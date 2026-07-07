@@ -10,11 +10,13 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 
-import { nextUid } from '@cngx/core/utils';
+import { nextUid, type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
 import { CNGX_ACCORDION, CngxAccordionPanel } from '@cngx/common/interactive';
 
 import { CNGX_ACCORDION_GROUP } from './accordion-group.token';
+import { CngxAccordionItemBusy } from './accordion-item-busy.directive';
 import { CngxAccordionItemContent } from './accordion-item-content.directive';
+import { CngxAccordionItemError } from './accordion-item-error.directive';
 import { CngxAccordionItemIcon } from './accordion-item-icon.directive';
 import { CngxAccordionItemSubtitle } from './accordion-item-subtitle.directive';
 import { injectAccordionConfig } from './config/inject-accordion-config';
@@ -79,6 +81,15 @@ export class CngxAccordionItem {
    * drive expansion from router/SSR state. Mirrors `CngxTab.id` / `CngxStep.id`.
    */
   readonly panelId = input<string>(nextUid('cngx-accordion-panel-'));
+  /**
+   * The panel's async lifecycle, communicated to assistive tech. Accepts a raw
+   * {@link AsyncStatus} or a {@link CngxAsyncState} the consumer already owns -
+   * the item reads only the status discriminator, never the payload, so it stays
+   * non-generic. A pure data input (the item injects no `CNGX_STATEFUL`), so no
+   * empty-string transform: a bare string status must survive untouched. The
+   * consumer wires the fetch; the item only communicates the state it is handed.
+   */
+  readonly state = input<AsyncStatus | CngxAsyncState<unknown> | undefined>(undefined);
 
   private readonly accordion = inject(CNGX_ACCORDION);
   protected readonly group = inject(CNGX_ACCORDION_GROUP);
@@ -107,6 +118,10 @@ export class CngxAccordionItem {
   protected readonly subtitleSlot = contentChild(CngxAccordionItemSubtitle);
   /** Chevron override slot; absent means the CSS chevron default renders. */
   protected readonly iconSlot = contentChild(CngxAccordionItemIcon);
+  /** Busy-state slot; absent means the CSS skeleton default renders. */
+  protected readonly busySlot = contentChild(CngxAccordionItemBusy);
+  /** Error-state slot; absent means the CSS error affordance default renders. */
+  protected readonly errorSlot = contentChild(CngxAccordionItemError);
   /**
    * Resolved chevron template through the three-stage slot cascade: per-instance
    * `*cngxAccordionItemIcon` -> app-wide `CNGX_ACCORDION_CONFIG.templates.icon`
@@ -115,6 +130,32 @@ export class CngxAccordionItem {
   protected readonly iconTemplate = computed(
     () => this.iconSlot()?.templateRef ?? this.config.templates?.icon ?? null,
   );
+  /** Resolved busy template: per-instance slot -> CSS skeleton default. */
+  protected readonly busyTemplate = computed(() => this.busySlot()?.templateRef ?? null);
+  /** Resolved error template: per-instance slot -> CSS error affordance default. */
+  protected readonly errorTemplate = computed(() => this.errorSlot()?.templateRef ?? null);
+
+  /**
+   * Panel async status, normalised to an {@link AsyncStatus} from either the raw
+   * enum or a {@link CngxAsyncState} object form (reads its `status()` signal).
+   * A primitive, so `Object.is` dedupes - no `equal` needed. The object form's
+   * status signal IS tracked, so a consumer state machine drives this directly.
+   */
+  protected readonly status = computed<AsyncStatus | undefined>(() => {
+    const state = this.state();
+    if (state == null) {
+      return undefined;
+    }
+    return typeof state === 'string' ? state : state.status();
+  });
+  /**
+   * `aria-busy` driver. Mirrors `CngxAsyncState.isBusy` (loading|refreshing|
+   * pending) so the string and object input forms agree. Boolean, no `equal`.
+   */
+  protected readonly busy = computed(() => {
+    const status = this.status();
+    return status === 'loading' || status === 'refreshing' || status === 'pending';
+  });
 
   /** Whether this item's region is open, derived from the coordinator's open-set. */
   protected readonly expanded = computed(() => this.accordion.isOpen(this.panelId()));

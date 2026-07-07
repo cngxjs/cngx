@@ -52,13 +52,45 @@
   class="cngx-accordion-item__region"
   [id]="regionId"
   [attr.aria-labelledby]="titleId"
+  [attr.aria-busy]="busy() ? 'true' : null"
   [hidden]="!expanded()"
 >
-  @if (contentSlot(); as content) {
-    @if (hasOpened()) {
-      <ng-container [ngTemplateOutlet]="content.templateRef" />
+  @switch (status()) {
+    @case ('error') {
+      <div class="cngx-accordion-item__error" role="alert">
+        @if (errorTemplate(); as tpl) {
+          <ng-container [ngTemplateOutlet]="tpl" />
+        } @else {
+          <span class="cngx-accordion-item__error-default"></span>
+        }
+      </div>
     }
-  } @else {
-    <ng-content />
+    @case ('loading') {
+      <div class="cngx-accordion-item__busy" aria-hidden="true">
+        @if (busyTemplate(); as tpl) {
+          <ng-container [ngTemplateOutlet]="tpl" />
+        } @else {
+          <span class="cngx-accordion-item__skeleton"></span>
+        }
+      </div>
+    }
+    @default {
+      @if (contentSlot(); as content) {
+        @if (hasOpened()) {
+          <ng-container [ngTemplateOutlet]="content.templateRef" />
+        }
+      } @else {
+        <ng-content />
+      }
+      @if (status() === 'refreshing') {
+        <div class="cngx-accordion-item__refreshing" aria-hidden="true">
+          @if (busyTemplate(); as tpl) {
+            <ng-container [ngTemplateOutlet]="tpl" />
+          } @else {
+            <span class="cngx-accordion-item__refresh-indicator"></span>
+          }
+        </div>
+      }
+    }
   }
 </div>

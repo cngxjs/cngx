@@ -151,7 +151,56 @@
 }
 
 .cngx-accordion-item__region {
+  position: relative;
   padding: var(--cngx-accordion-region-padding, 0.75rem 1rem);
+}
+
+/* First-load skeleton default (replaced by the *cngxAccordionItemBusy slot).
+   Decorative: the region's aria-busy carries the state to assistive tech. */
+.cngx-accordion-item__skeleton {
+  display: block;
+  block-size: var(--cngx-accordion-skeleton-height, 3rem);
+  border-radius: var(--cngx-accordion-skeleton-radius, 0.25rem);
+  background: var(--cngx-accordion-skeleton-bg, #e5e7eb);
+  animation: cngx-accordion-skeleton-pulse
+    var(--cngx-accordion-skeleton-duration, 1.5s) ease-in-out infinite;
+}
+
+/* Refreshing keeps the body mounted; a thin primary bar rides the region top. */
+.cngx-accordion-item__refresh-indicator {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+  block-size: var(--cngx-accordion-refresh-height, 2px);
+  background: var(--cngx-accordion-refresh-color, var(--cngx-color-primary, #1d4ed8));
+  animation: cngx-accordion-skeleton-pulse
+    var(--cngx-accordion-refresh-duration, 1.2s) ease-in-out infinite;
+}
+
+.cngx-accordion-item__error {
+  color: var(--cngx-accordion-error-color, #b91c1c);
+}
+
+/* Minimal error affordance when no *cngxAccordionItemError slot is given; the
+   announced message is the slot's job, so the default is visual only. */
+.cngx-accordion-item__error-default {
+  display: block;
+  block-size: var(--cngx-accordion-error-mark-height, 0.25rem);
+  border-radius: var(--cngx-accordion-error-mark-radius, 0.125rem);
+  background: var(--cngx-accordion-error-mark-bg, currentColor);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cngx-accordion-item__skeleton,
+  .cngx-accordion-item__refresh-indicator {
+    animation: none;
+  }
+}
+
+@keyframes cngx-accordion-skeleton-pulse {
+  50% {
+    opacity: 0.5;
+  }
 }
 
 .cngx-visually-hidden {

@@ -3,9 +3,13 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it } from 'vitest';
 
+import type { AsyncStatus, CngxAsyncState } from '@cngx/core/utils';
+
 import { CngxAccordionGroup } from './accordion-group.component';
 import { CngxAccordionItem } from './accordion-item.component';
+import { CngxAccordionItemBusy } from './accordion-item-busy.directive';
 import { CngxAccordionItemContent } from './accordion-item-content.directive';
+import { CngxAccordionItemError } from './accordion-item-error.directive';
 import { CngxAccordionItemIcon } from './accordion-item-icon.directive';
 import { CngxAccordionItemLeading } from './accordion-item-leading.directive';
 import { CngxAccordionItemMeta } from './accordion-item-meta.directive';
@@ -81,6 +85,34 @@ class NamedHost {
 })
 class SlotsHost {}
 
+@Component({
+  template: `<cngx-accordion-group>
+    <cngx-accordion-item [state]="state()">
+      <span cngxAccordionItemTitle>Report</span>
+      <ng-template cngxAccordionItemBusy><span class="busy-slot">loading</span></ng-template>
+      <ng-template cngxAccordionItemError><span class="error-slot">failed</span></ng-template>
+      <ng-template cngxAccordionItemContent><span class="body">content</span></ng-template>
+    </cngx-accordion-item>
+  </cngx-accordion-group>`,
+  imports: [
+    CngxAccordionGroup,
+    CngxAccordionItem,
+    CngxAccordionItemTitle,
+    CngxAccordionItemBusy,
+    CngxAccordionItemError,
+    CngxAccordionItemContent,
+  ],
+})
+class AsyncHost {
+  readonly state = signal<AsyncStatus | CngxAsyncState<unknown> | undefined>(undefined);
+}
+
+// The item reads only `.status()` off the object form, so a status-only stub is
+// a faithful CngxAsyncState for these tests.
+function asyncState(status: AsyncStatus): CngxAsyncState<unknown> {
+  return { status: signal(status) } as unknown as CngxAsyncState<unknown>;
+}
+
 describe('CngxAccordionItem', () => {
   beforeEach(() => TestBed.configureTestingModule({ imports: [Host] }));
 
@@ -106,6 +138,21 @@ describe('CngxAccordionItem', () => {
       .split(/\s+/)
       .map((id) => root.querySelector<HTMLElement>(`#${id}`))
       .find((el): el is HTMLElement => el?.classList.contains('cngx-visually-hidden') ?? false);
+  }
+
+  function setupAsync(initial?: AsyncStatus | CngxAsyncState<unknown>) {
+    const fixture = TestBed.createComponent(AsyncHost);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    const header = root.querySelector<HTMLButtonElement>('button.cngx-accordion-item__header')!;
+    // Open so the lazy body latches; async branches then swap around a mounted body.
+    header.click();
+    if (initial !== undefined) {
+      fixture.componentInstance.state.set(initial);
+    }
+    fixture.detectChanges();
+    const region = root.querySelector<HTMLElement>('[role="region"]')!;
+    return { fixture, root, header, region };
   }
 
   it('pins each region and its header button name to the title element only', () => {
@@ -297,5 +344,53 @@ describe('CngxAccordionItem', () => {
     // Interactive meta (a link) sits OUTSIDE the button -> valid HTML.
     const metaLink = root.querySelector<HTMLAnchorElement>('.meta-link')!;
     expect(button.contains(metaLink)).toBe(false);
+  });
+
+  it('sets aria-busy and renders the busy slot on [state]="loading"', () => {
+    const { region, root } = setupAsync('loading');
+    expect(region.getAttribute('aria-busy')).toBe('true');
+    expect(root.querySelector('.busy-slot')).not.toBeNull();
+    // Loading is first-load: the body is replaced by the busy visual.
+    expect(root.querySelector('.body')).toBeNull();
+  });
+
+  it('keeps aria-busy and the mounted body on [state]="refreshing"', () => {
+    const { region, root } = setupAsync('refreshing');
+    expect(region.getAttribute('aria-busy')).toBe('true');
+    // Refreshing keeps the body mounted and overlays the busy visual.
+    expect(root.querySelector('.body')?.textContent).toBe('content');
+    expect(root.querySelector('.busy-slot')).not.toBeNull();
+  });
+
+  it('sets aria-busy on [state]="pending" without dropping the body', () => {
+    const { region, root } = setupAsync('pending');
+    expect(region.getAttribute('aria-busy')).toBe('true');
+    expect(root.querySelector('.body')?.textContent).toBe('content');
+  });
+
+  it('renders the error slot in an alert and clears aria-busy on [state]="error"', () => {
+    const { region, root } = setupAsync('error');
+    expect(region.getAttribute('aria-busy')).toBeNull();
+    const alert = root.querySelector<HTMLElement>('[role="alert"]');
+    expect(alert).not.toBeNull();
+    expect(alert?.querySelector('.error-slot')?.textContent).toBe('failed');
+    // Error replaces the body.
+    expect(root.querySelector('.body')).toBeNull();
+  });
+
+  it('clears aria-busy and shows the body on success and when [state] is absent', () => {
+    const { fixture, region, root } = setupAsync('success');
+    expect(region.getAttribute('aria-busy')).toBeNull();
+    expect(root.querySelector('.body')?.textContent).toBe('content');
+
+    fixture.componentInstance.state.set(undefined);
+    fixture.detectChanges();
+    expect(region.getAttribute('aria-busy')).toBeNull();
+    expect(root.querySelector('.body')?.textContent).toBe('content');
+  });
+
+  it('resolves a CngxAsyncState<unknown> object input via its status() signal', () => {
+    const { region } = setupAsync(asyncState('loading'));
+    expect(region.getAttribute('aria-busy')).toBe('true');
   });
 });
