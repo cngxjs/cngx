@@ -78,7 +78,17 @@ describe('accordion config cascade', () => {
   it('falls back to the EN library defaults when unconfigured', () => {
     const { item, group } = render(UnboundHost);
     expect(item.disabledReason()).toBe('This section is currently unavailable.');
+    expect(item.errorMessage()).toBe('This section could not be loaded.');
     expect(group.headingLevel()).toBe(3);
+  });
+
+  it('overrides the error message through withAccordionLabels', () => {
+    const { item } = render(UnboundHost, [
+      provideAccordionConfig(withAccordionLabels({ errorMessage: 'Load failed.' })),
+    ]);
+    expect(item.errorMessage()).toBe('Load failed.');
+    // Un-set label key keeps its EN default (partial labels compose).
+    expect(item.disabledReason()).toBe('This section is currently unavailable.');
   });
 
   it('resolves the root provideAccordionConfig over the defaults', () => {

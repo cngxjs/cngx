@@ -181,13 +181,11 @@
   color: var(--cngx-accordion-error-color, #b91c1c);
 }
 
-/* Minimal error affordance when no *cngxAccordionItemError slot is given; the
-   announced message is the slot's job, so the default is visual only. */
+/* Default error message when no *cngxAccordionItemError slot is given. Rendered
+   as text inside the role="alert" so the error state is announced, not silent. */
 .cngx-accordion-item__error-default {
   display: block;
-  block-size: var(--cngx-accordion-error-mark-height, 0.25rem);
-  border-radius: var(--cngx-accordion-error-mark-radius, 0.125rem);
-  background: var(--cngx-accordion-error-mark-bg, currentColor);
+  font-size: var(--cngx-accordion-error-font-size, 0.875em);
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -61,7 +61,7 @@
         @if (errorTemplate(); as tpl) {
           <ng-container [ngTemplateOutlet]="tpl" />
         } @else {
-          <span class="cngx-accordion-item__error-default"></span>
+          <span class="cngx-accordion-item__error-default">{{ errorMessage() }}</span>
         }
       </div>
     }

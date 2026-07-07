@@ -29,6 +29,13 @@ export interface CngxAccordionConfig {
    */
   readonly disabledReason: string;
   /**
+   * Message announced (via a `role="alert"`) when an item's `[state]` is error
+   * and no `*cngxAccordionItemError` slot is provided. English default; a
+   * per-instance `[errorMessage]` or the error slot still wins. Ships a spoken
+   * default so the error state is never silent to assistive tech (Pillar 2).
+   */
+  readonly errorMessage: string;
+  /**
    * Default `aria-level` (2-6) every `CngxAccordionGroup` heading wrapper
    * reflects when `[headingLevel]` is not bound. Clamped into the ARIA range by
    * the group.

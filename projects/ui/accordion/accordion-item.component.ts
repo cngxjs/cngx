@@ -75,6 +75,14 @@ export class CngxAccordionItem {
    */
   readonly disabledReason = input<string>(this.config.disabledReason);
   /**
+   * Message announced through a `role="alert"` when `[state]` is error and no
+   * `*cngxAccordionItemError` slot is provided. Resolves
+   * `input ?? CNGX_ACCORDION_CONFIG.errorMessage ?? EN default`, mirroring
+   * {@link disabledReason}: a spoken default so the error state is never silent
+   * to assistive tech. The error slot, when present, wins over this string.
+   */
+  readonly errorMessage = input<string>(this.config.errorMessage);
+  /**
    * Stable id this item registers under in the coordinator's open-set. Defaults
    * to a generated id; bind `[panelId]` to a stable consumer value to address
    * the panel through the group's `[(openIds)]` model - seed it open on load or

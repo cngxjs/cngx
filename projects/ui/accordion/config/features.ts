@@ -2,20 +2,28 @@ import type { CngxAccordionConfig } from './accordion.config';
 import type { CngxAccordionConfigFeature } from './provide-accordion-config';
 
 /**
- * Override the accordion's locale-sensitive `disabledReason` string - the text
- * announced to assistive tech when an item is disabled. Per-instance
- * `[disabledReason]` still wins over the cascade; this only sets the fallback.
+ * Override the accordion's locale-sensitive announced strings - `disabledReason`
+ * (spoken when an item is disabled) and `errorMessage` (spoken via `role="alert"`
+ * when an item's `[state]` is error and no error slot is given). Pass either or
+ * both. Per-instance `[disabledReason]` / `[errorMessage]` still win over the
+ * cascade; this only sets the fallback.
  *
  * ```ts
  * provideAccordionConfig(
- *   withAccordionLabels({ disabledReason: 'This section is locked.' }),
+ *   withAccordionLabels({
+ *     disabledReason: 'This section is locked.',
+ *     errorMessage: 'This section failed to load.',
+ *   }),
  * );
  * ```
  *
  * @category ui/accordion
  * @since 0.1.0
  */
-export function withAccordionLabels(payload: { disabledReason: string }): CngxAccordionConfigFeature {
+export function withAccordionLabels(payload: {
+  disabledReason?: string;
+  errorMessage?: string;
+}): CngxAccordionConfigFeature {
   return { kind: 'labels', payload };
 }
 

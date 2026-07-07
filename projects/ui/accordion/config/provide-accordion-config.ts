@@ -20,7 +20,10 @@ import { CNGX_ACCORDION_CONFIG, CNGX_ACCORDION_DEFAULTS } from './accordion.conf
  * @since 0.1.0
  */
 export type CngxAccordionConfigFeature =
-  | { readonly kind: 'labels'; readonly payload: { readonly disabledReason: string } }
+  | {
+      readonly kind: 'labels';
+      readonly payload: { readonly disabledReason?: string; readonly errorMessage?: string };
+    }
   | { readonly kind: 'headingLevel'; readonly payload: { readonly headingLevel: number } }
   | { readonly kind: 'templates'; readonly payload: NonNullable<CngxAccordionConfig['templates']> };
 
@@ -35,13 +38,19 @@ function reduceFeatures(
 ): Partial<CngxAccordionConfig> {
   const out: {
     disabledReason?: string;
+    errorMessage?: string;
     headingLevel?: number;
     templates?: NonNullable<CngxAccordionConfig['templates']>;
   } = {};
   for (const f of features) {
     switch (f.kind) {
       case 'labels':
-        out.disabledReason = f.payload.disabledReason;
+        if (f.payload.disabledReason !== undefined) {
+          out.disabledReason = f.payload.disabledReason;
+        }
+        if (f.payload.errorMessage !== undefined) {
+          out.errorMessage = f.payload.errorMessage;
+        }
         break;
       case 'headingLevel':
         out.headingLevel = f.payload.headingLevel;
@@ -67,6 +76,7 @@ function mergeConfig(
 ): CngxAccordionConfig {
   return {
     disabledReason: partial.disabledReason ?? base.disabledReason,
+    errorMessage: partial.errorMessage ?? base.errorMessage,
     headingLevel: partial.headingLevel ?? base.headingLevel,
     templates: { ...base.templates, ...partial.templates },
   };

@@ -113,6 +113,26 @@ function asyncState(status: AsyncStatus): CngxAsyncState<unknown> {
   return { status: signal(status) } as unknown as CngxAsyncState<unknown>;
 }
 
+@Component({
+  template: `<cngx-accordion-group>
+    <cngx-accordion-item [state]="'error'"><span cngxAccordionItemTitle>R</span>Body</cngx-accordion-item>
+  </cngx-accordion-group>`,
+  imports: [CngxAccordionGroup, CngxAccordionItem, CngxAccordionItemTitle],
+})
+class ErrorDefaultHost {}
+
+@Component({
+  template: `<cngx-accordion-group>
+    <cngx-accordion-item [state]="'error'" [errorMessage]="msg()">
+      <span cngxAccordionItemTitle>R</span>
+    </cngx-accordion-item>
+  </cngx-accordion-group>`,
+  imports: [CngxAccordionGroup, CngxAccordionItem, CngxAccordionItemTitle],
+})
+class ErrorMessageHost {
+  readonly msg = signal('Custom failure.');
+}
+
 describe('CngxAccordionItem', () => {
   beforeEach(() => TestBed.configureTestingModule({ imports: [Host] }));
 
@@ -392,5 +412,22 @@ describe('CngxAccordionItem', () => {
   it('resolves a CngxAsyncState<unknown> object input via its status() signal', () => {
     const { region } = setupAsync(asyncState('loading'));
     expect(region.getAttribute('aria-busy')).toBe('true');
+  });
+
+  it('announces an EN default error message when no error slot is given', () => {
+    const fixture = TestBed.createComponent(ErrorDefaultHost);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    const alert = root.querySelector<HTMLElement>('[role="alert"]');
+    // The zero-config error state speaks, never a silent alert (Pillar 2).
+    expect(alert?.textContent?.trim()).toBe('This section could not be loaded.');
+  });
+
+  it('lets a per-instance [errorMessage] win over the default in the alert', () => {
+    const fixture = TestBed.createComponent(ErrorMessageHost);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    const alert = root.querySelector<HTMLElement>('[role="alert"]');
+    expect(alert?.textContent?.trim()).toBe('Custom failure.');
   });
 });
