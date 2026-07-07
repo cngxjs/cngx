@@ -15,7 +15,10 @@
 
 .cngx-accordion-item__heading {
   margin: 0;
-  display: flex;
+  /* display/columns are hooks so a table-style skin (Data-Grid) can lay the
+     heading row out as a column grid; the flat default stays a flex row. */
+  display: var(--cngx-accordion-heading-display, flex);
+  grid-template-columns: var(--cngx-accordion-heading-columns, none);
   align-items: var(--cngx-accordion-heading-align, center);
   gap: var(--cngx-accordion-heading-gap, 0.5rem);
 }

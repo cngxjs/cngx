@@ -1,0 +1,78 @@
+/**
+ * @overview
+ * Data-Grid skin preset for the `@cngx/ui/accordion` organism. Opt in with
+ * `class="cngx-accordion-skin-data-grid"` on `cngx-accordion-group`. The header
+ * row reads as a table: an id cell leads (`cngxAccordionItemLeading`), the title
+ * takes the flexible column, trailing facts sit in the meta cell
+ * (`cngxAccordionItemMeta`), zebra striping separates rows, and the body opens
+ * into an inset detail zone. Under 620px a container query drops the id column.
+ *
+ * The column caption row is CONSUMER markup above the group (the organism ships
+ * no caption row) - see the story / README. Heading layout rides the tokenized
+ * `--cngx-accordion-heading-display` / `-columns` hooks; zebra rows set the item
+ * bg token. No gradients; every value a `var(--cngx-*, fallback)`.
+ */
+@layer cngx.components {
+  .cngx-accordion-skin-data-grid {
+    --cngx-accordion-group-border: 1px solid var(--cngx-color-border, #d1d5db);
+    --cngx-accordion-group-radius: var(--cngx-radius-sm, 0.25rem);
+    --cngx-accordion-group-overflow: hidden;
+    --cngx-accordion-group-bg: var(--cngx-color-surface, #fff);
+    --cngx-accordion-group-border-block-start: none;
+    --cngx-accordion-heading-display: grid;
+    --cngx-accordion-heading-columns: var(--cngx-accordion-datagrid-columns, 11ch 1fr auto);
+    --cngx-accordion-heading-gap: var(--cngx-space-sm, 0.75rem);
+    --cngx-accordion-header-padding: 0.6rem var(--cngx-space-md, 1rem);
+    --cngx-accordion-divider: 1px solid var(--cngx-color-border, #d1d5db);
+    --cngx-accordion-region-padding: var(--cngx-space-md, 1rem) var(--cngx-space-lg, 1.25rem);
+  }
+
+  /* Zebra rows via the item background token. */
+  .cngx-accordion-skin-data-grid .cngx-accordion-item:nth-of-type(even) {
+    --cngx-accordion-item-bg: color-mix(
+      in oklab,
+      var(--cngx-color-text, #111827) 3%,
+      transparent
+    );
+  }
+
+  .cngx-accordion-skin-data-grid .cngx-accordion-item__header:hover {
+    --cngx-accordion-header-bg: color-mix(
+      in oklab,
+      var(--cngx-color-primary, #1d4ed8) 6%,
+      transparent
+    );
+  }
+
+  /* Id cell + meta read as monospace table columns. */
+  .cngx-accordion-skin-data-grid .cngx-accordion-item__leading {
+    font-family: var(--cngx-accordion-datagrid-mono, ui-monospace, monospace);
+    font-size: var(--cngx-font-size-sm, 0.8125rem);
+    color: var(--cngx-color-text-muted, #6b7280);
+  }
+
+  .cngx-accordion-skin-data-grid .cngx-accordion-item__meta {
+    justify-content: end;
+    gap: var(--cngx-space-md, 1rem);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Inset detail zone with a primary edge. */
+  .cngx-accordion-skin-data-grid .cngx-accordion-item__region {
+    box-shadow: inset 3px 0 0 var(--cngx-color-primary, #1d4ed8);
+    background: color-mix(in oklab, var(--cngx-color-text, #111827) 2%, transparent);
+  }
+
+  @container (max-width: 620px) {
+    .cngx-accordion-skin-data-grid {
+      --cngx-accordion-heading-columns: 1fr auto;
+    }
+    .cngx-accordion-skin-data-grid .cngx-accordion-item__leading {
+      display: none;
+    }
+  }
+
+  .cngx-accordion-skin-data-grid {
+    container-type: inline-size;
+  }
+}

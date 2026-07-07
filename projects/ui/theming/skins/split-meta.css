@@ -1,0 +1,37 @@
+/**
+ * @overview
+ * Split-Meta skin preset for the `@cngx/ui/accordion` organism. Opt in with
+ * `class="cngx-accordion-skin-split-meta"` on `cngx-accordion-group`. A flat
+ * two-part header: title on the start, meta (a `cngx-time` timestamp + a status
+ * badge) trailing on the end. Under 520px a container query drops the timestamp
+ * so the badge and title keep their room.
+ *
+ * The group is a size container; the timestamp hide is an additive container
+ * query. No gradients; every value a `var(--cngx-*, fallback)`.
+ */
+@layer cngx.components {
+  .cngx-accordion-skin-split-meta {
+    --cngx-accordion-group-border-block-start: none;
+    --cngx-accordion-divider: 1px solid var(--cngx-color-border, #d1d5db);
+    --cngx-accordion-header-padding: var(--cngx-space-lg, 1.25rem) 0;
+    --cngx-accordion-region-padding: 0 0 var(--cngx-space-lg, 1.25rem);
+
+    container-type: inline-size;
+  }
+
+  .cngx-accordion-skin-split-meta .cngx-accordion-item__meta {
+    gap: var(--cngx-space-md, 1rem);
+  }
+
+  .cngx-accordion-skin-split-meta .cngx-accordion-item__meta cngx-time {
+    font-family: var(--cngx-accordion-split-time-font, ui-monospace, monospace);
+    font-size: var(--cngx-font-size-sm, 0.8125rem);
+    color: var(--cngx-color-text-muted, #6b7280);
+  }
+
+  @container (max-width: 520px) {
+    .cngx-accordion-skin-split-meta .cngx-accordion-item__meta cngx-time {
+      display: none;
+    }
+  }
+}
