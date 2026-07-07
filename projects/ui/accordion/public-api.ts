@@ -8,6 +8,9 @@ export {
 } from './accordion-group.token';
 export { CngxAccordionItem } from './accordion-item.component';
 export { CngxAccordionItemTitle } from './accordion-item-title.directive';
+export { CngxAccordionItemSubtitle } from './accordion-item-subtitle.directive';
+export { CngxAccordionItemLeading } from './accordion-item-leading.directive';
+export { CngxAccordionItemMeta } from './accordion-item-meta.directive';
 export { CngxAccordionItemContent } from './accordion-item-content.directive';
 export {
   CngxAccordionItemIcon,
