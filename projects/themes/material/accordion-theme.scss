@@ -10,17 +10,25 @@
 // are plain inheriting custom properties, so setting them on the
 // `cngx-accordion-group` host cascades to every `cngx-accordion-item` inside it.
 //
-// Covers the base organism AND the opt-in skin presets
-// (projects/ui/accordion/theming/skins/*.css) in one include:
-//   - base:  the group + item divider, the header (text, disabled text, focus
-//            ring), the region, and the chevron spacing
-//   - skins: the dim-text / subtitle tone, card-surface elevation (scoped to the
-//            card skins), and the per-skin accents (bento tile, plus-minus box,
-//            severity spine)
+// Two includes:
+//   - theme($theme): the base organism only - the group + item divider, the
+//     header (text, disabled text, focus ring), the region, the chevron spacing,
+//     and the dim-text / subtitle tone. Token-only; ships on every accordion.
+//   - skins($theme): the per-skin refinements - card-surface elevation (scoped
+//     to the card skins via [data-skin]) and the per-skin accents (bento tile,
+//     plus-minus box, severity spine). Include only when the app renders skins.
+//
+// Skin SELECTION lives in the component CSS via the [data-skin] host attribute
+// (projects/ui/accordion/accordion-skins.css); these mixins only map tokens. The
+// full theme.scss aggregation includes both; a base-only consumer includes
+// theme() alone and stays lean.
 //
 //   @use '@angular/material' as mat;
 //   @use '@cngx/themes/material/accordion-theme' as accordion;
-//   html { @include accordion.theme($theme); }
+//   html {
+//     @include accordion.theme($theme);
+//     @include accordion.skins($theme); // only if the app uses skins
+//   }
 
 @mixin color($theme) {
   @if mat.get-theme-version($theme) == 1 {
@@ -50,7 +58,7 @@
   --cngx-accordion-header-gap: #{map.get($gaps, $scale)};
 }
 
-// --- Skin presets (projects/ui/accordion/theming/skins/*.css) ------------
+// --- Skin refinements (accordion-skins.css, selected via [data-skin]) -----
 // The skins compose foundation tokens (--cngx-color-surface / -text / -primary
 // / -border / -radius-*), which system-bridge.scss already maps to --mat-sys-*,
 // so a Material-paired accordion is skin-aware out of the box. These mixins
@@ -106,6 +114,9 @@
   }
 }
 
+// Base organism bridge. Token-only, emitted on the group host. Ships on every
+// accordion regardless of skin; kept lean so base consumers (e.g. the examples
+// material-lab, which includes theme() only) stay under their style budget.
 @mixin theme($theme) {
   @layer cngx.components {
     :where(cngx-accordion-group) {
@@ -113,27 +124,34 @@
       @include density($theme);
       @include _skin-text($theme);
     }
+  }
+}
 
+// Per-skin refinements, keyed off the [data-skin] host attribute. Split out of
+// theme() so an app that never renders a skin omits this include and its per-
+// skin blocks. The full theme.scss aggregation always includes it.
+@mixin skins($theme) {
+  @layer cngx.components {
     // Card-surface skins only - flat skins keep their surfaceless look.
     :where(
-        .cngx-accordion-skin-categorized,
-        .cngx-accordion-skin-bento,
-        .cngx-accordion-skin-section-bands,
-        .cngx-accordion-skin-severity-spine,
-        .cngx-accordion-skin-data-grid,
-        .cngx-accordion-skin-primary-frame,
-        .cngx-accordion-skin-plus-minus
+        cngx-accordion-group[data-skin='categorized'],
+        cngx-accordion-group[data-skin='bento'],
+        cngx-accordion-group[data-skin='section-bands'],
+        cngx-accordion-group[data-skin='severity-spine'],
+        cngx-accordion-group[data-skin='data-grid'],
+        cngx-accordion-group[data-skin='primary-frame'],
+        cngx-accordion-group[data-skin='plus-minus']
       ) {
       @include _skin-cards($theme);
     }
 
-    :where(.cngx-accordion-skin-bento) {
+    :where(cngx-accordion-group[data-skin='bento']) {
       @include _skin-bento($theme);
     }
-    :where(.cngx-accordion-skin-plus-minus) {
+    :where(cngx-accordion-group[data-skin='plus-minus']) {
       @include _skin-plus-minus($theme);
     }
-    :where(.cngx-accordion-skin-severity-spine) {
+    :where(cngx-accordion-group[data-skin='severity-spine']) {
       @include _skin-spine($theme);
     }
   }

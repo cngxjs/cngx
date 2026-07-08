@@ -14,11 +14,12 @@ import { describe, expect, it } from 'vitest';
  *   - v0 (M2): `mat.m2-define-light-theme(...)` with the
  *     `get-theme-color($theme, ...)` branch active.
  *
- * The bridge themes the base group/item/header/region tokens plus the skin
- * refinements: dim-text / subtitle tone, card-surface elevation for the card
- * skins, and the per-skin accent fills (bento tile, plus-minus box, severity
- * spine). Any change to a pinned line is intentional only when the diff matches
- * a deliberate bridge edit.
+ * Split across two mixins: `theme()` pins the lean base (group/item/header/
+ * region tokens + dim-text / subtitle tone) that ships on every accordion, and
+ * `skins()` pins the per-skin refinements the full theme.scss aggregation adds -
+ * card-surface elevation for the card skins and the per-skin accent fills (bento
+ * tile, plus-minus box, severity spine). Any change to a pinned line is
+ * intentional only when the diff matches a deliberate bridge edit.
  *
  * Co-located with the CngxAccordionItem organism (rather than a dedicated themes
  * test project) because `projects/themes/material/` carries no `ng-package.json`
@@ -33,6 +34,9 @@ const LOAD_PATHS = [resolve(REPO_ROOT, 'node_modules'), resolve(REPO_ROOT, 'proj
 interface CompileOptions {
   themeVersion: 'v1' | 'v0';
   variant: 'light' | 'dark';
+  // `theme` = the lean base bridge (ships on every accordion); `skins` = the
+  // per-skin refinements the full theme.scss aggregation adds on top.
+  mixin: 'theme' | 'skins';
 }
 
 function buildEntry(opts: CompileOptions): string {
@@ -49,7 +53,7 @@ $theme: mat.define-theme((
   ),
 ));
 
-@include accordion.theme($theme);
+@include accordion.${opts.mixin}($theme);
 `;
   }
   return `
@@ -68,7 +72,7 @@ $theme: mat.m2-define-light-theme((
   ),
 ));
 
-@include accordion.theme($theme);
+@include accordion.${opts.mixin}($theme);
 `;
 }
 
@@ -96,15 +100,27 @@ function compileAndExtract(opts: CompileOptions): Record<string, string> {
 }
 
 describe('Material accordion-theme bridge baseline', () => {
-  it('v1 light: resolved --cngx-* declarations match the baseline', () => {
-    expect(compileAndExtract({ themeVersion: 'v1', variant: 'light' })).toMatchSnapshot();
+  describe('theme() - base organism (ships on every accordion)', () => {
+    it('v1 light: resolved --cngx-* declarations match the baseline', () => {
+      expect(compileAndExtract({ themeVersion: 'v1', variant: 'light', mixin: 'theme' })).toMatchSnapshot();
+    });
+
+    it('v1 dark: resolved --cngx-* declarations match the baseline', () => {
+      expect(compileAndExtract({ themeVersion: 'v1', variant: 'dark', mixin: 'theme' })).toMatchSnapshot();
+    });
+
+    it('v0 light: resolved --cngx-* declarations match the baseline', () => {
+      expect(compileAndExtract({ themeVersion: 'v0', variant: 'light', mixin: 'theme' })).toMatchSnapshot();
+    });
   });
 
-  it('v1 dark: resolved --cngx-* declarations match the baseline', () => {
-    expect(compileAndExtract({ themeVersion: 'v1', variant: 'dark' })).toMatchSnapshot();
-  });
+  describe('skins() - per-skin refinements (full aggregation only)', () => {
+    it('v1 light: resolved --cngx-* declarations match the baseline', () => {
+      expect(compileAndExtract({ themeVersion: 'v1', variant: 'light', mixin: 'skins' })).toMatchSnapshot();
+    });
 
-  it('v0 light: resolved --cngx-* declarations match the baseline', () => {
-    expect(compileAndExtract({ themeVersion: 'v0', variant: 'light' })).toMatchSnapshot();
+    it('v0 light: resolved --cngx-* declarations match the baseline', () => {
+      expect(compileAndExtract({ themeVersion: 'v0', variant: 'light', mixin: 'skins' })).toMatchSnapshot();
+    });
   });
 });
