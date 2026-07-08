@@ -1,0 +1,492 @@
+/**
+ * @overview
+ * The eleven opt-in visual skins for `<cngx-accordion-group>`. Pairs with the
+ * structural `accordion-group.component.css` / `accordion-item.component.css` in
+ * this same entry - those own the flat base layout, the marker, the skeleton /
+ * refresh / error affordances, and the a11y wiring; this file owns only the
+ * per-skin paint.
+ *
+ * Selected by the `[skin]` input via the `[data-skin]` host attribute, mirroring
+ * `<cngx-tab-group>`. Every skin renders the identical heading / region / marker
+ * structure, slots, ARIA, and keyboard model - only the paint changes. Each
+ * value is a CSS `@scope (.cngx-accordion-group[data-skin='<name>'])` block.
+ * Unlayered (this is a component `styleUrl`, not the Track-B `cngx.css`), so a
+ * `[data-skin]` rule overrides the flat base by specificity + source order - no
+ * `@layer` battle, no tokenising a layout hook just to let a layered rule win.
+ *
+ * Reverted-hook structure (display / gap / surface box / heading grid) is set as
+ * a direct property; genuine theming stays on the `--cngx-accordion-*` custom
+ * properties the base still reads (padding, divider, header tint, marker,
+ * per-skin accents). Every value is a `var(--cngx-*, fallback)`; every gradient
+ * from the design lab is re-mapped to a solid `--cngx-color-primary` (there is
+ * no linear / conic / radial gradient anywhere here). Motion short-circuits
+ * under `prefers-reduced-motion` via an unlayered `@media` block, never nested
+ * inside `@scope`.
+ *
+ * - `editorial` - a mono running index leads each row, hairline dividers, no
+ *   surfaces; index + title light up primary on open / hover.
+ * - `categorized` - each item is a bordered surface card, the group stacks them
+ *   with a gap, title turns primary on open.
+ * - `plus-minus` - one framed surface, items divided within, the chevron is a
+ *   boxed +/- (via the `--cngx-accordion-marker: plus-minus` token) that fills
+ *   primary on open.
+ * - `lux` - generous whitespace, large low-contrast type, a single hairline per
+ *   row; title fades on hover.
+ * - `bento` - a container-query card grid (one column, two past 620px), an
+ *   icon tile leads each card and fills primary on open.
+ * - `section-bands` - each header is an inverted full-width band, items are
+ *   framed surfaces with a gap, a status chip rides the band via the meta slot.
+ * - `timeline` - a vertical rail with a per-item node that lights primary on
+ *   open; rail + node are item pseudo-elements, no leading markup required.
+ * - `severity-spine` - a full-height colour spine leads each item with the
+ *   priority stamped in it (a structural column, not a border).
+ * - `data-grid` - the header row reads as a table (id / title / meta columns),
+ *   zebra rows, an inset detail zone; a container query drops the id column
+ *   under 620px.
+ * - `split-meta` - a flat two-part header, title on the start and meta trailing;
+ *   a container query drops the timestamp under 520px.
+ * - `primary-frame` - each item is a card that gains a solid primary border and
+ *   an animated primary glow on open (the re-map of the lab's rotating conic
+ *   frame to a solid primary treatment).
+ */
+
+@scope (.cngx-accordion-group[data-skin='editorial']) {
+  :scope {
+    --cngx-accordion-heading-gap: var(--cngx-space-lg, 1.25rem);
+    --cngx-accordion-header-padding: var(--cngx-space-lg, 1.25rem) 0;
+    --cngx-accordion-region-padding: 0 0 var(--cngx-space-xl, 2rem);
+  }
+
+  .cngx-accordion-item__heading {
+    align-items: flex-start;
+  }
+
+  .cngx-accordion-item__leading {
+    padding-block-start: 0.15em;
+    min-inline-size: 2.6ch;
+    font-family: var(--cngx-accordion-editorial-index-font, ui-monospace, monospace);
+    font-size: var(--cngx-font-size-lg, 1.125rem);
+    font-weight: 700;
+    color: var(--cngx-color-text-muted, #6b7280);
+    line-height: 1;
+    transition: color var(--cngx-accordion-chevron-transition, 150ms ease);
+  }
+
+  .cngx-accordion-item__title {
+    font-size: var(--cngx-font-size-lg, 1.125rem);
+  }
+
+  /* Index and title light up in the primary colour on open / hover. */
+  .cngx-accordion-item[data-expanded] .cngx-accordion-item__leading,
+  .cngx-accordion-item__header:hover .cngx-accordion-item__title {
+    color: var(--cngx-color-primary, #1d4ed8);
+  }
+}
+
+@scope (.cngx-accordion-group[data-skin='categorized']) {
+  :scope {
+    display: flex;
+    gap: var(--cngx-space-sm, 0.75rem);
+    --cngx-accordion-group-border-block-start: none;
+    --cngx-accordion-divider: none;
+    --cngx-accordion-header-padding: var(--cngx-space-md, 1rem) var(--cngx-space-lg, 1.25rem);
+    --cngx-accordion-region-padding: 0 var(--cngx-space-lg, 1.25rem) var(--cngx-space-lg, 1.25rem);
+  }
+
+  .cngx-accordion-item {
+    background: var(--cngx-color-surface, #fff);
+    border: 1px solid var(--cngx-color-border, #d1d5db);
+    border-radius: var(--cngx-radius-md, 0.375rem);
+    overflow: hidden;
+  }
+
+  /* Hover tint set via the token so it composes with the base header rule. */
+  .cngx-accordion-item__header:hover {
+    --cngx-accordion-header-bg: color-mix(in oklab, var(--cngx-color-primary, #1d4ed8) 5%, transparent);
+  }
+
+  .cngx-accordion-item[data-expanded] .cngx-accordion-item__title {
+    color: var(--cngx-color-primary, #1d4ed8);
+  }
+}
+
+@scope (.cngx-accordion-group[data-skin='plus-minus']) {
+  :scope {
+    background: var(--cngx-color-surface, #fff);
+    border: 1px solid var(--cngx-color-border, #d1d5db);
+    border-radius: var(--cngx-radius-lg, 0.5rem);
+    overflow: hidden;
+    --cngx-accordion-group-border-block-start: none;
+    --cngx-accordion-marker: plus-minus;
+    --cngx-accordion-marker-size: 1.75rem;
+    --cngx-accordion-header-padding: var(--cngx-space-lg, 1.25rem);
+    --cngx-accordion-region-padding: 0 var(--cngx-space-lg, 1.25rem) var(--cngx-space-lg, 1.25rem);
+  }
+
+  /* Boxed marker: additive background + radius on the bare +/- bars. */
+  .cngx-accordion-item__chevron {
+    background: var(
+      --cngx-accordion-pm-box-bg,
+      color-mix(in oklab, var(--cngx-color-text, #111827) 5%, transparent)
+    );
+    border-radius: var(--cngx-radius-sm, 0.25rem);
+    color: var(--cngx-color-text-muted, #6b7280);
+    transition:
+      background var(--cngx-accordion-chevron-transition, 150ms ease),
+      color var(--cngx-accordion-chevron-transition, 150ms ease);
+  }
+
+  .cngx-accordion-item[data-expanded] .cngx-accordion-item__chevron {
+    background: var(--cngx-color-primary, #1d4ed8);
+    color: #fff;
+  }
+
+  .cngx-accordion-item[data-expanded] .cngx-accordion-item__title {
+    color: var(--cngx-color-primary, #1d4ed8);
+  }
+}
+
+@scope (.cngx-accordion-group[data-skin='lux']) {
+  :scope {
+    --cngx-accordion-header-padding: clamp(1.1rem, 3vw, 1.8rem) 0;
+    --cngx-accordion-region-padding: 0 0 clamp(1.2rem, 3vw, 2rem);
+    --cngx-accordion-title-gap: 0.35rem;
+  }
+
+  .cngx-accordion-item__heading {
+    align-items: baseline;
+  }
+
+  .cngx-accordion-item__title {
+    font-size: var(--cngx-font-size-lg, 1.125rem);
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+
+  .cngx-accordion-item__region {
+    font-size: var(--cngx-font-size-lg, 1.125rem);
+    line-height: 1.6;
+  }
+
+  /* Marker centres against the baseline-aligned row. */
+  .cngx-accordion-item__chevron-slot {
+    align-self: center;
+  }
+
+  /* Title fades on hover (set via the token so it composes with the base). */
+  .cngx-accordion-item__header:hover {
+    --cngx-accordion-header-color: var(--cngx-color-text-muted, #6b7280);
+  }
+}
+
+@scope (.cngx-accordion-group[data-skin='bento']) {
+  :scope {
+    display: grid;
+    gap: var(--cngx-space-sm, 0.75rem);
+    container-type: inline-size;
+    --cngx-accordion-group-border-block-start: none;
+    --cngx-accordion-divider: none;
+    --cngx-accordion-header-padding: var(--cngx-space-lg, 1.25rem);
+    --cngx-accordion-region-padding: 0 var(--cngx-space-lg, 1.25rem) var(--cngx-space-lg, 1.25rem);
+  }
+
+  .cngx-accordion-item {
+    background: var(--cngx-color-surface, #fff);
+    border: 1px solid var(--cngx-color-border, #d1d5db);
+    border-radius: var(--cngx-radius-lg, 0.5rem);
+    overflow: hidden;
+  }
+
+  @container (min-width: 620px) {
+    :scope {
+      grid-template-columns: 1fr 1fr;
+    }
+    .cngx-accordion-item--wide {
+      grid-column: 1 / -1;
+    }
+  }
+
+  /* Icon-tile leading; fills primary on open (re-mapped from the gradient). */
+  .cngx-accordion-item__leading {
+    inline-size: 2.625rem;
+    block-size: 2.625rem;
+    border-radius: var(--cngx-radius-md, 0.375rem);
+    background: var(
+      --cngx-accordion-bento-tile-bg,
+      color-mix(in oklab, var(--cngx-color-primary, #1d4ed8) 12%, transparent)
+    );
+    color: var(--cngx-color-primary, #1d4ed8);
+    display: inline-grid;
+    place-items: center;
+    transition:
+      background var(--cngx-accordion-chevron-transition, 150ms ease),
+      color var(--cngx-accordion-chevron-transition, 150ms ease);
+  }
+
+  .cngx-accordion-item[data-expanded] .cngx-accordion-item__leading {
+    background: var(--cngx-color-primary, #1d4ed8);
+    color: var(--cngx-color-surface, #fff);
+  }
+}
+
+@scope (.cngx-accordion-group[data-skin='section-bands']) {
+  :scope {
+    display: flex;
+    gap: var(--cngx-space-sm, 0.75rem);
+    --cngx-accordion-group-border-block-start: none;
+    --cngx-accordion-divider: none;
+    --cngx-accordion-header-padding: 0.65rem var(--cngx-space-md, 1rem);
+    --cngx-accordion-header-bg: var(--cngx-color-text, #111827);
+    --cngx-accordion-header-color: var(--cngx-color-surface, #fff);
+    --cngx-accordion-subtitle-color: color-mix(
+      in oklab,
+      var(--cngx-color-surface, #fff) 62%,
+      var(--cngx-color-text, #111827)
+    );
+    --cngx-accordion-region-padding: var(--cngx-space-md, 1rem);
+  }
+
+  .cngx-accordion-item {
+    border: 1px solid var(--cngx-color-border, #d1d5db);
+    border-radius: var(--cngx-radius-sm, 0.25rem);
+    overflow: hidden;
+  }
+
+  .cngx-accordion-item__header:hover {
+    --cngx-accordion-header-bg: color-mix(
+      in oklab,
+      var(--cngx-color-text, #111827) 86%,
+      var(--cngx-color-surface, #fff)
+    );
+  }
+
+  /* Status chip in the band via the meta slot. */
+  .cngx-accordion-item__meta {
+    font-family: var(--cngx-accordion-bands-chip-font, ui-monospace, monospace);
+    font-size: var(--cngx-font-size-sm, 0.8125rem);
+    color: color-mix(in oklab, var(--cngx-color-surface, #fff) 78%, var(--cngx-color-text, #111827));
+    border: 1px solid color-mix(in oklab, var(--cngx-color-surface, #fff) 28%, transparent);
+    border-radius: var(--cngx-radius-pill, 999px);
+    padding: 0.08rem 0.5rem;
+  }
+}
+
+@scope (.cngx-accordion-group[data-skin='timeline']) {
+  :scope {
+    --cngx-accordion-group-border-block-start: none;
+    --cngx-accordion-divider: none;
+    --cngx-accordion-header-padding: var(--cngx-space-md, 1rem) 0;
+    --cngx-accordion-region-padding: 0 0 var(--cngx-space-lg, 1.25rem);
+
+    padding-inline-start: var(--cngx-accordion-timeline-inset, 0.375rem);
+  }
+
+  /* Rail down the left; node on the rail beside the header row. */
+  .cngx-accordion-item {
+    position: relative;
+    padding-inline-start: var(--cngx-space-xl, 2rem);
+  }
+
+  .cngx-accordion-item::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0.3125rem;
+    inset-block: 0;
+    inline-size: var(--cngx-accordion-timeline-rail-width, 2px);
+    background: var(--cngx-color-border, #d1d5db);
+  }
+
+  .cngx-accordion-item::after {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0;
+    inset-block-start: 1.25rem;
+    inline-size: 0.75rem;
+    block-size: 0.75rem;
+    border-radius: 50%;
+    background: var(--cngx-color-surface, #fff);
+    box-shadow:
+      0 0 0 0.1875rem var(--cngx-color-surface, #fff),
+      inset 0 0 0 2px var(--cngx-color-border, #d1d5db);
+    transition: background var(--cngx-accordion-chevron-transition, 150ms ease);
+  }
+
+  .cngx-accordion-item[data-expanded]::after {
+    background: var(--cngx-color-primary, #1d4ed8);
+    box-shadow:
+      0 0 0 0.1875rem var(--cngx-color-surface, #fff),
+      inset 0 0 0 2px var(--cngx-color-primary, #1d4ed8);
+  }
+
+  .cngx-accordion-item[data-expanded] .cngx-accordion-item__title {
+    color: var(--cngx-color-primary, #1d4ed8);
+  }
+}
+
+@scope (.cngx-accordion-group[data-skin='severity-spine']) {
+  :scope {
+    display: flex;
+    gap: var(--cngx-space-xs, 0.5rem);
+    --cngx-accordion-group-border-block-start: none;
+    --cngx-accordion-divider: none;
+    --cngx-accordion-header-padding: var(--cngx-space-sm, 0.75rem) var(--cngx-space-md, 1rem);
+    --cngx-accordion-region-padding: 0 var(--cngx-space-md, 1rem) var(--cngx-space-md, 1rem);
+  }
+
+  .cngx-accordion-item {
+    position: relative;
+    background: var(--cngx-color-surface, #fff);
+    border: 1px solid var(--cngx-color-border, #d1d5db);
+    border-radius: var(--cngx-radius-sm, 0.25rem);
+    overflow: hidden;
+    padding-inline-start: var(--cngx-accordion-spine-width, 2.875rem);
+  }
+
+  /* Full-height spine cell over the leading slot. */
+  .cngx-accordion-item__leading {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    inline-size: var(--cngx-accordion-spine-width, 2.875rem);
+    display: grid;
+    place-items: center;
+    background: var(--cngx-accordion-spine-color, var(--cngx-color-primary, #1d4ed8));
+    color: var(--cngx-color-surface, #fff);
+    font-family: var(--cngx-accordion-spine-font, ui-monospace, monospace);
+    font-size: var(--cngx-font-size-sm, 0.8125rem);
+    font-weight: 800;
+    letter-spacing: 0.05em;
+  }
+}
+
+@scope (.cngx-accordion-group[data-skin='data-grid']) {
+  :scope {
+    background: var(--cngx-color-surface, #fff);
+    border: 1px solid var(--cngx-color-border, #d1d5db);
+    border-radius: var(--cngx-radius-sm, 0.25rem);
+    overflow: hidden;
+    container-type: inline-size;
+    --cngx-accordion-group-border-block-start: none;
+    --cngx-accordion-heading-gap: var(--cngx-space-sm, 0.75rem);
+    --cngx-accordion-header-padding: 0.6rem var(--cngx-space-md, 1rem);
+    --cngx-accordion-divider: 1px solid var(--cngx-color-border, #d1d5db);
+    --cngx-accordion-region-padding: var(--cngx-space-md, 1rem) var(--cngx-space-lg, 1.25rem);
+  }
+
+  /* Header row reads as a table. */
+  .cngx-accordion-item__heading {
+    display: grid;
+    grid-template-columns: var(--cngx-accordion-datagrid-columns, 11ch 1fr auto);
+  }
+
+  /* Zebra rows. */
+  .cngx-accordion-item:nth-of-type(even) {
+    background: color-mix(in oklab, var(--cngx-color-text, #111827) 3%, transparent);
+  }
+
+  .cngx-accordion-item__header:hover {
+    --cngx-accordion-header-bg: color-mix(in oklab, var(--cngx-color-primary, #1d4ed8) 6%, transparent);
+  }
+
+  /* Id cell + meta read as monospace table columns. */
+  .cngx-accordion-item__leading {
+    font-family: var(--cngx-accordion-datagrid-mono, ui-monospace, monospace);
+    font-size: var(--cngx-font-size-sm, 0.8125rem);
+    color: var(--cngx-color-text-muted, #6b7280);
+  }
+
+  .cngx-accordion-item__meta {
+    justify-content: end;
+    gap: var(--cngx-space-md, 1rem);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Inset detail zone with a primary edge. */
+  .cngx-accordion-item__region {
+    box-shadow: inset 3px 0 0 var(--cngx-color-primary, #1d4ed8);
+    background: color-mix(in oklab, var(--cngx-color-text, #111827) 2%, transparent);
+  }
+
+  @container (max-width: 620px) {
+    .cngx-accordion-item__heading {
+      grid-template-columns: 1fr auto;
+    }
+    .cngx-accordion-item__leading {
+      display: none;
+    }
+  }
+}
+
+@scope (.cngx-accordion-group[data-skin='split-meta']) {
+  :scope {
+    --cngx-accordion-group-border-block-start: none;
+    --cngx-accordion-divider: 1px solid var(--cngx-color-border, #d1d5db);
+    --cngx-accordion-header-padding: var(--cngx-space-lg, 1.25rem) 0;
+    --cngx-accordion-region-padding: 0 0 var(--cngx-space-lg, 1.25rem);
+
+    container-type: inline-size;
+  }
+
+  .cngx-accordion-item__meta {
+    gap: var(--cngx-space-md, 1rem);
+  }
+
+  .cngx-accordion-item__meta cngx-time {
+    font-family: var(--cngx-accordion-split-time-font, ui-monospace, monospace);
+    font-size: var(--cngx-font-size-sm, 0.8125rem);
+    color: var(--cngx-color-text-muted, #6b7280);
+  }
+
+  @container (max-width: 520px) {
+    .cngx-accordion-item__meta cngx-time {
+      display: none;
+    }
+  }
+}
+
+@scope (.cngx-accordion-group[data-skin='primary-frame']) {
+  :scope {
+    display: flex;
+    gap: var(--cngx-space-md, 1rem);
+    --cngx-accordion-group-border-block-start: none;
+    --cngx-accordion-divider: none;
+    --cngx-accordion-header-padding: var(--cngx-space-lg, 1.25rem);
+    --cngx-accordion-region-padding: 0 var(--cngx-space-lg, 1.25rem) var(--cngx-space-lg, 1.25rem);
+  }
+
+  .cngx-accordion-item {
+    background: var(--cngx-color-surface, #fff);
+    border: 1px solid var(--cngx-color-border, #d1d5db);
+    border-radius: var(--cngx-radius-lg, 0.5rem);
+    transition: border-color var(--cngx-accordion-chevron-transition, 150ms ease);
+  }
+
+  /* On open: solid primary border + an animated primary glow (no gradient). */
+  .cngx-accordion-item[data-expanded] {
+    border: 1px solid var(--cngx-color-primary, #1d4ed8);
+    animation: cngx-accordion-primary-frame-pulse
+      var(--cngx-accordion-frame-pulse-duration, 2s) ease-in-out infinite;
+  }
+
+  .cngx-accordion-item[data-expanded] .cngx-accordion-item__title {
+    color: var(--cngx-color-primary, #1d4ed8);
+  }
+}
+
+@keyframes cngx-accordion-primary-frame-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--cngx-color-primary, #1d4ed8) 35%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 0.375rem color-mix(in oklab, var(--cngx-color-primary, #1d4ed8) 0%, transparent);
+  }
+}
+
+/* Motion short-circuit lives unlayered and outside @scope so the scope cascade
+   never swallows it. */
+@media (prefers-reduced-motion: reduce) {
+  .cngx-accordion-group[data-skin='primary-frame'] .cngx-accordion-item[data-expanded] {
+    animation: none;
+  }
+}

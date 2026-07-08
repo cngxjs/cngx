@@ -44,7 +44,9 @@ import { injectAccordionConfig } from './config/inject-accordion-config';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  styleUrl: './accordion-group.component.css',
+  // Skin CSS lives after the base so the unlayered `[data-skin]` @scope rules
+  // win the root-level ties by source order (mirrors the tabs skin split).
+  styleUrls: ['./accordion-group.component.css', './accordion-skins.css'],
   hostDirectives: [
     { directive: CngxAccordion, inputs: ['multi', 'openIds'], outputs: ['openIdsChange'] },
   ],
