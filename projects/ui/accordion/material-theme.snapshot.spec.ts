@@ -5,19 +5,20 @@ import { describe, expect, it } from 'vitest';
 
 /**
  * Baseline for the Material bridge in
- * `projects/themes/material/accordion-skins-theme.scss`. Pins the resolved
- * `--cngx-*` declarations the `theme($theme)` mixin produces across both theme
- * versions:
+ * `projects/themes/material/accordion-theme.scss` (base organism + skin
+ * presets, one file). Pins the resolved `--cngx-*` declarations the
+ * `theme($theme)` mixin produces across both theme versions:
  *
  *   - v1 (M3): `mat.define-theme(...)` with the `--mat-sys-*` token branch
  *     active (light and dark).
  *   - v0 (M2): `mat.m2-define-light-theme(...)` with the
  *     `get-theme-color($theme, ...)` branch active.
  *
- * The skin bridge refines the dim-text / subtitle tone, the card-surface
- * elevation for the card skins, and the per-skin accent fills (bento tile,
- * plus-minus box, severity spine). Any change to a pinned line is intentional
- * only when the diff matches a deliberate bridge edit.
+ * The bridge themes the base group/item/header/region tokens plus the skin
+ * refinements: dim-text / subtitle tone, card-surface elevation for the card
+ * skins, and the per-skin accent fills (bento tile, plus-minus box, severity
+ * spine). Any change to a pinned line is intentional only when the diff matches
+ * a deliberate bridge edit.
  *
  * Co-located with the CngxAccordionItem organism (rather than a dedicated themes
  * test project) because `projects/themes/material/` carries no `ng-package.json`
@@ -38,7 +39,7 @@ function buildEntry(opts: CompileOptions): string {
   if (opts.themeVersion === 'v1') {
     return `
 @use '@angular/material' as mat;
-@use 'material/accordion-skins-theme' as accordion-skins;
+@use 'material/accordion-theme' as accordion;
 
 $theme: mat.define-theme((
   color: (
@@ -48,12 +49,12 @@ $theme: mat.define-theme((
   ),
 ));
 
-@include accordion-skins.theme($theme);
+@include accordion.theme($theme);
 `;
   }
   return `
 @use '@angular/material' as mat;
-@use 'material/accordion-skins-theme' as accordion-skins;
+@use 'material/accordion-theme' as accordion;
 
 $primary: mat.m2-define-palette(mat.$m2-indigo-palette);
 $accent: mat.m2-define-palette(mat.$m2-pink-palette);
@@ -67,7 +68,7 @@ $theme: mat.m2-define-light-theme((
   ),
 ));
 
-@include accordion-skins.theme($theme);
+@include accordion.theme($theme);
 `;
 }
 
@@ -94,7 +95,7 @@ function compileAndExtract(opts: CompileOptions): Record<string, string> {
   return parseCustomPropertyDeclarations(result.css);
 }
 
-describe('Material accordion-skins-theme bridge baseline', () => {
+describe('Material accordion-theme bridge baseline', () => {
   it('v1 light: resolved --cngx-* declarations match the baseline', () => {
     expect(compileAndExtract({ themeVersion: 'v1', variant: 'light' })).toMatchSnapshot();
   });

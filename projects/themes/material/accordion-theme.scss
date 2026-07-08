@@ -10,9 +10,13 @@
 // are plain inheriting custom properties, so setting them on the
 // `cngx-accordion-group` host cascades to every `cngx-accordion-item` inside it.
 //
-// Token namespace, one include:
-//   - --cngx-accordion-*  the group + item divider, the header (text, disabled
-//                         text, focus ring), the region, and the chevron spacing
+// Covers the base organism AND the opt-in skin presets
+// (projects/ui/accordion/theming/skins/*.css) in one include:
+//   - base:  the group + item divider, the header (text, disabled text, focus
+//            ring), the region, and the chevron spacing
+//   - skins: the dim-text / subtitle tone, card-surface elevation (scoped to the
+//            card skins), and the per-skin accents (bento tile, plus-minus box,
+//            severity spine)
 //
 //   @use '@angular/material' as mat;
 //   @use '@cngx/themes/material/accordion-theme' as accordion;
@@ -46,11 +50,91 @@
   --cngx-accordion-header-gap: #{map.get($gaps, $scale)};
 }
 
+// --- Skin presets (projects/ui/accordion/theming/skins/*.css) ------------
+// The skins compose foundation tokens (--cngx-color-surface / -text / -primary
+// / -border / -radius-*), which system-bridge.scss already maps to --mat-sys-*,
+// so a Material-paired accordion is skin-aware out of the box. These mixins
+// refine only what the foundation mapping does not cover ideally.
+
+// Dim text + subtitle: --cngx-color-text-muted is NOT in the system bridge, so
+// the editorial index / data-grid id / split time / subtitle would fall back to
+// their literal defaults under Material. Aligned here, scoped to the accordion.
+@mixin _skin-text($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-color-text-muted: var(--mat-sys-on-surface-variant);
+    --cngx-accordion-subtitle-color: var(--mat-sys-on-surface-variant);
+  } @else {
+    --cngx-color-text-muted: #{rgba(mat.get-theme-color($theme, foreground, text), 0.6)};
+    --cngx-accordion-subtitle-color: #{rgba(mat.get-theme-color($theme, foreground, text), 0.6)};
+  }
+}
+
+// Card-surface elevation: base --cngx-color-surface maps to the flat surface,
+// which reads wrong on an elevated card. Applied to the card skins only so flat
+// skins (editorial, lux, split-meta, timeline) keep their surfaceless look.
+@mixin _skin-cards($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-accordion-item-bg: var(--mat-sys-surface-container);
+    --cngx-accordion-group-bg: var(--mat-sys-surface-container-low);
+  } @else {
+    --cngx-accordion-item-bg: #{mat.get-theme-color($theme, background, card)};
+    --cngx-accordion-group-bg: #{mat.get-theme-color($theme, background, card)};
+  }
+}
+
+@mixin _skin-bento($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-accordion-bento-tile-bg: var(--mat-sys-primary-container);
+  } @else {
+    --cngx-accordion-bento-tile-bg: #{rgba(mat.get-theme-color($theme, primary), 0.12)};
+  }
+}
+
+@mixin _skin-plus-minus($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-accordion-pm-box-bg: var(--mat-sys-surface-container-highest);
+  } @else {
+    --cngx-accordion-pm-box-bg: #{rgba(mat.get-theme-color($theme, foreground, text), 0.06)};
+  }
+}
+
+@mixin _skin-spine($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-accordion-spine-color: var(--mat-sys-primary);
+  } @else {
+    --cngx-accordion-spine-color: #{mat.get-theme-color($theme, primary)};
+  }
+}
+
 @mixin theme($theme) {
   @layer cngx.components {
     :where(cngx-accordion-group) {
       @include color($theme);
       @include density($theme);
+      @include _skin-text($theme);
+    }
+
+    // Card-surface skins only - flat skins keep their surfaceless look.
+    :where(
+        .cngx-accordion-skin-categorized,
+        .cngx-accordion-skin-bento,
+        .cngx-accordion-skin-section-bands,
+        .cngx-accordion-skin-severity-spine,
+        .cngx-accordion-skin-data-grid,
+        .cngx-accordion-skin-primary-frame,
+        .cngx-accordion-skin-plus-minus
+      ) {
+      @include _skin-cards($theme);
+    }
+
+    :where(.cngx-accordion-skin-bento) {
+      @include _skin-bento($theme);
+    }
+    :where(.cngx-accordion-skin-plus-minus) {
+      @include _skin-plus-minus($theme);
+    }
+    :where(.cngx-accordion-skin-severity-spine) {
+      @include _skin-spine($theme);
     }
   }
 }
