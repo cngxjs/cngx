@@ -3,14 +3,14 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'Accordion skin: Split meta',
   subtitle:
-    'The <code>[skin]="\'split-meta\'"</code> skin pushes the meta slot to the far edge of the header. Here the meta holds a relative <code>&lt;cngx-time&gt;</code> and a small status badge.',
+    'The <code>[skin]="\'split-meta\'"</code> skin pushes the meta slot to the far edge of the header. Here the meta holds a relative <code>&lt;cngx-time&gt;</code> and a status <code>&lt;cngx-tag&gt;</code>.',
   description:
-    'The skin styles a right-aligned meta column. Project whatever the row needs into <code>[cngxAccordionItemMeta]</code> - this demo composes a relative timestamp via <code>&lt;cngx-time mode="relative"&gt;</code> with a badge span.',
+    'The skin styles a right-aligned meta column. Project whatever the row needs into <code>[cngxAccordionItemMeta]</code> - this demo composes a relative timestamp via <code>&lt;cngx-time mode="relative"&gt;</code> with a <code>&lt;cngx-tag&gt;</code> whose <code>color</code> variant carries the status.',
   level: 'organism',
   audience: ['dev', 'design'],
   artifact: 'standalone',
   focus: ['visual-variants'],
-  apiComponents: ['CngxAccordionGroup', 'CngxAccordionItem'],
+  apiComponents: ['CngxAccordionGroup', 'CngxAccordionItem', 'CngxTag'],
   imports: [
     'CngxAccordionGroup',
     'CngxAccordionItem',
@@ -18,6 +18,7 @@ export const STORY: DemoSpec = {
     'CngxAccordionItemSubtitle',
     'CngxAccordionItemMeta',
     'CngxTime',
+    'CngxTag',
   ],
   references: [
     {
@@ -34,7 +35,7 @@ export const STORY: DemoSpec = {
       <span cngxAccordionItemSubtitle>api-gateway v2.14.0</span>
       <span cngxAccordionItemMeta>
         <cngx-time [date]="now" mode="relative" />
-        <span style="margin-inline-start:.5rem; padding:.1rem .4rem; border-radius:4px; background:#dcfce7; color:#166534; font-size:.75rem">live</span>
+        <cngx-tag color="success" variant="subtle" size="sm">live</cngx-tag>
       </span>
       Rolled out to all regions with no failed health checks.
     </cngx-accordion-item>
@@ -43,7 +44,7 @@ export const STORY: DemoSpec = {
       <span cngxAccordionItemSubtitle>primary database</span>
       <span cngxAccordionItemMeta>
         <cngx-time [date]="hourAgo" mode="relative" />
-        <span style="margin-inline-start:.5rem; padding:.1rem .4rem; border-radius:4px; background:#e0e7ff; color:#3730a3; font-size:.75rem">done</span>
+        <cngx-tag color="info" variant="subtle" size="sm">done</cngx-tag>
       </span>
       Snapshot stored and verified against checksum.
     </cngx-accordion-item>
@@ -52,7 +53,7 @@ export const STORY: DemoSpec = {
       <span cngxAccordionItemSubtitle>*.example.com</span>
       <span cngxAccordionItemMeta>
         <cngx-time [date]="dayAgo" mode="relative" />
-        <span style="margin-inline-start:.5rem; padding:.1rem .4rem; border-radius:4px; background:#fef3c7; color:#92400e; font-size:.75rem">review</span>
+        <cngx-tag color="warning" variant="subtle" size="sm">review</cngx-tag>
       </span>
       Auto-renewed; manual check queued before expiry.
     </cngx-accordion-item>
