@@ -5,6 +5,10 @@
      rides `--cngx-accordion-group-border-block-start` so a skin can drop it
      without touching the item divider. */
   display: block;
+  /* Inert while `display: block`; kicks in for the flex card skins (categorized,
+     section-bands, severity-spine, primary-frame) that set `display: flex` on
+     the host so their cards stack vertically instead of defaulting to a row. */
+  flex-direction: column;
   border-block-start: var(
     --cngx-accordion-group-border-block-start,
     var(--cngx-accordion-divider, 1px solid var(--cngx-accordion-border-color, #d1d5db))
