@@ -1,6 +1,7 @@
 import type { TemplateRef } from '@angular/core';
 
 import type { CngxAccordionItemIconContext } from '../accordion-item-icon.directive';
+import type { CngxAccordionItemStateContext } from '../accordion-item-state-context';
 
 /**
  * Selectable visual skin for `<cngx-accordion-group>`. \
@@ -89,9 +90,17 @@ export interface CngxAccordionConfig {
   readonly templates?: {
     /** App-wide chevron override; `$implicit` is the item's expanded state. */
     readonly icon?: TemplateRef<CngxAccordionItemIconContext> | null;
-    /** App-wide busy visual, rendered while an item's `[state]` is loading/refreshing. */
-    readonly busySpinner?: TemplateRef<unknown> | null;
-    /** App-wide error affordance, rendered while an item's `[state]` is error. */
-    readonly error?: TemplateRef<unknown> | null;
+    /**
+     * App-wide busy visual, rendered while an item's `[state]` is
+     * loading/refreshing. Receives a {@link CngxAccordionItemStateContext}
+     * (`$implicit` is the status).
+     */
+    readonly busySpinner?: TemplateRef<CngxAccordionItemStateContext> | null;
+    /**
+     * App-wide error affordance, rendered while an item's `[state]` is error.
+     * Receives a {@link CngxAccordionItemStateContext} (`message` is the
+     * resolved error string).
+     */
+    readonly error?: TemplateRef<CngxAccordionItemStateContext> | null;
   };
 }

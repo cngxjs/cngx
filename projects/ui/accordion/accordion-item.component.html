@@ -59,7 +59,10 @@
     @case ('error') {
       <div class="cngx-accordion-item__error" role="alert">
         @if (errorTemplate(); as tpl) {
-          <ng-container [ngTemplateOutlet]="tpl" />
+          <ng-container
+            [ngTemplateOutlet]="tpl"
+            [ngTemplateOutletContext]="{ $implicit: 'error', message: errorMessage() }"
+          />
         } @else {
           <span class="cngx-accordion-item__error-default">{{ errorMessage() }}</span>
         }
@@ -68,7 +71,10 @@
     @case ('loading') {
       <div class="cngx-accordion-item__busy" aria-hidden="true">
         @if (busyTemplate(); as tpl) {
-          <ng-container [ngTemplateOutlet]="tpl" />
+          <ng-container
+            [ngTemplateOutlet]="tpl"
+            [ngTemplateOutletContext]="{ $implicit: 'loading', message: '' }"
+          />
         } @else {
           <span class="cngx-accordion-item__skeleton"></span>
         }
@@ -85,7 +91,10 @@
       @if (status() === 'refreshing') {
         <div class="cngx-accordion-item__refreshing" aria-hidden="true">
           @if (busyTemplate(); as tpl) {
-            <ng-container [ngTemplateOutlet]="tpl" />
+            <ng-container
+              [ngTemplateOutlet]="tpl"
+              [ngTemplateOutletContext]="{ $implicit: 'refreshing', message: '' }"
+            />
           } @else {
             <span class="cngx-accordion-item__refresh-indicator"></span>
           }

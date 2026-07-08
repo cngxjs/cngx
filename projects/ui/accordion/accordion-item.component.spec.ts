@@ -133,6 +133,26 @@ class ErrorMessageHost {
   readonly msg = signal('Custom failure.');
 }
 
+@Component({
+  template: `<cngx-accordion-group>
+    <cngx-accordion-item [state]="state()" [errorMessage]="'Boom.'">
+      <span cngxAccordionItemTitle>R</span>
+      <ng-template cngxAccordionItemBusy let-status><span class="busy-ctx">{{ status }}</span></ng-template>
+      <ng-template cngxAccordionItemError let-message="message"><span class="error-ctx">{{ message }}</span></ng-template>
+    </cngx-accordion-item>
+  </cngx-accordion-group>`,
+  imports: [
+    CngxAccordionGroup,
+    CngxAccordionItem,
+    CngxAccordionItemTitle,
+    CngxAccordionItemBusy,
+    CngxAccordionItemError,
+  ],
+})
+class StateContextHost {
+  readonly state = signal<AsyncStatus>('loading');
+}
+
 describe('CngxAccordionItem', () => {
   beforeEach(() => TestBed.configureTestingModule({ imports: [Host] }));
 
@@ -448,5 +468,22 @@ describe('CngxAccordionItem', () => {
     const root = fixture.nativeElement as HTMLElement;
     const alert = root.querySelector<HTMLElement>('[role="alert"]');
     expect(alert?.textContent?.trim()).toBe('Custom failure.');
+  });
+
+  it('hands the busy slot its status and the error slot the resolved message', () => {
+    const fixture = TestBed.createComponent(StateContextHost);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+
+    // Busy slot $implicit distinguishes loading from refreshing.
+    expect(root.querySelector('.busy-ctx')?.textContent?.trim()).toBe('loading');
+    fixture.componentInstance.state.set('refreshing');
+    fixture.detectChanges();
+    expect(root.querySelector('.busy-ctx')?.textContent?.trim()).toBe('refreshing');
+
+    // Error slot context.message is the resolved error string.
+    fixture.componentInstance.state.set('error');
+    fixture.detectChanges();
+    expect(root.querySelector('.error-ctx')?.textContent?.trim()).toBe('Boom.');
   });
 });

@@ -14,6 +14,7 @@ export { CngxAccordionItemMeta } from './accordion-item-meta.directive';
 export { CngxAccordionItemContent } from './accordion-item-content.directive';
 export { CngxAccordionItemBusy } from './accordion-item-busy.directive';
 export { CngxAccordionItemError } from './accordion-item-error.directive';
+export type { CngxAccordionItemStateContext } from './accordion-item-state-context';
 export {
   CngxAccordionItemIcon,
   type CngxAccordionItemIconContext,

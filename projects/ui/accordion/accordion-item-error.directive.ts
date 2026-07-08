@@ -1,5 +1,7 @@
 import { Directive, inject, TemplateRef } from '@angular/core';
 
+import type { CngxAccordionItemStateContext } from './accordion-item-state-context';
+
 /**
  * Structural slot for a {@link CngxAccordionItem}'s error state. The item renders
  * it inside the region, in a `role="alert"` container, when the item's `[state]`
@@ -8,11 +10,15 @@ import { Directive, inject, TemplateRef } from '@angular/core';
  * announced message is this slot's responsibility (author it with the error
  * text, e.g. a retry action).
  *
+ * The template receives a {@link CngxAccordionItemStateContext} whose `message`
+ * is the resolved error string, so the override can render the announced text
+ * (and a retry) without re-deriving it.
+ *
  * ```html
  * <cngx-accordion-item [state]="report.status()">
  *   <span cngxAccordionItemTitle>Report</span>
- *   <ng-template cngxAccordionItemError>
- *     Could not load. <button type="button" (click)="retry()">Retry</button>
+ *   <ng-template cngxAccordionItemError let-message="message">
+ *     {{ message }} <button type="button" (click)="retry()">Retry</button>
  *   </ng-template>
  * </cngx-accordion-item>
  * ```
@@ -29,5 +35,12 @@ import { Directive, inject, TemplateRef } from '@angular/core';
   standalone: true,
 })
 export class CngxAccordionItemError {
-  readonly templateRef = inject(TemplateRef<unknown>);
+  readonly templateRef = inject(TemplateRef<CngxAccordionItemStateContext>);
+
+  static ngTemplateContextGuard(
+    _dir: CngxAccordionItemError,
+    ctx: unknown,
+  ): ctx is CngxAccordionItemStateContext {
+    return true;
+  }
 }

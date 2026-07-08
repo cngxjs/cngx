@@ -13,6 +13,7 @@ import { describe, expect, it } from 'vitest';
 import { CngxAccordionGroup } from '../accordion-group.component';
 import { CngxAccordionItem } from '../accordion-item.component';
 import type { CngxAccordionItemIconContext } from '../accordion-item-icon.directive';
+import type { CngxAccordionItemStateContext } from '../accordion-item-state-context';
 import { CngxAccordionItemTitle } from '../accordion-item-title.directive';
 import { CNGX_ACCORDION_CONFIG } from './accordion.config.defaults';
 import {
@@ -23,7 +24,7 @@ import {
 import { provideAccordionConfig, provideAccordionConfigAt } from './provide-accordion-config';
 
 const fakeIconTemplate = () => ({}) as unknown as TemplateRef<CngxAccordionItemIconContext>;
-const fakeTemplate = () => ({}) as unknown as TemplateRef<unknown>;
+const fakeTemplate = () => ({}) as unknown as TemplateRef<CngxAccordionItemStateContext>;
 
 const IMPORTS = [CngxAccordionGroup, CngxAccordionItem, CngxAccordionItemTitle];
 
