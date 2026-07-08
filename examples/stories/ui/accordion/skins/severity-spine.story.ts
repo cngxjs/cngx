@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'Accordion skin: Severity spine',
   subtitle:
-    'The <code>cngx-accordion-skin-severity-spine</code> skin runs a coloured spine down the leading edge. Set the hue per item with <code>[style.--cngx-accordion-spine-color]</code>; the leading slot holds the priority label and the meta slot the ticket + SLA.',
+    'The <code>[skin]="\'severity-spine\'"</code> skin runs a coloured spine down the leading edge. Set the hue per item with <code>[style.--cngx-accordion-spine-color]</code>; the leading slot holds the priority label and the meta slot the ticket + SLA.',
   description:
     'The skin reads <code>--cngx-accordion-spine-color</code> off each item, so bind it inline per row - P1 red, P2 amber, P3 blue. Priority text goes in the leading slot, ticket id and SLA in the meta slot.',
   level: 'organism',
@@ -25,7 +25,7 @@ export const STORY: DemoSpec = {
       href: 'https://www.w3.org/WAI/ARIA/apg/patterns/accordion/',
     },
   ],
-  template: `  <cngx-accordion-group class="cngx-accordion-skin-severity-spine" [multi]="true" [headingLevel]="3" style="max-width:600px">
+  template: `  <cngx-accordion-group [skin]="'severity-spine'" [multi]="true" [headingLevel]="3" style="max-width:600px">
     <cngx-accordion-item [style.--cngx-accordion-spine-color]="'#dc2626'">
       <span cngxAccordionItemLeading>P1</span>
       <span cngxAccordionItemTitle>Checkout returns 500</span>

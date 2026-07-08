@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'Accordion skin: Section bands',
   subtitle:
-    'The <code>cngx-accordion-skin-section-bands</code> skin gives each header an inverted colour band with a status chip in the meta slot - useful for grouping a long form into labelled sections.',
+    'The <code>[skin]="\'section-bands\'"</code> skin gives each header an inverted colour band with a status chip in the meta slot - useful for grouping a long form into labelled sections.',
   description:
     'The skin colours the header background and styles the meta slot as a chip. Put the section status in <code>[cngxAccordionItemMeta]</code>; the band and chip typography come from the skin.',
   level: 'organism',
@@ -24,7 +24,7 @@ export const STORY: DemoSpec = {
       href: 'https://www.w3.org/WAI/ARIA/apg/patterns/accordion/',
     },
   ],
-  template: `  <cngx-accordion-group class="cngx-accordion-skin-section-bands" [multi]="true" [headingLevel]="3" style="max-width:600px">
+  template: `  <cngx-accordion-group [skin]="'section-bands'" [multi]="true" [headingLevel]="3" style="max-width:600px">
     <cngx-accordion-item>
       <span cngxAccordionItemTitle>Applicant details</span>
       <span cngxAccordionItemSubtitle>Name, address, and contact.</span>

@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'Accordion skin: Plus / minus',
   subtitle:
-    'The <code>cngx-accordion-skin-plus-minus</code> skin swaps the chevron for a boxed +/- marker that flips on open. Pure CSS - no icon slot, no template.',
+    'The <code>[skin]="\'plus-minus\'"</code> skin swaps the chevron for a boxed +/- marker that flips on open. Pure CSS - no icon slot, no template.',
   description:
     'The marker is drawn entirely from the skin CSS off the existing <code>data-expanded</code> attribute, so the markup is a plain accordion with subtitles. No <code>*cngxAccordionItemIcon</code> template needed.',
   level: 'organism',
@@ -23,7 +23,7 @@ export const STORY: DemoSpec = {
       href: 'https://www.w3.org/WAI/ARIA/apg/patterns/accordion/',
     },
   ],
-  template: `  <cngx-accordion-group class="cngx-accordion-skin-plus-minus" [headingLevel]="3" style="max-width:520px">
+  template: `  <cngx-accordion-group [skin]="'plus-minus'" [headingLevel]="3" style="max-width:520px">
     <cngx-accordion-item>
       <span cngxAccordionItemTitle>How do refunds work?</span>
       <span cngxAccordionItemSubtitle>Timelines and eligibility.</span>

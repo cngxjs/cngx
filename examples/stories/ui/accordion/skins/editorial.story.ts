@@ -3,9 +3,9 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'Accordion skin: Editorial',
   subtitle:
-    'The <code>cngx-accordion-skin-editorial</code> skin: a mono running index in the leading slot, a left-aligned heading with a secondary subtitle line. Same organism, purely a themed shell.',
+    'The <code>[skin]="\'editorial\'"</code> skin: a mono running index in the leading slot, a left-aligned heading with a secondary subtitle line. Same organism, purely a themed shell.',
   description:
-    'Apply the skin by adding the class to the group. Feed each item a leading index via <code>[cngxAccordionItemLeading]</code> and a secondary line via <code>[cngxAccordionItemSubtitle]</code>; the CSS styles the index font and heading alignment.',
+    'Apply the skin by binding <code>[skin]="\'editorial\'"</code> on the group. Feed each item a leading index via <code>[cngxAccordionItemLeading]</code> and a secondary line via <code>[cngxAccordionItemSubtitle]</code>; the CSS styles the index font and heading alignment.',
   level: 'organism',
   audience: ['dev', 'design'],
   artifact: 'standalone',
@@ -24,7 +24,7 @@ export const STORY: DemoSpec = {
       href: 'https://www.w3.org/WAI/ARIA/apg/patterns/accordion/',
     },
   ],
-  template: `  <cngx-accordion-group class="cngx-accordion-skin-editorial" [headingLevel]="3" style="max-width:560px">
+  template: `  <cngx-accordion-group [skin]="'editorial'" [headingLevel]="3" style="max-width:560px">
     <cngx-accordion-item>
       <span cngxAccordionItemLeading>01</span>
       <span cngxAccordionItemTitle>The brief</span>

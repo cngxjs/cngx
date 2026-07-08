@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'Accordion skin: Timeline',
   subtitle:
-    'The <code>cngx-accordion-skin-timeline</code> skin draws a vertical rail with a node per header. Set <code>[multi]="false"</code> so the accordion reads as a single walkthrough - one step open at a time.',
+    'The <code>[skin]="\'timeline\'"</code> skin draws a vertical rail with a node per header. Set <code>[multi]="false"</code> so the accordion reads as a single walkthrough - one step open at a time.',
   description:
     'The rail and nodes are pure CSS off the header positions, so no leading slot is needed - subtitles carry the step detail. Kept exclusive via <code>[multi]="false"</code>: opening a step collapses the previous one, matching the one-at-a-time reading order the rail implies.',
   level: 'organism',
@@ -23,7 +23,7 @@ export const STORY: DemoSpec = {
       href: 'https://www.w3.org/WAI/ARIA/apg/patterns/accordion/',
     },
   ],
-  template: `  <cngx-accordion-group class="cngx-accordion-skin-timeline" [multi]="false" [headingLevel]="3" style="max-width:560px">
+  template: `  <cngx-accordion-group [skin]="'timeline'" [multi]="false" [headingLevel]="3" style="max-width:560px">
     <cngx-accordion-item>
       <span cngxAccordionItemTitle>Order placed</span>
       <span cngxAccordionItemSubtitle>Confirmed and paid.</span>

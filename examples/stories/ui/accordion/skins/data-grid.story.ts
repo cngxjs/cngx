@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'Accordion skin: Data grid',
   subtitle:
-    'The <code>cngx-accordion-skin-data-grid</code> skin aligns each header into columns (id, title, amount/due) so a list of records reads like a table you can expand. Pair it with a consumer caption row.',
+    'The <code>[skin]="\'data-grid\'"</code> skin aligns each header into columns (id, title, amount/due) so a list of records reads like a table you can expand. Pair it with a consumer caption row.',
   description:
     'The skin lays the header out with <code>--cngx-accordion-datagrid-columns</code>. Because the column labels are consumer chrome (not part of the accordion), add a caption row above the group whose grid mirrors the skin columns - id / title / meta. Feed each item an id via the leading slot and amount + due via the meta slot.',
   level: 'organism',
@@ -33,7 +33,7 @@ export const STORY: DemoSpec = {
       <span>Customer</span>
       <span>Amount / due</span>
     </div>
-    <cngx-accordion-group class="cngx-accordion-skin-data-grid" [multi]="true" [headingLevel]="3">
+    <cngx-accordion-group [skin]="'data-grid'" [multi]="true" [headingLevel]="3">
       <cngx-accordion-item>
         <span cngxAccordionItemLeading>INV-1042</span>
         <span cngxAccordionItemTitle>Northwind Traders</span>

@@ -3,9 +3,9 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'Accordion skin: Lux',
   subtitle:
-    'The <code>cngx-accordion-skin-lux</code> skin: generous padding, a muted header colour, and a wide title-to-chevron gap for an unhurried, premium feel. Subtitle only.',
+    'The <code>[skin]="\'lux\'"</code> skin: generous padding, a muted header colour, and a wide title-to-chevron gap for an unhurried, premium feel. Subtitle only.',
   description:
-    'A restrained theme built from spacing and colour tokens - no extra slots beyond an optional subtitle. Add the class to the group and keep the markup minimal.',
+    'A restrained theme built from spacing and colour tokens - no extra slots beyond an optional subtitle. Bind the <code>[skin]</code> input on the group and keep the markup minimal.',
   level: 'organism',
   audience: ['dev', 'design'],
   artifact: 'standalone',
@@ -23,7 +23,7 @@ export const STORY: DemoSpec = {
       href: 'https://www.w3.org/WAI/ARIA/apg/patterns/accordion/',
     },
   ],
-  template: `  <cngx-accordion-group class="cngx-accordion-skin-lux" [headingLevel]="3" style="max-width:560px">
+  template: `  <cngx-accordion-group [skin]="'lux'" [headingLevel]="3" style="max-width:560px">
     <cngx-accordion-item>
       <span cngxAccordionItemTitle>Concierge</span>
       <span cngxAccordionItemSubtitle>A dedicated point of contact.</span>

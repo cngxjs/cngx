@@ -3,9 +3,9 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'Accordion skin: Primary frame',
   subtitle:
-    'The <code>cngx-accordion-skin-primary-frame</code> skin draws a bordered frame with a soft glow around the currently open item. Border and pulse are pure CSS off <code>data-expanded</code>. Subtitle only.',
+    'The <code>[skin]="\'primary-frame\'"</code> skin draws a bordered frame with a soft glow around the currently open item. Border and pulse are pure CSS off <code>data-expanded</code>. Subtitle only.',
   description:
-    'The open item is framed and lightly pulsed to draw the eye to the active panel - useful when one section deserves focus. No extra slots: add the class and keep the markup plain.',
+    'The open item is framed and lightly pulsed to draw the eye to the active panel - useful when one section deserves focus. No extra slots: bind the <code>[skin]</code> input and keep the markup plain.',
   level: 'organism',
   audience: ['dev', 'design'],
   artifact: 'standalone',
@@ -23,7 +23,7 @@ export const STORY: DemoSpec = {
       href: 'https://www.w3.org/WAI/ARIA/apg/patterns/accordion/',
     },
   ],
-  template: `  <cngx-accordion-group class="cngx-accordion-skin-primary-frame" [headingLevel]="3" style="max-width:560px">
+  template: `  <cngx-accordion-group [skin]="'primary-frame'" [headingLevel]="3" style="max-width:560px">
     <cngx-accordion-item>
       <span cngxAccordionItemTitle>Choose a plan</span>
       <span cngxAccordionItemSubtitle>Monthly or annual billing.</span>

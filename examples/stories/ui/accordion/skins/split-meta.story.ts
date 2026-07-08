@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'Accordion skin: Split meta',
   subtitle:
-    'The <code>cngx-accordion-skin-split-meta</code> skin pushes the meta slot to the far edge of the header. Here the meta holds a relative <code>&lt;cngx-time&gt;</code> and a small status badge.',
+    'The <code>[skin]="\'split-meta\'"</code> skin pushes the meta slot to the far edge of the header. Here the meta holds a relative <code>&lt;cngx-time&gt;</code> and a small status badge.',
   description:
     'The skin styles a right-aligned meta column. Project whatever the row needs into <code>[cngxAccordionItemMeta]</code> - this demo composes a relative timestamp via <code>&lt;cngx-time mode="relative"&gt;</code> with a badge span.',
   level: 'organism',
@@ -28,7 +28,7 @@ export const STORY: DemoSpec = {
   setup: `  protected readonly now = new Date();
   protected readonly hourAgo = new Date(Date.now() - 60 * 60 * 1000);
   protected readonly dayAgo = new Date(Date.now() - 26 * 60 * 60 * 1000);`,
-  template: `  <cngx-accordion-group class="cngx-accordion-skin-split-meta" [multi]="true" [headingLevel]="3" style="max-width:600px">
+  template: `  <cngx-accordion-group [skin]="'split-meta'" [multi]="true" [headingLevel]="3" style="max-width:600px">
     <cngx-accordion-item>
       <span cngxAccordionItemTitle>Deployment succeeded</span>
       <span cngxAccordionItemSubtitle>api-gateway v2.14.0</span>

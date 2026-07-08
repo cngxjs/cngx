@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'Accordion skin: Bento',
   subtitle:
-    'The <code>cngx-accordion-skin-bento</code> skin lays items out as tiles with a glyph in the leading slot and a pill in the meta slot. Add <code>cngx-accordion-item--wide</code> to span one tile across the row.',
+    'The <code>[skin]="\'bento\'"</code> skin lays items out as tiles with a glyph in the leading slot and a pill in the meta slot. Add <code>cngx-accordion-item--wide</code> to span one tile across the row.',
   description:
     'The skin sets a tiled grid on the group. Give each item a short glyph via <code>[cngxAccordionItemLeading]</code>, a pill via <code>[cngxAccordionItemMeta]</code>, and mark one item wide with the item modifier class.',
   level: 'organism',
@@ -25,7 +25,7 @@ export const STORY: DemoSpec = {
       href: 'https://www.w3.org/WAI/ARIA/apg/patterns/accordion/',
     },
   ],
-  template: `  <cngx-accordion-group class="cngx-accordion-skin-bento" [multi]="true" [headingLevel]="3" style="max-width:640px">
+  template: `  <cngx-accordion-group [skin]="'bento'" [multi]="true" [headingLevel]="3" style="max-width:640px">
     <cngx-accordion-item class="cngx-accordion-item--wide">
       <span cngxAccordionItemLeading>▤</span>
       <span cngxAccordionItemTitle>Overview</span>
