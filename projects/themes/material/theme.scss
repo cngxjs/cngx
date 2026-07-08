@@ -26,6 +26,7 @@
 
 @use './system-bridge' as cngx-system;
 @use './accordion-theme' as accordion;
+@use './accordion-skins-theme' as accordion-skins;
 @use './action-button-theme' as action-button;
 @use './async-container-theme' as async-container;
 @use './avatar-theme' as avatar;
@@ -71,6 +72,7 @@
   @include cngx-system.theme($theme);
 
   @include accordion.theme($theme);
+  @include accordion-skins.theme($theme);
   @include action-button.theme($theme);
   @include async-container.theme($theme);
   @include avatar.theme($theme);

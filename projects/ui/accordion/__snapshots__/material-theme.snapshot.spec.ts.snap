@@ -1,0 +1,37 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Material accordion-skins-theme bridge baseline > v0 light: resolved --cngx-* declarations match the baseline 1`] = `
+{
+  "--cngx-accordion-bento-tile-bg": "rgba(63, 81, 181, 0.12)",
+  "--cngx-accordion-group-bg": "white",
+  "--cngx-accordion-item-bg": "white",
+  "--cngx-accordion-pm-box-bg": "rgba(0, 0, 0, 0.06)",
+  "--cngx-accordion-spine-color": "#3f51b5",
+  "--cngx-accordion-subtitle-color": "rgba(0, 0, 0, 0.6)",
+  "--cngx-color-text-muted": "rgba(0, 0, 0, 0.6)",
+}
+`;
+
+exports[`Material accordion-skins-theme bridge baseline > v1 dark: resolved --cngx-* declarations match the baseline 1`] = `
+{
+  "--cngx-accordion-bento-tile-bg": "var(--mat-sys-primary-container)",
+  "--cngx-accordion-group-bg": "var(--mat-sys-surface-container-low)",
+  "--cngx-accordion-item-bg": "var(--mat-sys-surface-container)",
+  "--cngx-accordion-pm-box-bg": "var(--mat-sys-surface-container-highest)",
+  "--cngx-accordion-spine-color": "var(--mat-sys-primary)",
+  "--cngx-accordion-subtitle-color": "var(--mat-sys-on-surface-variant)",
+  "--cngx-color-text-muted": "var(--mat-sys-on-surface-variant)",
+}
+`;
+
+exports[`Material accordion-skins-theme bridge baseline > v1 light: resolved --cngx-* declarations match the baseline 1`] = `
+{
+  "--cngx-accordion-bento-tile-bg": "var(--mat-sys-primary-container)",
+  "--cngx-accordion-group-bg": "var(--mat-sys-surface-container-low)",
+  "--cngx-accordion-item-bg": "var(--mat-sys-surface-container)",
+  "--cngx-accordion-pm-box-bg": "var(--mat-sys-surface-container-highest)",
+  "--cngx-accordion-spine-color": "var(--mat-sys-primary)",
+  "--cngx-accordion-subtitle-color": "var(--mat-sys-on-surface-variant)",
+  "--cngx-color-text-muted": "var(--mat-sys-on-surface-variant)",
+}
+`;

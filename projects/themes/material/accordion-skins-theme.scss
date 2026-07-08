@@ -1,0 +1,98 @@
+@use '@angular/material' as mat;
+
+// Material bridge for the @cngx/ui/accordion SKIN PRESETS
+// (projects/ui/accordion/theming/skins/*.css). The skins compose foundation
+// tokens (--cngx-color-surface / -text / -primary / -border / -radius-*), which
+// system-bridge.scss already maps to --mat-sys-*, so a Material-paired accordion
+// is skin-aware out of the box. This file refines only what the foundation
+// mapping does not cover ideally:
+//
+//   - the dim-text tone (--cngx-color-text-muted is NOT in the system bridge)
+//     and the subtitle colour -> on-surface-variant, scoped to the accordion so
+//     it does not leak to the rest of the app;
+//   - card-surface elevation for the card-style skins -> surface-container
+//     (base --cngx-color-surface maps to the flat surface, which reads wrong on
+//     an elevated card), scoped to the card skins so flat skins (editorial,
+//     lux, split-meta, timeline) keep their surfaceless look;
+//   - the per-skin accent fills (bento tile, plus-minus box, severity spine).
+//
+//   @use '@angular/material' as mat;
+//   @use '@cngx/themes/material/accordion-skins-theme' as accordion-skins;
+//   html { @include accordion-skins.theme($theme); }
+
+@mixin _text($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    // --mat-sys-* already carries light and dark, so one assignment tracks both.
+    --cngx-color-text-muted: var(--mat-sys-on-surface-variant);
+    --cngx-accordion-subtitle-color: var(--mat-sys-on-surface-variant);
+  } @else {
+    --cngx-color-text-muted: #{rgba(mat.get-theme-color($theme, foreground, text), 0.6)};
+    --cngx-accordion-subtitle-color: #{rgba(mat.get-theme-color($theme, foreground, text), 0.6)};
+  }
+}
+
+@mixin _cards($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-accordion-item-bg: var(--mat-sys-surface-container);
+    --cngx-accordion-group-bg: var(--mat-sys-surface-container-low);
+  } @else {
+    --cngx-accordion-item-bg: #{mat.get-theme-color($theme, background, card)};
+    --cngx-accordion-group-bg: #{mat.get-theme-color($theme, background, card)};
+  }
+}
+
+@mixin _bento($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-accordion-bento-tile-bg: var(--mat-sys-primary-container);
+  } @else {
+    --cngx-accordion-bento-tile-bg: #{rgba(mat.get-theme-color($theme, primary), 0.12)};
+  }
+}
+
+@mixin _plus-minus($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-accordion-pm-box-bg: var(--mat-sys-surface-container-highest);
+  } @else {
+    --cngx-accordion-pm-box-bg: #{rgba(mat.get-theme-color($theme, foreground, text), 0.06)};
+  }
+}
+
+@mixin _spine($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-accordion-spine-color: var(--mat-sys-primary);
+  } @else {
+    --cngx-accordion-spine-color: #{mat.get-theme-color($theme, primary)};
+  }
+}
+
+@mixin theme($theme) {
+  @layer cngx.components {
+    // Dim text + subtitle align on every skin (cascades to items).
+    :where(cngx-accordion-group) {
+      @include _text($theme);
+    }
+
+    // Card-surface skins only - flat skins keep their surfaceless look.
+    :where(
+        .cngx-accordion-skin-categorized,
+        .cngx-accordion-skin-bento,
+        .cngx-accordion-skin-section-bands,
+        .cngx-accordion-skin-severity-spine,
+        .cngx-accordion-skin-data-grid,
+        .cngx-accordion-skin-primary-frame,
+        .cngx-accordion-skin-plus-minus
+      ) {
+      @include _cards($theme);
+    }
+
+    :where(.cngx-accordion-skin-bento) {
+      @include _bento($theme);
+    }
+    :where(.cngx-accordion-skin-plus-minus) {
+      @include _plus-minus($theme);
+    }
+    :where(.cngx-accordion-skin-severity-spine) {
+      @include _spine($theme);
+    }
+  }
+}
