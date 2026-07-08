@@ -97,14 +97,14 @@
 
 /* Opt-in accordion skin presets - inert until a `.cngx-accordion-skin-*` scope
  * class is applied to a `cngx-accordion-group`. */
-@import '../ui/theming/skins/editorial.css';
-@import '../ui/theming/skins/categorized.css';
-@import '../ui/theming/skins/plus-minus.css';
-@import '../ui/theming/skins/lux.css';
-@import '../ui/theming/skins/bento.css';
-@import '../ui/theming/skins/section-bands.css';
-@import '../ui/theming/skins/timeline.css';
-@import '../ui/theming/skins/severity-spine.css';
-@import '../ui/theming/skins/data-grid.css';
-@import '../ui/theming/skins/split-meta.css';
-@import '../ui/theming/skins/primary-frame.css';
+@import '../ui/accordion/theming/skins/editorial.css';
+@import '../ui/accordion/theming/skins/categorized.css';
+@import '../ui/accordion/theming/skins/plus-minus.css';
+@import '../ui/accordion/theming/skins/lux.css';
+@import '../ui/accordion/theming/skins/bento.css';
+@import '../ui/accordion/theming/skins/section-bands.css';
+@import '../ui/accordion/theming/skins/timeline.css';
+@import '../ui/accordion/theming/skins/severity-spine.css';
+@import '../ui/accordion/theming/skins/data-grid.css';
+@import '../ui/accordion/theming/skins/split-meta.css';
+@import '../ui/accordion/theming/skins/primary-frame.css';

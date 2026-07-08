@@ -6,6 +6,7 @@
   },
   "assets": [
     "mat-tabs/styles/mat-tabs.css",
-    { "input": "theming", "glob": "**/*.css", "output": "theming" }
+    { "input": "theming", "glob": "**/*.css", "output": "theming" },
+    { "input": "accordion/theming", "glob": "**/*.css", "output": "accordion/theming" }
   ]
 }
