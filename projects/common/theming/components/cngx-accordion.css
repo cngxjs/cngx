@@ -34,7 +34,11 @@
    */
   @property --cngx-accordion-header-padding {
     syntax: '*';
-    inherits: false;
+    /* Inherits so a value set on the group host (a skin's `[data-skin]` block or
+       the Material density bridge) reaches the item header - the header is a
+       descendant, and `inherits: false` would silently pin it to the initial
+       value. */
+    inherits: true;
     initial-value: 0.75rem 1rem;
   }
 
@@ -44,7 +48,9 @@
    */
   @property --cngx-accordion-region-padding {
     syntax: '*';
-    inherits: false;
+    /* Inherits so a group-host value (skin block or density bridge) reaches the
+       region - same host->descendant cascade as the header padding above. */
+    inherits: true;
     initial-value: 0.75rem 1rem;
   }
 
