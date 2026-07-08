@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'Each panel is its own async boundary. Opening a section starts a fetch, the panel shows a skeleton via <code>*cngxAccordionItemBusy</code>, then resolves to content or an error with a retry button via <code>*cngxAccordionItemError</code>.',
   description:
-    'Drive each item&apos;s <code>[state]</code> from a per-panel manual async state. There is no open output on the item, so the fetch is kicked from the group&apos;s <code>(openIdsChange)</code>: when a panel id first enters the open set and its state is still idle, the fetch runs. The busy, error, and content slots are chosen by the state machine, not by the accordion. The third panel always fails so the error + retry path is visible.',
+    'Drive each item&apos;s <code>[state]</code> from a per-panel manual async state. There is no open output on the item, so the fetch is kicked from the group&apos;s <code>(openIdsChange)</code>: when a panel id first enters the open set and its state is still idle, the fetch runs. The busy, error, and content slots are chosen by the state machine, not by the accordion. Each slot receives a <code>CngxAccordionItemStateContext</code>: the busy template reads the status via <code>let-status</code>, the error template the resolved message via <code>let-message="message"</code>. The third panel always fails so the error + retry path is visible.',
   level: 'organism',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
@@ -72,8 +72,8 @@ export const STORY: DemoSpec = {
     <cngx-accordion-item panelId="overview" [state]="overviewState">
       <span cngxAccordionItemTitle>Overview</span>
       <span cngxAccordionItemSubtitle>Loaded on first open.</span>
-      <ng-template cngxAccordionItemBusy>
-        <p>Loading overview…</p>
+      <ng-template cngxAccordionItemBusy let-status>
+        <p>Loading overview… <small>({{ status }})</small></p>
       </ng-template>
       <ng-template cngxAccordionItemContent>
         <p>{{ overviewState.data() }}</p>
@@ -91,14 +91,18 @@ export const STORY: DemoSpec = {
       </ng-template>
     </cngx-accordion-item>
 
-    <cngx-accordion-item panelId="audit" [state]="auditState">
+    <cngx-accordion-item
+      panelId="audit"
+      [state]="auditState"
+      [errorMessage]="'The audit log could not be loaded.'"
+    >
       <span cngxAccordionItemTitle>Audit log</span>
       <span cngxAccordionItemSubtitle>This endpoint fails on purpose.</span>
       <ng-template cngxAccordionItemBusy>
         <p>Loading audit log…</p>
       </ng-template>
-      <ng-template cngxAccordionItemError>
-        <p>The audit log could not be loaded.</p>
+      <ng-template cngxAccordionItemError let-message="message">
+        <p>{{ message }}</p>
         <button type="button" (click)="retry(auditState, '', true)">Retry</button>
       </ng-template>
       <ng-template cngxAccordionItemContent>
