@@ -108,6 +108,7 @@ function mergeConfig(
  *     provideAccordionConfig(
  *       withAccordionLabels({ disabledReason: 'Dieser Abschnitt ist gesperrt.' }),
  *       withDefaultHeadingLevel(2),
+ *       withAccordionSkin('categorized'),
  *     ),
  *   ],
  * });
