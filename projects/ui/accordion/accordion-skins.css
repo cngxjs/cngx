@@ -131,20 +131,79 @@
     gap: var(--cngx-space-sm, 0.75rem);
     --cngx-accordion-group-border-block-start: none;
     --cngx-accordion-divider: none;
-    --cngx-accordion-header-padding: var(--cngx-space-md, 1rem) var(--cngx-space-lg, 1.25rem);
-    --cngx-accordion-region-padding: 0 var(--cngx-space-lg, 1.25rem) var(--cngx-space-lg, 1.25rem);
+    /* Horizontal inset lives on the heading row (below), not the header button,
+       so the leading pill and the body text share the same 1.25rem left flush;
+       the button keeps only the vertical rhythm. POC `.cat`: summary 1rem 1.25rem,
+       body 0 1.25rem 1.25rem. */
+    --cngx-accordion-header-padding: 1rem 0;
+    --cngx-accordion-region-padding: 0 1.25rem 1.25rem;
+    /* Roomier gap to the right of the category pill (pill -> title). */
+    --cngx-accordion-heading-gap: 1rem;
+    /* Focus ring tracks the accent, not the base blue. */
+    --cngx-accordion-focus-color: var(--cngx-color-primary, #1d4ed8);
   }
 
+  /* Lifted card; the shadow does the lifting, the border is a near-invisible
+     hairline (POC --hairline ~3%), not a hard grey edge. Shadow deepens on open
+     (POC --sh-1 -> --sh-2). */
   .cngx-accordion-item {
     background: var(--cngx-accordion-item-bg, var(--cngx-color-surface, #fff));
-    border: 1px solid var(--cngx-color-border, #d1d5db);
-    border-radius: var(--cngx-radius-md, 0.375rem);
+    border: 1px solid
+      var(--cngx-accordion-card-border, color-mix(in srgb, var(--cngx-color-text, #0f1320) 6%, transparent));
+    border-radius: var(--cngx-accordion-card-radius, 0.875rem);
     overflow: hidden;
+    box-shadow: var(--cngx-accordion-card-shadow, 0 1px 2px #0c122010, 0 6px 20px -12px #0c122026);
+    transition: box-shadow var(--cngx-accordion-chevron-transition, 150ms ease);
   }
 
-  /* Hover tint set via the token so it composes with the base header rule. */
-  .cngx-accordion-item__header:hover {
-    --cngx-accordion-header-bg: color-mix(in oklab, var(--cngx-color-primary, #1d4ed8) 5%, transparent);
+  .cngx-accordion-item[data-expanded] {
+    box-shadow: var(--cngx-accordion-card-shadow-open, 0 2px 4px #0c122012, 0 24px 60px -22px #0c122033);
+  }
+
+  /* The category tag aligns with the title line; the horizontal inset lives here
+     so the pill flushes with the body text (both at 1.25rem). */
+  .cngx-accordion-item__heading {
+    align-items: baseline;
+    padding-inline: 1.25rem;
+  }
+
+  /* Accent focus ring with breathing room + a soft radius (the header button has
+     no horizontal padding, so the base inset ring would bite the title). */
+  .cngx-accordion-item__header:focus-visible {
+    outline-offset: 3px;
+    border-radius: var(--cngx-radius-sm, 6px);
+  }
+
+  /* Semibold title (POC `.rt`: font-weight 660). */
+  .cngx-accordion-item__title {
+    font-weight: 660;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+  }
+
+  /* Tag-like category pill (POC `.ctag`): the leading slot renders as a rounded,
+     tinted chip. The hue comes per item from --cngx-accordion-category-color
+     (default the skin primary); the fill is a soft mix of it. No cngx-tag
+     dependency - the skin owns the look. */
+  .cngx-accordion-item__leading {
+    padding: 0.22rem 0.6rem;
+    border-radius: var(--cngx-radius-pill, 999px);
+    font-family: var(--cngx-accordion-category-font, ui-monospace, monospace);
+    font-size: var(--cngx-accordion-category-size, clamp(0.7rem, 0.68rem + 0.1vw, 0.75rem));
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    color: var(--cngx-accordion-category-color, var(--cngx-color-primary, #1d4ed8));
+    background: color-mix(
+      in srgb,
+      var(--cngx-accordion-category-color, var(--cngx-color-primary, #1d4ed8)) 15%,
+      transparent
+    );
+  }
+
+  /* Neutral hover across the whole header row (POC `summary:hover` -> surface-2),
+     not a primary-tinted box behind the title column only. */
+  .cngx-accordion-item:hover .cngx-accordion-item__heading {
+    background: var(--cngx-color-surface-alt, #f6f7fa);
   }
 
   .cngx-accordion-item[data-expanded] .cngx-accordion-item__title {
