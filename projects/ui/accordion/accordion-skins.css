@@ -94,7 +94,7 @@
   }
 
   .cngx-accordion-item {
-    background: var(--cngx-color-surface, #fff);
+    background: var(--cngx-accordion-item-bg, var(--cngx-color-surface, #fff));
     border: 1px solid var(--cngx-color-border, #d1d5db);
     border-radius: var(--cngx-radius-md, 0.375rem);
     overflow: hidden;
@@ -112,7 +112,7 @@
 
 @scope (.cngx-accordion-group[data-skin='plus-minus']) {
   :scope {
-    background: var(--cngx-color-surface, #fff);
+    background: var(--cngx-accordion-group-bg, var(--cngx-color-surface, #fff));
     border: 1px solid var(--cngx-color-border, #d1d5db);
     border-radius: var(--cngx-radius-lg, 0.5rem);
     overflow: hidden;
@@ -138,7 +138,7 @@
 
   .cngx-accordion-item[data-expanded] .cngx-accordion-item__chevron {
     background: var(--cngx-color-primary, #1d4ed8);
-    color: #fff;
+    color: var(--cngx-color-surface, #fff);
   }
 
   .cngx-accordion-item[data-expanded] .cngx-accordion-item__title {
@@ -191,7 +191,7 @@
   }
 
   .cngx-accordion-item {
-    background: var(--cngx-color-surface, #fff);
+    background: var(--cngx-accordion-item-bg, var(--cngx-color-surface, #fff));
     border: 1px solid var(--cngx-color-border, #d1d5db);
     border-radius: var(--cngx-radius-lg, 0.5rem);
     overflow: hidden;
@@ -335,7 +335,7 @@
 
   .cngx-accordion-item {
     position: relative;
-    background: var(--cngx-color-surface, #fff);
+    background: var(--cngx-accordion-item-bg, var(--cngx-color-surface, #fff));
     border: 1px solid var(--cngx-color-border, #d1d5db);
     border-radius: var(--cngx-radius-sm, 0.25rem);
     overflow: hidden;
@@ -361,7 +361,7 @@
 
 @scope (.cngx-accordion-group[data-skin='data-grid']) {
   :scope {
-    background: var(--cngx-color-surface, #fff);
+    background: var(--cngx-accordion-group-bg, var(--cngx-color-surface, #fff));
     border: 1px solid var(--cngx-color-border, #d1d5db);
     border-radius: var(--cngx-radius-sm, 0.25rem);
     overflow: hidden;
@@ -455,7 +455,7 @@
   }
 
   .cngx-accordion-item {
-    background: var(--cngx-color-surface, #fff);
+    background: var(--cngx-accordion-item-bg, var(--cngx-color-surface, #fff));
     border: 1px solid var(--cngx-color-border, #d1d5db);
     border-radius: var(--cngx-radius-lg, 0.5rem);
     transition: border-color var(--cngx-accordion-chevron-transition, 150ms ease);
