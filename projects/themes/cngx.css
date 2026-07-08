@@ -94,17 +94,3 @@
 @import '../common/theming/components/cngx-tooltip.css';
 @import '../forms/theming/components/cngx-file-drop.css';
 @import '../forms/theming/components/cngx-field-affix.css';
-
-/* Opt-in accordion skin presets - inert until a `.cngx-accordion-skin-*` scope
- * class is applied to a `cngx-accordion-group`. */
-@import '../ui/accordion/theming/skins/editorial.css';
-@import '../ui/accordion/theming/skins/categorized.css';
-@import '../ui/accordion/theming/skins/plus-minus.css';
-@import '../ui/accordion/theming/skins/lux.css';
-@import '../ui/accordion/theming/skins/bento.css';
-@import '../ui/accordion/theming/skins/section-bands.css';
-@import '../ui/accordion/theming/skins/timeline.css';
-@import '../ui/accordion/theming/skins/severity-spine.css';
-@import '../ui/accordion/theming/skins/data-grid.css';
-@import '../ui/accordion/theming/skins/split-meta.css';
-@import '../ui/accordion/theming/skins/primary-frame.css';

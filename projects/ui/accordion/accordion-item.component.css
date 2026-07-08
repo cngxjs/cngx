@@ -1,12 +1,10 @@
 .cngx-accordion-item {
+  /* Flat default: a transparent row with a bottom divider. A card skin
+     (categorized, bento, section-bands, ...) sets its own surface + box border
+     directly through its `[data-skin]` @scope block (accordion-skins.css). The
+     divider stays token-driven so a skin drops it with one `--cngx-accordion-
+     divider: none`. */
   display: block;
-  /* Surface hooks a card skin (Categorized, Bento, Bands) drives from a layer:
-     the flat default keeps a transparent surface, no box border, square corners,
-     and only a bottom divider. */
-  background: var(--cngx-accordion-item-bg, transparent);
-  border: var(--cngx-accordion-item-border, 0 solid transparent);
-  border-radius: var(--cngx-accordion-item-radius, 0);
-  overflow: var(--cngx-accordion-item-overflow, visible);
   border-block-end: var(
     --cngx-accordion-divider,
     1px solid var(--cngx-accordion-border-color, #d1d5db)
@@ -15,11 +13,10 @@
 
 .cngx-accordion-item__heading {
   margin: 0;
-  /* display/columns are hooks so a table-style skin (Data-Grid) can lay the
-     heading row out as a column grid; the flat default stays a flex row. */
-  display: var(--cngx-accordion-heading-display, flex);
-  grid-template-columns: var(--cngx-accordion-heading-columns, none);
-  align-items: var(--cngx-accordion-heading-align, center);
+  /* Flat default is a flex row. A table-style skin (data-grid) lays the heading
+     out as a column grid directly through its `[data-skin]` @scope block. */
+  display: flex;
+  align-items: center;
   gap: var(--cngx-accordion-heading-gap, 0.5rem);
 }
 
@@ -114,9 +111,9 @@
 }
 
 /* Marker variants driven by the --cngx-accordion-marker token, not a mode input
-   (Pillar 3). Token unset keeps the CSS chevron above; a skin scope class sets
-   the token and a style container query re-paints the same chevron box, so no
-   new DOM and no new input. */
+   (Pillar 3). Token unset keeps the CSS chevron above; a skin's [data-skin]
+   block sets the token and a style container query re-paints the same chevron
+   box, so no new DOM and no new input. */
 @container style(--cngx-accordion-marker: none) {
   .cngx-accordion-item__chevron {
     display: none;

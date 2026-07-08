@@ -3,7 +3,7 @@
 APG-correct disclosure organism over the headless `CngxAccordion` brain
 (`@cngx/common/interactive`). Renders the heading / button / region trio, derives
 expansion from an open-set coordinator, and ships a header slot family, async
-status communication, and eleven opt-in CSS skin presets.
+status communication, and eleven built-in visual skins.
 
 ## Anatomy
 
@@ -39,48 +39,51 @@ collapsed item un-hides its region so the alert is announced.
 
 `provideAccordionConfig(...)` / `provideAccordionConfigAt(...)` with
 `withAccordionLabels({ disabledReason, errorMessage })`,
-`withDefaultHeadingLevel(n)`, and `withAccordionTemplates({ icon, busySpinner,
-error })`. Library defaults are English.
+`withDefaultHeadingLevel(n)`, `withAccordionSkin(name)`, and
+`withAccordionTemplates({ icon, busySpinner, error })`. Library defaults are
+English.
 
-## Skin presets
+## Skins
 
-Eleven opt-in visual skins ship as CSS. Import the theme once, then add a
-`cngx-accordion-skin-<name>` class to the group:
-
-```css
-@import '@cngx/themes/cngx.css'; /* carries every skin, inert until opted in */
-```
+Eleven built-in visual skins select via the `[skin]` input, reflected onto a
+`[data-skin]` host attribute (the same pattern as `<cngx-tab-group>`). The skin
+CSS ships with the component - no theme import, no scope class. `[skin]` is typed
+class-sugar (`CngxAccordionSkin`), not a mode flag: every skin renders the
+identical structure, slots, ARIA, and keyboard model, only the paint changes.
 
 ```html
-<cngx-accordion-group class="cngx-accordion-skin-editorial">...</cngx-accordion-group>
+<cngx-accordion-group [skin]="'editorial'">...</cngx-accordion-group>
 ```
 
-| skin | class | notes |
+Set an app-wide default with `provideAccordionConfig(withAccordionSkin('editorial'))`;
+a per-instance `[skin]` still wins.
+
+| Skin | `[skin]` value | notes |
 |-|-|-|
-| Editorial | `cngx-accordion-skin-editorial` | mono index leading, hairlines |
-| Categorized | `cngx-accordion-skin-categorized` | category-tag leading, elevate-on-open |
-| Plus-Minus | `cngx-accordion-skin-plus-minus` | boxed +/- marker |
-| Lux | `cngx-accordion-skin-lux` | whitespace, large type |
-| Bento | `cngx-accordion-skin-bento` | container-query card grid |
-| Section-Bands | `cngx-accordion-skin-section-bands` | inverted full-width band |
-| Timeline | `cngx-accordion-skin-timeline` | rail + node (see note) |
-| Severity-Spine | `cngx-accordion-skin-severity-spine` | full-height priority spine |
-| Data-Grid | `cngx-accordion-skin-data-grid` | table layout (see note) |
-| Split-Meta | `cngx-accordion-skin-split-meta` | title + trailing meta |
-| Primary-Frame | `cngx-accordion-skin-primary-frame` | solid primary border + glow on open |
+| Editorial | `editorial` | mono index leading, hairlines |
+| Categorized | `categorized` | category-tag leading, elevate-on-open |
+| Plus-Minus | `plus-minus` | boxed +/- marker |
+| Lux | `lux` | whitespace, large type |
+| Bento | `bento` | container-query card grid |
+| Section-Bands | `section-bands` | inverted full-width band |
+| Timeline | `timeline` | rail + node (see note) |
+| Severity-Spine | `severity-spine` | full-height priority spine |
+| Data-Grid | `data-grid` | table layout (see note) |
+| Split-Meta | `split-meta` | title + trailing meta |
+| Primary-Frame | `primary-frame` | solid primary border + glow on open |
 
 Every skin drives the organism through its `--cngx-accordion-*` custom
-properties; each colour maps to `--cngx-color-primary`, never a gradient. Skins
-live in `@layer cngx.components`, so consumer overrides in `@layer cngx.theme` or
-the app layer win.
+properties; each colour maps to `--cngx-color-primary`, never a gradient. The
+skin CSS lives unlayered in the component stylesheet, so a `[data-skin]` rule
+overrides the flat base by specificity.
 
 ### Timeline: exclusive mode
 
 The timeline look is exclusive by convention. Bind `[multi]="false"` on the
-group so one section opens at a time; the preset does not force it.
+group so one section opens at a time; the skin does not force it.
 
 ```html
-<cngx-accordion-group class="cngx-accordion-skin-timeline" [multi]="false">...</cngx-accordion-group>
+<cngx-accordion-group [skin]="'timeline'" [multi]="false">...</cngx-accordion-group>
 ```
 
 ### Data-Grid: caption row
@@ -92,7 +95,7 @@ mirror the skin's column template so the headers align:
 <div class="my-dg-caption" style="display:grid; grid-template-columns: 11ch 1fr auto;">
   <span>ID</span><span>Name</span><span>Amount</span>
 </div>
-<cngx-accordion-group class="cngx-accordion-skin-data-grid">...</cngx-accordion-group>
+<cngx-accordion-group [skin]="'data-grid'">...</cngx-accordion-group>
 ```
 
 Set `--cngx-accordion-datagrid-columns` to change the column template on both.
