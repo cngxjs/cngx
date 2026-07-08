@@ -52,31 +52,73 @@
 
 @scope (.cngx-accordion-group[data-skin='editorial']) {
   :scope {
-    --cngx-accordion-heading-gap: var(--cngx-space-lg, 1.25rem);
-    --cngx-accordion-header-padding: var(--cngx-space-lg, 1.25rem) 0;
-    --cngx-accordion-region-padding: 0 0 var(--cngx-space-xl, 2rem);
+    /* Values transcribed 1:1 from the design POC (.internal/accordions/index.html,
+       `.editorial`): --sp-5 = 1.25rem, --sp-6 = 1.5rem. */
+    --cngx-accordion-heading-gap: 1.25rem;
+    --cngx-accordion-header-padding: 1.25rem 0;
+    /* Body flows under the title: indent by the index column (2.6ch) + the gap,
+       generous bottom whitespace, readable 60ch measure. */
+    --cngx-accordion-region-padding: 0 0 1.5rem calc(2.6ch + 1.25rem);
+    /* Hairline is owned per item (border-block-start) below, not by the base
+       divider - so drop the base border-block-end + group top border. */
+    --cngx-accordion-divider: none;
+    /* Focus ring tracks the skin accent (the open-index / hover colour), not the
+       base default blue. */
+    --cngx-accordion-focus-color: var(--cngx-color-primary, #1d4ed8);
   }
 
+  /* Hairline above every row + below the last (POC `.editorial details`). */
+  .cngx-accordion-item {
+    border-block-start: 1px solid var(--cngx-accordion-hairline, var(--cngx-color-border, #d1d5db));
+  }
+
+  .cngx-accordion-item:last-child {
+    border-block-end: 1px solid var(--cngx-accordion-hairline, var(--cngx-color-border, #d1d5db));
+  }
+
+  /* Baseline-align the running index with the title. The header button carries
+     the block padding, so `flex-start` would float the index (a heading-row
+     sibling of the button) above the title; baseline pins them to one line. */
   .cngx-accordion-item__heading {
-    align-items: flex-start;
+    align-items: baseline;
   }
 
+  /* Mono running index at the editorial size (POC `--s-1`), dim until open.
+     The size rides a skin-local token (NOT the registered --cngx-font-size-*
+     @property, whose var() fallback is dead) so it actually takes effect. */
   .cngx-accordion-item__leading {
-    padding-block-start: 0.15em;
     min-inline-size: 2.6ch;
     font-family: var(--cngx-accordion-editorial-index-font, ui-monospace, monospace);
-    font-size: var(--cngx-font-size-lg, 1.125rem);
+    font-size: var(--cngx-accordion-editorial-size, clamp(1.05rem, 0.98rem + 0.35vw, 1.25rem));
     font-weight: 700;
-    color: var(--cngx-color-text-muted, #6b7280);
+    color: var(--cngx-color-text-muted, #8b93a4);
     line-height: 1;
     transition: color var(--cngx-accordion-chevron-transition, 150ms ease);
   }
 
+  /* Title shares the index size (POC `--s-1`), semibold with a tight measure
+     (POC `.rt`: font-weight 660, letter-spacing -0.01em, line-height 1.2). */
   .cngx-accordion-item__title {
-    font-size: var(--cngx-font-size-lg, 1.125rem);
+    font-size: var(--cngx-accordion-editorial-size, clamp(1.05rem, 0.98rem + 0.35vw, 1.25rem));
+    font-weight: 660;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
   }
 
-  /* Index and title light up in the primary colour on open / hover. */
+  /* Readable editorial measure. */
+  .cngx-accordion-item__region {
+    max-inline-size: 60ch;
+  }
+
+  /* The flat editorial header has no horizontal padding, so the base inset
+     (-2px) focus ring would bite into the title. Ring sits outside with a soft
+     radius instead (POC uses a rounded box-shadow ring). */
+  .cngx-accordion-item__header:focus-visible {
+    outline-offset: var(--cngx-accordion-editorial-focus-offset, 4px);
+    border-radius: var(--cngx-radius-sm, 6px);
+  }
+
+  /* Index lights up primary on open; the title tints primary on hover. */
   .cngx-accordion-item[data-expanded] .cngx-accordion-item__leading,
   .cngx-accordion-item__header:hover .cngx-accordion-item__title {
     color: var(--cngx-color-primary, #1d4ed8);
