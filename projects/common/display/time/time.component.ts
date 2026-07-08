@@ -72,11 +72,19 @@ export class CngxTime {
   /** `Intl.DateTimeFormatOptions` for `absolute` mode; ignored in `relative` mode. */
   readonly format = input<Intl.DateTimeFormatOptions | undefined>(undefined);
 
-  /** Coerced instant. A primitive-free `Date`; downstream reads its time value. */
-  protected readonly instant = computed<Date>(() => {
-    const value = this.date();
-    return value instanceof Date ? value : new Date(value);
-  });
+  /**
+   * Coerced instant. A `Date`; downstream reads its time value. The `equal` fn
+   * dedupes by time value so re-binding `[date]` to a fresh `Date` of the same
+   * instant (or the equivalent ISO string) does not cascade `iso`/`formatted` -
+   * the object-computed equality rule.
+   */
+  protected readonly instant = computed<Date>(
+    () => {
+      const value = this.date();
+      return value instanceof Date ? value : new Date(value);
+    },
+    { equal: (a, b) => a.getTime() === b.getTime() },
+  );
 
   /** Machine-readable ISO 8601 for the `datetime` attribute. */
   protected readonly iso = computed(() => this.instant().toISOString());

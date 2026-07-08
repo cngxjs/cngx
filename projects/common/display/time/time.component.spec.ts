@@ -75,4 +75,22 @@ describe('CngxTime', () => {
     const { timeEl } = make(new Date(Date.now() - 3 * 365 * 24 * 60 * 60 * 1000), { mode: 'relative' });
     expect(timeEl.textContent?.trim()).toBe('3 years ago');
   });
+
+  it('renders a stable instant when [date] switches between equal representations', () => {
+    const fixture = TestBed.createComponent(CngxTime);
+    fixture.componentRef.setInput('date', new Date('2026-03-15T12:00:00Z'));
+    fixture.detectChanges();
+    const timeEl = (fixture.nativeElement as HTMLElement).querySelector('time') as HTMLTimeElement;
+    const iso = timeEl.getAttribute('datetime');
+
+    // A fresh Date of the same instant, then the equivalent ISO string: the
+    // instant computed's time-value equal fn keeps the rendered output stable.
+    fixture.componentRef.setInput('date', new Date('2026-03-15T12:00:00Z'));
+    fixture.detectChanges();
+    expect(timeEl.getAttribute('datetime')).toBe(iso);
+
+    fixture.componentRef.setInput('date', '2026-03-15T12:00:00.000Z');
+    fixture.detectChanges();
+    expect(timeEl.getAttribute('datetime')).toBe(iso);
+  });
 });
