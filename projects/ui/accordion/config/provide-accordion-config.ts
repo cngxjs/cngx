@@ -5,7 +5,7 @@ import {
   type Provider,
 } from '@angular/core';
 
-import type { CngxAccordionConfig } from './accordion.config';
+import type { CngxAccordionConfig, CngxAccordionSkin } from './accordion.config';
 import { CNGX_ACCORDION_CONFIG, CNGX_ACCORDION_DEFAULTS } from './accordion.config.defaults';
 
 /**
@@ -25,6 +25,7 @@ export type CngxAccordionConfigFeature =
       readonly payload: { readonly disabledReason?: string; readonly errorMessage?: string };
     }
   | { readonly kind: 'headingLevel'; readonly payload: { readonly headingLevel: number } }
+  | { readonly kind: 'skin'; readonly payload: { readonly skin: CngxAccordionSkin } }
   | { readonly kind: 'templates'; readonly payload: NonNullable<CngxAccordionConfig['templates']> };
 
 /**
@@ -40,6 +41,7 @@ function reduceFeatures(
     disabledReason?: string;
     errorMessage?: string;
     headingLevel?: number;
+    skin?: CngxAccordionSkin;
     templates?: NonNullable<CngxAccordionConfig['templates']>;
   } = {};
   for (const f of features) {
@@ -54,6 +56,9 @@ function reduceFeatures(
         break;
       case 'headingLevel':
         out.headingLevel = f.payload.headingLevel;
+        break;
+      case 'skin':
+        out.skin = f.payload.skin;
         break;
       case 'templates':
         out.templates = { ...out.templates, ...f.payload };
@@ -78,6 +83,7 @@ function mergeConfig(
     disabledReason: partial.disabledReason ?? base.disabledReason,
     errorMessage: partial.errorMessage ?? base.errorMessage,
     headingLevel: partial.headingLevel ?? base.headingLevel,
+    skin: partial.skin ?? base.skin,
     templates: { ...base.templates, ...partial.templates },
   };
 }

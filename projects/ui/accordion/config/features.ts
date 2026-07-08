@@ -1,4 +1,4 @@
-import type { CngxAccordionConfig } from './accordion.config';
+import type { CngxAccordionConfig, CngxAccordionSkin } from './accordion.config';
 import type { CngxAccordionConfigFeature } from './provide-accordion-config';
 
 /**
@@ -41,6 +41,24 @@ export function withAccordionLabels(payload: {
  */
 export function withDefaultHeadingLevel(headingLevel: number): CngxAccordionConfigFeature {
   return { kind: 'headingLevel', payload: { headingLevel } };
+}
+
+/**
+ * Set the app-wide default visual skin for `<cngx-accordion-group>`. Unset by
+ * default (the base flat look). Per-instance `[skin]` Input still wins; this
+ * moves the cascade default. Structure, slots, ARIA, and keyboard behaviour are
+ * identical across skins - only the `[data-skin]` host attribute changes the
+ * CSS. Typed class-sugar, not a mode flag.
+ *
+ * ```ts
+ * provideAccordionConfig(withAccordionSkin('categorized'));
+ * ```
+ *
+ * @category ui/accordion
+ * @since 0.1.0
+ */
+export function withAccordionSkin(skin: CngxAccordionSkin): CngxAccordionConfigFeature {
+  return { kind: 'skin', payload: { skin } };
 }
 
 /**

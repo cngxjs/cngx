@@ -3,6 +3,37 @@ import type { TemplateRef } from '@angular/core';
 import type { CngxAccordionItemIconContext } from '../accordion-item-icon.directive';
 
 /**
+ * Selectable visual skin for `<cngx-accordion-group>`. \
+ * The skin is a pure thematic concern - every value renders the identical
+ * heading / region / marker structure, slots, ARIA, and keyboard behaviour, and
+ * only redirects CSS via the `[data-skin]` host attribute. Typed class-sugar
+ * (mirrors {@link CngxTabsSkin}), not a behaviour-branching mode flag.
+ *
+ * `'editorial'` mono index + hairlines; `'categorized'` bordered surface cards;
+ * `'plus-minus'` one framed surface with a boxed +/- marker; `'lux'` generous
+ * whitespace, large type; `'bento'` container-query card grid; `'section-bands'`
+ * inverted full-width header bands; `'timeline'` a rail with per-item nodes;
+ * `'severity-spine'` a full-height priority spine; `'data-grid'` a table layout;
+ * `'split-meta'` title with trailing meta; `'primary-frame'` a solid primary
+ * border + glow on open.
+ *
+ * @category ui/accordion
+ * @since 0.1.0
+ */
+export type CngxAccordionSkin =
+  | 'editorial'
+  | 'categorized'
+  | 'plus-minus'
+  | 'lux'
+  | 'bento'
+  | 'section-bands'
+  | 'timeline'
+  | 'severity-spine'
+  | 'data-grid'
+  | 'split-meta'
+  | 'primary-frame';
+
+/**
  * App-wide cascade for the accordion organism's locale-sensitive
  * `disabledReason` string, the default heading level, and app-wide slot
  * templates.
@@ -41,6 +72,12 @@ export interface CngxAccordionConfig {
    * the group.
    */
   readonly headingLevel: number;
+  /**
+   * App-wide default visual skin reflected onto `[data-skin]`. Unset by default
+   * (the base flat look). A per-instance `[skin]` Input still wins; this only
+   * moves the cascade default. Override via {@link withAccordionSkin}.
+   */
+  readonly skin?: CngxAccordionSkin;
   /**
    * App-wide slot templates - the third tier of the slot cascade
    * (`*cngxAccordionItemXxx` per-instance -> this -> CSS default). Only slots

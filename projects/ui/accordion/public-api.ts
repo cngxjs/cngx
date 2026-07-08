@@ -18,7 +18,7 @@ export {
   CngxAccordionItemIcon,
   type CngxAccordionItemIconContext,
 } from './accordion-item-icon.directive';
-export type { CngxAccordionConfig } from './config/accordion.config';
+export type { CngxAccordionConfig, CngxAccordionSkin } from './config/accordion.config';
 export { CNGX_ACCORDION_CONFIG } from './config/accordion.config.defaults';
 export {
   provideAccordionConfig,
@@ -28,6 +28,7 @@ export {
 export {
   withAccordionLabels,
   withDefaultHeadingLevel,
+  withAccordionSkin,
   withAccordionTemplates,
 } from './config/features';
 export { injectAccordionConfig } from './config/inject-accordion-config';

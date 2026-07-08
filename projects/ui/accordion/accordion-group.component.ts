@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   input,
   ViewEncapsulation,
 } from '@angular/core';
@@ -9,6 +10,7 @@ import { coerceNumberProperty } from '@cngx/core/utils';
 import { CngxAccordion } from '@cngx/common/interactive';
 
 import { CNGX_ACCORDION_GROUP, type CngxAccordionGroupContext } from './accordion-group.token';
+import type { CngxAccordionSkin } from './config/accordion.config';
 import { injectAccordionConfig } from './config/inject-accordion-config';
 
 /**
@@ -50,6 +52,7 @@ import { injectAccordionConfig } from './config/inject-accordion-config';
   template: '<ng-content />',
   host: {
     class: 'cngx-accordion-group',
+    '[attr.data-skin]': 'resolvedSkin() ?? null',
   },
 })
 export class CngxAccordionGroup implements CngxAccordionGroupContext {
@@ -70,6 +73,21 @@ export class CngxAccordionGroup implements CngxAccordionGroupContext {
   readonly headingLevel = input(clampHeadingLevel(this.config.headingLevel), {
     transform: (value: number | string) => clampHeadingLevel(value, this.config.headingLevel),
   });
+
+  /**
+   * Visual skin reflected onto the `[data-skin]` host attribute. Resolves
+   * `input ?? CNGX_ACCORDION_CONFIG.skin`: an unbound `[skin]` falls back to the
+   * app-wide config default (`withAccordionSkin`); unset on both leaves the base
+   * flat look. The skin only redirects CSS - structure, slots, ARIA, and
+   * keyboard behaviour are identical across skins. Mirrors the tabs/stepper
+   * `[skin]` cascade.
+   */
+  readonly skin = input<CngxAccordionSkin | undefined>(undefined);
+
+  /** `[skin]` input over the config default. `null` host binding when unset. */
+  protected readonly resolvedSkin = computed<CngxAccordionSkin | undefined>(
+    () => this.skin() ?? this.config.skin,
+  );
 }
 
 /**
