@@ -213,33 +213,93 @@
 
 @scope (.cngx-accordion-group[data-skin='plus-minus']) {
   :scope {
+    /* One framed surface holding all rows (POC `.pm`): a whisper-faint hairline
+       (not a hard grey edge), the large `--r-lg` (22px) radius, surface fill, no
+       shadow, clipped so the item dividers stop at the rounded corners. Full
+       width - the story sets no max-width. The hairline mixes from the text
+       colour so it stays a faint-dark line on light and a faint-light line on
+       dark, tracking the POC `--hairline` in both schemes. */
     background: var(--cngx-accordion-group-bg, var(--cngx-color-surface, #fff));
-    border: 1px solid var(--cngx-color-border, #d1d5db);
-    border-radius: var(--cngx-radius-lg, 0.5rem);
+    /* Single hairline value shared by the frame edge and the row dividers so they
+       read as one system, not a faint frame around hard grey rules. */
+    --cngx-accordion-hairline: color-mix(in srgb, var(--cngx-color-text, #0f1320) 6%, transparent);
+    border: var(--cngx-accordion-frame-border-width, 1px) solid
+      var(--cngx-accordion-frame-border, var(--cngx-accordion-hairline));
+    border-radius: var(--cngx-accordion-frame-radius, 1.375rem);
     overflow: hidden;
     --cngx-accordion-group-border-block-start: none;
+    /* Row dividers match the frame hairline (base default is the hard grey border
+       colour). */
+    --cngx-accordion-divider: 1px solid var(--cngx-accordion-hairline);
     --cngx-accordion-marker: plus-minus;
+    /* POC `--surface-2`: the palette ships no alt-surface token, so derive one by
+       nudging surface toward text - a faint tint on light, a slight lift on dark.
+       Mixed in oklab (perceptually uniform): an srgb mix at this ratio barely
+       moves a near-black surface, so the lift would vanish in dark mode. Used for
+       the marker tile and the row hover so both track the scheme. */
+    --cngx-accordion-alt-surface: color-mix(
+      in oklab,
+      var(--cngx-color-surface, #fff) 93%,
+      var(--cngx-color-text, #0f1320) 7%
+    );
+    /* POC `.ctrl` box = 28px; title -> box gap = --sp-3 (0.75rem). */
     --cngx-accordion-marker-size: 1.75rem;
-    --cngx-accordion-header-padding: var(--cngx-space-lg, 1.25rem);
-    --cngx-accordion-region-padding: 0 var(--cngx-space-lg, 1.25rem) var(--cngx-space-lg, 1.25rem);
+    --cngx-accordion-header-gap: 0.75rem;
+    /* POC `.pm summary` padding = --sp-5 (1.25rem); body 0 1.25rem 1.25rem. */
+    --cngx-accordion-header-padding: 1.25rem;
+    --cngx-accordion-region-padding: 0 1.25rem 1.25rem;
+    /* Focus ring tracks the accent, not the base blue. */
+    --cngx-accordion-focus-color: var(--cngx-color-primary, #1d4ed8);
   }
 
-  /* Boxed marker: additive background + radius on the bare +/- bars. */
+  /* Boxed marker (POC `.ctrl`): a soft surface-2 tile with a faint border and a
+     9px radius. The base draws the two +/- bars inside; this only paints the box
+     and softens the bars (below). */
   .cngx-accordion-item__chevron {
-    background: var(
-      --cngx-accordion-pm-box-bg,
-      color-mix(in oklab, var(--cngx-color-text, #111827) 5%, transparent)
-    );
-    border-radius: var(--cngx-radius-sm, 0.25rem);
+    background: var(--cngx-accordion-pm-box-bg, var(--cngx-accordion-alt-surface));
+    border: var(--cngx-accordion-pm-box-border-width, 1px) solid
+      var(--cngx-accordion-pm-box-border, color-mix(in srgb, var(--cngx-color-text, #0f1320) 12%, transparent));
+    border-radius: var(--cngx-accordion-pm-box-radius, 0.5625rem);
     color: var(--cngx-color-text-muted, #6b7280);
     transition:
       background var(--cngx-accordion-chevron-transition, 150ms ease),
+      border-color var(--cngx-accordion-chevron-transition, 150ms ease),
       color var(--cngx-accordion-chevron-transition, 150ms ease);
   }
 
+  /* Short centred bars (POC `.ctrl::before/after`: 12px, radius 2px), not the
+     base full-width plus that spans the whole box edge to edge. */
+  .cngx-accordion-item__chevron::before,
+  .cngx-accordion-item__chevron::after {
+    inline-size: var(--cngx-accordion-pm-bar-length, 0.75rem);
+    border-radius: var(--cngx-accordion-pm-bar-radius, 2px);
+  }
+
+  /* On open the box fills primary, the border folds away, the bars go white
+     (POC `.pm details[open] .ctrl` -> bars #fff). On-primary keeps the bars
+     readable on the accent box in both schemes - `--cngx-color-surface` would
+     turn them dark on dark. */
   .cngx-accordion-item[data-expanded] .cngx-accordion-item__chevron {
     background: var(--cngx-color-primary, #1d4ed8);
-    color: var(--cngx-color-surface, #fff);
+    border-color: transparent;
+    color: var(--cngx-color-on-primary, #fff);
+  }
+
+  /* Neutral full-row hover (POC `.pm summary:hover` -> surface-2). */
+  .cngx-accordion-item__header:hover {
+    background: var(--cngx-accordion-alt-surface);
+  }
+
+  /* The last row sits on the frame edge, so it needs no divider of its own. */
+  .cngx-accordion-item:last-child {
+    --cngx-accordion-divider: none;
+  }
+
+  /* Semibold title (POC `.rt`), lit primary on open. */
+  .cngx-accordion-item__title {
+    font-weight: 660;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
   }
 
   .cngx-accordion-item[data-expanded] .cngx-accordion-item__title {
