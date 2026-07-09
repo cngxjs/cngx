@@ -28,7 +28,7 @@ export const STORY: DemoSpec = {
   template: `  <div style="max-width:640px">
     <cngx-data-grid-accordion
       [skin]="'ledger'"
-      columns="7rem 1fr 6rem 7rem 40px"
+      columns="7rem 1fr 6rem 7rem"
       [multi]="true"
       [headingLevel]="3"
     >

@@ -30,7 +30,7 @@ export const STORY: DemoSpec = {
   template: `  <div style="max-width:680px">
     <cngx-data-grid-accordion
       [skin]="'log-stream'"
-      columns="10ch 8ch 1fr 40px"
+      columns="10ch 8ch 1fr"
       [multi]="true"
       [headingLevel]="3"
     >
