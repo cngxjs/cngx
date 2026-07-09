@@ -18,6 +18,8 @@ export const STORY: DemoSpec = {
     'CngxDataGridFooter',
     'CngxDgCell',
     'CngxTag',
+    'CngxMetaList',
+    'CngxMeta',
   ],
   references: [
     {
@@ -44,12 +46,12 @@ export const STORY: DemoSpec = {
           <cngx-tag color="error" variant="subtle" size="sm">ERROR</cngx-tag>
         </span>
         <span cngxDgCell primary>TimeoutError: SAML response exceeded 8000ms (idp=entra-prod)</span>
-        <div style="display:flex;flex-wrap:wrap;gap:0.4rem 1.2rem;margin-block-end:0.55rem">
-          <span><b>trace</b> 9f31c0d4</span>
-          <span><b>tenant</b> north</span>
-          <span><b>pod</b> auth-7d9f4</span>
-          <span><b>count</b> 47x in 5m</span>
-        </div>
+        <cngx-meta-list style="margin-block-end:0.55rem">
+          <cngx-meta term="trace">9f31c0d4</cngx-meta>
+          <cngx-meta term="tenant">north</cngx-meta>
+          <cngx-meta term="pod">auth-7d9f4</cngx-meta>
+          <cngx-meta term="count">47x in 5m</cngx-meta>
+        </cngx-meta-list>
         <pre>TimeoutError: SAML response exceeded 8000ms
     at SamlClient.assert (saml/client.ts:214:19)
     at AuthFlow.callback (auth/flow.ts:88:31)
@@ -63,11 +65,11 @@ export const STORY: DemoSpec = {
           <cngx-tag color="warning" variant="subtle" size="sm">WARN</cngx-tag>
         </span>
         <span cngxDgCell primary>Retry 2/3 for export job exp-5521, chunk 14 of 22</span>
-        <div style="display:flex;flex-wrap:wrap;gap:0.4rem 1.2rem;margin-block-end:0.55rem">
-          <span><b>trace</b> 2b77e1aa</span>
-          <span><b>job</b> exp-5521</span>
-          <span><b>worker</b> exports-2</span>
-        </div>
+        <cngx-meta-list style="margin-block-end:0.55rem">
+          <cngx-meta term="trace">2b77e1aa</cngx-meta>
+          <cngx-meta term="job">exp-5521</cngx-meta>
+          <cngx-meta term="worker">exports-2</cngx-meta>
+        </cngx-meta-list>
         <pre>WARN retry: chunk 14 failed with 503 from storage backend
     backoff: 4s, attempt 2 of 3
     payload: 48.2 MB, rows 50000</pre>
@@ -79,11 +81,11 @@ export const STORY: DemoSpec = {
           <cngx-tag color="info" variant="subtle" size="sm">INFO</cngx-tag>
         </span>
         <span cngxDgCell primary>Deployment v0.9.1 rolled out to production (canary 100%)</span>
-        <div style="display:flex;flex-wrap:wrap;gap:0.4rem 1.2rem;margin-block-end:0.55rem">
-          <span><b>release</b> v0.9.1</span>
-          <span><b>duration</b> 2m 14s</span>
-          <span><b>triggered by</b> ci/main</span>
-        </div>
+        <cngx-meta-list style="margin-block-end:0.55rem">
+          <cngx-meta term="release">v0.9.1</cngx-meta>
+          <cngx-meta term="duration">2m 14s</cngx-meta>
+          <cngx-meta term="triggered by">ci/main</cngx-meta>
+        </cngx-meta-list>
         <pre>INFO rollout complete: 12/12 pods healthy
     canary window: 15m, error budget unchanged
     previous: v0.9.0 (kept for instant rollback)</pre>
