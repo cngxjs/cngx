@@ -885,3 +885,40 @@
     animation: none;
   }
 }
+
+/* Shared keyboard-focus ring for the card skins. Their header button is inset
+   (leading column / trailing meta / chevron sit outside it), so the button's own
+   ring would float around the title only and clip against the card's
+   overflow:hidden. Instead the ring rides the item's OWN outline - which its own
+   overflow never clips - so it wraps the whole card cleanly. Visual only: the
+   button stays the sole focus target and the sole toggle (`:focus-visible`, so a
+   mouse press never triggers it). Unlayered, so it wins the base button ring by
+   specificity + source order. Flat skins (editorial, lux, timeline, plus-minus,
+   split-meta) keep the base button ring. */
+:is(
+  .cngx-accordion-group[data-skin='categorized'],
+  .cngx-accordion-group[data-skin='bento'],
+  .cngx-accordion-group[data-skin='section-bands'],
+  .cngx-accordion-group[data-skin='severity-spine'],
+  .cngx-accordion-group[data-skin='data-grid'],
+  .cngx-accordion-group[data-skin='primary-frame']
+)
+  .cngx-accordion-item__header:focus-visible {
+  outline: none;
+}
+
+:is(
+  .cngx-accordion-group[data-skin='categorized'],
+  .cngx-accordion-group[data-skin='bento'],
+  .cngx-accordion-group[data-skin='section-bands'],
+  .cngx-accordion-group[data-skin='severity-spine'],
+  .cngx-accordion-group[data-skin='data-grid'],
+  .cngx-accordion-group[data-skin='primary-frame']
+)
+  .cngx-accordion-item:has(.cngx-accordion-item__header:focus-visible) {
+  outline: var(
+    --cngx-accordion-focus-ring,
+    2px solid var(--cngx-accordion-focus-color, var(--cngx-color-primary, #1d4ed8))
+  );
+  outline-offset: var(--cngx-accordion-focus-offset, 2px);
+}
