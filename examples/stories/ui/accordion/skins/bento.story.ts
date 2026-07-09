@@ -3,9 +3,9 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'Accordion skin: Bento',
   subtitle:
-    'The <code>[skin]="\'bento\'"</code> skin lays items out as tiles with a glyph in the leading slot and a pill in the meta slot. Add <code>cngx-accordion-item--wide</code> to span one tile across the row.',
+    'The <code>[skin]="\'bento\'"</code> skin lays items out as full-width tile cards - a glyph in the leading slot, a status pill in the meta slot, the chevron on the outer edge. No per-item markup.',
   description:
-    'The skin sets a tiled grid on the group. Give each item a short glyph via <code>[cngxAccordionItemLeading]</code>, a pill via <code>[cngxAccordionItemMeta]</code>, and mark one item wide with the item modifier class.',
+    'The skin stacks full-width cards, each sizing to its own content. Give each item a short glyph via <code>[cngxAccordionItemLeading]</code> and a pill via <code>[cngxAccordionItemMeta]</code>.',
   level: 'organism',
   audience: ['dev', 'design'],
   artifact: 'standalone',
@@ -26,12 +26,12 @@ export const STORY: DemoSpec = {
     },
   ],
   template: `  <cngx-accordion-group [skin]="'bento'" [multi]="true" [headingLevel]="3" style="max-width:640px">
-    <cngx-accordion-item class="cngx-accordion-item--wide">
+    <cngx-accordion-item>
       <span cngxAccordionItemLeading>▤</span>
       <span cngxAccordionItemTitle>Overview</span>
       <span cngxAccordionItemSubtitle>Everything at a glance.</span>
       <span cngxAccordionItemMeta>featured</span>
-      The headline tile spans the full row so the summary reads first.
+      A quick summary tile; the grid places it beside its neighbours.
     </cngx-accordion-item>
     <cngx-accordion-item>
       <span cngxAccordionItemLeading>◆</span>

@@ -32,8 +32,9 @@
  *   primary on open.
  * - `lux` - generous whitespace, large low-contrast type, a single hairline per
  *   row; title fades on hover.
- * - `bento` - a container-query card grid (one column, two past 620px), an
- *   icon tile leads each card and fills primary on open.
+ * - `bento` - full-width tile cards stacked in a column; an icon tile leads each
+ *   card and fills primary on open, a status pill trails in the meta slot and the
+ *   chevron rides the outer edge.
  * - `section-bands` - each header is an inverted full-width band, items are
  *   framed surfaces with a gap, a status chip rides the band via the meta slot.
  * - `timeline` - a vertical rail with a per-item node that lights primary on
@@ -342,43 +343,96 @@
 
 @scope (.cngx-accordion-group[data-skin='bento']) {
   :scope {
-    display: grid;
+    /* Full-width cards stacked in a column (POC bento at this width). Each card
+       is 100% wide and sizes to its own content; the group organises them by its
+       own width via normal block flow, no grid, no container query. */
+    display: flex;
+    flex-direction: column;
     gap: var(--cngx-space-sm, 0.75rem);
-    container-type: inline-size;
     --cngx-accordion-group-border-block-start: none;
     --cngx-accordion-divider: none;
-    --cngx-accordion-header-padding: var(--cngx-space-lg, 1.25rem);
-    --cngx-accordion-region-padding: 0 var(--cngx-space-lg, 1.25rem) var(--cngx-space-lg, 1.25rem);
+    /* The summary inset rides the heading row (POC `.bento summary` padding
+       --sp-5), not the header button, so the tile and the pill sit inside the
+       card instead of flush against the clipped overflow edge. */
+    --cngx-accordion-header-padding: 0;
+    --cngx-accordion-region-padding: 0 1.25rem 1.25rem;
+    /* tile -> title and title -> chevron/pill rhythm. */
+    --cngx-accordion-heading-gap: 0.75rem;
+    --cngx-accordion-focus-color: var(--cngx-color-primary, #1d4ed8);
+    --cngx-accordion-hairline: color-mix(in srgb, var(--cngx-color-text, #0f1320) 6%, transparent);
   }
 
+  /* Card (POC `.bento details`): surface tile, faint hairline, large radius, a
+     soft shadow that deepens on open, and a 2px hover lift. */
   .cngx-accordion-item {
     background: var(--cngx-accordion-item-bg, var(--cngx-color-surface, #fff));
-    border: 1px solid var(--cngx-color-border, #d1d5db);
-    border-radius: var(--cngx-radius-lg, 0.5rem);
+    border: 1px solid var(--cngx-accordion-card-border, var(--cngx-accordion-hairline));
+    border-radius: var(--cngx-accordion-card-radius, 1.375rem);
     overflow: hidden;
+    box-shadow: var(--cngx-accordion-card-shadow, 0 1px 2px #0c122010, 0 6px 20px -12px #0c122026);
+    transition:
+      box-shadow var(--cngx-accordion-chevron-transition, 150ms ease),
+      transform var(--cngx-accordion-chevron-transition, 150ms ease);
   }
 
-  @container (min-width: 620px) {
-    :scope {
-      grid-template-columns: 1fr 1fr;
-    }
-    .cngx-accordion-item--wide {
-      grid-column: 1 / -1;
-    }
+  .cngx-accordion-item:hover {
+    transform: translateY(-2px);
   }
 
-  /* Icon-tile leading; fills primary on open (re-mapped from the gradient). */
+  .cngx-accordion-item[data-expanded] {
+    box-shadow: var(--cngx-accordion-card-shadow-open, 0 2px 4px #0c122012, 0 24px 60px -22px #0c122033);
+  }
+
+  /* Padded summary row carrying the tile, text, pill and chevron (POC --sp-5).
+     Reserve room at the trailing edge for the chevron that rides the outer edge
+     past the pill (absolute below). */
+  .cngx-accordion-item__heading {
+    position: relative;
+    padding: 1.25rem;
+    padding-inline-end: calc(1.25rem + var(--cngx-accordion-bento-chevron-reserve, 1.5rem));
+  }
+
+  /* Chevron sits at the very outside, trailing the status pill (POC order: pill
+     then chevron). It is decorative (aria-hidden) and stays a DOM child of the
+     header button, so absolute-positioning only relocates its box - the title
+     and the row gap remain the toggle target. */
+  .cngx-accordion-item__chevron-slot {
+    position: absolute;
+    inset-inline-end: 1.25rem;
+    inset-block-start: 50%;
+    transform: translateY(-50%);
+  }
+
+  .cngx-accordion-item__header:focus-visible {
+    outline-offset: 3px;
+    border-radius: var(--cngx-radius-sm, 6px);
+  }
+
+  /* Semibold title (POC `.rt`). */
+  .cngx-accordion-item__title {
+    font-weight: 660;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+  }
+
+  /* Icon tile leading (POC `.tile`): 42px, 14px radius, an inset ring, a soft
+     primary tint + primary glyph when closed, filling solid primary with a white
+     glyph on open (re-mapped from the gradient). */
   .cngx-accordion-item__leading {
-    inline-size: 2.625rem;
-    block-size: 2.625rem;
-    border-radius: var(--cngx-radius-md, 0.375rem);
+    inline-size: var(--cngx-accordion-bento-tile-size, 2.625rem);
+    block-size: var(--cngx-accordion-bento-tile-size, 2.625rem);
+    border-radius: var(--cngx-accordion-bento-tile-radius, 0.875rem);
     background: var(
       --cngx-accordion-bento-tile-bg,
-      color-mix(in oklab, var(--cngx-color-primary, #1d4ed8) 12%, transparent)
+      color-mix(in oklab, var(--cngx-color-primary, #1d4ed8) 16%, transparent)
     );
     color: var(--cngx-color-primary, #1d4ed8);
+    font-size: var(--cngx-accordion-bento-tile-glyph, 1.25rem);
+    line-height: 1;
     display: inline-grid;
     place-items: center;
+    box-shadow: inset 0 0 0 1px
+      var(--cngx-accordion-bento-tile-ring, color-mix(in srgb, var(--cngx-color-text, #0f1320) 10%, transparent));
     transition:
       background var(--cngx-accordion-chevron-transition, 150ms ease),
       color var(--cngx-accordion-chevron-transition, 150ms ease);
@@ -386,7 +440,24 @@
 
   .cngx-accordion-item[data-expanded] .cngx-accordion-item__leading {
     background: var(--cngx-color-primary, #1d4ed8);
-    color: var(--cngx-color-surface, #fff);
+    color: var(--cngx-color-on-primary, #fff);
+    box-shadow: none;
+  }
+
+  /* Status pill in the meta slot (POC `.pill`): mono, pill radius, an elevated
+     surface-3 fill, muted text, never clipped. */
+  .cngx-accordion-item__meta {
+    flex: none;
+    white-space: nowrap;
+    font-family: var(--cngx-accordion-bento-pill-font, ui-monospace, monospace);
+    font-size: var(--cngx-accordion-bento-pill-size, clamp(0.7rem, 0.68rem + 0.1vw, 0.75rem));
+    padding: 0.2rem 0.55rem;
+    border-radius: var(--cngx-radius-pill, 999px);
+    background: var(
+      --cngx-accordion-bento-pill-bg,
+      color-mix(in oklab, var(--cngx-color-surface, #fff) 88%, var(--cngx-color-text, #0f1320) 12%)
+    );
+    color: var(--cngx-color-text-muted, #6b7280);
   }
 }
 
