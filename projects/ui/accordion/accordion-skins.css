@@ -625,36 +625,132 @@
 @scope (.cngx-accordion-group[data-skin='severity-spine']) {
   :scope {
     display: flex;
+    flex-direction: column;
     gap: var(--cngx-space-xs, 0.5rem);
     --cngx-accordion-group-border-block-start: none;
     --cngx-accordion-divider: none;
-    --cngx-accordion-header-padding: var(--cngx-space-sm, 0.75rem) var(--cngx-space-md, 1rem);
-    --cngx-accordion-region-padding: 0 var(--cngx-space-md, 1rem) var(--cngx-space-md, 1rem);
+    /* Vertical rhythm on the button; the horizontal inset rides the heading so
+       the trailing ticket/SLA meta keeps a right margin and does not clip. */
+    --cngx-accordion-header-padding: 0.75rem 0;
+    --cngx-accordion-region-padding: 0 1rem 1rem;
+    --cngx-accordion-focus-color: var(--cngx-color-primary, #1d4ed8);
   }
 
+  /* Queue row (POC `.spine details`): a quiet card with a faint frame, an 8px
+     radius (--cngx-radius-sm resolves to 4px, so set explicitly), a soft shadow,
+     and room at the start for the full-height spine (POC padding-left 46px). */
   .cngx-accordion-item {
     position: relative;
     background: var(--cngx-accordion-item-bg, var(--cngx-color-surface, #fff));
-    border: 1px solid var(--cngx-color-border, #d1d5db);
-    border-radius: var(--cngx-radius-sm, 0.25rem);
+    border: 1px solid
+      var(--cngx-accordion-card-border, color-mix(in srgb, var(--cngx-color-text, #0f1320) 8%, transparent));
+    border-radius: var(--cngx-accordion-card-radius, 0.5rem);
     overflow: hidden;
+    box-shadow: var(--cngx-accordion-card-shadow, 0 1px 2px #0c122010, 0 6px 20px -12px #0c122026);
     padding-inline-start: var(--cngx-accordion-spine-width, 2.875rem);
   }
 
-  /* Full-height spine cell over the leading slot. */
-  .cngx-accordion-item__leading {
+  /* Reserve room at the trailing edge for the chevron that rides the outer edge
+     past the ticket/SLA meta (POC summary order: title, meta, chevron). */
+  .cngx-accordion-item__heading {
+    position: relative;
+    padding-inline: 1rem;
+    padding-inline-end: calc(1rem + var(--cngx-accordion-spine-chevron-reserve, 1.5rem));
+  }
+
+  /* Chevron rides the very outside, trailing the meta (POC `.mk` sits after
+     `.qmeta`). Decorative, stays a DOM child of the header button. */
+  .cngx-accordion-item__chevron-slot {
+    position: absolute;
+    inset-inline-end: 1rem;
+    inset-block-start: 50%;
+    transform: translateY(-50%);
+  }
+
+  /* Neutral row hover (POC `.spine summary:hover` -> surface-2). */
+  .cngx-accordion-item:hover {
+    background: var(
+      --cngx-accordion-row-hover,
+      color-mix(in oklab, var(--cngx-color-text, #0f1320) 4%, var(--cngx-color-surface, #fff))
+    );
+  }
+
+  /* Full-height colour column in the reserved left space (POC `.spine .sv`): a
+     structural column, not an edge border. It lives on the item (not the leading,
+     which sits inside the positioned heading and would otherwise land 46px in
+     over the title), so it fills the whole item and grows with the panel. The
+     colour is revealed only while the row is open; closed rows keep the reserved
+     column empty. Hue per item from --cngx-accordion-spine-color. */
+  .cngx-accordion-item::before {
+    content: '';
     position: absolute;
     inset-block: 0;
     inset-inline-start: 0;
     inline-size: var(--cngx-accordion-spine-width, 2.875rem);
+    background: transparent;
+    transition: background var(--cngx-accordion-chevron-transition, 150ms ease);
+  }
+
+  .cngx-accordion-item[data-expanded]::before {
+    background: var(--cngx-accordion-spine-color, var(--cngx-color-primary, #1d4ed8));
+  }
+
+  /* Priority stamped in the reserved column, centred on the header row. The
+     leading sits inside the positioned heading, so pull it back over the item's
+     reserved column. Muted while closed; fixed white on the colour when open (not
+     the surface token, which would turn the label dark in dark mode). */
+  .cngx-accordion-item__leading {
+    position: absolute;
+    inset-inline-start: calc(-1 * var(--cngx-accordion-spine-width, 2.875rem));
+    inset-block-start: 50%;
+    transform: translateY(-50%);
+    inline-size: var(--cngx-accordion-spine-width, 2.875rem);
     display: grid;
     place-items: center;
-    background: var(--cngx-accordion-spine-color, var(--cngx-color-primary, #1d4ed8));
-    color: var(--cngx-color-surface, #fff);
+    color: var(--cngx-color-text-muted, #6b7280);
     font-family: var(--cngx-accordion-spine-font, ui-monospace, monospace);
-    font-size: var(--cngx-font-size-sm, 0.8125rem);
+    font-size: var(--cngx-accordion-spine-size, clamp(0.7rem, 0.68rem + 0.1vw, 0.75rem));
     font-weight: 800;
     letter-spacing: 0.05em;
+  }
+
+  .cngx-accordion-item[data-expanded] .cngx-accordion-item__leading {
+    color: var(--cngx-accordion-spine-label-color, #fff);
+  }
+
+  /* Severity state -> spine colour via the semantic tokens (not a raw hex passed
+     through a style binding). Consumers set `data-severity` on the item; the
+     priority label stays projected in the leading slot. A raw
+     --cngx-accordion-spine-color override still wins for bespoke hues. */
+  .cngx-accordion-item[data-severity='error'] {
+    --cngx-accordion-spine-color: var(--cngx-color-danger, #dc2626);
+  }
+
+  .cngx-accordion-item[data-severity='warning'] {
+    --cngx-accordion-spine-color: var(--cngx-color-warning, #d97706);
+  }
+
+  .cngx-accordion-item[data-severity='info'] {
+    --cngx-accordion-spine-color: var(--cngx-color-info, #2563eb);
+  }
+
+  /* Compact queue title (POC `.rt`: s--1, weight 620). */
+  .cngx-accordion-item__title {
+    font-size: var(--cngx-accordion-spine-title-size, clamp(0.8rem, 0.76rem + 0.2vw, 0.88rem));
+    font-weight: 620;
+  }
+
+  .cngx-accordion-item__region {
+    max-inline-size: 62ch;
+  }
+
+  /* Ticket id + SLA (POC `.tid`/`.sla`): muted mono, never clipped. */
+  .cngx-accordion-item__meta {
+    flex: none;
+    white-space: nowrap;
+    font-family: var(--cngx-accordion-spine-meta-font, ui-monospace, monospace);
+    font-size: var(--cngx-accordion-spine-meta-size, clamp(0.7rem, 0.68rem + 0.1vw, 0.75rem));
+    color: var(--cngx-color-text-muted, #6b7280);
   }
 }
 

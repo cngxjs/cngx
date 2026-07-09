@@ -3,9 +3,9 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'Accordion skin: Severity spine',
   subtitle:
-    'The <code>[skin]="\'severity-spine\'"</code> skin runs a coloured spine down the leading edge. Set the hue per item with <code>[style.--cngx-accordion-spine-color]</code>; the leading slot holds the priority label and the meta slot the ticket + SLA.',
+    'The <code>[skin]="\'severity-spine\'"</code> skin runs a full-height colour spine down the reserved leading edge, revealed when the row opens. Set the severity per item with the <code>[severity]</code> input (<code>error</code> / <code>warning</code> / <code>info</code>); the leading slot holds the priority label and the meta slot the ticket + SLA.',
   description:
-    'The skin reads <code>--cngx-accordion-spine-color</code> off each item, so bind it inline per row - P1 red, P2 amber, P3 blue. Priority text goes in the leading slot, ticket id and SLA in the meta slot.',
+    'The <code>[severity]</code> input reflects to <code>data-severity</code> and the skin maps it to the semantic <code>danger</code> / <code>warning</code> / <code>info</code> tokens - no raw colours. Priority text goes in the leading slot, ticket id and SLA in the meta slot.',
   level: 'organism',
   audience: ['dev', 'design'],
   artifact: 'standalone',
@@ -26,21 +26,21 @@ export const STORY: DemoSpec = {
     },
   ],
   template: `  <cngx-accordion-group [skin]="'severity-spine'" [multi]="true" [headingLevel]="3" style="max-width:600px">
-    <cngx-accordion-item [style.--cngx-accordion-spine-color]="'#dc2626'">
+    <cngx-accordion-item [severity]="'error'">
       <span cngxAccordionItemLeading>P1</span>
       <span cngxAccordionItemTitle>Checkout returns 500</span>
       <span cngxAccordionItemSubtitle>Payment capture failing intermittently.</span>
       <span cngxAccordionItemMeta>OPS-4821 - SLA 1h</span>
       Errors spiked after the 14:00 deploy; rollback in progress.
     </cngx-accordion-item>
-    <cngx-accordion-item [style.--cngx-accordion-spine-color]="'#d97706'">
+    <cngx-accordion-item [severity]="'warning'">
       <span cngxAccordionItemLeading>P2</span>
       <span cngxAccordionItemTitle>Search latency elevated</span>
       <span cngxAccordionItemSubtitle>p95 above target on EU region.</span>
       <span cngxAccordionItemMeta>OPS-4822 - SLA 4h</span>
       Cache warm-up underway; no user-facing errors yet.
     </cngx-accordion-item>
-    <cngx-accordion-item [style.--cngx-accordion-spine-color]="'#2563eb'">
+    <cngx-accordion-item [severity]="'info'">
       <span cngxAccordionItemLeading>P3</span>
       <span cngxAccordionItemTitle>Stale avatar thumbnails</span>
       <span cngxAccordionItemSubtitle>CDN not purging on upload.</span>
