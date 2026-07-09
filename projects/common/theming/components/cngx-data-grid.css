@@ -77,6 +77,19 @@
   }
 
   /**
+   * Scroll floor for the header / rows / footer. Set on the group host by a skin;
+   * when it exceeds the host width the whole grid scrolls sideways (host
+   * `overflow-x: auto`) with every column intact, instead of a container query
+   * dropping a column. The flat base leaves it 0 (no forced scroll).
+   * @group Grid
+   */
+  @property --cngx-dga-min-width {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 0px;
+  }
+
+  /**
    * Divider colour between rows and around the header / footer.
    * @group Grid
    * @see [[--cngx-color-border]]

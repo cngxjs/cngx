@@ -1,5 +1,9 @@
 .cngx-data-grid-row {
   display: block;
+  /* Same scroll floor as the header / footer (host `overflow-x: auto`): the row -
+     summary grid plus its detail region - stays at least `--cngx-dga-min-width`
+     wide so every column scrolls in sync instead of a column being dropped. */
+  min-inline-size: var(--cngx-dga-min-width, 0);
   border-block-end: var(
     --cngx-dga-row-divider,
     1px solid var(--cngx-dga-border-color, #d1d5db)

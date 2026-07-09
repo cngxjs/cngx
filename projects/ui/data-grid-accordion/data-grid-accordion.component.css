@@ -3,6 +3,15 @@
      surface + framing directly through their `[data-skin]` @scope block
      (data-grid-accordion-skins.css). */
   display: block;
+
+  /* Horizontal overflow is SCROLLED, never dropped: when the header / rows / footer
+     carry a `--cngx-dga-min-width` wider than the host, this scroll container lets
+     the whole grid scroll sideways with every column intact - no `display:none`
+     information loss. The host keeps auto height, so a tall grid never triggers a
+     vertical scrollbar (only the min-width children overflow horizontally). Skins
+     opt in by setting `--cngx-dga-min-width`; the default 0 keeps the flat base
+     non-scrolling. */
+  overflow-x: auto;
 }
 
 /* Header and footer are non-row grid lines on the SAME column contract as every
@@ -17,6 +26,10 @@
   align-items: center;
   padding: var(--cngx-dga-row-py, 0.5rem) var(--cngx-dga-row-px, 0.75rem);
   font-size: var(--cngx-dga-fs, inherit);
+  /* Shared scroll floor with the rows (see host `overflow-x`): 0 keeps the flat
+     base full-width; a skin raises it to force sideways scroll instead of dropping
+     a column. */
+  min-inline-size: var(--cngx-dga-min-width, 0);
 }
 
 .cngx-data-grid-header {

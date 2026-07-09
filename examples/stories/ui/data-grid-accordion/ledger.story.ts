@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'The <code>[skin]="\'ledger\'"</code> skin frames the grid like an account ledger - a mono uppercase column head, zebra rows, right-aligned amounts, an inset primary-accent detail zone, and a sum footer. Every row is still a disclosure: click to expand its detail.',
   description:
-    'Header, every row, and the footer share one <code>[columns]</code> template, so the columns align with zero measurement. The status cell is a <code>&lt;cngx-tag&gt;</code>, not hand-written pill CSS. Under 620px a container query drops the invoice and status columns. Mark one cell <code>primary</code> so a screen reader names the row by the customer alone.',
+    'Header, every row, and the footer share one <code>[columns]</code> template, so the columns align with zero measurement. The status cell is a <code>&lt;cngx-tag&gt;</code>, not hand-written pill CSS. On narrow screens the grid scrolls sideways with every column intact instead of dropping one. Mark one cell <code>primary</code> so a screen reader names the row by the customer alone.',
   level: 'organism',
   audience: ['dev', 'design'],
   artifact: 'building-block',

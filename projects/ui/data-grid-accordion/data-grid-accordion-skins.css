@@ -18,10 +18,9 @@
  * selectors, never nested inside `@scope` (that breaks the token cascade).
  *
  * - `ledger` - a framed table: mono uppercase column head, zebra rows, mono
- *   right-aligned amounts, an inset primary-accent detail zone, a sum footer; a
- *   container query drops the id + due columns under 620px. The `ledger` skin
- *   assumes the ledger column semantics (id / name / amount / due / chevron), so
- *   the responsive drop targets the first and fourth cells.
+ *   right-aligned amounts, an inset primary-accent detail zone, a sum footer. Below
+ *   its `--cngx-dga-min-width` the grid scrolls sideways (host `overflow-x`) with
+ *   every column intact rather than dropping one.
  * - `spreadsheet`, `log-stream`, `terminal`, `master-detail`, `report`,
  *   `metrics`, `density` - transcribed in later phases.
  */
@@ -29,13 +28,15 @@
 @scope (.cngx-data-grid-accordion[data-skin='ledger']) {
   :scope {
     /* POC `.ledger`: framed surface, 8px radius (--cngx-radius-sm resolves to
-       4px, so the 8px is set explicitly), mono-ish small type. Establishes the
-       inline-size container the responsive column drop below queries. */
-    container-type: inline-size;
+       4px, so the 8px is set explicitly), mono-ish small type. The host's
+       `overflow-x: auto` clips to this rounded border and provides the scroll. */
     border: 1px solid var(--cngx-color-border, #d1d5db);
     border-radius: var(--cngx-dga-radius, 0.5rem);
-    overflow: hidden;
     background: var(--cngx-color-surface, #fff);
+
+    /* Overflow is scrolled, never dropped: under ~38rem the grid scrolls sideways
+       with the invoice + status columns intact instead of hiding them. */
+    --cngx-dga-min-width: 38rem;
 
     /* POC gaps / paddings: --sp-3 gutter, .6rem row block padding, .5rem head. */
     --cngx-dga-col-gap: 0.75rem;
@@ -111,30 +112,5 @@
     font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
     font-size: var(--cngx-dga-head-fs, 0.75rem);
     color: var(--cngx-color-text-muted, #6b7280);
-  }
-}
-
-/* Responsive column drop, UNLAYERED with direct selectors (never an @container
-   nested inside @scope - that breaks the token cascade, mirroring the accordion
-   skin's @media handling). Drops the id (1st) and due (4th) tracks under 620px,
-   matching the POC `@container (max-width: 620px)`. */
-@container (max-width: 620px) {
-  .cngx-data-grid-accordion[data-skin='ledger'] .cngx-data-grid-header,
-  .cngx-data-grid-accordion[data-skin='ledger'] .cngx-data-grid-row__summary,
-  .cngx-data-grid-accordion[data-skin='ledger'] .cngx-data-grid-footer {
-    grid-template-columns: 1fr 6rem 40px;
-  }
-
-  .cngx-data-grid-accordion[data-skin='ledger'] .cngx-data-grid-header > .cngx-dga-cell:nth-child(1),
-  .cngx-data-grid-accordion[data-skin='ledger'] .cngx-data-grid-header > .cngx-dga-cell:nth-child(4),
-  .cngx-data-grid-accordion[data-skin='ledger']
-    .cngx-data-grid-row__summary
-    > .cngx-dga-cell:nth-child(1),
-  .cngx-data-grid-accordion[data-skin='ledger']
-    .cngx-data-grid-row__summary
-    > .cngx-dga-cell:nth-child(4),
-  .cngx-data-grid-accordion[data-skin='ledger'] .cngx-data-grid-footer > .cngx-dga-cell:nth-child(1),
-  .cngx-data-grid-accordion[data-skin='ledger'] .cngx-data-grid-footer > .cngx-dga-cell:nth-child(4) {
-    display: none;
   }
 }
