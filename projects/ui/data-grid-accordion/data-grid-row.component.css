@@ -1,0 +1,85 @@
+.cngx-data-grid-row {
+  display: block;
+  border-block-end: var(
+    --cngx-dga-row-divider,
+    1px solid var(--cngx-dga-border-color, #d1d5db)
+  );
+}
+
+.cngx-data-grid-row__heading {
+  margin: 0;
+}
+
+/* The summary button IS the grid line: cells project into it and land on the
+   shared column contract, the chevron slot fills the trailing `auto` track. */
+.cngx-data-grid-row__summary {
+  display: grid;
+  grid-template-columns: var(--cngx-dga-columns, 1fr);
+  gap: var(--cngx-dga-col-gap, 0.5rem);
+  align-items: center;
+  inline-size: 100%;
+  padding: var(--cngx-dga-row-py, 0.5rem) var(--cngx-dga-row-px, 0.75rem);
+  border: 0;
+  background: var(--cngx-dga-row-bg, transparent);
+  color: var(--cngx-dga-row-color, inherit);
+  font: inherit;
+  font-size: var(--cngx-dga-fs, inherit);
+  text-align: start;
+  cursor: pointer;
+}
+
+.cngx-data-grid-row__summary:focus-visible {
+  outline: var(--cngx-dga-focus-ring, 2px solid var(--cngx-dga-focus-color, #1d4ed8));
+  outline-offset: var(--cngx-dga-focus-offset, -2px);
+}
+
+/* Cells truncate rather than shove the grid wider; alignment rides a data-attr
+   the directive reflects. */
+.cngx-dga-cell {
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cngx-dga-cell[data-align='center'] {
+  justify-self: center;
+  text-align: center;
+}
+
+.cngx-dga-cell[data-align='end'] {
+  justify-self: end;
+  text-align: end;
+}
+
+.cngx-data-grid-row__chevron-slot {
+  display: inline-flex;
+  justify-self: end;
+  align-items: center;
+}
+
+.cngx-data-grid-row__chevron {
+  /* Must be a block box: an inline element ignores inline-size/block-size and
+     transform, collapsing the bordered square into a sliver. */
+  display: block;
+  inline-size: var(--cngx-dga-chevron-size, 0.6em);
+  block-size: var(--cngx-dga-chevron-size, 0.6em);
+  border-inline-end: var(--cngx-dga-chevron-stroke, 2px solid currentcolor);
+  border-block-end: var(--cngx-dga-chevron-stroke, 2px solid currentcolor);
+  transform: rotate(45deg);
+  transition: transform var(--cngx-dga-chevron-transition, 150ms ease);
+}
+
+.cngx-data-grid-row[data-expanded] .cngx-data-grid-row__chevron {
+  transform: rotate(225deg);
+}
+
+.cngx-data-grid-row__region {
+  padding: var(--cngx-dga-region-padding, 0.75rem 1rem);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cngx-data-grid-row__chevron {
+    transition: none;
+  }
+}

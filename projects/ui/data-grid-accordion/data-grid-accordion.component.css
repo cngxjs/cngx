@@ -1,0 +1,36 @@
+.cngx-data-grid-accordion {
+  /* Flat default: a block stack. Skins (ledger, spreadsheet, ...) set their own
+     surface + framing directly through their `[data-skin]` @scope block
+     (data-grid-accordion-skins.css). */
+  display: block;
+}
+
+/* Header and footer are non-row grid lines on the SAME column contract as every
+   row's summary, so labels and totals align down the grid with zero JS
+   measurement. They carry one fewer filled track than a row - the trailing
+   `auto` chevron track stays empty here. */
+.cngx-data-grid-header,
+.cngx-data-grid-footer {
+  display: grid;
+  grid-template-columns: var(--cngx-dga-columns, 1fr);
+  gap: var(--cngx-dga-col-gap, 0.5rem);
+  align-items: center;
+  padding: var(--cngx-dga-row-py, 0.5rem) var(--cngx-dga-row-px, 0.75rem);
+  font-size: var(--cngx-dga-fs, inherit);
+}
+
+.cngx-data-grid-header {
+  font-weight: var(--cngx-dga-head-weight, 600);
+  color: var(--cngx-dga-head-color, #6b7280);
+  border-block-end: var(
+    --cngx-dga-head-border,
+    1px solid var(--cngx-dga-border-color, #d1d5db)
+  );
+}
+
+.cngx-data-grid-footer {
+  border-block-start: var(
+    --cngx-dga-foot-border,
+    1px solid var(--cngx-dga-border-color, #d1d5db)
+  );
+}

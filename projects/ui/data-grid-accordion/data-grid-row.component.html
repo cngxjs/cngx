@@ -1,0 +1,26 @@
+<div role="heading" [attr.aria-level]="grid.headingLevel()" class="cngx-data-grid-row__heading">
+  <button
+    type="button"
+    cngxAccordionPanel
+    class="cngx-data-grid-row__summary"
+    [panelId]="panelId()"
+    [controls]="regionId"
+    [id]="headerId"
+    [attr.aria-labelledby]="primaryId()"
+  >
+    <ng-content select="[cngxDgCell]" />
+    <span class="cngx-data-grid-row__chevron-slot" aria-hidden="true">
+      <span class="cngx-data-grid-row__chevron"></span>
+    </span>
+  </button>
+</div>
+
+<div
+  role="region"
+  class="cngx-data-grid-row__region"
+  [id]="regionId"
+  [attr.aria-labelledby]="primaryId()"
+  [hidden]="!expanded()"
+>
+  <ng-content />
+</div>
