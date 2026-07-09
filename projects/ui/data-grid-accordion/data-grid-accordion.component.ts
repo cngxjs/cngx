@@ -66,7 +66,9 @@ import { injectDataGridAccordionConfig } from './config/inject-data-grid-accordi
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  styleUrl: './data-grid-accordion.component.css',
+  // Skin CSS lives after the base so the unlayered `[data-skin]` @scope rules win
+  // the ties by source order (mirrors the accordion / tabs skin split).
+  styleUrls: ['./data-grid-accordion.component.css', './data-grid-accordion-skins.css'],
   hostDirectives: [
     { directive: CngxAccordion, inputs: ['multi', 'openIds'], outputs: ['openIdsChange'] },
   ],

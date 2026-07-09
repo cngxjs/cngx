@@ -13,6 +13,12 @@
 /* The summary button IS the grid line: cells project into it and land on the
    shared column contract, the chevron slot fills the trailing `auto` track. */
 .cngx-data-grid-row__summary {
+  /* The summary carries `cngxAccordionPanel`, so the headless Track-B accordion
+     skin (@cngx/themes cngx.css) would paint its own ::after twisty here. This
+     organism ships its own chevron slot, so suppress the inherited one through
+     the token the Track-B skin exposes for exactly this (accordion-item
+     precedent) - not a blanket ::after reset. */
+  --cngx-accordion-twisty-display: none;
   display: grid;
   grid-template-columns: var(--cngx-dga-columns, 1fr);
   gap: var(--cngx-dga-col-gap, 0.5rem);
