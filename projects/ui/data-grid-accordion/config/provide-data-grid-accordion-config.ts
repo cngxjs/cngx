@@ -21,10 +21,10 @@ import {
  * @category ui/data-grid-accordion
  * @since 0.1.0
  */
-export type CngxDataGridAccordionConfigFeature = {
+export interface CngxDataGridAccordionConfigFeature {
   readonly kind: 'skin';
   readonly payload: { readonly skin: CngxDataGridSkin };
-};
+}
 
 /**
  * Reduces a list of feature objects into a partial config - last write wins per
