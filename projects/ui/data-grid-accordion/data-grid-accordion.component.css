@@ -3,6 +3,10 @@
      surface + framing directly through their `[data-skin]` @scope block
      (data-grid-accordion-skins.css). */
   display: block;
+  /* Fill the container by default so a consumer never has to pin a width - a data
+     grid wants all the horizontal room it can get; narrower is opt-in via the host
+     element's own width. */
+  inline-size: 100%;
 
   /* Horizontal overflow is SCROLLED, never dropped: when the header / rows / footer
      carry a `--cngx-dga-min-width` wider than the host, this scroll container lets
