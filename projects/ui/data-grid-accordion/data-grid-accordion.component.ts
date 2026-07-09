@@ -35,7 +35,7 @@ import { injectDataGridAccordionConfig } from './config/inject-data-grid-accordi
  * is keyed by row value so a sorted row stays open while it moves.
  *
  * ```html
- * <cngx-data-grid-accordion columns="8ch 1fr auto auto" [multi]="true">
+ * <cngx-data-grid-accordion columns="8ch 1fr auto" [multi]="true">
  *   <cngx-data-grid-header>
  *     <span cngxDgCell>ID</span>
  *     <span cngxDgCell>Name</span>
@@ -88,10 +88,12 @@ export class CngxDataGridAccordion implements CngxDataGridAccordionContext {
   /**
    * The shared `grid-template-columns` value published onto the inherited
    * `--cngx-dga-columns` property. Header, every row's summary, and footer read
-   * it, so all three rows align on one contract with zero JS measurement. Ends
-   * with an `auto` track for the row chevron (the header/footer leave that track
-   * empty). Per-instance only - each grid has a different column set, so there
-   * is no app-wide config default (unlike `[skin]`).
+   * it, so all three rows align on one contract with zero JS measurement. It holds
+   * content columns only - the disclosure chevron rides a leading gutter outside
+   * the grid (reserved by inline-start padding), so it stays visible at the row's
+   * start when the grid scrolls sideways and never consumes a track. Per-instance
+   * only - each grid has a different column set, so there is no app-wide config
+   * default (unlike `[skin]`).
    */
   readonly columns = input<string>('1fr');
 

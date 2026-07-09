@@ -8,10 +8,10 @@
     [id]="headerId"
     [attr.aria-labelledby]="primaryId()"
   >
-    <ng-content select="[cngxDgCell]" />
     <span class="cngx-data-grid-row__chevron-slot" aria-hidden="true">
       <span class="cngx-data-grid-row__chevron"></span>
     </span>
+    <ng-content select="[cngxDgCell]" />
   </button>
 </div>
 

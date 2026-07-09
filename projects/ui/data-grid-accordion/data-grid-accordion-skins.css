@@ -162,6 +162,13 @@
     --cngx-dga-row-py: 0;
     --cngx-dga-row-px: 0;
 
+    /* No extra leading chevron gutter: this skin already owns a visible leading
+       column (the synthesised row-number gutter, `::before` below), which fills
+       with the accent on open - that IS the disclosure cue. Zeroing the base lead
+       keeps the frame flush and lets the chevron overlay the left of the gutter
+       instead of pushing a blank strip in front of the frame. */
+    --cngx-dga-lead: 0;
+
     /* Same @property trap as the ledger skin: `--cngx-dga-border-color` and
        `--cngx-dga-surface-alt` are registered with fixed light initial-values, so
        their `var(token, ...)` fallbacks never fire and the light initial would win
@@ -310,9 +317,12 @@
     content: counter(cngx-dga-col, upper-alpha);
   }
 
-  /* Centre the chevron in its track (POC `.mk { margin-inline: auto }`). */
+  /* The chevron overlays the left of the synthesised row-number gutter (the number
+     itself is right-aligned in its 44px cell), so the leading column carries both
+     the row number and the disclosure affordance without a separate gutter. */
   .cngx-data-grid-row__chevron-slot {
-    justify-self: center;
+    inline-size: 44px;
+    justify-content: center;
   }
 
   /* Hover + open tint every content cell; the synthesised gutter has its own open

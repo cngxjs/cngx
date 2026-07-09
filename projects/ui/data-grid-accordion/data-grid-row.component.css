@@ -23,12 +23,23 @@
      the token the Track-B skin exposes for exactly this (accordion-item
      precedent) - not a blanket ::after reset. */
   --cngx-accordion-twisty-display: none;
+  /* Positioning context for the leading chevron gutter below. */
+  position: relative;
   display: grid;
   grid-template-columns: var(--cngx-dga-columns, 1fr);
   gap: var(--cngx-dga-col-gap, 0.5rem);
   align-items: center;
   inline-size: 100%;
-  padding: var(--cngx-dga-row-py, 0.5rem) var(--cngx-dga-row-px, 0.75rem);
+  /* Reserve a leading gutter for the disclosure chevron so it never rides a shared
+     grid track: the chevron is an absolute overlay (below), OUT of the grid, so
+     `--cngx-dga-columns` stays pure content columns for every skin. The extra
+     inline-start padding shifts the cells past the chevron; header + footer carry
+     the identical padding so all three stay column-aligned. The chevron leads the
+     row (not the trailing track) so it is visible at scroll offset 0 when the grid
+     is wider than its container and scrolls sideways. */
+  padding-block: var(--cngx-dga-row-py, 0.5rem);
+  padding-inline: calc(var(--cngx-dga-row-px, 0.75rem) + var(--cngx-dga-lead, 1.25rem))
+    var(--cngx-dga-row-px, 0.75rem);
   border: 0;
   background: var(--cngx-dga-row-bg, transparent);
   color: var(--cngx-dga-row-color, inherit);
@@ -62,9 +73,15 @@
   text-align: end;
 }
 
+/* The chevron is an absolute overlay in the leading gutter reserved by the
+   summary's inline-start padding - deliberately NOT a grid item, so it consumes no
+   shared track and stays put at the row's start (visible first under sideways
+   scroll). Vertically centred across the summary height. */
 .cngx-data-grid-row__chevron-slot {
+  position: absolute;
+  inset-inline-start: var(--cngx-dga-row-px, 0.75rem);
+  inset-block: 0;
   display: inline-flex;
-  justify-self: end;
   align-items: center;
 }
 

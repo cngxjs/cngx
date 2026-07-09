@@ -24,7 +24,13 @@
   grid-template-columns: var(--cngx-dga-columns, 1fr);
   gap: var(--cngx-dga-col-gap, 0.5rem);
   align-items: center;
-  padding: var(--cngx-dga-row-py, 0.5rem) var(--cngx-dga-row-px, 0.75rem);
+  /* Same leading chevron gutter as every row's summary (data-grid-row.component.css):
+     the rows reserve inline-start room for the absolute chevron overlay, so the
+     header + footer must carry the identical inline-start padding or their columns
+     would sit one gutter-width left of the data columns. */
+  padding-block: var(--cngx-dga-row-py, 0.5rem);
+  padding-inline: calc(var(--cngx-dga-row-px, 0.75rem) + var(--cngx-dga-lead, 1.25rem))
+    var(--cngx-dga-row-px, 0.75rem);
   font-size: var(--cngx-dga-fs, inherit);
   /* Shared scroll floor with the rows (see host `overflow-x`): 0 keeps the flat
      base full-width; a skin raises it to force sideways scroll instead of dropping
