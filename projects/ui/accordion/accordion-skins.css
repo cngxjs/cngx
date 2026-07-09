@@ -464,42 +464,109 @@
 @scope (.cngx-accordion-group[data-skin='section-bands']) {
   :scope {
     display: flex;
+    flex-direction: column;
     gap: var(--cngx-space-sm, 0.75rem);
     --cngx-accordion-group-border-block-start: none;
     --cngx-accordion-divider: none;
-    --cngx-accordion-header-padding: 0.65rem var(--cngx-space-md, 1rem);
-    --cngx-accordion-header-bg: var(--cngx-color-text, #111827);
+    /* Header text and chevron ride the band: light on the dark band (light mode),
+       dark on the light band (dark mode) - always the inverse of the surface, so
+       the band flips automatically per scheme. */
     --cngx-accordion-header-color: var(--cngx-color-surface, #fff);
     --cngx-accordion-subtitle-color: color-mix(
       in oklab,
       var(--cngx-color-surface, #fff) 62%,
       var(--cngx-color-text, #111827)
     );
-    --cngx-accordion-region-padding: var(--cngx-space-md, 1rem);
+    /* The band inset rides the heading (the full-width band) below, not the
+       button - so the status chip sits on the band, not on the body surface. */
+    --cngx-accordion-header-padding: 0;
+    --cngx-accordion-region-padding: 1rem 1rem 1.25rem;
+    --cngx-accordion-focus-color: var(--cngx-color-primary, #1d4ed8);
   }
 
+  /* Framed groupbox (POC `.bands details`): a visible frame (the theme border,
+     not a faint mix that vanishes on the dark band), the POC `--r-sm` 8px radius
+     - `--cngx-radius-sm` resolves to 4px, so this is set explicitly - and a quiet
+     surface for the body below the band. */
   .cngx-accordion-item {
-    border: 1px solid var(--cngx-color-border, #d1d5db);
-    border-radius: var(--cngx-radius-sm, 0.25rem);
+    border: 1px solid var(--cngx-accordion-band-frame, var(--cngx-color-border, #d1d5db));
+    border-radius: var(--cngx-accordion-band-radius, 0.5rem);
     overflow: hidden;
+    background: var(--cngx-color-surface, #fff);
   }
 
-  .cngx-accordion-item__header:hover {
-    --cngx-accordion-header-bg: color-mix(
-      in oklab,
-      var(--cngx-color-text, #111827) 86%,
-      var(--cngx-color-surface, #fff)
+  /* Inverted full-width band (POC `.bands summary` background): the title, the
+     chevron and the status chip all ride the band, so the dark fill sits on the
+     whole heading row rather than just the button. Reserve room at the trailing
+     edge for the chevron that rides the outer edge (absolute below). */
+  .cngx-accordion-item__heading {
+    position: relative;
+    padding: 0.65rem 1rem;
+    padding-inline-end: calc(1rem + var(--cngx-accordion-bands-chevron-reserve, 1.5rem));
+    background: var(--cngx-accordion-band-bg, var(--cngx-color-text, #111827));
+    transition: background var(--cngx-accordion-chevron-transition, 150ms ease);
+  }
+
+  .cngx-accordion-item__heading:hover {
+    background: var(
+      --cngx-accordion-band-bg-hover,
+      color-mix(in oklab, var(--cngx-color-text, #111827) 86%, var(--cngx-color-surface, #fff))
     );
   }
 
-  /* Status chip in the band via the meta slot. */
+  /* Chevron rides the very outside of the band, trailing the status chip. It is
+     decorative (aria-hidden) and stays a DOM child of the header button. */
+  .cngx-accordion-item__chevron-slot {
+    position: absolute;
+    inset-inline-end: 1rem;
+    inset-block-start: 50%;
+    transform: translateY(-50%);
+  }
+
+  /* Ring sits just outside the padding-free button, on the band. */
+  .cngx-accordion-item__header:focus-visible {
+    outline-offset: 2px;
+    border-radius: var(--cngx-accordion-band-radius, 0.5rem);
+  }
+
+  /* Semibold band title (POC `.rt`: weight 650, +0.01em). */
+  .cngx-accordion-item__title {
+    font-weight: 650;
+    letter-spacing: 0.01em;
+  }
+
+  .cngx-accordion-item__region {
+    max-inline-size: 64ch;
+  }
+
+  /* Status chip on the band (POC `.bstat`): mono, pill, a faint inverse border. */
   .cngx-accordion-item__meta {
+    flex: none;
+    white-space: nowrap;
     font-family: var(--cngx-accordion-bands-chip-font, ui-monospace, monospace);
-    font-size: var(--cngx-font-size-sm, 0.8125rem);
-    color: color-mix(in oklab, var(--cngx-color-surface, #fff) 78%, var(--cngx-color-text, #111827));
-    border: 1px solid color-mix(in oklab, var(--cngx-color-surface, #fff) 28%, transparent);
+    font-size: var(--cngx-accordion-bands-chip-size, clamp(0.7rem, 0.68rem + 0.1vw, 0.75rem));
+    color: color-mix(in oklab, var(--cngx-color-surface, #fff) 75%, var(--cngx-color-text, #111827));
+    border: 1px solid color-mix(in srgb, var(--cngx-color-surface, #fff) 28%, transparent);
     border-radius: var(--cngx-radius-pill, 999px);
     padding: 0.08rem 0.5rem;
+  }
+}
+
+/* Dark scheme: the band is `--cngx-color-text`, which is near-white in dark and
+   reads harsh, so dim it toward the surface (light mode keeps the raw near-black
+   band). Unlayered with direct selectors - never an `@media` nested inside
+   `@scope`. Both paths are covered: the explicit `[data-color-scheme='dark']`
+   override and the OS default via `@media`, the latter guarded so an explicit
+   light choice still wins. */
+[data-color-scheme='dark'] .cngx-accordion-group[data-skin='section-bands'] {
+  --cngx-accordion-band-bg: color-mix(in oklab, var(--cngx-color-text, #f2f4fa) 87%, var(--cngx-color-surface, #13151d));
+  --cngx-accordion-band-bg-hover: color-mix(in oklab, var(--cngx-color-text, #f2f4fa) 79%, var(--cngx-color-surface, #13151d));
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-color-scheme='light']) .cngx-accordion-group[data-skin='section-bands'] {
+    --cngx-accordion-band-bg: color-mix(in oklab, var(--cngx-color-text, #f2f4fa) 87%, var(--cngx-color-surface, #13151d));
+    --cngx-accordion-band-bg-hover: color-mix(in oklab, var(--cngx-color-text, #f2f4fa) 79%, var(--cngx-color-surface, #13151d));
   }
 }
 
