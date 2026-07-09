@@ -15,8 +15,7 @@ import type { CngxAccordionItemStateContext } from '../accordion-item-state-cont
  * whitespace, large type; `'bento'` container-query card grid; `'section-bands'`
  * inverted full-width header bands; `'timeline'` a rail with per-item nodes;
  * `'severity-spine'` a full-height priority spine; `'data-grid'` a table layout;
- * `'split-meta'` title with trailing meta; `'primary-frame'` a solid primary
- * border + glow on open.
+ * `'primary-frame'` a solid primary border + glow on open.
  *
  * @category ui/accordion
  * @since 0.1.0
@@ -31,7 +30,6 @@ export type CngxAccordionSkin =
   | 'timeline'
   | 'severity-spine'
   | 'data-grid'
-  | 'split-meta'
   | 'primary-frame';
 
 /**

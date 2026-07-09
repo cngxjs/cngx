@@ -3,7 +3,7 @@
 APG-correct disclosure organism over the headless `CngxAccordion` brain
 (`@cngx/common/interactive`). Renders the heading / button / region trio, derives
 expansion from an open-set coordinator, and ships a header slot family, async
-status communication, and eleven built-in visual skins.
+status communication, and ten built-in visual skins.
 
 ## Anatomy
 
@@ -45,7 +45,7 @@ English.
 
 ## Skins
 
-Eleven built-in visual skins select via the `[skin]` input, reflected onto a
+Ten built-in visual skins select via the `[skin]` input, reflected onto a
 `[data-skin]` host attribute (the same pattern as `<cngx-tab-group>`). The skin
 CSS ships with the component - no theme import, no scope class. `[skin]` is typed
 class-sugar (`CngxAccordionSkin`), not a mode flag: every skin renders the
@@ -69,7 +69,6 @@ a per-instance `[skin]` still wins.
 | Timeline | `timeline` | rail + node (see note) |
 | Severity-Spine | `severity-spine` | full-height priority spine |
 | Data-Grid | `data-grid` | table layout (see note) |
-| Split-Meta | `split-meta` | title + trailing meta |
 | Primary-Frame | `primary-frame` | solid primary border + glow on open |
 
 Every skin drives the organism through its `--cngx-accordion-*` custom

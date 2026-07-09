@@ -1,6 +1,6 @@
 /**
  * @overview
- * The eleven opt-in visual skins for `<cngx-accordion-group>`. Pairs with the
+ * The ten opt-in visual skins for `<cngx-accordion-group>`. Pairs with the
  * structural `accordion-group.component.css` / `accordion-item.component.css` in
  * this same entry - those own the flat base layout, the marker, the skeleton /
  * refresh / error affordances, and the a11y wiring; this file owns only the
@@ -44,8 +44,6 @@
  * - `data-grid` - the header row reads as a table (id / title / meta columns),
  *   zebra rows, an inset detail zone; a container query drops the id column
  *   under 620px.
- * - `split-meta` - a flat two-part header, title on the start and meta trailing;
- *   a container query drops the timestamp under 520px.
  * - `primary-frame` - each item is a card that gains a solid primary border and
  *   an animated primary glow on open (the re-map of the lab's rotating conic
  *   frame to a solid primary treatment).
@@ -812,33 +810,6 @@
   }
 }
 
-@scope (.cngx-accordion-group[data-skin='split-meta']) {
-  :scope {
-    --cngx-accordion-group-border-block-start: none;
-    --cngx-accordion-divider: 1px solid var(--cngx-color-border, #d1d5db);
-    --cngx-accordion-header-padding: var(--cngx-space-lg, 1.25rem) 0;
-    --cngx-accordion-region-padding: 0 0 var(--cngx-space-lg, 1.25rem);
-
-    container-type: inline-size;
-  }
-
-  .cngx-accordion-item__meta {
-    gap: var(--cngx-space-md, 1rem);
-  }
-
-  .cngx-accordion-item__meta cngx-time {
-    font-family: var(--cngx-accordion-split-time-font, ui-monospace, monospace);
-    font-size: var(--cngx-font-size-sm, 0.8125rem);
-    color: var(--cngx-color-text-muted, #6b7280);
-  }
-
-  @container (max-width: 520px) {
-    .cngx-accordion-item__meta cngx-time {
-      display: none;
-    }
-  }
-}
-
 @scope (.cngx-accordion-group[data-skin='primary-frame']) {
   :scope {
     display: flex;
@@ -893,8 +864,8 @@
    overflow never clips - so it wraps the whole card cleanly. Visual only: the
    button stays the sole focus target and the sole toggle (`:focus-visible`, so a
    mouse press never triggers it). Unlayered, so it wins the base button ring by
-   specificity + source order. Flat skins (editorial, lux, timeline, plus-minus,
-   split-meta) keep the base button ring. */
+   specificity + source order. Flat skins (editorial, lux, timeline, plus-minus)
+   keep the base button ring. */
 :is(
   .cngx-accordion-group[data-skin='categorized'],
   .cngx-accordion-group[data-skin='bento'],

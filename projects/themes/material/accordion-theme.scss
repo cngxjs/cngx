@@ -79,7 +79,7 @@
 
 // Card-surface elevation: base --cngx-color-surface maps to the flat surface,
 // which reads wrong on an elevated card. Applied to the card skins only so flat
-// skins (editorial, lux, split-meta, timeline) keep their surfaceless look.
+// skins (editorial, lux, timeline) keep their surfaceless look.
 @mixin _skin-cards($theme) {
   @if mat.get-theme-version($theme) == 1 {
     --cngx-accordion-item-bg: var(--mat-sys-surface-container);
