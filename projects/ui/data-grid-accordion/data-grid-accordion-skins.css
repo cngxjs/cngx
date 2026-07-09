@@ -28,8 +28,12 @@
  *   the accent colour and the detail zone becomes a warning-tinted note cell. Below
  *   its `--cngx-dga-min-width` the grid scrolls sideways rather than dropping a
  *   column.
- * - `log-stream`, `terminal`, `master-detail`, `report`, `metrics`, `density` -
- *   transcribed in later phases.
+ * - `log-stream` - a mono log console: timestamp / level / message columns, the
+ *   row severity doubled as a 3px left edge (`[data-severity]`), a level badge
+ *   (projected `cngx-tag`), an expanded stacktrace `pre` on a recessed surface, and
+ *   a flex status footer with a live dot. Below its `--cngx-dga-min-width` the grid
+ *   scrolls sideways rather than dropping the timestamp.
+ * - `master-detail`, `report`, `density` - transcribed in later phases.
  */
 
 @scope (.cngx-data-grid-accordion[data-skin='ledger']) {
@@ -350,6 +354,118 @@
 
   .cngx-data-grid-footer .cngx-dga-cell {
     font-weight: 650;
+  }
+}
+
+@scope (.cngx-data-grid-accordion[data-skin='log-stream']) {
+  :scope {
+    /* POC `.logs`: framed mono console, small type. Mono lives on the host so it
+       cascades to header + rows equally - keeping the `ch` tracks identical across
+       every grid container (never weight a container; see the ledger/spreadsheet
+       note). The host's `overflow-x: auto` clips to the rounded border and scrolls. */
+    border: 1px solid var(--cngx-color-border, #d1d5db);
+    border-radius: var(--cngx-dga-radius, 0.5rem);
+    background: var(--cngx-color-surface, #fff);
+    font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
+    font-size: var(--cngx-dga-fs, 0.75rem);
+
+    /* Overflow is scrolled, never dropped: under ~33rem the grid scrolls sideways
+       with the timestamp column intact instead of hiding it. */
+    --cngx-dga-min-width: 33rem;
+
+    /* POC gaps / paddings: --sp-3 gutter, .5rem row block, sp-4 inline. */
+    --cngx-dga-col-gap: 0.75rem;
+    --cngx-dga-row-py: 0.5rem;
+    --cngx-dga-row-px: 1rem;
+
+    /* Same registered-@property trap as the other skins: SET the adaptive border +
+       surfaces so they track the scheme instead of the fixed light initial. */
+    --cngx-dga-border-color: var(--cngx-color-border, #d1d5db);
+    --cngx-dga-surface-alt: color-mix(
+      in oklab,
+      var(--cngx-color-surface, #fff) 96%,
+      var(--cngx-color-text, #0f1320)
+    );
+    --cngx-dga-surface-strong: color-mix(
+      in oklab,
+      var(--cngx-color-surface, #fff) 90%,
+      var(--cngx-color-text, #0f1320)
+    );
+  }
+
+  /* Column head: strong surface, uppercase, muted. */
+  .cngx-data-grid-header {
+    background: var(--cngx-dga-surface-strong);
+    border-block-end: 1px solid var(--cngx-color-border, #d1d5db);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--cngx-color-text-muted, #6b7280);
+  }
+
+  /* The row summary hosts the severity edge, so it needs a positioning context. */
+  .cngx-data-grid-row__summary {
+    position: relative;
+  }
+
+  /* Severity doubled as a 3px left edge (POC `summary::before`). Absolute, so it
+     never becomes a grid item / shifts a column. Transparent unless the row carries
+     `[data-severity]`; error maps to the danger token (there is no -error). */
+  .cngx-data-grid-row__summary::before {
+    content: '';
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    inline-size: 3px;
+    background: transparent;
+  }
+
+  .cngx-data-grid-row[data-severity='error'] .cngx-data-grid-row__summary::before {
+    background: var(--cngx-color-danger, #dc2626);
+  }
+
+  .cngx-data-grid-row[data-severity='warning'] .cngx-data-grid-row__summary::before {
+    background: var(--cngx-color-warning, #f59e0b);
+  }
+
+  .cngx-data-grid-row[data-severity='info'] .cngx-data-grid-row__summary::before {
+    background: var(--cngx-color-info, #2563eb);
+  }
+
+  /* Timestamp (first cell) is dimmed; the message (third) already truncates via the
+     base cell. Hover + open tint the whole summary. */
+  .cngx-data-grid-row__summary .cngx-dga-cell:first-child {
+    color: var(--cngx-color-text-muted, #6b7280);
+  }
+
+  .cngx-data-grid-row__summary:hover,
+  .cngx-data-grid-row[data-expanded] .cngx-data-grid-row__summary {
+    background: var(--cngx-dga-surface-alt);
+  }
+
+  /* Expanded detail: recessed surface, the stacktrace as a scrollable mono `pre`. */
+  .cngx-data-grid-row__region {
+    background: var(--cngx-dga-surface-strong);
+    border-block-start: 1px solid var(--cngx-color-border, #d1d5db);
+  }
+
+  .cngx-data-grid-row__region pre {
+    margin: 0;
+    overflow-x: auto;
+    color: var(--cngx-color-text-muted, #6b7280);
+    line-height: 1.55;
+    font-size: var(--cngx-dga-fs, 0.75rem);
+  }
+
+  /* Footer is a flex status bar (POC `.dg-foot` is not on the column grid): a count
+     on the left, a live indicator on the right. */
+  .cngx-data-grid-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    background: var(--cngx-dga-surface-strong);
+    border-block-start: 1px solid var(--cngx-color-border, #d1d5db);
+    color: var(--cngx-color-text-muted, #6b7280);
   }
 }
 
