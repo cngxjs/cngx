@@ -23,7 +23,7 @@ export const STORY: DemoSpec = {
       href: 'https://www.w3.org/WAI/ARIA/apg/patterns/accordion/',
     },
   ],
-  template: `  <cngx-accordion-group [skin]="'plus-minus'" [headingLevel]="3" style="max-width:520px">
+  template: `  <cngx-accordion-group [skin]="'plus-minus'" [headingLevel]="3">
     <cngx-accordion-item>
       <span cngxAccordionItemTitle>How do refunds work?</span>
       <span cngxAccordionItemSubtitle>Timelines and eligibility.</span>
