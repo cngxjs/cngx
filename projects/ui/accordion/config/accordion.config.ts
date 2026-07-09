@@ -35,6 +35,17 @@ export type CngxAccordionSkin =
   | 'primary-frame';
 
 /**
+ * Per-item semantic severity, reflected onto the `[data-severity]` host
+ * attribute for skins that visualise it (the `severity-spine` skin maps it to
+ * the `--cngx-color-danger` / `-warning` / `-info` tokens). Structural only - it
+ * changes no ARIA and no behaviour, and unset items simply carry no severity.
+ *
+ * @category ui/accordion
+ * @since 0.1.0
+ */
+export type CngxAccordionSeverity = 'error' | 'warning' | 'info';
+
+/**
  * App-wide cascade for the accordion organism's locale-sensitive
  * `disabledReason` string, the default heading level, and app-wide slot
  * templates.

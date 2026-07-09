@@ -13,6 +13,7 @@ import {
 import { nextUid, type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
 import { CNGX_ACCORDION, CngxAccordionPanel } from '@cngx/common/interactive';
 
+import type { CngxAccordionSeverity } from './config/accordion.config';
 import { CNGX_ACCORDION_GROUP } from './accordion-group.token';
 import { CngxAccordionItemBusy } from './accordion-item-busy.directive';
 import { CngxAccordionItemContent } from './accordion-item-content.directive';
@@ -53,6 +54,7 @@ import { injectAccordionConfig } from './config/inject-accordion-config';
   host: {
     class: 'cngx-accordion-item',
     '[attr.data-expanded]': "expanded() ? '' : null",
+    '[attr.data-severity]': 'severity() ?? null',
   },
 })
 export class CngxAccordionItem {
@@ -66,6 +68,13 @@ export class CngxAccordionItem {
    * announced through {@link disabledReason} via `aria-describedby`.
    */
   readonly disabled = input<boolean>(false);
+  /**
+   * Semantic severity reflected onto the `[data-severity]` host attribute for
+   * skins that render it (the `severity-spine` skin fills its colour column from
+   * the matching `--cngx-color-danger` / `-warning` / `-info` token). Mirrors the
+   * group's `[skin]` -> `[data-skin]` cascade; purely visual, no ARIA impact.
+   */
+  readonly severity = input<CngxAccordionSeverity | undefined>(undefined);
   /**
    * Reason announced to assistive tech when the item is disabled, bound through
    * the always-present `aria-describedby` reason element. Resolves
