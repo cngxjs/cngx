@@ -21,8 +21,15 @@
  *   right-aligned amounts, an inset primary-accent detail zone, a sum footer. Below
  *   its `--cngx-dga-min-width` the grid scrolls sideways (host `overflow-x`) with
  *   every column intact rather than dropping one.
- * - `spreadsheet`, `log-stream`, `terminal`, `master-detail`, `report`,
- *   `metrics`, `density` - transcribed in later phases.
+ * - `spreadsheet` - an Excel-style sheet: visible cell hairlines, plus a
+ *   column-letter strip (A / B / C ...) and gutter row numbers BOTH derived from
+ *   CSS counters - the letters count column position, the numbers count structural
+ *   rows, so the consumer authors neither. Opening a row fills its gutter cell with
+ *   the accent colour and the detail zone becomes a warning-tinted note cell. Below
+ *   its `--cngx-dga-min-width` the grid scrolls sideways rather than dropping a
+ *   column.
+ * - `log-stream`, `terminal`, `master-detail`, `report`, `metrics`, `density` -
+ *   transcribed in later phases.
  */
 
 @scope (.cngx-data-grid-accordion[data-skin='ledger']) {
@@ -114,3 +121,235 @@
     color: var(--cngx-color-text-muted, #6b7280);
   }
 }
+
+
+@scope (.cngx-data-grid-accordion[data-skin='spreadsheet']) {
+  :scope {
+    /* POC `.sheet`: framed surface, explicit 8px radius (--cngx-radius-sm resolves
+       to 4px), small type. The host's `overflow-x: auto` clips to this rounded
+       border and provides the sideways scroll. */
+    border: 1px solid var(--cngx-color-border, #d1d5db);
+    border-radius: var(--cngx-dga-radius, 0.5rem);
+    background: var(--cngx-color-surface, #fff);
+    font-size: var(--cngx-dga-fs, 0.875rem);
+
+    /* Overflow is scrolled, never dropped: hold the grid at a scroll floor so that
+       under ~35rem it scrolls sideways with every column intact instead of hiding
+       the stock column. */
+    --cngx-dga-min-width: 35rem;
+
+    /* Root of the derived spreadsheet row numbers: header = 1, data rows = 2..N,
+       footer = N+1, counted in document order. The gutter prints this counter, so
+       the numbers are computed from position too - the story authors none. */
+    counter-reset: cngx-dga-row;
+
+    /* Spreadsheet look = flush cells divided by hairlines, not gaps. Zero the row
+       padding + column gap and let each cell carry its own padding + right rule;
+       the base summary/header/footer padding + gap would otherwise reintroduce the
+       gutters this skin deliberately removes. */
+    --cngx-dga-col-gap: 0;
+    --cngx-dga-row-py: 0;
+    --cngx-dga-row-px: 0;
+
+    /* Same @property trap as the ledger skin: `--cngx-dga-border-color` and
+       `--cngx-dga-surface-alt` are registered with fixed light initial-values, so
+       their `var(token, ...)` fallbacks never fire and the light initial would win
+       in dark. SET them here so every hairline + surface tracks the scheme.
+       `-strong` is unregistered. */
+    --cngx-dga-border-color: var(--cngx-color-border, #d1d5db);
+    --cngx-dga-surface-alt: color-mix(
+      in oklab,
+      var(--cngx-color-surface, #fff) 96%,
+      var(--cngx-color-text, #0f1320)
+    );
+    --cngx-dga-surface-strong: color-mix(
+      in oklab,
+      var(--cngx-color-surface, #fff) 90%,
+      var(--cngx-color-text, #0f1320)
+    );
+
+    /* Detail zone reads as a cell note: room at the top for the NOTE tag, indented
+       past the row-number gutter so the note lines up under the content column. The
+       3rem indent clears the story's 44px gutter without coupling the skin to the
+       exact column width. */
+    --cngx-dga-region-padding: 1.4rem 1rem 1rem 3rem;
+  }
+
+  /* Cells are flush flex boxes with their own padding and a right hairline; the
+     grid rows stretch so those hairlines run full height (POC `align-items:
+     stretch` + `> span` flex). Alignment rides `justify-content`, not
+     `justify-self`, so an aligned cell still fills its track and keeps its rule. */
+  .cngx-data-grid-header,
+  .cngx-data-grid-row__summary,
+  .cngx-data-grid-footer {
+    align-items: stretch;
+  }
+
+  .cngx-dga-cell {
+    display: flex;
+    align-items: center;
+    justify-self: stretch;
+    padding: 0.45rem 0.7rem;
+    border-inline-end: 1px solid var(--cngx-dga-border-color, #d1d5db);
+  }
+
+  /* Alignment rides `justify-content` so the cell still fills its track (and keeps
+     its right hairline + open-state tint). The `:scope` prefix lifts specificity
+     above the row component's base `[data-align] { justify-self: ... }`, which would
+     otherwise shrink the cell and leave an untinted gap in the track. */
+  :scope .cngx-dga-cell[data-align='center'] {
+    justify-self: stretch;
+    justify-content: center;
+  }
+
+  :scope .cngx-dga-cell[data-align='end'] {
+    justify-self: stretch;
+    justify-content: flex-end;
+  }
+
+  /* The row-number gutter is SYNTHESISED, not authored: each structural row bumps
+     the counter and paints its own first-column pseudo-cell via `::before`, so the
+     story writes only content columns - there is no empty gutter cell. The
+     pseudo-cell is the first grid child, so it lands in track 1; mono, right-aligned
+     on the strong surface, closed by a heavier rule. The header gutter reserves the
+     letter-band height so its number lines up with the labels below. */
+  .cngx-data-grid-header,
+  .cngx-data-grid-row,
+  .cngx-data-grid-footer {
+    counter-increment: cngx-dga-row;
+  }
+
+  .cngx-data-grid-header::before,
+  .cngx-data-grid-row__summary::before,
+  .cngx-data-grid-footer::before {
+    content: counter(cngx-dga-row);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0.45rem 0.7rem;
+    background: var(--cngx-dga-surface-strong);
+    border-inline-end: 1px solid var(--cngx-color-border, #d1d5db);
+    font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
+    font-size: var(--cngx-dga-head-fs, 0.75rem);
+    color: var(--cngx-color-text-muted, #6b7280);
+  }
+
+  .cngx-data-grid-header::before {
+    padding-block-start: calc(0.45rem + var(--cngx-dga-letter-band, 1.15rem));
+  }
+
+  /* The label header carries a DERIVED column-letter strip: each cell reserves a
+     top band whose `::before` prints its column letter from a CSS counter, so the
+     letters (A / B / C ...) are computed from position, never authored. Adjacent
+     bands abut into one continuous strip; the synthesised gutter fills the blank
+     corner beside them. One header does the work of the POC's two rows. */
+  /* Bold sits on the cells, NOT the grid container: `ch`-based tracks in the
+     `[columns]` template resolve against the container's font, so a bold header
+     widens its `11ch` / `12ch` tracks and shifts the numeric columns out of line
+     with the normal-weight data rows. The base component CSS weights the header
+     container 600, so force it back to normal here (the cells carry the bold) -
+     that makes header, rows, and footer share identical track widths. */
+  .cngx-data-grid-header {
+    background: var(--cngx-dga-surface-alt);
+    color: var(--cngx-color-text, #0f1320);
+    font-weight: 400;
+    counter-reset: cngx-dga-col;
+  }
+
+  .cngx-data-grid-header .cngx-dga-cell {
+    position: relative;
+    padding-block-start: calc(0.45rem + var(--cngx-dga-letter-band, 1.15rem));
+    font-weight: 650;
+  }
+
+  .cngx-data-grid-header .cngx-dga-cell::before {
+    content: '';
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline: 0;
+    block-size: var(--cngx-dga-letter-band, 1.15rem);
+    display: flex;
+    align-items: center;
+    /* The letter follows the column's own alignment (start / centre / end) and
+       carries the cell's inline padding, so it stacks directly above the label and
+       the values below - a right-aligned numeric column gets a right-aligned
+       letter. */
+    justify-content: flex-start;
+    padding-inline: 0.7rem;
+    background: var(--cngx-dga-surface-strong);
+    border-block-end: 1px solid var(--cngx-color-border, #d1d5db);
+    font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
+    font-size: var(--cngx-dga-head-fs, 0.75rem);
+    color: var(--cngx-color-text-muted, #6b7280);
+  }
+
+  :scope .cngx-data-grid-header .cngx-dga-cell[data-align='center']::before {
+    justify-content: center;
+  }
+
+  :scope .cngx-data-grid-header .cngx-dga-cell[data-align='end']::before {
+    justify-content: flex-end;
+  }
+
+  .cngx-data-grid-header .cngx-dga-cell {
+    counter-increment: cngx-dga-col;
+  }
+
+  .cngx-data-grid-header .cngx-dga-cell::before {
+    content: counter(cngx-dga-col, upper-alpha);
+  }
+
+  /* Centre the chevron in its track (POC `.mk { margin-inline: auto }`). */
+  .cngx-data-grid-row__chevron-slot {
+    justify-self: center;
+  }
+
+  /* Hover + open tint every content cell; the synthesised gutter has its own open
+     state below. */
+  .cngx-data-grid-row__summary:hover .cngx-dga-cell,
+  .cngx-data-grid-row[data-expanded] .cngx-data-grid-row__summary .cngx-dga-cell {
+    background: color-mix(in oklab, var(--cngx-color-primary, #1d4ed8) 8%, transparent);
+  }
+
+  /* The gutter pseudo-cell fills primary when its row opens - the active-cell cue. */
+  .cngx-data-grid-row[data-expanded] .cngx-data-grid-row__summary::before {
+    background: var(--cngx-color-primary, #1d4ed8);
+    color: var(--cngx-color-on-primary, #fff);
+  }
+
+  /* Detail zone as a warning-tinted note cell with a small NOTE tag pinned top
+     left. The POC's fixed amber maps to the semantic warning token so the note
+     tracks the theme instead of a hardcoded hex. */
+  .cngx-data-grid-row__region {
+    position: relative;
+    background: color-mix(
+      in oklab,
+      var(--cngx-color-warning, #f59e0b) 9%,
+      var(--cngx-color-surface, #fff)
+    );
+    border-block-end: 1px solid var(--cngx-dga-border-color, #d1d5db);
+  }
+
+  .cngx-data-grid-row__region::before {
+    content: 'NOTE';
+    position: absolute;
+    inset-block-start: 0.4rem;
+    inset-inline-start: 3rem;
+    font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
+    font-size: 0.625rem;
+    letter-spacing: 0.1em;
+    color: color-mix(in oklab, var(--cngx-color-warning, #f59e0b) 80%, var(--cngx-color-text, #0f1320));
+  }
+
+  /* Footer sum row: alternate surface, bold on the cells (same track-width reason
+     as the header above - never bold the grid container). */
+  .cngx-data-grid-footer {
+    background: var(--cngx-dga-surface-alt);
+    color: var(--cngx-color-text, #0f1320);
+  }
+
+  .cngx-data-grid-footer .cngx-dga-cell {
+    font-weight: 650;
+  }
+}
+
