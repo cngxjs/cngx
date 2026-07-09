@@ -36,10 +36,10 @@
  * - `master-detail` - an order/positions view: mono dimmed order number, a
  *   weighted customer name, mono right-aligned position + sum cells, and the open
  *   row held primary-tinted as the context for its detail. The detail zone is a
- *   projected sub-`<table>` (consumer content the skin only paints) indented under
- *   the customer column via `--cngx-dga-lead-col`, with a bold rule-free `tfoot`
- *   sum. Below its `--cngx-dga-min-width` the grid scrolls sideways rather than
- *   dropping a column.
+ *   projected sub-`<table>` (consumer content the skin only paints) on a recessed
+ *   surface with a primary inset edge and a quiet sub-head, with a bold rule-free
+ *   `tfoot` sum. Below its `--cngx-dga-min-width` the grid scrolls sideways rather
+ *   than dropping a column.
  * - `report`, `density` - transcribed in later phases.
  */
 
@@ -497,27 +497,23 @@
     background: var(--cngx-color-surface, #fff);
     font-size: var(--cngx-dga-fs, 0.875rem);
 
-    /* Overflow is scrolled, never dropped: this is the widest column set (order /
-       customer / positions / sum / chevron), so under ~42rem it scrolls sideways
-       with the order + positions columns intact instead of hiding them. */
-    --cngx-dga-min-width: 42rem;
+    /* Overflow is scrolled, never dropped: hold the grid at a realistic scroll floor
+       so it fits without a scrollbar at normal widths and only scrolls sideways when
+       genuinely narrow (the old 42rem forced a scrollbar even on desktop). */
+    --cngx-dga-min-width: 35rem;
 
     /* POC gaps / paddings: --sp-3 gutter, .6rem row block, sp-4 inline. */
     --cngx-dga-col-gap: 0.75rem;
     --cngx-dga-row-py: 0.6rem;
     --cngx-dga-row-px: 1rem;
 
-    /* Detail zone is a nested sub-table indented under the customer column so the
-       positions read as a continuation of the row (POC `padding-left: calc(10ch +
-       sp-3 + sp-4)`). The lead-column width is a token the story sets to its own
-       first track, so the indent tracks the actual grid instead of hardcoding a
-       magic width; default matches this family's ledger-style first column. */
-    --cngx-dga-lead-col: 7rem;
-    --cngx-dga-region-padding: 0.75rem 1rem 1rem
-      calc(
-        var(--cngx-dga-lead-col, 7rem) + var(--cngx-dga-col-gap, 0.75rem) +
-          var(--cngx-dga-row-px, 1rem)
-      );
+    /* Detail zone: a shallow indent just past the accent edge, NOT a deep indent
+       under the customer column. The deep POC indent (`calc(10ch + ...)`) left a
+       wide dead gutter under the order column and pushed the full-width sub-table
+       off the right edge (clipping its last column under the scroll floor). A small
+       inset keeps the sub-table readable and fully visible while still reading as a
+       nested continuation of the row. */
+    --cngx-dga-region-padding: 0.75rem 1rem 1rem 1.25rem;
 
     /* Same registered-@property trap as the other skins: SET the adaptive border +
        surfaces so they track the scheme instead of the fixed light initial. */
@@ -602,12 +598,13 @@
     white-space: nowrap;
   }
 
+  /* Sub-table head is deliberately quieter than the main column header (which is
+     mono UPPERCASE): normal case, lighter weight, muted - so the two header rows
+     read as parent + child, not two competing peers stacked together. */
   .cngx-data-grid-row__region th {
     font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
     font-size: var(--cngx-dga-head-fs, 0.75rem);
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    font-weight: 500;
     color: var(--cngx-color-text-muted, #6b7280);
   }
 
