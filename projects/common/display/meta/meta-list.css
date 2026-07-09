@@ -1,0 +1,7 @@
+.cngx-meta-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cngx-meta-list-gap, 0.4rem 1.2rem);
+  color: var(--cngx-meta-list-color, var(--cngx-color-text-muted, #6b7280));
+  font-size: var(--cngx-meta-list-fs, inherit);
+}

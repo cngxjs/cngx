@@ -20,6 +20,8 @@ export {
   type CngxBadgePosition,
 } from './badge/badge.directive';
 export { CngxChip } from './chip/chip.component';
+export { CngxMetaList } from './meta/meta-list.component';
+export { CngxMeta } from './meta/meta.component';
 export { CngxCheckboxIndicator } from './checkbox-indicator/checkbox-indicator.component';
 export { CngxRadioIndicator } from './radio-indicator/radio-indicator.component';
 export { CngxTime } from './time/time.component';
