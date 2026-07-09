@@ -33,7 +33,14 @@
  *   (projected `cngx-tag`), an expanded stacktrace `pre` on a recessed surface, and
  *   a flex status footer with a live dot. Below its `--cngx-dga-min-width` the grid
  *   scrolls sideways rather than dropping the timestamp.
- * - `master-detail`, `report`, `density` - transcribed in later phases.
+ * - `master-detail` - an order/positions view: mono dimmed order number, a
+ *   weighted customer name, mono right-aligned position + sum cells, and the open
+ *   row held primary-tinted as the context for its detail. The detail zone is a
+ *   projected sub-`<table>` (consumer content the skin only paints) indented under
+ *   the customer column via `--cngx-dga-lead-col`, with a bold rule-free `tfoot`
+ *   sum. Below its `--cngx-dga-min-width` the grid scrolls sideways rather than
+ *   dropping a column.
+ * - `report`, `density` - transcribed in later phases.
  */
 
 @scope (.cngx-data-grid-accordion[data-skin='ledger']) {
@@ -466,6 +473,173 @@
     background: var(--cngx-dga-surface-strong);
     border-block-start: 1px solid var(--cngx-color-border, #d1d5db);
     color: var(--cngx-color-text-muted, #6b7280);
+  }
+}
+
+@scope (.cngx-data-grid-accordion[data-skin='master-detail']) {
+  :scope {
+    /* POC `.master`: framed surface, explicit 8px radius (--cngx-radius-sm resolves
+       to 4px), small type. The host's `overflow-x: auto` clips to this rounded
+       border and provides the sideways scroll - the POC `overflow: hidden` is
+       dropped, it would have killed that scroll. */
+    border: 1px solid var(--cngx-color-border, #d1d5db);
+    border-radius: var(--cngx-dga-radius, 0.5rem);
+    background: var(--cngx-color-surface, #fff);
+    font-size: var(--cngx-dga-fs, 0.875rem);
+
+    /* Overflow is scrolled, never dropped: this is the widest column set (order /
+       customer / positions / sum / chevron), so under ~42rem it scrolls sideways
+       with the order + positions columns intact instead of hiding them. */
+    --cngx-dga-min-width: 42rem;
+
+    /* POC gaps / paddings: --sp-3 gutter, .6rem row block, sp-4 inline. */
+    --cngx-dga-col-gap: 0.75rem;
+    --cngx-dga-row-py: 0.6rem;
+    --cngx-dga-row-px: 1rem;
+
+    /* Detail zone is a nested sub-table indented under the customer column so the
+       positions read as a continuation of the row (POC `padding-left: calc(10ch +
+       sp-3 + sp-4)`). The lead-column width is a token the story sets to its own
+       first track, so the indent tracks the actual grid instead of hardcoding a
+       magic width; default matches this family's ledger-style first column. */
+    --cngx-dga-lead-col: 7rem;
+    --cngx-dga-region-padding: 0.75rem 1rem 1rem
+      calc(
+        var(--cngx-dga-lead-col, 7rem) + var(--cngx-dga-col-gap, 0.75rem) +
+          var(--cngx-dga-row-px, 1rem)
+      );
+
+    /* Same registered-@property trap as the other skins: SET the adaptive border +
+       surfaces so they track the scheme instead of the fixed light initial. */
+    --cngx-dga-border-color: var(--cngx-color-border, #d1d5db);
+    --cngx-dga-surface-alt: color-mix(
+      in oklab,
+      var(--cngx-color-surface, #fff) 96%,
+      var(--cngx-color-text, #0f1320)
+    );
+    --cngx-dga-surface-strong: color-mix(
+      in oklab,
+      var(--cngx-color-surface, #fff) 90%,
+      var(--cngx-color-text, #0f1320)
+    );
+  }
+
+  /* Column head: strong surface, mono uppercase, dimmed (POC surface-3 head). Force
+     normal weight (POC head is unbolded): the base component weights the header
+     container 600, and a bold container would widen any `ch` track relative to the
+     normal-weight rows - the ch/track-vs-container-font trap. */
+  .cngx-data-grid-header {
+    background: var(--cngx-dga-surface-strong);
+    border-block-end: 1px solid var(--cngx-color-border, #d1d5db);
+    font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
+    font-size: var(--cngx-dga-head-fs, 0.75rem);
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--cngx-color-text-muted, #6b7280);
+  }
+
+  /* The order number (first cell) is mono + dimmed; the customer (primary) cell
+     carries the row weight; the numeric position + sum cells are mono right of the
+     name. Mono sits on the cells, never the summary container, so it never shifts a
+     shared track width. */
+  .cngx-data-grid-row__summary .cngx-dga-cell:first-child {
+    font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
+    font-size: var(--cngx-dga-head-fs, 0.75rem);
+    color: var(--cngx-color-text-muted, #6b7280);
+  }
+
+  .cngx-data-grid-row__summary .cngx-dga-cell[data-primary] {
+    font-weight: 620;
+    color: var(--cngx-color-text, #0f1320);
+  }
+
+  .cngx-data-grid-row__summary .cngx-dga-cell[data-align='end'] {
+    font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
+  }
+
+  /* Hover + open both tint the summary with the primary accent; the open row STAYS
+     tinted so the context row reads as the parent of the detail below (POC
+     `details[open] > summary { background: accent-weak }`). */
+  .cngx-data-grid-row__summary:hover,
+  .cngx-data-grid-row[data-expanded] .cngx-data-grid-row__summary {
+    background: color-mix(in oklab, var(--cngx-color-primary, #1d4ed8) 8%, transparent);
+  }
+
+  /* Detail zone: recessed alternate surface with a primary inset edge, indented via
+     the region padding above so the sub-table lines up under the customer column. */
+  .cngx-data-grid-row__region {
+    background: var(--cngx-dga-surface-alt);
+    border-block-start: 1px solid var(--cngx-color-border, #d1d5db);
+    box-shadow: inset 3px 0 0 var(--cngx-color-primary, #1d4ed8);
+  }
+
+  /* The projected sub-`<table>` is consumer content; the skin only paints it - a
+     full-width collapsed table with mono uppercase heads, hairline row rules, and a
+     bold rule-free `tfoot` sum. Numeric columns opt in via `.r` (POC convention),
+     so the story keeps authoring plain table markup. */
+  .cngx-data-grid-row__region table {
+    inline-size: 100%;
+    border-collapse: collapse;
+    font-size: var(--cngx-dga-fs, 0.875rem);
+  }
+
+  .cngx-data-grid-row__region th,
+  .cngx-data-grid-row__region td {
+    padding: 0.45rem 0.5rem;
+    border-block-end: 1px solid var(--cngx-dga-border-color, #d1d5db);
+    text-align: start;
+    white-space: nowrap;
+  }
+
+  .cngx-data-grid-row__region th {
+    font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
+    font-size: var(--cngx-dga-head-fs, 0.75rem);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--cngx-color-text-muted, #6b7280);
+  }
+
+  .cngx-data-grid-row__region td {
+    color: var(--cngx-color-text, #0f1320);
+  }
+
+  .cngx-data-grid-row__region th.r,
+  .cngx-data-grid-row__region td.r {
+    text-align: end;
+    font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
+  }
+
+  .cngx-data-grid-row__region tfoot td {
+    border-block-end: none;
+    font-weight: 700;
+    color: var(--cngx-color-text, #0f1320);
+  }
+
+  .cngx-data-grid-row__region tfoot td:first-child {
+    font-weight: 600;
+    color: var(--cngx-color-text-muted, #6b7280);
+  }
+
+  /* Sum footer: strong surface, mono; the total cell bold (POC `.dg-foot .c-sum`).
+     Bold rides the cell, not the footer container, so it never widens a ch track. */
+  .cngx-data-grid-footer {
+    background: var(--cngx-dga-surface-strong);
+    font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
+    font-size: var(--cngx-dga-head-fs, 0.75rem);
+    color: var(--cngx-color-text-muted, #6b7280);
+  }
+
+  .cngx-data-grid-footer .cngx-dga-cell[data-align='end'] {
+    font-weight: 700;
+    color: var(--cngx-color-text, #0f1320);
+  }
+
+  /* Drop the last row's own divider so it never doubles with the footer's top
+     border (both draw from the same adaptive token). */
+  .cngx-data-grid-row:last-of-type {
+    --cngx-dga-row-divider: none;
   }
 }
 
