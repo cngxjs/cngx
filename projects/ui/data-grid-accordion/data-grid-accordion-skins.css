@@ -162,12 +162,12 @@
     --cngx-dga-row-py: 0;
     --cngx-dga-row-px: 0;
 
-    /* No extra leading chevron gutter: this skin already owns a visible leading
-       column (the synthesised row-number gutter, `::before` below), which fills
-       with the accent on open - that IS the disclosure cue. Zeroing the base lead
-       keeps the frame flush and lets the chevron overlay the left of the gutter
-       instead of pushing a blank strip in front of the frame. */
-    --cngx-dga-lead: 0;
+    /* Leading chevron gutter kept SEPARATE from the row-number column: overlaying
+       the two collided the chevron and the digit into a single unreadable glyph
+       (e.g. a check-mark "2"). A narrow margin in front of the framed sheet holds
+       the disclosure chevron; the synthesised row-number gutter (`::before` below)
+       follows as its own column. */
+    --cngx-dga-lead: 1.5rem;
 
     /* Same @property trap as the ledger skin: `--cngx-dga-border-color` and
        `--cngx-dga-surface-alt` are registered with fixed light initial-values, so
@@ -317,11 +317,11 @@
     content: counter(cngx-dga-col, upper-alpha);
   }
 
-  /* The chevron overlays the left of the synthesised row-number gutter (the number
-     itself is right-aligned in its 44px cell), so the leading column carries both
-     the row number and the disclosure affordance without a separate gutter. */
+  /* Centre the chevron within the leading gutter. `--cngx-dga-row-px` is 0 in this
+     flush skin, so the base inset would pin the chevron to the frame border; box it
+     to the gutter width and centre it instead. */
   .cngx-data-grid-row__chevron-slot {
-    inline-size: 44px;
+    inline-size: var(--cngx-dga-lead, 1.5rem);
     justify-content: center;
   }
 
