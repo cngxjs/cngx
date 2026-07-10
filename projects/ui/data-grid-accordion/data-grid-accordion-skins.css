@@ -260,13 +260,16 @@
     padding-block-start: calc(0.45rem + var(--cngx-dga-letter-band, 1.15rem));
   }
 
-  /* The leading chevron gutter reads as part of the row-number column: paint it the
-     same strong surface as the `::before` cells so the two form one continuous band
-     down the left edge. The chevron lives in this gutter (base absolute overlay); an
-     abs `::before` on the inner grid paints the strip WITHOUT becoming a grid item
-     (it would otherwise auto-place into track 1). No divider on its inline-end so it
-     merges seamlessly with the row-number column that abuts it. */
-  .cngx-data-grid-accordion__grid {
+  /* This skin OPTS OUT of the base leading chevron track. It already owns a
+     synthesised row-number gutter (`::before`, track 1 of its own `[columns]`) and
+     the CSS-counter column-letter strip, both of which fight an extra grid track. So
+     it drops the leading track, reserves the chevron gutter as inner-grid inline
+     padding instead, overlays the chevron there, and paints that strip the strong
+     surface so it merges with the row-number column into one band. (Non-spreadsheet
+     skins keep the leading track, which their row backgrounds need to cover.) */
+  :scope .cngx-data-grid-accordion__grid {
+    grid-template-columns: var(--cngx-dga-columns, 1fr);
+    padding-inline-start: var(--cngx-dga-lead, 1.5rem);
     position: relative;
   }
 
@@ -277,6 +280,28 @@
     inset-inline-start: 0;
     inline-size: var(--cngx-dga-lead, 1.5rem);
     background: var(--cngx-dga-surface-strong);
+  }
+
+  /* Overlay the chevron in that gutter (one gutter-width back from the summary's
+     content edge), centred; the summary is the positioning context. */
+  .cngx-data-grid-row__summary {
+    position: relative;
+  }
+
+  .cngx-data-grid-row__chevron-slot {
+    position: absolute;
+    inset-inline-start: calc(-1 * var(--cngx-dga-lead, 1.5rem));
+    inset-block: 0;
+    inline-size: var(--cngx-dga-lead, 1.5rem);
+    justify-content: center;
+    padding-inline-start: 0;
+  }
+
+  /* Undo the base header/footer first-cell offset - there is no leading track here,
+     so the first content cell starts at track 1 as normal. */
+  :scope .cngx-data-grid-header > .cngx-dga-cell:first-child,
+  :scope .cngx-data-grid-footer > .cngx-dga-cell:first-child {
+    grid-column-start: auto;
   }
 
   /* The label header carries a DERIVED column-letter strip: each cell reserves a

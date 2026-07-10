@@ -26,8 +26,8 @@
   margin: 0;
 }
 
-/* The summary button IS the grid line: cells project into it and land on the shared
-   column contract; the chevron is an absolute overlay in the leading gutter. */
+/* The summary button IS the grid line: its chevron cell (track 1) plus the projected
+   content cells land on the shared column contract via `subgrid`. */
 .cngx-data-grid-row__summary {
   /* The summary carries `cngxAccordionPanel`, so the headless Track-B accordion
      skin (@cngx/themes cngx.css) would paint its own ::after twisty here. This
@@ -35,8 +35,6 @@
      the token the Track-B skin exposes for exactly this (accordion-item
      precedent) - not a blanket ::after reset. */
   --cngx-accordion-twisty-display: none;
-  /* Positioning context for the leading chevron gutter below. */
-  position: relative;
   /* Adopt the group's tracks via `subgrid` so the projected cells land on the shared
      grid lines (spans every column of the parent heading subgrid). */
   grid-column: 1 / -1;
@@ -48,11 +46,9 @@
   column-gap: var(--cngx-dga-col-gap, 0.5rem);
   align-items: center;
   inline-size: 100%;
-  /* Only block padding on the subgrid summary - the inline gutter (chevron + edges)
-     is the inner grid's padding, so the summary's tracks stay aligned with the
-     header and footer (inline padding on a subgrid re-flows its flexible tracks).
-     Inline padding is forced to 0: the summary carries `cngxAccordionPanel`, and the
-     Track-B accordion skin (@cngx/themes cngx.css) would otherwise paint its own
+  /* Only block padding on the subgrid summary; the inline edges are the chevron track
+     + last-cell padding. Inline padding is forced to 0: the summary carries
+     `cngxAccordionPanel`, and the Track-B accordion skin would otherwise paint its own
      header-button inline padding here and push the cells off the shared tracks. */
   padding-block: var(--cngx-dga-row-py, 0.5rem);
   padding-inline: 0;
@@ -79,6 +75,12 @@
   white-space: nowrap;
 }
 
+/* Trailing edge inset lives on the last cell (the inner grid has no inline padding,
+   so the backgrounds reach the frame). The chevron track holds the leading edge. */
+.cngx-dga-cell:last-child {
+  padding-inline-end: var(--cngx-dga-row-px, 0.75rem);
+}
+
 .cngx-dga-cell[data-align='center'] {
   justify-self: center;
   text-align: center;
@@ -89,20 +91,18 @@
   text-align: end;
 }
 
-/* The chevron is an absolute overlay in the leading gutter that the inner grid's
-   inline-start padding reserves - deliberately NOT a grid item, so it consumes no
-   shared track (the tracks stay pure content columns and align via subgrid) and
-   stays put at the row's start (visible first under sideways scroll). It reaches one
-   gutter-width back into that padding (negative inset), boxed to the gutter width and
-   centred. */
+/* The chevron rides the leading grid TRACK (column 1) as the summary's first child;
+   the projected cells auto-flow into the content columns after it. Being a real grid
+   cell (not an overlay) means every row / header / footer background covers this
+   column, and the chevron stays at the row's start - visible first under sideways
+   scroll. Centred within the track. */
 .cngx-data-grid-row__chevron-slot {
-  position: absolute;
-  inset-inline-start: calc(-1 * var(--cngx-dga-lead, 1.25rem));
-  inset-block: 0;
-  inline-size: var(--cngx-dga-lead, 1.25rem);
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  /* Inset the chevron from the frame by the same edge padding the content uses, so it
+     is not flush against the border; the leading track is sized to fit it. */
+  justify-content: flex-start;
+  padding-inline-start: var(--cngx-dga-row-px, 0.75rem);
 }
 
 .cngx-data-grid-row__chevron {
@@ -121,16 +121,12 @@
   transform: rotate(225deg);
 }
 
-/* The detail zone is row 2 of the row subgrid, spanning every column. Negative inline
-   margins pull it back OUT across the inner grid's inline padding (the leading chevron
-   gutter + the trailing edge) so its background, border, and accent edge run frame to
-   frame like a normal disclosure panel - a plain grid item would stop at the content
-   columns and leave the gutter uncovered (a white notch beside the open row). The
-   region's own `--cngx-dga-region-padding` provides the text inset. */
+/* The detail zone is row 2 of the row subgrid, spanning every column (including the
+   chevron track) so its background, border, and accent edge run frame to frame like a
+   normal disclosure panel. The inner grid has no inline padding, so `1 / -1` already
+   reaches both edges; the region's own `--cngx-dga-region-padding` provides the inset. */
 .cngx-data-grid-row__region {
   grid-column: 1 / -1;
-  margin-inline: calc(-1 * (var(--cngx-dga-row-px, 0.75rem) + var(--cngx-dga-lead, 1.25rem)))
-    calc(-1 * var(--cngx-dga-row-px, 0.75rem));
   padding: var(--cngx-dga-region-padding, 0.75rem 1rem);
 }
 

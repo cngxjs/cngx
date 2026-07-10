@@ -25,21 +25,24 @@
    (not on the children) so the one grid scrolls sideways as a unit. */
 .cngx-data-grid-accordion__grid {
   display: grid;
-  grid-template-columns: var(--cngx-dga-columns, 1fr);
-  gap: var(--cngx-dga-col-gap, 0.5rem);
+  /* A leading chevron TRACK, then the content columns. The chevron rides a real
+     column (not the grid's inline padding) so every row / header / footer element
+     spans it via `subgrid` and its background covers the gutter - a padding gutter
+     would leave a white strip down the left that no row background could reach. */
+  grid-template-columns: var(--cngx-dga-lead, 2rem) var(--cngx-dga-columns, 1fr);
+  /* COLUMN gap only - the `gap` shorthand would add a row-gap between the header,
+     rows, and footer (they are grid items now), which reads as a stray top margin on
+     every row. Vertical separation is the row borders, not a gap. */
+  column-gap: var(--cngx-dga-col-gap, 0.5rem);
   min-inline-size: var(--cngx-dga-min-width, 0);
-  /* The leading chevron gutter and the content edge padding live on the ONE grid,
-     NOT on the subgrid rows: `padding-inline` on a subgrid item re-resolves its
-     flexible (`fit`/`grow`) tracks against its own padded width, so equal padding
-     still drifts the columns apart. Block padding stays per-row (below) because it
-     must sit between rows, not only at the grid's outer edges. */
-  padding-inline: calc(var(--cngx-dga-row-px, 0.75rem) + var(--cngx-dga-lead, 1.25rem))
-    var(--cngx-dga-row-px, 0.75rem);
+  /* No inline padding: the row / header / footer backgrounds must reach both frame
+     edges, and a grid item cannot paint the grid's own padding. The leading edge is
+     the chevron track; the trailing edge inset lives on the last cell (row CSS). */
 }
 
 /* Header and footer adopt the parent grid's tracks via `subgrid`, so labels and
    totals land on the exact same lines as the row cells with zero JS measurement.
-   Only block padding here - the inline gutter is the inner grid's job (above). */
+   Only block padding here - the inline edges are the chevron track + last-cell pad. */
 .cngx-data-grid-header,
 .cngx-data-grid-footer {
   grid-column: 1 / -1;
@@ -48,6 +51,14 @@
   align-items: center;
   padding-block: var(--cngx-dga-row-py, 0.5rem);
   font-size: var(--cngx-dga-fs, inherit);
+}
+
+/* Header and footer carry no chevron, so their first projected cell must skip the
+   leading chevron track and start at the first content column (track 2), aligning
+   with every row's first cell (which follows its chevron cell in track 1). */
+.cngx-data-grid-header > .cngx-dga-cell:first-child,
+.cngx-data-grid-footer > .cngx-dga-cell:first-child {
+  grid-column-start: 2;
 }
 
 .cngx-data-grid-header {
