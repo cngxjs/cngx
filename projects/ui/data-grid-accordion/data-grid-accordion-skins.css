@@ -225,6 +225,15 @@
     border-inline-end: 1px solid var(--cngx-dga-border-color, #d1d5db);
   }
 
+  /* Restore the last cell's trailing padding. This skin zeroes `--cngx-dga-row-px`
+     (flush cells), but the base `.cngx-dga-cell:last-child` reads that token for its
+     `padding-inline-end`, so the rightmost column would otherwise sit flush against
+     the frame edge. Re-assert the cell's own 0.7rem so the last column breathes like
+     the others. `:scope` lifts specificity above the base last-child rule. */
+  :scope .cngx-dga-cell:last-child {
+    padding-inline-end: 0.7rem;
+  }
+
   /* Alignment rides `justify-content` so the cell still fills its track (and keeps
      its right hairline + open-state tint). The `:scope` prefix lifts specificity
      above the row component's base `[data-align] { justify-self: ... }`, which would
@@ -525,12 +534,15 @@
   }
 
   /* Footer is a flex status bar (POC `.dg-foot` is not on the column grid): a count
-     on the left, a live indicator on the right. */
+     on the left, a live indicator on the right. A flex footer carries no cells, so it
+     needs its own inline padding - the grid footers get their inset from the chevron
+     track + last-cell padding, which a flex layout has neither of. */
   .cngx-data-grid-footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 1rem;
+    padding-inline: var(--cngx-dga-row-px, 1rem);
     background: var(--cngx-dga-surface-strong);
     border-block-start: 1px solid var(--cngx-color-border, #d1d5db);
     color: var(--cngx-color-text-muted, #6b7280);
@@ -899,12 +911,15 @@
   }
 
   /* Footer is a flex status bar (POC `.dg-foot` is off the column grid): a count on the
-     left, a status summary on the right. */
+     left, a status summary on the right. A flex footer carries no cells, so it needs
+     its own inline padding - the grid footers get their inset from the chevron track +
+     last-cell padding, which a flex layout has neither of. */
   .cngx-data-grid-footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 1rem;
+    padding-inline: var(--cngx-dga-row-px, 1rem);
     background: var(--cngx-dga-surface-strong);
     color: var(--cngx-color-text-muted, #6b7280);
   }
