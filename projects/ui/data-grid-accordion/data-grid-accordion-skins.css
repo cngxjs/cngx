@@ -248,7 +248,7 @@
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    padding: 0.45rem 0.7rem;
+    padding: 0.45rem 0.5rem;
     background: var(--cngx-dga-surface-strong);
     border-inline-end: 1px solid var(--cngx-color-border, #d1d5db);
     font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
@@ -258,6 +258,25 @@
 
   .cngx-data-grid-header::before {
     padding-block-start: calc(0.45rem + var(--cngx-dga-letter-band, 1.15rem));
+  }
+
+  /* The leading chevron gutter reads as part of the row-number column: paint it the
+     same strong surface as the `::before` cells so the two form one continuous band
+     down the left edge. The chevron lives in this gutter (base absolute overlay); an
+     abs `::before` on the inner grid paints the strip WITHOUT becoming a grid item
+     (it would otherwise auto-place into track 1). No divider on its inline-end so it
+     merges seamlessly with the row-number column that abuts it. */
+  .cngx-data-grid-accordion__grid {
+    position: relative;
+  }
+
+  .cngx-data-grid-accordion__grid::before {
+    content: '';
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    inline-size: var(--cngx-dga-lead, 1.5rem);
+    background: var(--cngx-dga-surface-strong);
   }
 
   /* The label header carries a DERIVED column-letter strip: each cell reserves a
