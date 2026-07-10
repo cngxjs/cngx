@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'The <code>[skin]="\'master-detail\'"</code> skin reads an order summary per row and expands into its line-item detail. The open row stays primary-tinted as the context for the sub-table below it.',
   description:
-    'The detail zone is a projected <code>&lt;table&gt;</code> - consumer content the skin only paints, indented under the customer column so the positions read as a continuation of the row. Header, every row, and the footer share one <code>[columns]</code> template, so the summary numbers align with zero measurement; the customer cell is marked <code>primary</code> so a screen reader names each row by the customer alone. On narrow screens the grid scrolls sideways with every column intact instead of dropping one.',
+    'The detail zone is a projected <code>&lt;table&gt;</code> - consumer content the skin only paints, inset past the accent edge so the positions read as a continuation of the row. Column widths come from <code>col</code> on the header cells (<code>grow</code> for the customer, <code>md</code> for order + total, <code>fit</code> for the position count); the group derives one shared template, so the summary numbers align with zero measurement. The customer cell is marked <code>primary</code> so a screen reader names each row by the customer alone. On narrow screens the grid scrolls sideways with every column intact instead of dropping one.',
   level: 'organism',
   audience: ['dev', 'design'],
   artifact: 'building-block',
@@ -27,15 +27,14 @@ export const STORY: DemoSpec = {
   template: `  <div style="max-width:720px">
     <cngx-data-grid-accordion
       [skin]="'master-detail'"
-      columns="7rem 1fr 4rem 7rem"
       [multi]="true"
       [headingLevel]="3"
     >
       <cngx-data-grid-header>
-        <span cngxDgCell>Order</span>
-        <span cngxDgCell>Customer</span>
-        <span cngxDgCell align="end">Pos.</span>
-        <span cngxDgCell align="end">Total</span>
+        <span cngxDgCell col="md">Order</span>
+        <span cngxDgCell col="grow">Customer</span>
+        <span cngxDgCell col="fit" align="end">Pos.</span>
+        <span cngxDgCell col="md" align="end">Total</span>
       </cngx-data-grid-header>
 
       <cngx-data-grid-row panelId="AU-7731">

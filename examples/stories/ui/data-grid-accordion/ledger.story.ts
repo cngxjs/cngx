@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'The <code>[skin]="\'ledger\'"</code> skin frames the grid like an account ledger - a mono uppercase column head, zebra rows, right-aligned amounts, an inset primary-accent detail zone, and a sum footer. Every row is still a disclosure: click to expand its detail.',
   description:
-    'Header, every row, and the footer share one <code>[columns]</code> template, so the columns align with zero measurement. The status cell is a <code>&lt;cngx-tag&gt;</code>, not hand-written pill CSS. On narrow screens the grid scrolls sideways with every column intact instead of dropping one. Mark one cell <code>primary</code> so a screen reader names the row by the customer alone.',
+    'Column widths are declared on the header cells with <code>col</code> (<code>grow</code> for the customer, <code>md</code> for the mono amounts, <code>fit</code> for the status tag); the group derives one shared template from them, so header, rows, and footer align with zero measurement and no <code>grid-template-columns</code> string. The status cell is a <code>&lt;cngx-tag&gt;</code>, not hand-written pill CSS. On narrow screens the grid scrolls sideways with every column intact instead of dropping one. Mark one cell <code>primary</code> so a screen reader names the row by the customer alone.',
   level: 'organism',
   audience: ['dev', 'design'],
   artifact: 'building-block',
@@ -28,15 +28,14 @@ export const STORY: DemoSpec = {
   template: `  <div style="max-width:640px">
     <cngx-data-grid-accordion
       [skin]="'ledger'"
-      columns="7rem 1fr 6rem 7rem"
       [multi]="true"
       [headingLevel]="3"
     >
       <cngx-data-grid-header>
-        <span cngxDgCell>Invoice</span>
-        <span cngxDgCell>Customer</span>
-        <span cngxDgCell align="end">Amount</span>
-        <span cngxDgCell align="end">Status</span>
+        <span cngxDgCell col="md">Invoice</span>
+        <span cngxDgCell col="grow">Customer</span>
+        <span cngxDgCell col="md" align="end">Amount</span>
+        <span cngxDgCell col="fit" align="end">Status</span>
       </cngx-data-grid-header>
 
       <cngx-data-grid-row panelId="inv-1042">

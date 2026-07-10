@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'The <code>[skin]="\'spreadsheet\'"</code> skin reads like a worksheet - visible cell hairlines, a row-number gutter, and a column-letter strip above the labels. Opening a row fills its gutter cell with the accent colour and turns the detail zone into a note cell.',
   description:
-    'The column letters (A / B / C) and the gutter row numbers are both derived by the skin from CSS counters, so you author neither and write no gutter cell at all - the skin owns the first column of the <code>[columns]</code> template and paints it, while your cells fill the rest. Mark the item cell <code>primary</code> so a screen reader names the row by its item alone. On narrow screens the grid scrolls sideways with every column intact instead of dropping one.',
+    'The column letters (A / B / C) and the gutter row numbers are both derived by the skin from CSS counters, so you author neither and write no gutter cell at all - the skin owns the first column of the <code>[columns]</code> template and paints it, while your cells fill the rest. Unlike the other skins this one keeps the raw <code>[columns]</code> string as the escape hatch: its <code>28px</code> gutter and <code>ch</code> tracks have no equivalent in the <code>col</code> vocabulary. Mark the item cell <code>primary</code> so a screen reader names the row by its item alone. On narrow screens the grid scrolls sideways with every column intact instead of dropping one.',
   level: 'organism',
   audience: ['dev', 'design'],
   artifact: 'building-block',
@@ -27,7 +27,7 @@ export const STORY: DemoSpec = {
   template: `  <div style="max-width:640px">
     <cngx-data-grid-accordion
       [skin]="'spreadsheet'"
-      columns="44px 1fr 11ch 12ch"
+      columns="28px 1fr 11ch 12ch"
       [multi]="true"
       [headingLevel]="3"
     >

@@ -30,14 +30,13 @@ export const STORY: DemoSpec = {
   template: `  <div style="max-width:680px">
     <cngx-data-grid-accordion
       [skin]="'log-stream'"
-      columns="10ch 8ch 1fr"
       [multi]="true"
       [headingLevel]="3"
     >
       <cngx-data-grid-header>
-        <span cngxDgCell>Time</span>
-        <span cngxDgCell>Level</span>
-        <span cngxDgCell>Message</span>
+        <span cngxDgCell col="md">Time</span>
+        <span cngxDgCell col="fit">Level</span>
+        <span cngxDgCell col="grow">Message</span>
       </cngx-data-grid-header>
 
       <cngx-data-grid-row panelId="log-1" [severity]="'error'">
