@@ -121,9 +121,16 @@
   transform: rotate(225deg);
 }
 
-/* The detail zone is row 2 of the row subgrid, spanning every column. */
+/* The detail zone is row 2 of the row subgrid, spanning every column. Negative inline
+   margins pull it back OUT across the inner grid's inline padding (the leading chevron
+   gutter + the trailing edge) so its background, border, and accent edge run frame to
+   frame like a normal disclosure panel - a plain grid item would stop at the content
+   columns and leave the gutter uncovered (a white notch beside the open row). The
+   region's own `--cngx-dga-region-padding` provides the text inset. */
 .cngx-data-grid-row__region {
   grid-column: 1 / -1;
+  margin-inline: calc(-1 * (var(--cngx-dga-row-px, 0.75rem) + var(--cngx-dga-lead, 1.25rem)))
+    calc(-1 * var(--cngx-dga-row-px, 0.75rem));
   padding: var(--cngx-dga-region-padding, 0.75rem 1rem);
 }
 
