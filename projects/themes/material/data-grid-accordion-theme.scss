@@ -1,0 +1,52 @@
+@use '@angular/material' as mat;
+
+// Material bridge for the @cngx/ui/data-grid-accordion organism
+// (CngxDataGridAccordion + CngxDataGridRow + CngxDgCell + header / footer).
+// Default visuals ship with the components' own styleUrls (the base grid CSS +
+// data-grid-accordion-skins.css), which carry literal fallback defaults only.
+// This file aligns the shared `--cngx-dga-*` tokens with Material so a base
+// (unskinned) data-grid reads native alongside <mat-table> / <mat-expansion-panel>.
+//
+// The tokens are plain inheriting custom properties set on the group host, so they
+// cascade to every row, header, and footer inside it. The skins
+// (data-grid-accordion-skins.css) set their own surfaces in `:scope` and win over
+// this bridge by source order - as intended: a skin owns its palette, the bridge
+// aligns the base look and the shared dim-head tone (`--cngx-color-text-muted`,
+// which the system bridge does not map) that the skins still read.
+//
+//   @use '@angular/material' as mat;
+//   @use '@cngx/themes/material/data-grid-accordion-theme' as data-grid-accordion;
+//   html {
+//     @include data-grid-accordion.theme($theme);
+//   }
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    // --mat-sys-* already carries light and dark, so one assignment tracks both
+    // theme types without a separate prefers-color-scheme block.
+    --cngx-dga-border-color: var(--mat-sys-outline-variant);
+    --cngx-dga-surface-alt: var(--mat-sys-surface-container-low);
+    --cngx-dga-surface-strong: var(--mat-sys-surface-container-high);
+    --cngx-dga-focus-color: var(--mat-sys-primary);
+    // The mono column heads / dimmed cells read --cngx-color-text-muted, which the
+    // system bridge does not map. Align it here, scoped to the data-grid.
+    --cngx-color-text-muted: var(--mat-sys-on-surface-variant);
+  } @else {
+    --cngx-dga-border-color: #{rgba(mat.get-theme-color($theme, foreground, divider), 0.12)};
+    --cngx-dga-surface-alt: #{rgba(mat.get-theme-color($theme, foreground, text), 0.03)};
+    --cngx-dga-surface-strong: #{rgba(mat.get-theme-color($theme, foreground, text), 0.06)};
+    --cngx-dga-focus-color: #{mat.get-theme-color($theme, primary)};
+    --cngx-color-text-muted: #{rgba(mat.get-theme-color($theme, foreground, text), 0.62)};
+  }
+}
+
+// Base organism bridge. Token-only, emitted on the group host via `:where()` so it
+// stays specificity 0 and any skin `:scope` block overrides it. Layered in
+// cngx.components to sit beneath the unlayered component skins.
+@mixin theme($theme) {
+  @layer cngx.components {
+    :where(cngx-data-grid-accordion) {
+      @include color($theme);
+    }
+  }
+}
