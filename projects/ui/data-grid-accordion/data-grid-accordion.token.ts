@@ -1,6 +1,6 @@
-import { InjectionToken, type Signal } from '@angular/core';
+import { InjectionToken, type Signal, type WritableSignal } from '@angular/core';
 
-import type { CngxSort } from '@cngx/common/data';
+import type { CngxFilter, CngxSort } from '@cngx/common/data';
 
 /**
  * UI-local context a {@link CngxDataGridAccordion} exposes so each
@@ -11,15 +11,16 @@ import type { CngxSort } from '@cngx/common/data';
  * through the inherited `--cngx-dga-columns` custom property (CSS cascade), so it
  * needs no signal here.
  *
- * The group also hosts the orthogonal {@link CngxSort} atom and exposes it here as
- * `sort`, so `cngxDgaSortHeader` cells drive the shared sort with no `[cngxSortRef]`
- * plumbing. The context still carries state only - the consumer's `computed()` derives
- * the ordered rows.
+ * The group also hosts the orthogonal {@link CngxSort} and {@link CngxFilter} atoms and
+ * exposes them here as `sort` and `filter`, so `cngxDgaSortHeader` cells drive the sort
+ * with no `[cngxSortRef]` and the `cngxDgaFilter` slot writes `filterTerm`. The context
+ * still carries state only - the consumer's `computed()` derives the visible + ordered
+ * rows.
  *
  * @category ui/data-grid-accordion
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/data-grid-accordion/data-grid-accordion.token.ts
  * @since 0.1.0
- * @relatedTo CngxDataGridAccordion, CngxDataGridRow, CngxSort
+ * @relatedTo CngxDataGridAccordion, CngxDataGridRow, CngxSort, CngxFilter
  */
 export interface CngxDataGridAccordionContext {
   /** Heading level (2-6) every row's `role="heading"` wrapper reflects via `aria-level`. */
@@ -29,6 +30,18 @@ export interface CngxDataGridAccordionContext {
    * and call `setSort(...)`; a consumer derives the ordered rows from it via `computed()`.
    */
   readonly sort: CngxSort;
+  /**
+   * The group's hosted {@link CngxFilter}. `[filterPredicate]` feeds its controlled
+   * predicate; a consumer reads `filter.predicate()` (or drives `addPredicate` for facet
+   * filtering) and derives the visible rows via `computed()`.
+   */
+  readonly filter: CngxFilter;
+  /**
+   * The simple text filter term, two-way bindable as `[(filterTerm)]`. The `cngxDgaFilter`
+   * input writes it (debounced); a consumer matches it against its own row fields in a
+   * `computed()`. Writable so the slot directive can set it.
+   */
+  readonly filterTerm: WritableSignal<string>;
 }
 
 /**

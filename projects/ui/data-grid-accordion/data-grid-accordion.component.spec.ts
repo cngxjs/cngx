@@ -4,7 +4,7 @@ import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { CngxAccordion } from '@cngx/common/interactive';
-import { CngxSort, type SortEntry } from '@cngx/common/data';
+import { CngxFilter, CngxSort, type SortEntry } from '@cngx/common/data';
 
 import { CngxDataGridAccordion } from './data-grid-accordion.component';
 import { CngxDataGridHeader } from './data-grid-header.component';
@@ -215,6 +215,66 @@ describe('CngxDataGridAccordion sort', () => {
   it('forwards [multiSort] into the hosted CngxSort', () => {
     const { sort } = setup();
     expect(sort.multiSort()).toBe(true);
+  });
+});
+
+@Component({
+  template: `<cngx-data-grid-accordion
+    [filterPredicate]="predicate()"
+    [(filterTerm)]="term"
+  ></cngx-data-grid-accordion>`,
+  imports: [CngxDataGridAccordion],
+})
+class FilterHost {
+  readonly predicate = signal<((row: unknown) => boolean) | null>(null);
+  readonly term = signal('');
+}
+
+describe('CngxDataGridAccordion filter', () => {
+  beforeEach(() => TestBed.configureTestingModule({ imports: [FilterHost] }));
+
+  function setup() {
+    const fixture = TestBed.createComponent(FilterHost);
+    fixture.detectChanges();
+    const de = fixture.debugElement.query(By.directive(CngxDataGridAccordion));
+    return {
+      fixture,
+      host: fixture.componentInstance,
+      de,
+      group: de.injector.get(CngxDataGridAccordion),
+      filter: de.injector.get(CngxFilter),
+    };
+  }
+
+  it('exposes the hosted CngxFilter and the filterTerm model on the context', () => {
+    const { de, group, filter } = setup();
+    const ctx = de.injector.get(CNGX_DATA_GRID_ACCORDION);
+    expect(group.filter).toBe(filter);
+    expect(ctx.filter).toBe(filter);
+    expect(ctx.filterTerm).toBe(group.filterTerm);
+  });
+
+  it('forwards [filterPredicate] into the hosted CngxFilter', () => {
+    const { fixture, host, filter } = setup();
+    expect(filter.predicate()).toBeNull();
+
+    host.predicate.set((row) => row === 'keep');
+    fixture.detectChanges();
+    const predicate = filter.predicate();
+    expect(predicate).not.toBeNull();
+    expect(predicate?.('keep')).toBe(true);
+    expect(predicate?.('drop')).toBe(false);
+  });
+
+  it('two-way binds [(filterTerm)] with the hosted model', () => {
+    const { fixture, host, group } = setup();
+    host.term.set('alpha');
+    fixture.detectChanges();
+    expect(group.filterTerm()).toBe('alpha');
+
+    group.filterTerm.set('omega');
+    fixture.detectChanges();
+    expect(host.term()).toBe('omega');
   });
 });
 

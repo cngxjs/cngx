@@ -5,12 +5,13 @@ import {
   contentChild,
   inject,
   input,
+  model,
   ViewEncapsulation,
 } from '@angular/core';
 
 import { coerceNumberProperty } from '@cngx/core/utils';
 import { CngxAccordion } from '@cngx/common/interactive';
-import { CngxSort } from '@cngx/common/data';
+import { CngxFilter, CngxSort } from '@cngx/common/data';
 
 import {
   CNGX_DATA_GRID_ACCORDION,
@@ -41,9 +42,12 @@ import type { CngxDgCellTrack } from './data-grid-cell.directive';
  * {@link CNGX_DATA_GRID_ACCORDION} as `sort`, so header cells become sortable with
  * one `cngxDgaSortHeader` attribute (no `[cngxSortRef]` plumbing) and a consumer can
  * bind the controlled `[sortActive]` / `[sortDirection]` inputs and read `(sortChange)`.
- * The group only publishes the sort state - the consumer still derives the ordered
- * rows via a `computed()` and owns the `@for`; the open set is keyed by row value so a
- * sorted row stays open while it moves.
+ * It hosts the orthogonal {@link CngxFilter} atom the same way, exposed as `filter`:
+ * `[filterPredicate]` forwards to its controlled predicate, `(filterChange)` re-emits,
+ * and a projected `cngxDgaFilter` input two-way-binds the simple `[(filterTerm)]`.
+ * The group only publishes sort/filter state - the consumer still derives the
+ * visible + ordered rows via a `computed()` and owns the `@for`; the open set is keyed
+ * by row value so a sorted or filtered row stays open while it moves.
  *
  * The column widths are declared on the header cells via `col`
  * (`grow` / `fit` / `sm` / `md` / `lg`); the group derives the shared template from
@@ -95,6 +99,16 @@ import type { CngxDgCellTrack } from './data-grid-cell.directive';
       inputs: ['cngxSortActive: sortActive', 'cngxSortDirection: sortDirection', 'multiSort'],
       outputs: ['sortChange'],
     },
+    // Filter mirrors sort: the `CngxFilter` predicate atom hosted here, its controlled
+    // predicate re-exposed as `[filterPredicate]` and its change re-emitted as
+    // `(filterChange)`. Consumers reach its combined predicate (and the multi-predicate
+    // `addPredicate` API for facet filtering) through the context. The simple text path
+    // is the separate `[(filterTerm)]` model below, which the `cngxDgaFilter` slot writes.
+    {
+      directive: CngxFilter,
+      inputs: ['cngxFilter: filterPredicate'],
+      outputs: ['filterChange'],
+    },
   ],
   providers: [{ provide: CNGX_DATA_GRID_ACCORDION, useExisting: CngxDataGridAccordion }],
   // The inner `__grid` is the single grid that owns the tracks; the host stays the
@@ -121,6 +135,23 @@ export class CngxDataGridAccordion implements CngxDataGridAccordionContext {
    * consumer's `computed()` still derives the ordered rows (Ableitung preserved).
    */
   readonly sort = inject(CngxSort, { self: true });
+
+  /**
+   * The hosted {@link CngxFilter} instance, exposed on {@link CNGX_DATA_GRID_ACCORDION}
+   * as `filter`. `[filterPredicate]` forwards to its controlled predicate; consumers
+   * read `filter.predicate()` (or drive `addPredicate` for facet filtering) and derive
+   * the visible rows themselves. State only - the group never hides projected rows.
+   */
+  readonly filter = inject(CngxFilter, { self: true });
+
+  /**
+   * The simple text filter term, two-way bindable as `[(filterTerm)]`. A `model()`
+   * because it is a two-way primary value the projected `cngxDgaFilter` input writes
+   * (a plain `input()` could not be set from the slot). The group publishes it on the
+   * context so the consumer's `computed()` matches it against its own row fields - the
+   * group holds no field knowledge and does no matching (Pillar 3).
+   */
+  readonly filterTerm = model<string>('');
 
   /**
    * Raw `grid-template-columns` escape hatch. Leave it unset for the common case:
