@@ -26,8 +26,8 @@
   margin: 0;
 }
 
-/* The summary button IS the grid line: cells project into it and land on the
-   shared column contract, the chevron slot fills the trailing `auto` track. */
+/* The summary button IS the grid line: cells project into it and land on the shared
+   column contract; the chevron is an absolute overlay in the leading gutter. */
 .cngx-data-grid-row__summary {
   /* The summary carries `cngxAccordionPanel`, so the headless Track-B accordion
      skin (@cngx/themes cngx.css) would paint its own ::after twisty here. This
@@ -42,6 +42,10 @@
   grid-column: 1 / -1;
   display: grid;
   grid-template-columns: subgrid;
+  /* Match the inner grid's column gap explicitly: the Track-B accordion skin sets its
+     own `column-gap` on the `cngxAccordionPanel` button, which would otherwise shift
+     the summary's subgrid tracks off the header / footer (they inherit the grid gap). */
+  column-gap: var(--cngx-dga-col-gap, 0.5rem);
   align-items: center;
   inline-size: 100%;
   /* Only block padding on the subgrid summary - the inline gutter (chevron + edges)
