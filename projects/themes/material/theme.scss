@@ -87,6 +87,7 @@
   @include controls.theme($theme);
   @include copy-block.theme($theme);
   @include data-grid-accordion.theme($theme);
+  @include data-grid-accordion.skins($theme);
   @include dialog.theme($theme);
   @include divider.theme($theme);
   @include empty-state.theme($theme);

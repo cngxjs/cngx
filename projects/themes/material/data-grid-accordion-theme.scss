@@ -43,10 +43,58 @@
 // Base organism bridge. Token-only, emitted on the group host via `:where()` so it
 // stays specificity 0 and any skin `:scope` block overrides it. Layered in
 // cngx.components to sit beneath the unlayered component skins.
+//
+//   - theme($theme): the base organism (unskinned default). Ships on every grid.
+//   - skins($theme): the per-skin surface refinements. Include only when the app
+//     renders skins. The framed skins expose a `--cngx-dga-surface-*-mat` override
+//     token that this maps to Material surface-container tokens, so a skin's elevated
+//     surfaces read as native Material elevation instead of the oklab derivation.
 @mixin theme($theme) {
   @layer cngx.components {
     :where(cngx-data-grid-accordion) {
       @include color($theme);
+    }
+  }
+}
+
+// Maps a framed skin's alternate surfaces to Material surface-container tokens through
+// the skin's `-mat` override token. Unset (base-only consumer), the skin keeps its
+// oklab-from-foundation derivation - so this only ever refines, never breaks.
+@mixin _skin-surfaces($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-dga-surface-alt-mat: var(--mat-sys-surface-container-low);
+    --cngx-dga-surface-strong-mat: var(--mat-sys-surface-container-high);
+  } @else {
+    --cngx-dga-surface-alt-mat: #{rgba(mat.get-theme-color($theme, foreground, text), 0.03)};
+    --cngx-dga-surface-strong-mat: #{rgba(mat.get-theme-color($theme, foreground, text), 0.06)};
+  }
+}
+
+// Per-skin refinements, keyed off the [data-skin] host attribute. Split out of theme()
+// so an app that never renders a skin omits this include and its per-skin blocks. The
+// full theme.scss aggregation always includes it.
+//
+// `report` is frameless (no alternate surface), and its over-budget danger + the
+// `density` / `log-stream` status colours already track Material through the foundation
+// tokens (danger -> error, info -> primary) and the tag bridge, so neither needs a block.
+@mixin skins($theme) {
+  @layer cngx.components {
+    :where(cngx-data-grid-accordion[data-skin='ledger']),
+    :where(cngx-data-grid-accordion[data-skin='log-stream']),
+    :where(cngx-data-grid-accordion[data-skin='master-detail']),
+    :where(cngx-data-grid-accordion[data-skin='density']) {
+      @include _skin-surfaces($theme);
+    }
+
+    :where(cngx-data-grid-accordion[data-skin='spreadsheet']) {
+      @include _skin-surfaces($theme);
+      // The row-number gutter fills primary on open; its digit reads --cngx-color-on-primary,
+      // which the system bridge does not map. Align it so the contrast holds under any theme.
+      @if mat.get-theme-version($theme) == 1 {
+        --cngx-color-on-primary: var(--mat-sys-on-primary);
+      } @else {
+        --cngx-color-on-primary: white;
+      }
     }
   }
 }
