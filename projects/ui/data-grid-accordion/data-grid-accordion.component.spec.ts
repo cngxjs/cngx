@@ -372,3 +372,66 @@ describe('CngxDataGridAccordion column derivation', () => {
     expect(template(el)).toBe('auto minmax(0, 1fr) auto');
   });
 });
+
+@Component({
+  template: `<cngx-data-grid-accordion [multi]="true" [(openIds)]="open">
+    @for (row of rows(); track row.id) {
+      <cngx-dga-row [panelId]="row.id">
+        <span cngxDgaCell primary>{{ row.name }}</span>
+        Detail {{ row.id }}
+      </cngx-dga-row>
+    }
+  </cngx-data-grid-accordion>`,
+  imports: [CngxDataGridAccordion, CngxDataGridRow, CngxDgCell],
+})
+class OpenSetHost {
+  readonly rows = signal<{ id: string; name: string }[]>([
+    { id: 'a', name: 'Alpha' },
+    { id: 'b', name: 'Beta' },
+    { id: 'c', name: 'Gamma' },
+  ]);
+  readonly open = signal<ReadonlySet<string>>(new Set());
+}
+
+describe('CngxDataGridAccordion open-set survives sort + filter', () => {
+  beforeEach(() => TestBed.configureTestingModule({ imports: [OpenSetHost] }));
+
+  function expandedCount(fixture: { nativeElement: HTMLElement }): number {
+    return fixture.nativeElement.querySelectorAll('.cngx-dga-row[data-expanded]').length;
+  }
+
+  it('keeps rows open by panelId through a reorder and a filter that removes them', () => {
+    const fixture = TestBed.createComponent(OpenSetHost);
+    fixture.detectChanges();
+    const host = fixture.componentInstance;
+
+    host.open.set(new Set(['a', 'c']));
+    fixture.detectChanges();
+    expect(expandedCount(fixture)).toBe(2);
+
+    // Reorder (reverse) and filter out 'b'. The open-set is keyed by panelId, not by
+    // position or DOM presence, so 'a' and 'c' stay open through the move.
+    host.rows.set([
+      { id: 'c', name: 'Gamma' },
+      { id: 'a', name: 'Alpha' },
+    ]);
+    fixture.detectChanges();
+    expect(expandedCount(fixture)).toBe(2);
+    expect([...host.open()].sort()).toEqual(['a', 'c']);
+
+    // Filter 'c' out of the DOM entirely; its open state is retained in the set even
+    // while the row is unmounted (unregisterHeader does not prune openIds).
+    host.rows.set([{ id: 'a', name: 'Alpha' }]);
+    fixture.detectChanges();
+    expect(expandedCount(fixture)).toBe(1);
+    expect([...host.open()].sort()).toEqual(['a', 'c']);
+
+    // Bring 'c' back; it renders expanded again - the open state survived the filter.
+    host.rows.set([
+      { id: 'c', name: 'Gamma' },
+      { id: 'a', name: 'Alpha' },
+    ]);
+    fixture.detectChanges();
+    expect(expandedCount(fixture)).toBe(2);
+  });
+});
