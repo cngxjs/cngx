@@ -61,8 +61,16 @@
   cursor: pointer;
 }
 
+/* Full-row keyboard focus ring: the summary spans every column via subgrid, so its
+   own outline already wraps the whole row. The colour chains through
+   `--cngx-dga-focus-color` to the theme primary (the Material bridge maps it to
+   `--mat-sys-primary`), so it tracks the theme instead of a fixed blue; the inset
+   offset keeps it clear of the frame edge on the framed skins. */
 .cngx-data-grid-row__summary:focus-visible {
-  outline: var(--cngx-dga-focus-ring, 2px solid var(--cngx-dga-focus-color, #1d4ed8));
+  outline: var(
+    --cngx-dga-focus-ring,
+    2px solid var(--cngx-dga-focus-color, var(--cngx-color-primary, #1d4ed8))
+  );
   outline-offset: var(--cngx-dga-focus-offset, -2px);
 }
 
