@@ -160,7 +160,11 @@
        gutters this skin deliberately removes. */
     --cngx-dga-col-gap: 0;
     --cngx-dga-row-py: 0;
-    --cngx-dga-row-px: 0;
+    /* 0px, not a bare 0: the inner grid reserves the chevron gutter with
+       `calc(var(--cngx-dga-row-px) + var(--cngx-dga-lead))`, and a unitless 0 makes
+       that calc invalid (number + length), collapsing the gutter and pushing the
+       chevron off the frame. */
+    --cngx-dga-row-px: 0px;
 
     /* Leading chevron gutter kept SEPARATE from the row-number column: overlaying
        the two collided the chevron and the digit into a single unreadable glyph
@@ -317,13 +321,6 @@
     content: counter(cngx-dga-col, upper-alpha);
   }
 
-  /* Centre the chevron within the leading gutter. `--cngx-dga-row-px` is 0 in this
-     flush skin, so the base inset would pin the chevron to the frame border; box it
-     to the gutter width and centre it instead. */
-  .cngx-data-grid-row__chevron-slot {
-    inline-size: var(--cngx-dga-lead, 1.5rem);
-    justify-content: center;
-  }
 
   /* Hover + open tint every content cell; the synthesised gutter has its own open
      state below. */
