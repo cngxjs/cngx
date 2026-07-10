@@ -3,12 +3,14 @@ import {
   Component,
   computed,
   contentChild,
+  inject,
   input,
   ViewEncapsulation,
 } from '@angular/core';
 
 import { coerceNumberProperty } from '@cngx/core/utils';
 import { CngxAccordion } from '@cngx/common/interactive';
+import { CngxSort } from '@cngx/common/data';
 
 import {
   CNGX_DATA_GRID_ACCORDION,
@@ -34,9 +36,14 @@ import type { CngxDgCellTrack } from './data-grid-cell.directive';
  * {@link CNGX_DATA_GRID_ACCORDION} so rows read the shared heading level.
  *
  * It is a disclosure accordion, not a data grid: no `role="grid"`, no cell edit,
- * no selection model, no keyboard grid navigation. Sort and filter compose from
- * the orthogonal `CngxSort` / `CngxFilter` atoms in the header slot; the open set
- * is keyed by row value so a sorted row stays open while it moves.
+ * no selection model, no keyboard grid navigation. It hosts the orthogonal
+ * {@link CngxSort} atom as a second `hostDirective` and exposes it on
+ * {@link CNGX_DATA_GRID_ACCORDION} as `sort`, so header cells become sortable with
+ * one `cngxDgaSortHeader` attribute (no `[cngxSortRef]` plumbing) and a consumer can
+ * bind the controlled `[sortActive]` / `[sortDirection]` inputs and read `(sortChange)`.
+ * The group only publishes the sort state - the consumer still derives the ordered
+ * rows via a `computed()` and owns the `@for`; the open set is keyed by row value so a
+ * sorted row stays open while it moves.
  *
  * The column widths are declared on the header cells via `col`
  * (`grow` / `fit` / `sm` / `md` / `lg`); the group derives the shared template from
@@ -79,6 +86,15 @@ import type { CngxDgCellTrack } from './data-grid-cell.directive';
   styleUrls: ['./data-grid-accordion.component.css', './data-grid-accordion-skins.css'],
   hostDirectives: [
     { directive: CngxAccordion, inputs: ['multi', 'openIds'], outputs: ['openIdsChange'] },
+    // Sort is the orthogonal `@cngx/common/data` atom, hosted here so header cells reach
+    // it through the context token with no `[cngxSortRef]`. Its controlled inputs are
+    // re-exposed as `[sortActive]` / `[sortDirection]`; the primary change re-emits as
+    // `(sortChange)`. The group publishes state only - derivation stays with the consumer.
+    {
+      directive: CngxSort,
+      inputs: ['cngxSortActive: sortActive', 'cngxSortDirection: sortDirection', 'multiSort'],
+      outputs: ['sortChange'],
+    },
   ],
   providers: [{ provide: CNGX_DATA_GRID_ACCORDION, useExisting: CngxDataGridAccordion }],
   // The inner `__grid` is the single grid that owns the tracks; the host stays the
@@ -96,6 +112,15 @@ export class CngxDataGridAccordion implements CngxDataGridAccordionContext {
   // Config cascade source. Declared first so the resolvedSkin computed below can
   // read it (field initialisers run top-to-bottom).
   private readonly config = injectDataGridAccordionConfig();
+
+  /**
+   * The hosted {@link CngxSort} instance, exposed on {@link CNGX_DATA_GRID_ACCORDION}
+   * so `cngxDgaSortHeader` cells read the shared sort with no `[cngxSortRef]`. It is a
+   * `hostDirective`, so it lives on this element's injector; `{ self: true }` resolves
+   * that instance rather than an ancestor's. The group publishes it as state - the
+   * consumer's `computed()` still derives the ordered rows (Ableitung preserved).
+   */
+  readonly sort = inject(CngxSort, { self: true });
 
   /**
    * Raw `grid-template-columns` escape hatch. Leave it unset for the common case:

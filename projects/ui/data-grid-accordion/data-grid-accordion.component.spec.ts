@@ -4,6 +4,7 @@ import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { CngxAccordion } from '@cngx/common/interactive';
+import { CngxSort, type SortEntry } from '@cngx/common/data';
 
 import { CngxDataGridAccordion } from './data-grid-accordion.component';
 import { CngxDataGridHeader } from './data-grid-header.component';
@@ -152,6 +153,68 @@ describe('CngxDataGridAccordion skin cascade', () => {
     host.skin.set('terminal');
     fixture.detectChanges();
     expect(el.getAttribute('data-skin')).toBe('terminal');
+  });
+});
+
+@Component({
+  template: `<cngx-data-grid-accordion
+    [sortActive]="active()"
+    [sortDirection]="direction()"
+    [multiSort]="true"
+    (sortChange)="onSort($event)"
+  ></cngx-data-grid-accordion>`,
+  imports: [CngxDataGridAccordion],
+})
+class SortHost {
+  readonly active = signal<string | undefined>(undefined);
+  readonly direction = signal<'asc' | 'desc' | undefined>(undefined);
+  readonly lastSort = signal<SortEntry | undefined>(undefined);
+  onSort(entry: SortEntry | undefined): void {
+    this.lastSort.set(entry);
+  }
+}
+
+describe('CngxDataGridAccordion sort', () => {
+  beforeEach(() => TestBed.configureTestingModule({ imports: [SortHost] }));
+
+  function setup() {
+    const fixture = TestBed.createComponent(SortHost);
+    fixture.detectChanges();
+    const de = fixture.debugElement.query(By.directive(CngxDataGridAccordion));
+    return {
+      fixture,
+      host: fixture.componentInstance,
+      de,
+      group: de.injector.get(CngxDataGridAccordion),
+      sort: de.injector.get(CngxSort),
+    };
+  }
+
+  it('exposes the hosted CngxSort as grid.sort on the context', () => {
+    const { de, group, sort } = setup();
+    expect(group.sort).toBe(sort);
+    expect(de.injector.get(CNGX_DATA_GRID_ACCORDION).sort).toBe(sort);
+  });
+
+  it('forwards [sortActive]/[sortDirection] into the hosted CngxSort', () => {
+    const { fixture, host, sort } = setup();
+    host.active.set('name');
+    host.direction.set('desc');
+    fixture.detectChanges();
+    expect(sort.active()).toBe('name');
+    expect(sort.direction()).toBe('desc');
+  });
+
+  it('re-emits (sortChange) when the hosted sort toggles', () => {
+    const { fixture, host, sort } = setup();
+    sort.setSort('amount');
+    fixture.detectChanges();
+    expect(host.lastSort()).toEqual({ active: 'amount', direction: 'asc' });
+  });
+
+  it('forwards [multiSort] into the hosted CngxSort', () => {
+    const { sort } = setup();
+    expect(sort.multiSort()).toBe(true);
   });
 });
 
