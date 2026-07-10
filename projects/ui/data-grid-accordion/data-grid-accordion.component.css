@@ -106,3 +106,54 @@
 .cngx-data-grid-accordion:not([data-skin]) .cngx-dga-row__summary:hover {
   background: color-mix(in oklab, var(--cngx-color-text, #0f1320) 4%, transparent);
 }
+
+/* A sortable header cell (`cngxDgaSortHeader`) - a focusable `role="button"` on a
+   header cell. Lives in the base (not a skin) so sort works on the flat grid and every
+   skin alike. The sort state reaches assistive tech through a visually-hidden
+   description (`__sr`); the arrow below is a purely visual cue. */
+.cngx-dga-sort-header {
+  cursor: pointer;
+  user-select: none;
+}
+
+.cngx-dga-sort-header:focus-visible {
+  outline: var(
+    --cngx-dga-focus-ring,
+    2px solid var(--cngx-dga-focus-color, var(--cngx-color-primary, #1d4ed8))
+  );
+  outline-offset: var(--cngx-dga-focus-offset, 2px);
+}
+
+/* Direction arrow: only on the active column, tinted with the theme primary. A `::after`
+   glyph (pseudo content, so it is never announced and never widens a `ch`-based track).
+   The colour chains through `--cngx-dga-sort-indicator-color` so the Material bridge can
+   map it to `--mat-sys-primary`. */
+.cngx-dga-sort-header--active::after {
+  margin-inline-start: var(--cngx-dga-sort-indicator-gap, 0.35em);
+  font-size: var(--cngx-dga-sort-indicator-size, 0.7em);
+  color: var(--cngx-dga-sort-indicator-color, var(--cngx-color-primary, #1d4ed8));
+}
+
+.cngx-dga-sort-header--asc::after {
+  content: '\25B2'; /* ▲ */
+}
+
+.cngx-dga-sort-header--desc::after {
+  content: '\25BC'; /* ▼ */
+}
+
+/* Visually-hidden description node the sortable header's `aria-describedby` names.
+   Always in the DOM, content kept reactive by the directive (Pillar 2). Standard clip
+   idiom (structural, not thematic), matching the entry's other sr-only helpers. */
+.cngx-dga-sort-header__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}

@@ -137,13 +137,15 @@ describe('CngxDataGridRow', () => {
     expect(buttons[0].getAttribute('tabindex')).toBe('0');
   });
 
-  it('hides the header from AT but keeps the footer announced', () => {
+  it('keeps the header and footer announced (neither aria-hidden)', () => {
+    // The header is exposed to AT so a `cngxDgaSortHeader` sort control inside it stays
+    // reachable - a focusable control in an aria-hidden subtree fails aria-hidden-focus.
     const { fixture } = setup();
     const header = fixture.debugElement.query(By.directive(CngxDataGridHeader))
       .nativeElement as HTMLElement;
     const footer = fixture.debugElement.query(By.directive(CngxDataGridFooter))
       .nativeElement as HTMLElement;
-    expect(header.getAttribute('aria-hidden')).toBe('true');
+    expect(header.hasAttribute('aria-hidden')).toBe(false);
     expect(footer.hasAttribute('aria-hidden')).toBe(false);
   });
 

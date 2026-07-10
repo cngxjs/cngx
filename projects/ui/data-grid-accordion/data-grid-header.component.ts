@@ -8,12 +8,15 @@ import {
 import { CngxDgCell } from './data-grid-cell.directive';
 
 /**
- * The non-interactive column-header row of a {@link CngxDataGridAccordion}. Lays
- * its projected `cngxDgaCell`s out on the shared `--cngx-dga-columns` grid so the
- * labels align with the data columns below. Carries `aria-hidden="true"`: the
- * column labels are visual scaffolding, and each row already announces its own
- * accessible name through its primary cell, so the header would only add noise to
- * the disclosure list a screen reader walks.
+ * The column-header row of a {@link CngxDataGridAccordion}. Lays its projected
+ * `cngxDgaCell`s out on the shared `--cngx-dga-columns` grid so the labels align with
+ * the data columns below. It is exposed to assistive tech (no `aria-hidden`) so a
+ * `cngxDgaSortHeader` cell is reachable: a focusable sort control inside an
+ * `aria-hidden` subtree would be pruned from the accessibility tree and fail
+ * `aria-hidden-focus`, and `aria-hidden` cannot be undone by a descendant. The plain
+ * label cells now read like a table header row - a small, acceptable trade for keeping
+ * the sort controls operable. Each data row still announces its own name through its
+ * primary cell, so the disclosure list stays legible.
  *
  * It is also the single **column source**: the group reads these header cells and
  * derives the shared `grid-template-columns` from each cell's `col` track intent
@@ -35,7 +38,6 @@ import { CngxDgCell } from './data-grid-cell.directive';
   template: '<ng-content />',
   host: {
     class: 'cngx-dga-header',
-    'aria-hidden': 'true',
   },
 })
 export class CngxDataGridHeader {
