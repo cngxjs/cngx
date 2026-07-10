@@ -40,7 +40,12 @@
  *   surface with a primary inset edge and a quiet sub-head, with a bold rule-free
  *   `tfoot` sum. Below its `--cngx-dga-min-width` the grid scrolls sideways rather
  *   than dropping a column.
- * - `report`, `density` - transcribed in later phases.
+ * - `report` - a frameless cost report: no surface frame, a `3px double` rule under
+ *   the column head and over the sum foot, hairline dividers between rows, mono
+ *   right-aligned budget / actual money, and over-budget actual cells (`[data-over]`)
+ *   in the danger colour. Below its `--cngx-dga-min-width` the grid scrolls sideways
+ *   rather than dropping a column.
+ * - `density` - transcribed in the next phase.
  */
 
 @scope (.cngx-data-grid-accordion[data-skin='ledger']) {
@@ -688,6 +693,118 @@
      border (both draw from the same adaptive token). */
   .cngx-data-grid-row:last-of-type {
     --cngx-dga-row-divider: none;
+  }
+}
+
+@scope (.cngx-data-grid-accordion[data-skin='report']) {
+  :scope {
+    /* POC `.report`: frameless - no surface, no radius, no zebra. It reads as a
+       printed cost report: a `3px double` rule under the column head and over the sum
+       foot, hairline dividers between rows, and over-budget actuals in the danger
+       colour. `--s--1` body type. The host's `overflow-x: auto` still scrolls it. */
+    background: transparent;
+    font-size: var(--cngx-dga-fs, 0.875rem);
+
+    /* Overflow is scrolled, never dropped: under ~40rem the grid scrolls sideways with
+       the cost-centre + budget columns intact instead of hiding them. */
+    --cngx-dga-min-width: 40rem;
+
+    /* POC gaps / paddings: --sp-3 column gutter, .55rem row block; frameless, so no
+       inline frame padding (cells run edge to edge, POC `padding: .55rem 0`). */
+    --cngx-dga-col-gap: 0.75rem;
+    --cngx-dga-row-py: 0.55rem;
+    --cngx-dga-row-px: 0;
+    --cngx-dga-fs: 0.875rem;
+    --cngx-dga-head-fs: 0.75rem;
+
+    /* Detail zone reads as a note under the label column: indent past the leading
+       chevron track + the cost-centre (`sm`) column + the column gap so it lines up
+       under the label, not the frame edge (POC `padding-left: calc(8ch + --sp-3)`). */
+    --cngx-dga-region-padding: 0.1rem 0 0.85rem
+      calc(var(--cngx-dga-lead, 2rem) + var(--cngx-dga-col-sm, 5rem) + var(--cngx-dga-col-gap, 0.75rem));
+
+    /* Registered-@property trap: SET the adaptive divider colour so the between-row
+       hairline tracks the scheme instead of the fixed light initial. */
+    --cngx-dga-border-color: var(--cngx-color-border, #d1d5db);
+  }
+
+  /* Column head: a `3px double` bottom rule (POC border-bottom:3px double text@45%),
+     mono uppercase wide-tracked, muted. Normal weight (base weights the container 600;
+     the POC head is unbolded). */
+  .cngx-data-grid-header {
+    border-block-end: 3px double
+      color-mix(in oklab, var(--cngx-color-text, #0f1320) 45%, transparent);
+    font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
+    font-size: var(--cngx-dga-head-fs, 0.75rem);
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--cngx-color-text-muted, #6b7280);
+  }
+
+  /* Between-row divider is the quiet hairline (POC `details + details`); the head and
+     foot carry the heavy double rules. Hover tints with a faint text wash (POC
+     `summary:hover { background: text@5% }`). */
+  .cngx-data-grid-row__summary:hover {
+    background: color-mix(in oklab, var(--cngx-color-text, #0f1320) 5%, transparent);
+  }
+
+  /* The cost-centre code (first cell) is mono + dimmed; the label (primary) carries the
+     row weight; the money columns are mono, right of the label. Mono rides the cells,
+     never the summary container, so it never shifts a shared track width. */
+  .cngx-data-grid-row__summary .cngx-dga-cell:first-child {
+    font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
+    color: var(--cngx-color-text-muted, #6b7280);
+  }
+
+  .cngx-data-grid-row__summary .cngx-dga-cell[data-primary] {
+    font-weight: 620;
+    color: var(--cngx-color-text, #0f1320);
+  }
+
+  .cngx-data-grid-row__summary .cngx-dga-cell[data-align='end'] {
+    font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
+    color: var(--cngx-color-text, #0f1320);
+  }
+
+  /* Over-budget actual cells: the danger colour, bold (POC `.c-ist.over`). Authored in
+     the story as a `data-over` attribute on the cell - a consumer marker, so the state
+     stays a typed data-attr -> semantic token, never a raw hex via `[style]`. */
+  .cngx-data-grid-row__summary .cngx-dga-cell[data-over] {
+    color: var(--cngx-color-danger, #dc2626);
+    font-weight: 700;
+  }
+
+  /* Detail zone: muted small note, indented via the region padding above. */
+  .cngx-data-grid-row__region {
+    font-size: var(--cngx-dga-head-fs, 0.75rem);
+    color: var(--cngx-color-text-muted, #6b7280);
+    max-inline-size: 60ch;
+  }
+
+  /* Drop the last row's own divider so it never doubles with the footer's `3px double`
+     top rule. */
+  .cngx-data-grid-row:last-of-type {
+    --cngx-dga-row-divider: none;
+  }
+
+  /* Sum foot: a `3px double` top rule matching the head, text colour, the label +
+     money cells bold (POC `.dg-foot .c-lbl / .c-bud / .c-ist { font-weight:700 }`).
+     Bold rides the cells, never the container. */
+  .cngx-data-grid-footer {
+    border-block-start: 3px double
+      color-mix(in oklab, var(--cngx-color-text, #0f1320) 45%, transparent);
+    color: var(--cngx-color-text, #0f1320);
+  }
+
+  .cngx-data-grid-footer .cngx-dga-cell[data-primary] {
+    font-weight: 700;
+  }
+
+  .cngx-data-grid-footer .cngx-dga-cell[data-align='end'] {
+    font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
+    font-weight: 700;
+    color: var(--cngx-color-text, #0f1320);
   }
 }
 
