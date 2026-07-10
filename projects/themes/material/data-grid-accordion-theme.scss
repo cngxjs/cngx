@@ -1,3 +1,5 @@
+@use 'sass:map';
+@use 'sass:math';
 @use '@angular/material' as mat;
 
 // Material bridge for the @cngx/ui/data-grid-accordion organism
@@ -49,10 +51,40 @@
 //     renders skins. The framed skins expose a `--cngx-dga-surface-*-mat` override
 //     token that this maps to Material surface-container tokens, so a skin's elevated
 //     surfaces read as native Material elevation instead of the oklab derivation.
+// Typography: align the cell + column-head type with the Material type scale.
+// `--cngx-dga-head-fs` is read (not set) by every skin, so this reaches all of them;
+// `--cngx-dga-fs` is set by some skins in their :scope, so for those the skin wins -
+// the default and the density skin still pick it up.
+@mixin typography($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-dga-fs: var(--mat-sys-body-medium-size, 0.875rem);
+    --cngx-dga-head-fs: var(--mat-sys-label-medium-size, 0.75rem);
+  }
+}
+
+// Density: map the Material theme density scale (0 to -4) onto the row block padding
+// and the detail-region padding, so a single `density: -N` in the Material theme
+// compacts the grid the same way it compacts every other Material-paired cngx
+// component. The framed skins pin their own `--cngx-dga-row-py` in :scope, so this
+// drives the (unskinned) default and the density skin; a global cngx-native density
+// system that also reaches the skins is tracked separately.
+@mixin density($theme) {
+  $scale: mat.get-theme-density($theme);
+  $scale: math.max(-4, math.min(0, $scale));
+
+  $py: (0: 0.5rem, -1: 0.4rem, -2: 0.3rem, -3: 0.25rem, -4: 0.2rem);
+  $region: (0: 0.75rem 1rem, -1: 0.6rem 0.85rem, -2: 0.5rem 0.7rem, -3: 0.4rem 0.6rem, -4: 0.3rem 0.5rem);
+
+  --cngx-dga-row-py: #{map.get($py, $scale)};
+  --cngx-dga-region-padding: #{map.get($region, $scale)};
+}
+
 @mixin theme($theme) {
   @layer cngx.components {
     :where(cngx-data-grid-accordion) {
       @include color($theme);
+      @include typography($theme);
+      @include density($theme);
     }
   }
 }
