@@ -73,8 +73,12 @@ export class CngxDataGridRow {
   protected readonly regionId = nextUid('cngx-dga-region-');
   protected readonly headerId = nextUid('cngx-dga-header-');
 
-  /** Projected cells; the `primary` one supplies the row's accessible name. */
-  protected readonly cells = contentChildren(CngxDgCell);
+  /**
+   * Projected cells; the `primary` one supplies the row's accessible name. Public
+   * so {@link CngxDataGridAccordion} can read the primary-column index (for the
+   * grow default) and use the first row as the column source when no header exists.
+   */
+  readonly cells = contentChildren(CngxDgCell);
 
   /**
    * IDREF of the primary cell, bound to the summary button's and the region's

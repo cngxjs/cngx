@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  contentChildren,
+  ViewEncapsulation,
+} from '@angular/core';
+
+import { CngxDgCell } from './data-grid-cell.directive';
 
 /**
  * The non-interactive column-header row of a {@link CngxDataGridAccordion}. Lays
@@ -7,6 +14,11 @@ import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/
  * column labels are visual scaffolding, and each row already announces its own
  * accessible name through its primary cell, so the header would only add noise to
  * the disclosure list a screen reader walks.
+ *
+ * It is also the single **column source**: the group reads these header cells and
+ * derives the shared `grid-template-columns` from each cell's `col` track intent
+ * (`grow` / `fit` / `sm` / `md` / `lg`), so the columns are defined where they are
+ * labelled rather than in a separate template string.
  *
  * @category ui/data-grid-accordion
  * @wcag AA
@@ -26,4 +38,11 @@ import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/
     'aria-hidden': 'true',
   },
 })
-export class CngxDataGridHeader {}
+export class CngxDataGridHeader {
+  /**
+   * The projected header cells, in column order. Read by
+   * {@link CngxDataGridAccordion} to derive the shared grid template from each
+   * cell's `col` track intent.
+   */
+  readonly cells = contentChildren(CngxDgCell);
+}

@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  contentChild,
   input,
   ViewEncapsulation,
 } from '@angular/core';
@@ -15,6 +16,9 @@ import {
 } from './data-grid-accordion.token';
 import type { CngxDataGridSkin } from './config/data-grid-accordion.config';
 import { injectDataGridAccordionConfig } from './config/inject-data-grid-accordion-config';
+import { CngxDataGridHeader } from './data-grid-header.component';
+import { CngxDataGridRow } from './data-grid-row.component';
+import type { CngxDgCellTrack } from './data-grid-cell.directive';
 
 /**
  * Data-grid accordion group. A disclosure accordion whose header, rows, and
@@ -34,12 +38,16 @@ import { injectDataGridAccordionConfig } from './config/inject-data-grid-accordi
  * the orthogonal `CngxSort` / `CngxFilter` atoms in the header slot; the open set
  * is keyed by row value so a sorted row stays open while it moves.
  *
+ * The column widths are declared on the header cells via `col`
+ * (`grow` / `fit` / `sm` / `md` / `lg`); the group derives the shared template from
+ * them, so no `grid-template-columns` string is needed for the common case.
+ *
  * ```html
- * <cngx-data-grid-accordion columns="8ch 1fr auto" [multi]="true">
+ * <cngx-data-grid-accordion [multi]="true">
  *   <cngx-data-grid-header>
- *     <span cngxDgCell>ID</span>
- *     <span cngxDgCell>Name</span>
- *     <span cngxDgCell align="end">Amount</span>
+ *     <span cngxDgCell col="sm">ID</span>
+ *     <span cngxDgCell col="grow">Name</span>
+ *     <span cngxDgCell col="md" align="end">Amount</span>
  *   </cngx-data-grid-header>
  *   <cngx-data-grid-row panelId="1">
  *     <span cngxDgCell>1</span>
@@ -77,7 +85,7 @@ import { injectDataGridAccordionConfig } from './config/inject-data-grid-accordi
   host: {
     class: 'cngx-data-grid-accordion',
     '[attr.data-skin]': 'resolvedSkin() ?? null',
-    '[style.--cngx-dga-columns]': 'columns()',
+    '[style.--cngx-dga-columns]': 'resolvedColumns()',
   },
 })
 export class CngxDataGridAccordion implements CngxDataGridAccordionContext {
@@ -86,16 +94,16 @@ export class CngxDataGridAccordion implements CngxDataGridAccordionContext {
   private readonly config = injectDataGridAccordionConfig();
 
   /**
-   * The shared `grid-template-columns` value published onto the inherited
-   * `--cngx-dga-columns` property. Header, every row's summary, and footer read
-   * it, so all three rows align on one contract with zero JS measurement. It holds
-   * content columns only - the disclosure chevron rides a leading gutter outside
-   * the grid (reserved by inline-start padding), so it stays visible at the row's
-   * start when the grid scrolls sideways and never consumes a track. Per-instance
-   * only - each grid has a different column set, so there is no app-wide config
-   * default (unlike `[skin]`).
+   * Raw `grid-template-columns` escape hatch. Leave it unset for the common case:
+   * the group derives the shared template from the header cells' `col` intents
+   * (see {@link resolvedColumns}). Set it only when a skin needs track syntax the
+   * `col` vocabulary cannot express - `ch` tracks, `subgrid`, `minmax` - such as the
+   * `spreadsheet` skin. When set, it wins over the derived value. It holds content
+   * columns only: the disclosure chevron rides a leading gutter outside the grid, so
+   * it never consumes a track. Per-instance only - no app-wide config default
+   * (unlike `[skin]`).
    */
-  readonly columns = input<string>('1fr');
+  readonly columns = input<string | undefined>(undefined);
 
   /**
    * Heading level (2-6) every row's `role="heading"` wrapper reflects via
@@ -121,6 +129,67 @@ export class CngxDataGridAccordion implements CngxDataGridAccordionContext {
   protected readonly resolvedSkin = computed<CngxDataGridSkin | undefined>(
     () => this.skin() ?? this.config.skin,
   );
+
+  // The header is the single column source; the first row provides the primary
+  // index (for the grow default) and doubles as the source when no header exists.
+  private readonly header = contentChild(CngxDataGridHeader);
+  private readonly firstRow = contentChild(CngxDataGridRow);
+
+  /** Index of the primary column, read from the first row's `primary` cell (-1 = none). */
+  private readonly primaryIndex = computed(
+    () => this.firstRow()?.cells().findIndex((cell) => cell.primary()) ?? -1,
+  );
+
+  /** Column source: the header cells, or the first row's cells when no header exists. */
+  private readonly sourceCells = computed(
+    () => this.header()?.cells() ?? this.firstRow()?.cells() ?? [],
+  );
+
+  /**
+   * `grid-template-columns` derived from the column intents: each source cell's
+   * `col` track maps to a CSS track; unset falls back to the default (the primary
+   * column grows, every other column fits). `null` until a source cell exists.
+   */
+  private readonly derivedColumns = computed<string | null>(() => {
+    const cells = this.sourceCells();
+    if (cells.length === 0) {
+      return null;
+    }
+    const primary = this.primaryIndex();
+    return cells.map((cell, index) => trackFor(cell.col(), index === primary)).join(' ');
+  });
+
+  /**
+   * The shared column template published onto `--cngx-dga-columns`. Derivation over
+   * management (Pillar 1): a single `computed()` from one source (the header), not a
+   * hand-synced string. Precedence: an explicit `[columns]` escape hatch wins, else
+   * the header-derived template, else a single `1fr`. Primitive string, so
+   * `Object.is` dedupes with no `equal` fn.
+   */
+  protected readonly resolvedColumns = computed(
+    () => this.columns() ?? this.derivedColumns() ?? '1fr',
+  );
+}
+
+/**
+ * Map a cell's `col` track intent to one CSS `grid-template-columns` track. Unset
+ * (`undefined`) falls back to the derived default: the primary column grows
+ * (`minmax(0, 1fr)`), every other column fits its content (`auto`). The named sizes
+ * resolve against the registered `--cngx-dga-col-sm|-md|-lg` tokens.
+ */
+function trackFor(track: CngxDgCellTrack | undefined, isPrimary: boolean): string {
+  switch (track) {
+    case 'grow':
+      return 'minmax(0, 1fr)';
+    case 'fit':
+      return 'auto';
+    case 'sm':
+    case 'md':
+    case 'lg':
+      return `var(--cngx-dga-col-${track})`;
+    default:
+      return isPrimary ? 'minmax(0, 1fr)' : 'auto';
+  }
 }
 
 /**
