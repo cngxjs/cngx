@@ -6,7 +6,7 @@ import { coerceBooleanProperty, nextUid } from '@cngx/core/utils';
 export type CngxDgCellAlign = 'start' | 'center' | 'end';
 
 /**
- * Column-sizing intent for a data-grid track, authored on the `cngxDgCell`s of the
+ * Column-sizing intent for a data-grid track, authored on the `cngxDgaCell`s of the
  * {@link CngxDataGridHeader} (the single column source). The group derives the
  * shared `grid-template-columns` from these:
  *
@@ -39,8 +39,8 @@ export type CngxDgCellTrack = 'grow' | 'fit' | 'sm' | 'md' | 'lg';
  * @relatedTo CngxDataGridRow
  */
 @Directive({
-  selector: '[cngxDgCell]',
-  exportAs: 'cngxDgCell',
+  selector: '[cngxDgaCell]',
+  exportAs: 'cngxDgaCell',
   standalone: true,
   host: {
     class: 'cngx-dga-cell',

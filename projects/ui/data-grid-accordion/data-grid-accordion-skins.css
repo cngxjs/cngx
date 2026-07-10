@@ -103,7 +103,7 @@
   }
 
   /* Column head: strong alternate surface, mono uppercase, muted. */
-  .cngx-data-grid-header {
+  .cngx-dga-header {
     background: var(--cngx-dga-surface-strong);
     border-block-end: 1px solid var(--cngx-color-border, #d1d5db);
     font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
@@ -114,7 +114,7 @@
   }
 
   /* Zebra: even rows carry the alternate surface. */
-  .cngx-data-grid-row:nth-of-type(even) .cngx-data-grid-row__summary {
+  .cngx-dga-row:nth-of-type(even) .cngx-dga-row__summary {
     background: var(--cngx-dga-surface-alt);
   }
 
@@ -122,23 +122,23 @@
      adaptive via the :scope `--cngx-dga-border-color` above). The last row drops
      it so it does not double with the footer's own top border (which the base
      group CSS already draws from the same adaptive token). */
-  .cngx-data-grid-row:last-of-type {
+  .cngx-dga-row:last-of-type {
     --cngx-dga-row-divider: none;
   }
 
-  .cngx-data-grid-row__summary:hover {
+  .cngx-dga-row__summary:hover {
     background: color-mix(in oklab, var(--cngx-color-primary, #1d4ed8) 8%, transparent);
   }
 
   /* Inset primary-accent detail zone on the alternate surface. */
-  .cngx-data-grid-row__region {
+  .cngx-dga-row__region {
     background: var(--cngx-dga-surface-alt);
     border-block-start: 1px solid var(--cngx-color-border, #d1d5db);
     box-shadow: inset 3px 0 0 var(--cngx-color-primary, #1d4ed8);
   }
 
   /* Sum footer: strong alternate surface, mono, the amount cell bold. */
-  .cngx-data-grid-footer {
+  .cngx-dga-footer {
     background: var(--cngx-dga-surface-strong);
     font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
     font-size: var(--cngx-dga-head-fs, 0.75rem);
@@ -217,9 +217,9 @@
      grid rows stretch so those hairlines run full height (POC `align-items:
      stretch` + `> span` flex). Alignment rides `justify-content`, not
      `justify-self`, so an aligned cell still fills its track and keeps its rule. */
-  .cngx-data-grid-header,
-  .cngx-data-grid-row__summary,
-  .cngx-data-grid-footer {
+  .cngx-dga-header,
+  .cngx-dga-row__summary,
+  .cngx-dga-footer {
     align-items: stretch;
   }
 
@@ -260,15 +260,15 @@
      pseudo-cell is the first grid child, so it lands in track 1; mono, right-aligned
      on the strong surface, closed by a heavier rule. The header gutter reserves the
      letter-band height so its number lines up with the labels below. */
-  .cngx-data-grid-header,
-  .cngx-data-grid-row,
-  .cngx-data-grid-footer {
+  .cngx-dga-header,
+  .cngx-dga-row,
+  .cngx-dga-footer {
     counter-increment: cngx-dga-row;
   }
 
-  .cngx-data-grid-header::before,
-  .cngx-data-grid-row__summary::before,
-  .cngx-data-grid-footer::before {
+  .cngx-dga-header::before,
+  .cngx-dga-row__summary::before,
+  .cngx-dga-footer::before {
     content: counter(cngx-dga-row);
     display: flex;
     align-items: center;
@@ -281,7 +281,7 @@
     color: var(--cngx-color-text-muted, #6b7280);
   }
 
-  .cngx-data-grid-header::before {
+  .cngx-dga-header::before {
     padding-block-start: calc(0.45rem + var(--cngx-dga-letter-band, 1.15rem));
   }
 
@@ -309,11 +309,11 @@
 
   /* Overlay the chevron in that gutter (one gutter-width back from the summary's
      content edge), centred; the summary is the positioning context. */
-  .cngx-data-grid-row__summary {
+  .cngx-dga-row__summary {
     position: relative;
   }
 
-  .cngx-data-grid-row__chevron-slot {
+  .cngx-dga-row__chevron-slot {
     position: absolute;
     inset-inline-start: calc(-1 * var(--cngx-dga-lead, 1.5rem));
     inset-block: 0;
@@ -324,8 +324,8 @@
 
   /* Undo the base header/footer first-cell offset - there is no leading track here,
      so the first content cell starts at track 1 as normal. */
-  :scope .cngx-data-grid-header > .cngx-dga-cell:first-child,
-  :scope .cngx-data-grid-footer > .cngx-dga-cell:first-child {
+  :scope .cngx-dga-header > .cngx-dga-cell:first-child,
+  :scope .cngx-dga-footer > .cngx-dga-cell:first-child {
     grid-column-start: auto;
   }
 
@@ -340,20 +340,20 @@
      with the normal-weight data rows. The base component CSS weights the header
      container 600, so force it back to normal here (the cells carry the bold) -
      that makes header, rows, and footer share identical track widths. */
-  .cngx-data-grid-header {
+  .cngx-dga-header {
     background: var(--cngx-dga-surface-alt);
     color: var(--cngx-color-text, #0f1320);
     font-weight: 400;
     counter-reset: cngx-dga-col;
   }
 
-  .cngx-data-grid-header .cngx-dga-cell {
+  .cngx-dga-header .cngx-dga-cell {
     position: relative;
     padding-block-start: calc(0.45rem + var(--cngx-dga-letter-band, 1.15rem));
     font-weight: 650;
   }
 
-  .cngx-data-grid-header .cngx-dga-cell::before {
+  .cngx-dga-header .cngx-dga-cell::before {
     content: '';
     position: absolute;
     inset-block-start: 0;
@@ -374,32 +374,32 @@
     color: var(--cngx-color-text-muted, #6b7280);
   }
 
-  :scope .cngx-data-grid-header .cngx-dga-cell[data-align='center']::before {
+  :scope .cngx-dga-header .cngx-dga-cell[data-align='center']::before {
     justify-content: center;
   }
 
-  :scope .cngx-data-grid-header .cngx-dga-cell[data-align='end']::before {
+  :scope .cngx-dga-header .cngx-dga-cell[data-align='end']::before {
     justify-content: flex-end;
   }
 
-  .cngx-data-grid-header .cngx-dga-cell {
+  .cngx-dga-header .cngx-dga-cell {
     counter-increment: cngx-dga-col;
   }
 
-  .cngx-data-grid-header .cngx-dga-cell::before {
+  .cngx-dga-header .cngx-dga-cell::before {
     content: counter(cngx-dga-col, upper-alpha);
   }
 
 
   /* Hover + open tint every content cell; the synthesised gutter has its own open
      state below. */
-  .cngx-data-grid-row__summary:hover .cngx-dga-cell,
-  .cngx-data-grid-row[data-expanded] .cngx-data-grid-row__summary .cngx-dga-cell {
+  .cngx-dga-row__summary:hover .cngx-dga-cell,
+  .cngx-dga-row[data-expanded] .cngx-dga-row__summary .cngx-dga-cell {
     background: color-mix(in oklab, var(--cngx-color-primary, #1d4ed8) 8%, transparent);
   }
 
   /* The gutter pseudo-cell fills primary when its row opens - the active-cell cue. */
-  .cngx-data-grid-row[data-expanded] .cngx-data-grid-row__summary::before {
+  .cngx-dga-row[data-expanded] .cngx-dga-row__summary::before {
     background: var(--cngx-color-primary, #1d4ed8);
     color: var(--cngx-color-on-primary, #fff);
   }
@@ -407,7 +407,7 @@
   /* Detail zone as a warning-tinted note cell with a small NOTE tag pinned top
      left. The POC's fixed amber maps to the semantic warning token so the note
      tracks the theme instead of a hardcoded hex. */
-  .cngx-data-grid-row__region {
+  .cngx-dga-row__region {
     position: relative;
     background: color-mix(
       in oklab,
@@ -417,7 +417,7 @@
     border-block-end: 1px solid var(--cngx-dga-border-color, #d1d5db);
   }
 
-  .cngx-data-grid-row__region::before {
+  .cngx-dga-row__region::before {
     content: 'NOTE';
     position: absolute;
     inset-block-start: 0.4rem;
@@ -430,12 +430,12 @@
 
   /* Footer sum row: alternate surface, bold on the cells (same track-width reason
      as the header above - never bold the grid container). */
-  .cngx-data-grid-footer {
+  .cngx-dga-footer {
     background: var(--cngx-dga-surface-alt);
     color: var(--cngx-color-text, #0f1320);
   }
 
-  .cngx-data-grid-footer .cngx-dga-cell {
+  .cngx-dga-footer .cngx-dga-cell {
     font-weight: 650;
   }
 }
@@ -480,7 +480,7 @@
   }
 
   /* Column head: strong surface, uppercase, muted. */
-  .cngx-data-grid-header {
+  .cngx-dga-header {
     background: var(--cngx-dga-surface-strong);
     border-block-end: 1px solid var(--cngx-color-border, #d1d5db);
     text-transform: uppercase;
@@ -489,14 +489,14 @@
   }
 
   /* The row summary hosts the severity edge, so it needs a positioning context. */
-  .cngx-data-grid-row__summary {
+  .cngx-dga-row__summary {
     position: relative;
   }
 
   /* Severity doubled as a 3px left edge (POC `summary::before`). Absolute, so it
      never becomes a grid item / shifts a column. Transparent unless the row carries
      `[data-severity]`; error maps to the danger token (there is no -error). */
-  .cngx-data-grid-row__summary::before {
+  .cngx-dga-row__summary::before {
     content: '';
     position: absolute;
     inset-block: 0;
@@ -505,36 +505,36 @@
     background: transparent;
   }
 
-  .cngx-data-grid-row[data-severity='error'] .cngx-data-grid-row__summary::before {
+  .cngx-dga-row[data-severity='error'] .cngx-dga-row__summary::before {
     background: var(--cngx-color-danger, #dc2626);
   }
 
-  .cngx-data-grid-row[data-severity='warning'] .cngx-data-grid-row__summary::before {
+  .cngx-dga-row[data-severity='warning'] .cngx-dga-row__summary::before {
     background: var(--cngx-color-warning, #f59e0b);
   }
 
-  .cngx-data-grid-row[data-severity='info'] .cngx-data-grid-row__summary::before {
+  .cngx-dga-row[data-severity='info'] .cngx-dga-row__summary::before {
     background: var(--cngx-color-info, #2563eb);
   }
 
   /* Timestamp (first cell) is dimmed; the message (third) already truncates via the
      base cell. Hover + open tint the whole summary. */
-  .cngx-data-grid-row__summary .cngx-dga-cell:first-child {
+  .cngx-dga-row__summary .cngx-dga-cell:first-child {
     color: var(--cngx-color-text-muted, #6b7280);
   }
 
-  .cngx-data-grid-row__summary:hover,
-  .cngx-data-grid-row[data-expanded] .cngx-data-grid-row__summary {
+  .cngx-dga-row__summary:hover,
+  .cngx-dga-row[data-expanded] .cngx-dga-row__summary {
     background: var(--cngx-dga-surface-alt);
   }
 
   /* Expanded detail: recessed surface, the stacktrace as a scrollable mono `pre`. */
-  .cngx-data-grid-row__region {
+  .cngx-dga-row__region {
     background: var(--cngx-dga-surface-strong);
     border-block-start: 1px solid var(--cngx-color-border, #d1d5db);
   }
 
-  .cngx-data-grid-row__region pre {
+  .cngx-dga-row__region pre {
     margin: 0;
     overflow-x: auto;
     color: var(--cngx-color-text-muted, #6b7280);
@@ -546,7 +546,7 @@
      on the left, a live indicator on the right. A flex footer carries no cells, so it
      needs its own inline padding - the grid footers get their inset from the chevron
      track + last-cell padding, which a flex layout has neither of. */
-  .cngx-data-grid-footer {
+  .cngx-dga-footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -609,7 +609,7 @@
      normal weight (POC head is unbolded): the base component weights the header
      container 600, and a bold container would widen any `ch` track relative to the
      normal-weight rows - the ch/track-vs-container-font trap. */
-  .cngx-data-grid-header {
+  .cngx-dga-header {
     background: var(--cngx-dga-surface-strong);
     border-block-end: 1px solid var(--cngx-color-border, #d1d5db);
     font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
@@ -624,32 +624,32 @@
      carries the row weight; the numeric position + sum cells are mono right of the
      name. Mono sits on the cells, never the summary container, so it never shifts a
      shared track width. */
-  .cngx-data-grid-row__summary .cngx-dga-cell:first-child {
+  .cngx-dga-row__summary .cngx-dga-cell:first-child {
     font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
     font-size: var(--cngx-dga-head-fs, 0.75rem);
     color: var(--cngx-color-text-muted, #6b7280);
   }
 
-  .cngx-data-grid-row__summary .cngx-dga-cell[data-primary] {
+  .cngx-dga-row__summary .cngx-dga-cell[data-primary] {
     font-weight: 620;
     color: var(--cngx-color-text, #0f1320);
   }
 
-  .cngx-data-grid-row__summary .cngx-dga-cell[data-align='end'] {
+  .cngx-dga-row__summary .cngx-dga-cell[data-align='end'] {
     font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
   }
 
   /* Hover + open both tint the summary with the primary accent; the open row STAYS
      tinted so the context row reads as the parent of the detail below (POC
      `details[open] > summary { background: accent-weak }`). */
-  .cngx-data-grid-row__summary:hover,
-  .cngx-data-grid-row[data-expanded] .cngx-data-grid-row__summary {
+  .cngx-dga-row__summary:hover,
+  .cngx-dga-row[data-expanded] .cngx-dga-row__summary {
     background: color-mix(in oklab, var(--cngx-color-primary, #1d4ed8) 8%, transparent);
   }
 
   /* Detail zone: recessed alternate surface with a primary inset edge, indented via
      the region padding above so the sub-table lines up under the customer column. */
-  .cngx-data-grid-row__region {
+  .cngx-dga-row__region {
     background: var(--cngx-dga-surface-alt);
     border-block-start: 1px solid var(--cngx-color-border, #d1d5db);
     box-shadow: inset 3px 0 0 var(--cngx-color-primary, #1d4ed8);
@@ -659,14 +659,14 @@
      full-width collapsed table with mono uppercase heads, hairline row rules, and a
      bold rule-free `tfoot` sum. Numeric columns opt in via `.r` (POC convention),
      so the story keeps authoring plain table markup. */
-  .cngx-data-grid-row__region table {
+  .cngx-dga-row__region table {
     inline-size: 100%;
     border-collapse: collapse;
     font-size: var(--cngx-dga-fs, 0.875rem);
   }
 
-  .cngx-data-grid-row__region th,
-  .cngx-data-grid-row__region td {
+  .cngx-dga-row__region th,
+  .cngx-dga-row__region td {
     padding: 0.45rem 0.5rem;
     border-block-end: 1px solid var(--cngx-dga-border-color, #d1d5db);
     text-align: start;
@@ -676,51 +676,51 @@
   /* Sub-table head is deliberately quieter than the main column header (which is
      mono UPPERCASE): normal case, lighter weight, muted - so the two header rows
      read as parent + child, not two competing peers stacked together. */
-  .cngx-data-grid-row__region th {
+  .cngx-dga-row__region th {
     font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
     font-size: var(--cngx-dga-head-fs, 0.75rem);
     font-weight: 500;
     color: var(--cngx-color-text-muted, #6b7280);
   }
 
-  .cngx-data-grid-row__region td {
+  .cngx-dga-row__region td {
     color: var(--cngx-color-text, #0f1320);
   }
 
-  .cngx-data-grid-row__region th.r,
-  .cngx-data-grid-row__region td.r {
+  .cngx-dga-row__region th.r,
+  .cngx-dga-row__region td.r {
     text-align: end;
     font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
   }
 
-  .cngx-data-grid-row__region tfoot td {
+  .cngx-dga-row__region tfoot td {
     border-block-end: none;
     font-weight: 700;
     color: var(--cngx-color-text, #0f1320);
   }
 
-  .cngx-data-grid-row__region tfoot td:first-child {
+  .cngx-dga-row__region tfoot td:first-child {
     font-weight: 600;
     color: var(--cngx-color-text-muted, #6b7280);
   }
 
   /* Sum footer: strong surface, mono; the total cell bold (POC `.dg-foot .c-sum`).
      Bold rides the cell, not the footer container, so it never widens a ch track. */
-  .cngx-data-grid-footer {
+  .cngx-dga-footer {
     background: var(--cngx-dga-surface-strong);
     font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
     font-size: var(--cngx-dga-head-fs, 0.75rem);
     color: var(--cngx-color-text-muted, #6b7280);
   }
 
-  .cngx-data-grid-footer .cngx-dga-cell[data-align='end'] {
+  .cngx-dga-footer .cngx-dga-cell[data-align='end'] {
     font-weight: 700;
     color: var(--cngx-color-text, #0f1320);
   }
 
   /* Drop the last row's own divider so it never doubles with the footer's top
      border (both draw from the same adaptive token). */
-  .cngx-data-grid-row:last-of-type {
+  .cngx-dga-row:last-of-type {
     --cngx-dga-row-divider: none;
   }
 }
@@ -760,7 +760,7 @@
   /* Column head: a `3px double` bottom rule (POC border-bottom:3px double text@45%),
      mono uppercase wide-tracked, muted. Normal weight (base weights the container 600;
      the POC head is unbolded). */
-  .cngx-data-grid-header {
+  .cngx-dga-header {
     border-block-end: 3px double
       color-mix(in oklab, var(--cngx-color-text, #0f1320) 45%, transparent);
     font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
@@ -774,24 +774,24 @@
   /* Between-row divider is the quiet hairline (POC `details + details`); the head and
      foot carry the heavy double rules. Hover tints with a faint text wash (POC
      `summary:hover { background: text@5% }`). */
-  .cngx-data-grid-row__summary:hover {
+  .cngx-dga-row__summary:hover {
     background: color-mix(in oklab, var(--cngx-color-text, #0f1320) 5%, transparent);
   }
 
   /* The cost-centre code (first cell) is mono + dimmed; the label (primary) carries the
      row weight; the money columns are mono, right of the label. Mono rides the cells,
      never the summary container, so it never shifts a shared track width. */
-  .cngx-data-grid-row__summary .cngx-dga-cell:first-child {
+  .cngx-dga-row__summary .cngx-dga-cell:first-child {
     font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
     color: var(--cngx-color-text-muted, #6b7280);
   }
 
-  .cngx-data-grid-row__summary .cngx-dga-cell[data-primary] {
+  .cngx-dga-row__summary .cngx-dga-cell[data-primary] {
     font-weight: 620;
     color: var(--cngx-color-text, #0f1320);
   }
 
-  .cngx-data-grid-row__summary .cngx-dga-cell[data-align='end'] {
+  .cngx-dga-row__summary .cngx-dga-cell[data-align='end'] {
     font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
     color: var(--cngx-color-text, #0f1320);
   }
@@ -799,13 +799,13 @@
   /* Over-budget actual cells: the danger colour, bold (POC `.c-ist.over`). Authored in
      the story as a `data-over` attribute on the cell - a consumer marker, so the state
      stays a typed data-attr -> semantic token, never a raw hex via `[style]`. */
-  .cngx-data-grid-row__summary .cngx-dga-cell[data-over] {
+  .cngx-dga-row__summary .cngx-dga-cell[data-over] {
     color: var(--cngx-color-danger, #dc2626);
     font-weight: 700;
   }
 
   /* Detail zone: muted small note, indented via the region padding above. */
-  .cngx-data-grid-row__region {
+  .cngx-dga-row__region {
     font-size: var(--cngx-dga-head-fs, 0.75rem);
     color: var(--cngx-color-text-muted, #6b7280);
     max-inline-size: 60ch;
@@ -813,24 +813,24 @@
 
   /* Drop the last row's own divider so it never doubles with the footer's `3px double`
      top rule. */
-  .cngx-data-grid-row:last-of-type {
+  .cngx-dga-row:last-of-type {
     --cngx-dga-row-divider: none;
   }
 
   /* Sum foot: a `3px double` top rule matching the head, text colour, the label +
      money cells bold (POC `.dg-foot .c-lbl / .c-bud / .c-ist { font-weight:700 }`).
      Bold rides the cells, never the container. */
-  .cngx-data-grid-footer {
+  .cngx-dga-footer {
     border-block-start: 3px double
       color-mix(in oklab, var(--cngx-color-text, #0f1320) 45%, transparent);
     color: var(--cngx-color-text, #0f1320);
   }
 
-  .cngx-data-grid-footer .cngx-dga-cell[data-primary] {
+  .cngx-dga-footer .cngx-dga-cell[data-primary] {
     font-weight: 700;
   }
 
-  .cngx-data-grid-footer .cngx-dga-cell[data-align='end'] {
+  .cngx-dga-footer .cngx-dga-cell[data-align='end'] {
     font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
     font-weight: 700;
     color: var(--cngx-color-text, #0f1320);
@@ -880,13 +880,13 @@
   /* Head + summary transition their block padding so a density switch animates the
      rows taller / shorter rather than snapping (POC `transition: padding`). The cell
      type change (`--cngx-dga-fs`) snaps with it, exactly as the POC. */
-  .cngx-data-grid-header,
-  .cngx-data-grid-row__summary {
+  .cngx-dga-header,
+  .cngx-dga-row__summary {
     transition: padding var(--cngx-dga-transition, 300ms cubic-bezier(0.22, 1, 0.36, 1));
   }
 
   /* Column head: strong surface, mono uppercase dim. */
-  .cngx-data-grid-header {
+  .cngx-dga-header {
     background: var(--cngx-dga-surface-strong);
     border-block-end: 1px solid var(--cngx-color-border, #d1d5db);
     font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
@@ -898,8 +898,8 @@
 
   /* Hover + open both tint with the primary accent (POC `summary:hover` accent-weak /
      `details[open] > summary`). */
-  .cngx-data-grid-row__summary:hover,
-  .cngx-data-grid-row[data-expanded] .cngx-data-grid-row__summary {
+  .cngx-dga-row__summary:hover,
+  .cngx-dga-row[data-expanded] .cngx-dga-row__summary {
     background: color-mix(in oklab, var(--cngx-color-primary, #1d4ed8) 8%, transparent);
   }
 
@@ -907,19 +907,19 @@
      non-primary content cell, child 3 of the summary after the chevron slot (child 1)
      and the task cell (child 2) - is mono + dimmed (POC `.c-asg`). The status cell is
      the last child and holds a projected `cngx-tag`, so it needs no skin paint. */
-  .cngx-data-grid-row__summary .cngx-dga-cell[data-primary] {
+  .cngx-dga-row__summary .cngx-dga-cell[data-primary] {
     font-weight: 620;
     color: var(--cngx-color-text, #0f1320);
   }
 
-  .cngx-data-grid-row__summary > .cngx-dga-cell:nth-child(3) {
+  .cngx-dga-row__summary > .cngx-dga-cell:nth-child(3) {
     font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
     font-size: var(--cngx-dga-head-fs, 0.75rem);
     color: var(--cngx-color-text-muted, #6b7280);
   }
 
   /* Detail zone: recessed alternate surface with a primary inset edge (POC `.body`). */
-  .cngx-data-grid-row__region {
+  .cngx-dga-row__region {
     background: var(--cngx-dga-surface-alt);
     border-block-start: 1px solid var(--cngx-color-border, #d1d5db);
     box-shadow: inset 3px 0 0 var(--cngx-color-primary, #1d4ed8);
@@ -929,7 +929,7 @@
      left, a status summary on the right. A flex footer carries no cells, so it needs
      its own inline padding - the grid footers get their inset from the chevron track +
      last-cell padding, which a flex layout has neither of. */
-  .cngx-data-grid-footer {
+  .cngx-dga-footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -941,7 +941,7 @@
 
   /* Drop the last row's own divider so it never doubles with the footer's top border
      (both draw from the same adaptive token). */
-  .cngx-data-grid-row:last-of-type {
+  .cngx-dga-row:last-of-type {
     --cngx-dga-row-divider: none;
   }
 }

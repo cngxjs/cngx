@@ -31,41 +31,41 @@ export const STORY: DemoSpec = {
       [multi]="true"
       [headingLevel]="3"
     >
-      <cngx-data-grid-header>
-        <span cngxDgCell>Item</span>
-        <span cngxDgCell align="end">Stock</span>
-        <span cngxDgCell align="end">List price</span>
-      </cngx-data-grid-header>
+      <cngx-dga-header>
+        <span cngxDgaCell>Item</span>
+        <span cngxDgaCell align="end">Stock</span>
+        <span cngxDgaCell align="end">List price</span>
+      </cngx-dga-header>
 
-      <cngx-data-grid-row panelId="row-2">
-        <span cngxDgCell primary>Aluminium profile 40x40, slot 8</span>
-        <span cngxDgCell align="end">1,240</span>
-        <span cngxDgCell align="end">$18.90</span>
+      <cngx-dga-row panelId="row-2">
+        <span cngxDgaCell primary>Aluminium profile 40x40, slot 8</span>
+        <span cngxDgaCell align="end">1,240</span>
+        <span cngxDgaCell align="end">$18.90</span>
         Framework contract with volume pricing from 500 units. Minimum stock 800,
         replenishment lead time 10 working days.
-      </cngx-data-grid-row>
+      </cngx-dga-row>
 
-      <cngx-data-grid-row panelId="row-3">
-        <span cngxDgCell primary>Linear guide HGR-15, 600 mm</span>
-        <span cngxDgCell align="end">86</span>
-        <span cngxDgCell align="end">$64.50</span>
+      <cngx-dga-row panelId="row-3">
+        <span cngxDgaCell primary>Linear guide HGR-15, 600 mm</span>
+        <span cngxDgaCell align="end">86</span>
+        <span cngxDgaCell align="end">$64.50</span>
         Below minimum stock (100). Purchase order B-2044 for 120 units is in transit,
         delivery 18 Jul.
-      </cngx-data-grid-row>
+      </cngx-dga-row>
 
-      <cngx-data-grid-row panelId="row-4">
-        <span cngxDgCell primary>Stepper motor NEMA 23, 2.8 A</span>
-        <span cngxDgCell align="end">312</span>
-        <span cngxDgCell align="end">$42.00</span>
+      <cngx-dga-row panelId="row-4">
+        <span cngxDgaCell primary>Stepper motor NEMA 23, 2.8 A</span>
+        <span cngxDgaCell align="end">312</span>
+        <span cngxDgaCell align="end">$42.00</span>
         Discontinued by the manufacturer; successor listed from Q4. Remaining stock is
         being sold down, no reorder planned.
-      </cngx-data-grid-row>
+      </cngx-dga-row>
 
-      <cngx-data-grid-footer>
-        <span cngxDgCell>Total stock value</span>
-        <span cngxDgCell></span>
-        <span cngxDgCell align="end">$42,087</span>
-      </cngx-data-grid-footer>
+      <cngx-dga-footer>
+        <span cngxDgaCell>Total stock value</span>
+        <span cngxDgaCell></span>
+        <span cngxDgaCell align="end">$42,087</span>
+      </cngx-dga-footer>
     </cngx-data-grid-accordion>
   </div>`,
 };

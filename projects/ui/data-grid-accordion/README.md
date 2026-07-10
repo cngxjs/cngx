@@ -11,24 +11,24 @@ selection model, no keyboard grid navigation.
 
 ```html
 <cngx-data-grid-accordion [multi]="true" [(openIds)]="open">
-  <cngx-data-grid-header>
-    <span cngxDgCell col="sm">ID</span>
-    <span cngxDgCell col="grow">Name</span>
-    <span cngxDgCell col="md" align="end">Amount</span>
-  </cngx-data-grid-header>
+  <cngx-dga-header>
+    <span cngxDgaCell col="sm">ID</span>
+    <span cngxDgaCell col="grow">Name</span>
+    <span cngxDgaCell col="md" align="end">Amount</span>
+  </cngx-dga-header>
 
-  <cngx-data-grid-row panelId="1">
-    <span cngxDgCell>INV-1</span>
-    <span cngxDgCell primary>Northwind Traders</span>
-    <span cngxDgCell align="end">$1,280</span>
+  <cngx-dga-row panelId="1">
+    <span cngxDgaCell>INV-1</span>
+    <span cngxDgaCell primary>Northwind Traders</span>
+    <span cngxDgaCell align="end">$1,280</span>
     Net 30 terms. Two line items, no disputes.
-  </cngx-data-grid-row>
+  </cngx-dga-row>
 
-  <cngx-data-grid-footer>
-    <span cngxDgCell>1 invoice</span>
-    <span cngxDgCell></span>
-    <span cngxDgCell align="end">$1,280</span>
-  </cngx-data-grid-footer>
+  <cngx-dga-footer>
+    <span cngxDgaCell>1 invoice</span>
+    <span cngxDgaCell></span>
+    <span cngxDgaCell align="end">$1,280</span>
+  </cngx-dga-footer>
 </cngx-data-grid-accordion>
 ```
 

@@ -44,20 +44,20 @@ import type { CngxDgCellTrack } from './data-grid-cell.directive';
  *
  * ```html
  * <cngx-data-grid-accordion [multi]="true">
- *   <cngx-data-grid-header>
- *     <span cngxDgCell col="sm">ID</span>
- *     <span cngxDgCell col="grow">Name</span>
- *     <span cngxDgCell col="md" align="end">Amount</span>
- *   </cngx-data-grid-header>
- *   <cngx-data-grid-row panelId="1">
- *     <span cngxDgCell>1</span>
- *     <span cngxDgCell primary>Alpha</span>
- *     <span cngxDgCell align="end">120.00</span>
+ *   <cngx-dga-header>
+ *     <span cngxDgaCell col="sm">ID</span>
+ *     <span cngxDgaCell col="grow">Name</span>
+ *     <span cngxDgaCell col="md" align="end">Amount</span>
+ *   </cngx-dga-header>
+ *   <cngx-dga-row panelId="1">
+ *     <span cngxDgaCell>1</span>
+ *     <span cngxDgaCell primary>Alpha</span>
+ *     <span cngxDgaCell align="end">120.00</span>
  *     Detail for row 1
- *   </cngx-data-grid-row>
- *   <cngx-data-grid-footer>
- *     <span cngxDgCell>Total</span>
- *   </cngx-data-grid-footer>
+ *   </cngx-dga-row>
+ *   <cngx-dga-footer>
+ *     <span cngxDgaCell>Total</span>
+ *   </cngx-dga-footer>
  * </cngx-data-grid-accordion>
  * ```
  *

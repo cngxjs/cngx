@@ -43,8 +43,8 @@
 /* Header and footer adopt the parent grid's tracks via `subgrid`, so labels and
    totals land on the exact same lines as the row cells with zero JS measurement.
    Only block padding here - the inline edges are the chevron track + last-cell pad. */
-.cngx-data-grid-header,
-.cngx-data-grid-footer {
+.cngx-dga-header,
+.cngx-dga-footer {
   grid-column: 1 / -1;
   display: grid;
   grid-template-columns: subgrid;
@@ -56,12 +56,12 @@
 /* Header and footer carry no chevron, so their first projected cell must skip the
    leading chevron track and start at the first content column (track 2), aligning
    with every row's first cell (which follows its chevron cell in track 1). */
-.cngx-data-grid-header > .cngx-dga-cell:first-child,
-.cngx-data-grid-footer > .cngx-dga-cell:first-child {
+.cngx-dga-header > .cngx-dga-cell:first-child,
+.cngx-dga-footer > .cngx-dga-cell:first-child {
   grid-column-start: 2;
 }
 
-.cngx-data-grid-header {
+.cngx-dga-header {
   font-weight: var(--cngx-dga-head-weight, 600);
   color: var(--cngx-dga-head-color, var(--cngx-color-text-muted, #6b7280));
   border-block-end: var(
@@ -70,7 +70,7 @@
   );
 }
 
-.cngx-data-grid-footer {
+.cngx-dga-footer {
   border-block-start: var(
     --cngx-dga-foot-border,
     1px solid var(--cngx-dga-border-color, #d1d5db)
@@ -98,11 +98,11 @@
 
 /* Drop the last row's divider so it never doubles with the footer's own top rule
    (the named skins do the same inside their scope). */
-.cngx-data-grid-accordion:not([data-skin]) .cngx-data-grid-row:last-of-type {
+.cngx-data-grid-accordion:not([data-skin]) .cngx-dga-row:last-of-type {
   --cngx-dga-row-divider: none;
 }
 
 /* Subtle hover affordance on the disclosure summary - a faint text wash, no colour. */
-.cngx-data-grid-accordion:not([data-skin]) .cngx-data-grid-row__summary:hover {
+.cngx-data-grid-accordion:not([data-skin]) .cngx-dga-row__summary:hover {
   background: color-mix(in oklab, var(--cngx-color-text, #0f1320) 4%, transparent);
 }

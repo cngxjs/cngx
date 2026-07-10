@@ -33,18 +33,18 @@ export const STORY: DemoSpec = {
       [multi]="true"
       [headingLevel]="3"
     >
-      <cngx-data-grid-header>
-        <span cngxDgCell col="md">Time</span>
-        <span cngxDgCell col="fit">Level</span>
-        <span cngxDgCell col="grow">Message</span>
-      </cngx-data-grid-header>
+      <cngx-dga-header>
+        <span cngxDgaCell col="md">Time</span>
+        <span cngxDgaCell col="fit">Level</span>
+        <span cngxDgaCell col="grow">Message</span>
+      </cngx-dga-header>
 
-      <cngx-data-grid-row panelId="log-1" [severity]="'error'">
-        <span cngxDgCell>14:02:11</span>
-        <span cngxDgCell>
+      <cngx-dga-row panelId="log-1" [severity]="'error'">
+        <span cngxDgaCell>14:02:11</span>
+        <span cngxDgaCell>
           <cngx-tag color="error" variant="subtle" size="sm">ERROR</cngx-tag>
         </span>
-        <span cngxDgCell primary>TimeoutError: SAML response exceeded 8000ms (idp=entra-prod)</span>
+        <span cngxDgaCell primary>TimeoutError: SAML response exceeded 8000ms (idp=entra-prod)</span>
         <cngx-meta-list style="margin-block-end:0.55rem">
           <cngx-meta term="trace">9f31c0d4</cngx-meta>
           <cngx-meta term="tenant">north</cngx-meta>
@@ -56,14 +56,14 @@ export const STORY: DemoSpec = {
     at AuthFlow.callback (auth/flow.ts:88:31)
     at async Router.handle (http/router.ts:52:9)
   caused by: socket hang up (ECONNRESET)</pre>
-      </cngx-data-grid-row>
+      </cngx-dga-row>
 
-      <cngx-data-grid-row panelId="log-2" [severity]="'warning'">
-        <span cngxDgCell>14:01:58</span>
-        <span cngxDgCell>
+      <cngx-dga-row panelId="log-2" [severity]="'warning'">
+        <span cngxDgaCell>14:01:58</span>
+        <span cngxDgaCell>
           <cngx-tag color="warning" variant="subtle" size="sm">WARN</cngx-tag>
         </span>
-        <span cngxDgCell primary>Retry 2/3 for export job exp-5521, chunk 14 of 22</span>
+        <span cngxDgaCell primary>Retry 2/3 for export job exp-5521, chunk 14 of 22</span>
         <cngx-meta-list style="margin-block-end:0.55rem">
           <cngx-meta term="trace">2b77e1aa</cngx-meta>
           <cngx-meta term="job">exp-5521</cngx-meta>
@@ -72,14 +72,14 @@ export const STORY: DemoSpec = {
         <pre>WARN retry: chunk 14 failed with 503 from storage backend
     backoff: 4s, attempt 2 of 3
     payload: 48.2 MB, rows 50000</pre>
-      </cngx-data-grid-row>
+      </cngx-dga-row>
 
-      <cngx-data-grid-row panelId="log-3" [severity]="'info'">
-        <span cngxDgCell>14:01:40</span>
-        <span cngxDgCell>
+      <cngx-dga-row panelId="log-3" [severity]="'info'">
+        <span cngxDgaCell>14:01:40</span>
+        <span cngxDgaCell>
           <cngx-tag color="info" variant="subtle" size="sm">INFO</cngx-tag>
         </span>
-        <span cngxDgCell primary>Deployment v0.9.1 rolled out to production (canary 100%)</span>
+        <span cngxDgaCell primary>Deployment v0.9.1 rolled out to production (canary 100%)</span>
         <cngx-meta-list style="margin-block-end:0.55rem">
           <cngx-meta term="release">v0.9.1</cngx-meta>
           <cngx-meta term="duration">2m 14s</cngx-meta>
@@ -88,12 +88,12 @@ export const STORY: DemoSpec = {
         <pre>INFO rollout complete: 12/12 pods healthy
     canary window: 15m, error budget unchanged
     previous: v0.9.0 (kept for instant rollback)</pre>
-      </cngx-data-grid-row>
+      </cngx-dga-row>
 
-      <cngx-data-grid-footer>
-        <span cngxDgCell>347 lines &middot; last 15 min</span>
+      <cngx-dga-footer>
+        <span cngxDgaCell>347 lines &middot; last 15 min</span>
         <cngx-tag color="success" variant="subtle" size="sm">Stream connected</cngx-tag>
-      </cngx-data-grid-footer>
+      </cngx-dga-footer>
     </cngx-data-grid-accordion>
   </div>`,
 };

@@ -25,7 +25,7 @@ import { CngxDgCell } from './data-grid-cell.directive';
  * so arrow keys rove across rows even though each summary lives in its own
  * component view.
  *
- * The projected `cngxDgCell`s fill the summary grid; the one marked `primary`
+ * The projected `cngxDgaCell`s fill the summary grid; the one marked `primary`
  * supplies the row's accessible name, so a screen reader hears a list of
  * expandable sections rather than a wall of cell text.
  *
@@ -37,8 +37,8 @@ import { CngxDgCell } from './data-grid-cell.directive';
  * @relatedTo CngxDataGridAccordion, CngxDgCell, CngxAccordionPanel
  */
 @Component({
-  selector: 'cngx-data-grid-row',
-  exportAs: 'cngxDataGridRow',
+  selector: 'cngx-dga-row',
+  exportAs: 'cngxDgaRow',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
@@ -46,7 +46,7 @@ import { CngxDgCell } from './data-grid-cell.directive';
   templateUrl: './data-grid-row.component.html',
   styleUrl: './data-grid-row.component.css',
   host: {
-    class: 'cngx-data-grid-row',
+    class: 'cngx-dga-row',
     '[attr.data-expanded]': "expanded() ? '' : null",
     '[attr.data-severity]': 'severity() ?? null',
   },

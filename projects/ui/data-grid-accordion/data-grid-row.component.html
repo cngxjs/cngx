@@ -1,23 +1,23 @@
-<div role="heading" [attr.aria-level]="grid.headingLevel()" class="cngx-data-grid-row__heading">
+<div role="heading" [attr.aria-level]="grid.headingLevel()" class="cngx-dga-row__heading">
   <button
     type="button"
     cngxAccordionPanel
-    class="cngx-data-grid-row__summary"
+    class="cngx-dga-row__summary"
     [panelId]="panelId()"
     [controls]="regionId"
     [id]="headerId"
     [attr.aria-labelledby]="primaryId()"
   >
-    <span class="cngx-data-grid-row__chevron-slot" aria-hidden="true">
-      <span class="cngx-data-grid-row__chevron"></span>
+    <span class="cngx-dga-row__chevron-slot" aria-hidden="true">
+      <span class="cngx-dga-row__chevron"></span>
     </span>
-    <ng-content select="[cngxDgCell]" />
+    <ng-content select="[cngxDgaCell]" />
   </button>
 </div>
 
 <div
   role="region"
-  class="cngx-data-grid-row__region"
+  class="cngx-dga-row__region"
   [id]="regionId"
   [attr.aria-labelledby]="primaryId()"
   [hidden]="!expanded()"

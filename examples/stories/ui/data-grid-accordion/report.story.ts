@@ -30,51 +30,51 @@ export const STORY: DemoSpec = {
       [multi]="true"
       [headingLevel]="3"
     >
-      <cngx-data-grid-header>
-        <span cngxDgCell col="sm">KST</span>
-        <span cngxDgCell col="grow">Cost centre</span>
-        <span cngxDgCell col="md" align="end">Budget</span>
-        <span cngxDgCell col="md" align="end">Actual</span>
-      </cngx-data-grid-header>
+      <cngx-dga-header>
+        <span cngxDgaCell col="sm">KST</span>
+        <span cngxDgaCell col="grow">Cost centre</span>
+        <span cngxDgaCell col="md" align="end">Budget</span>
+        <span cngxDgaCell col="md" align="end">Actual</span>
+      </cngx-dga-header>
 
-      <cngx-data-grid-row panelId="kst-4100">
-        <span cngxDgCell>4100</span>
-        <span cngxDgCell primary>Marketing</span>
-        <span cngxDgCell align="end">€48,000</span>
-        <span cngxDgCell align="end" data-over>€52,400</span>
+      <cngx-dga-row panelId="kst-4100">
+        <span cngxDgaCell>4100</span>
+        <span cngxDgaCell primary>Marketing</span>
+        <span cngxDgaCell align="end">€48,000</span>
+        <span cngxDgaCell align="end" data-over>€52,400</span>
         Campaign spend ran 9% over on paid social; brand refresh pulled forward from Q4.
-      </cngx-data-grid-row>
+      </cngx-dga-row>
 
-      <cngx-data-grid-row panelId="kst-4200">
-        <span cngxDgCell>4200</span>
-        <span cngxDgCell primary>Sales</span>
-        <span cngxDgCell align="end">€96,000</span>
-        <span cngxDgCell align="end">€91,200</span>
+      <cngx-dga-row panelId="kst-4200">
+        <span cngxDgaCell>4200</span>
+        <span cngxDgaCell primary>Sales</span>
+        <span cngxDgaCell align="end">€96,000</span>
+        <span cngxDgaCell align="end">€91,200</span>
         Under budget after two open headcounts stayed unfilled through the quarter.
-      </cngx-data-grid-row>
+      </cngx-dga-row>
 
-      <cngx-data-grid-row panelId="kst-4300">
-        <span cngxDgCell>4300</span>
-        <span cngxDgCell primary>Engineering</span>
-        <span cngxDgCell align="end">€180,000</span>
-        <span cngxDgCell align="end" data-over>€184,500</span>
+      <cngx-dga-row panelId="kst-4300">
+        <span cngxDgaCell>4300</span>
+        <span cngxDgaCell primary>Engineering</span>
+        <span cngxDgaCell align="end">€180,000</span>
+        <span cngxDgaCell align="end" data-over>€184,500</span>
         Cloud spend above plan; committed-use discount negotiation moved to next period.
-      </cngx-data-grid-row>
+      </cngx-dga-row>
 
-      <cngx-data-grid-row panelId="kst-4400">
-        <span cngxDgCell>4400</span>
-        <span cngxDgCell primary>Operations</span>
-        <span cngxDgCell align="end">€64,000</span>
-        <span cngxDgCell align="end">€61,800</span>
+      <cngx-dga-row panelId="kst-4400">
+        <span cngxDgaCell>4400</span>
+        <span cngxDgaCell primary>Operations</span>
+        <span cngxDgaCell align="end">€64,000</span>
+        <span cngxDgaCell align="end">€61,800</span>
         On plan; facilities renewal came in slightly under the negotiated cap.
-      </cngx-data-grid-row>
+      </cngx-dga-row>
 
-      <cngx-data-grid-footer>
-        <span cngxDgCell></span>
-        <span cngxDgCell primary>Total</span>
-        <span cngxDgCell align="end">€388,000</span>
-        <span cngxDgCell align="end">€389,900</span>
-      </cngx-data-grid-footer>
+      <cngx-dga-footer>
+        <span cngxDgaCell></span>
+        <span cngxDgaCell primary>Total</span>
+        <span cngxDgaCell align="end">€388,000</span>
+        <span cngxDgaCell align="end">€389,900</span>
+      </cngx-dga-footer>
     </cngx-data-grid-accordion>
   </div>`,
 };

@@ -14,26 +14,26 @@ import type { CngxDataGridSeverity } from './config/data-grid-accordion.config';
 
 @Component({
   template: `<cngx-data-grid-accordion columns="8ch 1fr auto" [multi]="true">
-    <cngx-data-grid-header>
-      <span cngxDgCell>ID</span>
-      <span cngxDgCell>Name</span>
-      <span cngxDgCell align="end">Amount</span>
-    </cngx-data-grid-header>
-    <cngx-data-grid-row panelId="a" [severity]="sev()">
-      <span cngxDgCell>1</span>
-      <span cngxDgCell primary>Alpha</span>
-      <span cngxDgCell align="end">120</span>
+    <cngx-dga-header>
+      <span cngxDgaCell>ID</span>
+      <span cngxDgaCell>Name</span>
+      <span cngxDgaCell align="end">Amount</span>
+    </cngx-dga-header>
+    <cngx-dga-row panelId="a" [severity]="sev()">
+      <span cngxDgaCell>1</span>
+      <span cngxDgaCell primary>Alpha</span>
+      <span cngxDgaCell align="end">120</span>
       Detail A
-    </cngx-data-grid-row>
-    <cngx-data-grid-row panelId="b">
-      <span cngxDgCell>2</span>
-      <span cngxDgCell primary>Beta</span>
-      <span cngxDgCell align="end">80</span>
+    </cngx-dga-row>
+    <cngx-dga-row panelId="b">
+      <span cngxDgaCell>2</span>
+      <span cngxDgaCell primary>Beta</span>
+      <span cngxDgaCell align="end">80</span>
       Detail B
-    </cngx-data-grid-row>
-    <cngx-data-grid-footer>
-      <span cngxDgCell>Total</span>
-    </cngx-data-grid-footer>
+    </cngx-dga-row>
+    <cngx-dga-footer>
+      <span cngxDgaCell>Total</span>
+    </cngx-dga-footer>
   </cngx-data-grid-accordion>`,
   imports: [
     CngxDataGridAccordion,
@@ -71,7 +71,7 @@ describe('CngxDataGridRow', () => {
   it('renders each row as a role="heading" carrying the group aria-level', () => {
     const { fixture } = setup();
     const headings = fixture.debugElement.nativeElement.querySelectorAll(
-      '.cngx-data-grid-row__heading',
+      '.cngx-dga-row__heading',
     ) as NodeListOf<HTMLElement>;
     expect(headings.length).toBe(2);
     headings.forEach((h) => expect(h.getAttribute('aria-level')).toBe('3'));
@@ -80,7 +80,7 @@ describe('CngxDataGridRow', () => {
   it('wires the summary button aria-controls at its region and starts collapsed', () => {
     const { fixture, buttons } = setup();
     const region = fixture.debugElement.nativeElement.querySelector(
-      '.cngx-data-grid-row__region',
+      '.cngx-dga-row__region',
     ) as HTMLElement;
     expect(buttons[0].getAttribute('aria-controls')).toBe(region.id);
     expect(buttons.every((b) => b.getAttribute('aria-expanded') === 'false')).toBe(true);
@@ -90,8 +90,8 @@ describe('CngxDataGridRow', () => {
     const { fixture } = setup();
     const firstRow = fixture.debugElement.queryAll(By.directive(CngxDataGridRow))[0]
       .nativeElement as HTMLElement;
-    const button = firstRow.querySelector('.cngx-data-grid-row__summary') as HTMLElement;
-    const region = firstRow.querySelector('.cngx-data-grid-row__region') as HTMLElement;
+    const button = firstRow.querySelector('.cngx-dga-row__summary') as HTMLElement;
+    const region = firstRow.querySelector('.cngx-dga-row__region') as HTMLElement;
     const primaryCell = firstRow.querySelector('[data-primary]') as HTMLElement;
 
     expect(primaryCell.textContent?.trim()).toBe('Alpha');
@@ -101,7 +101,7 @@ describe('CngxDataGridRow', () => {
 
   it('opens the region on click and toggles its [hidden] flag', () => {
     const { fixture, rows, buttons } = setup();
-    const region = rows[0].querySelector('.cngx-data-grid-row__region') as HTMLElement;
+    const region = rows[0].querySelector('.cngx-dga-row__region') as HTMLElement;
     expect(region.hidden).toBe(true);
 
     buttons[0].click();

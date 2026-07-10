@@ -30,18 +30,18 @@ export const STORY: DemoSpec = {
       [multi]="true"
       [headingLevel]="3"
     >
-      <cngx-data-grid-header>
-        <span cngxDgCell col="md">Order</span>
-        <span cngxDgCell col="grow">Customer</span>
-        <span cngxDgCell col="fit" align="end">Pos.</span>
-        <span cngxDgCell col="md" align="end">Total</span>
-      </cngx-data-grid-header>
+      <cngx-dga-header>
+        <span cngxDgaCell col="md">Order</span>
+        <span cngxDgaCell col="grow">Customer</span>
+        <span cngxDgaCell col="fit" align="end">Pos.</span>
+        <span cngxDgaCell col="md" align="end">Total</span>
+      </cngx-dga-header>
 
-      <cngx-data-grid-row panelId="AU-7731">
-        <span cngxDgCell>AU-7731</span>
-        <span cngxDgCell primary>Bergmann Machine Works</span>
-        <span cngxDgCell align="end">3</span>
-        <span cngxDgCell align="end">$9,870.00</span>
+      <cngx-dga-row panelId="AU-7731">
+        <span cngxDgaCell>AU-7731</span>
+        <span cngxDgaCell primary>Bergmann Machine Works</span>
+        <span cngxDgaCell align="end">3</span>
+        <span cngxDgaCell align="end">$9,870.00</span>
         <table>
           <thead>
             <tr>
@@ -61,13 +61,13 @@ export const STORY: DemoSpec = {
             <tr><td colspan="4">Net total</td><td class="r">$9,870.00</td></tr>
           </tfoot>
         </table>
-      </cngx-data-grid-row>
+      </cngx-dga-row>
 
-      <cngx-data-grid-row panelId="AU-7728">
-        <span cngxDgCell>AU-7728</span>
-        <span cngxDgCell primary>Weidner &amp; Sons</span>
-        <span cngxDgCell align="end">2</span>
-        <span cngxDgCell align="end">$3,140.00</span>
+      <cngx-dga-row panelId="AU-7728">
+        <span cngxDgaCell>AU-7728</span>
+        <span cngxDgaCell primary>Weidner &amp; Sons</span>
+        <span cngxDgaCell align="end">2</span>
+        <span cngxDgaCell align="end">$3,140.00</span>
         <table>
           <thead>
             <tr>
@@ -86,13 +86,13 @@ export const STORY: DemoSpec = {
             <tr><td colspan="4">Net total</td><td class="r">$3,140.00</td></tr>
           </tfoot>
         </table>
-      </cngx-data-grid-row>
+      </cngx-dga-row>
 
-      <cngx-data-grid-row panelId="AU-7719">
-        <span cngxDgCell>AU-7719</span>
-        <span cngxDgCell primary>Bremen Harbor Works</span>
-        <span cngxDgCell align="end">1</span>
-        <span cngxDgCell align="end">$18,500.00</span>
+      <cngx-dga-row panelId="AU-7719">
+        <span cngxDgaCell>AU-7719</span>
+        <span cngxDgaCell primary>Bremen Harbor Works</span>
+        <span cngxDgaCell align="end">1</span>
+        <span cngxDgaCell align="end">$18,500.00</span>
         <table>
           <thead>
             <tr>
@@ -110,14 +110,14 @@ export const STORY: DemoSpec = {
             <tr><td colspan="4">Net total</td><td class="r">$18,500.00</td></tr>
           </tfoot>
         </table>
-      </cngx-data-grid-row>
+      </cngx-dga-row>
 
-      <cngx-data-grid-footer>
-        <span cngxDgCell></span>
-        <span cngxDgCell>3 orders</span>
-        <span cngxDgCell align="end">6</span>
-        <span cngxDgCell align="end">$31,510.00</span>
-      </cngx-data-grid-footer>
+      <cngx-dga-footer>
+        <span cngxDgaCell></span>
+        <span cngxDgaCell>3 orders</span>
+        <span cngxDgaCell align="end">6</span>
+        <span cngxDgaCell align="end">$31,510.00</span>
+      </cngx-dga-footer>
     </cngx-data-grid-accordion>
   </div>`,
 };

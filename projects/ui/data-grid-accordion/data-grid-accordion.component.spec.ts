@@ -157,17 +157,17 @@ describe('CngxDataGridAccordion skin cascade', () => {
 
 @Component({
   template: `<cngx-data-grid-accordion [columns]="cols()">
-    <cngx-data-grid-header>
-      <span cngxDgCell [col]="c0()">ID</span>
-      <span cngxDgCell [col]="c1()">Name</span>
-      <span cngxDgCell [col]="c2()" align="end">Amount</span>
-    </cngx-data-grid-header>
-    <cngx-data-grid-row panelId="a">
-      <span cngxDgCell>1</span>
-      <span cngxDgCell primary>Alpha</span>
-      <span cngxDgCell align="end">120</span>
+    <cngx-dga-header>
+      <span cngxDgaCell [col]="c0()">ID</span>
+      <span cngxDgaCell [col]="c1()">Name</span>
+      <span cngxDgaCell [col]="c2()" align="end">Amount</span>
+    </cngx-dga-header>
+    <cngx-dga-row panelId="a">
+      <span cngxDgaCell>1</span>
+      <span cngxDgaCell primary>Alpha</span>
+      <span cngxDgaCell align="end">120</span>
       Detail
-    </cngx-data-grid-row>
+    </cngx-dga-row>
   </cngx-data-grid-accordion>`,
   imports: [CngxDataGridAccordion, CngxDataGridHeader, CngxDataGridRow, CngxDgCell],
 })
@@ -180,12 +180,12 @@ class ContentHost {
 
 @Component({
   template: `<cngx-data-grid-accordion>
-    <cngx-data-grid-row panelId="a">
-      <span cngxDgCell>1</span>
-      <span cngxDgCell primary>Alpha</span>
-      <span cngxDgCell align="end">120</span>
+    <cngx-dga-row panelId="a">
+      <span cngxDgaCell>1</span>
+      <span cngxDgaCell primary>Alpha</span>
+      <span cngxDgaCell align="end">120</span>
       Detail
-    </cngx-data-grid-row>
+    </cngx-dga-row>
   </cngx-data-grid-accordion>`,
   imports: [CngxDataGridAccordion, CngxDataGridRow, CngxDgCell],
 })

@@ -40,52 +40,52 @@ export const STORY: DemoSpec = {
       [style.--cngx-dga-row-py]="densityPy()"
       [style.--cngx-dga-fs]="densityFs()"
     >
-      <cngx-data-grid-header>
-        <span cngxDgCell col="grow">Task</span>
-        <span cngxDgCell col="md">Assignee</span>
-        <span cngxDgCell col="fit">Status</span>
-      </cngx-data-grid-header>
+      <cngx-dga-header>
+        <span cngxDgaCell col="grow">Task</span>
+        <span cngxDgaCell col="md">Assignee</span>
+        <span cngxDgaCell col="fit">Status</span>
+      </cngx-dga-header>
 
-      <cngx-data-grid-row panelId="t-812">
-        <span cngxDgCell primary>Migrate auth guards to signals</span>
-        <span cngxDgCell>a.khan</span>
-        <span cngxDgCell>
+      <cngx-dga-row panelId="t-812">
+        <span cngxDgaCell primary>Migrate auth guards to signals</span>
+        <span cngxDgaCell>a.khan</span>
+        <span cngxDgaCell>
           <cngx-tag color="info" variant="subtle" size="sm">Running</cngx-tag>
         </span>
         Blocked on the token refresh flow; PR up for review, targeting this sprint.
-      </cngx-data-grid-row>
+      </cngx-dga-row>
 
-      <cngx-data-grid-row panelId="t-815">
-        <span cngxDgCell primary>Stabilise flaky checkout e2e</span>
-        <span cngxDgCell>m.oren</span>
-        <span cngxDgCell>
+      <cngx-dga-row panelId="t-815">
+        <span cngxDgaCell primary>Stabilise flaky checkout e2e</span>
+        <span cngxDgaCell>m.oren</span>
+        <span cngxDgaCell>
           <cngx-tag color="warning" variant="subtle" size="sm">Waiting</cngx-tag>
         </span>
         Waiting on a staging fixture reset; retries masked a real race in the cart total.
-      </cngx-data-grid-row>
+      </cngx-dga-row>
 
-      <cngx-data-grid-row panelId="t-818">
-        <span cngxDgCell primary>Write the density skin docs</span>
-        <span cngxDgCell>c.weiss</span>
-        <span cngxDgCell>
+      <cngx-dga-row panelId="t-818">
+        <span cngxDgaCell primary>Write the density skin docs</span>
+        <span cngxDgaCell>c.weiss</span>
+        <span cngxDgaCell>
           <cngx-tag color="success" variant="subtle" size="sm">Done</cngx-tag>
         </span>
         Shipped with the report skin; screenshots verified in light and dark.
-      </cngx-data-grid-row>
+      </cngx-dga-row>
 
-      <cngx-data-grid-row panelId="t-820">
-        <span cngxDgCell primary>Audit tag colour tokens</span>
-        <span cngxDgCell>l.park</span>
-        <span cngxDgCell>
+      <cngx-dga-row panelId="t-820">
+        <span cngxDgaCell primary>Audit tag colour tokens</span>
+        <span cngxDgaCell>l.park</span>
+        <span cngxDgaCell>
           <cngx-tag color="info" variant="subtle" size="sm">Running</cngx-tag>
         </span>
         Cross-checking every semantic colour against the dark scheme contrast floor.
-      </cngx-data-grid-row>
+      </cngx-dga-row>
 
-      <cngx-data-grid-footer>
+      <cngx-dga-footer>
         <span>4 tasks</span>
         <span>1 done / 2 running / 1 waiting</span>
-      </cngx-data-grid-footer>
+      </cngx-dga-footer>
     </cngx-data-grid-accordion>
   </div>`,
   templateChrome: `  <fieldset class="button-row" style="border:0;padding:0;margin:0 0 1rem;display:flex;gap:1rem;align-items:center;flex-wrap:wrap">

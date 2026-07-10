@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/
 
 /**
  * The footer row of a {@link CngxDataGridAccordion}. Lays its projected
- * `cngxDgCell`s out on the shared `--cngx-dga-columns` grid, so a sum or count
+ * `cngxDgaCell`s out on the shared `--cngx-dga-columns` grid, so a sum or count
  * cell lines up with the column it totals. Unlike {@link CngxDataGridHeader} it
  * is NOT `aria-hidden`: the footer is the designated host for a consumer-supplied
  * `aria-live` region (row count, running totals, load status). The component
@@ -16,14 +16,14 @@ import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/
  * @relatedTo CngxDataGridAccordion, CngxDgCell
  */
 @Component({
-  selector: 'cngx-data-grid-footer',
-  exportAs: 'cngxDataGridFooter',
+  selector: 'cngx-dga-footer',
+  exportAs: 'cngxDgaFooter',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   template: '<ng-content />',
   host: {
-    class: 'cngx-data-grid-footer',
+    class: 'cngx-dga-footer',
   },
 })
 export class CngxDataGridFooter {}

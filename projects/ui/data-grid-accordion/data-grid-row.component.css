@@ -6,7 +6,7 @@
    re-exposes those tracks to its children (heading + region), so the summary cells
    map onto the shared grid lines. Two rows: the heading (summary) and the detail
    region. The scroll floor lives on the inner grid, not here. */
-.cngx-data-grid-row {
+.cngx-dga-row {
   grid-column: 1 / -1;
   display: grid;
   grid-template-columns: subgrid;
@@ -19,7 +19,7 @@
 
 /* Passes the shared tracks down to the summary button (subgrid chain
    inner-grid -> row -> heading -> summary -> cells). */
-.cngx-data-grid-row__heading {
+.cngx-dga-row__heading {
   grid-column: 1 / -1;
   display: grid;
   grid-template-columns: subgrid;
@@ -28,7 +28,7 @@
 
 /* The summary button IS the grid line: its chevron cell (track 1) plus the projected
    content cells land on the shared column contract via `subgrid`. */
-.cngx-data-grid-row__summary {
+.cngx-dga-row__summary {
   /* The summary carries `cngxAccordionPanel`, so the headless Track-B accordion
      skin (@cngx/themes cngx.css) would paint its own ::after twisty here. This
      organism ships its own chevron slot, so suppress the inherited one through
@@ -66,7 +66,7 @@
    `--cngx-dga-focus-color` to the theme primary (the Material bridge maps it to
    `--mat-sys-primary`), so it tracks the theme instead of a fixed blue; the inset
    offset keeps it clear of the frame edge on the framed skins. */
-.cngx-data-grid-row__summary:focus-visible {
+.cngx-dga-row__summary:focus-visible {
   outline: var(
     --cngx-dga-focus-ring,
     2px solid var(--cngx-dga-focus-color, var(--cngx-color-primary, #1d4ed8))
@@ -104,7 +104,7 @@
    cell (not an overlay) means every row / header / footer background covers this
    column, and the chevron stays at the row's start - visible first under sideways
    scroll. Centred within the track. */
-.cngx-data-grid-row__chevron-slot {
+.cngx-dga-row__chevron-slot {
   display: inline-flex;
   align-items: center;
   /* Inset the chevron from the frame by the same edge padding the content uses, so it
@@ -113,7 +113,7 @@
   padding-inline-start: var(--cngx-dga-row-px, 0.75rem);
 }
 
-.cngx-data-grid-row__chevron {
+.cngx-dga-row__chevron {
   /* Must be a block box: an inline element ignores inline-size/block-size and
      transform, collapsing the bordered square into a sliver. */
   display: block;
@@ -125,7 +125,7 @@
   transition: transform var(--cngx-dga-chevron-transition, 150ms ease);
 }
 
-.cngx-data-grid-row[data-expanded] .cngx-data-grid-row__chevron {
+.cngx-dga-row[data-expanded] .cngx-dga-row__chevron {
   transform: rotate(225deg);
 }
 
@@ -133,13 +133,13 @@
    chevron track) so its background, border, and accent edge run frame to frame like a
    normal disclosure panel. The inner grid has no inline padding, so `1 / -1` already
    reaches both edges; the region's own `--cngx-dga-region-padding` provides the inset. */
-.cngx-data-grid-row__region {
+.cngx-dga-row__region {
   grid-column: 1 / -1;
   padding: var(--cngx-dga-region-padding, 0.75rem 1rem);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .cngx-data-grid-row__chevron {
+  .cngx-dga-row__chevron {
     transition: none;
   }
 }

@@ -7,9 +7,9 @@ import { CngxDgCell } from './data-grid-cell.directive';
 
 @Component({
   template: `
-    <span cngxDgCell>plain</span>
-    <span cngxDgCell col="md">sized</span>
-    <span cngxDgCell col="grow" align="end">flex</span>
+    <span cngxDgaCell>plain</span>
+    <span cngxDgaCell col="md">sized</span>
+    <span cngxDgaCell col="grow" align="end">flex</span>
   `,
   imports: [CngxDgCell],
 })
