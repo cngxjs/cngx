@@ -77,7 +77,7 @@ import type { CngxDgCellTrack } from './data-grid-cell.directive';
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/data-grid-accordion/data-grid-accordion.component.ts
  * @since 0.1.0
- * @relatedTo CngxDataGridRow, CngxDgCell, CngxDataGridHeader, CngxDataGridFooter, CngxAccordion
+ * @relatedTo CngxDataGridRow, CngxDgCell, CngxDataGridHeader, CngxDataGridFooter, CngxAccordion, CngxSort, CngxFilter, CngxDgaSortHeader, CngxDgaFilter, CngxDgaCount
  */
 @Component({
   selector: 'cngx-data-grid-accordion',

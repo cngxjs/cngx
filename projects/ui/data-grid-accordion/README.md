@@ -89,6 +89,49 @@ single `withDataGridSkin(name)` feature; read it back with
 
 ## Sort and filter
 
-Orthogonal. The component injects neither `CngxSort` nor `CngxFilter`; host them in the
-header slot and derive row order in the consumer via `computed()`. The open set is keyed
-by `[panelId]`, so a sorted row stays open while it moves.
+The group hosts `CngxSort` and `CngxFilter` (`@cngx/common/data`) as `hostDirectives` and
+exposes them on the context as `sort` and `filter`. It only ever **publishes** state - it
+never reorders projected DOM and never renders a data-bound `@for`. The consumer keeps the
+`@for` and derives the visible, ordered rows in one `computed()` (Ableitung). Because the
+open set is keyed by `[panelId]`, an expanded row stays open as it moves under a sort or
+leaves and re-enters under a filter.
+
+There are two supported paths over the same hosted atoms.
+
+**Declarative** - sortable heads and a filter input, the group owns the state:
+
+```html
+<cngx-data-grid-accordion [multiSort]="true" [(filterTerm)]="term" (sortChange)="sort.set($event)">
+  <input cngxDgaFilter cngxDgaFilterLabel="Filter invoices" />
+  <cngx-dga-header>
+    <span cngxDgaCell col="grow" cngxDgaSortHeader="customer">Customer</span>
+    <span cngxDgaCell col="md" align="end" cngxDgaSortHeader="amount">Amount</span>
+  </cngx-dga-header>
+  @for (row of rows(); track row.id) { <cngx-dga-row [panelId]="row.id">…</cngx-dga-row> }
+  <cngx-dga-footer><span [cngxDgaCount]="rows().length"></span></cngx-dga-footer>
+</cngx-data-grid-accordion>
+```
+
+`cngxDgaSortHeader="field"` makes a head sortable with no `[cngxSortRef]` - it reads the
+group's hosted sort off the context. The head is an operable `role="button"`; the sort
+state reaches assistive tech through an `aria-describedby` description (this is a disclosure
+accordion, not a table, so there is no valid context for `aria-sort`). `cngxDgaFilter`
+two-way-binds `[(filterTerm)]` with a debounce it owns; `cngxDgaCount` is a polite
+`aria-live` region that announces the visible count.
+
+**Binding** - the consumer already owns controlled state:
+
+```html
+<cngx-data-grid-accordion
+  [sortActive]="field()" [sortDirection]="dir()" [filterPredicate]="predicate()">
+  …no header directives; the consumer derives rows() from its own signals…
+</cngx-data-grid-accordion>
+```
+
+`[filterPredicate]` feeds the hosted `CngxFilter` (and `filter.addPredicate(...)` on the
+context adds facet filters); `[sortActive]` / `[sortDirection]` feed the hosted `CngxSort`.
+
+Sort and filter are per-instance, so there is no `withDataGridSort` / `withDataGridFilter`
+config feature - each grid sorts and filters its own data. No in-component sort/filter
+engine: the `@cngx/common/data` atoms own comparison and predicate matching; the group only
+coordinates and publishes state.
