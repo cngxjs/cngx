@@ -1,6 +1,6 @@
 /**
  * @overview
- * The ten opt-in visual skins for `<cngx-accordion-group>`. Pairs with the
+ * The nine opt-in visual skins for `<cngx-accordion-group>`. Pairs with the
  * structural `accordion-group.component.css` / `accordion-item.component.css` in
  * this same entry - those own the flat base layout, the marker, the skeleton /
  * refresh / error affordances, and the a11y wiring; this file owns only the
