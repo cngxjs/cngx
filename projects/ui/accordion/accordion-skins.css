@@ -41,9 +41,6 @@
  *   open; rail + node are item pseudo-elements, no leading markup required.
  * - `severity-spine` - a full-height colour spine leads each item with the
  *   priority stamped in it (a structural column, not a border).
- * - `data-grid` - the header row reads as a table (id / title / meta columns),
- *   zebra rows, an inset detail zone; a container query drops the id column
- *   under 620px.
  * - `primary-frame` - each item is a card that gains a solid primary border and
  *   an animated primary glow on open (the re-map of the lab's rotating conic
  *   frame to a solid primary treatment).
@@ -752,64 +749,6 @@
   }
 }
 
-@scope (.cngx-accordion-group[data-skin='data-grid']) {
-  :scope {
-    background: var(--cngx-accordion-group-bg, var(--cngx-color-surface, #fff));
-    border: 1px solid var(--cngx-color-border, #d1d5db);
-    border-radius: var(--cngx-radius-sm, 0.25rem);
-    overflow: hidden;
-    container-type: inline-size;
-    --cngx-accordion-group-border-block-start: none;
-    --cngx-accordion-heading-gap: var(--cngx-space-sm, 0.75rem);
-    --cngx-accordion-header-padding: 0.6rem var(--cngx-space-md, 1rem);
-    --cngx-accordion-divider: 1px solid var(--cngx-color-border, #d1d5db);
-    --cngx-accordion-region-padding: var(--cngx-space-md, 1rem) var(--cngx-space-lg, 1.25rem);
-  }
-
-  /* Header row reads as a table. */
-  .cngx-accordion-item__heading {
-    display: grid;
-    grid-template-columns: var(--cngx-accordion-datagrid-columns, 11ch 1fr auto);
-  }
-
-  /* Zebra rows. */
-  .cngx-accordion-item:nth-of-type(even) {
-    background: color-mix(in oklab, var(--cngx-color-text, #111827) 3%, transparent);
-  }
-
-  .cngx-accordion-item__header:hover {
-    --cngx-accordion-header-bg: color-mix(in oklab, var(--cngx-color-primary, #1d4ed8) 6%, transparent);
-  }
-
-  /* Id cell + meta read as monospace table columns. */
-  .cngx-accordion-item__leading {
-    font-family: var(--cngx-accordion-datagrid-mono, ui-monospace, monospace);
-    font-size: var(--cngx-font-size-sm, 0.8125rem);
-    color: var(--cngx-color-text-muted, #6b7280);
-  }
-
-  .cngx-accordion-item__meta {
-    justify-content: end;
-    gap: var(--cngx-space-md, 1rem);
-    font-variant-numeric: tabular-nums;
-  }
-
-  /* Inset detail zone with a primary edge. */
-  .cngx-accordion-item__region {
-    box-shadow: inset 3px 0 0 var(--cngx-color-primary, #1d4ed8);
-    background: color-mix(in oklab, var(--cngx-color-text, #111827) 2%, transparent);
-  }
-
-  @container (max-width: 620px) {
-    .cngx-accordion-item__heading {
-      grid-template-columns: 1fr auto;
-    }
-    .cngx-accordion-item__leading {
-      display: none;
-    }
-  }
-}
-
 @scope (.cngx-accordion-group[data-skin='primary-frame']) {
   :scope {
     display: flex;
@@ -871,7 +810,6 @@
   .cngx-accordion-group[data-skin='bento'],
   .cngx-accordion-group[data-skin='section-bands'],
   .cngx-accordion-group[data-skin='severity-spine'],
-  .cngx-accordion-group[data-skin='data-grid'],
   .cngx-accordion-group[data-skin='primary-frame']
 )
   .cngx-accordion-item__header:focus-visible {
@@ -883,7 +821,6 @@
   .cngx-accordion-group[data-skin='bento'],
   .cngx-accordion-group[data-skin='section-bands'],
   .cngx-accordion-group[data-skin='severity-spine'],
-  .cngx-accordion-group[data-skin='data-grid'],
   .cngx-accordion-group[data-skin='primary-frame']
 )
   .cngx-accordion-item:has(.cngx-accordion-item__header:focus-visible) {

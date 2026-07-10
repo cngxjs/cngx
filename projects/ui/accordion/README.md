@@ -68,7 +68,6 @@ a per-instance `[skin]` still wins.
 | Section-Bands | `section-bands` | inverted full-width band |
 | Timeline | `timeline` | rail + node (see note) |
 | Severity-Spine | `severity-spine` | full-height priority spine |
-| Data-Grid | `data-grid` | table layout (see note) |
 | Primary-Frame | `primary-frame` | solid primary border + glow on open |
 
 Every skin drives the organism through its `--cngx-accordion-*` custom
@@ -85,16 +84,3 @@ group so one section opens at a time; the skin does not force it.
 <cngx-accordion-group [skin]="'timeline'" [multi]="false">...</cngx-accordion-group>
 ```
 
-### Data-Grid: caption row
-
-The organism ships no column caption row. Render one yourself above the group and
-mirror the skin's column template so the headers align:
-
-```html
-<div class="my-dg-caption" style="display:grid; grid-template-columns: 11ch 1fr auto;">
-  <span>ID</span><span>Name</span><span>Amount</span>
-</div>
-<cngx-accordion-group [skin]="'data-grid'">...</cngx-accordion-group>
-```
-
-Set `--cngx-accordion-datagrid-columns` to change the column template on both.

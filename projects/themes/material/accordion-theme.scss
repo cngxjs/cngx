@@ -65,8 +65,8 @@
 // refine only what the foundation mapping does not cover ideally.
 
 // Dim text + subtitle: --cngx-color-text-muted is NOT in the system bridge, so
-// the editorial index / data-grid id / split time / subtitle would fall back to
-// their literal defaults under Material. Aligned here, scoped to the accordion.
+// the editorial index / split time / subtitle would fall back to their literal
+// defaults under Material. Aligned here, scoped to the accordion.
 @mixin _skin-text($theme) {
   @if mat.get-theme-version($theme) == 1 {
     --cngx-color-text-muted: var(--mat-sys-on-surface-variant);
@@ -138,7 +138,6 @@
         cngx-accordion-group[data-skin='bento'],
         cngx-accordion-group[data-skin='section-bands'],
         cngx-accordion-group[data-skin='severity-spine'],
-        cngx-accordion-group[data-skin='data-grid'],
         cngx-accordion-group[data-skin='primary-frame'],
         cngx-accordion-group[data-skin='plus-minus']
       ) {

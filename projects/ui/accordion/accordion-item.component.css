@@ -13,8 +13,8 @@
 
 .cngx-accordion-item__heading {
   margin: 0;
-  /* Flat default is a flex row. A table-style skin (data-grid) lays the heading
-     out as a column grid directly through its `[data-skin]` @scope block. */
+  /* Flat default is a flex row. A column-grid skin can lay the heading out as a
+     grid directly through its own `[data-skin]` @scope block. */
   display: flex;
   align-items: center;
   gap: var(--cngx-accordion-heading-gap, 0.5rem);
