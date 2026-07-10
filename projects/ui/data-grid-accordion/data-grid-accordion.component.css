@@ -63,7 +63,7 @@
 
 .cngx-data-grid-header {
   font-weight: var(--cngx-dga-head-weight, 600);
-  color: var(--cngx-dga-head-color, #6b7280);
+  color: var(--cngx-dga-head-color, var(--cngx-color-text-muted, #6b7280));
   border-block-end: var(
     --cngx-dga-head-border,
     1px solid var(--cngx-dga-border-color, #d1d5db)
@@ -75,4 +75,34 @@
     --cngx-dga-foot-border,
     1px solid var(--cngx-dga-border-color, #d1d5db)
   );
+}
+
+/* Default look - applies only when no `[skin]` is set. A flat, bracketed disclosure
+   list in the spirit of the accordion's flat default (accordion-group /
+   accordion-item component CSS): a hairline brackets the header / rows / footer top
+   and bottom, each row is divided by a hairline, the column head is muted, rows sit on
+   comfortable padding, and the summary lifts on hover. Every named skin sets
+   `[data-skin]` and owns its own frame, so `:not([data-skin])` keeps this off them. */
+.cngx-data-grid-accordion:not([data-skin]) {
+  --cngx-dga-row-py: 0.75rem;
+  --cngx-dga-row-px: 1rem;
+}
+
+/* Top + bottom brackets around the whole grid (the accordion default's group
+   `border-block-start` plus its last item's `border-block-end`). The header already
+   draws its own bottom rule and the footer its own top rule, so this only adds the
+   two outer edges. */
+.cngx-data-grid-accordion:not([data-skin]) .cngx-data-grid-accordion__grid {
+  border-block: 1px solid var(--cngx-dga-border-color, #d1d5db);
+}
+
+/* Drop the last row's divider so it never doubles with the footer's own top rule
+   (the named skins do the same inside their scope). */
+.cngx-data-grid-accordion:not([data-skin]) .cngx-data-grid-row:last-of-type {
+  --cngx-dga-row-divider: none;
+}
+
+/* Subtle hover affordance on the disclosure summary - a faint text wash, no colour. */
+.cngx-data-grid-accordion:not([data-skin]) .cngx-data-grid-row__summary:hover {
+  background: color-mix(in oklab, var(--cngx-color-text, #0f1320) 4%, transparent);
 }
