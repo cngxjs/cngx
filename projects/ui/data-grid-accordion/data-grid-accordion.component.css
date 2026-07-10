@@ -18,28 +18,36 @@
   overflow-x: auto;
 }
 
-/* Header and footer are non-row grid lines on the SAME column contract as every
-   row's summary, so labels and totals align down the grid with zero JS
-   measurement. They carry one fewer filled track than a row - the trailing
-   `auto` chevron track stays empty here. */
-.cngx-data-grid-header,
-.cngx-data-grid-footer {
+/* The single grid that owns the column tracks. Header, every row, and the footer are
+   `subgrid` items of THIS grid, so a content-sized (`fit`/`auto`) column resolves
+   once here and every row adopts the identical track - three separate grids would
+   each size `auto` to their own content and drift apart. The scroll floor lives here
+   (not on the children) so the one grid scrolls sideways as a unit. */
+.cngx-data-grid-accordion__grid {
   display: grid;
   grid-template-columns: var(--cngx-dga-columns, 1fr);
   gap: var(--cngx-dga-col-gap, 0.5rem);
-  align-items: center;
-  /* Same leading chevron gutter as every row's summary (data-grid-row.component.css):
-     the rows reserve inline-start room for the absolute chevron overlay, so the
-     header + footer must carry the identical inline-start padding or their columns
-     would sit one gutter-width left of the data columns. */
-  padding-block: var(--cngx-dga-row-py, 0.5rem);
+  min-inline-size: var(--cngx-dga-min-width, 0);
+  /* The leading chevron gutter and the content edge padding live on the ONE grid,
+     NOT on the subgrid rows: `padding-inline` on a subgrid item re-resolves its
+     flexible (`fit`/`grow`) tracks against its own padded width, so equal padding
+     still drifts the columns apart. Block padding stays per-row (below) because it
+     must sit between rows, not only at the grid's outer edges. */
   padding-inline: calc(var(--cngx-dga-row-px, 0.75rem) + var(--cngx-dga-lead, 1.25rem))
     var(--cngx-dga-row-px, 0.75rem);
+}
+
+/* Header and footer adopt the parent grid's tracks via `subgrid`, so labels and
+   totals land on the exact same lines as the row cells with zero JS measurement.
+   Only block padding here - the inline gutter is the inner grid's job (above). */
+.cngx-data-grid-header,
+.cngx-data-grid-footer {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  align-items: center;
+  padding-block: var(--cngx-dga-row-py, 0.5rem);
   font-size: var(--cngx-dga-fs, inherit);
-  /* Shared scroll floor with the rows (see host `overflow-x`): 0 keeps the flat
-     base full-width; a skin raises it to force sideways scroll instead of dropping
-     a column. */
-  min-inline-size: var(--cngx-dga-min-width, 0);
 }
 
 .cngx-data-grid-header {

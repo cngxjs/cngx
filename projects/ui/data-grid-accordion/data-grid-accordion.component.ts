@@ -81,7 +81,11 @@ import type { CngxDgCellTrack } from './data-grid-cell.directive';
     { directive: CngxAccordion, inputs: ['multi', 'openIds'], outputs: ['openIdsChange'] },
   ],
   providers: [{ provide: CNGX_DATA_GRID_ACCORDION, useExisting: CngxDataGridAccordion }],
-  template: '<ng-content />',
+  // The inner `__grid` is the single grid that owns the tracks; the host stays the
+  // horizontal scroll container. Header, rows, and footer are `subgrid` items of it
+  // (see the CSS), so content-sized (`fit`) columns resolve once and align across
+  // all three instead of each grid sizing them independently.
+  template: '<div class="cngx-data-grid-accordion__grid"><ng-content /></div>',
   host: {
     class: 'cngx-data-grid-accordion',
     '[attr.data-skin]': 'resolvedSkin() ?? null',

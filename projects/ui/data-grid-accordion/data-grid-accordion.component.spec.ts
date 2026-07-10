@@ -74,6 +74,13 @@ describe('CngxDataGridAccordion', () => {
     expect(group.headingLevel()).toBe(5);
   });
 
+  it('renders the inner grid that owns the shared column tracks', () => {
+    const { el } = setup();
+    // The host is the scroll container; the inner `__grid` is the single grid the
+    // header, rows, and footer subgrid onto (so `fit` columns resolve once).
+    expect(el.querySelector('.cngx-data-grid-accordion__grid')).toBeTruthy();
+  });
+
   it('reflects [columns] onto the --cngx-dga-columns host property', () => {
     const { fixture, host, el } = setup();
     expect(el.style.getPropertyValue('--cngx-dga-columns')).toBe('8ch 1fr auto');
