@@ -45,7 +45,12 @@
  *   right-aligned budget / actual money, and over-budget actual cells (`[data-over]`)
  *   in the danger colour. Below its `--cngx-dga-min-width` the grid scrolls sideways
  *   rather than dropping a column.
- * - `density` - transcribed in the next phase.
+ * - `density` - a framed task list whose row block padding and cell type ride the
+ *   `--cngx-dga-row-py` / `--cngx-dga-fs` hooks, transitioned so a density change
+ *   animates rather than jumps. The compact / standard / spacious control is a
+ *   consumer token concern (demo chrome that sets those two tokens), not a component
+ *   input; the skin only frames the grid and animates the change. Below its
+ *   `--cngx-dga-min-width` the grid scrolls sideways rather than dropping a column.
  */
 
 @scope (.cngx-data-grid-accordion[data-skin='ledger']) {
@@ -807,4 +812,108 @@
     color: var(--cngx-color-text, #0f1320);
   }
 }
+
+@scope (.cngx-data-grid-accordion[data-skin='density']) {
+  :scope {
+    /* POC `.densg`: a framed task list. The compact / standard / spacious control is
+       demo chrome that drives the `--cngx-dga-row-py` + `--cngx-dga-fs` hooks (a
+       consumer token concern, not a component input); this skin only frames the grid
+       and TRANSITIONS the row block padding so a density change animates rather than
+       snaps. The host's `overflow-x: auto` clips to the rounded border and scrolls. */
+    border: 1px solid var(--cngx-color-border, #d1d5db);
+    border-radius: var(--cngx-dga-radius, 0.5rem);
+    background: var(--cngx-color-surface, #fff);
+    font-size: var(--cngx-dga-fs, 0.875rem);
+
+    /* Overflow is scrolled, never dropped: under ~32rem the grid scrolls sideways with
+       the assignee + status columns intact instead of hiding one. */
+    --cngx-dga-min-width: 32rem;
+
+    /* POC gaps / paddings. `--cngx-dga-row-py` carries the STANDARD default here; the
+       demo chrome overrides it (and `--cngx-dga-fs`) for compact / spacious. */
+    --cngx-dga-col-gap: 0.75rem;
+    --cngx-dga-row-py: 0.6rem;
+    --cngx-dga-row-px: 1rem;
+
+    /* Registered-@property trap: SET the adaptive border + surfaces so they track the
+       scheme instead of the fixed light initial. `-strong` is unregistered. */
+    --cngx-dga-border-color: var(--cngx-color-border, #d1d5db);
+    --cngx-dga-surface-alt: color-mix(
+      in oklab,
+      var(--cngx-color-surface, #fff) 96%,
+      var(--cngx-color-text, #0f1320)
+    );
+    --cngx-dga-surface-strong: color-mix(
+      in oklab,
+      var(--cngx-color-surface, #fff) 90%,
+      var(--cngx-color-text, #0f1320)
+    );
+  }
+
+  /* Head + summary transition their block padding so a density switch animates the
+     rows taller / shorter rather than snapping (POC `transition: padding`). The cell
+     type change (`--cngx-dga-fs`) snaps with it, exactly as the POC. */
+  .cngx-data-grid-header,
+  .cngx-data-grid-row__summary {
+    transition: padding var(--cngx-dga-transition, 300ms cubic-bezier(0.22, 1, 0.36, 1));
+  }
+
+  /* Column head: strong surface, mono uppercase dim. */
+  .cngx-data-grid-header {
+    background: var(--cngx-dga-surface-strong);
+    border-block-end: 1px solid var(--cngx-color-border, #d1d5db);
+    font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
+    font-size: var(--cngx-dga-head-fs, 0.75rem);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--cngx-color-text-muted, #6b7280);
+  }
+
+  /* Hover + open both tint with the primary accent (POC `summary:hover` accent-weak /
+     `details[open] > summary`). */
+  .cngx-data-grid-row__summary:hover,
+  .cngx-data-grid-row[data-expanded] .cngx-data-grid-row__summary {
+    background: color-mix(in oklab, var(--cngx-color-primary, #1d4ed8) 8%, transparent);
+  }
+
+  /* The task (primary) cell carries the row weight; the assignee - the middle
+     non-primary content cell, child 3 of the summary after the chevron slot (child 1)
+     and the task cell (child 2) - is mono + dimmed (POC `.c-asg`). The status cell is
+     the last child and holds a projected `cngx-tag`, so it needs no skin paint. */
+  .cngx-data-grid-row__summary .cngx-dga-cell[data-primary] {
+    font-weight: 620;
+    color: var(--cngx-color-text, #0f1320);
+  }
+
+  .cngx-data-grid-row__summary > .cngx-dga-cell:nth-child(3) {
+    font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
+    font-size: var(--cngx-dga-head-fs, 0.75rem);
+    color: var(--cngx-color-text-muted, #6b7280);
+  }
+
+  /* Detail zone: recessed alternate surface with a primary inset edge (POC `.body`). */
+  .cngx-data-grid-row__region {
+    background: var(--cngx-dga-surface-alt);
+    border-block-start: 1px solid var(--cngx-color-border, #d1d5db);
+    box-shadow: inset 3px 0 0 var(--cngx-color-primary, #1d4ed8);
+  }
+
+  /* Footer is a flex status bar (POC `.dg-foot` is off the column grid): a count on the
+     left, a status summary on the right. */
+  .cngx-data-grid-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    background: var(--cngx-dga-surface-strong);
+    color: var(--cngx-color-text-muted, #6b7280);
+  }
+
+  /* Drop the last row's own divider so it never doubles with the footer's top border
+     (both draw from the same adaptive token). */
+  .cngx-data-grid-row:last-of-type {
+    --cngx-dga-row-divider: none;
+  }
+}
+
 
