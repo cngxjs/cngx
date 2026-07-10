@@ -87,15 +87,18 @@
        with a fixed (light) initial-value, so the fallback never fires and the
        initial would otherwise win - the exact @property trap. Setting it lets the
        adaptive value cascade to every descendant. `-strong` is unregistered. */
-    --cngx-dga-surface-alt: color-mix(
-      in oklab,
-      var(--cngx-color-surface, #fff) 96%,
-      var(--cngx-color-text, #0f1320)
+    /* The `-mat` override token lets the Material bridge (data-grid-accordion-theme
+       skins mixin) map this surface to a Material surface-container; unset, the oklab
+       derivation from the foundation tokens is the fallback, so the skin is unchanged
+       without the bridge. The `-mat` token is deliberately UNregistered so the var()
+       fallback fires (a registered @property would pin it to a fixed initial). */
+    --cngx-dga-surface-alt: var(
+      --cngx-dga-surface-alt-mat,
+      color-mix(in oklab, var(--cngx-color-surface, #fff) 96%, var(--cngx-color-text, #0f1320))
     );
-    --cngx-dga-surface-strong: color-mix(
-      in oklab,
-      var(--cngx-color-surface, #fff) 90%,
-      var(--cngx-color-text, #0f1320)
+    --cngx-dga-surface-strong: var(
+      --cngx-dga-surface-strong-mat,
+      color-mix(in oklab, var(--cngx-color-surface, #fff) 90%, var(--cngx-color-text, #0f1320))
     );
   }
 
@@ -189,15 +192,18 @@
        in dark. SET them here so every hairline + surface tracks the scheme.
        `-strong` is unregistered. */
     --cngx-dga-border-color: var(--cngx-color-border, #d1d5db);
-    --cngx-dga-surface-alt: color-mix(
-      in oklab,
-      var(--cngx-color-surface, #fff) 96%,
-      var(--cngx-color-text, #0f1320)
+    /* The `-mat` override token lets the Material bridge (data-grid-accordion-theme
+       skins mixin) map this surface to a Material surface-container; unset, the oklab
+       derivation from the foundation tokens is the fallback, so the skin is unchanged
+       without the bridge. The `-mat` token is deliberately UNregistered so the var()
+       fallback fires (a registered @property would pin it to a fixed initial). */
+    --cngx-dga-surface-alt: var(
+      --cngx-dga-surface-alt-mat,
+      color-mix(in oklab, var(--cngx-color-surface, #fff) 96%, var(--cngx-color-text, #0f1320))
     );
-    --cngx-dga-surface-strong: color-mix(
-      in oklab,
-      var(--cngx-color-surface, #fff) 90%,
-      var(--cngx-color-text, #0f1320)
+    --cngx-dga-surface-strong: var(
+      --cngx-dga-surface-strong-mat,
+      color-mix(in oklab, var(--cngx-color-surface, #fff) 90%, var(--cngx-color-text, #0f1320))
     );
 
     /* Detail zone reads as a cell note: room at the top for the NOTE tag, indented
@@ -458,15 +464,18 @@
     /* Same registered-@property trap as the other skins: SET the adaptive border +
        surfaces so they track the scheme instead of the fixed light initial. */
     --cngx-dga-border-color: var(--cngx-color-border, #d1d5db);
-    --cngx-dga-surface-alt: color-mix(
-      in oklab,
-      var(--cngx-color-surface, #fff) 96%,
-      var(--cngx-color-text, #0f1320)
+    /* The `-mat` override token lets the Material bridge (data-grid-accordion-theme
+       skins mixin) map this surface to a Material surface-container; unset, the oklab
+       derivation from the foundation tokens is the fallback, so the skin is unchanged
+       without the bridge. The `-mat` token is deliberately UNregistered so the var()
+       fallback fires (a registered @property would pin it to a fixed initial). */
+    --cngx-dga-surface-alt: var(
+      --cngx-dga-surface-alt-mat,
+      color-mix(in oklab, var(--cngx-color-surface, #fff) 96%, var(--cngx-color-text, #0f1320))
     );
-    --cngx-dga-surface-strong: color-mix(
-      in oklab,
-      var(--cngx-color-surface, #fff) 90%,
-      var(--cngx-color-text, #0f1320)
+    --cngx-dga-surface-strong: var(
+      --cngx-dga-surface-strong-mat,
+      color-mix(in oklab, var(--cngx-color-surface, #fff) 90%, var(--cngx-color-text, #0f1320))
     );
   }
 
@@ -581,15 +590,18 @@
     /* Same registered-@property trap as the other skins: SET the adaptive border +
        surfaces so they track the scheme instead of the fixed light initial. */
     --cngx-dga-border-color: var(--cngx-color-border, #d1d5db);
-    --cngx-dga-surface-alt: color-mix(
-      in oklab,
-      var(--cngx-color-surface, #fff) 96%,
-      var(--cngx-color-text, #0f1320)
+    /* The `-mat` override token lets the Material bridge (data-grid-accordion-theme
+       skins mixin) map this surface to a Material surface-container; unset, the oklab
+       derivation from the foundation tokens is the fallback, so the skin is unchanged
+       without the bridge. The `-mat` token is deliberately UNregistered so the var()
+       fallback fires (a registered @property would pin it to a fixed initial). */
+    --cngx-dga-surface-alt: var(
+      --cngx-dga-surface-alt-mat,
+      color-mix(in oklab, var(--cngx-color-surface, #fff) 96%, var(--cngx-color-text, #0f1320))
     );
-    --cngx-dga-surface-strong: color-mix(
-      in oklab,
-      var(--cngx-color-surface, #fff) 90%,
-      var(--cngx-color-text, #0f1320)
+    --cngx-dga-surface-strong: var(
+      --cngx-dga-surface-strong-mat,
+      color-mix(in oklab, var(--cngx-color-surface, #fff) 90%, var(--cngx-color-text, #0f1320))
     );
   }
 
@@ -850,15 +862,18 @@
     /* Registered-@property trap: SET the adaptive border + surfaces so they track the
        scheme instead of the fixed light initial. `-strong` is unregistered. */
     --cngx-dga-border-color: var(--cngx-color-border, #d1d5db);
-    --cngx-dga-surface-alt: color-mix(
-      in oklab,
-      var(--cngx-color-surface, #fff) 96%,
-      var(--cngx-color-text, #0f1320)
+    /* The `-mat` override token lets the Material bridge (data-grid-accordion-theme
+       skins mixin) map this surface to a Material surface-container; unset, the oklab
+       derivation from the foundation tokens is the fallback, so the skin is unchanged
+       without the bridge. The `-mat` token is deliberately UNregistered so the var()
+       fallback fires (a registered @property would pin it to a fixed initial). */
+    --cngx-dga-surface-alt: var(
+      --cngx-dga-surface-alt-mat,
+      color-mix(in oklab, var(--cngx-color-surface, #fff) 96%, var(--cngx-color-text, #0f1320))
     );
-    --cngx-dga-surface-strong: color-mix(
-      in oklab,
-      var(--cngx-color-surface, #fff) 90%,
-      var(--cngx-color-text, #0f1320)
+    --cngx-dga-surface-strong: var(
+      --cngx-dga-surface-strong-mat,
+      color-mix(in oklab, var(--cngx-color-surface, #fff) 90%, var(--cngx-color-text, #0f1320))
     );
   }
 
