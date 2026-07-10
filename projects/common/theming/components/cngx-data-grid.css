@@ -109,4 +109,36 @@
     inherits: true;
     initial-value: oklch(0.97 0.003 250);
   }
+
+  /**
+   * Fixed track width for a `col="sm"` column. Named sizes mirror the `size`
+   * vocabulary of `CngxTag` / `CngxIcon` / `CngxAvatar`; the group maps `col="sm"`
+   * to `var(--cngx-dga-col-sm)` when deriving the shared template.
+   * @group Grid
+   */
+  @property --cngx-dga-col-sm {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 5rem;
+  }
+
+  /**
+   * Fixed track width for a `col="md"` column.
+   * @group Grid
+   */
+  @property --cngx-dga-col-md {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 7rem;
+  }
+
+  /**
+   * Fixed track width for a `col="lg"` column.
+   * @group Grid
+   */
+  @property --cngx-dga-col-lg {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 10rem;
+  }
 }
