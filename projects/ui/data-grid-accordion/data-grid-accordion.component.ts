@@ -175,7 +175,9 @@ export class CngxDataGridAccordion implements CngxDataGridAccordionContext {
  * Map a cell's `col` track intent to one CSS `grid-template-columns` track. Unset
  * (`undefined`) falls back to the derived default: the primary column grows
  * (`minmax(0, 1fr)`), every other column fits its content (`auto`). The named sizes
- * resolve against the registered `--cngx-dga-col-sm|-md|-lg` tokens.
+ * resolve against the registered `--cngx-dga-col-sm|-md|-lg` tokens, each with a rem
+ * fallback so the track stays valid even before the token surface loads (an invalid
+ * `var()` would collapse the whole `grid-template-columns` to one column).
  */
 function trackFor(track: CngxDgCellTrack | undefined, isPrimary: boolean): string {
   switch (track) {
@@ -184,9 +186,11 @@ function trackFor(track: CngxDgCellTrack | undefined, isPrimary: boolean): strin
     case 'fit':
       return 'auto';
     case 'sm':
+      return 'var(--cngx-dga-col-sm, 5rem)';
     case 'md':
+      return 'var(--cngx-dga-col-md, 7rem)';
     case 'lg':
-      return `var(--cngx-dga-col-${track})`;
+      return 'var(--cngx-dga-col-lg, 10rem)';
     default:
       return isPrimary ? 'minmax(0, 1fr)' : 'auto';
   }

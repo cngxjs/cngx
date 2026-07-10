@@ -200,7 +200,9 @@ describe('CngxDataGridAccordion column derivation', () => {
     fixture.detectChanges();
     const el = fixture.debugElement.query(By.directive(CngxDataGridAccordion))
       .nativeElement as HTMLElement;
-    expect(template(el)).toBe('var(--cngx-dga-col-sm) minmax(0, 1fr) var(--cngx-dga-col-md)');
+    expect(template(el)).toBe(
+      'var(--cngx-dga-col-sm, 5rem) minmax(0, 1fr) var(--cngx-dga-col-md, 7rem)',
+    );
   });
 
   it('lets an explicit [columns] string win over the derived template', () => {
