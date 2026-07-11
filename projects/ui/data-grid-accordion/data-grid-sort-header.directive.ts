@@ -8,6 +8,7 @@ import {
   Renderer2,
 } from '@angular/core';
 
+import { createSortHeaderState } from '@cngx/common/data';
 import { nextUid } from '@cngx/core/utils';
 
 import { CNGX_DATA_GRID_ACCORDION } from './data-grid-accordion.token';
@@ -87,25 +88,20 @@ export class CngxDgaSortHeader {
   /** Stable id of the visually-hidden status element the host `aria-describedby` names. */
   protected readonly statusId = nextUid('cngx-dga-sort-status-');
 
-  private readonly entry = computed(() =>
-    this.grid.sort.sorts().find((sort) => sort.active === this.field()),
-  );
+  private readonly state = createSortHeaderState(() => this.grid.sort, this.field);
 
   /** `true` when this column is part of the active sort (primary or secondary). */
-  readonly isActive = computed(() => this.entry() !== undefined);
+  readonly isActive = this.state.isActive;
   /** `true` when this column is active and sorted ascending. */
-  readonly isAsc = computed(() => this.entry()?.direction === 'asc');
+  readonly isAsc = this.state.isAsc;
   /** `true` when this column is active and sorted descending. */
-  readonly isDesc = computed(() => this.entry()?.direction === 'desc');
+  readonly isDesc = this.state.isDesc;
 
   /**
    * 1-based position of this column in the sort stack, or `0` when it is not active.
    * Only meaningful when the owning group has `[multiSort]` (for sort-order badges).
    */
-  readonly priority = computed(() => {
-    const index = this.grid.sort.sorts().findIndex((sort) => sort.active === this.field());
-    return index === -1 ? 0 : index + 1;
-  });
+  readonly priority = this.state.priority;
 
   private readonly statusText = computed(() => {
     if (this.isAsc()) {
@@ -141,9 +137,7 @@ export class CngxDgaSortHeader {
   }
 
   protected handleSort(event?: Event): void {
-    const additive =
-      this.grid.sort.multiSort() && (event as { shiftKey?: boolean })?.shiftKey === true;
-    this.grid.sort.setSort(this.field(), additive);
+    this.state.toggle((event as { shiftKey?: boolean })?.shiftKey ?? false);
   }
 
   protected handleActivateKey(event: Event): void {
