@@ -2,10 +2,6 @@
    re-exposes those tracks to its own children (heading + region), so the summary
    cells below map onto the shared grid lines. Two rows: the heading (summary) and
    the detail region. The scroll floor now lives on the inner grid, not here. */
-/* The row is a `subgrid` item of the group's inner grid: it spans every column and
-   re-exposes those tracks to its children (heading + region), so the summary cells
-   map onto the shared grid lines. Two rows: the heading (summary) and the detail
-   region. The scroll floor lives on the inner grid, not here. */
 .cngx-dga-row {
   grid-column: 1 / -1;
   display: grid;
