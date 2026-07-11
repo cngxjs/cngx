@@ -47,6 +47,7 @@ import { createMatExpansionSetSync } from './material-bridge/set-sync';
  * that re-asserts on every `multi` change) so Material never runs its own
  * single-open close while the cngx `effectiveOpenIds` clamp arbitrates.
  *
+ * @playground Controlled open-set ./examples/bridge/bridge-example.component.ts
  * @category ui/mat-accordion
  * @docsKind primary
  * @wcag AA
