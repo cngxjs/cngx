@@ -220,6 +220,39 @@ describe('CngxDataGridAccordion sort', () => {
 
 @Component({
   template: `<cngx-data-grid-accordion
+    [initialSort]="{ active: 'amount', direction: 'desc' }"
+  ></cngx-data-grid-accordion>`,
+  imports: [CngxDataGridAccordion],
+})
+class InitialSortHost {}
+
+describe('CngxDataGridAccordion initial sort', () => {
+  beforeEach(() => TestBed.configureTestingModule({ imports: [InitialSortHost] }));
+
+  function setup() {
+    const fixture = TestBed.createComponent(InitialSortHost);
+    fixture.detectChanges();
+    const de = fixture.debugElement.query(By.directive(CngxDataGridAccordion));
+    return { fixture, sort: de.injector.get(CngxSort) };
+  }
+
+  it('starts sorted from [initialSort]', () => {
+    const { sort } = setup();
+    expect(sort.active()).toBe('amount');
+    expect(sort.direction()).toBe('desc');
+  });
+
+  it('hands over to a header click after seeding', () => {
+    const { fixture, sort } = setup();
+    sort.setSort('name');
+    fixture.detectChanges();
+    expect(sort.active()).toBe('name');
+    expect(sort.direction()).toBe('asc');
+  });
+});
+
+@Component({
+  template: `<cngx-data-grid-accordion
     [filterPredicate]="predicate()"
     [(filterTerm)]="term"
   ></cngx-data-grid-accordion>`,

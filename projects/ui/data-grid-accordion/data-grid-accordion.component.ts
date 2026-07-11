@@ -42,6 +42,8 @@ import type { CngxDgCellTrack } from './data-grid-cell.directive';
  * {@link CNGX_DATA_GRID_ACCORDION} as `sort`, so header cells become sortable with
  * one `cngxDgaSortHeader` attribute (no `[cngxSortRef]` plumbing) and a consumer can
  * bind the controlled `[sortActive]` / `[sortDirection]` inputs and read `(sortChange)`.
+ * For an uncontrolled grid that just needs a starting order, `[initialSort]="{ active,
+ * direction }"` seeds the sort once and then yields to header clicks.
  * It hosts the orthogonal {@link CngxFilter} atom the same way, exposed as `filter`:
  * `[filterPredicate]` forwards to its controlled predicate, `(filterChange)` re-emits,
  * and a projected `cngxDgaFilter` input two-way-binds the simple `[(filterTerm)]`.
@@ -96,7 +98,12 @@ import type { CngxDgCellTrack } from './data-grid-cell.directive';
     // `(sortChange)`. The group publishes state only - derivation stays with the consumer.
     {
       directive: CngxSort,
-      inputs: ['cngxSortActive: sortActive', 'cngxSortDirection: sortDirection', 'multiSort'],
+      inputs: [
+        'cngxSortActive: sortActive',
+        'cngxSortDirection: sortDirection',
+        'cngxSortInitial: initialSort',
+        'multiSort',
+      ],
       outputs: ['sortChange'],
     },
     // Filter mirrors sort: the `CngxFilter` predicate atom hosted here, its controlled
