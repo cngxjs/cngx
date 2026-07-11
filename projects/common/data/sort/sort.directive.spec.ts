@@ -1,13 +1,29 @@
 import { Component } from '@angular/core';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createDirectiveFixture, spyOnOutput, type DirectiveFixture } from '@cngx/testing';
-import { CngxSort } from './sort.directive';
+import { CngxSort, type SortEntry } from './sort.directive';
 
 @Component({
   template: '<div cngxSort></div>',
   imports: [CngxSort],
 })
 class Host {}
+
+@Component({
+  template: '<div cngxSort [cngxSortInitial]="seed"></div>',
+  imports: [CngxSort],
+})
+class InitialSortHost {
+  seed: SortEntry = { active: 'name', direction: 'desc' };
+}
+
+@Component({
+  template: '<div cngxSort cngxSortActive="age" [cngxSortInitial]="seed"></div>',
+  imports: [CngxSort],
+})
+class ControlledPinHost {
+  seed: SortEntry = { active: 'name', direction: 'desc' };
+}
 
 describe('CngxSort', () => {
   let ctx: DirectiveFixture<CngxSort, Host>;
@@ -158,5 +174,27 @@ describe('CngxSort', () => {
       expect(spy.values()[1]).toBeUndefined();
       spy.destroy();
     });
+  });
+});
+
+describe('CngxSort initial sort seed', () => {
+  it('seeds the sort once on init from [cngxSortInitial]', async () => {
+    const ctx = await createDirectiveFixture(CngxSort, InitialSortHost);
+    expect(ctx.directive.sorts()).toEqual([{ active: 'name', direction: 'desc' }]);
+    expect(ctx.directive.active()).toBe('name');
+    expect(ctx.directive.direction()).toBe('desc');
+  });
+
+  it('hands over to user clicks after seeding (seed does not pin)', async () => {
+    const ctx = await createDirectiveFixture(CngxSort, InitialSortHost);
+    ctx.directive.setSort('age');
+    expect(ctx.directive.sorts()).toEqual([{ active: 'age', direction: 'asc' }]);
+  });
+
+  it('does not seed when a controlled cngxSortActive pin is bound', async () => {
+    const ctx = await createDirectiveFixture(CngxSort, ControlledPinHost);
+    // The seed no-ops so nothing surfaces if the controlled pin later unbinds.
+    expect(ctx.directive.sorts()).toEqual([]);
+    expect(ctx.directive.active()).toBe('age');
   });
 });

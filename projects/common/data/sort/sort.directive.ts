@@ -1,4 +1,4 @@
-import { computed, Directive, input, output, signal } from '@angular/core';
+import { afterNextRender, computed, Directive, input, output, signal } from '@angular/core';
 
 /**
  * A single sort entry: the active field key and its direction.
@@ -17,6 +17,11 @@ export interface SortEntry {
  * In controlled mode the `cngxSortActive` / `cngxSortDirection` inputs take
  * precedence over the internal state - pair with `sortChange` to keep them
  * in sync.
+ *
+ * An uncontrolled sort may declare a **starting** column + direction via
+ * `[cngxSortInitial]`: it seeds the internal state exactly once on init, then
+ * user clicks take over. Distinct from the controlled `cngxSortActive` /
+ * `cngxSortDirection` pins - the seed is skipped when a controlled pin is bound.
  *
  * When `multiSort` is `true`, holding **Shift** while clicking a sort header
  * adds it as a secondary (tertiary, …) sort key instead of replacing the
@@ -54,8 +59,27 @@ export class CngxSort {
    * replacing the current sort.
    */
   readonly multiSort = input<boolean>(false);
+  /**
+   * Uncontrolled starting sort. Seeds the internal state once on init if no sort
+   * is set yet and no controlled `cngxSortActive` pin is bound; user clicks own
+   * it thereafter. Ignored in controlled mode.
+   */
+  readonly initialSort = input<SortEntry | undefined>(undefined, { alias: 'cngxSortInitial' });
 
   private readonly sortsState = signal<SortEntry[]>([]);
+
+  constructor() {
+    // One-shot uncontrolled seed: not a reactive derivation, so afterNextRender
+    // (single-shot, outside the signal graph) rather than an effect. The empty +
+    // no-controlled-pin guards keep it from clobbering an early click or writing
+    // an invisible state that would surface when a controlled pin unbinds.
+    afterNextRender(() => {
+      const seed = this.initialSort();
+      if (seed && this.sortsState().length === 0 && this.activeInput() === undefined) {
+        this.sortsState.set([seed]);
+      }
+    });
+  }
 
   /** The active sort column of the primary entry (controlled takes precedence in single-sort mode). */
   readonly active = computed(() => this.activeInput() ?? this.sortsState()[0]?.active);
