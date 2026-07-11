@@ -6,6 +6,7 @@ export { CngxDataGridRow } from './data-grid-row.component';
 export { CngxDataGridHeader } from './data-grid-header.component';
 export { CngxDgaSortHeader } from './data-grid-sort-header.directive';
 export { CngxDgaFilter } from './data-grid-filter.directive';
+export { CngxDgaFilterField } from './data-grid-filter-field.component';
 export { CngxDgaCount } from './data-grid-count.directive';
 export { CngxDataGridFooter } from './data-grid-footer.component';
 export {

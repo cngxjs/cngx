@@ -1,0 +1,28 @@
+.cngx-dga-filter-field {
+  grid-column: 1 / -1;
+  display: block;
+  padding: var(--cngx-dga-filter-py, 0.6rem) var(--cngx-dga-filter-px, 1rem);
+}
+
+.cngx-dga-filter-field__label {
+  display: block;
+  margin-block-end: var(--cngx-dga-filter-label-gap, 0.25rem);
+  font-size: var(--cngx-dga-filter-label-fs, 0.8125rem);
+  color: var(--cngx-dga-filter-label-color, var(--cngx-color-text-muted, #6b7280));
+}
+
+.cngx-dga-filter-field__input {
+  inline-size: 100%;
+  box-sizing: border-box;
+  padding: var(--cngx-dga-filter-input-py, 0.4rem) var(--cngx-dga-filter-input-px, 0.6rem);
+  font: inherit;
+  color: var(--cngx-color-text, #0f1320);
+  background: var(--cngx-color-surface, #fff);
+  border: 1px solid var(--cngx-dga-border-color, var(--cngx-color-border, #d1d5db));
+  border-radius: var(--cngx-radius-sm, 0.25rem);
+}
+
+.cngx-dga-filter-field__input:focus-visible {
+  outline: 2px solid var(--cngx-dga-focus-color, var(--cngx-color-primary, #1d4ed8));
+  outline-offset: 1px;
+}
