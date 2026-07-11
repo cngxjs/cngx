@@ -31,9 +31,11 @@ const SORTED_DESCENDING = 'sorted descending, activate to sort ascending';
  * click / Enter / Space all toggle the column's sort through `CngxSort.setSort`. When
  * the owning group has `[multiSort]`, Shift-activating adds this column to the sort
  * stack instead of replacing it (mirrors {@link CngxSortHeader}). The field/direction
- * logic is a faithful copy of `CngxSortHeader`; that atom cannot be composed here
- * because its `cngxSortRef` is `input.required` and only template-bindable, so a
- * sibling wrapper could never feed it - the copy reads the ref off the context instead.
+ * logic is not re-implemented: both headers compose the shared `createSortHeaderState`
+ * factory from `@cngx/common/data`, so the derivation lives in one place. `CngxSortHeader`
+ * cannot be reused as a sibling here (its `cngxSortRef` is `input.required` and only
+ * template-bindable), so this header composes the same factory and feeds it the sort it
+ * reads off the context token.
  *
  * The component is a disclosure accordion, not a table, so it carries no
  * `role="grid"` / `role="table"` and thus no valid context for `aria-sort` /

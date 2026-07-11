@@ -32,7 +32,6 @@ export const CNGX_DATA_GRID_ACCORDION_DEFAULTS: CngxDataGridAccordionConfig = {}
  * resolves.
  *
  * @category ui/data-grid-accordion
- * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/data-grid-accordion/config/data-grid-accordion.config.defaults.ts
  * @since 0.1.0
  */
 export const CNGX_DATA_GRID_ACCORDION_CONFIG = new InjectionToken<CngxDataGridAccordionConfig>(
