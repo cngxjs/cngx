@@ -79,10 +79,10 @@ export class CngxMatAccordion {
 
   private readonly panels = contentChildren(MatExpansionPanel, { descendants: true });
 
-  // Stable id per panel — the key the brain's open-set stores. A Map,
-  // not a WeakMap: `panelId` is called from the sync's effects where a
-  // deterministic first-seen assignment is all that is needed.
-  private readonly idByPanel = new Map<MatExpansionPanel, string>();
+  // Stable id per panel — the key the brain's open-set stores. A WeakMap:
+  // the id is assigned first-seen and never needs enumeration, so a removed
+  // panel's entry drops with the panel instead of accumulating over churn.
+  private readonly idByPanel = new WeakMap<MatExpansionPanel, string>();
 
   constructor() {
     // Pin Material's own `multi` so it never arbitrates single-open: the
