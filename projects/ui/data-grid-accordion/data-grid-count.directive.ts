@@ -25,6 +25,8 @@ import { Directive, effect, ElementRef, inject, input, Renderer2 } from '@angula
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/data-grid-accordion/data-grid-count.directive.ts
  * @since 0.1.0
  * @relatedTo CngxDataGridAccordion, CngxDgaFilter
+ *
+ * <example-url>http://localhost:4200/#/ui/data-grid-accordion/sortable-ledger</example-url>
  */
 @Directive({
   selector: '[cngxDgaCount]',

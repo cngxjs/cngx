@@ -32,6 +32,8 @@ import { CngxDgaFilter } from './data-grid-filter.directive';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/data-grid-accordion/data-grid-filter-field.component.ts
  * @since 0.1.0
  * @relatedTo CngxDataGridAccordion, CngxDgaFilter, CngxDgaCount
+ *
+ * <example-url>http://localhost:4200/#/ui/data-grid-accordion/sortable-ledger</example-url>
  */
 @Component({
   selector: 'cngx-dga-filter',

@@ -29,6 +29,9 @@ import { CNGX_DATA_GRID_ACCORDION } from './data-grid-accordion.token';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/data-grid-accordion/data-grid-filter.directive.ts
  * @since 0.1.0
  * @relatedTo CngxDataGridAccordion, CngxFilter, CngxDgaCount
+ *
+ * <example-url>http://localhost:4200/#/ui/data-grid-accordion/bound-sort-filter</example-url>
+ * <example-url>http://localhost:4200/#/ui/data-grid-accordion/sortable-ledger</example-url>
  */
 @Directive({
   selector: 'input[cngxDgaFilter]',

@@ -80,6 +80,12 @@ import type { CngxDgCellTrack } from './data-grid-cell.directive';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/data-grid-accordion/data-grid-accordion.component.ts
  * @since 0.1.0
  * @relatedTo CngxDataGridRow, CngxDgCell, CngxDataGridHeader, CngxDataGridFooter, CngxAccordion, CngxSort, CngxFilter, CngxDgaSortHeader, CngxDgaFilter, CngxDgaCount
+ *
+ * <example-url>http://localhost:4200/#/ui/data-grid-accordion/sortable-ledger</example-url>
+ * <example-url>http://localhost:4200/#/ui/data-grid-accordion/bound-sort-filter</example-url>
+ * <example-url>http://localhost:4200/#/ui/data-grid-accordion/master-detail</example-url>
+ * <example-url>http://localhost:4200/#/ui/data-grid-accordion/spreadsheet</example-url>
+ * <example-url>http://localhost:4200/#/ui/data-grid-accordion/density</example-url>
  */
 @Component({
   selector: 'cngx-data-grid-accordion',

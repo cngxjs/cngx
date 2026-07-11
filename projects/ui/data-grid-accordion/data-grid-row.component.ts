@@ -35,6 +35,9 @@ import { CngxDgCell } from './data-grid-cell.directive';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/data-grid-accordion/data-grid-row.component.ts
  * @since 0.1.0
  * @relatedTo CngxDataGridAccordion, CngxDgCell, CngxAccordionPanel
+ *
+ * <example-url>http://localhost:4200/#/ui/data-grid-accordion/master-detail</example-url>
+ * <example-url>http://localhost:4200/#/ui/data-grid-accordion/report</example-url>
  */
 @Component({
   selector: 'cngx-dga-row',
