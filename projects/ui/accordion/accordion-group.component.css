@@ -14,3 +14,13 @@
     var(--cngx-accordion-divider, 1px solid var(--cngx-accordion-border-color, #d1d5db))
   );
 }
+
+/* SET the divider colour to the adaptive theme token on the flat default.
+   `--cngx-accordion-border-color` is a registered `@property` with a fixed light
+   initial-value, so its `var()` fallbacks never adapt and the unskinned group +
+   item dividers stay light in dark mode. The token inherits, so setting it on the
+   group host reaches the item dividers too; skins that set `--cngx-accordion-divider`
+   are unaffected (that token wins in the `var()` chain). */
+.cngx-accordion-group:not([data-skin]) {
+  --cngx-accordion-border-color: var(--cngx-color-border, #d1d5db);
+}
