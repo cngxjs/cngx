@@ -3,6 +3,9 @@
  */
 export { CngxDataGridAccordion } from './data-grid-accordion.component';
 export { CngxDataGridRow } from './data-grid-row.component';
+export { CngxDgaRowBusy } from './data-grid-row-busy.directive';
+export { CngxDgaRowError } from './data-grid-row-error.directive';
+export type { CngxDgaRowStateContext } from './data-grid-row-state-context';
 export { CngxDataGridHeader } from './data-grid-header.component';
 export { CngxDgaSortHeader } from './data-grid-sort-header.directive';
 export { CngxDgaFilter } from './data-grid-filter.directive';
