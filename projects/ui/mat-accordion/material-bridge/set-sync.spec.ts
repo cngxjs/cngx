@@ -36,14 +36,26 @@ class FakePanel {
 @Component({ standalone: true, template: '' })
 class HostCmp {
   readonly panels = signal<FakePanel[]>([]);
+  // Multi-mode fake open-set: isOpen/toggle without the single-mode clamp.
+  // The clamp is CngxAccordion's own tested behaviour; the directive spec
+  // exercises it end-to-end. Here we isolate the sync mechanics.
   readonly openIds = signal<ReadonlySet<string>>(new Set());
+  toggle(id: string): void {
+    const next = new Set(this.openIds());
+    if (next.has(id)) {
+      next.delete(id);
+    } else {
+      next.add(id);
+    }
+    this.openIds.set(next);
+  }
   constructor() {
     createMatExpansionSetSync<FakePanel>({
       panels: this.panels,
       panelId: (panel) => panel.id,
       accordion: {
         isOpen: (id) => this.openIds().has(id),
-        openIds: this.openIds,
+        toggle: (id) => this.toggle(id),
       },
       injector: inject(Injector),
       destroyRef: inject(DestroyRef),

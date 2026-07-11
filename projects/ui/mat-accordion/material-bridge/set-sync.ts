@@ -22,21 +22,22 @@ export interface CngxExpansionPanelLike {
 }
 
 /**
- * Minimal structural view of the accordion brain's open-set: a reactive
- * membership read and a settable id-set model. `CngxAccordion` satisfies
- * it (`isOpen` reads the clamped `effectiveOpenIds` computed; `openIds`
- * is a `ModelSignal<ReadonlySet<string>>` — callable, with `.set`).
+ * Minimal structural view of the accordion brain the sync drives:
+ * a reactive membership read plus the same `toggle` the native
+ * `CngxAccordionPanel` calls. `CngxAccordion` satisfies it — `isOpen`
+ * reads the clamped `effectiveOpenIds` computed and `toggle` mutates
+ * from that clamped view, so single-open arbitration stays authoritative
+ * and the exposed `openIds` model never retains a clamped-out id. The
+ * sync writes membership exclusively through `toggle`, never a raw
+ * set-write, so it can never diverge from the brain's own DOM path.
  *
  * @category ui/mat-accordion/material-bridge
  */
 export interface CngxAccordionOpenSet {
   /** Reactive membership read — reflects single-mode arbitration. Tracked inside the sync effect. */
   isOpen(panelId: string): boolean;
-  /** Settable open-id set model (the brain's single source of truth). */
-  readonly openIds: {
-    (): ReadonlySet<string>;
-    set(value: ReadonlySet<string>): void;
-  };
+  /** Flip a panel's open state, arbitrated by the brain (clamps siblings in single mode). */
+  toggle(panelId: string): void;
 }
 
 /**
@@ -77,15 +78,19 @@ export interface CngxMatExpansionSetSyncOptions<P extends CngxExpansionPanelLike
  *    `panels()`; inside `untracked()` it subscribes freshly-added
  *    panels' `expandedChange` and drops removed ones (diff-only churn,
  *    a `Map<P, subscription>`).
- * 3. **Material→brain** — each `expandedChange` listener writes back
- *    idempotently: it compares the incoming `expanded` against current
- *    set membership and only rewrites `openIds` when they differ, so a
- *    programmatic echo (or a redundant Material emit) is a no-op. The
- *    brain's `effectiveOpenIds` clamp then arbitrates single-mode.
+ * 3. **Material→brain** — each `expandedChange` listener flips the
+ *    brain via `accordion.toggle(id)`, but only when the incoming
+ *    `expanded` differs from the brain's current (clamped) membership,
+ *    so a programmatic echo (or a redundant Material emit) is a no-op.
+ *    Routing through `toggle` (not a raw set-write) means single-mode
+ *    arbitration and the exposed `openIds` model stay identical to the
+ *    native `CngxAccordionPanel` DOM path.
  *
- * The idempotent membership check is the real loop-breaker; the
- * re-entrancy flag is belt-and-suspenders for the synchronous echo
- * `CdkAccordionItem` emits from its `expanded` setter.
+ * The idempotent membership check plus the re-entrancy flag together
+ * close the loop: the flag drops the synchronous echo `CdkAccordionItem`
+ * emits from its `expanded` setter during our own write, and the
+ * membership check drops any Material emit that already agrees with the
+ * brain.
  *
  * @category ui/mat-accordion/material-bridge
  */
@@ -106,17 +111,10 @@ export function createMatExpansionSetSync<P extends CngxExpansionPanelLike>(
     if (writingToMaterial) {
       return;
     }
-    const current = accordion.openIds();
-    if (current.has(id) === expanded) {
+    if (accordion.isOpen(id) === expanded) {
       return;
     }
-    const next = new Set(current);
-    if (expanded) {
-      next.add(id);
-    } else {
-      next.delete(id);
-    }
-    accordion.openIds.set(next);
+    accordion.toggle(id);
   };
 
   runInInjectionContext(injector, () => {
