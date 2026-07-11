@@ -42,6 +42,7 @@ import { CngxDgaRowError } from './data-grid-row-error.directive';
  *
  * <example-url>http://localhost:4200/#/ui/data-grid-accordion/master-detail</example-url>
  * <example-url>http://localhost:4200/#/ui/data-grid-accordion/report</example-url>
+ * <example-url>http://localhost:4200/#/ui/data-grid-accordion/lazy-row</example-url>
  */
 @Component({
   selector: 'cngx-dga-row',
