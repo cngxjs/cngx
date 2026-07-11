@@ -8,6 +8,7 @@ import {
   Renderer2,
 } from '@angular/core';
 
+import { CngxLiveAnnouncer } from '@cngx/common/a11y';
 import { createSortHeaderState } from '@cngx/common/data';
 import { nextUid } from '@cngx/core/utils';
 
@@ -41,7 +42,10 @@ const SORTED_DESCENDING = 'sorted descending, activate to sort ascending';
  * referenced by `aria-describedby`: the accessible name stays the stable column label,
  * the description carries the live sort state. A tinted direction arrow is a CSS
  * `::after` cue (pseudo content, so it never doubles the announcement or shifts a
- * `ch`-based track).
+ * `ch`-based track). On activation the new sort state is also spoken once through the
+ * shared {@link CngxLiveAnnouncer} polite region - a change announcement worded
+ * distinctly from the on-focus description, for SR/browser pairs that do not re-read a
+ * mutated `aria-describedby` on an already-focused control.
  *
  * ```html
  * <cngx-data-grid-accordion [multiSort]="true">
@@ -88,7 +92,26 @@ export class CngxDgaSortHeader {
   /** SR status while sorted descending. English default; override for other locales. */
   readonly descendingLabel = input(SORTED_DESCENDING, { alias: 'cngxDgaSortStatusDescending' });
 
+  /**
+   * Human column name spoken in the live sort announcement (`{label}` placeholder
+   * of the announcement templates). Defaults to the field key.
+   */
+  readonly label = input<string | undefined>(undefined, { alias: 'cngxDgaSortLabel' });
+  /** Live announcement fired when this column becomes sorted ascending. `{label}` is replaced. */
+  readonly ascendingAnnouncement = input('Sorted by {label} ascending', {
+    alias: 'cngxDgaSortAnnounceAscending',
+  });
+  /** Live announcement fired when this column becomes sorted descending. `{label}` is replaced. */
+  readonly descendingAnnouncement = input('Sorted by {label} descending', {
+    alias: 'cngxDgaSortAnnounceDescending',
+  });
+  /** Live announcement fired when this column's sort is cleared. `{label}` is replaced. */
+  readonly clearedAnnouncement = input('Sorting by {label} cleared', {
+    alias: 'cngxDgaSortAnnounceCleared',
+  });
+
   private readonly grid = inject(CNGX_DATA_GRID_ACCORDION);
+  private readonly announcer = inject(CngxLiveAnnouncer);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   private readonly renderer = inject(Renderer2);
 
@@ -145,6 +168,22 @@ export class CngxDgaSortHeader {
 
   protected handleSort(event?: Event): void {
     this.state.toggle((event as { shiftKey?: boolean })?.shiftKey ?? false);
+    // Announce the transition through the shared polite live region. Fired from the
+    // handler (not an effect) so it speaks exactly once per user activation and stays
+    // silent on init and on external sort changes. The always-present aria-describedby
+    // node keeps the on-focus description; this is the change announcement some SR /
+    // browser pairs miss when only a describedby text mutates on a focused control.
+    this.announcer.announce(this.announcementText());
+  }
+
+  private announcementText(): string {
+    const label = this.label() ?? this.field();
+    const template = this.isAsc()
+      ? this.ascendingAnnouncement()
+      : this.isDesc()
+        ? this.descendingAnnouncement()
+        : this.clearedAnnouncement();
+    return template.replace('{label}', label);
   }
 
   protected handleActivateKey(event: Event): void {

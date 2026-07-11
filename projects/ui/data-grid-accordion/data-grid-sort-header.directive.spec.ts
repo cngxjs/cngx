@@ -1,8 +1,9 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { CngxLiveAnnouncer } from '@cngx/common/a11y';
 import { CngxSort } from '@cngx/common/data';
 
 import { CngxDataGridAccordion } from './data-grid-accordion.component';
@@ -128,6 +129,42 @@ describe('CngxDgaSortHeader', () => {
     TestBed.flushEffects();
     expect(status.textContent).toBe('aufsteigend');
   });
+
+  it('announces the sort-state change once per activation via the live announcer', () => {
+    const spy = vi.spyOn(TestBed.inject(CngxLiveAnnouncer), 'announce').mockImplementation(() => {});
+    const { fixture, nameEl } = setup();
+    expect(spy).not.toHaveBeenCalled();
+
+    nameEl.click();
+    fixture.detectChanges();
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(spy.mock.calls[0][0]).toContain('ascending');
+
+    nameEl.click();
+    fixture.detectChanges();
+    expect(spy).toHaveBeenCalledTimes(2);
+    expect(spy.mock.calls[1][0]).toContain('descending');
+  });
+
+  it('does not announce on an external sort change', () => {
+    const spy = vi.spyOn(TestBed.inject(CngxLiveAnnouncer), 'announce').mockImplementation(() => {});
+    const { fixture, sort } = setup();
+    sort.setSort('name');
+    fixture.detectChanges();
+    expect(spy).not.toHaveBeenCalled();
+  });
+
+  it('speaks the overridden label and announcement string', () => {
+    const spy = vi.spyOn(TestBed.inject(CngxLiveAnnouncer), 'announce').mockImplementation(() => {});
+    const fixture = TestBed.createComponent(LabelHost);
+    fixture.detectChanges();
+    const nameEl = fixture.debugElement.query(By.directive(CngxDgaSortHeader))
+      .nativeElement as HTMLElement;
+
+    nameEl.click();
+    fixture.detectChanges();
+    expect(spy).toHaveBeenCalledWith('Betrag aufsteigend sortiert');
+  });
 });
 
 @Component({
@@ -139,6 +176,8 @@ describe('CngxDgaSortHeader', () => {
         cngxDgaSortStatusNotSorted="nicht sortiert"
         cngxDgaSortStatusAscending="aufsteigend"
         cngxDgaSortStatusDescending="absteigend"
+        cngxDgaSortLabel="Betrag"
+        cngxDgaSortAnnounceAscending="{label} aufsteigend sortiert"
         >Name</span
       >
     </cngx-dga-header>
