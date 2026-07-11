@@ -190,6 +190,8 @@ module.exports = tseslint.config(
             'projects/ui/mat-stepper/**/*.directive.ts',
             'projects/ui/mat-tabs/**/*.component.ts',
             'projects/ui/mat-tabs/**/*.directive.ts',
+            'projects/ui/mat-accordion/**/*.component.ts',
+            'projects/ui/mat-accordion/**/*.directive.ts',
         ],
         plugins: { local: localRules },
         rules: {

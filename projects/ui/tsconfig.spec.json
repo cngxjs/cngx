@@ -21,6 +21,7 @@
     "stepper/**/*.spec.ts",
     "mat-stepper/**/*.spec.ts",
     "mat-tabs/**/*.spec.ts",
+    "mat-accordion/**/*.spec.ts",
     "tabs/**/*.spec.ts",
     "accordion/**/*.spec.ts",
     "data-grid-accordion/**/*.spec.ts",

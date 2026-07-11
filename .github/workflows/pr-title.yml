@@ -69,6 +69,7 @@ jobs:
             ui/tabs
             ui/mat-tabs
             ui/accordion
+            ui/mat-accordion
             ui/data-grid-accordion
             ui/breadcrumb
             ui/sidenav

@@ -1,0 +1,13 @@
+.bridge-demo__chrome {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--cngx-mat-accordion-demo-gap, 1rem);
+  margin-block-end: var(--cngx-mat-accordion-demo-gap, 1rem);
+}
+
+.bridge-demo__readout {
+  margin-block-start: var(--cngx-mat-accordion-demo-gap, 1rem);
+  color: var(--mat-sys-on-surface-variant, currentColor);
+  font: var(--mat-sys-body-medium, inherit);
+}
