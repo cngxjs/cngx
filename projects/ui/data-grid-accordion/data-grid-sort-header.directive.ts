@@ -81,6 +81,13 @@ export class CngxDgaSortHeader {
   /** The field key this header cell sorts by. */
   readonly field = input.required<string>({ alias: 'cngxDgaSortHeader' });
 
+  /** SR status while unsorted. English default; override for other locales. */
+  readonly notSortedLabel = input(NOT_SORTED, { alias: 'cngxDgaSortStatusNotSorted' });
+  /** SR status while sorted ascending. English default; override for other locales. */
+  readonly ascendingLabel = input(SORTED_ASCENDING, { alias: 'cngxDgaSortStatusAscending' });
+  /** SR status while sorted descending. English default; override for other locales. */
+  readonly descendingLabel = input(SORTED_DESCENDING, { alias: 'cngxDgaSortStatusDescending' });
+
   private readonly grid = inject(CNGX_DATA_GRID_ACCORDION);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   private readonly renderer = inject(Renderer2);
@@ -105,12 +112,12 @@ export class CngxDgaSortHeader {
 
   private readonly statusText = computed(() => {
     if (this.isAsc()) {
-      return SORTED_ASCENDING;
+      return this.ascendingLabel();
     }
     if (this.isDesc()) {
-      return SORTED_DESCENDING;
+      return this.descendingLabel();
     }
-    return NOT_SORTED;
+    return this.notSortedLabel();
   });
 
   // A visually-hidden, aria-hidden description node the host `aria-describedby` names.

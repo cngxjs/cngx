@@ -24,7 +24,7 @@ class Host {
 }
 
 describe('CngxDgaSortHeader', () => {
-  beforeEach(() => TestBed.configureTestingModule({ imports: [Host] }));
+  beforeEach(() => TestBed.configureTestingModule({ imports: [Host, LabelHost] }));
 
   function setup() {
     const fixture = TestBed.createComponent(Host);
@@ -114,4 +114,35 @@ describe('CngxDgaSortHeader', () => {
     TestBed.flushEffects();
     expect(status.textContent).toContain('sorted descending');
   });
+
+  it('lets a consumer override the SR status strings for other locales', () => {
+    const fixture = TestBed.createComponent(LabelHost);
+    fixture.detectChanges();
+    const nameEl = fixture.debugElement.query(By.directive(CngxDgaSortHeader))
+      .nativeElement as HTMLElement;
+    const status = nameEl.querySelector('.cngx-dga-sort-header__sr') as HTMLElement;
+    expect(status.textContent).toBe('nicht sortiert');
+
+    nameEl.click();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(status.textContent).toBe('aufsteigend');
+  });
 });
+
+@Component({
+  template: `<cngx-data-grid-accordion>
+    <cngx-dga-header>
+      <span
+        cngxDgaCell
+        cngxDgaSortHeader="name"
+        cngxDgaSortStatusNotSorted="nicht sortiert"
+        cngxDgaSortStatusAscending="aufsteigend"
+        cngxDgaSortStatusDescending="absteigend"
+        >Name</span
+      >
+    </cngx-dga-header>
+  </cngx-data-grid-accordion>`,
+  imports: [CngxDataGridAccordion, CngxDataGridHeader, CngxDgCell, CngxDgaSortHeader],
+})
+class LabelHost {}
