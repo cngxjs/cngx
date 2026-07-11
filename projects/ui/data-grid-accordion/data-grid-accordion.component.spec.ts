@@ -132,7 +132,7 @@ describe('CngxDataGridAccordion skin cascade', () => {
   beforeEach(() =>
     TestBed.configureTestingModule({
       imports: [Host],
-      providers: [provideDataGridAccordionConfig(withDataGridSkin('metrics'))],
+      providers: [provideDataGridAccordionConfig(withDataGridSkin('report'))],
     }),
   );
 
@@ -145,14 +145,14 @@ describe('CngxDataGridAccordion skin cascade', () => {
 
   it('falls back to the configured skin when [skin] is unbound', () => {
     const { el } = setup();
-    expect(el.getAttribute('data-skin')).toBe('metrics');
+    expect(el.getAttribute('data-skin')).toBe('report');
   });
 
   it('lets a per-instance [skin] win over the configured default', () => {
     const { fixture, host, el } = setup();
-    host.skin.set('terminal');
+    host.skin.set('ledger');
     fixture.detectChanges();
-    expect(el.getAttribute('data-skin')).toBe('terminal');
+    expect(el.getAttribute('data-skin')).toBe('ledger');
   });
 });
 

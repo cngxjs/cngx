@@ -6,9 +6,8 @@
  * {@link CngxAccordionSkin}), not a behaviour-branching mode flag.
  *
  * `'ledger'` zebra rows + sum footer; `'spreadsheet'` cell hairlines + row-number
- * gutter; `'log-stream'` mono grid with a severity edge; `'terminal'` fixed dark
- * phosphor palette; `'master-detail'` primary-tinted open row + sub-table detail;
- * `'report'` frameless double rules; `'metrics'` inline progress + trend colour;
+ * gutter; `'log-stream'` mono grid with a severity edge; `'master-detail'`
+ * primary-tinted open row + sub-table detail; `'report'` frameless double rules;
  * `'density'` compact/standard/spacious token hooks.
  *
  * @category ui/data-grid-accordion
@@ -18,10 +17,8 @@ export type CngxDataGridSkin =
   | 'ledger'
   | 'spreadsheet'
   | 'log-stream'
-  | 'terminal'
   | 'master-detail'
   | 'report'
-  | 'metrics'
   | 'density';
 
 /**
