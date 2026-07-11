@@ -37,6 +37,12 @@ import { injectAccordionConfig } from './config/inject-accordion-config';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/accordion/accordion-group.component.ts
  * @since 0.1.0
  * @relatedTo CngxAccordionItem, CngxAccordion, createAccordionKeyboardNav
+ *
+ * <example-url>http://localhost:4200/#/ui/accordion/single-open/basic</example-url>
+ * <example-url>http://localhost:4200/#/ui/accordion/multi-open/independent</example-url>
+ * <example-url>http://localhost:4200/#/ui/accordion/controlled-open/initial-open</example-url>
+ * <example-url>http://localhost:4200/#/ui/accordion/config/app-wide-labels</example-url>
+ * <example-url>http://localhost:4200/#/ui/accordion/skins/editorial</example-url>
  */
 @Component({
   selector: 'cngx-accordion-group',

@@ -41,6 +41,11 @@ import { injectAccordionConfig } from './config/inject-accordion-config';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/accordion/accordion-item.component.ts
  * @since 0.1.0
  * @relatedTo CngxAccordionGroup, CngxAccordionPanel
+ *
+ * <example-url>http://localhost:4200/#/ui/accordion/async-panel/lazy-fetch</example-url>
+ * <example-url>http://localhost:4200/#/ui/accordion/disabled-lazy/disabled-and-lazy</example-url>
+ * <example-url>http://localhost:4200/#/ui/accordion/custom-chevron/icon-slot</example-url>
+ * <example-url>http://localhost:4200/#/ui/accordion/panel-content/table</example-url>
  */
 @Component({
   selector: 'cngx-accordion-item',

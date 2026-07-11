@@ -48,8 +48,8 @@
 
 @scope (.cngx-accordion-group[data-skin='editorial']) {
   :scope {
-    /* Values transcribed 1:1 from the design POC (.internal/accordions/index.html,
-       `.editorial`): --sp-5 = 1.25rem, --sp-6 = 1.5rem. */
+    /* Values transcribed 1:1 from the editorial design POC: --sp-5 = 1.25rem,
+       --sp-6 = 1.5rem. */
     --cngx-accordion-heading-gap: 1.25rem;
     --cngx-accordion-header-padding: 1.25rem 0;
     /* Body flows under the title: indent by the index column (2.6ch) + the gap,
