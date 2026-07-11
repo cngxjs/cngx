@@ -86,6 +86,12 @@
 .cngx-data-grid-accordion:not([data-skin]) {
   --cngx-dga-row-py: 0.75rem;
   --cngx-dga-row-px: 1rem;
+  /* SET the divider colour to the adaptive theme token. `--cngx-dga-border-color`
+     is a registered `@property` with a fixed light initial-value, so every
+     `var(--cngx-dga-border-color, ...)` fallback in the base look is defeated and
+     the unskinned grid keeps light hairlines in dark mode. The named skins escape
+     it the same way inside their own `:scope`; the flat default needs it too. */
+  --cngx-dga-border-color: var(--cngx-color-border, #d1d5db);
 }
 
 /* Top + bottom brackets around the whole grid (the accordion default's group
