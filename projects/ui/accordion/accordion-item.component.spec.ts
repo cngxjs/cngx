@@ -3,10 +3,17 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it } from 'vitest';
 
+import type { AsyncStatus, CngxAsyncState } from '@cngx/core/utils';
+
 import { CngxAccordionGroup } from './accordion-group.component';
 import { CngxAccordionItem } from './accordion-item.component';
+import { CngxAccordionItemBusy } from './accordion-item-busy.directive';
 import { CngxAccordionItemContent } from './accordion-item-content.directive';
+import { CngxAccordionItemError } from './accordion-item-error.directive';
 import { CngxAccordionItemIcon } from './accordion-item-icon.directive';
+import { CngxAccordionItemLeading } from './accordion-item-leading.directive';
+import { CngxAccordionItemMeta } from './accordion-item-meta.directive';
+import { CngxAccordionItemSubtitle } from './accordion-item-subtitle.directive';
 import { CngxAccordionItemTitle } from './accordion-item-title.directive';
 
 @Component({
@@ -57,6 +64,95 @@ class NamedHost {
   readonly open = signal<ReadonlySet<string>>(new Set(['beta']));
 }
 
+@Component({
+  template: `<cngx-accordion-group>
+    <cngx-accordion-item>
+      <span cngxAccordionItemLeading class="lead">01</span>
+      <span cngxAccordionItemTitle>Billing</span>
+      <span cngxAccordionItemSubtitle class="sub">Invoices</span>
+      <span cngxAccordionItemMeta><a href="#" class="meta-link">edit</a></span>
+      Body
+    </cngx-accordion-item>
+  </cngx-accordion-group>`,
+  imports: [
+    CngxAccordionGroup,
+    CngxAccordionItem,
+    CngxAccordionItemTitle,
+    CngxAccordionItemSubtitle,
+    CngxAccordionItemLeading,
+    CngxAccordionItemMeta,
+  ],
+})
+class SlotsHost {}
+
+@Component({
+  template: `<cngx-accordion-group>
+    <cngx-accordion-item [state]="state()">
+      <span cngxAccordionItemTitle>Report</span>
+      <ng-template cngxAccordionItemBusy><span class="busy-slot">loading</span></ng-template>
+      <ng-template cngxAccordionItemError><span class="error-slot">failed</span></ng-template>
+      <ng-template cngxAccordionItemContent><span class="body">content</span></ng-template>
+    </cngx-accordion-item>
+  </cngx-accordion-group>`,
+  imports: [
+    CngxAccordionGroup,
+    CngxAccordionItem,
+    CngxAccordionItemTitle,
+    CngxAccordionItemBusy,
+    CngxAccordionItemError,
+    CngxAccordionItemContent,
+  ],
+})
+class AsyncHost {
+  readonly state = signal<AsyncStatus | CngxAsyncState<unknown> | undefined>(undefined);
+}
+
+// The item reads only `.status()` off the object form, so a status-only stub is
+// a faithful CngxAsyncState for these tests.
+function asyncState(status: AsyncStatus): CngxAsyncState<unknown> {
+  return { status: signal(status) } as unknown as CngxAsyncState<unknown>;
+}
+
+@Component({
+  template: `<cngx-accordion-group>
+    <cngx-accordion-item [state]="'error'"><span cngxAccordionItemTitle>R</span>Body</cngx-accordion-item>
+  </cngx-accordion-group>`,
+  imports: [CngxAccordionGroup, CngxAccordionItem, CngxAccordionItemTitle],
+})
+class ErrorDefaultHost {}
+
+@Component({
+  template: `<cngx-accordion-group>
+    <cngx-accordion-item [state]="'error'" [errorMessage]="msg()">
+      <span cngxAccordionItemTitle>R</span>
+    </cngx-accordion-item>
+  </cngx-accordion-group>`,
+  imports: [CngxAccordionGroup, CngxAccordionItem, CngxAccordionItemTitle],
+})
+class ErrorMessageHost {
+  readonly msg = signal('Custom failure.');
+}
+
+@Component({
+  template: `<cngx-accordion-group>
+    <cngx-accordion-item [state]="state()" [errorMessage]="'Boom.'">
+      <span cngxAccordionItemTitle>R</span>
+      <ng-template cngxAccordionItemBusy let-status><span class="busy-ctx">{{ status }}</span></ng-template>
+      <ng-template cngxAccordionItemError let-message="message"><span class="error-ctx">{{ message }}</span></ng-template>
+    </cngx-accordion-item>
+  </cngx-accordion-group>`,
+  imports: [
+    CngxAccordionGroup,
+    CngxAccordionItem,
+    CngxAccordionItemTitle,
+    CngxAccordionItemBusy,
+    CngxAccordionItemError,
+  ],
+})
+class StateContextHost {
+  readonly state = signal<AsyncStatus>('loading');
+}
+
 describe('CngxAccordionItem', () => {
   beforeEach(() => TestBed.configureTestingModule({ imports: [Host] }));
 
@@ -75,13 +171,45 @@ describe('CngxAccordionItem', () => {
     el.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
   }
 
-  it('names each region back at its own header via aria-labelledby', () => {
-    const { headers, regions } = setup();
+  // The button's aria-describedby is `${subtitleId} ${reasonId}`; the reason is
+  // the visually-hidden element among the referenced ids.
+  function describedReason(root: HTMLElement, button: HTMLElement): HTMLElement | undefined {
+    return (button.getAttribute('aria-describedby') ?? '')
+      .split(/\s+/)
+      .map((id) => root.querySelector<HTMLElement>(`#${id}`))
+      .find((el): el is HTMLElement => el?.classList.contains('cngx-visually-hidden') ?? false);
+  }
+
+  function setupAsync(initial?: AsyncStatus | CngxAsyncState<unknown>) {
+    const fixture = TestBed.createComponent(AsyncHost);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    const header = root.querySelector<HTMLButtonElement>('button.cngx-accordion-item__header')!;
+    // Open so the lazy body latches; async branches then swap around a mounted body.
+    header.click();
+    if (initial !== undefined) {
+      fixture.componentInstance.state.set(initial);
+    }
+    fixture.detectChanges();
+    const region = root.querySelector<HTMLElement>('[role="region"]')!;
+    return { fixture, root, header, region };
+  }
+
+  it('pins each region and its header button name to the title element only', () => {
+    const { headers, regions, root } = setup();
     expect(regions).toHaveLength(3);
     regions.forEach((region, i) => {
       expect(region.getAttribute('role')).toBe('region');
-      expect(region.getAttribute('aria-labelledby')).toBe(headers[i].id);
-      expect(headers[i].id).toBeTruthy();
+      // Button names itself at the title element (not its own subtree), so a
+      // subtitle inside the button never leaks into the accessible name.
+      const titleId = headers[i].getAttribute('aria-labelledby');
+      expect(titleId).toBeTruthy();
+      // Region points at the SAME title element, not at the button: naming the
+      // button would fold in title+subtitle since accname does not re-follow the
+      // button's own aria-labelledby.
+      expect(region.getAttribute('aria-labelledby')).toBe(titleId);
+      const titleEl = root.querySelector<HTMLElement>(`#${titleId}`);
+      expect(titleEl?.textContent?.trim()).toBe(['A', 'B', 'C'][i]);
     });
   });
 
@@ -114,9 +242,9 @@ describe('CngxAccordionItem', () => {
     fixture.detectChanges();
 
     expect(headers[1].getAttribute('aria-disabled')).toBe('true');
-    const reasonId = headers[1].getAttribute('aria-describedby');
-    expect(reasonId).toBeTruthy();
-    const reason = root.querySelector<HTMLElement>(`#${reasonId}`);
+    // aria-describedby now carries `${subtitleId} ${reasonId}`; pick the reason
+    // element (the visually-hidden one) out of the id list.
+    const reason = describedReason(root, headers[1]);
     expect(reason?.textContent?.trim()).toBeTruthy();
     expect(reason?.getAttribute('aria-hidden')).toBe('false');
 
@@ -126,11 +254,10 @@ describe('CngxAccordionItem', () => {
     expect(document.activeElement).toBe(headers[2]);
   });
 
-  it('keeps the aria-describedby IDREF present but hidden when enabled', () => {
+  it('keeps the aria-describedby reason IDREF present but hidden when enabled', () => {
     const { headers, root } = setup();
-    const reasonId = headers[1].getAttribute('aria-describedby');
-    const reason = root.querySelector<HTMLElement>(`#${reasonId}`);
-    expect(reason).not.toBeNull();
+    const reason = describedReason(root, headers[1]);
+    expect(reason).toBeTruthy();
     expect(reason?.getAttribute('aria-hidden')).toBe('true');
     expect(reason?.textContent?.trim()).toBe('');
   });
@@ -177,5 +304,186 @@ describe('CngxAccordionItem', () => {
     fixture.detectChanges();
     expect(headers[0].getAttribute('aria-expanded')).toBe('true');
     expect(headers[1].getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('exposes the title, subtitle, leading and meta slots on the header', () => {
+    const fixture = TestBed.createComponent(SlotsHost);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+
+    expect(root.querySelector('.cngx-accordion-item__title')?.textContent?.trim()).toBe('Billing');
+    expect(root.querySelector('.sub')?.textContent?.trim()).toBe('Invoices');
+    expect(root.querySelector('.lead')?.textContent?.trim()).toBe('01');
+    expect(root.querySelector('.meta-link')?.textContent?.trim()).toBe('edit');
+  });
+
+  it('pins the header/region name to the title, excluding subtitle, leading and meta', () => {
+    const fixture = TestBed.createComponent(SlotsHost);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    const button = root.querySelector<HTMLButtonElement>('button.cngx-accordion-item__header')!;
+    const region = root.querySelector<HTMLElement>('[role="region"]')!;
+
+    const titleId = button.getAttribute('aria-labelledby');
+    expect(titleId).toBeTruthy();
+    const titleEl = root.querySelector<HTMLElement>(`#${titleId}`)!;
+    // The name resolves to the title text only - not "Billing Invoices".
+    expect(titleEl.textContent?.trim()).toBe('Billing');
+    expect(region.getAttribute('aria-labelledby')).toBe(titleId);
+  });
+
+  it('announces the subtitle through aria-describedby without leaking it into the name', () => {
+    const fixture = TestBed.createComponent(SlotsHost);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    const button = root.querySelector<HTMLButtonElement>('button.cngx-accordion-item__header')!;
+    const subtitleWrapper = root.querySelector<HTMLElement>('.cngx-accordion-item__subtitle')!;
+
+    // The subtitle wrapper id is referenced by aria-describedby (announced),
+    // and the bound subtitle is visible (not aria-hidden).
+    const ids = (button.getAttribute('aria-describedby') ?? '').split(/\s+/);
+    expect(ids).toContain(subtitleWrapper.id);
+    expect(subtitleWrapper.getAttribute('aria-hidden')).toBeNull();
+    // Subtitle lives inside the button (described), title-only name still holds.
+    expect(button.contains(subtitleWrapper)).toBe(true);
+  });
+
+  it('hides the subtitle IDREF wrapper when no subtitle is projected', () => {
+    const { headers, root } = setup();
+    const button = headers[0];
+    const ids = (button.getAttribute('aria-describedby') ?? '').split(/\s+/);
+    const subtitleWrapper = ids
+      .map((id) => root.querySelector<HTMLElement>(`#${id}`))
+      .find((el) => el?.classList.contains('cngx-accordion-item__subtitle'));
+    // IDREF stays in the DOM (always-present describedby), but is aria-hidden
+    // and empty when unbound.
+    expect(subtitleWrapper).toBeTruthy();
+    expect(subtitleWrapper?.getAttribute('aria-hidden')).toBe('true');
+    expect(subtitleWrapper?.textContent?.trim()).toBe('');
+  });
+
+  it('renders leading aria-hidden and meta as real content, both button siblings', () => {
+    const fixture = TestBed.createComponent(SlotsHost);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    const heading = root.querySelector<HTMLElement>('[role="heading"]')!;
+    const button = root.querySelector<HTMLButtonElement>('button.cngx-accordion-item__header')!;
+    const leadingWrapper = root.querySelector<HTMLElement>('.cngx-accordion-item__leading')!;
+    const metaWrapper = root.querySelector<HTMLElement>('.cngx-accordion-item__meta')!;
+
+    // Siblings of the button (parent is the heading row), never children.
+    expect(leadingWrapper.parentElement).toBe(heading);
+    expect(metaWrapper.parentElement).toBe(heading);
+    expect(button.contains(leadingWrapper)).toBe(false);
+    expect(button.contains(metaWrapper)).toBe(false);
+
+    // Leading is decorative; meta is real content.
+    expect(leadingWrapper.getAttribute('aria-hidden')).toBe('true');
+    expect(metaWrapper.getAttribute('aria-hidden')).toBeNull();
+
+    // Interactive meta (a link) sits OUTSIDE the button -> valid HTML.
+    const metaLink = root.querySelector<HTMLAnchorElement>('.meta-link')!;
+    expect(button.contains(metaLink)).toBe(false);
+  });
+
+  it('sets aria-busy and renders the busy slot on [state]="loading"', () => {
+    const { region, root } = setupAsync('loading');
+    expect(region.getAttribute('aria-busy')).toBe('true');
+    expect(root.querySelector('.busy-slot')).not.toBeNull();
+    // Loading is first-load: the body is replaced by the busy visual.
+    expect(root.querySelector('.body')).toBeNull();
+  });
+
+  it('keeps aria-busy and the mounted body on [state]="refreshing"', () => {
+    const { region, root } = setupAsync('refreshing');
+    expect(region.getAttribute('aria-busy')).toBe('true');
+    // Refreshing keeps the body mounted and overlays the busy visual.
+    expect(root.querySelector('.body')?.textContent).toBe('content');
+    expect(root.querySelector('.busy-slot')).not.toBeNull();
+  });
+
+  it('sets aria-busy on [state]="pending" without dropping the body', () => {
+    const { region, root } = setupAsync('pending');
+    expect(region.getAttribute('aria-busy')).toBe('true');
+    expect(root.querySelector('.body')?.textContent).toBe('content');
+  });
+
+  it('renders the error slot in an alert and clears aria-busy on [state]="error"', () => {
+    const { region, root } = setupAsync('error');
+    expect(region.getAttribute('aria-busy')).toBeNull();
+    const alert = root.querySelector<HTMLElement>('[role="alert"]');
+    expect(alert).not.toBeNull();
+    expect(alert?.querySelector('.error-slot')?.textContent).toBe('failed');
+    // Error replaces the body.
+    expect(root.querySelector('.body')).toBeNull();
+  });
+
+  it('clears aria-busy and shows the body on success and when [state] is absent', () => {
+    const { fixture, region, root } = setupAsync('success');
+    expect(region.getAttribute('aria-busy')).toBeNull();
+    expect(root.querySelector('.body')?.textContent).toBe('content');
+
+    fixture.componentInstance.state.set(undefined);
+    fixture.detectChanges();
+    expect(region.getAttribute('aria-busy')).toBeNull();
+    expect(root.querySelector('.body')?.textContent).toBe('content');
+  });
+
+  it('resolves a CngxAsyncState<unknown> object input via its status() signal', () => {
+    const { region } = setupAsync(asyncState('loading'));
+    expect(region.getAttribute('aria-busy')).toBe('true');
+  });
+
+  it('announces an EN default error message when no error slot is given', () => {
+    const fixture = TestBed.createComponent(ErrorDefaultHost);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    const alert = root.querySelector<HTMLElement>('[role="alert"]');
+    // The zero-config error state speaks, never a silent alert (Pillar 2).
+    expect(alert?.textContent?.trim()).toBe('This section could not be loaded.');
+  });
+
+  it('un-hides the region for a collapsed errored item so the alert stays announced', () => {
+    const fixture = TestBed.createComponent(ErrorDefaultHost);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    const button = root.querySelector<HTMLButtonElement>('button.cngx-accordion-item__header')!;
+    const region = root.querySelector<HTMLElement>('[role="region"]')!;
+    // Never opened, yet the error un-hides the region so role="alert" is live.
+    expect(button.getAttribute('aria-expanded')).toBe('false');
+    expect(region.hasAttribute('hidden')).toBe(false);
+    expect(region.querySelector('[role="alert"]')?.textContent?.trim()).toBe(
+      'This section could not be loaded.',
+    );
+  });
+
+  it('keeps the region hidden for a collapsed item with no error', () => {
+    const { regions } = setup();
+    regions.forEach((region) => expect(region.hasAttribute('hidden')).toBe(true));
+  });
+
+  it('lets a per-instance [errorMessage] win over the default in the alert', () => {
+    const fixture = TestBed.createComponent(ErrorMessageHost);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    const alert = root.querySelector<HTMLElement>('[role="alert"]');
+    expect(alert?.textContent?.trim()).toBe('Custom failure.');
+  });
+
+  it('hands the busy slot its status and the error slot the resolved message', () => {
+    const fixture = TestBed.createComponent(StateContextHost);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+
+    // Busy slot $implicit distinguishes loading from refreshing.
+    expect(root.querySelector('.busy-ctx')?.textContent?.trim()).toBe('loading');
+    fixture.componentInstance.state.set('refreshing');
+    fixture.detectChanges();
+    expect(root.querySelector('.busy-ctx')?.textContent?.trim()).toBe('refreshing');
+
+    // Error slot context.message is the resolved error string.
+    fixture.componentInstance.state.set('error');
+    fixture.detectChanges();
+    expect(root.querySelector('.error-ctx')?.textContent?.trim()).toBe('Boom.');
   });
 });

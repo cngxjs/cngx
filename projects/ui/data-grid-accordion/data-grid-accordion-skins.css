@@ -1,0 +1,949 @@
+/**
+ * @overview
+ * The eight opt-in visual skins for `<cngx-data-grid-accordion>`. Pairs with the
+ * structural `data-grid-accordion.component.css` / `data-grid-row.component.css`
+ * in this same entry - those own the flat base grid, the chevron, the region,
+ * and the a11y wiring; this file owns only the per-skin paint.
+ *
+ * Selected by the `[skin]` input via the `[data-skin]` host attribute, mirroring
+ * `<cngx-accordion-group>`. Every skin renders the identical header / row /
+ * region structure, cells, ARIA, and keyboard model - only the paint changes.
+ * Each value is a CSS `@scope (.cngx-data-grid-accordion[data-skin='<name>'])`
+ * block. Unlayered (this is a component `styleUrl`, not the Track-B `cngx.css`),
+ * so a `[data-skin]` rule overrides the flat base by specificity + source order -
+ * no `@layer` battle. Every gradient from the design lab is re-mapped to a solid
+ * `--cngx-color-primary`; the alternate surfaces are derived in oklab from
+ * `--cngx-color-surface` toward `--cngx-color-text` so they track light / dark
+ * without a fixed palette. Container / motion queries stay UNLAYERED with direct
+ * selectors, never nested inside `@scope` (that breaks the token cascade).
+ *
+ * - `ledger` - a framed table: mono uppercase column head, zebra rows, mono
+ *   right-aligned amounts, an inset primary-accent detail zone, a sum footer. Below
+ *   its `--cngx-dga-min-width` the grid scrolls sideways (host `overflow-x`) with
+ *   every column intact rather than dropping one.
+ * - `spreadsheet` - an Excel-style sheet: visible cell hairlines, plus a
+ *   column-letter strip (A / B / C ...) and gutter row numbers BOTH derived from
+ *   CSS counters - the letters count column position, the numbers count structural
+ *   rows, so the consumer authors neither. Opening a row fills its gutter cell with
+ *   the accent colour and the detail zone becomes a warning-tinted note cell. Below
+ *   its `--cngx-dga-min-width` the grid scrolls sideways rather than dropping a
+ *   column.
+ * - `log-stream` - a mono log console: timestamp / level / message columns, the
+ *   row severity doubled as a 3px left edge (`[data-severity]`), a level badge
+ *   (projected `cngx-tag`), an expanded stacktrace `pre` on a recessed surface, and
+ *   a flex status footer with a live dot. Below its `--cngx-dga-min-width` the grid
+ *   scrolls sideways rather than dropping the timestamp.
+ * - `master-detail` - an order/positions view: mono dimmed order number, a
+ *   weighted customer name, mono right-aligned position + sum cells, and the open
+ *   row held primary-tinted as the context for its detail. The detail zone is a
+ *   projected sub-`<table>` (consumer content the skin only paints) on a recessed
+ *   surface with a primary inset edge and a quiet sub-head, with a bold rule-free
+ *   `tfoot` sum. Below its `--cngx-dga-min-width` the grid scrolls sideways rather
+ *   than dropping a column.
+ * - `report` - a frameless cost report: no surface frame, a `3px double` rule under
+ *   the column head and over the sum foot, hairline dividers between rows, mono
+ *   right-aligned budget / actual money, and over-budget actual cells (`[data-over]`)
+ *   in the danger colour. Below its `--cngx-dga-min-width` the grid scrolls sideways
+ *   rather than dropping a column.
+ * - `density` - a framed task list whose row block padding and cell type ride the
+ *   `--cngx-dga-row-py` / `--cngx-dga-fs` hooks, transitioned so a density change
+ *   animates rather than jumps. The compact / standard / spacious control is a
+ *   consumer token concern (demo chrome that sets those two tokens), not a component
+ *   input; the skin only frames the grid and animates the change. Below its
+ *   `--cngx-dga-min-width` the grid scrolls sideways rather than dropping a column.
+ */
+
+@scope (.cngx-data-grid-accordion[data-skin='ledger']) {
+  :scope {
+    /* POC `.ledger`: framed surface, 8px radius (--cngx-radius-sm resolves to
+       4px, so the 8px is set explicitly), mono-ish small type. The host's
+       `overflow-x: auto` clips to this rounded border and provides the scroll. */
+    border: 1px solid var(--cngx-color-border, #d1d5db);
+    border-radius: var(--cngx-dga-radius, 0.5rem);
+    background: var(--cngx-color-surface, #fff);
+
+    /* Overflow is scrolled, never dropped: under ~38rem the grid scrolls sideways
+       with the invoice + status columns intact instead of hiding them. */
+    --cngx-dga-min-width: 38rem;
+
+    /* POC gaps / paddings: --sp-3 gutter, .6rem row block padding, .5rem head. */
+    --cngx-dga-col-gap: 0.75rem;
+    --cngx-dga-row-py: 0.6rem;
+    --cngx-dga-row-px: 1rem;
+    --cngx-dga-fs: 0.875rem;
+    /* Inset accent detail zone reads with generous padding (POC --sp-4/--sp-5). */
+    --cngx-dga-region-padding: 1rem 1.25rem;
+
+    /* Same @property trap as the surfaces below: `--cngx-dga-border-color` is
+       registered with a fixed light initial-value, so the base row-divider
+       fallback `var(--cngx-dga-border-color, ...)` never adapts to dark. SET it
+       to the adaptive system border so every row divider (including the first,
+       which no `+` rule overrides) tracks the scheme. */
+    --cngx-dga-border-color: var(--cngx-color-border, #d1d5db);
+
+    /* Derive the alternate surfaces in oklab from surface toward text so they
+       track light / dark. These MUST be SET here, not left to the `var(token,
+       color-mix)` fallback: `--cngx-dga-surface-alt` is a registered @property
+       with a fixed (light) initial-value, so the fallback never fires and the
+       initial would otherwise win - the exact @property trap. Setting it lets the
+       adaptive value cascade to every descendant. `-strong` is unregistered. */
+    /* The `-mat` override token lets the Material bridge (data-grid-accordion-theme
+       skins mixin) map this surface to a Material surface-container; unset, the oklab
+       derivation from the foundation tokens is the fallback, so the skin is unchanged
+       without the bridge. The `-mat` token is deliberately UNregistered so the var()
+       fallback fires (a registered @property would pin it to a fixed initial). */
+    --cngx-dga-surface-alt: var(
+      --cngx-dga-surface-alt-mat,
+      color-mix(in oklab, var(--cngx-color-surface, #fff) 96%, var(--cngx-color-text, #0f1320))
+    );
+    --cngx-dga-surface-strong: var(
+      --cngx-dga-surface-strong-mat,
+      color-mix(in oklab, var(--cngx-color-surface, #fff) 90%, var(--cngx-color-text, #0f1320))
+    );
+  }
+
+  /* Column head: strong alternate surface, mono uppercase, muted. */
+  .cngx-dga-header {
+    background: var(--cngx-dga-surface-strong);
+    border-block-end: 1px solid var(--cngx-color-border, #d1d5db);
+    font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
+    font-size: var(--cngx-dga-head-fs, 0.75rem);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--cngx-color-text-muted, #6b7280);
+  }
+
+  /* Zebra: even rows carry the alternate surface. */
+  .cngx-dga-row:nth-of-type(even) .cngx-dga-row__summary {
+    background: var(--cngx-dga-surface-alt);
+  }
+
+  /* Every row's base border-block-end is the between-rows divider (its colour now
+     adaptive via the :scope `--cngx-dga-border-color` above). The last row drops
+     it so it does not double with the footer's own top border (which the base
+     group CSS already draws from the same adaptive token). */
+  .cngx-dga-row:last-of-type {
+    --cngx-dga-row-divider: none;
+  }
+
+  .cngx-dga-row__summary:hover {
+    background: color-mix(in oklab, var(--cngx-color-primary, #1d4ed8) 8%, transparent);
+  }
+
+  /* Inset primary-accent detail zone on the alternate surface. */
+  .cngx-dga-row__region {
+    background: var(--cngx-dga-surface-alt);
+    border-block-start: 1px solid var(--cngx-color-border, #d1d5db);
+    box-shadow: inset 3px 0 0 var(--cngx-color-primary, #1d4ed8);
+  }
+
+  /* Sum footer: strong alternate surface, mono, the amount cell bold. */
+  .cngx-dga-footer {
+    background: var(--cngx-dga-surface-strong);
+    font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
+    font-size: var(--cngx-dga-head-fs, 0.75rem);
+    color: var(--cngx-color-text-muted, #6b7280);
+  }
+}
+
+
+@scope (.cngx-data-grid-accordion[data-skin='spreadsheet']) {
+  :scope {
+    /* POC `.sheet`: framed surface, explicit 8px radius (--cngx-radius-sm resolves
+       to 4px), small type. The host's `overflow-x: auto` clips to this rounded
+       border and provides the sideways scroll. */
+    border: 1px solid var(--cngx-color-border, #d1d5db);
+    border-radius: var(--cngx-dga-radius, 0.5rem);
+    background: var(--cngx-color-surface, #fff);
+    font-size: var(--cngx-dga-fs, 0.875rem);
+
+    /* Overflow is scrolled, never dropped: hold the grid at a scroll floor so that
+       under ~35rem it scrolls sideways with every column intact instead of hiding
+       the stock column. */
+    --cngx-dga-min-width: 35rem;
+
+    /* Root of the derived spreadsheet row numbers: header = 1, data rows = 2..N,
+       footer = N+1, counted in document order. The gutter prints this counter, so
+       the numbers are computed from position too - the story authors none. */
+    counter-reset: cngx-dga-row;
+
+    /* Spreadsheet look = flush cells divided by hairlines, not gaps. Zero the row
+       padding + column gap and let each cell carry its own padding + right rule;
+       the base summary/header/footer padding + gap would otherwise reintroduce the
+       gutters this skin deliberately removes. */
+    --cngx-dga-col-gap: 0;
+    --cngx-dga-row-py: 0;
+    /* 0px, not a bare 0: the inner grid reserves the chevron gutter with
+       `calc(var(--cngx-dga-row-px) + var(--cngx-dga-lead))`, and a unitless 0 makes
+       that calc invalid (number + length), collapsing the gutter and pushing the
+       chevron off the frame. */
+    --cngx-dga-row-px: 0px;
+
+    /* Leading chevron gutter kept SEPARATE from the row-number column: overlaying
+       the two collided the chevron and the digit into a single unreadable glyph
+       (e.g. a check-mark "2"). A narrow margin in front of the framed sheet holds
+       the disclosure chevron; the synthesised row-number gutter (`::before` below)
+       follows as its own column. */
+    --cngx-dga-lead: 1.5rem;
+
+    /* Same @property trap as the ledger skin: `--cngx-dga-border-color` and
+       `--cngx-dga-surface-alt` are registered with fixed light initial-values, so
+       their `var(token, ...)` fallbacks never fire and the light initial would win
+       in dark. SET them here so every hairline + surface tracks the scheme.
+       `-strong` is unregistered. */
+    --cngx-dga-border-color: var(--cngx-color-border, #d1d5db);
+    /* The `-mat` override token lets the Material bridge (data-grid-accordion-theme
+       skins mixin) map this surface to a Material surface-container; unset, the oklab
+       derivation from the foundation tokens is the fallback, so the skin is unchanged
+       without the bridge. The `-mat` token is deliberately UNregistered so the var()
+       fallback fires (a registered @property would pin it to a fixed initial). */
+    --cngx-dga-surface-alt: var(
+      --cngx-dga-surface-alt-mat,
+      color-mix(in oklab, var(--cngx-color-surface, #fff) 96%, var(--cngx-color-text, #0f1320))
+    );
+    --cngx-dga-surface-strong: var(
+      --cngx-dga-surface-strong-mat,
+      color-mix(in oklab, var(--cngx-color-surface, #fff) 90%, var(--cngx-color-text, #0f1320))
+    );
+
+    /* Detail zone reads as a cell note: room at the top for the NOTE tag, indented
+       past the row-number gutter so the note lines up under the content column. The
+       3rem indent clears the story's 44px gutter without coupling the skin to the
+       exact column width. */
+    --cngx-dga-region-padding: 1.4rem 1rem 1rem 3rem;
+  }
+
+  /* Cells are flush flex boxes with their own padding and a right hairline; the
+     grid rows stretch so those hairlines run full height (POC `align-items:
+     stretch` + `> span` flex). Alignment rides `justify-content`, not
+     `justify-self`, so an aligned cell still fills its track and keeps its rule. */
+  .cngx-dga-header,
+  .cngx-dga-row__summary,
+  .cngx-dga-footer {
+    align-items: stretch;
+  }
+
+  .cngx-dga-cell {
+    display: flex;
+    align-items: center;
+    justify-self: stretch;
+    padding: 0.45rem 0.7rem;
+    border-inline-end: 1px solid var(--cngx-dga-border-color, #d1d5db);
+  }
+
+  /* Restore the last cell's trailing padding. This skin zeroes `--cngx-dga-row-px`
+     (flush cells), but the base `.cngx-dga-cell:last-child` reads that token for its
+     `padding-inline-end`, so the rightmost column would otherwise sit flush against
+     the frame edge. Re-assert the cell's own 0.7rem so the last column breathes like
+     the others. `:scope` lifts specificity above the base last-child rule. */
+  :scope .cngx-dga-cell:last-child {
+    padding-inline-end: 0.7rem;
+  }
+
+  /* Alignment rides `justify-content` so the cell still fills its track (and keeps
+     its right hairline + open-state tint). The `:scope` prefix lifts specificity
+     above the row component's base `[data-align] { justify-self: ... }`, which would
+     otherwise shrink the cell and leave an untinted gap in the track. */
+  :scope .cngx-dga-cell[data-align='center'] {
+    justify-self: stretch;
+    justify-content: center;
+  }
+
+  :scope .cngx-dga-cell[data-align='end'] {
+    justify-self: stretch;
+    justify-content: flex-end;
+  }
+
+  /* The row-number gutter is SYNTHESISED, not authored: each structural row bumps
+     the counter and paints its own first-column pseudo-cell via `::before`, so the
+     story writes only content columns - there is no empty gutter cell. The
+     pseudo-cell is the first grid child, so it lands in track 1; mono, right-aligned
+     on the strong surface, closed by a heavier rule. The header gutter reserves the
+     letter-band height so its number lines up with the labels below. */
+  .cngx-dga-header,
+  .cngx-dga-row,
+  .cngx-dga-footer {
+    counter-increment: cngx-dga-row;
+  }
+
+  .cngx-dga-header::before,
+  .cngx-dga-row__summary::before,
+  .cngx-dga-footer::before {
+    content: counter(cngx-dga-row);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0.45rem 0.5rem;
+    background: var(--cngx-dga-surface-strong);
+    border-inline-end: 1px solid var(--cngx-color-border, #d1d5db);
+    font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
+    font-size: var(--cngx-dga-head-fs, 0.75rem);
+    color: var(--cngx-color-text-muted, #6b7280);
+  }
+
+  .cngx-dga-header::before {
+    padding-block-start: calc(0.45rem + var(--cngx-dga-letter-band, 1.15rem));
+  }
+
+  /* This skin OPTS OUT of the base leading chevron track. It already owns a
+     synthesised row-number gutter (`::before`, track 1 of its own `[columns]`) and
+     the CSS-counter column-letter strip, both of which fight an extra grid track. So
+     it drops the leading track, reserves the chevron gutter as inner-grid inline
+     padding instead, overlays the chevron there, and paints that strip the strong
+     surface so it merges with the row-number column into one band. (Non-spreadsheet
+     skins keep the leading track, which their row backgrounds need to cover.) */
+  :scope .cngx-data-grid-accordion__grid {
+    grid-template-columns: var(--cngx-dga-columns, 1fr);
+    padding-inline-start: var(--cngx-dga-lead, 1.5rem);
+    position: relative;
+  }
+
+  .cngx-data-grid-accordion__grid::before {
+    content: '';
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    inline-size: var(--cngx-dga-lead, 1.5rem);
+    background: var(--cngx-dga-surface-strong);
+  }
+
+  /* Overlay the chevron in that gutter (one gutter-width back from the summary's
+     content edge), centred; the summary is the positioning context. */
+  .cngx-dga-row__summary {
+    position: relative;
+  }
+
+  .cngx-dga-row__chevron-slot {
+    position: absolute;
+    inset-inline-start: calc(-1 * var(--cngx-dga-lead, 1.5rem));
+    inset-block: 0;
+    inline-size: var(--cngx-dga-lead, 1.5rem);
+    justify-content: center;
+    padding-inline-start: 0;
+  }
+
+  /* Undo the base header/footer first-cell offset - there is no leading track here,
+     so the first content cell starts at track 1 as normal. */
+  :scope .cngx-dga-header > .cngx-dga-cell:first-child,
+  :scope .cngx-dga-footer > .cngx-dga-cell:first-child {
+    grid-column-start: auto;
+  }
+
+  /* The label header carries a DERIVED column-letter strip: each cell reserves a
+     top band whose `::before` prints its column letter from a CSS counter, so the
+     letters (A / B / C ...) are computed from position, never authored. Adjacent
+     bands abut into one continuous strip; the synthesised gutter fills the blank
+     corner beside them. One header does the work of the POC's two rows. */
+  /* Bold sits on the cells, NOT the grid container: `ch`-based tracks in the
+     `[columns]` template resolve against the container's font, so a bold header
+     widens its `11ch` / `12ch` tracks and shifts the numeric columns out of line
+     with the normal-weight data rows. The base component CSS weights the header
+     container 600, so force it back to normal here (the cells carry the bold) -
+     that makes header, rows, and footer share identical track widths. */
+  .cngx-dga-header {
+    background: var(--cngx-dga-surface-alt);
+    color: var(--cngx-color-text, #0f1320);
+    font-weight: 400;
+    counter-reset: cngx-dga-col;
+  }
+
+  .cngx-dga-header .cngx-dga-cell {
+    position: relative;
+    padding-block-start: calc(0.45rem + var(--cngx-dga-letter-band, 1.15rem));
+    font-weight: 650;
+  }
+
+  .cngx-dga-header .cngx-dga-cell::before {
+    content: '';
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline: 0;
+    block-size: var(--cngx-dga-letter-band, 1.15rem);
+    display: flex;
+    align-items: center;
+    /* The letter follows the column's own alignment (start / centre / end) and
+       carries the cell's inline padding, so it stacks directly above the label and
+       the values below - a right-aligned numeric column gets a right-aligned
+       letter. */
+    justify-content: flex-start;
+    padding-inline: 0.7rem;
+    background: var(--cngx-dga-surface-strong);
+    border-block-end: 1px solid var(--cngx-color-border, #d1d5db);
+    font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
+    font-size: var(--cngx-dga-head-fs, 0.75rem);
+    color: var(--cngx-color-text-muted, #6b7280);
+  }
+
+  :scope .cngx-dga-header .cngx-dga-cell[data-align='center']::before {
+    justify-content: center;
+  }
+
+  :scope .cngx-dga-header .cngx-dga-cell[data-align='end']::before {
+    justify-content: flex-end;
+  }
+
+  .cngx-dga-header .cngx-dga-cell {
+    counter-increment: cngx-dga-col;
+  }
+
+  .cngx-dga-header .cngx-dga-cell::before {
+    content: counter(cngx-dga-col, upper-alpha);
+  }
+
+
+  /* Hover + open tint every content cell; the synthesised gutter has its own open
+     state below. */
+  .cngx-dga-row__summary:hover .cngx-dga-cell,
+  .cngx-dga-row[data-expanded] .cngx-dga-row__summary .cngx-dga-cell {
+    background: color-mix(in oklab, var(--cngx-color-primary, #1d4ed8) 8%, transparent);
+  }
+
+  /* The gutter pseudo-cell fills primary when its row opens - the active-cell cue. */
+  .cngx-dga-row[data-expanded] .cngx-dga-row__summary::before {
+    background: var(--cngx-color-primary, #1d4ed8);
+    color: var(--cngx-color-on-primary, #fff);
+  }
+
+  /* Detail zone as a warning-tinted note cell with a small NOTE tag pinned top
+     left. The POC's fixed amber maps to the semantic warning token so the note
+     tracks the theme instead of a hardcoded hex. */
+  .cngx-dga-row__region {
+    position: relative;
+    background: color-mix(
+      in oklab,
+      var(--cngx-color-warning, #f59e0b) 9%,
+      var(--cngx-color-surface, #fff)
+    );
+    border-block-end: 1px solid var(--cngx-dga-border-color, #d1d5db);
+  }
+
+  .cngx-dga-row__region::before {
+    content: 'NOTE';
+    position: absolute;
+    inset-block-start: 0.4rem;
+    inset-inline-start: 3rem;
+    font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
+    font-size: 0.625rem;
+    letter-spacing: 0.1em;
+    color: color-mix(in oklab, var(--cngx-color-warning, #f59e0b) 80%, var(--cngx-color-text, #0f1320));
+  }
+
+  /* Footer sum row: alternate surface, bold on the cells (same track-width reason
+     as the header above - never bold the grid container). */
+  .cngx-dga-footer {
+    background: var(--cngx-dga-surface-alt);
+    color: var(--cngx-color-text, #0f1320);
+  }
+
+  .cngx-dga-footer .cngx-dga-cell {
+    font-weight: 650;
+  }
+}
+
+@scope (.cngx-data-grid-accordion[data-skin='log-stream']) {
+  :scope {
+    /* POC `.logs`: framed mono console, small type. Mono lives on the host so it
+       cascades to header + rows equally - keeping the `ch` tracks identical across
+       every grid container (never weight a container; see the ledger/spreadsheet
+       note). The host's `overflow-x: auto` clips to the rounded border and scrolls. */
+    border: 1px solid var(--cngx-color-border, #d1d5db);
+    border-radius: var(--cngx-dga-radius, 0.5rem);
+    background: var(--cngx-color-surface, #fff);
+    font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
+    font-size: var(--cngx-dga-fs, 0.75rem);
+
+    /* Overflow is scrolled, never dropped: under ~33rem the grid scrolls sideways
+       with the timestamp column intact instead of hiding it. */
+    --cngx-dga-min-width: 33rem;
+
+    /* POC gaps / paddings: --sp-3 gutter, .5rem row block, sp-4 inline. */
+    --cngx-dga-col-gap: 0.75rem;
+    --cngx-dga-row-py: 0.5rem;
+    --cngx-dga-row-px: 1rem;
+
+    /* Same registered-@property trap as the other skins: SET the adaptive border +
+       surfaces so they track the scheme instead of the fixed light initial. */
+    --cngx-dga-border-color: var(--cngx-color-border, #d1d5db);
+    /* The `-mat` override token lets the Material bridge (data-grid-accordion-theme
+       skins mixin) map this surface to a Material surface-container; unset, the oklab
+       derivation from the foundation tokens is the fallback, so the skin is unchanged
+       without the bridge. The `-mat` token is deliberately UNregistered so the var()
+       fallback fires (a registered @property would pin it to a fixed initial). */
+    --cngx-dga-surface-alt: var(
+      --cngx-dga-surface-alt-mat,
+      color-mix(in oklab, var(--cngx-color-surface, #fff) 96%, var(--cngx-color-text, #0f1320))
+    );
+    --cngx-dga-surface-strong: var(
+      --cngx-dga-surface-strong-mat,
+      color-mix(in oklab, var(--cngx-color-surface, #fff) 90%, var(--cngx-color-text, #0f1320))
+    );
+  }
+
+  /* Column head: strong surface, uppercase, muted. */
+  .cngx-dga-header {
+    background: var(--cngx-dga-surface-strong);
+    border-block-end: 1px solid var(--cngx-color-border, #d1d5db);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--cngx-color-text-muted, #6b7280);
+  }
+
+  /* The row summary hosts the severity edge, so it needs a positioning context. */
+  .cngx-dga-row__summary {
+    position: relative;
+  }
+
+  /* Severity doubled as a 3px left edge (POC `summary::before`). Absolute, so it
+     never becomes a grid item / shifts a column. Transparent unless the row carries
+     `[data-severity]`; error maps to the danger token (there is no -error). */
+  .cngx-dga-row__summary::before {
+    content: '';
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    inline-size: 3px;
+    background: transparent;
+  }
+
+  .cngx-dga-row[data-severity='error'] .cngx-dga-row__summary::before {
+    background: var(--cngx-color-danger, #dc2626);
+  }
+
+  .cngx-dga-row[data-severity='warning'] .cngx-dga-row__summary::before {
+    background: var(--cngx-color-warning, #f59e0b);
+  }
+
+  .cngx-dga-row[data-severity='info'] .cngx-dga-row__summary::before {
+    background: var(--cngx-color-info, #2563eb);
+  }
+
+  /* Timestamp (first cell) is dimmed; the message (third) already truncates via the
+     base cell. Hover + open tint the whole summary. */
+  .cngx-dga-row__summary .cngx-dga-cell:first-child {
+    color: var(--cngx-color-text-muted, #6b7280);
+  }
+
+  .cngx-dga-row__summary:hover,
+  .cngx-dga-row[data-expanded] .cngx-dga-row__summary {
+    background: var(--cngx-dga-surface-alt);
+  }
+
+  /* Expanded detail: recessed surface, the stacktrace as a scrollable mono `pre`. */
+  .cngx-dga-row__region {
+    background: var(--cngx-dga-surface-strong);
+    border-block-start: 1px solid var(--cngx-color-border, #d1d5db);
+  }
+
+  .cngx-dga-row__region pre {
+    margin: 0;
+    overflow-x: auto;
+    color: var(--cngx-color-text-muted, #6b7280);
+    line-height: 1.55;
+    font-size: var(--cngx-dga-fs, 0.75rem);
+  }
+
+  /* Footer is a flex status bar (POC `.dg-foot` is not on the column grid): a count
+     on the left, a live indicator on the right. A flex footer carries no cells, so it
+     needs its own inline padding - the grid footers get their inset from the chevron
+     track + last-cell padding, which a flex layout has neither of. */
+  .cngx-dga-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding-inline: var(--cngx-dga-row-px, 1rem);
+    background: var(--cngx-dga-surface-strong);
+    border-block-start: 1px solid var(--cngx-color-border, #d1d5db);
+    color: var(--cngx-color-text-muted, #6b7280);
+  }
+}
+
+@scope (.cngx-data-grid-accordion[data-skin='master-detail']) {
+  :scope {
+    /* POC `.master`: framed surface, explicit 8px radius (--cngx-radius-sm resolves
+       to 4px), small type. The host's `overflow-x: auto` clips to this rounded
+       border and provides the sideways scroll - the POC `overflow: hidden` is
+       dropped, it would have killed that scroll. */
+    border: 1px solid var(--cngx-color-border, #d1d5db);
+    border-radius: var(--cngx-dga-radius, 0.5rem);
+    background: var(--cngx-color-surface, #fff);
+    font-size: var(--cngx-dga-fs, 0.875rem);
+
+    /* Overflow is scrolled, never dropped: hold the grid at a realistic scroll floor
+       so it fits without a scrollbar at normal widths and only scrolls sideways when
+       genuinely narrow (the old 42rem forced a scrollbar even on desktop). */
+    --cngx-dga-min-width: 35rem;
+
+    /* POC gaps / paddings: --sp-3 gutter, .6rem row block, sp-4 inline. */
+    --cngx-dga-col-gap: 0.75rem;
+    --cngx-dga-row-py: 0.6rem;
+    --cngx-dga-row-px: 1rem;
+
+    /* Detail zone: a shallow indent just past the accent edge, NOT a deep indent
+       under the customer column. The deep POC indent (`calc(10ch + ...)`) left a
+       wide dead gutter under the order column and pushed the full-width sub-table
+       off the right edge (clipping its last column under the scroll floor). A small
+       inset keeps the sub-table readable and fully visible while still reading as a
+       nested continuation of the row. */
+    --cngx-dga-region-padding: 0.75rem 1rem 1rem 1.25rem;
+
+    /* Same registered-@property trap as the other skins: SET the adaptive border +
+       surfaces so they track the scheme instead of the fixed light initial. */
+    --cngx-dga-border-color: var(--cngx-color-border, #d1d5db);
+    /* The `-mat` override token lets the Material bridge (data-grid-accordion-theme
+       skins mixin) map this surface to a Material surface-container; unset, the oklab
+       derivation from the foundation tokens is the fallback, so the skin is unchanged
+       without the bridge. The `-mat` token is deliberately UNregistered so the var()
+       fallback fires (a registered @property would pin it to a fixed initial). */
+    --cngx-dga-surface-alt: var(
+      --cngx-dga-surface-alt-mat,
+      color-mix(in oklab, var(--cngx-color-surface, #fff) 96%, var(--cngx-color-text, #0f1320))
+    );
+    --cngx-dga-surface-strong: var(
+      --cngx-dga-surface-strong-mat,
+      color-mix(in oklab, var(--cngx-color-surface, #fff) 90%, var(--cngx-color-text, #0f1320))
+    );
+  }
+
+  /* Column head: strong surface, mono uppercase, dimmed (POC surface-3 head). Force
+     normal weight (POC head is unbolded): the base component weights the header
+     container 600, and a bold container would widen any `ch` track relative to the
+     normal-weight rows - the ch/track-vs-container-font trap. */
+  .cngx-dga-header {
+    background: var(--cngx-dga-surface-strong);
+    border-block-end: 1px solid var(--cngx-color-border, #d1d5db);
+    font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
+    font-size: var(--cngx-dga-head-fs, 0.75rem);
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--cngx-color-text-muted, #6b7280);
+  }
+
+  /* The order number (first cell) is mono + dimmed; the customer (primary) cell
+     carries the row weight; the numeric position + sum cells are mono right of the
+     name. Mono sits on the cells, never the summary container, so it never shifts a
+     shared track width. */
+  .cngx-dga-row__summary .cngx-dga-cell:first-child {
+    font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
+    font-size: var(--cngx-dga-head-fs, 0.75rem);
+    color: var(--cngx-color-text-muted, #6b7280);
+  }
+
+  .cngx-dga-row__summary .cngx-dga-cell[data-primary] {
+    font-weight: 620;
+    color: var(--cngx-color-text, #0f1320);
+  }
+
+  .cngx-dga-row__summary .cngx-dga-cell[data-align='end'] {
+    font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
+  }
+
+  /* Hover + open both tint the summary with the primary accent; the open row STAYS
+     tinted so the context row reads as the parent of the detail below (POC
+     `details[open] > summary { background: accent-weak }`). */
+  .cngx-dga-row__summary:hover,
+  .cngx-dga-row[data-expanded] .cngx-dga-row__summary {
+    background: color-mix(in oklab, var(--cngx-color-primary, #1d4ed8) 8%, transparent);
+  }
+
+  /* Detail zone: recessed alternate surface with a primary inset edge, indented via
+     the region padding above so the sub-table lines up under the customer column. */
+  .cngx-dga-row__region {
+    background: var(--cngx-dga-surface-alt);
+    border-block-start: 1px solid var(--cngx-color-border, #d1d5db);
+    box-shadow: inset 3px 0 0 var(--cngx-color-primary, #1d4ed8);
+  }
+
+  /* The projected sub-`<table>` is consumer content; the skin only paints it - a
+     full-width collapsed table with mono uppercase heads, hairline row rules, and a
+     bold rule-free `tfoot` sum. Numeric columns opt in via `.r` (POC convention),
+     so the story keeps authoring plain table markup. */
+  .cngx-dga-row__region table {
+    inline-size: 100%;
+    border-collapse: collapse;
+    font-size: var(--cngx-dga-fs, 0.875rem);
+  }
+
+  .cngx-dga-row__region th,
+  .cngx-dga-row__region td {
+    padding: 0.45rem 0.5rem;
+    border-block-end: 1px solid var(--cngx-dga-border-color, #d1d5db);
+    text-align: start;
+    white-space: nowrap;
+  }
+
+  /* Sub-table head is deliberately quieter than the main column header (which is
+     mono UPPERCASE): normal case, lighter weight, muted - so the two header rows
+     read as parent + child, not two competing peers stacked together. */
+  .cngx-dga-row__region th {
+    font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
+    font-size: var(--cngx-dga-head-fs, 0.75rem);
+    font-weight: 500;
+    color: var(--cngx-color-text-muted, #6b7280);
+  }
+
+  .cngx-dga-row__region td {
+    color: var(--cngx-color-text, #0f1320);
+  }
+
+  .cngx-dga-row__region th.r,
+  .cngx-dga-row__region td.r {
+    text-align: end;
+    font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
+  }
+
+  .cngx-dga-row__region tfoot td {
+    border-block-end: none;
+    font-weight: 700;
+    color: var(--cngx-color-text, #0f1320);
+  }
+
+  .cngx-dga-row__region tfoot td:first-child {
+    font-weight: 600;
+    color: var(--cngx-color-text-muted, #6b7280);
+  }
+
+  /* Sum footer: strong surface, mono; the total cell bold (POC `.dg-foot .c-sum`).
+     Bold rides the cell, not the footer container, so it never widens a ch track. */
+  .cngx-dga-footer {
+    background: var(--cngx-dga-surface-strong);
+    font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
+    font-size: var(--cngx-dga-head-fs, 0.75rem);
+    color: var(--cngx-color-text-muted, #6b7280);
+  }
+
+  .cngx-dga-footer .cngx-dga-cell[data-align='end'] {
+    font-weight: 700;
+    color: var(--cngx-color-text, #0f1320);
+  }
+
+  /* Drop the last row's own divider so it never doubles with the footer's top
+     border (both draw from the same adaptive token). */
+  .cngx-dga-row:last-of-type {
+    --cngx-dga-row-divider: none;
+  }
+}
+
+@scope (.cngx-data-grid-accordion[data-skin='report']) {
+  :scope {
+    /* POC `.report`: frameless - no surface, no radius, no zebra. It reads as a
+       printed cost report: a `3px double` rule under the column head and over the sum
+       foot, hairline dividers between rows, and over-budget actuals in the danger
+       colour. `--s--1` body type. The host's `overflow-x: auto` still scrolls it. */
+    background: transparent;
+    font-size: var(--cngx-dga-fs, 0.875rem);
+
+    /* Overflow is scrolled, never dropped: under ~40rem the grid scrolls sideways with
+       the cost-centre + budget columns intact instead of hiding them. */
+    --cngx-dga-min-width: 40rem;
+
+    /* POC gaps / paddings: --sp-3 column gutter, .55rem row block; frameless, so no
+       inline frame padding (cells run edge to edge, POC `padding: .55rem 0`). */
+    --cngx-dga-col-gap: 0.75rem;
+    --cngx-dga-row-py: 0.55rem;
+    --cngx-dga-row-px: 0;
+    --cngx-dga-fs: 0.875rem;
+    --cngx-dga-head-fs: 0.75rem;
+
+    /* Detail zone reads as a note under the label column: indent past the leading
+       chevron track + the cost-centre (`sm`) column + the column gap so it lines up
+       under the label, not the frame edge (POC `padding-left: calc(8ch + --sp-3)`). */
+    --cngx-dga-region-padding: 0.1rem 0 0.85rem
+      calc(var(--cngx-dga-lead, 2rem) + var(--cngx-dga-col-sm, 5rem) + var(--cngx-dga-col-gap, 0.75rem));
+
+    /* Registered-@property trap: SET the adaptive divider colour so the between-row
+       hairline tracks the scheme instead of the fixed light initial. */
+    --cngx-dga-border-color: var(--cngx-color-border, #d1d5db);
+  }
+
+  /* Column head: a `3px double` bottom rule (POC border-bottom:3px double text@45%),
+     mono uppercase wide-tracked, muted. Normal weight (base weights the container 600;
+     the POC head is unbolded). */
+  .cngx-dga-header {
+    border-block-end: 3px double
+      color-mix(in oklab, var(--cngx-color-text, #0f1320) 45%, transparent);
+    font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
+    font-size: var(--cngx-dga-head-fs, 0.75rem);
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--cngx-color-text-muted, #6b7280);
+  }
+
+  /* Between-row divider is the quiet hairline (POC `details + details`); the head and
+     foot carry the heavy double rules. Hover tints with a faint text wash (POC
+     `summary:hover { background: text@5% }`). */
+  .cngx-dga-row__summary:hover {
+    background: color-mix(in oklab, var(--cngx-color-text, #0f1320) 5%, transparent);
+  }
+
+  /* The cost-centre code (first cell) is mono + dimmed; the label (primary) carries the
+     row weight; the money columns are mono, right of the label. Mono rides the cells,
+     never the summary container, so it never shifts a shared track width. */
+  .cngx-dga-row__summary .cngx-dga-cell:first-child {
+    font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
+    color: var(--cngx-color-text-muted, #6b7280);
+  }
+
+  .cngx-dga-row__summary .cngx-dga-cell[data-primary] {
+    font-weight: 620;
+    color: var(--cngx-color-text, #0f1320);
+  }
+
+  .cngx-dga-row__summary .cngx-dga-cell[data-align='end'] {
+    font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
+    color: var(--cngx-color-text, #0f1320);
+  }
+
+  /* Over-budget actual cells: the danger colour, bold (POC `.c-ist.over`). Authored in
+     the story as a `data-over` attribute on the cell - a consumer marker, so the state
+     stays a typed data-attr -> semantic token, never a raw hex via `[style]`. */
+  .cngx-dga-row__summary .cngx-dga-cell[data-over] {
+    color: var(--cngx-color-danger, #dc2626);
+    font-weight: 700;
+  }
+
+  /* Detail zone: muted small note, indented via the region padding above. */
+  .cngx-dga-row__region {
+    font-size: var(--cngx-dga-head-fs, 0.75rem);
+    color: var(--cngx-color-text-muted, #6b7280);
+    max-inline-size: 60ch;
+  }
+
+  /* Drop the last row's own divider so it never doubles with the footer's `3px double`
+     top rule. */
+  .cngx-dga-row:last-of-type {
+    --cngx-dga-row-divider: none;
+  }
+
+  /* Sum foot: a `3px double` top rule matching the head, text colour, the label +
+     money cells bold (POC `.dg-foot .c-lbl / .c-bud / .c-ist { font-weight:700 }`).
+     Bold rides the cells, never the container. */
+  .cngx-dga-footer {
+    border-block-start: 3px double
+      color-mix(in oklab, var(--cngx-color-text, #0f1320) 45%, transparent);
+    color: var(--cngx-color-text, #0f1320);
+  }
+
+  .cngx-dga-footer .cngx-dga-cell[data-primary] {
+    font-weight: 700;
+  }
+
+  .cngx-dga-footer .cngx-dga-cell[data-align='end'] {
+    font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
+    font-weight: 700;
+    color: var(--cngx-color-text, #0f1320);
+  }
+}
+
+@scope (.cngx-data-grid-accordion[data-skin='density']) {
+  :scope {
+    /* POC `.densg`: a framed task list. The compact / standard / spacious control is
+       demo chrome that drives the `--cngx-dga-row-py` + `--cngx-dga-fs` hooks (a
+       consumer token concern, not a component input); this skin only frames the grid
+       and TRANSITIONS the row block padding so a density change animates rather than
+       snaps. The host's `overflow-x: auto` clips to the rounded border and scrolls. */
+    border: 1px solid var(--cngx-color-border, #d1d5db);
+    border-radius: var(--cngx-dga-radius, 0.5rem);
+    background: var(--cngx-color-surface, #fff);
+    font-size: var(--cngx-dga-fs, 0.875rem);
+
+    /* Overflow is scrolled, never dropped: under ~32rem the grid scrolls sideways with
+       the assignee + status columns intact instead of hiding one. */
+    --cngx-dga-min-width: 32rem;
+
+    /* POC gaps / paddings. `--cngx-dga-row-py` carries the STANDARD default here; the
+       demo chrome overrides it (and `--cngx-dga-fs`) for compact / spacious. */
+    --cngx-dga-col-gap: 0.75rem;
+    --cngx-dga-row-py: 0.6rem;
+    --cngx-dga-row-px: 1rem;
+
+    /* Registered-@property trap: SET the adaptive border + surfaces so they track the
+       scheme instead of the fixed light initial. `-strong` is unregistered. */
+    --cngx-dga-border-color: var(--cngx-color-border, #d1d5db);
+    /* The `-mat` override token lets the Material bridge (data-grid-accordion-theme
+       skins mixin) map this surface to a Material surface-container; unset, the oklab
+       derivation from the foundation tokens is the fallback, so the skin is unchanged
+       without the bridge. The `-mat` token is deliberately UNregistered so the var()
+       fallback fires (a registered @property would pin it to a fixed initial). */
+    --cngx-dga-surface-alt: var(
+      --cngx-dga-surface-alt-mat,
+      color-mix(in oklab, var(--cngx-color-surface, #fff) 96%, var(--cngx-color-text, #0f1320))
+    );
+    --cngx-dga-surface-strong: var(
+      --cngx-dga-surface-strong-mat,
+      color-mix(in oklab, var(--cngx-color-surface, #fff) 90%, var(--cngx-color-text, #0f1320))
+    );
+  }
+
+  /* Head + summary transition their block padding so a density switch animates the
+     rows taller / shorter rather than snapping (POC `transition: padding`). The cell
+     type change (`--cngx-dga-fs`) snaps with it, exactly as the POC. */
+  .cngx-dga-header,
+  .cngx-dga-row__summary {
+    transition: padding var(--cngx-dga-transition, 300ms cubic-bezier(0.22, 1, 0.36, 1));
+  }
+
+  /* Column head: strong surface, mono uppercase dim. */
+  .cngx-dga-header {
+    background: var(--cngx-dga-surface-strong);
+    border-block-end: 1px solid var(--cngx-color-border, #d1d5db);
+    font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
+    font-size: var(--cngx-dga-head-fs, 0.75rem);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--cngx-color-text-muted, #6b7280);
+  }
+
+  /* Hover + open both tint with the primary accent (POC `summary:hover` accent-weak /
+     `details[open] > summary`). */
+  .cngx-dga-row__summary:hover,
+  .cngx-dga-row[data-expanded] .cngx-dga-row__summary {
+    background: color-mix(in oklab, var(--cngx-color-primary, #1d4ed8) 8%, transparent);
+  }
+
+  /* The task (primary) cell carries the row weight; the assignee - the middle
+     non-primary content cell, child 3 of the summary after the chevron slot (child 1)
+     and the task cell (child 2) - is mono + dimmed (POC `.c-asg`). The status cell is
+     the last child and holds a projected `cngx-tag`, so it needs no skin paint. */
+  .cngx-dga-row__summary .cngx-dga-cell[data-primary] {
+    font-weight: 620;
+    color: var(--cngx-color-text, #0f1320);
+  }
+
+  .cngx-dga-row__summary > .cngx-dga-cell:nth-child(3) {
+    font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
+    font-size: var(--cngx-dga-head-fs, 0.75rem);
+    color: var(--cngx-color-text-muted, #6b7280);
+  }
+
+  /* Detail zone: recessed alternate surface with a primary inset edge (POC `.body`). */
+  .cngx-dga-row__region {
+    background: var(--cngx-dga-surface-alt);
+    border-block-start: 1px solid var(--cngx-color-border, #d1d5db);
+    box-shadow: inset 3px 0 0 var(--cngx-color-primary, #1d4ed8);
+  }
+
+  /* Footer is a flex status bar (POC `.dg-foot` is off the column grid): a count on the
+     left, a status summary on the right. A flex footer carries no cells, so it needs
+     its own inline padding - the grid footers get their inset from the chevron track +
+     last-cell padding, which a flex layout has neither of. */
+  .cngx-dga-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding-inline: var(--cngx-dga-row-px, 1rem);
+    background: var(--cngx-dga-surface-strong);
+    color: var(--cngx-color-text-muted, #6b7280);
+  }
+
+  /* Drop the last row's own divider so it never doubles with the footer's top border
+     (both draw from the same adaptive token). */
+  .cngx-dga-row:last-of-type {
+    --cngx-dga-row-divider: none;
+  }
+}
+
+

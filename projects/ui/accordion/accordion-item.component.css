@@ -1,4 +1,9 @@
 .cngx-accordion-item {
+  /* Flat default: a transparent row with a bottom divider. A card skin
+     (categorized, bento, section-bands, ...) sets its own surface + box border
+     directly through its `[data-skin]` @scope block (accordion-skins.css). The
+     divider stays token-driven so a skin drops it with one `--cngx-accordion-
+     divider: none`. */
   display: block;
   border-block-end: var(
     --cngx-accordion-divider,
@@ -8,6 +13,26 @@
 
 .cngx-accordion-item__heading {
   margin: 0;
+  /* Flat default is a flex row. A column-grid skin can lay the heading out as a
+     grid directly through its own `[data-skin]` @scope block. */
+  display: flex;
+  align-items: center;
+  gap: var(--cngx-accordion-heading-gap, 0.5rem);
+}
+
+/* Leading and meta are siblings of the button, not children, so interactive
+   meta (a link, a remove-button) stays valid HTML. Empty slots collapse via
+   :empty so an item with neither renders exactly as before (no stray gap). */
+.cngx-accordion-item__leading,
+.cngx-accordion-item__meta {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+}
+
+.cngx-accordion-item__leading:empty,
+.cngx-accordion-item__meta:empty {
+  display: none;
 }
 
 .cngx-accordion-item__header {
@@ -21,7 +46,10 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--cngx-accordion-header-gap, 0.5rem);
-  inline-size: 100%;
+  /* Grows to fill the heading row between the leading and meta cells; min-0
+     lets a long title truncate instead of shoving meta off the edge. */
+  flex: 1 1 auto;
+  min-inline-size: 0;
   padding: var(--cngx-accordion-header-padding, 0.75rem 1rem);
   border: 0;
   background: var(--cngx-accordion-header-bg, transparent);
@@ -39,6 +67,25 @@
 .cngx-accordion-item__header[aria-disabled='true'] {
   color: var(--cngx-accordion-header-disabled-color, #9ca3af);
   cursor: not-allowed;
+}
+
+.cngx-accordion-item__text {
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 0;
+  gap: var(--cngx-accordion-title-gap, 0.125rem);
+}
+
+.cngx-accordion-item__subtitle {
+  font-size: var(--cngx-accordion-subtitle-size, 0.875em);
+  font-weight: var(--cngx-accordion-subtitle-weight, 400);
+  color: var(--cngx-accordion-subtitle-color, #6b7280);
+}
+
+/* An unbound subtitle projects nothing; collapse it so the text column keeps
+   its single-line height and the title gap does not open. */
+.cngx-accordion-item__subtitle:empty {
+  display: none;
 }
 
 .cngx-accordion-item__chevron-slot {
@@ -63,8 +110,102 @@
   transform: rotate(225deg);
 }
 
+/* Marker variants driven by the --cngx-accordion-marker token, not a mode input
+   (Pillar 3). Token unset keeps the CSS chevron above; a skin's [data-skin]
+   block sets the token and a style container query re-paints the same chevron
+   box, so no new DOM and no new input. */
+@container style(--cngx-accordion-marker: none) {
+  .cngx-accordion-item__chevron {
+    display: none;
+  }
+}
+
+@container style(--cngx-accordion-marker: plus-minus) {
+  .cngx-accordion-item__chevron {
+    /* Drop the corner-border chevron; the plus is two centred pseudo bars. */
+    inline-size: var(--cngx-accordion-marker-size, 0.75em);
+    block-size: var(--cngx-accordion-marker-size, 0.75em);
+    border: 0;
+    transform: none;
+    position: relative;
+  }
+
+  .cngx-accordion-item__chevron::before,
+  .cngx-accordion-item__chevron::after {
+    content: '';
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-start: 50%;
+    inline-size: 100%;
+    block-size: var(--cngx-accordion-marker-stroke, 2px);
+    background: currentColor;
+    transform: translate(-50%, -50%);
+  }
+
+  .cngx-accordion-item__chevron::after {
+    transform: translate(-50%, -50%) rotate(90deg);
+    transition: opacity var(--cngx-accordion-chevron-transition, 150ms ease);
+  }
+
+  /* The vertical bar collapses on open: plus morphs to minus. */
+  .cngx-accordion-item[data-expanded] .cngx-accordion-item__chevron {
+    transform: none;
+  }
+
+  .cngx-accordion-item[data-expanded] .cngx-accordion-item__chevron::after {
+    opacity: 0;
+  }
+}
+
 .cngx-accordion-item__region {
+  position: relative;
   padding: var(--cngx-accordion-region-padding, 0.75rem 1rem);
+}
+
+/* First-load skeleton default (replaced by the *cngxAccordionItemBusy slot).
+   Decorative: the region's aria-busy carries the state to assistive tech. */
+.cngx-accordion-item__skeleton {
+  display: block;
+  block-size: var(--cngx-accordion-skeleton-height, 3rem);
+  border-radius: var(--cngx-accordion-skeleton-radius, 0.25rem);
+  background: var(--cngx-accordion-skeleton-bg, #e5e7eb);
+  animation: cngx-accordion-skeleton-pulse
+    var(--cngx-accordion-skeleton-duration, 1.5s) ease-in-out infinite;
+}
+
+/* Refreshing keeps the body mounted; a thin primary bar rides the region top. */
+.cngx-accordion-item__refresh-indicator {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+  block-size: var(--cngx-accordion-refresh-height, 2px);
+  background: var(--cngx-accordion-refresh-color, var(--cngx-color-primary, #1d4ed8));
+  animation: cngx-accordion-skeleton-pulse
+    var(--cngx-accordion-refresh-duration, 1.2s) ease-in-out infinite;
+}
+
+.cngx-accordion-item__error {
+  color: var(--cngx-accordion-error-color, #b91c1c);
+}
+
+/* Default error message when no *cngxAccordionItemError slot is given. Rendered
+   as text inside the role="alert" so the error state is announced, not silent. */
+.cngx-accordion-item__error-default {
+  display: block;
+  font-size: var(--cngx-accordion-error-font-size, 0.875em);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cngx-accordion-item__skeleton,
+  .cngx-accordion-item__refresh-indicator {
+    animation: none;
+  }
+}
+
+@keyframes cngx-accordion-skeleton-pulse {
+  50% {
+    opacity: 0.5;
+  }
 }
 
 .cngx-visually-hidden {

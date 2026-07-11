@@ -1,0 +1,144 @@
+/**
+ * @overview
+ * Registered `@property` token surface for the `@cngx/ui/data-grid-accordion`
+ * organism. The organism carries its structural CSS through each component's
+ * `styleUrl` (Track A); this file only *registers* the shared `--cngx-dga-*`
+ * custom properties so a value set on the group host cascades down to every row,
+ * header, and footer.
+ *
+ * Registration matters because the column template, gaps, and paddings are set
+ * on the group host and read by descendant summaries. `@property` with
+ * `inherits: true` keeps that host -> descendant cascade alive; `inherits: false`
+ * would silently pin descendants to the initial value. Every token here inherits.
+ */
+
+@layer cngx.tokens {
+  /**
+   * The shared `grid-template-columns` template. Set on the group host via
+   * `[style.--cngx-dga-columns]`; header, every row summary, and footer read it,
+   * so all three align on one contract.
+   * @group Grid
+   */
+  @property --cngx-dga-columns {
+    syntax: '*';
+    inherits: true;
+    initial-value: 1fr;
+  }
+
+  /**
+   * Gap between column tracks in the header, row summaries, and footer.
+   * @group Grid
+   */
+  @property --cngx-dga-col-gap {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0.5rem;
+  }
+
+  /**
+   * Block padding of a row summary (and the header / footer rows).
+   * @group Grid
+   */
+  @property --cngx-dga-row-py {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0.5rem;
+  }
+
+  /**
+   * Inline padding of a row summary (and the header / footer rows).
+   * @group Grid
+   */
+  @property --cngx-dga-row-px {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0.75rem;
+  }
+
+  /**
+   * Padding of a row's expanded detail region.
+   * @group Region
+   */
+  @property --cngx-dga-region-padding {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0.75rem 1rem;
+  }
+
+  /**
+   * Base font size for grid cells; the `density` skin drives compact / spacious
+   * off this hook.
+   * @group Grid
+   */
+  @property --cngx-dga-fs {
+    syntax: '*';
+    inherits: true;
+    initial-value: inherit;
+  }
+
+  /**
+   * Scroll floor for the header / rows / footer. Set on the group host by a skin;
+   * when it exceeds the host width the whole grid scrolls sideways (host
+   * `overflow-x: auto`) with every column intact, instead of a container query
+   * dropping a column. The flat base leaves it 0 (no forced scroll).
+   * @group Grid
+   */
+  @property --cngx-dga-min-width {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 0px;
+  }
+
+  /**
+   * Divider colour between rows and around the header / footer.
+   * @group Grid
+   * @see [[--cngx-color-border]]
+   */
+  @property --cngx-dga-border-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.88 0.005 250);
+  }
+
+  /**
+   * Alternate row surface, the zebra tint the `ledger` skin fills.
+   * @group Surface
+   */
+  @property --cngx-dga-surface-alt {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.97 0.003 250);
+  }
+
+  /**
+   * Fixed track width for a `col="sm"` column. Named sizes mirror the `size`
+   * vocabulary of `CngxTag` / `CngxIcon` / `CngxAvatar`; the group maps `col="sm"`
+   * to `var(--cngx-dga-col-sm)` when deriving the shared template.
+   * @group Grid
+   */
+  @property --cngx-dga-col-sm {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 5rem;
+  }
+
+  /**
+   * Fixed track width for a `col="md"` column.
+   * @group Grid
+   */
+  @property --cngx-dga-col-md {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 7rem;
+  }
+
+  /**
+   * Fixed track width for a `col="lg"` column.
+   * @group Grid
+   */
+  @property --cngx-dga-col-lg {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 10rem;
+  }
+}

@@ -1,4 +1,4 @@
-import { computed, Directive, input, output, signal } from '@angular/core';
+import { afterNextRender, computed, Directive, input, output, signal } from '@angular/core';
 
 /**
  * A single sort entry: the active field key and its direction.
@@ -18,6 +18,11 @@ export interface SortEntry {
  * precedence over the internal state - pair with `sortChange` to keep them
  * in sync.
  *
+ * An uncontrolled sort may declare a **starting** column + direction via
+ * `[cngxSortInitial]`: it seeds the internal state exactly once on init, then
+ * user clicks take over. Distinct from the controlled `cngxSortActive` /
+ * `cngxSortDirection` pins - the seed is skipped when a controlled pin is bound.
+ *
  * When `multiSort` is `true`, holding **Shift** while clicking a sort header
  * adds it as a secondary (tertiary, …) sort key instead of replacing the
  * primary one. Shift-clicking an active column cycles it asc → desc → removed.
@@ -36,9 +41,6 @@ export interface SortEntry {
  * <example-url>http://localhost:4200/#/common/data/sort/multi-sort</example-url>
  * <example-url>http://localhost:4200/#/common/data/sort/controlled</example-url>
  * <example-url>http://localhost:4200/#/common/data/sort/aria-and-keyboard</example-url>
-//  * <example-url>http://localhost:4200/#/common/data/smart-data-source/auto-wired</example-url>
-//  * <example-url>http://localhost:4200/#/common/data/smart-data-source/how-it-works-hostdirectives-inject</example-url>
-//  * <example-url>http://localhost:4200/#/common/data/smart-data-source/smartdatasource-cngxpaginate-hostdirective</example-url>
  */
 @Directive({
   selector: '[cngxSort]',
@@ -57,8 +59,27 @@ export class CngxSort {
    * replacing the current sort.
    */
   readonly multiSort = input<boolean>(false);
+  /**
+   * Uncontrolled starting sort. Seeds the internal state once on init if no sort
+   * is set yet and no controlled `cngxSortActive` pin is bound; user clicks own
+   * it thereafter. Ignored in controlled mode.
+   */
+  readonly initialSort = input<SortEntry | undefined>(undefined, { alias: 'cngxSortInitial' });
 
   private readonly sortsState = signal<SortEntry[]>([]);
+
+  constructor() {
+    // One-shot uncontrolled seed: not a reactive derivation, so afterNextRender
+    // (single-shot, outside the signal graph) rather than an effect. The empty +
+    // no-controlled-pin guards keep it from clobbering an early click or writing
+    // an invisible state that would surface when a controlled pin unbinds.
+    afterNextRender(() => {
+      const seed = this.initialSort();
+      if (seed && this.sortsState().length === 0 && this.activeInput() === undefined) {
+        this.sortsState.set([seed]);
+      }
+    });
+  }
 
   /** The active sort column of the primary entry (controlled takes precedence in single-sort mode). */
   readonly active = computed(() => this.activeInput() ?? this.sortsState()[0]?.active);
@@ -94,7 +115,7 @@ export class CngxSort {
    * Sets or toggles the sort for `field`.
    *
    * **`additive = false`** (default, plain click):
-   * - Same field → toggle direction (asc → desc → asc)
+   * - Same field → cycle `asc` → `desc` → cleared (a third click removes the sort)
    * - Different field → replace stack with `{ field, asc }`
    *
    * **`additive = true`** (Shift+click when `multiSort` is enabled on the header):
@@ -119,12 +140,18 @@ export class CngxSort {
       this.sortChange.emit(next[0]);
     } else {
       const current = this.sortsState();
-      const dir: 'asc' | 'desc' =
-        field === current[0]?.active ? (current[0].direction === 'asc' ? 'desc' : 'asc') : 'asc';
-      const entry: SortEntry = { active: field, direction: dir };
-      this.sortsState.set([entry]);
-      this.sortChange.emit(entry);
-      this.sortsChange.emit([entry]);
+      if (field === current[0]?.active && current[0].direction === 'desc') {
+        // Third click on the active column: cycle desc -> cleared.
+        this.sortsState.set([]);
+        this.sortChange.emit(undefined);
+        this.sortsChange.emit([]);
+      } else {
+        const dir: 'asc' | 'desc' = field === current[0]?.active ? 'desc' : 'asc';
+        const entry: SortEntry = { active: field, direction: dir };
+        this.sortsState.set([entry]);
+        this.sortChange.emit(entry);
+        this.sortsChange.emit([entry]);
+      }
     }
   }
 

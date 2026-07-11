@@ -1,4 +1,5 @@
 import { computed, Directive, input } from '@angular/core';
+import { createSortHeaderState } from './sort-header-state';
 import { type CngxSort } from './sort.directive';
 
 /**
@@ -53,41 +54,31 @@ export class CngxSortHeader {
   /** Explicit reference to the owning `CngxSort`. */
   readonly cngxSortRef = input.required<CngxSort>();
 
-  private readonly entry = computed(() =>
-    this.cngxSortRef()
-      .sorts()
-      .find((s) => s.active === this.field()),
-  );
+  private readonly state = createSortHeaderState(this.cngxSortRef, this.field);
 
   /** `true` when this column is part of the active sort (primary or secondary). */
-  readonly isActive = computed(() => this.entry() !== undefined);
+  readonly isActive = this.state.isActive;
   /** `true` when this column is active and sorted ascending. */
-  readonly isAsc = computed(() => this.entry()?.direction === 'asc');
+  readonly isAsc = this.state.isAsc;
   /** `true` when this column is active and sorted descending. */
-  readonly isDesc = computed(() => this.entry()?.direction === 'desc');
+  readonly isDesc = this.state.isDesc;
 
   /**
    * 1-based position of this column in the sort stack.
    * Returns `0` when the column is not part of the active sort.
    * Only meaningful when `multiSort` is enabled on the owning `CngxSort`.
    */
-  readonly priority = computed(() => {
-    const idx = this.cngxSortRef()
-      .sorts()
-      .findIndex((s) => s.active === this.field());
-    return idx === -1 ? 0 : idx + 1;
-  });
+  readonly priority = this.state.priority;
 
   /** The `aria-sort` attribute value for the host element. */
   readonly ariaSort = computed((): 'ascending' | 'descending' | null => {
-    if (!this.isActive()) {
+    if (!this.state.isActive()) {
       return null;
     }
-    return this.isAsc() ? 'ascending' : 'descending';
+    return this.state.isAsc() ? 'ascending' : 'descending';
   });
 
   protected handleSort(event?: MouseEvent): void {
-    const additive = this.cngxSortRef().multiSort() && (event?.shiftKey ?? false);
-    this.cngxSortRef().setSort(this.field(), additive);
+    this.state.toggle(event?.shiftKey ?? false);
   }
 }

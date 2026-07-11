@@ -3,6 +3,7 @@
  */
 export { CngxSort, type SortEntry } from './sort/sort.directive';
 export { CngxSortHeader } from './sort/sort-header.directive';
+export { createSortHeaderState, type SortHeaderState } from './sort/sort-header-state';
 export { CngxFilter } from './filter/filter.directive';
 export {
   CngxFilterChips,

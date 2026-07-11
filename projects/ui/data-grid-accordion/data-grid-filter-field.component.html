@@ -1,0 +1,9 @@
+<label class="cngx-dga-filter-field__label" [attr.for]="inputId">{{ label() }}</label>
+<input
+  class="cngx-dga-filter-field__input"
+  [id]="inputId"
+  cngxDgaFilter
+  [cngxDgaFilterLabel]="label()"
+  [cngxDgaFilterDebounce]="debounce()"
+  [attr.placeholder]="placeholder()"
+/>

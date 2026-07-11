@@ -19,6 +19,7 @@ import type { CngxAccordionConfig } from './accordion.config';
  */
 export const CNGX_ACCORDION_DEFAULTS: CngxAccordionConfig = {
   disabledReason: 'This section is currently unavailable.',
+  errorMessage: 'This section could not be loaded.',
   headingLevel: 3,
 };
 

@@ -5,7 +5,7 @@ import {
   type Provider,
 } from '@angular/core';
 
-import type { CngxAccordionConfig } from './accordion.config';
+import type { CngxAccordionConfig, CngxAccordionSkin } from './accordion.config';
 import { CNGX_ACCORDION_CONFIG, CNGX_ACCORDION_DEFAULTS } from './accordion.config.defaults';
 
 /**
@@ -20,8 +20,12 @@ import { CNGX_ACCORDION_CONFIG, CNGX_ACCORDION_DEFAULTS } from './accordion.conf
  * @since 0.1.0
  */
 export type CngxAccordionConfigFeature =
-  | { readonly kind: 'labels'; readonly payload: { readonly disabledReason: string } }
+  | {
+      readonly kind: 'labels';
+      readonly payload: { readonly disabledReason?: string; readonly errorMessage?: string };
+    }
   | { readonly kind: 'headingLevel'; readonly payload: { readonly headingLevel: number } }
+  | { readonly kind: 'skin'; readonly payload: { readonly skin: CngxAccordionSkin } }
   | { readonly kind: 'templates'; readonly payload: NonNullable<CngxAccordionConfig['templates']> };
 
 /**
@@ -35,16 +39,26 @@ function reduceFeatures(
 ): Partial<CngxAccordionConfig> {
   const out: {
     disabledReason?: string;
+    errorMessage?: string;
     headingLevel?: number;
+    skin?: CngxAccordionSkin;
     templates?: NonNullable<CngxAccordionConfig['templates']>;
   } = {};
   for (const f of features) {
     switch (f.kind) {
       case 'labels':
-        out.disabledReason = f.payload.disabledReason;
+        if (f.payload.disabledReason !== undefined) {
+          out.disabledReason = f.payload.disabledReason;
+        }
+        if (f.payload.errorMessage !== undefined) {
+          out.errorMessage = f.payload.errorMessage;
+        }
         break;
       case 'headingLevel':
         out.headingLevel = f.payload.headingLevel;
+        break;
+      case 'skin':
+        out.skin = f.payload.skin;
         break;
       case 'templates':
         out.templates = { ...out.templates, ...f.payload };
@@ -67,7 +81,9 @@ function mergeConfig(
 ): CngxAccordionConfig {
   return {
     disabledReason: partial.disabledReason ?? base.disabledReason,
+    errorMessage: partial.errorMessage ?? base.errorMessage,
     headingLevel: partial.headingLevel ?? base.headingLevel,
+    skin: partial.skin ?? base.skin,
     templates: { ...base.templates, ...partial.templates },
   };
 }
@@ -92,6 +108,7 @@ function mergeConfig(
  *     provideAccordionConfig(
  *       withAccordionLabels({ disabledReason: 'Dieser Abschnitt ist gesperrt.' }),
  *       withDefaultHeadingLevel(2),
+ *       withAccordionSkin('categorized'),
  *     ),
  *   ],
  * });

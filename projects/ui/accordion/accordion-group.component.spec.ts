@@ -7,11 +7,15 @@ import { CngxAccordion } from '@cngx/common/interactive';
 
 import { CngxAccordionGroup } from './accordion-group.component';
 import { CNGX_ACCORDION_GROUP } from './accordion-group.token';
+import type { CngxAccordionSkin } from './config/accordion.config';
+import { withAccordionSkin } from './config/features';
+import { provideAccordionConfig } from './config/provide-accordion-config';
 
 @Component({
   template: `<cngx-accordion-group
     [multi]="multi()"
     [headingLevel]="level()"
+    [skin]="skin()"
     [(openIds)]="open"
   ></cngx-accordion-group>`,
   imports: [CngxAccordionGroup],
@@ -19,6 +23,7 @@ import { CNGX_ACCORDION_GROUP } from './accordion-group.token';
 class Host {
   readonly multi = signal(false);
   readonly level = signal<number | string>(3);
+  readonly skin = signal<CngxAccordionSkin | undefined>(undefined);
   readonly open = signal<ReadonlySet<string>>(new Set());
 }
 
@@ -90,5 +95,51 @@ describe('CngxAccordionGroup', () => {
     accordion.toggle('a');
     fixture.detectChanges();
     expect([...host.open()]).toEqual(['a']);
+  });
+
+  it('omits [data-skin] when no skin is bound or configured', () => {
+    const { fixture } = setup();
+    const el = fixture.debugElement.query(By.directive(CngxAccordionGroup)).nativeElement;
+    expect(el.hasAttribute('data-skin')).toBe(false);
+  });
+
+  it('reflects a bound [skin] onto the [data-skin] host attribute', () => {
+    const { fixture, host } = setup();
+    const el = fixture.debugElement.query(By.directive(CngxAccordionGroup)).nativeElement;
+    host.skin.set('categorized');
+    fixture.detectChanges();
+    expect(el.getAttribute('data-skin')).toBe('categorized');
+
+    host.skin.set(undefined);
+    fixture.detectChanges();
+    expect(el.hasAttribute('data-skin')).toBe(false);
+  });
+});
+
+describe('CngxAccordionGroup skin cascade', () => {
+  beforeEach(() =>
+    TestBed.configureTestingModule({
+      imports: [Host],
+      providers: [provideAccordionConfig(withAccordionSkin('bento'))],
+    }),
+  );
+
+  function setup() {
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+    const de = fixture.debugElement.query(By.directive(CngxAccordionGroup));
+    return { fixture, host: fixture.componentInstance, group: de.injector.get(CngxAccordionGroup), el: de.nativeElement as HTMLElement };
+  }
+
+  it('falls back to the configured skin when [skin] is unbound', () => {
+    const { el } = setup();
+    expect(el.getAttribute('data-skin')).toBe('bento');
+  });
+
+  it('lets a per-instance [skin] win over the configured default', () => {
+    const { fixture, host, el } = setup();
+    host.skin.set('timeline');
+    fixture.detectChanges();
+    expect(el.getAttribute('data-skin')).toBe('timeline');
   });
 });

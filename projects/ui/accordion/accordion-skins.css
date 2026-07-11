@@ -1,0 +1,832 @@
+/**
+ * @overview
+ * The nine opt-in visual skins for `<cngx-accordion-group>`. Pairs with the
+ * structural `accordion-group.component.css` / `accordion-item.component.css` in
+ * this same entry - those own the flat base layout, the marker, the skeleton /
+ * refresh / error affordances, and the a11y wiring; this file owns only the
+ * per-skin paint.
+ *
+ * Selected by the `[skin]` input via the `[data-skin]` host attribute, mirroring
+ * `<cngx-tab-group>`. Every skin renders the identical heading / region / marker
+ * structure, slots, ARIA, and keyboard model - only the paint changes. Each
+ * value is a CSS `@scope (.cngx-accordion-group[data-skin='<name>'])` block.
+ * Unlayered (this is a component `styleUrl`, not the Track-B `cngx.css`), so a
+ * `[data-skin]` rule overrides the flat base by specificity + source order - no
+ * `@layer` battle, no tokenising a layout hook just to let a layered rule win.
+ *
+ * Reverted-hook structure (display / gap / surface box / heading grid) is set as
+ * a direct property; genuine theming stays on the `--cngx-accordion-*` custom
+ * properties the base still reads (padding, divider, header tint, marker,
+ * per-skin accents). Every value is a `var(--cngx-*, fallback)`; every gradient
+ * from the design lab is re-mapped to a solid `--cngx-color-primary` (there is
+ * no linear / conic / radial gradient anywhere here). Motion short-circuits
+ * under `prefers-reduced-motion` via an unlayered `@media` block, never nested
+ * inside `@scope`.
+ *
+ * - `editorial` - a mono running index leads each row, hairline dividers, no
+ *   surfaces; index + title light up primary on open / hover.
+ * - `categorized` - each item is a bordered surface card, the group stacks them
+ *   with a gap, title turns primary on open.
+ * - `plus-minus` - one framed surface, items divided within, the chevron is a
+ *   boxed +/- (via the `--cngx-accordion-marker: plus-minus` token) that fills
+ *   primary on open.
+ * - `lux` - generous whitespace, large low-contrast type, a single hairline per
+ *   row; title fades on hover.
+ * - `bento` - full-width tile cards stacked in a column; an icon tile leads each
+ *   card and fills primary on open, a status pill trails in the meta slot and the
+ *   chevron rides the outer edge.
+ * - `section-bands` - each header is an inverted full-width band, items are
+ *   framed surfaces with a gap, a status chip rides the band via the meta slot.
+ * - `timeline` - a vertical rail with a per-item node that lights primary on
+ *   open; rail + node are item pseudo-elements, no leading markup required.
+ * - `severity-spine` - a full-height colour spine leads each item with the
+ *   priority stamped in it (a structural column, not a border).
+ * - `primary-frame` - each item is a card that gains a solid primary border and
+ *   an animated primary glow on open (the re-map of the lab's rotating conic
+ *   frame to a solid primary treatment).
+ */
+
+@scope (.cngx-accordion-group[data-skin='editorial']) {
+  :scope {
+    /* Values transcribed 1:1 from the editorial design POC: --sp-5 = 1.25rem,
+       --sp-6 = 1.5rem. */
+    --cngx-accordion-heading-gap: 1.25rem;
+    --cngx-accordion-header-padding: 1.25rem 0;
+    /* Body flows under the title: indent by the index column (2.6ch) + the gap,
+       generous bottom whitespace, readable 60ch measure. */
+    --cngx-accordion-region-padding: 0 0 1.5rem calc(2.6ch + 1.25rem);
+    /* Hairline is owned per item (border-block-start) below, not by the base
+       divider - so drop the base border-block-end + group top border. */
+    --cngx-accordion-divider: none;
+    /* Focus ring tracks the skin accent (the open-index / hover colour), not the
+       base default blue. */
+    --cngx-accordion-focus-color: var(--cngx-color-primary, #1d4ed8);
+  }
+
+  /* Hairline above every row + below the last (POC `.editorial details`). */
+  .cngx-accordion-item {
+    border-block-start: 1px solid var(--cngx-accordion-hairline, var(--cngx-color-border, #d1d5db));
+  }
+
+  .cngx-accordion-item:last-child {
+    border-block-end: 1px solid var(--cngx-accordion-hairline, var(--cngx-color-border, #d1d5db));
+  }
+
+  /* Baseline-align the running index with the title. The header button carries
+     the block padding, so `flex-start` would float the index (a heading-row
+     sibling of the button) above the title; baseline pins them to one line. */
+  .cngx-accordion-item__heading {
+    align-items: baseline;
+  }
+
+  /* Mono running index at the editorial size (POC `--s-1`), dim until open.
+     The size rides a skin-local token (NOT the registered --cngx-font-size-*
+     @property, whose var() fallback is dead) so it actually takes effect. */
+  .cngx-accordion-item__leading {
+    min-inline-size: 2.6ch;
+    font-family: var(--cngx-accordion-editorial-index-font, ui-monospace, monospace);
+    font-size: var(--cngx-accordion-editorial-size, clamp(1.05rem, 0.98rem + 0.35vw, 1.25rem));
+    font-weight: 700;
+    color: var(--cngx-color-text-muted, #8b93a4);
+    line-height: 1;
+    transition: color var(--cngx-accordion-chevron-transition, 150ms ease);
+  }
+
+  /* Title shares the index size (POC `--s-1`), semibold with a tight measure
+     (POC `.rt`: font-weight 660, letter-spacing -0.01em, line-height 1.2). */
+  .cngx-accordion-item__title {
+    font-size: var(--cngx-accordion-editorial-size, clamp(1.05rem, 0.98rem + 0.35vw, 1.25rem));
+    font-weight: 660;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+  }
+
+  /* Readable editorial measure. */
+  .cngx-accordion-item__region {
+    max-inline-size: 60ch;
+  }
+
+  /* The flat editorial header has no horizontal padding, so the base inset
+     (-2px) focus ring would bite into the title. Ring sits outside with a soft
+     radius instead (POC uses a rounded box-shadow ring). */
+  .cngx-accordion-item__header:focus-visible {
+    outline-offset: var(--cngx-accordion-editorial-focus-offset, 4px);
+    border-radius: var(--cngx-radius-sm, 6px);
+  }
+
+  /* Index lights up primary on open; the title tints primary on hover. */
+  .cngx-accordion-item[data-expanded] .cngx-accordion-item__leading,
+  .cngx-accordion-item__header:hover .cngx-accordion-item__title {
+    color: var(--cngx-color-primary, #1d4ed8);
+  }
+}
+
+@scope (.cngx-accordion-group[data-skin='categorized']) {
+  :scope {
+    display: flex;
+    gap: var(--cngx-space-sm, 0.75rem);
+    --cngx-accordion-group-border-block-start: none;
+    --cngx-accordion-divider: none;
+    /* Horizontal inset lives on the heading row (below), not the header button,
+       so the leading pill and the body text share the same 1.25rem left flush;
+       the button keeps only the vertical rhythm. POC `.cat`: summary 1rem 1.25rem,
+       body 0 1.25rem 1.25rem. */
+    --cngx-accordion-header-padding: 1rem 0;
+    --cngx-accordion-region-padding: 0 1.25rem 1.25rem;
+    /* Roomier gap to the right of the category pill (pill -> title). */
+    --cngx-accordion-heading-gap: 1rem;
+    /* Focus ring tracks the accent, not the base blue. */
+    --cngx-accordion-focus-color: var(--cngx-color-primary, #1d4ed8);
+  }
+
+  /* Lifted card; the shadow does the lifting, the border is a near-invisible
+     hairline (POC --hairline ~3%), not a hard grey edge. Shadow deepens on open
+     (POC --sh-1 -> --sh-2). */
+  .cngx-accordion-item {
+    background: var(--cngx-accordion-item-bg, var(--cngx-color-surface, #fff));
+    border: 1px solid
+      var(--cngx-accordion-card-border, color-mix(in srgb, var(--cngx-color-text, #0f1320) 6%, transparent));
+    border-radius: var(--cngx-accordion-card-radius, 0.875rem);
+    overflow: hidden;
+    box-shadow: var(--cngx-accordion-card-shadow, 0 1px 2px #0c122010, 0 6px 20px -12px #0c122026);
+    transition: box-shadow var(--cngx-accordion-chevron-transition, 150ms ease);
+  }
+
+  .cngx-accordion-item[data-expanded] {
+    box-shadow: var(--cngx-accordion-card-shadow-open, 0 2px 4px #0c122012, 0 24px 60px -22px #0c122033);
+  }
+
+  /* The category tag aligns with the title line; the horizontal inset lives here
+     so the pill flushes with the body text (both at 1.25rem). */
+  .cngx-accordion-item__heading {
+    align-items: baseline;
+    padding-inline: 1.25rem;
+  }
+
+  /* Accent focus ring with breathing room + a soft radius (the header button has
+     no horizontal padding, so the base inset ring would bite the title). */
+  .cngx-accordion-item__header:focus-visible {
+    outline-offset: 3px;
+    border-radius: var(--cngx-radius-sm, 6px);
+  }
+
+  /* Semibold title (POC `.rt`: font-weight 660). */
+  .cngx-accordion-item__title {
+    font-weight: 660;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+  }
+
+  /* Tag-like category pill (POC `.ctag`): the leading slot renders as a rounded,
+     tinted chip. The hue comes per item from --cngx-accordion-category-color
+     (default the skin primary); the fill is a soft mix of it. No cngx-tag
+     dependency - the skin owns the look. */
+  .cngx-accordion-item__leading {
+    padding: 0.22rem 0.6rem;
+    border-radius: var(--cngx-radius-pill, 999px);
+    font-family: var(--cngx-accordion-category-font, ui-monospace, monospace);
+    font-size: var(--cngx-accordion-category-size, clamp(0.7rem, 0.68rem + 0.1vw, 0.75rem));
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    color: var(--cngx-accordion-category-color, var(--cngx-color-primary, #1d4ed8));
+    background: color-mix(
+      in srgb,
+      var(--cngx-accordion-category-color, var(--cngx-color-primary, #1d4ed8)) 15%,
+      transparent
+    );
+  }
+
+  /* Neutral hover across the whole header row (POC `summary:hover` -> surface-2),
+     not a primary-tinted box behind the title column only. */
+  .cngx-accordion-item:hover .cngx-accordion-item__heading {
+    background: var(--cngx-color-surface-alt, #f6f7fa);
+  }
+
+  .cngx-accordion-item[data-expanded] .cngx-accordion-item__title {
+    color: var(--cngx-color-primary, #1d4ed8);
+  }
+}
+
+@scope (.cngx-accordion-group[data-skin='plus-minus']) {
+  :scope {
+    /* One framed surface holding all rows (POC `.pm`): a whisper-faint hairline
+       (not a hard grey edge), the large `--r-lg` (22px) radius, surface fill, no
+       shadow, clipped so the item dividers stop at the rounded corners. Full
+       width - the story sets no max-width. The hairline mixes from the text
+       colour so it stays a faint-dark line on light and a faint-light line on
+       dark, tracking the POC `--hairline` in both schemes. */
+    background: var(--cngx-accordion-group-bg, var(--cngx-color-surface, #fff));
+    /* Single hairline value shared by the frame edge and the row dividers so they
+       read as one system, not a faint frame around hard grey rules. */
+    --cngx-accordion-hairline: color-mix(in srgb, var(--cngx-color-text, #0f1320) 6%, transparent);
+    border: var(--cngx-accordion-frame-border-width, 1px) solid
+      var(--cngx-accordion-frame-border, var(--cngx-accordion-hairline));
+    border-radius: var(--cngx-accordion-frame-radius, 1.375rem);
+    overflow: hidden;
+    --cngx-accordion-group-border-block-start: none;
+    /* Row dividers match the frame hairline (base default is the hard grey border
+       colour). */
+    --cngx-accordion-divider: 1px solid var(--cngx-accordion-hairline);
+    --cngx-accordion-marker: plus-minus;
+    /* POC `--surface-2`: the palette ships no alt-surface token, so derive one by
+       nudging surface toward text - a faint tint on light, a slight lift on dark.
+       Mixed in oklab (perceptually uniform): an srgb mix at this ratio barely
+       moves a near-black surface, so the lift would vanish in dark mode. Used for
+       the marker tile and the row hover so both track the scheme. */
+    --cngx-accordion-alt-surface: color-mix(
+      in oklab,
+      var(--cngx-color-surface, #fff) 93%,
+      var(--cngx-color-text, #0f1320) 7%
+    );
+    /* POC `.ctrl` box = 28px; title -> box gap = --sp-3 (0.75rem). */
+    --cngx-accordion-marker-size: 1.75rem;
+    --cngx-accordion-header-gap: 0.75rem;
+    /* POC `.pm summary` padding = --sp-5 (1.25rem); body 0 1.25rem 1.25rem. */
+    --cngx-accordion-header-padding: 1.25rem;
+    --cngx-accordion-region-padding: 0 1.25rem 1.25rem;
+    /* Focus ring tracks the accent, not the base blue. */
+    --cngx-accordion-focus-color: var(--cngx-color-primary, #1d4ed8);
+  }
+
+  /* Boxed marker (POC `.ctrl`): a soft surface-2 tile with a faint border and a
+     9px radius. The base draws the two +/- bars inside; this only paints the box
+     and softens the bars (below). */
+  .cngx-accordion-item__chevron {
+    background: var(--cngx-accordion-pm-box-bg, var(--cngx-accordion-alt-surface));
+    border: var(--cngx-accordion-pm-box-border-width, 1px) solid
+      var(--cngx-accordion-pm-box-border, color-mix(in srgb, var(--cngx-color-text, #0f1320) 12%, transparent));
+    border-radius: var(--cngx-accordion-pm-box-radius, 0.5625rem);
+    color: var(--cngx-color-text-muted, #6b7280);
+    transition:
+      background var(--cngx-accordion-chevron-transition, 150ms ease),
+      border-color var(--cngx-accordion-chevron-transition, 150ms ease),
+      color var(--cngx-accordion-chevron-transition, 150ms ease);
+  }
+
+  /* Short centred bars (POC `.ctrl::before/after`: 12px, radius 2px), not the
+     base full-width plus that spans the whole box edge to edge. */
+  .cngx-accordion-item__chevron::before,
+  .cngx-accordion-item__chevron::after {
+    inline-size: var(--cngx-accordion-pm-bar-length, 0.75rem);
+    border-radius: var(--cngx-accordion-pm-bar-radius, 2px);
+  }
+
+  /* On open the box fills primary, the border folds away, the bars go white
+     (POC `.pm details[open] .ctrl` -> bars #fff). On-primary keeps the bars
+     readable on the accent box in both schemes - `--cngx-color-surface` would
+     turn them dark on dark. */
+  .cngx-accordion-item[data-expanded] .cngx-accordion-item__chevron {
+    background: var(--cngx-color-primary, #1d4ed8);
+    border-color: transparent;
+    color: var(--cngx-color-on-primary, #fff);
+  }
+
+  /* Neutral full-row hover (POC `.pm summary:hover` -> surface-2). */
+  .cngx-accordion-item__header:hover {
+    background: var(--cngx-accordion-alt-surface);
+  }
+
+  /* The last row sits on the frame edge, so it needs no divider of its own. */
+  .cngx-accordion-item:last-child {
+    --cngx-accordion-divider: none;
+  }
+
+  /* Semibold title (POC `.rt`), lit primary on open. */
+  .cngx-accordion-item__title {
+    font-weight: 660;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+  }
+
+  .cngx-accordion-item[data-expanded] .cngx-accordion-item__title {
+    color: var(--cngx-color-primary, #1d4ed8);
+  }
+}
+
+@scope (.cngx-accordion-group[data-skin='lux']) {
+  :scope {
+    --cngx-accordion-header-padding: clamp(1.1rem, 3vw, 1.8rem) 0;
+    --cngx-accordion-region-padding: 0 0 clamp(1.2rem, 3vw, 2rem);
+    --cngx-accordion-title-gap: 0.35rem;
+  }
+
+  .cngx-accordion-item__heading {
+    align-items: baseline;
+  }
+
+  .cngx-accordion-item__title {
+    font-size: var(--cngx-font-size-lg, 1.125rem);
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+
+  .cngx-accordion-item__region {
+    font-size: var(--cngx-font-size-lg, 1.125rem);
+    line-height: 1.6;
+  }
+
+  /* Marker centres against the baseline-aligned row. */
+  .cngx-accordion-item__chevron-slot {
+    align-self: center;
+  }
+
+  /* Title fades on hover (set via the token so it composes with the base). */
+  .cngx-accordion-item__header:hover {
+    --cngx-accordion-header-color: var(--cngx-color-text-muted, #6b7280);
+  }
+}
+
+@scope (.cngx-accordion-group[data-skin='bento']) {
+  :scope {
+    /* Full-width cards stacked in a column (POC bento at this width). Each card
+       is 100% wide and sizes to its own content; the group organises them by its
+       own width via normal block flow, no grid, no container query. */
+    display: flex;
+    flex-direction: column;
+    gap: var(--cngx-space-sm, 0.75rem);
+    --cngx-accordion-group-border-block-start: none;
+    --cngx-accordion-divider: none;
+    /* The summary inset rides the heading row (POC `.bento summary` padding
+       --sp-5), not the header button, so the tile and the pill sit inside the
+       card instead of flush against the clipped overflow edge. */
+    --cngx-accordion-header-padding: 0;
+    --cngx-accordion-region-padding: 0 1.25rem 1.25rem;
+    /* tile -> title and title -> chevron/pill rhythm. */
+    --cngx-accordion-heading-gap: 0.75rem;
+    --cngx-accordion-focus-color: var(--cngx-color-primary, #1d4ed8);
+    --cngx-accordion-hairline: color-mix(in srgb, var(--cngx-color-text, #0f1320) 6%, transparent);
+  }
+
+  /* Card (POC `.bento details`): surface tile, faint hairline, large radius, a
+     soft shadow that deepens on open, and a 2px hover lift. */
+  .cngx-accordion-item {
+    background: var(--cngx-accordion-item-bg, var(--cngx-color-surface, #fff));
+    border: 1px solid var(--cngx-accordion-card-border, var(--cngx-accordion-hairline));
+    border-radius: var(--cngx-accordion-card-radius, 1.375rem);
+    overflow: hidden;
+    box-shadow: var(--cngx-accordion-card-shadow, 0 1px 2px #0c122010, 0 6px 20px -12px #0c122026);
+    transition:
+      box-shadow var(--cngx-accordion-chevron-transition, 150ms ease),
+      transform var(--cngx-accordion-chevron-transition, 150ms ease);
+  }
+
+  .cngx-accordion-item:hover {
+    transform: translateY(-2px);
+  }
+
+  .cngx-accordion-item[data-expanded] {
+    box-shadow: var(--cngx-accordion-card-shadow-open, 0 2px 4px #0c122012, 0 24px 60px -22px #0c122033);
+  }
+
+  /* Padded summary row carrying the tile, text, pill and chevron (POC --sp-5).
+     Reserve room at the trailing edge for the chevron that rides the outer edge
+     past the pill (absolute below). */
+  .cngx-accordion-item__heading {
+    position: relative;
+    padding: 1.25rem;
+    padding-inline-end: calc(1.25rem + var(--cngx-accordion-bento-chevron-reserve, 1.5rem));
+  }
+
+  /* Chevron sits at the very outside, trailing the status pill (POC order: pill
+     then chevron). It is decorative (aria-hidden) and stays a DOM child of the
+     header button, so absolute-positioning only relocates its box - the title
+     and the row gap remain the toggle target. */
+  .cngx-accordion-item__chevron-slot {
+    position: absolute;
+    inset-inline-end: 1.25rem;
+    inset-block-start: 50%;
+    transform: translateY(-50%);
+  }
+
+  .cngx-accordion-item__header:focus-visible {
+    outline-offset: 3px;
+    border-radius: var(--cngx-radius-sm, 6px);
+  }
+
+  /* Semibold title (POC `.rt`). */
+  .cngx-accordion-item__title {
+    font-weight: 660;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+  }
+
+  /* Icon tile leading (POC `.tile`): 42px, 14px radius, an inset ring, a soft
+     primary tint + primary glyph when closed, filling solid primary with a white
+     glyph on open (re-mapped from the gradient). */
+  .cngx-accordion-item__leading {
+    inline-size: var(--cngx-accordion-bento-tile-size, 2.625rem);
+    block-size: var(--cngx-accordion-bento-tile-size, 2.625rem);
+    border-radius: var(--cngx-accordion-bento-tile-radius, 0.875rem);
+    background: var(
+      --cngx-accordion-bento-tile-bg,
+      color-mix(in oklab, var(--cngx-color-primary, #1d4ed8) 16%, transparent)
+    );
+    color: var(--cngx-color-primary, #1d4ed8);
+    font-size: var(--cngx-accordion-bento-tile-glyph, 1.25rem);
+    line-height: 1;
+    display: inline-grid;
+    place-items: center;
+    box-shadow: inset 0 0 0 1px
+      var(--cngx-accordion-bento-tile-ring, color-mix(in srgb, var(--cngx-color-text, #0f1320) 10%, transparent));
+    transition:
+      background var(--cngx-accordion-chevron-transition, 150ms ease),
+      color var(--cngx-accordion-chevron-transition, 150ms ease);
+  }
+
+  .cngx-accordion-item[data-expanded] .cngx-accordion-item__leading {
+    background: var(--cngx-color-primary, #1d4ed8);
+    color: var(--cngx-color-on-primary, #fff);
+    box-shadow: none;
+  }
+
+  /* Status pill in the meta slot (POC `.pill`): mono, pill radius, an elevated
+     surface-3 fill, muted text, never clipped. */
+  .cngx-accordion-item__meta {
+    flex: none;
+    white-space: nowrap;
+    font-family: var(--cngx-accordion-bento-pill-font, ui-monospace, monospace);
+    font-size: var(--cngx-accordion-bento-pill-size, clamp(0.7rem, 0.68rem + 0.1vw, 0.75rem));
+    padding: 0.2rem 0.55rem;
+    border-radius: var(--cngx-radius-pill, 999px);
+    background: var(
+      --cngx-accordion-bento-pill-bg,
+      color-mix(in oklab, var(--cngx-color-surface, #fff) 88%, var(--cngx-color-text, #0f1320) 12%)
+    );
+    color: var(--cngx-color-text-muted, #6b7280);
+  }
+}
+
+@scope (.cngx-accordion-group[data-skin='section-bands']) {
+  :scope {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cngx-space-sm, 0.75rem);
+    --cngx-accordion-group-border-block-start: none;
+    --cngx-accordion-divider: none;
+    /* Header text and chevron ride the band: light on the dark band (light mode),
+       dark on the light band (dark mode) - always the inverse of the surface, so
+       the band flips automatically per scheme. */
+    --cngx-accordion-header-color: var(--cngx-color-surface, #fff);
+    --cngx-accordion-subtitle-color: color-mix(
+      in oklab,
+      var(--cngx-color-surface, #fff) 62%,
+      var(--cngx-color-text, #111827)
+    );
+    /* The band inset rides the heading (the full-width band) below, not the
+       button - so the status chip sits on the band, not on the body surface. */
+    --cngx-accordion-header-padding: 0;
+    --cngx-accordion-region-padding: 1rem 1rem 1.25rem;
+    --cngx-accordion-focus-color: var(--cngx-color-primary, #1d4ed8);
+  }
+
+  /* Framed groupbox (POC `.bands details`): a visible frame (the theme border,
+     not a faint mix that vanishes on the dark band), the POC `--r-sm` 8px radius
+     - `--cngx-radius-sm` resolves to 4px, so this is set explicitly - and a quiet
+     surface for the body below the band. */
+  .cngx-accordion-item {
+    border: 1px solid var(--cngx-accordion-band-frame, var(--cngx-color-border, #d1d5db));
+    border-radius: var(--cngx-accordion-band-radius, 0.5rem);
+    overflow: hidden;
+    background: var(--cngx-color-surface, #fff);
+  }
+
+  /* Inverted full-width band (POC `.bands summary` background): the title, the
+     chevron and the status chip all ride the band, so the dark fill sits on the
+     whole heading row rather than just the button. Reserve room at the trailing
+     edge for the chevron that rides the outer edge (absolute below). */
+  .cngx-accordion-item__heading {
+    position: relative;
+    padding: 0.65rem 1rem;
+    padding-inline-end: calc(1rem + var(--cngx-accordion-bands-chevron-reserve, 1.5rem));
+    background: var(--cngx-accordion-band-bg, var(--cngx-color-text, #111827));
+    transition: background var(--cngx-accordion-chevron-transition, 150ms ease);
+  }
+
+  .cngx-accordion-item__heading:hover {
+    background: var(
+      --cngx-accordion-band-bg-hover,
+      color-mix(in oklab, var(--cngx-color-text, #111827) 86%, var(--cngx-color-surface, #fff))
+    );
+  }
+
+  /* Chevron rides the very outside of the band, trailing the status chip. It is
+     decorative (aria-hidden) and stays a DOM child of the header button. */
+  .cngx-accordion-item__chevron-slot {
+    position: absolute;
+    inset-inline-end: 1rem;
+    inset-block-start: 50%;
+    transform: translateY(-50%);
+  }
+
+  /* Ring sits just outside the padding-free button, on the band. */
+  .cngx-accordion-item__header:focus-visible {
+    outline-offset: 2px;
+    border-radius: var(--cngx-accordion-band-radius, 0.5rem);
+  }
+
+  /* Semibold band title (POC `.rt`: weight 650, +0.01em). */
+  .cngx-accordion-item__title {
+    font-weight: 650;
+    letter-spacing: 0.01em;
+  }
+
+  .cngx-accordion-item__region {
+    max-inline-size: 64ch;
+  }
+
+  /* Status chip on the band (POC `.bstat`): mono, pill, a faint inverse border. */
+  .cngx-accordion-item__meta {
+    flex: none;
+    white-space: nowrap;
+    font-family: var(--cngx-accordion-bands-chip-font, ui-monospace, monospace);
+    font-size: var(--cngx-accordion-bands-chip-size, clamp(0.7rem, 0.68rem + 0.1vw, 0.75rem));
+    color: color-mix(in oklab, var(--cngx-color-surface, #fff) 75%, var(--cngx-color-text, #111827));
+    border: 1px solid color-mix(in srgb, var(--cngx-color-surface, #fff) 28%, transparent);
+    border-radius: var(--cngx-radius-pill, 999px);
+    padding: 0.08rem 0.5rem;
+  }
+}
+
+/* Dark scheme: the band is `--cngx-color-text`, which is near-white in dark and
+   reads harsh, so dim it toward the surface (light mode keeps the raw near-black
+   band). Unlayered with direct selectors - never an `@media` nested inside
+   `@scope`. Both paths are covered: the explicit `[data-color-scheme='dark']`
+   override and the OS default via `@media`, the latter guarded so an explicit
+   light choice still wins. */
+[data-color-scheme='dark'] .cngx-accordion-group[data-skin='section-bands'] {
+  --cngx-accordion-band-bg: color-mix(in oklab, var(--cngx-color-text, #f2f4fa) 87%, var(--cngx-color-surface, #13151d));
+  --cngx-accordion-band-bg-hover: color-mix(in oklab, var(--cngx-color-text, #f2f4fa) 79%, var(--cngx-color-surface, #13151d));
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-color-scheme='light']) .cngx-accordion-group[data-skin='section-bands'] {
+    --cngx-accordion-band-bg: color-mix(in oklab, var(--cngx-color-text, #f2f4fa) 87%, var(--cngx-color-surface, #13151d));
+    --cngx-accordion-band-bg-hover: color-mix(in oklab, var(--cngx-color-text, #f2f4fa) 79%, var(--cngx-color-surface, #13151d));
+  }
+}
+
+@scope (.cngx-accordion-group[data-skin='timeline']) {
+  :scope {
+    --cngx-accordion-group-border-block-start: none;
+    --cngx-accordion-divider: none;
+    --cngx-accordion-header-padding: var(--cngx-space-md, 1rem) 0;
+    --cngx-accordion-region-padding: 0 0 var(--cngx-space-lg, 1.25rem);
+
+    padding-inline-start: var(--cngx-accordion-timeline-inset, 0.375rem);
+  }
+
+  /* Rail down the left; node on the rail beside the header row. */
+  .cngx-accordion-item {
+    position: relative;
+    padding-inline-start: var(--cngx-space-xl, 2rem);
+  }
+
+  .cngx-accordion-item::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0.3125rem;
+    inset-block: 0;
+    inline-size: var(--cngx-accordion-timeline-rail-width, 2px);
+    background: var(--cngx-color-border, #d1d5db);
+  }
+
+  .cngx-accordion-item::after {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0;
+    inset-block-start: 1.25rem;
+    inline-size: 0.75rem;
+    block-size: 0.75rem;
+    border-radius: 50%;
+    background: var(--cngx-color-surface, #fff);
+    box-shadow:
+      0 0 0 0.1875rem var(--cngx-color-surface, #fff),
+      inset 0 0 0 2px var(--cngx-color-border, #d1d5db);
+    transition: background var(--cngx-accordion-chevron-transition, 150ms ease);
+  }
+
+  .cngx-accordion-item[data-expanded]::after {
+    background: var(--cngx-color-primary, #1d4ed8);
+    box-shadow:
+      0 0 0 0.1875rem var(--cngx-color-surface, #fff),
+      inset 0 0 0 2px var(--cngx-color-primary, #1d4ed8);
+  }
+
+  .cngx-accordion-item[data-expanded] .cngx-accordion-item__title {
+    color: var(--cngx-color-primary, #1d4ed8);
+  }
+}
+
+@scope (.cngx-accordion-group[data-skin='severity-spine']) {
+  :scope {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cngx-space-xs, 0.5rem);
+    --cngx-accordion-group-border-block-start: none;
+    --cngx-accordion-divider: none;
+    /* Vertical rhythm on the button; the horizontal inset rides the heading so
+       the trailing ticket/SLA meta keeps a right margin and does not clip. */
+    --cngx-accordion-header-padding: 0.75rem 0;
+    --cngx-accordion-region-padding: 0 1rem 1rem;
+    --cngx-accordion-focus-color: var(--cngx-color-primary, #1d4ed8);
+  }
+
+  /* Queue row (POC `.spine details`): a quiet card with a faint frame, an 8px
+     radius (--cngx-radius-sm resolves to 4px, so set explicitly), a soft shadow,
+     and room at the start for the full-height spine (POC padding-left 46px). */
+  .cngx-accordion-item {
+    position: relative;
+    background: var(--cngx-accordion-item-bg, var(--cngx-color-surface, #fff));
+    border: 1px solid
+      var(--cngx-accordion-card-border, color-mix(in srgb, var(--cngx-color-text, #0f1320) 8%, transparent));
+    border-radius: var(--cngx-accordion-card-radius, 0.5rem);
+    overflow: hidden;
+    box-shadow: var(--cngx-accordion-card-shadow, 0 1px 2px #0c122010, 0 6px 20px -12px #0c122026);
+    padding-inline-start: var(--cngx-accordion-spine-width, 2.875rem);
+  }
+
+  /* Reserve room at the trailing edge for the chevron that rides the outer edge
+     past the ticket/SLA meta (POC summary order: title, meta, chevron). */
+  .cngx-accordion-item__heading {
+    position: relative;
+    padding-inline: 1rem;
+    padding-inline-end: calc(1rem + var(--cngx-accordion-spine-chevron-reserve, 1.5rem));
+  }
+
+  /* Chevron rides the very outside, trailing the meta (POC `.mk` sits after
+     `.qmeta`). Decorative, stays a DOM child of the header button. */
+  .cngx-accordion-item__chevron-slot {
+    position: absolute;
+    inset-inline-end: 1rem;
+    inset-block-start: 50%;
+    transform: translateY(-50%);
+  }
+
+  /* Neutral row hover (POC `.spine summary:hover` -> surface-2). */
+  .cngx-accordion-item:hover {
+    background: var(
+      --cngx-accordion-row-hover,
+      color-mix(in oklab, var(--cngx-color-text, #0f1320) 4%, var(--cngx-color-surface, #fff))
+    );
+  }
+
+  /* Full-height colour column in the reserved left space (POC `.spine .sv`): a
+     structural column, not an edge border. It lives on the item (not the leading,
+     which sits inside the positioned heading and would otherwise land 46px in
+     over the title), so it fills the whole item and grows with the panel. The
+     colour is revealed only while the row is open; closed rows keep the reserved
+     column empty. Hue per item from --cngx-accordion-spine-color. */
+  .cngx-accordion-item::before {
+    content: '';
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    inline-size: var(--cngx-accordion-spine-width, 2.875rem);
+    background: transparent;
+    transition: background var(--cngx-accordion-chevron-transition, 150ms ease);
+  }
+
+  .cngx-accordion-item[data-expanded]::before {
+    background: var(--cngx-accordion-spine-color, var(--cngx-color-primary, #1d4ed8));
+  }
+
+  /* Priority stamped in the reserved column, centred on the header row. The
+     leading sits inside the positioned heading, so pull it back over the item's
+     reserved column. Muted while closed; fixed white on the colour when open (not
+     the surface token, which would turn the label dark in dark mode). */
+  .cngx-accordion-item__leading {
+    position: absolute;
+    inset-inline-start: calc(-1 * var(--cngx-accordion-spine-width, 2.875rem));
+    inset-block-start: 50%;
+    transform: translateY(-50%);
+    inline-size: var(--cngx-accordion-spine-width, 2.875rem);
+    display: grid;
+    place-items: center;
+    color: var(--cngx-color-text-muted, #6b7280);
+    font-family: var(--cngx-accordion-spine-font, ui-monospace, monospace);
+    font-size: var(--cngx-accordion-spine-size, clamp(0.7rem, 0.68rem + 0.1vw, 0.75rem));
+    font-weight: 800;
+    letter-spacing: 0.05em;
+  }
+
+  .cngx-accordion-item[data-expanded] .cngx-accordion-item__leading {
+    color: var(--cngx-accordion-spine-label-color, #fff);
+  }
+
+  /* Severity state -> spine colour via the semantic tokens (not a raw hex passed
+     through a style binding). Consumers set `data-severity` on the item; the
+     priority label stays projected in the leading slot. A raw
+     --cngx-accordion-spine-color override still wins for bespoke hues. */
+  .cngx-accordion-item[data-severity='error'] {
+    --cngx-accordion-spine-color: var(--cngx-color-danger, #dc2626);
+  }
+
+  .cngx-accordion-item[data-severity='warning'] {
+    --cngx-accordion-spine-color: var(--cngx-color-warning, #d97706);
+  }
+
+  .cngx-accordion-item[data-severity='info'] {
+    --cngx-accordion-spine-color: var(--cngx-color-info, #2563eb);
+  }
+
+  /* Compact queue title (POC `.rt`: s--1, weight 620). */
+  .cngx-accordion-item__title {
+    font-size: var(--cngx-accordion-spine-title-size, clamp(0.8rem, 0.76rem + 0.2vw, 0.88rem));
+    font-weight: 620;
+  }
+
+  .cngx-accordion-item__region {
+    max-inline-size: 62ch;
+  }
+
+  /* Ticket id + SLA (POC `.tid`/`.sla`): muted mono, never clipped. */
+  .cngx-accordion-item__meta {
+    flex: none;
+    white-space: nowrap;
+    font-family: var(--cngx-accordion-spine-meta-font, ui-monospace, monospace);
+    font-size: var(--cngx-accordion-spine-meta-size, clamp(0.7rem, 0.68rem + 0.1vw, 0.75rem));
+    color: var(--cngx-color-text-muted, #6b7280);
+  }
+}
+
+@scope (.cngx-accordion-group[data-skin='primary-frame']) {
+  :scope {
+    display: flex;
+    gap: var(--cngx-space-md, 1rem);
+    --cngx-accordion-group-border-block-start: none;
+    --cngx-accordion-divider: none;
+    --cngx-accordion-header-padding: var(--cngx-space-lg, 1.25rem);
+    --cngx-accordion-region-padding: 0 var(--cngx-space-lg, 1.25rem) var(--cngx-space-lg, 1.25rem);
+  }
+
+  .cngx-accordion-item {
+    background: var(--cngx-accordion-item-bg, var(--cngx-color-surface, #fff));
+    border: 1px solid var(--cngx-color-border, #d1d5db);
+    border-radius: var(--cngx-radius-lg, 0.5rem);
+    transition: border-color var(--cngx-accordion-chevron-transition, 150ms ease);
+  }
+
+  /* On open: solid primary border + an animated primary glow (no gradient). */
+  .cngx-accordion-item[data-expanded] {
+    border: 1px solid var(--cngx-color-primary, #1d4ed8);
+    animation: cngx-accordion-primary-frame-pulse
+      var(--cngx-accordion-frame-pulse-duration, 2s) ease-in-out infinite;
+  }
+
+  .cngx-accordion-item[data-expanded] .cngx-accordion-item__title {
+    color: var(--cngx-color-primary, #1d4ed8);
+  }
+}
+
+@keyframes cngx-accordion-primary-frame-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--cngx-color-primary, #1d4ed8) 35%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 0.375rem color-mix(in oklab, var(--cngx-color-primary, #1d4ed8) 0%, transparent);
+  }
+}
+
+/* Motion short-circuit lives unlayered and outside @scope so the scope cascade
+   never swallows it. */
+@media (prefers-reduced-motion: reduce) {
+  .cngx-accordion-group[data-skin='primary-frame'] .cngx-accordion-item[data-expanded] {
+    animation: none;
+  }
+}
+
+/* Shared keyboard-focus ring for the card skins. Their header button is inset
+   (leading column / trailing meta / chevron sit outside it), so the button's own
+   ring would float around the title only and clip against the card's
+   overflow:hidden. Instead the ring rides the item's OWN outline - which its own
+   overflow never clips - so it wraps the whole card cleanly. Visual only: the
+   button stays the sole focus target and the sole toggle (`:focus-visible`, so a
+   mouse press never triggers it). Unlayered, so it wins the base button ring by
+   specificity + source order. Flat skins (editorial, lux, timeline, plus-minus)
+   keep the base button ring. */
+:is(
+  .cngx-accordion-group[data-skin='categorized'],
+  .cngx-accordion-group[data-skin='bento'],
+  .cngx-accordion-group[data-skin='section-bands'],
+  .cngx-accordion-group[data-skin='severity-spine'],
+  .cngx-accordion-group[data-skin='primary-frame']
+)
+  .cngx-accordion-item__header:focus-visible {
+  outline: none;
+}
+
+:is(
+  .cngx-accordion-group[data-skin='categorized'],
+  .cngx-accordion-group[data-skin='bento'],
+  .cngx-accordion-group[data-skin='section-bands'],
+  .cngx-accordion-group[data-skin='severity-spine'],
+  .cngx-accordion-group[data-skin='primary-frame']
+)
+  .cngx-accordion-item:has(.cngx-accordion-item__header:focus-visible) {
+  outline: var(
+    --cngx-accordion-focus-ring,
+    2px solid var(--cngx-accordion-focus-color, var(--cngx-color-primary, #1d4ed8))
+  );
+  outline-offset: var(--cngx-accordion-focus-offset, 2px);
+}

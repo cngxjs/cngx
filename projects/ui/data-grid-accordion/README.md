@@ -1,0 +1,137 @@
+# @cngx/ui/data-grid-accordion
+
+A disclosure accordion whose header, every row, and footer share one column
+contract, so N arbitrary cells align down the grid. Hosts the headless
+`CngxAccordion` brain (`@cngx/common/interactive`) as a `hostDirective`, so the
+open-set coordinator, roving keyboard nav, and disclosure ARIA come with it. It is
+a table-shaped accordion, not a data grid: no `role="grid"`, no cell edit, no
+selection model, no keyboard grid navigation.
+
+## Anatomy
+
+```html
+<cngx-data-grid-accordion [multi]="true" [(openIds)]="open">
+  <cngx-dga-header>
+    <span cngxDgaCell col="sm">ID</span>
+    <span cngxDgaCell col="grow">Name</span>
+    <span cngxDgaCell col="md" align="end">Amount</span>
+  </cngx-dga-header>
+
+  <cngx-dga-row panelId="1">
+    <span cngxDgaCell>INV-1</span>
+    <span cngxDgaCell primary>Northwind Traders</span>
+    <span cngxDgaCell align="end">$1,280</span>
+    Net 30 terms. Two line items, no disputes.
+  </cngx-dga-row>
+
+  <cngx-dga-footer>
+    <span cngxDgaCell>1 invoice</span>
+    <span cngxDgaCell></span>
+    <span cngxDgaCell align="end">$1,280</span>
+  </cngx-dga-footer>
+</cngx-data-grid-accordion>
+```
+
+Each row is a `role="heading"` wrapping a `button[aria-expanded]` plus a labelled
+`role="region"`. Mark one cell `primary` so the row's accessible name is that cell
+alone; the disclosure chevron rides a leading gutter track, never a data column.
+
+## Columns
+
+Declare widths on the header cells with `col`, and the group derives one shared
+`grid-template-columns` from them - no hand-written string:
+
+| `col` | Track |
+|-|-|
+| `grow` | `minmax(0, 1fr)` - fills remaining width |
+| `fit` | `auto` - hugs its content, aligned across every row via subgrid |
+| `sm` / `md` / `lg` | fixed `--cngx-dga-col-sm` / `-md` / `-lg` (5 / 7 / 10rem) |
+
+Unset, the `primary` column grows and the rest fit. For track syntax the vocabulary
+cannot express (`ch`, `minmax`, a synthesised gutter) set the raw `[columns]` escape
+hatch instead; it holds content columns only, since the chevron rides its own gutter.
+
+## Overflow
+
+Above `--cngx-dga-min-width` the grid fills 100%; below it the host scrolls sideways
+(`overflow-x: auto`) with every column intact. No column is ever dropped - horizontal
+scroll over silent information loss.
+
+## Skins
+
+Six built-in skins select via the `[skin]` input, reflected onto a `[data-skin]` host
+attribute (the same pattern as `<cngx-tab-group>`). The skin CSS ships with the
+component - no theme import, no scope class. Every skin renders the identical
+structure, cells, ARIA, and keyboard model; only the paint changes.
+
+```html
+<cngx-data-grid-accordion [skin]="'ledger'">...</cngx-data-grid-accordion>
+```
+
+| Skin | `[skin]` value | notes |
+|-|-|-|
+| Ledger | `ledger` | zebra rows, mono amounts, sum footer, inset accent detail |
+| Spreadsheet | `spreadsheet` | cell hairlines, derived row-number gutter + column letters |
+| Log-stream | `log-stream` | mono console, severity edge, level badge, stacktrace region |
+| Master-detail | `master-detail` | primary-tinted open row, projected sub-table detail |
+| Report | `report` | frameless, `3px double` head + foot rules, over-budget cells red |
+| Density | `density` | row padding + type ride `--cngx-dga-row-py` / `-fs`, transitioned |
+
+Set an app-wide default with `provideDataGridAccordionConfig(withDataGridSkin('ledger'))`;
+a per-instance `[skin]` still wins. Columns are per-instance, so there is no
+`withDataGridColumns` - `[columns]` / `col` stay on the element.
+
+## Config
+
+`provideDataGridAccordionConfig(...)` / `provideDataGridAccordionConfigAt(...)` with the
+single `withDataGridSkin(name)` feature; read it back with
+`injectDataGridAccordionConfig()`.
+
+## Sort and filter
+
+The group hosts `CngxSort` and `CngxFilter` (`@cngx/common/data`) as `hostDirectives` and
+exposes them on the context as `sort` and `filter`. It only ever **publishes** state - it
+never reorders projected DOM and never renders a data-bound `@for`. The consumer keeps the
+`@for` and derives the visible, ordered rows in one `computed()` (Ableitung). Because the
+open set is keyed by `[panelId]`, an expanded row stays open as it moves under a sort or
+leaves and re-enters under a filter.
+
+There are two supported paths over the same hosted atoms.
+
+**Declarative** - sortable heads and a filter input, the group owns the state:
+
+```html
+<cngx-data-grid-accordion [multiSort]="true" [(filterTerm)]="term" (sortChange)="sort.set($event)">
+  <input cngxDgaFilter cngxDgaFilterLabel="Filter invoices" />
+  <cngx-dga-header>
+    <span cngxDgaCell col="grow" cngxDgaSortHeader="customer">Customer</span>
+    <span cngxDgaCell col="md" align="end" cngxDgaSortHeader="amount">Amount</span>
+  </cngx-dga-header>
+  @for (row of rows(); track row.id) { <cngx-dga-row [panelId]="row.id">…</cngx-dga-row> }
+  <cngx-dga-footer><span [cngxDgaCount]="rows().length"></span></cngx-dga-footer>
+</cngx-data-grid-accordion>
+```
+
+`cngxDgaSortHeader="field"` makes a head sortable with no `[cngxSortRef]` - it reads the
+group's hosted sort off the context. The head is an operable `role="button"`; the sort
+state reaches assistive tech through an `aria-describedby` description (this is a disclosure
+accordion, not a table, so there is no valid context for `aria-sort`). `cngxDgaFilter`
+two-way-binds `[(filterTerm)]` with a debounce it owns; `cngxDgaCount` is a polite
+`aria-live` region that announces the visible count.
+
+**Binding** - the consumer already owns controlled state:
+
+```html
+<cngx-data-grid-accordion
+  [sortActive]="field()" [sortDirection]="dir()" [filterPredicate]="predicate()">
+  …no header directives; the consumer derives rows() from its own signals…
+</cngx-data-grid-accordion>
+```
+
+`[filterPredicate]` feeds the hosted `CngxFilter` (and `filter.addPredicate(...)` on the
+context adds facet filters); `[sortActive]` / `[sortDirection]` feed the hosted `CngxSort`.
+
+Sort and filter are per-instance, so there is no `withDataGridSort` / `withDataGridFilter`
+config feature - each grid sorts and filters its own data. No in-component sort/filter
+engine: the `@cngx/common/data` atoms own comparison and predicate matching; the group only
+coordinates and publishes state.

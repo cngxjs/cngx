@@ -38,6 +38,7 @@
 @use './chip-theme' as chip;
 @use './close-button-theme' as close-button;
 @use './copy-block-theme' as copy-block;
+@use './data-grid-accordion-theme' as data-grid-accordion;
 @use './dialog-theme' as dialog;
 @use './divider-theme' as divider;
 @use './empty-state-theme' as empty-state;
@@ -71,6 +72,7 @@
   @include cngx-system.theme($theme);
 
   @include accordion.theme($theme);
+  @include accordion.skins($theme);
   @include action-button.theme($theme);
   @include async-container.theme($theme);
   @include avatar.theme($theme);
@@ -84,6 +86,8 @@
   @include close-button.theme($theme);
   @include controls.theme($theme);
   @include copy-block.theme($theme);
+  @include data-grid-accordion.theme($theme);
+  @include data-grid-accordion.skins($theme);
   @include dialog.theme($theme);
   @include divider.theme($theme);
   @include empty-state.theme($theme);

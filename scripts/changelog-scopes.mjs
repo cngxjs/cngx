@@ -45,6 +45,7 @@ export const LIBRARY_SCOPES = [
   'ui/tabs',
   'ui/mat-tabs',
   'ui/accordion',
+  'ui/data-grid-accordion',
   'ui/breadcrumb',
   'ui/sidenav',
   'ui/skeleton',

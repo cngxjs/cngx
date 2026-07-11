@@ -13,12 +13,18 @@ import { describe, expect, it } from 'vitest';
 import { CngxAccordionGroup } from '../accordion-group.component';
 import { CngxAccordionItem } from '../accordion-item.component';
 import type { CngxAccordionItemIconContext } from '../accordion-item-icon.directive';
+import type { CngxAccordionItemStateContext } from '../accordion-item-state-context';
 import { CngxAccordionItemTitle } from '../accordion-item-title.directive';
 import { CNGX_ACCORDION_CONFIG } from './accordion.config.defaults';
-import { withAccordionLabels, withAccordionTemplates, withDefaultHeadingLevel } from './features';
+import {
+  withAccordionLabels,
+  withAccordionTemplates,
+  withDefaultHeadingLevel,
+} from './features';
 import { provideAccordionConfig, provideAccordionConfigAt } from './provide-accordion-config';
 
 const fakeIconTemplate = () => ({}) as unknown as TemplateRef<CngxAccordionItemIconContext>;
+const fakeTemplate = () => ({}) as unknown as TemplateRef<CngxAccordionItemStateContext>;
 
 const IMPORTS = [CngxAccordionGroup, CngxAccordionItem, CngxAccordionItemTitle];
 
@@ -71,7 +77,17 @@ describe('accordion config cascade', () => {
   it('falls back to the EN library defaults when unconfigured', () => {
     const { item, group } = render(UnboundHost);
     expect(item.disabledReason()).toBe('This section is currently unavailable.');
+    expect(item.errorMessage()).toBe('This section could not be loaded.');
     expect(group.headingLevel()).toBe(3);
+  });
+
+  it('overrides the error message through withAccordionLabels', () => {
+    const { item } = render(UnboundHost, [
+      provideAccordionConfig(withAccordionLabels({ errorMessage: 'Load failed.' })),
+    ]);
+    expect(item.errorMessage()).toBe('Load failed.');
+    // Un-set label key keeps its EN default (partial labels compose).
+    expect(item.disabledReason()).toBe('This section is currently unavailable.');
   });
 
   it('resolves the root provideAccordionConfig over the defaults', () => {
@@ -131,6 +147,36 @@ describe('accordion config cascade', () => {
       providers: [provideAccordionConfig(withAccordionTemplates({ icon }))],
     });
     expect(TestBed.inject(CNGX_ACCORDION_CONFIG).templates?.icon).toBe(icon);
+  });
+
+  it('flows busySpinner and error tiers through withAccordionTemplates', () => {
+    const busySpinner = fakeTemplate();
+    const error = fakeTemplate();
+    TestBed.configureTestingModule({
+      providers: [provideAccordionConfig(withAccordionTemplates({ busySpinner, error }))],
+    });
+    const templates = TestBed.inject(CNGX_ACCORDION_CONFIG).templates;
+    expect(templates?.busySpinner).toBe(busySpinner);
+    expect(templates?.error).toBe(error);
+  });
+
+  it('composes icon, busySpinner and error tiers across calls without clobbering', () => {
+    const icon = fakeIconTemplate();
+    const busySpinner = fakeTemplate();
+    const error = fakeTemplate();
+    TestBed.configureTestingModule({
+      providers: [
+        provideAccordionConfig(
+          withAccordionTemplates({ icon }),
+          withAccordionTemplates({ busySpinner }),
+          withAccordionTemplates({ error }),
+        ),
+      ],
+    });
+    const templates = TestBed.inject(CNGX_ACCORDION_CONFIG).templates;
+    expect(templates?.icon).toBe(icon);
+    expect(templates?.busySpinner).toBe(busySpinner);
+    expect(templates?.error).toBe(error);
   });
 
   it('lets provideAccordionConfigAt override the root chevron template', () => {

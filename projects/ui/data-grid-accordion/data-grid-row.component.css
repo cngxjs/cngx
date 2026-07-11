@@ -1,0 +1,167 @@
+/* The row is a `subgrid` item of the group's inner grid: it spans every column and
+   re-exposes those tracks to its own children (heading + region), so the summary
+   cells below map onto the shared grid lines. Two rows: the heading (summary) and
+   the detail region. The scroll floor now lives on the inner grid, not here. */
+.cngx-dga-row {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-template-rows: auto auto;
+  border-block-end: var(
+    --cngx-dga-row-divider,
+    1px solid var(--cngx-dga-border-color, #d1d5db)
+  );
+}
+
+/* Passes the shared tracks down to the summary button (subgrid chain
+   inner-grid -> row -> heading -> summary -> cells). */
+.cngx-dga-row__heading {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  margin: 0;
+}
+
+/* The summary button IS the grid line: its chevron cell (track 1) plus the projected
+   content cells land on the shared column contract via `subgrid`. */
+.cngx-dga-row__summary {
+  /* The summary carries `cngxAccordionPanel`, so the headless Track-B accordion
+     skin (@cngx/themes cngx.css) would paint its own ::after twisty here. This
+     organism ships its own chevron slot, so suppress the inherited one through
+     the token the Track-B skin exposes for exactly this (accordion-item
+     precedent) - not a blanket ::after reset. */
+  --cngx-accordion-twisty-display: none;
+  /* Adopt the group's tracks via `subgrid` so the projected cells land on the shared
+     grid lines (spans every column of the parent heading subgrid). */
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  /* Match the inner grid's column gap explicitly: the Track-B accordion skin sets its
+     own `column-gap` on the `cngxAccordionPanel` button, which would otherwise shift
+     the summary's subgrid tracks off the header / footer (they inherit the grid gap). */
+  column-gap: var(--cngx-dga-col-gap, 0.5rem);
+  align-items: center;
+  inline-size: 100%;
+  /* Only block padding on the subgrid summary; the inline edges are the chevron track
+     + last-cell padding. Inline padding is forced to 0: the summary carries
+     `cngxAccordionPanel`, and the Track-B accordion skin would otherwise paint its own
+     header-button inline padding here and push the cells off the shared tracks. */
+  padding-block: var(--cngx-dga-row-py, 0.5rem);
+  padding-inline: 0;
+  border: 0;
+  background: var(--cngx-dga-row-bg, transparent);
+  color: var(--cngx-dga-row-color, inherit);
+  font: inherit;
+  font-size: var(--cngx-dga-fs, inherit);
+  text-align: start;
+  cursor: pointer;
+}
+
+/* Full-row keyboard focus ring: the summary spans every column via subgrid, so its
+   own outline already wraps the whole row. The colour chains through
+   `--cngx-dga-focus-color` to the theme primary (the Material bridge maps it to
+   `--mat-sys-primary`), so it tracks the theme instead of a fixed blue; the inset
+   offset keeps it clear of the frame edge on the framed skins. */
+.cngx-dga-row__summary:focus-visible {
+  outline: var(
+    --cngx-dga-focus-ring,
+    2px solid var(--cngx-dga-focus-color, var(--cngx-color-primary, #1d4ed8))
+  );
+  outline-offset: var(--cngx-dga-focus-offset, -2px);
+}
+
+/* Cells truncate rather than shove the grid wider; alignment rides a data-attr
+   the directive reflects. */
+.cngx-dga-cell {
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Trailing edge inset lives on the last cell (the inner grid has no inline padding,
+   so the backgrounds reach the frame). The chevron track holds the leading edge. */
+.cngx-dga-cell:last-child {
+  padding-inline-end: var(--cngx-dga-row-px, 0.75rem);
+}
+
+.cngx-dga-cell[data-align='center'] {
+  justify-self: center;
+  text-align: center;
+}
+
+.cngx-dga-cell[data-align='end'] {
+  justify-self: end;
+  text-align: end;
+}
+
+/* The chevron rides the leading grid TRACK (column 1) as the summary's first child;
+   the projected cells auto-flow into the content columns after it. Being a real grid
+   cell (not an overlay) means every row / header / footer background covers this
+   column, and the chevron stays at the row's start - visible first under sideways
+   scroll. Centred within the track. */
+.cngx-dga-row__chevron-slot {
+  display: inline-flex;
+  align-items: center;
+  /* Inset the chevron from the frame by the same edge padding the content uses, so it
+     is not flush against the border; the leading track is sized to fit it. */
+  justify-content: flex-start;
+  padding-inline-start: var(--cngx-dga-row-px, 0.75rem);
+}
+
+.cngx-dga-row__chevron {
+  /* Must be a block box: an inline element ignores inline-size/block-size and
+     transform, collapsing the bordered square into a sliver. */
+  display: block;
+  inline-size: var(--cngx-dga-chevron-size, 0.6em);
+  block-size: var(--cngx-dga-chevron-size, 0.6em);
+  border-inline-end: var(--cngx-dga-chevron-stroke, 2px solid currentcolor);
+  border-block-end: var(--cngx-dga-chevron-stroke, 2px solid currentcolor);
+  transform: rotate(45deg);
+  transition: transform var(--cngx-dga-chevron-transition, 150ms ease);
+}
+
+.cngx-dga-row[data-expanded] .cngx-dga-row__chevron {
+  transform: rotate(225deg);
+}
+
+/* The detail zone is row 2 of the row subgrid, spanning every column (including the
+   chevron track) so its background, border, and accent edge run frame to frame like a
+   normal disclosure panel. The inner grid has no inline padding, so `1 / -1` already
+   reaches both edges; the region's own `--cngx-dga-region-padding` provides the inset. */
+.cngx-dga-row__region {
+  grid-column: 1 / -1;
+  padding: var(--cngx-dga-region-padding, 0.75rem 1rem);
+}
+
+/* Async affordances rendered inside the region by the `@switch(status())`. The
+   busy/refresh visuals are decorative (`aria-hidden`); AT learns the busy state from
+   the region's `aria-busy`. The error container is `role="alert"` so its text is
+   announced the moment it appears, even on a collapsed row. */
+.cngx-dga-row__error {
+  color: var(--cngx-color-danger, #b42318);
+}
+
+.cngx-dga-row__error-default {
+  font: inherit;
+}
+
+.cngx-dga-row__skeleton {
+  display: block;
+  block-size: var(--cngx-dga-skeleton-height, 1.25rem);
+  border-radius: var(--cngx-radius-sm, 0.25rem);
+  background: var(--cngx-dga-skeleton-color, var(--cngx-color-border, #e5e7eb));
+}
+
+.cngx-dga-row__refreshing {
+  block-size: var(--cngx-dga-refresh-height, 2px);
+  margin-block-start: var(--cngx-dga-refresh-gap, 0.5rem);
+  background: var(--cngx-dga-refresh-color, var(--cngx-color-primary, #1d4ed8));
+  opacity: var(--cngx-dga-refresh-opacity, 0.6);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cngx-dga-row__chevron {
+    transition: none;
+  }
+}

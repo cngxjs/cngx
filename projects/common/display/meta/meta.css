@@ -1,0 +1,15 @@
+.cngx-meta {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--cngx-meta-gap, 0.35em);
+  min-inline-size: 0;
+}
+
+.cngx-meta__term {
+  font-weight: var(--cngx-meta-term-weight, 600);
+  color: var(--cngx-meta-term-color, inherit);
+}
+
+.cngx-meta__value {
+  min-inline-size: 0;
+}

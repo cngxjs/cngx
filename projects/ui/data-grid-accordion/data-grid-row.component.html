@@ -1,0 +1,67 @@
+<div role="heading" [attr.aria-level]="grid.headingLevel()" class="cngx-dga-row__heading">
+  <button
+    type="button"
+    cngxAccordionPanel
+    class="cngx-dga-row__summary"
+    [panelId]="panelId()"
+    [controls]="regionId"
+    [id]="headerId"
+    [attr.aria-labelledby]="primaryId()"
+  >
+    <span class="cngx-dga-row__chevron-slot" aria-hidden="true">
+      <span class="cngx-dga-row__chevron"></span>
+    </span>
+    <ng-content select="[cngxDgaCell]" />
+  </button>
+</div>
+
+<div
+  role="region"
+  class="cngx-dga-row__region"
+  [id]="regionId"
+  [attr.aria-labelledby]="primaryId()"
+  [attr.aria-busy]="busy() ? 'true' : null"
+  [hidden]="regionHidden()"
+>
+  @switch (status()) {
+    @case ('error') {
+      <div class="cngx-dga-row__error" role="alert">
+        @if (errorTemplate(); as tpl) {
+          <ng-container
+            [ngTemplateOutlet]="tpl"
+            [ngTemplateOutletContext]="{ $implicit: 'error', message: errorMessage() }"
+          />
+        } @else {
+          <span class="cngx-dga-row__error-default">{{ errorMessage() }}</span>
+        }
+      </div>
+    }
+    @case ('loading') {
+      <div class="cngx-dga-row__busy" aria-hidden="true">
+        @if (busyTemplate(); as tpl) {
+          <ng-container
+            [ngTemplateOutlet]="tpl"
+            [ngTemplateOutletContext]="{ $implicit: 'loading', message: '' }"
+          />
+        } @else {
+          <span class="cngx-dga-row__skeleton"></span>
+        }
+      </div>
+    }
+    @default {
+      <ng-content />
+      @if (status() === 'refreshing') {
+        <div class="cngx-dga-row__refreshing" aria-hidden="true">
+          @if (busyTemplate(); as tpl) {
+            <ng-container
+              [ngTemplateOutlet]="tpl"
+              [ngTemplateOutletContext]="{ $implicit: 'refreshing', message: '' }"
+            />
+          } @else {
+            <span class="cngx-dga-row__refresh-indicator"></span>
+          }
+        </div>
+      }
+    }
+  }
+</div>
