@@ -3,14 +3,19 @@ import type { DemoSpec } from '../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'Data-grid accordion: Sortable ledger',
   subtitle:
-    'The <strong>declarative</strong> path. Each head is sortable with one <code>cngxDgaSortHeader="field"</code> attribute and no <code>[cngxSortRef]</code> wiring, an <code>&lt;input cngxDgaFilter&gt;</code> two-way-binds the filter term, and a <code>[cngxDgaCount]</code> live region announces the visible count. The group only publishes state - the consumer derives the ordered, filtered rows in one <code>computed()</code> and owns the <code>@for</code>.',
+    'The <strong>declarative</strong> path. Each head is sortable with one <code>cngxDgaSortHeader="field"</code> attribute and no <code>[cngxSortRef]</code> wiring, a <code>&lt;cngx-dga-filter&gt;</code> shell (a labelled search box) two-way-binds the filter term, and a <code>[cngxDgaCount]</code> live region announces the visible count. The group only publishes state - the consumer derives the ordered, filtered rows in one <code>computed()</code> and owns the <code>@for</code>.',
   description:
     'Click a column head to sort (it toggles ascending then descending; the arrow and an <code>aria-describedby</code> description track it), and type in the search box to filter. The group hosts <code>CngxSort</code> and <code>CngxFilter</code>, so the header cells and the input reach them through the context with no plumbing; the group re-emits <code>(sortChange)</code> and the input two-way-binds <code>[(filterTerm)]</code>, which the consumer lifts into signals and derives <code>rows()</code> from. Because the open-set is keyed by <code>panelId</code>, an expanded row stays open as it moves under a sort or leaves and re-enters under a filter. The header is exposed to assistive tech (not <code>aria-hidden</code>) so the sort controls are reachable.',
   level: 'organism',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
   focus: ['behavior', 'a11y-pattern'],
-  apiComponents: ['CngxDataGridAccordion', 'CngxDgaSortHeader', 'CngxDgaFilter', 'CngxDgaCount'],
+  apiComponents: [
+    'CngxDataGridAccordion',
+    'CngxDgaSortHeader',
+    'CngxDgaFilterField',
+    'CngxDgaCount',
+  ],
   imports: [
     'CngxDataGridAccordion',
     'CngxDataGridRow',
@@ -18,7 +23,7 @@ export const STORY: DemoSpec = {
     'CngxDataGridFooter',
     'CngxDgCell',
     'CngxDgaSortHeader',
-    'CngxDgaFilter',
+    'CngxDgaFilterField',
     'CngxDgaCount',
     'CngxTag',
   ],
@@ -69,14 +74,10 @@ export const STORY: DemoSpec = {
       [(filterTerm)]="term"
       (sortChange)="activeSort.set($event)"
     >
-      <div style="grid-column:1/-1;padding:0.6rem 1rem">
-        <input
-          cngxDgaFilter
-          cngxDgaFilterLabel="Filter invoices"
-          placeholder="Filter by customer or invoice number"
-          style="width:100%;box-sizing:border-box;padding:0.4rem 0.6rem"
-        />
-      </div>
+      <cngx-dga-filter
+        label="Filter invoices"
+        placeholder="Filter by customer or invoice number"
+      />
 
       <cngx-dga-header>
         <span cngxDgaCell col="md" cngxDgaSortHeader="id">Invoice</span>
