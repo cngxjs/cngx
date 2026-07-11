@@ -1,19 +1,23 @@
+import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  contentChild,
   contentChildren,
   inject,
   input,
   ViewEncapsulation,
 } from '@angular/core';
 
-import { nextUid } from '@cngx/core/utils';
+import { nextUid, type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
 import { CNGX_ACCORDION, CngxAccordionPanel } from '@cngx/common/interactive';
 
 import type { CngxDataGridSeverity } from './config/data-grid-accordion.config';
 import { CNGX_DATA_GRID_ACCORDION } from './data-grid-accordion.token';
 import { CngxDgCell } from './data-grid-cell.directive';
+import { CngxDgaRowBusy } from './data-grid-row-busy.directive';
+import { CngxDgaRowError } from './data-grid-row-error.directive';
 
 /**
  * A disclosure row in a {@link CngxDataGridAccordion}. Renders the APG-correct
@@ -45,7 +49,7 @@ import { CngxDgCell } from './data-grid-cell.directive';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [CngxAccordionPanel],
+  imports: [CngxAccordionPanel, NgTemplateOutlet],
   templateUrl: './data-grid-row.component.html',
   styleUrl: './data-grid-row.component.css',
   host: {
@@ -69,6 +73,18 @@ export class CngxDataGridRow {
    * visual, no ARIA impact.
    */
   readonly severity = input<CngxDataGridSeverity | undefined>(undefined);
+  /**
+   * The row's async lifecycle, communicated to assistive tech. Accepts a raw
+   * {@link AsyncStatus} or a {@link CngxAsyncState} the consumer already owns - the
+   * row reads only the status discriminator, never the payload, so it stays
+   * non-generic. A pure data input (the row injects no `CNGX_STATEFUL`), so no
+   * empty-string transform: a bare string status must survive untouched. Mirrors
+   * `CngxAccordionItem.state`; the consumer wires the fetch, the row only
+   * communicates the state it is handed.
+   */
+  readonly state = input<AsyncStatus | CngxAsyncState<unknown> | undefined>(undefined);
+  /** Error message announced in the error state. English default; override per locale. */
+  readonly errorMessage = input('Failed to load');
 
   private readonly accordion = inject(CNGX_ACCORDION);
   protected readonly grid = inject(CNGX_DATA_GRID_ACCORDION);
@@ -94,4 +110,41 @@ export class CngxDataGridRow {
 
   /** Whether this row's region is open, derived from the coordinator's open-set. */
   protected readonly expanded = computed(() => this.accordion.isOpen(this.panelId()));
+
+  /** Per-instance busy slot; absent means the CSS skeleton default renders. */
+  protected readonly busySlot = contentChild(CngxDgaRowBusy);
+  /** Per-instance error slot; absent means the CSS error affordance default renders. */
+  protected readonly errorSlot = contentChild(CngxDgaRowError);
+  /** Resolved busy template: per-instance slot -> null (CSS skeleton default). */
+  protected readonly busyTemplate = computed(() => this.busySlot()?.templateRef ?? null);
+  /** Resolved error template: per-instance slot -> null (CSS error default). */
+  protected readonly errorTemplate = computed(() => this.errorSlot()?.templateRef ?? null);
+
+  /**
+   * Row async status, normalised to an {@link AsyncStatus} from either the raw enum
+   * or a {@link CngxAsyncState} object form (reads its `status()` signal). A
+   * primitive, so `Object.is` dedupes - no `equal`. Mirrors `CngxAccordionItem`.
+   */
+  protected readonly status = computed<AsyncStatus | undefined>(() => {
+    const state = this.state();
+    if (state == null) {
+      return undefined;
+    }
+    return typeof state === 'string' ? state : state.status();
+  });
+  /**
+   * `aria-busy` driver. Mirrors `CngxAsyncState.isBusy` (loading|refreshing|pending)
+   * so the string and object input forms agree. Boolean, no `equal`.
+   */
+  protected readonly busy = computed(() => {
+    const status = this.status();
+    return status === 'loading' || status === 'refreshing' || status === 'pending';
+  });
+  /**
+   * Region visibility. Hidden while collapsed, EXCEPT in the error state: an errored
+   * row un-hides its region so the `role="alert"` mounts into the live a11y tree and
+   * is announced even when the row was never opened (Pillar 2 - an error is never
+   * silenced by a collapsed row).
+   */
+  protected readonly regionHidden = computed(() => !this.expanded() && this.status() !== 'error');
 }

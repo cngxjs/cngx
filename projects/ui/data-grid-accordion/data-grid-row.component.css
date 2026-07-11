@@ -138,6 +138,32 @@
   padding: var(--cngx-dga-region-padding, 0.75rem 1rem);
 }
 
+/* Async affordances rendered inside the region by the `@switch(status())`. The
+   busy/refresh visuals are decorative (`aria-hidden`); AT learns the busy state from
+   the region's `aria-busy`. The error container is `role="alert"` so its text is
+   announced the moment it appears, even on a collapsed row. */
+.cngx-dga-row__error {
+  color: var(--cngx-color-danger, #b42318);
+}
+
+.cngx-dga-row__error-default {
+  font: inherit;
+}
+
+.cngx-dga-row__skeleton {
+  display: block;
+  block-size: var(--cngx-dga-skeleton-height, 1.25rem);
+  border-radius: var(--cngx-radius-sm, 0.25rem);
+  background: var(--cngx-dga-skeleton-color, var(--cngx-color-border, #e5e7eb));
+}
+
+.cngx-dga-row__refreshing {
+  block-size: var(--cngx-dga-refresh-height, 2px);
+  margin-block-start: var(--cngx-dga-refresh-gap, 0.5rem);
+  background: var(--cngx-dga-refresh-color, var(--cngx-color-primary, #1d4ed8));
+  opacity: var(--cngx-dga-refresh-opacity, 0.6);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .cngx-dga-row__chevron {
     transition: none;
