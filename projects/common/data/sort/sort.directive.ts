@@ -91,7 +91,7 @@ export class CngxSort {
    * Sets or toggles the sort for `field`.
    *
    * **`additive = false`** (default, plain click):
-   * - Same field → toggle direction (asc → desc → asc)
+   * - Same field → cycle `asc` → `desc` → cleared (a third click removes the sort)
    * - Different field → replace stack with `{ field, asc }`
    *
    * **`additive = true`** (Shift+click when `multiSort` is enabled on the header):
@@ -116,12 +116,18 @@ export class CngxSort {
       this.sortChange.emit(next[0]);
     } else {
       const current = this.sortsState();
-      const dir: 'asc' | 'desc' =
-        field === current[0]?.active ? (current[0].direction === 'asc' ? 'desc' : 'asc') : 'asc';
-      const entry: SortEntry = { active: field, direction: dir };
-      this.sortsState.set([entry]);
-      this.sortChange.emit(entry);
-      this.sortsChange.emit([entry]);
+      if (field === current[0]?.active && current[0].direction === 'desc') {
+        // Third click on the active column: cycle desc -> cleared.
+        this.sortsState.set([]);
+        this.sortChange.emit(undefined);
+        this.sortsChange.emit([]);
+      } else {
+        const dir: 'asc' | 'desc' = field === current[0]?.active ? 'desc' : 'asc';
+        const entry: SortEntry = { active: field, direction: dir };
+        this.sortsState.set([entry]);
+        this.sortChange.emit(entry);
+        this.sortsChange.emit([entry]);
+      }
     }
   }
 

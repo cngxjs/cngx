@@ -34,11 +34,30 @@ describe('CngxSort', () => {
     expect(ctx.directive.direction()).toBe('desc');
   });
 
-  it('setSort on same field toggles direction desc -> asc', () => {
-    ctx.directive.setSort('name');
-    ctx.directive.setSort('name');
-    ctx.directive.setSort('name');
+  it('setSort a third time on the same field clears the sort (asc -> desc -> unsorted)', () => {
+    ctx.directive.setSort('name'); // asc
+    ctx.directive.setSort('name'); // desc
+    ctx.directive.setSort('name'); // cleared
+    expect(ctx.directive.sort()).toBeNull();
+    expect(ctx.directive.isActive()).toBe(false);
+  });
+
+  it('emits sortChange(undefined) when a third plain click clears the sort', () => {
+    const spy = spyOnOutput(ctx.directive.sortChange);
+    ctx.directive.setSort('name'); // asc
+    ctx.directive.setSort('name'); // desc
+    ctx.directive.setSort('name'); // cleared
+    expect(spy.lastValue()).toBeUndefined();
+    spy.destroy();
+  });
+
+  it('re-sorts ascending on a fourth click after clearing', () => {
+    ctx.directive.setSort('name'); // asc
+    ctx.directive.setSort('name'); // desc
+    ctx.directive.setSort('name'); // cleared
+    ctx.directive.setSort('name'); // asc again
     expect(ctx.directive.direction()).toBe('asc');
+    expect(ctx.directive.active()).toBe('name');
   });
 
   it('setSort on a different field resets to asc', () => {
