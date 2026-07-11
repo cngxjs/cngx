@@ -62,7 +62,7 @@ export const STORY: DemoSpec = {
     state.reset();
     this.fetch(state, '', true);
   }`,
-  template: `  <div style="max-width:560px">
+  template: `  <div style="max-width:40rem">
     <cngx-data-grid-accordion
       [skin]="'ledger'"
       [multi]="true"
