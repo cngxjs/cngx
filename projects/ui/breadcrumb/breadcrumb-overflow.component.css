@@ -4,31 +4,64 @@
    menu list so the collapsed crumbs read as rows, not a raw bulleted <ul>.
    Thematic values flow through --cngx-* custom properties with fallbacks. */
 
+/* PoC `.disclosure__btn` (components.md 07): a boxed three-dot ellipsis with a
+   hover-accent border. The `&hellip;` glyph is the trigger content. */
 .cngx-breadcrumb__overflow-trigger {
   display: inline-flex;
   align-items: center;
-  padding: var(--cngx-breadcrumb-overflow-trigger-padding, 0 0.25rem);
-  border: 0;
-  background: none;
+  justify-content: center;
+  gap: 2px;
+  width: var(--cngx-breadcrumb-overflow-trigger-width, 32px);
+  height: var(--cngx-breadcrumb-overflow-trigger-height, 26px);
+  padding: 0;
+  border: 1px solid
+    var(--cngx-breadcrumb-overflow-trigger-border, var(--cngx-color-border, oklch(0.88 0.005 250)));
+  border-radius: var(--cngx-breadcrumb-overflow-trigger-radius, var(--cngx-radius-sm, 4px));
+  background: var(
+    --cngx-breadcrumb-overflow-trigger-bg,
+    color-mix(in oklch, var(--cngx-color-text, oklch(0.2 0.01 250)) 5%, var(--cngx-color-surface, oklch(1 0 0)))
+  );
   font: inherit;
   line-height: 1;
-  color: var(--cngx-breadcrumb-overflow-trigger-color, inherit);
+  color: var(--cngx-breadcrumb-overflow-trigger-color, var(--cngx-color-text-muted, oklch(0.5 0.01 250)));
   cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+}
+
+.cngx-breadcrumb__overflow-trigger:hover {
+  background: var(
+    --cngx-breadcrumb-overflow-trigger-hover-bg,
+    color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 12%, transparent)
+  );
+  color: var(--cngx-breadcrumb-overflow-trigger-hover-color, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+  border-color: var(
+    --cngx-breadcrumb-overflow-trigger-hover-border,
+    var(--cngx-color-primary, oklch(0.66 0.19 50))
+  );
 }
 
 .cngx-breadcrumb__overflow-menu {
   margin: 0;
   padding: var(--cngx-breadcrumb-overflow-menu-padding, 0.25rem 0);
   list-style: none;
-  min-width: var(--cngx-breadcrumb-overflow-menu-min-width, 10rem);
+  min-width: var(--cngx-breadcrumb-overflow-menu-min-width, 11.875rem);
 }
 
 .cngx-breadcrumb__overflow-item {
-  padding: var(--cngx-breadcrumb-overflow-item-padding, 0.375rem 0.75rem);
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: var(--cngx-breadcrumb-overflow-item-padding, 0.5em 0.6em);
+  border-radius: var(--cngx-breadcrumb-overflow-item-radius, var(--cngx-radius-sm, 4px));
   white-space: nowrap;
+  color: var(--cngx-breadcrumb-overflow-item-color, var(--cngx-color-text-muted, oklch(0.5 0.01 250)));
   cursor: pointer;
 }
 
 .cngx-breadcrumb__overflow-item:hover {
-  background: var(--cngx-breadcrumb-overflow-item-hover-bg, color-mix(in srgb, currentColor 8%, transparent));
+  background: var(
+    --cngx-breadcrumb-overflow-item-hover-bg,
+    color-mix(in oklch, var(--cngx-color-text, oklch(0.2 0.01 250)) 5%, var(--cngx-color-surface, oklch(1 0 0)))
+  );
+  color: var(--cngx-breadcrumb-overflow-item-hover-color, var(--cngx-color-text, oklch(0.2 0.01 250)));
 }
