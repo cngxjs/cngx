@@ -11,7 +11,13 @@
 export interface CngxBreadcrumbCrumb {
   /** Visible, and accessible, crumb text. */
   readonly label: string;
-  /** Target for a plain-link crumb. Omit on the terminal crumb. */
+  /**
+   * Target for a plain-link crumb. Omit on the terminal crumb. Keep it unique
+   * across the trail: the bar tracks crumbs by `href ?? label`, so two crumbs
+   * that share an `href` collide on the track key and throw NG0955. The router
+   * source dedups a repeated URL automatically; a hand-built `[items]` array
+   * must not repeat one.
+   */
   readonly href?: string;
   /**
    * Opaque per-crumb icon token. cngx never interprets this string - it is
