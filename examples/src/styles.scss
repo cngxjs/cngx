@@ -3746,3 +3746,13 @@ cngx-radio-group .cngx-radio + .cngx-radio {
   border: 1px dashed var(--cngx-color-border, var(--cngx-ex-border, #cbd5e1));
   border-radius: var(--cngx-radius-sm, 4px);
 }
+
+// Demo-only: the iconlabel/path stories project <mat-icon> through the
+// *cngxBreadcrumbIcon slot. mat-icon defaults to 24px, oversized against the
+// small crumb text, so size it down to sit with the label. Sizing only, no
+// colour - the element+class selector beats mat-icon's own .mat-icon rule.
+mat-icon.demo-breadcrumb-icon {
+  font-size: 1.125rem;
+  width: 1.125rem;
+  height: 1.125rem;
+}

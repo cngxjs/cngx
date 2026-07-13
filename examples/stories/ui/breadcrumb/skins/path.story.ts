@@ -24,7 +24,7 @@ export const STORY: DemoSpec = {
   ];`,
   template: `  <cngx-breadcrumb [items]="crumbs" skin="path" label="File path breadcrumb">
     <ng-template cngxBreadcrumbIcon let-crumb>
-      <mat-icon aria-hidden="true">{{ crumb.icon }}</mat-icon>
+      <mat-icon class="demo-breadcrumb-icon" aria-hidden="true">{{ crumb.icon }}</mat-icon>
     </ng-template>
   </cngx-breadcrumb>`,
 };
