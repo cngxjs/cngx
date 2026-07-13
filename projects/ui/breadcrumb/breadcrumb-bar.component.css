@@ -34,23 +34,107 @@
   user-select: none;
 }
 
-/* Variant skins: mapped to a `cngx-breadcrumb--{variant}` host class, not
-   boolean flags. Each retints the same leaf tokens the structural rules above
-   already read, so structure stays variant-agnostic. */
+/* Skin paint: reflected onto `[data-skin]`, not boolean flags. Each look is an
+   independent `@scope` block that retints the same leaf tokens the structural
+   rules above already read, so structure stays skin-agnostic (Pillar 3).
+   `classic` is the bare base (no scope block). Colour tokens are assigned inside
+   each skin's `:scope` from the adaptive `--cngx-surface` / `--cngx-border`
+   theme vars, so a registered `@property`'s fixed initial-value never defeats a
+   dark theme (a registered custom property is never "unset", so the initial
+   would otherwise win over any `var(..., fallback)`). */
 
-.cngx-breadcrumb--plain {
-  --cngx-breadcrumb-link-decoration: var(--cngx-breadcrumb-plain-link-decoration, none);
+/** Link text-decoration under the `plain` skin (retints the shared link-decoration leaf token). @group Skin */
+@property --cngx-breadcrumb-plain-link-decoration {
+  syntax: '*';
+  inherits: true;
+  initial-value: none;
 }
 
-.cngx-breadcrumb--contained .cngx-breadcrumb__list {
-  padding: var(--cngx-breadcrumb-contained-padding, 0.375rem 0.75rem);
-  background: var(--cngx-breadcrumb-contained-bg, var(--cngx-surface, #f4f4f5));
-  border: var(--cngx-breadcrumb-contained-border, 1px solid) var(--cngx-breadcrumb-contained-border-color, var(--cngx-border, #e4e4e7));
-  border-radius: var(--cngx-breadcrumb-contained-radius, 0.375rem);
+/** Inline padding of the `contained` list surface. @group Skin */
+@property --cngx-breadcrumb-contained-padding {
+  syntax: '*';
+  inherits: true;
+  initial-value: 0.375rem 0.75rem;
 }
 
-.cngx-breadcrumb--pill .cngx-breadcrumb__list {
-  padding: var(--cngx-breadcrumb-pill-padding, 0.375rem 0.875rem);
-  background: var(--cngx-breadcrumb-pill-bg, var(--cngx-surface, #f4f4f5));
-  border-radius: var(--cngx-breadcrumb-pill-radius, 9999px);
+/** Surface fill of the `contained` list box (set adaptively from `--cngx-surface` in `:scope`). @group Skin */
+@property --cngx-breadcrumb-contained-bg {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #f4f4f5;
+}
+
+/** Border width + style of the `contained` box. @group Skin */
+@property --cngx-breadcrumb-contained-border {
+  syntax: '*';
+  inherits: true;
+  initial-value: 1px solid;
+}
+
+/** Border colour of the `contained` box (set adaptively from `--cngx-border` in `:scope`). @group Skin */
+@property --cngx-breadcrumb-contained-border-color {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #e4e4e7;
+}
+
+/** Corner radius of the `contained` box. @group Skin */
+@property --cngx-breadcrumb-contained-radius {
+  syntax: '*';
+  inherits: true;
+  initial-value: 0.375rem;
+}
+
+/** Inline padding of the `pill` list surface. @group Skin */
+@property --cngx-breadcrumb-pill-padding {
+  syntax: '*';
+  inherits: true;
+  initial-value: 0.375rem 0.875rem;
+}
+
+/** Surface fill of the `pill` list box (set adaptively from `--cngx-surface` in `:scope`). @group Skin */
+@property --cngx-breadcrumb-pill-bg {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #f4f4f5;
+}
+
+/** Corner radius of the `pill` list surface. @group Skin */
+@property --cngx-breadcrumb-pill-radius {
+  syntax: '*';
+  inherits: true;
+  initial-value: 9999px;
+}
+
+@scope (.cngx-breadcrumb[data-skin='plain']) {
+  :scope {
+    --cngx-breadcrumb-link-decoration: var(--cngx-breadcrumb-plain-link-decoration, none);
+  }
+}
+
+@scope (.cngx-breadcrumb[data-skin='contained']) {
+  :scope {
+    --cngx-breadcrumb-contained-bg: var(--cngx-surface, #f4f4f5);
+    --cngx-breadcrumb-contained-border-color: var(--cngx-border, #e4e4e7);
+  }
+
+  .cngx-breadcrumb__list {
+    padding: var(--cngx-breadcrumb-contained-padding, 0.375rem 0.75rem);
+    background: var(--cngx-breadcrumb-contained-bg);
+    border: var(--cngx-breadcrumb-contained-border, 1px solid)
+      var(--cngx-breadcrumb-contained-border-color);
+    border-radius: var(--cngx-breadcrumb-contained-radius, 0.375rem);
+  }
+}
+
+@scope (.cngx-breadcrumb[data-skin='pill']) {
+  :scope {
+    --cngx-breadcrumb-pill-bg: var(--cngx-surface, #f4f4f5);
+  }
+
+  .cngx-breadcrumb__list {
+    padding: var(--cngx-breadcrumb-pill-padding, 0.375rem 0.875rem);
+    background: var(--cngx-breadcrumb-pill-bg);
+    border-radius: var(--cngx-breadcrumb-pill-radius, 9999px);
+  }
 }
