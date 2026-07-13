@@ -38,8 +38,8 @@
    independent `@scope` block that retints the same leaf tokens the structural
    rules above already read, so structure stays skin-agnostic (Pillar 3).
    `classic` is the bare base (no scope block). Colour tokens are assigned inside
-   each skin's `:scope` from the adaptive `--cngx-surface` / `--cngx-border`
-   theme vars, so a registered `@property`'s fixed initial-value never defeats a
+   each skin's `:scope` from the adaptive `--cngx-color-*` theme vars, so a
+   registered `@property`'s fixed initial-value never defeats a
    dark theme (a registered custom property is never "unset", so the initial
    would otherwise win over any `var(..., fallback)`). */
 
@@ -57,7 +57,7 @@
   initial-value: 0.375rem 0.75rem;
 }
 
-/** Surface fill of the `contained` list box (set adaptively from `--cngx-surface` in `:scope`). @group Skin */
+/** Surface fill of the `contained` list box (set adaptively from `--cngx-color-surface` in `:scope`). @group Skin */
 @property --cngx-breadcrumb-contained-bg {
   syntax: '<color>';
   inherits: true;
@@ -71,7 +71,7 @@
   initial-value: 1px solid;
 }
 
-/** Border colour of the `contained` box (set adaptively from `--cngx-border` in `:scope`). @group Skin */
+/** Border colour of the `contained` box (set adaptively from `--cngx-color-border` in `:scope`). @group Skin */
 @property --cngx-breadcrumb-contained-border-color {
   syntax: '<color>';
   inherits: true;
@@ -156,8 +156,8 @@
 
 @scope (.cngx-breadcrumb[data-skin='contained']) {
   :scope {
-    --cngx-breadcrumb-contained-bg: var(--cngx-surface, #f4f4f5);
-    --cngx-breadcrumb-contained-border-color: var(--cngx-border, #e4e4e7);
+    --cngx-breadcrumb-contained-bg: var(--cngx-color-surface, #f4f4f5);
+    --cngx-breadcrumb-contained-border-color: var(--cngx-color-border, #e4e4e7);
   }
 
   .cngx-breadcrumb__list {
