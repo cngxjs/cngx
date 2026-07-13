@@ -4,33 +4,72 @@
    list, and the rows so the siblings read as a picker, not a raw bulleted <ul>.
    Thematic values flow through --cngx-* custom properties with fallbacks. */
 
+/* PoC `details.sibling > summary` (components.md 08): a compact 22px chevron box
+   that tints on open and rotates its caret. The trigger's open state rides
+   `aria-expanded` (set by CngxPopoverTrigger), so the `&#9662;` caret flips
+   without a template branch. */
 .cngx-breadcrumb__siblings-trigger {
   display: inline-flex;
   align-items: center;
-  padding: var(--cngx-breadcrumb-siblings-trigger-padding, 0 0.25rem);
+  justify-content: center;
+  width: var(--cngx-breadcrumb-siblings-trigger-size, 22px);
+  height: var(--cngx-breadcrumb-siblings-trigger-size, 22px);
+  padding: 0;
   border: 0;
+  border-radius: var(--cngx-breadcrumb-siblings-trigger-radius, var(--cngx-radius-sm, 4px));
   background: none;
   font: inherit;
   line-height: 1;
-  color: var(--cngx-breadcrumb-siblings-trigger-color, inherit);
+  color: var(--cngx-breadcrumb-siblings-trigger-color, var(--cngx-color-text-muted, oklch(0.5 0.01 250)));
   cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease;
+}
+
+.cngx-breadcrumb__siblings-trigger:hover {
+  background: var(
+    --cngx-breadcrumb-siblings-trigger-hover-bg,
+    color-mix(in oklch, var(--cngx-color-text, oklch(0.2 0.01 250)) 5%, var(--cngx-color-surface, oklch(1 0 0)))
+  );
+  color: var(--cngx-breadcrumb-siblings-trigger-hover-color, var(--cngx-color-text, oklch(0.2 0.01 250)));
+}
+
+.cngx-breadcrumb__siblings-trigger[aria-expanded='true'] {
+  background: var(
+    --cngx-breadcrumb-siblings-trigger-open-bg,
+    color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 12%, transparent)
+  );
+  color: var(--cngx-breadcrumb-siblings-trigger-open-color, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+  transform: rotate(180deg);
 }
 
 .cngx-breadcrumb__siblings-menu {
   margin: 0;
   padding: var(--cngx-breadcrumb-siblings-menu-padding, 0.25rem 0);
   list-style: none;
-  min-width: var(--cngx-breadcrumb-siblings-menu-min-width, 10rem);
+  min-width: var(--cngx-breadcrumb-siblings-menu-min-width, 11.25rem);
 }
 
 .cngx-breadcrumb__siblings-item {
-  padding: var(--cngx-breadcrumb-siblings-item-padding, 0.375rem 0.75rem);
+  display: flex;
+  align-items: center;
+  padding: var(--cngx-breadcrumb-siblings-item-padding, 0.45em 0.55em);
+  border-radius: var(--cngx-breadcrumb-siblings-item-radius, var(--cngx-radius-sm, 4px));
   white-space: nowrap;
+  color: var(--cngx-breadcrumb-siblings-item-color, var(--cngx-color-text-muted, oklch(0.5 0.01 250)));
   cursor: pointer;
 }
 
 .cngx-breadcrumb__siblings-item:hover {
-  background: var(--cngx-breadcrumb-siblings-item-hover-bg, color-mix(in srgb, currentColor 8%, transparent));
+  background: var(
+    --cngx-breadcrumb-siblings-item-hover-bg,
+    color-mix(in oklch, var(--cngx-color-text, oklch(0.2 0.01 250)) 5%, var(--cngx-color-surface, oklch(1 0 0)))
+  );
+  color: var(--cngx-breadcrumb-siblings-item-hover-color, var(--cngx-color-text, oklch(0.2 0.01 250)));
+}
+
+.cngx-breadcrumb__siblings-item[aria-current='page'] {
+  color: var(--cngx-breadcrumb-siblings-item-current-color, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+  font-weight: 600;
 }
 
 .cngx-breadcrumb__siblings-link {
