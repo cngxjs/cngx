@@ -75,15 +75,17 @@
  */
 
 @layer cngx.tokens {
-  /**
-   * Padding shorthand inside the card.
-   * @group Layout
+  /*
+   * `--cngx-card-padding` is intentionally NOT registered as an `@property`.
+   * A registered token with a fixed `initial-value` would defeat the
+   * `var(--cngx-card-padding, var(--cngx-space-md))` fallback below, pinning
+   * padding to a literal and killing `[data-density]` derivation
+   * (reference_property_color_initial_defeats_fallback). Left unregistered, the
+   * fallback resolves to `--cngx-space-md` for a standalone card (so density
+   * flows), and card-grid's ancestor pins on `--cngx-card-padding` inherit
+   * naturally (compact -> space-sm, comfortable -> space-lg) instead of being
+   * overridden by a self-set default.
    */
-  @property --cngx-card-padding {
-    syntax: '<length>';
-    inherits: false;
-    initial-value: 16px;
-  }
 
   /**
    * Corner radius. Defaults to `--cngx-radius-lg`.
