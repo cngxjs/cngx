@@ -406,8 +406,15 @@
     font-weight: 700;
   }
 
+  /* editorial delimits with a mid-dot, not the base slash: suppress the "/"
+     glyph and render "·" via ::after */
   .cngx-breadcrumb__separator {
-    transform: rotate(-8deg);
+    font-size: 0;
+  }
+
+  .cngx-breadcrumb__separator::after {
+    content: '·';
+    font-size: var(--cngx-breadcrumb-editorial-font-size);
   }
 }
 
@@ -490,6 +497,21 @@
     line-height: 1.2;
     white-space: normal;
     color: var(--cngx-breadcrumb-header-text);
+  }
+
+  /* small chevron delimiter instead of the base slash */
+  .cngx-breadcrumb__separator {
+    font-size: 0;
+  }
+
+  .cngx-breadcrumb__separator::after {
+    content: '\203A';
+    font-size: var(--cngx-breadcrumb-header-font-size);
+  }
+
+  /* no dangling delimiter before the leaf once it wraps onto the title row */
+  .cngx-breadcrumb__separator:has(+ .cngx-breadcrumb__crumb .cngx-breadcrumb__link[aria-current='page']) {
+    display: none;
   }
 }
 
@@ -1023,10 +1045,17 @@
     --cngx-breadcrumb-iconlabel-font-size: var(--cngx-font-size-sm, 0.875rem);
   }
 
-  /* order the projected accessory icon ahead of its label */
+  /* order the projected accessory icon ahead of its label; the icon reads
+     currentColor off the crumb, so it dims at rest and takes the accent on the
+     active leaf */
   .cngx-breadcrumb__crumb {
     flex-direction: row-reverse;
     gap: 0.4em;
+    color: var(--cngx-breadcrumb-iconlabel-color);
+  }
+
+  .cngx-breadcrumb__crumb:has(.cngx-breadcrumb__link[aria-current='page']) {
+    color: var(--cngx-breadcrumb-iconlabel-active-color);
   }
 
   .cngx-breadcrumb__link {
@@ -1048,5 +1077,15 @@
   .cngx-breadcrumb__link[aria-current='page'] {
     background: var(--cngx-breadcrumb-iconlabel-active-bg);
     color: var(--cngx-breadcrumb-iconlabel-active-color);
+  }
+
+  /* chevron delimiter instead of the base slash */
+  .cngx-breadcrumb__separator {
+    font-size: 0;
+  }
+
+  .cngx-breadcrumb__separator::after {
+    content: '\203A';
+    font-size: var(--cngx-breadcrumb-iconlabel-font-size);
   }
 }
