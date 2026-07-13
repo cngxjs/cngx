@@ -4,6 +4,8 @@ import { By } from '@angular/platform-browser';
 import { NavigationEnd, provideRouter, Router, RouterOutlet } from '@angular/router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { createResizeObserverMock } from '@cngx/testing';
+
 import { CngxBreadcrumbBar } from './breadcrumb-bar.component';
 import { CngxBreadcrumbRouterSync } from './breadcrumb-router-sync.directive';
 import { withBreadcrumbDataKey } from './config/features';
@@ -75,11 +77,19 @@ async function flushMicrotasks(rounds = 5): Promise<void> {
 }
 
 describe('CngxBreadcrumbRouterSync', () => {
+  // The composed CngxBreadcrumbBar mounts an always-on CngxResizeObserver
+  // hostDirective, but jsdom ships no ResizeObserver - stub it so the constructor
+  // does not throw. These tests never drive width (the responsive path is covered
+  // in the bar spec + e2e).
+  const resizeMock = createResizeObserverMock();
+
   beforeEach(() => {
     TestBed.resetTestingModule();
+    resizeMock.install(window);
   });
 
   afterEach(() => {
+    resizeMock.restore(window);
     TestBed.resetTestingModule();
   });
 
