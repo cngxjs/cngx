@@ -18,7 +18,9 @@ export type CngxBreadcrumbSkin =
   | 'header'
   | 'metro'
   | 'toolbar'
-  | 'chips';
+  | 'chips'
+  | 'path'
+  | 'iconlabel';
 
 /**
  * App-wide cascade for the breadcrumb family's ARIA labels, the router

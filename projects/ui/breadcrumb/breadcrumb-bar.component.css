@@ -85,25 +85,67 @@
   initial-value: 0.375rem;
 }
 
-/** Inline padding of the `pill` list surface. @group Skin */
-@property --cngx-breadcrumb-pill-padding {
-  syntax: '*';
-  inherits: true;
-  initial-value: 0.375rem 0.875rem;
-}
-
-/** Surface fill of the `pill` list box (set adaptively from `--cngx-surface` in `:scope`). @group Skin */
-@property --cngx-breadcrumb-pill-bg {
+/** Track fill of the segmented `pill` bar. @group Skin */
+@property --cngx-breadcrumb-pill-track-bg {
   syntax: '<color>';
   inherits: true;
-  initial-value: #f4f4f5;
+  initial-value: oklch(0.97 0.005 250);
 }
 
-/** Corner radius of the `pill` list surface. @group Skin */
+/** Track border of the segmented `pill` bar. @group Skin */
+@property --cngx-breadcrumb-pill-track-border {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.88 0.005 250);
+}
+
+/** Corner radius of the `pill` track and its segments. @group Skin */
 @property --cngx-breadcrumb-pill-radius {
   syntax: '*';
   inherits: true;
-  initial-value: 9999px;
+  initial-value: 999px;
+}
+
+/** Resting segment label colour under the `pill` skin. @group Skin */
+@property --cngx-breadcrumb-pill-color {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.5 0.01 250);
+}
+
+/** Hover segment fill under the `pill` skin. @group Skin */
+@property --cngx-breadcrumb-pill-hover-bg {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.95 0.03 50);
+}
+
+/** Hover segment label colour under the `pill` skin. @group Skin */
+@property --cngx-breadcrumb-pill-hover-color {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.2 0.01 250);
+}
+
+/** Active-segment fill under the `pill` skin. @group Skin */
+@property --cngx-breadcrumb-pill-active-bg {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.66 0.19 50);
+}
+
+/** Active-segment label colour under the `pill` skin. @group Skin */
+@property --cngx-breadcrumb-pill-active-color {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(1 0 0);
+}
+
+/** Segment font size under the `pill` skin. @group Skin */
+@property --cngx-breadcrumb-pill-font-size {
+  syntax: '*';
+  inherits: true;
+  initial-value: 0.875rem;
 }
 
 @scope (.cngx-breadcrumb[data-skin='plain']) {
@@ -129,13 +171,58 @@
 
 @scope (.cngx-breadcrumb[data-skin='pill']) {
   :scope {
-    --cngx-breadcrumb-pill-bg: var(--cngx-surface, #f4f4f5);
+    --cngx-breadcrumb-pill-track-bg: color-mix(
+      in oklch,
+      var(--cngx-color-text, oklch(0.2 0.01 250)) 5%,
+      var(--cngx-color-surface, oklch(1 0 0))
+    );
+    --cngx-breadcrumb-pill-track-border: var(--cngx-color-border, oklch(0.88 0.005 250));
+    --cngx-breadcrumb-pill-radius: var(--cngx-radius-pill, 999px);
+    --cngx-breadcrumb-pill-color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
+    --cngx-breadcrumb-pill-hover-bg: color-mix(
+      in oklch,
+      var(--cngx-color-primary, oklch(0.66 0.19 50)) 12%,
+      transparent
+    );
+    --cngx-breadcrumb-pill-hover-color: var(--cngx-color-text, oklch(0.2 0.01 250));
+    --cngx-breadcrumb-pill-active-bg: var(--cngx-color-primary, oklch(0.66 0.19 50));
+    --cngx-breadcrumb-pill-active-color: var(--cngx-color-on-primary, oklch(1 0 0));
+    --cngx-breadcrumb-pill-font-size: var(--cngx-font-size-sm, 0.875rem);
   }
 
+  /* segmented track: one connected pill bar, active segment a solid accent */
   .cngx-breadcrumb__list {
-    padding: var(--cngx-breadcrumb-pill-padding, 0.375rem 0.875rem);
-    background: var(--cngx-breadcrumb-pill-bg);
-    border-radius: var(--cngx-breadcrumb-pill-radius, 9999px);
+    gap: 0;
+    padding: 4px;
+    background: var(--cngx-breadcrumb-pill-track-bg);
+    border: 1px solid var(--cngx-breadcrumb-pill-track-border);
+    border-radius: var(--cngx-breadcrumb-pill-radius);
+  }
+
+  .cngx-breadcrumb__link {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.38em 0.9em;
+    border-radius: var(--cngx-breadcrumb-pill-radius);
+    font-size: var(--cngx-breadcrumb-pill-font-size);
+    font-weight: 560;
+    text-decoration: none;
+    color: var(--cngx-breadcrumb-pill-color);
+  }
+
+  .cngx-breadcrumb__link:hover {
+    background: var(--cngx-breadcrumb-pill-hover-bg);
+    color: var(--cngx-breadcrumb-pill-hover-color);
+  }
+
+  .cngx-breadcrumb__link[aria-current='page'] {
+    background: var(--cngx-breadcrumb-pill-active-bg);
+    color: var(--cngx-breadcrumb-pill-active-color);
+    box-shadow: var(--cngx-shadow-sm, 0 1px 2px oklch(0 0 0 / 0.08));
+  }
+
+  .cngx-breadcrumb__separator {
+    display: none;
   }
 }
 
@@ -760,5 +847,206 @@
 
   .cngx-breadcrumb__separator {
     display: none;
+  }
+}
+
+/* 04 File Path - monospace explorer; leading folder/file icons ride the
+   `*cngxBreadcrumbItemAccessory` slot (consumer content). The skin only paints
+   and orders the crumb so the projected icon leads its label. */
+@property --cngx-breadcrumb-path-track-bg {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.97 0.005 250);
+}
+@property --cngx-breadcrumb-path-track-border {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.88 0.005 250);
+}
+@property --cngx-breadcrumb-path-color {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.5 0.01 250);
+}
+@property --cngx-breadcrumb-path-hover-bg {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(1 0 0);
+}
+@property --cngx-breadcrumb-path-hover-color {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.2 0.01 250);
+}
+@property --cngx-breadcrumb-path-active-color {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.66 0.19 50);
+}
+@property --cngx-breadcrumb-path-sep-color {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.72 0.01 250);
+}
+@property --cngx-breadcrumb-path-radius {
+  syntax: '*';
+  inherits: true;
+  initial-value: 8px;
+}
+@property --cngx-breadcrumb-path-link-radius {
+  syntax: '*';
+  inherits: true;
+  initial-value: 4px;
+}
+@property --cngx-breadcrumb-path-font-size {
+  syntax: '*';
+  inherits: true;
+  initial-value: 0.875rem;
+}
+
+@scope (.cngx-breadcrumb[data-skin='path']) {
+  :scope {
+    font-family: var(--cngx-font-family-mono, ui-monospace, 'SFMono-Regular', 'Menlo', monospace);
+    --cngx-breadcrumb-path-track-bg: color-mix(
+      in oklch,
+      var(--cngx-color-text, oklch(0.2 0.01 250)) 5%,
+      var(--cngx-color-surface, oklch(1 0 0))
+    );
+    --cngx-breadcrumb-path-track-border: var(--cngx-color-border, oklch(0.88 0.005 250));
+    --cngx-breadcrumb-path-color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
+    --cngx-breadcrumb-path-hover-bg: var(--cngx-color-surface, oklch(1 0 0));
+    --cngx-breadcrumb-path-hover-color: var(--cngx-color-text, oklch(0.2 0.01 250));
+    --cngx-breadcrumb-path-active-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+    --cngx-breadcrumb-path-sep-color: color-mix(
+      in oklch,
+      var(--cngx-color-text-muted, oklch(0.5 0.01 250)) 55%,
+      var(--cngx-color-surface, oklch(1 0 0))
+    );
+    --cngx-breadcrumb-path-radius: var(--cngx-radius-md, 8px);
+    --cngx-breadcrumb-path-link-radius: var(--cngx-radius-sm, 4px);
+    --cngx-breadcrumb-path-font-size: var(--cngx-font-size-sm, 0.875rem);
+  }
+
+  .cngx-breadcrumb__list {
+    gap: var(--cngx-space-xs, 0.25rem);
+    padding: 0.5em 0.7em;
+    background: var(--cngx-breadcrumb-path-track-bg);
+    border: 1px solid var(--cngx-breadcrumb-path-track-border);
+    border-radius: var(--cngx-breadcrumb-path-radius);
+  }
+
+  /* order the projected accessory icon ahead of its label */
+  .cngx-breadcrumb__crumb {
+    flex-direction: row-reverse;
+    gap: 0.4em;
+  }
+
+  .cngx-breadcrumb__link {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2em 0.45em;
+    font-size: var(--cngx-breadcrumb-path-font-size);
+    text-decoration: none;
+    border-radius: var(--cngx-breadcrumb-path-link-radius);
+    color: var(--cngx-breadcrumb-path-color);
+  }
+
+  .cngx-breadcrumb__link:hover {
+    background: var(--cngx-breadcrumb-path-hover-bg);
+    color: var(--cngx-breadcrumb-path-hover-color);
+  }
+
+  .cngx-breadcrumb__link[aria-current='page'] {
+    color: var(--cngx-breadcrumb-path-active-color);
+  }
+
+  .cngx-breadcrumb__separator {
+    color: var(--cngx-breadcrumb-path-sep-color);
+  }
+}
+
+/* 11 Icon + Label - each crumb carries a leading icon through the accessory
+   slot (consumer content, decorative). The skin paints the pill and orders the
+   icon ahead of the label. */
+@property --cngx-breadcrumb-iconlabel-color {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.5 0.01 250);
+}
+@property --cngx-breadcrumb-iconlabel-hover-bg {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.97 0.005 250);
+}
+@property --cngx-breadcrumb-iconlabel-hover-color {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.2 0.01 250);
+}
+@property --cngx-breadcrumb-iconlabel-active-bg {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.95 0.03 50);
+}
+@property --cngx-breadcrumb-iconlabel-active-color {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.66 0.19 50);
+}
+@property --cngx-breadcrumb-iconlabel-radius {
+  syntax: '*';
+  inherits: true;
+  initial-value: 999px;
+}
+@property --cngx-breadcrumb-iconlabel-font-size {
+  syntax: '*';
+  inherits: true;
+  initial-value: 0.875rem;
+}
+
+@scope (.cngx-breadcrumb[data-skin='iconlabel']) {
+  :scope {
+    --cngx-breadcrumb-iconlabel-color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
+    --cngx-breadcrumb-iconlabel-hover-bg: color-mix(
+      in oklch,
+      var(--cngx-color-text, oklch(0.2 0.01 250)) 5%,
+      var(--cngx-color-surface, oklch(1 0 0))
+    );
+    --cngx-breadcrumb-iconlabel-hover-color: var(--cngx-color-text, oklch(0.2 0.01 250));
+    --cngx-breadcrumb-iconlabel-active-bg: color-mix(
+      in oklch,
+      var(--cngx-color-primary, oklch(0.66 0.19 50)) 12%,
+      transparent
+    );
+    --cngx-breadcrumb-iconlabel-active-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+    --cngx-breadcrumb-iconlabel-radius: var(--cngx-radius-pill, 999px);
+    --cngx-breadcrumb-iconlabel-font-size: var(--cngx-font-size-sm, 0.875rem);
+  }
+
+  /* order the projected accessory icon ahead of its label */
+  .cngx-breadcrumb__crumb {
+    flex-direction: row-reverse;
+    gap: 0.4em;
+  }
+
+  .cngx-breadcrumb__link {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.4em 0.7em;
+    border-radius: var(--cngx-breadcrumb-iconlabel-radius);
+    font-size: var(--cngx-breadcrumb-iconlabel-font-size);
+    font-weight: 550;
+    text-decoration: none;
+    color: var(--cngx-breadcrumb-iconlabel-color);
+  }
+
+  .cngx-breadcrumb__link:hover {
+    background: var(--cngx-breadcrumb-iconlabel-hover-bg);
+    color: var(--cngx-breadcrumb-iconlabel-hover-color);
+  }
+
+  .cngx-breadcrumb__link[aria-current='page'] {
+    background: var(--cngx-breadcrumb-iconlabel-active-bg);
+    color: var(--cngx-breadcrumb-iconlabel-active-color);
   }
 }
