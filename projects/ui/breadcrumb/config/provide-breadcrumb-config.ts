@@ -12,10 +12,12 @@ import {
 } from './breadcrumb.config.defaults';
 
 /**
- * Discriminated-union shape returned by `withBreadcrumbAriaLabels` /
- * `withBreadcrumbDataKey`. The reducer in `provideBreadcrumbConfig` /
+ * Discriminated-union shape returned by the breadcrumb config features -
+ * `withBreadcrumbAriaLabels`, `withBreadcrumbDataKey`, `withBreadcrumbIconKey`,
+ * and `withBreadcrumbSkin`. The reducer in `provideBreadcrumbConfig` /
  * `provideBreadcrumbConfigAt` matches on `kind` and merges `payload` into the
- * corresponding config sub-tree. Mirrors `CngxTagConfigFeature` from
+ * corresponding config sub-tree (`dataKey` and `iconKey` both land under the
+ * `router` sub-tree). Mirrors `CngxTagConfigFeature` from
  * `@cngx/common/display` so the consumer's mental model is one across feature
  * areas.
  *
@@ -91,8 +93,9 @@ function mergeConfig(
 
 /**
  * Application-root configuration cascade for the breadcrumb family. Pass any
- * combination of `withBreadcrumbAriaLabels` / `withBreadcrumbDataKey` features
- * in `bootstrapApplication`'s providers array.
+ * combination of `withBreadcrumbAriaLabels`, `withBreadcrumbDataKey`,
+ * `withBreadcrumbIconKey`, and `withBreadcrumbSkin` features in
+ * `bootstrapApplication`'s providers array.
  *
  * Resolution priority (high -> low):
  *   1. Per-instance Input binding.
