@@ -2,7 +2,7 @@ import { Component, provideZonelessChangeDetection, signal } from '@angular/core
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { provideRouter, Router, RouterOutlet } from '@angular/router';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 import { CngxBreadcrumbBar } from './breadcrumb-bar.component';
 import { CngxBreadcrumbIcon } from './breadcrumb-icon.directive';
@@ -86,6 +86,37 @@ function stubPopoverApi(): void {
     }
   }
 }
+
+/**
+ * The bar mounts a {@link CngxResizeObserver} hostDirective, but jsdom ships no
+ * `ResizeObserver`. This file-scoped fake keeps every bar test from throwing on
+ * `new win.ResizeObserver`; it registers each observer so the responsive suite
+ * below can drive a synthetic width. Observers that are never emitted stay at
+ * `width()==0` / `isReady()==false`, so non-responsive tests behave exactly as
+ * before.
+ */
+const resizeInstances: { emit: (width: number) => void }[] = [];
+let originalResizeObserver: typeof globalThis.ResizeObserver | undefined;
+
+class FakeResizeObserver {
+  constructor(cb: (entries: ResizeObserverEntry[]) => void) {
+    resizeInstances.push({
+      emit: (width) => cb([{ contentRect: { width } } as ResizeObserverEntry]),
+    });
+  }
+  observe(): void {}
+  unobserve(): void {}
+  disconnect(): void {}
+}
+
+beforeAll(() => {
+  originalResizeObserver = globalThis.ResizeObserver;
+  (globalThis as { ResizeObserver: unknown }).ResizeObserver = FakeResizeObserver;
+});
+
+afterAll(() => {
+  (globalThis as { ResizeObserver: unknown }).ResizeObserver = originalResizeObserver;
+});
 
 describe('CngxBreadcrumbBar', () => {
   beforeEach(() => {
@@ -596,6 +627,93 @@ class BarSkinCascadeHost {
   readonly items = signal<readonly CngxBreadcrumbCrumb[]>(TRAIL);
   readonly skin = signal<CngxBreadcrumbSkin | undefined>(undefined);
 }
+
+@Component({
+  standalone: true,
+  selector: 'bar-responsive-host',
+  imports: [CngxBreadcrumbBar],
+  template: `
+    <cngx-breadcrumb
+      [items]="items()"
+      [responsive]="responsive()"
+      [maxVisible]="maxVisible()"
+    />
+  `,
+})
+class BarResponsiveHost {
+  readonly items = signal<readonly CngxBreadcrumbCrumb[]>(TRAIL);
+  readonly responsive = signal(false);
+  readonly maxVisible = signal<number | undefined>(undefined);
+}
+
+/**
+ * jsdom fires no real ResizeObserver, so the bar's width source is the file-scoped
+ * fake whose captured callback the test drives with a synthetic content-box width.
+ * That exercises the live `resolveBreadcrumbTier` -> `autoMaxVisible` wiring
+ * without a browser (the real observer path is the Phase 2 e2e).
+ */
+describe('CngxBreadcrumbBar responsive (width-derived maxVisible)', () => {
+  beforeEach(() => {
+    TestBed.resetTestingModule();
+    stubPopoverApi();
+    resizeInstances.length = 0;
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+  });
+
+  function mount(): {
+    fixture: ReturnType<typeof TestBed.createComponent<BarResponsiveHost>>;
+    host: BarResponsiveHost;
+    barEl: HTMLElement;
+    emit: (width: number) => void;
+    collapsed: () => boolean;
+  } {
+    const fixture = TestBed.createComponent(BarResponsiveHost);
+    fixture.detectChanges();
+    const barEl = fixture.debugElement.query(By.css('cngx-breadcrumb')).nativeElement as HTMLElement;
+    return {
+      fixture,
+      host: fixture.componentInstance,
+      barEl,
+      // The bar mounts exactly one ResizeObserver hostDirective.
+      emit: (width) => {
+        resizeInstances.at(-1)?.emit(width);
+        fixture.detectChanges();
+      },
+      // The overflow element renders only when the trail collapses.
+      collapsed: () => barEl.querySelector('cngx-breadcrumb-overflow') !== null,
+    };
+  }
+
+  it('derives maxVisible from the observed width via resolveBreadcrumbTier', () => {
+    const { host, emit, collapsed } = mount();
+    host.responsive.set(true);
+
+    // Wide: TRAIL (4 crumbs) fits the 6-cap tier, no collapse.
+    emit(700);
+    expect(collapsed()).toBe(false);
+
+    // Narrow: the 2-cap tier collapses the middle into the overflow.
+    emit(300);
+    expect(collapsed()).toBe(true);
+  });
+
+  it('lets an explicit [maxVisible] win over the width-derived value', () => {
+    const { host, emit, collapsed } = mount();
+    host.responsive.set(true);
+    host.maxVisible.set(6);
+
+    // Narrow width would resolve to 2 (collapse), but the explicit 6 wins -> no collapse.
+    emit(300);
+    expect(collapsed()).toBe(false);
+  });
+
+  it('never collapses from width when responsive is unset (current default behaviour)', () => {
+    const { emit, collapsed } = mount();
+    // responsive stays false; even a narrow width leaves the width path gated off.
+    emit(300);
+    expect(collapsed()).toBe(false);
+  });
+});
 
 describe('CngxBreadcrumbBar skin cascade', () => {
   beforeEach(() => {

@@ -1,4 +1,4 @@
-<nav cngxBreadcrumb [maxVisible]="maxVisible()" [label]="label()" #bc="cngxBreadcrumb">
+<nav cngxBreadcrumb [maxVisible]="effectiveMaxVisible()" [label]="label()" #bc="cngxBreadcrumb">
   <ol class="cngx-breadcrumb__list">
     @for (crumb of items(); track crumb.href ?? crumb.label; let last = $last; let first = $first) {
       <li class="cngx-breadcrumb__crumb" [style.display]="bc.isCollapsed(crumbRef) ? 'none' : null">
