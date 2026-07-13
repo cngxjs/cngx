@@ -867,8 +867,14 @@
     font-weight: 640;
   }
 
+  /* chevron delimiter instead of the base slash (PoC skin 18 is a chevron skin) */
   .cngx-breadcrumb__separator {
-    display: none;
+    font-size: 0;
+  }
+
+  .cngx-breadcrumb__separator::after {
+    content: '\203A';
+    font-size: var(--cngx-breadcrumb-chips-font-size);
   }
 }
 
