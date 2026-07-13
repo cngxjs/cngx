@@ -52,6 +52,19 @@ class RouterKeyHost {
   readonly key = signal('crumb');
 }
 
+@Component({
+  standalone: true,
+  selector: 'router-icon-host',
+  imports: [CngxBreadcrumbBar, CngxBreadcrumbRouterSync, RouterOutlet],
+  template: `
+    <cngx-breadcrumb cngxRouterSync [iconKey]="iconKey()" />
+    <router-outlet />
+  `,
+})
+class RouterIconHost {
+  readonly iconKey = signal('icon');
+}
+
 // Drains pending microtasks so the router's NavigationEnd propagates through
 // toSignal before assertions. whenStable() has been observed to hang under
 // Node 20 + zoneless tests with Router in providers (mirrors the tabs spec).
@@ -270,6 +283,51 @@ describe('CngxBreadcrumbRouterSync', () => {
 
     const barEl = fixture.debugElement.query(By.css('cngx-breadcrumb')).nativeElement as HTMLElement;
     expect(labels(barEl)).toEqual(['Default']);
+  });
+
+  it('populates crumb.icon from route data[iconKey] and joins the crumb identity (crumbsEqual)', async () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideRouter([
+          { path: 'x', component: Blank, data: { breadcrumb: 'X', icon: 'home', altIcon: 'star' } },
+        ]),
+      ],
+    });
+    const router = TestBed.inject(Router);
+    const fixture = TestBed.createComponent(RouterIconHost);
+    fixture.detectChanges();
+    await flushMicrotasks();
+
+    await router.navigateByUrl('/x');
+    fixture.detectChanges();
+    await flushMicrotasks();
+    fixture.detectChanges();
+
+    const directive = fixture.debugElement
+      .query(By.directive(CngxBreadcrumbRouterSync))
+      .injector.get(CngxBreadcrumbRouterSync);
+    expect(directive.crumbs()[0].icon).toBe('home');
+    const first = directive.crumbs();
+
+    // A same-shape re-navigation keeps the reference (icon unchanged).
+    (router.events as unknown as { next: (e: unknown) => void }).next?.(
+      new NavigationEnd(2, '/x', '/x'),
+    );
+    await flushMicrotasks();
+    expect(directive.crumbs()).toBe(first);
+
+    // Switching iconKey changes only the icon; label/href stay identical, so a
+    // reference swap here proves icon joined crumbsEqual's identity.
+    fixture.componentInstance.iconKey.set('altIcon');
+    fixture.detectChanges();
+    await flushMicrotasks();
+    fixture.detectChanges();
+
+    const second = directive.crumbs();
+    expect(second).not.toBe(first);
+    expect(second[0].icon).toBe('star');
+    expect(second[0].label).toBe('X');
   });
 
   it('is a graceful no-op (empty source) when Router is not provided', () => {

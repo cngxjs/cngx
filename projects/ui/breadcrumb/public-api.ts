@@ -16,6 +16,10 @@ export {
   CngxBreadcrumbItemAccessory,
   type CngxBreadcrumbItemAccessoryContext,
 } from './breadcrumb-item-accessory.directive';
+export {
+  CngxBreadcrumbIcon,
+  type CngxBreadcrumbIconContext,
+} from './breadcrumb-icon.directive';
 export type { CngxBreadcrumbCrumb, CngxBreadcrumbSibling } from './breadcrumb.types';
 export {
   CNGX_BREADCRUMB_ITEMS_SOURCE,
@@ -27,9 +31,14 @@ export {
 } from './breadcrumb-siblings-source.token';
 export { CngxBreadcrumbRouterSync } from './breadcrumb-router-sync.directive';
 export { CngxBreadcrumbSiblingsRouterSync } from './breadcrumb-siblings-router-sync.directive';
-export { type CngxBreadcrumbConfig } from './config/breadcrumb.config';
+export { type CngxBreadcrumbConfig, type CngxBreadcrumbSkin } from './config/breadcrumb.config';
 export { CNGX_BREADCRUMB_CONFIG } from './config/breadcrumb.config.defaults';
-export { withBreadcrumbAriaLabels, withBreadcrumbDataKey } from './config/features';
+export {
+  withBreadcrumbAriaLabels,
+  withBreadcrumbDataKey,
+  withBreadcrumbIconKey,
+  withBreadcrumbSkin,
+} from './config/features';
 export {
   provideBreadcrumbConfig,
   provideBreadcrumbConfigAt,

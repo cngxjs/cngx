@@ -5,12 +5,14 @@ import { provideRouter, Router, RouterOutlet } from '@angular/router';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { CngxBreadcrumbBar } from './breadcrumb-bar.component';
+import { CngxBreadcrumbIcon } from './breadcrumb-icon.directive';
 import { CngxBreadcrumbItemAccessory } from './breadcrumb-item-accessory.directive';
 import { CngxBreadcrumbOverflowItem } from './breadcrumb-overflow-item.directive';
 import { CngxBreadcrumbSiblings } from './breadcrumb-siblings.component';
 import { CngxBreadcrumbSiblingsRouterSync } from './breadcrumb-siblings-router-sync.directive';
 import { CNGX_BREADCRUMB_ITEMS_SOURCE } from './breadcrumb-items-source.token';
-import { withBreadcrumbAriaLabels } from './config/features';
+import type { CngxBreadcrumbSkin } from './config/breadcrumb.config';
+import { withBreadcrumbAriaLabels, withBreadcrumbSkin } from './config/features';
 import { provideBreadcrumbConfig } from './config/provide-breadcrumb-config';
 import type { CngxBreadcrumbCrumb, CngxBreadcrumbSibling } from './breadcrumb.types';
 
@@ -19,6 +21,13 @@ const TRAIL: readonly CngxBreadcrumbCrumb[] = [
   { label: 'Catalog', href: '/catalog' },
   { label: 'Books', href: '/catalog/books' },
   { label: 'The Hobbit' },
+];
+
+const ICON_TRAIL: readonly CngxBreadcrumbCrumb[] = [
+  { label: 'Home', href: '/', icon: 'home' },
+  { label: 'Catalog', href: '/catalog', icon: 'folder' },
+  { label: 'Books', href: '/catalog/books', icon: 'menu_book' },
+  { label: 'The Hobbit', icon: 'description' },
 ];
 
 const CITY_SIBLINGS: readonly CngxBreadcrumbSibling[] = [
@@ -36,7 +45,7 @@ const CITY_SIBLINGS: readonly CngxBreadcrumbSibling[] = [
       [items]="items()"
       [maxVisible]="maxVisible()"
       [label]="label()"
-      [variant]="variant()"
+      [skin]="skin()"
     />
   `,
 })
@@ -44,7 +53,7 @@ class BarHost {
   readonly items = signal<readonly CngxBreadcrumbCrumb[]>(TRAIL);
   readonly maxVisible = signal<number | undefined>(undefined);
   readonly label = signal('Breadcrumb');
-  readonly variant = signal<string | undefined>(undefined);
+  readonly skin = signal<CngxBreadcrumbSkin | undefined>(undefined);
 }
 
 const ROUTER_TRAIL: readonly CngxBreadcrumbCrumb[] = [
@@ -162,14 +171,15 @@ describe('CngxBreadcrumbBar', () => {
     expect(anchors[0].getAttribute('aria-current')).toBeNull();
   });
 
-  it('reflects the variant input as a host class', () => {
+  it('reflects the resolved skin onto [data-skin] (default classic)', () => {
     const { fixture, host, barEl } = setup();
     expect(barEl.classList.contains('cngx-breadcrumb')).toBe(true);
-    expect(barEl.className).not.toContain('cngx-breadcrumb--');
+    // Input unset resolves to the 'classic' cascade default.
+    expect(barEl.getAttribute('data-skin')).toBe('classic');
 
-    host.variant.set('pill');
+    host.skin.set('pill');
     fixture.detectChanges();
-    expect(barEl.classList.contains('cngx-breadcrumb--pill')).toBe(true);
+    expect(barEl.getAttribute('data-skin')).toBe('pill');
     expect(barEl.classList.contains('cngx-breadcrumb')).toBe(true);
   });
 
@@ -318,6 +328,82 @@ describe('CngxBreadcrumbBar', () => {
     );
     expect(rows).toEqual(['Catalog', 'Books']);
   });
+
+  it('renders the *cngxBreadcrumbIcon slot once per crumb inside the link, leading the label span', () => {
+    const fixture = TestBed.createComponent(IconHost);
+    fixture.detectChanges();
+    const barEl = fixture.debugElement.query(By.css('cngx-breadcrumb')).nativeElement as HTMLElement;
+
+    const markers = Array.from(barEl.querySelectorAll<HTMLElement>('.icon-marker'));
+    expect(markers.length).toBe(ICON_TRAIL.length);
+    for (const marker of markers) {
+      const link = marker.closest('a.cngx-breadcrumb__link');
+      expect(link).toBeTruthy();
+      const label = link?.querySelector('span.cngx-breadcrumb__label');
+      expect(label).toBeTruthy();
+      // The icon marker precedes the label span in DOM order (leading icon).
+      expect(
+        marker.compareDocumentPosition(label as Node) & Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+    }
+  });
+
+  it('passes the { crumb, index } context (crumb.icon from [items]) to the icon slot', () => {
+    const fixture = TestBed.createComponent(IconHost);
+    fixture.detectChanges();
+    const barEl = fixture.debugElement.query(By.css('cngx-breadcrumb')).nativeElement as HTMLElement;
+
+    const markers = Array.from(barEl.querySelectorAll<HTMLElement>('.icon-marker'));
+    expect(markers.map((m) => m.dataset['index'])).toEqual(['0', '1', '2', '3']);
+    expect(markers.map((m) => m.dataset['icon'])).toEqual([
+      'home',
+      'folder',
+      'menu_book',
+      'description',
+    ]);
+  });
+
+  it('wraps every label in a .cngx-breadcrumb__label span with the link data-label, and renders no icon markup when the slot is unset', () => {
+    const { links, barEl } = setup();
+    const anchors = links();
+    for (const a of anchors) {
+      const label = a.querySelector('span.cngx-breadcrumb__label');
+      expect(label?.textContent?.trim()).toBe(a.getAttribute('data-label'));
+    }
+    // BarHost projects no icon slot, so nothing extra renders inside the links.
+    expect(barEl.querySelector('.icon-marker')).toBeNull();
+  });
+
+  it('keeps the label in the DOM as the accessible name under the icononly skin (visually hidden, not removed)', () => {
+    const { fixture, host, barEl, links } = setup();
+    host.skin.set('icononly');
+    fixture.detectChanges();
+
+    expect(barEl.getAttribute('data-skin')).toBe('icononly');
+    const anchors = links();
+    expect(anchors.length).toBe(TRAIL.length);
+    for (const a of anchors) {
+      // The label span and the [data-label] the CSS tooltip reads both persist -
+      // icononly hides the label visually via @scope, it never drops it (Pillar 2).
+      const label = a.querySelector('span.cngx-breadcrumb__label');
+      expect(label?.textContent?.trim()).toBe(a.getAttribute('data-label'));
+    }
+    expect(anchors.at(-1)?.getAttribute('aria-current')).toBe('page');
+  });
+
+  it('reflects the shell skin onto [data-skin]', () => {
+    const { fixture, host, barEl } = setup();
+    host.skin.set('shell');
+    fixture.detectChanges();
+    expect(barEl.getAttribute('data-skin')).toBe('shell');
+  });
+
+  it('reflects the record skin onto [data-skin]', () => {
+    const { fixture, host, barEl } = setup();
+    host.skin.set('record');
+    fixture.detectChanges();
+    expect(barEl.getAttribute('data-skin')).toBe('record');
+  });
 });
 
 @Component({
@@ -350,6 +436,22 @@ class OverflowRowHost {
 })
 class AccessoryHost {
   readonly items = signal<readonly CngxBreadcrumbCrumb[]>(TRAIL);
+}
+
+@Component({
+  standalone: true,
+  selector: 'icon-host',
+  imports: [CngxBreadcrumbBar, CngxBreadcrumbIcon],
+  template: `
+    <cngx-breadcrumb [items]="items()">
+      <ng-template cngxBreadcrumbIcon let-crumb let-index="index">
+        <span class="icon-marker" [attr.data-icon]="crumb.icon" [attr.data-index]="index"></span>
+      </ng-template>
+    </cngx-breadcrumb>
+  `,
+})
+class IconHost {
+  readonly items = signal<readonly CngxBreadcrumbCrumb[]>(ICON_TRAIL);
 }
 
 @Component({ standalone: true, template: '' })
@@ -481,5 +583,47 @@ describe('CngxBreadcrumbBar config cascade', () => {
     fixture.detectChanges();
     const nav = (fixture.nativeElement as HTMLElement).querySelector('nav') as HTMLElement;
     expect(nav.getAttribute('aria-label')).toBe('Explicit trail');
+  });
+});
+
+@Component({
+  standalone: true,
+  selector: 'bar-skin-cascade-host',
+  imports: [CngxBreadcrumbBar],
+  template: `<cngx-breadcrumb [items]="items()" [skin]="skin()" />`,
+})
+class BarSkinCascadeHost {
+  readonly items = signal<readonly CngxBreadcrumbCrumb[]>(TRAIL);
+  readonly skin = signal<CngxBreadcrumbSkin | undefined>(undefined);
+}
+
+describe('CngxBreadcrumbBar skin cascade', () => {
+  beforeEach(() => {
+    TestBed.resetTestingModule();
+    stubPopoverApi();
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideBreadcrumbConfig(withBreadcrumbSkin('pill')),
+      ],
+    });
+  });
+
+  function skinOf(fixture: ReturnType<typeof TestBed.createComponent<BarSkinCascadeHost>>): string | null {
+    const bar = (fixture.nativeElement as HTMLElement).querySelector('cngx-breadcrumb') as HTMLElement;
+    return bar.getAttribute('data-skin');
+  }
+
+  it('resolves [data-skin] from the config cascade when no [skin] is bound', () => {
+    const fixture = TestBed.createComponent(BarSkinCascadeHost);
+    fixture.detectChanges();
+    expect(skinOf(fixture)).toBe('pill');
+  });
+
+  it('lets an explicit [skin] win over the config cascade', () => {
+    const fixture = TestBed.createComponent(BarSkinCascadeHost);
+    fixture.componentInstance.skin.set('contained');
+    fixture.detectChanges();
+    expect(skinOf(fixture)).toBe('contained');
   });
 });

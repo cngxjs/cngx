@@ -27,6 +27,7 @@ export const CNGX_BREADCRUMB_DEFAULTS: CngxBreadcrumbConfig = {
   },
   router: {
     dataKey: 'breadcrumb',
+    iconKey: 'icon',
   },
 };
 

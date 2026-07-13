@@ -10,9 +10,24 @@
  */
 export interface CngxBreadcrumbCrumb {
   /** Visible, and accessible, crumb text. */
-  label: string;
-  /** Target for a plain-link crumb. Omit on the terminal crumb. */
-  href?: string;
+  readonly label: string;
+  /**
+   * Target for a plain-link crumb. Omit on the terminal crumb. Keep it unique
+   * across the trail: the bar tracks crumbs by `href ?? label`, so two crumbs
+   * that share an `href` collide on the track key and throw NG0955. The router
+   * source dedups a repeated URL automatically; a hand-built `[items]` array
+   * must not repeat one.
+   */
+  readonly href?: string;
+  /**
+   * Opaque per-crumb icon token. cngx never interprets this string - it is
+   * handed verbatim to the projected `*cngxBreadcrumbIcon` slot as the
+   * `{ crumb }` context, and the consumer's slot renders it with whatever icon
+   * system they use (`<mat-icon>{{ crumb.icon }}</mat-icon>`, an icon font,
+   * inline SVG, `<app-icon>`). cngx ships no icon set and resolves no names.
+   * Omit it and the leading icon slot simply renders nothing for that crumb.
+   */
+  readonly icon?: string;
   /**
    * Static lateral-navigation alternatives for this crumb. When present and
    * non-empty, {@link CngxBreadcrumbBar} auto-renders a
@@ -21,7 +36,7 @@ export interface CngxBreadcrumbCrumb {
    * `*cngxBreadcrumbItemAccessory` slot instead (the bar stays free of
    * `@angular/router`). An empty array renders nothing (the dropdown self-hides).
    */
-  siblings?: readonly CngxBreadcrumbSibling[];
+  readonly siblings?: readonly CngxBreadcrumbSibling[];
 }
 
 /**
@@ -37,9 +52,9 @@ export interface CngxBreadcrumbCrumb {
  */
 export interface CngxBreadcrumbSibling {
   /** Visible, and accessible, sibling text. */
-  label: string;
+  readonly label: string;
   /** Target for a navigable sibling. Omit (or set `current`) on the active level. */
-  href?: string;
+  readonly href?: string;
   /** Marks the sibling representing the current level - rendered as `aria-current="page"`, no link. */
-  current?: boolean;
+  readonly current?: boolean;
 }

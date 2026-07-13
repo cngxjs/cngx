@@ -12,10 +12,12 @@ import {
 } from './breadcrumb.config.defaults';
 
 /**
- * Discriminated-union shape returned by `withBreadcrumbAriaLabels` /
- * `withBreadcrumbDataKey`. The reducer in `provideBreadcrumbConfig` /
+ * Discriminated-union shape returned by the breadcrumb config features -
+ * `withBreadcrumbAriaLabels`, `withBreadcrumbDataKey`, `withBreadcrumbIconKey`,
+ * and `withBreadcrumbSkin`. The reducer in `provideBreadcrumbConfig` /
  * `provideBreadcrumbConfigAt` matches on `kind` and merges `payload` into the
- * corresponding config sub-tree. Mirrors `CngxTagConfigFeature` from
+ * corresponding config sub-tree (`dataKey` and `iconKey` both land under the
+ * `router` sub-tree). Mirrors `CngxTagConfigFeature` from
  * `@cngx/common/display` so the consumer's mental model is one across feature
  * areas.
  *
@@ -30,6 +32,10 @@ export type CngxBreadcrumbConfigFeature =
   | {
       readonly kind: 'router';
       readonly payload: NonNullable<CngxBreadcrumbConfig['router']>;
+    }
+  | {
+      readonly kind: 'skin';
+      readonly payload: { readonly skin: NonNullable<CngxBreadcrumbConfig['skin']> };
     };
 
 /**
@@ -45,6 +51,7 @@ function reduceFeatures(
   const out: {
     ariaLabels?: NonNullable<CngxBreadcrumbConfig['ariaLabels']>;
     router?: NonNullable<CngxBreadcrumbConfig['router']>;
+    skin?: NonNullable<CngxBreadcrumbConfig['skin']>;
   } = {};
   for (const f of features) {
     switch (f.kind) {
@@ -54,18 +61,22 @@ function reduceFeatures(
       case 'router':
         out.router = { ...out.router, ...f.payload };
         break;
+      case 'skin':
+        out.skin = f.payload.skin;
+        break;
     }
   }
   return out;
 }
 
 /**
- * Two-level deep merge: top-level keys (`ariaLabels` / `router`) are
+ * Two-level deep merge: nested sub-tree keys (`ariaLabels` / `router`) are
  * spread-merged so the partial fills in missing keys without nuking unrelated
- * config sub-trees. Inner objects are flat (one level), so a single spread per
- * key suffices. Invariant: a config key nested more than one level deep would
- * shallow-merge silently here - if the config ever grows a nested sub-tree, add
- * a dedicated spread for it rather than relying on this pass.
+ * config sub-trees; the flat top-level scalar `skin` takes the partial when
+ * present, else the base. Inner objects are flat (one level), so a single
+ * spread per key suffices. Invariant: a config key nested more than one level
+ * deep would shallow-merge silently here - if the config ever grows a nested
+ * sub-tree, add a dedicated spread for it rather than relying on this pass.
  *
  * @internal
  */
@@ -76,13 +87,15 @@ function mergeConfig(
   return {
     ariaLabels: { ...base.ariaLabels, ...partial.ariaLabels },
     router: { ...base.router, ...partial.router },
+    skin: partial.skin ?? base.skin,
   };
 }
 
 /**
  * Application-root configuration cascade for the breadcrumb family. Pass any
- * combination of `withBreadcrumbAriaLabels` / `withBreadcrumbDataKey` features
- * in `bootstrapApplication`'s providers array.
+ * combination of `withBreadcrumbAriaLabels`, `withBreadcrumbDataKey`,
+ * `withBreadcrumbIconKey`, and `withBreadcrumbSkin` features in
+ * `bootstrapApplication`'s providers array.
  *
  * Resolution priority (high -> low):
  *   1. Per-instance Input binding.

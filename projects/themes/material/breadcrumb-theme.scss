@@ -11,12 +11,12 @@
 // native alongside Material navigation. The collapsed-crumb menu and the
 // sibling list both sit inside a CngxPopoverPanel surface themed by
 // popover-panel-theme.scss, so the chrome (background, elevation, radius) is
-// not re-declared here - only the leaf link / current / separator colours, the
-// two variant chips, and the overflow / siblings trigger + row-hover knobs.
+// not re-declared here - only the leaf link / current / separator colours and
+// the overflow / siblings trigger + row-hover knobs. Every skin chip (contained
+// included) self-assigns from --cngx-color-* in its own :scope.
 //
 // Token namespaces, one include:
-//   - --cngx-breadcrumb-*          the bar: link, current, separator, gap,
-//                                  and the contained / pill variant chips
+//   - --cngx-breadcrumb-*          the bar: link, current, separator, gap
 //   - --cngx-breadcrumb-overflow-* the ellipsis trigger + collapsed-crumb rows
 //   - --cngx-breadcrumb-siblings-* the sibling chevron trigger + row hover +
 //                                  the sibling anchor colour
@@ -29,23 +29,19 @@
   @if mat.get-theme-version($theme) == 1 {
     // --mat-sys-* already carries light and dark, so one assignment tracks
     // both theme types without a separate prefers-color-scheme block.
+    // Base bar colours only. Every skin - contained included - self-assigns its
+    // chip fills from --cngx-color-* in its own :scope (bridged system-wide by
+    // system-bridge.scss, and the unlayered :scope wins over this layered
+    // assignment anyway), so no per-skin chip token is bridged here. The record
+    // skin's status colour is likewise the cngx --cngx-color-success token by
+    // design - Material 3 has no success role to bridge onto.
     --cngx-breadcrumb-link-color: var(--mat-sys-primary);
     --cngx-breadcrumb-current-color: var(--mat-sys-on-surface);
     --cngx-breadcrumb-separator-color: var(--mat-sys-on-surface-variant);
-
-    // The contained / pill skins paint a surface-container chip on the
-    // outline; both variant classes read these same knobs.
-    --cngx-breadcrumb-contained-bg: var(--mat-sys-surface-container);
-    --cngx-breadcrumb-contained-border-color: var(--mat-sys-outline-variant);
-    --cngx-breadcrumb-pill-bg: var(--mat-sys-surface-container);
   } @else {
     --cngx-breadcrumb-link-color: #{mat.get-theme-color($theme, primary)};
     --cngx-breadcrumb-current-color: #{mat.get-theme-color($theme, foreground, text)};
     --cngx-breadcrumb-separator-color: #{rgba(mat.get-theme-color($theme, foreground, text), 0.6)};
-
-    --cngx-breadcrumb-contained-bg: #{mat.get-theme-color($theme, background, card)};
-    --cngx-breadcrumb-contained-border-color: #{rgba(mat.get-theme-color($theme, foreground, divider), 0.12)};
-    --cngx-breadcrumb-pill-bg: #{mat.get-theme-color($theme, background, card)};
   }
 }
 
@@ -65,9 +61,23 @@
 @mixin _overflow($theme) {
   @if mat.get-theme-version($theme) == 1 {
     --cngx-breadcrumb-overflow-trigger-color: var(--mat-sys-on-surface-variant);
+    --cngx-breadcrumb-overflow-trigger-bg: var(--mat-sys-surface-container);
+    --cngx-breadcrumb-overflow-trigger-border: var(--mat-sys-outline-variant);
+    --cngx-breadcrumb-overflow-trigger-hover-bg: color-mix(in srgb, var(--mat-sys-primary) 12%, transparent);
+    --cngx-breadcrumb-overflow-trigger-hover-color: var(--mat-sys-primary);
+    --cngx-breadcrumb-overflow-trigger-hover-border: var(--mat-sys-primary);
+    --cngx-breadcrumb-overflow-item-color: var(--mat-sys-on-surface-variant);
+    --cngx-breadcrumb-overflow-item-hover-color: var(--mat-sys-on-surface);
     --cngx-breadcrumb-overflow-item-hover-bg: color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent);
   } @else {
     --cngx-breadcrumb-overflow-trigger-color: #{rgba(mat.get-theme-color($theme, foreground, text), 0.6)};
+    --cngx-breadcrumb-overflow-trigger-bg: #{mat.get-theme-color($theme, background, card)};
+    --cngx-breadcrumb-overflow-trigger-border: #{rgba(mat.get-theme-color($theme, foreground, divider), 0.12)};
+    --cngx-breadcrumb-overflow-trigger-hover-bg: color-mix(in srgb, #{mat.get-theme-color($theme, primary)} 12%, transparent);
+    --cngx-breadcrumb-overflow-trigger-hover-color: #{mat.get-theme-color($theme, primary)};
+    --cngx-breadcrumb-overflow-trigger-hover-border: #{mat.get-theme-color($theme, primary)};
+    --cngx-breadcrumb-overflow-item-color: #{rgba(mat.get-theme-color($theme, foreground, text), 0.6)};
+    --cngx-breadcrumb-overflow-item-hover-color: #{mat.get-theme-color($theme, foreground, text)};
     --cngx-breadcrumb-overflow-item-hover-bg: color-mix(in srgb, currentColor 8%, transparent);
   }
 }
@@ -81,11 +91,25 @@
 @mixin _siblings($theme) {
   @if mat.get-theme-version($theme) == 1 {
     --cngx-breadcrumb-siblings-trigger-color: var(--mat-sys-on-surface-variant);
+    --cngx-breadcrumb-siblings-trigger-hover-bg: color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent);
+    --cngx-breadcrumb-siblings-trigger-hover-color: var(--mat-sys-on-surface);
+    --cngx-breadcrumb-siblings-trigger-open-bg: color-mix(in srgb, var(--mat-sys-primary) 12%, transparent);
+    --cngx-breadcrumb-siblings-trigger-open-color: var(--mat-sys-primary);
+    --cngx-breadcrumb-siblings-item-color: var(--mat-sys-on-surface-variant);
+    --cngx-breadcrumb-siblings-item-hover-color: var(--mat-sys-on-surface);
     --cngx-breadcrumb-siblings-item-hover-bg: color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent);
+    --cngx-breadcrumb-siblings-item-current-color: var(--mat-sys-primary);
     --cngx-breadcrumb-siblings-link-color: var(--mat-sys-primary);
   } @else {
     --cngx-breadcrumb-siblings-trigger-color: #{rgba(mat.get-theme-color($theme, foreground, text), 0.6)};
+    --cngx-breadcrumb-siblings-trigger-hover-bg: color-mix(in srgb, currentColor 8%, transparent);
+    --cngx-breadcrumb-siblings-trigger-hover-color: #{mat.get-theme-color($theme, foreground, text)};
+    --cngx-breadcrumb-siblings-trigger-open-bg: color-mix(in srgb, #{mat.get-theme-color($theme, primary)} 12%, transparent);
+    --cngx-breadcrumb-siblings-trigger-open-color: #{mat.get-theme-color($theme, primary)};
+    --cngx-breadcrumb-siblings-item-color: #{rgba(mat.get-theme-color($theme, foreground, text), 0.6)};
+    --cngx-breadcrumb-siblings-item-hover-color: #{mat.get-theme-color($theme, foreground, text)};
     --cngx-breadcrumb-siblings-item-hover-bg: color-mix(in srgb, currentColor 8%, transparent);
+    --cngx-breadcrumb-siblings-item-current-color: #{mat.get-theme-color($theme, primary)};
     --cngx-breadcrumb-siblings-link-color: #{mat.get-theme-color($theme, primary)};
   }
 }
