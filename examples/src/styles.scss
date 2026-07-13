@@ -3742,7 +3742,17 @@ cngx-radio-group .cngx-radio + .cngx-radio {
 // Demo-only resizable frame for the responsive breadcrumb story. The resize
 // affordance (resize/overflow/padding) stays inline as layout; the border
 // chrome is thematic and lives here so no colour literal leaks into the story.
+// Demo-only frame: gives a breadcrumb a resizable, width-capped box so the
+// reader can drag the right edge (or narrow the window) and watch the trail
+// collapse. Layout-only chrome - the artifact is the <cngx-breadcrumb> itself.
+// The bar host sets none of these props, so a single-class selector wins.
 .demo-breadcrumb-resizable {
+  display: block;
+  resize: horizontal;
+  overflow: auto;
+  min-width: 220px;
+  max-width: 100%;
+  padding: 0.75rem;
   border: 1px dashed var(--cngx-color-border, var(--cngx-ex-border, #cbd5e1));
   border-radius: var(--cngx-radius-sm, 4px);
 }

@@ -70,6 +70,11 @@ export {
   type CngxBreadcrumbCollapseStrategy,
 } from './breadcrumb/breadcrumb-collapse';
 export { CNGX_BREADCRUMB_COLLAPSE_STRATEGY } from './breadcrumb/breadcrumb-collapse.token';
+export {
+  DEFAULT_BREADCRUMB_WIDTH_TIERS,
+  resolveBreadcrumbTier,
+  type CngxBreadcrumbWidthTier,
+} from './breadcrumb/breadcrumb-responsive';
 export { CngxToggle } from './toggle/toggle.component';
 export { CngxCheckbox } from './checkbox/checkbox.component';
 export { CngxCheckboxGroup } from './checkbox-group/checkbox-group.component';
