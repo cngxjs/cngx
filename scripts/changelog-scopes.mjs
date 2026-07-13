@@ -12,6 +12,7 @@
 export const LIBRARY_SCOPES = [
   'utils',
   'core',
+  'core/theming',
   'common',
   'common/a11y',
   'common/interactive',
