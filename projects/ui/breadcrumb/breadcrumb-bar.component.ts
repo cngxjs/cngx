@@ -18,6 +18,7 @@ import { CngxBreadcrumbOverflow } from './breadcrumb-overflow.component';
 import { CngxBreadcrumbOverflowItem } from './breadcrumb-overflow-item.directive';
 import { CngxBreadcrumbSiblings } from './breadcrumb-siblings.component';
 import { CNGX_BREADCRUMB_ITEMS_SOURCE } from './breadcrumb-items-source.token';
+import type { CngxBreadcrumbSkin } from './config/breadcrumb.config';
 import { injectBreadcrumbConfig } from './config/inject-breadcrumb-config';
 import type { CngxBreadcrumbCrumb } from './breadcrumb.types';
 
@@ -35,7 +36,7 @@ import type { CngxBreadcrumbCrumb } from './breadcrumb.types';
  * the trail through a token, never by writing this component's `input()`.
  *
  * ```html
- * <cngx-breadcrumb [items]="crumbs" [maxVisible]="4" variant="pill" />
+ * <cngx-breadcrumb [items]="crumbs" [maxVisible]="4" skin="pill" />
  * ```
  *
  * @category ui/breadcrumb
@@ -63,7 +64,8 @@ import type { CngxBreadcrumbCrumb } from './breadcrumb.types';
   templateUrl: './breadcrumb-bar.component.html',
   styleUrl: './breadcrumb-bar.component.css',
   host: {
-    '[class]': 'hostClass()',
+    class: 'cngx-breadcrumb',
+    '[attr.data-skin]': 'resolvedSkin()',
   },
 })
 export class CngxBreadcrumbBar {
@@ -76,8 +78,12 @@ export class CngxBreadcrumbBar {
 
   /** Accessible name of the `nav` landmark. Falls back through the config cascade to the EN default. */
   readonly label = input<string>(this.cfg.ariaLabels?.bar ?? 'Breadcrumb');
-  /** Visual skin, mapped to a `cngx-breadcrumb--{variant}` host class. */
-  readonly variant = input<string | undefined>(undefined);
+  /**
+   * Visual skin, reflected onto `[data-skin]`. Cascade `input ?? config.skin ??
+   * 'classic'`, resolved by {@link resolvedSkin}. Pure thematic concern -
+   * structure, slots, and ARIA are identical across values.
+   */
+  readonly skin = input<CngxBreadcrumbSkin | undefined>(undefined);
 
   private readonly itemsSource = inject(CNGX_BREADCRUMB_ITEMS_SOURCE, { optional: true });
 
@@ -100,8 +106,8 @@ export class CngxBreadcrumbBar {
   /** The rendered trail: a provided source wins over the `[items]` input (controlled/uncontrolled). */
   protected readonly items = createControlledSource(this.itemsSource?.crumbs, this.itemsInput);
 
-  protected readonly hostClass = computed(() => {
-    const variant = this.variant();
-    return variant ? `cngx-breadcrumb cngx-breadcrumb--${variant}` : 'cngx-breadcrumb';
-  });
+  /** Resolved skin (`input ?? config.skin ?? 'classic'`), reflected onto `[data-skin]`. */
+  protected readonly resolvedSkin = computed<CngxBreadcrumbSkin>(
+    () => this.skin() ?? this.cfg.skin ?? 'classic',
+  );
 }
