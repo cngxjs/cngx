@@ -1203,9 +1203,12 @@
     color: var(--cngx-breadcrumb-icononly-active-color);
   }
 
-  /* pure-CSS tooltip from [data-label], on hover AND keyboard focus */
+  /* pure-CSS tooltip from [data-label], on hover AND keyboard focus. The `/ ''`
+     empty alt text keeps the generated content out of the accessible-name
+     computation, so the link's name stays the (visually hidden) label span
+     alone, never doubled (Pillar 2). */
   .cngx-breadcrumb__link::after {
-    content: attr(data-label);
+    content: attr(data-label) / '';
     position: absolute;
     bottom: calc(100% + 8px);
     left: 50%;
