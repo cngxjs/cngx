@@ -1,11 +1,11 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxBreadcrumbBar: variant skins',
+  title: 'CngxBreadcrumbBar: skins',
   subtitle:
-    'The <code>variant</code> input maps to a <code>cngx-breadcrumb--{variant}</code> host class, not a set of boolean flags. <code>plain</code>, <code>contained</code>, and <code>pill</code> each retint the same leaf tokens the structural rules already read, so the structure stays variant-agnostic (Pillar 3).',
+    'The typed <code>skin</code> input reflects onto a <code>[data-skin]</code> host attribute, not a set of boolean flags. <code>plain</code>, <code>contained</code>, and <code>pill</code> each paint through their own <code>@scope</code> block, retinting the same leaf tokens the structural rules already read, so the structure stays skin-agnostic (Pillar 3).',
   description:
-    'Every thematic value resolves from a <code>--cngx-breadcrumb-*</code> custom property with a fallback, so a consumer retheme is a token override - no fork of the template. Add your own variant by defining <code>.cngx-breadcrumb--brand</code> against those same tokens.',
+    'Every thematic value resolves from a <code>--cngx-breadcrumb-*</code> custom property declared as a <code>@property</code> under <code>@group Skin</code>, so a consumer retheme is a token override - no fork of the template. The skin resolves through the cascade <code>input ?? config.skin ?? \'classic\'</code>; set an app-wide default with <code>withBreadcrumbSkin(...)</code>.',
   level: 'organism',
   audience: ['dev', 'design'],
   artifact: 'standalone',
@@ -20,8 +20,8 @@ export const STORY: DemoSpec = {
     { label: 'The Hobbit' },
   ];`,
   template: `  <div style="display: flex; flex-direction: column; gap: 1rem;">
-    <cngx-breadcrumb [items]="crumbs" variant="plain" label="Plain breadcrumb" />
-    <cngx-breadcrumb [items]="crumbs" variant="contained" label="Contained breadcrumb" />
-    <cngx-breadcrumb [items]="crumbs" variant="pill" label="Pill breadcrumb" />
+    <cngx-breadcrumb [items]="crumbs" skin="plain" label="Plain breadcrumb" />
+    <cngx-breadcrumb [items]="crumbs" skin="contained" label="Contained breadcrumb" />
+    <cngx-breadcrumb [items]="crumbs" skin="pill" label="Pill breadcrumb" />
   </div>`,
 };
