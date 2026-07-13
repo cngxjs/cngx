@@ -106,6 +106,23 @@ test.describe('ui/data-grid-accordion — row spacing derives from the density s
   });
 });
 
+test.describe('ui/accordion — default padding derives from the density scale', () => {
+  test.beforeEach(async ({ page }) => {
+    // A panel-content route renders a default (unskinned) cngx-accordion-group,
+    // loading the global accordion CSS (ViewEncapsulation.None).
+    await gotoDemo(page, 'ui/accordion/panel-content/checklist');
+    await expect(page.locator('.cngx-accordion-group').first()).toBeVisible();
+  });
+
+  test('unskinned default header-padding tracks density (8px 16px -> 4px 8px)', async ({ page }) => {
+    const GROUP = 'cngx-accordion-group';
+    expect(await resolveVar(page, GROUP, '--cngx-accordion-header-padding')).toBe('8px 16px');
+    expect(
+      await resolveVar(page, GROUP, '--cngx-accordion-header-padding', { density: 'compact' }),
+    ).toBe('4px 8px');
+  });
+});
+
 test.describe('common/card — padding derives from the density scale', () => {
   test.beforeEach(async ({ page }) => {
     // Any card route loads the global .cngx-card CSS (ViewEncapsulation.None).
