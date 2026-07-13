@@ -373,6 +373,23 @@ describe('CngxBreadcrumbBar', () => {
     // BarHost projects no icon slot, so nothing extra renders inside the links.
     expect(barEl.querySelector('.icon-marker')).toBeNull();
   });
+
+  it('keeps the label in the DOM as the accessible name under the icononly skin (visually hidden, not removed)', () => {
+    const { fixture, host, barEl, links } = setup();
+    host.skin.set('icononly');
+    fixture.detectChanges();
+
+    expect(barEl.getAttribute('data-skin')).toBe('icononly');
+    const anchors = links();
+    expect(anchors.length).toBe(TRAIL.length);
+    for (const a of anchors) {
+      // The label span and the [data-label] the CSS tooltip reads both persist -
+      // icononly hides the label visually via @scope, it never drops it (Pillar 2).
+      const label = a.querySelector('span.cngx-breadcrumb__label');
+      expect(label?.textContent?.trim()).toBe(a.getAttribute('data-label'));
+    }
+    expect(anchors.at(-1)?.getAttribute('aria-current')).toBe('page');
+  });
 });
 
 @Component({

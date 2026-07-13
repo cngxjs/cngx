@@ -1088,3 +1088,154 @@
     font-size: var(--cngx-breadcrumb-iconlabel-font-size);
   }
 }
+
+/* ---- Content-structural skins (Phase C) ---------------------------------
+   Each drives the shared slot family (leading `*cngxBreadcrumbIcon`, trailing
+   `*cngxBreadcrumbItemAccessory`) plus `@scope` paint - the bar carries no
+   skin-conditional branch (Pillar 3). Colour tokens are `@property` under
+   `@group Skin` and assigned adaptively in each `:scope` from `--cngx-color-*`
+   so a registered `@property`'s fixed initial never defeats a dark theme. */
+
+/* 12 Icon Only - compact icon-square crumbs. The label is visually hidden but
+   stays the accessible name (Pillar 2); a pure-CSS tooltip surfaces it from
+   `[data-label]` on hover and keyboard focus. The leading icon rides the
+   `*cngxBreadcrumbIcon` slot (consumer content). */
+@property --cngx-breadcrumb-icononly-color {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.5 0.01 250);
+}
+@property --cngx-breadcrumb-icononly-hover-bg {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.97 0.005 250);
+}
+@property --cngx-breadcrumb-icononly-hover-color {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.2 0.01 250);
+}
+@property --cngx-breadcrumb-icononly-active-bg {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.66 0.19 50);
+}
+@property --cngx-breadcrumb-icononly-active-color {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(1 0 0);
+}
+@property --cngx-breadcrumb-icononly-tip-bg {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.2 0.01 250);
+}
+@property --cngx-breadcrumb-icononly-tip-color {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(1 0 0);
+}
+@property --cngx-breadcrumb-icononly-radius {
+  syntax: '*';
+  inherits: true;
+  initial-value: 4px;
+}
+@property --cngx-breadcrumb-icononly-font-size {
+  syntax: '*';
+  inherits: true;
+  initial-value: 0.875rem;
+}
+
+@scope (.cngx-breadcrumb[data-skin='icononly']) {
+  :scope {
+    --cngx-breadcrumb-icononly-color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
+    --cngx-breadcrumb-icononly-hover-bg: color-mix(
+      in oklch,
+      var(--cngx-color-text, oklch(0.2 0.01 250)) 5%,
+      var(--cngx-color-surface, oklch(1 0 0))
+    );
+    --cngx-breadcrumb-icononly-hover-color: var(--cngx-color-text, oklch(0.2 0.01 250));
+    --cngx-breadcrumb-icononly-active-bg: var(--cngx-color-primary, oklch(0.66 0.19 50));
+    --cngx-breadcrumb-icononly-active-color: var(--cngx-color-on-primary, oklch(1 0 0));
+    --cngx-breadcrumb-icononly-tip-bg: var(--cngx-color-text, oklch(0.2 0.01 250));
+    --cngx-breadcrumb-icononly-tip-color: var(--cngx-color-surface, oklch(1 0 0));
+    --cngx-breadcrumb-icononly-radius: var(--cngx-radius-sm, 4px);
+    --cngx-breadcrumb-icononly-font-size: var(--cngx-font-size-sm, 0.875rem);
+  }
+
+  .cngx-breadcrumb__list {
+    gap: var(--cngx-space-xs, 0.25rem);
+  }
+
+  /* structural: each crumb is a fixed icon square */
+  .cngx-breadcrumb__link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--cngx-breadcrumb-icononly-radius);
+    text-decoration: none;
+    color: var(--cngx-breadcrumb-icononly-color);
+  }
+
+  /* hide the label visually but keep it the accessible name (skins.md .vh) */
+  .cngx-breadcrumb__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .cngx-breadcrumb__link:hover {
+    background: var(--cngx-breadcrumb-icononly-hover-bg);
+    color: var(--cngx-breadcrumb-icononly-hover-color);
+  }
+
+  .cngx-breadcrumb__link[aria-current='page'] {
+    background: var(--cngx-breadcrumb-icononly-active-bg);
+    color: var(--cngx-breadcrumb-icononly-active-color);
+  }
+
+  /* pure-CSS tooltip from [data-label], on hover AND keyboard focus */
+  .cngx-breadcrumb__link::after {
+    content: attr(data-label);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    translate: -50% 0;
+    padding: 0.3em 0.6em;
+    border-radius: var(--cngx-breadcrumb-icononly-radius);
+    background: var(--cngx-breadcrumb-icononly-tip-bg);
+    color: var(--cngx-breadcrumb-icononly-tip-color);
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+    box-shadow: var(--cngx-shadow-md, 0 4px 12px oklch(0 0 0 / 0.15));
+    z-index: 30;
+  }
+
+  .cngx-breadcrumb__link:hover::after,
+  .cngx-breadcrumb__link:focus-visible::after {
+    opacity: 1;
+  }
+
+  /* chevron delimiter */
+  .cngx-breadcrumb__separator {
+    font-size: 0;
+  }
+
+  .cngx-breadcrumb__separator::after {
+    content: '\203A';
+    font-size: var(--cngx-breadcrumb-icononly-font-size);
+  }
+}
