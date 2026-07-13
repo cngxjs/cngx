@@ -36,6 +36,7 @@ export { CNGX_BREADCRUMB_CONFIG } from './config/breadcrumb.config.defaults';
 export {
   withBreadcrumbAriaLabels,
   withBreadcrumbDataKey,
+  withBreadcrumbIconKey,
   withBreadcrumbSkin,
 } from './config/features';
 export {

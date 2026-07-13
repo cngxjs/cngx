@@ -72,6 +72,11 @@ export interface CngxBreadcrumbConfig {
   readonly router?: {
     /** Route-data key the router-sync directives read crumbs/siblings from. */
     readonly dataKey?: string;
+    /**
+     * Route-data key `CngxBreadcrumbRouterSync` reads the per-crumb opaque
+     * icon token from (default `'icon'`). Mirrors `dataKey` for cascade parity.
+     */
+    readonly iconKey?: string;
   };
 
   /**

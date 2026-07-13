@@ -39,6 +39,22 @@ export function withBreadcrumbDataKey(dataKey: string): CngxBreadcrumbConfigFeat
 }
 
 /**
+ * Override the route-data key `CngxBreadcrumbRouterSync` reads the per-crumb
+ * opaque icon token from (default `'icon'`). Per-instance `[iconKey]` still
+ * wins. Mirrors `withBreadcrumbDataKey` for cascade parity.
+ *
+ * ```ts
+ * provideBreadcrumbConfig(withBreadcrumbIconKey('glyph'));
+ * ```
+ *
+ * @category ui/breadcrumb
+ * @since 0.1.0
+ */
+export function withBreadcrumbIconKey(iconKey: string): CngxBreadcrumbConfigFeature {
+  return { kind: 'router', payload: { iconKey } };
+}
+
+/**
  * Select the app-wide default visual skin for `CngxBreadcrumbBar`. Per-instance
  * `[skin]` still wins; this only moves the cascade default. Structure, slots,
  * and ARIA are identical across skins - only the `[data-skin]` host attribute

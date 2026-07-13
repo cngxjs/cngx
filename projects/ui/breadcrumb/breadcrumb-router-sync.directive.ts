@@ -20,13 +20,14 @@ import type { CngxBreadcrumbCrumb } from './breadcrumb.types';
 /**
  * Positional shape equality for two crumb trails. The router source maps a
  * fresh crumb literal per navigation, so reference equality (`Object.is`)
- * would treat every `NavigationEnd` as a change; comparing `label`/`href`
+ * would treat every `NavigationEnd` as a change; comparing `label`/`href`/`icon`
  * lets a same-shape navigation keep the previous signal reference and stops
  * it cascading the bar (reference_signal_architecture Equality Rule).
  *
- * The router source emits `href` only, so `label`/`href` fully describe a
- * crumb's identity here. When SPA-link emission lands, its equality is defined
- * alongside it.
+ * The router source populates `label`, `href`, and (from `data[iconKey]`)
+ * `icon`, so those three fully describe a crumb's identity here - `icon` must be
+ * compared or an icon-only route-data change never propagates. When SPA-link
+ * emission lands, its equality is defined alongside it.
  */
 function crumbsEqual(
   a: readonly CngxBreadcrumbCrumb[],
@@ -39,7 +40,7 @@ function crumbsEqual(
     return false;
   }
   for (let i = 0; i < a.length; i++) {
-    if (a[i].label !== b[i].label || a[i].href !== b[i].href) {
+    if (a[i].label !== b[i].label || a[i].href !== b[i].href || a[i].icon !== b[i].icon) {
       return false;
     }
   }
@@ -100,6 +101,13 @@ export class CngxBreadcrumbRouterSync implements CngxBreadcrumbItemsSource {
    */
   readonly dataKey = input<string>(this.cfg.router?.dataKey ?? 'breadcrumb');
 
+  /**
+   * Route `data` key each crumb's opaque icon token is read from. Falls back
+   * through the config cascade to `'icon'`; override per-instance to read a
+   * different key (mirrors `dataKey`).
+   */
+  readonly iconKey = input<string>(this.cfg.router?.iconKey ?? 'icon');
+
   /** The router-derived trail. Wins over the bar's `[items]` input. */
   readonly crumbs: Signal<readonly CngxBreadcrumbCrumb[]>;
 
@@ -129,7 +137,7 @@ export class CngxBreadcrumbRouterSync implements CngxBreadcrumbItemsSource {
     // read imperatively per recompute; navEnd is the tracked trigger (Pillar 1).
     this.crumbs = computed(() => {
       navEnd();
-      return buildCrumbs(router, this.dataKey());
+      return buildCrumbs(router, this.dataKey(), this.iconKey());
     }, { equal: crumbsEqual });
   }
 }
@@ -137,9 +145,15 @@ export class CngxBreadcrumbRouterSync implements CngxBreadcrumbItemsSource {
 /**
  * Walks the activated route tree from the root down the firstChild chain,
  * accumulating the URL and emitting one crumb per route whose `data[dataKey]`
- * is a non-empty string.
+ * is a non-empty string. A non-empty `data[iconKey]` string rides onto the
+ * crumb's opaque `icon` (the leading icon slot renders it; deepest wins on the
+ * componentless-collapse branch, like the label).
  */
-function buildCrumbs(router: Router, dataKey: string): readonly CngxBreadcrumbCrumb[] {
+function buildCrumbs(
+  router: Router,
+  dataKey: string,
+  iconKey: string,
+): readonly CngxBreadcrumbCrumb[] {
   const crumbs: CngxBreadcrumbCrumb[] = [];
   let route: ActivatedRouteSnapshot | null = router.routerState.snapshot.root;
   let url = '';
@@ -151,15 +165,18 @@ function buildCrumbs(router: Router, dataKey: string): readonly CngxBreadcrumbCr
     const raw: unknown = route.data[dataKey];
     if (typeof raw === 'string' && raw.length > 0) {
       const href = url || '/';
+      const rawIcon: unknown = route.data[iconKey];
+      const icon = typeof rawIcon === 'string' && rawIcon.length > 0 ? rawIcon : undefined;
+      const next: CngxBreadcrumbCrumb = icon !== undefined ? { label: raw, href, icon } : { label: raw, href };
       const prev = crumbs[crumbs.length - 1];
       if (prev?.href === href) {
         // A segment-less (componentless) route carrying a breadcrumb reuses the
-        // parent URL; collapse it into one crumb - deepest label wins - so the
-        // trail never emits a duplicate href, which is the bar's @for track key
-        // and would throw NG0955 on a duplicate.
-        crumbs[crumbs.length - 1] = { label: raw, href };
+        // parent URL; collapse it into one crumb - deepest label/icon wins - so
+        // the trail never emits a duplicate href, which is the bar's @for track
+        // key and would throw NG0955 on a duplicate.
+        crumbs[crumbs.length - 1] = next;
       } else {
-        crumbs.push({ label: raw, href });
+        crumbs.push(next);
       }
     }
     route = route.firstChild;
