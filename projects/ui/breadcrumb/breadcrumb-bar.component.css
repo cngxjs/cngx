@@ -1239,3 +1239,112 @@
     font-size: var(--cngx-breadcrumb-icononly-font-size);
   }
 }
+
+/* 16 Product Shell - the root is a product chip (an initial mark), the rest a
+   muted path. The `.product-mark` rides the `*cngxBreadcrumbIcon` slot, gated on
+   index 0 in the consumer markup. */
+@property --cngx-breadcrumb-shell-color {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.5 0.01 250);
+}
+@property --cngx-breadcrumb-shell-hover-bg {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.97 0.005 250);
+}
+@property --cngx-breadcrumb-shell-text {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.2 0.01 250);
+}
+@property --cngx-breadcrumb-shell-mark-bg {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.66 0.19 50);
+}
+@property --cngx-breadcrumb-shell-mark-color {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(1 0 0);
+}
+@property --cngx-breadcrumb-shell-font-size {
+  syntax: '*';
+  inherits: true;
+  initial-value: 0.875rem;
+}
+@property --cngx-breadcrumb-shell-radius {
+  syntax: '*';
+  inherits: true;
+  initial-value: 4px;
+}
+
+@scope (.cngx-breadcrumb[data-skin='shell']) {
+  :scope {
+    --cngx-breadcrumb-shell-color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
+    --cngx-breadcrumb-shell-hover-bg: color-mix(
+      in oklch,
+      var(--cngx-color-text, oklch(0.2 0.01 250)) 5%,
+      var(--cngx-color-surface, oklch(1 0 0))
+    );
+    --cngx-breadcrumb-shell-text: var(--cngx-color-text, oklch(0.2 0.01 250));
+    --cngx-breadcrumb-shell-mark-bg: var(--cngx-color-primary, oklch(0.66 0.19 50));
+    --cngx-breadcrumb-shell-mark-color: var(--cngx-color-on-primary, oklch(1 0 0));
+    --cngx-breadcrumb-shell-font-size: var(--cngx-font-size-sm, 0.875rem);
+    --cngx-breadcrumb-shell-radius: var(--cngx-radius-sm, 4px);
+  }
+
+  .cngx-breadcrumb__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    padding: 0.3em 0.5em;
+    border-radius: var(--cngx-breadcrumb-shell-radius);
+    font-size: var(--cngx-breadcrumb-shell-font-size);
+    font-weight: 550;
+    text-decoration: none;
+    color: var(--cngx-breadcrumb-shell-color);
+  }
+
+  .cngx-breadcrumb__link:hover {
+    background: var(--cngx-breadcrumb-shell-hover-bg);
+    color: var(--cngx-breadcrumb-shell-text);
+  }
+
+  .cngx-breadcrumb__link[aria-current='page'] {
+    color: var(--cngx-breadcrumb-shell-text);
+    font-weight: 660;
+  }
+
+  /* the root crumb reads as the product name */
+  .cngx-breadcrumb__crumb:first-child .cngx-breadcrumb__link {
+    font-weight: 650;
+    color: var(--cngx-breadcrumb-shell-text);
+  }
+
+  /* structural: the root product mark (projected into the icon slot on index 0) */
+  .product-mark {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    background: var(--cngx-breadcrumb-shell-mark-bg);
+    color: var(--cngx-breadcrumb-shell-mark-color);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+
+  /* chevron delimiter */
+  .cngx-breadcrumb__separator {
+    font-size: 0;
+  }
+
+  .cngx-breadcrumb__separator::after {
+    content: '\203A';
+    font-size: var(--cngx-breadcrumb-shell-font-size);
+  }
+}

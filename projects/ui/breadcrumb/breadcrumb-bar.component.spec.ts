@@ -390,6 +390,13 @@ describe('CngxBreadcrumbBar', () => {
     }
     expect(anchors.at(-1)?.getAttribute('aria-current')).toBe('page');
   });
+
+  it('reflects the shell skin onto [data-skin]', () => {
+    const { fixture, host, barEl } = setup();
+    host.skin.set('shell');
+    fixture.detectChanges();
+    expect(barEl.getAttribute('data-skin')).toBe('shell');
+  });
 });
 
 @Component({
