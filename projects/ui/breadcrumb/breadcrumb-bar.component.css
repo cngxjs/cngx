@@ -138,3 +138,627 @@
     border-radius: var(--cngx-breadcrumb-pill-radius, 9999px);
   }
 }
+
+/* ---- Paint skins (Phase B) ----------------------------------------------
+   Each look is one `@scope` block remapped from the UX-lab catalogue onto the
+   real DOM classes. Convention (mirrors tabs): colour + type-scale + radius +
+   gap are `@property` tokens under `@group Skin`; adaptive colour tokens are
+   assigned in each skin's `:scope` from `--cngx-color-*` so a registered
+   `@property`'s fixed initial never defeats a dark theme. Structural constants
+   that define a skin's silhouette - paddings, clip-path shapes, the metro dot
+   and rail dimensions, font-weights - stay literal in the skin scope per the
+   Pillar "structural styles live with the variant skin"; they are not theming
+   knobs. */
+
+/* 03 Chevron Ribbon */
+@property --cngx-breadcrumb-ribbon-bg {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.97 0.005 250);
+}
+@property --cngx-breadcrumb-ribbon-color {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.5 0.01 250);
+}
+@property --cngx-breadcrumb-ribbon-hover-bg {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.95 0.03 50);
+}
+@property --cngx-breadcrumb-ribbon-hover-color {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.2 0.01 250);
+}
+@property --cngx-breadcrumb-ribbon-active-bg {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.66 0.19 50);
+}
+@property --cngx-breadcrumb-ribbon-active-color {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(1 0 0);
+}
+@property --cngx-breadcrumb-ribbon-font-size {
+  syntax: '*';
+  inherits: true;
+  initial-value: 0.875rem;
+}
+@property --cngx-breadcrumb-ribbon-radius {
+  syntax: '*';
+  inherits: true;
+  initial-value: 4px;
+}
+
+@scope (.cngx-breadcrumb[data-skin='ribbon']) {
+  :scope {
+    --cngx-breadcrumb-ribbon-bg: color-mix(
+      in oklch,
+      var(--cngx-color-text, oklch(0.2 0.01 250)) 5%,
+      var(--cngx-color-surface, oklch(1 0 0))
+    );
+    --cngx-breadcrumb-ribbon-color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
+    --cngx-breadcrumb-ribbon-hover-bg: color-mix(
+      in oklch,
+      var(--cngx-color-primary, oklch(0.66 0.19 50)) 12%,
+      transparent
+    );
+    --cngx-breadcrumb-ribbon-hover-color: var(--cngx-color-text, oklch(0.2 0.01 250));
+    --cngx-breadcrumb-ribbon-active-bg: var(--cngx-color-primary, oklch(0.66 0.19 50));
+    --cngx-breadcrumb-ribbon-active-color: var(--cngx-color-on-primary, oklch(1 0 0));
+    --cngx-breadcrumb-ribbon-font-size: var(--cngx-font-size-sm, 0.875rem);
+    --cngx-breadcrumb-ribbon-radius: var(--cngx-radius-sm, 4px);
+  }
+
+  .cngx-breadcrumb__list {
+    gap: 0;
+  }
+
+  .cngx-breadcrumb__crumb {
+    position: relative;
+  }
+
+  .cngx-breadcrumb__link {
+    /* structural: arrow silhouette + segment overlap - the ribbon's identity */
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5em 1.1em 0.5em 1.4em;
+    margin-left: -10px;
+    clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%, 12px 50%);
+    font-size: var(--cngx-breadcrumb-ribbon-font-size);
+    font-weight: 560;
+    text-decoration: none;
+    background: var(--cngx-breadcrumb-ribbon-bg);
+    color: var(--cngx-breadcrumb-ribbon-color);
+  }
+
+  .cngx-breadcrumb__crumb:first-child .cngx-breadcrumb__link {
+    padding-left: 1em;
+    margin-left: 0;
+    clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%);
+    border-radius: var(--cngx-breadcrumb-ribbon-radius) 0 0 var(--cngx-breadcrumb-ribbon-radius);
+  }
+
+  .cngx-breadcrumb__link:hover {
+    background: var(--cngx-breadcrumb-ribbon-hover-bg);
+    color: var(--cngx-breadcrumb-ribbon-hover-color);
+  }
+
+  .cngx-breadcrumb__link[aria-current='page'] {
+    background: var(--cngx-breadcrumb-ribbon-active-bg);
+    color: var(--cngx-breadcrumb-ribbon-active-color);
+  }
+
+  .cngx-breadcrumb__separator {
+    display: none;
+  }
+}
+
+/* 06 Editorial Gradient */
+@property --cngx-breadcrumb-editorial-accent {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.66 0.19 50);
+}
+@property --cngx-breadcrumb-editorial-text {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.2 0.01 250);
+}
+@property --cngx-breadcrumb-editorial-font-size {
+  syntax: '*';
+  inherits: true;
+  initial-value: 1rem;
+}
+
+@scope (.cngx-breadcrumb[data-skin='editorial']) {
+  :scope {
+    --cngx-breadcrumb-editorial-accent: var(--cngx-color-primary, oklch(0.66 0.19 50));
+    --cngx-breadcrumb-editorial-text: var(--cngx-color-text, oklch(0.2 0.01 250));
+    --cngx-breadcrumb-editorial-font-size: var(--cngx-font-size-md, 1rem);
+  }
+
+  .cngx-breadcrumb__link {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2em 0.1em 0.25em;
+    font-size: var(--cngx-breadcrumb-editorial-font-size);
+    text-decoration: none;
+    color: var(--cngx-breadcrumb-editorial-text);
+    /* wiping gradient underline: 0% -> 100% on hover */
+    background-image: linear-gradient(
+      90deg,
+      var(--cngx-breadcrumb-editorial-accent),
+      color-mix(in oklch, var(--cngx-breadcrumb-editorial-accent) 40%, var(--cngx-breadcrumb-editorial-text))
+    );
+    background-repeat: no-repeat;
+    background-position: 0 100%;
+    background-size: 0% 2px;
+    transition: background-size 0.18s ease, color 0.18s ease;
+  }
+
+  .cngx-breadcrumb__link:hover {
+    background-size: 100% 2px;
+    color: var(--cngx-breadcrumb-editorial-text);
+  }
+
+  .cngx-breadcrumb__link[aria-current='page'] {
+    /* leaf as gradient text */
+    background-image: linear-gradient(
+      90deg,
+      var(--cngx-breadcrumb-editorial-accent),
+      color-mix(in oklch, var(--cngx-breadcrumb-editorial-accent) 50%, var(--cngx-breadcrumb-editorial-text))
+    );
+    background-position: 0 0;
+    background-size: 100% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-weight: 700;
+  }
+
+  .cngx-breadcrumb__separator {
+    transform: rotate(-8deg);
+  }
+}
+
+/* 13 Page Header */
+@property --cngx-breadcrumb-header-color {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.5 0.01 250);
+}
+@property --cngx-breadcrumb-header-hover-bg {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.97 0.005 250);
+}
+@property --cngx-breadcrumb-header-text {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.2 0.01 250);
+}
+@property --cngx-breadcrumb-header-font-size {
+  syntax: '*';
+  inherits: true;
+  initial-value: 0.875rem;
+}
+@property --cngx-breadcrumb-header-leaf-font-size {
+  syntax: '*';
+  inherits: true;
+  initial-value: 1.125rem;
+}
+@property --cngx-breadcrumb-header-radius {
+  syntax: '*';
+  inherits: true;
+  initial-value: 4px;
+}
+
+@scope (.cngx-breadcrumb[data-skin='header']) {
+  :scope {
+    width: 100%;
+    --cngx-breadcrumb-header-color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
+    --cngx-breadcrumb-header-hover-bg: color-mix(
+      in oklch,
+      var(--cngx-color-text, oklch(0.2 0.01 250)) 5%,
+      var(--cngx-color-surface, oklch(1 0 0))
+    );
+    --cngx-breadcrumb-header-text: var(--cngx-color-text, oklch(0.2 0.01 250));
+    --cngx-breadcrumb-header-font-size: var(--cngx-font-size-sm, 0.875rem);
+    --cngx-breadcrumb-header-leaf-font-size: var(--cngx-font-size-lg, 1.125rem);
+    --cngx-breadcrumb-header-radius: var(--cngx-radius-sm, 4px);
+  }
+
+  .cngx-breadcrumb__list {
+    row-gap: var(--cngx-space-sm, 0.5rem);
+  }
+
+  .cngx-breadcrumb__link {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2em 0.35em;
+    border-radius: var(--cngx-breadcrumb-header-radius);
+    font-size: var(--cngx-breadcrumb-header-font-size);
+    font-weight: 550;
+    text-decoration: none;
+    color: var(--cngx-breadcrumb-header-color);
+  }
+
+  .cngx-breadcrumb__link:hover {
+    background: var(--cngx-breadcrumb-header-hover-bg);
+    color: var(--cngx-breadcrumb-header-text);
+  }
+
+  /* leaf breaks to its own row and reads as the page title */
+  .cngx-breadcrumb__crumb:has(.cngx-breadcrumb__link[aria-current='page']) {
+    flex-basis: 100%;
+  }
+
+  .cngx-breadcrumb__link[aria-current='page'] {
+    font-size: var(--cngx-breadcrumb-header-leaf-font-size);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+    white-space: normal;
+    color: var(--cngx-breadcrumb-header-text);
+  }
+}
+
+/* 14 Metro Line */
+@property --cngx-breadcrumb-metro-accent {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.66 0.19 50);
+}
+@property --cngx-breadcrumb-metro-surface {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(1 0 0);
+}
+@property --cngx-breadcrumb-metro-hover-dot {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.95 0.03 50);
+}
+@property --cngx-breadcrumb-metro-color {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.5 0.01 250);
+}
+@property --cngx-breadcrumb-metro-active-color {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.2 0.01 250);
+}
+@property --cngx-breadcrumb-metro-rail {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.8 0.06 50);
+}
+@property --cngx-breadcrumb-metro-font-size {
+  syntax: '*';
+  inherits: true;
+  initial-value: 0.875rem;
+}
+
+@scope (.cngx-breadcrumb[data-skin='metro']) {
+  :scope {
+    --cngx-breadcrumb-metro-accent: var(--cngx-color-primary, oklch(0.66 0.19 50));
+    --cngx-breadcrumb-metro-surface: var(--cngx-color-surface, oklch(1 0 0));
+    --cngx-breadcrumb-metro-hover-dot: color-mix(
+      in oklch,
+      var(--cngx-color-primary, oklch(0.66 0.19 50)) 12%,
+      transparent
+    );
+    --cngx-breadcrumb-metro-color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
+    --cngx-breadcrumb-metro-active-color: var(--cngx-color-text, oklch(0.2 0.01 250));
+    --cngx-breadcrumb-metro-rail: color-mix(
+      in oklch,
+      var(--cngx-color-primary, oklch(0.66 0.19 50)) 45%,
+      var(--cngx-color-border, oklch(0.88 0.005 250))
+    );
+    --cngx-breadcrumb-metro-font-size: var(--cngx-font-size-sm, 0.875rem);
+  }
+
+  .cngx-breadcrumb__list {
+    gap: 0;
+  }
+
+  .cngx-breadcrumb__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    padding: 0.3em 0.25em;
+    font-size: var(--cngx-breadcrumb-metro-font-size);
+    font-weight: 560;
+    text-decoration: none;
+    color: var(--cngx-breadcrumb-metro-color);
+  }
+
+  /* structural: station dot */
+  .cngx-breadcrumb__link::before {
+    content: '';
+    flex: none;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    border: 2.5px solid var(--cngx-breadcrumb-metro-accent);
+    background: var(--cngx-breadcrumb-metro-surface);
+    transition: background 0.18s ease, transform 0.18s ease;
+  }
+
+  .cngx-breadcrumb__link:hover {
+    color: var(--cngx-breadcrumb-metro-active-color);
+  }
+
+  .cngx-breadcrumb__link:hover::before {
+    background: var(--cngx-breadcrumb-metro-hover-dot);
+    transform: scale(1.15);
+  }
+
+  .cngx-breadcrumb__link[aria-current='page'] {
+    color: var(--cngx-breadcrumb-metro-active-color);
+  }
+
+  .cngx-breadcrumb__link[aria-current='page']::before {
+    background: var(--cngx-breadcrumb-metro-accent);
+    box-shadow: 0 0 0 3px color-mix(in oklch, var(--cngx-breadcrumb-metro-accent) 22%, transparent);
+  }
+
+  /* separator repurposed as the connecting rail; the "/" glyph is suppressed */
+  .cngx-breadcrumb__separator {
+    width: 30px;
+    height: 3px;
+    margin-inline: 3px;
+    border-radius: 2px;
+    font-size: 0;
+    background: var(--cngx-breadcrumb-metro-rail);
+  }
+}
+
+/* 15 Dense Toolbar */
+@property --cngx-breadcrumb-toolbar-bg {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(1 0 0);
+}
+@property --cngx-breadcrumb-toolbar-border-strong {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.78 0.01 250);
+}
+@property --cngx-breadcrumb-toolbar-cell-border {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.88 0.005 250);
+}
+@property --cngx-breadcrumb-toolbar-color {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.5 0.01 250);
+}
+@property --cngx-breadcrumb-toolbar-hover-bg {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.97 0.005 250);
+}
+@property --cngx-breadcrumb-toolbar-hover-color {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.2 0.01 250);
+}
+@property --cngx-breadcrumb-toolbar-active-bg {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.95 0.03 50);
+}
+@property --cngx-breadcrumb-toolbar-active-color {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.66 0.19 50);
+}
+@property --cngx-breadcrumb-toolbar-font-size {
+  syntax: '*';
+  inherits: true;
+  initial-value: 0.875rem;
+}
+@property --cngx-breadcrumb-toolbar-radius {
+  syntax: '*';
+  inherits: true;
+  initial-value: 4px;
+}
+
+@scope (.cngx-breadcrumb[data-skin='toolbar']) {
+  :scope {
+    width: 100%;
+    --cngx-breadcrumb-toolbar-bg: var(--cngx-color-surface, oklch(1 0 0));
+    --cngx-breadcrumb-toolbar-border-strong: color-mix(
+      in oklch,
+      var(--cngx-color-border, oklch(0.88 0.005 250)) 50%,
+      var(--cngx-color-text, oklch(0.2 0.01 250))
+    );
+    --cngx-breadcrumb-toolbar-cell-border: var(--cngx-color-border, oklch(0.88 0.005 250));
+    --cngx-breadcrumb-toolbar-color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
+    --cngx-breadcrumb-toolbar-hover-bg: color-mix(
+      in oklch,
+      var(--cngx-color-text, oklch(0.2 0.01 250)) 5%,
+      var(--cngx-color-surface, oklch(1 0 0))
+    );
+    --cngx-breadcrumb-toolbar-hover-color: var(--cngx-color-text, oklch(0.2 0.01 250));
+    --cngx-breadcrumb-toolbar-active-bg: color-mix(
+      in oklch,
+      var(--cngx-color-primary, oklch(0.66 0.19 50)) 12%,
+      transparent
+    );
+    --cngx-breadcrumb-toolbar-active-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+    --cngx-breadcrumb-toolbar-font-size: var(--cngx-font-size-sm, 0.875rem);
+    --cngx-breadcrumb-toolbar-radius: var(--cngx-radius-sm, 4px);
+  }
+
+  .cngx-breadcrumb__list {
+    width: 100%;
+    gap: 0;
+    flex-wrap: nowrap;
+    overflow: hidden;
+    background: var(--cngx-breadcrumb-toolbar-bg);
+    border: 1px solid var(--cngx-breadcrumb-toolbar-border-strong);
+    border-radius: var(--cngx-breadcrumb-toolbar-radius);
+  }
+
+  .cngx-breadcrumb__crumb {
+    align-self: stretch;
+  }
+
+  .cngx-breadcrumb__link {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.55em 0.95em;
+    font-size: var(--cngx-breadcrumb-toolbar-font-size);
+    font-weight: 550;
+    text-decoration: none;
+    border-right: 1px solid var(--cngx-breadcrumb-toolbar-cell-border);
+    border-radius: 0;
+    color: var(--cngx-breadcrumb-toolbar-color);
+  }
+
+  .cngx-breadcrumb__link:hover {
+    background: var(--cngx-breadcrumb-toolbar-hover-bg);
+    color: var(--cngx-breadcrumb-toolbar-hover-color);
+  }
+
+  .cngx-breadcrumb__link[aria-current='page'] {
+    background: var(--cngx-breadcrumb-toolbar-active-bg);
+    color: var(--cngx-breadcrumb-toolbar-active-color);
+    font-weight: 640;
+    border-right: none;
+  }
+
+  .cngx-breadcrumb__separator {
+    display: none;
+  }
+}
+
+/* 18 Quiet Chips */
+@property --cngx-breadcrumb-chips-bg {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(1 0 0);
+}
+@property --cngx-breadcrumb-chips-border {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.88 0.005 250);
+}
+@property --cngx-breadcrumb-chips-color {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.5 0.01 250);
+}
+@property --cngx-breadcrumb-chips-hover-border {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.78 0.01 250);
+}
+@property --cngx-breadcrumb-chips-hover-bg {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.97 0.005 250);
+}
+@property --cngx-breadcrumb-chips-hover-color {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.2 0.01 250);
+}
+@property --cngx-breadcrumb-chips-active-bg {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.95 0.03 50);
+}
+@property --cngx-breadcrumb-chips-active-border {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.82 0.08 50);
+}
+@property --cngx-breadcrumb-chips-active-color {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.66 0.19 50);
+}
+@property --cngx-breadcrumb-chips-font-size {
+  syntax: '*';
+  inherits: true;
+  initial-value: 0.875rem;
+}
+@property --cngx-breadcrumb-chips-radius {
+  syntax: '*';
+  inherits: true;
+  initial-value: 999px;
+}
+
+@scope (.cngx-breadcrumb[data-skin='chips']) {
+  :scope {
+    --cngx-breadcrumb-chips-bg: var(--cngx-color-surface, oklch(1 0 0));
+    --cngx-breadcrumb-chips-border: var(--cngx-color-border, oklch(0.88 0.005 250));
+    --cngx-breadcrumb-chips-color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
+    --cngx-breadcrumb-chips-hover-border: color-mix(
+      in oklch,
+      var(--cngx-color-border, oklch(0.88 0.005 250)) 50%,
+      var(--cngx-color-text, oklch(0.2 0.01 250))
+    );
+    --cngx-breadcrumb-chips-hover-bg: color-mix(
+      in oklch,
+      var(--cngx-color-text, oklch(0.2 0.01 250)) 5%,
+      var(--cngx-color-surface, oklch(1 0 0))
+    );
+    --cngx-breadcrumb-chips-hover-color: var(--cngx-color-text, oklch(0.2 0.01 250));
+    --cngx-breadcrumb-chips-active-bg: color-mix(
+      in oklch,
+      var(--cngx-color-primary, oklch(0.66 0.19 50)) 12%,
+      transparent
+    );
+    --cngx-breadcrumb-chips-active-border: color-mix(
+      in oklch,
+      var(--cngx-color-primary, oklch(0.66 0.19 50)) 35%,
+      var(--cngx-color-border, oklch(0.88 0.005 250))
+    );
+    --cngx-breadcrumb-chips-active-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+    --cngx-breadcrumb-chips-font-size: var(--cngx-font-size-sm, 0.875rem);
+    --cngx-breadcrumb-chips-radius: var(--cngx-radius-pill, 999px);
+  }
+
+  .cngx-breadcrumb__list {
+    gap: var(--cngx-space-sm, 0.5rem);
+  }
+
+  .cngx-breadcrumb__link {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.32em 0.8em;
+    font-size: var(--cngx-breadcrumb-chips-font-size);
+    font-weight: 550;
+    text-decoration: none;
+    border: 1px solid var(--cngx-breadcrumb-chips-border);
+    border-radius: var(--cngx-breadcrumb-chips-radius);
+    background: var(--cngx-breadcrumb-chips-bg);
+    color: var(--cngx-breadcrumb-chips-color);
+  }
+
+  .cngx-breadcrumb__link:hover {
+    border-color: var(--cngx-breadcrumb-chips-hover-border);
+    background: var(--cngx-breadcrumb-chips-hover-bg);
+    color: var(--cngx-breadcrumb-chips-hover-color);
+  }
+
+  .cngx-breadcrumb__link[aria-current='page'] {
+    background: var(--cngx-breadcrumb-chips-active-bg);
+    border-color: var(--cngx-breadcrumb-chips-active-border);
+    color: var(--cngx-breadcrumb-chips-active-color);
+    font-weight: 640;
+  }
+
+  .cngx-breadcrumb__separator {
+    display: none;
+  }
+}

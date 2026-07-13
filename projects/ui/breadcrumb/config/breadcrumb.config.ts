@@ -8,7 +8,17 @@
  * @category ui/breadcrumb
  * @since 0.1.0
  */
-export type CngxBreadcrumbSkin = 'classic' | 'plain' | 'contained' | 'pill';
+export type CngxBreadcrumbSkin =
+  | 'classic'
+  | 'plain'
+  | 'contained'
+  | 'pill'
+  | 'ribbon'
+  | 'editorial'
+  | 'header'
+  | 'metro'
+  | 'toolbar'
+  | 'chips';
 
 /**
  * App-wide cascade for the breadcrumb family's ARIA labels, the router
