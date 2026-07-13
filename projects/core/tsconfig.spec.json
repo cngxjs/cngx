@@ -4,12 +4,13 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "outDir": "../../out-tsc/spec",
-    "types": ["vitest/globals"]
+    "types": ["vitest/globals", "node"]
   },
   "include": [
     "*.d.ts",
     "*.spec.ts",
     "utils/**/*.spec.ts",
-    "tokens/**/*.spec.ts"
+    "tokens/**/*.spec.ts",
+    "theming/**/*.spec.ts"
   ]
 }

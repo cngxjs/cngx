@@ -82,7 +82,7 @@
    */
   @property --cngx-space-xs {
     syntax: '<length>';
-    inherits: false;
+    inherits: true;
     initial-value: 4px;
   }
 
@@ -92,7 +92,7 @@
    */
   @property --cngx-space-sm {
     syntax: '<length>';
-    inherits: false;
+    inherits: true;
     initial-value: 8px;
   }
 
@@ -102,7 +102,7 @@
    */
   @property --cngx-space-md {
     syntax: '<length>';
-    inherits: false;
+    inherits: true;
     initial-value: 16px;
   }
 
@@ -112,7 +112,7 @@
    */
   @property --cngx-space-lg {
     syntax: '<length>';
-    inherits: false;
+    inherits: true;
     initial-value: 24px;
   }
 
@@ -122,7 +122,7 @@
    */
   @property --cngx-space-xl {
     syntax: '<length>';
-    inherits: false;
+    inherits: true;
     initial-value: 32px;
   }
 
