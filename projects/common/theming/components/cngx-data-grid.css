@@ -10,6 +10,16 @@
  * on the group host and read by descendant summaries. `@property` with
  * `inherits: true` keeps that host -> descendant cascade alive; `inherits: false`
  * would silently pin descendants to the initial value. Every token here inherits.
+ *
+ * Density: the pixel `initial-value` of each spacing token is only the un-set
+ * fallback. The organism's default rule and each skin SET `--cngx-dga-row-py` /
+ * `-row-px` / `-region-padding` / `-col-gap` FROM `--cngx-space-*`
+ * (`data-grid-accordion.component.css` `:not([data-skin])`, and the content skins
+ * in `data-grid-accordion-skins.css`), so a global `[data-density]` re-scales the
+ * grid. Do NOT put `var()` in an `initial-value` here - it is invalid and a
+ * registered initial-value defeats any `var()` fallback anyway
+ * (reference_property_color_initial_defeats_fallback); the derivation is always a
+ * SET at the host, never the registration.
  */
 
 @layer cngx.tokens {
