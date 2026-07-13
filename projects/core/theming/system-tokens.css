@@ -16,8 +16,9 @@
  * **Token families**
  *
  * - **Spacing** - `--cngx-space-{xs|sm|md|lg|xl}` (4 / 8 / 16 / 24 /
- *   32 px). T-shirt scale, swapped wholesale by `[data-density]`
- *   overrides in `cngx.theme`.
+ *   32 px). T-shirt scale, registered `inherits: true` so a
+ *   `[data-density]` set on any ancestor re-scales the subtree. The
+ *   swap itself lives in `density-tokens.css` (`cngx.theme` layer).
  * - **Radius** - `--cngx-radius-{sm|md|lg|pill}` (4 / 8 / 12 / 999 px).
  * - **Motion** - `--cngx-duration-{fast|base|slow}` (150 / 200 / 320 ms)
  *   plus `--cngx-easing-{standard|decelerate|accelerate}` cubic-
@@ -76,8 +77,9 @@
 
 @layer cngx.tokens {
   /**
-   * Spacing T-shirt scale — extra-small (4px). Swapped wholesale by
-   * `[data-density]` in `cngx.theme`.
+   * Spacing T-shirt scale — extra-small (4px). `inherits: true` so a
+   * `[data-density]` ancestor re-scales it; the swap presets live in
+   * `density-tokens.css` (`cngx.theme` layer).
    * @group Layout
    */
   @property --cngx-space-xs {

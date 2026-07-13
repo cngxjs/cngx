@@ -45,3 +45,60 @@ test.describe('core/theming — spacing scale inheritance', () => {
     expect(await descendantSpaceMd(page, '8px')).toBe('8px');
   });
 });
+
+/**
+ * Resolve `--cngx-space-md` on a descendant of an ancestor carrying a
+ * `[data-density]` attribute — the global switch the density-tokens.css
+ * presets drive.
+ */
+async function descendantSpaceMdUnderDensity(
+  page: import('@playwright/test').Page,
+  density: string,
+) {
+  return page.evaluate((value) => {
+    const anc = document.createElement('div');
+    anc.setAttribute('data-density', value);
+    const desc = document.createElement('div');
+    anc.appendChild(desc);
+    document.body.appendChild(anc);
+    const resolved = getComputedStyle(desc).getPropertyValue('--cngx-space-md').trim();
+    anc.remove();
+    return resolved;
+  }, density);
+}
+
+test.describe('core/theming — [data-density] swap', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('app-root')).toBeVisible();
+  });
+
+  const cases: ReadonlyArray<readonly [string, string]> = [
+    ['comfortable', '16px'],
+    ['compact', '8px'],
+    ['spacious', '20px'],
+  ];
+
+  for (const [density, expected] of cases) {
+    test(`[data-density='${density}'] resolves --cngx-space-md to ${expected}`, async ({ page }) => {
+      expect(await descendantSpaceMdUnderDensity(page, density)).toBe(expected);
+    });
+  }
+
+  test('a comfortable island resets inside a compact ancestor', async ({ page }) => {
+    const resolved = await page.evaluate(() => {
+      const outer = document.createElement('div');
+      outer.setAttribute('data-density', 'compact');
+      const island = document.createElement('div');
+      island.setAttribute('data-density', 'comfortable');
+      const leaf = document.createElement('div');
+      island.appendChild(leaf);
+      outer.appendChild(island);
+      document.body.appendChild(outer);
+      const value = getComputedStyle(leaf).getPropertyValue('--cngx-space-md').trim();
+      outer.remove();
+      return value;
+    });
+    expect(resolved).toBe('16px');
+  });
+});

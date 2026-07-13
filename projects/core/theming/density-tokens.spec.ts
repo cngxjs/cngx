@@ -28,3 +28,32 @@ describe('spacing scale is inheritable', () => {
     },
   );
 });
+
+describe('[data-density] swap presets', () => {
+  const css = readCss('density-tokens.css');
+
+  it('lives in @layer cngx.theme so it beats the @property initial-value', () => {
+    expect(css).toMatch(/@layer cngx\.theme\s*{/);
+  });
+
+  const PRESETS = [
+    { name: 'comfortable', md: '16px', xs: '4px', xl: '32px' },
+    { name: 'compact', md: '8px', xs: '2px', xl: '16px' },
+    { name: 'spacious', md: '20px', xs: '6px', xl: '40px' },
+  ] as const;
+
+  it.each(PRESETS)(
+    '$name declares the attribute + class twin and the expected scale',
+    ({ name, md, xs, xl }) => {
+      const block = css.match(
+        new RegExp(
+          `\\[data-density='${name}'\\],\\s*\\.cngx-density-${name}\\s*{[^}]+}`,
+        ),
+      );
+      expect(block, `${name} block (attribute + class) not found`).not.toBeNull();
+      expect(block![0]).toContain(`--cngx-space-xs: ${xs};`);
+      expect(block![0]).toContain(`--cngx-space-md: ${md};`);
+      expect(block![0]).toContain(`--cngx-space-xl: ${xl};`);
+    },
+  );
+});
