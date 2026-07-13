@@ -879,8 +879,8 @@
 }
 
 /* 04 File Path - monospace explorer; leading folder/file icons ride the
-   `*cngxBreadcrumbItemAccessory` slot (consumer content). The skin only paints
-   and orders the crumb so the projected icon leads its label. */
+   `*cngxBreadcrumbIcon` slot (consumer content, rendered inside the link). The
+   skin only paints; the icon slot leads the label natively. */
 @property --cngx-breadcrumb-path-track-bg {
   syntax: '<color>';
   inherits: true;
@@ -963,15 +963,10 @@
     border-radius: var(--cngx-breadcrumb-path-radius);
   }
 
-  /* order the projected accessory icon ahead of its label */
-  .cngx-breadcrumb__crumb {
-    flex-direction: row-reverse;
-    gap: 0.4em;
-  }
-
   .cngx-breadcrumb__link {
     display: inline-flex;
     align-items: center;
+    gap: 0.4em;
     padding: 0.2em 0.45em;
     font-size: var(--cngx-breadcrumb-path-font-size);
     text-decoration: none;
@@ -993,9 +988,9 @@
   }
 }
 
-/* 11 Icon + Label - each crumb carries a leading icon through the accessory
-   slot (consumer content, decorative). The skin paints the pill and orders the
-   icon ahead of the label. */
+/* 11 Icon + Label - each crumb carries a leading icon through the
+   `*cngxBreadcrumbIcon` slot (consumer content, decorative, rendered inside the
+   link). The skin paints the pill; the icon slot leads the label natively. */
 @property --cngx-breadcrumb-iconlabel-color {
   syntax: '<color>';
   inherits: true;
@@ -1051,12 +1046,9 @@
     --cngx-breadcrumb-iconlabel-font-size: var(--cngx-font-size-sm, 0.875rem);
   }
 
-  /* order the projected accessory icon ahead of its label; the icon reads
-     currentColor off the crumb, so it dims at rest and takes the accent on the
-     active leaf */
+  /* the leading icon slot renders inside the link; the icon reads currentColor
+     off the crumb, so it dims at rest and takes the accent on the active leaf */
   .cngx-breadcrumb__crumb {
-    flex-direction: row-reverse;
-    gap: 0.4em;
     color: var(--cngx-breadcrumb-iconlabel-color);
   }
 
@@ -1067,6 +1059,7 @@
   .cngx-breadcrumb__link {
     display: inline-flex;
     align-items: center;
+    gap: 0.4em;
     padding: 0.4em 0.7em;
     border-radius: var(--cngx-breadcrumb-iconlabel-radius);
     font-size: var(--cngx-breadcrumb-iconlabel-font-size);
