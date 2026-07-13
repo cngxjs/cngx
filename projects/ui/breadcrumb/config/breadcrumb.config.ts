@@ -1,9 +1,16 @@
 /**
- * Selectable visual skin for `CngxBreadcrumbBar`. The skin is a pure thematic
- * concern - every value renders the same `nav` / list / crumb / separator DOM
- * with identical ARIA and collapse behaviour; only the `[data-skin]` host
- * attribute redirects which `@scope` paint block applies. `'classic'` is the
- * bare default (plain link + slash separator). Mirrors `CngxTabsSkin`.
+ * Selectable visual skin for `CngxBreadcrumbBar`. Every skin keeps the same
+ * `nav` / list / crumb / separator structure with identical ARIA and collapse
+ * behaviour, and the `[data-skin]` host attribute redirects which `@scope`
+ * paint block applies. Pure paint skins (`plain`, `contained`, `pill`,
+ * `ribbon`, `editorial`, `header`, `metro`, `toolbar`, `chips`) render
+ * identical DOM. The content skins (`iconlabel`, `path`, and the content-
+ * structural `icononly` / `shell` / `record`) additionally consume the
+ * projected `*cngxBreadcrumbIcon` slot - and `record` the trailing accessory
+ * slot - for per-crumb icon/content markup the consumer supplies; the bar still
+ * carries no skin-conditional template branch, so the slot is inert until
+ * projected (Pillar 3). `'classic'` is the bare default (plain link + slash
+ * separator). Mirrors `CngxTabsSkin`.
  *
  * @category ui/breadcrumb
  * @since 0.1.0

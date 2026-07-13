@@ -13,6 +13,7 @@ import {
 import { CngxBreadcrumb, CngxBreadcrumbItem, CngxBreadcrumbSeparator } from '@cngx/common/interactive';
 import { createControlledSource } from '@cngx/core/utils';
 
+import { CngxBreadcrumbIcon } from './breadcrumb-icon.directive';
 import { CngxBreadcrumbItemAccessory } from './breadcrumb-item-accessory.directive';
 import { CngxBreadcrumbOverflow } from './breadcrumb-overflow.component';
 import { CngxBreadcrumbOverflowItem } from './breadcrumb-overflow-item.directive';
@@ -94,6 +95,14 @@ export class CngxBreadcrumbBar {
    * `Signal<TemplateRef | undefined>` - bound directly, no pass-through `computed`.
    */
   protected readonly accessory = contentChild(CngxBreadcrumbItemAccessory, { read: TemplateRef });
+
+  /**
+   * Projected leading per-crumb icon template. Rendered inside every crumb link
+   * (`<a>`) before the label span, fed the `{ crumb, index }` context so the
+   * consumer renders the opaque `crumb.icon` with any icon system. Direct
+   * `Signal<TemplateRef | undefined>` - bound in the template, no pass-through.
+   */
+  protected readonly icon = contentChild(CngxBreadcrumbIcon, { read: TemplateRef });
 
   /**
    * Projected overflow-row template, forwarded to the composed

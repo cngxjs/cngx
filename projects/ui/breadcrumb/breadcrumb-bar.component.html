@@ -8,8 +8,15 @@
           class="cngx-breadcrumb__link"
           [cngxBreadcrumbItemLabel]="crumb.label"
           [attr.href]="last ? null : (crumb.href ?? null)"
-          >{{ crumb.label }}</a
+          [attr.data-label]="crumb.label"
         >
+          @if (icon(); as tpl) {
+            <ng-container
+              *ngTemplateOutlet="tpl; context: { $implicit: crumb, crumb: crumb, index: $index }"
+            />
+          }
+          <span class="cngx-breadcrumb__label">{{ crumb.label }}</span>
+        </a>
         @if (accessory(); as tpl) {
           <ng-container
             *ngTemplateOutlet="tpl; context: { $implicit: crumb, crumb: crumb, index: $index }"

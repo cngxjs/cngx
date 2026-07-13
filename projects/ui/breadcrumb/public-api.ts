@@ -16,6 +16,10 @@ export {
   CngxBreadcrumbItemAccessory,
   type CngxBreadcrumbItemAccessoryContext,
 } from './breadcrumb-item-accessory.directive';
+export {
+  CngxBreadcrumbIcon,
+  type CngxBreadcrumbIconContext,
+} from './breadcrumb-icon.directive';
 export type { CngxBreadcrumbCrumb, CngxBreadcrumbSibling } from './breadcrumb.types';
 export {
   CNGX_BREADCRUMB_ITEMS_SOURCE,
