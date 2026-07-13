@@ -397,6 +397,13 @@ describe('CngxBreadcrumbBar', () => {
     fixture.detectChanges();
     expect(barEl.getAttribute('data-skin')).toBe('shell');
   });
+
+  it('reflects the record skin onto [data-skin]', () => {
+    const { fixture, host, barEl } = setup();
+    host.skin.set('record');
+    fixture.detectChanges();
+    expect(barEl.getAttribute('data-skin')).toBe('record');
+  });
 });
 
 @Component({

@@ -29,7 +29,8 @@ export type CngxBreadcrumbSkin =
   | 'path'
   | 'iconlabel'
   | 'icononly'
-  | 'shell';
+  | 'shell'
+  | 'record';
 
 /**
  * App-wide cascade for the breadcrumb family's ARIA labels, the router

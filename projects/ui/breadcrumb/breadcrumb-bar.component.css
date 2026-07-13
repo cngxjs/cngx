@@ -1348,3 +1348,142 @@
     font-size: var(--cngx-breadcrumb-shell-font-size);
   }
 }
+
+/* 17 Record Status - the leaf is a record chip: mono id + status dot + status
+   label. The mono id rides the `*cngxBreadcrumbIcon` slot; the status dot and
+   label ride the trailing `*cngxBreadcrumbItemAccessory` slot, both gated on the
+   terminal crumb in the consumer markup. The dot is decorative (`aria-hidden`);
+   the status label carries the semantics (Pillar 2). */
+@property --cngx-breadcrumb-record-color {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.5 0.01 250);
+}
+@property --cngx-breadcrumb-record-hover-bg {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.97 0.005 250);
+}
+@property --cngx-breadcrumb-record-text {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.2 0.01 250);
+}
+@property --cngx-breadcrumb-record-chip-bg {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(1 0 0);
+}
+@property --cngx-breadcrumb-record-chip-border {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.78 0.01 250);
+}
+@property --cngx-breadcrumb-record-status {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(0.7 0.17 145);
+}
+@property --cngx-breadcrumb-record-font-size {
+  syntax: '*';
+  inherits: true;
+  initial-value: 0.875rem;
+}
+@property --cngx-breadcrumb-record-radius {
+  syntax: '*';
+  inherits: true;
+  initial-value: 4px;
+}
+@property --cngx-breadcrumb-record-chip-radius {
+  syntax: '*';
+  inherits: true;
+  initial-value: 999px;
+}
+
+@scope (.cngx-breadcrumb[data-skin='record']) {
+  :scope {
+    --cngx-breadcrumb-record-color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
+    --cngx-breadcrumb-record-hover-bg: color-mix(
+      in oklch,
+      var(--cngx-color-text, oklch(0.2 0.01 250)) 5%,
+      var(--cngx-color-surface, oklch(1 0 0))
+    );
+    --cngx-breadcrumb-record-text: var(--cngx-color-text, oklch(0.2 0.01 250));
+    --cngx-breadcrumb-record-chip-bg: var(--cngx-color-surface, oklch(1 0 0));
+    --cngx-breadcrumb-record-chip-border: color-mix(
+      in oklch,
+      var(--cngx-color-border, oklch(0.88 0.005 250)) 50%,
+      var(--cngx-color-text, oklch(0.2 0.01 250))
+    );
+    --cngx-breadcrumb-record-status: var(--cngx-color-success, oklch(0.7 0.17 145));
+    --cngx-breadcrumb-record-font-size: var(--cngx-font-size-sm, 0.875rem);
+    --cngx-breadcrumb-record-radius: var(--cngx-radius-sm, 4px);
+    --cngx-breadcrumb-record-chip-radius: var(--cngx-radius-pill, 999px);
+  }
+
+  .cngx-breadcrumb__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    padding: 0.3em 0.45em;
+    border-radius: var(--cngx-breadcrumb-record-radius);
+    font-size: var(--cngx-breadcrumb-record-font-size);
+    text-decoration: none;
+    color: var(--cngx-breadcrumb-record-color);
+  }
+
+  .cngx-breadcrumb__link:hover {
+    background: var(--cngx-breadcrumb-record-hover-bg);
+    color: var(--cngx-breadcrumb-record-text);
+  }
+
+  .cngx-breadcrumb__link[aria-current='page'] {
+    background: transparent;
+    color: var(--cngx-breadcrumb-record-text);
+    font-weight: 620;
+  }
+
+  /* the terminal crumb wraps the link + status accessory into one record chip */
+  .cngx-breadcrumb__crumb:has(.cngx-breadcrumb__link[aria-current='page']) {
+    gap: 0.55em;
+    padding: 0.32em 0.8em;
+    background: var(--cngx-breadcrumb-record-chip-bg);
+    border: 1px solid var(--cngx-breadcrumb-record-chip-border);
+    border-radius: var(--cngx-breadcrumb-record-chip-radius);
+    box-shadow: var(--cngx-shadow-sm, 0 1px 2px oklch(0 0 0 / 0.08));
+  }
+
+  /* mono record id (projected into the icon slot on the leaf) */
+  .rec-id {
+    font-family: var(--cngx-font-family-mono, ui-monospace, 'SFMono-Regular', 'Menlo', monospace);
+    font-size: 0.95em;
+  }
+
+  /* decorative status dot (projected into the accessory slot on the leaf) */
+  .status-dot {
+    flex: none;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--cngx-breadcrumb-record-status);
+    box-shadow: 0 0 0 3px color-mix(in oklch, var(--cngx-breadcrumb-record-status) 20%, transparent);
+  }
+
+  .status-label {
+    font-size: 0.65625rem;
+    font-weight: 680;
+    color: var(--cngx-breadcrumb-record-status);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  /* chevron delimiter */
+  .cngx-breadcrumb__separator {
+    font-size: 0;
+  }
+
+  .cngx-breadcrumb__separator::after {
+    content: '\203A';
+    font-size: var(--cngx-breadcrumb-record-font-size);
+  }
+}
