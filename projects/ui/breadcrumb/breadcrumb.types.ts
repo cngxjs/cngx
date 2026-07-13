@@ -14,6 +14,15 @@ export interface CngxBreadcrumbCrumb {
   /** Target for a plain-link crumb. Omit on the terminal crumb. */
   href?: string;
   /**
+   * Opaque per-crumb icon token. cngx never interprets this string - it is
+   * handed verbatim to the projected `*cngxBreadcrumbIcon` slot as the
+   * `{ crumb }` context, and the consumer's slot renders it with whatever icon
+   * system they use (`<mat-icon>{{ crumb.icon }}</mat-icon>`, an icon font,
+   * inline SVG, `<app-icon>`). cngx ships no icon set and resolves no names.
+   * Omit it and the leading icon slot simply renders nothing for that crumb.
+   */
+  readonly icon?: string;
+  /**
    * Static lateral-navigation alternatives for this crumb. When present and
    * non-empty, {@link CngxBreadcrumbBar} auto-renders a
    * {@link CngxBreadcrumbSiblings} dropdown for the crumb - no consumer wiring.
