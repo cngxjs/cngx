@@ -5,6 +5,7 @@ import { provideRouter, Router, RouterOutlet } from '@angular/router';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { CngxBreadcrumbBar } from './breadcrumb-bar.component';
+import { CngxBreadcrumbIcon } from './breadcrumb-icon.directive';
 import { CngxBreadcrumbItemAccessory } from './breadcrumb-item-accessory.directive';
 import { CngxBreadcrumbOverflowItem } from './breadcrumb-overflow-item.directive';
 import { CngxBreadcrumbSiblings } from './breadcrumb-siblings.component';
@@ -20,6 +21,13 @@ const TRAIL: readonly CngxBreadcrumbCrumb[] = [
   { label: 'Catalog', href: '/catalog' },
   { label: 'Books', href: '/catalog/books' },
   { label: 'The Hobbit' },
+];
+
+const ICON_TRAIL: readonly CngxBreadcrumbCrumb[] = [
+  { label: 'Home', href: '/', icon: 'home' },
+  { label: 'Catalog', href: '/catalog', icon: 'folder' },
+  { label: 'Books', href: '/catalog/books', icon: 'menu_book' },
+  { label: 'The Hobbit', icon: 'description' },
 ];
 
 const CITY_SIBLINGS: readonly CngxBreadcrumbSibling[] = [
@@ -320,6 +328,51 @@ describe('CngxBreadcrumbBar', () => {
     );
     expect(rows).toEqual(['Catalog', 'Books']);
   });
+
+  it('renders the *cngxBreadcrumbIcon slot once per crumb inside the link, leading the label span', () => {
+    const fixture = TestBed.createComponent(IconHost);
+    fixture.detectChanges();
+    const barEl = fixture.debugElement.query(By.css('cngx-breadcrumb')).nativeElement as HTMLElement;
+
+    const markers = Array.from(barEl.querySelectorAll<HTMLElement>('.icon-marker'));
+    expect(markers.length).toBe(ICON_TRAIL.length);
+    for (const marker of markers) {
+      const link = marker.closest('a.cngx-breadcrumb__link');
+      expect(link).toBeTruthy();
+      const label = link?.querySelector('span.cngx-breadcrumb__label');
+      expect(label).toBeTruthy();
+      // The icon marker precedes the label span in DOM order (leading icon).
+      expect(
+        marker.compareDocumentPosition(label as Node) & Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+    }
+  });
+
+  it('passes the { crumb, index } context (crumb.icon from [items]) to the icon slot', () => {
+    const fixture = TestBed.createComponent(IconHost);
+    fixture.detectChanges();
+    const barEl = fixture.debugElement.query(By.css('cngx-breadcrumb')).nativeElement as HTMLElement;
+
+    const markers = Array.from(barEl.querySelectorAll<HTMLElement>('.icon-marker'));
+    expect(markers.map((m) => m.dataset['index'])).toEqual(['0', '1', '2', '3']);
+    expect(markers.map((m) => m.dataset['icon'])).toEqual([
+      'home',
+      'folder',
+      'menu_book',
+      'description',
+    ]);
+  });
+
+  it('wraps every label in a .cngx-breadcrumb__label span with the link data-label, and renders no icon markup when the slot is unset', () => {
+    const { links, barEl } = setup();
+    const anchors = links();
+    for (const a of anchors) {
+      const label = a.querySelector('span.cngx-breadcrumb__label');
+      expect(label?.textContent?.trim()).toBe(a.getAttribute('data-label'));
+    }
+    // BarHost projects no icon slot, so nothing extra renders inside the links.
+    expect(barEl.querySelector('.icon-marker')).toBeNull();
+  });
 });
 
 @Component({
@@ -352,6 +405,22 @@ class OverflowRowHost {
 })
 class AccessoryHost {
   readonly items = signal<readonly CngxBreadcrumbCrumb[]>(TRAIL);
+}
+
+@Component({
+  standalone: true,
+  selector: 'icon-host',
+  imports: [CngxBreadcrumbBar, CngxBreadcrumbIcon],
+  template: `
+    <cngx-breadcrumb [items]="items()">
+      <ng-template cngxBreadcrumbIcon let-crumb let-index="index">
+        <span class="icon-marker" [attr.data-icon]="crumb.icon" [attr.data-index]="index"></span>
+      </ng-template>
+    </cngx-breadcrumb>
+  `,
+})
+class IconHost {
+  readonly items = signal<readonly CngxBreadcrumbCrumb[]>(ICON_TRAIL);
 }
 
 @Component({ standalone: true, template: '' })
