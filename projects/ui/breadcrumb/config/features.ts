@@ -1,4 +1,4 @@
-import type { CngxBreadcrumbConfig } from './breadcrumb.config';
+import type { CngxBreadcrumbConfig, CngxBreadcrumbSkin } from './breadcrumb.config';
 import type { CngxBreadcrumbConfigFeature } from './provide-breadcrumb-config';
 
 /**
@@ -36,4 +36,21 @@ export function withBreadcrumbAriaLabels(
  */
 export function withBreadcrumbDataKey(dataKey: string): CngxBreadcrumbConfigFeature {
   return { kind: 'router', payload: { dataKey } };
+}
+
+/**
+ * Select the app-wide default visual skin for `CngxBreadcrumbBar`. Per-instance
+ * `[skin]` still wins; this only moves the cascade default. Structure, slots,
+ * and ARIA are identical across skins - only the `[data-skin]` host attribute
+ * changes which `@scope` paint applies.
+ *
+ * ```ts
+ * provideBreadcrumbConfig(withBreadcrumbSkin('pill'));
+ * ```
+ *
+ * @category ui/breadcrumb
+ * @since 0.1.0
+ */
+export function withBreadcrumbSkin(skin: CngxBreadcrumbSkin): CngxBreadcrumbConfigFeature {
+  return { kind: 'skin', payload: { skin } };
 }

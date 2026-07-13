@@ -27,9 +27,13 @@ export {
 } from './breadcrumb-siblings-source.token';
 export { CngxBreadcrumbRouterSync } from './breadcrumb-router-sync.directive';
 export { CngxBreadcrumbSiblingsRouterSync } from './breadcrumb-siblings-router-sync.directive';
-export { type CngxBreadcrumbConfig } from './config/breadcrumb.config';
+export { type CngxBreadcrumbConfig, type CngxBreadcrumbSkin } from './config/breadcrumb.config';
 export { CNGX_BREADCRUMB_CONFIG } from './config/breadcrumb.config.defaults';
-export { withBreadcrumbAriaLabels, withBreadcrumbDataKey } from './config/features';
+export {
+  withBreadcrumbAriaLabels,
+  withBreadcrumbDataKey,
+  withBreadcrumbSkin,
+} from './config/features';
 export {
   provideBreadcrumbConfig,
   provideBreadcrumbConfigAt,
