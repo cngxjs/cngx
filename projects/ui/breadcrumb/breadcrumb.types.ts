@@ -10,9 +10,9 @@
  */
 export interface CngxBreadcrumbCrumb {
   /** Visible, and accessible, crumb text. */
-  label: string;
+  readonly label: string;
   /** Target for a plain-link crumb. Omit on the terminal crumb. */
-  href?: string;
+  readonly href?: string;
   /**
    * Opaque per-crumb icon token. cngx never interprets this string - it is
    * handed verbatim to the projected `*cngxBreadcrumbIcon` slot as the
@@ -30,7 +30,7 @@ export interface CngxBreadcrumbCrumb {
    * `*cngxBreadcrumbItemAccessory` slot instead (the bar stays free of
    * `@angular/router`). An empty array renders nothing (the dropdown self-hides).
    */
-  siblings?: readonly CngxBreadcrumbSibling[];
+  readonly siblings?: readonly CngxBreadcrumbSibling[];
 }
 
 /**
@@ -46,9 +46,9 @@ export interface CngxBreadcrumbCrumb {
  */
 export interface CngxBreadcrumbSibling {
   /** Visible, and accessible, sibling text. */
-  label: string;
+  readonly label: string;
   /** Target for a navigable sibling. Omit (or set `current`) on the active level. */
-  href?: string;
+  readonly href?: string;
   /** Marks the sibling representing the current level - rendered as `aria-current="page"`, no link. */
-  current?: boolean;
+  readonly current?: boolean;
 }
