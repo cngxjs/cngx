@@ -50,9 +50,9 @@ async function resolveVar(
   page: Page,
   className: string,
   prop: string,
-  opts: { density?: string; dataSkin?: string } = {},
+  opts: { density?: string; dataSkin?: string; dataPaginatorSize?: string } = {},
 ) {
-  return page.evaluate(({ className, prop, density, dataSkin }) => {
+  return page.evaluate(({ className, prop, density, dataSkin, dataPaginatorSize }) => {
     const outer = document.createElement('div');
     if (density) {
       outer.setAttribute('data-density', density);
@@ -62,12 +62,21 @@ async function resolveVar(
     if (dataSkin) {
       el.setAttribute('data-skin', dataSkin);
     }
+    if (dataPaginatorSize) {
+      el.setAttribute('data-paginator-size', dataPaginatorSize);
+    }
     outer.appendChild(el);
     document.body.appendChild(outer);
     const v = getComputedStyle(el).getPropertyValue(prop).trim();
     outer.remove();
     return v;
-  }, { className, prop, density: opts.density, dataSkin: opts.dataSkin });
+  }, {
+    className,
+    prop,
+    density: opts.density,
+    dataSkin: opts.dataSkin,
+    dataPaginatorSize: opts.dataPaginatorSize,
+  });
 }
 
 test.describe('ui/data-grid-accordion — row spacing derives from the density scale', () => {
@@ -120,6 +129,45 @@ test.describe('ui/accordion — default padding derives from the density scale',
     expect(
       await resolveVar(page, GROUP, '--cngx-accordion-header-padding', { density: 'compact' }),
     ).toBe('4px 8px');
+  });
+});
+
+test.describe('ui/paginator — spacing derives from the scale; size preset is a private axis', () => {
+  test.beforeEach(async ({ page }) => {
+    // A paginator skin route loads the global .cngx-paginator CSS
+    // (ViewEncapsulation.None): the base file + component skins.
+    await gotoDemo(page, 'ui/paginator/paginator-skins/numbered');
+    await expect(page.locator('.cngx-paginator').first()).toBeVisible();
+  });
+
+  const PGN = 'cngx-paginator';
+
+  test('default paginator gap tokens track a root [data-density] (row-gap 8/4, gap 4/2)', async ({
+    page,
+  }) => {
+    // The base rule SETs both from the scale, so a root [data-density] compacts
+    // the DEFAULT paginator (density()='default' no longer stamps [data-density]).
+    expect(await resolveVar(page, PGN, '--cngx-paginator-row-gap')).toBe('8px');
+    expect(await resolveVar(page, PGN, '--cngx-paginator-row-gap', { density: 'compact' })).toBe(
+      '4px',
+    );
+    expect(await resolveVar(page, PGN, '--cngx-paginator-gap')).toBe('4px');
+    expect(await resolveVar(page, PGN, '--cngx-paginator-gap', { density: 'compact' })).toBe('2px');
+  });
+
+  test('[density] size preset shrinks button-size via [data-paginator-size], independent of the scale', async ({
+    page,
+  }) => {
+    // The private size axis no longer squats on [data-density]: a global density
+    // compacts spacing but leaves the hit-target alone; [data-paginator-size]
+    // shrinks it. (Root font-size is pinned to 16px on the examples app.)
+    expect(await resolveVar(page, PGN, '--cngx-paginator-button-size')).toBe('36px');
+    expect(
+      await resolveVar(page, PGN, '--cngx-paginator-button-size', { dataPaginatorSize: 'compact' }),
+    ).toBe('28px');
+    expect(await resolveVar(page, PGN, '--cngx-paginator-button-size', { density: 'compact' })).toBe(
+      '36px',
+    );
   });
 });
 

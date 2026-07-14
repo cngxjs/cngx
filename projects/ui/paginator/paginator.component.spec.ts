@@ -113,22 +113,22 @@ describe('CngxPaginator', () => {
     expect(paginatorEl.getAttribute('role')).toBe('navigation');
     expect(paginatorEl.getAttribute('aria-label')).toBe('Pagination');
     expect(paginatorEl.getAttribute('data-skin')).toBe('numbered');
-    expect(paginatorEl.getAttribute('data-density')).toBe('default');
+    expect(paginatorEl.getAttribute('data-paginator-size')).toBe('default');
   });
 
-  test('[skin] and [density] reflect onto [data-skin] / [data-density]', async () => {
+  test('[skin] and [density] reflect onto [data-skin] / [data-paginator-size]', async () => {
     const { fixture, host, paginatorEl } = await setup();
     host.skin.set('pill');
     host.density.set('compact');
     await settle(fixture);
     expect(paginatorEl.getAttribute('data-skin')).toBe('pill');
-    expect(paginatorEl.getAttribute('data-density')).toBe('compact');
+    expect(paginatorEl.getAttribute('data-paginator-size')).toBe('compact');
 
     host.skin.set('segmented');
     host.density.set('comfortable');
     await settle(fixture);
     expect(paginatorEl.getAttribute('data-skin')).toBe('segmented');
-    expect(paginatorEl.getAttribute('data-density')).toBe('comfortable');
+    expect(paginatorEl.getAttribute('data-paginator-size')).toBe('comfortable');
 
     for (const skin of ['rail', 'bar'] as const) {
       host.skin.set(skin);
@@ -357,19 +357,30 @@ describe('CngxPaginator — host typography', () => {
     expect(css).toMatch(
       /\.cngx-paginator__pages\s*\{[^}]*gap:\s*var\(--cngx-paginator-gap,\s*0\.25rem\)/,
     );
+    // The base rule SETs both gap tokens from the global spacing scale, so a
+    // root [data-density] compacts the default paginator; the registered pixel
+    // initial-value would otherwise defeat a use-site scale fallback.
+    expect(css).toMatch(
+      /\.cngx-paginator\s*\{[^}]*--cngx-paginator-row-gap:\s*var\(--cngx-space-sm\)/,
+    );
+    expect(css).toMatch(
+      /\.cngx-paginator\s*\{[^}]*--cngx-paginator-gap:\s*var\(--cngx-space-xs\)/,
+    );
   });
 
-  test('compact density shifts the font to 0.8125rem and shrinks the hit target to 1.75rem', async () => {
+  test('compact size preset shifts the font to 0.8125rem and shrinks the hit target to 1.75rem', async () => {
     await setup();
     const css = paginatorCss();
+    // The private size preset reflects onto [data-paginator-size], not the
+    // global [data-density] the spacing scale owns, and no longer sets the gap.
     expect(css).toMatch(
-      /\[data-density=['"]?compact['"]?\][^{]*\{[^}]*--cngx-paginator-button-size:\s*1\.75rem/,
+      /\[data-paginator-size=['"]?compact['"]?\][^{]*\{[^}]*--cngx-paginator-button-size:\s*1\.75rem/,
     );
     expect(css).toMatch(
-      /\[data-density=['"]?compact['"]?\][^{]*\{[^}]*font-size:\s*var\(--cngx-paginator-font-size-compact,\s*0\.8125rem\)/,
+      /\[data-paginator-size=['"]?compact['"]?\][^{]*\{[^}]*font-size:\s*var\(--cngx-paginator-font-size-compact,\s*0\.8125rem\)/,
     );
     expect(css).toMatch(
-      /\[data-density=['"]?comfortable['"]?\][^{]*\{[^}]*font-size:\s*var\(--cngx-paginator-font-size-comfortable,\s*0\.95rem\)/,
+      /\[data-paginator-size=['"]?comfortable['"]?\][^{]*\{[^}]*font-size:\s*var\(--cngx-paginator-font-size-comfortable,\s*0\.95rem\)/,
     );
   });
 

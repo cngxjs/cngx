@@ -103,7 +103,7 @@ export type CngxPaginatorDensity = 'compact' | 'default' | 'comfortable';
     '[attr.aria-label]': 'resolvedAriaLabel()',
     '[attr.aria-busy]': 'paginate.isBusy()',
     '[attr.data-skin]': 'skin()',
-    '[attr.data-density]': 'density()',
+    '[attr.data-paginator-size]': 'density()',
     '[attr.data-responsive]': "responsive() ? '' : null",
   },
 })
@@ -112,7 +112,13 @@ export class CngxPaginator {
   readonly ariaLabel = input<string | undefined>(undefined, { alias: 'aria-label' });
   /** Visual skin; reflected onto `[data-skin]`. */
   readonly skin = input<CngxPaginatorSkin>('numbered');
-  /** Density preset; reflected onto `[data-density]`. */
+  /**
+   * Private size preset (hit-target + type); reflected onto
+   * `[data-paginator-size]`, NOT the global `[data-density]`. Spacing is a
+   * global concern derived from `--cngx-space-*`, so a root `[data-density]`
+   * compacts this paginator's gaps like every other component; this input keeps
+   * only the touch-target sizing the global scale does not yet cover.
+   */
   readonly density = input<CngxPaginatorDensity>('default');
   /**
    * Opt into the responsive collapse; reflected onto `[data-responsive]`. When
