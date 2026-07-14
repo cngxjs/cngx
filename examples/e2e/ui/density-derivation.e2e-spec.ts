@@ -330,6 +330,28 @@ test.describe('ui/breadcrumb - contained-skin padding derives from the density s
   });
 });
 
+test.describe('common/interactive - slider value-bubble spacing derives from the density scale', () => {
+  test('slider bubble padding tracks a root [data-density] (xs/sm: 4px 8px -> 2px 4px)', async ({
+    page,
+  }) => {
+    // A slider route loads the global cngx-slider CSS (ViewEncapsulation.None);
+    // the cngx-slider host SETs --cngx-slider-bubble-padding from --cngx-space-xs/sm.
+    // Probe the SHIFTED token (2/6.4 -> 4/8): compact reads 2px 4px, NOT the old
+    // literal 0.125rem 0.4rem in every density.
+    await gotoDemo(page, 'common/interactive/slider/thumb-glyph-and-bubble');
+    await page.locator('cngx-slider').first().waitFor({ state: 'attached' });
+    expect(await resolveVar(page, '', '--cngx-slider-bubble-padding', { tag: 'cngx-slider' })).toBe(
+      '4px 8px',
+    );
+    expect(
+      await resolveVar(page, '', '--cngx-slider-bubble-padding', {
+        tag: 'cngx-slider',
+        density: 'compact',
+      }),
+    ).toBe('2px 4px');
+  });
+});
+
 test.describe('common/interactive - checkbox gap derives from the density scale', () => {
   test('checkbox gap tracks a root [data-density] (space-sm: 8 -> 4)', async ({ page }) => {
     // A checkbox route loads the global .cngx-checkbox CSS (ViewEncapsulation.None);
