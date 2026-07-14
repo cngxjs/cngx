@@ -387,6 +387,20 @@ test.describe('common/tabs - tab padding derives from the density scale', () => 
   });
 });
 
+test.describe('common/data - metric gap derives from the density scale', () => {
+  test('metric gap tracks a root [data-density] (shift 2->4 = space-xs: 4 -> 2)', async ({ page }) => {
+    // A metric route loads the global .cngx-metric CSS (ViewEncapsulation.None);
+    // the :scope SETs --cngx-metric-gap from --cngx-space-xs. Probe the SHIFTED
+    // token: compact reads 2, NOT the old literal 2 in every density.
+    await gotoDemo(page, 'common/data/metric/standalone-metrics');
+    await page.locator('.cngx-metric').first().waitFor({ state: 'attached' });
+    expect(await resolveVar(page, 'cngx-metric', '--cngx-metric-gap')).toBe('4px');
+    expect(await resolveVar(page, 'cngx-metric', '--cngx-metric-gap', { density: 'compact' })).toBe(
+      '2px',
+    );
+  });
+});
+
 test.describe('common/card — padding derives from the density scale', () => {
   test.beforeEach(async ({ page }) => {
     // Any card route loads the global .cngx-card CSS (ViewEncapsulation.None).
