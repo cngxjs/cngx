@@ -105,7 +105,6 @@
     initial-value: oklch(1 0 0);
   }
 
-
   /* Delegating tokens - trigger border + bg track the foundation
    * chain so a dark-mode swap on `--cngx-color-border` /
    * `--cngx-color-surface` cascades through the trigger host. */
@@ -129,6 +128,11 @@
     }
 
     .cngx-typeahead__trigger {
+      /* Derive trigger spacing from the global scale (SET-from-scale rule;
+         read on the trigger host). gap 0.5 -> sm; padding 0/0.75 -> 0 keep /
+         sm (inline 12 tie sm/md -> sm). */
+      --cngx-typeahead-gap: var(--cngx-space-sm);
+      --cngx-typeahead-padding: 0 var(--cngx-space-sm);
       display: flex;
       align-items: center;
       gap: var(--cngx-typeahead-gap, 0.5rem);

@@ -53,13 +53,29 @@ async function resolveVar(
   page: Page,
   className: string,
   prop: string,
-  opts: { density?: string; dataSkin?: string; dataPaginatorSize?: string; tag?: string } = {},
+  opts: {
+    density?: string;
+    dataSkin?: string;
+    dataPaginatorSize?: string;
+    tag?: string;
+    hostClass?: string;
+  } = {},
 ) {
   return page.evaluate(
-    ({ className, prop, density, dataSkin, dataPaginatorSize, tag }) => {
+    ({ className, prop, density, dataSkin, dataPaginatorSize, tag, hostClass }) => {
       const outer = document.createElement('div');
       if (density) {
         outer.setAttribute('data-density', density);
+      }
+      // Scoped variant rules (@scope (.cngx-combobox) { .cngx-combobox__trigger })
+      // only match under their scope root, so nest the probe under a host
+      // carrying that class when hostClass is passed.
+      let mount: HTMLElement = outer;
+      if (hostClass) {
+        const host = document.createElement('div');
+        host.className = hostClass;
+        outer.appendChild(host);
+        mount = host;
       }
       // Some components (e.g. cngx-sidenav) style a custom-element tag, not a
       // class, so the probe element must be created with that tag name.
@@ -73,7 +89,7 @@ async function resolveVar(
       if (dataPaginatorSize) {
         el.setAttribute('data-paginator-size', dataPaginatorSize);
       }
-      outer.appendChild(el);
+      mount.appendChild(el);
       document.body.appendChild(outer);
       const v = getComputedStyle(el).getPropertyValue(prop).trim();
       outer.remove();
@@ -86,6 +102,7 @@ async function resolveVar(
       dataSkin: opts.dataSkin,
       dataPaginatorSize: opts.dataPaginatorSize,
       tag: opts.tag,
+      hostClass: opts.hostClass,
     },
   );
 }
@@ -460,5 +477,29 @@ test.describe('forms/select — shared option padding derives from the density s
         density: 'compact',
       }),
     ).toBe('2px 4px');
+  });
+});
+
+test.describe('forms/select — combobox trigger gap derives from the density scale', () => {
+  test('.cngx-combobox__trigger gap tracks a root [data-density] (tie xs/sm->xs, shift 6->4)', async ({
+    page,
+  }) => {
+    // The combobox trigger rule is @scope (.cngx-combobox)-wrapped, so the probe
+    // sits under a .cngx-combobox host. The trigger SETs --cngx-combobox-gap from
+    // --cngx-space-xs: comfortable reads 4 (the shifted xs, NOT the old 6px),
+    // compact reads 2 — catching a mis-ranked shift, not just an exact rung.
+    await gotoDemo(page, 'forms/select/combobox/combobox-basic-tag-picker-with-typeahead-filter');
+    await page.locator('.cngx-combobox__trigger').first().waitFor({ state: 'attached' });
+    expect(
+      await resolveVar(page, 'cngx-combobox__trigger', '--cngx-combobox-gap', {
+        hostClass: 'cngx-combobox',
+      }),
+    ).toBe('4px');
+    expect(
+      await resolveVar(page, 'cngx-combobox__trigger', '--cngx-combobox-gap', {
+        hostClass: 'cngx-combobox',
+        density: 'compact',
+      }),
+    ).toBe('2px');
   });
 });
