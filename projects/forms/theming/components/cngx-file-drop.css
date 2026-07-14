@@ -143,6 +143,11 @@
 @layer cngx.components {
   @scope (.cngx-file-drop) {
     :scope {
+      /* Derive the dropzone padding from the global scale so a root
+         [data-density] compacts it (SET-from-scale rule; the registered 32px
+         initial defeats the existing var(..., --cngx-space-xl) fallback).
+         32 -> xl. */
+      --cngx-file-drop-padding: var(--cngx-space-xl);
       display: block;
       border: var(--cngx-file-drop-border-width, 2px) dashed
         var(--cngx-file-drop-border-color, oklch(0.8 0 0));

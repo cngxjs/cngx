@@ -539,3 +539,17 @@ test.describe('forms/filter-builder — action-button padding derives from the d
     ).toBe('2px 4px');
   });
 });
+
+test.describe('forms/field — file-drop padding derives from the density scale', () => {
+  test('.cngx-file-drop padding tracks a root [data-density] (space-xl: 32 / 16)', async ({
+    page,
+  }) => {
+    // The dropzone rule is @scope (.cngx-file-drop) { :scope }, so a bare
+    // .cngx-file-drop synthetic element IS the scope root and picks up the SET.
+    // Track B CSS ships globally via @cngx/themes/cngx.css. padding 32 -> xl.
+    await gotoDemo(page, 'forms/input/file-drop/image-upload');
+    await page.locator('.cngx-file-drop').first().waitFor({ state: 'attached' });
+    expect(await paddingTopOf(page, 'cngx-file-drop')).toBe('32px');
+    expect(await paddingTopOf(page, 'cngx-file-drop', { density: 'compact' })).toBe('16px');
+  });
+});
