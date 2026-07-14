@@ -194,6 +194,25 @@ test.describe('ui/feedback - alert / toast spacing derives from the density scal
   });
 });
 
+test.describe('ui/tab-overflow - item padding derives from the density scale', () => {
+  test('overflow item padding tracks a root [data-density] (space-sm: 8/8 -> 4/4)', async ({ page }) => {
+    // A tab-overflow route loads the global .cngx-tab-overflow CSS (ViewEncapsulation.None);
+    // the :scope SETs --cngx-tab-overflow-item-padding from --cngx-space-sm (both axes).
+    await gotoDemo(page, 'ui/tabs/tab-overflow/8-tabs-in-a-narrow-container');
+    // Wait for the overflow molecule to mount so its ViewEncapsulation.None
+    // styles (and the @property registration) are injected before probing.
+    await page.locator('.cngx-tab-overflow').first().waitFor({ state: 'attached' });
+    expect(await resolveVar(page, 'cngx-tab-overflow', '--cngx-tab-overflow-item-padding')).toBe(
+      '8px 8px',
+    );
+    expect(
+      await resolveVar(page, 'cngx-tab-overflow', '--cngx-tab-overflow-item-padding', {
+        density: 'compact',
+      }),
+    ).toBe('4px 4px');
+  });
+});
+
 test.describe('common/card — padding derives from the density scale', () => {
   test.beforeEach(async ({ page }) => {
     // Any card route loads the global .cngx-card CSS (ViewEncapsulation.None).
