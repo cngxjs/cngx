@@ -132,7 +132,7 @@ test.describe('ui/accordion — default padding derives from the density scale',
   });
 });
 
-test.describe('ui/paginator — spacing derives from the scale; size preset is a private axis', () => {
+test.describe('ui/paginator - spacing derives from the scale; size preset is a private axis', () => {
   test.beforeEach(async ({ page }) => {
     // A paginator skin route loads the global .cngx-paginator CSS
     // (ViewEncapsulation.None): the base file + component skins.
@@ -167,6 +167,29 @@ test.describe('ui/paginator — spacing derives from the scale; size preset is a
     ).toBe('28px');
     expect(await resolveVar(page, PGN, '--cngx-paginator-button-size', { density: 'compact' })).toBe(
       '36px',
+    );
+  });
+});
+
+test.describe('ui/feedback - alert / toast spacing derives from the density scale', () => {
+  test('alert padding tracks a root [data-density] (8px 16px -> 4px 8px)', async ({ page }) => {
+    // The severities route loads the global .cngx-alert CSS (ViewEncapsulation.None);
+    // the :scope rule SETs --cngx-alert-padding from --cngx-space-sm/md.
+    await gotoDemo(page, 'ui/feedback/alert/severities');
+    await expect(page.locator('.cngx-alert').first()).toBeVisible();
+    expect(await resolveVar(page, 'cngx-alert', '--cngx-alert-padding')).toBe('8px 16px');
+    expect(await resolveVar(page, 'cngx-alert', '--cngx-alert-padding', { density: 'compact' })).toBe(
+      '4px 8px',
+    );
+  });
+
+  test('toast-outlet gap tracks a root [data-density] (space-sm: 8 -> 4)', async ({ page }) => {
+    // The declarative toast route mounts a cngx-toast-outlet, loading its global
+    // CSS; the outlet :scope SETs --cngx-toast-gap from --cngx-space-sm.
+    await gotoDemo(page, 'ui/feedback/toast/declarative-cngx-toast');
+    expect(await resolveVar(page, 'cngx-toast-outlet', '--cngx-toast-gap')).toBe('8px');
+    expect(await resolveVar(page, 'cngx-toast-outlet', '--cngx-toast-gap', { density: 'compact' })).toBe(
+      '4px',
     );
   });
 });

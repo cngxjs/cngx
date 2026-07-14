@@ -120,7 +120,8 @@
    */
   @property --cngx-alert-stack-overflow-padding {
     syntax: '*';
-    inherits: false;
+    /* Read on the __overflow descendant; inherits so the :scope SET reaches it. */
+    inherits: true;
     initial-value: 8px 16px;
   }
 
@@ -263,6 +264,13 @@
 @layer cngx.components {
   @scope (.cngx-alert-stack) {
     :scope {
+      /* Derive stack spacing from the global scale (SET-from-scale rule; the
+         registered pixel initial defeats a use-site fallback). gap is read on
+         the host; overflow-padding is read on the __overflow descendant and is
+         inherits:true so the SET cascades. gap 8 -> sm; overflow-padding
+         8/16 -> sm/md. */
+      --cngx-alert-stack-gap: var(--cngx-space-sm);
+      --cngx-alert-stack-overflow-padding: var(--cngx-space-sm) var(--cngx-space-md);
       display: flex;
       flex-direction: column;
       gap: var(--cngx-alert-stack-gap, 8px);

@@ -106,7 +106,8 @@
    */
   @property --cngx-toast-inner-gap {
     syntax: '<length>';
-    inherits: false;
+    /* Read on the .cngx-toast descendant; inherits so the outlet :scope SET reaches it. */
+    inherits: true;
     initial-value: 10px;
   }
 
@@ -116,7 +117,8 @@
    */
   @property --cngx-toast-padding {
     syntax: '*';
-    inherits: false;
+    /* Read on the .cngx-toast descendant; inherits so the outlet :scope SET reaches it. */
+    inherits: true;
     initial-value: 12px 16px;
   }
 
@@ -347,7 +349,8 @@
    */
   @property --cngx-toast-action-padding {
     syntax: '*';
-    inherits: false;
+    /* Read on the __action descendant; inherits so the outlet :scope SET reaches it. */
+    inherits: true;
     initial-value: 4px 0;
   }
 
@@ -424,6 +427,18 @@
 @layer cngx.components {
   @scope (.cngx-toast-outlet) {
     :scope {
+      /* Derive toast spacing from the global scale (SET-from-scale rule; the
+         registered pixel initial defeats a use-site fallback). gap and
+         outlet-padding are read on the host; inner-gap / padding /
+         action-padding are read on the .cngx-toast descendant and are
+         inherits:true so the SET cascades from the outlet. Rungs per the audit:
+         gap 8 -> sm; outlet-padding 16 -> md; inner-gap 10 -> sm (10 -> 8);
+         padding 12/16 -> sm/md; action-padding 4/0 -> xs/0 (0 kept literal). */
+      --cngx-toast-gap: var(--cngx-space-sm);
+      --cngx-toast-outlet-padding: var(--cngx-space-md);
+      --cngx-toast-inner-gap: var(--cngx-space-sm);
+      --cngx-toast-padding: var(--cngx-space-sm) var(--cngx-space-md);
+      --cngx-toast-action-padding: var(--cngx-space-xs) 0;
       position: fixed;
       z-index: var(--cngx-toast-z-index, 9999);
       display: flex;
