@@ -11,7 +11,6 @@ exports[`Material tabs-theme bridge baseline > v0 light: resolved --cngx-* decla
   "--cngx-tab-busy-spinner-color": "#3f51b5",
   "--cngx-tab-error-badge-color": "#f44336",
   "--cngx-tab-error-badge-text-color": "oklch(1 0 0)",
-  "--cngx-tab-gap": "0.5rem",
   "--cngx-tab-overflow-item-active-bg": "color-mix(in srgb, currentColor 12%, transparent)",
   "--cngx-tab-overflow-item-active-outline": "2px solid #3f51b5",
   "--cngx-tab-overflow-item-hover-bg": "color-mix(in srgb, currentColor 8%, transparent)",
@@ -24,7 +23,6 @@ exports[`Material tabs-theme bridge baseline > v0 light: resolved --cngx-* decla
   "--cngx-tab-rejected-bg": "rgba(244, 67, 54, 0.12)",
   "--cngx-tab-rejection-icon-color": "#f44336",
   "--cngx-tab-rejection-icon-text": "oklch(1 0 0)",
-  "--cngx-tab-strip-padding": "0.5rem 0",
 }
 `;
 
@@ -45,7 +43,6 @@ exports[`Material tabs-theme bridge baseline > v1 dark: resolved --cngx-* declar
   "--cngx-tab-error-badge-font-size": "var(--mat-sys-label-small-size)",
   "--cngx-tab-error-badge-font-weight": "var(--mat-sys-label-small-weight)",
   "--cngx-tab-error-badge-text-color": "var(--mat-sys-on-error)",
-  "--cngx-tab-gap": "0.5rem",
   "--cngx-tab-hover-color": "var(--mat-sys-on-surface)",
   "--cngx-tab-overflow-item-active-bg": "color-mix(in srgb, var(--mat-sys-on-surface) 12%, transparent)",
   "--cngx-tab-overflow-item-active-outline": "2px solid var(--mat-sys-primary)",
@@ -60,7 +57,6 @@ exports[`Material tabs-theme bridge baseline > v1 dark: resolved --cngx-* declar
   "--cngx-tab-rejection-icon-color": "var(--mat-sys-error)",
   "--cngx-tab-rejection-icon-font-size": "var(--mat-sys-label-small-size)",
   "--cngx-tab-rejection-icon-text": "var(--mat-sys-on-error)",
-  "--cngx-tab-strip-padding": "0.5rem 0",
 }
 `;
 
@@ -81,7 +77,6 @@ exports[`Material tabs-theme bridge baseline > v1 light: resolved --cngx-* decla
   "--cngx-tab-error-badge-font-size": "var(--mat-sys-label-small-size)",
   "--cngx-tab-error-badge-font-weight": "var(--mat-sys-label-small-weight)",
   "--cngx-tab-error-badge-text-color": "var(--mat-sys-on-error)",
-  "--cngx-tab-gap": "0.5rem",
   "--cngx-tab-hover-color": "var(--mat-sys-on-surface)",
   "--cngx-tab-overflow-item-active-bg": "color-mix(in srgb, var(--mat-sys-on-surface) 12%, transparent)",
   "--cngx-tab-overflow-item-active-outline": "2px solid var(--mat-sys-primary)",
@@ -96,6 +91,5 @@ exports[`Material tabs-theme bridge baseline > v1 light: resolved --cngx-* decla
   "--cngx-tab-rejection-icon-color": "var(--mat-sys-error)",
   "--cngx-tab-rejection-icon-font-size": "var(--mat-sys-label-small-size)",
   "--cngx-tab-rejection-icon-text": "var(--mat-sys-on-error)",
-  "--cngx-tab-strip-padding": "0.5rem 0",
 }
 `;

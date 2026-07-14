@@ -45,15 +45,6 @@
   }
 }
 
-@mixin density($theme) {
-  $scale: mat.get-theme-density($theme);
-  $scale: math.max(-4, math.min(0, $scale));
-
-  $gaps: (0: 0.5rem, -1: 0.4rem, -2: 0.3rem, -3: 0.25rem, -4: 0.2rem);
-
-  --cngx-breadcrumb-gap: #{map.get($gaps, $scale)};
-}
-
 // Overflow trigger + collapsed-crumb rows. The menu lives inside a
 // CngxPopoverPanel (themed by popover-panel-theme.scss), so only the trigger
 // glyph colour and the row hover wash are set here; they inherit from the
@@ -118,7 +109,6 @@
   @layer cngx.components {
     :where(cngx-breadcrumb) {
       @include color($theme);
-      @include density($theme);
     }
     :where(cngx-breadcrumb-overflow) {
       @include _overflow($theme);

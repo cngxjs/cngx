@@ -85,13 +85,13 @@
   $scale: mat.get-theme-density($theme);
   $scale: math.max(-4, math.min(0, $scale));
 
-  $paddings:        (0: 0.5rem 0.75rem, -1: 0.4rem 0.6rem, -2: 0.3rem 0.5rem, -3: 0.25rem 0.4rem, -4: 0.2rem 0.35rem);
-  $strip-paddings:  (0: 0.5rem 0, -1: 0.4rem 0, -2: 0.3rem 0, -3: 0.25rem 0, -4: 0.2rem 0);
-  $gaps:            (0: 0.5rem, -1: 0.4rem, -2: 0.3rem, -3: 0.25rem, -4: 0.2rem);
+  // The inline tab padding (0.75rem == 12px) diverges from the scale sm
+  // (8px), so --cngx-tab-padding stays bridged. The strip padding
+  // (0.5rem 0 == space-sm 0) and the gap (0.5rem == space-sm) now derive
+  // from the scale in tabs-base.css, so they are dropped here.
+  $paddings: (0: 0.5rem 0.75rem, -1: 0.4rem 0.6rem, -2: 0.3rem 0.5rem, -3: 0.25rem 0.4rem, -4: 0.2rem 0.35rem);
 
   --cngx-tab-padding: #{map.get($paddings, $scale)};
-  --cngx-tab-strip-padding: #{map.get($strip-paddings, $scale)};
-  --cngx-tab-gap: #{map.get($gaps, $scale)};
 }
 
 // "More" overflow popover -> Material `mat-menu`. The overflow surface is a

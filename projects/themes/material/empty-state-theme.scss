@@ -34,11 +34,12 @@
   $scale: mat.get-theme-density($theme);
   $scale: math.max(-4, math.min(0, $scale));
 
+  // The hero empty-state padding (48px) diverges from the scale xl (32px),
+  // so --cngx-empty-padding stays bridged. The gap (16px == space-md) now
+  // derives from the scale in empty-state.component.css, so it is dropped.
   $paddings: (0: 48px, -1: 40px, -2: 32px, -3: 24px, -4: 20px);
-  $gaps:     (0: 16px, -1: 14px, -2: 12px, -3: 10px, -4: 8px);
 
   --cngx-empty-padding: #{map.get($paddings, $scale)};
-  --cngx-empty-gap: #{map.get($gaps, $scale)};
 }
 
 @mixin theme($theme) {

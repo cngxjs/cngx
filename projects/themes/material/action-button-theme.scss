@@ -35,20 +35,11 @@
   }
 }
 
-@mixin density($theme) {
-  $scale: mat.get-theme-density($theme);
-  $scale: math.max(-4, math.min(0, $scale));
-
-  $paddings: (0: 8px 16px, -1: 6px 12px, -2: 5px 10px, -3: 4px 8px, -4: 3px 6px);
-  --cngx-action-btn-padding: #{map.get($paddings, $scale)};
-}
-
 @mixin theme($theme) {
   @layer cngx.components {
     :where(cngx-action-button),
     :where([cngxAsyncClick]) {
       @include color($theme);
-      @include density($theme);
     }
   }
 }
