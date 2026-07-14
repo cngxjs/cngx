@@ -1,4 +1,16 @@
 .cngx-accordion-group {
+  /* Derive the intra-header gaps from the density scale on the UNCONDITIONAL
+     host - not `:not([data-skin])` - so every group (skinned included) compacts
+     under a root `[data-density]`. This matches the Material bridge's
+     `:where(cngx-accordion-group)` reach for `--cngx-accordion-header-gap`, the
+     precondition for dropping that bridge fork (wave-3 Phase 4). The tokens are
+     not `@property`-registered, so they inherit to the item use-sites
+     (feedback_property_inherits_false_trap); a skin sets its own gap via its
+     `@scope` `:scope` (same specificity, wins by scope-proximity). Snaps:
+     heading/header 8px -> sm; title 2px -> xs (shift 2->4). */
+  --cngx-accordion-heading-gap: var(--cngx-space-sm, 0.5rem);
+  --cngx-accordion-header-gap: var(--cngx-space-sm, 0.5rem);
+  --cngx-accordion-title-gap: var(--cngx-space-xs, 0.125rem);
   /* Flat default: a block stack with a top divider. Card / grid / framed skins
      set display, gap, and the surface box directly through their
      `[data-skin]` @scope block (accordion-skins.css). The top divider still

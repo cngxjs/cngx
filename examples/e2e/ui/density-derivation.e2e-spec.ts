@@ -168,6 +168,50 @@ test.describe('ui/accordion — default padding derives from the density scale',
   });
 });
 
+test.describe('ui/accordion - intra-header gaps derive from the density scale', () => {
+  const GROUP = 'cngx-accordion-group';
+
+  test.beforeEach(async ({ page }) => {
+    // A skins route loads both accordion-group.component.css and
+    // accordion-skins.css (both styleUrls on the ViewEncapsulation.None group),
+    // so the unconditional-host SET and the skin @scope blocks are present.
+    await gotoDemo(page, 'ui/accordion/skins/severity-spine');
+    await page.locator('.cngx-accordion-group').first().waitFor({ state: 'attached' });
+  });
+
+  test('unskinned title-gap tracks a root [data-density] (shift 2->4 = space-xs: 4 -> 2)', async ({
+    page,
+  }) => {
+    // The unconditional .cngx-accordion-group host SETs --cngx-accordion-title-gap
+    // from --cngx-space-xs. Probe the SHIFTED token: comfortable reads 4 (NOT the
+    // old 2px literal), compact reads 2.
+    expect(await resolveVar(page, GROUP, '--cngx-accordion-title-gap')).toBe('4px');
+    expect(
+      await resolveVar(page, GROUP, '--cngx-accordion-title-gap', { density: 'compact' }),
+    ).toBe('2px');
+  });
+
+  test('skinned header-gap still tracks density (unconditional-host reach; space-sm: 8 -> 4)', async ({
+    page,
+  }) => {
+    // Skin-reach proof: a [data-skin] group whose skin does NOT override
+    // header-gap (severity-spine) still resolves --cngx-accordion-header-gap from
+    // the scale, because the SET lives on the unconditional host - matching the
+    // Material bridge's :where(cngx-accordion-group) reach. This is the
+    // precondition that makes the Phase-4 bridge drop value-equivalent for
+    // skinned groups too.
+    expect(
+      await resolveVar(page, GROUP, '--cngx-accordion-header-gap', { dataSkin: 'severity-spine' }),
+    ).toBe('8px');
+    expect(
+      await resolveVar(page, GROUP, '--cngx-accordion-header-gap', {
+        dataSkin: 'severity-spine',
+        density: 'compact',
+      }),
+    ).toBe('4px');
+  });
+});
+
 test.describe('ui/paginator - spacing derives from the scale; size preset is a private axis', () => {
   test.beforeEach(async ({ page }) => {
     // A paginator skin route loads the global .cngx-paginator CSS
