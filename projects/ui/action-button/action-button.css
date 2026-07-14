@@ -244,6 +244,11 @@
    * which is what cngx.css aggregation delivers. */
 
   .cngx-action-button {
+    /* Derive the button padding from the global scale so a root [data-density]
+       compacts it (SET-from-scale rule; the registered pixel initial defeats a
+       use-site fallback). Read on this element, so inherits:false is fine.
+       8/16 -> sm/md. */
+    --cngx-action-btn-padding: var(--cngx-space-sm) var(--cngx-space-md);
     cursor: pointer;
     border: 1px solid var(--cngx-action-btn-border, var(--cngx-color-border, oklch(0.87 0 0)));
     border-radius: var(--cngx-action-btn-radius, 6px);

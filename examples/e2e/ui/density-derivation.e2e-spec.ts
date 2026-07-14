@@ -239,6 +239,25 @@ test.describe('ui/sidenav - nav-link padding derives from the density scale', ()
   });
 });
 
+test.describe('ui/action-button - padding derives from the density scale', () => {
+  test('action-button padding tracks a root [data-density] (sm/md: 8px 16px -> 4px 8px)', async ({
+    page,
+  }) => {
+    // An action-button route loads the global .cngx-action-button CSS
+    // (ViewEncapsulation.None); the rule SETs --cngx-action-btn-padding from the scale.
+    await gotoDemo(page, 'ui/action-button/async-button/random-outcome');
+    await page.locator('.cngx-action-button').first().waitFor({ state: 'attached' });
+    expect(await resolveVar(page, 'cngx-action-button', '--cngx-action-btn-padding')).toBe(
+      '8px 16px',
+    );
+    expect(
+      await resolveVar(page, 'cngx-action-button', '--cngx-action-btn-padding', {
+        density: 'compact',
+      }),
+    ).toBe('4px 8px');
+  });
+});
+
 test.describe('common/card — padding derives from the density scale', () => {
   test.beforeEach(async ({ page }) => {
     // Any card route loads the global .cngx-card CSS (ViewEncapsulation.None).
