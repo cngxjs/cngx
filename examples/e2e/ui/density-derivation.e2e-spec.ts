@@ -359,6 +359,26 @@ test.describe('common/display - chip spacing derives from the density scale', ()
   });
 });
 
+test.describe('common/display - segmented-progress gap derives from the density scale', () => {
+  test('segmented-progress gap tracks a root [data-density] (space-xs: 4 -> 2)', async ({
+    page,
+  }) => {
+    // A segmented-progress route loads the global .cngx-segmented-progress CSS
+    // (ViewEncapsulation.None); the host SETs --cngx-segmented-progress-gap from
+    // --cngx-space-xs. Absolute px per rung, not relative compaction.
+    await gotoDemo(page, 'common/display/segmented-progress/value-total');
+    await page.locator('.cngx-segmented-progress').first().waitFor({ state: 'attached' });
+    expect(await resolveVar(page, 'cngx-segmented-progress', '--cngx-segmented-progress-gap')).toBe(
+      '4px',
+    );
+    expect(
+      await resolveVar(page, 'cngx-segmented-progress', '--cngx-segmented-progress-gap', {
+        density: 'compact',
+      }),
+    ).toBe('2px');
+  });
+});
+
 test.describe('common/popover - panel padding derives from the density scale', () => {
   test('popover-panel padding tracks a root [data-density] (space-md: 16 -> 8)', async ({
     page,

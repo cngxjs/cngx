@@ -1,4 +1,5 @@
 .cngx-meta-list {
+  --cngx-meta-list-gap: var(--cngx-space-sm, 0.4rem) var(--cngx-space-md, 1.2rem);
   display: flex;
   flex-wrap: wrap;
   gap: var(--cngx-meta-list-gap, 0.4rem 1.2rem);

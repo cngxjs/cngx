@@ -1,4 +1,5 @@
 .cngx-meta {
+  --cngx-meta-gap: var(--cngx-space-xs, 0.35em);
   display: inline-flex;
   align-items: baseline;
   gap: var(--cngx-meta-gap, 0.35em);
