@@ -310,6 +310,22 @@ test.describe('common/interactive - checkbox gap derives from the density scale'
   });
 });
 
+test.describe('common/display - chip spacing derives from the density scale', () => {
+  test('chip padding-block tracks a root [data-density] (shift 2->4 = space-xs: 4 -> 2)', async ({
+    page,
+  }) => {
+    // A chip route loads the global .cngx-chip CSS (ViewEncapsulation.None); the
+    // :scope SETs --cngx-chip-padding-block from --cngx-space-xs. Probe the
+    // SHIFTED token: compact reads 2, NOT the old literal 2 in every density.
+    await gotoDemo(page, 'common/display/chip/basic');
+    await page.locator('.cngx-chip').first().waitFor({ state: 'attached' });
+    expect(await resolveVar(page, 'cngx-chip', '--cngx-chip-padding-block')).toBe('4px');
+    expect(
+      await resolveVar(page, 'cngx-chip', '--cngx-chip-padding-block', { density: 'compact' }),
+    ).toBe('2px');
+  });
+});
+
 test.describe('common/card — padding derives from the density scale', () => {
   test.beforeEach(async ({ page }) => {
     // Any card route loads the global .cngx-card CSS (ViewEncapsulation.None).
