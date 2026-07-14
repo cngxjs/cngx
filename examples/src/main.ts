@@ -74,6 +74,52 @@ globalThis.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',
   }
 });
 
+// Density coordination.
+//
+// The cngx foundation re-scales its spacing T-shirt scale whenever
+// `<html data-density>` is set to `compact` or `spacious` (`comfortable`
+// is the base rung, so it needs no attribute). We persist an explicit
+// preference to `localStorage['cngx_density']` and reflect it onto the
+// document element, mirroring the color-scheme coordination above. There
+// is no OS-level density signal, so a cleared key just means the
+// comfortable base. Compodocx has no density control, so no parent sync
+// is needed; the `storage` listener only keeps multiple tabs aligned.
+const CNGX_DENSITY_KEY = 'cngx_density';
+
+type DensityPref = 'compact' | 'spacious' | null;
+
+function applyDensity(pref: DensityPref): void {
+  const el = document.documentElement;
+  if (pref === null) {
+    delete el.dataset['density'];
+  } else el.dataset['density'] = pref;
+}
+
+function readPersistedDensity(): DensityPref {
+  try {
+    const v = localStorage.getItem(CNGX_DENSITY_KEY);
+    if (v === 'compact' || v === 'spacious') {
+      return v;
+    }
+  } catch {
+    // localStorage may be unavailable in restrictive contexts; treat as comfortable.
+  }
+  return null;
+}
+
+function syncDensityFromState(): void {
+  applyDensity(readPersistedDensity());
+}
+
+syncDensityFromState();
+
+globalThis.addEventListener('storage', (event) => {
+  if (event.key !== CNGX_DENSITY_KEY) {
+    return;
+  }
+  syncDensityFromState();
+});
+
 // Floating dark-mode debug toggle. Bottom-right of the viewport,
 // cycles auto → dark → light → auto by writing the same localStorage
 // key compodocx uses. Useful when running the examples app standalone
@@ -126,9 +172,54 @@ function installColorSchemeToggle(): void {
   render();
 }
 
-// Only install the floating toggle when the examples app runs standalone.
+// Floating density debug toggle. Sits just above the color-scheme toggle
+// (bottom-right), cycles comfortable → compact → spacious → comfortable by
+// writing the `cngx_density` localStorage key. Standalone-only, same
+// rationale as the color-scheme toggle: inside the compodocx iframe it
+// would overlap demo content, and compodocx exposes no density control.
+function installDensityToggle(): void {
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.id = 'cngx-ex-density-toggle';
+  btn.setAttribute('aria-label', 'Cycle density: comfortable / compact / spacious');
+  document.body.appendChild(btn);
+
+  function setPersistedDensity(pref: DensityPref): void {
+    try {
+      if (pref === null) {
+        localStorage.removeItem(CNGX_DENSITY_KEY);
+      } else {
+        localStorage.setItem(CNGX_DENSITY_KEY, pref);
+      }
+    } catch {
+      // localStorage may be unavailable; the toggle still updates the DOM.
+    }
+  }
+
+  function render(): void {
+    const pref = readPersistedDensity();
+    // Apache-style bracket marker, matching the color-scheme toggle:
+    // [-] tighter (compact), [+] looser (spacious), [=] the comfortable base.
+    btn.textContent = pref === 'compact' ? '[-]' : pref === 'spacious' ? '[+]' : '[=]';
+    btn.title = `Density: ${pref ?? 'comfortable (base)'} — click to cycle`;
+  }
+
+  btn.addEventListener('click', () => {
+    const current = readPersistedDensity();
+    // comfortable (null) → compact → spacious → comfortable
+    const next: DensityPref =
+      current === null ? 'compact' : current === 'compact' ? 'spacious' : null;
+    setPersistedDensity(next);
+    applyDensity(next);
+    render();
+  });
+
+  render();
+}
+
+// Only install the floating toggles when the examples app runs standalone.
 // Inside the compodocx iframe the parent already exposes its own dark-mode
-// toggle, and the floating button would overlap demo content.
+// toggle, and the floating buttons would overlap demo content.
 function isEmbeddedInIframe(): boolean {
   try {
     return globalThis.self !== globalThis.top;
@@ -142,6 +233,7 @@ bootstrapApplication(App, appConfig)
   .then(() => {
     if (!isEmbeddedInIframe()) {
       installColorSchemeToggle();
+      installDensityToggle();
     }
   })
   .catch((err) => console.error(err));
