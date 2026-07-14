@@ -50,15 +50,19 @@ async function resolveVar(
   page: Page,
   className: string,
   prop: string,
-  opts: { density?: string; dataSkin?: string; dataPaginatorSize?: string } = {},
+  opts: { density?: string; dataSkin?: string; dataPaginatorSize?: string; tag?: string } = {},
 ) {
-  return page.evaluate(({ className, prop, density, dataSkin, dataPaginatorSize }) => {
+  return page.evaluate(({ className, prop, density, dataSkin, dataPaginatorSize, tag }) => {
     const outer = document.createElement('div');
     if (density) {
       outer.setAttribute('data-density', density);
     }
-    const el = document.createElement('div');
-    el.className = className;
+    // Some components (e.g. cngx-sidenav) style a custom-element tag, not a
+    // class, so the probe element must be created with that tag name.
+    const el = document.createElement(tag ?? 'div');
+    if (className) {
+      el.className = className;
+    }
     if (dataSkin) {
       el.setAttribute('data-skin', dataSkin);
     }
@@ -76,6 +80,7 @@ async function resolveVar(
     density: opts.density,
     dataSkin: opts.dataSkin,
     dataPaginatorSize: opts.dataPaginatorSize,
+    tag: opts.tag,
   });
 }
 
@@ -210,6 +215,27 @@ test.describe('ui/tab-overflow - item padding derives from the density scale', (
         density: 'compact',
       }),
     ).toBe('4px 4px');
+  });
+});
+
+test.describe('ui/sidenav - nav-link padding derives from the density scale', () => {
+  test('nav-link padding tracks a root [data-density] (shift 10->8: 8px 16px -> 4px 8px)', async ({
+    page,
+  }) => {
+    // A sidenav route loads the global cngx-sidenav CSS (ViewEncapsulation.None);
+    // the cngx-sidenav host SETs --cngx-nav-link-padding from --cngx-space-sm/md.
+    // Probe a SHIFTED token (10->8) so a mis-ranked rung is caught.
+    await gotoDemo(page, 'ui/sidenav/full-navigation-sidebar');
+    await page.locator('cngx-sidenav').first().waitFor({ state: 'attached' });
+    expect(await resolveVar(page, '', '--cngx-nav-link-padding', { tag: 'cngx-sidenav' })).toBe(
+      '8px 16px',
+    );
+    expect(
+      await resolveVar(page, '', '--cngx-nav-link-padding', {
+        tag: 'cngx-sidenav',
+        density: 'compact',
+      }),
+    ).toBe('4px 8px');
   });
 });
 
