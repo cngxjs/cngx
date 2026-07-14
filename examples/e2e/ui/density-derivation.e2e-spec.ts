@@ -372,6 +372,21 @@ test.describe('common/card-grid - gap derives from the density scale', () => {
   });
 });
 
+test.describe('common/tabs - tab padding derives from the density scale', () => {
+  test('tab padding tracks a root [data-density] (space-sm: 8/8 -> 4/4)', async ({ page }) => {
+    // cngx-tab-group (ui/tabs) loads the common tabs-base CSS; the host SETs
+    // --cngx-tab-padding from --cngx-space-sm (both axes, inherits:true to the tabs).
+    await gotoDemo(page, 'ui/tabs/tab-layout/fitted-and-tab-alignment');
+    await page.locator('cngx-tab-group').first().waitFor({ state: 'attached' });
+    expect(await resolveVar(page, '', '--cngx-tab-padding', { tag: 'cngx-tab-group' })).toBe(
+      '8px 8px',
+    );
+    expect(
+      await resolveVar(page, '', '--cngx-tab-padding', { tag: 'cngx-tab-group', density: 'compact' }),
+    ).toBe('4px 4px');
+  });
+});
+
 test.describe('common/card — padding derives from the density scale', () => {
   test.beforeEach(async ({ page }) => {
     // Any card route loads the global .cngx-card CSS (ViewEncapsulation.None).

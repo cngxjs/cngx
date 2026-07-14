@@ -61,7 +61,9 @@
    */
   @property --cngx-tab-gap {
     syntax: '*';
-    inherits: false;
+    /* Read across the strip / tab / affordance / panel descendants; inherits so
+       the cngx-tab-group host SET reaches them all. */
+    inherits: true;
     initial-value: 0.5rem;
   }
 
@@ -71,7 +73,8 @@
    */
   @property --cngx-tab-strip-padding {
     syntax: '*';
-    inherits: false;
+    /* Read on the .cngx-tabs__strip descendant; inherits so the host SET reaches it. */
+    inherits: true;
     initial-value: 0.5rem 0;
   }
 
@@ -91,7 +94,8 @@
    */
   @property --cngx-tab-padding {
     syntax: '*';
-    inherits: false;
+    /* Read on the .cngx-tabs__tab / __panel descendants; inherits so the host SET reaches them. */
+    inherits: true;
     initial-value: 0.5rem 0.75rem;
   }
 
@@ -414,6 +418,15 @@
 
 @layer cngx.components {
   cngx-tab-group {
+    /* Derive tab spacing from the global scale so a root [data-density] compacts
+       the tabs (SET-from-scale rule; the registered pixel initial defeats the
+       use-site fallback). All three are read on descendants (strip / tab /
+       affordances / panel) and are inherits:true, so this host SET cascades.
+       tab-gap 0.5rem -> sm; strip-padding 0.5rem/0 -> sm/0 (0 kept); tab-padding
+       0.5rem/0.75rem -> sm/sm (0.75rem -> 8). */
+    --cngx-tab-gap: var(--cngx-space-sm);
+    --cngx-tab-strip-padding: var(--cngx-space-sm) 0;
+    --cngx-tab-padding: var(--cngx-space-sm) var(--cngx-space-sm);
     display: block;
   }
 
