@@ -59,18 +59,16 @@
   $scale: mat.get-theme-density($theme);
   $scale: math.max(-4, math.min(0, $scale));
 
-  // Material 3 popover-surface paddings sit lower than cngx's original
+  // Material 3 popover-surface padding sits lower than cngx's original
   // 16px default. Card uses corner-medium (12px) inset, Menu vertically
-  // pads at 8px. Drop the bridge defaults to match Material's tighter
-  // surfaces so a cngx popover next to <mat-menu> doesn't read as
-  // chunkier.
-  $paddings:    (0: 12px, -1: 10px, -2: 8px,  -3: 6px,  -4: 4px);
-  $header-gaps: (0: 8px,  -1: 6px,  -2: 5px,  -3: 4px,  -4: 4px);
-  $footer-gaps: (0: 8px,  -1: 6px,  -2: 5px,  -3: 4px,  -4: 4px);
+  // pads at 8px. Keep the bridge default at 12px to match Material's
+  // tighter surfaces so a cngx popover next to <mat-menu> doesn't read as
+  // chunkier - this diverges from the scale md (16px), so it stays.
+  // The header / footer gaps (8px == space-sm) now derive from the scale
+  // in popover-panel.component.css, so they are dropped here.
+  $paddings: (0: 12px, -1: 10px, -2: 8px, -3: 6px, -4: 4px);
 
   --cngx-popover-panel-padding: #{map.get($paddings, $scale)};
-  --cngx-popover-panel-header-gap: #{map.get($header-gaps, $scale)};
-  --cngx-popover-panel-footer-gap: #{map.get($footer-gaps, $scale)};
 }
 
 @mixin theme($theme) {

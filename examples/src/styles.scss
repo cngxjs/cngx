@@ -76,11 +76,13 @@ body {
   color: var(--cngx-ex-text);
 }
 
-// Floating dark-mode debug toggle (mounted by main.ts after
-// bootstrapApplication). Bottom-right, monospace + sharp corners to
-// match the Apache mod_autoindex aesthetic of the home directory
-// listing. Cycles auto → dark → light → auto.
-#cngx-ex-color-scheme-toggle {
+// Floating debug toggles (mounted by main.ts after bootstrapApplication):
+// color-scheme (bottom-most) and density (stacked just above it).
+// Monospace + sharp corners to match the Apache mod_autoindex aesthetic of
+// the home directory listing. Color-scheme cycles auto → dark → light;
+// density cycles comfortable → compact → spacious.
+#cngx-ex-color-scheme-toggle,
+#cngx-ex-density-toggle {
   position: fixed;
   right: 16px;
   bottom: 16px;
@@ -96,10 +98,17 @@ body {
   font-size: 0.8125rem;
   line-height: 1.2;
 }
-#cngx-ex-color-scheme-toggle:hover {
+// Stack the density toggle one row above the color-scheme toggle so the two
+// never overlap.
+#cngx-ex-density-toggle {
+  bottom: 44px;
+}
+#cngx-ex-color-scheme-toggle:hover,
+#cngx-ex-density-toggle:hover {
   background: color-mix(in oklch, var(--cngx-color-surface, #fff), currentColor 6%);
 }
-#cngx-ex-color-scheme-toggle:focus-visible {
+#cngx-ex-color-scheme-toggle:focus-visible,
+#cngx-ex-density-toggle:focus-visible {
   outline: 1px solid var(--cngx-color-primary, #4a8cff);
   outline-offset: 1px;
 }

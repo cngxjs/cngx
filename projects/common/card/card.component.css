@@ -75,15 +75,17 @@
  */
 
 @layer cngx.tokens {
-  /**
-   * Padding shorthand inside the card.
-   * @group Layout
+  /*
+   * `--cngx-card-padding` is intentionally NOT registered as an `@property`.
+   * A registered token with a fixed `initial-value` would defeat the
+   * `var(--cngx-card-padding, var(--cngx-space-md))` fallback below, pinning
+   * padding to a literal and killing `[data-density]` derivation
+   * (reference_property_color_initial_defeats_fallback). Left unregistered, the
+   * fallback resolves to `--cngx-space-md` for a standalone card (so density
+   * flows), and card-grid's ancestor pins on `--cngx-card-padding` inherit
+   * naturally (compact -> space-sm, comfortable -> space-lg) instead of being
+   * overridden by a self-set default.
    */
-  @property --cngx-card-padding {
-    syntax: '<length>';
-    inherits: false;
-    initial-value: 16px;
-  }
 
   /**
    * Corner radius. Defaults to `--cngx-radius-lg`.
@@ -874,6 +876,11 @@
 
     /* Badge placement - absolute, four corner variants */
     .cngx-card__badge {
+      /* Derive the badge inline padding from the global scale (SET-from-scale
+         rule; the registered pixel initial defeats the use-site fallback).
+         set-at-read-site: the --size-sm/md/lg variants read the same token on the
+         same element, so this one SET covers them all. 5 -> xs (5 -> 4). */
+      --cngx-card-badge-padding-inline: var(--cngx-space-xs);
       position: absolute;
       z-index: 1;
       display: inline-flex;

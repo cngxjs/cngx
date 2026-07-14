@@ -60,6 +60,10 @@
 
 @layer cngx.components {
   [cngxBreadcrumb] > ol {
+    /* Derive the gap from the global scale (SET-from-scale rule). 0.5rem -> sm.
+       Read on this element (inherits:true, so a set on the container would also
+       reach it). */
+    --cngx-breadcrumb-gap: var(--cngx-space-sm);
     display: flex;
     flex-wrap: wrap;
     align-items: center;

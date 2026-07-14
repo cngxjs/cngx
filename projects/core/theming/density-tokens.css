@@ -1,0 +1,77 @@
+/**
+ * @overview
+ * The `[data-density]` swap for the spacing T-shirt scale. Setting
+ * `data-density` (or the equivalent `.cngx-density-*` class) on any
+ * ancestor re-scales `--cngx-space-{xs..xl}` for its whole subtree, the
+ * same way `data-color-scheme` re-themes the colour ramp in
+ * `system-tokens.css`. Every component that derives its padding / gap
+ * from the scale then re-densifies for free - no per-component input.
+ *
+ * **Presets**
+ *
+ * - `comfortable` - the library default (4 / 8 / 16 / 24 / 32 px). An
+ *   explicit block, not just the registered `initial-value`, so a
+ *   `comfortable` island resets cleanly inside a `compact` ancestor
+ *   (mirrors Block 4 restating light in `system-tokens.css`).
+ * - `compact` - dense rung (2 / 4 / 8 / 12 / 16 px).
+ * - `spacious` - roomy rung (6 / 12 / 20 / 28 / 40 px).
+ *
+ * **Layer**
+ *
+ * These blocks live in `@layer cngx.theme` - the documented
+ * theme-override layer (`layers.css`) that sits ABOVE `cngx.tokens`.
+ * That placement is deliberate and differs from the colour-scheme
+ * blocks (which sit in `cngx.tokens` and win by selector specificity):
+ * the density swap must beat the `@property` `initial-value` of
+ * `--cngx-space-*` regardless of specificity, and only a higher layer
+ * guarantees that. The `inherits: true` flip on the spacing
+ * registrations (`system-tokens.css`) is the prerequisite that lets a
+ * value set here on an ancestor reach a descendant.
+ *
+ * **Form**
+ *
+ * Attribute-primary (`[data-density='compact']`) with a class twin
+ * (`.cngx-density-compact`) for Tailwind/shadcn-style conventions -
+ * same dual-signal pattern as the colour-scheme blocks. The ergonomic
+ * `provideDensity()` / `CngxDensity` layer (`@cngx/core/theming`)
+ * reflects a signal onto this attribute.
+ *
+ * **Pair with**
+ *
+ * - `@cngx/core/theming/system-tokens` - registers `--cngx-space-*`
+ *   (`inherits: true`) and declares the layer order this file appends to
+ * - `@cngx/core/theming/density` - `provideDensity` / `CngxDensity`
+ */
+
+@layer cngx.theme {
+  /* comfortable — the library default. Declared explicitly so a nested
+   * comfortable island resets inside a compact/spacious ancestor. */
+  [data-density='comfortable'],
+  .cngx-density-comfortable {
+    --cngx-space-xs: 4px;
+    --cngx-space-sm: 8px;
+    --cngx-space-md: 16px;
+    --cngx-space-lg: 24px;
+    --cngx-space-xl: 32px;
+  }
+
+  /* compact — dense rung. */
+  [data-density='compact'],
+  .cngx-density-compact {
+    --cngx-space-xs: 2px;
+    --cngx-space-sm: 4px;
+    --cngx-space-md: 8px;
+    --cngx-space-lg: 12px;
+    --cngx-space-xl: 16px;
+  }
+
+  /* spacious — roomy rung. */
+  [data-density='spacious'],
+  .cngx-density-spacious {
+    --cngx-space-xs: 6px;
+    --cngx-space-sm: 12px;
+    --cngx-space-md: 20px;
+    --cngx-space-lg: 28px;
+    --cngx-space-xl: 40px;
+  }
+}

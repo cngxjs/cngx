@@ -244,11 +244,17 @@
     }
 
     .cngx-tree-select__tree {
+      /* tree-padding 0.25 -> xs. */
+      --cngx-tree-select-tree-padding: var(--cngx-space-xs);
       outline: none;
       padding: var(--cngx-tree-select-tree-padding, 0.25rem);
     }
 
     .cngx-tree-select__node {
+      /* node-gap 0.5 -> sm; node-padding-end 0.75 -> sm (tie sm/md -> sm).
+         base-indent / level-indent are indentation axes, left literal. */
+      --cngx-tree-select-node-gap: var(--cngx-space-sm);
+      --cngx-tree-select-node-padding-end: var(--cngx-space-sm);
       display: flex;
       align-items: center;
       gap: var(--cngx-tree-select-node-gap, 0.5rem);

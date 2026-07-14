@@ -84,8 +84,16 @@
    comfortable padding, and the summary lifts on hover. Every named skin sets
    `[data-skin]` and owns its own frame, so `:not([data-skin])` keeps this off them. */
 .cngx-data-grid-accordion:not([data-skin]) {
-  --cngx-dga-row-py: 0.75rem;
-  --cngx-dga-row-px: 1rem;
+  /* Derive the unskinned default spacing from the density scale so a global
+     `[data-density]` re-scales it. The tokens are registered `@property`
+     (cngx-data-grid.css) whose pixel initial-value would otherwise defeat any
+     `var()` fallback, so the derivation is a SET here, not a fallback. Values
+     snap to the nearest rung (row-py 12px -> space-sm, tighter for data rows;
+     row-px 16px = space-md, exact; region 12/16px -> space-sm/space-md). */
+  --cngx-dga-row-py: var(--cngx-space-sm, 8px);
+  --cngx-dga-row-px: var(--cngx-space-md, 16px);
+  --cngx-dga-region-padding: var(--cngx-space-sm, 8px) var(--cngx-space-md, 16px);
+  --cngx-dga-col-gap: var(--cngx-space-sm, 8px);
   /* SET the divider colour to the adaptive theme token. `--cngx-dga-border-color`
      is a registered `@property` with a fixed light initial-value, so every
      `var(--cngx-dga-border-color, ...)` fallback in the base look is defeated and

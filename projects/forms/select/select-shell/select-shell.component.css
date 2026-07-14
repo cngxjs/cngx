@@ -215,6 +215,11 @@
     }
 
     .cngx-select-shell__trigger {
+      /* Derive trigger spacing from the global scale (SET-from-scale rule;
+         read on the trigger host). gap 0.5 -> sm; padding 0.5/0.75 -> sm/sm
+         (inline 12 tie sm/md -> sm). */
+      --cngx-select-shell-gap: var(--cngx-space-sm);
+      --cngx-select-shell-padding: var(--cngx-space-sm) var(--cngx-space-sm);
       display: inline-flex;
       align-items: center;
       gap: var(--cngx-select-shell-gap, var(--cngx-select-gap, 0.5rem));
@@ -249,6 +254,8 @@
     }
 
     .cngx-select-shell__label {
+      /* label-gap 0.375 -> xs (tie xs/sm -> xs). */
+      --cngx-select-shell-label-gap: var(--cngx-space-xs);
       flex: 1 1 auto;
       overflow: hidden;
       text-overflow: ellipsis;

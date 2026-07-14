@@ -182,7 +182,9 @@
    */
   @property --cngx-sidenav-padding {
     syntax: '<length>';
-    inherits: false;
+    /* Read on the .cngx-sidenav-header / -footer descendants; inherits so the
+       cngx-sidenav host SET reaches them. */
+    inherits: true;
     initial-value: 16px;
   }
 
@@ -285,7 +287,9 @@
    */
   @property --cngx-nav-link-padding {
     syntax: '*';
-    inherits: false;
+    /* Read on the .cngx-nav-link descendant; inherits so the cngx-sidenav host
+       SET reaches it. */
+    inherits: true;
     initial-value: 10px 16px;
   }
 
@@ -474,6 +478,14 @@
   }
 
   cngx-sidenav {
+    /* Derive the rail's header/footer padding and the nav-link padding from
+       the global scale so a root [data-density] compacts the sidenav (SET-from-
+       scale rule; the registered pixel initial defeats a use-site fallback).
+       Both tokens are read on descendants (header/footer, .cngx-nav-link) and
+       are inherits:true so the SET cascades from this host. sidenav-padding
+       16 -> md; nav-link-padding 10/16 -> sm/md (10 -> 8). */
+    --cngx-sidenav-padding: var(--cngx-space-md);
+    --cngx-nav-link-padding: var(--cngx-space-sm) var(--cngx-space-md);
     display: flex;
     flex-direction: column;
     flex-shrink: 0;

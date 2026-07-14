@@ -121,6 +121,10 @@
 @layer cngx.components {
   @scope (.cngx-trend) {
     :scope {
+      /* Derive the gap from the global scale (SET-from-scale rule; the
+         registered pixel initial defeats the use-site fallback). Read on the
+         host. 2 -> xs (2 -> 4). */
+      --cngx-trend-gap: var(--cngx-space-xs);
       display: inline-flex;
       align-items: center;
       gap: var(--cngx-trend-gap, 2px);

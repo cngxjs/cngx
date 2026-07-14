@@ -130,7 +130,8 @@
    */
   @property --cngx-tab-overflow-popover-padding {
     syntax: '*';
-    inherits: false;
+    /* Read on the __panel-surface descendant; inherits so the :scope SET reaches it. */
+    inherits: true;
     initial-value: 0.25rem 0;
   }
 
@@ -140,7 +141,8 @@
    */
   @property --cngx-tab-overflow-item-padding {
     syntax: '*';
-    inherits: false;
+    /* Read on the __item descendant; inherits so the :scope SET reaches it. */
+    inherits: true;
     initial-value: 0.5rem 0.75rem;
   }
 
@@ -194,6 +196,14 @@
        * sibling of the actual `<div role="tablist">`. Static flow
        * positions it at the right edge of the wrapper.
        */
+      /* Derive the popover + item padding from the global scale so a root
+         [data-density] compacts them (SET-from-scale rule; the registered
+         pixel initial defeats a use-site fallback). Both are read on
+         descendants (__panel-surface, __item) and are inherits:true so the
+         SET cascades. popover-padding 0.25rem/0 -> xs/0 (0 kept); item-padding
+         0.5rem/0.75rem -> sm/sm (0.75rem -> 8). */
+      --cngx-tab-overflow-popover-padding: var(--cngx-space-xs) 0;
+      --cngx-tab-overflow-item-padding: var(--cngx-space-sm) var(--cngx-space-sm);
       display: inline-flex;
       align-items: center;
       flex: 0 0 auto;

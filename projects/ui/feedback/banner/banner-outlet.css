@@ -74,7 +74,8 @@
    */
   @property --cngx-banner-gap {
     syntax: '<length>';
-    inherits: false;
+    /* Read on the .cngx-banner descendant; inherits so the outlet :scope SET reaches it. */
+    inherits: true;
     initial-value: 12px;
   }
 
@@ -84,7 +85,8 @@
    */
   @property --cngx-banner-padding {
     syntax: '*';
-    inherits: false;
+    /* Read on the .cngx-banner descendant; inherits so the outlet :scope SET reaches it. */
+    inherits: true;
     initial-value: 10px 16px;
   }
 
@@ -357,7 +359,8 @@
    */
   @property --cngx-banner-action-padding {
     syntax: '*';
-    inherits: false;
+    /* Read on the __action descendant; inherits so the outlet :scope SET reaches it. */
+    inherits: true;
     initial-value: 4px 10px;
   }
 
@@ -493,6 +496,15 @@
 @layer cngx.components {
   @scope (.cngx-banner-outlet) {
     :scope {
+      /* Derive banner spacing from the global scale (SET-from-scale rule; the
+         registered pixel initial defeats a use-site fallback). All three are
+         read on the .cngx-banner / __action descendant, so their @property is
+         inherits:true and the SET cascades from the outlet host. Rungs per the
+         audit: gap 12 -> sm (tie, tighter rung); padding 10/16 -> sm/md
+         (10 -> 8); action-padding 4/10 -> xs/sm (10 -> 8). */
+      --cngx-banner-gap: var(--cngx-space-sm);
+      --cngx-banner-padding: var(--cngx-space-sm) var(--cngx-space-md);
+      --cngx-banner-action-padding: var(--cngx-space-xs) var(--cngx-space-sm);
       display: block;
       position: sticky;
       top: 0;

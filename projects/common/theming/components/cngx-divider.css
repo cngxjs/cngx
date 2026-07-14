@@ -113,6 +113,10 @@
   @scope (.cngx-divider) {
     /* Horizontal default - full-width thin line, vertical breathing room. */
     :scope {
+      /* Derive the inset amount from the global scale (SET-from-scale rule; the
+         registered pixel initial defeats the use-site fallback). Read on the
+         host under the --inset modifier. 16 -> md. */
+      --cngx-divider-inset-amount: var(--cngx-space-md);
       display: block;
       box-sizing: border-box;
       width: 100%;

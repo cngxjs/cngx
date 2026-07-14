@@ -343,6 +343,18 @@
 @layer cngx.components {
   @scope (.cngx-popover-panel) {
     :scope {
+      /* Derive spacing from the global scale so a root [data-density] compacts
+         the panel (SET-from-scale rule; the registered pixel initial defeats the
+         use-site fallback). panel-padding is read on the host; header/footer
+         tokens are read on __header / __footer descendants and are already
+         inherits:true, so the :scope SET cascades. padding 16 -> md; header-gap
+         8 -> sm; footer-gap 8 -> sm; footer-padding-top 12 -> sm; footer-margin-
+         top 12 -> sm. */
+      --cngx-popover-panel-padding: var(--cngx-space-md);
+      --cngx-popover-panel-header-gap: var(--cngx-space-sm);
+      --cngx-popover-panel-footer-gap: var(--cngx-space-sm);
+      --cngx-popover-panel-footer-padding-top: var(--cngx-space-sm);
+      --cngx-popover-panel-footer-margin-top: var(--cngx-space-sm);
       position: fixed;
       inset: unset;
       box-sizing: border-box;

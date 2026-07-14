@@ -104,7 +104,8 @@
    */
   @property --cngx-copy-block-btn-padding {
     syntax: '*';
-    inherits: false;
+    /* Read on the __button descendant; inherits so the :scope SET reaches it. */
+    inherits: true;
     initial-value: 4px 8px;
   }
 
@@ -180,6 +181,11 @@
 @layer cngx.components {
   @scope (.cngx-copy-block) {
     :scope {
+      /* Derive spacing from the global scale (SET-from-scale rule). gap 8 -> sm
+         (read on host); btn-padding 4/8 -> xs/sm (read on the __button
+         descendant, inherits:true so the SET cascades). */
+      --cngx-copy-block-gap: var(--cngx-space-sm);
+      --cngx-copy-block-btn-padding: var(--cngx-space-xs) var(--cngx-space-sm);
       display: flex;
       align-items: flex-start;
       gap: var(--cngx-copy-block-gap, var(--cngx-space-sm, 8px));

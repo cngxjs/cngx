@@ -260,6 +260,12 @@
    * conventions allow the indicator span to be scoped on its own. */
   @scope (.cngx-badge-indicator) {
     :scope {
+      /* Derive spacing from the global scale (SET-from-scale rule; the
+         registered pixel initial defeats the use-site fallback). Both read on
+         the host (base + --inline modifier). padding-inline 3 -> xs (3 -> 4);
+         inline-gap 0.375rem -> xs. */
+      --cngx-badge-padding-inline: var(--cngx-space-xs);
+      --cngx-badge-inline-gap: var(--cngx-space-xs);
       display: inline-flex;
       align-items: center;
       justify-content: center;

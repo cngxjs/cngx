@@ -24,6 +24,10 @@
 @layer cngx.components {
   @scope (.cngx-field-affix-row) {
     :scope {
+      /* Derive the affix-row gap from the global scale so a root [data-density]
+         compacts it (SET-from-scale rule; the registered pixel initial defeats
+         the use-site fallback). gap 0.5 -> sm. */
+      --cngx-field-affix-gap: var(--cngx-space-sm);
       display: inline-flex;
       align-items: center;
       gap: var(--cngx-field-affix-gap, 0.5rem);

@@ -185,7 +185,7 @@ earlier. Both read the same scope list (`scripts/changelog-scopes.mjs`).
 Scope mirrors the source path under `projects/<lib>/<area>/`. Use `<lib>` or
 `<lib>/<area>`:
 
-- `utils`, `core`
+- `utils`, `core`, `core/theming`
 - `common`, `common/interactive`, `common/stepper`, `common/display`, `common/a11y`, `common/data`, ...
 - `forms`, `forms/input`, `forms/field`, `forms/select`, ...
 - `data-display`, `data-display/treetable`

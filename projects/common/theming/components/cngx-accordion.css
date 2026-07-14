@@ -29,7 +29,12 @@
 
 @layer cngx.tokens {
   /**
-   * Header button padding.
+   * Header button padding. The pixel `initial-value` is only the un-set
+   * fallback; `@cngx/ui/accordion` SETs this from `--cngx-space-*` at its group
+   * default (`accordion-group.component.css` `:not([data-skin])`) so a global
+   * `[data-density]` re-scales it. Never put `var()` in the `initial-value` (it
+   * is invalid, and a registered initial-value defeats any `var()` fallback -
+   * reference_property_color_initial_defeats_fallback); derive via a host SET.
    * @group Header
    */
   @property --cngx-accordion-header-padding {

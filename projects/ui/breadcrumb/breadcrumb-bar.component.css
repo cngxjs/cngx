@@ -156,6 +156,12 @@
 
 @scope (.cngx-breadcrumb[data-skin='contained']) {
   :scope {
+    /* Derive the contained-box padding from the global scale so a root
+       [data-density] compacts it (SET-from-scale rule; the registered pixel
+       initial defeats a use-site fallback). Read on the __list descendant; the
+       token is inherits:true so the :scope SET cascades. 0.375rem/0.75rem ->
+       xs/sm (6 -> 4 / 12 -> 8). */
+    --cngx-breadcrumb-contained-padding: var(--cngx-space-xs) var(--cngx-space-sm);
     --cngx-breadcrumb-contained-bg: var(--cngx-color-surface, #f4f4f5);
     --cngx-breadcrumb-contained-border-color: var(--cngx-color-border, #e4e4e7);
   }

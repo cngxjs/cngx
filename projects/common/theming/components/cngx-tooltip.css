@@ -216,6 +216,12 @@
       line-height: var(--cngx-tooltip-line-height, 1rem);
       font-weight: var(--cngx-tooltip-font-weight, 400);
       letter-spacing: var(--cngx-tooltip-letter-spacing, 0.033em);
+      /* Derive the default padding from the global scale (SET-from-scale rule;
+         the registered pixel initial defeats the use-site fallback). Read on the
+         host. padding-block 4 -> xs; padding-inline 8 -> sm. The @media
+         (hover:none) touch override below keeps its larger literal. */
+      --cngx-tooltip-padding-block: var(--cngx-space-xs);
+      --cngx-tooltip-padding-inline: var(--cngx-space-sm);
       padding: var(--cngx-tooltip-padding-block, 4px) var(--cngx-tooltip-padding-inline, 8px);
       border-radius: var(--cngx-tooltip-border-radius, 4px);
       max-width: var(--cngx-tooltip-max-width, 200px);

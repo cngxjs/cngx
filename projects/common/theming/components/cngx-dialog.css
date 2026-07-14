@@ -277,6 +277,10 @@
 @layer cngx.components {
   @scope (dialog[cngxDialog]) {
     :scope {
+      /* Derive the padding from the global scale (SET-from-scale rule; the
+         registered pixel initial defeats the use-site fallback). Read on the
+         host. 24 -> lg. */
+      --cngx-dialog-padding: var(--cngx-space-lg);
       border: var(--cngx-dialog-border, none);
       border-radius: var(--cngx-dialog-border-radius, 8px);
       padding: var(--cngx-dialog-padding, 24px);

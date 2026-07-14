@@ -62,29 +62,18 @@
   }
 }
 
-// Density: map the Material theme density scale (0 to -4) onto the row block padding
-// and the detail-region padding, so a single `density: -N` in the Material theme
-// compacts the grid the same way it compacts every other Material-paired cngx
-// component. The framed skins pin their own `--cngx-dga-row-py` in :scope, so this
-// drives the (unskinned) default and the density skin; a global cngx-native density
-// system that also reaches the skins is tracked separately.
-@mixin density($theme) {
-  $scale: mat.get-theme-density($theme);
-  $scale: math.max(-4, math.min(0, $scale));
-
-  $py: (0: 0.5rem, -1: 0.4rem, -2: 0.3rem, -3: 0.25rem, -4: 0.2rem);
-  $region: (0: 0.75rem 1rem, -1: 0.6rem 0.85rem, -2: 0.5rem 0.7rem, -3: 0.4rem 0.6rem, -4: 0.3rem 0.5rem);
-
-  --cngx-dga-row-py: #{map.get($py, $scale)};
-  --cngx-dga-region-padding: #{map.get($region, $scale)};
-}
+// Density: the default row padding + detail-region padding now derive from the
+// global --cngx-space-* scale in the component CSS (:not([data-skin])), and
+// density-bridge.scss maps Material density onto that scale, so a `density: -N`
+// Material theme compacts the grid without a per-component map here. The `density`
+// skin stays developer-driven (reframed in the wave-2 sweep); it is not reached by
+// the global scale yet.
 
 @mixin theme($theme) {
   @layer cngx.components {
     :where(cngx-data-grid-accordion) {
       @include color($theme);
       @include typography($theme);
-      @include density($theme);
     }
   }
 }

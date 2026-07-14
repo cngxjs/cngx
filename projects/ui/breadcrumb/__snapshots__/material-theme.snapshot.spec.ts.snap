@@ -3,7 +3,6 @@
 exports[`Material breadcrumb-theme bridge baseline > v0 light: resolved --cngx-* declarations match the baseline 1`] = `
 {
   "--cngx-breadcrumb-current-color": "rgba(0, 0, 0, 0.87)",
-  "--cngx-breadcrumb-gap": "0.5rem",
   "--cngx-breadcrumb-link-color": "#3f51b5",
   "--cngx-breadcrumb-overflow-item-color": "rgba(0, 0, 0, 0.6)",
   "--cngx-breadcrumb-overflow-item-hover-bg": "color-mix(in srgb, currentColor 8%, transparent)",
@@ -31,7 +30,6 @@ exports[`Material breadcrumb-theme bridge baseline > v0 light: resolved --cngx-*
 exports[`Material breadcrumb-theme bridge baseline > v1 dark: resolved --cngx-* declarations match the baseline 1`] = `
 {
   "--cngx-breadcrumb-current-color": "var(--mat-sys-on-surface)",
-  "--cngx-breadcrumb-gap": "0.5rem",
   "--cngx-breadcrumb-link-color": "var(--mat-sys-primary)",
   "--cngx-breadcrumb-overflow-item-color": "var(--mat-sys-on-surface-variant)",
   "--cngx-breadcrumb-overflow-item-hover-bg": "color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent)",
@@ -59,7 +57,6 @@ exports[`Material breadcrumb-theme bridge baseline > v1 dark: resolved --cngx-* 
 exports[`Material breadcrumb-theme bridge baseline > v1 light: resolved --cngx-* declarations match the baseline 1`] = `
 {
   "--cngx-breadcrumb-current-color": "var(--mat-sys-on-surface)",
-  "--cngx-breadcrumb-gap": "0.5rem",
   "--cngx-breadcrumb-link-color": "var(--mat-sys-primary)",
   "--cngx-breadcrumb-overflow-item-color": "var(--mat-sys-on-surface-variant)",
   "--cngx-breadcrumb-overflow-item-hover-bg": "color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent)",

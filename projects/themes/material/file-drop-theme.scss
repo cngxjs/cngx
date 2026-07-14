@@ -27,10 +27,11 @@
   $scale: mat.get-theme-density($theme);
   $scale: math.max(-4, math.min(0, $scale));
 
-  $paddings: (0: 32px, -1: 24px, -2: 16px, -3: 12px, -4: 10px);
-  $radii:    (0: 8px,  -1: 7px,  -2: 6px,  -3: 5px,  -4: 4px);
+  // The dropzone padding (32px == space-xl) now derives from the scale in
+  // cngx-file-drop.css, so it is dropped here. The radius is a shape axis
+  // (out of the spacing-density scope), so it stays bridged.
+  $radii: (0: 8px, -1: 7px, -2: 6px, -3: 5px, -4: 4px);
 
-  --cngx-file-drop-padding: #{map.get($paddings, $scale)};
   --cngx-file-drop-radius: #{map.get($radii, $scale)};
 }
 

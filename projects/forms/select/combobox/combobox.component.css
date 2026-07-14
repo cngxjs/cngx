@@ -211,6 +211,11 @@
     }
 
     .cngx-combobox__trigger {
+      /* Derive trigger spacing from the global scale (SET-from-scale rule;
+         read on the trigger host). gap 0.375 -> xs (tie xs/sm -> xs, shift
+         6->4); padding 0.25/0.375 -> xs/xs (inline 6 tie xs/sm -> xs). */
+      --cngx-combobox-gap: var(--cngx-space-xs);
+      --cngx-combobox-padding: var(--cngx-space-xs) var(--cngx-space-xs);
       display: flex;
       align-items: center;
       gap: var(--cngx-combobox-gap, var(--cngx-select-gap, 0.375rem));

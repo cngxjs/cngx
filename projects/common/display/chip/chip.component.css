@@ -421,6 +421,13 @@
       max-width: 100%;
       box-sizing: border-box;
 
+      /* Derive spacing from the global scale so a root [data-density] compacts
+         the chip (SET-from-scale rule; the registered pixel initial defeats the
+         use-site fallback). Read on the host. inner-gap 4 -> xs; padding-block
+         2 -> xs (2 -> 4); padding-inline 8 -> sm. */
+      --cngx-chip-inner-gap: var(--cngx-space-xs);
+      --cngx-chip-padding-block: var(--cngx-space-xs);
+      --cngx-chip-padding-inline: var(--cngx-space-sm);
       /* Themable - token-driven with system-token fallback chains */
       gap: var(--cngx-chip-inner-gap, var(--cngx-space-xs, 4px));
       padding-block: var(--cngx-chip-padding-block, 2px);

@@ -102,6 +102,8 @@
 @layer cngx.components {
   @scope (.cngx-radio) {
     :scope {
+      /* Derive the gap from the global scale (SET-from-scale rule). 0.5rem -> sm. */
+      --cngx-radio-gap: var(--cngx-space-sm);
       display: inline-flex;
       align-items: center;
       gap: var(--cngx-radio-gap, var(--cngx-space-sm, 0.5rem));

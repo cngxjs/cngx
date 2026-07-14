@@ -60,6 +60,18 @@
   /* CngxTag — single decorative tag, inline-flex container */
   @scope (.cngx-tag) {
     :scope {
+      /* Derive tag spacing from the global scale so a root [data-density]
+         compacts it (SET-from-scale rule; the registered pixel initial in
+         tag.css defeats the use-site fallback). All paddings are read on the
+         .cngx-tag element (base + sm/lg/xl modifiers are classes on the same
+         host), so the SET here reaches every variant. gap 4 -> xs; padding
+         2/8 -> xs/sm (2 -> 4); sm-padding 0/6 -> 0/xs; lg-padding 4/10 -> xs/sm
+         (10 -> 8); xl-padding 6/12 -> xs/sm. */
+      --cngx-tag-gap: var(--cngx-space-xs);
+      --cngx-tag-padding: var(--cngx-space-xs) var(--cngx-space-sm);
+      --cngx-tag-sm-padding: 0 var(--cngx-space-xs);
+      --cngx-tag-lg-padding: var(--cngx-space-xs) var(--cngx-space-sm);
+      --cngx-tag-xl-padding: var(--cngx-space-xs) var(--cngx-space-sm);
       display: inline-flex;
       align-items: center;
       line-height: 1.25;
@@ -100,12 +112,17 @@
   /* CngxTagGroup — vertical three-zone stack (header / row / accessory) */
   @scope (.cngx-tag-group) {
     :scope {
+      /* stack-gap read on the host; derive from the scale. 8 -> sm. */
+      --cngx-tag-group-stack-gap: var(--cngx-space-sm);
       display: flex;
       flex-direction: column;
       gap: var(--cngx-tag-group-stack-gap, var(--cngx-space-sm, 8px));
     }
 
     .cngx-tag-group__row {
+      /* row gap read here; set-at-read-site so a root [data-density] compacts
+         it. 8 -> sm. */
+      --cngx-tag-group-gap: var(--cngx-space-sm);
       display: flex;
       flex-wrap: wrap;
       align-items: center;
@@ -115,9 +132,11 @@
 
     /* Gap modifiers — sm is default, xs/md modifiers override */
     :scope.cngx-tag-group--gap-xs > .cngx-tag-group__row {
+      --cngx-tag-group-gap-xs: var(--cngx-space-xs);
       gap: var(--cngx-tag-group-gap-xs, var(--cngx-space-xs, 4px));
     }
     :scope.cngx-tag-group--gap-md > .cngx-tag-group__row {
+      --cngx-tag-group-gap-md: var(--cngx-space-sm);
       gap: var(--cngx-tag-group-gap-md, 12px);
     }
 

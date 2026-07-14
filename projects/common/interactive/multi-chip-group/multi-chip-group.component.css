@@ -36,6 +36,8 @@
 @layer cngx.components {
   @scope (.cngx-multi-chip-group) {
     :scope {
+      /* Derive the gap from the global scale (SET-from-scale rule). 0.5rem -> sm. */
+      --cngx-multi-chip-group-gap: var(--cngx-space-sm);
       display: inline-flex;
       flex-direction: column;
       gap: var(

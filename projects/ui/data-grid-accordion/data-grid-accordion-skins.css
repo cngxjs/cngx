@@ -66,9 +66,10 @@
        with the invoice + status columns intact instead of hiding them. */
     --cngx-dga-min-width: 38rem;
 
-    /* POC gaps / paddings: --sp-3 gutter, .6rem row block padding, .5rem head. */
+    /* POC gaps / paddings: --sp-3 gutter, row block from the density scale
+       (space-sm; snapped from .6rem), .5rem head. */
     --cngx-dga-col-gap: 0.75rem;
-    --cngx-dga-row-py: 0.6rem;
+    --cngx-dga-row-py: var(--cngx-space-sm, 8px);
     --cngx-dga-row-px: 1rem;
     --cngx-dga-fs: 0.875rem;
     /* Inset accent detail zone reads with generous padding (POC --sp-4/--sp-5). */
@@ -456,9 +457,10 @@
        with the timestamp column intact instead of hiding it. */
     --cngx-dga-min-width: 33rem;
 
-    /* POC gaps / paddings: --sp-3 gutter, .5rem row block, sp-4 inline. */
+    /* POC gaps / paddings: --sp-3 gutter, row block from the density scale
+       (space-sm; snapped from .5rem), sp-4 inline. */
     --cngx-dga-col-gap: 0.75rem;
-    --cngx-dga-row-py: 0.5rem;
+    --cngx-dga-row-py: var(--cngx-space-sm, 8px);
     --cngx-dga-row-px: 1rem;
 
     /* Same registered-@property trap as the other skins: SET the adaptive border +
@@ -574,9 +576,10 @@
        genuinely narrow (the old 42rem forced a scrollbar even on desktop). */
     --cngx-dga-min-width: 35rem;
 
-    /* POC gaps / paddings: --sp-3 gutter, .6rem row block, sp-4 inline. */
+    /* POC gaps / paddings: --sp-3 gutter, row block from the density scale
+       (space-sm; snapped from .6rem), sp-4 inline. */
     --cngx-dga-col-gap: 0.75rem;
-    --cngx-dga-row-py: 0.6rem;
+    --cngx-dga-row-py: var(--cngx-space-sm, 8px);
     --cngx-dga-row-px: 1rem;
 
     /* Detail zone: a shallow indent just past the accent edge, NOT a deep indent
@@ -738,10 +741,11 @@
        the cost-centre + budget columns intact instead of hiding them. */
     --cngx-dga-min-width: 40rem;
 
-    /* POC gaps / paddings: --sp-3 column gutter, .55rem row block; frameless, so no
-       inline frame padding (cells run edge to edge, POC `padding: .55rem 0`). */
+    /* POC gaps / paddings: --sp-3 column gutter, row block from the density scale
+       (space-sm; snapped from .55rem); frameless, so no inline frame padding
+       (cells run edge to edge). */
     --cngx-dga-col-gap: 0.75rem;
-    --cngx-dga-row-py: 0.55rem;
+    --cngx-dga-row-py: var(--cngx-space-sm, 8px);
     --cngx-dga-row-px: 0;
     --cngx-dga-fs: 0.875rem;
     --cngx-dga-head-fs: 0.75rem;

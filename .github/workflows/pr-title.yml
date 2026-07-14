@@ -36,6 +36,7 @@ jobs:
           scopes: |
             utils
             core
+            core/theming
             common
             common/a11y
             common/interactive

@@ -136,6 +136,14 @@
 @layer cngx.components {
   @scope (.cngx-empty-state) {
     :scope {
+      /* Derive gap + block padding from the global scale so a root
+         [data-density] compacts the empty state (SET-from-scale rule; the
+         registered pixel initial defeats the var(token, scale) fallback baked
+         into the shorthands below). Both read on the host, so inherits:false is
+         fine. gap 16 -> md; padding-block 48 -> xl (48 -> 32). The inline axis
+         already reads --cngx-space-md directly. */
+      --cngx-empty-gap: var(--cngx-space-md);
+      --cngx-empty-padding: var(--cngx-space-xl);
       display: flex;
       flex-direction: column;
       align-items: center;

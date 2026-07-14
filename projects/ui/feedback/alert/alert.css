@@ -276,7 +276,9 @@
    */
   @property --cngx-alert-title-gap {
     syntax: '<length>';
-    inherits: false;
+    /* Read on the __title descendant; must inherit so the :scope SET
+       from --cngx-space-* reaches it (a false value pins the initial). */
+    inherits: true;
     initial-value: 4px;
   }
 
@@ -306,7 +308,8 @@
    */
   @property --cngx-alert-actions-gap {
     syntax: '<length>';
-    inherits: false;
+    /* Read on the __actions descendant; inherits so the :scope SET reaches it. */
+    inherits: true;
     initial-value: 8px;
   }
 
@@ -338,7 +341,8 @@
    */
   @property --cngx-alert-action-padding {
     syntax: '*';
-    inherits: false;
+    /* Read on the __action descendant; inherits so the :scope SET reaches it. */
+    inherits: true;
     initial-value: 4px 10px;
   }
 
@@ -510,6 +514,21 @@
 @layer cngx.components {
   @scope (.cngx-alert) {
     :scope {
+      /* Derive spacing from the global scale so a root [data-density] (and
+         the Material density theme) compacts the alert like every other
+         component. These are registered @property tokens, so the value must
+         be SET here - a var(token, scale) use-site fallback is defeated by the
+         pixel initial-value. gap/padding are read on the host; title-gap /
+         actions-gap / action-padding are read on descendants and their
+         @property is inherits:true so the SET cascades. Rungs per the audit:
+         gap 12 -> sm (tie, tighter rung); padding 12/16 -> sm/md; title-gap
+         4 -> xs; actions-gap 8 -> sm; action-padding 4/10 -> xs/sm (10 -> 8).
+         Skins and per-instance [style.--token] still override. */
+      --cngx-alert-gap: var(--cngx-space-sm);
+      --cngx-alert-padding: var(--cngx-space-sm) var(--cngx-space-md);
+      --cngx-alert-title-gap: var(--cngx-space-xs);
+      --cngx-alert-actions-gap: var(--cngx-space-sm);
+      --cngx-alert-action-padding: var(--cngx-space-xs) var(--cngx-space-sm);
       display: flex;
       align-items: flex-start;
       gap: var(--cngx-alert-gap, 12px);

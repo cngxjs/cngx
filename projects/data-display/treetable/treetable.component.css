@@ -186,7 +186,7 @@
    */
   @property --cngx-treetable-cell-padding-block {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.6rem;
   }
 
@@ -196,7 +196,7 @@
    */
   @property --cngx-treetable-cell-padding-inline {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 1rem;
   }
 
@@ -207,7 +207,7 @@
    */
   @property --cngx-treetable-narrow-cell-padding-inline {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.25rem;
   }
 
@@ -217,7 +217,7 @@
    */
   @property --cngx-treetable-empty-padding-block {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 2rem;
   }
 
@@ -227,7 +227,7 @@
    */
   @property --cngx-treetable-empty-padding-inline {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 1rem;
   }
 
@@ -237,7 +237,7 @@
    */
   @property --cngx-treetable-toggle-padding {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.25rem;
   }
 
@@ -367,7 +367,7 @@
    */
   @property --cngx-treetable-narrow-header-padding-block {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.5rem;
   }
 
@@ -377,7 +377,7 @@
    */
   @property --cngx-treetable-narrow-header-padding-inline {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.625rem;
   }
 
@@ -388,7 +388,7 @@
    */
   @property --cngx-treetable-narrow-cell-padding-block {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.875rem;
   }
 
@@ -398,7 +398,7 @@
    */
   @property --cngx-treetable-narrow-cell-padding-inline-default {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.625rem;
   }
 
@@ -408,7 +408,7 @@
    */
   @property --cngx-treetable-narrow-utility-padding-inline {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.125rem;
   }
 
@@ -419,7 +419,7 @@
    */
   @property --cngx-treetable-narrow-utility-padding-inline-large {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.875rem;
   }
 
@@ -441,7 +441,7 @@
    */
   @property --cngx-treetable-narrow-toggle-padding {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.5rem;
   }
 
@@ -508,6 +508,31 @@
 @layer cngx.components {
   @scope (.cngx-treetable) {
     :scope {
+      /* Derive every cell / header / empty / toggle / utility padding from the
+         global scale so a root [data-density] compacts the treetable (SET-from-
+         scale rule; the registered pixel initials defeat the use-site
+         fallbacks). All 13 spacing tokens are registered inherits:true, so this
+         host SET reaches the cdk cells, the empty slot, the toggle, and the
+         @media narrow overrides below. Rungs (audit): cell-block 0.6->sm
+         (9.6->8); cell-inline 1rem->md; narrow-cell-inline 0.25->xs; empty-block
+         2rem->xl; empty-inline 1rem->md; toggle 0.25->xs; narrow-header-block
+         0.5->sm; narrow-header-inline 0.625->sm (10->8); narrow-cell-block
+         0.875->md (14->16); narrow-cell-inline-default 0.625->sm (10->8);
+         narrow-utility-inline 0.125->xs (2->4); narrow-utility-inline-large
+         0.875->md (14->16); narrow-toggle 0.5->sm. */
+      --cngx-treetable-cell-padding-block: var(--cngx-space-sm);
+      --cngx-treetable-cell-padding-inline: var(--cngx-space-md);
+      --cngx-treetable-narrow-cell-padding-inline: var(--cngx-space-xs);
+      --cngx-treetable-empty-padding-block: var(--cngx-space-xl);
+      --cngx-treetable-empty-padding-inline: var(--cngx-space-md);
+      --cngx-treetable-toggle-padding: var(--cngx-space-xs);
+      --cngx-treetable-narrow-header-padding-block: var(--cngx-space-sm);
+      --cngx-treetable-narrow-header-padding-inline: var(--cngx-space-sm);
+      --cngx-treetable-narrow-cell-padding-block: var(--cngx-space-md);
+      --cngx-treetable-narrow-cell-padding-inline-default: var(--cngx-space-sm);
+      --cngx-treetable-narrow-utility-padding-inline: var(--cngx-space-xs);
+      --cngx-treetable-narrow-utility-padding-inline-large: var(--cngx-space-md);
+      --cngx-treetable-narrow-toggle-padding: var(--cngx-space-sm);
       display: block;
       width: 100%;
     }

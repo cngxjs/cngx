@@ -23,4 +23,13 @@
    are unaffected (that token wins in the `var()` chain). */
 .cngx-accordion-group:not([data-skin]) {
   --cngx-accordion-border-color: var(--cngx-color-border, #d1d5db);
+  /* Derive the unskinned default header/region padding from the density scale so
+     a global `[data-density]` re-scales it. The tokens are registered `@property`
+     (inherits: true) whose pixel initial-value would otherwise defeat the item's
+     `var(--cngx-accordion-*-padding, ...)` fallback; SET here on the group, the
+     item inherits (reference_property_color_initial_defeats_fallback). Nearest
+     rung: 0.75rem 1rem -> space-sm space-md (block 12px -> 8px; inline 16px exact).
+     Named skins own their own padding inside their `[data-skin]` scope. */
+  --cngx-accordion-header-padding: var(--cngx-space-sm, 8px) var(--cngx-space-md, 16px);
+  --cngx-accordion-region-padding: var(--cngx-space-sm, 8px) var(--cngx-space-md, 16px);
 }

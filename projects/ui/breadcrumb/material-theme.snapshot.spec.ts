@@ -14,8 +14,9 @@ import { describe, expect, it } from 'vitest';
  *   - v0 (M2): `mat.m2-define-light-theme(...)` with the
  *     `get-theme-color($theme, ...)` branch active.
  *
- * The bridge themes the bar's link / current / separator colours, the density
- * gap, and the overflow + siblings trigger / row-hover knobs. Skin chips (incl.
+ * The bridge themes the bar's link / current / separator colours and the
+ * overflow + siblings trigger / row-hover knobs. The gap now derives from the
+ * global spacing scale (breadcrumb.css), so it is no longer bridged here. Skin chips (incl.
  * contained) self-assign from --cngx-color-* in their own :scope, so they are
  * not bridged here.
  * Any change to a pinned line is intentional only when the diff matches a

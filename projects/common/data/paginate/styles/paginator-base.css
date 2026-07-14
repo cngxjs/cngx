@@ -15,8 +15,11 @@
  * - `[aria-disabled="true"]` - dimmed, `cursor: not-allowed` (bound nav buttons / busy)
  * - `:focus-visible` - focus ring via `--cngx-paginator-focus-ring`
  *
- * **Density** - `[data-density="compact" | "comfortable"]` on the host shifts
- * the button hit-target and gap tokens; the default needs no rule.
+ * **Size preset** - `[data-paginator-size="compact" | "comfortable"]` (the
+ * private `[density]` input) shifts the button hit-target + font; the gap
+ * tokens derive from the global `--cngx-space-*` scale, so a root
+ * `[data-density]` compacts the paginator with every other component. The
+ * default size needs no rule.
  *
  * **Slots**
  *
@@ -34,6 +37,15 @@
     flex-direction: row;
     align-items: center;
     flex-wrap: wrap;
+    /* Derive the two gap tokens from the global spacing scale so a root
+       [data-density] compacts the default paginator like every other component.
+       Both are registered @property tokens (paginator.component.css), so the
+       value must be SET here - a var(token, scale) use-site fallback is defeated
+       by the pixel initial-value. row-gap 0.75rem -> space-sm (tie sm/md, tighter
+       rung); gap 0.25rem -> space-xs (exact). Skins and the size preset still
+       override; per-instance [style.--token] still wins. */
+    --cngx-paginator-row-gap: var(--cngx-space-sm);
+    --cngx-paginator-gap: var(--cngx-space-xs);
     gap: var(--cngx-paginator-row-gap, 0.75rem);
     font-family: var(
       --cngx-paginator-font-family,
@@ -336,16 +348,20 @@
     font-weight: 600;
   }
 
-  /* Density axis - shifts the hit-target, gap, and font tokens on the host. */
-  .cngx-paginator[data-density='compact'] {
+  /*
+   * Size axis - the private hit-target + type preset the [density] input drives,
+   * reflected onto [data-paginator-size] (NOT [data-density]). It no longer sets
+   * the gap: spacing derives from the global scale on the base rule above, so the
+   * global [data-density] swap and this private size preset stop fighting over one
+   * attribute.
+   */
+  .cngx-paginator[data-paginator-size='compact'] {
     --cngx-paginator-button-size: 1.75rem;
-    --cngx-paginator-gap: 0.125rem;
     font-size: var(--cngx-paginator-font-size-compact, 0.8125rem);
   }
 
-  .cngx-paginator[data-density='comfortable'] {
+  .cngx-paginator[data-paginator-size='comfortable'] {
     --cngx-paginator-button-size: 2.75rem;
-    --cngx-paginator-gap: 0.5rem;
     font-size: var(--cngx-paginator-font-size-comfortable, 0.95rem);
   }
 

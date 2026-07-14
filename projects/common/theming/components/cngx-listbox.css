@@ -179,6 +179,9 @@
 
 @layer cngx.components {
   [cngxListbox] {
+    /* Derive container padding from the global scale (SET-from-scale rule; the
+       registered pixel initial defeats the use-site fallback). 4 -> xs. */
+    --cngx-listbox-padding: var(--cngx-space-xs);
     list-style: none;
     margin: 0;
     padding: var(--cngx-listbox-padding, 4px);
@@ -192,6 +195,9 @@
   }
 
   [cngxOption] {
+    /* Derive option padding from the global scale (SET-from-scale rule).
+       6/10 -> xs/sm (10 -> 8). Read on this element. */
+    --cngx-option-padding: var(--cngx-space-xs) var(--cngx-space-sm);
     display: flex;
     align-items: center;
     padding: var(--cngx-option-padding, 6px 10px);

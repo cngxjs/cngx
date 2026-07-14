@@ -593,7 +593,7 @@
    */
   @scope (.cngx-paginator[data-skin='pill']) {
     :scope {
-      --cngx-paginator-gap: 0.375rem;
+      --cngx-paginator-gap: var(--cngx-space-xs);
       --cngx-paginator-button-radius: 100px;
       --cngx-paginator-current-bg: var(--cngx-color-primary, oklch(0.66 0.19 50));
       --cngx-paginator-current-color: var(--cngx-color-on-primary, oklch(1 0 0));
@@ -648,8 +648,8 @@
    */
   @scope (.cngx-paginator[data-skin='minimal']) {
     :scope {
-      --cngx-paginator-row-gap: 0.5rem;
-      --cngx-paginator-gap: 0.125rem;
+      --cngx-paginator-row-gap: var(--cngx-space-sm);
+      --cngx-paginator-gap: var(--cngx-space-xs);
       --cngx-paginator-button-bg: transparent;
       --cngx-paginator-button-hover-bg: transparent;
       --cngx-paginator-button-border-color: transparent;
@@ -717,7 +717,7 @@
    */
   @scope (.cngx-paginator[data-skin='rail']) {
     :scope {
-      --cngx-paginator-row-gap: 0.9rem;
+      --cngx-paginator-row-gap: var(--cngx-space-md);
     }
   }
 
@@ -830,9 +830,9 @@
    */
   @scope (.cngx-paginator[data-skin='dots']) {
     :scope {
-      --cngx-paginator-row-gap: 0.9rem;
-      --cngx-paginator-gap: 0.5rem;
-      --cngx-paginator-dot-gap: 0.625rem;
+      --cngx-paginator-row-gap: var(--cngx-space-md);
+      --cngx-paginator-gap: var(--cngx-space-sm);
+      --cngx-paginator-dot-gap: var(--cngx-space-sm);
       --cngx-paginator-dot-size: 0.5625rem;
       --cngx-paginator-dot-color: color-mix(in oklch, currentColor 30%, transparent);
       --cngx-paginator-dot-current-color: var(--cngx-color-primary, oklch(0.66 0.19 50));

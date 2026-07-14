@@ -44,21 +44,11 @@
   }
 }
 
-@mixin density($theme) {
-  $scale: mat.get-theme-density($theme);
-  $scale: math.max(-4, math.min(0, $scale));
-
-  $paddings: (0: 16px, -1: 12px, -2: 8px, -3: 6px, -4: 4px);
-
-  --cngx-sidenav-padding: #{map.get($paddings, $scale)};
-}
-
 @mixin theme($theme) {
   @layer cngx.components {
     :where(cngx-sidenav-layout) {
       @include color($theme);
       @include typography($theme);
-      @include density($theme);
       @include nav-link.theme($theme);
     }
   }
