@@ -25,6 +25,7 @@
 //   @include action-btn.theme($theme);
 
 @use './system-bridge' as cngx-system;
+@use './density-bridge' as cngx-density;
 @use './accordion-theme' as accordion;
 @use './action-button-theme' as action-button;
 @use './async-container-theme' as async-container;
@@ -70,6 +71,11 @@
   // Foundation tokens come first so every component bridge resolves its
   // var() fallbacks against the Material-aligned system layer.
   @include cngx-system.theme($theme);
+  // Material density -> the global --cngx-space-* scale, once. Every component
+  // that derives its spacing from the scale (card, data-grid-accordion,
+  // accordion, paginator today; the wave-2 sweep next) compacts from here, so
+  // Material density and cngx-native [data-density] share one surface.
+  @include cngx-density.density($theme);
 
   @include accordion.theme($theme);
   @include accordion.skins($theme);

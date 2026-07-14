@@ -59,20 +59,16 @@
   }
 }
 
-@mixin density($theme) {
-  $scale: mat.get-theme-density($theme);
-  $scale: math.max(-4, math.min(0, $scale));
-
-  $paddings: (0: 16px, -1: 14px, -2: 12px, -3: 10px, -4: 8px);
-  --cngx-card-padding: #{map.get($paddings, $scale)};
-}
+// Card padding derives from the global --cngx-space-* scale (the un-registered
+// --cngx-card-padding lets the var(..., var(--cngx-space-md)) use-site fallback
+// fire), so Material density reaches it through density-bridge.scss - no
+// per-component density() map here anymore.
 
 @mixin theme($theme) {
   @layer cngx.components {
     :where(cngx-card, cngx-card-grid, cngx-metric, cngx-trend, cngx-card-timestamp) {
       @include color($theme);
       @include typography($theme);
-      @include density($theme);
     }
   }
 }

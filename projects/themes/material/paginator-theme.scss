@@ -156,8 +156,10 @@
 
   // Map Material's density scale onto the single hit-target token the whole
   // paginator sizes off. Scale 0 lands on Material's 40px control height;
-  // -4 tightens toward the cngx compact preset. The gap follows so the row
-  // proportions hold across densities.
+  // -4 tightens toward the cngx compact preset. This is the private size axis
+  // (mirrors the cngx-native [data-paginator-size] preset), NOT global spacing:
+  // the paginator's gap now derives from --cngx-space-* and compacts through
+  // density-bridge.scss, so it is dropped here to stop forking the global scale.
   $sizes: (
     0: 2.5rem,
     -1: 2.25rem,
@@ -165,16 +167,8 @@
     -3: 1.875rem,
     -4: 1.75rem,
   );
-  $gaps: (
-    0: 0.25rem,
-    -1: 0.25rem,
-    -2: 0.2rem,
-    -3: 0.15rem,
-    -4: 0.125rem,
-  );
 
   --cngx-paginator-button-size: #{map.get($sizes, $scale)};
-  --cngx-paginator-gap: #{map.get($gaps, $scale)};
 }
 
 @mixin theme($theme) {
