@@ -341,6 +341,24 @@ test.describe('common/popover - panel padding derives from the density scale', (
   });
 });
 
+test.describe('common/dialog - bottom-sheet padding derives from the density scale', () => {
+  test('bottom-sheet padding tracks a root [data-density] (space-lg: 24 -> 12)', async ({ page }) => {
+    // Dialog/bottom-sheet are Track B (@cngx/themes/cngx.css, shipped globally),
+    // so dialog.cngx-bottom-sheet rules are present on any route; the :scope SETs
+    // --cngx-bottom-sheet-padding from --cngx-space-lg.
+    await gotoDemo(page, 'common/dialog/alert-dialog');
+    expect(
+      await resolveVar(page, 'cngx-bottom-sheet', '--cngx-bottom-sheet-padding', { tag: 'dialog' }),
+    ).toBe('24px');
+    expect(
+      await resolveVar(page, 'cngx-bottom-sheet', '--cngx-bottom-sheet-padding', {
+        tag: 'dialog',
+        density: 'compact',
+      }),
+    ).toBe('12px');
+  });
+});
+
 test.describe('common/card — padding derives from the density scale', () => {
   test.beforeEach(async ({ page }) => {
     // Any card route loads the global .cngx-card CSS (ViewEncapsulation.None).
