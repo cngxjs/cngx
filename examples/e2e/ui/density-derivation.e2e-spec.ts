@@ -258,6 +258,22 @@ test.describe('ui/action-button - padding derives from the density scale', () =>
   });
 });
 
+test.describe('ui/empty-state - padding derives from the density scale', () => {
+  test('empty-state padding tracks a root [data-density] (shift 48->32 = space-xl: 32 -> 16)', async ({
+    page,
+  }) => {
+    // An empty-state route loads the global .cngx-empty-state CSS
+    // (ViewEncapsulation.None); the :scope SETs --cngx-empty-padding from
+    // --cngx-space-xl. Probe the SHIFTED token: compact must read 16, NOT 48/12.
+    await gotoDemo(page, 'ui/empty-state/inside-a-card-grid');
+    await page.locator('.cngx-empty-state').first().waitFor({ state: 'attached' });
+    expect(await resolveVar(page, 'cngx-empty-state', '--cngx-empty-padding')).toBe('32px');
+    expect(
+      await resolveVar(page, 'cngx-empty-state', '--cngx-empty-padding', { density: 'compact' }),
+    ).toBe('16px');
+  });
+});
+
 test.describe('common/card — padding derives from the density scale', () => {
   test.beforeEach(async ({ page }) => {
     // Any card route loads the global .cngx-card CSS (ViewEncapsulation.None).
