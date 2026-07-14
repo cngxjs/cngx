@@ -93,6 +93,12 @@
 @layer cngx.components {
   @scope (.cngx-checkbox) {
     :scope {
+      /* Derive spacing from the global scale so a root [data-density] compacts
+         the control (SET-from-scale rule; the registered pixel initial defeats
+         the use-site fallback). gap 0.5rem -> sm; sibling-gap 1rem -> md (read on
+         the adjacent .cngx-checkbox, itself a :scope root, so the SET reaches it). */
+      --cngx-checkbox-gap: var(--cngx-space-sm);
+      --cngx-checkbox-sibling-gap: var(--cngx-space-md);
       display: inline-flex;
       align-items: center;
       gap: var(--cngx-checkbox-gap, var(--cngx-space-sm, 0.5rem));

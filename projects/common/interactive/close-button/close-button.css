@@ -81,7 +81,8 @@
    */
   @property --cngx-close-button-padding {
     syntax: '<length>';
-    inherits: false;
+    /* Read on the __btn descendant; inherits so the :scope SET reaches it. */
+    inherits: true;
     initial-value: 8px;
   }
 
@@ -207,6 +208,10 @@
 @layer cngx.components {
   @scope (.cngx-close-button) {
     :scope {
+      /* Derive the button padding from the global scale (SET-from-scale rule;
+         the registered pixel initial defeats the use-site fallback). Read on the
+         __btn descendant, inherits:true so the SET cascades. 8 -> sm. */
+      --cngx-close-button-padding: var(--cngx-space-sm);
       display: inline-flex;
       align-items: center;
       justify-content: center;

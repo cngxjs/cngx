@@ -192,7 +192,8 @@
    */
   @property --cngx-toggle-thumb-inset {
     syntax: '*';
-    inherits: false;
+    /* Read on the __thumb descendant; inherits so the :scope SET reaches it. */
+    inherits: true;
     initial-value: 0.125rem;
   }
 
@@ -257,6 +258,11 @@
 @layer cngx.components {
   @scope (.cngx-toggle) {
     :scope {
+      /* Derive spacing from the global scale (SET-from-scale rule). gap 0.5rem
+         -> sm (read on host); thumb-inset 0.125rem -> xs (2 -> 4, read on the
+         __thumb descendant, inherits:true so the SET cascades). */
+      --cngx-toggle-gap: var(--cngx-space-sm);
+      --cngx-toggle-thumb-inset: var(--cngx-space-xs);
       display: inline-flex;
       align-items: center;
       gap: var(--cngx-toggle-gap, var(--cngx-space-sm, 0.5rem));

@@ -51,6 +51,12 @@
 @layer cngx.components {
   @scope (.cngx-button-toggle) {
     :scope {
+      /* Derive padding from the global scale (SET-from-scale rule; the
+         registered pixel initial defeats the use-site fallback). Read on the
+         host. padding-block 0.4rem -> sm (6.4 -> 8); padding-inline 0.875rem ->
+         md (14 -> 16). */
+      --cngx-button-toggle-padding-block: var(--cngx-space-sm);
+      --cngx-button-toggle-padding-inline: var(--cngx-space-md);
       display: inline-flex;
       align-items: center;
       justify-content: center;

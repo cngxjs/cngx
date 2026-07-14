@@ -297,6 +297,19 @@ test.describe('ui/breadcrumb - contained-skin padding derives from the density s
   });
 });
 
+test.describe('common/interactive - checkbox gap derives from the density scale', () => {
+  test('checkbox gap tracks a root [data-density] (space-sm: 8 -> 4)', async ({ page }) => {
+    // A checkbox route loads the global .cngx-checkbox CSS (ViewEncapsulation.None);
+    // the :scope SETs --cngx-checkbox-gap from --cngx-space-sm.
+    await gotoDemo(page, 'common/interactive/checkbox/base/disabled');
+    await page.locator('.cngx-checkbox').first().waitFor({ state: 'attached' });
+    expect(await resolveVar(page, 'cngx-checkbox', '--cngx-checkbox-gap')).toBe('8px');
+    expect(await resolveVar(page, 'cngx-checkbox', '--cngx-checkbox-gap', { density: 'compact' })).toBe(
+      '4px',
+    );
+  });
+});
+
 test.describe('common/card — padding derives from the density scale', () => {
   test.beforeEach(async ({ page }) => {
     // Any card route loads the global .cngx-card CSS (ViewEncapsulation.None).
