@@ -59,21 +59,24 @@ async function resolveVar(
     dataPaginatorSize?: string;
     tag?: string;
     hostClass?: string;
+    hostTag?: string;
   } = {},
 ) {
   return page.evaluate(
-    ({ className, prop, density, dataSkin, dataPaginatorSize, tag, hostClass }) => {
+    ({ className, prop, density, dataSkin, dataPaginatorSize, tag, hostClass, hostTag }) => {
       const outer = document.createElement('div');
       if (density) {
         outer.setAttribute('data-density', density);
       }
-      // Scoped variant rules (@scope (.cngx-combobox) { .cngx-combobox__trigger })
-      // only match under their scope root, so nest the probe under a host
-      // carrying that class when hostClass is passed.
+      // Scoped rules (@scope (.cngx-combobox) { .cngx-combobox__trigger } or
+      // @scope (cngx-filter-builder) { ... }) only match under their scope root,
+      // so nest the probe under a host carrying that class / tag when passed.
       let mount: HTMLElement = outer;
-      if (hostClass) {
-        const host = document.createElement('div');
-        host.className = hostClass;
+      if (hostClass || hostTag) {
+        const host = document.createElement(hostTag ?? 'div');
+        if (hostClass) {
+          host.className = hostClass;
+        }
         outer.appendChild(host);
         mount = host;
       }
@@ -103,6 +106,7 @@ async function resolveVar(
       dataPaginatorSize: opts.dataPaginatorSize,
       tag: opts.tag,
       hostClass: opts.hostClass,
+      hostTag: opts.hostTag,
     },
   );
 }
@@ -501,5 +505,37 @@ test.describe('forms/select — combobox trigger gap derives from the density sc
         density: 'compact',
       }),
     ).toBe('2px');
+  });
+});
+
+test.describe('forms/filter-builder — action-button padding derives from the density scale', () => {
+  test('.cngx-filter-builder__action-button padding tracks [data-density] (inline shift 10->8 = sm)', async ({
+    page,
+  }) => {
+    // The builder rules are @scope (cngx-filter-builder)-wrapped (a tag scope
+    // root), so the probe sits under a <cngx-filter-builder> host. action-padding
+    // SETs xs/sm; the inline half is the shifted sm (10->8), so compact reads
+    // 2px 4px — catching a mis-ranked shift.
+    await gotoDemo(page, 'forms/filter-builder/seeded-tree-and-or-composition');
+    await page
+      .locator('.cngx-filter-builder__action-button')
+      .first()
+      .waitFor({ state: 'attached' });
+    expect(
+      await resolveVar(
+        page,
+        'cngx-filter-builder__action-button',
+        '--cngx-filter-builder-action-padding',
+        { hostTag: 'cngx-filter-builder' },
+      ),
+    ).toBe('4px 8px');
+    expect(
+      await resolveVar(
+        page,
+        'cngx-filter-builder__action-button',
+        '--cngx-filter-builder-action-padding',
+        { hostTag: 'cngx-filter-builder', density: 'compact' },
+      ),
+    ).toBe('2px 4px');
   });
 });

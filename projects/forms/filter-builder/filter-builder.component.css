@@ -119,7 +119,7 @@
    */
   @property --cngx-filter-builder-gap {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.5rem;
   }
 
@@ -420,6 +420,13 @@
 @layer cngx.components {
   @scope (cngx-filter-builder) {
     :scope {
+      /* Derive spacing from the global scale so a root [data-density] compacts
+         the builder (SET-from-scale rule; the registered pixel initial defeats
+         the use-site fallback). padding 0.5 -> sm; gap 0.5 -> sm, registered
+         inherits:true so the group / expression / actions / logic-toggle rows
+         below track the same value. */
+      --cngx-filter-builder-padding: var(--cngx-space-sm);
+      --cngx-filter-builder-gap: var(--cngx-space-sm);
       display: block;
       padding: var(--cngx-filter-builder-padding, 0.5rem);
       background: var(--cngx-filter-builder-bg, transparent);
@@ -439,6 +446,8 @@
     }
 
     .cngx-filter-builder__group {
+      /* group-padding 0.5 -> sm (read here + on the :not(root) padding-left). */
+      --cngx-filter-builder-group-padding: var(--cngx-space-sm);
       display: flex;
       flex-direction: column;
       gap: var(--cngx-filter-builder-gap, 0.5rem);
@@ -477,12 +486,18 @@
     }
 
     .cngx-filter-builder__empty {
+      /* empty-padding 0.75 -> sm (tie sm/md -> sm). */
+      --cngx-filter-builder-empty-padding: var(--cngx-space-sm);
       padding: var(--cngx-filter-builder-empty-padding, 0.75rem);
       color: var(--cngx-filter-builder-empty-fg, oklch(0.45 0 0));
       font-style: italic;
     }
 
     .cngx-filter-builder__action-button {
+      /* action-gap 0.25 -> xs; action-padding 0.25/0.625 -> xs/sm (inline 10
+         shift ->8). */
+      --cngx-filter-builder-action-gap: var(--cngx-space-xs);
+      --cngx-filter-builder-action-padding: var(--cngx-space-xs) var(--cngx-space-sm);
       display: inline-flex;
       align-items: center;
       gap: var(--cngx-filter-builder-action-gap, 0.25rem);
