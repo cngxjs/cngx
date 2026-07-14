@@ -274,6 +274,29 @@ test.describe('ui/empty-state - padding derives from the density scale', () => {
   });
 });
 
+test.describe('ui/breadcrumb - contained-skin padding derives from the density scale', () => {
+  test("contained-skin padding tracks a root [data-density] (xs/sm: 4px 8px -> 2px 4px)", async ({
+    page,
+  }) => {
+    // A breadcrumb-skins route loads the global .cngx-breadcrumb CSS
+    // (ViewEncapsulation.None); the contained skin :scope SETs
+    // --cngx-breadcrumb-contained-padding from --cngx-space-xs/sm.
+    await gotoDemo(page, 'ui/breadcrumb/skins/variants');
+    await page.locator('.cngx-breadcrumb').first().waitFor({ state: 'attached' });
+    expect(
+      await resolveVar(page, 'cngx-breadcrumb', '--cngx-breadcrumb-contained-padding', {
+        dataSkin: 'contained',
+      }),
+    ).toBe('4px 8px');
+    expect(
+      await resolveVar(page, 'cngx-breadcrumb', '--cngx-breadcrumb-contained-padding', {
+        dataSkin: 'contained',
+        density: 'compact',
+      }),
+    ).toBe('2px 4px');
+  });
+});
+
 test.describe('common/card — padding derives from the density scale', () => {
   test.beforeEach(async ({ page }) => {
     // Any card route loads the global .cngx-card CSS (ViewEncapsulation.None).
