@@ -1,4 +1,7 @@
 :host {
+  --cngx-rating-gap: var(--cngx-space-xs, 0.25rem);
+  --cngx-rating-item-gap: var(--cngx-space-xs, 0.125rem);
+  --cngx-rating-item-padding: var(--cngx-space-xs, 0.125rem);
   display: inline-flex;
   flex-direction: column;
   gap: var(--cngx-rating-gap, 0.25rem);

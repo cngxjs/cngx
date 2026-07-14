@@ -505,6 +505,34 @@ test.describe('common/card — padding derives from the density scale', () => {
   });
 });
 
+test.describe('forms/input - rating spacing derives from the density scale', () => {
+  test('rating item-padding tracks a root [data-density] (shift 2->4 = space-xs: 4 -> 2)', async ({
+    page,
+  }) => {
+    // CngxRating is ViewEncapsulation.Emulated: its :host SET rule is rewritten
+    // with an _nghost attribute, so the synthetic-element helper can't reach it.
+    // Probe the REAL rendered host instead; --cngx-space-* (inherits:true) cascades
+    // from a documentElement [data-density] into the emulated host. Probe the
+    // SHIFTED token (2->4): compact reads 2, NOT the old literal 2 in every density.
+    await gotoDemo(page, 'forms/input/rating/basic');
+    const host = page.locator('cngx-rating').first();
+    await host.waitFor({ state: 'attached' });
+    expect(
+      await host.evaluate((el) =>
+        getComputedStyle(el).getPropertyValue('--cngx-rating-item-padding').trim(),
+      ),
+    ).toBe('4px');
+    expect(
+      await host.evaluate((el) => {
+        document.documentElement.setAttribute('data-density', 'compact');
+        const v = getComputedStyle(el).getPropertyValue('--cngx-rating-item-padding').trim();
+        document.documentElement.removeAttribute('data-density');
+        return v;
+      }),
+    ).toBe('2px');
+  });
+});
+
 test.describe('forms/select — shared option padding derives from the density scale', () => {
   test('.cngx-select__option padding tracks a root [data-density] (xs/sm block tie xs/sm->xs = 4->2)', async ({
     page,
