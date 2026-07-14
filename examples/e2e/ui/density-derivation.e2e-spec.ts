@@ -19,26 +19,29 @@ async function paddingTopOf(
   className: string,
   opts: { density?: string; hostClass?: string } = {},
 ) {
-  return page.evaluate(({ className, density, hostClass }) => {
-    const outer = document.createElement('div');
-    if (density) {
-      outer.setAttribute('data-density', density);
-    }
-    let mount: HTMLElement = outer;
-    if (hostClass) {
-      const host = document.createElement('div');
-      host.className = hostClass;
-      outer.appendChild(host);
-      mount = host;
-    }
-    const el = document.createElement('div');
-    el.className = className;
-    mount.appendChild(el);
-    document.body.appendChild(outer);
-    const v = getComputedStyle(el).paddingTop;
-    outer.remove();
-    return v;
-  }, { className, density: opts.density, hostClass: opts.hostClass });
+  return page.evaluate(
+    ({ className, density, hostClass }) => {
+      const outer = document.createElement('div');
+      if (density) {
+        outer.setAttribute('data-density', density);
+      }
+      let mount: HTMLElement = outer;
+      if (hostClass) {
+        const host = document.createElement('div');
+        host.className = hostClass;
+        outer.appendChild(host);
+        mount = host;
+      }
+      const el = document.createElement('div');
+      el.className = className;
+      mount.appendChild(el);
+      document.body.appendChild(outer);
+      const v = getComputedStyle(el).paddingTop;
+      outer.remove();
+      return v;
+    },
+    { className, density: opts.density, hostClass: opts.hostClass },
+  );
 }
 
 /**
@@ -52,36 +55,39 @@ async function resolveVar(
   prop: string,
   opts: { density?: string; dataSkin?: string; dataPaginatorSize?: string; tag?: string } = {},
 ) {
-  return page.evaluate(({ className, prop, density, dataSkin, dataPaginatorSize, tag }) => {
-    const outer = document.createElement('div');
-    if (density) {
-      outer.setAttribute('data-density', density);
-    }
-    // Some components (e.g. cngx-sidenav) style a custom-element tag, not a
-    // class, so the probe element must be created with that tag name.
-    const el = document.createElement(tag ?? 'div');
-    if (className) {
-      el.className = className;
-    }
-    if (dataSkin) {
-      el.setAttribute('data-skin', dataSkin);
-    }
-    if (dataPaginatorSize) {
-      el.setAttribute('data-paginator-size', dataPaginatorSize);
-    }
-    outer.appendChild(el);
-    document.body.appendChild(outer);
-    const v = getComputedStyle(el).getPropertyValue(prop).trim();
-    outer.remove();
-    return v;
-  }, {
-    className,
-    prop,
-    density: opts.density,
-    dataSkin: opts.dataSkin,
-    dataPaginatorSize: opts.dataPaginatorSize,
-    tag: opts.tag,
-  });
+  return page.evaluate(
+    ({ className, prop, density, dataSkin, dataPaginatorSize, tag }) => {
+      const outer = document.createElement('div');
+      if (density) {
+        outer.setAttribute('data-density', density);
+      }
+      // Some components (e.g. cngx-sidenav) style a custom-element tag, not a
+      // class, so the probe element must be created with that tag name.
+      const el = document.createElement(tag ?? 'div');
+      if (className) {
+        el.className = className;
+      }
+      if (dataSkin) {
+        el.setAttribute('data-skin', dataSkin);
+      }
+      if (dataPaginatorSize) {
+        el.setAttribute('data-paginator-size', dataPaginatorSize);
+      }
+      outer.appendChild(el);
+      document.body.appendChild(outer);
+      const v = getComputedStyle(el).getPropertyValue(prop).trim();
+      outer.remove();
+      return v;
+    },
+    {
+      className,
+      prop,
+      density: opts.density,
+      dataSkin: opts.dataSkin,
+      dataPaginatorSize: opts.dataPaginatorSize,
+      tag: opts.tag,
+    },
+  );
 }
 
 test.describe('ui/data-grid-accordion — row spacing derives from the density scale', () => {
@@ -107,7 +113,9 @@ test.describe('ui/data-grid-accordion — row spacing derives from the density s
     });
   }
 
-  test("'density' skin is exempt (deferred to Phase 6) — stays developer-driven", async ({ page }) => {
+  test("'density' skin is exempt (deferred to Phase 6) — stays developer-driven", async ({
+    page,
+  }) => {
     // Its literal 0.6rem is unchanged by a root [data-density]; global density
     // deliberately does not reach it yet.
     const comfortable = await resolveVar(page, GRID, '--cngx-dga-row-py', { dataSkin: 'density' });
@@ -128,7 +136,9 @@ test.describe('ui/accordion — default padding derives from the density scale',
     await expect(page.locator('.cngx-accordion-group').first()).toBeVisible();
   });
 
-  test('unskinned default header-padding tracks density (8px 16px -> 4px 8px)', async ({ page }) => {
+  test('unskinned default header-padding tracks density (8px 16px -> 4px 8px)', async ({
+    page,
+  }) => {
     const GROUP = 'cngx-accordion-group';
     expect(await resolveVar(page, GROUP, '--cngx-accordion-header-padding')).toBe('8px 16px');
     expect(
@@ -170,9 +180,9 @@ test.describe('ui/paginator - spacing derives from the scale; size preset is a p
     expect(
       await resolveVar(page, PGN, '--cngx-paginator-button-size', { dataPaginatorSize: 'compact' }),
     ).toBe('28px');
-    expect(await resolveVar(page, PGN, '--cngx-paginator-button-size', { density: 'compact' })).toBe(
-      '36px',
-    );
+    expect(
+      await resolveVar(page, PGN, '--cngx-paginator-button-size', { density: 'compact' }),
+    ).toBe('36px');
   });
 });
 
@@ -183,9 +193,9 @@ test.describe('ui/feedback - alert / toast spacing derives from the density scal
     await gotoDemo(page, 'ui/feedback/alert/severities');
     await expect(page.locator('.cngx-alert').first()).toBeVisible();
     expect(await resolveVar(page, 'cngx-alert', '--cngx-alert-padding')).toBe('8px 16px');
-    expect(await resolveVar(page, 'cngx-alert', '--cngx-alert-padding', { density: 'compact' })).toBe(
-      '4px 8px',
-    );
+    expect(
+      await resolveVar(page, 'cngx-alert', '--cngx-alert-padding', { density: 'compact' }),
+    ).toBe('4px 8px');
   });
 
   test('toast-outlet gap tracks a root [data-density] (space-sm: 8 -> 4)', async ({ page }) => {
@@ -193,14 +203,16 @@ test.describe('ui/feedback - alert / toast spacing derives from the density scal
     // CSS; the outlet :scope SETs --cngx-toast-gap from --cngx-space-sm.
     await gotoDemo(page, 'ui/feedback/toast/declarative-cngx-toast');
     expect(await resolveVar(page, 'cngx-toast-outlet', '--cngx-toast-gap')).toBe('8px');
-    expect(await resolveVar(page, 'cngx-toast-outlet', '--cngx-toast-gap', { density: 'compact' })).toBe(
-      '4px',
-    );
+    expect(
+      await resolveVar(page, 'cngx-toast-outlet', '--cngx-toast-gap', { density: 'compact' }),
+    ).toBe('4px');
   });
 });
 
 test.describe('ui/tab-overflow - item padding derives from the density scale', () => {
-  test('overflow item padding tracks a root [data-density] (space-sm: 8/8 -> 4/4)', async ({ page }) => {
+  test('overflow item padding tracks a root [data-density] (space-sm: 8/8 -> 4/4)', async ({
+    page,
+  }) => {
     // A tab-overflow route loads the global .cngx-tab-overflow CSS (ViewEncapsulation.None);
     // the :scope SETs --cngx-tab-overflow-item-padding from --cngx-space-sm (both axes).
     await gotoDemo(page, 'ui/tabs/tab-overflow/8-tabs-in-a-narrow-container');
@@ -275,7 +287,7 @@ test.describe('ui/empty-state - padding derives from the density scale', () => {
 });
 
 test.describe('ui/breadcrumb - contained-skin padding derives from the density scale', () => {
-  test("contained-skin padding tracks a root [data-density] (xs/sm: 4px 8px -> 2px 4px)", async ({
+  test('contained-skin padding tracks a root [data-density] (xs/sm: 4px 8px -> 2px 4px)', async ({
     page,
   }) => {
     // A breadcrumb-skins route loads the global .cngx-breadcrumb CSS
@@ -304,9 +316,9 @@ test.describe('common/interactive - checkbox gap derives from the density scale'
     await gotoDemo(page, 'common/interactive/checkbox/base/disabled');
     await page.locator('.cngx-checkbox').first().waitFor({ state: 'attached' });
     expect(await resolveVar(page, 'cngx-checkbox', '--cngx-checkbox-gap')).toBe('8px');
-    expect(await resolveVar(page, 'cngx-checkbox', '--cngx-checkbox-gap', { density: 'compact' })).toBe(
-      '4px',
-    );
+    expect(
+      await resolveVar(page, 'cngx-checkbox', '--cngx-checkbox-gap', { density: 'compact' }),
+    ).toBe('4px');
   });
 });
 
@@ -327,12 +339,16 @@ test.describe('common/display - chip spacing derives from the density scale', ()
 });
 
 test.describe('common/popover - panel padding derives from the density scale', () => {
-  test('popover-panel padding tracks a root [data-density] (space-md: 16 -> 8)', async ({ page }) => {
+  test('popover-panel padding tracks a root [data-density] (space-md: 16 -> 8)', async ({
+    page,
+  }) => {
     // The panel-variants route renders cngx-popover-panel inline, loading the
     // global .cngx-popover-panel CSS; the :scope SETs --cngx-popover-panel-padding.
     await gotoDemo(page, 'common/popover/popover-panel/variants');
     await page.locator('.cngx-popover-panel').first().waitFor({ state: 'attached' });
-    expect(await resolveVar(page, 'cngx-popover-panel', '--cngx-popover-panel-padding')).toBe('16px');
+    expect(await resolveVar(page, 'cngx-popover-panel', '--cngx-popover-panel-padding')).toBe(
+      '16px',
+    );
     expect(
       await resolveVar(page, 'cngx-popover-panel', '--cngx-popover-panel-padding', {
         density: 'compact',
@@ -342,7 +358,9 @@ test.describe('common/popover - panel padding derives from the density scale', (
 });
 
 test.describe('common/dialog - bottom-sheet padding derives from the density scale', () => {
-  test('bottom-sheet padding tracks a root [data-density] (space-lg: 24 -> 12)', async ({ page }) => {
+  test('bottom-sheet padding tracks a root [data-density] (space-lg: 24 -> 12)', async ({
+    page,
+  }) => {
     // Dialog/bottom-sheet are Track B (@cngx/themes/cngx.css, shipped globally),
     // so dialog.cngx-bottom-sheet rules are present on any route; the :scope SETs
     // --cngx-bottom-sheet-padding from --cngx-space-lg.
@@ -382,13 +400,18 @@ test.describe('common/tabs - tab padding derives from the density scale', () => 
       '8px 8px',
     );
     expect(
-      await resolveVar(page, '', '--cngx-tab-padding', { tag: 'cngx-tab-group', density: 'compact' }),
+      await resolveVar(page, '', '--cngx-tab-padding', {
+        tag: 'cngx-tab-group',
+        density: 'compact',
+      }),
     ).toBe('4px 4px');
   });
 });
 
 test.describe('common/data - metric gap derives from the density scale', () => {
-  test('metric gap tracks a root [data-density] (shift 2->4 = space-xs: 4 -> 2)', async ({ page }) => {
+  test('metric gap tracks a root [data-density] (shift 2->4 = space-xs: 4 -> 2)', async ({
+    page,
+  }) => {
     // A metric route loads the global .cngx-metric CSS (ViewEncapsulation.None);
     // the :scope SETs --cngx-metric-gap from --cngx-space-xs. Probe the SHIFTED
     // token: compact reads 2, NOT the old literal 2 in every density.
@@ -416,5 +439,26 @@ test.describe('common/card — padding derives from the density scale', () => {
     expect(await paddingTopOf(page, 'cngx-card')).toBe('16px');
     expect(await paddingTopOf(page, 'cngx-card', { density: 'compact' })).toBe('8px');
     expect(await paddingTopOf(page, 'cngx-card', { density: 'spacious' })).toBe('20px');
+  });
+});
+
+test.describe('forms/select — shared option padding derives from the density scale', () => {
+  test('.cngx-select__option padding tracks a root [data-density] (xs/sm block tie xs/sm->xs = 4->2)', async ({
+    page,
+  }) => {
+    // A select route loads the global select-base CSS (ViewEncapsulation.None);
+    // the read-site rule SETs --cngx-select-option-padding from
+    // --cngx-space-xs/--cngx-space-sm. The block half is the shifted xs (6->4),
+    // so compact reads 2px 4px, NOT the old literal 0.375rem 0.5rem.
+    await gotoDemo(page, 'forms/select/single-select/clearable');
+    await page.locator('.cngx-select__option').first().waitFor({ state: 'attached' });
+    expect(await resolveVar(page, 'cngx-select__option', '--cngx-select-option-padding')).toBe(
+      '4px 8px',
+    );
+    expect(
+      await resolveVar(page, 'cngx-select__option', '--cngx-select-option-padding', {
+        density: 'compact',
+      }),
+    ).toBe('2px 4px');
   });
 });
