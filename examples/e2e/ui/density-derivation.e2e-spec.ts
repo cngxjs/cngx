@@ -326,6 +326,21 @@ test.describe('common/display - chip spacing derives from the density scale', ()
   });
 });
 
+test.describe('common/popover - panel padding derives from the density scale', () => {
+  test('popover-panel padding tracks a root [data-density] (space-md: 16 -> 8)', async ({ page }) => {
+    // The panel-variants route renders cngx-popover-panel inline, loading the
+    // global .cngx-popover-panel CSS; the :scope SETs --cngx-popover-panel-padding.
+    await gotoDemo(page, 'common/popover/popover-panel/variants');
+    await page.locator('.cngx-popover-panel').first().waitFor({ state: 'attached' });
+    expect(await resolveVar(page, 'cngx-popover-panel', '--cngx-popover-panel-padding')).toBe('16px');
+    expect(
+      await resolveVar(page, 'cngx-popover-panel', '--cngx-popover-panel-padding', {
+        density: 'compact',
+      }),
+    ).toBe('8px');
+  });
+});
+
 test.describe('common/card — padding derives from the density scale', () => {
   test.beforeEach(async ({ page }) => {
     // Any card route loads the global .cngx-card CSS (ViewEncapsulation.None).

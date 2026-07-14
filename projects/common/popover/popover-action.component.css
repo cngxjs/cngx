@@ -157,6 +157,13 @@
 @layer cngx.components {
   @scope (.cngx-popover-action) {
     :scope {
+      /* Derive spacing from the global scale (SET-from-scale rule; the
+         registered pixel initial defeats the use-site fallback). Read on the
+         host. gap 6 -> xs; padding-block 6 -> xs; padding-inline 14 -> md
+         (14 -> 16). */
+      --cngx-popover-action-gap: var(--cngx-space-xs);
+      --cngx-popover-action-padding-block: var(--cngx-space-xs);
+      --cngx-popover-action-padding-inline: var(--cngx-space-md);
       display: inline-flex;
       align-items: center;
       gap: var(--cngx-popover-action-gap, 6px);
