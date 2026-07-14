@@ -359,6 +359,19 @@ test.describe('common/dialog - bottom-sheet padding derives from the density sca
   });
 });
 
+test.describe('common/card-grid - gap derives from the density scale', () => {
+  test('card-grid gap tracks a root [data-density] (space-md: 16 -> 8)', async ({ page }) => {
+    // A card-grid route loads the global .cngx-card-grid CSS (ViewEncapsulation.None);
+    // the :scope SETs --cngx-card-grid-gap from --cngx-space-md.
+    await gotoDemo(page, 'common/card/card-grid/basic-grid');
+    await page.locator('.cngx-card-grid').first().waitFor({ state: 'attached' });
+    expect(await resolveVar(page, 'cngx-card-grid', '--cngx-card-grid-gap')).toBe('16px');
+    expect(
+      await resolveVar(page, 'cngx-card-grid', '--cngx-card-grid-gap', { density: 'compact' }),
+    ).toBe('8px');
+  });
+});
+
 test.describe('common/card — padding derives from the density scale', () => {
   test.beforeEach(async ({ page }) => {
     // Any card route loads the global .cngx-card CSS (ViewEncapsulation.None).

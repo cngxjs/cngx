@@ -89,6 +89,9 @@
 @layer cngx.components {
   @scope (.cngx-card-timestamp) {
     :scope {
+      /* Derive the gap from the global scale (SET-from-scale rule). Read on the
+         host. 4 -> xs. */
+      --cngx-card-timestamp-gap: var(--cngx-space-xs);
       display: inline-flex;
       gap: var(--cngx-card-timestamp-gap, var(--cngx-space-xs, 4px));
       font-size: var(--cngx-card-timestamp-size, 0.75rem);

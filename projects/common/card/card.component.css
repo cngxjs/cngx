@@ -876,6 +876,11 @@
 
     /* Badge placement - absolute, four corner variants */
     .cngx-card__badge {
+      /* Derive the badge inline padding from the global scale (SET-from-scale
+         rule; the registered pixel initial defeats the use-site fallback).
+         set-at-read-site: the --size-sm/md/lg variants read the same token on the
+         same element, so this one SET covers them all. 5 -> xs (5 -> 4). */
+      --cngx-card-badge-padding-inline: var(--cngx-space-xs);
       position: absolute;
       z-index: 1;
       display: inline-flex;
