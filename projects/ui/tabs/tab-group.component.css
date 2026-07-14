@@ -740,6 +740,10 @@
    */
   @scope (.cngx-tab-group[data-skin='pill']) {
     :scope {
+      /* Derive the pill-strip spacing from the density scale (inherits to the
+         horizontal + vertical strip use-sites). Tie 6->xs 4, chosen tighter. */
+      --cngx-tab-pill-gap: var(--cngx-space-xs, 0.375rem);
+      --cngx-tab-pill-strip-padding: var(--cngx-space-xs, 0.25rem);
       --cngx-tab-active-bg: var(--cngx-color-primary, oklch(0.66 0.19 50));
       --cngx-tab-pill-active-color: var(--cngx-color-on-primary, oklch(1 0 0));
       /* Resting pills lift onto a faint tint of the brand accent on hover,
@@ -821,6 +825,10 @@
    */
   @scope (.cngx-tab-group[data-skin='pill-outline']) {
     :scope {
+      /* Same pill-strip tokens as the `pill` skin - a separate [data-skin]
+         value, so a separate scope root; derive them from the scale here too. */
+      --cngx-tab-pill-gap: var(--cngx-space-xs, 0.375rem);
+      --cngx-tab-pill-strip-padding: var(--cngx-space-xs, 0.25rem);
       --cngx-tab-pill-outline-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
       --cngx-tab-pill-outline-bg: color-mix(
         in oklch,
@@ -870,6 +878,10 @@
    */
   @scope (.cngx-tab-group[data-skin='segmented']) {
     :scope {
+      /* Derive the segmented-track spacing from the density scale (inherits to
+         the horizontal + vertical strip use-sites). Both 4px -> xs, exact. */
+      --cngx-tab-segmented-gap: var(--cngx-space-xs, 0.25rem);
+      --cngx-tab-segmented-track-padding: var(--cngx-space-xs, 0.25rem);
       /* Track and hover fill derive from surface + border so they track
          the foundation light / dark scheme (and the Material bridge) on
          their own; the active tab lifts to the plain surface. */

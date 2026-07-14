@@ -453,6 +453,33 @@ test.describe('common/card-grid - gap derives from the density scale', () => {
   });
 });
 
+test.describe('ui/tabs - pill-strip spacing derives from the density scale', () => {
+  test('pill tab gap tracks a root [data-density] under the pill skin (tie 6->xs: 4 -> 2)', async ({
+    page,
+  }) => {
+    // The pill skin is @scope (.cngx-tab-group[data-skin='pill']) in the
+    // ViewEncapsulation.None tab-group stylesheet; the :scope SETs
+    // --cngx-tab-pill-gap from --cngx-space-xs. Probe a synthetic host carrying
+    // both the class and [data-skin='pill'] so it IS the scope root. The 6->xs
+    // tie means comfortable reads 4 (NOT the old 6px literal), compact reads 2.
+    await gotoDemo(page, 'ui/tabs/tab-skins/pill');
+    await page.locator('cngx-tab-group').first().waitFor({ state: 'attached' });
+    expect(
+      await resolveVar(page, 'cngx-tab-group', '--cngx-tab-pill-gap', {
+        tag: 'cngx-tab-group',
+        dataSkin: 'pill',
+      }),
+    ).toBe('4px');
+    expect(
+      await resolveVar(page, 'cngx-tab-group', '--cngx-tab-pill-gap', {
+        tag: 'cngx-tab-group',
+        dataSkin: 'pill',
+        density: 'compact',
+      }),
+    ).toBe('2px');
+  });
+});
+
 test.describe('common/tabs - tab padding derives from the density scale', () => {
   test('tab padding tracks a root [data-density] (space-sm: 8/8 -> 4/4)', async ({ page }) => {
     // cngx-tab-group (ui/tabs) loads the common tabs-base CSS; the host SETs
