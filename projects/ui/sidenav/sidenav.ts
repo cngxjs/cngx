@@ -208,6 +208,9 @@ export class CngxSidenav {
   /** Element that held focus when the overlay opened, restored to it on close. */
   private restoreTarget: HTMLElement | null = null;
 
+  /** Aborts the in-flight resize drag's document listeners (pointerup or teardown). */
+  private resizeAbort: AbortController | null = null;
+
   constructor() {
     this.focusTrap = inject(FocusTrapFactory).create(this.elementRef.nativeElement as HTMLElement);
 
@@ -233,6 +236,7 @@ export class CngxSidenav {
     });
 
     inject(DestroyRef).onDestroy(() => this.focusTrap.destroy());
+    inject(DestroyRef).onDestroy(() => this.resizeAbort?.abort());
 
     effect((onCleanup) => {
       const query = this.responsive();
@@ -360,6 +364,12 @@ export class CngxSidenav {
     let currentWidth = startWidth;
     let rafId = 0;
 
+    // One controller per drag removes both document listeners in a single abort:
+    // on pointerup below, and - critically - if the component is torn down
+    // mid-drag (the onDestroy hook aborts this.resizeAbort).
+    const controller = new AbortController();
+    this.resizeAbort = controller;
+
     const onMove = (ev: PointerEvent): void => {
       const delta = isEnd ? startX - ev.clientX : ev.clientX - startX;
       currentWidth = Math.round(Math.max(min, Math.min(max, startWidth + delta)));
@@ -377,11 +387,11 @@ export class CngxSidenav {
       this.resizingState.set(false);
       // Single CD on pointerup - model catches up with the DOM.
       this.width.set(`${currentWidth}px`);
-      this.doc.removeEventListener('pointermove', onMove);
-      this.doc.removeEventListener('pointerup', onUp);
+      controller.abort();
+      this.resizeAbort = null;
     };
 
-    this.doc.addEventListener('pointermove', onMove);
-    this.doc.addEventListener('pointerup', onUp);
+    this.doc.addEventListener('pointermove', onMove, { signal: controller.signal });
+    this.doc.addEventListener('pointerup', onUp, { signal: controller.signal });
   }
 }

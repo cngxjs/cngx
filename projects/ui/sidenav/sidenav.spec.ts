@@ -423,6 +423,29 @@ describe('CngxSidenav resizable', () => {
     fixture.detectChanges();
     expect(left.width()).toBe('320px');
   });
+
+  it('aborts resize listeners when the component is destroyed mid-drag', () => {
+    const { fixture, left, host } = setupDual();
+    host.resizable.set(true);
+    fixture.detectChanges();
+
+    const addSpy = vi.spyOn(document, 'addEventListener');
+    left.handleResizeStart({
+      preventDefault: vi.fn(),
+      clientX: 100,
+      pointerId: 1,
+      target: { setPointerCapture: vi.fn() },
+    } as unknown as PointerEvent);
+
+    const moveCall = addSpy.mock.calls.find((c) => c[0] === 'pointermove');
+    const options = moveCall?.[2] as AddEventListenerOptions | undefined;
+    expect(options?.signal).toBeDefined();
+    expect(options?.signal?.aborted).toBe(false);
+
+    // Teardown mid-drag (onUp never fired) must still remove both listeners.
+    fixture.destroy();
+    expect(options?.signal?.aborted).toBe(true);
+  });
 });
 
 describe('CngxSidenav responsive', () => {
