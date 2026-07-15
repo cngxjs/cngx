@@ -31,10 +31,12 @@ import { DestroyRef, Directive, inject, input, output, signal } from '@angular/c
  *
  * @category common/interactive
  * @docsKind primary
+ * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/hover-intent/hover-intent.directive.ts
  * @since 0.1.0
  * @relatedTo CngxHoverable, CngxLongPress, CngxExpandable
  * <example-url>http://localhost:4200/#/common/interactive/hover-intent/hover-to-reveal</example-url>
+ * <example-url>http://localhost:4200/#/common/interactive/hover-intent/hover-to-prefetch</example-url>
  */
 @Directive({
   selector: '[cngxHoverIntent]',
