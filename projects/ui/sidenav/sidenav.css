@@ -551,14 +551,21 @@
   }
 
   /*
-   * Mini mode: collapsed icon rail, stays in flex flow.
-   * No width transition - expand/collapse is instant to prevent
-   * content shift (negative margin + animating width = layout jank).
+   * Mini mode: collapsed icon rail, stays in flex flow. Expand/collapse
+   * animates the width AND the compensating negative margin together, with
+   * the same duration/easing. Because the flex footprint is width + margin
+   * (e.g. 128px + -72px = 56px at every frame), the two stay in lockstep and
+   * the rail grows *over* the content without shifting it. Animating width
+   * alone would shift layout - the synced margin is what keeps it smooth.
    */
   cngx-sidenav.cngx-sidenav--mini {
     width: var(--cngx-sidenav-mini-width, 56px);
     visibility: visible;
-    transition: none;
+    transition:
+      width var(--cngx-sidenav-transition-duration, 0.25s)
+        var(--cngx-sidenav-transition-easing, ease),
+      margin var(--cngx-sidenav-transition-duration, 0.25s)
+        var(--cngx-sidenav-transition-easing, ease);
   }
 
   /*
