@@ -15,6 +15,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { matchesKeyCombo, parseKeyCombo } from '@cngx/core/utils';
+import { CngxHoverIntent } from '@cngx/common/interactive';
 
 /**
  * Logical position - flips in RTL.
@@ -82,6 +83,11 @@ export type SidenavMode = 'over' | 'push' | 'side' | 'mini';
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   styleUrls: ['./sidenav.css'],
+  // The mini expand-on-hover is debounced by composing CngxHoverIntent: its own
+  // pointerenter/pointerleave listeners replace the sidenav's instant ones, so a
+  // sweep-through never expands. No inputs are forwarded - the atom's 120/0 dwell
+  // defaults apply and the sidenav input surface stays untouched.
+  hostDirectives: [CngxHoverIntent],
   host: {
     '[class.cngx-sidenav]': 'true',
     '[class.cngx-sidenav--start]': "position() === 'start'",
@@ -102,8 +108,6 @@ export type SidenavMode = 'over' | 'push' | 'side' | 'mini';
     role: 'complementary',
     '[attr.aria-label]': 'ariaLabel() || null',
     '(keydown.escape)': 'closeIfOverlay()',
-    '(mouseenter)': 'handleMouseEnter()',
-    '(mouseleave)': 'handleMouseLeave()',
   },
   template: `
     <ng-content select="cngx-sidenav-header, [cngxSidenavHeader]" />
@@ -173,15 +177,49 @@ export class CngxSidenav {
   /** Two-way opened state. Supports `[(opened)]="signal"`. */
   readonly opened = model<boolean>(false);
 
+  /** Debounced mini expand-on-hover, composed as a hostDirective (its own pointer listeners drive it). */
+  private readonly hoverIntent = inject(CngxHoverIntent, { host: true });
+
   /**
-   * Whether the mini-mode rail is currently expanded (hover or programmatic).
-   * Derived from the mode: hover / `expand()` / `collapse()` still write it (a
-   * `linkedSignal` is writable), but leaving `mini` resets it to `false`
-   * automatically instead of an imperative reset inside the mode effect.
+   * Composed source for `expandedState`: the effective mode, the debounced
+   * hover-intent signal, and the on/off switch. Carries an explicit `equal` so
+   * the object literal never churns identity and re-runs the computation when
+   * none of the three fields actually changed.
    */
-  private readonly expandedState = linkedSignal<SidenavMode, boolean>({
-    source: () => this.effectiveMode(),
-    computation: (mode, prev) => (mode === 'mini' ? (prev?.value ?? false) : false),
+  private readonly hoverSource = computed(
+    () => ({
+      mode: this.effectiveMode(),
+      hover: this.hoverIntent.active(),
+      enabled: this.expandOnHover(),
+    }),
+    { equal: (a, b) => a.mode === b.mode && a.hover === b.hover && a.enabled === b.enabled },
+  );
+
+  /**
+   * Whether the mini-mode rail is currently expanded. A pure derivation of
+   * `(effectiveMode, hoverIntent.active, expandOnHover)`, not two imperative
+   * event-handler writes:
+   *
+   * - outside `mini` it is always `false`;
+   * - with `expandOnHover=true` the debounced hover is the source of truth, so a
+   *   pointer edge overrides a prior `expand()`/`collapse()` (see `expand()`);
+   * - with `expandOnHover=false` hover is ignored and the prior value is kept, so
+   *   `expand()`/`collapse()` retain full programmatic authority.
+   *
+   * It stays a writable `linkedSignal` so `expand()`/`collapse()` can `set()` it;
+   * the next source change re-derives from the debounced hover.
+   */
+  private readonly expandedState = linkedSignal<
+    { mode: SidenavMode; hover: boolean; enabled: boolean },
+    boolean
+  >({
+    source: this.hoverSource,
+    computation: ({ mode, hover, enabled }, prev) => {
+      if (mode !== 'mini') {
+        return false;
+      }
+      return enabled ? hover : (prev?.value ?? false);
+    },
   });
   readonly expanded = this.expandedState.asReadonly();
 
@@ -365,28 +403,26 @@ export class CngxSidenav {
     }
   }
 
-  /** Expand the mini rail to full width. */
+  /**
+   * Expand the mini rail to full width.
+   *
+   * When `expandOnHover=true` (the default) the debounced hover is the source of
+   * truth for `expanded`, so a programmatic `expand()` is transient: the next
+   * pointer edge overrides it. For authoritative programmatic control set
+   * `expandOnHover=false`, which hands `expand()`/`collapse()` full authority.
+   */
   expand(): void {
     this.expandedState.set(true);
   }
 
-  /** Collapse the expanded mini rail back to miniWidth. */
+  /**
+   * Collapse the expanded mini rail back to miniWidth.
+   *
+   * Same reconciliation as `expand()`: transient while `expandOnHover=true`,
+   * authoritative while `expandOnHover=false`.
+   */
   collapse(): void {
     this.expandedState.set(false);
-  }
-
-  /** @internal */
-  handleMouseEnter(): void {
-    if (this.effectiveMode() === 'mini' && this.expandOnHover()) {
-      this.expandedState.set(true);
-    }
-  }
-
-  /** @internal */
-  handleMouseLeave(): void {
-    if (this.effectiveMode() === 'mini') {
-      this.expandedState.set(false);
-    }
   }
 
   /** @internal Parse a CSS px value to a number. */
