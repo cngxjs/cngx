@@ -17,7 +17,8 @@ import {
 ## Quick Start
 
 ```typescript
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
+import { CngxNavLink } from '@cngx/common';
 import {
   CngxSidenav,
   CngxSidenavLayout,
@@ -46,6 +47,7 @@ import {
     CngxSidenavContent,
     CngxSidenavHeader,
     CngxSidenavFooter,
+    CngxNavLink,
   ],
 })
 export class ExampleComponent {
@@ -73,7 +75,7 @@ Key features:
   - `Escape` - Closes overlay mode sidenav
   - Custom shortcut (if configured) - Toggles opened state globally
 - **Screen reader:** Complementary landmark announces the sidebar label; scroll lock prevents reading body content when sidebar is open in overlay.
-- **Focus management:** On overlay close, focus is not automatically restored (consumer must manage).
+- **Focus management:** In overlay (`over`) mode a CDK focus trap keeps Tab within the rail while open, moves focus into the rail on open, and restores focus to the element that opened it on close.
 
 ## Composition
 

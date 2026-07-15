@@ -56,6 +56,24 @@
  * Mini-mode also hides `[cngxNavLabel]`, `[cngxNavGroup]`, and
  * `[cngxNavBadge]`.
  *
+ * **Nav-class contract**
+ *
+ * The rail styles a set of class / attribute hooks emitted by the
+ * `@cngx/common/interactive` nav directives. These form a cross-lib
+ * contract: rename any hook in `@cngx/common` and mini-mode plus
+ * active-state styling break silently. `sidenav-nav-contract.spec.ts`
+ * mounts the real directives inside a `cngx-sidenav` and asserts the
+ * hooks still resolve, so a rename fails a test instead. The hooks:
+ *
+ * - `.cngx-nav-link` / `.cngx-nav-link--active` (`CngxNavLink`)
+ * - `[data-initial]` - first-letter initial shown in mini mode
+ *   (`CngxNavLink`)
+ * - `[cngxNavLabel]` (`CngxNavLabel`), `[cngxNavGroup]`
+ *   (`CngxNavGroup`), `[cngxNavBadge]` (`CngxNavBadge`), all hidden
+ *   in collapsed mini mode
+ * - `.cngx-nav-group-content` / `--open`, the nested nav-group
+ *   expand / collapse wrapper
+ *
  * **Inheritance**
  *
  * - `--cngx-sidenav-bg` -> `--cngx-color-surface`
