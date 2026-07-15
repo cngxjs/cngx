@@ -53,3 +53,24 @@ export function withSidenavResponsive(query: string): CngxSidenavConfigFeature {
 export function withSidenavShortcut(combo: string): CngxSidenavConfigFeature {
   return { kind: 'shortcut', payload: { shortcut: combo } };
 }
+
+/**
+ * Set the app-wide default mini expand-on-hover dwell - `enterDelay` (ms before
+ * the rail expands) and `leaveDelay` (ms before it collapses). Flows into the
+ * composed `CngxHoverIntent` via `CNGX_HOVER_INTENT_DEFAULTS`. Per-instance
+ * `[enterDelay]` / `[leaveDelay]` still win; the shipped literals (120 / 0)
+ * apply when neither is set. Partial payloads deep-merge, so pass only the key
+ * you want to change.
+ *
+ * ```ts
+ * provideSidenavConfig(withSidenavHoverDwell({ enterDelay: 200, leaveDelay: 150 }));
+ * ```
+ *
+ * @category ui/sidenav
+ * @since 0.1.0
+ */
+export function withSidenavHoverDwell(
+  payload: NonNullable<CngxSidenavConfig['hover']>,
+): CngxSidenavConfigFeature {
+  return { kind: 'hover', payload };
+}

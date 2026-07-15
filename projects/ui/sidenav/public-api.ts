@@ -19,5 +19,6 @@ export {
   withSidenavDimensions,
   withSidenavResponsive,
   withSidenavShortcut,
+  withSidenavHoverDwell,
 } from './config/features';
 export { injectSidenavConfig } from './config/inject-sidenav-config';

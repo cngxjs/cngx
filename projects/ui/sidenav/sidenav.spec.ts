@@ -7,7 +7,11 @@ import { CngxSidenav } from './sidenav';
 import { CngxSidenavLayout } from './sidenav-layout';
 import { CngxSidenavContent } from './sidenav-content';
 import { provideSidenavConfig } from './config/provide-sidenav-config';
-import { withSidenavDimensions, withSidenavResponsive } from './config/features';
+import {
+  withSidenavDimensions,
+  withSidenavResponsive,
+  withSidenavHoverDwell,
+} from './config/features';
 
 @Component({
   template: `
@@ -98,6 +102,12 @@ class BoundWidthHost {}
 class MiniDwellHost {
   enterDelay = signal(200);
 }
+
+@Component({
+  template: `<cngx-sidenav mode="mini">Nav</cngx-sidenav>`,
+  imports: [CngxSidenav],
+})
+class MiniUnboundHost {}
 
 describe('CngxSidenav', () => {
   afterEach(() => vi.restoreAllMocks());
@@ -840,6 +850,39 @@ describe('CngxSidenav tunable dwell', () => {
   }
 
   it('per-instance [enterDelay] tunes the mini expand dwell', () => {
+    const { nav, el } = miniNav(MiniDwellHost);
+
+    el.dispatchEvent(new PointerEvent('pointerenter'));
+    vi.advanceTimersByTime(199);
+    expect(nav.expanded()).toBe(false);
+    vi.advanceTimersByTime(1);
+    expect(nav.expanded()).toBe(true);
+  });
+
+  it('withSidenavHoverDwell drives the app-wide mini dwell (enter and leave)', () => {
+    TestBed.configureTestingModule({
+      providers: [provideSidenavConfig(withSidenavHoverDwell({ enterDelay: 250, leaveDelay: 150 }))],
+    });
+    const { nav, el } = miniNav(MiniUnboundHost);
+
+    el.dispatchEvent(new PointerEvent('pointerenter'));
+    vi.advanceTimersByTime(249);
+    expect(nav.expanded()).toBe(false);
+    vi.advanceTimersByTime(1);
+    expect(nav.expanded()).toBe(true);
+
+    el.dispatchEvent(new PointerEvent('pointerleave'));
+    vi.advanceTimersByTime(149);
+    expect(nav.expanded()).toBe(true);
+    vi.advanceTimersByTime(1);
+    expect(nav.expanded()).toBe(false);
+  });
+
+  it('per-instance [enterDelay] still wins over withSidenavHoverDwell', () => {
+    TestBed.configureTestingModule({
+      providers: [provideSidenavConfig(withSidenavHoverDwell({ enterDelay: 250 }))],
+    });
+    // MiniDwellHost binds [enterDelay]=200, which must beat the config's 250.
     const { nav, el } = miniNav(MiniDwellHost);
 
     el.dispatchEvent(new PointerEvent('pointerenter'));

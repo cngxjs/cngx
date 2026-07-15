@@ -15,7 +15,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { matchesKeyCombo, parseKeyCombo } from '@cngx/core/utils';
-import { CngxHoverIntent } from '@cngx/common/interactive';
+import { CNGX_HOVER_INTENT_DEFAULTS, CngxHoverIntent } from '@cngx/common/interactive';
 
 import { injectSidenavConfig } from './config/inject-sidenav-config';
 
@@ -94,6 +94,13 @@ export type SidenavMode = 'over' | 'push' | 'side' | 'mini';
   // app-wide via CNGX_HOVER_INTENT_DEFAULTS (provided from the config below);
   // un-set, the atom's 120/0 literals apply so behaviour stays unchanged.
   hostDirectives: [{ directive: CngxHoverIntent, inputs: ['enterDelay', 'leaveDelay'] }],
+  // Element-injector provider (not viewProviders): the composed CngxHoverIntent
+  // resolves CNGX_HOVER_INTENT_DEFAULTS from the host element injector, so the
+  // config-resolved dwell reaches the atom. Un-configured, cfg.hover is the
+  // 120/0 default, byte-identical to the atom's own literals.
+  providers: [
+    { provide: CNGX_HOVER_INTENT_DEFAULTS, useFactory: () => injectSidenavConfig().hover ?? {} },
+  ],
   host: {
     '[class.cngx-sidenav]': 'true',
     '[class.cngx-sidenav--start]': "position() === 'start'",
