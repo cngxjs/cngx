@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, type Type } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -6,6 +6,8 @@ import type { SidenavMode } from './sidenav';
 import { CngxSidenav } from './sidenav';
 import { CngxSidenavLayout } from './sidenav-layout';
 import { CngxSidenavContent } from './sidenav-content';
+import { provideSidenavConfig } from './config/provide-sidenav-config';
+import { withSidenavDimensions, withSidenavResponsive } from './config/features';
 
 @Component({
   template: `
@@ -76,6 +78,18 @@ class ShortcutHost {
   open = signal(false);
   shortcut = signal<string | undefined>('mod+b');
 }
+
+@Component({
+  template: `<cngx-sidenav>Nav</cngx-sidenav>`,
+  imports: [CngxSidenav],
+})
+class UnboundHost {}
+
+@Component({
+  template: `<cngx-sidenav [width]="'500px'">Nav</cngx-sidenav>`,
+  imports: [CngxSidenav],
+})
+class BoundWidthHost {}
 
 describe('CngxSidenav', () => {
   afterEach(() => vi.restoreAllMocks());
@@ -736,5 +750,69 @@ describe('CngxSidenav resize math and shortcut', () => {
     press();
     fixture.detectChanges();
     expect(host.open()).toBe(false);
+  });
+});
+
+describe('CngxSidenav config cascade', () => {
+  // The config-driven responsive query fires the matchMedia effect during
+  // detectChanges; jsdom has no matchMedia, so stub it like the responsive suite.
+  beforeEach(() => {
+    (globalThis as Record<string, unknown>)['matchMedia'] = vi.fn().mockImplementation((query: string) => ({
+      matches: false,
+      media: query,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }));
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    delete (globalThis as Record<string, unknown>)['matchMedia'];
+  });
+
+  function getNav<T>(host: Type<T>): { fixture: ReturnType<typeof TestBed.createComponent<T>>; nav: CngxSidenav } {
+    const fixture = TestBed.createComponent(host);
+    fixture.detectChanges();
+    const nav = fixture.debugElement.query(By.directive(CngxSidenav)).injector.get(CngxSidenav);
+    return { fixture, nav };
+  }
+
+  it('resolves un-bound width/miniWidth/responsive from provideSidenavConfig', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideSidenavConfig(
+          withSidenavDimensions({ width: '320px', miniWidth: '72px' }),
+          withSidenavResponsive('(min-width: 900px)'),
+        ),
+      ],
+    });
+    const { nav } = getNav(UnboundHost);
+
+    expect(nav.width()).toBe('320px');
+    expect(nav.miniWidth()).toBe('72px');
+    expect(nav.responsive()).toBe('(min-width: 900px)');
+  });
+
+  it('per-instance [width] binding still wins over the config default', () => {
+    TestBed.configureTestingModule({
+      providers: [provideSidenavConfig(withSidenavDimensions({ width: '320px' }))],
+    });
+    const { nav } = getNav(BoundWidthHost);
+
+    expect(nav.width()).toBe('500px');
+  });
+
+  it('un-configured sidenav keeps the byte-identical defaults', () => {
+    const { nav } = getNav(UnboundHost);
+
+    expect(nav.width()).toBe('280px');
+    expect(nav.miniWidth()).toBe('56px');
+    expect(nav.minWidth()).toBe('120px');
+    expect(nav.maxWidth()).toBe('600px');
+    expect(nav.responsive()).toBeUndefined();
   });
 });

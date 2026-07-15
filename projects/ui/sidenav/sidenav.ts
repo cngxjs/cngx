@@ -17,6 +17,8 @@ import {
 import { matchesKeyCombo, parseKeyCombo } from '@cngx/core/utils';
 import { CngxHoverIntent } from '@cngx/common/interactive';
 
+import { injectSidenavConfig } from './config/inject-sidenav-config';
+
 /**
  * Logical position - flips in RTL.
  *
@@ -132,6 +134,15 @@ export type SidenavMode = 'over' | 'push' | 'side' | 'mini';
   `,
 })
 export class CngxSidenav {
+  /**
+   * Resolved sidenav configuration cascade. Seeds the dimension, `responsive`,
+   * and `shortcut` input defaults below so a per-instance binding still wins
+   * (Controlled+Uncontrolled), an app-wide `provideSidenavConfig(...)` moves the
+   * default, and an un-configured consumer keeps the byte-identical literals.
+   * Declared first so the input field initialisers can read it.
+   */
+  private readonly cfg = injectSidenavConfig();
+
   /** Logical position: `'start'` (default left in LTR) or `'end'` (right in LTR). */
   readonly position = input<SidenavPosition>('start');
 
@@ -146,13 +157,13 @@ export class CngxSidenav {
    * When the query matches, mode becomes `'side'` (permanent).
    * When it doesn't match, mode becomes `'over'` (overlay).
    */
-  readonly responsive = input<string | undefined>(undefined);
+  readonly responsive = input<string | undefined>(this.cfg.responsive);
 
   /** Width of the sidenav panel. Supports two-way `[(width)]` for resize. */
-  readonly width = model<string>('280px');
+  readonly width = model<string>(this.cfg.dimensions?.width ?? '280px');
 
   /** Width of the collapsed rail in `mini` mode. Any CSS value. */
-  readonly miniWidth = input<string>('56px');
+  readonly miniWidth = input<string>(this.cfg.dimensions?.miniWidth ?? '56px');
 
   /** Whether hovering the mini rail expands the sidenav to full width. */
   readonly expandOnHover = input<boolean>(true);
@@ -161,17 +172,17 @@ export class CngxSidenav {
   readonly resizable = input<boolean>(false);
 
   /** Minimum width constraint during resize. */
-  readonly minWidth = input<string>('120px');
+  readonly minWidth = input<string>(this.cfg.dimensions?.minWidth ?? '120px');
 
   /** Maximum width constraint during resize. */
-  readonly maxWidth = input<string>('600px');
+  readonly maxWidth = input<string>(this.cfg.dimensions?.maxWidth ?? '600px');
 
   /**
    * Keyboard shortcut to toggle the sidenav, e.g. `'ctrl+b'` or `'meta+b'`.
    * Uses `ctrl` on Windows/Linux and `meta` (Cmd) on macOS automatically
    * when `'mod+<key>'` syntax is used.
    */
-  readonly shortcut = input<string | undefined>(undefined);
+  readonly shortcut = input<string | undefined>(this.cfg.shortcut);
 
   /** Whether a resize drag is in progress. */
   private readonly resizingState = signal(false);
