@@ -9,6 +9,7 @@ import {
   ElementRef,
   inject,
   input,
+  linkedSignal,
   model,
   signal,
   ViewEncapsulation,
@@ -164,8 +165,16 @@ export class CngxSidenav {
   /** Two-way opened state. Supports `[(opened)]="signal"`. */
   readonly opened = model<boolean>(false);
 
-  /** Whether the mini-mode rail is currently expanded (hover or programmatic). */
-  private readonly expandedState = signal(false);
+  /**
+   * Whether the mini-mode rail is currently expanded (hover or programmatic).
+   * Derived from the mode: hover / `expand()` / `collapse()` still write it (a
+   * `linkedSignal` is writable), but leaving `mini` resets it to `false`
+   * automatically instead of an imperative reset inside the mode effect.
+   */
+  private readonly expandedState = linkedSignal<SidenavMode, boolean>({
+    source: () => this.effectiveMode(),
+    computation: (mode, prev) => (mode === 'mini' ? (prev?.value ?? false) : false),
+  });
   readonly expanded = this.expandedState.asReadonly();
 
   /** @internal Reference to host element for layout positioning. */
@@ -279,9 +288,6 @@ export class CngxSidenav {
         const alwaysVisible = (m: SidenavMode) => m === 'side' || m === 'mini';
         if (alwaysVisible(prev) && !alwaysVisible(mode)) {
           this.opened.set(true);
-        }
-        if (prev === 'mini' && mode !== 'mini') {
-          this.expandedState.set(false);
         }
       }
       this.prevMode.set(mode);

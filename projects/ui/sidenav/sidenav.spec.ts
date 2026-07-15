@@ -317,6 +317,20 @@ describe('CngxSidenav mini mode', () => {
     expect(left.expanded()).toBe(false);
   });
 
+  it('resets expanded to false automatically when leaving mini mode', () => {
+    const { fixture, left, host } = setupDual();
+    host.mode.set('mini');
+    fixture.detectChanges();
+    left.handleMouseEnter();
+    expect(left.expanded()).toBe(true);
+
+    // Leaving mini derives expanded back to false via linkedSignal, with no
+    // imperative reset in the mode effect.
+    host.mode.set('side');
+    fixture.detectChanges();
+    expect(left.expanded()).toBe(false);
+  });
+
   it('effectiveWidth returns miniWidth when collapsed', () => {
     const { fixture, left, host } = setupDual();
     host.mode.set('mini');
