@@ -238,6 +238,13 @@ export class CngxSidenav {
   /** Element that held focus when the overlay opened, restored to it on close. */
   private restoreTarget: HTMLElement | null = null;
 
+  /**
+   * Set when the mode-transition effect auto-opens an overlay (a viewport-driven
+   * `side`/`mini` -> `over` switch). The focus effect reads it to enable the trap
+   * without pulling focus into the rail, since that open was not user-initiated.
+   */
+  private autoOpenInFlight = false;
+
   /** Aborts the in-flight resize drag's document listeners (pointerup or teardown). */
   private resizeAbort: AbortController | null = null;
 
@@ -254,9 +261,16 @@ export class CngxSidenav {
       const active = this.overlayActive();
       this.focusTrap.enabled = active;
       if (active && !wasOverlayActive) {
-        const activeEl = this.doc.activeElement;
-        this.restoreTarget = activeEl instanceof HTMLElement ? activeEl : null;
-        void this.focusTrap.focusFirstTabbableElementWhenReady();
+        // Only pull focus into the rail when the open was user-initiated. An
+        // auto-open driven by a responsive mode switch (viewport resize) engages
+        // the trap - the rail is now modal - but must not steal focus.
+        const viaAutoOpen = this.autoOpenInFlight;
+        this.autoOpenInFlight = false;
+        if (!viaAutoOpen) {
+          const activeEl = this.doc.activeElement;
+          this.restoreTarget = activeEl instanceof HTMLElement ? activeEl : null;
+          void this.focusTrap.focusFirstTabbableElementWhenReady();
+        }
       } else if (!active && wasOverlayActive) {
         const target = this.restoreTarget;
         this.restoreTarget = null;
@@ -311,6 +325,10 @@ export class CngxSidenav {
       }
       const alwaysVisible = (m: SidenavMode) => m === 'side' || m === 'mini';
       if (alwaysVisible(previous) && !alwaysVisible(current)) {
+        // Flag only overlay auto-opens so the focus effect skips the focus-move.
+        // `over` is the only overlay mode; a `push` auto-open never raises
+        // overlayActive, so it must not leave the flag stuck for a later open.
+        this.autoOpenInFlight = current === 'over';
         this.opened.set(true);
       }
     });

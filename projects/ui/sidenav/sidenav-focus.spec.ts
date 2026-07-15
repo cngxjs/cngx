@@ -109,6 +109,26 @@ describe('CngxSidenav focus management', () => {
     expect(sidenavEl.getAttribute('aria-modal')).toBeNull();
   });
 
+  it('does not steal focus when a mode switch auto-opens the overlay', () => {
+    const { fixture, host, sidenavEl } = setup();
+    host.mode.set('side');
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    mockTrap.focusFirstTabbableElementWhenReady.mockClear();
+
+    // Leaving an always-visible mode (side) for overlay (over) auto-opens the
+    // rail. The trap must engage but focus must not be pulled in - the open was
+    // driven by a viewport change, not a user gesture.
+    host.mode.set('over');
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    expect(host.open()).toBe(true);
+    expect(mockTrap.enabled).toBe(true);
+    expect(mockTrap.focusFirstTabbableElementWhenReady).not.toHaveBeenCalled();
+    expect(sidenavEl.getAttribute('aria-modal')).toBe('true');
+  });
+
   it('disables the trap again when the overlay closes', () => {
     const { fixture, host } = setup();
     host.open.set(true);
