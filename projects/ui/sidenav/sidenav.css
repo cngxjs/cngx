@@ -551,21 +551,16 @@
   }
 
   /*
-   * Mini mode: collapsed icon rail, stays in flex flow. Expand/collapse
-   * animates the width AND the compensating negative margin together, with
-   * the same duration/easing. Because the flex footprint is width + margin
-   * (e.g. 128px + -72px = 56px at every frame), the two stay in lockstep and
-   * the rail grows *over* the content without shifting it. Animating width
-   * alone would shift layout - the synced margin is what keeps it smooth.
+   * Mini mode: collapsed icon rail, stays in flex flow. Asymmetric timing -
+   * the collapsed state carries `transition: none`, so *closing* snaps
+   * instantly (the width and the label->initial content swap collapse together,
+   * with no wide-rail-then-shrink jump). The expanded rule below re-adds a
+   * transition so *opening* animates: the label reveals as the rail grows.
    */
   cngx-sidenav.cngx-sidenav--mini {
     width: var(--cngx-sidenav-mini-width, 56px);
     visibility: visible;
-    transition:
-      width var(--cngx-sidenav-transition-duration, 0.25s)
-        var(--cngx-sidenav-transition-easing, ease),
-      margin var(--cngx-sidenav-transition-duration, 0.25s)
-        var(--cngx-sidenav-transition-easing, ease);
+    transition: none;
   }
 
   /*
@@ -576,6 +571,15 @@
     width: var(--cngx-sidenav-width, 280px);
     z-index: 3;
     box-shadow: var(--cngx-sidenav-expanded-shadow, 4px 0 12px oklch(0 0 0 / 0.1));
+    /* Opening only: animate width and the compensating negative margin in
+       lockstep so the flex footprint (width + margin) stays at mini-width every
+       frame - the rail grows *over* the content without shifting it. Closing
+       uses the base rule's `transition: none` for an instant, jump-free snap. */
+    transition:
+      width var(--cngx-sidenav-transition-duration, 0.25s)
+        var(--cngx-sidenav-transition-easing, ease),
+      margin var(--cngx-sidenav-transition-duration, 0.25s)
+        var(--cngx-sidenav-transition-easing, ease);
   }
 
   cngx-sidenav.cngx-sidenav--mini.cngx-sidenav--expanded.cngx-sidenav--start {
