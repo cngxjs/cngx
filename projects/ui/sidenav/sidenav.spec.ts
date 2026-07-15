@@ -54,6 +54,27 @@ class ResponsiveHost {
   responsive = signal<string | undefined>(undefined);
 }
 
+@Component({
+  template: `
+    <cngx-sidenav-layout>
+      <cngx-sidenav position="end" [resizable]="true" [(opened)]="open">End</cngx-sidenav>
+    </cngx-sidenav-layout>
+  `,
+  imports: [CngxSidenavLayout, CngxSidenav],
+})
+class EndResizableHost {
+  open = signal(true);
+}
+
+@Component({
+  template: `<cngx-sidenav [shortcut]="shortcut()" [(opened)]="open">Nav</cngx-sidenav>`,
+  imports: [CngxSidenav],
+})
+class ShortcutHost {
+  open = signal(false);
+  shortcut = signal<string | undefined>('mod+b');
+}
+
 describe('CngxSidenav', () => {
   afterEach(() => vi.restoreAllMocks());
 
@@ -181,6 +202,27 @@ describe('CngxSidenav', () => {
     expect(host.leftOpen()).toBe(false);
   });
 
+  it('outside dismiss listens on pointerdown, not click (open-race guard)', () => {
+    const { fixture, host } = setupDual();
+    const external = document.createElement('button');
+    external.type = 'button';
+    document.body.appendChild(external);
+
+    host.leftOpen.set(true);
+    fixture.detectChanges();
+
+    // A click on an external element must NOT close the overlay - otherwise the
+    // same click that opened it would bubble to the document and self-close it.
+    external.dispatchEvent(new Event('click', { bubbles: true }));
+    expect(host.leftOpen()).toBe(true);
+
+    // A pointerdown outside the rail still dismisses (outside-click behaviour).
+    external.dispatchEvent(new Event('pointerdown', { bubbles: true }));
+    expect(host.leftOpen()).toBe(false);
+
+    external.remove();
+  });
+
   it('sets aria-hidden on overlay sidenavs', () => {
     const { fixture, host } = setupDual();
     fixture.detectChanges();
@@ -215,6 +257,21 @@ describe('CngxSidenav', () => {
     TestBed.flushEffects();
     expect(left.effectiveMode()).toBe('push');
     expect(left.opened()).toBe(true);
+  });
+
+  it('auto-opens when switching from mini to an overlay mode', () => {
+    const { fixture, left, host } = setupDual();
+    host.mode.set('mini');
+    host.leftOpen.set(false);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(left.effectiveMode()).toBe('mini');
+
+    host.mode.set('over');
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(left.effectiveMode()).toBe('over');
+    expect(host.leftOpen()).toBe(true);
   });
 
   it('auto-opens when leaving side mode with opened=false', () => {
@@ -293,6 +350,20 @@ describe('CngxSidenav mini mode', () => {
     left.handleMouseEnter();
     expect(left.expanded()).toBe(true);
     left.handleMouseLeave();
+    expect(left.expanded()).toBe(false);
+  });
+
+  it('resets expanded to false automatically when leaving mini mode', () => {
+    const { fixture, left, host } = setupDual();
+    host.mode.set('mini');
+    fixture.detectChanges();
+    left.handleMouseEnter();
+    expect(left.expanded()).toBe(true);
+
+    // Leaving mini derives expanded back to false via linkedSignal, with no
+    // imperative reset in the mode effect.
+    host.mode.set('side');
+    fixture.detectChanges();
     expect(left.expanded()).toBe(false);
   });
 
@@ -402,6 +473,29 @@ describe('CngxSidenav resizable', () => {
     fixture.detectChanges();
     expect(left.width()).toBe('320px');
   });
+
+  it('aborts resize listeners when the component is destroyed mid-drag', () => {
+    const { fixture, left, host } = setupDual();
+    host.resizable.set(true);
+    fixture.detectChanges();
+
+    const addSpy = vi.spyOn(document, 'addEventListener');
+    left.handleResizeStart({
+      preventDefault: vi.fn(),
+      clientX: 100,
+      pointerId: 1,
+      target: { setPointerCapture: vi.fn() },
+    } as unknown as PointerEvent);
+
+    const moveCall = addSpy.mock.calls.find((c) => c[0] === 'pointermove');
+    const options = moveCall?.[2] as AddEventListenerOptions | undefined;
+    expect(options?.signal).toBeDefined();
+    expect(options?.signal?.aborted).toBe(false);
+
+    // Teardown mid-drag (onUp never fired) must still remove both listeners.
+    fixture.destroy();
+    expect(options?.signal?.aborted).toBe(true);
+  });
 });
 
 describe('CngxSidenav responsive', () => {
@@ -458,5 +552,105 @@ describe('CngxSidenav responsive', () => {
     const nav = fixture.debugElement.query(By.directive(CngxSidenav)).injector.get(CngxSidenav);
     changeHandler!({ matches: false });
     expect(nav.effectiveMode()).toBe('push');
+  });
+});
+
+describe('CngxSidenav resize math and shortcut', () => {
+  beforeEach(() => {
+    // rAF only paints the CSS var mid-drag; run it synchronously so the drag is
+    // deterministic. currentWidth (the value committed on pointerup) is computed
+    // in the move handler regardless.
+    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => {
+      cb(0);
+      return 1;
+    });
+    vi.stubGlobal('cancelAnimationFrame', () => undefined);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    // restoreAllMocks does NOT undo stubGlobal - without this the synchronous
+    // requestAnimationFrame stub leaks into later spec files in the same worker
+    // and makes Angular's scheduler run reentrantly.
+    vi.unstubAllGlobals();
+  });
+
+  function startDrag(nav: CngxSidenav, clientX: number): void {
+    nav.handleResizeStart({
+      preventDefault: vi.fn(),
+      clientX,
+      pointerId: 1,
+      target: { setPointerCapture: vi.fn() },
+    } as unknown as PointerEvent);
+  }
+
+  const move = (clientX: number): void => {
+    document.dispatchEvent(new MouseEvent('pointermove', { clientX }));
+  };
+  const up = (): void => {
+    document.dispatchEvent(new MouseEvent('pointerup'));
+  };
+
+  it('clamps a start-side resize to [minWidth, maxWidth]', () => {
+    const fixture = TestBed.createComponent(DualHost);
+    fixture.componentInstance.resizable.set(true);
+    fixture.detectChanges();
+    const left = fixture.debugElement
+      .queryAll(By.directive(CngxSidenav))[0]
+      .injector.get(CngxSidenav);
+
+    // Dragging far right on a start-positioned rail widens; clamps to max (600).
+    startDrag(left, 100);
+    move(100_000);
+    up();
+    expect(left.width()).toBe('600px');
+
+    // Dragging far left clamps to min (120).
+    startDrag(left, 100);
+    move(-100_000);
+    up();
+    expect(left.width()).toBe('120px');
+  });
+
+  it('flips the delta sign for an end-positioned rail', () => {
+    const fixture = TestBed.createComponent(EndResizableHost);
+    fixture.detectChanges();
+    const end = fixture.debugElement.query(By.directive(CngxSidenav)).injector.get(CngxSidenav);
+
+    // On an end rail the delta is inverted: dragging right narrows it (clamps to
+    // min), dragging left widens it (clamps to max) - the mirror of the start rail.
+    startDrag(end, 100);
+    move(100_000);
+    up();
+    expect(end.width()).toBe('120px');
+
+    startDrag(end, 100);
+    move(-100_000);
+    up();
+    expect(end.width()).toBe('600px');
+  });
+
+  it('toggles opened via the configured mod+b keyboard shortcut', () => {
+    const fixture = TestBed.createComponent(ShortcutHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const host = fixture.componentInstance;
+    expect(host.open()).toBe(false);
+
+    // ctrl+meta both set so the combo matches regardless of the platform mod
+    // resolution (ctrl off macOS, meta on it).
+    const press = (): void => {
+      document.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'b', ctrlKey: true, metaKey: true }),
+      );
+    };
+
+    press();
+    fixture.detectChanges();
+    expect(host.open()).toBe(true);
+
+    press();
+    fixture.detectChanges();
+    expect(host.open()).toBe(false);
   });
 });

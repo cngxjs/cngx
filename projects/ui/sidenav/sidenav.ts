@@ -1,12 +1,15 @@
+import { type FocusTrap, FocusTrapFactory } from '@angular/cdk/a11y';
 import { DOCUMENT } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  DestroyRef,
   effect,
   ElementRef,
   inject,
   input,
+  linkedSignal,
   model,
   signal,
   ViewEncapsulation,
@@ -32,11 +35,18 @@ export type SidenavPosition = 'start' | 'end';
 export type SidenavMode = 'over' | 'push' | 'side' | 'mini';
 
 /**
- * Declarative sidebar component that composes drawer, focus trap,
- * scroll lock, swipe dismiss, and media query atoms internally.
+ * Declarative sidebar component for the four drawer modes (`over`,
+ * `push`, `side`, `mini`), with responsive mode switching, two-way
+ * `[(opened)]` binding, and content projection via header/footer
+ * slots.
  *
- * Supports responsive mode switching, two-way `[(opened)]` binding,
- * and content projection via header/footer slots.
+ * In overlay (`over`) mode it drives a CDK focus trap directly via
+ * `FocusTrapFactory` (the same primitive `CngxFocusTrap` wraps): focus
+ * moves into the rail on open and is restored to the opener on close.
+ * Responsive switching runs off an inline `matchMedia` listener; the
+ * shared backdrop and document scroll lock are coordinated by
+ * `CngxSidenavLayout`. It does not compose `CngxDrawer` and has no
+ * swipe-to-dismiss.
  *
  * Use inside `CngxSidenavLayout` for dual-sidebar support and
  * shared backdrop coordination.
@@ -71,6 +81,7 @@ export type SidenavMode = 'over' | 'push' | 'side' | 'mini';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
+  styleUrls: ['./sidenav.css'],
   host: {
     '[class.cngx-sidenav]': 'true',
     '[class.cngx-sidenav--start]': "position() === 'start'",
@@ -85,6 +96,7 @@ export type SidenavMode = 'over' | 'push' | 'side' | 'mini';
     '[class.cngx-sidenav--resizing]': 'resizing()',
     '[attr.aria-hidden]':
       "effectiveMode() === 'side' || effectiveMode() === 'mini' ? null : !opened()",
+    '[attr.aria-modal]': "overlayActive() ? 'true' : null",
     '[style.--cngx-sidenav-width]': 'effectiveWidth()',
     '[style.--cngx-sidenav-mini-width]': 'miniWidth()',
     role: 'complementary',
@@ -161,8 +173,16 @@ export class CngxSidenav {
   /** Two-way opened state. Supports `[(opened)]="signal"`. */
   readonly opened = model<boolean>(false);
 
-  /** Whether the mini-mode rail is currently expanded (hover or programmatic). */
-  private readonly expandedState = signal(false);
+  /**
+   * Whether the mini-mode rail is currently expanded (hover or programmatic).
+   * Derived from the mode: hover / `expand()` / `collapse()` still write it (a
+   * `linkedSignal` is writable), but leaving `mini` resets it to `false`
+   * automatically instead of an imperative reset inside the mode effect.
+   */
+  private readonly expandedState = linkedSignal<SidenavMode, boolean>({
+    source: () => this.effectiveMode(),
+    computation: (mode, prev) => (mode === 'mini' ? (prev?.value ?? false) : false),
+  });
   readonly expanded = this.expandedState.asReadonly();
 
   /** @internal Reference to host element for layout positioning. */
@@ -182,6 +202,9 @@ export class CngxSidenav {
   /** Whether this sidenav is in overlay mode (over). */
   readonly isOverlay = computed(() => this.effectiveMode() === 'over');
 
+  /** Whether the sidenav is currently a modal overlay: overlay mode and open. */
+  readonly overlayActive = computed(() => this.isOverlay() && this.opened());
+
   /** Resolved width - mini mode uses miniWidth unless expanded. */
   readonly effectiveWidth = computed(() => {
     if (this.effectiveMode() === 'mini' && !this.expandedState()) {
@@ -193,10 +216,74 @@ export class CngxSidenav {
   private readonly doc = inject(DOCUMENT);
   private readonly win = this.doc.defaultView;
 
-  /** Tracks the previous effective mode to detect transitions. */
-  private readonly prevMode = signal<SidenavMode | undefined>(undefined);
+  /**
+   * Current/previous effective-mode pair for transition detection. Mirrors the
+   * `createTransitionTracker` shape from `@cngx/core/utils`, inlined because that
+   * helper is typed to `AsyncStatus`; `SidenavMode` needs the same `linkedSignal`
+   * pattern. Replaces the hand-rolled `prevMode` signal that was `.set()` inside
+   * the mode effect.
+   */
+  private readonly modeTransition = linkedSignal<
+    SidenavMode,
+    { current: SidenavMode; previous: SidenavMode | undefined }
+  >({
+    source: () => this.effectiveMode(),
+    computation: (current, prev) => ({ current, previous: prev?.value.current }),
+    equal: (a, b) => a.current === b.current && a.previous === b.previous,
+  });
+
+  /** CDK focus trap over the host; enabled only while a modal overlay is open. */
+  private readonly focusTrap: FocusTrap;
+
+  /** Element that held focus when the overlay opened, restored to it on close. */
+  private restoreTarget: HTMLElement | null = null;
+
+  /**
+   * Set when the mode-transition effect auto-opens an overlay (a viewport-driven
+   * `side`/`mini` -> `over` switch). The focus effect reads it to enable the trap
+   * without pulling focus into the rail, since that open was not user-initiated.
+   */
+  private autoOpenInFlight = false;
+
+  /** Aborts the in-flight resize drag's document listeners (pointerup or teardown). */
+  private resizeAbort: AbortController | null = null;
 
   constructor() {
+    this.focusTrap = inject(FocusTrapFactory).create(this.elementRef.nativeElement as HTMLElement);
+
+    // Modal-overlay focus contract: on the open edge move focus into the rail
+    // and trap it; on the close edge restore focus to whatever opened it, after
+    // the DOM settles. overlayActive is the single tracked trigger; restoreTarget
+    // is a plain field, not a signal, so this stays a pure side-effect and never
+    // feeds a write back into the reactive graph.
+    let wasOverlayActive = false;
+    effect(() => {
+      const active = this.overlayActive();
+      this.focusTrap.enabled = active;
+      if (active && !wasOverlayActive) {
+        // Only pull focus into the rail when the open was user-initiated. An
+        // auto-open driven by a responsive mode switch (viewport resize) engages
+        // the trap - the rail is now modal - but must not steal focus.
+        const viaAutoOpen = this.autoOpenInFlight;
+        this.autoOpenInFlight = false;
+        if (!viaAutoOpen) {
+          const activeEl = this.doc.activeElement;
+          this.restoreTarget = activeEl instanceof HTMLElement ? activeEl : null;
+          void this.focusTrap.focusFirstTabbableElementWhenReady();
+        }
+      } else if (!active && wasOverlayActive) {
+        const target = this.restoreTarget;
+        this.restoreTarget = null;
+        queueMicrotask(() => target?.focus());
+      }
+      wasOverlayActive = active;
+    });
+
+    inject(DestroyRef).onDestroy(() => {
+      this.focusTrap.destroy();
+      this.resizeAbort?.abort();
+    });
+
     effect((onCleanup) => {
       const query = this.responsive();
       const win = this.win;
@@ -229,21 +316,23 @@ export class CngxSidenav {
       onCleanup(() => this.doc.removeEventListener('keydown', handler));
     });
 
-    // Plain signal for prev mode, linkedSignal updates eagerly before the
-    // effect reads it and the prev/current compare collapses.
+    // Residual transition side-effect, not a derivation: opened is a consumer
+    // model() the user can still toggle, so leaving an always-visible mode for an
+    // overlay mode auto-opens the rail once. Guarded by the current/previous
+    // compare so it fires only on the transition edge.
     effect(() => {
-      const mode = this.effectiveMode();
-      const prev = this.prevMode();
-      if (prev !== undefined) {
-        const alwaysVisible = (m: SidenavMode) => m === 'side' || m === 'mini';
-        if (alwaysVisible(prev) && !alwaysVisible(mode)) {
-          this.opened.set(true);
-        }
-        if (prev === 'mini' && mode !== 'mini') {
-          this.expandedState.set(false);
-        }
+      const { current, previous } = this.modeTransition();
+      if (previous === undefined || current === previous) {
+        return;
       }
-      this.prevMode.set(mode);
+      const alwaysVisible = (m: SidenavMode) => m === 'side' || m === 'mini';
+      if (alwaysVisible(previous) && !alwaysVisible(current)) {
+        // Flag only overlay auto-opens so the focus effect skips the focus-move.
+        // `over` is the only overlay mode; a `push` auto-open never raises
+        // overlayActive, so it must not leave the flag stuck for a later open.
+        this.autoOpenInFlight = current === 'over';
+        this.opened.set(true);
+      }
     });
   }
 
@@ -270,7 +359,7 @@ export class CngxSidenav {
   }
 
   /** @internal Close only if in overlay mode (for Escape key, click-outside). */
-  closeIfOverlay(): void {
+  protected closeIfOverlay(): void {
     if (this.isOverlay()) {
       this.close();
     }
@@ -301,9 +390,9 @@ export class CngxSidenav {
   }
 
   /** @internal Parse a CSS px value to a number. */
-  widthPx = computed(() => Number.parseInt(this.width(), 10) || 280);
-  minWidthPx = computed(() => Number.parseInt(this.minWidth(), 10) || 120);
-  maxWidthPx = computed(() => Number.parseInt(this.maxWidth(), 10) || 600);
+  protected readonly widthPx = computed(() => Number.parseInt(this.width(), 10) || 280);
+  protected readonly minWidthPx = computed(() => Number.parseInt(this.minWidth(), 10) || 120);
+  protected readonly maxWidthPx = computed(() => Number.parseInt(this.maxWidth(), 10) || 600);
 
   /** @internal */
   handleResizeStart(e: PointerEvent): void {
@@ -323,6 +412,12 @@ export class CngxSidenav {
     let currentWidth = startWidth;
     let rafId = 0;
 
+    // One controller per drag removes both document listeners in a single abort:
+    // on pointerup below, and - critically - if the component is torn down
+    // mid-drag (the onDestroy hook aborts this.resizeAbort).
+    const controller = new AbortController();
+    this.resizeAbort = controller;
+
     const onMove = (ev: PointerEvent): void => {
       const delta = isEnd ? startX - ev.clientX : ev.clientX - startX;
       currentWidth = Math.round(Math.max(min, Math.min(max, startWidth + delta)));
@@ -340,11 +435,11 @@ export class CngxSidenav {
       this.resizingState.set(false);
       // Single CD on pointerup - model catches up with the DOM.
       this.width.set(`${currentWidth}px`);
-      this.doc.removeEventListener('pointermove', onMove);
-      this.doc.removeEventListener('pointerup', onUp);
+      controller.abort();
+      this.resizeAbort = null;
     };
 
-    this.doc.addEventListener('pointermove', onMove);
-    this.doc.addEventListener('pointerup', onUp);
+    this.doc.addEventListener('pointermove', onMove, { signal: controller.signal });
+    this.doc.addEventListener('pointerup', onUp, { signal: controller.signal });
   }
 }
