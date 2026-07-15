@@ -54,6 +54,27 @@ class ResponsiveHost {
   responsive = signal<string | undefined>(undefined);
 }
 
+@Component({
+  template: `
+    <cngx-sidenav-layout>
+      <cngx-sidenav position="end" [resizable]="true" [(opened)]="open">End</cngx-sidenav>
+    </cngx-sidenav-layout>
+  `,
+  imports: [CngxSidenavLayout, CngxSidenav],
+})
+class EndResizableHost {
+  open = signal(true);
+}
+
+@Component({
+  template: `<cngx-sidenav [shortcut]="shortcut()" [(opened)]="open">Nav</cngx-sidenav>`,
+  imports: [CngxSidenav],
+})
+class ShortcutHost {
+  open = signal(false);
+  shortcut = signal<string | undefined>('mod+b');
+}
+
 describe('CngxSidenav', () => {
   afterEach(() => vi.restoreAllMocks());
 
@@ -531,5 +552,99 @@ describe('CngxSidenav responsive', () => {
     const nav = fixture.debugElement.query(By.directive(CngxSidenav)).injector.get(CngxSidenav);
     changeHandler!({ matches: false });
     expect(nav.effectiveMode()).toBe('push');
+  });
+});
+
+describe('CngxSidenav resize math and shortcut', () => {
+  beforeEach(() => {
+    // rAF only paints the CSS var mid-drag; run it synchronously so the drag is
+    // deterministic. currentWidth (the value committed on pointerup) is computed
+    // in the move handler regardless.
+    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => {
+      cb(0);
+      return 1;
+    });
+    vi.stubGlobal('cancelAnimationFrame', () => undefined);
+  });
+
+  afterEach(() => vi.restoreAllMocks());
+
+  function startDrag(nav: CngxSidenav, clientX: number): void {
+    nav.handleResizeStart({
+      preventDefault: vi.fn(),
+      clientX,
+      pointerId: 1,
+      target: { setPointerCapture: vi.fn() },
+    } as unknown as PointerEvent);
+  }
+
+  const move = (clientX: number): void => {
+    document.dispatchEvent(new MouseEvent('pointermove', { clientX }));
+  };
+  const up = (): void => {
+    document.dispatchEvent(new MouseEvent('pointerup'));
+  };
+
+  it('clamps a start-side resize to [minWidth, maxWidth]', () => {
+    const fixture = TestBed.createComponent(DualHost);
+    fixture.componentInstance.resizable.set(true);
+    fixture.detectChanges();
+    const left = fixture.debugElement
+      .queryAll(By.directive(CngxSidenav))[0]
+      .injector.get(CngxSidenav);
+
+    // Dragging far right on a start-positioned rail widens; clamps to max (600).
+    startDrag(left, 100);
+    move(100_000);
+    up();
+    expect(left.width()).toBe('600px');
+
+    // Dragging far left clamps to min (120).
+    startDrag(left, 100);
+    move(-100_000);
+    up();
+    expect(left.width()).toBe('120px');
+  });
+
+  it('flips the delta sign for an end-positioned rail', () => {
+    const fixture = TestBed.createComponent(EndResizableHost);
+    fixture.detectChanges();
+    const end = fixture.debugElement.query(By.directive(CngxSidenav)).injector.get(CngxSidenav);
+
+    // On an end rail the delta is inverted: dragging right narrows it (clamps to
+    // min), dragging left widens it (clamps to max) - the mirror of the start rail.
+    startDrag(end, 100);
+    move(100_000);
+    up();
+    expect(end.width()).toBe('120px');
+
+    startDrag(end, 100);
+    move(-100_000);
+    up();
+    expect(end.width()).toBe('600px');
+  });
+
+  it('toggles opened via the configured mod+b keyboard shortcut', () => {
+    const fixture = TestBed.createComponent(ShortcutHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const host = fixture.componentInstance;
+    expect(host.open()).toBe(false);
+
+    // ctrl+meta both set so the combo matches regardless of the platform mod
+    // resolution (ctrl off macOS, meta on it).
+    const press = (): void => {
+      document.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'b', ctrlKey: true, metaKey: true }),
+      );
+    };
+
+    press();
+    fixture.detectChanges();
+    expect(host.open()).toBe(true);
+
+    press();
+    fixture.detectChanges();
+    expect(host.open()).toBe(false);
   });
 });
