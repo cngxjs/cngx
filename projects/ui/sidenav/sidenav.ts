@@ -89,11 +89,18 @@ export type SidenavMode = 'over' | 'push' | 'side' | 'mini';
   // listeners replace the sidenav's instant ones so a sweep-through never
   // expands. The directive is composed unconditionally - its listeners arm in
   // every mode - but only `mini` reads its `active()` signal (see hoverSource);
-  // non-mini modes gate the debounced result to false downstream. The dwell is
-  // tunable per instance via the forwarded [enterDelay]/[leaveDelay] inputs and
-  // app-wide via CNGX_HOVER_INTENT_DEFAULTS (provided from the config below);
-  // un-set, the atom's 120/0 literals apply so behaviour stays unchanged.
-  hostDirectives: [{ directive: CngxHoverIntent, inputs: ['enterDelay', 'leaveDelay'] }],
+  // non-mini modes gate the debounced result to false downstream. The mini dwell
+  // is tunable per instance via [expandDelay]/[collapseDelay] - rail-scoped
+  // aliases of the atom's enterDelay/leaveDelay, named for what they do on a rail
+  // ("expand after N ms of hover", "collapse after N ms off") - and app-wide via
+  // CNGX_HOVER_INTENT_DEFAULTS (provided from the config below); un-set, the
+  // atom's 120/0 literals apply so behaviour stays unchanged.
+  hostDirectives: [
+    {
+      directive: CngxHoverIntent,
+      inputs: ['enterDelay: expandDelay', 'leaveDelay: collapseDelay'],
+    },
+  ],
   // Element-injector provider (not viewProviders): the composed CngxHoverIntent
   // resolves CNGX_HOVER_INTENT_DEFAULTS from the host element injector, so the
   // config-resolved dwell reaches the atom. Un-configured, cfg.hover is the

@@ -96,11 +96,11 @@ class UnboundHost {}
 class BoundWidthHost {}
 
 @Component({
-  template: `<cngx-sidenav mode="mini" [enterDelay]="enterDelay()">Nav</cngx-sidenav>`,
+  template: `<cngx-sidenav mode="mini" [expandDelay]="expandDelay()">Nav</cngx-sidenav>`,
   imports: [CngxSidenav],
 })
 class MiniDwellHost {
-  enterDelay = signal(200);
+  expandDelay = signal(200);
 }
 
 @Component({
@@ -849,7 +849,7 @@ describe('CngxSidenav tunable dwell', () => {
     return { nav, el: nav.elementRef.nativeElement };
   }
 
-  it('per-instance [enterDelay] tunes the mini expand dwell', () => {
+  it('per-instance [expandDelay] tunes the mini expand dwell', () => {
     const { nav, el } = miniNav(MiniDwellHost);
 
     el.dispatchEvent(new PointerEvent('pointerenter'));
@@ -878,11 +878,11 @@ describe('CngxSidenav tunable dwell', () => {
     expect(nav.expanded()).toBe(false);
   });
 
-  it('per-instance [enterDelay] still wins over withSidenavHoverDwell', () => {
+  it('per-instance [expandDelay] still wins over withSidenavHoverDwell', () => {
     TestBed.configureTestingModule({
       providers: [provideSidenavConfig(withSidenavHoverDwell({ enterDelay: 250 }))],
     });
-    // MiniDwellHost binds [enterDelay]=200, which must beat the config's 250.
+    // MiniDwellHost binds [expandDelay]=200, which must beat the config's 250.
     const { nav, el } = miniNav(MiniDwellHost);
 
     el.dispatchEvent(new PointerEvent('pointerenter'));
