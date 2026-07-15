@@ -83,10 +83,13 @@ export type SidenavMode = 'over' | 'push' | 'side' | 'mini';
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   styleUrls: ['./sidenav.css'],
-  // The mini expand-on-hover is debounced by composing CngxHoverIntent: its own
-  // pointerenter/pointerleave listeners replace the sidenav's instant ones, so a
-  // sweep-through never expands. No inputs are forwarded - the atom's 120/0 dwell
-  // defaults apply and the sidenav input surface stays untouched.
+  // Debounced expand-on-hover: CngxHoverIntent's pointerenter/pointerleave
+  // listeners replace the sidenav's instant ones so a sweep-through never
+  // expands. The directive is composed unconditionally - its listeners arm in
+  // every mode - but only `mini` reads its `active()` signal (see hoverSource);
+  // non-mini modes gate the debounced result to false downstream. No inputs are
+  // forwarded: the atom's 120/0 dwell defaults apply and the input surface stays
+  // untouched.
   hostDirectives: [CngxHoverIntent],
   host: {
     '[class.cngx-sidenav]': 'true',
