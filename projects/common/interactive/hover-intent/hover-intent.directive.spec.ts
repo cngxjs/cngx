@@ -2,7 +2,7 @@ import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { CngxHoverIntent } from './hover-intent.directive';
+import { CNGX_HOVER_INTENT_DEFAULTS, CngxHoverIntent } from './hover-intent.directive';
 
 @Component({
   template: `
@@ -119,5 +119,69 @@ describe('CngxHoverIntent', () => {
 
     vi.advanceTimersByTime(500);
     expect(fixture.componentInstance.edges).toEqual([]);
+  });
+});
+
+@Component({
+  template: `<div cngxHoverIntent #hi="cngxHoverIntent">Hover</div>`,
+  imports: [CngxHoverIntent],
+})
+class UnboundHost {}
+
+@Component({
+  template: `<div cngxHoverIntent [enterDelay]="300" #hi="cngxHoverIntent">Hover</div>`,
+  imports: [CngxHoverIntent],
+})
+class BoundEnterHost {}
+
+describe('CngxHoverIntent DI defaults', () => {
+  beforeEach(() => vi.useFakeTimers());
+  afterEach(() => vi.useRealTimers());
+
+  function setup(host: typeof UnboundHost | typeof BoundEnterHost, defaults?: CngxHoverIntentDefaultsInput) {
+    TestBed.configureTestingModule({
+      imports: [host],
+      providers: defaults
+        ? [{ provide: CNGX_HOVER_INTENT_DEFAULTS, useValue: defaults }]
+        : [],
+    });
+    const fixture = TestBed.createComponent(host);
+    fixture.detectChanges();
+    const el = fixture.debugElement.query(By.directive(CngxHoverIntent));
+    return { fixture, dir: el.injector.get(CngxHoverIntent), host: el.nativeElement as HTMLElement };
+  }
+
+  type CngxHoverIntentDefaultsInput = { enterDelay?: number; leaveDelay?: number };
+
+  it('sources un-bound enterDelay/leaveDelay from CNGX_HOVER_INTENT_DEFAULTS', () => {
+    const { dir } = setup(UnboundHost, { enterDelay: 250, leaveDelay: 150 });
+    expect(dir.enterDelay()).toBe(250);
+    expect(dir.leaveDelay()).toBe(150);
+  });
+
+  it('settles active on the injected enterDelay when un-bound', () => {
+    const { dir, host } = setup(UnboundHost, { enterDelay: 250 });
+    host.dispatchEvent(new PointerEvent('pointerenter'));
+    vi.advanceTimersByTime(249);
+    expect(dir.active()).toBe(false);
+    vi.advanceTimersByTime(1);
+    expect(dir.active()).toBe(true);
+  });
+
+  it('a bound [enterDelay] still wins over the injected default', () => {
+    const { dir } = setup(BoundEnterHost, { enterDelay: 250 });
+    expect(dir.enterDelay()).toBe(300);
+  });
+
+  it('a partial default keeps the literal for the unset key', () => {
+    const { dir } = setup(UnboundHost, { enterDelay: 200 });
+    expect(dir.enterDelay()).toBe(200);
+    expect(dir.leaveDelay()).toBe(0);
+  });
+
+  it('falls back to the 120/0 literals when the token is absent', () => {
+    const { dir } = setup(UnboundHost);
+    expect(dir.enterDelay()).toBe(120);
+    expect(dir.leaveDelay()).toBe(0);
   });
 });
