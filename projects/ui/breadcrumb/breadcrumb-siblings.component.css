@@ -43,6 +43,9 @@
 }
 
 .cngx-breadcrumb__siblings-menu {
+  /* Derive the dropdown-row spacing from the density scale on the rows
+     themselves (they own these tokens; the popover chrome does not);
+     --cngx-space-* inherits in from a root [data-density]. */
   --cngx-breadcrumb-siblings-menu-padding: var(--cngx-space-xs, 0.25rem) 0;
   margin: 0;
   padding: var(--cngx-breadcrumb-siblings-menu-padding, 0.25rem 0);
