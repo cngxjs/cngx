@@ -74,6 +74,7 @@ export type SidenavMode = 'over' | 'push' | 'side' | 'mini';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
+  styleUrls: ['./sidenav.css'],
   host: {
     '[class.cngx-sidenav]': 'true',
     '[class.cngx-sidenav--start]': "position() === 'start'",
