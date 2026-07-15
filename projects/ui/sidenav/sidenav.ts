@@ -279,8 +279,10 @@ export class CngxSidenav {
       wasOverlayActive = active;
     });
 
-    inject(DestroyRef).onDestroy(() => this.focusTrap.destroy());
-    inject(DestroyRef).onDestroy(() => this.resizeAbort?.abort());
+    inject(DestroyRef).onDestroy(() => {
+      this.focusTrap.destroy();
+      this.resizeAbort?.abort();
+    });
 
     effect((onCleanup) => {
       const query = this.responsive();
@@ -357,7 +359,7 @@ export class CngxSidenav {
   }
 
   /** @internal Close only if in overlay mode (for Escape key, click-outside). */
-  closeIfOverlay(): void {
+  protected closeIfOverlay(): void {
     if (this.isOverlay()) {
       this.close();
     }
@@ -388,9 +390,9 @@ export class CngxSidenav {
   }
 
   /** @internal Parse a CSS px value to a number. */
-  widthPx = computed(() => Number.parseInt(this.width(), 10) || 280);
-  minWidthPx = computed(() => Number.parseInt(this.minWidth(), 10) || 120);
-  maxWidthPx = computed(() => Number.parseInt(this.maxWidth(), 10) || 600);
+  protected readonly widthPx = computed(() => Number.parseInt(this.width(), 10) || 280);
+  protected readonly minWidthPx = computed(() => Number.parseInt(this.minWidth(), 10) || 120);
+  protected readonly maxWidthPx = computed(() => Number.parseInt(this.maxWidth(), 10) || 600);
 
   /** @internal */
   handleResizeStart(e: PointerEvent): void {
