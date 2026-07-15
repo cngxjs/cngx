@@ -555,7 +555,7 @@
    * No width transition - expand/collapse is instant to prevent
    * content shift (negative margin + animating width = layout jank).
    */
-  cngx-sidenav.cngx-sidenav--mini.cngx-sidenav--open {
+  cngx-sidenav.cngx-sidenav--mini {
     width: var(--cngx-sidenav-mini-width, 56px);
     visibility: visible;
     transition: none;
@@ -565,17 +565,17 @@
    * Expanded: grow to full width but compensate with negative margin
    * so it overlays content without shifting the flex layout.
    */
-  cngx-sidenav.cngx-sidenav--mini.cngx-sidenav--open.cngx-sidenav--expanded {
+  cngx-sidenav.cngx-sidenav--mini.cngx-sidenav--expanded {
     width: var(--cngx-sidenav-width, 280px);
     z-index: 3;
     box-shadow: var(--cngx-sidenav-expanded-shadow, 4px 0 12px oklch(0 0 0 / 0.1));
   }
 
-  cngx-sidenav.cngx-sidenav--mini.cngx-sidenav--open.cngx-sidenav--expanded.cngx-sidenav--start {
+  cngx-sidenav.cngx-sidenav--mini.cngx-sidenav--expanded.cngx-sidenav--start {
     margin-right: calc(var(--cngx-sidenav-mini-width, 56px) - var(--cngx-sidenav-width, 280px));
   }
 
-  cngx-sidenav.cngx-sidenav--mini.cngx-sidenav--open.cngx-sidenav--expanded.cngx-sidenav--end {
+  cngx-sidenav.cngx-sidenav--mini.cngx-sidenav--expanded.cngx-sidenav--end {
     margin-left: calc(var(--cngx-sidenav-mini-width, 56px) - var(--cngx-sidenav-width, 280px));
   }
 
