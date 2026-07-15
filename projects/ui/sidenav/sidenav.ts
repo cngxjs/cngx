@@ -89,10 +89,11 @@ export type SidenavMode = 'over' | 'push' | 'side' | 'mini';
   // listeners replace the sidenav's instant ones so a sweep-through never
   // expands. The directive is composed unconditionally - its listeners arm in
   // every mode - but only `mini` reads its `active()` signal (see hoverSource);
-  // non-mini modes gate the debounced result to false downstream. No inputs are
-  // forwarded: the atom's 120/0 dwell defaults apply and the input surface stays
-  // untouched.
-  hostDirectives: [CngxHoverIntent],
+  // non-mini modes gate the debounced result to false downstream. The dwell is
+  // tunable per instance via the forwarded [enterDelay]/[leaveDelay] inputs and
+  // app-wide via CNGX_HOVER_INTENT_DEFAULTS (provided from the config below);
+  // un-set, the atom's 120/0 literals apply so behaviour stays unchanged.
+  hostDirectives: [{ directive: CngxHoverIntent, inputs: ['enterDelay', 'leaveDelay'] }],
   host: {
     '[class.cngx-sidenav]': 'true',
     '[class.cngx-sidenav--start]': "position() === 'start'",

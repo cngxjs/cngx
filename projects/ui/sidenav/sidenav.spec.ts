@@ -91,6 +91,14 @@ class UnboundHost {}
 })
 class BoundWidthHost {}
 
+@Component({
+  template: `<cngx-sidenav mode="mini" [enterDelay]="enterDelay()">Nav</cngx-sidenav>`,
+  imports: [CngxSidenav],
+})
+class MiniDwellHost {
+  enterDelay = signal(200);
+}
+
 describe('CngxSidenav', () => {
   afterEach(() => vi.restoreAllMocks());
 
@@ -814,5 +822,30 @@ describe('CngxSidenav config cascade', () => {
     expect(nav.minWidth()).toBe('120px');
     expect(nav.maxWidth()).toBe('600px');
     expect(nav.responsive()).toBeUndefined();
+  });
+});
+
+describe('CngxSidenav tunable dwell', () => {
+  beforeEach(() => vi.useFakeTimers());
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
+
+  function miniNav<T>(host: Type<T>): { nav: CngxSidenav; el: HTMLElement } {
+    const fixture = TestBed.createComponent(host);
+    fixture.detectChanges();
+    const nav = fixture.debugElement.query(By.directive(CngxSidenav)).injector.get(CngxSidenav);
+    return { nav, el: nav.elementRef.nativeElement };
+  }
+
+  it('per-instance [enterDelay] tunes the mini expand dwell', () => {
+    const { nav, el } = miniNav(MiniDwellHost);
+
+    el.dispatchEvent(new PointerEvent('pointerenter'));
+    vi.advanceTimersByTime(199);
+    expect(nav.expanded()).toBe(false);
+    vi.advanceTimersByTime(1);
+    expect(nav.expanded()).toBe(true);
   });
 });
