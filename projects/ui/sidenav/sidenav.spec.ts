@@ -238,6 +238,21 @@ describe('CngxSidenav', () => {
     expect(left.opened()).toBe(true);
   });
 
+  it('auto-opens when switching from mini to an overlay mode', () => {
+    const { fixture, left, host } = setupDual();
+    host.mode.set('mini');
+    host.leftOpen.set(false);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(left.effectiveMode()).toBe('mini');
+
+    host.mode.set('over');
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(left.effectiveMode()).toBe('over');
+    expect(host.leftOpen()).toBe(true);
+  });
+
   it('auto-opens when leaving side mode with opened=false', () => {
     const { fixture, left, host } = setupDual();
     host.mode.set('side');

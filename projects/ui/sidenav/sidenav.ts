@@ -208,8 +208,21 @@ export class CngxSidenav {
   private readonly doc = inject(DOCUMENT);
   private readonly win = this.doc.defaultView;
 
-  /** Tracks the previous effective mode to detect transitions. */
-  private readonly prevMode = signal<SidenavMode | undefined>(undefined);
+  /**
+   * Current/previous effective-mode pair for transition detection. Mirrors the
+   * `createTransitionTracker` shape from `@cngx/core/utils`, inlined because that
+   * helper is typed to `AsyncStatus`; `SidenavMode` needs the same `linkedSignal`
+   * pattern. Replaces the hand-rolled `prevMode` signal that was `.set()` inside
+   * the mode effect.
+   */
+  private readonly modeTransition = linkedSignal<
+    SidenavMode,
+    { current: SidenavMode; previous: SidenavMode | undefined }
+  >({
+    source: () => this.effectiveMode(),
+    computation: (current, prev) => ({ current, previous: prev?.value.current }),
+    equal: (a, b) => a.current === b.current && a.previous === b.previous,
+  });
 
   /** CDK focus trap over the host; enabled only while a modal overlay is open. */
   private readonly focusTrap: FocusTrap;
@@ -279,18 +292,19 @@ export class CngxSidenav {
       onCleanup(() => this.doc.removeEventListener('keydown', handler));
     });
 
-    // Plain signal for prev mode, linkedSignal updates eagerly before the
-    // effect reads it and the prev/current compare collapses.
+    // Residual transition side-effect, not a derivation: opened is a consumer
+    // model() the user can still toggle, so leaving an always-visible mode for an
+    // overlay mode auto-opens the rail once. Guarded by the current/previous
+    // compare so it fires only on the transition edge.
     effect(() => {
-      const mode = this.effectiveMode();
-      const prev = this.prevMode();
-      if (prev !== undefined) {
-        const alwaysVisible = (m: SidenavMode) => m === 'side' || m === 'mini';
-        if (alwaysVisible(prev) && !alwaysVisible(mode)) {
-          this.opened.set(true);
-        }
+      const { current, previous } = this.modeTransition();
+      if (previous === undefined || current === previous) {
+        return;
       }
-      this.prevMode.set(mode);
+      const alwaysVisible = (m: SidenavMode) => m === 'side' || m === 'mini';
+      if (alwaysVisible(previous) && !alwaysVisible(current)) {
+        this.opened.set(true);
+      }
     });
   }
 
