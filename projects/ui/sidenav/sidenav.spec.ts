@@ -567,7 +567,13 @@ describe('CngxSidenav resize math and shortcut', () => {
     vi.stubGlobal('cancelAnimationFrame', () => undefined);
   });
 
-  afterEach(() => vi.restoreAllMocks());
+  afterEach(() => {
+    vi.restoreAllMocks();
+    // restoreAllMocks does NOT undo stubGlobal - without this the synchronous
+    // requestAnimationFrame stub leaks into later spec files in the same worker
+    // and makes Angular's scheduler run reentrantly.
+    vi.unstubAllGlobals();
+  });
 
   function startDrag(nav: CngxSidenav, clientX: number): void {
     nav.handleResizeStart({
