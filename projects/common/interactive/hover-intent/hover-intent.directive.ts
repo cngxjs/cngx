@@ -1,4 +1,44 @@
-import { DestroyRef, Directive, inject, input, output, signal } from '@angular/core';
+import {
+  DestroyRef,
+  Directive,
+  inject,
+  InjectionToken,
+  input,
+  output,
+  signal,
+} from '@angular/core';
+
+/**
+ * Optional app-wide defaults for `CngxHoverIntent`'s dwell timings. Provide it
+ * to move the `enterDelay` / `leaveDelay` fallbacks an organism composes the
+ * atom with, without touching the per-instance input surface. Every key is
+ * optional - an unset key keeps the atom's literal (120 / 0).
+ *
+ * @category common/interactive
+ * @since 0.1.0
+ */
+export interface CngxHoverIntentDefaults {
+  /** Fallback for `enterDelay` (ms) when the input is not bound. */
+  readonly enterDelay?: number;
+  /** Fallback for `leaveDelay` (ms) when the input is not bound. */
+  readonly leaveDelay?: number;
+}
+
+/**
+ * Optional DI fallback for `CngxHoverIntent`'s `enterDelay` / `leaveDelay`
+ * input defaults. Resolution is `bound input -> injected default -> literal`
+ * (120 / 0). A hostDirective input default cannot be overridden by the host
+ * that composes it, so this token is the layered extension point any
+ * hover-to-reveal organism uses to set app-wide dwell defaults. `optional`, so
+ * standalone `[cngxHoverIntent]` stays byte-identical when the token is absent.
+ *
+ * @category common/interactive
+ * @relatedTo CngxHoverIntent
+ * @since 0.1.0
+ */
+export const CNGX_HOVER_INTENT_DEFAULTS = new InjectionToken<CngxHoverIntentDefaults>(
+  'CNGX_HOVER_INTENT_DEFAULTS',
+);
 
 /**
  * Debounced hover-intent primitive. Turns raw pointer enter/leave into a
@@ -48,10 +88,17 @@ import { DestroyRef, Directive, inject, input, output, signal } from '@angular/c
   },
 })
 export class CngxHoverIntent {
+  /**
+   * Optional app-wide dwell defaults. Declared first so the input initialisers
+   * below can source their fallback from it. Absent by default - standalone
+   * `[cngxHoverIntent]` then keeps the 120 / 0 literals.
+   */
+  private readonly defaults = inject(CNGX_HOVER_INTENT_DEFAULTS, { optional: true });
+
   /** ms of continuous hover before `active` settles to `true`. */
-  readonly enterDelay = input<number>(120);
+  readonly enterDelay = input<number>(this.defaults?.enterDelay ?? 120);
   /** ms of continuous un-hover before `active` settles back to `false`. */
-  readonly leaveDelay = input<number>(0);
+  readonly leaveDelay = input<number>(this.defaults?.leaveDelay ?? 0);
 
   private readonly intentState = signal(false);
   /** Debounced hover-intent state. `true` only after `enterDelay` ms of continuous hover. */

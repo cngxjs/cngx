@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, type Type } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -6,6 +6,12 @@ import type { SidenavMode } from './sidenav';
 import { CngxSidenav } from './sidenav';
 import { CngxSidenavLayout } from './sidenav-layout';
 import { CngxSidenavContent } from './sidenav-content';
+import { provideSidenavConfig } from './config/provide-sidenav-config';
+import {
+  withSidenavDimensions,
+  withSidenavResponsive,
+  withSidenavHoverDwell,
+} from './config/features';
 
 @Component({
   template: `
@@ -76,6 +82,32 @@ class ShortcutHost {
   open = signal(false);
   shortcut = signal<string | undefined>('mod+b');
 }
+
+@Component({
+  template: `<cngx-sidenav>Nav</cngx-sidenav>`,
+  imports: [CngxSidenav],
+})
+class UnboundHost {}
+
+@Component({
+  template: `<cngx-sidenav [width]="'500px'">Nav</cngx-sidenav>`,
+  imports: [CngxSidenav],
+})
+class BoundWidthHost {}
+
+@Component({
+  template: `<cngx-sidenav mode="mini" [expandDelay]="expandDelay()">Nav</cngx-sidenav>`,
+  imports: [CngxSidenav],
+})
+class MiniDwellHost {
+  expandDelay = signal(200);
+}
+
+@Component({
+  template: `<cngx-sidenav mode="mini">Nav</cngx-sidenav>`,
+  imports: [CngxSidenav],
+})
+class MiniUnboundHost {}
 
 describe('CngxSidenav', () => {
   afterEach(() => vi.restoreAllMocks());
@@ -736,5 +768,127 @@ describe('CngxSidenav resize math and shortcut', () => {
     press();
     fixture.detectChanges();
     expect(host.open()).toBe(false);
+  });
+});
+
+describe('CngxSidenav config cascade', () => {
+  // The config-driven responsive query fires the matchMedia effect during
+  // detectChanges; jsdom has no matchMedia, so stub it like the responsive suite.
+  beforeEach(() => {
+    (globalThis as Record<string, unknown>)['matchMedia'] = vi.fn().mockImplementation((query: string) => ({
+      matches: false,
+      media: query,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }));
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    delete (globalThis as Record<string, unknown>)['matchMedia'];
+  });
+
+  function getNav<T>(host: Type<T>): { fixture: ReturnType<typeof TestBed.createComponent<T>>; nav: CngxSidenav } {
+    const fixture = TestBed.createComponent(host);
+    fixture.detectChanges();
+    const nav = fixture.debugElement.query(By.directive(CngxSidenav)).injector.get(CngxSidenav);
+    return { fixture, nav };
+  }
+
+  it('resolves un-bound width/miniWidth/responsive from provideSidenavConfig', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideSidenavConfig(
+          withSidenavDimensions({ width: '320px', miniWidth: '72px' }),
+          withSidenavResponsive('(min-width: 900px)'),
+        ),
+      ],
+    });
+    const { nav } = getNav(UnboundHost);
+
+    expect(nav.width()).toBe('320px');
+    expect(nav.miniWidth()).toBe('72px');
+    expect(nav.responsive()).toBe('(min-width: 900px)');
+  });
+
+  it('per-instance [width] binding still wins over the config default', () => {
+    TestBed.configureTestingModule({
+      providers: [provideSidenavConfig(withSidenavDimensions({ width: '320px' }))],
+    });
+    const { nav } = getNav(BoundWidthHost);
+
+    expect(nav.width()).toBe('500px');
+  });
+
+  it('un-configured sidenav keeps the byte-identical defaults', () => {
+    const { nav } = getNav(UnboundHost);
+
+    expect(nav.width()).toBe('280px');
+    expect(nav.miniWidth()).toBe('56px');
+    expect(nav.minWidth()).toBe('120px');
+    expect(nav.maxWidth()).toBe('600px');
+    expect(nav.responsive()).toBeUndefined();
+  });
+});
+
+describe('CngxSidenav tunable dwell', () => {
+  beforeEach(() => vi.useFakeTimers());
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
+
+  function miniNav<T>(host: Type<T>): { nav: CngxSidenav; el: HTMLElement } {
+    const fixture = TestBed.createComponent(host);
+    fixture.detectChanges();
+    const nav = fixture.debugElement.query(By.directive(CngxSidenav)).injector.get(CngxSidenav);
+    return { nav, el: nav.elementRef.nativeElement };
+  }
+
+  it('per-instance [expandDelay] tunes the mini expand dwell', () => {
+    const { nav, el } = miniNav(MiniDwellHost);
+
+    el.dispatchEvent(new PointerEvent('pointerenter'));
+    vi.advanceTimersByTime(199);
+    expect(nav.expanded()).toBe(false);
+    vi.advanceTimersByTime(1);
+    expect(nav.expanded()).toBe(true);
+  });
+
+  it('withSidenavHoverDwell drives the app-wide mini dwell (enter and leave)', () => {
+    TestBed.configureTestingModule({
+      providers: [provideSidenavConfig(withSidenavHoverDwell({ enterDelay: 250, leaveDelay: 150 }))],
+    });
+    const { nav, el } = miniNav(MiniUnboundHost);
+
+    el.dispatchEvent(new PointerEvent('pointerenter'));
+    vi.advanceTimersByTime(249);
+    expect(nav.expanded()).toBe(false);
+    vi.advanceTimersByTime(1);
+    expect(nav.expanded()).toBe(true);
+
+    el.dispatchEvent(new PointerEvent('pointerleave'));
+    vi.advanceTimersByTime(149);
+    expect(nav.expanded()).toBe(true);
+    vi.advanceTimersByTime(1);
+    expect(nav.expanded()).toBe(false);
+  });
+
+  it('per-instance [expandDelay] still wins over withSidenavHoverDwell', () => {
+    TestBed.configureTestingModule({
+      providers: [provideSidenavConfig(withSidenavHoverDwell({ enterDelay: 250 }))],
+    });
+    // MiniDwellHost binds [expandDelay]=200, which must beat the config's 250.
+    const { nav, el } = miniNav(MiniDwellHost);
+
+    el.dispatchEvent(new PointerEvent('pointerenter'));
+    vi.advanceTimersByTime(199);
+    expect(nav.expanded()).toBe(false);
+    vi.advanceTimersByTime(1);
+    expect(nav.expanded()).toBe(true);
   });
 });

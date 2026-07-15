@@ -106,7 +106,12 @@
    */
   @property --cngx-sidenav-width {
     syntax: '<length>';
-    inherits: false;
+    /* inherits so .cngx-sidenav__body (a descendant) reads the host's
+       configured width for its min-width reserve; inherits:false made the body
+       fall back to the 280px initial and overflow any non-280 rail. The value
+       is static (the `width` property animates between states, not this
+       custom property), so inheriting carries no animation cost. */
+    inherits: true;
     initial-value: 280px;
   }
 
@@ -157,7 +162,10 @@
    */
   @property --cngx-sidenav-mini-width {
     syntax: '<length>';
-    inherits: false;
+    /* inherits for the same reason as --cngx-sidenav-width: the collapsed
+       .cngx-sidenav__body reads it for min-width and must see the host's
+       configured mini width, not the 56px initial. */
+    inherits: true;
     initial-value: 56px;
   }
 
@@ -543,11 +551,13 @@
   }
 
   /*
-   * Mini mode: collapsed icon rail, stays in flex flow.
-   * No width transition - expand/collapse is instant to prevent
-   * content shift (negative margin + animating width = layout jank).
+   * Mini mode: collapsed icon rail, stays in flex flow. Asymmetric timing -
+   * the collapsed state carries `transition: none`, so *closing* snaps
+   * instantly (the width and the label->initial content swap collapse together,
+   * with no wide-rail-then-shrink jump). The expanded rule below re-adds a
+   * transition so *opening* animates: the label reveals as the rail grows.
    */
-  cngx-sidenav.cngx-sidenav--mini.cngx-sidenav--open {
+  cngx-sidenav.cngx-sidenav--mini {
     width: var(--cngx-sidenav-mini-width, 56px);
     visibility: visible;
     transition: none;
@@ -557,17 +567,26 @@
    * Expanded: grow to full width but compensate with negative margin
    * so it overlays content without shifting the flex layout.
    */
-  cngx-sidenav.cngx-sidenav--mini.cngx-sidenav--open.cngx-sidenav--expanded {
+  cngx-sidenav.cngx-sidenav--mini.cngx-sidenav--expanded {
     width: var(--cngx-sidenav-width, 280px);
     z-index: 3;
     box-shadow: var(--cngx-sidenav-expanded-shadow, 4px 0 12px oklch(0 0 0 / 0.1));
+    /* Opening only: animate width and the compensating negative margin in
+       lockstep so the flex footprint (width + margin) stays at mini-width every
+       frame - the rail grows *over* the content without shifting it. Closing
+       uses the base rule's `transition: none` for an instant, jump-free snap. */
+    transition:
+      width var(--cngx-sidenav-transition-duration, 0.25s)
+        var(--cngx-sidenav-transition-easing, ease),
+      margin var(--cngx-sidenav-transition-duration, 0.25s)
+        var(--cngx-sidenav-transition-easing, ease);
   }
 
-  cngx-sidenav.cngx-sidenav--mini.cngx-sidenav--open.cngx-sidenav--expanded.cngx-sidenav--start {
+  cngx-sidenav.cngx-sidenav--mini.cngx-sidenav--expanded.cngx-sidenav--start {
     margin-right: calc(var(--cngx-sidenav-mini-width, 56px) - var(--cngx-sidenav-width, 280px));
   }
 
-  cngx-sidenav.cngx-sidenav--mini.cngx-sidenav--open.cngx-sidenav--expanded.cngx-sidenav--end {
+  cngx-sidenav.cngx-sidenav--mini.cngx-sidenav--expanded.cngx-sidenav--end {
     margin-left: calc(var(--cngx-sidenav-mini-width, 56px) - var(--cngx-sidenav-width, 280px));
   }
 
