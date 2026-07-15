@@ -1,6 +1,6 @@
 # Observer System
 
-Low-level observer directives wrapping native browser APIs. Use for reactive size tracking, viewport visibility, and media query changes. All observers expose state as Angular signals.
+Low-level observer directives wrapping native browser APIs. Use for reactive size tracking, viewport visibility, and media query changes. All observers expose state as Angular signals. For media queries there is also an inject-form factory - `injectMediaQuery` - for use where no host element exists.
 
 ## Import
 
@@ -9,6 +9,7 @@ import {
   CngxIntersectionObserver,
   CngxResizeObserver,
   CngxMediaQuery,
+  injectMediaQuery,
 } from '@cngx/common/layout';
 ```
 
@@ -250,6 +251,55 @@ Implement with template directives:
 @if (mobile.matches()) { Mobile }
 @else if (tablet.matches()) { Tablet }
 @else { Desktop }
+```
+
+## injectMediaQuery
+
+The inject-form of `CngxMediaQuery`. Returns a reactive `Signal<boolean>` that reflects whether the host window matches a CSS media query - **without needing a host element**. Use it where the directive has nowhere to attach: inside a route guard, a store, a `computed()`, or any injection context that reacts to a viewport or preference query. For host-bound templates, prefer the `[cngxMediaQuery]` directive; for pure styling, prefer CSS `@media` / `@container`.
+
+Same lifecycle as the directive: seeds from `MediaQueryList.matches`, updates on the `change` event, and removes the listener via `DestroyRef` when the injection scope is destroyed. SSR-safe - in non-DOM environments (no `defaultView` or no `matchMedia`) it returns a static `false` signal and wires no listener, so the same code runs on the server without throwing. Returns a `Signal<boolean>`, never an `Observable`.
+
+### In a component field
+
+```typescript
+import { Component, computed } from '@angular/core';
+import { injectMediaQuery } from '@cngx/common/layout';
+
+@Component({ /* … */ })
+export class Dashboard {
+  private readonly compact = injectMediaQuery('(max-width: 640px)');
+  protected readonly layout = computed(() => (this.compact() ? 'stacked' : 'grid'));
+}
+```
+
+### In a store (no host element)
+
+```typescript
+import { Injectable, computed } from '@angular/core';
+import { injectMediaQuery } from '@cngx/common/layout';
+
+@Injectable({ providedIn: 'root' })
+export class ViewportStore {
+  private readonly mobile = injectMediaQuery('(max-width: 639px)');
+  private readonly tablet = injectMediaQuery('(min-width: 640px) and (max-width: 1023px)');
+  readonly deviceClass = computed(() =>
+    this.mobile() ? 'mobile' : this.tablet() ? 'tablet' : 'desktop',
+  );
+}
+```
+
+### In a route guard
+
+```typescript
+import { inject } from '@angular/core';
+import { Router, type CanActivateFn } from '@angular/router';
+import { injectMediaQuery } from '@cngx/common/layout';
+
+// Send narrow viewports to the mobile-optimised route.
+export const desktopOnlyGuard: CanActivateFn = () => {
+  const compact = injectMediaQuery('(max-width: 640px)');
+  return compact() ? inject(Router).parseUrl('/m/dashboard') : true;
+};
 ```
 
 ## Accessibility
