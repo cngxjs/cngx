@@ -120,7 +120,10 @@ export class CngxSidenavLayout {
       }
     });
 
-    fromEvent<MouseEvent>(doc, 'click')
+    // Dismiss on pointerdown, not click: an external open-trigger's pointerdown
+    // fires before the click that flips opened(), so hasOverlay() is still false
+    // here at that point and the same-gesture open cannot self-close.
+    fromEvent<PointerEvent>(doc, 'pointerdown')
       .pipe(takeUntilDestroyed())
       .subscribe((e) => {
         if (!this.hasOverlay()) {

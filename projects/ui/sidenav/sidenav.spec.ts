@@ -181,6 +181,27 @@ describe('CngxSidenav', () => {
     expect(host.leftOpen()).toBe(false);
   });
 
+  it('outside dismiss listens on pointerdown, not click (open-race guard)', () => {
+    const { fixture, host } = setupDual();
+    const external = document.createElement('button');
+    external.type = 'button';
+    document.body.appendChild(external);
+
+    host.leftOpen.set(true);
+    fixture.detectChanges();
+
+    // A click on an external element must NOT close the overlay - otherwise the
+    // same click that opened it would bubble to the document and self-close it.
+    external.dispatchEvent(new Event('click', { bubbles: true }));
+    expect(host.leftOpen()).toBe(true);
+
+    // A pointerdown outside the rail still dismisses (outside-click behaviour).
+    external.dispatchEvent(new Event('pointerdown', { bubbles: true }));
+    expect(host.leftOpen()).toBe(false);
+
+    external.remove();
+  });
+
   it('sets aria-hidden on overlay sidenavs', () => {
     const { fixture, host } = setupDual();
     fixture.detectChanges();
