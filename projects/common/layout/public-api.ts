@@ -7,6 +7,7 @@ export { CngxDrawerPanel, type DrawerMode } from './drawer/drawer-panel.directiv
 export { CngxDrawerContent } from './drawer/drawer-content.directive';
 export { CngxIntersectionObserver } from './observers/intersection-observer.directive';
 export { CngxMediaQuery } from './observers/media-query.directive';
+export { injectMediaQuery } from './observers/inject-media-query';
 export { CngxResizeObserver } from './observers/resize-observer.directive';
 export { CngxScrollLock } from './scroll/scroll-lock.directive';
 export { CngxSkeleton } from './text/skeleton.directive';

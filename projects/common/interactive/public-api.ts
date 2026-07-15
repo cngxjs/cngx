@@ -31,6 +31,7 @@ export { CngxNavLink } from './nav/nav-link.directive';
 export { CngxNavBadge, type NavBadgeVariant } from './nav/nav-badge.directive';
 export { CngxDisclosure } from './nav/disclosure.directive';
 export { CngxExpandable } from './expandable/expandable.directive';
+export { CngxHoverIntent } from './hover-intent/hover-intent.directive';
 export {
   CNGX_CONTROL_VALUE,
   type CngxControlValue,
