@@ -1,8 +1,10 @@
+import { type FocusTrap, FocusTrapFactory } from '@angular/cdk/a11y';
 import { DOCUMENT } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  DestroyRef,
   effect,
   ElementRef,
   inject,
@@ -85,6 +87,7 @@ export type SidenavMode = 'over' | 'push' | 'side' | 'mini';
     '[class.cngx-sidenav--resizing]': 'resizing()',
     '[attr.aria-hidden]':
       "effectiveMode() === 'side' || effectiveMode() === 'mini' ? null : !opened()",
+    '[attr.aria-modal]': "overlayActive() ? 'true' : null",
     '[style.--cngx-sidenav-width]': 'effectiveWidth()',
     '[style.--cngx-sidenav-mini-width]': 'miniWidth()',
     role: 'complementary',
@@ -182,6 +185,9 @@ export class CngxSidenav {
   /** Whether this sidenav is in overlay mode (over). */
   readonly isOverlay = computed(() => this.effectiveMode() === 'over');
 
+  /** Whether the sidenav is currently a modal overlay: overlay mode and open. */
+  readonly overlayActive = computed(() => this.isOverlay() && this.opened());
+
   /** Resolved width - mini mode uses miniWidth unless expanded. */
   readonly effectiveWidth = computed(() => {
     if (this.effectiveMode() === 'mini' && !this.expandedState()) {
@@ -196,7 +202,38 @@ export class CngxSidenav {
   /** Tracks the previous effective mode to detect transitions. */
   private readonly prevMode = signal<SidenavMode | undefined>(undefined);
 
+  /** CDK focus trap over the host; enabled only while a modal overlay is open. */
+  private readonly focusTrap: FocusTrap;
+
+  /** Element that held focus when the overlay opened, restored to it on close. */
+  private restoreTarget: HTMLElement | null = null;
+
   constructor() {
+    this.focusTrap = inject(FocusTrapFactory).create(this.elementRef.nativeElement as HTMLElement);
+
+    // Modal-overlay focus contract: on the open edge move focus into the rail
+    // and trap it; on the close edge restore focus to whatever opened it, after
+    // the DOM settles. overlayActive is the single tracked trigger; restoreTarget
+    // is a plain field, not a signal, so this stays a pure side-effect and never
+    // feeds a write back into the reactive graph.
+    let wasOverlayActive = false;
+    effect(() => {
+      const active = this.overlayActive();
+      this.focusTrap.enabled = active;
+      if (active && !wasOverlayActive) {
+        const activeEl = this.doc.activeElement;
+        this.restoreTarget = activeEl instanceof HTMLElement ? activeEl : null;
+        void this.focusTrap.focusFirstTabbableElementWhenReady();
+      } else if (!active && wasOverlayActive) {
+        const target = this.restoreTarget;
+        this.restoreTarget = null;
+        queueMicrotask(() => target?.focus());
+      }
+      wasOverlayActive = active;
+    });
+
+    inject(DestroyRef).onDestroy(() => this.focusTrap.destroy());
+
     effect((onCleanup) => {
       const query = this.responsive();
       const win = this.win;
