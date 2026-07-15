@@ -18,6 +18,7 @@ import { CngxSidenavContent } from './sidenav-content';
         [resizable]="resizable()"
         [ariaLabel]="ariaLabel()"
         [miniWidth]="miniWidth()"
+        [expandOnHover]="expandOnHover()"
       >
         Left content
       </cngx-sidenav>
@@ -35,6 +36,7 @@ class DualHost {
   resizable = signal(false);
   ariaLabel = signal<string | undefined>(undefined);
   miniWidth = signal('56px');
+  expandOnHover = signal(true);
 }
 
 @Component({
@@ -291,7 +293,24 @@ describe('CngxSidenav', () => {
 });
 
 describe('CngxSidenav mini mode', () => {
-  afterEach(() => vi.restoreAllMocks());
+  beforeEach(() => vi.useFakeTimers());
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
+
+  // Debounced expand-on-hover routes through the CngxHoverIntent hostDirective,
+  // whose pointerenter/pointerleave listeners settle `active` after enterDelay
+  // (120ms) / leaveDelay (0ms). Drive it with real pointer events under fake
+  // timers, mirroring the hover-intent directive's own specs.
+  const ENTER_DELAY = 120;
+
+  function enter(el: HTMLElement): void {
+    el.dispatchEvent(new PointerEvent('pointerenter'));
+  }
+  function leave(el: HTMLElement): void {
+    el.dispatchEvent(new PointerEvent('pointerleave'));
+  }
 
   function setupDual() {
     const fixture = TestBed.createComponent(DualHost);
@@ -335,21 +354,85 @@ describe('CngxSidenav mini mode', () => {
     expect(left.expanded()).toBe(false);
   });
 
-  it('handleMouseEnter sets expanded to true in mini mode', () => {
+  it('expands only after a deliberate hover dwell in mini mode', () => {
     const { fixture, left, host } = setupDual();
     host.mode.set('mini');
     fixture.detectChanges();
-    left.handleMouseEnter();
+    const el = left.elementRef.nativeElement;
+    enter(el);
+    vi.advanceTimersByTime(ENTER_DELAY - 1);
+    expect(left.expanded()).toBe(false);
+    vi.advanceTimersByTime(1);
     expect(left.expanded()).toBe(true);
   });
 
-  it('handleMouseLeave sets expanded to false in mini mode', () => {
+  it('collapses on a debounced pointer leave in mini mode', () => {
     const { fixture, left, host } = setupDual();
     host.mode.set('mini');
     fixture.detectChanges();
-    left.handleMouseEnter();
+    const el = left.elementRef.nativeElement;
+    enter(el);
+    vi.advanceTimersByTime(ENTER_DELAY);
     expect(left.expanded()).toBe(true);
-    left.handleMouseLeave();
+    leave(el);
+    vi.advanceTimersByTime(1);
+    expect(left.expanded()).toBe(false);
+  });
+
+  it('does not expand on a sweep-through (leave before enterDelay)', () => {
+    const { fixture, left, host } = setupDual();
+    host.mode.set('mini');
+    fixture.detectChanges();
+    const el = left.elementRef.nativeElement;
+    enter(el);
+    vi.advanceTimersByTime(80);
+    leave(el);
+    vi.advanceTimersByTime(500);
+    expect(left.expanded()).toBe(false);
+  });
+
+  it('ignores hover when expandOnHover=false, but expand() still works', () => {
+    const { fixture, left, host } = setupDual();
+    host.mode.set('mini');
+    host.expandOnHover.set(false);
+    fixture.detectChanges();
+    const el = left.elementRef.nativeElement;
+    enter(el);
+    vi.advanceTimersByTime(500);
+    expect(left.expanded()).toBe(false);
+    left.expand();
+    expect(left.expanded()).toBe(true);
+  });
+
+  it('clears the pending hover timer on destroy (no late expand)', () => {
+    const { fixture, left, host } = setupDual();
+    host.mode.set('mini');
+    fixture.detectChanges();
+    const el = left.elementRef.nativeElement;
+    enter(el);
+    vi.advanceTimersByTime(80);
+    fixture.destroy();
+    vi.advanceTimersByTime(500);
+    expect(left.expanded()).toBe(false);
+  });
+
+  it('lets a pointer edge override a prior programmatic expand when expandOnHover=true', () => {
+    const { fixture, left, host } = setupDual();
+    host.mode.set('mini');
+    fixture.detectChanges();
+    const el = left.elementRef.nativeElement;
+
+    // Programmatic expand holds while the debounced hover has not changed.
+    left.expand();
+    expect(left.expanded()).toBe(true);
+
+    // A hover dwell then a leave re-derive expanded from the debounced hover,
+    // overriding the prior programmatic set - hover is the source of truth.
+    enter(el);
+    vi.advanceTimersByTime(ENTER_DELAY);
+    expect(left.expanded()).toBe(true);
+    leave(el);
+    vi.advanceTimersByTime(1);
     expect(left.expanded()).toBe(false);
   });
 
@@ -357,7 +440,9 @@ describe('CngxSidenav mini mode', () => {
     const { fixture, left, host } = setupDual();
     host.mode.set('mini');
     fixture.detectChanges();
-    left.handleMouseEnter();
+    const el = left.elementRef.nativeElement;
+    enter(el);
+    vi.advanceTimersByTime(ENTER_DELAY);
     expect(left.expanded()).toBe(true);
 
     // Leaving mini derives expanded back to false via linkedSignal, with no
@@ -380,7 +465,8 @@ describe('CngxSidenav mini mode', () => {
     host.mode.set('mini');
     host.width.set('300px');
     fixture.detectChanges();
-    left.handleMouseEnter();
+    enter(left.elementRef.nativeElement);
+    vi.advanceTimersByTime(ENTER_DELAY);
     expect(left.effectiveWidth()).toBe('300px');
   });
 
@@ -400,10 +486,8 @@ describe('CngxSidenav mini mode', () => {
     const leftEl = fixture.debugElement.queryAll(By.directive(CngxSidenav))[0]
       .nativeElement as HTMLElement;
     expect(leftEl.classList.contains('cngx-sidenav--expanded')).toBe(false);
-    const left = fixture.debugElement
-      .queryAll(By.directive(CngxSidenav))[0]
-      .injector.get(CngxSidenav);
-    left.handleMouseEnter();
+    enter(leftEl);
+    vi.advanceTimersByTime(ENTER_DELAY);
     fixture.detectChanges();
     expect(leftEl.classList.contains('cngx-sidenav--expanded')).toBe(true);
   });
