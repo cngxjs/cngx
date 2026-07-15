@@ -35,11 +35,18 @@ export type SidenavPosition = 'start' | 'end';
 export type SidenavMode = 'over' | 'push' | 'side' | 'mini';
 
 /**
- * Declarative sidebar component that composes drawer, focus trap,
- * scroll lock, swipe dismiss, and media query atoms internally.
+ * Declarative sidebar component for the four drawer modes (`over`,
+ * `push`, `side`, `mini`), with responsive mode switching, two-way
+ * `[(opened)]` binding, and content projection via header/footer
+ * slots.
  *
- * Supports responsive mode switching, two-way `[(opened)]` binding,
- * and content projection via header/footer slots.
+ * In overlay (`over`) mode it drives a CDK focus trap directly via
+ * `FocusTrapFactory` (the same primitive `CngxFocusTrap` wraps): focus
+ * moves into the rail on open and is restored to the opener on close.
+ * Responsive switching runs off an inline `matchMedia` listener; the
+ * shared backdrop and document scroll lock are coordinated by
+ * `CngxSidenavLayout`. It does not compose `CngxDrawer` and has no
+ * swipe-to-dismiss.
  *
  * Use inside `CngxSidenavLayout` for dual-sidebar support and
  * shared backdrop coordination.
