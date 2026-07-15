@@ -106,7 +106,12 @@
    */
   @property --cngx-sidenav-width {
     syntax: '<length>';
-    inherits: false;
+    /* inherits so .cngx-sidenav__body (a descendant) reads the host's
+       configured width for its min-width reserve; inherits:false made the body
+       fall back to the 280px initial and overflow any non-280 rail. The value
+       is static (the `width` property animates between states, not this
+       custom property), so inheriting carries no animation cost. */
+    inherits: true;
     initial-value: 280px;
   }
 
@@ -157,7 +162,10 @@
    */
   @property --cngx-sidenav-mini-width {
     syntax: '<length>';
-    inherits: false;
+    /* inherits for the same reason as --cngx-sidenav-width: the collapsed
+       .cngx-sidenav__body reads it for min-width and must see the host's
+       configured mini width, not the 56px initial. */
+    inherits: true;
     initial-value: 56px;
   }
 
