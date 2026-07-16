@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxDelta: Sentiment vs. direction',
   subtitle:
-    'The same <code>-2.1%</code> reads red under <code>higher-is-better</code> and green under <code>lower-is-better</code> — while the arrow keeps pointing down. Colour is never the only signal.',
+    'The same <code>-2.1%</code> reads red under <code>higher-is-better</code> and green under <code>lower-is-better</code>, while the arrow keeps pointing down. Colour is never the only signal.',
   description:
     'Sentiment is derived from direction × polarity in the computed graph. The arrow tracks raw direction; the colour and the screen-reader word track sentiment, so the two can diverge for KPIs where a drop is good (churn, latency, error rate).',
   level: 'atom',

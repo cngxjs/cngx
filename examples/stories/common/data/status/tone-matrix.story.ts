@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxStatus: Tone matrix',
   subtitle:
-    'Five semantic tones, each with a distinct glyph inside the dot — colour is never the only signal. The visible label carries the meaning; the dot is decorative.',
+    'Five semantic tones, each with a distinct glyph inside the dot, so colour is never the only signal. The visible label carries the meaning; the dot is decorative.',
   description:
     'A semantic health indicator distinct from CngxBadge / CngxChip / CngxTag. Every tone pairs a colour with a tone glyph (✓ ! ✕ i •) so a colour-blind reader still tells the states apart. Set live for a status that changes in place.',
   level: 'atom',
