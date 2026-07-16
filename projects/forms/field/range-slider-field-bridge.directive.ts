@@ -1,8 +1,8 @@
-import { computed, Directive, effect, inject, signal, untracked } from '@angular/core';
+import { computed, Directive, inject, signal } from '@angular/core';
 
 import { CngxRangeSliderTrack } from '@cngx/common/interactive';
 
-import { writeFieldValue } from './field-sync';
+import { createFieldSync } from './field-sync';
 import { CngxFormFieldPresenter } from './form-field-presenter';
 import { CNGX_FORM_FIELD_CONTROL } from './form-field.token';
 import type { CngxFormFieldControl } from './models';
@@ -86,36 +86,16 @@ export class CngxRangeSliderFieldBridge implements CngxFormFieldControl {
   protected readonly ariaReadonly = computed(() => (this.presenter?.readonly() ? true : null));
 
   constructor() {
-    // Field -> Slider. Tuple equality so the inverse sync's write does not bounce.
-    effect(() => {
-      const presenter = this.presenter;
-      if (!presenter) {
-        return;
-      }
-      const fieldValue = presenter.fieldState().value();
-      const next = toTuple(fieldValue);
-      if (!next) {
-        return;
-      }
-      const current = untracked(() => this.slider.value());
-      if (!tupleEq(current, next)) {
-        this.slider.value.set(next);
-      }
-    });
-
-    // Slider -> Field.
-    effect(() => {
-      const presenter = this.presenter;
-      if (!presenter) {
-        return;
-      }
-      const fieldRef = presenter.fieldState();
-      const sliderValue = this.slider.value();
-      const current = untracked(() => fieldRef.value());
-      if (Array.isArray(current) && tupleEq(current as readonly number[], sliderValue)) {
-        return;
-      }
-      writeFieldValue(fieldRef, [...sliderValue]);
+    // A range slider always asserts its own tuple: a non-tuple field is skipped
+    // on read but still seeded on write. `toFieldValue` spreads so the field
+    // owns a fresh array. The coerceFromField fallback is unreachable -
+    // skipFieldValue guarantees a valid tuple by the time it runs.
+    createFieldSync<[number, number]>({
+      componentValue: this.slider.value,
+      valueEquals: tupleEq,
+      coerceFromField: (v) => toTuple(v) ?? [0, 0],
+      skipFieldValue: (v) => toTuple(v) === null,
+      toFieldValue: (v) => [...v],
     });
   }
 
