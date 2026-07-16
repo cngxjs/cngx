@@ -111,7 +111,45 @@ Manages text truncation with expand/collapse state detection. Applies `-webkit-l
 - `isClamped` is only updated when collapsed - expanded state preserves the last known value.
 - Consumer is responsible for the toggle button and `aria-expanded` attribute.
 
+## injectQueryParamSync
+
+Bidirectional sync between a caller-owned `WritableSignal<T>` and a named URL query param. The URL wins on initial load (deep-link / shareable-link intent); after that the signal is the source and reflects outward. Re-hydrates on browser back/forward, dev-warns once and no-ops when `@angular/router` is absent.
+
+Call it in an injection context (a component field/constructor, a directive) on a signal you own:
+
+```typescript
+import { Component, signal } from '@angular/core';
+import { injectQueryParamSync } from '@cngx/common/layout';
+
+@Component({ /* ... */ })
+export class PanelComponent {
+  readonly panelOpen = signal(false);
+
+  constructor() {
+    // Persist panelOpen to ?panel=open, restore it on load and back/forward.
+    injectQueryParamSync(this.panelOpen, { param: 'panel' });
+  }
+}
+```
+
+The default codec is boolean (`true` -> `open`, absence -> `false`). Pass an explicit codec for other value shapes (a `null` return removes the param):
+
+```typescript
+injectQueryParamSync(this.tab, {
+  param: 'tab',
+  serialize: (v) => v ?? null,
+  deserialize: (raw) => raw ?? 'overview',
+});
+```
+
+### Notes
+
+- Loop-safe: reflect writes run in `untracked()` and are skipped when the serialized value is unchanged, so there is no signal<->URL feedback loop.
+- `param` accepts a `Signal<string>`; a bound rename migrates the key in a single navigate (old key removed, current value written under the new key).
+- `onSyncError(err)` receives `router.navigate` rejections - no silent failures.
+- Returns `void`; it wires effects on the caller's signal and tears them down with the injection context.
+
 ## Other Exports
 
 `CngxIntersectionObserver`, `CngxResizeObserver`, `CngxScrollLock`, `CngxBackdrop`,
-`CngxMediaQuery`, `CngxDrawer`, `CngxDrawerPanel`, `CngxDrawerContent`, `CngxInfiniteScroll`
+`CngxMediaQuery`, `injectMediaQuery`, `CngxDrawer`, `CngxDrawerPanel`, `CngxDrawerContent`, `CngxInfiniteScroll`

@@ -67,7 +67,8 @@ Key features:
 - **Resize:** Optional drag handle with min/max constraints
 - **Keyboard:** Escape closes overlay, configurable global shortcut via `[shortcut]`
 - **RTL-aware:** `position="start"` / `"end"` flip logically in RTL
-- **App-wide defaults:** `CNGX_SIDENAV_CONFIG` cascade for dimensions, responsive query, shortcut, and hover dwell (see [Configuration](#configuration))
+- **Deep-linking:** persist open state to a URL query param via `[cngxSidenavRouterSync]` (see [Deep-linking](#deep-linking-router-sync))
+- **App-wide defaults:** `CNGX_SIDENAV_CONFIG` cascade for dimensions, responsive query, shortcut, hover dwell, and router-sync param (see [Configuration](#configuration))
 
 ## Configuration
 
@@ -107,6 +108,7 @@ bootstrapApplication(AppComponent, {
 | `withSidenavResponsive(query)` | Default responsive media query |
 | `withSidenavShortcut(combo)` | Default toggle shortcut |
 | `withSidenavHoverDwell({ enterDelay?, leaveDelay? })` | Mini expand/collapse dwell (ms) |
+| `withSidenavRouterSync({ param })` | Default deep-link query-param key |
 
 Read the resolved config in an injection context with `injectSidenavConfig()`. Scope overrides to a sub-tree with `provideSidenavConfigAt(...)` in a component's `viewProviders`.
 
@@ -119,6 +121,35 @@ In `mini` mode the rail expands only after the pointer rests for `expandDelay` m
 ```
 
 Defaults are `expandDelay` 120ms and `collapseDelay` 0ms (instant collapse). The app-wide default is `withSidenavHoverDwell({ enterDelay, leaveDelay })`; per-instance `[expandDelay]` / `[collapseDelay]` win over it.
+
+## Deep-linking (router sync)
+
+Add `[cngxSidenavRouterSync]` to a `<cngx-sidenav>` to persist its open state in a URL query param. Opening writes `?nav=open`, an initial `?nav=open` restores it open on load, closing removes the param, and browser back/forward re-hydrates it. The directive reaches the rail through the `CNGX_SIDENAV` contract token and delegates to `injectQueryParamSync` from `@cngx/common/layout`.
+
+```typescript
+import {
+  CngxSidenav,
+  CngxSidenavLayout,
+  CngxSidenavContent,
+  CngxSidenavRouterSync,
+} from '@cngx/ui';
+```
+
+```html
+<cngx-sidenav cngxSidenavRouterSync position="start" mode="over" [(opened)]="navOpen">
+  ...
+</cngx-sidenav>
+```
+
+The query-param key defaults to `nav`. Override it per instance with `[param]`, or move the app-wide default through the config cascade:
+
+```typescript
+import { provideSidenavConfig, withSidenavRouterSync } from '@cngx/ui';
+
+provideSidenavConfig(withSidenavRouterSync({ param: 'menu' }));
+```
+
+Resolution order for the key: per-instance `[param]` beats `withSidenavRouterSync({ param })`, which beats the `nav` literal. `router.navigate` rejections surface on the directive's `(syncError)` output. Without `@angular/router` the directive dev-warns once and no-ops.
 
 ## Accessibility
 
