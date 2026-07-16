@@ -4,6 +4,7 @@
 
 export { CngxSidenavLayout } from './sidenav-layout';
 export { CngxSidenav, type SidenavPosition, type SidenavMode } from './sidenav';
+export { CNGX_SIDENAV, type CngxSidenavContract } from './sidenav-token';
 export { CngxSidenavContent } from './sidenav-content';
 export { CngxSidenavHeader } from './sidenav-header';
 export { CngxSidenavFooter } from './sidenav-footer';

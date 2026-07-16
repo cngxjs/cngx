@@ -18,6 +18,7 @@ import { matchesKeyCombo, parseKeyCombo } from '@cngx/core/utils';
 import { CNGX_HOVER_INTENT_DEFAULTS, CngxHoverIntent } from '@cngx/common/interactive';
 
 import { injectSidenavConfig } from './config/inject-sidenav-config';
+import { CNGX_SIDENAV } from './sidenav-token';
 
 /**
  * Logical position - flips in RTL.
@@ -107,6 +108,7 @@ export type SidenavMode = 'over' | 'push' | 'side' | 'mini';
   // 120/0 default, byte-identical to the atom's own literals.
   providers: [
     { provide: CNGX_HOVER_INTENT_DEFAULTS, useFactory: () => injectSidenavConfig().hover ?? {} },
+    { provide: CNGX_SIDENAV, useExisting: CngxSidenav },
   ],
   host: {
     '[class.cngx-sidenav]': 'true',
