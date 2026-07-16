@@ -15,9 +15,10 @@
  * (spread-merged per key); `responsive` and `shortcut` are flat top-level
  * scalars.
  *
- * Only the six §3-tracked inputs plus the dwell are cascaded - `ariaLabel`,
- * `position`, and `mode` stay per-instance only, since they describe an
- * individual rail rather than an app-wide default.
+ * The cascaded keys are the dimension inputs, the mini hover dwell, the
+ * `responsive` and `shortcut` defaults, and the router-sync `param`.
+ * `ariaLabel`, `position`, and `mode` stay per-instance only, since they
+ * describe an individual rail rather than an app-wide default.
  *
  * @category ui/sidenav
  * @since 0.1.0
@@ -41,9 +42,8 @@ export interface CngxSidenavConfig {
 
   /**
    * Mini expand-on-hover dwell, forwarded to the composed `CngxHoverIntent`
-   * hostDirective. A one-level nested sub-tree. Wired in Phase 2 via
-   * `withSidenavHoverDwell(...)`; the shape is declared here so the reducer and
-   * deep-merge cover it from the start.
+   * hostDirective. A one-level nested sub-tree. Wired via
+   * `withSidenavHoverDwell(...)`.
    */
   readonly hover?: {
     /** Delay in ms before the mini rail expands on pointer enter. */
