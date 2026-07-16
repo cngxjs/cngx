@@ -23,7 +23,7 @@ export const STORY: DemoSpec = {
     'CngxMetric',
     'CngxDelta',
   ],
-  template: `<cngx-stat aria-live="polite" style="max-width:220px">
+  template: `<cngx-stat [live]="'polite'" style="max-width:220px">
     <span cngxStatLabel class="demo-card-label">Revenue</span>
     <cngx-metric cngxStatValue [value]="1.2" unit="M EUR" />
     <cngx-delta cngxStatDelta [value]="5.3" />
