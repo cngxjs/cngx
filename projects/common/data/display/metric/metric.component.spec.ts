@@ -34,6 +34,11 @@ describe('CngxMetric', () => {
     expect(el.querySelector('.cngx-metric__value')!.textContent!.trim()).toContain('1,234');
   });
 
+  it('exposes its accessible name via role=img', () => {
+    const { el } = setup();
+    expect(el.getAttribute('role')).toBe('img');
+  });
+
   it('displays em-dash for null', () => {
     const { fixture, el, host } = setup();
     host.value.set(null);
