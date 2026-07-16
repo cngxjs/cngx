@@ -51,6 +51,11 @@ import {
   encapsulation: ViewEncapsulation.None,
   host: {
     class: 'cngx-metric',
+    // role=img makes the host a single labelled graphic so AT announces the
+    // curated `aria-label` (value + unit) instead of the raw text on an
+    // otherwise role=generic custom element, where aria-label is unreliably
+    // exposed. Mirrors CngxDelta / CngxTrend.
+    role: 'img',
     '[attr.aria-label]': 'accessibleValue()',
   },
   template: `
