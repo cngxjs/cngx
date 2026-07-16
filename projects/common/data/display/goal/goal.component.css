@@ -27,12 +27,15 @@
 @layer cngx.tokens {
   /**
    * Attained fraction, as a `<percentage>`. The component binds this inline
-   * from the clamped value (e.g. `73%`); authors normally leave it alone.
+   * on the host from the clamped value (e.g. `73%`); it must inherit so the
+   * value reaches the descendant `.cngx-goal__fill` that consumes it (a
+   * `inherits: false` here would pin the fill to the `0%` initial). Authors
+   * normally leave it alone.
    * @group Layout
    */
   @property --cngx-goal-fill {
     syntax: '<percentage>';
-    inherits: false;
+    inherits: true;
     initial-value: 0%;
   }
 
