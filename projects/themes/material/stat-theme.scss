@@ -1,5 +1,3 @@
-@use '@angular/material' as mat;
-
 // Material bridge for CngxStat. The molecule is purely structural: it owns no
 // colour or typography tokens (every visual comes from the atoms projected
 // into its slots - CngxMetric, CngxDelta), and its two gap tokens
