@@ -35,6 +35,8 @@ export { CngxAsync, type CngxAsyncContext } from './async/async.directive';
 
 export { CngxMetric } from './display/metric/metric.component';
 export { CngxTrend } from './display/trend/trend.component';
+export { CngxDelta } from './display/delta/delta.component';
+export { type DeltaPolarity, type DeltaMode } from './display/shared/delta-format';
 
 export {
   injectRecycler,

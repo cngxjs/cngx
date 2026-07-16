@@ -1,0 +1,148 @@
+/**
+ * @overview
+ * Default visuals for `CngxDelta`. The host carries `.cngx-delta` - an
+ * inline-flex pair of a direction arrow and the formatted magnitude. Three
+ * sentiment modifiers pin the colour to the semantic intent; unlike
+ * `CngxTrend` the colour follows sentiment, not raw direction, so a
+ * `lower-is-better` drop renders green while the arrow still points down.
+ *
+ * **Sentiment modifiers**
+ *
+ * - `--positive` - good change, success-coded
+ * - `--negative` - bad change, danger-coded
+ * - `--neutral` - flat or polarity-disabled, muted
+ *
+ * **Inheritance**
+ *
+ * - `--cngx-delta-positive-color` -> `--cngx-color-success`
+ * - `--cngx-delta-negative-color` -> `--cngx-color-danger`
+ * - `--cngx-delta-neutral-color` - leaf neutral token, swaps in dark mode
+ *
+ * **Dark mode**
+ *
+ * Three hooks lift the sentiment colours to the foundation's dark variant -
+ * the neutral text gains lightness, the sentiment colours shed chroma and
+ * gain L to track the foundation's dark success and danger tones:
+ *
+ * - `prefers-color-scheme: dark`
+ * - `[data-color-scheme="dark"]` / `.dark` class
+ * - `[data-color-scheme="light"]` / `.light` class (explicit pin)
+ */
+
+@layer cngx.tokens {
+  /**
+   * Gap between the arrow glyph and the delta magnitude.
+   * @group Layout
+   */
+  @property --cngx-delta-gap {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 2px;
+  }
+
+  /**
+   * Font-size of the delta label.
+   * @group Typography
+   */
+  @property --cngx-delta-size {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0.8125rem;
+  }
+
+  /**
+   * Font-weight of the delta label.
+   * @group Typography
+   */
+  @property --cngx-delta-weight {
+    syntax: '<number>';
+    inherits: true;
+    initial-value: 500;
+  }
+
+  /**
+   * Colour of the `.cngx-delta--neutral` modifier - flat or
+   * polarity-disabled.
+   * @group Variant / Neutral
+   */
+  @property --cngx-delta-neutral-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.36 0.02 290);
+  }
+
+  /**
+   * Colour of the `.cngx-delta--positive` modifier. Falls back to
+   * `--cngx-color-success`.
+   * @group Variant / Positive
+   * @see [[--cngx-color-success]]
+   */
+  @property --cngx-delta-positive-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.65 0.18 145);
+  }
+
+  /**
+   * Colour of the `.cngx-delta--negative` modifier. Falls back to
+   * `--cngx-color-danger`.
+   * @group Variant / Negative
+   * @see [[--cngx-color-danger]]
+   */
+  @property --cngx-delta-negative-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.65 0.22 25);
+  }
+
+  /* Dark-mode swap. Neutral text lifts to the foundation's muted-text
+   * lightness; the sentiment colours lift L slightly and shed C to match the
+   * foundation's dark-mode success/danger tones. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-delta-neutral-color: oklch(0.7 0.01 290);
+      --cngx-delta-positive-color: oklch(0.78 0.16 145);
+      --cngx-delta-negative-color: oklch(0.75 0.18 25);
+    }
+  }
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-delta-neutral-color: oklch(0.7 0.01 290);
+    --cngx-delta-positive-color: oklch(0.78 0.16 145);
+    --cngx-delta-negative-color: oklch(0.75 0.18 25);
+  }
+  [data-color-scheme='light'],
+  .light {
+    --cngx-delta-neutral-color: oklch(0.36 0.02 290);
+    --cngx-delta-positive-color: oklch(0.65 0.18 145);
+    --cngx-delta-negative-color: oklch(0.65 0.22 25);
+  }
+}
+
+@layer cngx.components {
+  @scope (.cngx-delta) {
+    :scope {
+      /* Derive the gap from the global scale (SET-from-scale rule; the
+         registered pixel initial defeats the use-site fallback). 2 -> xs. */
+      --cngx-delta-gap: var(--cngx-space-xs);
+      display: inline-flex;
+      align-items: center;
+      gap: var(--cngx-delta-gap, 2px);
+      font-size: var(--cngx-delta-size, 0.8125rem);
+      font-weight: var(--cngx-delta-weight, 500);
+      color: var(--cngx-delta-neutral-color, oklch(0.36 0.02 290));
+    }
+
+    :scope.cngx-delta--positive {
+      color: var(--cngx-delta-positive-color, var(--cngx-color-success, oklch(0.65 0.18 145)));
+    }
+
+    :scope.cngx-delta--negative {
+      color: var(--cngx-delta-negative-color, var(--cngx-color-danger, oklch(0.65 0.22 25)));
+    }
+
+    :scope.cngx-delta--neutral {
+      color: var(--cngx-delta-neutral-color, oklch(0.36 0.02 290));
+    }
+  }
+}
