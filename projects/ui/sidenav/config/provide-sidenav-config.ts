@@ -19,8 +19,8 @@ import {
  * `payload` into the corresponding config sub-tree: `dimensions`, `hover`, and
  * `routerSync` are one-level nested sub-trees, `responsive` and `shortcut` are
  * flat top-level scalars. Mirrors `CngxBreadcrumbConfigFeature` from
- * `@cngx/ui/breadcrumb` so the consumer's mental model is one across feature
- * areas.
+ * `@cngx/ui/breadcrumb` (nested-sub-tree style; the stepper family uses flat
+ * scalar keys instead).
  *
  * @category ui/sidenav
  * @since 0.1.0
