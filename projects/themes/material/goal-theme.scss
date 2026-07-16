@@ -1,0 +1,31 @@
+@use '@angular/material' as mat;
+
+// Material bridge for CngxGoal. The determinate fill routes onto primary -
+// Material's own linear-progress colour - and the groove onto the
+// surface-variant so the bar reads as a Material progress indicator inside a
+// <mat-card>.
+//
+//   @use '@cngx/themes/material/goal-theme' as goal;
+//   html { @include goal.theme($theme); }
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-goal-fill-color: var(--mat-sys-primary);
+    --cngx-goal-track-color: var(--mat-sys-surface-variant);
+  } @else {
+    --cngx-goal-fill-color: #{mat.get-theme-color($theme, primary)};
+    --cngx-goal-track-color: #{mat.get-theme-color(
+        $theme,
+        foreground,
+        divider
+      )};
+  }
+}
+
+@mixin theme($theme) {
+  @layer cngx.components {
+    :where(cngx-goal, .cngx-goal) {
+      @include color($theme);
+    }
+  }
+}

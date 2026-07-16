@@ -2,9 +2,13 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  inject,
   input,
+  LOCALE_ID,
   ViewEncapsulation,
 } from '@angular/core';
+
+import { deltaDirection, directionGlyph, formatDelta } from '../shared/delta-format';
 
 /**
  * Displays a trend indicator with directional arrow and formatted percentage.
@@ -50,6 +54,10 @@ import {
   encapsulation: ViewEncapsulation.None,
   host: {
     class: 'cngx-trend',
+    // role=img makes the host a single labelled graphic so AT announces the
+    // curated `aria-label` instead of the raw glyph text on an otherwise
+    // role=generic custom element, where aria-label is unreliably exposed.
+    role: 'img',
     '[class.cngx-trend--up]': 'value() > 0',
     '[class.cngx-trend--down]': 'value() < 0',
     '[attr.aria-label]': 'resolvedLabel()',
@@ -61,6 +69,8 @@ import {
   styleUrls: ['./trend.component.css'],
 })
 export class CngxTrend {
+  private readonly locale = inject(LOCALE_ID);
+
   /** Trend percentage. Positive = up, negative = down, zero = flat. */
   readonly value = input.required<number>();
 
@@ -68,23 +78,18 @@ export class CngxTrend {
   readonly label = input<string | undefined>(undefined);
 
   /** @internal */
-  readonly icon = computed(() =>
-    this.value() > 0 ? '\u2191' : this.value() < 0 ? '\u2193' : '\u2192',
-  );
+  protected readonly icon = computed(() => directionGlyph(deltaDirection(this.value())));
 
   /** @internal */
-  readonly formattedValue = computed(() => {
-    const v = this.value();
-    const abs = Math.abs(v);
-    return `${v > 0 ? '+' : ''}${abs.toFixed(1)}\u202F%`;
-  });
+  protected readonly formattedValue = computed(() => formatDelta(this.value(), 'percent', this.locale));
 
   /** @internal */
-  readonly resolvedLabel = computed(() => {
+  protected readonly resolvedLabel = computed(() => {
     if (this.label()) {
       return this.label()!;
     }
-    const dir = this.value() > 0 ? 'up' : this.value() < 0 ? 'down' : 'unchanged';
+    const direction = deltaDirection(this.value());
+    const dir = direction === 'up' ? 'up' : direction === 'down' ? 'down' : 'unchanged';
     return `${this.formattedValue()} ${dir}`;
   });
 }

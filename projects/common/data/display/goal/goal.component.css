@@ -1,0 +1,127 @@
+/**
+ * @overview
+ * Default visuals for `CngxGoal`. The host carries `.cngx-goal` - a rounded
+ * track with a determinate fill whose width is driven by `--cngx-goal-fill`
+ * (a percent the component binds inline from the clamped attainment). Purely
+ * a horizontal bar; the accessible value lives on the host's `aria-value*`.
+ *
+ * **Slots**
+ *
+ * - `.cngx-goal__track` - the full-width groove
+ * - `.cngx-goal__fill` - the attained portion, width `= --cngx-goal-fill%`
+ *
+ * **Inheritance**
+ *
+ * - `--cngx-goal-fill-color` -> `--cngx-color-success`
+ * - `--cngx-goal-track-color` - leaf token, swaps in dark mode
+ *
+ * **Dark mode**
+ *
+ * Three hooks lift the track and fill to the foundation's dark variant:
+ *
+ * - `prefers-color-scheme: dark`
+ * - `[data-color-scheme="dark"]` / `.dark` class
+ * - `[data-color-scheme="light"]` / `.light` class (explicit pin)
+ */
+
+@layer cngx.tokens {
+  /**
+   * Attained fraction, as a `<percentage>`. The component binds this inline
+   * on the host from the clamped value (e.g. `73%`); it must inherit so the
+   * value reaches the descendant `.cngx-goal__fill` that consumes it (a
+   * `inherits: false` here would pin the fill to the `0%` initial). Authors
+   * normally leave it alone.
+   * @group Layout
+   */
+  @property --cngx-goal-fill {
+    syntax: '<percentage>';
+    inherits: true;
+    initial-value: 0%;
+  }
+
+  /**
+   * Height of the track.
+   * @group Layout
+   */
+  @property --cngx-goal-height {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 8px;
+  }
+
+  /**
+   * Corner radius of the track and fill.
+   * @group Layout
+   */
+  @property --cngx-goal-radius {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 999px;
+  }
+
+  /**
+   * Colour of the unfilled track groove.
+   * @group Surface
+   */
+  @property --cngx-goal-track-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.92 0.01 290);
+  }
+
+  /**
+   * Colour of the attained fill. Falls back to `--cngx-color-success`.
+   * @group Surface
+   * @see [[--cngx-color-success]]
+   */
+  @property --cngx-goal-fill-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.65 0.18 145);
+  }
+
+  /* Dark-mode swap. The groove darkens toward the surface, the fill lifts L
+   * and sheds C to track the foundation's dark success tone. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-goal-track-color: oklch(0.3 0.01 290);
+      --cngx-goal-fill-color: oklch(0.78 0.16 145);
+    }
+  }
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-goal-track-color: oklch(0.3 0.01 290);
+    --cngx-goal-fill-color: oklch(0.78 0.16 145);
+  }
+  [data-color-scheme='light'],
+  .light {
+    --cngx-goal-track-color: oklch(0.92 0.01 290);
+    --cngx-goal-fill-color: oklch(0.65 0.18 145);
+  }
+}
+
+@layer cngx.components {
+  @scope (.cngx-goal) {
+    :scope {
+      display: block;
+      inline-size: 100%;
+    }
+
+    .cngx-goal__track {
+      display: block;
+      inline-size: 100%;
+      block-size: var(--cngx-goal-height, 8px);
+      border-radius: var(--cngx-goal-radius, 999px);
+      background: var(--cngx-goal-track-color, oklch(0.92 0.01 290));
+      overflow: hidden;
+    }
+
+    .cngx-goal__fill {
+      display: block;
+      block-size: 100%;
+      inline-size: var(--cngx-goal-fill, 0%);
+      border-radius: inherit;
+      background: var(--cngx-goal-fill-color, var(--cngx-color-success, oklch(0.65 0.18 145)));
+    }
+  }
+}

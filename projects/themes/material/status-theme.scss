@@ -1,0 +1,47 @@
+@use '@angular/material' as mat;
+
+// Material bridge for CngxStatus. The five tone dots fold onto Material roles
+// the same way the tag bridge does, so success-flavoured cngx atoms stay
+// aligned: success -> tertiary, warning -> secondary (M3 has no warning slot;
+// secondary keeps the hue distinct from success and info), danger -> error,
+// info -> primary, neutral -> outline. Typography pulls from label-medium.
+//
+//   @use '@cngx/themes/material/status-theme' as status;
+//   html { @include status.theme($theme); }
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-status-success-color: var(--mat-sys-tertiary);
+    --cngx-status-warning-color: var(--mat-sys-secondary);
+    --cngx-status-danger-color: var(--mat-sys-error);
+    --cngx-status-info-color: var(--mat-sys-primary);
+    --cngx-status-neutral-color: var(--mat-sys-outline);
+  } @else {
+    --cngx-status-success-color: #{mat.get-theme-color($theme, accent)};
+    --cngx-status-warning-color: #{mat.get-theme-color($theme, accent)};
+    --cngx-status-danger-color: #{mat.get-theme-color($theme, warn)};
+    --cngx-status-info-color: #{mat.get-theme-color($theme, primary)};
+    --cngx-status-neutral-color: #{mat.get-theme-color(
+        $theme,
+        foreground,
+        secondary-text
+      )};
+  }
+}
+
+@mixin typography($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-status-size: var(--mat-sys-label-medium-size);
+    --cngx-status-weight: var(--mat-sys-label-medium-weight);
+  }
+  // M2 lacks first-class label-scale tokens; component initials stand in.
+}
+
+@mixin theme($theme) {
+  @layer cngx.components {
+    :where(cngx-status, .cngx-status) {
+      @include color($theme);
+      @include typography($theme);
+    }
+  }
+}

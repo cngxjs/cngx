@@ -1,0 +1,16 @@
+// Material bridge for CngxStat. The molecule is purely structural: it owns no
+// colour or typography tokens (every visual comes from the atoms projected
+// into its slots - CngxMetric, CngxDelta), and its two gap tokens
+// (--cngx-stat-gap, --cngx-stat-row-gap) derive from the global --cngx-space-*
+// scale, which the density bridge already routes to Material density. There is
+// therefore nothing tone- or type-specific to route here. This mixin is an
+// intentional structural no-op, kept in the aggregator for family symmetry and
+// forward-compat: if CngxStat ever gains a themed surface, its bridge lands
+// here without a new @use/@include in theme.scss.
+//
+//   @use '@cngx/themes/material/stat-theme' as stat;
+//   html { @include stat.theme($theme); }
+
+@mixin theme($theme) {
+  // Intentionally empty - see the note above. Spacing rides the density bridge.
+}

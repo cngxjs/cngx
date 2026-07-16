@@ -40,6 +40,7 @@
 @use './close-button-theme' as close-button;
 @use './copy-block-theme' as copy-block;
 @use './data-grid-accordion-theme' as data-grid-accordion;
+@use './delta-theme' as delta;
 @use './dialog-theme' as dialog;
 @use './divider-theme' as divider;
 @use './empty-state-theme' as empty-state;
@@ -47,6 +48,7 @@
 @use './field-theme' as field;
 @use './file-drop-theme' as file-drop;
 @use './filter-builder-theme' as filter-builder;
+@use './goal-theme' as goal;
 @use './icon-theme' as icon;
 @use './interactive-controls-theme' as controls;
 @use './metric-theme' as metric;
@@ -60,6 +62,8 @@
 @use './skeleton-theme' as skeleton;
 @use './slider-theme' as slider;
 @use './speak-button-theme' as speak;
+@use './stat-theme' as stat;
+@use './status-theme' as status;
 @use './stepper-theme' as stepper;
 @use './tabs-theme' as tabs;
 @use './tag-theme' as tag;
@@ -94,6 +98,7 @@
   @include copy-block.theme($theme);
   @include data-grid-accordion.theme($theme);
   @include data-grid-accordion.skins($theme);
+  @include delta.theme($theme);
   @include dialog.theme($theme);
   @include divider.theme($theme);
   @include empty-state.theme($theme);
@@ -101,6 +106,7 @@
   @include field.theme($theme);
   @include file-drop.theme($theme);
   @include filter-builder.theme($theme);
+  @include goal.theme($theme);
   @include icon.theme($theme);
   @include metric.theme($theme);
   @include option.theme($theme);
@@ -113,6 +119,8 @@
   @include skeleton.theme($theme);
   @include slider.theme($theme);
   @include speak.theme($theme);
+  @include stat.theme($theme);
+  @include status.theme($theme);
   @include stepper.theme($theme);
   @include tabs.theme($theme);
   @include tag.theme($theme);
