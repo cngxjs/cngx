@@ -61,12 +61,64 @@ export class ExampleComponent {
 
 Key features:
 
-- **Mode switching:** `over` (overlay), `push` (nudges content), `side` (permanent), `mini` (collapsed icon rail with hover expand)
+- **Mode switching:** `over` (overlay), `push` (nudges content), `side` (permanent), `mini` (collapsed icon rail; hover expands after a tunable dwell via `[expandDelay]` / `[collapseDelay]`)
 - **Responsive:** Media query-driven mode override via `[responsive]` input
 - **Two-way binding:** `[(opened)]` synchronizes with external state
 - **Resize:** Optional drag handle with min/max constraints
 - **Keyboard:** Escape closes overlay, configurable global shortcut via `[shortcut]`
 - **RTL-aware:** `position="start"` / `"end"` flip logically in RTL
+- **App-wide defaults:** `CNGX_SIDENAV_CONFIG` cascade for dimensions, responsive query, shortcut, and hover dwell (see [Configuration](#configuration))
+
+## Configuration
+
+Every dimension default, the responsive query, the toggle shortcut, and the mini hover dwell resolve through a standard cascade. Per-instance bindings always win; unset keys fall back to the library defaults, so an unconfigured `<cngx-sidenav>` behaves exactly as before.
+
+Resolution priority (high to low):
+
+1. Per-instance input (`[width]`, `[shortcut]`, `[expandDelay]`, ...)
+2. `provideSidenavConfigAt(...)` in a component's `viewProviders` (sub-tree scope)
+3. `provideSidenavConfig(...)` at the application root
+4. Library defaults
+
+```typescript
+import {
+  provideSidenavConfig,
+  withSidenavDimensions,
+  withSidenavResponsive,
+  withSidenavShortcut,
+  withSidenavHoverDwell,
+} from '@cngx/ui';
+
+bootstrapApplication(AppComponent, {
+  providers: [
+    provideSidenavConfig(
+      withSidenavDimensions({ width: '320px', miniWidth: '64px' }),
+      withSidenavResponsive('(min-width: 1024px)'),
+      withSidenavShortcut('mod+b'),
+      withSidenavHoverDwell({ enterDelay: 200, leaveDelay: 150 }),
+    ),
+  ],
+});
+```
+
+| Feature | Overrides |
+|-|-|
+| `withSidenavDimensions({ width?, miniWidth?, minWidth?, maxWidth? })` | Panel dimensions |
+| `withSidenavResponsive(query)` | Default responsive media query |
+| `withSidenavShortcut(combo)` | Default toggle shortcut |
+| `withSidenavHoverDwell({ enterDelay?, leaveDelay? })` | Mini expand/collapse dwell (ms) |
+
+Read the resolved config in an injection context with `injectSidenavConfig()`. Scope overrides to a sub-tree with `provideSidenavConfigAt(...)` in a component's `viewProviders`.
+
+### Mini hover dwell
+
+In `mini` mode the rail expands only after the pointer rests for `expandDelay` ms and collapses after `collapseDelay` ms, so a sweep across the rail never expands it. Both are tunable per instance and app-wide:
+
+```html
+<cngx-sidenav mode="mini" [expandDelay]="250" [collapseDelay]="150">...</cngx-sidenav>
+```
+
+Defaults are `expandDelay` 120ms and `collapseDelay` 0ms (instant collapse). The app-wide default is `withSidenavHoverDwell({ enterDelay, leaveDelay })`; per-instance `[expandDelay]` / `[collapseDelay]` win over it.
 
 ## Accessibility
 
@@ -85,6 +137,7 @@ Key features:
 - **Keyboard shortcut:** Global document listener via `effect(onCleanup)`
 - **Scroll lock:** Coordinate with `CngxSidenavLayout` via `hasOverlay` computed
 - **Resize:** Pointer-capture drag with RAFed position updates
+- **Mini hover intent:** Debounced expand-on-hover via the composed `CngxHoverIntent` host directive (`@cngx/common/interactive`), reading `CNGX_HOVER_INTENT_DEFAULTS` from the resolved config
 
 
 ## Material Theme
