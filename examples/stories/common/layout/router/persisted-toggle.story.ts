@@ -28,11 +28,19 @@ export const STORY: DemoSpec = {
   template: `
   <button type="button"
           class="chip"
-          [attr.aria-pressed]="panelOpen()"
+          [attr.aria-expanded]="panelOpen()"
+          aria-controls="cngx-qps-panel"
           (click)="panelOpen.set(!panelOpen())">
     {{ panelOpen() ? 'Close panel' : 'Open panel' }}
   </button>
   <cngx-tag [color]="panelOpen() ? 'success' : 'neutral'">
     panel: {{ panelOpen() ? 'open' : 'closed' }}
-  </cngx-tag>`,
+  </cngx-tag>
+  <div id="cngx-qps-panel"
+       role="region"
+       aria-label="Persisted panel"
+       [hidden]="!panelOpen()"
+       style="margin-top:0.75rem; padding:0.75rem; border:1px solid var(--cngx-border, #e4e4e7); border-radius:var(--cngx-radius, 0.5rem)">
+    This panel's open state lives in <code>?panel=open</code>. Reload or share the URL to restore it.
+  </div>`,
 };
