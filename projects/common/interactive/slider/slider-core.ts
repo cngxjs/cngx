@@ -1,4 +1,5 @@
 import { computed, type Signal, type WritableSignal } from '@angular/core';
+import { decimalPlaces } from '@cngx/utils';
 
 /**
  * Inputs for {@link createSliderCore}. Every field is a `Signal`, so the
@@ -68,15 +69,6 @@ export interface CngxSliderCore {
   stepToMin(): void;
   /** Jump to the effective upper bound. */
   stepToMax(): void;
-}
-
-function decimalPlaces(n: number): number {
-  if (!Number.isFinite(n)) {
-    return 0;
-  }
-  const text = String(n);
-  const dot = text.indexOf('.');
-  return dot === -1 ? 0 : text.length - dot - 1;
 }
 
 function snapToStep(raw: number, origin: number, step: number): number {
