@@ -101,6 +101,12 @@ export class CngxListboxFieldBridge implements CngxFormFieldControl {
   protected readonly ariaReadonly = computed(() => (this.presenter?.readonly() ? true : null));
 
   constructor() {
+    // Kept as hand-rolled effects rather than createFieldSync: this bridge drives
+    // two different writable signals by mode (value in single, selectedValues in
+    // multi), and multi's read (undefined -> [] clears the selection) diverges
+    // from its write (seed [] into an absent field) in a way the symmetric
+    // createFieldSync contract cannot express. Slider/range are the createFieldSync
+    // exemplars; this one stays explicit.
     // Field → Listbox. Equality-guarded so the inverse sync's write does not bounce.
     effect(() => {
       const presenter = this.presenter;
