@@ -1,0 +1,55 @@
+/**
+ * @overview
+ * Default layout for `CngxStat`. The host carries `.cngx-stat` - a vertical
+ * grid stacking the label, the value+delta row, and the caption. Purely
+ * structural: every visual (colour, size, weight) comes from the atoms the
+ * consumer projects into the slots, so the molecule adds no thematic surface
+ * of its own beyond the row gaps.
+ *
+ * **Slots**
+ *
+ * - `[cngxStatLabel]` - the heading row
+ * - `.cngx-stat__row` - the value + delta row (baseline-aligned)
+ * - `[cngxStatCaption]` - the trailing context row
+ */
+
+@layer cngx.tokens {
+  /**
+   * Vertical gap between the label, value row, and caption.
+   * @group Layout
+   */
+  @property --cngx-stat-gap {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 2px;
+  }
+
+  /**
+   * Horizontal gap between the value and the delta on the value row.
+   * @group Layout
+   */
+  @property --cngx-stat-row-gap {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 8px;
+  }
+}
+
+@layer cngx.components {
+  @scope (.cngx-stat) {
+    :scope {
+      /* Derive both gaps from the global scale (SET-from-scale rule; the
+         registered pixel initials defeat the use-site fallbacks). */
+      --cngx-stat-gap: var(--cngx-space-xs);
+      --cngx-stat-row-gap: var(--cngx-space-sm);
+      display: grid;
+      gap: var(--cngx-stat-gap, 2px);
+    }
+
+    .cngx-stat__row {
+      display: inline-flex;
+      align-items: baseline;
+      gap: var(--cngx-stat-row-gap, 8px);
+    }
+  }
+}
