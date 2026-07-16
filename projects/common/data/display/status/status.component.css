@@ -1,0 +1,199 @@
+/**
+ * @overview
+ * Default visuals for `CngxStatus`. The host carries `.cngx-status` - an
+ * inline-flex pair of a small tone dot (holding the tone glyph) and a label.
+ * Five tone modifiers pin the dot colour; the glyph inside the dot is the
+ * non-colour signal so the state survives a colour-blind reader.
+ *
+ * **Tone modifiers**
+ *
+ * - `--success` - operational, success-coded
+ * - `--warning` - degraded, warning-coded
+ * - `--danger` - down, danger-coded
+ * - `--info` - informational
+ * - `--neutral` - unknown / idle, muted
+ *
+ * **Inheritance**
+ *
+ * - `--cngx-status-success-color` -> `--cngx-color-success`
+ * - `--cngx-status-danger-color` -> `--cngx-color-danger`
+ * - remaining tone colours are leaf tokens, all swap in dark mode
+ *
+ * **Dark mode**
+ *
+ * Three hooks lift every tone colour to the foundation's dark variant:
+ *
+ * - `prefers-color-scheme: dark`
+ * - `[data-color-scheme="dark"]` / `.dark` class
+ * - `[data-color-scheme="light"]` / `.light` class (explicit pin)
+ */
+
+@layer cngx.tokens {
+  /**
+   * Gap between the tone dot and the status label.
+   * @group Layout
+   */
+  @property --cngx-status-gap {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 6px;
+  }
+
+  /**
+   * Diameter of the tone dot.
+   * @group Layout
+   */
+  @property --cngx-status-dot-size {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 1rem;
+  }
+
+  /**
+   * Font-size of the status label.
+   * @group Typography
+   */
+  @property --cngx-status-size {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0.8125rem;
+  }
+
+  /**
+   * Font-weight of the status label.
+   * @group Typography
+   */
+  @property --cngx-status-weight {
+    syntax: '<number>';
+    inherits: true;
+    initial-value: 500;
+  }
+
+  /**
+   * Colour of the `--success` tone dot. Falls back to `--cngx-color-success`.
+   * @group Variant / Success
+   * @see [[--cngx-color-success]]
+   */
+  @property --cngx-status-success-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.65 0.18 145);
+  }
+
+  /**
+   * Colour of the `--warning` tone dot.
+   * @group Variant / Warning
+   */
+  @property --cngx-status-warning-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.75 0.15 85);
+  }
+
+  /**
+   * Colour of the `--danger` tone dot. Falls back to `--cngx-color-danger`.
+   * @group Variant / Danger
+   * @see [[--cngx-color-danger]]
+   */
+  @property --cngx-status-danger-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.65 0.22 25);
+  }
+
+  /**
+   * Colour of the `--info` tone dot.
+   * @group Variant / Info
+   */
+  @property --cngx-status-info-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.6 0.14 250);
+  }
+
+  /**
+   * Colour of the `--neutral` tone dot.
+   * @group Variant / Neutral
+   */
+  @property --cngx-status-neutral-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.6 0.02 290);
+  }
+
+  /* Dark-mode swap. Every tone lifts L and sheds C to track the foundation's
+   * dark-mode-readable tones. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-status-success-color: oklch(0.78 0.16 145);
+      --cngx-status-warning-color: oklch(0.82 0.13 85);
+      --cngx-status-danger-color: oklch(0.75 0.18 25);
+      --cngx-status-info-color: oklch(0.72 0.12 250);
+      --cngx-status-neutral-color: oklch(0.7 0.02 290);
+    }
+  }
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-status-success-color: oklch(0.78 0.16 145);
+    --cngx-status-warning-color: oklch(0.82 0.13 85);
+    --cngx-status-danger-color: oklch(0.75 0.18 25);
+    --cngx-status-info-color: oklch(0.72 0.12 250);
+    --cngx-status-neutral-color: oklch(0.7 0.02 290);
+  }
+  [data-color-scheme='light'],
+  .light {
+    --cngx-status-success-color: oklch(0.65 0.18 145);
+    --cngx-status-warning-color: oklch(0.75 0.15 85);
+    --cngx-status-danger-color: oklch(0.65 0.22 25);
+    --cngx-status-info-color: oklch(0.6 0.14 250);
+    --cngx-status-neutral-color: oklch(0.6 0.02 290);
+  }
+}
+
+@layer cngx.components {
+  @scope (.cngx-status) {
+    :scope {
+      /* Derive the gap from the global scale (SET-from-scale rule; the
+         registered pixel initial defeats the use-site fallback). 6 -> sm. */
+      --cngx-status-gap: var(--cngx-space-sm);
+      display: inline-flex;
+      align-items: center;
+      gap: var(--cngx-status-gap, 6px);
+      font-size: var(--cngx-status-size, 0.8125rem);
+      font-weight: var(--cngx-status-weight, 500);
+    }
+
+    .cngx-status__dot {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      inline-size: var(--cngx-status-dot-size, 1rem);
+      block-size: var(--cngx-status-dot-size, 1rem);
+      border-radius: 50%;
+      font-size: 0.7em;
+      line-height: 1;
+      color: white;
+      background: var(--cngx-status-neutral-color, oklch(0.6 0.02 290));
+    }
+
+    :scope.cngx-status--success .cngx-status__dot {
+      background: var(--cngx-status-success-color, var(--cngx-color-success, oklch(0.65 0.18 145)));
+    }
+
+    :scope.cngx-status--warning .cngx-status__dot {
+      background: var(--cngx-status-warning-color, oklch(0.75 0.15 85));
+    }
+
+    :scope.cngx-status--danger .cngx-status__dot {
+      background: var(--cngx-status-danger-color, var(--cngx-color-danger, oklch(0.65 0.22 25)));
+    }
+
+    :scope.cngx-status--info .cngx-status__dot {
+      background: var(--cngx-status-info-color, oklch(0.6 0.14 250));
+    }
+
+    :scope.cngx-status--neutral .cngx-status__dot {
+      background: var(--cngx-status-neutral-color, oklch(0.6 0.02 290));
+    }
+  }
+}

@@ -45,6 +45,7 @@ export {
   CngxStatCaption,
 } from './display/stat/stat-slots';
 export { CNGX_STAT, type CngxStatRegistry, type CngxStatSlotKind } from './display/stat/stat.token';
+export { CngxStatus, type StatusTone } from './display/status/status.component';
 
 export {
   injectRecycler,
