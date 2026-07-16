@@ -68,6 +68,11 @@ const SENTIMENT_WORD: Record<DeltaSentiment, string> = {
   encapsulation: ViewEncapsulation.None,
   host: {
     class: 'cngx-delta',
+    // role=img makes the host a single labelled graphic so AT announces the
+    // curated `aria-label` (the sentiment word) instead of the raw glyph text
+    // on an otherwise role=generic custom element, where aria-label is
+    // unreliably exposed.
+    role: 'img',
     '[class.cngx-delta--positive]': "sentiment() === 'positive'",
     '[class.cngx-delta--negative]': "sentiment() === 'negative'",
     '[class.cngx-delta--neutral]': "sentiment() === 'neutral'",

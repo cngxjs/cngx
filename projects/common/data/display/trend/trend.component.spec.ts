@@ -46,6 +46,11 @@ describe('CngxTrend', () => {
     expect(el.classList.contains('cngx-trend--down')).toBe(false);
   });
 
+  it('exposes its accessible name via role=img', () => {
+    const { el } = setup();
+    expect(el.getAttribute('role')).toBe('img');
+  });
+
   it('uses consumer label override for aria-label', () => {
     const { fixture, el, host } = setup();
     host.label.set('+5.3% vs. last month');

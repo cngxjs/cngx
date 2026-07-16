@@ -54,6 +54,10 @@ import { deltaDirection, directionGlyph, formatDelta } from '../shared/delta-for
   encapsulation: ViewEncapsulation.None,
   host: {
     class: 'cngx-trend',
+    // role=img makes the host a single labelled graphic so AT announces the
+    // curated `aria-label` instead of the raw glyph text on an otherwise
+    // role=generic custom element, where aria-label is unreliably exposed.
+    role: 'img',
     '[class.cngx-trend--up]': 'value() > 0',
     '[class.cngx-trend--down]': 'value() < 0',
     '[attr.aria-label]': 'resolvedLabel()',

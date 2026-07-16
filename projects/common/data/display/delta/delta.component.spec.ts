@@ -35,6 +35,11 @@ describe('CngxDelta', () => {
     return { fixture, el, host: fixture.componentInstance };
   }
 
+  it('exposes its accessible name via role=img', () => {
+    const { el } = setup();
+    expect(el.getAttribute('role')).toBe('img');
+  });
+
   it('colours by sentiment and shows the up arrow for a rise (higher-is-better)', () => {
     const { el } = setup();
     expect(el.classList.contains('cngx-delta--positive')).toBe(true);
