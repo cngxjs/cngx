@@ -29,6 +29,11 @@ export interface FieldSyncOptions<V> {
  * coordination, not a single `computed()`. Requires an injection context;
  * no-op without a surrounding `cngx-form-field`.
  *
+ * Keeps the `create*` prefix despite calling `inject()` in its body: it is a
+ * blessed exception (see architecture-summary, mirrors `adaptFormControl`),
+ * not an oversight. The name is also the public `@cngx/forms/select` export;
+ * renaming would break that contract.
+ *
  * ```ts
  * createFieldSync<number>({
  *   componentValue: this.value,
@@ -74,11 +79,12 @@ export function createFieldSync<V>(options: FieldSyncOptions<V>): void {
 /**
  * Writes through Signal Forms' `WritableSignal`-shaped `FieldState.value`.
  * `CngxFieldRef` hides writability for API stability; narrow it here. Skips
- * readonly refs (e.g. mock fields) silently.
+ * readonly refs (e.g. mock fields) silently. Shared with the `model()`-based
+ * field bridges via a relative import; not part of the public API.
  *
  * @internal
  */
-function writeFieldValue(fieldRef: CngxFieldRef, value: unknown): void {
+export function writeFieldValue(fieldRef: CngxFieldRef, value: unknown): void {
   const signalLike = fieldRef.value as unknown;
   if (
     typeof signalLike === 'function' &&

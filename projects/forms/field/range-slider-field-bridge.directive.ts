@@ -2,9 +2,10 @@ import { computed, Directive, effect, inject, signal, untracked } from '@angular
 
 import { CngxRangeSliderTrack } from '@cngx/common/interactive';
 
+import { writeFieldValue } from './field-sync';
 import { CngxFormFieldPresenter } from './form-field-presenter';
 import { CNGX_FORM_FIELD_CONTROL } from './form-field.token';
-import type { CngxFieldRef, CngxFormFieldControl } from './models';
+import type { CngxFormFieldControl } from './models';
 
 /**
  * Bridges a `<cngx-range-slider>` (or a bare `[cngxRangeSliderTrack]`) into a
@@ -145,19 +146,4 @@ function toTuple(value: unknown): [number, number] | null {
 /** @internal */
 function tupleEq(a: readonly number[], b: readonly number[]): boolean {
   return a.length === b.length && a.every((v, i) => Object.is(v, b[i]));
-}
-
-/**
- * Writes `value` into `fieldRef.value` when it exposes a `WritableSignal`.
- * @internal
- */
-function writeFieldValue(fieldRef: CngxFieldRef, value: unknown): void {
-  const signal = fieldRef.value as unknown;
-  if (
-    typeof signal === 'function' &&
-    'set' in signal &&
-    typeof (signal as { set: unknown }).set === 'function'
-  ) {
-    (signal as { set: (v: unknown) => void }).set(value);
-  }
 }

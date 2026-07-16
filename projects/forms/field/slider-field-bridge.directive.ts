@@ -2,9 +2,10 @@ import { computed, Directive, effect, inject, signal, untracked } from '@angular
 
 import { CngxSliderTrack } from '@cngx/common/interactive';
 
+import { writeFieldValue } from './field-sync';
 import { CngxFormFieldPresenter } from './form-field-presenter';
 import { CNGX_FORM_FIELD_CONTROL } from './form-field.token';
-import type { CngxFieldRef, CngxFormFieldControl } from './models';
+import type { CngxFormFieldControl } from './models';
 
 /**
  * Bridges a `<cngx-slider>` (or a bare `[cngxSliderTrack]`) into a
@@ -134,21 +135,5 @@ export class CngxSliderFieldBridge implements CngxFormFieldControl {
   protected handleBlur(): void {
     this.focusedState.set(false);
     this.presenter?.fieldState().markAsTouched();
-  }
-}
-
-/**
- * Writes `value` into `fieldRef.value` when it exposes a `WritableSignal`.
- * Capability-checked branch instead of widening the public type.
- * @internal
- */
-function writeFieldValue(fieldRef: CngxFieldRef, value: unknown): void {
-  const signal = fieldRef.value as unknown;
-  if (
-    typeof signal === 'function' &&
-    'set' in signal &&
-    typeof (signal as { set: unknown }).set === 'function'
-  ) {
-    (signal as { set: (v: unknown) => void }).set(value);
   }
 }
