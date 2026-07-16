@@ -11,8 +11,9 @@
  *
  * Every key is optional - partial overrides deep-merge with the library
  * defaults, so consumers declare only the keys they want to override. The
- * `dimensions` and `hover` sub-trees are one level deep (spread-merged per
- * key); `responsive` and `shortcut` are flat top-level scalars.
+ * `dimensions`, `hover`, and `routerSync` sub-trees are one level deep
+ * (spread-merged per key); `responsive` and `shortcut` are flat top-level
+ * scalars.
  *
  * Only the six §3-tracked inputs plus the dwell are cascaded - `ariaLabel`,
  * `position`, and `mode` stay per-instance only, since they describe an
@@ -49,6 +50,18 @@ export interface CngxSidenavConfig {
     readonly enterDelay?: number;
     /** Delay in ms before the mini rail collapses on pointer leave. */
     readonly leaveDelay?: number;
+  };
+
+  /**
+   * URL query-param sync defaults for `[cngxSidenavRouterSync]`. A one-level
+   * nested sub-tree (spread-merged per key in the config reducer). Wired via
+   * `withSidenavRouterSync(...)`; the directive resolves `param` as
+   * `[param] ?? routerSync.param ?? 'nav'`, so an un-configured consumer keeps
+   * the `'nav'` literal.
+   */
+  readonly routerSync?: {
+    /** Query-param key the sidenav's `opened` state syncs to. Defaults to `'nav'`. */
+    readonly param?: string;
   };
 
   /**

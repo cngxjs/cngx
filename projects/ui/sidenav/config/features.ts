@@ -74,3 +74,21 @@ export function withSidenavHoverDwell(
 ): CngxSidenavConfigFeature {
   return { kind: 'hover', payload };
 }
+
+/**
+ * Set the app-wide default query-param key for `[cngxSidenavRouterSync]` - the
+ * param the sidenav's `opened` state deep-links to. Per-instance `[param]`
+ * still wins; the `'nav'` literal applies when neither is set.
+ *
+ * ```ts
+ * provideSidenavConfig(withSidenavRouterSync({ param: 'menu' }));
+ * ```
+ *
+ * @category ui/sidenav
+ * @since 0.1.0
+ */
+export function withSidenavRouterSync(
+  payload: NonNullable<CngxSidenavConfig['routerSync']>,
+): CngxSidenavConfigFeature {
+  return { kind: 'routerSync', payload };
+}

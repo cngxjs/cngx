@@ -13,13 +13,14 @@ import {
 
 /**
  * Discriminated-union shape returned by the sidenav config features -
- * `withSidenavDimensions`, `withSidenavResponsive`, `withSidenavShortcut`, and
- * (Phase 2) `withSidenavHoverDwell`. The reducer in `provideSidenavConfig` /
- * `provideSidenavConfigAt` matches on `kind` and merges `payload` into the
- * corresponding config sub-tree: `dimensions` and `hover` are one-level nested
- * sub-trees, `responsive` and `shortcut` are flat top-level scalars. Mirrors
- * `CngxBreadcrumbConfigFeature` from `@cngx/ui/breadcrumb` so the consumer's
- * mental model is one across feature areas.
+ * `withSidenavDimensions`, `withSidenavResponsive`, `withSidenavShortcut`,
+ * `withSidenavHoverDwell`, and `withSidenavRouterSync`. The reducer in
+ * `provideSidenavConfig` / `provideSidenavConfigAt` matches on `kind` and merges
+ * `payload` into the corresponding config sub-tree: `dimensions`, `hover`, and
+ * `routerSync` are one-level nested sub-trees, `responsive` and `shortcut` are
+ * flat top-level scalars. Mirrors `CngxBreadcrumbConfigFeature` from
+ * `@cngx/ui/breadcrumb` so the consumer's mental model is one across feature
+ * areas.
  *
  * @category ui/sidenav
  * @since 0.1.0
@@ -32,6 +33,10 @@ export type CngxSidenavConfigFeature =
   | {
       readonly kind: 'hover';
       readonly payload: NonNullable<CngxSidenavConfig['hover']>;
+    }
+  | {
+      readonly kind: 'routerSync';
+      readonly payload: NonNullable<CngxSidenavConfig['routerSync']>;
     }
   | {
       readonly kind: 'responsive';
@@ -55,6 +60,7 @@ function reduceFeatures(
   const out: {
     dimensions?: NonNullable<CngxSidenavConfig['dimensions']>;
     hover?: NonNullable<CngxSidenavConfig['hover']>;
+    routerSync?: NonNullable<CngxSidenavConfig['routerSync']>;
     responsive?: string;
     shortcut?: string;
   } = {};
@@ -65,6 +71,9 @@ function reduceFeatures(
         break;
       case 'hover':
         out.hover = { ...out.hover, ...f.payload };
+        break;
+      case 'routerSync':
+        out.routerSync = { ...out.routerSync, ...f.payload };
         break;
       case 'responsive':
         out.responsive = f.payload.responsive;
@@ -96,6 +105,7 @@ function mergeConfig(
   return {
     dimensions: { ...base.dimensions, ...partial.dimensions },
     hover: { ...base.hover, ...partial.hover },
+    routerSync: { ...base.routerSync, ...partial.routerSync },
     responsive: partial.responsive ?? base.responsive,
     shortcut: partial.shortcut ?? base.shortcut,
   };
@@ -104,8 +114,8 @@ function mergeConfig(
 /**
  * Application-root configuration cascade for the sidenav family. Pass any
  * combination of `withSidenavDimensions`, `withSidenavResponsive`,
- * `withSidenavShortcut`, and (Phase 2) `withSidenavHoverDwell` features in
- * `bootstrapApplication`'s providers array.
+ * `withSidenavShortcut`, `withSidenavHoverDwell`, and `withSidenavRouterSync`
+ * features in `bootstrapApplication`'s providers array.
  *
  * Resolution priority (high -> low):
  *   1. Per-instance Input binding.
