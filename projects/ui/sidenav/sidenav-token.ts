@@ -1,20 +1,20 @@
-import { InjectionToken, type ModelSignal, type Signal } from '@angular/core';
+import { InjectionToken, type ModelSignal } from '@angular/core';
 
 /**
- * Minimal contract a sidenav rail exposes to collaborators (the router-sync
- * directive today; the layout's rail coordination is the documented second
- * consumer). Injected via {@link CNGX_SIDENAV} + `useExisting`, never by
- * injecting the concrete `CngxSidenav` class - that would create a cyclic type
- * dependency and block the decompose brain/skin split.
+ * Minimal contract a sidenav rail exposes to the router-sync directive: the
+ * two-way `opened` signal it reads and writes. Injected via {@link CNGX_SIDENAV}
+ * + `useExisting`, never by injecting the concrete `CngxSidenav` class - that
+ * would create a cyclic type dependency and block the decompose brain/skin
+ * split. The deferred layout-coordination consumer will broaden this contract
+ * (with `close()` / `elementRef`) in the branch that migrates
+ * `CngxSidenavLayout` onto the token.
  *
  * @category ui/sidenav
  * @since 0.1.0
  */
 export interface CngxSidenavContract {
-  /** Two-way open state; a collaborator both reads and writes it. */
+  /** Two-way open state; the directive both reads and writes it. */
   readonly opened: ModelSignal<boolean>;
-  /** Whether the rail is currently an overlay (`over` mode). */
-  readonly isOverlay: Signal<boolean>;
 }
 
 /**
