@@ -509,8 +509,10 @@
       visibility 0s var(--cngx-sidenav-transition-duration, 0.25s);
   }
 
-  /* Closed state: collapse to 0 width (not in side/mini - those stay visible) */
-  cngx-sidenav:not(.cngx-sidenav--open):not(.cngx-sidenav--side):not(.cngx-sidenav--mini) {
+  /* Closed state: collapse to 0 width. Excludes side/mini (always visible) and
+     over (slides via transform below, keeps full width so the backdrop sits
+     beside the rail instead of over its footprint during the animation). */
+  cngx-sidenav:not(.cngx-sidenav--open):not(.cngx-sidenav--side):not(.cngx-sidenav--mini):not(.cngx-sidenav--over) {
     width: 0;
     visibility: hidden;
   }
@@ -528,19 +530,40 @@
     visibility: visible;
   }
 
-  /* Over mode: absolute positioning, doesn't push content */
+  /* Over mode: absolute overlay that slides in as a full-width panel, so the
+     backdrop sits beside the rail rather than over its footprint during the
+     animation. Closed = translated fully off its own edge; open = translateX(0).
+     Visibility is delayed to the end of the close slide so the closed rail
+     leaves the tab order (mirrors the width-mode visibility timing). */
   cngx-sidenav.cngx-sidenav--over {
     position: absolute;
     top: 0;
     bottom: 0;
+    width: var(--cngx-sidenav-width, 280px);
+    visibility: hidden;
+    transition:
+      transform var(--cngx-sidenav-transition-duration, 0.25s)
+        var(--cngx-sidenav-transition-easing, ease),
+      visibility 0s var(--cngx-sidenav-transition-duration, 0.25s);
   }
 
   cngx-sidenav.cngx-sidenav--over.cngx-sidenav--start {
     left: 0;
+    transform: translateX(-100%);
   }
 
   cngx-sidenav.cngx-sidenav--over.cngx-sidenav--end {
     right: 0;
+    transform: translateX(100%);
+  }
+
+  cngx-sidenav.cngx-sidenav--over.cngx-sidenav--open {
+    transform: translateX(0);
+    visibility: visible;
+    transition:
+      transform var(--cngx-sidenav-transition-duration, 0.25s)
+        var(--cngx-sidenav-transition-easing, ease),
+      visibility 0s 0s;
   }
 
   /* Push/side/mini mode: in flex flow */
