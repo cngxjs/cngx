@@ -50,6 +50,26 @@
   }
 
   /**
+   * Font-size of the tone glyph inside the dot, relative to the dot.
+   * @group Typography
+   */
+  @property --cngx-status-glyph-size {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0.7em;
+  }
+
+  /**
+   * Foreground colour of the tone glyph, over the coloured dot.
+   * @group Typography
+   */
+  @property --cngx-status-dot-fg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: white;
+  }
+
+  /**
    * Font-size of the status label.
    * @group Typography
    */
@@ -170,9 +190,9 @@
       inline-size: var(--cngx-status-dot-size, 1rem);
       block-size: var(--cngx-status-dot-size, 1rem);
       border-radius: 50%;
-      font-size: 0.7em;
+      font-size: var(--cngx-status-glyph-size, 0.7em);
       line-height: 1;
-      color: white;
+      color: var(--cngx-status-dot-fg, white);
       background: var(--cngx-status-neutral-color, oklch(0.6 0.02 290));
     }
 
