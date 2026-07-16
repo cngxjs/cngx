@@ -1,0 +1,44 @@
+@use '@angular/material' as mat;
+
+// Material bridge for CngxDelta. Sentiment routes the same way as the trend
+// bridge so success-flavoured cngx atoms stay aligned: positive folds onto
+// tertiary (Material 3 has no first-class success surface), negative onto
+// error, and the neutral text onto on-surface-variant. Typography pulls from
+// the label-medium scale.
+//
+//   @use '@cngx/themes/material/delta-theme' as delta;
+//   html { @include delta.theme($theme); }
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-delta-neutral-color: var(--mat-sys-on-surface-variant);
+    --cngx-delta-positive-color: var(--mat-sys-tertiary);
+    --cngx-delta-negative-color: var(--mat-sys-error);
+  } @else {
+    --cngx-delta-neutral-color: #{mat.get-theme-color(
+        $theme,
+        foreground,
+        secondary-text
+      )};
+    --cngx-delta-positive-color: #{mat.get-theme-color($theme, accent)};
+    --cngx-delta-negative-color: #{mat.get-theme-color($theme, warn)};
+  }
+}
+
+@mixin typography($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-delta-size: var(--mat-sys-label-medium-size);
+    --cngx-delta-weight: var(--mat-sys-label-medium-weight);
+  }
+  // M2 lacks first-class label-scale tokens; the component initial
+  // values stand in for M2 consumers.
+}
+
+@mixin theme($theme) {
+  @layer cngx.components {
+    :where(cngx-delta, .cngx-delta) {
+      @include color($theme);
+      @include typography($theme);
+    }
+  }
+}

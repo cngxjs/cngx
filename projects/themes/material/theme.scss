@@ -40,6 +40,7 @@
 @use './close-button-theme' as close-button;
 @use './copy-block-theme' as copy-block;
 @use './data-grid-accordion-theme' as data-grid-accordion;
+@use './delta-theme' as delta;
 @use './dialog-theme' as dialog;
 @use './divider-theme' as divider;
 @use './empty-state-theme' as empty-state;
@@ -60,6 +61,7 @@
 @use './skeleton-theme' as skeleton;
 @use './slider-theme' as slider;
 @use './speak-button-theme' as speak;
+@use './stat-theme' as stat;
 @use './stepper-theme' as stepper;
 @use './tabs-theme' as tabs;
 @use './tag-theme' as tag;
@@ -94,6 +96,7 @@
   @include copy-block.theme($theme);
   @include data-grid-accordion.theme($theme);
   @include data-grid-accordion.skins($theme);
+  @include delta.theme($theme);
   @include dialog.theme($theme);
   @include divider.theme($theme);
   @include empty-state.theme($theme);
@@ -113,6 +116,7 @@
   @include skeleton.theme($theme);
   @include slider.theme($theme);
   @include speak.theme($theme);
+  @include stat.theme($theme);
   @include stepper.theme($theme);
   @include tabs.theme($theme);
   @include tag.theme($theme);

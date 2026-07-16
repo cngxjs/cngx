@@ -1,0 +1,29 @@
+@use '@angular/material' as mat;
+
+// Material bridge for CngxStat. The molecule is purely structural: it owns no
+// colour or typography tokens (every visual comes from the atoms projected
+// into its slots - CngxMetric, CngxDelta), and its two gap tokens
+// (--cngx-stat-gap, --cngx-stat-row-gap) derive from the global --cngx-space-*
+// scale, which the density bridge already routes to Material density. The
+// bridge therefore aligns the row gap to Material's density-driven spacing for
+// symmetry with the rest of the family; there is deliberately no colour mixin.
+//
+//   @use '@cngx/themes/material/stat-theme' as stat;
+//   html { @include stat.theme($theme); }
+
+@mixin spacing($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    // Track the value/delta row gap to the Material 3 comfortable spacing so a
+    // stat's internal rhythm matches surrounding <mat-card> content.
+    --cngx-stat-row-gap: var(--cngx-space-sm);
+  }
+  // M2 has no spacing sys tokens; the component initial value stands in.
+}
+
+@mixin theme($theme) {
+  @layer cngx.components {
+    :where(cngx-stat, .cngx-stat) {
+      @include spacing($theme);
+    }
+  }
+}
