@@ -74,13 +74,13 @@ export class CngxTrend {
   readonly label = input<string | undefined>(undefined);
 
   /** @internal */
-  readonly icon = computed(() => directionGlyph(deltaDirection(this.value())));
+  protected readonly icon = computed(() => directionGlyph(deltaDirection(this.value())));
 
   /** @internal */
-  readonly formattedValue = computed(() => formatDelta(this.value(), 'percent', this.locale));
+  protected readonly formattedValue = computed(() => formatDelta(this.value(), 'percent', this.locale));
 
   /** @internal */
-  readonly resolvedLabel = computed(() => {
+  protected readonly resolvedLabel = computed(() => {
     if (this.label()) {
       return this.label()!;
     }
