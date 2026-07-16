@@ -90,3 +90,39 @@ describe('CngxSliderFieldBridge', () => {
     expect(bridge.errorState()).toBe(true);
   });
 });
+
+// Characterises the mount-time init-push: a numeric slider is never empty, so
+// when it mounts over an undefined field it seeds that field with its own
+// value. This guards against a symmetric field<->control migration silently
+// dropping the write (field stays undefined) - the Field->Slider read skips a
+// non-finite field, but the Slider->Field write must still fire.
+@Component({
+  selector: 'empty-slider-host',
+  template: `
+    <cngx-form-field [field]="field">
+      <cngx-slider cngxSliderFieldBridge [min]="0" [max]="100" [step]="5" aria-label="Volume" />
+    </cngx-form-field>
+  `,
+  imports: [CngxFormField, CngxSlider, CngxSliderFieldBridge],
+})
+class EmptyHost {
+  readonly _mock = createMockField<number>({ name: 'volume' });
+  readonly field = this._mock.accessor;
+  readonly ref: MockFieldRef<number> = this._mock.ref;
+  constructor() {
+    this.ref.value.set(undefined as unknown as number);
+  }
+}
+
+describe('CngxSliderFieldBridge — empty field mount', () => {
+  beforeEach(() => {
+    TestBed.configureTestingModule({ imports: [EmptyHost] });
+  });
+
+  it('seeds an undefined field with the slider value on mount', () => {
+    const fixture = TestBed.createComponent(EmptyHost);
+    fixture.detectChanges();
+    flush(fixture);
+    expect(fixture.componentInstance.ref.value()).toBe(0);
+  });
+});
