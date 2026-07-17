@@ -26,6 +26,7 @@
     "accordion/**/*.spec.ts",
     "data-grid-accordion/**/*.spec.ts",
     "breadcrumb/**/*.spec.ts",
-    "paginator/**/*.spec.ts"
+    "paginator/**/*.spec.ts",
+    "collection/**/*.spec.ts"
   ]
 }
