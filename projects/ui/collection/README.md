@@ -48,6 +48,28 @@ The organism is a pure consumer: it owns no `[mode]` flag and introduces no new
 `[state]` producer. Every visible region is a derivation of the bound state and
 the brain signals.
 
+Five view states render from the single `[state]` source: loading, content,
+empty, error (first load), and end-reached. A subsequent-page failure
+(`content+error`) keeps the accumulated rows visible and renders an inline retry
+below them that fires the `(retry)` output - so a page-N error is never silently
+swallowed. Supply `[trackBy]` when the bound data can be replaced or reordered so
+projected item templates keep their per-row state.
+
+## Skins
+
+`[skin]` is a paint-only attribute reflected onto `[data-skin]`; structure, ARIA,
+and behaviour are identical across values.
+
+- `plain` (default) - browser-native list, no chrome.
+- `divided` - hairline separators between rows.
+- `card` - the list sits on an elevated, rounded surface.
+
+```html
+<cngx-incremental-list skin="card" [state]="state" [total]="total()">
+  <ng-template cngxIncrementalItem let-item>{{ item.name }}</ng-template>
+</cngx-incremental-list>
+```
+
 ## Accessibility
 
 - The content region carries a reactive `aria-busy`, bound to the async state's
@@ -66,6 +88,27 @@ the brain signals.
 - **Projected trigger** - a `<ng-content>` region backed by
   `CNGX_PAGINATOR_HOST`, accepting the load-more / infinite atoms or a custom
   trigger.
+
+## Material Theme
+
+Include the theme SCSS in your global stylesheet so the organism's tokens adopt
+the Material system palette:
+
+```scss
+@use '@angular/material' as mat;
+@use '@cngx/themes/material/incremental-list-theme' as incremental-list;
+
+$theme: mat.define-theme((...));
+
+html {
+  @include mat.all-component-themes($theme);
+  @include incremental-list.theme($theme);
+}
+```
+
+Without the bridge the organism uses the cngx foundation `--cngx-color-*` tokens
+(light/dark aware) with a native look; the bridge maps text, dividers, surface,
+error, and the retry button onto `--mat-sys-*`.
 
 ## See Also
 

@@ -1,0 +1,51 @@
+@use '@angular/material' as mat;
+
+// Material bridge for CngxIncrementalList (all three skins) and its built-in
+// view states. Default visuals ship with the component
+// (projects/ui/collection/incremental-list.component.css) and read the cngx
+// foundation --cngx-color-* tokens with literal oklch fallbacks; this file is
+// the single place that aligns the organism's tokens with Material so the
+// append list feels native next to Material data surfaces.
+//
+// Every token below is a leaf read through a use-site var() (never re-SET in a
+// skin :scope), so a host-level :where() assignment reaches the plain, divided,
+// and card skins alike. --mat-sys-* appears only here.
+//
+//   @use '@angular/material' as mat;
+//   @use '@cngx/themes/material/incremental-list-theme' as incremental-list;
+//   html { @include incremental-list.theme($theme); }
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-incremental-list-text: var(--mat-sys-on-surface);
+    --cngx-incremental-list-message-color: var(--mat-sys-on-surface-variant);
+    --cngx-incremental-list-error-color: var(--mat-sys-error);
+    --cngx-incremental-list-divider: var(--mat-sys-outline-variant);
+    --cngx-incremental-list-surface: var(--mat-sys-surface);
+    --cngx-incremental-list-button-fg: var(--mat-sys-primary);
+    --cngx-incremental-list-button-border: var(--mat-sys-outline);
+  } @else {
+    $primary: mat.get-theme-color($theme, primary);
+    $surface: mat.get-theme-color($theme, background, card);
+    $text: mat.get-theme-color($theme, foreground, text);
+    $secondary: mat.get-theme-color($theme, foreground, secondary-text);
+    $divider: mat.get-theme-color($theme, foreground, divider);
+    $error: mat.get-theme-color($theme, warn);
+
+    --cngx-incremental-list-text: #{$text};
+    --cngx-incremental-list-message-color: #{$secondary};
+    --cngx-incremental-list-error-color: #{$error};
+    --cngx-incremental-list-divider: #{rgba($divider, 0.42)};
+    --cngx-incremental-list-surface: #{$surface};
+    --cngx-incremental-list-button-fg: #{$primary};
+    --cngx-incremental-list-button-border: #{rgba($divider, 0.42)};
+  }
+}
+
+@mixin theme($theme) {
+  @layer cngx.components {
+    :where(cngx-incremental-list) {
+      @include color($theme);
+    }
+  }
+}
