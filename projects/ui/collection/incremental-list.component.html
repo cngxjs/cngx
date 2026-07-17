@@ -28,20 +28,29 @@
     }
   }
   @default {
-    <ul class="cngx-incremental-list__items">
-      @for (item of items(); track trackItem($index, item)) {
-        <li class="cngx-incremental-list__item">
-          @if (itemTemplate(); as tpl) {
-            <ng-container
-              [ngTemplateOutlet]="tpl"
-              [ngTemplateOutletContext]="{ $implicit: item, index: $index }"
-            />
-          } @else {
-            {{ item }}
-          }
-        </li>
-      }
-    </ul>
+    @if (virtualize()) {
+      <cngx-incremental-virtualized-body
+        [items]="items()"
+        [estimateSize]="estimateSize()"
+        [itemTemplate]="itemTemplate()"
+        [trackItem]="trackItem"
+      />
+    } @else {
+      <ul class="cngx-incremental-list__items">
+        @for (item of items(); track trackItem($index, item)) {
+          <li class="cngx-incremental-list__item">
+            @if (itemTemplate(); as tpl) {
+              <ng-container
+                [ngTemplateOutlet]="tpl"
+                [ngTemplateOutletContext]="{ $implicit: item, index: $index }"
+              />
+            } @else {
+              {{ item }}
+            }
+          </li>
+        }
+      </ul>
+    }
     @if (view() === 'content+error') {
       <!-- Subsequent-page failure: keep the accumulated list above visible and
            render a reachable retry, rather than silently swallowing the error. -->

@@ -21,6 +21,7 @@ import { CngxProgress } from '@cngx/ui/feedback';
 
 import { injectIncrementalListConfig } from './incremental-list-config';
 import { CNGX_PAGINATOR_HOST } from './incremental-list-host.token';
+import { CngxIncrementalVirtualizedBody } from './incremental-list-virtualized-body.component';
 import {
   CngxIncrementalEmpty,
   CngxIncrementalEnd,
@@ -74,7 +75,13 @@ export type CngxIncrementalListSkin = 'plain' | 'divided' | 'card';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [CngxProgress, CngxEmptyState, CngxLiveRegion, NgTemplateOutlet],
+  imports: [
+    CngxProgress,
+    CngxEmptyState,
+    CngxLiveRegion,
+    NgTemplateOutlet,
+    CngxIncrementalVirtualizedBody,
+  ],
   templateUrl: './incremental-list.component.html',
   styleUrl: './incremental-list.component.css',
   hostDirectives: [

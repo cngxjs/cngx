@@ -1,7 +1,7 @@
 import { Component, provideZonelessChangeDetection, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { describe, expect, test } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { CngxPaginate, createManualState } from '@cngx/common/data';
 import type { CngxAsyncState } from '@cngx/core/utils';
@@ -131,6 +131,12 @@ class TrackHostCmp {
   };
 }
 
+class MockResizeObserver {
+  observe(): void {}
+  unobserve(): void {}
+  disconnect(): void {}
+}
+
 /** Structural view of the organism's derived read surface (protected members). */
 interface ListInternals {
   items(): readonly number[];
@@ -170,6 +176,18 @@ async function setup(): Promise<Plumbing> {
 }
 
 describe('CngxIncrementalList', () => {
+  // jsdom lacks ResizeObserver; the scroll observer and CngxMeasure both
+  // construct one once a list virtualizes. A no-op stub keeps the render-all
+  // tests unaffected (they never touch it). rAF stays real - the zoneless
+  // scheduler needs it, and a sync stub would run CD during a notification.
+  beforeEach(() => {
+    vi.stubGlobal('ResizeObserver', MockResizeObserver);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
   test('provides CNGX_PAGINATOR_HOST as the brain via useExisting', async () => {
     const { hostToken, paginate } = await setup();
     expect(hostToken).toBe(paginate);
@@ -420,5 +438,69 @@ describe('CngxIncrementalList', () => {
     await settle(fixture);
     // The custom key fn is invoked once per revealed row.
     expect(fixture.componentInstance.seen).toEqual([10, 20, 30]);
+  });
+
+  describe('virtualization', () => {
+    // The scroll observer's own rAF is real; flush it with a short real-timer
+    // wait so the seeded viewport height reaches the range computation.
+    const flushFrame = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 20));
+
+    async function reveal(count: number, virtualize: boolean): Promise<Plumbing> {
+      const plumbing = await setup();
+      const { fixture, host } = plumbing;
+      const manual = createManualState<number[]>();
+      manual.setSuccess(Array.from({ length: count }, (_, i) => i));
+      host.state.set(manual);
+      host.total.set(count);
+      host.size.set(count);
+      host.virtualize.set(virtualize);
+      await settle(fixture);
+      return plumbing;
+    }
+
+    test('renders only the visible window as <li> under one <ul>, with row ARIA', async () => {
+      const { fixture, listEl } = await reveal(1000, true);
+
+      const viewport = listEl.querySelector('.cngx-incremental-list__viewport') as HTMLElement;
+      expect(viewport).not.toBeNull();
+      // jsdom reports clientHeight 0 -> empty range. Seed a real viewport and
+      // nudge the scroll observer so the window computes.
+      Object.defineProperty(viewport, 'clientHeight', {
+        value: 500,
+        writable: true,
+        configurable: true,
+      });
+      Object.defineProperty(viewport, 'scrollTop', {
+        value: 0,
+        writable: true,
+        configurable: true,
+      });
+      viewport.dispatchEvent(new Event('scroll'));
+      await flushFrame();
+      await settle(fixture);
+
+      const lists = listEl.querySelectorAll('.cngx-incremental-list__items');
+      expect(lists).toHaveLength(1);
+
+      const rows = listEl.querySelectorAll('.cngx-incremental-list__item');
+      expect(rows.length).toBeGreaterThan(0);
+      expect(rows.length).toBeLessThan(100);
+
+      // Row ARIA rides the CngxVirtualItem atom: set-size == accumulated total,
+      // pos-in-set == absolute index + 1.
+      expect(rows[0].getAttribute('aria-setsize')).toBe('1000');
+      expect(rows[0].getAttribute('aria-posinset')).toBe('1');
+
+      // The off-window rows below are a padding spacer, not real DOM nodes.
+      const ul = lists[0] as HTMLElement;
+      expect(ul.style.paddingBlockStart).toBe('0px');
+      expect(parseFloat(ul.style.paddingBlockEnd)).toBeGreaterThan(0);
+    });
+
+    test('[virtualize] unset renders every accumulated row (regression guard)', async () => {
+      const { listEl } = await reveal(300, false);
+      expect(listEl.querySelectorAll('.cngx-incremental-list__item')).toHaveLength(300);
+      expect(listEl.querySelector('.cngx-incremental-list__viewport')).toBeNull();
+    });
   });
 });
