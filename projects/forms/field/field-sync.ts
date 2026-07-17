@@ -17,6 +17,15 @@ export interface FieldSyncOptions<V> {
   readonly coerceFromField: (fieldValue: unknown) => V;
   /** Transform applied before writing `V` back to the field. Default: identity. */
   readonly toFieldValue?: (v: V) => unknown;
+  /**
+   * Optional. Returns `true` when the raw field value is absent/invalid for a
+   * control that always asserts its own value (a numeric slider is never
+   * "empty"). When `true`, the field->control read is skipped (the control
+   * keeps its value) and the control->field write is forced (the control seeds
+   * the field on mount). Omit for controls where the field is the sole source
+   * of truth - the default sync reads and writes symmetrically.
+   */
+  readonly shouldSkipFieldValue?: (fieldValue: unknown) => boolean;
 }
 
 /**
@@ -28,6 +37,11 @@ export interface FieldSyncOptions<V> {
  * field and the control's `model()` are writable sources of truth, so this is
  * coordination, not a single `computed()`. Requires an injection context;
  * no-op without a surrounding `cngx-form-field`.
+ *
+ * Keeps the `create*` prefix despite calling `inject()` in its body: it is a
+ * blessed exception (see architecture-summary, mirrors `adaptFormControl`),
+ * not an oversight. The name is also the public `@cngx/forms/select` export;
+ * renaming would break that contract.
  *
  * ```ts
  * createFieldSync<number>({
@@ -47,10 +61,15 @@ export function createFieldSync<V>(options: FieldSyncOptions<V>): void {
     return;
   }
   const toField = options.toFieldValue ?? ((v: V) => v as unknown);
+  const skip = options.shouldSkipFieldValue;
 
   effect(() => {
     const fieldRef: CngxFieldRef = presenter.fieldState();
-    const fieldValue = options.coerceFromField(fieldRef.value());
+    const raw = fieldRef.value();
+    if (skip?.(raw)) {
+      return;
+    }
+    const fieldValue = options.coerceFromField(raw);
     untracked(() => {
       const current = options.componentValue();
       if (!options.valueEquals(current, fieldValue)) {
@@ -63,7 +82,10 @@ export function createFieldSync<V>(options: FieldSyncOptions<V>): void {
     const next = options.componentValue();
     untracked(() => {
       const fieldRef = presenter.fieldState();
-      if (options.valueEquals(options.coerceFromField(fieldRef.value()), next)) {
+      const raw = fieldRef.value();
+      // A skipped (absent) field has no value to guard against - force the seed
+      // write. Otherwise skip the write when the field already equals `next`.
+      if (!skip?.(raw) && options.valueEquals(options.coerceFromField(raw), next)) {
         return;
       }
       writeFieldValue(fieldRef, toField(next));
@@ -74,11 +96,12 @@ export function createFieldSync<V>(options: FieldSyncOptions<V>): void {
 /**
  * Writes through Signal Forms' `WritableSignal`-shaped `FieldState.value`.
  * `CngxFieldRef` hides writability for API stability; narrow it here. Skips
- * readonly refs (e.g. mock fields) silently.
+ * readonly refs (e.g. mock fields) silently. Shared with the `model()`-based
+ * field bridges via a relative import; not part of the public API.
  *
  * @internal
  */
-function writeFieldValue(fieldRef: CngxFieldRef, value: unknown): void {
+export function writeFieldValue(fieldRef: CngxFieldRef, value: unknown): void {
   const signalLike = fieldRef.value as unknown;
   if (
     typeof signalLike === 'function' &&

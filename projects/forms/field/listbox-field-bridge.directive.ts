@@ -2,6 +2,7 @@ import { computed, Directive, effect, inject, signal, untracked } from '@angular
 
 import { CngxListbox } from '@cngx/common/interactive';
 
+import { writeFieldValue } from './field-sync';
 import { CngxFormFieldPresenter } from './form-field-presenter';
 import { CNGX_FORM_FIELD_CONTROL } from './form-field.token';
 import type { CngxFieldRef, CngxFormFieldControl } from './models';
@@ -100,6 +101,12 @@ export class CngxListboxFieldBridge implements CngxFormFieldControl {
   protected readonly ariaReadonly = computed(() => (this.presenter?.readonly() ? true : null));
 
   constructor() {
+    // Kept as hand-rolled effects rather than createFieldSync: this bridge drives
+    // two different writable signals by mode (value in single, selectedValues in
+    // multi), and multi's read (undefined -> [] clears the selection) diverges
+    // from its write (seed [] into an absent field) in a way the symmetric
+    // createFieldSync contract cannot express. Slider/range are the createFieldSync
+    // exemplars; this one stays explicit.
     // Field → Listbox. Equality-guarded so the inverse sync's write does not bounce.
     effect(() => {
       const presenter = this.presenter;
@@ -172,20 +179,4 @@ function arrayEq(a: readonly unknown[], b: readonly unknown[]): boolean {
     }
   }
   return true;
-}
-
-/**
- * Writes `value` into `fieldRef.value` when it exposes a `WritableSignal`.
- * Capability-checked branch instead of widening the public type.
- * @internal
- */
-function writeFieldValue(fieldRef: CngxFieldRef, value: unknown): void {
-  const signal = fieldRef.value as unknown;
-  if (
-    typeof signal === 'function' &&
-    'set' in signal &&
-    typeof (signal as { set: unknown }).set === 'function'
-  ) {
-    (signal as { set: (v: unknown) => void }).set(value);
-  }
 }

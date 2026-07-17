@@ -8,7 +8,7 @@
  * @since 0.1.0
  */
 import { computed, type Signal } from '@angular/core';
-import { arrayEqual } from '@cngx/utils';
+import { arrayEqual, decimalPlaces } from '@cngx/utils';
 
 /** Tick view produced by {@link createSliderTicks}. */
 export interface CngxSliderTicksView {
@@ -80,13 +80,4 @@ export function sliderTickValues(min: number, max: number, step: number, maxCoun
     stops.push(Number((min + i * step).toFixed(decimals)));
   }
   return stops;
-}
-
-function decimalPlaces(n: number): number {
-  if (!Number.isFinite(n)) {
-    return 0;
-  }
-  const text = String(n);
-  const dot = text.indexOf('.');
-  return dot === -1 ? 0 : text.length - dot - 1;
 }

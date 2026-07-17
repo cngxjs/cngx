@@ -196,3 +196,65 @@ describe('CngxListboxFieldBridge — multi select', () => {
     expect(ref.value().sort()).toEqual(['a', 'b']);
   });
 });
+
+// Characterises the mount-time init-push asymmetry between the two modes. Guards
+// against a symmetric field<->control migration changing either branch.
+@Component({
+  template: `
+    <cngx-form-field [field]="field">
+      <div cngxListbox cngxListboxFieldBridge [label]="'Choice'" tabindex="0" #lb="cngxListbox">
+        <div cngxOption value="a">A</div>
+        <div cngxOption value="b">B</div>
+      </div>
+    </cngx-form-field>
+  `,
+  selector: 'empty-single-host',
+  imports: [CngxFormField, CngxListbox, CngxListboxFieldBridge, CngxOption],
+})
+class EmptySingleHost {
+  readonly _mock = createMockField<string>({ name: 'choice' });
+  readonly field = this._mock.accessor;
+  readonly ref: MockFieldRef<string> = this._mock.ref;
+  constructor() {
+    this.ref.value.set(undefined as unknown as string);
+  }
+}
+
+@Component({
+  template: `
+    <cngx-form-field [field]="field">
+      <div cngxListbox cngxListboxFieldBridge [label]="'Choices'" [multiple]="true" tabindex="0" #lb="cngxListbox">
+        <div cngxOption value="a">A</div>
+        <div cngxOption value="b">B</div>
+      </div>
+    </cngx-form-field>
+  `,
+  selector: 'empty-multi-host',
+  imports: [CngxFormField, CngxListbox, CngxListboxFieldBridge, CngxOption],
+})
+class EmptyMultiHost {
+  readonly _mock = createMockField<string[]>({ name: 'choices' });
+  readonly field = this._mock.accessor;
+  readonly ref: MockFieldRef<string[]> = this._mock.ref;
+  constructor() {
+    this.ref.value.set(undefined as unknown as string[]);
+  }
+}
+
+describe('CngxListboxFieldBridge — empty field mount', () => {
+  it('leaves an undefined single-select field untouched (nothing selected to push)', () => {
+    TestBed.configureTestingModule({ imports: [EmptySingleHost] });
+    const fixture = TestBed.createComponent(EmptySingleHost);
+    fixture.detectChanges();
+    flush(fixture);
+    expect(fixture.componentInstance.ref.value()).toBeUndefined();
+  });
+
+  it('seeds an undefined multi-select field with the empty selection array on mount', () => {
+    TestBed.configureTestingModule({ imports: [EmptyMultiHost] });
+    const fixture = TestBed.createComponent(EmptyMultiHost);
+    fixture.detectChanges();
+    flush(fixture);
+    expect(fixture.componentInstance.ref.value()).toEqual([]);
+  });
+});

@@ -1,10 +1,11 @@
-import { computed, Directive, effect, inject, signal, untracked } from '@angular/core';
+import { computed, Directive, inject, signal } from '@angular/core';
 
 import { CngxSliderTrack } from '@cngx/common/interactive';
 
+import { createFieldSync } from './field-sync';
 import { CngxFormFieldPresenter } from './form-field-presenter';
 import { CNGX_FORM_FIELD_CONTROL } from './form-field.token';
-import type { CngxFieldRef, CngxFormFieldControl } from './models';
+import type { CngxFormFieldControl } from './models';
 
 /**
  * Bridges a `<cngx-slider>` (or a bare `[cngxSliderTrack]`) into a
@@ -91,37 +92,14 @@ export class CngxSliderFieldBridge implements CngxFormFieldControl {
   protected readonly ariaReadonly = computed(() => (this.presenter?.readonly() ? true : null));
 
   constructor() {
-    // Field -> Slider. Equality-guarded so the inverse sync's write does not bounce.
-    effect(() => {
-      const presenter = this.presenter;
-      if (!presenter) {
-        return;
-      }
-      const fieldValue = presenter.fieldState().value();
-      const next = typeof fieldValue === 'number' ? fieldValue : Number(fieldValue);
-      if (!Number.isFinite(next)) {
-        return;
-      }
-      const current = untracked(() => this.slider.value());
-      if (!Object.is(current, next)) {
-        this.slider.value.set(next);
-      }
-    });
-
-    // Slider -> Field. `value` is a `WritableSignal` at runtime; `CngxFieldRef`
-    // hides writability for API stability - narrow via writeFieldValue.
-    effect(() => {
-      const presenter = this.presenter;
-      if (!presenter) {
-        return;
-      }
-      const fieldRef = presenter.fieldState();
-      const sliderValue = this.slider.value();
-      const current: unknown = untracked(() => fieldRef.value());
-      if (Object.is(current, sliderValue)) {
-        return;
-      }
-      writeFieldValue(fieldRef, sliderValue);
+    // A numeric slider always asserts its own value: an absent/non-finite field
+    // is skipped on read but still seeded on write (createFieldSync's
+    // shouldSkipFieldValue). Number() coercion covers string field values.
+    createFieldSync<number>({
+      componentValue: this.slider.value,
+      valueEquals: Object.is,
+      coerceFromField: (v) => (typeof v === 'number' ? v : Number(v)),
+      shouldSkipFieldValue: (v) => !Number.isFinite(typeof v === 'number' ? v : Number(v)),
     });
   }
 
@@ -134,21 +112,5 @@ export class CngxSliderFieldBridge implements CngxFormFieldControl {
   protected handleBlur(): void {
     this.focusedState.set(false);
     this.presenter?.fieldState().markAsTouched();
-  }
-}
-
-/**
- * Writes `value` into `fieldRef.value` when it exposes a `WritableSignal`.
- * Capability-checked branch instead of widening the public type.
- * @internal
- */
-function writeFieldValue(fieldRef: CngxFieldRef, value: unknown): void {
-  const signal = fieldRef.value as unknown;
-  if (
-    typeof signal === 'function' &&
-    'set' in signal &&
-    typeof (signal as { set: unknown }).set === 'function'
-  ) {
-    (signal as { set: (v: unknown) => void }).set(value);
   }
 }

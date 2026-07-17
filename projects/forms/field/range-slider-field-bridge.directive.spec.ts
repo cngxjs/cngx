@@ -81,3 +81,38 @@ describe('CngxRangeSliderFieldBridge', () => {
     expect(bridge.empty()).toBe(false);
   });
 });
+
+// Characterises the mount-time init-push: a range slider always has a tuple, so
+// mounting over an undefined field seeds that field with its own value. Guards
+// against a symmetric field<->control migration dropping the write - the
+// Field->Slider read skips a non-tuple field, but the Slider->Field write fires.
+@Component({
+  selector: 'empty-range-host',
+  template: `
+    <cngx-form-field [field]="field">
+      <cngx-range-slider cngxRangeSliderFieldBridge [min]="0" [max]="1000" [step]="10" aria-label="Price" />
+    </cngx-form-field>
+  `,
+  imports: [CngxFormField, CngxRangeSlider, CngxRangeSliderFieldBridge],
+})
+class EmptyHost {
+  readonly _mock = createMockField<[number, number]>({ name: 'price' });
+  readonly field = this._mock.accessor;
+  readonly ref: MockFieldRef<[number, number]> = this._mock.ref;
+  constructor() {
+    this.ref.value.set(undefined as unknown as [number, number]);
+  }
+}
+
+describe('CngxRangeSliderFieldBridge — empty field mount', () => {
+  beforeEach(() => {
+    TestBed.configureTestingModule({ imports: [EmptyHost] });
+  });
+
+  it('seeds an undefined field with the slider tuple on mount', () => {
+    const fixture = TestBed.createComponent(EmptyHost);
+    fixture.detectChanges();
+    flush(fixture);
+    expect(fixture.componentInstance.ref.value()).toEqual([0, 100]);
+  });
+});

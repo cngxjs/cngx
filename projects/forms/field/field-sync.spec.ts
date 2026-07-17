@@ -29,6 +29,31 @@ class NumericControl implements CngxFormFieldControl {
   }
 }
 
+/** Control that always asserts its own value via `shouldSkipFieldValue` (default 7). */
+@Component({
+  selector: 'test-seeding-control',
+  standalone: true,
+  template: '',
+  providers: [{ provide: CNGX_FORM_FIELD_CONTROL, useExisting: SeedingControl }],
+})
+class SeedingControl implements CngxFormFieldControl {
+  readonly value: ModelSignal<number> = model<number>(7);
+  readonly id = signal('test-seeding');
+  readonly focused = signal(false);
+  readonly empty = computed(() => false);
+  readonly disabled = signal(false);
+  readonly errorState = signal(false);
+
+  constructor() {
+    createFieldSync<number>({
+      componentValue: this.value,
+      valueEquals: Object.is,
+      coerceFromField: (v) => (typeof v === 'number' ? v : Number(v)),
+      shouldSkipFieldValue: (v) => !Number.isFinite(typeof v === 'number' ? v : Number(v)),
+    });
+  }
+}
+
 describe('createFieldSync', () => {
   it('is a no-op without a surrounding form field', () => {
     @Component({ template: '<test-numeric-control />', imports: [NumericControl] })
@@ -68,5 +93,37 @@ describe('createFieldSync', () => {
     fixture.componentInstance.control().value.set(2);
     TestBed.flushEffects();
     expect(ref.value()).toBe(2);
+  });
+
+  it('shouldSkipFieldValue skips reading an absent field but still seeds it', () => {
+    const { accessor, ref } = createMockField<number>({ name: 'volume' });
+    ref.value.set(undefined as unknown as number);
+
+    @Component({
+      template: `
+        <cngx-form-field [field]="field">
+          <test-seeding-control />
+        </cngx-form-field>
+      `,
+      imports: [CngxFormField, SeedingControl],
+    })
+    class Host {
+      readonly control = viewChild.required(SeedingControl);
+      readonly field = accessor;
+    }
+
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    // Read skipped: the control kept its own value against the absent field.
+    expect(fixture.componentInstance.control().value()).toBe(7);
+    // Write forced: the absent field was seeded with the control value.
+    expect(ref.value()).toBe(7);
+
+    // A present (finite) field reads through normally.
+    ref.value.set(3);
+    TestBed.flushEffects();
+    expect(fixture.componentInstance.control().value()).toBe(3);
   });
 });
