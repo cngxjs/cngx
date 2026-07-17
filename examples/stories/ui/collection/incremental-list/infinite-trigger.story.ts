@@ -51,10 +51,4 @@ export const STORY: DemoSpec = {
       <cngx-pgn-infinite cngxIncrementalTrigger root=".demo-incremental-frame" rootMargin="0px 0px 48px 0px" />
     </cngx-incremental-list>
   </div>`,
-  css: `.demo-incremental-frame {
-  max-height: 320px;
-  overflow-y: auto;
-  border: 1px solid var(--mat-sys-outline-variant, #ccc);
-  border-radius: 8px;
-}`,
 };
