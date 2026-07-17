@@ -8,6 +8,7 @@ import type { CngxAsyncState } from '@cngx/core/utils';
 
 import { CngxIncrementalList } from './incremental-list.component';
 import { CNGX_PAGINATOR_HOST } from './incremental-list-host.token';
+import { CngxIncrementalError, CngxIncrementalItem } from './incremental-list-slots';
 
 @Component({
   standalone: true,
@@ -37,6 +38,35 @@ class HostCmp {
   }
   onSize(value: number): void {
     this.sizeEmits.push(value);
+  }
+}
+
+@Component({
+  standalone: true,
+  imports: [CngxIncrementalList, CngxIncrementalItem, CngxIncrementalError],
+  template: `
+    <cngx-incremental-list
+      [total]="total()"
+      [state]="state()"
+      [pageSize]="size()"
+      (retry)="onRetry()"
+    >
+      <ng-template cngxIncrementalItem let-item let-i="index">
+        <span class="custom-item">{{ i }}:{{ item }}</span>
+      </ng-template>
+      <ng-template cngxIncrementalError let-retry="retry" let-error="error">
+        <button class="custom-retry" type="button" (click)="retry()">retry {{ error }}</button>
+      </ng-template>
+    </cngx-incremental-list>
+  `,
+})
+class SlotHostCmp {
+  readonly total = signal(0);
+  readonly state = signal<CngxAsyncState<number[]> | undefined>(undefined);
+  readonly size = signal<number | undefined>(10);
+  retryCount = 0;
+  onRetry(): void {
+    this.retryCount += 1;
   }
 }
 
@@ -188,5 +218,37 @@ describe('CngxIncrementalList', () => {
     const sr = listEl.querySelector('.cngx-incremental-list__sr');
     expect(sr?.getAttribute('aria-live')).toBe('polite');
     expect(sr?.textContent?.trim()).toBe('Nothing here yet');
+  });
+
+  test('a projected item slot renders each accumulated row with its context', async () => {
+    TestBed.configureTestingModule({ providers });
+    const fixture = TestBed.createComponent(SlotHostCmp);
+    await settle(fixture);
+    const manual = createManualState<number[]>();
+    manual.setSuccess([10, 20, 30]);
+    fixture.componentInstance.state.set(manual);
+    await settle(fixture);
+
+    const custom = fixture.nativeElement.querySelectorAll('.custom-item');
+    expect(custom).toHaveLength(3);
+    expect(custom[1].textContent).toContain('1:20');
+  });
+
+  test('a projected error slot renders and its retry() context fires the retry output', async () => {
+    TestBed.configureTestingModule({ providers });
+    const fixture = TestBed.createComponent(SlotHostCmp);
+    await settle(fixture);
+    const manual = createManualState<number[]>();
+    manual.set('loading');
+    manual.setError(new Error('boom'));
+    fixture.componentInstance.state.set(manual);
+    await settle(fixture);
+
+    const retryBtn = fixture.nativeElement.querySelector('.custom-retry') as HTMLButtonElement | null;
+    expect(retryBtn).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('.cngx-incremental-list__error')).toBeNull();
+    retryBtn?.click();
+    await settle(fixture);
+    expect(fixture.componentInstance.retryCount).toBe(1);
   });
 });

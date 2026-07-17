@@ -1,11 +1,14 @@
+import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  contentChild,
   DestroyRef,
   effect,
   inject,
   output,
+  TemplateRef,
   ViewEncapsulation,
 } from '@angular/core';
 
@@ -14,6 +17,14 @@ import { type AsyncView, CngxPaginate, resolveAsyncView } from '@cngx/common/dat
 import { CngxProgress } from '@cngx/ui/feedback';
 
 import { CNGX_PAGINATOR_HOST } from './incremental-list-host.token';
+import {
+  CngxIncrementalEmpty,
+  CngxIncrementalEnd,
+  CngxIncrementalError,
+  type CngxIncrementalErrorContext,
+  CngxIncrementalItem,
+  CngxIncrementalLoading,
+} from './incremental-list-slots';
 
 /**
  * Append-style collection organism. \
@@ -50,7 +61,7 @@ import { CNGX_PAGINATOR_HOST } from './incremental-list-host.token';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [CngxProgress, CngxLiveRegion],
+  imports: [CngxProgress, CngxLiveRegion, NgTemplateOutlet],
   templateUrl: './incremental-list.component.html',
   styleUrl: './incremental-list.component.css',
   hostDirectives: [
@@ -70,9 +81,33 @@ export class CngxIncrementalList<T = unknown> {
   readonly pageIndexChange = output<number>();
   /** Emits the effective page size on every change. */
   readonly pageSizeChange = output<number>();
+  /**
+   * Emits when the error view's retry affordance is activated (the built-in
+   * button or a projected error slot's `retry()` context). The consumer re-runs
+   * its data source; the organism owns no fetch of its own.
+   */
+  readonly retry = output<void>();
 
   protected readonly paginate = inject(CngxPaginate);
   private readonly destroyRef = inject(DestroyRef);
+
+  // View slot resolvers. Direct contentChild field initialisers (AOT NG8110
+  // rejects them from a helper); read as TemplateRef so the cascade computeds
+  // return a renderable reference or null.
+  private readonly itemSlot = contentChild(CngxIncrementalItem, { read: TemplateRef });
+  private readonly emptySlot = contentChild(CngxIncrementalEmpty, { read: TemplateRef });
+  private readonly errorSlot = contentChild(CngxIncrementalError, { read: TemplateRef });
+  private readonly endSlot = contentChild(CngxIncrementalEnd, { read: TemplateRef });
+  private readonly loadingSlot = contentChild(CngxIncrementalLoading, { read: TemplateRef });
+
+  // Slot cascade: instance slot -> built-in default (the config middle tier is
+  // inserted in the config-cascade commit). Returns existing TemplateRef refs
+  // or null - reference-stable, so no explicit equal fn is needed.
+  protected readonly itemTemplate = computed(() => this.itemSlot() ?? null);
+  protected readonly emptyTemplate = computed(() => this.emptySlot() ?? null);
+  protected readonly errorTemplate = computed(() => this.errorSlot() ?? null);
+  protected readonly endTemplate = computed(() => this.endSlot() ?? null);
+  protected readonly loadingTemplate = computed(() => this.loadingSlot() ?? null);
 
   /**
    * Which region renders, resolved from the single `[state]` source through the
@@ -108,24 +143,40 @@ export class CngxIncrementalList<T = unknown> {
     { equal: (a, b) => a.length === b.length && a.every((item, i) => Object.is(item, b[i])) },
   );
 
+  // Built-in view labels. English defaults; the config-cascade commit re-points
+  // these bodies at the injected config without touching the template.
+  protected readonly loadingLabel = computed(() => 'Loading');
+  protected readonly emptyLabel = computed(() => 'Nothing here yet');
+  protected readonly errorLabel = computed(() => 'Failed to load');
+  protected readonly retryLabel = computed(() => 'Retry');
+  protected readonly endLabel = computed(() => `All ${this.paginate.total()} loaded`);
+
   /**
-   * Polite live-region message - communicated on every settle. English
-   * built-in defaults; the config cascade routes these through
-   * consumer-supplied labels in a later phase.
+   * Polite live-region message - communicated on every settle through the same
+   * labels the visible views use, so a config or slot override stays in sync.
    */
   protected readonly statusMessage = computed(() => {
     if (this.paginate.isBusy()) {
-      return 'Loading';
+      return this.loadingLabel();
     }
     const view = this.view();
     if (view === 'empty') {
-      return 'Nothing here yet';
+      return this.emptyLabel();
     }
     if (view === 'error' || view === 'content+error') {
-      return 'Failed to load';
+      return this.errorLabel();
     }
-    return this.exhausted() ? `All ${this.paginate.total()} loaded` : '';
+    return this.exhausted() ? this.endLabel() : '';
   });
+
+  /** Stable retry callback - emits the `retry` output; shared by the built-in button and the error slot context. */
+  protected readonly retryFn = (): void => this.retry.emit();
+
+  /** Context handed to a projected error slot: the retry callback and the raw error. */
+  protected readonly errorContext = computed<CngxIncrementalErrorContext>(
+    () => ({ retry: this.retryFn, error: this.paginate.state()?.error() }),
+    { equal: (a, b) => a.retry === b.retry && a.error === b.error },
+  );
 
   // Two-way [(pageIndex)] / [(pageSize)] plumbing, mirroring CngxPaginator: the
   // brain's controlled inputs are aliased through hostDirectives and this

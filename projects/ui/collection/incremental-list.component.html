@@ -1,28 +1,56 @@
 @switch (view()) {
   @case ('skeleton') {
-    <cngx-progress
-      class="cngx-incremental-list__progress"
-      variant="linear"
-      [state]="paginate.state()"
-      label="Loading"
-    />
+    @if (loadingTemplate(); as tpl) {
+      <ng-container [ngTemplateOutlet]="tpl" />
+    } @else {
+      <cngx-progress
+        class="cngx-incremental-list__progress"
+        variant="linear"
+        [state]="paginate.state()"
+        [label]="loadingLabel()"
+      />
+    }
   }
   @case ('empty') {
-    <p class="cngx-incremental-list__message cngx-incremental-list__empty">Nothing here yet</p>
+    @if (emptyTemplate(); as tpl) {
+      <ng-container [ngTemplateOutlet]="tpl" />
+    } @else {
+      <p class="cngx-incremental-list__message cngx-incremental-list__empty">{{ emptyLabel() }}</p>
+    }
   }
   @case ('error') {
-    <p class="cngx-incremental-list__message cngx-incremental-list__error">Failed to load</p>
+    @if (errorTemplate(); as tpl) {
+      <ng-container [ngTemplateOutlet]="tpl" [ngTemplateOutletContext]="errorContext()" />
+    } @else {
+      <div class="cngx-incremental-list__error">
+        <p class="cngx-incremental-list__error-text">{{ errorLabel() }}</p>
+        <button type="button" class="cngx-incremental-list__retry" (click)="retryFn()">
+          {{ retryLabel() }}
+        </button>
+      </div>
+    }
   }
   @default {
     <ul class="cngx-incremental-list__items">
       @for (item of items(); track $index) {
-        <li class="cngx-incremental-list__item">{{ item }}</li>
+        <li class="cngx-incremental-list__item">
+          @if (itemTemplate(); as tpl) {
+            <ng-container
+              [ngTemplateOutlet]="tpl"
+              [ngTemplateOutletContext]="{ $implicit: item, index: $index }"
+            />
+          } @else {
+            {{ item }}
+          }
+        </li>
       }
     </ul>
     @if (exhausted()) {
-      <p class="cngx-incremental-list__message cngx-incremental-list__end">
-        All {{ paginate.total() }} loaded
-      </p>
+      @if (endTemplate(); as tpl) {
+        <ng-container [ngTemplateOutlet]="tpl" />
+      } @else {
+        <p class="cngx-incremental-list__message cngx-incremental-list__end">{{ endLabel() }}</p>
+      }
     }
   }
 }

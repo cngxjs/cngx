@@ -6,6 +6,7 @@
   display: block;
   --cngx-incremental-list-item-padding: var(--cngx-space-sm, 0.5rem);
   --cngx-incremental-list-message-padding: var(--cngx-space-md, 1rem);
+  --cngx-incremental-list-error-gap: var(--cngx-space-sm, 0.5rem);
 }
 
 .cngx-incremental-list__items {
@@ -23,6 +24,20 @@
   padding: var(--cngx-incremental-list-message-padding);
   text-align: center;
   color: var(--cngx-incremental-list-message-color, var(--mat-sys-on-surface-variant, inherit));
+}
+
+.cngx-incremental-list__error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--cngx-incremental-list-error-gap);
+  padding: var(--cngx-incremental-list-message-padding);
+}
+
+.cngx-incremental-list__error-text {
+  margin: 0;
+  text-align: center;
+  color: var(--cngx-incremental-list-error-color, var(--mat-sys-error, inherit));
 }
 
 /* Visually-hidden live region - present in the DOM, announced by AT. Mirrors the
