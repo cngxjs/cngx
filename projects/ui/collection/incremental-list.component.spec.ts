@@ -25,6 +25,8 @@ import { CngxIncrementalError, CngxIncrementalItem } from './incremental-list-sl
       [pageIndex]="index()"
       [pageSize]="size()"
       [skin]="skin()"
+      [virtualize]="virtualize()"
+      [estimateSize]="estimateSize()"
       (pageIndexChange)="onIndex($event)"
       (pageSizeChange)="onSize($event)"
       (retry)="onRetry()"
@@ -37,6 +39,8 @@ class HostCmp {
   readonly index = signal<number | undefined>(undefined);
   readonly size = signal<number | undefined>(undefined);
   readonly skin = signal<CngxIncrementalListSkin>('plain');
+  readonly virtualize = signal(false);
+  readonly estimateSize = signal(48);
 
   readonly indexEmits: number[] = [];
   readonly sizeEmits: number[] = [];
@@ -396,6 +400,14 @@ describe('CngxIncrementalList', () => {
     host.skin.set('card');
     await settle(fixture);
     expect(listEl.getAttribute('data-skin')).toBe('card');
+  });
+
+  test('the virtualize input reflects onto [data-virtualize] (absent by default)', async () => {
+    const { fixture, host, listEl } = await setup();
+    expect(listEl.getAttribute('data-virtualize')).toBeNull();
+    host.virtualize.set(true);
+    await settle(fixture);
+    expect(listEl.getAttribute('data-virtualize')).toBe('');
   });
 
   test('the trackBy input drives the accumulated @for identity', async () => {

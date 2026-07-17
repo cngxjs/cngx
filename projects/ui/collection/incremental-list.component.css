@@ -28,6 +28,16 @@
 
 @layer cngx.components {
   @scope (.cngx-incremental-list) {
+    /* Virtualized scroll viewport: the single node the recycler observes. The
+       overflow + bounded height live here, not on the organism host, so the
+       card skin's host `overflow: hidden` never clips the scroll. The height is
+       a plain use-site var (a viewport height is not a density spacing rung), so
+       no SET-from-scale rule - a deliberate, tracked opt-out. */
+    .cngx-incremental-list__viewport {
+      overflow-y: auto;
+      max-block-size: var(--cngx-incremental-list-viewport-height, 60vh);
+    }
+
     .cngx-incremental-list__items {
       margin: 0;
       padding: 0;

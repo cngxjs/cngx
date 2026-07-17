@@ -1,5 +1,6 @@
 import { NgTemplateOutlet } from '@angular/common';
 import {
+  booleanAttribute,
   ChangeDetectionStrategy,
   Component,
   computed,
@@ -87,11 +88,27 @@ export type CngxIncrementalListSkin = 'plain' | 'divided' | 'card';
     class: 'cngx-incremental-list',
     '[attr.aria-busy]': 'paginate.isBusy()',
     '[attr.data-skin]': 'skin()',
+    '[attr.data-virtualize]': "virtualize() ? '' : null",
   },
 })
 export class CngxIncrementalList<T = unknown> {
   /** Visual skin; reflected onto `[data-skin]`. Paint-only. */
   readonly skin = input<CngxIncrementalListSkin>('plain');
+
+  /**
+   * Opt into DOM recycling. When set, the accumulated content branch renders
+   * only the visible window of rows through an internal virtualized body inside
+   * a bounded scroll viewport; every off-window row is a pixel spacer. Unset
+   * (default) keeps the render-all path - the recycler never constructs, so a
+   * small list pays nothing. Reflected onto `[data-virtualize]`.
+   */
+  readonly virtualize = input(false, { transform: booleanAttribute });
+
+  /**
+   * Initial per-row height estimate (px) for the virtualized window - the first
+   * guess before a row is measured. Ignored unless `[virtualize]` is set.
+   */
+  readonly estimateSize = input<number>(48);
 
   /** Emits the effective page index on every change - navigation or `total`-shrink clamp. */
   readonly pageIndexChange = output<number>();
