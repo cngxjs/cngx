@@ -29,7 +29,7 @@ class NumericControl implements CngxFormFieldControl {
   }
 }
 
-/** Control that always asserts its own value via `skipFieldValue` (default 7). */
+/** Control that always asserts its own value via `shouldSkipFieldValue` (default 7). */
 @Component({
   selector: 'test-seeding-control',
   standalone: true,
@@ -49,7 +49,7 @@ class SeedingControl implements CngxFormFieldControl {
       componentValue: this.value,
       valueEquals: Object.is,
       coerceFromField: (v) => (typeof v === 'number' ? v : Number(v)),
-      skipFieldValue: (v) => !Number.isFinite(typeof v === 'number' ? v : Number(v)),
+      shouldSkipFieldValue: (v) => !Number.isFinite(typeof v === 'number' ? v : Number(v)),
     });
   }
 }
@@ -95,7 +95,7 @@ describe('createFieldSync', () => {
     expect(ref.value()).toBe(2);
   });
 
-  it('skipFieldValue skips reading an absent field but still seeds it', () => {
+  it('shouldSkipFieldValue skips reading an absent field but still seeds it', () => {
     const { accessor, ref } = createMockField<number>({ name: 'volume' });
     ref.value.set(undefined as unknown as number);
 

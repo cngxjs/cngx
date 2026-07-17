@@ -89,12 +89,12 @@ export class CngxRangeSliderFieldBridge implements CngxFormFieldControl {
     // A range slider always asserts its own tuple: a non-tuple field is skipped
     // on read but still seeded on write. `toFieldValue` spreads so the field
     // owns a fresh array. The coerceFromField fallback is unreachable -
-    // skipFieldValue guarantees a valid tuple by the time it runs.
+    // shouldSkipFieldValue guarantees a valid tuple by the time it runs.
     createFieldSync<[number, number]>({
       componentValue: this.slider.value,
       valueEquals: tupleEq,
       coerceFromField: (v) => toTuple(v) ?? [0, 0],
-      skipFieldValue: (v) => toTuple(v) === null,
+      shouldSkipFieldValue: (v) => toTuple(v) === null,
       toFieldValue: (v) => [...v],
     });
   }

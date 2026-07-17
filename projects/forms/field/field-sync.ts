@@ -25,7 +25,7 @@ export interface FieldSyncOptions<V> {
    * the field on mount). Omit for controls where the field is the sole source
    * of truth - the default sync reads and writes symmetrically.
    */
-  readonly skipFieldValue?: (fieldValue: unknown) => boolean;
+  readonly shouldSkipFieldValue?: (fieldValue: unknown) => boolean;
 }
 
 /**
@@ -61,7 +61,7 @@ export function createFieldSync<V>(options: FieldSyncOptions<V>): void {
     return;
   }
   const toField = options.toFieldValue ?? ((v: V) => v as unknown);
-  const skip = options.skipFieldValue;
+  const skip = options.shouldSkipFieldValue;
 
   effect(() => {
     const fieldRef: CngxFieldRef = presenter.fieldState();

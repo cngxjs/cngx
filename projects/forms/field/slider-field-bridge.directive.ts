@@ -94,12 +94,12 @@ export class CngxSliderFieldBridge implements CngxFormFieldControl {
   constructor() {
     // A numeric slider always asserts its own value: an absent/non-finite field
     // is skipped on read but still seeded on write (createFieldSync's
-    // skipFieldValue). Number() coercion covers string field values.
+    // shouldSkipFieldValue). Number() coercion covers string field values.
     createFieldSync<number>({
       componentValue: this.slider.value,
       valueEquals: Object.is,
       coerceFromField: (v) => (typeof v === 'number' ? v : Number(v)),
-      skipFieldValue: (v) => !Number.isFinite(typeof v === 'number' ? v : Number(v)),
+      shouldSkipFieldValue: (v) => !Number.isFinite(typeof v === 'number' ? v : Number(v)),
     });
   }
 
