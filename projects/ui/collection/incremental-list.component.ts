@@ -14,8 +14,10 @@ import {
 
 import { CngxLiveRegion } from '@cngx/common/a11y';
 import { type AsyncView, CngxPaginate, resolveAsyncView } from '@cngx/common/data';
+import { CngxEmptyState } from '@cngx/ui/empty-state';
 import { CngxProgress } from '@cngx/ui/feedback';
 
+import { injectIncrementalListConfig } from './incremental-list-config';
 import { CNGX_PAGINATOR_HOST } from './incremental-list-host.token';
 import {
   CngxIncrementalEmpty,
@@ -61,7 +63,7 @@ import {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [CngxProgress, CngxLiveRegion, NgTemplateOutlet],
+  imports: [CngxProgress, CngxEmptyState, CngxLiveRegion, NgTemplateOutlet],
   templateUrl: './incremental-list.component.html',
   styleUrl: './incremental-list.component.css',
   hostDirectives: [
@@ -90,6 +92,7 @@ export class CngxIncrementalList<T = unknown> {
 
   protected readonly paginate = inject(CngxPaginate);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly config = injectIncrementalListConfig();
 
   // View slot resolvers. Direct contentChild field initialisers (AOT NG8110
   // rejects them from a helper); read as TemplateRef so the cascade computeds
@@ -100,14 +103,24 @@ export class CngxIncrementalList<T = unknown> {
   private readonly endSlot = contentChild(CngxIncrementalEnd, { read: TemplateRef });
   private readonly loadingSlot = contentChild(CngxIncrementalLoading, { read: TemplateRef });
 
-  // Slot cascade: instance slot -> built-in default (the config middle tier is
-  // inserted in the config-cascade commit). Returns existing TemplateRef refs
-  // or null - reference-stable, so no explicit equal fn is needed.
-  protected readonly itemTemplate = computed(() => this.itemSlot() ?? null);
-  protected readonly emptyTemplate = computed(() => this.emptySlot() ?? null);
-  protected readonly errorTemplate = computed(() => this.errorSlot() ?? null);
-  protected readonly endTemplate = computed(() => this.endSlot() ?? null);
-  protected readonly loadingTemplate = computed(() => this.loadingSlot() ?? null);
+  // Three-stage slot cascade: instance slot -> config.templates.<key> ->
+  // built-in default. Returns existing TemplateRef refs or null -
+  // reference-stable, so no explicit equal fn is needed.
+  protected readonly itemTemplate = computed(
+    () => this.itemSlot() ?? this.config.templates?.item ?? null,
+  );
+  protected readonly emptyTemplate = computed(
+    () => this.emptySlot() ?? this.config.templates?.empty ?? null,
+  );
+  protected readonly errorTemplate = computed(
+    () => this.errorSlot() ?? this.config.templates?.error ?? null,
+  );
+  protected readonly endTemplate = computed(
+    () => this.endSlot() ?? this.config.templates?.end ?? null,
+  );
+  protected readonly loadingTemplate = computed(
+    () => this.loadingSlot() ?? this.config.templates?.loading ?? null,
+  );
 
   /**
    * Which region renders, resolved from the single `[state]` source through the
@@ -143,13 +156,13 @@ export class CngxIncrementalList<T = unknown> {
     { equal: (a, b) => a.length === b.length && a.every((item, i) => Object.is(item, b[i])) },
   );
 
-  // Built-in view labels. English defaults; the config-cascade commit re-points
-  // these bodies at the injected config without touching the template.
-  protected readonly loadingLabel = computed(() => 'Loading');
-  protected readonly emptyLabel = computed(() => 'Nothing here yet');
-  protected readonly errorLabel = computed(() => 'Failed to load');
-  protected readonly retryLabel = computed(() => 'Retry');
-  protected readonly endLabel = computed(() => `All ${this.paginate.total()} loaded`);
+  // Built-in view labels, resolved through the config cascade (EN library
+  // defaults). Consumers re-phrase or localise via provideIncrementalListConfig.
+  protected readonly loadingLabel = computed(() => this.config.ariaLabels.loading);
+  protected readonly emptyLabel = computed(() => this.config.ariaLabels.empty);
+  protected readonly errorLabel = computed(() => this.config.ariaLabels.error);
+  protected readonly retryLabel = computed(() => this.config.ariaLabels.retry);
+  protected readonly endLabel = computed(() => this.config.ariaLabels.endReached(this.paginate.total()));
 
   /**
    * Polite live-region message - communicated on every settle through the same

@@ -15,7 +15,7 @@
     @if (emptyTemplate(); as tpl) {
       <ng-container [ngTemplateOutlet]="tpl" />
     } @else {
-      <p class="cngx-incremental-list__message cngx-incremental-list__empty">{{ emptyLabel() }}</p>
+      <cngx-empty-state class="cngx-incremental-list__empty" [title]="emptyLabel()" />
     }
   }
   @case ('error') {

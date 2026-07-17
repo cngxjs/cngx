@@ -6,6 +6,10 @@ import { describe, expect, test } from 'vitest';
 import { CngxPaginate, createManualState } from '@cngx/common/data';
 import type { CngxAsyncState } from '@cngx/core/utils';
 
+import {
+  provideIncrementalListConfigAt,
+  withIncrementalListAriaLabels,
+} from './incremental-list-config';
 import { CngxIncrementalList } from './incremental-list.component';
 import { CNGX_PAGINATOR_HOST } from './incremental-list-host.token';
 import { CngxIncrementalError, CngxIncrementalItem } from './incremental-list-slots';
@@ -68,6 +72,22 @@ class SlotHostCmp {
   onRetry(): void {
     this.retryCount += 1;
   }
+}
+
+@Component({
+  standalone: true,
+  imports: [CngxIncrementalList],
+  viewProviders: [
+    ...provideIncrementalListConfigAt(
+      withIncrementalListAriaLabels({ empty: 'Nothing to display' }),
+    ),
+  ],
+  template: `<cngx-incremental-list [total]="total()" [state]="state()" [pageSize]="size()" />`,
+})
+class ConfigHostCmp {
+  readonly total = signal(2);
+  readonly state = signal<CngxAsyncState<number[]> | undefined>(undefined);
+  readonly size = signal<number | undefined>(2);
 }
 
 /** Structural view of the organism's derived read surface (protected members). */
@@ -250,5 +270,29 @@ describe('CngxIncrementalList', () => {
     retryBtn?.click();
     await settle(fixture);
     expect(fixture.componentInstance.retryCount).toBe(1);
+  });
+
+  test('the built-in empty view renders cngx-empty-state', async () => {
+    const { fixture, host, listEl } = await setup();
+    const manual = createManualState<number[]>();
+    host.state.set(manual);
+    manual.setSuccess([]);
+    await settle(fixture);
+    expect(listEl.querySelector('cngx-empty-state.cngx-incremental-list__empty')).not.toBeNull();
+  });
+
+  test('provideIncrementalListConfigAt overrides a label at component scope', async () => {
+    TestBed.configureTestingModule({ providers });
+    const fixture = TestBed.createComponent(ConfigHostCmp);
+    await settle(fixture);
+    const manual = createManualState<number[]>();
+    manual.setSuccess([]);
+    fixture.componentInstance.state.set(manual);
+    await settle(fixture);
+
+    const sr = fixture.nativeElement.querySelector('.cngx-incremental-list__sr');
+    expect(sr?.textContent?.trim()).toBe('Nothing to display');
+    const empty = fixture.nativeElement.querySelector('cngx-empty-state.cngx-incremental-list__empty');
+    expect(empty?.textContent).toContain('Nothing to display');
   });
 });
