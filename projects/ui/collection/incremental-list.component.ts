@@ -7,6 +7,7 @@ import {
   DestroyRef,
   effect,
   inject,
+  input,
   output,
   TemplateRef,
   ViewEncapsulation,
@@ -89,6 +90,14 @@ export class CngxIncrementalList<T = unknown> {
    * its data source; the organism owns no fetch of its own.
    */
   readonly retry = output<void>();
+
+  /**
+   * Item identity for the accumulated `@for`. Defaults to the row index
+   * (append-safe: appended rows keep their position). Supply a key fn when the
+   * bound `[state]` data can be replaced or reordered, so a projected item
+   * template keeps its per-row state instead of being reused by position.
+   */
+  readonly trackBy = input<(index: number, item: T) => unknown>((index) => index);
 
   protected readonly paginate = inject(CngxPaginate);
   private readonly destroyRef = inject(DestroyRef);
@@ -190,6 +199,9 @@ export class CngxIncrementalList<T = unknown> {
     () => ({ retry: this.retryFn, error: this.paginate.state()?.error() }),
     { equal: (a, b) => a.retry === b.retry && a.error === b.error },
   );
+
+  /** `@for` track expression - delegates to the `trackBy` input (index by default). */
+  protected trackItem = (index: number, item: T): unknown => this.trackBy()(index, item);
 
   // Two-way [(pageIndex)] / [(pageSize)] plumbing, mirroring CngxPaginator: the
   // brain's controlled inputs are aliased through hostDirectives and this

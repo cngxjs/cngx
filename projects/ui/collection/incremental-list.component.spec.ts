@@ -111,6 +111,20 @@ class TriggerHostCmp {
   readonly size = signal<number | undefined>(2);
 }
 
+@Component({
+  standalone: true,
+  imports: [CngxIncrementalList],
+  template: `<cngx-incremental-list [state]="state()" [total]="3" [pageSize]="10" [trackBy]="trackFn" />`,
+})
+class TrackHostCmp {
+  readonly state = signal<CngxAsyncState<number[]> | undefined>(undefined);
+  readonly seen: unknown[] = [];
+  readonly trackFn = (_index: number, item: unknown): unknown => {
+    this.seen.push(item);
+    return item;
+  };
+}
+
 /** Structural view of the organism's derived read surface (protected members). */
 interface ListInternals {
   items(): readonly number[];
@@ -369,5 +383,17 @@ describe('CngxIncrementalList', () => {
     retryBtn?.click();
     await settle(fixture);
     expect(host.retryCount).toBe(1);
+  });
+
+  test('the trackBy input drives the accumulated @for identity', async () => {
+    TestBed.configureTestingModule({ providers });
+    const fixture = TestBed.createComponent(TrackHostCmp);
+    await settle(fixture);
+    const manual = createManualState<number[]>();
+    manual.setSuccess([10, 20, 30]);
+    fixture.componentInstance.state.set(manual);
+    await settle(fixture);
+    // The custom key fn is invoked once per revealed row.
+    expect(fixture.componentInstance.seen).toEqual([10, 20, 30]);
   });
 });

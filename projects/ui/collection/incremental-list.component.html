@@ -29,7 +29,7 @@
   }
   @default {
     <ul class="cngx-incremental-list__items">
-      @for (item of items(); track $index) {
+      @for (item of items(); track trackItem($index, item)) {
         <li class="cngx-incremental-list__item">
           @if (itemTemplate(); as tpl) {
             <ng-container
