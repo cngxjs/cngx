@@ -26,6 +26,7 @@ import { CngxIncrementalError, CngxIncrementalItem } from './incremental-list-sl
       [pageSize]="size()"
       (pageIndexChange)="onIndex($event)"
       (pageSizeChange)="onSize($event)"
+      (retry)="onRetry()"
     ></cngx-incremental-list>
   `,
 })
@@ -37,12 +38,16 @@ class HostCmp {
 
   readonly indexEmits: number[] = [];
   readonly sizeEmits: number[] = [];
+  retryCount = 0;
 
   onIndex(value: number): void {
     this.indexEmits.push(value);
   }
   onSize(value: number): void {
     this.sizeEmits.push(value);
+  }
+  onRetry(): void {
+    this.retryCount += 1;
   }
 }
 
@@ -335,5 +340,34 @@ describe('CngxIncrementalList', () => {
     expect(el.querySelectorAll('.cngx-incremental-list__item')).toHaveLength(4);
     expect(el.querySelector('.cngx-paginator__load-more')).toBeNull();
     expect(el.querySelector('.cngx-incremental-list__end')).not.toBeNull();
+  });
+
+  test('a subsequent-page error keeps the list visible and renders a reachable inline retry', async () => {
+    const { fixture, host, listEl } = await setup();
+    const manual = createManualState<number[]>();
+    host.state.set(manual);
+    host.size.set(10);
+    manual.setSuccess([1, 2, 3]);
+    await settle(fixture);
+    expect(listEl.querySelectorAll('.cngx-incremental-list__item')).toHaveLength(3);
+
+    // Error after a prior success is content+error (not a first load): the
+    // accumulated rows stay, an inline error + retry appears, and AT is told.
+    manual.setError(new Error('page 2 failed'));
+    await settle(fixture);
+    expect(listEl.querySelectorAll('.cngx-incremental-list__item')).toHaveLength(3);
+    const inline = listEl.querySelector('.cngx-incremental-list__inline-error');
+    expect(inline).not.toBeNull();
+    expect(listEl.querySelector('.cngx-incremental-list__sr')?.textContent?.trim()).toBe(
+      'Failed to load',
+    );
+
+    const retryBtn = inline?.querySelector('.cngx-incremental-list__retry') as
+      | HTMLButtonElement
+      | null;
+    expect(retryBtn).not.toBeNull();
+    retryBtn?.click();
+    await settle(fixture);
+    expect(host.retryCount).toBe(1);
   });
 });

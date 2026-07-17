@@ -39,6 +39,12 @@ export const STORY: DemoSpec = {
     this.listState.reset();
     this.listState.set('loading');
     this.listState.setError(new Error('Network unreachable'));
+  }
+  protected showPageError(): void {
+    // Error after a prior success = content+error: the accumulated list stays
+    // visible and an inline retry appears - the append list's core failure mode.
+    this.listState.setSuccess(this.people);
+    this.listState.setError(new Error('Could not load the next page'));
   }`,
   template: `  <cngx-incremental-list
     [state]="listState"
@@ -54,7 +60,8 @@ export const STORY: DemoSpec = {
     <button type="button" class="chip" (click)="showLoading()">loading</button>
     <button type="button" class="chip" (click)="showSuccess()">success</button>
     <button type="button" class="chip" (click)="showEmpty()">empty</button>
-    <button type="button" class="chip" (click)="showError()">error</button>
+    <button type="button" class="chip" (click)="showError()">error (first load)</button>
+    <button type="button" class="chip" (click)="showPageError()">error (keeps list)</button>
   </div>`,
   templateChrome: `<div class="status-row" style="margin-top:8px">
     <span class="cngx-ex-status-readout">status: {{ listState.status() }}</span>

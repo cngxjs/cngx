@@ -26,12 +26,19 @@
   color: var(--cngx-incremental-list-message-color, var(--mat-sys-on-surface-variant, inherit));
 }
 
-.cngx-incremental-list__error {
+.cngx-incremental-list__error,
+.cngx-incremental-list__inline-error {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--cngx-incremental-list-error-gap);
   padding: var(--cngx-incremental-list-message-padding);
+}
+
+/* Subsequent-page error sits below the still-visible accumulated list, so a
+   separator distinguishes it from the rows above. */
+.cngx-incremental-list__inline-error {
+  border-top: var(--cngx-incremental-list-inline-error-border, 1px solid var(--mat-sys-outline-variant, #ccc));
 }
 
 .cngx-incremental-list__error-text {
