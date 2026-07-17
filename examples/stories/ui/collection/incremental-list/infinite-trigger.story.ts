@@ -3,9 +3,9 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxIncrementalList: Infinite trigger',
   subtitle:
-    'Same organism, different trigger. A projected <code>cngx-pgn-infinite</code> drops a sentinel that auto-advances the page as it enters the scroll container, so the accumulated slice grows on scroll. Binding <code>[state]</code> lets each simulated fetch flip busy, so the sentinel paces itself instead of racing through every page.',
+    'Same organism, different trigger. A projected <code>cngx-pgn-infinite</code> drops a sentinel at the bottom of the scroll frame; scrolling to it auto-advances the page, and the accumulated slice grows one batch at a time. Binding <code>[state]</code> flips busy during each simulated fetch, so the spinner shows before the next rows arrive.',
   description:
-    'The infinite segment composes <code>CngxInfiniteScroll</code> and injects the same <code>CNGX_PAGINATOR_HOST</code> the organism provides - it reads <code>isBusy()</code> / <code>isLast()</code> and calls <code>next()</code>. The organism keeps rendering content while busy (it is no longer a first load), so the list stays visible as the next batch loads. On the last page the trigger region gives way to the end-reached label.',
+    'The infinite segment composes <code>CngxInfiniteScroll</code> and injects the same <code>CNGX_PAGINATOR_HOST</code> the organism provides - it reads <code>isBusy()</code> / <code>isLast()</code> and calls <code>next()</code>. The demo reveals each page only when its fetch settles (like a real data source), so the list grows on scroll rather than all at once; the organism keeps the loaded rows visible while the next batch loads. On the last page the trigger region gives way to the end-reached label.',
   level: 'organism',
   audience: ['dev'],
   artifact: 'standalone',
@@ -17,38 +17,45 @@ export const STORY: DemoSpec = {
     "import { PEOPLE, type Person } from '../../../../fixtures';",
   ],
   imports: ['CngxIncrementalList', 'CngxIncrementalItem', 'CngxPaginatorInfinite'],
-  setup: `protected readonly people: Person[] = Array.from({ length: 6 }, (_, copy: number) =>
+  setup: `protected readonly allPeople: Person[] = Array.from({ length: 6 }, (_, copy: number) =>
     PEOPLE.map((p: Person) => (copy === 0 ? p : { ...p, name: p.name + ' #' + (copy + 1) })),
   ).flat();
-  protected readonly listState = createManualState<Person[]>();
+  protected readonly pageSize = signal(10);
   protected readonly pageIndex = signal(0);
-  protected readonly pageSize = signal(6);
+  // Rows revealed so far. The first page overflows the frame, so the sentinel
+  // starts below the fold and only fires once the user scrolls to it.
+  protected readonly loaded = signal(10);
+  protected readonly listState = createManualState<Person[]>();
   constructor() {
-    this.listState.setSuccess(this.people);
+    this.listState.setSuccess(this.allPeople.slice(0, this.loaded()));
   }
-  // Pace the auto-load: each advance flips the state to refreshing for a beat so
-  // the sentinel's busy-gate waits instead of racing through every page at once.
+  // Reveal-on-settle: the sentinel advances the page, the simulated fetch flips
+  // busy for a beat, and only on settle does the revealed slice grow - so the
+  // spinner shows first and the next batch appears after, like a real source.
   private readonly _pace = effect(() => {
-    const idx = this.pageIndex();
+    const wanted = Math.min((this.pageIndex() + 1) * this.pageSize(), this.allPeople.length);
     untracked(() => {
-      if (idx === 0) {
+      if (wanted <= this.loaded()) {
         return;
       }
       this.listState.set('refreshing');
-      setTimeout(() => this.listState.setSuccess(this.people), 400);
+      setTimeout(() => {
+        this.loaded.set(wanted);
+        this.listState.setSuccess(this.allPeople.slice(0, wanted));
+      }, 500);
     });
   });`,
   template: `  <div class="demo-incremental-frame">
     <cngx-incremental-list
       [state]="listState"
-      [total]="people.length"
+      [total]="allPeople.length"
       [(pageIndex)]="pageIndex"
       [pageSize]="pageSize()"
     >
       <ng-template cngxIncrementalItem let-p>
         <strong>{{ p.name }}</strong> - {{ p.role }}, {{ p.location }}
       </ng-template>
-      <cngx-pgn-infinite cngxIncrementalTrigger root=".demo-incremental-frame" rootMargin="0px 0px 48px 0px" />
+      <cngx-pgn-infinite cngxIncrementalTrigger root=".demo-incremental-frame" rootMargin="0px" />
     </cngx-incremental-list>
   </div>`,
 };
