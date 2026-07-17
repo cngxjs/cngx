@@ -30,6 +30,15 @@ import {
 } from './incremental-list-slots';
 
 /**
+ * Visual skin. Paint-only - structure, ARIA, and keyboard behaviour are
+ * identical across values; each is reflected onto `[data-skin]`.
+ * - `plain` (default): browser-native list, no chrome.
+ * - `divided`: hairline separators between rows.
+ * - `card`: the list sits on an elevated, rounded surface.
+ */
+export type CngxIncrementalListSkin = 'plain' | 'divided' | 'card';
+
+/**
  * Append-style collection organism. \
  * Accumulates rows across pages (append, don't replace) and switches its view
  * by async status - loading / content / empty / error / end-reached - from a
@@ -77,9 +86,13 @@ import {
   host: {
     class: 'cngx-incremental-list',
     '[attr.aria-busy]': 'paginate.isBusy()',
+    '[attr.data-skin]': 'skin()',
   },
 })
 export class CngxIncrementalList<T = unknown> {
+  /** Visual skin; reflected onto `[data-skin]`. Paint-only. */
+  readonly skin = input<CngxIncrementalListSkin>('plain');
+
   /** Emits the effective page index on every change - navigation or `total`-shrink clamp. */
   readonly pageIndexChange = output<number>();
   /** Emits the effective page size on every change. */

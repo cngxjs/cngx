@@ -2,7 +2,7 @@
  * @module @cngx/ui/collection
  */
 
-export { CngxIncrementalList } from './incremental-list.component';
+export { CngxIncrementalList, type CngxIncrementalListSkin } from './incremental-list.component';
 export { CNGX_PAGINATOR_HOST, type CngxPaginatorHost } from './incremental-list-host.token';
 export {
   CngxIncrementalItem,

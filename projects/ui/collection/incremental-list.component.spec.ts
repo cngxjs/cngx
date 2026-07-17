@@ -11,7 +11,7 @@ import {
   provideIncrementalListConfigAt,
   withIncrementalListAriaLabels,
 } from './incremental-list-config';
-import { CngxIncrementalList } from './incremental-list.component';
+import { CngxIncrementalList, type CngxIncrementalListSkin } from './incremental-list.component';
 import { CNGX_PAGINATOR_HOST } from './incremental-list-host.token';
 import { CngxIncrementalError, CngxIncrementalItem } from './incremental-list-slots';
 
@@ -24,6 +24,7 @@ import { CngxIncrementalError, CngxIncrementalItem } from './incremental-list-sl
       [state]="state()"
       [pageIndex]="index()"
       [pageSize]="size()"
+      [skin]="skin()"
       (pageIndexChange)="onIndex($event)"
       (pageSizeChange)="onSize($event)"
       (retry)="onRetry()"
@@ -35,6 +36,7 @@ class HostCmp {
   readonly state = signal<CngxAsyncState<number[]> | undefined>(undefined);
   readonly index = signal<number | undefined>(undefined);
   readonly size = signal<number | undefined>(undefined);
+  readonly skin = signal<CngxIncrementalListSkin>('plain');
 
   readonly indexEmits: number[] = [];
   readonly sizeEmits: number[] = [];
@@ -383,6 +385,14 @@ describe('CngxIncrementalList', () => {
     retryBtn?.click();
     await settle(fixture);
     expect(host.retryCount).toBe(1);
+  });
+
+  test('the skin input reflects onto [data-skin] (default plain)', async () => {
+    const { fixture, host, listEl } = await setup();
+    expect(listEl.getAttribute('data-skin')).toBe('plain');
+    host.skin.set('card');
+    await settle(fixture);
+    expect(listEl.getAttribute('data-skin')).toBe('card');
   });
 
   test('the trackBy input drives the accumulated @for identity', async () => {
