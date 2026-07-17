@@ -5,6 +5,7 @@ import { describe, expect, test } from 'vitest';
 
 import { CngxPaginate, createManualState } from '@cngx/common/data';
 import type { CngxAsyncState } from '@cngx/core/utils';
+import { CngxPaginatorLoadMore } from '@cngx/ui/paginator';
 
 import {
   provideIncrementalListConfigAt,
@@ -86,6 +87,21 @@ class SlotHostCmp {
 })
 class ConfigHostCmp {
   readonly total = signal(2);
+  readonly state = signal<CngxAsyncState<number[]> | undefined>(undefined);
+  readonly size = signal<number | undefined>(2);
+}
+
+@Component({
+  standalone: true,
+  imports: [CngxIncrementalList, CngxPaginatorLoadMore],
+  template: `
+    <cngx-incremental-list [total]="total()" [state]="state()" [pageSize]="size()">
+      <cngx-pgn-load-more cngxIncrementalTrigger />
+    </cngx-incremental-list>
+  `,
+})
+class TriggerHostCmp {
+  readonly total = signal(0);
   readonly state = signal<CngxAsyncState<number[]> | undefined>(undefined);
   readonly size = signal<number | undefined>(2);
 }
@@ -294,5 +310,30 @@ describe('CngxIncrementalList', () => {
     expect(sr?.textContent?.trim()).toBe('Nothing to display');
     const empty = fixture.nativeElement.querySelector('cngx-empty-state.cngx-incremental-list__empty');
     expect(empty?.textContent).toContain('Nothing to display');
+  });
+
+  test('a projected load-more trigger advances the slice and is hidden once exhausted', async () => {
+    TestBed.configureTestingModule({ providers });
+    const fixture = TestBed.createComponent(TriggerHostCmp);
+    await settle(fixture);
+    const manual = createManualState<number[]>();
+    manual.setSuccess([1, 2, 3, 4]);
+    fixture.componentInstance.state.set(manual);
+    fixture.componentInstance.total.set(4);
+    await settle(fixture);
+
+    const el = fixture.nativeElement as HTMLElement;
+    // page 0 of 2: slice [0, 2) and the trigger is visible.
+    expect(el.querySelectorAll('.cngx-incremental-list__item')).toHaveLength(2);
+    const loadMore = el.querySelector('.cngx-paginator__load-more') as HTMLButtonElement | null;
+    expect(loadMore).not.toBeNull();
+    expect(el.querySelector('.cngx-incremental-list__end')).toBeNull();
+
+    loadMore?.click();
+    await settle(fixture);
+    // page 1 of 2: cumulative slice [0, 4), now exhausted -> trigger gone, end label shown.
+    expect(el.querySelectorAll('.cngx-incremental-list__item')).toHaveLength(4);
+    expect(el.querySelector('.cngx-paginator__load-more')).toBeNull();
+    expect(el.querySelector('.cngx-incremental-list__end')).not.toBeNull();
   });
 });

@@ -51,6 +51,8 @@
       } @else {
         <p class="cngx-incremental-list__message cngx-incremental-list__end">{{ endLabel() }}</p>
       }
+    } @else {
+      <ng-content select="[cngxIncrementalTrigger]" />
     }
   }
 }

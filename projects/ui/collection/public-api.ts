@@ -26,3 +26,8 @@ export {
   type CngxIncrementalListAriaLabels,
   type CngxIncrementalListTemplates,
 } from './incremental-list-config';
+
+// Trigger atoms re-exported for discoverability - a projected trigger injects
+// the shared CNGX_PAGINATOR_HOST the organism provides. No new component; these
+// are the existing terminal trigger units from @cngx/ui/paginator.
+export { CngxPaginatorLoadMore, CngxPaginatorInfinite } from '@cngx/ui/paginator';
