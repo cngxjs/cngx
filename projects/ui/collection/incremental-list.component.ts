@@ -183,8 +183,19 @@ export class CngxIncrementalList<T = unknown> {
   protected readonly loadingLabel = computed(() => this.config.ariaLabels.loading);
   protected readonly emptyLabel = computed(() => this.config.ariaLabels.empty);
   protected readonly errorLabel = computed(() => this.config.ariaLabels.error);
+  protected readonly pageErrorLabel = computed(() => this.config.ariaLabels.pageError);
   protected readonly retryLabel = computed(() => this.config.ariaLabels.retry);
   protected readonly endLabel = computed(() => this.config.ariaLabels.endReached(this.paginate.total()));
+
+  /**
+   * Error text for the active error view - the distinct `pageError` phrasing
+   * when a subsequent page failed with the list still visible (`content+error`),
+   * the first-load `error` phrasing otherwise. Drives both the built-in visible
+   * text and the live-region announcement so the two never diverge.
+   */
+  protected readonly errorViewLabel = computed(() =>
+    this.view() === 'content+error' ? this.pageErrorLabel() : this.errorLabel(),
+  );
 
   /**
    * Polite live-region message - communicated on every settle through the same
@@ -199,7 +210,7 @@ export class CngxIncrementalList<T = unknown> {
       return this.emptyLabel();
     }
     if (view === 'error' || view === 'content+error') {
-      return this.errorLabel();
+      return this.errorViewLabel();
     }
     return this.exhausted() ? this.endLabel() : '';
   });
@@ -214,7 +225,7 @@ export class CngxIncrementalList<T = unknown> {
   );
 
   /** `@for` track expression - delegates to the `trackBy` input (index by default). */
-  protected trackItem = (index: number, item: T): unknown => this.trackBy()(index, item);
+  protected readonly trackItem = (index: number, item: T): unknown => this.trackBy()(index, item);
 
   // Two-way [(pageIndex)] / [(pageSize)] plumbing, mirroring CngxPaginator: the
   // brain's controlled inputs are aliased through hostDirectives and this

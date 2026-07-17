@@ -26,6 +26,12 @@ export interface CngxIncrementalListAriaLabels {
   readonly empty: string;
   /** Error-view text shown when the first load fails. */
   readonly error: string;
+  /**
+   * Error text shown when a subsequent page fails but the accumulated rows stay
+   * visible (`content+error`). Distinct from `error` so assistive tech can tell
+   * a page-N failure (list preserved) from a first-load failure (nothing shown).
+   */
+  readonly pageError: string;
   /** Retry-button label on the built-in error view. */
   readonly retry: string;
   /** End-reached label once every page is revealed, given the total item count. */
@@ -74,6 +80,7 @@ export const CNGX_INCREMENTAL_LIST_DEFAULTS: CngxIncrementalListConfig = {
     loading: 'Loading',
     empty: 'Nothing here yet',
     error: 'Failed to load',
+    pageError: 'Failed to load more',
     retry: 'Retry',
     endReached: (total) => `All ${total} loaded`,
   },
