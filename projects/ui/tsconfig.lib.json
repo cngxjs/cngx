@@ -23,6 +23,7 @@
       "@cngx/common/stepper": ["dist/common/types/cngx-common-stepper.d.ts"],
       "@cngx/common/tabs": ["dist/common/types/cngx-common-tabs.d.ts"],
       "@cngx/ui/feedback": ["dist/ui/types/cngx-ui-feedback.d.ts"],
+      "@cngx/ui/paginator": ["dist/ui/types/cngx-ui-paginator.d.ts"],
       "@cngx/ui/tabs": ["dist/ui/types/cngx-ui-tabs.d.ts"],
       "@cngx/ui/mat-tabs": ["dist/ui/types/cngx-ui-mat-tabs.d.ts"],
       "@cngx/ui/action-button": ["dist/ui/types/cngx-ui-action-button.d.ts"],

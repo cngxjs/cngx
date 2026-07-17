@@ -1,0 +1,41 @@
+/* Structural skin for the append-style collection organism. Thematic values are
+   CSS custom properties with fallback defaults; the spacing tokens are SET from
+   the global --cngx-space-* scale at the host so a root [data-density] swap
+   re-scales them (density derivation, day-one concern). */
+.cngx-incremental-list {
+  display: block;
+  --cngx-incremental-list-item-padding: var(--cngx-space-sm, 0.5rem);
+  --cngx-incremental-list-message-padding: var(--cngx-space-md, 1rem);
+}
+
+.cngx-incremental-list__items {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cngx-incremental-list__item {
+  padding-block: var(--cngx-incremental-list-item-padding);
+}
+
+.cngx-incremental-list__message {
+  margin: 0;
+  padding: var(--cngx-incremental-list-message-padding);
+  text-align: center;
+  color: var(--cngx-incremental-list-message-color, var(--mat-sys-on-surface-variant, inherit));
+}
+
+/* Visually-hidden live region - present in the DOM, announced by AT. Mirrors the
+   local sr-only rule other cngx organisms ship (action-button, accordion). */
+.cngx-incremental-list__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}

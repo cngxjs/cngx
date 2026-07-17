@@ -1,0 +1,30 @@
+@switch (view()) {
+  @case ('skeleton') {
+    <cngx-progress
+      class="cngx-incremental-list__progress"
+      variant="linear"
+      [state]="paginate.state()"
+      label="Loading"
+    />
+  }
+  @case ('empty') {
+    <p class="cngx-incremental-list__message cngx-incremental-list__empty">Nothing here yet</p>
+  }
+  @case ('error') {
+    <p class="cngx-incremental-list__message cngx-incremental-list__error">Failed to load</p>
+  }
+  @default {
+    <ul class="cngx-incremental-list__items">
+      @for (item of items(); track $index) {
+        <li class="cngx-incremental-list__item">{{ item }}</li>
+      }
+    </ul>
+    @if (exhausted()) {
+      <p class="cngx-incremental-list__message cngx-incremental-list__end">
+        All {{ paginate.total() }} loaded
+      </p>
+    }
+  }
+}
+
+<span cngxLiveRegion class="cngx-incremental-list__sr">{{ statusMessage() }}</span>
