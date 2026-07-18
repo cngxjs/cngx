@@ -15,7 +15,13 @@ import {
 } from '@angular/core';
 
 import { CngxLiveRegion } from '@cngx/common/a11y';
-import { type AsyncView, CngxPaginate, resolveAsyncView } from '@cngx/common/data';
+import {
+  type AsyncView,
+  CngxPaginate,
+  CNGX_RECYCLER_I18N,
+  type RecyclerI18n,
+  resolveAsyncView,
+} from '@cngx/common/data';
 import { CngxEmptyState } from '@cngx/ui/empty-state';
 import { CngxProgress } from '@cngx/ui/feedback';
 
@@ -90,7 +96,28 @@ export type CngxIncrementalListSkin = 'plain' | 'divided' | 'card';
       inputs: ['cngxPageIndex: pageIndex', 'cngxPageSize: pageSize', 'total', 'state'],
     },
   ],
-  providers: [{ provide: CNGX_PAGINATOR_HOST, useExisting: CngxPaginate }],
+  providers: [
+    { provide: CNGX_PAGINATOR_HOST, useExisting: CngxPaginate },
+    {
+      // Route the recycler's SR i18n through the same config cascade the
+      // organism uses, so a consumer localises the load-count announcement via
+      // withIncrementalListAriaLabels alongside the view-state labels. Owner
+      // split: only loaded() carries text; empty()/error()/filtered() stay
+      // silent so the organism's statusMessage live region remains the sole
+      // owner of view-state (no double-announce). The no-state recycler branch
+      // never calls filtered()/error() anyway.
+      provide: CNGX_RECYCLER_I18N,
+      useFactory: (): RecyclerI18n => {
+        const config = injectIncrementalListConfig();
+        return {
+          loaded: (count, total) => config.ariaLabels.loadedMore(count, total),
+          filtered: () => '',
+          empty: () => '',
+          error: () => '',
+        };
+      },
+    },
+  ],
   host: {
     class: 'cngx-incremental-list',
     '[attr.aria-busy]': 'paginate.isBusy()',

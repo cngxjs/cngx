@@ -36,6 +36,15 @@ export interface CngxIncrementalListAriaLabels {
   readonly retry: string;
   /** End-reached label once every page is revealed, given the total item count. */
   readonly endReached: (total: number) => string;
+  /**
+   * Recycler load-count announcement, live-announced when the accumulated total
+   * grows under `[virtualize]`. Owner-split from the view-state live region: the
+   * recycler announcer speaks only load-count, the organism's `statusMessage`
+   * keeps empty / error / end-reached. `count` rows newly revealed, `total`
+   * accumulated. Routed into the recycler's i18n so localisation stays one
+   * cascade.
+   */
+  readonly loadedMore: (count: number, total: number) => string;
 }
 
 /**
@@ -83,6 +92,7 @@ export const CNGX_INCREMENTAL_LIST_DEFAULTS: CngxIncrementalListConfig = {
     pageError: 'Failed to load more',
     retry: 'Retry',
     endReached: (total) => `All ${total} loaded`,
+    loadedMore: (count, total) => `${count} more loaded. ${total} total.`,
   },
 };
 

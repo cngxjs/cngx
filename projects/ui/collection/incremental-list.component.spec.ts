@@ -119,6 +119,33 @@ class TriggerHostCmp {
 
 @Component({
   standalone: true,
+  imports: [CngxIncrementalList, CngxPaginatorLoadMore],
+  viewProviders: [
+    ...provideIncrementalListConfigAt(
+      withIncrementalListAriaLabels({ loadedMore: (count, total) => `MORE ${count} OF ${total}` }),
+    ),
+  ],
+  template: `
+    <cngx-incremental-list
+      [total]="total()"
+      [state]="state()"
+      [pageIndex]="index()"
+      [pageSize]="size()"
+      [virtualize]="true"
+    >
+      <cngx-pgn-load-more cngxIncrementalTrigger />
+    </cngx-incremental-list>
+  `,
+})
+class VirtualI18nHostCmp {
+  readonly total = signal(4);
+  readonly state = signal<CngxAsyncState<number[]> | undefined>(undefined);
+  readonly index = signal<number | undefined>(0);
+  readonly size = signal<number | undefined>(2);
+}
+
+@Component({
+  standalone: true,
   imports: [CngxIncrementalList],
   template: `<cngx-incremental-list [state]="state()" [total]="3" [pageSize]="10" [trackBy]="trackFn" />`,
 })
@@ -497,10 +524,40 @@ describe('CngxIncrementalList', () => {
       expect(parseFloat(ul.style.paddingBlockEnd)).toBeGreaterThan(0);
     });
 
-    test('[virtualize] unset renders every accumulated row (regression guard)', async () => {
+    test('[virtualize] unset renders every accumulated row; no recycler announcer (regression guard)', async () => {
       const { listEl } = await reveal(300, false);
       expect(listEl.querySelectorAll('.cngx-incremental-list__item')).toHaveLength(300);
       expect(listEl.querySelector('.cngx-incremental-list__viewport')).toBeNull();
+      // The recycler announcer rides the body component - absent in render-all.
+      expect(listEl.querySelector('cngx-recycler-announcer')).toBeNull();
+    });
+
+    test('adds the recycler announcer in virtualize mode; the view-state region persists', async () => {
+      const { listEl } = await reveal(50, true);
+      expect(listEl.querySelector('cngx-recycler-announcer')).not.toBeNull();
+      // Owner split: the organism keeps its own polite region for view-state,
+      // distinct from the recycler's load-count announcer.
+      expect(listEl.querySelector('.cngx-incremental-list__sr')).not.toBeNull();
+    });
+
+    test('routes the recycler load-count announcement through the config i18n cascade', async () => {
+      TestBed.configureTestingModule({ providers });
+      const fixture = TestBed.createComponent(VirtualI18nHostCmp);
+      await settle(fixture);
+      const manual = createManualState<number[]>();
+      manual.setSuccess([1, 2, 3, 4]);
+      fixture.componentInstance.state.set(manual);
+      // page 0: cumulative [0, 2) - the body's first bind (prevTotal 0 -> 2) is
+      // not announced by the no-state branch.
+      await settle(fixture);
+
+      // page 1: cumulative [0, 4) - total grows 2 -> 4, the load-count announces
+      // through the component-scoped loadedMore override.
+      fixture.componentInstance.index.set(1);
+      await settle(fixture);
+
+      const announcer = fixture.nativeElement.querySelector('cngx-recycler-announcer');
+      expect(announcer?.textContent).toContain('MORE 2 OF 4');
     });
   });
 });

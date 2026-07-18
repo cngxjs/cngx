@@ -73,6 +73,27 @@ describe('CngxIncrementalVirtualizedBody', () => {
     expect(internals.recycler.start()).toBeGreaterThan(150);
   });
 
+  it('announces the load count through the recycler announcer when the total grows', () => {
+    // Construction seeds previousTotal at 0 (items default []); binding 500 is
+    // the first growth from 0, which the no-state branch does not announce
+    // (prevTotal must be > 0). The next growth is the real load.
+    const { fixture, el } = setup(500, 48);
+    expect(el.querySelector('cngx-recycler-announcer')).not.toBeNull();
+
+    fixture.componentRef.setInput(
+      'items',
+      Array.from({ length: 600 }, (_, i) => i),
+    );
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    const announcer = el.querySelector('cngx-recycler-announcer');
+    // 100 more rows revealed, 600 accumulated (default EN recycler i18n - the
+    // organism's config routing is exercised in the organism spec).
+    expect(announcer?.textContent).toContain('100');
+    expect(announcer?.textContent).toContain('600');
+  });
+
   it('keeps window reference identity when the window does not move (equal fn)', () => {
     const { fixture, internals } = setup(1000, 48);
     const first = internals.windowItems();
