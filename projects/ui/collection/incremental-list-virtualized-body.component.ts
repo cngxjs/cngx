@@ -1,11 +1,13 @@
 import { NgTemplateOutlet } from '@angular/common';
 import {
+  afterRenderEffect,
   ChangeDetectionStrategy,
   Component,
   computed,
   ElementRef,
   inject,
   input,
+  output,
   type TemplateRef,
   ViewEncapsulation,
 } from '@angular/core';
@@ -60,6 +62,14 @@ export class CngxIncrementalVirtualizedBody<T = unknown> {
   /** `@for` track fn from the organism - keyed on the absolute row index. */
   readonly trackItem = input.required<(index: number, item: T) => unknown>();
 
+  /**
+   * Emitted when the row holding focus recycles out of the window and no
+   * rendered row remains to catch it. The organism owns the projected trigger,
+   * so the escape-fallback target is the organism's, not this component's - it
+   * hands focus back rather than reaching outside its own host.
+   */
+  readonly focusEscaped = output<void>();
+
   private readonly host = inject(ElementRef<HTMLElement>);
 
   /**
@@ -112,4 +122,50 @@ export class CngxIncrementalVirtualizedBody<T = unknown> {
       },
     },
   );
+
+  constructor() {
+    // Focus continuity under recycling: when the row that held focus scrolls out
+    // of the window, move focus to the nearest still-rendered row so keyboard
+    // focus is never stranded on a detached node (Pillar 2 - a recycled-out
+    // focus is a silent failure). afterRenderEffect (not effect) so the restore
+    // reads the DOM AFTER the recycled window has painted its new rows - a plain
+    // effect races the @for re-render and would target an about-to-be-removed
+    // row. Reads `lostFocus` (the recycler owns the focusin/focusout tracking);
+    // writes no signal it owns and calls no service, so no `untracked` guard is
+    // needed. Landing focus on an in-window row re-enters the recycler's focusin
+    // handler, which pulls `focusedIndex` back into `[start, end)` and nulls
+    // `lostFocus` - the next run early-returns, so there is no re-fire loop.
+    afterRenderEffect(() => {
+      const lost = this.recycler.lostFocus();
+      if (!lost) {
+        return;
+      }
+      this.restoreFocus(lost.index);
+    });
+  }
+
+  /**
+   * Move focus to the rendered row nearest the recycled-out index, or emit
+   * `focusEscaped` when the window has no row to receive it.
+   */
+  private restoreFocus(lostIndex: number): void {
+    const rows = Array.from(
+      (this.host.nativeElement as HTMLElement).querySelectorAll<HTMLElement>(
+        '[data-cngx-recycle-index]',
+      ),
+    );
+    if (rows.length === 0) {
+      this.focusEscaped.emit();
+      return;
+    }
+    const indexOf = (row: HTMLElement): number =>
+      Number(row.getAttribute('data-cngx-recycle-index'));
+    const target = rows.reduce((nearest, row) =>
+      Math.abs(indexOf(row) - lostIndex) < Math.abs(indexOf(nearest) - lostIndex) ? row : nearest,
+    );
+    // Content rows are not natively focusable; make the target programmatically
+    // focusable without adding it to the tab order.
+    target.tabIndex = -1;
+    target.focus({ preventScroll: true });
+  }
 }

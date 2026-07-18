@@ -13,6 +13,7 @@ import {
 } from './incremental-list-config';
 import { CngxIncrementalList, type CngxIncrementalListSkin } from './incremental-list.component';
 import { CNGX_PAGINATOR_HOST } from './incremental-list-host.token';
+import { CngxIncrementalVirtualizedBody } from './incremental-list-virtualized-body.component';
 import { CngxIncrementalError, CngxIncrementalItem } from './incremental-list-slots';
 
 @Component({
@@ -558,6 +559,26 @@ describe('CngxIncrementalList', () => {
 
       const announcer = fixture.nativeElement.querySelector('cngx-recycler-announcer');
       expect(announcer?.textContent).toContain('MORE 2 OF 4');
+    });
+
+    test('focus escaping the virtualized window restores focus to the projected trigger', async () => {
+      TestBed.configureTestingModule({ providers });
+      const fixture = TestBed.createComponent(VirtualI18nHostCmp);
+      await settle(fixture);
+      const manual = createManualState<number[]>();
+      manual.setSuccess([1, 2, 3, 4]);
+      fixture.componentInstance.state.set(manual);
+      await settle(fixture);
+
+      const el = fixture.nativeElement as HTMLElement;
+      const bodyDe = fixture.debugElement.query(By.directive(CngxIncrementalVirtualizedBody));
+      expect(bodyDe).not.toBeNull();
+      (bodyDe.componentInstance as CngxIncrementalVirtualizedBody).focusEscaped.emit();
+      await settle(fixture);
+
+      const trigger = el.querySelector('.cngx-paginator__load-more') as HTMLButtonElement | null;
+      expect(trigger).not.toBeNull();
+      expect(document.activeElement).toBe(trigger);
     });
   });
 });

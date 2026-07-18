@@ -7,6 +7,7 @@ import {
   contentChild,
   DestroyRef,
   effect,
+  ElementRef,
   inject,
   input,
   output,
@@ -165,6 +166,7 @@ export class CngxIncrementalList<T = unknown> {
 
   protected readonly paginate = inject(CngxPaginate);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly host = inject(ElementRef<HTMLElement>);
   private readonly config = injectIncrementalListConfig();
 
   // View slot resolvers. Direct contentChild field initialisers (AOT NG8110
@@ -268,6 +270,22 @@ export class CngxIncrementalList<T = unknown> {
 
   /** Stable retry callback - emits the `retry` output; shared by the built-in button and the error slot context. */
   protected readonly retryFn = (): void => this.retry.emit();
+
+  /**
+   * Focus fallback for the virtualized body: when a focused row recycles out and
+   * the window has no row left to catch focus, restore it to the projected
+   * trigger. The organism owns the trigger `ng-content`, so the escape target is
+   * the organism's, not the body's.
+   */
+  protected handleFocusEscaped(): void {
+    const root = this.host.nativeElement as HTMLElement;
+    const trigger = root.querySelector<HTMLElement>('[cngxIncrementalTrigger]');
+    if (!trigger) {
+      return;
+    }
+    const focusable = trigger.querySelector<HTMLElement>('button, [tabindex]') ?? trigger;
+    focusable.focus();
+  }
 
   /** Context handed to a projected error slot: the retry callback and the raw error. */
   protected readonly errorContext = computed<CngxIncrementalErrorContext>(

@@ -34,6 +34,7 @@
         [estimateSize]="estimateSize()"
         [itemTemplate]="itemTemplate()"
         [trackItem]="trackItem"
+        (focusEscaped)="handleFocusEscaped()"
       />
     } @else {
       <ul class="cngx-incremental-list__items">

@@ -35,11 +35,16 @@ describe('CngxIncrementalVirtualizedBody', () => {
     // stubGlobal is NOT undone by restoreAllMocks - a leaked sync rAF stub
     // corrupts later specs in the worker.
     vi.unstubAllGlobals();
+    // Detach any fixture roots the focus specs attached to the document.
+    document.body.replaceChildren();
   });
 
   function setup(count = 1000, estimate = 48) {
     const fixture = TestBed.createComponent(CngxIncrementalVirtualizedBody);
     const el = fixture.nativeElement as HTMLElement;
+    // Attach to the document so jsdom treats rows as focusable areas - focus()
+    // is a no-op on a detached tree, which the focus-restore specs depend on.
+    document.body.appendChild(el);
     // jsdom reports 0 for both; seed a real viewport before the scroll observer
     // reads them on its first effect run.
     Object.defineProperty(el, 'clientHeight', { value: 500, writable: true, configurable: true });
@@ -92,6 +97,50 @@ describe('CngxIncrementalVirtualizedBody', () => {
     // organism's config routing is exercised in the organism spec).
     expect(announcer?.textContent).toContain('100');
     expect(announcer?.textContent).toContain('600');
+  });
+
+  it('restores focus to an in-window row when the focused row recycles out', () => {
+    const { el, internals } = setup(1000, 48);
+    // Focus enters the first rendered row (its data-cngx-recycle-index is set by
+    // CngxVirtualItem); the recycler's focusin handler tracks it.
+    const firstRow = el.querySelector<HTMLElement>('[data-cngx-recycle-index]');
+    firstRow?.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    TestBed.flushEffects();
+
+    // Scroll far past the focused row so it leaves the window.
+    el.scrollTop = 48 * 400;
+    el.dispatchEvent(new Event('scroll'));
+    TestBed.flushEffects();
+    // tick() paints the recycled window, then runs the focus-restore
+    // afterRenderEffect against the new rows.
+    TestBed.tick();
+
+    const active = document.activeElement as HTMLElement;
+    const idx = Number(active.getAttribute('data-cngx-recycle-index'));
+    expect(idx).toBeGreaterThanOrEqual(internals.recycler.start());
+    expect(idx).toBeLessThan(internals.recycler.end());
+    // Landing focus in-window pulls focusedIndex back into range and nulls
+    // lostFocus - the effect early-returns next run, so no re-fire loop.
+    expect(internals.recycler.lostFocus()).toBeNull();
+  });
+
+  it('emits focusEscaped when no rendered row remains to catch focus', () => {
+    const { el, fixture } = setup(1000, 48);
+    let escaped = 0;
+    fixture.componentInstance.focusEscaped.subscribe(() => (escaped += 1));
+
+    const firstRow = el.querySelector<HTMLElement>('[data-cngx-recycle-index]');
+    firstRow?.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    TestBed.flushEffects();
+
+    // Empty the list: the window renders no rows, and the focused index (0) is
+    // now outside the empty range, so lostFocus fires with nothing to catch it.
+    fixture.componentRef.setInput('items', []);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    TestBed.tick();
+
+    expect(escaped).toBe(1);
   });
 
   it('keeps window reference identity when the window does not move (equal fn)', () => {
