@@ -19,8 +19,7 @@
     --cngx-incremental-list-message-padding: var(--cngx-space-md, 1rem);
     --cngx-incremental-list-error-gap: var(--cngx-space-sm, 0.5rem);
     --cngx-incremental-list-card-padding: var(--cngx-space-md, 1rem);
-    --cngx-incremental-list-button-padding: var(--cngx-space-xs, 0.25rem)
-      var(--cngx-space-md, 1rem);
+    --cngx-incremental-list-button-padding: var(--cngx-space-xs, 0.25rem) var(--cngx-space-md, 1rem);
 
     color: var(--cngx-incremental-list-text, var(--cngx-color-text, oklch(0.2 0.01 250)));
   }
@@ -52,7 +51,10 @@
       margin: 0;
       padding: var(--cngx-incremental-list-message-padding);
       text-align: center;
-      color: var(--cngx-incremental-list-message-color, var(--cngx-color-text-muted, oklch(0.5 0.01 250)));
+      color: var(
+        --cngx-incremental-list-message-color,
+        var(--cngx-color-text-muted, oklch(0.5 0.01 250))
+      );
     }
 
     .cngx-incremental-list__error,
@@ -139,6 +141,26 @@
     }
 
     .cngx-incremental-list__item:not(:last-child) {
+      border-bottom: 1px solid
+        var(--cngx-incremental-list-divider, var(--cngx-color-border, oklch(0.88 0.005 250)));
+    }
+  }
+
+  /* Virtualized: the window's last rendered row is the <ul>'s :last-child but
+     NOT the accumulated list's last row, so the :not(:last-child) divider rules
+     above would drop a separator mid-scroll. Under [data-virtualize] every
+     windowed row carries the divider; the recycler keeps only a window in the
+     DOM, so a border on the true final row appears only when it is actually
+     scrolled into view. */
+  @scope (.cngx-incremental-list[data-skin='divided'][data-virtualize]) {
+    .cngx-incremental-list__item {
+      border-bottom: 1px solid
+        var(--cngx-incremental-list-divider, var(--cngx-color-border, oklch(0.88 0.005 250)));
+    }
+  }
+
+  @scope (.cngx-incremental-list[data-skin='card'][data-virtualize]) {
+    .cngx-incremental-list__item {
       border-bottom: 1px solid
         var(--cngx-incremental-list-divider, var(--cngx-color-border, oklch(0.88 0.005 250)));
     }
