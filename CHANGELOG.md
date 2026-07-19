@@ -5,6 +5,37 @@ squash-merged pull request. Non-library scopes (examples, examples-gen, docs,
 ci, build, chore) and non-consumer-facing types are omitted by design.
 See CONTRIBUTING.md for the workflow.
 
+## 0.1.0-rc.4 (2026-07-19)
+
+
+### Features
+
+- **common:** add CngxHoverIntent and injectMediaQuery reactive-helper atoms ([#223](https://github.com/cngxjs/cngx/issues/223)) ([b6d5ce2](https://github.com/cngxjs/cngx/commit/b6d5ce25c28e47e54cbb6d46d0c356fac277638f))
+- **common,ui:** add slider, accordion, and breadcrumb primitive families ([#214](https://github.com/cngxjs/cngx/issues/214)) ([43881be](https://github.com/cngxjs/cngx/commit/43881bea33b1799734d93880c1a1f0f5ad706fcd))
+- **common/data:** add the stat-display dashboard atom family ([#228](https://github.com/cngxjs/cngx/issues/228)) ([05aa1e6](https://github.com/cngxjs/cngx/commit/05aa1e6a1fc83fadbabf3374f52c8df3132f232b))
+- **common/layout,ui/sidenav:** query-param URL sync kernel and deep-linkable sidenav ([#227](https://github.com/cngxjs/cngx/issues/227)) ([de6d315](https://github.com/cngxjs/cngx/commit/de6d3153df3c3e757535bbdf751181b397e7a6c1))
+- **core/theming:** library-wide [data-density] density system with Material convergence ([#221](https://github.com/cngxjs/cngx/issues/221)) ([ff28265](https://github.com/cngxjs/cngx/commit/ff28265653b7f57c5ab062a2e43cc7393f485379))
+- **forms:** input a11y hardening and field/input consistency cleanup ([#209](https://github.com/cngxjs/cngx/issues/209)) ([6869249](https://github.com/cngxjs/cngx/commit/68692498e9680aa9f87e72ec5e7045bba739a089))
+- **forms/input:** keyboard a11y, multi-drop accumulation and maxFiles for CngxFileDrop ([#210](https://github.com/cngxjs/cngx/issues/210)) ([1d7bdac](https://github.com/cngxjs/cngx/commit/1d7bdacf434f35aae3b7920084525715a723314a))
+- **forms/input:** enterprise input expansion - a11y, restriction, affixes, currency, data-handling ([#212](https://github.com/cngxjs/cngx/issues/212)) ([b80ee09](https://github.com/cngxjs/cngx/commit/b80ee0944bbdbaca061b03912742b8585dfbbb24))
+- **forms/input:** rating, intl phone, mask presets and phone-metadata strategy ([#213](https://github.com/cngxjs/cngx/issues/213)) ([32e11ec](https://github.com/cngxjs/cngx/commit/32e11ecc0443d49d2146d612390268af8da175ee))
+- **forms/select:** material-theme playgrounds and bridge fidelity pass ([#202](https://github.com/cngxjs/cngx/issues/202)) ([79ce792](https://github.com/cngxjs/cngx/commit/79ce79255f9d3537effa5e05e62d80797dca9ffc))
+- **ui:** accordion skins and variants, and the data-grid-accordion entry ([#216](https://github.com/cngxjs/cngx/issues/216)) ([5629443](https://github.com/cngxjs/cngx/commit/5629443b77cdd87e730d18dc5b48f6cbe2e2853c))
+- **ui/breadcrumb:** 15 skins, a per-crumb icon slot, and refined dropdowns ([#218](https://github.com/cngxjs/cngx/issues/218)) ([b8f4f20](https://github.com/cngxjs/cngx/commit/b8f4f201d44b63898ddbce79c45857e07333e9e4))
+- **ui/breadcrumb:** width-responsive collapse on CngxBreadcrumbBar ([#219](https://github.com/cngxjs/cngx/issues/219)) ([c236f23](https://github.com/cngxjs/cngx/commit/c236f23124e084fcfa13f935a9fc3219a0c8d15c))
+- **ui/collection:** add the CngxIncrementalList append-style collection organism ([#231](https://github.com/cngxjs/cngx/issues/231)) ([31d7373](https://github.com/cngxjs/cngx/commit/31d7373897a43a198647486beef3cd87512887a8))
+- **ui/mat-accordion:** add [cngxMatAccordion] Material instrumentation bridge ([#217](https://github.com/cngxjs/cngx/issues/217)) ([e16955e](https://github.com/cngxjs/cngx/commit/e16955ebf667a3b8a883243a44091cd67564ab6d))
+- **ui/paginator:** playgrounds, isolated part docs, and bridge/interaction fixes ([#199](https://github.com/cngxjs/cngx/issues/199)) ([49874d1](https://github.com/cngxjs/cngx/commit/49874d19a3ea1b4af440ae3168dfde17cb201893))
+- **ui/paginator:** config-cascade default for page-size options ([#207](https://github.com/cngxjs/cngx/issues/207)) ([bce7b88](https://github.com/cngxjs/cngx/commit/bce7b88561aceb1c4e136173d77568234fbd7690))
+- **ui/sidenav:** overlay focus management and stability hardening ([#222](https://github.com/cngxjs/cngx/issues/222)) ([3db279f](https://github.com/cngxjs/cngx/commit/3db279fbb2d5e8f446821d0cc27d2eae15ca29d0))
+- **ui/sidenav:** debounce mini expand-on-hover via CngxHoverIntent ([#224](https://github.com/cngxjs/cngx/issues/224)) ([2a41025](https://github.com/cngxjs/cngx/commit/2a41025fadeaae4f09a11856397374ec0bb8ea8e))
+- **ui/sidenav:** configuration cascade and tunable mini hover dwell ([#225](https://github.com/cngxjs/cngx/issues/225)) ([478f4a4](https://github.com/cngxjs/cngx/commit/478f4a44688d5294611f99809042efc2af34a6ee))
+
+### Bug Fixes
+
+- **common:** close the field-sync over-reach ([#98](https://github.com/cngxjs/cngx/issues/98)) and the roving auto-select race ([#135](https://github.com/cngxjs/cngx/issues/135)) ([#204](https://github.com/cngxjs/cngx/issues/204)) ([3577cd2](https://github.com/cngxjs/cngx/commit/3577cd288987a981f22c9405ca83696980b95945))
+- **common/data:** expose CngxMetric accessible name via role=img ([#229](https://github.com/cngxjs/cngx/issues/229)) ([d3c5930](https://github.com/cngxjs/cngx/commit/d3c593068d575eaa4287e1b060ad2a6aea428360))
+
 ## 0.1.0-rc.3 (2026-06-23)
 
 
