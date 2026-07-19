@@ -5,8 +5,6 @@ import {
   Component,
   computed,
   contentChild,
-  DestroyRef,
-  effect,
   inject,
   input,
   output,
@@ -15,7 +13,7 @@ import {
 } from '@angular/core';
 
 import { CngxLiveRegion } from '@cngx/common/a11y';
-import { CngxPaginate, connectPaginateResetOn } from '@cngx/common/data';
+import { CngxPaginate, connectPaginateEmit, connectPaginateResetOn } from '@cngx/common/data';
 import { CngxProgress } from '@cngx/ui/feedback';
 
 import { CNGX_PAGINATOR_ANNOUNCER_FACTORY } from './paginator-announcer';
@@ -45,8 +43,8 @@ export type CngxPaginatorDensity = 'compact' | 'default' | 'comfortable';
  * Two-way `[(pageIndex)]` / `[(pageSize)]`:  \
  * the brain's controlled inputs are aliased through `hostDirectives` (`cngxPageIndex` -> `pageIndex`, `cngxPageSize` -> `pageSize`);  \
  * the shell owns the matching `pageIndexChange` / `pageSizeChange` outputs and is their single emitter,
- * guarded by the shared `lastEmitted*` fields.  \
- * Two paths feed each output once:
+ * wired through the shared `connectPaginateEmit` bridge (identical to `CngxIncrementalList`).  \
+ * The bridge feeds each output once from two paths:
  * (1) a subscription forwards the brain's nav-only `pageChange` /
  * `pageSizeChange` - the only signal that captures a controlled-mode `setPage`,
  * because the brain's `pageIndex()` stays pinned to the input until the
@@ -145,7 +143,6 @@ export class CngxPaginator {
 
   protected readonly paginate = inject(CngxPaginate);
   protected readonly config = injectPaginatorConfig();
-  private readonly destroyRef = inject(DestroyRef);
 
   /**
    * Live-region message source - mounted onto the `cngxLiveRegion` span in the
@@ -167,54 +164,16 @@ export class CngxPaginator {
     () => this.loadingSlot() ?? this.config.templates?.loading ?? null,
   );
 
-  // Shared last-emitted guards across the nav (subscription) and clamp (effect)
-  // paths. Plain non-signal fields, so the effects carry no signal write.
-  // Seeded with the current effective values so mounting emits no initial change.
-  private lastEmittedIndex = this.paginate.pageIndex();
-  private lastEmittedSize = this.paginate.pageSize();
-
   constructor() {
     // Reset-on-change, shared verbatim with the bridge input and the generic
     // [cngxPaginateResetOn] directive.
     connectPaginateResetOn(this.paginate, this.resetOn);
 
-    // Nav path. Forward the brain's nav-only outputs: in controlled mode a
-    // setPage leaves the effective pageIndex() pinned to the input, so this
-    // event is the only thing that reports the navigation. Forwarded (not
-    // aliased) so the guard is shared with the clamp effect below.
-    const indexSub = this.paginate.pageChange.subscribe((index) => {
-      if (index !== this.lastEmittedIndex) {
-        this.lastEmittedIndex = index;
-        this.pageIndexChange.emit(index);
-      }
-    });
-    const sizeSub = this.paginate.pageSizeChange.subscribe((size) => {
-      if (size !== this.lastEmittedSize) {
-        this.lastEmittedSize = size;
-        this.pageSizeChange.emit(size);
-      }
-    });
-    this.destroyRef.onDestroy(() => {
-      indexSub.unsubscribe();
-      sizeSub.unsubscribe();
-    });
-
-    // Clamp path. The effective pageIndex moved without a nav (a total-shrink
-    // clamp the nav-only pageChange misses). The shared guard means a value the
-    // nav path already emitted is a no-op here, so each change emits once.
-    effect(() => {
-      const index = this.paginate.pageIndex();
-      if (index !== this.lastEmittedIndex) {
-        this.lastEmittedIndex = index;
-        this.pageIndexChange.emit(index);
-      }
-    });
-    effect(() => {
-      const size = this.paginate.pageSize();
-      if (size !== this.lastEmittedSize) {
-        this.lastEmittedSize = size;
-        this.pageSizeChange.emit(size);
-      }
+    // Two-way [(pageIndex)] / [(pageSize)] emit, shared verbatim with
+    // CngxIncrementalList through the connectPaginateEmit bridge.
+    connectPaginateEmit(this.paginate, {
+      onIndex: (index) => this.pageIndexChange.emit(index),
+      onSize: (size) => this.pageSizeChange.emit(size),
     });
   }
 }

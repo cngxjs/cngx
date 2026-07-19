@@ -5,8 +5,6 @@ import {
   Component,
   computed,
   contentChild,
-  DestroyRef,
-  effect,
   ElementRef,
   inject,
   input,
@@ -20,6 +18,7 @@ import {
   type AsyncView,
   CngxPaginate,
   CNGX_RECYCLER_I18N,
+  connectPaginateEmit,
   type RecyclerI18n,
   resolveAsyncView,
 } from '@cngx/common/data';
@@ -165,7 +164,6 @@ export class CngxIncrementalList<T = unknown> {
   readonly trackBy = input<(index: number, item: T) => unknown>((index) => index);
 
   protected readonly paginate = inject(CngxPaginate);
-  private readonly destroyRef = inject(DestroyRef);
   private readonly host = inject(ElementRef<HTMLElement>);
   private readonly config = injectIncrementalListConfig();
 
@@ -296,46 +294,12 @@ export class CngxIncrementalList<T = unknown> {
   /** `@for` track expression - delegates to the `trackBy` input (index by default). */
   protected readonly trackItem = (index: number, item: T): unknown => this.trackBy()(index, item);
 
-  // Two-way [(pageIndex)] / [(pageSize)] plumbing, mirroring CngxPaginator: the
-  // brain's controlled inputs are aliased through hostDirectives and this
-  // component is their single emitter. The nav subscription captures a
-  // controlled-mode setPage (where the effective pageIndex() stays pinned to the
-  // input); the clamp effect covers a total-shrink move the nav-only output
-  // misses. The shared lastEmitted guard keeps each change to exactly one emit.
-  private lastEmittedIndex = this.paginate.pageIndex();
-  private lastEmittedSize = this.paginate.pageSize();
-
   constructor() {
-    const indexSub = this.paginate.pageChange.subscribe((index) => {
-      if (index !== this.lastEmittedIndex) {
-        this.lastEmittedIndex = index;
-        this.pageIndexChange.emit(index);
-      }
-    });
-    const sizeSub = this.paginate.pageSizeChange.subscribe((size) => {
-      if (size !== this.lastEmittedSize) {
-        this.lastEmittedSize = size;
-        this.pageSizeChange.emit(size);
-      }
-    });
-    this.destroyRef.onDestroy(() => {
-      indexSub.unsubscribe();
-      sizeSub.unsubscribe();
-    });
-
-    effect(() => {
-      const index = this.paginate.pageIndex();
-      if (index !== this.lastEmittedIndex) {
-        this.lastEmittedIndex = index;
-        this.pageIndexChange.emit(index);
-      }
-    });
-    effect(() => {
-      const size = this.paginate.pageSize();
-      if (size !== this.lastEmittedSize) {
-        this.lastEmittedSize = size;
-        this.pageSizeChange.emit(size);
-      }
+    // Two-way [(pageIndex)] / [(pageSize)] emit, shared verbatim with
+    // CngxPaginator through the connectPaginateEmit bridge.
+    connectPaginateEmit(this.paginate, {
+      onIndex: (index) => this.pageIndexChange.emit(index),
+      onSize: (size) => this.pageSizeChange.emit(size),
     });
   }
 }
