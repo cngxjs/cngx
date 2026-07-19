@@ -70,6 +70,55 @@ and behaviour are identical across values.
 </cngx-incremental-list>
 ```
 
+## Virtualization
+
+An append feed is exactly the surface that grows to thousands of rows, where the
+unbounded DOM node count becomes the bottleneck. Opt into DOM recycling with
+`[virtualize]`: the content branch then renders only the rows inside a bounded
+scroll viewport (plus a small overscan), with every off-window row collapsed into
+a pixel spacer, so the node count stays flat while the scrollbar still reflects
+the full set. Unset (the default), the render-all path is byte-for-byte unchanged
+and pays nothing - the recycler is never constructed.
+
+```html
+<cngx-incremental-list
+  [state]="state"
+  [total]="total()"
+  [virtualize]="true"
+  [estimateSize]="36"
+  style="--cngx-incremental-list-viewport-height: 60vh"
+>
+  <ng-template cngxIncrementalItem let-item>{{ item.name }}</ng-template>
+  <cngx-pgn-infinite cngxIncrementalTrigger />
+</cngx-incremental-list>
+```
+
+- `[virtualize]` - opt into recycling. Default `false`.
+- `[estimateSize]` - initial per-row height in px, the first guess before a row
+  is measured (rows self-measure afterwards, so variable heights are fine).
+  Default `48`. Ignored unless `[virtualize]` is set.
+
+**Bounded height is required.** Virtualization needs a bounded viewport to scroll
+inside. Tune it with the `--cngx-incremental-list-viewport-height` custom property
+on the organism host (default `60vh`); there is no `[viewportHeight]` input - a
+CSS variable is the honest surface. The recycled body is the scroll node, so the
+`card` skin's clipping does not interfere - the two are different elements by
+design, and `card` + `[virtualize]` compose without an override.
+
+The trigger still drives accumulation: `[virtualize]` virtualizes only
+*rendering*, not the feed. A projected `cngx-pgn-load-more` / `cngx-pgn-infinite`
+keeps calling `next()`, and the recycler windows whatever the accumulated slice
+grows to.
+
+Accessibility is preserved under recycling: each rendered row carries
+`aria-setsize` (the accumulated total) and `aria-posinset` (its absolute index),
+so a screen reader reports position against the whole set, not the window. A
+polite live region announces the load-count when the accumulated total grows;
+override its phrasing with `withIncrementalListAriaLabels({ loadedMore })`. When a
+focused row recycles out of the window, focus moves to the nearest still-rendered
+row, or back to the projected trigger when the window has none - a recycled-out
+focus is never silently dropped.
+
 ## Accessibility
 
 - The content region carries a reactive `aria-busy`, bound to the async state's
