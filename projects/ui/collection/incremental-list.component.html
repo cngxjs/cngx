@@ -37,7 +37,7 @@
         (focusEscaped)="handleFocusEscaped()"
       />
     } @else {
-      <ul class="cngx-incremental-list__items">
+      <ul class="cngx-incremental-list__items" role="list">
         @for (item of items(); track trackItem($index, item)) {
           <li class="cngx-incremental-list__item">
             @if (itemTemplate(); as tpl) {

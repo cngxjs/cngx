@@ -509,6 +509,9 @@ describe('CngxIncrementalList', () => {
 
       const lists = listEl.querySelectorAll('.cngx-incremental-list__items');
       expect(lists).toHaveLength(1);
+      // role="list" survives list-style:none stripping in WebKit, so the row
+      // aria-posinset/setsize stay anchored to a list.
+      expect(lists[0].getAttribute('role')).toBe('list');
 
       const rows = listEl.querySelectorAll('.cngx-incremental-list__item');
       expect(rows.length).toBeGreaterThan(0);
@@ -528,6 +531,9 @@ describe('CngxIncrementalList', () => {
     test('[virtualize] unset renders every accumulated row; no recycler announcer (regression guard)', async () => {
       const { listEl } = await reveal(300, false);
       expect(listEl.querySelectorAll('.cngx-incremental-list__item')).toHaveLength(300);
+      expect(listEl.querySelector('.cngx-incremental-list__items')?.getAttribute('role')).toBe(
+        'list',
+      );
       expect(listEl.querySelector('.cngx-incremental-list__viewport')).toBeNull();
       // The recycler announcer rides the body component - absent in render-all.
       expect(listEl.querySelector('cngx-recycler-announcer')).toBeNull();
