@@ -53,6 +53,7 @@ export const LIBRARY_SCOPES = [
   'ui/skeleton',
   'ui/speak',
   'ui/action-button',
+  'ui/collection',
   'themes/material',
 ];
 

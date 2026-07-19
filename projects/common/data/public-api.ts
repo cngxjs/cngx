@@ -12,6 +12,7 @@ export {
 } from './filter-chips/filter-chips.component';
 export { CngxPaginate } from './paginate/paginate.directive';
 export { CngxPaginateResetOn, connectPaginateResetOn } from './paginate/paginate-reset.directive';
+export { connectPaginateEmit, type CngxPaginateEmitHandlers } from './paginate/paginate-emit';
 export { CngxPaginateRouting } from './paginate/paginate-routing.directive';
 export { CngxBucketPaginate, type CngxBucket } from './paginate/bucket-paginate.directive';
 export {

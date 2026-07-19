@@ -100,6 +100,37 @@ describe('injectRecycler', () => {
     });
   });
 
+  describe('estimateSize dev warning', () => {
+    it('does not warn for a reactive Signal estimate at large counts', () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const estimate = signal(48);
+      TestBed.runInInjectionContext(() => {
+        injectRecycler({
+          scrollElement: mockContainer,
+          totalCount: () => 20_000,
+          estimateSize: estimate,
+        });
+      });
+      // A signal is a zero-arg function but a uniform estimate, not a per-index
+      // O(n) measurement - the variable-height warning must not fire.
+      expect(warn).not.toHaveBeenCalled();
+      warn.mockRestore();
+    });
+
+    it('still warns for a genuine per-index function at large counts', () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      TestBed.runInInjectionContext(() => {
+        injectRecycler({
+          scrollElement: mockContainer,
+          totalCount: () => 20_000,
+          estimateSize: (i: number) => 40 + (i % 10),
+        });
+      });
+      expect(warn).toHaveBeenCalledOnce();
+      warn.mockRestore();
+    });
+  });
+
   describe('sliced()', () => {
     it('should return a computed signal slicing the array', () => {
       const items = signal(Array.from({ length: 100 }, (_, i) => ({ id: i, name: `Item ${i}` })));

@@ -7,6 +7,7 @@ import {
   effect,
   inject,
   isDevMode,
+  isSignal,
   signal,
   untracked,
 } from '@angular/core';
@@ -87,8 +88,13 @@ export interface RecyclerConfig {
    */
   totalCount: () => number;
 
-  /** Estimated height per item (px). Number or function per index. */
-  estimateSize: number | ((index: number) => number);
+  /**
+   * Estimated height per item (px). A fixed `number`, a `Signal<number>` for a
+   * reactive uniform estimate (e.g. an `input()` bound after construction), or a
+   * `(index) => number` for genuine per-index variable heights. Only the last
+   * form carries per-frame cost; a signal resolves to one uniform value.
+   */
+  estimateSize: number | Signal<number> | ((index: number) => number);
 
   /** Extra items to render above/below the viewport. Default: 5. */
   overscan?: number;
@@ -322,7 +328,15 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
     return typeof config.columns === 'function' ? config.columns() : config.columns;
   });
 
-  if (typeof config.estimateSize === 'function' && isDevMode()) {
+  // A Signal is a zero-arg function but resolves to a uniform height, not a
+  // per-index measurement - it carries no O(n) per-frame cost, so exclude it
+  // from the variable-height warning (a reactive scalar estimate is a
+  // sanctioned pattern; see the resolveSize note below).
+  if (
+    typeof config.estimateSize === 'function' &&
+    !isSignal(config.estimateSize) &&
+    isDevMode()
+  ) {
     const count = config.totalCount();
     if (count > 10_000) {
       console.warn(

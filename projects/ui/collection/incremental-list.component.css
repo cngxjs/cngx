@@ -1,0 +1,168 @@
+/* Default skin + visual variants for the append-style collection organism.
+   All values are CSS custom properties. Spacing tokens are SET from the global
+   --cngx-space-* scale at the host so a root [data-density] swap re-scales them.
+   Colour use-sites delegate to the foundation --cngx-color-* tokens (which
+   already carry the light/dark distinction, so no per-component dark block is
+   needed) with a literal oklch fallback. --mat-sys-* never appears here - the
+   @cngx/themes Material bridge maps the component tokens onto it.
+
+   Token SET lives in @layer cngx.tokens and the rules in @layer cngx.components
+   so the Material bridge (which sets tokens in cngx.components) overrides these
+   defaults; skin paint is @scope'd to [data-skin] so it never leaks. */
+
+@layer cngx.tokens {
+  .cngx-incremental-list {
+    display: block;
+
+    /* Spacing - SET from the scale so density tracks. */
+    --cngx-incremental-list-item-padding: var(--cngx-space-sm, 0.5rem);
+    --cngx-incremental-list-message-padding: var(--cngx-space-md, 1rem);
+    --cngx-incremental-list-error-gap: var(--cngx-space-sm, 0.5rem);
+    --cngx-incremental-list-card-padding: var(--cngx-space-md, 1rem);
+    --cngx-incremental-list-button-padding: var(--cngx-space-xs, 0.25rem) var(--cngx-space-md, 1rem);
+
+    color: var(--cngx-incremental-list-text, var(--cngx-color-text, oklch(0.2 0.01 250)));
+  }
+}
+
+@layer cngx.components {
+  @scope (.cngx-incremental-list) {
+    /* Virtualized scroll viewport: the single node the recycler observes. The
+       overflow + bounded height live here, not on the organism host, so the
+       card skin's host `overflow: hidden` never clips the scroll. The height is
+       a plain use-site var (a viewport height is not a density spacing rung), so
+       no SET-from-scale rule - a deliberate, tracked opt-out. */
+    .cngx-incremental-list__viewport {
+      overflow-y: auto;
+      max-block-size: var(--cngx-incremental-list-viewport-height, 60vh);
+    }
+
+    .cngx-incremental-list__items {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .cngx-incremental-list__item {
+      padding-block: var(--cngx-incremental-list-item-padding);
+    }
+
+    .cngx-incremental-list__message {
+      margin: 0;
+      padding: var(--cngx-incremental-list-message-padding);
+      text-align: center;
+      color: var(
+        --cngx-incremental-list-message-color,
+        var(--cngx-color-text-muted, oklch(0.5 0.01 250))
+      );
+    }
+
+    .cngx-incremental-list__error,
+    .cngx-incremental-list__inline-error {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--cngx-incremental-list-error-gap);
+      padding: var(--cngx-incremental-list-message-padding);
+    }
+
+    /* A subsequent-page error sits below the still-visible accumulated list, so
+       a separator distinguishes it from the rows above. */
+    .cngx-incremental-list__inline-error {
+      border-top: 1px solid
+        var(--cngx-incremental-list-divider, var(--cngx-color-border, oklch(0.88 0.005 250)));
+    }
+
+    .cngx-incremental-list__error-text {
+      margin: 0;
+      text-align: center;
+      color: var(--cngx-incremental-list-error-color, var(--cngx-color-danger, oklch(0.6 0.18 25)));
+    }
+
+    /* The library ships no cngx-button, so the built-in retry affordance is a
+       restrained outlined control derived from the foundation primary. */
+    .cngx-incremental-list__retry {
+      font: inherit;
+      color: var(--cngx-incremental-list-button-fg, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+      background: transparent;
+      padding: var(--cngx-incremental-list-button-padding);
+      border: 1px solid
+        var(--cngx-incremental-list-button-border, var(--cngx-color-border, oklch(0.88 0.005 250)));
+      border-radius: var(--cngx-incremental-list-button-radius, var(--cngx-radius-sm, 6px));
+      cursor: pointer;
+    }
+
+    .cngx-incremental-list__retry:hover {
+      background: color-mix(
+        in oklch,
+        var(--cngx-incremental-list-button-fg, var(--cngx-color-primary, oklch(0.66 0.19 50))) 8%,
+        transparent
+      );
+    }
+
+    .cngx-incremental-list__retry:focus-visible {
+      outline: 2px solid
+        var(--cngx-incremental-list-button-fg, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+      outline-offset: 2px;
+    }
+
+    /* Visually-hidden live region - present in the DOM, announced by AT. */
+    .cngx-incremental-list__sr {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      margin: -1px;
+      padding: 0;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      clip-path: inset(50%);
+      white-space: nowrap;
+      border: 0;
+    }
+  }
+
+  /* divided: hairline separators between rows. */
+  @scope (.cngx-incremental-list[data-skin='divided']) {
+    .cngx-incremental-list__item:not(:last-child) {
+      border-bottom: 1px solid
+        var(--cngx-incremental-list-divider, var(--cngx-color-border, oklch(0.88 0.005 250)));
+    }
+  }
+
+  /* card: the list sits on an elevated, rounded surface with row dividers. */
+  @scope (.cngx-incremental-list[data-skin='card']) {
+    :scope {
+      background: var(--cngx-incremental-list-surface, var(--cngx-color-surface, oklch(1 0 0)));
+      border: 1px solid
+        var(--cngx-incremental-list-divider, var(--cngx-color-border, oklch(0.88 0.005 250)));
+      border-radius: var(--cngx-incremental-list-radius, var(--cngx-radius-md, 8px));
+      padding-inline: var(--cngx-incremental-list-card-padding);
+      overflow: hidden;
+    }
+
+    .cngx-incremental-list__item:not(:last-child) {
+      border-bottom: 1px solid
+        var(--cngx-incremental-list-divider, var(--cngx-color-border, oklch(0.88 0.005 250)));
+    }
+  }
+
+  /* Virtualized: the window's last rendered row is the <ul>'s :last-child but
+     NOT the accumulated list's last row, so the :not(:last-child) divider rules
+     above would drop a separator mid-scroll. Under [data-virtualize] every
+     windowed row carries the divider; the recycler keeps only a window in the
+     DOM, so a border on the true final row appears only when it is actually
+     scrolled into view. */
+  @scope (.cngx-incremental-list[data-skin='divided'][data-virtualize]) {
+    .cngx-incremental-list__item {
+      border-bottom: 1px solid
+        var(--cngx-incremental-list-divider, var(--cngx-color-border, oklch(0.88 0.005 250)));
+    }
+  }
+
+  @scope (.cngx-incremental-list[data-skin='card'][data-virtualize]) {
+    .cngx-incremental-list__item {
+      border-bottom: 1px solid
+        var(--cngx-incremental-list-divider, var(--cngx-color-border, oklch(0.88 0.005 250)));
+    }
+  }
+}

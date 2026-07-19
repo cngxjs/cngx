@@ -1,0 +1,27 @@
+<ul
+  class="cngx-incremental-list__items"
+  role="list"
+  [style.padding-block-start.px]="recycler.offsetBefore()"
+  [style.padding-block-end.px]="recycler.offsetAfter()"
+>
+  @for (item of windowItems(); track trackItem()(recycler.start() + $index, item)) {
+    <li
+      class="cngx-incremental-list__item"
+      [cngxVirtualItem]="recycler"
+      [cngxVirtualItemIndex]="recycler.start() + $index"
+      [cngxMeasure]="recycler"
+      [cngxMeasureIndex]="recycler.start() + $index"
+    >
+      @if (itemTemplate(); as tpl) {
+        <ng-container
+          [ngTemplateOutlet]="tpl"
+          [ngTemplateOutletContext]="{ $implicit: item, index: recycler.start() + $index }"
+        />
+      } @else {
+        {{ item }}
+      }
+    </li>
+  }
+</ul>
+
+<cngx-recycler-announcer [cngxRecyclerAnnouncer]="recycler" />

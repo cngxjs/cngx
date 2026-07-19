@@ -2388,6 +2388,17 @@ button.chip.demo-chip--copied {
   gap: 16px;
 }
 
+// CngxIncrementalList infinite-trigger demo. The projected cngx-pgn-infinite
+// points its sentinel at this bounded frame via [root], so scrolling the box -
+// not the page - auto-loads the next batch and the sentinel's "loading" affordance
+// only appears at the scroll boundary.
+.demo-incremental-frame {
+  max-height: 320px;
+  overflow-y: auto;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e0e0e0));
+  border-radius: var(--cngx-radius-md, 8px);
+}
+
 // CngxIntersectionObserver demo helpers. Two spacer panels frame the
 // observed sentinel inside a scroll container; the sentinel flips its
 // background through cngx primary tokens when it crosses into the viewport.

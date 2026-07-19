@@ -1,0 +1,84 @@
+@switch (view()) {
+  @case ('skeleton') {
+    @if (loadingTemplate(); as tpl) {
+      <ng-container [ngTemplateOutlet]="tpl" />
+    } @else {
+      <cngx-progress
+        class="cngx-incremental-list__progress"
+        variant="linear"
+        [state]="paginate.state()"
+        [label]="loadingLabel()"
+      />
+    }
+  }
+  @case ('empty') {
+    @if (emptyTemplate(); as tpl) {
+      <ng-container [ngTemplateOutlet]="tpl" />
+    } @else {
+      <cngx-empty-state class="cngx-incremental-list__empty" [title]="emptyLabel()" />
+    }
+  }
+  @case ('error') {
+    @if (errorTemplate(); as tpl) {
+      <ng-container [ngTemplateOutlet]="tpl" [ngTemplateOutletContext]="errorContext()" />
+    } @else {
+      <div class="cngx-incremental-list__error">
+        <ng-container [ngTemplateOutlet]="builtinError" />
+      </div>
+    }
+  }
+  @default {
+    @if (virtualize()) {
+      <cngx-incremental-virtualized-body
+        [items]="items()"
+        [estimateSize]="estimateSize()"
+        [itemTemplate]="itemTemplate()"
+        [trackItem]="trackItem"
+        (focusEscaped)="handleFocusEscaped()"
+      />
+    } @else {
+      <ul class="cngx-incremental-list__items" role="list">
+        @for (item of items(); track trackItem($index, item)) {
+          <li class="cngx-incremental-list__item">
+            @if (itemTemplate(); as tpl) {
+              <ng-container
+                [ngTemplateOutlet]="tpl"
+                [ngTemplateOutletContext]="{ $implicit: item, index: $index }"
+              />
+            } @else {
+              {{ item }}
+            }
+          </li>
+        }
+      </ul>
+    }
+    @if (view() === 'content+error') {
+      <!-- Subsequent-page failure: keep the accumulated list above visible and
+           render a reachable retry, rather than silently swallowing the error. -->
+      @if (errorTemplate(); as tpl) {
+        <ng-container [ngTemplateOutlet]="tpl" [ngTemplateOutletContext]="errorContext()" />
+      } @else {
+        <div class="cngx-incremental-list__inline-error">
+          <ng-container [ngTemplateOutlet]="builtinError" />
+        </div>
+      }
+    } @else if (exhausted()) {
+      @if (endTemplate(); as tpl) {
+        <ng-container [ngTemplateOutlet]="tpl" />
+      } @else {
+        <p class="cngx-incremental-list__message cngx-incremental-list__end">{{ endLabel() }}</p>
+      }
+    } @else {
+      <ng-content select="[cngxIncrementalTrigger]" />
+    }
+  }
+}
+
+<ng-template #builtinError>
+  <p class="cngx-incremental-list__error-text">{{ errorViewLabel() }}</p>
+  <button type="button" class="cngx-incremental-list__retry" (click)="retryFn()">
+    {{ retryLabel() }}
+  </button>
+</ng-template>
+
+<span cngxLiveRegion class="cngx-incremental-list__sr">{{ statusMessage() }}</span>
