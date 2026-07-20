@@ -71,7 +71,7 @@ export class CngxAudio {
   /** Suppress this element's audio without unbinding. */
   readonly audioDisabled = input(false, { transform: booleanAttribute });
 
-  protected readonly bindings = computed(() => parseEventBindings(this.spec()).bindings, {
+  private readonly bindings = computed(() => parseEventBindings(this.spec()).bindings, {
     equal: sameStringMap,
   });
 
@@ -125,7 +125,9 @@ export class CngxAudio {
       // Captures the type only — the earcon is read fresh at fire time, so
       // renaming it in the grammar needs no rebind.
       const listener: EventListener = () => this.handleEvent(type);
-      el.addEventListener(type, listener, { passive: true });
+      // Not passive: none of the bindable types are scroll-blocking, so the
+      // flag buys nothing and would foreclose preventDefault on submit/click.
+      el.addEventListener(type, listener);
       this.bound.set(type, listener);
     }
   }
