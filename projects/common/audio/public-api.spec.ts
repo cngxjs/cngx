@@ -15,6 +15,8 @@ describe('@cngx/common/audio public surface', () => {
     expect(api.CNGX_AUDIO_ENGINE_FACTORY).toBeDefined();
     expect(api.CNGX_AUDIO_TONE_GENERATOR_FACTORY).toBeDefined();
     expect(api.CNGX_AUDIO_CONFIG).toBeDefined();
+    expect(api.CNGX_AUDIO_DEFAULTS).toBeDefined();
+    expect(api.injectAudioConfig).toBeTypeOf('function');
     expect(api.CngxAudio).toBeTypeOf('function');
   });
 

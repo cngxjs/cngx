@@ -15,6 +15,8 @@ export { injectCngxAudio, provideCngxAudioAt, type CngxAudioHandle } from './inj
 // Config + provider
 export {
   CNGX_AUDIO_CONFIG,
+  CNGX_AUDIO_DEFAULTS,
+  injectAudioConfig,
   provideCngxAudio,
   withEarcons,
   withVolume,
