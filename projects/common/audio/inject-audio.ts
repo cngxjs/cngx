@@ -1,7 +1,15 @@
-import { InjectionToken, type Provider, type Signal, inject } from '@angular/core';
+import {
+  InjectionToken,
+  Optional,
+  type Provider,
+  type Signal,
+  SkipSelf,
+  inject,
+} from '@angular/core';
 
 import {
   CNGX_AUDIO_CONFIG,
+  type CngxAudioConfig,
   type CngxAudioFeature,
   foldAudioFeatures,
 } from './config/audio-config';
@@ -87,25 +95,42 @@ export function injectCngxAudio(): CngxAudioHandle {
  * export class Mixer {}
  * ```
  *
- * Unlike the root `provideCngxAudio` (which returns `EnvironmentProviders` and
- * only applies at the app / route level), this returns `Provider[]` and scopes
- * to a component. The default shared engine is a single, process-global
- * `AudioContext`; this deliberately re-provides {@link CNGX_AUDIO_ENGINE} so the
- * subtree gets an **isolated engine** reading the scoped {@link CNGX_AUDIO_CONFIG}.
+ * Returns `Provider[]` (not `EnvironmentProviders`) so it can sit in
+ * `viewProviders`. The root `provideCngxAudio` must be registered at
+ * **application bootstrap**: {@link CNGX_AUDIO_ENGINE} is `providedIn: 'root'`,
+ * so its factory resolves the config from the root injector and a provider
+ * registered on a lazy route never reaches it.
+ *
+ * Features **layer over** the ancestor config (root, or an enclosing scope)
+ * rather than replacing it — the `provideMenuConfigAt` pattern. Scalar fields
+ * (`muted`, `volume`, `debounceMs`, `respectReducedMotion`) override; `earcons`
+ * merge, so a subtree adds or overrides individual earcons without dropping the
+ * app-wide registry.
+ *
+ * The default shared engine is a single, process-global `AudioContext`; this
+ * deliberately re-provides {@link CNGX_AUDIO_ENGINE} so the subtree gets an
+ * **isolated engine** reading the scoped {@link CNGX_AUDIO_CONFIG} — a
+ * config-only override would be inert against the already-built root engine.
  * That engine owns a **second `AudioContext`**, created lazily on its first play
  * and closed with the component's `DestroyRef`. Browsers cap the number of live
  * `AudioContext`s, so reach for this only when a subtree genuinely needs an
  * independent audio scope — per-element `[audioVolume]` / `[audioDisabled]`
- * cover the common case without a second context. The scoped config replaces
- * (does not layer over) the root config, merged only with library defaults —
- * matching `provideTreeConfigAt` / `provideMenuConfigAt`.
+ * cover the common case without a second context.
  *
  * @category common/audio
  * @relatedTo provideCngxAudio, injectCngxAudio
  */
 export function provideCngxAudioAt(...features: CngxAudioFeature[]): Provider[] {
   return [
-    { provide: CNGX_AUDIO_CONFIG, useValue: foldAudioFeatures(features) },
+    {
+      provide: CNGX_AUDIO_CONFIG,
+      useFactory: (parent: Partial<CngxAudioConfig> | null): Partial<CngxAudioConfig> => {
+        const base = parent ?? {};
+        const scoped = foldAudioFeatures(features);
+        return { ...base, ...scoped, earcons: { ...base.earcons, ...scoped.earcons } };
+      },
+      deps: [[new SkipSelf(), new Optional(), CNGX_AUDIO_CONFIG]],
+    },
     { provide: CNGX_AUDIO_ENGINE, useFactory: () => inject(CNGX_AUDIO_ENGINE_FACTORY)() },
   ];
 }

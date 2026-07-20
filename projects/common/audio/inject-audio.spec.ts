@@ -109,12 +109,35 @@ describe('provideCngxAudioAt', () => {
     expect(rootChild.audio.volume()).toBe(1);
   });
 
-  it('folds features into the scoped CNGX_AUDIO_CONFIG value', () => {
-    const providers = provideCngxAudioAt(withMuted(true), withVolume(0.3));
-    const configProvider = providers.find(
-      (p): p is { provide: unknown; useValue: unknown } =>
-        typeof p === 'object' && 'provide' in p && p.provide === CNGX_AUDIO_CONFIG,
-    );
-    expect(configProvider?.useValue).toEqual({ muted: true, volume: 0.3 });
+  it('layers over an ancestor config: scalars override, earcons merge', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        {
+          provide: CNGX_AUDIO_CONFIG,
+          useValue: { volume: 0.6, earcons: { send: { sequence: [{ freq: 880, duration: 60 }] } } },
+        },
+      ],
+    });
+    const scoped = TestBed.createComponent(ScopedHost);
+    scoped.detectChanges();
+    const [child] = children(scoped);
+    const merged = scoped.debugElement.children[0].injector.get(CNGX_AUDIO_CONFIG);
+
+    // Scalars: the At features win over the ancestor.
+    expect(merged.muted).toBe(true);
+    expect(merged.volume).toBe(0.3);
+    expect(child.audio.muted()).toBe(true);
+    expect(child.audio.volume()).toBe(0.3);
+
+    // Earcons: the ancestor's registry survives into the scope rather than
+    // being replaced wholesale.
+    expect(merged.earcons).toHaveProperty('send');
+  });
+
+  it('folds features into the scoped config when no ancestor config is set', () => {
+    const scoped = TestBed.createComponent(ScopedHost);
+    scoped.detectChanges();
+    const merged = scoped.debugElement.children[0].injector.get(CNGX_AUDIO_CONFIG);
+    expect(merged).toEqual({ muted: true, volume: 0.3, earcons: {} });
   });
 });
