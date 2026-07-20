@@ -1,10 +1,15 @@
 import {
+  DestroyRef,
   Directive,
+  ElementRef,
   afterNextRender,
   booleanAttribute,
   computed,
+  effect,
+  inject,
   input,
   isDevMode,
+  untracked,
 } from '@angular/core';
 
 import { injectCngxAudio } from '../inject-audio';
@@ -41,19 +46,14 @@ import { type CngxAudioDomEvent, parseEventBindings } from './parse-bindings';
 @Directive({
   selector: '[cngxAudio]',
   exportAs: 'cngxAudio',
-  host: {
-    '(click)': 'handleEvent("click")',
-    '(focus)': 'handleEvent("focus")',
-    '(blur)': 'handleEvent("blur")',
-    '(pointerenter)': 'handleEvent("pointerenter")',
-    '(pointerleave)': 'handleEvent("pointerleave")',
-    '(submit)': 'handleEvent("submit")',
-    '(change)': 'handleEvent("change")',
-    '(input)': 'handleEvent("input")',
-  },
 })
 export class CngxAudio {
   private readonly audio = injectCngxAudio();
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly destroyRef = inject(DestroyRef);
+
+  /** The listeners currently registered on the host, keyed by event type. */
+  private readonly bound = new Map<CngxAudioDomEvent, EventListener>();
 
   /** The `event:earcon` grammar, e.g. `'click:tap, focus:notification'`. */
   readonly spec = input<string>('', { alias: 'cngxAudio' });
@@ -69,6 +69,13 @@ export class CngxAudio {
   });
 
   constructor() {
+    effect(() => {
+      const wanted = this.bindings();
+      untracked(() => this.syncListeners(wanted));
+    });
+
+    this.destroyRef.onDestroy(() => this.unbindAll());
+
     if (isDevMode()) {
       // One-shot post-binding check, not a reactive node.
       afterNextRender(() => {
@@ -89,7 +96,42 @@ export class CngxAudio {
     }
   }
 
-  protected handleEvent(event: CngxAudioDomEvent): void {
+  /**
+   * Diff the bound listener set against the parsed spec: drop event types the
+   * grammar no longer names, add the ones it newly names, leave the rest alone.
+   * A rebuild would churn a listener that is still wanted.
+   */
+  private syncListeners(wanted: ReadonlyMap<CngxAudioDomEvent, string>): void {
+    const el = this.host.nativeElement;
+
+    for (const [type, listener] of this.bound) {
+      if (!wanted.has(type)) {
+        el.removeEventListener(type, listener);
+        this.bound.delete(type);
+      }
+    }
+
+    for (const type of wanted.keys()) {
+      if (this.bound.has(type)) {
+        continue;
+      }
+      // Captures the type only — the earcon is read fresh at fire time, so
+      // renaming it in the grammar needs no rebind.
+      const listener: EventListener = () => this.handleEvent(type);
+      el.addEventListener(type, listener, { passive: true });
+      this.bound.set(type, listener);
+    }
+  }
+
+  private unbindAll(): void {
+    const el = this.host.nativeElement;
+    for (const [type, listener] of this.bound) {
+      el.removeEventListener(type, listener);
+    }
+    this.bound.clear();
+  }
+
+  private handleEvent(event: CngxAudioDomEvent): void {
     if (this.audioDisabled()) {
       return;
     }
