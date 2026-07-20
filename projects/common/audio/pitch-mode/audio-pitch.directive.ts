@@ -2,9 +2,14 @@ import { Directive, effect, input, untracked } from '@angular/core';
 
 import { createDebouncer, type CngxDebouncer } from '../debouncer/debouncer';
 import { injectCngxAudio } from '../inject-audio';
+import { DEFAULT_TONE_GAIN } from '../tone-generator/tone-generator';
 
 /** Throttle key — the pitch directive plays a single ad-hoc voice. */
 const PITCH_VOICE = 'pitch';
+
+function clampUnit(value: number): number {
+  return Math.max(0, Math.min(1, value));
+}
 
 /**
  * Pitch-mode audio binder. Sonifies a continuous numeric value: each change of
@@ -53,15 +58,27 @@ export class CngxAudioPitch {
   /** Minimum ms between tones during a sweep. Default `50`. */
   readonly pitchThrottleMs = input<number>(50);
 
+  /** Per-element volume multiplier in `[0, 1]`; unset uses the tone default. */
+  readonly audioVolume = input<number | undefined>(undefined);
+
+  /** Suppress this element's audio without unbinding. */
+  readonly audioDisabled = input<boolean>(false);
+
   constructor() {
     effect(() => {
       const value = this.value();
       untracked(() => {
+        if (this.audioDisabled()) {
+          return;
+        }
         this.debouncer ??= createDebouncer({ windowMs: this.pitchThrottleMs() });
         if (!this.debouncer.shouldFire(PITCH_VOICE)) {
           return;
         }
-        this.audio.tone(this.scale(value), this.pitchDurationMs());
+        const volume = this.audioVolume();
+        const opts =
+          volume === undefined ? undefined : { gain: DEFAULT_TONE_GAIN * clampUnit(volume) };
+        this.audio.tone(this.scale(value), this.pitchDurationMs(), opts);
       });
     });
   }

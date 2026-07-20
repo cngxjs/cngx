@@ -28,7 +28,9 @@ function createMockHandle(): CngxAudioHandle {
     [cngxAudioPitch]="value()"
     [pitchDomain]="domain"
     [pitchRange]="range"
-    [pitchThrottleMs]="throttle">
+    [pitchThrottleMs]="throttle"
+    [audioVolume]="vol"
+    [audioDisabled]="disabled">
     x
   </div>`,
 })
@@ -37,6 +39,8 @@ class Host {
   domain: [number, number] = [0, 100];
   range: [number, number] = [200, 400];
   throttle = 1000;
+  vol: number | undefined = undefined;
+  disabled = false;
 }
 
 interface PitchConfig {
@@ -44,6 +48,8 @@ interface PitchConfig {
   domain?: [number, number];
   range?: [number, number];
   throttle?: number;
+  vol?: number;
+  disabled?: boolean;
 }
 
 function setup(config?: PitchConfig, handle: CngxAudioHandle = createMockHandle()) {
@@ -61,6 +67,12 @@ function setup(config?: PitchConfig, handle: CngxAudioHandle = createMockHandle(
   }
   if (config?.throttle !== undefined) {
     host.throttle = config.throttle;
+  }
+  if (config?.vol !== undefined) {
+    host.vol = config.vol;
+  }
+  if (config?.disabled !== undefined) {
+    host.disabled = config.disabled;
   }
   if (config?.value !== undefined) {
     host.value.set(config.value);
@@ -96,7 +108,17 @@ describe('CngxAudioPitch directive', () => {
 
   it('passes the configured tone duration', () => {
     const { handle } = setup({ value: 0, domain: [0, 100] });
-    expect(handle.tone).toHaveBeenCalledWith(expect.any(Number), 120);
+    expect(handle.tone).toHaveBeenCalledWith(expect.any(Number), 120, undefined);
+  });
+
+  it('does not play while audioDisabled is true', () => {
+    const { handle } = setup({ value: 50, domain: [0, 100], disabled: true });
+    expect(handle.tone).not.toHaveBeenCalled();
+  });
+
+  it('scales the tone gain by audioVolume', () => {
+    const { handle } = setup({ value: 50, domain: [0, 100], vol: 0.5 });
+    expect(handle.tone).toHaveBeenCalledWith(expect.any(Number), 120, { gain: 0.1 });
   });
 
   it('throttles a rapid sweep to one tone per window', () => {
