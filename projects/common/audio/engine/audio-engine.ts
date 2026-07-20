@@ -83,16 +83,16 @@ function clampVolume(v: number): number {
  * Create the audio engine: composes the autoplay gate, tone generator, and
  * debouncer over one lazily-created shared `AudioContext`. Reduced-motion muting
  * reuses the existing `injectMediaQuery('(prefers-reduced-motion: reduce)')`
- * primitive rather than a fourth `matchMedia` reader (the inline ripple/skeleton/
- * reduced-motion readers are tracked as `audio-accepted-debt.md` §1).
+ * primitive rather than adding another `matchMedia` reader.
  *
  * The four mute conditions are enforced centrally in `play()`/`tone()`/
  * `sequence()`: global mute, reduced-motion, and autoplay-not-armed here;
- * per-element `[audioDisabled]` in the `[cngxAudio]` directive.
+ * per-element `[audioDisabled]` in the directives.
  *
  * Runs in an injection context (calls `inject()` for DOCUMENT, DestroyRef, the
- * tone-generator factory, and the reduced-motion query). Never `providedIn:
- * 'root'` — feature-scoped via `CNGX_AUDIO_ENGINE_FACTORY`.
+ * tone-generator factory, and the reduced-motion query). The engine instance is
+ * resolved through {@link CNGX_AUDIO_ENGINE_FACTORY}; scope it to a subtree with
+ * `provideCngxAudioAt(...)` rather than calling this directly.
  */
 export const createAudioEngine: CngxAudioEngineFactory = (options) => {
   const doc = inject(DOCUMENT);
@@ -270,9 +270,18 @@ export const createAudioEngine: CngxAudioEngineFactory = (options) => {
 /**
  * Swappable engine factory. Defaults to {@link createAudioEngine}. Override to
  * wrap the engine with telemetry/audit logging — the documented second consumer
- * of this boundary token. Feature-scoped; never `providedIn: 'root'`.
+ * of this boundary token.
  *
- * @relatedTo createAudioEngine, injectCngxAudio
+ * Register the override at **application bootstrap**. The shared engine instance
+ * is itself `providedIn: 'root'` and is built on first use, so a factory override
+ * registered in a lazy route's `providers` is never consulted. For a subtree that
+ * needs its own engine, use `provideCngxAudioAt(...)` in `viewProviders`.
+ *
+ * An override that needs the resolved configuration reads it with
+ * {@link injectAudioConfig} (defaults merged); {@link CNGX_AUDIO_DEFAULTS} holds
+ * the library baseline. Both are exported from `@cngx/common/audio`.
+ *
+ * @relatedTo createAudioEngine, injectCngxAudio, injectAudioConfig
  */
 export const CNGX_AUDIO_ENGINE_FACTORY = new InjectionToken<CngxAudioEngineFactory>(
   'CngxAudioEngineFactory',

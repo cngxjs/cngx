@@ -94,7 +94,14 @@ export function foldAudioFeatures(features: readonly CngxAudioFeature[]): Partia
  * });
  * ```
  *
+ * Register this at **application bootstrap**. The shared engine is
+ * `providedIn: 'root'` and reads its configuration once, when it is first built,
+ * so config registered in a lazy route's `providers` never reaches it. To
+ * configure a subtree, use `provideCngxAudioAt(...)` in `viewProviders` — it
+ * layers over this one and re-provides the engine so the scope actually applies.
+ *
  * @category common/audio
+ * @relatedTo provideCngxAudioAt, injectAudioConfig
  */
 export function provideCngxAudio(...features: CngxAudioFeature[]): EnvironmentProviders {
   return makeEnvironmentProviders([

@@ -25,8 +25,9 @@ export type CngxAudioHandle = CngxAudioEngine;
  * The shared engine instance. Lazily built from `CNGX_AUDIO_ENGINE_FACTORY` and
  * memoised per injector so every directive shares one `AudioContext`, mute
  * state, and volume. `@internal` — the public entry point is {@link injectCngxAudio};
- * consumers override the swappable factory, not this instance anchor. Scope it
- * to a component by re-providing it in `viewProviders`.
+ * consumers override the swappable factory, not this instance anchor. To scope
+ * audio to a subtree, use {@link provideCngxAudioAt} — it re-provides this token
+ * for you alongside the scoped config.
  *
  * @internal
  */
