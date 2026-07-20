@@ -6,6 +6,7 @@ import {
 } from '@cngx/core/utils';
 
 import { injectCngxAudio } from '../inject-audio';
+import { sameStringMap } from '../internal/same-string-map';
 import { parseStatusBindings } from './parse-status-bindings';
 
 /**
@@ -64,7 +65,9 @@ export class CngxAudioStatus {
     () => this.state() ?? this.statefulFallback?.state,
   );
 
-  private readonly bindings = computed(() => parseStatusBindings(this.spec()).bindings);
+  private readonly bindings = computed(() => parseStatusBindings(this.spec()).bindings, {
+    equal: sameStringMap,
+  });
 
   constructor() {
     if (isDevMode()) {
