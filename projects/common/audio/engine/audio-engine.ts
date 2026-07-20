@@ -45,11 +45,11 @@ export interface AudioEngineOptions {
 export interface CngxAudioEngine {
   /**
    * Play a registered earcon by name. Gated + debounced centrally here.
-   * `volume` (a `[0, 1]` multiplier over the per-tone default) scales just this
-   * play — used by `[cngxAudio]`'s per-element `audioVolume` without touching
+   * `scale` (a `[0, 1]` multiplier over the per-tone default) scales just this
+   * play — used by the directives' per-element `audioVolume` without touching
    * the shared master volume.
    */
-  play(name: string, volume?: number): void;
+  play(name: string, scale?: number): void;
   /** Play a single ad-hoc tone. Gated, not debounced, no `lastPlayed` update. */
   tone(freq: number, durationMs: number, opts?: ToneOptions): void;
   /** Play an ad-hoc tone sequence. Gated, not debounced. */

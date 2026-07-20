@@ -1,11 +1,4 @@
-import {
-  InjectionToken,
-  Optional,
-  type Provider,
-  type Signal,
-  SkipSelf,
-  inject,
-} from '@angular/core';
+import { InjectionToken, Optional, type Provider, SkipSelf, inject } from '@angular/core';
 
 import {
   CNGX_AUDIO_CONFIG,
@@ -13,40 +6,20 @@ import {
   type CngxAudioFeature,
   foldAudioFeatures,
 } from './config/audio-config';
-import type { EarconConfig } from './earcons/default-earcons';
-import { CNGX_AUDIO_ENGINE_FACTORY, type AudioStatus } from './engine/audio-engine';
-import type { ToneOptions, ToneStep } from './tone-generator/tone-generator';
+import { CNGX_AUDIO_ENGINE_FACTORY, type CngxAudioEngine } from './engine/audio-engine';
 
 /**
- * The public audio handle. A typed projection of the engine surface — callers
- * depend on this interface, the engine implementation stays internal-flexible.
+ * The public audio handle — what {@link injectCngxAudio} returns.
+ *
+ * An alias for {@link CngxAudioEngine} rather than a second interface: the two
+ * contracts were member-for-member identical, so a separate declaration was
+ * duplication, not indirection. The name is kept because it reads better at
+ * call sites (`const audio: CngxAudioHandle = injectCngxAudio()`), and because
+ * the engine contract is the one an override implements.
  *
  * @category common/audio
  */
-export interface CngxAudioHandle {
-  /** Play a registered earcon by name, optionally at a `[0, 1]` volume multiplier. */
-  play(name: string, volume?: number): void;
-  /** Play a single ad-hoc tone. */
-  tone(freq: number, durationMs: number, opts?: ToneOptions): void;
-  /** Play an ad-hoc tone sequence. */
-  sequence(steps: readonly ToneStep[]): void;
-  /** Register or override an earcon at runtime. */
-  register(name: string, config: EarconConfig): void;
-  /** Arm the autoplay gate programmatically. */
-  armAutoplay(): void;
-  /** Set the global mute state. */
-  setMuted(muted: boolean): void;
-  /** Set master volume, clamped to `[0, 1]`. */
-  setVolume(volume: number): void;
-  /** `true` when globally muted. */
-  readonly muted: Signal<boolean>;
-  /** Master volume in `[0, 1]`. */
-  readonly volume: Signal<number>;
-  /** Shared-context lifecycle state. */
-  readonly status: Signal<AudioStatus>;
-  /** Name of the last earcon actually played, or `null`. */
-  readonly lastPlayed: Signal<string | null>;
-}
+export type CngxAudioHandle = CngxAudioEngine;
 
 /**
  * The shared engine instance. Lazily built from `CNGX_AUDIO_ENGINE_FACTORY` and
