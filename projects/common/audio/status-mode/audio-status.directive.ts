@@ -1,4 +1,14 @@
-import { Directive, afterNextRender, computed, effect, inject, input, isDevMode, untracked } from '@angular/core';
+import {
+  Directive,
+  afterNextRender,
+  booleanAttribute,
+  computed,
+  effect,
+  inject,
+  input,
+  isDevMode,
+  untracked,
+} from '@angular/core';
 import {
   CNGX_STATEFUL,
   type CngxAsyncState,
@@ -61,7 +71,7 @@ export class CngxAudioStatus {
   readonly audioVolume = input<number | undefined>(undefined);
 
   /** Suppress this element's audio without unbinding. */
-  readonly audioDisabled = input<boolean>(false);
+  readonly audioDisabled = input(false, { transform: booleanAttribute });
 
   /** Effective state — explicit input wins over ancestor `CNGX_STATEFUL`. */
   private readonly effectiveState = computed<CngxAsyncState<unknown> | undefined>(

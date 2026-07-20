@@ -1,4 +1,11 @@
-import { Directive, afterNextRender, computed, input, isDevMode } from '@angular/core';
+import {
+  Directive,
+  afterNextRender,
+  booleanAttribute,
+  computed,
+  input,
+  isDevMode,
+} from '@angular/core';
 
 import { injectCngxAudio } from '../inject-audio';
 import { sameStringMap } from '../internal/same-string-map';
@@ -47,7 +54,7 @@ export class CngxAudio {
   readonly audioVolume = input<number | undefined>(undefined);
 
   /** Suppress this element's audio without unbinding. */
-  readonly audioDisabled = input<boolean>(false);
+  readonly audioDisabled = input(false, { transform: booleanAttribute });
 
   protected readonly bindings = computed(() => parseEventBindings(this.spec()).bindings, {
     equal: sameStringMap,

@@ -1,4 +1,4 @@
-import { Directive, effect, input, linkedSignal, untracked } from '@angular/core';
+import { Directive, booleanAttribute, effect, input, linkedSignal, untracked } from '@angular/core';
 
 import { createDebouncer } from '../debouncer/debouncer';
 import { injectCngxAudio } from '../inject-audio';
@@ -61,7 +61,7 @@ export class CngxAudioPitch {
   readonly audioVolume = input<number | undefined>(undefined);
 
   /** Suppress this element's audio without unbinding. */
-  readonly audioDisabled = input<boolean>(false);
+  readonly audioDisabled = input(false, { transform: booleanAttribute });
 
   // One instance for the directive's lifetime, deliberately outside the signal
   // graph: a debouncer carries mutable throttle state, and minting one inside a

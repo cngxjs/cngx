@@ -56,6 +56,25 @@ describe('CngxAudio directive', () => {
     expect(handle.play).toHaveBeenCalledWith('tap', undefined);
   });
 
+  it('treats a bare audioDisabled attribute as true', () => {
+    @Component({
+      standalone: true,
+      imports: [CngxAudio],
+      template: `<button [cngxAudio]="'click:tap'" audioDisabled>x</button>`,
+    })
+    class BareHost {}
+
+    const handle = createMockHandle();
+    TestBed.configureTestingModule({
+      imports: [BareHost],
+      providers: [{ provide: CNGX_AUDIO_ENGINE, useValue: handle }],
+    });
+    const fixture = TestBed.createComponent(BareHost);
+    fixture.detectChanges();
+    (fixture.nativeElement.querySelector('button') as HTMLButtonElement).click();
+    expect(handle.play).not.toHaveBeenCalled();
+  });
+
   it('does not play when audioDisabled is true', () => {
     const { button, handle } = setup({ disabled: true });
     button.click();

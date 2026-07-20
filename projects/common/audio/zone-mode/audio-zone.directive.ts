@@ -1,4 +1,4 @@
-import { Directive, input } from '@angular/core';
+import { Directive, booleanAttribute, input } from '@angular/core';
 
 import { injectCngxAudio } from '../inject-audio';
 
@@ -54,7 +54,7 @@ export class CngxAudioZone {
   readonly audioVolume = input<number | undefined>(undefined);
 
   /** Suppress this element's audio without unbinding. */
-  readonly audioDisabled = input<boolean>(false);
+  readonly audioDisabled = input(false, { transform: booleanAttribute });
 
   protected handleZone(kind: keyof CngxAudioZoneBinding): void {
     if (this.audioDisabled()) {
