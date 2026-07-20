@@ -1,4 +1,4 @@
-import { Directive, booleanAttribute, input } from '@angular/core';
+import { Directive, ElementRef, booleanAttribute, inject, input } from '@angular/core';
 
 import { injectCngxAudio } from '../inject-audio';
 
@@ -40,12 +40,13 @@ export interface CngxAudioZoneBinding {
   host: {
     '(pointerenter)': 'handleZone("enter")',
     '(pointerleave)': 'handleZone("leave")',
-    '(focusin)': 'handleZone("focus")',
-    '(focusout)': 'handleZone("blur")',
+    '(focusin)': 'handleFocusCross("focus", $event)',
+    '(focusout)': 'handleFocusCross("blur", $event)',
   },
 })
 export class CngxAudioZone {
   private readonly audio = injectCngxAudio();
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
 
   /** Earcon per zone transition. Any omitted key plays nothing. */
   readonly zone = input<CngxAudioZoneBinding>({}, { alias: 'cngxAudioZone' });
@@ -55,6 +56,18 @@ export class CngxAudioZone {
 
   /** Suppress this element's audio without unbinding. */
   readonly audioDisabled = input(false, { transform: booleanAttribute });
+
+  /**
+   * `focusin`/`focusout` bubble, so a zone wrapping focusable children would
+   * otherwise fire on every internal tab move. Only a crossing of the zone
+   * boundary counts — the focus counterpart of pointerenter/pointerleave.
+   */
+  protected handleFocusCross(kind: 'focus' | 'blur', event: FocusEvent): void {
+    if (this.host.nativeElement.contains(event.relatedTarget as Node | null)) {
+      return;
+    }
+    this.handleZone(kind);
+  }
 
   protected handleZone(kind: keyof CngxAudioZoneBinding): void {
     if (this.audioDisabled()) {

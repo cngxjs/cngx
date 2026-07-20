@@ -65,10 +65,32 @@ describe('CngxAudioZone directive', () => {
 
   it('plays the focus earcon on focusin and blur earcon on focusout', () => {
     const { el, handle } = setup({ zone: { focus: 'notification', blur: 'complete' } });
-    el.dispatchEvent(new Event('focusin'));
-    el.dispatchEvent(new Event('focusout'));
+    el.dispatchEvent(new FocusEvent('focusin'));
+    el.dispatchEvent(new FocusEvent('focusout'));
     expect(handle.play).toHaveBeenNthCalledWith(1, 'notification', undefined);
     expect(handle.play).toHaveBeenNthCalledWith(2, 'complete', undefined);
+  });
+
+  it('ignores focus moves that stay inside the zone', () => {
+    const { el, handle } = setup({ zone: { focus: 'notification', blur: 'complete' } });
+    const inner = document.createElement('button');
+    el.appendChild(inner);
+
+    // Tabbing from the zone to one of its own children, and back.
+    el.dispatchEvent(new FocusEvent('focusout', { relatedTarget: inner }));
+    el.dispatchEvent(new FocusEvent('focusin', { relatedTarget: inner }));
+    expect(handle.play).not.toHaveBeenCalled();
+  });
+
+  it('plays when focus crosses the zone boundary to an outside element', () => {
+    const { el, handle } = setup({ zone: { blur: 'complete' } });
+    const outside = document.createElement('button');
+    document.body.appendChild(outside);
+
+    el.dispatchEvent(new FocusEvent('focusout', { relatedTarget: outside }));
+    expect(handle.play).toHaveBeenCalledWith('complete', undefined);
+
+    outside.remove();
   });
 
   it('plays nothing for an omitted zone key', () => {
