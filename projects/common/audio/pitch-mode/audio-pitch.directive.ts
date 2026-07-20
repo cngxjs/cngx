@@ -1,4 +1,4 @@
-import { Directive, computed, effect, input, untracked } from '@angular/core';
+import { Directive, computed, effect, input, linkedSignal, untracked } from '@angular/core';
 
 import { createDebouncer } from '../debouncer/debouncer';
 import { injectCngxAudio } from '../inject-audio';
@@ -70,9 +70,21 @@ export class CngxAudioPitch {
     createDebouncer({ windowMs: this.pitchThrottleMs() }),
   );
 
+  // Fires on change, never on mount: sonifying the initial value would emit a
+  // tone the user never asked for, and would burn the throttle window before
+  // their first move. Same current/previous shape as createTransitionTracker.
+  private readonly transition = linkedSignal<number, { current: number; previous: number | null }>({
+    source: () => this.value(),
+    computation: (current, prev) => ({ current, previous: prev?.value.current ?? null }),
+    equal: (a, b) => a.current === b.current && a.previous === b.previous,
+  });
+
   constructor() {
     effect(() => {
-      const value = this.value();
+      const { current, previous } = this.transition();
+      if (previous === null || current === previous) {
+        return;
+      }
       untracked(() => {
         if (this.audioDisabled()) {
           return;
@@ -83,7 +95,7 @@ export class CngxAudioPitch {
         const volume = this.audioVolume();
         const opts =
           volume === undefined ? undefined : { gain: DEFAULT_TONE_GAIN * clampUnit(volume) };
-        this.audio.tone(this.scale(value), this.pitchDurationMs(), opts);
+        this.audio.tone(this.scale(current), this.pitchDurationMs(), opts);
       });
     });
   }

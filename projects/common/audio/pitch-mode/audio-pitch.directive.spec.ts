@@ -90,63 +90,80 @@ function lastToneFreq(handle: CngxAudioHandle): number {
 afterEach(() => vi.restoreAllMocks());
 
 describe('CngxAudioPitch directive', () => {
+  /** Drive a value change; the directive sonifies changes, not the mount value. */
+  function sweep(
+    host: Host,
+    fixture: ReturnType<typeof TestBed.createComponent>,
+    next: number,
+  ): void {
+    host.value.set(next);
+    fixture.detectChanges();
+  }
+
+  it('does not sonify the initial value on mount', () => {
+    const { handle } = setup({ value: 50, domain: [0, 100] });
+    expect(handle.tone).not.toHaveBeenCalled();
+  });
+
   it('linear-scales a mid-domain value into the range', () => {
-    const { handle } = setup({ value: 50, domain: [0, 100], range: [200, 400] });
+    const { host, fixture, handle } = setup({ value: 0, domain: [0, 100], range: [200, 400] });
+    sweep(host, fixture, 50);
     expect(handle.tone).toHaveBeenCalledTimes(1);
     expect(lastToneFreq(handle)).toBe(300);
   });
 
   it('clamps a below-domain value to the range low endpoint', () => {
-    const { handle } = setup({ value: -20, domain: [0, 100], range: [200, 400] });
+    const { host, fixture, handle } = setup({ value: 50, domain: [0, 100], range: [200, 400] });
+    sweep(host, fixture, -20);
     expect(lastToneFreq(handle)).toBe(200);
   });
 
   it('clamps an above-domain value to the range high endpoint', () => {
-    const { handle } = setup({ value: 999, domain: [0, 100], range: [200, 400] });
+    const { host, fixture, handle } = setup({ value: 50, domain: [0, 100], range: [200, 400] });
+    sweep(host, fixture, 999);
     expect(lastToneFreq(handle)).toBe(400);
   });
 
   it('passes the configured tone duration', () => {
-    const { handle } = setup({ value: 0, domain: [0, 100] });
+    const { host, fixture, handle } = setup({ value: 0, domain: [0, 100] });
+    sweep(host, fixture, 10);
     expect(handle.tone).toHaveBeenCalledWith(expect.any(Number), 120, undefined);
   });
 
   it('does not play while audioDisabled is true', () => {
-    const { handle } = setup({ value: 50, domain: [0, 100], disabled: true });
+    const { host, fixture, handle } = setup({ value: 0, domain: [0, 100], disabled: true });
+    sweep(host, fixture, 50);
     expect(handle.tone).not.toHaveBeenCalled();
   });
 
   it('scales the tone gain by audioVolume', () => {
-    const { handle } = setup({ value: 50, domain: [0, 100], vol: 0.5 });
+    const { host, fixture, handle } = setup({ value: 0, domain: [0, 100], vol: 0.5 });
+    sweep(host, fixture, 50);
     expect(handle.tone).toHaveBeenCalledWith(expect.any(Number), 120, { gain: 0.1 });
   });
 
   it('throttles a rapid sweep to one tone per window', () => {
     const { host, fixture, handle } = setup({ value: 10, domain: [0, 100], throttle: 1000 });
+    sweep(host, fixture, 40);
     expect(handle.tone).toHaveBeenCalledTimes(1);
 
-    host.value.set(40);
-    fixture.detectChanges();
-    host.value.set(80);
-    fixture.detectChanges();
-
-    // Both follow-up sweeps land inside the 1000 ms window -> suppressed.
+    // The follow-up sweep lands inside the 1000 ms window -> suppressed.
+    sweep(host, fixture, 80);
     expect(handle.tone).toHaveBeenCalledTimes(1);
   });
 
   it('re-reads pitchThrottleMs when it changes mid-flight', () => {
     const { host, fixture, handle } = setup({ value: 10, domain: [0, 100], throttle: 1000 });
+    sweep(host, fixture, 40);
     expect(handle.tone).toHaveBeenCalledTimes(1);
 
-    host.value.set(40);
-    fixture.detectChanges();
+    sweep(host, fixture, 60);
     expect(handle.tone).toHaveBeenCalledTimes(1);
 
-    // Widening the window to 0 disables throttling; the next sweep must fire.
+    // Narrowing the window to 0 disables throttling; the next sweep must fire.
     host.throttle.set(0);
     fixture.detectChanges();
-    host.value.set(80);
-    fixture.detectChanges();
+    sweep(host, fixture, 80);
     expect(handle.tone).toHaveBeenCalledTimes(2);
   });
 });
