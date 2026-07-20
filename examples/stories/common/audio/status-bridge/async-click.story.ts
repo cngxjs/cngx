@@ -35,10 +35,10 @@ export const STORY: DemoSpec = {
     type="button"
     class="demo-button"
     [cngxAsyncClick]="upload"
-    #upload="cngxAsyncClick"
-    [state]="upload.state"
+    #uploadCtl="cngxAsyncClick"
+    [state]="uploadCtl.state"
     [cngxAudioStatus]="'pending:tap, succeeded:success, failed:error'">
-    @switch (upload.status()) {
+    @switch (uploadCtl.status()) {
       @case ('pending') { Uploading... }
       @case ('success') { Uploaded }
       @case ('error') { Failed }
