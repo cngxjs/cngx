@@ -31,6 +31,13 @@ import { type CngxAudioDomEvent, parseEventBindings } from './parse-bindings';
  * same earcon is still within the debounce window. `[audioVolume]` scales just
  * this element's plays.
  *
+ * The listener set is derived from the grammar, not fixed: `'click:tap'`
+ * registers one DOM listener, and rebinding `[cngxAudio]` at runtime adds the
+ * newly named events and removes the dropped ones. Listeners are registered
+ * outside Angular's event dispatch, so hovering or typing on a bound element
+ * plays its earcon without scheduling change detection. The directive renders
+ * nothing, so there is no view to keep in sync.
+ *
  * @category common/audio
  * @docsKind primary
  * @wcag AA
