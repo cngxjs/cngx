@@ -95,7 +95,7 @@ test.describe('CngxAudioZone enter/leave', () => {
     await page.waitForFunction(() => '__cngxAudioEngine' in window);
 
     await page.getByRole('button', { name: 'Enable sound' }).click();
-    await page.getByRole('button', { name: 'Hover or focus this zone' }).hover();
+    await page.getByRole('group', { name: 'Playback controls' }).hover();
 
     await expect.poll(() => lastPlayed(page)).toBe('notification');
   });

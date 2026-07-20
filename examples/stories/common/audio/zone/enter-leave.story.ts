@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'A spatial complement to <code>[cngxAudio]</code>. Pass a record of earcons and <code>[cngxAudioZone]</code> plays them as the pointer or keyboard focus enters and leaves the host - <code>enter</code>/<code>leave</code> on hover, <code>focus</code>/<code>blur</code> on focus. Any omitted key stays silent.',
   description:
-    'Hover the panel to hear a soft notification on entry and a tap on exit; Tab to it to hear the focus earcon. Click "Enable sound" once to arm audio (browser autoplay policy).',
+    'Hover the panel to hear a notification on entry and a tap on exit. Tab into it to hear the focus earcon and Tab out to hear the blur earcon - moving between the two buttons inside the zone stays silent, because only a crossing of the zone boundary counts. Click "Enable sound" once to arm audio (browser autoplay policy).',
   level: 'atom',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
@@ -22,12 +22,14 @@ export const STORY: DemoSpec = {
     }
   }`,
   template: `
-  <button
-    type="button"
+  <div
+    role="group"
+    aria-label="Playback controls"
     [cngxAudioZone]="{ enter: 'notification', leave: 'tap', focus: 'notification', blur: 'tap' }"
-    style="display:grid; place-items:center; width:100%; min-height:8rem; padding:1.5rem; border:1px dashed var(--cngx-color-border, #cbd5e1); border-radius:0.5rem; background:transparent; font:inherit; color:inherit; cursor:pointer;">
-    Hover or focus this zone
-  </button>`,
+    style="display:flex; gap:0.75rem; align-items:center; justify-content:center; min-height:8rem; padding:1.5rem; border:1px dashed var(--cngx-color-border, #cbd5e1); border-radius:0.5rem;">
+    <button type="button" class="demo-button">Rewind</button>
+    <button type="button" class="demo-button">Forward</button>
+  </div>`,
   templateChromeBefore: `
   <div class="button-row" style="margin-bottom:0.75rem; gap:0.75rem; align-items:center;">
     <button type="button" class="demo-button" (click)="audio.armAutoplay()">Enable sound</button>
