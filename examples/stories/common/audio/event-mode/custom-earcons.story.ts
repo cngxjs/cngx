@@ -3,29 +3,21 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxAudio: custom earcons + mute and volume',
   subtitle:
-    'Register branded earcons with <code>provideCngxAudio(withEarcons({...}))</code> and bind them by name. The mute toggle and volume slider drive the shared engine through <code>injectCngxAudio()</code> - one engine, one <code>AudioContext</code> for the whole page.',
+    'Register branded earcons on the shared engine with <code>injectCngxAudio().register(name, { sequence })</code>, then bind them by name. The mute toggle and volume slider drive the same handle - one engine, one <code>AudioContext</code> for the whole page. App-wide defaults use <code>provideCngxAudio(withEarcons({...}))</code> at bootstrap.',
   description:
-    'The Send and Receive buttons play custom oscillator earcons registered at the story providers. The disabled button binds an earcon but carries [audioDisabled], so it never plays. Mute and volume live in the demo chrome and act on the shared handle.',
+    'Send and Receive play oscillator earcons registered at runtime. The third button binds an earcon but carries [audioDisabled], so it never plays. Mute and volume act on the shared handle.',
   level: 'atom',
   audience: ['dev'],
   artifact: 'building-block',
   focus: ['behavior', 'integration'],
   apiComponents: ['CngxAudio'],
-  moduleImports: [
-    "import { CngxAudio, provideCngxAudio, withEarcons, injectCngxAudio } from '@cngx/common/audio';",
-  ],
+  moduleImports: ["import { CngxAudio, injectCngxAudio } from '@cngx/common/audio';"],
   imports: ['CngxAudio'],
-  viewProviders: [
-    `provideCngxAudio(
-      withEarcons({
-        send: { sequence: [{ freq: 880, duration: 60 }, { freq: 1180, duration: 90 }] },
-        receive: { sequence: [{ freq: 520, duration: 90 }] },
-      }),
-    )`,
-  ],
   setupChrome: `protected readonly audio = injectCngxAudio();
 
   constructor() {
+    this.audio.register('send', { sequence: [{ freq: 880, duration: 60 }, { freq: 1180, duration: 90 }] });
+    this.audio.register('receive', { sequence: [{ freq: 520, duration: 90 }] });
     // Demo-only hook so the headless e2e can read lastPlayed() without sniffing audio.
     if (typeof window !== 'undefined') {
       (window as unknown as Record<string, unknown>)['__cngxAudioEngine'] = this.audio;
