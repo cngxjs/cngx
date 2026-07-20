@@ -15,6 +15,7 @@ export const LIBRARY_SCOPES = [
   'core/theming',
   'common',
   'common/a11y',
+  'common/audio',
   'common/interactive',
   'common/display',
   'common/popover',
