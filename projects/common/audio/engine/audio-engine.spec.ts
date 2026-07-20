@@ -181,6 +181,61 @@ describe('createAudioEngine', () => {
     });
   });
 
+  describe('per-call scale', () => {
+    /**
+     * Peak of the most recent tone envelope: the generator ramps to `peak` with
+     * the first linearRampToValueAtTime on that tone's gain node. gains[0] is
+     * the engine's master gain, so the newest node is the envelope.
+     */
+    function lastPeak(ctx: AudioContextMock): number {
+      const env = ctx.gains[ctx.gains.length - 1];
+      return env.gain.linearRampToValueAtTime.mock.calls[0][0] as number;
+    }
+
+    it('scales an earcon sequence via play(name, scale)', () => {
+      const { engine, ctx } = setupEngine();
+      engine.armAutoplay();
+      engine.play('tap', 0.5);
+      // tap's step carries no explicit gain -> the 0.2 default, scaled by 0.5.
+      expect(lastPeak(ctx)).toBeCloseTo(0.1, 5);
+    });
+
+    it('scales an ad-hoc tone via tone(freq, dur, opts, scale)', () => {
+      const { engine, ctx } = setupEngine();
+      engine.armAutoplay();
+      engine.tone(440, 100, undefined, 0.5);
+      expect(lastPeak(ctx)).toBeCloseTo(0.1, 5);
+    });
+
+    it('scales over an explicit opts.gain rather than replacing it', () => {
+      const { engine, ctx } = setupEngine();
+      engine.armAutoplay();
+      engine.tone(440, 100, { gain: 0.8 }, 0.5);
+      expect(lastPeak(ctx)).toBeCloseTo(0.4, 5);
+    });
+
+    it('clamps the scale to [0, 1]', () => {
+      const { engine, ctx } = setupEngine();
+      engine.armAutoplay();
+      engine.tone(440, 100, undefined, 5);
+      expect(lastPeak(ctx)).toBeCloseTo(0.2, 5);
+    });
+
+    it('scales an ad-hoc sequence via sequence(steps, scale)', () => {
+      const { engine, ctx } = setupEngine();
+      engine.armAutoplay();
+      engine.sequence([{ freq: 440, duration: 60 }], 0.5);
+      expect(lastPeak(ctx)).toBeCloseTo(0.1, 5);
+    });
+
+    it('leaves gain untouched when no scale is passed', () => {
+      const { engine, ctx } = setupEngine();
+      engine.armAutoplay();
+      engine.tone(440, 100, { gain: 0.8 });
+      expect(lastPeak(ctx)).toBeCloseTo(0.8, 5);
+    });
+  });
+
   describe('teardown', () => {
     it('closes the context when the injector is destroyed', () => {
       const { engine, ctx } = setupEngine();

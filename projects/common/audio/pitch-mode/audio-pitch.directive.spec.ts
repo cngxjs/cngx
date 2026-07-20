@@ -128,7 +128,7 @@ describe('CngxAudioPitch directive', () => {
   it('passes the configured tone duration', () => {
     const { host, fixture, handle } = setup({ value: 0, domain: [0, 100] });
     sweep(host, fixture, 10);
-    expect(handle.tone).toHaveBeenCalledWith(expect.any(Number), 120, undefined);
+    expect(handle.tone).toHaveBeenCalledWith(expect.any(Number), 120, undefined, undefined);
   });
 
   it('does not play while audioDisabled is true', () => {
@@ -137,10 +137,11 @@ describe('CngxAudioPitch directive', () => {
     expect(handle.tone).not.toHaveBeenCalled();
   });
 
-  it('scales the tone gain by audioVolume', () => {
+  it('forwards audioVolume to the engine as the per-call scale', () => {
     const { host, fixture, handle } = setup({ value: 0, domain: [0, 100], vol: 0.5 });
     sweep(host, fixture, 50);
-    expect(handle.tone).toHaveBeenCalledWith(expect.any(Number), 120, { gain: 0.1 });
+    // The engine owns the multiply and the clamp; the directive passes the raw scale.
+    expect(handle.tone).toHaveBeenCalledWith(expect.any(Number), 120, undefined, 0.5);
   });
 
   it('throttles a rapid sweep to one tone per window', () => {

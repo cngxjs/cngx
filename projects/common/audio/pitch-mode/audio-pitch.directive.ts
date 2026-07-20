@@ -2,14 +2,9 @@ import { Directive, booleanAttribute, effect, input, linkedSignal, untracked } f
 
 import { createDebouncer } from '../debouncer/debouncer';
 import { injectCngxAudio } from '../inject-audio';
-import { DEFAULT_TONE_GAIN } from '../tone-generator/tone-generator';
 
 /** Throttle key — the pitch directive plays a single ad-hoc voice. */
 const PITCH_VOICE = 'pitch';
-
-function clampUnit(value: number): number {
-  return Math.max(0, Math.min(1, value));
-}
 
 /**
  * Pitch-mode audio binder. Sonifies a continuous numeric value: each change of
@@ -95,10 +90,7 @@ export class CngxAudioPitch {
         if (!this.debouncer.shouldFire(PITCH_VOICE)) {
           return;
         }
-        const volume = this.audioVolume();
-        const opts =
-          volume === undefined ? undefined : { gain: DEFAULT_TONE_GAIN * clampUnit(volume) };
-        this.audio.tone(this.scale(current), this.pitchDurationMs(), opts);
+        this.audio.tone(this.scale(current), this.pitchDurationMs(), undefined, this.audioVolume());
       });
     });
   }

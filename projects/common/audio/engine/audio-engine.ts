@@ -61,10 +61,14 @@ export interface CngxAudioEngine {
    * the shared master volume.
    */
   play(name: string, scale?: number): void;
-  /** Play a single ad-hoc tone. Gated, not debounced, no `lastPlayed` update. */
-  tone(freq: number, durationMs: number, opts?: ToneOptions): void;
-  /** Play an ad-hoc tone sequence. Gated, not debounced. */
-  sequence(steps: readonly ToneStep[]): void;
+  /**
+   * Play a single ad-hoc tone. Gated, not debounced, no `lastPlayed` update.
+   * `scale` is the same `[0, 1]` multiplier `play()` takes and is applied over
+   * `opts.gain` (or the per-tone default) by the engine.
+   */
+  tone(freq: number, durationMs: number, opts?: ToneOptions, scale?: number): void;
+  /** Play an ad-hoc tone sequence. Gated, not debounced. `scale` as in {@link tone}. */
+  sequence(steps: readonly ToneStep[], scale?: number): void;
   /** Register or override an earcon at runtime. */
   register(name: string, config: EarconConfig): void;
   /** Arm the autoplay gate programmatically and resume the context if possible. */
@@ -93,6 +97,23 @@ export type CngxAudioEngineFactory = (options?: AudioEngineOptions) => CngxAudio
 
 function clampVolume(v: number): number {
   return Math.max(0, Math.min(1, v));
+}
+
+/**
+ * Apply a per-call `[0, 1]` scale to a tone's peak gain. Centralised here so
+ * every play path (`play` / `tone` / `sequence`) scales identically and an
+ * engine override sees per-element volume uniformly, rather than each caller
+ * pre-baking its own gain.
+ */
+function scaleGain(gain: number | undefined, scale: number): number {
+  return (gain ?? DEFAULT_TONE_GAIN) * clampVolume(scale);
+}
+
+function scaleSteps(steps: readonly ToneStep[], scale: number | undefined): readonly ToneStep[] {
+  if (scale === undefined) {
+    return steps;
+  }
+  return steps.map((step) => ({ ...step, gain: scaleGain(step.gain, scale) }));
 }
 
 /**
@@ -242,29 +263,26 @@ export const createAudioEngine: CngxAudioEngineFactory = (options) => {
         }
         return;
       }
-      const sequence =
-        scale === undefined
-          ? earcon.sequence
-          : earcon.sequence.map((step) => ({
-              ...step,
-              gain: (step.gain ?? DEFAULT_TONE_GAIN) * clampVolume(scale),
-            }));
-      toneGenerator.sequence(sequence);
+      toneGenerator.sequence(scaleSteps(earcon.sequence, scale));
       lastPlayed.set(name);
     },
-    tone(freq, durationMs, opts) {
+    tone(freq, durationMs, opts, scale) {
       if (blocked() || !ensureContext()) {
         return;
       }
       resumeIfArmed();
-      toneGenerator.tone(freq, durationMs, opts);
+      toneGenerator.tone(
+        freq,
+        durationMs,
+        scale === undefined ? opts : { ...opts, gain: scaleGain(opts?.gain, scale) },
+      );
     },
-    sequence(steps) {
+    sequence(steps, scale) {
       if (blocked() || !ensureContext()) {
         return;
       }
       resumeIfArmed();
-      toneGenerator.sequence(steps);
+      toneGenerator.sequence(scaleSteps(steps, scale));
     },
     register(name, earconConfig) {
       earcons.set(name, earconConfig);
