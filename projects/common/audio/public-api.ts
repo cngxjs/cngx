@@ -55,3 +55,8 @@ export type { EarconConfig } from './earcons/default-earcons';
 
 // Event-mode directive
 export { CngxAudio } from './event-mode/audio.directive';
+
+// Status-, zone-, and pitch-mode directives (Phase 2)
+export { CngxAudioStatus } from './status-mode/audio-status.directive';
+export { CngxAudioZone, type CngxAudioZoneBinding } from './zone-mode/audio-zone.directive';
+export { CngxAudioPitch } from './pitch-mode/audio-pitch.directive';

@@ -17,6 +17,12 @@ describe('@cngx/common/audio public surface', () => {
     expect(api.CngxAudio).toBeTypeOf('function');
   });
 
+  it('exports the Phase 2 status, zone, and pitch atoms', () => {
+    expect(api.CngxAudioStatus).toBeTypeOf('function');
+    expect(api.CngxAudioZone).toBeTypeOf('function');
+    expect(api.CngxAudioPitch).toBeTypeOf('function');
+  });
+
   it('exports all five with* config features', () => {
     expect(api.withEarcons).toBeTypeOf('function');
     expect(api.withVolume).toBeTypeOf('function');
