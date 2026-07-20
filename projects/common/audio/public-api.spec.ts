@@ -7,6 +7,7 @@ describe('@cngx/common/audio public surface', () => {
   it('exports the factories, tokens, provider, and directive', () => {
     expect(api.injectCngxAudio).toBeTypeOf('function');
     expect(api.provideCngxAudio).toBeTypeOf('function');
+    expect(api.provideCngxAudioAt).toBeTypeOf('function');
     expect(api.createAudioEngine).toBeTypeOf('function');
     expect(api.createToneGenerator).toBeTypeOf('function');
     expect(api.createAutoplayGate).toBeTypeOf('function');

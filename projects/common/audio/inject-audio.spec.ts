@@ -1,7 +1,8 @@
+import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { CNGX_AUDIO_CONFIG } from './config/audio-config';
-import { type CngxAudioHandle, injectCngxAudio } from './inject-audio';
+import { CNGX_AUDIO_CONFIG, withMuted, withVolume } from './config/audio-config';
+import { type CngxAudioHandle, injectCngxAudio, provideCngxAudioAt } from './inject-audio';
 
 beforeEach(() => {
   // Engine construction reads injectMediaQuery; jsdom has no matchMedia.
@@ -53,5 +54,67 @@ describe('injectCngxAudio', () => {
     expect(audio.muted()).toBe(true);
     audio.setMuted(false);
     expect(audio.muted()).toBe(false);
+  });
+});
+
+// viewProviders reach the template children, not the host component itself,
+// so the audio handle is read from a child directive/component in the view.
+@Component({ selector: 'test-child', standalone: true, template: '' })
+class ScopedChild {
+  readonly audio = injectCngxAudio();
+}
+
+@Component({
+  standalone: true,
+  imports: [ScopedChild],
+  template: '<test-child /><test-child />',
+  viewProviders: [provideCngxAudioAt(withMuted(true), withVolume(0.3))],
+})
+class ScopedHost {}
+
+@Component({ standalone: true, imports: [ScopedChild], template: '<test-child />' })
+class RootHost {}
+
+function children(fixture: ReturnType<typeof TestBed.createComponent>): ScopedChild[] {
+  return fixture.debugElement.children.map((d) => d.componentInstance as ScopedChild);
+}
+
+describe('provideCngxAudioAt', () => {
+  it('scopes an isolated engine reading the At config', () => {
+    const scoped = TestBed.createComponent(ScopedHost);
+    scoped.detectChanges();
+    const [child] = children(scoped);
+
+    expect(child.audio.muted()).toBe(true);
+    expect(child.audio.volume()).toBe(0.3);
+  });
+
+  it('shares one scoped engine across the whole subtree', () => {
+    const scoped = TestBed.createComponent(ScopedHost);
+    scoped.detectChanges();
+    const [a, b] = children(scoped);
+    expect(a.audio).toBe(b.audio);
+  });
+
+  it('gives the scoped subtree a different engine than the root default', () => {
+    const scoped = TestBed.createComponent(ScopedHost);
+    scoped.detectChanges();
+    const root = TestBed.createComponent(RootHost);
+    root.detectChanges();
+    const [scopedChild] = children(scoped);
+    const [rootChild] = children(root);
+
+    expect(scopedChild.audio).not.toBe(rootChild.audio);
+    expect(rootChild.audio.muted()).toBe(false);
+    expect(rootChild.audio.volume()).toBe(1);
+  });
+
+  it('folds features into the scoped CNGX_AUDIO_CONFIG value', () => {
+    const providers = provideCngxAudioAt(withMuted(true), withVolume(0.3));
+    const configProvider = providers.find(
+      (p): p is { provide: unknown; useValue: unknown } =>
+        typeof p === 'object' && 'provide' in p && p.provide === CNGX_AUDIO_CONFIG,
+    );
+    expect(configProvider?.useValue).toEqual({ muted: true, volume: 0.3 });
   });
 });

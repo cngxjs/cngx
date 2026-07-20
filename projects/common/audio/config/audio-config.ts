@@ -66,6 +66,20 @@ export interface CngxAudioFeature {
 }
 
 /**
+ * Fold a `with*` feature list into a single partial config.
+ *
+ * @internal — shared by {@link provideCngxAudio} and `provideCngxAudioAt`;
+ *   not exported from `public-api.ts`.
+ */
+export function foldAudioFeatures(features: readonly CngxAudioFeature[]): Partial<CngxAudioConfig> {
+  let config: Partial<CngxAudioConfig> = {};
+  for (const feature of features) {
+    config = feature._apply(config);
+  }
+  return config;
+}
+
+/**
  * Register global audio defaults. Mirrors `provideFeedback` — a single small
  * config object folded through `with*` features.
  *
@@ -83,11 +97,9 @@ export interface CngxAudioFeature {
  * @category common/audio
  */
 export function provideCngxAudio(...features: CngxAudioFeature[]): EnvironmentProviders {
-  let config: Partial<CngxAudioConfig> = {};
-  for (const feature of features) {
-    config = feature._apply(config);
-  }
-  return makeEnvironmentProviders([{ provide: CNGX_AUDIO_CONFIG, useValue: config }]);
+  return makeEnvironmentProviders([
+    { provide: CNGX_AUDIO_CONFIG, useValue: foldAudioFeatures(features) },
+  ]);
 }
 
 /**

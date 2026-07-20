@@ -1,5 +1,10 @@
-import { InjectionToken, type Signal, inject } from '@angular/core';
+import { InjectionToken, type Provider, type Signal, inject } from '@angular/core';
 
+import {
+  CNGX_AUDIO_CONFIG,
+  type CngxAudioFeature,
+  foldAudioFeatures,
+} from './config/audio-config';
 import type { EarconConfig } from './earcons/default-earcons';
 import { CNGX_AUDIO_ENGINE_FACTORY, type AudioStatus } from './engine/audio-engine';
 import type { ToneOptions, ToneStep } from './tone-generator/tone-generator';
@@ -67,4 +72,40 @@ export const CNGX_AUDIO_ENGINE = new InjectionToken<CngxAudioHandle>('CngxAudioE
  */
 export function injectCngxAudio(): CngxAudioHandle {
   return inject(CNGX_AUDIO_ENGINE);
+}
+
+/**
+ * Component-scope audio config — place in a component's `viewProviders` so a
+ * subtree runs its own muted / volume / earcon set, independent of the app-wide
+ * `provideCngxAudio(...)`.
+ *
+ * ```typescript
+ * @Component({
+ *   selector: 'app-mixer',
+ *   viewProviders: [provideCngxAudioAt(withVolume(0.3), withEarcons({ ... }))],
+ * })
+ * export class Mixer {}
+ * ```
+ *
+ * Unlike the root `provideCngxAudio` (which returns `EnvironmentProviders` and
+ * only applies at the app / route level), this returns `Provider[]` and scopes
+ * to a component. The default shared engine is a single, process-global
+ * `AudioContext`; this deliberately re-provides {@link CNGX_AUDIO_ENGINE} so the
+ * subtree gets an **isolated engine** reading the scoped {@link CNGX_AUDIO_CONFIG}.
+ * That engine owns a **second `AudioContext`**, created lazily on its first play
+ * and closed with the component's `DestroyRef`. Browsers cap the number of live
+ * `AudioContext`s, so reach for this only when a subtree genuinely needs an
+ * independent audio scope — per-element `[audioVolume]` / `[audioDisabled]`
+ * cover the common case without a second context. The scoped config replaces
+ * (does not layer over) the root config, merged only with library defaults —
+ * matching `provideTreeConfigAt` / `provideMenuConfigAt`.
+ *
+ * @category common/audio
+ * @relatedTo provideCngxAudio, injectCngxAudio
+ */
+export function provideCngxAudioAt(...features: CngxAudioFeature[]): Provider[] {
+  return [
+    { provide: CNGX_AUDIO_CONFIG, useValue: foldAudioFeatures(features) },
+    { provide: CNGX_AUDIO_ENGINE, useFactory: () => inject(CNGX_AUDIO_ENGINE_FACTORY)() },
+  ];
 }

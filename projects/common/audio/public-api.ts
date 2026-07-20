@@ -9,8 +9,8 @@
  * fourth sense, audition, as composable atoms.
  */
 
-// Handle
-export { injectCngxAudio, type CngxAudioHandle } from './inject-audio';
+// Handle + component-scope provider
+export { injectCngxAudio, provideCngxAudioAt, type CngxAudioHandle } from './inject-audio';
 
 // Config + provider
 export {
