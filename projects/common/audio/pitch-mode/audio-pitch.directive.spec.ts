@@ -30,7 +30,8 @@ function createMockHandle(): CngxAudioHandle {
     [pitchRange]="range"
     [pitchThrottleMs]="throttle()"
     [audioVolume]="vol"
-    [audioDisabled]="disabled">
+    [audioDisabled]="disabled"
+  >
     x
   </div>`,
 })

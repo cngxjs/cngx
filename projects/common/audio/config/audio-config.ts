@@ -13,6 +13,8 @@ import type { EarconConfig } from '../earcons/default-earcons';
  * construct this object directly.
  *
  * @category common/audio
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/config/audio-config.ts
+ * @since 0.1.0
  */
 export interface CngxAudioConfig {
   /** Start muted. Default `false`. */
@@ -27,7 +29,12 @@ export interface CngxAudioConfig {
   readonly earcons: Readonly<Record<string, EarconConfig>>;
 }
 
-/** Library defaults — English, browser-native. */
+/**
+ * Library defaults — English, browser-native.
+ * @category common/audio
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/config/audio-config.ts
+ * @since 0.1.0
+ */
 export const CNGX_AUDIO_DEFAULTS: CngxAudioConfig = {
   muted: false,
   volume: 1,
@@ -43,6 +50,8 @@ export const CNGX_AUDIO_DEFAULTS: CngxAudioConfig = {
  *
  * @category common/audio
  * @relatedTo provideCngxAudio, injectAudioConfig
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/config/audio-config.ts
+ * @since 0.1.0
  */
 export const CNGX_AUDIO_CONFIG = new InjectionToken<Partial<CngxAudioConfig>>('CngxAudioConfig', {
   providedIn: 'root',
@@ -54,12 +63,19 @@ export const CNGX_AUDIO_CONFIG = new InjectionToken<Partial<CngxAudioConfig>>('C
  * `provideCngxAudio(...)` contributed. Runs in an injection context.
  *
  * @category common/audio
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/config/audio-config.ts
+ * @since 0.1.0
  */
 export function injectAudioConfig(): CngxAudioConfig {
   return { ...CNGX_AUDIO_DEFAULTS, ...inject(CNGX_AUDIO_CONFIG, { optional: true }) };
 }
 
-/** A feature returned by a `with*` helper, folded into the config by {@link provideCngxAudio}. */
+/**
+ * A feature returned by a `with*` helper, folded into the config by {@link provideCngxAudio}.
+ * @category common/audio
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/config/audio-config.ts
+ * @since 0.1.0
+ */
 export interface CngxAudioFeature {
   /** @internal */
   readonly _apply: (config: Partial<CngxAudioConfig>) => Partial<CngxAudioConfig>;
@@ -102,6 +118,8 @@ export function foldAudioFeatures(features: readonly CngxAudioFeature[]): Partia
  *
  * @category common/audio
  * @relatedTo provideCngxAudioAt, injectAudioConfig
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/config/audio-config.ts
+ * @since 0.1.0
  */
 export function provideCngxAudio(...features: CngxAudioFeature[]): EnvironmentProviders {
   return makeEnvironmentProviders([
@@ -114,6 +132,8 @@ export function provideCngxAudio(...features: CngxAudioFeature[]): EnvironmentPr
  * any earlier `withEarcons` in the same `provideCngxAudio` call.
  *
  * @category common/audio
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/config/audio-config.ts
+ * @since 0.1.0
  */
 export function withEarcons(earcons: Record<string, EarconConfig>): CngxAudioFeature {
   return { _apply: (c) => ({ ...c, earcons: { ...c.earcons, ...earcons } }) };
@@ -123,6 +143,8 @@ export function withEarcons(earcons: Record<string, EarconConfig>): CngxAudioFea
  * Set the master volume in `[0, 1]`.
  *
  * @category common/audio
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/config/audio-config.ts
+ * @since 0.1.0
  */
 export function withVolume(volume: number): CngxAudioFeature {
   return { _apply: (c) => ({ ...c, volume }) };
@@ -132,6 +154,8 @@ export function withVolume(volume: number): CngxAudioFeature {
  * Start muted (or explicitly unmuted with `withMuted(false)`).
  *
  * @category common/audio
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/config/audio-config.ts
+ * @since 0.1.0
  */
 export function withMuted(muted = true): CngxAudioFeature {
   return { _apply: (c) => ({ ...c, muted }) };
@@ -142,6 +166,8 @@ export function withMuted(muted = true): CngxAudioFeature {
  * library; pass `false` to keep audio playing under reduced-motion.
  *
  * @category common/audio
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/config/audio-config.ts
+ * @since 0.1.0
  */
 export function withRespectReducedMotion(respect: boolean): CngxAudioFeature {
   return { _apply: (c) => ({ ...c, respectReducedMotion: respect }) };
@@ -151,6 +177,8 @@ export function withRespectReducedMotion(respect: boolean): CngxAudioFeature {
  * Set the same-name suppression window in milliseconds.
  *
  * @category common/audio
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/config/audio-config.ts
+ * @since 0.1.0
  */
 export function withDebounceMs(ms: number): CngxAudioFeature {
   return { _apply: (c) => ({ ...c, debounceMs: ms }) };

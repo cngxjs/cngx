@@ -28,7 +28,15 @@ import { type CngxAudioDomEvent, parseEventBindings } from './parse-bindings';
  *
  * @category common/audio
  * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/event-mode/audio.directive.ts
+ * @since 0.1.0
  * @relatedTo injectCngxAudio, provideCngxAudio, CngxAudioStatus
+ * <example-url>http://localhost:4200/#/common/audio/event-mode/basic</example-url>
+ * <example-url>http://localhost:4200/#/common/audio/event-mode/custom-earcons</example-url>
+ * <example-url>http://localhost:4200/#/common/audio/event-mode/earcon-palette</example-url>
+ * <example-url>http://localhost:4200/#/common/audio/event-mode/form-feedback</example-url>
+ * <example-url>http://localhost:4200/#/common/audio/event-mode/hover-and-focus</example-url>
  */
 @Directive({
   selector: '[cngxAudio]',

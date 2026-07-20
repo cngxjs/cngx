@@ -15,7 +15,10 @@ describe('createToneGenerator', () => {
     const { ctx, gen } = setup();
     gen.tone(440, 100);
     expect(ctx.oscillators).toHaveLength(1);
-    expect(ctx.oscillators[0].frequency.setValueAtTime).toHaveBeenCalledWith(440, expect.any(Number));
+    expect(ctx.oscillators[0].frequency.setValueAtTime).toHaveBeenCalledWith(
+      440,
+      expect.any(Number),
+    );
   });
 
   it('applies the requested waveform type', () => {

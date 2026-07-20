@@ -4,10 +4,11 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { type CngxAudioConfig, CNGX_AUDIO_CONFIG } from '../config/audio-config';
 import { type CngxAudioEngine, createAudioEngine } from './audio-engine';
 
-function setupEngine(opts?: {
-  reducedMotion?: boolean;
-  config?: Partial<CngxAudioConfig>;
-}): { engine: CngxAudioEngine; ctx: AudioContextMock; flipReducedMotion: (v: boolean) => void } {
+function setupEngine(opts?: { reducedMotion?: boolean; config?: Partial<CngxAudioConfig> }): {
+  engine: CngxAudioEngine;
+  ctx: AudioContextMock;
+  flipReducedMotion: (v: boolean) => void;
+} {
   // jsdom ships no window.matchMedia; seed a placeholder so the shared mock's
   // install() has something to bind/restore.
   (window as unknown as Record<string, unknown>)['matchMedia'] = vi.fn();
@@ -70,7 +71,10 @@ describe('createAudioEngine', () => {
     });
 
     it('ignores reduced-motion when respectReducedMotion is false', () => {
-      const { engine } = setupEngine({ reducedMotion: true, config: { respectReducedMotion: false } });
+      const { engine } = setupEngine({
+        reducedMotion: true,
+        config: { respectReducedMotion: false },
+      });
       engine.armAutoplay();
       engine.play('tap');
       expect(engine.lastPlayed()).toBe('tap');

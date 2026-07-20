@@ -1,6 +1,11 @@
 import type { ToneStep } from '../tone-generator/tone-generator';
 
-/** A named earcon — an ordered sequence of tone steps. */
+/**
+ * A named earcon — an ordered sequence of tone steps.
+ * @category common/audio
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/earcons/default-earcons.ts
+ * @since 0.1.0
+ */
 export interface EarconConfig {
   /** The tones that make up the earcon, played back-to-back. */
   readonly sequence: readonly ToneStep[];

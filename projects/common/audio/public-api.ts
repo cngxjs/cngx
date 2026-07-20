@@ -49,7 +49,11 @@ export {
 } from './tone-generator/tone-generator';
 
 // Token-less composed factories
-export { createAutoplayGate, type CngxAutoplayGate, type GestureEventTarget } from './autoplay-gate/autoplay-gate';
+export {
+  createAutoplayGate,
+  type CngxAutoplayGate,
+  type GestureEventTarget,
+} from './autoplay-gate/autoplay-gate';
 export { createDebouncer, type CngxDebouncer } from './debouncer/debouncer';
 
 // Earcon value type (the CNGX_AUDIO_DEFAULT_EARCONS const stays internal)

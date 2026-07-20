@@ -42,7 +42,8 @@ function makeState(status: WritableSignal<AsyncStatus>): CngxAsyncState<unknown>
     [cngxAudioStatus]="spec"
     [state]="state"
     [audioVolume]="vol"
-    [audioDisabled]="disabled">
+    [audioDisabled]="disabled"
+  >
     x
   </button>`,
 })
@@ -60,10 +61,7 @@ function setup(
 ) {
   TestBed.configureTestingModule({
     imports: [Host],
-    providers: [
-      { provide: CNGX_AUDIO_ENGINE, useValue: handle },
-      ...(extraProviders as never[]),
-    ],
+    providers: [{ provide: CNGX_AUDIO_ENGINE, useValue: handle }, ...(extraProviders as never[])],
   });
   const fixture = TestBed.createComponent(Host);
   const host = fixture.componentInstance;
@@ -135,9 +133,11 @@ describe('CngxAudioStatus directive', () => {
   it('lets an explicit [state] win over an ancestor CNGX_STATEFUL', () => {
     const explicit = signal<AsyncStatus>('idle');
     const ancestor = signal<AsyncStatus>('idle');
-    const { handle } = setup({ spec: 'success:complete', state: makeState(explicit) }, createMockHandle(), [
-      { provide: CNGX_STATEFUL, useValue: { state: makeState(ancestor) } },
-    ]);
+    const { handle } = setup(
+      { spec: 'success:complete', state: makeState(explicit) },
+      createMockHandle(),
+      [{ provide: CNGX_STATEFUL, useValue: { state: makeState(ancestor) } }],
+    );
     // Only the ancestor moves — the directive watches the explicit input, so nothing fires.
     ancestor.set('success');
     TestBed.flushEffects();
