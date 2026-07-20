@@ -197,7 +197,7 @@ export const createAudioEngine: CngxAudioEngineFactory = (options) => {
   });
 
   return {
-    play(name, volume) {
+    play(name, scale) {
       if (blocked()) {
         return;
       }
@@ -218,11 +218,11 @@ export const createAudioEngine: CngxAudioEngineFactory = (options) => {
         return;
       }
       const sequence =
-        volume === undefined
+        scale === undefined
           ? earcon.sequence
           : earcon.sequence.map((step) => ({
               ...step,
-              gain: (step.gain ?? DEFAULT_TONE_GAIN) * clampVolume(volume),
+              gain: (step.gain ?? DEFAULT_TONE_GAIN) * clampVolume(scale),
             }));
       toneGenerator.sequence(sequence);
       lastPlayed.set(name);
