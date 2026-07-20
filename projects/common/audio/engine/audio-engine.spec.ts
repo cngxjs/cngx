@@ -177,6 +177,23 @@ describe('createAudioEngine', () => {
     });
   });
 
+  describe('teardown', () => {
+    it('closes the context when the injector is destroyed', () => {
+      const { engine, ctx } = setupEngine();
+      engine.armAutoplay();
+      engine.play('tap');
+      expect(ctx.state).not.toBe('closed');
+
+      TestBed.resetTestingModule();
+      expect(ctx.state).toBe('closed');
+    });
+
+    it('survives a destroy with no context ever created', () => {
+      setupEngine();
+      expect(() => TestBed.resetTestingModule()).not.toThrow();
+    });
+  });
+
   describe('register', () => {
     it('plays a runtime-registered earcon', () => {
       const { engine } = setupEngine();

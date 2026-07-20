@@ -193,7 +193,13 @@ export const createAudioEngine: CngxAudioEngineFactory = (options) => {
   doc.addEventListener('visibilitychange', onVisibility);
   destroyRef.onDestroy(() => {
     doc.removeEventListener('visibilitychange', onVisibility);
-    void (context as AudioContext | null)?.close?.();
+    // close() rejects on an already-closed context; swallow it so a double
+    // destroy does not surface an unhandled rejection.
+    const closing = (context as AudioContext | null)?.close?.();
+    void closing?.then(
+      () => undefined,
+      () => undefined,
+    );
   });
 
   return {
