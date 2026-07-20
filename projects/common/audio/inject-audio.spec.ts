@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CNGX_AUDIO_CONFIG } from './config/audio-config';
-import { type CngxAudio, injectCngxAudio } from './inject-audio';
+import { type CngxAudioHandle, injectCngxAudio } from './inject-audio';
 
 beforeEach(() => {
   // Engine construction reads injectMediaQuery; jsdom has no matchMedia.
@@ -17,7 +17,7 @@ afterEach(() => {
   delete (window as unknown as Record<string, unknown>)['matchMedia'];
 });
 
-function inject(config?: Record<string, unknown>): CngxAudio {
+function inject(config?: Record<string, unknown>): CngxAudioHandle {
   TestBed.configureTestingModule({
     providers: config ? [{ provide: CNGX_AUDIO_CONFIG, useValue: config }] : [],
   });

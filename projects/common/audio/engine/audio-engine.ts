@@ -15,6 +15,7 @@ import { createDebouncer } from '../debouncer/debouncer';
 import { CNGX_AUDIO_DEFAULT_EARCONS, type EarconConfig } from '../earcons/default-earcons';
 import {
   CNGX_AUDIO_TONE_GENERATOR_FACTORY,
+  DEFAULT_TONE_GAIN,
   type ToneOptions,
   type ToneStep,
 } from '../tone-generator/tone-generator';
@@ -42,8 +43,13 @@ export interface AudioEngineOptions {
  * (no `mute()`/`unmute()` pair); every state change is a reactive `Signal`.
  */
 export interface CngxAudioEngine {
-  /** Play a registered earcon by name. Gated + debounced centrally here. */
-  play(name: string): void;
+  /**
+   * Play a registered earcon by name. Gated + debounced centrally here.
+   * `volume` (a `[0, 1]` multiplier over the per-tone default) scales just this
+   * play — used by `[cngxAudio]`'s per-element `audioVolume` without touching
+   * the shared master volume.
+   */
+  play(name: string, volume?: number): void;
   /** Play a single ad-hoc tone. Gated, not debounced, no `lastPlayed` update. */
   tone(freq: number, durationMs: number, opts?: ToneOptions): void;
   /** Play an ad-hoc tone sequence. Gated, not debounced. */
@@ -191,7 +197,7 @@ export const createAudioEngine: CngxAudioEngineFactory = (options) => {
   });
 
   return {
-    play(name) {
+    play(name, volume) {
       if (blocked()) {
         return;
       }
@@ -211,7 +217,14 @@ export const createAudioEngine: CngxAudioEngineFactory = (options) => {
         }
         return;
       }
-      toneGenerator.sequence(earcon.sequence);
+      const sequence =
+        volume === undefined
+          ? earcon.sequence
+          : earcon.sequence.map((step) => ({
+              ...step,
+              gain: (step.gain ?? DEFAULT_TONE_GAIN) * clampVolume(volume),
+            }));
+      toneGenerator.sequence(sequence);
       lastPlayed.set(name);
     },
     tone(freq, durationMs, opts) {

@@ -10,9 +10,9 @@ import type { ToneOptions, ToneStep } from './tone-generator/tone-generator';
  *
  * @category common/audio
  */
-export interface CngxAudio {
-  /** Play a registered earcon by name. */
-  play(name: string): void;
+export interface CngxAudioHandle {
+  /** Play a registered earcon by name, optionally at a `[0, 1]` volume multiplier. */
+  play(name: string, volume?: number): void;
   /** Play a single ad-hoc tone. */
   tone(freq: number, durationMs: number, opts?: ToneOptions): void;
   /** Play an ad-hoc tone sequence. */
@@ -44,7 +44,7 @@ export interface CngxAudio {
  *
  * @internal
  */
-export const CNGX_AUDIO_ENGINE = new InjectionToken<CngxAudio>('CngxAudioEngineInstance', {
+export const CNGX_AUDIO_ENGINE = new InjectionToken<CngxAudioHandle>('CngxAudioEngineInstance', {
   providedIn: 'root',
   factory: () => inject(CNGX_AUDIO_ENGINE_FACTORY)(),
 });
@@ -65,6 +65,6 @@ export const CNGX_AUDIO_ENGINE = new InjectionToken<CngxAudio>('CngxAudioEngineI
  *
  * @category common/audio
  */
-export function injectCngxAudio(): CngxAudio {
+export function injectCngxAudio(): CngxAudioHandle {
   return inject(CNGX_AUDIO_ENGINE);
 }

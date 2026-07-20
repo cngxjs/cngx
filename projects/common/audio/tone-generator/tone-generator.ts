@@ -6,8 +6,12 @@ const ATTACK_SEC = 0.005;
 const RELEASE_SEC = 0.03;
 /** A tone shorter than attack+release cannot host both ramps; clamp up to this floor. */
 const MIN_DURATION_SEC = ATTACK_SEC + RELEASE_SEC;
-/** Default peak gain for a single tone (before the engine's master volume). */
-const DEFAULT_PEAK_GAIN = 0.2;
+/**
+ * Default peak gain for a single tone (before the engine's master volume).
+ * Exported so a per-element volume multiplier can scale against the same
+ * baseline the generator uses.
+ */
+export const DEFAULT_TONE_GAIN = 0.2;
 
 /** Per-tone synthesis options. */
 export interface ToneOptions {
@@ -68,7 +72,7 @@ export const createToneGenerator: CngxAudioToneGeneratorFactory = (deps) => {
     const dest = deps.destination();
     const start = ctx.currentTime + whenSec + (opts?.when ?? 0);
     const durSec = Math.max(durationMs / 1000, MIN_DURATION_SEC);
-    const peak = opts?.gain ?? DEFAULT_PEAK_GAIN;
+    const peak = opts?.gain ?? DEFAULT_TONE_GAIN;
 
     const osc = ctx.createOscillator();
     osc.type = opts?.type ?? 'sine';
