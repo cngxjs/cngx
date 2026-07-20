@@ -41,6 +41,7 @@ function makeState(status: WritableSignal<AsyncStatus>): CngxAsyncState<unknown>
   template: `<button
     [cngxAudioStatus]="spec"
     [state]="state"
+    [audioVolume]="vol"
     [audioDisabled]="disabled">
     x
   </button>`,
@@ -48,11 +49,12 @@ function makeState(status: WritableSignal<AsyncStatus>): CngxAsyncState<unknown>
 class Host {
   spec = 'pending:tap, succeeded:success, failed:error';
   state: CngxAsyncState<unknown> | undefined = undefined;
+  vol: number | undefined = undefined;
   disabled = false;
 }
 
 function setup(
-  config?: { spec?: string; state?: CngxAsyncState<unknown>; disabled?: boolean },
+  config?: { spec?: string; state?: CngxAsyncState<unknown>; disabled?: boolean; vol?: number },
   handle: CngxAudioHandle = createMockHandle(),
   extraProviders: unknown[] = [],
 ) {
@@ -78,7 +80,7 @@ describe('CngxAudioStatus directive', () => {
     const { handle } = setup({ state: makeState(status) });
     status.set('pending');
     TestBed.flushEffects();
-    expect(handle.play).toHaveBeenCalledWith('tap');
+    expect(handle.play).toHaveBeenCalledWith('tap', undefined);
   });
 
   it('fires success on a pending -> success transition (succeeded alias)', () => {
@@ -86,7 +88,7 @@ describe('CngxAudioStatus directive', () => {
     const { handle } = setup({ state: makeState(status) });
     status.set('success');
     TestBed.flushEffects();
-    expect(handle.play).toHaveBeenCalledWith('success');
+    expect(handle.play).toHaveBeenCalledWith('success', undefined);
   });
 
   it('fires error on a failure transition (failed alias)', () => {
@@ -94,7 +96,7 @@ describe('CngxAudioStatus directive', () => {
     const { handle } = setup({ state: makeState(status) });
     status.set('error');
     TestBed.flushEffects();
-    expect(handle.play).toHaveBeenCalledWith('error');
+    expect(handle.play).toHaveBeenCalledWith('error', undefined);
   });
 
   it('does not fire on the initial idle state', () => {
@@ -112,6 +114,14 @@ describe('CngxAudioStatus directive', () => {
     status.set('pending');
     TestBed.flushEffects();
     expect(handle.play).toHaveBeenCalledTimes(1);
+  });
+
+  it('forwards the per-element audioVolume to play', () => {
+    const status = signal<AsyncStatus>('idle');
+    const { handle } = setup({ state: makeState(status), vol: 0.5 });
+    status.set('pending');
+    TestBed.flushEffects();
+    expect(handle.play).toHaveBeenCalledWith('tap', 0.5);
   });
 
   it('does not fire while audioDisabled is true', () => {
@@ -135,7 +145,7 @@ describe('CngxAudioStatus directive', () => {
 
     explicit.set('success');
     TestBed.flushEffects();
-    expect(handle.play).toHaveBeenCalledWith('complete');
+    expect(handle.play).toHaveBeenCalledWith('complete', undefined);
   });
 
   it('falls back to an ancestor CNGX_STATEFUL when no [state] is bound', () => {
@@ -145,7 +155,7 @@ describe('CngxAudioStatus directive', () => {
     ]);
     ancestor.set('pending');
     TestBed.flushEffects();
-    expect(handle.play).toHaveBeenCalledWith('tap');
+    expect(handle.play).toHaveBeenCalledWith('tap', undefined);
   });
 
   it('dev-errors once when no state source resolves', async () => {

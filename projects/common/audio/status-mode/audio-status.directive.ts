@@ -57,6 +57,9 @@ export class CngxAudioStatus {
     transform: (v) => (typeof v === 'string' ? undefined : v),
   });
 
+  /** Per-element volume multiplier in `[0, 1]`; unset uses the engine volume. */
+  readonly audioVolume = input<number | undefined>(undefined);
+
   /** Suppress this element's audio without unbinding. */
   readonly audioDisabled = input<boolean>(false);
 
@@ -102,7 +105,7 @@ export class CngxAudioStatus {
         }
         const earcon = this.bindings().get(status);
         if (earcon) {
-          this.audio.play(earcon);
+          this.audio.play(earcon, this.audioVolume());
         }
       });
     });
