@@ -1,4 +1,4 @@
-import { Directive, computed, effect, input, linkedSignal, untracked } from '@angular/core';
+import { Directive, effect, input, linkedSignal, untracked } from '@angular/core';
 
 import { createDebouncer } from '../debouncer/debouncer';
 import { injectCngxAudio } from '../inject-audio';
@@ -63,12 +63,11 @@ export class CngxAudioPitch {
   /** Suppress this element's audio without unbinding. */
   readonly audioDisabled = input<boolean>(false);
 
-  // Derived from the input rather than cached in a field: a changed
-  // [pitchThrottleMs] must rebuild the debouncer (a new window starts a fresh
-  // throttle) instead of staying frozen at whatever the first fire captured.
-  private readonly debouncer = computed(() =>
-    createDebouncer({ windowMs: this.pitchThrottleMs() }),
-  );
+  // One instance for the directive's lifetime, deliberately outside the signal
+  // graph: a debouncer carries mutable throttle state, and minting one inside a
+  // computed would hand out a fresh object per evaluation. The window is a
+  // getter, so a changed [pitchThrottleMs] applies on the next fire.
+  private readonly debouncer = createDebouncer({ windowMs: () => this.pitchThrottleMs() });
 
   // Fires on change, never on mount: sonifying the initial value would emit a
   // tone the user never asked for, and would burn the throttle window before
@@ -89,7 +88,7 @@ export class CngxAudioPitch {
         if (this.audioDisabled()) {
           return;
         }
-        if (!this.debouncer().shouldFire(PITCH_VOICE)) {
+        if (!this.debouncer.shouldFire(PITCH_VOICE)) {
           return;
         }
         const volume = this.audioVolume();

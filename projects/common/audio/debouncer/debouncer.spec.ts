@@ -69,4 +69,31 @@ describe('createDebouncer', () => {
     expect(debouncer.shouldFire('tap')).toBe(true);
     expect(debouncer.shouldFire('success')).toBe(true);
   });
+
+  describe('getter window', () => {
+    it('resolves the window per call, not at construction', () => {
+      let clock = 0;
+      let windowMs = 100;
+      const debouncer = createDebouncer({ windowMs: () => windowMs, now: () => clock });
+
+      expect(debouncer.shouldFire('tap')).toBe(true);
+      clock += 50;
+      expect(debouncer.shouldFire('tap')).toBe(false);
+
+      // Narrowing the window mid-flight applies on the very next call.
+      windowMs = 10;
+      expect(debouncer.shouldFire('tap')).toBe(true);
+    });
+
+    it('keeps one instance across window changes', () => {
+      let windowMs = 0;
+      const debouncer = createDebouncer({ windowMs: () => windowMs, now: () => 0 });
+      expect(debouncer.shouldFire('tap')).toBe(true);
+      // window 0 disables debouncing, so a second call at the same instant fires
+      expect(debouncer.shouldFire('tap')).toBe(true);
+
+      windowMs = 100;
+      expect(debouncer.shouldFire('tap')).toBe(false);
+    });
+  });
 });

@@ -19,17 +19,26 @@ export interface CngxDebouncer {
  * the engine (Pillar 3). Plain factory, no DI token — `withDebounceMs` covers
  * configuration and there is no independent swap consumer.
  *
+ * `windowMs` accepts a getter so a caller whose window is a reactive input can
+ * hold ONE debouncer instance for its lifetime and still track changes: the
+ * window is resolved per `shouldFire` call, not captured at construction. That
+ * keeps the (stateful) debouncer out of the signal graph — minting one inside a
+ * `computed` would return a fresh object per evaluation and break the equality
+ * rule. `CngxAudioPitch` is the getter consumer; the engine passes a number.
+ *
  * The clock is injectable (`now`) purely so specs are deterministic; production
  * defaults to `Date.now`.
  *
- * @param options.windowMs Suppression window. `<= 0` disables debouncing. Default `100`.
+ * @param options.windowMs Suppression window, or a getter for it. `<= 0` disables debouncing. Default `100`.
  * @param options.now Clock source in ms. Default `Date.now`.
  */
 export function createDebouncer(options?: {
-  readonly windowMs?: number;
+  readonly windowMs?: number | (() => number);
   readonly now?: () => number;
 }): CngxDebouncer {
-  const windowMs = options?.windowMs ?? DEFAULT_WINDOW_MS;
+  const windowOption = options?.windowMs ?? DEFAULT_WINDOW_MS;
+  const resolveWindow =
+    typeof windowOption === 'function' ? windowOption : (): number => windowOption;
   const now = options?.now ?? (() => Date.now());
   const lastFiredAt = new Map<string, number>();
 
@@ -37,7 +46,7 @@ export function createDebouncer(options?: {
     shouldFire(name) {
       const at = now();
       const last = lastFiredAt.get(name);
-      if (last !== undefined && at - last < windowMs) {
+      if (last !== undefined && at - last < resolveWindow()) {
         return false;
       }
       lastFiredAt.set(name, at);
