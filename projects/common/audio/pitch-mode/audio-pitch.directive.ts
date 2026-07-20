@@ -1,6 +1,6 @@
-import { Directive, effect, input, untracked } from '@angular/core';
+import { Directive, computed, effect, input, untracked } from '@angular/core';
 
-import { createDebouncer, type CngxDebouncer } from '../debouncer/debouncer';
+import { createDebouncer } from '../debouncer/debouncer';
 import { injectCngxAudio } from '../inject-audio';
 import { DEFAULT_TONE_GAIN } from '../tone-generator/tone-generator';
 
@@ -41,7 +41,6 @@ function clampUnit(value: number): number {
 })
 export class CngxAudioPitch {
   private readonly audio = injectCngxAudio();
-  private debouncer: CngxDebouncer | null = null;
 
   /** The tracked value to sonify. */
   readonly value = input.required<number>({ alias: 'cngxAudioPitch' });
@@ -64,6 +63,13 @@ export class CngxAudioPitch {
   /** Suppress this element's audio without unbinding. */
   readonly audioDisabled = input<boolean>(false);
 
+  // Derived from the input rather than cached in a field: a changed
+  // [pitchThrottleMs] must rebuild the debouncer (a new window starts a fresh
+  // throttle) instead of staying frozen at whatever the first fire captured.
+  private readonly debouncer = computed(() =>
+    createDebouncer({ windowMs: this.pitchThrottleMs() }),
+  );
+
   constructor() {
     effect(() => {
       const value = this.value();
@@ -71,8 +77,7 @@ export class CngxAudioPitch {
         if (this.audioDisabled()) {
           return;
         }
-        this.debouncer ??= createDebouncer({ windowMs: this.pitchThrottleMs() });
-        if (!this.debouncer.shouldFire(PITCH_VOICE)) {
+        if (!this.debouncer().shouldFire(PITCH_VOICE)) {
           return;
         }
         const volume = this.audioVolume();

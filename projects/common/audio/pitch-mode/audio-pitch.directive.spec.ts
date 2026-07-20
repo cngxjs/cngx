@@ -28,7 +28,7 @@ function createMockHandle(): CngxAudioHandle {
     [cngxAudioPitch]="value()"
     [pitchDomain]="domain"
     [pitchRange]="range"
-    [pitchThrottleMs]="throttle"
+    [pitchThrottleMs]="throttle()"
     [audioVolume]="vol"
     [audioDisabled]="disabled">
     x
@@ -36,9 +36,9 @@ function createMockHandle(): CngxAudioHandle {
 })
 class Host {
   readonly value = signal(50);
+  readonly throttle = signal(1000);
   domain: [number, number] = [0, 100];
   range: [number, number] = [200, 400];
-  throttle = 1000;
   vol: number | undefined = undefined;
   disabled = false;
 }
@@ -66,7 +66,7 @@ function setup(config?: PitchConfig, handle: CngxAudioHandle = createMockHandle(
     host.range = config.range;
   }
   if (config?.throttle !== undefined) {
-    host.throttle = config.throttle;
+    host.throttle.set(config.throttle);
   }
   if (config?.vol !== undefined) {
     host.vol = config.vol;
@@ -132,5 +132,21 @@ describe('CngxAudioPitch directive', () => {
 
     // Both follow-up sweeps land inside the 1000 ms window -> suppressed.
     expect(handle.tone).toHaveBeenCalledTimes(1);
+  });
+
+  it('re-reads pitchThrottleMs when it changes mid-flight', () => {
+    const { host, fixture, handle } = setup({ value: 10, domain: [0, 100], throttle: 1000 });
+    expect(handle.tone).toHaveBeenCalledTimes(1);
+
+    host.value.set(40);
+    fixture.detectChanges();
+    expect(handle.tone).toHaveBeenCalledTimes(1);
+
+    // Widening the window to 0 disables throttling; the next sweep must fire.
+    host.throttle.set(0);
+    fixture.detectChanges();
+    host.value.set(80);
+    fixture.detectChanges();
+    expect(handle.tone).toHaveBeenCalledTimes(2);
   });
 });
