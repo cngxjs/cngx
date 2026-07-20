@@ -33,10 +33,15 @@ import { type CngxAudioDomEvent, parseEventBindings } from './parse-bindings';
  *
  * The listener set is derived from the grammar, not fixed: `'click:tap'`
  * registers one DOM listener, and rebinding `[cngxAudio]` at runtime adds the
- * newly named events and removes the dropped ones. Listeners are registered
- * outside Angular's event dispatch, so hovering or typing on a bound element
- * plays its earcon without scheduling change detection. The directive renders
- * nothing, so there is no view to keep in sync.
+ * newly named events and removes the dropped ones. Binding happens on the first
+ * change detection after the input settles rather than at construction, so an
+ * event dispatched programmatically before the host's first tick is missed.
+ *
+ * Listeners are registered outside Angular's event dispatch. In a zoneless app
+ * that means they schedule no change detection; under zone.js the patched
+ * `addEventListener` still triggers a tick, so there the saving is registration
+ * cost alone. Either way the engine's `lastPlayed` and `status` are signals, so
+ * anything a template binds to them stays current.
  *
  * @category common/audio
  * @docsKind primary
