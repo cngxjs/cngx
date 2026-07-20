@@ -95,7 +95,7 @@ test.describe('CngxAudioZone enter/leave', () => {
     await page.waitForFunction(() => '__cngxAudioEngine' in window);
 
     await page.getByRole('button', { name: 'Enable sound' }).click();
-    await page.getByRole('group', { name: 'Audio zone' }).hover();
+    await page.getByRole('button', { name: 'Hover or focus this zone' }).hover();
 
     await expect.poll(() => lastPlayed(page)).toBe('notification');
   });
@@ -113,7 +113,7 @@ test.describe('CngxAudioPitch sonification', () => {
     // Focus + arrow keys are a real keydown gesture: arms autoplay and the
     // pitch directive plays tones (engine.tone() does not touch lastPlayed, so
     // the observable signal here is the context status running).
-    const slider = page.getByRole('slider', { name: 'Sonified level' });
+    const slider = page.getByRole('slider', { name: 'Level' });
     await slider.focus();
     await slider.press('ArrowRight');
     await slider.press('ArrowRight');

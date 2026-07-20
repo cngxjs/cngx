@@ -29,6 +29,10 @@ export const STORY: DemoSpec = {
     if (typeof window !== 'undefined') {
       (window as unknown as Record<string, unknown>)['__cngxAudioEngine'] = this.audio;
     }
+  }
+
+  protected onFailToggle(event: Event): void {
+    this.failNext = (event.target as HTMLInputElement).checked;
   }`,
   template: `
   <button
@@ -48,7 +52,7 @@ export const STORY: DemoSpec = {
   templateChrome: `
   <div class="status-row" style="margin-top:0.75rem; gap:0.75rem; align-items:center;">
     <label style="display:flex; gap:0.4rem; align-items:center;">
-      <input type="checkbox" [checked]="failNext" (change)="failNext = $any($event.target).checked" />
+      <input type="checkbox" [checked]="failNext" (change)="onFailToggle($event)" />
       <span>Fail next upload</span>
     </label>
     <span class="status-badge">last played: {{ audio.lastPlayed() ?? 'none' }}</span>

@@ -22,14 +22,12 @@ export const STORY: DemoSpec = {
     }
   }`,
   template: `
-  <div
-    tabindex="0"
-    role="group"
-    aria-label="Audio zone"
+  <button
+    type="button"
     [cngxAudioZone]="{ enter: 'notification', leave: 'tap', focus: 'notification', blur: 'tap' }"
-    style="display:grid; place-items:center; min-height:8rem; padding:1.5rem; border:1px dashed var(--cngx-color-border, #cbd5e1); border-radius:0.5rem;">
+    style="display:grid; place-items:center; width:100%; min-height:8rem; padding:1.5rem; border:1px dashed var(--cngx-color-border, #cbd5e1); border-radius:0.5rem; background:transparent; font:inherit; color:inherit; cursor:pointer;">
     Hover or focus this zone
-  </div>`,
+  </button>`,
   templateChromeBefore: `
   <div class="button-row" style="margin-bottom:0.75rem; gap:0.75rem; align-items:center;">
     <button type="button" class="demo-button" (click)="audio.armAutoplay()">Enable sound</button>

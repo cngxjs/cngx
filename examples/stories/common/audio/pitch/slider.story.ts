@@ -28,14 +28,14 @@ export const STORY: DemoSpec = {
     }
   }`,
   template: `
-  <label style="display:flex; gap:0.75rem; align-items:center;">
-    <span>Level</span>
+  <div style="display:flex; gap:0.75rem; align-items:center;">
+    <label for="pitch-level">Level</label>
     <input
+      id="pitch-level"
       type="range"
       min="0"
       max="100"
       step="1"
-      aria-label="Sonified level"
       [value]="level"
       (input)="onInput($event)"
       [cngxAudioPitch]="level"
@@ -43,5 +43,5 @@ export const STORY: DemoSpec = {
       [pitchRange]="[220, 880]"
       [pitchThrottleMs]="60" />
     <span class="status-badge">{{ level }}</span>
-  </label>`,
+  </div>`,
 };
