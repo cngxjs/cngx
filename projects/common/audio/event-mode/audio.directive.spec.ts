@@ -2,7 +2,7 @@ import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CNGX_AUDIO_ENGINE, type CngxAudioHandle } from '../inject-audio';
-import { CngxAudio } from './cngx-audio.directive';
+import { CngxAudio } from './audio.directive';
 
 function createMockHandle(): CngxAudioHandle {
   return {

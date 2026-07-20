@@ -54,4 +54,4 @@ export { createDebouncer, type CngxDebouncer } from './debouncer/debouncer';
 export type { EarconConfig } from './earcons/default-earcons';
 
 // Event-mode directive
-export { CngxAudio } from './cngx-audio/cngx-audio.directive';
+export { CngxAudio } from './event-mode/audio.directive';
