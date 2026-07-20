@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxAudio: event-mode earcons',
+  title: 'CngxAudio: Basic',
   subtitle:
     'The <code>[cngxAudio]</code> directive maps a DOM event to an earcon with the <code>event:earcon</code> grammar. No state, no config - drop it on any element and the built-in oscillator earcons play on interaction.',
   description:

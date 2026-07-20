@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxAudioStatus: async lifecycle earcons',
+  title: 'CngxAudioStatus: Async click',
   subtitle:
     'The audition counterpart of <code>CngxToastOn</code>. Bind <code>[cngxAudioStatus]</code> next to a <code>CngxAsyncState</code> producer and the <code>status:earcon</code> grammar plays one earcon per lifecycle transition - <code>pending</code> on start, <code>succeeded</code> on resolve, <code>failed</code> on reject. It fires only on real transitions, never on the initial <code>idle</code>.',
   description:

@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxAudio: hover and focus feedback',
+  title: 'CngxAudio: Hover and focus',
   subtitle:
     'The <code>event:earcon</code> grammar covers more than click. Bind <code>pointerenter</code>, <code>pointerleave</code>, <code>focus</code>, and <code>blur</code> to give navigation a quiet audible texture - one earcon per interaction, comma-separated.',
   description:
@@ -10,6 +10,12 @@ export const STORY: DemoSpec = {
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
   focus: ['behavior', 'a11y-pattern'],
+  references: [
+    {
+      label: 'WCAG 2.2 SC 1.3.3 Sensory Characteristics',
+      href: 'https://www.w3.org/WAI/WCAG22/Understanding/sensory-characteristics.html',
+    },
+  ],
   apiComponents: ['CngxAudio'],
   moduleImports: ["import { CngxAudio } from '@cngx/common/audio';"],
   imports: ['CngxAudio'],

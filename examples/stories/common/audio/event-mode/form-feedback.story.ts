@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxAudio: form event feedback',
+  title: 'CngxAudio: Form feedback',
   subtitle:
     'Bind form events - <code>input</code>, <code>change</code>, <code>submit</code> - to earcons directly on the fields and the form element. The engine debounces same-name plays, so typing does not machine-gun the tap sound.',
   description:

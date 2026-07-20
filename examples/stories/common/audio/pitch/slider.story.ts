@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxAudioPitch: value sonification',
+  title: 'CngxAudioPitch: Slider',
   subtitle:
     'Sonify a continuous number. <code>[cngxAudioPitch]</code> clamps the value against a fixed <code>[pitchDomain]</code>, linear-scales it into <code>[pitchRange]</code> Hz, and plays a short tone on each change. The inputs are discrete so <code>[cngxAudioPitch]="level"</code> stays a native reactive binding. Rapid sweeps are throttled to one tone per <code>[pitchThrottleMs]</code>.',
   description:
@@ -10,6 +10,12 @@ export const STORY: DemoSpec = {
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
   focus: ['behavior', 'a11y-pattern'],
+  references: [
+    {
+      label: 'WAI-ARIA APG: Slider Pattern',
+      href: 'https://www.w3.org/WAI/ARIA/apg/patterns/slider/',
+    },
+  ],
   apiComponents: ['CngxAudioPitch'],
   moduleImports: ["import { CngxAudioPitch, injectCngxAudio } from '@cngx/common/audio';"],
   imports: ['CngxAudioPitch'],

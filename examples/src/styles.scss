@@ -3786,3 +3786,10 @@ mat-icon.demo-breadcrumb-icon {
   width: 1.125rem;
   height: 1.125rem;
 }
+
+/* Audio-zone demo panel: the dashed region [cngxAudioZone] is bound to. */
+.demo-audio-zone {
+  padding: var(--cngx-space-6, 1.5rem);
+  border: var(--cngx-border-width, 1px) dashed var(--cngx-color-border, #cbd5e1);
+  border-radius: var(--cngx-radius-md, 0.5rem);
+}

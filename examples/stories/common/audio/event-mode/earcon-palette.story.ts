@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxAudio: the six built-in earcons',
+  title: 'CngxAudio: Earcon palette',
   subtitle:
     'Every built-in earcon is synthesised from <code>OscillatorNode</code> - zero audio assets. Click each button to hear <code>tap</code>, <code>success</code>, <code>error</code>, <code>warning</code>, <code>notification</code>, and <code>complete</code>.',
   description:

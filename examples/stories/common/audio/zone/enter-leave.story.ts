@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxAudioZone: enter, leave, focus, blur',
+  title: 'CngxAudioZone: Enter leave',
   subtitle:
     'A spatial complement to <code>[cngxAudio]</code>. Pass a record of earcons and <code>[cngxAudioZone]</code> plays them as the pointer or keyboard focus enters and leaves the host - <code>enter</code>/<code>leave</code> on hover, <code>focus</code>/<code>blur</code> on focus. Any omitted key stays silent.',
   description:
@@ -10,9 +10,21 @@ export const STORY: DemoSpec = {
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
   focus: ['behavior', 'a11y-pattern'],
+  references: [
+    {
+      label: 'WCAG 2.2 SC 1.3.3 Sensory Characteristics',
+      href: 'https://www.w3.org/WAI/WCAG22/Understanding/sensory-characteristics.html',
+    },
+  ],
   apiComponents: ['CngxAudioZone'],
   moduleImports: ["import { CngxAudioZone, injectCngxAudio } from '@cngx/common/audio';"],
   imports: ['CngxAudioZone'],
+  setup: `
+  protected position = 0;
+
+  protected seek(deltaSeconds: number): void {
+    this.position = Math.max(0, this.position + deltaSeconds);
+  }`,
   setupChrome: `protected readonly audio = injectCngxAudio();
 
   constructor() {
@@ -25,15 +37,17 @@ export const STORY: DemoSpec = {
   <div
     role="group"
     aria-label="Playback controls"
+    class="demo-audio-zone"
     [cngxAudioZone]="{ enter: 'notification', leave: 'tap', focus: 'notification', blur: 'tap' }"
-    style="display:flex; gap:0.75rem; align-items:center; justify-content:center; min-height:8rem; padding:1.5rem; border:1px dashed var(--cngx-color-border, #cbd5e1); border-radius:0.5rem;">
-    <button type="button" class="demo-button">Rewind</button>
-    <button type="button" class="demo-button">Forward</button>
+    style="display:flex; gap:0.75rem; align-items:center; justify-content:center; min-height:8rem;">
+    <button type="button" class="demo-button" (click)="seek(-10)">Rewind 10s</button>
+    <output aria-live="off">{{ position }}s</output>
+    <button type="button" class="demo-button" (click)="seek(10)">Forward 10s</button>
   </div>`,
   templateChromeBefore: `
   <div class="button-row" style="margin-bottom:0.75rem; gap:0.75rem; align-items:center;">
     <button type="button" class="demo-button" (click)="audio.armAutoplay()">Enable sound</button>
-    <span class="demo-hint">Then hover the panel or Tab to it.</span>
+    <span class="demo-hint">Then hover the panel, or Tab into it and between the buttons.</span>
   </div>`,
   templateChrome: `
   <div class="status-row" style="margin-top:0.75rem;">

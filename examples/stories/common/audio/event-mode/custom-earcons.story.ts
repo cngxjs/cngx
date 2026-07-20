@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxAudio: custom earcons + mute and volume',
+  title: 'CngxAudio: Custom earcons',
   subtitle:
     'Register branded earcons on the shared engine with <code>injectCngxAudio().register(name, { sequence })</code>, then bind them by name. The mute toggle and volume slider drive the same handle - one engine, one <code>AudioContext</code> for the whole page. App-wide defaults use <code>provideCngxAudio(withEarcons({...}))</code> at bootstrap.',
   description:
