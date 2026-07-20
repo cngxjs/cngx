@@ -1,10 +1,15 @@
 import {
+  DestroyRef,
   Directive,
+  ElementRef,
   afterNextRender,
   booleanAttribute,
   computed,
+  effect,
+  inject,
   input,
   isDevMode,
+  untracked,
 } from '@angular/core';
 
 import { injectCngxAudio } from '../inject-audio';
@@ -26,6 +31,18 @@ import { type CngxAudioDomEvent, parseEventBindings } from './parse-bindings';
  * same earcon is still within the debounce window. `[audioVolume]` scales just
  * this element's plays.
  *
+ * The listener set is derived from the grammar, not fixed: `'click:tap'`
+ * registers one DOM listener, and rebinding `[cngxAudio]` at runtime adds the
+ * newly named events and removes the dropped ones. Binding happens on the first
+ * change detection after the input settles rather than at construction, so an
+ * event dispatched programmatically before the host's first tick is missed.
+ *
+ * Listeners are registered outside Angular's event dispatch. In a zoneless app
+ * that means they schedule no change detection; under zone.js the patched
+ * `addEventListener` still triggers a tick, so there the saving is registration
+ * cost alone. Either way the engine's `lastPlayed` and `status` are signals, so
+ * anything a template binds to them stays current.
+ *
  * @category common/audio
  * @docsKind primary
  * @wcag AA
@@ -41,19 +58,14 @@ import { type CngxAudioDomEvent, parseEventBindings } from './parse-bindings';
 @Directive({
   selector: '[cngxAudio]',
   exportAs: 'cngxAudio',
-  host: {
-    '(click)': 'handleEvent("click")',
-    '(focus)': 'handleEvent("focus")',
-    '(blur)': 'handleEvent("blur")',
-    '(pointerenter)': 'handleEvent("pointerenter")',
-    '(pointerleave)': 'handleEvent("pointerleave")',
-    '(submit)': 'handleEvent("submit")',
-    '(change)': 'handleEvent("change")',
-    '(input)': 'handleEvent("input")',
-  },
 })
 export class CngxAudio {
   private readonly audio = injectCngxAudio();
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly destroyRef = inject(DestroyRef);
+
+  /** The listeners currently registered on the host, keyed by event type. */
+  private readonly bound = new Map<CngxAudioDomEvent, EventListener>();
 
   /** The `event:earcon` grammar, e.g. `'click:tap, focus:notification'`. */
   readonly spec = input<string>('', { alias: 'cngxAudio' });
@@ -64,11 +76,18 @@ export class CngxAudio {
   /** Suppress this element's audio without unbinding. */
   readonly audioDisabled = input(false, { transform: booleanAttribute });
 
-  protected readonly bindings = computed(() => parseEventBindings(this.spec()).bindings, {
+  private readonly bindings = computed(() => parseEventBindings(this.spec()).bindings, {
     equal: sameStringMap,
   });
 
   constructor() {
+    effect(() => {
+      const wanted = this.bindings();
+      untracked(() => this.syncListeners(wanted));
+    });
+
+    this.destroyRef.onDestroy(() => this.unbindAll());
+
     if (isDevMode()) {
       // One-shot post-binding check, not a reactive node.
       afterNextRender(() => {
@@ -89,7 +108,44 @@ export class CngxAudio {
     }
   }
 
-  protected handleEvent(event: CngxAudioDomEvent): void {
+  /**
+   * Diff the bound listener set against the parsed spec: drop event types the
+   * grammar no longer names, add the ones it newly names, leave the rest alone.
+   * A rebuild would churn a listener that is still wanted.
+   */
+  private syncListeners(wanted: ReadonlyMap<CngxAudioDomEvent, string>): void {
+    const el = this.host.nativeElement;
+
+    for (const [type, listener] of this.bound) {
+      if (!wanted.has(type)) {
+        el.removeEventListener(type, listener);
+        this.bound.delete(type);
+      }
+    }
+
+    for (const type of wanted.keys()) {
+      if (this.bound.has(type)) {
+        continue;
+      }
+      // Captures the type only — the earcon is read fresh at fire time, so
+      // renaming it in the grammar needs no rebind.
+      const listener: EventListener = () => this.handleEvent(type);
+      // Not passive: none of the bindable types are scroll-blocking, so the
+      // flag buys nothing and would foreclose preventDefault on submit/click.
+      el.addEventListener(type, listener);
+      this.bound.set(type, listener);
+    }
+  }
+
+  private unbindAll(): void {
+    const el = this.host.nativeElement;
+    for (const [type, listener] of this.bound) {
+      el.removeEventListener(type, listener);
+    }
+    this.bound.clear();
+  }
+
+  private handleEvent(event: CngxAudioDomEvent): void {
     if (this.audioDisabled()) {
       return;
     }
