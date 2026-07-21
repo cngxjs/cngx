@@ -1,0 +1,42 @@
+{
+  "name": "@cngx/interop",
+  "version": "0.0.0-PLACEHOLDER",
+  "description": "Adapters bridging external state engines (TanStack Query, NgRx SignalStore) onto the CNGX async-state protocol.",
+  "keywords": [
+    "cngx",
+    "angular",
+    "signals",
+    "interop",
+    "tanstack",
+    "ngrx",
+    "async-state"
+  ],
+  "author": "Christian Weiss <info@cngx.dev>",
+  "license": "MIT",
+  "homepage": "https://github.com/cngxjs/cngx#readme",
+  "bugs": {
+    "url": "https://github.com/cngxjs/cngx/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cngxjs/cngx.git",
+    "directory": "projects/interop"
+  },
+  "peerDependencies": {
+    "@angular/core": "^21.2.0",
+    "@ngrx/signals": "^21.0.0",
+    "@tanstack/angular-query-experimental": "^5.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@ngrx/signals": {
+      "optional": true
+    },
+    "@tanstack/angular-query-experimental": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "tslib": "^2.3.0"
+  },
+  "sideEffects": false
+}

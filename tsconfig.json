@@ -41,6 +41,12 @@
       "path": "./projects/data-display/tsconfig.spec.json"
     },
     {
+      "path": "./projects/interop/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/interop/tsconfig.spec.json"
+    },
+    {
       "path": "./examples/tsconfig.app.json"
     },
     {

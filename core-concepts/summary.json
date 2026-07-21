@@ -28,6 +28,10 @@
         "file": "async-state-machine.md"
     },
     {
+        "title": "Store Bridges & Async Observability",
+        "file": "store-bridges-and-observability.md"
+    },
+    {
         "title": "Instrumentation Pattern",
         "file": "instrumentation-pattern.md"
     },

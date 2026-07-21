@@ -3,6 +3,7 @@ import type { CngxAsyncState } from '@cngx/core/utils';
 import { isObservable, type Observable, type Subscription } from 'rxjs';
 
 import { createManualState, type ManualAsyncState } from './create-manual-state';
+import { injectAsyncRegistry } from '../async-registry/provide-async-registry';
 
 /**
  * Configuration options for `injectAsyncState`.
@@ -16,6 +17,20 @@ export interface InjectAsyncStateOptions {
    * @default 50
    */
   debounce?: number;
+
+  /**
+   * Human-readable label surfaced in `CngxAsyncRegistry.activeOperations`.
+   * Display only - never the registry key. Ignored unless `register` is set.
+   */
+  label?: string;
+
+  /**
+   * When `true`, register this state in the ambient `CngxAsyncRegistry` (if
+   * one is provided via `provideAsyncRegistry()`) for the injector's lifetime,
+   * and unregister automatically on destroy. Defaults to `false` - a no-op for
+   * existing callers, and a no-op when no registry is provided.
+   */
+  register?: boolean;
 }
 
 /**
@@ -75,6 +90,17 @@ export function injectAsyncState<T>(
       debounceTimer = undefined;
     }
   });
+
+  // Opt-in observability: register with the ambient CngxAsyncRegistry (if any)
+  // under a fresh per-operation uid, and unregister on destroy. No-op when the
+  // caller did not opt in, or when no registry is provided.
+  if (options?.register) {
+    const registry = injectAsyncRegistry();
+    if (registry) {
+      const operationId = registry.register(state, options.label);
+      destroyRef.onDestroy(() => registry.unregister(operationId));
+    }
+  }
 
   function executeQuery(computation: () => Promise<T> | Observable<T>): void {
     cancelInFlight();

@@ -32,6 +32,19 @@ export {
 // out of `@cngx/common/data`.
 export * from './async-state';
 
+export { CngxAsyncRegistry, type CngxAsyncOperation } from './async-registry/async-registry';
+export { provideAsyncRegistry, injectAsyncRegistry } from './async-registry/provide-async-registry';
+export {
+  CNGX_ASYNC_LABEL,
+  CNGX_ASYNC_SKIP,
+  withAsyncLabel,
+  withAsyncSkip,
+} from './async-registry/http-context';
+export {
+  cngxAsyncInterceptor,
+  provideAsyncHttpObservability,
+} from './async-registry/http-interceptor';
+
 export { CngxAsync, type CngxAsyncContext } from './async/async.directive';
 
 export { CngxMetric } from './display/metric/metric.component';
