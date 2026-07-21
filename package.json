@@ -82,6 +82,7 @@
     "@commitlint/cli": "^20.1.0",
     "@commitlint/config-conventional": "^20.0.0",
     "@floating-ui/dom": "^1.7.6",
+    "@ngrx/signals": "^21.1.1",
     "@playwright/test": "1.59.1",
     "@softarc/eslint-plugin-sheriff": "^0.19.6",
     "@softarc/sheriff-core": "^0.19.6",

@@ -24,9 +24,13 @@
   },
   "peerDependencies": {
     "@angular/core": "^21.2.0",
+    "@ngrx/signals": "^21.0.0",
     "@tanstack/angular-query-experimental": "^5.0.0"
   },
   "peerDependenciesMeta": {
+    "@ngrx/signals": {
+      "optional": true
+    },
     "@tanstack/angular-query-experimental": {
       "optional": true
     }

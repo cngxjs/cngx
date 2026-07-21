@@ -7,6 +7,7 @@
   "include": [
     "*.d.ts",
     "*.spec.ts",
-    "query/**/*.spec.ts"
+    "query/**/*.spec.ts",
+    "signals/**/*.spec.ts"
   ]
 }
