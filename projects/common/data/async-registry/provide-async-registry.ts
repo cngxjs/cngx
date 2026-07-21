@@ -6,7 +6,7 @@ import { CngxAsyncRegistry } from './async-registry';
  *
  * Opt-in - not `providedIn: 'root'`. Add it to `bootstrapApplication`
  * providers to enable app-wide async observability; producers that opt in
- * (`injectAsyncState({ register: true })`, `provideCngxHttpObservability()`)
+ * (`injectAsyncState({ register: true })`, `provideAsyncHttpObservability()`)
  * then surface in `isAnythingLoading()` / `activeOperations()`.
  *
  * ```ts

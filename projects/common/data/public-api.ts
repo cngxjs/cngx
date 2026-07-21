@@ -42,7 +42,7 @@ export {
 } from './async-registry/http-context';
 export {
   cngxAsyncInterceptor,
-  provideCngxHttpObservability,
+  provideAsyncHttpObservability,
 } from './async-registry/http-interceptor';
 
 export { CngxAsync, type CngxAsyncContext } from './async/async.directive';

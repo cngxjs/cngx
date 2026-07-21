@@ -64,13 +64,13 @@ export const cngxAsyncInterceptor: HttpInterceptorFn = (req, next) => {
  * bootstrapApplication(AppComponent, {
  *   providers: [
  *     provideAsyncRegistry(),
- *     provideCngxHttpObservability(),
+ *     provideAsyncHttpObservability(),
  *   ],
  * });
  * ```
  *
  * @category common/data/async-registry
  */
-export function provideCngxHttpObservability(): EnvironmentProviders {
+export function provideAsyncHttpObservability(): EnvironmentProviders {
   return makeEnvironmentProviders([provideHttpClient(withInterceptors([cngxAsyncInterceptor]))]);
 }

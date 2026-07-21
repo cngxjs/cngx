@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { CngxAsyncRegistry } from './async-registry';
 import { provideAsyncRegistry } from './provide-async-registry';
 import { withAsyncLabel, withAsyncSkip } from './http-context';
-import { cngxAsyncInterceptor, provideCngxHttpObservability } from './http-interceptor';
+import { cngxAsyncInterceptor, provideAsyncHttpObservability } from './http-interceptor';
 
 interface Harness {
   http: HttpClient;
@@ -115,9 +115,9 @@ describe('cngxAsyncInterceptor', () => {
     expect(registry.activeOperations()).toHaveLength(0);
   });
 
-  it('provideCngxHttpObservability wires the interceptor end-to-end', () => {
+  it('provideAsyncHttpObservability wires the interceptor end-to-end', () => {
     TestBed.configureTestingModule({
-      providers: [provideAsyncRegistry(), provideCngxHttpObservability(), provideHttpClientTesting()],
+      providers: [provideAsyncRegistry(), provideAsyncHttpObservability(), provideHttpClientTesting()],
     });
     const http = TestBed.inject(HttpClient);
     const httpMock = TestBed.inject(HttpTestingController);
