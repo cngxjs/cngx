@@ -59,6 +59,9 @@ jobs:
             forms/filter-builder
             data-display
             data-display/treetable
+            interop
+            interop/query
+            interop/signals
             ui
             ui/layout
             ui/overlay

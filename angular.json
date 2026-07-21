@@ -266,6 +266,38 @@
         }
       }
     },
+    "interop": {
+      "projectType": "library",
+      "root": "projects/interop",
+      "sourceRoot": "projects/interop",
+      "prefix": "cngx",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:ng-packagr",
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/interop/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/interop/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "projects/interop/tsconfig.spec.json"
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": ["projects/interop/**/*.ts", "projects/interop/**/*.html"]
+          }
+        }
+      }
+    },
     "examples": {
       "projectType": "application",
       "schematics": {

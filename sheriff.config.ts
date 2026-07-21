@@ -83,6 +83,13 @@ export const config: SheriffConfig = {
       `entry:${entry}`,
       'scope:lib',
     ],
+    'projects/interop': ['lib:interop', 'level:3', 'entry:primary', 'scope:lib'],
+    'projects/interop/<entry>': ({ entry }) => [
+      'lib:interop',
+      'level:3',
+      `entry:${entry}`,
+      'scope:lib',
+    ],
     'projects/ui': ['lib:ui', 'level:4', 'entry:primary', 'scope:lib'],
     'projects/ui/<entry>': ({ entry }) => [
       'lib:ui',
@@ -105,7 +112,8 @@ export const config: SheriffConfig = {
     'lib:common':       ['lib:utils', 'lib:core', 'lib:common'],
     'lib:forms':        ['lib:utils', 'lib:core', 'lib:common', 'lib:forms'],
     'lib:data-display': ['lib:utils', 'lib:core', 'lib:common', 'lib:data-display'],
-    'lib:ui':           ['lib:utils', 'lib:core', 'lib:common', 'lib:forms', 'lib:data-display', 'lib:ui'],
+    'lib:interop':      ['lib:utils', 'lib:core', 'lib:common', 'lib:interop'],
+    'lib:ui':           ['lib:utils', 'lib:core', 'lib:common', 'lib:forms', 'lib:data-display', 'lib:interop', 'lib:ui'],
 
     // Tooling / fixtures / demos can pull from any lib.
     'lib:testing':      anyTag,
