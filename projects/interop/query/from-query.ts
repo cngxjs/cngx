@@ -2,7 +2,7 @@ import { computed, type Signal } from '@angular/core';
 import { buildAsyncStateView, type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
 
 /**
- * Minimal structural view of a TanStack Query result — the signal-bag fields
+ * Minimal structural view of a TanStack Query result - the signal-bag fields
  * `fromQuery` reads.
  *
  * A `CreateQueryResult<T>` from `@tanstack/angular-query-experimental`
@@ -15,7 +15,7 @@ import { buildAsyncStateView, type AsyncStatus, type CngxAsyncState } from '@cng
 export interface CngxQueryLike<T> {
   /** TanStack query status. */
   readonly status: Signal<'pending' | 'error' | 'success'>;
-  /** TanStack fetch status — `fetching` signals an in-flight request. */
+  /** TanStack fetch status - `fetching` signals an in-flight request. */
   readonly fetchStatus: Signal<'fetching' | 'paused' | 'idle'>;
   /** The most recent successful result, or `undefined`. */
   readonly data: Signal<T | undefined>;
@@ -28,16 +28,16 @@ export interface CngxQueryLike<T> {
  *
  * Reads the query's signal-bag and maps TanStack's `status` / `fetchStatus`
  * pair onto the cngx `AsyncStatus` union, then hands the derived signals to
- * `buildAsyncStateView` — the same single-source-of-truth kernel every other
+ * `buildAsyncStateView` - the same single-source-of-truth kernel every other
  * producer uses. No injection context is required (only `computed()`), and no
  * boolean view is re-derived here.
  *
  * Status mapping:
- * - `error` → `error`
- * - `success` + `fetching` → `refreshing` (background refetch, data visible)
- * - `success` + idle/paused → `success`
- * - `pending` + `fetching` → `loading` (first load, no data yet)
- * - `pending` + idle/paused → `idle` (disabled or paused query)
+ * - `error` -> `error`
+ * - `success` + `fetching` -> `refreshing` (background refetch, data visible)
+ * - `success` + idle/paused -> `success`
+ * - `pending` + `fetching` -> `loading` (first load, no data yet)
+ * - `pending` + idle/paused -> `idle` (disabled or paused query)
  *
  * ```typescript
  * private readonly query = injectQuery(() => ({
@@ -46,8 +46,8 @@ export interface CngxQueryLike<T> {
  * }));
  *
  * readonly users = fromQuery(this.query);
- * // users.status(), users.data(), users.isFirstLoad() — all work
- * // <cngx-async-container [state]="users"> — direct binding
+ * // users.status(), users.data(), users.isFirstLoad() - all work
+ * // <cngx-async-container [state]="users"> - direct binding
  * ```
  *
  * @category interop/query
@@ -63,13 +63,18 @@ export function fromQuery<T>(query: CngxQueryLike<T>): CngxAsyncState<T> {
       // Data is already present; a concurrent fetch is a background refresh.
       return fetching ? 'refreshing' : 'success';
     }
-    // s === 'pending' — no successful load has completed yet.
+    // s === 'pending' - no successful load has completed yet.
     return fetching ? 'loading' : 'idle';
   });
 
-  const data = computed(() => query.data());
-  const error = computed(() => query.error());
   const isFirstLoad = computed(() => query.status() === 'pending');
 
-  return buildAsyncStateView<T>({ status, data, error, isFirstLoad });
+  // data and error are already the query's own signals - pass them through
+  // directly rather than re-wrapping in a needless computed.
+  return buildAsyncStateView<T>({
+    status,
+    data: query.data,
+    error: query.error,
+    isFirstLoad,
+  });
 }
