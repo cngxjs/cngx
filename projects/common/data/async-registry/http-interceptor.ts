@@ -56,7 +56,7 @@ export const cngxAsyncInterceptor: HttpInterceptorFn = (req, next) => {
 };
 
 /**
- * Wires {@link cngxAsyncInterceptor} into `HttpClient` so every request
+ * Sets up `HttpClient` with {@link cngxAsyncInterceptor} so every request
  * surfaces in {@link CngxAsyncRegistry}. Opt-in - add it to
  * `bootstrapApplication` providers alongside `provideAsyncRegistry()`.
  *
@@ -67,6 +67,18 @@ export const cngxAsyncInterceptor: HttpInterceptorFn = (req, next) => {
  *     provideAsyncHttpObservability(),
  *   ],
  * });
+ * ```
+ *
+ * **Use this only when cngx owns the `HttpClient` setup.** It calls
+ * `provideHttpClient(withInterceptors([cngxAsyncInterceptor]))` internally, so
+ * an app that already calls `provideHttpClient` (especially with `withFetch()`
+ * or other features) would get a second, feature-less `HttpClient`
+ * configuration - last-provider-wins on `HttpBackend` can silently revert
+ * `withFetch()` to the XHR backend. In that case do not call this; add the
+ * exported {@link cngxAsyncInterceptor} to your own `withInterceptors` instead:
+ *
+ * ```ts
+ * provideHttpClient(withFetch(), withInterceptors([authInterceptor, cngxAsyncInterceptor]))
  * ```
  *
  * @category common/data/async-registry
