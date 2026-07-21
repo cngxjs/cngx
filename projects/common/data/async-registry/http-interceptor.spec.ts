@@ -41,7 +41,7 @@ describe('cngxAsyncInterceptor', () => {
     expect(registry.activeOperations()).toHaveLength(0);
   });
 
-  it('clears on the error path too (finalize fires on error — no pinned loading)', () => {
+  it('clears on the error path too (finalize fires on error - no pinned loading)', () => {
     const { http, httpMock, registry } = configure();
 
     http.get('/api/err').subscribe({ error: () => undefined });
@@ -89,7 +89,7 @@ describe('cngxAsyncInterceptor', () => {
 
     httpMock.expectOne('/api/a').flush([]);
 
-    // Completing one must not evict the other — the second is still in flight.
+    // Completing one must not evict the other - the second is still in flight.
     expect(registry.isAnythingLoading()).toBe(true);
     expect(registry.activeOperations()).toHaveLength(1);
 

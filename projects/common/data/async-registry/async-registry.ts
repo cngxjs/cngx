@@ -66,7 +66,7 @@ function operationsEqual(
  * Producers register their `CngxAsyncState` (via `injectAsyncState({ register:
  * true })`, the HTTP interceptor, or directly) and unregister on teardown.
  *
- * Not `providedIn: 'root'` — consumers opt in with {@link provideAsyncRegistry}.
+ * Not `providedIn: 'root'` - consumers opt in with {@link provideAsyncRegistry}.
  * When the registry is absent, producers skip registration entirely.
  *
  * **Keyed by a per-operation uid, not the human label.** Async operations are
@@ -75,7 +75,7 @@ function operationsEqual(
  * its own entry. This is the one deliberate divergence from `CngxErrorRegistry`
  * (which keys by a stable scope name).
  *
- * Both views are `computed()` only — no `effect`, no service calls. Inner
+ * Both views are `computed()` only - no `effect`, no service calls. Inner
  * status reactivity flows through each entry's `CngxAsyncState` signals; the
  * Map signal's `mapKeySetEqual` short-circuits register/unregister churn
  * without hiding status changes.
@@ -114,7 +114,7 @@ export class CngxAsyncRegistry {
 
   /**
    * Registers an async state under a fresh per-operation uid and returns it.
-   * The optional `label` is display metadata only — never the map key, so
+   * The optional `label` is display metadata only - never the map key, so
    * concurrent same-label (or unlabeled) operations stay independent.
    */
   register(state: CngxAsyncState<unknown>, label?: string): string {

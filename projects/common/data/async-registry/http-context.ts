@@ -10,7 +10,7 @@ export const CNGX_ASYNC_LABEL = new HttpContextToken<string | undefined>(() => u
 
 /**
  * Per-request opt-out. When `true`, `cngxAsyncInterceptor` passes the request
- * through without registering it — keeps polling / telemetry pings out of the
+ * through without registering it - keeps polling / telemetry pings out of the
  * aggregate without a global allow-list.
  *
  * @category common/data/async-registry

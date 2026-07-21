@@ -17,7 +17,7 @@ import { CNGX_ASYNC_LABEL, CNGX_ASYNC_SKIP } from './http-context';
  *
  * Fully opt-in and self-contained:
  * - Resolves `inject(CngxAsyncRegistry, { optional: true })` and passes the
- *   request straight through when no registry is provided — zero behaviour
+ *   request straight through when no registry is provided - zero behaviour
  *   change for consumers who do not opt in.
  * - Passes through without registering when `CNGX_ASYNC_SKIP` is set.
  * - Otherwise registers a fresh `createManualState` (set `loading`) under a
@@ -26,7 +26,7 @@ import { CNGX_ASYNC_LABEL, CNGX_ASYNC_SKIP } from './http-context';
  *   unsubscribe), so a request can never pin the global loading state.
  *
  * Per-request uid identity (from `CngxAsyncRegistry`) means concurrent requests
- * sharing a label never evict one another — completing one leaves the other
+ * sharing a label never evict one another - completing one leaves the other
  * tracked. The interceptor does not swallow errors: `setError` records the
  * failure, then the error propagates to the caller unchanged.
  *
@@ -57,7 +57,7 @@ export const cngxAsyncInterceptor: HttpInterceptorFn = (req, next) => {
 
 /**
  * Wires {@link cngxAsyncInterceptor} into `HttpClient` so every request
- * surfaces in {@link CngxAsyncRegistry}. Opt-in — add it to
+ * surfaces in {@link CngxAsyncRegistry}. Opt-in - add it to
  * `bootstrapApplication` providers alongside `provideAsyncRegistry()`.
  *
  * ```ts

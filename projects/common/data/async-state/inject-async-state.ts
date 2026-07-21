@@ -20,14 +20,14 @@ export interface InjectAsyncStateOptions {
 
   /**
    * Human-readable label surfaced in `CngxAsyncRegistry.activeOperations`.
-   * Display only — never the registry key. Ignored unless `register` is set.
+   * Display only - never the registry key. Ignored unless `register` is set.
    */
   label?: string;
 
   /**
    * When `true`, register this state in the ambient `CngxAsyncRegistry` (if
    * one is provided via `provideAsyncRegistry()`) for the injector's lifetime,
-   * and unregister automatically on destroy. Defaults to `false` — a no-op for
+   * and unregister automatically on destroy. Defaults to `false` - a no-op for
    * existing callers, and a no-op when no registry is provided.
    */
   register?: boolean;
