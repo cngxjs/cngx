@@ -258,11 +258,19 @@
 @layer cngx.components {
   @scope (.cngx-toggle) {
     :scope {
-      /* Derive spacing from the global scale (SET-from-scale rule). gap 0.5rem
-         -> sm (read on host); thumb-inset 0.125rem -> xs (2 -> 4, read on the
-         __thumb descendant, inherits:true so the SET cascades). */
+      /* gap 0.5rem -> sm (SET-from-scale, read on host). */
       --cngx-toggle-gap: var(--cngx-space-sm);
-      --cngx-toggle-thumb-inset: var(--cngx-space-xs);
+      /* The thumb inset is the GEOMETRIC centring inset, not a spacing rung -
+         it must equal (track-height - thumb-size) / 2 so the thumb sits centred
+         in the track (and, at rest, inset equally from every edge; the travel
+         is sized to match). Deriving it from the actual geometry keeps it
+         centred under any track/thumb override and is a deliberate density
+         opt-out: anchoring it to --cngx-space-xs (4px at comfortable) pushed
+         the thumb off-centre to the track's bottom-right. Read on the __thumb
+         descendant; inherits:true so the SET cascades. */
+      --cngx-toggle-thumb-inset: calc(
+        (var(--cngx-toggle-track-height) - var(--cngx-toggle-thumb-size)) / 2
+      );
       display: inline-flex;
       align-items: center;
       gap: var(--cngx-toggle-gap, var(--cngx-space-sm, 0.5rem));

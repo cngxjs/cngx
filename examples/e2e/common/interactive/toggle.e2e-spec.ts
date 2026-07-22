@@ -38,4 +38,47 @@ test.describe('common/interactive/toggle', () => {
     await gotoDemo(page, 'common/interactive/toggle/label-position');
     expect(await page.getByRole('switch').count()).toBeGreaterThan(0);
   });
+
+  // Regression: the thumb inset is the geometric centring inset
+  // ((track-height - thumb-size) / 2 = 2px), NOT a density spacing rung. A
+  // density sweep once anchored it to --cngx-space-xs (4px at comfortable),
+  // which pushed the thumb off-centre to the track's bottom edge (empty space
+  // above it). This guard measures the real geometry: the thumb sits centred in
+  // the track, and a density swap does NOT move it.
+  test('thumb stays vertically centred in the track at any density', async ({ page }) => {
+    await gotoDemo(page, 'common/interactive/toggle/basic-two-way-binding');
+    await expect(page.getByRole('switch').first()).toBeVisible();
+
+    const readGaps = () =>
+      page.evaluate(() => {
+        const host = document.querySelector('.cngx-toggle') as HTMLElement;
+        const track = host.querySelector('.cngx-toggle__track') as HTMLElement;
+        const thumb = host.querySelector('.cngx-toggle__thumb') as HTMLElement;
+        const t = track.getBoundingClientRect();
+        const h = thumb.getBoundingClientRect();
+        return {
+          topGap: Number((h.top - t.top).toFixed(2)),
+          bottomGap: Number((t.bottom - h.bottom).toFixed(2)),
+        };
+      });
+
+    // Comfortable (default): 20px track, 16px thumb -> 2px inset top and bottom.
+    const comfortable = await readGaps();
+    expect(comfortable.topGap, 'thumb block-start inset != 2px (off-centre)').toBeCloseTo(2, 1);
+    expect(
+      Math.abs(comfortable.topGap - comfortable.bottomGap),
+      'thumb not vertically centred in the track',
+    ).toBeLessThanOrEqual(0.5);
+
+    // The inset is geometric, so a density swap must leave it unchanged - the
+    // bug was it tracked the density scale and grew at comfortable/spacious.
+    await page.evaluate(() => document.documentElement.setAttribute('data-density', 'spacious'));
+    const spacious = await readGaps();
+    expect(spacious.topGap, 'thumb inset drifted under [data-density=spacious]').toBeCloseTo(2, 1);
+    expect(
+      Math.abs(spacious.topGap - spacious.bottomGap),
+      'thumb off-centre at spacious density',
+    ).toBeLessThanOrEqual(0.5);
+    await page.evaluate(() => document.documentElement.removeAttribute('data-density'));
+  });
 });
