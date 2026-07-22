@@ -2,12 +2,15 @@ import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  type ElementRef,
   ViewEncapsulation,
+  afterNextRender,
   computed,
   inject,
   input,
   model,
   signal,
+  viewChild,
   type TemplateRef,
 } from '@angular/core';
 import {
@@ -91,6 +94,7 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
     '[attr.aria-disabled]': 'disabled() ? "true" : null',
     '[attr.aria-invalid]': '(invalid() || errorState()) ? "true" : null',
     '[attr.aria-errormessage]': 'errorMessageId()',
+    '[attr.aria-labelledby]': 'hasProjectedLabel() ? labelId : null',
     '[attr.aria-describedby]': 'describedById()',
     '[attr.tabindex]': 'disabled() ? -1 : 0',
     '[class.cngx-toggle--checked]': 'value()',
@@ -115,7 +119,7 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
         }
       </span>
     </span>
-    <span class="cngx-toggle__label">
+    <span #label class="cngx-toggle__label" [id]="labelId">
       <ng-content />
     </span>
     <span
@@ -155,10 +159,38 @@ export class CngxToggle implements CngxControlValue<boolean>, CngxFormFieldContr
   readonly thumbGlyph = input<TemplateRef<void> | null>(null);
 
   protected readonly describedId = nextUid('cngx-toggle-desc');
+  protected readonly labelId = nextUid('cngx-toggle-label');
 
   protected readonly describedById = computed(() =>
     this.disabledReason() ? this.describedId : null,
   );
+
+  private readonly labelRef = viewChild<ElementRef<HTMLElement>>('label');
+  private readonly hasProjectedLabelState = signal(false);
+  /**
+   * True when static content is projected into the label span. Gates
+   * `aria-labelledby`: Chrome's name-from-contents for `role="switch"`
+   * does not recurse into the nested `.cngx-toggle__label`, so a
+   * projected label would otherwise yield an empty accessible name
+   * (Pillar 2). Emitting `aria-labelledby` only when a label is present
+   * leaves an icon-only toggle's consumer `aria-label` in force -
+   * pointing labelledby at an empty span would blank the name instead.
+   */
+  protected readonly hasProjectedLabel = this.hasProjectedLabelState.asReadonly();
+
+  constructor() {
+    // One-shot post-render read of the projected content (static-label
+    // case, the switch-label norm). afterNextRender runs after `<ng-content>`
+    // resolves and is outside the reactive graph; on SSR it no-ops and
+    // hydrates true on the client (attribute-only, hydration-safe). A
+    // late-changing projected label (empty->filled after first render) is
+    // intentionally not tracked here.
+    afterNextRender(() => {
+      this.hasProjectedLabelState.set(
+        !!this.labelRef()?.nativeElement.textContent?.trim(),
+      );
+    });
+  }
 
   /** Stable per-instance id used for `<label for>` wiring. */
   readonly id = signal(nextUid('cngx-toggle-')).asReadonly();

@@ -107,6 +107,46 @@ describe('CngxToggle', () => {
     expect(projected?.textContent).toBe('★');
   });
 
+  describe('projected label as accessible name', () => {
+    it('wires aria-labelledby to the projected label span', () => {
+      @Component({
+        template: `<cngx-toggle>Dark</cngx-toggle>`,
+        imports: [CngxToggle],
+      })
+      class LabelHost {}
+
+      const fixture = TestBed.createComponent(LabelHost);
+      fixture.detectChanges();
+      TestBed.tick(); // flush the afterNextRender projected-content probe
+      fixture.detectChanges(); // reflect hasProjectedLabel onto the host binding
+
+      const el = fixture.debugElement.query(By.directive(CngxToggle)).nativeElement as HTMLElement;
+      const labelledby = el.getAttribute('aria-labelledby');
+      expect(labelledby).toBeTruthy();
+      // jsdom does not compute AccName; assert the wiring points at the
+      // visible label span. Real accessible-name is covered by the e2e.
+      const labelSpan = el.querySelector('.cngx-toggle__label');
+      expect(labelSpan?.id).toBe(labelledby);
+    });
+
+    it('omits aria-labelledby for a label-less toggle so a consumer aria-label wins', () => {
+      @Component({
+        template: `<cngx-toggle aria-label="Mute"></cngx-toggle>`,
+        imports: [CngxToggle],
+      })
+      class IconOnlyHost {}
+
+      const fixture = TestBed.createComponent(IconOnlyHost);
+      fixture.detectChanges();
+      TestBed.tick();
+      fixture.detectChanges();
+
+      const el = fixture.debugElement.query(By.directive(CngxToggle)).nativeElement as HTMLElement;
+      expect(el.getAttribute('aria-labelledby')).toBeNull();
+      expect(el.getAttribute('aria-label')).toBe('Mute');
+    });
+  });
+
   describe('aria-invalid + aria-errormessage symmetric semantics', () => {
     it('aria-invalid reflects invalid() alone (no form-field host)', () => {
       const { fixture, dir, el } = setup();
