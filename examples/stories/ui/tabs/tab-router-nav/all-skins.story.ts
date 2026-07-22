@@ -28,9 +28,9 @@ export const STORY: DemoSpec = {
       <div style="display:flex;flex-direction:column;gap:6px">
         <span style="font-weight:600;text-transform:capitalize">{{ skin }}</span>
         <cngx-tab-nav [skin]="skin" [activeIndex]="0" [aria-label]="skin + ' skin'">
-          <a cngxTabLink id="overview" label="Overview" [href]="demoHref">Overview</a>
-          <a cngxTabLink id="activity" label="Activity" [href]="demoHref">Activity</a>
-          <a cngxTabLink id="settings" label="Settings" [href]="demoHref">Settings</a>
+          <a cngxTabLink [id]="skin + '-overview'" label="Overview" [href]="demoHref">Overview</a>
+          <a cngxTabLink [id]="skin + '-activity'" label="Activity" [href]="demoHref">Activity</a>
+          <a cngxTabLink [id]="skin + '-settings'" label="Settings" [href]="demoHref">Settings</a>
         </cngx-tab-nav>
       </div>
     }
