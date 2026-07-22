@@ -179,7 +179,7 @@
     }
 
     .cngx-tab-nav__link {
-      --cngx-tab-padding: 0.4375rem 0.875rem;
+      --cngx-tab-padding: calc(var(--cngx-space-sm) - 1px) calc(var(--cngx-space-md) - 2px);
       /* Sit just outside the pill, within the padding above. */
       --cngx-tab-focus-offset: 1px;
       background: transparent;
@@ -215,7 +215,7 @@
     }
 
     .cngx-tab-nav__link {
-      --cngx-tab-padding: 0.4375rem 1rem;
+      --cngx-tab-padding: calc(var(--cngx-space-sm) - 1px) var(--cngx-space-md);
       justify-content: center;
       text-align: center;
     }
@@ -241,7 +241,7 @@
     }
 
     .cngx-tab-nav__link {
-      --cngx-tab-padding: 0.4375rem 0.875rem;
+      --cngx-tab-padding: calc(var(--cngx-space-sm) - 1px) calc(var(--cngx-space-md) - 2px);
       --cngx-tab-focus-offset: 1px;
       background: transparent;
       border: var(--cngx-tab-surface-border-width, 1px) solid transparent;
@@ -275,7 +275,7 @@
     }
 
     .cngx-tab-nav__link {
-      --cngx-tab-padding: 0.4375rem 1rem;
+      --cngx-tab-padding: calc(var(--cngx-space-sm) - 1px) var(--cngx-space-md);
       border: var(--cngx-tab-surface-border-width, 1px) solid transparent;
       justify-content: center;
       text-align: center;
@@ -321,7 +321,7 @@
     }
 
     .cngx-tab-nav__link {
-      --cngx-tab-padding: 0.5rem 0.875rem;
+      --cngx-tab-padding: var(--cngx-space-sm) calc(var(--cngx-space-md) - 2px);
       /* Sit just outside the rounded tile, within the track padding. */
       --cngx-tab-focus-offset: 1px;
       background: transparent;
@@ -357,7 +357,7 @@
     }
 
     .cngx-tab-nav__link {
-      --cngx-tab-padding: 0.5rem 1rem;
+      --cngx-tab-padding: var(--cngx-space-sm) var(--cngx-space-md);
     }
   }
 
@@ -399,7 +399,7 @@
        border. `margin-inline-end` collapses adjacent borders into a shared
        1px seam (the nav links are direct flex siblings; gap is 0). */
     .cngx-tab-nav__link {
-      --cngx-tab-padding: 0.625rem 1.25rem;
+      --cngx-tab-padding: calc(var(--cngx-space-sm) + 2px) calc(var(--cngx-space-md) + 4px);
       background: var(--cngx-tab-inactive-bg, oklch(0.97 0 0));
       border: var(--cngx-tab-surface-border-width, 1px) solid
         var(--cngx-tab-surface-border-color, oklch(0.87 0 0));

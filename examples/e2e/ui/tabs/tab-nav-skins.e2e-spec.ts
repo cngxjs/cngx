@@ -284,4 +284,59 @@ test.describe('ui/tabs/tab-nav-skins', () => {
       '2px',
     );
   });
+
+  // Family-wide anchored-padding lock for the nav's non-line skins (line is the
+  // base, guarded above). Each per-skin --cngx-tab-padding override is
+  // re-expressed as its density anchor plus fixed remainder, so comfortable
+  // render is byte-identical to the pre-fix pixels AND [data-density='compact']
+  // re-scales it (the element-level override used to shadow the density seam).
+  // Oracle = the anchored-padding map: comfortable [block, inline] / compact
+  // [block, inline] with sm=4 / md=8. `contained vertical` shares the contained
+  // override (no V-specific padding rule), so it proves contained tracks in
+  // vertical too.
+  const NAV_PADDING = [
+    { label: 'contained skin', comfortable: ['10px', '20px'], compact: ['6px', '12px'] },
+    { label: 'segmented skin', comfortable: ['8px', '14px'], compact: ['4px', '6px'] },
+    { label: 'pill skin', comfortable: ['7px', '14px'], compact: ['3px', '6px'] },
+    { label: 'pill-outline skin', comfortable: ['7px', '14px'], compact: ['3px', '6px'] },
+    { label: 'contained vertical', comfortable: ['10px', '20px'], compact: ['6px', '12px'] },
+  ];
+
+  test('per-skin nav link padding stays byte-identical at comfortable and tracks density', async ({
+    page,
+  }) => {
+    await gotoDemo(page, 'ui/tabs/tab-router-nav/all-skins');
+    await expect(page.locator('cngx-tab-nav[aria-label="pill skin"]')).toBeVisible();
+
+    const readAll = (labels: string[]) =>
+      page.evaluate((labels) => {
+        const out: Record<string, [string, string]> = {};
+        for (const label of labels) {
+          const host = document.querySelector(`cngx-tab-nav[aria-label="${label}"]`);
+          const link = host?.querySelector('.cngx-tab-nav__link') as HTMLElement | null;
+          const cs = link ? getComputedStyle(link) : null;
+          out[label] = cs ? [cs.paddingTop, cs.paddingLeft] : ['', ''];
+        }
+        return out;
+      }, labels);
+
+    const labels = NAV_PADDING.map((s) => s.label);
+
+    const comfortable = await readAll(labels);
+    for (const s of NAV_PADDING) {
+      expect(comfortable[s.label], `${s.label} nav padding drifted at comfortable density`).toEqual(
+        s.comfortable,
+      );
+    }
+
+    await page.evaluate(() => document.documentElement.setAttribute('data-density', 'compact'));
+    const compact = await readAll(labels);
+    for (const s of NAV_PADDING) {
+      expect(compact[s.label], `${s.label} nav padding did not track [data-density=compact]`).toEqual(
+        s.compact,
+      );
+    }
+
+    await page.evaluate(() => document.documentElement.removeAttribute('data-density'));
+  });
 });
