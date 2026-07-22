@@ -12,6 +12,18 @@ test.describe('common/interactive/toggle', () => {
     await expect(toggle).not.toHaveAttribute('aria-checked', initial as string);
   });
 
+  test('basic two-way: switch derives its accessible name from the projected label', async ({
+    page,
+  }) => {
+    await gotoDemo(page, 'common/interactive/toggle/basic-two-way-binding');
+    // Real-browser AccName check: Chrome does not recurse name-from-contents
+    // into the nested label span for role=switch, so this is empty without the
+    // aria-labelledby wiring. jsdom cannot compute this — the unit spec only
+    // proves the wiring.
+    const toggle = page.getByRole('switch').first();
+    await expect(toggle).toHaveAccessibleName('Receive e-mail notifications');
+  });
+
   test('disabled with reason: page renders with at least one switch', async ({ page }) => {
     await gotoDemo(page, 'common/interactive/toggle/disabled-with-reason');
     expect(await page.getByRole('switch').count()).toBeGreaterThan(0);
