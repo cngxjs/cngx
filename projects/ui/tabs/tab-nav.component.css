@@ -1,11 +1,20 @@
 /**
  * @overview
  * Structural + line-skin styling for `<cngx-tab-nav>`. Pairs with the
- * shared `tabs-base.css` token vocabulary (loaded first via `styleUrls`),
- * so a consumer theming `<cngx-tab-group>` themes the nav identically -
- * the `--cngx-tab-*` tokens are read with `var(--token, fallback)` since
- * the nav does not load `tab-group.component.css` where some are
- * `@property`-registered; the fallback carries the default.
+ * shared `tabs-base.css` token vocabulary, loaded first via `styleUrls`
+ * (see `tab-nav.component.ts`), where the `--cngx-tab-*` tokens are
+ * `@property`-registered. A registered property is never unset, so a
+ * use-site `var(--token, fallback)` fallback is dead - the registered
+ * initial wins. The nav therefore SETs its base spacing tokens
+ * (`--cngx-tab-gap` / `--cngx-tab-padding` / `--cngx-tab-affordance-gap`)
+ * on `:scope`, anchored to the `--cngx-space-*` density scale, exactly as
+ * `<cngx-tab-group>` does - they are `inherits:true` (or unregistered), so
+ * the host SET cascades to the `.cngx-tab-nav__link` anchors and a root
+ * `[data-density]` swap re-scales them. The `inherits:false`
+ * `--cngx-tab-focus-offset` is instead SET on the consuming
+ * `.cngx-tab-nav__link` element (a `:scope` SET never reaches it). The
+ * per-skin `@scope` blocks below still read unregistered skin-local tokens
+ * whose use-site fallbacks do fire.
  *
  * The links are consumer-authored `<a cngxTabLink>` anchors; this file
  * styles the `.cngx-tab-nav__link` class the atom puts on each one.
