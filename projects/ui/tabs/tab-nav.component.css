@@ -57,6 +57,12 @@
       align-items: center;
       gap: var(--cngx-tab-affordance-gap);
       padding: var(--cngx-tab-padding);
+      /* SET on the link, NOT :scope - --cngx-tab-focus-offset is registered
+         inherits:false in tabs-base.css and read on this element's
+         :focus-visible, so a host SET never reaches it and the registered
+         initial (2px, outset) would render. Inset (-2px) matches how the
+         group SETs it on .cngx-tabs__tab. */
+      --cngx-tab-focus-offset: -2px;
       color: var(--cngx-tab-color, inherit);
       font: inherit;
       font-size: var(--cngx-tab-font-size, 0.875rem);
@@ -89,7 +95,7 @@
         --cngx-tab-focus-ring,
         2px solid var(--cngx-color-primary, oklch(0.66 0.19 50))
       );
-      outline-offset: var(--cngx-tab-focus-offset, -2px);
+      outline-offset: var(--cngx-tab-focus-offset);
     }
 
     .cngx-tab-nav__link--active {
@@ -117,7 +123,7 @@
     /* Error link: danger-tinted label plus a leading glyph gated on the
        class - the aria-invalid visual partner. */
     .cngx-tab-nav__link--error {
-      color: var(--cngx-tab-error-badge-color, oklch(0.55 0.2 27));
+      color: var(--cngx-tab-error-badge-color);
     }
 
     .cngx-tab-nav__link--error::before {
@@ -132,7 +138,7 @@
       content: var(--cngx-tab-error-glyph, '!') / '';
       font-size: var(--cngx-tab-rejection-icon-font-size, 0.75em);
       font-weight: 700;
-      color: var(--cngx-tab-error-badge-color, oklch(0.55 0.2 27));
+      color: var(--cngx-tab-error-badge-color);
     }
   }
 

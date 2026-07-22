@@ -257,4 +257,31 @@ test.describe('ui/tabs/tab-nav-skins', () => {
 
     await page.evaluate(() => document.documentElement.removeAttribute('data-density'));
   });
+
+  // The line nav SETs --cngx-tab-focus-offset: -2px on .cngx-tab-nav__link
+  // (the inherits:false consuming element), so the focus ring sits inset like
+  // the group's - not the registered initial 2px (outset). Reading the token
+  // off the link is the robust probe of the SET-on-link fix: the rendered
+  // outline-offset only applies under :focus-visible, whose keyboard heuristic
+  // is flaky to force per-element, whereas the resolved custom property is
+  // deterministic and distinguishes the -2px SET from the 2px initial.
+  test('line nav focus offset SET on the link resolves to -2px, not the initial 2px', async ({
+    page,
+  }) => {
+    await gotoDemo(page, 'ui/tabs/tab-router-nav/all-skins');
+    const nav = page.locator('cngx-tab-nav[aria-label="line skin"]');
+    await expect(nav).toBeVisible();
+
+    const offset = await page.evaluate(() => {
+      const link = document
+        .querySelector('cngx-tab-nav[aria-label="line skin"]')!
+        .querySelector('.cngx-tab-nav__link') as HTMLElement;
+      return getComputedStyle(link).getPropertyValue('--cngx-tab-focus-offset').trim();
+    });
+
+    expect(offset, 'line nav focus offset did not SET to -2px on the link').toBe('-2px');
+    expect(offset, 'line nav focus offset fell through to the registered initial 2px').not.toBe(
+      '2px',
+    );
+  });
 });
