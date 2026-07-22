@@ -5,6 +5,20 @@ squash-merged pull request. Non-library scopes (examples, examples-gen, docs,
 ci, build, chore) and non-consumer-facing types are omitted by design.
 See CONTRIBUTING.md for the workflow.
 
+## 0.1.0-rc.5 (2026-07-22)
+
+
+### Features
+
+- **common/audio:** add the audio feedback system ([#232](https://github.com/cngxjs/cngx/issues/232)) ([9f110b8](https://github.com/cngxjs/cngx/commit/9f110b8f92c93e70df8dc4e7c532c0655fd1f103))
+- **interop:** add @cngx/interop store bridges and opt-in async observability ([#235](https://github.com/cngxjs/cngx/issues/235)) ([ac7ec0e](https://github.com/cngxjs/cngx/commit/ac7ec0ebb64446fef9be3398703841998b583b05))
+- **ui/tabs:** paint all five skins on cngx-tab-nav ([#237](https://github.com/cngxjs/cngx/issues/237)) ([1b15aee](https://github.com/cngxjs/cngx/commit/1b15aee6b9952ccc8cc444e7ad8f008077d0fb67))
+
+### Bug Fixes
+
+- **common:** resolve recycler late-mount, sparkline SR-only clip, and toggle accessible name ([#236](https://github.com/cngxjs/cngx/issues/236)) ([a3aa58c](https://github.com/cngxjs/cngx/commit/a3aa58c20ee69e2bbfd611871f6f6e520aec1a40))
+- **ui/tabs:** derive the cngx-tab-nav base tokens and density-anchor the family tab padding ([#238](https://github.com/cngxjs/cngx/issues/238)) ([2c7cae5](https://github.com/cngxjs/cngx/commit/2c7cae554a8b3b010d151ae3af142cd1e177b440))
+
 ## 0.1.0-rc.4 (2026-07-19)
 
 
