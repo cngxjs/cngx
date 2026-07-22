@@ -247,6 +247,81 @@
       border-color: var(--cngx-tab-pill-outline-color, oklch(0.66 0.19 50));
     }
   }
+
+  /*
+   * Segmented skin - the links share a muted track; the active link lifts
+   * onto a raised surface with a soft shadow. tab-group hangs the track on
+   * `.cngx-tabs__strip`; the nav host IS the row, so the track lives on
+   * `:scope`. `display: inline-flex` shrink-wraps the track to its links -
+   * the group got this from `flex: 0 1 auto` on the inner strip
+   * (tab-group.component.css:901-903); the strip-less nav host must
+   * shrink-wrap itself. A consumer wanting a full-bleed bar overrides the
+   * host `display` / `width` in their own CSS. Skin-local tokens mirror
+   * tab-group.component.css:872-887. The `[data-fitted]` / `[data-tab-align]`
+   * rules are dropped - the nav exposes neither axis.
+   */
+  @scope (.cngx-tab-nav[data-skin='segmented']) {
+    :scope {
+      --cngx-tab-segmented-track-bg: color-mix(
+        in oklch,
+        var(--cngx-color-surface, oklch(1 0 0)),
+        var(--cngx-color-border, oklch(0.88 0.005 250)) 25%
+      );
+      --cngx-tab-active-bg: var(--cngx-color-surface, oklch(1 0 0));
+      --cngx-tab-segmented-hover-bg: color-mix(
+        in oklch,
+        var(--cngx-color-surface, oklch(1 0 0)),
+        var(--cngx-color-border, oklch(0.88 0.005 250)) 45%
+      );
+      /* The host is the track - shrink-wrap it to its links. */
+      display: inline-flex;
+      background: var(--cngx-tab-segmented-track-bg, oklch(0.96 0 0));
+      border-bottom: 0;
+      border-radius: var(--cngx-tab-radius, 0.5rem);
+      gap: var(--cngx-tab-segmented-gap, 0.25rem);
+      padding: var(--cngx-tab-segmented-track-padding, 0.25rem);
+    }
+
+    .cngx-tab-nav__link {
+      --cngx-tab-padding: 0.5rem 0.875rem;
+      /* Sit just outside the rounded tile, within the track padding. */
+      --cngx-tab-focus-offset: 1px;
+      background: transparent;
+      border: 0;
+      border-radius: calc(var(--cngx-tab-radius, 0.5rem) - 0.125rem);
+    }
+
+    /* Suppress the line indicator - the raised surface is the active signal. */
+    .cngx-tab-nav__link::after {
+      display: none;
+    }
+
+    .cngx-tab-nav__link:hover:not(.cngx-tab-nav__link--active) {
+      background: var(--cngx-tab-segmented-hover-bg, oklch(0.93 0 0));
+    }
+
+    .cngx-tab-nav__link--active {
+      background: var(--cngx-tab-active-bg, oklch(1 0 0));
+      color: var(--cngx-tab-active-color, currentColor);
+      box-shadow: var(--cngx-tab-segmented-active-shadow, 0 1px 2px oklch(0 0 0 / 0.06));
+    }
+  }
+
+  /*
+   * Segmented + vertical: the track stacks into a column. Drop the host's
+   * inline-end strip rule (base `:scope[data-orientation='vertical']`,
+   * 0,2,0) and re-assert the track padding.
+   */
+  @scope (.cngx-tab-nav[data-skin='segmented'][data-orientation='vertical']) {
+    :scope[data-orientation='vertical'] {
+      border-inline-end: 0;
+      padding: var(--cngx-tab-segmented-track-padding, 0.25rem);
+    }
+
+    .cngx-tab-nav__link {
+      --cngx-tab-padding: 0.5rem 1rem;
+    }
+  }
 }
 
 /*
@@ -257,5 +332,21 @@
   .cngx-tab-nav__link,
   .cngx-tab-nav__link::after {
     transition: none !important;
+  }
+}
+
+/*
+ * Dark-mode refinement for the segmented skin. Every surface / border token
+ * derives from the foundation tokens (which carry their own light / dark
+ * values), so the only thing the scheme can't derive is shadow strength - a
+ * 6%-black drop reads as nothing on a dark surface, so deepen it here.
+ * Mirrors tab-group.component.css:1022. Kept UNLAYERED and OUTSIDE every
+ * `@scope`: nesting an `@media` inside `@scope` silently breaks the cascade,
+ * and an unlayered block reliably wins over the in-layer `:scope` light
+ * assignment.
+ */
+@media (prefers-color-scheme: dark) {
+  .cngx-tab-nav[data-skin='segmented'] {
+    --cngx-tab-segmented-active-shadow: 0 1px 3px oklch(0 0 0 / 0.3);
   }
 }

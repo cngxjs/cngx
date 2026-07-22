@@ -90,6 +90,13 @@ describe('CngxTabNav', () => {
     expect(navEl.getAttribute('data-skin')).toBe('pill-outline');
   });
 
+  it('reflects [skin]="segmented" onto [data-skin]', () => {
+    const { fixture, navEl } = setup();
+    fixture.componentInstance.skin.set('segmented');
+    fixture.detectChanges();
+    expect(navEl.getAttribute('data-skin')).toBe('segmented');
+  });
+
   it('the live-region span carries the active link label', () => {
     const { fixture, liveRegion } = setup();
     expect(liveRegion.getAttribute('role')).toBe('status');
