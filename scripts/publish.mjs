@@ -16,7 +16,7 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const ROOT = resolve(__dirname, '..');
-const LIBS = ['utils', 'core', 'common', 'forms', 'data-display', 'ui', 'themes'];
+const LIBS = ['utils', 'core', 'common', 'interop', 'forms', 'data-display', 'ui', 'themes'];
 
 // CSS-only libs that don't have an angular.json build target — built via
 // a dedicated node script that copies sources to dist/<lib>/.
