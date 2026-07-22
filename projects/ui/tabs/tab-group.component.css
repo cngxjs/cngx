@@ -344,7 +344,7 @@
       position: relative;
       /* Default skin is `line`; its tab metrics double as the base every
          other skin starts from, then overrides per scope below. */
-      --cngx-tab-padding: 0.625rem 1rem;
+      --cngx-tab-padding: calc(var(--cngx-space-sm) + 2px) var(--cngx-space-md);
       /* Brand-accent focus ring (was `currentColor`, which blended into
          the label) - the foundation primary, same accent as everything
          else. Inset by default so it sits inside the line / folder tab
@@ -366,7 +366,7 @@
        same specificity as the per-skin tab rules so a later skin scope
        still wins for non-line skins. */
     :where(:scope[data-orientation='vertical']) .cngx-tabs__tab {
-      --cngx-tab-padding: 0.5rem 1rem;
+      --cngx-tab-padding: var(--cngx-space-sm) var(--cngx-space-md);
     }
 
     /*
@@ -571,7 +571,7 @@
     }
 
     .cngx-tabs__tab {
-      --cngx-tab-padding: 0.625rem 1.25rem;
+      --cngx-tab-padding: calc(var(--cngx-space-sm) + 2px) calc(var(--cngx-space-md) + 4px);
       background: var(--cngx-tab-inactive-bg, oklch(0.97 0 0));
       border: var(--cngx-tab-surface-border-width, 1px) solid
         var(--cngx-tab-surface-border-color, oklch(0.87 0 0));
@@ -761,7 +761,7 @@
     }
 
     .cngx-tabs__tab {
-      --cngx-tab-padding: 0.4375rem 0.875rem;
+      --cngx-tab-padding: calc(var(--cngx-space-sm) - 1px) calc(var(--cngx-space-md) - 2px);
       /* Sit just outside the pill, within the strip padding above. */
       --cngx-tab-focus-offset: 1px;
       background: transparent;
@@ -803,7 +803,7 @@
     }
 
     :scope[data-orientation='vertical'] .cngx-tabs__tab {
-      --cngx-tab-padding: 0.4375rem 1rem;
+      --cngx-tab-padding: calc(var(--cngx-space-sm) - 1px) var(--cngx-space-md);
       border-inline-end: 0;
       margin-inline-end: 0;
       /* Equal-width pills read as buttons stacked in a column, so centre
@@ -837,7 +837,7 @@
     }
 
     .cngx-tabs__tab {
-      --cngx-tab-padding: 0.4375rem 0.875rem;
+      --cngx-tab-padding: calc(var(--cngx-space-sm) - 1px) calc(var(--cngx-space-md) - 2px);
       /* Sit just outside the pill, within the strip padding above. */
       --cngx-tab-focus-offset: 1px;
       background: transparent;
@@ -923,7 +923,7 @@
     }
 
     .cngx-tabs__tab {
-      --cngx-tab-padding: 0.5rem 0.875rem;
+      --cngx-tab-padding: var(--cngx-space-sm) calc(var(--cngx-space-md) - 2px);
       /* Sit just outside the rounded tab, within the track padding. */
       --cngx-tab-focus-offset: 1px;
       background: transparent;
@@ -970,7 +970,7 @@
     }
 
     :scope[data-orientation='vertical'] .cngx-tabs__tab {
-      --cngx-tab-padding: 0.5rem 1rem;
+      --cngx-tab-padding: var(--cngx-space-sm) var(--cngx-space-md);
       border-inline-end: 0;
       margin-inline-end: 0;
     }
@@ -993,7 +993,7 @@
     }
 
     :scope[data-orientation='vertical'] .cngx-tabs__tab {
-      --cngx-tab-padding: 0.4375rem 1rem;
+      --cngx-tab-padding: calc(var(--cngx-space-sm) - 1px) var(--cngx-space-md);
       border: var(--cngx-tab-surface-border-width, 1px) solid transparent;
       margin-bottom: 0;
       margin-inline-end: 0;

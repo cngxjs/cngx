@@ -214,4 +214,129 @@ test.describe('ui/tabs/tab-nav-skins', () => {
       }
     }
   });
+
+  // The nav base `line` skin SETs its gap / padding from --cngx-space-* on
+  // :scope (registered @property initials defeat the old use-site fallbacks).
+  // Comfortable render must be byte-identical to the pre-fix hardcoded look
+  // (gap 8px, padding 10px 16px = the anchored calc(sm + 2px) md), and a root
+  // [data-density='compact'] swap must re-scale BOTH gap and padding - which
+  // the dead-fallback version never did.
+  test('line nav base spacing tracks the density scale', async ({ page }) => {
+    await gotoDemo(page, 'ui/tabs/tab-router-nav/all-skins');
+    const nav = page.locator('cngx-tab-nav[aria-label="line skin"]');
+    await expect(nav).toBeVisible();
+
+    const read = () =>
+      page.evaluate(() => {
+        const host = document.querySelector(
+          'cngx-tab-nav[aria-label="line skin"]',
+        ) as HTMLElement;
+        const link = host.querySelector('.cngx-tab-nav__link') as HTMLElement;
+        const hostCS = getComputedStyle(host);
+        const linkCS = getComputedStyle(link);
+        return {
+          gap: hostCS.columnGap,
+          padTop: linkCS.paddingTop,
+          padLeft: linkCS.paddingLeft,
+        };
+      });
+
+    // Comfortable (library default): the anchored expressions reproduce the
+    // pre-fix hardcoded metrics exactly.
+    const comfortable = await read();
+    expect(comfortable.gap, 'line nav gap != --cngx-space-sm (8px)').toBe('8px');
+    expect(comfortable.padTop, 'line nav block padding != 10px').toBe('10px');
+    expect(comfortable.padLeft, 'line nav inline padding != 16px').toBe('16px');
+
+    // Compact: sm=4, md=8, so gap 4px, padding calc(4 + 2px)=6px / 8px.
+    await page.evaluate(() => document.documentElement.setAttribute('data-density', 'compact'));
+    const compact = await read();
+    expect(compact.gap, 'line nav gap did not shrink under [data-density=compact]').toBe('4px');
+    expect(compact.padTop, 'line nav block padding did not track density').toBe('6px');
+    expect(compact.padLeft, 'line nav inline padding did not track density').toBe('8px');
+
+    await page.evaluate(() => document.documentElement.removeAttribute('data-density'));
+  });
+
+  // The line nav SETs --cngx-tab-focus-offset: -2px on .cngx-tab-nav__link
+  // (the inherits:false consuming element), so the focus ring sits inset like
+  // the group's - not the registered initial 2px (outset). Reading the token
+  // off the link is the robust probe of the SET-on-link fix: the rendered
+  // outline-offset only applies under :focus-visible, whose keyboard heuristic
+  // is flaky to force per-element, whereas the resolved custom property is
+  // deterministic and distinguishes the -2px SET from the 2px initial.
+  test('line nav focus offset SET on the link resolves to -2px, not the initial 2px', async ({
+    page,
+  }) => {
+    await gotoDemo(page, 'ui/tabs/tab-router-nav/all-skins');
+    const nav = page.locator('cngx-tab-nav[aria-label="line skin"]');
+    await expect(nav).toBeVisible();
+
+    const offset = await page.evaluate(() => {
+      const link = document
+        .querySelector('cngx-tab-nav[aria-label="line skin"]')!
+        .querySelector('.cngx-tab-nav__link') as HTMLElement;
+      return getComputedStyle(link).getPropertyValue('--cngx-tab-focus-offset').trim();
+    });
+
+    expect(offset, 'line nav focus offset did not SET to -2px on the link').toBe('-2px');
+    expect(offset, 'line nav focus offset fell through to the registered initial 2px').not.toBe(
+      '2px',
+    );
+  });
+
+  // Family-wide anchored-padding lock for the nav's non-line skins (line is the
+  // base, guarded above). Each per-skin --cngx-tab-padding override is
+  // re-expressed as its density anchor plus fixed remainder, so comfortable
+  // render is byte-identical to the pre-fix pixels AND [data-density='compact']
+  // re-scales it (the element-level override used to shadow the density seam).
+  // Oracle = the anchored-padding map: comfortable [block, inline] / compact
+  // [block, inline] with sm=4 / md=8. `contained vertical` shares the contained
+  // override (no V-specific padding rule), so it proves contained tracks in
+  // vertical too.
+  const NAV_PADDING = [
+    { label: 'contained skin', comfortable: ['10px', '20px'], compact: ['6px', '12px'] },
+    { label: 'segmented skin', comfortable: ['8px', '14px'], compact: ['4px', '6px'] },
+    { label: 'pill skin', comfortable: ['7px', '14px'], compact: ['3px', '6px'] },
+    { label: 'pill-outline skin', comfortable: ['7px', '14px'], compact: ['3px', '6px'] },
+    { label: 'contained vertical', comfortable: ['10px', '20px'], compact: ['6px', '12px'] },
+  ];
+
+  test('per-skin nav link padding stays byte-identical at comfortable and tracks density', async ({
+    page,
+  }) => {
+    await gotoDemo(page, 'ui/tabs/tab-router-nav/all-skins');
+    await expect(page.locator('cngx-tab-nav[aria-label="pill skin"]')).toBeVisible();
+
+    const readAll = (labels: string[]) =>
+      page.evaluate((labels) => {
+        const out: Record<string, [string, string]> = {};
+        for (const label of labels) {
+          const host = document.querySelector(`cngx-tab-nav[aria-label="${label}"]`);
+          const link = host?.querySelector('.cngx-tab-nav__link') as HTMLElement | null;
+          const cs = link ? getComputedStyle(link) : null;
+          out[label] = cs ? [cs.paddingTop, cs.paddingLeft] : ['', ''];
+        }
+        return out;
+      }, labels);
+
+    const labels = NAV_PADDING.map((s) => s.label);
+
+    const comfortable = await readAll(labels);
+    for (const s of NAV_PADDING) {
+      expect(comfortable[s.label], `${s.label} nav padding drifted at comfortable density`).toEqual(
+        s.comfortable,
+      );
+    }
+
+    await page.evaluate(() => document.documentElement.setAttribute('data-density', 'compact'));
+    const compact = await readAll(labels);
+    for (const s of NAV_PADDING) {
+      expect(compact[s.label], `${s.label} nav padding did not track [data-density=compact]`).toEqual(
+        s.compact,
+      );
+    }
+
+    await page.evaluate(() => document.documentElement.removeAttribute('data-density'));
+  });
 });
