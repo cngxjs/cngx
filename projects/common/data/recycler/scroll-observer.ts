@@ -6,6 +6,7 @@ import {
   type Signal,
   effect,
   inject,
+  isDevMode,
   signal,
   untracked,
 } from '@angular/core';
@@ -47,7 +48,25 @@ export function createScrollObserver(
   // content projection, lazy rendering).
   const retryTick = signal(0);
 
+  // Late-mount watcher for the string-selector path. A viewport gated behind
+  // async data (or a skeleton->content swap) can mount many renders after the
+  // one-shot afterNextRender retry fires, so a single retry misses it. This
+  // observer bumps retryTick the instant the selector matches, then
+  // disconnects. Created only in the unresolved-string case; stays null on
+  // every faster path.
+  let mutationObserver: MutationObserver | null = null;
+
+  function disconnectMutationObserver(): void {
+    mutationObserver?.disconnect();
+    mutationObserver = null;
+  }
+
   function attachListeners(el: HTMLElement, onCleanup: (fn: () => void) => void): void {
+    // A viewport resolved: the late-mount watcher has done its job. Disconnect
+    // it on attach so it can never outlive a resolved element — the node is
+    // already in the DOM, so the observer would otherwise never fire again and
+    // leak until destroy.
+    disconnectMutationObserver();
     elementState.set(el);
     scrollTopState.set(el.scrollTop);
     clientHeightState.set(el.clientHeight);
@@ -101,12 +120,42 @@ export function createScrollObserver(
     // untracked: afterNextRender may run in the same microtask as the effect.
     // Reading elementState() without untracked could create an unintended dependency
     // in whatever reactive context is active.
-    if (untracked(() => elementState()) == null) {
-      retryTick.update((v) => v + 1);
+    if (untracked(() => elementState()) != null) {
+      return;
     }
+    // Element missing after the first render. Bump once for the common
+    // next-render mount (routed component, content projection, lazy rendering).
+    retryTick.update((v) => v + 1);
+
+    // A string selector can still be unresolved because its viewport mounts
+    // arbitrarily late — an async-gated list, a skeleton->content swap. Watch
+    // the document and attach the instant it appears. Non-string refs
+    // (HTMLElement / ElementRef) are not document-queryable, so the watcher
+    // cannot help them; they stay on the single-retry path. Guard MutationObserver
+    // for SSR.
+    if (typeof elementRef !== 'string' || typeof MutationObserver === 'undefined') {
+      return;
+    }
+    if (isDevMode()) {
+      console.warn(
+        `recycler scrollElement '${elementRef}' not found on first render; ` +
+          'it will attach automatically once it mounts. If it never does, check the selector.',
+      );
+    }
+    mutationObserver = new MutationObserver(() => {
+      if (resolveElement(elementRef, doc) == null) {
+        return;
+      }
+      // Found it. Disconnect before the retry bump so the resolving effect run
+      // never observes a live-but-spent watcher, then let the effect attach.
+      disconnectMutationObserver();
+      retryTick.update((v) => v + 1);
+    });
+    mutationObserver.observe(doc.documentElement, { childList: true, subtree: true });
   });
 
   destroyRef.onDestroy(() => {
+    disconnectMutationObserver();
     elementState.set(null);
   });
 
