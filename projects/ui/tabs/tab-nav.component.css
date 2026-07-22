@@ -116,8 +116,10 @@
          resolves to the colour value, which is invalid for `content` and
          drops the pseudo to `none` - the `!` never rendered. `--cngx-tab-error-glyph`
          is intentionally unregistered so the string fallback fires (a
-         syntax-typed @property would defeat it the same way). */
-      content: var(--cngx-tab-error-glyph, '!');
+         syntax-typed @property would defeat it the same way). The `/ ''`
+         alt keeps the decorative glyph out of the anchor's accessible name -
+         `aria-invalid` + the describedby message already carry the state to AT. */
+      content: var(--cngx-tab-error-glyph, '!') / '';
       font-size: var(--cngx-tab-rejection-icon-font-size, 0.75em);
       font-weight: 700;
       color: var(--cngx-tab-error-badge-color, oklch(0.55 0.2 27));
