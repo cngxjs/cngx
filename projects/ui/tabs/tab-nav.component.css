@@ -322,6 +322,143 @@
       --cngx-tab-padding: 0.5rem 1rem;
     }
   }
+
+  /*
+   * Contained skin - panel-less folder tabs. tab-group fuses the active tab
+   * with its owned panel via a negative-margin border overlap
+   * (tab-group.component.css:615-640); a routed nav owns no panel, so the
+   * overlap is re-expressed against the HOST's own bottom rule (User-
+   * Entscheidung: reinterpret as folder tabs). The host keeps its line-skin
+   * `border-bottom` as the horizontal rule; the active link laps one
+   * border-width down over it with an opaque surface fill, so it covers the
+   * rule segment beneath while the transparent gaps past the tabs let the
+   * rule show - the "tab breaks the rule" read the group gets from the panel
+   * overlap, with no panel. Surface tokens mirror
+   * tab-group.component.css:536-545.
+   *
+   * The active accent bar rides the REPURPOSED line `::after` (repositioned
+   * to the top edge), NOT `::before`: `.cngx-tab-nav__link--error::before`
+   * already owns the error glyph, so a contained `::before` accent would
+   * erase the `!` on an active+error link (a Pillar-2 regression). Putting
+   * the accent on the freed `::after` leaves `::before` for the error glyph,
+   * so an active+error contained tab shows both.
+   */
+  @scope (.cngx-tab-nav[data-skin='contained']) {
+    :scope {
+      --cngx-tab-active-bg: var(--cngx-color-surface, oklch(1 0 0));
+      --cngx-tab-inactive-bg: color-mix(
+        in oklch,
+        var(--cngx-color-surface, oklch(1 0 0)),
+        var(--cngx-color-border, oklch(0.88 0.005 250)) 25%
+      );
+      --cngx-tab-surface-border-color: var(--cngx-color-border, oklch(0.88 0.005 250));
+      --cngx-tab-contained-accent-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+      /* Folder tabs share a 1px seam - no gap between links. */
+      gap: 0;
+    }
+
+    /* Resting folder tabs: muted fill, square top + side borders, no bottom
+       border. `margin-inline-end` collapses adjacent borders into a shared
+       1px seam (the nav links are direct flex siblings; gap is 0). */
+    .cngx-tab-nav__link {
+      --cngx-tab-padding: 0.625rem 1.25rem;
+      background: var(--cngx-tab-inactive-bg, oklch(0.97 0 0));
+      border: var(--cngx-tab-surface-border-width, 1px) solid
+        var(--cngx-tab-surface-border-color, oklch(0.87 0 0));
+      border-bottom: 0;
+      border-radius: 0;
+      margin-inline-end: calc(-1 * var(--cngx-tab-surface-border-width, 1px));
+    }
+
+    .cngx-tab-nav__link:hover:not(.cngx-tab-nav__link--active) {
+      background: color-mix(
+        in oklch,
+        var(--cngx-tab-inactive-bg, oklch(0.97 0 0)) 60%,
+        var(--cngx-tab-active-bg, oklch(1 0 0))
+      );
+    }
+
+    /* Active folder tab: opaque surface fill laps one border-width down over
+       the host's bottom rule (z-index lifts it so the fill covers the rule
+       segment), its own bottom border dropped so the covered segment stays
+       gone. `position: relative` is inherited from the base link rule. */
+    .cngx-tab-nav__link--active {
+      background: var(--cngx-tab-active-bg, oklch(1 0 0));
+      color: var(--cngx-tab-active-color, currentColor);
+      font-weight: var(--cngx-tab-active-font-weight, 600);
+      border-bottom: 0;
+      margin-bottom: calc(-1 * var(--cngx-tab-surface-border-width, 1px));
+      z-index: 1;
+    }
+
+    /* Repurpose the freed line `::after` as the top accent bar. Fully
+       override the base line geometry (bottom:0, 2px, rounded 2px) so the
+       accent is a square 3px bar on the top edge - matching the group's
+       ::before accent (tab-group.component.css:592-601). Ties the base
+       active ::after at (0,1,1) and wins on source order. */
+    .cngx-tab-nav__link::after {
+      top: -1px;
+      bottom: auto;
+      inset-inline: 0;
+      block-size: var(--cngx-tab-contained-accent-thickness, 3px);
+      border-radius: 0;
+      background: var(--cngx-tab-contained-accent-color, oklch(0.66 0.19 50));
+      transform: scaleX(0);
+    }
+
+    /* Must follow the ::after reposition above: the base active-grow rule
+       (line-skin, same (0,1,1)) sits earlier than the reposition, so
+       re-assert scaleX(1) here or the active accent would inherit the
+       reposition's scaleX(0) and never grow. */
+    .cngx-tab-nav__link--active::after {
+      transform: scaleX(1);
+    }
+  }
+
+  /*
+   * Contained + vertical: the seam moves to the host's inline-end rule and
+   * the accent bar to each link's inline-start edge. The base vertical
+   * `::after` geometry rule is `:scope[data-orientation='vertical']
+   * .cngx-tab-nav__link::after` at (0,3,1) with an active twin also at
+   * (0,3,1) - a naive `.cngx-tab-nav__link--active::after` (0,1,1) accent
+   * would LOSE to it and render a 2px bar on the wrong (inline-end) edge.
+   * So the accent is written at (0,3,1), reusing the base's
+   * scaleY(0)->scaleY(1) transforms to drive the grow. The group never hit
+   * this (its accent is ::before, unopposed); transposing to ::after walks
+   * into the base vertical ::after rule the group lacked.
+   */
+  @scope (.cngx-tab-nav[data-skin='contained'][data-orientation='vertical']) {
+    /* Restore the full per-side border (the horizontal scope zeroed the
+       bottom) and swap the seam-collapse axis: inline-end margin back to 0,
+       block-end margin to lap each stacked tab onto the next. */
+    .cngx-tab-nav__link {
+      border: var(--cngx-tab-surface-border-width, 1px) solid
+        var(--cngx-tab-surface-border-color, oklch(0.87 0 0));
+      border-radius: 0;
+      margin-inline-end: 0;
+      margin-bottom: calc(-1 * var(--cngx-tab-surface-border-width, 1px));
+    }
+
+    /* Active tab laps the host's inline-end rule: drop its own inline-end
+       border, pull one border-width into the rule, opaque fill covers it. */
+    .cngx-tab-nav__link--active {
+      border-inline-end: 0;
+      margin-inline-end: calc(-1 * var(--cngx-tab-surface-border-width, 1px));
+      z-index: 1;
+    }
+
+    /* Accent bar on the inline-start (leading) edge, at (0,3,1) to beat the
+       base vertical ::after: base supplies inset-block / block-size / the
+       scaleY transforms, this repositions to the leading edge, widens to the
+       3px accent, and recolors. */
+    :scope[data-orientation='vertical'] .cngx-tab-nav__link::after {
+      inset-inline-start: -1px;
+      inset-inline-end: auto;
+      inline-size: var(--cngx-tab-contained-accent-thickness, 3px);
+      border-radius: 0;
+      background: var(--cngx-tab-contained-accent-color, oklch(0.66 0.19 50));
+    }
+  }
 }
 
 /*

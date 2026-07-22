@@ -97,6 +97,13 @@ describe('CngxTabNav', () => {
     expect(navEl.getAttribute('data-skin')).toBe('segmented');
   });
 
+  it('reflects [skin]="contained" onto [data-skin]', () => {
+    const { fixture, navEl } = setup();
+    fixture.componentInstance.skin.set('contained');
+    fixture.detectChanges();
+    expect(navEl.getAttribute('data-skin')).toBe('contained');
+  });
+
   it('the live-region span carries the active link label', () => {
     const { fixture, liveRegion } = setup();
     expect(liveRegion.getAttribute('role')).toBe('status');
