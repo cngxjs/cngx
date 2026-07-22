@@ -43,4 +43,33 @@ test.describe('common/chart/sparkline', () => {
     await expect(status).toContainText('error');
 
   });
+
+  test('sr-only data table is contained by its chart host, not the document', async ({ page }) => {
+    await gotoDemo(page, 'common/chart/sparkline/basic-sparklines');
+    await expect(page.locator('cngx-sparkline')).toHaveCount(3);
+
+    // The SR-only <cngx-chart-data-table> is position:absolute. Its containing
+    // block must be the <cngx-chart> host (position:relative), not the initial
+    // containing block. If the host were static the table would escape ancestor
+    // overflow clipping and inflate document scrollHeight inside a virtualized
+    // list. offsetParent of an absolute element IS its containing block, so
+    // asserting it equals the host proves containment directly.
+    const charts = await page.evaluate(() =>
+      Array.from(document.querySelectorAll('cngx-chart')).map((chart) => {
+        const table = chart.querySelector('cngx-chart-data-table') as HTMLElement | null;
+        return {
+          hasTable: !!table,
+          chartPosition: getComputedStyle(chart as HTMLElement).position,
+          tableContainedByChart: table ? table.offsetParent === chart : null,
+        };
+      }),
+    );
+
+    expect(charts.length).toBeGreaterThan(0);
+    for (const chart of charts) {
+      expect(chart.hasTable).toBe(true);
+      expect(chart.chartPosition).toBe('relative');
+      expect(chart.tableContainedByChart).toBe(true);
+    }
+  });
 });

@@ -160,6 +160,14 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
     `
       cngx-chart {
         display: inline-block;
+        /* Positioning context for the SR-only cngx-chart-data-table (a
+           direct absolute descendant). Without it the table's containing
+           block is the initial containing block, so it escapes ancestor
+           overflow clipping and contributes to the document's scroll
+           height - in a virtualized list of charts that destabilises the
+           recycler's viewport math. Zero visual effect: the host has no
+           absolutely-positioned children that offset from it. */
+        position: relative;
         /* Cap the host at its parent's content width so explicit
            [width] values shrink on narrower viewports (mobile portrait,
            constrained dashboard cells). The aspect-ratio derived from
