@@ -23,11 +23,21 @@
     :scope {
       display: flex;
       align-items: stretch;
-      gap: var(--cngx-tab-gap, 0);
+      gap: var(--cngx-tab-gap);
       border-bottom: var(
         --cngx-tab-strip-border,
         1px solid var(--cngx-color-border, oklch(0.88 0.005 250))
       );
+      /* Base spacing SET from the density scale so a root [data-density]
+         swap re-scales the nav. The --cngx-tab-* tokens are registered in
+         tabs-base.css (loaded first via styleUrls); a registered @property
+         is never unset, so the old use-site fallbacks were dead and the nav
+         never tracked density. Padding is anchored (sm + 2px / md) to
+         reproduce the line skin's 0.625rem 1rem exactly at comfortable
+         density; --cngx-tab-gap matches the group host SET. */
+      --cngx-tab-gap: var(--cngx-space-sm);
+      --cngx-tab-padding: calc(var(--cngx-space-sm) + 2px) var(--cngx-space-md);
+      --cngx-tab-affordance-gap: var(--cngx-space-xs);
       /* The line indicator reads as the brand accent (see tab-group). */
       --cngx-tab-active-indicator-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
     }
@@ -45,8 +55,8 @@
       position: relative;
       display: inline-flex;
       align-items: center;
-      gap: var(--cngx-tab-affordance-gap, 0.375rem);
-      padding: var(--cngx-tab-padding, 0.625rem 1rem);
+      gap: var(--cngx-tab-affordance-gap);
+      padding: var(--cngx-tab-padding);
       color: var(--cngx-tab-color, inherit);
       font: inherit;
       font-size: var(--cngx-tab-font-size, 0.875rem);

@@ -214,4 +214,47 @@ test.describe('ui/tabs/tab-nav-skins', () => {
       }
     }
   });
+
+  // The nav base `line` skin SETs its gap / padding from --cngx-space-* on
+  // :scope (registered @property initials defeat the old use-site fallbacks).
+  // Comfortable render must be byte-identical to the pre-fix hardcoded look
+  // (gap 8px, padding 10px 16px = the anchored calc(sm + 2px) md), and a root
+  // [data-density='compact'] swap must re-scale BOTH gap and padding - which
+  // the dead-fallback version never did.
+  test('line nav base spacing tracks the density scale', async ({ page }) => {
+    await gotoDemo(page, 'ui/tabs/tab-router-nav/all-skins');
+    const nav = page.locator('cngx-tab-nav[aria-label="line skin"]');
+    await expect(nav).toBeVisible();
+
+    const read = () =>
+      page.evaluate(() => {
+        const host = document.querySelector(
+          'cngx-tab-nav[aria-label="line skin"]',
+        ) as HTMLElement;
+        const link = host.querySelector('.cngx-tab-nav__link') as HTMLElement;
+        const hostCS = getComputedStyle(host);
+        const linkCS = getComputedStyle(link);
+        return {
+          gap: hostCS.columnGap,
+          padTop: linkCS.paddingTop,
+          padLeft: linkCS.paddingLeft,
+        };
+      });
+
+    // Comfortable (library default): the anchored expressions reproduce the
+    // pre-fix hardcoded metrics exactly.
+    const comfortable = await read();
+    expect(comfortable.gap, 'line nav gap != --cngx-space-sm (8px)').toBe('8px');
+    expect(comfortable.padTop, 'line nav block padding != 10px').toBe('10px');
+    expect(comfortable.padLeft, 'line nav inline padding != 16px').toBe('16px');
+
+    // Compact: sm=4, md=8, so gap 4px, padding calc(4 + 2px)=6px / 8px.
+    await page.evaluate(() => document.documentElement.setAttribute('data-density', 'compact'));
+    const compact = await read();
+    expect(compact.gap, 'line nav gap did not shrink under [data-density=compact]').toBe('4px');
+    expect(compact.padTop, 'line nav block padding did not track density').toBe('6px');
+    expect(compact.padLeft, 'line nav inline padding did not track density').toBe('8px');
+
+    await page.evaluate(() => document.documentElement.removeAttribute('data-density'));
+  });
 });
