@@ -10,8 +10,13 @@
  * The links are consumer-authored `<a cngxTabLink>` anchors; this file
  * styles the `.cngx-tab-nav__link` class the atom puts on each one.
  * `--active` mirrors `aria-current="page"`, `--error` mirrors
- * `aria-invalid`. Only the `line` treatment ships (the resolved-skin
- * default); `[data-skin]` is still reflected for consumer CSS.
+ * `aria-invalid`. All five `CngxTabsSkin` values ship (`line` default,
+ * plus `pill`, `pill-outline`, `segmented`, `contained`, each horizontal
+ * and vertical), reflected onto `[data-skin]` and painted in the `@scope`
+ * blocks below - matching `<cngx-tab-group>`. The nav has no inner strip
+ * and no owned panel, so each skin is re-expressed on the host `:scope`
+ * and the `.cngx-tab-nav__link` anchors rather than the group's
+ * strip/tab/panel structure.
  */
 @layer cngx.components {
   @scope (.cngx-tab-nav) {
