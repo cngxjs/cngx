@@ -340,8 +340,8 @@
    * Contained skin - panel-less folder tabs. tab-group fuses the active tab
    * with its owned panel via a negative-margin border overlap
    * (tab-group.component.css:615-640); a routed nav owns no panel, so the
-   * overlap is re-expressed against the HOST's own bottom rule (User-
-   * Entscheidung: reinterpret as folder tabs). The host keeps its line-skin
+   * overlap is re-expressed against the HOST's own bottom rule (a deliberate
+   * reinterpretation as folder tabs). The host keeps its line-skin
    * `border-bottom` as the horizontal rule; the active link laps one
    * border-width down over it with an opaque surface fill, so it covers the
    * rule segment beneath while the transparent gaps past the tabs let the
@@ -410,7 +410,10 @@
        ::before accent (tab-group.component.css:592-601). Ties the base
        active ::after at (0,1,1) and wins on source order. */
     .cngx-tab-nav__link::after {
-      top: -1px;
+      /* Lap the host bottom rule by one border-width so the accent covers it,
+         tracking a `--cngx-tab-surface-border-width` override like the seam
+         margins do. */
+      top: calc(-1 * var(--cngx-tab-surface-border-width, 1px));
       bottom: auto;
       inset-inline: 0;
       block-size: var(--cngx-tab-contained-accent-thickness, 3px);
@@ -465,7 +468,7 @@
        scaleY transforms, this repositions to the leading edge, widens to the
        3px accent, and recolors. */
     :scope[data-orientation='vertical'] .cngx-tab-nav__link::after {
-      inset-inline-start: -1px;
+      inset-inline-start: calc(-1 * var(--cngx-tab-surface-border-width, 1px));
       inset-inline-end: auto;
       inline-size: var(--cngx-tab-contained-accent-thickness, 3px);
       border-radius: 0;
