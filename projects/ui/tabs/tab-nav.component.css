@@ -106,7 +106,13 @@
     }
 
     .cngx-tab-nav__link--error::before {
-      content: var(--cngx-tab-rejection-icon-text, '!');
+      /* Glyph character - NOT `--cngx-tab-rejection-icon-text`: that token is
+         registered `<color>` in tabs-base.css, so `content: var(color, '!')`
+         resolves to the colour value, which is invalid for `content` and
+         drops the pseudo to `none` - the `!` never rendered. `--cngx-tab-error-glyph`
+         is intentionally unregistered so the string fallback fires (a
+         syntax-typed @property would defeat it the same way). */
+      content: var(--cngx-tab-error-glyph, '!');
       font-size: var(--cngx-tab-rejection-icon-font-size, 0.75em);
       font-weight: 700;
       color: var(--cngx-tab-error-badge-color, oklch(0.55 0.2 27));
