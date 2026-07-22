@@ -55,4 +55,26 @@ test.describe('ui/tabs/tab-router-nav', () => {
     await expect(settings).toHaveAttribute('aria-current', 'page');
     await expect(profile).not.toHaveAttribute('aria-current', 'page');
   });
+
+  test('an invalid link renders the ::before error glyph (visual partner of aria-invalid)', async ({
+    page,
+  }) => {
+    await gotoDemo(page, 'ui/tabs/tab-router-nav/native-routerlink-nav');
+
+    const profile = page.getByRole('link', { name: 'Profile' });
+    const glyph = (): Promise<string> =>
+      profile.evaluate((el) => getComputedStyle(el, '::before').content);
+
+    // No error yet: the ::before pseudo generates no glyph box.
+    await expect(profile).not.toHaveAttribute('aria-invalid', 'true');
+    expect(await glyph()).toBe('none');
+
+    // Mark the link invalid: aria-invalid AND the visual glyph both light up.
+    // The glyph is `content: var(--cngx-tab-error-glyph, '!')` - it must NOT
+    // read the `<color>`-typed --cngx-tab-rejection-icon-text token, which
+    // would resolve to an invalid `content` value and drop the pseudo to none.
+    await page.getByLabel(/unsaved changes/i).check();
+    await expect(profile).toHaveAttribute('aria-invalid', 'true');
+    expect(await glyph()).toContain('!');
+  });
 });

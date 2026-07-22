@@ -10,8 +10,13 @@
  * The links are consumer-authored `<a cngxTabLink>` anchors; this file
  * styles the `.cngx-tab-nav__link` class the atom puts on each one.
  * `--active` mirrors `aria-current="page"`, `--error` mirrors
- * `aria-invalid`. Only the `line` treatment ships (the resolved-skin
- * default); `[data-skin]` is still reflected for consumer CSS.
+ * `aria-invalid`. All five `CngxTabsSkin` values ship (`line` default,
+ * plus `pill`, `pill-outline`, `segmented`, `contained`, each horizontal
+ * and vertical), reflected onto `[data-skin]` and painted in the `@scope`
+ * blocks below - matching `<cngx-tab-group>`. The nav has no inner strip
+ * and no owned panel, so each skin is re-expressed on the host `:scope`
+ * and the `.cngx-tab-nav__link` anchors rather than the group's
+ * strip/tab/panel structure.
  */
 @layer cngx.components {
   @scope (.cngx-tab-nav) {
@@ -106,10 +111,368 @@
     }
 
     .cngx-tab-nav__link--error::before {
-      content: var(--cngx-tab-rejection-icon-text, '!');
+      /* Glyph character - NOT `--cngx-tab-rejection-icon-text`: that token is
+         registered `<color>` in tabs-base.css, so `content: var(color, '!')`
+         resolves to the colour value, which is invalid for `content` and
+         drops the pseudo to `none` - the `!` never rendered. `--cngx-tab-error-glyph`
+         is intentionally unregistered so the string fallback fires (a
+         syntax-typed @property would defeat it the same way). The `/ ''`
+         alt keeps the decorative glyph out of the anchor's accessible name -
+         `aria-invalid` + the describedby message already carry the state to AT. */
+      content: var(--cngx-tab-error-glyph, '!') / '';
       font-size: var(--cngx-tab-rejection-icon-font-size, 0.75em);
       font-weight: 700;
       color: var(--cngx-tab-error-badge-color, oklch(0.55 0.2 27));
+    }
+  }
+
+  /*
+   * Pill skin - rounded solid fills with gaps; the active link takes the
+   * primary fill, resting links tint on hover. The host IS the row (there
+   * is no inner strip), so tab-group's `.cngx-tabs__strip` rules map onto
+   * `:scope`, the `.cngx-tabs__tab` rules onto `.cngx-tab-nav__link`, and
+   * the `[aria-selected='true']` rules onto `.cngx-tab-nav__link--active`
+   * (the nav mirrors `aria-current`, not `aria-selected`). The line
+   * `::after` indicator is suppressed - the fill carries the active state.
+   * Skin-local tokens set here mirror tab-group.component.css:742-752; the
+   * rest read their use-site fallback (unregistered on the nav).
+   */
+  @scope (.cngx-tab-nav[data-skin='pill']) {
+    :scope {
+      --cngx-tab-active-bg: var(--cngx-color-primary, oklch(0.66 0.19 50));
+      --cngx-tab-pill-active-color: var(--cngx-color-on-primary, oklch(1 0 0));
+      --cngx-tab-pill-hover-bg: color-mix(
+        in oklch,
+        var(--cngx-color-primary, oklch(0.66 0.19 50)) 8%,
+        transparent
+      );
+      gap: var(--cngx-tab-pill-gap, 0.375rem);
+      border-bottom: 0;
+      /* Breathing room so the active pill's outset focus ring is not
+         clipped by the row's overflow box. */
+      padding: var(--cngx-tab-pill-strip-padding, 0.25rem);
+    }
+
+    .cngx-tab-nav__link {
+      --cngx-tab-padding: 0.4375rem 0.875rem;
+      /* Sit just outside the pill, within the padding above. */
+      --cngx-tab-focus-offset: 1px;
+      background: transparent;
+      border: 0;
+      border-radius: var(--cngx-tab-pill-radius, 100px);
+    }
+
+    /* Suppress the line indicator - the pill fill is the active signal. */
+    .cngx-tab-nav__link::after {
+      display: none;
+    }
+
+    .cngx-tab-nav__link:hover:not(.cngx-tab-nav__link--active) {
+      background: var(--cngx-tab-pill-hover-bg, oklch(0.95 0 0));
+    }
+
+    .cngx-tab-nav__link--active {
+      background: var(--cngx-tab-active-bg, oklch(0.66 0.19 50));
+      color: var(--cngx-tab-pill-active-color, oklch(1 0 0));
+    }
+  }
+
+  /*
+   * Pill + vertical: drop the host's inline-end strip rule and re-assert
+   * the focus-ring padding. The base vertical rule is
+   * `:scope[data-orientation='vertical']` (0,2,0), so match its specificity
+   * to win on source order. Centre the stacked pills.
+   */
+  @scope (.cngx-tab-nav[data-skin='pill'][data-orientation='vertical']) {
+    :scope[data-orientation='vertical'] {
+      border-inline-end: 0;
+      padding: var(--cngx-tab-pill-strip-padding, 0.25rem);
+    }
+
+    .cngx-tab-nav__link {
+      --cngx-tab-padding: 0.4375rem 1rem;
+      justify-content: center;
+      text-align: center;
+    }
+  }
+
+  /*
+   * Pill-outline skin - the same pill geometry as `pill`, but the active
+   * link reads as a tinted, outlined chip rather than a solid fill. Resting
+   * links carry a transparent border so the hover outline does not shift
+   * layout. Skin-local tokens mirror tab-group.component.css:823-830.
+   */
+  @scope (.cngx-tab-nav[data-skin='pill-outline']) {
+    :scope {
+      --cngx-tab-pill-outline-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+      --cngx-tab-pill-outline-bg: color-mix(
+        in oklch,
+        var(--cngx-tab-pill-outline-color, oklch(0.66 0.19 50)) 12%,
+        transparent
+      );
+      gap: var(--cngx-tab-pill-gap, 0.375rem);
+      border-bottom: 0;
+      padding: var(--cngx-tab-pill-strip-padding, 0.25rem);
+    }
+
+    .cngx-tab-nav__link {
+      --cngx-tab-padding: 0.4375rem 0.875rem;
+      --cngx-tab-focus-offset: 1px;
+      background: transparent;
+      border: var(--cngx-tab-surface-border-width, 1px) solid transparent;
+      border-radius: var(--cngx-tab-pill-radius, 100px);
+    }
+
+    .cngx-tab-nav__link::after {
+      display: none;
+    }
+
+    .cngx-tab-nav__link:hover:not(.cngx-tab-nav__link--active) {
+      border-color: var(--cngx-tab-surface-border-color, oklch(0.87 0 0));
+    }
+
+    .cngx-tab-nav__link--active {
+      background: var(--cngx-tab-pill-outline-bg);
+      border-color: var(--cngx-tab-pill-outline-color, oklch(0.66 0.19 50));
+      color: var(--cngx-tab-pill-outline-color, oklch(0.66 0.19 50));
+    }
+  }
+
+  /*
+   * Pill-outline + vertical: drop the host inline-end strip rule, re-assert
+   * the focus padding, keep the full transparent per-side border, centre
+   * the label, and paint the active outline with the accent.
+   */
+  @scope (.cngx-tab-nav[data-skin='pill-outline'][data-orientation='vertical']) {
+    :scope[data-orientation='vertical'] {
+      border-inline-end: 0;
+      padding: var(--cngx-tab-pill-strip-padding, 0.25rem);
+    }
+
+    .cngx-tab-nav__link {
+      --cngx-tab-padding: 0.4375rem 1rem;
+      border: var(--cngx-tab-surface-border-width, 1px) solid transparent;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .cngx-tab-nav__link--active {
+      border-color: var(--cngx-tab-pill-outline-color, oklch(0.66 0.19 50));
+    }
+  }
+
+  /*
+   * Segmented skin - the links share a muted track; the active link lifts
+   * onto a raised surface with a soft shadow. tab-group hangs the track on
+   * `.cngx-tabs__strip`; the nav host IS the row, so the track lives on
+   * `:scope`. `display: inline-flex` shrink-wraps the track to its links -
+   * the group got this from `flex: 0 1 auto` on the inner strip
+   * (tab-group.component.css:901-903); the strip-less nav host must
+   * shrink-wrap itself. A consumer wanting a full-bleed bar overrides the
+   * host `display` / `width` in their own CSS. Skin-local tokens mirror
+   * tab-group.component.css:872-887. The `[data-fitted]` / `[data-tab-align]`
+   * rules are dropped - the nav exposes neither axis.
+   */
+  @scope (.cngx-tab-nav[data-skin='segmented']) {
+    :scope {
+      --cngx-tab-segmented-track-bg: color-mix(
+        in oklch,
+        var(--cngx-color-surface, oklch(1 0 0)),
+        var(--cngx-color-border, oklch(0.88 0.005 250)) 25%
+      );
+      --cngx-tab-active-bg: var(--cngx-color-surface, oklch(1 0 0));
+      --cngx-tab-segmented-hover-bg: color-mix(
+        in oklch,
+        var(--cngx-color-surface, oklch(1 0 0)),
+        var(--cngx-color-border, oklch(0.88 0.005 250)) 45%
+      );
+      /* The host is the track - shrink-wrap it to its links. */
+      display: inline-flex;
+      background: var(--cngx-tab-segmented-track-bg, oklch(0.96 0 0));
+      border-bottom: 0;
+      border-radius: var(--cngx-tab-radius, 0.5rem);
+      gap: var(--cngx-tab-segmented-gap, 0.25rem);
+      padding: var(--cngx-tab-segmented-track-padding, 0.25rem);
+    }
+
+    .cngx-tab-nav__link {
+      --cngx-tab-padding: 0.5rem 0.875rem;
+      /* Sit just outside the rounded tile, within the track padding. */
+      --cngx-tab-focus-offset: 1px;
+      background: transparent;
+      border: 0;
+      border-radius: calc(var(--cngx-tab-radius, 0.5rem) - 0.125rem);
+    }
+
+    /* Suppress the line indicator - the raised surface is the active signal. */
+    .cngx-tab-nav__link::after {
+      display: none;
+    }
+
+    .cngx-tab-nav__link:hover:not(.cngx-tab-nav__link--active) {
+      background: var(--cngx-tab-segmented-hover-bg, oklch(0.93 0 0));
+    }
+
+    .cngx-tab-nav__link--active {
+      background: var(--cngx-tab-active-bg, oklch(1 0 0));
+      color: var(--cngx-tab-active-color, currentColor);
+      box-shadow: var(--cngx-tab-segmented-active-shadow, 0 1px 2px oklch(0 0 0 / 0.06));
+    }
+  }
+
+  /*
+   * Segmented + vertical: the track stacks into a column. Drop the host's
+   * inline-end strip rule (base `:scope[data-orientation='vertical']`,
+   * 0,2,0) and re-assert the track padding.
+   */
+  @scope (.cngx-tab-nav[data-skin='segmented'][data-orientation='vertical']) {
+    :scope[data-orientation='vertical'] {
+      border-inline-end: 0;
+      padding: var(--cngx-tab-segmented-track-padding, 0.25rem);
+    }
+
+    .cngx-tab-nav__link {
+      --cngx-tab-padding: 0.5rem 1rem;
+    }
+  }
+
+  /*
+   * Contained skin - panel-less folder tabs. tab-group fuses the active tab
+   * with its owned panel via a negative-margin border overlap
+   * (tab-group.component.css:615-640); a routed nav owns no panel, so the
+   * overlap is re-expressed against the HOST's own bottom rule (a deliberate
+   * reinterpretation as folder tabs). The host keeps its line-skin
+   * `border-bottom` as the horizontal rule; the active link laps one
+   * border-width down over it with an opaque surface fill, so it covers the
+   * rule segment beneath while the transparent gaps past the tabs let the
+   * rule show - the "tab breaks the rule" read the group gets from the panel
+   * overlap, with no panel. Surface tokens mirror
+   * tab-group.component.css:536-545.
+   *
+   * The active accent bar rides the REPURPOSED line `::after` (repositioned
+   * to the top edge), NOT `::before`: `.cngx-tab-nav__link--error::before`
+   * already owns the error glyph, so a contained `::before` accent would
+   * erase the `!` on an active+error link (a Pillar-2 regression). Putting
+   * the accent on the freed `::after` leaves `::before` for the error glyph,
+   * so an active+error contained tab shows both.
+   */
+  @scope (.cngx-tab-nav[data-skin='contained']) {
+    :scope {
+      --cngx-tab-active-bg: var(--cngx-color-surface, oklch(1 0 0));
+      --cngx-tab-inactive-bg: color-mix(
+        in oklch,
+        var(--cngx-color-surface, oklch(1 0 0)),
+        var(--cngx-color-border, oklch(0.88 0.005 250)) 25%
+      );
+      --cngx-tab-surface-border-color: var(--cngx-color-border, oklch(0.88 0.005 250));
+      --cngx-tab-contained-accent-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+      /* Folder tabs share a 1px seam - no gap between links. */
+      gap: 0;
+    }
+
+    /* Resting folder tabs: muted fill, square top + side borders, no bottom
+       border. `margin-inline-end` collapses adjacent borders into a shared
+       1px seam (the nav links are direct flex siblings; gap is 0). */
+    .cngx-tab-nav__link {
+      --cngx-tab-padding: 0.625rem 1.25rem;
+      background: var(--cngx-tab-inactive-bg, oklch(0.97 0 0));
+      border: var(--cngx-tab-surface-border-width, 1px) solid
+        var(--cngx-tab-surface-border-color, oklch(0.87 0 0));
+      border-bottom: 0;
+      border-radius: 0;
+      margin-inline-end: calc(-1 * var(--cngx-tab-surface-border-width, 1px));
+    }
+
+    .cngx-tab-nav__link:hover:not(.cngx-tab-nav__link--active) {
+      background: color-mix(
+        in oklch,
+        var(--cngx-tab-inactive-bg, oklch(0.97 0 0)) 60%,
+        var(--cngx-tab-active-bg, oklch(1 0 0))
+      );
+    }
+
+    /* Active folder tab: opaque surface fill laps one border-width down over
+       the host's bottom rule (z-index lifts it so the fill covers the rule
+       segment), its own bottom border dropped so the covered segment stays
+       gone. `position: relative` is inherited from the base link rule. */
+    .cngx-tab-nav__link--active {
+      background: var(--cngx-tab-active-bg, oklch(1 0 0));
+      color: var(--cngx-tab-active-color, currentColor);
+      font-weight: var(--cngx-tab-active-font-weight, 600);
+      border-bottom: 0;
+      margin-bottom: calc(-1 * var(--cngx-tab-surface-border-width, 1px));
+      z-index: 1;
+    }
+
+    /* Repurpose the freed line `::after` as the top accent bar. Fully
+       override the base line geometry (bottom:0, 2px, rounded 2px) so the
+       accent is a square 3px bar on the top edge - matching the group's
+       ::before accent (tab-group.component.css:592-601). Ties the base
+       active ::after at (0,1,1) and wins on source order. */
+    .cngx-tab-nav__link::after {
+      /* Lap the host bottom rule by one border-width so the accent covers it,
+         tracking a `--cngx-tab-surface-border-width` override like the seam
+         margins do. */
+      top: calc(-1 * var(--cngx-tab-surface-border-width, 1px));
+      bottom: auto;
+      inset-inline: 0;
+      block-size: var(--cngx-tab-contained-accent-thickness, 3px);
+      border-radius: 0;
+      background: var(--cngx-tab-contained-accent-color, oklch(0.66 0.19 50));
+      transform: scaleX(0);
+    }
+
+    /* Must follow the ::after reposition above: the base active-grow rule
+       (line-skin, same (0,1,1)) sits earlier than the reposition, so
+       re-assert scaleX(1) here or the active accent would inherit the
+       reposition's scaleX(0) and never grow. */
+    .cngx-tab-nav__link--active::after {
+      transform: scaleX(1);
+    }
+  }
+
+  /*
+   * Contained + vertical: the seam moves to the host's inline-end rule and
+   * the accent bar to each link's inline-start edge. The base vertical
+   * `::after` geometry rule is `:scope[data-orientation='vertical']
+   * .cngx-tab-nav__link::after` at (0,3,1) with an active twin also at
+   * (0,3,1) - a naive `.cngx-tab-nav__link--active::after` (0,1,1) accent
+   * would LOSE to it and render a 2px bar on the wrong (inline-end) edge.
+   * So the accent is written at (0,3,1), reusing the base's
+   * scaleY(0)->scaleY(1) transforms to drive the grow. The group never hit
+   * this (its accent is ::before, unopposed); transposing to ::after walks
+   * into the base vertical ::after rule the group lacked.
+   */
+  @scope (.cngx-tab-nav[data-skin='contained'][data-orientation='vertical']) {
+    /* Restore the full per-side border (the horizontal scope zeroed the
+       bottom) and swap the seam-collapse axis: inline-end margin back to 0,
+       block-end margin to lap each stacked tab onto the next. */
+    .cngx-tab-nav__link {
+      border: var(--cngx-tab-surface-border-width, 1px) solid
+        var(--cngx-tab-surface-border-color, oklch(0.87 0 0));
+      border-radius: 0;
+      margin-inline-end: 0;
+      margin-bottom: calc(-1 * var(--cngx-tab-surface-border-width, 1px));
+    }
+
+    /* Active tab laps the host's inline-end rule: drop its own inline-end
+       border, pull one border-width into the rule, opaque fill covers it. */
+    .cngx-tab-nav__link--active {
+      border-inline-end: 0;
+      margin-inline-end: calc(-1 * var(--cngx-tab-surface-border-width, 1px));
+      z-index: 1;
+    }
+
+    /* Accent bar on the inline-start (leading) edge, at (0,3,1) to beat the
+       base vertical ::after: base supplies inset-block / block-size / the
+       scaleY transforms, this repositions to the leading edge, widens to the
+       3px accent, and recolors. */
+    :scope[data-orientation='vertical'] .cngx-tab-nav__link::after {
+      inset-inline-start: calc(-1 * var(--cngx-tab-surface-border-width, 1px));
+      inset-inline-end: auto;
+      inline-size: var(--cngx-tab-contained-accent-thickness, 3px);
+      border-radius: 0;
+      background: var(--cngx-tab-contained-accent-color, oklch(0.66 0.19 50));
     }
   }
 }
@@ -122,5 +485,21 @@
   .cngx-tab-nav__link,
   .cngx-tab-nav__link::after {
     transition: none !important;
+  }
+}
+
+/*
+ * Dark-mode refinement for the segmented skin. Every surface / border token
+ * derives from the foundation tokens (which carry their own light / dark
+ * values), so the only thing the scheme can't derive is shadow strength - a
+ * 6%-black drop reads as nothing on a dark surface, so deepen it here.
+ * Mirrors tab-group.component.css:1022. Kept UNLAYERED and OUTSIDE every
+ * `@scope`: nesting an `@media` inside `@scope` silently breaks the cascade,
+ * and an unlayered block reliably wins over the in-layer `:scope` light
+ * assignment.
+ */
+@media (prefers-color-scheme: dark) {
+  .cngx-tab-nav[data-skin='segmented'] {
+    --cngx-tab-segmented-active-shadow: 0 1px 3px oklch(0 0 0 / 0.3);
   }
 }
