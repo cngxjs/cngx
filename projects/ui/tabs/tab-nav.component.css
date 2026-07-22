@@ -112,6 +112,141 @@
       color: var(--cngx-tab-error-badge-color, oklch(0.55 0.2 27));
     }
   }
+
+  /*
+   * Pill skin - rounded solid fills with gaps; the active link takes the
+   * primary fill, resting links tint on hover. The host IS the row (there
+   * is no inner strip), so tab-group's `.cngx-tabs__strip` rules map onto
+   * `:scope`, the `.cngx-tabs__tab` rules onto `.cngx-tab-nav__link`, and
+   * the `[aria-selected='true']` rules onto `.cngx-tab-nav__link--active`
+   * (the nav mirrors `aria-current`, not `aria-selected`). The line
+   * `::after` indicator is suppressed - the fill carries the active state.
+   * Skin-local tokens set here mirror tab-group.component.css:742-752; the
+   * rest read their use-site fallback (unregistered on the nav).
+   */
+  @scope (.cngx-tab-nav[data-skin='pill']) {
+    :scope {
+      --cngx-tab-active-bg: var(--cngx-color-primary, oklch(0.66 0.19 50));
+      --cngx-tab-pill-active-color: var(--cngx-color-on-primary, oklch(1 0 0));
+      --cngx-tab-pill-hover-bg: color-mix(
+        in oklch,
+        var(--cngx-color-primary, oklch(0.66 0.19 50)) 8%,
+        transparent
+      );
+      gap: var(--cngx-tab-pill-gap, 0.375rem);
+      border-bottom: 0;
+      /* Breathing room so the active pill's outset focus ring is not
+         clipped by the row's overflow box. */
+      padding: var(--cngx-tab-pill-strip-padding, 0.25rem);
+    }
+
+    .cngx-tab-nav__link {
+      --cngx-tab-padding: 0.4375rem 0.875rem;
+      /* Sit just outside the pill, within the padding above. */
+      --cngx-tab-focus-offset: 1px;
+      background: transparent;
+      border: 0;
+      border-radius: var(--cngx-tab-pill-radius, 100px);
+    }
+
+    /* Suppress the line indicator - the pill fill is the active signal. */
+    .cngx-tab-nav__link::after {
+      display: none;
+    }
+
+    .cngx-tab-nav__link:hover:not(.cngx-tab-nav__link--active) {
+      background: var(--cngx-tab-pill-hover-bg, oklch(0.95 0 0));
+    }
+
+    .cngx-tab-nav__link--active {
+      background: var(--cngx-tab-active-bg, oklch(0.66 0.19 50));
+      color: var(--cngx-tab-pill-active-color, oklch(1 0 0));
+    }
+  }
+
+  /*
+   * Pill + vertical: drop the host's inline-end strip rule and re-assert
+   * the focus-ring padding. The base vertical rule is
+   * `:scope[data-orientation='vertical']` (0,2,0), so match its specificity
+   * to win on source order. Centre the stacked pills.
+   */
+  @scope (.cngx-tab-nav[data-skin='pill'][data-orientation='vertical']) {
+    :scope[data-orientation='vertical'] {
+      border-inline-end: 0;
+      padding: var(--cngx-tab-pill-strip-padding, 0.25rem);
+    }
+
+    .cngx-tab-nav__link {
+      --cngx-tab-padding: 0.4375rem 1rem;
+      justify-content: center;
+      text-align: center;
+    }
+  }
+
+  /*
+   * Pill-outline skin - the same pill geometry as `pill`, but the active
+   * link reads as a tinted, outlined chip rather than a solid fill. Resting
+   * links carry a transparent border so the hover outline does not shift
+   * layout. Skin-local tokens mirror tab-group.component.css:823-830.
+   */
+  @scope (.cngx-tab-nav[data-skin='pill-outline']) {
+    :scope {
+      --cngx-tab-pill-outline-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+      --cngx-tab-pill-outline-bg: color-mix(
+        in oklch,
+        var(--cngx-tab-pill-outline-color, oklch(0.66 0.19 50)) 12%,
+        transparent
+      );
+      gap: var(--cngx-tab-pill-gap, 0.375rem);
+      border-bottom: 0;
+      padding: var(--cngx-tab-pill-strip-padding, 0.25rem);
+    }
+
+    .cngx-tab-nav__link {
+      --cngx-tab-padding: 0.4375rem 0.875rem;
+      --cngx-tab-focus-offset: 1px;
+      background: transparent;
+      border: var(--cngx-tab-surface-border-width, 1px) solid transparent;
+      border-radius: var(--cngx-tab-pill-radius, 100px);
+    }
+
+    .cngx-tab-nav__link::after {
+      display: none;
+    }
+
+    .cngx-tab-nav__link:hover:not(.cngx-tab-nav__link--active) {
+      border-color: var(--cngx-tab-surface-border-color, oklch(0.87 0 0));
+    }
+
+    .cngx-tab-nav__link--active {
+      background: var(--cngx-tab-pill-outline-bg);
+      border-color: var(--cngx-tab-pill-outline-color, oklch(0.66 0.19 50));
+      color: var(--cngx-tab-pill-outline-color, oklch(0.66 0.19 50));
+    }
+  }
+
+  /*
+   * Pill-outline + vertical: drop the host inline-end strip rule, re-assert
+   * the focus padding, keep the full transparent per-side border, centre
+   * the label, and paint the active outline with the accent.
+   */
+  @scope (.cngx-tab-nav[data-skin='pill-outline'][data-orientation='vertical']) {
+    :scope[data-orientation='vertical'] {
+      border-inline-end: 0;
+      padding: var(--cngx-tab-pill-strip-padding, 0.25rem);
+    }
+
+    .cngx-tab-nav__link {
+      --cngx-tab-padding: 0.4375rem 1rem;
+      border: var(--cngx-tab-surface-border-width, 1px) solid transparent;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .cngx-tab-nav__link--active {
+      border-color: var(--cngx-tab-pill-outline-color, oklch(0.66 0.19 50));
+    }
+  }
 }
 
 /*
