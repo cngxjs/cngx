@@ -136,8 +136,14 @@ function skinGatedRanges(css) {
 }
 
 const SPACING_TOKEN_REF = /--cngx-[a-z0-9-]+/g;
-// `-inset` is deliberately excluded: it is affordance geometry (thumb / rail /
-// indicator position), not compactness, per the pillar CSS density rule.
+// `-inset` names affordance/position geometry (thumb / rail / indicator offset)
+// and is deliberately NOT matched: it is not compactness, per the pillar CSS
+// density rule. Naming convention that keeps this correct by construction -
+// compactness spacing is named `-gap` / `-padding` / `-margin` (all guarded);
+// `-inset` is reserved for affordance. The one margin-inset in the tree
+// (`--cngx-divider-inset-amount`) predates the convention and already derives,
+// so nothing regresses; a new compactness value must not take the `-inset`
+// suffix, and review catches it if it does.
 const IS_SPACING = /-(gap|padding)(-|$)/;
 const SCALE_SET = /--[a-z][a-z0-9-]*\s*:\s*[^;{}]*var\(\s*--cngx-space-/g;
 
