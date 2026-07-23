@@ -16,6 +16,11 @@ import { describe, expect, it } from 'vitest';
  * this guard covers the segment tokens closed in wave 5.
  */
 
+// Cross-lib raw-CSS read (not a TS import - Sheriff governs imports, not test
+// fs reads): the paginator's segment SETs live in @cngx/common/data's
+// paginator-base.css, inlined into @cngx/ui/paginator via styleUrls, so this
+// wiring pin must read across the lib boundary to see them. Deliberate and
+// unique to this guard - do not replicate it as a general test pattern.
 const BASE_CSS = readFileSync(
   resolve(__dirname, '../../common/data/paginate/styles/paginator-base.css'),
   'utf8',
