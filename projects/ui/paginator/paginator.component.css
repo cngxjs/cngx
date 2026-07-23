@@ -637,6 +637,13 @@
     .cngx-paginator__pages {
       background: var(--cngx-paginator-track-bg, oklch(0.96 0 0));
       border-radius: var(--cngx-paginator-button-radius, 0.375rem);
+      /* Skin use-sites here (and in the minimal-nav / bar scopes below) read the
+         density scale directly instead of through a named
+         --cngx-paginator-*-padding token. Intentional divergence from the
+         stepper keep-the-token skin path: these paddings are skin-only and were
+         unregistered, so a component token bought no override surface worth
+         preserving. Mirrors the stepper raw-literal fix; the registered base +
+         per-segment tokens still derive via the host SET in paginator-base.css. */
       padding: var(--cngx-space-xs, 0.25rem);
     }
 
