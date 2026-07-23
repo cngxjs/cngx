@@ -30,11 +30,12 @@
 @layer cngx.tokens {
   /**
    * Header button padding. The pixel `initial-value` is only the un-set
-   * fallback; `@cngx/ui/accordion` SETs this from `--cngx-space-*` at its group
-   * default (`accordion-group.component.css` `:not([data-skin])`) so a global
-   * `[data-density]` re-scales it. Never put `var()` in the `initial-value` (it
-   * is invalid, and a registered initial-value defeats any `var()` fallback -
-   * reference_property_color_initial_defeats_fallback); derive via a host SET.
+   * fallback; the standalone `[cngxAccordion]` host SETs this from
+   * `--cngx-space-*` (below) so a global `[data-density]` re-scales a bare
+   * `@cngx/common` accordion, and the `@cngx/ui/accordion` organism SETs the
+   * same tokens at its group default. Never put `var()` in the `initial-value`
+   * (it is invalid, and a registered initial-value defeats any `var()` fallback
+   * - reference_property_color_initial_defeats_fallback); derive via a host SET.
    * @group Header
    */
   @property --cngx-accordion-header-padding {
@@ -86,6 +87,13 @@
 
 @layer cngx.components {
   [cngxAccordion] {
+    /* Derive header + region padding from the scale so a bare @cngx/common
+       accordion densifies at its own default host - standalone use must not
+       depend on the @cngx/ui/accordion organism (which SETs the same tokens at
+       its group default). Both @property tokens are inherits:true, so this host
+       SET reaches the header / region descendants. 0.75rem 1rem -> sm md. */
+    --cngx-accordion-header-padding: var(--cngx-space-sm, 8px) var(--cngx-space-md, 16px);
+    --cngx-accordion-region-padding: var(--cngx-space-sm, 8px) var(--cngx-space-md, 16px);
     display: block;
     border: 1px solid var(--cngx-accordion-border-color, oklch(0.88 0.005 250));
     border-radius: var(--cngx-radius-md, 0.375rem);
