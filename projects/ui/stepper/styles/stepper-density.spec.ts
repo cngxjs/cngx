@@ -73,6 +73,7 @@ describe('stepper density derivation (stepper.component.css)', () => {
     // step slot gap reuses --cngx-step-gap and the pill padding derives from
     // the scale-SET --cngx-step-status-pill-padding.
     expect(COMPONENT_CSS).not.toMatch(/gap:\s*0\.5rem\s*;/);
+    expect(COMPONENT_CSS).not.toMatch(/gap:\s*0\.375rem\s*;/);
     expect(COMPONENT_CSS).not.toMatch(/padding:\s*0\.125rem\s+0\.5rem\s*;/);
   });
 });
