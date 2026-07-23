@@ -439,19 +439,19 @@ describe('CngxStepper organism', () => {
       return fixture;
     }
 
-    it('degrades [data-density] full -> compact -> minimal on container width', () => {
+    it('degrades [data-strip-density] full -> compact -> minimal on container width', () => {
       const fixture = autoFixture();
       const host = fixture.nativeElement.querySelector('cngx-stepper') as HTMLElement;
-      expect(host.getAttribute('data-density')).toBe('full'); // width 0 before first measure
+      expect(host.getAttribute('data-strip-density')).toBe('full'); // width 0 before first measure
       emitWidth(3 * 130); // 130 px/step -> full
       fixture.detectChanges();
-      expect(host.getAttribute('data-density')).toBe('full');
+      expect(host.getAttribute('data-strip-density')).toBe('full');
       emitWidth(3 * 100); // 100 px/step -> compact
       fixture.detectChanges();
-      expect(host.getAttribute('data-density')).toBe('compact');
+      expect(host.getAttribute('data-strip-density')).toBe('compact');
       emitWidth(3 * 40); // 40 px/step -> minimal
       fixture.detectChanges();
-      expect(host.getAttribute('data-density')).toBe('minimal');
+      expect(host.getAttribute('data-strip-density')).toBe('minimal');
     });
 
     it('keeps the configured horizontal orientation at the minimal rung (no auto-vertical flip)', () => {
@@ -459,7 +459,7 @@ describe('CngxStepper organism', () => {
       const host = fixture.nativeElement.querySelector('cngx-stepper') as HTMLElement;
       emitWidth(3 * 40);
       fixture.detectChanges();
-      expect(host.getAttribute('data-density')).toBe('minimal');
+      expect(host.getAttribute('data-strip-density')).toBe('minimal');
       // A horizontal stepper stays horizontal - minimal degrades to an
       // indicators-only row, it does not stack vertically.
       expect(host.getAttribute('aria-orientation')).toBe('horizontal');
@@ -505,7 +505,7 @@ describe('CngxStepper organism', () => {
       expect(labels.every((l) => (l.textContent ?? '').trim().length > 0)).toBe(true);
     });
 
-    it("'comfortable' (default) keeps data-density full at any width and sets no [data-density-auto]", () => {
+    it("'comfortable' (default) keeps data-strip-density full at any width and sets no [data-density-auto]", () => {
       TestBed.configureTestingModule({
         providers: [provideZonelessChangeDetection()],
       });
@@ -514,7 +514,7 @@ describe('CngxStepper organism', () => {
       const host = fixture.nativeElement.querySelector('cngx-stepper') as HTMLElement;
       emitWidth(3 * 10);
       fixture.detectChanges();
-      expect(host.getAttribute('data-density')).toBe('full');
+      expect(host.getAttribute('data-strip-density')).toBe('full');
       expect(host.getAttribute('aria-orientation')).toBe('horizontal');
       // No-scrollbar shrink CSS is scoped to [data-density-auto]; off here.
       expect(host.hasAttribute('data-density-auto')).toBe(false);

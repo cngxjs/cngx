@@ -927,7 +927,11 @@
   }
 
   .cngx-select__group-header {
-    padding: 0.25rem 0.5rem;
+    /* group-header padding 0.25/0.5 -> xs/sm. SET from scale so a global
+       [data-density] compacts it; kept locked to the declarative
+       <cngx-optgroup> header (optgroup.component.css). */
+    --cngx-select-optgroup-padding: var(--cngx-space-xs) var(--cngx-space-sm);
+    padding: var(--cngx-select-optgroup-padding, 0.25rem 0.5rem);
     font-size: 0.75rem;
     font-weight: 600;
     opacity: 0.7;
@@ -970,7 +974,11 @@
 
   .cngx-select__loading,
   .cngx-select__empty {
-    padding: 0.5rem 0.75rem;
+    /* message-padding 0.5/0.75 -> sm/sm (0.75rem -> 8, matching the family
+       snap) so a global [data-density] compacts the loading / empty rows like
+       the option / skeleton rows already do. */
+    --cngx-select-message-padding: var(--cngx-space-sm) var(--cngx-space-sm);
+    padding: var(--cngx-select-message-padding, 0.5rem 0.75rem);
     font-style: italic;
     opacity: 0.7;
   }

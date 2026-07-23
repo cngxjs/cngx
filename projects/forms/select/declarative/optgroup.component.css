@@ -14,10 +14,11 @@
  *
  * **Inheritance**
  *
- * No tunable tokens - the header is intentionally pinned to the same
- * static values as `.cngx-select__group-header` in `select-base.css`
- * so declarative and data-mode groups stay visually locked. Override
- * the base rule to restyle both together.
+ * The header padding derives from the density scale via
+ * `--cngx-select-optgroup-padding` (SET identically here and on
+ * `.cngx-select__group-header` in `select-base.css`) so declarative and
+ * data-mode groups stay visually locked and both compact under a global
+ * `[data-density]`. Font-size / weight / tracking stay pinned to the base.
  */
 
 :host {
@@ -25,7 +26,11 @@
 }
 
 .cngx-select__group-header {
-  padding: 0.25rem 0.5rem;
+  /* Derive the header padding from the scale so a global [data-density]
+     compacts it; SET identically on the data-mode base header so the two stay
+     locked. 0.25rem 0.5rem -> xs sm. */
+  --cngx-select-optgroup-padding: var(--cngx-space-xs) var(--cngx-space-sm);
+  padding: var(--cngx-select-optgroup-padding, 0.25rem 0.5rem);
   font-size: 0.75rem;
   font-weight: 600;
   opacity: 0.7;

@@ -1,4 +1,15 @@
 .cngx-dga-filter-field {
+  /* Derive filter-field spacing from the density scale so a global
+     [data-density] re-scales it (SET-from-scale rule; mirrors
+     data-grid-accordion.component.css:86-96). Plain custom properties, so this
+     host SET cascades to the __label / __input descendants. Nearest-rung snap:
+     filter-py 0.6rem(9.6px)->sm; filter-px 1rem(16px)->md (exact); label-gap
+     0.25rem(4px)->xs (exact); input-py 0.4rem(6.4px)->sm; input-px 0.6rem(9.6px)->sm. */
+  --cngx-dga-filter-py: var(--cngx-space-sm, 8px);
+  --cngx-dga-filter-px: var(--cngx-space-md, 16px);
+  --cngx-dga-filter-label-gap: var(--cngx-space-xs, 4px);
+  --cngx-dga-filter-input-py: var(--cngx-space-sm, 8px);
+  --cngx-dga-filter-input-px: var(--cngx-space-sm, 8px);
   grid-column: 1 / -1;
   display: block;
   padding: var(--cngx-dga-filter-py, 0.6rem) var(--cngx-dga-filter-px, 1rem);

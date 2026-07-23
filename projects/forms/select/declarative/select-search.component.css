@@ -21,9 +21,9 @@
  * Surface and focus tokens fall back to the foundation so brand swaps
  * propagate without per-component theming:
  *
- * - `--cngx-select-search-padding` - hardcoded `0.5rem`
+ * - `--cngx-select-search-padding` -> `--cngx-space-sm` (density scale)
  * - `--cngx-select-search-divider` -> `--cngx-color-border`
- * - `--cngx-select-search-input-padding` - hardcoded `0.375rem 0.5rem`
+ * - `--cngx-select-search-input-padding` -> `--cngx-space-xs`/`-sm` (scale)
  * - `--cngx-select-search-input-border` -> `--cngx-color-border`
  * - `--cngx-select-search-input-radius` - hardcoded `0.25rem`
  * - `--cngx-select-search-input-bg` - hardcoded `transparent`
@@ -32,6 +32,12 @@
  */
 
 :host {
+  /* Derive search padding from the scale so a global [data-density] compacts
+     the search field. search-padding 0.5rem -> sm; input-padding 0.375/0.5 ->
+     xs/sm (block 6px tie -> xs, matching the option snap). Both cascade to the
+     descendant input. */
+  --cngx-select-search-padding: var(--cngx-space-sm);
+  --cngx-select-search-input-padding: var(--cngx-space-xs) var(--cngx-space-sm);
   display: block;
   padding: var(--cngx-select-search-padding, 0.5rem);
   border-bottom: var(

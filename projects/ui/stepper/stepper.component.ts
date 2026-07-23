@@ -138,7 +138,7 @@ import { coerceBooleanProperty } from '@cngx/core/utils';
     '[attr.aria-roledescription]': 'stepperRoleDescription()',
     '[attr.aria-orientation]': 'presenter.orientation()',
     '[attr.data-orientation]': 'presenter.orientation()',
-    '[attr.data-density]': 'stripDensity()',
+    '[attr.data-strip-density]': 'stripDensity()',
     '[attr.data-density-auto]': "isDensityAuto() ? '' : null",
     '[attr.data-skin]': 'hostAttrs.resolvedSkin()',
     '[attr.data-connectors]': "hostAttrs.resolvedConnectors() ? 'true' : null",
@@ -227,8 +227,9 @@ export class CngxStepper implements CngxStepPanelHost {
   /**
    * Space-driven density rung for the classic strip, measured off the
    * host element's own width via {@link createStripDensity}. `'full'`
-   * under the `'comfortable'` default. Drives `[data-density]` (the CSS
-   * label-degradation ladder) and the auto-vertical flip below.
+   * under the `'comfortable'` default. Drives `[data-strip-density]` (the
+   * strip-overflow rung, distinct from the global `[data-density]` spacing
+   * swap so strip degradation never re-scales component spacing).
    */
   protected readonly stripDensity = createStripDensity({
     element: this.hostElement,
