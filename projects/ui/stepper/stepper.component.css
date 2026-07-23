@@ -501,6 +501,20 @@
   }
 
   /**
+   * Padding shorthand of the status pill. Derived from the global scale at
+   * the unskinned `cngx-stepper` host (stepper-base.css) so a root
+   * `[data-density]` re-scales the pill; `inherits: true` lets that host SET
+   * reach this skin-scoped element. The 2px block keeps the pill compact, so
+   * it is half `--cngx-space-xs` rather than snapped to a rung.
+   * @group Skin / stripe-status-rich
+   */
+  @property --cngx-step-status-pill-padding {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0.125rem 0.5rem;
+  }
+
+  /**
    * Fill of the chevron tile while the step is active on the
    * `path-chevron` skin.
    * @group Skin / path-chevron
@@ -983,7 +997,7 @@
       align-items: center;
       justify-content: flex-start;
       text-align: center;
-      gap: 0.5rem;
+      gap: var(--cngx-step-gap, 0.5rem);
     }
 
     /* Disc + label sit above the rail. */
@@ -1164,7 +1178,7 @@
     .cngx-stepper__status-pill {
       display: inline-flex;
       align-items: center;
-      padding: 0.125rem 0.5rem;
+      padding: var(--cngx-step-status-pill-padding, 0.125rem 0.5rem);
       border-radius: 999px;
       font-size: 0.7em;
       font-weight: 600;
@@ -1401,7 +1415,7 @@
     .cngx-stepper__step {
       flex: 1 1 0;
       justify-content: center;
-      gap: 0.5rem;
+      gap: var(--cngx-step-gap, 0.5rem);
       background: transparent;
       border-radius: 9999px;
       color: color-mix(in srgb, currentColor 60%, transparent);

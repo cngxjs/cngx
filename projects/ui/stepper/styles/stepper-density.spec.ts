@@ -17,6 +17,7 @@ import { describe, expect, it } from 'vitest';
 
 const STYLES_DIR = resolve(__dirname);
 const BASE_CSS = readFileSync(resolve(STYLES_DIR, 'stepper-base.css'), 'utf8');
+const COMPONENT_CSS = readFileSync(resolve(STYLES_DIR, '../stepper.component.css'), 'utf8');
 
 /** Every base strip/step token the host must SET from the scale. */
 const BASE_HOST_SETS: ReadonlyArray<readonly [string, string]> = [
@@ -58,5 +59,20 @@ describe('stepper density derivation (stepper-base.css)', () => {
         'true',
       );
     }
+  });
+
+  it('SETs the status-pill padding from the scale at the unskinned host', () => {
+    expect(BASE_CSS).toMatch(/--cngx-step-status-pill-padding:\s*calc\(var\(--cngx-space-/);
+    expect(propertyInherits(COMPONENT_CSS, '--cngx-step-status-pill-padding')).toBe('true');
+  });
+});
+
+describe('stepper density derivation (stepper.component.css)', () => {
+  it('carries no raw compactness literal for the tokenised step gap / status-pill padding', () => {
+    // A bare literal controlling compactness silently opts out of density; the
+    // step slot gap reuses --cngx-step-gap and the pill padding derives from
+    // the scale-SET --cngx-step-status-pill-padding.
+    expect(COMPONENT_CSS).not.toMatch(/gap:\s*0\.5rem\s*;/);
+    expect(COMPONENT_CSS).not.toMatch(/padding:\s*0\.125rem\s+0\.5rem\s*;/);
   });
 });

@@ -447,6 +447,10 @@
     --cngx-step-padding: var(--cngx-space-sm) var(--cngx-space-sm);
     --cngx-step-padding-inline: var(--cngx-space-sm);
     --cngx-step-padding-compact: var(--cngx-space-xs) var(--cngx-space-sm);
+    /* Status pill (stripe-status-rich skin) - SET here at the unskinned host
+       so the derivation is not skin-gated. The 2px block has no rung, so it is
+       half xs; inline 0.5rem -> sm. */
+    --cngx-step-status-pill-padding: calc(var(--cngx-space-xs) / 2) var(--cngx-space-sm);
     display: block;
     container-type: inline-size;
     container-name: cngx-stepper;
