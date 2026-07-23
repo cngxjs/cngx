@@ -118,6 +118,13 @@
 }
 
 .cngx-stepper-footer {
+  /* Derive footer spacing from the global scale so a root [data-density]
+     compacts the footer row (SET-from-scale rule). gap 0.75rem -> sm;
+     region-gap 0.5rem -> sm; padding-block 0.75rem -> sm. padding-inline (0)
+     and margin-block-start (margin, not compactness) are left as-is. */
+  --cngx-stepper-footer-gap: var(--cngx-space-sm);
+  --cngx-stepper-footer-region-gap: var(--cngx-space-sm);
+  --cngx-stepper-footer-padding-block: var(--cngx-space-sm);
   display: flex;
   align-items: center;
   flex-wrap: wrap;

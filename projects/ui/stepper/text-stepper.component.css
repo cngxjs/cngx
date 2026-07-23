@@ -7,6 +7,9 @@
  */
 
 .cngx-text-stepper {
+  /* Derive the inter-step column gap from the scale so a root [data-density]
+     compacts it (SET-from-scale rule). 0.5rem -> sm. */
+  --cngx-text-step-gap: var(--cngx-space-sm);
   display: inline-flex;
   flex-wrap: wrap;
   align-items: baseline;

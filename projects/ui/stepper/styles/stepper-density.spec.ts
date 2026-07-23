@@ -76,3 +76,30 @@ describe('stepper density derivation (stepper.component.css)', () => {
     expect(COMPONENT_CSS).not.toMatch(/padding:\s*0\.125rem\s+0\.5rem\s*;/);
   });
 });
+
+describe('stepper density derivation (footer + dot/text/progress variants)', () => {
+  const VARIANT_SETS: ReadonlyArray<readonly [string, ReadonlyArray<string>]> = [
+    [
+      'footer/stepper-footer.css',
+      [
+        '--cngx-stepper-footer-gap',
+        '--cngx-stepper-footer-region-gap',
+        '--cngx-stepper-footer-padding-block',
+      ],
+    ],
+    ['dot-stepper.component.css', ['--cngx-dot-step-gap']],
+    ['text-stepper.component.css', ['--cngx-text-step-gap']],
+    ['progress-bar-stepper.component.css', ['--cngx-progress-bar-stepper-gap']],
+  ];
+
+  for (const [file, tokens] of VARIANT_SETS) {
+    it(`SETs ${tokens.join(' / ')} from the scale at the ${file} host`, () => {
+      const css = readFileSync(resolve(STYLES_DIR, '..', file), 'utf8');
+      for (const token of tokens) {
+        expect(css, `${token} must be SET from --cngx-space-* at its variant host`).toMatch(
+          new RegExp(`${token.replace(/-/g, '\\-')}:\\s*var\\(--cngx-space-`),
+        );
+      }
+    });
+  }
+});

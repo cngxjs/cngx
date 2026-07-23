@@ -44,6 +44,10 @@
 }
 
 .cngx-dot-stepper {
+  /* Derive the dot-row gap from the scale so a root [data-density] compacts it
+     (SET-from-scale rule; --cngx-dot-step-gap is inherits:true so this host SET
+     reaches the __row descendant). 0.5rem -> sm. */
+  --cngx-dot-step-gap: var(--cngx-space-sm);
   display: inline-flex;
   align-items: center;
   /* Wrap so the aggregate error line drops to its own row below the
