@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CngxTruncate } from './truncate.directive';
 
 // Mock ResizeObserver (must be constructible with `new`)
@@ -12,6 +12,9 @@ class ResizeObserverMock {
   disconnect(): void {}
 }
 vi.stubGlobal('ResizeObserver', ResizeObserverMock);
+// Module-level stubGlobal persists for the worker lifetime; unstub at file end
+// so the ResizeObserver mock never leaks into a later spec in this worker.
+afterAll(() => vi.unstubAllGlobals());
 
 @Component({
   template: `

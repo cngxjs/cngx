@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CngxStickyHeader } from './sticky-header.directive';
 
 let observerCallback: IntersectionObserverCallback;
@@ -14,6 +14,9 @@ class MockIntersectionObserver {
   }
 }
 vi.stubGlobal('IntersectionObserver', MockIntersectionObserver);
+// Module-level stubGlobal persists for the worker lifetime; unstub at file end
+// so the IntersectionObserver mock never leaks into a later spec in this worker.
+afterAll(() => vi.unstubAllGlobals());
 
 @Component({
   template: `<header cngxStickyHeader #sh="cngxStickyHeader" (stickyChange)="sticky = $event">

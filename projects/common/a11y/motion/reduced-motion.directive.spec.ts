@@ -35,7 +35,12 @@ describe('CngxReducedMotion', () => {
     TestBed.configureTestingModule({ imports: [TestHost] });
   });
 
-  afterEach(() => vi.restoreAllMocks());
+  afterEach(() => {
+    vi.restoreAllMocks();
+    // restoreAllMocks does not undo stubGlobal; unstub matchMedia so it never
+    // leaks into a later spec in this worker.
+    vi.unstubAllGlobals();
+  });
 
   function setup(matches = false) {
     mockMq.matches = matches;
