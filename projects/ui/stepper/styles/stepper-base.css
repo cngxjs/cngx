@@ -451,6 +451,19 @@
        so the derivation is not skin-gated. The 2px block has no rung, so it is
        half xs; inline 0.5rem -> sm. */
     --cngx-step-status-pill-padding: calc(var(--cngx-space-xs) / 2) var(--cngx-space-sm);
+    /* Chips / breadcrumb / pill skin sub-paddings, SET here at the unskinned
+       host so the derivation is not skin-gated - each is read on a descendant
+       inside a [data-skin] @scope, and the four registered chips/breadcrumb
+       tokens were flipped inherits:false -> true (stepper.component.css) so this
+       SET reaches them; pill-vertical is unregistered and inherits by default.
+       Snap (base scale xs4/sm8/md16): chips-gap 0.5rem -> sm; chips-padding-inline
+       0.875rem -> md; chips-padding-block 0.4rem -> sm (+1.6px); breadcrumb-gap
+       0.5rem -> sm; pill-vertical-padding-block 1.125rem -> md. */
+    --cngx-step-chips-gap: var(--cngx-space-sm);
+    --cngx-step-chips-padding-inline: var(--cngx-space-md);
+    --cngx-step-chips-padding-block: var(--cngx-space-sm);
+    --cngx-step-breadcrumb-gap: var(--cngx-space-sm);
+    --cngx-step-pill-vertical-padding-block: var(--cngx-space-md);
     display: block;
     container-type: inline-size;
     container-name: cngx-stepper;
