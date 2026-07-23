@@ -5,6 +5,19 @@ squash-merged pull request. Non-library scopes (examples, examples-gen, docs,
 ci, build, chore) and non-consumer-facing types are omitted by design.
 See CONTRIBUTING.md for the workflow.
 
+## 0.1.0-rc.6 (2026-07-23)
+
+
+### Bug Fixes
+
+- **common:** register @property length tokens dropped for invalid initial-value ([#240](https://github.com/cngxjs/cngx/issues/240)) ([e467bcf](https://github.com/cngxjs/cngx/commit/e467bcf3d401d653b4b043de4aadf3acf5ed688a))
+- **common/interactive:** centre the cngx-toggle thumb in its track ([#239](https://github.com/cngxjs/cngx/issues/239)) ([c80a999](https://github.com/cngxjs/cngx/commit/c80a999010ca5f2ec48a7f1d9a402f18e9987000))
+
+### BREAKING CHANGES
+
+- **ui:** density coverage wave 4 - spacing derived from the scale + regression guard ([#242](https://github.com/cngxjs/cngx/issues/242))
+- **ui:** density coverage wave 5 - derive remaining paginator/stepper/tabs/select spacing + guard refinement ([#243](https://github.com/cngxjs/cngx/issues/243))
+
 ## 0.1.0-rc.5 (2026-07-22)
 
 
