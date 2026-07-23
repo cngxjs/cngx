@@ -46,3 +46,9 @@ describe('declarative divider + option density derivation', () => {
     assertScaleSet(css('declarative/option.component.css'), '--cngx-select-option-padding');
   });
 });
+
+describe('panel loading + empty-state density derivation', () => {
+  it('derives the loading / empty message padding from the scale', () => {
+    assertScaleSet(css('shared/select-base.css'), '--cngx-select-message-padding');
+  });
+});

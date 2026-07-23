@@ -974,7 +974,11 @@
 
   .cngx-select__loading,
   .cngx-select__empty {
-    padding: 0.5rem 0.75rem;
+    /* message-padding 0.5/0.75 -> sm/sm (0.75rem -> 8, matching the family
+       snap) so a global [data-density] compacts the loading / empty rows like
+       the option / skeleton rows already do. */
+    --cngx-select-message-padding: var(--cngx-space-sm) var(--cngx-space-sm);
+    padding: var(--cngx-select-message-padding, 0.5rem 0.75rem);
     font-style: italic;
     opacity: 0.7;
   }
