@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CngxScrollSpy } from './scroll-spy.directive';
 
 let observerCallback: IntersectionObserverCallback;
@@ -17,6 +17,9 @@ class MockIntersectionObserver {
   disconnect = vi.fn();
 }
 vi.stubGlobal('IntersectionObserver', MockIntersectionObserver);
+// Module-level stubGlobal persists for the worker lifetime; unstub at file end
+// so the IntersectionObserver mock never leaks into a later spec in this worker.
+afterAll(() => vi.unstubAllGlobals());
 
 @Component({
   template: `

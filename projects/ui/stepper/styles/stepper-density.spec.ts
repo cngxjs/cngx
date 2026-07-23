@@ -42,7 +42,9 @@ describe('stepper density derivation (stepper-base.css)', () => {
 
   it('leaves no base --cngx-step-* gap/padding @property without a scale SET', () => {
     const declared = [
-      ...BASE_CSS.matchAll(/@property (--cngx-step-[a-z-]*(?:gap|padding|padding-inline|padding-compact))\s*\{/g),
+      ...BASE_CSS.matchAll(
+        /@property (--cngx-step-[a-z-]*(?:gap|padding|padding-inline|padding-compact))\s*\{/g,
+      ),
     ].map((m) => m[1]);
     // At least the five wired tokens must be declared and SET.
     expect(declared.length).toBeGreaterThanOrEqual(BASE_HOST_SETS.length);
@@ -55,15 +57,68 @@ describe('stepper density derivation (stepper-base.css)', () => {
 
   it('keeps those tokens inherits:true so the host SET cascades to descendants', () => {
     for (const [token] of BASE_HOST_SETS) {
-      expect(propertyInherits(BASE_CSS, token), `${token} must inherit for the host SET to reach the strip/step`).toBe(
-        'true',
-      );
+      expect(
+        propertyInherits(BASE_CSS, token),
+        `${token} must inherit for the host SET to reach the strip/step`,
+      ).toBe('true');
     }
   });
 
   it('SETs the status-pill padding from the scale at the unskinned host', () => {
     expect(BASE_CSS).toMatch(/--cngx-step-status-pill-padding:\s*calc\(var\(--cngx-space-/);
     expect(propertyInherits(COMPONENT_CSS, '--cngx-step-status-pill-padding')).toBe('true');
+  });
+});
+
+describe('stepper density derivation (chips / breadcrumb / pill skins - wave 5)', () => {
+  /** Skin sub-paddings SET at the unskinned host so they are not skin-gated. */
+  const SKIN_HOST_SETS: ReadonlyArray<readonly [string, string]> = [
+    ['--cngx-step-chips-gap', 'var(--cngx-space-sm)'],
+    ['--cngx-step-chips-padding-inline', 'var(--cngx-space-md)'],
+    ['--cngx-step-chips-padding-block', 'var(--cngx-space-sm)'],
+    ['--cngx-step-breadcrumb-gap', 'var(--cngx-space-sm)'],
+    ['--cngx-step-pill-vertical-padding-block', 'var(--cngx-space-md)'],
+  ];
+
+  it('SETs every chips / breadcrumb / pill sub-padding from the scale at the host', () => {
+    for (const [token, value] of SKIN_HOST_SETS) {
+      expect(BASE_CSS, `${token} must be SET from the scale at cngx-stepper`).toContain(
+        `${token}: ${value};`,
+      );
+    }
+  });
+
+  it('flips the registered chips / breadcrumb tokens to inherits:true so the host SET cascades', () => {
+    // Registered inherits:false would strand the descendant pill on the initial
+    // value (feedback_property_inherits_false_trap); the host SET only reaches
+    // the skin-scoped descendant once the token inherits.
+    for (const token of [
+      '--cngx-step-chips-gap',
+      '--cngx-step-chips-padding-inline',
+      '--cngx-step-chips-padding-block',
+      '--cngx-step-breadcrumb-gap',
+    ]) {
+      expect(propertyInherits(COMPONENT_CSS, token), `${token} must inherit`).toBe('true');
+    }
+  });
+
+  it('does NOT touch the auto-ladder chips density padding (accepted-debt opt-out)', () => {
+    // --cngx-step-chips-density-padding-inline is armed by the strip-overflow
+    // resolver, not skin compactness; SETting it from the scale would re-couple
+    // strip-overflow density to the global spacing swap.
+    expect(BASE_CSS).not.toContain('--cngx-step-chips-density-padding-inline:');
+  });
+
+  it('SETs the group-chip padding from the scale (block via half-xs, inline sm)', () => {
+    expect(BASE_CSS).toMatch(
+      /--cngx-stepper-group-chip-padding:\s*calc\(var\(--cngx-space-xs\) \/ 2\) var\(--cngx-space-sm\)/,
+    );
+  });
+
+  it('keeps the group-summary padding a font-relative em gauge (density opt-out)', () => {
+    // The summary badge is fully em-sized (font 0.75em, size 1.3em); its padding
+    // stays 0 0.4em so it scales with the badge font, not the px spacing scale.
+    expect(BASE_CSS).not.toMatch(/--cngx-stepper-group-summary-padding:\s*[^;]*var\(--cngx-space-/);
   });
 });
 

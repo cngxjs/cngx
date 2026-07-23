@@ -8,7 +8,11 @@ function sizedDiv(className: string, clientHeight: number): HTMLDivElement {
   const el = document.createElement('div');
   el.classList.add(className);
   Object.defineProperty(el, 'scrollTop', { value: 0, writable: true, configurable: true });
-  Object.defineProperty(el, 'clientHeight', { value: clientHeight, writable: true, configurable: true });
+  Object.defineProperty(el, 'clientHeight', {
+    value: clientHeight,
+    writable: true,
+    configurable: true,
+  });
   return el;
 }
 
@@ -49,6 +53,9 @@ describe('createScrollObserver', () => {
 
   afterEach(() => {
     mockContainer.remove();
+    // stubGlobal outlives restoreAllMocks; unstub so the ResizeObserver mock
+    // never leaks into a later spec sharing this vitest worker.
+    vi.unstubAllGlobals();
   });
 
   it('should resolve element via CSS selector', () => {

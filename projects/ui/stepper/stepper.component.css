@@ -706,7 +706,7 @@
    */
   @property --cngx-step-chips-gap {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.5rem;
   }
 
@@ -726,7 +726,7 @@
    */
   @property --cngx-step-chips-padding-inline {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.875rem;
   }
 
@@ -736,7 +736,7 @@
    */
   @property --cngx-step-chips-padding-block {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.4rem;
   }
 
@@ -803,7 +803,7 @@
    */
   @property --cngx-step-breadcrumb-gap {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.5rem;
   }
 
@@ -1970,12 +1970,18 @@
    active-step theming. Unlayered direct selector to match the collapsed/
    navigable rules above (consistent cascade ordering across engines). */
 .cngx-stepper__group-header--active {
-  border-color: var(--cngx-stepper-group-chip-active-border, var(--cngx-color-primary, oklch(0.55 0.18 264)));
+  border-color: var(
+    --cngx-stepper-group-chip-active-border,
+    var(--cngx-color-primary, oklch(0.55 0.18 264))
+  );
   background: var(
     --cngx-stepper-group-chip-active-bg,
     color-mix(in srgb, var(--cngx-color-primary, oklch(0.55 0.18 264)) 14%, transparent)
   );
-  color: var(--cngx-stepper-group-chip-active-color, var(--cngx-color-primary, oklch(0.55 0.18 264)));
+  color: var(
+    --cngx-stepper-group-chip-active-color,
+    var(--cngx-color-primary, oklch(0.55 0.18 264))
+  );
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -2017,8 +2023,7 @@
    matching how the light default (the @property initial) is overridable.
    The dark grey only applies when no bridge sets the fill. */
 @layer cngx.tokens {
-  :where(:root[data-color-scheme='dark'], :root.dark)
-    .cngx-stepper[data-skin='pill-segment'] {
+  :where(:root[data-color-scheme='dark'], :root.dark) .cngx-stepper[data-skin='pill-segment'] {
     --cngx-step-pill-segment-fill-active: oklch(0.4 0.008 240);
   }
 }
@@ -2130,7 +2135,8 @@
 }
 
 .cngx-stepper[data-density-auto][data-skin='path-chevron'] .cngx-stepper__step[aria-current='step'],
-.cngx-stepper[data-density-auto][data-skin='pill-segment'] .cngx-stepper__step[aria-current='step'] {
+.cngx-stepper[data-density-auto][data-skin='pill-segment']
+  .cngx-stepper__step[aria-current='step'] {
   flex-shrink: 0.25;
 }
 
@@ -2143,9 +2149,15 @@
    breadcrumb): floor the non-active label so a collapsing step keeps a
    readable stub instead of emptying out. The active label keeps its own
    (larger) floor from the base rule. */
-.cngx-stepper[data-density-auto][data-skin='path-chevron'] .cngx-stepper__step:not([aria-current='step']) .cngx-stepper__label,
-.cngx-stepper[data-density-auto][data-skin='chips'] .cngx-stepper__step:not([aria-current='step']) .cngx-stepper__label,
-.cngx-stepper[data-density-auto][data-skin='breadcrumb'] .cngx-stepper__step:not([aria-current='step']) .cngx-stepper__label {
+.cngx-stepper[data-density-auto][data-skin='path-chevron']
+  .cngx-stepper__step:not([aria-current='step'])
+  .cngx-stepper__label,
+.cngx-stepper[data-density-auto][data-skin='chips']
+  .cngx-stepper__step:not([aria-current='step'])
+  .cngx-stepper__label,
+.cngx-stepper[data-density-auto][data-skin='breadcrumb']
+  .cngx-stepper__step:not([aria-current='step'])
+  .cngx-stepper__label {
   min-width: var(--cngx-step-collapsed-label-min, 2ch);
 }
 

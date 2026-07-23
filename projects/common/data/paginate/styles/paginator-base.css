@@ -46,6 +46,37 @@
        override; per-instance [style.--token] still wins. */
     --cngx-paginator-row-gap: var(--cngx-space-sm);
     --cngx-paginator-gap: var(--cngx-space-xs);
+    /* Derive the per-segment paddings and gaps from the scale at the same
+       default host, so a root [data-density] compacts the nav / listbox /
+       overflow / load-more / infinite / alpha / goto segments too. All of
+       these are read on descendants (nav button, popover panel/row, overflow
+       grid, segment rows); every one either inherits by default (unregistered
+       custom property) or is registered inherits:true (option/panel-padding in
+       paginator.component.css), so a host SET reaches the use-site. The px
+       use-site fallbacks stay as documentation and as the pre-density value.
+       Nearest-rung snap recorded per token (base scale xs4/sm8/md16):
+         button-padding  0 0.5rem  -> 0 sm  (inline exact; block 0-keep, flush to button-size row)
+         goto-padding    0 0.5rem  -> 0 sm  (inline exact; block 0-keep)
+         option-padding  0 0.75rem -> 0 sm  (inline tie sm/md, tighter rung per row-gap precedent; block 0-keep)
+         panel-padding   0.25rem   -> xs    (exact)
+         select-gap      0.25rem   -> xs    (exact)
+         overflow-gap    0.15rem   -> xs    (+1.6px; sub-rung grid gap snaps up to the tightest rung)
+         alpha-gap       0.4rem    -> sm    (+1.6px)
+         infinite-gap    0.5rem    -> sm    (exact)
+         load-more-gap   0.5rem    -> sm    (exact)
+         infinite-padding 0.9rem   -> md    (+1.6px)
+       overflow-cell-padding stays 0 (deliberate 0-keep: fixed square grid
+       cells sized by --cngx-paginator-overflow-cell-size, not compactness). */
+    --cngx-paginator-button-padding: 0 var(--cngx-space-sm);
+    --cngx-paginator-goto-padding: 0 var(--cngx-space-sm);
+    --cngx-paginator-option-padding: 0 var(--cngx-space-sm);
+    --cngx-paginator-panel-padding: var(--cngx-space-xs);
+    --cngx-paginator-select-gap: var(--cngx-space-xs);
+    --cngx-paginator-overflow-gap: var(--cngx-space-xs);
+    --cngx-paginator-alpha-gap: var(--cngx-space-sm);
+    --cngx-paginator-infinite-gap: var(--cngx-space-sm);
+    --cngx-paginator-load-more-gap: var(--cngx-space-sm);
+    --cngx-paginator-infinite-padding: var(--cngx-space-md);
     gap: var(--cngx-paginator-row-gap, 0.75rem);
     font-family: var(
       --cngx-paginator-font-family,
@@ -344,7 +375,10 @@
       --cngx-paginator-option-selected-bg,
       color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 14%, transparent)
     );
-    color: var(--cngx-paginator-option-selected-color, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+    color: var(
+      --cngx-paginator-option-selected-color,
+      var(--cngx-color-primary, oklch(0.66 0.19 50))
+    );
     font-weight: 600;
   }
 

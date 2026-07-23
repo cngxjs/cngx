@@ -423,10 +423,13 @@
        use-site fallback). All three are read on descendants (strip / tab /
        affordances / panel) and are inherits:true, so this host SET cascades.
        tab-gap 0.5rem -> sm; strip-padding 0.5rem/0 -> sm/0 (0 kept); tab-padding
-       0.5rem/0.75rem -> sm/sm (0.75rem -> 8). */
+       0.5rem/0.75rem -> sm/sm (0.75rem -> 8); vertical-gap 1rem -> md (exact,
+       the strip-to-panel gutter in the vertical layout). The `contained` skin
+       still zeroes vertical-gap in its own scope. */
     --cngx-tab-gap: var(--cngx-space-sm);
     --cngx-tab-strip-padding: var(--cngx-space-sm) 0;
     --cngx-tab-padding: var(--cngx-space-sm) var(--cngx-space-sm);
+    --cngx-tab-vertical-gap: var(--cngx-space-md);
     display: block;
   }
 

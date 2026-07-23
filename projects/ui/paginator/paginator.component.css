@@ -489,7 +489,11 @@
   @property --cngx-paginator-option-selected-bg {
     syntax: '*';
     inherits: true;
-    initial-value: color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 14%, transparent);
+    initial-value: color-mix(
+      in oklch,
+      var(--cngx-color-primary, oklch(0.66 0.19 50)) 14%,
+      transparent
+    );
   }
 
   /**
@@ -633,7 +637,14 @@
     .cngx-paginator__pages {
       background: var(--cngx-paginator-track-bg, oklch(0.96 0 0));
       border-radius: var(--cngx-paginator-button-radius, 0.375rem);
-      padding: var(--cngx-paginator-segmented-track-padding, 0.25rem);
+      /* Skin use-sites here (and in the minimal-nav / bar scopes below) read the
+         density scale directly instead of through a named
+         --cngx-paginator-*-padding token. Intentional divergence from the
+         stepper keep-the-token skin path: these paddings are skin-only and were
+         unregistered, so a component token bought no override surface worth
+         preserving. Mirrors the stepper raw-literal fix; the registered base +
+         per-segment tokens still derive via the host SET in paginator-base.css. */
+      padding: var(--cngx-space-xs, 0.25rem);
     }
 
     .cngx-paginator__page[aria-current='page'] {
@@ -678,8 +689,8 @@
      * skin keeps its text-forward, icon-only nav.
      */
     :scope[data-nav-labels] .cngx-paginator__nav {
-      gap: var(--cngx-paginator-minimal-nav-gap, 0.4rem);
-      padding-inline: var(--cngx-paginator-minimal-nav-padding, 0.85rem);
+      gap: var(--cngx-space-sm, 0.4rem);
+      padding-inline: var(--cngx-space-md, 0.85rem);
       border-color: var(--cngx-color-border, oklch(0.88 0.005 250));
     }
 
@@ -773,7 +784,7 @@
       align-self: stretch;
       block-size: auto;
       border-radius: 0;
-      padding-inline: var(--cngx-paginator-bar-cell-padding, 0.85rem);
+      padding-inline: var(--cngx-space-md, 0.85rem);
     }
 
     /* Nav cells stay compact squares - the chevron centres with no extra
@@ -789,13 +800,13 @@
     .cngx-paginator__range,
     .cngx-paginator__status {
       align-self: center;
-      padding-inline: var(--cngx-paginator-bar-cell-padding, 0.85rem);
+      padding-inline: var(--cngx-space-md, 0.85rem);
     }
 
     /* A bare label span used directly as a segment (e.g. "Items per page:"). */
     :scope > span.cngx-paginator__segment {
       align-items: center;
-      padding-inline: var(--cngx-paginator-bar-cell-padding, 0.85rem);
+      padding-inline: var(--cngx-space-md, 0.85rem);
     }
 
     /* The page row is a button sub-grid: per-button dividers, each button fills
@@ -813,7 +824,7 @@
       /* Symmetric inline padding so the numeral / ellipsis centres - the
          `--cngx-paginator-button-padding` token is a `padding` shorthand
          (`0 0.5rem`), which would read asymmetric on `padding-inline`. */
-      padding-inline: var(--cngx-paginator-bar-page-padding, 0.5rem);
+      padding-inline: var(--cngx-space-sm, 0.5rem);
     }
 
     .cngx-paginator__pages .cngx-paginator__button:first-child {

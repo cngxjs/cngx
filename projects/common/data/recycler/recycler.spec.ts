@@ -64,6 +64,9 @@ describe('injectRecycler', () => {
 
   afterEach(() => {
     mockContainer.remove();
+    // stubGlobal outlives restoreAllMocks; unstub so the ResizeObserver mock
+    // never leaks into a later spec sharing this vitest worker.
+    vi.unstubAllGlobals();
   });
 
   function createRecycler(overrides?: Partial<Parameters<typeof injectRecycler>[0]>): CngxRecycler {
