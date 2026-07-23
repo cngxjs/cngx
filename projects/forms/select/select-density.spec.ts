@@ -45,6 +45,11 @@ describe('declarative divider + option density derivation', () => {
   it('derives the declarative option-row padding from the scale at the host', () => {
     assertScaleSet(css('declarative/option.component.css'), '--cngx-select-option-padding');
   });
+
+  it('derives the option-row gap on both the data-mode and declarative hosts (kept locked)', () => {
+    assertScaleSet(css('shared/select-base.css'), '--cngx-option-gap');
+    assertScaleSet(css('declarative/option.component.css'), '--cngx-option-gap');
+  });
 });
 
 describe('panel loading + empty-state density derivation', () => {

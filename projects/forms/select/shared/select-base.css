@@ -941,9 +941,12 @@
   .cngx-select__option {
     /* option-padding 0.375/0.5 -> xs/sm (block 6 tie xs/sm -> xs). */
     --cngx-select-option-padding: var(--cngx-space-xs) var(--cngx-space-sm);
+    /* option-row gap 0.5rem -> sm; SET here so the data-mode row derives and
+       stays locked to the declarative cngx-option host (option.component.css). */
+    --cngx-option-gap: var(--cngx-space-sm);
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--cngx-option-gap, 0.5rem);
     padding: var(--cngx-select-option-padding, 0.375rem 0.5rem);
     min-height: var(--cngx-select-option-min-height, auto);
     cursor: pointer;
