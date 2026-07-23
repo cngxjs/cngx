@@ -464,6 +464,12 @@
     --cngx-step-chips-padding-block: var(--cngx-space-sm);
     --cngx-step-breadcrumb-gap: var(--cngx-space-sm);
     --cngx-step-pill-vertical-padding-block: var(--cngx-space-md);
+    /* Group-header chip padding (inherits:true, read on the group-header
+       descendant). Block 0.125rem has no rung, so it is half xs like the
+       status pill above; inline 0.5rem -> sm. The sibling group-summary padding
+       stays 0 0.4em - a deliberate font-relative gauge on a fully em-sized
+       badge (font 0.75em, size 1.3em), a density opt-out, not a px miss. */
+    --cngx-stepper-group-chip-padding: calc(var(--cngx-space-xs) / 2) var(--cngx-space-sm);
     display: block;
     container-type: inline-size;
     container-name: cngx-stepper;

@@ -108,6 +108,18 @@ describe('stepper density derivation (chips / breadcrumb / pill skins - wave 5)'
     // strip-overflow density to the global spacing swap.
     expect(BASE_CSS).not.toContain('--cngx-step-chips-density-padding-inline:');
   });
+
+  it('SETs the group-chip padding from the scale (block via half-xs, inline sm)', () => {
+    expect(BASE_CSS).toMatch(
+      /--cngx-stepper-group-chip-padding:\s*calc\(var\(--cngx-space-xs\) \/ 2\) var\(--cngx-space-sm\)/,
+    );
+  });
+
+  it('keeps the group-summary padding a font-relative em gauge (density opt-out)', () => {
+    // The summary badge is fully em-sized (font 0.75em, size 1.3em); its padding
+    // stays 0 0.4em so it scales with the badge font, not the px spacing scale.
+    expect(BASE_CSS).not.toMatch(/--cngx-stepper-group-summary-padding:\s*[^;]*var\(--cngx-space-/);
+  });
 });
 
 describe('stepper density derivation (stepper.component.css)', () => {
