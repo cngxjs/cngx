@@ -88,7 +88,7 @@
   @property --cngx-slider-length {
     syntax: '<length>';
     inherits: true;
-    initial-value: 9rem;
+    initial-value: 144px;
   }
 }
 

@@ -338,8 +338,8 @@ describe('CngxPaginator — host typography', () => {
   test('registers the font-size + row-gap tokens with the prototype defaults', async () => {
     await setup();
     const css = paginatorCss();
-    expect(css).toMatch(/--cngx-paginator-font-size\s*\{[^}]*initial-value:\s*0\.875rem/);
-    expect(css).toMatch(/--cngx-paginator-row-gap\s*\{[^}]*initial-value:\s*0\.75rem/);
+    expect(css).toMatch(/--cngx-paginator-font-size\s*\{[^}]*initial-value:\s*14px/);
+    expect(css).toMatch(/--cngx-paginator-row-gap\s*\{[^}]*initial-value:\s*12px/);
   });
 
   test('host sets the system font + font-size and reads the row gap; the page row keeps the inter-page gap', async () => {
@@ -385,11 +385,12 @@ describe('CngxPaginator — host typography', () => {
   });
 
   // Guards the default radius so a later token-default override does not silently
-  // regress it back below the prototype's 0.5rem.
-  test('registers the default button radius at the prototype 0.5rem', async () => {
+  // regress it back below the prototype's 8px (the absolute equivalent of the
+  // locked 0.5rem; a typed <length> initial-value must not be a rem).
+  test('registers the default button radius at the prototype 8px', async () => {
     await setup();
     const css = paginatorCss();
-    expect(css).toMatch(/--cngx-paginator-button-radius\s*\{[^}]*initial-value:\s*0\.5rem/);
+    expect(css).toMatch(/--cngx-paginator-button-radius\s*\{[^}]*initial-value:\s*8px/);
   });
 });
 

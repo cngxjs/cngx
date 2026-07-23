@@ -46,7 +46,7 @@
   @property --cngx-status-dot-size {
     syntax: '<length>';
     inherits: false;
-    initial-value: 1rem;
+    initial-value: 16px;
   }
 
   /**

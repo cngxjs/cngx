@@ -83,7 +83,6 @@
   @property --cngx-dga-fs {
     syntax: '*';
     inherits: true;
-    initial-value: inherit;
   }
 
   /**
@@ -129,7 +128,7 @@
   @property --cngx-dga-col-sm {
     syntax: '<length>';
     inherits: true;
-    initial-value: 5rem;
+    initial-value: 80px;
   }
 
   /**
@@ -139,7 +138,7 @@
   @property --cngx-dga-col-md {
     syntax: '<length>';
     inherits: true;
-    initial-value: 7rem;
+    initial-value: 112px;
   }
 
   /**
@@ -149,6 +148,6 @@
   @property --cngx-dga-col-lg {
     syntax: '<length>';
     inherits: true;
-    initial-value: 10rem;
+    initial-value: 160px;
   }
 }
