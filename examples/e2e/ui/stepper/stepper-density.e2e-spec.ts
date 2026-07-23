@@ -26,17 +26,17 @@ test.describe('ui/stepper/stepper-density', () => {
     await expect(stepper).toBeVisible();
 
     await page.addStyleTag({ content: 'cngx-stepper { width: 620px !important; display: block; }' });
-    await expect(stepper).toHaveAttribute('data-density', 'full');
+    await expect(stepper).toHaveAttribute('data-strip-density', 'full');
     expect(await horizontalOverflow(stepper)).toBeLessThanOrEqual(1);
 
     await page.addStyleTag({ content: 'cngx-stepper { width: 520px !important; display: block; }' });
-    await expect(stepper).toHaveAttribute('data-density', 'compact');
+    await expect(stepper).toHaveAttribute('data-strip-density', 'compact');
     // The user-reported failure was a horizontal scrollbar here - the
     // compact rung must fit its container.
     expect(await horizontalOverflow(stepper)).toBeLessThanOrEqual(1);
 
     await page.addStyleTag({ content: 'cngx-stepper { width: 400px !important; display: block; }' });
-    await expect(stepper).toHaveAttribute('data-density', 'minimal');
+    await expect(stepper).toHaveAttribute('data-strip-density', 'minimal');
     // A horizontal stepper stays horizontal at minimal - it degrades to an
     // indicators-only row, never an auto-vertical stack.
     await expect(stepper).toHaveAttribute('aria-orientation', 'horizontal');
@@ -68,7 +68,7 @@ test.describe('ui/stepper/stepper-density', () => {
 
     const stepper = page.locator('cngx-stepper').first();
     await page.addStyleTag({ content: 'cngx-stepper { width: 400px !important; display: block; }' });
-    await expect(stepper).toHaveAttribute('data-density', 'minimal');
+    await expect(stepper).toHaveAttribute('data-strip-density', 'minimal');
 
     // The active (first) step's label is rendered, not sr-only-clipped.
     const activeLabel = stepper
