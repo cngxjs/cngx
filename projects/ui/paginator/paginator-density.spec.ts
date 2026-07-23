@@ -88,4 +88,37 @@ describe('paginator density derivation (paginator.component.css)', () => {
       ).toBe('true');
     }
   });
+
+  // The segmented / minimal-nav / bar skin paddings live inside [data-skin]
+  // scopes; a component-token host SET would be skin-gated, so the density
+  // mechanism is a direct scale read at the use-site (stepper precedent).
+  const SKIN_READS: ReadonlyArray<string> = [
+    'padding: var(--cngx-space-xs, 0.25rem);', // segmented track, 0.25rem -> xs
+    'gap: var(--cngx-space-sm, 0.4rem);', // minimal nav gap, 0.4rem -> sm
+    'padding-inline: var(--cngx-space-md, 0.85rem);', // minimal nav + bar cell, 0.85rem -> md
+    'padding-inline: var(--cngx-space-sm, 0.5rem);', // bar page, 0.5rem -> sm
+  ];
+
+  const DROPPED_SKIN_TOKENS: ReadonlyArray<string> = [
+    '--cngx-paginator-segmented-track-padding',
+    '--cngx-paginator-minimal-nav-gap',
+    '--cngx-paginator-minimal-nav-padding',
+    '--cngx-paginator-bar-cell-padding',
+    '--cngx-paginator-bar-page-padding',
+  ];
+
+  it('reads the scale directly at every segmented / minimal-nav / bar skin use-site', () => {
+    for (const read of SKIN_READS) {
+      expect(COMPONENT_CSS, `skin use-site must read the scale: ${read}`).toContain(read);
+    }
+  });
+
+  it('leaves no skin token as a bare literal read that opts out of density', () => {
+    for (const token of DROPPED_SKIN_TOKENS) {
+      expect(
+        COMPONENT_CSS,
+        `${token} still read at a use-site; it no longer derives`,
+      ).not.toContain(token);
+    }
+  });
 });
