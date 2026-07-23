@@ -1,4 +1,10 @@
 .cngx-breadcrumb {
+  /* Derive the default bar gap from the scale so a global [data-density]
+     compacts the unskinned breadcrumb (SET-from-scale rule; the skins derive
+     their own contained/pill spacing, but the base list gap was pinned to the
+     0.5rem fallback). 0.5rem -> sm. Read on the __list descendant; plain custom
+     property, so this host SET cascades. */
+  --cngx-breadcrumb-gap: var(--cngx-space-sm, 0.5rem);
   display: block;
   font: inherit;
 }
