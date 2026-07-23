@@ -27,13 +27,20 @@
  *
  * - `--cngx-option-gap` -> hardcoded `0.5rem`
  * - `--cngx-option-status-justify` -> hardcoded `flex-start`
- * - `--cngx-select-option-padding` -> hardcoded `0.375rem 0.5rem`
+ * - `--cngx-select-option-padding` -> `--cngx-space-xs`/`-sm` (scale, locked to data-mode)
  * - `--cngx-select-option-radius` -> hardcoded `0.125rem`
  * - `--cngx-select-option-highlight-bg` -> `--cngx-color-primary` at
  *   10% alpha
  */
 
 :host {
+  /* Derive the option-row padding from the scale so a global [data-density]
+     compacts it; SET identically to the data-mode .cngx-select__option
+     (select-base.css:939) so declarative and data rows stay locked. The bare
+     cngx-option host carries no .cngx-select__option class, so the base's
+     element-scoped SET does not reach it - this is the host's own SET, not a
+     duplicate. 0.375rem 0.5rem -> xs sm (block 6px tie -> xs). */
+  --cngx-select-option-padding: var(--cngx-space-xs) var(--cngx-space-sm);
   display: flex;
   align-items: center;
   gap: var(--cngx-option-gap, 0.5rem);

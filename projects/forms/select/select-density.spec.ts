@@ -36,3 +36,13 @@ describe('declarative optgroup + select-search density derivation', () => {
     assertScaleSet(searchCss, '--cngx-select-search-input-padding');
   });
 });
+
+describe('declarative divider + option density derivation', () => {
+  it('derives the divider margin from the scale', () => {
+    assertScaleSet(css('declarative/divider.component.css'), '--cngx-select-divider-margin');
+  });
+
+  it('derives the declarative option-row padding from the scale at the host', () => {
+    assertScaleSet(css('declarative/option.component.css'), '--cngx-select-option-padding');
+  });
+});

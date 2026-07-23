@@ -10,10 +10,13 @@
  * propagate without per-component theming:
  *
  * - `--cngx-select-divider-color` -> `--cngx-color-border`
- * - `--cngx-select-divider-margin` - hardcoded `0.25rem 0`
+ * - `--cngx-select-divider-margin` -> `--cngx-space-xs` 0 (density scale)
  */
 
 :host {
+  /* Derive the divider margin from the scale so a global [data-density]
+     compacts it. 0.25rem 0 -> xs 0. */
+  --cngx-select-divider-margin: var(--cngx-space-xs) 0;
   display: block;
   block-size: 1px;
   margin: var(--cngx-select-divider-margin, 0.25rem 0);
