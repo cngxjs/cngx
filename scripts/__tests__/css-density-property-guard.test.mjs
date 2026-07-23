@@ -8,11 +8,14 @@ import { describe, expect, it } from 'vitest';
  * Repo-wide static guard for the two CSS invariants the density sweeps rely on.
  *
  * (a) Density derivation (file-coarse): a component stylesheet that references a
- *     spacing token (a custom property named `*-gap` / `*-padding` / `*-inset`)
- *     MUST SET at least one token from the `--cngx-space-*` scale at a
- *     NON-skin-gated host in that same file, so a root `[data-density]` swap
- *     re-scales it (pillars.md "Density derivation"). This catches the wave
- *     regression - a new component that ships spacing with zero derivation.
+ *     spacing token (a custom property named `*-gap` / `*-padding`) MUST SET at
+ *     least one token from the `--cngx-space-*` scale at a NON-skin-gated host
+ *     in that same file, so a root `[data-density]` swap re-scales it
+ *     (pillars.md "Density derivation"). This catches the wave regression - a
+ *     new component that ships spacing with zero derivation. `*-inset` tokens
+ *     are NOT counted: an inset positions a thumb / rail / indicator
+ *     (affordance geometry), which the pillar CSS rule excludes from density -
+ *     densifying it would distort the affordance, not compact the component.
  *     It is deliberately coarse (per-file, not per-token): a file with any own
  *     scale SET passes. Split stylesheets (a consumer whose SET lives in a
  *     sibling / shared base / other lib), pure `@property`-declaration files,
@@ -45,16 +48,46 @@ function isDensityExcluded(relPath) {
  * tracked gap). Keep this principled - it is the escape hatch, not a dumping
  * ground. A NEW component that opts out of density is meant to fail here. */
 const DENSITY_ALLOWLIST = new Map([
-  ['/projects/ui/stepper/stepper.component.css', 'split stylesheet - the --cngx-step-* SETs live in styles/stepper-base.css.'],
-  ['/projects/ui/accordion/accordion-item.component.css', 'split stylesheet - the --cngx-accordion-* SETs live in accordion-group.component.css.'],
-  ['/projects/ui/data-grid-accordion/data-grid-row.component.css', 'split stylesheet - the --cngx-dga-* SETs live in data-grid-accordion.component.css.'],
-  ['/projects/ui/paginator/paginator.component.css', 'split across libs - the core paginate SETs live in common/data/paginate/styles/paginator-base.css; the remaining ui/paginator sub-tokens are a pre-existing per-token gap.'],
-  ['/projects/common/display/tag/tag.css', 'split stylesheet - the --cngx-tag-* SETs live in shared/tag-base.css.'],
-  ['/projects/common/display/tag-group/tag-group.component.css', 'split stylesheet - the --cngx-tag-group-* SETs live in tag/shared/tag-base.css.'],
-  ['/projects/common/theming/components/cngx-data-grid.css', 'pure @property declaration file - the --cngx-dga-* SETs live in ui/data-grid-accordion.'],
-  ['/projects/forms/filter-builder/filter-builder-row.component.css', 'split stylesheet - the --cngx-filter-builder-gap SET lives in filter-builder.component.css.'],
-  ['/projects/forms/filter-builder/filter-builder-expression-row.component.css', 'split stylesheet - the --cngx-filter-builder-gap SET lives in filter-builder.component.css.'],
-  ['/projects/common/interactive/button-toggle/button-toggle-group.component.css', 'tracked gap - --cngx-button-toggle-group-gap is derived nowhere; pre-existing, outside the density-sweep-wave-4 scope (future sweep).'],
+  [
+    '/projects/ui/stepper/stepper.component.css',
+    'split stylesheet - the --cngx-step-* SETs live in styles/stepper-base.css.',
+  ],
+  [
+    '/projects/ui/accordion/accordion-item.component.css',
+    'split stylesheet - the --cngx-accordion-* SETs live in accordion-group.component.css.',
+  ],
+  [
+    '/projects/ui/data-grid-accordion/data-grid-row.component.css',
+    'split stylesheet - the --cngx-dga-* SETs live in data-grid-accordion.component.css.',
+  ],
+  [
+    '/projects/ui/paginator/paginator.component.css',
+    'split across libs - the paginate + per-segment SETs all live in common/data/paginate/styles/paginator-base.css; the ui/paginator skin use-sites read the scale directly (density-sweep-wave-5).',
+  ],
+  [
+    '/projects/common/display/tag/tag.css',
+    'split stylesheet - the --cngx-tag-* SETs live in shared/tag-base.css.',
+  ],
+  [
+    '/projects/common/display/tag-group/tag-group.component.css',
+    'split stylesheet - the --cngx-tag-group-* SETs live in tag/shared/tag-base.css.',
+  ],
+  [
+    '/projects/common/theming/components/cngx-data-grid.css',
+    'pure @property declaration file - the --cngx-dga-* SETs live in ui/data-grid-accordion.',
+  ],
+  [
+    '/projects/forms/filter-builder/filter-builder-row.component.css',
+    'split stylesheet - the --cngx-filter-builder-gap SET lives in filter-builder.component.css.',
+  ],
+  [
+    '/projects/forms/filter-builder/filter-builder-expression-row.component.css',
+    'split stylesheet - the --cngx-filter-builder-gap SET lives in filter-builder.component.css.',
+  ],
+  [
+    '/projects/common/interactive/button-toggle/button-toggle-group.component.css',
+    'deliberate 0-keep - --cngx-button-toggle-group-gap defaults to 0 so segmented toggles render flush; deriving it would introduce an unwanted gap.',
+  ],
 ]);
 
 // --- helpers ---------------------------------------------------------------
@@ -103,7 +136,9 @@ function skinGatedRanges(css) {
 }
 
 const SPACING_TOKEN_REF = /--cngx-[a-z0-9-]+/g;
-const IS_SPACING = /-(gap|padding|inset)(-|$)/;
+// `-inset` is deliberately excluded: it is affordance geometry (thumb / rail /
+// indicator position), not compactness, per the pillar CSS density rule.
+const IS_SPACING = /-(gap|padding)(-|$)/;
 const SCALE_SET = /--[a-z][a-z0-9-]*\s*:\s*[^;{}]*var\(\s*--cngx-space-/g;
 
 function referencesSpacingToken(css) {
@@ -151,14 +186,20 @@ function propertyViolations(css, relPath) {
     const initial = initialMatch[1].trim();
 
     if (CSS_WIDE_KEYWORD.test(initial)) {
-      violations.push(`${relPath}: @property ${name} initial-value '${initial}' is a CSS-wide keyword (rule is dropped)`);
+      violations.push(
+        `${relPath}: @property ${name} initial-value '${initial}' is a CSS-wide keyword (rule is dropped)`,
+      );
       continue;
     }
     if (TYPED_DIMENSION.test(syntax)) {
       if (RELATIVE_UNIT.test(initial)) {
-        violations.push(`${relPath}: @property ${name} (syntax ${syntax}) initial-value '${initial}' uses a relative unit; typed dimensions need an absolute value`);
+        violations.push(
+          `${relPath}: @property ${name} (syntax ${syntax}) initial-value '${initial}' uses a relative unit; typed dimensions need an absolute value`,
+        );
       } else if (/\b(var|env)\(/.test(initial)) {
-        violations.push(`${relPath}: @property ${name} (syntax ${syntax}) initial-value '${initial}' uses var()/env(); typed dimensions must be computationally independent`);
+        violations.push(
+          `${relPath}: @property ${name} (syntax ${syntax}) initial-value '${initial}' uses var()/env(); typed dimensions must be computationally independent`,
+        );
       }
     }
   }
@@ -167,7 +208,10 @@ function propertyViolations(css, relPath) {
 
 // --- the suite -------------------------------------------------------------
 
-const CSS_FILES = walkCss(PROJECTS).map((f) => ({ full: f, rel: '/' + relative(REPO_ROOT, f).replaceAll('\\', '/') }));
+const CSS_FILES = walkCss(PROJECTS).map((f) => ({
+  full: f,
+  rel: '/' + relative(REPO_ROOT, f).replaceAll('\\', '/'),
+}));
 
 describe('css density + @property regression guard', () => {
   it('every component stylesheet referencing a spacing token derives it from the scale at a non-skin-gated host', () => {
@@ -183,7 +227,7 @@ describe('css density + @property regression guard', () => {
     }
     expect(
       offenders,
-      `these stylesheets reference a *-gap/*-padding/*-inset token but never SET one from --cngx-space-* at a non-skin-gated host (add the SET, or a DENSITY_ALLOWLIST entry with a one-clause reason):\n${offenders.join('\n')}`,
+      `these stylesheets reference a *-gap/*-padding token but never SET one from --cngx-space-* at a non-skin-gated host (add the SET, or a DENSITY_ALLOWLIST entry with a one-clause reason):\n${offenders.join('\n')}`,
     ).toEqual([]);
   });
 
