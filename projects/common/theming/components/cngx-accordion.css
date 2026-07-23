@@ -94,6 +94,9 @@
        SET reaches the header / region descendants. 0.75rem 1rem -> sm md. */
     --cngx-accordion-header-padding: var(--cngx-space-sm, 8px) var(--cngx-space-md, 16px);
     --cngx-accordion-region-padding: var(--cngx-space-sm, 8px) var(--cngx-space-md, 16px);
+    /* Label/twisty gap on the header button - derived from the scale too, via
+       the same token the @cngx/ui organism uses. 0.5rem -> sm. */
+    --cngx-accordion-header-gap: var(--cngx-space-sm, 8px);
     display: block;
     border: 1px solid var(--cngx-accordion-border-color, oklch(0.88 0.005 250));
     border-radius: var(--cngx-radius-md, 0.375rem);
@@ -104,7 +107,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 0.5rem;
+    gap: var(--cngx-accordion-header-gap, 0.5rem);
     inline-size: 100%;
     padding: var(--cngx-accordion-header-padding, 0.75rem 1rem);
     border: 0;

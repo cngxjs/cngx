@@ -17,11 +17,19 @@ const CSS = readFileSync(
 );
 
 describe('standalone accordion density derivation', () => {
-  it('SETs header + region padding from the scale at the [cngxAccordion] host', () => {
-    for (const token of ['--cngx-accordion-header-padding', '--cngx-accordion-region-padding']) {
+  it('SETs header padding, region padding + header gap from the scale at the [cngxAccordion] host', () => {
+    for (const token of [
+      '--cngx-accordion-header-padding',
+      '--cngx-accordion-region-padding',
+      '--cngx-accordion-header-gap',
+    ]) {
       expect(CSS, `${token} must be SET from --cngx-space-* at the standalone host`).toMatch(
         new RegExp(`${token.replace(/-/g, '\\-')}:\\s*var\\(--cngx-space-`),
       );
     }
+  });
+
+  it('leaves no raw gap literal on the header button', () => {
+    expect(CSS).not.toMatch(/gap:\s*0\.5rem\s*;/);
   });
 });
