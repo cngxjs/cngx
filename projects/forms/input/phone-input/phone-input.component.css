@@ -1,4 +1,5 @@
 :host {
+  --cngx-phone-input-gap: var(--cngx-space-sm, 0.5rem);
   display: inline-flex;
   align-items: stretch;
   gap: var(--cngx-phone-input-gap, 0.5rem);

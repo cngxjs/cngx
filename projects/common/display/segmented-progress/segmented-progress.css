@@ -6,6 +6,7 @@
  * theme picks them up. Per-segment colour keys off `[data-state]`.
  */
 .cngx-segmented-progress {
+  --cngx-segmented-progress-gap: var(--cngx-space-xs, 0.25rem);
   display: flex;
   align-items: center;
   gap: var(--cngx-segmented-progress-gap, 0.25rem);

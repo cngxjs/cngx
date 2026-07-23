@@ -3,6 +3,9 @@
  * --cngx-slider-* tokens (registered in @cngx/themes/cngx.css). The brain sets
  * --cngx-slider-fraction on this host; fill / thumb / value inherit it. */
 cngx-slider {
+  --cngx-slider-value-gap: var(--cngx-space-xs, 0.25rem);
+  --cngx-slider-bubble-gap: var(--cngx-space-sm, 0.5rem);
+  --cngx-slider-bubble-padding: var(--cngx-space-xs, 0.125rem) var(--cngx-space-sm, 0.4rem);
   position: relative;
   display: flex;
   align-items: center;

@@ -41,6 +41,10 @@
 }
 
 .cngx-breadcrumb__overflow-menu {
+  /* Derive the dropdown-row spacing from the density scale on the rows
+     themselves (they own these tokens; the popover chrome does not);
+     --cngx-space-* inherits in from a root [data-density]. */
+  --cngx-breadcrumb-overflow-menu-padding: var(--cngx-space-xs, 0.25rem) 0;
   margin: 0;
   padding: var(--cngx-breadcrumb-overflow-menu-padding, 0.25rem 0);
   list-style: none;
@@ -48,6 +52,7 @@
 }
 
 .cngx-breadcrumb__overflow-item {
+  --cngx-breadcrumb-overflow-item-padding: var(--cngx-space-sm, 0.5em) var(--cngx-space-sm, 0.6em);
   display: flex;
   align-items: center;
   gap: 0.5em;

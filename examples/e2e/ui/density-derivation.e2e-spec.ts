@@ -168,6 +168,50 @@ test.describe('ui/accordion — default padding derives from the density scale',
   });
 });
 
+test.describe('ui/accordion - intra-header gaps derive from the density scale', () => {
+  const GROUP = 'cngx-accordion-group';
+
+  test.beforeEach(async ({ page }) => {
+    // A skins route loads both accordion-group.component.css and
+    // accordion-skins.css (both styleUrls on the ViewEncapsulation.None group),
+    // so the unconditional-host SET and the skin @scope blocks are present.
+    await gotoDemo(page, 'ui/accordion/skins/severity-spine');
+    await page.locator('.cngx-accordion-group').first().waitFor({ state: 'attached' });
+  });
+
+  test('unskinned title-gap tracks a root [data-density] (shift 2->4 = space-xs: 4 -> 2)', async ({
+    page,
+  }) => {
+    // The unconditional .cngx-accordion-group host SETs --cngx-accordion-title-gap
+    // from --cngx-space-xs. Probe the SHIFTED token: comfortable reads 4 (NOT the
+    // old 2px literal), compact reads 2.
+    expect(await resolveVar(page, GROUP, '--cngx-accordion-title-gap')).toBe('4px');
+    expect(
+      await resolveVar(page, GROUP, '--cngx-accordion-title-gap', { density: 'compact' }),
+    ).toBe('2px');
+  });
+
+  test('skinned header-gap still tracks density (unconditional-host reach; space-sm: 8 -> 4)', async ({
+    page,
+  }) => {
+    // Skin-reach proof: a [data-skin] group whose skin does NOT override
+    // header-gap (severity-spine) still resolves --cngx-accordion-header-gap from
+    // the scale, because the SET lives on the unconditional host - matching the
+    // Material bridge's :where(cngx-accordion-group) reach. This is the
+    // precondition that makes the Phase-4 bridge drop value-equivalent for
+    // skinned groups too.
+    expect(
+      await resolveVar(page, GROUP, '--cngx-accordion-header-gap', { dataSkin: 'severity-spine' }),
+    ).toBe('8px');
+    expect(
+      await resolveVar(page, GROUP, '--cngx-accordion-header-gap', {
+        dataSkin: 'severity-spine',
+        density: 'compact',
+      }),
+    ).toBe('4px');
+  });
+});
+
 test.describe('ui/paginator - spacing derives from the scale; size preset is a private axis', () => {
   test.beforeEach(async ({ page }) => {
     // A paginator skin route loads the global .cngx-paginator CSS
@@ -330,6 +374,28 @@ test.describe('ui/breadcrumb - contained-skin padding derives from the density s
   });
 });
 
+test.describe('common/interactive - slider value-bubble spacing derives from the density scale', () => {
+  test('slider bubble padding tracks a root [data-density] (xs/sm: 4px 8px -> 2px 4px)', async ({
+    page,
+  }) => {
+    // A slider route loads the global cngx-slider CSS (ViewEncapsulation.None);
+    // the cngx-slider host SETs --cngx-slider-bubble-padding from --cngx-space-xs/sm.
+    // Probe the SHIFTED token (2/6.4 -> 4/8): compact reads 2px 4px, NOT the old
+    // literal 0.125rem 0.4rem in every density.
+    await gotoDemo(page, 'common/interactive/slider/thumb-glyph-and-bubble');
+    await page.locator('cngx-slider').first().waitFor({ state: 'attached' });
+    expect(await resolveVar(page, '', '--cngx-slider-bubble-padding', { tag: 'cngx-slider' })).toBe(
+      '4px 8px',
+    );
+    expect(
+      await resolveVar(page, '', '--cngx-slider-bubble-padding', {
+        tag: 'cngx-slider',
+        density: 'compact',
+      }),
+    ).toBe('2px 4px');
+  });
+});
+
 test.describe('common/interactive - checkbox gap derives from the density scale', () => {
   test('checkbox gap tracks a root [data-density] (space-sm: 8 -> 4)', async ({ page }) => {
     // A checkbox route loads the global .cngx-checkbox CSS (ViewEncapsulation.None);
@@ -355,6 +421,26 @@ test.describe('common/display - chip spacing derives from the density scale', ()
     expect(await resolveVar(page, 'cngx-chip', '--cngx-chip-padding-block')).toBe('4px');
     expect(
       await resolveVar(page, 'cngx-chip', '--cngx-chip-padding-block', { density: 'compact' }),
+    ).toBe('2px');
+  });
+});
+
+test.describe('common/display - segmented-progress gap derives from the density scale', () => {
+  test('segmented-progress gap tracks a root [data-density] (space-xs: 4 -> 2)', async ({
+    page,
+  }) => {
+    // A segmented-progress route loads the global .cngx-segmented-progress CSS
+    // (ViewEncapsulation.None); the host SETs --cngx-segmented-progress-gap from
+    // --cngx-space-xs. Absolute px per rung, not relative compaction.
+    await gotoDemo(page, 'common/display/segmented-progress/value-total');
+    await page.locator('.cngx-segmented-progress').first().waitFor({ state: 'attached' });
+    expect(await resolveVar(page, 'cngx-segmented-progress', '--cngx-segmented-progress-gap')).toBe(
+      '4px',
+    );
+    expect(
+      await resolveVar(page, 'cngx-segmented-progress', '--cngx-segmented-progress-gap', {
+        density: 'compact',
+      }),
     ).toBe('2px');
   });
 });
@@ -411,6 +497,33 @@ test.describe('common/card-grid - gap derives from the density scale', () => {
   });
 });
 
+test.describe('ui/tabs - pill-strip spacing derives from the density scale', () => {
+  test('pill tab gap tracks a root [data-density] under the pill skin (tie 6->xs: 4 -> 2)', async ({
+    page,
+  }) => {
+    // The pill skin is @scope (.cngx-tab-group[data-skin='pill']) in the
+    // ViewEncapsulation.None tab-group stylesheet; the :scope SETs
+    // --cngx-tab-pill-gap from --cngx-space-xs. Probe a synthetic host carrying
+    // both the class and [data-skin='pill'] so it IS the scope root. The 6->xs
+    // tie means comfortable reads 4 (NOT the old 6px literal), compact reads 2.
+    await gotoDemo(page, 'ui/tabs/tab-skins/pill');
+    await page.locator('cngx-tab-group').first().waitFor({ state: 'attached' });
+    expect(
+      await resolveVar(page, 'cngx-tab-group', '--cngx-tab-pill-gap', {
+        tag: 'cngx-tab-group',
+        dataSkin: 'pill',
+      }),
+    ).toBe('4px');
+    expect(
+      await resolveVar(page, 'cngx-tab-group', '--cngx-tab-pill-gap', {
+        tag: 'cngx-tab-group',
+        dataSkin: 'pill',
+        density: 'compact',
+      }),
+    ).toBe('2px');
+  });
+});
+
 test.describe('common/tabs - tab padding derives from the density scale', () => {
   test('tab padding tracks a root [data-density] (space-sm: 8/8 -> 4/4)', async ({ page }) => {
     // cngx-tab-group (ui/tabs) loads the common tabs-base CSS; the host SETs
@@ -460,6 +573,34 @@ test.describe('common/card — padding derives from the density scale', () => {
     expect(await paddingTopOf(page, 'cngx-card')).toBe('16px');
     expect(await paddingTopOf(page, 'cngx-card', { density: 'compact' })).toBe('8px');
     expect(await paddingTopOf(page, 'cngx-card', { density: 'spacious' })).toBe('20px');
+  });
+});
+
+test.describe('forms/input - rating spacing derives from the density scale', () => {
+  test('rating item-padding tracks a root [data-density] (shift 2->4 = space-xs: 4 -> 2)', async ({
+    page,
+  }) => {
+    // CngxRating is ViewEncapsulation.Emulated: its :host SET rule is rewritten
+    // with an _nghost attribute, so the synthetic-element helper can't reach it.
+    // Probe the REAL rendered host instead; --cngx-space-* (inherits:true) cascades
+    // from a documentElement [data-density] into the emulated host. Probe the
+    // SHIFTED token (2->4): compact reads 2, NOT the old literal 2 in every density.
+    await gotoDemo(page, 'forms/input/rating/basic');
+    const host = page.locator('cngx-rating').first();
+    await host.waitFor({ state: 'attached' });
+    expect(
+      await host.evaluate((el) =>
+        getComputedStyle(el).getPropertyValue('--cngx-rating-item-padding').trim(),
+      ),
+    ).toBe('4px');
+    expect(
+      await host.evaluate((el) => {
+        document.documentElement.setAttribute('data-density', 'compact');
+        const v = getComputedStyle(el).getPropertyValue('--cngx-rating-item-padding').trim();
+        document.documentElement.removeAttribute('data-density');
+        return v;
+      }),
+    ).toBe('2px');
   });
 });
 
