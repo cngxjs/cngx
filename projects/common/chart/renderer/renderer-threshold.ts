@@ -2,9 +2,8 @@ import { InjectionToken } from '@angular/core';
 
 /**
  * Datapoint count above which `<cngx-chart>` auto-switches from SVG to
- * Canvas rendering. Default `500` - matches the v1 SVG perf-budget cap
- * documented in `chart-area-accepted-debt.md` §1, so the cutoff and the
- * historical cap stay cross-referenced.
+ * Canvas rendering. Default `500` - the point at which the SVG backend's
+ * per-layer DOM-node cost starts to dominate on a mid-range laptop.
  *
  * Override enterprise-wide via {@link withChartRendererThreshold} (or a
  * bare provider) to tune the SVG/Canvas crossover for a given app's
