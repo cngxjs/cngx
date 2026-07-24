@@ -60,6 +60,11 @@ export {
 } from './layers/scatter.component';
 export { CngxThreshold } from './layers/threshold.component';
 export { CngxBand } from './layers/band.component';
+export {
+  CNGX_CHART_LAYER,
+  type CngxChartLayer,
+  type LayerGeometry,
+} from './layers/chart-layer';
 
 export {
   CNGX_CHART_I18N,

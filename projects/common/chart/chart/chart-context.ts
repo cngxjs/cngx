@@ -44,6 +44,14 @@ export interface CngxChartContext<TX = XScaleInput, TY = number> {
    * one boundary cast in its implementation.
    */
   data<T = unknown>(): readonly T[];
+  /**
+   * SVG-output gate (default `true`). Layer atoms wrap their own
+   * `<svg:path>` / `<svg:rect>` / `<svg:circle>` emission behind
+   * `@if (ctx.renderSvg())`. The chart shell drives this `false` only
+   * when Canvas mode is active - an atom asks "should I render my own
+   * SVG?", never "what mode am I in?".
+   */
+  readonly renderSvg: Signal<boolean>;
 }
 
 /**

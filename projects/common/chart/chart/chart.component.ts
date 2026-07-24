@@ -8,6 +8,8 @@ import {
   inject,
   input,
   isDevMode,
+  signal,
+  type Signal,
   ViewEncapsulation,
 } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
@@ -403,6 +405,14 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
     }),
     { equal: dimensionsEqual },
   );
+
+  /**
+   * SVG-output gate published on {@link CngxChartContext}. Held `true` so
+   * every layer atom self-renders its SVG output - visual result is
+   * bit-identical to before the geometry contract landed. The canvas
+   * auto-switch derives this from the active render mode.
+   */
+  readonly renderSvg: Signal<boolean> = signal(true).asReadonly();
 
   protected readonly viewBox = computed(() => {
     const { width, height } = this.dimensions();
