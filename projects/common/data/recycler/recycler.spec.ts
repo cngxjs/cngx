@@ -190,7 +190,13 @@ describe('injectRecycler', () => {
   });
 
   describe('showSkeleton with delay', () => {
-    it('should show skeleton immediately when delay=0', () => {
+    it('should show skeleton one macrotask after activation when delay=0', () => {
+      // Since the recycler moved from the synchronous createDelayedFlag passthrough
+      // to the shared createVisibilityGate, even skeletonDelay=0 defers the flag by
+      // one macrotask (the gate always setTimeout()s). Same emitted value, shifted
+      // one tick - pinned here rather than asserted as synchronous equality.
+      vi.useFakeTimers();
+
       const mockState = createMockState();
 
       let recycler!: CngxRecycler;
@@ -205,7 +211,14 @@ describe('injectRecycler', () => {
       });
 
       TestBed.flushEffects();
+      // Not yet flipped - the 0ms timer has not fired.
+      expect(recycler.showSkeleton()).toBe(false);
+
+      vi.advanceTimersByTime(0);
+      TestBed.flushEffects();
       expect(recycler.showSkeleton()).toBe(true);
+
+      vi.useRealTimers();
     });
 
     it('should delay skeleton when skeletonDelay > 0', () => {

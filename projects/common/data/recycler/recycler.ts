@@ -12,7 +12,7 @@ import {
   untracked,
 } from '@angular/core';
 import type { CngxAsyncState } from '@cngx/core/utils';
-import { createTransitionTracker } from '@cngx/core/utils';
+import { createTransitionTracker, createVisibilityGate } from '@cngx/core/utils';
 
 import { computeRange } from './range-computer';
 import { createScrollObserver } from './scroll-observer';
@@ -247,39 +247,6 @@ export interface CngxRecycler {
 }
 
 /**
- * Inline equivalent of `createVisibilityTimer` from `@cngx/ui/feedback` (Level 4, not importable).
- *
- * Uses `setTimeout` inside an effect - this is a timer-driven side effect, not derived state.
- * Same pattern accepted in `createVisibilityTimer` for `CngxLoadingOverlay`.
- * Safe in zoneless: the `setTimeout` callback only writes a signal, which schedules
- * Angular's own change detection - no Zone.js dependency.
- *
- * @param source Boolean signal to delay. When `true`, starts the timer.
- * @param delayMs Delay in milliseconds before the flag becomes `true`.
- * @returns A readonly signal that becomes `true` after `delayMs` when `source` is `true`.
- * @internal
- */
-function createDelayedFlag(source: Signal<boolean>, delayMs: number): Signal<boolean> {
-  if (delayMs <= 0) {
-    return source;
-  }
-  const flag = signal(false);
-  effect((onCleanup) => {
-    const active = source();
-    if (active) {
-      const timer = setTimeout(() => flag.set(true), delayMs);
-      onCleanup(() => {
-        clearTimeout(timer);
-        flag.set(false);
-      });
-    } else {
-      flag.set(false);
-    }
-  });
-  return flag.asReadonly();
-}
-
-/**
  * Creates a Signal-based virtualizer for DOM recycling.
  *
  * Must be called in an injection context (field initializer or constructor).
@@ -441,7 +408,11 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
     return Math.ceil(ch / itemHeight);
   });
 
-  const showSkeleton = createDelayedFlag(isLoading, config.skeletonDelay ?? 0);
+  const showSkeleton = createVisibilityGate(
+    isLoading,
+    computed(() => config.skeletonDelay ?? 0),
+    computed(() => 0),
+  );
 
   // previousTotal is a signal, not a mutable let - reactive, no stale-value risk.
   const announcementState = signal('');
