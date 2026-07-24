@@ -11,7 +11,7 @@ import {
   type Signal,
   ViewEncapsulation,
 } from '@angular/core';
-import type { CngxAsyncState } from '@cngx/core/utils';
+import { createVisibilityGate, injectLoadingConfig, type CngxAsyncState } from '@cngx/core/utils';
 
 import {
   CngxSkeletonPlaceholder,
@@ -70,12 +70,12 @@ import {
   host: {
     style: 'display: contents',
     class: 'cngx-skeleton',
-    '[class.cngx-skeleton--loading]': 'isLoading()',
+    '[class.cngx-skeleton--loading]': 'gatedLoading()',
     '[class.cngx-skeleton--shimmer]': 'showShimmer()',
-    '[attr.aria-busy]': 'isLoading() || null',
+    '[attr.aria-busy]': 'gatedLoading() || null',
   },
   template: `
-    @if (isLoading()) {
+    @if (gatedLoading()) {
       @for (i of indices(); track i) {
         <ng-container
           *ngTemplateOutlet="placeholderTpl()?.templateRef ?? null; context: getContext(i)"
@@ -88,6 +88,8 @@ import {
   styleUrls: ['./skeleton-container.css'],
 })
 export class CngxSkeletonContainer {
+  private readonly loadingConfig = injectLoadingConfig();
+
   /** Controls the loading state directly. */
   readonly loading = input<boolean>(false);
 
@@ -100,8 +102,25 @@ export class CngxSkeletonContainer {
   /** Repeat count for the placeholder template. */
   readonly count = input<number>(1);
 
+  /** Delay in ms before the placeholder shows. Defaults to `CNGX_LOADING_CONFIG.showDelay`. */
+  readonly showDelay = input<number>(this.loadingConfig.showDelay);
+
+  /** Minimum time in ms the placeholder stays once shown. Defaults to `CNGX_LOADING_CONFIG.minDwell`. */
+  readonly minDwell = input<number>(this.loadingConfig.minDwell);
+
   /** Derived loading state: `state.isFirstLoad` takes precedence over `loading` input. */
   protected readonly isLoading = computed(() => this.state()?.isFirstLoad() ?? this.loading());
+
+  /**
+   * @internal - flash-suppressed loading. A sub-`showDelay` blip never renders the
+   * placeholder; once shown it holds for `minDwell`. Drives the placeholder, the
+   * `--loading` class, and `aria-busy` so AT and DOM agree.
+   */
+  protected readonly gatedLoading = createVisibilityGate(
+    this.isLoading,
+    this.showDelay,
+    this.minDwell,
+  );
 
   /** @internal - projected placeholder template. */
   protected readonly placeholderTpl = contentChild(CngxSkeletonPlaceholder);
@@ -126,7 +145,7 @@ export class CngxSkeletonContainer {
 
   /** @internal */
   protected readonly showShimmer = computed(
-    () => this.isLoading() && this.shimmer() && !this.prefersReducedMotion(),
+    () => this.gatedLoading() && this.shimmer() && !this.prefersReducedMotion(),
   );
 
   /** @internal */
