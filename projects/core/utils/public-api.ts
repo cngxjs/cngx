@@ -13,6 +13,7 @@ export {
 } from './build-async-state-view';
 export { createTransitionTracker, type StatusTransition } from './transition-tracker';
 export { createVisibilityGate } from './visibility-gate';
+export { createLatencyProbe, type CngxLatencyProbe } from './latency-probe';
 export {
   type CngxLoadingConfig,
   type CngxLoadingConfigFeature,
