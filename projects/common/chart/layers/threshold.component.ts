@@ -6,6 +6,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { injectChartContext } from '../chart/chart-context';
+import { CNGX_CHART_LAYER, type CngxChartLayer, type LayerGeometry } from './chart-layer';
 
 /**
  * Threshold reference atom. Renders a single horizontal `<line>` at
@@ -38,25 +39,28 @@ import { injectChartContext } from '../chart/chart-context';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
+  providers: [{ provide: CNGX_CHART_LAYER, useExisting: CngxThreshold }],
   template: `
-    @if (geometry(); as g) {
-      <svg:line
-        class="cngx-threshold__line"
-        [attr.x1]="0"
-        [attr.y1]="g.y"
-        [attr.x2]="g.width"
-        [attr.y2]="g.y"
-        [attr.stroke-dasharray]="dashed() ? '4 3' : null"
-      />
-      @if (label(); as l) {
-        <svg:text
-          class="cngx-threshold__label"
-          [attr.x]="g.width - 4"
-          [attr.y]="g.y - 4"
-          text-anchor="end"
-        >
-          {{ l }}
-        </svg:text>
+    @if (ctx.renderSvg()) {
+      @if (bounds(); as g) {
+        <svg:line
+          class="cngx-threshold__line"
+          [attr.x1]="0"
+          [attr.y1]="g.y"
+          [attr.x2]="g.width"
+          [attr.y2]="g.y"
+          [attr.stroke-dasharray]="dashed() ? '4 3' : null"
+        />
+        @if (label(); as l) {
+          <svg:text
+            class="cngx-threshold__label"
+            [attr.x]="g.width - 4"
+            [attr.y]="g.y - 4"
+            text-anchor="end"
+          >
+            {{ l }}
+          </svg:text>
+        }
       }
     }
   `,
@@ -92,14 +96,14 @@ import { injectChartContext } from '../chart/chart-context';
     `,
   ],
 })
-export class CngxThreshold {
+export class CngxThreshold implements CngxChartLayer {
   readonly value = input.required<number>();
   readonly label = input<string | null>(null);
   readonly dashed = input<boolean>(false);
 
-  private readonly ctx = injectChartContext('CngxThreshold');
+  protected readonly ctx = injectChartContext('CngxThreshold');
 
-  protected readonly geometry = computed<{ width: number; y: number } | null>(
+  protected readonly bounds = computed<{ width: number; y: number } | null>(
     () => {
       const { width, height } = this.ctx.dimensions();
       if (width <= 0 || height <= 0) {
@@ -111,5 +115,42 @@ export class CngxThreshold {
     {
       equal: (a, b) => a === b || (a !== null && b !== null && a.width === b.width && a.y === b.y),
     },
+  );
+
+  readonly kind = computed(() => 'threshold' as const);
+
+  readonly geometry = computed<LayerGeometry>(
+    () => {
+      const b = this.bounds();
+      const y = b?.y ?? 0;
+      return {
+        kind: 'threshold',
+        x1: 0,
+        y1: y,
+        x2: b?.width ?? 0,
+        y2: y,
+        color: null,
+        dashed: this.dashed(),
+      };
+    },
+    { equal: thresholdGeomEqual },
+  );
+}
+
+/** @internal */
+function thresholdGeomEqual(a: LayerGeometry, b: LayerGeometry): boolean {
+  if (a === b) {
+    return true;
+  }
+  if (a.kind !== 'threshold' || b.kind !== 'threshold') {
+    return false;
+  }
+  return (
+    a.x1 === b.x1 &&
+    a.y1 === b.y1 &&
+    a.x2 === b.x2 &&
+    a.y2 === b.y2 &&
+    a.color === b.color &&
+    a.dashed === b.dashed
   );
 }

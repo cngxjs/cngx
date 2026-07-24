@@ -6,6 +6,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { injectChartContext } from '../chart/chart-context';
+import { CNGX_CHART_LAYER, type CngxChartLayer, type LayerGeometry } from './chart-layer';
 import { type CngxCurve } from '../path/curve';
 import {
   createPathBuilder,
@@ -50,16 +51,19 @@ import {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
+  providers: [{ provide: CNGX_CHART_LAYER, useExisting: CngxLine }],
   template: `
-    <svg:path
-      class="cngx-line"
-      [attr.d]="d()"
-      [attr.fill]="'none'"
-      [attr.stroke]="color()"
-      [attr.stroke-width]="strokeWidth()"
-      [attr.stroke-linejoin]="'round'"
-      [attr.stroke-linecap]="'round'"
-    />
+    @if (ctx.renderSvg()) {
+      <svg:path
+        class="cngx-line"
+        [attr.d]="d()"
+        [attr.fill]="'none'"
+        [attr.stroke]="color()"
+        [attr.stroke-width]="strokeWidth()"
+        [attr.stroke-linejoin]="'round'"
+        [attr.stroke-linecap]="'round'"
+      />
+    }
   `,
   styles: [
     `
@@ -79,7 +83,7 @@ import {
     `,
   ],
 })
-export class CngxLine<T = unknown> {
+export class CngxLine<T = unknown> implements CngxChartLayer {
   readonly accessor = input<LineYAccessor<T>>((d: T) => Number(d));
   readonly xAccessor = input<LineXAccessor<T> | undefined>(undefined);
   readonly color = input<string | null>(null);
@@ -87,7 +91,7 @@ export class CngxLine<T = unknown> {
   readonly curve = input<CngxCurve>('linear');
   readonly data = input<readonly T[] | undefined>(undefined);
 
-  private readonly ctx = injectChartContext('CngxLine');
+  protected readonly ctx = injectChartContext('CngxLine');
 
   private readonly builder = computed<PathBuilder<T>>(() =>
     createPathBuilder<T>({
@@ -108,5 +112,41 @@ export class CngxLine<T = unknown> {
   protected readonly d = computed<string>(
     () => this.builder().build(this.resolvedData(), this.ctx.xScale(), this.ctx.yScale()),
     { equal: (a, b) => a === b },
+  );
+
+  readonly kind = computed(() => 'line' as const);
+
+  readonly geometry = computed<LayerGeometry>(
+    () => ({
+      kind: 'line',
+      d: this.d(),
+      color: this.color(),
+      strokeWidth: this.strokeWidth(),
+      fill: 'none',
+    }),
+    { equal: pathGeomEqual },
+  );
+}
+
+/**
+ * Structural equality for line geometry: `d` string plus scalar
+ * stroke/fill fields, so a no-op data refresh that rebuilds the same `d`
+ * does not cascade into the renderer.
+ *
+ * @internal
+ */
+function pathGeomEqual(a: LayerGeometry, b: LayerGeometry): boolean {
+  if (a === b) {
+    return true;
+  }
+  if ((a.kind !== 'line' && a.kind !== 'area') || (b.kind !== 'line' && b.kind !== 'area')) {
+    return false;
+  }
+  return (
+    a.d === b.d &&
+    a.color === b.color &&
+    a.strokeWidth === b.strokeWidth &&
+    a.fill === b.fill &&
+    a.opacity === b.opacity
   );
 }

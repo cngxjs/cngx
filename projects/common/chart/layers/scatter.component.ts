@@ -6,6 +6,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { injectChartContext, type XScaleInput } from '../chart/chart-context';
+import { CNGX_CHART_LAYER, type CngxChartLayer, type LayerGeometry } from './chart-layer';
 
 /**
  * Reads the data-space X value of a scatter row at index `i`.
@@ -54,9 +55,12 @@ interface ScatterCircle {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
+  providers: [{ provide: CNGX_CHART_LAYER, useExisting: CngxScatter }],
   template: `
-    @for (c of circles(); track c.key) {
-      <svg:circle class="cngx-scatter" [attr.cx]="c.cx" [attr.cy]="c.cy" [attr.r]="radius()" />
+    @if (ctx.renderSvg()) {
+      @for (c of circles(); track c.key) {
+        <svg:circle class="cngx-scatter" [attr.cx]="c.cx" [attr.cy]="c.cy" [attr.r]="radius()" />
+      }
     }
   `,
   styles: [
@@ -86,13 +90,13 @@ interface ScatterCircle {
     `,
   ],
 })
-export class CngxScatter<T = unknown> {
+export class CngxScatter<T = unknown> implements CngxChartLayer {
   readonly x = input.required<ScatterXAccessor<T>>();
   readonly y = input.required<ScatterYAccessor<T>>();
   readonly radius = input<number>(3);
   readonly data = input<readonly T[] | undefined>(undefined);
 
-  private readonly ctx = injectChartContext('CngxScatter');
+  protected readonly ctx = injectChartContext('CngxScatter');
 
   private readonly resolvedData = computed<readonly T[]>(() => {
     const local = this.data();
@@ -121,6 +125,40 @@ export class CngxScatter<T = unknown> {
     },
     { equal: circlesEqual },
   );
+
+  readonly kind = computed(() => 'scatter' as const);
+
+  readonly geometry = computed<LayerGeometry>(
+    () => {
+      const r = this.radius();
+      return {
+        kind: 'scatter',
+        marks: this.circles().map((c) => ({ cx: c.cx, cy: c.cy, r, color: null })),
+      };
+    },
+    { equal: scatterGeomEqual },
+  );
+}
+
+/** @internal */
+function scatterGeomEqual(a: LayerGeometry, b: LayerGeometry): boolean {
+  if (a === b) {
+    return true;
+  }
+  if (a.kind !== 'scatter' || b.kind !== 'scatter') {
+    return false;
+  }
+  if (a.marks.length !== b.marks.length) {
+    return false;
+  }
+  for (let i = 0; i < a.marks.length; i++) {
+    const x = a.marks[i];
+    const y = b.marks[i];
+    if (x.cx !== y.cx || x.cy !== y.cy || x.r !== y.r || x.color !== y.color) {
+      return false;
+    }
+  }
+  return true;
 }
 
 /** @internal */
