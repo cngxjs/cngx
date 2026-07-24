@@ -13,6 +13,17 @@ export {
 } from './build-async-state-view';
 export { createTransitionTracker, type StatusTransition } from './transition-tracker';
 export { createVisibilityGate } from './visibility-gate';
+export {
+  type CngxLoadingConfig,
+  type CngxLoadingConfigFeature,
+  CNGX_LOADING_DEFAULTS,
+  CNGX_LOADING_CONFIG,
+  withShowDelay,
+  withMinDwell,
+  provideLoadingConfig,
+  provideLoadingConfigAt,
+  injectLoadingConfig,
+} from './loading-config';
 export { createControlledSource } from './controlled-source';
 export { CNGX_STATEFUL, type CngxStateful } from './stateful';
 export {
