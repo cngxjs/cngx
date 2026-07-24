@@ -94,7 +94,9 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
     canvas = el;
     ctx2d = el.getContext('2d');
     sizeCanvas();
-    deps.destroyRef.onDestroy(() => destroy());
+    // Teardown is owned by the renderer controller (it destroys on mode
+    // flip and on the chart's DestroyRef). Self-registering here would
+    // pile up one never-unregistered closure per svg<->canvas flip.
   }
 
   function paint(geometries: readonly LayerGeometry[]): void {

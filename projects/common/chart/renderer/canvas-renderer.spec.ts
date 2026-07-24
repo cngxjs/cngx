@@ -123,6 +123,13 @@ describe('createCanvasRenderer', () => {
     expect(canvas?.height).toBe(Math.round(120 * DPR));
   });
 
+  it('does not self-register teardown on the deps DestroyRef (controller owns it)', () => {
+    const d = deps();
+    const renderer = createCanvasRenderer(d);
+    renderer.mount(document.createElement('div'), d.ctx);
+    expect(d.destroyRef.onDestroy as ReturnType<typeof vi.fn>).not.toHaveBeenCalled();
+  });
+
   it('removes the canvas on destroy', () => {
     const renderer = createCanvasRenderer(deps());
     const host = document.createElement('div');
