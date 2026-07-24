@@ -167,6 +167,8 @@ readonly recycler = injectRecycler({
 readonly visible = this.recycler.sliced(computed(() => this.state.data() ?? []));
 ```
 
+The skeleton is gated through `createVisibilityGate` from `@cngx/core/utils`. `skeletonDelay` is the recycler's per-instance override of `CNGX_LOADING_CONFIG.showDelay`; omit it and the app-wide `provideLoadingConfig(withShowDelay(...))` default applies.
+
 ```html
 <div class="scroll" [attr.aria-busy]="recycler.isLoading() || recycler.isRefreshing() || null">
   <div [style.paddingTop.px]="recycler.offsetBefore()"

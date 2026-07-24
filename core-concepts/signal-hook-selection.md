@@ -24,7 +24,7 @@ For the *why* behind each pattern - equality functions, untracked rationale, tra
 |`signal(initial)`|Owned writable state.|Private backing state where the directive is the sole writer.|Any value a `computed()` could derive.|
 |`computed(fn)`|Derive a value.|Every derived value - ARIA flags, view models, controlled+uncontrolled merges, equality-keyed lists.|Side effects. Service calls. DOM writes.|
 |`linkedSignal({ source, computation, equal })`|Track a transition; remember the latest result across source changes.|Status pairs (`{ current, previous }`), tab-visibility maps, expanded-state with auto-reset on count change.|Plain derivation (use `computed`). Effects that *write* this signal (infinite loop).|
-|`effect(fn, { onCleanup })`|Imperative side effect that leaves the reactive graph.|DOM measurement, focus, transition bridges, listener install + teardown.|`ngOnInit` (NG0203). Writing signals. Unwrapped service calls.|
+|`effect(fn, { onCleanup })`|Imperative side effect that leaves the reactive graph.|DOM measurement, focus, transition bridges, listener install + teardown, busy-envelope measurement (`createLatencyProbe`).|`ngOnInit` (NG0203). Writing signals (except a documented measurement - see Signal-First Internals). Unwrapped service calls.|
 |`afterNextRender(fn)`|One-shot post-binding callback. Outside the reactive graph.|Dev-mode binding checks, post-mount init that needs `viewChild` resolved.|Anywhere you need re-fire on input changes.|
 |`afterRender(fn)` / `afterRenderEffect(fn)`|Reactive DOM read after every render.|Geometry sync, host-element measurement that must follow layout.|Hot paths without a guard - fires every CD cycle.|
 

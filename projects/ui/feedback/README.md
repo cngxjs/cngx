@@ -27,6 +27,8 @@ Two patterns make the whole feedback layer feel cohesive:
 
 Toast, banner, and alerter services are **not** `providedIn: 'root'`. Provide them via `provideFeedback(...)` in your application bootstrap, and render the outlets once at the application root. This is intentional - feedback presentation is application-level, not library-level, and forcing the consumer to opt in keeps a tree-shake-friendly footprint when only a subset of surfaces is in use.
 
+Loading timing (the flash-suppression `showDelay` / `minDwell` shared by every loading surface) lives in the `CNGX_LOADING_CONFIG` cascade in `@cngx/core/utils`. `provideFeedback(withLoadingDefaults({ delay, minDuration }))` still writes that token as a back-compat wrapper (`delay` maps to `showDelay`, `minDuration` to `minDwell`), but it replaces the whole config and resets `spinnerVsSkeletonCutoff`. For new apps prefer `provideLoadingConfig(withShowDelay(...), withMinDwell(...), withSpinnerVsSkeletonCutoff(...))` from `@cngx/core/utils` as the canonical loading-timing knob.
+
 ## See also
 
 - Outlet components, services, bridge directives, slot directives, and `with*` config features in the **API** tab.

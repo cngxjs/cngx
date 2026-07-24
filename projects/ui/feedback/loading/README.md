@@ -144,7 +144,7 @@ readonly progress = computed(() => this.uploadState().progress() ?? 0);
 
 ## Timing Control
 
-Both `CngxLoadingIndicator` and `CngxLoadingOverlay` support smart timing:
+Both `CngxLoadingIndicator` and `CngxLoadingOverlay` support smart timing, and both debounce their visibility through `createVisibilityGate` from `@cngx/core/utils`.
 
 ### Delay
 
@@ -152,13 +152,27 @@ Both `CngxLoadingIndicator` and `CngxLoadingOverlay` support smart timing:
 [delay]="200"  // Don't show spinner if operation completes in < 200ms
 ```
 
-### Minimum Duration
+### Minimum Dwell
 
 ```typescript
-[minDuration]="500"  // Keep spinner visible for at least 500ms even if data arrives early
+[minDwell]="500"  // Keep spinner visible for at least 500ms even if data arrives early
 ```
 
+`[minDuration]` is the deprecated alias for `[minDwell]`; it still takes precedence when set, but prefer `[minDwell]` in new code.
+
 These prevent the "flash" effect when operations are very fast or very slow.
+
+### Where the defaults come from
+
+`[delay]` and `[minDwell]` are **per-instance overrides**. Their defaults come from the app-wide `CNGX_LOADING_CONFIG` cascade in `@cngx/core/utils` (`showDelay` 120, `minDwell` 400):
+
+```typescript
+bootstrapApplication(AppComponent, {
+  providers: [provideLoadingConfig(withShowDelay(200), withMinDwell(600))],
+});
+```
+
+Set app-wide timing there once and every loading surface (indicator, overlay, async-container, skeleton, recycler) picks it up; reach for the inputs only when one instance needs to differ. `provideFeedback(withLoadingDefaults({ delay, minDuration }))` writes the same token as a back-compat wrapper - prefer `provideLoadingConfig(...)` for new apps.
 
 
 

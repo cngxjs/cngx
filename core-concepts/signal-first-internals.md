@@ -134,6 +134,15 @@ Effects are sharp tools. The non-negotiable rules:
 
     See `CngxToastOn`, `CngxAlertOn`, `CngxBannerOn`. Do not pair it with fake timers and `whenStable`.
 
+### Sanctioned write-in-effect: measurement
+
+Rule 2 says an effect that writes a signal is almost always wrong. The exceptions are the cases where the written value is **not** derivable from other signals and must be captured imperatively at the moment an event happens:
+
+- The **async-container announcement** writes a message string from its transition-tracker effect. It stays loop-free because the tracker's `equal` short-circuits identical-status re-runs.
+- **`createLatencyProbe`** (in `@cngx/core/utils`) writes `lastDuration` - the wall-clock length of a busy window - from an effect. The value depends on the clock at the busy edge, so it cannot be a `computed`. It stays loop-free by construction: the effect tracks only the busy source, reads the clock in `untracked()`, and never reads `lastDuration` back.
+
+Both are measurement or event-capture side effects, not state synchronization. If you cannot name the signal the write mirrors, and the value depends on the wall clock or an external event, it is a measurement; otherwise rule 2 applies and you want `computed` or `linkedSignal`.
+
 ### Cleanup pattern
 
 Real cleanup pattern from `projects/forms/select/shared/ad-activation-dispatcher.ts`:

@@ -886,3 +886,24 @@ handleUpload(files: File[]): void {
 | `[cngxPaginate]` | `isBusy` blocks navigation, disabled paginator |
 | `[cngxFileDrop]` | `uploading`, `uploadProgress`, `uploadError`, blocks drop/browse |
 | `injectSmartDataSource` | `isLoading`, `isRefreshing`, `error`, `isEmpty`, `filteredCount` |
+
+The loading surfaces above (skeleton, overlay, async-container refresh bar, recycler skeleton) debounce their show/hide through the `CNGX_LOADING_CONFIG` cascade in `@cngx/core/utils`: `provideLoadingConfig(withShowDelay(...), withMinDwell(...))` suppresses the flash on fast operations app-wide, with per-instance `[delay]` / `[minDwell]` / `[skeletonDelay]` overrides. See the Async State Machine chapter for the full timing model.
+
+## Latency probe
+
+`injectLatencyProbe()` measures how long the app's aggregate busy window lasted, so an app-shell indicator can pick spinner-vs-skeleton from observed latency before the next load renders.
+
+It bridges `CngxAsyncRegistry.isAnythingLoading` (see the async-registry section) into a `createLatencyProbe` from `@cngx/core/utils`:
+
+```typescript
+const probe = injectLatencyProbe();
+// probe.lastDuration(): ms of the last completed busy window, or undefined
+// probe.isBusy():       true while anything is loading
+
+const showSkeleton = computed(() => {
+  const last = probe.lastDuration();
+  return last !== undefined && last > injectLoadingConfig().spinnerVsSkeletonCutoff;
+});
+```
+
+The probe measures the **busy-envelope**: from the first operation starting to the last finishing, not any single operation. When no registry is provided (`provideAsyncRegistry()` not called), the probe is simply never busy and never throws. For a single state rather than the whole app, call `createLatencyProbe(() => state.isBusy())` directly with any boolean-busy source.

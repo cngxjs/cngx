@@ -39,6 +39,7 @@ export class ExampleComponent {
 - **Repetition:** Repeats placeholder template via `[count]` input
 - **Shimmer animation:** Optional shimmer effect that respects `prefers-reduced-motion`
 - **Async state integration:** Automatically hides when data arrives (via `[state]` input)
+- **Flash suppression:** Debounces its first-load placeholder through `createVisibilityGate`, so a load faster than `CNGX_LOADING_CONFIG.showDelay` never flashes a skeleton and a shown skeleton stays for at least `minDwell`
 - **DOM efficiency:** Uses `display: contents` - no wrapper overhead
 - **ARIA:** Sets `aria-busy="true"` while loading
 
@@ -55,6 +56,7 @@ The component is composable with `CngxSkeletonPlaceholder` directive (content pr
 `CngxSkeletonContainer` composes:
 
 - **Async state integration:** Reads from `CngxAsyncState<T>` via `state()` input
+- **Visibility gate:** `createVisibilityGate` from `@cngx/core/utils` for the show-delay / min-dwell flash suppression
 - **Placeholder projection:** `CngxSkeletonPlaceholder` directive for template marking
 - **Reduced motion detection:** Inline `matchMedia` listener for `prefers-reduced-motion`
 
