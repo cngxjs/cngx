@@ -5,10 +5,11 @@ import {
   computed,
   contentChild,
   contentChildren,
+  DestroyRef,
+  ElementRef,
   inject,
   input,
   isDevMode,
-  signal,
   type Signal,
   ViewEncapsulation,
 } from '@angular/core';
@@ -35,7 +36,11 @@ import {
   type XScaleInput,
 } from './chart-context';
 import { computeChartSummary } from './summary';
-import { dimensionsEqual, sameNumberArr } from './equal-helpers';
+import { dimensionsEqual, sameItemsArr, sameNumberArr } from './equal-helpers';
+import { CNGX_CHART_LAYER, type LayerGeometry } from '../layers/chart-layer';
+import { createChartRendererController } from '../renderer/chart-renderer-controller';
+import { CNGX_CHART_RENDERER_FACTORY } from '../renderer/renderer-factory';
+import { CNGX_CHART_RENDERER_THRESHOLD } from '../renderer/renderer-threshold';
 
 /** @internal */
 const NOOP_SCALE: ScaleFn<XScaleInput> = () => 0;
@@ -306,8 +311,13 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
   readonly state = input<CngxAsyncState<readonly T[]> | undefined>(undefined);
 
   private readonly resize = inject(CngxResizeObserver, { host: true });
+  private readonly hostEl = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly rendererFactory = inject(CNGX_CHART_RENDERER_FACTORY);
+  private readonly threshold = inject(CNGX_CHART_RENDERER_THRESHOLD);
   private readonly axes = contentChildren(CngxAxis, { descendants: true });
   private readonly thresholds = contentChildren(CngxThreshold, { descendants: true });
+  private readonly layers = contentChildren(CNGX_CHART_LAYER, { descendants: true });
   protected readonly i18n = inject(CNGX_CHART_I18N);
   protected readonly dataTableId = nextUid('cngx-chart-data-table');
 
@@ -364,6 +374,18 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
   });
 
   constructor() {
+    // The controller owns the mount / destroy / paint reactive lifecycle;
+    // its effects and teardown are held by this injection context's
+    // DestroyRef, so the shell keeps no rendering brain and no handle.
+    createChartRendererController({
+      host: this.hostEl.nativeElement,
+      ctx: this,
+      mode: this.renderMode,
+      geometries: this.geometries,
+      factory: this.rendererFactory,
+      destroyRef: this.destroyRef,
+    });
+
     if (isDevMode()) {
       afterNextRender(() => {
         if (this.summaryAccessor() !== DEFAULT_SUMMARY_ACCESSOR) {
@@ -407,12 +429,33 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
   );
 
   /**
-   * SVG-output gate published on {@link CngxChartContext}. Held `true` so
-   * every layer atom self-renders its SVG output - visual result is
-   * bit-identical to before the geometry contract landed. The canvas
-   * auto-switch derives this from the active render mode.
+   * Render backend: `'canvas'` once the datapoint count exceeds the
+   * configured threshold, `'svg'` otherwise. The threshold is a DI
+   * constant ({@link CNGX_CHART_RENDERER_THRESHOLD}, default `500`),
+   * resolved once at construction; a consumer tunes it via
+   * `withChartRendererThreshold(...)` or replaces the whole factory.
    */
-  readonly renderSvg: Signal<boolean> = signal(true).asReadonly();
+  readonly renderMode = computed<'svg' | 'canvas'>(() =>
+    this.dataLength() > this.threshold ? 'canvas' : 'svg',
+  );
+
+  /**
+   * SVG-output gate published on {@link CngxChartContext}. Derived from
+   * {@link renderMode} - layer atoms self-render their SVG only in SVG
+   * mode. Single source of truth; the renderer never writes it.
+   */
+  readonly renderSvg: Signal<boolean> = computed(() => this.renderMode() === 'svg');
+
+  /**
+   * Aggregate layer geometries the Canvas backend paints. Element-wise
+   * guarded: an unchanged layer contributes a reference-stable geometry
+   * object (its own `equal` fn holds), so the mapped array is
+   * element-wise-equal and the paint cascade short-circuits.
+   */
+  protected readonly geometries = computed<readonly LayerGeometry[]>(
+    () => this.layers().map((l) => l.geometry()),
+    { equal: sameItemsArr },
+  );
 
   protected readonly viewBox = computed(() => {
     const { width, height } = this.dimensions();
