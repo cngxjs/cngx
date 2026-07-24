@@ -26,6 +26,7 @@ export {
   createSignificantChangeTracker,
   type CngxSignificantChange,
 } from './chart/significant-change';
+export { CngxChartAnnouncer } from './chart/chart-announcer.component';
 export {
   CNGX_CHART_CONTEXT,
   type CngxChartContext,
