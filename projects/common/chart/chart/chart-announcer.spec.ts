@@ -49,6 +49,13 @@ describe('CngxChartAnnouncer', () => {
     expect(assertive().textContent?.trim()).toBe('');
   });
 
+  it('ships the sr-only rule locally so it hides without the global stylesheet', () => {
+    // The component's own styles must clip the regions - no dependency on a
+    // globally-loaded utilities.css.
+    expect(getComputedStyle(polite()).position).toBe('absolute');
+    expect(getComputedStyle(assertive()).width).toBe('1px');
+  });
+
   it('voices a trend flip in the polite region only', () => {
     fixture.componentInstance.sig.set({ kind: 'trend-flip', from: 'flat', to: 'up' });
     fixture.detectChanges();

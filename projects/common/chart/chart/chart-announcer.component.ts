@@ -45,6 +45,25 @@ import { type CngxChart } from './chart.component';
       assertiveAnnouncement()
     }}</span>
   `,
+  // Ship the visually-hidden rule locally (emulated encapsulation scopes it
+  // to these spans) so the announcer stays self-contained even when the
+  // global @cngx/themes utilities.css is not loaded - an SR-only region
+  // must never fall back to visible text.
+  styles: [
+    `
+      .cngx-sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+    `,
+  ],
 })
 export class CngxChartAnnouncer {
   /** The chart instance whose `significantChange()` this announcer voices. */
