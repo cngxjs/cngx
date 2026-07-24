@@ -2,9 +2,9 @@ import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 
-import { createVisibilityTimer } from './visibility-timer';
+import { createVisibilityGate } from './visibility-gate';
 
-describe('createVisibilityTimer', () => {
+describe('createVisibilityGate', () => {
   beforeEach(() => {
     vi.useFakeTimers();
   });
@@ -13,18 +13,18 @@ describe('createVisibilityTimer', () => {
     vi.useRealTimers();
   });
 
-  function setup(opts: { delay?: number; minDuration?: number } = {}) {
+  function setup(opts: { delay?: number; minDwell?: number } = {}) {
     const isActive = signal(false);
     const delay = signal(opts.delay ?? 200);
-    const minDuration = signal(opts.minDuration ?? 500);
+    const minDwell = signal(opts.minDwell ?? 500);
 
-    let visible!: ReturnType<typeof createVisibilityTimer>;
+    let visible!: ReturnType<typeof createVisibilityGate>;
     TestBed.runInInjectionContext(() => {
-      visible = createVisibilityTimer(isActive, delay, minDuration);
+      visible = createVisibilityGate(isActive, delay, minDwell);
     });
     TestBed.flushEffects();
 
-    return { isActive, delay, minDuration, visible };
+    return { isActive, delay, minDwell, visible };
   }
 
   it('should not be visible initially when isActive is false', () => {
@@ -65,8 +65,8 @@ describe('createVisibilityTimer', () => {
     expect(visible()).toBe(false);
   });
 
-  it('should stay visible for minDuration even if isActive becomes false quickly', () => {
-    const { isActive, visible } = setup({ delay: 200, minDuration: 500 });
+  it('should stay visible for minDwell even if isActive becomes false quickly', () => {
+    const { isActive, visible } = setup({ delay: 200, minDwell: 500 });
 
     isActive.set(true);
     TestBed.flushEffects();
@@ -77,13 +77,13 @@ describe('createVisibilityTimer', () => {
     isActive.set(false);
     TestBed.flushEffects();
 
-    // Still visible — minDuration not elapsed
+    // Still visible — minDwell not elapsed
     vi.advanceTimersByTime(300);
     expect(visible()).toBe(true);
   });
 
-  it('should hide after minDuration when isActive is false', () => {
-    const { isActive, visible } = setup({ delay: 200, minDuration: 500 });
+  it('should hide after minDwell when isActive is false', () => {
+    const { isActive, visible } = setup({ delay: 200, minDwell: 500 });
 
     isActive.set(true);
     TestBed.flushEffects();
@@ -97,21 +97,21 @@ describe('createVisibilityTimer', () => {
     expect(visible()).toBe(false);
   });
 
-  it('should remain visible if isActive is still true after minDuration', () => {
-    const { isActive, visible } = setup({ delay: 200, minDuration: 500 });
+  it('should remain visible if isActive is still true after minDwell', () => {
+    const { isActive, visible } = setup({ delay: 200, minDwell: 500 });
 
     isActive.set(true);
     TestBed.flushEffects();
     vi.advanceTimersByTime(200);
     expect(visible()).toBe(true);
 
-    // Do not deactivate — wait for minDuration to pass
+    // Do not deactivate — wait for minDwell to pass
     vi.advanceTimersByTime(500);
     expect(visible()).toBe(true);
   });
 
-  it('should hide immediately after minDuration if isActive was already false', () => {
-    const { isActive, visible } = setup({ delay: 100, minDuration: 300 });
+  it('should hide immediately after minDwell if isActive was already false', () => {
+    const { isActive, visible } = setup({ delay: 100, minDwell: 300 });
 
     isActive.set(true);
     TestBed.flushEffects();
@@ -121,13 +121,13 @@ describe('createVisibilityTimer', () => {
     isActive.set(false);
     TestBed.flushEffects();
 
-    // minDuration timer fires and checks isActive => false => hides
+    // minDwell timer fires and checks isActive => false => hides
     vi.advanceTimersByTime(300);
     expect(visible()).toBe(false);
   });
 
   it('should respect zero delay', () => {
-    const { isActive, visible } = setup({ delay: 0, minDuration: 500 });
+    const { isActive, visible } = setup({ delay: 0, minDwell: 500 });
 
     isActive.set(true);
     TestBed.flushEffects();

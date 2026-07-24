@@ -7,6 +7,7 @@ import {
 } from '@angular/core';
 
 import { CNGX_CLOSE_ICON } from '@cngx/common/interactive';
+import { CNGX_LOADING_CONFIG, CNGX_LOADING_DEFAULTS } from '@cngx/core/utils';
 
 import type { AlertSeverity } from '../alert/alert';
 import { CngxAlerter } from '../alert/alerter.service';
@@ -26,10 +27,20 @@ export interface FeedbackConfig {
   /** Custom icon components per alert severity. Replaces built-in SVG icons. */
   alertIcons?: Partial<Record<AlertSeverity, Type<unknown>>>;
 
-  /** Default delay in ms before showing loading indicators. */
+  /**
+   * Default delay in ms before showing loading indicators.
+   *
+   * @deprecated Use `provideLoadingConfig(withShowDelay(...))` from `@cngx/core/utils`.
+   * Kept one release as a forwarder; `withLoadingDefaults` still writes it.
+   */
   loadingDelay?: number;
 
-  /** Default minimum display time in ms for loading indicators. */
+  /**
+   * Default minimum display time in ms for loading indicators.
+   *
+   * @deprecated Use `provideLoadingConfig(withMinDwell(...))` from `@cngx/core/utils`.
+   * Kept one release as a forwarder; `withLoadingDefaults` still writes it.
+   */
   loadingMinDuration?: number;
 
   /** Custom close/dismiss icon component - replaces default X SVG globally. */
@@ -155,7 +166,18 @@ export function withAlertIcons(
 /**
  * Set default timing for all loading indicators and overlays.
  *
- * Individual components can still override via their `[delay]` and `[minDuration]` inputs.
+ * Forwards into the Level-1 `CNGX_LOADING_CONFIG` cascade so the gated
+ * surfaces (indicator, overlay, async-container, skeleton) all read the same
+ * defaults. Prefer `provideLoadingConfig(withShowDelay(...), withMinDwell(...))`
+ * from `@cngx/core/utils` directly; this feature is kept for back-compat.
+ *
+ * Note: this forwarder provides a full `CNGX_LOADING_CONFIG` value, so under
+ * DI last-wins it replaces the whole config - including `spinnerVsSkeletonCutoff`,
+ * which resets to its default. Set the cutoff through
+ * `provideLoadingConfig(withSpinnerVsSkeletonCutoff(...))` rather than combining
+ * it with this back-compat forwarder.
+ *
+ * Individual components can still override via their `[delay]` and `[minDwell]` inputs.
  *
  * ```ts
  * provideFeedback(withLoadingDefaults({ delay: 300, minDuration: 600 }))
@@ -173,6 +195,16 @@ export function withLoadingDefaults(opts: {
       loadingDelay: opts.delay ?? c.loadingDelay,
       loadingMinDuration: opts.minDuration ?? c.loadingMinDuration,
     }),
+    _providers: [
+      {
+        provide: CNGX_LOADING_CONFIG,
+        useValue: {
+          showDelay: opts.delay ?? CNGX_LOADING_DEFAULTS.showDelay,
+          minDwell: opts.minDuration ?? CNGX_LOADING_DEFAULTS.minDwell,
+          spinnerVsSkeletonCutoff: CNGX_LOADING_DEFAULTS.spinnerVsSkeletonCutoff,
+        },
+      },
+    ],
   };
 }
 

@@ -11,11 +11,9 @@ import {
   viewChild,
   ViewEncapsulation,
 } from '@angular/core';
-import type { CngxAsyncState } from '@cngx/core/utils';
+import { createVisibilityGate, injectLoadingConfig, type CngxAsyncState } from '@cngx/core/utils';
 
-import { CNGX_FEEDBACK_CONFIG } from '../config/feedback-config';
 import { CngxLoadingIndicator } from './loading-indicator';
-import { createVisibilityTimer } from './visibility-timer';
 
 /**
  * Loading overlay - content container that blocks interaction while loading.
@@ -93,7 +91,7 @@ import { createVisibilityTimer } from './visibility-timer';
 })
 export class CngxLoadingOverlay {
   private readonly doc = inject(DOCUMENT);
-  private readonly config = inject(CNGX_FEEDBACK_CONFIG, { optional: true });
+  private readonly loadingConfig = injectLoadingConfig();
 
   /** Bind an async state - shows overlay when `isBusy()`. */
   readonly state = input<CngxAsyncState<unknown> | undefined>(undefined);
@@ -104,11 +102,17 @@ export class CngxLoadingOverlay {
   /** Screen reader label for the spinner. */
   readonly label = input<string>('Loading');
 
-  /** Delay in ms before showing the overlay. Falls back to global config, then 200ms. */
-  readonly delay = input<number>(this.config?.loadingDelay ?? 200);
+  /** Delay in ms before showing the overlay. Defaults to `CNGX_LOADING_CONFIG.showDelay`. */
+  readonly delay = input<number>(this.loadingConfig.showDelay);
 
-  /** Minimum display time in ms once visible. Falls back to global config, then 500ms. */
-  readonly minDuration = input<number>(this.config?.loadingMinDuration ?? 500);
+  /** Minimum display time in ms once visible. Defaults to `CNGX_LOADING_CONFIG.minDwell`. */
+  readonly minDwell = input<number>(this.loadingConfig.minDwell);
+
+  /**
+   * @deprecated Use `minDwell`. Kept one release for migration; when set, it
+   * takes precedence over `minDwell`.
+   */
+  readonly minDuration = input<number | undefined>(undefined);
 
   /**
    * When `true`, the overlay only activates during the first load (`isFirstLoad()`),
@@ -126,8 +130,11 @@ export class CngxLoadingOverlay {
     return this.loading();
   });
 
-  /** @internal - debounced visibility via shared timer factory. */
-  protected readonly visible = createVisibilityTimer(this.isActive, this.delay, this.minDuration);
+  /** @internal - deprecated `minDuration` alias forwards to `minDwell`. */
+  protected readonly effectiveMinDwell = computed(() => this.minDuration() ?? this.minDwell());
+
+  /** @internal - debounced visibility via shared gate factory. */
+  protected readonly visible = createVisibilityGate(this.isActive, this.delay, this.effectiveMinDwell);
 
   private readonly savedFocus = signal<HTMLElement | null>(null);
 

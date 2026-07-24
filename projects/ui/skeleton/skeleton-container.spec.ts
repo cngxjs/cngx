@@ -1,11 +1,17 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { CngxSkeletonContainer } from './skeleton-container';
 import { CngxSkeletonPlaceholder } from './skeleton-placeholder';
 
 @Component({
   template: `
-    <cngx-skeleton [loading]="loading()" [count]="count()">
+    <cngx-skeleton
+      [loading]="loading()"
+      [count]="count()"
+      [showDelay]="showDelay()"
+      [minDwell]="minDwell()"
+    >
       <ng-template cngxSkeletonPlaceholder let-i let-last="last">
         <div class="placeholder" [attr.data-index]="i" [attr.data-last]="last"></div>
       </ng-template>
@@ -17,6 +23,10 @@ import { CngxSkeletonPlaceholder } from './skeleton-placeholder';
 class Host {
   readonly loading = signal(true);
   readonly count = signal(3);
+  // 0/0 keeps existing behavioural tests effectively synchronous (one macrotask,
+  // flipped via advanceTimersByTime). Flash-suppression tests override these.
+  readonly showDelay = signal(0);
+  readonly minDwell = signal(0);
 }
 
 function setup(overrides: { loading?: boolean; count?: number } = {}) {
@@ -29,6 +39,9 @@ function setup(overrides: { loading?: boolean; count?: number } = {}) {
   }
   fixture.detectChanges();
   TestBed.flushEffects();
+  // Fire the 0ms gate timers so the placeholder reflects the loading input.
+  vi.advanceTimersByTime(1);
+  fixture.detectChanges();
   const el = fixture.nativeElement as HTMLElement;
   return { fixture, el };
 }
@@ -36,9 +49,19 @@ function setup(overrides: { loading?: boolean; count?: number } = {}) {
 function flush(fixture: ReturnType<typeof TestBed.createComponent>): void {
   fixture.detectChanges();
   TestBed.flushEffects();
+  vi.advanceTimersByTime(1);
+  fixture.detectChanges();
 }
 
 describe('CngxSkeletonContainer', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it('should render placeholders when loading', () => {
     const { el } = setup({ loading: true, count: 3 });
     const placeholders = el.querySelectorAll('.placeholder');
@@ -94,5 +117,75 @@ describe('CngxSkeletonContainer', () => {
     const { el } = setup();
     const host = el.querySelector('cngx-skeleton') as HTMLElement;
     expect(host?.style.display).toBe('contents');
+  });
+
+  describe('flash suppression', () => {
+    it('never renders the placeholder for a sub-showDelay first load', () => {
+      const fixture = TestBed.createComponent(Host);
+      const host = fixture.componentInstance;
+      host.showDelay.set(120);
+      host.minDwell.set(400);
+      host.loading.set(true);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      // 100ms < 120ms showDelay: placeholder stays suppressed, aria-busy stays off.
+      vi.advanceTimersByTime(100);
+      fixture.detectChanges();
+      const el = fixture.nativeElement as HTMLElement;
+      expect(el.querySelectorAll('.placeholder').length).toBe(0);
+      expect(el.querySelector('cngx-skeleton')?.getAttribute('aria-busy')).toBeNull();
+
+      // load resolves before the threshold: never flashes.
+      host.loading.set(false);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      vi.advanceTimersByTime(400);
+      fixture.detectChanges();
+      expect(el.querySelectorAll('.placeholder').length).toBe(0);
+    });
+
+    it('renders after showDelay and holds for minDwell', () => {
+      const fixture = TestBed.createComponent(Host);
+      const host = fixture.componentInstance;
+      host.showDelay.set(120);
+      host.minDwell.set(400);
+      host.count.set(2);
+      host.loading.set(true);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      vi.advanceTimersByTime(120);
+      fixture.detectChanges();
+      const el = fixture.nativeElement as HTMLElement;
+      expect(el.querySelectorAll('.placeholder').length).toBe(2);
+      expect(el.querySelector('cngx-skeleton')?.getAttribute('aria-busy')).toBe('true');
+
+      // loading stops immediately, but the placeholder holds for minDwell.
+      host.loading.set(false);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      vi.advanceTimersByTime(200);
+      fixture.detectChanges();
+      expect(el.querySelectorAll('.placeholder').length).toBe(2);
+
+      vi.advanceTimersByTime(200);
+      fixture.detectChanges();
+      expect(el.querySelectorAll('.placeholder').length).toBe(0);
+    });
+
+    it('aria-busy follows the gated value, not the raw loading input', () => {
+      const fixture = TestBed.createComponent(Host);
+      const host = fixture.componentInstance;
+      host.showDelay.set(120);
+      host.loading.set(true);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      // raw loading is true, but the gate has not opened: aria-busy must be off.
+      vi.advanceTimersByTime(50);
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('cngx-skeleton')?.getAttribute('aria-busy')).toBeNull();
+    });
   });
 });
