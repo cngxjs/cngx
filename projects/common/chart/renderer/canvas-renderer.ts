@@ -2,14 +2,20 @@ import { type CngxChartContext } from '../chart/chart-context';
 import { type LayerGeometry } from '../layers/chart-layer';
 import { type ChartRendererDeps, type CngxChartRenderer } from './chart-renderer';
 
-/** @internal Default CSS custom property per layer kind when geometry.color is null. */
-const KIND_VARS: Record<LayerGeometry['kind'], string> = {
-  line: '--cngx-chart-primary',
-  area: '--cngx-chart-primary',
-  bar: '--cngx-chart-primary',
-  scatter: '--cngx-chart-primary',
-  threshold: '--cngx-chart-danger',
-  band: '--cngx-chart-secondary',
+/**
+ * @internal Per-kind CSS custom-property fallback chain, resolved when a
+ * geometry emits `color: null`. Mirrors each layer atom's SVG cascade
+ * (`var(--cngx-<kind>-*, var(--cngx-chart-*, currentColor))`) so a
+ * consumer's per-atom theming survives the SVG->Canvas crossover instead
+ * of collapsing to the three chart-family colors.
+ */
+const KIND_VARS: Record<LayerGeometry['kind'], readonly string[]> = {
+  line: ['--cngx-line-color', '--cngx-chart-primary'],
+  area: ['--cngx-area-fill', '--cngx-chart-primary'],
+  bar: ['--cngx-bar-color', '--cngx-chart-primary'],
+  scatter: ['--cngx-scatter-color', '--cngx-chart-primary'],
+  threshold: ['--cngx-threshold-color', '--cngx-chart-danger'],
+  band: ['--cngx-band-color', '--cngx-chart-secondary'],
 };
 
 /** @internal */
@@ -43,22 +49,36 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
   let ctx2d: CanvasRenderingContext2D | null = null;
   const colorCache = new Map<string, string>();
 
-  function resolveColor(name: string): string {
-    if (!name.startsWith('--')) {
-      return name;
-    }
-    const cached = colorCache.get(name);
-    if (cached !== undefined) {
-      return cached;
-    }
-    const raw = hostEl ? getComputedStyle(hostEl).getPropertyValue(name).trim() : '';
-    const resolved = raw || 'currentColor';
-    colorCache.set(name, resolved);
-    return resolved;
+  function readVar(name: string): string {
+    return hostEl ? getComputedStyle(hostEl).getPropertyValue(name).trim() : '';
   }
 
   function colorOf(color: string | null, kind: LayerGeometry['kind']): string {
-    return resolveColor(color ?? KIND_VARS[kind]);
+    // An explicit literal color (e.g. [cngxLine] [color]="'#f00'") passes
+    // through untouched - no var resolution, no cache.
+    if (color !== null && !color.startsWith('--')) {
+      return color;
+    }
+    const key = color ?? `@${kind}`;
+    const cached = colorCache.get(key);
+    if (cached !== undefined) {
+      return cached;
+    }
+    let resolved = 'currentColor';
+    if (color !== null) {
+      resolved = readVar(color) || 'currentColor';
+    } else {
+      // Walk the per-atom -> family fallback chain, first hit wins.
+      for (const name of KIND_VARS[kind]) {
+        const value = readVar(name);
+        if (value) {
+          resolved = value;
+          break;
+        }
+      }
+    }
+    colorCache.set(key, resolved);
+    return resolved;
   }
 
   function strokeWidthOf(sw: number | string | null): number {

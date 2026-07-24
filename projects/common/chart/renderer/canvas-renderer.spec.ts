@@ -140,21 +140,41 @@ describe('createCanvasRenderer', () => {
     expect(host.querySelector('canvas')).toBeNull();
   });
 
-  it('reads each CSS var once across paints, re-reads after invalidateColorCache', () => {
+  it('resolves colors once and caches across paints, re-reads after invalidateColorCache', () => {
     const gcs = vi.spyOn(window, 'getComputedStyle');
     const renderer = createCanvasRenderer(deps());
     const host = document.createElement('div');
     renderer.mount(host, deps().ctx);
 
     renderer.paint([LINE_GEOM]);
+    const afterFirst = gcs.mock.calls.length;
+    expect(afterFirst).toBeGreaterThan(0);
+
     renderer.paint([LINE_GEOM]);
     renderer.paint([LINE_GEOM]);
-    // One CSS var (--cngx-chart-primary), resolved once, then cached.
-    expect(gcs).toHaveBeenCalledTimes(1);
+    expect(gcs.mock.calls.length).toBe(afterFirst); // cached, no fresh reads
 
     renderer.invalidateColorCache?.();
     renderer.paint([LINE_GEOM]);
-    expect(gcs).toHaveBeenCalledTimes(2);
+    expect(gcs.mock.calls.length).toBeGreaterThan(afterFirst); // re-read
+  });
+
+  it('walks the per-atom var chain before the family var (theming parity)', () => {
+    const names: string[] = [];
+    vi.spyOn(window, 'getComputedStyle').mockReturnValue({
+      getPropertyValue: (n: string) => {
+        names.push(n);
+        return '';
+      },
+    } as unknown as CSSStyleDeclaration);
+    const renderer = createCanvasRenderer(deps());
+    const host = document.createElement('div');
+    renderer.mount(host, deps().ctx);
+
+    renderer.paint([BAR_GEOM]);
+    expect(names).toContain('--cngx-bar-color');
+    expect(names).toContain('--cngx-chart-primary');
+    expect(names.indexOf('--cngx-bar-color')).toBeLessThan(names.indexOf('--cngx-chart-primary'));
   });
 
   it('never exposes a writable seat on ctx.renderSvg', () => {
