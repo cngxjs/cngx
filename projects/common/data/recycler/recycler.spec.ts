@@ -191,10 +191,9 @@ describe('injectRecycler', () => {
 
   describe('showSkeleton with delay', () => {
     it('should show skeleton one macrotask after activation when delay=0', () => {
-      // Since the recycler moved from the synchronous createDelayedFlag passthrough
-      // to the shared createVisibilityGate, even skeletonDelay=0 defers the flag by
-      // one macrotask (the gate always setTimeout()s). Same emitted value, shifted
-      // one tick - pinned here rather than asserted as synchronous equality.
+      // createVisibilityGate always setTimeout()s, so even skeletonDelay=0 defers the
+      // flag by one macrotask instead of flipping synchronously. Same emitted value,
+      // shifted one tick - pinned here rather than asserted as synchronous equality.
       vi.useFakeTimers();
 
       const mockState = createMockState();
