@@ -12,6 +12,7 @@ export {
   type AsyncStateViewSources,
 } from './build-async-state-view';
 export { createTransitionTracker, type StatusTransition } from './transition-tracker';
+export { createVisibilityGate } from './visibility-gate';
 export { createControlledSource } from './controlled-source';
 export { CNGX_STATEFUL, type CngxStateful } from './stateful';
 export {
