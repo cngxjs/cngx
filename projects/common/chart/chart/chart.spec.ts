@@ -12,7 +12,7 @@ import { By } from '@angular/platform-browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CngxChart } from './chart.component';
 import { CNGX_CHART_CONTEXT, type CngxChartContext } from './chart-context';
-import { CngxChartEmpty, CngxChartError } from './template-slots';
+import { CngxChartConnectionError, CngxChartEmpty, CngxChartError } from './template-slots';
 import { CngxAxis } from '../axis/axis.component';
 import { CngxLine } from '../layers/line.component';
 import { CngxBar } from '../layers/bar.component';
@@ -531,5 +531,114 @@ describe('CngxChart — auto-switch backend (Phase 3)', () => {
     fixture.detectChanges();
     TestBed.tick();
     expect(runs).toBeGreaterThan(base);
+  });
+});
+
+describe('CngxChart — [connectionState] envelope (Phase 4)', () => {
+  beforeEach(() => vi.stubGlobal('ResizeObserver', ResizeObserverMock));
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('shows no connection overlay when [connectionState] is unbound', () => {
+    @Component({
+      standalone: true,
+      imports: [CngxChart],
+      template: `<cngx-chart [data]="[1, 2, 3]" [width]="200" [height]="100" data-testid="chart" />`,
+    })
+    class Host {}
+    TestBed.configureTestingModule({ imports: [Host] });
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+    const chart = fixture.nativeElement.querySelector('[data-testid="chart"]') as HTMLElement;
+    expect(chart.querySelector('.cngx-chart__connection-overlay')).toBeNull();
+  });
+
+  it('renders the reconnecting overlay (role=status) with the default i18n on refreshing', async () => {
+    const { createManualState } = await import('@cngx/common/data');
+    @Component({
+      standalone: true,
+      imports: [CngxChart],
+      template: `<cngx-chart [data]="[1, 2, 3]" [connectionState]="cs" [width]="200" [height]="100" data-testid="chart" />`,
+    })
+    class Host {
+      readonly cs = createManualState<unknown>();
+    }
+    TestBed.configureTestingModule({ imports: [Host] });
+    const fixture = TestBed.createComponent(Host);
+    fixture.componentInstance.cs.set('refreshing');
+    fixture.detectChanges();
+    const chart = fixture.nativeElement.querySelector('[data-testid="chart"]') as HTMLElement;
+    const overlay = chart.querySelector('.cngx-chart__connection-overlay--reconnecting');
+    expect(overlay).not.toBeNull();
+    expect(overlay?.getAttribute('role')).toBe('status');
+    expect(overlay?.textContent?.trim()).toBe('Reconnecting');
+    // Data view is not overridden by a connection blip.
+    expect(chart.querySelector('svg')).not.toBeNull();
+  });
+
+  it('renders the error overlay (role=alert) with the default i18n on connection error', async () => {
+    const { createManualState } = await import('@cngx/common/data');
+    @Component({
+      standalone: true,
+      imports: [CngxChart],
+      template: `<cngx-chart [data]="[1, 2, 3]" [connectionState]="cs" [width]="200" [height]="100" data-testid="chart" />`,
+    })
+    class Host {
+      readonly cs = createManualState<unknown>();
+    }
+    TestBed.configureTestingModule({ imports: [Host] });
+    const fixture = TestBed.createComponent(Host);
+    fixture.componentInstance.cs.setError(new Error('socket closed'));
+    fixture.detectChanges();
+    const chart = fixture.nativeElement.querySelector('[data-testid="chart"]') as HTMLElement;
+    const overlay = chart.querySelector('.cngx-chart__connection-overlay--error');
+    expect(overlay).not.toBeNull();
+    expect(overlay?.getAttribute('role')).toBe('alert');
+    expect(overlay?.textContent?.trim()).toBe('Connection lost');
+  });
+
+  it('projects the *cngxChartConnectionError slot template over the default banner', async () => {
+    const { createManualState } = await import('@cngx/common/data');
+    @Component({
+      standalone: true,
+      imports: [CngxChart, CngxChartConnectionError],
+      template: `
+        <cngx-chart [data]="[1, 2, 3]" [connectionState]="cs" [width]="200" [height]="100" data-testid="chart">
+          <ng-template cngxChartConnectionError>CUSTOM OFFLINE</ng-template>
+        </cngx-chart>
+      `,
+    })
+    class Host {
+      readonly cs = createManualState<unknown>();
+    }
+    TestBed.configureTestingModule({ imports: [Host] });
+    const fixture = TestBed.createComponent(Host);
+    fixture.componentInstance.cs.setError(new Error('down'));
+    fixture.detectChanges();
+    const chart = fixture.nativeElement.querySelector('[data-testid="chart"]') as HTMLElement;
+    const overlay = chart.querySelector('.cngx-chart__connection-overlay--error');
+    expect(overlay?.textContent?.trim()).toBe('CUSTOM OFFLINE');
+    expect(overlay?.getAttribute('role')).toBe('alert');
+  });
+
+  it('keeps the data [state] view independent of a connection error', async () => {
+    const { createManualState } = await import('@cngx/common/data');
+    @Component({
+      standalone: true,
+      imports: [CngxChart],
+      template: `<cngx-chart [data]="[1, 2, 3]" [state]="state" [connectionState]="cs" [width]="200" [height]="100" data-testid="chart" />`,
+    })
+    class Host {
+      readonly state = createManualState<readonly number[]>();
+      readonly cs = createManualState<unknown>();
+    }
+    TestBed.configureTestingModule({ imports: [Host] });
+    const fixture = TestBed.createComponent(Host);
+    fixture.componentInstance.state.setSuccess([1, 2, 3]);
+    fixture.componentInstance.cs.setError(new Error('blip'));
+    fixture.detectChanges();
+    const chart = fixture.nativeElement.querySelector('[data-testid="chart"]') as HTMLElement;
+    // Data content renders (svg), connection error overlays on top — no precedence contention.
+    expect(chart.querySelector('svg')).not.toBeNull();
+    expect(chart.querySelector('.cngx-chart__connection-overlay--error')).not.toBeNull();
   });
 });

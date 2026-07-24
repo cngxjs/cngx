@@ -33,8 +33,11 @@ export {
   CngxChartLoading,
   CngxChartEmpty,
   CngxChartError,
+  CngxChartConnectionError,
+  CngxChartReconnecting,
   CHART_SMALL_BREAKPOINT_PX,
   type CngxChartErrorContext,
+  type CngxChartConnectionContext,
   type CngxChartSlotContext,
 } from './chart/template-slots';
 

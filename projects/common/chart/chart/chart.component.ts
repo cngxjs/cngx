@@ -23,9 +23,12 @@ import { CNGX_CHART_I18N } from '../i18n/chart-i18n';
 import { CngxChartDataTable } from './data-table.component';
 import {
   CHART_SMALL_BREAKPOINT_PX,
+  CngxChartConnectionError,
+  type CngxChartConnectionContext,
   CngxChartEmpty,
   CngxChartError,
   CngxChartLoading,
+  CngxChartReconnecting,
   type CngxChartSlotContext,
 } from './template-slots';
 import { createBandScale, createLinearScale, createTimeScale } from '../scales';
@@ -156,6 +159,27 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
         </svg>
       }
     }
+    @if (connectionView() === 'error') {
+      @if (connectionErrorTpl(); as tpl) {
+        <div class="cngx-chart__connection-overlay cngx-chart__connection-overlay--error" role="alert">
+          <ng-container *ngTemplateOutlet="tpl; context: connectionCtx()" />
+        </div>
+      } @else {
+        <div class="cngx-chart__connection-overlay cngx-chart__connection-overlay--error" role="alert">
+          {{ i18n.connectionLost() }}
+        </div>
+      }
+    } @else if (connectionView() === 'reconnecting') {
+      @if (reconnectingTpl(); as tpl) {
+        <div class="cngx-chart__connection-overlay cngx-chart__connection-overlay--reconnecting" role="status">
+          <ng-container *ngTemplateOutlet="tpl; context: connectionCtx()" />
+        </div>
+      } @else {
+        <div class="cngx-chart__connection-overlay cngx-chart__connection-overlay--reconnecting" role="status">
+          {{ i18n.connectionReconnecting() }}
+        </div>
+      }
+    }
     <cngx-chart-data-table
       [id]="dataTableId"
       [values]="summaryValues()"
@@ -246,6 +270,29 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
         color: var(--cngx-chart-danger, currentColor);
         opacity: 1;
       }
+      cngx-chart > .cngx-chart__connection-overlay {
+        position: absolute;
+        top: var(--cngx-chart-connection-inset, 0.5rem);
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        align-items: center;
+        gap: var(--cngx-chart-connection-gap, 0.375rem);
+        padding: var(--cngx-chart-connection-padding, 0.25rem 0.625rem);
+        border-radius: var(--cngx-chart-connection-radius, 999px);
+        font-size: var(--cngx-chart-connection-font-size, 0.75rem);
+        line-height: 1.4;
+        pointer-events: none;
+        box-shadow: var(--cngx-chart-connection-shadow, 0 1px 3px rgb(0 0 0 / 0.12));
+      }
+      cngx-chart > .cngx-chart__connection-overlay--error {
+        background: var(--cngx-chart-connection-error-bg, var(--cngx-chart-danger, #d32f2f));
+        color: var(--cngx-chart-connection-error-color, #fff);
+      }
+      cngx-chart > .cngx-chart__connection-overlay--reconnecting {
+        background: var(--cngx-chart-connection-reconnecting-bg, rgb(0 0 0 / 0.72));
+        color: var(--cngx-chart-connection-reconnecting-color, #fff);
+      }
       @keyframes cngx-chart-spin {
         to {
           transform: rotate(360deg);
@@ -304,11 +351,21 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
    *
    * Accepts the standard `CngxAsyncState<T>` shape (any producer:
    * `createManualState`, `createAsyncState`, `injectAsyncState`,
-   * `fromHttpResource`, `tap*` pipeline output). The chart provides
-   * `CNGX_STATEFUL` for downstream bridge directives - composing
-   * `<cngx-toast-on />` etc. inside the chart works automatically.
+   * `fromHttpResource`, `tap*` pipeline output). The chart exposes its
+   * state via this explicit input, not a `CNGX_STATEFUL` provision - bind
+   * bridges directly, e.g. `<cngx-toast-on [state]="chart.state()">`. The
+   * separate `[connectionState]` input tracks connection lifecycle so the
+   * two channels never contend for a single precedence seat.
    */
   readonly state = input<CngxAsyncState<readonly T[]> | undefined>(undefined);
+  /**
+   * Optional connection-lifecycle envelope, additive and independent of
+   * `[state]`. Bind a websocket/SSE adapter's `CngxAsyncState<unknown>` so
+   * connection blips surface via the `*cngxChartConnectionError` /
+   * `*cngxChartReconnecting` overlays without overriding the data view.
+   * Consumers care only about the status surface, hence `unknown` as `T`.
+   */
+  readonly connectionState = input<CngxAsyncState<unknown> | undefined>(undefined);
 
   private readonly resize = inject(CngxResizeObserver, { host: true });
   private readonly hostEl = inject<ElementRef<HTMLElement>>(ElementRef);
@@ -324,6 +381,8 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
   private readonly loadingSlot = contentChild(CngxChartLoading);
   private readonly emptySlot = contentChild(CngxChartEmpty);
   private readonly errorSlot = contentChild(CngxChartError);
+  private readonly connectionErrorSlot = contentChild(CngxChartConnectionError);
+  private readonly reconnectingSlot = contentChild(CngxChartReconnecting);
 
   /** Resolved consumer-projected loading template (null when no slot bound). */
   protected readonly loadingTpl = computed(() => this.loadingSlot()?.templateRef ?? null);
@@ -331,6 +390,12 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
   protected readonly emptyTpl = computed(() => this.emptySlot()?.templateRef ?? null);
   /** Resolved consumer-projected error template (null when no slot bound). */
   protected readonly errorTpl = computed(() => this.errorSlot()?.templateRef ?? null);
+  /** Resolved consumer-projected connection-error template. */
+  protected readonly connectionErrorTpl = computed(
+    () => this.connectionErrorSlot()?.templateRef ?? null,
+  );
+  /** Resolved consumer-projected reconnecting template. */
+  protected readonly reconnectingTpl = computed(() => this.reconnectingSlot()?.templateRef ?? null);
 
   /**
    * Common context for every slot template (loading, empty, error).
@@ -370,6 +435,38 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
    */
   protected readonly errorContext = computed(() => {
     const err = this.state()?.error?.() ?? null;
+    return { ...this.slotContext(), $implicit: err, error: err };
+  });
+
+  /**
+   * Connection-lifecycle view derived from `[connectionState]`'s status.
+   * NOT routed through `resolveAsyncView` - that `AsyncView` union has no
+   * `'refreshing'` member and folds a refreshing status into the data
+   * view. The connection channel maps status directly: `'error'` ->
+   * connection-lost overlay, `'refreshing'` -> reconnecting overlay,
+   * everything else -> no overlay. Independent of `activeView()`.
+   */
+  protected readonly connectionView = computed<'error' | 'reconnecting' | 'none'>(() => {
+    const s = this.connectionState();
+    if (!s) {
+      return 'none';
+    }
+    const status = s.status();
+    if (status === 'error') {
+      return 'error';
+    }
+    if (status === 'refreshing') {
+      return 'reconnecting';
+    }
+    return 'none';
+  });
+
+  /**
+   * Context for the connection-slot templates - the connection-channel
+   * twin of {@link errorContext}, carrying the live connection error.
+   */
+  protected readonly connectionCtx = computed<CngxChartConnectionContext>(() => {
+    const err = this.connectionState()?.error?.() ?? null;
     return { ...this.slotContext(), $implicit: err, error: err };
   });
 
