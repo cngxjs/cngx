@@ -171,6 +171,12 @@ export function withAlertIcons(
  * defaults. Prefer `provideLoadingConfig(withShowDelay(...), withMinDwell(...))`
  * from `@cngx/core/utils` directly; this feature is kept for back-compat.
  *
+ * Note: this forwarder provides a full `CNGX_LOADING_CONFIG` value, so under
+ * DI last-wins it replaces the whole config - including `spinnerVsSkeletonCutoff`,
+ * which resets to its default. Set the cutoff through
+ * `provideLoadingConfig(withSpinnerVsSkeletonCutoff(...))` rather than combining
+ * it with this back-compat forwarder.
+ *
  * Individual components can still override via their `[delay]` and `[minDwell]` inputs.
  *
  * ```ts
