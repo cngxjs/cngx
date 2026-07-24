@@ -73,6 +73,7 @@ export {
 } from './renderer/chart-renderer';
 export { createSvgRenderer } from './renderer/svg-renderer';
 export { createCanvasRenderer } from './renderer/canvas-renderer';
+export { CNGX_CHART_RENDERER_THRESHOLD } from './renderer/renderer-threshold';
 
 export {
   CNGX_CHART_I18N,
