@@ -67,7 +67,7 @@ export const STORY: DemoSpec = {
   <div class="status-row" style="margin-top:8px">
     <span class="cngx-ex-status-readout">points: {{ buffer.length() }} · connection: {{ connection.status() }}</span>
   </div>`,
-  template: `  <div class="cngx-ex-chart-frame">
+  template: `  <div class="cngx-ex-chart-frame cngx-ex-chart-frame--bottom-axis-room cngx-ex-chart-frame--left-axis-room">
     <cngx-chart
       #chart
       [data]="buffer.points()"
