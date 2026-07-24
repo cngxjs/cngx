@@ -7,10 +7,9 @@ import {
   input,
   ViewEncapsulation,
 } from '@angular/core';
-import type { CngxAsyncState } from '@cngx/core/utils';
+import { createVisibilityGate, injectLoadingConfig, type CngxAsyncState } from '@cngx/core/utils';
 
 import { CNGX_FEEDBACK_CONFIG } from '../config/feedback-config';
-import { createVisibilityTimer } from './visibility-timer';
 
 /**
  * Visual variant for the loading indicator.
@@ -26,9 +25,9 @@ export type LoadingIndicatorVariant = 'spinner' | 'bar';
  * - `spinner` - rotating circle, inline or centered
  * - `bar` - thin line at the top of the container (YouTube-style)
  *
- * Timing:
- * - `delay` (default 200ms): operations faster than this never show the indicator
- * - `minDuration` (default 500ms): once visible, stays for at least this long
+ * Timing (defaults from `CNGX_LOADING_CONFIG`):
+ * - `delay` (default 120ms): operations faster than this never show the indicator
+ * - `minDwell` (default 400ms): once visible, stays for at least this long
  *
  * For content-blocking overlays, use `cngx-loading-overlay` instead.
  *
@@ -106,6 +105,7 @@ export type LoadingIndicatorVariant = 'spinner' | 'bar';
 })
 export class CngxLoadingIndicator {
   private readonly config = inject(CNGX_FEEDBACK_CONFIG, { optional: true });
+  private readonly loadingConfig = injectLoadingConfig();
 
   /** Bind an async state - shows indicator when `isBusy()`. */
   readonly state = input<CngxAsyncState<unknown> | undefined>(undefined);
@@ -119,11 +119,17 @@ export class CngxLoadingIndicator {
   /** Screen reader label. */
   readonly label = input<string>('Loading');
 
-  /** Delay in ms before showing the indicator. Falls back to global config, then 200ms. */
-  readonly delay = input<number>(this.config?.loadingDelay ?? 200);
+  /** Delay in ms before showing the indicator. Defaults to `CNGX_LOADING_CONFIG.showDelay`. */
+  readonly delay = input<number>(this.loadingConfig.showDelay);
 
-  /** Minimum display time in ms once visible. Falls back to global config, then 500ms. */
-  readonly minDuration = input<number>(this.config?.loadingMinDuration ?? 500);
+  /** Minimum display time in ms once visible. Defaults to `CNGX_LOADING_CONFIG.minDwell`. */
+  readonly minDwell = input<number>(this.loadingConfig.minDwell);
+
+  /**
+   * @deprecated Use `minDwell`. Kept one release for migration; when set, it
+   * takes precedence over `minDwell`.
+   */
+  readonly minDuration = input<number | undefined>(undefined);
 
   /** @internal - true when the underlying source says "loading". */
   protected readonly isActive = computed(() => this.state()?.isBusy() ?? this.loading());
@@ -131,6 +137,9 @@ export class CngxLoadingIndicator {
   /** @internal - custom spinner component from global config. */
   protected readonly customSpinner = computed(() => this.config?.spinnerComponent ?? null);
 
-  /** @internal - final visibility after delay + minDuration. */
-  readonly visible = createVisibilityTimer(this.isActive, this.delay, this.minDuration);
+  /** @internal - deprecated `minDuration` alias forwards to `minDwell`. */
+  protected readonly effectiveMinDwell = computed(() => this.minDuration() ?? this.minDwell());
+
+  /** @internal - final visibility after delay + minDwell. */
+  readonly visible = createVisibilityGate(this.isActive, this.delay, this.effectiveMinDwell);
 }

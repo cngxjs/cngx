@@ -22,6 +22,14 @@ class TestHost {
   readonly label = signal('Loading');
 }
 
+@Component({
+  template: `<cngx-loading-indicator [loading]="loading()" [delay]="0" [minDwell]="250" />`,
+  imports: [CngxLoadingIndicator],
+})
+class MinDwellHost {
+  readonly loading = signal(false);
+}
+
 function setup() {
   const fixture = TestBed.createComponent(TestHost);
   fixture.detectChanges();
@@ -162,5 +170,61 @@ describe('CngxLoadingIndicator', () => {
     fixture.detectChanges();
 
     expect(el.classList.contains('cngx-loading-indicator--visible')).toBe(true);
+  });
+
+  it('deprecated [minDuration] alias still drives the min-dwell hold', () => {
+    // The host binds [minDuration]; the input is deprecated in favour of [minDwell]
+    // but must keep working for one release. delay 0 -> visible on next tick,
+    // then held for the aliased dwell after loading stops.
+    const { fixture, host, el } = setup();
+    host.delay.set(0);
+    host.minDuration.set(300);
+    host.loading.set(true);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    vi.advanceTimersByTime(0);
+    fixture.detectChanges();
+    expect(el.classList.contains('cngx-loading-indicator--visible')).toBe(true);
+
+    host.loading.set(false);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    // Still held before the aliased dwell elapses
+    vi.advanceTimersByTime(200);
+    fixture.detectChanges();
+    expect(el.classList.contains('cngx-loading-indicator--visible')).toBe(true);
+
+    // Released after 300ms
+    vi.advanceTimersByTime(100);
+    fixture.detectChanges();
+    expect(el.classList.contains('cngx-loading-indicator--visible')).toBe(false);
+  });
+
+  it('[minDwell] input drives the hold when [minDuration] is unset', () => {
+    const fixture = TestBed.createComponent(MinDwellHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const el = fixture.nativeElement.querySelector('cngx-loading-indicator') as HTMLElement;
+    const host = fixture.componentInstance;
+
+    host.loading.set(true);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    vi.advanceTimersByTime(0);
+    fixture.detectChanges();
+    expect(el.classList.contains('cngx-loading-indicator--visible')).toBe(true);
+
+    host.loading.set(false);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    vi.advanceTimersByTime(150);
+    fixture.detectChanges();
+    expect(el.classList.contains('cngx-loading-indicator--visible')).toBe(true);
+
+    vi.advanceTimersByTime(100);
+    fixture.detectChanges();
+    expect(el.classList.contains('cngx-loading-indicator--visible')).toBe(false);
   });
 });
