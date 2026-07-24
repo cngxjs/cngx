@@ -50,9 +50,27 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
   let lastW = -1;
   let lastH = -1;
   const colorCache = new Map<string, string>();
+  const numberCache = new Map<string, number>();
 
   function readVar(name: string): string {
     return hostEl ? getComputedStyle(hostEl).getPropertyValue(name).trim() : '';
+  }
+
+  /**
+   * Read a numeric CSS custom property (e.g. `--cngx-area-opacity`,
+   * `--cngx-line-stroke-width`), cached like colors so the paint hot path
+   * stays free of synchronous DOM reads. Falls back when unset / unparseable.
+   */
+  function resolveNumberVar(name: string, fallback: number): number {
+    const cached = numberCache.get(name);
+    if (cached !== undefined) {
+      return cached;
+    }
+    const raw = readVar(name);
+    const parsed = raw ? parseFloat(raw) : NaN;
+    const value = Number.isFinite(parsed) ? parsed : fallback;
+    numberCache.set(name, value);
+    return value;
   }
 
   function colorOf(color: string | null, kind: LayerGeometry['kind']): string {
@@ -84,8 +102,10 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
   }
 
   function strokeWidthOf(sw: number | string | null): number {
+    // Unset -> the same `--cngx-line-stroke-width` var the SVG line reads,
+    // so per-atom stroke width survives the SVG->Canvas crossover.
     if (sw === null) {
-      return DEFAULT_STROKE_WIDTH;
+      return resolveNumberVar('--cngx-line-stroke-width', DEFAULT_STROKE_WIDTH);
     }
     const n = typeof sw === 'number' ? sw : parseFloat(sw);
     return Number.isFinite(n) ? n : DEFAULT_STROKE_WIDTH;
@@ -156,7 +176,7 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
       }
       case 'area': {
         c.fillStyle = colorOf(g.color, 'area');
-        c.globalAlpha = g.opacity ?? DEFAULT_AREA_OPACITY;
+        c.globalAlpha = g.opacity ?? resolveNumberVar('--cngx-area-opacity', DEFAULT_AREA_OPACITY);
         c.fill(new Path2D(g.d));
         c.globalAlpha = 1;
         break;
@@ -190,7 +210,7 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
       }
       case 'band': {
         c.fillStyle = colorOf(g.color, 'band');
-        c.globalAlpha = g.opacity ?? DEFAULT_BAND_OPACITY;
+        c.globalAlpha = g.opacity ?? resolveNumberVar('--cngx-band-opacity', DEFAULT_BAND_OPACITY);
         c.fillRect(g.x, g.y, g.w, g.h);
         c.globalAlpha = 1;
         break;
@@ -200,6 +220,7 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
 
   function invalidateColorCache(): void {
     colorCache.clear();
+    numberCache.clear();
   }
 
   function destroy(): void {
@@ -210,6 +231,7 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
     lastW = -1;
     lastH = -1;
     colorCache.clear();
+    numberCache.clear();
   }
 
   return {

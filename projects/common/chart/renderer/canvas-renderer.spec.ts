@@ -57,6 +57,14 @@ const BAR_GEOM: LayerGeometry = {
   kind: 'bar',
   rects: [{ x: 0, y: 0, w: 5, h: 10, color: null }],
 };
+const AREA_GEOM: LayerGeometry = {
+  kind: 'area',
+  d: 'M 0 0 L 10 10 Z',
+  color: null,
+  strokeWidth: null,
+  fill: null,
+  opacity: null,
+};
 
 let ctx2d: Ctx2dMock;
 let dims: WritableSignal<{ width: number; height: number }>;
@@ -190,6 +198,23 @@ describe('createCanvasRenderer', () => {
     expect(names).toContain('--cngx-bar-color');
     expect(names).toContain('--cngx-chart-primary');
     expect(names.indexOf('--cngx-bar-color')).toBeLessThan(names.indexOf('--cngx-chart-primary'));
+  });
+
+  it('reads per-atom opacity and stroke-width vars (token parity beyond color)', () => {
+    const names: string[] = [];
+    vi.spyOn(window, 'getComputedStyle').mockReturnValue({
+      getPropertyValue: (n: string) => {
+        names.push(n);
+        return '';
+      },
+    } as unknown as CSSStyleDeclaration);
+    const renderer = createCanvasRenderer(deps());
+    const host = document.createElement('div');
+    renderer.mount(host, deps().ctx);
+
+    renderer.paint([AREA_GEOM, LINE_GEOM]);
+    expect(names).toContain('--cngx-area-opacity');
+    expect(names).toContain('--cngx-line-stroke-width');
   });
 
   it('never exposes a writable seat on ctx.renderSvg', () => {
