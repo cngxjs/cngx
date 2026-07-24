@@ -23,6 +23,10 @@ export {
 
 export { CngxChart } from './chart/chart.component';
 export {
+  createSignificantChangeTracker,
+  type CngxSignificantChange,
+} from './chart/significant-change';
+export {
   CNGX_CHART_CONTEXT,
   type CngxChartContext,
   type ScaleFn,

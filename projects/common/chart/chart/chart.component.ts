@@ -39,6 +39,7 @@ import {
   type XScaleInput,
 } from './chart-context';
 import { computeChartSummary } from './summary';
+import { createSignificantChangeTracker } from './significant-change';
 import { dimensionsEqual, sameItemsArr, sameNumberArr } from './equal-helpers';
 import { CNGX_CHART_LAYER, type LayerGeometry } from '../layers/chart-layer';
 import { createChartRendererController } from '../renderer/chart-renderer-controller';
@@ -624,6 +625,14 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
         sameNumberArr(a.thresholds, b.thresholds),
     },
   );
+
+  /**
+   * The most recent significant transition (trend-flip or threshold-cross)
+   * derived from {@link summary}, or `null`. The chart stays
+   * pure-derivation - a companion `<cngx-chart-announcer>` subscribes to
+   * this surface and voices it to assistive technology.
+   */
+  readonly significantChange = createSignificantChangeTracker(this.summary);
 
   /**
    * Active view for the optional state-machine envelope. Returns
