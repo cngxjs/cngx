@@ -11,7 +11,7 @@ export const STORY: DemoSpec = {
   artifact: 'building-block',
   focus: ['async-state', 'composition', 'a11y-pattern'],
   moduleImports: [
-    "import { computed, inject, signal } from '@angular/core';",
+    "import { computed, inject, linkedSignal, signal, untracked } from '@angular/core';",
     "import { createVisibilityGate, injectLoadingConfig } from '@cngx/core/utils';",
     "import { injectLatencyProbe, createManualState, CngxAsyncRegistry } from '@cngx/common/data';",
   ],
@@ -21,25 +21,40 @@ export const STORY: DemoSpec = {
 
   protected readonly probe = injectLatencyProbe();
 
-  // Selection reflects the PREVIOUS busy-envelope duration: a slow last load
-  // predicts a skeleton for this one, a fast last load predicts a spinner.
-  protected readonly showSkeleton = computed(() => {
+  // Live prediction for the NEXT load: a slow last envelope predicts a skeleton,
+  // a fast one a spinner. Drives the readout, not the visible indicator.
+  protected readonly nextIsSkeleton = computed(() => {
     const last = this.probe.lastDuration();
     return last !== undefined && last > this.cutoff;
   });
 
-  // Flash gate: only surface the indicator once busy persists past showDelay.
+  // Flash gate: only surface the indicator once busy persists past showDelay,
+  // and keep it up for minDwell so it never flickers out.
   protected readonly gatedBusy = createVisibilityGate(
     computed(() => this.probe.isBusy()),
     signal(this.config.showDelay),
     signal(this.config.minDwell),
   );
 
+  // Latch the treatment when the indicator appears and hold it until it hides.
+  // lastDuration updates at the envelope's end, but the gate keeps the indicator
+  // on screen through its dwell tail; reading the prediction untracked at the
+  // rising edge stops the kind from swapping mid-display.
+  protected readonly displayedKind = linkedSignal<boolean, 'spinner' | 'skeleton'>({
+    source: () => this.gatedBusy(),
+    computation: (visible, prev) => {
+      if (!visible) {
+        return prev?.value ?? 'spinner';
+      }
+      return untracked(() => this.nextIsSkeleton()) ? 'skeleton' : 'spinner';
+    },
+  });
+
   protected readonly announcement = computed(() => {
     if (!this.gatedBusy()) {
       return '';
     }
-    return this.showSkeleton() ? 'Preparing content' : 'Loading';
+    return this.displayedKind() === 'skeleton' ? 'Preparing content' : 'Loading';
   });`,
   setupChrome: `private readonly registry = inject(CngxAsyncRegistry);
   private readonly fastOp = createManualState<number>();
@@ -61,7 +76,7 @@ export const STORY: DemoSpec = {
   }`,
   template: `  <div class="latency-indicator" [attr.aria-busy]="probe.isBusy()">
     @if (gatedBusy()) {
-      @if (showSkeleton()) {
+      @if (displayedKind() === 'skeleton') {
         <div class="demo-skeleton-row" style="height:48px" aria-hidden="true"></div>
         <div class="demo-skeleton-row" style="height:48px;width:70%" aria-hidden="true"></div>
       } @else {
@@ -83,6 +98,6 @@ export const STORY: DemoSpec = {
     <span class="status-badge">
       Last envelope: {{ probe.lastDuration() === undefined ? 'none yet' : probe.lastDuration() + 'ms' }}
     </span>
-    <span class="status-badge">Next treatment: {{ showSkeleton() ? 'skeleton' : 'spinner' }}</span>
+    <span class="status-badge">Next treatment: {{ nextIsSkeleton() ? 'skeleton' : 'spinner' }}</span>
   </div>`,
 };
