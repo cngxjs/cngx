@@ -173,6 +173,82 @@ The select family wires the full six-variant switch through `createSelectCore<T,
 
 ---
 
+## Loading timing
+
+`resolveAsyncView` decides *which* surface to show. **Loading timing** decides *when* to show it, so a fast operation never flashes a skeleton and a shown indicator never disappears the instant it appeared.
+
+Every loading surface routes its show/hide through `createVisibilityGate` from `@cngx/core/utils` (source: `projects/core/utils/visibility-gate.ts`):
+
+```typescript
+function createVisibilityGate(
+  isActive: Signal<boolean>,
+  delay: Signal<number>,    // showDelay - suppress the flash on fast ops
+  minDwell: Signal<number>, // keep visible at least this long once shown
+): Signal<boolean>;
+```
+
+Two rules, one derived signal:
+
+- **`showDelay`** - the source must stay busy this long before the surface appears. An operation that finishes inside the delay never shows anything.
+- **`minDwell`** - once shown, the surface stays for at least this long, so it never flickers out on a load that resolves a frame later.
+
+### The CNGX_LOADING_CONFIG cascade
+
+The two timings, plus the spinner-vs-skeleton cutoff, come from one config token defaulted in `@cngx/core/utils` (source: `projects/core/utils/loading-config.ts`):
+
+```typescript
+interface CngxLoadingConfig {
+  showDelay: number; // default 120
+  minDwell: number; // default 400
+  spinnerVsSkeletonCutoff: number; // default 800
+}
+```
+
+Standard cascade shape:
+
+- `provideLoadingConfig(withShowDelay(200), withMinDwell(600))` - app-wide, in `bootstrapApplication` providers.
+- `provideLoadingConfigAt(withShowDelay(0))` - component scope, in `viewProviders`.
+- `injectLoadingConfig()` - read the resolved config in an injection context.
+- Features: `withShowDelay(ms)`, `withMinDwell(ms)`, `withSpinnerVsSkeletonCutoff(ms)`.
+
+Resolution priority for any one surface:
+
+1. Per-instance input (`[delay]` / `[minDwell]` on `cngx-loading-indicator` / `cngx-loading-overlay`; `[skeletonDelay]` on the recycler).
+2. `provideLoadingConfigAt(...)` in a component's `viewProviders`.
+3. `provideLoadingConfig(...)` at the app root.
+4. `CNGX_LOADING_DEFAULTS` (120 / 400 / 800).
+
+Surfaces that gate through it: `cngx-skeleton`, `cngx-loading-indicator`, `cngx-loading-overlay`, the `cngx-async-container` skeleton view and refresh bar, and the recycler skeleton (`injectRecycler`).
+
+<aside class="cc-note">
+
+**Note.** `provideFeedback(withLoadingDefaults({ delay, minDuration }))` from `@cngx/ui/feedback` writes the same `CNGX_LOADING_CONFIG` token as a back-compat wrapper (`delay` maps to `showDelay`, `minDuration` to `minDwell`). It provides a whole config value, so it also resets `spinnerVsSkeletonCutoff` to its default. Prefer `provideLoadingConfig(...)` from `@cngx/core/utils` for new apps, and set the cutoff there rather than combining the two.
+
+</aside>
+
+### Measured latency: createLatencyProbe
+
+`showDelay` and `minDwell` shape a single load. **Latency awareness** looks one step further: it measures how long the *previous* busy window lasted, so an app-shell indicator can pick a spinner (last load was fast) or a skeleton (last load was slow) before the next load even renders.
+
+`createLatencyProbe` (source: `projects/core/utils/latency-probe.ts`) measures the busy-envelope of a boolean-busy source:
+
+```typescript
+const probe = createLatencyProbe(() => registry.isAnythingLoading());
+// probe.lastDuration(): ms of the last completed busy window, or undefined
+// probe.isBusy():       mirrors the source
+
+const showSkeleton = computed(() => {
+  const last = probe.lastDuration();
+  return last !== undefined && last > injectLoadingConfig().spinnerVsSkeletonCutoff;
+});
+```
+
+The duration is a wall-clock sample taken at the busy edge through an injectable monotonic clock (default `performance.now()`), so it is a **measurement side effect**, not derived state. The probe writes `lastDuration` from an `effect` that tracks only the busy source, reads the clock in `untracked()`, and never reads its own output back. The Signal-First Internals chapter documents why this is a sanctioned write-in-effect.
+
+In `@cngx/common/data`, `injectLatencyProbe()` bridges the app-wide `CngxAsyncRegistry.isAnythingLoading` signal into a probe, so the whole app's busy-envelope drives the choice. When no registry is provided it returns a probe that is simply never busy. The selection stays a two-line consumer `@if`: CNGX ships the primitive, the bridge, and the cutoff; the consumer composes the indicator.
+
+---
+
 ## Transition bridges
 
 A **transition bridge** reacts to a status transition (`idle -> success`, `loading -> error`, `refreshing -> error`) and triggers an out-of-band notification.

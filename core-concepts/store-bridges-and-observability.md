@@ -127,6 +127,8 @@ Inner status reactivity flows through each entry's `CngxAsyncState` signals - ex
 
 **Error reaction stays consumer-wired.** The registry exposes read-only views; it never calls a toaster, alerter, or announcer. That would be a layer breach (`common` reaching into `ui`/`forms`) and Pillar-1 management. Error reaction runs through the transition bridges (`CngxToastOn` / `CngxAlertOn` / `CngxBannerOn`) against the produced state, exactly as with any other `CngxAsyncState`.
 
+**Latency reads off the same source.** `injectLatencyProbe()` (also `@cngx/common/data`) bridges `isAnythingLoading` into a `createLatencyProbe`, so the app's whole busy-envelope - first operation to start, last to finish - yields a `lastDuration`. An app-shell indicator compares that against `CNGX_LOADING_CONFIG.spinnerVsSkeletonCutoff` to pick spinner-vs-skeleton for the next load before it renders. When no registry is provided, the probe is simply never busy. See the Async State Machine chapter for the timing cascade.
+
 ---
 
 ## Registering a component state
@@ -223,5 +225,6 @@ Every public symbol on this page, linked to its generated API entry. The links a
 - [`CngxAsyncRegistry`](../injectables/CngxAsyncRegistry.html) - the opt-in aggregation registry
 - [`CngxAsyncOperation`](../interfaces/CngxAsyncOperation.html) - a registered-operation snapshot
 - [`provideAsyncRegistry`](../miscellaneous/functions/provideAsyncRegistry.html) / [`injectAsyncRegistry`](../miscellaneous/functions/injectAsyncRegistry.html)
+- [`injectLatencyProbe`](../miscellaneous/functions/injectLatencyProbe.html) - busy-envelope latency over `isAnythingLoading`
 - [`cngxAsyncInterceptor`](../interceptors/cngxAsyncInterceptor.html) / [`provideAsyncHttpObservability`](../miscellaneous/functions/provideAsyncHttpObservability.html)
 - [`withAsyncLabel`](../miscellaneous/functions/withAsyncLabel.html) / [`withAsyncSkip`](../miscellaneous/functions/withAsyncSkip.html), and the `CNGX_ASYNC_LABEL` / `CNGX_ASYNC_SKIP` [context tokens](../miscellaneous/variables.html)

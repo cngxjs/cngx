@@ -88,7 +88,7 @@ readonly state = injectAsyncState(() => this.loadItems$);
 
 #### Refresh Indicator
 
-A built-in refresh bar appears when data is visible but loading (refresh scenario). Customization via CSS:
+A built-in refresh bar appears when data is visible but loading (refresh scenario). Both the refresh bar and the first-load skeleton view debounce their show/hide through `createVisibilityGate`, so a fast refresh never flashes the bar: they honor `showDelay` and `minDwell` from the `CNGX_LOADING_CONFIG` cascade in `@cngx/core/utils`. Customization via CSS:
 
 ```scss
 .cngx-async-container--refreshing::before {
