@@ -130,6 +130,21 @@ describe('createCanvasRenderer', () => {
     expect(d.destroyRef.onDestroy as ReturnType<typeof vi.fn>).not.toHaveBeenCalled();
   });
 
+  it('does not reallocate the bitmap when dimensions are unchanged', () => {
+    const renderer = createCanvasRenderer(deps());
+    const host = document.createElement('div');
+    renderer.mount(host, deps().ctx);
+    const afterMount = ctx2d.setTransform.mock.calls.length;
+
+    renderer.paint([LINE_GEOM]);
+    renderer.paint([LINE_GEOM]);
+    expect(ctx2d.setTransform.mock.calls.length).toBe(afterMount); // no realloc
+
+    dims.set({ width: 300, height: 200 });
+    renderer.paint([LINE_GEOM]);
+    expect(ctx2d.setTransform.mock.calls.length).toBeGreaterThan(afterMount); // resized
+  });
+
   it('removes the canvas on destroy', () => {
     const renderer = createCanvasRenderer(deps());
     const host = document.createElement('div');

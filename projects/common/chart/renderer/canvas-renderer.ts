@@ -47,6 +47,8 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
   let canvas: HTMLCanvasElement | null = null;
   let hostEl: HTMLElement | null = null;
   let ctx2d: CanvasRenderingContext2D | null = null;
+  let lastW = -1;
+  let lastH = -1;
   const colorCache = new Map<string, string>();
 
   function readVar(name: string): string {
@@ -95,8 +97,18 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
     }
     const { width, height } = deps.ctx.dimensions();
     const dpr = globalThis.devicePixelRatio ?? 1;
-    canvas.width = Math.max(0, Math.round(width * dpr));
-    canvas.height = Math.max(0, Math.round(height * dpr));
+    const w = Math.max(0, Math.round(width * dpr));
+    const h = Math.max(0, Math.round(height * dpr));
+    if (w === lastW && h === lastH) {
+      return;
+    }
+    lastW = w;
+    lastH = h;
+    // Assigning width/height reallocates and clears the bitmap - only when
+    // the device-pixel size actually changed. paint() clears each frame via
+    // clearRect regardless, so the realtime hot path pays nothing here.
+    canvas.width = w;
+    canvas.height = h;
     // Draw in logical pixels; the bitmap is scaled for the device.
     ctx2d.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
@@ -195,6 +207,8 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
     canvas = null;
     ctx2d = null;
     hostEl = null;
+    lastW = -1;
+    lastH = -1;
     colorCache.clear();
   }
 
