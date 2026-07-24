@@ -73,8 +73,6 @@ export type LayerGeometry =
  * @since 0.1.0
  */
 export interface CngxChartLayer {
-  /** The layer's geometry variant discriminator. */
-  readonly kind: Signal<LayerGeometry['kind']>;
   /** The layer's scale-projected geometry, cascade-guarded by an `equal` fn. */
   readonly geometry: Signal<LayerGeometry>;
 }

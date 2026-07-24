@@ -142,8 +142,6 @@ export class CngxBar<T = unknown> implements CngxChartLayer {
     { equal: rectsEqual },
   );
 
-  readonly kind = computed(() => 'bar' as const);
-
   readonly geometry = computed<LayerGeometry>(
     () => ({
       kind: 'bar',

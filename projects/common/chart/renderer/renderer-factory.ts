@@ -42,7 +42,6 @@ export const CNGX_CHART_RENDERER_FACTORY = new InjectionToken<CngxChartRendererF
  * @category common/chart/renderer
  */
 export interface CngxChartRendererFeature {
-  readonly _kind: 'threshold' | 'factory';
   readonly providers: Provider[];
 }
 
@@ -54,7 +53,7 @@ export interface CngxChartRendererFeature {
  * @since 0.1.0
  */
 export function withChartRendererThreshold(n: number): CngxChartRendererFeature {
-  return { _kind: 'threshold', providers: [{ provide: CNGX_CHART_RENDERER_THRESHOLD, useValue: n }] };
+  return { providers: [{ provide: CNGX_CHART_RENDERER_THRESHOLD, useValue: n }] };
 }
 
 /**
@@ -67,7 +66,7 @@ export function withChartRendererThreshold(n: number): CngxChartRendererFeature 
  * @since 0.1.0
  */
 export function withChartRendererFactory(fn: CngxChartRendererFactory): CngxChartRendererFeature {
-  return { _kind: 'factory', providers: [{ provide: CNGX_CHART_RENDERER_FACTORY, useValue: fn }] };
+  return { providers: [{ provide: CNGX_CHART_RENDERER_FACTORY, useValue: fn }] };
 }
 
 /**

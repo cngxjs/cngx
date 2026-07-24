@@ -11,7 +11,6 @@ import { CNGX_CHART_LAYER, type CngxChartLayer, type LayerGeometry } from './cha
   providers: [{ provide: CNGX_CHART_LAYER, useExisting: TestLayer }],
 })
 class TestLayer implements CngxChartLayer {
-  readonly kind = computed(() => 'line' as const);
   readonly geometry = computed<LayerGeometry>(() => ({
     kind: 'line',
     d: 'M 0 0 L 1 1',
@@ -46,7 +45,6 @@ describe('CNGX_CHART_LAYER', () => {
     const de = fixture.debugElement.query(By.css('[testChartLayer]'));
     const resolved = de.injector.get(CNGX_CHART_LAYER);
     expect(resolved).toBe(de.injector.get(TestLayer));
-    expect(resolved.kind()).toBe('line');
     expect(resolved.geometry().kind).toBe('line');
   });
 

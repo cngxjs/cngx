@@ -118,8 +118,6 @@ export class CngxArea<T = unknown> implements CngxChartLayer {
     { equal: (a, b) => a === b },
   );
 
-  readonly kind = computed(() => 'area' as const);
-
   readonly geometry = computed<LayerGeometry>(
     () => {
       const op = this.opacity();

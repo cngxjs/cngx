@@ -125,8 +125,6 @@ export class CngxBand implements CngxChartLayer {
     },
   );
 
-  readonly kind = computed(() => 'band' as const);
-
   readonly geometry = computed<LayerGeometry>(
     () => {
       const r = this.rect();

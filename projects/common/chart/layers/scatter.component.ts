@@ -126,8 +126,6 @@ export class CngxScatter<T = unknown> implements CngxChartLayer {
     { equal: circlesEqual },
   );
 
-  readonly kind = computed(() => 'scatter' as const);
-
   readonly geometry = computed<LayerGeometry>(
     () => {
       const r = this.radius();

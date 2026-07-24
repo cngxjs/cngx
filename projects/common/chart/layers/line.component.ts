@@ -114,8 +114,6 @@ export class CngxLine<T = unknown> implements CngxChartLayer {
     { equal: (a, b) => a === b },
   );
 
-  readonly kind = computed(() => 'line' as const);
-
   readonly geometry = computed<LayerGeometry>(
     () => ({
       kind: 'line',

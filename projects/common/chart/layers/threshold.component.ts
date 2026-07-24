@@ -117,8 +117,6 @@ export class CngxThreshold implements CngxChartLayer {
     },
   );
 
-  readonly kind = computed(() => 'threshold' as const);
-
   readonly geometry = computed<LayerGeometry>(
     () => {
       const b = this.bounds();
