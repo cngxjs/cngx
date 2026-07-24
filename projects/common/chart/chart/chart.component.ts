@@ -113,6 +113,7 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
     '[attr.aria-describedby]': 'dataTableId',
     '[attr.aria-busy]': 'busy() ? "true" : null',
     '[class.cngx-chart--responsive]': 'isResponsive()',
+    '[class.cngx-chart--content-hidden]': 'contentHidden()',
     '[style.width.px]': 'width() ?? null',
     '[style.aspect-ratio]': 'explicitAspectRatio()',
   },
@@ -224,6 +225,9 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
         inset: 0;
         width: 100%;
         height: 100%;
+      }
+      cngx-chart.cngx-chart--content-hidden > .cngx-chart__canvas {
+        display: none;
       }
       cngx-chart > svg {
         display: block;
@@ -658,6 +662,18 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
 
   /** True when the chart is currently rendering its skeleton view. */
   protected readonly busy = computed(() => this.activeView() === 'skeleton');
+
+  /**
+   * True when a fallback view (skeleton / empty / error / none) has
+   * replaced the data content. The Canvas overlay is a sibling of the
+   * `@switch` and would otherwise keep painting the chart on top of the
+   * fallback in canvas mode - this gates it off so the fallback stands
+   * alone.
+   */
+  protected readonly contentHidden = computed(() => {
+    const view = this.activeView();
+    return view === 'skeleton' || view === 'empty' || view === 'error' || view === 'none';
+  });
 
   /**
    * Responsive mode is active when neither `[width]` nor `[height]` is

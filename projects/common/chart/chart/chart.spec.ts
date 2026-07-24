@@ -642,3 +642,45 @@ describe('CngxChart — [connectionState] envelope (Phase 4)', () => {
     expect(chart.querySelector('.cngx-chart__connection-overlay--error')).not.toBeNull();
   });
 });
+
+describe('CngxChart — canvas overlay gated on the content view (Phase 3 blocker fix)', () => {
+  beforeEach(() => vi.stubGlobal('ResizeObserver', ResizeObserverMock));
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('suppresses the canvas overlay while a fallback view is active', async () => {
+    const { createManualState } = await import('@cngx/common/data');
+    @Component({
+      standalone: true,
+      imports: [CngxChart, CngxAxis, CngxLine],
+      template: `
+        <cngx-chart [data]="data" [state]="state" [width]="200" [height]="100" data-testid="chart">
+          <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 10]"></svg:g>
+          <svg:g cngxAxis position="left" type="linear" [domain]="[0, 10]"></svg:g>
+          <svg:g cngxLine></svg:g>
+        </cngx-chart>
+      `,
+    })
+    class Host {
+      readonly state = createManualState<readonly number[]>();
+      readonly data = Array.from({ length: 501 }, (_, i) => i % 10); // > threshold -> canvas
+    }
+    TestBed.configureTestingModule({ imports: [Host] });
+    const fixture = TestBed.createComponent(Host);
+
+    // Error on first load -> fallback view; canvas is mounted (canvas mode)
+    // but the content-hidden class suppresses it via CSS.
+    fixture.componentInstance.state.setError(new Error('feed down'));
+    fixture.detectChanges();
+    const chart = fixture.nativeElement.querySelector('[data-testid="chart"]') as HTMLElement;
+    expect(chart.classList.contains('cngx-chart--content-hidden')).toBe(true);
+    const canvas = chart.querySelector('canvas') as HTMLCanvasElement;
+    expect(canvas).not.toBeNull();
+    expect(getComputedStyle(canvas).display).toBe('none');
+
+    // Recover -> content view; canvas visible again.
+    fixture.componentInstance.state.setSuccess(fixture.componentInstance.data);
+    fixture.detectChanges();
+    expect(chart.classList.contains('cngx-chart--content-hidden')).toBe(false);
+    expect(getComputedStyle(canvas).display).not.toBe('none');
+  });
+});
