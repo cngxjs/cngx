@@ -14,6 +14,8 @@ export {
   type BandScale,
 } from './scales';
 
+export { downsampleLTTB } from './buffer';
+
 export { CngxChart } from './chart/chart.component';
 export {
   CNGX_CHART_CONTEXT,
