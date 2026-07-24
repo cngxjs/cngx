@@ -82,6 +82,11 @@ export {
   withChartRendererFactory,
   type CngxChartRendererFeature,
 } from './renderer/renderer-factory';
+export {
+  createChartRendererController,
+  type CngxChartRendererController,
+  type ChartRendererControllerDeps,
+} from './renderer/chart-renderer-controller';
 
 export {
   CNGX_CHART_I18N,
