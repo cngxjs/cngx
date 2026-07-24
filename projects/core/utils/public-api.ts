@@ -21,6 +21,7 @@ export {
   CNGX_LOADING_CONFIG,
   withShowDelay,
   withMinDwell,
+  withSpinnerVsSkeletonCutoff,
   provideLoadingConfig,
   provideLoadingConfigAt,
   injectLoadingConfig,

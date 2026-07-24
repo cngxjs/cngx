@@ -7,8 +7,10 @@ import {
 } from '@angular/core';
 
 /**
- * Timing configuration shared by every loading surface that gates its
- * visibility through `createVisibilityGate`.
+ * Loading-feedback tuning: the visibility-gate timings shared by every surface
+ * that gates its visibility through `createVisibilityGate`, **and** the
+ * indicator-selection thresholds a consumer reads to choose one loading
+ * treatment over another.
  *
  * @category core/utils
  */
@@ -18,18 +20,27 @@ export interface CngxLoadingConfig {
 
   /** Minimum time in ms a loading surface stays visible once shown, to avoid a jarring flash-out. */
   minDwell: number;
+
+  /**
+   * Duration in ms above which an app-shell indicator should prefer a skeleton
+   * over a spinner. A consumer compares an observed busy-envelope duration
+   * (e.g. `createLatencyProbe().lastDuration()`) against this cutoff.
+   */
+  spinnerVsSkeletonCutoff: number;
 }
 
 /**
  * Library defaults for {@link CngxLoadingConfig}. English/neutral values; a
  * 120ms show delay suppresses sub-perceptual blips, a 400ms min-dwell keeps a
- * shown indicator on screen long enough to read.
+ * shown indicator on screen long enough to read, an 800ms cutoff splits a
+ * spinner-worthy wait from a skeleton-worthy one.
  *
  * @category core/utils
  */
 export const CNGX_LOADING_DEFAULTS = {
   showDelay: 120,
   minDwell: 400,
+  spinnerVsSkeletonCutoff: 800,
 } as const satisfies CngxLoadingConfig;
 
 /**
@@ -74,6 +85,16 @@ export function withShowDelay(ms: number): CngxLoadingConfigFeature {
  */
 export function withMinDwell(ms: number): CngxLoadingConfigFeature {
   return { _apply: (c) => ({ ...c, minDwell: ms }) };
+}
+
+/**
+ * Override the spinner-vs-skeleton cutoff (ms) an app-shell indicator reads to
+ * pick a skeleton for waits longer than this and a spinner for shorter ones.
+ *
+ * @category core/utils
+ */
+export function withSpinnerVsSkeletonCutoff(ms: number): CngxLoadingConfigFeature {
+  return { _apply: (c) => ({ ...c, spinnerVsSkeletonCutoff: ms }) };
 }
 
 function resolveLoadingConfig(features: CngxLoadingConfigFeature[]): CngxLoadingConfig {

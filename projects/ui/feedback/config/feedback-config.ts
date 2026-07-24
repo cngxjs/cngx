@@ -195,6 +195,7 @@ export function withLoadingDefaults(opts: {
         useValue: {
           showDelay: opts.delay ?? CNGX_LOADING_DEFAULTS.showDelay,
           minDwell: opts.minDuration ?? CNGX_LOADING_DEFAULTS.minDwell,
+          spinnerVsSkeletonCutoff: CNGX_LOADING_DEFAULTS.spinnerVsSkeletonCutoff,
         },
       },
     ],
