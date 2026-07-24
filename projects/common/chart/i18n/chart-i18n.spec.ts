@@ -44,6 +44,9 @@ describe('CNGX_CHART_I18N', () => {
       valueColumnLabel: () => 'COL_OVR',
       trendChanged: () => 'TREND_OVR',
       thresholdAlert: () => 'THRESHOLD_OVR',
+      connectionLost: () => 'LOST_OVR',
+      connectionReconnecting: () => 'RECONNECT_OVR',
+      connectionRestored: () => 'RESTORED_OVR',
       empty: () => 'EMPTY_OVR',
       loading: () => 'LOADING_OVR',
       error: () => 'ERROR_OVR',
@@ -54,9 +57,19 @@ describe('CNGX_CHART_I18N', () => {
     const i18n = TestBed.inject(CNGX_CHART_I18N);
     expect(i18n.empty()).toBe('EMPTY_OVR');
     expect(i18n.valueColumnLabel()).toBe('COL_OVR');
+    expect(i18n.connectionLost()).toBe('LOST_OVR');
+    expect(i18n.connectionReconnecting()).toBe('RECONNECT_OVR');
     expect(i18n.summary({ trend: 'up', min: 0, max: 0, current: 0, thresholds: [] })).toBe(
       'OVERRIDDEN',
     );
+  });
+
+  it('returns English defaults for the connection-lifecycle keys', () => {
+    TestBed.configureTestingModule({});
+    const i18n = TestBed.inject(CNGX_CHART_I18N);
+    expect(i18n.connectionLost()).toBe('Connection lost');
+    expect(i18n.connectionReconnecting()).toBe('Reconnecting');
+    expect(i18n.connectionRestored()).toBe('Connection restored');
   });
 
   it('returns the trend-changed string keyed by direction', () => {
