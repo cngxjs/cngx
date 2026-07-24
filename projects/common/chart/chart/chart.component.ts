@@ -219,6 +219,12 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
         width: 100%;
         aspect-ratio: var(--cngx-chart-aspect-ratio, 5 / 2);
       }
+      cngx-chart > .cngx-chart__canvas {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
       cngx-chart > svg {
         display: block;
         width: 100%;

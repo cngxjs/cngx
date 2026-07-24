@@ -153,6 +153,17 @@ describe('createCanvasRenderer', () => {
     expect(ctx2d.setTransform.mock.calls.length).toBeGreaterThan(afterMount); // resized
   });
 
+  it('positions the canvas via the stylesheet class, not inline styles', () => {
+    const renderer = createCanvasRenderer(deps());
+    const host = document.createElement('div');
+    renderer.mount(host, deps().ctx);
+    const canvas = host.querySelector('canvas') as HTMLCanvasElement;
+    expect(canvas.classList.contains('cngx-chart__canvas')).toBe(true);
+    expect(canvas.getAttribute('aria-hidden')).toBe('true');
+    expect(canvas.style.position).toBe('');
+    expect(canvas.style.inset).toBe('');
+  });
+
   it('removes the canvas on destroy', () => {
     const renderer = createCanvasRenderer(deps());
     const host = document.createElement('div');

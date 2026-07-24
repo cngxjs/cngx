@@ -136,12 +136,11 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
   function mount(host: HTMLElement): void {
     hostEl = host;
     const el = host.ownerDocument.createElement('canvas');
+    // Structural positioning lives with the skin (the `.cngx-chart__canvas`
+    // rule in the chart stylesheet), not inline here - so a decomposed skin
+    // can restyle the overlay without editing this brain.
     el.className = 'cngx-chart__canvas';
     el.setAttribute('aria-hidden', 'true');
-    el.style.position = 'absolute';
-    el.style.inset = '0';
-    el.style.width = '100%';
-    el.style.height = '100%';
     host.appendChild(el);
     canvas = el;
     ctx2d = el.getContext('2d');
