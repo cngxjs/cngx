@@ -1237,11 +1237,16 @@ button.chip[aria-pressed='true'],
   border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e5e7eb));
   border-radius: 4px;
 }
+// Axis tick labels AND rotated axis `label` text render OUTSIDE the
+// chart's viewBox (overflow: visible). The block/inline axis-label
+// offsets are 36px / 32px from the chart edge, so with the text height
+// on top the labels reach ~44-48px out - the room modifiers reserve
+// enough gutter that the axis label + widest tick fit inside the frame.
 .cngx-ex-chart-frame--bottom-axis-room {
-  padding-bottom: 32px;
+  padding-bottom: 44px;
 }
 .cngx-ex-chart-frame--left-axis-room {
-  padding-left: 40px;
+  padding-left: 48px;
 }
 .cngx-ex-chart-frame--responsive {
   resize: horizontal;

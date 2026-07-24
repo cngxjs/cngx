@@ -6,6 +6,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { injectChartContext } from '../chart/chart-context';
+import { CNGX_CHART_LAYER, type CngxChartLayer, type LayerGeometry } from './chart-layer';
 
 /**
  * Band reference atom. Renders a `<rect>` across a vertical Y-range
@@ -37,26 +38,29 @@ import { injectChartContext } from '../chart/chart-context';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
+  providers: [{ provide: CNGX_CHART_LAYER, useExisting: CngxBand }],
   template: `
-    @if (rect(); as r) {
-      <svg:rect
-        class="cngx-band__rect"
-        [attr.x]="0"
-        [attr.y]="r.y"
-        [attr.width]="r.width"
-        [attr.height]="r.height"
-        [attr.fill-opacity]="opacity()"
-      />
-      @if (label(); as l) {
-        <svg:text
-          class="cngx-band__label"
-          [attr.x]="4"
-          [attr.y]="r.y + r.height / 2"
-          text-anchor="start"
-          dominant-baseline="middle"
-        >
-          {{ l }}
-        </svg:text>
+    @if (ctx.renderSvg()) {
+      @if (rect(); as r) {
+        <svg:rect
+          class="cngx-band__rect"
+          [attr.x]="0"
+          [attr.y]="r.y"
+          [attr.width]="r.width"
+          [attr.height]="r.height"
+          [attr.fill-opacity]="opacity()"
+        />
+        @if (label(); as l) {
+          <svg:text
+            class="cngx-band__label"
+            [attr.x]="4"
+            [attr.y]="r.y + r.height / 2"
+            text-anchor="start"
+            dominant-baseline="middle"
+          >
+            {{ l }}
+          </svg:text>
+        }
       }
     }
   `,
@@ -85,13 +89,13 @@ import { injectChartContext } from '../chart/chart-context';
     `,
   ],
 })
-export class CngxBand {
+export class CngxBand implements CngxChartLayer {
   readonly from = input.required<number>();
   readonly to = input.required<number>();
   readonly label = input<string | null>(null);
   readonly opacity = input<number | string | null>(null);
 
-  private readonly ctx = injectChartContext('CngxBand');
+  protected readonly ctx = injectChartContext('CngxBand');
 
   protected readonly rect = computed<{
     width: number;
@@ -119,6 +123,41 @@ export class CngxBand {
           a.y === b.y &&
           a.height === b.height),
     },
+  );
+
+  readonly geometry = computed<LayerGeometry>(
+    () => {
+      const r = this.rect();
+      const op = this.opacity();
+      return {
+        kind: 'band',
+        x: 0,
+        y: r?.y ?? 0,
+        w: r?.width ?? 0,
+        h: r?.height ?? 0,
+        color: null,
+        opacity: op == null ? null : Number(op),
+      };
+    },
+    { equal: bandGeomEqual },
+  );
+}
+
+/** @internal */
+function bandGeomEqual(a: LayerGeometry, b: LayerGeometry): boolean {
+  if (a === b) {
+    return true;
+  }
+  if (a.kind !== 'band' || b.kind !== 'band') {
+    return false;
+  }
+  return (
+    a.x === b.x &&
+    a.y === b.y &&
+    a.w === b.w &&
+    a.h === b.h &&
+    a.color === b.color &&
+    a.opacity === b.opacity
   );
 }
 

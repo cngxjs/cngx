@@ -14,7 +14,19 @@ export {
   type BandScale,
 } from './scales';
 
+export {
+  downsampleLTTB,
+  injectChartBuffer,
+  type CngxChartBuffer,
+  type ChartBufferOptions,
+} from './buffer';
+
 export { CngxChart } from './chart/chart.component';
+export {
+  createSignificantChangeTracker,
+  type CngxSignificantChange,
+} from './chart/significant-change';
+export { CngxChartAnnouncer } from './chart/chart-announcer.component';
 export {
   CNGX_CHART_CONTEXT,
   type CngxChartContext,
@@ -26,8 +38,11 @@ export {
   CngxChartLoading,
   CngxChartEmpty,
   CngxChartError,
+  CngxChartConnectionError,
+  CngxChartReconnecting,
   CHART_SMALL_BREAKPOINT_PX,
   type CngxChartErrorContext,
+  type CngxChartConnectionContext,
   type CngxChartSlotContext,
 } from './chart/template-slots';
 
@@ -53,6 +68,33 @@ export {
 } from './layers/scatter.component';
 export { CngxThreshold } from './layers/threshold.component';
 export { CngxBand } from './layers/band.component';
+export {
+  CNGX_CHART_LAYER,
+  type CngxChartLayer,
+  type LayerGeometry,
+} from './layers/chart-layer';
+
+export {
+  type CngxChartRenderer,
+  type CngxChartRendererFactory,
+  type ChartRendererDeps,
+} from './renderer/chart-renderer';
+export { createSvgRenderer } from './renderer/svg-renderer';
+export { createCanvasRenderer } from './renderer/canvas-renderer';
+export { CNGX_CHART_RENDERER_THRESHOLD } from './renderer/renderer-threshold';
+export {
+  CNGX_CHART_RENDERER_FACTORY,
+  createDefaultChartRenderer,
+  provideChartRenderer,
+  withChartRendererThreshold,
+  withChartRendererFactory,
+  type CngxChartRendererFeature,
+} from './renderer/renderer-factory';
+export {
+  createChartRendererController,
+  type CngxChartRendererController,
+  type ChartRendererControllerDeps,
+} from './renderer/chart-renderer-controller';
 
 export {
   CNGX_CHART_I18N,

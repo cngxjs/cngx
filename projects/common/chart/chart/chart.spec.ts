@@ -1,10 +1,29 @@
-import { Component, inject, signal } from '@angular/core';
+import {
+  Component,
+  effect,
+  EnvironmentInjector,
+  inject,
+  type Provider,
+  runInInjectionContext,
+  signal,
+} from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CngxChart } from './chart.component';
 import { CNGX_CHART_CONTEXT, type CngxChartContext } from './chart-context';
-import { CngxChartEmpty, CngxChartError } from './template-slots';
+import { CngxChartConnectionError, CngxChartEmpty, CngxChartError } from './template-slots';
+import { CngxAxis } from '../axis/axis.component';
+import { CngxLine } from '../layers/line.component';
+import { CngxBar } from '../layers/bar.component';
+import { type LayerGeometry } from '../layers/chart-layer';
+import { type CngxChartRendererFactory } from '../renderer/chart-renderer';
+import { createCanvasRenderer } from '../renderer/canvas-renderer';
+import {
+  provideChartRenderer,
+  withChartRendererFactory,
+  withChartRendererThreshold,
+} from '../renderer/renderer-factory';
 
 import { ResizeObserverMock } from '../testing/resize-observer-mock';
 
@@ -417,5 +436,251 @@ describe('CngxChart', () => {
       expect(chart.querySelector('.cngx-chart__loading')).toBeNull();
       expect(chart.querySelector('svg')).not.toBeNull();
     });
+  });
+});
+
+@Component({
+  standalone: true,
+  imports: [CngxChart, CngxAxis, CngxLine, CngxBar],
+  template: `
+    <cngx-chart [data]="data()" [width]="200" [height]="100" data-testid="chart">
+      <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 10]"></svg:g>
+      <svg:g cngxAxis position="left" type="linear" [domain]="[0, 10]"></svg:g>
+      <svg:g cngxLine></svg:g>
+      <svg:g cngxBar></svg:g>
+    </cngx-chart>
+  `,
+})
+class SwitchHost {
+  readonly data = signal<readonly number[]>([1, 2, 3, 4, 5]);
+}
+
+describe('CngxChart — auto-switch backend (Phase 3)', () => {
+  beforeEach(() => vi.stubGlobal('ResizeObserver', ResizeObserverMock));
+  afterEach(() => vi.unstubAllGlobals());
+
+  function mount(
+    providers: Provider[] = [],
+    data?: readonly number[],
+  ): { fixture: ReturnType<typeof TestBed.createComponent<SwitchHost>>; chart: HTMLElement } {
+    TestBed.configureTestingModule({ imports: [SwitchHost], providers });
+    const fixture = TestBed.createComponent(SwitchHost);
+    if (data) {
+      fixture.componentInstance.data.set(data);
+    }
+    fixture.detectChanges();
+    const chart = fixture.nativeElement.querySelector('[data-testid="chart"]') as HTMLElement;
+    return { fixture, chart };
+  }
+
+  it('stays on SVG below the threshold — layer atoms render, no canvas', () => {
+    const { chart } = mount();
+    expect(chart.querySelector('.cngx-line')).not.toBeNull();
+    expect(chart.querySelector('canvas')).toBeNull();
+  });
+
+  it('switches to canvas above the threshold — canvas mounts, layer SVG suppressed', () => {
+    const { chart } = mount([], Array.from({ length: 501 }, (_, i) => i % 10));
+    expect(chart.querySelector('canvas')).not.toBeNull();
+    expect(chart.querySelector('.cngx-line')).toBeNull();
+    expect(chart.querySelector('.cngx-bar')).toBeNull();
+  });
+
+  it('honours a factory override regardless of length', () => {
+    const alwaysCanvas: CngxChartRendererFactory = (_mode, deps) => createCanvasRenderer(deps);
+    const { chart } = mount([provideChartRenderer(withChartRendererFactory(alwaysCanvas))]);
+    expect(chart.querySelector('canvas')).not.toBeNull();
+  });
+
+  it('honours a threshold override, flipping to canvas at a lower count', () => {
+    const { chart } = mount(
+      [provideChartRenderer(withChartRendererThreshold(50))],
+      Array.from({ length: 51 }, (_, i) => i % 10),
+    );
+    expect(chart.querySelector('canvas')).not.toBeNull();
+    expect(chart.querySelector('.cngx-line')).toBeNull();
+  });
+
+  it('short-circuits the aggregate geometries computed when no layer changed', () => {
+    const { fixture } = mount();
+    const chartInstance = fixture.debugElement.query(By.directive(CngxChart))
+      .componentInstance as CngxChart<number>;
+    const geometries = (chartInstance as unknown as { geometries: () => readonly LayerGeometry[] })
+      .geometries;
+
+    const env = TestBed.inject(EnvironmentInjector);
+    let runs = 0;
+    runInInjectionContext(env, () => {
+      effect(() => {
+        geometries();
+        runs++;
+      });
+    });
+    TestBed.tick();
+    const base = runs;
+
+    // Fresh-reference array, identical values: every layer's geometry is
+    // reference-stable, so the mapped array short-circuits.
+    fixture.componentInstance.data.set([1, 2, 3, 4, 5]);
+    fixture.detectChanges();
+    TestBed.tick();
+    expect(runs).toBe(base);
+
+    // A genuine change flows through.
+    fixture.componentInstance.data.set([5, 4, 3, 2, 1]);
+    fixture.detectChanges();
+    TestBed.tick();
+    expect(runs).toBeGreaterThan(base);
+  });
+});
+
+describe('CngxChart — [connectionState] envelope (Phase 4)', () => {
+  beforeEach(() => vi.stubGlobal('ResizeObserver', ResizeObserverMock));
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('shows no connection overlay when [connectionState] is unbound', () => {
+    @Component({
+      standalone: true,
+      imports: [CngxChart],
+      template: `<cngx-chart [data]="[1, 2, 3]" [width]="200" [height]="100" data-testid="chart" />`,
+    })
+    class Host {}
+    TestBed.configureTestingModule({ imports: [Host] });
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+    const chart = fixture.nativeElement.querySelector('[data-testid="chart"]') as HTMLElement;
+    expect(chart.querySelector('.cngx-chart__connection-overlay')).toBeNull();
+  });
+
+  it('renders the reconnecting overlay (role=status) with the default i18n on refreshing', async () => {
+    const { createManualState } = await import('@cngx/common/data');
+    @Component({
+      standalone: true,
+      imports: [CngxChart],
+      template: `<cngx-chart [data]="[1, 2, 3]" [connectionState]="cs" [width]="200" [height]="100" data-testid="chart" />`,
+    })
+    class Host {
+      readonly cs = createManualState<unknown>();
+    }
+    TestBed.configureTestingModule({ imports: [Host] });
+    const fixture = TestBed.createComponent(Host);
+    fixture.componentInstance.cs.set('refreshing');
+    fixture.detectChanges();
+    const chart = fixture.nativeElement.querySelector('[data-testid="chart"]') as HTMLElement;
+    const overlay = chart.querySelector('.cngx-chart__connection-overlay--reconnecting');
+    expect(overlay).not.toBeNull();
+    expect(overlay?.getAttribute('role')).toBe('status');
+    expect(overlay?.textContent?.trim()).toBe('Reconnecting');
+    // Data view is not overridden by a connection blip.
+    expect(chart.querySelector('svg')).not.toBeNull();
+  });
+
+  it('renders the error overlay (role=alert) with the default i18n on connection error', async () => {
+    const { createManualState } = await import('@cngx/common/data');
+    @Component({
+      standalone: true,
+      imports: [CngxChart],
+      template: `<cngx-chart [data]="[1, 2, 3]" [connectionState]="cs" [width]="200" [height]="100" data-testid="chart" />`,
+    })
+    class Host {
+      readonly cs = createManualState<unknown>();
+    }
+    TestBed.configureTestingModule({ imports: [Host] });
+    const fixture = TestBed.createComponent(Host);
+    fixture.componentInstance.cs.setError(new Error('socket closed'));
+    fixture.detectChanges();
+    const chart = fixture.nativeElement.querySelector('[data-testid="chart"]') as HTMLElement;
+    const overlay = chart.querySelector('.cngx-chart__connection-overlay--error');
+    expect(overlay).not.toBeNull();
+    expect(overlay?.getAttribute('role')).toBe('alert');
+    expect(overlay?.textContent?.trim()).toBe('Connection lost');
+  });
+
+  it('projects the *cngxChartConnectionError slot template over the default banner', async () => {
+    const { createManualState } = await import('@cngx/common/data');
+    @Component({
+      standalone: true,
+      imports: [CngxChart, CngxChartConnectionError],
+      template: `
+        <cngx-chart [data]="[1, 2, 3]" [connectionState]="cs" [width]="200" [height]="100" data-testid="chart">
+          <ng-template cngxChartConnectionError>CUSTOM OFFLINE</ng-template>
+        </cngx-chart>
+      `,
+    })
+    class Host {
+      readonly cs = createManualState<unknown>();
+    }
+    TestBed.configureTestingModule({ imports: [Host] });
+    const fixture = TestBed.createComponent(Host);
+    fixture.componentInstance.cs.setError(new Error('down'));
+    fixture.detectChanges();
+    const chart = fixture.nativeElement.querySelector('[data-testid="chart"]') as HTMLElement;
+    const overlay = chart.querySelector('.cngx-chart__connection-overlay--error');
+    expect(overlay?.textContent?.trim()).toBe('CUSTOM OFFLINE');
+    expect(overlay?.getAttribute('role')).toBe('alert');
+  });
+
+  it('keeps the data [state] view independent of a connection error', async () => {
+    const { createManualState } = await import('@cngx/common/data');
+    @Component({
+      standalone: true,
+      imports: [CngxChart],
+      template: `<cngx-chart [data]="[1, 2, 3]" [state]="state" [connectionState]="cs" [width]="200" [height]="100" data-testid="chart" />`,
+    })
+    class Host {
+      readonly state = createManualState<readonly number[]>();
+      readonly cs = createManualState<unknown>();
+    }
+    TestBed.configureTestingModule({ imports: [Host] });
+    const fixture = TestBed.createComponent(Host);
+    fixture.componentInstance.state.setSuccess([1, 2, 3]);
+    fixture.componentInstance.cs.setError(new Error('blip'));
+    fixture.detectChanges();
+    const chart = fixture.nativeElement.querySelector('[data-testid="chart"]') as HTMLElement;
+    // Data content renders (svg), connection error overlays on top — no precedence contention.
+    expect(chart.querySelector('svg')).not.toBeNull();
+    expect(chart.querySelector('.cngx-chart__connection-overlay--error')).not.toBeNull();
+  });
+});
+
+describe('CngxChart — canvas overlay gated on the content view (Phase 3 blocker fix)', () => {
+  beforeEach(() => vi.stubGlobal('ResizeObserver', ResizeObserverMock));
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('suppresses the canvas overlay while a fallback view is active', async () => {
+    const { createManualState } = await import('@cngx/common/data');
+    @Component({
+      standalone: true,
+      imports: [CngxChart, CngxAxis, CngxLine],
+      template: `
+        <cngx-chart [data]="data" [state]="state" [width]="200" [height]="100" data-testid="chart">
+          <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 10]"></svg:g>
+          <svg:g cngxAxis position="left" type="linear" [domain]="[0, 10]"></svg:g>
+          <svg:g cngxLine></svg:g>
+        </cngx-chart>
+      `,
+    })
+    class Host {
+      readonly state = createManualState<readonly number[]>();
+      readonly data = Array.from({ length: 501 }, (_, i) => i % 10); // > threshold -> canvas
+    }
+    TestBed.configureTestingModule({ imports: [Host] });
+    const fixture = TestBed.createComponent(Host);
+
+    // Error on first load -> fallback view; canvas is mounted (canvas mode)
+    // but the content-hidden class suppresses it via CSS.
+    fixture.componentInstance.state.setError(new Error('feed down'));
+    fixture.detectChanges();
+    const chart = fixture.nativeElement.querySelector('[data-testid="chart"]') as HTMLElement;
+    expect(chart.classList.contains('cngx-chart--content-hidden')).toBe(true);
+    const canvas = chart.querySelector('canvas') as HTMLCanvasElement;
+    expect(canvas).not.toBeNull();
+    expect(getComputedStyle(canvas).display).toBe('none');
+
+    // Recover -> content view; canvas visible again.
+    fixture.componentInstance.state.setSuccess(fixture.componentInstance.data);
+    fixture.detectChanges();
+    expect(chart.classList.contains('cngx-chart--content-hidden')).toBe(false);
+    expect(getComputedStyle(canvas).display).not.toBe('none');
   });
 });

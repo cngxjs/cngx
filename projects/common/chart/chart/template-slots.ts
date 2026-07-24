@@ -117,3 +117,55 @@ export interface CngxChartErrorContext extends CngxChartSlotContext {
 export class CngxChartError {
   readonly templateRef = inject(TemplateRef<CngxChartErrorContext>);
 }
+
+/**
+ * Context for the connection-lifecycle slots (`*cngxChartConnectionError`,
+ * `*cngxChartReconnecting`). Extends the common slot context with the live
+ * connection error value via `$implicit` / `error`, mirroring
+ * {@link CngxChartErrorContext}. The connection channel is separate from
+ * the data `[state]` channel, so this context reflects `[connectionState]`.
+ *
+ * @category common/chart
+ */
+export interface CngxChartConnectionContext extends CngxChartSlotContext {
+  readonly $implicit: unknown;
+  readonly error: unknown;
+}
+
+/**
+ * `*cngxChartConnectionError` slot - overrides the default banner shown
+ * when `[connectionState]` reports `'error'` (connection lost). Overlaid on
+ * top of the data view with `role="alert"`; receives a
+ * {@link CngxChartConnectionContext}.
+ *
+ * @category common/chart
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/chart/template-slots.ts
+ * @since 0.1.0
+ * @relatedTo CngxChartReconnecting, CngxChart
+ */
+@Directive({
+  selector: 'ng-template[cngxChartConnectionError]',
+  standalone: true,
+})
+export class CngxChartConnectionError {
+  readonly templateRef = inject(TemplateRef<CngxChartConnectionContext>);
+}
+
+/**
+ * `*cngxChartReconnecting` slot - overrides the default subtle indicator
+ * shown when `[connectionState]` reports `'refreshing'` (reconnecting).
+ * Overlaid with `role="status"` (polite); receives a
+ * {@link CngxChartConnectionContext}.
+ *
+ * @category common/chart
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/chart/template-slots.ts
+ * @since 0.1.0
+ * @relatedTo CngxChartConnectionError, CngxChart
+ */
+@Directive({
+  selector: 'ng-template[cngxChartReconnecting]',
+  standalone: true,
+})
+export class CngxChartReconnecting {
+  readonly templateRef = inject(TemplateRef<CngxChartConnectionContext>);
+}

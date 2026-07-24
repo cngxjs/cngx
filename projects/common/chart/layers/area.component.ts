@@ -6,6 +6,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { injectChartContext } from '../chart/chart-context';
+import { CNGX_CHART_LAYER, type CngxChartLayer, type LayerGeometry } from './chart-layer';
 import { type CngxCurve } from '../path/curve';
 import {
   createPathBuilder,
@@ -44,12 +45,15 @@ import {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
+  providers: [{ provide: CNGX_CHART_LAYER, useExisting: CngxArea }],
   template: `
-    <svg:path
-      class="cngx-area"
-      [attr.d]="d()"
-      [attr.fill-opacity]="opacity()"
-    />
+    @if (ctx.renderSvg()) {
+      <svg:path
+        class="cngx-area"
+        [attr.d]="d()"
+        [attr.fill-opacity]="opacity()"
+      />
+    }
   `,
   styles: [
     `
@@ -70,7 +74,7 @@ import {
     `,
   ],
 })
-export class CngxArea<T = unknown> {
+export class CngxArea<T = unknown> implements CngxChartLayer {
   readonly accessor = input<LineYAccessor<T>>((d: T) => Number(d));
   readonly xAccessor = input<LineXAccessor<T> | undefined>(undefined);
   readonly opacity = input<number | string | null>(null);
@@ -78,7 +82,7 @@ export class CngxArea<T = unknown> {
   readonly baseline = input<number>(0);
   readonly data = input<readonly T[] | undefined>(undefined);
 
-  private readonly ctx = injectChartContext('CngxArea');
+  protected readonly ctx = injectChartContext('CngxArea');
 
   private readonly builder = computed<PathBuilder<T>>(() =>
     createPathBuilder<T>({
@@ -113,5 +117,37 @@ export class CngxArea<T = unknown> {
     },
     { equal: (a, b) => a === b },
   );
+
+  readonly geometry = computed<LayerGeometry>(
+    () => {
+      const op = this.opacity();
+      return {
+        kind: 'area',
+        d: this.d(),
+        color: null,
+        strokeWidth: null,
+        fill: null,
+        opacity: op == null ? null : Number(op),
+      };
+    },
+    { equal: areaGeomEqual },
+  );
+}
+
+/**
+ * Structural equality for area geometry: `d` string plus the numeric
+ * fill opacity. A no-op refresh rebuilding the same closed path does not
+ * cascade into the renderer.
+ *
+ * @internal
+ */
+function areaGeomEqual(a: LayerGeometry, b: LayerGeometry): boolean {
+  if (a === b) {
+    return true;
+  }
+  if (a.kind !== 'area' || b.kind !== 'area') {
+    return false;
+  }
+  return a.d === b.d && a.opacity === b.opacity;
 }
 

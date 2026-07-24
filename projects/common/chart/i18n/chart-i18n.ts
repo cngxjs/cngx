@@ -28,6 +28,9 @@ export interface CngxChartI18n {
   readonly valueColumnLabel: () => string;
   readonly trendChanged: (trend: 'up' | 'down' | 'flat') => string;
   readonly thresholdAlert: (threshold: number) => string;
+  readonly connectionLost: () => string;
+  readonly connectionReconnecting: () => string;
+  readonly connectionRestored: () => string;
   readonly empty: () => string;
   readonly loading: () => string;
   readonly error: () => string;
@@ -65,6 +68,9 @@ export const CNGX_CHART_I18N = new InjectionToken<CngxChartI18n>('CngxChartI18n'
           ? 'Trend changed to down'
           : 'Trend flattened',
     thresholdAlert: (threshold) => `Threshold ${threshold} crossed`,
+    connectionLost: () => 'Connection lost',
+    connectionReconnecting: () => 'Reconnecting',
+    connectionRestored: () => 'Connection restored',
     empty: () => 'No data',
     loading: () => 'Loading',
     error: () => 'Error loading chart',

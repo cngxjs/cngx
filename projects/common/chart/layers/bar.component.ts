@@ -6,6 +6,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { injectChartContext } from '../chart/chart-context';
+import { CNGX_CHART_LAYER, type CngxChartLayer, type LayerGeometry } from './chart-layer';
 
 /**
  * Reads the bar height (data-space Y) of a data row at index `i`.
@@ -58,15 +59,18 @@ const FALLBACK_BASELINE = 0;
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
+  providers: [{ provide: CNGX_CHART_LAYER, useExisting: CngxBar }],
   template: `
-    @for (rect of rects(); track rect.key) {
-      <svg:rect
-        class="cngx-bar"
-        [attr.x]="rect.x"
-        [attr.y]="rect.y"
-        [attr.width]="rect.width"
-        [attr.height]="rect.height"
-      />
+    @if (ctx.renderSvg()) {
+      @for (rect of rects(); track rect.key) {
+        <svg:rect
+          class="cngx-bar"
+          [attr.x]="rect.x"
+          [attr.y]="rect.y"
+          [attr.width]="rect.width"
+          [attr.height]="rect.height"
+        />
+      }
     }
   `,
   styles: [
@@ -88,13 +92,13 @@ const FALLBACK_BASELINE = 0;
     `,
   ],
 })
-export class CngxBar<T = unknown> {
+export class CngxBar<T = unknown> implements CngxChartLayer {
   readonly accessor = input<BarYAccessor<T>>(((d: T) => Number(d)) as BarYAccessor<T>);
   readonly gap = input<number>(0.1);
   readonly baseline = input<number>(FALLBACK_BASELINE);
   readonly data = input<readonly T[] | undefined>(undefined);
 
-  private readonly ctx = injectChartContext('CngxBar');
+  protected readonly ctx = injectChartContext('CngxBar');
 
   private readonly resolvedData = computed<readonly T[]>(() => {
     const local = this.data();
@@ -137,6 +141,35 @@ export class CngxBar<T = unknown> {
     },
     { equal: rectsEqual },
   );
+
+  readonly geometry = computed<LayerGeometry>(
+    () => ({
+      kind: 'bar',
+      rects: this.rects().map((r) => ({ x: r.x, y: r.y, w: r.width, h: r.height, color: null })),
+    }),
+    { equal: barGeomEqual },
+  );
+}
+
+/** @internal */
+function barGeomEqual(a: LayerGeometry, b: LayerGeometry): boolean {
+  if (a === b) {
+    return true;
+  }
+  if (a.kind !== 'bar' || b.kind !== 'bar') {
+    return false;
+  }
+  if (a.rects.length !== b.rects.length) {
+    return false;
+  }
+  for (let i = 0; i < a.rects.length; i++) {
+    const x = a.rects[i];
+    const y = b.rects[i];
+    if (x.x !== y.x || x.y !== y.y || x.w !== y.w || x.h !== y.h || x.color !== y.color) {
+      return false;
+    }
+  }
+  return true;
 }
 
 /** @internal */
