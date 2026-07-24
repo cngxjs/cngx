@@ -18,10 +18,10 @@ import { CNGX_CHART_I18N } from '../i18n/chart-i18n';
  * from the host, only the row content's accessibility-tree visibility
  * does.
  *
- * V1 surface is single-column ("Value") backed by the chart's
- * `summary`-projected numeric values. Phase 4+ may widen to one
- * column per layer accessor; the column header derivation is
- * intentionally minimal until that lands.
+ * The current surface is single-column ("Value") backed by the chart's
+ * `summary`-projected numeric values; the column header derivation is
+ * intentionally minimal, and may later widen to one column per layer
+ * accessor.
  *
  * @internal
  */

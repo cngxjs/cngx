@@ -608,8 +608,8 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
   /**
    * Auto-Summary derived from `data` and `<cngx-threshold>` content
    * children. Drives the host's reactive `aria-label`. Layer atoms do
-   * not contribute to the summary on Phase 3 - Phase 5/6 may extend
-   * with per-layer hints.
+   * not contribute to the summary today; per-layer hints may extend it
+   * later.
    */
   readonly summary = computed(
     () => {

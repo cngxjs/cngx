@@ -4,7 +4,7 @@ import { InjectionToken, type Signal } from '@angular/core';
  * Backend-agnostic geometry a layer atom publishes for rendering. A
  * discriminated union: each variant carries exactly the primitives its
  * kind needs, and nothing more. Both the SVG self-render path and the
- * Phase-3 Canvas renderer paint against this same shape, so a single
+ * Canvas renderer paint against this same shape, so a single
  * layer-authoring API drives either backend.
  *
  * Coordinates are already scale-projected (pixel space); `color` is
