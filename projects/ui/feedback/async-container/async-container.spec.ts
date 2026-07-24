@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createManualState } from '@cngx/common/data';
 import type { ManualAsyncState } from '@cngx/common/data';
 
@@ -14,7 +14,7 @@ import {
 
 @Component({
   template: `
-    <cngx-async-container [state]="state()">
+    <cngx-async-container [state]="state()" [showDelay]="showDelay()" [minDwell]="minDwell()">
       <ng-template cngxAsyncSkeleton>
         <div class="skeleton">Loading skeleton...</div>
       </ng-template>
@@ -46,10 +46,21 @@ import {
 })
 class TestHost {
   readonly state = signal<ManualAsyncState<string[]>>(createManualState<string[]>());
+  // 0/0 keeps the gated skeleton/refresh views effectively immediate (one macrotask,
+  // flipped via advanceTimersByTime). Flash-suppression tests override these.
+  readonly showDelay = signal(0);
+  readonly minDwell = signal(0);
 }
 
 describe('CngxAsyncContainer', () => {
-  beforeEach(() => TestBed.configureTestingModule({ imports: [TestHost] }));
+  beforeEach(() => {
+    TestBed.configureTestingModule({ imports: [TestHost] });
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
 
   function setup() {
     const fixture = TestBed.createComponent(TestHost);
@@ -59,6 +70,12 @@ describe('CngxAsyncContainer', () => {
     const container: HTMLElement = fixture.nativeElement.querySelector('cngx-async-container');
     const state = fixture.componentInstance.state();
     return { fixture, container, state };
+  }
+
+  // Fire the 0ms gate timers so the skeleton view / refresh bar reflects the state.
+  function openGate(fixture: ReturnType<typeof TestBed.createComponent>): void {
+    vi.advanceTimersByTime(1);
+    fixture.detectChanges();
   }
 
   function query(container: HTMLElement, sel: string): HTMLElement | null {
@@ -72,7 +89,7 @@ describe('CngxAsyncContainer', () => {
     state.set('loading');
     fixture.detectChanges();
     TestBed.flushEffects();
-    fixture.detectChanges();
+    openGate(fixture);
     expect(query(container, '.skeleton')).toBeTruthy();
     expect(query(container, '.content')).toBeNull();
   });
@@ -149,7 +166,7 @@ describe('CngxAsyncContainer', () => {
     state.set('refreshing');
     fixture.detectChanges();
     TestBed.flushEffects();
-    fixture.detectChanges();
+    openGate(fixture);
 
     expect(container.querySelector('cngx-loading-indicator')).toBeTruthy();
   });
@@ -288,5 +305,65 @@ describe('CngxAsyncContainer', () => {
     expect(query(container, '.content')).toBeNull();
     expect(query(container, '.empty')).toBeNull();
     expect(query(container, '.error')).toBeNull();
+  });
+
+  // --- Flash suppression (gate) ---
+
+  describe('flash suppression', () => {
+    it('never renders the skeleton outlet for a sub-showDelay first load', () => {
+      const { fixture, container, state } = setup();
+      fixture.componentInstance.showDelay.set(120);
+      state.set('loading');
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      // 100ms < 120ms: skeleton stays suppressed, but the region is genuinely busy.
+      vi.advanceTimersByTime(100);
+      fixture.detectChanges();
+      expect(query(container, '.skeleton')).toBeNull();
+      expect(container.getAttribute('aria-busy')).toBe('true');
+    });
+
+    it('never renders the refresh bar for a sub-showDelay refresh', () => {
+      const { fixture, container, state } = setup();
+      fixture.componentInstance.showDelay.set(120);
+      state.setSuccess(['Alice']);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      state.set('refreshing');
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      vi.advanceTimersByTime(100);
+      fixture.detectChanges();
+
+      expect(container.querySelector('cngx-loading-indicator')).toBeNull();
+    });
+
+    it('holds the refresh bar for minDwell after refreshing resolves', () => {
+      const { fixture, container, state } = setup();
+      fixture.componentInstance.minDwell.set(400);
+      state.setSuccess(['Alice']);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      state.set('refreshing');
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      openGate(fixture);
+      expect(container.querySelector('cngx-loading-indicator')).toBeTruthy();
+
+      // Refresh resolves quickly; the bar holds for minDwell rather than flashing out.
+      state.setSuccess(['Alice', 'Bob']);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      vi.advanceTimersByTime(200);
+      fixture.detectChanges();
+      expect(container.querySelector('cngx-loading-indicator')).toBeTruthy();
+
+      vi.advanceTimersByTime(200);
+      fixture.detectChanges();
+      expect(container.querySelector('cngx-loading-indicator')).toBeNull();
+    });
   });
 });

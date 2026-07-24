@@ -13,7 +13,12 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { type AsyncView, resolveAsyncView } from '@cngx/common/data';
-import type { AsyncStatus, CngxAsyncState } from '@cngx/core/utils';
+import {
+  createVisibilityGate,
+  injectLoadingConfig,
+  type AsyncStatus,
+  type CngxAsyncState,
+} from '@cngx/core/utils';
 
 import { CngxLoadingIndicator } from '../loading/loading-indicator';
 import { CngxToaster } from '../toast/toast.service';
@@ -133,7 +138,7 @@ export class CngxAsyncErrorTpl {
     '[attr.aria-label]': 'ariaLabel() || null',
   },
   template: `
-    @if (showRefreshIndicator()) {
+    @if (refreshVisible()) {
       <cngx-loading-indicator
         [loading]="true"
         variant="bar"
@@ -144,7 +149,7 @@ export class CngxAsyncErrorTpl {
 
     @switch (activeView()) {
       @case ('skeleton') {
-        @if (skeletonTpl(); as tpl) {
+        @if (skeletonVisible() && skeletonTpl(); as tpl) {
           <ng-container *ngTemplateOutlet="tpl.templateRef" />
         }
       }
@@ -181,9 +186,16 @@ export class CngxAsyncErrorTpl {
 })
 export class CngxAsyncContainer<T> {
   private readonly toaster = inject(CngxToaster, { optional: true });
+  private readonly loadingConfig = injectLoadingConfig();
 
   /** The async state to render. */
   readonly state = input.required<CngxAsyncState<T>>();
+
+  /** Delay in ms before the skeleton view / refresh bar shows. Defaults to `CNGX_LOADING_CONFIG.showDelay`. */
+  readonly showDelay = input<number>(this.loadingConfig.showDelay);
+
+  /** Minimum time in ms the skeleton view / refresh bar stays once shown. Defaults to `CNGX_LOADING_CONFIG.minDwell`. */
+  readonly minDwell = input<number>(this.loadingConfig.minDwell);
 
   /** Show refresh indicator bar during refresh/re-query. */
   readonly refreshIndicator = input<boolean>(true);
@@ -221,6 +233,24 @@ export class CngxAsyncContainer<T> {
     const status = s.status();
     return status === 'refreshing' || (status === 'loading' && !s.isFirstLoad());
   });
+
+  /**
+   * @internal - flash-suppressed first-load skeleton view. A sub-`showDelay` first
+   * load never renders the skeleton outlet; once shown it holds for `minDwell`. The
+   * region `aria-busy` stays truthful (`state().isBusy()`); only the visual is gated.
+   */
+  protected readonly skeletonVisible = createVisibilityGate(
+    computed(() => this.activeView() === 'skeleton'),
+    this.showDelay,
+    this.minDwell,
+  );
+
+  /** @internal - flash-suppressed refresh bar, gated by the same showDelay + minDwell. */
+  protected readonly refreshVisible = createVisibilityGate(
+    this.showRefreshIndicator,
+    this.showDelay,
+    this.minDwell,
+  );
 
   /** @internal */
   protected readonly contentContext = computed(() => ({
