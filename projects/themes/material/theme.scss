@@ -36,6 +36,7 @@
 @use './breadcrumb-theme' as breadcrumb;
 @use './card-theme' as card;
 @use './chart-theme' as chart;
+@use './chart-panel-theme' as chart-panel;
 @use './chip-theme' as chip;
 @use './close-button-theme' as close-button;
 @use './copy-block-theme' as copy-block;
@@ -64,6 +65,7 @@
 @use './slider-theme' as slider;
 @use './speak-button-theme' as speak;
 @use './stat-theme' as stat;
+@use './stat-card-theme' as stat-card;
 @use './status-theme' as status;
 @use './stepper-theme' as stepper;
 @use './tabs-theme' as tabs;
@@ -93,6 +95,7 @@
   @include breadcrumb.theme($theme);
   @include card.theme($theme);
   @include chart.theme($theme);
+  @include chart-panel.theme($theme);
   @include chip.theme($theme);
   @include close-button.theme($theme);
   @include controls.theme($theme);
@@ -122,6 +125,7 @@
   @include slider.theme($theme);
   @include speak.theme($theme);
   @include stat.theme($theme);
+  @include stat-card.theme($theme);
   @include status.theme($theme);
   @include stepper.theme($theme);
   @include tabs.theme($theme);
