@@ -42,6 +42,11 @@ export type CngxChartPanelLegendPosition = 'top' | 'bottom' | 'none';
  * projected title means a screen reader announces "Revenue by quarter, group"
  * instead of dropping the user into an unlabelled SVG (Pillar 2).
  *
+ * Panel-level busy marks the **header**, never the group. An `aria-busy` on the
+ * region would hold back the projected chart's own live announcements and tell
+ * AT that a perfectly stable chart is updating - the same boundary violation in
+ * the a11y layer that duplicating its view switch would be in the state layer.
+ *
  * ```html
  * <cngx-chart-panel>
  *   <h3 cngxChartPanelTitle>Revenue by quarter</h3>
@@ -73,12 +78,11 @@ export type CngxChartPanelLegendPosition = 'top' | 'bottom' | 'none';
     class: 'cngx-chart-panel',
     role: 'group',
     '[attr.aria-labelledby]': 'labelledBy()',
-    '[attr.aria-busy]': 'panelBusy() || null',
     '[attr.data-legend]': 'legendPosition()',
     '[class.cngx-chart-panel--busy]': 'panelBusy()',
   },
   template: `
-    <header class="cngx-chart-panel__header">
+    <header class="cngx-chart-panel__header" [attr.aria-busy]="panelBusy() || null">
       <div class="cngx-chart-panel__heading">
         <ng-content select="[cngxChartPanelTitle]" />
         <ng-content select="[cngxChartPanelSubtitle]" />

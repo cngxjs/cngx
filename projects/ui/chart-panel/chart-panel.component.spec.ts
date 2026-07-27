@@ -186,12 +186,23 @@ describe('CngxChartPanel chrome', () => {
     state.set({ status: 'refreshing', firstLoad: false });
     fixture.detectChanges();
     expect(slot.getAttribute('aria-disabled')).toBe('true');
-    expect(panel.getAttribute('aria-busy')).toBe('true');
 
     state.set({ status: 'success', firstLoad: false });
     fixture.detectChanges();
     expect(slot.getAttribute('aria-disabled')).toBeNull();
+  });
+
+  it('confines busy to the header, leaving the chart region unmarked', () => {
+    const { fixture, panel } = setup();
+    state.set({ status: 'refreshing', firstLoad: false });
+    fixture.detectChanges();
+
+    // aria-busy on the group would suppress the projected chart's own live
+    // announcements and claim a stable chart is updating.
     expect(panel.getAttribute('aria-busy')).toBeNull();
+    expect(panel.querySelector('.cngx-chart-panel__header')!.getAttribute('aria-busy')).toBe(
+      'true',
+    );
   });
 
   it('keeps the action cluster in the DOM while busy, rather than removing it', () => {
