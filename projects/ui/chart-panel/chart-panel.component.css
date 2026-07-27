@@ -1,0 +1,93 @@
+/* Default skin for the dashboard chart housing. All values are CSS custom
+   properties. Spacing tokens are SET from the global --cngx-space-* scale at
+   the host so a root [data-density] swap re-scales them. Colour use-sites
+   delegate to the foundation --cngx-color-* tokens (which already carry the
+   light/dark distinction) with a literal oklch fallback. --mat-sys-* never
+   appears here - the @cngx/themes Material bridge maps the component tokens
+   onto it.
+
+   Token SET lives in @layer cngx.tokens and the rules in @layer cngx.components
+   so the Material bridge (which sets tokens in cngx.components) overrides these
+   defaults. */
+
+@layer cngx.tokens {
+  .cngx-chart-panel {
+    display: flex;
+    flex-direction: column;
+
+    /* Spacing - SET from the scale so density tracks. */
+    --cngx-chart-panel-gap: var(--cngx-space-md, 1rem);
+    --cngx-chart-panel-header-gap: var(--cngx-space-sm, 0.5rem);
+    /* Half an xs rung - the scale has no finer step, and calc keeps it tracking
+       density instead of pinning a literal. */
+    --cngx-chart-panel-heading-gap: calc(var(--cngx-space-xs, 0.25rem) / 2);
+    --cngx-chart-panel-padding: var(--cngx-space-md, 1rem);
+    --cngx-chart-panel-footer-gap: var(--cngx-space-xs, 0.25rem);
+
+    gap: var(--cngx-chart-panel-gap);
+    padding: var(--cngx-chart-panel-padding);
+    background: var(--cngx-chart-panel-surface, var(--cngx-color-surface, oklch(1 0 0)));
+    border: 1px solid
+      var(--cngx-chart-panel-border, var(--cngx-color-border, oklch(0.88 0.005 250)));
+    border-radius: var(--cngx-chart-panel-radius, var(--cngx-radius-md, 8px));
+    color: var(--cngx-chart-panel-text, var(--cngx-color-text, oklch(0.2 0.01 250)));
+  }
+}
+
+@layer cngx.components {
+  @scope (.cngx-chart-panel) {
+    /* Title block left, actions right; wraps rather than crushing the actions
+       on a narrow tile. */
+    .cngx-chart-panel__header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: var(--cngx-chart-panel-header-gap);
+      flex-wrap: wrap;
+    }
+
+    .cngx-chart-panel__heading {
+      display: flex;
+      flex-direction: column;
+      gap: var(--cngx-chart-panel-heading-gap);
+      min-inline-size: 0;
+    }
+
+    .cngx-chart-panel__title {
+      margin: 0;
+      font-size: var(--cngx-chart-panel-title-size, 1rem);
+      font-weight: var(--cngx-chart-panel-title-weight, 600);
+    }
+
+    .cngx-chart-panel__subtitle {
+      font-size: var(--cngx-chart-panel-subtitle-size, 0.8125rem);
+      color: var(
+        --cngx-chart-panel-subtitle-color,
+        var(--cngx-color-text-muted, oklch(0.5 0.01 250))
+      );
+    }
+
+    .cngx-chart-panel__actions {
+      display: flex;
+      align-items: center;
+      gap: var(--cngx-chart-panel-footer-gap);
+    }
+
+    /* min-inline-size: 0 lets a flex child shrink below its SVG intrinsic
+       width, so a chart in a narrow panel scales instead of overflowing. */
+    .cngx-chart-panel__body {
+      min-inline-size: 0;
+    }
+
+    .cngx-chart-panel__footer {
+      display: flex;
+      align-items: center;
+      gap: var(--cngx-chart-panel-footer-gap);
+      font-size: var(--cngx-chart-panel-footer-size, 0.8125rem);
+      color: var(
+        --cngx-chart-panel-footer-color,
+        var(--cngx-color-text-muted, oklch(0.5 0.01 250))
+      );
+    }
+  }
+}
