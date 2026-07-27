@@ -54,6 +54,7 @@ export { CngxTrend } from './display/trend/trend.component';
 export { CngxDelta } from './display/delta/delta.component';
 export { type DeltaPolarity, type DeltaMode } from './display/shared/delta-format';
 export { CngxStat } from './display/stat/stat.component';
+export { CngxStatCoordinator } from './display/stat/stat-coordinator.directive';
 export {
   CngxStatLabel,
   CngxStatValue,
