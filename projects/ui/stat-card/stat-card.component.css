@@ -66,6 +66,15 @@
       color: var(--cngx-stat-card-stale-color, var(--cngx-color-text-muted, oklch(0.5 0.01 250)));
     }
 
+    /* The spinner treatment stands in for the same block the skeleton fills, so
+       a fast tile does not collapse its card height mid-refresh. */
+    .cngx-stat-card__spinner {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-block-size: var(--cngx-stat-card-placeholder-height, 3.5rem);
+    }
+
     .cngx-stat-card__skeleton {
       display: flex;
       flex-direction: column;

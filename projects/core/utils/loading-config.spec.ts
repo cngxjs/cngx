@@ -6,6 +6,7 @@ import {
   injectLoadingConfig,
   provideLoadingConfig,
   provideLoadingConfigAt,
+  resolveLoadingTreatment,
   withMinDwell,
   withShowDelay,
   withSpinnerVsSkeletonCutoff,
@@ -62,5 +63,34 @@ describe('CNGX_LOADING_CONFIG cascade', () => {
     const config = inject();
     config.showDelay = 999;
     expect(CNGX_LOADING_DEFAULTS.showDelay).toBe(120);
+  });
+});
+
+describe('resolveLoadingTreatment', () => {
+  const cutoff = 800;
+
+  it('returns an explicit treatment verbatim, whatever was measured', () => {
+    expect(resolveLoadingTreatment('spinner', 5000, cutoff)).toBe('spinner');
+    expect(resolveLoadingTreatment('skeleton', 5, cutoff)).toBe('skeleton');
+    expect(resolveLoadingTreatment('spinner', undefined, cutoff)).toBe('spinner');
+  });
+
+  it('defaults to a skeleton before any window has been measured', () => {
+    expect(resolveLoadingTreatment('auto', undefined, cutoff)).toBe('skeleton');
+  });
+
+  it('picks a spinner for a last window at or under the cutoff', () => {
+    expect(resolveLoadingTreatment('auto', 120, cutoff)).toBe('spinner');
+    expect(resolveLoadingTreatment('auto', cutoff, cutoff)).toBe('spinner');
+  });
+
+  it('picks a skeleton for a last window past the cutoff', () => {
+    expect(resolveLoadingTreatment('auto', cutoff + 1, cutoff)).toBe('skeleton');
+    expect(resolveLoadingTreatment('auto', 4000, cutoff)).toBe('skeleton');
+  });
+
+  it('tracks a re-tuned cutoff rather than a baked-in threshold', () => {
+    expect(resolveLoadingTreatment('auto', 300, 200)).toBe('skeleton');
+    expect(resolveLoadingTreatment('auto', 300, 2000)).toBe('spinner');
   });
 });

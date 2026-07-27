@@ -97,6 +97,50 @@ export function withSpinnerVsSkeletonCutoff(ms: number): CngxLoadingConfigFeatur
   return { _apply: (c) => ({ ...c, spinnerVsSkeletonCutoff: ms }) };
 }
 
+/**
+ * What a loading surface renders while it waits. `'auto'` defers to observed
+ * latency; the other two pin the treatment regardless of measurement.
+ *
+ * @category core/utils
+ */
+export type CngxLoadingTreatment = 'auto' | 'spinner' | 'skeleton';
+
+/**
+ * Pick a spinner or a skeleton from an observed busy-envelope duration.
+ *
+ * Completes the latency-aware set: {@link createLatencyProbe} measures,
+ * {@link CngxLoadingConfig.spinnerVsSkeletonCutoff} sets the threshold, and this
+ * turns the pair into a treatment. Pure, so a surface can call it inside a
+ * `computed()` without a side effect.
+ *
+ * Before any window has closed `lastDuration` is `undefined` and the answer is
+ * `'skeleton'`: a first load is the one with nothing cached and no measurement
+ * to argue otherwise, and a skeleton that resolves quickly reads better than a
+ * spinner that outstays a layout shift.
+ *
+ * @param requested The surface's `loadingTreatment`; anything but `'auto'` wins verbatim.
+ * @param lastDuration `createLatencyProbe().lastDuration()` - ms of the last completed window.
+ * @param cutoff `injectLoadingConfig().spinnerVsSkeletonCutoff`.
+ *
+ * @category core/utils
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/loading-config.ts
+ * @since 0.1.0
+ * @relatedTo createLatencyProbe, CNGX_LOADING_CONFIG, withSpinnerVsSkeletonCutoff
+ */
+export function resolveLoadingTreatment(
+  requested: CngxLoadingTreatment,
+  lastDuration: number | undefined,
+  cutoff: number,
+): Exclude<CngxLoadingTreatment, 'auto'> {
+  if (requested !== 'auto') {
+    return requested;
+  }
+  if (lastDuration === undefined) {
+    return 'skeleton';
+  }
+  return lastDuration > cutoff ? 'skeleton' : 'spinner';
+}
+
 function resolveLoadingConfig(features: CngxLoadingConfigFeature[]): CngxLoadingConfig {
   let config: CngxLoadingConfig = { ...CNGX_LOADING_DEFAULTS };
   for (const f of features) {

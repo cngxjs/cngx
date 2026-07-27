@@ -1,8 +1,14 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { CngxStatCaption, CngxStatDelta, CngxStatLabel, CngxStatValue } from '@cngx/common/data';
-import type { AsyncStatus, CngxAsyncState } from '@cngx/core/utils';
-import { beforeEach, describe, expect, it } from 'vitest';
+import {
+  provideLoadingConfig,
+  withSpinnerVsSkeletonCutoff,
+  type AsyncStatus,
+  type CngxAsyncState,
+  type CngxLoadingTreatment,
+} from '@cngx/core/utils';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxStatCard } from './stat-card.component';
 import { CngxStatCardFooter, CngxStatCardViz } from './stat-card-slots';
@@ -46,6 +52,18 @@ function makeState(): CngxAsyncState<unknown> & {
       }
     },
   };
+}
+
+@Component({
+  standalone: true,
+  imports: [CngxStatCard],
+  template: `
+    <cngx-stat-card [state]="state()" [loadingTreatment]="treatment()" />
+  `,
+})
+class TreatmentHost {
+  state = signal<CngxAsyncState<unknown> | undefined>(undefined);
+  treatment = signal<CngxLoadingTreatment>('auto');
 }
 
 @Component({
@@ -166,5 +184,115 @@ describe('CngxStatCard', () => {
     fixture.detectChanges();
     expect(card.querySelector('[role="group"]')).not.toBeNull();
     expect(card.querySelector('.cngx-stat-card__skeleton')).toBeNull();
+  });
+});
+
+describe('CngxStatCard loading treatment', () => {
+  let state: ReturnType<typeof makeState>;
+
+  beforeEach(() => {
+    state = makeState();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  function setup(providers: unknown[] = []) {
+    TestBed.configureTestingModule({
+      imports: [TreatmentHost],
+      providers: providers as never[],
+    });
+    const fixture = TestBed.createComponent(TreatmentHost);
+    fixture.componentInstance.state.set(state);
+    fixture.detectChanges();
+    const card: HTMLElement = fixture.nativeElement.querySelector('cngx-stat-card');
+    return { fixture, card, host: fixture.componentInstance };
+  }
+
+  function isSkeleton(card: HTMLElement): boolean {
+    return card.querySelector('.cngx-stat-card__skeleton') !== null;
+  }
+
+  function isSpinner(card: HTMLElement): boolean {
+    return card.querySelector('.cngx-stat-card__spinner') !== null;
+  }
+
+  it('pins the skeleton when asked, regardless of measurement', () => {
+    const { fixture, card, host } = setup();
+    host.treatment.set('skeleton');
+    state.set({ status: 'loading', firstLoad: true });
+    fixture.detectChanges();
+
+    expect(isSkeleton(card)).toBe(true);
+    expect(isSpinner(card)).toBe(false);
+  });
+
+  it('pins the spinner when asked', () => {
+    const { fixture, card, host } = setup();
+    host.treatment.set('spinner');
+    state.set({ status: 'loading', firstLoad: true });
+    fixture.detectChanges();
+
+    expect(isSpinner(card)).toBe(true);
+    expect(isSkeleton(card)).toBe(false);
+  });
+
+  it('shows a skeleton on the very first load, with nothing measured yet', () => {
+    const { fixture, card } = setup();
+    state.set({ status: 'loading', firstLoad: true });
+    fixture.detectChanges();
+
+    expect(isSkeleton(card)).toBe(true);
+  });
+
+  it('switches to a spinner after a fast window closed', () => {
+    // performance.now() drives the probe, so it must be faked alongside timers
+    // for the measured window to be deterministic.
+    vi.useFakeTimers({ toFake: ['performance'] });
+    const { fixture, card } = setup();
+
+    state.set({ status: 'loading', firstLoad: true });
+    fixture.detectChanges();
+    vi.advanceTimersByTime(50);
+    state.set({ status: 'success', firstLoad: false });
+    fixture.detectChanges();
+
+    // Second load: the 50ms window is well under the 800ms default cutoff.
+    state.set({ status: 'refreshing', firstLoad: true });
+    fixture.detectChanges();
+    expect(isSpinner(card)).toBe(true);
+    expect(isSkeleton(card)).toBe(false);
+  });
+
+  it('stays on the skeleton after a slow window closed', () => {
+    vi.useFakeTimers({ toFake: ['performance'] });
+    const { fixture, card } = setup();
+
+    state.set({ status: 'loading', firstLoad: true });
+    fixture.detectChanges();
+    vi.advanceTimersByTime(3000);
+    state.set({ status: 'success', firstLoad: false });
+    fixture.detectChanges();
+
+    state.set({ status: 'refreshing', firstLoad: true });
+    fixture.detectChanges();
+    expect(isSkeleton(card)).toBe(true);
+  });
+
+  it('reads the cutoff from the config cascade, not a baked-in threshold', () => {
+    vi.useFakeTimers({ toFake: ['performance'] });
+    const { fixture, card } = setup([provideLoadingConfig(withSpinnerVsSkeletonCutoff(20))]);
+
+    state.set({ status: 'loading', firstLoad: true });
+    fixture.detectChanges();
+    vi.advanceTimersByTime(50);
+    state.set({ status: 'success', firstLoad: false });
+    fixture.detectChanges();
+
+    // 50ms would be "fast" under the 800ms default; against a 20ms cutoff it is slow.
+    state.set({ status: 'refreshing', firstLoad: true });
+    fixture.detectChanges();
+    expect(isSkeleton(card)).toBe(true);
   });
 });

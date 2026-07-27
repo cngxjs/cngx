@@ -9,7 +9,14 @@ import {
 import { CngxCard } from '@cngx/common/card';
 import { CNGX_STAT, CngxStatCoordinator, resolveAsyncView } from '@cngx/common/data';
 import { CngxSkeleton } from '@cngx/common/layout';
-import type { CngxAsyncState } from '@cngx/core/utils';
+import {
+  createLatencyProbe,
+  injectLoadingConfig,
+  resolveLoadingTreatment,
+  type CngxAsyncState,
+  type CngxLoadingTreatment,
+} from '@cngx/core/utils';
+import { CngxLoadingIndicator } from '@cngx/ui/feedback';
 
 /**
  * Card-framed KPI tile: one `<cngx-stat-card>` renders a complete dashboard
@@ -53,7 +60,7 @@ import type { CngxAsyncState } from '@cngx/core/utils';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [CngxCard, CngxSkeleton],
+  imports: [CngxCard, CngxSkeleton, CngxLoadingIndicator],
   hostDirectives: [CngxStatCoordinator],
   providers: [{ provide: CNGX_STAT, useExisting: CngxStatCoordinator }],
   host: {
@@ -65,16 +72,22 @@ import type { CngxAsyncState } from '@cngx/core/utils';
     <cngx-card>
       @switch (activeView()) {
         @case ('skeleton') {
-          <div
-            class="cngx-stat-card__skeleton"
-            [cngxSkeleton]="true"
-            [count]="3"
-            #sk="cngxSkeleton"
-          >
-            @for (i of sk.indices(); track i) {
-              <div class="cngx-stat-card__skeleton-line" aria-hidden="true"></div>
-            }
-          </div>
+          @if (resolvedTreatment() === 'skeleton') {
+            <div
+              class="cngx-stat-card__skeleton"
+              [cngxSkeleton]="true"
+              [count]="3"
+              #sk="cngxSkeleton"
+            >
+              @for (i of sk.indices(); track i) {
+                <div class="cngx-stat-card__skeleton-line" aria-hidden="true"></div>
+              }
+            </div>
+          } @else {
+            <div class="cngx-stat-card__spinner">
+              <cngx-loading-indicator [loading]="true" variant="spinner" [label]="busyLabel()" />
+            </div>
+          }
         }
         @case ('error') {
           <p class="cngx-stat-card__error">{{ errorText() }}</p>
@@ -120,6 +133,17 @@ export class CngxStatCard {
     { transform: (v) => (typeof v === 'string' ? undefined : v) },
   );
 
+  /**
+   * What the card shows while it loads. `'auto'` (default) picks from the
+   * latency the tile itself observed: a tile whose last load was quick shows a
+   * spinner blip, one whose last load dragged shows a skeleton. `'spinner'` and
+   * `'skeleton'` pin the choice.
+   */
+  readonly loadingTreatment = input<CngxLoadingTreatment>('auto');
+
+  /** Accessible label announced while the card is loading. */
+  readonly busyLabel = input<string>('Loading');
+
   /** Message shown instead of the stat when the first load failed. */
   readonly errorText = input<string>('Could not load');
 
@@ -128,6 +152,29 @@ export class CngxStatCard {
 
   /** Whether any operation is running. Drives `aria-busy` (Pillar 2). */
   readonly busy = computed(() => this.state()?.isBusy() ?? false);
+
+  private readonly loadingConfig = injectLoadingConfig();
+
+  /**
+   * Measures how long this tile's own busy windows last. The measurement is a
+   * wall-clock sample the probe writes from an effect; the selection below stays
+   * a pure `computed()`, so nothing in the reactive graph writes state.
+   */
+  private readonly probe = createLatencyProbe(() => this.busy());
+
+  /**
+   * Spinner or skeleton for the current load, from the observed latency and the
+   * cascaded cutoff. Never a hardcoded millisecond threshold - the cutoff always
+   * comes from `CNGX_LOADING_CONFIG`, so one `provideLoadingConfig(...)` retunes
+   * every tile in the app.
+   */
+  readonly resolvedTreatment = computed(() =>
+    resolveLoadingTreatment(
+      this.loadingTreatment(),
+      this.probe.lastDuration(),
+      this.loadingConfig.spinnerVsSkeletonCutoff,
+    ),
+  );
 
   /**
    * Which body the card renders. Delegates to the shared `resolveAsyncView`
