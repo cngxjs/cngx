@@ -1,0 +1,43 @@
+@use '@angular/material' as mat;
+
+// Material bridge for CngxStatCard. Default visuals ship with the component
+// (projects/ui/stat-card/stat-card.component.css) and read the cngx foundation
+// --cngx-color-* tokens with literal oklch fallbacks; this file is the single
+// place that aligns the KPI tile's tokens with Material so a dashboard of stat
+// cards feels native next to Material surfaces.
+//
+// The card frame itself is themed by card-theme (the tile renders a cngx-card);
+// only the tokens the stat card adds on top live here. Every token is a leaf
+// read through a use-site var(), so a host-level :where() assignment reaches
+// the skeleton, spinner, error and stale surfaces alike. --mat-sys-* appears
+// only here.
+//
+//   @use '@angular/material' as mat;
+//   @use '@cngx/themes/material/stat-card-theme' as stat-card;
+//   html { @include stat-card.theme($theme); }
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-stat-card-footer-color: var(--mat-sys-on-surface-variant);
+    --cngx-stat-card-error-color: var(--mat-sys-error);
+    --cngx-stat-card-stale-color: var(--mat-sys-on-surface-variant);
+    --cngx-stat-card-skeleton-color: var(--mat-sys-surface-variant);
+  } @else {
+    $secondary: mat.get-theme-color($theme, foreground, secondary-text);
+    $divider: mat.get-theme-color($theme, foreground, divider);
+    $error: mat.get-theme-color($theme, warn);
+
+    --cngx-stat-card-footer-color: #{$secondary};
+    --cngx-stat-card-error-color: #{$error};
+    --cngx-stat-card-stale-color: #{$secondary};
+    --cngx-stat-card-skeleton-color: #{rgba($divider, 0.42)};
+  }
+}
+
+@mixin theme($theme) {
+  @layer cngx.components {
+    :where(cngx-stat-card) {
+      @include color($theme);
+    }
+  }
+}

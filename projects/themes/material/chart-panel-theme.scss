@@ -1,0 +1,45 @@
+@use '@angular/material' as mat;
+
+// Material bridge for CngxChartPanel. Default visuals ship with the component
+// (projects/ui/chart-panel/chart-panel.component.css) and read the cngx
+// foundation --cngx-color-* tokens with literal oklch fallbacks; this file is
+// the single place that aligns the panel chrome with Material so a dashboard
+// panel framing a chart feels native next to Material cards.
+//
+// Only chrome tokens live here - the projected cngx-chart themes itself. Every
+// token is a leaf read through a use-site var(), never re-SET in a
+// [data-legend] scope, so a host-level :where() assignment reaches all legend
+// placements alike. --mat-sys-* appears only here.
+//
+//   @use '@angular/material' as mat;
+//   @use '@cngx/themes/material/chart-panel-theme' as chart-panel;
+//   html { @include chart-panel.theme($theme); }
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-chart-panel-text: var(--mat-sys-on-surface);
+    --cngx-chart-panel-surface: var(--mat-sys-surface);
+    --cngx-chart-panel-border: var(--mat-sys-outline-variant);
+    --cngx-chart-panel-subtitle-color: var(--mat-sys-on-surface-variant);
+    --cngx-chart-panel-footer-color: var(--mat-sys-on-surface-variant);
+  } @else {
+    $surface: mat.get-theme-color($theme, background, card);
+    $text: mat.get-theme-color($theme, foreground, text);
+    $secondary: mat.get-theme-color($theme, foreground, secondary-text);
+    $divider: mat.get-theme-color($theme, foreground, divider);
+
+    --cngx-chart-panel-text: #{$text};
+    --cngx-chart-panel-surface: #{$surface};
+    --cngx-chart-panel-border: #{rgba($divider, 0.42)};
+    --cngx-chart-panel-subtitle-color: #{$secondary};
+    --cngx-chart-panel-footer-color: #{$secondary};
+  }
+}
+
+@mixin theme($theme) {
+  @layer cngx.components {
+    :where(cngx-chart-panel) {
+      @include color($theme);
+    }
+  }
+}

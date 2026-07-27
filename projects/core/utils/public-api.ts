@@ -17,6 +17,8 @@ export { createLatencyProbe, type CngxLatencyProbe } from './latency-probe';
 export {
   type CngxLoadingConfig,
   type CngxLoadingConfigFeature,
+  type CngxLoadingTreatment,
+  resolveLoadingTreatment,
   CNGX_LOADING_DEFAULTS,
   CNGX_LOADING_CONFIG,
   withShowDelay,
