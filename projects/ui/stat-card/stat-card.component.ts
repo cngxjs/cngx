@@ -56,6 +56,10 @@ import { injectStatCardConfig } from './config/inject-stat-card-config';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/stat-card/stat-card.component.ts
  * @since 0.1.0
  * @relatedTo CngxStat, CngxStatCoordinator, CngxStatCardViz, CngxStatCardFooter, CngxCard
+ *
+ * <example-url>http://localhost:4200/#/ui/stat-card/basic/composed-kpi-tile</example-url>
+ * <example-url>http://localhost:4200/#/ui/stat-card/async/latency-aware-loading</example-url>
+ * <example-url>http://localhost:4200/#/ui/stat-card/async/error-and-refresh</example-url>
  */
 @Component({
   selector: 'cngx-stat-card',

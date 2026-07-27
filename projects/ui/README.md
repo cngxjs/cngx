@@ -78,6 +78,87 @@ need `@if`/`@for` boilerplate.
 
 **Selector:** `cngx-skeleton` -- exportAs `"cngxSkeletonContainer"`
 
+### CngxStatCard
+
+Card-framed KPI tile. One `<cngx-stat-card [state]="s">` renders the whole
+dashboard metric: card surface, the four coordinated stat slots, an inline
+visualisation and a footer, with the async view switch derived from `[state]`.
+
+The stat slots are the existing `cngxStat*` atoms from `@cngx/common/data`, not
+copies. They resolve `CNGX_STAT` at their declaration site, so the card hosts
+the shared `CngxStatCoordinator` brain and re-points the token at it - the same
+shape `CngxIncrementalList` uses for `CNGX_PAGINATOR_HOST`. The tile therefore
+carries one accessible name in reading order instead of four fragments.
+
+```html
+<cngx-stat-card [state]="revenue" live="polite">
+  <span cngxStatLabel>Revenue</span>
+  <cngx-metric cngxStatValue [value]="1.2" unit="M EUR" />
+  <cngx-delta cngxStatDelta [value]="5.3" />
+  <span cngxStatCaption>vs. last quarter</span>
+  <cngx-sparkline cngxStatCardViz [data]="trend()" />
+</cngx-stat-card>
+```
+
+**Inputs:** `state` (`CngxAsyncState<unknown>`), `loadingTreatment`
+(`'auto' | 'spinner' | 'skeleton'`), `live` (`'off' | 'polite' | 'assertive'`),
+`busyLabel`, `errorText`, `staleText`
+
+**Slots:** `cngxStatLabel` / `cngxStatValue` / `cngxStatDelta` /
+`cngxStatCaption` (re-exported), plus `cngxStatCardViz` and `cngxStatCardFooter`
+
+With `loadingTreatment="auto"` the tile picks spinner vs skeleton from the
+latency it observed. The threshold is never hardcoded - it comes from
+`CNGX_LOADING_CONFIG`, so one `provideLoadingConfig(...)` retunes every tile.
+
+**Config:** `provideStatCardConfig` / `provideStatCardConfigAt` /
+`injectStatCardConfig`, features `withStatCardAriaLabels` and
+`withStatCardLoadingTreatment`
+
+**Selector:** `cngx-stat-card` -- entry `@cngx/ui/stat-card`
+
+### CngxChartPanel
+
+Dashboard housing for a chart: title, subtitle, header actions, legend
+placement and footer. `role="group"` plus an `aria-labelledby` pointing at the
+projected title makes the region announce as one named unit rather than
+dropping the user into an unlabelled SVG.
+
+The panel frames a projected `cngx-chart` and never duplicates its machine. The
+chart keeps owning its data async envelope, its view switch and its SR data
+table; panel-level `[state]` drives header chrome only. `aria-busy` sits on the
+header, not on the group - on the region it would hold back the chart's own live
+announcements and claim a stable chart is updating.
+
+```html
+<cngx-chart-panel [state]="rangeSwitch" legendPosition="bottom">
+  <h3 cngxChartPanelTitle>Revenue by quarter</h3>
+  <span cngxChartPanelSubtitle>EUR, net</span>
+  <button cngxChartPanelActions type="button">Change range</button>
+
+  <cngx-chart [data]="series" [state]="chartState">
+    <svg:g cngxLine [data]="series"></svg:g>
+  </cngx-chart>
+
+  <cngx-chart-legend [items]="legend" />
+</cngx-chart-panel>
+```
+
+**Inputs:** `state` (`CngxAsyncState<unknown>`), `legendPosition`
+(`'top' | 'bottom' | 'none'`)
+
+**Slots:** `cngxChartPanelTitle`, `cngxChartPanelSubtitle`,
+`cngxChartPanelActions`, `cngxChartPanelFooter`
+
+The legend slot matches the bare `cngx-chart-legend` tag; a legend wrapped in an
+element of your own lands in the body instead.
+
+**Config:** `provideChartPanelConfig` / `provideChartPanelConfigAt` /
+`injectChartPanelConfig`, features `withChartPanelAriaLabels` and
+`withChartPanelLegendPosition`
+
+**Selector:** `cngx-chart-panel` -- entry `@cngx/ui/chart-panel`
+
 ### CngxActionButton
 
 Action button molecule with built-in async status communication. Composes
