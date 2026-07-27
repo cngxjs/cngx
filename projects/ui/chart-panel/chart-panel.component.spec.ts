@@ -1,6 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import type { AsyncStatus, CngxAsyncState } from '@cngx/core/utils';
+import type { CngxAsyncState } from '@cngx/core/utils';
+import { createAsyncStateMock, type AsyncStateMock } from '@cngx/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { CngxChartPanel, type CngxChartPanelLegendPosition } from './chart-panel.component';
@@ -10,43 +11,6 @@ import {
   CngxChartPanelSubtitle,
   CngxChartPanelTitle,
 } from './chart-panel-slots';
-
-/**
- * Hand-rolled state so each spec drives `status` independently. The panel reads
- * only the interface, never a producer.
- */
-function makeState(): CngxAsyncState<unknown> & {
-  set(patch: { status?: AsyncStatus; firstLoad?: boolean }): void;
-} {
-  const status = signal<AsyncStatus>('idle');
-  const firstLoad = signal(true);
-  const busy = signal(false);
-
-  return {
-    status,
-    data: signal<unknown>(undefined),
-    error: signal<unknown>(undefined),
-    progress: signal<number | undefined>(undefined),
-    isLoading: busy,
-    isPending: signal(false),
-    isRefreshing: signal(false),
-    isBusy: busy,
-    isFirstLoad: firstLoad,
-    isEmpty: signal(false),
-    hasData: signal(false),
-    isSettled: signal(false),
-    lastUpdated: signal<Date | undefined>(undefined),
-    set(patch) {
-      if (patch.status !== undefined) {
-        status.set(patch.status);
-        busy.set(['loading', 'pending', 'refreshing'].includes(patch.status));
-      }
-      if (patch.firstLoad !== undefined) {
-        firstLoad.set(patch.firstLoad);
-      }
-    },
-  };
-}
 
 @Component({
   standalone: true,
@@ -147,10 +111,10 @@ class ChromeHost {
 }
 
 describe('CngxChartPanel chrome', () => {
-  let state: ReturnType<typeof makeState>;
+  let state: AsyncStateMock;
 
   beforeEach(() => {
-    state = makeState();
+    state = createAsyncStateMock();
     TestBed.configureTestingModule({ imports: [ChromeHost] });
   });
 

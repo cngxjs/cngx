@@ -4,55 +4,14 @@ import { CngxStatCaption, CngxStatDelta, CngxStatLabel, CngxStatValue } from '@c
 import {
   provideLoadingConfig,
   withSpinnerVsSkeletonCutoff,
-  type AsyncStatus,
   type CngxAsyncState,
   type CngxLoadingTreatment,
 } from '@cngx/core/utils';
+import { createAsyncStateMock, type AsyncStateMock } from '@cngx/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxStatCard } from './stat-card.component';
 import { CngxStatCardFooter, CngxStatCardViz } from './stat-card-slots';
-
-/**
- * Hand-rolled state so each spec drives `status` / `isFirstLoad` / `isEmpty`
- * independently. The card reads only the interface, never a producer.
- */
-function makeState(): CngxAsyncState<unknown> & {
-  set(patch: { status?: AsyncStatus; firstLoad?: boolean; empty?: boolean }): void;
-} {
-  const status = signal<AsyncStatus>('idle');
-  const firstLoad = signal(true);
-  const empty = signal(false);
-  const busy = signal(false);
-
-  return {
-    status,
-    data: signal<unknown>(undefined),
-    error: signal<unknown>(undefined),
-    progress: signal<number | undefined>(undefined),
-    isLoading: busy,
-    isPending: signal(false),
-    isRefreshing: signal(false),
-    isBusy: busy,
-    isFirstLoad: firstLoad,
-    isEmpty: empty,
-    hasData: signal(false),
-    isSettled: signal(false),
-    lastUpdated: signal<Date | undefined>(undefined),
-    set(patch) {
-      if (patch.status !== undefined) {
-        status.set(patch.status);
-        busy.set(['loading', 'pending', 'refreshing'].includes(patch.status));
-      }
-      if (patch.firstLoad !== undefined) {
-        firstLoad.set(patch.firstLoad);
-      }
-      if (patch.empty !== undefined) {
-        empty.set(patch.empty);
-      }
-    },
-  };
-}
 
 @Component({
   standalone: true,
@@ -105,10 +64,10 @@ class TestHost {
 }
 
 describe('CngxStatCard', () => {
-  let state: ReturnType<typeof makeState>;
+  let state: AsyncStateMock;
 
   beforeEach(() => {
-    state = makeState();
+    state = createAsyncStateMock();
     TestBed.configureTestingModule({ imports: [TestHost] });
   });
 
@@ -203,10 +162,10 @@ describe('CngxStatCard', () => {
 });
 
 describe('CngxStatCard loading treatment', () => {
-  let state: ReturnType<typeof makeState>;
+  let state: AsyncStateMock;
 
   beforeEach(() => {
-    state = makeState();
+    state = createAsyncStateMock();
   });
 
   afterEach(() => {
@@ -313,10 +272,10 @@ describe('CngxStatCard loading treatment', () => {
 });
 
 describe('CngxStatCard live region', () => {
-  let state: ReturnType<typeof makeState>;
+  let state: AsyncStateMock;
 
   beforeEach(() => {
-    state = makeState();
+    state = createAsyncStateMock();
     TestBed.configureTestingModule({ imports: [LiveHost] });
   });
 
