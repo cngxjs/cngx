@@ -26,6 +26,7 @@ export const LIBRARY_SCOPES = [
   'common/dialog',
   'common/data',
   'common/layout',
+  'common/timeline',
   'forms',
   'forms/controls',
   'forms/validators',
