@@ -135,18 +135,15 @@ describe('CngxChartPanel', () => {
   standalone: true,
   imports: [CngxChartPanel, CngxChartPanelActions],
   template: `
-    <cngx-chart-panel [state]="state()" [legendPosition]="legend()" [hasBody]="hasBody()">
+    <cngx-chart-panel [state]="state()" [legendPosition]="legend()">
       <button cngxChartPanelActions type="button">Refresh</button>
-      @if (hasBody()) {
-        <div class="fake-chart">chart body</div>
-      }
+      <div class="fake-chart">chart body</div>
     </cngx-chart-panel>
   `,
 })
 class ChromeHost {
   state = signal<CngxAsyncState<unknown> | undefined>(undefined);
   legend = signal<CngxChartPanelLegendPosition>('bottom');
-  hasBody = signal(true);
 }
 
 describe('CngxChartPanel chrome', () => {
@@ -220,20 +217,6 @@ describe('CngxChartPanel chrome', () => {
     // The demarcation: panel busy dims chrome only. The chart body neither
     // disappears nor gains a panel-owned placeholder over it.
     expect(panel.querySelector('.fake-chart')!.textContent).toContain('chart body');
-    expect(panel.querySelector('.cngx-chart-panel__placeholder')).toBeNull();
-  });
-
-  it('shows a panel placeholder only before a chart body exists', () => {
-    const { fixture, panel, host } = setup();
-    host.hasBody.set(false);
-    state.set({ status: 'loading', firstLoad: true });
-    fixture.detectChanges();
-
-    expect(panel.querySelector('.cngx-chart-panel__placeholder')).not.toBeNull();
-
-    host.hasBody.set(true);
-    fixture.detectChanges();
-    expect(panel.querySelector('.cngx-chart-panel__placeholder')).toBeNull();
   });
 
   it('owns no async view switch of its own', () => {

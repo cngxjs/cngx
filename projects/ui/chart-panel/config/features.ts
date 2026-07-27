@@ -1,5 +1,3 @@
-import type { CngxLoadingTreatment } from '@cngx/core/utils';
-
 import type { CngxChartPanelLegendPosition } from '../chart-panel.component';
 import type { CngxChartPanelConfig } from './chart-panel.config';
 import type { CngxChartPanelConfigFeature } from './provide-chart-panel-config';
@@ -28,17 +26,4 @@ export function withChartPanelLegendPosition(
   position: CngxChartPanelLegendPosition,
 ): CngxChartPanelConfigFeature {
   return { kind: 'legendPosition', payload: { legendPosition: position } };
-}
-
-/**
- * Move the cascade default for the panel-level placeholder treatment.
- * Per-instance `[loadingTreatment]` still wins.
- *
- * @category ui/chart-panel
- * @since 0.1.0
- */
-export function withChartPanelLoadingTreatment(
-  treatment: CngxLoadingTreatment,
-): CngxChartPanelConfigFeature {
-  return { kind: 'loadingTreatment', payload: { loadingTreatment: treatment } };
 }

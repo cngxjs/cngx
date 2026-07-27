@@ -4,11 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 import { CngxChartPanel } from '../chart-panel.component';
 import { CNGX_CHART_PANEL_DEFAULTS } from './chart-panel.config.defaults';
-import {
-  withChartPanelAriaLabels,
-  withChartPanelLegendPosition,
-  withChartPanelLoadingTreatment,
-} from './features';
+import { withChartPanelAriaLabels, withChartPanelLegendPosition } from './features';
 import { injectChartPanelConfig } from './inject-chart-panel-config';
 import { provideChartPanelConfig, provideChartPanelConfigAt } from './provide-chart-panel-config';
 
@@ -21,7 +17,6 @@ describe('CNGX_CHART_PANEL_CONFIG cascade', () => {
     expect(read()).toEqual({
       ariaLabels: { busy: 'Updating' },
       legendPosition: 'bottom',
-      loadingTreatment: 'auto',
     });
   });
 
@@ -36,21 +31,15 @@ describe('CNGX_CHART_PANEL_CONFIG cascade', () => {
     });
     const cfg = read();
     expect(cfg.legendPosition).toBe('top');
-    expect(cfg.loadingTreatment).toBe('auto');
     expect(cfg.ariaLabels?.busy).toBe('Updating');
   });
 
   it('deep-merges a partial ariaLabels override', () => {
     TestBed.configureTestingModule({
-      providers: [
-        provideChartPanelConfig(
-          withChartPanelAriaLabels({ busy: 'Aktualisiert' }),
-          withChartPanelLoadingTreatment('spinner'),
-        ),
-      ],
+      providers: [provideChartPanelConfig(withChartPanelAriaLabels({ busy: 'Aktualisiert' }))],
     });
     expect(read().ariaLabels?.busy).toBe('Aktualisiert');
-    expect(read().loadingTreatment).toBe('spinner');
+    expect(read().legendPosition).toBe('bottom');
   });
 });
 

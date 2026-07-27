@@ -26,12 +26,6 @@ export type CngxChartPanelConfigFeature =
       readonly payload: {
         readonly legendPosition: NonNullable<CngxChartPanelConfig['legendPosition']>;
       };
-    }
-  | {
-      readonly kind: 'loadingTreatment';
-      readonly payload: {
-        readonly loadingTreatment: NonNullable<CngxChartPanelConfig['loadingTreatment']>;
-      };
     };
 
 /**
@@ -46,7 +40,6 @@ function reduceFeatures(
   const out: {
     ariaLabels?: NonNullable<CngxChartPanelConfig['ariaLabels']>;
     legendPosition?: NonNullable<CngxChartPanelConfig['legendPosition']>;
-    loadingTreatment?: NonNullable<CngxChartPanelConfig['loadingTreatment']>;
   } = {};
   for (const f of features) {
     switch (f.kind) {
@@ -55,9 +48,6 @@ function reduceFeatures(
         break;
       case 'legendPosition':
         out.legendPosition = f.payload.legendPosition;
-        break;
-      case 'loadingTreatment':
-        out.loadingTreatment = f.payload.loadingTreatment;
         break;
     }
   }
@@ -77,7 +67,6 @@ function mergeConfig(
   return {
     ariaLabels: { ...base.ariaLabels, ...partial.ariaLabels },
     legendPosition: partial.legendPosition ?? base.legendPosition,
-    loadingTreatment: partial.loadingTreatment ?? base.loadingTreatment,
   };
 }
 

@@ -19,7 +19,6 @@ export const CNGX_CHART_PANEL_DEFAULTS: CngxChartPanelConfig = {
     busy: 'Updating',
   },
   legendPosition: 'bottom',
-  loadingTreatment: 'auto',
 };
 
 /**

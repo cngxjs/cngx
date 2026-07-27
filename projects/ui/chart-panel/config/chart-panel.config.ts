@@ -1,10 +1,8 @@
-import type { CngxLoadingTreatment } from '@cngx/core/utils';
-
 import type { CngxChartPanelLegendPosition } from '../chart-panel.component';
 
 /**
- * App-wide cascade for the chart-panel's ARIA strings, its default legend
- * placement, and its default loading treatment.
+ * App-wide cascade for the chart-panel's ARIA strings and its default legend
+ * placement.
  *
  * Resolution priority (high -> low):
  *   1. Per-instance Input binding (e.g. `[legendPosition]`).
@@ -24,7 +22,4 @@ export interface CngxChartPanelConfig {
 
   /** App-wide default legend placement. Per-instance `[legendPosition]` wins. */
   readonly legendPosition?: CngxChartPanelLegendPosition;
-
-  /** App-wide default placeholder treatment. Per-instance `[loadingTreatment]` wins. */
-  readonly loadingTreatment?: CngxLoadingTreatment;
 }

@@ -6,13 +6,7 @@ import {
   signal,
   ViewEncapsulation,
 } from '@angular/core';
-import {
-  createLatencyProbe,
-  injectLoadingConfig,
-  resolveLoadingTreatment,
-  type CngxAsyncState,
-  type CngxLoadingTreatment,
-} from '@cngx/core/utils';
+import type { CngxAsyncState } from '@cngx/core/utils';
 
 import { injectChartPanelConfig } from './config/inject-chart-panel-config';
 import { CNGX_CHART_PANEL, type CngxChartPanelRegistry } from './chart-panel.token';
@@ -110,20 +104,9 @@ export type CngxChartPanelLegendPosition = 'top' | 'bottom' | 'none';
     </div>
 
     <div class="cngx-chart-panel__body">
-      <!-- No view switch here by design: the projected cngx-chart owns the data
-           async envelope. The placeholder below shows only when nothing has
-           been projected yet, so the two never contend. -->
+      <!-- No view switch here, and no panel-owned placeholder either: the
+           projected cngx-chart owns the data async envelope end to end. -->
       <ng-content />
-
-      @if (showPlaceholder()) {
-        @if (resolvedTreatment() === 'skeleton') {
-          <div class="cngx-chart-panel__placeholder" aria-hidden="true"></div>
-        } @else {
-          <div class="cngx-chart-panel__placeholder cngx-chart-panel__placeholder--spinner">
-            <span class="cngx-chart-panel__spinner" aria-hidden="true"></span>
-          </div>
-        }
-      }
     </div>
 
     <ng-content select="[cngxChartPanelFooter]" />
@@ -133,7 +116,6 @@ export type CngxChartPanelLegendPosition = 'top' | 'bottom' | 'none';
 export class CngxChartPanel implements CngxChartPanelRegistry {
   private readonly titleId = signal<string | undefined>(undefined);
   private readonly config = injectChartPanelConfig();
-  private readonly loadingConfig = injectLoadingConfig();
 
   /**
    * Panel-level async envelope - the one driving the header chrome, not the
@@ -145,45 +127,17 @@ export class CngxChartPanel implements CngxChartPanelRegistry {
     CngxAsyncState<unknown> | '' | undefined
   >(undefined, { transform: (v) => (typeof v === 'string' ? undefined : v) });
 
-  /** Where the projected `cngx-chart-legend` sits. `'none'` hides it. */
+  /**
+   * Where the projected `cngx-chart-legend` sits. `'none'` hides it. Matches
+   * the bare `cngx-chart-legend` tag; a legend wrapped in an element of your
+   * own lands in the body slot instead.
+   */
   readonly legendPosition = input<CngxChartPanelLegendPosition>(
     this.config.legendPosition ?? 'bottom',
   );
 
-  /**
-   * What the panel-level placeholder renders while it waits. Only reaches the
-   * screen before a chart has been projected; once one is, the chart owns the
-   * body.
-   */
-  readonly loadingTreatment = input<CngxLoadingTreatment>(this.config.loadingTreatment ?? 'auto');
-
-  /**
-   * Whether a chart body has been projected. `false` only in the window before
-   * a consumer's `@if` resolves, which is exactly when a panel-level
-   * placeholder is the honest thing to show.
-   */
-  readonly hasBody = input<boolean>(true);
-
   /** @internal Panel-level busy, never the chart's data-loading state. */
   protected readonly panelBusy = computed(() => this.state()?.isBusy() ?? false);
-
-  private readonly probe = createLatencyProbe(() => this.panelBusy());
-
-  /** @internal Spinner or skeleton for the panel placeholder. */
-  protected readonly resolvedTreatment = computed(() =>
-    resolveLoadingTreatment(
-      this.loadingTreatment(),
-      this.probe.lastDuration(),
-      this.loadingConfig.spinnerVsSkeletonCutoff,
-    ),
-  );
-
-  /**
-   * @internal The placeholder is strictly a pre-chart affordance. Once a body
-   * is projected it never shows again, so the panel can never paint over the
-   * chart's own skeleton / empty / error views.
-   */
-  protected readonly showPlaceholder = computed(() => !this.hasBody() && this.panelBusy());
 
   /** {@inheritDoc CngxChartPanelRegistry.registerTitle} */
   registerTitle(id: string): void {

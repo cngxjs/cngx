@@ -13,11 +13,7 @@ export {
   provideChartPanelConfigAt,
   type CngxChartPanelConfigFeature,
 } from './config/provide-chart-panel-config';
-export {
-  withChartPanelAriaLabels,
-  withChartPanelLegendPosition,
-  withChartPanelLoadingTreatment,
-} from './config/features';
+export { withChartPanelAriaLabels, withChartPanelLegendPosition } from './config/features';
 export { injectChartPanelConfig } from './config/inject-chart-panel-config';
 export {
   CngxChartPanelTitle,
