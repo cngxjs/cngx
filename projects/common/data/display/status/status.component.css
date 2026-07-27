@@ -35,7 +35,7 @@
    */
   @property --cngx-status-gap {
     syntax: '<length>';
-    inherits: false;
+    inherits: true;
     initial-value: 6px;
   }
 
@@ -45,7 +45,7 @@
    */
   @property --cngx-status-dot-size {
     syntax: '<length>';
-    inherits: false;
+    inherits: true;
     initial-value: 16px;
   }
 
@@ -187,8 +187,11 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      inline-size: var(--cngx-status-dot-size, 1rem);
-      block-size: var(--cngx-status-dot-size, 1rem);
+      /* The dot is the non-textual severity channel: never let a narrow flex
+         parent shrink it on one axis and turn the circle into an ellipse. */
+      flex: none;
+      inline-size: var(--cngx-status-dot-size, 16px);
+      block-size: var(--cngx-status-dot-size, 16px);
       border-radius: 50%;
       font-size: var(--cngx-status-glyph-size, 0.7em);
       line-height: 1;
