@@ -101,9 +101,14 @@
       color: inherit;
     }
 
-    .cngx-stat-card__error .cngx-empty-state__default-icon {
-      inline-size: var(--cngx-stat-card-error-icon-size, 24px);
-      block-size: var(--cngx-stat-card-error-icon-size, 24px);
+    /* Sizes the projected glyph; the stock icon is already hidden by the
+       empty-state's own :not(:empty) rule once the slot is filled. Slightly
+       held back from full strength so the headline leads and the icon
+       supports it. */
+    .cngx-stat-card__error-icon {
+      inline-size: var(--cngx-stat-card-error-icon-size, 22px);
+      block-size: var(--cngx-stat-card-error-icon-size, 22px);
+      opacity: var(--cngx-stat-card-error-icon-opacity, 0.85);
     }
 
     /* Out of flow entirely: a refresh must not move the figure the user is

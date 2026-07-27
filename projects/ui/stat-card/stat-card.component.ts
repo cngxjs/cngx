@@ -144,7 +144,26 @@ const DEFAULT_SKELETON_SLOTS: readonly CngxStatSlotKind[] = ['label', 'value', '
             class="cngx-stat-card__error"
             [title]="errorText()"
             [description]="errorDescription()"
-          />
+          >
+            <!-- The stock empty-state glyph is an archive box, which reads
+                 "nothing here" rather than "this failed". Projecting into the
+                 icon slot hides it. Decorative: the title carries the message. -->
+            <svg
+              cngxEmptyStateIcon
+              class="cngx-stat-card__error-icon"
+              aria-hidden="true"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+              <path d="M12 9v4" />
+              <path d="M12 17h.01" />
+            </svg>
+          </cngx-empty-state>
         }
         @default {
           <div class="cngx-stat-card__stat">

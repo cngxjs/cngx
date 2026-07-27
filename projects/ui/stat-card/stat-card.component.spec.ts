@@ -135,6 +135,11 @@ describe('CngxStatCard', () => {
     expect(empty).not.toBeNull();
     expect(empty.getAttribute('role')).toBe('status');
     expect(empty.textContent).toContain('Could not load');
+    // A projected alert glyph, not the stock archive box, and decorative so the
+    // headline stays the accessible message.
+    const icon = empty.querySelector('.cngx-stat-card__error-icon')!;
+    expect(icon).not.toBeNull();
+    expect(icon.getAttribute('aria-hidden')).toBe('true');
     expect(card.querySelector('.cngx-stat-card__stat')).toBeNull();
   });
 
