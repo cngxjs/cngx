@@ -156,8 +156,8 @@ export class CngxStatCard {
     this.config.ariaLabels?.staleFallback ?? 'Showing last known value',
   );
 
-  /** Whether any operation is running. Drives `aria-busy` (Pillar 2). */
-  readonly busy = computed(() => this.state()?.isBusy() ?? false);
+  /** @internal Whether any operation is running. Drives `aria-busy` (Pillar 2). */
+  protected readonly busy = computed(() => this.state()?.isBusy() ?? false);
 
   private readonly loadingConfig = injectLoadingConfig();
 
@@ -174,7 +174,7 @@ export class CngxStatCard {
    * comes from `CNGX_LOADING_CONFIG`, so one `provideLoadingConfig(...)` retunes
    * every tile in the app.
    */
-  readonly resolvedTreatment = computed(() =>
+  protected readonly resolvedTreatment = computed(() =>
     resolveLoadingTreatment(
       this.loadingTreatment(),
       this.probe.lastDuration(),
@@ -187,7 +187,7 @@ export class CngxStatCard {
    * lookup table so the tile cannot drift from every other async surface.
    * Without a bound `[state]` the card always shows its content.
    */
-  readonly activeView = computed(() => {
+  protected readonly activeView = computed(() => {
     const s = this.state();
     if (!s) {
       return 'content' as const;
