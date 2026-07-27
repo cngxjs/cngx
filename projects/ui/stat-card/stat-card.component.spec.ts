@@ -56,10 +56,22 @@ function makeState(): CngxAsyncState<unknown> & {
 
 @Component({
   standalone: true,
-  imports: [CngxStatCard],
+  imports: [CngxStatCard, CngxStatValue],
   template: `
-    <cngx-stat-card [state]="state()" [loadingTreatment]="treatment()" />
+    <cngx-stat-card [state]="state()" [live]="live()">
+      <span cngxStatValue>1.2M</span>
+    </cngx-stat-card>
   `,
+})
+class LiveHost {
+  state = signal<CngxAsyncState<unknown> | undefined>(undefined);
+  live = signal<'off' | 'polite' | 'assertive'>('off');
+}
+
+@Component({
+  standalone: true,
+  imports: [CngxStatCard],
+  template: `<cngx-stat-card [state]="state()" [loadingTreatment]="treatment()" />`,
 })
 class TreatmentHost {
   state = signal<CngxAsyncState<unknown> | undefined>(undefined);
@@ -112,7 +124,7 @@ describe('CngxStatCard', () => {
 
   it('names the whole tile from the projected stat slots', () => {
     const { card } = setup();
-    const group = card.querySelector('[role="group"]')!;
+    const region = card.querySelector('cngx-card')!;
     const expected = [
       card.querySelector('[cngxStatLabel]')!.id,
       card.querySelector('[cngxStatValue]')!.id,
@@ -120,7 +132,10 @@ describe('CngxStatCard', () => {
       card.querySelector('[cngxStatCaption]')!.id,
     ];
     expect(expected.every(Boolean)).toBe(true);
-    expect(group.getAttribute('aria-labelledby')).toBe(expected.join(' '));
+    // One named region per tile: the card itself, not an unnamed article
+    // wrapped around a separately named group.
+    expect(region.getAttribute('aria-labelledby')).toBe(expected.join(' '));
+    expect(card.querySelector('[role="group"]')).toBeNull();
   });
 
   it('projects the viz and footer slots', () => {
@@ -131,7 +146,7 @@ describe('CngxStatCard', () => {
 
   it('renders content when no state is bound', () => {
     const { card } = setup(false);
-    expect(card.querySelector('[role="group"]')).not.toBeNull();
+    expect(card.querySelector('.cngx-stat-card__stat')).not.toBeNull();
     expect(card.getAttribute('aria-busy')).toBeNull();
   });
 
@@ -141,7 +156,7 @@ describe('CngxStatCard', () => {
     fixture.detectChanges();
 
     expect(card.querySelector('.cngx-stat-card__skeleton')).not.toBeNull();
-    expect(card.querySelector('[role="group"]')).toBeNull();
+    expect(card.querySelector('.cngx-stat-card__stat')).toBeNull();
     expect(card.querySelectorAll('.cngx-stat-card__skeleton-line')).toHaveLength(3);
   });
 
@@ -151,7 +166,7 @@ describe('CngxStatCard', () => {
     fixture.detectChanges();
 
     expect(card.querySelector('.cngx-stat-card__error')!.textContent).toContain('Could not load');
-    expect(card.querySelector('[role="group"]')).toBeNull();
+    expect(card.querySelector('.cngx-stat-card__stat')).toBeNull();
   });
 
   it('keeps stale content visible when a refresh fails', () => {
@@ -159,7 +174,7 @@ describe('CngxStatCard', () => {
     state.set({ status: 'error', firstLoad: false });
     fixture.detectChanges();
 
-    expect(card.querySelector('[role="group"]')).not.toBeNull();
+    expect(card.querySelector('.cngx-stat-card__stat')).not.toBeNull();
     expect(card.querySelector('.cngx-stat-card__stale')!.textContent).toContain(
       'Showing last known value',
     );
@@ -182,7 +197,7 @@ describe('CngxStatCard', () => {
     const { fixture, card } = setup();
     state.set({ status: 'refreshing', firstLoad: false });
     fixture.detectChanges();
-    expect(card.querySelector('[role="group"]')).not.toBeNull();
+    expect(card.querySelector('.cngx-stat-card__stat')).not.toBeNull();
     expect(card.querySelector('.cngx-stat-card__skeleton')).toBeNull();
   });
 });
@@ -294,5 +309,45 @@ describe('CngxStatCard loading treatment', () => {
     state.set({ status: 'refreshing', firstLoad: true });
     fixture.detectChanges();
     expect(isSkeleton(card)).toBe(true);
+  });
+});
+
+describe('CngxStatCard live region', () => {
+  let state: ReturnType<typeof makeState>;
+
+  beforeEach(() => {
+    state = makeState();
+    TestBed.configureTestingModule({ imports: [LiveHost] });
+  });
+
+  function setup() {
+    const fixture = TestBed.createComponent(LiveHost);
+    fixture.componentInstance.state.set(state);
+    fixture.detectChanges();
+    const region: HTMLElement = fixture.nativeElement.querySelector('cngx-card');
+    return { fixture, region, host: fixture.componentInstance };
+  }
+
+  it('stays silent by default', () => {
+    const { region } = setup();
+    expect(region.getAttribute('aria-live')).toBeNull();
+  });
+
+  it('announces a refreshing KPI when politeness is requested', () => {
+    const { fixture, region, host } = setup();
+    host.live.set('polite');
+    fixture.detectChanges();
+    expect(region.getAttribute('aria-live')).toBe('polite');
+  });
+
+  it('drops the accessible name while the stat is not rendered', () => {
+    const { fixture, region } = setup();
+    expect(region.getAttribute('aria-labelledby')).toBeTruthy();
+
+    // The slot ids live inside the content branch; keeping the reference during
+    // the skeleton would point at elements that are out of the DOM.
+    state.set({ status: 'loading', firstLoad: true });
+    fixture.detectChanges();
+    expect(region.getAttribute('aria-labelledby')).toBeNull();
   });
 });

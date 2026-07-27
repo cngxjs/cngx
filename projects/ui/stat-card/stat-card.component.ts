@@ -71,7 +71,10 @@ import { injectStatCardConfig } from './config/inject-stat-card-config';
     '[class.cngx-stat-card--busy]': 'busy()',
   },
   template: `
-    <cngx-card>
+    <cngx-card
+      [attr.aria-labelledby]="cardLabelledBy()"
+      [attr.aria-live]="live() === 'off' ? null : live()"
+    >
       @switch (activeView()) {
         @case ('skeleton') {
           @if (resolvedTreatment() === 'skeleton') {
@@ -95,11 +98,7 @@ import { injectStatCardConfig } from './config/inject-stat-card-config';
           <p class="cngx-stat-card__error">{{ errorText() }}</p>
         }
         @default {
-          <div
-            class="cngx-stat-card__stat"
-            role="group"
-            [attr.aria-labelledby]="coordinator.labelledBy()"
-          >
+          <div class="cngx-stat-card__stat">
             <ng-content select="[cngxStatLabel]" />
             <div class="cngx-stat-card__row">
               <ng-content select="[cngxStatValue]" />
@@ -156,6 +155,13 @@ export class CngxStatCard {
     this.config.ariaLabels?.staleFallback ?? 'Showing last known value',
   );
 
+  /**
+   * Politeness of the tile's live region. `off` (default) for a static KPI;
+   * `polite` for a tile that refreshes on a timer, so the new figure is
+   * announced instead of changing silently. Mirrors `CngxStat.live`.
+   */
+  readonly live = input<'off' | 'polite' | 'assertive'>('off');
+
   /** @internal Whether any operation is running. Drives `aria-busy` (Pillar 2). */
   protected readonly busy = computed(() => this.state()?.isBusy() ?? false);
 
@@ -187,6 +193,17 @@ export class CngxStatCard {
    * lookup table so the tile cannot drift from every other async surface.
    * Without a bound `[state]` the card always shows its content.
    */
+  /**
+   * @internal The card element carries the accessible name, so the tile is one
+   * named region instead of an unnamed `article` wrapped around a named group.
+   * Null while the stat is not rendered: the slot ids live inside the content
+   * branch, and pointing at ids that are out of the DOM reads as unnamed anyway.
+   */
+  protected readonly cardLabelledBy = computed(() => {
+    const view = this.activeView();
+    return view === 'skeleton' || view === 'error' ? null : this.coordinator.labelledBy();
+  });
+
   protected readonly activeView = computed(() => {
     const s = this.state();
     if (!s) {
