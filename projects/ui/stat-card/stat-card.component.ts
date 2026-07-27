@@ -18,6 +18,8 @@ import {
 } from '@cngx/core/utils';
 import { CngxLoadingIndicator } from '@cngx/ui/feedback';
 
+import { injectStatCardConfig } from './config/inject-stat-card-config';
+
 /**
  * Card-framed KPI tile: one `<cngx-stat-card>` renders a complete dashboard
  * metric - card surface, coordinated stat slots, an inline visualisation, a
@@ -123,6 +125,8 @@ export class CngxStatCard {
   /** @internal The shared slot-id brain, applied as a host directive. */
   protected readonly coordinator = inject(CngxStatCoordinator, { host: true });
 
+  private readonly config = injectStatCardConfig();
+
   /**
    * The tile's async envelope. Every view decision derives from it; there are
    * no discrete `loading` / `error` boolean fallbacks. Optional per the
@@ -139,16 +143,18 @@ export class CngxStatCard {
    * spinner blip, one whose last load dragged shows a skeleton. `'spinner'` and
    * `'skeleton'` pin the choice.
    */
-  readonly loadingTreatment = input<CngxLoadingTreatment>('auto');
+  readonly loadingTreatment = input<CngxLoadingTreatment>(this.config.loadingTreatment ?? 'auto');
 
   /** Accessible label announced while the card is loading. */
-  readonly busyLabel = input<string>('Loading');
+  readonly busyLabel = input<string>(this.config.ariaLabels?.busy ?? 'Loading');
 
   /** Message shown instead of the stat when the first load failed. */
-  readonly errorText = input<string>('Could not load');
+  readonly errorText = input<string>(this.config.ariaLabels?.errorFallback ?? 'Could not load');
 
   /** Note appended below the stat when a refresh failed but stale data is still shown. */
-  readonly staleText = input<string>('Showing last known value');
+  readonly staleText = input<string>(
+    this.config.ariaLabels?.staleFallback ?? 'Showing last known value',
+  );
 
   /** Whether any operation is running. Drives `aria-busy` (Pillar 2). */
   readonly busy = computed(() => this.state()?.isBusy() ?? false);
