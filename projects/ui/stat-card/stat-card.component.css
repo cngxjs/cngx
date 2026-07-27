@@ -1,0 +1,100 @@
+/* Default skin for the card-framed KPI tile. All values are CSS custom
+   properties. Spacing tokens are SET from the global --cngx-space-* scale at
+   the host so a root [data-density] swap re-scales them. Colour use-sites
+   delegate to the foundation --cngx-color-* tokens (which already carry the
+   light/dark distinction) with a literal oklch fallback. --mat-sys-* never
+   appears here - the @cngx/themes Material bridge maps the component tokens
+   onto it.
+
+   Token SET lives in @layer cngx.tokens and the rules in @layer cngx.components
+   so the Material bridge (which sets tokens in cngx.components) overrides these
+   defaults. */
+
+@layer cngx.tokens {
+  .cngx-stat-card {
+    display: block;
+
+    /* Spacing - SET from the scale so density tracks. */
+    --cngx-stat-card-gap: var(--cngx-space-sm, 0.5rem);
+    --cngx-stat-card-row-gap: var(--cngx-space-xs, 0.25rem);
+    --cngx-stat-card-viz-margin: var(--cngx-space-sm, 0.5rem);
+    --cngx-stat-card-footer-padding: var(--cngx-space-xs, 0.25rem);
+    --cngx-stat-card-skeleton-gap: var(--cngx-space-xs, 0.25rem);
+  }
+}
+
+@layer cngx.components {
+  @scope (.cngx-stat-card) {
+    .cngx-stat-card__stat {
+      display: flex;
+      flex-direction: column;
+      gap: var(--cngx-stat-card-gap);
+    }
+
+    /* Value and delta share a baseline so the metric reads as one figure. */
+    .cngx-stat-card__row {
+      display: flex;
+      align-items: baseline;
+      gap: var(--cngx-stat-card-row-gap);
+      flex-wrap: wrap;
+    }
+
+    .cngx-stat-card__viz {
+      display: block;
+      margin-block-start: var(--cngx-stat-card-viz-margin);
+    }
+
+    .cngx-stat-card__footer {
+      display: flex;
+      align-items: center;
+      gap: var(--cngx-stat-card-row-gap);
+      padding-block-start: var(--cngx-stat-card-footer-padding);
+      color: var(--cngx-stat-card-footer-color, var(--cngx-color-text-muted, oklch(0.5 0.01 250)));
+    }
+
+    .cngx-stat-card__error {
+      margin: 0;
+      color: var(--cngx-stat-card-error-color, var(--cngx-color-danger, oklch(0.6 0.18 25)));
+    }
+
+    /* A failed refresh over still-visible data: muted, not alarming - the
+       numbers above are stale, not wrong. */
+    .cngx-stat-card__stale {
+      margin: 0;
+      margin-block-start: var(--cngx-stat-card-row-gap);
+      font-size: var(--cngx-stat-card-stale-size, 0.8125rem);
+      color: var(--cngx-stat-card-stale-color, var(--cngx-color-text-muted, oklch(0.5 0.01 250)));
+    }
+
+    .cngx-stat-card__skeleton {
+      display: flex;
+      flex-direction: column;
+      gap: var(--cngx-stat-card-skeleton-gap);
+    }
+
+    /* Descending widths sketch the label / value / caption rhythm of the real
+       tile, so the swap to content does not jump. Heights are a fixed visual
+       gauge, not a density rung - deliberate opt-out from the scale. */
+    .cngx-stat-card__skeleton-line {
+      block-size: var(--cngx-stat-card-skeleton-line-height, 0.75rem);
+      border-radius: var(--cngx-stat-card-skeleton-radius, var(--cngx-radius-sm, 6px));
+      background: var(
+        --cngx-stat-card-skeleton-color,
+        var(--cngx-color-border, oklch(0.88 0.005 250))
+      );
+    }
+
+    .cngx-stat-card__skeleton-line:nth-child(1) {
+      inline-size: 40%;
+    }
+
+    .cngx-stat-card__skeleton-line:nth-child(2) {
+      inline-size: 70%;
+      block-size: var(--cngx-stat-card-skeleton-value-height, 1.25rem);
+    }
+
+    .cngx-stat-card__skeleton-line:nth-child(3) {
+      inline-size: 55%;
+    }
+  }
+}
