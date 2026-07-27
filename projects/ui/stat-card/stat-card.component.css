@@ -13,21 +13,38 @@
 @layer cngx.tokens {
   .cngx-stat-card {
     display: block;
+    /* Positioning context for the refresh indicator, which must not take part
+       in flow. */
+    position: relative;
 
     /* Spacing - SET from the scale so density tracks. */
     --cngx-stat-card-gap: var(--cngx-space-sm, 0.5rem);
     --cngx-stat-card-row-gap: var(--cngx-space-xs, 0.25rem);
     --cngx-stat-card-viz-margin: var(--cngx-space-sm, 0.5rem);
     --cngx-stat-card-footer-padding: var(--cngx-space-xs, 0.25rem);
-    --cngx-stat-card-skeleton-gap: var(--cngx-space-xs, 0.25rem);
+    --cngx-stat-card-refresh-inset: var(--cngx-space-sm, 0.5rem);
+
+    /* Every view branch reserves the same block, so switching skeleton ->
+       spinner -> content -> error never resizes the tile. A dashboard grid of
+       these would otherwise reflow on every refresh. Not a density rung: this
+       is a layout floor matched to the label + value + caption rhythm, so it
+       stays a plain token. */
+    --cngx-stat-card-body-min-height: 6rem;
   }
 }
 
 @layer cngx.components {
   @scope (.cngx-stat-card) {
+    .cngx-stat-card__stat,
+    .cngx-stat-card__spinner,
+    .cngx-stat-card__error {
+      min-block-size: var(--cngx-stat-card-body-min-height);
+    }
+
     .cngx-stat-card__stat {
       display: flex;
       flex-direction: column;
+      justify-content: center;
       gap: var(--cngx-stat-card-gap);
     }
 
@@ -49,21 +66,100 @@
       align-items: center;
       gap: var(--cngx-stat-card-row-gap);
       padding-block-start: var(--cngx-stat-card-footer-padding);
+      font-size: var(--cngx-stat-card-footer-size, 0.8125rem);
       color: var(--cngx-stat-card-footer-color, var(--cngx-color-text-muted, oklch(0.5 0.01 250)));
     }
 
-    .cngx-stat-card__error {
-      margin: 0;
+    /* A projected cngx-card-timestamp inherits the footer's scale rather than
+       carrying its own. */
+    .cngx-stat-card__footer .cngx-card-timestamp {
+      font-size: inherit;
+      color: inherit;
+    }
+
+    /* The error branch is a cngx-empty-state, scaled down to tile proportions -
+       its stock size is built for a full page region, not a KPI card. */
+    /* Doubled up with .cngx-empty-state: the component sets these same tokens
+       on its own host at equal specificity, so a single class would lose the
+       cascade on source order alone. */
+    .cngx-stat-card__error.cngx-empty-state {
+      /* Stock empty-state is built for a full page region: 48px block padding,
+         16px gap, 48px icon. Inside a KPI tile that dwarfs every other view.
+         These are the component's own registered tokens, declared on the
+         element that reads them. */
+      --cngx-empty-padding: 0px;
+      --cngx-empty-gap: var(--cngx-space-xs, 0.25rem);
+      --cngx-empty-title-size: var(--cngx-stat-card-error-title-size, 0.9375rem);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      text-align: center;
       color: var(--cngx-stat-card-error-color, var(--cngx-color-danger, oklch(0.6 0.18 25)));
     }
 
-    /* A failed refresh over still-visible data: muted, not alarming - the
-       numbers above are stale, not wrong. */
+    .cngx-stat-card__error .cngx-empty-state__title {
+      color: inherit;
+    }
+
+    /* Sizes the projected glyph; the stock icon is already hidden by the
+       empty-state's own :not(:empty) rule once the slot is filled. Slightly
+       held back from full strength so the headline leads and the icon
+       supports it. */
+    .cngx-stat-card__error-icon {
+      inline-size: var(--cngx-stat-card-error-icon-size, 22px);
+      block-size: var(--cngx-stat-card-error-icon-size, 22px);
+      opacity: var(--cngx-stat-card-error-icon-opacity, 0.85);
+    }
+
+    /* Out of flow entirely: a refresh must not move the figure the user is
+       reading. Sits in the corner rather than spanning the card, so it reads as
+       "this tile is updating" and not as determinate progress. */
+    .cngx-stat-card__refresh {
+      position: absolute;
+      inset-block-start: var(--cngx-stat-card-refresh-inset);
+      inset-inline-end: var(--cngx-stat-card-refresh-inset);
+      pointer-events: none;
+    }
+
+    /* --cngx-loading-indicator-size registers inherits: false, so assigning it
+       on the indicator host would never reach the ring. It has to be declared
+       on the element that reads it. */
+    .cngx-stat-card__refresh .cngx-loading-indicator__spinner {
+      --cngx-loading-indicator-size: var(--cngx-stat-card-refresh-size, 14px);
+    }
+
+    /* A failed refresh over still-visible data. Muted grey read as a caption and
+       the failure went unnoticed, so this carries the danger tone and a glyph -
+       the figure above is stale, and the user has to be able to see that at a
+       glance without the tile shouting like a first-load failure. */
     .cngx-stat-card__stale {
+      display: flex;
+      align-items: center;
+      gap: var(--cngx-stat-card-row-gap);
       margin: 0;
       margin-block-start: var(--cngx-stat-card-row-gap);
       font-size: var(--cngx-stat-card-stale-size, 0.8125rem);
-      color: var(--cngx-stat-card-stale-color, var(--cngx-color-text-muted, oklch(0.5 0.01 250)));
+      color: var(--cngx-stat-card-stale-color, var(--cngx-color-danger, oklch(0.6 0.18 25)));
+    }
+
+    /* Empty alt text keeps the glyph out of the accessible name - the sentence
+       beside it already carries the meaning. */
+    .cngx-stat-card__stale::before {
+      content: '!' / '';
+      flex: none;
+      display: grid;
+      place-items: center;
+      inline-size: var(--cngx-stat-card-stale-glyph-size, 1rem);
+      block-size: var(--cngx-stat-card-stale-glyph-size, 1rem);
+      border-radius: 50%;
+      font-size: var(--cngx-stat-card-stale-glyph-font-size, 0.75rem);
+      font-weight: 700;
+      line-height: 1;
+      color: var(--cngx-stat-card-stale-glyph-color, var(--cngx-color-surface, oklch(1 0 0)));
+      /* Not currentcolor: `color` is set on this same pseudo-element just above,
+         so currentcolor would resolve to the glyph's own colour and paint the
+         badge dark-on-dark. Name the tone explicitly. */
+      background: var(--cngx-stat-card-stale-color, var(--cngx-color-danger, oklch(0.6 0.18 25)));
     }
 
     /* The spinner treatment stands in for the same block the skeleton fills, so
@@ -72,38 +168,83 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      min-block-size: var(--cngx-stat-card-placeholder-height, 3.5rem);
     }
 
-    .cngx-stat-card__skeleton {
-      display: flex;
-      flex-direction: column;
-      gap: var(--cngx-stat-card-skeleton-gap);
-    }
-
-    /* Descending widths sketch the label / value / caption rhythm of the real
-       tile, so the swap to content does not jump. Heights are a fixed visual
-       gauge, not a density rung - deliberate opt-out from the scale. */
+    /* Each bar takes the line-box of the text it stands in for, so the
+       placeholder occupies the same block as the rendered stat and the swap is
+       a paint change, not a reflow. Heights are em-relative to the row they sit
+       in - a text gauge, not a density rung, so no SET-from-scale rule. */
     .cngx-stat-card__skeleton-line {
-      block-size: var(--cngx-stat-card-skeleton-line-height, 0.75rem);
-      border-radius: var(--cngx-stat-card-skeleton-radius, var(--cngx-radius-sm, 6px));
-      background: var(
+      /* Resolved once here and reused by the shimmer gradient below. Falls back
+         through the skeleton entry's token to the foundation border colour,
+         which already carries the light/dark distinction - so the bones adapt
+         even when @cngx/ui/skeleton's own CSS is not on the page. */
+      --cngx-stat-card-skeleton-base: var(
         --cngx-stat-card-skeleton-color,
-        var(--cngx-color-border, oklch(0.88 0.005 250))
+        var(--cngx-skeleton-bg, var(--cngx-color-border, oklch(0.88 0.005 250)))
       );
+
+      display: block;
+      border-radius: var(--cngx-stat-card-skeleton-radius, var(--cngx-radius-sm, 6px));
+      background: var(--cngx-stat-card-skeleton-base);
     }
 
-    .cngx-stat-card__skeleton-line:nth-child(1) {
-      inline-size: 40%;
+    /* Reads the shared --cngx-skeleton-* tokens so these bars match the bones in
+       @cngx/ui/skeleton (including its light/dark values), but carries its own
+       rule: that entry's CSS only ships when a consumer actually uses it, and a
+       stat card must shimmer on its own. CngxSkeleton drops the --shimmer class
+       under prefers-reduced-motion, so gating on it needs no media query. */
+    .cngx-stat-card__stat--skeleton.cngx-skeleton--shimmer .cngx-stat-card__skeleton-line {
+      background-image: linear-gradient(
+        90deg,
+        var(--cngx-stat-card-skeleton-base) 0%,
+        var(
+            --cngx-skeleton-shimmer-color,
+            color-mix(in oklch, var(--cngx-stat-card-skeleton-base), white 18%)
+          )
+          50%,
+        var(--cngx-stat-card-skeleton-base) 100%
+      );
+      background-size: 200% 100%;
+      animation: cngx-stat-card-shimmer var(--cngx-skeleton-shimmer-duration, 1.5s) ease-in-out
+        infinite;
     }
 
-    .cngx-stat-card__skeleton-line:nth-child(2) {
-      inline-size: 70%;
-      block-size: var(--cngx-stat-card-skeleton-value-height, 1.25rem);
+    /* 1lh, not 1em: a bar has to fill the whole line box the text occupies,
+       and the line box is font-size x line-height. Sizing to 1em left every bar
+       ~0.5rem short, so the placeholder came out shorter than the content and
+       the tile grew on swap. */
+    .cngx-stat-card__skeleton-line--label {
+      inline-size: var(--cngx-stat-card-skeleton-label-width, 45%);
+      block-size: 1lh;
     }
 
-    .cngx-stat-card__skeleton-line:nth-child(3) {
-      inline-size: 55%;
+    /* Adopts cngx-metric's own type scale, so 1lh resolves to exactly the line
+       box the figure will occupy. */
+    .cngx-stat-card__skeleton-line--value {
+      inline-size: var(--cngx-stat-card-skeleton-value-width, 55%);
+      font-size: var(--cngx-metric-value-size, 1.75rem);
+      line-height: 1.2;
+      block-size: 1lh;
     }
+
+    .cngx-stat-card__skeleton-line--delta {
+      inline-size: var(--cngx-stat-card-skeleton-delta-width, 3rem);
+      block-size: 1lh;
+    }
+
+    .cngx-stat-card__skeleton-line--caption {
+      inline-size: var(--cngx-stat-card-skeleton-caption-width, 65%);
+      block-size: 1lh;
+    }
+  }
+}
+
+@keyframes cngx-stat-card-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
   }
 }

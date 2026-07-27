@@ -9,6 +9,10 @@ const SLOT_ORDER: readonly CngxStatSlotKind[] = ['label', 'value', 'delta', 'cap
 const idsEqual = (a: readonly string[], b: readonly string[]): boolean =>
   a.length === b.length && a.every((id, i) => id === b[i]);
 
+/** Structural equality so an unchanged slot set never cascades to a placeholder. */
+const kindsEqual = (a: readonly CngxStatSlotKind[], b: readonly CngxStatSlotKind[]): boolean =>
+  a.length === b.length && a.every((kind, i) => kind === b[i]);
+
 /**
  * The slot-id coordination brain behind {@link CNGX_STAT}. Collects the id each
  * `cngxStat*` slot registers and derives one `aria-labelledby` that reads the
@@ -64,4 +68,19 @@ export class CngxStatCoordinator implements CngxStatRegistry {
 
   /** Combined accessible name for the host; `null` when no slot is present. */
   readonly labelledBy = computed(() => this.orderedIds().join(' ') || null);
+
+  /**
+   * Which slots a consumer actually projected, in reading order. Registration
+   * happens when the slot directive is constructed in the consumer's template,
+   * so this stays accurate even while the host renders a branch that does not
+   * include the `<ng-content>` outlets - which is what lets a placeholder mirror
+   * the real tile instead of guessing at it.
+   */
+  readonly presentKinds = computed(
+    () => {
+      const map = this.slots();
+      return SLOT_ORDER.filter((kind) => map.has(kind));
+    },
+    { equal: kindsEqual },
+  );
 }

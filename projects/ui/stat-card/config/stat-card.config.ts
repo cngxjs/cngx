@@ -24,8 +24,10 @@ export interface CngxStatCardConfig {
   readonly ariaLabels?: {
     /** Accessible name announced while the tile is loading. */
     readonly busy?: string;
-    /** Message shown instead of the stat when the first load failed. */
+    /** Headline of the error state shown instead of the stat when the first load failed. */
     readonly errorFallback?: string;
+    /** Supporting detail under the error headline. Omitted when unset. */
+    readonly errorDescription?: string;
     /** Note shown below stale numbers when a refresh failed. */
     readonly staleFallback?: string;
   };
