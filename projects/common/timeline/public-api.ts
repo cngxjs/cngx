@@ -14,3 +14,14 @@ export {
   type TimelineGroupKey,
   type TimelineGrouping,
 } from './grouping';
+export {
+  CNGX_TIMELINE_CONFIG,
+  injectTimelineConfig,
+  provideTimelineConfig,
+  provideTimelineConfigAt,
+  withTimelineLabels,
+  type CngxTimelineConfig,
+  type CngxTimelineConfigFeature,
+  type CngxTimelineLabels,
+  type CngxTimelineTemplates,
+} from './timeline-config';
