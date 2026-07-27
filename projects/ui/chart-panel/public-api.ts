@@ -2,7 +2,23 @@
  * @module @cngx/ui/chart-panel
  */
 
-export { CngxChartPanel } from './chart-panel.component';
+export {
+  CngxChartPanel,
+  type CngxChartPanelLegendPosition,
+} from './chart-panel.component';
+export { type CngxChartPanelConfig } from './config/chart-panel.config';
+export { CNGX_CHART_PANEL_CONFIG } from './config/chart-panel.config.defaults';
+export {
+  provideChartPanelConfig,
+  provideChartPanelConfigAt,
+  type CngxChartPanelConfigFeature,
+} from './config/provide-chart-panel-config';
+export {
+  withChartPanelAriaLabels,
+  withChartPanelLegendPosition,
+  withChartPanelLoadingTreatment,
+} from './config/features';
+export { injectChartPanelConfig } from './config/inject-chart-panel-config';
 export {
   CngxChartPanelTitle,
   CngxChartPanelSubtitle,

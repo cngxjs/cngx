@@ -37,8 +37,10 @@
 @layer cngx.components {
   @scope (.cngx-chart-panel) {
     /* Title block left, actions right; wraps rather than crushing the actions
-       on a narrow tile. */
+       on a narrow tile. Explicit order on every region so the single legend
+       outlet can move without a second ng-content. */
     .cngx-chart-panel__header {
+      order: 1;
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
@@ -67,19 +69,36 @@
       );
     }
 
-    .cngx-chart-panel__actions {
+    .cngx-chart-panel__actions,
+    .cngx-chart-panel__action-slot {
       display: flex;
       align-items: center;
       gap: var(--cngx-chart-panel-footer-gap);
     }
 
+    /* Panel-level busy: the actions read as unavailable without leaving the
+       a11y tree. Pointer-events go, so a click cannot race an in-flight
+       operation, but focus and AT still reach the aria-disabled state. */
+    .cngx-chart-panel__action-slot[aria-disabled='true'] {
+      opacity: var(--cngx-chart-panel-busy-opacity, 0.5);
+      pointer-events: none;
+    }
+
     /* min-inline-size: 0 lets a flex child shrink below its SVG intrinsic
        width, so a chart in a narrow panel scales instead of overflowing. */
     .cngx-chart-panel__body {
+      order: 3;
       min-inline-size: 0;
     }
 
+    /* Default placement: below the chart. The legend carries no focusable
+       content, so moving it visually cannot desync from tab order. */
+    .cngx-chart-panel__legend {
+      order: 4;
+    }
+
     .cngx-chart-panel__footer {
+      order: 5;
       display: flex;
       align-items: center;
       gap: var(--cngx-chart-panel-footer-gap);
@@ -89,5 +108,61 @@
         var(--cngx-color-text-muted, oklch(0.5 0.01 250))
       );
     }
+
+    .cngx-chart-panel__placeholder {
+      block-size: var(--cngx-chart-panel-placeholder-height, 8rem);
+      border-radius: var(--cngx-chart-panel-radius, var(--cngx-radius-md, 8px));
+      background: var(
+        --cngx-chart-panel-placeholder-color,
+        var(--cngx-color-border, oklch(0.88 0.005 250))
+      );
+    }
+
+    .cngx-chart-panel__placeholder--spinner {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+    }
+
+    .cngx-chart-panel__spinner {
+      inline-size: var(--cngx-chart-panel-spinner-size, 1.5rem);
+      block-size: var(--cngx-chart-panel-spinner-size, 1.5rem);
+      border: 2px solid
+        var(--cngx-chart-panel-placeholder-color, var(--cngx-color-border, oklch(0.88 0.005 250)));
+      border-top-color: var(
+        --cngx-chart-panel-spinner-color,
+        var(--cngx-color-primary, oklch(0.66 0.19 50))
+      );
+      border-radius: 50%;
+      animation: cngx-chart-panel-spin var(--cngx-chart-panel-spinner-duration, 0.8s) linear
+        infinite;
+    }
+  }
+
+  @scope (.cngx-chart-panel[data-legend='top']) {
+    .cngx-chart-panel__legend {
+      order: 2;
+    }
+  }
+
+  @scope (.cngx-chart-panel[data-legend='none']) {
+    .cngx-chart-panel__legend {
+      display: none;
+    }
+  }
+}
+
+/* Unlayered, outside @scope: a layered @media inside a scope block loses the
+   cascade fight against the unlayered component rule it needs to override. */
+@media (prefers-reduced-motion: reduce) {
+  .cngx-chart-panel__spinner {
+    animation: none;
+  }
+}
+
+@keyframes cngx-chart-panel-spin {
+  to {
+    transform: rotate(360deg);
   }
 }

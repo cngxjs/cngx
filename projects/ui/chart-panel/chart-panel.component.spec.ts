@@ -1,14 +1,52 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import type { AsyncStatus, CngxAsyncState } from '@cngx/core/utils';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { CngxChartPanel } from './chart-panel.component';
+import { CngxChartPanel, type CngxChartPanelLegendPosition } from './chart-panel.component';
 import {
   CngxChartPanelActions,
   CngxChartPanelFooter,
   CngxChartPanelSubtitle,
   CngxChartPanelTitle,
 } from './chart-panel-slots';
+
+/**
+ * Hand-rolled state so each spec drives `status` independently. The panel reads
+ * only the interface, never a producer.
+ */
+function makeState(): CngxAsyncState<unknown> & {
+  set(patch: { status?: AsyncStatus; firstLoad?: boolean }): void;
+} {
+  const status = signal<AsyncStatus>('idle');
+  const firstLoad = signal(true);
+  const busy = signal(false);
+
+  return {
+    status,
+    data: signal<unknown>(undefined),
+    error: signal<unknown>(undefined),
+    progress: signal<number | undefined>(undefined),
+    isLoading: busy,
+    isPending: signal(false),
+    isRefreshing: signal(false),
+    isBusy: busy,
+    isFirstLoad: firstLoad,
+    isEmpty: signal(false),
+    hasData: signal(false),
+    isSettled: signal(false),
+    lastUpdated: signal<Date | undefined>(undefined),
+    set(patch) {
+      if (patch.status !== undefined) {
+        status.set(patch.status);
+        busy.set(['loading', 'pending', 'refreshing'].includes(patch.status));
+      }
+      if (patch.firstLoad !== undefined) {
+        firstLoad.set(patch.firstLoad);
+      }
+    },
+  };
+}
 
 @Component({
   standalone: true,
@@ -90,5 +128,110 @@ describe('CngxChartPanel', () => {
     expect(panel.querySelector('[class*="skeleton"]')).toBeNull();
     expect(panel.querySelector('[class*="empty"]')).toBeNull();
     expect(panel.querySelector('[class*="error"]')).toBeNull();
+  });
+});
+
+@Component({
+  standalone: true,
+  imports: [CngxChartPanel, CngxChartPanelActions],
+  template: `
+    <cngx-chart-panel [state]="state()" [legendPosition]="legend()" [hasBody]="hasBody()">
+      <button cngxChartPanelActions type="button">Refresh</button>
+      @if (hasBody()) {
+        <div class="fake-chart">chart body</div>
+      }
+    </cngx-chart-panel>
+  `,
+})
+class ChromeHost {
+  state = signal<CngxAsyncState<unknown> | undefined>(undefined);
+  legend = signal<CngxChartPanelLegendPosition>('bottom');
+  hasBody = signal(true);
+}
+
+describe('CngxChartPanel chrome', () => {
+  let state: ReturnType<typeof makeState>;
+
+  beforeEach(() => {
+    state = makeState();
+    TestBed.configureTestingModule({ imports: [ChromeHost] });
+  });
+
+  function setup() {
+    const fixture = TestBed.createComponent(ChromeHost);
+    fixture.componentInstance.state.set(state);
+    fixture.detectChanges();
+    const panel: HTMLElement = fixture.nativeElement.querySelector('cngx-chart-panel');
+    return { fixture, panel, host: fixture.componentInstance };
+  }
+
+  it('exposes the legend placement as a host attribute for the skin', () => {
+    const { fixture, panel, host } = setup();
+    expect(panel.getAttribute('data-legend')).toBe('bottom');
+
+    host.legend.set('top');
+    fixture.detectChanges();
+    expect(panel.getAttribute('data-legend')).toBe('top');
+
+    host.legend.set('none');
+    fixture.detectChanges();
+    expect(panel.getAttribute('data-legend')).toBe('none');
+  });
+
+  it('marks the action cluster aria-disabled only while the panel is busy', () => {
+    const { fixture, panel } = setup();
+    const slot = panel.querySelector('.cngx-chart-panel__action-slot')!;
+    expect(slot.getAttribute('aria-disabled')).toBeNull();
+
+    state.set({ status: 'refreshing', firstLoad: false });
+    fixture.detectChanges();
+    expect(slot.getAttribute('aria-disabled')).toBe('true');
+    expect(panel.getAttribute('aria-busy')).toBe('true');
+
+    state.set({ status: 'success', firstLoad: false });
+    fixture.detectChanges();
+    expect(slot.getAttribute('aria-disabled')).toBeNull();
+    expect(panel.getAttribute('aria-busy')).toBeNull();
+  });
+
+  it('keeps the action cluster in the DOM while busy, rather than removing it', () => {
+    const { fixture, panel } = setup();
+    state.set({ status: 'refreshing', firstLoad: false });
+    fixture.detectChanges();
+    expect(panel.querySelector('[cngxChartPanelActions]')!.textContent).toContain('Refresh');
+  });
+
+  it('leaves a projected chart body untouched while the panel is busy', () => {
+    const { fixture, panel } = setup();
+    state.set({ status: 'refreshing', firstLoad: false });
+    fixture.detectChanges();
+
+    // The demarcation: panel busy dims chrome only. The chart body neither
+    // disappears nor gains a panel-owned placeholder over it.
+    expect(panel.querySelector('.fake-chart')!.textContent).toContain('chart body');
+    expect(panel.querySelector('.cngx-chart-panel__placeholder')).toBeNull();
+  });
+
+  it('shows a panel placeholder only before a chart body exists', () => {
+    const { fixture, panel, host } = setup();
+    host.hasBody.set(false);
+    state.set({ status: 'loading', firstLoad: true });
+    fixture.detectChanges();
+
+    expect(panel.querySelector('.cngx-chart-panel__placeholder')).not.toBeNull();
+
+    host.hasBody.set(true);
+    fixture.detectChanges();
+    expect(panel.querySelector('.cngx-chart-panel__placeholder')).toBeNull();
+  });
+
+  it('owns no async view switch of its own', () => {
+    const { fixture, panel } = setup();
+    state.set({ status: 'error', firstLoad: true });
+    fixture.detectChanges();
+
+    // An error on the panel state must not replace the body - the chart decides
+    // what an error looks like for its own data.
+    expect(panel.querySelector('.fake-chart')).not.toBeNull();
   });
 });
