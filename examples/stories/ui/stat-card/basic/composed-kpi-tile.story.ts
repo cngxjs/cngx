@@ -14,6 +14,7 @@ export const STORY: DemoSpec = {
   moduleImports: [
     "import { CngxStatCard, CngxStatCardViz, CngxStatCardFooter, CngxStatLabel, CngxStatValue, CngxStatDelta, CngxStatCaption } from '@cngx/ui/stat-card';",
     "import { CngxMetric, CngxDelta } from '@cngx/common/data';",
+    "import { CngxCardTimestamp } from '@cngx/common/card';",
     "import { CngxSparkline } from '@cngx/common/chart';",
   ],
   imports: [
@@ -27,8 +28,10 @@ export const STORY: DemoSpec = {
     'CngxMetric',
     'CngxDelta',
     'CngxSparkline',
+    'CngxCardTimestamp',
   ],
-  setup: `protected readonly trend: readonly number[] = [4, 6, 5, 8, 7, 9, 11, 10, 13];`,
+  setup: `protected readonly trend: readonly number[] = [4, 6, 5, 8, 7, 9, 11, 10, 13];
+  protected readonly lastSync = new Date('2026-07-27T09:55:00');`,
   template: `<cngx-stat-card style="max-width:260px">
     <span cngxStatLabel>Revenue</span>
     <cngx-metric cngxStatValue [value]="1.2" unit="M EUR" />
@@ -37,6 +40,6 @@ export const STORY: DemoSpec = {
 
     <cngx-sparkline cngxStatCardViz [data]="trend" [width]="220" [height]="36" />
 
-    <span cngxStatCardFooter>Updated 5 minutes ago</span>
+    <cngx-card-timestamp cngxStatCardFooter [date]="lastSync" prefix="Updated" />
   </cngx-stat-card>`,
 };

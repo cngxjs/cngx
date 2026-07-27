@@ -114,9 +114,14 @@ describe('CngxStatCard', () => {
     state.set({ status: 'loading', firstLoad: true });
     fixture.detectChanges();
 
-    expect(card.querySelector('.cngx-stat-card__skeleton')).not.toBeNull();
-    expect(card.querySelector('.cngx-stat-card__stat')).toBeNull();
-    expect(card.querySelectorAll('.cngx-stat-card__skeleton-line')).toHaveLength(3);
+    // The skeleton reuses the stat container and its row structure, so each bar
+    // stands where its text will and the swap to content cannot reflow the tile.
+    const skeleton = card.querySelector('.cngx-stat-card__stat--skeleton')!;
+    expect(skeleton).not.toBeNull();
+    expect(skeleton.querySelector('.cngx-stat-card__row')).not.toBeNull();
+    expect(skeleton.getAttribute('aria-hidden')).toBe('true');
+    expect(card.querySelectorAll('.cngx-stat-card__skeleton-line')).toHaveLength(4);
+    expect(card.querySelector('[cngxStatLabel]')).toBeNull();
   });
 
   it('switches to the error body when the first load fails', () => {
@@ -124,8 +129,32 @@ describe('CngxStatCard', () => {
     state.set({ status: 'error', firstLoad: true });
     fixture.detectChanges();
 
-    expect(card.querySelector('.cngx-stat-card__error')!.textContent).toContain('Could not load');
+    // The error branch is a real empty-state, not a bare paragraph: it brings
+    // role=status, an aria-live region and an icon of its own.
+    const empty = card.querySelector('cngx-empty-state')!;
+    expect(empty).not.toBeNull();
+    expect(empty.getAttribute('role')).toBe('status');
+    expect(empty.textContent).toContain('Could not load');
     expect(card.querySelector('.cngx-stat-card__stat')).toBeNull();
+  });
+
+  it('surfaces a refresh over readable content instead of only flipping aria-busy', () => {
+    const { fixture, card } = setup();
+    state.set({ status: 'success', firstLoad: false });
+    fixture.detectChanges();
+    expect(card.querySelector('.cngx-stat-card__refresh')).toBeNull();
+
+    state.set({ status: 'refreshing', firstLoad: false });
+    fixture.detectChanges();
+    expect(card.querySelector('.cngx-stat-card__refresh')).not.toBeNull();
+    expect(card.querySelector('.cngx-stat-card__stat')).not.toBeNull();
+  });
+
+  it('omits the refresh bar on a first load, where the skeleton already signals busy', () => {
+    const { fixture, card } = setup();
+    state.set({ status: 'loading', firstLoad: true });
+    fixture.detectChanges();
+    expect(card.querySelector('.cngx-stat-card__refresh')).toBeNull();
   });
 
   it('keeps stale content visible when a refresh fails', () => {
@@ -157,7 +186,7 @@ describe('CngxStatCard', () => {
     state.set({ status: 'refreshing', firstLoad: false });
     fixture.detectChanges();
     expect(card.querySelector('.cngx-stat-card__stat')).not.toBeNull();
-    expect(card.querySelector('.cngx-stat-card__skeleton')).toBeNull();
+    expect(card.querySelector('.cngx-stat-card__stat--skeleton')).toBeNull();
   });
 });
 
@@ -185,7 +214,7 @@ describe('CngxStatCard loading treatment', () => {
   }
 
   function isSkeleton(card: HTMLElement): boolean {
-    return card.querySelector('.cngx-stat-card__skeleton') !== null;
+    return card.querySelector('.cngx-stat-card__stat--skeleton') !== null;
   }
 
   function isSpinner(card: HTMLElement): boolean {

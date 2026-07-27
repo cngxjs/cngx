@@ -7,7 +7,12 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { CngxCard } from '@cngx/common/card';
-import { CNGX_STAT, CngxStatCoordinator, resolveAsyncView } from '@cngx/common/data';
+import {
+  CNGX_STAT,
+  CngxStatCoordinator,
+  resolveAsyncView,
+  type CngxStatSlotKind,
+} from '@cngx/common/data';
 import { CngxSkeleton } from '@cngx/common/layout';
 import {
   createLatencyProbe,
@@ -16,9 +21,13 @@ import {
   type CngxAsyncState,
   type CngxLoadingTreatment,
 } from '@cngx/core/utils';
+import { CngxEmptyState } from '@cngx/ui/empty-state';
 import { CngxLoadingIndicator } from '@cngx/ui/feedback';
 
 import { injectStatCardConfig } from './config/inject-stat-card-config';
+
+/** Placeholder shape for a card whose consumer projected no stat slots at all. */
+const DEFAULT_SKELETON_SLOTS: readonly CngxStatSlotKind[] = ['label', 'value', 'caption'];
 
 /**
  * Card-framed KPI tile: one `<cngx-stat-card>` renders a complete dashboard
@@ -66,7 +75,7 @@ import { injectStatCardConfig } from './config/inject-stat-card-config';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [CngxCard, CngxSkeleton, CngxLoadingIndicator],
+  imports: [CngxCard, CngxSkeleton, CngxLoadingIndicator, CngxEmptyState],
   hostDirectives: [CngxStatCoordinator],
   providers: [{ provide: CNGX_STAT, useExisting: CngxStatCoordinator }],
   host: {
@@ -79,17 +88,49 @@ import { injectStatCardConfig } from './config/inject-stat-card-config';
       [attr.aria-labelledby]="cardLabelledBy()"
       [attr.aria-live]="live() === 'off' ? null : live()"
     >
+      <!-- A refresh over existing content would otherwise be invisible: the view
+           stays 'content' and only aria-busy flips, which says nothing to a
+           sighted user. The indicator is absolutely placed and the figure only
+           dims, so the tile never reflows while refreshing - a dashboard grid
+           would otherwise twitch on every poll. It carries the loading config's
+           show-delay and min-dwell, so a fast refresh never flashes. -->
+      @if (showRefreshIndicator()) {
+        <cngx-loading-indicator
+          class="cngx-stat-card__refresh"
+          [loading]="true"
+          variant="spinner"
+          [label]="busyLabel()"
+        />
+      }
+
       @switch (activeView()) {
         @case ('skeleton') {
           @if (resolvedTreatment() === 'skeleton') {
+            <!-- Same container and same row structure as the content branch, so
+                 each bar sits exactly where its text will, and the swap to
+                 content does not resize the tile. -->
             <div
-              class="cngx-stat-card__skeleton"
+              class="cngx-stat-card__stat cngx-stat-card__stat--skeleton"
               [cngxSkeleton]="true"
-              [count]="3"
-              #sk="cngxSkeleton"
+              aria-hidden="true"
             >
-              @for (i of sk.indices(); track i) {
-                <div class="cngx-stat-card__skeleton-line" aria-hidden="true"></div>
+              @if (skeletonSlots().includes('label')) {
+                <span class="cngx-stat-card__skeleton-line cngx-stat-card__skeleton-line--label">
+                </span>
+              }
+              <div class="cngx-stat-card__row">
+                @if (skeletonSlots().includes('value')) {
+                  <span class="cngx-stat-card__skeleton-line cngx-stat-card__skeleton-line--value">
+                  </span>
+                }
+                @if (skeletonSlots().includes('delta')) {
+                  <span class="cngx-stat-card__skeleton-line cngx-stat-card__skeleton-line--delta">
+                  </span>
+                }
+              </div>
+              @if (skeletonSlots().includes('caption')) {
+                <span class="cngx-stat-card__skeleton-line cngx-stat-card__skeleton-line--caption">
+                </span>
               }
             </div>
           } @else {
@@ -99,7 +140,11 @@ import { injectStatCardConfig } from './config/inject-stat-card-config';
           }
         }
         @case ('error') {
-          <p class="cngx-stat-card__error">{{ errorText() }}</p>
+          <cngx-empty-state
+            class="cngx-stat-card__error"
+            [title]="errorText()"
+            [description]="errorDescription()"
+          />
         }
         @default {
           <div class="cngx-stat-card__stat">
@@ -151,8 +196,13 @@ export class CngxStatCard {
   /** Accessible label announced while the card is loading. */
   readonly busyLabel = input<string>(this.config.ariaLabels?.busy ?? 'Loading');
 
-  /** Message shown instead of the stat when the first load failed. */
+  /** Headline of the error state shown instead of the stat when the first load failed. */
   readonly errorText = input<string>(this.config.ariaLabels?.errorFallback ?? 'Could not load');
+
+  /** Supporting detail under {@link errorText}. Omitted when unset. */
+  readonly errorDescription = input<string | undefined>(
+    this.config.ariaLabels?.errorDescription,
+  );
 
   /** Note appended below the stat when a refresh failed but stale data is still shown. */
   readonly staleText = input<string>(
@@ -168,6 +218,26 @@ export class CngxStatCard {
 
   /** @internal Whether any operation is running. Drives `aria-busy` (Pillar 2). */
   protected readonly busy = computed(() => this.state()?.isBusy() ?? false);
+
+  /**
+   * @internal A refresh over content the user can still read. The skeleton and
+   * spinner branches already carry their own busy signal, so the bar would be
+   * redundant there.
+   */
+  /**
+   * @internal Which bars the placeholder draws. Mirrors the slots the consumer
+   * actually projected, so a tile without a delta gets no delta bar. Falls back
+   * to the common label / value / caption shape when nothing has registered -
+   * a card with no stat slots at all still needs a plausible placeholder.
+   */
+  protected readonly skeletonSlots = computed<readonly CngxStatSlotKind[]>(() => {
+    const present = this.coordinator.presentKinds();
+    return present.length > 0 ? present : DEFAULT_SKELETON_SLOTS;
+  });
+
+  protected readonly showRefreshIndicator = computed(
+    () => this.busy() && this.activeView() !== 'skeleton',
+  );
 
   private readonly loadingConfig = injectLoadingConfig();
 
