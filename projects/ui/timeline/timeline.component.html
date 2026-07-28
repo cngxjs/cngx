@@ -1,4 +1,43 @@
-@if (groups().length) {
+@switch (activeView()) {
+  @case ('skeleton') {
+    <!-- The container owns show-delay and min-dwell, so a fast load never
+         flashes and the timeline holds no latency logic. The placeholder
+         reuses the item raster, so the swap to content cannot reflow. -->
+    <cngx-skeleton
+      class="cngx-timeline__skeleton"
+      [state]="state()"
+      [count]="skeletonRowCount()"
+      [attr.aria-label]="label('loading')"
+    >
+      <ng-template cngxSkeletonPlaceholder>
+        <div class="cngx-timeline-item cngx-timeline__skeleton-row" aria-hidden="true">
+          <span class="cngx-timeline-marker"></span>
+          <span class="cngx-timeline-connector"></span>
+          <div class="cngx-timeline-item__body">
+            <span class="cngx-timeline__skeleton-line"></span>
+            <span class="cngx-timeline__skeleton-line cngx-timeline__skeleton-line--short"></span>
+          </div>
+        </div>
+      </ng-template>
+    </cngx-skeleton>
+  }
+
+  @case ('empty') {
+    <div class="cngx-timeline__empty">
+      @if (emptyTpl(); as tpl) {
+        <ng-container *ngTemplateOutlet="tpl; context: { $implicit: emptyReason() }" />
+      } @else {
+        {{ label('emptyFallback') }}
+      }
+    </div>
+  }
+
+  @case ('error') {
+    <ng-container *ngTemplateOutlet="errorSurface" />
+  }
+}
+
+@if (showsContent() && groups().length) {
   <div
     class="cngx-timeline__list"
     role="list"
@@ -6,11 +45,10 @@
     [attr.aria-labelledby]="ariaLabelledBy()"
   >
     @for (group of groups(); track group.key) {
-      <!-- The wrapper carries role="group" even though it is a plain div
-           today: v2 turns it into <details role="group"> for collapsible
-           bands, and putting the role here now means that change does not
-           move the ARIA chain. Ungrouped drops the role instead of the
-           element, so the chain shortens to list -> listitem. -->
+      <!-- The role sits here even though the wrapper is a plain div today:
+           v2 turns it into <details role="group">, and that must not move
+           the ARIA chain. Ungrouped drops the role, not the element, so the
+           chain shortens to list -> listitem. -->
       <div
         class="cngx-timeline__group"
         [attr.role]="groupRole()"
@@ -29,9 +67,7 @@
         @for (item of group.items; track trackItem($index, item)) {
           <div class="cngx-timeline__item" role="listitem">
             @if (itemTpl(); as tpl) {
-              <ng-container
-                *ngTemplateOutlet="tpl; context: itemContext(item, $index, group)"
-              />
+              <ng-container *ngTemplateOutlet="tpl; context: itemContext(item, $index, group)" />
             }
           </div>
         }
@@ -39,3 +75,39 @@
     }
   </div>
 }
+
+<!-- A refresh keeps the loaded rows on screen, so this tail is the only thing
+     saying anything is happening. Outside the list, so it never reads as an
+     event of its own. -->
+@if (refreshing()) {
+  <div class="cngx-timeline__tail" role="status">
+    @if (loadingTailTpl(); as tpl) {
+      <ng-container *ngTemplateOutlet="tpl" />
+    } @else {
+      {{ label('refreshing') }}
+    }
+  </div>
+}
+
+@if (activeView() === 'content+error') {
+  <ng-container *ngTemplateOutlet="errorSurface" />
+}
+
+<ng-template #errorSurface>
+  <div class="cngx-timeline__error" role="alert">
+    @if (errorTpl(); as tpl) {
+      <ng-container
+        *ngTemplateOutlet="tpl; context: { $implicit: state()?.error(), retry: emitRetry }"
+      />
+    } @else {
+      <p class="cngx-timeline__error-message">{{ label('errorFallback') }}</p>
+      @if (retryButtonTpl(); as tpl) {
+        <ng-container *ngTemplateOutlet="tpl; context: { $implicit: emitRetry }" />
+      } @else {
+        <button class="cngx-timeline__retry" type="button" (click)="emitRetry()">
+          {{ label('retry') }}
+        </button>
+      }
+    }
+  </div>
+</ng-template>

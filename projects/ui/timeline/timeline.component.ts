@@ -6,15 +6,22 @@ import {
   contentChild,
   inject,
   input,
+  output,
   ViewEncapsulation,
   type Signal,
   type TemplateRef,
 } from '@angular/core';
+import type { EmptyReason } from '@cngx/common/card';
+import { resolveAsyncView } from '@cngx/common/data';
 import {
   CNGX_TIMELINE_GROUPING_FACTORY,
   CngxTimelineDateHeader,
+  CngxTimelineEmpty,
+  CngxTimelineError,
   CngxTimelineItemTpl,
+  CngxTimelineLoadingTail,
   CngxTimelineMarkerTpl,
+  CngxTimelineRetryButton,
   injectTimelineConfig,
   type CngxTimelineDateHeaderContext,
   type CngxTimelineItemContext,
@@ -24,7 +31,11 @@ import {
   type TimelineGroup,
   type TimelineGroupBy,
 } from '@cngx/common/timeline';
-import { nextUid } from '@cngx/core/utils';
+import { CNGX_STATEFUL, nextUid, type CngxAsyncState } from '@cngx/core/utils';
+import { CngxSkeletonContainer, CngxSkeletonPlaceholder } from '@cngx/ui/skeleton';
+
+import { createForwardedAsyncState } from './forwarded-async-state';
+import { resolveSlot } from './slot-cascade';
 
 /**
  * Raster the timeline lays its rows out on.
@@ -96,11 +107,25 @@ export type CngxTimelineSkin = 'line' | 'card' | 'bands';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [NgTemplateOutlet],
+  imports: [NgTemplateOutlet, CngxSkeletonContainer, CngxSkeletonPlaceholder],
+  providers: [
+    {
+      // Re-exposes whatever is bound to [state] so CngxToastOn / CngxAlertOn /
+      // CngxBannerOn attach with no wiring at all. It cannot be `useExisting`
+      // like the select family's: there the state is a concrete field, here it
+      // arrives through an Input that can change or be absent, so the façade
+      // below forwards each signal instead of capturing one object.
+      provide: CNGX_STATEFUL,
+      useFactory: (): { readonly state: CngxAsyncState<unknown> } => ({
+        state: inject(CngxTimeline).asyncState,
+      }),
+    },
+  ],
   host: {
     class: 'cngx-timeline',
     '[attr.data-mode]': 'mode()',
     '[attr.data-skin]': 'skin()',
+    '[attr.aria-busy]': 'ariaBusy()',
   },
   templateUrl: './timeline.component.html',
   styleUrl: './timeline.component.css',
@@ -110,8 +135,38 @@ export class CngxTimeline<T = unknown> {
   private readonly groupingFactory = inject(CNGX_TIMELINE_GROUPING_FACTORY);
   private readonly uid = nextUid('cngx-timeline');
 
-  /** The flat event list. Order is irrelevant - the presenter sorts. */
+  /**
+   * The flat event list. Order is irrelevant - the presenter sorts.
+   * Ignored once `[state]` is bound.
+   */
   readonly items = input<readonly T[]>([]);
+
+  /**
+   * The list's async state. Wins over `[items]`, and drives the whole body:
+   * skeleton on first load, error surface with a retry, empty surface, and a
+   * refreshing tail over content that stays on screen.
+   *
+   * Also republished through `CNGX_STATEFUL`, so a transition bridge inside
+   * the timeline needs no binding of its own.
+   */
+  readonly state = input<CngxAsyncState<readonly T[]> | undefined>(undefined);
+
+  /**
+   * Why the timeline is empty, forwarded to `*cngxTimelineEmpty`. The
+   * organism cannot infer this - only the consumer knows whether a filter
+   * cleared the list or nothing has happened yet.
+   */
+  readonly emptyReason = input<EmptyReason>('first-use');
+
+  /**
+   * How many placeholder rows the loading body draws. Match it to the
+   * timeline's usual length so the skeleton reserves roughly the space the
+   * content will take.
+   */
+  readonly skeletonRowCount = input<number>(3);
+
+  /** Fires when the consumer asks to retry a failed load. */
+  readonly retry = output<void>();
 
   /**
    * Pulls the timestamp out of an event. Anything the `Date` constructor
@@ -153,9 +208,18 @@ export class CngxTimeline<T = unknown> {
   private readonly itemSlot = contentChild(CngxTimelineItemTpl);
   private readonly dateHeaderSlot = contentChild(CngxTimelineDateHeader);
   private readonly markerSlot = contentChild(CngxTimelineMarkerTpl);
+  private readonly emptySlot = contentChild(CngxTimelineEmpty);
+  private readonly errorSlot = contentChild(CngxTimelineError);
+  private readonly retryButtonSlot = contentChild(CngxTimelineRetryButton);
+  private readonly loadingTailSlot = contentChild(CngxTimelineLoadingTail);
+
+  /** @internal The list the presenter groups: bound state first, then `[items]`. */
+  protected readonly resolvedItems = computed<readonly T[]>(
+    () => this.state()?.data() ?? this.items(),
+  );
 
   private readonly grouping = this.groupingFactory<T>({
-    items: this.items,
+    items: this.resolvedItems,
     dateAccessor: (item) => this.dateAccessor()(item),
     groupBy: this.groupBy,
     direction: this.direction,
@@ -165,33 +229,73 @@ export class CngxTimeline<T = unknown> {
   /** The derived bands, in sort order. */
   readonly groups: Signal<readonly TimelineGroup<T>[]> = this.grouping.groups;
 
-  /** @internal Three-stage cascade: instance slot -> config default -> null. */
-  protected readonly itemTpl = computed<TemplateRef<CngxTimelineItemContext<T>> | null>(
-    () =>
-      this.itemSlot()?.templateRef ??
-      (this.config.templates?.item as TemplateRef<CngxTimelineItemContext<T>> | undefined) ??
-      null,
+  /**
+   * @internal Seven slots, one cascade rule: instance slot -> config default
+   * -> null. The config tier is typed against `unknown` items while the slots
+   * are generic, hence the casts - `TemplateRef` is method-bivariant, so a
+   * consumer's concrete template still assigns in.
+   */
+  protected readonly itemTpl = resolveSlot(
+    this.itemSlot,
+    () => this.config.templates?.item as TemplateRef<CngxTimelineItemContext<T>> | undefined,
   );
-
-  /** @internal */
-  protected readonly dateHeaderTpl = computed<TemplateRef<
-    CngxTimelineDateHeaderContext<T>
-  > | null>(
+  protected readonly dateHeaderTpl = resolveSlot(
+    this.dateHeaderSlot,
     () =>
-      this.dateHeaderSlot()?.templateRef ??
-      (this.config.templates?.dateHeader as
+      this.config.templates?.dateHeader as
         | TemplateRef<CngxTimelineDateHeaderContext<T>>
-        | undefined) ??
-      null,
+        | undefined,
+  );
+  protected readonly markerTpl = resolveSlot(
+    this.markerSlot,
+    () => this.config.templates?.marker as TemplateRef<CngxTimelineMarkerContext<T>> | undefined,
+  );
+  protected readonly emptyTpl = resolveSlot(this.emptySlot, () => this.config.templates?.empty);
+  protected readonly errorTpl = resolveSlot(this.errorSlot, () => this.config.templates?.error);
+  protected readonly retryButtonTpl = resolveSlot(
+    this.retryButtonSlot,
+    () => this.config.templates?.retryButton,
+  );
+  protected readonly loadingTailTpl = resolveSlot(
+    this.loadingTailSlot,
+    () => this.config.templates?.loadingTail,
   );
 
-  /** @internal */
-  protected readonly markerTpl = computed<TemplateRef<CngxTimelineMarkerContext<T>> | null>(
-    () =>
-      this.markerSlot()?.templateRef ??
-      (this.config.templates?.marker as TemplateRef<CngxTimelineMarkerContext<T>> | undefined) ??
-      null,
+  /**
+   * Forwarding façade over the bound `[state]`, published through
+   * `CNGX_STATEFUL`. Every member delegates, so swapping the bound state (or
+   * binding none at all) never leaves a bridge holding a stale object.
+   */
+  readonly asyncState: CngxAsyncState<readonly T[]> = createForwardedAsyncState(this.state);
+
+  /**
+   * @internal The whole body switch, derived - there is no second state
+   * machine here and no boolean fallback inputs. With no `[state]` bound the
+   * timeline is a plain list, so it reports content and lets `[items]` speak.
+   */
+  protected readonly activeView = computed(() => {
+    const state = this.state();
+    if (!state) {
+      return 'content' as const;
+    }
+    return resolveAsyncView(state.status(), state.isFirstLoad(), this.groups().length === 0);
+  });
+
+  /** @internal Content is on screen, whether or not an error rides along. */
+  protected readonly showsContent = computed(
+    () => this.activeView() === 'content' || this.activeView() === 'content+error',
   );
+
+  /** @internal A background refresh over content the user can still read. */
+  protected readonly refreshing = computed(
+    () => this.showsContent() && (this.state()?.isRefreshing() ?? false),
+  );
+
+  /** @internal Mirrors the bound state's own busy flag. */
+  protected readonly ariaBusy = computed(() => (this.state()?.isBusy() ? 'true' : null));
+
+  /** @internal Passed into the error and retry-button slot contexts. */
+  protected readonly emitRetry = (): void => this.retry.emit();
 
   /**
    * @internal `groupBy: 'none'` still produces one synthetic band from the
@@ -216,6 +320,11 @@ export class CngxTimeline<T = unknown> {
   /** @internal Fallback header text when no `*cngxTimelineDateHeader` is bound. */
   protected groupLabel(group: TimelineGroup<T>): string {
     return this.config.labels?.groupLabel?.(group) ?? group.key;
+  }
+
+  /** @internal Fallback copy, all from the config cascade. */
+  protected label(key: 'retry' | 'errorFallback' | 'emptyFallback' | 'loading' | 'refreshing'): string {
+    return this.config.labels?.[key] ?? '';
   }
 
   /** @internal Row context. `first` / `last` are positions within the group. */

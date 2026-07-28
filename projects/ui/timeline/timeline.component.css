@@ -90,6 +90,63 @@
     .cngx-timeline__item {
       display: contents;
     }
+
+    .cngx-timeline__empty,
+    .cngx-timeline__error,
+    .cngx-timeline__tail {
+      padding: var(--cngx-timeline-content-padding, 4px);
+    }
+
+    .cngx-timeline__empty,
+    .cngx-timeline__tail {
+      color: var(--cngx-timeline-muted-color, oklch(0.5 0.01 250));
+      font-size: 0.8125rem;
+    }
+
+    .cngx-timeline__error-message {
+      margin: 0 0 var(--cngx-timeline-item-gap, 16px);
+      color: var(--cngx-timeline-rejected-color, oklch(0.6 0.18 25));
+    }
+
+    /* Placeholder rows reuse the item raster, so the swap to real content
+       does not reflow the page. */
+    .cngx-timeline__skeleton {
+      display: flex;
+      flex-direction: column;
+      gap: var(--cngx-timeline-item-gap, 16px);
+    }
+
+    .cngx-timeline__skeleton-row .cngx-timeline-marker,
+    .cngx-timeline__skeleton-row .cngx-timeline-connector {
+      background: color-mix(in oklch, currentColor 14%, transparent);
+    }
+
+    .cngx-timeline__skeleton-row .cngx-timeline-marker {
+      inline-size: var(--cngx-timeline-marker-size, 12px);
+      block-size: var(--cngx-timeline-marker-size, 12px);
+      border-radius: 50%;
+    }
+
+    .cngx-timeline__skeleton-row .cngx-timeline-connector {
+      inline-size: var(--cngx-timeline-connector-width, 2px);
+      block-size: 100%;
+      justify-self: center;
+    }
+
+    .cngx-timeline__skeleton-line {
+      display: block;
+      block-size: 0.75rem;
+      border-radius: var(--cngx-radius-sm, 4px);
+      background: color-mix(in oklch, currentColor 14%, transparent);
+    }
+
+    .cngx-timeline__skeleton-line + .cngx-timeline__skeleton-line {
+      margin-block-start: var(--cngx-timeline-row-gap, 4px);
+    }
+
+    .cngx-timeline__skeleton-line--short {
+      inline-size: 60%;
+    }
   }
 
   /* card - the row body gets a surface. The marker column stays outside it
