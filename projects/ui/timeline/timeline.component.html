@@ -62,26 +62,25 @@
     [attr.aria-labelledby]="ariaLabelledBy()"
   >
     @for (group of groups(); track group.key) {
-      <!-- Each band is its own list, named by its own header, and the
-           container above is the group that holds them: group -> list ->
-           listitem. The obvious alternative, one list with role="group"
-           bands inside it, is rejected by axe (a list may not own a group)
-           and reports one item count across every band instead of one per
-           band. Ungrouped drops the band to presentation rather than to no
+      <!-- Three elements per band, not two, and the middle one is why: a
+           list may own nothing but listitems, so the header cannot sit
+           inside it. The header is a consumer slot and the documented
+           example is an <h3> - a real role, which axe rejects as a child of
+           role="list". So the band wrapper stays generic, the header sits
+           beside the rows, and only the rows carry the list role. The rows
+           element is what the header names, and what v2 wraps in a
+           <details role="group">.
+
+           Ungrouped drops both wrappers to presentation rather than to no
            role at all: a generic div between the list and its rows still
            owns them and breaks listitem's required context - display:
-           contents fixes the box tree, not this. v2's <details role="group">
-           wraps this element rather than replacing its role.
+           contents fixes the box tree, not this.
 
            The label id is keyed on $index, not on group.key: a custom
            TimelineGroupingFn is free to return "today / this week / earlier",
            and whitespace in an id makes this reference resolve to nothing,
            leaving the band unnamed. -->
-      <div
-        class="cngx-timeline__group"
-        [attr.role]="bandRole()"
-        [attr.aria-labelledby]="ungrouped() ? null : groupLabelId($index)"
-      >
+      <div class="cngx-timeline__group" [attr.role]="wrapperRole()">
         @if (!ungrouped()) {
           <div class="cngx-timeline__date-header" [id]="groupLabelId($index)">
             @if (dateHeaderTpl(); as tpl) {
@@ -92,13 +91,19 @@
           </div>
         }
 
-        @for (item of group.items; track trackItem($index, item)) {
-          <div class="cngx-timeline__item" role="listitem">
-            @if (itemTpl(); as tpl) {
-              <ng-container *ngTemplateOutlet="tpl; context: itemContext(item, $index, group)" />
-            }
-          </div>
-        }
+        <div
+          class="cngx-timeline__rows"
+          [attr.role]="rowsRole()"
+          [attr.aria-labelledby]="ungrouped() ? null : groupLabelId($index)"
+        >
+          @for (item of group.items; track trackItem($index, item)) {
+            <div class="cngx-timeline__item" role="listitem">
+              @if (itemTpl(); as tpl) {
+                <ng-container *ngTemplateOutlet="tpl; context: itemContext(item, $index, group)" />
+              }
+            </div>
+          }
+        </div>
       </div>
     }
   </div>

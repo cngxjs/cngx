@@ -162,11 +162,14 @@ everything visual through the slots.
 ## Accessibility
 
 Every band is its own list: grouped renders `role="group"` on the container,
-`role="list"` + `aria-labelledby` on each band, `role="listitem"` on each row,
-so a screen reader reports an item count per band rather than one count across
-the whole timeline. `groupBy: 'none'` moves `list` up to the container and drops
-the band to `presentation`, shortening the chain to `list -> listitem` without a
-second code path.
+then per band a generic wrapper holding the date header beside a `role="list"`
+that owns only `role="listitem"` rows and is named by that header. A screen
+reader therefore reports an item count per band rather than one across the whole
+timeline. The header sits outside the list on purpose - a list may own nothing
+but list items, and the header is a consumer slot that often carries a heading.
+`groupBy: 'none'` moves `list` up to the container and drops both wrappers to
+`presentation`, shortening the chain to `list -> listitem` without a second code
+path.
 
 `aria-busy` sits on the element that owns the content, and is a `computed()`
 over the bound state rather than a one-time setting. A polite live region stays

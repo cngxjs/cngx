@@ -76,7 +76,10 @@
   }
 
   /**
-   * Height of one placeholder bar in the loading body.
+   * Height of one placeholder bar in the loading body. Affordance geometry,
+   * deliberately outside the density scale - the bar stands in for a line of
+   * text, so it tracks the type it replaces rather than the compactness of
+   * the box around it.
    * @group Layout
    */
   @property --cngx-timeline-skeleton-line-size {
@@ -91,9 +94,9 @@
     :scope {
       /* Derive from the global scale; the registered pixel initials above
          would otherwise defeat every use-site fallback. 16 -> md, 24 -> lg. */
-      --cngx-timeline-item-gap: var(--cngx-space-md);
-      --cngx-timeline-group-gap: var(--cngx-space-lg);
-      --cngx-timeline-surface-padding: var(--cngx-space-xs);
+      --cngx-timeline-item-gap: var(--cngx-space-md, 16px);
+      --cngx-timeline-group-gap: var(--cngx-space-lg, 24px);
+      --cngx-timeline-surface-padding: var(--cngx-space-xs, 4px);
       /* The row's two raster tokens, repeated here for the skeleton alone.
          Their registration and their primary SET both live at the row host
          in timeline-item.component.css, but the placeholder deliberately
@@ -101,8 +104,8 @@
          scope and would freeze at the registered initials while real rows
          re-scale. Same derivation, same values - a row inside re-SETs them
          at its own host and nothing here reaches it. */
-      --cngx-timeline-gap: var(--cngx-space-sm);
-      --cngx-timeline-row-gap: var(--cngx-space-xs);
+      --cngx-timeline-gap: var(--cngx-space-sm, 8px);
+      --cngx-timeline-row-gap: var(--cngx-space-xs, 4px);
 
       display: block;
       color: var(--cngx-timeline-text-color, oklch(0.2 0.01 250));
@@ -114,7 +117,8 @@
       gap: var(--cngx-timeline-group-gap, 24px);
     }
 
-    .cngx-timeline__group {
+    .cngx-timeline__group,
+    .cngx-timeline__rows {
       display: flex;
       flex-direction: column;
       gap: var(--cngx-timeline-item-gap, 16px);
@@ -134,10 +138,11 @@
       display: block;
     }
 
-    /* Ungrouped renders one band with no role, which would otherwise leave a
-       generic box between the list and its items. Collapsing it keeps the
+    /* Ungrouped renders one band and no header, so both wrappers would leave
+       generic boxes between the list and its items. Collapsing them keeps the
        chain at list -> listitem; the list then owns the row spacing. */
-    :scope[data-ungrouped] .cngx-timeline__group {
+    :scope[data-ungrouped] .cngx-timeline__group,
+    :scope[data-ungrouped] .cngx-timeline__rows {
       display: contents;
     }
 

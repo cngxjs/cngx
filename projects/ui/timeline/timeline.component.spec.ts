@@ -52,7 +52,7 @@ const EVENTS: readonly Event[] = [
       </ng-template>
       @if (withHeaderSlot()) {
         <ng-template cngxTimelineDateHeader let-group>
-          <span class="slot-header">SLOT {{ group.key }}</span>
+          <h3 class="slot-header">SLOT {{ group.key }}</h3>
         </ng-template>
       }
     </cngx-timeline>
@@ -200,8 +200,12 @@ describe('CngxTimeline', () => {
       const container = el.querySelector('.cngx-timeline__list');
       expect(container?.getAttribute('role')).toBe('group');
 
+      // The band wrapper stays generic so the header can sit outside the list.
       const bands = Array.from(el.querySelectorAll('.cngx-timeline__group'));
-      expect(bands.map((band) => band.getAttribute('role'))).toEqual(['list', 'list']);
+      expect(bands.map((band) => band.getAttribute('role'))).toEqual([null, null]);
+
+      const rows = Array.from(el.querySelectorAll('.cngx-timeline__rows'));
+      expect(rows.map((row) => row.getAttribute('role'))).toEqual(['list', 'list']);
 
       const items = Array.from(el.querySelectorAll('.cngx-timeline__item'));
       expect(items.map((i) => i.getAttribute('role'))).toEqual([
@@ -211,20 +215,43 @@ describe('CngxTimeline', () => {
       ]);
     });
 
-    it('gives every listitem a list parent in both configurations', () => {
+    it('lets a list own nothing but listitems, in both configurations', () => {
       const { el, host, detect } = mount();
+      host.withHeaderSlot.set(true);
+      detect();
 
-      const parentsAreLists = (): boolean =>
+      // The header slot's documented example is an <h3>, a real role, which
+      // axe rejects as a child of role="list". Asserting the invariant rather
+      // than the markup is what keeps a future header move honest.
+      // Descends through presentation wrappers the way the accessibility
+      // tree does, so the ungrouped path's collapsed divs do not read as
+      // owned elements while a real one (an <h3>) still would.
+      const ownedRoles = (root: Element): string[] =>
+        Array.from(root.children).flatMap((child) => {
+          const role = child.getAttribute('role');
+          if (role === 'presentation' || role === 'none') {
+            return ownedRoles(child);
+          }
+          return [role ?? child.tagName.toLowerCase()];
+        });
+      const listsOwnOnlyItems = (): boolean =>
+        Array.from(el.querySelectorAll('[role="list"]')).every((list) =>
+          ownedRoles(list).every((role) => role === 'listitem'),
+        );
+      const itemsSitInAList = (): boolean =>
         Array.from(el.querySelectorAll('[role="listitem"]')).every(
           (item) => item.parentElement?.closest('[role="list"]') !== null,
         );
 
-      expect(parentsAreLists()).toBe(true);
+      expect(el.querySelector('.cngx-timeline__date-header h3')).not.toBeNull();
+      expect(listsOwnOnlyItems()).toBe(true);
+      expect(itemsSitInAList()).toBe(true);
 
       host.groupBy.set('none');
       detect();
 
-      expect(parentsAreLists()).toBe(true);
+      expect(listsOwnOnlyItems()).toBe(true);
+      expect(itemsSitInAList()).toBe(true);
     });
 
     it('names every band by its own header element', () => {
@@ -232,7 +259,8 @@ describe('CngxTimeline', () => {
 
       for (const group of Array.from(el.querySelectorAll('.cngx-timeline__group'))) {
         const header = group.querySelector('.cngx-timeline__date-header');
-        expect(group.getAttribute('aria-labelledby')).toBe(header?.id);
+        const rows = group.querySelector('.cngx-timeline__rows');
+        expect(rows?.getAttribute('aria-labelledby')).toBe(header?.id);
         expect(header?.id).toBeTruthy();
         expect(text(header)).not.toBe('');
       }
@@ -253,7 +281,7 @@ describe('CngxTimeline', () => {
       const groups = Array.from(el.querySelectorAll('.cngx-timeline__group'));
       expect(groups).toHaveLength(2);
       for (const group of groups) {
-        const id = group.getAttribute('aria-labelledby') ?? '';
+        const id = group.querySelector('.cngx-timeline__rows')?.getAttribute('aria-labelledby') ?? '';
         expect(id).not.toMatch(/\s/);
         expect(el.querySelector(`#${id}`)).toBe(group.querySelector('.cngx-timeline__date-header'));
       }
@@ -266,11 +294,12 @@ describe('CngxTimeline', () => {
       detect();
 
       expect(el.querySelector('.cngx-timeline__list')?.getAttribute('role')).toBe('list');
-      const group = el.querySelector('.cngx-timeline__group');
       // presentation, not absent: a role-less wrapper would still own the
       // rows and break listitem's required context.
-      expect(group?.getAttribute('role')).toBe('presentation');
-      expect(group?.hasAttribute('aria-labelledby')).toBe(false);
+      expect(el.querySelector('.cngx-timeline__group')?.getAttribute('role')).toBe('presentation');
+      const rows = el.querySelector('.cngx-timeline__rows');
+      expect(rows?.getAttribute('role')).toBe('presentation');
+      expect(rows?.hasAttribute('aria-labelledby')).toBe(false);
       expect(el.querySelectorAll('.cngx-timeline__date-header')).toHaveLength(0);
       expect(Array.from(el.querySelectorAll('.cngx-timeline__item')).map((i) => i.getAttribute('role'))
       ).toEqual(['listitem', 'listitem', 'listitem']);

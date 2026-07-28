@@ -24,6 +24,7 @@ import {
   CngxTimelineSkeleton,
   injectTimelineConfig,
   type CngxTimelineItemContext,
+  type CngxTimelineMarkerHost,
   type TimelineDateAccessor,
   type TimelineDirection,
   type TimelineGroup,
@@ -73,12 +74,12 @@ export type CngxTimelineSkin = 'line' | 'card' | 'bands';
  * grouping without forking the component.
  *
  * **ARIA.** One chain in two configurations, both derived rather than set:
- * grouped gives every band its own `list` (named by its date header) inside
- * a `group` container, so a screen reader counts items per band rather than
- * across the whole history; `groupBy="none"` moves `list` up to the
- * container and collapses to `list` -> `listitem`. The band carries its role
- * from day one so the v2 collapsible variant wraps it in a
- * `<details role="group">` without moving the chain.
+ * grouped is `group` -> `list` -> `listitem`, one list per band named by its
+ * date header, so a screen reader counts items per band rather than across
+ * the whole history. The header sits beside that list, never inside it - a
+ * list may own nothing but `listitem`, and the header is a consumer slot.
+ * `groupBy="none"` moves `list` up to the container and collapses the chain
+ * to `list` -> `listitem`.
  *
  * **Not keyboard-navigable, deliberately.** v1 items are content, not
  * widgets - links and buttons *inside* a row are natively tabbable in DOM
@@ -139,7 +140,7 @@ export type CngxTimelineSkin = 'line' | 'card' | 'bands';
   templateUrl: './timeline.component.html',
   styleUrl: './timeline.component.css',
 })
-export class CngxTimeline<T = unknown> {
+export class CngxTimeline<T = unknown> implements CngxTimelineMarkerHost {
   private readonly config = injectTimelineConfig();
   private readonly groupingFactory = inject(CNGX_TIMELINE_GROUPING_FACTORY);
   private readonly uid = nextUid('cngx-timeline');
@@ -303,8 +304,11 @@ export class CngxTimeline<T = unknown> {
   /** @internal Grouped is `group -> list -> listitem`: one list per band. */
   protected readonly containerRole = computed(() => (this.ungrouped() ? 'list' : 'group'));
 
-  /** @internal Ungrouped needs `presentation`, not role-less. See the template. */
-  protected readonly bandRole = computed(() => (this.ungrouped() ? 'presentation' : 'list'));
+  /** @internal Generic when grouped so the header may sit beside the rows. */
+  protected readonly wrapperRole = computed(() => (this.ungrouped() ? 'presentation' : null));
+
+  /** @internal The rows are the list, so it owns only `listitem` children. */
+  protected readonly rowsRole = computed(() => (this.ungrouped() ? 'presentation' : 'list'));
 
   /** @internal Config fallback only applies when nothing was named explicitly. */
   protected readonly listLabel = computed(() =>
