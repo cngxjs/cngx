@@ -1,4 +1,4 @@
-import { Component, signal, TemplateRef, viewChild } from '@angular/core';
+import { Component, computed, forwardRef, signal, TemplateRef, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { createManualState } from '@cngx/common/data';
 import type { AsyncStatus } from '@cngx/core/utils';
@@ -194,6 +194,49 @@ describe('CngxTimelineItem', () => {
     });
   });
 
+  /**
+   * A row under a timeline that does offer a marker template, so the two
+   * tiers are genuinely in competition. `project` decides whether the row
+   * also carries its own `[cngxTimelineMarkerContent]`.
+   */
+  function mountMarkerHost(project: boolean): { marker: Element | null } {
+    @Component({
+      selector: 'cngx-timeline-marker-host-host',
+      standalone: true,
+      imports: [CngxTimelineItem, CngxTimelineMarkerContent],
+      template: `
+        <ng-template #wide let-status="status">TPL:{{ status }}</ng-template>
+        <cngx-timeline-item status="done" [item]="{ id: 1 }">
+          @if (project) {
+            <span cngxTimelineMarkerContent>PROJECTED</span>
+          }
+        </cngx-timeline-item>
+      `,
+      providers: [
+        {
+          provide: CNGX_TIMELINE_MARKER_HOST,
+          useExisting: forwardRef(() => MarkerHostHost),
+        },
+      ],
+    })
+    class MarkerHostHost {
+      readonly project = project;
+      private readonly wide = viewChild('wide', { read: TemplateRef });
+      readonly markerTpl = computed(() => this.wide() ?? null);
+    }
+
+    TestBed.configureTestingModule({ imports: [MarkerHostHost] });
+    const fixture = TestBed.createComponent(MarkerHostHost);
+    // Twice: the template ref resolves on view init, so the first pass has
+    // nothing for the marker host to hand down yet.
+    fixture.detectChanges();
+    fixture.detectChanges();
+
+    return {
+      marker: (fixture.nativeElement as HTMLElement).querySelector('cngx-timeline-marker'),
+    };
+  }
+
   describe('marker content', () => {
     it('projects [cngxTimelineMarkerContent] into the dot when standing alone', () => {
       TestBed.resetTestingModule();
@@ -218,37 +261,21 @@ describe('CngxTimelineItem', () => {
       expect(marker?.textContent).toContain('OK');
     });
 
-    it('lets an app-wide marker template win over the projected content', () => {
+    it('renders the timeline-wide template when the row projects nothing', () => {
       TestBed.resetTestingModule();
+      const { marker } = mountMarkerHost(false);
 
-      @Component({
-        selector: 'cngx-timeline-marker-host-host',
-        standalone: true,
-        imports: [CngxTimelineItem, CngxTimelineMarkerContent],
-        template: `
-          <ng-template #appWide let-status="status">TPL:{{ status }}</ng-template>
-          <cngx-timeline-item status="done" [item]="{ id: 1 }">
-            <span cngxTimelineMarkerContent>PROJECTED</span>
-          </cngx-timeline-item>
-        `,
-        providers: [
-          {
-            provide: CNGX_TIMELINE_MARKER_HOST,
-            useFactory: () => ({ markerTpl: signal(null) }),
-          },
-        ],
-      })
-      class MarkerHostHost {
-        readonly tpl = viewChild.required('appWide', { read: TemplateRef });
-      }
+      expect(marker?.textContent).toContain('TPL:done');
+    });
 
-      TestBed.configureTestingModule({ imports: [MarkerHostHost] });
-      const fixture = TestBed.createComponent(MarkerHostHost);
-      fixture.detectChanges();
-      const marker = (fixture.nativeElement as HTMLElement).querySelector('cngx-timeline-marker');
+    it('lets a row that projects its own content win over the timeline-wide template', () => {
+      TestBed.resetTestingModule();
+      const { marker } = mountMarkerHost(true);
 
-      // Host present but offering no template: projection still wins.
+      // Most-local-wins: one row swaps its glyph without tearing the
+      // timeline's default out for every other row.
       expect(marker?.textContent).toContain('PROJECTED');
+      expect(marker?.textContent).not.toContain('TPL:');
     });
   });
 

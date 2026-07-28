@@ -126,6 +126,9 @@ export interface CngxTimelineMarkerContext<T> {
  * What goes inside the marker dot - an icon, an avatar, a type glyph.
  * Falls back to a bare coloured dot.
  *
+ * Applies to every row. A single row overrides it by projecting its own
+ * `[cngxTimelineMarkerContent]`, which wins over this template.
+ *
  * Whatever renders here is inside an `aria-hidden` element, so it must
  * not be the only carrier of anything: the status reaches assistive tech
  * through `CNGX_TIMELINE_CONFIG.labels.status`.

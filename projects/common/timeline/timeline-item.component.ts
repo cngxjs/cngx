@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  contentChild,
   Directive,
   inject,
   input,
@@ -36,11 +37,11 @@ export class CngxTimelineTime {}
  * Marks content to render inside this row's marker dot - a glyph, an icon,
  * an avatar.
  *
- * The per-row counterpart to the app-wide `*cngxTimelineMarkerTpl`, and the
- * only route when the row stands on its own. If a `<cngx-timeline>` above it
- * carries a marker template, that template wins, on the same
- * app-wide-default-under-local-override logic as every other slot in the
- * family.
+ * The per-row counterpart to the timeline-wide `*cngxTimelineMarkerTpl`, and
+ * the only route when the row stands on its own. It also *wins* over that
+ * template when both are present: most-local-wins, the same direction as
+ * every other slot in the family, so one row can carry a different glyph
+ * without the timeline's default being torn out for the rest.
  *
  * Whatever renders here is inside an `aria-hidden` element - decoration only.
  *
@@ -192,12 +193,25 @@ export class CngxTimelineItem {
   readonly item = input<unknown>(undefined);
 
   /**
-   * @internal App-wide marker template, when a `<cngx-timeline>` is above
-   * this row. Absent standalone, where `[cngxTimelineMarkerContent]`
-   * projection takes over instead.
+   * @internal The timeline-wide marker template, when a `<cngx-timeline>` is
+   * above this row. Absent standalone.
    */
-  protected readonly markerTpl =
+  private readonly hostMarkerTpl =
     inject(CNGX_TIMELINE_MARKER_HOST, { optional: true })?.markerTpl ?? (() => null);
+
+  /** @internal Set when this row projects its own marker content. */
+  private readonly ownMarker = contentChild(CngxTimelineMarkerContent);
+
+  /**
+   * @internal The timeline-wide template is the *default*, so a row that
+   * projects its own marker content overrides it - most-local-wins, the
+   * same direction as every other slot in the family. Resolving to `null`
+   * rather than branching on `<ng-content>` keeps the projection static:
+   * content lands in the DOM once and renders whatever it was given.
+   */
+  protected readonly markerTpl = computed(() =>
+    this.ownMarker() ? null : this.hostMarkerTpl(),
+  );
 
   /** @internal Work in flight on this row's own state. */
   protected readonly busy = computed(() => {
