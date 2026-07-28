@@ -141,6 +141,25 @@ describe('CngxTimeline async body', () => {
       expect(surfaces(el)).toEqual([]);
     });
 
+    it('never renders a blank body while busy with nothing on screen', () => {
+      const { el, host, detect } = mount();
+
+      // Settled empty first, so the next load is no longer a first load and
+      // the lookup table resolves `pending` to content - which, with zero
+      // rows, would render nothing at all and announce nothing.
+      host.state.setSuccess([]);
+      settleGate(detect);
+      expect(surfaces(el)).toEqual(['empty']);
+
+      host.state.set('pending');
+      settleGate(detect);
+
+      expect(surfaces(el)).toEqual(['skeleton']);
+      expect(el.querySelector('.cngx-timeline__sr-only')?.textContent?.trim()).toBe(
+        'Loading timeline',
+      );
+    });
+
     it.each<AsyncStatus>(['loading', 'pending', 'refreshing'])(
       'shows the skeleton while "%s" on first load',
       (status) => {
