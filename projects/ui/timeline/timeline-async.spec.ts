@@ -208,12 +208,12 @@ describe('CngxTimeline async body', () => {
       const rows = el.querySelectorAll('.cngx-timeline__skeleton-row');
       expect(rows).toHaveLength(2);
       for (const row of Array.from(rows)) {
-        // Same class as a real row, so it resolves the same grid areas and
-        // the swap to content cannot reflow.
-        expect(row.classList.contains('cngx-timeline-item')).toBe(true);
-        expect(row.querySelector('.cngx-timeline-marker')).not.toBeNull();
-        expect(row.querySelector('.cngx-timeline-connector')).not.toBeNull();
-        expect(row.querySelector('.cngx-timeline-item__body')).not.toBeNull();
+        // Self-contained: no class here belongs to CngxTimelineItem, whose
+        // stylesheet is not in the document before the first row renders.
+        expect(row.className).not.toContain('cngx-timeline-item');
+        expect(row.querySelector('.cngx-timeline__skeleton-marker')).not.toBeNull();
+        expect(row.querySelector('.cngx-timeline__skeleton-rail')).not.toBeNull();
+        expect(row.querySelector('.cngx-timeline__skeleton-body')).not.toBeNull();
       }
     });
 
@@ -384,17 +384,23 @@ describe('CngxTimeline async body', () => {
   });
 
   describe('aria-busy', () => {
-    it('mirrors the bound state onto the host', () => {
+    it('sits on the list, not the role-less host, and tracks the bound state', () => {
       const { el, host, detect } = mount();
-      expect(el.hasAttribute('aria-busy')).toBe(false);
-
-      host.state.set('loading');
+      host.state.setSuccess(EVENTS);
       settleGate(detect);
-      expect(el.getAttribute('aria-busy')).toBe('true');
+
+      const list = el.querySelector('.cngx-timeline__list');
+      expect(list?.getAttribute('role')).toBe('list');
+      expect(el.hasAttribute('aria-busy')).toBe(false);
+      expect(list?.hasAttribute('aria-busy')).toBe(false);
+
+      host.state.set('refreshing');
+      settleGate(detect);
+      expect(el.querySelector('.cngx-timeline__list')?.getAttribute('aria-busy')).toBe('true');
 
       host.state.setSuccess(EVENTS);
       settleGate(detect);
-      expect(el.hasAttribute('aria-busy')).toBe(false);
+      expect(el.querySelector('.cngx-timeline__list')?.hasAttribute('aria-busy')).toBe(false);
     });
   });
 });

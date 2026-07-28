@@ -136,6 +136,19 @@
   }
 
   /**
+   * Font size for secondary text across the family - timestamps, inline
+   * errors, date headers, the refreshing tail. Registered here rather than
+   * with either consumer, because the row and the organism both read it and
+   * a registration in one is out of scope for the other.
+   * @group Typography
+   */
+  @property --cngx-timeline-meta-size {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0.8125rem;
+  }
+
+  /**
    * Primary text colour inside an item.
    * @group Typography
    * @see [[--cngx-color-text]]

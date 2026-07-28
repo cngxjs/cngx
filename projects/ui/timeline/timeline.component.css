@@ -70,17 +70,6 @@
   }
 
   /**
-   * Font size for the organism's secondary text - date headers, empty copy,
-   * the refreshing tail.
-   * @group Typography
-   */
-  @property --cngx-timeline-meta-size {
-    syntax: '*';
-    inherits: true;
-    initial-value: 0.8125rem;
-  }
-
-  /**
    * Height of one placeholder bar in the loading body.
    * @group Layout
    */
@@ -171,29 +160,53 @@
       color: var(--cngx-timeline-rejected-color, oklch(0.6 0.18 25));
     }
 
-    /* Placeholder rows reuse the item raster, so the swap to real content
-       does not reflow the page. The spacing is a margin rather than a flex
-       gap on the container: `<cngx-skeleton>` hosts itself with
-       `display: contents`, so it has no box to hang a gap on. */
+    /* The placeholder restates the row raster instead of borrowing
+       `.cngx-timeline-item`: `CngxTimelineItem` is not among this
+       component's imports, so on a cold first load its stylesheet has not
+       been injected and borrowed classes would render as bare spans. The
+       geometry is the same, so the swap to content still does not reflow.
+
+       Spacing is a margin rather than a flex gap on the container:
+       `<cngx-skeleton>` hosts itself with `display: contents` and has no box
+       to hang a gap on. */
+    .cngx-timeline__skeleton-row {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      grid-template-rows: auto minmax(0, 1fr);
+      grid-template-areas:
+        'marker line'
+        'rail body';
+      column-gap: var(--cngx-timeline-gap, 8px);
+      row-gap: var(--cngx-timeline-row-gap, 4px);
+    }
+
     .cngx-timeline__skeleton-row + .cngx-timeline__skeleton-row {
       margin-block-start: var(--cngx-timeline-item-gap, 16px);
     }
 
-    .cngx-timeline__skeleton-row .cngx-timeline-marker,
-    .cngx-timeline__skeleton-row .cngx-timeline-connector {
+    .cngx-timeline__skeleton-marker,
+    .cngx-timeline__skeleton-rail {
       background: color-mix(in oklch, currentColor 14%, transparent);
     }
 
-    .cngx-timeline__skeleton-row .cngx-timeline-marker {
+    .cngx-timeline__skeleton-marker {
+      grid-area: marker;
       inline-size: var(--cngx-timeline-marker-size, 12px);
       block-size: var(--cngx-timeline-marker-size, 12px);
       border-radius: 50%;
     }
 
-    .cngx-timeline__skeleton-row .cngx-timeline-connector {
+    .cngx-timeline__skeleton-rail {
+      grid-area: rail;
       inline-size: var(--cngx-timeline-connector-width, 2px);
       block-size: 100%;
       justify-self: center;
+    }
+
+    .cngx-timeline__skeleton-body {
+      grid-area: body;
+      padding: var(--cngx-timeline-surface-padding, 4px);
+      min-inline-size: 0;
     }
 
     .cngx-timeline__skeleton-line {

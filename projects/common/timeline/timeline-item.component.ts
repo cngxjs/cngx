@@ -8,7 +8,7 @@ import {
   input,
   ViewEncapsulation,
 } from '@angular/core';
-import { type CngxAsyncState, nextUid } from '@cngx/core/utils';
+import { type CngxAsyncState } from '@cngx/core/utils';
 
 import { CngxTimelineConnector, type TimelineConnectorPosition } from './connector.component';
 import { CNGX_TIMELINE_MARKER_HOST } from './marker-host.token';
@@ -87,12 +87,11 @@ export class CngxTimelineContent {}
  * **What it announces.** The marker and rail are `aria-hidden`, so colour is
  * never the only channel - the status reaches assistive tech through a
  * screen-reader-only line fed from `CNGX_TIMELINE_CONFIG.labels.status`, and
- * a failed row through a visible inline error. Both keep stable IDs and stay
- * in the DOM in every state; `aria-hidden` decides which one is read. They
- * are read as the row's own content rather than through
- * `aria-describedby` - the host is a plain element with no role, so a
- * description pointed at its own descendants would resolve nowhere and
- * duplicate the text for anyone browsing it.
+ * a failed row through a visible inline error. Both are read as the row's own
+ * content, in DOM order, rather than through `aria-describedby`: the host is
+ * a plain element with no role, so a description pointed at its own
+ * descendants would resolve nowhere and duplicate the text for anyone
+ * browsing it. Neither element is rendered while it has nothing to say.
  *
  * ### Standalone
  * ```html
@@ -143,27 +142,18 @@ export class CngxTimelineContent {}
     <div class="cngx-timeline-item__body">
       <ng-content select="[cngxTimelineContent]" />
       <ng-content />
-      <p
-        class="cngx-timeline-item__error"
-        [id]="errorId"
-        [attr.aria-hidden]="errorText() ? null : 'true'"
-      >
-        {{ errorText() }}
-      </p>
+      @if (errorText(); as text) {
+        <p class="cngx-timeline-item__error">{{ text }}</p>
+      }
     </div>
-    <span
-      class="cngx-timeline-item__sr"
-      [id]="statusId"
-      [attr.aria-hidden]="statusText() ? null : 'true'"
-    >
-      {{ statusText() }}
-    </span>
+    @if (statusText(); as text) {
+      <span class="cngx-timeline-item__sr">{{ text }}</span>
+    }
   `,
   styleUrls: ['./timeline-tokens.css', './timeline-item.component.css'],
 })
 export class CngxTimelineItem {
   private readonly config = injectTimelineConfig();
-  private readonly uid = nextUid('cngx-timeline-item');
 
   /**
    * Where the event sits in the history. Drives the marker and rail
@@ -208,12 +198,6 @@ export class CngxTimelineItem {
    */
   protected readonly markerTpl =
     inject(CNGX_TIMELINE_MARKER_HOST, { optional: true })?.markerTpl ?? (() => null);
-
-  /** @internal Stable target for the screen-reader status line. */
-  protected readonly statusId = `${this.uid}-status`;
-
-  /** @internal Stable target for the inline error. */
-  protected readonly errorId = `${this.uid}-error`;
 
   /** @internal Work in flight on this row's own state. */
   protected readonly busy = computed(() => {

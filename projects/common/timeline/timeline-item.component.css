@@ -34,9 +34,10 @@
  *
  * **State**
  *
- * `[data-failed]` recolours the row's text and shows the inline error.
- * The error keeps its ID in every state and is toggled with
- * `aria-hidden`, so `aria-describedby` never points at a missing node.
+ * `[data-failed]` recolours the row's text and shows the inline error. The
+ * error and the screen-reader status line are rendered only while they have
+ * something to say, and are read as the row's own content - the host carries
+ * no role for an `aria-describedby` to resolve against.
  */
 
 @layer cngx.tokens {
@@ -132,13 +133,7 @@
       line-height: 1.4;
     }
 
-    /* Kept in the DOM with its ID so aria-describedby always resolves;
-       a referenced hidden element still contributes its text. */
-    .cngx-timeline-item__error[aria-hidden='true'] {
-      display: none;
-    }
-
-    /* Visually gone, still announced. */
+    /* Visually gone, still read in DOM order. */
     .cngx-timeline-item__sr {
       position: absolute;
       inline-size: 1px;

@@ -57,21 +57,14 @@ function mount(): {
   };
 }
 
-/**
- * The row's two announcement surfaces, in read order. Both keep a stable id
- * and stay in the DOM in every state; `aria-hidden` decides which is read.
- */
-function announcementTargets(item: HTMLElement): HTMLElement[] {
-  return ['.cngx-timeline-item__sr', '.cngx-timeline-item__error'].map((selector) => {
-    const el = item.querySelector(selector);
-    if (!el) {
-      throw new Error(`${selector} is not in the DOM`);
-    }
-    if (!el.id) {
-      throw new Error(`${selector} lost its stable id`);
-    }
-    return el as HTMLElement;
-  });
+/** Screen-reader status line, present only while there is a status to read. */
+function statusLine(item: HTMLElement): HTMLElement | null {
+  return item.querySelector('.cngx-timeline-item__sr');
+}
+
+/** Inline error, present only while this row's own state has failed. */
+function inlineError(item: HTMLElement): HTMLElement | null {
+  return item.querySelector('.cngx-timeline-item__error');
 }
 
 describe('CngxTimelineItem', () => {
@@ -80,14 +73,13 @@ describe('CngxTimelineItem', () => {
   });
 
   describe('standalone completeness', () => {
-    it('renders marker, rail, timestamp, body and both described targets with no organism above it', () => {
+    it('renders marker, rail, timestamp and body with no organism above it', () => {
       const { item } = mount();
 
       expect(item.querySelector('cngx-timeline-marker')).not.toBeNull();
       expect(item.querySelector('cngx-timeline-connector')).not.toBeNull();
       expect(item.querySelector('.cngx-timeline-item__time')?.textContent).toContain('12:04');
       expect(item.querySelector('.body')?.textContent).toContain('Deployment finished');
-      expect(announcementTargets(item)).toHaveLength(2);
     });
 
     it('sets no data-mode of its own, so the narrative raster is the host default', () => {
@@ -110,51 +102,41 @@ describe('CngxTimelineItem', () => {
   });
 
   describe('announcement surfaces', () => {
-    it.each(ALL_STATUSES)('keeps both surfaces in the DOM while the state is "%s"', (status) => {
-      const { item, host, detect } = mount();
-      const state = createManualState<string>();
-      host.state.set(state);
-      host.status.set('done');
-      detect();
+    it.each(ALL_STATUSES)(
+      'reads its status as row content in every state, including "%s"',
+      (status) => {
+        const { item, host, detect } = mount();
+        const state = createManualState<string>();
+        host.state.set(state);
+        host.status.set('done');
+        detect();
 
-      state.set(status);
-      detect();
+        state.set(status);
+        detect();
 
-      expect(announcementTargets(item)).toHaveLength(2);
-    });
-
-    it('keeps both surfaces in the DOM with no state bound at all', () => {
-      const { item } = mount();
-
-      expect(announcementTargets(item)).toHaveLength(2);
-    });
-
-    it('keeps each surface at a stable id across a state transition', () => {
-      const { item, host, detect } = mount();
-      const before = announcementTargets(item).map((el) => el.id);
-
-      const state = createManualState<string>();
-      host.state.set(state);
-      state.setError(new Error('boom'));
-      detect();
-
-      expect(announcementTargets(item).map((el) => el.id)).toEqual(before);
-    });
+        // Busy states swap the wording; every state still says something.
+        expect(statusLine(item)?.textContent?.trim()).not.toBe('');
+      },
+    );
 
     it('carries no aria-describedby - the host has no role for one to resolve against', () => {
       const { item } = mount();
 
       expect(item.hasAttribute('aria-describedby')).toBe(false);
     });
+
+    it('renders no inline error until this row fails', () => {
+      const { item } = mount();
+
+      expect(inlineError(item)).toBeNull();
+    });
   });
 
   describe('status announcement', () => {
-    it('says nothing when no status is set', () => {
+    it('renders no status line when no status is set', () => {
       const { item } = mount();
-      const [statusEl] = announcementTargets(item);
 
-      expect(statusEl.getAttribute('aria-hidden')).toBe('true');
-      expect(statusEl.textContent?.trim()).toBe('');
+      expect(statusLine(item)).toBeNull();
     });
 
     it.each([
@@ -167,10 +149,8 @@ describe('CngxTimelineItem', () => {
 
       host.status.set(status);
       detect();
-      const [statusEl] = announcementTargets(item);
 
-      expect(statusEl.getAttribute('aria-hidden')).toBeNull();
-      expect(statusEl.textContent?.trim()).toBe(text);
+      expect(statusLine(item)?.textContent?.trim()).toBe(text);
     });
 
     it('reflects the status onto data-status for the visual channel', () => {
@@ -196,7 +176,7 @@ describe('CngxTimelineItem', () => {
       host.status.set('done');
       detect();
 
-      expect(announcementTargets(item)[0].textContent?.trim()).toBe('Erledigt');
+      expect(statusLine(item)?.textContent?.trim()).toBe('Erledigt');
     });
 
     it('leaves the statuses a partial override did not name at their defaults', () => {
@@ -210,7 +190,7 @@ describe('CngxTimelineItem', () => {
       host.status.set('rejected');
       detect();
 
-      expect(announcementTargets(item)[0].textContent?.trim()).toBe('Rejected');
+      expect(statusLine(item)?.textContent?.trim()).toBe('Rejected');
     });
   });
 
@@ -343,27 +323,25 @@ describe('CngxTimelineItem', () => {
       state.set('pending');
       detect();
 
-      expect(announcementTargets(item)[0].textContent?.trim()).toBe('Updating');
+      expect(statusLine(item)?.textContent?.trim()).toBe('Updating');
     });
 
     describe('failure', () => {
-      it('shows the inline error and hides it again on recovery', () => {
+      it('shows the inline error and drops it again on recovery', () => {
         const { item, host, detect } = mount();
         const state = createManualState<string>();
         host.state.set(state);
         detect();
-        const [, errorEl] = announcementTargets(item);
 
-        expect(errorEl.getAttribute('aria-hidden')).toBe('true');
+        expect(inlineError(item)).toBeNull();
 
         state.setError(new Error('boom'));
         detect();
-        expect(errorEl.getAttribute('aria-hidden')).toBeNull();
-        expect(errorEl.textContent?.trim()).toBe('Could not load this event.');
+        expect(inlineError(item)?.textContent?.trim()).toBe('Could not load this event.');
 
         state.setSuccess('ok');
         detect();
-        expect(errorEl.getAttribute('aria-hidden')).toBe('true');
+        expect(inlineError(item)).toBeNull();
       });
 
       it('repaints marker and rail as rejected without discarding the editorial status', () => {

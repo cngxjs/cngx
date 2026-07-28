@@ -5,10 +5,14 @@
          reuses the item raster, so the swap to content cannot reflow. -->
     <cngx-skeleton class="cngx-timeline__skeleton" [state]="state()" [count]="skeletonRowCount()">
       <ng-template cngxSkeletonPlaceholder>
-        <div class="cngx-timeline-item cngx-timeline__skeleton-row" aria-hidden="true">
-          <span class="cngx-timeline-marker"></span>
-          <span class="cngx-timeline-connector"></span>
-          <div class="cngx-timeline-item__body">
+        <!-- Own classes, not the row's. `CngxTimelineItem` is never imported
+             here, so on a cold first load its Track-A stylesheet is not in
+             the document yet and borrowed classes would render unstyled -
+             on the one path the skeleton exists to cover. -->
+        <div class="cngx-timeline__skeleton-row" aria-hidden="true">
+          <span class="cngx-timeline__skeleton-marker"></span>
+          <span class="cngx-timeline__skeleton-rail"></span>
+          <div class="cngx-timeline__skeleton-body">
             <span class="cngx-timeline__skeleton-line"></span>
             <span class="cngx-timeline__skeleton-line cngx-timeline__skeleton-line--short"></span>
           </div>
@@ -33,9 +37,12 @@
 }
 
 @if (showsContent() && groups().length) {
+  <!-- aria-busy belongs on the element that owns the content, not on the
+       role-less host, where AT would never read it. -->
   <div
     class="cngx-timeline__list"
     role="list"
+    [attr.aria-busy]="ariaBusy()"
     [attr.aria-label]="listLabel()"
     [attr.aria-labelledby]="ariaLabelledBy()"
   >
@@ -97,13 +104,15 @@
 </span>
 
 <ng-template #errorSurface>
-  <div class="cngx-timeline__error" role="alert">
+  <div class="cngx-timeline__error">
     @if (errorTpl(); as tpl) {
       <ng-container
         *ngTemplateOutlet="tpl; context: { $implicit: state()?.error(), retry: emitRetry }"
       />
     } @else {
-      <p class="cngx-timeline__error-message">{{ labels.errorFallback }}</p>
+      <!-- The alert is the message alone. Wrapping the retry control in it
+           too would re-announce the button on every mutation of the region. -->
+      <p class="cngx-timeline__error-message" role="alert">{{ labels.errorFallback }}</p>
       @if (retryButtonTpl(); as tpl) {
         <ng-container *ngTemplateOutlet="tpl; context: { $implicit: emitRetry }" />
       } @else {

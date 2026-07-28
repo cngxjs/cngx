@@ -207,7 +207,9 @@ describe('CngxTimeline', () => {
 
       expect(el.querySelector('.cngx-timeline__list')?.getAttribute('role')).toBe('list');
       const group = el.querySelector('.cngx-timeline__group');
-      expect(group?.hasAttribute('role')).toBe(false);
+      // presentation, not absent: a role-less wrapper would still own the
+      // rows and break listitem's required context.
+      expect(group?.getAttribute('role')).toBe('presentation');
       expect(group?.hasAttribute('aria-labelledby')).toBe(false);
       expect(el.querySelectorAll('.cngx-timeline__date-header')).toHaveLength(0);
       expect(Array.from(el.querySelectorAll('.cngx-timeline__item')).map((i) => i.getAttribute('role'))
