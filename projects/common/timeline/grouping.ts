@@ -211,7 +211,6 @@ function groupsEqual<T>(a: readonly TimelineGroup<T>[], b: readonly TimelineGrou
  *   items: this.events,
  *   dateAccessor: (event) => event.occurredAt,
  *   groupBy: this.groupBy,
- *   idAccessor: (event) => event.id,
  * });
  * ```
  *
