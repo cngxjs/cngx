@@ -3,6 +3,10 @@
     <!-- The container owns show-delay and min-dwell, so a fast load never
          flashes and the timeline holds no latency logic. The placeholder
          reuses the item raster, so the swap to content cannot reflow. -->
+    <!-- The class carries no rule on purpose: `<cngx-skeleton>` hosts itself
+         with `display: contents` and has no box to style. It is the hook that
+         makes the loading branch addressable from outside - tests and
+         consumer overrides have nothing else to select on. -->
     <cngx-skeleton class="cngx-timeline__skeleton" [state]="state()" [count]="skeletonRowCount()">
       <ng-template cngxSkeletonPlaceholder>
         <!-- Own classes, not the row's. `CngxTimelineItem` is never imported

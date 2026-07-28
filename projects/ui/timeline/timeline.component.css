@@ -18,6 +18,12 @@
  * `timeline-item.component.css`, and is out of scope for anything outside a
  * `.cngx-timeline-item`.
  *
+ * `--cngx-timeline-gap` and `--cngx-timeline-row-gap` belong to the row and
+ * are registered there, but are SET a second time on this host: the skeleton
+ * restates the row raster without borrowing `.cngx-timeline-item`, so it
+ * never enters the scope that derives them and would otherwise render at the
+ * registered literals while real rows track density.
+ *
  * **Skins**
  *
  * `[data-skin]` is thematic only - no skin changes structure, ARIA or slot
@@ -88,6 +94,15 @@
       --cngx-timeline-item-gap: var(--cngx-space-md);
       --cngx-timeline-group-gap: var(--cngx-space-lg);
       --cngx-timeline-surface-padding: var(--cngx-space-xs);
+      /* The row's two raster tokens, repeated here for the skeleton alone.
+         Their registration and their primary SET both live at the row host
+         in timeline-item.component.css, but the placeholder deliberately
+         does not borrow `.cngx-timeline-item`, so it sits outside that
+         scope and would freeze at the registered initials while real rows
+         re-scale. Same derivation, same values - a row inside re-SETs them
+         at its own host and nothing here reaches it. */
+      --cngx-timeline-gap: var(--cngx-space-sm);
+      --cngx-timeline-row-gap: var(--cngx-space-xs);
 
       display: block;
       color: var(--cngx-timeline-text-color, oklch(0.2 0.01 250));
@@ -211,7 +226,7 @@
 
     .cngx-timeline__skeleton-line {
       display: block;
-      block-size: var(--cngx-timeline-skeleton-line-size, 0.75rem);
+      block-size: var(--cngx-timeline-skeleton-line-size, 12px);
       border-radius: var(--cngx-radius-sm, 4px);
       background: color-mix(in oklch, currentColor 14%, transparent);
     }
