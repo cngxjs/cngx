@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 
 import type { TimelineGroup } from './grouping';
+import type { TimelineStatus } from './marker.component';
 
 /**
  * Every user-visible string the timeline can render without a consumer
@@ -69,6 +70,17 @@ export interface CngxTimelineLabels {
    */
   readonly itemErrorFallback?: string;
   /**
+   * Screen-reader wording for each process status. The marker paints the
+   * status visually and the dot is `aria-hidden`, so this map is the only
+   * channel that carries it to assistive tech - leaving a key blank
+   * silences that status rather than merely restyling it.
+   *
+   * Defaults: `Completed` / `In progress` / `Upcoming` / `Rejected`.
+   * Partial - {@link withTimelineLabels} merges it key by key, so
+   * renaming one status leaves the other three at their defaults.
+   */
+  readonly status?: Readonly<Partial<Record<TimelineStatus, string>>>;
+  /**
    * Formats a group's header when no `*cngxTimelineDateHeader` slot is
    * bound. Receives the whole group so a consumer can fold the item
    * count into the header. Defaults to the group's start date in the
@@ -119,6 +131,12 @@ const TIMELINE_CONFIG_DEFAULTS: Required<CngxTimelineConfig> = {
     refreshing: 'Updating…',
     itemBusy: 'Updating',
     itemErrorFallback: 'Could not load this event.',
+    status: {
+      done: 'Completed',
+      active: 'In progress',
+      upcoming: 'Upcoming',
+      rejected: 'Rejected',
+    },
     groupLabel: (group) => group.start.toLocaleDateString(),
   },
   templates: {},
@@ -168,7 +186,17 @@ export type CngxTimelineConfigFeature = (config: CngxTimelineConfig) => CngxTime
  * @category common/timeline
  */
 export function withTimelineLabels(labels: CngxTimelineLabels): CngxTimelineConfigFeature {
-  return (config) => ({ ...config, labels: { ...config.labels, ...labels } });
+  return (config) => ({
+    ...config,
+    labels: {
+      ...config.labels,
+      ...labels,
+      // One level deeper than the rest: `status` is a map, and a shallow
+      // spread would let a consumer who renames one status silently
+      // silence the other three.
+      status: { ...config.labels?.status, ...labels.status },
+    },
+  });
 }
 
 function resolveFeatures(features: readonly CngxTimelineConfigFeature[]): CngxTimelineConfig {

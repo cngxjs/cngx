@@ -20,6 +20,11 @@ export {
   type TimelineConnectorPosition,
 } from './connector.component';
 export {
+  CngxTimelineContent,
+  CngxTimelineItem,
+  CngxTimelineTime,
+} from './timeline-item.component';
+export {
   CNGX_TIMELINE_CONFIG,
   injectTimelineConfig,
   provideTimelineConfig,
