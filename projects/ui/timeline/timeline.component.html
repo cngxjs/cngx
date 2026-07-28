@@ -3,12 +3,7 @@
     <!-- The container owns show-delay and min-dwell, so a fast load never
          flashes and the timeline holds no latency logic. The placeholder
          reuses the item raster, so the swap to content cannot reflow. -->
-    <cngx-skeleton
-      class="cngx-timeline__skeleton"
-      [state]="state()"
-      [count]="skeletonRowCount()"
-      [attr.aria-label]="labels.loading"
-    >
+    <cngx-skeleton class="cngx-timeline__skeleton" [state]="state()" [count]="skeletonRowCount()">
       <ng-template cngxSkeletonPlaceholder>
         <div class="cngx-timeline-item cngx-timeline__skeleton-row" aria-hidden="true">
           <span class="cngx-timeline-marker"></span>
@@ -76,11 +71,12 @@
   </div>
 }
 
-<!-- A refresh keeps the loaded rows on screen, so this tail is the only thing
-     saying anything is happening. Outside the list, so it never reads as an
-     event of its own. -->
+<!-- A refresh keeps the loaded rows on screen, so this tail is the only visible
+     sign anything is happening. Outside the list, so it never reads as an
+     event of its own. Decorative: the announcement is the live region below,
+     which stays in the DOM whether or not there is anything to say. -->
 @if (refreshing()) {
-  <div class="cngx-timeline__tail" role="status">
+  <div class="cngx-timeline__tail" aria-hidden="true">
     @if (loadingTailTpl(); as tpl) {
       <ng-container *ngTemplateOutlet="tpl" />
     } @else {
@@ -92,6 +88,13 @@
 @if (activeView() === 'content+error') {
   <ng-container *ngTemplateOutlet="errorSurface" />
 }
+
+<!-- Always in the DOM, content reactive - a region created together with its
+     message is announced inconsistently or not at all. Empty whenever the
+     timeline has nothing to report. -->
+<span aria-live="polite" aria-atomic="true" class="cngx-timeline__sr-only">
+  {{ announcement() }}
+</span>
 
 <ng-template #errorSurface>
   <div class="cngx-timeline__error" role="alert">

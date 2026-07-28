@@ -10,9 +10,13 @@
  *
  * **Density**
  *
- * Both spacing tokens are registered and SET from `--cngx-space-*` in this
- * one file, so the registration cannot outlive its derivation and a
- * `[data-density]` swap on any ancestor re-scales them.
+ * Every spacing token the organism owns is registered and SET from
+ * `--cngx-space-*` in this one file, so a registration cannot outlive its
+ * derivation and a `[data-density]` swap on any ancestor re-scales them.
+ * `--cngx-timeline-surface-padding` is the organism's own padding; the row's
+ * `--cngx-timeline-content-padding` is registered and SET in
+ * `timeline-item.component.css`, and is out of scope for anything outside a
+ * `.cngx-timeline-item`.
  *
  * **Skins**
  *
@@ -51,6 +55,40 @@
     inherits: true;
     initial-value: 24px;
   }
+
+  /**
+   * Padding around the organism's own surfaces - empty, error, refreshing
+   * tail. Distinct from `--cngx-timeline-content-padding`, which belongs to
+   * the row and is SET at the row host where the row can see it.
+   * SET from `--cngx-space-xs`.
+   * @group Layout
+   */
+  @property --cngx-timeline-surface-padding {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 4px;
+  }
+
+  /**
+   * Font size for the organism's secondary text - date headers, empty copy,
+   * the refreshing tail.
+   * @group Typography
+   */
+  @property --cngx-timeline-meta-size {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0.8125rem;
+  }
+
+  /**
+   * Height of one placeholder bar in the loading body.
+   * @group Layout
+   */
+  @property --cngx-timeline-skeleton-line-size {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 12px;
+  }
 }
 
 @layer cngx.components {
@@ -60,6 +98,7 @@
          would otherwise defeat every use-site fallback. 16 -> md, 24 -> lg. */
       --cngx-timeline-item-gap: var(--cngx-space-md);
       --cngx-timeline-group-gap: var(--cngx-space-lg);
+      --cngx-timeline-surface-padding: var(--cngx-space-xs);
 
       display: block;
       color: var(--cngx-timeline-text-color, oklch(0.2 0.01 250));
@@ -79,28 +118,52 @@
 
     .cngx-timeline__date-header {
       color: var(--cngx-timeline-muted-color, oklch(0.5 0.01 250));
-      font-size: 0.8125rem;
+      font-size: var(--cngx-timeline-meta-size, 0.8125rem);
       font-weight: 600;
       line-height: 1.4;
     }
 
-    /* The row wrapper only carries the listitem role - it must not add a box
-       of its own, or it would sit between the group's gap and the item's
-       own grid and double the rhythm. */
+    /* A real box, not `display: contents`. The listitem role has to sit on
+       something the accessibility tree keeps, and the group's flex gap
+       already spaces these, so a box costs no extra rhythm. */
     .cngx-timeline__item {
+      display: block;
+    }
+
+    /* Ungrouped renders one band with no role, which would otherwise leave a
+       generic box between the list and its items. Collapsing it keeps the
+       chain at list -> listitem; the list then owns the row spacing. */
+    :scope[data-ungrouped] .cngx-timeline__group {
       display: contents;
+    }
+
+    :scope[data-ungrouped] .cngx-timeline__list {
+      gap: var(--cngx-timeline-item-gap, 16px);
     }
 
     .cngx-timeline__empty,
     .cngx-timeline__error,
     .cngx-timeline__tail {
-      padding: var(--cngx-timeline-content-padding, 4px);
+      padding: var(--cngx-timeline-surface-padding, 4px);
     }
 
     .cngx-timeline__empty,
     .cngx-timeline__tail {
       color: var(--cngx-timeline-muted-color, oklch(0.5 0.01 250));
-      font-size: 0.8125rem;
+      font-size: var(--cngx-timeline-meta-size, 0.8125rem);
+    }
+
+    /* Visually gone, still announced. */
+    .cngx-timeline__sr-only {
+      position: absolute;
+      inline-size: 1px;
+      block-size: 1px;
+      margin: -1px;
+      padding: 0;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+      border: 0;
     }
 
     .cngx-timeline__error-message {
@@ -109,11 +172,11 @@
     }
 
     /* Placeholder rows reuse the item raster, so the swap to real content
-       does not reflow the page. */
-    .cngx-timeline__skeleton {
-      display: flex;
-      flex-direction: column;
-      gap: var(--cngx-timeline-item-gap, 16px);
+       does not reflow the page. The spacing is a margin rather than a flex
+       gap on the container: `<cngx-skeleton>` hosts itself with
+       `display: contents`, so it has no box to hang a gap on. */
+    .cngx-timeline__skeleton-row + .cngx-timeline__skeleton-row {
+      margin-block-start: var(--cngx-timeline-item-gap, 16px);
     }
 
     .cngx-timeline__skeleton-row .cngx-timeline-marker,
@@ -135,7 +198,7 @@
 
     .cngx-timeline__skeleton-line {
       display: block;
-      block-size: 0.75rem;
+      block-size: var(--cngx-timeline-skeleton-line-size, 0.75rem);
       border-radius: var(--cngx-radius-sm, 4px);
       background: color-mix(in oklch, currentColor 14%, transparent);
     }
@@ -153,7 +216,7 @@
      so the rail still runs edge to edge. */
   .cngx-timeline[data-skin='card'] .cngx-timeline-item__body {
     background: var(--cngx-timeline-surface, oklch(1 0 0));
-    border: 1px solid var(--cngx-timeline-connector-color, oklch(0.88 0.005 250));
+    border: var(--cngx-timeline-connector-width, 2px) solid var(--cngx-timeline-connector-color, oklch(0.88 0.005 250));
     border-radius: var(--cngx-radius-md, 8px);
     padding: var(--cngx-timeline-content-padding, 4px);
   }
@@ -163,6 +226,9 @@
   .cngx-timeline[data-skin='bands'] .cngx-timeline__group:nth-of-type(even) {
     background: color-mix(in oklch, currentColor 4%, transparent);
     border-radius: var(--cngx-radius-md, 8px);
-    padding: var(--cngx-timeline-content-padding, 4px);
+    /* The organism's own token, not the row's: a group sits outside any
+       `.cngx-timeline-item`, so `--cngx-timeline-content-padding` is not in
+       scope here and would silently fall back to its registered literal. */
+    padding: var(--cngx-timeline-surface-padding, 4px);
   }
 }

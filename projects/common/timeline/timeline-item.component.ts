@@ -84,17 +84,20 @@ export class CngxTimelineContent {}
  * paints as rejected and announces the failure, without losing the
  * editorial status once the retry succeeds.
  *
- * **What it announces.** The marker and rail are `aria-hidden`, so colour
- * is never the only channel - the status reaches assistive tech through a
- * screen-reader-only line fed from `CNGX_TIMELINE_CONFIG.labels.status`,
- * and a failed row through a visible inline error. Both carry stable IDs
- * that stay in the DOM in every state; `aria-hidden` decides which one is
- * read, and `aria-describedby` always names both.
+ * **What it announces.** The marker and rail are `aria-hidden`, so colour is
+ * never the only channel - the status reaches assistive tech through a
+ * screen-reader-only line fed from `CNGX_TIMELINE_CONFIG.labels.status`, and
+ * a failed row through a visible inline error. Both keep stable IDs and stay
+ * in the DOM in every state; `aria-hidden` decides which one is read. They
+ * are read as the row's own content rather than through
+ * `aria-describedby` - the host is a plain element with no role, so a
+ * description pointed at its own descendants would resolve nowhere and
+ * duplicate the text for anyone browsing it.
  *
  * ### Standalone
  * ```html
  * <cngx-timeline-item status="done">
- *   <cngx-time cngxTimelineTime [value]="event.at" />
+ *   <cngx-time cngxTimelineTime [date]="event.at" />
  *   <p>Deployment finished</p>
  * </cngx-timeline-item>
  * ```
@@ -124,7 +127,6 @@ export class CngxTimelineContent {}
     '[attr.data-status]': 'status()',
     '[attr.data-failed]': 'failed() ? "" : null',
     '[attr.aria-busy]': 'ariaBusy()',
-    '[attr.aria-describedby]': 'describedBy',
   },
   template: `
     <cngx-timeline-marker [status]="markerStatus()" [busy]="busy()">
@@ -212,14 +214,6 @@ export class CngxTimelineItem {
 
   /** @internal Stable target for the inline error. */
   protected readonly errorId = `${this.uid}-error`;
-
-  /**
-   * @internal Both IDs, always. Which one is actually read is decided by
-   * `aria-hidden` on the elements themselves - dropping an ID from this
-   * list instead would make the description order jump around as the row
-   * changes state.
-   */
-  protected readonly describedBy = `${this.statusId} ${this.errorId}`;
 
   /** @internal Work in flight on this row's own state. */
   protected readonly busy = computed(() => {

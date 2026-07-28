@@ -217,18 +217,18 @@ describe('CngxTimeline async body', () => {
       }
     });
 
-    it('hides the placeholder from assistive tech and names the loading region', () => {
+    it('hides the placeholder from assistive tech and announces the load instead', () => {
       const { el, host, detect } = mount();
 
       host.state.set('loading');
       settleGate(detect);
 
-      expect(el.querySelector('.cngx-timeline__skeleton')?.getAttribute('aria-label')).toBe(
-        'Loading timeline',
-      );
       for (const row of Array.from(el.querySelectorAll('.cngx-timeline__skeleton-row'))) {
         expect(row.getAttribute('aria-hidden')).toBe('true');
       }
+      expect(el.querySelector('.cngx-timeline__sr-only')?.textContent?.trim()).toBe(
+        'Loading timeline',
+      );
     });
   });
 
@@ -291,7 +291,9 @@ describe('CngxTimeline async body', () => {
       settleGate(detect);
 
       expect(el.querySelector('.slot-tail')).not.toBeNull();
-      expect(el.querySelector('.cngx-timeline__tail')?.getAttribute('role')).toBe('status');
+      // The visible tail is decoration; the announcement is the live region.
+      expect(el.querySelector('.cngx-timeline__tail')?.getAttribute('aria-hidden')).toBe('true');
+      expect(el.querySelector('.cngx-timeline__sr-only')?.textContent?.trim()).toBe('Updating…');
     });
 
     it('falls back to the config copy with no slots bound', () => {
@@ -351,6 +353,33 @@ describe('CngxTimeline async body', () => {
       detect();
       expect(stateful.state.status()).toBe('error');
       expect(stateful.state.error()).toBeInstanceOf(Error);
+    });
+  });
+
+  describe('live region', () => {
+    it('is in the DOM from the first render, before it has anything to say', () => {
+      const { el, detect } = mount();
+      settleGate(detect);
+      const region = el.querySelector('.cngx-timeline__sr-only');
+
+      expect(region).not.toBeNull();
+      expect(region?.getAttribute('aria-live')).toBe('polite');
+      expect(region?.textContent?.trim()).toBe('');
+    });
+
+    it('stays the same element across load, refresh and quiet', () => {
+      const { el, host, detect } = mount();
+      settleGate(detect);
+      const region = el.querySelector('.cngx-timeline__sr-only');
+
+      host.state.set('loading');
+      settleGate(detect);
+      expect(el.querySelector('.cngx-timeline__sr-only')).toBe(region);
+
+      host.state.setSuccess(EVENTS);
+      settleGate(detect);
+      expect(el.querySelector('.cngx-timeline__sr-only')).toBe(region);
+      expect(region?.textContent?.trim()).toBe('');
     });
   });
 

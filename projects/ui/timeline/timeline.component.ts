@@ -12,7 +12,6 @@ import {
   type TemplateRef,
 } from '@angular/core';
 import type { EmptyReason } from '@cngx/common/card';
-import { resolveAsyncView } from '@cngx/common/data';
 import {
   CNGX_TIMELINE_GROUPING_FACTORY,
   CNGX_TIMELINE_MARKER_HOST,
@@ -38,6 +37,7 @@ import { CngxSkeletonContainer, CngxSkeletonPlaceholder } from '@cngx/ui/skeleto
 import { createForwardedAsyncState } from './forwarded-async-state';
 import { resolveSlot } from './slot-cascade';
 import { createTimelineFallbackCopy } from './timeline-labels';
+import { createTimelineView } from './timeline-view';
 
 /**
  * Raster the timeline lays its rows out on.
@@ -93,7 +93,7 @@ type MarkerTpl = TemplateRef<CngxTimelineMarkerContext<unknown>>;
  * <cngx-timeline [items]="events()" [dateAccessor]="at" groupBy="day">
  *   <ng-template cngxTimelineItem let-event let-last="last">
  *     <cngx-timeline-item [position]="last ? 'last' : 'middle'">
- *       <cngx-time cngxTimelineTime [value]="$any(event).at" />
+ *       <cngx-time cngxTimelineTime [date]="$any(event).at" />
  *       <p>{{ $any(event).summary }}</p>
  *     </cngx-timeline-item>
  *   </ng-template>
@@ -134,6 +134,7 @@ type MarkerTpl = TemplateRef<CngxTimelineMarkerContext<unknown>>;
     class: 'cngx-timeline',
     '[attr.data-mode]': 'mode()',
     '[attr.data-skin]': 'skin()',
+    '[attr.data-ungrouped]': 'ungrouped() ? "" : null',
     '[attr.aria-busy]': 'ariaBusy()',
   },
   templateUrl: './timeline.component.html',
@@ -158,7 +159,10 @@ export class CngxTimeline<T = unknown> {
    * Also republished through `CNGX_STATEFUL`, so a transition bridge inside
    * the timeline needs no binding of its own.
    */
-  readonly state = input<CngxAsyncState<readonly T[]> | undefined>(undefined);
+  readonly state = input<
+    CngxAsyncState<readonly T[]> | undefined,
+    CngxAsyncState<readonly T[]> | '' | undefined
+  >(undefined, { transform: (value) => (typeof value === 'string' ? undefined : value) });
 
   /**
    * Why the timeline is empty, forwarded to `*cngxTimelineEmpty`. The
@@ -222,7 +226,7 @@ export class CngxTimeline<T = unknown> {
   private readonly loadingTailSlot = contentChild(CngxTimelineLoadingTail);
 
   /** @internal The list the presenter groups: bound state first, then `[items]`. */
-  protected readonly resolvedItems = computed<readonly T[]>(
+  private readonly resolvedItems = computed<readonly T[]>(
     () => this.state()?.data() ?? this.items(),
   );
 
@@ -277,31 +281,21 @@ export class CngxTimeline<T = unknown> {
    */
   readonly asyncState: CngxAsyncState<readonly T[]> = createForwardedAsyncState(this.state);
 
-  /**
-   * @internal The whole body switch, derived - there is no second state
-   * machine here and no boolean fallback inputs. With no `[state]` bound the
-   * timeline is a plain list, so it reports content and lets `[items]` speak.
-   */
-  protected readonly activeView = computed(() => {
-    const state = this.state();
-    if (!state) {
-      return 'content' as const;
-    }
-    return resolveAsyncView(state.status(), state.isFirstLoad(), this.groups().length === 0);
-  });
+  /** @internal Fallback copy for every surface with no slot bound. */
+  protected readonly labels = createTimelineFallbackCopy(this.config);
 
-  /** @internal Content is on screen, whether or not an error rides along. */
-  protected readonly showsContent = computed(
-    () => this.activeView() === 'content' || this.activeView() === 'content+error',
+  /** @internal The body switch, the busy flag and the live-region text. */
+  private readonly view = createTimelineView(
+    this.state,
+    () => this.groups().length === 0,
+    this.labels,
   );
 
-  /** @internal A background refresh over content the user can still read. */
-  protected readonly refreshing = computed(
-    () => this.showsContent() && (this.state()?.isRefreshing() ?? false),
-  );
-
-  /** @internal Mirrors the bound state's own busy flag. */
-  protected readonly ariaBusy = computed(() => (this.state()?.isBusy() ? 'true' : null));
+  protected readonly activeView = this.view.activeView;
+  protected readonly showsContent = this.view.showsContent;
+  protected readonly refreshing = this.view.refreshing;
+  protected readonly ariaBusy = this.view.ariaBusy;
+  protected readonly announcement = this.view.announcement;
 
   /** @internal Passed into the error and retry-button slot contexts. */
   protected readonly emitRetry = (): void => this.retry.emit();
@@ -315,9 +309,6 @@ export class CngxTimeline<T = unknown> {
 
   /** @internal `null` in the ungrouped chain, so it reads `list -> listitem`. */
   protected readonly groupRole = computed(() => (this.ungrouped() ? null : 'group'));
-
-  /** @internal Fallback copy for every surface with no slot bound. */
-  protected readonly labels = createTimelineFallbackCopy(this.config);
 
   /** @internal Config fallback only applies when nothing was named explicitly. */
   protected readonly listLabel = computed(() =>

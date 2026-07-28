@@ -57,12 +57,18 @@ function mount(): {
   };
 }
 
-function describedTargets(item: HTMLElement): HTMLElement[] {
-  const ids = (item.getAttribute('aria-describedby') ?? '').split(/\s+/).filter(Boolean);
-  return ids.map((id) => {
-    const el = item.querySelector(`#${id}`);
+/**
+ * The row's two announcement surfaces, in read order. Both keep a stable id
+ * and stay in the DOM in every state; `aria-hidden` decides which is read.
+ */
+function announcementTargets(item: HTMLElement): HTMLElement[] {
+  return ['.cngx-timeline-item__sr', '.cngx-timeline-item__error'].map((selector) => {
+    const el = item.querySelector(selector);
     if (!el) {
-      throw new Error(`aria-describedby target #${id} is not in the DOM`);
+      throw new Error(`${selector} is not in the DOM`);
+    }
+    if (!el.id) {
+      throw new Error(`${selector} lost its stable id`);
     }
     return el as HTMLElement;
   });
@@ -81,7 +87,7 @@ describe('CngxTimelineItem', () => {
       expect(item.querySelector('cngx-timeline-connector')).not.toBeNull();
       expect(item.querySelector('.cngx-timeline-item__time')?.textContent).toContain('12:04');
       expect(item.querySelector('.body')?.textContent).toContain('Deployment finished');
-      expect(describedTargets(item)).toHaveLength(2);
+      expect(announcementTargets(item)).toHaveLength(2);
     });
 
     it('sets no data-mode of its own, so the narrative raster is the host default', () => {
@@ -103,8 +109,8 @@ describe('CngxTimelineItem', () => {
     });
   });
 
-  describe('aria-describedby targets', () => {
-    it.each(ALL_STATUSES)('keeps both target IDs in the DOM while the state is "%s"', (status) => {
+  describe('announcement surfaces', () => {
+    it.each(ALL_STATUSES)('keeps both surfaces in the DOM while the state is "%s"', (status) => {
       const { item, host, detect } = mount();
       const state = createManualState<string>();
       host.state.set(state);
@@ -114,32 +120,38 @@ describe('CngxTimelineItem', () => {
       state.set(status);
       detect();
 
-      expect(describedTargets(item)).toHaveLength(2);
+      expect(announcementTargets(item)).toHaveLength(2);
     });
 
-    it('keeps both target IDs in the DOM with no state bound at all', () => {
+    it('keeps both surfaces in the DOM with no state bound at all', () => {
       const { item } = mount();
 
-      expect(describedTargets(item)).toHaveLength(2);
+      expect(announcementTargets(item)).toHaveLength(2);
     });
 
-    it('names both IDs in a stable order rather than dropping one', () => {
+    it('keeps each surface at a stable id across a state transition', () => {
       const { item, host, detect } = mount();
-      const before = item.getAttribute('aria-describedby');
+      const before = announcementTargets(item).map((el) => el.id);
 
       const state = createManualState<string>();
       host.state.set(state);
       state.setError(new Error('boom'));
       detect();
 
-      expect(item.getAttribute('aria-describedby')).toBe(before);
+      expect(announcementTargets(item).map((el) => el.id)).toEqual(before);
+    });
+
+    it('carries no aria-describedby - the host has no role for one to resolve against', () => {
+      const { item } = mount();
+
+      expect(item.hasAttribute('aria-describedby')).toBe(false);
     });
   });
 
   describe('status announcement', () => {
     it('says nothing when no status is set', () => {
       const { item } = mount();
-      const [statusEl] = describedTargets(item);
+      const [statusEl] = announcementTargets(item);
 
       expect(statusEl.getAttribute('aria-hidden')).toBe('true');
       expect(statusEl.textContent?.trim()).toBe('');
@@ -155,7 +167,7 @@ describe('CngxTimelineItem', () => {
 
       host.status.set(status);
       detect();
-      const [statusEl] = describedTargets(item);
+      const [statusEl] = announcementTargets(item);
 
       expect(statusEl.getAttribute('aria-hidden')).toBeNull();
       expect(statusEl.textContent?.trim()).toBe(text);
@@ -184,7 +196,7 @@ describe('CngxTimelineItem', () => {
       host.status.set('done');
       detect();
 
-      expect(describedTargets(item)[0].textContent?.trim()).toBe('Erledigt');
+      expect(announcementTargets(item)[0].textContent?.trim()).toBe('Erledigt');
     });
 
     it('leaves the statuses a partial override did not name at their defaults', () => {
@@ -198,7 +210,7 @@ describe('CngxTimelineItem', () => {
       host.status.set('rejected');
       detect();
 
-      expect(describedTargets(item)[0].textContent?.trim()).toBe('Rejected');
+      expect(announcementTargets(item)[0].textContent?.trim()).toBe('Rejected');
     });
   });
 
@@ -331,7 +343,7 @@ describe('CngxTimelineItem', () => {
       state.set('pending');
       detect();
 
-      expect(describedTargets(item)[0].textContent?.trim()).toBe('Updating');
+      expect(announcementTargets(item)[0].textContent?.trim()).toBe('Updating');
     });
 
     describe('failure', () => {
@@ -340,7 +352,7 @@ describe('CngxTimelineItem', () => {
         const state = createManualState<string>();
         host.state.set(state);
         detect();
-        const [, errorEl] = describedTargets(item);
+        const [, errorEl] = announcementTargets(item);
 
         expect(errorEl.getAttribute('aria-hidden')).toBe('true');
 
