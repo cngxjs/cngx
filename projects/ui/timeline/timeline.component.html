@@ -50,14 +50,19 @@
       <!-- The role sits here even though the wrapper is a plain div today:
            v2 turns it into <details role="group">, and that must not move
            the ARIA chain. Ungrouped drops the role, not the element, so the
-           chain shortens to list -> listitem. -->
+           chain shortens to list -> listitem.
+
+           The label id is keyed on $index, not on group.key: a custom
+           TimelineGroupingFn is free to return "today / this week / earlier",
+           and whitespace in an id makes this reference resolve to nothing,
+           leaving the band unnamed. -->
       <div
         class="cngx-timeline__group"
         [attr.role]="groupRole()"
-        [attr.aria-labelledby]="ungrouped() ? null : groupLabelId(group)"
+        [attr.aria-labelledby]="ungrouped() ? null : groupLabelId($index)"
       >
         @if (!ungrouped()) {
-          <div class="cngx-timeline__date-header" [id]="groupLabelId(group)">
+          <div class="cngx-timeline__date-header" [id]="groupLabelId($index)">
             @if (dateHeaderTpl(); as tpl) {
               <ng-container *ngTemplateOutlet="tpl; context: { $implicit: group }" />
             } @else {

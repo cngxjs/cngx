@@ -199,6 +199,27 @@ describe('CngxTimeline', () => {
       }
     });
 
+    it('keeps the header id resolvable when a custom grouper returns prose keys', () => {
+      const { el, host, detect } = mount();
+
+      // The documented escape hatch is exactly this shape - "today / this
+      // week / earlier". Whitespace in an id makes the aria-labelledby
+      // reference resolve to nothing and the band goes unnamed.
+      host.groupBy.set((date) => ({
+        key: date.getDate() === 21 ? 'this week' : 'earlier',
+        start: date,
+      }));
+      detect();
+
+      const groups = Array.from(el.querySelectorAll('.cngx-timeline__group'));
+      expect(groups).toHaveLength(2);
+      for (const group of groups) {
+        const id = group.getAttribute('aria-labelledby') ?? '';
+        expect(id).not.toMatch(/\s/);
+        expect(el.querySelector(`#${id}`)).toBe(group.querySelector('.cngx-timeline__date-header'));
+      }
+    });
+
     it('collapses to list -> listitem when ungrouped', () => {
       const { el, host, detect } = mount();
 

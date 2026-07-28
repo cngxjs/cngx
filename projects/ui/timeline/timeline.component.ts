@@ -322,9 +322,9 @@ export class CngxTimeline<T = unknown> {
     this.ariaLabelledBy() ? null : (this.ariaLabel() ?? this.config.labels?.timelineRegion ?? null),
   );
 
-  /** @internal A group is named by its own header element. */
-  protected groupLabelId(group: TimelineGroup<T>): string {
-    return `${this.uid}-group-${group.key}`;
+  /** @internal A group is named by its own header element, keyed on position. */
+  protected groupLabelId(index: number): string {
+    return `${this.uid}-group-${index}`;
   }
 
   /** @internal Row context. `first` / `last` are positions within the group. */
