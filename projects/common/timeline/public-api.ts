@@ -14,6 +14,11 @@ export {
   type TimelineGroupKey,
   type TimelineGrouping,
 } from './grouping';
+export { CngxTimelineMarker, type TimelineStatus } from './marker.component';
+export {
+  CngxTimelineConnector,
+  type TimelineConnectorPosition,
+} from './connector.component';
 export {
   CNGX_TIMELINE_CONFIG,
   injectTimelineConfig,
