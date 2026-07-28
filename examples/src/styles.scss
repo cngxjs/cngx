@@ -33,6 +33,7 @@
   --cngx-ex-surface-alt: #f9fafb;
   --cngx-ex-highlight-bg: rgba(37, 99, 235, 0.12);
   --cngx-ex-focus: #2563eb;
+  --cngx-ex-link: #2563eb;
   color: var(--cngx-ex-text);
 }
 // main.ts mirrors the compodocx dark-mode preference onto
@@ -53,6 +54,9 @@ html.dark {
   --cngx-ex-surface-alt: #1f1f1f;
   --cngx-ex-highlight-bg: rgba(121, 192, 255, 0.18);
   --cngx-ex-focus: #79c0ff;
+  // #2563eb on the dark shell is 3.65:1 - below the 4.5:1 the reference
+  // links need at 0.75rem.
+  --cngx-ex-link: #79c0ff;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -66,6 +70,7 @@ html.dark {
     --cngx-ex-surface-alt: #1f1f1f;
     --cngx-ex-highlight-bg: rgba(121, 192, 255, 0.18);
     --cngx-ex-focus: #79c0ff;
+    --cngx-ex-link: #79c0ff;
   }
 }
 
