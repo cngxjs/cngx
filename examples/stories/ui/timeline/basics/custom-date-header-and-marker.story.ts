@@ -39,7 +39,10 @@ export const STORY: DemoSpec = {
   };
 
   protected readonly at = (event: { at: Date }): Date => event.at;
-  protected readonly byId = (event: { id: number }): number => event.id;`,
+  protected readonly byId = (event: { id: number }): number => event.id;
+
+  protected readonly dayLabel = (start: Date): string =>
+    start.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });`,
   template: `<cngx-timeline
     [items]="events"
     [dateAccessor]="at"
@@ -48,7 +51,7 @@ export const STORY: DemoSpec = {
   >
     <ng-template cngxTimelineDateHeader let-group>
       <span style="text-transform:uppercase;letter-spacing:0.04em">
-        {{ group.start | date: 'fullDate' }}
+        {{ dayLabel(group.start) }}
       </span>
       <span style="opacity:0.7"> &middot; {{ group.items.length }} events</span>
     </ng-template>
