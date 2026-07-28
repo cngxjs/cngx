@@ -287,26 +287,7 @@ describe('createTimelineGrouping', () => {
       expect(after[0].items.map((e) => e.id)).toEqual([3, 2]);
     });
 
-    it('reuses group references across a refetch when idAccessor is supplied', () => {
-      const items = signal([
-        entry(1, new Date(2026, 6, 20, 9)),
-        entry(2, new Date(2026, 6, 21, 9)),
-      ]);
-      const { groups } = createTimelineGrouping({
-        items,
-        dateAccessor: (e) => e.at,
-        idAccessor: (e) => e.id,
-      });
-
-      const before = groups();
-      // Same payload, all-new object identities - what an HTTP refetch
-      // hands back.
-      items.set([entry(1, new Date(2026, 6, 20, 9)), entry(2, new Date(2026, 6, 21, 9))]);
-
-      expect(groups()).toBe(before);
-    });
-
-    it('re-creates every group reference on a refetch without idAccessor', () => {
+    it('re-creates the band on a refetch, because the items are new objects', () => {
       const items = signal([entry(1, new Date(2026, 6, 20, 9))]);
       const { groups } = createTimelineGrouping({ items, dateAccessor: (e) => e.at });
 
@@ -314,6 +295,30 @@ describe('createTimelineGrouping', () => {
       items.set([entry(1, new Date(2026, 6, 20, 9))]);
 
       expect(groups()[0]).not.toBe(before);
+    });
+
+    it('never renders a stale payload when a refetch changes content at the same id', () => {
+      // The regression this whole rule exists for. Reusing a band because
+      // its ids matched would pin the row to `summary: 'old'` forever.
+      const items = signal([{ id: 1, at: new Date(2026, 6, 20, 9), summary: 'old' }]);
+      const { groups } = createTimelineGrouping({ items, dateAccessor: (e) => e.at });
+
+      expect(groups()[0].items[0].summary).toBe('old');
+
+      items.set([{ id: 1, at: new Date(2026, 6, 20, 9), summary: 'new' }]);
+
+      expect(groups()[0].items[0].summary).toBe('new');
+    });
+
+    it('reuses a band when the very same item objects come back', () => {
+      const kept = entry(1, new Date(2026, 6, 20, 9));
+      const items = signal([kept]);
+      const { groups } = createTimelineGrouping({ items, dateAccessor: (e) => e.at });
+
+      const before = groups()[0];
+      items.set([kept]);
+
+      expect(groups()[0]).toBe(before);
     });
   });
 

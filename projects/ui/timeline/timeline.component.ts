@@ -135,7 +135,6 @@ type MarkerTpl = TemplateRef<CngxTimelineMarkerContext<unknown>>;
     '[attr.data-mode]': 'mode()',
     '[attr.data-skin]': 'skin()',
     '[attr.data-ungrouped]': 'ungrouped() ? "" : null',
-    '[attr.aria-busy]': 'ariaBusy()',
   },
   templateUrl: './timeline.component.html',
   styleUrl: './timeline.component.css',
@@ -187,9 +186,12 @@ export class CngxTimeline<T = unknown> {
   readonly dateAccessor = input.required<TimelineDateAccessor<T>>();
 
   /**
-   * Stable event identity. Supplying it makes a refetch that returns equal
-   * data leave untouched bands at their previous references, so the
-   * unaffected parts of a long timeline do not re-render.
+   * Stable event identity, used as the `@for` track expression so a row
+   * keeps its DOM across a refetch instead of being torn down and rebuilt.
+   *
+   * It deliberately does *not* drive band reuse: a refetch returns new
+   * objects at the same ids, and reusing a band on an id match would pin it
+   * to the old payload.
    */
   readonly idAccessor = input<((item: T) => unknown) | undefined>(undefined);
 
@@ -235,7 +237,6 @@ export class CngxTimeline<T = unknown> {
     dateAccessor: (item) => this.dateAccessor()(item),
     groupBy: this.groupBy,
     direction: this.direction,
-    idAccessor: (item) => this.idAccessor()?.(item) ?? item,
   });
 
   /** The derived bands, in sort order. */
@@ -307,8 +308,14 @@ export class CngxTimeline<T = unknown> {
    */
   protected readonly ungrouped = computed(() => this.groupBy() === 'none');
 
-  /** @internal `null` in the ungrouped chain, so it reads `list -> listitem`. */
-  protected readonly groupRole = computed(() => (this.ungrouped() ? null : 'group'));
+  /**
+   * @internal `presentation`, not `null`, when ungrouped. A role-less div
+   * between the list and its rows still owns them in the accessibility tree
+   * and breaks `listitem`'s required context - `display: contents` fixes the
+   * box tree, not this. `presentation` drops the wrapper's own semantics so
+   * the chain reads `list -> listitem`.
+   */
+  protected readonly groupRole = computed(() => (this.ungrouped() ? 'presentation' : 'group'));
 
   /** @internal Config fallback only applies when nothing was named explicitly. */
   protected readonly listLabel = computed(() =>

@@ -95,13 +95,6 @@ export interface TimelineGroupingOptions<T> {
   readonly groupBy?: () => TimelineGroupBy<T>;
   /** Sort direction. Defaults to `'desc'`. */
   readonly direction?: () => TimelineDirection;
-  /**
-   * Stable item identity. When supplied, append-stability compares items
-   * by id instead of by reference, so a list re-fetched from the server
-   * (fresh object literals, same ids) still hands back the previous group
-   * objects and leaves untouched bands un-rerendered.
-   */
-  readonly idAccessor?: (item: T) => unknown;
 }
 
 /**
@@ -174,23 +167,8 @@ function toDate(value: Date | string | number): Date {
   return value instanceof Date ? value : new Date(value);
 }
 
-function sameItems<T>(
-  previous: readonly T[],
-  next: readonly T[],
-  idAccessor?: (item: T) => unknown,
-): boolean {
-  if (previous.length !== next.length) {
-    return false;
-  }
-  for (let i = 0; i < previous.length; i++) {
-    const same = idAccessor
-      ? idAccessor(previous[i]) === idAccessor(next[i])
-      : previous[i] === next[i];
-    if (!same) {
-      return false;
-    }
-  }
-  return true;
+function sameItems<T>(previous: readonly T[], next: readonly T[]): boolean {
+  return previous.length === next.length && previous.every((item, i) => item === next[i]);
 }
 
 function groupsEqual<T>(a: readonly TimelineGroup<T>[], b: readonly TimelineGroup<T>[]): boolean {
@@ -216,9 +194,12 @@ function groupsEqual<T>(a: readonly TimelineGroup<T>[], b: readonly TimelineGrou
  *   fields rather than dividing the epoch, which is what keeps 23-hour and
  *   25-hour DST days intact. Consumers who want UTC (or any other rule)
  *   pass a {@link TimelineGroupingFn}.
- * - **Append-stability.** Groups whose contents did not change hand back
- *   the *same object reference*, and the computed carries a structural
- *   `equal`. Appending to one end therefore leaves every other band's
+ * - **Append-stability.** Groups whose items are *the same objects* hand
+ *   back the same band reference, and the signal carries a structural
+ *   `equal`. Reuse is deliberately keyed on reference identity rather than
+ *   on an id: a refetch returns new objects at the same ids, and reusing
+ *   there would pin the band to a stale payload. Appending therefore leaves
+ *   every other band's
  *   `@for` block untouched instead of re-rendering the whole timeline.
  *
  * Reach for the DI token {@link CNGX_TIMELINE_GROUPING_FACTORY} rather
@@ -241,7 +222,7 @@ function groupsEqual<T>(a: readonly TimelineGroup<T>[], b: readonly TimelineGrou
 export function createTimelineGrouping<T>(
   options: TimelineGroupingOptions<T>,
 ): TimelineGrouping<T> {
-  const { items, dateAccessor, groupBy, direction, idAccessor } = options;
+  const { items, dateAccessor, groupBy, direction } = options;
 
   // `linkedSignal` rather than `computed`: append-stability needs the
   // previous bands to hand their references back, and this is the sanctioned
@@ -279,9 +260,14 @@ export function createTimelineGrouping<T>(
       const previousByKey = new Map((previous?.value ?? []).map((group) => [group.key, group]));
       return fresh.map((group) => {
         const prior = previousByKey.get(group.key);
+        // Reference identity only. Matching ids are NOT enough: a refetch
+        // returns fresh objects at the same ids with changed content, and
+        // handing back the prior band there would render the old payload
+        // forever. Reference equality is the only signal that says "these
+        // are literally the same items", which is what reuse requires.
         const reusable =
           prior?.start.getTime() === group.start.getTime() &&
-          sameItems(prior.items, group.items, idAccessor);
+          sameItems(prior.items, group.items);
         return reusable ? prior : group;
       });
     },
