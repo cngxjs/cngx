@@ -33,7 +33,7 @@ export interface CngxTimelineItemContext<T> {
  * <cngx-timeline [state]="events" [dateAccessor]="at">
  *   <ng-template cngxTimelineItem let-event let-last="last">
  *     <cngx-timeline-item [position]="last ? 'last' : 'middle'">
- *       <cngx-time cngxTimelineTime [value]="event.at" />
+ *       <cngx-time cngxTimelineTime [date]="event.at" />
  *       <p>{{ event.summary }}</p>
  *     </cngx-timeline-item>
  *   </ng-template>
@@ -85,7 +85,7 @@ export interface CngxTimelineDateHeaderContext<T> {
  *
  * ```html
  * <ng-template cngxTimelineDateHeader let-group>
- *   <h3>{{ group.start | date: 'fullDate' }} ({{ group.items.length }})</h3>
+ *   <h3>{{ format(group.start) }} ({{ group.items.length }})</h3>
  * </ng-template>
  * ```
  *

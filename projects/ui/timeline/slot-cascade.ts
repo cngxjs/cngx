@@ -20,9 +20,7 @@ interface SlotDirective<C> {
  * `configured` is a thunk rather than a value so the config tier is read at
  * resolution time, inside the `computed()`.
  *
- * @category ui/timeline
- * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/timeline/slot-cascade.ts
- * @since 0.1.0
+ * @internal
  */
 export function resolveSlot<C>(
   instance: Signal<SlotDirective<C> | undefined>,

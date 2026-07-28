@@ -21,17 +21,16 @@
  *
  * **Density**
  *
- * `--cngx-timeline-marker-size` is a fixed affordance, not compactness, so
- * it is not SET from the scale. It is the anchor
- * `--cngx-timeline-rail-inset` derives from.
+ * `--cngx-timeline-marker-size` is a fixed affordance, not compactness, so it
+ * is not SET from the scale. It is the anchor `--cngx-timeline-rail-inset`
+ * derives from, but that derivation is applied at the row host in
+ * `timeline-item.component.css`: the marker and the connector are siblings,
+ * and a custom property set here would never reach the rail.
  */
 
 @layer cngx.components {
   @scope (.cngx-timeline-marker) {
     :scope {
-      /* Half the dot, so a rail ending at this offset meets the centre. */
-      --cngx-timeline-rail-inset: calc(var(--cngx-timeline-marker-size, 12px) / 2);
-
       display: inline-flex;
       align-items: center;
       justify-content: center;

@@ -1,4 +1,4 @@
-import { computed, InjectionToken, type Signal } from '@angular/core';
+import { InjectionToken, linkedSignal, type Signal } from '@angular/core';
 
 /**
  * One rendered band of a timeline - a calendar bucket plus the items that
@@ -200,9 +200,11 @@ function groupsEqual<T>(a: readonly TimelineGroup<T>[], b: readonly TimelineGrou
 /**
  * Derives grouped, sorted timeline bands from a flat item list.
  *
- * Pure derivation, no stored state: `groups` is a single `computed()` over
- * the `items` accessor. Nothing is synced, nothing is written back, and
- * the presenter never mutates its input array.
+ * Pure derivation: bands come out of one `linkedSignal` over the `items`
+ * accessor. Nothing is synced, nothing is written back, and the presenter
+ * never mutates its input array. The previous bands are read through the
+ * `computation` callback rather than a closure cache, so the result depends
+ * on the inputs and the prior value alone - never on how many times it ran.
  *
  * Three properties make it usable as the organism's only data path:
  *
@@ -241,13 +243,13 @@ export function createTimelineGrouping<T>(
 ): TimelineGrouping<T> {
   const { items, dateAccessor, groupBy, direction, idAccessor } = options;
 
-  // Keyed by group key, rebuilt every run and therefore bounded by the
-  // current group count - this is a reference-reuse table, not a growing
-  // cache.
-  let previousGroups = new Map<string, TimelineGroup<T>>();
-
-  const groups = computed<readonly TimelineGroup<T>[]>(
-    () => {
+  // `linkedSignal` rather than `computed`: append-stability needs the
+  // previous bands to hand their references back, and this is the sanctioned
+  // way to read them. A closure cache mutated inside a `computed` would make
+  // the computation impure - its output would depend on how many times it had
+  // run, not only on its inputs.
+  const groups = linkedSignal<readonly TimelineGroup<T>[], readonly TimelineGroup<T>[]>({
+    source: () => {
       const source = items();
       const grouper = resolveGrouper(groupBy?.() ?? 'day');
       const sign = (direction?.() ?? 'desc') === 'asc' ? 1 : -1;
@@ -267,23 +269,24 @@ export function createTimelineGrouping<T>(
         }
       }
 
-      const next = new Map<string, TimelineGroup<T>>();
-      const result: TimelineGroup<T>[] = [];
-      for (const [key, bucket] of buckets) {
-        const previous = previousGroups.get(key);
-        const reusable =
-          previous?.start.getTime() === bucket.start.getTime() &&
-          sameItems(previous.items, bucket.items, idAccessor);
-        const group = reusable ? previous : { key, start: bucket.start, items: bucket.items };
-        next.set(key, group);
-        result.push(group);
-      }
-      previousGroups = next;
-
-      return result;
+      return Array.from(buckets, ([key, bucket]) => ({
+        key,
+        start: bucket.start,
+        items: bucket.items as readonly T[],
+      }));
     },
-    { equal: groupsEqual },
-  );
+    computation: (fresh, previous) => {
+      const previousByKey = new Map((previous?.value ?? []).map((group) => [group.key, group]));
+      return fresh.map((group) => {
+        const prior = previousByKey.get(group.key);
+        const reusable =
+          prior?.start.getTime() === group.start.getTime() &&
+          sameItems(prior.items, group.items, idAccessor);
+        return reusable ? prior : group;
+      });
+    },
+    equal: groupsEqual,
+  });
 
   return { groups };
 }

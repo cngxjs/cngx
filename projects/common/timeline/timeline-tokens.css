@@ -33,7 +33,10 @@
  * deliberately outside the density scale. `--cngx-timeline-rail-inset` in
  * particular derives from `--cngx-timeline-marker-size`: the rail has to
  * meet the marker's centre, and a density swap that moved one without the
- * other would detach the rail from the dot.
+ * other would detach the rail from the dot. That derivation is applied at
+ * the row host (`timeline-item.component.css`), the nearest common ancestor
+ * of the marker and the connector - custom properties inherit downwards
+ * only, so deriving it on either sibling would never reach the other.
  *
  * **Colour and dark mode**
  *

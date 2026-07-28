@@ -83,6 +83,11 @@
       --cngx-timeline-gap: var(--cngx-space-sm);
       --cngx-timeline-row-gap: var(--cngx-space-xs);
       --cngx-timeline-content-padding: var(--cngx-space-xs);
+      /* Half the dot, so a rail clipped to this offset meets the marker's
+         centre. It is derived here, at the nearest common ancestor of the
+         two: the marker and the connector are siblings, so a value set on
+         either one is invisible to the other. */
+      --cngx-timeline-rail-inset: calc(var(--cngx-timeline-marker-size, 12px) / 2);
 
       display: grid;
       /* narrative: marker track sized to the dot, content takes the rest. */
@@ -107,7 +112,7 @@
     .cngx-timeline-item__time {
       grid-area: time;
       color: var(--cngx-timeline-muted-color, oklch(0.5 0.01 250));
-      font-size: 0.8125rem;
+      font-size: var(--cngx-timeline-meta-size, 0.8125rem);
       line-height: 1.4;
     }
 
@@ -123,7 +128,7 @@
     .cngx-timeline-item__error {
       margin: 0;
       color: var(--cngx-timeline-rejected-color, oklch(0.6 0.18 25));
-      font-size: 0.8125rem;
+      font-size: var(--cngx-timeline-meta-size, 0.8125rem);
       line-height: 1.4;
     }
 

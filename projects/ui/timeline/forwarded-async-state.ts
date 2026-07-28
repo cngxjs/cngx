@@ -25,9 +25,7 @@ import type { CngxAsyncState } from '@cngx/core/utils';
  * readonly asyncState = createForwardedAsyncState(this.state);
  * ```
  *
- * @category ui/timeline
- * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/timeline/forwarded-async-state.ts
- * @since 0.1.0
+ * @internal
  */
 export function createForwardedAsyncState<T>(
   source: () => CngxAsyncState<T> | undefined,
