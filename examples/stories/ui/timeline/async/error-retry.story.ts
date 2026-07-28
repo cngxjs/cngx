@@ -31,7 +31,7 @@ export const STORY: DemoSpec = {
   protected readonly at = (event: { at: Date }): Date => event.at;
   protected readonly byId = (event: { id: number }): number => event.id;
 
-  protected reload(): void {
+  protected onRetry(): void {
     this.feed.set('refreshing');
     setTimeout(() => this.feed.setSuccess(this.rows), 400);
   }`,
@@ -54,15 +54,14 @@ export const STORY: DemoSpec = {
     this.feed.setError(new Error('Refresh failed'));
   }
 
-  protected onRetry(): void {
+  protected countRetry(): void {
     this.retryCount.set(this.retryCount() + 1);
-    this.reload();
   }`,
   templateChromeBefore: `<div class="button-row" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
     <button type="button" class="chip" (click)="failFirstLoad()">fail first load</button>
     <button type="button" class="chip" (click)="failRefresh()">fail refresh (keeps rows)</button>
-    <button type="button" class="chip" (click)="surface.set('button-slot')">override button only</button>
-    <button type="button" class="chip" (click)="surface.set('whole-surface')">override whole surface</button>
+    <button type="button" class="chip" [attr.aria-pressed]="surface() === 'button-slot'" (click)="surface.set('button-slot')">override button only</button>
+    <button type="button" class="chip" [attr.aria-pressed]="surface() === 'whole-surface'" (click)="surface.set('whole-surface')">override whole surface</button>
   </div>`,
   templateChrome: `<div class="status-row" style="margin-top:8px">
     <span class="cngx-ex-status-readout">status: {{ feed.status() }}</span>
@@ -73,7 +72,7 @@ export const STORY: DemoSpec = {
     [dateAccessor]="at"
     [idAccessor]="byId"
     groupBy="day"
-    (retry)="onRetry()"
+    (retry)="onRetry(); countRetry()"
   >
     @if (surface() === 'button-slot') {
       <ng-template cngxTimelineRetryButton let-retry>

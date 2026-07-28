@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'A single row can carry its own <code>[state]</code>. It repaints as rejected and announces the failure without disturbing the rows around it.',
   description:
-    'The row keeps two channels apart. status is editorial - where the event sits in the history - while state is whether this row\'s own data loaded. They compose: a done row whose state fails paints rejected and shows an inline error, but data-status still says done, so a successful retry restores its colour with no bookkeeping on the consumer side. The error carries a stable id that stays in the DOM in every state and is toggled with aria-hidden, so aria-describedby never points at a missing node. A row that is merely pending announces the busy label instead of its status, because a row still loading has nothing settled to report.',
+    'The row keeps two channels apart. status is editorial - where the event sits in the history - while state is whether this row\'s own data loaded. They compose: a done row whose state fails paints rejected and shows an inline error, but data-status still says done, so a successful retry restores its colour with no bookkeeping on the consumer side. The inline error and the screen-reader status line are read as the row\'s own content in DOM order, not through aria-describedby: the row host carries no role for a description to resolve against. A row that is merely pending announces the busy label instead of its status, because a row still loading has nothing settled to report.',
   level: 'molecule',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',

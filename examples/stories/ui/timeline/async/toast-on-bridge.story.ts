@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     '<code>cngxToastOn</code> sits on the host with no <code>[state]</code> binding of its own and still fires - it reads the timeline\'s <code>CNGX_STATEFUL</code>.',
   description:
-    'This is the producer half of the timeline\'s state surface. The organism republishes whatever is bound to [state] through CNGX_STATEFUL, so a bridge on the same element resolves it via { host: true } and needs no binding. The token cannot hand out the input object directly - an Input can be rebound or absent, and a bridge that captured it would hold a stale state - so the timeline publishes a façade whose every member forwards to whatever is bound right now. Bind nothing and the façade reports a quiet idle rather than throwing, which is why a bridge can sit inside a timeline that has not been given a state yet. cngxAlertOn and cngxBannerOn compose the same way.',
+    'This is the producer half of the timeline\'s state surface. The organism republishes whatever is bound to [state] through CNGX_STATEFUL, and the bridge picks it up with inject(CNGX_STATEFUL, { optional: true }) - element-injector resolution starts at the element the directive sits on, which is the one providing it, so no binding is needed. The token cannot hand out the input object directly - an Input can be rebound or absent, and a bridge that captured it would hold a stale state - so the timeline publishes a façade whose every member forwards to whatever is bound right now. Bind nothing and the façade reports a quiet idle rather than throwing, which is why a bridge can sit inside a timeline that has not been given a state yet. cngxAlertOn and cngxBannerOn compose the same way.',
   level: 'organism',
   audience: ['dev'],
   artifact: 'standalone',

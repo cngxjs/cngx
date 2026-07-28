@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'A background refresh keeps every row on screen and appends a tail. <code>*cngxTimelineLoadingTail</code> replaces it.',
   description:
-    'refreshing over existing content is the one state that would otherwise be invisible: the view stays on content and only aria-busy flips, which tells a sighted reader nothing. The tail sits outside the list rather than inside it, so it never reads as an event of its own, and carries role="status" so the update is announced politely instead of silently. Its default copy comes from CNGX_TIMELINE_CONFIG.labels.refreshing - the slot is for apps that want a spinner or their own wording.',
+    'refreshing over existing content is the one state that would otherwise be invisible: the view stays on content and only aria-busy flips, which tells a sighted reader nothing. The tail sits outside the list so it never reads as an event of its own, and is aria-hidden. The announcement comes instead from a live region that is in the DOM from first render with reactive content - a region created alongside its own message is announced inconsistently or not at all. Default copy comes from CNGX_TIMELINE_CONFIG.labels.refreshing; the slot is for apps that want a spinner or their own wording.',
   level: 'organism',
   audience: ['dev', 'a11y'],
   artifact: 'standalone',

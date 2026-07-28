@@ -45,9 +45,9 @@ export const STORY: DemoSpec = {
     ]);
   }`,
   templateChromeBefore: `<div class="button-row" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
-    <button type="button" class="chip" (click)="show('first-use')">first-use</button>
-    <button type="button" class="chip" (click)="show('no-results')">no-results</button>
-    <button type="button" class="chip" (click)="show('cleared')">cleared</button>
+    <button type="button" class="chip" [attr.aria-pressed]="reason() === 'first-use'" (click)="show('first-use')">first-use</button>
+    <button type="button" class="chip" [attr.aria-pressed]="reason() === 'no-results'" (click)="show('no-results')">no-results</button>
+    <button type="button" class="chip" [attr.aria-pressed]="reason() === 'cleared'" (click)="show('cleared')">cleared</button>
     <button type="button" class="chip" (click)="showContent()">with content</button>
   </div>`,
   template: `<cngx-timeline

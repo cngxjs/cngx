@@ -28,8 +28,8 @@ export const STORY: DemoSpec = {
   protected readonly byId = (event: { id: number }): number => event.id;`,
   setupChrome: `protected readonly order = signal<'asc' | 'desc'>('desc');`,
   templateChromeBefore: `<div class="button-row" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
-    <button type="button" class="chip" (click)="order.set('desc')">desc (newest first)</button>
-    <button type="button" class="chip" (click)="order.set('asc')">asc (oldest first)</button>
+    <button type="button" class="chip" [attr.aria-pressed]="order() === 'desc'" (click)="order.set('desc')">desc (newest first)</button>
+    <button type="button" class="chip" [attr.aria-pressed]="order() === 'asc'" (click)="order.set('asc')">asc (oldest first)</button>
   </div>`,
   templateChrome: `<div class="status-row" style="margin-top:8px">
     <span class="cngx-ex-status-readout">direction: {{ order() }}</span>

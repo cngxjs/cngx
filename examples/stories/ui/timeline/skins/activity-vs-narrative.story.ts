@@ -29,11 +29,11 @@ export const STORY: DemoSpec = {
   setupChrome: `protected readonly rowMode = signal<'narrative' | 'activity'>('narrative');
   protected readonly look = signal<'line' | 'card' | 'bands'>('line');`,
   templateChromeBefore: `<div class="button-row" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
-    <button type="button" class="chip" (click)="rowMode.set('narrative')">narrative</button>
-    <button type="button" class="chip" (click)="rowMode.set('activity')">activity</button>
-    <button type="button" class="chip" (click)="look.set('line')">line</button>
-    <button type="button" class="chip" (click)="look.set('card')">card</button>
-    <button type="button" class="chip" (click)="look.set('bands')">bands</button>
+    <button type="button" class="chip" [attr.aria-pressed]="rowMode() === 'narrative'" (click)="rowMode.set('narrative')">narrative</button>
+    <button type="button" class="chip" [attr.aria-pressed]="rowMode() === 'activity'" (click)="rowMode.set('activity')">activity</button>
+    <button type="button" class="chip" [attr.aria-pressed]="look() === 'line'" (click)="look.set('line')">line</button>
+    <button type="button" class="chip" [attr.aria-pressed]="look() === 'card'" (click)="look.set('card')">card</button>
+    <button type="button" class="chip" [attr.aria-pressed]="look() === 'bands'" (click)="look.set('bands')">bands</button>
   </div>`,
   templateChrome: `<div class="status-row" style="margin-top:8px">
     <span class="cngx-ex-status-readout">mode: {{ rowMode() }}</span>
