@@ -135,6 +135,9 @@ type MarkerTpl = TemplateRef<CngxTimelineMarkerContext<unknown>>;
     '[attr.data-mode]': 'mode()',
     '[attr.data-skin]': 'skin()',
     '[attr.data-ungrouped]': 'ungrouped() ? "" : null',
+    // Aliased inputs leave the raw attribute behind, naming the role-less host.
+    '[attr.aria-label]': 'null',
+    '[attr.aria-labelledby]': 'null',
   },
   templateUrl: './timeline.component.html',
   styleUrl: './timeline.component.css',
@@ -216,9 +219,8 @@ export class CngxTimeline<T = unknown> {
   /** Names the list from existing markup instead. Wins over `aria-label`. */
   readonly ariaLabelledBy = input<string | undefined>(undefined, { alias: 'aria-labelledby' });
 
-  // contentChild as a direct field initialiser - AOT (NG8110) rejects these
-  // from a helper, which is why the slot cascade is spelled out rather than
-  // pushed into a registry factory.
+  // Direct field initialisers, not a registry factory: AOT (NG8110) rejects
+  // contentChild from a helper.
   private readonly itemSlot = contentChild(CngxTimelineItemTpl);
   private readonly dateHeaderSlot = contentChild(CngxTimelineDateHeader);
   private readonly markerSlot = contentChild(CngxTimelineMarkerTpl);

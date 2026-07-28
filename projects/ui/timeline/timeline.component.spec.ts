@@ -63,6 +63,22 @@ class Host {
   readonly byId = (event: Event): unknown => event.id;
 }
 
+/** Names the timeline the way a consumer does: a plain static attribute. */
+@Component({
+  selector: 'cngx-timeline-labelled-host',
+  standalone: true,
+  imports: [CngxTimeline, CngxTimelineItemTpl],
+  template: `
+    <cngx-timeline [items]="items" [dateAccessor]="at" aria-label="Audit trail">
+      <ng-template cngxTimelineItem>x</ng-template>
+    </cngx-timeline>
+  `,
+})
+class LabelledHost {
+  readonly items = EVENTS;
+  readonly at = (event: Event): Date => event.at;
+}
+
 function mount(): { host: Host; el: HTMLElement; detect: () => void } {
   const fixture = TestBed.createComponent(Host);
   fixture.detectChanges();
@@ -235,6 +251,21 @@ describe('CngxTimeline', () => {
       expect(el.querySelectorAll('.cngx-timeline__date-header')).toHaveLength(0);
       expect(Array.from(el.querySelectorAll('.cngx-timeline__item')).map((i) => i.getAttribute('role'))
       ).toEqual(['listitem', 'listitem', 'listitem']);
+    });
+
+    it('moves a static aria-label off the host and onto the list', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({ imports: [LabelledHost] });
+      const fixture = TestBed.createComponent(LabelledHost);
+      fixture.detectChanges();
+      const el = (fixture.nativeElement as HTMLElement).querySelector('cngx-timeline');
+
+      // Left on the role-less host it would name a generic wrapper and
+      // duplicate the list's own name in the accessibility tree.
+      expect(el?.hasAttribute('aria-label')).toBe(false);
+      expect(el?.querySelector('.cngx-timeline__list')?.getAttribute('aria-label')).toBe(
+        'Audit trail',
+      );
     });
 
     it('names the list from the config when the consumer names nothing', () => {
