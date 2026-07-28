@@ -154,10 +154,12 @@ everything visual through the slots.
 
 ## Accessibility
 
-Grouped renders `role="list"` on the container, `role="group"` +
-`aria-labelledby` on each band, `role="listitem"` on each row.
-`groupBy: 'none'` drops the band role so the chain shortens to
-`list -> listitem` without a second code path.
+Every band is its own list: grouped renders `role="group"` on the container,
+`role="list"` + `aria-labelledby` on each band, `role="listitem"` on each row,
+so a screen reader reports an item count per band rather than one count across
+the whole timeline. `groupBy: 'none'` moves `list` up to the container and drops
+the band to `presentation`, shortening the chain to `list -> listitem` without a
+second code path.
 
 `aria-busy` sits on the element that owns the content, and is a `computed()`
 over the bound state rather than a one-time setting. A polite live region stays

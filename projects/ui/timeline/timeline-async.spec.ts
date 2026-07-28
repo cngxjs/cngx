@@ -384,13 +384,14 @@ describe('CngxTimeline async body', () => {
   });
 
   describe('aria-busy', () => {
-    it('sits on the list, not the role-less host, and tracks the bound state', () => {
+    it('sits on the container that owns the rows, not the role-less host', () => {
       const { el, host, detect } = mount();
       host.state.setSuccess(EVENTS);
       settleGate(detect);
 
+      // Grouped, so the container is the group holding one list per band.
       const list = el.querySelector('.cngx-timeline__list');
-      expect(list?.getAttribute('role')).toBe('list');
+      expect(list?.getAttribute('role')).toBe('group');
       expect(el.hasAttribute('aria-busy')).toBe(false);
       expect(list?.hasAttribute('aria-busy')).toBe(false);
 

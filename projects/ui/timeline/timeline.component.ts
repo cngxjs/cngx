@@ -310,14 +310,11 @@ export class CngxTimeline<T = unknown> {
    */
   protected readonly ungrouped = computed(() => this.groupBy() === 'none');
 
-  /**
-   * @internal `presentation`, not `null`, when ungrouped. A role-less div
-   * between the list and its rows still owns them in the accessibility tree
-   * and breaks `listitem`'s required context - `display: contents` fixes the
-   * box tree, not this. `presentation` drops the wrapper's own semantics so
-   * the chain reads `list -> listitem`.
-   */
-  protected readonly groupRole = computed(() => (this.ungrouped() ? 'presentation' : 'group'));
+  /** @internal Grouped is `group -> list -> listitem`: one list per band. */
+  protected readonly containerRole = computed(() => (this.ungrouped() ? 'list' : 'group'));
+
+  /** @internal Ungrouped needs `presentation`, not role-less. See the template. */
+  protected readonly bandRole = computed(() => (this.ungrouped() ? 'presentation' : 'list'));
 
   /** @internal Config fallback only applies when nothing was named explicitly. */
   protected readonly listLabel = computed(() =>

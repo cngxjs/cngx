@@ -187,14 +187,16 @@ describe('CngxTimeline', () => {
   });
 
   describe('ARIA chain', () => {
-    it('renders list -> group -> listitem when grouped', () => {
+    it('renders group -> list -> listitem when grouped', () => {
       const { el } = mount();
 
-      const list = el.querySelector('.cngx-timeline__list');
-      expect(list?.getAttribute('role')).toBe('list');
+      // One list per band, not one list owning group wrappers: a list may
+      // not own a group, and a per-band item count is what AT should report.
+      const container = el.querySelector('.cngx-timeline__list');
+      expect(container?.getAttribute('role')).toBe('group');
 
-      const groups = Array.from(el.querySelectorAll('.cngx-timeline__group'));
-      expect(groups.map((g) => g.getAttribute('role'))).toEqual(['group', 'group']);
+      const bands = Array.from(el.querySelectorAll('.cngx-timeline__group'));
+      expect(bands.map((band) => band.getAttribute('role'))).toEqual(['list', 'list']);
 
       const items = Array.from(el.querySelectorAll('.cngx-timeline__item'));
       expect(items.map((i) => i.getAttribute('role'))).toEqual([
@@ -204,7 +206,23 @@ describe('CngxTimeline', () => {
       ]);
     });
 
-    it('names every group by its own header element', () => {
+    it('gives every listitem a list parent in both configurations', () => {
+      const { el, host, detect } = mount();
+
+      const parentsAreLists = (): boolean =>
+        Array.from(el.querySelectorAll('[role="listitem"]')).every(
+          (item) => item.parentElement?.closest('[role="list"]') !== null,
+        );
+
+      expect(parentsAreLists()).toBe(true);
+
+      host.groupBy.set('none');
+      detect();
+
+      expect(parentsAreLists()).toBe(true);
+    });
+
+    it('names every band by its own header element', () => {
       const { el } = mount();
 
       for (const group of Array.from(el.querySelectorAll('.cngx-timeline__group'))) {
@@ -253,7 +271,7 @@ describe('CngxTimeline', () => {
       ).toEqual(['listitem', 'listitem', 'listitem']);
     });
 
-    it('moves a static aria-label off the host and onto the list', () => {
+    it('moves a static aria-label off the host and onto the region it names', () => {
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({ imports: [LabelledHost] });
       const fixture = TestBed.createComponent(LabelledHost);

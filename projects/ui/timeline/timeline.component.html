@@ -45,16 +45,22 @@
        role-less host, where AT would never read it. -->
   <div
     class="cngx-timeline__list"
-    role="list"
+    [attr.role]="containerRole()"
     [attr.aria-busy]="ariaBusy()"
     [attr.aria-label]="listLabel()"
     [attr.aria-labelledby]="ariaLabelledBy()"
   >
     @for (group of groups(); track group.key) {
-      <!-- The role sits here even though the wrapper is a plain div today:
-           v2 turns it into <details role="group">, and that must not move
-           the ARIA chain. Ungrouped drops the role, not the element, so the
-           chain shortens to list -> listitem.
+      <!-- Each band is its own list, named by its own header, and the
+           container above is the group that holds them: group -> list ->
+           listitem. The obvious alternative, one list with role="group"
+           bands inside it, is rejected by axe (a list may not own a group)
+           and reports one item count across every band instead of one per
+           band. Ungrouped drops the band to presentation rather than to no
+           role at all: a generic div between the list and its rows still
+           owns them and breaks listitem's required context - display:
+           contents fixes the box tree, not this. v2's <details role="group">
+           wraps this element rather than replacing its role.
 
            The label id is keyed on $index, not on group.key: a custom
            TimelineGroupingFn is free to return "today / this week / earlier",
@@ -62,7 +68,7 @@
            leaving the band unnamed. -->
       <div
         class="cngx-timeline__group"
-        [attr.role]="groupRole()"
+        [attr.role]="bandRole()"
         [attr.aria-labelledby]="ungrouped() ? null : groupLabelId($index)"
       >
         @if (!ungrouped()) {
