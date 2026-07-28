@@ -3,7 +3,9 @@ import {
   inject,
   InjectionToken,
   makeEnvironmentProviders,
+  Optional,
   type Provider,
+  SkipSelf,
   type TemplateRef,
 } from '@angular/core';
 
@@ -246,11 +248,11 @@ export function withTimelineTemplates(
   return (config) => ({ ...config, templates: { ...config.templates, ...templates } });
 }
 
-function resolveFeatures(features: readonly CngxTimelineConfigFeature[]): CngxTimelineConfig {
-  return features.reduce<CngxTimelineConfig>(
-    (config, feature) => feature(config),
-    TIMELINE_CONFIG_DEFAULTS,
-  );
+function applyFeatures(
+  base: CngxTimelineConfig,
+  features: readonly CngxTimelineConfigFeature[],
+): CngxTimelineConfig {
+  return features.reduce<CngxTimelineConfig>((config, feature) => feature(config), base);
 }
 
 /**
@@ -263,7 +265,10 @@ export function provideTimelineConfig(
   ...features: readonly CngxTimelineConfigFeature[]
 ): EnvironmentProviders {
   return makeEnvironmentProviders([
-    { provide: CNGX_TIMELINE_CONFIG, useValue: resolveFeatures(features) },
+    {
+      provide: CNGX_TIMELINE_CONFIG,
+      useValue: applyFeatures(TIMELINE_CONFIG_DEFAULTS, features),
+    },
   ]);
 }
 
@@ -272,9 +277,9 @@ export function provideTimelineConfig(
  * {@link EnvironmentProviders} because `viewProviders` rejects opaque
  * environment providers.
  *
- * Each call resolves against the library defaults, not against whatever
- * the root provider set - a scoped override states its full intent
- * rather than inheriting half of an app-wide one.
+ * Features merge onto the parent config - an enclosing scope, or the root
+ * provider, or the library defaults when neither is present - so a region
+ * can re-phrase one label without resetting every other one the app set.
  *
  * ```ts
  * @Component({
@@ -287,7 +292,14 @@ export function provideTimelineConfig(
 export function provideTimelineConfigAt(
   ...features: readonly CngxTimelineConfigFeature[]
 ): Provider[] {
-  return [{ provide: CNGX_TIMELINE_CONFIG, useValue: resolveFeatures(features) }];
+  return [
+    {
+      provide: CNGX_TIMELINE_CONFIG,
+      useFactory: (parent: CngxTimelineConfig | null) =>
+        applyFeatures(parent ?? TIMELINE_CONFIG_DEFAULTS, features),
+      deps: [[new SkipSelf(), new Optional(), CNGX_TIMELINE_CONFIG]],
+    },
+  ];
 }
 
 /**

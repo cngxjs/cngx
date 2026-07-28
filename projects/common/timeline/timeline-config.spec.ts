@@ -130,7 +130,7 @@ describe('timeline config cascade', () => {
       expect(readConfig().labels?.retry).toBe('Root');
     });
 
-    it('resolves a scoped override against the library defaults, not the root config', () => {
+    it('merges a scoped override onto the root config instead of replacing it', () => {
       @Component({
         selector: 'cngx-timeline-scope-host',
         template: '',
@@ -146,6 +146,25 @@ describe('timeline config cascade', () => {
       });
       const fixture = TestBed.createComponent(ScopeHost);
 
+      // Re-phrasing one label must not reset the rest of the app's wording.
+      expect(fixture.componentInstance.config.labels?.retry).toBe('Scoped');
+      expect(fixture.componentInstance.config.labels?.emptyFallback).toBe('Root empty.');
+    });
+
+    it('falls back to the library defaults when no parent config is provided', () => {
+      @Component({
+        selector: 'cngx-timeline-scope-host',
+        template: '',
+        viewProviders: [...provideTimelineConfigAt(withTimelineLabels({ retry: 'Scoped' }))],
+      })
+      class ScopeHost {
+        readonly config = inject(CNGX_TIMELINE_CONFIG);
+      }
+
+      TestBed.configureTestingModule({ imports: [ScopeHost] });
+      const fixture = TestBed.createComponent(ScopeHost);
+
+      expect(fixture.componentInstance.config.labels?.retry).toBe('Scoped');
       expect(fixture.componentInstance.config.labels?.emptyFallback).toBe('No events yet.');
     });
   });

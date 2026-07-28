@@ -143,10 +143,11 @@ provideTimelineConfig(
 );
 ```
 
-Root, or scoped to a subtree with `provideTimelineConfigAt` in `viewProviders`.
-Resolution runs per-instance input, then the scoped provider, then root, then
-the library default. Defaults are English; supply your locale through the
-cascade.
+Root, or scoped to a subtree with `provideTimelineConfigAt` in `viewProviders`,
+where features merge onto the parent config rather than replacing it - a region
+can re-phrase one label without resetting the rest. Resolution runs per-instance
+input, then the scoped provider, then root, then the library default. Defaults
+are English; supply your locale through the cascade.
 
 The config is deliberately small - text and templates only. There are no
 behavioural switches to configure: bucketing swaps through the factory token,
