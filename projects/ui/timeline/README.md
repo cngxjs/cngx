@@ -92,7 +92,9 @@ min-dwell gating is the skeleton container's - the timeline holds no latency
 logic, so a load that resolves faster than the delay never flashes a
 placeholder.
 
-`[skeletonRowCount]` sizes the placeholder to the usual result length.
+`[skeletonRowCount]` sizes the placeholder to the usual result length, and
+`*cngxTimelineSkeleton` reshapes the placeholder row itself when your rows are
+taller than a dot and two bars.
 `[emptyReason]` tells the empty slot which empty it is looking at: the organism
 cannot infer whether a filter cleared the list or nothing has ever happened.
 
@@ -120,7 +122,7 @@ values:
 
 ## Slots
 
-Seven template slots, each resolved through the family-standard three-stage
+Eight template slots, each resolved through the family-standard three-stage
 cascade: per-instance directive, then `CngxTimelineConfig.templates`, then the
 built-in markup.
 
@@ -133,6 +135,10 @@ built-in markup.
 |`*cngxTimelineError`|`$implicit: unknown`, `retry`|
 |`*cngxTimelineRetryButton`|`$implicit: retry`|
 |`*cngxTimelineLoadingTail`|none|
+|`*cngxTimelineSkeleton`|none|
+
+`*cngxTimelineMarkerTpl` applies to every row; a single row overrides it by
+projecting its own `[cngxTimelineMarkerContent]`, which wins.
 
 ## Configuration
 
@@ -177,6 +183,15 @@ none of them is injected by the timeline, which keeps one filter usable across a
 timeline, a table and a chart at once. Narrow the list in a `computed()` and
 hand the result to `[items]`; see the integration stories for
 `injectDataSource`, filter-before-bind, and `CngxScrollSpy` band navigation.
+
+Two swap points cover the rest without a fork. `CNGX_TIMELINE_GROUPING_FACTORY`
+replaces the bucketing; `CNGX_TIMELINE_VIEW_FACTORY` replaces the body-view
+mapping, for when holding rows through every refetch or treating a filtered
+empty differently is a product decision rather than a library one.
+
+An ejected skin keeps working: `createTimelineView`, `createTimelineSlotBinding`,
+`createTimelineFallbackCopy` and `createForwardedAsyncState` are public, so the
+copy imports the brain instead of restating it.
 
 ## Material Theme
 

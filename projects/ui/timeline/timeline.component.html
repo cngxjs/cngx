@@ -9,17 +9,28 @@
          consumer overrides have nothing else to select on. -->
     <cngx-skeleton class="cngx-timeline__skeleton" [state]="state()" [count]="skeletonRowCount()">
       <ng-template cngxSkeletonPlaceholder>
-        <!-- Own classes, not the row's. `CngxTimelineItem` is never imported
-             here, so on a cold first load its Track-A stylesheet is not in
-             the document yet and borrowed classes would render unstyled -
-             on the one path the skeleton exists to cover. -->
-        <div class="cngx-timeline__skeleton-row" aria-hidden="true">
-          <span class="cngx-timeline__skeleton-marker"></span>
-          <span class="cngx-timeline__skeleton-rail"></span>
-          <div class="cngx-timeline__skeleton-body">
-            <span class="cngx-timeline__skeleton-line"></span>
-            <span class="cngx-timeline__skeleton-line cngx-timeline__skeleton-line--short"></span>
-          </div>
+        <!-- aria-hidden on the wrapper, not on the branches: whatever a
+             consumer supplies is decoration too, and the load is announced
+             through the live region at the bottom of this template. -->
+        <div aria-hidden="true">
+          @if (skeletonTpl(); as tpl) {
+            <ng-container *ngTemplateOutlet="tpl" />
+          } @else {
+            <!-- Own classes, not the row's. `CngxTimelineItem` is never
+                 imported here, so on a cold first load its Track-A stylesheet
+                 is not in the document yet and borrowed classes would render
+                 unstyled - on the one path the skeleton exists to cover. -->
+            <div class="cngx-timeline__skeleton-row">
+              <span class="cngx-timeline__skeleton-marker"></span>
+              <span class="cngx-timeline__skeleton-rail"></span>
+              <div class="cngx-timeline__skeleton-body">
+                <span class="cngx-timeline__skeleton-line"></span>
+                <span
+                  class="cngx-timeline__skeleton-line cngx-timeline__skeleton-line--short"
+                ></span>
+              </div>
+            </div>
+          }
         </div>
       </ng-template>
     </cngx-skeleton>

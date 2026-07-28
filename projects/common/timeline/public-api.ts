@@ -37,6 +37,7 @@ export {
   CngxTimelineLoadingTail,
   CngxTimelineMarkerTpl,
   CngxTimelineRetryButton,
+  CngxTimelineSkeleton,
   type CngxTimelineDateHeaderContext,
   type CngxTimelineEmptyContext,
   type CngxTimelineErrorContext,

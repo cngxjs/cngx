@@ -126,6 +126,8 @@ export interface CngxTimelineTemplates {
   readonly retryButton?: TemplateRef<CngxTimelineRetryButtonContext>;
   /** Default refreshing tail (`*cngxTimelineLoadingTail`). */
   readonly loadingTail?: TemplateRef<void>;
+  /** Default placeholder row for the first-load body (`*cngxTimelineSkeleton`). */
+  readonly skeleton?: TemplateRef<void>;
 }
 
 /**
@@ -228,8 +230,8 @@ export function withTimelineLabels(labels: CngxTimelineLabels): CngxTimelineConf
  * keep whatever an earlier feature set, and a per-instance slot directive
  * still wins over anything set here.
  *
- * One bag rather than seven `with*Template` builders, matching how the
- * select family carries its own slot defaults - the timeline has seven
+ * One bag rather than a `with*Template` builder per slot, matching how the
+ * select family carries its own slot defaults - the timeline has eight
  * slots and near-identical builders would only add surface.
  *
  * ```ts

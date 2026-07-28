@@ -7,6 +7,7 @@ import {
   CngxTimelineItemTpl,
   CngxTimelineLoadingTail,
   CngxTimelineRetryButton,
+  CngxTimelineSkeleton,
 } from '@cngx/common/timeline';
 import { CNGX_STATEFUL, type AsyncStatus, type CngxStateful } from '@cngx/core/utils';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -33,6 +34,7 @@ const EVENTS: readonly Event[] = [
     CngxTimelineError,
     CngxTimelineRetryButton,
     CngxTimelineLoadingTail,
+    CngxTimelineSkeleton,
   ],
   template: `
     <cngx-timeline
@@ -56,6 +58,11 @@ const EVENTS: readonly Event[] = [
           <span class="slot-tail">TAIL</span>
         </ng-template>
       }
+      @if (withSkeletonSlot()) {
+        <ng-template cngxTimelineSkeleton>
+          <span class="slot-skeleton">BAR</span>
+        </ng-template>
+      }
       @if (withRetryButtonSlot()) {
         <ng-template cngxTimelineRetryButton let-retry>
           <button class="slot-retry" type="button" (click)="retry()">AGAIN</button>
@@ -69,6 +76,7 @@ class Host {
   readonly emptyReason = signal<'first-use' | 'no-results' | 'cleared'>('first-use');
   readonly withSlots = signal(false);
   readonly withRetryButtonSlot = signal(false);
+  readonly withSkeletonSlot = signal(false);
   readonly retries = signal(0);
   readonly at = (event: Event): Date => event.at;
 }
@@ -223,12 +231,27 @@ describe('CngxTimeline async body', () => {
       host.state.set('loading');
       settleGate(detect);
 
+      // Asserted on the subtree, not on the row itself: a consumer slot
+      // replaces the row, and the placeholder must stay decoration either way.
       for (const row of Array.from(el.querySelectorAll('.cngx-timeline__skeleton-row'))) {
-        expect(row.getAttribute('aria-hidden')).toBe('true');
+        expect(row.closest('[aria-hidden="true"]')).not.toBeNull();
       }
       expect(el.querySelector('.cngx-timeline__sr-only')?.textContent?.trim()).toBe(
         'Loading timeline',
       );
+    });
+
+    it('replaces the placeholder row with a bound *cngxTimelineSkeleton', () => {
+      const { el, host, detect } = mount();
+
+      host.withSkeletonSlot.set(true);
+      host.state.set('loading');
+      settleGate(detect);
+
+      expect(el.querySelectorAll('.slot-skeleton')).toHaveLength(2);
+      expect(el.querySelector('.cngx-timeline__skeleton-row')).toBeNull();
+      // Still decoration, whoever supplied it.
+      expect(el.querySelector('.slot-skeleton')?.closest('[aria-hidden="true"]')).not.toBeNull();
     });
   });
 

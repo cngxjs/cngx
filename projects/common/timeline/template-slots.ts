@@ -309,3 +309,29 @@ export class CngxTimelineRetryButton {
 export class CngxTimelineLoadingTail {
   readonly templateRef = inject<TemplateRef<void>>(TemplateRef);
 }
+
+/**
+ * One placeholder row in the first-load body, replacing the built-in
+ * marker-rail-and-two-bars shape. Rendered `[skeletonRowCount]` times.
+ *
+ * Contextless, and deliberately so: a placeholder stands in for a row whose
+ * data has not arrived, so there is nothing to hand it. Bind this when the
+ * real rows are taller or busier than the default shape and the swap to
+ * content would otherwise reflow the page.
+ *
+ * Whatever renders here sits inside an `aria-hidden` wrapper - the load is
+ * announced through the timeline's live region, not through the placeholder.
+ *
+ * @category common/timeline
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/timeline/template-slots.ts
+ * @relatedTo CngxTimelineLoadingTail
+ * @since 0.1.0
+ */
+@Directive({
+  selector: 'ng-template[cngxTimelineSkeleton]',
+  standalone: true,
+  exportAs: 'cngxTimelineSkeleton',
+})
+export class CngxTimelineSkeleton {
+  readonly templateRef = inject<TemplateRef<void>>(TemplateRef);
+}

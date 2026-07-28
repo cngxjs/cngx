@@ -9,7 +9,6 @@ import {
   output,
   ViewEncapsulation,
   type Signal,
-  type TemplateRef,
 } from '@angular/core';
 import type { EmptyReason } from '@cngx/common/card';
 import {
@@ -22,10 +21,9 @@ import {
   CngxTimelineLoadingTail,
   CngxTimelineMarkerTpl,
   CngxTimelineRetryButton,
+  CngxTimelineSkeleton,
   injectTimelineConfig,
-  type CngxTimelineDateHeaderContext,
   type CngxTimelineItemContext,
-  type CngxTimelineMarkerContext,
   type TimelineDateAccessor,
   type TimelineDirection,
   type TimelineGroup,
@@ -35,7 +33,7 @@ import { CNGX_STATEFUL, nextUid, type CngxAsyncState } from '@cngx/core/utils';
 import { CngxSkeletonContainer, CngxSkeletonPlaceholder } from '@cngx/ui/skeleton';
 
 import { createForwardedAsyncState } from './forwarded-async-state';
-import { createTimelineSlotBinding } from './slot-cascade';
+import { createTimelineSlots } from './slot-cascade';
 import { createTimelineFallbackCopy } from './timeline-labels';
 import { CNGX_TIMELINE_VIEW_FACTORY } from './timeline-view';
 
@@ -64,9 +62,6 @@ export type CngxTimelineMode = 'narrative' | 'activity';
  */
 export type CngxTimelineSkin = 'line' | 'card' | 'bands';
 
-/** The marker slot is published through DI, so its type is item-agnostic. */
-type MarkerTpl = TemplateRef<CngxTimelineMarkerContext<unknown>>;
-
 /**
  * Grouped, themed, RTL-safe timeline over a flat list of events.
  *
@@ -78,10 +73,12 @@ type MarkerTpl = TemplateRef<CngxTimelineMarkerContext<unknown>>;
  * grouping without forking the component.
  *
  * **ARIA.** One chain in two configurations, both derived rather than set:
- * grouped renders `list` -> `group` (named by its date header) ->
- * `listitem`; `groupBy="none"` collapses to `list` -> `listitem`. The group
- * wrapper carries its role from day one so the v2 collapsible variant can
- * become a `<details role="group">` without moving the chain.
+ * grouped gives every band its own `list` (named by its date header) inside
+ * a `group` container, so a screen reader counts items per band rather than
+ * across the whole history; `groupBy="none"` moves `list` up to the
+ * container and collapses to `list` -> `listitem`. The band carries its role
+ * from day one so the v2 collapsible variant wraps it in a
+ * `<details role="group">` without moving the chain.
  *
  * **Not keyboard-navigable, deliberately.** v1 items are content, not
  * widgets - links and buttons *inside* a row are natively tabbable in DOM
@@ -228,6 +225,7 @@ export class CngxTimeline<T = unknown> {
   private readonly errorSlot = contentChild(CngxTimelineError);
   private readonly retryButtonSlot = contentChild(CngxTimelineRetryButton);
   private readonly loadingTailSlot = contentChild(CngxTimelineLoadingTail);
+  private readonly skeletonSlot = contentChild(CngxTimelineSkeleton);
 
   /** @internal The list the presenter groups: bound state first, then `[items]`. */
   private readonly resolvedItems = computed<readonly T[]>(
@@ -244,38 +242,30 @@ export class CngxTimeline<T = unknown> {
   /** The derived bands, in sort order. */
   readonly groups: Signal<readonly TimelineGroup<T>[]> = this.grouping.groups;
 
-  /**
-   * @internal Seven slots, one cascade rule: instance slot -> config default
-   * -> null. The config tier is typed against `unknown` items while the slots
-   * are generic, hence the casts - `TemplateRef` is method-bivariant, so a
-   * consumer's concrete template still assigns in.
-   */
-  protected readonly itemTpl = createTimelineSlotBinding(
-    this.itemSlot,
-    () => this.config.templates?.item as TemplateRef<CngxTimelineItemContext<T>> | undefined,
+  /** @internal Eight slots, one cascade rule, resolved in one place. */
+  private readonly slots = createTimelineSlots<T>(
+    {
+      item: this.itemSlot,
+      dateHeader: this.dateHeaderSlot,
+      marker: this.markerSlot,
+      empty: this.emptySlot,
+      error: this.errorSlot,
+      retryButton: this.retryButtonSlot,
+      loadingTail: this.loadingTailSlot,
+      skeleton: this.skeletonSlot,
+    },
+    () => this.config.templates,
   );
-  protected readonly dateHeaderTpl = createTimelineSlotBinding(
-    this.dateHeaderSlot,
-    () =>
-      this.config.templates?.dateHeader as
-        | TemplateRef<CngxTimelineDateHeaderContext<T>>
-        | undefined,
-  );
+
+  protected readonly itemTpl = this.slots.item;
+  protected readonly dateHeaderTpl = this.slots.dateHeader;
   /** Public: this is the `CNGX_TIMELINE_MARKER_HOST` contract the rows read. */
-  readonly markerTpl = createTimelineSlotBinding(
-    this.markerSlot,
-    () => this.config.templates?.marker as MarkerTpl | undefined,
-  );
-  protected readonly emptyTpl = createTimelineSlotBinding(this.emptySlot, () => this.config.templates?.empty);
-  protected readonly errorTpl = createTimelineSlotBinding(this.errorSlot, () => this.config.templates?.error);
-  protected readonly retryButtonTpl = createTimelineSlotBinding(
-    this.retryButtonSlot,
-    () => this.config.templates?.retryButton,
-  );
-  protected readonly loadingTailTpl = createTimelineSlotBinding(
-    this.loadingTailSlot,
-    () => this.config.templates?.loadingTail,
-  );
+  readonly markerTpl = this.slots.marker;
+  protected readonly emptyTpl = this.slots.empty;
+  protected readonly errorTpl = this.slots.error;
+  protected readonly retryButtonTpl = this.slots.retryButton;
+  protected readonly loadingTailTpl = this.slots.loadingTail;
+  protected readonly skeletonTpl = this.slots.skeleton;
 
   /**
    * Forwarding façade over the bound `[state]`, published through
