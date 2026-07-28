@@ -35,9 +35,9 @@ import { CNGX_STATEFUL, nextUid, type CngxAsyncState } from '@cngx/core/utils';
 import { CngxSkeletonContainer, CngxSkeletonPlaceholder } from '@cngx/ui/skeleton';
 
 import { createForwardedAsyncState } from './forwarded-async-state';
-import { resolveSlot } from './slot-cascade';
+import { createTimelineSlotBinding } from './slot-cascade';
 import { createTimelineFallbackCopy } from './timeline-labels';
-import { createTimelineView } from './timeline-view';
+import { CNGX_TIMELINE_VIEW_FACTORY } from './timeline-view';
 
 /**
  * Raster the timeline lays its rows out on.
@@ -250,11 +250,11 @@ export class CngxTimeline<T = unknown> {
    * are generic, hence the casts - `TemplateRef` is method-bivariant, so a
    * consumer's concrete template still assigns in.
    */
-  protected readonly itemTpl = resolveSlot(
+  protected readonly itemTpl = createTimelineSlotBinding(
     this.itemSlot,
     () => this.config.templates?.item as TemplateRef<CngxTimelineItemContext<T>> | undefined,
   );
-  protected readonly dateHeaderTpl = resolveSlot(
+  protected readonly dateHeaderTpl = createTimelineSlotBinding(
     this.dateHeaderSlot,
     () =>
       this.config.templates?.dateHeader as
@@ -262,17 +262,17 @@ export class CngxTimeline<T = unknown> {
         | undefined,
   );
   /** Public: this is the `CNGX_TIMELINE_MARKER_HOST` contract the rows read. */
-  readonly markerTpl = resolveSlot(
+  readonly markerTpl = createTimelineSlotBinding(
     this.markerSlot,
     () => this.config.templates?.marker as MarkerTpl | undefined,
   );
-  protected readonly emptyTpl = resolveSlot(this.emptySlot, () => this.config.templates?.empty);
-  protected readonly errorTpl = resolveSlot(this.errorSlot, () => this.config.templates?.error);
-  protected readonly retryButtonTpl = resolveSlot(
+  protected readonly emptyTpl = createTimelineSlotBinding(this.emptySlot, () => this.config.templates?.empty);
+  protected readonly errorTpl = createTimelineSlotBinding(this.errorSlot, () => this.config.templates?.error);
+  protected readonly retryButtonTpl = createTimelineSlotBinding(
     this.retryButtonSlot,
     () => this.config.templates?.retryButton,
   );
-  protected readonly loadingTailTpl = resolveSlot(
+  protected readonly loadingTailTpl = createTimelineSlotBinding(
     this.loadingTailSlot,
     () => this.config.templates?.loadingTail,
   );
@@ -288,7 +288,7 @@ export class CngxTimeline<T = unknown> {
   protected readonly labels = createTimelineFallbackCopy(this.config);
 
   /** @internal The body switch, the busy flag and the live-region text. */
-  private readonly view = createTimelineView(
+  private readonly view = inject(CNGX_TIMELINE_VIEW_FACTORY)(
     this.state,
     () => this.groups().length === 0,
     this.labels,

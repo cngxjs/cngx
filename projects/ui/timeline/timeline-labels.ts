@@ -4,7 +4,7 @@ import type { CngxTimelineConfig, TimelineGroup } from '@cngx/common/timeline';
  * The fallback copy the timeline renders when a consumer bound no slot for
  * a surface, resolved once from the config cascade.
  *
- * @internal
+ * @category ui/timeline
  */
 export interface CngxTimelineFallbackCopy {
   readonly retry: string;
@@ -25,7 +25,8 @@ export interface CngxTimelineFallbackCopy {
  * clears the formatter should still get a legible header rather than an
  * empty one that leaves the group unnamed.
  *
- * @internal
+ * @category ui/timeline
+ * @since 0.1.0
  */
 export function createTimelineFallbackCopy(config: CngxTimelineConfig): CngxTimelineFallbackCopy {
   const labels = config.labels;

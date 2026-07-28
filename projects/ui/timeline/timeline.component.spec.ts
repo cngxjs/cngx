@@ -1,4 +1,4 @@
-import { Component, signal, TemplateRef, viewChild } from '@angular/core';
+import { Component, computed, signal, TemplateRef, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import {
   CNGX_TIMELINE_GROUPING_FACTORY,
@@ -15,6 +15,11 @@ import {
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { CngxTimeline, type CngxTimelineMode, type CngxTimelineSkin } from './timeline.component';
+import {
+  CNGX_TIMELINE_VIEW_FACTORY,
+  createTimelineView,
+  type CngxTimelineViewFactory,
+} from './timeline-view';
 
 interface Event {
   readonly id: number;
@@ -411,6 +416,31 @@ describe('CngxTimeline', () => {
 
       expect(el.querySelectorAll('.cngx-timeline__group')).toHaveLength(1);
       expect(text(el.querySelector('.cngx-timeline__date-header'))).toBe(dayLabel(2026, 6, 21));
+    });
+  });
+
+  describe('CNGX_TIMELINE_VIEW_FACTORY', () => {
+    it('renders through a consumer-supplied body-view override', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        imports: [Host],
+        providers: [
+          {
+            provide: CNGX_TIMELINE_VIEW_FACTORY,
+            // Force the empty surface over a list that has rows - proof the
+            // override drives the real body switch rather than sitting beside it.
+            useValue: ((state, isEmpty, labels) => ({
+              ...createTimelineView(state, isEmpty, labels),
+              activeView: computed(() => 'empty' as const),
+              showsContent: computed(() => false),
+            })) satisfies CngxTimelineViewFactory,
+          },
+        ],
+      });
+      const { el } = mount();
+
+      expect(el.querySelector('.cngx-timeline__list')).toBeNull();
+      expect(text(el.querySelector('.cngx-timeline__empty'))).toBe('No events yet.');
     });
   });
 });
