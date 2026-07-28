@@ -364,6 +364,25 @@ describe('CngxTimelineItem', () => {
         );
       });
 
+      it('announces what it paints rather than the editorial status it kept', () => {
+        const { item, host, detect } = mount();
+        const state = createManualState<string>();
+        host.state.set(state);
+        host.status.set('done');
+        detect();
+
+        expect(statusLine(item)?.textContent?.trim()).toBe('Completed');
+
+        state.setError(new Error('boom'));
+        detect();
+
+        expect(statusLine(item)?.textContent?.trim()).toBe('Rejected');
+
+        state.setSuccess('ok');
+        detect();
+        expect(statusLine(item)?.textContent?.trim()).toBe('Completed');
+      });
+
       it('returns to the editorial colour once a retry succeeds', () => {
         const { item, host, detect } = mount();
         const state = createManualState<string>();

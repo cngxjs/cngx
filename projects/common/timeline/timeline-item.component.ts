@@ -221,15 +221,17 @@ export class CngxTimelineItem {
   );
 
   /**
-   * @internal Busy outranks status in the announcement for the same
-   * reason: a row that is still loading has nothing settled to report.
+   * @internal Busy outranks everything: a row still loading has nothing
+   * settled to report. Otherwise this reads `markerStatus`, not `status`,
+   * so the announcement can never contradict the paint - a failed row
+   * announces the `rejected` it shows, not the editorial status it kept.
    */
   protected readonly statusText = computed(() => {
     const labels = this.config.labels;
     if (this.busy()) {
       return labels?.itemBusy ?? '';
     }
-    const status = this.status();
+    const status = this.markerStatus();
     return status ? (labels?.status?.[status] ?? '') : '';
   });
 
