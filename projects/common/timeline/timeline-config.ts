@@ -9,6 +9,14 @@ import {
 
 import type { TimelineGroup } from './grouping';
 import type { TimelineStatus } from './marker.component';
+import type {
+  CngxTimelineDateHeaderContext,
+  CngxTimelineEmptyContext,
+  CngxTimelineErrorContext,
+  CngxTimelineItemContext,
+  CngxTimelineMarkerContext,
+  CngxTimelineRetryButtonContext,
+} from './template-slots';
 
 /**
  * Every user-visible string the timeline can render without a consumer
@@ -91,17 +99,31 @@ export interface CngxTimelineLabels {
 }
 
 /**
- * App-wide template defaults for the timeline's slot regions - the
- * middle tier of the family-standard 3-stage cascade
+ * App-wide template defaults for the timeline's slot regions - the middle
+ * tier of the family-standard 3-stage cascade
  * (per-instance directive > this field > built-in markup).
  *
- * Apply via the matching `with*Template` builders.
+ * Set them with {@link withTimelineTemplates}. Keys are typed against
+ * `unknown` items because the config is app-wide while the slots are
+ * generic; a `TemplateRef` for a concrete item type assigns in fine.
  *
  * @category common/timeline
  */
 export interface CngxTimelineTemplates {
-  /** Default for the per-group date header (`*cngxTimelineDateHeader`). */
-  readonly dateHeader?: TemplateRef<{ readonly $implicit: TimelineGroup<unknown> }>;
+  /** Default row template (`*cngxTimelineItem`). */
+  readonly item?: TemplateRef<CngxTimelineItemContext<unknown>>;
+  /** Default per-group date header (`*cngxTimelineDateHeader`). */
+  readonly dateHeader?: TemplateRef<CngxTimelineDateHeaderContext<unknown>>;
+  /** Default marker content (`*cngxTimelineMarkerTpl`). */
+  readonly marker?: TemplateRef<CngxTimelineMarkerContext<unknown>>;
+  /** Default empty surface (`*cngxTimelineEmpty`). */
+  readonly empty?: TemplateRef<CngxTimelineEmptyContext>;
+  /** Default error surface (`*cngxTimelineError`). */
+  readonly error?: TemplateRef<CngxTimelineErrorContext>;
+  /** Default retry control (`*cngxTimelineRetryButton`). */
+  readonly retryButton?: TemplateRef<CngxTimelineRetryButtonContext>;
+  /** Default refreshing tail (`*cngxTimelineLoadingTail`). */
+  readonly loadingTail?: TemplateRef<void>;
 }
 
 /**
@@ -197,6 +219,31 @@ export function withTimelineLabels(labels: CngxTimelineLabels): CngxTimelineConf
       status: { ...config.labels?.status, ...labels.status },
     },
   });
+}
+
+/**
+ * Merge app-wide slot template defaults into the cascade. Keys left out
+ * keep whatever an earlier feature set, and a per-instance slot directive
+ * still wins over anything set here.
+ *
+ * One bag rather than seven `with*Template` builders, matching how the
+ * select family carries its own slot defaults - the timeline has seven
+ * slots and near-identical builders would only add surface.
+ *
+ * ```ts
+ * readonly emptyTpl = viewChild.required<TemplateRef<CngxTimelineEmptyContext>>('emptyTpl', {
+ *   read: TemplateRef,
+ * });
+ *
+ * providers: [provideTimelineConfig(withTimelineTemplates({ empty: this.emptyTpl() }))]
+ * ```
+ *
+ * @category common/timeline
+ */
+export function withTimelineTemplates(
+  templates: CngxTimelineTemplates,
+): CngxTimelineConfigFeature {
+  return (config) => ({ ...config, templates: { ...config.templates, ...templates } });
 }
 
 function resolveFeatures(features: readonly CngxTimelineConfigFeature[]): CngxTimelineConfig {

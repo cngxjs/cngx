@@ -25,11 +25,27 @@ export {
   CngxTimelineTime,
 } from './timeline-item.component';
 export {
+  CngxTimelineDateHeader,
+  CngxTimelineEmpty,
+  CngxTimelineError,
+  CngxTimelineItemTpl,
+  CngxTimelineLoadingTail,
+  CngxTimelineMarkerTpl,
+  CngxTimelineRetryButton,
+  type CngxTimelineDateHeaderContext,
+  type CngxTimelineEmptyContext,
+  type CngxTimelineErrorContext,
+  type CngxTimelineItemContext,
+  type CngxTimelineMarkerContext,
+  type CngxTimelineRetryButtonContext,
+} from './template-slots';
+export {
   CNGX_TIMELINE_CONFIG,
   injectTimelineConfig,
   provideTimelineConfig,
   provideTimelineConfigAt,
   withTimelineLabels,
+  withTimelineTemplates,
   type CngxTimelineConfig,
   type CngxTimelineConfigFeature,
   type CngxTimelineLabels,
