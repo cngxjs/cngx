@@ -15,6 +15,7 @@ import type { EmptyReason } from '@cngx/common/card';
 import { resolveAsyncView } from '@cngx/common/data';
 import {
   CNGX_TIMELINE_GROUPING_FACTORY,
+  CNGX_TIMELINE_MARKER_HOST,
   CngxTimelineDateHeader,
   CngxTimelineEmpty,
   CngxTimelineError,
@@ -36,6 +37,7 @@ import { CngxSkeletonContainer, CngxSkeletonPlaceholder } from '@cngx/ui/skeleto
 
 import { createForwardedAsyncState } from './forwarded-async-state';
 import { resolveSlot } from './slot-cascade';
+import { createTimelineFallbackCopy } from './timeline-labels';
 
 /**
  * Raster the timeline lays its rows out on.
@@ -61,6 +63,9 @@ export type CngxTimelineMode = 'narrative' | 'activity';
  * @category ui/timeline
  */
 export type CngxTimelineSkin = 'line' | 'card' | 'bands';
+
+/** The marker slot is published through DI, so its type is item-agnostic. */
+type MarkerTpl = TemplateRef<CngxTimelineMarkerContext<unknown>>;
 
 /**
  * Grouped, themed, RTL-safe timeline over a flat list of events.
@@ -109,6 +114,10 @@ export type CngxTimelineSkin = 'line' | 'card' | 'bands';
   encapsulation: ViewEncapsulation.None,
   imports: [NgTemplateOutlet, CngxSkeletonContainer, CngxSkeletonPlaceholder],
   providers: [
+    // The rows render their own markers, so an app-wide marker template can
+    // only reach them through a contract. A token, never the class itself:
+    // a row has to stay usable with no timeline above it.
+    { provide: CNGX_TIMELINE_MARKER_HOST, useExisting: CngxTimeline },
     {
       // Re-exposes whatever is bound to [state] so CngxToastOn / CngxAlertOn /
       // CngxBannerOn attach with no wiring at all. It cannot be `useExisting`
@@ -159,9 +168,8 @@ export class CngxTimeline<T = unknown> {
   readonly emptyReason = input<EmptyReason>('first-use');
 
   /**
-   * How many placeholder rows the loading body draws. Match it to the
-   * timeline's usual length so the skeleton reserves roughly the space the
-   * content will take.
+   * How many placeholder rows the loading body draws. Match it to the usual
+   * length so the skeleton reserves roughly the space the content will take.
    */
   readonly skeletonRowCount = input<number>(3);
 
@@ -246,9 +254,10 @@ export class CngxTimeline<T = unknown> {
         | TemplateRef<CngxTimelineDateHeaderContext<T>>
         | undefined,
   );
-  protected readonly markerTpl = resolveSlot(
+  /** Public: this is the `CNGX_TIMELINE_MARKER_HOST` contract the rows read. */
+  readonly markerTpl = resolveSlot(
     this.markerSlot,
-    () => this.config.templates?.marker as TemplateRef<CngxTimelineMarkerContext<T>> | undefined,
+    () => this.config.templates?.marker as MarkerTpl | undefined,
   );
   protected readonly emptyTpl = resolveSlot(this.emptySlot, () => this.config.templates?.empty);
   protected readonly errorTpl = resolveSlot(this.errorSlot, () => this.config.templates?.error);
@@ -307,6 +316,9 @@ export class CngxTimeline<T = unknown> {
   /** @internal `null` in the ungrouped chain, so it reads `list -> listitem`. */
   protected readonly groupRole = computed(() => (this.ungrouped() ? null : 'group'));
 
+  /** @internal Fallback copy for every surface with no slot bound. */
+  protected readonly labels = createTimelineFallbackCopy(this.config);
+
   /** @internal Config fallback only applies when nothing was named explicitly. */
   protected readonly listLabel = computed(() =>
     this.ariaLabelledBy() ? null : (this.ariaLabel() ?? this.config.labels?.timelineRegion ?? null),
@@ -315,16 +327,6 @@ export class CngxTimeline<T = unknown> {
   /** @internal A group is named by its own header element. */
   protected groupLabelId(group: TimelineGroup<T>): string {
     return `${this.uid}-group-${group.key}`;
-  }
-
-  /** @internal Fallback header text when no `*cngxTimelineDateHeader` is bound. */
-  protected groupLabel(group: TimelineGroup<T>): string {
-    return this.config.labels?.groupLabel?.(group) ?? group.key;
-  }
-
-  /** @internal Fallback copy, all from the config cascade. */
-  protected label(key: 'retry' | 'errorFallback' | 'emptyFallback' | 'loading' | 'refreshing'): string {
-    return this.config.labels?.[key] ?? '';
   }
 
   /** @internal Row context. `first` / `last` are positions within the group. */

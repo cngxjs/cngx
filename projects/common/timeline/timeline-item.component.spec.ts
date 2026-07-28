@@ -1,10 +1,15 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, TemplateRef, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { createManualState } from '@cngx/common/data';
 import type { AsyncStatus } from '@cngx/core/utils';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { CngxTimelineItem, CngxTimelineTime } from './timeline-item.component';
+import { CNGX_TIMELINE_MARKER_HOST } from './marker-host.token';
+import {
+  CngxTimelineItem,
+  CngxTimelineMarkerContent,
+  CngxTimelineTime,
+} from './timeline-item.component';
 import { provideTimelineConfig, withTimelineLabels } from './timeline-config';
 
 const ALL_STATUSES: readonly AsyncStatus[] = [
@@ -194,6 +199,64 @@ describe('CngxTimelineItem', () => {
       detect();
 
       expect(describedTargets(item)[0].textContent?.trim()).toBe('Rejected');
+    });
+  });
+
+  describe('marker content', () => {
+    it('projects [cngxTimelineMarkerContent] into the dot when standing alone', () => {
+      TestBed.resetTestingModule();
+
+      @Component({
+        selector: 'cngx-timeline-marker-content-host',
+        standalone: true,
+        imports: [CngxTimelineItem, CngxTimelineMarkerContent],
+        template: `
+          <cngx-timeline-item status="done">
+            <span cngxTimelineMarkerContent>OK</span>
+          </cngx-timeline-item>
+        `,
+      })
+      class MarkerHost {}
+
+      TestBed.configureTestingModule({ imports: [MarkerHost] });
+      const fixture = TestBed.createComponent(MarkerHost);
+      fixture.detectChanges();
+      const marker = (fixture.nativeElement as HTMLElement).querySelector('cngx-timeline-marker');
+
+      expect(marker?.textContent).toContain('OK');
+    });
+
+    it('lets an app-wide marker template win over the projected content', () => {
+      TestBed.resetTestingModule();
+
+      @Component({
+        selector: 'cngx-timeline-marker-host-host',
+        standalone: true,
+        imports: [CngxTimelineItem, CngxTimelineMarkerContent],
+        template: `
+          <ng-template #appWide let-status="status">TPL:{{ status }}</ng-template>
+          <cngx-timeline-item status="done" [item]="{ id: 1 }">
+            <span cngxTimelineMarkerContent>PROJECTED</span>
+          </cngx-timeline-item>
+        `,
+        providers: [
+          {
+            provide: CNGX_TIMELINE_MARKER_HOST,
+            useFactory: () => ({ markerTpl: signal(null) }),
+          },
+        ],
+      })
+      class MarkerHostHost {
+        readonly tpl = viewChild.required('appWide', { read: TemplateRef });
+      }
+
+      TestBed.configureTestingModule({ imports: [MarkerHostHost] });
+      const fixture = TestBed.createComponent(MarkerHostHost);
+      fixture.detectChanges();
+      const marker = (fixture.nativeElement as HTMLElement).querySelector('cngx-timeline-marker');
+
+      // Host present but offering no template: projection still wins.
+      expect(marker?.textContent).toContain('PROJECTED');
     });
   });
 

@@ -3,7 +3,9 @@ import { TestBed } from '@angular/core/testing';
 import {
   CNGX_TIMELINE_GROUPING_FACTORY,
   CngxTimelineDateHeader,
+  CngxTimelineItem,
   CngxTimelineItemTpl,
+  CngxTimelineMarkerTpl,
   createTimelineGrouping,
   provideTimelineConfig,
   withTimelineLabels,
@@ -279,6 +281,40 @@ describe('CngxTimeline', () => {
       detect();
 
       expect(text(el.querySelector('.cngx-timeline__date-header'))).toBe('SLOT 2026-07-21');
+    });
+  });
+
+  describe('marker slot', () => {
+    it('reaches the dot inside a row the consumer wrote', () => {
+      @Component({
+        selector: 'cngx-timeline-marker-slot-host',
+        standalone: true,
+        imports: [CngxTimeline, CngxTimelineItemTpl, CngxTimelineMarkerTpl, CngxTimelineItem],
+        template: `
+          <cngx-timeline [items]="items" [dateAccessor]="at" groupBy="none">
+            <ng-template cngxTimelineMarkerTpl let-event let-status="status">
+              <span class="glyph">{{ $any(event).id }}/{{ status }}</span>
+            </ng-template>
+            <ng-template cngxTimelineItem let-event>
+              <cngx-timeline-item status="done" [item]="event" />
+            </ng-template>
+          </cngx-timeline>
+        `,
+      })
+      class MarkerSlotHost {
+        readonly items = [EVENTS[0]];
+        readonly at = (event: Event): Date => event.at;
+      }
+
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({ imports: [MarkerSlotHost] });
+      const fixture = TestBed.createComponent(MarkerSlotHost);
+      fixture.detectChanges();
+      const el = fixture.nativeElement as HTMLElement;
+
+      // The organism never renders the marker itself - this only appears if
+      // the template travelled down through CNGX_TIMELINE_MARKER_HOST.
+      expect(text(el.querySelector('cngx-timeline-marker .glyph'))).toBe('1/done');
     });
   });
 

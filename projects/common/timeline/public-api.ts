@@ -22,8 +22,13 @@ export {
 export {
   CngxTimelineContent,
   CngxTimelineItem,
+  CngxTimelineMarkerContent,
   CngxTimelineTime,
 } from './timeline-item.component';
+export {
+  CNGX_TIMELINE_MARKER_HOST,
+  type CngxTimelineMarkerHost,
+} from './marker-host.token';
 export {
   CngxTimelineDateHeader,
   CngxTimelineEmpty,

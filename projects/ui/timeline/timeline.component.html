@@ -7,7 +7,7 @@
       class="cngx-timeline__skeleton"
       [state]="state()"
       [count]="skeletonRowCount()"
-      [attr.aria-label]="label('loading')"
+      [attr.aria-label]="labels.loading"
     >
       <ng-template cngxSkeletonPlaceholder>
         <div class="cngx-timeline-item cngx-timeline__skeleton-row" aria-hidden="true">
@@ -27,7 +27,7 @@
       @if (emptyTpl(); as tpl) {
         <ng-container *ngTemplateOutlet="tpl; context: { $implicit: emptyReason() }" />
       } @else {
-        {{ label('emptyFallback') }}
+        {{ labels.emptyFallback }}
       }
     </div>
   }
@@ -59,7 +59,7 @@
             @if (dateHeaderTpl(); as tpl) {
               <ng-container *ngTemplateOutlet="tpl; context: { $implicit: group }" />
             } @else {
-              {{ groupLabel(group) }}
+              {{ labels.groupLabel(group) }}
             }
           </div>
         }
@@ -84,7 +84,7 @@
     @if (loadingTailTpl(); as tpl) {
       <ng-container *ngTemplateOutlet="tpl" />
     } @else {
-      {{ label('refreshing') }}
+      {{ labels.refreshing }}
     }
   </div>
 }
@@ -100,12 +100,12 @@
         *ngTemplateOutlet="tpl; context: { $implicit: state()?.error(), retry: emitRetry }"
       />
     } @else {
-      <p class="cngx-timeline__error-message">{{ label('errorFallback') }}</p>
+      <p class="cngx-timeline__error-message">{{ labels.errorFallback }}</p>
       @if (retryButtonTpl(); as tpl) {
         <ng-container *ngTemplateOutlet="tpl; context: { $implicit: emitRetry }" />
       } @else {
         <button class="cngx-timeline__retry" type="button" (click)="emitRetry()">
-          {{ label('retry') }}
+          {{ labels.retry }}
         </button>
       }
     }

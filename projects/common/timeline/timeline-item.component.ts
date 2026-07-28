@@ -1,14 +1,17 @@
+import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
   computed,
   Directive,
+  inject,
   input,
   ViewEncapsulation,
 } from '@angular/core';
 import { type CngxAsyncState, nextUid } from '@cngx/core/utils';
 
 import { CngxTimelineConnector, type TimelineConnectorPosition } from './connector.component';
+import { CNGX_TIMELINE_MARKER_HOST } from './marker-host.token';
 import { CngxTimelineMarker, type TimelineStatus } from './marker.component';
 import { injectTimelineConfig } from './timeline-config';
 
@@ -28,6 +31,26 @@ import { injectTimelineConfig } from './timeline-config';
   host: { class: 'cngx-timeline-item__time' },
 })
 export class CngxTimelineTime {}
+
+/**
+ * Marks content to render inside this row's marker dot - a glyph, an icon,
+ * an avatar.
+ *
+ * The per-row counterpart to the app-wide `*cngxTimelineMarkerTpl`, and the
+ * only route when the row stands on its own. If a `<cngx-timeline>` above it
+ * carries a marker template, that template wins, on the same
+ * app-wide-default-under-local-override logic as every other slot in the
+ * family.
+ *
+ * Whatever renders here is inside an `aria-hidden` element - decoration only.
+ *
+ * @category common/timeline
+ */
+@Directive({
+  selector: '[cngxTimelineMarkerContent]',
+  standalone: true,
+})
+export class CngxTimelineMarkerContent {}
 
 /**
  * Marks the element that holds an item's body. Optional - anything
@@ -95,7 +118,7 @@ export class CngxTimelineContent {}
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [CngxTimelineMarker, CngxTimelineConnector],
+  imports: [CngxTimelineMarker, CngxTimelineConnector, NgTemplateOutlet],
   host: {
     class: 'cngx-timeline-item',
     '[attr.data-status]': 'status()',
@@ -104,7 +127,15 @@ export class CngxTimelineContent {}
     '[attr.aria-describedby]': 'describedBy',
   },
   template: `
-    <cngx-timeline-marker [status]="markerStatus()" [busy]="busy()" />
+    <cngx-timeline-marker [status]="markerStatus()" [busy]="busy()">
+      @if (markerTpl(); as tpl) {
+        <ng-container
+          *ngTemplateOutlet="tpl; context: { $implicit: item(), status: status() }"
+        />
+      } @else {
+        <ng-content select="[cngxTimelineMarkerContent]" />
+      }
+    </cngx-timeline-marker>
     <cngx-timeline-connector [status]="markerStatus()" [position]="position()" />
     <ng-content select="[cngxTimelineTime]" />
     <div class="cngx-timeline-item__body">
@@ -160,6 +191,21 @@ export class CngxTimelineItem {
    * `'middle'`.
    */
   readonly position = input<TimelineConnectorPosition>('middle');
+
+  /**
+   * The event this row stands for. Only ever read as the `$implicit` of an
+   * app-wide `*cngxTimelineMarkerTpl`, so bind it when the app sets one and
+   * that template needs the payload; leave it off otherwise.
+   */
+  readonly item = input<unknown>(undefined);
+
+  /**
+   * @internal App-wide marker template, when a `<cngx-timeline>` is above
+   * this row. Absent standalone, where `[cngxTimelineMarkerContent]`
+   * projection takes over instead.
+   */
+  protected readonly markerTpl =
+    inject(CNGX_TIMELINE_MARKER_HOST, { optional: true })?.markerTpl ?? (() => null);
 
   /** @internal Stable target for the screen-reader status line. */
   protected readonly statusId = `${this.uid}-status`;
