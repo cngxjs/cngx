@@ -1,0 +1,111 @@
+/**
+ * @overview
+ * Default visuals for `<cngx-timeline>` - the group and item stacking the
+ * organism owns, on top of the per-row raster `CngxTimelineItem` ships.
+ *
+ * The organism deliberately owns very little: the rail, the dot and the
+ * row grid all live with the atoms, so an item still renders complete
+ * without this file. What is here is the vertical rhythm between rows and
+ * between bands, plus the three skins.
+ *
+ * **Density**
+ *
+ * Both spacing tokens are registered and SET from `--cngx-space-*` in this
+ * one file, so the registration cannot outlive its derivation and a
+ * `[data-density]` swap on any ancestor re-scales them.
+ *
+ * **Skins**
+ *
+ * `[data-skin]` is thematic only - no skin changes structure, ARIA or slot
+ * behaviour:
+ *
+ * - `line` (default) - bare rail, no surface
+ * - `card` - each row body lifted onto its own surface
+ * - `bands` - alternating group tint for long timelines
+ *
+ * **Modes**
+ *
+ * `[data-mode]` is read by `timeline-item.component.css`, not here - the
+ * raster belongs to the row that draws it.
+ */
+
+@layer cngx.tokens {
+  /**
+   * Vertical gap between consecutive rows inside one group.
+   * SET from `--cngx-space-md`.
+   * @group Layout
+   */
+  @property --cngx-timeline-item-gap {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 16px;
+  }
+
+  /**
+   * Vertical gap between two groups.
+   * SET from `--cngx-space-lg`.
+   * @group Layout
+   */
+  @property --cngx-timeline-group-gap {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 24px;
+  }
+}
+
+@layer cngx.components {
+  @scope (.cngx-timeline) {
+    :scope {
+      /* Derive from the global scale; the registered pixel initials above
+         would otherwise defeat every use-site fallback. 16 -> md, 24 -> lg. */
+      --cngx-timeline-item-gap: var(--cngx-space-md);
+      --cngx-timeline-group-gap: var(--cngx-space-lg);
+
+      display: block;
+      color: var(--cngx-timeline-text-color, oklch(0.2 0.01 250));
+    }
+
+    .cngx-timeline__list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--cngx-timeline-group-gap, 24px);
+    }
+
+    .cngx-timeline__group {
+      display: flex;
+      flex-direction: column;
+      gap: var(--cngx-timeline-item-gap, 16px);
+    }
+
+    .cngx-timeline__date-header {
+      color: var(--cngx-timeline-muted-color, oklch(0.5 0.01 250));
+      font-size: 0.8125rem;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+
+    /* The row wrapper only carries the listitem role - it must not add a box
+       of its own, or it would sit between the group's gap and the item's
+       own grid and double the rhythm. */
+    .cngx-timeline__item {
+      display: contents;
+    }
+  }
+
+  /* card - the row body gets a surface. The marker column stays outside it
+     so the rail still runs edge to edge. */
+  .cngx-timeline[data-skin='card'] .cngx-timeline-item__body {
+    background: var(--cngx-timeline-surface, oklch(1 0 0));
+    border: 1px solid var(--cngx-timeline-connector-color, oklch(0.88 0.005 250));
+    border-radius: var(--cngx-radius-md, 8px);
+    padding: var(--cngx-timeline-content-padding, 4px);
+  }
+
+  /* bands - alternate group tint. nth-of-type rather than a class, so the
+     stripe survives groups being added or removed at either end. */
+  .cngx-timeline[data-skin='bands'] .cngx-timeline__group:nth-of-type(even) {
+    background: color-mix(in oklch, currentColor 4%, transparent);
+    border-radius: var(--cngx-radius-md, 8px);
+    padding: var(--cngx-timeline-content-padding, 4px);
+  }
+}

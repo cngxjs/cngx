@@ -29,6 +29,7 @@
     "paginator/**/*.spec.ts",
     "collection/**/*.spec.ts",
     "stat-card/**/*.spec.ts",
-    "chart-panel/**/*.spec.ts"
+    "chart-panel/**/*.spec.ts",
+    "timeline/**/*.spec.ts"
   ]
 }

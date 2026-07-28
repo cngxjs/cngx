@@ -1,0 +1,41 @@
+@if (groups().length) {
+  <div
+    class="cngx-timeline__list"
+    role="list"
+    [attr.aria-label]="listLabel()"
+    [attr.aria-labelledby]="ariaLabelledBy()"
+  >
+    @for (group of groups(); track group.key) {
+      <!-- The wrapper carries role="group" even though it is a plain div
+           today: v2 turns it into <details role="group"> for collapsible
+           bands, and putting the role here now means that change does not
+           move the ARIA chain. Ungrouped drops the role instead of the
+           element, so the chain shortens to list -> listitem. -->
+      <div
+        class="cngx-timeline__group"
+        [attr.role]="groupRole()"
+        [attr.aria-labelledby]="ungrouped() ? null : groupLabelId(group)"
+      >
+        @if (!ungrouped()) {
+          <div class="cngx-timeline__date-header" [id]="groupLabelId(group)">
+            @if (dateHeaderTpl(); as tpl) {
+              <ng-container *ngTemplateOutlet="tpl; context: { $implicit: group }" />
+            } @else {
+              {{ groupLabel(group) }}
+            }
+          </div>
+        }
+
+        @for (item of group.items; track trackItem($index, item)) {
+          <div class="cngx-timeline__item" role="listitem">
+            @if (itemTpl(); as tpl) {
+              <ng-container
+                *ngTemplateOutlet="tpl; context: itemContext(item, $index, group)"
+              />
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
+}

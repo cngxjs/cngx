@@ -85,6 +85,7 @@ jobs:
             ui/collection
             ui/stat-card
             ui/chart-panel
+            ui/timeline
             themes/material
             examples
             examples-gen
