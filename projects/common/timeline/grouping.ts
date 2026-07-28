@@ -89,7 +89,12 @@ export type TimelineDateAccessor<T> = (item: T) => Date | string | number;
 export interface TimelineGroupingOptions<T> {
   /** Source list. Read inside the `groups` computation, so it is tracked. */
   readonly items: () => readonly T[];
-  /** Timestamp accessor. Not tracked - treated as a stable pure function. */
+  /**
+   * Timestamp accessor. Not a signal itself, but it is called inside the
+   * `groups` computation, so a caller that closes over one - as the organism
+   * does over its `[dateAccessor]` input - has those reads tracked like any
+   * other and re-groups when the accessor is rebound.
+   */
   readonly dateAccessor: TimelineDateAccessor<T>;
   /** Bucketing mode. Defaults to `'day'`. */
   readonly groupBy?: () => TimelineGroupBy<T>;

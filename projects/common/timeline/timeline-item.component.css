@@ -81,9 +81,9 @@
       /* Derive from the global scale so a [data-density] swap reaches
          them; the registered pixel initials above would otherwise defeat
          every use-site fallback. 8 -> sm, 4 -> xs, 4 -> xs. */
-      --cngx-timeline-gap: var(--cngx-space-sm);
-      --cngx-timeline-row-gap: var(--cngx-space-xs);
-      --cngx-timeline-content-padding: var(--cngx-space-xs);
+      --cngx-timeline-gap: var(--cngx-space-sm, 8px);
+      --cngx-timeline-row-gap: var(--cngx-space-xs, 4px);
+      --cngx-timeline-content-padding: var(--cngx-space-xs, 4px);
       /* Half the dot, so a rail clipped to this offset meets the marker's
          centre. It is derived here, at the nearest common ancestor of the
          two: the marker and the connector are siblings, so a value set on

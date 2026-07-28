@@ -19,6 +19,9 @@ export {
 } from './timeline-view';
 export {
   createTimelineSlotBinding,
+  createTimelineSlots,
+  type CngxTimelineSlotQueries,
+  type CngxTimelineSlots,
   type CngxTimelineSlotSource,
 } from './slot-cascade';
 export {
