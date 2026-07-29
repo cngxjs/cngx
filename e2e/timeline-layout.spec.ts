@@ -7,13 +7,6 @@ import { expect, test, type Page } from '@playwright/test';
 // `getComputedStyle(row).gridTemplateColumns` is `''` in `ng test` no
 // matter what the stylesheet says. Playwright runs a real engine, so
 // `@layer`, `@scope` and `:has()` all resolve.
-//
-// Phase 1 covers:
-//   (a) rows that predate `[cngxTimelineOpposite]` keep their v1 raster,
-//       in both modes - the `:has()` gate is the one change in the phase
-//       that re-evaluates markup nobody edited
-//   (b) the two cascade ties the plan locks: activity x row-side=end, and
-//       activity x placement=alternate
 
 const NARRATIVE = '/#/ui/timeline/basics/flat-array';
 const MODES = '/#/ui/timeline/skins/activity-vs-narrative';
@@ -23,12 +16,21 @@ const V1_NARRATIVE_AREAS = '"marker time" "rail body"';
 const V1_ACTIVITY_AREAS = '"marker body time" "rail body time"';
 
 /**
- * Number of tracks in a resolved `grid-template-columns`. Chromium reports
- * used pixel values (`"128px 24px 512px"`), so counting whitespace-separated
- * entries is the portable form.
+ * Resolved track widths. Chromium reports used pixel values
+ * (`"128px 24px 512px"`), so splitting on whitespace gives both the count
+ * and the widths - a track count alone cannot tell `1fr auto 1fr` from
+ * `auto auto 1fr`.
  */
+function tracks(value: string): readonly number[] {
+  return value
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((track) => Number.parseFloat(track));
+}
+
 function trackCount(value: string): number {
-  return value.trim().split(/\s+/).filter(Boolean).length;
+  return tracks(value).length;
 }
 
 async function firstRow(page: Page) {
@@ -158,9 +160,14 @@ test.describe('timeline layout - locked cascade ties', () => {
     await page.goto(NARRATIVE);
     await stampOnTimeline(page, { 'data-placement': 'alternate' });
     const { columns, areas } = await raster(page);
+    const [lead, , trail] = tracks(columns);
 
     expect(trackCount(columns)).toBe(3);
     expect(areas).toBe('"opposite marker time" "opposite rail body"');
+    // The rail is centred only when the two outer tracks resolve equal.
+    // A track count alone passes on `auto auto 1fr`, which is the raster
+    // this test exists to distinguish itself from.
+    expect(lead).toBeCloseTo(trail, 1);
   });
 
   test('narrative x row-side=end mirrors tracks and areas', async ({ page }) => {
