@@ -8,6 +8,7 @@ import {
   CngxTimeline,
   type CngxTimelineMode,
   type CngxTimelinePlacement,
+  type CngxTimelineRail,
 } from './timeline.component';
 
 interface Event {
@@ -44,6 +45,7 @@ const TWO_BANDS: readonly Event[] = [
       [groupBy]="groupBy()"
       [mode]="mode()"
       [placement]="placement()"
+      [rail]="rail()"
       [state]="state()"
       [skeletonRowCount]="4"
     >
@@ -58,6 +60,7 @@ class LayoutHost {
   readonly groupBy = signal<'day' | 'none'>('day');
   readonly mode = signal<CngxTimelineMode>('narrative');
   readonly placement = signal<CngxTimelinePlacement>('start');
+  readonly rail = signal<CngxTimelineRail>('segmented');
   readonly state = signal<ReturnType<typeof createManualState<readonly Event[]>> | undefined>(
     undefined,
   );
@@ -114,6 +117,35 @@ describe('CngxTimeline layout', () => {
       detect();
 
       expect(el.querySelector('cngx-timeline')?.getAttribute('data-placement')).toBe(placement);
+    });
+  });
+
+  describe('rail attribute', () => {
+    it('defaults to segmented, so v1 rails break between rows as before', () => {
+      const { el } = mount();
+
+      expect(el.querySelector('cngx-timeline')?.getAttribute('data-rail')).toBe('segmented');
+    });
+
+    it('reflects continuous onto the host, which is all the organism does', () => {
+      const { el, host, detect } = mount();
+
+      host.rail.set('continuous');
+      detect();
+
+      expect(el.querySelector('cngx-timeline')?.getAttribute('data-rail')).toBe('continuous');
+    });
+
+    it('leaves the connector API alone - continuity is geometry, not state', () => {
+      const { el, host, detect } = mount();
+
+      host.rail.set('continuous');
+      detect();
+
+      // The rows still report the positions the consumer gave them; the
+      // stretch is a stylesheet concern keyed off the host attribute.
+      expect(el.querySelector('cngx-timeline')?.getAttribute('data-rail')).toBe('continuous');
+      expect(sides(el)).toEqual(['start', 'start', 'start', 'start']);
     });
   });
 

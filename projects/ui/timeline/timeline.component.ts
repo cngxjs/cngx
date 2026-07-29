@@ -85,6 +85,22 @@ export type CngxTimelineSkin = 'line' | 'card' | 'bands';
 export type CngxTimelinePlacement = 'start' | 'end' | 'alternate';
 
 /**
+ * Whether the rail breaks between rows or reads as one line.
+ *
+ * `segmented` (default) is v1: one segment per row, separated by the item
+ * gap. `continuous` stretches each segment across that gap so a band reads
+ * as an unbroken line.
+ *
+ * Continuity is built per segment rather than from one line behind the run,
+ * so a `rejected` stretch stays red and an `upcoming` tail stays dashed.
+ * It applies within a band; the gap between groups stays open, because a
+ * band is a semantic boundary rather than a rendering accident.
+ *
+ * @category ui/timeline
+ */
+export type CngxTimelineRail = 'segmented' | 'continuous';
+
+/**
  * Grouped, themed, RTL-safe timeline over a flat list of events.
  *
  * Data in, rows out: bind `[items]` and a `[dateAccessor]`, project one
@@ -154,6 +170,7 @@ export type CngxTimelinePlacement = 'start' | 'end' | 'alternate';
     '[attr.data-mode]': 'mode()',
     '[attr.data-skin]': 'skin()',
     '[attr.data-placement]': 'placement()',
+    '[attr.data-rail]': 'rail()',
     '[attr.data-ungrouped]': 'ungrouped() ? "" : null',
     // Aliased inputs leave the raw attribute behind, naming the role-less host.
     '[attr.aria-label]': 'null',
@@ -240,6 +257,9 @@ export class CngxTimeline<T = unknown> implements CngxTimelineMarkerHost {
 
   /** Which side of the rail rows sit on. See {@link CngxTimelinePlacement}. */
   readonly placement = input<CngxTimelinePlacement>('start');
+
+  /** Whether the rail breaks between rows. See {@link CngxTimelineRail}. */
+  readonly rail = input<CngxTimelineRail>('segmented');
 
   /** Accessible name for the list. Falls back to the config's `timelineRegion`. */
   readonly ariaLabel = input<string | undefined>(undefined, { alias: 'aria-label' });
