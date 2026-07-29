@@ -1,12 +1,15 @@
 import { NgTemplateOutlet } from '@angular/common';
 import {
+  afterNextRender,
   ChangeDetectionStrategy,
   Component,
   computed,
   contentChild,
   Directive,
+  ElementRef,
   inject,
   input,
+  isDevMode,
   ViewEncapsulation,
 } from '@angular/core';
 import { type CngxAsyncState } from '@cngx/core/utils';
@@ -32,6 +35,47 @@ import { injectTimelineConfig } from './timeline-config';
   host: { class: 'cngx-timeline-item__time' },
 })
 export class CngxTimelineTime {}
+
+/**
+ * Marks content that belongs on the far side of the rail from the row's
+ * body - the year label opposite a card, the timestamp across a centred
+ * rail.
+ *
+ * Per-row content, so it is a projection slot rather than a timeline-wide
+ * template: the row template already owns it, and the config cascade is
+ * for surfaces the whole timeline shares.
+ *
+ * The extra grid track only exists for rows that actually project into it
+ * (`:has(> [cngxTimelineOpposite])`), so markup that predates this slot
+ * keeps its raster to the pixel. Placement follows the row: opposite content
+ * sits across the rail from the body under `start`, `end` and `alternate`
+ * alike.
+ *
+ * ```html
+ * <cngx-timeline-item status="done">
+ *   <span cngxTimelineOpposite>2019</span>
+ *   <p>Founded</p>
+ * </cngx-timeline-item>
+ * ```
+ *
+ * **Keep the content non-interactive.** The slot projects ahead of the body,
+ * so it is read first in every layout. For a year or a short label that is
+ * the right reading order whichever side the rail is on. A link or a button
+ * would take focus before the row it belongs to, and no placement of the
+ * grid can fix that, because the paint follows `[data-row-side]` while the
+ * DOM order does not.
+ *
+ * @category common/timeline
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/timeline/timeline-item.component.ts
+ * @relatedTo CngxTimelineItem, CngxTimelineTime
+ * @since 0.1.0
+ */
+@Directive({
+  selector: '[cngxTimelineOpposite]',
+  standalone: true,
+  host: { class: 'cngx-timeline-item__opposite' },
+})
+export class CngxTimelineOpposite {}
 
 /**
  * Marks content to render inside this row's marker dot - a glyph, an icon,
@@ -67,6 +111,14 @@ export class CngxTimelineMarkerContent {}
   host: { class: 'cngx-timeline-item__content' },
 })
 export class CngxTimelineContent {}
+
+/**
+ * @internal Enough of the tabbable surface to catch the mistake this warns
+ * about. Not a general focus-order utility - `[tabindex]` matches a negative
+ * value too, which is deliberately over-eager for a dev-only check.
+ */
+const FOCUSABLE =
+  'a[href], button, input, select, textarea, summary, [tabindex], [contenteditable]';
 
 /**
  * One event on the timeline: a marker, the rail segment below it, an
@@ -139,6 +191,7 @@ export class CngxTimelineContent {}
       }
     </cngx-timeline-marker>
     <cngx-timeline-connector [status]="markerStatus()" [position]="position()" />
+    <ng-content select="[cngxTimelineOpposite]" />
     <ng-content select="[cngxTimelineTime]" />
     <div class="cngx-timeline-item__body">
       <ng-content select="[cngxTimelineContent]" />
@@ -155,6 +208,7 @@ export class CngxTimelineContent {}
 })
 export class CngxTimelineItem {
   private readonly config = injectTimelineConfig();
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
 
   /**
    * Where the event sits in the history. Drives the marker and rail
@@ -209,9 +263,7 @@ export class CngxTimelineItem {
    * rather than branching on `<ng-content>` keeps the projection static:
    * content lands in the DOM once and renders whatever it was given.
    */
-  protected readonly markerTpl = computed(() =>
-    this.ownMarker() ? null : this.hostMarkerTpl(),
-  );
+  protected readonly markerTpl = computed(() => (this.ownMarker() ? null : this.hostMarkerTpl()));
 
   /** @internal Work in flight on this row's own state. */
   protected readonly busy = computed(() => {
@@ -253,4 +305,25 @@ export class CngxTimelineItem {
   protected readonly errorText = computed(() =>
     this.failed() ? (this.config.labels?.itemErrorFallback ?? '') : '',
   );
+
+  constructor() {
+    if (isDevMode()) {
+      // afterNextRender, not an effect: this is a one-shot authoring check
+      // on projected content, and the reactive graph has no business
+      // carrying it. Runs once per row, after its content exists.
+      afterNextRender(() => {
+        const opposite = this.host.nativeElement.querySelector(':scope > [cngxTimelineOpposite]');
+        if (opposite?.querySelector(FOCUSABLE)) {
+          console.warn(
+            '[cngx-timeline-item] focusable content inside [cngxTimelineOpposite]. ' +
+              'The slot projects ahead of the row body, so under placement="end" or ' +
+              '"alternate" it takes focus before the row it belongs to while painting ' +
+              'on the far side of the rail. Keep opposite content non-interactive and ' +
+              'put controls in the body.',
+            this.host.nativeElement,
+          );
+        }
+      });
+    }
+  }
 }

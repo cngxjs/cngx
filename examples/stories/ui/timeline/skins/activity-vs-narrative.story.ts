@@ -16,7 +16,13 @@ export const STORY: DemoSpec = {
     "import { CngxTimelineItem, CngxTimelineItemTpl, CngxTimelineTime } from '@cngx/common/timeline';",
     "import { CngxTime } from '@cngx/common/display';",
   ],
-  imports: ['CngxTimeline', 'CngxTimelineItem', 'CngxTimelineItemTpl', 'CngxTimelineTime', 'CngxTime'],
+  imports: [
+    'CngxTimeline',
+    'CngxTimelineItem',
+    'CngxTimelineItemTpl',
+    'CngxTimelineTime',
+    'CngxTime',
+  ],
   setup: `protected readonly events = [
     { id: 1, at: new Date('2026-07-20T09:12:00'), summary: 'Signed up' },
     { id: 2, at: new Date('2026-07-20T16:48:00'), summary: 'Completed onboarding' },
@@ -47,10 +53,10 @@ export const STORY: DemoSpec = {
     [skin]="look()"
     groupBy="day"
   >
-    <ng-template cngxTimelineItem let-event let-last="last">
+    <ng-template [cngxTimelineItem]="events" let-event let-last="last">
       <cngx-timeline-item [position]="last ? 'last' : 'middle'" status="done">
-        <cngx-time cngxTimelineTime [date]="$any(event).at" />
-        <p style="margin:0">{{ $any(event).summary }}</p>
+        <cngx-time cngxTimelineTime [date]="event.at" />
+        <p style="margin:0">{{ event.summary }}</p>
       </cngx-timeline-item>
     </ng-template>
   </cngx-timeline>`,

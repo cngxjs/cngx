@@ -22,7 +22,7 @@ import { CngxTime } from '@cngx/common/display';
   selector: 'app-example',
   template: `
     <cngx-timeline [state]="feed" [dateAccessor]="at" [idAccessor]="byId" groupBy="day">
-      <ng-template cngxTimelineItem let-event let-last="last">
+      <ng-template [cngxTimelineItem]="feed.data()" let-event let-last="last">
         <cngx-timeline-item [position]="last ? 'last' : 'middle'" status="done">
           <cngx-time cngxTimelineTime [date]="event.at" />
           <p>{{ event.summary }}</p>
@@ -41,6 +41,12 @@ export class ExampleComponent {
 
 `[items]` takes a plain array when there is no async state to bind. `[state]`
 wins over it.
+
+Binding the same array to `[cngxTimelineItem]` is what types `let-event`.
+Angular cannot infer a structural directive's context generic from a sibling
+input on the host, so the slot pins it through an input of its own - the
+`ngForOf` mechanism. The binding is optional and never read at runtime; leave
+it off and the `let-` variables fall back to `unknown`.
 
 ## Overview
 
@@ -120,6 +126,78 @@ values:
 - `card` - each row body lifted onto its own surface.
 - `bands` - alternating group tint for long timelines.
 
+## Layout
+
+Three inputs, each defaulting to the v1 rendering, each resolving to a
+`[data-*]` attribute the row stylesheet reads. No new DOM, no ARIA change: the
+role chain is byte-identical across every combination, and DOM order stays
+chronological whatever the paint does.
+
+|Input|Values|Effect|
+|-|-|-|
+|`[placement]`|`start` (default), `end`, `alternate`|which side of the rail the body sits on|
+|`[rail]`|`segmented` (default), `continuous`|whether the rail breaks between rows|
+|`[orientation]`|`vertical` (default), `horizontal`|which axis the run reads along|
+
+```html
+<cngx-timeline [items]="milestones()" [dateAccessor]="at"
+               placement="alternate" rail="continuous" groupBy="none">
+  <ng-template [cngxTimelineItem]="milestones()" let-milestone let-last="last">
+    <cngx-timeline-item [position]="last ? 'last' : 'middle'" status="done">
+      <strong cngxTimelineOpposite>{{ milestone.year }}</strong>
+      <h3>{{ milestone.title }}</h3>
+    </cngx-timeline-item>
+  </ng-template>
+</cngx-timeline>
+```
+
+**Alternation comes from the loop index**, not from `:nth-child`, so a filtered
+or refetched list alternates by its rendered position rather than by DOM
+structure. The built-in loading placeholder derives its sides the same way, so
+the swap from skeleton to content does not reflow.
+
+**`alternate` is not supported with `mode="activity"`.** Alternating a
+scan-feed defeats the scan; those rows render `start` and dev mode warns once.
+
+**`alternate` collapses to a single side below `32rem`** of the timeline's own
+width. It is a container query, not a viewport one, so the same timeline
+behaves correctly inside a narrow panel on a wide screen. The threshold is a
+literal because a container-query condition cannot read a custom property.
+
+**`continuous` stretches each segment across the row gap**, per segment rather
+than as one line behind the run. That is what keeps a `rejected` stretch red
+and an `upcoming` tail dashed. The last segment of a band never stretches, so
+the gap between groups stays open.
+
+### Horizontal
+
+`orientation="horizontal"` transposes the whole raster: the rail becomes the
+axis, the cards stack away from it, and grouped bands become labelled columns.
+The run sits behind `overflow-x: auto`, which makes it keyboard-scrollable
+natively.
+
+Orientation **composes** with placement rather than replacing it. Under
+`horizontal`, `[placement]` selects which side of the *axis* a row sits on, so
+`alternate` puts cards above and below in turn. The organism derives a side per
+row, never a direction; the stylesheet decides which axis that side lives on.
+
+```html
+<cngx-timeline [items]="events()" [dateAccessor]="at"
+               orientation="horizontal" placement="alternate" groupBy="none">
+```
+
+A horizontal row takes `--cngx-timeline-item-inline-size` (default `12rem`)
+rather than a content-derived width, because flex would otherwise size every
+card to its longest word and the axis would read as a ragged queue.
+
+`mode="activity"` has no horizontal variant: a scan-feed is a vertical shape,
+and those rows render the narrative axis.
+
+**RTL is free.** In horizontal the run's main axis *is* the inline axis, so
+`dir="rtl"` reverses the whole timeline through the same logical properties
+that carry the block axis in vertical. Neither stylesheet contains a single
+physical property.
+
 ## Slots
 
 Eight template slots, each resolved through the family-standard three-stage
@@ -139,6 +217,53 @@ built-in markup.
 
 `*cngxTimelineMarkerTpl` applies to every row; a single row overrides it by
 projecting its own `[cngxTimelineMarkerContent]`, which wins.
+
+### Content across the rail
+
+`[cngxTimelineOpposite]` is a projection slot on the row, not a template slot:
+it carries per-row content, and the config cascade is for surfaces the whole
+timeline shares. Whatever is projected lands on the far side of the rail from
+the body.
+
+```html
+<cngx-timeline-item status="done">
+  <cngx-time cngxTimelineOpposite [date]="event.at" />
+  <p>{{ event.summary }}</p>
+</cngx-timeline-item>
+```
+
+The row grows a third grid track only when something is actually projected, so
+markup written before this slot existed keeps its geometry unchanged.
+
+Keep the content non-interactive. The slot projects ahead of the body in DOM
+order, which reads correctly for a label but would put a link or button before
+the row it belongs to.
+
+### Media inside the marker
+
+The dot clips to its circle, so a photo, an avatar or a glyph renders inside it
+with no extra markup. Sizing has two halves and they behave differently:
+
+|Content|Sized by|
+|-|-|
+|`img` / `picture`|the marker; fills it edge to edge|
+|`svg`|`--cngx-timeline-marker-glyph-size` (60% of the dot)|
+|`<cngx-avatar>` / `<cngx-icon>`|its own size token, never the marker|
+
+Bare media follows `--cngx-timeline-marker-size` on its own. A projected atom
+does not: `CngxAvatar` and `CngxIcon` pin `--cngx-avatar-size` /
+`--cngx-icon-size` on their own host, where nothing inherited from the marker
+reaches them. **Enlarging a marker that holds an atom means setting both.**
+
+```html
+<cngx-timeline-item [style.--cngx-timeline-marker-size]="'48px'">
+  <cngx-avatar cngxTimelineMarkerContent size="lg" initials="JD" />
+  <p>{{ event.summary }}</p>
+</cngx-timeline-item>
+```
+
+`--cngx-timeline-rail-inset` derives from the marker size at the row host, so
+the rail meets an enlarged dot's centre with no further wiring.
 
 ## Configuration
 

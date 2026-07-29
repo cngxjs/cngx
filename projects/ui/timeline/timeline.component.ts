@@ -1,11 +1,13 @@
 import { NgTemplateOutlet } from '@angular/common';
 import {
+  afterNextRender,
   ChangeDetectionStrategy,
   Component,
   computed,
   contentChild,
   inject,
   input,
+  isDevMode,
   output,
   ViewEncapsulation,
   type Signal,
@@ -64,6 +66,59 @@ export type CngxTimelineMode = 'narrative' | 'activity';
 export type CngxTimelineSkin = 'line' | 'card' | 'bands';
 
 /**
+ * Which side of the rail each row's body sits on.
+ *
+ * `start` (default) is v1: rail leading, body trailing. `end` mirrors every
+ * row. `alternate` centres the rail and flips the body side by row, which is
+ * the classic infographic layout - pair it with `[cngxTimelineOpposite]` so
+ * the empty side carries a year or a label.
+ *
+ * Purely visual. DOM order stays chronological under every value, the ARIA
+ * chain is identical, and alternation comes from the loop index rather than
+ * from `:nth-child`, so a filtered list alternates correctly.
+ *
+ * `alternate` is not supported with `mode="activity"`: alternating a
+ * scan-feed defeats the scan. Those rows render `start` and dev mode warns.
+ *
+ * @category ui/timeline
+ */
+export type CngxTimelinePlacement = 'start' | 'end' | 'alternate';
+
+/**
+ * Whether the rail breaks between rows or reads as one line.
+ *
+ * `segmented` (default) is v1: one segment per row, separated by the item
+ * gap. `continuous` stretches each segment across that gap so a band reads
+ * as an unbroken line.
+ *
+ * Continuity is built per segment rather than from one line behind the run,
+ * so a `rejected` stretch stays red and an `upcoming` tail stays dashed.
+ * It applies within a band; the gap between groups stays open, because a
+ * band is a semantic boundary rather than a rendering accident.
+ *
+ * @category ui/timeline
+ */
+export type CngxTimelineRail = 'segmented' | 'continuous';
+
+/**
+ * Which axis the run reads along.
+ *
+ * `vertical` (default) stacks rows down the page. `horizontal` lays them out
+ * along the inline axis behind a scroll container, with the rail as a
+ * horizontal axis and the content stacked away from it.
+ *
+ * Orientation composes with `placement` rather than replacing it: under
+ * `horizontal`, `[placement]` selects which side of the *axis* a row's body
+ * sits on, so `alternate` puts cards above and below in turn.
+ *
+ * Named `orientation` rather than `direction` because `[direction]` is
+ * already the sort order on this component.
+ *
+ * @category ui/timeline
+ */
+export type CngxTimelineOrientation = 'vertical' | 'horizontal';
+
+/**
  * Grouped, themed, RTL-safe timeline over a flat list of events.
  *
  * Data in, rows out: bind `[items]` and a `[dateAccessor]`, project one
@@ -89,10 +144,10 @@ export type CngxTimelineSkin = 'line' | 'card' | 'bands';
  *
  * ```html
  * <cngx-timeline [items]="events()" [dateAccessor]="at" groupBy="day">
- *   <ng-template cngxTimelineItem let-event let-last="last">
+ *   <ng-template [cngxTimelineItem]="events()" let-event let-last="last">
  *     <cngx-timeline-item [position]="last ? 'last' : 'middle'">
- *       <cngx-time cngxTimelineTime [date]="$any(event).at" />
- *       <p>{{ $any(event).summary }}</p>
+ *       <cngx-time cngxTimelineTime [date]="event.at" />
+ *       <p>{{ event.summary }}</p>
  *     </cngx-timeline-item>
  *   </ng-template>
  * </cngx-timeline>
@@ -132,6 +187,9 @@ export type CngxTimelineSkin = 'line' | 'card' | 'bands';
     class: 'cngx-timeline',
     '[attr.data-mode]': 'mode()',
     '[attr.data-skin]': 'skin()',
+    '[attr.data-placement]': 'placement()',
+    '[attr.data-rail]': 'rail()',
+    '[attr.data-orientation]': 'orientation()',
     '[attr.data-ungrouped]': 'ungrouped() ? "" : null',
     // Aliased inputs leave the raw attribute behind, naming the role-less host.
     '[attr.aria-label]': 'null',
@@ -215,6 +273,15 @@ export class CngxTimeline<T = unknown> implements CngxTimelineMarkerHost {
 
   /** Visual skin. See {@link CngxTimelineSkin}. */
   readonly skin = input<CngxTimelineSkin>('line');
+
+  /** Which side of the rail rows sit on. See {@link CngxTimelinePlacement}. */
+  readonly placement = input<CngxTimelinePlacement>('start');
+
+  /** Whether the rail breaks between rows. See {@link CngxTimelineRail}. */
+  readonly rail = input<CngxTimelineRail>('segmented');
+
+  /** Which axis the run reads along. See {@link CngxTimelineOrientation}. */
+  readonly orientation = input<CngxTimelineOrientation>('vertical');
 
   /** Accessible name for the list. Falls back to the config's `timelineRegion`. */
   readonly ariaLabel = input<string | undefined>(undefined, { alias: 'aria-label' });
@@ -340,6 +407,46 @@ export class CngxTimeline<T = unknown> implements CngxTimelineMarkerHost {
     };
   }
 
+  /**
+   * @internal Which side this row's body sits on. Derived from the loop
+   * index, never from `:nth-child`: a filtered or refetched list has to
+   * alternate by its own position in the rendered run, and CSS structural
+   * parity would count DOM children instead. The row stylesheet reads the
+   * resulting `[data-row-side]` off an ancestor, exactly like `[data-mode]`.
+   *
+   * The built-in skeleton placeholder calls this with the index its own
+   * container hands it, so the loading rows land on the same sides the
+   * content will - which is what keeps the swap from reflowing.
+   */
+  protected rowSide(index: number): 'start' | 'end' {
+    const placement = this.placement();
+    if (placement !== 'alternate') {
+      return placement;
+    }
+    // Alternating a scan-feed defeats the scan; the warning below says so.
+    if (this.mode() === 'activity') {
+      return 'start';
+    }
+    return index % 2 === 0 ? 'start' : 'end';
+  }
+
   /** @internal Track by consumer identity when given, else by reference. */
   protected trackItem = (index: number, item: T): unknown => this.idAccessor()?.(item) ?? item;
+
+  constructor() {
+    if (isDevMode()) {
+      // afterNextRender, not an effect: this is a one-shot authoring check,
+      // and a dead node in the reactive graph is worse than a missed
+      // re-check after a runtime mode swap nobody does.
+      afterNextRender(() => {
+        if (this.mode() === 'activity' && this.placement() === 'alternate') {
+          console.warn(
+            '[cngx-timeline] placement="alternate" is ignored in mode="activity" - ' +
+              'alternating a scan-feed defeats the scan, so every row renders at the ' +
+              'start side. Use mode="narrative" to alternate.',
+          );
+        }
+      });
+    }
+  }
 }

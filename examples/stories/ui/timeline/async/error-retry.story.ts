@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'A failed first load replaces the body. A failed refresh keeps the rows on screen and adds the error beneath them.',
   description:
-    'Both branches come from the same lookup: error on first load resolves to the error view, error after a prior success resolves to content+error. That second case is the one that matters in practice - dropping a timeline the user was reading because a background poll failed is worse than the failure. Two override tiers are shown side by side. *cngxTimelineRetryButton swaps only the control and leaves the copy on the config cascade, which is what an app with its own button component wants. *cngxTimelineError replaces the whole surface, for when the message and the control have to be written together - it receives the raw error alongside the same retry callback. Either way the callback is the organism\'s, so (retry) fires exactly once per press.',
+    "Both branches come from the same lookup: error on first load resolves to the error view, error after a prior success resolves to content+error. That second case is the one that matters in practice - dropping a timeline the user was reading because a background poll failed is worse than the failure. Two override tiers are shown side by side. *cngxTimelineRetryButton swaps only the control and leaves the copy on the config cascade, which is what an app with its own button component wants. *cngxTimelineError replaces the whole surface, for when the message and the control have to be written together - it receives the raw error alongside the same retry callback. Either way the callback is the organism's, so (retry) fires exactly once per press.",
   level: 'organism',
   audience: ['dev', 'a11y'],
   artifact: 'standalone',
@@ -30,6 +30,12 @@ export const STORY: DemoSpec = {
 
   protected readonly at = (event: { at: Date }): Date => event.at;
   protected readonly byId = (event: { id: number }): number => event.id;
+
+  // The error slot hands out \`unknown\` - anything can be thrown - and a
+  // template cannot narrow it. Narrowing in the component is the fix; a
+  // cast in the template would only hide the case where it is not an Error.
+  protected readonly messageOf = (error: unknown): string =>
+    error instanceof Error ? error.message : 'Unknown error';
 
   protected onRetry(): void {
     this.feed.set('refreshing');
@@ -80,15 +86,15 @@ export const STORY: DemoSpec = {
       </ng-template>
     } @else {
       <ng-template cngxTimelineError let-error let-retry="retry">
-        <p style="margin:0 0 8px">We could not reach the webhook log: {{ $any(error).message }}</p>
+        <p style="margin:0 0 8px">We could not reach the webhook log: {{ messageOf(error) }}</p>
         <button type="button" class="chip" (click)="retry()">Reconnect</button>
       </ng-template>
     }
 
-    <ng-template cngxTimelineItem let-event let-last="last">
+    <ng-template [cngxTimelineItem]="feed.data()" let-event let-last="last">
       <cngx-timeline-item [position]="last ? 'last' : 'middle'" status="done">
-        <cngx-time cngxTimelineTime [date]="$any(event).at" />
-        <p style="margin:0">{{ $any(event).summary }}</p>
+        <cngx-time cngxTimelineTime [date]="event.at" />
+        <p style="margin:0">{{ event.summary }}</p>
       </cngx-timeline-item>
     </ng-template>
   </cngx-timeline>`,

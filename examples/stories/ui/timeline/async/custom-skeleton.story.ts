@@ -61,11 +61,11 @@ export const STORY: DemoSpec = {
       </div>
     </ng-template>
 
-    <ng-template cngxTimelineItem let-event let-last="last">
+    <ng-template [cngxTimelineItem]="feed.data()" let-event let-last="last">
       <cngx-timeline-item [position]="last ? 'last' : 'middle'" status="done">
-        <cngx-time cngxTimelineTime [date]="$any(event).at" />
-        <p style="margin:0 0 4px;font-weight:600">{{ $any(event).who }}</p>
-        <p style="margin:0">{{ $any(event).note }}</p>
+        <cngx-time cngxTimelineTime [date]="event.at" />
+        <p style="margin:0 0 4px;font-weight:600">{{ event.who }}</p>
+        <p style="margin:0">{{ event.note }}</p>
       </cngx-timeline-item>
     </ng-template>
   </cngx-timeline>`,

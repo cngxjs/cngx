@@ -2,12 +2,13 @@ import { Component, computed, forwardRef, signal, TemplateRef, viewChild } from 
 import { TestBed } from '@angular/core/testing';
 import { createManualState } from '@cngx/common/data';
 import type { AsyncStatus } from '@cngx/core/utils';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CNGX_TIMELINE_MARKER_HOST } from './marker-host.token';
 import {
   CngxTimelineItem,
   CngxTimelineMarkerContent,
+  CngxTimelineOpposite,
   CngxTimelineTime,
 } from './timeline-item.component';
 import { provideTimelineConfig, withTimelineLabels } from './timeline-config';
@@ -279,6 +280,146 @@ describe('CngxTimelineItem', () => {
     });
   });
 
+  /**
+   * Structure only. The raster the slot unlocks is verified in
+   * `e2e/timeline-layout.spec.ts`: the row grid lives inside `@layer` and
+   * `@scope`, neither of which jsdom's CSSOM parses, so
+   * `getComputedStyle(row).gridTemplateColumns` is `''` here for the gated
+   * and the ungated case alike - an assertion on it would pass whatever
+   * the stylesheet says.
+   */
+  describe('opposite slot', () => {
+    it('projects [cngxTimelineOpposite] into its own element', () => {
+      TestBed.resetTestingModule();
+
+      @Component({
+        selector: 'cngx-timeline-opposite-host',
+        standalone: true,
+        imports: [CngxTimelineItem, CngxTimelineOpposite],
+        template: `
+          <cngx-timeline-item status="done">
+            <span cngxTimelineOpposite>2019</span>
+            <p>Founded</p>
+          </cngx-timeline-item>
+        `,
+      })
+      class OppositeHost {}
+
+      TestBed.configureTestingModule({ imports: [OppositeHost] });
+      const fixture = TestBed.createComponent(OppositeHost);
+      fixture.detectChanges();
+      const item = (fixture.nativeElement as HTMLElement).querySelector('cngx-timeline-item');
+
+      expect(item?.querySelector('.cngx-timeline-item__opposite')?.textContent).toContain('2019');
+    });
+
+    it('renders no opposite element for a row that projects none', () => {
+      const { item } = mount();
+
+      expect(item.querySelector('.cngx-timeline-item__opposite')).toBeNull();
+    });
+
+    /**
+     * The slot projects ahead of the body, so its reading order is fixed
+     * while its paint follows `[data-row-side]`. Under `end` / `alternate`
+     * a focusable child would take focus before the row it belongs to, and
+     * no grid placement can fix that - so the constraint gets a dev signal
+     * rather than only a line in the README.
+     */
+    describe('non-interactive contract', () => {
+      function mountOpposite(content: 'link' | 'label'): void {
+        TestBed.resetTestingModule();
+
+        @Component({
+          selector: 'cngx-timeline-opposite-focus-host',
+          standalone: true,
+          imports: [CngxTimelineItem, CngxTimelineOpposite],
+          template: `
+            <cngx-timeline-item>
+              <span cngxTimelineOpposite>
+                @if (isLink) {
+                  <a href="#somewhere">2019</a>
+                } @else {
+                  2019
+                }
+              </span>
+              <p>Founded</p>
+            </cngx-timeline-item>
+          `,
+        })
+        class OppositeFocusHost {
+          readonly isLink = content === 'link';
+        }
+
+        TestBed.configureTestingModule({ imports: [OppositeFocusHost] });
+        const fixture = TestBed.createComponent(OppositeFocusHost);
+        fixture.detectChanges();
+        TestBed.tick();
+      }
+
+      function warnings(spy: { mock: { calls: readonly unknown[][] } }): number {
+        return spy.mock.calls.filter((call) =>
+          String(call[0]).includes('focusable content inside [cngxTimelineOpposite]'),
+        ).length;
+      }
+
+      it('warns once when the slot holds something focusable', () => {
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+        mountOpposite('link');
+
+        expect(warnings(warn)).toBe(1);
+        warn.mockRestore();
+      });
+
+      it('stays silent for a plain label, which is what the slot is for', () => {
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+        mountOpposite('label');
+
+        expect(warnings(warn)).toBe(0);
+        warn.mockRestore();
+      });
+
+      it('stays silent for a row that projects no opposite content at all', () => {
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+        mount();
+        TestBed.tick();
+
+        expect(warnings(warn)).toBe(0);
+        warn.mockRestore();
+      });
+    });
+
+    it('keeps opposite content out of the body, so the body raster is unchanged', () => {
+      TestBed.resetTestingModule();
+
+      @Component({
+        selector: 'cngx-timeline-opposite-body-host',
+        standalone: true,
+        imports: [CngxTimelineItem, CngxTimelineOpposite],
+        template: `
+          <cngx-timeline-item>
+            <span cngxTimelineOpposite>2019</span>
+            <p class="body">Founded</p>
+          </cngx-timeline-item>
+        `,
+      })
+      class OppositeBodyHost {}
+
+      TestBed.configureTestingModule({ imports: [OppositeBodyHost] });
+      const fixture = TestBed.createComponent(OppositeBodyHost);
+      fixture.detectChanges();
+      const body = (fixture.nativeElement as HTMLElement).querySelector(
+        '.cngx-timeline-item__body',
+      );
+
+      expect(body?.querySelector('.body')).not.toBeNull();
+      expect(body?.querySelector('.cngx-timeline-item__opposite')).toBeNull();
+    });
+  });
+
   describe('per-item async state', () => {
     it('leaves aria-busy off with no state bound', () => {
       const { item } = mount();
@@ -423,7 +564,9 @@ describe('CngxTimelineItem', () => {
         detect();
 
         expect(item.hasAttribute('data-failed')).toBe(false);
-        expect(item.querySelector('cngx-timeline-marker')?.getAttribute('data-status')).toBe('done');
+        expect(item.querySelector('cngx-timeline-marker')?.getAttribute('data-status')).toBe(
+          'done',
+        );
       });
     });
   });

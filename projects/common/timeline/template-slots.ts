@@ -1,4 +1,4 @@
-import { Directive, inject, TemplateRef } from '@angular/core';
+import { Directive, inject, input, TemplateRef } from '@angular/core';
 import type { EmptyReason } from '@cngx/common/card';
 
 import type { TimelineGroup } from './grouping';
@@ -29,9 +29,12 @@ export interface CngxTimelineItemContext<T> {
  * The row template. The one slot with no built-in fallback: only the
  * consumer knows what an event of theirs looks like.
  *
+ * Bind the same array the timeline gets and the `let-` variables come out
+ * typed - `[cngxTimelineItem]` exists to pin `T`, nothing more:
+ *
  * ```html
- * <cngx-timeline [state]="events" [dateAccessor]="at">
- *   <ng-template cngxTimelineItem let-event let-last="last">
+ * <cngx-timeline [items]="events()" [dateAccessor]="at">
+ *   <ng-template [cngxTimelineItem]="events()" let-event let-last="last">
  *     <cngx-timeline-item [position]="last ? 'last' : 'middle'">
  *       <cngx-time cngxTimelineTime [date]="event.at" />
  *       <p>{{ event.summary }}</p>
@@ -55,6 +58,30 @@ export interface CngxTimelineItemContext<T> {
   exportAs: 'cngxTimelineItem',
 })
 export class CngxTimelineItemTpl<T = unknown> {
+  /**
+   * Type carrier, never read at runtime. Angular cannot infer a structural
+   * directive's context generic from a sibling input on the host component,
+   * so `T` has to be pinned on the directive itself; binding the same array
+   * the timeline renders does that, and `ngTemplateContextGuard` below then
+   * types every `let-` variable. This is `NgForOf`'s `ngForOf` mechanism,
+   * not a cngx invention.
+   *
+   * Optional, and tolerant of the bare `cngxTimelineItem` attribute every
+   * v1 consumer writes: an unbound attribute binds the empty string, which
+   * `strictTemplates` would otherwise reject against an array type. The
+   * empty string coerces to `undefined` and `T` falls back to `unknown` -
+   * the Bridge-Input shape the library uses wherever an attribute doubles
+   * as an opt-in.
+   *
+   * Nothing enforces that the array bound here is the array bound to
+   * `[items]`; a mismatch only mistypes the `let-` variables, which the
+   * template type-checker then rejects at the use site.
+   */
+  readonly cngxTimelineItem = input<readonly T[] | undefined, readonly T[] | '' | undefined>(
+    undefined,
+    { transform: (value) => (typeof value === 'string' ? undefined : value) },
+  );
+
   readonly templateRef = inject<TemplateRef<CngxTimelineItemContext<T>>>(TemplateRef);
 
   static ngTemplateContextGuard<T>(
@@ -84,7 +111,7 @@ export interface CngxTimelineDateHeaderContext<T> {
  * points at, so a header that renders nothing leaves the group unnamed.
  *
  * ```html
- * <ng-template cngxTimelineDateHeader let-group>
+ * <ng-template [cngxTimelineDateHeader]="events()" let-group>
  *   <h3>{{ format(group.start) }} ({{ group.items.length }})</h3>
  * </ng-template>
  * ```
@@ -101,6 +128,16 @@ export interface CngxTimelineDateHeaderContext<T> {
   exportAs: 'cngxTimelineDateHeader',
 })
 export class CngxTimelineDateHeader<T = unknown> {
+  /**
+   * Type carrier for the group's item type, never read at runtime. Bind the
+   * same array the timeline gets and `let-group` types as
+   * `TimelineGroup<T>`. See {@link CngxTimelineItemTpl.cngxTimelineItem}.
+   */
+  readonly cngxTimelineDateHeader = input<readonly T[] | undefined, readonly T[] | '' | undefined>(
+    undefined,
+    { transform: (value) => (typeof value === 'string' ? undefined : value) },
+  );
+
   readonly templateRef = inject<TemplateRef<CngxTimelineDateHeaderContext<T>>>(TemplateRef);
 
   static ngTemplateContextGuard<T>(
@@ -148,6 +185,16 @@ export interface CngxTimelineMarkerContext<T> {
   exportAs: 'cngxTimelineMarkerTpl',
 })
 export class CngxTimelineMarkerTpl<T = unknown> {
+  /**
+   * Type carrier for the item type, never read at runtime. Bind the same
+   * array the timeline gets and `let-event` types as `T`. See
+   * {@link CngxTimelineItemTpl.cngxTimelineItem}.
+   */
+  readonly cngxTimelineMarkerTpl = input<readonly T[] | undefined, readonly T[] | '' | undefined>(
+    undefined,
+    { transform: (value) => (typeof value === 'string' ? undefined : value) },
+  );
+
   readonly templateRef = inject<TemplateRef<CngxTimelineMarkerContext<T>>>(TemplateRef);
 
   static ngTemplateContextGuard<T>(

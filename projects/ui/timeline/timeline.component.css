@@ -33,10 +33,24 @@
  * - `card` - each row body lifted onto its own surface
  * - `bands` - alternating group tint for long timelines
  *
- * **Modes**
+ * **Modes and placement**
  *
- * `[data-mode]` is read by `timeline-item.component.css`, not here - the
- * raster belongs to the row that draws it.
+ * `[data-mode]` and `[data-placement]` are read by
+ * `timeline-item.component.css`, not here - the raster belongs to the row
+ * that draws it. The organism only sets the attributes and, per row wrapper,
+ * `[data-row-side]` derived from the loop index.
+ *
+ * **The `cngx-timeline` container name is a cross-library contract**
+ *
+ * `:scope` below declares `container-type: inline-size` and
+ * `container-name: cngx-timeline`. `@cngx/common`'s
+ * `timeline-item.component.css` queries that exact name to collapse
+ * `placement="alternate"` back to a single side below `32rem`. CSS offers
+ * nothing tighter: `container-name` cannot be a custom property, and an
+ * unnamed `@container` would match the nearest container of any name, which
+ * is worse. So the name is API, not an implementation detail - renaming it
+ * in an ejected skin silently disables the collapse. `e2e/timeline-layout.spec.ts`
+ * asserts the degrade fires, so a rename breaks a test rather than a layout.
  */
 
 @layer cngx.tokens {
@@ -107,6 +121,12 @@
       --cngx-timeline-row-gap: var(--cngx-space-xs, 4px);
 
       display: block;
+      /* Names the query container the row stylesheet collapses `alternate`
+         against. Safe here: the organism is display: block and
+         self-contained, so an inline-size container adds no layout of its
+         own. See the contract note in the @overview - the name is API. */
+      container-type: inline-size;
+      container-name: cngx-timeline;
       color: var(--cngx-timeline-text-color, oklch(0.2 0.01 250));
     }
 
@@ -203,6 +223,118 @@
       margin-block-start: var(--cngx-timeline-item-gap, 16px);
     }
 
+    /* The placement mirror. Without it the guarantee three comments up is
+       false under placement="end" / "alternate": placeholders would draw at
+       the start side and every row would jump on resolve. The side comes
+       from the same rowSide() the content rows use, fed by the index the
+       skeleton container passes into the placeholder template - so this is
+       still zero structural parity in CSS. */
+    .cngx-timeline__skeleton-row[data-row-side='end'] {
+      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-areas:
+        'line marker'
+        'body rail';
+    }
+
+    /* alternate centres the rail on symmetric tracks whether or not a row
+       carries opposite content, so the placeholder has to do the same. Track
+       structure is what must match; the area names differ because the
+       placeholder has a `line` where a row has its `time`. */
+    :scope[data-placement='alternate']:not([data-mode='activity']) .cngx-timeline__skeleton-row {
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      grid-template-areas:
+        'opposite marker line'
+        'opposite rail body';
+    }
+
+    :scope[data-placement='alternate']:not([data-mode='activity'])
+      .cngx-timeline__skeleton-row[data-row-side='end'] {
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      grid-template-areas:
+        'line marker opposite'
+        'body rail opposite';
+    }
+
+    /* ───────────────────────────────────────────────────────────────
+       Horizontal: the bands become inline columns behind a scroll
+       container, and the rows inside a band become an inline run. The row
+       raster itself is not restated here - that belongs to the row, and
+       `timeline-item.component.css` already carries both axes.
+
+       `overflow-x: auto` makes the run keyboard-scrollable natively, which
+       is why no roving tabindex appears with it. The date header stays at
+       the block-start of its band, so a grouped horizontal run reads as
+       labelled columns.
+       ─────────────────────────────────────────────────────────────── */
+    :scope[data-orientation='horizontal'] {
+      overflow-x: auto;
+    }
+
+    :scope[data-orientation='horizontal'] .cngx-timeline__list {
+      flex-direction: row;
+      align-items: start;
+    }
+
+    /* Bands keep their own width instead of sharing the container's, so a
+       long run scrolls rather than crushing every column. */
+    :scope[data-orientation='horizontal'] .cngx-timeline__group {
+      flex: none;
+    }
+
+    /* The band stays a column - header above, rows below - while the rows
+       inside it become the inline run. */
+    :scope[data-orientation='horizontal'] .cngx-timeline__rows {
+      flex-direction: row;
+      align-items: stretch;
+    }
+
+    /* The placeholder transposes with the content it stands in for, or the
+       swap would reflow on exactly the axis this branch exists to reserve. */
+    :scope[data-orientation='horizontal'] .cngx-timeline__skeleton {
+      display: flex;
+      flex-direction: row;
+      gap: var(--cngx-timeline-item-gap, 16px);
+    }
+
+    :scope[data-orientation='horizontal'] .cngx-timeline__skeleton-row {
+      grid-template-columns: auto minmax(0, 1fr);
+      grid-template-rows: auto auto minmax(0, 1fr);
+      grid-template-areas:
+        'marker rail'
+        'line line'
+        'body body';
+      inline-size: 12rem;
+    }
+
+    /* The inline run carries its own spacing through the flex gap above, so
+       the vertical stack margin would double it. */
+    :scope[data-orientation='horizontal']
+      .cngx-timeline__skeleton-row
+      + .cngx-timeline__skeleton-row {
+      margin-block-start: 0;
+    }
+
+    :scope[data-orientation='horizontal'] .cngx-timeline__skeleton-rail {
+      inline-size: 100%;
+      block-size: var(--cngx-timeline-connector-width, 2px);
+      align-self: center;
+      justify-self: stretch;
+    }
+
+    /* Same 32rem degrade the row raster takes, for the same reason and
+       against the same container. The organism names the container, so this
+       block queries its own :scope. */
+    @container cngx-timeline (max-inline-size: 32rem) {
+      :scope[data-placement='alternate']:not([data-mode='activity']) .cngx-timeline__skeleton-row,
+      :scope[data-placement='alternate']:not([data-mode='activity'])
+        .cngx-timeline__skeleton-row[data-row-side='end'] {
+        grid-template-columns: auto minmax(0, 1fr);
+        grid-template-areas:
+          'marker line'
+          'rail body';
+      }
+    }
+
     .cngx-timeline__skeleton-marker,
     .cngx-timeline__skeleton-rail {
       background: color-mix(in oklch, currentColor 14%, transparent);
@@ -248,7 +380,8 @@
      so the rail still runs edge to edge. */
   .cngx-timeline[data-skin='card'] .cngx-timeline-item__body {
     background: var(--cngx-timeline-surface, oklch(1 0 0));
-    border: var(--cngx-timeline-connector-width, 2px) solid var(--cngx-timeline-connector-color, oklch(0.88 0.005 250));
+    border: var(--cngx-timeline-connector-width, 2px) solid
+      var(--cngx-timeline-connector-color, oklch(0.88 0.005 250));
     border-radius: var(--cngx-radius-md, 8px);
     padding: var(--cngx-timeline-content-padding, 4px);
   }

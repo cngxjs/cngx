@@ -83,6 +83,39 @@
   }
 
   /**
+   * Size of a bare `svg` glyph projected into the marker, as a share of the
+   * marker box. A percentage rather than a length so it tracks
+   * `--cngx-timeline-marker-size` on its own: `em` would resolve against the
+   * marker's pinned `font-size`, which is not the dot's size.
+   *
+   * Photos are not covered by this - an `img` or `picture` fills the dot
+   * edge to edge, because a cropped portrait wants no inset and a glyph does.
+   * @group Layout
+   */
+  @property --cngx-timeline-marker-glyph-size {
+    syntax: '<percentage>';
+    inherits: true;
+    initial-value: 60%;
+  }
+
+  /**
+   * Width of one row on the horizontal axis. Ignored in the vertical
+   * default, where a row takes the container's width.
+   *
+   * An affordance, not compactness, so it is deliberately outside the
+   * density scale. It exists because a horizontal run has no sensible
+   * content-derived width: flex would size every card to its longest word
+   * and the axis would read as a ragged queue. Override per instance for
+   * denser or wider cards.
+   * @group Layout
+   */
+  @property --cngx-timeline-item-inline-size {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 12rem;
+  }
+
+  /**
    * Thickness of the connector rail.
    * @group Layout
    */

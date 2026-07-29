@@ -398,10 +398,10 @@ describe('CngxTimeline', () => {
         imports: [CngxTimeline, CngxTimelineItemTpl, CngxTimelineMarkerTpl, CngxTimelineItem],
         template: `
           <cngx-timeline [items]="items" [dateAccessor]="at" groupBy="none">
-            <ng-template cngxTimelineMarkerTpl let-event let-status="status">
-              <span class="glyph">{{ $any(event).id }}/{{ status }}</span>
+            <ng-template [cngxTimelineMarkerTpl]="items" let-event let-status="status">
+              <span class="glyph">{{ event.id }}/{{ status }}</span>
             </ng-template>
-            <ng-template cngxTimelineItem let-event>
+            <ng-template [cngxTimelineItem]="items" let-event>
               <cngx-timeline-item status="done" [item]="event" />
             </ng-template>
           </cngx-timeline>

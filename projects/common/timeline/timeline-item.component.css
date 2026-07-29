@@ -22,6 +22,63 @@
  * rail    body  time
  * ```
  *
+ * **Placement**
+ *
+ * `[data-row-side]` says which side of the rail this row's body sits on -
+ * `start` is v1 (rail leading, body trailing), `end` mirrors both tracks
+ * and areas. The organism derives it per row from the loop index; a
+ * standalone row opts in by putting the attribute on any wrapper, exactly
+ * like `[data-mode]`.
+ *
+ * `[data-placement='alternate']` centres the rail on symmetric `1fr auto
+ * 1fr` tracks so the empty side can carry opposite content, and collapses
+ * back to the `start` raster below `32rem` of the `cngx-timeline`
+ * container. The query lives here, next to the raster it overrides; the
+ * organism only names the container.
+ *
+ * Combinations are selected as `:is([data-x] *)` / `:not([data-x] *)` on
+ * the row rather than as an ancestor chain: `[data-mode]` and
+ * `[data-placement]` are both organism *host* attributes, so
+ * `[data-mode='...'] [data-placement='...']` matches nothing, while the row
+ * is a descendant of the element carrying either one no matter how a
+ * consumer distributes them. Every raster below is therefore settled by
+ * specificity, not by source order.
+ *
+ * **Orientation**
+ *
+ * `[data-orientation='horizontal']` transposes every raster below: the
+ * marker and its rail share the axis row, the content stacks away from it,
+ * and `[data-row-side]` selects which side of the axis rather than which
+ * side of the column. The two axes are separate copies of the same ladder
+ * rather than steps in one, so `horizontal` combines with `alternate`
+ * instead of cancelling it.
+ *
+ * `activity` has no horizontal variant: a scan-feed is a vertical shape.
+ * Those rows render the narrative axis.
+ *
+ * **Rail style**
+ *
+ * `[data-rail='continuous']` stretches every non-last segment across the
+ * inter-row gap so the run reads as one line. Per segment rather than one
+ * line behind the whole band, because each segment carries its own status
+ * colour and a single line would flatten that channel.
+ *
+ * **Opposite content**
+ *
+ * `[cngxTimelineOpposite]` gets a third track, and only rows that project
+ * into it do: an unconditional `auto` track would collapse to zero width
+ * but still take a `column-gap`, shifting every row that predates the
+ * slot.
+ *
+ * The gate is `:has(> [cngxTimelineOpposite])`, and both halves matter.
+ * The **attribute**, not the directive's host class, so it agrees with
+ * `<ng-content select="[cngxTimelineOpposite]">` by construction - a
+ * consumer who projects the element without importing the directive still
+ * gets the track. The **child** combinator, because projection lands the
+ * node as a direct child of this host, and only a direct child can be a
+ * grid item at all: a descendant match would hand a row a track that
+ * nothing can occupy.
+ *
  * **Density**
  *
  * The three spacing tokens are registered and SET here, in the one file
@@ -117,6 +174,20 @@
       line-height: 1.4;
     }
 
+    /* Across the rail from the body. Muted meta typography, reusing the
+       timestamp's tokens rather than minting a pair of its own - the two
+       carry the same weight in the raster. */
+    .cngx-timeline-item__opposite {
+      grid-area: opposite;
+      align-self: start;
+      color: var(--cngx-timeline-muted-color, oklch(0.5 0.01 250));
+      font-size: var(--cngx-timeline-meta-size, 0.8125rem);
+      line-height: 1.4;
+      /* It leads the rail in every start-side raster, so it reads best
+         hugging it. Mirrored below wherever the body leads instead. */
+      text-align: end;
+    }
+
     .cngx-timeline-item__body {
       grid-area: body;
       padding: var(--cngx-timeline-content-padding, 4px);
@@ -151,9 +222,48 @@
     }
   }
 
-  /* activity raster - opt-in through the organism's [data-mode]. Higher
+  /* ─────────────────────────────────────────────────────────────────────
+     Cascade order, most general first, and settled by specificity rather
+     than by source order - the row now reads five attributes and several of
+     them combine.
+
+     Ancestor conditions are written as `:is([data-x] *)` / `:not([data-x] *)`
+     on the row itself, not as a descendant chain. The row is a descendant of
+     whatever element carries the attribute either way, so the idiom matches
+     in every arrangement; `[data-a] [data-b] .row` silently matches nothing
+     when a and b sit on the *same* ancestor, which is exactly what the
+     organism does with `[data-mode]` and `[data-placement]`.
+
+     Orientation is not a step in that ladder, it is a second copy of it.
+     Every vertical rule carries `:not([data-orientation='horizontal'] *)`
+     and every horizontal rule carries `:is(...)`, so the two axes never
+     compete and `horizontal` combines with `alternate` instead of
+     out-ranking it. That costs a repeated matrix, which is the honest price
+     of a second axis; the alternative - letting orientation sit late in one
+     ladder - would make `orientation="horizontal"` silently cancel
+     `placement="alternate"`.
+
+     Vertical ladder (each rule also carries the `:not(horizontal *)` guard):
+     (1) :scope base                   (0,1,0), shared by both axes
+     (2) [data-mode='activity']        (0,3,0)
+     (3) [data-row-side='end']         (0,4,0), split by mode
+     (4) [data-placement='alternate']  (0,4,0) start / (0,5,0) end
+     (5) :has() opposite track         (0,4,0)..(0,6,0), excluded under (4)
+
+     Horizontal ladder (same shape, one level lower - nothing competes):
+     (H1) base transposition           (0,2,0)
+     (H3) [data-row-side='end']        (0,3,0)
+     (H4) [data-placement='alternate'] (0,3,0) start / (0,4,0) end
+     (H5) :has() opposite track        (0,4,0) / (0,5,0)
+
+     `activity` has no horizontal variant on purpose: a scan-feed is a
+     vertical shape. Those rows fall through to (H1) and render the
+     narrative axis.
+     ───────────────────────────────────────────────────────────────────── */
+
+  /* (2) activity raster - opt-in through the organism's [data-mode]. Higher
      specificity than the :scope default above, so it simply wins. */
-  [data-mode='activity'] .cngx-timeline-item {
+  [data-mode='activity'] .cngx-timeline-item:not([data-orientation='horizontal'] *) {
     grid-template-columns: auto minmax(0, 1fr) auto;
     grid-template-areas:
       'marker body time'
@@ -164,5 +274,310 @@
     align-self: start;
     text-align: end;
     white-space: nowrap;
+  }
+
+  /* (3) placement per row: `end` mirrors tracks and areas so the rail trails
+     the body. One rule per mode, mutually exclusive, both a level above (2). */
+  [data-row-side='end']
+    .cngx-timeline-item:not([data-mode='activity'] *):not([data-orientation='horizontal'] *) {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'time marker'
+      'body rail';
+  }
+
+  [data-row-side='end']
+    .cngx-timeline-item:is([data-mode='activity'] *):not([data-orientation='horizontal'] *) {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      'time body marker'
+      'time body rail';
+  }
+
+  /* The timestamp swaps sides with the raster, so its alignment follows. */
+  [data-row-side='end']
+    .cngx-timeline-item:not([data-mode='activity'] *)
+    .cngx-timeline-item__time {
+    text-align: end;
+  }
+
+  [data-row-side='end'] .cngx-timeline-item:is([data-mode='activity'] *) .cngx-timeline-item__time {
+    text-align: start;
+  }
+
+  [data-row-side='end'] .cngx-timeline-item .cngx-timeline-item__opposite {
+    text-align: start;
+  }
+
+  /* (4) alternate: one centred rail, the body on the side [data-row-side]
+     names and the opposite track on the other. Symmetric `1fr auto 1fr`
+     rather than the content-sized tracks above, because the rail has to land
+     on the same axis for every row regardless of what each one holds.
+
+     The body spans both rows here, unlike every raster above it. The whole
+     point of the opposite slot under alternate is that a year and its card
+     pair across the rail, and they only read as a pair on a shared top
+     edge - inheriting narrative's `time` row would drop the card a marker
+     height below its own label. The timestamp therefore moves under the
+     opposite content, which is where the meta column already is in this
+     layout.
+
+     Excluded under `activity` in the selector rather than left to source
+     order: alternating a scan-feed defeats the scan, so those rows render
+     `start` and the organism warns. */
+  .cngx-timeline-item:is([data-placement='alternate'] *):not([data-mode='activity'] *):not(
+      [data-orientation='horizontal'] *
+    ) {
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    grid-template-areas:
+      'opposite marker body'
+      'time rail body';
+  }
+
+  [data-row-side='end']
+    .cngx-timeline-item:is([data-placement='alternate'] *):not([data-mode='activity'] *):not(
+      [data-orientation='horizontal'] *
+    ) {
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    grid-template-areas:
+      'body marker opposite'
+      'body rail time';
+  }
+
+  /* Narrow containers cannot carry two columns of prose either side of a
+     rail, so alternation degrades to the `start` raster. The query sits with
+     the geometry it overrides, not in the organism: the organism names the
+     container, the row owns its grid. Inert until something above declares
+     `container-name: cngx-timeline`, which is exactly how a standalone row
+     should behave.
+
+     32rem is a literal by necessity - a container-query condition cannot read
+     a custom property, so there is no token to reach for. The value is where
+     two *cards* stop fitting either side of the rail, not two columns of
+     prose: this pattern carries a year and a line or two, and the reference
+     infographic it exists for is routinely drawn at widths a paragraph
+     layout would refuse. An earlier 40rem collapsed at exactly the 640px
+     reading width the library's own demo shell uses, which made the feature
+     invisible in the one place it is shown.
+
+     These restate the four rules above at equal specificity and win on source
+     order, which is what a query-guarded override is for; nothing outside the
+     query relies on ordering. */
+  @container cngx-timeline (max-inline-size: 32rem) {
+    .cngx-timeline-item:is([data-placement='alternate'] *):not([data-mode='activity'] *):not(
+        [data-orientation='horizontal'] *
+      ),
+    [data-row-side='end']
+      .cngx-timeline-item:is([data-placement='alternate'] *):not([data-mode='activity'] *):not(
+        [data-orientation='horizontal'] *
+      ) {
+      grid-template-columns: auto minmax(0, 1fr);
+      grid-template-areas:
+        'marker time'
+        'rail body';
+    }
+
+    .cngx-timeline-item:is([data-placement='alternate'] *):not([data-mode='activity'] *):not(
+        [data-orientation='horizontal'] *
+      ):has(> [cngxTimelineOpposite]),
+    [data-row-side='end']
+      .cngx-timeline-item:is([data-placement='alternate'] *):not([data-mode='activity'] *):not(
+        [data-orientation='horizontal'] *
+      ):has(> [cngxTimelineOpposite]) {
+      grid-template-columns: auto auto minmax(0, 1fr);
+      /* Body still spans both rows, as it does in the wide alternate above.
+         Collapsing should move both sides onto one, not also re-break the
+         year/card pairing - that would make one resize change two things. */
+      grid-template-areas:
+        'opposite marker body'
+        'time rail body';
+    }
+
+    [data-row-side='end']
+      .cngx-timeline-item:is([data-placement='alternate'] *):not([data-mode='activity'] *)
+      .cngx-timeline-item__time {
+      text-align: start;
+    }
+
+    [data-row-side='end']
+      .cngx-timeline-item:is([data-placement='alternate'] *):not([data-mode='activity'] *)
+      .cngx-timeline-item__opposite {
+      text-align: end;
+    }
+  }
+
+  /* (5) the opposite track, gated on the projected attribute so markup that
+     predates the slot keeps its raster to the pixel. Each rule restates
+     whichever of (1)-(3) it widens. Skipped under (4), which already centres
+     the rail on three tracks. */
+  .cngx-timeline-item:not([data-placement='alternate'] *):not(
+      [data-orientation='horizontal'] *
+    ):has(> [cngxTimelineOpposite]) {
+    grid-template-columns: auto auto minmax(0, 1fr);
+    grid-template-areas:
+      'opposite marker time'
+      'opposite rail body';
+  }
+
+  .cngx-timeline-item:is([data-mode='activity'] *):not([data-placement='alternate'] *):not(
+      [data-orientation='horizontal'] *
+    ):has(> [cngxTimelineOpposite]) {
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      'opposite marker body time'
+      'opposite rail body time';
+  }
+
+  [data-row-side='end']
+    .cngx-timeline-item:not([data-mode='activity'] *):not([data-placement='alternate'] *):not(
+      [data-orientation='horizontal'] *
+    ):has(> [cngxTimelineOpposite]) {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-areas:
+      'time marker opposite'
+      'body rail opposite';
+  }
+
+  [data-row-side='end']
+    .cngx-timeline-item:is([data-mode='activity'] *):not([data-placement='alternate'] *):not(
+      [data-orientation='horizontal'] *
+    ):has(> [cngxTimelineOpposite]) {
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
+    grid-template-areas:
+      'time body marker opposite'
+      'time body rail opposite';
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────
+     Continuous rail. Outside the raster cascade above on purpose: this sets
+     `block-size` on the connector, not a grid template, so it competes with
+     nothing up there.
+
+     Continuity is built per segment rather than from one line behind the
+     whole run. A container-level pseudo-element would be less code and
+     would flatten the status channel: a `rejected` run paints its own
+     segments red and an `upcoming` tail dashes them, and both are visual
+     state this family deliberately carries in the rail. Stretching each
+     segment keeps every one of them its own colour.
+
+     Each non-last segment spans the inter-row gap so it meets the next
+     marker, which is opaque and carries the line through its own diameter.
+     `last` and `only` are excluded, so a band ends where its last event
+     does and the group gap stays open - a band is a semantic boundary, not
+     a rendering accident. `--cngx-timeline-item-gap` is the organism's own
+     token and inherits down to here, so the two cannot drift.
+     ───────────────────────────────────────────────────────────────────── */
+  [data-rail='continuous']
+    .cngx-timeline-item
+    .cngx-timeline-connector:not([data-position='last']):not([data-position='only']):not(
+      [data-orientation='horizontal'] *
+    ) {
+    block-size: calc(100% + var(--cngx-timeline-item-gap, 16px));
+  }
+
+  [data-rail='continuous']
+    .cngx-timeline-item
+    .cngx-timeline-connector:not([data-position='last']):not([data-position='only']):is(
+      [data-orientation='horizontal'] *
+    ) {
+    inline-size: calc(100% + var(--cngx-timeline-item-gap, 16px));
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────
+     The horizontal axis. Every raster above transposed: what was a column
+     pair becomes a row pair, the marker and its rail share the axis row,
+     and the content stacks away from it.
+
+     `[data-row-side]` keeps its meaning - which side of the rail the body
+     sits on - it is just the block axis now: `start` puts the body after
+     the axis, `end` before it. That is why `alternate` works on both axes
+     from one derivation: the organism computes a side, not a direction.
+
+     In horizontal the run's main axis IS the inline axis, so RTL reverses
+     the whole timeline through the same logical properties that carry the
+     block axis in vertical. There is nothing to mirror by hand.
+     ───────────────────────────────────────────────────────────────────── */
+
+  /* (H1) base transposition. `activity` falls through to here on purpose. */
+  .cngx-timeline-item:is([data-orientation='horizontal'] *) {
+    /* A horizontal run has no content-derived width worth having: flex would
+       size every card to its longest word and the axis would read as a
+       ragged queue. `flex: none` so the row keeps this width instead of
+       shrinking to fit the container - the container scrolls instead. */
+    flex: none;
+    inline-size: var(--cngx-timeline-item-inline-size, 12rem);
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(0, 1fr);
+    grid-template-areas:
+      'marker rail'
+      'time time'
+      'body body';
+  }
+
+  /* The timestamp is a full-width line under the axis here, not a column
+     neighbour, so the vertical alignment rules do not carry over. */
+  .cngx-timeline-item:is([data-orientation='horizontal'] *) .cngx-timeline-item__time {
+    text-align: start;
+    white-space: normal;
+  }
+
+  .cngx-timeline-item:is([data-orientation='horizontal'] *) .cngx-timeline-item__opposite {
+    text-align: start;
+  }
+
+  /* (H3) body before the axis instead of after it. */
+  [data-row-side='end'] .cngx-timeline-item:is([data-orientation='horizontal'] *) {
+    grid-template-rows: minmax(0, 1fr) auto auto;
+    grid-template-areas:
+      'body body'
+      'time time'
+      'marker rail';
+  }
+
+  /* (H4) alternate: the axis row is pinned to the middle by symmetric outer
+     rows, so every marker lands on one line however tall each card is. The
+     body spans the full width for the same reason it spans both rows in the
+     vertical alternate - a card and its opposite label have to read as a
+     pair. */
+  .cngx-timeline-item:is([data-orientation='horizontal'] *):is([data-placement='alternate'] *) {
+    grid-template-rows: minmax(0, 1fr) auto minmax(0, 1fr);
+    grid-template-areas:
+      'opposite time'
+      'marker rail'
+      'body body';
+  }
+
+  [data-row-side='end']
+    .cngx-timeline-item:is([data-orientation='horizontal'] *):is([data-placement='alternate'] *) {
+    grid-template-rows: minmax(0, 1fr) auto minmax(0, 1fr);
+    grid-template-areas:
+      'body body'
+      'marker rail'
+      'opposite time';
+  }
+
+  /* (H5) the opposite track, across the axis from the body. Same markup
+     gate as the vertical rasters, one row wider instead of one column. */
+  .cngx-timeline-item:is([data-orientation='horizontal'] *):not([data-placement='alternate'] *):has(
+      > [cngxTimelineOpposite]
+    ) {
+    grid-template-rows: auto auto auto minmax(0, 1fr);
+    grid-template-areas:
+      'opposite opposite'
+      'marker rail'
+      'time time'
+      'body body';
+  }
+
+  [data-row-side='end']
+    .cngx-timeline-item:is([data-orientation='horizontal'] *):not(
+      [data-placement='alternate'] *
+    ):has(> [cngxTimelineOpposite]) {
+    grid-template-rows: minmax(0, 1fr) auto auto auto;
+    grid-template-areas:
+      'body body'
+      'time time'
+      'marker rail'
+      'opposite opposite';
   }
 }

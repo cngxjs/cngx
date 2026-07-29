@@ -19,6 +19,30 @@
  * `transform` would shift the rail's anchor every frame. Fully suppressed
  * under `prefers-reduced-motion`.
  *
+ * **Media**
+ *
+ * The dot clips to its circle, so a photo, a logo or a glyph can render
+ * inside it with no extra markup. The sizing contract has two halves and
+ * they are not the same:
+ *
+ * - *Bare* media (`img` / `picture` / `svg`) is sized here, as a percentage
+ *   of the marker box, and therefore follows `--cngx-timeline-marker-size`
+ *   on its own. Percentages rather than `em`: the scope pins `font-size:
+ *   0.625em` below, so an `em`-sized glyph would track that font-size and an
+ *   enlarged marker would keep a 12px-era icon. An `img` fills the dot; an
+ *   `svg` insets to `--cngx-timeline-marker-glyph-size`.
+ * - A projected `CngxAvatar` or `CngxIcon` sizes *itself*. Both pin
+ *   `--cngx-avatar-size` / `--cngx-icon-size` on their own host from their
+ *   size-variant classes, where nothing inherited from here can reach them,
+ *   and a rule in this file naming `.cngx-avatar--md` would put a sibling
+ *   atom's class in the marker's stylesheet at equal specificity - a
+ *   source-order coin flip. So enlarging such a marker means setting
+ *   `--cngx-timeline-marker-size` **and** the atom's own size.
+ *
+ * `--cngx-timeline-rail-inset` derives from the marker size at the row host
+ * either way, so the rail meets an enlarged marker's centre with no extra
+ * wiring.
+ *
  * **Density**
  *
  * `--cngx-timeline-marker-size` is a fixed affordance, not compactness, so it
@@ -40,6 +64,10 @@
       inline-size: var(--cngx-timeline-marker-size, 12px);
       block-size: var(--cngx-timeline-marker-size, 12px);
       border-radius: 50%;
+      /* Clips projected media to the circle. The busy pulse and the
+         surface punch-out both run on `box-shadow`, which paints outside
+         the padding box and is therefore unaffected. */
+      overflow: hidden;
       /* Opaque, so a coloured rail running behind the marker column does
          not read through the dot. */
       background: var(--cngx-timeline-connector-color, oklch(0.88 0.005 250));
@@ -48,6 +76,25 @@
       color: var(--cngx-timeline-marker-fg, oklch(1 0 0));
       font-size: 0.625em;
       line-height: 1;
+    }
+
+    /* Bare media fills the dot. Direct children only: an avatar or icon
+       atom carries its own size token and is sized by the consumer, and a
+       rule here reaching into one would collide with its own stylesheet. */
+    :scope > img,
+    :scope > picture {
+      inline-size: 100%;
+      block-size: 100%;
+      object-fit: cover;
+      border-radius: inherit;
+    }
+
+    /* A glyph wants padding around it, unlike a photo that bleeds to the
+       edge. Percent of the marker box, not `em` - the font-size below is
+       0.625em and would otherwise decide the size instead of the token. */
+    :scope > svg {
+      inline-size: var(--cngx-timeline-marker-glyph-size, 60%);
+      block-size: var(--cngx-timeline-marker-glyph-size, 60%);
     }
 
     :scope[data-status='done'] {
@@ -92,7 +139,10 @@
   50% {
     box-shadow:
       0 0 0 var(--cngx-timeline-connector-width, 2px) var(--cngx-timeline-surface, oklch(1 0 0)),
-      0 0 0 calc(var(--cngx-timeline-connector-width, 2px) + var(--cngx-timeline-marker-ring-width, 3px))
+      0 0 0
+        calc(
+          var(--cngx-timeline-connector-width, 2px) + var(--cngx-timeline-marker-ring-width, 3px)
+        )
         color-mix(in oklch, currentColor 35%, transparent);
   }
 }
