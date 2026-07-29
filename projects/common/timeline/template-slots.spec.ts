@@ -56,7 +56,74 @@ class SlotHost {
   readonly loadingTail = viewChild.required(CngxTimelineLoadingTail);
 }
 
+/**
+ * The inference proof. Every `let-` variable below is read without a cast:
+ * `event.summary` off `$implicit`, `group.items.length` off the group. If
+ * the of-style inputs stop pinning `T`, `event` falls back to `unknown` and
+ * `strictTemplates` (on at `tsconfig.base.json`, inherited by the spec
+ * tsconfig) fails the *build* rather than an assertion - which is the point,
+ * a type behaviour that only a reviewer can catch is not tested.
+ */
+@Component({
+  selector: 'cngx-timeline-typed-slot-host',
+  standalone: true,
+  imports: [CngxTimelineItemTpl, CngxTimelineDateHeader, CngxTimelineMarkerTpl],
+  template: `
+    <ng-template [cngxTimelineItem]="events" let-event let-last="last">
+      {{ event.summary }}/{{ last }}
+    </ng-template>
+    <ng-template [cngxTimelineDateHeader]="events" let-group>
+      {{ group.key }}:{{ group.items.length }}
+    </ng-template>
+    <ng-template [cngxTimelineMarkerTpl]="events" let-event let-status="status">
+      {{ event.id }}:{{ status }}
+    </ng-template>
+  `,
+})
+class TypedSlotHost {
+  readonly events: readonly TypedEvent[] = [{ id: 1, summary: 'Branch created' }];
+  readonly item = viewChild.required(CngxTimelineItemTpl<TypedEvent>);
+  readonly marker = viewChild.required(CngxTimelineMarkerTpl<TypedEvent>);
+}
+
+interface TypedEvent {
+  readonly id: number;
+  readonly summary: string;
+}
+
 describe('timeline template slots', () => {
+  describe('slot context inference', () => {
+    it('types let- variables from the of-style input, with no cast in the template', () => {
+      TestBed.configureTestingModule({ imports: [TypedSlotHost] });
+      const fixture = TestBed.createComponent(TypedSlotHost);
+      fixture.detectChanges();
+      const event: TypedEvent = { id: 7, summary: 'Merged to main' };
+
+      const view = fixture.componentInstance.item().templateRef.createEmbeddedView({
+        $implicit: event,
+        index: 0,
+        first: true,
+        last: true,
+        group: { key: '2026-07-20', start: new Date(2026, 6, 20), items: [event] },
+      });
+      view.detectChanges();
+
+      expect(view.rootNodes.map((n: Node) => n.textContent).join('')).toContain(
+        'Merged to main/true',
+      );
+    });
+
+    it('leaves the input unbound-safe, so every v1 usage keeps compiling', () => {
+      TestBed.configureTestingModule({ imports: [SlotHost] });
+      const fixture = TestBed.createComponent(SlotHost);
+      fixture.detectChanges();
+
+      // The bare `cngxTimelineItem` form in SlotHost above binds nothing;
+      // the input is optional and the directive still matches.
+      expect(fixture.componentInstance.item().cngxTimelineItem()).toBeUndefined();
+    });
+  });
+
   it('every slot directive matches its selector and exposes a TemplateRef', () => {
     TestBed.configureTestingModule({ imports: [SlotHost] });
     const fixture = TestBed.createComponent(SlotHost);
