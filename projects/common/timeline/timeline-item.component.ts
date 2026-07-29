@@ -43,9 +43,10 @@ export class CngxTimelineTime {}
  * for surfaces the whole timeline shares.
  *
  * The extra grid track only exists for rows that actually project into it
- * (`:has([cngxTimelineOpposite])`), so markup that predates this slot keeps
- * its raster to the pixel. Placement follows the row: opposite content sits
- * across the rail from the body under `start`, `end` and `alternate` alike.
+ * (`:has(> [cngxTimelineOpposite])`), so markup that predates this slot
+ * keeps its raster to the pixel. Placement follows the row: opposite content
+ * sits across the rail from the body under `start`, `end` and `alternate`
+ * alike.
  *
  * ```html
  * <cngx-timeline-item status="done">
@@ -53,6 +54,13 @@ export class CngxTimelineTime {}
  *   <p>Founded</p>
  * </cngx-timeline-item>
  * ```
+ *
+ * **Keep the content non-interactive.** The slot projects ahead of the body,
+ * so it is read first in every layout. For a year or a short label that is
+ * the right reading order whichever side the rail is on. A link or a button
+ * would take focus before the row it belongs to, and no placement of the
+ * grid can fix that, because the paint follows `[data-row-side]` while the
+ * DOM order does not.
  *
  * @category common/timeline
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/timeline/timeline-item.component.ts
