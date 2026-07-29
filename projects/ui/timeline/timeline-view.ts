@@ -74,8 +74,15 @@ export function createTimelineView(
     refreshing,
     ariaBusy: computed(() => (state()?.isBusy() ? 'true' : null)),
     announcement: computed(() => {
-      if (activeView() === 'skeleton') {
+      const view = activeView();
+      if (view === 'skeleton') {
         return labels.loading;
+      }
+      // The built-in error surface carries its own role="alert", but a bound
+      // *cngxTimelineError replaces that markup wholesale. Announcing here
+      // means the failure reaches AT whether or not the slot is bound.
+      if (view === 'error' || view === 'content+error') {
+        return labels.errorFallback;
       }
       return refreshing() ? labels.refreshing : '';
     }),

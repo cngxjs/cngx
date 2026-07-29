@@ -147,7 +147,12 @@ export class CngxTimeline<T = unknown> implements CngxTimelineMarkerHost {
 
   /**
    * The flat event list. Order is irrelevant - the presenter sorts.
-   * Ignored once `[state]` is bound.
+   *
+   * A bound `[state]` supplies the rows instead as soon as it *has* data;
+   * until then these are still used, so binding both is a legitimate way to
+   * render a seed list while the first load runs. Note that the body still
+   * follows the state, so an `idle` state renders nothing whatever `[items]`
+   * holds.
    */
   readonly items = input<readonly T[]>([]);
 

@@ -132,7 +132,7 @@ export class CngxTimelineContent {}
     <cngx-timeline-marker [status]="markerStatus()" [busy]="busy()">
       @if (markerTpl(); as tpl) {
         <ng-container
-          *ngTemplateOutlet="tpl; context: { $implicit: item(), status: status() }"
+          *ngTemplateOutlet="tpl; context: { $implicit: item(), status: markerStatus() }"
         />
       } @else {
         <ng-content select="[cngxTimelineMarkerContent]" />

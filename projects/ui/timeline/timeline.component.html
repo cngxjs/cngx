@@ -7,7 +7,13 @@
          with `display: contents` and has no box to style. It is the hook that
          makes the loading branch addressable from outside - tests and
          consumer overrides have nothing else to select on. -->
-    <cngx-skeleton class="cngx-timeline__skeleton" [state]="state()" [count]="skeletonRowCount()">
+    <!-- [loading], not [state]: the container derives first-load from a bound
+         state and would refuse to draw on a refetch that has nothing on
+         screen, which is exactly the branch this case exists for. Reaching
+         this branch at all IS the decision that a placeholder belongs here -
+         activeView() already made it - so the flag is true by construction
+         and the container is left owning only show-delay and min-dwell. -->
+    <cngx-skeleton class="cngx-timeline__skeleton" [loading]="true" [count]="skeletonRowCount()">
       <ng-template cngxSkeletonPlaceholder>
         <!-- aria-hidden on the wrapper, not on the branches: whatever a
              consumer supplies is decoration too, and the load is announced

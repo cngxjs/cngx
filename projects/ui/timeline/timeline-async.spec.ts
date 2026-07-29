@@ -95,10 +95,18 @@ function mount(): { host: Host; el: HTMLElement; detect: () => void } {
   };
 }
 
-/** What the body is showing, named the way the view switch names it. */
+/**
+ * What the body is showing, named the way the view switch names it.
+ *
+ * The skeleton probe deliberately looks for a rendered placeholder rather
+ * than for `.cngx-timeline__skeleton`: that class is the container's host,
+ * which is in the DOM whenever the branch is selected even if the container
+ * gates the placeholder away. Keying on it made a blank body read as a
+ * rendered skeleton.
+ */
 function surfaces(el: HTMLElement): string[] {
   const present: string[] = [];
-  if (el.querySelector('.cngx-timeline__skeleton')) {
+  if (el.querySelector('.cngx-timeline__skeleton-row, .slot-skeleton')) {
     present.push('skeleton');
   }
   if (el.querySelector('.cngx-timeline__empty')) {
@@ -154,6 +162,10 @@ describe('CngxTimeline async body', () => {
         expect(surfaces(el)).toEqual(['empty']);
 
         host.state.set(status);
+        // Twice: the first pass swaps the branch in and creates the skeleton
+        // container, the second lets its show-delay elapse. One pass would
+        // advance the clock before the container exists to start its timer.
+        settleGate(detect);
         settleGate(detect);
 
         expect(surfaces(el)).toEqual(['skeleton']);
