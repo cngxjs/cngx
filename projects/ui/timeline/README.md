@@ -126,6 +126,48 @@ values:
 - `card` - each row body lifted onto its own surface.
 - `bands` - alternating group tint for long timelines.
 
+## Layout
+
+Two inputs, each defaulting to the v1 rendering, each resolving to a
+`[data-*]` attribute the row stylesheet reads. No new DOM, no ARIA change: the
+role chain is byte-identical across every combination, and DOM order stays
+chronological whatever the paint does.
+
+|Input|Values|Effect|
+|-|-|-|
+|`[placement]`|`start` (default), `end`, `alternate`|which side of the rail the body sits on|
+|`[rail]`|`segmented` (default), `continuous`|whether the rail breaks between rows|
+
+```html
+<cngx-timeline [items]="milestones()" [dateAccessor]="at"
+               placement="alternate" rail="continuous" groupBy="none">
+  <ng-template [cngxTimelineItem]="milestones()" let-milestone let-last="last">
+    <cngx-timeline-item [position]="last ? 'last' : 'middle'" status="done">
+      <strong cngxTimelineOpposite>{{ milestone.year }}</strong>
+      <h3>{{ milestone.title }}</h3>
+    </cngx-timeline-item>
+  </ng-template>
+</cngx-timeline>
+```
+
+**Alternation comes from the loop index**, not from `:nth-child`, so a filtered
+or refetched list alternates by its rendered position rather than by DOM
+structure. The built-in loading placeholder derives its sides the same way, so
+the swap from skeleton to content does not reflow.
+
+**`alternate` is not supported with `mode="activity"`.** Alternating a
+scan-feed defeats the scan; those rows render `start` and dev mode warns once.
+
+**`alternate` collapses to a single side below `32rem`** of the timeline's own
+width. It is a container query, not a viewport one, so the same timeline
+behaves correctly inside a narrow panel on a wide screen. The threshold is a
+literal because a container-query condition cannot read a custom property.
+
+**`continuous` stretches each segment across the row gap**, per segment rather
+than as one line behind the run. That is what keeps a `rejected` stretch red
+and an `upcoming` tail dashed. The last segment of a band never stretches, so
+the gap between groups stays open.
+
 ## Slots
 
 Eight template slots, each resolved through the family-standard three-stage

@@ -12,6 +12,9 @@ const NARRATIVE = '/#/ui/timeline/basics/flat-array';
 const MODES = '/#/ui/timeline/skins/activity-vs-narrative';
 const OPPOSITE = '/#/ui/timeline/layout/opposite-time';
 const MEDIA = '/#/ui/timeline/layout/media-markers';
+const INFOGRAPHIC = '/#/ui/timeline/layout/alternating-infographic';
+const RAILS = '/#/ui/timeline/layout/continuous-vs-segmented';
+const SKELETON = '/#/ui/timeline/async/global-loading-skeleton';
 
 /** v1 rasters, as the row stylesheet declares them. */
 const V1_NARRATIVE_AREAS = '"marker time" "rail body"';
@@ -245,5 +248,107 @@ test.describe('timeline layout - locked cascade ties', () => {
 
     expect(trackCount(columns)).toBe(2);
     expect(areas).toBe('"time marker" "body rail"');
+  });
+});
+
+test.describe('timeline layout - the organism drives the raster', () => {
+  test('alternate flips the body side row by row, from the loop index', async ({ page }) => {
+    await page.goto(INFOGRAPHIC);
+    await expect(page.locator('cngx-timeline-item').first()).toBeVisible();
+
+    const rowSides = await page
+      .locator('.cngx-timeline__item')
+      .evaluateAll((rows) => rows.map((row) => row.getAttribute('data-row-side')));
+
+    expect(rowSides).toEqual(['start', 'end', 'start', 'end']);
+  });
+
+  test('the alternating rows resolve to mirrored three-track rasters', async ({ page }) => {
+    await page.goto(INFOGRAPHIC);
+    await expect(page.locator('cngx-timeline-item').first()).toBeVisible();
+
+    const rasters = await page
+      .locator('cngx-timeline-item')
+      .evaluateAll((rows) => rows.map((row) => getComputedStyle(row).gridTemplateAreas));
+
+    expect(rasters[0]).toBe('"opposite marker time" "opposite rail body"');
+    expect(rasters[1]).toBe('"time marker opposite" "body rail opposite"');
+  });
+
+  test('the centred rail lands on the same axis for every row', async ({ page }) => {
+    await page.goto(INFOGRAPHIC);
+    await expect(page.locator('cngx-timeline-item').first()).toBeVisible();
+
+    // The whole point of the symmetric tracks: a row that carries a long
+    // body and a row that carries a short one still share a rail axis.
+    const centres = await page.locator('cngx-timeline-connector').evaluateAll((rails) =>
+      rails.map((rail) => {
+        const box = rail.getBoundingClientRect();
+        return Math.round(box.left + box.width / 2);
+      }),
+    );
+
+    expect(new Set(centres).size).toBe(1);
+  });
+
+  test('a continuous rail keeps each segment its own status colour', async ({ page }) => {
+    await page.goto(RAILS);
+    await expect(page.locator('cngx-timeline-item').first()).toBeVisible();
+
+    const colours = await page
+      .locator('cngx-timeline-connector')
+      .evaluateAll((rails) => rails.map((rail) => getComputedStyle(rail).borderInlineStartColor));
+
+    // Two done, two rejected, one upcoming: continuity must not flatten
+    // that into one line of one colour, which a container-level rail would.
+    expect(new Set(colours).size).toBeGreaterThan(1);
+  });
+
+  test('continuous stretches every segment but the last of a band', async ({ page }) => {
+    await page.goto(RAILS);
+    await expect(page.locator('cngx-timeline-item').first()).toBeVisible();
+
+    const heights = await page.locator('cngx-timeline-item').evaluateAll((rows) =>
+      rows.map((row) => {
+        const rail = row.querySelector('cngx-timeline-connector');
+        return {
+          position: rail?.getAttribute('data-position') ?? null,
+          overshoot: Math.round(
+            (rail?.getBoundingClientRect().bottom ?? 0) - row.getBoundingClientRect().bottom,
+          ),
+        };
+      }),
+    );
+
+    for (const { position, overshoot } of heights) {
+      if (position === 'last' || position === 'only') {
+        expect(overshoot).toBeLessThanOrEqual(0);
+      } else {
+        // Bridges the inter-row gap to reach the next marker.
+        expect(overshoot).toBeGreaterThan(0);
+      }
+    }
+  });
+});
+
+test.describe('timeline layout - the skeleton does not reflow into content', () => {
+  test('placeholder rows mirror the sides the content rows will take', async ({ page }) => {
+    await page.goto(SKELETON);
+    // The story starts idle and loads on demand, so drive it the way a user
+    // would rather than reaching into the component.
+    await page.getByRole('button', { name: 'load', exact: false }).first().click();
+
+    const placeholder = page.locator('.cngx-timeline__skeleton-row');
+    await expect(placeholder.first()).toBeVisible();
+
+    const sides = await placeholder.evaluateAll((rows) =>
+      rows.map((row) => row.getAttribute('data-row-side')),
+    );
+
+    // placement defaults to start on this story, so every placeholder does
+    // too - the point is that the attribute is derived at all, from the
+    // index the skeleton container passes into the placeholder template.
+    expect(sides.every((side) => side === 'start')).toBe(true);
+    expect(sides.length).toBeGreaterThan(0);
   });
 });
