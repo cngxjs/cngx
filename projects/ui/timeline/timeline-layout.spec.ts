@@ -99,6 +99,8 @@ function roles(el: HTMLElement): readonly (string | null)[] {
 }
 
 const PLACEMENTS: readonly CngxTimelinePlacement[] = ['start', 'end', 'alternate'];
+const MODES: readonly CngxTimelineMode[] = ['narrative', 'activity'];
+const ORIENTATIONS: readonly CngxTimelineOrientation[] = ['vertical', 'horizontal'];
 
 describe('CngxTimeline layout', () => {
   afterEach(() => {
@@ -252,27 +254,66 @@ describe('CngxTimeline layout', () => {
     });
   });
 
-  describe('ARIA chain is placement-blind', () => {
-    it.each(PLACEMENTS)('keeps the grouped role triple identical under "%s"', (placement) => {
-      const { el, host, detect } = mount();
+  describe('ARIA chain is layout-blind', () => {
+    /**
+     * The full 2 modes x 3 placements x 2 orientations. Not a sample: the
+     * promise this family makes is that none of the layout attributes reach
+     * the accessibility tree at all, and a promise about a product needs the
+     * product asserted. Grouping doubles it again, so 24 cases.
+     */
+    const MATRIX = MODES.flatMap((mode) =>
+      PLACEMENTS.flatMap((placement) =>
+        ORIENTATIONS.map((orientation) => ({ mode, placement, orientation })),
+      ),
+    );
 
-      host.placement.set(placement);
-      detect();
+    it.each(MATRIX)(
+      'keeps the grouped role triple identical under $mode/$placement/$orientation',
+      ({ mode, placement, orientation }) => {
+        const { el, host, detect } = mount();
 
-      expect(roles(el)).toEqual(['group', null, 'list']);
-      expect(el.querySelectorAll('[role="listitem"]')).toHaveLength(4);
-    });
+        host.mode.set(mode);
+        host.placement.set(placement);
+        host.orientation.set(orientation);
+        detect();
 
-    it.each(PLACEMENTS)('keeps the ungrouped role triple identical under "%s"', (placement) => {
-      const { el, host, detect } = mount();
+        expect(roles(el)).toEqual(['group', null, 'list']);
+        expect(el.querySelectorAll('[role="listitem"]')).toHaveLength(4);
+      },
+    );
 
-      host.groupBy.set('none');
-      host.placement.set(placement);
-      detect();
+    it.each(MATRIX)(
+      'keeps the ungrouped role triple identical under $mode/$placement/$orientation',
+      ({ mode, placement, orientation }) => {
+        const { el, host, detect } = mount();
 
-      expect(roles(el)).toEqual(['list', 'presentation', 'presentation']);
-      expect(el.querySelectorAll('[role="listitem"]')).toHaveLength(4);
-    });
+        host.groupBy.set('none');
+        host.mode.set(mode);
+        host.placement.set(placement);
+        host.orientation.set(orientation);
+        detect();
+
+        expect(roles(el)).toEqual(['list', 'presentation', 'presentation']);
+        expect(el.querySelectorAll('[role="listitem"]')).toHaveLength(4);
+      },
+    );
+
+    it.each(MATRIX)(
+      'names the band from its own header under $mode/$placement/$orientation',
+      ({ mode, placement, orientation }) => {
+        const { el, host, detect } = mount();
+
+        host.mode.set(mode);
+        host.placement.set(placement);
+        host.orientation.set(orientation);
+        detect();
+
+        const rows = el.querySelector('.cngx-timeline__rows');
+        const labelId = rows?.getAttribute('aria-labelledby');
+        expect(labelId).toBeTruthy();
+        expect(el.querySelector(`#${labelId}`)).not.toBeNull();
+      },
+    );
 
     it('adds no ARIA of its own to the row wrapper beyond listitem', () => {
       const { el, host, detect } = mount();
