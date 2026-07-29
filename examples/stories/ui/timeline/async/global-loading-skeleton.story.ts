@@ -17,7 +17,13 @@ export const STORY: DemoSpec = {
     "import { CngxTime } from '@cngx/common/display';",
     "import { createManualState } from '@cngx/common/data';",
   ],
-  imports: ['CngxTimeline', 'CngxTimelineItem', 'CngxTimelineItemTpl', 'CngxTimelineTime', 'CngxTime'],
+  imports: [
+    'CngxTimeline',
+    'CngxTimelineItem',
+    'CngxTimelineItemTpl',
+    'CngxTimelineTime',
+    'CngxTime',
+  ],
   setup: `protected readonly feed = createManualState<{ id: number; at: Date; summary: string }[]>();
 
   protected readonly at = (event: { at: Date }): Date => event.at;
@@ -56,10 +62,10 @@ export const STORY: DemoSpec = {
     [skeletonRowCount]="3"
     groupBy="day"
   >
-    <ng-template cngxTimelineItem let-event let-last="last">
+    <ng-template [cngxTimelineItem]="feed.data()" let-event let-last="last">
       <cngx-timeline-item [position]="last ? 'last' : 'middle'" status="done">
-        <cngx-time cngxTimelineTime [date]="$any(event).at" />
-        <p style="margin:0">{{ $any(event).summary }}</p>
+        <cngx-time cngxTimelineTime [date]="event.at" />
+        <p style="margin:0">{{ event.summary }}</p>
       </cngx-timeline-item>
     </ng-template>
   </cngx-timeline>`,

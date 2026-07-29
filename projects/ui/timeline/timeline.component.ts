@@ -89,10 +89,10 @@ export type CngxTimelineSkin = 'line' | 'card' | 'bands';
  *
  * ```html
  * <cngx-timeline [items]="events()" [dateAccessor]="at" groupBy="day">
- *   <ng-template cngxTimelineItem let-event let-last="last">
+ *   <ng-template [cngxTimelineItem]="events()" let-event let-last="last">
  *     <cngx-timeline-item [position]="last ? 'last' : 'middle'">
- *       <cngx-time cngxTimelineTime [date]="$any(event).at" />
- *       <p>{{ $any(event).summary }}</p>
+ *       <cngx-time cngxTimelineTime [date]="event.at" />
+ *       <p>{{ event.summary }}</p>
  *     </cngx-timeline-item>
  *   </ng-template>
  * </cngx-timeline>

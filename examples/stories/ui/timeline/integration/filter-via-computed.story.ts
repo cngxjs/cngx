@@ -79,17 +79,17 @@ export const STORY: DemoSpec = {
     groupBy="day"
     aria-label="Service events"
   >
-    <ng-template cngxTimelineItem let-event let-last="last">
-      <cngx-timeline-item [position]="last ? 'last' : 'middle'" [status]="$any(event).status">
-        <cngx-time cngxTimelineTime [date]="$any(event).at" />
-        <p style="margin:0 0 4px">{{ $any(event).summary }}</p>
-        <cngx-tag>{{ $any(event).channel }}</cngx-tag>
+    <ng-template [cngxTimelineItem]="visible()" let-event let-last="last">
+      <cngx-timeline-item [position]="last ? 'last' : 'middle'" [status]="event.status">
+        <cngx-time cngxTimelineTime [date]="event.at" />
+        <p style="margin:0 0 4px">{{ event.summary }}</p>
+        <cngx-tag>{{ event.channel }}</cngx-tag>
       </cngx-timeline-item>
     </ng-template>
 
     <ng-template cngxTimelineEmpty let-emptyReason>
       <p style="margin:0">
-        {{ $any(emptyReason) === 'no-results' ? 'No events on this channel yet.' : 'Nothing has happened yet.' }}
+        {{ emptyReason === 'no-results' ? 'No events on this channel yet.' : 'Nothing has happened yet.' }}
       </p>
     </ng-template>
   </cngx-timeline>`,

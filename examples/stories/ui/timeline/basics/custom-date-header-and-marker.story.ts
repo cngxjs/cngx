@@ -49,25 +49,25 @@ export const STORY: DemoSpec = {
     [idAccessor]="byId"
     groupBy="day"
   >
-    <ng-template cngxTimelineDateHeader let-group>
+    <ng-template [cngxTimelineDateHeader]="events" let-group>
       <span style="text-transform:uppercase;letter-spacing:0.04em">
         {{ dayLabel(group.start) }}
       </span>
       <span style="opacity:0.7"> &middot; {{ group.items.length }} events</span>
     </ng-template>
 
-    <ng-template cngxTimelineMarkerTpl let-event>
-      {{ glyphs[$any(event).kind] }}
+    <ng-template [cngxTimelineMarkerTpl]="events" let-event>
+      {{ glyphs[event.kind] }}
     </ng-template>
 
-    <ng-template cngxTimelineItem let-event let-last="last">
+    <ng-template [cngxTimelineItem]="events" let-event let-last="last">
       <cngx-timeline-item
         [position]="last ? 'last' : 'middle'"
         [item]="event"
-        [status]="$any(event).kind === 'failed' ? 'rejected' : 'done'"
+        [status]="event.kind === 'failed' ? 'rejected' : 'done'"
       >
-        <cngx-time cngxTimelineTime [date]="$any(event).at" />
-        <p style="margin:0">{{ $any(event).summary }}</p>
+        <cngx-time cngxTimelineTime [date]="event.at" />
+        <p style="margin:0">{{ event.summary }}</p>
       </cngx-timeline-item>
     </ng-template>
   </cngx-timeline>`,

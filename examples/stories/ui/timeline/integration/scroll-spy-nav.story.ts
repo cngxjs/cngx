@@ -99,14 +99,14 @@ export const STORY: DemoSpec = {
         direction="asc"
         aria-label="Programme milestones"
       >
-        <ng-template cngxTimelineItem let-event let-last="last">
+        <ng-template [cngxTimelineItem]="events" let-event let-last="last">
           <cngx-timeline-item
-            [attr.id]="'row-' + $any(event).id"
+            [attr.id]="'row-' + event.id"
             [position]="last ? 'last' : 'middle'"
             status="done"
           >
-            <cngx-time cngxTimelineTime [date]="$any(event).at" />
-            <p style="margin:0">{{ $any(event).summary }}</p>
+            <cngx-time cngxTimelineTime [date]="event.at" />
+            <p style="margin:0">{{ event.summary }}</p>
           </cngx-timeline-item>
         </ng-template>
       </cngx-timeline>

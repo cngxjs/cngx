@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'A single row can carry its own <code>[state]</code>. It repaints as rejected and announces the failure without disturbing the rows around it.',
   description:
-    'The row keeps two channels apart. status is editorial - where the event sits in the history - while state is whether this row\'s own data loaded. They compose: a done row whose state fails paints rejected and shows an inline error, but data-status still says done, so a successful retry restores its colour with no bookkeeping on the consumer side. The inline error and the screen-reader status line are read as the row\'s own content in DOM order, not through aria-describedby: the row host carries no role for a description to resolve against. A row that is merely pending announces the busy label instead of its status, because a row still loading has nothing settled to report.',
+    "The row keeps two channels apart. status is editorial - where the event sits in the history - while state is whether this row's own data loaded. They compose: a done row whose state fails paints rejected and shows an inline error, but data-status still says done, so a successful retry restores its colour with no bookkeeping on the consumer side. The inline error and the screen-reader status line are read as the row's own content in DOM order, not through aria-describedby: the row host carries no role for a description to resolve against. A row that is merely pending announces the busy label instead of its status, because a row still loading has nothing settled to report.",
   level: 'molecule',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
@@ -17,7 +17,13 @@ export const STORY: DemoSpec = {
     "import { CngxTime } from '@cngx/common/display';",
     "import { createManualState } from '@cngx/common/data';",
   ],
-  imports: ['CngxTimeline', 'CngxTimelineItem', 'CngxTimelineItemTpl', 'CngxTimelineTime', 'CngxTime'],
+  imports: [
+    'CngxTimeline',
+    'CngxTimelineItem',
+    'CngxTimelineItemTpl',
+    'CngxTimelineTime',
+    'CngxTime',
+  ],
   setup: `protected readonly attachment = createManualState<string>();
 
   protected readonly events = [
@@ -51,14 +57,14 @@ export const STORY: DemoSpec = {
     [idAccessor]="byId"
     groupBy="none"
   >
-    <ng-template cngxTimelineItem let-event let-last="last">
+    <ng-template [cngxTimelineItem]="events" let-event let-last="last">
       <cngx-timeline-item
         [position]="last ? 'last' : 'middle'"
-        [state]="$any(event).local ? attachment : undefined"
+        [state]="event.local ? attachment : undefined"
         status="done"
       >
-        <cngx-time cngxTimelineTime [date]="$any(event).at" />
-        <p style="margin:0">{{ $any(event).summary }}</p>
+        <cngx-time cngxTimelineTime [date]="event.at" />
+        <p style="margin:0">{{ event.summary }}</p>
       </cngx-timeline-item>
     </ng-template>
   </cngx-timeline>`,

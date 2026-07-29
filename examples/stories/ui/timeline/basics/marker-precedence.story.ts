@@ -52,22 +52,22 @@ export const STORY: DemoSpec = {
     aria-label="Release history"
   >
     <!-- Applies to every row that does not say otherwise. -->
-    <ng-template cngxTimelineMarkerTpl>
+    <ng-template [cngxTimelineMarkerTpl]="events">
       <span style="font-size:0.625rem">&#9679;</span>
     </ng-template>
 
-    <ng-template cngxTimelineItem let-event let-last="last">
+    <ng-template [cngxTimelineItem]="events" let-event let-last="last">
       <cngx-timeline-item
         [position]="last ? 'last' : 'middle'"
-        [status]="$any(event).release ? 'done' : 'active'"
+        [status]="event.release ? 'done' : 'active'"
         [item]="event"
       >
         <!-- Only the release row carries this, and only it is overridden. -->
-        @if ($any(event).release) {
+        @if (event.release) {
           <span cngxTimelineMarkerContent>&#10003;</span>
         }
-        <cngx-time cngxTimelineTime [date]="$any(event).at" />
-        <p style="margin:0">{{ $any(event).summary }}</p>
+        <cngx-time cngxTimelineTime [date]="event.at" />
+        <p style="margin:0">{{ event.summary }}</p>
       </cngx-timeline-item>
     </ng-template>
   </cngx-timeline>`,

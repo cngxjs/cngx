@@ -22,7 +22,7 @@ import { CngxTime } from '@cngx/common/display';
   selector: 'app-example',
   template: `
     <cngx-timeline [state]="feed" [dateAccessor]="at" [idAccessor]="byId" groupBy="day">
-      <ng-template cngxTimelineItem let-event let-last="last">
+      <ng-template [cngxTimelineItem]="feed.data()" let-event let-last="last">
         <cngx-timeline-item [position]="last ? 'last' : 'middle'" status="done">
           <cngx-time cngxTimelineTime [date]="event.at" />
           <p>{{ event.summary }}</p>
@@ -41,6 +41,12 @@ export class ExampleComponent {
 
 `[items]` takes a plain array when there is no async state to bind. `[state]`
 wins over it.
+
+Binding the same array to `[cngxTimelineItem]` is what types `let-event`.
+Angular cannot infer a structural directive's context generic from a sibling
+input on the host, so the slot pins it through an input of its own - the
+`ngForOf` mechanism. The binding is optional and never read at runtime; leave
+it off and the `let-` variables fall back to `unknown`.
 
 ## Overview
 
