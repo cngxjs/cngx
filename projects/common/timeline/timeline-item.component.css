@@ -500,6 +500,12 @@
 
   /* (H1) base transposition. `activity` falls through to here on purpose. */
   .cngx-timeline-item:is([data-orientation='horizontal'] *) {
+    /* A horizontal run has no content-derived width worth having: flex would
+       size every card to its longest word and the axis would read as a
+       ragged queue. `flex: none` so the row keeps this width instead of
+       shrinking to fit the container - the container scrolls instead. */
+    flex: none;
+    inline-size: var(--cngx-timeline-item-inline-size, 12rem);
     grid-template-columns: auto minmax(0, 1fr);
     grid-template-rows: auto auto minmax(0, 1fr);
     grid-template-areas:

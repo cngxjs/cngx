@@ -15,6 +15,9 @@ const MEDIA = '/#/ui/timeline/layout/media-markers';
 const INFOGRAPHIC = '/#/ui/timeline/layout/alternating-infographic';
 const RAILS = '/#/ui/timeline/layout/continuous-vs-segmented';
 const SKELETON = '/#/ui/timeline/async/global-loading-skeleton';
+const HORIZONTAL = '/#/ui/timeline/layout/horizontal';
+const HORIZONTAL_ALTERNATE = '/#/ui/timeline/layout/horizontal-alternate';
+const HORIZONTAL_GROUPED = '/#/ui/timeline/layout/horizontal-grouped';
 
 /** v1 rasters, as the row stylesheet declares them. */
 const V1_NARRATIVE_AREAS = '"marker time" "rail body"';
@@ -452,5 +455,103 @@ test.describe('timeline layout - the horizontal axis, driven standalone', () => 
     // Collapsing two side-by-side prose columns is a vertical-axis concern.
     // Horizontally the content already stacks, so there is nothing to fold.
     expect(areas).toBe('"opposite time" "marker rail" "body body"');
+  });
+});
+
+test.describe('timeline layout - the organism drives the horizontal axis', () => {
+  test('the run lays out along the inline axis behind a scroll container', async ({ page }) => {
+    await page.goto(HORIZONTAL);
+    await expect(page.locator('cngx-timeline-item').first()).toBeVisible();
+
+    const lefts = await page
+      .locator('cngx-timeline-item')
+      .evaluateAll((rows) => rows.map((row) => Math.round(row.getBoundingClientRect().left)));
+    const overflow = await page
+      .locator('cngx-timeline')
+      .first()
+      .evaluate((el) => getComputedStyle(el).overflowX);
+
+    expect(lefts).toEqual([...lefts].sort((a, b) => a - b));
+    expect(new Set(lefts).size).toBe(lefts.length);
+    expect(overflow).toBe('auto');
+  });
+
+  test('every marker sits on one axis line', async ({ page }) => {
+    await page.goto(HORIZONTAL);
+    await expect(page.locator('cngx-timeline-item').first()).toBeVisible();
+
+    const centres = await page.locator('cngx-timeline-connector').evaluateAll((rails) =>
+      rails.map((rail) => {
+        const box = rail.getBoundingClientRect();
+        return Math.round(box.top + box.height / 2);
+      }),
+    );
+
+    expect(new Set(centres).size).toBe(1);
+  });
+
+  // The logical-properties bet, stated as a promise in the README: in
+  // horizontal the run's main axis IS the inline axis, so RTL reverses the
+  // whole timeline with no second rule and no mirrored rail.
+  test('dir="rtl" reverses the run with the rail geometry intact', async ({ page }) => {
+    await page.goto(HORIZONTAL);
+    await expect(page.locator('cngx-timeline-item').first()).toBeVisible();
+
+    const read = () =>
+      page.locator('cngx-timeline-item').evaluateAll((rows) =>
+        rows.map((row) => {
+          const rail = row.querySelector('cngx-timeline-connector')!;
+          const style = getComputedStyle(rail);
+          return {
+            left: Math.round(row.getBoundingClientRect().left),
+            blockStart: Math.round(Number.parseFloat(style.borderBlockStartWidth)),
+            inlineStart: Math.round(Number.parseFloat(style.borderInlineStartWidth)),
+          };
+        }),
+      );
+
+    const ltr = await read();
+    await page.locator('html').evaluate((el) => el.setAttribute('dir', 'rtl'));
+    const rtl = await read();
+    await page.locator('html').evaluate((el) => el.removeAttribute('dir'));
+
+    expect(ltr.map((r) => r.left)).toEqual([...ltr.map((r) => r.left)].sort((a, b) => a - b));
+    expect(rtl.map((r) => r.left)).toEqual([...rtl.map((r) => r.left)].sort((a, b) => b - a));
+    // The rail never becomes a block-axis line just because direction flipped.
+    for (const row of [...ltr, ...rtl]) {
+      expect(row.blockStart).toBeGreaterThan(0);
+      expect(row.inlineStart).toBe(0);
+    }
+  });
+
+  test('grouped bands become labelled columns without touching the ARIA chain', async ({
+    page,
+  }) => {
+    await page.goto(HORIZONTAL_GROUPED);
+    await expect(page.locator('cngx-timeline-item').first()).toBeVisible();
+
+    const bands = await page
+      .locator('.cngx-timeline__group')
+      .evaluateAll((groups) => groups.map((g) => Math.round(g.getBoundingClientRect().left)));
+
+    expect(bands.length).toBeGreaterThan(1);
+    expect(bands).toEqual([...bands].sort((a, b) => a - b));
+    await expect(page.locator('.cngx-timeline__rows[role="list"]').first()).toBeVisible();
+  });
+
+  test('horizontal alternate puts the cards on both sides of one axis', async ({ page }) => {
+    await page.goto(HORIZONTAL_ALTERNATE);
+    await expect(page.locator('cngx-timeline-item').first()).toBeVisible();
+
+    const sides = await page
+      .locator('.cngx-timeline__item')
+      .evaluateAll((rows) => rows.map((row) => row.getAttribute('data-row-side')));
+    const rasters = await page
+      .locator('cngx-timeline-item')
+      .evaluateAll((rows) => rows.map((row) => getComputedStyle(row).gridTemplateAreas));
+
+    expect(sides).toEqual(['start', 'end', 'start', 'end']);
+    expect(rasters[0]).toBe('"opposite time" "marker rail" "body body"');
+    expect(rasters[1]).toBe('"body body" "marker rail" "opposite time"');
   });
 });

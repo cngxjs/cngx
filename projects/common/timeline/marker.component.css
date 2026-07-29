@@ -139,7 +139,10 @@
   50% {
     box-shadow:
       0 0 0 var(--cngx-timeline-connector-width, 2px) var(--cngx-timeline-surface, oklch(1 0 0)),
-      0 0 0 calc(var(--cngx-timeline-connector-width, 2px) + var(--cngx-timeline-marker-ring-width, 3px))
+      0 0 0
+        calc(
+          var(--cngx-timeline-connector-width, 2px) + var(--cngx-timeline-marker-ring-width, 3px)
+        )
         color-mix(in oklch, currentColor 35%, transparent);
   }
 }

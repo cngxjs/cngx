@@ -128,7 +128,7 @@ values:
 
 ## Layout
 
-Two inputs, each defaulting to the v1 rendering, each resolving to a
+Three inputs, each defaulting to the v1 rendering, each resolving to a
 `[data-*]` attribute the row stylesheet reads. No new DOM, no ARIA change: the
 role chain is byte-identical across every combination, and DOM order stays
 chronological whatever the paint does.
@@ -137,6 +137,7 @@ chronological whatever the paint does.
 |-|-|-|
 |`[placement]`|`start` (default), `end`, `alternate`|which side of the rail the body sits on|
 |`[rail]`|`segmented` (default), `continuous`|whether the rail breaks between rows|
+|`[orientation]`|`vertical` (default), `horizontal`|which axis the run reads along|
 
 ```html
 <cngx-timeline [items]="milestones()" [dateAccessor]="at"
@@ -167,6 +168,35 @@ literal because a container-query condition cannot read a custom property.
 than as one line behind the run. That is what keeps a `rejected` stretch red
 and an `upcoming` tail dashed. The last segment of a band never stretches, so
 the gap between groups stays open.
+
+### Horizontal
+
+`orientation="horizontal"` transposes the whole raster: the rail becomes the
+axis, the cards stack away from it, and grouped bands become labelled columns.
+The run sits behind `overflow-x: auto`, which makes it keyboard-scrollable
+natively.
+
+Orientation **composes** with placement rather than replacing it. Under
+`horizontal`, `[placement]` selects which side of the *axis* a row sits on, so
+`alternate` puts cards above and below in turn. The organism derives a side per
+row, never a direction; the stylesheet decides which axis that side lives on.
+
+```html
+<cngx-timeline [items]="events()" [dateAccessor]="at"
+               orientation="horizontal" placement="alternate" groupBy="none">
+```
+
+A horizontal row takes `--cngx-timeline-item-inline-size` (default `12rem`)
+rather than a content-derived width, because flex would otherwise size every
+card to its longest word and the axis would read as a ragged queue.
+
+`mode="activity"` has no horizontal variant: a scan-feed is a vertical shape,
+and those rows render the narrative axis.
+
+**RTL is free.** In horizontal the run's main axis *is* the inline axis, so
+`dir="rtl"` reverses the whole timeline through the same logical properties
+that carry the block axis in vertical. Neither stylesheet contains a single
+physical property.
 
 ## Slots
 
