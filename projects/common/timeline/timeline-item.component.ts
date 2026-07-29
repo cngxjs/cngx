@@ -1,12 +1,15 @@
 import { NgTemplateOutlet } from '@angular/common';
 import {
+  afterNextRender,
   ChangeDetectionStrategy,
   Component,
   computed,
   contentChild,
   Directive,
+  ElementRef,
   inject,
   input,
+  isDevMode,
   ViewEncapsulation,
 } from '@angular/core';
 import { type CngxAsyncState } from '@cngx/core/utils';
@@ -110,6 +113,14 @@ export class CngxTimelineMarkerContent {}
 export class CngxTimelineContent {}
 
 /**
+ * @internal Enough of the tabbable surface to catch the mistake this warns
+ * about. Not a general focus-order utility - `[tabindex]` matches a negative
+ * value too, which is deliberately over-eager for a dev-only check.
+ */
+const FOCUSABLE =
+  'a[href], button, input, select, textarea, summary, [tabindex], [contenteditable]';
+
+/**
  * One event on the timeline: a marker, the rail segment below it, an
  * optional timestamp, and the projected body.
  *
@@ -197,6 +208,7 @@ export class CngxTimelineContent {}
 })
 export class CngxTimelineItem {
   private readonly config = injectTimelineConfig();
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
 
   /**
    * Where the event sits in the history. Drives the marker and rail
@@ -251,9 +263,7 @@ export class CngxTimelineItem {
    * rather than branching on `<ng-content>` keeps the projection static:
    * content lands in the DOM once and renders whatever it was given.
    */
-  protected readonly markerTpl = computed(() =>
-    this.ownMarker() ? null : this.hostMarkerTpl(),
-  );
+  protected readonly markerTpl = computed(() => (this.ownMarker() ? null : this.hostMarkerTpl()));
 
   /** @internal Work in flight on this row's own state. */
   protected readonly busy = computed(() => {
@@ -295,4 +305,25 @@ export class CngxTimelineItem {
   protected readonly errorText = computed(() =>
     this.failed() ? (this.config.labels?.itemErrorFallback ?? '') : '',
   );
+
+  constructor() {
+    if (isDevMode()) {
+      // afterNextRender, not an effect: this is a one-shot authoring check
+      // on projected content, and the reactive graph has no business
+      // carrying it. Runs once per row, after its content exists.
+      afterNextRender(() => {
+        const opposite = this.host.nativeElement.querySelector(':scope > [cngxTimelineOpposite]');
+        if (opposite?.querySelector(FOCUSABLE)) {
+          console.warn(
+            '[cngx-timeline-item] focusable content inside [cngxTimelineOpposite]. ' +
+              'The slot projects ahead of the row body, so under placement="end" or ' +
+              '"alternate" it takes focus before the row it belongs to while painting ' +
+              'on the far side of the rail. Keep opposite content non-interactive and ' +
+              'put controls in the body.',
+            this.host.nativeElement,
+          );
+        }
+      });
+    }
+  }
 }

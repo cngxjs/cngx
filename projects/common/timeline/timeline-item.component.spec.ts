@@ -2,7 +2,7 @@ import { Component, computed, forwardRef, signal, TemplateRef, viewChild } from 
 import { TestBed } from '@angular/core/testing';
 import { createManualState } from '@cngx/common/data';
 import type { AsyncStatus } from '@cngx/core/utils';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CNGX_TIMELINE_MARKER_HOST } from './marker-host.token';
 import {
@@ -319,6 +319,79 @@ describe('CngxTimelineItem', () => {
       expect(item.querySelector('.cngx-timeline-item__opposite')).toBeNull();
     });
 
+    /**
+     * The slot projects ahead of the body, so its reading order is fixed
+     * while its paint follows `[data-row-side]`. Under `end` / `alternate`
+     * a focusable child would take focus before the row it belongs to, and
+     * no grid placement can fix that - so the constraint gets a dev signal
+     * rather than only a line in the README.
+     */
+    describe('non-interactive contract', () => {
+      function mountOpposite(content: 'link' | 'label'): void {
+        TestBed.resetTestingModule();
+
+        @Component({
+          selector: 'cngx-timeline-opposite-focus-host',
+          standalone: true,
+          imports: [CngxTimelineItem, CngxTimelineOpposite],
+          template: `
+            <cngx-timeline-item>
+              <span cngxTimelineOpposite>
+                @if (isLink) {
+                  <a href="#somewhere">2019</a>
+                } @else {
+                  2019
+                }
+              </span>
+              <p>Founded</p>
+            </cngx-timeline-item>
+          `,
+        })
+        class OppositeFocusHost {
+          readonly isLink = content === 'link';
+        }
+
+        TestBed.configureTestingModule({ imports: [OppositeFocusHost] });
+        const fixture = TestBed.createComponent(OppositeFocusHost);
+        fixture.detectChanges();
+        TestBed.tick();
+      }
+
+      function warnings(spy: { mock: { calls: readonly unknown[][] } }): number {
+        return spy.mock.calls.filter((call) =>
+          String(call[0]).includes('focusable content inside [cngxTimelineOpposite]'),
+        ).length;
+      }
+
+      it('warns once when the slot holds something focusable', () => {
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+        mountOpposite('link');
+
+        expect(warnings(warn)).toBe(1);
+        warn.mockRestore();
+      });
+
+      it('stays silent for a plain label, which is what the slot is for', () => {
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+        mountOpposite('label');
+
+        expect(warnings(warn)).toBe(0);
+        warn.mockRestore();
+      });
+
+      it('stays silent for a row that projects no opposite content at all', () => {
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+        mount();
+        TestBed.tick();
+
+        expect(warnings(warn)).toBe(0);
+        warn.mockRestore();
+      });
+    });
+
     it('keeps opposite content out of the body, so the body raster is unchanged', () => {
       TestBed.resetTestingModule();
 
@@ -491,7 +564,9 @@ describe('CngxTimelineItem', () => {
         detect();
 
         expect(item.hasAttribute('data-failed')).toBe(false);
-        expect(item.querySelector('cngx-timeline-marker')?.getAttribute('data-status')).toBe('done');
+        expect(item.querySelector('cngx-timeline-marker')?.getAttribute('data-status')).toBe(
+          'done',
+        );
       });
     });
   });
