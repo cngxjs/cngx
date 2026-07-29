@@ -8,6 +8,7 @@ import {
   CngxTimeline,
   type CngxTimelineMode,
   type CngxTimelinePlacement,
+  type CngxTimelineOrientation,
   type CngxTimelineRail,
 } from './timeline.component';
 
@@ -46,6 +47,7 @@ const TWO_BANDS: readonly Event[] = [
       [mode]="mode()"
       [placement]="placement()"
       [rail]="rail()"
+      [orientation]="orientation()"
       [state]="state()"
       [skeletonRowCount]="4"
     >
@@ -61,6 +63,7 @@ class LayoutHost {
   readonly mode = signal<CngxTimelineMode>('narrative');
   readonly placement = signal<CngxTimelinePlacement>('start');
   readonly rail = signal<CngxTimelineRail>('segmented');
+  readonly orientation = signal<CngxTimelineOrientation>('vertical');
   readonly state = signal<ReturnType<typeof createManualState<readonly Event[]>> | undefined>(
     undefined,
   );
@@ -281,6 +284,77 @@ describe('CngxTimeline layout', () => {
       expect(row?.getAttribute('role')).toBe('listitem');
       expect(row?.hasAttribute('aria-hidden')).toBe(false);
       expect(row?.hasAttribute('aria-label')).toBe(false);
+    });
+  });
+
+  describe('orientation', () => {
+    it('defaults to vertical, so v1 markup renders unchanged', () => {
+      const { el } = mount();
+
+      expect(el.querySelector('cngx-timeline')?.getAttribute('data-orientation')).toBe('vertical');
+    });
+
+    it('reflects horizontal onto the host', () => {
+      const { el, host, detect } = mount();
+
+      host.orientation.set('horizontal');
+      detect();
+
+      expect(el.querySelector('cngx-timeline')?.getAttribute('data-orientation')).toBe(
+        'horizontal',
+      );
+    });
+
+    it.each(PLACEMENTS)('composes with placement "%s" rather than replacing it', (placement) => {
+      const { el, host, detect } = mount();
+
+      host.orientation.set('horizontal');
+      host.placement.set(placement);
+      detect();
+
+      const timeline = el.querySelector('cngx-timeline');
+      expect(timeline?.getAttribute('data-orientation')).toBe('horizontal');
+      expect(timeline?.getAttribute('data-placement')).toBe(placement);
+      // The side derivation is axis-agnostic: the organism computes which
+      // side of the rail a row sits on, and the stylesheet decides which
+      // axis that side lives on.
+      expect(sides(el)).toEqual(
+        placement === 'alternate'
+          ? ['start', 'end', 'start', 'end']
+          : [placement, placement, placement, placement],
+      );
+    });
+
+    it('keeps the grouped ARIA chain identical under horizontal', () => {
+      const { el, host, detect } = mount();
+
+      host.orientation.set('horizontal');
+      detect();
+
+      expect(roles(el)).toEqual(['group', null, 'list']);
+      expect(el.querySelectorAll('[role="listitem"]')).toHaveLength(4);
+    });
+
+    it('keeps the ungrouped ARIA chain identical under horizontal', () => {
+      const { el, host, detect } = mount();
+
+      host.orientation.set('horizontal');
+      host.groupBy.set('none');
+      detect();
+
+      expect(roles(el)).toEqual(['list', 'presentation', 'presentation']);
+      expect(el.querySelectorAll('[role="listitem"]')).toHaveLength(4);
+    });
+
+    it('adds no scroll-related ARIA of its own - the container is natively scrollable', () => {
+      const { el, host, detect } = mount();
+
+      host.orientation.set('horizontal');
+      detect();
+      const timeline = el.querySelector('cngx-timeline');
+
+      expect(timeline?.hasAttribute('role')).toBe(false);
+      expect(timeline?.hasAttribute('tabindex')).toBe(false);
     });
   });
 

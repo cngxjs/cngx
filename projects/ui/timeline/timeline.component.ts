@@ -101,6 +101,24 @@ export type CngxTimelinePlacement = 'start' | 'end' | 'alternate';
 export type CngxTimelineRail = 'segmented' | 'continuous';
 
 /**
+ * Which axis the run reads along.
+ *
+ * `vertical` (default) stacks rows down the page. `horizontal` lays them out
+ * along the inline axis behind a scroll container, with the rail as a
+ * horizontal axis and the content stacked away from it.
+ *
+ * Orientation composes with `placement` rather than replacing it: under
+ * `horizontal`, `[placement]` selects which side of the *axis* a row's body
+ * sits on, so `alternate` puts cards above and below in turn.
+ *
+ * Named `orientation` rather than `direction` because `[direction]` is
+ * already the sort order on this component.
+ *
+ * @category ui/timeline
+ */
+export type CngxTimelineOrientation = 'vertical' | 'horizontal';
+
+/**
  * Grouped, themed, RTL-safe timeline over a flat list of events.
  *
  * Data in, rows out: bind `[items]` and a `[dateAccessor]`, project one
@@ -171,6 +189,7 @@ export type CngxTimelineRail = 'segmented' | 'continuous';
     '[attr.data-skin]': 'skin()',
     '[attr.data-placement]': 'placement()',
     '[attr.data-rail]': 'rail()',
+    '[attr.data-orientation]': 'orientation()',
     '[attr.data-ungrouped]': 'ungrouped() ? "" : null',
     // Aliased inputs leave the raw attribute behind, naming the role-less host.
     '[attr.aria-label]': 'null',
@@ -260,6 +279,9 @@ export class CngxTimeline<T = unknown> implements CngxTimelineMarkerHost {
 
   /** Whether the rail breaks between rows. See {@link CngxTimelineRail}. */
   readonly rail = input<CngxTimelineRail>('segmented');
+
+  /** Which axis the run reads along. See {@link CngxTimelineOrientation}. */
+  readonly orientation = input<CngxTimelineOrientation>('vertical');
 
   /** Accessible name for the list. Falls back to the config's `timelineRegion`. */
   readonly ariaLabel = input<string | undefined>(undefined, { alias: 'aria-label' });

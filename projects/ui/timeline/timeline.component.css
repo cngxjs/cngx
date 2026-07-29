@@ -255,6 +255,72 @@
         'body rail opposite';
     }
 
+    /* ───────────────────────────────────────────────────────────────
+       Horizontal: the bands become inline columns behind a scroll
+       container, and the rows inside a band become an inline run. The row
+       raster itself is not restated here - that belongs to the row, and
+       `timeline-item.component.css` already carries both axes.
+
+       `overflow-x: auto` makes the run keyboard-scrollable natively, which
+       is why no roving tabindex appears with it. The date header stays at
+       the block-start of its band, so a grouped horizontal run reads as
+       labelled columns.
+       ─────────────────────────────────────────────────────────────── */
+    :scope[data-orientation='horizontal'] {
+      overflow-x: auto;
+    }
+
+    :scope[data-orientation='horizontal'] .cngx-timeline__list {
+      flex-direction: row;
+      align-items: start;
+    }
+
+    /* Bands keep their own width instead of sharing the container's, so a
+       long run scrolls rather than crushing every column. */
+    :scope[data-orientation='horizontal'] .cngx-timeline__group {
+      flex: none;
+    }
+
+    /* The band stays a column - header above, rows below - while the rows
+       inside it become the inline run. */
+    :scope[data-orientation='horizontal'] .cngx-timeline__rows {
+      flex-direction: row;
+      align-items: stretch;
+    }
+
+    /* The placeholder transposes with the content it stands in for, or the
+       swap would reflow on exactly the axis this branch exists to reserve. */
+    :scope[data-orientation='horizontal'] .cngx-timeline__skeleton {
+      display: flex;
+      flex-direction: row;
+      gap: var(--cngx-timeline-item-gap, 16px);
+    }
+
+    :scope[data-orientation='horizontal'] .cngx-timeline__skeleton-row {
+      grid-template-columns: auto minmax(0, 1fr);
+      grid-template-rows: auto auto minmax(0, 1fr);
+      grid-template-areas:
+        'marker rail'
+        'line line'
+        'body body';
+      inline-size: 12rem;
+    }
+
+    /* The inline run carries its own spacing through the flex gap above, so
+       the vertical stack margin would double it. */
+    :scope[data-orientation='horizontal']
+      .cngx-timeline__skeleton-row
+      + .cngx-timeline__skeleton-row {
+      margin-block-start: 0;
+    }
+
+    :scope[data-orientation='horizontal'] .cngx-timeline__skeleton-rail {
+      inline-size: 100%;
+      block-size: var(--cngx-timeline-connector-width, 2px);
+      align-self: center;
+      justify-self: stretch;
+    }
+
     /* Same 32rem degrade the row raster takes, for the same reason and
        against the same container. The organism names the container, so this
        block queries its own :scope. */
