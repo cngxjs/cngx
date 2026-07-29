@@ -1,0 +1,246 @@
+/**
+ * @overview
+ * The `--cngx-timeline-*` custom-property family, shared by every
+ * artifact in `@cngx/common/timeline` and re-used by the `<cngx-timeline>`
+ * organism in `@cngx/ui/timeline`. A pure token surface - registrations
+ * plus `:root` chains, no structural rules and no `@scope`.
+ *
+ * It lives with the atoms rather than with the organism on purpose: a
+ * `<cngx-timeline-item>` dropped into a hand-rolled layout has to render
+ * complete and density-correct on its own. A token family that only
+ * resolved under a Level-4 host would make the molecule a fragment
+ * instead of a terminal unit.
+ *
+ * **Where the spacing tokens are, and why not here**
+ *
+ * This file carries no `-gap` / `-padding` registration. A spacing token
+ * is registered in the same stylesheet that SETs it from `--cngx-space-*`,
+ * at that component's own host:
+ *
+ * - `--cngx-timeline-gap`, `--cngx-timeline-row-gap`,
+ *   `--cngx-timeline-content-padding` - `timeline-item.component.css`
+ * - `--cngx-timeline-group-gap` - the organism's stylesheet
+ *
+ * Registering them here and SETting them there would put a registration
+ * one file away from its derivation, where the two can drift silently: a
+ * registered `initial-value` defeats every use-site `var(token,
+ * fallback)`, so a token that loses its SET rule freezes at the literal
+ * and a nested `[data-density]` never reaches it. Keeping the pair
+ * together makes that failure impossible to introduce by accident, and is
+ * what the repo's density guard checks per file.
+ *
+ * The sizes that remain here are affordances, not compactness, and are
+ * deliberately outside the density scale. `--cngx-timeline-rail-inset` in
+ * particular derives from `--cngx-timeline-marker-size`: the rail has to
+ * meet the marker's centre, and a density swap that moved one without the
+ * other would detach the rail from the dot. That derivation is applied at
+ * the row host (`timeline-item.component.css`), the nearest common ancestor
+ * of the marker and the connector - custom properties inherit downwards
+ * only, so deriving it on either sibling would never reach the other.
+ *
+ * **Colour and dark mode**
+ *
+ * Every colour chains to a `--cngx-color-*` foundation token, which
+ * already carries its own light and dark values. Dark mode therefore
+ * needs no per-token redefinition here - overriding
+ * `--cngx-color-primary` or the active colour scheme re-themes the
+ * timeline for free. The literal in each chain's tail is the leaf
+ * default for consumers running without the foundation stylesheet.
+ *
+ * - `--cngx-timeline-connector-color` -> `--cngx-color-border`
+ * - `--cngx-timeline-surface` -> `--cngx-color-surface`
+ * - `--cngx-timeline-text-color` -> `--cngx-color-text`
+ * - `--cngx-timeline-muted-color` -> `--cngx-color-text-muted`
+ * - `--cngx-timeline-done-color` -> `--cngx-color-success`
+ * - `--cngx-timeline-active-color` -> `--cngx-color-primary`
+ * - `--cngx-timeline-rejected-color` -> `--cngx-color-danger`
+ * - `--cngx-timeline-upcoming-color` -> `--cngx-color-text-muted`
+ */
+
+@layer cngx.tokens {
+  /**
+   * Distance the rail is pulled back from the edge of the marker cell so
+   * it meets the marker's centre. Affordance geometry, deliberately
+   * outside the density scale - it tracks `--cngx-timeline-marker-size`
+   * instead, and a density swap that moved it would detach the rail from
+   * the dot.
+   * @group Layout
+   */
+  @property --cngx-timeline-rail-inset {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 6px;
+  }
+
+  /**
+   * Diameter of the marker dot.
+   * @group Layout
+   */
+  @property --cngx-timeline-marker-size {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 12px;
+  }
+
+  /**
+   * Thickness of the connector rail.
+   * @group Layout
+   */
+  @property --cngx-timeline-connector-width {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 2px;
+  }
+
+  /**
+   * Width of the halo ring drawn around a marker in the `active` status.
+   * @group Layout
+   */
+  @property --cngx-timeline-marker-ring-width {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 3px;
+  }
+
+  /**
+   * Colour of the connector rail in its default (unstated) status.
+   * @group Surface
+   * @see [[--cngx-color-border]]
+   */
+  @property --cngx-timeline-connector-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.88 0.005 250);
+  }
+
+  /**
+   * Background the marker is punched out of, so a coloured rail passing
+   * behind the dot does not show through it.
+   * @group Surface
+   * @see [[--cngx-color-surface]]
+   */
+  @property --cngx-timeline-surface {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(1 0 0);
+  }
+
+  /**
+   * Foreground colour of a glyph projected into the marker.
+   * @group Typography
+   */
+  @property --cngx-timeline-marker-fg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(1 0 0);
+  }
+
+  /**
+   * Font size for secondary text across the family - timestamps, inline
+   * errors, date headers, the refreshing tail. Registered here rather than
+   * with either consumer, because the row and the organism both read it and
+   * a registration in one is out of scope for the other.
+   * @group Typography
+   */
+  @property --cngx-timeline-meta-size {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0.8125rem;
+  }
+
+  /**
+   * Primary text colour inside an item.
+   * @group Typography
+   * @see [[--cngx-color-text]]
+   */
+  @property --cngx-timeline-text-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.2 0.01 250);
+  }
+
+  /**
+   * Secondary text colour - timestamps, group headers, the refreshing tail.
+   * @group Typography
+   * @see [[--cngx-color-text-muted]]
+   */
+  @property --cngx-timeline-muted-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.5 0.01 250);
+  }
+
+  /**
+   * Marker and rail colour for the `done` status.
+   * @group Variant / Done
+   * @see [[--cngx-color-success]]
+   */
+  @property --cngx-timeline-done-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.6 0.15 145);
+  }
+
+  /**
+   * Marker and rail colour for the `active` status.
+   * @group Variant / Active
+   * @see [[--cngx-color-primary]]
+   */
+  @property --cngx-timeline-active-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.66 0.19 50);
+  }
+
+  /**
+   * Marker and rail colour for the `upcoming` status. Pairs with a dashed
+   * rail, so the state survives a colour-blind reader.
+   * @group Variant / Upcoming
+   * @see [[--cngx-color-text-muted]]
+   */
+  @property --cngx-timeline-upcoming-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.5 0.01 250);
+  }
+
+  /**
+   * Marker and rail colour for the `rejected` status, and for an item
+   * whose own `[state]` failed.
+   * @group Variant / Rejected
+   * @see [[--cngx-color-danger]]
+   */
+  @property --cngx-timeline-rejected-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.6 0.18 25);
+  }
+
+  /**
+   * Period of the busy pulse on a marker. Set to `0s` to stop it without
+   * touching the rest of the family.
+   * @group Motion
+   */
+  @property --cngx-timeline-pulse-duration {
+    syntax: '<time>';
+    inherits: true;
+    initial-value: 1.6s;
+  }
+}
+
+/* Colour chains. Each timeline token resolves through the foundation
+ * `--cngx-color-*` tier, which carries its own light and dark values, so
+ * the family follows the active colour scheme with no dark-mode block of
+ * its own. These are assignments rather than use-site fallbacks because a
+ * registered `@property` initial-value never unsets - `var(token,
+ * fallback)` would never reach the fallback. */
+:root {
+  --cngx-timeline-connector-color: var(--cngx-color-border, oklch(0.88 0.005 250));
+  --cngx-timeline-surface: var(--cngx-color-surface, oklch(1 0 0));
+  --cngx-timeline-text-color: var(--cngx-color-text, oklch(0.2 0.01 250));
+  --cngx-timeline-muted-color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
+  --cngx-timeline-done-color: var(--cngx-color-success, oklch(0.6 0.15 145));
+  --cngx-timeline-active-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+  --cngx-timeline-upcoming-color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
+  --cngx-timeline-rejected-color: var(--cngx-color-danger, oklch(0.6 0.18 25));
+}

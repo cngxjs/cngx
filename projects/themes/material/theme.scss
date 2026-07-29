@@ -70,6 +70,7 @@
 @use './stepper-theme' as stepper;
 @use './tabs-theme' as tabs;
 @use './tag-theme' as tag;
+@use './timeline-theme' as timeline;
 @use './tooltip-theme' as tooltip;
 @use './trend-theme' as trend;
 @use './treetable-theme' as treetable;
@@ -130,6 +131,7 @@
   @include stepper.theme($theme);
   @include tabs.theme($theme);
   @include tag.theme($theme);
+  @include timeline.theme($theme);
   @include tooltip.theme($theme);
   @include trend.theme($theme);
   @include treetable.theme($theme);

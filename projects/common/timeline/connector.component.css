@@ -1,0 +1,71 @@
+/**
+ * @overview
+ * Default visuals for `CngxTimelineConnector` - the vertical rail between
+ * two markers.
+ *
+ * **Geometry**
+ *
+ * The rail is the element's own `border-inline-start`, which puts it on
+ * the left in LTR and on the right in RTL with no override and no
+ * physical property anywhere in this file. `justify-self: center` inside
+ * the item's marker column lines it up with the dot above it.
+ *
+ * **Position modifiers**
+ *
+ * `[data-position]` clips the segment back to the adjacent marker's
+ * centre using `--cngx-timeline-rail-inset`:
+ *
+ * - `middle` (default) - full height
+ * - `first` - head clipped, so the rail starts at the first marker
+ * - `last` - tail clipped, so the rail stops at the last marker
+ * - `only` - not rendered; a single-item timeline has no rail
+ *
+ * **Status modifiers**
+ *
+ * `[data-status]` recolours the border, and `upcoming` also switches it
+ * to `dashed` so the state does not rest on colour alone.
+ */
+
+@layer cngx.components {
+  @scope (.cngx-timeline-connector) {
+    :scope {
+      display: block;
+      inline-size: 0;
+      block-size: 100%;
+      justify-self: center;
+      border-inline-start: var(--cngx-timeline-connector-width, 2px) solid
+        var(--cngx-timeline-connector-color, oklch(0.88 0.005 250));
+    }
+
+    :scope[data-position='first'] {
+      margin-block-start: var(--cngx-timeline-rail-inset, 6px);
+    }
+
+    :scope[data-position='last'] {
+      margin-block-end: var(--cngx-timeline-rail-inset, 6px);
+    }
+
+    :scope[data-position='only'] {
+      display: none;
+    }
+
+    :scope[data-status='done'] {
+      border-inline-start-color: var(--cngx-timeline-done-color, oklch(0.6 0.15 145));
+    }
+
+    :scope[data-status='active'] {
+      border-inline-start-color: var(--cngx-timeline-active-color, oklch(0.66 0.19 50));
+    }
+
+    :scope[data-status='rejected'] {
+      border-inline-start-color: var(--cngx-timeline-rejected-color, oklch(0.6 0.18 25));
+    }
+
+    /* Dashed as well as muted: `upcoming` has to be distinguishable from
+       the neutral rail without relying on two low-chroma greys. */
+    :scope[data-status='upcoming'] {
+      border-inline-start-style: dashed;
+      border-inline-start-color: var(--cngx-timeline-upcoming-color, oklch(0.5 0.01 250));
+    }
+  }
+}

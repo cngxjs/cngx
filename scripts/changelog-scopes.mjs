@@ -26,6 +26,7 @@ export const LIBRARY_SCOPES = [
   'common/dialog',
   'common/data',
   'common/layout',
+  'common/timeline',
   'forms',
   'forms/controls',
   'forms/validators',
@@ -60,6 +61,7 @@ export const LIBRARY_SCOPES = [
   'ui/collection',
   'ui/stat-card',
   'ui/chart-panel',
+  'ui/timeline',
   'themes/material',
 ];
 

@@ -1,0 +1,168 @@
+/**
+ * @overview
+ * Default visuals for `CngxTimelineItem` - the two-column raster that puts
+ * the marker and its rail in one track and the item's content in the other.
+ *
+ * **Rasters**
+ *
+ * `narrative` is the default and is declared on the host itself, so an
+ * item outside any `<cngx-timeline>` still lays out completely. The
+ * timestamp sits above the body:
+ *
+ * ```text
+ * marker  time
+ * rail    body
+ * ```
+ *
+ * `activity` is an override, keyed off the `[data-mode]` attribute the
+ * organism sets on an ancestor. The timestamp trails the body on one line:
+ *
+ * ```text
+ * marker  body  time
+ * rail    body  time
+ * ```
+ *
+ * **Density**
+ *
+ * The three spacing tokens are registered and SET here, in the one file
+ * that uses them, so the registration cannot outlive its derivation. A
+ * `[data-density]` swap on any ancestor re-scales all three.
+ *
+ * `--cngx-timeline-marker-size` and `--cngx-timeline-rail-inset` are
+ * deliberately absent: they are affordance geometry and live with the
+ * atoms in `timeline-tokens.css`.
+ *
+ * **State**
+ *
+ * `[data-failed]` recolours the row's text and shows the inline error. The
+ * error and the screen-reader status line are rendered only while they have
+ * something to say, and are read as the row's own content - the host carries
+ * no role for an `aria-describedby` to resolve against.
+ */
+
+@layer cngx.tokens {
+  /**
+   * Column gap between the marker track and the content.
+   * SET from `--cngx-space-sm`.
+   * @group Layout
+   */
+  @property --cngx-timeline-gap {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 8px;
+  }
+
+  /**
+   * Row gap inside one item, between the timestamp and the body.
+   * SET from `--cngx-space-xs`.
+   * @group Layout
+   */
+  @property --cngx-timeline-row-gap {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 4px;
+  }
+
+  /**
+   * Padding around an item's projected body.
+   * SET from `--cngx-space-xs`.
+   * @group Layout
+   */
+  @property --cngx-timeline-content-padding {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 4px;
+  }
+}
+
+@layer cngx.components {
+  @scope (.cngx-timeline-item) {
+    :scope {
+      /* Derive from the global scale so a [data-density] swap reaches
+         them; the registered pixel initials above would otherwise defeat
+         every use-site fallback. 8 -> sm, 4 -> xs, 4 -> xs. */
+      --cngx-timeline-gap: var(--cngx-space-sm, 8px);
+      --cngx-timeline-row-gap: var(--cngx-space-xs, 4px);
+      --cngx-timeline-content-padding: var(--cngx-space-xs, 4px);
+      /* Half the dot, so a rail clipped to this offset meets the marker's
+         centre. It is derived here, at the nearest common ancestor of the
+         two: the marker and the connector are siblings, so a value set on
+         either one is invisible to the other. */
+      --cngx-timeline-rail-inset: calc(var(--cngx-timeline-marker-size, 12px) / 2);
+
+      display: grid;
+      /* narrative: marker track sized to the dot, content takes the rest. */
+      grid-template-columns: auto minmax(0, 1fr);
+      grid-template-rows: auto minmax(0, 1fr);
+      grid-template-areas:
+        'marker time'
+        'rail body';
+      column-gap: var(--cngx-timeline-gap, 8px);
+      row-gap: var(--cngx-timeline-row-gap, 4px);
+      color: var(--cngx-timeline-text-color, oklch(0.2 0.01 250));
+    }
+
+    .cngx-timeline-marker {
+      grid-area: marker;
+    }
+
+    .cngx-timeline-connector {
+      grid-area: rail;
+    }
+
+    .cngx-timeline-item__time {
+      grid-area: time;
+      color: var(--cngx-timeline-muted-color, oklch(0.5 0.01 250));
+      font-size: var(--cngx-timeline-meta-size, 0.8125rem);
+      line-height: 1.4;
+    }
+
+    .cngx-timeline-item__body {
+      grid-area: body;
+      padding: var(--cngx-timeline-content-padding, 4px);
+      /* The body owns the item's own bottom breathing room; the run's
+         inter-item spacing belongs to the container above it. */
+      padding-block-end: var(--cngx-timeline-row-gap, 4px);
+      min-inline-size: 0;
+    }
+
+    .cngx-timeline-item__error {
+      margin: 0;
+      color: var(--cngx-timeline-rejected-color, oklch(0.6 0.18 25));
+      font-size: var(--cngx-timeline-meta-size, 0.8125rem);
+      line-height: 1.4;
+    }
+
+    /* Visually gone, still read in DOM order. */
+    .cngx-timeline-item__sr {
+      position: absolute;
+      inline-size: 1px;
+      block-size: 1px;
+      margin: -1px;
+      padding: 0;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    :scope[data-failed] .cngx-timeline-item__time {
+      color: var(--cngx-timeline-rejected-color, oklch(0.6 0.18 25));
+    }
+  }
+
+  /* activity raster - opt-in through the organism's [data-mode]. Higher
+     specificity than the :scope default above, so it simply wins. */
+  [data-mode='activity'] .cngx-timeline-item {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      'marker body time'
+      'rail body time';
+  }
+
+  [data-mode='activity'] .cngx-timeline-item .cngx-timeline-item__time {
+    align-self: start;
+    text-align: end;
+    white-space: nowrap;
+  }
+}

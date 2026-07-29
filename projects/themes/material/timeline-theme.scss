@@ -1,0 +1,64 @@
+@use '@angular/material' as mat;
+
+// Material bridge for the timeline family. Default visuals ship with the
+// artifacts themselves - projects/common/timeline/timeline-tokens.css for the
+// shared family, plus the per-component stylesheets - and read the cngx
+// foundation --cngx-color-* tokens with literal oklch fallbacks. This file is
+// the single place that re-points those tokens at Material, so a timeline
+// reads as native next to Material surfaces. --mat-sys-* appears only here.
+//
+// Assignment sits on :where(cngx-timeline, cngx-timeline-item,
+// cngx-timeline-marker, cngx-timeline-connector) rather than on the organism
+// alone: the atoms and the molecule are terminal units a consumer can use
+// without any <cngx-timeline> above them, and a bridge that only reached the
+// organism would leave those standalone uses un-themed.
+//
+// Spacing is deliberately absent. The timeline derives every gap and padding
+// from --cngx-space-*, which density-bridge.scss already maps to the Material
+// density scale; forking those here would fight it.
+//
+//   @use '@angular/material' as mat;
+//   @use '@cngx/themes/material/timeline-theme' as timeline;
+//   html { @include timeline.theme($theme); }
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-timeline-connector-color: var(--mat-sys-outline-variant);
+    --cngx-timeline-surface: var(--mat-sys-surface);
+    --cngx-timeline-marker-fg: var(--mat-sys-on-primary);
+    --cngx-timeline-text-color: var(--mat-sys-on-surface);
+    --cngx-timeline-muted-color: var(--mat-sys-on-surface-variant);
+    --cngx-timeline-active-color: var(--mat-sys-primary);
+    --cngx-timeline-rejected-color: var(--mat-sys-error);
+    --cngx-timeline-upcoming-color: var(--mat-sys-outline);
+    // M3 has no success role. Tertiary is the documented stand-in for a
+    // positive-but-not-primary accent, which is what a completed event is.
+    --cngx-timeline-done-color: var(--mat-sys-tertiary);
+  } @else {
+    $primary: mat.get-theme-color($theme, primary);
+    $accent: mat.get-theme-color($theme, accent);
+    $error: mat.get-theme-color($theme, warn);
+    $divider: mat.get-theme-color($theme, foreground, divider);
+    $secondary: mat.get-theme-color($theme, foreground, secondary-text);
+    $text: mat.get-theme-color($theme, foreground, text);
+    $card: mat.get-theme-color($theme, background, card);
+
+    --cngx-timeline-connector-color: #{$divider};
+    --cngx-timeline-surface: #{$card};
+    --cngx-timeline-marker-fg: #{$card};
+    --cngx-timeline-text-color: #{$text};
+    --cngx-timeline-muted-color: #{$secondary};
+    --cngx-timeline-active-color: #{$primary};
+    --cngx-timeline-rejected-color: #{$error};
+    --cngx-timeline-upcoming-color: #{$secondary};
+    --cngx-timeline-done-color: #{$accent};
+  }
+}
+
+@mixin theme($theme) {
+  @layer cngx.components {
+    :where(cngx-timeline, cngx-timeline-item, cngx-timeline-marker, cngx-timeline-connector) {
+      @include color($theme);
+    }
+  }
+}

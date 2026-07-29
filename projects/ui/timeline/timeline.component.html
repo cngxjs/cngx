@@ -1,0 +1,162 @@
+@switch (activeView()) {
+  @case ('skeleton') {
+    <!-- The container owns show-delay and min-dwell, so a fast load never
+         flashes and the timeline holds no latency logic. The placeholder
+         reuses the item raster, so the swap to content cannot reflow. -->
+    <!-- The class carries no rule on purpose: `<cngx-skeleton>` hosts itself
+         with `display: contents` and has no box to style. It is the hook that
+         makes the loading branch addressable from outside - tests and
+         consumer overrides have nothing else to select on. -->
+    <!-- [loading], not [state]: the container derives first-load from a bound
+         state and would refuse to draw on a refetch that has nothing on
+         screen, which is exactly the branch this case exists for. Reaching
+         this branch at all IS the decision that a placeholder belongs here -
+         activeView() already made it - so the flag is true by construction
+         and the container is left owning only show-delay and min-dwell. -->
+    <cngx-skeleton class="cngx-timeline__skeleton" [loading]="true" [count]="skeletonRowCount()">
+      <ng-template cngxSkeletonPlaceholder>
+        <!-- aria-hidden on the wrapper, not on the branches: whatever a
+             consumer supplies is decoration too, and the load is announced
+             through the live region at the bottom of this template. -->
+        <div aria-hidden="true">
+          @if (skeletonTpl(); as tpl) {
+            <ng-container *ngTemplateOutlet="tpl" />
+          } @else {
+            <!-- Own classes, not the row's. `CngxTimelineItem` is never
+                 imported here, so on a cold first load its Track-A stylesheet
+                 is not in the document yet and borrowed classes would render
+                 unstyled - on the one path the skeleton exists to cover. -->
+            <div class="cngx-timeline__skeleton-row">
+              <span class="cngx-timeline__skeleton-marker"></span>
+              <span class="cngx-timeline__skeleton-rail"></span>
+              <div class="cngx-timeline__skeleton-body">
+                <span class="cngx-timeline__skeleton-line"></span>
+                <span
+                  class="cngx-timeline__skeleton-line cngx-timeline__skeleton-line--short"
+                ></span>
+              </div>
+            </div>
+          }
+        </div>
+      </ng-template>
+    </cngx-skeleton>
+  }
+
+  @case ('empty') {
+    <div class="cngx-timeline__empty">
+      @if (emptyTpl(); as tpl) {
+        <ng-container *ngTemplateOutlet="tpl; context: { $implicit: emptyReason() }" />
+      } @else {
+        {{ labels.emptyFallback }}
+      }
+    </div>
+  }
+
+  @case ('error') {
+    <ng-container *ngTemplateOutlet="errorSurface" />
+  }
+}
+
+@if (showsContent() && groups().length) {
+  <!-- aria-busy belongs on the element that owns the content, not on the
+       role-less host, where AT would never read it. -->
+  <div
+    class="cngx-timeline__list"
+    [attr.role]="containerRole()"
+    [attr.aria-busy]="ariaBusy()"
+    [attr.aria-label]="listLabel()"
+    [attr.aria-labelledby]="ariaLabelledBy()"
+  >
+    @for (group of groups(); track group.key) {
+      <!-- Three elements per band, not two, and the middle one is why: a
+           list may own nothing but listitems, so the header cannot sit
+           inside it. The header is a consumer slot and the documented
+           example is an <h3> - a real role, which axe rejects as a child of
+           role="list". So the band wrapper stays generic, the header sits
+           beside the rows, and only the rows carry the list role. The rows
+           element is what the header names, and what v2 wraps in a
+           <details role="group">.
+
+           Ungrouped drops both wrappers to presentation rather than to no
+           role at all: a generic div between the list and its rows still
+           owns them and breaks listitem's required context - display:
+           contents fixes the box tree, not this.
+
+           The label id is keyed on $index, not on group.key: a custom
+           TimelineGroupingFn is free to return "today / this week / earlier",
+           and whitespace in an id makes this reference resolve to nothing,
+           leaving the band unnamed. -->
+      <div class="cngx-timeline__group" [attr.role]="wrapperRole()">
+        @if (!ungrouped()) {
+          <div class="cngx-timeline__date-header" [id]="groupLabelId($index)">
+            @if (dateHeaderTpl(); as tpl) {
+              <ng-container *ngTemplateOutlet="tpl; context: { $implicit: group }" />
+            } @else {
+              {{ labels.groupLabel(group) }}
+            }
+          </div>
+        }
+
+        <div
+          class="cngx-timeline__rows"
+          [attr.role]="rowsRole()"
+          [attr.aria-labelledby]="ungrouped() ? null : groupLabelId($index)"
+        >
+          @for (item of group.items; track trackItem($index, item)) {
+            <div class="cngx-timeline__item" role="listitem">
+              @if (itemTpl(); as tpl) {
+                <ng-container *ngTemplateOutlet="tpl; context: itemContext(item, $index, group)" />
+              }
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+}
+
+<!-- A refresh keeps the loaded rows on screen, so this tail is the only visible
+     sign anything is happening. Outside the list, so it never reads as an
+     event of its own. Decorative: the announcement is the live region below,
+     which stays in the DOM whether or not there is anything to say. -->
+@if (refreshing()) {
+  <div class="cngx-timeline__tail" aria-hidden="true">
+    @if (loadingTailTpl(); as tpl) {
+      <ng-container *ngTemplateOutlet="tpl" />
+    } @else {
+      {{ labels.refreshing }}
+    }
+  </div>
+}
+
+@if (activeView() === 'content+error') {
+  <ng-container *ngTemplateOutlet="errorSurface" />
+}
+
+<!-- Always in the DOM, content reactive - a region created together with its
+     message is announced inconsistently or not at all. Empty whenever the
+     timeline has nothing to report. -->
+<span aria-live="polite" aria-atomic="true" class="cngx-timeline__sr-only">
+  {{ announcement() }}
+</span>
+
+<ng-template #errorSurface>
+  <div class="cngx-timeline__error">
+    @if (errorTpl(); as tpl) {
+      <ng-container
+        *ngTemplateOutlet="tpl; context: { $implicit: state()?.error(), retry: emitRetry }"
+      />
+    } @else {
+      <!-- The alert is the message alone. Wrapping the retry control in it
+           too would re-announce the button on every mutation of the region. -->
+      <p class="cngx-timeline__error-message" role="alert">{{ labels.errorFallback }}</p>
+      @if (retryButtonTpl(); as tpl) {
+        <ng-container *ngTemplateOutlet="tpl; context: { $implicit: emitRetry }" />
+      } @else {
+        <button class="cngx-timeline__retry" type="button" (click)="emitRetry()">
+          {{ labels.retry }}
+        </button>
+      }
+    }
+  </div>
+</ng-template>

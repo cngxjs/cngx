@@ -1,0 +1,104 @@
+/**
+ * @overview
+ * Default visuals for `CngxTimelineMarker` - a round, status-coloured dot
+ * that centres whatever is projected into it.
+ *
+ * **Status modifiers**
+ *
+ * Driven by `[data-status]`, set from the `status` Input:
+ *
+ * - `done` - filled in the success tone
+ * - `active` - filled in the primary tone, with a soft halo ring
+ * - `upcoming` - hollow, muted ring only, so the state reads without colour
+ * - `rejected` - filled in the danger tone
+ *
+ * **Busy pulse**
+ *
+ * `.cngx-timeline-marker--busy` animates `box-shadow` only. The marker
+ * shares a grid track with the connector rail, so animating size or
+ * `transform` would shift the rail's anchor every frame. Fully suppressed
+ * under `prefers-reduced-motion`.
+ *
+ * **Density**
+ *
+ * `--cngx-timeline-marker-size` is a fixed affordance, not compactness, so it
+ * is not SET from the scale. It is the anchor `--cngx-timeline-rail-inset`
+ * derives from, but that derivation is applied at the row host in
+ * `timeline-item.component.css`: the marker and the connector are siblings,
+ * and a custom property set here would never reach the rail.
+ */
+
+@layer cngx.components {
+  @scope (.cngx-timeline-marker) {
+    :scope {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      /* Never let a narrow flex or grid parent squash the circle into an
+         ellipse - the dot is a status channel, not decoration. */
+      flex: none;
+      inline-size: var(--cngx-timeline-marker-size, 12px);
+      block-size: var(--cngx-timeline-marker-size, 12px);
+      border-radius: 50%;
+      /* Opaque, so a coloured rail running behind the marker column does
+         not read through the dot. */
+      background: var(--cngx-timeline-connector-color, oklch(0.88 0.005 250));
+      box-shadow: 0 0 0 var(--cngx-timeline-connector-width, 2px)
+        var(--cngx-timeline-surface, oklch(1 0 0));
+      color: var(--cngx-timeline-marker-fg, oklch(1 0 0));
+      font-size: 0.625em;
+      line-height: 1;
+    }
+
+    :scope[data-status='done'] {
+      background: var(--cngx-timeline-done-color, oklch(0.6 0.15 145));
+    }
+
+    :scope[data-status='active'] {
+      background: var(--cngx-timeline-active-color, oklch(0.66 0.19 50));
+    }
+
+    :scope[data-status='rejected'] {
+      background: var(--cngx-timeline-rejected-color, oklch(0.6 0.18 25));
+    }
+
+    /* Hollow rather than filled: the shape carries `upcoming` on its own,
+       so the state does not depend on telling two muted colours apart. */
+    :scope[data-status='upcoming'] {
+      background: var(--cngx-timeline-surface, oklch(1 0 0));
+      border: var(--cngx-timeline-connector-width, 2px) dashed
+        var(--cngx-timeline-upcoming-color, oklch(0.5 0.01 250));
+      color: var(--cngx-timeline-upcoming-color, oklch(0.5 0.01 250));
+    }
+  }
+}
+
+@layer cngx.components {
+  @scope (.cngx-timeline-marker--busy) {
+    :scope {
+      animation: cngx-timeline-marker-pulse var(--cngx-timeline-pulse-duration, 1.6s) ease-in-out
+        infinite;
+    }
+  }
+}
+
+@keyframes cngx-timeline-marker-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 var(--cngx-timeline-connector-width, 2px) var(--cngx-timeline-surface, oklch(1 0 0)),
+      0 0 0 var(--cngx-timeline-connector-width, 2px) transparent;
+  }
+  50% {
+    box-shadow:
+      0 0 0 var(--cngx-timeline-connector-width, 2px) var(--cngx-timeline-surface, oklch(1 0 0)),
+      0 0 0 calc(var(--cngx-timeline-connector-width, 2px) + var(--cngx-timeline-marker-ring-width, 3px))
+        color-mix(in oklch, currentColor 35%, transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cngx-timeline-marker--busy {
+    animation: none;
+  }
+}
