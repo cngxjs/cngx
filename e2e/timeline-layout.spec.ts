@@ -107,6 +107,25 @@ test.describe('timeline layout - the opposite track is gated on markup', () => {
     expect(trackCount(columns)).toBe(3);
     expect(areas).toBe('"opposite marker time" "opposite rail body"');
   });
+
+  // The gate has to match the same set `<ng-content select>` projects.
+  // Projection lands the node as a direct child, and only a direct child
+  // can be a grid item - a descendant match would hand this row a track
+  // that nothing is able to occupy.
+  test('an opposite attribute nested in the body earns no track', async ({ page }) => {
+    await page.goto(NARRATIVE);
+    const row = await firstRow(page);
+    await row.evaluate((el) => {
+      const nested = document.createElement('span');
+      nested.setAttribute('cngxTimelineOpposite', '');
+      nested.textContent = 'not projected';
+      el.querySelector('.cngx-timeline-item__body')?.append(nested);
+    });
+    const { columns, areas } = await raster(page);
+
+    expect(trackCount(columns)).toBe(2);
+    expect(areas).toBe(V1_NARRATIVE_AREAS);
+  });
 });
 
 test.describe('timeline layout - locked cascade ties', () => {

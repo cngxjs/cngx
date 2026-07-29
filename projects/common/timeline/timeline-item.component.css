@@ -49,10 +49,16 @@
  * `[cngxTimelineOpposite]` gets a third track, and only rows that project
  * into it do: an unconditional `auto` track would collapse to zero width
  * but still take a `column-gap`, shifting every row that predates the
- * slot. The gate keys on the attribute rather than on the host class,
- * so it agrees with the `<ng-content select>` by construction - a
+ * slot.
+ *
+ * The gate is `:has(> [cngxTimelineOpposite])`, and both halves matter.
+ * The **attribute**, not the directive's host class, so it agrees with
+ * `<ng-content select="[cngxTimelineOpposite]">` by construction - a
  * consumer who projects the element without importing the directive still
- * gets the track.
+ * gets the track. The **child** combinator, because projection lands the
+ * node as a direct child of this host, and only a direct child can be a
+ * grid item at all: a descendant match would hand a row a track that
+ * nothing can occupy.
  *
  * **Density**
  *
@@ -310,11 +316,11 @@
     }
 
     .cngx-timeline-item:is([data-placement='alternate'] *):not([data-mode='activity'] *):has(
-        [cngxTimelineOpposite]
+        > [cngxTimelineOpposite]
       ),
     [data-row-side='end']
       .cngx-timeline-item:is([data-placement='alternate'] *):not([data-mode='activity'] *):has(
-        [cngxTimelineOpposite]
+        > [cngxTimelineOpposite]
       ) {
       grid-template-columns: auto auto minmax(0, 1fr);
       grid-template-areas:
@@ -339,7 +345,7 @@
      predates the slot keeps its raster to the pixel. Each rule restates
      whichever of (1)-(3) it widens. Skipped under (4), which already centres
      the rail on three tracks. */
-  .cngx-timeline-item:not([data-placement='alternate'] *):has([cngxTimelineOpposite]) {
+  .cngx-timeline-item:not([data-placement='alternate'] *):has(> [cngxTimelineOpposite]) {
     grid-template-columns: auto auto minmax(0, 1fr);
     grid-template-areas:
       'opposite marker time'
@@ -347,7 +353,7 @@
   }
 
   .cngx-timeline-item:is([data-mode='activity'] *):not([data-placement='alternate'] *):has(
-      [cngxTimelineOpposite]
+      > [cngxTimelineOpposite]
     ) {
     grid-template-columns: auto auto minmax(0, 1fr) auto;
     grid-template-areas:
@@ -357,7 +363,7 @@
 
   [data-row-side='end']
     .cngx-timeline-item:not([data-mode='activity'] *):not([data-placement='alternate'] *):has(
-      [cngxTimelineOpposite]
+      > [cngxTimelineOpposite]
     ) {
     grid-template-columns: minmax(0, 1fr) auto auto;
     grid-template-areas:
@@ -367,7 +373,7 @@
 
   [data-row-side='end']
     .cngx-timeline-item:is([data-mode='activity'] *):not([data-placement='alternate'] *):has(
-      [cngxTimelineOpposite]
+      > [cngxTimelineOpposite]
     ) {
     grid-template-columns: auto minmax(0, 1fr) auto auto;
     grid-template-areas:
