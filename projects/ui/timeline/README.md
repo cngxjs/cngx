@@ -146,6 +146,53 @@ built-in markup.
 `*cngxTimelineMarkerTpl` applies to every row; a single row overrides it by
 projecting its own `[cngxTimelineMarkerContent]`, which wins.
 
+### Content across the rail
+
+`[cngxTimelineOpposite]` is a projection slot on the row, not a template slot:
+it carries per-row content, and the config cascade is for surfaces the whole
+timeline shares. Whatever is projected lands on the far side of the rail from
+the body.
+
+```html
+<cngx-timeline-item status="done">
+  <cngx-time cngxTimelineOpposite [date]="event.at" />
+  <p>{{ event.summary }}</p>
+</cngx-timeline-item>
+```
+
+The row grows a third grid track only when something is actually projected, so
+markup written before this slot existed keeps its geometry unchanged.
+
+Keep the content non-interactive. The slot projects ahead of the body in DOM
+order, which reads correctly for a label but would put a link or button before
+the row it belongs to.
+
+### Media inside the marker
+
+The dot clips to its circle, so a photo, an avatar or a glyph renders inside it
+with no extra markup. Sizing has two halves and they behave differently:
+
+|Content|Sized by|
+|-|-|
+|`img` / `picture`|the marker; fills it edge to edge|
+|`svg`|`--cngx-timeline-marker-glyph-size` (60% of the dot)|
+|`<cngx-avatar>` / `<cngx-icon>`|its own size token, never the marker|
+
+Bare media follows `--cngx-timeline-marker-size` on its own. A projected atom
+does not: `CngxAvatar` and `CngxIcon` pin `--cngx-avatar-size` /
+`--cngx-icon-size` on their own host, where nothing inherited from the marker
+reaches them. **Enlarging a marker that holds an atom means setting both.**
+
+```html
+<cngx-timeline-item [style.--cngx-timeline-marker-size]="'48px'">
+  <cngx-avatar cngxTimelineMarkerContent size="lg" initials="JD" />
+  <p>{{ event.summary }}</p>
+</cngx-timeline-item>
+```
+
+`--cngx-timeline-rail-inset` derives from the marker size at the row host, so
+the rail meets an enlarged dot's centre with no further wiring.
+
 ## Configuration
 
 ```typescript

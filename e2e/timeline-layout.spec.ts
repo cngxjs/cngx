@@ -10,6 +10,8 @@ import { expect, test, type Page } from '@playwright/test';
 
 const NARRATIVE = '/#/ui/timeline/basics/flat-array';
 const MODES = '/#/ui/timeline/skins/activity-vs-narrative';
+const OPPOSITE = '/#/ui/timeline/layout/opposite-time';
+const MEDIA = '/#/ui/timeline/layout/media-markers';
 
 /** v1 rasters, as the row stylesheet declares them. */
 const V1_NARRATIVE_AREAS = '"marker time" "rail body"';
@@ -90,24 +92,13 @@ test.describe('timeline layout - v1 rasters are untouched', () => {
 });
 
 test.describe('timeline layout - the opposite track is gated on markup', () => {
-  // The gate keys on the projected attribute, so injecting one is enough to
-  // flip the raster. The demo that projects it properly lands with the
-  // organism input in the next PR; this keeps the rule from shipping with
-  // nothing at all able to observe it.
   test('a row that projects opposite content gains a third track', async ({ page }) => {
-    await page.goto(NARRATIVE);
-    const row = await firstRow(page);
-    await row.evaluate((el) => {
-      const span = document.createElement('span');
-      span.setAttribute('cngxTimelineOpposite', '');
-      span.className = 'cngx-timeline-item__opposite';
-      span.textContent = '2019';
-      el.append(span);
-    });
+    await page.goto(OPPOSITE);
     const { columns, areas } = await raster(page);
 
     expect(trackCount(columns)).toBe(3);
     expect(areas).toBe('"opposite marker time" "opposite rail body"');
+    await expect(page.locator('.cngx-timeline-item__opposite').first()).toBeVisible();
   });
 
   // The gate has to match the same set `<ng-content select>` projects.
@@ -127,6 +118,62 @@ test.describe('timeline layout - the opposite track is gated on markup', () => {
 
     expect(trackCount(columns)).toBe(2);
     expect(areas).toBe(V1_NARRATIVE_AREAS);
+  });
+});
+
+test.describe('timeline layout - the marker media sizing contract', () => {
+  /** Rendered width of a marker and of the element projected into it. */
+  async function markerAndChild(page: Page, childSelector: string) {
+    return page.evaluate((selector) => {
+      const marker = document.querySelector(`cngx-timeline-marker:has(> ${selector})`);
+      const child = marker?.firstElementChild;
+      if (!marker || !child) {
+        throw new Error(`no marker holding ${selector}`);
+      }
+      return {
+        marker: marker.getBoundingClientRect().width,
+        child: child.getBoundingClientRect().width,
+      };
+    }, childSelector);
+  }
+
+  test('a bare img fills the marker, so it follows the marker token alone', async ({ page }) => {
+    await page.goto(MEDIA);
+    await expect(page.locator('cngx-timeline-marker > img').first()).toBeVisible();
+    const { marker, child } = await markerAndChild(page, 'img');
+
+    expect(child).toBeCloseTo(marker, 0);
+  });
+
+  test('a bare svg insets to the glyph token instead of filling', async ({ page }) => {
+    await page.goto(MEDIA);
+    await expect(page.locator('cngx-timeline-marker > svg').first()).toBeVisible();
+    const { marker, child } = await markerAndChild(page, 'svg');
+
+    // --cngx-timeline-marker-glyph-size, 60% of the dot.
+    expect(child).toBeCloseTo(marker * 0.6, 0);
+  });
+
+  // The contract the README states as a rule: enlarging a marker that holds
+  // an atom means setting the marker token AND the atom's own size. Nothing
+  // enforces the pairing at runtime, so the demo that teaches it is also
+  // what pins it.
+  test('a projected avatar sized alongside the marker matches it', async ({ page }) => {
+    await page.goto(MEDIA);
+    await expect(page.locator('cngx-timeline-marker > cngx-avatar').first()).toBeVisible();
+    const { marker, child } = await markerAndChild(page, 'cngx-avatar');
+
+    expect(child).toBeCloseTo(marker, 0);
+  });
+
+  test('a projected icon takes its size from its own token, not the marker', async ({ page }) => {
+    await page.goto(MEDIA);
+    await expect(page.locator('cngx-timeline-marker > cngx-icon').first()).toBeVisible();
+    const { marker, child } = await markerAndChild(page, 'cngx-icon');
+
+    // Half the dot here, because the story pins --cngx-icon-size directly.
+    // An atom that silently tracked the marker token would fail this.
+    expect(child).toBeLessThan(marker * 0.75);
   });
 });
 
