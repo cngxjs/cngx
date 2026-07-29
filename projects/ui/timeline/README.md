@@ -192,9 +192,11 @@ replaces the bucketing; `CNGX_TIMELINE_VIEW_FACTORY` replaces the body-view
 mapping, for when holding rows through every refetch or treating a filtered
 empty differently is a product decision rather than a library one.
 
-An ejected skin keeps working: `createTimelineView`, `createTimelineSlotBinding`,
-`createTimelineFallbackCopy` and `createForwardedAsyncState` are public, so the
-copy imports the brain instead of restating it.
+An ejected skin keeps working: `createTimelineView`, `createTimelineSlots`,
+`createTimelineSlotBinding` and `createTimelineFallbackCopy` are public, so the
+copy imports the brain instead of restating it. The state-forwarding façade it
+also needs, `createForwardedAsyncState`, is not timeline-specific and ships from
+`@cngx/common/data` alongside the rest of the async-state surface.
 
 ## Material Theme
 

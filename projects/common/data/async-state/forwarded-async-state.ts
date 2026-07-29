@@ -20,12 +20,18 @@ import type { CngxAsyncState } from '@cngx/core/utils';
  * Contrast the select family, which provides `CNGX_STATEFUL` with
  * `useFactory` over a concrete `commitState` field - no forwarding needed
  * there, because the state is created by the component rather than passed in.
+ * The split is not about the component, it is about where the state is born:
+ * created locally, capture it; arriving through an `Input`, forward it.
  *
  * ```ts
  * readonly asyncState = createForwardedAsyncState(this.state);
+ *
+ * // providers:
+ * { provide: CNGX_STATEFUL, useFactory: () => ({ state: inject(Host).asyncState }) }
  * ```
  *
- * @category ui/timeline
+ * @category common/data/async-state
+ * @relatedTo createAsyncState, createManualState
  * @since 0.1.0
  */
 export function createForwardedAsyncState<T>(

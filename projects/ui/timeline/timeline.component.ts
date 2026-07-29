@@ -11,6 +11,7 @@ import {
   type Signal,
 } from '@angular/core';
 import type { EmptyReason } from '@cngx/common/card';
+import { createForwardedAsyncState } from '@cngx/common/data';
 import {
   CNGX_TIMELINE_GROUPING_FACTORY,
   CNGX_TIMELINE_MARKER_HOST,
@@ -33,7 +34,6 @@ import {
 import { CNGX_STATEFUL, nextUid, type CngxAsyncState } from '@cngx/core/utils';
 import { CngxSkeletonContainer, CngxSkeletonPlaceholder } from '@cngx/ui/skeleton';
 
-import { createForwardedAsyncState } from './forwarded-async-state';
 import { createTimelineSlots } from './slot-cascade';
 import { createTimelineFallbackCopy } from './timeline-labels';
 import { CNGX_TIMELINE_VIEW_FACTORY } from './timeline-view';
