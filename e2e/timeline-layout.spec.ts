@@ -353,3 +353,104 @@ test.describe('timeline layout - the skeleton does not reflow into content', () 
     expect(sides.length).toBeGreaterThan(0);
   });
 });
+
+// The HIGH-risk gate for the horizontal axis. It runs before any organism
+// input or horizontal story exists: the attributes are inherited and read by
+// descendant selectors, so stamping them on a v1 story's host is exactly the
+// standalone opt-in v1 already documents for `data-mode`. If this does not go
+// green, `orientation` does not ship and Phases 1 and 2 stand on their own.
+test.describe('timeline layout - the horizontal axis, driven standalone', () => {
+  async function railStyle(page: Page) {
+    return page
+      .locator('cngx-timeline-connector')
+      .first()
+      .evaluate((el) => {
+        const s = getComputedStyle(el);
+        return {
+          blockStartWidth: Math.round(Number.parseFloat(s.borderBlockStartWidth)),
+          inlineStartWidth: Math.round(Number.parseFloat(s.borderInlineStartWidth)),
+          width: Math.round(el.getBoundingClientRect().width),
+          height: Math.round(el.getBoundingClientRect().height),
+        };
+      });
+  }
+
+  test('the vertical rail is a block-axis line before anything is stamped', async ({ page }) => {
+    await page.goto(NARRATIVE);
+    await expect(page.locator('cngx-timeline-item').first()).toBeVisible();
+    const rail = await railStyle(page);
+
+    expect(rail.inlineStartWidth).toBeGreaterThan(0);
+    expect(rail.blockStartWidth).toBe(0);
+    expect(rail.height).toBeGreaterThan(rail.width);
+  });
+
+  test('stamping data-orientation flips the rail onto the inline axis', async ({ page }) => {
+    await page.goto(NARRATIVE);
+    await expect(page.locator('cngx-timeline-item').first()).toBeVisible();
+    await stampOnTimeline(page, { 'data-orientation': 'horizontal' });
+    const rail = await railStyle(page);
+
+    expect(rail.blockStartWidth).toBeGreaterThan(0);
+    expect(rail.inlineStartWidth).toBe(0);
+    expect(rail.width).toBeGreaterThan(rail.height);
+  });
+
+  test('stamping data-orientation transposes the row raster', async ({ page }) => {
+    await page.goto(NARRATIVE);
+    await expect(page.locator('cngx-timeline-item').first()).toBeVisible();
+    await stampOnTimeline(page, { 'data-orientation': 'horizontal' });
+    const { areas } = await raster(page);
+
+    expect(areas).toBe('"marker rail" "time time" "body body"');
+  });
+
+  test('row-side end moves the body before the axis instead of after it', async ({ page }) => {
+    await page.goto(NARRATIVE);
+    await expect(page.locator('cngx-timeline-item').first()).toBeVisible();
+    await stampOnTimeline(page, { 'data-orientation': 'horizontal', 'data-row-side': 'end' });
+    const { areas } = await raster(page);
+
+    expect(areas).toBe('"body body" "time time" "marker rail"');
+  });
+
+  // The reason the two axes are separate copies of one ladder rather than
+  // steps in it: orientation must combine with placement, not out-rank it.
+  test('horizontal combines with alternate rather than cancelling it', async ({ page }) => {
+    await page.goto(NARRATIVE);
+    await expect(page.locator('cngx-timeline-item').first()).toBeVisible();
+    await stampOnTimeline(page, {
+      'data-orientation': 'horizontal',
+      'data-placement': 'alternate',
+    });
+    const { areas } = await raster(page);
+
+    expect(areas).toBe('"opposite time" "marker rail" "body body"');
+  });
+
+  test('activity has no horizontal variant and falls through to the axis raster', async ({
+    page,
+  }) => {
+    await page.goto(MODES);
+    await page.getByRole('button', { name: 'activity', exact: true }).click();
+    await stampOnTimeline(page, { 'data-orientation': 'horizontal' });
+    const { areas } = await raster(page);
+
+    expect(areas).toBe('"marker rail" "time time" "body body"');
+  });
+
+  test('the vertical width degrade does not fire on the horizontal axis', async ({ page }) => {
+    await page.goto(NARRATIVE);
+    await expect(page.locator('cngx-timeline-item').first()).toBeVisible();
+    await stampOnTimeline(page, {
+      'data-orientation': 'horizontal',
+      'data-placement': 'alternate',
+    });
+    await page.setViewportSize({ width: 420, height: 900 });
+    const { areas } = await raster(page);
+
+    // Collapsing two side-by-side prose columns is a vertical-axis concern.
+    // Horizontally the content already stacks, so there is nothing to fold.
+    expect(areas).toBe('"opposite time" "marker rail" "body body"');
+  });
+});
