@@ -281,22 +281,30 @@
      rather than the content-sized tracks above, because the rail has to land
      on the same axis for every row regardless of what each one holds.
 
+     The body spans both rows here, unlike every raster above it. The whole
+     point of the opposite slot under alternate is that a year and its card
+     pair across the rail, and they only read as a pair on a shared top
+     edge - inheriting narrative's `time` row would drop the card a marker
+     height below its own label. The timestamp therefore moves under the
+     opposite content, which is where the meta column already is in this
+     layout.
+
      Excluded under `activity` in the selector rather than left to source
      order: alternating a scan-feed defeats the scan, so those rows render
      `start` and the organism warns. */
   .cngx-timeline-item:is([data-placement='alternate'] *):not([data-mode='activity'] *) {
     grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     grid-template-areas:
-      'opposite marker time'
-      'opposite rail body';
+      'opposite marker body'
+      'time rail body';
   }
 
   [data-row-side='end']
     .cngx-timeline-item:is([data-placement='alternate'] *):not([data-mode='activity'] *) {
     grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     grid-template-areas:
-      'time marker opposite'
-      'body rail opposite';
+      'body marker opposite'
+      'body rail time';
   }
 
   /* Narrow containers cannot carry two columns of prose either side of a
@@ -336,9 +344,12 @@
         > [cngxTimelineOpposite]
       ) {
       grid-template-columns: auto auto minmax(0, 1fr);
+      /* Body still spans both rows, as it does in the wide alternate above.
+         Collapsing should move both sides onto one, not also re-break the
+         year/card pairing - that would make one resize change two things. */
       grid-template-areas:
-        'opposite marker time'
-        'opposite rail body';
+        'opposite marker body'
+        'time rail body';
     }
 
     [data-row-side='end']

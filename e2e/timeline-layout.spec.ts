@@ -213,7 +213,7 @@ test.describe('timeline layout - locked cascade ties', () => {
     const [lead, , trail] = tracks(columns);
 
     expect(trackCount(columns)).toBe(3);
-    expect(areas).toBe('"opposite marker time" "opposite rail body"');
+    expect(areas).toBe('"opposite marker body" "time rail body"');
     // The rail is centred only when the two outer tracks resolve equal.
     // A track count alone passes on `auto auto 1fr`, which is the raster
     // this test exists to distinguish itself from.
@@ -271,8 +271,9 @@ test.describe('timeline layout - the organism drives the raster', () => {
       .locator('cngx-timeline-item')
       .evaluateAll((rows) => rows.map((row) => getComputedStyle(row).gridTemplateAreas));
 
-    expect(rasters[0]).toBe('"opposite marker time" "opposite rail body"');
-    expect(rasters[1]).toBe('"time marker opposite" "body rail opposite"');
+    // The body spans both rows so a card and its year share a top edge.
+    expect(rasters[0]).toBe('"opposite marker body" "time rail body"');
+    expect(rasters[1]).toBe('"body marker opposite" "body rail time"');
   });
 
   test('the centred rail lands on the same axis for every row', async ({ page }) => {
