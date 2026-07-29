@@ -76,10 +76,9 @@
   }
 
   /**
-   * Height of one placeholder bar in the loading body. Affordance geometry,
-   * deliberately outside the density scale - the bar stands in for a line of
-   * text, so it tracks the type it replaces rather than the compactness of
-   * the box around it.
+   * Height of one placeholder bar in the loading body. Deliberately outside
+   * the density scale and not SET from it: the bar is a fixed affordance,
+   * and the surrounding raster already compacts with `[data-density]`.
    * @group Layout
    */
   @property --cngx-timeline-skeleton-line-size {

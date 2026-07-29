@@ -141,23 +141,41 @@ describe('CngxTimeline async body', () => {
       expect(surfaces(el)).toEqual([]);
     });
 
-    it('never renders a blank body while busy with nothing on screen', () => {
+    it.each<AsyncStatus>(['loading', 'pending'])(
+      'never renders a blank body while "%s" with nothing on screen',
+      (status) => {
+        const { el, host, detect } = mount();
+
+        // Settled empty first, so the next load is no longer a first load and
+        // the lookup table resolves to content - which, with zero rows, would
+        // render nothing at all and announce nothing.
+        host.state.setSuccess([]);
+        settleGate(detect);
+        expect(surfaces(el)).toEqual(['empty']);
+
+        host.state.set(status);
+        settleGate(detect);
+
+        expect(surfaces(el)).toEqual(['skeleton']);
+        expect(el.querySelector('.cngx-timeline__sr-only')?.textContent?.trim()).toBe(
+          'Loading timeline',
+        );
+      },
+    );
+
+    it('leaves a refreshing empty list on its tail rather than the skeleton', () => {
       const { el, host, detect } = mount();
 
-      // Settled empty first, so the next load is no longer a first load and
-      // the lookup table resolves `pending` to content - which, with zero
-      // rows, would render nothing at all and announce nothing.
       host.state.setSuccess([]);
       settleGate(detect);
-      expect(surfaces(el)).toEqual(['empty']);
 
-      host.state.set('pending');
+      host.state.set('refreshing');
       settleGate(detect);
 
-      expect(surfaces(el)).toEqual(['skeleton']);
-      expect(el.querySelector('.cngx-timeline__sr-only')?.textContent?.trim()).toBe(
-        'Loading timeline',
-      );
+      // Sparse, but not silent: the tail is on screen and the live region
+      // speaks, which is the whole reason refreshing is left alone.
+      expect(surfaces(el)).toEqual(['tail']);
+      expect(el.querySelector('.cngx-timeline__sr-only')?.textContent?.trim()).toBe('Updating…');
     });
 
     it.each<AsyncStatus>(['loading', 'pending', 'refreshing'])(

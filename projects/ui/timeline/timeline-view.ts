@@ -31,8 +31,8 @@ export interface CngxTimelineView {
  *   say, and the string is empty otherwise so the live region stays in the
  *   DOM while staying silent.
  * - **Busy with an empty screen.** The lookup table resolves a non-first-load
- *   `pending` to `content`; with no rows that renders nothing at all, so it
- *   is treated as a load instead.
+ *   `loading` or `pending` to `content`; with no rows that renders nothing at
+ *   all, so it is treated as a load instead. `refreshing` keeps its tail.
  *
  * Swap the whole mapping through {@link CNGX_TIMELINE_VIEW_FACTORY} rather
  * than forking the organism - treating `pending` as content, or holding the
@@ -54,12 +54,13 @@ export function createTimelineView(
       return empty ? 'empty' : 'content';
     }
     const view = resolveAsyncView(bound.status(), bound.isFirstLoad(), empty);
-    // A `pending` refetch that is not a first load resolves to `content`,
-    // and with nothing to render that is a blank region: no rows, no
-    // refreshing tail (which only follows `refreshing`), nothing announced.
-    // Work in flight with an empty screen is a load, whatever the status
-    // says.
-    return view === 'content' && empty && bound.isBusy() ? 'skeleton' : view;
+    // `loading` and `pending` that are not a first load resolve to `content`,
+    // and with nothing to render that is a blank, silent region: no rows, no
+    // tail, nothing announced. Work in flight with an empty screen is a load.
+    // `refreshing` is deliberately excluded - it already renders its tail and
+    // announces itself, so it is communicated, just sparse.
+    const silentlyBusy = empty && bound.isBusy() && !bound.isRefreshing();
+    return view === 'content' && silentlyBusy ? 'skeleton' : view;
   });
 
   const showsContent = computed(
