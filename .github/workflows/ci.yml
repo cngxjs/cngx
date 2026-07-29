@@ -51,3 +51,15 @@ jobs:
 
       - name: Build examples app
         run: npm run build:examples
+
+      # Scoped to one spec on one browser by design. The repo has ~30 e2e
+      # specs CI has never run; adopting them here would make this step the
+      # owner of their current health and would be the fastest route to
+      # having it disabled. This one guards the timeline row raster, which
+      # no unit test can observe: the grid lives inside @layer and @scope,
+      # neither of which jsdom's CSSOM parses.
+      - name: Install Playwright chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Timeline layout e2e
+        run: npx playwright test e2e/timeline-layout.spec.ts --project=chromium

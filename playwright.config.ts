@@ -30,6 +30,16 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
 
+  /* The examples app is the fixture for every spec in ./e2e, and until now
+     each run silently depended on a dev server someone had started by hand.
+     Locally an already-running `npm start` is reused; CI gets its own. */
+  webServer: {
+    command: 'npm start',
+    url: 'http://localhost:4200',
+    reuseExistingServer: !process.env['CI'],
+    timeout: 180_000,
+  },
+
   /* Configure projects for major browsers */
   projects: [
     {
