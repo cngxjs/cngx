@@ -83,6 +83,22 @@
   }
 
   /**
+   * Size of a bare `svg` glyph projected into the marker, as a share of the
+   * marker box. A percentage rather than a length so it tracks
+   * `--cngx-timeline-marker-size` on its own: `em` would resolve against the
+   * marker's pinned `font-size`, which is not the dot's size.
+   *
+   * Photos are not covered by this - an `img` or `picture` fills the dot
+   * edge to edge, because a cropped portrait wants no inset and a glyph does.
+   * @group Layout
+   */
+  @property --cngx-timeline-marker-glyph-size {
+    syntax: '<percentage>';
+    inherits: true;
+    initial-value: 60%;
+  }
+
+  /**
    * Thickness of the connector rail.
    * @group Layout
    */

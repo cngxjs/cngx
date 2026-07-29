@@ -29,7 +29,8 @@
  *   of the marker box, and therefore follows `--cngx-timeline-marker-size`
  *   on its own. Percentages rather than `em`: the scope pins `font-size:
  *   0.625em` below, so an `em`-sized glyph would track that font-size and an
- *   enlarged marker would keep a 12px-era icon.
+ *   enlarged marker would keep a 12px-era icon. An `img` fills the dot; an
+ *   `svg` insets to `--cngx-timeline-marker-glyph-size`.
  * - A projected `CngxAvatar` or `CngxIcon` sizes *itself*. Both pin
  *   `--cngx-avatar-size` / `--cngx-icon-size` on their own host from their
  *   size-variant classes, where nothing inherited from here can reach them,
@@ -92,8 +93,8 @@
        edge. Percent of the marker box, not `em` - the font-size below is
        0.625em and would otherwise decide the size instead of the token. */
     :scope > svg {
-      inline-size: 60%;
-      block-size: 60%;
+      inline-size: var(--cngx-timeline-marker-glyph-size, 60%);
+      block-size: var(--cngx-timeline-marker-glyph-size, 60%);
     }
 
     :scope[data-status='done'] {
