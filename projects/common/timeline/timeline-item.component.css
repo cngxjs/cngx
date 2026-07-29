@@ -44,6 +44,13 @@
  * consumer distributes them. Every raster below is therefore settled by
  * specificity, not by source order.
  *
+ * **Rail style**
+ *
+ * `[data-rail='continuous']` stretches every non-last segment across the
+ * inter-row gap so the run reads as one line. Per segment rather than one
+ * line behind the whole band, because each segment carries its own status
+ * colour and a single line would flatten that channel.
+ *
  * **Opposite content**
  *
  * `[cngxTimelineOpposite]` gets a third track, and only rows that project
@@ -385,5 +392,30 @@
     grid-template-areas:
       'time body marker opposite'
       'time body rail opposite';
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────
+     Continuous rail. Outside the raster cascade above on purpose: this sets
+     `block-size` on the connector, not a grid template, so it competes with
+     nothing up there.
+
+     Continuity is built per segment rather than from one line behind the
+     whole run. A container-level pseudo-element would be less code and
+     would flatten the status channel: a `rejected` run paints its own
+     segments red and an `upcoming` tail dashes them, and both are visual
+     state this family deliberately carries in the rail. Stretching each
+     segment keeps every one of them its own colour.
+
+     Each non-last segment spans the inter-row gap so it meets the next
+     marker, which is opaque and carries the line through its own diameter.
+     `last` and `only` are excluded, so a band ends where its last event
+     does and the group gap stays open - a band is a semantic boundary, not
+     a rendering accident. `--cngx-timeline-item-gap` is the organism's own
+     token and inherits down to here, so the two cannot drift.
+     ───────────────────────────────────────────────────────────────────── */
+  [data-rail='continuous']
+    .cngx-timeline-item
+    .cngx-timeline-connector:not([data-position='last']):not([data-position='only']) {
+    block-size: calc(100% + var(--cngx-timeline-item-gap, 16px));
   }
 }
