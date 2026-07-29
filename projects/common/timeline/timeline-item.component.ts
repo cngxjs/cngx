@@ -34,6 +34,39 @@ import { injectTimelineConfig } from './timeline-config';
 export class CngxTimelineTime {}
 
 /**
+ * Marks content that belongs on the far side of the rail from the row's
+ * body - the year label opposite a card, the timestamp across a centred
+ * rail.
+ *
+ * Per-row content, so it is a projection slot rather than a timeline-wide
+ * template: the row template already owns it, and the config cascade is
+ * for surfaces the whole timeline shares.
+ *
+ * The extra grid track only exists for rows that actually project into it
+ * (`:has([cngxTimelineOpposite])`), so markup that predates this slot keeps
+ * its raster to the pixel. Placement follows the row: opposite content sits
+ * across the rail from the body under `start`, `end` and `alternate` alike.
+ *
+ * ```html
+ * <cngx-timeline-item status="done">
+ *   <span cngxTimelineOpposite>2019</span>
+ *   <p>Founded</p>
+ * </cngx-timeline-item>
+ * ```
+ *
+ * @category common/timeline
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/timeline/timeline-item.component.ts
+ * @relatedTo CngxTimelineItem, CngxTimelineTime
+ * @since 0.1.0
+ */
+@Directive({
+  selector: '[cngxTimelineOpposite]',
+  standalone: true,
+  host: { class: 'cngx-timeline-item__opposite' },
+})
+export class CngxTimelineOpposite {}
+
+/**
  * Marks content to render inside this row's marker dot - a glyph, an icon,
  * an avatar.
  *
@@ -139,6 +172,7 @@ export class CngxTimelineContent {}
       }
     </cngx-timeline-marker>
     <cngx-timeline-connector [status]="markerStatus()" [position]="position()" />
+    <ng-content select="[cngxTimelineOpposite]" />
     <ng-content select="[cngxTimelineTime]" />
     <div class="cngx-timeline-item__body">
       <ng-content select="[cngxTimelineContent]" />

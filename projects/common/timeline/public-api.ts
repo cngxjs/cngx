@@ -23,6 +23,7 @@ export {
   CngxTimelineContent,
   CngxTimelineItem,
   CngxTimelineMarkerContent,
+  CngxTimelineOpposite,
   CngxTimelineTime,
 } from './timeline-item.component';
 export {

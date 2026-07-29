@@ -8,6 +8,7 @@ import { CNGX_TIMELINE_MARKER_HOST } from './marker-host.token';
 import {
   CngxTimelineItem,
   CngxTimelineMarkerContent,
+  CngxTimelineOpposite,
   CngxTimelineTime,
 } from './timeline-item.component';
 import { provideTimelineConfig, withTimelineLabels } from './timeline-config';
@@ -276,6 +277,73 @@ describe('CngxTimelineItem', () => {
       // timeline's default out for every other row.
       expect(marker?.textContent).toContain('PROJECTED');
       expect(marker?.textContent).not.toContain('TPL:');
+    });
+  });
+
+  /**
+   * Structure only. The raster the slot unlocks is verified in
+   * `e2e/timeline-layout.spec.ts`: the row grid lives inside `@layer` and
+   * `@scope`, neither of which jsdom's CSSOM parses, so
+   * `getComputedStyle(row).gridTemplateColumns` is `''` here for the gated
+   * and the ungated case alike - an assertion on it would pass whatever
+   * the stylesheet says.
+   */
+  describe('opposite slot', () => {
+    it('projects [cngxTimelineOpposite] into its own element', () => {
+      TestBed.resetTestingModule();
+
+      @Component({
+        selector: 'cngx-timeline-opposite-host',
+        standalone: true,
+        imports: [CngxTimelineItem, CngxTimelineOpposite],
+        template: `
+          <cngx-timeline-item status="done">
+            <span cngxTimelineOpposite>2019</span>
+            <p>Founded</p>
+          </cngx-timeline-item>
+        `,
+      })
+      class OppositeHost {}
+
+      TestBed.configureTestingModule({ imports: [OppositeHost] });
+      const fixture = TestBed.createComponent(OppositeHost);
+      fixture.detectChanges();
+      const item = (fixture.nativeElement as HTMLElement).querySelector('cngx-timeline-item');
+
+      expect(item?.querySelector('.cngx-timeline-item__opposite')?.textContent).toContain('2019');
+    });
+
+    it('renders no opposite element for a row that projects none', () => {
+      const { item } = mount();
+
+      expect(item.querySelector('.cngx-timeline-item__opposite')).toBeNull();
+    });
+
+    it('keeps opposite content out of the body, so the body raster is unchanged', () => {
+      TestBed.resetTestingModule();
+
+      @Component({
+        selector: 'cngx-timeline-opposite-body-host',
+        standalone: true,
+        imports: [CngxTimelineItem, CngxTimelineOpposite],
+        template: `
+          <cngx-timeline-item>
+            <span cngxTimelineOpposite>2019</span>
+            <p class="body">Founded</p>
+          </cngx-timeline-item>
+        `,
+      })
+      class OppositeBodyHost {}
+
+      TestBed.configureTestingModule({ imports: [OppositeBodyHost] });
+      const fixture = TestBed.createComponent(OppositeBodyHost);
+      fixture.detectChanges();
+      const body = (fixture.nativeElement as HTMLElement).querySelector(
+        '.cngx-timeline-item__body',
+      );
+
+      expect(body?.querySelector('.body')).not.toBeNull();
+      expect(body?.querySelector('.cngx-timeline-item__opposite')).toBeNull();
     });
   });
 
