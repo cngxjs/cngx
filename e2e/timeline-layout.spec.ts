@@ -217,6 +217,27 @@ test.describe('timeline layout - locked cascade ties', () => {
     expect(lead).toBeCloseTo(trail, 1);
   });
 
+  // The degrade depends on a bare `container-name` string that @cngx/ui's
+  // organism declares and @cngx/common's row queries. Nothing in either
+  // language checks that the two agree, so a rename would silently disable
+  // the collapse. This is the check that turns it into a failing test.
+  test('alternate collapses to the start raster below the 32rem container', async ({ page }) => {
+    await page.goto(NARRATIVE);
+    await stampOnTimeline(page, { 'data-placement': 'alternate' });
+
+    // Both sides of the boundary with room to spare, so the test says
+    // "the query fires" rather than sitting on the threshold itself.
+    await page.setViewportSize({ width: 1280, height: 900 });
+    const wide = await raster(page);
+    expect(trackCount(wide.columns)).toBe(3);
+
+    await page.setViewportSize({ width: 420, height: 900 });
+    const narrow = await raster(page);
+
+    expect(trackCount(narrow.columns)).toBe(2);
+    expect(narrow.areas).toBe(V1_NARRATIVE_AREAS);
+  });
+
   test('narrative x row-side=end mirrors tracks and areas', async ({ page }) => {
     await page.goto(NARRATIVE);
     await stampOnTimeline(page, { 'data-row-side': 'end' });

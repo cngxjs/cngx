@@ -1,11 +1,13 @@
 import { NgTemplateOutlet } from '@angular/common';
 import {
+  afterNextRender,
   ChangeDetectionStrategy,
   Component,
   computed,
   contentChild,
   inject,
   input,
+  isDevMode,
   output,
   ViewEncapsulation,
   type Signal,
@@ -62,6 +64,25 @@ export type CngxTimelineMode = 'narrative' | 'activity';
  * @category ui/timeline
  */
 export type CngxTimelineSkin = 'line' | 'card' | 'bands';
+
+/**
+ * Which side of the rail each row's body sits on.
+ *
+ * `start` (default) is v1: rail leading, body trailing. `end` mirrors every
+ * row. `alternate` centres the rail and flips the body side by row, which is
+ * the classic infographic layout - pair it with `[cngxTimelineOpposite]` so
+ * the empty side carries a year or a label.
+ *
+ * Purely visual. DOM order stays chronological under every value, the ARIA
+ * chain is identical, and alternation comes from the loop index rather than
+ * from `:nth-child`, so a filtered list alternates correctly.
+ *
+ * `alternate` is not supported with `mode="activity"`: alternating a
+ * scan-feed defeats the scan. Those rows render `start` and dev mode warns.
+ *
+ * @category ui/timeline
+ */
+export type CngxTimelinePlacement = 'start' | 'end' | 'alternate';
 
 /**
  * Grouped, themed, RTL-safe timeline over a flat list of events.
@@ -132,6 +153,7 @@ export type CngxTimelineSkin = 'line' | 'card' | 'bands';
     class: 'cngx-timeline',
     '[attr.data-mode]': 'mode()',
     '[attr.data-skin]': 'skin()',
+    '[attr.data-placement]': 'placement()',
     '[attr.data-ungrouped]': 'ungrouped() ? "" : null',
     // Aliased inputs leave the raw attribute behind, naming the role-less host.
     '[attr.aria-label]': 'null',
@@ -215,6 +237,9 @@ export class CngxTimeline<T = unknown> implements CngxTimelineMarkerHost {
 
   /** Visual skin. See {@link CngxTimelineSkin}. */
   readonly skin = input<CngxTimelineSkin>('line');
+
+  /** Which side of the rail rows sit on. See {@link CngxTimelinePlacement}. */
+  readonly placement = input<CngxTimelinePlacement>('start');
 
   /** Accessible name for the list. Falls back to the config's `timelineRegion`. */
   readonly ariaLabel = input<string | undefined>(undefined, { alias: 'aria-label' });
@@ -340,6 +365,46 @@ export class CngxTimeline<T = unknown> implements CngxTimelineMarkerHost {
     };
   }
 
+  /**
+   * @internal Which side this row's body sits on. Derived from the loop
+   * index, never from `:nth-child`: a filtered or refetched list has to
+   * alternate by its own position in the rendered run, and CSS structural
+   * parity would count DOM children instead. The row stylesheet reads the
+   * resulting `[data-row-side]` off an ancestor, exactly like `[data-mode]`.
+   *
+   * The built-in skeleton placeholder calls this with the index its own
+   * container hands it, so the loading rows land on the same sides the
+   * content will - which is what keeps the swap from reflowing.
+   */
+  protected rowSide(index: number): 'start' | 'end' {
+    const placement = this.placement();
+    if (placement !== 'alternate') {
+      return placement;
+    }
+    // Alternating a scan-feed defeats the scan; the warning below says so.
+    if (this.mode() === 'activity') {
+      return 'start';
+    }
+    return index % 2 === 0 ? 'start' : 'end';
+  }
+
   /** @internal Track by consumer identity when given, else by reference. */
   protected trackItem = (index: number, item: T): unknown => this.idAccessor()?.(item) ?? item;
+
+  constructor() {
+    if (isDevMode()) {
+      // afterNextRender, not an effect: this is a one-shot authoring check,
+      // and a dead node in the reactive graph is worse than a missed
+      // re-check after a runtime mode swap nobody does.
+      afterNextRender(() => {
+        if (this.mode() === 'activity' && this.placement() === 'alternate') {
+          console.warn(
+            '[cngx-timeline] placement="alternate" is ignored in mode="activity" - ' +
+              'alternating a scan-feed defeats the scan, so every row renders at the ' +
+              'start side. Use mode="narrative" to alternate.',
+          );
+        }
+      });
+    }
+  }
 }

@@ -14,7 +14,14 @@
          activeView() already made it - so the flag is true by construction
          and the container is left owning only show-delay and min-dwell. -->
     <cngx-skeleton class="cngx-timeline__skeleton" [loading]="true" [count]="skeletonRowCount()">
-      <ng-template cngxSkeletonPlaceholder>
+      <!-- let-index: the container has passed index/count/first/last into
+           this template all along, the timeline just never read it. The
+           built-in placeholder needs the per-row index to land on the same
+           sides the content will, so the swap does not reflow under
+           placement="end" / "alternate". A consumer-supplied
+           *cngxTimelineSkeleton is still outletted without context, which is
+           unchanged and tracked. -->
+      <ng-template cngxSkeletonPlaceholder let-index="index">
         <!-- aria-hidden on the wrapper, not on the branches: whatever a
              consumer supplies is decoration too, and the load is announced
              through the live region at the bottom of this template. -->
@@ -26,7 +33,7 @@
                  imported here, so on a cold first load its Track-A stylesheet
                  is not in the document yet and borrowed classes would render
                  unstyled - on the one path the skeleton exists to cover. -->
-            <div class="cngx-timeline__skeleton-row">
+            <div class="cngx-timeline__skeleton-row" [attr.data-row-side]="rowSide(index)">
               <span class="cngx-timeline__skeleton-marker"></span>
               <span class="cngx-timeline__skeleton-rail"></span>
               <div class="cngx-timeline__skeleton-body">
@@ -103,7 +110,11 @@
           [attr.aria-labelledby]="ungrouped() ? null : groupLabelId($index)"
         >
           @for (item of group.items; track trackItem($index, item)) {
-            <div class="cngx-timeline__item" role="listitem">
+            <!-- The side comes from the loop index, not from :nth-child: a
+                 filtered list has to alternate by its position in the run
+                 that is actually rendered, and the row stylesheet reads the
+                 attribute off an ancestor exactly like [data-mode]. -->
+            <div class="cngx-timeline__item" role="listitem" [attr.data-row-side]="rowSide($index)">
               @if (itemTpl(); as tpl) {
                 <ng-container *ngTemplateOutlet="tpl; context: itemContext(item, $index, group)" />
               }

@@ -32,7 +32,7 @@
  *
  * `[data-placement='alternate']` centres the rail on symmetric `1fr auto
  * 1fr` tracks so the empty side can carry opposite content, and collapses
- * back to the `start` raster below `40rem` of the `cngx-timeline`
+ * back to the `start` raster below `32rem` of the `cngx-timeline`
  * container. The query lives here, next to the raster it overrides; the
  * organism only names the container.
  *
@@ -299,13 +299,19 @@
      `container-name: cngx-timeline`, which is exactly how a standalone row
      should behave.
 
-     40rem is a literal by necessity - a container-query condition cannot read
-     a custom property, so there is no token to reach for.
+     32rem is a literal by necessity - a container-query condition cannot read
+     a custom property, so there is no token to reach for. The value is where
+     two *cards* stop fitting either side of the rail, not two columns of
+     prose: this pattern carries a year and a line or two, and the reference
+     infographic it exists for is routinely drawn at widths a paragraph
+     layout would refuse. An earlier 40rem collapsed at exactly the 640px
+     reading width the library's own demo shell uses, which made the feature
+     invisible in the one place it is shown.
 
      These restate the four rules above at equal specificity and win on source
      order, which is what a query-guarded override is for; nothing outside the
      query relies on ordering. */
-  @container cngx-timeline (max-inline-size: 40rem) {
+  @container cngx-timeline (max-inline-size: 32rem) {
     .cngx-timeline-item:is([data-placement='alternate'] *):not([data-mode='activity'] *),
     [data-row-side='end']
       .cngx-timeline-item:is([data-placement='alternate'] *):not([data-mode='activity'] *) {
