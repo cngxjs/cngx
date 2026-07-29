@@ -32,9 +32,16 @@ export default defineConfig({
 
   /* The examples app is the fixture for every spec in ./e2e, and until now
      each run silently depended on a dev server someone had started by hand.
-     Locally an already-running `npm start` is reused; CI gets its own. */
+     Locally an already-running `npm start` is reused; CI gets its own.
+
+     `ng serve` rather than `npm start`, deliberately: the `prestart` hook
+     re-runs `docs:json` over every project plus `examples:generate` before
+     the server even boots, and CI has already done both two steps earlier.
+     Paying for a second compodoc pass inside the server's start-up window
+     is how a gate turns into a timeout. Run `npm run examples:generate`
+     first when starting from a clean tree locally. */
   webServer: {
-    command: 'npm start',
+    command: 'npx ng serve examples',
     url: 'http://localhost:4200',
     reuseExistingServer: !process.env['CI'],
     timeout: 180_000,
