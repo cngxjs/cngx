@@ -42,11 +42,12 @@ type ParentResolution<T> = SingleResolution<T> | MultiResolution<T>;
  *
  * The present token determines:
  *
- * - the ARIA pattern (`aria-checked` for single, `aria-pressed` for
- *   multi), bound on the host AT INJECTION TIME. The multi toolbar uses
- *   toggle buttons (`aria-pressed` per W3C APG); the listbox `selected`
- *   state is undefined for `role="button"` in ARIA 1.2 and would be
- *   dropped by the a11y tree,
+ * - the ARIA pattern, bound on the host AT INJECTION TIME: a single leaf
+ *   takes `role="radio"` + `aria-checked` (radiogroup APG); a multi leaf
+ *   stays a native `role="button"` toggle with `aria-pressed` (toolbar
+ *   APG). Both `aria-checked` and the listbox `selected` state are
+ *   undefined for `role="button"` in ARIA 1.2, so the single leaf carries
+ *   the radio role that makes `aria-checked` valid rather than dropped,
  * - the activation contract (single: `group.value.set(...)`; multi:
  *   `group.toggle(...)`),
  * - whether `(focus)` consumes the parent's pending arrow-select
@@ -109,6 +110,7 @@ type ParentResolution<T> = SingleResolution<T> | MultiResolution<T>;
   host: {
     class: 'cngx-button-toggle',
     type: 'button',
+    '[attr.role]': 'hostRole()',
     '[attr.aria-checked]': 'ariaChecked()',
     '[attr.aria-pressed]': 'ariaPressed()',
     '[attr.aria-disabled]': 'toggleDisabled() ? "true" : null',
@@ -140,6 +142,13 @@ export class CngxButtonToggle<T = unknown> {
 
   protected readonly toggleDisabled = computed(
     () => this.resolved.group.disabled() || this.disabled(),
+  );
+
+  // Single leaves are radios in a radiogroup (aria-checked is valid there);
+  // multi leaves stay native buttons (implicit role="button" carries
+  // aria-pressed). aria-checked is undefined for role="button".
+  protected readonly hostRole = computed(() =>
+    this.resolved.mode === 'single' ? 'radio' : null,
   );
 
   protected readonly ariaChecked = computed(() =>

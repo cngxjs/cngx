@@ -63,6 +63,10 @@ describe('CngxButtonMultiToggleGroup + CngxButtonToggle (multi mode)', () => {
     const { groupEl, toggles } = setup();
     expect(groupEl.getAttribute('role')).toBe('toolbar');
     toggles.forEach(({ el }) => {
+      // Multi leaves stay native buttons: implicit role="button" carries
+      // aria-pressed, so no explicit role is set.
+      expect(el.tagName).toBe('BUTTON');
+      expect(el.getAttribute('role')).toBeNull();
       expect(el.getAttribute('aria-pressed')).toBe('false');
       expect(el.getAttribute('aria-checked')).toBeNull();
       // Regression guard: the listbox selected state is undefined for
