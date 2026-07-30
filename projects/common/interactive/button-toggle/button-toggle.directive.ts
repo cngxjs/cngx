@@ -42,8 +42,11 @@ type ParentResolution<T> = SingleResolution<T> | MultiResolution<T>;
  *
  * The present token determines:
  *
- * - the ARIA pattern (`aria-checked` for single, `aria-selected` for
- *   multi), bound on the host AT INJECTION TIME,
+ * - the ARIA pattern (`aria-checked` for single, `aria-pressed` for
+ *   multi), bound on the host AT INJECTION TIME. `aria-selected` is
+ *   undefined for `role="button"` in ARIA 1.2 and is dropped by the
+ *   a11y tree; the multi toolbar uses toggle buttons (`aria-pressed`)
+ *   per W3C APG,
  * - the activation contract (single: `group.value.set(...)`; multi:
  *   `group.toggle(...)`),
  * - whether `(focus)` consumes the parent's pending arrow-select
@@ -107,7 +110,7 @@ type ParentResolution<T> = SingleResolution<T> | MultiResolution<T>;
     class: 'cngx-button-toggle',
     type: 'button',
     '[attr.aria-checked]': 'ariaChecked()',
-    '[attr.aria-selected]': 'ariaSelected()',
+    '[attr.aria-pressed]': 'ariaPressed()',
     '[attr.aria-disabled]': 'toggleDisabled() ? "true" : null',
     '[attr.aria-describedby]': 'describedBy()',
     '[attr.disabled]': 'toggleDisabled() ? "" : null',
@@ -143,7 +146,7 @@ export class CngxButtonToggle<T = unknown> {
     this.resolved.mode === 'single' ? (this.toggleChecked() ? 'true' : 'false') : null,
   );
 
-  protected readonly ariaSelected = computed(() =>
+  protected readonly ariaPressed = computed(() =>
     this.resolved.mode === 'multi' ? (this.toggleChecked() ? 'true' : 'false') : null,
   );
 

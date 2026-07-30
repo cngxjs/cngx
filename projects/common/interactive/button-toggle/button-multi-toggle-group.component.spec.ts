@@ -59,11 +59,11 @@ describe('CngxButtonMultiToggleGroup + CngxButtonToggle (multi mode)', () => {
     expect(groupDe.injector.get(CNGX_CONTROL_VALUE)).toBe(group);
   });
 
-  it('renders role="toolbar" on the group and aria-selected on each leaf (NOT aria-checked)', () => {
+  it('renders role="toolbar" on the group and aria-pressed on each leaf (NOT aria-checked)', () => {
     const { groupEl, toggles } = setup();
     expect(groupEl.getAttribute('role')).toBe('toolbar');
     toggles.forEach(({ el }) => {
-      expect(el.getAttribute('aria-selected')).toBe('false');
+      expect(el.getAttribute('aria-pressed')).toBe('false');
       expect(el.getAttribute('aria-checked')).toBeNull();
     });
   });
@@ -73,7 +73,7 @@ describe('CngxButtonMultiToggleGroup + CngxButtonToggle (multi mode)', () => {
     toggles[0].el.click();
     fixture.detectChanges();
     expect(host.picked()).toEqual(['open']);
-    expect(toggles[0].el.getAttribute('aria-selected')).toBe('true');
+    expect(toggles[0].el.getAttribute('aria-pressed')).toBe('true');
 
     toggles[1].el.click();
     fixture.detectChanges();
@@ -82,7 +82,7 @@ describe('CngxButtonMultiToggleGroup + CngxButtonToggle (multi mode)', () => {
     toggles[0].el.click();
     fixture.detectChanges();
     expect(host.picked()).toEqual(['closed']);
-    expect(toggles[0].el.getAttribute('aria-selected')).toBe('false');
+    expect(toggles[0].el.getAttribute('aria-pressed')).toBe('false');
   });
 
   it('Space and Enter on a focused toggle toggle membership (no auto-select on arrow)', () => {
@@ -107,8 +107,8 @@ describe('CngxButtonMultiToggleGroup + CngxButtonToggle (multi mode)', () => {
     expect(leafInjector.get(CNGX_BUTTON_MULTI_TOGGLE_GROUP)).toBe(
       groupDe.injector.get(CngxButtonMultiToggleGroup),
     );
-    // aria-selected is the multi-mode marker; aria-checked stays null.
-    expect(toggles[0].el.getAttribute('aria-selected')).toBe('false');
+    // aria-pressed is the multi-mode marker; aria-checked stays null.
+    expect(toggles[0].el.getAttribute('aria-pressed')).toBe('false');
     expect(toggles[0].el.getAttribute('aria-checked')).toBeNull();
   });
 
