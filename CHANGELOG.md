@@ -5,6 +5,13 @@ squash-merged pull request. Non-library scopes (examples, examples-gen, docs,
 ci, build, chore) and non-consumer-facing types are omitted by design.
 See CONTRIBUTING.md for the workflow.
 
+## Unreleased
+
+
+### BREAKING CHANGES
+
+- **common/interactive:** multi button-toggle leaves now emit `aria-pressed` instead of `aria-selected`. `aria-selected` is undefined for `role="button"` in ARIA 1.2 and was dropped by the accessibility tree, so a selected leaf reported no state at all; the on/off state only reached the visual channel. Consumers styling or querying `[aria-selected]` on a `cngx-button-multi-toggle-group` leaf must move to `[aria-pressed]`.
+
 ## 0.1.0-rc.6 (2026-07-23)
 
 
