@@ -1,6 +1,6 @@
 import { Component, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CngxLiveAnnouncer } from '@cngx/common/a11y';
 import { CngxCopyValue } from './copy-value.directive';
 import { provideInputConfig, withCopyResetDelay, withInputAriaLabels } from './input-config';
@@ -40,7 +40,6 @@ describe('CngxCopyValue', () => {
 
   describe('resetTimer race-guard', () => {
     beforeEach(() => vi.useFakeTimers());
-    afterEach(() => vi.useRealTimers());
 
     it('back-to-back copy() schedules a single fresh reset; first timer no-ops', async () => {
       const { directive, fixture } = setup();
@@ -113,7 +112,6 @@ describe('CngxCopyValue', () => {
 
   describe('config fallback (withCopyResetDelay)', () => {
     beforeEach(() => vi.useFakeTimers());
-    afterEach(() => vi.useRealTimers());
 
     it('honours copyResetDelay from global config when no [resetDelay] binding is set', async () => {
       TestBed.configureTestingModule({

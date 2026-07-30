@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxDataGridAccordion } from './data-grid-accordion.component';
 import { CngxDataGridHeader } from './data-grid-header.component';
@@ -22,8 +22,6 @@ describe('CngxDgaFilter', () => {
     vi.useFakeTimers();
     TestBed.configureTestingModule({ imports: [Host] });
   });
-
-  afterEach(() => vi.useRealTimers());
 
   function setup() {
     const fixture = TestBed.createComponent(Host);

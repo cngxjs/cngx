@@ -9,6 +9,7 @@
   "include": [
     "*.d.ts",
     "*.spec.ts",
+    "../testing/setup/vitest-setup.ts",
     "validators/**/*.spec.ts",
     "controls/**/*.spec.ts",
     "field/**/*.spec.ts",

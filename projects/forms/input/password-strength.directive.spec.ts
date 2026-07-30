@@ -1,6 +1,6 @@
 import { Component, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { CngxLiveAnnouncer } from '@cngx/common/a11y';
 import { CngxPasswordStrength } from './password-strength.directive';
 import {
@@ -67,8 +67,6 @@ describe('CngxPasswordStrength', () => {
   });
 
   describe('debounced announcement', () => {
-    afterEach(() => vi.useRealTimers());
-
     it('announces the label once after the debounce window', () => {
       vi.useFakeTimers();
       const announcer = TestBed.inject(CngxLiveAnnouncer);

@@ -10,7 +10,7 @@ import {
   CngxTimelineSkeleton,
 } from '@cngx/common/timeline';
 import { CNGX_STATEFUL, type AsyncStatus, type CngxStateful } from '@cngx/core/utils';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxTimeline } from './timeline.component';
 
@@ -130,10 +130,6 @@ describe('CngxTimeline async body', () => {
     // The skeleton container gates on show-delay / min-dwell timers; without
     // fake timers the placeholder never appears within a synchronous spec.
     vi.useFakeTimers();
-  });
-
-  afterEach(() => {
-    vi.useRealTimers();
   });
 
   function settleGate(detect: () => void): void {

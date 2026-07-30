@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createAsyncState, type MutableAsyncState } from './create-async-state';
 
 describe('createAsyncState', () => {
@@ -8,10 +8,6 @@ describe('createAsyncState', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     state = TestBed.runInInjectionContext(() => createAsyncState<string>());
-  });
-
-  afterEach(() => {
-    vi.useRealTimers();
   });
 
   it('starts in idle status', () => {

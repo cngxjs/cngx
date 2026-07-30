@@ -36,6 +36,13 @@ function stubDialogElement(el: HTMLDialogElement): void {
   } as unknown as CSSStyleDeclaration);
 }
 
+// stubDialogElement spies on the global getComputedStyle. The shared setup file
+// restores timers and unstubs globals but does not touch spies, so without this
+// the stub would answer every later spec file in the project.
+afterEach(() => {
+  vi.restoreAllMocks();
+});
+
 // ── Test hosts ──────────────────────────────────────────────────────────
 
 @Component({
@@ -100,7 +107,6 @@ function openFully<T extends { dialog: ReturnType<typeof viewChild.required<Cngx
 
 describe('CngxDialog', () => {
   beforeEach(() => vi.useFakeTimers());
-  afterEach(() => vi.useRealTimers());
 
   describe('initial state', () => {
     it('starts in closed state', () => {
@@ -357,7 +363,6 @@ describe('CngxDialog', () => {
 
 describe('CngxDialog submitAction', () => {
   beforeEach(() => vi.useFakeTimers());
-  afterEach(() => vi.useRealTimers());
 
   @Component({
     template: `

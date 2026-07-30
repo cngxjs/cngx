@@ -7,6 +7,7 @@
   "include": [
     "*.d.ts",
     "*.spec.ts",
+    "../testing/setup/vitest-setup.ts",
     "treetable/**/*.spec.ts"
   ]
 }

@@ -108,6 +108,20 @@ Conventions: call `TestBed.flushEffects()` after signal mutations, use
 `@cngx/testing`. Public reactive state, the `computed()` graph, and the
 ARIA outputs (`aria-busy`/`aria-invalid`/`aria-describedby`) all belong under test.
 
+One environment per worker: the builder runs vitest with `isolate: false` and
+leaves `fileParallelism` at its default, so spec files are spread across worker
+processes and every file sharing a worker shares one environment. An unrestored
+fake clock or stubbed global leaks into the files scheduled after it in that
+worker, which is why the victim moves between runs and why a single green run
+proves nothing. The shared setup file
+`projects/testing/setup/vitest-setup.ts`, wired into every `test` target,
+restores real timers after each test and unstubs globals after each file, so a
+spec only needs its own `vi.useRealTimers()` / `vi.unstubAllGlobals()` when a
+later test in the *same* file must not see the fake clock or the stub. Spies are
+not covered: `vi.spyOn()` on a global object outlives the file, so restore it in
+the spec itself. See `projects/testing/README.md` for the details and the
+reference cases.
+
 ### End-to-end tests (Playwright)
 
 E2E tests cover rendered behaviour and visual flows. Write or update them when

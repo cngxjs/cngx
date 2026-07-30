@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createManualState } from '@cngx/common/data';
 import type { ManualAsyncState } from '@cngx/common/data';
 
@@ -56,10 +56,6 @@ describe('CngxAsyncContainer', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({ imports: [TestHost] });
     vi.useFakeTimers();
-  });
-
-  afterEach(() => {
-    vi.useRealTimers();
   });
 
   function setup() {

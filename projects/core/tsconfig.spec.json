@@ -9,6 +9,7 @@
   "include": [
     "*.d.ts",
     "*.spec.ts",
+    "../testing/setup/vitest-setup.ts",
     "utils/**/*.spec.ts",
     "tokens/**/*.spec.ts",
     "theming/**/*.spec.ts"

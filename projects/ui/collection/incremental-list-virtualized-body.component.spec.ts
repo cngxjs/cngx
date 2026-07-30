@@ -33,7 +33,12 @@ describe('CngxIncrementalVirtualizedBody', () => {
 
   afterEach(() => {
     // stubGlobal is NOT undone by restoreAllMocks - a leaked sync rAF stub
-    // corrupts later specs in the worker.
+    // corrupts later specs in the worker. The shared setup file
+    // (projects/testing/setup/vitest-setup.ts) unstubs per file, which covers
+    // that leak, but the stub here is installed per test and a synchronous rAF
+    // must not survive into the next test in this file either. Keeping the call
+    // also makes this spec the detector if a test target ever loses its
+    // setupFiles entry.
     vi.unstubAllGlobals();
     // Detach any fixture roots the focus specs attached to the document.
     document.body.replaceChildren();

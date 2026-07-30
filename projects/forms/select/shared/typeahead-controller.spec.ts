@@ -1,5 +1,5 @@
 import { signal, type Signal } from '@angular/core';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   createTypeaheadController,
@@ -43,9 +43,6 @@ function makeController(
 describe('createTypeaheadController', () => {
   beforeEach(() => {
     vi.useFakeTimers();
-  });
-  afterEach(() => {
-    vi.useRealTimers();
   });
 
   it('with no current (currentIndex -1) matches the first option from index 0', () => {

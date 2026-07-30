@@ -8,7 +8,7 @@ import {
   type CngxLoadingTreatment,
 } from '@cngx/core/utils';
 import { createAsyncStateMock, type AsyncStateMock } from '@cngx/testing';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxStatCard } from './stat-card.component';
 import { CngxStatCardFooter, CngxStatCardViz } from './stat-card-slots';
@@ -200,10 +200,6 @@ describe('CngxStatCard loading treatment', () => {
 
   beforeEach(() => {
     state = createAsyncStateMock();
-  });
-
-  afterEach(() => {
-    vi.useRealTimers();
   });
 
   function setup(providers: unknown[] = []) {

@@ -687,7 +687,12 @@ describe('CngxSidenav resize math and shortcut', () => {
     vi.restoreAllMocks();
     // restoreAllMocks does NOT undo stubGlobal - without this the synchronous
     // requestAnimationFrame stub leaks into later spec files in the same worker
-    // and makes Angular's scheduler run reentrantly.
+    // and makes Angular's scheduler run reentrantly. The shared setup file
+    // (projects/testing/setup/vitest-setup.ts) unstubs per file, which covers
+    // that leak, but the stub here is installed per test and a synchronous rAF
+    // must not survive into the next test in this file either. Keeping the call
+    // also makes this spec the detector if a test target ever loses its
+    // setupFiles entry.
     vi.unstubAllGlobals();
   });
 

@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import type { CngxAsyncState, AsyncStatus } from '@cngx/core/utils';
 
 import { CngxLoadingOverlay } from './loading-overlay';
@@ -82,10 +82,6 @@ function setupState() {
 describe('CngxLoadingOverlay', () => {
   beforeEach(() => {
     vi.useFakeTimers();
-  });
-
-  afterEach(() => {
-    vi.useRealTimers();
   });
 
   it('should use display:grid on host', () => {
