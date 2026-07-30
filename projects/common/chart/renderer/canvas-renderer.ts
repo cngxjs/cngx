@@ -24,6 +24,8 @@ const DEFAULT_STROKE_WIDTH = 1.5;
 const DEFAULT_AREA_OPACITY = 0.18;
 /** @internal */
 const DEFAULT_BAND_OPACITY = 0.12;
+/** @internal Fallback point-marker radius, matching the layers' CSS token defaults. */
+const DEFAULT_POINT_RADIUS = 3;
 
 /**
  * Canvas rendering backend. Mounts a `<canvas>` absolutely positioned
@@ -111,6 +113,30 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
     return Number.isFinite(n) ? n : DEFAULT_STROKE_WIDTH;
   }
 
+  /**
+   * Draw the optional point-marker pass a line / area geometry carries,
+   * as filled arcs in the layer's resolved colour. Same colour path as
+   * the stroke / fill so no second colour resolution is introduced.
+   */
+  function drawPointMarks(
+    c: CanvasRenderingContext2D,
+    points: readonly { readonly cx: number; readonly cy: number }[] | undefined,
+    color: string | null,
+    kind: LayerGeometry['kind'],
+    radiusVar: string,
+  ): void {
+    if (!points || points.length === 0) {
+      return;
+    }
+    const r = resolveNumberVar(radiusVar, DEFAULT_POINT_RADIUS);
+    c.fillStyle = colorOf(color, kind);
+    for (const p of points) {
+      c.beginPath();
+      c.arc(p.cx, p.cy, r, 0, Math.PI * 2);
+      c.fill();
+    }
+  }
+
   function sizeCanvas(): void {
     if (!canvas || !ctx2d) {
       return;
@@ -171,6 +197,7 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
         c.lineJoin = 'round';
         c.lineCap = 'round';
         c.stroke(new Path2D(g.d));
+        drawPointMarks(c, g.points, g.color, 'line', '--cngx-line-point-radius');
         break;
       }
       case 'area': {
@@ -178,6 +205,7 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
         c.globalAlpha = g.opacity ?? resolveNumberVar('--cngx-area-opacity', DEFAULT_AREA_OPACITY);
         c.fill(new Path2D(g.d));
         c.globalAlpha = 1;
+        drawPointMarks(c, g.points, g.color, 'area', '--cngx-area-point-radius');
         break;
       }
       case 'bar': {
