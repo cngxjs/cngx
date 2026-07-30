@@ -47,7 +47,7 @@ The leaf injects `CNGX_BUTTON_TOGGLE_GROUP` and `CNGX_BUTTON_MULTI_TOGGLE_GROUP`
 | Canonical model | `value = model<T \| undefined>` | `selectedValues = model<T[]>` |
 | Two-way alias | `[(value)]` | `[(selectedValues)]` (also `[(value)]`) |
 | Host role | `radiogroup` | `toolbar` |
-| Leaf ARIA | `aria-checked` | `aria-selected` |
+| Leaf ARIA | `aria-checked` | `aria-pressed` |
 | Arrow keys | move focus AND select | move focus only |
 | Activation | `group.value.set(v)` | `group.toggle(v)` |
 | Empty | `value() === undefined` | `selectedValues().length === 0` |

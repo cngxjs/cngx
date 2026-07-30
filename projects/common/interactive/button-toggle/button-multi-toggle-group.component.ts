@@ -42,7 +42,7 @@ import {
  * `feedback_select_family_split`). Consumers pick this component or
  * `<cngx-button-toggle-group>` at template authoring time. Leaves
  * (`CngxButtonToggle`) inject EITHER token with `{ optional: true }`
- * and choose `aria-checked` (single) vs `aria-selected` (multi)
+ * and choose `aria-checked` (single) vs `aria-pressed` (multi)
  * AT INJECTION TIME, never at runtime.
  *
  * Internals lean on `createSelectionController` from

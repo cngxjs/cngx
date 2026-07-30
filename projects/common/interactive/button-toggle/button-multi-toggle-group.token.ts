@@ -4,7 +4,7 @@ import { InjectionToken, type ModelSignal, type Signal } from '@angular/core';
  * Multi-select parent contract every `CngxButtonMultiToggleGroup`
  * provides via `useExisting`. `CngxButtonToggle` leaves that detect
  * a multi-mode parent (via `inject(CNGX_BUTTON_MULTI_TOGGLE_GROUP, {
- * optional: true })`) bind `aria-selected` (toolbar APG) instead of
+ * optional: true })`) bind `aria-pressed` (toolbar APG) instead of
  * `aria-checked` (radiogroup APG) AT INJECTION TIME. Mode is static
  * per atom instance - there is no `[selectionMode]` flag.
  *
@@ -15,7 +15,7 @@ import { InjectionToken, type ModelSignal, type Signal } from '@angular/core';
  *
  * `isSelected(value)` returns the per-value membership signal from
  * the group's internal `SelectionController` so the leaf can render
- * `aria-selected` reactively without re-querying the array on every
+ * `aria-pressed` reactively without re-querying the array on every
  * keystroke. The signal identity is stable per value (per
  * `createSelectionController` contract) - safe to read inside a
  * `computed()` on the leaf.
