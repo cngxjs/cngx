@@ -15,6 +15,12 @@ import { injectPresetState } from './preset-state';
  * indicators; `aria-valuenow` / `aria-valuemin` / `aria-valuemax`
  * tell AT the exact reading without a separate Summary.
  *
+ * `label` renders a visible caption above the track and doubles as the
+ * host's accessible name: with `label` bound and `[aria-label]` unbound
+ * the meter names itself from the caption, so it is no longer an unnamed
+ * `role="meter"`. A bound `[aria-label]` always wins and overrides the
+ * visible caption.
+ *
  * @category common/chart/presets
  * @docsKind primary
  * @wcag AA
@@ -36,7 +42,7 @@ import { injectPresetState } from './preset-state';
     '[attr.aria-valuenow]': 'value()',
     '[attr.aria-valuemin]': 'min()',
     '[attr.aria-valuemax]': 'max()',
-    '[attr.aria-label]': 'ariaLabel()',
+    '[attr.aria-label]': 'ariaLabel() ?? label()',
     class: 'cngx-mini-bar',
   },
   template: `
@@ -56,6 +62,9 @@ import { injectPresetState } from './preset-state';
       }
       @case ('none') {}
       @default {
+        @if (label(); as l) {
+          <span class="cngx-mini-bar__label">{{ l }}</span>
+        }
         <div class="cngx-mini-bar__track">
           <div class="cngx-mini-bar__fill" [style.width.%]="percent()"></div>
         </div>
@@ -69,6 +78,11 @@ import { injectPresetState } from './preset-state';
         display: inline-block;
         width: var(--cngx-mini-bar-width, 80px);
         --cngx-mini-bar-color: var(--cngx-bar-color, var(--cngx-chart-primary, currentColor));
+      }
+      cngx-mini-bar .cngx-mini-bar__label {
+        display: block;
+        font-size: var(--cngx-mini-bar-label-font-size, 0.75rem);
+        color: var(--cngx-mini-bar-label-color, inherit);
       }
       cngx-mini-bar .cngx-mini-bar__track {
         position: relative;
