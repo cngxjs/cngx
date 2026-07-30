@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxFilterChips: Multi-role filter wired to a list',
   subtitle: 'The <code>&lt;cngx-filter-chips&gt;</code> bridge synchronises with the parent <code>CngxFilter</code>. The list reads <code>filter.predicate()</code> in a <code>computed</code>; toggling chips re-runs the filter without any <code>effect()</code> write-back.',
-  description: 'End-to-end wiring: a chip strip drives a <code>CngxFilter</code> predicate; a sibling <code>&lt;ul&gt;</code> reads that predicate to decide which items to render. A <code>role="status"</code> live region announces the new count whenever chips toggle, so screen-reader users hear the result change.',
+  description: 'End-to-end wiring: a chip strip drives a <code>CngxFilter</code> predicate; a sibling <code>&lt;ul&gt;</code> reads that predicate to decide which items to render. The bridge renders the required <code>label</code> ("Tags") as a visible caption above the strip - no consumer-drawn facet label - and keeps naming the inner listbox with the same string. A <code>role="status"</code> live region announces the new count whenever chips toggle, so screen-reader users hear the result change.',
   level: 'molecule',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'building-block',
