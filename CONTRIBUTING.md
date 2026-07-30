@@ -114,8 +114,10 @@ or stubbed global leaks into the files that run after it. The shared setup file
 `projects/testing/setup/vitest-setup.ts`, wired into every `test` target,
 restores real timers after each test and unstubs globals after each file, so a
 spec only needs its own `vi.useRealTimers()` / `vi.unstubAllGlobals()` when a
-later test in the *same* file must not see the fake clock or the stub. See
-`projects/testing/README.md` for the details and the reference cases.
+later test in the *same* file must not see the fake clock or the stub. Spies are
+not covered: `vi.spyOn()` on a global object outlives the file, so restore it in
+the spec itself. See `projects/testing/README.md` for the details and the
+reference cases.
 
 ### End-to-end tests (Playwright)
 

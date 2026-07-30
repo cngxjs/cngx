@@ -356,18 +356,29 @@ target through the builder's `setupFiles` option and closes that by default:
   scope, because some specs stub a global once at module level and need it for
   every test in the file.
 
-Two consequences for a new spec:
+Three consequences for a new spec:
 
 - `vi.useFakeTimers()` needs no matching `vi.useRealTimers()`. Add one only if
   a later test *in the same file* needs the real clock before its own teardown.
 - `vi.stubGlobal()` needs no matching `vi.unstubAllGlobals()` to keep the stub
-  out of the next file. Add one in `afterEach` when the stub must not survive
-  into the next test in the same file, which is the case for a synchronous
-  `requestAnimationFrame` - it makes Angular's scheduler run reentrantly.
+  out of the next file. `projects/ui/tabs/tab-overflow.component.spec.ts` and
+  `projects/ui/paginator/segments/paginator-infinite.component.spec.ts` rely on
+  exactly that: both stub `IntersectionObserver` and neither unstubs it.
+  Add an `afterEach` unstub only when the stub must not survive into the next
+  test in the *same* file. A synchronous `requestAnimationFrame` is the case
+  that matters, because it makes Angular's scheduler run reentrantly;
   `projects/ui/sidenav/sidenav.spec.ts` is the reference.
+- `vi.spyOn()` is **not** covered. The shared setup restores timers and unstubs
+  globals; it does not touch spies, deliberately, since clearing every spy after
+  every test would change behaviour for the whole suite rather than fix a leak.
+  A spy on a global object outlives the file that installed it, so restore it
+  yourself. `projects/common/dialog/dialog/dialog.directive.spec.ts` is the
+  reference: it spies on `getComputedStyle` and carries its own
+  `vi.restoreAllMocks()`.
 
-Note that `vi.restoreAllMocks()` covers neither axis. It restores `vi.spyOn`
-spies only; fake timers and stubbed globals each need their own call.
+Note that `vi.restoreAllMocks()` covers neither of the first two axes. It
+restores `vi.spyOn` spies only; fake timers and stubbed globals each need their
+own call.
 
 File-local teardown runs before the shared hooks, since vitest's default
 `sequence.hooks: 'stack'` runs "after" hooks in reverse registration order. A

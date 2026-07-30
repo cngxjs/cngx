@@ -22,6 +22,12 @@
  *   under them. File scope still closes the leak that matters, since
  *   `isolate: false` is what carries a stub into the next file.
  *
+ * Spies are the third axis and are deliberately not restored here. Clearing
+ * every `vi.spyOn` after every test would change behaviour for the whole suite
+ * rather than close a leak, so a spec that spies on a global object restores it
+ * itself; `projects/common/dialog/dialog/dialog.directive.spec.ts` is the
+ * reference.
+ *
  * A spec needing more teardown than this does it itself. File-local hooks run
  * first - vitest's default `sequence.hooks: 'stack'` runs "after" hooks in
  * reverse registration order - so a teardown that still needs the fake clock or
