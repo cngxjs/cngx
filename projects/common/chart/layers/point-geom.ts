@@ -69,6 +69,9 @@ export function lineAreaGeomEqual(a: LayerGeometry, b: LayerGeometry): boolean {
   if ((a.kind !== 'line' && a.kind !== 'area') || (b.kind !== 'line' && b.kind !== 'area')) {
     return false;
   }
+  if (a.kind !== b.kind) {
+    return false;
+  }
   return (
     a.d === b.d &&
     a.color === b.color &&

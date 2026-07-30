@@ -77,4 +77,17 @@ describe('lineAreaGeomEqual', () => {
     });
     expect(lineAreaGeomEqual(area('M 0 0 Z'), area('M 0 0 Z'))).toBe(true);
   });
+
+  it('rejects a line-vs-area comparison outright (kind guard)', () => {
+    const area: LayerGeometry = {
+      kind: 'area',
+      d: 'M 0 0',
+      color: null,
+      strokeWidth: null,
+      fill: null,
+      opacity: null,
+      points: EMPTY_POINTS,
+    };
+    expect(lineAreaGeomEqual(line('M 0 0', []), area)).toBe(false);
+  });
 });
