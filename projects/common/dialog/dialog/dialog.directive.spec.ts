@@ -1,6 +1,6 @@
 import { Component, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { of, type Observable } from 'rxjs';
 
 import { CngxDialog } from './dialog.directive';
@@ -35,6 +35,13 @@ function stubDialogElement(el: HTMLDialogElement): void {
     transitionDuration: '0s',
   } as unknown as CSSStyleDeclaration);
 }
+
+// stubDialogElement spies on the global getComputedStyle. The shared setup file
+// restores timers and unstubs globals but does not touch spies, so without this
+// the stub would answer every later spec file in the project.
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 // ── Test hosts ──────────────────────────────────────────────────────────
 
