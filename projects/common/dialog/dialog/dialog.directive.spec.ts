@@ -1,6 +1,6 @@
 import { Component, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { of, type Observable } from 'rxjs';
 
 import { CngxDialog } from './dialog.directive';
@@ -100,7 +100,6 @@ function openFully<T extends { dialog: ReturnType<typeof viewChild.required<Cngx
 
 describe('CngxDialog', () => {
   beforeEach(() => vi.useFakeTimers());
-  afterEach(() => vi.useRealTimers());
 
   describe('initial state', () => {
     it('starts in closed state', () => {
@@ -357,7 +356,6 @@ describe('CngxDialog', () => {
 
 describe('CngxDialog submitAction', () => {
   beforeEach(() => vi.useFakeTimers());
-  afterEach(() => vi.useRealTimers());
 
   @Component({
     template: `

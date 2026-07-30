@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Subject, type Observable } from 'rxjs';
 
@@ -294,9 +294,6 @@ describe('CngxCombobox — search + filter', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     polyfillPopover();
-  });
-  afterEach(() => {
-    vi.useRealTimers();
   });
 
   it('typing into the input filters the rendered option rows', () => {

@@ -409,10 +409,6 @@ describe('CngxTimeline layout', () => {
       vi.useFakeTimers();
     });
 
-    afterEach(() => {
-      vi.useRealTimers();
-    });
-
     /** Drives the organism into its first-load placeholder body. */
     function loading(placement: CngxTimelinePlacement): {
       el: HTMLElement;

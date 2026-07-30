@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CngxAutofocus } from './autofocus.directive';
 
 @Component({
@@ -29,8 +29,6 @@ describe('CngxAutofocus', () => {
     vi.useFakeTimers();
     TestBed.configureTestingModule({ imports: [TestHost, ConditionalHost] });
   });
-
-  afterEach(() => vi.useRealTimers());
 
   it('focuses element when inserted into DOM', () => {
     const fixture = TestBed.createComponent(TestHost);

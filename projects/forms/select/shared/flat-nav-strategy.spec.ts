@@ -1,5 +1,5 @@
 import { signal, type Signal } from '@angular/core';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   createDefaultFlatNavStrategy,
@@ -87,10 +87,6 @@ describe('createDefaultFlatNavStrategy', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     strategy = createDefaultFlatNavStrategy();
-  });
-
-  afterEach(() => {
-    vi.useRealTimers();
   });
 
   describe('onPageJump', () => {

@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CNGX_HOVER_INTENT_DEFAULTS, CngxHoverIntent } from './hover-intent.directive';
 
 @Component({
@@ -32,10 +32,6 @@ describe('CngxHoverIntent', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     TestBed.configureTestingModule({ imports: [TestHost] });
-  });
-
-  afterEach(() => {
-    vi.useRealTimers();
   });
 
   function setup() {
@@ -136,7 +132,6 @@ class BoundEnterHost {}
 
 describe('CngxHoverIntent DI defaults', () => {
   beforeEach(() => vi.useFakeTimers());
-  afterEach(() => vi.useRealTimers());
 
   function setup(host: typeof UnboundHost | typeof BoundEnterHost, defaults?: CngxHoverIntentDefaultsInput) {
     TestBed.configureTestingModule({

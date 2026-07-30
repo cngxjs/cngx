@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { CngxSkeletonContainer } from './skeleton-container';
 import { CngxSkeletonPlaceholder } from './skeleton-placeholder';
 
@@ -56,10 +56,6 @@ function flush(fixture: ReturnType<typeof TestBed.createComponent>): void {
 describe('CngxSkeletonContainer', () => {
   beforeEach(() => {
     vi.useFakeTimers();
-  });
-
-  afterEach(() => {
-    vi.useRealTimers();
   });
 
   it('should render placeholders when loading', () => {

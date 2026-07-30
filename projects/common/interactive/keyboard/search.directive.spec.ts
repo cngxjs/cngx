@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CngxSearch } from './search.directive';
 
 @Component({
@@ -14,7 +14,6 @@ class TestHost {
 
 describe('CngxSearch', () => {
   beforeEach(() => TestBed.configureTestingModule({ imports: [TestHost] }));
-  afterEach(() => vi.useRealTimers());
 
   function setup() {
     const fixture = TestBed.createComponent(TestHost);

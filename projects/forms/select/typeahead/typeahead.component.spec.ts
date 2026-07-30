@@ -1,7 +1,7 @@
 import { Component, signal, viewChild, type TemplateRef, type WritableSignal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import { CngxFormField } from '@cngx/forms/field';
 import { createMockField, type MockFieldRef } from '@cngx/forms/field/testing';
@@ -133,9 +133,6 @@ describe('CngxTypeahead — standalone', () => {
   beforeEach(() => {
     polyfillPopover();
     TestBed.configureTestingModule({ imports: [StandaloneHost] });
-  });
-  afterEach(() => {
-    vi.useRealTimers();
   });
 
   function setup(): {

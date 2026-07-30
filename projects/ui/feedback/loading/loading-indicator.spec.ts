@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 import { CngxLoadingIndicator, type LoadingIndicatorVariant } from './loading-indicator';
 
@@ -42,10 +42,6 @@ function setup() {
 describe('CngxLoadingIndicator', () => {
   beforeEach(() => {
     vi.useFakeTimers();
-  });
-
-  afterEach(() => {
-    vi.useRealTimers();
   });
 
   it('should have role="status"', () => {
