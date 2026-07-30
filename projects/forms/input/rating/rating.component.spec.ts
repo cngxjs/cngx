@@ -249,6 +249,16 @@ describe('CngxRating', () => {
       expect(reason.getAttribute('aria-hidden')).toBeNull();
     });
 
+    it('does not reference the reason while enabled even when a reason is set', () => {
+      const { fixture, host } = setup();
+      fixture.componentInstance.reason.set('Rating locked until sign-in');
+      fixture.detectChanges(); // disabled stays false
+      const group = host.querySelector('cngx-rating') as HTMLElement;
+      // accname 1.2 §2A reads a directly-referenced hidden span, so the id must
+      // be gated on the disabled state - not merely on the reason being present.
+      expect(group.getAttribute('aria-describedby')).toBeNull();
+    });
+
     it('derives disabled from a disabled form field', () => {
       const { accessor } = createMockField<number>({
         name: 'score',
