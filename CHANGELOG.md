@@ -8,6 +8,11 @@ See CONTRIBUTING.md for the workflow.
 ## Unreleased
 
 
+### Bug Fixes
+
+- **core:** `matchesKeyCombo` rejects modifiers a combo did not name, so a bare-key shortcut (`'b'`) no longer fires on the modified chord (`Cmd+B`) and the browser keeps its own binding. Consumers that relied on the loose match must declare the modifier explicitly (`'mod+b'` alongside `'b'`).
+
+
 ### BREAKING CHANGES
 
 - **common/interactive:** multi button-toggle leaves now emit `aria-pressed` instead of `aria-selected`. `aria-selected` is undefined for `role="button"` in ARIA 1.2 and was dropped by the accessibility tree, so a selected leaf reported no state at all; the on/off state only reached the visual channel. Consumers styling or querying `[aria-selected]` on a `cngx-button-multi-toggle-group` leaf must move to `[aria-pressed]`.
