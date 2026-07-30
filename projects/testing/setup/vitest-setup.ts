@@ -6,12 +6,16 @@
  *
  * The builder runs vitest with `isolate: false`
  * (`@angular/build/src/builders/unit-test/runners/vitest/plugins.js`, commented
- * there as aligning with the Karma/Jasmine experience), so every spec file in a
- * project shares one environment. An unrestored `vi.useFakeTimers()` therefore
- * patches `requestAnimationFrame` for every file that runs after it: the next
- * spec awaiting a real frame queues its callback into a clock nobody advances
- * and hangs until vitest's 5s cap. `vi.restoreAllMocks()` undoes neither fake
- * timers nor `vi.stubGlobal` - each needs its own call.
+ * there as aligning with the Karma/Jasmine experience) and leaves
+ * `fileParallelism` at its default, so spec files are spread across worker
+ * processes and every file sharing a worker shares one environment. An
+ * unrestored `vi.useFakeTimers()` therefore patches `requestAnimationFrame` for
+ * the files scheduled after it *in that worker*: the next such spec awaiting a
+ * real frame queues its callback into a clock nobody advances and hangs until
+ * vitest's 5s cap. Which file gets hit depends on how files were distributed, so
+ * the symptom moves between runs and a single green run proves nothing.
+ * `vi.restoreAllMocks()` undoes neither fake timers nor `vi.stubGlobal` - each
+ * needs its own call.
  *
  * The two axes restore at different scopes on purpose:
  *
@@ -19,8 +23,9 @@
  *   real frame in the next fails exactly like the cross-file case.
  * - Globals per file. Several specs stub a global once at module level and rely
  *   on it for every test in the file; a per-test unstub would pull it out from
- *   under them. File scope still closes the leak that matters, since
- *   `isolate: false` is what carries a stub into the next file.
+ *   under them. File scope still closes the leak that matters: this setup module
+ *   is re-evaluated for every spec file, so its `afterAll` fires once per file
+ *   and the stub cannot reach the next file in the worker.
  *
  * Spies are the third axis and are deliberately not restored here. Clearing
  * every `vi.spyOn` after every test would change behaviour for the whole suite

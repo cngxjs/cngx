@@ -338,15 +338,22 @@ it('debounces input', async () => {
 });
 ```
 
-## One Shared Environment Per Project
+## One Shared Environment Per Worker
 
 `ng test <lib>` runs vitest with `isolate: false`, a default the Angular
-builder sets to match the Karma/Jasmine experience. Every spec file in a
-project therefore shares one environment: a fake clock or a stubbed global that
-is never restored stays patched for every file that runs after it. The classic
-symptom is a file that passes alone and hangs for five seconds inside
-`await new Promise((r) => requestAnimationFrame(r))` when the whole project
-runs, because the frame callback went into a clock nobody advances.
+builder sets to match the Karma/Jasmine experience, and leaves `fileParallelism`
+at its default. Spec files are therefore spread across worker processes, and
+every file that shares a worker shares one environment: a fake clock or a
+stubbed global that is never restored stays patched for the files scheduled
+after it in that worker.
+
+The classic symptom is a file that passes alone and hangs for five seconds
+inside `await new Promise((r) => requestAnimationFrame(r))` when the whole
+project runs, because the frame callback went into a clock nobody advances.
+Which file gets hit depends on how that run distributed the files, so the
+victim moves between runs. That is the tell for pollution rather than a
+per-component bug, and it is why reproducing it takes repeat runs: a single
+green run proves nothing.
 
 `projects/testing/setup/vitest-setup.ts` is wired into every library `test`
 target through the builder's `setupFiles` option and closes that by default:
@@ -354,7 +361,8 @@ target through the builder's `setupFiles` option and closes that by default:
 - `vi.useRealTimers()` after **every test**.
 - `vi.unstubAllGlobals()` after **every file**. File scope rather than test
   scope, because some specs stub a global once at module level and need it for
-  every test in the file.
+  every test in the file. The setup module is re-evaluated per spec file, so its
+  `afterAll` fires once per file rather than once per worker.
 
 Three consequences for a new spec:
 
