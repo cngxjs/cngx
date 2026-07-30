@@ -58,6 +58,8 @@ describe('CngxButtonToggleGroup + CngxButtonToggle (single mode)', () => {
     toggles.forEach(({ el }) => {
       expect(el.getAttribute('aria-checked')).toBe('false');
       expect(el.getAttribute('aria-selected')).toBeNull();
+      // Mirror of the multi guard: a single-mode leaf carries no aria-pressed.
+      expect(el.getAttribute('aria-pressed')).toBeNull();
     });
   });
 
