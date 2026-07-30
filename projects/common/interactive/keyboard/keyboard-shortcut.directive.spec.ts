@@ -111,4 +111,25 @@ describe('CngxKeyboardShortcut', () => {
     document.dispatchEvent(event);
     expect(spy).toHaveBeenCalled();
   });
+
+  it('does not prevent default or emit for an unmatched modifier chord', () => {
+    const { fixture } = setup();
+    fixture.componentInstance.shortcut.set('b');
+    fixture.detectChanges();
+
+    // A bare 'b' shortcut must leave Cmd+B / Ctrl+B to the browser: the
+    // consumer cannot recover the chord because preventDefault runs before
+    // shortcutTriggered emits.
+    const event = new KeyboardEvent('keydown', {
+      key: 'b',
+      metaKey: true,
+      ctrlKey: true,
+      bubbles: true,
+      cancelable: true,
+    });
+    document.dispatchEvent(event);
+
+    expect(fixture.componentInstance.triggerCount).toBe(0);
+    expect(event.defaultPrevented).toBe(false);
+  });
 });
