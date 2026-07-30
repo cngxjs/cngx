@@ -117,6 +117,17 @@ export class CngxFilterChip<TItem = unknown, TValue = unknown> {
  * mount and unmount cleans the latest binding (per
  * `reference_signal_architecture` memory-hygiene rule).
  *
+ * **Visible caption.** The required `label` renders as a
+ * `.cngx-filter-chips__label` caption above the strip so a sighted user
+ * can tell which facet a chip row belongs to. The caption is
+ * `aria-hidden="true"`: the inner `<cngx-multi-chip-group>` is already
+ * named by the same string via `[label]`, so exposing the visible node
+ * to AT would announce the facet twice. Spacing between caption and
+ * strip is the `--cngx-filter-chips-gap` token; the caption's own
+ * appearance is `--cngx-filter-chips-label-color`,
+ * `--cngx-filter-chips-label-font-size` and
+ * `--cngx-filter-chips-label-font-weight`.
+ *
  * ```html
  * <cngx-filter-chips
  *   label="Tags"
@@ -150,7 +161,13 @@ export class CngxFilterChip<TItem = unknown, TValue = unknown> {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CngxChip, CngxMultiChipGroup, CngxChipInGroup, NgTemplateOutlet],
+  host: {
+    class: 'cngx-filter-chips',
+    '[class.cngx-filter-chips--vertical]': 'orientation() === "vertical"',
+  },
+  styleUrl: './filter-chips.component.css',
   template: `
+    <span class="cngx-filter-chips__label" aria-hidden="true">{{ label() }}</span>
     <cngx-multi-chip-group
       [label]="label()"
       [(selectedValues)]="selectedValues"
