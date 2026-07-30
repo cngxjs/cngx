@@ -21,7 +21,7 @@ import { ResizeObserverMock } from '../testing/resize-observer-mock';
     <cngx-chart [data]="data()" [width]="200" [height]="100">
       <svg:g cngxAxis position="bottom" type="linear" [domain]="xDomain()"></svg:g>
       <svg:g cngxAxis position="left" type="linear" [domain]="yDomain()"></svg:g>
-      <svg:g cngxLine [accessor]="acc()"></svg:g>
+      <svg:g cngxLine [accessor]="acc()" [points]="points()"></svg:g>
     </cngx-chart>
   `,
 })
@@ -30,6 +30,7 @@ class TestHost {
   xDomain = signal<readonly unknown[]>([0, 4]);
   yDomain = signal<readonly unknown[]>([0, 5]);
   acc = signal<(d: number) => number>((d) => d);
+  points = signal<'auto' | 'always' | 'never'>('auto');
 }
 
 @Component({
@@ -116,5 +117,70 @@ describe('CngxLine', () => {
 
     expect(runs).toBe(baselineRuns);
     void inject; // keep import to satisfy lint when not directly used
+  });
+
+  function points(fixture: ReturnType<typeof TestBed.createComponent<TestHost>>): NodeListOf<Element> {
+    return (fixture.nativeElement as HTMLElement).querySelectorAll('.cngx-line__point');
+  }
+
+  it("'auto' marks a single-datum series with exactly one point", () => {
+    const { fixture } = setup();
+    fixture.componentInstance.data.set([3]);
+    fixture.detectChanges();
+    expect(points(fixture).length).toBe(1);
+  });
+
+  it("'auto' marks nothing on a multi-point series", () => {
+    const { fixture } = setup();
+    // default data is [1..5]; auto is the default mode
+    expect(points(fixture).length).toBe(0);
+  });
+
+  it("'always' marks every datum of a multi-point series", () => {
+    const { fixture } = setup();
+    fixture.componentInstance.points.set('always');
+    fixture.detectChanges();
+    expect(points(fixture).length).toBe(5);
+  });
+
+  it("'never' marks nothing, single-datum or multi-point", () => {
+    const { fixture } = setup();
+    fixture.componentInstance.points.set('never');
+    fixture.componentInstance.data.set([3]);
+    fixture.detectChanges();
+    expect(points(fixture).length).toBe(0);
+    fixture.componentInstance.data.set([1, 2, 3, 4, 5]);
+    fixture.detectChanges();
+    expect(points(fixture).length).toBe(0);
+  });
+
+  it('cascade guard — a same-coordinate refresh of a marked single-datum series keeps the geometry identity', () => {
+    const { fixture } = setup();
+    fixture.componentInstance.data.set([3]);
+    fixture.detectChanges();
+
+    const lineEl = fixture.debugElement.query((el) => el.componentInstance instanceof CngxLine);
+    const line = lineEl.componentInstance as CngxLine<number>;
+    const geometry = (line as unknown as { geometry: () => unknown }).geometry;
+
+    let runs = 0;
+    const env = TestBed.inject(EnvironmentInjector);
+    runInInjectionContext(env, () => {
+      effect(() => {
+        geometry();
+        runs++;
+      });
+    });
+    TestBed.tick();
+    const baselineRuns = runs;
+
+    // Fresh-reference array, same single value, unchanged scales — the
+    // marker recomputes to the same {cx,cy}, so the extended pathGeomEqual
+    // must hold and the geometry identity must not change.
+    fixture.componentInstance.data.set([3]);
+    fixture.detectChanges();
+    TestBed.tick();
+
+    expect(runs).toBe(baselineRuns);
   });
 });

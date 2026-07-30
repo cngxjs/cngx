@@ -118,6 +118,31 @@ describe('createCanvasRenderer', () => {
     expect(ctx2d.fillRect).toHaveBeenCalled();
   });
 
+  it('draws an arc per point mark on a line geometry carrying points', () => {
+    const renderer = createCanvasRenderer(deps());
+    const host = document.createElement('div');
+    renderer.mount(host, deps().ctx);
+
+    const lineWithPoints: LayerGeometry = {
+      ...LINE_GEOM,
+      points: [
+        { cx: 5, cy: 5 },
+        { cx: 10, cy: 10 },
+      ],
+    } as LayerGeometry;
+    renderer.paint([lineWithPoints]);
+    expect(ctx2d.arc).toHaveBeenCalledTimes(2);
+  });
+
+  it('issues no arc when a line geometry carries no points', () => {
+    const renderer = createCanvasRenderer(deps());
+    const host = document.createElement('div');
+    renderer.mount(host, deps().ctx);
+
+    renderer.paint([LINE_GEOM]);
+    expect(ctx2d.arc).not.toHaveBeenCalled();
+  });
+
   it('resizes the bitmap when dimensions change', () => {
     const renderer = createCanvasRenderer(deps());
     const host = document.createElement('div');
