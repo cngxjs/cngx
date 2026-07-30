@@ -1,0 +1,18 @@
+:host {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  --cngx-filter-chips-gap: var(--cngx-space-sm, 8px);
+  gap: var(--cngx-filter-chips-gap, 8px);
+}
+
+:host(.cngx-filter-chips--vertical) {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.cngx-filter-chips__label {
+  color: var(--cngx-filter-chips-label-color, inherit);
+  font-size: var(--cngx-filter-chips-label-font-size, 0.8125rem);
+  font-weight: var(--cngx-filter-chips-label-font-weight, 600);
+}

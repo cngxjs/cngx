@@ -7,6 +7,12 @@ import {
 } from '@angular/core';
 import { injectChartContext } from '../chart/chart-context';
 import { CNGX_CHART_LAYER, type CngxChartLayer, type LayerGeometry } from './chart-layer';
+import {
+  derivePointMarks,
+  EMPTY_POINTS,
+  lineAreaGeomEqual,
+  type PointMark,
+} from './point-geom';
 import { type CngxCurve } from '../path/curve';
 import {
   createPathBuilder,
@@ -24,6 +30,11 @@ import {
  *
  * The `d` string is cascade-guarded with string equality on its
  * `computed` so a no-op data refresh does not force a fill repaint.
+ *
+ * A single-datum area closes on itself at one x and covers no pixels,
+ * so a series shorter than two points paints a point marker instead of
+ * nothing. `[points]` mirrors {@link CngxLine}: `'auto'` (default) marks
+ * only the one-datum case, `'always'` every datum, `'never'` none.
  *
  * @category common/chart/layers
  * @docsKind primary
@@ -53,6 +64,9 @@ import {
         [attr.d]="d()"
         [attr.fill-opacity]="opacity()"
       />
+      @for (p of pointMarks(); track $index) {
+        <svg:circle class="cngx-area__point" [attr.cx]="p.cx" [attr.cy]="p.cy" />
+      }
     }
   `,
   styles: [
@@ -68,8 +82,15 @@ import {
         from { opacity: 0; }
         to { opacity: 1; }
       }
+      .cngx-area__point {
+        r: var(--cngx-area-point-radius, 3px);
+        fill: var(--cngx-area-fill, var(--cngx-chart-primary, currentColor));
+        animation: cngx-area-enter var(--cngx-chart-enter-duration, 480ms)
+          var(--cngx-chart-enter-easing, cubic-bezier(0.4, 0, 0.2, 1));
+      }
       @media (prefers-reduced-motion: reduce) {
-        .cngx-area { animation: none; }
+        .cngx-area,
+        .cngx-area__point { animation: none; }
       }
     `,
   ],
@@ -81,6 +102,14 @@ export class CngxArea<T = unknown> implements CngxChartLayer {
   readonly curve = input<CngxCurve>('linear');
   readonly baseline = input<number>(0);
   readonly data = input<readonly T[] | undefined>(undefined);
+
+  /**
+   * Point-marker mode, mirroring {@link CngxLine}. `'auto'` (default)
+   * draws a marker only for a single-datum series - an area closed on
+   * itself at one x covers no pixels and paints nothing otherwise.
+   * `'always'` marks every datum; `'never'` suppresses markers.
+   */
+  readonly points = input<'auto' | 'always' | 'never'>('auto');
 
   protected readonly ctx = injectChartContext('CngxArea');
 
@@ -128,26 +157,27 @@ export class CngxArea<T = unknown> implements CngxChartLayer {
         strokeWidth: null,
         fill: null,
         opacity: op == null ? null : Number(op),
+        points: derivePointMarks(
+          this.points(),
+          this.resolvedData(),
+          this.ctx.xScale(),
+          this.ctx.yScale(),
+          this.accessor(),
+          this.xAccessor() ?? ((_: T, i: number) => i),
+        ),
       };
     },
-    { equal: areaGeomEqual },
+    { equal: lineAreaGeomEqual },
   );
-}
 
-/**
- * Structural equality for area geometry: `d` string plus the numeric
- * fill opacity. A no-op refresh rebuilding the same closed path does not
- * cascade into the renderer.
- *
- * @internal
- */
-function areaGeomEqual(a: LayerGeometry, b: LayerGeometry): boolean {
-  if (a === b) {
-    return true;
-  }
-  if (a.kind !== 'area' || b.kind !== 'area') {
-    return false;
-  }
-  return a.d === b.d && a.opacity === b.opacity;
+  /**
+   * Template view of the geometry's marker pass. Forwards the reference
+   * the `geometry` computed already holds - `lineAreaGeomEqual` keeps it
+   * stable across a no-op refresh, so no second equality guard is needed.
+   */
+  protected readonly pointMarks = computed<readonly PointMark[]>(() => {
+    const g = this.geometry();
+    return g.kind === 'area' ? (g.points ?? EMPTY_POINTS) : EMPTY_POINTS;
+  });
 }
 

@@ -11,12 +11,16 @@ import { CNGX_CHART_I18N } from '../i18n/chart-i18n';
 
 /**
  * Internal SR-only data-table view. The parent `<cngx-chart>` mounts
- * one of these and links it via `aria-describedby`. The element is
- * always present in the DOM — visibility flips through `aria-hidden`
- * controlled by the chart's `tableActive` predicate. This is the
- * Pillar-2 always-in-DOM contract: the linked id never disappears
- * from the host, only the row content's accessibility-tree visibility
- * does.
+ * one of these and links it via `aria-describedby`
+ * (`chart.component.ts`), and that link never disappears from the host.
+ * The element is always visually SR-only (the clip/offscreen host
+ * styles below), so nothing about it ever paints. What toggles is its
+ * accessibility-tree visibility: the chart binds the `hidden` input
+ * (`chart.component.ts`) from its `tableActive` predicate and
+ * `activeView`, and the host maps that input to `[attr.aria-hidden]`.
+ * This is the Pillar-2 always-in-DOM contract: the `aria-describedby`
+ * id stays referenced whether or not the table is exposed to AT; only
+ * `aria-hidden` flips.
  *
  * The current surface is single-column ("Value") backed by the chart's
  * `summary`-projected numeric values; the column header derivation is

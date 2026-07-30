@@ -1,5 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { createManualState } from '@cngx/common/data';
+import type { CngxAsyncState } from '@cngx/core/utils';
 import { describe, expect, it } from 'vitest';
 import { CngxMiniBar } from './mini-bar.component';
 
@@ -68,5 +70,74 @@ describe('CngxMiniBar', () => {
     fixture.detectChanges();
     expect(host.getAttribute('aria-valuenow')).toBe('75');
     expect(host.getAttribute('aria-valuemax')).toBe('200');
+  });
+});
+
+@Component({
+  standalone: true,
+  imports: [CngxMiniBar],
+  template: `
+    <cngx-mini-bar
+      [value]="value()"
+      [label]="label()"
+      [aria-label]="ariaLabel()"
+      [state]="state()"
+      data-testid="bar"
+    />
+  `,
+})
+class LabelHost {
+  value = signal<number>(50);
+  label = signal<string | null>(null);
+  ariaLabel = signal<string | null>(null);
+  state = signal<CngxAsyncState<number> | undefined>(undefined);
+}
+
+describe('CngxMiniBar label + meter name', () => {
+  function setup(): {
+    fixture: ReturnType<typeof TestBed.createComponent<LabelHost>>;
+    host: HTMLElement;
+  } {
+    TestBed.configureTestingModule({ imports: [LabelHost] });
+    const fixture = TestBed.createComponent(LabelHost);
+    fixture.detectChanges();
+    const host = fixture.nativeElement.querySelector('[data-testid="bar"]') as HTMLElement;
+    return { fixture, host };
+  }
+
+  it('renders the label caption above the track', () => {
+    const { fixture, host } = setup();
+    fixture.componentInstance.label.set('CPU');
+    fixture.detectChanges();
+    const caption = host.querySelector('.cngx-mini-bar__label') as HTMLElement;
+    expect(caption).not.toBeNull();
+    expect(caption.textContent?.trim()).toBe('CPU');
+  });
+
+  it('names the meter from the label when [aria-label] is unbound', () => {
+    const { fixture, host } = setup();
+    fixture.componentInstance.label.set('CPU');
+    fixture.detectChanges();
+    expect(host.getAttribute('aria-label')).toBe('CPU');
+  });
+
+  it('lets [aria-label] win over the visible label when both are bound', () => {
+    const { fixture, host } = setup();
+    fixture.componentInstance.label.set('CPU');
+    fixture.componentInstance.ariaLabel.set('Processor load');
+    fixture.detectChanges();
+    expect(host.getAttribute('aria-label')).toBe('Processor load');
+    expect(host.querySelector('.cngx-mini-bar__label')?.textContent?.trim()).toBe('CPU');
+  });
+
+  it('renders no caption while a loading state shows its fallback', () => {
+    const { fixture, host } = setup();
+    const state = createManualState<number>();
+    state.set('loading');
+    fixture.componentInstance.state.set(state);
+    fixture.componentInstance.label.set('CPU');
+    fixture.detectChanges();
+    expect(host.querySelector('.cngx-mini-bar__label')).toBeNull();
+    expect(host.querySelector('.cngx-preset-skeleton')).not.toBeNull();
   });
 });

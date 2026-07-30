@@ -24,6 +24,15 @@ export type LayerGeometry =
       readonly strokeWidth: number | string | null;
       readonly fill?: string | null;
       readonly opacity?: number | null;
+      /**
+       * Optional point-marker pass a mark layer emits alongside its
+       * path - the scale-projected centres of the datapoints the layer
+       * chooses to mark (e.g. the lone datum of a warming series). Both
+       * the SVG template and the Canvas renderer paint these as small
+       * filled circles in the layer's resolved colour. Absent / empty
+       * when the layer draws no markers.
+       */
+      readonly points?: readonly { readonly cx: number; readonly cy: number }[];
     }
   | {
       readonly kind: 'bar';

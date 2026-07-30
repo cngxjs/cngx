@@ -7,6 +7,12 @@ import {
 } from '@angular/core';
 import { injectChartContext } from '../chart/chart-context';
 import { CNGX_CHART_LAYER, type CngxChartLayer, type LayerGeometry } from './chart-layer';
+import {
+  derivePointMarks,
+  EMPTY_POINTS,
+  lineAreaGeomEqual,
+  type PointMark,
+} from './point-geom';
 import { type CngxCurve } from '../path/curve';
 import {
   createPathBuilder,
@@ -30,6 +36,11 @@ import {
  * geometry actually changes. The `createPathBuilder` cache provides
  * the **compute guard** — same `(data, xScale, yScale)` triple by
  * reference skips the per-datapoint projection work.
+ *
+ * A single-point series draws no visible path (`M x y` has no length),
+ * so a series shorter than two points paints a point marker instead of
+ * nothing. `[points]` controls this: `'auto'` (default) marks only the
+ * one-datum case, `'always'` marks every datum, `'never'` suppresses it.
  *
  * @category common/chart/layers
  * @docsKind primary
@@ -63,6 +74,9 @@ import {
         [attr.stroke-linejoin]="'round'"
         [attr.stroke-linecap]="'round'"
       />
+      @for (p of pointMarks(); track $index) {
+        <svg:circle class="cngx-line__point" [attr.cx]="p.cx" [attr.cy]="p.cy" />
+      }
     }
   `,
   styles: [
@@ -77,8 +91,15 @@ import {
         from { opacity: 0; }
         to { opacity: 1; }
       }
+      .cngx-line__point {
+        r: var(--cngx-line-point-radius, 3px);
+        fill: var(--cngx-line-color, var(--cngx-chart-primary, currentColor));
+        animation: cngx-line-enter var(--cngx-chart-enter-duration, 480ms)
+          var(--cngx-chart-enter-easing, cubic-bezier(0.4, 0, 0.2, 1));
+      }
       @media (prefers-reduced-motion: reduce) {
-        .cngx-line { animation: none; }
+        .cngx-line,
+        .cngx-line__point { animation: none; }
       }
     `,
   ],
@@ -90,6 +111,14 @@ export class CngxLine<T = unknown> implements CngxChartLayer {
   readonly strokeWidth = input<number | string | null>(null);
   readonly curve = input<CngxCurve>('linear');
   readonly data = input<readonly T[] | undefined>(undefined);
+
+  /**
+   * Point-marker mode. `'auto'` (default) draws a marker only when the
+   * resolved series has exactly one datum - the frame a warming buffer
+   * passes through on every reload, which paints nothing otherwise.
+   * `'always'` marks every datum; `'never'` suppresses markers.
+   */
+  readonly points = input<'auto' | 'always' | 'never'>('auto');
 
   protected readonly ctx = injectChartContext('CngxLine');
 
@@ -121,30 +150,26 @@ export class CngxLine<T = unknown> implements CngxChartLayer {
       color: this.color(),
       strokeWidth: this.strokeWidth(),
       fill: 'none',
+      points: derivePointMarks(
+        this.points(),
+        this.resolvedData(),
+        this.ctx.xScale(),
+        this.ctx.yScale(),
+        this.accessor(),
+        this.xAccessor() ?? ((_: T, i: number) => i),
+      ),
     }),
-    { equal: pathGeomEqual },
+    { equal: lineAreaGeomEqual },
   );
-}
 
-/**
- * Structural equality for line geometry: `d` string plus scalar
- * stroke/fill fields, so a no-op data refresh that rebuilds the same `d`
- * does not cascade into the renderer.
- *
- * @internal
- */
-function pathGeomEqual(a: LayerGeometry, b: LayerGeometry): boolean {
-  if (a === b) {
-    return true;
-  }
-  if ((a.kind !== 'line' && a.kind !== 'area') || (b.kind !== 'line' && b.kind !== 'area')) {
-    return false;
-  }
-  return (
-    a.d === b.d &&
-    a.color === b.color &&
-    a.strokeWidth === b.strokeWidth &&
-    a.fill === b.fill &&
-    a.opacity === b.opacity
-  );
+  /**
+   * Template view of the geometry's marker pass. Forwards the array
+   * reference the `geometry` computed already holds - `lineAreaGeomEqual`
+   * keeps that reference stable across a no-op refresh, so this
+   * projection stays stable too without a second equality guard.
+   */
+  protected readonly pointMarks = computed<readonly PointMark[]>(() => {
+    const g = this.geometry();
+    return g.kind === 'line' ? (g.points ?? EMPTY_POINTS) : EMPTY_POINTS;
+  });
 }

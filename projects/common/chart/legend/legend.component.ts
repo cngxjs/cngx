@@ -8,10 +8,12 @@ import {
 
 /**
  * Single legend entry. `color` is optional - when omitted the swatch
- * falls back to the chart-level primary token. `value` is intentionally
- * unconstrained so consumers can carry their domain key (id, layer
- * name, accessor return type, ...) for later interactions without a
- * second lookup.
+ * falls back to the chart-level primary token. `value` is rendered as a
+ * trailing `.cngx-chart-legend__value` node when present (`!= null`, so a
+ * literal `0` still shows), turning a legend into a readout. It stays
+ * intentionally unconstrained so the same field a consumer weights in the
+ * row can still carry their domain key (id, layer name, accessor return
+ * type, ...) for later interactions without a second lookup.
  *
  * @category common/chart/legend
  */
@@ -46,7 +48,10 @@ export interface CngxChartLegendItem<T = unknown> {
  *
  * Theming via `--cngx-chart-legend-gap`,
  * `--cngx-chart-legend-swatch-size`, `--cngx-chart-legend-swatch-radius`,
- * `--cngx-chart-legend-font-size`. `[orientation]` flips between row
+ * `--cngx-chart-legend-font-size`. A rendered `value` carries its own
+ * `--cngx-chart-legend-value-color` and `--cngx-chart-legend-value-font-weight`
+ * so a legend doubling as a readout can weight the number apart from the
+ * label without a wrapper element. `[orientation]` flips between row
  * and column; `[align]` aligns along the main axis (`start`, `center`,
  * `end`).
  *
@@ -78,6 +83,9 @@ export interface CngxChartLegendItem<T = unknown> {
           aria-hidden="true"
         ></span>
         <span class="cngx-chart-legend__label">{{ item.label }}</span>
+        @if (item.value != null) {
+          <span class="cngx-chart-legend__value">{{ item.value }}</span>
+        }
       </span>
     }
   `,
@@ -106,6 +114,10 @@ export interface CngxChartLegendItem<T = unknown> {
         height: var(--cngx-chart-legend-swatch-size, 12px);
         background: var(--cngx-chart-primary, currentColor);
         border-radius: var(--cngx-chart-legend-swatch-radius, 2px);
+      }
+      cngx-chart-legend .cngx-chart-legend__value {
+        color: var(--cngx-chart-legend-value-color, inherit);
+        font-weight: var(--cngx-chart-legend-value-font-weight, 600);
       }
     `,
   ],
