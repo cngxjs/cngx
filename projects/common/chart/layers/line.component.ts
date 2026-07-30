@@ -31,6 +31,11 @@ import {
  * the **compute guard** — same `(data, xScale, yScale)` triple by
  * reference skips the per-datapoint projection work.
  *
+ * A single-point series draws no visible path (`M x y` has no length),
+ * so a series shorter than two points paints a point marker instead of
+ * nothing. `[points]` controls this: `'auto'` (default) marks only the
+ * one-datum case, `'always'` marks every datum, `'never'` suppresses it.
+ *
  * @category common/chart/layers
  * @docsKind primary
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/layers/line.component.ts
@@ -63,6 +68,9 @@ import {
         [attr.stroke-linejoin]="'round'"
         [attr.stroke-linecap]="'round'"
       />
+      @for (p of pointMarks(); track $index) {
+        <svg:circle class="cngx-line__point" [attr.cx]="p.cx" [attr.cy]="p.cy" />
+      }
     }
   `,
   styles: [
@@ -77,8 +85,15 @@ import {
         from { opacity: 0; }
         to { opacity: 1; }
       }
+      .cngx-line__point {
+        r: var(--cngx-line-point-radius, 3px);
+        fill: var(--cngx-line-color, var(--cngx-chart-primary, currentColor));
+        animation: cngx-line-enter var(--cngx-chart-enter-duration, 480ms)
+          var(--cngx-chart-enter-easing, cubic-bezier(0.4, 0, 0.2, 1));
+      }
       @media (prefers-reduced-motion: reduce) {
-        .cngx-line { animation: none; }
+        .cngx-line,
+        .cngx-line__point { animation: none; }
       }
     `,
   ],
@@ -90,6 +105,14 @@ export class CngxLine<T = unknown> implements CngxChartLayer {
   readonly strokeWidth = input<number | string | null>(null);
   readonly curve = input<CngxCurve>('linear');
   readonly data = input<readonly T[] | undefined>(undefined);
+
+  /**
+   * Point-marker mode. `'auto'` (default) draws a marker only when the
+   * resolved series has exactly one datum - the frame a warming buffer
+   * passes through on every reload, which paints nothing otherwise.
+   * `'always'` marks every datum; `'never'` suppresses markers.
+   */
+  readonly points = input<'auto' | 'always' | 'never'>('auto');
 
   protected readonly ctx = injectChartContext('CngxLine');
 
@@ -115,21 +138,63 @@ export class CngxLine<T = unknown> implements CngxChartLayer {
   );
 
   readonly geometry = computed<LayerGeometry>(
-    () => ({
-      kind: 'line',
-      d: this.d(),
-      color: this.color(),
-      strokeWidth: this.strokeWidth(),
-      fill: 'none',
-    }),
+    () => {
+      const mode = this.points();
+      const data = this.resolvedData();
+      const draw = mode === 'always' || (mode === 'auto' && data.length === 1);
+      let marks: readonly PointMark[] = EMPTY_POINTS;
+      if (draw && data.length > 0) {
+        const xScale = this.ctx.xScale();
+        const yScale = this.ctx.yScale();
+        const yAcc = this.accessor();
+        const xAcc = this.xAccessor() ?? ((_: T, i: number) => i);
+        const out = new Array<PointMark>(data.length);
+        for (let i = 0; i < data.length; i++) {
+          out[i] = { cx: xScale(xAcc(data[i], i)), cy: yScale(yAcc(data[i], i)) };
+        }
+        marks = out;
+      }
+      return {
+        kind: 'line',
+        d: this.d(),
+        color: this.color(),
+        strokeWidth: this.strokeWidth(),
+        fill: 'none',
+        points: marks,
+      };
+    },
     { equal: pathGeomEqual },
   );
+
+  /**
+   * Template view of the geometry's marker pass. Forwards the array
+   * reference the `geometry` computed already holds - `pathGeomEqual`
+   * keeps that reference stable across a no-op refresh, so this
+   * projection stays stable too without a second equality guard.
+   */
+  protected readonly pointMarks = computed<readonly PointMark[]>(() => {
+    const g = this.geometry();
+    return g.kind === 'line' ? (g.points ?? EMPTY_POINTS) : EMPTY_POINTS;
+  });
 }
+
+/** @internal Scale-projected centre of a single point marker. */
+interface PointMark {
+  readonly cx: number;
+  readonly cy: number;
+}
+
+/** @internal Shared stable empty-marks reference. */
+const EMPTY_POINTS: readonly PointMark[] = [];
 
 /**
  * Structural equality for line geometry: `d` string plus scalar
- * stroke/fill fields, so a no-op data refresh that rebuilds the same `d`
- * does not cascade into the renderer.
+ * stroke/fill fields, plus a length-and-elementwise comparison of the
+ * `points` marker pass, so a no-op data refresh that rebuilds the same
+ * `d` and the same markers does not cascade into the renderer. Extending
+ * the comparator rather than dropping it keeps the array field under the
+ * existing guard - an array computed without a working `equal` cascades
+ * on every rebuild.
  *
  * @internal
  */
@@ -145,6 +210,33 @@ function pathGeomEqual(a: LayerGeometry, b: LayerGeometry): boolean {
     a.color === b.color &&
     a.strokeWidth === b.strokeWidth &&
     a.fill === b.fill &&
-    a.opacity === b.opacity
+    a.opacity === b.opacity &&
+    pointsEqual(a.points, b.points)
   );
+}
+
+/**
+ * Length-plus-elementwise equality for the optional `points` marker
+ * pass on line / area geometry. Absent and empty are equivalent.
+ *
+ * @internal
+ */
+function pointsEqual(
+  a: readonly PointMark[] | undefined,
+  b: readonly PointMark[] | undefined,
+): boolean {
+  const ap = a ?? EMPTY_POINTS;
+  const bp = b ?? EMPTY_POINTS;
+  if (ap === bp) {
+    return true;
+  }
+  if (ap.length !== bp.length) {
+    return false;
+  }
+  for (let i = 0; i < ap.length; i++) {
+    if (ap[i].cx !== bp[i].cx || ap[i].cy !== bp[i].cy) {
+      return false;
+    }
+  }
+  return true;
 }
