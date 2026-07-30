@@ -154,7 +154,7 @@ describe('CngxLine', () => {
     expect(points(fixture).length).toBe(0);
   });
 
-  it('cascade guard — a same-coordinate refresh of a marked single-datum series keeps the geometry identity', () => {
+  it('cascade guard - a same-coordinate refresh of a marked single-datum series keeps the geometry identity', () => {
     const { fixture } = setup();
     fixture.componentInstance.data.set([3]);
     fixture.detectChanges();
@@ -174,8 +174,8 @@ describe('CngxLine', () => {
     TestBed.tick();
     const baselineRuns = runs;
 
-    // Fresh-reference array, same single value, unchanged scales — the
-    // marker recomputes to the same {cx,cy}, so the extended pathGeomEqual
+    // Fresh-reference array, same single value, unchanged scales: the
+    // marker recomputes to the same {cx,cy}, so the shared lineAreaGeomEqual
     // must hold and the geometry identity must not change.
     fixture.componentInstance.data.set([3]);
     fixture.detectChanges();

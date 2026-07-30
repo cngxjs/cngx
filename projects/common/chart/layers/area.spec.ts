@@ -93,7 +93,7 @@ describe('CngxArea', () => {
     expect(marks(fixture).length).toBe(0);
   });
 
-  it('cascade guard — a same-coordinate refresh of a marked single-datum series keeps the geometry identity', () => {
+  it('cascade guard - a same-coordinate refresh of a marked single-datum series keeps the geometry identity', () => {
     const fixture = TestBed.createComponent(TestHost);
     fixture.componentInstance.data.set([3]);
     fixture.detectChanges();
