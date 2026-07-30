@@ -123,6 +123,23 @@ describe('CngxFilterChips', () => {
     expect(filter.predicates().has('tags')).toBe(false);
   });
 
+  it('renders the required label as an aria-hidden visible caption; the inner group keeps the aria name', async () => {
+    const { fixture } = await setup();
+    const caption = (fixture.nativeElement as HTMLElement).querySelector(
+      '.cngx-filter-chips__label',
+    ) as HTMLElement;
+    expect(caption).not.toBeNull();
+    expect(caption.textContent?.trim()).toBe('Tags');
+    expect(caption.getAttribute('aria-hidden')).toBe('true');
+
+    // The inner group carries the same string as its accessible name,
+    // so the visible caption is hidden from AT to avoid a double announce.
+    const groupEl = (fixture.nativeElement as HTMLElement).querySelector(
+      'cngx-multi-chip-group',
+    ) as HTMLElement;
+    expect(groupEl.getAttribute('aria-label')).toBe('Tags');
+  });
+
   it('optionLabel and optionValue functions resolve correctly through the inner chip rendering', async () => {
     const { fixture } = await setup();
     const html = (fixture.nativeElement as HTMLElement).textContent ?? '';
