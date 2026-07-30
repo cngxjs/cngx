@@ -7,6 +7,12 @@ import {
 } from '@angular/core';
 import { injectChartContext } from '../chart/chart-context';
 import { CNGX_CHART_LAYER, type CngxChartLayer, type LayerGeometry } from './chart-layer';
+import {
+  derivePointMarks,
+  EMPTY_POINTS,
+  lineAreaGeomEqual,
+  type PointMark,
+} from './point-geom';
 import { type CngxCurve } from '../path/curve';
 import {
   createPathBuilder,
@@ -144,21 +150,6 @@ export class CngxArea<T = unknown> implements CngxChartLayer {
   readonly geometry = computed<LayerGeometry>(
     () => {
       const op = this.opacity();
-      const mode = this.points();
-      const data = this.resolvedData();
-      const draw = mode === 'always' || (mode === 'auto' && data.length === 1);
-      let marks: readonly PointMark[] = EMPTY_POINTS;
-      if (draw && data.length > 0) {
-        const xScale = this.ctx.xScale();
-        const yScale = this.ctx.yScale();
-        const yAcc = this.accessor();
-        const xAcc = this.xAccessor() ?? ((_: T, i: number) => i);
-        const out = new Array<PointMark>(data.length);
-        for (let i = 0; i < data.length; i++) {
-          out[i] = { cx: xScale(xAcc(data[i], i)), cy: yScale(yAcc(data[i], i)) };
-        }
-        marks = out;
-      }
       return {
         kind: 'area',
         d: this.d(),
@@ -166,74 +157,27 @@ export class CngxArea<T = unknown> implements CngxChartLayer {
         strokeWidth: null,
         fill: null,
         opacity: op == null ? null : Number(op),
-        points: marks,
+        points: derivePointMarks(
+          this.points(),
+          this.resolvedData(),
+          this.ctx.xScale(),
+          this.ctx.yScale(),
+          this.accessor(),
+          this.xAccessor() ?? ((_: T, i: number) => i),
+        ),
       };
     },
-    { equal: areaGeomEqual },
+    { equal: lineAreaGeomEqual },
   );
 
   /**
    * Template view of the geometry's marker pass. Forwards the reference
-   * the `geometry` computed already holds - `areaGeomEqual` keeps it
+   * the `geometry` computed already holds - `lineAreaGeomEqual` keeps it
    * stable across a no-op refresh, so no second equality guard is needed.
    */
   protected readonly pointMarks = computed<readonly PointMark[]>(() => {
     const g = this.geometry();
     return g.kind === 'area' ? (g.points ?? EMPTY_POINTS) : EMPTY_POINTS;
   });
-}
-
-/** @internal Scale-projected centre of a single point marker. */
-interface PointMark {
-  readonly cx: number;
-  readonly cy: number;
-}
-
-/** @internal Shared stable empty-marks reference. */
-const EMPTY_POINTS: readonly PointMark[] = [];
-
-/**
- * Structural equality for area geometry: `d` string, the numeric fill
- * opacity, and a length-plus-elementwise comparison of the `points`
- * marker pass. Extending the comparator rather than dropping it keeps
- * the new array field under the existing guard - an array computed
- * without a working `equal` cascades on every rebuild.
- *
- * @internal
- */
-function areaGeomEqual(a: LayerGeometry, b: LayerGeometry): boolean {
-  if (a === b) {
-    return true;
-  }
-  if (a.kind !== 'area' || b.kind !== 'area') {
-    return false;
-  }
-  return a.d === b.d && a.opacity === b.opacity && pointsEqual(a.points, b.points);
-}
-
-/**
- * Length-plus-elementwise equality for the optional `points` marker
- * pass. Absent and empty are equivalent.
- *
- * @internal
- */
-function pointsEqual(
-  a: readonly PointMark[] | undefined,
-  b: readonly PointMark[] | undefined,
-): boolean {
-  const ap = a ?? EMPTY_POINTS;
-  const bp = b ?? EMPTY_POINTS;
-  if (ap === bp) {
-    return true;
-  }
-  if (ap.length !== bp.length) {
-    return false;
-  }
-  for (let i = 0; i < ap.length; i++) {
-    if (ap[i].cx !== bp[i].cx || ap[i].cy !== bp[i].cy) {
-      return false;
-    }
-  }
-  return true;
 }
 

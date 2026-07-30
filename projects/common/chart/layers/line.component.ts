@@ -7,6 +7,12 @@ import {
 } from '@angular/core';
 import { injectChartContext } from '../chart/chart-context';
 import { CNGX_CHART_LAYER, type CngxChartLayer, type LayerGeometry } from './chart-layer';
+import {
+  derivePointMarks,
+  EMPTY_POINTS,
+  lineAreaGeomEqual,
+  type PointMark,
+} from './point-geom';
 import { type CngxCurve } from '../path/curve';
 import {
   createPathBuilder,
@@ -138,37 +144,27 @@ export class CngxLine<T = unknown> implements CngxChartLayer {
   );
 
   readonly geometry = computed<LayerGeometry>(
-    () => {
-      const mode = this.points();
-      const data = this.resolvedData();
-      const draw = mode === 'always' || (mode === 'auto' && data.length === 1);
-      let marks: readonly PointMark[] = EMPTY_POINTS;
-      if (draw && data.length > 0) {
-        const xScale = this.ctx.xScale();
-        const yScale = this.ctx.yScale();
-        const yAcc = this.accessor();
-        const xAcc = this.xAccessor() ?? ((_: T, i: number) => i);
-        const out = new Array<PointMark>(data.length);
-        for (let i = 0; i < data.length; i++) {
-          out[i] = { cx: xScale(xAcc(data[i], i)), cy: yScale(yAcc(data[i], i)) };
-        }
-        marks = out;
-      }
-      return {
-        kind: 'line',
-        d: this.d(),
-        color: this.color(),
-        strokeWidth: this.strokeWidth(),
-        fill: 'none',
-        points: marks,
-      };
-    },
-    { equal: pathGeomEqual },
+    () => ({
+      kind: 'line',
+      d: this.d(),
+      color: this.color(),
+      strokeWidth: this.strokeWidth(),
+      fill: 'none',
+      points: derivePointMarks(
+        this.points(),
+        this.resolvedData(),
+        this.ctx.xScale(),
+        this.ctx.yScale(),
+        this.accessor(),
+        this.xAccessor() ?? ((_: T, i: number) => i),
+      ),
+    }),
+    { equal: lineAreaGeomEqual },
   );
 
   /**
    * Template view of the geometry's marker pass. Forwards the array
-   * reference the `geometry` computed already holds - `pathGeomEqual`
+   * reference the `geometry` computed already holds - `lineAreaGeomEqual`
    * keeps that reference stable across a no-op refresh, so this
    * projection stays stable too without a second equality guard.
    */
@@ -176,67 +172,4 @@ export class CngxLine<T = unknown> implements CngxChartLayer {
     const g = this.geometry();
     return g.kind === 'line' ? (g.points ?? EMPTY_POINTS) : EMPTY_POINTS;
   });
-}
-
-/** @internal Scale-projected centre of a single point marker. */
-interface PointMark {
-  readonly cx: number;
-  readonly cy: number;
-}
-
-/** @internal Shared stable empty-marks reference. */
-const EMPTY_POINTS: readonly PointMark[] = [];
-
-/**
- * Structural equality for line geometry: `d` string plus scalar
- * stroke/fill fields, plus a length-and-elementwise comparison of the
- * `points` marker pass, so a no-op data refresh that rebuilds the same
- * `d` and the same markers does not cascade into the renderer. Extending
- * the comparator rather than dropping it keeps the array field under the
- * existing guard - an array computed without a working `equal` cascades
- * on every rebuild.
- *
- * @internal
- */
-function pathGeomEqual(a: LayerGeometry, b: LayerGeometry): boolean {
-  if (a === b) {
-    return true;
-  }
-  if ((a.kind !== 'line' && a.kind !== 'area') || (b.kind !== 'line' && b.kind !== 'area')) {
-    return false;
-  }
-  return (
-    a.d === b.d &&
-    a.color === b.color &&
-    a.strokeWidth === b.strokeWidth &&
-    a.fill === b.fill &&
-    a.opacity === b.opacity &&
-    pointsEqual(a.points, b.points)
-  );
-}
-
-/**
- * Length-plus-elementwise equality for the optional `points` marker
- * pass on line / area geometry. Absent and empty are equivalent.
- *
- * @internal
- */
-function pointsEqual(
-  a: readonly PointMark[] | undefined,
-  b: readonly PointMark[] | undefined,
-): boolean {
-  const ap = a ?? EMPTY_POINTS;
-  const bp = b ?? EMPTY_POINTS;
-  if (ap === bp) {
-    return true;
-  }
-  if (ap.length !== bp.length) {
-    return false;
-  }
-  for (let i = 0; i < ap.length; i++) {
-    if (ap[i].cx !== bp[i].cx || ap[i].cy !== bp[i].cy) {
-      return false;
-    }
-  }
-  return true;
 }
