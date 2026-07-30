@@ -11,6 +11,7 @@ See CONTRIBUTING.md for the workflow.
 ### Bug Fixes
 
 - **core:** `matchesKeyCombo` rejects modifiers a combo did not name, so a bare-key shortcut (`'b'`) no longer fires on the modified chord (`Cmd+B`) and the browser keeps its own binding. Consumers that relied on the loose match must declare the modifier explicitly (`'mod+b'` alongside `'b'`).
+- **common/interactive:** single-mode `cngx-button-toggle-group` leaves now carry `role="radio"` so their `aria-checked` state is exposed to assistive technology (`aria-checked` is undefined for the implicit `role="button"` and was dropped by the a11y tree).
 
 
 ### BREAKING CHANGES
