@@ -274,6 +274,51 @@ describe('CngxPhoneInput', () => {
     expect(reason.getAttribute('aria-hidden')).toBeNull();
   });
 
+  it('omits the reason id from aria-describedby until a reason is set', () => {
+    const { fixture } = setup(); // bare host: no field, no reason, not disabled
+    const input = fixture.nativeElement.querySelector(
+      '.cngx-phone-input__number',
+    ) as HTMLInputElement;
+    const reasonSpan = fixture.nativeElement.querySelector(
+      '.cngx-phone-input__disabled-reason',
+    ) as HTMLElement;
+    // Nothing to describe -> no dangling reference at all.
+    expect(input.getAttribute('aria-describedby')).toBeNull();
+    // The span itself stays in the DOM; only the reference is gated.
+    expect(reasonSpan).toBeTruthy();
+  });
+
+  it('keeps the field ids and omits the reason id inside a form field with no reason', () => {
+    const { accessor } = createMockField<string>({ name: 'phone', value: '' });
+
+    @Component({
+      template: `
+        <cngx-form-field [field]="field">
+          <cngx-phone-input />
+        </cngx-form-field>
+      `,
+      imports: [CngxFormField, CngxPhoneInput],
+    })
+    class FieldHost {
+      readonly field = accessor;
+    }
+
+    const fixture = TestBed.createComponent(FieldHost);
+    document.body.appendChild(fixture.nativeElement);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    const input = fixture.nativeElement.querySelector(
+      '.cngx-phone-input__number',
+    ) as HTMLInputElement;
+    const reasonSpan = fixture.nativeElement.querySelector(
+      '.cngx-phone-input__disabled-reason',
+    ) as HTMLElement;
+    const describedBy = input.getAttribute('aria-describedby') ?? '';
+    expect(describedBy.length).toBeGreaterThan(0); // field hint/error ids unconditional
+    expect(describedBy).not.toContain(reasonSpan.id); // reason id gated out
+  });
+
   it('routes the country label through the config cascade', () => {
     TestBed.configureTestingModule({
       providers: [provideInputConfig(withInputAriaLabels({ phoneCountry: 'Land' }))],
