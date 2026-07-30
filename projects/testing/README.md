@@ -338,6 +338,41 @@ it('debounces input', async () => {
 });
 ```
 
+## One Shared Environment Per Project
+
+`ng test <lib>` runs vitest with `isolate: false`, a default the Angular
+builder sets to match the Karma/Jasmine experience. Every spec file in a
+project therefore shares one environment: a fake clock or a stubbed global that
+is never restored stays patched for every file that runs after it. The classic
+symptom is a file that passes alone and hangs for five seconds inside
+`await new Promise((r) => requestAnimationFrame(r))` when the whole project
+runs, because the frame callback went into a clock nobody advances.
+
+`projects/testing/setup/vitest-setup.ts` is wired into every library `test`
+target through the builder's `setupFiles` option and closes that by default:
+
+- `vi.useRealTimers()` after **every test**.
+- `vi.unstubAllGlobals()` after **every file**. File scope rather than test
+  scope, because some specs stub a global once at module level and need it for
+  every test in the file.
+
+Two consequences for a new spec:
+
+- `vi.useFakeTimers()` needs no matching `vi.useRealTimers()`. Add one only if
+  a later test *in the same file* needs the real clock before its own teardown.
+- `vi.stubGlobal()` needs no matching `vi.unstubAllGlobals()` to keep the stub
+  out of the next file. Add one in `afterEach` when the stub must not survive
+  into the next test in the same file, which is the case for a synchronous
+  `requestAnimationFrame` - it makes Angular's scheduler run reentrantly.
+  `projects/ui/sidenav/sidenav.spec.ts` is the reference.
+
+Note that `vi.restoreAllMocks()` covers neither axis. It restores `vi.spyOn`
+spies only; fake timers and stubbed globals each need their own call.
+
+File-local teardown runs before the shared hooks, since vitest's default
+`sequence.hooks: 'stack'` runs "after" hooks in reverse registration order. A
+teardown that still needs the fake clock or the stub in place keeps it.
+
 ## Best Practices
 
 1. **Always use `flush()`** after signal mutations and event dispatches to ensure effects run and DOM updates are detected.
