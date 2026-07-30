@@ -65,8 +65,8 @@ describe('CngxButtonMultiToggleGroup + CngxButtonToggle (multi mode)', () => {
     toggles.forEach(({ el }) => {
       expect(el.getAttribute('aria-pressed')).toBe('false');
       expect(el.getAttribute('aria-checked')).toBeNull();
-      // Regression guard: aria-selected is undefined for role="button" and
-      // must never come back on a multi leaf.
+      // Regression guard: the listbox selected state is undefined for
+      // role="button" and must never come back on a multi leaf.
       expect(el.getAttribute('aria-selected')).toBeNull();
     });
   });

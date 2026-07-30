@@ -43,10 +43,10 @@ type ParentResolution<T> = SingleResolution<T> | MultiResolution<T>;
  * The present token determines:
  *
  * - the ARIA pattern (`aria-checked` for single, `aria-pressed` for
- *   multi), bound on the host AT INJECTION TIME. `aria-selected` is
- *   undefined for `role="button"` in ARIA 1.2 and is dropped by the
- *   a11y tree; the multi toolbar uses toggle buttons (`aria-pressed`)
- *   per W3C APG,
+ *   multi), bound on the host AT INJECTION TIME. The multi toolbar uses
+ *   toggle buttons (`aria-pressed` per W3C APG); the listbox `selected`
+ *   state is undefined for `role="button"` in ARIA 1.2 and would be
+ *   dropped by the a11y tree,
  * - the activation contract (single: `group.value.set(...)`; multi:
  *   `group.toggle(...)`),
  * - whether `(focus)` consumes the parent's pending arrow-select
