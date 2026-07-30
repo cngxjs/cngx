@@ -25,6 +25,11 @@ import {
  * The `d` string is cascade-guarded with string equality on its
  * `computed` so a no-op data refresh does not force a fill repaint.
  *
+ * A single-datum area closes on itself at one x and covers no pixels,
+ * so a series shorter than two points paints a point marker instead of
+ * nothing. `[points]` mirrors {@link CngxLine}: `'auto'` (default) marks
+ * only the one-datum case, `'always'` every datum, `'never'` none.
+ *
  * @category common/chart/layers
  * @docsKind primary
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/layers/area.component.ts
@@ -53,6 +58,9 @@ import {
         [attr.d]="d()"
         [attr.fill-opacity]="opacity()"
       />
+      @for (p of pointMarks(); track $index) {
+        <svg:circle class="cngx-area__point" [attr.cx]="p.cx" [attr.cy]="p.cy" />
+      }
     }
   `,
   styles: [
@@ -68,8 +76,15 @@ import {
         from { opacity: 0; }
         to { opacity: 1; }
       }
+      .cngx-area__point {
+        r: var(--cngx-area-point-radius, 3px);
+        fill: var(--cngx-area-fill, var(--cngx-chart-primary, currentColor));
+        animation: cngx-area-enter var(--cngx-chart-enter-duration, 480ms)
+          var(--cngx-chart-enter-easing, cubic-bezier(0.4, 0, 0.2, 1));
+      }
       @media (prefers-reduced-motion: reduce) {
-        .cngx-area { animation: none; }
+        .cngx-area,
+        .cngx-area__point { animation: none; }
       }
     `,
   ],
@@ -81,6 +96,14 @@ export class CngxArea<T = unknown> implements CngxChartLayer {
   readonly curve = input<CngxCurve>('linear');
   readonly baseline = input<number>(0);
   readonly data = input<readonly T[] | undefined>(undefined);
+
+  /**
+   * Point-marker mode, mirroring {@link CngxLine}. `'auto'` (default)
+   * draws a marker only for a single-datum series - an area closed on
+   * itself at one x covers no pixels and paints nothing otherwise.
+   * `'always'` marks every datum; `'never'` suppresses markers.
+   */
+  readonly points = input<'auto' | 'always' | 'never'>('auto');
 
   protected readonly ctx = injectChartContext('CngxArea');
 
@@ -121,6 +144,21 @@ export class CngxArea<T = unknown> implements CngxChartLayer {
   readonly geometry = computed<LayerGeometry>(
     () => {
       const op = this.opacity();
+      const mode = this.points();
+      const data = this.resolvedData();
+      const draw = mode === 'always' || (mode === 'auto' && data.length === 1);
+      let marks: readonly PointMark[] = EMPTY_POINTS;
+      if (draw && data.length > 0) {
+        const xScale = this.ctx.xScale();
+        const yScale = this.ctx.yScale();
+        const yAcc = this.accessor();
+        const xAcc = this.xAccessor() ?? ((_: T, i: number) => i);
+        const out = new Array<PointMark>(data.length);
+        for (let i = 0; i < data.length; i++) {
+          out[i] = { cx: xScale(xAcc(data[i], i)), cy: yScale(yAcc(data[i], i)) };
+        }
+        marks = out;
+      }
       return {
         kind: 'area',
         d: this.d(),
@@ -128,16 +166,38 @@ export class CngxArea<T = unknown> implements CngxChartLayer {
         strokeWidth: null,
         fill: null,
         opacity: op == null ? null : Number(op),
+        points: marks,
       };
     },
     { equal: areaGeomEqual },
   );
+
+  /**
+   * Template view of the geometry's marker pass. Forwards the reference
+   * the `geometry` computed already holds - `areaGeomEqual` keeps it
+   * stable across a no-op refresh, so no second equality guard is needed.
+   */
+  protected readonly pointMarks = computed<readonly PointMark[]>(() => {
+    const g = this.geometry();
+    return g.kind === 'area' ? (g.points ?? EMPTY_POINTS) : EMPTY_POINTS;
+  });
 }
 
+/** @internal Scale-projected centre of a single point marker. */
+interface PointMark {
+  readonly cx: number;
+  readonly cy: number;
+}
+
+/** @internal Shared stable empty-marks reference. */
+const EMPTY_POINTS: readonly PointMark[] = [];
+
 /**
- * Structural equality for area geometry: `d` string plus the numeric
- * fill opacity. A no-op refresh rebuilding the same closed path does not
- * cascade into the renderer.
+ * Structural equality for area geometry: `d` string, the numeric fill
+ * opacity, and a length-plus-elementwise comparison of the `points`
+ * marker pass. Extending the comparator rather than dropping it keeps
+ * the new array field under the existing guard - an array computed
+ * without a working `equal` cascades on every rebuild.
  *
  * @internal
  */
@@ -148,6 +208,32 @@ function areaGeomEqual(a: LayerGeometry, b: LayerGeometry): boolean {
   if (a.kind !== 'area' || b.kind !== 'area') {
     return false;
   }
-  return a.d === b.d && a.opacity === b.opacity;
+  return a.d === b.d && a.opacity === b.opacity && pointsEqual(a.points, b.points);
+}
+
+/**
+ * Length-plus-elementwise equality for the optional `points` marker
+ * pass. Absent and empty are equivalent.
+ *
+ * @internal
+ */
+function pointsEqual(
+  a: readonly PointMark[] | undefined,
+  b: readonly PointMark[] | undefined,
+): boolean {
+  const ap = a ?? EMPTY_POINTS;
+  const bp = b ?? EMPTY_POINTS;
+  if (ap === bp) {
+    return true;
+  }
+  if (ap.length !== bp.length) {
+    return false;
+  }
+  for (let i = 0; i < ap.length; i++) {
+    if (ap[i].cx !== bp[i].cx || ap[i].cy !== bp[i].cy) {
+      return false;
+    }
+  }
+  return true;
 }
 
