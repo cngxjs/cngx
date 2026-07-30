@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CngxSpeak } from './speak.directive';
 
 class MockUtterance {
@@ -17,11 +17,11 @@ class MockUtterance {
     this.text = text;
   }
 }
+// Stubbed once at module level on purpose: every test here needs the mock, so it
+// must not be unstubbed per test. The shared setup unstubs at file end, which is
+// what keeps it out of the next spec file. The per-test speechSynthesis stub is
+// re-set in beforeEach and is unaffected.
 vi.stubGlobal('SpeechSynthesisUtterance', MockUtterance);
-// Module-level stubGlobal persists for the worker lifetime; unstub at file end
-// so the SpeechSynthesisUtterance mock never leaks into a later spec in this
-// worker (the per-test speechSynthesis stub is re-set in beforeEach).
-afterAll(() => vi.unstubAllGlobals());
 
 @Component({
   template: '<div [cngxSpeak]="message()"></div>',
