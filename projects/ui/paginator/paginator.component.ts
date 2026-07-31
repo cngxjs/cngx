@@ -179,7 +179,7 @@ export class CngxPaginator {
     // [cngxPaginateResetOn] directive.
     connectPaginateResetOn(this.paginate, this.resetOn);
 
-    // Two-way [(pageIndex)] / [(pageSize)] emit, shared verbatim with
+    // pageIndexChange / pageSizeChange emit, shared verbatim with
     // CngxIncrementalList through the connectPaginateEmit bridge.
     connectPaginateEmit(this.paginate, {
       onIndex: (index) => this.pageIndexChange.emit(index),
