@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  Injector,
   ViewEncapsulation,
   computed,
   inject,
@@ -11,7 +12,9 @@ import {
 import { CngxLiveRegion } from '@cngx/common/a11y';
 import {
   CNGX_TAB_GROUP_HOST,
+  CNGX_TAB_NAV_HOST,
   CngxTabGroupPresenter,
+  createTabNavAnnouncement,
   injectTabsConfig,
   type CngxTabsSkin,
 } from '@cngx/common/tabs';
@@ -63,6 +66,9 @@ import {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CngxLiveRegion],
+  // Presence-only marker: it tells a stacked [cngxTabsRouteSync] that its
+  // links own subtrees, so the URL match is prefix rather than suffix.
+  providers: [{ provide: CNGX_TAB_NAV_HOST, useValue: true }],
   styleUrls: ['../../common/tabs/styles/tabs-base.css', './tab-nav.component.css'],
   encapsulation: ViewEncapsulation.None,
   hostDirectives: [
@@ -104,16 +110,13 @@ export class CngxTabNav {
   );
 
   /**
-   * Active link's accessible label, fed to the polite live region. Derived
-   * from `activeId` through the registered handle (Pillar 1 - single
-   * source, the route-fed active index). Empty string before any link is
-   * active so the region stays silent.
+   * Polite live-region content. The brain stays linked from
+   * `@cngx/common/tabs`, so a decomposed skin keeps receiving fixes to
+   * the mount-window gate and the change detection instead of carrying a
+   * frozen copy.
    */
-  protected readonly liveAnnouncement: Signal<string> = computed(() => {
-    const id = this.presenter.activeId();
-    if (id === null) {
-      return '';
-    }
-    return this.presenter.tabs().find((tab) => tab.id === id)?.label() ?? '';
-  });
+  protected readonly liveAnnouncement: Signal<string> = createTabNavAnnouncement({
+    presenter: this.presenter,
+    injector: inject(Injector),
+  }).liveAnnouncement;
 }

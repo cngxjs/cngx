@@ -15,6 +15,15 @@ export {
   CNGX_TAB_PANEL_HOST,
   type CngxTabPanelHost,
 } from './tab-panel-host.token';
+export { CNGX_TAB_NAV_HOST } from './tab-nav-host.token';
+export {
+  CNGX_TAB_URL_MATCH_STRATEGY,
+  createTabUrlMatch,
+  type CngxTabMatchMode,
+  type CngxTabUrlMatch,
+  type CngxTabUrlMatchContext,
+  type CngxTabUrlMatchFactory,
+} from './url-match';
 export { CngxTab } from './tab.directive';
 export { CngxTabLink } from './tab-link.directive';
 export { CngxTabLabel } from './tab-label.directive';
@@ -58,6 +67,8 @@ export {
   withTabsPanelMode,
   withTabsFragmentSync,
   withTabsRouterSync,
+  withTabsLinkAriaCurrent,
+  withTabsRouteMatch,
   withTabsRovingLoop,
   withTabsSkin,
   type CngxTabAlign,
@@ -164,6 +175,11 @@ export {
   type CngxTabGroupAnnouncements,
   type CngxTabGroupAnnouncementsOptions,
 } from './announcements/tab-group-announcements';
+export {
+  createTabNavAnnouncement,
+  type CngxTabNavAnnouncement,
+  type CngxTabNavAnnouncementOptions,
+} from './announcements/tab-nav-announcement';
 export { CNGX_TABS_GLYPHS } from './glyphs';
 export {
   CNGX_OVERFLOW_POPOVER_HIGHLIGHT_FACTORY,

@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { NavigationEnd, provideRouter, Router } from '@angular/router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -37,6 +38,64 @@ class FragmentHost {}
   `,
 })
 class QueryParamHost {}
+
+@Component({
+  standalone: true,
+  selector: 'replace-url-host',
+  imports: [CngxTab],
+  hostDirectives: [
+    CngxTabGroupPresenter,
+    { directive: CngxTabsFragmentSync, inputs: ['replaceUrl'] },
+  ],
+  template: `
+    <div cngxTab id="a" [label]="'A'"></div>
+    <div cngxTab id="b" [label]="'B'"></div>
+  `,
+})
+class ReplaceUrlHost {}
+
+// Tabs must be CONTENT children for ngAfterContentInit to see them
+// registered - a host whose template declares the tabs makes them view
+// children, which register after the host's own content-init and make
+// the seam untestable (the afterNextRender fallback silently covers).
+@Component({
+  standalone: true,
+  selector: 'seed-shell',
+  hostDirectives: [
+    { directive: CngxTabGroupPresenter, inputs: ['commitAction', 'commitMode'] },
+    CngxTabsFragmentSync,
+  ],
+  template: '<ng-content />',
+})
+class SeedShell {}
+
+@Component({
+  standalone: true,
+  selector: 'commit-seed-host',
+  imports: [SeedShell, CngxTab],
+  template: `
+    <seed-shell [commitAction]="action" commitMode="pessimistic">
+      <div cngxTab id="a" [label]="'A'"></div>
+      <div cngxTab id="b" [label]="'B'"></div>
+    </seed-shell>
+  `,
+})
+class CommitSeedHost {
+  action: ((from: number, to: number) => Promise<boolean>) | null = null;
+}
+
+@Component({
+  standalone: true,
+  selector: 'projected-seed-host',
+  imports: [SeedShell, CngxTab],
+  template: `
+    <seed-shell>
+      <div cngxTab id="a" [label]="'A'"></div>
+      <div cngxTab id="b" [label]="'B'"></div>
+    </seed-shell>
+  `,
+})
+class ProjectedSeedHost {}
 
 // Drains pending microtasks so the directive's effect() chain (which
 // reads activeId, then calls router.navigate inside untracked()) has
@@ -163,5 +222,131 @@ describe('CngxTabsFragmentSync', () => {
     // Either the afterNextRender path (no-op for sentinel) or the
     // NavigationEnd path lands the URL value on the presenter.
     expect(presenter.activeId()).toBe(tabs[1].id);
+  });
+
+  // Same coverage note as the route-sync twin: this pins that a deep link
+  // resolves within the first CD pass, not which of the two seed paths
+  // did it. The panelMode="lazy" block in
+  // projects/ui/tabs/tab-group.component.spec.ts is where the ordering is
+  // actually observable.
+  it('resolves the deep-linked tab on the first change-detection pass', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), provideRouter([])],
+    });
+    const router = TestBed.inject(Router);
+    vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    Object.defineProperty(router.routerState.snapshot.root, 'fragment', {
+      get: () => 'tab=b',
+      configurable: true,
+    });
+
+    const fixture = TestBed.createComponent(ProjectedSeedHost);
+    fixture.detectChanges();
+    const presenter = fixture.debugElement
+      .query(By.directive(SeedShell))
+      .injector.get(CngxTabGroupPresenter);
+
+    expect(presenter.activeId()).toBe('b');
+  });
+
+  it('pushes a history entry instead of replacing when [replaceUrl]="false"', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), provideRouter([])],
+    });
+    const router = TestBed.inject(Router);
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    const fixture = TestBed.createComponent(ReplaceUrlHost);
+    fixture.componentRef.setInput('replaceUrl', false);
+    fixture.detectChanges();
+    await flushMicrotasks();
+    const presenter = fixture.debugElement.injector.get(CngxTabGroupPresenter);
+    presenter.select(1);
+    fixture.detectChanges();
+    await flushMicrotasks();
+
+    const extras = navigateSpy.mock.calls[navigateSpy.mock.calls.length - 1][1] as {
+      replaceUrl?: boolean;
+    };
+    expect(extras.replaceUrl).toBe(false);
+  });
+
+  it('replaces by default so browser-back leaves the page', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), provideRouter([])],
+    });
+    const router = TestBed.inject(Router);
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    const fixture = TestBed.createComponent(ReplaceUrlHost);
+    fixture.detectChanges();
+    await flushMicrotasks();
+    const presenter = fixture.debugElement.injector.get(CngxTabGroupPresenter);
+    presenter.select(1);
+    fixture.detectChanges();
+    await flushMicrotasks();
+
+    const extras = navigateSpy.mock.calls[navigateSpy.mock.calls.length - 1][1] as {
+      replaceUrl?: boolean;
+    };
+    expect(extras.replaceUrl).toBe(true);
+  });
+
+  it('runs a bound commit action exactly once for the content-init seed', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), provideRouter([])],
+    });
+    const router = TestBed.inject(Router);
+    vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    Object.defineProperty(router.routerState.snapshot.root, 'fragment', {
+      get: () => 'tab=b',
+      configurable: true,
+    });
+
+    // Deliberately NOT mockResolvedValue: an action that settles inside
+    // the first microtask drain lets activeIndex land before the
+    // afterNextRender fallback runs, which hides a double-fire. A real
+    // HTTP-backed action does not. Hold it open instead, so the fallback
+    // observes the pessimistic in-flight state (activeIndex still 0)
+    // exactly as it would in production.
+    let release!: (ok: boolean) => void;
+    const commitAction = vi.fn(
+      () =>
+        new Promise<boolean>((resolve) => {
+          release = resolve;
+        }),
+    );
+
+    // Pessimistic (bound on the shell) is what exposes the repeat:
+    // activeIndex holds the previous value while the action is in
+    // flight, so the presenter's `target === previous` bail cannot catch
+    // a second seed. Optimistic moves the index up front and masks it.
+    const fixture = TestBed.createComponent(CommitSeedHost);
+    fixture.componentInstance.action = commitAction;
+    fixture.detectChanges();
+    // TestBed.tick() is what runs the afterNextRender fallback;
+    // detectChanges alone does not, so without it this test passes
+    // whether or not the repeat is guarded.
+    TestBed.tick();
+    await flushMicrotasks();
+    TestBed.tick();
+
+    // The content-init seed goes through selectById -> select(), so it
+    // does run the consumer's action - but the fallback must not run it
+    // again while the first is still pending.
+    expect(commitAction).toHaveBeenCalledTimes(1);
+    // (fromIndex, toIndex): the seed moves off the default tab.
+    expect(commitAction.mock.calls[0]).toEqual([0, 1]);
+
+    release(true);
+    await flushMicrotasks();
+    fixture.detectChanges();
+    await flushMicrotasks();
+
+    const presenter = fixture.debugElement
+      .query(By.directive(SeedShell))
+      .injector.get(CngxTabGroupPresenter);
+    expect(presenter.activeId()).toBe('b');
+    expect(commitAction).toHaveBeenCalledTimes(1);
   });
 });

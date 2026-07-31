@@ -269,12 +269,20 @@ describe('CngxMatTabNav native nav-bar bridge', () => {
   });
 
   it('reflects the route-active link onto activeIndex via composed [cngxTabsRouteSync]', async () => {
+    // Real routes and a real navigation, not a mocked router.url getter:
+    // the nav bridge provides CNGX_TAB_NAV_HOST, so route-sync matches by
+    // UrlTree subset against the live router state.
     TestBed.configureTestingModule({
-      providers: [provideZonelessChangeDetection(), provideRouter([])],
+      providers: [
+        provideZonelessChangeDetection(),
+        provideRouter([
+          { path: 'a', component: RouteSyncNavHostCmp },
+          { path: 'b', component: RouteSyncNavHostCmp, children: [{ path: 'detail', component: RouteSyncNavHostCmp }] },
+          { path: 'c', component: RouteSyncNavHostCmp },
+        ]),
+      ],
     });
     const router = TestBed.inject(Router);
-    vi.spyOn(router, 'navigate').mockResolvedValue(true);
-    const urlSpy = vi.spyOn(router, 'url', 'get').mockReturnValue('/');
 
     const fixture = TestBed.createComponent(RouteSyncNavHostCmp);
     fixture.detectChanges();
@@ -285,11 +293,11 @@ describe('CngxMatTabNav native nav-bar bridge', () => {
     expect(presenter.tabs().length).toBe(3);
     expect(presenter.activeIndex()).toBe(0);
 
-    // External navigation to /b — route-sync reflects it onto activeIndex
-    // by matching the handle id (= route segment) against the URL tail.
-    urlSpy.mockReturnValue('/b');
+    // External navigation into the B section: the nav flavour owns the
+    // whole subtree, so /b/detail still resolves the B link.
+    await router.navigateByUrl('/b/detail');
     (router.events as unknown as { next: (e: unknown) => void }).next(
-      new NavigationEnd(1, '/b', '/b'),
+      new NavigationEnd(1, '/b/detail', '/b/detail'),
     );
     fixture.detectChanges();
     await fixture.whenStable();

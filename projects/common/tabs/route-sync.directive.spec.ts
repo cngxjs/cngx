@@ -1,10 +1,22 @@
-import { Component, provideZonelessChangeDetection } from '@angular/core';
-import { TestBed } from '@angular/core/testing';
-import { NavigationCancel, NavigationEnd, provideRouter, Router } from '@angular/router';
+import { Component, provideZonelessChangeDetection, type Type } from '@angular/core';
+import { TestBed, type ComponentFixture } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
+import {
+  NavigationCancel,
+  NavigationEnd,
+  provideRouter,
+  Router,
+  RouterOutlet,
+  type Routes,
+} from '@angular/router';
+import { RouterTestingHarness } from '@angular/router/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxTabGroupPresenter } from './presenter.directive';
+import { provideTabsConfig, withTabsRouteMatch } from './tabs-config';
+import { CNGX_TAB_URL_MATCH_STRATEGY, type CngxTabUrlMatch } from './url-match';
 import { CngxTabsRouteSync } from './route-sync.directive';
+import { CNGX_TAB_NAV_HOST } from './tab-nav-host.token';
 import { CngxTab } from './tab.directive';
 import { CngxTabLink } from './tab-link.directive';
 
@@ -51,6 +63,107 @@ class NestedRouteHost {}
   `,
 })
 class NavLinkRouteHost {}
+
+@Component({ standalone: true, selector: 'blank-page', template: '' })
+class BlankPage {}
+
+// Tabs must be CONTENT children for ngAfterContentInit to see them
+// registered - a host whose own template declares the tabs makes them
+// view children, which register too late and let the afterNextRender
+// fallback silently stand in for the seam under test.
+@Component({
+  standalone: true,
+  selector: 'route-seed-shell',
+  hostDirectives: [CngxTabGroupPresenter, CngxTabsRouteSync],
+  template: '<ng-content />',
+})
+class RouteSeedShell {}
+
+@Component({
+  standalone: true,
+  selector: 'projected-route-host',
+  imports: [RouteSeedShell, CngxTab],
+  template: `
+    <route-seed-shell>
+      <div cngxTab id="a" [label]="'A'"></div>
+      <div cngxTab id="b" [label]="'B'"></div>
+      <div cngxTab id="c" [label]="'C'"></div>
+    </route-seed-shell>
+  `,
+})
+class ProjectedRouteHost {}
+
+// The nav flavour: provides the marker token, so route-sync defaults to
+// prefix matching. Mirrors what <cngx-tab-nav> / [cngxMatTabNav] declare.
+@Component({
+  standalone: true,
+  selector: 'section-nav-host',
+  imports: [CngxTabLink],
+  providers: [{ provide: CNGX_TAB_NAV_HOST, useValue: true }],
+  hostDirectives: [
+    CngxTabGroupPresenter,
+    { directive: CngxTabsRouteSync, inputs: ['routeFor', 'match'] },
+  ],
+  template: `
+    <a cngxTabLink id="overview" [label]="'Overview'"></a>
+    <a cngxTabLink id="rounds" [label]="'Rounds'"></a>
+  `,
+})
+class SectionNavHost {}
+
+// Same flavour, but with a nested tab whose route is a strict extension
+// of a sibling's - the longest-match case.
+@Component({
+  standalone: true,
+  selector: 'overlapping-nav-host',
+  imports: [CngxTabLink],
+  providers: [{ provide: CNGX_TAB_NAV_HOST, useValue: true }],
+  hostDirectives: [
+    CngxTabGroupPresenter,
+    { directive: CngxTabsRouteSync, inputs: ['routeFor'] },
+  ],
+  template: `
+    <a cngxTabLink id="rounds" [label]="'Rounds'"></a>
+    <a cngxTabLink id="explorer" [label]="'Explorer'"></a>
+  `,
+})
+class OverlappingNavHost {}
+
+// Mounted under a base path: the nav is the routed component at /app, so
+// its ActivatedRoute is the mount point the tab routes resolve against.
+@Component({
+  standalone: true,
+  selector: 'section-nav-shell',
+  imports: [CngxTabLink, RouterOutlet],
+  providers: [{ provide: CNGX_TAB_NAV_HOST, useValue: true }],
+  hostDirectives: [CngxTabGroupPresenter, CngxTabsRouteSync],
+  template: `
+    <a cngxTabLink id="overview" [label]="'Overview'"></a>
+    <a cngxTabLink id="rounds" [label]="'Rounds'"></a>
+    <router-outlet />
+  `,
+})
+class SectionNavShell {}
+
+// The tablist twin of SectionNavHost: identical tab set, no marker token,
+// so the suffix default applies.
+@Component({
+  standalone: true,
+  selector: 'section-tab-host',
+  imports: [CngxTab],
+  hostDirectives: [CngxTabGroupPresenter, CngxTabsRouteSync],
+  template: `
+    <div cngxTab id="overview" [label]="'Overview'"></div>
+    <div cngxTab id="rounds" [label]="'Rounds'"></div>
+  `,
+})
+class SectionTabHost {}
+
+const SECTION_ROUTES: Routes = [
+  { path: 'overview', component: BlankPage },
+  { path: 'rounds', component: BlankPage, children: [{ path: 'explorer', component: BlankPage }] },
+  { path: 'elsewhere', component: BlankPage },
+];
 
 // Drains pending microtasks so afterNextRender / effect chains settle.
 // Mirrors the fragment-sync spec - whenStable() has been observed to
@@ -112,6 +225,29 @@ describe('CngxTabsRouteSync', () => {
 
     expect(presenter.activeId()).toBe('c');
     expect(presenter.activeIndex()).toBe(2);
+  });
+
+  // Coverage note: this pins that a deep link resolves by the end of the
+  // first CD pass, projected content and all. It does NOT discriminate
+  // content-init from the afterNextRender fallback - detectChanges()
+  // flushes afterRender hooks too. The seam itself (seed lands before the
+  // group's panels render) is pinned where it is observable, in the
+  // panelMode="lazy" block of projects/ui/tabs/tab-group.component.spec.ts.
+  it('resolves the deep-linked tab on the first change-detection pass', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), provideRouter([])],
+    });
+    const router = TestBed.inject(Router);
+    vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    vi.spyOn(router, 'url', 'get').mockReturnValue('/c');
+
+    const fixture = TestBed.createComponent(ProjectedRouteHost);
+    fixture.detectChanges();
+    const presenter = fixture.debugElement
+      .query(By.directive(RouteSeedShell))
+      .injector.get(CngxTabGroupPresenter);
+
+    expect(presenter.activeId()).toBe('c');
   });
 
   it('reflects an external NavigationEnd into activeIndex without re-navigating', async () => {
@@ -290,5 +426,155 @@ describe('CngxTabsRouteSync', () => {
     // Reflective only: no re-navigation, no commit transition was opened.
     expect(navigateSpy).not.toHaveBeenCalled();
     expect(presenter.commitState.status()).toBe('idle');
+  });
+
+  describe('prefix matching on the nav flavour', () => {
+    // Real routes, real navigation: prefix mode resolves through
+    // router.isActive against the live UrlTree, so a mocked router.url
+    // getter would not exercise it.
+    function configure(routes: Routes = SECTION_ROUTES): Router {
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection(), provideRouter(routes)],
+      });
+      return TestBed.inject(Router);
+    }
+
+    async function mountAt<T>(
+      component: Type<T>,
+      url: string,
+      inputs: Record<string, unknown> = {},
+    ): Promise<ComponentFixture<T>> {
+      await TestBed.inject(Router).navigateByUrl(url);
+      const fixture = TestBed.createComponent(component);
+      for (const [name, value] of Object.entries(inputs)) {
+        fixture.componentRef.setInput(name, value);
+      }
+      fixture.detectChanges();
+      await flushMicrotasks();
+      return fixture;
+    }
+
+    function presenterOf(fixture: ComponentFixture<unknown>): CngxTabGroupPresenter {
+      return fixture.debugElement.injector.get(CngxTabGroupPresenter);
+    }
+
+    it('resolves the owning section on a URL beneath the link', async () => {
+      configure();
+      const fixture = await mountAt(SectionNavHost, '/rounds/explorer');
+
+      // The reported defect: suffix matching resolved null here and the
+      // first link kept aria-current="page".
+      expect(presenterOf(fixture).activeId()).toBe('rounds');
+      expect(presenterOf(fixture).activeIndex()).toBe(1);
+    });
+
+    it('lets the longest matching route win so a section cannot shadow its own child', async () => {
+      configure();
+      const fixture = await mountAt(OverlappingNavHost, '/rounds/explorer', {
+        routeFor: (h: { id: string }) => (h.id === 'explorer' ? ['rounds', 'explorer'] : ['rounds']),
+      });
+
+      expect(presenterOf(fixture).activeId()).toBe('explorer');
+    });
+
+    it('anchors matching at the nav mount point, not the URL root', async () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideRouter([{ path: 'app', component: SectionNavShell, children: SECTION_ROUTES }]),
+        ],
+      });
+
+      const harness = await RouterTestingHarness.create('/app/rounds/explorer');
+      harness.detectChanges();
+      await flushMicrotasks();
+      const presenter = harness.routeDebugElement!.injector.get(CngxTabGroupPresenter);
+
+      // Root-anchored segment compare would test 'app' === 'rounds' here
+      // and resolve null, reintroducing the defect for nested mounts.
+      expect(presenter.activeId()).toBe('rounds');
+    });
+
+    it('agrees with suffix mode at an exact leaf URL', async () => {
+      configure();
+      const prefix = await mountAt(SectionNavHost, '/overview');
+      expect(presenterOf(prefix).activeId()).toBe('overview');
+
+      TestBed.resetTestingModule();
+      configure();
+      const suffix = await mountAt(SectionNavHost, '/overview', { match: 'suffix' });
+      expect(presenterOf(suffix).activeId()).toBe('overview');
+    });
+
+    it('restores suffix matching when match="suffix" is set on a nav host', async () => {
+      configure();
+      const fixture = await mountAt(SectionNavHost, '/rounds/explorer', { match: 'suffix' });
+
+      // 'rounds' is a parent segment, not the trailing one - suffix mode
+      // resolves nothing and the seed leaves the first link active.
+      expect(presenterOf(fixture).activeIndex()).toBe(0);
+    });
+
+    it('leaves a tablist host on the unchanged suffix default', async () => {
+      configure();
+      const fixture = await mountAt(SectionTabHost, '/rounds/explorer');
+
+      expect(presenterOf(fixture).activeIndex()).toBe(0);
+    });
+
+    it('takes the match mode from the tabs config when no input is bound', async () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideRouter(SECTION_ROUTES),
+          provideTabsConfig(withTabsRouteMatch('suffix')),
+        ],
+      });
+      // Config beats the nav flavour; the input would beat the config.
+      const fixture = await mountAt(SectionNavHost, '/rounds/explorer');
+      expect(presenterOf(fixture).activeIndex()).toBe(0);
+    });
+
+    it('lets the input win over the configured match mode', async () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideRouter(SECTION_ROUTES),
+          provideTabsConfig(withTabsRouteMatch('suffix')),
+        ],
+      });
+      const fixture = await mountAt(SectionNavHost, '/rounds/explorer', { match: 'prefix' });
+      expect(presenterOf(fixture).activeId()).toBe('rounds');
+    });
+
+    it('routes the comparison through the swappable match strategy', async () => {
+      // A consumer strategy that ignores the shipped policies entirely.
+      const strategy: CngxTabUrlMatch = {
+        resolve: (ctx) => ctx.tabs[ctx.tabs.length - 1]?.id ?? null,
+      };
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideRouter(SECTION_ROUTES),
+          { provide: CNGX_TAB_URL_MATCH_STRATEGY, useValue: strategy },
+        ],
+      });
+      const fixture = await mountAt(SectionNavHost, '/elsewhere');
+
+      // Neither shipped mode resolves anything at /elsewhere; the override
+      // does, so the directive is genuinely delegating.
+      expect(presenterOf(fixture).activeId()).toBe('rounds');
+    });
+
+    it('resolves no tab for a URL outside the set, in either mode', async () => {
+      configure();
+      const nav = await mountAt(SectionNavHost, '/elsewhere');
+      expect(presenterOf(nav).activeIndex()).toBe(0);
+
+      TestBed.resetTestingModule();
+      configure();
+      const tablist = await mountAt(SectionTabHost, '/elsewhere');
+      expect(presenterOf(tablist).activeIndex()).toBe(0);
+    });
   });
 });

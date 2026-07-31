@@ -130,6 +130,13 @@ export type CngxTabIconLayout = 'start' | 'end' | 'top' | 'only';
  * is activated and keeps it (keep-alive). `'lazy-destroy'` renders only
  * the active panel's content and destroys it on leave.
  *
+ * A `[cngxTabsRouteSync]` / `[cngxTabsFragmentSync]` deep link resolves
+ * its tab at content-init, before the first panel render, so under
+ * `'lazy'` only the target panel's content ever mounts - the default tab
+ * is never activated on the way. Without that ordering the first render
+ * would count as tab 0's first activation and keep-alive would hold its
+ * content for the rest of the session.
+ *
  * @category common/tabs
  */
 export type CngxTabsPanelMode = 'eager' | 'lazy' | 'lazy-destroy';
@@ -191,6 +198,25 @@ export interface CngxTabsConfig {
    * Override via {@link withTabsFragmentSync}.
    */
   readonly fragmentSyncParam?: string;
+  /**
+   * App-wide default URL-matching mode for
+   * {@link CngxTabsRouteSync}: `'suffix'` treats a tab as a leaf route,
+   * `'prefix'` treats it as a section that owns a subtree. Per-instance
+   * `[match]` still wins. Unset (the default) lets each host pick from
+   * its own flavour - `'prefix'` on a nav, `'suffix'` on a tablist -
+   * which is almost always what you want; set this only to force one
+   * mode app-wide. Override via {@link withTabsRouteMatch}.
+   */
+  readonly routeMatch?: 'suffix' | 'prefix';
+  /**
+   * App-wide `aria-current` token {@link CngxTabLink} publishes while
+   * active. Default `'page'`. Set `'true'` when the links are sections
+   * that stay active for URLs beneath them, which is the shape
+   * `routeMatch: 'prefix'` implies - `page` would then claim the link is
+   * the page being viewed. Per-link `[ariaCurrent]` still wins. Override
+   * via {@link withTabsLinkAriaCurrent}.
+   */
+  readonly linkAriaCurrent?: 'page' | 'true' | 'location' | 'step';
   /**
    * App-wide default visual skin. \
    * Default `'line'`. Per-instance
@@ -269,6 +295,7 @@ const TABS_CONFIG_DEFAULTS: Required<
     | 'ariaLabels'
     | 'fallbackLabels'
     | 'templates'
+    | 'routeMatch'
     | 'skin'
     | 'iconLayout'
     | 'panelMode'
@@ -287,6 +314,10 @@ const TABS_CONFIG_DEFAULTS: Required<
   defaultCommitMode: 'optimistic',
   fragmentSyncMode: 'fragment',
   fragmentSyncParam: 'tab',
+  // routeMatch stays unset: the host-flavour default is the right answer
+  // for both organisms, and pinning one here would silently flip the
+  // other. linkAriaCurrent defaults at the link, not here.
+  linkAriaCurrent: 'page',
   ariaLabels: {
     tabsRegion: 'Tabs',
   },
@@ -416,6 +447,44 @@ export function withTabsFragmentSync(
 }
 
 /**
+ * Force one URL-matching mode app-wide for `[cngxTabsRouteSync]`. \
+ * `'suffix'` treats every tab as a leaf route, `'prefix'` as a section
+ * that stays active for URLs beneath it.
+ *
+ * Reach for this only when the host-flavour default is wrong for your
+ * app. Unset, a `<cngx-tab-nav>` matches by prefix and a
+ * `<cngx-tab-group>` by suffix, which is what each markup implies; this
+ * feature overrides *both*. Per-instance `[match]` still wins.
+ *
+ * Changes which policy runs, not the policies themselves - swap those via
+ * {@link CNGX_TAB_URL_MATCH_STRATEGY}.
+ *
+ * @category common/tabs
+ */
+export function withTabsRouteMatch(mode: 'suffix' | 'prefix'): CngxTabsConfigFeature {
+  return defineTabsConfigFeature((cfg) => ({ ...cfg, routeMatch: mode }));
+}
+
+/**
+ * Set the `aria-current` token `[cngxTabLink]` publishes while active. \
+ * Default `'page'`.
+ *
+ * Use `'true'` for a section nav whose links stay active across a whole
+ * subtree: the active link is then the current *section*, and `page`
+ * would tell AT it is the page being viewed. Scope it to one nav with
+ * `provideTabsConfigAt` in that component's `viewProviders` rather than
+ * setting it app-wide, unless every nav in the app is section-shaped.
+ * Per-link `[ariaCurrent]` still wins.
+ *
+ * @category common/tabs
+ */
+export function withTabsLinkAriaCurrent(
+  token: 'page' | 'true' | 'location' | 'step',
+): CngxTabsConfigFeature {
+  return defineTabsConfigFeature((cfg) => ({ ...cfg, linkAriaCurrent: token }));
+}
+
+/**
  * @deprecated Use {@link withTabsFragmentSync}. "Router sync" collided
  * with the new `[cngxTabsRouteSync]` router-outlet directive; this
  * feature only ever configured fragment / query-param deep-linking. The
@@ -457,6 +526,9 @@ export function withTabsIconLayout(layout: CngxTabIconLayout): CngxTabsConfigFea
  * `'lazy-destroy'` renders only the active panel's content. Per-instance
  * `[panelMode]` Input still wins. The panel `<div>` always stays in the
  * DOM regardless of mode (the `aria-controls` target).
+ *
+ * Under `'lazy'`, a deep link mounts only the panel it names: both sync
+ * directives seed the active tab before the first panel render.
  *
  * @category common/tabs
  */
