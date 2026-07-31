@@ -40,9 +40,19 @@ export type CngxPaginatorDensity = 'compact' | 'default' | 'comfortable';
  * consumer from projected segment parts in DOM order - no `show*` config inputs.
  * `skin` / `density` are single paint attributes reflected onto `[data-skin]` / `[data-density]`.  \
  *
- * Two-way `[(pageIndex)]` / `[(pageSize)]`:  \
- * the brain's controlled inputs are aliased through `hostDirectives` (`cngxPageIndex` -> `pageIndex`, `cngxPageSize` -> `pageSize`);  \
- * the shell owns the matching `pageIndexChange` / `pageSizeChange` outputs and is their single emitter,
+ * Page bindings are longhand pairs -
+ * `[pageIndex]="pageIndex()" (pageIndexChange)="pageIndex.set($event)"` and
+ * `[pageSize]="pageSize()" (pageSizeChange)="pageSize.set($event)"`.  \
+ * The two-way shorthand (banana-in-a-box) fails NG8007 under `strictTemplates`,
+ * the consumer-app default: the property half resolves to the `CngxPaginate`
+ * host directive (`cngxPageIndex` -> `pageIndex`, `cngxPageSize` -> `pageSize`)
+ * while the shell owns the matching `pageIndexChange` / `pageSizeChange`
+ * outputs, and Angular requires both halves of the shorthand on one directive
+ * instance.  \
+ * Binding `[pageSize]` alone makes the value controlled: a `cngx-pgn-page-size`
+ * pick is swallowed on the next pass because the brain stays pinned to the
+ * input. Bind both halves for any page size other than the brain's default.  \
+ * The shell is the single emitter of both outputs,
  * wired through the shared `connectPaginateEmit` bridge (identical to `CngxIncrementalList`).  \
  * The bridge feeds each output once from two paths:
  * (1) a subscription forwards the brain's nav-only `pageChange` /
