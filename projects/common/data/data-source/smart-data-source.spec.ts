@@ -247,6 +247,96 @@ describe('CngxSmartDataSource — with CngxAsyncState source', () => {
   });
 });
 
+describe('CngxSmartDataSource — options-passed atoms', () => {
+  beforeEach(() => TestBed.configureTestingModule({ imports: [WithDirectivesHost] }));
+
+  function hostedSort(): CngxSort {
+    const fixture = TestBed.createComponent(WithDirectivesHost);
+    fixture.detectChanges();
+    return fixture.debugElement.query(By.directive(CngxSort)).injector.get(CngxSort);
+  }
+
+  it('an options-passed sort thunk reorders rows without any injectable CngxSort', () => {
+    // Root injection context: no CngxSort above the source, only the thunk.
+    TestBed.runInInjectionContext(() => {
+      const sortDir = hostedSort();
+      const data = signal(ITEMS);
+      const ds = injectSmartDataSource(data, { sort: () => sortDir });
+
+      sortDir.setSort('name');
+
+      const values: Item[][] = [];
+      const sub = ds.connect().subscribe((v: Item[]) => values.push(v));
+      TestBed.flushEffects();
+
+      expect(values.at(-1)!.map((i) => i.name)).toEqual(['Alice', 'Bob', 'Charlie']);
+      sub.unsubscribe();
+    });
+  });
+
+  it('a thunk resolving undefined first and an instance later starts sorting on the same source', () => {
+    TestBed.runInInjectionContext(() => {
+      const sortDir = hostedSort();
+      sortDir.setSort('name');
+      const sortRef = signal<CngxSort | undefined>(undefined);
+      const data = signal(ITEMS);
+      const ds = injectSmartDataSource(data, { sort: () => sortRef() });
+
+      const values: Item[][] = [];
+      const sub = ds.connect().subscribe((v: Item[]) => values.push(v));
+      TestBed.flushEffects();
+      expect(values.at(-1)!.map((i) => i.name)).toEqual(['Charlie', 'Alice', 'Bob']);
+
+      sortRef.set(sortDir);
+      TestBed.flushEffects();
+      expect(values.at(-1)!.map((i) => i.name)).toEqual(['Alice', 'Bob', 'Charlie']);
+      sub.unsubscribe();
+    });
+  });
+
+  it('an injected CngxSort still works when the options bag carries no thunk', () => {
+    const fixture = TestBed.createComponent(WithDirectivesHost);
+    fixture.detectChanges();
+    const elemInjector: Injector = fixture.debugElement.query(By.directive(CngxSort)).injector;
+    const sortDir = elemInjector.get(CngxSort);
+
+    const data = signal(ITEMS);
+    const ds = runInInjectionContext(elemInjector, () => injectSmartDataSource(data, {}));
+    sortDir.setSort('name');
+
+    const values: Item[][] = [];
+    const sub = ds.connect().subscribe((v: Item[]) => values.push(v));
+    TestBed.flushEffects();
+
+    expect(values.at(-1)!.map((i) => i.name)).toEqual(['Alice', 'Bob', 'Charlie']);
+    sub.unsubscribe();
+  });
+
+  it('an options-passed sort wins over an injected instance', () => {
+    const fixture = TestBed.createComponent(WithDirectivesHost);
+    fixture.detectChanges();
+    const elemInjector: Injector = fixture.debugElement.query(By.directive(CngxSort)).injector;
+    const injectedSort = elemInjector.get(CngxSort);
+    const optionSort = hostedSort();
+
+    injectedSort.setSort('name');
+    injectedSort.setSort('name'); // desc
+    optionSort.setSort('name'); // asc
+
+    const data = signal(ITEMS);
+    const ds = runInInjectionContext(elemInjector, () =>
+      injectSmartDataSource(data, { sort: () => optionSort }),
+    );
+
+    const values: Item[][] = [];
+    const sub = ds.connect().subscribe((v: Item[]) => values.push(v));
+    TestBed.flushEffects();
+
+    expect(values.at(-1)!.map((i) => i.name)).toEqual(['Alice', 'Bob', 'Charlie']);
+    sub.unsubscribe();
+  });
+});
+
 describe('CngxSmartDataSource — reactivity equality', () => {
   it('connect() does not re-emit when source resets to a positionally-identical array', () => {
     TestBed.runInInjectionContext(() => {
