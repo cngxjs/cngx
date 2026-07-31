@@ -36,6 +36,7 @@ import { InjectionToken } from '@angular/core';
  * ```
  *
  * @category common/tabs
+ * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/tab-nav-host.token.ts
  * @since 0.1.0
  * @relatedTo CngxTabsRouteSync, CNGX_TAB_GROUP_HOST, CngxTabNav, CngxMatTabNav
