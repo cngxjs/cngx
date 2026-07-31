@@ -13,6 +13,8 @@ import { RouterTestingHarness } from '@angular/router/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxTabGroupPresenter } from './presenter.directive';
+import { provideTabsConfig, withTabsRouteMatch } from './tabs-config';
+import { CNGX_TAB_URL_MATCH_STRATEGY, type CngxTabUrlMatch } from './url-match';
 import { CngxTabsRouteSync } from './route-sync.directive';
 import { CNGX_TAB_NAV_HOST } from './tab-nav-host.token';
 import { CngxTab } from './tab.directive';
@@ -518,6 +520,50 @@ describe('CngxTabsRouteSync', () => {
       const fixture = await mountAt(SectionTabHost, '/rounds/explorer');
 
       expect(presenterOf(fixture).activeIndex()).toBe(0);
+    });
+
+    it('takes the match mode from the tabs config when no input is bound', async () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideRouter(SECTION_ROUTES),
+          provideTabsConfig(withTabsRouteMatch('suffix')),
+        ],
+      });
+      // Config beats the nav flavour; the input would beat the config.
+      const fixture = await mountAt(SectionNavHost, '/rounds/explorer');
+      expect(presenterOf(fixture).activeIndex()).toBe(0);
+    });
+
+    it('lets the input win over the configured match mode', async () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideRouter(SECTION_ROUTES),
+          provideTabsConfig(withTabsRouteMatch('suffix')),
+        ],
+      });
+      const fixture = await mountAt(SectionNavHost, '/rounds/explorer', { match: 'prefix' });
+      expect(presenterOf(fixture).activeId()).toBe('rounds');
+    });
+
+    it('routes the comparison through the swappable match strategy', async () => {
+      // A consumer strategy that ignores the shipped policies entirely.
+      const strategy: CngxTabUrlMatch = {
+        resolve: (ctx) => ctx.tabs[ctx.tabs.length - 1]?.id ?? null,
+      };
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideRouter(SECTION_ROUTES),
+          { provide: CNGX_TAB_URL_MATCH_STRATEGY, useValue: strategy },
+        ],
+      });
+      const fixture = await mountAt(SectionNavHost, '/elsewhere');
+
+      // Neither shipped mode resolves anything at /elsewhere; the override
+      // does, so the directive is genuinely delegating.
+      expect(presenterOf(fixture).activeId()).toBe('rounds');
     });
 
     it('resolves no tab for a URL outside the set, in either mode', async () => {

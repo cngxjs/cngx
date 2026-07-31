@@ -12,13 +12,7 @@ import {
   type Signal,
 } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import {
-  ActivatedRoute,
-  NavigationEnd,
-  Router,
-  type UrlSegmentGroup,
-  type UrlTree,
-} from '@angular/router';
+import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
 
 import { CNGX_TABS_COMMIT_ACTION, type CngxTabsCommitActionSource } from './commit-action.token';
@@ -26,23 +20,9 @@ import { cngxDefaultTabRoute, createTabRouterCommit } from './router-commit';
 import { warnTabsRouterAbsent } from './router-absent-warning';
 import { CNGX_TAB_GROUP_HOST, type CngxTabHandle } from './tab-group-host.token';
 import { CNGX_TAB_NAV_HOST } from './tab-nav-host.token';
+import { injectTabsConfig } from './tabs-config';
+import { CNGX_TAB_URL_MATCH_STRATEGY, type CngxTabMatchMode } from './url-match';
 import type { CngxTabsCommitAction } from './presenter.directive';
-
-/**
- * Path-segment count of a resolved `UrlTree`, used to rank prefix
- * matches: `/rounds/explorer` outranks `/rounds` on a URL both match.
- */
-function urlTreeSegmentCount(tree: UrlTree): number {
-  let count = 0;
-  const walk = (group: UrlSegmentGroup): void => {
-    count += group.segments.length;
-    for (const key of Object.keys(group.children)) {
-      walk(group.children[key]);
-    }
-  };
-  walk(tree.root);
-  return count;
-}
 
 /**
  * Router-outlet integration for tab groups. \
@@ -171,14 +151,25 @@ export class CngxTabsRouteSync implements CngxTabsCommitActionSource, AfterConte
    *   so a nav mounted under a base path still resolves. When several
    *   tabs match, the one with the most path segments wins.
    *
-   * Unset (the default) resolves from the host flavour: `'prefix'` when
-   * {@link CNGX_TAB_NAV_HOST} is present, `'suffix'` otherwise.
+   * Cascade: this input -> `CngxTabsConfig.routeMatch`
+   * ({@link withTabsRouteMatch}) -> the host flavour, which is `'prefix'`
+   * when {@link CNGX_TAB_NAV_HOST} is present and `'suffix'` otherwise.
+   *
+   * This picks *which* policy runs. {@link CNGX_TAB_URL_MATCH_STRATEGY}
+   * replaces the policies themselves.
    */
-  readonly match = input<'suffix' | 'prefix' | undefined>(undefined);
+  readonly match = input<CngxTabMatchMode | undefined>(undefined);
 
   private readonly host = inject(CNGX_TAB_GROUP_HOST, { host: true });
   private readonly router = inject(Router, { optional: true });
   private readonly navHost = inject(CNGX_TAB_NAV_HOST, { optional: true, host: true });
+  private readonly config = injectTabsConfig();
+  private readonly urlMatch = inject(CNGX_TAB_URL_MATCH_STRATEGY);
+
+  /** Resolved match mode: input -> config -> host flavour. */
+  private readonly effectiveMatch: Signal<CngxTabMatchMode> = computed(
+    () => this.match() ?? this.config.routeMatch ?? (this.navHost ? 'prefix' : 'suffix'),
+  );
   private readonly activatedRoute = inject(ActivatedRoute, { optional: true });
 
   /**
@@ -275,85 +266,17 @@ export class CngxTabsRouteSync implements CngxTabsCommitActionSource, AfterConte
   }
 
   /**
-   * Find the tab the current URL belongs to, under the effective match
-   * mode. Same exact-versus-prefix distinction `routerLinkActive` draws:
-   * a tablist tab is a leaf and matches only its own route, a nav link is
-   * a section and matches everything beneath it. `null` means the URL is
-   * outside this tab set, in either mode.
+   * Resolve the active tab id through the swappable match strategy.
+   * The directive owns the mode cascade (input -> config -> host
+   * flavour); the strategy owns the comparison.
    */
   private readActiveId(router: Router): string | null {
-    const mode = this.match() ?? (this.navHost ? 'prefix' : 'suffix');
-    return mode === 'prefix' ? this.readActiveIdByPrefix(router) : this.readActiveIdBySuffix(router);
-  }
-
-  /**
-   * Find the tab whose route is the trailing segment(s) of the current
-   * URL path. Anchors on position, not a loose "appears anywhere" scan -
-   * a tab id that happens to equal an unrelated parent segment cannot
-   * win. The path is taken before any query/fragment. If two tabs produce
-   * the same trailing segment(s) (only possible with a custom `routeFor`
-   * that collides), the first registered tab wins - the default id-based
-   * mapping never collides.
-   */
-  private readActiveIdBySuffix(router: Router): string | null {
-    const path = router.url.split(/[?#]/)[0];
-    const segments = path.split('/').filter(Boolean);
-    const routeFor = this.routeFor();
-    for (const tab of this.host.tabs()) {
-      const route = routeFor(tab).map((command) => String(command));
-      if (route.length === 0 || route.length > segments.length) {
-        continue;
-      }
-      const tail = segments.slice(-route.length);
-      if (tail.every((segment, i) => segment === route[i])) {
-        return tab.id;
-      }
-    }
-    return null;
-  }
-
-  /**
-   * Find the tab that owns the current URL's subtree: the tab whose
-   * resolved `UrlTree` is a subset of the active one, ignoring query
-   * params, fragment, and matrix params.
-   *
-   * Routes resolve `{ relativeTo: ActivatedRoute }` rather than against
-   * the URL root. A root-anchored segment compare would break a nav
-   * mounted under a base path - at `/app/rounds` a `['rounds']` route
-   * would compare `'app' === 'rounds'`, resolve `null`, and hand the
-   * first link a wrong `aria-current`, which is the exact defect prefix
-   * mode exists to fix. Relative resolution is safe on the read side
-   * because the nav path is commit-free: links navigate through their own
-   * `routerLink`, so nothing here can diverge from a commit navigation.
-   *
-   * Longest route wins, so a `/rounds` tab cannot shadow a
-   * `/rounds/explorer` tab in the same set.
-   */
-  private readActiveIdByPrefix(router: Router): string | null {
-    const routeFor = this.routeFor();
-    let winner: string | null = null;
-    let winnerDepth = -1;
-    for (const tab of this.host.tabs()) {
-      const route = routeFor(tab);
-      if (route.length === 0) {
-        continue;
-      }
-      const tree = router.createUrlTree(route, { relativeTo: this.activatedRoute });
-      const active = router.isActive(tree, {
-        paths: 'subset',
-        queryParams: 'ignored',
-        fragment: 'ignored',
-        matrixParams: 'ignored',
-      });
-      if (!active) {
-        continue;
-      }
-      const depth = urlTreeSegmentCount(tree);
-      if (depth > winnerDepth) {
-        winner = tab.id;
-        winnerDepth = depth;
-      }
-    }
-    return winner;
+    return this.urlMatch.resolve({
+      router,
+      activatedRoute: this.activatedRoute,
+      tabs: this.host.tabs(),
+      routeFor: this.routeFor(),
+      mode: this.effectiveMatch(),
+    });
   }
 }

@@ -16,6 +16,14 @@ export {
   type CngxTabPanelHost,
 } from './tab-panel-host.token';
 export { CNGX_TAB_NAV_HOST } from './tab-nav-host.token';
+export {
+  CNGX_TAB_URL_MATCH_STRATEGY,
+  createTabUrlMatch,
+  type CngxTabMatchMode,
+  type CngxTabUrlMatch,
+  type CngxTabUrlMatchContext,
+  type CngxTabUrlMatchFactory,
+} from './url-match';
 export { CngxTab } from './tab.directive';
 export { CngxTabLink } from './tab-link.directive';
 export { CngxTabLabel } from './tab-label.directive';
@@ -59,6 +67,8 @@ export {
   withTabsPanelMode,
   withTabsFragmentSync,
   withTabsRouterSync,
+  withTabsLinkAriaCurrent,
+  withTabsRouteMatch,
   withTabsRovingLoop,
   withTabsSkin,
   type CngxTabAlign,
