@@ -48,6 +48,18 @@ export interface CngxSmartDataSourceOptions<T> {
    * direction. Defaults to a locale-aware string comparison.
    */
   sortFn?: (a: T, b: T, field: string, direction: 'asc' | 'desc') => number;
+  /**
+   * Resolve the `CngxSort` atom explicitly instead of relying on injection.
+   * A thunk, not an instance, so a `viewChild` that is `undefined` on the
+   * first pass resolves on a later read. Wins over an injected instance.
+   * Use for atoms hosted below this source's injector, e.g.
+   * `{ sort: () => this.grid()?.sort }` against a `CngxDataGridAccordion`.
+   */
+  sort?: () => CngxSort | null | undefined;
+  /** Same as `sort`, for the `CngxFilter` atom. */
+  filter?: () => CngxFilter<T> | null | undefined;
+  /** Same as `sort`, for the `CngxSearch` atom. */
+  search?: () => CngxSearch | null | undefined;
 }
 
 function isAsyncState<T>(source: Signal<T[]> | CngxAsyncState<T[]>): source is CngxAsyncState<T[]> {
@@ -85,13 +97,13 @@ function isAsyncState<T>(source: Signal<T[]> | CngxAsyncState<T[]>): source is C
  */
 export class CngxSmartDataSource<T> extends DataSource<T> {
   private readonly injector = inject(Injector);
-  private readonly sort = inject(CngxSort, { optional: true });
-  private readonly filter = inject(CngxFilter, { optional: true });
+  private readonly injectedSort = inject(CngxSort, { optional: true });
+  private readonly injectedFilter = inject(CngxFilter, { optional: true });
   // CngxSearch typically lives on a child <input> below the component injector,
   // so this inject returns null in the common case. It resolves only when CngxSearch
   // is placed as a hostDirective on the same component. For child-input search,
   // use injectDataSource() + manual computed() instead.
-  private readonly search = inject(CngxSearch, { optional: true });
+  private readonly injectedSearch = inject(CngxSearch, { optional: true });
   private readonly paginate = inject(CngxPaginate, { optional: true });
 
   /**
@@ -155,8 +167,12 @@ export class CngxSmartDataSource<T> extends DataSource<T> {
 
     this.filtered = computed(
       () => {
-        const predicate = this.filter?.predicate();
-        const term = this.search?.term();
+        // Resolve at read time: an options thunk pointing at a not-yet-mounted
+        // viewChild returns undefined now and the instance on a later pass.
+        const filter = this.options?.filter?.() ?? this.injectedFilter;
+        const search = this.options?.search?.() ?? this.injectedSearch;
+        const predicate = filter?.predicate();
+        const term = search?.term();
         const searchFn = this.options?.searchFn ?? defaultSearchFn<T>;
 
         // Pipeline: raw → filter → search. Cast required: CngxFilter injected as unknown.
@@ -179,7 +195,8 @@ export class CngxSmartDataSource<T> extends DataSource<T> {
 
     this.processed = computed(
       () => {
-        const sorts = this.sort?.sorts() ?? [];
+        const sort = this.options?.sort?.() ?? this.injectedSort;
+        const sorts = sort?.sorts() ?? [];
         const sortFn = this.options?.sortFn ?? defaultSortFn<T>;
 
         const sorted =
