@@ -17,6 +17,7 @@ import { nextUid } from '@cngx/core/utils';
 import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
 
 import { CNGX_TAB_GROUP_HOST, type CngxTabHandle } from './tab-group-host.token';
+import { injectTabsConfig } from './tabs-config';
 
 /**
  * Turns a consumer `<a routerLink>` into a registered {@link CngxTabHandle}
@@ -59,7 +60,7 @@ import { CNGX_TAB_GROUP_HOST, type CngxTabHandle } from './tab-group-host.token'
   standalone: true,
   host: {
     class: 'cngx-tab-nav__link',
-    '[attr.aria-current]': 'selected() ? ariaCurrent() : null',
+    '[attr.aria-current]': 'selected() ? resolvedAriaCurrent() : null',
     '[attr.aria-invalid]': "hasError() ? 'true' : null",
     '[attr.aria-describedby]': 'descriptorId()',
     '[class.cngx-tab-nav__link--active]': 'selected()',
@@ -68,6 +69,7 @@ import { CNGX_TAB_GROUP_HOST, type CngxTabHandle } from './tab-group-host.token'
 })
 export class CngxTabLink implements OnInit {
   private readonly host = inject(CNGX_TAB_GROUP_HOST, { optional: true });
+  private readonly config = injectTabsConfig();
   private readonly destroyRef = inject(DestroyRef);
   private readonly renderer = inject(Renderer2);
   private readonly hostEl = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
@@ -117,20 +119,28 @@ export class CngxTabLink implements OnInit {
 
   /**
    * Which `aria-current` token the link publishes while it is active.
-   * Default `'page'`, correct when the link addresses one page.
+   * Cascade: this input -> `CngxTabsConfig.linkAriaCurrent`
+   * ({@link withTabsLinkAriaCurrent}) -> `'page'`.
    *
    * Use `'true'` when the link owns a *subtree* and stays active for URLs
    * beneath it - a section nav driven by `[cngxTabsRouteSync]` in its
    * prefix mode. WAI-ARIA reserves `page` for the current page itself, so
    * `page` on an ancestor section over-claims: AT reads "current page" for
-   * something that is not the page being viewed.
+   * something that is not the page being viewed. A whole nav switches at
+   * once via `provideTabsConfigAt(withTabsLinkAriaCurrent('true'))`; this
+   * input is the per-link escape hatch.
    *
    * Not derived from the sync directive's match mode on purpose. `selected`
    * has exactly one source, the presenter's `activeId` (Pillar 1); reading
    * a sibling directive's mode here would fork that derivation and couple
    * the atom to a directive it does not otherwise know about.
    */
-  readonly ariaCurrent = input<'page' | 'true' | 'location' | 'step'>('page');
+  readonly ariaCurrent = input<'page' | 'true' | 'location' | 'step' | undefined>(undefined);
+
+  /** Resolved token: input -> config -> `'page'`. */
+  protected readonly resolvedAriaCurrent: Signal<'page' | 'true' | 'location' | 'step'> = computed(
+    () => this.ariaCurrent() ?? this.config.linkAriaCurrent ?? 'page',
+  );
 
   /** `true` when the presenter's `activeId` equals this link's id. */
   protected readonly selected: Signal<boolean> = computed(

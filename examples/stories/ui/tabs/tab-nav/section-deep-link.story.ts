@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxTabNav: a section link stays current for its whole subtree',
   subtitle:
-    'A <code>&lt;cngx-tab-nav&gt;</code> link is an application <em>section</em>, not a leaf, so it owns every URL beneath it. <code>[cngxTabsRouteSync]</code> reads that from the nav flavour and matches the URL by prefix - the non-exact form of <code>routerLinkActive</code>. A <code>&lt;cngx-tab-group&gt;</code> tablist keeps the exact-leaf (suffix) default. Section links also carry <code>ariaCurrent="true"</code> rather than the <code>page</code> default, since the active link is the current <em>section</em>, not the page you are on.',
+    'A <code>&lt;cngx-tab-nav&gt;</code> link is an application <em>section</em>, not a leaf, so it owns every URL beneath it. <code>[cngxTabsRouteSync]</code> reads that from the nav flavour and matches the URL by prefix - the non-exact form of <code>routerLinkActive</code>. A <code>&lt;cngx-tab-group&gt;</code> tablist keeps the exact-leaf (suffix) default. One <code>provideTabsConfigAt(withTabsLinkAriaCurrent(\'true\'))</code> switches the whole nav off the <code>page</code> default, since the active link is the current <em>section</em>, not the page you are on.',
   description:
     'The nav points at three sections of this documentation app, and the page you are reading sits at <code>/ui/tabs/tab-nav/section-deep-link</code> - a child of the Tab nav section. No click is needed: <code>[cngxTabsRouteSync]</code> resolves the owning section from the URL when it mounts, which is what a deep link or a reload exercises, and the Tab nav link carries <code>aria-current="true"</code>. The suffix default a tablist uses would resolve nothing here, because the URL\'s trailing segment matches no link - the read returns null, the seed is a no-op, and the first link keeps <code>aria-current</code> from the initial index. That is the whole reason the nav flavour defaults to prefix. When several sections match, the longest route wins, so a <code>/ui/tabs</code> link could not shadow <code>/ui/tabs/tab-nav</code>. Set <code>match="suffix"</code> on the nav to opt an instance back into leaf matching.',
   level: 'organism',
@@ -12,10 +12,11 @@ export const STORY: DemoSpec = {
   focus: ['integration', 'a11y-pattern', 'behavior'],
   apiComponents: ['CngxTabNav', 'CngxTabLink', 'CngxTabsRouteSync'],
   moduleImports: [
-    "import { CngxTabLink, CngxTabsRouteSync } from '@cngx/common/tabs';",
+    "import { CngxTabLink, CngxTabsRouteSync, provideTabsConfigAt, withTabsLinkAriaCurrent } from '@cngx/common/tabs';",
     "import { CngxTabNav } from '@cngx/ui/tabs';",
   ],
   imports: ['CngxTabNav', 'CngxTabLink', 'CngxTabsRouteSync'],
+  viewProviders: ['provideTabsConfigAt(withTabsLinkAriaCurrent(\'true\'))'],
   references: [
     {
       label: 'Angular Router: `RouterLinkActive` exact vs subset matching',
@@ -49,7 +50,6 @@ export const STORY: DemoSpec = {
     <a
       cngxTabLink
       id="tab-group"
-      ariaCurrent="true"
       label="Tab group"
       href="#/ui/tabs/tab-group/three-tab-navigation"
     >
@@ -58,7 +58,6 @@ export const STORY: DemoSpec = {
     <a
       cngxTabLink
       id="tab-nav"
-      ariaCurrent="true"
       label="Tab nav"
       href="#/ui/tabs/tab-nav/section-deep-link"
     >
@@ -67,7 +66,6 @@ export const STORY: DemoSpec = {
     <a
       cngxTabLink
       id="tab-skins"
-      ariaCurrent="true"
       label="Tab skins"
       href="#/ui/tabs/tab-skins/line"
     >
