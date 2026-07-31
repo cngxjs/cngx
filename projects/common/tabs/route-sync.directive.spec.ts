@@ -1,10 +1,19 @@
-import { Component, provideZonelessChangeDetection } from '@angular/core';
-import { TestBed } from '@angular/core/testing';
-import { NavigationCancel, NavigationEnd, provideRouter, Router } from '@angular/router';
+import { Component, provideZonelessChangeDetection, type Type } from '@angular/core';
+import { TestBed, type ComponentFixture } from '@angular/core/testing';
+import {
+  NavigationCancel,
+  NavigationEnd,
+  provideRouter,
+  Router,
+  RouterOutlet,
+  type Routes,
+} from '@angular/router';
+import { RouterTestingHarness } from '@angular/router/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxTabGroupPresenter } from './presenter.directive';
 import { CngxTabsRouteSync } from './route-sync.directive';
+import { CNGX_TAB_NAV_HOST } from './tab-nav-host.token';
 import { CngxTab } from './tab.directive';
 import { CngxTabLink } from './tab-link.directive';
 
@@ -51,6 +60,81 @@ class NestedRouteHost {}
   `,
 })
 class NavLinkRouteHost {}
+
+@Component({ standalone: true, selector: 'blank-page', template: '' })
+class BlankPage {}
+
+// The nav flavour: provides the marker token, so route-sync defaults to
+// prefix matching. Mirrors what <cngx-tab-nav> / [cngxMatTabNav] declare.
+@Component({
+  standalone: true,
+  selector: 'section-nav-host',
+  imports: [CngxTabLink],
+  providers: [{ provide: CNGX_TAB_NAV_HOST, useValue: true }],
+  hostDirectives: [
+    CngxTabGroupPresenter,
+    { directive: CngxTabsRouteSync, inputs: ['routeFor', 'match'] },
+  ],
+  template: `
+    <a cngxTabLink id="overview" [label]="'Overview'"></a>
+    <a cngxTabLink id="rounds" [label]="'Rounds'"></a>
+  `,
+})
+class SectionNavHost {}
+
+// Same flavour, but with a nested tab whose route is a strict extension
+// of a sibling's - the longest-match case.
+@Component({
+  standalone: true,
+  selector: 'overlapping-nav-host',
+  imports: [CngxTabLink],
+  providers: [{ provide: CNGX_TAB_NAV_HOST, useValue: true }],
+  hostDirectives: [
+    CngxTabGroupPresenter,
+    { directive: CngxTabsRouteSync, inputs: ['routeFor'] },
+  ],
+  template: `
+    <a cngxTabLink id="rounds" [label]="'Rounds'"></a>
+    <a cngxTabLink id="explorer" [label]="'Explorer'"></a>
+  `,
+})
+class OverlappingNavHost {}
+
+// Mounted under a base path: the nav is the routed component at /app, so
+// its ActivatedRoute is the mount point the tab routes resolve against.
+@Component({
+  standalone: true,
+  selector: 'section-nav-shell',
+  imports: [CngxTabLink, RouterOutlet],
+  providers: [{ provide: CNGX_TAB_NAV_HOST, useValue: true }],
+  hostDirectives: [CngxTabGroupPresenter, CngxTabsRouteSync],
+  template: `
+    <a cngxTabLink id="overview" [label]="'Overview'"></a>
+    <a cngxTabLink id="rounds" [label]="'Rounds'"></a>
+    <router-outlet />
+  `,
+})
+class SectionNavShell {}
+
+// The tablist twin of SectionNavHost: identical tab set, no marker token,
+// so the suffix default applies.
+@Component({
+  standalone: true,
+  selector: 'section-tab-host',
+  imports: [CngxTab],
+  hostDirectives: [CngxTabGroupPresenter, CngxTabsRouteSync],
+  template: `
+    <div cngxTab id="overview" [label]="'Overview'"></div>
+    <div cngxTab id="rounds" [label]="'Rounds'"></div>
+  `,
+})
+class SectionTabHost {}
+
+const SECTION_ROUTES: Routes = [
+  { path: 'overview', component: BlankPage },
+  { path: 'rounds', component: BlankPage, children: [{ path: 'explorer', component: BlankPage }] },
+  { path: 'elsewhere', component: BlankPage },
+];
 
 // Drains pending microtasks so afterNextRender / effect chains settle.
 // Mirrors the fragment-sync spec - whenStable() has been observed to
@@ -290,5 +374,111 @@ describe('CngxTabsRouteSync', () => {
     // Reflective only: no re-navigation, no commit transition was opened.
     expect(navigateSpy).not.toHaveBeenCalled();
     expect(presenter.commitState.status()).toBe('idle');
+  });
+
+  describe('prefix matching on the nav flavour', () => {
+    // Real routes, real navigation: prefix mode resolves through
+    // router.isActive against the live UrlTree, so a mocked router.url
+    // getter would not exercise it.
+    function configure(routes: Routes = SECTION_ROUTES): Router {
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection(), provideRouter(routes)],
+      });
+      return TestBed.inject(Router);
+    }
+
+    async function mountAt<T>(
+      component: Type<T>,
+      url: string,
+      inputs: Record<string, unknown> = {},
+    ): Promise<ComponentFixture<T>> {
+      await TestBed.inject(Router).navigateByUrl(url);
+      const fixture = TestBed.createComponent(component);
+      for (const [name, value] of Object.entries(inputs)) {
+        fixture.componentRef.setInput(name, value);
+      }
+      fixture.detectChanges();
+      await flushMicrotasks();
+      return fixture;
+    }
+
+    function presenterOf(fixture: ComponentFixture<unknown>): CngxTabGroupPresenter {
+      return fixture.debugElement.injector.get(CngxTabGroupPresenter);
+    }
+
+    it('resolves the owning section on a URL beneath the link', async () => {
+      configure();
+      const fixture = await mountAt(SectionNavHost, '/rounds/explorer');
+
+      // The reported defect: suffix matching resolved null here and the
+      // first link kept aria-current="page".
+      expect(presenterOf(fixture).activeId()).toBe('rounds');
+      expect(presenterOf(fixture).activeIndex()).toBe(1);
+    });
+
+    it('lets the longest matching route win so a section cannot shadow its own child', async () => {
+      configure();
+      const fixture = await mountAt(OverlappingNavHost, '/rounds/explorer', {
+        routeFor: (h: { id: string }) => (h.id === 'explorer' ? ['rounds', 'explorer'] : ['rounds']),
+      });
+
+      expect(presenterOf(fixture).activeId()).toBe('explorer');
+    });
+
+    it('anchors matching at the nav mount point, not the URL root', async () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideRouter([{ path: 'app', component: SectionNavShell, children: SECTION_ROUTES }]),
+        ],
+      });
+
+      const harness = await RouterTestingHarness.create('/app/rounds/explorer');
+      harness.detectChanges();
+      await flushMicrotasks();
+      const presenter = harness.routeDebugElement!.injector.get(CngxTabGroupPresenter);
+
+      // Root-anchored segment compare would test 'app' === 'rounds' here
+      // and resolve null, reintroducing the defect for nested mounts.
+      expect(presenter.activeId()).toBe('rounds');
+    });
+
+    it('agrees with suffix mode at an exact leaf URL', async () => {
+      configure();
+      const prefix = await mountAt(SectionNavHost, '/overview');
+      expect(presenterOf(prefix).activeId()).toBe('overview');
+
+      TestBed.resetTestingModule();
+      configure();
+      const suffix = await mountAt(SectionNavHost, '/overview', { match: 'suffix' });
+      expect(presenterOf(suffix).activeId()).toBe('overview');
+    });
+
+    it('restores suffix matching when match="suffix" is set on a nav host', async () => {
+      configure();
+      const fixture = await mountAt(SectionNavHost, '/rounds/explorer', { match: 'suffix' });
+
+      // 'rounds' is a parent segment, not the trailing one - suffix mode
+      // resolves nothing and the seed leaves the first link active.
+      expect(presenterOf(fixture).activeIndex()).toBe(0);
+    });
+
+    it('leaves a tablist host on the unchanged suffix default', async () => {
+      configure();
+      const fixture = await mountAt(SectionTabHost, '/rounds/explorer');
+
+      expect(presenterOf(fixture).activeIndex()).toBe(0);
+    });
+
+    it('resolves no tab for a URL outside the set, in either mode', async () => {
+      configure();
+      const nav = await mountAt(SectionNavHost, '/elsewhere');
+      expect(presenterOf(nav).activeIndex()).toBe(0);
+
+      TestBed.resetTestingModule();
+      configure();
+      const tablist = await mountAt(SectionTabHost, '/elsewhere');
+      expect(presenterOf(tablist).activeIndex()).toBe(0);
+    });
   });
 });
