@@ -51,6 +51,13 @@ import type { CngxDgCellTrack } from './data-grid-cell.directive';
  * visible + ordered rows via a `computed()` and owns the `@for`; the open set is keyed
  * by row value so a sorted or filtered row stays open while it moves.
  *
+ * `injectSmartDataSource` cannot inject the group's hosted atoms: injection
+ * resolves upward, and `sort` / `filter` live on this element below the
+ * consumer's injector. Two routes reach them: derive the rows yourself from a
+ * `viewChild` + `computed()` (the group's prescribed shape), or hand the atoms
+ * to the source through its options thunks -
+ * `injectSmartDataSource(rows, { sort: () => grid()?.sort, filter: () => grid()?.filter })`.
+ *
  * The column widths are declared on the header cells via `col`
  * (`grow` / `fit` / `sm` / `md` / `lg`); the group derives the shared template from
  * them, so no `grid-template-columns` string is needed for the common case.
