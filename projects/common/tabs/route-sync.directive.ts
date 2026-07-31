@@ -2,6 +2,7 @@ import {
   afterNextRender,
   computed,
   DestroyRef,
+  type AfterContentInit,
   Directive,
   effect,
   inject,
@@ -57,7 +58,9 @@ function urlTreeSegmentCount(tree: UrlTree): number {
  * keeps the old tab. The routing gate reuses the presenter's commit
  * lifecycle verbatim; the router navigation is the async op.
  *
- * Seeds the active tab from the current URL on mount and reflects
+ * Seeds the active tab from the current URL at content-init - before
+ * the group renders its panels, so a deep link under
+ * `panelMode="lazy"` mounts only the target panel - and reflects
  * external navigations (back/forward, direct URL) into `activeIndex`
  * *without* re-navigating - those writes bypass the commit-action,
  * since the router is already at the resolved route.
@@ -148,7 +151,7 @@ function urlTreeSegmentCount(tree: UrlTree): number {
   standalone: true,
   providers: [{ provide: CNGX_TABS_COMMIT_ACTION, useExisting: CngxTabsRouteSync }],
 })
-export class CngxTabsRouteSync implements CngxTabsCommitActionSource {
+export class CngxTabsRouteSync implements CngxTabsCommitActionSource, AfterContentInit {
   /**
    * Maps a tab handle to its router command array. Default
    * `(handle) => [handle.id]` - the tab id is the child segment.
@@ -211,7 +214,10 @@ export class CngxTabsRouteSync implements CngxTabsCommitActionSource {
     const router = this.router;
     const destroyRef = inject(DestroyRef);
 
-    // Seed from the current URL once the registry has populated.
+    // Fallback seed for tabs that register after content-init (a
+    // dynamic @for over an async list). Idempotent against the
+    // content-init seed: reflectFromUrl bails when the id already
+    // matches.
     afterNextRender(() => {
       untracked(() => this.reflectFromUrl(router));
     });
@@ -230,6 +236,24 @@ export class CngxTabsRouteSync implements CngxTabsCommitActionSource {
       }
       untracked(() => this.reflectFromUrl(router));
     });
+  }
+
+  /**
+   * Seed from the URL before the group renders its panels. `CngxTab`
+   * registers in `ngOnInit`, so the registry is populated by the time
+   * this runs, and the group's own view has not rendered yet - which is
+   * what keeps `panelMode="lazy"` from counting the default tab's first
+   * render as its first activation on a deep link.
+   *
+   * Its own router guard: the constructor's early return does not stop
+   * lifecycle hooks from running.
+   */
+  ngAfterContentInit(): void {
+    if (!this.router) {
+      return;
+    }
+    const router = this.router;
+    untracked(() => this.reflectFromUrl(router));
   }
 
   /**
