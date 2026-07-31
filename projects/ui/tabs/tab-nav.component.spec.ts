@@ -24,6 +24,15 @@ class NavHost {
   readonly profileError = signal<string | boolean>(false);
 }
 
+// Drains past the afterNextRender batch and the microtask that closes the
+// nav's announcement gate.
+async function settleMountWindow(fixture: { detectChanges: () => void }): Promise<void> {
+  for (let i = 0; i < 3; i++) {
+    await Promise.resolve();
+  }
+  fixture.detectChanges();
+}
+
 describe('CngxTabNav', () => {
   beforeEach(() => {
     TestBed.resetTestingModule();
@@ -104,11 +113,51 @@ describe('CngxTabNav', () => {
     expect(navEl.getAttribute('data-skin')).toBe('contained');
   });
 
-  it('the live-region span carries the active link label', () => {
+  it('the live-region span stays empty at mount and carries the label on a change', async () => {
     const { fixture, liveRegion } = setup();
     expect(liveRegion.getAttribute('role')).toBe('status');
+
+    // Mount state is not a change: a deep link resolving a section must
+    // not push it into the polite region.
+    await settleMountWindow(fixture);
+    expect(liveRegion.textContent?.trim()).toBe('');
+
+    fixture.componentInstance.active.set(1);
+    fixture.detectChanges();
+    expect(liveRegion.textContent?.trim()).toBe('Profile');
+  });
+
+  it('stays silent when a route seed lands the active link during the mount window', async () => {
+    const { fixture, liveRegion } = setup();
+
+    // Stands in for [cngxTabsRouteSync] resolving a deep link: the write
+    // happens after the first render, before the mount window closes.
+    fixture.componentInstance.active.set(1);
+    fixture.detectChanges();
+    await settleMountWindow(fixture);
+
+    expect(liveRegion.textContent?.trim()).toBe('');
+
+    // A later move is a real change and does announce.
+    fixture.componentInstance.active.set(0);
+    fixture.detectChanges();
+    expect(liveRegion.textContent?.trim()).toBe('Overview');
+  });
+
+  it('re-announces a section the user returns to', async () => {
+    const { fixture, liveRegion } = setup();
+    await settleMountWindow(fixture);
+
+    fixture.componentInstance.active.set(1);
+    fixture.detectChanges();
+    expect(liveRegion.textContent?.trim()).toBe('Profile');
+
+    fixture.componentInstance.active.set(0);
+    fixture.detectChanges();
     expect(liveRegion.textContent?.trim()).toBe('Overview');
 
+    // Back to the id that was active at mount: still a change, still
+    // announced - the mount gate must not suppress it forever.
     fixture.componentInstance.active.set(1);
     fixture.detectChanges();
     expect(liveRegion.textContent?.trim()).toBe('Profile');

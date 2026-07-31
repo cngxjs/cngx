@@ -2,9 +2,12 @@ import {
   ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
+  afterNextRender,
   computed,
   inject,
   input,
+  linkedSignal,
+  signal,
   type Signal,
 } from '@angular/core';
 
@@ -108,16 +111,56 @@ export class CngxTabNav {
   );
 
   /**
+   * Whether the polite region is live yet. Stays `false` through the first
+   * render and the microtask after it, so a `[cngxTabsRouteSync]` seed does
+   * not push the landing section into the region: on a deep link the active
+   * link is the page's *initial state*, not a change, and the browser
+   * already announces the document. `<cngx-tab-group>` gets this for free
+   * by gating its announcement on the commit transition
+   * (`createTabGroupAnnouncements`); the nav path is commit-free, so the
+   * mount window is the equivalent gate.
+   */
+  private readonly announcing = signal(false);
+
+  /**
+   * `activeId` before the most recent change - the tablist bundle's
+   * prior-index tracker, keyed on id. Seeded when the mount window closes
+   * rather than at construction, so whatever the seed resolved counts as
+   * the starting point instead of as the first announcement.
+   */
+  private readonly priorActiveId = linkedSignal<string | null, string | null>({
+    source: () => this.presenter.activeId(),
+    computation: (curr, prev) => prev?.source ?? curr,
+    equal: Object.is,
+  });
+
+  /**
    * Active link's accessible label, fed to the polite live region. Derived
    * from `activeId` through the registered handle (Pillar 1 - single
-   * source, the route-fed active index). Empty string before any link is
-   * active so the region stays silent.
+   * source, the route-fed active index). Empty while the id is unchanged,
+   * so the region stays silent on no-op ticks and at rest.
    */
   protected readonly liveAnnouncement: Signal<string> = computed(() => {
+    if (!this.announcing()) {
+      return '';
+    }
     const id = this.presenter.activeId();
-    if (id === null) {
+    if (id === null || id === this.priorActiveId()) {
       return '';
     }
     return this.presenter.tabs().find((tab) => tab.id === id)?.label() ?? '';
   });
+
+  constructor() {
+    // queueMicrotask rather than the afterNextRender body: every
+    // afterNextRender callback for one render runs in a single synchronous
+    // batch, so deferring past it makes the gate independent of whether the
+    // sync directive registered its seed before or after this one.
+    afterNextRender(() => {
+      queueMicrotask(() => {
+        this.priorActiveId();
+        this.announcing.set(true);
+      });
+    });
+  }
 }
