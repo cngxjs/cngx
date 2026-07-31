@@ -6,6 +6,7 @@ import {
   inject,
   input,
   untracked,
+  type AfterContentInit,
 } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router } from '@angular/router';
@@ -52,7 +53,7 @@ import { CNGX_TAB_GROUP_HOST } from './tab-group-host.token';
   exportAs: 'cngxTabsFragmentSync',
   standalone: true,
 })
-export class CngxTabsFragmentSync {
+export class CngxTabsFragmentSync implements AfterContentInit {
   readonly mode = input<'fragment' | 'queryParam'>('fragment');
   readonly paramName = input<string>('tab');
 
@@ -67,11 +68,12 @@ export class CngxTabsFragmentSync {
     const router = this.router;
     const destroyRef = inject(DestroyRef);
 
+    // Fallback seed for tabs that register after content-init (a
+    // dynamic @for over an async list). Idempotent against the
+    // content-init seed: selectById is a no-op when the id is already
+    // active.
     afterNextRender(() => {
-      const initial = this.readUrlValue(router);
-      if (initial) {
-        untracked(() => this.host.selectById(initial));
-      }
+      this.seedFromUrl(router);
     });
 
     effect(() => {
@@ -116,6 +118,35 @@ export class CngxTabsFragmentSync {
         }
       });
     });
+  }
+
+  /**
+   * Seed from the URL before the group renders its panels. `CngxTab`
+   * registers in `ngOnInit`, so the registry is populated by the time
+   * this runs, and the group's own view has not rendered yet - which is
+   * what keeps `panelMode="lazy"` from counting the default tab's first
+   * render as its first activation on a deep link.
+   *
+   * Unlike {@link CngxTabsRouteSync}, this seed goes through
+   * `selectById`, so it runs `select()` and any consumer-bound
+   * commit-action. Moving it earlier therefore also moves when that
+   * action first fires; it still fires exactly once for the seed.
+   *
+   * Its own router guard: the constructor's early return does not stop
+   * lifecycle hooks from running.
+   */
+  ngAfterContentInit(): void {
+    if (!this.router) {
+      return;
+    }
+    this.seedFromUrl(this.router);
+  }
+
+  private seedFromUrl(router: Router): void {
+    const initial = this.readUrlValue(router);
+    if (initial) {
+      untracked(() => this.host.selectById(initial));
+    }
   }
 
   private readUrlValue(router: Router): string | null {
