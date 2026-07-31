@@ -92,6 +92,36 @@ class FallbackHost {
   readonly popover = viewChild.required(CngxPopover);
 }
 
+@Component({
+  template: `
+    <div cngxPopover #outer="cngxPopover">
+      Outer
+      <div cngxPopover #inner="cngxPopover">Inner</div>
+    </div>
+    <div cngxPopover #sibling="cngxPopover">Sibling</div>
+  `,
+  imports: [CngxPopover],
+})
+class NestedHost {
+  readonly outer = viewChild.required('outer', { read: CngxPopover });
+  readonly inner = viewChild.required('inner', { read: CngxPopover });
+  readonly sibling = viewChild.required('sibling', { read: CngxPopover });
+}
+
+@Component({
+  template: `
+    <div cngxPopover #outer="cngxPopover">
+      Outer
+      <div cngxPopover #inner="cngxPopover" [exclusive]="false">Inner</div>
+    </div>
+  `,
+  imports: [CngxPopover],
+})
+class NestedOptOutHost {
+  readonly outer = viewChild.required('outer', { read: CngxPopover });
+  readonly inner = viewChild.required('inner', { read: CngxPopover });
+}
+
 function setup<T>(hostType: new () => T) {
   const fixture = TestBed.createComponent(hostType);
   fixture.detectChanges();
@@ -476,6 +506,43 @@ describe('CngxPopover', () => {
       expect(() => host.popover().show()).not.toThrow();
       await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
       expect(host.popover().state()).toBe('open');
+    });
+  });
+
+  describe('exclusive eviction', () => {
+    function nestedSetup<T>(hostType: new () => T) {
+      const fixture = TestBed.createComponent(hostType);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const els = fixture.nativeElement.querySelectorAll('[cngxpopover]');
+      for (const el of els) {
+        stubPopoverElement(el as HTMLElement);
+      }
+      return { fixture, host: fixture.componentInstance as T };
+    }
+
+    it('opening a popover nested inside another leaves the outer open', () => {
+      const { host } = nestedSetup(NestedHost);
+      host.outer().show();
+      host.inner().show();
+      expect(host.outer().state()).not.toBe('closed');
+      expect(host.inner().state()).not.toBe('closed');
+    });
+
+    it('two sibling popovers still evict each other', () => {
+      const { host } = nestedSetup(NestedHost);
+      host.outer().show();
+      host.sibling().show();
+      expect(host.outer().state()).toBe('closed');
+      expect(host.sibling().state()).not.toBe('closed');
+    });
+
+    it('a nested popover with an explicit [exclusive]="false" behaves identically', () => {
+      const { host } = nestedSetup(NestedOptOutHost);
+      host.outer().show();
+      host.inner().show();
+      expect(host.outer().state()).not.toBe('closed');
+      expect(host.inner().state()).not.toBe('closed');
     });
   });
 

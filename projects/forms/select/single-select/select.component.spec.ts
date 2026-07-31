@@ -155,6 +155,18 @@ function flush(fixture: { detectChanges: () => void }): void {
   fixture.detectChanges();
 }
 
+@Component({
+  template: `
+    <div cngxPopover #outerPop="cngxPopover">
+      <cngx-select [label]="'Farbe'" [options]="options" />
+    </div>
+  `,
+  imports: [CngxSelect, CngxPopover],
+})
+class PopoverWrappedHost {
+  readonly options = OPTIONS;
+}
+
 describe('CngxSelect — standalone', () => {
   beforeEach(() => {
     polyfillPopover();
@@ -292,6 +304,34 @@ describe('CngxSelect — standalone', () => {
     (select as unknown as WithGuard).handleClickOutside();
     flush(fixture);
     expect(popover.isVisible()).toBe(false);
+  });
+});
+
+describe('CngxSelect — nested inside a CngxPopover', () => {
+  beforeEach(() => {
+    polyfillPopover();
+    TestBed.configureTestingModule({ imports: [PopoverWrappedHost] });
+  });
+
+  it('opening the select leaves the outer popover open and both panels visible', () => {
+    const fixture = TestBed.createComponent(PopoverWrappedHost);
+    fixture.detectChanges();
+    flush(fixture);
+    const popovers = fixture.debugElement.queryAll(By.directive(CngxPopover));
+    // DOM order: the wrapping popover first, the select's own panel second.
+    const outer = popovers[0].injector.get(CngxPopover);
+    const panel = popovers[1].injector.get(CngxPopover);
+    const select = fixture.debugElement.query(By.directive(CngxSelect))
+      .componentInstance as CngxSelect<string>;
+
+    outer.show();
+    flush(fixture);
+    expect(outer.isVisible()).toBe(true);
+
+    select.open();
+    flush(fixture);
+    expect(panel.isVisible()).toBe(true);
+    expect(outer.isVisible()).toBe(true);
   });
 });
 
