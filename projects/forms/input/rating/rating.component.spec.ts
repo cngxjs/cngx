@@ -249,6 +249,16 @@ describe('CngxRating', () => {
       expect(reason.getAttribute('aria-hidden')).toBeNull();
     });
 
+    it('does not reference the reason while enabled even when a reason is set', () => {
+      const { fixture, host } = setup();
+      fixture.componentInstance.reason.set('Rating locked until sign-in');
+      fixture.detectChanges(); // disabled stays false
+      const group = host.querySelector('cngx-rating') as HTMLElement;
+      // accname 1.2 §2A reads a directly-referenced hidden span, so the id must
+      // be gated on the disabled state - not merely on the reason being present.
+      expect(group.getAttribute('aria-describedby')).toBeNull();
+    });
+
     it('derives disabled from a disabled form field', () => {
       const { accessor } = createMockField<number>({
         name: 'score',
@@ -290,6 +300,44 @@ describe('CngxRating', () => {
       fixture.detectChanges();
       expect(rating.value()).toBe(0);
     });
+  });
+
+  it('omits the reason id from aria-describedby until a reason is set', () => {
+    const { host } = setup(); // bare: no field, no reason, not disabled
+    const group = host.querySelector('cngx-rating') as HTMLElement;
+    const reasonSpan = host.querySelector('.cngx-rating__disabled-reason') as HTMLElement;
+    expect(group.getAttribute('aria-describedby')).toBeNull();
+    expect(reasonSpan).toBeTruthy();
+  });
+
+  it('keeps the field ids and omits the reason id inside a form field with no reason', () => {
+    const { accessor } = createMockField<number>({ name: 'score', value: 0 });
+
+    @Component({
+      template: `
+        <cngx-form-field [field]="field">
+          <cngx-rating [(value)]="value" />
+        </cngx-form-field>
+      `,
+      imports: [CngxFormField, CngxRating],
+    })
+    class FieldHost {
+      readonly field = accessor;
+      value = 0;
+    }
+
+    const fixture = TestBed.createComponent(FieldHost);
+    document.body.appendChild(fixture.nativeElement);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    const group = fixture.nativeElement.querySelector('cngx-rating') as HTMLElement;
+    const reasonSpan = fixture.nativeElement.querySelector(
+      '.cngx-rating__disabled-reason',
+    ) as HTMLElement;
+    const describedBy = group.getAttribute('aria-describedby') ?? '';
+    expect(describedBy.length).toBeGreaterThan(0); // field hint/error ids unconditional
+    expect(describedBy).not.toContain(reasonSpan.id); // reason id gated out
   });
 
   it('exposes the form-field control contract signals', () => {

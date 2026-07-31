@@ -167,11 +167,17 @@ export class CngxCard {
   /** @internal */
   protected readonly liveRegionId = `${this.uid}-live`;
 
-  /** @internal IDs for `aria-describedby` - always present, aria-hidden controls what SR reads. */
-  protected readonly describedByIds = computed(() => {
-    const ids = [this.disabledReasonId];
-    return ids.join(' ');
-  });
+  /**
+   * @internal `aria-describedby` reference, gated on the disabled state it
+   * describes. The reason span stays in the DOM, but its id is emitted only
+   * while the card is disabled *with* a reason - accname 1.2 §2A traverses a
+   * directly-referenced hidden node, so referencing it unconditionally would
+   * announce the reason for a state the card is not in (a `disabledReason`
+   * set while `disabled` is false would read as "locked").
+   */
+  protected readonly describedByIds = computed(() =>
+    this.disabled() && this.disabledReason() ? this.disabledReasonId : null,
+  );
 
   /** @internal SR live announcement for state changes. */
   protected readonly liveAnnouncement = computed(() => {

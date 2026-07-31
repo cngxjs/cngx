@@ -45,6 +45,17 @@ export function parseKeyCombo(combo: string): KeyCombo {
 /**
  * Tests whether a `KeyboardEvent` matches a parsed {@link KeyCombo}.
  *
+ * A combo matches only a press carrying **exactly** the modifiers it names:
+ * a bare `'b'` matches an unmodified `b` and rejects `Cmd+B`, `Ctrl+B`,
+ * `Shift+B`, `Alt+B`. `mod` resolves to the platform's primary modifier
+ * (`Meta` on macOS, `Ctrl` elsewhere) and does not constrain the other one,
+ * so `'mod+b'` matches `Cmd+B` on macOS and `Ctrl+B` elsewhere. A
+ * single-character punctuation key is shift-agnostic unless the combo names
+ * `shift`, because the produced character already encodes the shift state
+ * (`?` requires Shift on most layouts): `'?'` matches the `Shift+/` press
+ * that yields `event.key === '?'`, while `'shift+?'` still requires it and
+ * ctrl/meta/alt stay strict for every key.
+ *
  * @param event The keyboard event to test.
  * @param combo The parsed combo to match against.
  * @param isMac Whether the current platform is macOS (affects `mod` resolution).
@@ -52,14 +63,29 @@ export function parseKeyCombo(combo: string): KeyCombo {
  * @category core/utils/keyboard
  */
 export function matchesKeyCombo(event: KeyboardEvent, combo: KeyCombo, isMac: boolean): boolean {
-  return (
-    event.key.toLowerCase() === combo.key &&
-    (!combo.shift || event.shiftKey) &&
-    (!combo.alt || event.altKey) &&
-    (combo.mod
-      ? isMac
-        ? event.metaKey
-        : event.ctrlKey
-      : (!combo.ctrl || event.ctrlKey) && (!combo.meta || event.metaKey))
-  );
+  if (event.key.toLowerCase() !== combo.key) {
+    return false;
+  }
+  // Alt is always strict: a combo that does not name it rejects an Alt press.
+  if (combo.alt !== event.altKey) {
+    return false;
+  }
+  // `mod` requires the platform primary and leaves the other one free;
+  // otherwise ctrl and meta must both match exactly.
+  const primaryOk = combo.mod
+    ? isMac
+      ? event.metaKey
+      : event.ctrlKey
+    : combo.ctrl === event.ctrlKey && combo.meta === event.metaKey;
+  if (!primaryOk) {
+    return false;
+  }
+  // Strict shift for letters, digits and named keys (so bare `b` rejects
+  // `Shift+B`); shift-agnostic for a single punctuation char whose glyph
+  // already encodes Shift, unless the combo names `shift` explicitly.
+  const shiftAgnostic = combo.key.length === 1 && !/[a-z0-9]/.test(combo.key) && !combo.shift;
+  if (!shiftAgnostic && combo.shift !== event.shiftKey) {
+    return false;
+  }
+  return true;
 }

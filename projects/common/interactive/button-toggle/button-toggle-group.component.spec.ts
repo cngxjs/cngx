@@ -56,8 +56,12 @@ describe('CngxButtonToggleGroup + CngxButtonToggle (single mode)', () => {
     const { groupEl, toggles } = setup();
     expect(groupEl.getAttribute('role')).toBe('radiogroup');
     toggles.forEach(({ el }) => {
+      // role="radio" is what makes aria-checked a valid, non-dropped state.
+      expect(el.getAttribute('role')).toBe('radio');
       expect(el.getAttribute('aria-checked')).toBe('false');
       expect(el.getAttribute('aria-selected')).toBeNull();
+      // Mirror of the multi guard: a single-mode leaf carries no aria-pressed.
+      expect(el.getAttribute('aria-pressed')).toBeNull();
     });
   });
 

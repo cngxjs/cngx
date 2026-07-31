@@ -206,10 +206,18 @@ export class CngxRating implements CngxFormFieldControl {
   protected readonly ariaInvalid = computed(() => (this.presenter?.showError() ? true : null));
   /** @internal */
   protected readonly ariaDisabled = computed(() => (this.disabled() ? true : null));
-  /** @internal IDs always present; the span itself toggles `aria-hidden`. */
+  /**
+   * @internal `aria-describedby` ids. Field-supplied ids are unconditional;
+   * the reason id is appended only while the control is disabled *with* a
+   * reason. accname 1.2 §2A traverses a directly-referenced hidden node, so
+   * emitting the id whenever a reason is merely set would announce the reason
+   * on an enabled control (a `disabledReason` bound statically while `disabled`
+   * is false), the same gating CngxCard uses.
+   */
   protected readonly describedBy = computed(() => {
-    const fieldIds = this.presenter?.describedBy();
-    return fieldIds ? `${fieldIds} ${this.reasonId}` : this.reasonId;
+    const fieldIds = this.presenter?.describedBy() ?? null;
+    const reasonId = this.disabled() && this.disabledReason() ? this.reasonId : null;
+    return [fieldIds, reasonId].filter(Boolean).join(' ') || null;
   });
 
   /**

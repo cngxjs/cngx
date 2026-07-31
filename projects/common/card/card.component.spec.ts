@@ -152,6 +152,20 @@ describe('CngxCard', () => {
     expect(reasonEl!.textContent!.trim()).toContain('No permission');
   });
 
+  it('has no aria-describedby when there is nothing to describe', () => {
+    const { card } = setup();
+    expect(card.hasAttribute('aria-describedby')).toBe(false);
+  });
+
+  it('does not describe itself when disabledReason is set but disabled is false', () => {
+    const { fixture, card, host } = setup();
+    host.disabledReason.set('No permission');
+    fixture.detectChanges();
+    // accname 1.2 §2A would traverse the referenced span even while hidden,
+    // so the id must be gated on the disabled state, not just on aria-hidden.
+    expect(card.hasAttribute('aria-describedby')).toBe(false);
+  });
+
   // --- Href ---
   it('sets href attribute when as="link"', () => {
     const { fixture, card, host } = setup();

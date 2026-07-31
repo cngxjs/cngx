@@ -41,7 +41,7 @@ export interface CngxButtonToggleGroupContract<T = unknown> {
  * The leaf injects this token AND `CNGX_BUTTON_MULTI_TOGGLE_GROUP`
  * with `{ optional: true }` on both; the present token determines the
  * leaf's keyboard semantics + ARIA pattern (`aria-checked` for single,
- * `aria-selected` for multi), chosen at injection time, NOT at
+ * `aria-pressed` for multi), chosen at injection time, NOT at
  * runtime - there is no `[selectionMode]` flag.
  *
  * @category common/interactive
