@@ -72,6 +72,22 @@ function isAsyncState<T>(source: Signal<T[]> | CngxAsyncState<T[]>): source is C
  * tree. Each directive is injected optionally - if absent, that processing
  * step is skipped.
  *
+ * Injection resolves UPWARD only. Any atom hosted by a descendant component
+ * - a `hostDirective` on an element below the consumer's injector - is
+ * invisible to these injects, and the matching step is silently skipped:
+ * the atom's own state still toggles (headers flip their arrows) while the
+ * rows never move. `CngxDataGridAccordion` is the case where this is always
+ * true: it hosts `CngxSort` and `CngxFilter` on the group element. Hand
+ * such atoms in through the options thunks instead:
+ *
+ * ```typescript
+ * readonly grid = viewChild(CngxDataGridAccordion);
+ * readonly dataSource = injectSmartDataSource(this.rows, {
+ *   sort: () => this.grid()?.sort,
+ *   filter: () => this.grid()?.filter,
+ * });
+ * ```
+ *
  * Accepts either a plain `Signal<T[]>` or a `CngxAsyncState<T[]>`.
  * When a `CngxAsyncState` is provided, the data source exposes the full
  * UX state (`isLoading`, `isRefreshing`, `error`, `isEmpty`) so the
@@ -99,10 +115,9 @@ export class CngxSmartDataSource<T> extends DataSource<T> {
   private readonly injector = inject(Injector);
   private readonly injectedSort = inject(CngxSort, { optional: true });
   private readonly injectedFilter = inject(CngxFilter, { optional: true });
-  // CngxSearch typically lives on a child <input> below the component injector,
-  // so this inject returns null in the common case. It resolves only when CngxSearch
-  // is placed as a hostDirective on the same component. For child-input search,
-  // use injectDataSource() + manual computed() instead.
+  // Injection resolves upward only; an atom below this injector (child
+  // <input> search, a hosting organism's sort/filter) arrives via the
+  // matching options thunk instead.
   private readonly injectedSearch = inject(CngxSearch, { optional: true });
   private readonly paginate = inject(CngxPaginate, { optional: true });
 
