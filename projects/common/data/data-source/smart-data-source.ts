@@ -51,7 +51,11 @@ export interface CngxSmartDataSourceOptions<T> {
   /**
    * Resolve the `CngxSort` atom explicitly instead of relying on injection.
    * A thunk, not an instance, so a `viewChild` that is `undefined` on the
-   * first pass resolves on a later read. Wins over an injected instance.
+   * first pass resolves on a later read. A thunk result takes precedence over
+   * an injected instance whenever it yields one; on `undefined` / `null` the
+   * source falls back to the injected atom - so with both present, the
+   * injected atom drives the frames before the thunk's target mounts, and the
+   * thunk cannot express "use none".
    * Use for atoms hosted below this source's injector, e.g.
    * `{ sort: () => this.grid()?.sort }` against a `CngxDataGridAccordion`.
    */
@@ -60,6 +64,8 @@ export interface CngxSmartDataSourceOptions<T> {
   filter?: () => CngxFilter<T> | null | undefined;
   /** Same as `sort`, for the `CngxSearch` atom. */
   search?: () => CngxSearch | null | undefined;
+  /** Same as `sort`, for the `CngxPaginate` atom. */
+  paginate?: () => CngxPaginate | null | undefined;
 }
 
 function isAsyncState<T>(source: Signal<T[]> | CngxAsyncState<T[]>): source is CngxAsyncState<T[]> {
@@ -119,7 +125,7 @@ export class CngxSmartDataSource<T> extends DataSource<T> {
   // <input> search, a hosting organism's sort/filter) arrives via the
   // matching options thunk instead.
   private readonly injectedSearch = inject(CngxSearch, { optional: true });
-  private readonly paginate = inject(CngxPaginate, { optional: true });
+  private readonly injectedPaginate = inject(CngxPaginate, { optional: true });
 
   /**
    * Items after filter and search are applied, before sort and pagination.
@@ -224,7 +230,8 @@ export class CngxSmartDataSource<T> extends DataSource<T> {
               )
             : this.filtered();
 
-        const range = this.paginate?.range();
+        const paginate = this.options?.paginate?.() ?? this.injectedPaginate;
+        const range = paginate?.range();
         return range ? sorted.slice(range[0], range[1]) : sorted;
       },
       { equal: arrayEqual },

@@ -4,6 +4,7 @@ import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createManualState } from '../async-state/create-manual-state';
 import { CngxFilter } from '../filter/filter.directive';
+import { CngxPaginate } from '../paginate/paginate.directive';
 import { CngxSort } from '../sort/sort.directive';
 import { CngxSmartDataSource, injectSmartDataSource } from './smart-data-source';
 
@@ -50,6 +51,12 @@ describe('CngxSmartDataSource — no directives', () => {
   imports: [CngxSort, CngxFilter],
 })
 class WithDirectivesHost {}
+
+@Component({
+  template: `<div cngxPaginate [total]="3"></div>`,
+  imports: [CngxPaginate],
+})
+class PaginateHost {}
 
 describe('CngxSmartDataSource — with directives', () => {
   beforeEach(() => TestBed.configureTestingModule({ imports: [WithDirectivesHost] }));
@@ -248,7 +255,9 @@ describe('CngxSmartDataSource — with CngxAsyncState source', () => {
 });
 
 describe('CngxSmartDataSource — options-passed atoms', () => {
-  beforeEach(() => TestBed.configureTestingModule({ imports: [WithDirectivesHost] }));
+  beforeEach(() =>
+    TestBed.configureTestingModule({ imports: [WithDirectivesHost, PaginateHost] }),
+  );
 
   function hostedSort(): CngxSort {
     const fixture = TestBed.createComponent(WithDirectivesHost);
@@ -310,6 +319,27 @@ describe('CngxSmartDataSource — options-passed atoms', () => {
 
     expect(values.at(-1)!.map((i) => i.name)).toEqual(['Alice', 'Bob', 'Charlie']);
     sub.unsubscribe();
+  });
+
+  it('an options-passed paginate thunk slices rows without any injectable CngxPaginate', () => {
+    TestBed.runInInjectionContext(() => {
+      const fixture = TestBed.createComponent(PaginateHost);
+      fixture.detectChanges();
+      const paginateDir = fixture.debugElement
+        .query(By.directive(CngxPaginate))
+        .injector.get(CngxPaginate);
+      paginateDir.setPageSize(2, true);
+
+      const data = signal(ITEMS);
+      const ds = injectSmartDataSource(data, { paginate: () => paginateDir });
+
+      const values: Item[][] = [];
+      const sub = ds.connect().subscribe((v: Item[]) => values.push(v));
+      TestBed.flushEffects();
+
+      expect(values.at(-1)!.map((i) => i.name)).toEqual(['Charlie', 'Alice']);
+      sub.unsubscribe();
+    });
   });
 
   it('an options-passed sort wins over an injected instance', () => {
