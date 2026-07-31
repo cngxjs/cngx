@@ -135,3 +135,19 @@ Sort and filter are per-instance, so there is no `withDataGridSort` / `withDataG
 config feature - each grid sorts and filters its own data. No in-component sort/filter
 engine: the `@cngx/common/data` atoms own comparison and predicate matching; the group only
 coordinates and publishes state.
+
+### Pairing with `injectSmartDataSource`
+
+`injectSmartDataSource` resolves its atoms by injection, and injection walks up the tree -
+the group's `sort` / `filter` live on the grid element below the consumer's injector, so
+the source never sees them and silently skips those steps. Either derive the rows yourself
+from the context (the prescribed shape above), or hand the hosted atoms over through the
+source's options thunks:
+
+```ts
+readonly grid = viewChild(CngxDataGridAccordion);
+readonly source = injectSmartDataSource(this.rows, {
+  sort: () => this.grid()?.sort,
+  filter: () => this.grid()?.filter,
+});
+```

@@ -52,9 +52,11 @@ interface PopoverController {
  * - `submenuMenu`: the inner `CngxMenu` (or any `CngxMenuHost`) the
  *   trigger transfers focus to when the submenu opens.
  *
- * The submenu's `<div cngxPopover>` MUST set `[exclusive]="false"` so that
- * opening it does not light-dismiss the parent popover. This is the only
- * extra wiring the consumer needs beyond the two inputs.
+ * The submenu popover needs no `[exclusive]` binding: a popover nested
+ * inside another never evicts its ancestor, so opening the submenu leaves
+ * the parent popover open by default. An explicit `[exclusive]="false"`
+ * remains valid (it additionally opts the submenu out of evicting
+ * unrelated sibling popovers) but is no longer required for nesting.
  *
  * @category common/interactive/menu
  * @docsKind primary

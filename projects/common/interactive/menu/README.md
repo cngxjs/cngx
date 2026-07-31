@@ -63,7 +63,7 @@ A `cngxMenu` with `cngxMenuItem` children. The menu fires `itemActivated` on Ent
 
 ### Submenu
 
-`CngxMenuItemSubmenu` sits on the same element as the parent `cngxMenuItem`. The inner popover MUST be `[exclusive]="false"` so opening it does not light-dismiss the outer popover. ArrowRight opens, ArrowLeft / Escape closes.
+`CngxMenuItemSubmenu` sits on the same element as the parent `cngxMenuItem`. The inner popover needs no `[exclusive]` binding - a nested popover never evicts its ancestor, so the outer popover stays open by default. ArrowRight opens, ArrowLeft / Escape closes.
 
 ```html
 <li cngxMenuItem
@@ -73,7 +73,7 @@ A `cngxMenu` with `cngxMenuItem` children. The menu fires `itemActivated` on Ent
   Open recent
 </li>
 
-<div cngxPopover #recentPop="cngxPopover" placement="right-start" [exclusive]="false"
+<div cngxPopover #recentPop="cngxPopover" placement="right-start"
      [positionTryFallbacks]="CNGX_SUBMENU_TRY_FALLBACKS">
   <ul cngxMenu [label]="'Recent files'" tabindex="0" #recentMenu="cngxMenu">
     <li cngxMenuItem value="plan.md">plan.md</li>

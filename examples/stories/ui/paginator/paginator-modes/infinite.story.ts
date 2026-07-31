@@ -67,8 +67,8 @@ export const STORY: DemoSpec = {
       aria-label="People"
       [total]="people().length"
       [state]="loadState"
-      [(pageIndex)]="pageIndex"
-      [(pageSize)]="pageSize"
+      [pageIndex]="pageIndex()" (pageIndexChange)="pageIndex.set($event)"
+      [pageSize]="pageSize()" (pageSizeChange)="pageSize.set($event)"
     >
       <cngx-pgn-infinite root=".demo-pgn-infinite-frame" rootMargin="0px 0px 48px 0px" />
     </cngx-paginator>

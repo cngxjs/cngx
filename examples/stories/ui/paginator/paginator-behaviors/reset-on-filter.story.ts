@@ -50,7 +50,7 @@ export const STORY: DemoSpec = {
     skin="numbered"
     [total]="filtered().length"
     [pageSize]="3"
-    [(pageIndex)]="pageIndex"
+    [pageIndex]="pageIndex()" (pageIndexChange)="pageIndex.set($event)"
     [resetOn]="query()"
   >
     <cngx-pgn-prev />

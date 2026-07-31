@@ -24,12 +24,12 @@ export const STORY: DemoSpec = {
   setup: `protected readonly small = signal(2);
   protected readonly large = signal(4);`,
   template: `  <div style="display:flex;flex-direction:column;gap:1.5rem">
-    <cngx-paginator skin="dots" [total]="50" [(pageIndex)]="small">
+    <cngx-paginator skin="dots" [total]="50" [pageIndex]="small()" (pageIndexChange)="small.set($event)">
       <cngx-pgn-prev />
       <cngx-pgn-dots />
       <cngx-pgn-next />
     </cngx-paginator>
-    <cngx-paginator skin="dots" [total]="320" [(pageIndex)]="large">
+    <cngx-paginator skin="dots" [total]="320" [pageIndex]="large()" (pageIndexChange)="large.set($event)">
       <cngx-pgn-prev />
       <cngx-pgn-dots />
       <cngx-pgn-next />

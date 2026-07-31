@@ -34,8 +34,8 @@ export const STORY: DemoSpec = {
     skin="pill"
     aria-label="Gallery pages"
     [total]="cards().length"
-    [(pageIndex)]="pageIndex"
-    [(pageSize)]="pageSize"
+    [pageIndex]="pageIndex()" (pageIndexChange)="pageIndex.set($event)"
+    [pageSize]="pageSize()" (pageSizeChange)="pageSize.set($event)"
     style="margin-top:16px;display:flex;justify-content:center"
   >
     <cngx-pgn-prev />

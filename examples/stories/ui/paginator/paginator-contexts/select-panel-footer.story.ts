@@ -43,8 +43,8 @@ export const STORY: DemoSpec = {
       class="demo-panel-footer-pgn"
       aria-label="Option pages"
       [total]="options().length"
-      [(pageIndex)]="pageIndex"
-      [(pageSize)]="pageSize"
+      [pageIndex]="pageIndex()" (pageIndexChange)="pageIndex.set($event)"
+      [pageSize]="pageSize()" (pageSizeChange)="pageSize.set($event)"
     >
       <cngx-pgn-prev />
       <cngx-pgn-range />

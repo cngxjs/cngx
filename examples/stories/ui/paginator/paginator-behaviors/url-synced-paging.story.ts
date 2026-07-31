@@ -48,8 +48,8 @@ export const STORY: DemoSpec = {
     cngxPaginateRouting
     skin="bar"
     [total]="people.length"
-    [(pageIndex)]="pageIndex"
-    [(pageSize)]="pageSize"
+    [pageIndex]="pageIndex()" (pageIndexChange)="pageIndex.set($event)"
+    [pageSize]="pageSize()" (pageSizeChange)="pageSize.set($event)"
   >
     <cngx-pgn-page-size [options]="sizes" />
     <cngx-pgn-range />

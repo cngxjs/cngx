@@ -61,9 +61,13 @@ export type CngxIncrementalListSkin = 'plain' | 'divided' | 'card';
  * same contract when projected - the trigger stays a swappable terminal unit,
  * the rich async experience lives here.
  *
- * Two-way `[(pageIndex)]` / `[(pageSize)]` mirror the paginator shell: the
- * brain's controlled inputs are aliased through `hostDirectives` and this
- * component is the single emitter of the matching outputs.
+ * Page bindings mirror the paginator shell and are longhand pairs -
+ * `[pageIndex]` + `(pageIndexChange)`, `[pageSize]` + `(pageSizeChange)`:
+ * the brain's controlled inputs are aliased through `hostDirectives` and this
+ * component is the single emitter of the matching outputs. The two-way
+ * shorthand (banana-in-a-box) fails NG8007 under `strictTemplates` because
+ * the two halves resolve to different directive instances - same limitation,
+ * same reason, as `CngxPaginator`.
  *
  * All ARIA is signal-driven: `aria-busy` reflects the brain busy signal and a
  * polite live region communicates every settle (empty / error / end-reached).
@@ -295,7 +299,7 @@ export class CngxIncrementalList<T = unknown> {
   protected readonly trackItem = (index: number, item: T): unknown => this.trackBy()(index, item);
 
   constructor() {
-    // Two-way [(pageIndex)] / [(pageSize)] emit, shared verbatim with
+    // pageIndexChange / pageSizeChange emit, shared verbatim with
     // CngxPaginator through the connectPaginateEmit bridge.
     connectPaginateEmit(this.paginate, {
       onIndex: (index) => this.pageIndexChange.emit(index),

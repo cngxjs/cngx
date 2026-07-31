@@ -3,9 +3,9 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxPaginator: Paginated list',
   subtitle:
-    'The brain is content-agnostic: track <code>[(pageIndex)]</code> / <code>[(pageSize)]</code> and slice the array yourself. Here a plain <code>&lt;ul&gt;</code> shows the current page of people, with a numbered paginator footer.',
+    'The brain is content-agnostic: track the page state through <code>[pageIndex]</code> + <code>(pageIndexChange)</code> and <code>[pageSize]</code> + <code>(pageSizeChange)</code>, then slice the array yourself. Here a plain <code>&lt;ul&gt;</code> shows the current page of people, with a numbered paginator footer.',
   description:
-    'The paginator owns no data - it derives page math from <code>[total]</code> and reports the active page back through the two-way bindings, which the host uses to compute the slice.',
+    'The paginator owns no data - it derives page math from <code>[total]</code> and reports the active page back through the page outputs, which the host uses to compute the slice.',
   level: 'organism',
   audience: ['dev'],
   artifact: 'standalone',
@@ -48,8 +48,8 @@ export const STORY: DemoSpec = {
     skin="numbered"
     aria-label="People pages"
     [total]="people().length"
-    [(pageIndex)]="pageIndex"
-    [(pageSize)]="pageSize"
+    [pageIndex]="pageIndex()" (pageIndexChange)="pageIndex.set($event)"
+    [pageSize]="pageSize()" (pageSizeChange)="pageSize.set($event)"
   >
     <cngx-pgn-prev />
     <cngx-pgn-pages />

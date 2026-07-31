@@ -4,6 +4,7 @@ import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createManualState } from '../async-state/create-manual-state';
 import { CngxFilter } from '../filter/filter.directive';
+import { CngxPaginate } from '../paginate/paginate.directive';
 import { CngxSort } from '../sort/sort.directive';
 import { CngxSmartDataSource, injectSmartDataSource } from './smart-data-source';
 
@@ -50,6 +51,12 @@ describe('CngxSmartDataSource — no directives', () => {
   imports: [CngxSort, CngxFilter],
 })
 class WithDirectivesHost {}
+
+@Component({
+  template: `<div cngxPaginate [total]="3"></div>`,
+  imports: [CngxPaginate],
+})
+class PaginateHost {}
 
 describe('CngxSmartDataSource — with directives', () => {
   beforeEach(() => TestBed.configureTestingModule({ imports: [WithDirectivesHost] }));
@@ -244,6 +251,119 @@ describe('CngxSmartDataSource — with CngxAsyncState source', () => {
 
       expect(ds.filteredCount()).toBe(3);
     });
+  });
+});
+
+describe('CngxSmartDataSource — options-passed atoms', () => {
+  beforeEach(() =>
+    TestBed.configureTestingModule({ imports: [WithDirectivesHost, PaginateHost] }),
+  );
+
+  function hostedSort(): CngxSort {
+    const fixture = TestBed.createComponent(WithDirectivesHost);
+    fixture.detectChanges();
+    return fixture.debugElement.query(By.directive(CngxSort)).injector.get(CngxSort);
+  }
+
+  it('an options-passed sort thunk reorders rows without any injectable CngxSort', () => {
+    // Root injection context: no CngxSort above the source, only the thunk.
+    TestBed.runInInjectionContext(() => {
+      const sortDir = hostedSort();
+      const data = signal(ITEMS);
+      const ds = injectSmartDataSource(data, { sort: () => sortDir });
+
+      sortDir.setSort('name');
+
+      const values: Item[][] = [];
+      const sub = ds.connect().subscribe((v: Item[]) => values.push(v));
+      TestBed.flushEffects();
+
+      expect(values.at(-1)!.map((i) => i.name)).toEqual(['Alice', 'Bob', 'Charlie']);
+      sub.unsubscribe();
+    });
+  });
+
+  it('a thunk resolving undefined first and an instance later starts sorting on the same source', () => {
+    TestBed.runInInjectionContext(() => {
+      const sortDir = hostedSort();
+      sortDir.setSort('name');
+      const sortRef = signal<CngxSort | undefined>(undefined);
+      const data = signal(ITEMS);
+      const ds = injectSmartDataSource(data, { sort: () => sortRef() });
+
+      const values: Item[][] = [];
+      const sub = ds.connect().subscribe((v: Item[]) => values.push(v));
+      TestBed.flushEffects();
+      expect(values.at(-1)!.map((i) => i.name)).toEqual(['Charlie', 'Alice', 'Bob']);
+
+      sortRef.set(sortDir);
+      TestBed.flushEffects();
+      expect(values.at(-1)!.map((i) => i.name)).toEqual(['Alice', 'Bob', 'Charlie']);
+      sub.unsubscribe();
+    });
+  });
+
+  it('an injected CngxSort still works when the options bag carries no thunk', () => {
+    const fixture = TestBed.createComponent(WithDirectivesHost);
+    fixture.detectChanges();
+    const elemInjector: Injector = fixture.debugElement.query(By.directive(CngxSort)).injector;
+    const sortDir = elemInjector.get(CngxSort);
+
+    const data = signal(ITEMS);
+    const ds = runInInjectionContext(elemInjector, () => injectSmartDataSource(data, {}));
+    sortDir.setSort('name');
+
+    const values: Item[][] = [];
+    const sub = ds.connect().subscribe((v: Item[]) => values.push(v));
+    TestBed.flushEffects();
+
+    expect(values.at(-1)!.map((i) => i.name)).toEqual(['Alice', 'Bob', 'Charlie']);
+    sub.unsubscribe();
+  });
+
+  it('an options-passed paginate thunk slices rows without any injectable CngxPaginate', () => {
+    TestBed.runInInjectionContext(() => {
+      const fixture = TestBed.createComponent(PaginateHost);
+      fixture.detectChanges();
+      const paginateDir = fixture.debugElement
+        .query(By.directive(CngxPaginate))
+        .injector.get(CngxPaginate);
+      paginateDir.setPageSize(2, true);
+
+      const data = signal(ITEMS);
+      const ds = injectSmartDataSource(data, { paginate: () => paginateDir });
+
+      const values: Item[][] = [];
+      const sub = ds.connect().subscribe((v: Item[]) => values.push(v));
+      TestBed.flushEffects();
+
+      expect(values.at(-1)!.map((i) => i.name)).toEqual(['Charlie', 'Alice']);
+      sub.unsubscribe();
+    });
+  });
+
+  it('an options-passed sort wins over an injected instance', () => {
+    const fixture = TestBed.createComponent(WithDirectivesHost);
+    fixture.detectChanges();
+    const elemInjector: Injector = fixture.debugElement.query(By.directive(CngxSort)).injector;
+    const injectedSort = elemInjector.get(CngxSort);
+    const optionSort = hostedSort();
+
+    injectedSort.setSort('name');
+    injectedSort.setSort('name'); // desc
+    optionSort.setSort('name'); // asc
+
+    const data = signal(ITEMS);
+    const ds = runInInjectionContext(elemInjector, () =>
+      injectSmartDataSource(data, { sort: () => optionSort }),
+    );
+
+    const values: Item[][] = [];
+    const sub = ds.connect().subscribe((v: Item[]) => values.push(v));
+    TestBed.flushEffects();
+
+    expect(values.at(-1)!.map((i) => i.name)).toEqual(['Alice', 'Bob', 'Charlie']);
+    sub.unsubscribe();
   });
 });
 
