@@ -11,6 +11,7 @@ import {
 
 import {
   CNGX_TAB_GROUP_HOST,
+  CNGX_TAB_NAV_HOST,
   CngxTabGroupPresenter,
   injectTabsI18n,
   type CngxTabGroupHost,
@@ -66,6 +67,9 @@ import { createRejectionState } from './decorations/rejection-state';
   selector: '[cngxMatTabNav]',
   exportAs: 'cngxMatTabNav',
   standalone: true,
+  // Presence-only marker: it tells a stacked [cngxTabsRouteSync] that its
+  // links own subtrees, so the URL match is prefix rather than suffix.
+  providers: [{ provide: CNGX_TAB_NAV_HOST, useValue: true }],
   hostDirectives: [CngxTabGroupPresenter],
 })
 export class CngxMatTabNav {

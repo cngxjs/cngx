@@ -11,6 +11,7 @@ import {
 import { CngxLiveRegion } from '@cngx/common/a11y';
 import {
   CNGX_TAB_GROUP_HOST,
+  CNGX_TAB_NAV_HOST,
   CngxTabGroupPresenter,
   injectTabsConfig,
   type CngxTabsSkin,
@@ -63,6 +64,9 @@ import {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CngxLiveRegion],
+  // Presence-only marker: it tells a stacked [cngxTabsRouteSync] that its
+  // links own subtrees, so the URL match is prefix rather than suffix.
+  providers: [{ provide: CNGX_TAB_NAV_HOST, useValue: true }],
   styleUrls: ['../../common/tabs/styles/tabs-base.css', './tab-nav.component.css'],
   encapsulation: ViewEncapsulation.None,
   hostDirectives: [
