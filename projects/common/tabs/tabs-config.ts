@@ -130,6 +130,13 @@ export type CngxTabIconLayout = 'start' | 'end' | 'top' | 'only';
  * is activated and keeps it (keep-alive). `'lazy-destroy'` renders only
  * the active panel's content and destroys it on leave.
  *
+ * A `[cngxTabsRouteSync]` / `[cngxTabsFragmentSync]` deep link resolves
+ * its tab at content-init, before the first panel render, so under
+ * `'lazy'` only the target panel's content ever mounts - the default tab
+ * is never activated on the way. Without that ordering the first render
+ * would count as tab 0's first activation and keep-alive would hold its
+ * content for the rest of the session.
+ *
  * @category common/tabs
  */
 export type CngxTabsPanelMode = 'eager' | 'lazy' | 'lazy-destroy';
@@ -457,6 +464,9 @@ export function withTabsIconLayout(layout: CngxTabIconLayout): CngxTabsConfigFea
  * `'lazy-destroy'` renders only the active panel's content. Per-instance
  * `[panelMode]` Input still wins. The panel `<div>` always stays in the
  * DOM regardless of mode (the `aria-controls` target).
+ *
+ * Under `'lazy'`, a deep link mounts only the panel it names: both sync
+ * directives seed the active tab before the first panel render.
  *
  * @category common/tabs
  */
