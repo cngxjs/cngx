@@ -306,6 +306,11 @@ export class CngxPopover {
    * When `true` (default), opening this popover closes any other open
    * `CngxPopover` instance. Set to `false` to allow multiple popovers
    * open simultaneously.
+   *
+   * Exclusivity governs sibling popovers only: a popover nested inside
+   * another open popover (a select panel or submenu opening within a
+   * popover-hosted surface) is that container's child, not a rival, and
+   * never evicts its ancestor.
    */
   readonly exclusive = input(true);
 
@@ -452,8 +457,11 @@ export class CngxPopover {
       return;
     }
     if (this.exclusive()) {
-      for (const other of openPopovers) {
-        if (other !== this) {
+      // Snapshot the set: hide() mutates `openPopovers` mid-loop. An ancestor
+      // is this popover's container, not a rival - hiding it would take this
+      // panel down with it (the ancestor's display: none cascades).
+      for (const other of [...openPopovers]) {
+        if (other !== this && !other.elRef.nativeElement.contains(this.elRef.nativeElement)) {
           other.hide();
         }
       }
