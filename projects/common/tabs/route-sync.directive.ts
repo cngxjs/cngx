@@ -11,14 +11,37 @@ import {
   type Signal,
 } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { NavigationEnd, Router } from '@angular/router';
+import {
+  ActivatedRoute,
+  NavigationEnd,
+  Router,
+  type UrlSegmentGroup,
+  type UrlTree,
+} from '@angular/router';
 import { filter } from 'rxjs/operators';
 
 import { CNGX_TABS_COMMIT_ACTION, type CngxTabsCommitActionSource } from './commit-action.token';
 import { cngxDefaultTabRoute, createTabRouterCommit } from './router-commit';
 import { warnTabsRouterAbsent } from './router-absent-warning';
 import { CNGX_TAB_GROUP_HOST, type CngxTabHandle } from './tab-group-host.token';
+import { CNGX_TAB_NAV_HOST } from './tab-nav-host.token';
 import type { CngxTabsCommitAction } from './presenter.directive';
+
+/**
+ * Path-segment count of a resolved `UrlTree`, used to rank prefix
+ * matches: `/rounds/explorer` outranks `/rounds` on a URL both match.
+ */
+function urlTreeSegmentCount(tree: UrlTree): number {
+  let count = 0;
+  const walk = (group: UrlSegmentGroup): void => {
+    count += group.segments.length;
+    for (const key of Object.keys(group.children)) {
+      walk(group.children[key]);
+    }
+  };
+  walk(tree.root);
+  return count;
+}
 
 /**
  * Router-outlet integration for tab groups. \
@@ -38,6 +61,17 @@ import type { CngxTabsCommitAction } from './presenter.directive';
  * external navigations (back/forward, direct URL) into `activeIndex`
  * *without* re-navigating - those writes bypass the commit-action,
  * since the router is already at the resolved route.
+ *
+ * **Two URL-matching modes, defaulted from the host flavour.** On a
+ * `<cngx-tab-group>` tablist each tab is a *leaf* route, so the default
+ * is `'suffix'`: a tab owns the trailing segment(s) of the URL and
+ * nothing else. On a `<cngx-tab-nav>` (or `[cngxMatTabNav]`) each link is
+ * an application *section* that owns a whole subtree, so the default
+ * flips to `'prefix'` and the section stays current for every URL beneath
+ * it - the non-exact flavour of `routerLinkActive`. The flavour is read
+ * from the {@link CNGX_TAB_NAV_HOST} marker the nav organisms provide, so
+ * neither default needs a consumer flag; `[match]` overrides both for the
+ * mixed case.
  *
  * `Router` is optional - without it the directive logs a single dev
  * warning via `afterNextRender`, exposes a null action, and becomes a
@@ -122,8 +156,27 @@ export class CngxTabsRouteSync implements CngxTabsCommitActionSource {
    */
   readonly routeFor = input<(handle: CngxTabHandle) => unknown[]>(cngxDefaultTabRoute);
 
+  /**
+   * How a tab's route is matched against the current URL.
+   *
+   * - `'suffix'` - the tab owns the trailing segment(s). A leaf tab in a
+   *   tablist: `/settings/billing` activates the `billing` tab, and
+   *   `/billing/invoices/42` activates nothing.
+   * - `'prefix'` - the tab owns a subtree. A section link in a nav:
+   *   `/rounds/explorer` activates the `rounds` link. Matching is a
+   *   `UrlTree` subset test anchored at the host's own `ActivatedRoute`,
+   *   so a nav mounted under a base path still resolves. When several
+   *   tabs match, the one with the most path segments wins.
+   *
+   * Unset (the default) resolves from the host flavour: `'prefix'` when
+   * {@link CNGX_TAB_NAV_HOST} is present, `'suffix'` otherwise.
+   */
+  readonly match = input<'suffix' | 'prefix' | undefined>(undefined);
+
   private readonly host = inject(CNGX_TAB_GROUP_HOST, { host: true });
   private readonly router = inject(Router, { optional: true });
+  private readonly navHost = inject(CNGX_TAB_NAV_HOST, { optional: true, host: true });
+  private readonly activatedRoute = inject(ActivatedRoute, { optional: true });
 
   /**
    * Pessimistic-only - not exposed as an input. The route-sync owns the
@@ -198,15 +251,27 @@ export class CngxTabsRouteSync implements CngxTabsCommitActionSource {
   }
 
   /**
-   * Find the tab whose route is the trailing segment(s) of the current
-   * URL path. Anchors on position (a suffix match), not a loose
-   * "appears anywhere" scan - a tab id that happens to equal an
-   * unrelated parent segment cannot win. The path is taken before any
-   * query/fragment. If two tabs produce the same trailing segment(s)
-   * (only possible with a custom `routeFor` that collides), the first
-   * registered tab wins - the default id-based mapping never collides.
+   * Find the tab the current URL belongs to, under the effective match
+   * mode. Same exact-versus-prefix distinction `routerLinkActive` draws:
+   * a tablist tab is a leaf and matches only its own route, a nav link is
+   * a section and matches everything beneath it. `null` means the URL is
+   * outside this tab set, in either mode.
    */
   private readActiveId(router: Router): string | null {
+    const mode = this.match() ?? (this.navHost ? 'prefix' : 'suffix');
+    return mode === 'prefix' ? this.readActiveIdByPrefix(router) : this.readActiveIdBySuffix(router);
+  }
+
+  /**
+   * Find the tab whose route is the trailing segment(s) of the current
+   * URL path. Anchors on position, not a loose "appears anywhere" scan -
+   * a tab id that happens to equal an unrelated parent segment cannot
+   * win. The path is taken before any query/fragment. If two tabs produce
+   * the same trailing segment(s) (only possible with a custom `routeFor`
+   * that collides), the first registered tab wins - the default id-based
+   * mapping never collides.
+   */
+  private readActiveIdBySuffix(router: Router): string | null {
     const path = router.url.split(/[?#]/)[0];
     const segments = path.split('/').filter(Boolean);
     const routeFor = this.routeFor();
@@ -221,5 +286,50 @@ export class CngxTabsRouteSync implements CngxTabsCommitActionSource {
       }
     }
     return null;
+  }
+
+  /**
+   * Find the tab that owns the current URL's subtree: the tab whose
+   * resolved `UrlTree` is a subset of the active one, ignoring query
+   * params, fragment, and matrix params.
+   *
+   * Routes resolve `{ relativeTo: ActivatedRoute }` rather than against
+   * the URL root. A root-anchored segment compare would break a nav
+   * mounted under a base path - at `/app/rounds` a `['rounds']` route
+   * would compare `'app' === 'rounds'`, resolve `null`, and hand the
+   * first link a wrong `aria-current`, which is the exact defect prefix
+   * mode exists to fix. Relative resolution is safe on the read side
+   * because the nav path is commit-free: links navigate through their own
+   * `routerLink`, so nothing here can diverge from a commit navigation.
+   *
+   * Longest route wins, so a `/rounds` tab cannot shadow a
+   * `/rounds/explorer` tab in the same set.
+   */
+  private readActiveIdByPrefix(router: Router): string | null {
+    const routeFor = this.routeFor();
+    let winner: string | null = null;
+    let winnerDepth = -1;
+    for (const tab of this.host.tabs()) {
+      const route = routeFor(tab);
+      if (route.length === 0) {
+        continue;
+      }
+      const tree = router.createUrlTree(route, { relativeTo: this.activatedRoute });
+      const active = router.isActive(tree, {
+        paths: 'subset',
+        queryParams: 'ignored',
+        fragment: 'ignored',
+        matrixParams: 'ignored',
+      });
+      if (!active) {
+        continue;
+      }
+      const depth = urlTreeSegmentCount(tree);
+      if (depth > winnerDepth) {
+        winner = tab.id;
+        winnerDepth = depth;
+      }
+    }
+    return winner;
   }
 }
