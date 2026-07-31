@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'Compose <code>cngx-pgn-page-size</code> and <code>cngx-pgn-range</code> into any skin. Picking a size routes through the brain and resets to the first page; the range readout stays in sync because both derive from the same brain signals.',
   description:
-    'The page-size dropdown is a <code>CngxListbox</code> popover. <code>[options]</code> is plain data, not a feature toggle - the segment is content-agnostic. The range connector ("of … items") localises through <code>withPaginatorRangeFormat</code>.',
+    'The page-size dropdown is a <code>CngxListbox</code> popover. <code>[options]</code> is plain data, not a feature toggle - the segment is content-agnostic. The range connector ("of … items") localises through <code>withPaginatorRangeFormat</code>. The page bindings are the longhand pairs (<code>[pageIndex]</code> + <code>(pageIndexChange)</code>, <code>[pageSize]</code> + <code>(pageSizeChange)</code>) - the supported form: the two-way shorthand fails NG8007 under <code>strictTemplates</code> because its two halves resolve to different directive instances.',
   level: 'organism',
   audience: ['dev'],
   artifact: 'standalone',
@@ -21,7 +21,9 @@ export const STORY: DemoSpec = {
   setup: `protected readonly pageIndex = signal(2);
   protected readonly pageSize = signal(10);
   protected readonly sizes = [10, 25, 50, 100] as const;`,
-  template: `  <cngx-paginator [total]="240" [(pageIndex)]="pageIndex" [(pageSize)]="pageSize">
+  template: `  <cngx-paginator [total]="240"
+    [pageIndex]="pageIndex()" (pageIndexChange)="pageIndex.set($event)"
+    [pageSize]="pageSize()" (pageSizeChange)="pageSize.set($event)">
     <span class="cngx-paginator__segment" aria-hidden="true">Items per page:</span>
     <cngx-pgn-page-size [options]="sizes" />
     <cngx-pgn-range />
