@@ -23,6 +23,11 @@ import { CNGX_TAB_GROUP_HOST } from './tab-group-host.token';
  * - `mode = 'fragment'` (default) → `#tab=settings`
  * - `mode = 'queryParam'` with `paramName = 'tab'` → `?tab=settings`
  *
+ * Reflecting the active tab replaces the current history entry by
+ * default, so browser-back leaves the page instead of stepping through
+ * the tabs opened on the way. Set `[replaceUrl]="false"` when the tabs
+ * read as distinct destinations.
+ *
  * `Router` is optional - without it the directive logs a dev warning
  * via `afterNextRender` and becomes a no-op. \
  * Every `router.navigate` and `host.selectById` inside the effects sits in `untracked()`.
@@ -57,6 +62,18 @@ export class CngxTabsFragmentSync implements AfterContentInit {
   readonly mode = input<'fragment' | 'queryParam'>('fragment');
   readonly paramName = input<string>('tab');
 
+  /**
+   * Whether reflecting the active tab into the URL replaces the current
+   * history entry instead of pushing a new one. Default `true`, which is
+   * right for a view toggle: browser-back leaves the page rather than
+   * stepping through the tabs the user opened on the way.
+   *
+   * Set `false` when the tabs read as distinct destinations and back
+   * should step between them. Note that every tab switch then costs a
+   * history entry.
+   */
+  readonly replaceUrl = input(true);
+
   private readonly host = inject(CNGX_TAB_GROUP_HOST, { host: true });
   private readonly router = inject(Router, { optional: true });
 
@@ -82,17 +99,18 @@ export class CngxTabsFragmentSync implements AfterContentInit {
         return;
       }
       untracked(() => {
+        const replaceUrl = this.replaceUrl();
         const navigation =
           this.mode() === 'fragment'
             ? router.navigate([], {
                 fragment: `${this.paramName()}=${id}`,
                 queryParamsHandling: 'merge',
-                replaceUrl: true,
+                replaceUrl,
               })
             : router.navigate([], {
                 queryParams: { [this.paramName()]: id },
                 queryParamsHandling: 'merge',
-                replaceUrl: true,
+                replaceUrl,
               });
         // Router rejection (e.g. cancelled navigation) has no recovery path.
         navigation.catch?.(() => undefined);
