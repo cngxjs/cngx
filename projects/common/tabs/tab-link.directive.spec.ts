@@ -23,6 +23,18 @@ class TabLinkHost {
 
 @Component({
   standalone: true,
+  selector: 'section-link-host',
+  imports: [CngxTabLink],
+  hostDirectives: [CngxTabGroupPresenter],
+  template: `
+    <a cngxTabLink id="rounds" ariaCurrent="true" [label]="'Rounds'">Rounds</a>
+    <a cngxTabLink id="reports" ariaCurrent="true" [label]="'Reports'">Reports</a>
+  `,
+})
+class SectionLinkHost {}
+
+@Component({
+  standalone: true,
   selector: 'orphan-link',
   imports: [CngxTabLink],
   template: '<a cngxTabLink></a>',
@@ -97,6 +109,23 @@ describe('CngxTabLink', () => {
     expect(anchor(0).getAttribute('aria-current')).toBeNull();
     expect(anchor(1).getAttribute('aria-current')).toBe('page');
     expect(anchor(1).classList.contains('cngx-tab-nav__link--active')).toBe(true);
+  });
+
+  it('publishes the [ariaCurrent] token instead of page when the link owns a subtree', () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(SectionLinkHost);
+    fixture.detectChanges();
+    const anchors = fixture.debugElement
+      .queryAll(By.directive(CngxTabLink))
+      .map((d) => d.nativeElement as HTMLAnchorElement);
+
+    // A section link that stays active for every URL beneath it is not
+    // the current *page*; `page` there would over-claim to AT.
+    expect(anchors[0].getAttribute('aria-current')).toBe('true');
+    expect(anchors[1].getAttribute('aria-current')).toBeNull();
   });
 
   it('aria-invalid + --error class track the direct [error] flag', () => {

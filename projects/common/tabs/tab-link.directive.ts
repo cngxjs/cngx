@@ -59,7 +59,7 @@ import { CNGX_TAB_GROUP_HOST, type CngxTabHandle } from './tab-group-host.token'
   standalone: true,
   host: {
     class: 'cngx-tab-nav__link',
-    '[attr.aria-current]': "selected() ? 'page' : null",
+    '[attr.aria-current]': 'selected() ? ariaCurrent() : null',
     '[attr.aria-invalid]': "hasError() ? 'true' : null",
     '[attr.aria-describedby]': 'descriptorId()',
     '[class.cngx-tab-nav__link--active]': 'selected()',
@@ -114,6 +114,23 @@ export class CngxTabLink implements OnInit {
     },
     { equal: Object.is },
   );
+
+  /**
+   * Which `aria-current` token the link publishes while it is active.
+   * Default `'page'`, correct when the link addresses one page.
+   *
+   * Use `'true'` when the link owns a *subtree* and stays active for URLs
+   * beneath it - a section nav driven by `[cngxTabsRouteSync]` in its
+   * prefix mode. WAI-ARIA reserves `page` for the current page itself, so
+   * `page` on an ancestor section over-claims: AT reads "current page" for
+   * something that is not the page being viewed.
+   *
+   * Not derived from the sync directive's match mode on purpose. `selected`
+   * has exactly one source, the presenter's `activeId` (Pillar 1); reading
+   * a sibling directive's mode here would fork that derivation and couple
+   * the atom to a directive it does not otherwise know about.
+   */
+  readonly ariaCurrent = input<'page' | 'true' | 'location' | 'step'>('page');
 
   /** `true` when the presenter's `activeId` equals this link's id. */
   protected readonly selected: Signal<boolean> = computed(
