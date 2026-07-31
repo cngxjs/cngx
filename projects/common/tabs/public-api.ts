@@ -175,6 +175,11 @@ export {
   type CngxTabGroupAnnouncements,
   type CngxTabGroupAnnouncementsOptions,
 } from './announcements/tab-group-announcements';
+export {
+  createTabNavAnnouncement,
+  type CngxTabNavAnnouncement,
+  type CngxTabNavAnnouncementOptions,
+} from './announcements/tab-nav-announcement';
 export { CNGX_TABS_GLYPHS } from './glyphs';
 export {
   CNGX_OVERFLOW_POPOVER_HIGHLIGHT_FACTORY,
