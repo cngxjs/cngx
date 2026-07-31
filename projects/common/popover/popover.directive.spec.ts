@@ -544,6 +544,29 @@ describe('CngxPopover', () => {
       expect(host.outer().state()).not.toBe('closed');
       expect(host.inner().state()).not.toBe('closed');
     });
+
+    it('hiding an ancestor cascades to its open descendant', () => {
+      const { host } = nestedSetup(NestedHost);
+      host.outer().show();
+      host.inner().show();
+      host.outer().hide();
+      expect(host.outer().state()).toBe('closed');
+      expect(host.inner().state()).toBe('closed');
+    });
+
+    it('Escape after an ancestor close finds no stranded descendant', () => {
+      const { fixture, host } = nestedSetup(NestedHost);
+      host.outer().show();
+      host.inner().show();
+      host.outer().hide();
+      // A stranded descendant would consume this Escape as the last-opened
+      // entry; a clean registry leaves the sibling untouched.
+      host.sibling().show();
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+      fixture.detectChanges();
+      expect(host.inner().state()).toBe('closed');
+      expect(host.sibling().state()).toBe('closed');
+    });
   });
 
   describe('public arrowOffset and resolvedEdge mirrors', () => {

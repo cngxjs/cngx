@@ -599,6 +599,15 @@ export class CngxPopover {
   }
 
   private startClosing(): void {
+    // Cascade to open descendants: the ancestor's display: none would take
+    // their panels down visually while state, ARIA, and the registry still
+    // said open - and the next Escape would route to an invisible panel.
+    const host = this.popoverElement;
+    for (const other of [...openPopovers]) {
+      if (other !== this && host.contains(other.popoverElement)) {
+        other.hide();
+      }
+    }
     if (hasTransition(this.popoverElement)) {
       this.stateSignal.set('closing');
       onTransitionDone(this.popoverElement, () => this.finalize());
