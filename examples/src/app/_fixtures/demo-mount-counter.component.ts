@@ -1,21 +1,7 @@
-import { ChangeDetectionStrategy, Component, input, signal, type OnInit } from '@angular/core';
-
-const counts = signal<Record<string, number>>({});
+import { ChangeDetectionStrategy, Component, input, output, type OnInit } from '@angular/core';
 
 /**
- * How many times each keyed `<demo-mount-counter>` has been constructed,
- * across the lifetime of the page. Demos read this to prove that a piece
- * of content was (or was not) instantiated.
- */
-export const demoMountCounts = counts.asReadonly();
-
-/** Clears the tally. Useful when a demo re-creates its subject. */
-export function resetDemoMountCounts(): void {
-  counts.set({});
-}
-
-/**
- * Counts its own construction and projects its content unchanged.
+ * Reports its own construction once, then projects its content unchanged.
  *
  * The point is measurement, not simulation: wrapping a lazily-rendered
  * region in this fixture is the only way a demo can show that the region
@@ -23,14 +9,19 @@ export function resetDemoMountCounts(): void {
  * counter method cannot do it - the interpolation re-runs on every change
  * detection pass, so it counts checks rather than constructions.
  *
- * The tally is written from a `queueMicrotask` so the update lands after
- * the current change-detection pass, never during it.
+ * The demo owns the tally, not this component. Module-level state would
+ * survive a route change and keep counting up across visits to the same
+ * page, so the numbers a reader sees would depend on where they had been
+ * before. `mounted` emits from a `queueMicrotask` so the demo's write
+ * lands after the current change-detection pass, never during it.
  *
  * **Internal demo fixture only.** Not part of any `@cngx/*` public API.
  *
  * ```html
  * <ng-template cngxTabContent>
- *   <demo-mount-counter key="overview">Overview body</demo-mount-counter>
+ *   <demo-mount-counter key="overview" (mounted)="count($event)">
+ *     Overview body
+ *   </demo-mount-counter>
  * </ng-template>
  * ```
  */
@@ -41,12 +32,14 @@ export function resetDemoMountCounts(): void {
   template: '<ng-content />',
 })
 export class DemoMountCounter implements OnInit {
+  /** Identifies this region in the demo's tally. */
   readonly key = input.required<string>();
+
+  /** Fires once, with `key`, after the component is constructed. */
+  readonly mounted = output<string>();
 
   ngOnInit(): void {
     const key = this.key();
-    queueMicrotask(() => {
-      counts.update((c) => ({ ...c, [key]: (c[key] ?? 0) + 1 }));
-    });
+    queueMicrotask(() => this.mounted.emit(key));
   }
 }

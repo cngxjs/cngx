@@ -14,7 +14,7 @@ export const STORY: DemoSpec = {
   moduleImports: [
     "import { CngxTab, CngxTabContent, CngxTabsFragmentSync } from '@cngx/common/tabs';",
     "import { CngxTabGroup } from '@cngx/ui/tabs';",
-    "import { DemoMountCounter, demoMountCounts } from '../_fixtures/demo-mount-counter.component';",
+    "import { DemoMountCounter } from '../_fixtures/demo-mount-counter.component';",
   ],
   imports: ['CngxTabGroup', 'CngxTab', 'CngxTabContent', 'CngxTabsFragmentSync', 'DemoMountCounter'],
   references: [
@@ -27,12 +27,16 @@ export const STORY: DemoSpec = {
   <cngx-tab-group cngxTabsFragmentSync panelMode="lazy" aria-label="Workspace">
     <div cngxTab id="overview" label="Overview">
       <ng-template cngxTabContent>
-        <demo-mount-counter key="overview">Overview body - expensive to build.</demo-mount-counter>
+        <demo-mount-counter key="overview" (mounted)="countMount($event)">
+          Overview body - expensive to build.
+        </demo-mount-counter>
       </ng-template>
     </div>
     <div cngxTab id="reports" label="Reports">
       <ng-template cngxTabContent>
-        <demo-mount-counter key="reports">Reports body.</demo-mount-counter>
+        <demo-mount-counter key="reports" (mounted)="countMount($event)">
+          Reports body.
+        </demo-mount-counter>
       </ng-template>
     </div>
   </cngx-tab-group>`,
@@ -43,8 +47,14 @@ export const STORY: DemoSpec = {
     moves a counter from <code>0</code> to <code>1</code>, never higher.
   </p>`,
   setupChrome: `
-  protected readonly overviewMounts = computed(() => demoMountCounts()['overview'] ?? 0);
-  protected readonly reportsMounts = computed(() => demoMountCounts()['reports'] ?? 0);`,
+  // Owned by the demo, not the fixture, so the tally starts at zero every
+  // time this page is opened.
+  protected readonly mounts = signal<Record<string, number>>({});
+  protected countMount(key: string): void {
+    this.mounts.update((m) => ({ ...m, [key]: (m[key] ?? 0) + 1 }));
+  }
+  protected readonly overviewMounts = computed(() => this.mounts()['overview'] ?? 0);
+  protected readonly reportsMounts = computed(() => this.mounts()['reports'] ?? 0);`,
   templateChrome: `
   <div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Overview body constructed</span><span class="event-value">{{ overviewMounts() }}x</span></div>
