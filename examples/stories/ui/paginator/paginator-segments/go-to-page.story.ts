@@ -26,7 +26,7 @@ export const STORY: DemoSpec = {
     'CngxPaginatorNext',
   ],
   setup: `protected readonly pageIndex = signal(0);`,
-  template: `  <cngx-paginator skin="numbered" [total]="300" [(pageIndex)]="pageIndex">
+  template: `  <cngx-paginator skin="numbered" [total]="300" [pageIndex]="pageIndex()" (pageIndexChange)="pageIndex.set($event)">
     <cngx-pgn-prev />
     <span class="cngx-paginator__segment" aria-hidden="true">Go to</span>
     <cngx-pgn-goto />

@@ -25,7 +25,7 @@ export const STORY: DemoSpec = {
   imports: ['CngxPaginator', 'CngxPaginatorPrev', 'CngxPaginatorPages', 'CngxPaginatorNext'],
   setup: `protected readonly pageIndex = signal(2);
   protected readonly loading = createManualState<unknown>();`,
-  template: `  <cngx-paginator skin="numbered" [total]="120" [state]="loading" [(pageIndex)]="pageIndex">
+  template: `  <cngx-paginator skin="numbered" [total]="120" [state]="loading" [pageIndex]="pageIndex()" (pageIndexChange)="pageIndex.set($event)">
     <cngx-pgn-prev />
     <cngx-pgn-pages />
     <cngx-pgn-next />

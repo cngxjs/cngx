@@ -28,7 +28,7 @@ export const STORY: DemoSpec = {
     'CngxPaginatorLast',
   ],
   setup: `protected readonly pageIndex = signal(4);`,
-  template: `  <cngx-paginator skin="pill" [total]="150" [(pageIndex)]="pageIndex">
+  template: `  <cngx-paginator skin="pill" [total]="150" [pageIndex]="pageIndex()" (pageIndexChange)="pageIndex.set($event)">
     <cngx-pgn-first />
     <cngx-pgn-prev />
     <cngx-pgn-pages />

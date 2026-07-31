@@ -33,12 +33,12 @@ export const STORY: DemoSpec = {
   setup: `protected readonly framePage = signal(3);
   protected readonly rangePage = signal(2);`,
   template: `  <div style="display:flex;flex-wrap:wrap;gap:1rem">
-    <cngx-paginator skin="bar" [total]="230" [pageSize]="10" [(pageIndex)]="framePage">
+    <cngx-paginator skin="bar" [total]="230" [pageSize]="10" [pageIndex]="framePage()" (pageIndexChange)="framePage.set($event)">
       <cngx-pgn-prev />
       <cngx-pgn-status />
       <cngx-pgn-next />
     </cngx-paginator>
-    <cngx-paginator skin="bar" [total]="50" [pageSize]="5" [(pageIndex)]="rangePage">
+    <cngx-paginator skin="bar" [total]="50" [pageSize]="5" [pageIndex]="rangePage()" (pageIndexChange)="rangePage.set($event)">
       <cngx-pgn-range />
       <cngx-pgn-prev />
       <cngx-pgn-next />

@@ -34,7 +34,7 @@ export const STORY: DemoSpec = {
       skin="numbered"
       [total]="240"
       [pageSize]="10"
-      [(pageIndex)]="pageIndex"
+      [pageIndex]="pageIndex()" (pageIndexChange)="pageIndex.set($event)"
       [responsive]="true"
     >
       <cngx-pgn-prev />

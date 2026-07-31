@@ -35,7 +35,7 @@ export const STORY: DemoSpec = {
   setup: `protected readonly pageIndex = signal(1);
   protected readonly pageSize = signal(10);
   protected readonly sizes = [10, 25, 50, 100] as const;`,
-  template: `  <cngx-paginator skin="bar" [total]="100" [(pageIndex)]="pageIndex" [(pageSize)]="pageSize">
+  template: `  <cngx-paginator skin="bar" [total]="100" [pageIndex]="pageIndex()" (pageIndexChange)="pageIndex.set($event)" [pageSize]="pageSize()" (pageSizeChange)="pageSize.set($event)">
     <span class="cngx-paginator__segment" aria-hidden="true">Items per page:</span>
     <cngx-pgn-page-size [options]="sizes" />
     <cngx-pgn-range />

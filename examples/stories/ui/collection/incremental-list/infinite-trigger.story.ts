@@ -49,7 +49,7 @@ export const STORY: DemoSpec = {
     <cngx-incremental-list
       [state]="listState"
       [total]="allPeople.length"
-      [(pageIndex)]="pageIndex"
+      [pageIndex]="pageIndex()" (pageIndexChange)="pageIndex.set($event)"
       [pageSize]="pageSize()"
     >
       <ng-template cngxIncrementalItem let-p>
