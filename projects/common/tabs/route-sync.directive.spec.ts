@@ -1,5 +1,6 @@
 import { Component, provideZonelessChangeDetection, type Type } from '@angular/core';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import {
   NavigationCancel,
   NavigationEnd,
@@ -63,6 +64,32 @@ class NavLinkRouteHost {}
 
 @Component({ standalone: true, selector: 'blank-page', template: '' })
 class BlankPage {}
+
+// Tabs must be CONTENT children for ngAfterContentInit to see them
+// registered - a host whose own template declares the tabs makes them
+// view children, which register too late and let the afterNextRender
+// fallback silently stand in for the seam under test.
+@Component({
+  standalone: true,
+  selector: 'route-seed-shell',
+  hostDirectives: [CngxTabGroupPresenter, CngxTabsRouteSync],
+  template: '<ng-content />',
+})
+class RouteSeedShell {}
+
+@Component({
+  standalone: true,
+  selector: 'projected-route-host',
+  imports: [RouteSeedShell, CngxTab],
+  template: `
+    <route-seed-shell>
+      <div cngxTab id="a" [label]="'A'"></div>
+      <div cngxTab id="b" [label]="'B'"></div>
+      <div cngxTab id="c" [label]="'C'"></div>
+    </route-seed-shell>
+  `,
+})
+class ProjectedRouteHost {}
 
 // The nav flavour: provides the marker token, so route-sync defaults to
 // prefix matching. Mirrors what <cngx-tab-nav> / [cngxMatTabNav] declare.
@@ -198,7 +225,13 @@ describe('CngxTabsRouteSync', () => {
     expect(presenter.activeIndex()).toBe(2);
   });
 
-  it('seeds at content-init, so the first change detection already renders the deep-linked tab', async () => {
+  // Coverage note: this pins that a deep link resolves by the end of the
+  // first CD pass, projected content and all. It does NOT discriminate
+  // content-init from the afterNextRender fallback - detectChanges()
+  // flushes afterRender hooks too. The seam itself (seed lands before the
+  // group's panels render) is pinned where it is observable, in the
+  // panelMode="lazy" block of projects/ui/tabs/tab-group.component.spec.ts.
+  it('resolves the deep-linked tab on the first change-detection pass', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection(), provideRouter([])],
     });
@@ -206,13 +239,11 @@ describe('CngxTabsRouteSync', () => {
     vi.spyOn(router, 'navigate').mockResolvedValue(true);
     vi.spyOn(router, 'url', 'get').mockReturnValue('/c');
 
-    const fixture = TestBed.createComponent(RouteHost);
-    // One CD pass only, no microtask drain: ngAfterContentInit runs
-    // inside it, ahead of the host's own view. A group rendering panels
-    // from that view therefore never sees index 0, which is what keeps
-    // panelMode="lazy" from mounting the default tab on a deep link.
+    const fixture = TestBed.createComponent(ProjectedRouteHost);
     fixture.detectChanges();
-    const presenter = fixture.debugElement.injector.get(CngxTabGroupPresenter);
+    const presenter = fixture.debugElement
+      .query(By.directive(RouteSeedShell))
+      .injector.get(CngxTabGroupPresenter);
 
     expect(presenter.activeId()).toBe('c');
   });

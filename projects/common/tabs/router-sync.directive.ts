@@ -77,6 +77,20 @@ export class CngxTabsFragmentSync implements AfterContentInit {
   private readonly host = inject(CNGX_TAB_GROUP_HOST, { host: true });
   private readonly router = inject(Router, { optional: true });
 
+  /**
+   * Latched once the URL seed has reached a registered tab, so the
+   * `afterNextRender` fallback cannot run it twice.
+   *
+   * Not symmetric with {@link CngxTabsRouteSync}, and it has to be: that
+   * sibling writes `activeIndex` directly, so its second seed bails on
+   * the already-matching id. This one goes through `select()`, and under
+   * a pessimistic commit `activeIndex` still holds the *previous* value
+   * while the action is in flight - so the presenter's `target ===
+   * previous` bail does not catch the repeat, and a consumer's async
+   * commit action would fire a second time and supersede the first.
+   */
+  private seeded = false;
+
   constructor() {
     if (!this.router) {
       afterNextRender(() => warnTabsRouterAbsent('CngxTabsFragmentSync', 'deep-linking'));
@@ -161,10 +175,21 @@ export class CngxTabsFragmentSync implements AfterContentInit {
   }
 
   private seedFromUrl(router: Router): void {
-    const initial = this.readUrlValue(router);
-    if (initial) {
-      untracked(() => this.host.selectById(initial));
+    if (this.seeded) {
+      return;
     }
+    const initial = this.readUrlValue(router);
+    if (!initial) {
+      return;
+    }
+    // Only latch once the target is actually registered. A seed that
+    // found no matching tab leaves the fallback armed for tabs that
+    // register after content-init.
+    if (!this.host.tabs().some((tab) => tab.id === initial)) {
+      return;
+    }
+    this.seeded = true;
+    untracked(() => this.host.selectById(initial));
   }
 
   private readUrlValue(router: Router): string | null {
