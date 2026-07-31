@@ -38,6 +38,36 @@ class FragmentHost {}
 })
 class QueryParamHost {}
 
+@Component({
+  standalone: true,
+  selector: 'replace-url-host',
+  imports: [CngxTab],
+  hostDirectives: [
+    CngxTabGroupPresenter,
+    { directive: CngxTabsFragmentSync, inputs: ['replaceUrl'] },
+  ],
+  template: `
+    <div cngxTab id="a" [label]="'A'"></div>
+    <div cngxTab id="b" [label]="'B'"></div>
+  `,
+})
+class ReplaceUrlHost {}
+
+@Component({
+  standalone: true,
+  selector: 'commit-seed-host',
+  imports: [CngxTab],
+  hostDirectives: [
+    { directive: CngxTabGroupPresenter, inputs: ['commitAction'] },
+    CngxTabsFragmentSync,
+  ],
+  template: `
+    <div cngxTab id="a" [label]="'A'"></div>
+    <div cngxTab id="b" [label]="'B'"></div>
+  `,
+})
+class CommitSeedHost {}
+
 // Drains pending microtasks so the directive's effect() chain (which
 // reads activeId, then calls router.navigate inside untracked()) has
 // a chance to fire and the spy captures the call. Mirrors the
@@ -163,5 +193,94 @@ describe('CngxTabsFragmentSync', () => {
     // Either the afterNextRender path (no-op for sentinel) or the
     // NavigationEnd path lands the URL value on the presenter.
     expect(presenter.activeId()).toBe(tabs[1].id);
+  });
+
+  it('seeds the deep-linked tab at content-init, before the host view renders', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), provideRouter([])],
+    });
+    const router = TestBed.inject(Router);
+    vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    Object.defineProperty(router.routerState.snapshot.root, 'fragment', {
+      get: () => 'tab=b',
+      configurable: true,
+    });
+
+    const fixture = TestBed.createComponent(ReplaceUrlHost);
+    // No detectChanges yet: ngAfterContentInit runs during the first
+    // CD pass, ahead of the host's own view. Panels rendered by that
+    // view therefore never see index 0 under panelMode="lazy".
+    fixture.detectChanges();
+    const presenter = fixture.debugElement.injector.get(CngxTabGroupPresenter);
+
+    expect(presenter.activeId()).toBe('b');
+  });
+
+  it('pushes a history entry instead of replacing when [replaceUrl]="false"', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), provideRouter([])],
+    });
+    const router = TestBed.inject(Router);
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    const fixture = TestBed.createComponent(ReplaceUrlHost);
+    fixture.componentRef.setInput('replaceUrl', false);
+    fixture.detectChanges();
+    await flushMicrotasks();
+    const presenter = fixture.debugElement.injector.get(CngxTabGroupPresenter);
+    presenter.select(1);
+    fixture.detectChanges();
+    await flushMicrotasks();
+
+    const extras = navigateSpy.mock.calls[navigateSpy.mock.calls.length - 1][1] as {
+      replaceUrl?: boolean;
+    };
+    expect(extras.replaceUrl).toBe(false);
+  });
+
+  it('replaces by default so browser-back leaves the page', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), provideRouter([])],
+    });
+    const router = TestBed.inject(Router);
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    const fixture = TestBed.createComponent(ReplaceUrlHost);
+    fixture.detectChanges();
+    await flushMicrotasks();
+    const presenter = fixture.debugElement.injector.get(CngxTabGroupPresenter);
+    presenter.select(1);
+    fixture.detectChanges();
+    await flushMicrotasks();
+
+    const extras = navigateSpy.mock.calls[navigateSpy.mock.calls.length - 1][1] as {
+      replaceUrl?: boolean;
+    };
+    expect(extras.replaceUrl).toBe(true);
+  });
+
+  it('runs a bound commit action exactly once for the content-init seed', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), provideRouter([])],
+    });
+    const router = TestBed.inject(Router);
+    vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    Object.defineProperty(router.routerState.snapshot.root, 'fragment', {
+      get: () => 'tab=b',
+      configurable: true,
+    });
+    const commitAction = vi.fn().mockResolvedValue(true);
+
+    const fixture = TestBed.createComponent(CommitSeedHost);
+    fixture.componentRef.setInput('commitAction', commitAction);
+    fixture.detectChanges();
+    await flushMicrotasks();
+
+    // The seed goes through selectById -> select(), so it does run the
+    // consumer's action - but the afterNextRender fallback must not run
+    // it a second time.
+    expect(commitAction).toHaveBeenCalledTimes(1);
+    // (fromIndex, toIndex): the seed moves off the default tab.
+    expect(commitAction.mock.calls[0]).toEqual([0, 1]);
   });
 });

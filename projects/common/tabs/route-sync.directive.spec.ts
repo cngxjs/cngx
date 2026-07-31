@@ -198,6 +198,25 @@ describe('CngxTabsRouteSync', () => {
     expect(presenter.activeIndex()).toBe(2);
   });
 
+  it('seeds at content-init, so the first change detection already renders the deep-linked tab', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), provideRouter([])],
+    });
+    const router = TestBed.inject(Router);
+    vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    vi.spyOn(router, 'url', 'get').mockReturnValue('/c');
+
+    const fixture = TestBed.createComponent(RouteHost);
+    // One CD pass only, no microtask drain: ngAfterContentInit runs
+    // inside it, ahead of the host's own view. A group rendering panels
+    // from that view therefore never sees index 0, which is what keeps
+    // panelMode="lazy" from mounting the default tab on a deep link.
+    fixture.detectChanges();
+    const presenter = fixture.debugElement.injector.get(CngxTabGroupPresenter);
+
+    expect(presenter.activeId()).toBe('c');
+  });
+
   it('reflects an external NavigationEnd into activeIndex without re-navigating', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection(), provideRouter([])],

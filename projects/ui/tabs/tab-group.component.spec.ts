@@ -6,6 +6,7 @@ import {
   signal,
 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { provideRouter, Router } from '@angular/router';
 import { readFileSync } from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -32,6 +33,7 @@ import {
   withTabsI18nLabels,
   withTabsIconLayout,
   withTabsSkin,
+  CngxTabsRouteSync,
   type CngxTabErrorBadgeContext,
   type CngxTabsCommitAction,
 } from '@cngx/common/tabs';
@@ -2214,5 +2216,91 @@ describe('CngxTabGroup sub-label', () => {
     expect(css).toMatch(
       /@property --cngx-tab-sublabel-color\s*\{[^}]*inherits:\s*true/,
     );
+  });
+});
+
+@Component({
+  standalone: true,
+  imports: [CngxTabGroup, CngxTab, CngxTabContent, CngxTabsRouteSync],
+  template: `
+    <cngx-tab-group cngxTabsRouteSync panelMode="lazy" aria-label="Deep-linked lazy panels">
+      <div cngxTab id="a" [label]="'A'">
+        <ng-template cngxTabContent><span class="body-a">A body</span></ng-template>
+      </div>
+      <div cngxTab id="b" [label]="'B'">
+        <ng-template cngxTabContent><span class="body-b">B body</span></ng-template>
+      </div>
+    </cngx-tab-group>
+  `,
+})
+class LazyDeepLinkHost {}
+
+describe('CngxTabGroup panelMode=lazy x route-sync deep link', () => {
+  function settle(fixture: { detectChanges(): void }): void {
+    fixture.detectChanges();
+    TestBed.tick();
+    fixture.detectChanges();
+    TestBed.tick();
+  }
+
+  // Route-sync pins pessimistic mode, so a tab click only lands once the
+  // router navigation resolves - drain past it before asserting.
+  async function settleNavigation(fixture: { detectChanges(): void }): Promise<void> {
+    for (let i = 0; i < 5; i++) {
+      await Promise.resolve();
+    }
+    settle(fixture);
+  }
+
+  it('mounts only the deep-linked panel, never the default tab', async () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideRouter([
+          { path: 'a', component: LazyDeepLinkHost },
+          { path: 'b', component: LazyDeepLinkHost },
+        ]),
+      ],
+    });
+    await TestBed.inject(Router).navigateByUrl('/b');
+
+    const fixture = TestBed.createComponent(LazyDeepLinkHost);
+    settle(fixture);
+
+    // The seed lands at content-init, before the group's view renders
+    // its panels, so tab A is never activated and keep-alive never
+    // holds its content.
+    expect(fixture.nativeElement.querySelector('.body-a')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.body-b')).not.toBeNull();
+  });
+
+  it('keeps the default panel keep-alived once the user does activate it', async () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideRouter([
+          { path: 'a', component: LazyDeepLinkHost },
+          { path: 'b', component: LazyDeepLinkHost },
+        ]),
+      ],
+    });
+    await TestBed.inject(Router).navigateByUrl('/b');
+
+    const fixture = TestBed.createComponent(LazyDeepLinkHost);
+    settle(fixture);
+    expect(fixture.nativeElement.querySelector('.body-a')).toBeNull();
+
+    // Navigate to A the way the router would (a link, back/forward):
+    // route-sync reflects it and the panel mounts for the first time.
+    const router = TestBed.inject(Router);
+    await router.navigateByUrl('/a');
+    await settleNavigation(fixture);
+    expect(fixture.nativeElement.querySelector('.body-a')).not.toBeNull();
+
+    // Back to B: A's content stays mounted (keep-alive intact).
+    await router.navigateByUrl('/b');
+    await settleNavigation(fixture);
+    expect(fixture.nativeElement.querySelector('.body-a')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('.body-b')).not.toBeNull();
   });
 });
