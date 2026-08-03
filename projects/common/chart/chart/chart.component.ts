@@ -603,14 +603,19 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
     () => {
       const axes = this.axes();
       const { width } = this.dimensions();
-      if (width <= 0) {
+      const { inlineStart, inlineEnd } = this.inset();
+      const plotEnd = width - inlineEnd;
+      // Guard the plot extent, not the box: a chart narrower than its
+      // own inset would otherwise get a backwards range and paint every
+      // mark mirrored.
+      if (plotEnd <= inlineStart) {
         return NOOP_SCALE;
       }
       const xAxis = axes.find((a) => isHorizontalPosition(a.position()));
       if (!xAxis) {
         return NOOP_SCALE;
       }
-      return this.xScaleCache.get(xAxis.type(), xAxis.domain() ?? [], [0, width]);
+      return this.xScaleCache.get(xAxis.type(), xAxis.domain() ?? [], [inlineStart, plotEnd]);
     },
     { equal: (a, b) => a === b },
   );
@@ -619,17 +624,19 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
     () => {
       const axes = this.axes();
       const { height } = this.dimensions();
-      if (height <= 0) {
+      const { blockStart, blockEnd } = this.inset();
+      const plotEnd = height - blockEnd;
+      if (plotEnd <= blockStart) {
         return NOOP_Y_SCALE;
       }
       const yAxis = axes.find((a) => isVerticalPosition(a.position()));
       if (!yAxis) {
         return NOOP_Y_SCALE;
       }
-      // SVG Y-axis is flipped - domain[max] maps to range[0] (top), domain[min] to range[height] (bottom).
+      // SVG Y-axis is flipped - domain[max] maps to the plot area's top edge, domain[min] to its bottom edge.
       return this.yScaleCache.get(yAxis.type(), yAxis.domain() ?? [], [
-        height,
-        0,
+        plotEnd,
+        blockStart,
       ]) as ScaleFn<number>;
     },
     { equal: (a, b) => a === b },
