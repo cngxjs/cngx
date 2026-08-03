@@ -453,10 +453,12 @@ export class CngxAxis {
   );
 
   /**
-   * Character count of the widest formatted tick label. Split out of
-   * {@link reservation} so a horizontal axis never reads it: a bottom
-   * label's extent is its height, so tracking the label strings there
-   * would put a dependency in the graph that cannot change the result.
+   * Character count of the widest formatted tick label. Split out so
+   * that {@link reservation} on a horizontal axis never reads it - a
+   * bottom label's own gutter is its height, so tracking the label
+   * strings there would add a dependency that cannot change the result.
+   * {@link crossReservation} does read it in the horizontal case, where
+   * the label's width is exactly what overhangs the plot corner.
    */
   private readonly longestTickLabel = computed<number>(() => {
     const fmt = this.format();

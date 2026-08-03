@@ -306,7 +306,7 @@ describe('CngxAxis', () => {
  * provider reaches the axis half of the plumbing without a test-only
  * seam on the chart.
  */
-describe('CngxAxis — non-zero plot inset', () => {
+describe('CngxAxis - non-zero plot inset', () => {
   // Box 200x100 with 30/10 inline and 8/20 block reserved.
   const PLOT: CngxChartPlotArea = {
     x0: 30,
@@ -467,7 +467,7 @@ describe('CngxAxis — non-zero plot inset', () => {
  * which is the plot edge the chart placed it on - so these cover the
  * derivation end to end rather than the computed in isolation.
  */
-describe('CngxAxis — the room an axis reserves', () => {
+describe('CngxAxis - the room an axis reserves', () => {
   @Component({
     standalone: true,
     imports: [CngxChart, CngxAxis],

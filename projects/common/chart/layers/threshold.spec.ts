@@ -72,7 +72,7 @@ describe('CngxThreshold', () => {
   });
 });
 
-describe('CngxThreshold — label survives the canvas auto-switch', () => {
+describe('CngxThreshold - label survives the canvas auto-switch', () => {
   @Component({
     standalone: true,
     imports: [CngxChart, CngxAxis, CngxThreshold],
