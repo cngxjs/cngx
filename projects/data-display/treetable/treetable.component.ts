@@ -92,6 +92,9 @@ import { CNGX_TREETABLE_CONFIG } from './treetable.token';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/data-display/treetable/treetable.component.ts
  * @since 0.1.0
  * @relatedTo CngxTreetableRow, CngxCellTpl, CngxHeaderTpl, CngxEmptyTpl
+ * @slot cngxHeader Replaces a column's header cell; gets the column definition.
+ * @slot cngxCell Replaces a body cell; gets the row and the column definition.
+ * @slot cngxEmpty Rendered when the tree resolves to no rows.
  */
 @Component({
   selector: 'cngx-treetable',
