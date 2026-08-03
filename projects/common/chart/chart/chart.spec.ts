@@ -1210,6 +1210,96 @@ describe('CngxChart - canvas marks land in the same plot the axes sit on', () =>
   });
 });
 
+/**
+ * What these assert is the *authored* coordinate of every piece of axis
+ * decoration, not its painted extent: jsdom lays out no text, so a spec
+ * cannot know how far a label's glyphs actually reach from their anchor.
+ * The evidence that nothing paints outside the box is the browser-side
+ * `getBBox()`-inside-`viewBox.baseVal` measurement. This is the cheap
+ * regression guard underneath it - the SVG root clips at the box now, so
+ * an axis authored outside it stops being visible rather than merely
+ * looking untidy.
+ */
+describe('CngxChart - axis decoration is authored inside the viewBox', () => {
+  @Component({
+    standalone: true,
+    imports: [CngxChart, CngxAxis],
+    template: `
+      <cngx-chart [data]="[1, 2, 3]" [width]="200" [height]="100" data-testid="chart">
+        <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 1200]" label="Samples"></svg:g>
+        <svg:g cngxAxis position="left" type="linear" [domain]="[0, 1200]" label="Volts"></svg:g>
+      </cngx-chart>
+    `,
+  })
+  class TitledAxesHost {}
+
+  beforeEach(() => {
+    vi.stubGlobal('ResizeObserver', ResizeObserverMock);
+    TestBed.configureTestingModule({ imports: [TitledAxesHost] });
+  });
+
+  afterEach(() => vi.unstubAllGlobals());
+
+  function translateOf(el: Element): { x: number; y: number } {
+    const m = /translate\(([-\d.]+),\s*([-\d.]+)\)/.exec(el.getAttribute('transform') ?? '');
+    return m ? { x: Number(m[1]), y: Number(m[2]) } : { x: 0, y: 0 };
+  }
+
+  function mount(): HTMLElement {
+    const fixture = TestBed.createComponent(TitledAxesHost);
+    fixture.detectChanges();
+    return fixture.nativeElement.querySelector('[data-testid="chart"]') as HTMLElement;
+  }
+
+  it('anchors every tick label inside the box on both axes', () => {
+    const chartEl = mount();
+    const labels = Array.from(chartEl.querySelectorAll('.cngx-axis__tick-label'));
+    // Four-digit labels on both axes: the shape that overhung the host
+    // before the inset existed.
+    expect(labels.length).toBeGreaterThan(0);
+
+    for (const label of labels) {
+      const tick = label.closest('.cngx-axis__tick') as Element;
+      const axis = label.closest('.cngx-axis') as Element;
+      const a = translateOf(axis);
+      const t = translateOf(tick);
+      const x = a.x + t.x + Number(label.getAttribute('x'));
+      const y = a.y + t.y + Number(label.getAttribute('y'));
+      expect(x).toBeGreaterThanOrEqual(0);
+      expect(x).toBeLessThanOrEqual(200);
+      expect(y).toBeGreaterThanOrEqual(0);
+      expect(y).toBeLessThanOrEqual(100);
+    }
+  });
+
+  it('anchors both axis titles inside the box', () => {
+    const chartEl = mount();
+    const titles = Array.from(chartEl.querySelectorAll('.cngx-axis__axis-label'));
+    expect(titles.length).toBe(2);
+
+    for (const title of titles) {
+      const axis = title.closest('.cngx-axis') as Element;
+      const a = translateOf(axis);
+      // The title carries its own transform, rotated on a vertical axis.
+      const t = translateOf(title);
+      expect(a.x + t.x).toBeGreaterThanOrEqual(0);
+      expect(a.x + t.x).toBeLessThanOrEqual(200);
+      expect(a.y + t.y).toBeGreaterThanOrEqual(0);
+      expect(a.y + t.y).toBeLessThanOrEqual(100);
+    }
+  });
+
+  it('sits each axis line on the plot edge rather than the box edge', () => {
+    const chartEl = mount();
+    const left = chartEl.querySelector('.cngx-axis--left') as Element;
+    const bottom = chartEl.querySelector('.cngx-axis--bottom') as Element;
+    // Wide labels plus a title on each: both edges are well inside the
+    // box, which is the whole point of the inset.
+    expect(translateOf(left).x).toBeGreaterThan(0);
+    expect(translateOf(bottom).y).toBeLessThan(100);
+  });
+});
+
 describe('CngxChart - slot templates see the plot they sit inside', () => {
   beforeEach(() => vi.stubGlobal('ResizeObserver', ResizeObserverMock));
   afterEach(() => vi.unstubAllGlobals());
