@@ -638,7 +638,7 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
    * chart without axes (every preset) resolves to {@link ZERO_INSET}
    * and renders exactly as it did before the inset existed.
    */
-  protected readonly inset = computed<CngxChartInset>(
+  private readonly inset = computed<CngxChartInset>(
     () => {
       const axes = this.axes();
       if (axes.length === 0) {
