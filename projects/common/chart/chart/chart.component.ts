@@ -151,6 +151,11 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
  * <example-url>http://localhost:4200/#/common/chart/primitives/responsive-fills-parent-width</example-url>
  * <example-url>http://localhost:4200/#/common/chart/primitives/scatter-with-performance-zones</example-url>
  * <example-url>http://localhost:4200/#/common/chart/primitives/time-series-with-threshold-zones</example-url>
+ * @slot cngxChartLoading Replaces the centred spinner shown during the first load.
+ * @slot cngxChartEmpty Rendered when the data resolves to nothing.
+ * @slot cngxChartError Rendered when the load fails; gets the error.
+ * @slot cngxChartConnectionError Rendered over the chart when the live connection drops.
+ * @slot cngxChartReconnecting Rendered over the chart while the connection retries.
  */
 @Component({
   selector: 'cngx-chart',

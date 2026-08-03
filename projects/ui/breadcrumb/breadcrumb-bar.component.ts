@@ -55,6 +55,9 @@ import type { CngxBreadcrumbCrumb } from './breadcrumb.types';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/breadcrumb/breadcrumb-bar.component.ts
  * @since 0.1.0
  * @relatedTo CngxBreadcrumb, CngxBreadcrumbItem, CngxBreadcrumbSeparator, CngxBreadcrumbOverflow, CngxBreadcrumbSiblings, CngxBreadcrumbItemAccessory, CngxBreadcrumbOverflowItem, CngxBreadcrumbRouterSync
+ * @slot cngxBreadcrumbIcon Replaces a crumb's leading icon; gets the crumb.
+ * @slot cngxBreadcrumbItemAccessory Trailing control on a crumb, e.g. a siblings dropdown trigger.
+ * @slot cngxBreadcrumbOverflowItem Replaces a row inside the collapsed-crumbs menu.
  * <example-url>http://localhost:4200/#/ui/breadcrumb/basic/explicit-items</example-url>
  */
 @Component({

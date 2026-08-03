@@ -39,6 +39,15 @@ import { CNGX_FILTER_BUILDER_BODY_HOST } from './filter-builder-body.host';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder.component.ts
  * @since 0.1.0
  * @relatedTo CngxFilterBuilderPresenter, CngxFilterBuilderBody, CngxFilterRow, CngxFilterBuilderFormFieldControl
+ * @slot cngxFilterBuilderGroupTemplate Replaces a whole condition group, including its nesting chrome.
+ * @slot cngxFilterBuilderExpressionTemplate Replaces a single condition row.
+ * @slot cngxFilterBuilderValueEditor Replaces the value input for a condition; gets the field and operator.
+ * @slot cngxFilterBuilderLogicToggle Replaces the AND/OR switch on a group.
+ * @slot cngxFilterBuilderNegationToggle Replaces the NOT switch on a group.
+ * @slot cngxFilterBuilderAddFilterButton Replaces the add-condition control.
+ * @slot cngxFilterBuilderAddGroupButton Replaces the add-group control.
+ * @slot cngxFilterBuilderRemoveButton Replaces the remove control on a row or group.
+ * @slot cngxFilterBuilderEmpty Rendered when no condition has been added yet.
  * <example-url>http://localhost:4200/#/forms/filter-builder/basic-two-way-binding-json-inspection</example-url>
  * <example-url>http://localhost:4200/#/forms/filter-builder/filter-builder-async-state/loading-error-content-branches-via-cngx-async-container</example-url>
  * <example-url>http://localhost:4200/#/forms/filter-builder/filter-builder-json/builder-json</example-url>

@@ -40,6 +40,9 @@ import { CNGX_TAB_GROUP_HOST } from './tab-group-host.token';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/tab.directive.ts
  * @since 0.1.0
  * @relatedTo CngxTabGroupPresenter, CngxTabLabel, CngxTabContent, CngxTabErrorBadge
+ * @slot cngxTabLabel The tab's own header label.
+ * @slot cngxTabSubLabel Secondary line under the label, e.g. a count or status.
+ * @slot cngxTabContent The panel body, rendered lazily when the tab activates.
  */
 @Directive({
   selector: '[cngxTab]',

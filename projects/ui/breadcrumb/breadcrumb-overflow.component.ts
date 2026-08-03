@@ -44,6 +44,7 @@ import { injectBreadcrumbConfig } from './config/inject-breadcrumb-config';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/breadcrumb/breadcrumb-overflow.component.ts
  * @since 0.1.0
  * @relatedTo CngxBreadcrumbBar, CngxBreadcrumbOverflowItem, CngxPopoverPanel, CngxPopoverTrigger, CngxMenu, CngxMenuTrigger
+ * @slot cngxBreadcrumbOverflowItem Replaces a row inside the collapsed-crumbs menu; gets the crumb.
  * <example-url>http://localhost:4200/#/ui/breadcrumb/overflow/collapsed-menu</example-url>
  */
 @Component({

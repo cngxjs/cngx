@@ -81,6 +81,13 @@ import { coerceBooleanProperty } from '@cngx/core/utils';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/stepper/stepper.component.ts
  * @since 0.1.0
  * @relatedTo CngxStepperPresenter, CngxStep, CngxRovingTabindex, CngxFocusRestore, CngxLiveRegion
+ * @slot cngxStepIndicator Replaces the per-step number or check glyph in the header.
+ * @slot cngxStepBadge Extra marker beside a step label, e.g. an optional or count badge.
+ * @slot cngxStepBusySpinner Replaces the busy affordance shown while a step commits.
+ * @slot cngxStepError Renders the failure surface on a step whose commit was rejected.
+ * @slot cngxStepRejection Renders the reason a rolled-back step was refused.
+ * @slot cngxStepGroupHeader Replaces the header a step group renders above its steps.
+ * @slot cngxStepperEmpty Renders when no step is projected at all.
  * @playground Material theme coverage across all skins ./examples/material-theme-coverage/skins-coverage.component.ts
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-horizontal/three-step-wizard</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-vertical/vertical-sidebar-layout</example-url>

@@ -74,6 +74,11 @@ import type { PopoverPanelRole } from './popover.types';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-panel.component.ts
  * @since 0.1.0
  * @relatedTo CngxPopover, CngxPopoverAction, CngxPopoverHeader, CngxPopoverBody, CngxPopoverFooter
+ * @slot cngxPopoverArrow Replaces the pointer that ties the panel to its trigger.
+ * @slot cngxPopoverClose Replaces the dismiss control.
+ * @slot cngxPopoverLoading Rendered while the panel's content is loading.
+ * @slot cngxPopoverEmpty Rendered when the panel has nothing to show.
+ * @slot cngxPopoverError Rendered when the panel's content failed to load.
  * <example-url>http://localhost:4200/#/common/popover/popover-panel/content-states</example-url>
  * <example-url>http://localhost:4200/#/common/popover/popover-panel/variants</example-url>
  * <example-url>http://localhost:4200/#/common/popover/popover-panel/with-footer-actions</example-url>

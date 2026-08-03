@@ -113,6 +113,8 @@ export class CngxMatTabsPanelHostAdapter implements CngxTabPanelHost {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/mat-tabs/mat-tabs.directive.ts
  * @since 0.1.0
  * @relatedTo CngxMatTabsRegistry, CngxMatTabError, CngxMatStepper
+ * @slot cngxMatTabAggregatorContent Replaces the aggregated error summary projected into a Material tab.
+ * @slot cngxMatTabRejectionContent Replaces the rejection notice on a rolled-back Material tab.
  */
 @Directive({
   selector: '[cngxMatTabs]',
