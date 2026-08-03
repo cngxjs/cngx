@@ -35,7 +35,8 @@ import { type CngxAxisPosition, type CngxAxisType } from './axis-position';
  * @since 0.1.0
  * @relatedTo CngxAxis, CngxChart, CngxChartAxis
  *
- * <example-url>http://localhost:4200/#/common/chart/sparkline/basic-sparklines</example-url>
+ * <example-url>http://localhost:4200/#/ui/chart-panel/basic/titled-panel-with-legend</example-url>
+ * <example-url>http://localhost:4200/#/ui/chart-panel/slots/actions-and-footer</example-url>
  */
 @Directive({
   selector: '[cngxAxisDomain]',
