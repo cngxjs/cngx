@@ -6,7 +6,7 @@ import { CngxChart } from '../chart/chart.component';
 import {
   CNGX_CHART_CONTEXT,
   type CngxChartContext,
-  type CngxChartInset,
+  type CngxChartPlotArea,
   type ScaleFn,
   type XScaleInput,
 } from '../chart/chart-context';
@@ -283,13 +283,15 @@ describe('CngxAxis', () => {
  * seam on the chart.
  */
 describe('CngxAxis — non-zero plot inset', () => {
-  const INSET: CngxChartInset = {
-    inlineStart: 30,
-    inlineEnd: 10,
-    blockStart: 8,
-    blockEnd: 20,
+  // Box 200x100 with 30/10 inline and 8/20 block reserved.
+  const PLOT: CngxChartPlotArea = {
+    x0: 30,
+    y0: 8,
+    x1: 190,
+    y1: 80,
+    width: 160,
+    height: 72,
   };
-  // Box 200x100 minus INSET: x 30..190, y 8..80, so 160x72.
   const WIDTH = 200;
   const HEIGHT = 100;
 
@@ -315,7 +317,7 @@ describe('CngxAxis — non-zero plot inset', () => {
           xScale: signal<ScaleFn<XScaleInput>>((v) => 30 + (Number(v) / 100) * 160),
           yScale: signal<ScaleFn<number>>((v) => 80 - (v / 100) * 72),
           dimensions: signal({ width: WIDTH, height: HEIGHT }),
-          inset: signal(INSET),
+          plot: signal(PLOT),
           dataLength: computed(() => 0),
           data: <T,>() => [] as readonly T[],
           renderSvg: signal(true),
@@ -417,7 +419,8 @@ describe('CngxAxis — non-zero plot inset', () => {
             xScale: signal<ScaleFn<XScaleInput>>(() => 0),
             yScale: signal<ScaleFn<number>>(() => 0),
             dimensions: signal({ width: 20, height: HEIGHT }),
-            inset: signal(INSET),
+            // Reserving 30+10 inline inside a 20px box collapses the plot.
+            plot: signal({ ...PLOT, x0: 30, x1: 10, width: -20 }),
             dataLength: computed(() => 0),
             data: <T,>() => [] as readonly T[],
             renderSvg: signal(true),

@@ -6,7 +6,7 @@ import {
   input,
   ViewEncapsulation,
 } from '@angular/core';
-import { CNGX_CHART_CONTEXT } from '../chart/chart-context';
+import { CNGX_CHART_CONTEXT, type CngxChartPlotArea } from '../chart/chart-context';
 
 /**
  * Axis position. Top/bottom are X-axes; left/right are Y-axes. The
@@ -36,23 +36,6 @@ const LABEL_OFFSET = 4;
 const AXIS_LABEL_OFFSET_INLINE = 32;
 /** @internal */
 const AXIS_LABEL_OFFSET_BLOCK = 36;
-
-/**
- * The rectangle the chart's scales map onto: the viewBox minus the
- * inset the chart reserves for axis decoration. Every axis coordinate
- * is authored against this rather than the box, so the line stays
- * attached to the area the marks actually occupy.
- *
- * @internal
- */
-interface PlotArea {
-  readonly x0: number;
-  readonly y0: number;
-  readonly x1: number;
-  readonly y1: number;
-  readonly width: number;
-  readonly height: number;
-}
 
 /** @internal */
 interface AxisLabelGeometry {
@@ -312,43 +295,19 @@ export class CngxAxis {
   protected readonly hostClass = computed(() => `cngx-axis cngx-axis--${this.position()}`);
 
   /**
-   * The chart's plot area in viewBox user units - the box minus the
-   * inset the chart reserves for axis decoration. Single source for
-   * every geometry below, so the line, the ticks, the gridlines and the
-   * title cannot disagree about where the plot starts.
+   * The chart's plot area, or `null` once it has collapsed on either
+   * dimension - the same condition under which the chart hands out its
+   * NOOP scale, so a collapsed chart renders no axis rather than an
+   * axis against a backwards range.
    *
-   * `null` once the plot has collapsed on either dimension, which is
-   * the same condition under which the chart hands out its NOOP scale.
+   * The rectangle itself is the chart's derivation, read straight off
+   * the context. The axis narrows it to a render/do-not-render
+   * decision; it never reconstructs it from the box.
    */
-  private readonly plot = computed<PlotArea | null>(
-    () => {
-      const { width, height } = this.ctx.dimensions();
-      const { inlineStart, inlineEnd, blockStart, blockEnd } = this.ctx.inset();
-      const x1 = width - inlineEnd;
-      const y1 = height - blockEnd;
-      if (x1 <= inlineStart || y1 <= blockStart) {
-        return null;
-      }
-      return {
-        x0: inlineStart,
-        y0: blockStart,
-        x1,
-        y1,
-        width: x1 - inlineStart,
-        height: y1 - blockStart,
-      };
-    },
-    {
-      equal: (a, b) =>
-        a === b ||
-        (a !== null &&
-          b !== null &&
-          a.x0 === b.x0 &&
-          a.y0 === b.y0 &&
-          a.x1 === b.x1 &&
-          a.y1 === b.y1),
-    },
-  );
+  private readonly plot = computed<CngxChartPlotArea | null>(() => {
+    const plot = this.ctx.plot();
+    return plot.width <= 0 || plot.height <= 0 ? null : plot;
+  });
 
   protected readonly axisLabelGeometry = computed<AxisLabelGeometry | null>(
     () => {
@@ -474,7 +433,7 @@ function toMs(v: unknown): number {
  *
  * @internal
  */
-function buildAxisGeometry(pos: CngxAxisPosition, plot: PlotArea): AxisGeometry {
+function buildAxisGeometry(pos: CngxAxisPosition, plot: CngxChartPlotArea): AxisGeometry {
   switch (pos) {
     case 'top':
       return {
@@ -505,7 +464,7 @@ function buildTickRendering(
   offset: number,
   text: string,
   key: string,
-  plot: PlotArea,
+  plot: CngxChartPlotArea,
 ): TickRendering {
   switch (pos) {
     case 'bottom':
@@ -593,7 +552,7 @@ function defaultTickFormat(v: unknown): string {
 }
 
 /** @internal */
-function buildAxisLabelGeometry(pos: CngxAxisPosition, plot: PlotArea): AxisLabelGeometry {
+function buildAxisLabelGeometry(pos: CngxAxisPosition, plot: CngxChartPlotArea): AxisLabelGeometry {
   // Local to the axis group, so the offsets stay as they were and only
   // the centring runs along the plot extent instead of the box.
   const midX = plot.x0 + plot.width / 2;

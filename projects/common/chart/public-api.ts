@@ -30,7 +30,7 @@ export { CngxChartAnnouncer } from './chart/chart-announcer.component';
 export {
   CNGX_CHART_CONTEXT,
   type CngxChartContext,
-  type CngxChartInset,
+  type CngxChartPlotArea,
   type ScaleFn,
   type XScaleInput,
 } from './chart/chart-context';

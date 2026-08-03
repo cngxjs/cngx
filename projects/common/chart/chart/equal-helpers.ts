@@ -10,7 +10,7 @@
  * @internal
  */
 
-import type { CngxChartInset } from './chart-context';
+import type { CngxChartInset, CngxChartPlotArea } from './chart-context';
 
 /**
  * Length + `Object.is` per-index equality on a readonly numeric array.
@@ -71,10 +71,11 @@ export function dimensionsEqual(
 }
 
 /**
- * Field-wise equality on the chart's four-sided plot inset. The
- * `resolvedInset` computed rebuilds its literal whenever the projected
- * axis set re-emits, so without this guard an unchanged axis set would
- * cascade into both scale ranges and every axis geometry on each pass.
+ * Field-wise equality on the chart's four-sided axis inset. The `inset`
+ * computed rebuilds its literal whenever the projected axis set
+ * re-emits, so without this guard an unchanged axis set would cascade
+ * into the plot area and from there into both scale ranges and every
+ * axis geometry on each pass.
  */
 export function insetEqual(a: CngxChartInset, b: CngxChartInset): boolean {
   return (
@@ -83,4 +84,13 @@ export function insetEqual(a: CngxChartInset, b: CngxChartInset): boolean {
     a.blockStart === b.blockStart &&
     a.blockEnd === b.blockEnd
   );
+}
+
+/**
+ * Field-wise equality on the published plot rectangle. Only the four
+ * corners are compared - `width`/`height` are derived from them, so an
+ * equal pair of corners implies equal extents.
+ */
+export function plotAreaEqual(a: CngxChartPlotArea, b: CngxChartPlotArea): boolean {
+  return a.x0 === b.x0 && a.y0 === b.y0 && a.x1 === b.x1 && a.y1 === b.y1;
 }

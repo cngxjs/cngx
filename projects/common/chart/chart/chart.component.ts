@@ -36,12 +36,19 @@ import {
   CNGX_CHART_CONTEXT,
   type CngxChartContext,
   type CngxChartInset,
+  type CngxChartPlotArea,
   type ScaleFn,
   type XScaleInput,
 } from './chart-context';
 import { computeChartSummary } from './summary';
 import { createSignificantChangeTracker } from './significant-change';
-import { dimensionsEqual, insetEqual, sameItemsArr, sameNumberArr } from './equal-helpers';
+import {
+  dimensionsEqual,
+  insetEqual,
+  plotAreaEqual,
+  sameItemsArr,
+  sameNumberArr,
+} from './equal-helpers';
 import { CNGX_CHART_LAYER, type LayerGeometry } from '../layers/chart-layer';
 import { createChartRendererController } from '../renderer/chart-renderer-controller';
 import { CNGX_CHART_RENDERER_FACTORY } from '../renderer/renderer-factory';
@@ -552,15 +559,39 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
   );
 
   /**
-   * Space reserved for axis decoration inside the viewBox, published on
-   * {@link CngxChartContext}. The scales below map onto the viewBox
-   * minus this inset, and `[cngxAxis]` places its line on the same plot
-   * edge, so the two never disagree about where the plot area is.
+   * Room the projected axes need for their decoration, per side.
+   * Chart-internal: it exists only to produce {@link plot}, which is
+   * what every reader actually wants.
    *
    * Zero on every side today - the mechanism ships inert and the
    * derivation from the projected axis set lands separately.
    */
-  readonly inset = computed<CngxChartInset>(() => ZERO_INSET, { equal: insetEqual });
+  private readonly inset = computed<CngxChartInset>(() => ZERO_INSET, { equal: insetEqual });
+
+  /**
+   * The plot rectangle published on {@link CngxChartContext}: the
+   * viewBox minus {@link inset}. Both scale ranges below and every
+   * `[cngxAxis]` resolve against this one derivation, so there is no
+   * second place where the box and the reserved room are subtracted
+   * from each other and no way for the two to disagree.
+   */
+  readonly plot = computed<CngxChartPlotArea>(
+    () => {
+      const { width, height } = this.dimensions();
+      const { inlineStart, inlineEnd, blockStart, blockEnd } = this.inset();
+      const x1 = width - inlineEnd;
+      const y1 = height - blockEnd;
+      return {
+        x0: inlineStart,
+        y0: blockStart,
+        x1,
+        y1,
+        width: x1 - inlineStart,
+        height: y1 - blockStart,
+      };
+    },
+    { equal: plotAreaEqual },
+  );
 
   /**
    * Render backend: `'canvas'` once the datapoint count exceeds the
@@ -602,20 +633,18 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
   readonly xScale = computed<ScaleFn<XScaleInput>>(
     () => {
       const axes = this.axes();
-      const { width } = this.dimensions();
-      const { inlineStart, inlineEnd } = this.inset();
-      const plotEnd = width - inlineEnd;
-      // Guard the plot extent, not the box: a chart narrower than its
-      // own inset would otherwise get a backwards range and paint every
-      // mark mirrored.
-      if (plotEnd <= inlineStart) {
+      const plot = this.plot();
+      // Guard the plot extent, not the box: a chart narrower than the
+      // room its axes need would otherwise get a backwards range and
+      // paint every mark mirrored.
+      if (plot.width <= 0) {
         return NOOP_SCALE;
       }
       const xAxis = axes.find((a) => isHorizontalPosition(a.position()));
       if (!xAxis) {
         return NOOP_SCALE;
       }
-      return this.xScaleCache.get(xAxis.type(), xAxis.domain() ?? [], [inlineStart, plotEnd]);
+      return this.xScaleCache.get(xAxis.type(), xAxis.domain() ?? [], [plot.x0, plot.x1]);
     },
     { equal: (a, b) => a === b },
   );
@@ -623,10 +652,8 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
   readonly yScale = computed<ScaleFn<number>>(
     () => {
       const axes = this.axes();
-      const { height } = this.dimensions();
-      const { blockStart, blockEnd } = this.inset();
-      const plotEnd = height - blockEnd;
-      if (plotEnd <= blockStart) {
+      const plot = this.plot();
+      if (plot.height <= 0) {
         return NOOP_Y_SCALE;
       }
       const yAxis = axes.find((a) => isVerticalPosition(a.position()));
@@ -635,8 +662,8 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
       }
       // SVG Y-axis is flipped - domain[max] maps to the plot area's top edge, domain[min] to its bottom edge.
       return this.yScaleCache.get(yAxis.type(), yAxis.domain() ?? [], [
-        plotEnd,
-        blockStart,
+        plot.y1,
+        plot.y0,
       ]) as ScaleFn<number>;
     },
     { equal: (a, b) => a === b },

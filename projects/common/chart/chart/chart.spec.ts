@@ -715,14 +715,16 @@ describe('CngxChart — plot inset', () => {
     ).ctx;
   }
 
-  it('reserves nothing on any side', () => {
+  it('publishes a plot area equal to the full box while nothing is reserved', () => {
     const fixture = TestBed.createComponent(AxedHost);
     fixture.detectChanges();
-    expect(ctxFor(fixture).inset()).toEqual({
-      inlineStart: 0,
-      inlineEnd: 0,
-      blockStart: 0,
-      blockEnd: 0,
+    expect(ctxFor(fixture).plot()).toEqual({
+      x0: 0,
+      y0: 0,
+      x1: 200,
+      y1: 100,
+      width: 200,
+      height: 100,
     });
   });
 
@@ -742,17 +744,21 @@ describe('CngxChart — plot inset', () => {
     expect(y(50)).toBe(0);
   });
 
-  it('hands back a reference-stable inset across re-reads', () => {
+  it('holds the plot reference across a re-read that changes nothing', () => {
     const fixture = TestBed.createComponent(AxedHost);
     fixture.detectChanges();
     const ctx = ctxFor(fixture);
-    const first = ctx.inset();
+    const first = ctx.plot();
+    // Same dimensions, fresh evaluation: the guard is what keeps both
+    // scales and every axis geometry from rebuilding on an unchanged box.
+    fixture.componentInstance.width.set(200);
+    fixture.detectChanges();
+    expect(ctx.plot()).toBe(first);
+
+    // A real change flows through.
     fixture.componentInstance.width.set(400);
     fixture.detectChanges();
-    // A dimension change must not cascade into the inset: the guard on
-    // the computed is what keeps both scales and every axis geometry
-    // from rebuilding on an unchanged axis set.
-    expect(ctx.inset()).toBe(first);
+    expect(ctx.plot().x1).toBe(400);
   });
 
   it('returns the NOOP scale rather than an inverted range on a collapsed box', () => {
