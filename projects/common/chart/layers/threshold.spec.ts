@@ -37,13 +37,13 @@ describe('CngxThreshold', () => {
     fixture.detectChanges();
     const line = fixture.nativeElement.querySelector('.cngx-threshold__line') as SVGLineElement;
     expect(line).not.toBeNull();
-    // Gutters plus label overhang put the plot at x 30..189 by y 8..75.
+    // Gutters plus label overhang put the plot at x 31..189 by y 9..74.
     // y domain [0, 10] over that height (SVG-flipped): value 5 -> y=41.5.
     expect(Number(line.getAttribute('y1'))).toBeCloseTo(41.5, 5);
     expect(Number(line.getAttribute('y2'))).toBeCloseTo(41.5, 5);
     // Spans the plot, not the box - a line running through the axis
     // gutter reads as a stray rule rather than as a level.
-    expect(Number(line.getAttribute('x1'))).toBe(30);
+    expect(Number(line.getAttribute('x1'))).toBe(31);
     expect(Number(line.getAttribute('x2'))).toBe(189);
   });
 

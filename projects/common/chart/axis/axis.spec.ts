@@ -86,13 +86,13 @@ describe('CngxAxis', () => {
   });
 
   // The host's 200x100 box with a [0, 100] domain formats to a longest
-  // tick label of three characters, so a vertical axis reserves 30 and
-  // a horizontal one the 25 its single line box needs.
+  // tick label of three characters, so a vertical axis reserves 31 and
+  // a horizontal one the 26 its single line box needs.
   it.each<[CngxAxisPosition, string]>([
-    ['top', 'translate(0,25)'],
-    ['bottom', 'translate(0,75)'],
-    ['left', 'translate(30,0)'],
-    ['right', 'translate(170,0)'],
+    ['top', 'translate(0,26)'],
+    ['bottom', 'translate(0,74)'],
+    ['left', 'translate(31,0)'],
+    ['right', 'translate(169,0)'],
   ])('positions the axis group on its own reserved plot edge for position=%s', (pos, expected) => {
     const { fixture, axisGroup } = setup();
     fixture.componentInstance.position.set(pos);
@@ -181,11 +181,11 @@ describe('CngxAxis', () => {
     expect(texts).toContain('Months');
     expect(texts).toContain('Revenue');
     // Bottom axis label is centred on the plot, not the box: the
-    // titled left axis reserves 53 and the bottom axis's own labels
-    // overhang 11 to the right, so the plot runs x 53..189 and its
-    // midpoint is 121. No rotation in the transform.
+    // titled left axis reserves 54 and the bottom axis's own labels
+    // overhang 11 to the right, so the plot runs x 54..189 and its
+    // midpoint is 121.5. No rotation in the transform.
     const bottomLabel = labels.find((l) => l.textContent?.trim() === 'Months');
-    expect(bottomLabel?.getAttribute('transform')).toMatch(/translate\(121,/);
+    expect(bottomLabel?.getAttribute('transform')).toMatch(/translate\(121\.5,/);
     expect(bottomLabel?.getAttribute('transform')).not.toMatch(/rotate/);
     // Left axis label is rotated -90deg.
     const leftLabel = labels.find((l) => l.textContent?.trim() === 'Revenue');
@@ -231,11 +231,11 @@ describe('CngxAxis', () => {
     );
     expect(lines.length).toBe(5);
     // Vertical gridlines for a bottom axis: x2=0, y2=-plot height. The
-    // bottom axis reserves 25 of the 100-tall box, so they stop at the
+    // bottom axis reserves 26 of the 100-tall box, so they stop at the
     // plot edge rather than running down through the tick labels.
     for (const l of lines) {
       expect(Number(l.getAttribute('x2'))).toBe(0);
-      expect(Number(l.getAttribute('y2'))).toBe(-75);
+      expect(Number(l.getAttribute('y2'))).toBe(-74);
     }
   });
 
@@ -264,10 +264,10 @@ describe('CngxAxis', () => {
       (f.nativeElement as HTMLElement).querySelectorAll<SVGLineElement>('.cngx-axis__grid-line'),
     );
     expect(lines.length).toBe(3);
-    // A [0, 10] domain over 3 ticks formats to '2.5' at its widest, so
-    // the left axis reserves 23 of the 200-wide box.
+    // A [0, 10] domain over 3 ticks formats to '10' at its widest, so
+    // the left axis reserves 24 of the 200-wide box.
     for (const l of lines) {
-      expect(Number(l.getAttribute('x2'))).toBe(177);
+      expect(Number(l.getAttribute('x2'))).toBe(176);
       expect(Number(l.getAttribute('y2'))).toBe(0);
     }
   });
@@ -514,8 +514,8 @@ describe('CngxAxis — the room an axis reserves', () => {
     const narrow = transformFor((h) => h.domain.set([0, 90]));
     // [0, 1200000] formats to '1200000' - seven.
     const wide = transformFor((h) => h.domain.set([0, 1200000]));
-    expect(narrow).toBe('translate(37,0)');
-    expect(wide).toBe('translate(57,0)');
+    expect(narrow).toBe('translate(38,0)');
+    expect(wide).toBe('translate(60,0)');
   });
 
   it('widens the reservation from [format] alone, with the domain unchanged', () => {
@@ -525,8 +525,8 @@ describe('CngxAxis — the room an axis reserves', () => {
       h.formatFn.set((v) => `€${v} EUR`);
     });
     // '90' is two characters; '€90 EUR' is seven.
-    expect(plain).toBe('translate(23,0)');
-    expect(formatted).toBe('translate(57,0)');
+    expect(plain).toBe('translate(24,0)');
+    expect(formatted).toBe('translate(60,0)');
   });
 
   it('reserves label-width-independently on a horizontal axis', () => {
@@ -540,7 +540,7 @@ describe('CngxAxis — the room an axis reserves', () => {
       h.position.set('bottom');
       h.domain.set([0, 1200000]);
     });
-    expect(narrow).toBe('translate(0,75)');
+    expect(narrow).toBe('translate(0,74)');
     expect(wide).toBe(narrow);
   });
 
@@ -551,10 +551,10 @@ describe('CngxAxis — the room an axis reserves', () => {
       h.axisTitle.set('Revenue');
     });
     // The title sits at a fixed offset from the line rather than beyond
-    // the ticks, so the two extents are alternatives: 23 for the ticks,
-    // 53 for the title, and the title wins here.
-    expect(untitled).toBe('translate(23,0)');
-    expect(titled).toBe('translate(53,0)');
+    // the ticks, so the two extents are alternatives: 24 for the ticks,
+    // 54 for the title, and the title wins here.
+    expect(untitled).toBe('translate(24,0)');
+    expect(titled).toBe('translate(54,0)');
   });
 
   it('reserves only the tick gap when the axis formats no labels at all', () => {

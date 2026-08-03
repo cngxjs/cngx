@@ -65,33 +65,35 @@ const AXIS_LABEL_FONT_SIZE = 12;
  * not the font's real advance width - the axis knows its label strings
  * but not the glyphs they resolve to.
  *
- * `0.62` sits above the average advance of the common UI sans faces at
- * their digit widths, so the gutter covers rather than clips. Measured
- * against the demo stories it over-reserves by roughly a character on a
- * long thousands-separated label, which is the correct direction to be
- * wrong in.
+ * `0.65` covers the measured digit advance in the demo app's font
+ * stack: at 11px `system-ui` a digit lays out 7.0 units wide, a ratio
+ * of 0.636. Digits are the common case on an axis and the widest
+ * per-character case in a numeric label - separators and decimal points
+ * are narrower, so a thousands-separated label over-reserves, which is
+ * the correct direction to be wrong in.
  *
  * @internal
  */
-const CHAR_ADVANCE_RATIO = 0.62;
+const CHAR_ADVANCE_RATIO = 0.65;
 
 /**
  * Height of a rendered line box as a fraction of the font size, sized
  * so that *half* of it still covers the taller half. A label reaches
  * above its ascender and below its descender, so it needs more than the
- * font size: at 11px the browser lays out 13. It is also not centred on
- * its anchor - a `dominant-baseline: middle` label measures 7.6 above
- * the anchor and 5.4 below, so a symmetric half of the true 13 would
- * under-reserve on the taller side by exactly the amount that clips the
- * topmost tick label of a left axis.
+ * font size: at 11px the browser lays out 13, a ratio of 1.18. It is
+ * also not centred on its anchor - a `dominant-baseline: middle` label
+ * measures 8.11 above the anchor and 4.89 below, so a symmetric half of
+ * the true line box under-reserves on the taller side by exactly the
+ * amount that clips the topmost tick label of a left axis.
  *
- * `1.4` is that asymmetry folded into one number: `11 x 1.4 / 2 = 7.7`
- * covers the 7.6, and the full value over-reserves a horizontal axis by
- * about two units, which is the direction to be wrong in.
+ * `1.5` is that asymmetry folded into one number: `11 x 1.5 / 2 = 8.25`
+ * covers the measured 8.11, and the full value over-reserves a
+ * horizontal axis by about three units, which is the direction to be
+ * wrong in.
  *
  * @internal
  */
-const LINE_BOX_RATIO = 1.4;
+const LINE_BOX_RATIO = 1.5;
 
 /** @internal */
 interface AxisLabelGeometry {
