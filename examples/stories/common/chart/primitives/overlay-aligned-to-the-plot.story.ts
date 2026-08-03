@@ -16,17 +16,20 @@ export const STORY: DemoSpec = {
   setup: `protected readonly load: readonly number[] = [
     18400, 24100, 31500, 27300, 44200, 52800, 48600, 61200, 57400, 72900, 68300, 80100,
   ];
-  protected readonly W = 480;
-  protected readonly H = 200;
   protected readonly thousands = (v: unknown): string => Number(v).toLocaleString('en-US');
-  /** viewBox units -> a percentage of the host box, which is what CSS inset wants. */
+  /**
+   * viewBox units -> a percentage of the host box, which is what CSS
+   * wants. The extent comes from the chart's own dimensions() rather
+   * than from a copy of the bound width, so this works unchanged on a
+   * responsive chart that has no [width] to copy.
+   */
   protected readonly pct = (v: number, extent: number): string => \`\${(v / extent) * 100}%\`;`,
   template: `<div class="cngx-ex-chart-overlay-host">
     <cngx-chart
       #chart="cngxChart"
       [data]="load"
-      [width]="W"
-      [height]="H"
+      [width]="480"
+      [height]="200"
       aria-label="Request load by month"
     >
       <svg:g
@@ -45,10 +48,10 @@ export const STORY: DemoSpec = {
          instance rather than inheriting the host custom properties. -->
     <div
       class="cngx-ex-plot-overlay"
-      [style.left]="alignToPlot() ? pct(chart.plot().x0, W) : '0%'"
-      [style.top]="alignToPlot() ? pct(chart.plot().y0, H) : '0%'"
-      [style.width]="alignToPlot() ? pct(chart.plot().width, W) : '100%'"
-      [style.height]="alignToPlot() ? pct(chart.plot().height, H) : '100%'"
+      [style.left]="alignToPlot() ? pct(chart.plot().x0, chart.dimensions().width) : '0%'"
+      [style.top]="alignToPlot() ? pct(chart.plot().y0, chart.dimensions().height) : '0%'"
+      [style.width]="alignToPlot() ? pct(chart.plot().width, chart.dimensions().width) : '100%'"
+      [style.height]="alignToPlot() ? pct(chart.plot().height, chart.dimensions().height) : '100%'"
     >
       <span>peak window</span>
     </div>

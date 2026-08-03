@@ -47,7 +47,7 @@ Every slot context carries `plot` - `{ x0, y0, x1, y1, width, height }` in viewB
 
 Mind the two coordinate spaces. Slot templates render into an HTML frame layered over the SVG, so `width`/`height` on the context are **rendered px** while `plot` is **viewBox units**. They diverge whenever an explicit `[width]` chart is squeezed by `max-width`. Do not compute a ratio across the two. For SVG-space geometry read `plot` off `injectChartContext()` inside a directive on an `<svg:g>` host, the way the layer atoms do.
 
-From outside the chart, read the rectangle off the instance. An HTML overlay is always a sibling - everything projected into `<cngx-chart>` lands inside its SVG - so this is the route it has:
+From outside the chart, read the rectangle off the instance. An HTML overlay is always a sibling - everything projected into `<cngx-chart>` lands inside its SVG - so this is the route it has. Divide by `dimensions()`, which is the viewBox extent `plot` is measured in, rather than by a copy of the bound width: the same template then works on a responsive chart that has no `[width]` to copy.
 
 ```html
 <div style="position: relative; display: inline-block">
@@ -58,10 +58,10 @@ From outside the chart, read the rectangle off the instance. An HTML overlay is 
 
   <div
     style="position: absolute"
-    [style.left.%]="(chart.plot().x0 / 480) * 100"
-    [style.top.%]="(chart.plot().y0 / 200) * 100"
-    [style.width.%]="(chart.plot().width / 480) * 100"
-    [style.height.%]="(chart.plot().height / 200) * 100"
+    [style.left.%]="(chart.plot().x0 / chart.dimensions().width) * 100"
+    [style.top.%]="(chart.plot().y0 / chart.dimensions().height) * 100"
+    [style.width.%]="(chart.plot().width / chart.dimensions().width) * 100"
+    [style.height.%]="(chart.plot().height / chart.dimensions().height) * 100"
   >…</div>
 </div>
 ```
