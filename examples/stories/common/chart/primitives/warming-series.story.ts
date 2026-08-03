@@ -39,7 +39,7 @@ export const STORY: DemoSpec = {
     <button type="button" class="chip" (click)="resetSeries()">Reset</button>
     <span class="cngx-ex-status-readout">{{ series().length }} reading(s)</span>
   </div>`,
-  template: `  <div class="cngx-ex-chart-frame cngx-ex-chart-frame--left-axis-room">
+  template: `  <div class="cngx-ex-chart-frame">
     <cngx-chart
       [data]="series()"
       [width]="480"
