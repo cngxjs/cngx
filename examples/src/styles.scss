@@ -1242,6 +1242,27 @@ button.chip[aria-pressed='true'],
   border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e5e7eb));
   border-radius: 4px;
 }
+// Positioning context for an HTML layer over a chart, plus the layer
+// itself. Demonstrates the published --cngx-chart-plot-* properties;
+// the story sets `inset` inline so it can toggle plot vs box alignment.
+.cngx-ex-chart-overlay-host {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+}
+.cngx-ex-plot-overlay {
+  position: absolute;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: 4px;
+  pointer-events: none;
+  background: var(--cngx-ex-plot-overlay-bg, rgb(37 99 235 / 12%));
+  border: 1px dashed var(--cngx-color-primary, var(--cngx-ex-accent, #2563eb));
+  border-radius: 2px;
+  font-size: 11px;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-text-muted, #6b7280));
+}
 .cngx-ex-chart-frame--responsive {
   resize: horizontal;
   overflow: auto;
