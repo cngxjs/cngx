@@ -31,6 +31,42 @@ A chart with no axis reserves nothing and fills the box edge to edge. So does a 
 
 There is no knob. No input, no CSS custom property, no DI token sizes the gutter, because the component already knows everything needed to compute it. The one approximation is character width: the chart measures no text, so it estimates one character as a fraction of the default axis font size. Restyling `--cngx-axis-font-size` scales your labels but not the gutter they sit in. If that bites, the fix is a real measure pass or an escape hatch, and both are additive - open an issue with the font and the label that clipped.
 
+### Reading the plot area from outside
+
+The chart publishes where its plot area ended up, so anything you position against the host box can line up with the marks rather than the box.
+
+In a template, read the rectangle off the chart context or a slot context - `plot` carries `{ x0, y0, x1, y1, width, height }` in viewBox user units:
+
+```html
+<ng-template cngxChartEmpty let-plot="plot">
+  <text [attr.x]="plot.x0 + plot.width / 2" [attr.y]="plot.y0 + plot.height / 2">No readings</text>
+</ng-template>
+```
+
+In CSS, the chart writes four custom properties onto its own host, as percentages of the host box:
+
+|Property|Reserved on|
+|-|-|
+|`--cngx-chart-plot-inline-start`|left|
+|`--cngx-chart-plot-inline-end`|right|
+|`--cngx-chart-plot-block-start`|top|
+|`--cngx-chart-plot-block-end`|bottom|
+
+These are outputs, not settings. The chart rewrites them whenever the box or the axis set changes, so setting them yourself has no effect - read them to inset an HTML overlay onto the plot:
+
+```css
+.chart-overlay {
+  inset: var(--cngx-chart-plot-block-start) var(--cngx-chart-plot-inline-end)
+         var(--cngx-chart-plot-block-end) var(--cngx-chart-plot-inline-start);
+}
+```
+
+Percent rather than pixels because an explicit-`[width]` chart squeezed by `max-width` keeps its viewBox: a user unit stops being a CSS pixel, while a fraction stays a fraction.
+
+### Implementing CngxChartContext yourself
+
+`CngxChartContext` carries a required `plot` field. Injecting the context via `injectChartContext()` is unaffected. If you implement the interface directly - a hand-rolled test double, a custom container providing `CNGX_CHART_CONTEXT` - you have to supply it; there is no fallback to the host box, deliberately, so a mis-wired container fails loudly instead of silently drawing edge to edge.
+
 ## Status
 
 Under active development. Treat the **preset molecules** as stable for adoption. Treat the **atom internals** (axis tick computation, layer projection caching, custom-layer authoring) as still in flux until the chart-area master plan closes - APIs may move between minor releases.
