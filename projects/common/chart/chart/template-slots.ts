@@ -76,7 +76,7 @@ export const CHART_SMALL_BREAKPOINT_PX = 400;
  * @category common/chart
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/chart/template-slots.ts
  * @since 0.1.0
- * @relatedTo CngxChartEmpty, CngxChartError, CngxChart
+ * @relatedTo CngxChartSlotContext, CngxChartEmpty, CngxChartError, CngxChart
  */
 @Directive({
   selector: 'ng-template[cngxChartLoading]',
@@ -93,10 +93,18 @@ export class CngxChartLoading {
  * a richer surface (`<cngx-empty-state>`, illustration, action) at
  * regular sizes.
  *
+ * ```html
+ * <cngx-chart [state]="state()">
+ *   <ng-template cngxChartEmpty let-small="small" let-plot="plot">
+ *     <span>No readings in this range ({{ plot.width }} wide)</span>
+ *   </ng-template>
+ * </cngx-chart>
+ * ```
+ *
  * @category common/chart
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/chart/template-slots.ts
  * @since 0.1.0
- * @relatedTo CngxChartLoading, CngxChartError, CngxChart
+ * @relatedTo CngxChartSlotContext, CngxChartLoading, CngxChartError, CngxChart
  */
 @Directive({
   selector: 'ng-template[cngxChartEmpty]',
@@ -123,10 +131,18 @@ export interface CngxChartErrorContext extends CngxChartSlotContext {
  * `*cngxChartError` slot - overrides the chart-level error placeholder.
  * Receives a {@link CngxChartErrorContext}.
  *
+ * ```html
+ * <cngx-chart [state]="state()">
+ *   <ng-template cngxChartError let-error let-small="small">
+ *     <span>Could not load: {{ error?.message }}</span>
+ *   </ng-template>
+ * </cngx-chart>
+ * ```
+ *
  * @category common/chart
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/chart/template-slots.ts
  * @since 0.1.0
- * @relatedTo CngxChartLoading, CngxChartEmpty, CngxChart
+ * @relatedTo CngxChartErrorContext, CngxChartLoading, CngxChartEmpty, CngxChart
  */
 @Directive({
   selector: 'ng-template[cngxChartError]',
@@ -156,10 +172,18 @@ export interface CngxChartConnectionContext extends CngxChartSlotContext {
  * top of the data view with `role="alert"`; receives a
  * {@link CngxChartConnectionContext}.
  *
+ * ```html
+ * <cngx-chart [connectionState]="socket">
+ *   <ng-template cngxChartConnectionError let-error>
+ *     <span>Live feed lost: {{ error?.message }}</span>
+ *   </ng-template>
+ * </cngx-chart>
+ * ```
+ *
  * @category common/chart
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/chart/template-slots.ts
  * @since 0.1.0
- * @relatedTo CngxChartReconnecting, CngxChart
+ * @relatedTo CngxChartConnectionContext, CngxChartReconnecting, CngxChart
  */
 @Directive({
   selector: 'ng-template[cngxChartConnectionError]',
@@ -175,10 +199,18 @@ export class CngxChartConnectionError {
  * Overlaid with `role="status"` (polite); receives a
  * {@link CngxChartConnectionContext}.
  *
+ * ```html
+ * <cngx-chart [connectionState]="socket">
+ *   <ng-template cngxChartReconnecting let-small="small">
+ *     <span>{{ small ? 'Reconnecting' : 'Reconnecting to the live feed' }}</span>
+ *   </ng-template>
+ * </cngx-chart>
+ * ```
+ *
  * @category common/chart
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/chart/template-slots.ts
  * @since 0.1.0
- * @relatedTo CngxChartConnectionError, CngxChart
+ * @relatedTo CngxChartConnectionContext, CngxChartConnectionError, CngxChart
  */
 @Directive({
   selector: 'ng-template[cngxChartReconnecting]',
