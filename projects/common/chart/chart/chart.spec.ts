@@ -16,6 +16,8 @@ import { CngxChartConnectionError, CngxChartEmpty, CngxChartError } from './temp
 import { CngxAxis } from '../axis/axis.component';
 import { CngxLine } from '../layers/line.component';
 import { CngxBar } from '../layers/bar.component';
+import { CngxThreshold } from '../layers/threshold.component';
+import { CngxBand } from '../layers/band.component';
 import { type LayerGeometry } from '../layers/chart-layer';
 import { type CngxChartRendererFactory } from '../renderer/chart-renderer';
 import { createCanvasRenderer } from '../renderer/canvas-renderer';
@@ -1058,5 +1060,111 @@ describe('CngxChart — inset derived per axis combination', () => {
     fixture.detectChanges();
     TestBed.tick();
     expect(runs).toBe(settled + 1);
+  });
+});
+
+/**
+ * The canvas backend never draws axis decoration - `canvas-renderer.ts`
+ * has no axis branch - so the two render paths can only disagree about
+ * where the plot is if the geometries the canvas paints stop matching
+ * the plot the axes are placed on. These assert they cannot.
+ */
+describe('CngxChart — canvas marks land in the same plot the axes sit on', () => {
+  @Component({
+    standalone: true,
+    imports: [CngxChart, CngxAxis, CngxLine, CngxThreshold, CngxBand, ContextProbe],
+    template: `
+      <cngx-chart [data]="data()" [width]="200" [height]="100" data-testid="chart">
+        <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 10]"></svg:g>
+        <svg:g cngxAxis position="left" type="linear" [domain]="[0, 10]"></svg:g>
+        <svg:g cngxLine></svg:g>
+        <svg:g cngxThreshold [value]="5"></svg:g>
+        <svg:g cngxBand [from]="2" [to]="8"></svg:g>
+        <test-context-probe />
+      </cngx-chart>
+    `,
+  })
+  class CanvasHost {
+    readonly data = signal<readonly number[]>([1, 2, 3, 4, 5]);
+  }
+
+  beforeEach(() => vi.stubGlobal('ResizeObserver', ResizeObserverMock));
+  afterEach(() => vi.unstubAllGlobals());
+
+  function mount(pointCount: number): {
+    chartEl: HTMLElement;
+    plot: ReturnType<CngxChartContext['plot']>;
+    geometries: readonly LayerGeometry[];
+    axisTransforms: Record<string, string | null>;
+  } {
+    // Both crossover sides mount in one test, so the module has to be
+    // torn down between them.
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      imports: [CanvasHost],
+      providers: [provideChartRenderer(withChartRendererThreshold(50))],
+    });
+    const fixture = TestBed.createComponent(CanvasHost);
+    fixture.componentInstance.data.set(Array.from({ length: pointCount }, (_, i) => i % 10));
+    fixture.detectChanges();
+    const chartEl = fixture.nativeElement.querySelector('[data-testid="chart"]') as HTMLElement;
+    const instance = fixture.debugElement.query(By.directive(CngxChart))
+      .componentInstance as CngxChart<number>;
+    const geometries = (
+      instance as unknown as { geometries: () => readonly LayerGeometry[] }
+    ).geometries();
+    const plot = (
+      fixture.debugElement.query(By.directive(ContextProbe)).componentInstance as ContextProbe
+    ).ctx.plot();
+    const axisTransforms: Record<string, string | null> = {};
+    for (const g of Array.from(chartEl.querySelectorAll('.cngx-axis'))) {
+      const side = (g.getAttribute('class') ?? '').split('cngx-axis--')[1] ?? '?';
+      axisTransforms[side] = g.getAttribute('transform');
+    }
+    return { chartEl, plot, geometries, axisTransforms };
+  }
+
+  it('spans threshold and band across the plot in canvas mode, where the axes are', () => {
+    const { chartEl, plot, geometries, axisTransforms } = mount(51);
+    // Precondition: we are actually on the canvas backend.
+    expect(chartEl.querySelector('canvas')).not.toBeNull();
+    expect(chartEl.querySelector('.cngx-line')).toBeNull();
+
+    const threshold = geometries.find((g) => g.kind === 'threshold');
+    const band = geometries.find((g) => g.kind === 'band');
+    expect(threshold).toBeDefined();
+    expect(band).toBeDefined();
+    if (threshold?.kind !== 'threshold' || band?.kind !== 'band') {
+      throw new Error('unreachable');
+    }
+
+    // The geometries the canvas paints start and end on the plot edges.
+    expect(threshold.x1).toBe(plot.x0);
+    expect(threshold.x2).toBe(plot.x1);
+    expect(band.x).toBe(plot.x0);
+    expect(band.x + band.w).toBe(plot.x1);
+
+    // And the axes - which stay SVG in canvas mode - sit on those same
+    // edges. This is the pairing that makes the two paths agree.
+    expect(axisTransforms['left']).toBe(`translate(${plot.x0},0)`);
+    expect(axisTransforms['bottom']).toBe(`translate(0,${plot.y1})`);
+  });
+
+  it('publishes identical geometry either side of the threshold crossover', () => {
+    const svgSide = mount(10);
+    expect(svgSide.chartEl.querySelector('canvas')).toBeNull();
+    const canvasSide = mount(51);
+    expect(canvasSide.chartEl.querySelector('canvas')).not.toBeNull();
+
+    // Same box, same axes, so the same plot - the backend swap changes
+    // who paints, never where.
+    expect(canvasSide.plot).toEqual(svgSide.plot);
+    expect(canvasSide.axisTransforms).toEqual(svgSide.axisTransforms);
+
+    const pick = (gs: readonly LayerGeometry[]) =>
+      gs
+        .filter((g) => g.kind === 'threshold' || g.kind === 'band')
+        .map((g) => (g.kind === 'threshold' ? [g.x1, g.x2, g.y1] : [g.x, g.x + g.w, g.y]));
+    expect(pick(canvasSide.geometries)).toEqual(pick(svgSide.geometries));
   });
 });
