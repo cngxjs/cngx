@@ -10,6 +10,8 @@
  * @internal
  */
 
+import type { CngxChartInset } from './chart-context';
+
 /**
  * Length + `Object.is` per-index equality on a readonly numeric array.
  * Used by `summaryValues` and `summary.thresholds`. Reference-equal
@@ -66,4 +68,19 @@ export function dimensionsEqual(
   b: { width: number; height: number },
 ): boolean {
   return a.width === b.width && a.height === b.height;
+}
+
+/**
+ * Field-wise equality on the chart's four-sided plot inset. The
+ * `resolvedInset` computed rebuilds its literal whenever the projected
+ * axis set re-emits, so without this guard an unchanged axis set would
+ * cascade into both scale ranges and every axis geometry on each pass.
+ */
+export function insetEqual(a: CngxChartInset, b: CngxChartInset): boolean {
+  return (
+    a.inlineStart === b.inlineStart &&
+    a.inlineEnd === b.inlineEnd &&
+    a.blockStart === b.blockStart &&
+    a.blockEnd === b.blockEnd
+  );
 }

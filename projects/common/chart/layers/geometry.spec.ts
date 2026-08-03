@@ -13,6 +13,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import {
   CNGX_CHART_CONTEXT,
   type CngxChartContext,
+  type CngxChartInset,
   type ScaleFn,
   type XScaleInput,
 } from '../chart/chart-context';
@@ -27,12 +28,19 @@ interface MockCtxHandle {
   readonly ctx: CngxChartContext;
   readonly renderSvg: WritableSignal<boolean>;
   readonly dims: WritableSignal<{ width: number; height: number }>;
+  readonly inset: WritableSignal<CngxChartInset>;
   readonly data: WritableSignal<readonly number[]>;
 }
 
 function mkCtx(): MockCtxHandle {
   const renderSvg = signal(true);
   const dims = signal({ width: 100, height: 50 });
+  const inset = signal<CngxChartInset>({
+    inlineStart: 0,
+    inlineEnd: 0,
+    blockStart: 0,
+    blockEnd: 0,
+  });
   const dataSig = signal<readonly number[]>([1, 2, 3, 4, 5]);
   const xScale = signal<ScaleFn<XScaleInput>>((v) => Number(v) * 10);
   const yScale = signal<ScaleFn<number>>((v) => v * 4);
@@ -40,11 +48,12 @@ function mkCtx(): MockCtxHandle {
     xScale,
     yScale,
     dimensions: dims,
+    inset,
     dataLength: computed(() => dataSig().length),
     data: <T>() => dataSig() as unknown as readonly T[],
     renderSvg,
   };
-  return { ctx, renderSvg, dims, data: dataSig };
+  return { ctx, renderSvg, dims, inset, data: dataSig };
 }
 
 @Component({

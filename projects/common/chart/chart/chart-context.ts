@@ -21,6 +21,25 @@ export type XScaleInput = number | Date | string;
 export type ScaleFn<TIn> = (v: TIn) => number;
 
 /**
+ * Space reserved inside the viewBox for axis decoration, in viewBox
+ * user units. The plot area is the viewBox minus this inset on each
+ * side, and the chart's scales map onto the plot area rather than the
+ * full box, so a left axis has room for its tick labels instead of
+ * painting them left of `x = 0`.
+ *
+ * Logical, not physical: `inlineStart` is the left edge in an LTR
+ * writing mode. A side with no axis on it reserves `0`.
+ *
+ * @category common/chart
+ */
+export interface CngxChartInset {
+  readonly inlineStart: number;
+  readonly inlineEnd: number;
+  readonly blockStart: number;
+  readonly blockEnd: number;
+}
+
+/**
  * Reactive context published by `<cngx-chart>` to its content children.
  * Layer atoms (`[cngxLine]`, `[cngxBar]`, ...) and `[cngxAxis]` inject
  * {@link CNGX_CHART_CONTEXT} to read the parent chart's scales,
@@ -36,6 +55,13 @@ export interface CngxChartContext<TX = XScaleInput, TY = number> {
   readonly xScale: Signal<ScaleFn<TX>>;
   readonly yScale: Signal<ScaleFn<TY>>;
   readonly dimensions: Signal<{ width: number; height: number }>;
+  /**
+   * Space reserved for axis decoration inside the viewBox. Read by the
+   * chart's own scale ranges and by `[cngxAxis]` for its line
+   * placement, so both describe the same plot area. Derived from which
+   * axes are projected - a chart without axes reserves nothing.
+   */
+  readonly inset: Signal<CngxChartInset>;
   readonly dataLength: Signal<number>;
   /**
    * Generic-aware data accessor. Reads the chart's reactive data

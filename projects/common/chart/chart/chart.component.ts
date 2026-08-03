@@ -35,12 +35,13 @@ import { createBandScale, createLinearScale, createTimeScale } from '../scales';
 import {
   CNGX_CHART_CONTEXT,
   type CngxChartContext,
+  type CngxChartInset,
   type ScaleFn,
   type XScaleInput,
 } from './chart-context';
 import { computeChartSummary } from './summary';
 import { createSignificantChangeTracker } from './significant-change';
-import { dimensionsEqual, sameItemsArr, sameNumberArr } from './equal-helpers';
+import { dimensionsEqual, insetEqual, sameItemsArr, sameNumberArr } from './equal-helpers';
 import { CNGX_CHART_LAYER, type LayerGeometry } from '../layers/chart-layer';
 import { createChartRendererController } from '../renderer/chart-renderer-controller';
 import { CNGX_CHART_RENDERER_FACTORY } from '../renderer/renderer-factory';
@@ -50,6 +51,20 @@ import { CNGX_CHART_RENDERER_THRESHOLD } from '../renderer/renderer-threshold';
 const NOOP_SCALE: ScaleFn<XScaleInput> = () => 0;
 /** @internal */
 const NOOP_Y_SCALE: ScaleFn<number> = () => 0;
+
+/**
+ * Reserve-nothing inset. A stable reference, so a chart whose axis set
+ * never changes hands the same object to every reader and the `equal`
+ * guard on {@link CngxChart.inset} short-circuits on identity.
+ *
+ * @internal
+ */
+const ZERO_INSET: CngxChartInset = {
+  inlineStart: 0,
+  inlineEnd: 0,
+  blockStart: 0,
+  blockEnd: 0,
+};
 
 /**
  * Stable reference for the default `summaryAccessor`. Exposed so the
@@ -535,6 +550,17 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
     }),
     { equal: dimensionsEqual },
   );
+
+  /**
+   * Space reserved for axis decoration inside the viewBox, published on
+   * {@link CngxChartContext}. The scales below map onto the viewBox
+   * minus this inset, and `[cngxAxis]` places its line on the same plot
+   * edge, so the two never disagree about where the plot area is.
+   *
+   * Zero on every side today - the mechanism ships inert and the
+   * derivation from the projected axis set lands separately.
+   */
+  readonly inset = computed<CngxChartInset>(() => ZERO_INSET, { equal: insetEqual });
 
   /**
    * Render backend: `'canvas'` once the datapoint count exceeds the
