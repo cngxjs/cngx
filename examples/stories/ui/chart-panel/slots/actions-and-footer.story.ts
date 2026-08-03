@@ -39,6 +39,13 @@ export const STORY: DemoSpec = {
 
     <cngx-chart [data]="series" [height]="180" aria-label="Net revenue by quarter">
       <svg:g cngxAxis position="left" type="linear" [domain]="[0, 90]" [grid]="true"></svg:g>
+      <svg:g
+        cngxAxis
+        [decorated]="false"
+        position="bottom"
+        type="linear"
+        [domain]="[0, 7]"
+      ></svg:g>
       <svg:g cngxLine [data]="series"></svg:g>
     </cngx-chart>
 
