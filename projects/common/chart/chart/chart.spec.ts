@@ -832,3 +832,147 @@ describe('CngxChart — plot inset', () => {
     expect(ctx.yScale()(50)).toBe(0);
   });
 });
+
+describe('CngxChart — inset derived per axis combination', () => {
+  // A 200x100 box. The bottom axis reserves the 20 its single line box
+  // needs regardless of its labels; the left axis's [0, 100] domain
+  // formats to '100' at its widest, three characters, so it reserves 30.
+  @Component({
+    standalone: true,
+    imports: [CngxChart, CngxAxis, ContextProbe],
+    template: `
+      <cngx-chart [data]="[1, 2, 3]" [width]="width()" [height]="100">
+        @if (hasBottom()) {
+          <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 100]"></svg:g>
+        }
+        @if (hasLeft()) {
+          <svg:g cngxAxis position="left" type="linear" [domain]="[0, 100]"></svg:g>
+        }
+        <test-context-probe />
+      </cngx-chart>
+    `,
+  })
+  class ComboHost {
+    width = signal<number | undefined>(200);
+    hasBottom = signal(false);
+    hasLeft = signal(false);
+  }
+
+  beforeEach(() => {
+    vi.stubGlobal('ResizeObserver', ResizeObserverMock);
+    TestBed.configureTestingModule({ imports: [ComboHost] });
+  });
+
+  afterEach(() => vi.unstubAllGlobals());
+
+  function plotFor(bottom: boolean, left: boolean): ReturnType<CngxChartContext['plot']> {
+    const fixture = TestBed.createComponent(ComboHost);
+    fixture.componentInstance.hasBottom.set(bottom);
+    fixture.componentInstance.hasLeft.set(left);
+    fixture.detectChanges();
+    return (
+      fixture.debugElement.query(By.directive(ContextProbe)).componentInstance as ContextProbe
+    ).ctx.plot();
+  }
+
+  it('reserves nothing at all when no axis is projected', () => {
+    expect(plotFor(false, false)).toEqual({
+      x0: 0,
+      y0: 0,
+      x1: 200,
+      y1: 100,
+      width: 200,
+      height: 100,
+    });
+  });
+
+  it('reserves on inline-start only for a lone left axis', () => {
+    const plot = plotFor(false, true);
+    expect(plot.x0).toBe(30);
+    // Nothing occupies the other three sides.
+    expect(plot.y0).toBe(0);
+    expect(plot.x1).toBe(200);
+    expect(plot.y1).toBe(100);
+  });
+
+  it('reserves on block-end only for a lone bottom axis', () => {
+    const plot = plotFor(true, false);
+    expect(plot.y1).toBe(80);
+    expect(plot.x0).toBe(0);
+    expect(plot.y0).toBe(0);
+    expect(plot.x1).toBe(200);
+  });
+
+  it('reserves on both sides when both axes are projected', () => {
+    expect(plotFor(true, true)).toEqual({
+      x0: 30,
+      y0: 0,
+      x1: 200,
+      y1: 80,
+      width: 170,
+      height: 80,
+    });
+  });
+
+  it('shrinks the x range by exactly the room the left axis reserved', () => {
+    const fixture = TestBed.createComponent(ComboHost);
+    fixture.componentInstance.hasLeft.set(true);
+    fixture.detectChanges();
+    const ctx = (
+      fixture.debugElement.query(By.directive(ContextProbe)).componentInstance as ContextProbe
+    ).ctx;
+    const x = ctx.xScale();
+    // No horizontal axis, so xScale is the NOOP - the range shrink is
+    // observable on the plot the scale is built from.
+    expect(ctx.plot().width).toBe(200 - 30);
+    expect(typeof x).toBe('function');
+  });
+
+  it('returns the NOOP scale rather than an inverted range on a box narrower than its own inset', () => {
+    const fixture = TestBed.createComponent(ComboHost);
+    fixture.componentInstance.hasBottom.set(true);
+    fixture.componentInstance.hasLeft.set(true);
+    fixture.componentInstance.width.set(20);
+    fixture.detectChanges();
+    const ctx = (
+      fixture.debugElement.query(By.directive(ContextProbe)).componentInstance as ContextProbe
+    ).ctx;
+    // 30 reserved inside a 20-wide box collapses the plot.
+    expect(ctx.plot().width).toBeLessThan(0);
+    expect(ctx.xScale()(100)).toBe(0);
+  });
+
+  it('settles rather than looping when the axis set feeds the plot it is placed against', () => {
+    const fixture = TestBed.createComponent(ComboHost);
+    fixture.componentInstance.hasBottom.set(true);
+    fixture.componentInstance.hasLeft.set(true);
+    fixture.detectChanges();
+    const ctx = (
+      fixture.debugElement.query(By.directive(ContextProbe)).componentInstance as ContextProbe
+    ).ctx;
+
+    let runs = 0;
+    const injector = TestBed.inject(EnvironmentInjector);
+    runInInjectionContext(injector, () => {
+      effect(() => {
+        ctx.plot();
+        runs++;
+      });
+    });
+    TestBed.tick();
+    const settled = runs;
+
+    // reservation -> inset -> plot -> scale -> tickRenderings has no
+    // back edge: tickValues reads domain/ticks/type and never the
+    // scale, so a re-flush adds no further runs.
+    fixture.detectChanges();
+    TestBed.tick();
+    expect(runs).toBe(settled);
+
+    // A real change flows through exactly once.
+    fixture.componentInstance.width.set(400);
+    fixture.detectChanges();
+    TestBed.tick();
+    expect(runs).toBe(settled + 1);
+  });
+});

@@ -458,3 +458,105 @@ describe('CngxAxis — non-zero plot inset', () => {
     expect(host.querySelectorAll('.cngx-axis__tick').length).toBe(0);
   });
 });
+
+/**
+ * The reservation itself. Asserted through the axis group's transform,
+ * which is the plot edge the chart placed it on - so these cover the
+ * derivation end to end rather than the computed in isolation.
+ */
+describe('CngxAxis — the room an axis reserves', () => {
+  @Component({
+    standalone: true,
+    imports: [CngxChart, CngxAxis],
+    template: `
+      <cngx-chart [data]="[1, 2, 3]" [width]="200" [height]="100">
+        <svg:g
+          cngxAxis
+          [position]="position()"
+          type="linear"
+          [domain]="domain()"
+          [ticks]="tickCount()"
+          [format]="formatFn()"
+          [label]="axisTitle()"
+        ></svg:g>
+      </cngx-chart>
+    `,
+  })
+  class ReservationHost {
+    position = signal<CngxAxisPosition>('left');
+    domain = signal<readonly unknown[] | undefined>([0, 90]);
+    tickCount = signal<number | undefined>(undefined);
+    formatFn = signal<(v: unknown) => string>((v) => String(v));
+    axisTitle = signal<string | null>(null);
+  }
+
+  beforeEach(() => {
+    vi.stubGlobal('ResizeObserver', ResizeObserverMock);
+    TestBed.configureTestingModule({ imports: [ReservationHost] });
+  });
+
+  afterEach(() => vi.unstubAllGlobals());
+
+  function transformFor(apply: (host: ReservationHost) => void): string {
+    const fixture = TestBed.createComponent(ReservationHost);
+    apply(fixture.componentInstance);
+    fixture.detectChanges();
+    return (
+      (fixture.nativeElement as HTMLElement).querySelector('.cngx-axis') as SVGGElement
+    ).getAttribute('transform') as string;
+  }
+
+  it('reserves more for a wider tick label on the same vertical axis', () => {
+    // [0, 90] formats to '22.5' at its widest - four characters.
+    const narrow = transformFor((h) => h.domain.set([0, 90]));
+    // [0, 1200000] formats to '1200000' - seven.
+    const wide = transformFor((h) => h.domain.set([0, 1200000]));
+    expect(narrow).toBe('translate(37,0)');
+    expect(wide).toBe('translate(57,0)');
+  });
+
+  it('widens the reservation from [format] alone, with the domain unchanged', () => {
+    const plain = transformFor((h) => h.tickCount.set(2));
+    const formatted = transformFor((h) => {
+      h.tickCount.set(2);
+      h.formatFn.set((v) => `€${v} EUR`);
+    });
+    // '90' is two characters; '€90 EUR' is seven.
+    expect(plain).toBe('translate(23,0)');
+    expect(formatted).toBe('translate(57,0)');
+  });
+
+  it('reserves label-width-independently on a horizontal axis', () => {
+    // A bottom label extends downward by one line box no matter how
+    // many characters it carries, so the same 20 covers both.
+    const narrow = transformFor((h) => {
+      h.position.set('bottom');
+      h.domain.set([0, 90]);
+    });
+    const wide = transformFor((h) => {
+      h.position.set('bottom');
+      h.domain.set([0, 1200000]);
+    });
+    expect(narrow).toBe('translate(0,80)');
+    expect(wide).toBe(narrow);
+  });
+
+  it('reserves the title offset on top of the ticks when [label] is set', () => {
+    const untitled = transformFor((h) => h.tickCount.set(2));
+    const titled = transformFor((h) => {
+      h.tickCount.set(2);
+      h.axisTitle.set('Revenue');
+    });
+    // The title sits at a fixed offset from the line rather than beyond
+    // the ticks, so the two extents are alternatives: 23 for the ticks,
+    // 48 for the title, and the title wins here.
+    expect(untitled).toBe('translate(23,0)');
+    expect(titled).toBe('translate(48,0)');
+  });
+
+  it('reserves only the tick gap when the axis formats no labels at all', () => {
+    // No domain means no ticks; the axis still draws its line, and the
+    // gutter collapses to the tick length plus the label offset.
+    expect(transformFor((h) => h.domain.set(undefined))).toBe('translate(9,0)');
+  });
+});
