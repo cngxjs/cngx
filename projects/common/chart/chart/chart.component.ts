@@ -166,6 +166,13 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
     '[class.cngx-chart--content-hidden]': 'contentHidden()',
     '[style.width.px]': 'width() ?? null',
     '[style.aspect-ratio]': 'explicitAspectRatio()',
+    // The resolved plot inset, published so HTML overlays positioned
+    // against the host box can align to the plot area instead. The
+    // viewBox always equals the host box, so a user unit is a CSS pixel.
+    '[style.--cngx-chart-plot-block-start.px]': 'inset().blockStart',
+    '[style.--cngx-chart-plot-block-end.px]': 'inset().blockEnd',
+    '[style.--cngx-chart-plot-inline-start.px]': 'inset().inlineStart',
+    '[style.--cngx-chart-plot-inline-end.px]': 'inset().inlineEnd',
   },
   hostDirectives: [CngxResizeObserver],
   providers: [{ provide: CNGX_CHART_CONTEXT, useExisting: CngxChart }],
@@ -343,11 +350,25 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
         color: var(--cngx-chart-danger, currentColor);
         opacity: 1;
       }
+      /*
+        Anchored to the plot area's top-inline-end corner, not the host
+        box: centred over the box it lands on the marks, and on a chart
+        with axes it can sit over the tick labels. The plot inset comes
+        off the host as custom properties, so the pill tracks the gutter
+        the axes reserved without knowing an axis exists.
+      */
       cngx-chart > .cngx-chart__connection-overlay {
         position: absolute;
-        top: var(--cngx-chart-connection-inset, 0.5rem);
-        left: 50%;
-        transform: translateX(-50%);
+        top: calc(
+          var(--cngx-chart-plot-block-start, 0px) + var(--cngx-chart-connection-inset, 0.5rem)
+        );
+        inset-inline-end: calc(
+          var(--cngx-chart-plot-inline-end, 0px) + var(--cngx-chart-connection-inset, 0.5rem)
+        );
+        max-inline-size: calc(
+          100% - var(--cngx-chart-plot-inline-start, 0px) - var(--cngx-chart-plot-inline-end, 0px) -
+            2 * var(--cngx-chart-connection-inset, 0.5rem)
+        );
         display: flex;
         align-items: center;
         gap: var(--cngx-chart-connection-gap, 0.375rem);
@@ -612,7 +633,7 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
    * chart without axes (every preset) resolves to {@link ZERO_INSET}
    * and renders exactly as it did before the inset existed.
    */
-  private readonly inset = computed<CngxChartInset>(
+  protected readonly inset = computed<CngxChartInset>(
     () => {
       const axes = this.axes();
       if (axes.length === 0) {

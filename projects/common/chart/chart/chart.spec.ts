@@ -954,6 +954,29 @@ describe('CngxChart — inset derived per axis combination', () => {
     expect((fixture.nativeElement as HTMLElement).querySelector('.cngx-axis__line')).toBeNull();
   });
 
+  it('publishes the resolved plot inset as host custom properties', () => {
+    // HTML overlays sit on the host box, not in the viewBox, so the
+    // only way for one to align to the plot is for the chart to hand
+    // out the inset. The connection pill positions against these.
+    const fixture = TestBed.createComponent(ComboHost);
+    fixture.componentInstance.hasBottom.set(true);
+    fixture.componentInstance.hasLeft.set(true);
+    fixture.detectChanges();
+    const host = (fixture.nativeElement as HTMLElement).querySelector('cngx-chart') as HTMLElement;
+    expect(host.style.getPropertyValue('--cngx-chart-plot-inline-start')).toBe('31px');
+    expect(host.style.getPropertyValue('--cngx-chart-plot-inline-end')).toBe('11px');
+    expect(host.style.getPropertyValue('--cngx-chart-plot-block-start')).toBe('9px');
+    expect(host.style.getPropertyValue('--cngx-chart-plot-block-end')).toBe('26px');
+  });
+
+  it('publishes a zero plot inset when no axis reserves anything', () => {
+    const fixture = TestBed.createComponent(ComboHost);
+    fixture.detectChanges();
+    const host = (fixture.nativeElement as HTMLElement).querySelector('cngx-chart') as HTMLElement;
+    expect(host.style.getPropertyValue('--cngx-chart-plot-inline-start')).toBe('0px');
+    expect(host.style.getPropertyValue('--cngx-chart-plot-block-end')).toBe('0px');
+  });
+
   it('grows the cross-axis overhang with the label that overhangs', () => {
     // The bottom axis's inline overhang is half its widest label, so a
     // seven-character domain pushes the plot corners further in than a
