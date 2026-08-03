@@ -301,15 +301,14 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
         display: block;
         width: 100%;
         height: 100%;
-        /* Axis decoration no longer needs this: the plot inset reserves
-           room for tick labels and axis titles inside the viewBox. What
-           still relies on it is everything the inset cannot know about -
-           a mark whose stroke straddles the plot edge, and consumer
-           layers that deliberately paint outside. Whether that is worth
-           keeping is an open decision, not an endorsement; the canvas
-           backend already clips natively, so the two backends disagree
-           for as long as this stays. */
-        overflow: visible;
+        /* No overflow: visible here, deliberately. The plot inset
+           reserves room for tick labels and axis titles inside the
+           viewBox, so nothing the chart authors lands outside it and the
+           SVG default is the correct one. Two things do still cross the
+           edge and now clip: half the stroke width of a mark sitting on
+           the plot boundary, and out-of-domain data. Both already clip
+           on the canvas backend, which clips natively at the element
+           box - so the backends agree on where a chart ends. */
       }
       cngx-chart > .cngx-chart__fallback-frame {
         display: flex;
