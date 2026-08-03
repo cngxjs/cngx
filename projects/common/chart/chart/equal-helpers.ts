@@ -11,6 +11,7 @@
  */
 
 import type { CngxChartInset, CngxChartPlotArea } from './chart-context';
+import type { CngxChartSlotContext } from './template-slots';
 
 /**
  * Length + `Object.is` per-index equality on a readonly numeric array.
@@ -93,4 +94,17 @@ export function insetEqual(a: CngxChartInset, b: CngxChartInset): boolean {
  */
 export function plotAreaEqual(a: CngxChartPlotArea, b: CngxChartPlotArea): boolean {
   return a.x0 === b.x0 && a.y0 === b.y0 && a.x1 === b.x1 && a.y1 === b.y1;
+}
+
+/**
+ * Field-wise equality on the slot context handed to every fallback
+ * template. `small` is derived from `width`, so comparing it would be
+ * redundant.
+ *
+ * The context is a fresh literal on every read, so without this a
+ * resize that lands on the same pixel still re-renders every projected
+ * loading / empty / error template.
+ */
+export function slotContextEqual(a: CngxChartSlotContext, b: CngxChartSlotContext): boolean {
+  return a.width === b.width && a.height === b.height && plotAreaEqual(a.plot, b.plot);
 }

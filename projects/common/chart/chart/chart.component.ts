@@ -49,6 +49,7 @@ import {
   plotAreaEqual,
   sameItemsArr,
   sameNumberArr,
+  slotContextEqual,
 } from './equal-helpers';
 import { CNGX_CHART_LAYER, type LayerGeometry } from '../layers/chart-layer';
 import { createChartRendererController } from '../renderer/chart-renderer-controller';
@@ -513,19 +514,22 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
    * viewport: the rendered width is what the consumer cares about
    * for fallback layout, not the logical viewBox dimension.
    */
-  protected readonly slotContext = computed<CngxChartSlotContext>(() => {
-    const width = this.resize.width();
-    const height = this.resize.height();
-    return {
-      width,
-      height,
-      small: width > 0 && width < CHART_SMALL_BREAKPOINT_PX,
-      // The same derivation the scales and the axes read. A slot
-      // template that centres on width/height alone would sit
-      // off-centre from the marks it stands in for.
-      plot: this.plot(),
-    };
-  });
+  protected readonly slotContext = computed<CngxChartSlotContext>(
+    () => {
+      const width = this.resize.width();
+      const height = this.resize.height();
+      return {
+        width,
+        height,
+        small: width > 0 && width < CHART_SMALL_BREAKPOINT_PX,
+        // The same derivation the scales and the axes read. A slot
+        // template that centres on width/height alone would sit
+        // off-centre from the marks it stands in for.
+        plot: this.plot(),
+      };
+    },
+    { equal: slotContextEqual },
+  );
 
   /**
    * Error-slot context - extends {@link slotContext} with the live
@@ -533,10 +537,13 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
    * render a typed message AND branch on chart size in the same
    * template.
    */
-  protected readonly errorContext = computed(() => {
-    const err = this.state()?.error?.() ?? null;
-    return { ...this.slotContext(), $implicit: err, error: err };
-  });
+  protected readonly errorContext = computed(
+    () => {
+      const err = this.state()?.error?.() ?? null;
+      return { ...this.slotContext(), $implicit: err, error: err };
+    },
+    { equal: (a, b) => Object.is(a.error, b.error) && slotContextEqual(a, b) },
+  );
 
   /**
    * Connection-lifecycle view derived from `[connectionState]`'s status.
@@ -696,12 +703,21 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
    *
    * Percentages rather than pixels, because a user unit is not always a
    * CSS pixel: an explicit `[width]="520"` chart squeezed by
-   * `max-width: 100%` keeps a 520-unit viewBox inside a 400px box. The
-   * SVG scales uniformly and the host holds the same aspect ratio, so a
-   * fraction of the viewBox is the same fraction of the host - which a
-   * px value would not be. Block values resolve against the containing
-   * block's height and inline values against its width, matching what
-   * `top` and `inset-inline-end` expect.
+   * `max-width: 100%` keeps a 520-unit viewBox inside a 400px box. A
+   * fraction of the viewBox survives that scaling where a px value
+   * would not. Block values resolve against the containing block's
+   * height and inline values against its width, matching what `top` and
+   * `inset-inline-end` expect.
+   *
+   * Exact while the host's aspect ratio matches the viewBox, which is
+   * what {@link explicitAspectRatio} holds it to whenever both `[width]`
+   * and `[height]` are bound. Bind only one and it returns `null` on
+   * purpose (the consumer drove one dimension deliberately); the SVG
+   * then letterboxes under `preserveAspectRatio`, and these percentages
+   * address the host box rather than the letterboxed drawing area. The
+   * error is the letterbox margin - zero until the host is forced away
+   * from the viewBox ratio. Bind both dimensions when an overlay has to
+   * land on the plot edge exactly.
    */
   protected readonly plotVars = computed(
     () => {
