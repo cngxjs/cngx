@@ -40,8 +40,8 @@ import { CNGX_CHART_LAYER, type CngxChartLayer, type LayerGeometry } from './cha
   encapsulation: ViewEncapsulation.None,
   providers: [{ provide: CNGX_CHART_LAYER, useExisting: CngxBand }],
   template: `
-    @if (ctx.renderSvg()) {
-      @if (rect(); as r) {
+    @if (rect(); as r) {
+      @if (ctx.renderSvg()) {
         <svg:rect
           class="cngx-band__rect"
           [attr.x]="r.x"
@@ -50,17 +50,22 @@ import { CNGX_CHART_LAYER, type CngxChartLayer, type LayerGeometry } from './cha
           [attr.height]="r.height"
           [attr.fill-opacity]="opacity()"
         />
-        @if (label(); as l) {
-          <svg:text
-            class="cngx-band__label"
-            [attr.x]="r.x + 4"
-            [attr.y]="r.y + r.height / 2"
-            text-anchor="start"
-            dominant-baseline="middle"
-          >
-            {{ l }}
-          </svg:text>
-        }
+      }
+      <!--
+        Outside the renderSvg gate on purpose - see CngxThreshold: the
+        canvas backend paints no text, so a gated label vanishes at the
+        auto-switch threshold.
+      -->
+      @if (label(); as l) {
+        <svg:text
+          class="cngx-band__label"
+          [attr.x]="r.x + 4"
+          [attr.y]="r.y + r.height / 2"
+          text-anchor="start"
+          dominant-baseline="middle"
+        >
+          {{ l }}
+        </svg:text>
       }
     }
   `,

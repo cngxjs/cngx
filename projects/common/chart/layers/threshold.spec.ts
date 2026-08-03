@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CngxThreshold } from './threshold.component';
 import { CngxAxis } from '../axis/axis.component';
 import { CngxChart } from '../chart/chart.component';
+import { provideChartRenderer, withChartRendererThreshold } from '../renderer/renderer-factory';
 
 import { ResizeObserverMock } from '../testing/resize-observer-mock';
 
@@ -68,5 +69,52 @@ describe('CngxThreshold', () => {
     fixture.detectChanges();
     const line = fixture.nativeElement.querySelector('.cngx-threshold__line') as SVGLineElement;
     expect(line.getAttribute('stroke-dasharray')).toBe('4 3');
+  });
+});
+
+describe('CngxThreshold — label survives the canvas auto-switch', () => {
+  @Component({
+    standalone: true,
+    imports: [CngxChart, CngxAxis, CngxThreshold],
+    template: `
+      <cngx-chart [data]="data()" [width]="200" [height]="100">
+        <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 10]"></svg:g>
+        <svg:g cngxAxis position="left" type="linear" [domain]="[0, 10]"></svg:g>
+        <svg:g cngxThreshold [value]="5" label="alert"></svg:g>
+      </cngx-chart>
+    `,
+  })
+  class SwitchHost {
+    readonly data = signal<readonly number[]>([1, 2, 3]);
+  }
+
+  beforeEach(() => vi.stubGlobal('ResizeObserver', ResizeObserverMock));
+  afterEach(() => vi.unstubAllGlobals());
+
+  function mount(points: number): HTMLElement {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      imports: [SwitchHost],
+      providers: [provideChartRenderer(withChartRendererThreshold(50))],
+    });
+    const fixture = TestBed.createComponent(SwitchHost);
+    fixture.componentInstance.data.set(Array.from({ length: points }, (_, i) => i % 10));
+    fixture.detectChanges();
+    return fixture.nativeElement as HTMLElement;
+  }
+
+  it('keeps the label in SVG once the marks move to canvas', () => {
+    const svgMode = mount(10);
+    expect(svgMode.querySelector('canvas')).toBeNull();
+    expect(svgMode.querySelector('.cngx-threshold__line')).not.toBeNull();
+    expect(svgMode.querySelector('.cngx-threshold__label')?.textContent?.trim()).toBe('alert');
+
+    const canvasMode = mount(51);
+    // The line is the canvas renderer's job now...
+    expect(canvasMode.querySelector('canvas')).not.toBeNull();
+    expect(canvasMode.querySelector('.cngx-threshold__line')).toBeNull();
+    // ...but the canvas backend paints no text, so the label has to
+    // stay in SVG or it disappears at the crossover.
+    expect(canvasMode.querySelector('.cngx-threshold__label')?.textContent?.trim()).toBe('alert');
   });
 });

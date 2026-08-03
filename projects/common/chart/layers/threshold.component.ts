@@ -41,8 +41,8 @@ import { CNGX_CHART_LAYER, type CngxChartLayer, type LayerGeometry } from './cha
   encapsulation: ViewEncapsulation.None,
   providers: [{ provide: CNGX_CHART_LAYER, useExisting: CngxThreshold }],
   template: `
-    @if (ctx.renderSvg()) {
-      @if (bounds(); as g) {
+    @if (bounds(); as g) {
+      @if (ctx.renderSvg()) {
         <svg:line
           class="cngx-threshold__line"
           [attr.x1]="g.x1"
@@ -51,16 +51,23 @@ import { CNGX_CHART_LAYER, type CngxChartLayer, type LayerGeometry } from './cha
           [attr.y2]="g.y"
           [attr.stroke-dasharray]="dashed() ? '4 3' : null"
         />
-        @if (label(); as l) {
-          <svg:text
-            class="cngx-threshold__label"
-            [attr.x]="g.x2 - 4"
-            [attr.y]="g.y - 4"
-            text-anchor="end"
-          >
-            {{ l }}
-          </svg:text>
-        }
+      }
+      <!--
+        Outside the renderSvg gate on purpose: the canvas backend paints
+        marks, never text, so gating the label on it would delete the
+        label at the auto-switch threshold. Same split CngxAxis already
+        makes - decoration stays SVG in both modes, only the
+        volume-dependent geometry moves to canvas.
+      -->
+      @if (label(); as l) {
+        <svg:text
+          class="cngx-threshold__label"
+          [attr.x]="g.x2 - 4"
+          [attr.y]="g.y - 4"
+          text-anchor="end"
+        >
+          {{ l }}
+        </svg:text>
       }
     }
   `,
