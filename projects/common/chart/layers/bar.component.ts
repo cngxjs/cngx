@@ -123,7 +123,15 @@ export class CngxBar<T = unknown> implements CngxChartLayer {
       if (n === 0) {
         return [];
       }
-      const { width } = this.ctx.dimensions();
+      // Slots divide the plot, not the box. The y values come from
+      // ctx.yScale(), which already ranges over the plot, so measuring
+      // x against the box would put the bars and their own baseline in
+      // two different coordinate systems - and off the ticks that label
+      // them.
+      const { x0, width, height } = this.ctx.plot();
+      if (width <= 0 || height <= 0) {
+        return [];
+      }
       const yScale = this.ctx.yScale();
       const slot = width / n;
       const gap = clamp01(this.gap());
@@ -139,7 +147,7 @@ export class CngxBar<T = unknown> implements CngxChartLayer {
         const bottom = Math.max(valueY, baselineY);
         out[i] = {
           key: i,
-          x: i * slot + offset,
+          x: x0 + i * slot + offset,
           y: top,
           width: inner,
           height: bottom - top,
