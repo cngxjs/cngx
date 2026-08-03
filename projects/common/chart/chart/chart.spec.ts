@@ -48,12 +48,7 @@ class ContextWrapper {}
   standalone: true,
   imports: [CngxChart, ContextProbe, ContextWrapper],
   template: `
-    <cngx-chart
-      [data]="data()"
-      [width]="width()"
-      [height]="height()"
-      data-testid="chart"
-    >
+    <cngx-chart [data]="data()" [width]="width()" [height]="height()" data-testid="chart">
       <test-context-probe data-testid="direct" />
       <test-context-wrapper data-testid="nested" />
     </cngx-chart>
@@ -200,9 +195,7 @@ describe('CngxChart', () => {
     const fixture = TestBed.createComponent(NonNumericHost);
     fixture.detectChanges();
     TestBed.tick();
-    expect(warn).toHaveBeenCalledWith(
-      expect.stringContaining('CngxChart: data is non-numeric'),
-    );
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('CngxChart: data is non-numeric'));
     warn.mockRestore();
   });
 
@@ -212,12 +205,7 @@ describe('CngxChart', () => {
       standalone: true,
       imports: [CngxChart],
       template: `
-        <cngx-chart
-          [data]="data"
-          [width]="100"
-          [height]="50"
-          [summaryAccessor]="acc"
-        />
+        <cngx-chart [data]="data" [width]="100" [height]="50" [summaryAccessor]="acc" />
       `,
     })
     class TypedHost {
@@ -260,7 +248,13 @@ describe('CngxChart', () => {
         standalone: true,
         imports: [CngxChart],
         template: `
-          <cngx-chart [data]="[1, 2, 3]" [state]="state" [width]="200" [height]="100" data-testid="chart"></cngx-chart>
+          <cngx-chart
+            [data]="[1, 2, 3]"
+            [state]="state"
+            [width]="200"
+            [height]="100"
+            data-testid="chart"
+          ></cngx-chart>
         `,
       })
       class StateHost {
@@ -285,7 +279,13 @@ describe('CngxChart', () => {
         standalone: true,
         imports: [CngxChart],
         template: `
-          <cngx-chart [data]="data" [state]="state" [width]="200" [height]="100" data-testid="chart"></cngx-chart>
+          <cngx-chart
+            [data]="data"
+            [state]="state"
+            [width]="200"
+            [height]="100"
+            data-testid="chart"
+          ></cngx-chart>
         `,
       })
       class EmptyHost {
@@ -311,7 +311,13 @@ describe('CngxChart', () => {
         standalone: true,
         imports: [CngxChart],
         template: `
-          <cngx-chart [data]="[1, 2, 3]" [state]="state" [width]="200" [height]="100" data-testid="chart"></cngx-chart>
+          <cngx-chart
+            [data]="[1, 2, 3]"
+            [state]="state"
+            [width]="200"
+            [height]="100"
+            data-testid="chart"
+          ></cngx-chart>
         `,
       })
       class ErrorHost {
@@ -363,7 +369,13 @@ describe('CngxChart', () => {
         standalone: true,
         imports: [CngxChart, CngxChartError],
         template: `
-          <cngx-chart [data]="[1, 2, 3]" [state]="state" [width]="200" [height]="100" data-testid="chart">
+          <cngx-chart
+            [data]="[1, 2, 3]"
+            [state]="state"
+            [width]="200"
+            [height]="100"
+            data-testid="chart"
+          >
             <ng-template cngxChartError let-err="error">
               <div data-testid="custom-error">err: {{ err.message }}</div>
             </ng-template>
@@ -392,7 +404,12 @@ describe('CngxChart', () => {
           <cngx-chart [data]="data" data-testid="responsive"></cngx-chart>
           <cngx-chart [data]="data" [width]="400" data-testid="explicit-w"></cngx-chart>
           <cngx-chart [data]="data" [height]="200" data-testid="explicit-h"></cngx-chart>
-          <cngx-chart [data]="data" [width]="400" [height]="200" data-testid="explicit-both"></cngx-chart>
+          <cngx-chart
+            [data]="data"
+            [width]="400"
+            [height]="200"
+            data-testid="explicit-both"
+          ></cngx-chart>
         `,
       })
       class ResponsiveHost {
@@ -418,7 +435,13 @@ describe('CngxChart', () => {
         standalone: true,
         imports: [CngxChart],
         template: `
-          <cngx-chart [data]="[1, 2, 3]" [state]="state" [width]="200" [height]="100" data-testid="chart"></cngx-chart>
+          <cngx-chart
+            [data]="[1, 2, 3]"
+            [state]="state"
+            [width]="200"
+            [height]="100"
+            data-testid="chart"
+          ></cngx-chart>
         `,
       })
       class StateHost {
@@ -480,7 +503,10 @@ describe('CngxChart — auto-switch backend (Phase 3)', () => {
   });
 
   it('switches to canvas above the threshold — canvas mounts, layer SVG suppressed', () => {
-    const { chart } = mount([], Array.from({ length: 501 }, (_, i) => i % 10));
+    const { chart } = mount(
+      [],
+      Array.from({ length: 501 }, (_, i) => i % 10),
+    );
     expect(chart.querySelector('canvas')).not.toBeNull();
     expect(chart.querySelector('.cngx-line')).toBeNull();
     expect(chart.querySelector('.cngx-bar')).toBeNull();
@@ -542,7 +568,12 @@ describe('CngxChart — [connectionState] envelope (Phase 4)', () => {
     @Component({
       standalone: true,
       imports: [CngxChart],
-      template: `<cngx-chart [data]="[1, 2, 3]" [width]="200" [height]="100" data-testid="chart" />`,
+      template: `<cngx-chart
+        [data]="[1, 2, 3]"
+        [width]="200"
+        [height]="100"
+        data-testid="chart"
+      />`,
     })
     class Host {}
     TestBed.configureTestingModule({ imports: [Host] });
@@ -557,7 +588,13 @@ describe('CngxChart — [connectionState] envelope (Phase 4)', () => {
     @Component({
       standalone: true,
       imports: [CngxChart],
-      template: `<cngx-chart [data]="[1, 2, 3]" [connectionState]="cs" [width]="200" [height]="100" data-testid="chart" />`,
+      template: `<cngx-chart
+        [data]="[1, 2, 3]"
+        [connectionState]="cs"
+        [width]="200"
+        [height]="100"
+        data-testid="chart"
+      />`,
     })
     class Host {
       readonly cs = createManualState<unknown>();
@@ -580,7 +617,13 @@ describe('CngxChart — [connectionState] envelope (Phase 4)', () => {
     @Component({
       standalone: true,
       imports: [CngxChart],
-      template: `<cngx-chart [data]="[1, 2, 3]" [connectionState]="cs" [width]="200" [height]="100" data-testid="chart" />`,
+      template: `<cngx-chart
+        [data]="[1, 2, 3]"
+        [connectionState]="cs"
+        [width]="200"
+        [height]="100"
+        data-testid="chart"
+      />`,
     })
     class Host {
       readonly cs = createManualState<unknown>();
@@ -602,7 +645,13 @@ describe('CngxChart — [connectionState] envelope (Phase 4)', () => {
       standalone: true,
       imports: [CngxChart, CngxChartConnectionError],
       template: `
-        <cngx-chart [data]="[1, 2, 3]" [connectionState]="cs" [width]="200" [height]="100" data-testid="chart">
+        <cngx-chart
+          [data]="[1, 2, 3]"
+          [connectionState]="cs"
+          [width]="200"
+          [height]="100"
+          data-testid="chart"
+        >
           <ng-template cngxChartConnectionError>CUSTOM OFFLINE</ng-template>
         </cngx-chart>
       `,
@@ -625,7 +674,14 @@ describe('CngxChart — [connectionState] envelope (Phase 4)', () => {
     @Component({
       standalone: true,
       imports: [CngxChart],
-      template: `<cngx-chart [data]="[1, 2, 3]" [state]="state" [connectionState]="cs" [width]="200" [height]="100" data-testid="chart" />`,
+      template: `<cngx-chart
+        [data]="[1, 2, 3]"
+        [state]="state"
+        [connectionState]="cs"
+        [width]="200"
+        [height]="100"
+        data-testid="chart"
+      />`,
     })
     class Host {
       readonly state = createManualState<readonly number[]>();
@@ -715,32 +771,36 @@ describe('CngxChart — plot inset', () => {
     ).ctx;
   }
 
-  it('publishes a plot area equal to the full box while nothing is reserved', () => {
+  // The host mounts a bottom axis over [0, 100] and a left one over
+  // [0, 50] in a 200x100 box. The bottom axis reserves the 20 its
+  // single line box needs; the left one's widest label is '12.5', four
+  // characters, so it reserves 37.
+  it('publishes a plot area the projected axes have reserved room out of', () => {
     const fixture = TestBed.createComponent(AxedHost);
     fixture.detectChanges();
     expect(ctxFor(fixture).plot()).toEqual({
-      x0: 0,
+      x0: 37,
       y0: 0,
       x1: 200,
-      y1: 100,
-      width: 200,
-      height: 100,
+      y1: 80,
+      width: 163,
+      height: 80,
     });
   });
 
-  it('maps the x scale across the full box width while the inset is zero', () => {
+  it('maps the x scale across the plot width, not the box width', () => {
     const fixture = TestBed.createComponent(AxedHost);
     fixture.detectChanges();
     const x = ctxFor(fixture).xScale();
-    expect(x(0)).toBe(0);
+    expect(x(0)).toBe(37);
     expect(x(100)).toBe(200);
   });
 
-  it('maps the y scale across the full box height while the inset is zero, flipped', () => {
+  it('maps the y scale across the plot height, flipped', () => {
     const fixture = TestBed.createComponent(AxedHost);
     fixture.detectChanges();
     const y = ctxFor(fixture).yScale();
-    expect(y(0)).toBe(100);
+    expect(y(0)).toBe(80);
     expect(y(50)).toBe(0);
   });
 

@@ -185,21 +185,33 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
     }
     @if (connectionView() === 'error') {
       @if (connectionErrorTpl(); as tpl) {
-        <div class="cngx-chart__connection-overlay cngx-chart__connection-overlay--error" role="alert">
+        <div
+          class="cngx-chart__connection-overlay cngx-chart__connection-overlay--error"
+          role="alert"
+        >
           <ng-container *ngTemplateOutlet="tpl; context: connectionCtx()" />
         </div>
       } @else {
-        <div class="cngx-chart__connection-overlay cngx-chart__connection-overlay--error" role="alert">
+        <div
+          class="cngx-chart__connection-overlay cngx-chart__connection-overlay--error"
+          role="alert"
+        >
           {{ i18n.connectionLost() }}
         </div>
       }
     } @else if (connectionView() === 'reconnecting') {
       @if (reconnectingTpl(); as tpl) {
-        <div class="cngx-chart__connection-overlay cngx-chart__connection-overlay--reconnecting" role="status">
+        <div
+          class="cngx-chart__connection-overlay cngx-chart__connection-overlay--reconnecting"
+          role="status"
+        >
           <ng-container *ngTemplateOutlet="tpl; context: connectionCtx()" />
         </div>
       } @else {
-        <div class="cngx-chart__connection-overlay cngx-chart__connection-overlay--reconnecting" role="status">
+        <div
+          class="cngx-chart__connection-overlay cngx-chart__connection-overlay--reconnecting"
+          role="status"
+        >
           {{ i18n.connectionReconnecting() }}
         </div>
       }
@@ -563,10 +575,49 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
    * Chart-internal: it exists only to produce {@link plot}, which is
    * what every reader actually wants.
    *
-   * Zero on every side today - the mechanism ships inert and the
-   * derivation from the projected axis set lands separately.
+   * Which sides reserve is derived from the same `axes()` query the
+   * scale lookups below already read - a consumer input would be a
+   * second source for something the chart can see. How much each side
+   * reserves is the axis's own {@link CngxAxis.reservation}: the chart
+   * never learns what a tick label is, and the axis never learns where
+   * the plot ends. A side with no axis on it stays `0`, which is why a
+   * chart without axes (every preset) resolves to {@link ZERO_INSET}
+   * and renders exactly as it did before the inset existed.
    */
-  private readonly inset = computed<CngxChartInset>(() => ZERO_INSET, { equal: insetEqual });
+  private readonly inset = computed<CngxChartInset>(
+    () => {
+      const axes = this.axes();
+      if (axes.length === 0) {
+        return ZERO_INSET;
+      }
+      let inlineStart = 0;
+      let inlineEnd = 0;
+      let blockStart = 0;
+      let blockEnd = 0;
+      for (const axis of axes) {
+        const room = axis.reservation();
+        // Two axes on the same side reserve the wider of the two
+        // rather than stacking - they draw over each other, so the
+        // room they need is the room the deeper one needs.
+        switch (axis.position()) {
+          case 'left':
+            inlineStart = Math.max(inlineStart, room);
+            break;
+          case 'right':
+            inlineEnd = Math.max(inlineEnd, room);
+            break;
+          case 'top':
+            blockStart = Math.max(blockStart, room);
+            break;
+          case 'bottom':
+            blockEnd = Math.max(blockEnd, room);
+            break;
+        }
+      }
+      return { inlineStart, inlineEnd, blockStart, blockEnd };
+    },
+    { equal: insetEqual },
+  );
 
   /**
    * The plot rectangle published on {@link CngxChartContext}: the

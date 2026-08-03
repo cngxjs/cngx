@@ -37,10 +37,14 @@ describe('CngxThreshold', () => {
     fixture.detectChanges();
     const line = fixture.nativeElement.querySelector('.cngx-threshold__line') as SVGLineElement;
     expect(line).not.toBeNull();
-    // y domain [0, 10] over height 100 (SVG-flipped) — value 5 -> y=50.
-    expect(Number(line.getAttribute('y1'))).toBe(50);
-    expect(Number(line.getAttribute('y2'))).toBe(50);
-    expect(Number(line.getAttribute('x1'))).toBe(0);
+    // The left axis reserves 30 and the bottom axis 20, so the plot is
+    // x 30..200 by y 0..80. y domain [0, 10] over that height
+    // (SVG-flipped): value 5 -> y=40.
+    expect(Number(line.getAttribute('y1'))).toBe(40);
+    expect(Number(line.getAttribute('y2'))).toBe(40);
+    // Spans the plot, not the box - a line running through the axis
+    // gutter reads as a stray rule rather than as a level.
+    expect(Number(line.getAttribute('x1'))).toBe(30);
     expect(Number(line.getAttribute('x2'))).toBe(200);
   });
 
@@ -55,9 +59,7 @@ describe('CngxThreshold', () => {
     const fixture = TestBed.createComponent(TestHost);
     fixture.componentInstance.label.set('Budget cap');
     fixture.detectChanges();
-    const label = fixture.nativeElement.querySelector(
-      '.cngx-threshold__label',
-    ) as SVGTextElement;
+    const label = fixture.nativeElement.querySelector('.cngx-threshold__label') as SVGTextElement;
     expect(label?.textContent?.trim()).toBe('Budget cap');
   });
 

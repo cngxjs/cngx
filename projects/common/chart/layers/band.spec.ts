@@ -32,16 +32,20 @@ describe('CngxBand', () => {
 
   afterEach(() => vi.unstubAllGlobals());
 
-  it('renders a rect spanning the y-range from..to across full chart width', () => {
+  it('renders a rect spanning the y-range from..to across the plot width', () => {
     const fixture = TestBed.createComponent(TestHost);
     fixture.detectChanges();
     const rect = fixture.nativeElement.querySelector('.cngx-band__rect') as SVGRectElement;
     expect(rect).not.toBeNull();
-    // y domain [0, 10] over height 100 (SVG-flipped):
-    // from=2 -> y=80 (bottom), to=8 -> y=20 (top). Top = 20, height = 60.
-    expect(Number(rect.getAttribute('y'))).toBe(20);
-    expect(Number(rect.getAttribute('height'))).toBe(60);
-    expect(Number(rect.getAttribute('width'))).toBe(200);
+    // The left axis reserves 30 and the bottom axis 20, so the plot is
+    // x 30..200 by y 0..80. y domain [0, 10] over that height
+    // (SVG-flipped): from=2 -> y=64 (bottom), to=8 -> y=16 (top).
+    expect(Number(rect.getAttribute('y'))).toBe(16);
+    expect(Number(rect.getAttribute('height'))).toBe(48);
+    // Starts at the plot edge, not the box edge - otherwise the band
+    // paints over the left axis's tick labels.
+    expect(Number(rect.getAttribute('x'))).toBe(30);
+    expect(Number(rect.getAttribute('width'))).toBe(170);
   });
 
   it('handles inverted from/to values without producing negative height', () => {
@@ -50,8 +54,8 @@ describe('CngxBand', () => {
     fixture.componentInstance.to.set(2);
     fixture.detectChanges();
     const rect = fixture.nativeElement.querySelector('.cngx-band__rect') as SVGRectElement;
-    expect(Number(rect.getAttribute('y'))).toBe(20);
-    expect(Number(rect.getAttribute('height'))).toBe(60);
+    expect(Number(rect.getAttribute('y'))).toBe(16);
+    expect(Number(rect.getAttribute('height'))).toBe(48);
   });
 
   it('renders an optional label aligned to the band', () => {

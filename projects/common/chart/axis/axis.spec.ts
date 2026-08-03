@@ -54,9 +54,7 @@ describe('CngxAxis', () => {
   } {
     const fixture = TestBed.createComponent(TestHost);
     fixture.detectChanges();
-    const axisGroup = fixture.nativeElement.querySelector(
-      '.cngx-axis',
-    ) as SVGGElement;
+    const axisGroup = fixture.nativeElement.querySelector('.cngx-axis') as SVGGElement;
     return { fixture, axisGroup };
   }
 
@@ -87,12 +85,15 @@ describe('CngxAxis', () => {
     expect(labels).toEqual(['[0]', '[100]']);
   });
 
+  // The host's 200x100 box with a [0, 100] domain formats to a longest
+  // tick label of three characters, so a vertical axis reserves 30 and
+  // a horizontal one the 20 its single line box needs.
   it.each<[CngxAxisPosition, string]>([
-    ['top', 'translate(0,0)'],
-    ['bottom', 'translate(0,100)'],
-    ['left', 'translate(0,0)'],
-    ['right', 'translate(200,0)'],
-  ])('positions the axis group correctly for position=%s', (pos, expected) => {
+    ['top', 'translate(0,20)'],
+    ['bottom', 'translate(0,80)'],
+    ['left', 'translate(30,0)'],
+    ['right', 'translate(170,0)'],
+  ])('positions the axis group on its own reserved plot edge for position=%s', (pos, expected) => {
     const { fixture, axisGroup } = setup();
     fixture.componentInstance.position.set(pos);
     fixture.detectChanges();
@@ -140,9 +141,7 @@ describe('CngxAxis', () => {
     const f = TestBed.createComponent(FormatHost);
     f.detectChanges();
     const labels = Array.from(
-      (f.nativeElement as HTMLElement).querySelectorAll<SVGTextElement>(
-        '.cngx-axis__tick-label',
-      ),
+      (f.nativeElement as HTMLElement).querySelectorAll<SVGTextElement>('.cngx-axis__tick-label'),
     ).map((el) => el.textContent?.trim() ?? '');
     expect(labels).toEqual(['0', '2.2', '4.4', '6.6', '8.8', '11']);
     // Without the fix the third label would render as
@@ -181,9 +180,11 @@ describe('CngxAxis', () => {
     const texts = labels.map((l) => l.textContent?.trim());
     expect(texts).toContain('Months');
     expect(texts).toContain('Revenue');
-    // Bottom axis label is centered horizontally (no rotation in transform).
+    // Bottom axis label is centred on the plot, not the box: the
+    // titled left axis reserves 48, so the plot runs x 48..200 and its
+    // midpoint is 124. No rotation in the transform.
     const bottomLabel = labels.find((l) => l.textContent?.trim() === 'Months');
-    expect(bottomLabel?.getAttribute('transform')).toMatch(/translate\(100,/);
+    expect(bottomLabel?.getAttribute('transform')).toMatch(/translate\(124,/);
     expect(bottomLabel?.getAttribute('transform')).not.toMatch(/rotate/);
     // Left axis label is rotated -90deg.
     const leftLabel = labels.find((l) => l.textContent?.trim() === 'Revenue');
@@ -209,7 +210,14 @@ describe('CngxAxis', () => {
       imports: [CngxChart, CngxAxis],
       template: `
         <cngx-chart [data]="[1, 2, 3]" [width]="200" [height]="100">
-          <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 100]" [ticks]="5" [grid]="true"></svg:g>
+          <svg:g
+            cngxAxis
+            position="bottom"
+            type="linear"
+            [domain]="[0, 100]"
+            [ticks]="5"
+            [grid]="true"
+          ></svg:g>
         </cngx-chart>
       `,
     })
@@ -221,10 +229,12 @@ describe('CngxAxis', () => {
       (f2.nativeElement as HTMLElement).querySelectorAll<SVGLineElement>('.cngx-axis__grid-line'),
     );
     expect(lines.length).toBe(5);
-    // Vertical gridlines for a bottom axis: x2=0, y2=-height (extends up across the chart).
+    // Vertical gridlines for a bottom axis: x2=0, y2=-plot height. The
+    // bottom axis reserves 20 of the 100-tall box, so they stop at the
+    // plot edge rather than running down through the tick labels.
     for (const l of lines) {
       expect(Number(l.getAttribute('x2'))).toBe(0);
-      expect(Number(l.getAttribute('y2'))).toBe(-100);
+      expect(Number(l.getAttribute('y2'))).toBe(-80);
     }
   });
 
@@ -234,7 +244,14 @@ describe('CngxAxis', () => {
       imports: [CngxChart, CngxAxis],
       template: `
         <cngx-chart [data]="[1, 2, 3]" [width]="200" [height]="100">
-          <svg:g cngxAxis position="left" type="linear" [domain]="[0, 10]" [ticks]="3" [grid]="true"></svg:g>
+          <svg:g
+            cngxAxis
+            position="left"
+            type="linear"
+            [domain]="[0, 10]"
+            [ticks]="3"
+            [grid]="true"
+          ></svg:g>
         </cngx-chart>
       `,
     })
@@ -246,17 +263,21 @@ describe('CngxAxis', () => {
       (f.nativeElement as HTMLElement).querySelectorAll<SVGLineElement>('.cngx-axis__grid-line'),
     );
     expect(lines.length).toBe(3);
+    // A [0, 10] domain over 3 ticks formats to '2.5' at its widest, so
+    // the left axis reserves 23 of the 200-wide box.
     for (const l of lines) {
-      expect(Number(l.getAttribute('x2'))).toBe(200);
+      expect(Number(l.getAttribute('x2'))).toBe(177);
       expect(Number(l.getAttribute('y2'))).toBe(0);
     }
   });
 
-  it('spans the axis line across the full box while the inset is zero', () => {
+  it('spans the axis line across the full box width when no axis reserves inline room', () => {
     const { fixture } = setup();
     fixture.componentInstance.position.set('bottom');
     fixture.detectChanges();
     const line = fixture.nativeElement.querySelector('.cngx-axis__line') as SVGLineElement;
+    // A lone bottom axis reserves on block-end only, so the inline
+    // extent is untouched.
     expect(Number(line.getAttribute('x1'))).toBe(0);
     expect(Number(line.getAttribute('x2'))).toBe(200);
   });
@@ -319,7 +340,7 @@ describe('CngxAxis — non-zero plot inset', () => {
           dimensions: signal({ width: WIDTH, height: HEIGHT }),
           plot: signal(PLOT),
           dataLength: computed(() => 0),
-          data: <T,>() => [] as readonly T[],
+          data: <T>() => [] as readonly T[],
           renderSvg: signal(true),
         }),
       },
@@ -422,7 +443,7 @@ describe('CngxAxis — non-zero plot inset', () => {
             // Reserving 30+10 inline inside a 20px box collapses the plot.
             plot: signal({ ...PLOT, x0: 30, x1: 10, width: -20 }),
             dataLength: computed(() => 0),
-            data: <T,>() => [] as readonly T[],
+            data: <T>() => [] as readonly T[],
             renderSvg: signal(true),
           }),
         },

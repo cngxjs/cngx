@@ -37,6 +37,43 @@ const AXIS_LABEL_OFFSET_INLINE = 32;
 /** @internal */
 const AXIS_LABEL_OFFSET_BLOCK = 36;
 
+/**
+ * The declared default of `--cngx-axis-font-size` (see the tick-label
+ * rule in `styles` below), in viewBox user units.
+ *
+ * Duplicated here because {@link CngxAxis.reservation} is arithmetic
+ * over label strings and reads nothing from the DOM - resolving the
+ * custom property would mean a `getComputedStyle` call in the reactive
+ * graph. A consumer restyling the property therefore gets tick labels
+ * at their size inside a gutter sized for the default; that is the
+ * single limitation the chart-area debt register covers.
+ *
+ * @internal
+ */
+const AXIS_FONT_SIZE = 11;
+
+/**
+ * The declared default of `--cngx-axis-axis-label-font-size`. Same
+ * no-DOM-read reasoning as {@link AXIS_FONT_SIZE}.
+ *
+ * @internal
+ */
+const AXIS_LABEL_FONT_SIZE = 12;
+
+/**
+ * Width of one character as a fraction of the font size. An estimate,
+ * not the font's real advance width - the axis knows its label strings
+ * but not the glyphs they resolve to.
+ *
+ * `0.62` sits above the average advance of the common UI sans faces at
+ * their digit widths, so the gutter covers rather than clips. It is
+ * calibrated against the demo app's hand-tuned 48px left gutter: a
+ * two-digit domain with an axis title lands on exactly that number.
+ *
+ * @internal
+ */
+const CHAR_ADVANCE_RATIO = 0.62;
+
 /** @internal */
 interface AxisLabelGeometry {
   readonly transform: string;
@@ -291,6 +328,72 @@ export class CngxAxis {
       },
     },
   );
+
+  /**
+   * How far this axis's decoration extends perpendicular to its own
+   * line, in viewBox user units. The parent chart reads it to size the
+   * plot inset on the side {@link position} names; nothing else
+   * consumes it.
+   *
+   * The magnitude is derived, not configured. A vertical axis reserves
+   * for the tick gap plus the *longest formatted tick label*, because a
+   * left label grows leftward with its character count. A horizontal
+   * axis reserves the tick gap plus one line box, because a bottom
+   * label grows downward by its height no matter how long it is. An
+   * axis carrying a {@link axisLabel} title reserves at least the
+   * title's own fixed offset plus its line box, since
+   * `buildAxisLabelGeometry` places the title at a constant distance
+   * from the line rather than beyond the ticks - so the two extents
+   * are alternatives, not addends.
+   *
+   * Character width is an estimate ({@link CHAR_ADVANCE_RATIO}), which
+   * is the one value here that is not derived from state the axis
+   * owns. Everything else comes from {@link tickValues} and
+   * {@link format}, which the component already computes to render the
+   * labels themselves - so this reads no DOM, measures no text, and
+   * returns the same number under SSR as in the browser.
+   *
+   * Acyclic by construction: {@link tickValues} reads `domain` /
+   * `ticks` / `type` and never the scale, so
+   * `reservation -> inset -> plot -> scale -> tickRenderings` has no
+   * back edge.
+   */
+  readonly reservation = computed<number>(() => {
+    const horizontal = this.position() === 'top' || this.position() === 'bottom';
+
+    const labelExtent = horizontal
+      ? AXIS_FONT_SIZE
+      : this.longestTickLabel() * AXIS_FONT_SIZE * CHAR_ADVANCE_RATIO;
+    const tickRoom = TICK_LENGTH + LABEL_OFFSET + labelExtent;
+
+    const titleRoom = this.axisLabel()
+      ? (horizontal ? AXIS_LABEL_OFFSET_INLINE : AXIS_LABEL_OFFSET_BLOCK) + AXIS_LABEL_FONT_SIZE
+      : 0;
+
+    // Whole user units, rounded up: the estimate is already an
+    // approximation, so rounding down would trade a clean number for a
+    // clipped glyph. It also keeps the axis `transform` a short
+    // integer string instead of the float noise the ratio produces.
+    return Math.ceil(Math.max(tickRoom, titleRoom));
+  });
+
+  /**
+   * Character count of the widest formatted tick label. Split out of
+   * {@link reservation} so a horizontal axis never reads it: a bottom
+   * label's extent is its height, so tracking the label strings there
+   * would put a dependency in the graph that cannot change the result.
+   */
+  private readonly longestTickLabel = computed<number>(() => {
+    const fmt = this.format();
+    let longest = 0;
+    for (const v of this.tickValues()) {
+      const len = fmt(v).length;
+      if (len > longest) {
+        longest = len;
+      }
+    }
+    return longest;
+  });
 
   protected readonly hostClass = computed(() => `cngx-axis cngx-axis--${this.position()}`);
 
