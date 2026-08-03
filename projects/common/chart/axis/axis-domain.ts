@@ -1,6 +1,13 @@
-import { computed, Directive, input } from '@angular/core';
+import { Directive, input, signal, type Signal } from '@angular/core';
 import { CNGX_CHART_AXIS, type CngxChartAxis } from './chart-axis';
 import { type CngxAxisPosition, type CngxAxisType } from './axis-position';
+
+/**
+ * @internal Both reservations of every domain publisher are the same
+ * constant, so one frozen node serves all of them rather than two per
+ * directive instance.
+ */
+const NO_RESERVATION: Signal<number> = signal(0).asReadonly();
 
 /**
  * Declares a scale domain to the parent `<cngx-chart>` without drawing
@@ -57,8 +64,8 @@ export class CngxAxisDomain implements CngxChartAxis {
    * otherwise get - it draws nothing, so there is nothing to reserve
    * for, and the number stays derived from what the unit does.
    */
-  readonly reservation = computed<number>(() => 0);
+  readonly reservation = NO_RESERVATION;
 
   /** Always `0`, for the same reason as {@link reservation}. */
-  readonly crossReservation = computed<number>(() => 0);
+  readonly crossReservation = NO_RESERVATION;
 }
