@@ -167,12 +167,11 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
     '[style.width.px]': 'width() ?? null',
     '[style.aspect-ratio]': 'explicitAspectRatio()',
     // The resolved plot inset, published so HTML overlays positioned
-    // against the host box can align to the plot area instead. The
-    // viewBox always equals the host box, so a user unit is a CSS pixel.
-    '[style.--cngx-chart-plot-block-start.px]': 'inset().blockStart',
-    '[style.--cngx-chart-plot-block-end.px]': 'inset().blockEnd',
-    '[style.--cngx-chart-plot-inline-start.px]': 'inset().inlineStart',
-    '[style.--cngx-chart-plot-inline-end.px]': 'inset().inlineEnd',
+    // against the host box can align to the plot area instead.
+    '[style.--cngx-chart-plot-block-start]': 'plotVars().blockStart',
+    '[style.--cngx-chart-plot-block-end]': 'plotVars().blockEnd',
+    '[style.--cngx-chart-plot-inline-start]': 'plotVars().inlineStart',
+    '[style.--cngx-chart-plot-inline-end]': 'plotVars().inlineEnd',
   },
   hostDirectives: [CngxResizeObserver],
   providers: [{ provide: CNGX_CHART_CONTEXT, useExisting: CngxChart }],
@@ -302,11 +301,14 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
         display: block;
         width: 100%;
         height: 100%;
-        /* Let axis-label text and any decorative content beyond the
-           viewBox remain visible. Plot lines / areas / scatter use the
-           scale range and stay inside; axis-label text intentionally
-           sits outside (below bottom axis, left of Y axis tick labels)
-           and would otherwise be clipped. */
+        /* Axis decoration no longer needs this: the plot inset reserves
+           room for tick labels and axis titles inside the viewBox. What
+           still relies on it is everything the inset cannot know about -
+           a mark whose stroke straddles the plot edge, and consumer
+           layers that deliberately paint outside. Whether that is worth
+           keeping is an open decision, not an endorsement; the canvas
+           backend already clips natively, so the two backends disagree
+           for as long as this stays. */
         overflow: visible;
       }
       cngx-chart > .cngx-chart__fallback-frame {
@@ -518,6 +520,10 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
       width,
       height,
       small: width > 0 && width < CHART_SMALL_BREAKPOINT_PX,
+      // The same derivation the scales and the axes read. A slot
+      // template that centres on width/height alone would sit
+      // off-centre from the marks it stands in for.
+      plot: this.plot(),
     };
   });
 
@@ -680,6 +686,42 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
       return { inlineStart, inlineEnd, blockStart, blockEnd };
     },
     { equal: insetEqual },
+  );
+
+  /**
+   * The plot inset as percentages of the host box, published as the
+   * `--cngx-chart-plot-*` custom properties for HTML overlays that sit
+   * on the host and want to align to the plot.
+   *
+   * Percentages rather than pixels, because a user unit is not always a
+   * CSS pixel: an explicit `[width]="520"` chart squeezed by
+   * `max-width: 100%` keeps a 520-unit viewBox inside a 400px box. The
+   * SVG scales uniformly and the host holds the same aspect ratio, so a
+   * fraction of the viewBox is the same fraction of the host - which a
+   * px value would not be. Block values resolve against the containing
+   * block's height and inline values against its width, matching what
+   * `top` and `inset-inline-end` expect.
+   */
+  protected readonly plotVars = computed(
+    () => {
+      const { width, height } = this.dimensions();
+      const pct = (v: number, extent: number): string =>
+        extent > 0 ? `${+((v / extent) * 100).toFixed(4)}%` : '0%';
+      const { inlineStart, inlineEnd, blockStart, blockEnd } = this.inset();
+      return {
+        inlineStart: pct(inlineStart, width),
+        inlineEnd: pct(inlineEnd, width),
+        blockStart: pct(blockStart, height),
+        blockEnd: pct(blockEnd, height),
+      };
+    },
+    {
+      equal: (a, b) =>
+        a.inlineStart === b.inlineStart &&
+        a.inlineEnd === b.inlineEnd &&
+        a.blockStart === b.blockStart &&
+        a.blockEnd === b.blockEnd,
+    },
   );
 
   /**

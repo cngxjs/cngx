@@ -743,7 +743,7 @@ describe('CngxChart — canvas overlay gated on the content view (Phase 3 blocke
   });
 });
 
-describe('CngxChart — plot inset', () => {
+describe('CngxChart - plot inset', () => {
   @Component({
     standalone: true,
     imports: [CngxChart, CngxAxis, ContextProbe],
@@ -838,7 +838,7 @@ describe('CngxChart — plot inset', () => {
   });
 });
 
-describe('CngxChart — inset derived per axis combination', () => {
+describe('CngxChart - inset derived per axis combination', () => {
   // A 200x100 box, both axes over [0, 100], whose widest label is
   // '100'. The bottom axis reserves 26 on block-end (one line box) and
   // 11 on each inline side (half its widest label); the left axis
@@ -954,27 +954,45 @@ describe('CngxChart — inset derived per axis combination', () => {
     expect((fixture.nativeElement as HTMLElement).querySelector('.cngx-axis__line')).toBeNull();
   });
 
-  it('publishes the resolved plot inset as host custom properties', () => {
+  it('publishes the resolved plot inset as host custom properties, in percent', () => {
     // HTML overlays sit on the host box, not in the viewBox, so the
     // only way for one to align to the plot is for the chart to hand
-    // out the inset. The connection pill positions against these.
+    // out the inset. Percent, not px: an explicit [width] chart
+    // squeezed by max-width keeps its viewBox, so a user unit stops
+    // being a CSS pixel while a fraction stays a fraction.
     const fixture = TestBed.createComponent(ComboHost);
     fixture.componentInstance.hasBottom.set(true);
     fixture.componentInstance.hasLeft.set(true);
     fixture.detectChanges();
     const host = (fixture.nativeElement as HTMLElement).querySelector('cngx-chart') as HTMLElement;
-    expect(host.style.getPropertyValue('--cngx-chart-plot-inline-start')).toBe('31px');
-    expect(host.style.getPropertyValue('--cngx-chart-plot-inline-end')).toBe('11px');
-    expect(host.style.getPropertyValue('--cngx-chart-plot-block-start')).toBe('9px');
-    expect(host.style.getPropertyValue('--cngx-chart-plot-block-end')).toBe('26px');
+    // 31 and 11 of a 200-wide box; 9 and 26 of a 100-tall one.
+    expect(host.style.getPropertyValue('--cngx-chart-plot-inline-start')).toBe('15.5%');
+    expect(host.style.getPropertyValue('--cngx-chart-plot-inline-end')).toBe('5.5%');
+    expect(host.style.getPropertyValue('--cngx-chart-plot-block-start')).toBe('9%');
+    expect(host.style.getPropertyValue('--cngx-chart-plot-block-end')).toBe('26%');
   });
 
   it('publishes a zero plot inset when no axis reserves anything', () => {
     const fixture = TestBed.createComponent(ComboHost);
     fixture.detectChanges();
     const host = (fixture.nativeElement as HTMLElement).querySelector('cngx-chart') as HTMLElement;
-    expect(host.style.getPropertyValue('--cngx-chart-plot-inline-start')).toBe('0px');
-    expect(host.style.getPropertyValue('--cngx-chart-plot-block-end')).toBe('0px');
+    expect(host.style.getPropertyValue('--cngx-chart-plot-inline-start')).toBe('0%');
+    expect(host.style.getPropertyValue('--cngx-chart-plot-block-end')).toBe('0%');
+  });
+
+  it('rescales the published percentages with the box', () => {
+    // The gutter is a fixed number of user units, so its share of a
+    // wider box is smaller. Publishing that share rather than the
+    // pixel count is what survives an explicit-width chart being
+    // squeezed below its own viewBox.
+    const fixture = TestBed.createComponent(ComboHost);
+    fixture.componentInstance.hasLeft.set(true);
+    fixture.detectChanges();
+    const host = (fixture.nativeElement as HTMLElement).querySelector('cngx-chart') as HTMLElement;
+    expect(host.style.getPropertyValue('--cngx-chart-plot-inline-start')).toBe('15.5%');
+    fixture.componentInstance.width.set(400);
+    fixture.detectChanges();
+    expect(host.style.getPropertyValue('--cngx-chart-plot-inline-start')).toBe('7.75%');
   });
 
   it('grows the cross-axis overhang with the label that overhangs', () => {
@@ -1092,7 +1110,7 @@ describe('CngxChart — inset derived per axis combination', () => {
  * where the plot is if the geometries the canvas paints stop matching
  * the plot the axes are placed on. These assert they cannot.
  */
-describe('CngxChart — canvas marks land in the same plot the axes sit on', () => {
+describe('CngxChart - canvas marks land in the same plot the axes sit on', () => {
   @Component({
     standalone: true,
     imports: [CngxChart, CngxAxis, CngxLine, CngxThreshold, CngxBand, ContextProbe],
@@ -1189,5 +1207,38 @@ describe('CngxChart — canvas marks land in the same plot the axes sit on', () 
         .filter((g) => g.kind === 'threshold' || g.kind === 'band')
         .map((g) => (g.kind === 'threshold' ? [g.x1, g.x2, g.y1] : [g.x, g.x + g.w, g.y]));
     expect(pick(canvasSide.geometries)).toEqual(pick(svgSide.geometries));
+  });
+});
+
+describe('CngxChart - slot templates see the plot they sit inside', () => {
+  beforeEach(() => vi.stubGlobal('ResizeObserver', ResizeObserverMock));
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('hands the plot rectangle to the slot context', async () => {
+    // A fallback centred on width/height alone sits off-centre from the
+    // marks it stands in for, now that the box is not the plot.
+    const { createManualState } = await import('@cngx/common/data');
+    @Component({
+      standalone: true,
+      imports: [CngxChart, CngxAxis, CngxChartEmpty],
+      template: `
+        <cngx-chart [data]="[]" [state]="state" [width]="200" [height]="100">
+          <svg:g cngxAxis position="left" type="linear" [domain]="[0, 100]"></svg:g>
+          <ng-template cngxChartEmpty let-plot="plot">
+            <span class="probe">{{ plot.x0 }}/{{ plot.width }}/{{ plot.height }}</span>
+          </ng-template>
+        </cngx-chart>
+      `,
+    })
+    class SlotHost {
+      readonly state = createManualState<readonly number[]>();
+    }
+    TestBed.configureTestingModule({ imports: [SlotHost] });
+    const fixture = TestBed.createComponent(SlotHost);
+    fixture.componentInstance.state.setSuccess([]);
+    fixture.detectChanges();
+    const probe = (fixture.nativeElement as HTMLElement).querySelector('.probe');
+    // Lone left axis over [0, 100]: 31 inline-start, 9 on each block side.
+    expect(probe?.textContent?.trim()).toBe('31/169/82');
   });
 });
