@@ -10,8 +10,6 @@ import { CNGX_CHART_CONTEXT, type CngxChartPlotArea } from '../chart/chart-conte
 import { CNGX_CHART_AXIS, type CngxChartAxis } from './chart-axis';
 import { type CngxAxisPosition, type CngxAxisType } from './axis-position';
 
-export { type CngxAxisPosition, type CngxAxisType } from './axis-position';
-
 /** @internal */
 const DEFAULT_TICK_COUNT = 5;
 /** @internal */

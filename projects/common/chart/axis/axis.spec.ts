@@ -1,7 +1,8 @@
 import { computed, Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { CngxAxis, type CngxAxisPosition, type CngxAxisType } from './axis.component';
+import { CngxAxis } from './axis.component';
+import { type CngxAxisPosition, type CngxAxisType } from './axis-position';
 import { CngxChart } from '../chart/chart.component';
 import {
   CNGX_CHART_CONTEXT,
