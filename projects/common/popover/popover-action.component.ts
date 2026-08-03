@@ -67,6 +67,9 @@ export type PopoverActionVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-action.component.ts
  * @since 0.1.0
  * @relatedTo CngxPopoverPanel, CngxPopoverFooter
+ * @slot cngxPending Rendered while the action is running.
+ * @slot cngxSucceeded Rendered after the action succeeds.
+ * @slot cngxFailed Rendered when the action fails; gets the error.
  * <example-url>http://localhost:4200/#/common/popover/popover-panel/content-states</example-url>
  * <example-url>http://localhost:4200/#/common/popover/popover-panel/variants</example-url>
  * <example-url>http://localhost:4200/#/common/popover/popover-panel/with-footer-actions</example-url>

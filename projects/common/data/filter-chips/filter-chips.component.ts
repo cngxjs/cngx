@@ -151,6 +151,7 @@ export class CngxFilterChip<TItem = unknown, TValue = unknown> {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/filter-chips/filter-chips.component.ts
  * @since 0.1.0
  * @relatedTo CngxFilter, CngxFilterChip, CngxMultiChipGroup
+ * @slot cngxFilterChip Renders one active filter chip; gets the filter entry and a remove callback.
  *
  * <example-url>http://localhost:4200/#/common/data/filter-chips/custom-chip-decoration-via-cngxfilterchip</example-url>
  * <example-url>http://localhost:4200/#/common/data/filter-chips/multi-role-filter-wired-to-a-list</example-url>

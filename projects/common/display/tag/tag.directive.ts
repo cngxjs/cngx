@@ -89,6 +89,9 @@ export type CngxTagSize = 'sm' | 'md' | 'lg' | 'xl';
  * @selector cngx-tag
  * @since 0.1.0
  * @relatedTo CngxTagGroup, CngxChip, CngxBadge, CngxTagLabel
+ * @slot cngxTagLabel Replaces the tag's text body.
+ * @slot cngxTagPrefix Content before the label, typically an icon or swatch.
+ * @slot cngxTagSuffix Content after the label, typically a remove affordance.
  * <example-url>http://localhost:4200/#/common/display/tag/app-wide-defaults-via-providetagconfig</example-url>
  * <example-url>http://localhost:4200/#/common/display/tag/color-palette</example-url>
  * <example-url>http://localhost:4200/#/common/display/tag/composition-with-cngxicon</example-url>

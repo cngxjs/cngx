@@ -32,6 +32,8 @@ import { CNGX_STEPPER_HOST, type CngxStepStatus } from './stepper-host.token';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/step.directive.ts
  * @since 0.1.0
  * @relatedTo CngxStepGroup, CngxStepperPresenter, CngxStepLabel, CngxStepContent
+ * @slot cngxStepLabel The step's own header label.
+ * @slot cngxStepContent The step body, rendered lazily when the step activates.
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-step-content/typed-lazy-panels</example-url>
  */
 @Directive({
