@@ -7,12 +7,7 @@ import {
 } from '@angular/core';
 import { injectChartContext } from '../chart/chart-context';
 import { CNGX_CHART_LAYER, type CngxChartLayer, type LayerGeometry } from './chart-layer';
-import {
-  derivePointMarks,
-  EMPTY_POINTS,
-  lineAreaGeomEqual,
-  type PointMark,
-} from './point-geom';
+import { derivePointMarks, EMPTY_POINTS, lineAreaGeomEqual, type PointMark } from './point-geom';
 import { type CngxCurve } from '../path/curve';
 import {
   createPathBuilder,
@@ -59,11 +54,7 @@ import {
   providers: [{ provide: CNGX_CHART_LAYER, useExisting: CngxArea }],
   template: `
     @if (ctx.renderSvg()) {
-      <svg:path
-        class="cngx-area"
-        [attr.d]="d()"
-        [attr.fill-opacity]="opacity()"
-      />
+      <svg:path class="cngx-area" [attr.d]="d()" [attr.fill-opacity]="opacity()" />
       @for (p of pointMarks(); track $index) {
         <svg:circle class="cngx-area__point" [attr.cx]="p.cx" [attr.cy]="p.cy" />
       }
@@ -79,8 +70,12 @@ import {
           var(--cngx-chart-enter-easing, cubic-bezier(0.4, 0, 0.2, 1));
       }
       @keyframes cngx-area-enter {
-        from { opacity: 0; }
-        to { opacity: 1; }
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
       }
       .cngx-area__point {
         r: var(--cngx-area-point-radius, 3px);
@@ -90,7 +85,9 @@ import {
       }
       @media (prefers-reduced-motion: reduce) {
         .cngx-area,
-        .cngx-area__point { animation: none; }
+        .cngx-area__point {
+          animation: none;
+        }
       }
     `,
   ],
@@ -180,4 +177,3 @@ export class CngxArea<T = unknown> implements CngxChartLayer {
     return g.kind === 'area' ? (g.points ?? EMPTY_POINTS) : EMPTY_POINTS;
   });
 }
-

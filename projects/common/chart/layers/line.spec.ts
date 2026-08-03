@@ -87,9 +87,7 @@ describe('CngxLine', () => {
 
   it('cascade guard — a downstream effect on the line component does NOT re-fire when the d string is unchanged', () => {
     const { fixture } = setup();
-    const lineEl = fixture.debugElement.query(
-      (el) => el.componentInstance instanceof CngxLine,
-    );
+    const lineEl = fixture.debugElement.query((el) => el.componentInstance instanceof CngxLine);
     const line = lineEl.componentInstance as CngxLine<number>;
     // Reach the protected `d` signal through the runtime instance — the spec
     // is the spec, not consumer surface; testing the cascade guard
@@ -119,7 +117,9 @@ describe('CngxLine', () => {
     void inject; // keep import to satisfy lint when not directly used
   });
 
-  function points(fixture: ReturnType<typeof TestBed.createComponent<TestHost>>): NodeListOf<Element> {
+  function points(
+    fixture: ReturnType<typeof TestBed.createComponent<TestHost>>,
+  ): NodeListOf<Element> {
     return (fixture.nativeElement as HTMLElement).querySelectorAll('.cngx-line__point');
   }
 

@@ -7,12 +7,7 @@ import {
 } from '@angular/core';
 import { injectChartContext } from '../chart/chart-context';
 import { CNGX_CHART_LAYER, type CngxChartLayer, type LayerGeometry } from './chart-layer';
-import {
-  derivePointMarks,
-  EMPTY_POINTS,
-  lineAreaGeomEqual,
-  type PointMark,
-} from './point-geom';
+import { derivePointMarks, EMPTY_POINTS, lineAreaGeomEqual, type PointMark } from './point-geom';
 import { type CngxCurve } from '../path/curve';
 import {
   createPathBuilder,
@@ -88,8 +83,12 @@ import {
           var(--cngx-chart-enter-easing, cubic-bezier(0.4, 0, 0.2, 1));
       }
       @keyframes cngx-line-enter {
-        from { opacity: 0; }
-        to { opacity: 1; }
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
       }
       .cngx-line__point {
         r: var(--cngx-line-point-radius, 3px);
@@ -99,7 +98,9 @@ import {
       }
       @media (prefers-reduced-motion: reduce) {
         .cngx-line,
-        .cngx-line__point { animation: none; }
+        .cngx-line__point {
+          animation: none;
+        }
       }
     `,
   ],

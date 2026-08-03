@@ -2,7 +2,11 @@ import { effect } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { type ChartBufferOptions, type CngxChartBuffer, injectChartBuffer } from './inject-chart-buffer';
+import {
+  type ChartBufferOptions,
+  type CngxChartBuffer,
+  injectChartBuffer,
+} from './inject-chart-buffer';
 
 const baseOpts: ChartBufferOptions<number> = {
   capacity: 5,

@@ -66,13 +66,32 @@ const AXIS_LABEL_FONT_SIZE = 12;
  * but not the glyphs they resolve to.
  *
  * `0.62` sits above the average advance of the common UI sans faces at
- * their digit widths, so the gutter covers rather than clips. It is
- * calibrated against the demo app's hand-tuned 48px left gutter: a
- * two-digit domain with an axis title lands on exactly that number.
+ * their digit widths, so the gutter covers rather than clips. Measured
+ * against the demo stories it over-reserves by roughly a character on a
+ * long thousands-separated label, which is the correct direction to be
+ * wrong in.
  *
  * @internal
  */
 const CHAR_ADVANCE_RATIO = 0.62;
+
+/**
+ * Height of a rendered line box as a fraction of the font size, sized
+ * so that *half* of it still covers the taller half. A label reaches
+ * above its ascender and below its descender, so it needs more than the
+ * font size: at 11px the browser lays out 13. It is also not centred on
+ * its anchor - a `dominant-baseline: middle` label measures 7.6 above
+ * the anchor and 5.4 below, so a symmetric half of the true 13 would
+ * under-reserve on the taller side by exactly the amount that clips the
+ * topmost tick label of a left axis.
+ *
+ * `1.4` is that asymmetry folded into one number: `11 x 1.4 / 2 = 7.7`
+ * covers the 7.6, and the full value over-reserves a horizontal axis by
+ * about two units, which is the direction to be wrong in.
+ *
+ * @internal
+ */
+const LINE_BOX_RATIO = 1.4;
 
 /** @internal */
 interface AxisLabelGeometry {
@@ -163,7 +182,7 @@ interface TickRendering {
     '[attr.class]': 'hostClass()',
   },
   template: `
-    @if (axisGeometry(); as g) {
+    @if (decorated() && axisGeometry(); as g) {
       @if (showGrid()) {
         @for (tick of tickRenderings(); track tick.key) {
           <svg:line
@@ -271,6 +290,20 @@ export class CngxAxis {
    */
   readonly axisLabel = input<string | null>(null, { alias: 'label' });
 
+  /**
+   * Whether this axis draws anything. `false` turns it into a pure
+   * domain publisher: the parent still reads its `position` / `type` /
+   * `domain` to build the matching scale, but no line, tick or label
+   * is rendered and the axis reserves no room in the plot area.
+   *
+   * This is what the presets need. A sparkline mounts two axes to
+   * declare its scale domains and draws none of them, so charging it
+   * a gutter for decoration it never paints would shrink the whole
+   * mark down to nothing. Not a styling knob - an axis that draws
+   * nothing genuinely needs no room, so the reservation stays derived.
+   */
+  readonly decorated = input<boolean>(true);
+
   private readonly ctx = inject(CNGX_CHART_CONTEXT);
 
   /**
@@ -359,15 +392,17 @@ export class CngxAxis {
    * back edge.
    */
   readonly reservation = computed<number>(() => {
+    if (!this.decorated()) {
+      return 0;
+    }
     const horizontal = this.position() === 'top' || this.position() === 'bottom';
 
-    const labelExtent = horizontal
-      ? AXIS_FONT_SIZE
-      : this.longestTickLabel() * AXIS_FONT_SIZE * CHAR_ADVANCE_RATIO;
+    const labelExtent = horizontal ? AXIS_FONT_SIZE * LINE_BOX_RATIO : this.widestTickLabel();
     const tickRoom = TICK_LENGTH + LABEL_OFFSET + labelExtent;
 
     const titleRoom = this.axisLabel()
-      ? (horizontal ? AXIS_LABEL_OFFSET_INLINE : AXIS_LABEL_OFFSET_BLOCK) + AXIS_LABEL_FONT_SIZE
+      ? (horizontal ? AXIS_LABEL_OFFSET_INLINE : AXIS_LABEL_OFFSET_BLOCK) +
+        AXIS_LABEL_FONT_SIZE * LINE_BOX_RATIO
       : 0;
 
     // Whole user units, rounded up: the estimate is already an
@@ -376,6 +411,44 @@ export class CngxAxis {
     // integer string instead of the float noise the ratio produces.
     return Math.ceil(Math.max(tickRoom, titleRoom));
   });
+
+  /**
+   * How far this axis's decoration extends *along* its own line, past
+   * the plot corner at either end. The parent chart reserves it on the
+   * two sides perpendicular to {@link position}.
+   *
+   * A tick label is centred on its tick, and the extreme ticks sit
+   * exactly on the plot corners - so half of the first and last label
+   * hangs outside the plot no matter how much room the axis's own side
+   * reserves. A left axis's topmost label overhangs upward by half a
+   * line box; a bottom axis's last label overhangs rightward by half
+   * its width. Reserving only on the side the axis occupies leaves
+   * both of those painting outside the viewBox, which is the defect
+   * this pairs with {@link reservation} to close.
+   *
+   * The widest label stands in for the two extreme ones. Being wrong
+   * here means over-reserving by a few units on an axis whose ends
+   * happen to carry its shortest labels, which is cheaper than the
+   * per-end bookkeeping the exact answer would need.
+   */
+  readonly crossReservation = computed<number>(() => {
+    if (!this.decorated()) {
+      return 0;
+    }
+    const horizontal = this.position() === 'top' || this.position() === 'bottom';
+    const extent = horizontal ? this.widestTickLabel() : AXIS_FONT_SIZE * LINE_BOX_RATIO;
+    return Math.ceil(extent / 2);
+  });
+
+  /**
+   * Estimated width of the widest formatted tick label, in viewBox user
+   * units. Split out so a horizontal axis reads it only where label
+   * width actually matters - its own reservation is a line box, and
+   * only its cross-axis overhang depends on the strings.
+   */
+  private readonly widestTickLabel = computed<number>(
+    () => this.longestTickLabel() * AXIS_FONT_SIZE * CHAR_ADVANCE_RATIO,
+  );
 
   /**
    * Character count of the widest formatted tick label. Split out of

@@ -121,7 +121,12 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
  * from the axis itself, which sizes the gutter from the tick labels it
  * already formats. There is no input, no CSS custom property and no DI
  * token to tune it - a chart without axes reserves nothing and fills
- * its box exactly as it did before the plot area existed.
+ * its box exactly as it did before the plot area existed, as does one
+ * whose axes are `[decorated]="false"` and therefore draw nothing.
+ *
+ * Every axis reserves on its own side and a little on the two
+ * perpendicular ones, because a tick label is centred on its tick and
+ * the end ticks sit on the plot corners.
  *
  * Nothing here reads the DOM. The gutter is arithmetic over label
  * strings, so it is at final width in the first painted frame and
@@ -619,21 +624,35 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
       let blockEnd = 0;
       for (const axis of axes) {
         const room = axis.reservation();
+        // Half the extreme tick label hangs past the plot corner along
+        // the axis's own line, so every axis also reserves on the two
+        // sides perpendicular to it. Without this a left axis's topmost
+        // label paints above the viewBox and a bottom axis's last label
+        // paints past its right edge, however deep their own gutters are.
+        const cross = axis.crossReservation();
         // Two axes on the same side reserve the wider of the two
         // rather than stacking - they draw over each other, so the
         // room they need is the room the deeper one needs.
         switch (axis.position()) {
           case 'left':
             inlineStart = Math.max(inlineStart, room);
+            blockStart = Math.max(blockStart, cross);
+            blockEnd = Math.max(blockEnd, cross);
             break;
           case 'right':
             inlineEnd = Math.max(inlineEnd, room);
+            blockStart = Math.max(blockStart, cross);
+            blockEnd = Math.max(blockEnd, cross);
             break;
           case 'top':
             blockStart = Math.max(blockStart, room);
+            inlineStart = Math.max(inlineStart, cross);
+            inlineEnd = Math.max(inlineEnd, cross);
             break;
           case 'bottom':
             blockEnd = Math.max(blockEnd, room);
+            inlineStart = Math.max(inlineStart, cross);
+            inlineEnd = Math.max(inlineEnd, cross);
             break;
         }
       }

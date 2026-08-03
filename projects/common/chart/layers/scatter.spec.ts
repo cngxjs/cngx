@@ -56,9 +56,9 @@ describe('CngxScatter', () => {
       (fixture.nativeElement as HTMLElement).querySelectorAll<SVGCircleElement>('.cngx-scatter'),
     );
     const cxs = circles.map((c) => Number(c.getAttribute('cx')));
-    // The left axis reserves 30 of the 100-wide box, so the x range is
-    // 30..100 rather than 0..100.
-    expect(cxs).toEqual([30, 65, 100]);
+    // The left axis reserves 30 of the 100-wide box and the bottom
+    // axis's labels overhang 11 to the right, so the x range is 30..89.
+    expect(cxs).toEqual([30, 59.5, 89]);
   });
 
   it('binds the [radius] input to the r attribute', () => {

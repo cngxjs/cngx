@@ -3,7 +3,11 @@ import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
 import { type CngxChartContext } from '../chart/chart-context';
-import { type ChartRendererDeps, type CngxChartRenderer, type CngxChartRendererFactory } from './chart-renderer';
+import {
+  type ChartRendererDeps,
+  type CngxChartRenderer,
+  type CngxChartRendererFactory,
+} from './chart-renderer';
 import {
   CNGX_CHART_RENDERER_FACTORY,
   createDefaultChartRenderer,
@@ -41,7 +45,10 @@ describe('provideChartRenderer', () => {
   it('applies both features in a combined call', () => {
     TestBed.configureTestingModule({
       providers: [
-        provideChartRenderer(withChartRendererThreshold(750), withChartRendererFactory(fakeFactory)),
+        provideChartRenderer(
+          withChartRendererThreshold(750),
+          withChartRendererFactory(fakeFactory),
+        ),
       ],
     });
     expect(TestBed.inject(CNGX_CHART_RENDERER_THRESHOLD)).toBe(750);

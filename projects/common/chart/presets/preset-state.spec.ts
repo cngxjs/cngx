@@ -10,14 +10,7 @@ import { ResizeObserverMock } from '../testing/resize-observer-mock';
 @Component({
   standalone: true,
   imports: [CngxSparkline],
-  template: `
-    <cngx-sparkline
-      [data]="data"
-      [width]="80"
-      [height]="24"
-      [state]="state"
-    />
-  `,
+  template: ` <cngx-sparkline [data]="data" [width]="80" [height]="24" [state]="state" /> `,
 })
 class SparklineHost {
   readonly data: readonly number[] = [1, 2, 3, 4, 5];
@@ -84,9 +77,7 @@ describe('preset state — activeView wiring', () => {
       const fixture = TestBed.createComponent(SparklineHost);
       fixture.componentInstance.state.setError(new Error('boom'));
       fixture.detectChanges();
-      const fallback = fixture.nativeElement.querySelector(
-        '.cngx-preset-fallback--error',
-      );
+      const fallback = fixture.nativeElement.querySelector('.cngx-preset-fallback--error');
       expect(fallback).not.toBeNull();
       expect(fallback.textContent?.trim()).toBe('Error loading chart');
     });
@@ -141,9 +132,7 @@ describe('preset state — activeView wiring', () => {
       const fixture = TestBed.createComponent(BulletHost);
       fixture.componentInstance.state.setError(new Error('boom'));
       fixture.detectChanges();
-      expect(
-        fixture.nativeElement.querySelector('.cngx-preset-fallback--error'),
-      ).not.toBeNull();
+      expect(fixture.nativeElement.querySelector('.cngx-preset-fallback--error')).not.toBeNull();
     });
 
     it('renders content branch on success state', () => {

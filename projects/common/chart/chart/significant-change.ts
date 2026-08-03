@@ -16,7 +16,11 @@ type Trend = 'up' | 'down' | 'flat';
  */
 export type CngxSignificantChange =
   | { readonly kind: 'trend-flip'; readonly from: Trend; readonly to: Trend }
-  | { readonly kind: 'threshold-cross'; readonly threshold: number; readonly direction: 'up' | 'down' };
+  | {
+      readonly kind: 'threshold-cross';
+      readonly threshold: number;
+      readonly direction: 'up' | 'down';
+    };
 
 /** @internal Structural equality so a re-emitted identical event does not cascade. */
 function significantChangeEqual(

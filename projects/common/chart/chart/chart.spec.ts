@@ -772,19 +772,21 @@ describe('CngxChart — plot inset', () => {
   }
 
   // The host mounts a bottom axis over [0, 100] and a left one over
-  // [0, 50] in a 200x100 box. The bottom axis reserves the 20 its
-  // single line box needs; the left one's widest label is '12.5', four
-  // characters, so it reserves 37.
+  // [0, 50] in a 200x100 box. The bottom axis reserves the 25 its
+  // single line box needs on block-end plus 11 of label overhang on
+  // each inline side; the left one's widest label is '12.5', four
+  // characters, so it reserves 37, plus 8 of line-box overhang on each
+  // block side.
   it('publishes a plot area the projected axes have reserved room out of', () => {
     const fixture = TestBed.createComponent(AxedHost);
     fixture.detectChanges();
     expect(ctxFor(fixture).plot()).toEqual({
       x0: 37,
-      y0: 0,
-      x1: 200,
-      y1: 80,
-      width: 163,
-      height: 80,
+      y0: 8,
+      x1: 189,
+      y1: 75,
+      width: 152,
+      height: 67,
     });
   });
 
@@ -793,15 +795,15 @@ describe('CngxChart — plot inset', () => {
     fixture.detectChanges();
     const x = ctxFor(fixture).xScale();
     expect(x(0)).toBe(37);
-    expect(x(100)).toBe(200);
+    expect(x(100)).toBe(189);
   });
 
   it('maps the y scale across the plot height, flipped', () => {
     const fixture = TestBed.createComponent(AxedHost);
     fixture.detectChanges();
     const y = ctxFor(fixture).yScale();
-    expect(y(0)).toBe(80);
-    expect(y(50)).toBe(0);
+    expect(y(0)).toBe(75);
+    expect(y(50)).toBe(8);
   });
 
   it('holds the plot reference across a re-read that changes nothing', () => {
@@ -815,10 +817,11 @@ describe('CngxChart — plot inset', () => {
     fixture.detectChanges();
     expect(ctx.plot()).toBe(first);
 
-    // A real change flows through.
+    // A real change flows through. x1 trails the box by the bottom
+    // axis's inline overhang.
     fixture.componentInstance.width.set(400);
     fixture.detectChanges();
-    expect(ctx.plot().x1).toBe(400);
+    expect(ctx.plot().x1).toBe(389);
   });
 
   it('returns the NOOP scale rather than an inverted range on a collapsed box', () => {
@@ -834,9 +837,11 @@ describe('CngxChart — plot inset', () => {
 });
 
 describe('CngxChart — inset derived per axis combination', () => {
-  // A 200x100 box. The bottom axis reserves the 20 its single line box
-  // needs regardless of its labels; the left axis's [0, 100] domain
-  // formats to '100' at its widest, three characters, so it reserves 30.
+  // A 200x100 box, both axes over [0, 100], whose widest label is
+  // '100'. The bottom axis reserves 25 on block-end (one line box) and
+  // 11 on each inline side (half its widest label); the left axis
+  // reserves 30 on inline-start (three characters) and 8 on each block
+  // side (half a line box).
   @Component({
     standalone: true,
     imports: [CngxChart, CngxAxis, ContextProbe],
@@ -886,31 +891,109 @@ describe('CngxChart — inset derived per axis combination', () => {
     });
   });
 
-  it('reserves on inline-start only for a lone left axis', () => {
+  it('reserves its gutter on inline-start for a lone left axis, overhang on the block sides', () => {
     const plot = plotFor(false, true);
     expect(plot.x0).toBe(30);
-    // Nothing occupies the other three sides.
-    expect(plot.y0).toBe(0);
+    // No axis faces inline-end, so nothing reserves there.
     expect(plot.x1).toBe(200);
-    expect(plot.y1).toBe(100);
+    // Its own topmost and bottommost labels are centred on the plot
+    // corners, so half a line box comes off each block side.
+    expect(plot.y0).toBe(8);
+    expect(plot.y1).toBe(92);
   });
 
-  it('reserves on block-end only for a lone bottom axis', () => {
+  it('reserves its gutter on block-end for a lone bottom axis, overhang on the inline sides', () => {
     const plot = plotFor(true, false);
-    expect(plot.y1).toBe(80);
-    expect(plot.x0).toBe(0);
+    expect(plot.y1).toBe(75);
     expect(plot.y0).toBe(0);
-    expect(plot.x1).toBe(200);
+    expect(plot.x0).toBe(11);
+    expect(plot.x1).toBe(189);
+  });
+
+  it('reserves nothing for an axis that draws nothing', () => {
+    // The presets mount axes purely to publish a scale domain. An
+    // undecorated axis renders no line, tick or label, so charging it a
+    // gutter would shrink the mark for decoration that never paints.
+    @Component({
+      standalone: true,
+      imports: [CngxChart, CngxAxis, ContextProbe],
+      template: `
+        <cngx-chart [data]="[1, 2, 3]" [width]="80" [height]="24">
+          <svg:g
+            cngxAxis
+            [decorated]="false"
+            position="bottom"
+            type="linear"
+            [domain]="[0, 100]"
+          ></svg:g>
+          <svg:g
+            cngxAxis
+            [decorated]="false"
+            position="left"
+            type="linear"
+            [domain]="[0, 100]"
+          ></svg:g>
+          <test-context-probe />
+        </cngx-chart>
+      `,
+    })
+    class BareHost {}
+    TestBed.configureTestingModule({ imports: [BareHost] });
+    const fixture = TestBed.createComponent(BareHost);
+    fixture.detectChanges();
+    const ctx = (
+      fixture.debugElement.query(By.directive(ContextProbe)).componentInstance as ContextProbe
+    ).ctx;
+    // The full box - a sparkline at 80x24 has no room to give away.
+    expect(ctx.plot()).toEqual({ x0: 0, y0: 0, x1: 80, y1: 24, width: 80, height: 24 });
+    // And the scales still resolve, because the domain still publishes.
+    expect(ctx.xScale()(0)).toBe(0);
+    expect(ctx.xScale()(100)).toBe(80);
+    expect((fixture.nativeElement as HTMLElement).querySelector('.cngx-axis__line')).toBeNull();
+  });
+
+  it('grows the cross-axis overhang with the label that overhangs', () => {
+    // The bottom axis's inline overhang is half its widest label, so a
+    // seven-character domain pushes the plot corners further in than a
+    // three-character one. This is the half-label that hangs past the
+    // plot corner: without it the last tick label paints outside the
+    // viewBox no matter how deep the block-end gutter is.
+    @Component({
+      standalone: true,
+      imports: [CngxChart, CngxAxis, ContextProbe],
+      template: `
+        <cngx-chart [data]="[1, 2, 3]" [width]="200" [height]="100">
+          <svg:g cngxAxis position="bottom" type="linear" [domain]="domain()"></svg:g>
+          <test-context-probe />
+        </cngx-chart>
+      `,
+    })
+    class OverhangHost {
+      domain = signal<readonly unknown[]>([0, 100]);
+    }
+    TestBed.configureTestingModule({ imports: [OverhangHost] });
+    const fixture = TestBed.createComponent(OverhangHost);
+    fixture.detectChanges();
+    const ctx = (
+      fixture.debugElement.query(By.directive(ContextProbe)).componentInstance as ContextProbe
+    ).ctx;
+    expect(ctx.plot().x0).toBe(11);
+    expect(ctx.plot().x1).toBe(189);
+
+    fixture.componentInstance.domain.set([0, 1200000]);
+    fixture.detectChanges();
+    expect(ctx.plot().x0).toBe(24);
+    expect(ctx.plot().x1).toBe(176);
   });
 
   it('reserves on both sides when both axes are projected', () => {
     expect(plotFor(true, true)).toEqual({
       x0: 30,
-      y0: 0,
-      x1: 200,
-      y1: 80,
-      width: 170,
-      height: 80,
+      y0: 8,
+      x1: 189,
+      y1: 75,
+      width: 159,
+      height: 67,
     });
   });
 
@@ -925,6 +1008,7 @@ describe('CngxChart — inset derived per axis combination', () => {
     // No horizontal axis, so xScale is the NOOP - the range shrink is
     // observable on the plot the scale is built from.
     expect(ctx.plot().width).toBe(200 - 30);
+    expect(ctx.plot().height).toBe(100 - 8 - 8);
     expect(typeof x).toBe('function');
   });
 

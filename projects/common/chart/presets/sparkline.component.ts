@@ -70,8 +70,20 @@ import { injectPresetState } from './preset-state';
           [height]="height()"
           [aria-label]="ariaLabel()"
         >
-          <svg:g cngxAxis position="bottom" type="linear" [domain]="xDomain()"></svg:g>
-          <svg:g cngxAxis position="left" type="linear" [domain]="yDomain()"></svg:g>
+          <svg:g
+            cngxAxis
+            [decorated]="false"
+            position="bottom"
+            type="linear"
+            [domain]="xDomain()"
+          ></svg:g>
+          <svg:g
+            cngxAxis
+            [decorated]="false"
+            position="left"
+            type="linear"
+            [domain]="yDomain()"
+          ></svg:g>
           @if (showArea()) {
             <svg:g cngxArea [baseline]="yDomain()[0]"></svg:g>
           }
@@ -88,9 +100,6 @@ import { injectPresetState } from './preset-state';
         line-height: 0;
         --cngx-line-color: var(--cngx-sparkline-color, var(--cngx-chart-primary, currentColor));
         --cngx-area-fill: var(--cngx-sparkline-color, var(--cngx-chart-primary, currentColor));
-      }
-      cngx-sparkline [cngxAxis] {
-        display: none;
       }
       cngx-sparkline .cngx-preset-skeleton {
         display: inline-block;

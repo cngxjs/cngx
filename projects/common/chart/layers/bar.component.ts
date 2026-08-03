@@ -83,11 +83,19 @@ const FALLBACK_BASELINE = 0;
           var(--cngx-chart-enter-easing, cubic-bezier(0.34, 1.2, 0.64, 1));
       }
       @keyframes cngx-bar-enter {
-        from { transform: scaleY(0); opacity: 0; }
-        to { transform: scaleY(1); opacity: 1; }
+        from {
+          transform: scaleY(0);
+          opacity: 0;
+        }
+        to {
+          transform: scaleY(1);
+          opacity: 1;
+        }
       }
       @media (prefers-reduced-motion: reduce) {
-        .cngx-bar { animation: none; }
+        .cngx-bar {
+          animation: none;
+        }
       }
     `,
   ],
@@ -200,4 +208,3 @@ function rectsEqual(a: readonly BarRect[], b: readonly BarRect[]): boolean {
   }
   return true;
 }
-

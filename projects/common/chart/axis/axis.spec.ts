@@ -87,10 +87,10 @@ describe('CngxAxis', () => {
 
   // The host's 200x100 box with a [0, 100] domain formats to a longest
   // tick label of three characters, so a vertical axis reserves 30 and
-  // a horizontal one the 20 its single line box needs.
+  // a horizontal one the 25 its single line box needs.
   it.each<[CngxAxisPosition, string]>([
-    ['top', 'translate(0,20)'],
-    ['bottom', 'translate(0,80)'],
+    ['top', 'translate(0,25)'],
+    ['bottom', 'translate(0,75)'],
     ['left', 'translate(30,0)'],
     ['right', 'translate(170,0)'],
   ])('positions the axis group on its own reserved plot edge for position=%s', (pos, expected) => {
@@ -181,10 +181,11 @@ describe('CngxAxis', () => {
     expect(texts).toContain('Months');
     expect(texts).toContain('Revenue');
     // Bottom axis label is centred on the plot, not the box: the
-    // titled left axis reserves 48, so the plot runs x 48..200 and its
-    // midpoint is 124. No rotation in the transform.
+    // titled left axis reserves 53 and the bottom axis's own labels
+    // overhang 11 to the right, so the plot runs x 53..189 and its
+    // midpoint is 121. No rotation in the transform.
     const bottomLabel = labels.find((l) => l.textContent?.trim() === 'Months');
-    expect(bottomLabel?.getAttribute('transform')).toMatch(/translate\(124,/);
+    expect(bottomLabel?.getAttribute('transform')).toMatch(/translate\(121,/);
     expect(bottomLabel?.getAttribute('transform')).not.toMatch(/rotate/);
     // Left axis label is rotated -90deg.
     const leftLabel = labels.find((l) => l.textContent?.trim() === 'Revenue');
@@ -230,11 +231,11 @@ describe('CngxAxis', () => {
     );
     expect(lines.length).toBe(5);
     // Vertical gridlines for a bottom axis: x2=0, y2=-plot height. The
-    // bottom axis reserves 20 of the 100-tall box, so they stop at the
+    // bottom axis reserves 25 of the 100-tall box, so they stop at the
     // plot edge rather than running down through the tick labels.
     for (const l of lines) {
       expect(Number(l.getAttribute('x2'))).toBe(0);
-      expect(Number(l.getAttribute('y2'))).toBe(-80);
+      expect(Number(l.getAttribute('y2'))).toBe(-75);
     }
   });
 
@@ -271,15 +272,17 @@ describe('CngxAxis', () => {
     }
   });
 
-  it('spans the axis line across the full box width when no axis reserves inline room', () => {
+  it('insets its own line by the overhang of its extreme tick labels', () => {
     const { fixture } = setup();
     fixture.componentInstance.position.set('bottom');
     fixture.detectChanges();
     const line = fixture.nativeElement.querySelector('.cngx-axis__line') as SVGLineElement;
-    // A lone bottom axis reserves on block-end only, so the inline
-    // extent is untouched.
-    expect(Number(line.getAttribute('x1'))).toBe(0);
-    expect(Number(line.getAttribute('x2'))).toBe(200);
+    // A lone bottom axis reserves its gutter on block-end, and half of
+    // its widest label ('100', 11 units) on each inline side - the
+    // first and last tick sit on the plot corners, so half of each
+    // label would otherwise paint outside the viewBox.
+    expect(Number(line.getAttribute('x1'))).toBe(11);
+    expect(Number(line.getAttribute('x2'))).toBe(189);
   });
 
   it('produces evenly spaced linear ticks across the domain', () => {
@@ -537,7 +540,7 @@ describe('CngxAxis — the room an axis reserves', () => {
       h.position.set('bottom');
       h.domain.set([0, 1200000]);
     });
-    expect(narrow).toBe('translate(0,80)');
+    expect(narrow).toBe('translate(0,75)');
     expect(wide).toBe(narrow);
   });
 
@@ -549,9 +552,9 @@ describe('CngxAxis — the room an axis reserves', () => {
     });
     // The title sits at a fixed offset from the line rather than beyond
     // the ticks, so the two extents are alternatives: 23 for the ticks,
-    // 48 for the title, and the title wins here.
+    // 53 for the title, and the title wins here.
     expect(untitled).toBe('translate(23,0)');
-    expect(titled).toBe('translate(48,0)');
+    expect(titled).toBe('translate(53,0)');
   });
 
   it('reserves only the tick gap when the axis formats no labels at all', () => {

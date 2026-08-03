@@ -40,7 +40,11 @@ import { CNGX_CHART_I18N } from '../i18n/chart-i18n';
   },
   template: `
     <table class="cngx-chart-data-table__table">
-      <caption>{{ caption() }}</caption>
+      <caption>
+        {{
+          caption()
+        }}
+      </caption>
       <thead>
         <tr>
           <th scope="col">#</th>

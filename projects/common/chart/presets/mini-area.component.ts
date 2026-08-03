@@ -60,8 +60,20 @@ import { injectPresetState } from './preset-state';
           [height]="height()"
           [aria-label]="ariaLabel()"
         >
-          <svg:g cngxAxis position="bottom" type="linear" [domain]="xDomain()"></svg:g>
-          <svg:g cngxAxis position="left" type="linear" [domain]="yDomain()"></svg:g>
+          <svg:g
+            cngxAxis
+            [decorated]="false"
+            position="bottom"
+            type="linear"
+            [domain]="xDomain()"
+          ></svg:g>
+          <svg:g
+            cngxAxis
+            [decorated]="false"
+            position="left"
+            type="linear"
+            [domain]="yDomain()"
+          ></svg:g>
           <svg:g cngxArea [opacity]="opacity()" [baseline]="yDomain()[0]"></svg:g>
         </cngx-chart>
       }
@@ -74,9 +86,6 @@ import { injectPresetState } from './preset-state';
         display: inline-block;
         line-height: 0;
         --cngx-area-fill: var(--cngx-mini-area-color, var(--cngx-chart-primary, currentColor));
-      }
-      cngx-mini-area [cngxAxis] {
-        display: none;
       }
       cngx-mini-area .cngx-preset-skeleton {
         display: inline-block;
