@@ -9,7 +9,7 @@ export const STORY: DemoSpec = {
   level: 'organism',
   audience: ['dev'],
   artifact: 'standalone',
-  focus: ['composition', 'layout'],
+  focus: ['composition', 'integration'],
   apiComponents: ['CngxChartPanel', 'CngxChart', 'CngxAxis'],
   moduleImports: [
     "import { CngxChartPanel, CngxChartPanelTitle, CngxChartPanelSubtitle } from '@cngx/ui/chart-panel';",
