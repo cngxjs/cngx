@@ -26,7 +26,8 @@ export const STORY: DemoSpec = {
   setup: `protected readonly revenue: readonly number[] = [
     420000, 515000, 468000, 702000, 831000, 774000, 995000, 1180000,
   ];
-  protected readonly thousands = (v: unknown): string => Number(v).toLocaleString('en-US');`,
+  protected readonly thousands = (v: unknown): string => Number(v).toLocaleString('en-US');
+  protected readonly monthNumber = (v: unknown): string => String(Number(v) + 1);`,
   template: `<cngx-chart-panel style="max-width:520px">
     <h3 cngxChartPanelTitle>Net revenue</h3>
     <span cngxChartPanelSubtitle>EUR, by month</span>
@@ -40,7 +41,14 @@ export const STORY: DemoSpec = {
         [format]="thousands"
         [grid]="true"
       ></svg:g>
-      <svg:g cngxAxis position="bottom" type="linear" [domain]="[1, 8]" [ticks]="8"></svg:g>
+      <svg:g
+        cngxAxis
+        position="bottom"
+        type="linear"
+        [domain]="[0, 7]"
+        [ticks]="8"
+        [format]="monthNumber"
+      ></svg:g>
       <svg:g cngxLine [data]="revenue"></svg:g>
     </cngx-chart>
   </cngx-chart-panel>`,
