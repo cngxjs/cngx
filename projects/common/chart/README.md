@@ -37,13 +37,15 @@ There is no knob. No input, no CSS custom property, no DI token sizes the gutter
 
 The chart publishes where its plot area ended up, so anything you position against the host box can line up with the marks rather than the box.
 
-In a template, read the rectangle off the chart context or a slot context - `plot` carries `{ x0, y0, x1, y1, width, height }` in viewBox user units:
+Every slot context carries `plot` - `{ x0, y0, x1, y1, width, height }` in viewBox user units - so a fallback can reason about the drawing surface rather than the host box:
 
 ```html
 <ng-template cngxChartEmpty let-plot="plot">
-  <text [attr.x]="plot.x0 + plot.width / 2" [attr.y]="plot.y0 + plot.height / 2">No readings</text>
+  <span>No readings for this range ({{ plot.width }} x {{ plot.height }})</span>
 </ng-template>
 ```
+
+Mind the two coordinate spaces. Slot templates render into an HTML frame layered over the SVG, so `width`/`height` on the context are **rendered px** while `plot` is **viewBox units**. They diverge whenever an explicit `[width]` chart is squeezed by `max-width`. Do not compute a ratio across the two. For CSS-side alignment use the custom properties below, which are resolution-independent; for SVG-space geometry read `plot` off `injectChartContext()` inside a directive on an `<svg:g>` host, the way the layer atoms do.
 
 In CSS, the chart writes four custom properties onto its own host, as percentages of the host box:
 
