@@ -698,8 +698,13 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
 
   /**
    * The plot inset as percentages of the host box, published as the
-   * `--cngx-chart-plot-*` custom properties for HTML overlays that sit
-   * on the host and want to align to the plot.
+   * `--cngx-chart-plot-*` custom properties.
+   *
+   * Custom properties inherit downwards, so these reach the chart's own
+   * subtree. An overlay outside the host does not see them and reads
+   * {@link plot} off the exported instance instead
+   * (`#chart="cngxChart"`) - projected content lands inside the `<svg>`,
+   * so an HTML overlay is always a sibling.
    *
    * Percentages rather than pixels, because a user unit is not always a
    * CSS pixel: an explicit `[width]="520"` chart squeezed by

@@ -45,9 +45,28 @@ Every slot context carries `plot` - `{ x0, y0, x1, y1, width, height }` in viewB
 </ng-template>
 ```
 
-Mind the two coordinate spaces. Slot templates render into an HTML frame layered over the SVG, so `width`/`height` on the context are **rendered px** while `plot` is **viewBox units**. They diverge whenever an explicit `[width]` chart is squeezed by `max-width`. Do not compute a ratio across the two. For CSS-side alignment use the custom properties below, which are resolution-independent; for SVG-space geometry read `plot` off `injectChartContext()` inside a directive on an `<svg:g>` host, the way the layer atoms do.
+Mind the two coordinate spaces. Slot templates render into an HTML frame layered over the SVG, so `width`/`height` on the context are **rendered px** while `plot` is **viewBox units**. They diverge whenever an explicit `[width]` chart is squeezed by `max-width`. Do not compute a ratio across the two. For SVG-space geometry read `plot` off `injectChartContext()` inside a directive on an `<svg:g>` host, the way the layer atoms do.
 
-In CSS, the chart writes four custom properties onto its own host, as percentages of the host box:
+From outside the chart, read the rectangle off the instance. An HTML overlay is always a sibling - everything projected into `<cngx-chart>` lands inside its SVG - so this is the route it has:
+
+```html
+<div style="position: relative; display: inline-block">
+  <cngx-chart #chart="cngxChart" [width]="480" [height]="200" [data]="load">
+    <svg:g cngxAxis position="left" type="linear" [domain]="[0, 100000]"></svg:g>
+    <svg:g cngxLine></svg:g>
+  </cngx-chart>
+
+  <div
+    style="position: absolute"
+    [style.left.%]="(chart.plot().x0 / 480) * 100"
+    [style.top.%]="(chart.plot().y0 / 200) * 100"
+    [style.width.%]="(chart.plot().width / 480) * 100"
+    [style.height.%]="(chart.plot().height / 200) * 100"
+  >…</div>
+</div>
+```
+
+In CSS, the chart writes the same numbers as four custom properties onto its own host, as percentages of the host box. Custom properties inherit downwards only, so these reach the chart's own subtree - not an outside sibling, which is what the instance route above is for:
 
 |Property|Reserved on|
 |-|-|
@@ -56,16 +75,17 @@ In CSS, the chart writes four custom properties onto its own host, as percentage
 |`--cngx-chart-plot-block-start`|top|
 |`--cngx-chart-plot-block-end`|bottom|
 
-These are outputs, not settings. The chart rewrites them whenever the box or the axis set changes, so setting them yourself has no effect - read them to inset an HTML overlay onto the plot:
+These are outputs, not settings. The chart rewrites them whenever the box or the axis set changes, so setting them yourself has no effect.
 
 ```css
-.chart-overlay {
+/* reachable from the chart's own subtree; a sibling does not inherit these */
+.some-descendant {
   inset: var(--cngx-chart-plot-block-start) var(--cngx-chart-plot-inline-end)
          var(--cngx-chart-plot-block-end) var(--cngx-chart-plot-inline-start);
 }
 ```
 
-Percent rather than pixels because an explicit-`[width]` chart squeezed by `max-width` keeps its viewBox: a user unit stops being a CSS pixel, while a fraction stays a fraction.
+Percent rather than pixels because an explicit-`[width]` chart squeezed by `max-width` keeps its viewBox: a user unit stops being a CSS pixel, while a fraction stays a fraction. That holds while the host keeps the viewBox ratio, which it does whenever both `[width]` and `[height]` are bound. Bind only one and the SVG letterboxes, so the percentages address the host box rather than the drawing area.
 
 ### Implementing CngxChartContext yourself
 
