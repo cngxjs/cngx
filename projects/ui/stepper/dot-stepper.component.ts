@@ -55,6 +55,7 @@ import { CngxSwipe } from '@cngx/common/interactive';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/stepper/dot-stepper.component.ts
  * @since 0.1.0
  * @relatedTo CngxStepperPresenter, CngxProgressBarStepper, CngxTextStepper
+ * @slot cngxDotStepperDot Replaces one dot; gets its index and active state.
  * <example-url>http://localhost:4200/#/ui/stepper/dot-stepper/mobile-carousel</example-url>
  */
 @Component({

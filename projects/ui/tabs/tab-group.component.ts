@@ -88,6 +88,12 @@ import {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/tabs/tab-group.component.ts
  * @since 0.1.0
  * @relatedTo CngxTabOverflow, CngxTabGroupPresenter, CngxTab, CngxFocusRestore
+ * @slot cngxTabIcon Replaces a tab's leading icon; gets the tab.
+ * @slot cngxTabAddIcon Replaces the glyph on the add-tab control.
+ * @slot cngxTabCloseIcon Replaces the glyph on a tab's close control.
+ * @slot cngxTabErrorBadge Marks a tab whose panel holds validation errors.
+ * @slot cngxTabBusySpinner Rendered on a tab while its switch commits.
+ * @slot cngxTabRejectionIcon Marks a tab whose switch was refused.
  * <example-url>http://localhost:4200/#/ui/tabs/tab-commit-action/optimistic-pessimistic-commits-with-bridge-directives</example-url>
  * <example-url>http://localhost:4200/#/ui/tabs/tab-error-aggregation/per-tab-error-badges</example-url>
  * <example-url>http://localhost:4200/#/ui/tabs/tab-skins/all-skins-side-by-side</example-url>

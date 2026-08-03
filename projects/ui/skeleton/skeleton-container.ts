@@ -55,6 +55,7 @@ import {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/skeleton/skeleton-container.ts
  * @since 0.1.0
  * @relatedTo CngxSkeletonPlaceholder, CngxAsyncState, CngxEmptyState
+ * @slot cngxSkeletonPlaceholder Replaces the generated placeholder shape.
  * <example-url>http://localhost:4200/#/common/layout/skeleton/basic-skeleton</example-url>
  * <example-url>http://localhost:4200/#/common/layout/skeleton/skeleton-container</example-url>
  * <example-url>http://localhost:4200/#/ui/skeleton/card-skeleton</example-url>

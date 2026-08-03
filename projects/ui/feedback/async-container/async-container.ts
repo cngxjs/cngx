@@ -115,6 +115,10 @@ export class CngxAsyncErrorTpl {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/async-container/async-container.ts
  * @since 0.1.0
  * @relatedTo CngxLoadingIndicator, CngxLoadingOverlay, CngxAlert, CngxToaster
+ * @slot cngxAsyncContent Rendered on success; gets the resolved value.
+ * @slot cngxAsyncSkeleton Rendered during the first load.
+ * @slot cngxAsyncEmpty Rendered when the value resolves to nothing.
+ * @slot cngxAsyncError Rendered on failure; gets the error and a retry callback.
  *
  * <example-url>http://localhost:4200/#/forms/filter-builder/filter-builder-async-state/loading-error-content-branches-via-cngx-async-container</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/async-container/cngx-async-container-full-control-toast</example-url>

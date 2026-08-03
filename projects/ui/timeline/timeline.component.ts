@@ -158,6 +158,14 @@ export type CngxTimelineOrientation = 'vertical' | 'horizontal';
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/timeline/timeline.component.ts
  * @relatedTo CngxTimelineItem, CngxTimelineItemTpl, CNGX_TIMELINE_GROUPING_FACTORY, CNGX_TIMELINE_CONFIG
+ * @slot cngxTimelineItem Renders one event row; gets the event plus first/last/index flags.
+ * @slot cngxTimelineMarkerTpl Replaces a row's marker; takes precedence over a projected marker element.
+ * @slot cngxTimelineDateHeader Replaces a band's date caption; gets the band date.
+ * @slot cngxTimelineSkeleton Replaces the placeholder rows drawn during the first load.
+ * @slot cngxTimelineEmpty Rendered when no event resolves; gets the reason from [emptyReason].
+ * @slot cngxTimelineError Rendered when the load fails; gets the error and a retry callback.
+ * @slot cngxTimelineRetryButton Replaces the retry control on the error surface.
+ * @slot cngxTimelineLoadingTail Rendered below the rows while more history streams in.
  * @since 0.1.0
  */
 @Component({
