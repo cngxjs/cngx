@@ -107,6 +107,29 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
  * The `[width]` / `[height]` inputs override the resize observer for
  * fixed-dimension presets (inline sparkline at 80×24, etc.).
  *
+ * ## The plot area
+ *
+ * Marks are mapped onto the *plot area*, not onto the whole viewBox:
+ * the viewBox minus the room the projected axes need for their tick
+ * labels and titles. The chart publishes the resulting rectangle on
+ * {@link CngxChartContext.plot}, and both its own scale ranges and
+ * every `[cngxAxis]` line resolve against that one derivation, so a
+ * tick can never drift away from the mark it labels.
+ *
+ * The reserved room is derived, not configured. Which sides reserve
+ * comes from the projected axis set; how much each side reserves comes
+ * from the axis itself, which sizes the gutter from the tick labels it
+ * already formats. There is no input, no CSS custom property and no DI
+ * token to tune it - a chart without axes reserves nothing and fills
+ * its box exactly as it did before the plot area existed.
+ *
+ * Nothing here reads the DOM. The gutter is arithmetic over label
+ * strings, so it is at final width in the first painted frame and
+ * renders identically under SSR. The cost is that one character's
+ * width is an estimate rather than the font's real advance width; a
+ * consumer restyling `--cngx-axis-font-size` gets labels at their own
+ * size inside a gutter sized for the default.
+ *
  * @category common/chart
  * @docsKind primary
  * @wcag AA

@@ -21,6 +21,14 @@ Three properties make the chart system feel different from a wrapped library:
 - **Async-native.** Bind `[state]` and the chart switches between skeleton, content, refresh, empty, and error views the same way every other cngx surface does. Loading is a built-in mode, not a parent wrapper.
 - **Override slots.** Loading, empty, and error placeholders are template slots; the chart never blocks you from owning the UX of a failed fetch.
 
+## Sizing and the plot area
+
+The chart fills its host box. Inside that box it maps marks onto the **plot area**: the box minus the room the axes you projected need for their tick labels and titles. That is what keeps a `1,200,000` tick label inside a card instead of painting over its border, and it is why you never have to pad a container to catch overhanging axis text.
+
+The reservation is derived. Which sides reserve comes from the axes you mounted; how much each reserves comes from the labels that axis formats. A chart with no axis reserves nothing and fills the box edge to edge - every preset does exactly that.
+
+There is no knob. No input, no CSS custom property, no DI token sizes the gutter, because the component already knows everything needed to compute it. The one approximation is character width: the chart measures no text, so it estimates one character as a fraction of the default axis font size. Restyling `--cngx-axis-font-size` scales your labels but not the gutter they sit in. If that bites, the fix is a real measure pass or an escape hatch, and both are additive - open an issue with the font and the label that clipped.
+
 ## Status
 
 Under active development. Treat the **preset molecules** as stable for adoption. Treat the **atom internals** (axis tick computation, layer projection caching, custom-layer authoring) as still in flux until the chart-area master plan closes - APIs may move between minor releases.
