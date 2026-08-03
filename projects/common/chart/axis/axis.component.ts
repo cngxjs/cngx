@@ -37,6 +37,23 @@ const AXIS_LABEL_OFFSET_INLINE = 32;
 /** @internal */
 const AXIS_LABEL_OFFSET_BLOCK = 36;
 
+/**
+ * The rectangle the chart's scales map onto: the viewBox minus the
+ * inset the chart reserves for axis decoration. Every axis coordinate
+ * is authored against this rather than the box, so the line stays
+ * attached to the area the marks actually occupy.
+ *
+ * @internal
+ */
+interface PlotArea {
+  readonly x0: number;
+  readonly y0: number;
+  readonly x1: number;
+  readonly y1: number;
+  readonly width: number;
+  readonly height: number;
+}
+
 /** @internal */
 interface AxisLabelGeometry {
   readonly transform: string;
@@ -294,13 +311,52 @@ export class CngxAxis {
 
   protected readonly hostClass = computed(() => `cngx-axis cngx-axis--${this.position()}`);
 
-  protected readonly axisLabelGeometry = computed<AxisLabelGeometry | null>(
+  /**
+   * The chart's plot area in viewBox user units - the box minus the
+   * inset the chart reserves for axis decoration. Single source for
+   * every geometry below, so the line, the ticks, the gridlines and the
+   * title cannot disagree about where the plot starts.
+   *
+   * `null` once the plot has collapsed on either dimension, which is
+   * the same condition under which the chart hands out its NOOP scale.
+   */
+  private readonly plot = computed<PlotArea | null>(
     () => {
       const { width, height } = this.ctx.dimensions();
-      if (width <= 0 || height <= 0) {
+      const { inlineStart, inlineEnd, blockStart, blockEnd } = this.ctx.inset();
+      const x1 = width - inlineEnd;
+      const y1 = height - blockEnd;
+      if (x1 <= inlineStart || y1 <= blockStart) {
         return null;
       }
-      return buildAxisLabelGeometry(this.position(), width, height);
+      return {
+        x0: inlineStart,
+        y0: blockStart,
+        x1,
+        y1,
+        width: x1 - inlineStart,
+        height: y1 - blockStart,
+      };
+    },
+    {
+      equal: (a, b) =>
+        a === b ||
+        (a !== null &&
+          b !== null &&
+          a.x0 === b.x0 &&
+          a.y0 === b.y0 &&
+          a.x1 === b.x1 &&
+          a.y1 === b.y1),
+    },
+  );
+
+  protected readonly axisLabelGeometry = computed<AxisLabelGeometry | null>(
+    () => {
+      const plot = this.plot();
+      if (!plot) {
+        return null;
+      }
+      return buildAxisLabelGeometry(this.position(), plot);
     },
     {
       equal: (a, b) =>
@@ -315,12 +371,11 @@ export class CngxAxis {
 
   protected readonly axisGeometry = computed<AxisGeometry | null>(
     () => {
-      const { width, height } = this.ctx.dimensions();
-      if (width <= 0 || height <= 0) {
+      const plot = this.plot();
+      if (!plot) {
         return null;
       }
-      const pos = this.position();
-      return buildAxisGeometry(pos, width, height);
+      return buildAxisGeometry(this.position(), plot);
     },
     {
       equal: (a, b) =>
@@ -340,12 +395,15 @@ export class CngxAxis {
       const pos = this.position();
       const values = this.tickValues();
       const fmt = this.format();
-      const { width, height } = this.ctx.dimensions();
+      const plot = this.plot();
+      if (!plot) {
+        return [];
+      }
       const isHorizontal = pos === 'top' || pos === 'bottom';
       const scale = isHorizontal ? this.ctx.xScale() : this.ctx.yScale();
       return values.map((v, i) => {
         const offset = (scale as (input: unknown) => number)(v);
-        return buildTickRendering(pos, offset, fmt(v), `${i}-${String(v)}`, width, height);
+        return buildTickRendering(pos, offset, fmt(v), `${i}-${String(v)}`, plot);
       });
     },
     {
@@ -404,28 +462,39 @@ function toMs(v: unknown): number {
   return Number(v);
 }
 
-/** @internal */
-function buildAxisGeometry(pos: CngxAxisPosition, width: number, height: number): AxisGeometry {
+/**
+ * Places the axis group on the plot edge and spans its line across the
+ * plot extent.
+ *
+ * The group only translates along the axis's *perpendicular* direction:
+ * a bottom axis moves in y and stays at `x = 0`, because the tick
+ * offsets the scale hands back are already absolute viewBox
+ * coordinates and would double-count an inset baked into the group's
+ * own translate.
+ *
+ * @internal
+ */
+function buildAxisGeometry(pos: CngxAxisPosition, plot: PlotArea): AxisGeometry {
   switch (pos) {
     case 'top':
       return {
-        transform: 'translate(0,0)',
-        line: { x1: 0, y1: 0, x2: width, y2: 0 },
+        transform: `translate(0,${plot.y0})`,
+        line: { x1: plot.x0, y1: 0, x2: plot.x1, y2: 0 },
       };
     case 'bottom':
       return {
-        transform: `translate(0,${height})`,
-        line: { x1: 0, y1: 0, x2: width, y2: 0 },
+        transform: `translate(0,${plot.y1})`,
+        line: { x1: plot.x0, y1: 0, x2: plot.x1, y2: 0 },
       };
     case 'left':
       return {
-        transform: 'translate(0,0)',
-        line: { x1: 0, y1: 0, x2: 0, y2: height },
+        transform: `translate(${plot.x0},0)`,
+        line: { x1: 0, y1: plot.y0, x2: 0, y2: plot.y1 },
       };
     case 'right':
       return {
-        transform: `translate(${width},0)`,
-        line: { x1: 0, y1: 0, x2: 0, y2: height },
+        transform: `translate(${plot.x1},0)`,
+        line: { x1: 0, y1: plot.y0, x2: 0, y2: plot.y1 },
       };
   }
 }
@@ -436,8 +505,7 @@ function buildTickRendering(
   offset: number,
   text: string,
   key: string,
-  width: number,
-  height: number,
+  plot: PlotArea,
 ): TickRendering {
   switch (pos) {
     case 'bottom':
@@ -445,7 +513,7 @@ function buildTickRendering(
         key,
         transform: `translate(${offset},0)`,
         tickLine: { x1: 0, y1: 0, x2: 0, y2: TICK_LENGTH },
-        gridLine: { x2: 0, y2: -height },
+        gridLine: { x2: 0, y2: -plot.height },
         label: {
           x: 0,
           y: TICK_LENGTH + LABEL_OFFSET,
@@ -459,7 +527,7 @@ function buildTickRendering(
         key,
         transform: `translate(${offset},0)`,
         tickLine: { x1: 0, y1: 0, x2: 0, y2: -TICK_LENGTH },
-        gridLine: { x2: 0, y2: height },
+        gridLine: { x2: 0, y2: plot.height },
         label: {
           x: 0,
           y: -TICK_LENGTH - LABEL_OFFSET,
@@ -473,7 +541,7 @@ function buildTickRendering(
         key,
         transform: `translate(0,${offset})`,
         tickLine: { x1: 0, y1: 0, x2: -TICK_LENGTH, y2: 0 },
-        gridLine: { x2: width, y2: 0 },
+        gridLine: { x2: plot.width, y2: 0 },
         label: {
           x: -TICK_LENGTH - LABEL_OFFSET,
           y: 0,
@@ -487,7 +555,7 @@ function buildTickRendering(
         key,
         transform: `translate(0,${offset})`,
         tickLine: { x1: 0, y1: 0, x2: TICK_LENGTH, y2: 0 },
-        gridLine: { x2: -width, y2: 0 },
+        gridLine: { x2: -plot.width, y2: 0 },
         label: {
           x: TICK_LENGTH + LABEL_OFFSET,
           y: 0,
@@ -525,33 +593,33 @@ function defaultTickFormat(v: unknown): string {
 }
 
 /** @internal */
-function buildAxisLabelGeometry(
-  pos: CngxAxisPosition,
-  width: number,
-  height: number,
-): AxisLabelGeometry {
+function buildAxisLabelGeometry(pos: CngxAxisPosition, plot: PlotArea): AxisLabelGeometry {
+  // Local to the axis group, so the offsets stay as they were and only
+  // the centring runs along the plot extent instead of the box.
+  const midX = plot.x0 + plot.width / 2;
+  const midY = plot.y0 + plot.height / 2;
   switch (pos) {
     case 'bottom':
       return {
-        transform: `translate(${width / 2},${AXIS_LABEL_OFFSET_INLINE})`,
+        transform: `translate(${midX},${AXIS_LABEL_OFFSET_INLINE})`,
         anchor: 'middle',
         baseline: 'hanging',
       };
     case 'top':
       return {
-        transform: `translate(${width / 2},${-AXIS_LABEL_OFFSET_INLINE})`,
+        transform: `translate(${midX},${-AXIS_LABEL_OFFSET_INLINE})`,
         anchor: 'middle',
         baseline: 'auto',
       };
     case 'left':
       return {
-        transform: `translate(${-AXIS_LABEL_OFFSET_BLOCK},${height / 2}) rotate(-90)`,
+        transform: `translate(${-AXIS_LABEL_OFFSET_BLOCK},${midY}) rotate(-90)`,
         anchor: 'middle',
         baseline: 'auto',
       };
     case 'right':
       return {
-        transform: `translate(${AXIS_LABEL_OFFSET_BLOCK},${height / 2}) rotate(90)`,
+        transform: `translate(${AXIS_LABEL_OFFSET_BLOCK},${midY}) rotate(90)`,
         anchor: 'middle',
         baseline: 'auto',
       };
