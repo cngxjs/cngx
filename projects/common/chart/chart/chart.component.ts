@@ -143,8 +143,7 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/chart/chart.component.ts
  * @since 0.1.0
  * @relatedTo CngxAxis, CngxLine, CngxArea, CngxBar, CngxChartLegend
- */
-/**
+ *
  * <example-url>http://localhost:4200/#/common/chart/primitives/async-state-machine-on-the-primitive</example-url>
  * <example-url>http://localhost:4200/#/common/chart/primitives/combo-bars-moving-average-line</example-url>
  * <example-url>http://localhost:4200/#/common/chart/primitives/line-area-threshold-band</example-url>
