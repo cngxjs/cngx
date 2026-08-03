@@ -684,3 +684,85 @@ describe('CngxChart — canvas overlay gated on the content view (Phase 3 blocke
     expect(getComputedStyle(canvas).display).not.toBe('none');
   });
 });
+
+describe('CngxChart — plot inset', () => {
+  @Component({
+    standalone: true,
+    imports: [CngxChart, CngxAxis, ContextProbe],
+    template: `
+      <cngx-chart [data]="[1, 2, 3]" [width]="width()" [height]="height()">
+        <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 100]"></svg:g>
+        <svg:g cngxAxis position="left" type="linear" [domain]="[0, 50]"></svg:g>
+        <test-context-probe />
+      </cngx-chart>
+    `,
+  })
+  class AxedHost {
+    width = signal<number | undefined>(200);
+    height = signal<number | undefined>(100);
+  }
+
+  beforeEach(() => {
+    vi.stubGlobal('ResizeObserver', ResizeObserverMock);
+    TestBed.configureTestingModule({ imports: [AxedHost] });
+  });
+
+  afterEach(() => vi.unstubAllGlobals());
+
+  function ctxFor(fixture: ReturnType<typeof TestBed.createComponent<AxedHost>>): CngxChartContext {
+    return (
+      fixture.debugElement.query(By.directive(ContextProbe)).componentInstance as ContextProbe
+    ).ctx;
+  }
+
+  it('reserves nothing on any side', () => {
+    const fixture = TestBed.createComponent(AxedHost);
+    fixture.detectChanges();
+    expect(ctxFor(fixture).inset()).toEqual({
+      inlineStart: 0,
+      inlineEnd: 0,
+      blockStart: 0,
+      blockEnd: 0,
+    });
+  });
+
+  it('maps the x scale across the full box width while the inset is zero', () => {
+    const fixture = TestBed.createComponent(AxedHost);
+    fixture.detectChanges();
+    const x = ctxFor(fixture).xScale();
+    expect(x(0)).toBe(0);
+    expect(x(100)).toBe(200);
+  });
+
+  it('maps the y scale across the full box height while the inset is zero, flipped', () => {
+    const fixture = TestBed.createComponent(AxedHost);
+    fixture.detectChanges();
+    const y = ctxFor(fixture).yScale();
+    expect(y(0)).toBe(100);
+    expect(y(50)).toBe(0);
+  });
+
+  it('hands back a reference-stable inset across re-reads', () => {
+    const fixture = TestBed.createComponent(AxedHost);
+    fixture.detectChanges();
+    const ctx = ctxFor(fixture);
+    const first = ctx.inset();
+    fixture.componentInstance.width.set(400);
+    fixture.detectChanges();
+    // A dimension change must not cascade into the inset: the guard on
+    // the computed is what keeps both scales and every axis geometry
+    // from rebuilding on an unchanged axis set.
+    expect(ctx.inset()).toBe(first);
+  });
+
+  it('returns the NOOP scale rather than an inverted range on a collapsed box', () => {
+    const fixture = TestBed.createComponent(AxedHost);
+    fixture.detectChanges();
+    const ctx = ctxFor(fixture);
+    fixture.componentInstance.width.set(0);
+    fixture.componentInstance.height.set(0);
+    fixture.detectChanges();
+    expect(ctx.xScale()(100)).toBe(0);
+    expect(ctx.yScale()(50)).toBe(0);
+  });
+});
