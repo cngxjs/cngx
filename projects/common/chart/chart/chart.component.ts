@@ -17,7 +17,8 @@ import { NgTemplateOutlet } from '@angular/common';
 import { CngxResizeObserver } from '@cngx/common/layout';
 import { resolveAsyncView, type AsyncView } from '@cngx/common/data';
 import { nextUid, type CngxAsyncState } from '@cngx/core/utils';
-import { CngxAxis, type CngxAxisPosition, type CngxAxisType } from '../axis/axis.component';
+import { type CngxAxisPosition, type CngxAxisType } from '../axis/axis-position';
+import { CNGX_CHART_AXIS } from '../axis/chart-axis';
 import { CngxThreshold } from '../layers/threshold.component';
 import { CNGX_CHART_I18N } from '../i18n/chart-i18n';
 import { CngxChartDataTable } from './data-table.component';
@@ -122,7 +123,7 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
  * already formats. There is no input, no CSS custom property and no DI
  * token to tune it - a chart without axes reserves nothing and fills
  * its box exactly as it did before the plot area existed, as does one
- * whose axes are `[decorated]="false"` and therefore draw nothing.
+ * whose axes are {@link CngxAxisDomain}, which draws nothing.
  *
  * Every axis reserves on its own side and a little on the two
  * perpendicular ones, because a tick label is centred on its tick and
@@ -467,7 +468,7 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
   private readonly destroyRef = inject(DestroyRef);
   private readonly rendererFactory = inject(CNGX_CHART_RENDERER_FACTORY);
   private readonly threshold = inject(CNGX_CHART_RENDERER_THRESHOLD);
-  private readonly axes = contentChildren(CngxAxis, { descendants: true });
+  private readonly axes = contentChildren(CNGX_CHART_AXIS, { descendants: true });
   private readonly thresholds = contentChildren(CngxThreshold, { descendants: true });
   private readonly layers = contentChildren(CNGX_CHART_LAYER, { descendants: true });
   protected readonly i18n = inject(CNGX_CHART_I18N);
@@ -632,11 +633,12 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
    * Which sides reserve is derived from the same `axes()` query the
    * scale lookups below already read - a consumer input would be a
    * second source for something the chart can see. How much each side
-   * reserves is the axis's own {@link CngxAxis.reservation}: the chart
-   * never learns what a tick label is, and the axis never learns where
-   * the plot ends. A side with no axis on it stays `0`, which is why a
-   * chart without axes (every preset) resolves to {@link ZERO_INSET}
-   * and renders exactly as it did before the inset existed.
+   * reserves is the axis's own {@link CngxChartAxis.reservation}: the
+   * chart never learns what a tick label is, and the axis never learns
+   * where the plot ends. A side with no axis on it stays `0`, which is
+   * why a chart whose axes all draw nothing resolves to
+   * {@link ZERO_INSET} and renders exactly as it did before the inset
+   * existed.
    */
   private readonly inset = computed<CngxChartInset>(
     () => {

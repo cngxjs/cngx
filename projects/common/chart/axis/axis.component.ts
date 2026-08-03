@@ -7,24 +7,10 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { CNGX_CHART_CONTEXT, type CngxChartPlotArea } from '../chart/chart-context';
+import { CNGX_CHART_AXIS, type CngxChartAxis } from './chart-axis';
+import { type CngxAxisPosition, type CngxAxisType } from './axis-position';
 
-/**
- * Axis position. Top/bottom are X-axes; left/right are Y-axes. The
- * parent `<cngx-chart>` collects content-child axes and routes their
- * inputs to its `xScale` / `yScale` signals based on this discriminator.
- *
- * @category common/chart/axis
- */
-export type CngxAxisPosition = 'top' | 'right' | 'bottom' | 'left';
-
-/**
- * Axis scale type. The chart's scale-builder picks the matching
- * `create*Scale` factory at the boundary; the axis itself stays
- * scale-implementation-agnostic.
- *
- * @category common/chart/axis
- */
-export type CngxAxisType = 'linear' | 'time' | 'band';
+export { type CngxAxisPosition, type CngxAxisType } from './axis-position';
 
 /** @internal */
 const DEFAULT_TICK_COUNT = 5;
@@ -178,13 +164,14 @@ interface TickRendering {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
+  providers: [{ provide: CNGX_CHART_AXIS, useExisting: CngxAxis }],
   host: {
     'aria-hidden': 'true',
     '[attr.transform]': 'axisGeometry()?.transform ?? null',
     '[attr.class]': 'hostClass()',
   },
   template: `
-    @if (decorated() && axisGeometry(); as g) {
+    @if (axisGeometry(); as g) {
       @if (showGrid()) {
         @for (tick of tickRenderings(); track tick.key) {
           <svg:line
@@ -266,7 +253,7 @@ interface TickRendering {
     `,
   ],
 })
-export class CngxAxis {
+export class CngxAxis implements CngxChartAxis {
   readonly position = input.required<CngxAxisPosition>();
   readonly type = input<CngxAxisType>('linear');
   readonly domain = input<readonly unknown[] | undefined>(undefined);
@@ -291,20 +278,6 @@ export class CngxAxis {
    * `[label]` for terseness.
    */
   readonly axisLabel = input<string | null>(null, { alias: 'label' });
-
-  /**
-   * Whether this axis draws anything. `false` turns it into a pure
-   * domain publisher: the parent still reads its `position` / `type` /
-   * `domain` to build the matching scale, but no line, tick or label
-   * is rendered and the axis reserves no room in the plot area.
-   *
-   * This is what the presets need. A sparkline mounts two axes to
-   * declare its scale domains and draws none of them, so charging it
-   * a gutter for decoration it never paints would shrink the whole
-   * mark down to nothing. Not a styling knob - an axis that draws
-   * nothing genuinely needs no room, so the reservation stays derived.
-   */
-  readonly decorated = input<boolean>(true);
 
   private readonly ctx = inject(CNGX_CHART_CONTEXT);
 
@@ -394,9 +367,6 @@ export class CngxAxis {
    * back edge.
    */
   readonly reservation = computed<number>(() => {
-    if (!this.decorated()) {
-      return 0;
-    }
     const horizontal = this.position() === 'top' || this.position() === 'bottom';
 
     const labelExtent = horizontal ? AXIS_FONT_SIZE * LINE_BOX_RATIO : this.widestTickLabel();
@@ -434,9 +404,6 @@ export class CngxAxis {
    * per-end bookkeeping the exact answer would need.
    */
   readonly crossReservation = computed<number>(() => {
-    if (!this.decorated()) {
-      return 0;
-    }
     const horizontal = this.position() === 'top' || this.position() === 'bottom';
     const extent = horizontal ? this.widestTickLabel() : AXIS_FONT_SIZE * LINE_BOX_RATIO;
     return Math.ceil(extent / 2);

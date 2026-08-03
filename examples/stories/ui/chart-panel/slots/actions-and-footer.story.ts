@@ -13,7 +13,7 @@ export const STORY: DemoSpec = {
   apiComponents: ['CngxChartPanel'],
   moduleImports: [
     "import { CngxChartPanel, CngxChartPanelTitle, CngxChartPanelSubtitle, CngxChartPanelActions, CngxChartPanelFooter } from '@cngx/ui/chart-panel';",
-    "import { CngxChart, CngxLine, CngxAxis } from '@cngx/common/chart';",
+    "import { CngxChart, CngxLine, CngxAxis, CngxAxisDomain } from '@cngx/common/chart';",
     "import { CngxTag } from '@cngx/common/display';",
   ],
   imports: [
@@ -25,6 +25,7 @@ export const STORY: DemoSpec = {
     'CngxChart',
     'CngxLine',
     'CngxAxis',
+    'CngxAxisDomain',
     'CngxTag',
   ],
   setup: `protected readonly series: readonly number[] = [42, 51, 47, 63, 58, 71, 69, 82];`,
@@ -40,8 +41,7 @@ export const STORY: DemoSpec = {
     <cngx-chart [data]="series" [height]="180" aria-label="Net revenue by quarter">
       <svg:g cngxAxis position="left" type="linear" [domain]="[0, 90]" [grid]="true"></svg:g>
       <svg:g
-        cngxAxis
-        [decorated]="false"
+        cngxAxisDomain
         position="bottom"
         type="linear"
         [domain]="[0, 7]"

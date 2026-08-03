@@ -1,5 +1,6 @@
 import {
   Component,
+  Directive,
   effect,
   EnvironmentInjector,
   inject,
@@ -14,6 +15,8 @@ import { CngxChart } from './chart.component';
 import { CNGX_CHART_CONTEXT, type CngxChartContext } from './chart-context';
 import { CngxChartConnectionError, CngxChartEmpty, CngxChartError } from './template-slots';
 import { CngxAxis } from '../axis/axis.component';
+import { CngxAxisDomain } from '../axis/axis-domain';
+import { CNGX_CHART_AXIS, type CngxChartAxis } from '../axis/chart-axis';
 import { CngxLine } from '../layers/line.component';
 import { CngxBar } from '../layers/bar.component';
 import { CngxThreshold } from '../layers/threshold.component';
@@ -912,29 +915,17 @@ describe('CngxChart - inset derived per axis combination', () => {
     expect(plot.x1).toBe(189);
   });
 
-  it('reserves nothing for an axis that draws nothing', () => {
-    // The presets mount axes purely to publish a scale domain. An
-    // undecorated axis renders no line, tick or label, so charging it a
+  it('reserves nothing for a domain publisher, which draws nothing', () => {
+    // The presets mount axes purely to publish a scale domain.
+    // CngxAxisDomain renders no line, tick or label, so charging it a
     // gutter would shrink the mark for decoration that never paints.
     @Component({
       standalone: true,
-      imports: [CngxChart, CngxAxis, ContextProbe],
+      imports: [CngxChart, CngxAxisDomain, ContextProbe],
       template: `
         <cngx-chart [data]="[1, 2, 3]" [width]="80" [height]="24">
-          <svg:g
-            cngxAxis
-            [decorated]="false"
-            position="bottom"
-            type="linear"
-            [domain]="[0, 100]"
-          ></svg:g>
-          <svg:g
-            cngxAxis
-            [decorated]="false"
-            position="left"
-            type="linear"
-            [domain]="[0, 100]"
-          ></svg:g>
+          <svg:g cngxAxisDomain position="bottom" type="linear" [domain]="[0, 100]"></svg:g>
+          <svg:g cngxAxisDomain position="left" type="linear" [domain]="[0, 100]"></svg:g>
           <test-context-probe />
         </cngx-chart>
       `,
@@ -1297,6 +1288,78 @@ describe('CngxChart - axis decoration is authored inside the viewBox', () => {
     // box, which is the whole point of the inset.
     expect(translateOf(left).x).toBeGreaterThan(0);
     expect(translateOf(bottom).y).toBeLessThan(100);
+  });
+});
+
+describe('CngxChart - a consumer axis participates through the contract token', () => {
+  // The chart queries CNGX_CHART_AXIS, not CngxAxis. Nothing in this
+  // host is a library axis: if the scale builds and the plot shrinks,
+  // the contract is the whole coupling.
+  @Directive({
+    selector: '[testLogAxis]',
+    standalone: true,
+    providers: [{ provide: CNGX_CHART_AXIS, useExisting: TestLogAxis }],
+  })
+  class TestLogAxis implements CngxChartAxis {
+    readonly position = signal<'top' | 'right' | 'bottom' | 'left'>('left');
+    readonly type = signal<'linear' | 'time' | 'band'>('linear');
+    readonly domain = signal<readonly unknown[] | undefined>([0, 100]);
+    readonly reservation = signal(24);
+    readonly crossReservation = signal(6);
+  }
+
+  @Component({
+    standalone: true,
+    imports: [CngxChart, TestLogAxis, ContextProbe],
+    template: `
+      <cngx-chart [data]="[1, 2, 3]" [width]="200" [height]="100">
+        <svg:g testLogAxis></svg:g>
+        <test-context-probe />
+      </cngx-chart>
+    `,
+  })
+  class ConsumerAxisHost {}
+
+  beforeEach(() => {
+    vi.stubGlobal('ResizeObserver', ResizeObserverMock);
+    TestBed.configureTestingModule({ imports: [ConsumerAxisHost] });
+  });
+
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('reserves the room a consumer axis asks for and builds its scale', () => {
+    const fixture = TestBed.createComponent(ConsumerAxisHost);
+    fixture.detectChanges();
+    const ctx = (
+      fixture.debugElement.query(By.directive(ContextProbe)).componentInstance as ContextProbe
+    ).ctx;
+
+    // 24 on inline-start (its side), 6 on each block side (across it).
+    expect(ctx.plot()).toEqual({
+      x0: 24,
+      y0: 6,
+      x1: 200,
+      y1: 94,
+      width: 176,
+      height: 88,
+    });
+    const y = ctx.yScale();
+    expect(y(0)).toBe(94);
+    expect(y(100)).toBe(6);
+  });
+
+  it('tracks the consumer axis reactively, like a library one', () => {
+    const fixture = TestBed.createComponent(ConsumerAxisHost);
+    fixture.detectChanges();
+    const ctx = (
+      fixture.debugElement.query(By.directive(ContextProbe)).componentInstance as ContextProbe
+    ).ctx;
+    const axis = fixture.debugElement.query(By.directive(TestLogAxis))
+      .injector.get(TestLogAxis) as TestLogAxis;
+
+    axis.reservation.set(60);
+    fixture.detectChanges();
+    expect(ctx.plot().x0).toBe(60);
   });
 });
 

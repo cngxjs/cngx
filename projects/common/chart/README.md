@@ -27,7 +27,9 @@ The chart fills its host box. Inside that box it maps marks onto the **plot area
 
 The reservation is derived. Which sides reserve comes from the axes you mounted; how much each reserves comes from the labels that axis formats. Every axis also reserves a little on the two sides perpendicular to it, because a tick label is centred on its tick and the end ticks sit on the plot corners - half of the first and last label would otherwise hang outside.
 
-A chart with no axis reserves nothing and fills the box edge to edge. So does a chart whose axes are `[decorated]="false"` - that turns an axis into a pure domain publisher, drawing nothing and claiming no room, which is how the sparkline and mini-area presets declare their scales without paying for a gutter they never paint.
+A chart with no axis reserves nothing and fills the box edge to edge. So does a chart whose axes are `[cngxAxisDomain]` rather than `[cngxAxis]` - that directive publishes a scale domain and draws nothing, so it claims no room. It is how the sparkline and mini-area presets declare their scales without paying for a gutter they never paint, and what you reach for whenever a mark needs a domain but the box has no space for ticks.
+
+Both directives satisfy the same `CngxChartAxis` contract, provided through `CNGX_CHART_AXIS`. Implement it on your own directive when you need an axis the chart participates with but the library does not ship - a logarithmic publisher, a domain fed from a service, decoration you draw yourself. The chart queries the token, so it cannot tell your axis from ours.
 
 There is no knob. No input, no CSS custom property, no DI token sizes the gutter, because the component already knows everything needed to compute it. The one approximation is character width: the chart measures no text, so it estimates one character as a fraction of the default axis font size. Restyling `--cngx-axis-font-size` scales your labels but not the gutter they sit in. If that bites, the fix is a real measure pass or an escape hatch, and both are additive - open an issue with the font and the label that clipped.
 

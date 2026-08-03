@@ -47,7 +47,10 @@ export {
   type CngxChartSlotContext,
 } from './chart/template-slots';
 
-export { CngxAxis, type CngxAxisPosition, type CngxAxisType } from './axis/axis.component';
+export { CngxAxis } from './axis/axis.component';
+export { CngxAxisDomain } from './axis/axis-domain';
+export { CNGX_CHART_AXIS, type CngxChartAxis } from './axis/chart-axis';
+export { type CngxAxisPosition, type CngxAxisType } from './axis/axis-position';
 
 export { CngxChartLegend, type CngxChartLegendItem } from './legend/legend.component';
 
