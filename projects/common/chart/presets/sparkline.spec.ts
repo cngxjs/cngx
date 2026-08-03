@@ -8,12 +8,7 @@ import { ResizeObserverMock } from '../testing/resize-observer-mock';
   standalone: true,
   imports: [CngxSparkline],
   template: `
-    <cngx-sparkline
-      [data]="data()"
-      [width]="width()"
-      [height]="height()"
-      [showArea]="showArea()"
-    />
+    <cngx-sparkline [data]="data()" [width]="width()" [height]="height()" [showArea]="showArea()" />
   `,
 })
 class TestHost {

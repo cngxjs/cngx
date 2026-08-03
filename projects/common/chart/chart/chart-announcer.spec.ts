@@ -71,9 +71,12 @@ describe('CngxChartAnnouncer', () => {
   });
 
   it('short-circuits an identical event, re-fires a distinct one', () => {
-    const de = fixture.debugElement.query((el) => el.componentInstance instanceof CngxChartAnnouncer);
+    const de = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof CngxChartAnnouncer,
+    );
     const announcer = de.componentInstance as CngxChartAnnouncer;
-    const politeText = (announcer as unknown as { politeAnnouncement: () => string }).politeAnnouncement;
+    const politeText = (announcer as unknown as { politeAnnouncement: () => string })
+      .politeAnnouncement;
 
     const env = TestBed.inject(EnvironmentInjector);
     let runs = 0;

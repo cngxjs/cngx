@@ -10,6 +10,9 @@
  * @internal
  */
 
+import type { CngxChartInset, CngxChartPlotArea } from './chart-context';
+import type { CngxChartSlotContext } from './template-slots';
+
 /**
  * Length + `Object.is` per-index equality on a readonly numeric array.
  * Used by `summaryValues` and `summary.thresholds`. Reference-equal
@@ -66,4 +69,42 @@ export function dimensionsEqual(
   b: { width: number; height: number },
 ): boolean {
   return a.width === b.width && a.height === b.height;
+}
+
+/**
+ * Field-wise equality on the chart's four-sided axis inset. The `inset`
+ * computed rebuilds its literal whenever the projected axis set
+ * re-emits, so without this guard an unchanged axis set would cascade
+ * into the plot area and from there into both scale ranges and every
+ * axis geometry on each pass.
+ */
+export function insetEqual(a: CngxChartInset, b: CngxChartInset): boolean {
+  return (
+    a.inlineStart === b.inlineStart &&
+    a.inlineEnd === b.inlineEnd &&
+    a.blockStart === b.blockStart &&
+    a.blockEnd === b.blockEnd
+  );
+}
+
+/**
+ * Field-wise equality on the published plot rectangle. Only the four
+ * corners are compared - `width`/`height` are derived from them, so an
+ * equal pair of corners implies equal extents.
+ */
+export function plotAreaEqual(a: CngxChartPlotArea, b: CngxChartPlotArea): boolean {
+  return a.x0 === b.x0 && a.y0 === b.y0 && a.x1 === b.x1 && a.y1 === b.y1;
+}
+
+/**
+ * Field-wise equality on the slot context handed to every fallback
+ * template. `small` is derived from `width`, so comparing it would be
+ * redundant.
+ *
+ * The context is a fresh literal on every read, so without this a
+ * resize that lands on the same pixel still re-renders every projected
+ * loading / empty / error template.
+ */
+export function slotContextEqual(a: CngxChartSlotContext, b: CngxChartSlotContext): boolean {
+  return a.width === b.width && a.height === b.height && plotAreaEqual(a.plot, b.plot);
 }

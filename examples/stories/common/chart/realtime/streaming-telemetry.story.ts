@@ -67,7 +67,7 @@ export const STORY: DemoSpec = {
   <div class="status-row" style="margin-top:8px">
     <span class="cngx-ex-status-readout">points: {{ buffer.length() }} · connection: {{ connection.status() }}</span>
   </div>`,
-  template: `  <div class="cngx-ex-chart-frame cngx-ex-chart-frame--bottom-axis-room cngx-ex-chart-frame--left-axis-room">
+  template: `  <div class="cngx-ex-chart-frame">
     <cngx-chart
       #chart
       [data]="buffer.points()"
@@ -77,7 +77,7 @@ export const STORY: DemoSpec = {
       aria-label="Live streaming telemetry buffered through injectChartBuffer."
     >
       <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 600]"></svg:g>
-      <svg:g cngxAxis position="left" type="linear" [domain]="[0, 100]"></svg:g>
+      <svg:g cngxAxis position="left" type="linear" [domain]="[0, 130]"></svg:g>
       <svg:g cngxLine></svg:g>
       <svg:g cngxThreshold [value]="80" [label]="'alert'" [dashed]="true"></svg:g>
     </cngx-chart>

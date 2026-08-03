@@ -1,8 +1,4 @@
-export {
-  buildCurvePath,
-  type CngxCurve,
-  type PathPoint,
-} from './curve';
+export { buildCurvePath, type CngxCurve, type PathPoint } from './curve';
 export {
   createPathBuilder,
   type PathBuilder,

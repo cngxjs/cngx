@@ -7,7 +7,7 @@ import {
 } from '@angular/core';
 import type { CngxAsyncState } from '@cngx/core/utils';
 import { CngxChart } from '../chart/chart.component';
-import { CngxAxis } from '../axis/axis.component';
+import { CngxAxisDomain } from '../axis/axis-domain';
 import { CngxLine } from '../layers/line.component';
 import { CngxArea } from '../layers/area.component';
 import { injectPresetState } from './preset-state';
@@ -43,7 +43,7 @@ import { injectPresetState } from './preset-state';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [CngxChart, CngxAxis, CngxLine, CngxArea],
+  imports: [CngxChart, CngxAxisDomain, CngxLine, CngxArea],
   host: { class: 'cngx-sparkline' },
   template: `
     @switch (activeView()) {
@@ -70,8 +70,18 @@ import { injectPresetState } from './preset-state';
           [height]="height()"
           [aria-label]="ariaLabel()"
         >
-          <svg:g cngxAxis position="bottom" type="linear" [domain]="xDomain()"></svg:g>
-          <svg:g cngxAxis position="left" type="linear" [domain]="yDomain()"></svg:g>
+          <svg:g
+            cngxAxisDomain
+            position="bottom"
+            type="linear"
+            [domain]="xDomain()"
+          ></svg:g>
+          <svg:g
+            cngxAxisDomain
+            position="left"
+            type="linear"
+            [domain]="yDomain()"
+          ></svg:g>
           @if (showArea()) {
             <svg:g cngxArea [baseline]="yDomain()[0]"></svg:g>
           }
@@ -88,9 +98,6 @@ import { injectPresetState } from './preset-state';
         line-height: 0;
         --cngx-line-color: var(--cngx-sparkline-color, var(--cngx-chart-primary, currentColor));
         --cngx-area-fill: var(--cngx-sparkline-color, var(--cngx-chart-primary, currentColor));
-      }
-      cngx-sparkline [cngxAxis] {
-        display: none;
       }
       cngx-sparkline .cngx-preset-skeleton {
         display: inline-block;

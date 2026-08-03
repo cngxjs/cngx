@@ -17,7 +17,8 @@ import { NgTemplateOutlet } from '@angular/common';
 import { CngxResizeObserver } from '@cngx/common/layout';
 import { resolveAsyncView, type AsyncView } from '@cngx/common/data';
 import { nextUid, type CngxAsyncState } from '@cngx/core/utils';
-import { CngxAxis, type CngxAxisPosition, type CngxAxisType } from '../axis/axis.component';
+import { type CngxAxisPosition, type CngxAxisType } from '../axis/axis-position';
+import { CNGX_CHART_AXIS } from '../axis/chart-axis';
 import { CngxThreshold } from '../layers/threshold.component';
 import { CNGX_CHART_I18N } from '../i18n/chart-i18n';
 import { CngxChartDataTable } from './data-table.component';
@@ -35,12 +36,21 @@ import { createBandScale, createLinearScale, createTimeScale } from '../scales';
 import {
   CNGX_CHART_CONTEXT,
   type CngxChartContext,
+  type CngxChartInset,
+  type CngxChartPlotArea,
   type ScaleFn,
   type XScaleInput,
 } from './chart-context';
 import { computeChartSummary } from './summary';
 import { createSignificantChangeTracker } from './significant-change';
-import { dimensionsEqual, sameItemsArr, sameNumberArr } from './equal-helpers';
+import {
+  dimensionsEqual,
+  insetEqual,
+  plotAreaEqual,
+  sameItemsArr,
+  sameNumberArr,
+  slotContextEqual,
+} from './equal-helpers';
 import { CNGX_CHART_LAYER, type LayerGeometry } from '../layers/chart-layer';
 import { createChartRendererController } from '../renderer/chart-renderer-controller';
 import { CNGX_CHART_RENDERER_FACTORY } from '../renderer/renderer-factory';
@@ -50,6 +60,20 @@ import { CNGX_CHART_RENDERER_THRESHOLD } from '../renderer/renderer-threshold';
 const NOOP_SCALE: ScaleFn<XScaleInput> = () => 0;
 /** @internal */
 const NOOP_Y_SCALE: ScaleFn<number> = () => 0;
+
+/**
+ * Reserve-nothing inset. A stable reference, so a chart whose axis set
+ * never changes hands the same object to every reader and the `equal`
+ * guard on {@link CngxChart.inset} short-circuits on identity.
+ *
+ * @internal
+ */
+const ZERO_INSET: CngxChartInset = {
+  inlineStart: 0,
+  inlineEnd: 0,
+  blockStart: 0,
+  blockEnd: 0,
+};
 
 /**
  * Stable reference for the default `summaryAccessor`. Exposed so the
@@ -85,14 +109,41 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
  * The `[width]` / `[height]` inputs override the resize observer for
  * fixed-dimension presets (inline sparkline at 80×24, etc.).
  *
+ * ## The plot area
+ *
+ * Marks are mapped onto the *plot area*, not onto the whole viewBox:
+ * the viewBox minus the room the projected axes need for their tick
+ * labels and titles. The chart publishes the resulting rectangle on
+ * {@link CngxChartContext.plot}, and both its own scale ranges and
+ * every `[cngxAxis]` line resolve against that one derivation, so a
+ * tick can never drift away from the mark it labels.
+ *
+ * The reserved room is derived, not configured. Which sides reserve
+ * comes from the projected axis set; how much each side reserves comes
+ * from the axis itself, which sizes the gutter from the tick labels it
+ * already formats. There is no input, no CSS custom property and no DI
+ * token to tune it - a chart without axes reserves nothing and fills
+ * its box exactly as it did before the plot area existed, as does one
+ * whose axes are {@link CngxAxisDomain}, which draws nothing.
+ *
+ * Every axis reserves on its own side and a little on the two
+ * perpendicular ones, because a tick label is centred on its tick and
+ * the end ticks sit on the plot corners.
+ *
+ * Nothing here reads the DOM. The gutter is arithmetic over label
+ * strings, so it is at final width in the first painted frame and
+ * renders identically under SSR. The cost is that one character's
+ * width is an estimate rather than the font's real advance width; a
+ * consumer restyling `--cngx-axis-font-size` gets labels at their own
+ * size inside a gutter sized for the default.
+ *
  * @category common/chart
  * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/chart/chart.component.ts
  * @since 0.1.0
  * @relatedTo CngxAxis, CngxLine, CngxArea, CngxBar, CngxChartLegend
- */
-/**
+ *
  * <example-url>http://localhost:4200/#/common/chart/primitives/async-state-machine-on-the-primitive</example-url>
  * <example-url>http://localhost:4200/#/common/chart/primitives/combo-bars-moving-average-line</example-url>
  * <example-url>http://localhost:4200/#/common/chart/primitives/line-area-threshold-band</example-url>
@@ -116,6 +167,12 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
     '[class.cngx-chart--content-hidden]': 'contentHidden()',
     '[style.width.px]': 'width() ?? null',
     '[style.aspect-ratio]': 'explicitAspectRatio()',
+    // The resolved plot inset, published so HTML overlays positioned
+    // against the host box can align to the plot area instead.
+    '[style.--cngx-chart-plot-block-start]': 'plotVars().blockStart',
+    '[style.--cngx-chart-plot-block-end]': 'plotVars().blockEnd',
+    '[style.--cngx-chart-plot-inline-start]': 'plotVars().inlineStart',
+    '[style.--cngx-chart-plot-inline-end]': 'plotVars().inlineEnd',
   },
   hostDirectives: [CngxResizeObserver],
   providers: [{ provide: CNGX_CHART_CONTEXT, useExisting: CngxChart }],
@@ -163,21 +220,33 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
     }
     @if (connectionView() === 'error') {
       @if (connectionErrorTpl(); as tpl) {
-        <div class="cngx-chart__connection-overlay cngx-chart__connection-overlay--error" role="alert">
+        <div
+          class="cngx-chart__connection-overlay cngx-chart__connection-overlay--error"
+          role="alert"
+        >
           <ng-container *ngTemplateOutlet="tpl; context: connectionCtx()" />
         </div>
       } @else {
-        <div class="cngx-chart__connection-overlay cngx-chart__connection-overlay--error" role="alert">
+        <div
+          class="cngx-chart__connection-overlay cngx-chart__connection-overlay--error"
+          role="alert"
+        >
           {{ i18n.connectionLost() }}
         </div>
       }
     } @else if (connectionView() === 'reconnecting') {
       @if (reconnectingTpl(); as tpl) {
-        <div class="cngx-chart__connection-overlay cngx-chart__connection-overlay--reconnecting" role="status">
+        <div
+          class="cngx-chart__connection-overlay cngx-chart__connection-overlay--reconnecting"
+          role="status"
+        >
           <ng-container *ngTemplateOutlet="tpl; context: connectionCtx()" />
         </div>
       } @else {
-        <div class="cngx-chart__connection-overlay cngx-chart__connection-overlay--reconnecting" role="status">
+        <div
+          class="cngx-chart__connection-overlay cngx-chart__connection-overlay--reconnecting"
+          role="status"
+        >
           {{ i18n.connectionReconnecting() }}
         </div>
       }
@@ -233,12 +302,14 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
         display: block;
         width: 100%;
         height: 100%;
-        /* Let axis-label text and any decorative content beyond the
-           viewBox remain visible. Plot lines / areas / scatter use the
-           scale range and stay inside; axis-label text intentionally
-           sits outside (below bottom axis, left of Y axis tick labels)
-           and would otherwise be clipped. */
-        overflow: visible;
+        /* No overflow: visible here, deliberately. The plot inset
+           reserves room for tick labels and axis titles inside the
+           viewBox, so nothing the chart authors lands outside it and the
+           SVG default is the correct one. Two things do still cross the
+           edge and now clip: half the stroke width of a mark sitting on
+           the plot boundary, and out-of-domain data. Both already clip
+           on the canvas backend, which clips natively at the element
+           box - so the backends agree on where a chart ends. */
       }
       cngx-chart > .cngx-chart__fallback-frame {
         display: flex;
@@ -281,11 +352,25 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
         color: var(--cngx-chart-danger, currentColor);
         opacity: 1;
       }
+      /*
+        Anchored to the plot area's top-inline-end corner, not the host
+        box: centred over the box it lands on the marks, and on a chart
+        with axes it can sit over the tick labels. The plot inset comes
+        off the host as custom properties, so the pill tracks the gutter
+        the axes reserved without knowing an axis exists.
+      */
       cngx-chart > .cngx-chart__connection-overlay {
         position: absolute;
-        top: var(--cngx-chart-connection-inset, 0.5rem);
-        left: 50%;
-        transform: translateX(-50%);
+        top: calc(
+          var(--cngx-chart-plot-block-start, 0px) + var(--cngx-chart-connection-inset, 0.5rem)
+        );
+        inset-inline-end: calc(
+          var(--cngx-chart-plot-inline-end, 0px) + var(--cngx-chart-connection-inset, 0.5rem)
+        );
+        max-inline-size: calc(
+          100% - var(--cngx-chart-plot-inline-start, 0px) - var(--cngx-chart-plot-inline-end, 0px) -
+            2 * var(--cngx-chart-connection-inset, 0.5rem)
+        );
         display: flex;
         align-items: center;
         gap: var(--cngx-chart-connection-gap, 0.375rem);
@@ -383,7 +468,7 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
   private readonly destroyRef = inject(DestroyRef);
   private readonly rendererFactory = inject(CNGX_CHART_RENDERER_FACTORY);
   private readonly threshold = inject(CNGX_CHART_RENDERER_THRESHOLD);
-  private readonly axes = contentChildren(CngxAxis, { descendants: true });
+  private readonly axes = contentChildren(CNGX_CHART_AXIS, { descendants: true });
   private readonly thresholds = contentChildren(CngxThreshold, { descendants: true });
   private readonly layers = contentChildren(CNGX_CHART_LAYER, { descendants: true });
   protected readonly i18n = inject(CNGX_CHART_I18N);
@@ -428,15 +513,22 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
    * viewport: the rendered width is what the consumer cares about
    * for fallback layout, not the logical viewBox dimension.
    */
-  protected readonly slotContext = computed<CngxChartSlotContext>(() => {
-    const width = this.resize.width();
-    const height = this.resize.height();
-    return {
-      width,
-      height,
-      small: width > 0 && width < CHART_SMALL_BREAKPOINT_PX,
-    };
-  });
+  protected readonly slotContext = computed<CngxChartSlotContext>(
+    () => {
+      const width = this.resize.width();
+      const height = this.resize.height();
+      return {
+        width,
+        height,
+        small: width > 0 && width < CHART_SMALL_BREAKPOINT_PX,
+        // The same derivation the scales and the axes read. A slot
+        // template that centres on width/height alone would sit
+        // off-centre from the marks it stands in for.
+        plot: this.plot(),
+      };
+    },
+    { equal: slotContextEqual },
+  );
 
   /**
    * Error-slot context - extends {@link slotContext} with the live
@@ -444,10 +536,13 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
    * render a typed message AND branch on chart size in the same
    * template.
    */
-  protected readonly errorContext = computed(() => {
-    const err = this.state()?.error?.() ?? null;
-    return { ...this.slotContext(), $implicit: err, error: err };
-  });
+  protected readonly errorContext = computed(
+    () => {
+      const err = this.state()?.error?.() ?? null;
+      return { ...this.slotContext(), $implicit: err, error: err };
+    },
+    { equal: (a, b) => Object.is(a.error, b.error) && slotContextEqual(a, b) },
+  );
 
   /**
    * Connection-lifecycle view derived from `[connectionState]`'s status.
@@ -537,6 +632,145 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
   );
 
   /**
+   * Room the projected axes need for their decoration, per side.
+   * Chart-internal: it exists only to produce {@link plot}, which is
+   * what every reader actually wants.
+   *
+   * Which sides reserve is derived from the same `axes()` query the
+   * scale lookups below already read - a consumer input would be a
+   * second source for something the chart can see. How much each side
+   * reserves is the axis's own {@link CngxChartAxis.reservation}: the
+   * chart never learns what a tick label is, and the axis never learns
+   * where the plot ends. A side with no axis on it stays `0`, which is
+   * why a chart whose axes all draw nothing resolves to
+   * {@link ZERO_INSET} and renders exactly as it did before the inset
+   * existed.
+   */
+  private readonly inset = computed<CngxChartInset>(
+    () => {
+      const axes = this.axes();
+      if (axes.length === 0) {
+        return ZERO_INSET;
+      }
+      let inlineStart = 0;
+      let inlineEnd = 0;
+      let blockStart = 0;
+      let blockEnd = 0;
+      for (const axis of axes) {
+        const room = axis.reservation();
+        // Half the extreme tick label hangs past the plot corner along
+        // the axis's own line, so every axis also reserves on the two
+        // sides perpendicular to it. Without this a left axis's topmost
+        // label paints above the viewBox and a bottom axis's last label
+        // paints past its right edge, however deep their own gutters are.
+        const cross = axis.crossReservation();
+        // Two axes on the same side reserve the wider of the two
+        // rather than stacking - they draw over each other, so the
+        // room they need is the room the deeper one needs.
+        switch (axis.position()) {
+          case 'left':
+            inlineStart = Math.max(inlineStart, room);
+            blockStart = Math.max(blockStart, cross);
+            blockEnd = Math.max(blockEnd, cross);
+            break;
+          case 'right':
+            inlineEnd = Math.max(inlineEnd, room);
+            blockStart = Math.max(blockStart, cross);
+            blockEnd = Math.max(blockEnd, cross);
+            break;
+          case 'top':
+            blockStart = Math.max(blockStart, room);
+            inlineStart = Math.max(inlineStart, cross);
+            inlineEnd = Math.max(inlineEnd, cross);
+            break;
+          case 'bottom':
+            blockEnd = Math.max(blockEnd, room);
+            inlineStart = Math.max(inlineStart, cross);
+            inlineEnd = Math.max(inlineEnd, cross);
+            break;
+        }
+      }
+      return { inlineStart, inlineEnd, blockStart, blockEnd };
+    },
+    { equal: insetEqual },
+  );
+
+  /**
+   * The plot inset as percentages of the host box, published as the
+   * `--cngx-chart-plot-*` custom properties.
+   *
+   * Custom properties inherit downwards, so these reach the chart's own
+   * subtree. An overlay outside the host does not see them and reads
+   * {@link plot} off the exported instance instead
+   * (`#chart="cngxChart"`) - projected content lands inside the `<svg>`,
+   * so an HTML overlay is always a sibling.
+   *
+   * Percentages rather than pixels, because a user unit is not always a
+   * CSS pixel: an explicit `[width]="520"` chart squeezed by
+   * `max-width: 100%` keeps a 520-unit viewBox inside a 400px box. A
+   * fraction of the viewBox survives that scaling where a px value
+   * would not. Block values resolve against the containing block's
+   * height and inline values against its width, matching what `top` and
+   * `inset-inline-end` expect.
+   *
+   * Exact while the host's aspect ratio matches the viewBox, which is
+   * what {@link explicitAspectRatio} holds it to whenever both `[width]`
+   * and `[height]` are bound. Bind only one and it returns `null` on
+   * purpose (the consumer drove one dimension deliberately); the SVG
+   * then letterboxes under `preserveAspectRatio`, and these percentages
+   * address the host box rather than the letterboxed drawing area. The
+   * error is the letterbox margin - zero until the host is forced away
+   * from the viewBox ratio. Bind both dimensions when an overlay has to
+   * land on the plot edge exactly.
+   */
+  protected readonly plotVars = computed(
+    () => {
+      const { width, height } = this.dimensions();
+      const pct = (v: number, extent: number): string =>
+        extent > 0 ? `${+((v / extent) * 100).toFixed(4)}%` : '0%';
+      const { inlineStart, inlineEnd, blockStart, blockEnd } = this.inset();
+      return {
+        inlineStart: pct(inlineStart, width),
+        inlineEnd: pct(inlineEnd, width),
+        blockStart: pct(blockStart, height),
+        blockEnd: pct(blockEnd, height),
+      };
+    },
+    {
+      equal: (a, b) =>
+        a.inlineStart === b.inlineStart &&
+        a.inlineEnd === b.inlineEnd &&
+        a.blockStart === b.blockStart &&
+        a.blockEnd === b.blockEnd,
+    },
+  );
+
+  /**
+   * The plot rectangle published on {@link CngxChartContext}: the
+   * viewBox minus {@link inset}. Both scale ranges below and every
+   * `[cngxAxis]` resolve against this one derivation, so there is no
+   * second place where the box and the reserved room are subtracted
+   * from each other and no way for the two to disagree.
+   */
+  readonly plot = computed<CngxChartPlotArea>(
+    () => {
+      const { width, height } = this.dimensions();
+      const { inlineStart, inlineEnd, blockStart, blockEnd } = this.inset();
+      const x1 = width - inlineEnd;
+      const y1 = height - blockEnd;
+      return {
+        x0: inlineStart,
+        y0: blockStart,
+        x1,
+        y1,
+        width: x1 - inlineStart,
+        height: y1 - blockStart,
+      };
+    },
+    { equal: plotAreaEqual },
+  );
+
+  /**
    * Render backend: `'canvas'` once the datapoint count exceeds the
    * configured threshold, `'svg'` otherwise. The threshold is a DI
    * constant ({@link CNGX_CHART_RENDERER_THRESHOLD}, default `500`),
@@ -576,15 +810,18 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
   readonly xScale = computed<ScaleFn<XScaleInput>>(
     () => {
       const axes = this.axes();
-      const { width } = this.dimensions();
-      if (width <= 0) {
+      const plot = this.plot();
+      // Guard the plot extent, not the box: a chart narrower than the
+      // room its axes need would otherwise get a backwards range and
+      // paint every mark mirrored.
+      if (plot.width <= 0) {
         return NOOP_SCALE;
       }
       const xAxis = axes.find((a) => isHorizontalPosition(a.position()));
       if (!xAxis) {
         return NOOP_SCALE;
       }
-      return this.xScaleCache.get(xAxis.type(), xAxis.domain() ?? [], [0, width]);
+      return this.xScaleCache.get(xAxis.type(), xAxis.domain() ?? [], [plot.x0, plot.x1]);
     },
     { equal: (a, b) => a === b },
   );
@@ -592,18 +829,18 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
   readonly yScale = computed<ScaleFn<number>>(
     () => {
       const axes = this.axes();
-      const { height } = this.dimensions();
-      if (height <= 0) {
+      const plot = this.plot();
+      if (plot.height <= 0) {
         return NOOP_Y_SCALE;
       }
       const yAxis = axes.find((a) => isVerticalPosition(a.position()));
       if (!yAxis) {
         return NOOP_Y_SCALE;
       }
-      // SVG Y-axis is flipped - domain[max] maps to range[0] (top), domain[min] to range[height] (bottom).
+      // SVG Y-axis is flipped - domain[max] maps to the plot area's top edge, domain[min] to its bottom edge.
       return this.yScaleCache.get(yAxis.type(), yAxis.domain() ?? [], [
-        height,
-        0,
+        plot.y1,
+        plot.y0,
       ]) as ScaleFn<number>;
     },
     { equal: (a, b) => a === b },

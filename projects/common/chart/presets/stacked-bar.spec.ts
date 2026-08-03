@@ -6,13 +6,7 @@ import { CngxStackedBar, type CngxStackedSegment } from './stacked-bar.component
 @Component({
   standalone: true,
   imports: [CngxStackedBar],
-  template: `
-    <cngx-stacked-bar
-      [segments]="segments()"
-      [total]="total()"
-      data-testid="bar"
-    />
-  `,
+  template: ` <cngx-stacked-bar [segments]="segments()" [total]="total()" data-testid="bar" /> `,
 })
 class TestHost {
   segments = signal<readonly CngxStackedSegment[]>([
@@ -43,9 +37,7 @@ describe('CngxStackedBar', () => {
 
   it('lays out segments in proportional widths summing to 100% of the track', () => {
     const { host } = setup();
-    const segs = Array.from(
-      host.querySelectorAll<HTMLElement>('.cngx-stacked-bar__segment'),
-    );
+    const segs = Array.from(host.querySelectorAll<HTMLElement>('.cngx-stacked-bar__segment'));
     const widths = segs.map((s) => parseFloat(s.style.width));
     expect(widths).toEqual([25, 50, 25]);
   });
@@ -54,9 +46,7 @@ describe('CngxStackedBar', () => {
     const { fixture, host } = setup();
     fixture.componentInstance.total.set(200);
     fixture.detectChanges();
-    const segs = Array.from(
-      host.querySelectorAll<HTMLElement>('.cngx-stacked-bar__segment'),
-    );
+    const segs = Array.from(host.querySelectorAll<HTMLElement>('.cngx-stacked-bar__segment'));
     const widths = segs.map((s) => parseFloat(s.style.width));
     expect(widths).toEqual([12.5, 25, 12.5]);
   });

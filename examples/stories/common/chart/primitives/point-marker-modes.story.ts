@@ -23,7 +23,7 @@ export const STORY: DemoSpec = {
   template: `  <div style="display:flex;flex-direction:column;gap:20px;max-width:520px">
     <div>
       <div class="cngx-ex-status-readout" style="margin-bottom:4px">points="always" - a marker on every datum</div>
-      <div class="cngx-ex-chart-frame cngx-ex-chart-frame--left-axis-room">
+      <div class="cngx-ex-chart-frame">
         <cngx-chart [data]="readings" [width]="480" [height]="140" aria-label="Six readings with a marker on every point.">
           <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 5]" [ticks]="6"></svg:g>
           <svg:g cngxAxis position="left" type="linear" [domain]="[0, 20]" [grid]="true"></svg:g>
@@ -33,7 +33,7 @@ export const STORY: DemoSpec = {
     </div>
     <div>
       <div class="cngx-ex-status-readout" style="margin-bottom:4px">points="auto" (default) - no markers on a multi-point series</div>
-      <div class="cngx-ex-chart-frame cngx-ex-chart-frame--left-axis-room">
+      <div class="cngx-ex-chart-frame">
         <cngx-chart [data]="readings" [width]="480" [height]="140" aria-label="Six readings, no markers in auto mode.">
           <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 5]" [ticks]="6"></svg:g>
           <svg:g cngxAxis position="left" type="linear" [domain]="[0, 20]" [grid]="true"></svg:g>
@@ -43,7 +43,7 @@ export const STORY: DemoSpec = {
     </div>
     <div>
       <div class="cngx-ex-status-readout" style="margin-bottom:4px">points="never" - markers suppressed</div>
-      <div class="cngx-ex-chart-frame cngx-ex-chart-frame--left-axis-room">
+      <div class="cngx-ex-chart-frame">
         <cngx-chart [data]="readings" [width]="480" [height]="140" aria-label="Six readings, markers suppressed.">
           <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 5]" [ticks]="6"></svg:g>
           <svg:g cngxAxis position="left" type="linear" [domain]="[0, 20]" [grid]="true"></svg:g>

@@ -4,10 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { type CngxChartContext } from '../chart/chart-context';
 import { type LayerGeometry } from '../layers/chart-layer';
-import {
-  type CngxChartRenderer,
-  type CngxChartRendererFactory,
-} from './chart-renderer';
+import { type CngxChartRenderer, type CngxChartRendererFactory } from './chart-renderer';
 import {
   createChartRendererController,
   type CngxChartRendererController,

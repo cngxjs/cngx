@@ -41,26 +41,33 @@ import { CNGX_CHART_LAYER, type CngxChartLayer, type LayerGeometry } from './cha
   encapsulation: ViewEncapsulation.None,
   providers: [{ provide: CNGX_CHART_LAYER, useExisting: CngxThreshold }],
   template: `
-    @if (ctx.renderSvg()) {
-      @if (bounds(); as g) {
+    @if (bounds(); as g) {
+      @if (ctx.renderSvg()) {
         <svg:line
           class="cngx-threshold__line"
-          [attr.x1]="0"
+          [attr.x1]="g.x1"
           [attr.y1]="g.y"
-          [attr.x2]="g.width"
+          [attr.x2]="g.x2"
           [attr.y2]="g.y"
           [attr.stroke-dasharray]="dashed() ? '4 3' : null"
         />
-        @if (label(); as l) {
-          <svg:text
-            class="cngx-threshold__label"
-            [attr.x]="g.width - 4"
-            [attr.y]="g.y - 4"
-            text-anchor="end"
-          >
-            {{ l }}
-          </svg:text>
-        }
+      }
+      <!--
+        Outside the renderSvg gate on purpose: the canvas backend paints
+        marks, never text, so gating the label on it would delete the
+        label at the auto-switch threshold. Same split CngxAxis already
+        makes - decoration stays SVG in both modes, only the
+        volume-dependent geometry moves to canvas.
+      -->
+      @if (label(); as l) {
+        <svg:text
+          class="cngx-threshold__label"
+          [attr.x]="g.x2 - 4"
+          [attr.y]="g.y - 4"
+          text-anchor="end"
+        >
+          {{ l }}
+        </svg:text>
       }
     }
   `,
@@ -103,17 +110,21 @@ export class CngxThreshold implements CngxChartLayer {
 
   protected readonly ctx = injectChartContext('CngxThreshold');
 
-  protected readonly bounds = computed<{ width: number; y: number } | null>(
+  protected readonly bounds = computed<{ x1: number; x2: number; y: number } | null>(
     () => {
-      const { width, height } = this.ctx.dimensions();
+      // Spans the plot, not the box - a threshold line running under
+      // the left axis's tick labels reads as a stray rule through the
+      // gutter rather than as a level on the chart.
+      const { x0, x1, width, height } = this.ctx.plot();
       if (width <= 0 || height <= 0) {
         return null;
       }
       const y = this.ctx.yScale()(this.value());
-      return { width, y };
+      return { x1: x0, x2: x1, y };
     },
     {
-      equal: (a, b) => a === b || (a !== null && b !== null && a.width === b.width && a.y === b.y),
+      equal: (a, b) =>
+        a === b || (a !== null && b !== null && a.x1 === b.x1 && a.x2 === b.x2 && a.y === b.y),
     },
   );
 
@@ -123,9 +134,9 @@ export class CngxThreshold implements CngxChartLayer {
       const y = b?.y ?? 0;
       return {
         kind: 'threshold',
-        x1: 0,
+        x1: b?.x1 ?? 0,
         y1: y,
-        x2: b?.width ?? 0,
+        x2: b?.x2 ?? 0,
         y2: y,
         color: null,
         dashed: this.dashed(),

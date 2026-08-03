@@ -21,6 +21,76 @@ Three properties make the chart system feel different from a wrapped library:
 - **Async-native.** Bind `[state]` and the chart switches between skeleton, content, refresh, empty, and error views the same way every other cngx surface does. Loading is a built-in mode, not a parent wrapper.
 - **Override slots.** Loading, empty, and error placeholders are template slots; the chart never blocks you from owning the UX of a failed fetch.
 
+## Sizing and the plot area
+
+The chart fills its host box. Inside that box it maps marks onto the **plot area**: the box minus the room the axes you projected need for their tick labels and titles. That is what keeps a `1,200,000` tick label inside a card instead of painting over its border, and it is why you never have to pad a container to catch overhanging axis text.
+
+The reservation is derived. Which sides reserve comes from the axes you mounted; how much each reserves comes from the labels that axis formats. Every axis also reserves a little on the two sides perpendicular to it, because a tick label is centred on its tick and the end ticks sit on the plot corners - half of the first and last label would otherwise hang outside.
+
+A chart with no axis reserves nothing and fills the box edge to edge. So does a chart whose axes are `[cngxAxisDomain]` rather than `[cngxAxis]` - that directive publishes a scale domain and draws nothing, so it claims no room. It is how the sparkline and mini-area presets declare their scales without paying for a gutter they never paint, and what you reach for whenever a mark needs a domain but the box has no space for ticks.
+
+Both directives satisfy the same `CngxChartAxis` contract, provided through `CNGX_CHART_AXIS`. Implement it on your own directive when you need an axis the chart participates with but the library does not ship - a logarithmic publisher, a domain fed from a service, decoration you draw yourself. The chart queries the token, so it cannot tell your axis from ours.
+
+There is no knob. No input, no CSS custom property, no DI token sizes the gutter, because the component already knows everything needed to compute it. The one approximation is character width: the chart measures no text, so it estimates one character as a fraction of the default axis font size. Restyling `--cngx-axis-font-size` scales your labels but not the gutter they sit in. If that bites, the fix is a real measure pass or an escape hatch, and both are additive - open an issue with the font and the label that clipped.
+
+### Reading the plot area from outside
+
+The chart publishes where its plot area ended up, so anything you position against the host box can line up with the marks rather than the box.
+
+Every slot context carries `plot` - `{ x0, y0, x1, y1, width, height }` in viewBox user units - so a fallback can reason about the drawing surface rather than the host box:
+
+```html
+<ng-template cngxChartEmpty let-plot="plot">
+  <span>No readings for this range ({{ plot.width }} x {{ plot.height }})</span>
+</ng-template>
+```
+
+Mind the two coordinate spaces. Slot templates render into an HTML frame layered over the SVG, so `width`/`height` on the context are **rendered px** while `plot` is **viewBox units**. They diverge whenever an explicit `[width]` chart is squeezed by `max-width`. Do not compute a ratio across the two. For SVG-space geometry read `plot` off `injectChartContext()` inside a directive on an `<svg:g>` host, the way the layer atoms do.
+
+From outside the chart, read the rectangle off the instance. An HTML overlay is always a sibling - everything projected into `<cngx-chart>` lands inside its SVG - so this is the route it has. Divide by `dimensions()`, which is the viewBox extent `plot` is measured in, rather than by a copy of the bound width: the same template then works on a responsive chart that has no `[width]` to copy.
+
+```html
+<div style="position: relative; display: inline-block">
+  <cngx-chart #chart="cngxChart" [width]="480" [height]="200" [data]="load">
+    <svg:g cngxAxis position="left" type="linear" [domain]="[0, 100000]"></svg:g>
+    <svg:g cngxLine></svg:g>
+  </cngx-chart>
+
+  <div
+    style="position: absolute"
+    [style.left.%]="(chart.plot().x0 / chart.dimensions().width) * 100"
+    [style.top.%]="(chart.plot().y0 / chart.dimensions().height) * 100"
+    [style.width.%]="(chart.plot().width / chart.dimensions().width) * 100"
+    [style.height.%]="(chart.plot().height / chart.dimensions().height) * 100"
+  >…</div>
+</div>
+```
+
+In CSS, the chart writes the same numbers as four custom properties onto its own host, as percentages of the host box. Custom properties inherit downwards only, so these reach the chart's own subtree - not an outside sibling, which is what the instance route above is for:
+
+|Property|Reserved on|
+|-|-|
+|`--cngx-chart-plot-inline-start`|left|
+|`--cngx-chart-plot-inline-end`|right|
+|`--cngx-chart-plot-block-start`|top|
+|`--cngx-chart-plot-block-end`|bottom|
+
+These are outputs, not settings. The chart rewrites them whenever the box or the axis set changes, so setting them yourself has no effect.
+
+```css
+/* reachable from the chart's own subtree; a sibling does not inherit these */
+.some-descendant {
+  inset: var(--cngx-chart-plot-block-start) var(--cngx-chart-plot-inline-end)
+         var(--cngx-chart-plot-block-end) var(--cngx-chart-plot-inline-start);
+}
+```
+
+Percent rather than pixels because an explicit-`[width]` chart squeezed by `max-width` keeps its viewBox: a user unit stops being a CSS pixel, while a fraction stays a fraction. That holds while the host keeps the viewBox ratio, which it does whenever both `[width]` and `[height]` are bound. Bind only one and the SVG letterboxes, so the percentages address the host box rather than the drawing area.
+
+### Implementing CngxChartContext yourself
+
+`CngxChartContext` carries a required `plot` field. Injecting the context via `injectChartContext()` is unaffected. If you implement the interface directly - a hand-rolled test double, a custom container providing `CNGX_CHART_CONTEXT` - you have to supply it; there is no fallback to the host box, deliberately, so a mis-wired container fails loudly instead of silently drawing edge to edge.
+
 ## Status
 
 Under active development. Treat the **preset molecules** as stable for adoption. Treat the **atom internals** (axis tick computation, layer projection caching, custom-layer authoring) as still in flux until the chart-area master plan closes - APIs may move between minor releases.

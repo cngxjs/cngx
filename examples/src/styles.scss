@@ -1242,16 +1242,26 @@ button.chip[aria-pressed='true'],
   border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e5e7eb));
   border-radius: 4px;
 }
-// Axis tick labels AND rotated axis `label` text render OUTSIDE the
-// chart's viewBox (overflow: visible). The block/inline axis-label
-// offsets are 36px / 32px from the chart edge, so with the text height
-// on top the labels reach ~44-48px out - the room modifiers reserve
-// enough gutter that the axis label + widest tick fit inside the frame.
-.cngx-ex-chart-frame--bottom-axis-room {
-  padding-bottom: 44px;
+// Positioning context for an HTML layer over a chart, plus the layer
+// itself. Demonstrates the published --cngx-chart-plot-* properties;
+// the story sets `inset` inline so it can toggle plot vs box alignment.
+.cngx-ex-chart-overlay-host {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
 }
-.cngx-ex-chart-frame--left-axis-room {
-  padding-left: 48px;
+.cngx-ex-plot-overlay {
+  position: absolute;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: 4px;
+  pointer-events: none;
+  background: var(--cngx-ex-plot-overlay-bg, rgb(37 99 235 / 12%));
+  border: 1px dashed var(--cngx-color-primary, var(--cngx-ex-accent, #2563eb));
+  border-radius: 2px;
+  font-size: 11px;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-text-muted, #6b7280));
 }
 .cngx-ex-chart-frame--responsive {
   resize: horizontal;

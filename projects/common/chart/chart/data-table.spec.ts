@@ -14,13 +14,7 @@ import { provideChartI18n, type CngxChartI18n } from '../i18n/chart-i18n';
 @Component({
   standalone: true,
   imports: [CngxChartDataTable],
-  template: `
-    <cngx-chart-data-table
-      [id]="id()"
-      [values]="values()"
-      [hidden]="hidden()"
-    />
-  `,
+  template: ` <cngx-chart-data-table [id]="id()" [values]="values()" [hidden]="hidden()" /> `,
 })
 class TestHost {
   values = signal<readonly number[]>([5, 10, 15]);
@@ -105,9 +99,7 @@ describe('CngxChartDataTable', () => {
     const fixture = TestBed.createComponent(TestHost);
     fixture.detectChanges();
     const headerCells = Array.from(
-      (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLTableCellElement>(
-        'thead th',
-      ),
+      (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLTableCellElement>('thead th'),
     ).map((th) => th.textContent?.trim() ?? '');
     expect(headerCells).toContain('Wert');
   });
@@ -116,9 +108,8 @@ describe('CngxChartDataTable', () => {
     TestBed.configureTestingModule({ imports: [TestHost] });
     const fixture = TestBed.createComponent(TestHost);
     fixture.detectChanges();
-    const tableInstance = fixture.debugElement.query(
-      By.directive(CngxChartDataTable),
-    ).componentInstance as { rows: () => readonly { index: number; value: number }[] };
+    const tableInstance = fixture.debugElement.query(By.directive(CngxChartDataTable))
+      .componentInstance as { rows: () => readonly { index: number; value: number }[] };
     const env = TestBed.inject(EnvironmentInjector);
 
     let runs = 0;

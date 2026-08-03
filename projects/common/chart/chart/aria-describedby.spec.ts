@@ -42,8 +42,7 @@ describe('CngxChart — aria-describedby always-in-DOM invariant', () => {
     return {
       fixture,
       chart,
-      table: () =>
-        fixture.nativeElement.querySelector('cngx-chart-data-table') as HTMLElement,
+      table: () => fixture.nativeElement.querySelector('cngx-chart-data-table') as HTMLElement,
     };
   }
 
@@ -102,7 +101,7 @@ describe('CngxChart — aria-describedby always-in-DOM invariant', () => {
   it('combined sweep — aria-describedby id is invariant across all four (mode, data.length) combinations', () => {
     const { chart, fixture } = setup();
     const seen = new Set<string>();
-    const combos: readonly [('auto' | 'off'), readonly number[]][] = [
+    const combos: readonly ['auto' | 'off', readonly number[]][] = [
       ['auto', [1, 2, 3]],
       ['auto', [42]],
       ['off', [1, 2, 3]],

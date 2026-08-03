@@ -30,6 +30,7 @@ export { CngxChartAnnouncer } from './chart/chart-announcer.component';
 export {
   CNGX_CHART_CONTEXT,
   type CngxChartContext,
+  type CngxChartPlotArea,
   type ScaleFn,
   type XScaleInput,
 } from './chart/chart-context';
@@ -46,16 +47,12 @@ export {
   type CngxChartSlotContext,
 } from './chart/template-slots';
 
-export {
-  CngxAxis,
-  type CngxAxisPosition,
-  type CngxAxisType,
-} from './axis/axis.component';
+export { CngxAxis } from './axis/axis.component';
+export { CngxAxisDomain } from './axis/axis-domain';
+export { CNGX_CHART_AXIS, type CngxChartAxis } from './axis/chart-axis';
+export { type CngxAxisPosition, type CngxAxisType } from './axis/axis-position';
 
-export {
-  CngxChartLegend,
-  type CngxChartLegendItem,
-} from './legend/legend.component';
+export { CngxChartLegend, type CngxChartLegendItem } from './legend/legend.component';
 
 export { CngxLine } from './layers/line.component';
 export { CngxArea } from './layers/area.component';
@@ -68,11 +65,7 @@ export {
 } from './layers/scatter.component';
 export { CngxThreshold } from './layers/threshold.component';
 export { CngxBand } from './layers/band.component';
-export {
-  CNGX_CHART_LAYER,
-  type CngxChartLayer,
-  type LayerGeometry,
-} from './layers/chart-layer';
+export { CNGX_CHART_LAYER, type CngxChartLayer, type LayerGeometry } from './layers/chart-layer';
 
 export {
   type CngxChartRenderer,
@@ -108,14 +101,8 @@ export { CngxMiniBar } from './presets/mini-bar.component';
 export { CngxDeviationBar } from './presets/deviation-bar.component';
 export { CngxMiniArea } from './presets/mini-area.component';
 export { CngxDonut } from './presets/donut.component';
-export {
-  CngxBullet,
-  type CngxBulletRange,
-} from './presets/bullet.component';
-export {
-  CngxStackedBar,
-  type CngxStackedSegment,
-} from './presets/stacked-bar.component';
+export { CngxBullet, type CngxBulletRange } from './presets/bullet.component';
+export { CngxStackedBar, type CngxStackedSegment } from './presets/stacked-bar.component';
 export {
   createPathBuilder,
   type PathBuilder,

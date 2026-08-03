@@ -39,7 +39,12 @@ describe('pointsEqual', () => {
   it('is true for equal coordinates, false for a length or coordinate difference', () => {
     const a = [{ cx: 1, cy: 2 }];
     expect(pointsEqual(a, [{ cx: 1, cy: 2 }])).toBe(true);
-    expect(pointsEqual(a, [{ cx: 1, cy: 2 }, { cx: 3, cy: 4 }])).toBe(false);
+    expect(
+      pointsEqual(a, [
+        { cx: 1, cy: 2 },
+        { cx: 3, cy: 4 },
+      ]),
+    ).toBe(false);
     expect(pointsEqual(a, [{ cx: 1, cy: 9 }])).toBe(false);
   });
 });
@@ -55,9 +60,9 @@ describe('lineAreaGeomEqual', () => {
   });
 
   it('holds when d and markers are unchanged (no-op refresh)', () => {
-    expect(lineAreaGeomEqual(line('M 0 0', [{ cx: 1, cy: 2 }]), line('M 0 0', [{ cx: 1, cy: 2 }]))).toBe(
-      true,
-    );
+    expect(
+      lineAreaGeomEqual(line('M 0 0', [{ cx: 1, cy: 2 }]), line('M 0 0', [{ cx: 1, cy: 2 }])),
+    ).toBe(true);
   });
 
   it('breaks on a d change or a marker change', () => {

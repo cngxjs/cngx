@@ -40,27 +40,32 @@ import { CNGX_CHART_LAYER, type CngxChartLayer, type LayerGeometry } from './cha
   encapsulation: ViewEncapsulation.None,
   providers: [{ provide: CNGX_CHART_LAYER, useExisting: CngxBand }],
   template: `
-    @if (ctx.renderSvg()) {
-      @if (rect(); as r) {
+    @if (rect(); as r) {
+      @if (ctx.renderSvg()) {
         <svg:rect
           class="cngx-band__rect"
-          [attr.x]="0"
+          [attr.x]="r.x"
           [attr.y]="r.y"
           [attr.width]="r.width"
           [attr.height]="r.height"
           [attr.fill-opacity]="opacity()"
         />
-        @if (label(); as l) {
-          <svg:text
-            class="cngx-band__label"
-            [attr.x]="4"
-            [attr.y]="r.y + r.height / 2"
-            text-anchor="start"
-            dominant-baseline="middle"
-          >
-            {{ l }}
-          </svg:text>
-        }
+      }
+      <!--
+        Outside the renderSvg gate on purpose - see CngxThreshold: the
+        canvas backend paints no text, so a gated label vanishes at the
+        auto-switch threshold.
+      -->
+      @if (label(); as l) {
+        <svg:text
+          class="cngx-band__label"
+          [attr.x]="r.x + 4"
+          [attr.y]="r.y + r.height / 2"
+          text-anchor="start"
+          dominant-baseline="middle"
+        >
+          {{ l }}
+        </svg:text>
       }
     }
   `,
@@ -80,11 +85,18 @@ import { CNGX_CHART_LAYER, type CngxChartLayer, type LayerGeometry } from './cha
           var(--cngx-chart-enter-easing, cubic-bezier(0.4, 0, 0.2, 1));
       }
       @keyframes cngx-band-enter {
-        from { opacity: 0; }
-        to { opacity: 1; }
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
       }
       @media (prefers-reduced-motion: reduce) {
-        .cngx-band__rect, .cngx-band__label { animation: none; }
+        .cngx-band__rect,
+        .cngx-band__label {
+          animation: none;
+        }
       }
     `,
   ],
@@ -98,12 +110,16 @@ export class CngxBand implements CngxChartLayer {
   protected readonly ctx = injectChartContext('CngxBand');
 
   protected readonly rect = computed<{
+    x: number;
     width: number;
     y: number;
     height: number;
   } | null>(
     () => {
-      const { width, height } = this.ctx.dimensions();
+      // The plot, not the box: the band spans the area the marks live
+      // in, so it stops at the axis gutter instead of painting over
+      // the tick labels the chart now reserves room for.
+      const { x0, width, height } = this.ctx.plot();
       if (width <= 0 || height <= 0) {
         return null;
       }
@@ -112,13 +128,14 @@ export class CngxBand implements CngxChartLayer {
       const yB = yScale(this.to());
       const top = Math.min(yA, yB);
       const bottom = Math.max(yA, yB);
-      return { width, y: top, height: bottom - top };
+      return { x: x0, width, y: top, height: bottom - top };
     },
     {
       equal: (a, b) =>
         a === b ||
         (a !== null &&
           b !== null &&
+          a.x === b.x &&
           a.width === b.width &&
           a.y === b.y &&
           a.height === b.height),
@@ -131,7 +148,7 @@ export class CngxBand implements CngxChartLayer {
       const op = this.opacity();
       return {
         kind: 'band',
-        x: 0,
+        x: r?.x ?? 0,
         y: r?.y ?? 0,
         w: r?.width ?? 0,
         h: r?.height ?? 0,
@@ -160,4 +177,3 @@ function bandGeomEqual(a: LayerGeometry, b: LayerGeometry): boolean {
     a.opacity === b.opacity
   );
 }
-

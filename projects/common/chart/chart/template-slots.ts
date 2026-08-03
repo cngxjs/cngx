@@ -1,4 +1,5 @@
 import { Directive, inject, TemplateRef } from '@angular/core';
+import type { CngxChartPlotArea } from './chart-context';
 
 /**
  * Common context shape passed into every chart slot template
@@ -29,6 +30,23 @@ export interface CngxChartSlotContext {
   readonly width: number;
   readonly height: number;
   readonly small: boolean;
+  /**
+   * The rectangle the chart's marks occupy: the viewBox minus the room
+   * the projected axes reserved for their decoration. Without axes it
+   * equals the box.
+   *
+   * Slot templates paint over the chart, and since the axis gutter
+   * landed the box is no longer the drawing surface - a fallback
+   * centred on `width`/`height` sits off-centre from the marks it
+   * replaces. Align to this instead when the fallback should line up
+   * with the plot rather than with the host.
+   *
+   * In viewBox user units. `width`/`height` above stay the *rendered*
+   * host size, so the two are in different spaces whenever an explicit
+   * `[width]` chart is squeezed; use the `--cngx-chart-plot-*` custom
+   * properties for CSS-side alignment, which are resolution-independent.
+   */
+  readonly plot: CngxChartPlotArea;
 }
 
 /**

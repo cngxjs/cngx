@@ -21,6 +21,50 @@ export type XScaleInput = number | Date | string;
 export type ScaleFn<TIn> = (v: TIn) => number;
 
 /**
+ * Space reserved inside the viewBox for axis decoration, in viewBox
+ * user units. Logical, not physical: `inlineStart` is the left edge in
+ * an LTR writing mode. A side with no axis on it reserves `0`.
+ *
+ * Chart-internal. The context publishes the resulting
+ * {@link CngxChartPlotArea} instead, so the rectangle is derived once
+ * rather than reconstructed from the box and the inset at every reader.
+ *
+ * @internal
+ */
+export interface CngxChartInset {
+  readonly inlineStart: number;
+  readonly inlineEnd: number;
+  readonly blockStart: number;
+  readonly blockEnd: number;
+}
+
+/**
+ * The rectangle the chart's scales map onto: the viewBox minus the
+ * space reserved for axis decoration, in viewBox user units. Without
+ * axes it equals the box.
+ *
+ * `x0`/`y0` are the top-left corner, `x1`/`y1` the bottom-right one,
+ * and `width`/`height` the extents between them. Every chart child that
+ * needs to know where the plot starts reads this rather than
+ * subtracting an inset from the box itself - one derivation, so the
+ * scales and the axis lines cannot drift apart.
+ *
+ * A collapsed plot (a box narrower than the room its axes need) reports
+ * `width` or `height` at or below `0`. Readers guard on the extent; the
+ * chart hands out its NOOP scale in the same case.
+ *
+ * @category common/chart
+ */
+export interface CngxChartPlotArea {
+  readonly x0: number;
+  readonly y0: number;
+  readonly x1: number;
+  readonly y1: number;
+  readonly width: number;
+  readonly height: number;
+}
+
+/**
  * Reactive context published by `<cngx-chart>` to its content children.
  * Layer atoms (`[cngxLine]`, `[cngxBar]`, ...) and `[cngxAxis]` inject
  * {@link CNGX_CHART_CONTEXT} to read the parent chart's scales,
@@ -36,6 +80,14 @@ export interface CngxChartContext<TX = XScaleInput, TY = number> {
   readonly xScale: Signal<ScaleFn<TX>>;
   readonly yScale: Signal<ScaleFn<TY>>;
   readonly dimensions: Signal<{ width: number; height: number }>;
+  /**
+   * The plot rectangle inside the viewBox, after the room the projected
+   * axes need for their decoration. The chart's own scale ranges and
+   * `[cngxAxis]`'s line placement both read this single derivation, so
+   * ticks always line up with marks. A chart without axes gets the full
+   * box.
+   */
+  readonly plot: Signal<CngxChartPlotArea>;
   readonly dataLength: Signal<number>;
   /**
    * Generic-aware data accessor. Reads the chart's reactive data

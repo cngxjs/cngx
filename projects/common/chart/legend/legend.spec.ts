@@ -29,9 +29,7 @@ describe('CngxChartLegend', () => {
     TestBed.configureTestingModule({ imports: [TestHost] });
     const fixture = TestBed.createComponent(TestHost);
     fixture.detectChanges();
-    const legend = fixture.nativeElement.querySelector(
-      '[data-testid="legend"]',
-    ) as HTMLElement;
+    const legend = fixture.nativeElement.querySelector('[data-testid="legend"]') as HTMLElement;
     return { fixture, legend };
   }
 
@@ -45,9 +43,7 @@ describe('CngxChartLegend', () => {
 
   it('paints the swatch with the entry color via inline background style', () => {
     const { legend } = setup();
-    const swatches = Array.from(
-      legend.querySelectorAll<HTMLElement>('.cngx-chart-legend__swatch'),
-    );
+    const swatches = Array.from(legend.querySelectorAll<HTMLElement>('.cngx-chart-legend__swatch'));
     expect(swatches[0].style.background).toBe('rgb(59, 130, 246)');
     expect(swatches[1].style.background).toBe('rgb(210, 69, 47)');
   });

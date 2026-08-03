@@ -25,7 +25,7 @@ export const STORY: DemoSpec = {
     "import { CngxChart, CngxAxis, CngxLine, CngxChartLegend } from '@cngx/common/chart';",
   ],
   imports: ['CngxChart', 'CngxAxis', 'CngxLine', 'CngxChartLegend'],
-  template: `  <div class="cngx-ex-chart-frame cngx-ex-chart-frame--bottom-axis-room cngx-ex-chart-frame--left-axis-room">
+  template: `  <div class="cngx-ex-chart-frame">
     <cngx-chart
       [data]="[10, 12, 18, 22, 24, 28, 32, 30, 27, 26, 30, 35]"
       [width]="480"

@@ -1,4 +1,10 @@
-import { Component, EnvironmentInjector, effect, runInInjectionContext, signal } from '@angular/core';
+import {
+  Component,
+  EnvironmentInjector,
+  effect,
+  runInInjectionContext,
+  signal,
+} from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CngxArea } from './area.component';
@@ -58,7 +64,9 @@ describe('CngxArea', () => {
     expect(d.split(' L ').length).toBeGreaterThanOrEqual(3);
   });
 
-  function marks(fixture: ReturnType<typeof TestBed.createComponent<TestHost>>): NodeListOf<Element> {
+  function marks(
+    fixture: ReturnType<typeof TestBed.createComponent<TestHost>>,
+  ): NodeListOf<Element> {
     return (fixture.nativeElement as HTMLElement).querySelectorAll('.cngx-area__point');
   }
 

@@ -29,7 +29,7 @@ export const STORY: DemoSpec = {
     'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec',
   ];
   protected readonly monthByIndex = (_: unknown, i: number): string => this.months[i];`,
-  template: `  <div class="cngx-ex-chart-frame cngx-ex-chart-frame--bottom-axis-room">
+  template: `  <div class="cngx-ex-chart-frame">
     <cngx-chart
       [data]="[8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32]"
       [width]="520"

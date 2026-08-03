@@ -53,9 +53,8 @@ describe('CNGX_CHART_LAYER', () => {
     const fixture = TestBed.createComponent(Host);
     fixture.detectChanges();
 
-    const collector = fixture.debugElement.query(
-      (el) => el.componentInstance instanceof Collector,
-    ).componentInstance as Collector;
+    const collector = fixture.debugElement.query((el) => el.componentInstance instanceof Collector)
+      .componentInstance as Collector;
     expect(collector.layers().length).toBe(1);
     expect(collector.layers()[0].geometry().kind).toBe('line');
   });

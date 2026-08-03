@@ -41,6 +41,21 @@ const DEFAULT_POINT_RADIUS = 3;
  * for layout / theming reflow). It never writes the chart context's
  * `renderSvg` gate; the shell owns that.
  *
+ * The plot inset needs no handling here. Every geometry this backend
+ * paints was derived from `ctx.xScale()` / `ctx.yScale()`, whose ranges
+ * are already the inset plot area, so canvas marks land exactly where
+ * SVG marks would without the renderer knowing an inset exists. Axis
+ * decoration never reaches this file at all: there is no axis branch in
+ * {@link KIND_VARS} and no text call anywhere in the backend, because
+ * `CngxAxis` renders its own SVG ungated by `renderSvg` in both modes.
+ * The two paths therefore cannot disagree on where the plot area is,
+ * and only one of them ever draws an axis.
+ *
+ * They do differ on what happens past the box edge: a canvas clips
+ * natively at the element bounds, and since the SVG root no longer sets
+ * `overflow: visible` it now clips there too. Out-of-domain data is cut
+ * off on both paths.
+ *
  * @category common/chart/renderer
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/renderer/canvas-renderer.ts
  * @since 0.1.0
