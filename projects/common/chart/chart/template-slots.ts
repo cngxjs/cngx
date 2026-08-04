@@ -254,10 +254,18 @@ export class CngxChartReconnecting {
  * that is a debugging session; opting a single element back in is one
  * declaration.
  *
+ * Accessibility: the chart host is `role="img"` with an auto-summary
+ * `aria-label`, so assistive technology sees the chart as a single
+ * labelled graphic and never traverses into the overlay. Treat overlay
+ * content as *visual* - a hover readout, a tint, an annotation callout.
+ * Any state that has to reach AT belongs on the reactive summary or the
+ * SR data-table (the `aria-describedby` channel the chart already owns),
+ * not on an element projected here.
+ *
  * @category common/chart
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/chart/template-slots.ts
  * @since 0.1.0
- * @relatedTo CngxChartSlotContext, CngxChartEmpty, CngxChartError, CngxChart
+ * @relatedTo CngxChartSlotContext, CngxChartLoading, CngxChartEmpty, CngxChartError, CngxChart
  */
 @Directive({
   selector: 'ng-template[cngxChartOverlay]',
