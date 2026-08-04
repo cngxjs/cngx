@@ -13,7 +13,12 @@ import { By } from '@angular/platform-browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CngxChart } from './chart.component';
 import { CNGX_CHART_CONTEXT, type CngxChartContext } from './chart-context';
-import { CngxChartConnectionError, CngxChartEmpty, CngxChartError } from './template-slots';
+import {
+  CngxChartConnectionError,
+  CngxChartEmpty,
+  CngxChartError,
+  CngxChartOverlay,
+} from './template-slots';
 import { CngxAxis } from '../axis/axis.component';
 import { CngxAxisDomain } from '../axis/axis-domain';
 import { CNGX_CHART_AXIS, type CngxChartAxis } from '../axis/chart-axis';
@@ -1393,5 +1398,220 @@ describe('CngxChart - slot templates see the plot they sit inside', () => {
     const probe = (fixture.nativeElement as HTMLElement).querySelector('.probe');
     // Lone left axis over [0, 100]: 31 inline-start, 9 on each block side.
     expect(probe?.textContent?.trim()).toBe('31/169/82');
+  });
+});
+
+describe('CngxChart - overlay slot', () => {
+  beforeEach(() => vi.stubGlobal('ResizeObserver', ResizeObserverMock));
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('renders no overlay frame when no template is projected', () => {
+    @Component({
+      standalone: true,
+      imports: [CngxChart, CngxLine],
+      template: `
+        <cngx-chart [data]="[1, 2, 3]" [width]="200" [height]="100" data-testid="chart">
+          <svg:g cngxLine></svg:g>
+        </cngx-chart>
+      `,
+    })
+    class NoOverlayHost {}
+    TestBed.configureTestingModule({ imports: [NoOverlayHost] });
+    const fixture = TestBed.createComponent(NoOverlayHost);
+    fixture.detectChanges();
+    const chart = (fixture.nativeElement as HTMLElement).querySelector(
+      '[data-testid="chart"]',
+    ) as HTMLElement;
+    expect(chart.querySelector('.cngx-chart__overlay-frame')).toBeNull();
+  });
+
+  it('renders exactly one overlay frame with the plot the marks sit inside', () => {
+    @Component({
+      standalone: true,
+      imports: [CngxChart, CngxAxis, CngxLine, CngxChartOverlay, ContextProbe],
+      template: `
+        <cngx-chart [data]="[1, 2, 3]" [width]="200" [height]="100" data-testid="chart">
+          <svg:g cngxAxis position="left" type="linear" [domain]="[0, 100]"></svg:g>
+          <svg:g cngxLine></svg:g>
+          <test-context-probe />
+          <ng-template cngxChartOverlay let-plot="plot">
+            <span class="overlay-probe">{{ plot.x0 }}/{{ plot.width }}/{{ plot.height }}</span>
+          </ng-template>
+        </cngx-chart>
+      `,
+    })
+    class OverlayHost {}
+    TestBed.configureTestingModule({ imports: [OverlayHost] });
+    const fixture = TestBed.createComponent(OverlayHost);
+    fixture.detectChanges();
+    const chart = (fixture.nativeElement as HTMLElement).querySelector(
+      '[data-testid="chart"]',
+    ) as HTMLElement;
+    const frames = chart.querySelectorAll('.cngx-chart__overlay-frame');
+    expect(frames.length).toBe(1);
+
+    // The context.plot handed to the overlay is the same rectangle the
+    // chart publishes on its context - no second derivation.
+    const plot = (
+      fixture.debugElement.query(By.directive(ContextProbe)).componentInstance as ContextProbe
+    ).ctx.plot();
+    const overlayProbe = chart.querySelector('.overlay-probe');
+    expect(overlayProbe?.textContent?.trim()).toBe(`${plot.x0}/${plot.width}/${plot.height}`);
+  });
+
+  it('does not render the overlay frame in the loading, empty and error arms', async () => {
+    const { createManualState } = await import('@cngx/common/data');
+    @Component({
+      standalone: true,
+      imports: [CngxChart, CngxChartOverlay],
+      template: `
+        <cngx-chart [data]="[]" [state]="state" [width]="200" [height]="100" data-testid="chart">
+          <ng-template cngxChartOverlay>
+            <span class="overlay-probe">on the marks</span>
+          </ng-template>
+        </cngx-chart>
+      `,
+    })
+    class GatedOverlayHost {
+      readonly state = createManualState<readonly number[]>();
+    }
+    TestBed.configureTestingModule({ imports: [GatedOverlayHost] });
+    const fixture = TestBed.createComponent(GatedOverlayHost);
+    const chart = () =>
+      (fixture.nativeElement as HTMLElement).querySelector('[data-testid="chart"]') as HTMLElement;
+
+    // Error is checked while still first-load: only there does status
+    // 'error' route to the 'error' arm. A post-success error is
+    // 'content+error', which keeps the marks - and the overlay with them.
+    fixture.componentInstance.state.set('loading');
+    fixture.detectChanges();
+    expect(chart().querySelector('.cngx-chart__overlay-frame')).toBeNull();
+
+    fixture.componentInstance.state.setError(new Error('boom'));
+    fixture.detectChanges();
+    expect(chart().querySelector('.cngx-chart__overlay-frame')).toBeNull();
+
+    fixture.componentInstance.state.setSuccess([]);
+    fixture.detectChanges();
+    expect(chart().querySelector('.cngx-chart__overlay-frame')).toBeNull();
+
+    // And once data lands, the same projected template does render.
+    fixture.componentInstance.state.setSuccess([1, 2, 3]);
+    fixture.detectChanges();
+    expect(chart().querySelector('.cngx-chart__overlay-frame')).not.toBeNull();
+  });
+
+  it('warns in dev when more than one overlay template is projected', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    @Component({
+      standalone: true,
+      imports: [CngxChart, CngxChartOverlay],
+      template: `
+        <cngx-chart [data]="[1, 2, 3]" [width]="200" [height]="100" data-testid="chart">
+          <ng-template cngxChartOverlay><span>first</span></ng-template>
+          <ng-template cngxChartOverlay><span>second</span></ng-template>
+        </cngx-chart>
+      `,
+    })
+    class TwoOverlayHost {}
+    TestBed.configureTestingModule({ imports: [TwoOverlayHost] });
+    const fixture = TestBed.createComponent(TwoOverlayHost);
+    fixture.detectChanges();
+
+    // Only the first template renders; the extra one drops.
+    const chart = (fixture.nativeElement as HTMLElement).querySelector(
+      '[data-testid="chart"]',
+    ) as HTMLElement;
+    expect(chart.querySelectorAll('.cngx-chart__overlay-frame').length).toBe(1);
+    expect(chart.textContent).toContain('first');
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('more than one *cngxChartOverlay'));
+    warn.mockRestore();
+  });
+
+  it('does not warn when a single overlay template is projected', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    @Component({
+      standalone: true,
+      imports: [CngxChart, CngxChartOverlay],
+      template: `
+        <cngx-chart [data]="[1, 2, 3]" [width]="200" [height]="100">
+          <ng-template cngxChartOverlay><span>only</span></ng-template>
+        </cngx-chart>
+      `,
+    })
+    class OneOverlayHost {}
+    TestBed.configureTestingModule({ imports: [OneOverlayHost] });
+    const fixture = TestBed.createComponent(OneOverlayHost);
+    fixture.detectChanges();
+    expect(warn).not.toHaveBeenCalledWith(
+      expect.stringContaining('more than one *cngxChartOverlay'),
+    );
+    warn.mockRestore();
+  });
+});
+
+describe('CngxChart - overlay survives the renderer crossover', () => {
+  @Component({
+    standalone: true,
+    imports: [CngxChart, CngxAxis, CngxLine, CngxChartOverlay, ContextProbe],
+    template: `
+      <cngx-chart [data]="data()" [width]="200" [height]="100" data-testid="chart">
+        <svg:g cngxAxis position="left" type="linear" [domain]="[0, 100]"></svg:g>
+        <svg:g cngxLine></svg:g>
+        <test-context-probe />
+        <ng-template cngxChartOverlay let-plot="plot">
+          <span class="overlay-probe">{{ plot.x0 }}/{{ plot.width }}/{{ plot.height }}</span>
+        </ng-template>
+      </cngx-chart>
+    `,
+  })
+  class CrossoverHost {
+    readonly data = signal<readonly number[]>([1, 2, 3]);
+  }
+
+  beforeEach(() => vi.stubGlobal('ResizeObserver', ResizeObserverMock));
+  afterEach(() => vi.unstubAllGlobals());
+
+  function mount(pointCount: number): { isCanvas: boolean; frameCount: number; plotText: string } {
+    // Both crossover sides mount in one test, so the module is torn down
+    // between them.
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      imports: [CrossoverHost],
+      providers: [provideChartRenderer(withChartRendererThreshold(50))],
+    });
+    const fixture = TestBed.createComponent(CrossoverHost);
+    fixture.componentInstance.data.set(Array.from({ length: pointCount }, (_, i) => i % 10));
+    fixture.detectChanges();
+    const chartEl = fixture.nativeElement.querySelector('[data-testid="chart"]') as HTMLElement;
+    // The overlay reads the plot off the context via the CSS custom
+    // properties in production; the spec proves the *same* rectangle
+    // reaches the slot context on both backends.
+    const contextPlot = (
+      fixture.debugElement.query(By.directive(ContextProbe)).componentInstance as ContextProbe
+    ).ctx.plot();
+    const overlayProbe = chartEl.querySelector('.overlay-probe');
+    expect(overlayProbe?.textContent?.trim()).toBe(
+      `${contextPlot.x0}/${contextPlot.width}/${contextPlot.height}`,
+    );
+    return {
+      isCanvas: chartEl.querySelector('canvas') !== null,
+      frameCount: chartEl.querySelectorAll('.cngx-chart__overlay-frame').length,
+      plotText: overlayProbe?.textContent?.trim() ?? '',
+    };
+  }
+
+  it('renders one overlay frame with an identical context either side of the threshold', () => {
+    const svgSide = mount(10);
+    expect(svgSide.isCanvas).toBe(false);
+    expect(svgSide.frameCount).toBe(1);
+
+    const canvasSide = mount(51);
+    expect(canvasSide.isCanvas).toBe(true);
+    expect(canvasSide.frameCount).toBe(1);
+
+    // Same box, same axis, so the same plot: the backend swap changes who
+    // paints the marks, never whether the overlay renders or where.
+    expect(canvasSide.plotText).toBe(svgSide.plotText);
   });
 });

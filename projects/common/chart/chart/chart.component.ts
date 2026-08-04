@@ -29,6 +29,7 @@ import {
   CngxChartEmpty,
   CngxChartError,
   CngxChartLoading,
+  CngxChartOverlay,
   CngxChartReconnecting,
   type CngxChartSlotContext,
 } from './template-slots';
@@ -148,6 +149,7 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
  * <example-url>http://localhost:4200/#/common/chart/primitives/combo-bars-moving-average-line</example-url>
  * <example-url>http://localhost:4200/#/common/chart/primitives/line-area-threshold-band</example-url>
  * <example-url>http://localhost:4200/#/common/chart/primitives/multi-series-line-axis-labels-legend</example-url>
+ * <example-url>http://localhost:4200/#/common/chart/primitives/overlay-aligned-to-the-plot</example-url>
  * <example-url>http://localhost:4200/#/common/chart/primitives/responsive-fills-parent-width</example-url>
  * <example-url>http://localhost:4200/#/common/chart/primitives/scatter-with-performance-zones</example-url>
  * <example-url>http://localhost:4200/#/common/chart/primitives/time-series-with-threshold-zones</example-url>
@@ -156,6 +158,7 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
  * @slot cngxChartError Rendered when the load fails; gets the error.
  * @slot cngxChartConnectionError Rendered over the chart when the live connection drops.
  * @slot cngxChartReconnecting Rendered over the chart while the connection retries.
+ * @slot cngxChartOverlay HTML layered over the marks in the content view; the chart insets it to the plot area, pointer-events off by default.
  */
 @Component({
   selector: 'cngx-chart',
@@ -221,6 +224,11 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
           <svg:title>{{ ariaLabelText() }}</svg:title>
           <ng-content />
         </svg>
+        @if (overlayTpl(); as tpl) {
+          <div class="cngx-chart__overlay-frame">
+            <ng-container *ngTemplateOutlet="tpl; context: slotContext()" />
+          </div>
+        }
       }
     }
     @if (connectionView() === 'error') {
@@ -299,6 +307,11 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
         inset: 0;
         width: 100%;
         height: 100%;
+        /* The canvas is host.appendChild()-ed at runtime, so it lands
+           after all template content in DOM order and would paint over an
+           overlay by default. An explicit order keeps the overlay on top
+           across the SVG/canvas crossover; DOM order alone does not. */
+        z-index: var(--cngx-chart-canvas-z, 0);
       }
       cngx-chart.cngx-chart--content-hidden > .cngx-chart__canvas {
         display: none;
@@ -322,6 +335,23 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
         justify-content: center;
         width: 100%;
         height: 100%;
+      }
+      /*
+        Inset to the plot area from the four --cngx-chart-plot-* percentages
+        the host already publishes, so an overlay lands on the marks without
+        the consumer re-deriving the rectangle. pointer-events: none so the
+        frame never swallows chart interaction; an element inside it opts
+        back in with pointer-events: auto.
+      */
+      cngx-chart > .cngx-chart__overlay-frame {
+        position: absolute;
+        inset-block-start: var(--cngx-chart-plot-block-start, 0px);
+        inset-block-end: var(--cngx-chart-plot-block-end, 0px);
+        inset-inline-start: var(--cngx-chart-plot-inline-start, 0px);
+        inset-inline-end: var(--cngx-chart-plot-inline-end, 0px);
+        /* Above the canvas backend (see .cngx-chart__canvas). */
+        z-index: var(--cngx-chart-overlay-z, 1);
+        pointer-events: none;
       }
       cngx-chart > .cngx-chart__loading {
         display: flex;
@@ -484,6 +514,11 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
   private readonly errorSlot = contentChild(CngxChartError);
   private readonly connectionErrorSlot = contentChild(CngxChartConnectionError);
   private readonly reconnectingSlot = contentChild(CngxChartReconnecting);
+  private readonly overlaySlot = contentChild(CngxChartOverlay);
+  // Only the first overlay renders (contentChild above). This parallel
+  // query exists solely to warn in dev when a consumer projects more
+  // than one, since the extra templates drop silently otherwise.
+  private readonly overlaySlots = contentChildren(CngxChartOverlay);
 
   /** Resolved consumer-projected loading template (null when no slot bound). */
   protected readonly loadingTpl = computed(() => this.loadingSlot()?.templateRef ?? null);
@@ -497,6 +532,8 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
   );
   /** Resolved consumer-projected reconnecting template. */
   protected readonly reconnectingTpl = computed(() => this.reconnectingSlot()?.templateRef ?? null);
+  /** Resolved consumer-projected overlay template (null when no slot bound). */
+  protected readonly overlayTpl = computed(() => this.overlaySlot()?.templateRef ?? null);
 
   /**
    * Common context for every slot template (loading, empty, error).
@@ -612,6 +649,14 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
             'Auto-Summary and the SR data-table will silently fall back to NaN. ' +
             'Bind [summaryAccessor]="(d) => d.yourField" or pass a numeric data array.',
         );
+      });
+      afterNextRender(() => {
+        if (this.overlaySlots().length > 1) {
+          console.warn(
+            'CngxChart: more than one *cngxChartOverlay projected; only the first renders. ' +
+              'Compose multiple overlays inside a single overlay template.',
+          );
+        }
       });
     }
   }

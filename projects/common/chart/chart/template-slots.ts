@@ -219,3 +219,58 @@ export class CngxChartConnectionError {
 export class CngxChartReconnecting {
   readonly templateRef = inject(TemplateRef<CngxChartConnectionContext>);
 }
+
+/**
+ * `*cngxChartOverlay` slot - projects HTML *on top of the marks*, inside
+ * the plot area. Unlike the loading / empty / error slots (which replace
+ * the marks in their respective fallback arms), the overlay renders in the
+ * `@default` content arm alongside the drawn chart, so it is where
+ * crosshair readouts, hover tooltips, annotation callouts and brush
+ * affordances belong.
+ *
+ * The chart positions the overlay frame itself, inset to the plot area via
+ * the `--cngx-chart-plot-*` custom properties it already publishes - the
+ * consumer performs no `exportAs`, no `plot()` / `dimensions()` arithmetic,
+ * and needs no wrapper of their own to act as a containing block. Receives
+ * the shared {@link CngxChartSlotContext}, so `plot` / `width` / `height` /
+ * `small` are all readable from the template:
+ *
+ * ```html
+ * <cngx-chart [data]="series()" [width]="480" [height]="200">
+ *   <svg:g cngxAxis position="left" type="linear" [domain]="[0, 100000]"></svg:g>
+ *   <svg:g cngxLine></svg:g>
+ *   <ng-template cngxChartOverlay let-plot="plot">
+ *     <div class="my-callout">{{ plot.width }}x{{ plot.height }} plot</div>
+ *   </ng-template>
+ * </cngx-chart>
+ * ```
+ *
+ * Pointer events: the frame is `pointer-events: none`, so it never
+ * intercepts a click, hover or drag meant for the marks beneath it. An
+ * interactive element inside the overlay opts back in per element with
+ * `pointer-events: auto`. The default is off deliberately - an overlay
+ * that silently swallows every pointer event on the chart is invisible
+ * until some other interaction (a tooltip, a brush) stops firing, and
+ * that is a debugging session; opting a single element back in is one
+ * declaration.
+ *
+ * Accessibility: the chart host is `role="img"` with an auto-summary
+ * `aria-label`, so assistive technology sees the chart as a single
+ * labelled graphic and never traverses into the overlay. Treat overlay
+ * content as *visual* - a hover readout, a tint, an annotation callout.
+ * Any state that has to reach AT belongs on the reactive summary or the
+ * SR data-table (the `aria-describedby` channel the chart already owns),
+ * not on an element projected here.
+ *
+ * @category common/chart
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/chart/template-slots.ts
+ * @since 0.1.0
+ * @relatedTo CngxChartSlotContext, CngxChartLoading, CngxChartEmpty, CngxChartError, CngxChart
+ */
+@Directive({
+  selector: 'ng-template[cngxChartOverlay]',
+  standalone: true,
+})
+export class CngxChartOverlay {
+  readonly templateRef = inject(TemplateRef<CngxChartSlotContext>);
+}
