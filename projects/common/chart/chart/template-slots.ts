@@ -219,3 +219,41 @@ export class CngxChartConnectionError {
 export class CngxChartReconnecting {
   readonly templateRef = inject(TemplateRef<CngxChartConnectionContext>);
 }
+
+/**
+ * `*cngxChartOverlay` slot - projects HTML *on top of the marks*, inside
+ * the plot area. Unlike the loading / empty / error slots (which replace
+ * the marks in their respective fallback arms), the overlay renders in the
+ * `@default` content arm alongside the drawn chart, so it is where
+ * crosshair readouts, hover tooltips, annotation callouts and brush
+ * affordances belong.
+ *
+ * The chart positions the overlay frame itself, inset to the plot area via
+ * the `--cngx-chart-plot-*` custom properties it already publishes - the
+ * consumer performs no `exportAs`, no `plot()` / `dimensions()` arithmetic,
+ * and needs no wrapper of their own to act as a containing block. Receives
+ * the shared {@link CngxChartSlotContext}, so `plot` / `width` / `height` /
+ * `small` are all readable from the template:
+ *
+ * ```html
+ * <cngx-chart [data]="series()" [width]="480" [height]="200">
+ *   <svg:g cngxAxis position="left" type="linear" [domain]="[0, 100000]"></svg:g>
+ *   <svg:g cngxLine></svg:g>
+ *   <ng-template cngxChartOverlay let-plot="plot">
+ *     <div class="my-callout">{{ plot.width }}x{{ plot.height }} plot</div>
+ *   </ng-template>
+ * </cngx-chart>
+ * ```
+ *
+ * @category common/chart
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/chart/template-slots.ts
+ * @since 0.1.0
+ * @relatedTo CngxChartSlotContext, CngxChartEmpty, CngxChartError, CngxChart
+ */
+@Directive({
+  selector: 'ng-template[cngxChartOverlay]',
+  standalone: true,
+})
+export class CngxChartOverlay {
+  readonly templateRef = inject(TemplateRef<CngxChartSlotContext>);
+}

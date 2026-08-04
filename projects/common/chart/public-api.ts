@@ -41,6 +41,7 @@ export {
   CngxChartError,
   CngxChartConnectionError,
   CngxChartReconnecting,
+  CngxChartOverlay,
   CHART_SMALL_BREAKPOINT_PX,
   type CngxChartErrorContext,
   type CngxChartConnectionContext,
