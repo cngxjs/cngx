@@ -497,7 +497,7 @@ describe('CngxDataGridAccordion — layout containment', () => {
     expect(css).toMatch(/\.cngx-data-grid-accordion\s*\{[^}]*overflow-x:\s*auto/);
   });
 
-  it('caps its height off the opt-in token and pins the head only when bounded', () => {
+  it('caps its height off the opt-in token and pins head + footer only when bounded', () => {
     TestBed.configureTestingModule({ imports: [Host] });
     const fixture = TestBed.createComponent(Host);
     fixture.detectChanges();
@@ -505,9 +505,69 @@ describe('CngxDataGridAccordion — layout containment', () => {
     const css = dgaCss();
     // The host reads the opt-in token; unset resolves to `none` (content-height).
     expect(css).toMatch(/max-block-size:\s*var\(--cngx-dga-max-block-size,\s*none\)/);
-    // The pinned head is gated behind a style query on that token, so an unbounded
-    // grid gets no sticky treatment at all.
+    // Head and footer are both pinned, gated behind a style query on that token, so
+    // an unbounded grid gets no sticky treatment at all.
     expect(css).toMatch(/@container[^{]*style\([^)]*--cngx-dga-max-block-size[^)]*\)/);
     expect(css).toMatch(/\.cngx-dga-header\s*\{[^}]*position:\s*sticky/);
+    expect(css).toMatch(/\.cngx-dga-footer\s*\{[^}]*position:\s*sticky/);
+    expect(css).toMatch(/\.cngx-dga-footer\s*\{[^}]*inset-block-end:\s*0/);
+  });
+
+  it('ships a thin, tokenised scrollbar on the scroll container', () => {
+    TestBed.configureTestingModule({ imports: [Host] });
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+
+    const css = dgaCss();
+    expect(css).toMatch(
+      /\.cngx-data-grid-accordion\s*\{[^}]*scrollbar-width:\s*var\(--cngx-dga-scrollbar-width,\s*thin\)/,
+    );
+    expect(css).toMatch(/\.cngx-data-grid-accordion\s*\{[^}]*scrollbar-color:/);
+  });
+});
+
+@Component({
+  template: `<cngx-data-grid-accordion [maxBlockSize]="max()"></cngx-data-grid-accordion>`,
+  imports: [CngxDataGridAccordion],
+})
+class MaxBlockSizeHost {
+  readonly max = signal<string | number | undefined>(undefined);
+}
+
+describe('CngxDataGridAccordion — [maxBlockSize] input', () => {
+  beforeEach(() => TestBed.configureTestingModule({ imports: [MaxBlockSizeHost] }));
+
+  function setup() {
+    const fixture = TestBed.createComponent(MaxBlockSizeHost);
+    fixture.detectChanges();
+    const el = fixture.debugElement.query(By.directive(CngxDataGridAccordion))
+      .nativeElement as HTMLElement;
+    return { fixture, host: fixture.componentInstance, el };
+  }
+
+  it('reflects a number as a px length onto --cngx-dga-max-block-size', () => {
+    const { fixture, host, el } = setup();
+    host.max.set(320);
+    fixture.detectChanges();
+    expect(el.style.getPropertyValue('--cngx-dga-max-block-size')).toBe('320px');
+  });
+
+  it('passes a CSS length string through untouched', () => {
+    const { fixture, host, el } = setup();
+    host.max.set('40rem');
+    fixture.detectChanges();
+    expect(el.style.getPropertyValue('--cngx-dga-max-block-size')).toBe('40rem');
+  });
+
+  it('coerces a unit-less numeric string to px', () => {
+    const { fixture, host, el } = setup();
+    host.max.set('480');
+    fixture.detectChanges();
+    expect(el.style.getPropertyValue('--cngx-dga-max-block-size')).toBe('480px');
+  });
+
+  it('leaves the property unset when unbound, so the grid stays unbounded', () => {
+    const { el } = setup();
+    expect(el.style.getPropertyValue('--cngx-dga-max-block-size')).toBe('');
   });
 });
