@@ -157,8 +157,10 @@
   --cngx-dga-row-divider: none;
 }
 
-/* Subtle hover affordance on the disclosure summary - a faint text wash, no colour. */
-.cngx-data-grid-accordion:not([data-skin]) .cngx-dga-row__summary:hover {
+/* Subtle hover affordance on the disclosure summary - a faint text wash, no colour.
+   Keyed off the heading so hovering a cell (painted over the summary) or an interactive
+   cell descendant still lifts the summary beneath, not only a hover on bare summary. */
+.cngx-data-grid-accordion:not([data-skin]) .cngx-dga-row__heading:hover .cngx-dga-row__summary {
   background: color-mix(in oklab, var(--cngx-color-text, #0f1320) 4%, transparent);
 }
 
