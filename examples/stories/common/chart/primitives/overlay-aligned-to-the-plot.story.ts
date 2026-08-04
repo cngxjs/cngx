@@ -3,60 +3,56 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxChart: An HTML overlay aligned to the plot area',
   subtitle:
-    'The chart publishes its resolved plot rectangle, so an HTML layer over the chart can cover the marks rather than the axis gutter. Toggle the alignment to see what the box-aligned version gets wrong.',
+    'Project an *cngxChartOverlay template and the chart lays your HTML over the marks itself. Toggle the alignment to see what a box-aligned overlay gets wrong.',
   description:
-    'The overlay reads <code>plot</code> off the chart instance through its <code>exportAs</code> reference, which is the route an HTML sibling has. The four <code>--cngx-chart-plot-*</code> custom properties the chart writes to its own host carry the same numbers as percentages, but custom properties only inherit downwards and everything projected into <code>&lt;cngx-chart&gt;</code> lands inside its SVG - so an HTML overlay is always a sibling and never sees them. Use them from inside the chart subtree; use the instance from outside. Aligning to the host box instead puts the tint over the tick labels, which is the mistake the plot rectangle exists to prevent.',
+    'The <code>*cngxChartOverlay</code> slot renders your HTML in the plot area, inset by the chart. There is no <code>exportAs</code>, no <code>plot()</code>/<code>dimensions()</code> division, and no wrapper you have to remember to make a containing block: the frame the chart emits is already the marks rectangle, so the tint fills it with <code>inset: 0</code>. The box-aligned mistake this exists to prevent is the toggle: negating the four <code>--cngx-chart-plot-*</code> custom properties expands the tint back out over the tick labels, which is what aligning to the host box would do. Reach for the instance (<code>#chart="cngxChart"</code>, <code>plot()</code>) only when the overlay must live outside the chart box, or when you need the rectangle in TypeScript rather than in a template.',
   level: 'organism',
   audience: ['dev'],
   artifact: 'standalone',
   focus: ['composition', 'visual-variants'],
-  apiComponents: ['CngxChart', 'CngxAxis'],
-  moduleImports: ["import { CngxChart, CngxLine, CngxAxis } from '@cngx/common/chart';"],
-  imports: ['CngxChart', 'CngxLine', 'CngxAxis'],
+  apiComponents: ['CngxChart', 'CngxChartOverlay', 'CngxAxis'],
+  moduleImports: [
+    "import { CngxChart, CngxLine, CngxAxis, CngxChartOverlay } from '@cngx/common/chart';",
+  ],
+  imports: ['CngxChart', 'CngxLine', 'CngxAxis', 'CngxChartOverlay'],
   setup: `protected readonly load: readonly number[] = [
     18400, 24100, 31500, 27300, 44200, 52800, 48600, 61200, 57400, 72900, 68300, 80100,
   ];
-  protected readonly thousands = (v: unknown): string => Number(v).toLocaleString('en-US');
-  /**
-   * viewBox units -> a percentage of the host box, which is what CSS
-   * wants. The extent comes from the chart's own dimensions() rather
-   * than from a copy of the bound width, so this works unchanged on a
-   * responsive chart that has no [width] to copy.
-   */
-  protected readonly pct = (v: number, extent: number): string => \`\${(v / extent) * 100}%\`;`,
-  template: `<div class="cngx-ex-chart-overlay-host">
-    <cngx-chart
-      #chart="cngxChart"
-      [data]="load"
-      [width]="480"
-      [height]="200"
-      aria-label="Request load by month"
-    >
-      <svg:g
-        cngxAxis
-        position="left"
-        type="linear"
-        [domain]="[0, 100000]"
-        [format]="thousands"
-        [grid]="true"
-      ></svg:g>
-      <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 11]" [ticks]="6"></svg:g>
-      <svg:g cngxLine [data]="load"></svg:g>
-    </cngx-chart>
+  protected readonly thousands = (v: unknown): string => Number(v).toLocaleString('en-US');`,
+  template: `<cngx-chart
+    [data]="load"
+    [width]="480"
+    [height]="200"
+    aria-label="Request load by month"
+  >
+    <svg:g
+      cngxAxis
+      position="left"
+      type="linear"
+      [domain]="[0, 100000]"
+      [format]="thousands"
+      [grid]="true"
+    ></svg:g>
+    <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 11]" [ticks]="6"></svg:g>
+    <svg:g cngxLine [data]="load"></svg:g>
 
-    <!-- A sibling of the chart, so it reads the rectangle off the
-         instance rather than inheriting the host custom properties. -->
-    <div
-      class="cngx-ex-plot-overlay"
-      [style.left]="alignToPlot() ? pct(chart.plot().x0, chart.dimensions().width) : '0%'"
-      [style.top]="alignToPlot() ? pct(chart.plot().y0, chart.dimensions().height) : '0%'"
-      [style.width]="alignToPlot() ? pct(chart.plot().width, chart.dimensions().width) : '100%'"
-      [style.height]="alignToPlot() ? pct(chart.plot().height, chart.dimensions().height) : '100%'"
-    >
-      <span>peak window</span>
-    </div>
-  </div>`,
-  setupChrome: `protected readonly alignToPlot = signal(true);`,
+    <!-- The chart positions this frame over the plot area itself. The tint
+         fills it with inset: 0; the box-aligned toggle negates the plot
+         custom properties to expand back over the tick labels. -->
+    <ng-template cngxChartOverlay>
+      <div class="cngx-ex-plot-overlay" [style.inset]="alignToPlot() ? '0' : boxInset">
+        <span>peak window</span>
+      </div>
+    </ng-template>
+  </cngx-chart>`,
+  setupChrome: `protected readonly alignToPlot = signal(true);
+  /**
+   * Inside the chart subtree the four --cngx-chart-plot-* percentages are
+   * readable, so negating them expands the tint from the plot frame back
+   * out to the host box - the misalignment that covers the tick labels.
+   */
+  protected readonly boxInset =
+    'calc(-1 * var(--cngx-chart-plot-block-start, 0px)) calc(-1 * var(--cngx-chart-plot-inline-end, 0px)) calc(-1 * var(--cngx-chart-plot-block-end, 0px)) calc(-1 * var(--cngx-chart-plot-inline-start, 0px))';`,
   templateChrome: `<div class="button-row">
     <button type="button" (click)="alignToPlot.set(true)" [attr.aria-pressed]="alignToPlot()">
       Align to plot area
