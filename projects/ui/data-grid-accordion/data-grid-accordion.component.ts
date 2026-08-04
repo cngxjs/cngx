@@ -62,6 +62,14 @@ import type { CngxDgCellTrack } from './data-grid-cell.directive';
  * (`grow` / `fit` / `sm` / `md` / `lg`); the group derives the shared template from
  * them, so no `grid-template-columns` string is needed for the common case.
  *
+ * For a **bounded-height** grid, set `--cngx-dga-max-block-size` on the host: the grid
+ * then scrolls vertically inside itself and the column head stays pinned to the top
+ * (an opaque `.cngx-dga-header`). This is the only way to pin the head -
+ * `[cngxStickyHeader]` from `@cngx/common/layout` is the wrong tool here: the group is
+ * its own scrollport, so a header would resolve its sticky against that scrollport, and
+ * an unbounded (content-height) grid has nothing to stick to. Unset, the grid stays
+ * content-height and byte-identical.
+ *
  * ```html
  * <cngx-data-grid-accordion [multi]="true">
  *   <cngx-dga-header>
@@ -89,6 +97,7 @@ import type { CngxDgCellTrack } from './data-grid-cell.directive';
  * @relatedTo CngxDataGridRow, CngxDgCell, CngxDataGridHeader, CngxDataGridFooter, CngxAccordion, CngxSort, CngxFilter, CngxDgaSortHeader, CngxDgaFilter, CngxDgaCount
  *
  * <example-url>http://localhost:4200/#/ui/data-grid-accordion/sortable-ledger</example-url>
+ * <example-url>http://localhost:4200/#/ui/data-grid-accordion/sticky-head</example-url>
  * <example-url>http://localhost:4200/#/ui/data-grid-accordion/bound-sort-filter</example-url>
  * <example-url>http://localhost:4200/#/ui/data-grid-accordion/master-detail</example-url>
  * <example-url>http://localhost:4200/#/ui/data-grid-accordion/spreadsheet</example-url>
