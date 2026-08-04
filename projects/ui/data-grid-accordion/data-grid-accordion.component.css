@@ -36,6 +36,19 @@
      `none`, so the grid stays content-height and never scrolls in the block axis -
      byte-identical to before. */
   max-block-size: var(--cngx-dga-max-block-size, none);
+
+  /* A thin, neutral scrollbar by default. The rail spans the scrollport (beside the
+     pinned head / foot in bounded mode, and along the base horizontal scroll), so keep
+     it fine and quiet instead of the heavy platform default. Standard properties, so
+     evergreen only - older engines just fall back to their native bar. The thumb
+     derives from the text colour so it tracks light / dark; the track stays clear. Both
+     are tokens a skin can retune. */
+  scrollbar-width: var(--cngx-dga-scrollbar-width, thin);
+  scrollbar-color: var(
+      --cngx-dga-scrollbar-thumb,
+      color-mix(in oklab, var(--cngx-color-text, #0f1320) 22%, transparent)
+    )
+    var(--cngx-dga-scrollbar-track, transparent);
 }
 
 /* The single grid that owns the column tracks. Header, every row, and the footer are
@@ -94,20 +107,29 @@
   );
 }
 
-/* Bounded-height mode: when the consumer sets `--cngx-dga-max-block-size` the host is a
-   vertical scrollport, so pin the column head to its top. Gated by a style query on the
-   token - the same token-driven-variant idiom the accordion marker uses
-   (accordion-item.component.css), not a mode input (Pillar 3) - so an unbounded grid
-   gets NONE of this (no sticky, no stacking context, no fill) and renders exactly as
-   before. The head must be opaque or scrolling rows show through the pinned band
-   (Pillar 2); the fill delegates to the foundation surface token with a literal
-   fallback, and a skin can SET `--cngx-dga-head-bg` to its own surface. */
+/* Bounded-height mode: once the host is a vertical scrollport (its
+   `--cngx-dga-max-block-size` set, via the `[maxBlockSize]` input or a skin), pin the
+   column head to the top and the footer to the bottom so only the rows scroll between
+   them - the totals in the footer stay visible (Pillar 2), not just the head. Gated by
+   a style query on the token, the same token-driven-variant idiom the accordion marker
+   uses (accordion-item.component.css), so an unbounded grid gets NONE of this (no
+   sticky, no stacking context, no fill) and renders exactly as before. Head and foot
+   must be opaque or scrolling rows show through the pinned band; the fill delegates to
+   the foundation surface token with a literal fallback, and a skin can SET
+   `--cngx-dga-head-bg` / `--cngx-dga-foot-bg` to its own surface. */
 @container style(not (--cngx-dga-max-block-size: none)) {
   .cngx-dga-header {
     position: sticky;
     inset-block-start: 0;
     z-index: var(--cngx-dga-head-z, 2);
     background: var(--cngx-dga-head-bg, var(--cngx-color-surface, #fff));
+  }
+
+  .cngx-dga-footer {
+    position: sticky;
+    inset-block-end: 0;
+    z-index: var(--cngx-dga-foot-z, 2);
+    background: var(--cngx-dga-foot-bg, var(--cngx-color-surface, #fff));
   }
 }
 

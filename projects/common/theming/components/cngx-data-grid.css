@@ -188,4 +188,28 @@
     syntax: '*';
     inherits: true;
   }
+
+  /**
+   * Stacking order of the pinned footer over the rows scrolling beneath it
+   * (bounded mode only).
+   * @group Grid
+   */
+  @property --cngx-dga-foot-z {
+    syntax: '<integer>';
+    inherits: true;
+    initial-value: 2;
+  }
+
+  /**
+   * Opaque fill behind the pinned footer so scrolling rows never show through
+   * (bounded mode only). Universal syntax with NO initial-value, so the use-site
+   * fallback to the foundation surface token stays live - a fixed colour initial
+   * would defeat it (reference_property_color_initial_defeats_fallback). A skin
+   * SETs its own surface here.
+   * @group Surface
+   */
+  @property --cngx-dga-foot-bg {
+    syntax: '*';
+    inherits: true;
+  }
 }
