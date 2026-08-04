@@ -149,6 +149,7 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
  * <example-url>http://localhost:4200/#/common/chart/primitives/combo-bars-moving-average-line</example-url>
  * <example-url>http://localhost:4200/#/common/chart/primitives/line-area-threshold-band</example-url>
  * <example-url>http://localhost:4200/#/common/chart/primitives/multi-series-line-axis-labels-legend</example-url>
+ * <example-url>http://localhost:4200/#/common/chart/primitives/overlay-aligned-to-the-plot</example-url>
  * <example-url>http://localhost:4200/#/common/chart/primitives/responsive-fills-parent-width</example-url>
  * <example-url>http://localhost:4200/#/common/chart/primitives/scatter-with-performance-zones</example-url>
  * <example-url>http://localhost:4200/#/common/chart/primitives/time-series-with-threshold-zones</example-url>
