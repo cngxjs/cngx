@@ -1500,6 +1500,54 @@ describe('CngxChart - overlay slot', () => {
     fixture.detectChanges();
     expect(chart().querySelector('.cngx-chart__overlay-frame')).not.toBeNull();
   });
+
+  it('warns in dev when more than one overlay template is projected', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    @Component({
+      standalone: true,
+      imports: [CngxChart, CngxChartOverlay],
+      template: `
+        <cngx-chart [data]="[1, 2, 3]" [width]="200" [height]="100" data-testid="chart">
+          <ng-template cngxChartOverlay><span>first</span></ng-template>
+          <ng-template cngxChartOverlay><span>second</span></ng-template>
+        </cngx-chart>
+      `,
+    })
+    class TwoOverlayHost {}
+    TestBed.configureTestingModule({ imports: [TwoOverlayHost] });
+    const fixture = TestBed.createComponent(TwoOverlayHost);
+    fixture.detectChanges();
+
+    // Only the first template renders; the extra one drops.
+    const chart = (fixture.nativeElement as HTMLElement).querySelector(
+      '[data-testid="chart"]',
+    ) as HTMLElement;
+    expect(chart.querySelectorAll('.cngx-chart__overlay-frame').length).toBe(1);
+    expect(chart.textContent).toContain('first');
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('more than one *cngxChartOverlay'));
+    warn.mockRestore();
+  });
+
+  it('does not warn when a single overlay template is projected', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    @Component({
+      standalone: true,
+      imports: [CngxChart, CngxChartOverlay],
+      template: `
+        <cngx-chart [data]="[1, 2, 3]" [width]="200" [height]="100">
+          <ng-template cngxChartOverlay><span>only</span></ng-template>
+        </cngx-chart>
+      `,
+    })
+    class OneOverlayHost {}
+    TestBed.configureTestingModule({ imports: [OneOverlayHost] });
+    const fixture = TestBed.createComponent(OneOverlayHost);
+    fixture.detectChanges();
+    expect(warn).not.toHaveBeenCalledWith(
+      expect.stringContaining('more than one *cngxChartOverlay'),
+    );
+    warn.mockRestore();
+  });
 });
 
 describe('CngxChart - overlay survives the renderer crossover', () => {

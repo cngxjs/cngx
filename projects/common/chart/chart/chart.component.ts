@@ -158,6 +158,7 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
  * @slot cngxChartError Rendered when the load fails; gets the error.
  * @slot cngxChartConnectionError Rendered over the chart when the live connection drops.
  * @slot cngxChartReconnecting Rendered over the chart while the connection retries.
+ * @slot cngxChartOverlay HTML layered over the marks in the content view; the chart insets it to the plot area, pointer-events off by default.
  */
 @Component({
   selector: 'cngx-chart',
@@ -514,6 +515,10 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
   private readonly connectionErrorSlot = contentChild(CngxChartConnectionError);
   private readonly reconnectingSlot = contentChild(CngxChartReconnecting);
   private readonly overlaySlot = contentChild(CngxChartOverlay);
+  // Only the first overlay renders (contentChild above). This parallel
+  // query exists solely to warn in dev when a consumer projects more
+  // than one, since the extra templates drop silently otherwise.
+  private readonly overlaySlots = contentChildren(CngxChartOverlay);
 
   /** Resolved consumer-projected loading template (null when no slot bound). */
   protected readonly loadingTpl = computed(() => this.loadingSlot()?.templateRef ?? null);
@@ -644,6 +649,14 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
             'Auto-Summary and the SR data-table will silently fall back to NaN. ' +
             'Bind [summaryAccessor]="(d) => d.yourField" or pass a numeric data array.',
         );
+      });
+      afterNextRender(() => {
+        if (this.overlaySlots().length > 1) {
+          console.warn(
+            'CngxChart: more than one *cngxChartOverlay projected; only the first renders. ' +
+              'Compose multiple overlays inside a single overlay template.',
+          );
+        }
       });
     }
   }
