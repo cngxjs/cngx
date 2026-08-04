@@ -468,3 +468,32 @@ describe('CngxDataGridAccordion open-set survives sort + filter', () => {
     expect(expandedCount(fixture)).toBe(2);
   });
 });
+
+/**
+ * The host is `overflow-x: auto`; unless it is also a containing block, a
+ * `position: static` scroll container never clips its own absolutely positioned
+ * descendants (the sort header's visually-hidden status spans), which then escape
+ * and widen the document. This runner's `getComputedStyle` (jsdom) does not
+ * resolve the injected cascade, so the guard asserts the compiled declaration -
+ * comments stripped so it matches the property, not the prose describing it.
+ */
+describe('CngxDataGridAccordion — layout containment', () => {
+  function dgaCss(): string {
+    return Array.from(document.querySelectorAll('style'))
+      .map((s) => s.textContent ?? '')
+      .filter((t) => t.includes('cngx-data-grid-accordion'))
+      .join('\n')
+      .replace(/\/\*[\s\S]*?\*\//g, '');
+  }
+
+  it('makes the scroll-container host a containing block for its own overflow', () => {
+    TestBed.configureTestingModule({ imports: [Host] });
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+
+    const css = dgaCss();
+    expect(css).toMatch(/\.cngx-data-grid-accordion\s*\{[^}]*position:\s*relative/);
+    // The containment only matters because the same host owns the horizontal scroll.
+    expect(css).toMatch(/\.cngx-data-grid-accordion\s*\{[^}]*overflow-x:\s*auto/);
+  });
+});
