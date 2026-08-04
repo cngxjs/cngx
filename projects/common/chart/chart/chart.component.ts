@@ -29,6 +29,7 @@ import {
   CngxChartEmpty,
   CngxChartError,
   CngxChartLoading,
+  CngxChartOverlay,
   CngxChartReconnecting,
   type CngxChartSlotContext,
 } from './template-slots';
@@ -221,6 +222,11 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
           <svg:title>{{ ariaLabelText() }}</svg:title>
           <ng-content />
         </svg>
+        @if (overlayTpl(); as tpl) {
+          <div class="cngx-chart__overlay-frame">
+            <ng-container *ngTemplateOutlet="tpl; context: slotContext()" />
+          </div>
+        }
       }
     }
     @if (connectionView() === 'error') {
@@ -322,6 +328,21 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
         justify-content: center;
         width: 100%;
         height: 100%;
+      }
+      /*
+        Inset to the plot area from the four --cngx-chart-plot-* percentages
+        the host already publishes, so an overlay lands on the marks without
+        the consumer re-deriving the rectangle. pointer-events: none so the
+        frame never swallows chart interaction; an element inside it opts
+        back in with pointer-events: auto.
+      */
+      cngx-chart > .cngx-chart__overlay-frame {
+        position: absolute;
+        inset-block-start: var(--cngx-chart-plot-block-start, 0px);
+        inset-block-end: var(--cngx-chart-plot-block-end, 0px);
+        inset-inline-start: var(--cngx-chart-plot-inline-start, 0px);
+        inset-inline-end: var(--cngx-chart-plot-inline-end, 0px);
+        pointer-events: none;
       }
       cngx-chart > .cngx-chart__loading {
         display: flex;
@@ -484,6 +505,7 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
   private readonly errorSlot = contentChild(CngxChartError);
   private readonly connectionErrorSlot = contentChild(CngxChartConnectionError);
   private readonly reconnectingSlot = contentChild(CngxChartReconnecting);
+  private readonly overlaySlot = contentChild(CngxChartOverlay);
 
   /** Resolved consumer-projected loading template (null when no slot bound). */
   protected readonly loadingTpl = computed(() => this.loadingSlot()?.templateRef ?? null);
@@ -497,6 +519,8 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
   );
   /** Resolved consumer-projected reconnecting template. */
   protected readonly reconnectingTpl = computed(() => this.reconnectingSlot()?.templateRef ?? null);
+  /** Resolved consumer-projected overlay template (null when no slot bound). */
+  protected readonly overlayTpl = computed(() => this.overlaySlot()?.templateRef ?? null);
 
   /**
    * Common context for every slot template (loading, empty, error).
