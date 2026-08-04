@@ -305,6 +305,11 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
         inset: 0;
         width: 100%;
         height: 100%;
+        /* The canvas is host.appendChild()-ed at runtime, so it lands
+           after all template content in DOM order and would paint over an
+           overlay by default. An explicit order keeps the overlay on top
+           across the SVG/canvas crossover; DOM order alone does not. */
+        z-index: var(--cngx-chart-canvas-z, 0);
       }
       cngx-chart.cngx-chart--content-hidden > .cngx-chart__canvas {
         display: none;
@@ -342,6 +347,8 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
         inset-block-end: var(--cngx-chart-plot-block-end, 0px);
         inset-inline-start: var(--cngx-chart-plot-inline-start, 0px);
         inset-inline-end: var(--cngx-chart-plot-inline-end, 0px);
+        /* Above the canvas backend (see .cngx-chart__canvas). */
+        z-index: var(--cngx-chart-overlay-z, 1);
         pointer-events: none;
       }
       cngx-chart > .cngx-chart__loading {
