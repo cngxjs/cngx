@@ -245,6 +245,15 @@ export class CngxChartReconnecting {
  * </cngx-chart>
  * ```
  *
+ * Pointer events: the frame is `pointer-events: none`, so it never
+ * intercepts a click, hover or drag meant for the marks beneath it. An
+ * interactive element inside the overlay opts back in per element with
+ * `pointer-events: auto`. The default is off deliberately - an overlay
+ * that silently swallows every pointer event on the chart is invisible
+ * until some other interaction (a tooltip, a brush) stops firing, and
+ * that is a debugging session; opting a single element back in is one
+ * declaration.
+ *
  * @category common/chart
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/chart/template-slots.ts
  * @since 0.1.0
