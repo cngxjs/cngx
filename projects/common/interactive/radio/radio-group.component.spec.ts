@@ -263,6 +263,66 @@ describe('CngxRadioGroup + CngxRadio', () => {
     expect(indicator.dotGlyph()).not.toBeNull();
   });
 
+  describe('disabled-reason describedby gating', () => {
+    @Component({
+      template: `
+        <cngx-radio-group [(value)]="v" [disabled]="groupOff()">
+          <cngx-radio value="a" [disabled]="aOff()" [disabledReason]="reason()">A</cngx-radio>
+        </cngx-radio-group>
+      `,
+      imports: [CngxRadioGroup, CngxRadio],
+    })
+    class ReasonHost {
+      v = signal<string | undefined>(undefined);
+      groupOff = signal(false);
+      aOff = signal(false);
+      reason = signal('');
+    }
+
+    function reasonSetup() {
+      const fixture = TestBed.createComponent(ReasonHost);
+      fixture.detectChanges();
+      const el = fixture.debugElement.query(By.directive(CngxRadio))
+        .nativeElement as HTMLElement;
+      return { fixture, host: fixture.componentInstance, el };
+    }
+
+    it('emits neither the reference nor a visible span for a reason on an enabled leaf', () => {
+      const { fixture, host, el } = reasonSetup();
+      host.reason.set('Assigned by your admin');
+      fixture.detectChanges();
+      expect(el.getAttribute('aria-describedby')).toBeNull();
+      expect(
+        el.querySelector('.cngx-radio__sr-only')?.getAttribute('aria-hidden'),
+      ).toBe('true');
+    });
+
+    it('references the reason and un-hides the span when the leaf is disabled', () => {
+      const { fixture, host, el } = reasonSetup();
+      host.aOff.set(true);
+      host.reason.set('Assigned by your admin');
+      fixture.detectChanges();
+      const id = el.getAttribute('aria-describedby');
+      expect(id).toBeTruthy();
+      const span = el.querySelector(`#${id}`);
+      expect(span?.getAttribute('aria-hidden')).toBeNull();
+      expect(span?.textContent).toContain('Assigned by your admin');
+    });
+
+    it('surfaces the reason when the group disables the leaf (radioDisabled, not per-leaf disabled)', () => {
+      const { fixture, host, el } = reasonSetup();
+      host.groupOff.set(true);
+      host.reason.set('The whole group is locked');
+      fixture.detectChanges();
+      expect(el.getAttribute('aria-disabled')).toBe('true');
+      const id = el.getAttribute('aria-describedby');
+      expect(id).toBeTruthy();
+      expect(el.querySelector(`#${id}`)?.textContent).toContain(
+        'The whole group is locked',
+      );
+    });
+  });
+
   describe('aria-invalid + aria-errormessage symmetric semantics', () => {
     it('aria-invalid reflects errorState() alone (form-field host showError=true)', () => {
       @Component({

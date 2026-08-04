@@ -102,7 +102,7 @@ import { CNGX_RADIO_GROUP, type CngxRadioGroupContract } from './radio-group.tok
     <span
       [id]="describedId"
       class="cngx-radio__sr-only"
-      [attr.aria-hidden]="disabledReason() ? null : 'true'"
+      [attr.aria-hidden]="radioDisabled() && disabledReason() ? null : 'true'"
       >{{ disabledReason() }}</span
     >
   `,
@@ -124,8 +124,18 @@ export class CngxRadio<T = unknown> {
 
   protected readonly radioDisabled = computed(() => this.group.disabled() || this.disabled());
 
+  /**
+   * `aria-describedby` reference to the reason span, gated on
+   * `radioDisabled() && disabledReason()` - the effective disabled state
+   * (`aria-disabled` reflects the same signal), so a reason set on an
+   * enabled leaf announces nothing while a group-disabled leaf still
+   * surfaces its reason. Gating on the per-leaf `disabled()` alone would
+   * drop the announcement when the parent group disables the leaf. accname
+   * 1.2 §2A traverses a directly-referenced hidden node, so the span's
+   * `aria-hidden` tracks the same condition.
+   */
   protected readonly describedById = computed(() =>
-    this.disabledReason() ? this.describedId : null,
+    this.radioDisabled() && this.disabledReason() ? this.describedId : null,
   );
 
   constructor() {

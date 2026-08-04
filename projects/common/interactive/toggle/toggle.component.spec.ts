@@ -72,14 +72,26 @@ describe('CngxToggle', () => {
     expect(host.bound()).toBe(false);
   });
 
-  it('wires aria-describedby only when disabledReason is non-empty', () => {
+  it('gates aria-describedby on disabled AND a reason, not the reason alone', () => {
     const { fixture, el, host } = setup();
     expect(el.getAttribute('aria-describedby')).toBeNull();
+
+    // reason set while enabled describes a state the control is not in, so
+    // nothing is referenced and the span stays out of reading order
     host.reason.set('Locked by your OS preference');
+    fixture.detectChanges();
+    expect(el.getAttribute('aria-describedby')).toBeNull();
+    expect(
+      el.querySelector('.cngx-toggle__sr-only')?.getAttribute('aria-hidden'),
+    ).toBe('true');
+
+    // disabled with the reason: it now applies and is announced
+    host.off.set(true);
     fixture.detectChanges();
     const id = el.getAttribute('aria-describedby');
     expect(id).toBeTruthy();
     const span = el.querySelector(`#${id}`);
+    expect(span?.getAttribute('aria-hidden')).toBeNull();
     expect(span?.textContent).toContain('Locked by your OS preference');
   });
 
