@@ -62,6 +62,16 @@ import type { CngxDgCellTrack } from './data-grid-cell.directive';
  * (`grow` / `fit` / `sm` / `md` / `lg`); the group derives the shared template from
  * them, so no `grid-template-columns` string is needed for the common case.
  *
+ * For a **bounded-height** grid, bind `[maxBlockSize]` (a number is `px`, a string is
+ * any CSS length): the grid becomes its own vertical scrollport, the column head pins
+ * to the top and the footer to the bottom, and only the rows scroll between them - the
+ * sum footer stays visible, not just the head. The input reflects onto
+ * `--cngx-dga-max-block-size`, the same token a skin may set directly. This is the only
+ * way to pin the head - `[cngxStickyHeader]` from `@cngx/common/layout` is the wrong
+ * tool here: the group is its own scrollport, so a header would resolve its sticky
+ * against that scrollport, and an unbounded (content-height) grid has nothing to stick
+ * to. Leave `[maxBlockSize]` unbound and the grid stays content-height, byte-identical.
+ *
  * ```html
  * <cngx-data-grid-accordion [multi]="true">
  *   <cngx-dga-header>
@@ -89,6 +99,7 @@ import type { CngxDgCellTrack } from './data-grid-cell.directive';
  * @relatedTo CngxDataGridRow, CngxDgCell, CngxDataGridHeader, CngxDataGridFooter, CngxAccordion, CngxSort, CngxFilter, CngxDgaSortHeader, CngxDgaFilter, CngxDgaCount
  *
  * <example-url>http://localhost:4200/#/ui/data-grid-accordion/sortable-ledger</example-url>
+ * <example-url>http://localhost:4200/#/ui/data-grid-accordion/sticky-head</example-url>
  * <example-url>http://localhost:4200/#/ui/data-grid-accordion/bound-sort-filter</example-url>
  * <example-url>http://localhost:4200/#/ui/data-grid-accordion/master-detail</example-url>
  * <example-url>http://localhost:4200/#/ui/data-grid-accordion/spreadsheet</example-url>
@@ -140,6 +151,7 @@ import type { CngxDgCellTrack } from './data-grid-cell.directive';
     class: 'cngx-data-grid-accordion',
     '[attr.data-skin]': 'resolvedSkin() ?? null',
     '[style.--cngx-dga-columns]': 'resolvedColumns()',
+    '[style.--cngx-dga-max-block-size]': 'maxBlockSizeVar()',
   },
 })
 export class CngxDataGridAccordion implements CngxDataGridAccordionContext {
@@ -184,6 +196,36 @@ export class CngxDataGridAccordion implements CngxDataGridAccordionContext {
    * (unlike `[skin]`).
    */
   readonly columns = input<string | undefined>(undefined);
+
+  /**
+   * Opt-in maximum block size that turns the grid into a bounded vertical scrollport:
+   * the column head pins to the top and the footer to the bottom while the rows scroll
+   * between them. A number is taken as `px`; a string is any CSS length (`'40rem'`).
+   * Unset leaves the grid content-height - no scrollport, no pinning - byte-identical
+   * to before. Reflects onto `--cngx-dga-max-block-size`, the same token a skin may set
+   * directly: the input is the ergonomic front door, the token the escape hatch.
+   */
+  readonly maxBlockSize = input<string | number | undefined>(undefined);
+
+  /**
+   * `[maxBlockSize]` resolved to a CSS length for the host binding. A bare number (or
+   * a unit-less numeric string via attribute binding) becomes `px`; any other string
+   * passes through untouched. `null` removes the inline property so the registered
+   * `none` initial wins and the grid stays unbounded. Primitive, so `Object.is` dedupes.
+   */
+  protected readonly maxBlockSizeVar = computed<string | null>(() => {
+    const value = this.maxBlockSize();
+    if (value == null || value === '') {
+      return null;
+    }
+    if (typeof value === 'number') {
+      return `${value}px`;
+    }
+    // A unit-less numeric string (from attribute binding) is px; anything carrying a
+    // unit passes through - `coerceNumberProperty` would wrongly strip `40rem` to `40`.
+    const trimmed = value.trim();
+    return /^\d+(?:\.\d+)?$/.test(trimmed) ? `${trimmed}px` : trimmed;
+  });
 
   /**
    * Heading level (2-6) every row's `role="heading"` wrapper reflects via

@@ -127,7 +127,7 @@
     --cngx-dga-row-divider: none;
   }
 
-  .cngx-dga-row__summary:hover {
+  .cngx-dga-row__heading:hover .cngx-dga-row__summary {
     background: color-mix(in oklab, var(--cngx-color-primary, #1d4ed8) 8%, transparent);
   }
 
@@ -219,7 +219,7 @@
      stretch` + `> span` flex). Alignment rides `justify-content`, not
      `justify-self`, so an aligned cell still fills its track and keeps its rule. */
   .cngx-dga-header,
-  .cngx-dga-row__summary,
+  .cngx-dga-row__cells,
   .cngx-dga-footer {
     align-items: stretch;
   }
@@ -268,7 +268,7 @@
   }
 
   .cngx-dga-header::before,
-  .cngx-dga-row__summary::before,
+  .cngx-dga-row__cells::before,
   .cngx-dga-footer::before {
     content: counter(cngx-dga-row);
     display: flex;
@@ -394,13 +394,13 @@
 
   /* Hover + open tint every content cell; the synthesised gutter has its own open
      state below. */
-  .cngx-dga-row__summary:hover .cngx-dga-cell,
-  .cngx-dga-row[data-expanded] .cngx-dga-row__summary .cngx-dga-cell {
+  .cngx-dga-row__heading:hover .cngx-dga-cell,
+  .cngx-dga-row[data-expanded] .cngx-dga-row__cells .cngx-dga-cell {
     background: color-mix(in oklab, var(--cngx-color-primary, #1d4ed8) 8%, transparent);
   }
 
   /* The gutter pseudo-cell fills primary when its row opens - the active-cell cue. */
-  .cngx-dga-row[data-expanded] .cngx-dga-row__summary::before {
+  .cngx-dga-row[data-expanded] .cngx-dga-row__cells::before {
     background: var(--cngx-color-primary, #1d4ed8);
     color: var(--cngx-color-on-primary, #fff);
   }
@@ -521,11 +521,11 @@
 
   /* Timestamp (first cell) is dimmed; the message (third) already truncates via the
      base cell. Hover + open tint the whole summary. */
-  .cngx-dga-row__summary .cngx-dga-cell:first-child {
+  .cngx-dga-row__cells .cngx-dga-cell:first-child {
     color: var(--cngx-color-text-muted, #6b7280);
   }
 
-  .cngx-dga-row__summary:hover,
+  .cngx-dga-row__heading:hover .cngx-dga-row__summary,
   .cngx-dga-row[data-expanded] .cngx-dga-row__summary {
     background: var(--cngx-dga-surface-alt);
   }
@@ -627,25 +627,25 @@
      carries the row weight; the numeric position + sum cells are mono right of the
      name. Mono sits on the cells, never the summary container, so it never shifts a
      shared track width. */
-  .cngx-dga-row__summary .cngx-dga-cell:first-child {
+  .cngx-dga-row__cells .cngx-dga-cell:first-child {
     font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
     font-size: var(--cngx-dga-head-fs, 0.75rem);
     color: var(--cngx-color-text-muted, #6b7280);
   }
 
-  .cngx-dga-row__summary .cngx-dga-cell[data-primary] {
+  .cngx-dga-row__cells .cngx-dga-cell[data-primary] {
     font-weight: 620;
     color: var(--cngx-color-text, #0f1320);
   }
 
-  .cngx-dga-row__summary .cngx-dga-cell[data-align='end'] {
+  .cngx-dga-row__cells .cngx-dga-cell[data-align='end'] {
     font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
   }
 
   /* Hover + open both tint the summary with the primary accent; the open row STAYS
      tinted so the context row reads as the parent of the detail below (POC
      `details[open] > summary { background: accent-weak }`). */
-  .cngx-dga-row__summary:hover,
+  .cngx-dga-row__heading:hover .cngx-dga-row__summary,
   .cngx-dga-row[data-expanded] .cngx-dga-row__summary {
     background: color-mix(in oklab, var(--cngx-color-primary, #1d4ed8) 8%, transparent);
   }
@@ -778,24 +778,24 @@
   /* Between-row divider is the quiet hairline (POC `details + details`); the head and
      foot carry the heavy double rules. Hover tints with a faint text wash (POC
      `summary:hover { background: text@5% }`). */
-  .cngx-dga-row__summary:hover {
+  .cngx-dga-row__heading:hover .cngx-dga-row__summary {
     background: color-mix(in oklab, var(--cngx-color-text, #0f1320) 5%, transparent);
   }
 
   /* The cost-centre code (first cell) is mono + dimmed; the label (primary) carries the
      row weight; the money columns are mono, right of the label. Mono rides the cells,
      never the summary container, so it never shifts a shared track width. */
-  .cngx-dga-row__summary .cngx-dga-cell:first-child {
+  .cngx-dga-row__cells .cngx-dga-cell:first-child {
     font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
     color: var(--cngx-color-text-muted, #6b7280);
   }
 
-  .cngx-dga-row__summary .cngx-dga-cell[data-primary] {
+  .cngx-dga-row__cells .cngx-dga-cell[data-primary] {
     font-weight: 620;
     color: var(--cngx-color-text, #0f1320);
   }
 
-  .cngx-dga-row__summary .cngx-dga-cell[data-align='end'] {
+  .cngx-dga-row__cells .cngx-dga-cell[data-align='end'] {
     font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
     color: var(--cngx-color-text, #0f1320);
   }
@@ -803,7 +803,7 @@
   /* Over-budget actual cells: the danger colour, bold (POC `.c-ist.over`). Authored in
      the story as a `data-over` attribute on the cell - a consumer marker, so the state
      stays a typed data-attr -> semantic token, never a raw hex via `[style]`. */
-  .cngx-dga-row__summary .cngx-dga-cell[data-over] {
+  .cngx-dga-row__cells .cngx-dga-cell[data-over] {
     color: var(--cngx-color-danger, #dc2626);
     font-weight: 700;
   }
@@ -885,7 +885,8 @@
      rows taller / shorter rather than snapping (POC `transition: padding`). The cell
      type change (`--cngx-dga-fs`) snaps with it, exactly as the POC. */
   .cngx-dga-header,
-  .cngx-dga-row__summary {
+  .cngx-dga-row__summary,
+  .cngx-dga-row__cells {
     transition: padding var(--cngx-dga-transition, 300ms cubic-bezier(0.22, 1, 0.36, 1));
   }
 
@@ -902,21 +903,22 @@
 
   /* Hover + open both tint with the primary accent (POC `summary:hover` accent-weak /
      `details[open] > summary`). */
-  .cngx-dga-row__summary:hover,
+  .cngx-dga-row__heading:hover .cngx-dga-row__summary,
   .cngx-dga-row[data-expanded] .cngx-dga-row__summary {
     background: color-mix(in oklab, var(--cngx-color-primary, #1d4ed8) 8%, transparent);
   }
 
   /* The task (primary) cell carries the row weight; the assignee - the middle
-     non-primary content cell, child 3 of the summary after the chevron slot (child 1)
-     and the task cell (child 2) - is mono + dimmed (POC `.c-asg`). The status cell is
-     the last child and holds a projected `cngx-tag`, so it needs no skin paint. */
-  .cngx-dga-row__summary .cngx-dga-cell[data-primary] {
+     non-primary content cell, child 2 of the cells layer (the task cell is child 1; the
+     chevron lives on the summary beneath, no longer a sibling of the cells) - is mono +
+     dimmed (POC `.c-asg`). The status cell is the last child and holds a projected
+     `cngx-tag`, so it needs no skin paint. */
+  .cngx-dga-row__cells .cngx-dga-cell[data-primary] {
     font-weight: 620;
     color: var(--cngx-color-text, #0f1320);
   }
 
-  .cngx-dga-row__summary > .cngx-dga-cell:nth-child(3) {
+  .cngx-dga-row__cells > .cngx-dga-cell:nth-child(2) {
     font-family: var(--cngx-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
     font-size: var(--cngx-dga-head-fs, 0.75rem);
     color: var(--cngx-color-text-muted, #6b7280);

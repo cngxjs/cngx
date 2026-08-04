@@ -22,16 +22,22 @@ import { CngxDgaRowError } from './data-grid-row-error.directive';
 /**
  * A disclosure row in a {@link CngxDataGridAccordion}. Renders the APG-correct
  * trio: a `role="heading"` wrapper carrying the group's `aria-level`, a
- * `cngxAccordionPanel` summary `<button>` laid out on the shared
- * `--cngx-dga-columns` grid, and a `role="region"` detail zone named back at the
- * primary cell via `aria-labelledby`. Expansion is derived from the coordinator
- * (Pillar 1); the button self-wires keyboard nav through the registration brain,
- * so arrow keys rove across rows even though each summary lives in its own
- * component view.
+ * `cngxAccordionPanel` summary `<button>` that is the full-row disclosure
+ * trigger, and a `role="region"` detail zone named back at the primary cell via
+ * `aria-labelledby`. Expansion is derived from the coordinator (Pillar 1); the
+ * button self-wires keyboard nav through the registration brain, so arrow keys
+ * rove across rows even though each summary lives in its own component view.
  *
- * The projected `cngxDgaCell`s fill the summary grid; the one marked `primary`
- * supplies the row's accessible name, so a screen reader hears a list of
- * expandable sections rather than a wall of cell text.
+ * The projected `cngxDgaCell`s are laid OVER the trigger, not inside it: a
+ * `<button>` accepts phrasing content only, so a cell holding flow content (a
+ * chart, a table, a nested list) could never live in the button. The cells share
+ * the button's grid row, painted above it, and are `pointer-events: none`, so a
+ * click on a passive cell falls through to the trigger and toggles the row, while
+ * interactive cell content (a link, a control) re-enables its own clicks. The
+ * cell marked `primary` supplies the row's accessible name through the button's
+ * `aria-labelledby` (falling back to the whole cells row when none is marked), so
+ * a screen reader hears a list of expandable sections rather than a wall of cell
+ * text.
  *
  * @category ui/data-grid-accordion
  * @docsKind primary
@@ -94,6 +100,7 @@ export class CngxDataGridRow {
 
   protected readonly regionId = nextUid('cngx-dga-region-');
   protected readonly headerId = nextUid('cngx-dga-header-');
+  protected readonly cellsId = nextUid('cngx-dga-cells-');
 
   /**
    * Projected cells; the `primary` one supplies the row's accessible name. Public
@@ -103,13 +110,24 @@ export class CngxDataGridRow {
   readonly cells = contentChildren(CngxDgCell);
 
   /**
-   * IDREF of the primary cell, bound to the summary button's and the region's
-   * `aria-labelledby`. `null` when no cell is marked `primary` - then the button
-   * names itself from its projected content. A primitive, so `Object.is` dedupes.
+   * IDREF of the cell marked `primary`, or `null` when none is. Feeds
+   * {@link summaryLabelledBy}, the single name source both the summary button and the
+   * detail region reference. A primitive, so `Object.is` dedupes.
    */
   protected readonly primaryId = computed<string | null>(
     () => this.cells().find((cell) => cell.primary())?.cellId ?? null,
   );
+
+  /**
+   * Accessible name source for the summary button AND the detail region. The cells are
+   * laid over the button rather than inside it, so the button has no intrinsic text to
+   * name itself from - this points at the `primary` cell when one exists, else at the
+   * whole cells row (`cellsId`), reproducing the old name-from-projected-content
+   * fallback. Both surfaces read it so they stay symmetric: a no-primary row names both
+   * by the cells row rather than naming the button and leaving the region blank. A
+   * primitive, so `Object.is` dedupes.
+   */
+  protected readonly summaryLabelledBy = computed<string>(() => this.primaryId() ?? this.cellsId);
 
   /** Whether this row's region is open, derived from the coordinator's open-set. */
   protected readonly expanded = computed(() => this.accordion.isOpen(this.panelId()));

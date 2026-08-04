@@ -6,20 +6,30 @@
     [panelId]="panelId()"
     [controls]="regionId"
     [id]="headerId"
-    [attr.aria-labelledby]="primaryId()"
+    [attr.aria-labelledby]="summaryLabelledBy()"
   >
     <span class="cngx-dga-row__chevron-slot" aria-hidden="true">
       <span class="cngx-dga-row__chevron"></span>
     </span>
-    <ng-content select="[cngxDgaCell]" />
   </button>
+  <!-- Cells are laid OVER the trigger, not inside it: a `<button>` accepts phrasing
+       content only, so a cell holding flow content (a table, a chart's inline data
+       table, a nested list) could never live inside the summary. The wrapper spans the
+       same grid cell as the button and re-exposes the shared column tracks via subgrid;
+       it is `pointer-events: none` so a click on a cell falls through to the button and
+       toggles the row, while genuinely interactive cell content re-enables its own
+       clicks (see the CSS). The wrapper's id backs the summary's `aria-labelledby` when
+       no cell is marked `primary`, preserving today's name-from-content fallback. -->
+  <div class="cngx-dga-row__cells" [id]="cellsId">
+    <ng-content select="[cngxDgaCell]" />
+  </div>
 </div>
 
 <div
   role="region"
   class="cngx-dga-row__region"
   [id]="regionId"
-  [attr.aria-labelledby]="primaryId()"
+  [attr.aria-labelledby]="summaryLabelledBy()"
   [attr.aria-busy]="busy() ? 'true' : null"
   [hidden]="regionHidden()"
 >

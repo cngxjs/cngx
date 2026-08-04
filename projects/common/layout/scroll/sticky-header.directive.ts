@@ -6,6 +6,7 @@ import {
   ElementRef,
   inject,
   input,
+  isDevMode,
   output,
   signal,
 } from '@angular/core';
@@ -18,6 +19,14 @@ import {
  * `IntersectionObserver` to detect when the sentinel scrolls out,
  * meaning the header is now stuck. Toggles a CSS class for shadow,
  * elevation, or background changes.
+ *
+ * The sentinel is observed against the **nearest scroll-container ancestor**
+ * (the first ancestor whose computed `overflow-y` is not `visible`), not the
+ * page - that is the scrollport `position: sticky` resolves against, so
+ * `isSticky()` reports the state the host actually has. A scrollport whose
+ * height is content-driven never scrolls in the block axis, so a header inside
+ * it never pins; in dev mode the directive warns once when it resolves against
+ * such a scrollport.
  *
  * ### Sticky header with shadow
  * ```html
@@ -65,9 +74,35 @@ export class CngxStickyHeader {
   constructor() {
     const destroyRef = inject(DestroyRef);
 
-    // IntersectionObserver sentinel pattern - host is stuck once the 1px sentinel leaves the viewport.
+    // IntersectionObserver sentinel pattern - host is stuck once the 1px sentinel leaves
+    // the scrollport the host actually sticks to.
     afterNextRender(() => {
       const host = this.el.nativeElement as HTMLElement;
+      // Root the sentinel at the scrollport `position: sticky` resolves against, not the
+      // viewport. Observing against the viewport reports a different thing entirely: a
+      // header inside a never-scrolling scrollport would read `isSticky() === true` while
+      // it visibly scrolls away with its content.
+      const scrollport = this.resolveScrollParent(host);
+
+      // A scrollport whose content fits (client height equals scroll height) never
+      // scrolls in the block axis, so a header inside it can never pin - `isSticky()`
+      // stays false while the whole scrollport moves. Flag the misconfiguration once,
+      // in dev only; a one-shot read here is exactly what `afterNextRender` is for
+      // (no reactive-graph node, unlike a dep-less effect).
+      if (
+        isDevMode() &&
+        scrollport &&
+        scrollport.clientHeight === scrollport.scrollHeight
+      ) {
+        console.warn(
+          '[cngxStickyHeader] resolves against a scroll container that cannot scroll ' +
+            'in the block axis (client height equals scroll height), so this header ' +
+            'will never pin. Give the scrollport a bounded block-size, or drop ' +
+            'cngxStickyHeader.',
+          { host, scrollport },
+        );
+      }
+
       const sentinel = this.doc.createElement('div');
       sentinel.style.height = '1px';
       sentinel.style.width = '1px';
@@ -85,7 +120,7 @@ export class CngxStickyHeader {
             this.stickyChange.emit(isSticky);
           }
         },
-        { threshold: this.threshold() },
+        { threshold: this.threshold(), root: scrollport },
       );
 
       observer.observe(sentinel);
@@ -95,5 +130,24 @@ export class CngxStickyHeader {
         sentinel.remove();
       });
     });
+  }
+
+  /**
+   * The nearest ancestor that is a scroll container in the block axis - the scrollport
+   * `position: sticky` resolves against. Walks up from the host's parent to the first
+   * ancestor whose computed `overflow-y` is not `visible`; `null` means no such
+   * ancestor, i.e. the header sticks to the viewport. A used `overflow-x` other than
+   * `visible` coerces the computed `overflow-y` to `auto`, so this also catches a
+   * horizontal scroll container (e.g. a data grid that scrolls sideways).
+   */
+  private resolveScrollParent(host: HTMLElement): HTMLElement | null {
+    const view = this.doc.defaultView;
+    for (let node = host.parentElement; node; node = node.parentElement) {
+      const overflowY = view?.getComputedStyle(node).overflowY;
+      if (overflowY && overflowY !== 'visible') {
+        return node;
+      }
+    }
+    return null;
   }
 }

@@ -16,6 +16,39 @@
      opt in by setting `--cngx-dga-min-width`; the default 0 keeps the flat base
      non-scrolling. */
   overflow-x: auto;
+
+  /* Put the scroll container in its own descendants' containing-block chain. A
+     `position: static` scroll container is never the containing block for its
+     absolutely positioned descendants, so `overflow-x: auto` above cannot clip
+     them: the sort header's visually-hidden status spans
+     (`data-grid-sort-header.directive.ts`) would resolve against the initial
+     containing block, escape this clip, and widen the document. `position:
+     relative` anchors the containing block here so the host's own overflow
+     finally contains them. Clipping cannot substitute - the spans already carry
+     `clip-path: inset(50%)` and clipping never removes a box from an ancestor's
+     scrollable overflow. */
+  position: relative;
+
+  /* Opt-in bounded height. A consumer sets `--cngx-dga-max-block-size` to cap the
+     grid; with the `overflow-x: auto` above coercing the computed `overflow-y` to
+     `auto`, the host becomes a real vertical scrollport and the column head pins
+     inside it (the `@container` rule on `.cngx-dga-header` below). Unset resolves to
+     `none`, so the grid stays content-height and never scrolls in the block axis -
+     byte-identical to before. */
+  max-block-size: var(--cngx-dga-max-block-size, none);
+
+  /* A thin, neutral scrollbar by default. The rail spans the scrollport (beside the
+     pinned head / foot in bounded mode, and along the base horizontal scroll), so keep
+     it fine and quiet instead of the heavy platform default. Standard properties, so
+     evergreen only - older engines just fall back to their native bar. The thumb
+     derives from the text colour so it tracks light / dark; the track stays clear. Both
+     are tokens a skin can retune. */
+  scrollbar-width: var(--cngx-dga-scrollbar-width, thin);
+  scrollbar-color: var(
+      --cngx-dga-scrollbar-thumb,
+      color-mix(in oklab, var(--cngx-color-text, #0f1320) 22%, transparent)
+    )
+    var(--cngx-dga-scrollbar-track, transparent);
 }
 
 /* The single grid that owns the column tracks. Header, every row, and the footer are
@@ -53,11 +86,15 @@
   font-size: var(--cngx-dga-fs, inherit);
 }
 
-/* Header and footer carry no chevron, so their first projected cell must skip the
+/* Header and footer carry no chevron, so their first projected child must skip the
    leading chevron track and start at the first content column (track 2), aligning
-   with every row's first cell (which follows its chevron cell in track 1). */
-.cngx-dga-header > .cngx-dga-cell:first-child,
-.cngx-dga-footer > .cngx-dga-cell:first-child {
+   with every row's first cell (which follows its chevron cell in track 1). Matches
+   ANY first child, not only `.cngx-dga-cell`: the natural footer markup for a live
+   count is a bare element (`<span cngxDgaCount>`), and forgetting `cngxDgaCell` on
+   it must not silently drop the child into the chevron gutter (Pillar 2 - the
+   copy-paste path can't leave a defect that reads as the consumer's own CSS bug). */
+.cngx-dga-header > :first-child,
+.cngx-dga-footer > :first-child {
   grid-column-start: 2;
 }
 
@@ -68,6 +105,32 @@
     --cngx-dga-head-border,
     1px solid var(--cngx-dga-border-color, #d1d5db)
   );
+}
+
+/* Bounded-height mode: once the host is a vertical scrollport (its
+   `--cngx-dga-max-block-size` set, via the `[maxBlockSize]` input or a skin), pin the
+   column head to the top and the footer to the bottom so only the rows scroll between
+   them - the totals in the footer stay visible (Pillar 2), not just the head. Gated by
+   a style query on the token, the same token-driven-variant idiom the accordion marker
+   uses (accordion-item.component.css), so an unbounded grid gets NONE of this (no
+   sticky, no stacking context, no fill) and renders exactly as before. Head and foot
+   must be opaque or scrolling rows show through the pinned band; the fill delegates to
+   the foundation surface token with a literal fallback, and a skin can SET
+   `--cngx-dga-head-bg` / `--cngx-dga-foot-bg` to its own surface. */
+@container style(not (--cngx-dga-max-block-size: none)) {
+  .cngx-dga-header {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: var(--cngx-dga-head-z, 2);
+    background: var(--cngx-dga-head-bg, var(--cngx-color-surface, #fff));
+  }
+
+  .cngx-dga-footer {
+    position: sticky;
+    inset-block-end: 0;
+    z-index: var(--cngx-dga-foot-z, 2);
+    background: var(--cngx-dga-foot-bg, var(--cngx-color-surface, #fff));
+  }
 }
 
 .cngx-dga-footer {
@@ -116,8 +179,10 @@
   --cngx-dga-row-divider: none;
 }
 
-/* Subtle hover affordance on the disclosure summary - a faint text wash, no colour. */
-.cngx-data-grid-accordion:not([data-skin]) .cngx-dga-row__summary:hover {
+/* Subtle hover affordance on the disclosure summary - a faint text wash, no colour.
+   Keyed off the heading so hovering a cell (painted over the summary) or an interactive
+   cell descendant still lifts the summary beneath, not only a hover on bare summary. */
+.cngx-data-grid-accordion:not([data-skin]) .cngx-dga-row__heading:hover .cngx-dga-row__summary {
   background: color-mix(in oklab, var(--cngx-color-text, #0f1320) 4%, transparent);
 }
 

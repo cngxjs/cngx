@@ -57,6 +57,17 @@ Above `--cngx-dga-min-width` the grid fills 100%; below it the host scrolls side
 (`overflow-x: auto`) with every column intact. No column is ever dropped - horizontal
 scroll over silent information loss.
 
+## Bounded height
+
+Bind `[maxBlockSize]` to cap the grid (a number is `px`, a string is any CSS length):
+it becomes its own vertical scrollport, the column head pins to the top and the footer
+to the bottom, and only the rows scroll between them - the totals in the footer stay
+visible. The input reflects onto `--cngx-dga-max-block-size`, the same token a skin may
+set directly. This is the only way to pin the head - `[cngxStickyHeader]` from
+`@cngx/common/layout` is the wrong tool here, because the group is its own scrollport
+and a content-height grid has nothing to stick to. Leave `[maxBlockSize]` unbound and
+the grid stays content-height and unchanged.
+
 ## Skins
 
 Six built-in skins select via the `[skin]` input, reflected onto a `[data-skin]` host

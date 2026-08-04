@@ -468,3 +468,106 @@ describe('CngxDataGridAccordion open-set survives sort + filter', () => {
     expect(expandedCount(fixture)).toBe(2);
   });
 });
+
+/**
+ * The host is `overflow-x: auto`; unless it is also a containing block, a
+ * `position: static` scroll container never clips its own absolutely positioned
+ * descendants (the sort header's visually-hidden status spans), which then escape
+ * and widen the document. This runner's `getComputedStyle` (jsdom) does not
+ * resolve the injected cascade, so the guard asserts the compiled declaration -
+ * comments stripped so it matches the property, not the prose describing it.
+ */
+describe('CngxDataGridAccordion — layout containment', () => {
+  function dgaCss(): string {
+    return Array.from(document.querySelectorAll('style'))
+      .map((s) => s.textContent ?? '')
+      .filter((t) => t.includes('cngx-data-grid-accordion'))
+      .join('\n')
+      .replace(/\/\*[\s\S]*?\*\//g, '');
+  }
+
+  it('makes the scroll-container host a containing block for its own overflow', () => {
+    TestBed.configureTestingModule({ imports: [Host] });
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+
+    const css = dgaCss();
+    expect(css).toMatch(/\.cngx-data-grid-accordion\s*\{[^}]*position:\s*relative/);
+    // The containment only matters because the same host owns the horizontal scroll.
+    expect(css).toMatch(/\.cngx-data-grid-accordion\s*\{[^}]*overflow-x:\s*auto/);
+  });
+
+  it('caps its height off the opt-in token and pins head + footer only when bounded', () => {
+    TestBed.configureTestingModule({ imports: [Host] });
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+
+    const css = dgaCss();
+    // The host reads the opt-in token; unset resolves to `none` (content-height).
+    expect(css).toMatch(/max-block-size:\s*var\(--cngx-dga-max-block-size,\s*none\)/);
+    // Head and footer are both pinned, gated behind a style query on that token, so
+    // an unbounded grid gets no sticky treatment at all.
+    expect(css).toMatch(/@container[^{]*style\([^)]*--cngx-dga-max-block-size[^)]*\)/);
+    expect(css).toMatch(/\.cngx-dga-header\s*\{[^}]*position:\s*sticky/);
+    expect(css).toMatch(/\.cngx-dga-footer\s*\{[^}]*position:\s*sticky/);
+    expect(css).toMatch(/\.cngx-dga-footer\s*\{[^}]*inset-block-end:\s*0/);
+  });
+
+  it('ships a thin, tokenised scrollbar on the scroll container', () => {
+    TestBed.configureTestingModule({ imports: [Host] });
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+
+    const css = dgaCss();
+    expect(css).toMatch(
+      /\.cngx-data-grid-accordion\s*\{[^}]*scrollbar-width:\s*var\(--cngx-dga-scrollbar-width,\s*thin\)/,
+    );
+    expect(css).toMatch(/\.cngx-data-grid-accordion\s*\{[^}]*scrollbar-color:/);
+  });
+});
+
+@Component({
+  template: `<cngx-data-grid-accordion [maxBlockSize]="max()"></cngx-data-grid-accordion>`,
+  imports: [CngxDataGridAccordion],
+})
+class MaxBlockSizeHost {
+  readonly max = signal<string | number | undefined>(undefined);
+}
+
+describe('CngxDataGridAccordion — [maxBlockSize] input', () => {
+  beforeEach(() => TestBed.configureTestingModule({ imports: [MaxBlockSizeHost] }));
+
+  function setup() {
+    const fixture = TestBed.createComponent(MaxBlockSizeHost);
+    fixture.detectChanges();
+    const el = fixture.debugElement.query(By.directive(CngxDataGridAccordion))
+      .nativeElement as HTMLElement;
+    return { fixture, host: fixture.componentInstance, el };
+  }
+
+  it('reflects a number as a px length onto --cngx-dga-max-block-size', () => {
+    const { fixture, host, el } = setup();
+    host.max.set(320);
+    fixture.detectChanges();
+    expect(el.style.getPropertyValue('--cngx-dga-max-block-size')).toBe('320px');
+  });
+
+  it('passes a CSS length string through untouched', () => {
+    const { fixture, host, el } = setup();
+    host.max.set('40rem');
+    fixture.detectChanges();
+    expect(el.style.getPropertyValue('--cngx-dga-max-block-size')).toBe('40rem');
+  });
+
+  it('coerces a unit-less numeric string to px', () => {
+    const { fixture, host, el } = setup();
+    host.max.set('480');
+    fixture.detectChanges();
+    expect(el.style.getPropertyValue('--cngx-dga-max-block-size')).toBe('480px');
+  });
+
+  it('leaves the property unset when unbound, so the grid stays unbounded', () => {
+    const { el } = setup();
+    expect(el.style.getPropertyValue('--cngx-dga-max-block-size')).toBe('');
+  });
+});

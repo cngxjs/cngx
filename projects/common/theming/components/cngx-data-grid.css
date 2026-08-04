@@ -150,4 +150,70 @@
     inherits: true;
     initial-value: 160px;
   }
+
+  /**
+   * Opt-in maximum block size. Unset (`none`) leaves the grid content-height; a
+   * length caps it, turning the host into a vertical scrollport that pins the
+   * column head (`data-grid-accordion.component.css`). The pinned head is gated by
+   * a style query on this token, so registering a resolvable `none` initial is what
+   * makes bounded vs unbounded distinguishable to that query.
+   * @group Grid
+   */
+  @property --cngx-dga-max-block-size {
+    syntax: '<length> | none';
+    inherits: true;
+    initial-value: none;
+  }
+
+  /**
+   * Stacking order of the pinned column head over the rows scrolling beneath it
+   * (bounded mode only).
+   * @group Grid
+   */
+  @property --cngx-dga-head-z {
+    syntax: '<integer>';
+    inherits: true;
+    initial-value: 2;
+  }
+
+  /**
+   * Opaque fill behind the pinned column head so scrolling rows never show through
+   * (bounded mode only). Universal syntax with NO initial-value, so the use-site
+   * fallback to the foundation surface token stays live - a fixed colour initial
+   * would defeat it (reference_property_color_initial_defeats_fallback) and render
+   * a light head in dark mode. The unskinned base reads it as the head's fill; the
+   * content skins paint `.cngx-dga-header` background directly, so this token is the
+   * base default they may override, not one they currently set.
+   * @group Surface
+   */
+  @property --cngx-dga-head-bg {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Stacking order of the pinned footer over the rows scrolling beneath it
+   * (bounded mode only).
+   * @group Grid
+   */
+  @property --cngx-dga-foot-z {
+    syntax: '<integer>';
+    inherits: true;
+    initial-value: 2;
+  }
+
+  /**
+   * Opaque fill behind the pinned footer so scrolling rows never show through
+   * (bounded mode only). Universal syntax with NO initial-value, so the use-site
+   * fallback to the foundation surface token stays live - a fixed colour initial
+   * would defeat it (reference_property_color_initial_defeats_fallback). The unskinned
+   * base reads it as the footer's fill; the content skins paint `.cngx-dga-footer`
+   * background directly, so this token is the base default they may override, not one
+   * they currently set.
+   * @group Surface
+   */
+  @property --cngx-dga-foot-bg {
+    syntax: '*';
+    inherits: true;
+  }
 }
