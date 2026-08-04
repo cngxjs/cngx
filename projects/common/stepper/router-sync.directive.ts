@@ -8,6 +8,7 @@ import {
   input,
   output,
   untracked,
+  type AfterContentInit,
 } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router } from '@angular/router';
@@ -40,7 +41,7 @@ import { CNGX_STEPPER_HOST } from './stepper-host.token';
   exportAs: 'cngxStepperRouterSync',
   standalone: true,
 })
-export class CngxStepperRouterSync {
+export class CngxStepperRouterSync implements AfterContentInit {
   // Default undefined so the cascade resolves through CNGX_STEPPER_CONFIG.
   readonly modeInput = input<'fragment' | 'queryParam' | undefined>(undefined, { alias: 'mode' });
   readonly paramNameInput = input<string | undefined>(undefined, {
@@ -62,6 +63,19 @@ export class CngxStepperRouterSync {
   private readonly host = inject(CNGX_STEPPER_HOST, { host: true });
   private readonly router = inject(Router, { optional: true });
 
+  /**
+   * Latched once the URL seed has reached a registered step, so the
+   * `afterNextRender` fallback cannot run it twice.
+   *
+   * The latch is load-bearing, not decorative: the seed goes through
+   * `selectById` → `select()`, which opens a commit window. Under a
+   * pessimistic commit `activeStepIndex` still holds the *previous* index
+   * while the action is in flight, so the presenter's `target === previous`
+   * bail does not catch the repeat - an unlatched fallback would fire the
+   * consumer's commit-action a second time and supersede the first.
+   */
+  private seeded = false;
+
   constructor() {
     if (!this.router) {
       afterNextRender(() => {
@@ -74,18 +88,10 @@ export class CngxStepperRouterSync {
     }
     const router = this.router;
 
-    afterNextRender(() => {
-      const initial =
-        this.mode() === 'fragment'
-          ? router.routerState.snapshot.root.fragment
-          : (router.routerState.snapshot.root.queryParamMap.get(this.paramName()) ?? null);
-      if (initial) {
-        const value = this.mode() === 'fragment' ? this.parseFragment(initial) : initial;
-        if (value) {
-          this.host.selectById(value);
-        }
-      }
-    });
+    // Fallback seed for steps that register after content-init (a dynamic
+    // @for over an async step list). Idempotent against the content-init
+    // seed via the `seeded` latch.
+    afterNextRender(() => this.seedFromUrl(router));
 
     effect(() => {
       const id = this.host.activeStepId();
@@ -122,15 +128,54 @@ export class CngxStepperRouterSync {
         return;
       }
       untracked(() => {
-        const next =
-          this.mode() === 'fragment'
-            ? this.parseFragment(router.routerState.snapshot.root.fragment ?? '')
-            : (router.routerState.snapshot.root.queryParamMap.get(this.paramName()) ?? null);
+        const next = this.readUrlValue(router);
         if (next && next !== this.host.activeStepId()) {
           this.host.selectById(next);
         }
       });
     });
+  }
+
+  /**
+   * Seed from the URL before the stepper renders its panels. `CngxStep`
+   * registers in its constructor, so the registry is populated by the time
+   * this runs, and the host view has not rendered yet - which is what keeps
+   * a `panelMode="lazy"` default step from counting its first render as a
+   * first activation on a deep link that named another step.
+   *
+   * Own router guard: the constructor's early return does not stop
+   * lifecycle hooks from running.
+   */
+  ngAfterContentInit(): void {
+    if (!this.router) {
+      return;
+    }
+    this.seedFromUrl(this.router);
+  }
+
+  private seedFromUrl(router: Router): void {
+    if (this.seeded) {
+      return;
+    }
+    const initial = this.readUrlValue(router);
+    if (!initial) {
+      return;
+    }
+    // Only latch once the target is actually registered. A seed that found
+    // no matching step leaves the fallback armed for steps that register
+    // after content-init.
+    if (!this.host.stepsOnly().some((n) => n.id === initial)) {
+      return;
+    }
+    this.seeded = true;
+    untracked(() => this.host.selectById(initial));
+  }
+
+  private readUrlValue(router: Router): string | null {
+    if (this.mode() === 'fragment') {
+      return this.parseFragment(router.routerState.snapshot.root.fragment ?? '');
+    }
+    return router.routerState.snapshot.root.queryParamMap.get(this.paramName()) ?? null;
   }
 
   private parseFragment(fragment: string): string | null {
