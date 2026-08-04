@@ -29,7 +29,7 @@
   role="region"
   class="cngx-dga-row__region"
   [id]="regionId"
-  [attr.aria-labelledby]="primaryId()"
+  [attr.aria-labelledby]="summaryLabelledBy()"
   [attr.aria-busy]="busy() ? 'true' : null"
   [hidden]="regionHidden()"
 >

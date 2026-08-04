@@ -110,19 +110,21 @@ export class CngxDataGridRow {
   readonly cells = contentChildren(CngxDgCell);
 
   /**
-   * IDREF of the primary cell, bound to the summary button's and the region's
-   * `aria-labelledby`. `null` when no cell is marked `primary` - then the button
-   * names itself from its projected content. A primitive, so `Object.is` dedupes.
+   * IDREF of the cell marked `primary`, or `null` when none is. Feeds
+   * {@link summaryLabelledBy}, the single name source both the summary button and the
+   * detail region reference. A primitive, so `Object.is` dedupes.
    */
   protected readonly primaryId = computed<string | null>(
     () => this.cells().find((cell) => cell.primary())?.cellId ?? null,
   );
 
   /**
-   * Accessible name source for the summary button. The cells are laid over the button
-   * rather than inside it, so the button has no intrinsic text to name itself from -
-   * it points at the `primary` cell when one exists, else at the whole cells row
-   * (`cellsId`), which reproduces the old name-from-projected-content fallback. A
+   * Accessible name source for the summary button AND the detail region. The cells are
+   * laid over the button rather than inside it, so the button has no intrinsic text to
+   * name itself from - this points at the `primary` cell when one exists, else at the
+   * whole cells row (`cellsId`), reproducing the old name-from-projected-content
+   * fallback. Both surfaces read it so they stay symmetric: a no-primary row names both
+   * by the cells row rather than naming the button and leaving the region blank. A
    * primitive, so `Object.is` dedupes.
    */
   protected readonly summaryLabelledBy = computed<string>(() => this.primaryId() ?? this.cellsId);

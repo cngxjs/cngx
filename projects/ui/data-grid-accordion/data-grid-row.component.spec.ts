@@ -260,12 +260,17 @@ describe('CngxDataGridRow async state', () => {
     expect(alert.textContent).toContain('custom: Failed to load');
   });
 
-  it('keeps the error alert reachable when no cell is primary (null aria-labelledby)', () => {
+  it('names the error region by the cells row when no cell is primary, alert reachable', () => {
     TestBed.configureTestingModule({ imports: [NoPrimaryStateHost] });
     const fixture = TestBed.createComponent(NoPrimaryStateHost);
     fixture.detectChanges();
     const r = region(fixture);
-    expect(r.getAttribute('aria-labelledby')).toBeNull();
+    const cells = fixture.debugElement.nativeElement.querySelector(
+      '.cngx-dga-row__cells',
+    ) as HTMLElement;
+    // With no `primary` cell the region, like the button, is named by the whole cells
+    // row rather than left blank - both surfaces stay symmetric.
+    expect(r.getAttribute('aria-labelledby')).toBe(cells.id);
     const alert = r.querySelector('[role="alert"]') as HTMLElement;
     expect(alert).toBeTruthy();
     expect(alert.textContent).toContain('Failed to load');
