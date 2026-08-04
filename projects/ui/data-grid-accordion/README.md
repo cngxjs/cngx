@@ -59,11 +59,14 @@ scroll over silent information loss.
 
 ## Bounded height
 
-Set `--cngx-dga-max-block-size` on the host to cap the grid: it then scrolls vertically
-inside itself and the column head pins to the top (an opaque header). This is the only
-way to pin the head - `[cngxStickyHeader]` from `@cngx/common/layout` is the wrong tool
-here, because the group is its own scrollport and a content-height grid has nothing to
-stick to. Unset, the grid stays content-height and unchanged.
+Bind `[maxBlockSize]` to cap the grid (a number is `px`, a string is any CSS length):
+it becomes its own vertical scrollport, the column head pins to the top and the footer
+to the bottom, and only the rows scroll between them - the totals in the footer stay
+visible. The input reflects onto `--cngx-dga-max-block-size`, the same token a skin may
+set directly. This is the only way to pin the head - `[cngxStickyHeader]` from
+`@cngx/common/layout` is the wrong tool here, because the group is its own scrollport
+and a content-height grid has nothing to stick to. Leave `[maxBlockSize]` unbound and
+the grid stays content-height and unchanged.
 
 ## Skins
 
