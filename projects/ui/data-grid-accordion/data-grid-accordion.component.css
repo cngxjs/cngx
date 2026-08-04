@@ -16,6 +16,18 @@
      opt in by setting `--cngx-dga-min-width`; the default 0 keeps the flat base
      non-scrolling. */
   overflow-x: auto;
+
+  /* Put the scroll container in its own descendants' containing-block chain. A
+     `position: static` scroll container is never the containing block for its
+     absolutely positioned descendants, so `overflow-x: auto` above cannot clip
+     them: the sort header's visually-hidden status spans
+     (`data-grid-sort-header.directive.ts`) would resolve against the initial
+     containing block, escape this clip, and widen the document. `position:
+     relative` anchors the containing block here so the host's own overflow
+     finally contains them. Clipping cannot substitute - the spans already carry
+     `clip-path: inset(50%)` and clipping never removes a box from an ancestor's
+     scrollable overflow. */
+  position: relative;
 }
 
 /* The single grid that owns the column tracks. Header, every row, and the footer are
