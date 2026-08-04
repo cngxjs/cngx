@@ -271,3 +271,97 @@ describe('CngxDataGridRow async state', () => {
     expect(alert.textContent).toContain('Failed to load');
   });
 });
+
+@Component({
+  template: `<cngx-data-grid-accordion [multi]="true">
+    <cngx-dga-row panelId="a">
+      <span cngxDgaCell primary>Alpha</span>
+      <span cngxDgaCell>
+        <table>
+          <tbody>
+            <tr><td>trend</td></tr>
+          </tbody>
+        </table>
+      </span>
+      Detail A
+    </cngx-dga-row>
+  </cngx-data-grid-accordion>`,
+  imports: [CngxDataGridAccordion, CngxDataGridRow, CngxDgCell],
+})
+class FlowContentHost {}
+
+@Component({
+  template: `<cngx-data-grid-accordion>
+    <cngx-dga-row panelId="a">
+      <span cngxDgaCell>1</span>
+      <span cngxDgaCell>Alpha</span>
+      Detail A
+    </cngx-dga-row>
+  </cngx-data-grid-accordion>`,
+  imports: [CngxDataGridAccordion, CngxDataGridRow, CngxDgCell],
+})
+class NoPrimaryCellsHost {}
+
+describe('CngxDataGridRow summary content model', () => {
+  it('lays a table-bearing cell outside the summary button, so flow content is legal', () => {
+    TestBed.configureTestingModule({ imports: [FlowContentHost] });
+    const fixture = TestBed.createComponent(FlowContentHost);
+    fixture.detectChanges();
+    const row = fixture.debugElement.query(By.directive(CngxDataGridRow))
+      .nativeElement as HTMLElement;
+
+    // A `<button>` accepts phrasing content only. The cells are laid OVER the trigger,
+    // not inside it, so a `<table>` (flow content) in a cell is legal markup.
+    expect(row.querySelector('.cngx-dga-row__summary table')).toBeNull();
+    expect((row.querySelector('.cngx-dga-row__summary') as HTMLElement).querySelector('table')).toBeNull();
+    expect(row.querySelector('.cngx-dga-row__cells table')).toBeTruthy();
+  });
+
+  it('still names the summary by the primary cell after the restructure', () => {
+    TestBed.configureTestingModule({ imports: [FlowContentHost] });
+    const fixture = TestBed.createComponent(FlowContentHost);
+    fixture.detectChanges();
+    const row = fixture.debugElement.query(By.directive(CngxDataGridRow))
+      .nativeElement as HTMLElement;
+    const button = row.querySelector('.cngx-dga-row__summary') as HTMLElement;
+    const primaryCell = row.querySelector('[data-primary]') as HTMLElement;
+
+    expect(primaryCell.textContent?.trim()).toBe('Alpha');
+    expect(button.getAttribute('aria-labelledby')).toBe(primaryCell.id);
+  });
+
+  it('still toggles the row through the summary trigger', () => {
+    // The cells overlay is `pointer-events: none`, so a real click on a passive cell
+    // falls through to this button and toggles - browser-verified. jsdom does not
+    // hit-test `pointer-events` (the cell is a sibling of the button, so a synthetic
+    // cell click never reaches it), so the trigger is exercised directly here.
+    TestBed.configureTestingModule({ imports: [FlowContentHost] });
+    const fixture = TestBed.createComponent(FlowContentHost);
+    fixture.detectChanges();
+    const row = fixture.debugElement.query(By.directive(CngxDataGridRow))
+      .nativeElement as HTMLElement;
+    const button = row.querySelector('.cngx-dga-row__summary') as HTMLElement;
+
+    expect(row.hasAttribute('data-expanded')).toBe(false);
+    button.click();
+    fixture.detectChanges();
+    expect(button.getAttribute('aria-expanded')).toBe('true');
+    expect(row.hasAttribute('data-expanded')).toBe(true);
+  });
+
+  it('names the summary by the whole cells row when no cell is primary', () => {
+    // The button has no intrinsic text now (the cells are lifted out), so the
+    // name-from-content fallback is preserved by pointing aria-labelledby at the
+    // cells wrapper when no `primary` cell supplies a single name.
+    TestBed.configureTestingModule({ imports: [NoPrimaryCellsHost] });
+    const fixture = TestBed.createComponent(NoPrimaryCellsHost);
+    fixture.detectChanges();
+    const row = fixture.debugElement.query(By.directive(CngxDataGridRow))
+      .nativeElement as HTMLElement;
+    const button = row.querySelector('.cngx-dga-row__summary') as HTMLElement;
+    const cells = row.querySelector('.cngx-dga-row__cells') as HTMLElement;
+
+    expect(row.querySelector('[data-primary]')).toBeNull();
+    expect(button.getAttribute('aria-labelledby')).toBe(cells.id);
+  });
+});
