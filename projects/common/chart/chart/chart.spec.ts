@@ -1501,3 +1501,69 @@ describe('CngxChart - overlay slot', () => {
     expect(chart().querySelector('.cngx-chart__overlay-frame')).not.toBeNull();
   });
 });
+
+describe('CngxChart - overlay survives the renderer crossover', () => {
+  @Component({
+    standalone: true,
+    imports: [CngxChart, CngxAxis, CngxLine, CngxChartOverlay, ContextProbe],
+    template: `
+      <cngx-chart [data]="data()" [width]="200" [height]="100" data-testid="chart">
+        <svg:g cngxAxis position="left" type="linear" [domain]="[0, 100]"></svg:g>
+        <svg:g cngxLine></svg:g>
+        <test-context-probe />
+        <ng-template cngxChartOverlay let-plot="plot">
+          <span class="overlay-probe">{{ plot.x0 }}/{{ plot.width }}/{{ plot.height }}</span>
+        </ng-template>
+      </cngx-chart>
+    `,
+  })
+  class CrossoverHost {
+    readonly data = signal<readonly number[]>([1, 2, 3]);
+  }
+
+  beforeEach(() => vi.stubGlobal('ResizeObserver', ResizeObserverMock));
+  afterEach(() => vi.unstubAllGlobals());
+
+  function mount(pointCount: number): { isCanvas: boolean; frameCount: number; plotText: string } {
+    // Both crossover sides mount in one test, so the module is torn down
+    // between them.
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      imports: [CrossoverHost],
+      providers: [provideChartRenderer(withChartRendererThreshold(50))],
+    });
+    const fixture = TestBed.createComponent(CrossoverHost);
+    fixture.componentInstance.data.set(Array.from({ length: pointCount }, (_, i) => i % 10));
+    fixture.detectChanges();
+    const chartEl = fixture.nativeElement.querySelector('[data-testid="chart"]') as HTMLElement;
+    // The overlay reads the plot off the context via the CSS custom
+    // properties in production; the spec proves the *same* rectangle
+    // reaches the slot context on both backends.
+    const contextPlot = (
+      fixture.debugElement.query(By.directive(ContextProbe)).componentInstance as ContextProbe
+    ).ctx.plot();
+    const overlayProbe = chartEl.querySelector('.overlay-probe');
+    expect(overlayProbe?.textContent?.trim()).toBe(
+      `${contextPlot.x0}/${contextPlot.width}/${contextPlot.height}`,
+    );
+    return {
+      isCanvas: chartEl.querySelector('canvas') !== null,
+      frameCount: chartEl.querySelectorAll('.cngx-chart__overlay-frame').length,
+      plotText: overlayProbe?.textContent?.trim() ?? '',
+    };
+  }
+
+  it('renders one overlay frame with an identical context either side of the threshold', () => {
+    const svgSide = mount(10);
+    expect(svgSide.isCanvas).toBe(false);
+    expect(svgSide.frameCount).toBe(1);
+
+    const canvasSide = mount(51);
+    expect(canvasSide.isCanvas).toBe(true);
+    expect(canvasSide.frameCount).toBe(1);
+
+    // Same box, same axis, so the same plot: the backend swap changes who
+    // paints the marks, never whether the overlay renders or where.
+    expect(canvasSide.plotText).toBe(svgSide.plotText);
+  });
+});
