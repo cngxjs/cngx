@@ -28,6 +28,14 @@
      `clip-path: inset(50%)` and clipping never removes a box from an ancestor's
      scrollable overflow. */
   position: relative;
+
+  /* Opt-in bounded height. A consumer sets `--cngx-dga-max-block-size` to cap the
+     grid; with the `overflow-x: auto` above coercing the computed `overflow-y` to
+     `auto`, the host becomes a real vertical scrollport and the column head pins
+     inside it (the `@container` rule on `.cngx-dga-header` below). Unset resolves to
+     `none`, so the grid stays content-height and never scrolls in the block axis -
+     byte-identical to before. */
+  max-block-size: var(--cngx-dga-max-block-size, none);
 }
 
 /* The single grid that owns the column tracks. Header, every row, and the footer are
@@ -84,6 +92,23 @@
     --cngx-dga-head-border,
     1px solid var(--cngx-dga-border-color, #d1d5db)
   );
+}
+
+/* Bounded-height mode: when the consumer sets `--cngx-dga-max-block-size` the host is a
+   vertical scrollport, so pin the column head to its top. Gated by a style query on the
+   token - the same token-driven-variant idiom the accordion marker uses
+   (accordion-item.component.css), not a mode input (Pillar 3) - so an unbounded grid
+   gets NONE of this (no sticky, no stacking context, no fill) and renders exactly as
+   before. The head must be opaque or scrolling rows show through the pinned band
+   (Pillar 2); the fill delegates to the foundation surface token with a literal
+   fallback, and a skin can SET `--cngx-dga-head-bg` to its own surface. */
+@container style(not (--cngx-dga-max-block-size: none)) {
+  .cngx-dga-header {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: var(--cngx-dga-head-z, 2);
+    background: var(--cngx-dga-head-bg, var(--cngx-color-surface, #fff));
+  }
 }
 
 .cngx-dga-footer {
