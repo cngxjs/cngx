@@ -13,17 +13,22 @@
   );
 }
 
-/* Passes the shared tracks down to the summary button (subgrid chain
-   inner-grid -> row -> heading -> summary -> cells). */
+/* The heading holds two overlapping layers on a single grid row: the summary trigger
+   (beneath) and the cells layer (above). Both occupy `grid-area: 1 / 1 / 2 / -1`, so a
+   click on a cell falls through to the full-width trigger below it. */
 .cngx-dga-row__heading {
   grid-column: 1 / -1;
   display: grid;
   grid-template-columns: subgrid;
+  grid-template-rows: auto;
   margin: 0;
 }
 
-/* The summary button IS the grid line: its chevron cell (track 1) plus the projected
-   content cells land on the shared column contract via `subgrid`. */
+/* The full-row click target, laid BENEATH the cells. It carries the chevron only now:
+   the cells moved out to their own layer because a `<button>` accepts phrasing content
+   only, so a cell with flow content (a table, a chart's data table) could never live
+   inside it. Still a `subgrid` so the chevron sits in the leading track (track 1); the
+   remaining tracks stay empty here and are painted by the cells layer above. */
 .cngx-dga-row__summary {
   /* The summary carries `cngxAccordionPanel`, so the headless Track-B accordion
      skin (@cngx/themes cngx.css) would paint its own ::after twisty here. This
@@ -31,21 +36,23 @@
      the token the Track-B skin exposes for exactly this (accordion-item
      precedent) - not a blanket ::after reset. */
   --cngx-accordion-twisty-display: none;
-  /* Adopt the group's tracks via `subgrid` so the projected cells land on the shared
-     grid lines (spans every column of the parent heading subgrid). */
+  /* Span every column on grid row 1, painted beneath the cells layer (`z-index: 0`),
+     so the trigger is the full-width click target. */
+  grid-row: 1;
   grid-column: 1 / -1;
+  z-index: 0;
   display: grid;
   grid-template-columns: subgrid;
   /* Match the inner grid's column gap explicitly: the Track-B accordion skin sets its
      own `column-gap` on the `cngxAccordionPanel` button, which would otherwise shift
-     the summary's subgrid tracks off the header / footer (they inherit the grid gap). */
+     the subgrid tracks off the header / footer (they inherit the grid gap). */
   column-gap: var(--cngx-dga-col-gap, 0.5rem);
   align-items: center;
   inline-size: 100%;
   /* Only block padding on the subgrid summary; the inline edges are the chevron track
      + last-cell padding. Inline padding is forced to 0: the summary carries
      `cngxAccordionPanel`, and the Track-B accordion skin would otherwise paint its own
-     header-button inline padding here and push the cells off the shared tracks. */
+     header-button inline padding here and push the chevron off the leading track. */
   padding-block: var(--cngx-dga-row-py, 0.5rem);
   padding-inline: 0;
   border: 0;
@@ -55,6 +62,37 @@
   font-size: var(--cngx-dga-fs, inherit);
   text-align: start;
   cursor: pointer;
+}
+
+/* The cells layer, laid OVER the trigger on the same grid cell. Re-exposes the shared
+   column tracks via `subgrid` so cells align with the header / footer. It is transparent
+   to pointer events, so a click on a cell falls through to the trigger and toggles the
+   row; genuinely interactive cell content re-enables its own clicks below. */
+.cngx-dga-row__cells {
+  grid-row: 1;
+  grid-column: 1 / -1;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: subgrid;
+  column-gap: var(--cngx-dga-col-gap, 0.5rem);
+  align-items: center;
+  /* Match the summary's block padding so the overlaid cells share its baseline / height. */
+  padding-block: var(--cngx-dga-row-py, 0.5rem);
+  pointer-events: none;
+}
+
+/* A link / control inside a cell receives its own clicks (it is not phrasing-only content
+   the button could have held). Everything else stays click-through, so passive cell
+   content - text, a chart, a table - toggles the row like any other part of the summary. */
+.cngx-dga-row__cells :is(a, button, input, select, textarea, label, [tabindex]) {
+  pointer-events: auto;
+}
+
+/* The first projected cell skips the leading chevron track (track 1) and starts at the
+   first content column - the chevron belongs to the summary layer beneath. Mirrors the
+   header / footer first-child rule. */
+.cngx-dga-row__cells > .cngx-dga-cell:first-child {
+  grid-column-start: 2;
 }
 
 /* Full-row keyboard focus ring: the summary spans every column via subgrid, so its

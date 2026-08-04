@@ -94,6 +94,7 @@ export class CngxDataGridRow {
 
   protected readonly regionId = nextUid('cngx-dga-region-');
   protected readonly headerId = nextUid('cngx-dga-header-');
+  protected readonly cellsId = nextUid('cngx-dga-cells-');
 
   /**
    * Projected cells; the `primary` one supplies the row's accessible name. Public
@@ -110,6 +111,15 @@ export class CngxDataGridRow {
   protected readonly primaryId = computed<string | null>(
     () => this.cells().find((cell) => cell.primary())?.cellId ?? null,
   );
+
+  /**
+   * Accessible name source for the summary button. The cells are laid over the button
+   * rather than inside it, so the button has no intrinsic text to name itself from -
+   * it points at the `primary` cell when one exists, else at the whole cells row
+   * (`cellsId`), which reproduces the old name-from-projected-content fallback. A
+   * primitive, so `Object.is` dedupes.
+   */
+  protected readonly summaryLabelledBy = computed<string>(() => this.primaryId() ?? this.cellsId);
 
   /** Whether this row's region is open, derived from the coordinator's open-set. */
   protected readonly expanded = computed(() => this.accordion.isOpen(this.panelId()));
