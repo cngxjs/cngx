@@ -6,6 +6,7 @@ import {
   ElementRef,
   inject,
   input,
+  isDevMode,
   output,
   signal,
 } from '@angular/core';
@@ -74,6 +75,25 @@ export class CngxStickyHeader {
       // header inside a never-scrolling scrollport would read `isSticky() === true` while
       // it visibly scrolls away with its content.
       const scrollport = this.resolveScrollParent(host);
+
+      // A scrollport whose content fits (client height equals scroll height) never
+      // scrolls in the block axis, so a header inside it can never pin - `isSticky()`
+      // stays false while the whole scrollport moves. Flag the misconfiguration once,
+      // in dev only; a one-shot read here is exactly what `afterNextRender` is for
+      // (no reactive-graph node, unlike a dep-less effect).
+      if (
+        isDevMode() &&
+        scrollport &&
+        scrollport.clientHeight === scrollport.scrollHeight
+      ) {
+        console.warn(
+          '[cngxStickyHeader] resolves against a scroll container that cannot scroll ' +
+            'in the block axis (client height equals scroll height), so this header ' +
+            'will never pin. Give the scrollport a bounded block-size, or drop ' +
+            'cngxStickyHeader.',
+          { host, scrollport },
+        );
+      }
 
       const sentinel = this.doc.createElement('div');
       sentinel.style.height = '1px';
