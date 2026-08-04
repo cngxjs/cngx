@@ -20,6 +20,14 @@ import {
  * meaning the header is now stuck. Toggles a CSS class for shadow,
  * elevation, or background changes.
  *
+ * The sentinel is observed against the **nearest scroll-container ancestor**
+ * (the first ancestor whose computed `overflow-y` is not `visible`), not the
+ * page - that is the scrollport `position: sticky` resolves against, so
+ * `isSticky()` reports the state the host actually has. A scrollport whose
+ * height is content-driven never scrolls in the block axis, so a header inside
+ * it never pins; in dev mode the directive warns once when it resolves against
+ * such a scrollport.
+ *
  * ### Sticky header with shadow
  * ```html
  * <header cngxStickyHeader #sh="cngxStickyHeader"
