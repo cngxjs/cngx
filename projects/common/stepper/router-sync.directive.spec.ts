@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject, signal, type AfterViewInit } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { provideRouter, Router } from '@angular/router';
@@ -11,6 +11,18 @@ import {
   provideStepperConfig,
   withStepperRouterSync,
 } from './stepper-config';
+import type { CngxStepRegistration } from './stepper-host.token';
+
+/** Minimal step registration for a late-added step (no template atom). */
+function reg(id: string): CngxStepRegistration {
+  return {
+    id,
+    kind: 'step',
+    label: signal(id),
+    disabled: signal(false),
+    state: signal('idle'),
+  };
+}
 
 @Component({
   standalone: true,
@@ -23,6 +35,50 @@ import {
   `,
 })
 class HostCmp {}
+
+// The seed reads the URL against the registered step ids, so the test
+// needs deterministic ids present *before* ngAfterContentInit runs.
+// `CngxStep` registers in its own constructor with an auto-generated
+// `nextUid` id (a static `id="a"` attribute is not applied until after
+// construction), so this shell reproduces the "registry populated by
+// content-init" precondition the way the presenter spec does: it
+// registers named steps in its own constructor, which runs before the
+// host directive's content-init hook.
+@Component({
+  standalone: true,
+  selector: 'seed-shell',
+  hostDirectives: [
+    { directive: CngxStepperPresenter, inputs: ['commitAction', 'commitMode'] },
+    CngxStepperRouterSync,
+  ],
+  template: '',
+})
+class SeedShell {
+  readonly presenter = inject(CngxStepperPresenter);
+  constructor() {
+    this.presenter.register(reg('a'));
+    this.presenter.register(reg('b'));
+    this.presenter.register(reg('c'));
+  }
+}
+
+// Registers its steps in ngAfterViewInit - after the host directive's
+// content-init seed has already run and bailed (empty registry), but
+// before the afterNextRender fallback fires. Isolates the fallback path:
+// only the render-time seed can pick these up.
+@Component({
+  standalone: true,
+  selector: 'late-seed-shell',
+  hostDirectives: [CngxStepperPresenter, CngxStepperRouterSync],
+  template: '',
+})
+class LateSeedShell implements AfterViewInit {
+  readonly presenter = inject(CngxStepperPresenter);
+  ngAfterViewInit(): void {
+    this.presenter.register(reg('x'));
+    this.presenter.register(reg('late'));
+  }
+}
 
 // Drains pending microtasks so the directive's effect() chain (which
 // reads activeStepId, then calls router.navigate inside untracked()) has
@@ -127,5 +183,116 @@ describe('CngxStepperRouterSync', () => {
     fixture.detectChanges();
     await flushMicrotasks();
     expect(errors).toEqual([failure]);
+  });
+
+  describe('deep-link seed', () => {
+    it('resolves the deep-linked step on the first change-detection pass', () => {
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection(), provideRouter([])],
+      });
+      const router = TestBed.inject(Router);
+      vi.spyOn(router, 'navigate').mockResolvedValue(true);
+      Object.defineProperty(router.routerState.snapshot.root, 'fragment', {
+        get: () => 'step=c',
+        configurable: true,
+      });
+
+      const fixture = TestBed.createComponent(SeedShell);
+      fixture.detectChanges();
+
+      // The content-init seed selects the URL step inside the first CD pass,
+      // before the host view renders any panels. This pins that a deep link
+      // resolves on the first pass; the panelMode="lazy" ordering (default
+      // panel never mounts) is observable at the ui/render level, not here.
+      expect(fixture.componentInstance.presenter.activeStepId()).toBe('c');
+      expect(fixture.componentInstance.presenter.activeStepIndex()).toBe(2);
+    });
+
+    it('falls back to the afterNextRender seed for a step registered after content-init', async () => {
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection(), provideRouter([])],
+      });
+      const router = TestBed.inject(Router);
+      vi.spyOn(router, 'navigate').mockResolvedValue(true);
+      Object.defineProperty(router.routerState.snapshot.root, 'fragment', {
+        get: () => 'step=late',
+        configurable: true,
+      });
+
+      // LateSeedShell registers 'late' in ngAfterViewInit, so it is absent
+      // at content-init (seed bails, latch un-set) and present when the
+      // afterNextRender fallback runs.
+      const fixture = TestBed.createComponent(LateSeedShell);
+      fixture.detectChanges();
+      TestBed.tick();
+      await flushMicrotasks();
+
+      expect(fixture.componentInstance.presenter.activeStepId()).toBe('late');
+    });
+
+    it('runs a bound commit action exactly once for the content-init seed', async () => {
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection(), provideRouter([])],
+      });
+      const router = TestBed.inject(Router);
+      vi.spyOn(router, 'navigate').mockResolvedValue(true);
+      Object.defineProperty(router.routerState.snapshot.root, 'fragment', {
+        get: () => 'step=b',
+        configurable: true,
+      });
+
+      // Held open, not resolved: a pessimistic action that settles inside
+      // the first microtask drain lets activeStepIndex land before the
+      // afterNextRender fallback runs, which would hide a double-fire. Hold
+      // it open so the fallback observes the in-flight state (index still 0)
+      // exactly as a real HTTP-backed action would.
+      let release!: (ok: boolean) => void;
+      const commitAction = vi.fn(
+        () =>
+          new Promise<boolean>((resolve) => {
+            release = resolve;
+          }),
+      );
+
+      const fixture = TestBed.createComponent(SeedShell);
+      fixture.componentRef.setInput('commitAction', commitAction);
+      fixture.componentRef.setInput('commitMode', 'pessimistic');
+      fixture.detectChanges();
+      TestBed.tick();
+      await flushMicrotasks();
+      TestBed.tick();
+
+      // The content-init seed goes through selectById -> select(), so it
+      // does run the consumer's action - but the fallback must not run it
+      // again while the first is still pending.
+      expect(commitAction).toHaveBeenCalledTimes(1);
+      expect(commitAction.mock.calls[0]).toEqual([0, 1]);
+
+      release(true);
+      await flushMicrotasks();
+      fixture.detectChanges();
+      await flushMicrotasks();
+
+      expect(fixture.componentInstance.presenter.activeStepId()).toBe('b');
+      expect(commitAction).toHaveBeenCalledTimes(1);
+    });
+
+    it('ngAfterContentInit is a no-op without a Router', () => {
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      let fixture: ReturnType<typeof TestBed.createComponent<SeedShell>>;
+      expect(() => {
+        fixture = TestBed.createComponent(SeedShell);
+        fixture.detectChanges();
+      }).not.toThrow();
+
+      // No Router - the seed never runs, the default step stays active.
+      expect(fixture!.componentInstance.presenter.activeStepId()).toBe('a');
+
+      warnSpy.mockRestore();
+    });
   });
 });
