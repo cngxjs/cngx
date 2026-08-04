@@ -11,6 +11,7 @@ import {
   CngxChartLoading,
   CngxChartEmpty,
   CngxChartError,
+  CngxChartOverlay,
 } from '@cngx/common/chart';
 ```
 
@@ -52,7 +53,8 @@ Async envelope - same root, state-machine routes between skeleton, empty, error,
 | `CngxChartLoading` | `<ng-template cngxChartLoading>` - per-instance skeleton override. |
 | `CngxChartEmpty` | `<ng-template cngxChartEmpty>` - per-instance empty-state override. |
 | `CngxChartError` | `<ng-template cngxChartError>` - per-instance error override, receives the live error as `$implicit`. |
-| `CngxChartSlotContext` | Context every slot template gets: `{ width, height, small }`. |
+| `CngxChartOverlay` | `<ng-template cngxChartOverlay>` - HTML layered over the marks in the content view. The chart insets the frame to the plot; `pointer-events: none` by default. |
+| `CngxChartSlotContext` | Context every slot template gets: `{ width, height, small, plot }`. |
 | `CngxChartErrorContext` | Error-slot context: extends `CngxChartSlotContext` with `$implicit` / `error`. |
 | `CHART_SMALL_BREAKPOINT_PX` | Threshold (px) below which `slotContext.small` flips true. Container-size based, not viewport. |
 

@@ -33,11 +33,24 @@ Both directives satisfy the same `CngxChartAxis` contract, provided through `CNG
 
 There is no knob. No input, no CSS custom property, no DI token sizes the gutter, because the component already knows everything needed to compute it. The one approximation is character width: the chart measures no text, so it estimates one character as a fraction of the default axis font size. Restyling `--cngx-axis-font-size` scales your labels but not the gutter they sit in. If that bites, the fix is a real measure pass or an escape hatch, and both are additive - open an issue with the font and the label that clipped.
 
-### Reading the plot area from outside
+### Layering HTML over the plot area
 
-The chart publishes where its plot area ended up, so anything you position against the host box can line up with the marks rather than the box.
+To put HTML on top of the marks, project an `*cngxChartOverlay` template. The chart renders it in a frame it insets to the plot area for you, so there is no arithmetic and no wrapper you have to make a containing block:
 
-Every slot context carries `plot` - `{ x0, y0, x1, y1, width, height }` in viewBox user units - so a fallback can reason about the drawing surface rather than the host box:
+```html
+<cngx-chart [data]="load" [width]="480" [height]="200">
+  <svg:g cngxAxis position="left" type="linear" [domain]="[0, 100000]"></svg:g>
+  <svg:g cngxLine></svg:g>
+
+  <ng-template cngxChartOverlay>
+    <div class="peak-window">peak window</div>
+  </ng-template>
+</cngx-chart>
+```
+
+The frame is `pointer-events: none`, so it never swallows a click meant for the marks; an interactive element inside it opts back in with `pointer-events: auto`. It renders only in the content view - in the loading, empty and error arms there are no marks to annotate, and each of those arms owns its own frame.
+
+The overlay template receives the same slot context every other slot gets, so `plot` - `{ x0, y0, x1, y1, width, height }` in viewBox user units - is readable for content that reasons about the drawing surface rather than the host box:
 
 ```html
 <ng-template cngxChartEmpty let-plot="plot">
@@ -47,7 +60,9 @@ Every slot context carries `plot` - `{ x0, y0, x1, y1, width, height }` in viewB
 
 Mind the two coordinate spaces. Slot templates render into an HTML frame layered over the SVG, so `width`/`height` on the context are **rendered px** while `plot` is **viewBox units**. They diverge whenever an explicit `[width]` chart is squeezed by `max-width`. Do not compute a ratio across the two. For SVG-space geometry read `plot` off `injectChartContext()` inside a directive on an `<svg:g>` host, the way the layer atoms do.
 
-From outside the chart, read the rectangle off the instance. An HTML overlay is always a sibling - everything projected into `<cngx-chart>` lands inside its SVG - so this is the route it has. Divide by `dimensions()`, which is the viewBox extent `plot` is measured in, rather than by a copy of the bound width: the same template then works on a responsive chart that has no `[width]` to copy.
+#### When the overlay must live outside the chart box
+
+The slot covers HTML over the plot. When the overlay has to sit outside the chart's own box, or you need the rectangle in TypeScript rather than in a template, read it off the instance instead. An HTML sibling never inherits the plot custom properties - everything projected into `<cngx-chart>` lands inside its SVG - so the instance is the route it has. Divide by `dimensions()`, the viewBox extent `plot` is measured in, rather than by a copy of the bound width, so the same code works on a responsive chart with no `[width]` to copy.
 
 ```html
 <div style="position: relative; display: inline-block">
@@ -66,7 +81,7 @@ From outside the chart, read the rectangle off the instance. An HTML overlay is 
 </div>
 ```
 
-In CSS, the chart writes the same numbers as four custom properties onto its own host, as percentages of the host box. Custom properties inherit downwards only, so these reach the chart's own subtree - not an outside sibling, which is what the instance route above is for:
+In CSS, the chart writes the same numbers as four custom properties onto its own host, as percentages of the host box. Custom properties inherit downwards only, so these reach the chart's own subtree - the `*cngxChartOverlay` frame reads them to inset itself - but not an outside sibling, which is what the instance route above is for:
 
 |Property|Reserved on|
 |-|-|
