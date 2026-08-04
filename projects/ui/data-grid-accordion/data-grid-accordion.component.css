@@ -65,11 +65,15 @@
   font-size: var(--cngx-dga-fs, inherit);
 }
 
-/* Header and footer carry no chevron, so their first projected cell must skip the
+/* Header and footer carry no chevron, so their first projected child must skip the
    leading chevron track and start at the first content column (track 2), aligning
-   with every row's first cell (which follows its chevron cell in track 1). */
-.cngx-dga-header > .cngx-dga-cell:first-child,
-.cngx-dga-footer > .cngx-dga-cell:first-child {
+   with every row's first cell (which follows its chevron cell in track 1). Matches
+   ANY first child, not only `.cngx-dga-cell`: the natural footer markup for a live
+   count is a bare element (`<span cngxDgaCount>`), and forgetting `cngxDgaCell` on
+   it must not silently drop the child into the chevron gutter (Pillar 2 - the
+   copy-paste path can't leave a defect that reads as the consumer's own CSS bug). */
+.cngx-dga-header > :first-child,
+.cngx-dga-footer > :first-child {
   grid-column-start: 2;
 }
 

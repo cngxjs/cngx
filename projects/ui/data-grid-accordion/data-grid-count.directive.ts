@@ -13,9 +13,13 @@ import { Directive, effect, ElementRef, inject, input, Renderer2 } from '@angula
  *
  * ```html
  * <cngx-dga-footer>
- *   <span [cngxDgaCount]="visibleRows().length"></span>
+ *   <span cngxDgaCell [cngxDgaCount]="visibleRows().length"></span>
  * </cngx-dga-footer>
  * ```
+ *
+ * `cngxDgaCell` puts the count in the first content column alongside every other
+ * grid cell. It is not required - the footer already places a bare first child in
+ * that column - but it is the consistent form the rest of the grid's cells use.
  *
  * The noun is English by default (`result` / `results`); a consumer localises via
  * `cngxDgaCountSingular` / `cngxDgaCountPlural`.
