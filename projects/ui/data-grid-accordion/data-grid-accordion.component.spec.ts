@@ -496,4 +496,18 @@ describe('CngxDataGridAccordion — layout containment', () => {
     // The containment only matters because the same host owns the horizontal scroll.
     expect(css).toMatch(/\.cngx-data-grid-accordion\s*\{[^}]*overflow-x:\s*auto/);
   });
+
+  it('caps its height off the opt-in token and pins the head only when bounded', () => {
+    TestBed.configureTestingModule({ imports: [Host] });
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+
+    const css = dgaCss();
+    // The host reads the opt-in token; unset resolves to `none` (content-height).
+    expect(css).toMatch(/max-block-size:\s*var\(--cngx-dga-max-block-size,\s*none\)/);
+    // The pinned head is gated behind a style query on that token, so an unbounded
+    // grid gets no sticky treatment at all.
+    expect(css).toMatch(/@container[^{]*style\([^)]*--cngx-dga-max-block-size[^)]*\)/);
+    expect(css).toMatch(/\.cngx-dga-header\s*\{[^}]*position:\s*sticky/);
+  });
 });
