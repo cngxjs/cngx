@@ -3,9 +3,9 @@ import type { DemoSpec } from '../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'Data-grid accordion: Sticky head',
   subtitle:
-    'Set <code>--cngx-dga-max-block-size</code> on the host to cap the grid: it becomes its own vertical scrollport and the column head pins to the top while the rows scroll beneath it. No <code>[cngxStickyHeader]</code> - the group is the scrollport, so it pins the head natively.',
+    'Bind <code>[maxBlockSize]</code> to cap the grid: it becomes its own vertical scrollport, the column head pins to the top and the footer to the bottom, and only the rows scroll between them. No <code>[cngxStickyHeader]</code> - the group is the scrollport, so it pins natively.',
   description:
-    'The host caps its height off the opt-in <code>--cngx-dga-max-block-size</code> token; because the host already scrolls in the inline axis, the used <code>overflow</code> makes it a scrollport in the block axis too, so <code>position: sticky</code> on the header pins natively. An opaque header fill (the foundation surface token) keeps scrolling rows from showing through the pinned band. Leave the token unset and the grid stays content-height, byte-identical to the unbounded ledger. Every row is still a disclosure: click to expand its detail while the head stays put.',
+    'A number on <code>[maxBlockSize]</code> is taken as px (a string is any CSS length); it reflects onto <code>--cngx-dga-max-block-size</code>, the same token a skin may set directly. Because the host already scrolls in the inline axis, the used <code>overflow</code> makes it a scrollport in the block axis too, so <code>position: sticky</code> pins the head to the top and the footer to the bottom - the sum footer stays visible while the rows scroll. Opaque head + foot fills (the foundation surface token) keep scrolling rows from showing through the pinned bands. Leave <code>[maxBlockSize]</code> unbound and the grid stays content-height, byte-identical to the unbounded ledger. Every row is still a disclosure: click to expand its detail while head and foot stay put.',
   level: 'organism',
   audience: ['dev', 'design'],
   artifact: 'building-block',
@@ -57,7 +57,7 @@ export const STORY: DemoSpec = {
       [skin]="'ledger'"
       [multi]="true"
       [headingLevel]="3"
-      style="--cngx-dga-max-block-size: 320px"
+      [maxBlockSize]="320"
     >
       <cngx-dga-header>
         <span cngxDgaCell col="md">Invoice</span>
