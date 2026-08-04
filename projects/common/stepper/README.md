@@ -15,7 +15,7 @@ The presenter is a pure-derivation host directive - every visible piece of state
 | Export | Selector | Description |
 |-|-|-|
 | `CngxStepperPresenter` | `[cngxStepper]` | The brain. Owns active step, linear, orientation, commit lifecycle. Composed via `hostDirectives` by `<cngx-stepper>` and `<cngx-mat-stepper>` - never instantiated directly by consumers. |
-| `CngxStep` | `[cngxStep]` | Step atom - registers itself with the enclosing presenter (or `CngxStepGroup`) at construction time, unregisters on destroy. Carries `id`, `label`, `disabled`, `state`, optional `errorAggregator`. |
+| `CngxStep` | `[cngxStep]` | Step atom - registers itself with the enclosing presenter (or `CngxStepGroup`) on init (so a bound `[id]` is honored), unregisters on destroy. Carries `id`, `label`, `disabled`, `state`, optional `errorAggregator`. |
 | `CngxStepGroup` | `[cngxStepGroup]` | Group atom - nests child `cngxStep`s under a labelled cluster. Aggregates child status (`success` / `error` / `pending`) for the strip's group-header rendering. |
 | `CngxStepLabel` | `ng-template[cngxStepLabel]` | Per-step label override (replaces the default `node.label()` text rendering). |
 | `CngxStepContent` | `ng-template[cngxStepContent]` | Per-step panel body. The cngx-side organisms render this template inside the step's panel region. |
