@@ -181,7 +181,9 @@
    * (bounded mode only). Universal syntax with NO initial-value, so the use-site
    * fallback to the foundation surface token stays live - a fixed colour initial
    * would defeat it (reference_property_color_initial_defeats_fallback) and render
-   * a light head in dark mode. A skin SETs its own surface here.
+   * a light head in dark mode. The unskinned base reads it as the head's fill; the
+   * content skins paint `.cngx-dga-header` background directly, so this token is the
+   * base default they may override, not one they currently set.
    * @group Surface
    */
   @property --cngx-dga-head-bg {
@@ -204,8 +206,10 @@
    * Opaque fill behind the pinned footer so scrolling rows never show through
    * (bounded mode only). Universal syntax with NO initial-value, so the use-site
    * fallback to the foundation surface token stays live - a fixed colour initial
-   * would defeat it (reference_property_color_initial_defeats_fallback). A skin
-   * SETs its own surface here.
+   * would defeat it (reference_property_color_initial_defeats_fallback). The unskinned
+   * base reads it as the footer's fill; the content skins paint `.cngx-dga-footer`
+   * background directly, so this token is the base default they may override, not one
+   * they currently set.
    * @group Surface
    */
   @property --cngx-dga-foot-bg {
