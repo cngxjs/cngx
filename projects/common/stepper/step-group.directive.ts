@@ -1,4 +1,13 @@
-import { computed, DestroyRef, Directive, inject, input, signal, type Signal } from '@angular/core';
+import {
+  computed,
+  DestroyRef,
+  Directive,
+  inject,
+  input,
+  signal,
+  type OnInit,
+  type Signal,
+} from '@angular/core';
 
 import { nextUid } from '@cngx/core/utils';
 
@@ -35,7 +44,7 @@ import {
   standalone: true,
   providers: [{ provide: CNGX_STEP_GROUP_HOST, useExisting: CngxStepGroup }],
 })
-export class CngxStepGroup implements CngxStepGroupHost {
+export class CngxStepGroup implements CngxStepGroupHost, OnInit {
   readonly id = input<string>(nextUid('cngx-step-group'));
   readonly disabled = input<boolean>(false);
   readonly label = input<string>('');
@@ -67,6 +76,7 @@ export class CngxStepGroup implements CngxStepGroupHost {
   );
 
   private readonly stepperHost = inject(CNGX_STEPPER_HOST, { optional: true });
+  private readonly destroyRef = inject(DestroyRef);
 
   /**
    * `true` when this group's children are collapsed to the header node:
@@ -98,16 +108,25 @@ export class CngxStepGroup implements CngxStepGroupHost {
           'Wrap the group inside an element carrying [cngxStepper].',
       );
     }
+  }
+
+  ngOnInit(): void {
+    // Register in ngOnInit, not the constructor, so a bound `[id]` reaches
+    // the registry (see CngxStep). A group MUST register before its child
+    // steps or the presenter drops the orphaned children; ngOnInit fires an
+    // ancestor group before its descendant steps, so that order holds, and
+    // groups and steps share one lifecycle phase - keeping the presenter's
+    // insertion-order tree identical to the previous constructor ordering.
+    const stepperHost = this.stepperHost!;
     const groupId = this.id();
-    this.stepperHost.register({
+    stepperHost.register({
       id: groupId,
       kind: 'group',
       label: this.label,
       disabled: this.disabled,
       state: this.aggregatedStatus,
     });
-    const stepperHost = this.stepperHost;
-    inject(DestroyRef).onDestroy(() => stepperHost.unregister(groupId));
+    this.destroyRef.onDestroy(() => stepperHost.unregister(groupId));
   }
 
   register(handle: CngxStepRegistration): void {

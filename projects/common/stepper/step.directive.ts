@@ -6,6 +6,7 @@ import {
   inject,
   input,
   linkedSignal,
+  type OnInit,
   type Signal,
 } from '@angular/core';
 
@@ -41,7 +42,7 @@ import { CNGX_STEPPER_HOST, type CngxStepStatus } from './stepper-host.token';
   exportAs: 'cngxStep',
   standalone: true,
 })
-export class CngxStep {
+export class CngxStep implements OnInit {
   readonly id = input<string>(nextUid('cngx-step'));
   readonly disabled = input<boolean>(false);
   readonly completed = input<boolean>(false);
@@ -105,16 +106,29 @@ export class CngxStep {
     equal: Object.is,
   });
 
+  private readonly groupHost = inject(CNGX_STEP_GROUP_HOST, { optional: true });
+  private readonly stepperHost = inject(CNGX_STEPPER_HOST, { optional: true });
+  private readonly destroyRef = inject(DestroyRef);
+
   constructor() {
-    const groupHost = inject(CNGX_STEP_GROUP_HOST, { optional: true });
-    const stepperHost = inject(CNGX_STEPPER_HOST, { optional: true });
-    const host = groupHost ?? stepperHost;
-    if (!host) {
+    if (!this.groupHost && !this.stepperHost) {
       throw new Error(
         'CngxStep: no enclosing CngxStepperPresenter or CngxStepGroup found. ' +
           'Wrap the step inside an element carrying [cngxStepper] or [cngxStepGroup].',
       );
     }
+  }
+
+  ngOnInit(): void {
+    // Register in ngOnInit, NOT the constructor: a bound `[id]` signal
+    // input is not applied until the first change detection, so a
+    // constructor read captures the default auto-id. The registered id is
+    // the key the router-sync deep-link seed and consumers match against,
+    // so it must reflect the bound `[id]`. ngOnInit still runs before the
+    // host's ngAfterContentInit, so the seed's registry precondition holds;
+    // and it fires ancestor-group-before-descendant-step in DOM order, so
+    // the presenter's insertion-order tree is unchanged. Mirrors CngxTab.
+    const host = this.groupHost ?? this.stepperHost!;
     const stepId = this.id();
     host.register({
       id: stepId,
@@ -125,6 +139,6 @@ export class CngxStep {
       errorAggregator: this.errorAggregator,
       errorMessage: this.errorMessage,
     });
-    inject(DestroyRef).onDestroy(() => host.unregister(stepId));
+    this.destroyRef.onDestroy(() => host.unregister(stepId));
   }
 }

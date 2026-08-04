@@ -40,6 +40,22 @@ class GroupHost {}
 })
 class TwoGroupHost {}
 
+@Component({
+  standalone: true,
+  selector: 'custom-id-host',
+  imports: [CngxStep, CngxStepGroup],
+  hostDirectives: [CngxStepperPresenter],
+  template: `
+    <div cngxStep id="intro" label="Intro"></div>
+    <div cngxStepGroup id="account" label="Account">
+      <div cngxStep id="email" label="Email"></div>
+      <div cngxStep id="password" label="Password"></div>
+    </div>
+    <div cngxStep id="finish" label="Finish"></div>
+  `,
+})
+class CustomIdHost {}
+
 // Keyed by label() (stable post-detectChanges). The group's own id is an
 // auto-generated nextUid - the realistic grouped-stepper pattern, where
 // the registration id and this.id() agree at every read.
@@ -70,6 +86,30 @@ describe('CngxStepGroup', () => {
     expect(labels).toEqual(['Group 1', 'A', 'B', 'Trailing']);
     const group = flat.find((n) => n.kind === 'group')!;
     expect(group.children.length).toBe(2);
+  });
+
+  it('registers bound [id] values (not auto-ids) in DOM order across groups', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(CustomIdHost);
+    fixture.detectChanges();
+    const presenter = fixture.debugElement.injector.get(CngxStepperPresenter);
+
+    // ngOnInit registration applies the bound `[id]`; the constructor read
+    // captured the auto-uid. DOM order is preserved: root steps around the
+    // group, nested steps inside it.
+    expect(presenter.stepsOnly().map((n) => n.id)).toEqual([
+      'intro',
+      'email',
+      'password',
+      'finish',
+    ]);
+    expect(presenter.stepTree().map((n) => n.id)).toEqual(['intro', 'account', 'finish']);
+
+    // The registered id is now the deep-link key: selectById resolves it.
+    presenter.selectById('password');
+    expect(presenter.activeStepId()).toBe('password');
   });
 
   describe('isCollapsed (focus-driven group collapse)', () => {
