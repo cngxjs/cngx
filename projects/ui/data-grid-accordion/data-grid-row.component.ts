@@ -22,16 +22,22 @@ import { CngxDgaRowError } from './data-grid-row-error.directive';
 /**
  * A disclosure row in a {@link CngxDataGridAccordion}. Renders the APG-correct
  * trio: a `role="heading"` wrapper carrying the group's `aria-level`, a
- * `cngxAccordionPanel` summary `<button>` laid out on the shared
- * `--cngx-dga-columns` grid, and a `role="region"` detail zone named back at the
- * primary cell via `aria-labelledby`. Expansion is derived from the coordinator
- * (Pillar 1); the button self-wires keyboard nav through the registration brain,
- * so arrow keys rove across rows even though each summary lives in its own
- * component view.
+ * `cngxAccordionPanel` summary `<button>` that is the full-row disclosure
+ * trigger, and a `role="region"` detail zone named back at the primary cell via
+ * `aria-labelledby`. Expansion is derived from the coordinator (Pillar 1); the
+ * button self-wires keyboard nav through the registration brain, so arrow keys
+ * rove across rows even though each summary lives in its own component view.
  *
- * The projected `cngxDgaCell`s fill the summary grid; the one marked `primary`
- * supplies the row's accessible name, so a screen reader hears a list of
- * expandable sections rather than a wall of cell text.
+ * The projected `cngxDgaCell`s are laid OVER the trigger, not inside it: a
+ * `<button>` accepts phrasing content only, so a cell holding flow content (a
+ * chart, a table, a nested list) could never live in the button. The cells share
+ * the button's grid row, painted above it, and are `pointer-events: none`, so a
+ * click on a passive cell falls through to the trigger and toggles the row, while
+ * interactive cell content (a link, a control) re-enables its own clicks. The
+ * cell marked `primary` supplies the row's accessible name through the button's
+ * `aria-labelledby` (falling back to the whole cells row when none is marked), so
+ * a screen reader hears a list of expandable sections rather than a wall of cell
+ * text.
  *
  * @category ui/data-grid-accordion
  * @docsKind primary
