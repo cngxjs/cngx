@@ -65,9 +65,16 @@ export class CngxStickyHeader {
   constructor() {
     const destroyRef = inject(DestroyRef);
 
-    // IntersectionObserver sentinel pattern - host is stuck once the 1px sentinel leaves the viewport.
+    // IntersectionObserver sentinel pattern - host is stuck once the 1px sentinel leaves
+    // the scrollport the host actually sticks to.
     afterNextRender(() => {
       const host = this.el.nativeElement as HTMLElement;
+      // Root the sentinel at the scrollport `position: sticky` resolves against, not the
+      // viewport. Observing against the viewport reports a different thing entirely: a
+      // header inside a never-scrolling scrollport would read `isSticky() === true` while
+      // it visibly scrolls away with its content.
+      const scrollport = this.resolveScrollParent(host);
+
       const sentinel = this.doc.createElement('div');
       sentinel.style.height = '1px';
       sentinel.style.width = '1px';
@@ -85,7 +92,7 @@ export class CngxStickyHeader {
             this.stickyChange.emit(isSticky);
           }
         },
-        { threshold: this.threshold() },
+        { threshold: this.threshold(), root: scrollport },
       );
 
       observer.observe(sentinel);
@@ -95,5 +102,24 @@ export class CngxStickyHeader {
         sentinel.remove();
       });
     });
+  }
+
+  /**
+   * The nearest ancestor that is a scroll container in the block axis - the scrollport
+   * `position: sticky` resolves against. Walks up from the host's parent to the first
+   * ancestor whose computed `overflow-y` is not `visible`; `null` means no such
+   * ancestor, i.e. the header sticks to the viewport. A used `overflow-x` other than
+   * `visible` coerces the computed `overflow-y` to `auto`, so this also catches a
+   * horizontal scroll container (e.g. a data grid that scrolls sideways).
+   */
+  private resolveScrollParent(host: HTMLElement): HTMLElement | null {
+    const view = this.doc.defaultView;
+    for (let node = host.parentElement; node; node = node.parentElement) {
+      const overflowY = view?.getComputedStyle(node).overflowY;
+      if (overflowY && overflowY !== 'visible') {
+        return node;
+      }
+    }
+    return null;
   }
 }
