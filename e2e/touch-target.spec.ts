@@ -44,6 +44,12 @@ const ATOMS: { name: string; route: string; selector: string; axis: 'block' | 'i
     axis: 'block',
   },
   {
+    name: 'chip-remove',
+    route: '/#/common/display/chip/removable',
+    selector: '.cngx-chip__remove',
+    axis: 'inline',
+  },
+  {
     name: 'close-button',
     route: '/#/common/interactive/close-button/basic',
     selector: '.cngx-close-button__btn',

@@ -521,6 +521,16 @@
       flex: 0 0 auto;
       opacity: var(--cngx-chip-remove-opacity, 0.7);
       border-radius: var(--cngx-chip-remove-radius, var(--cngx-radius-sm, 2px));
+
+      /* Touch-target floor - the remove button is its own tap target,
+         nested inside the chip; give its hit box the pointer-derived
+         minimum on both axes while the glyph stays its design size,
+         centred. Inert at 0px on a fine pointer. */
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-inline-size: var(--cngx-target-min, 0px);
+      min-block-size: var(--cngx-target-min, 0px);
     }
     .cngx-chip__remove:hover {
       opacity: var(--cngx-chip-remove-opacity-hover, 1);
