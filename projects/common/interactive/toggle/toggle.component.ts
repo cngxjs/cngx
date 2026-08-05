@@ -38,11 +38,13 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  * one direction.
  *
  * `disabledReason` is consumer-supplied free text (no library default
- * per `feedback_en_default_locale`) - when present it lands in a hidden
- * `<span>` referenced by the host's `aria-describedby`. Per Pillar 2,
- * the description span is always in the DOM (visibility toggles via
- * `aria-hidden`); the host's `aria-describedby` is only emitted when a
- * reason is set so AT does not announce an empty description.
+ * per `feedback_en_default_locale`). Per Pillar 2 the description span is
+ * always in the DOM, but both its `aria-hidden` and the host's
+ * `aria-describedby` reference are gated on `disabled() && disabledReason()`,
+ * so a reason set on an enabled control announces nothing and stays out of
+ * reading order. Gating the reference alone is not enough: accname 1.2 §2A
+ * traverses a directly-referenced hidden node, so the span's visibility must
+ * track the same condition as the reference.
  *
  * Typical usage prefers the `<div>`/`<cngx-toggle>` element form because
  * `role="switch"` on a native `<button>` would conflict with the
@@ -125,7 +127,7 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
     <span
       [id]="describedId"
       class="cngx-toggle__sr-only"
-      [attr.aria-hidden]="disabledReason() ? null : 'true'"
+      [attr.aria-hidden]="disabled() && disabledReason() ? null : 'true'"
       >{{ disabledReason() }}</span
     >
   `,
@@ -162,7 +164,7 @@ export class CngxToggle implements CngxControlValue<boolean>, CngxFormFieldContr
   protected readonly labelId = nextUid('cngx-toggle-label');
 
   protected readonly describedById = computed(() =>
-    this.disabledReason() ? this.describedId : null,
+    this.disabled() && this.disabledReason() ? this.describedId : null,
   );
 
   private readonly labelRef = viewChild<ElementRef<HTMLElement>>('label');
