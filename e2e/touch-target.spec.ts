@@ -37,6 +37,18 @@ const ATOMS: { name: string; route: string; selector: string; axis: 'block' | 'i
     selector: '.cngx-toggle',
     axis: 'block',
   },
+  {
+    name: 'chip',
+    route: '/#/common/display/chip/removable',
+    selector: '.cngx-chip',
+    axis: 'block',
+  },
+  {
+    name: 'close-button',
+    route: '/#/common/interactive/close-button/basic',
+    selector: '.cngx-close-button__btn',
+    axis: 'block',
+  },
 ];
 
 const applyCompact = () => document.documentElement.setAttribute('data-density', 'compact');

@@ -451,6 +451,12 @@
     :scope[tabindex],
     :scope:has(.cngx-chip__remove) {
       cursor: pointer;
+      /* Touch-target floor - an interactive (selectable / removable)
+         chip is a tap target, so lift the pill to the pointer-derived
+         hit-area minimum on the block axis. A static label chip is not
+         matched here and stays its natural size. Inert at 0px on a fine
+         pointer. */
+      min-block-size: var(--cngx-target-min, 0px);
     }
     :scope[role='button']:hover,
     :scope[tabindex]:hover,
