@@ -225,8 +225,11 @@
       appearance: none;
       background: var(--cngx-close-button-bg, none);
       border: var(--cngx-close-button-border, none);
-      min-width: var(--cngx-close-button-size, 32px);
-      min-height: var(--cngx-close-button-size, 32px);
+      /* Touch-target floor - the existing 32px min is the design size on
+         a fine pointer; wrap it in max() so a coarse pointer lifts both
+         axes to the hit-area minimum without shrinking the design size. */
+      min-width: max(var(--cngx-close-button-size, 32px), var(--cngx-target-min, 0px));
+      min-height: max(var(--cngx-close-button-size, 32px), var(--cngx-target-min, 0px));
       padding: var(--cngx-close-button-padding, var(--cngx-space-sm, 8px));
       cursor: pointer;
       color: var(--cngx-close-button-color, inherit);
