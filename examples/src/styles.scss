@@ -474,6 +474,18 @@ html.dark .cngx-ex-tag[data-dim='stability'][data-value='deprecated'] {
   font-variant-numeric: tabular-nums;
 }
 
+// Touch-target demo aid: tints the otherwise-transparent hit box of an
+// interactive atom so the --cngx-target-min floor is visible. Only the
+// box grows (dense height -> 44px); the glyph keeps its design size,
+// centred. Used by /core/theming/touch-target; not part of any atom skin.
+.tt-hitbox {
+  outline: 2px dashed var(--cngx-color-primary, oklch(0.66 0.19 50));
+  outline-offset: -1px;
+  background: color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 8%, transparent);
+  border-radius: var(--cngx-radius-sm, 4px);
+  transition: min-block-size 0.15s ease;
+}
+
 // Narrow viewports: drop the 12rem label min-width so the label can
 // shrink to its text content and stay beside the value whenever both
 // fit. flex-wrap on the row above kicks in only when they don't, so

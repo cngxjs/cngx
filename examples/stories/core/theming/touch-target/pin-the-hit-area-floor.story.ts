@@ -53,14 +53,14 @@ export const STORY: DemoSpec = {
     [cngxTouchTarget]="mode() === 'auto' ? undefined : mode()"
     style="display:flex; flex-direction:column; gap:16px; align-items:flex-start"
   >
-    <cngx-checkbox [(value)]="accept">I accept the terms</cngx-checkbox>
+    <cngx-checkbox class="tt-hitbox" [(value)]="accept">I accept the terms</cngx-checkbox>
 
-    <cngx-toggle [(value)]="notifications">Receive e-mail notifications</cngx-toggle>
+    <cngx-toggle class="tt-hitbox" [(value)]="notifications">Receive e-mail notifications</cngx-toggle>
 
     <cngx-radio-group [(value)]="payment" name="tt-payment" label="Payment method">
-      <cngx-radio value="card">Credit card</cngx-radio>
-      <cngx-radio value="cash">Cash on delivery</cngx-radio>
-      <cngx-radio value="invoice">Invoice</cngx-radio>
+      <cngx-radio class="tt-hitbox" value="card">Credit card</cngx-radio>
+      <cngx-radio class="tt-hitbox" value="cash">Cash on delivery</cngx-radio>
+      <cngx-radio class="tt-hitbox" value="invoice">Invoice</cngx-radio>
     </cngx-radio-group>
 
     <cngx-button-toggle-group label="Layout" [(value)]="view">
@@ -79,7 +79,7 @@ export const STORY: DemoSpec = {
       }
     </div>
 
-    <cngx-close-button label="Dismiss notice" />
+    <cngx-close-button class="tt-hitbox" label="Dismiss notice" />
   </div>`,
   templateChromeBefore: `
   <div class="cngx-ex-chrome" style="margin-bottom:12px">
