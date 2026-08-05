@@ -49,6 +49,18 @@ const ATOMS: { name: string; route: string; selector: string; axis: 'block' | 'i
     selector: '.cngx-close-button__btn',
     axis: 'block',
   },
+  {
+    name: 'button-toggle',
+    route: '/#/common/interactive/button-toggle/group/basic-view-switcher',
+    selector: '.cngx-button-toggle',
+    axis: 'block',
+  },
+  {
+    name: 'menu-item',
+    route: '/#/common/interactive/menu/base/action-menu-with-separator',
+    selector: '[cngxMenuItem]',
+    axis: 'block',
+  },
 ];
 
 const applyCompact = () => document.documentElement.setAttribute('data-density', 'compact');
