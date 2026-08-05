@@ -129,6 +129,21 @@
   }
 
   /**
+   * Interactive hit-area floor. `inherits: true` so a `[data-touch]`
+   * ancestor cascades the floor to the subtree, orthogonal to the
+   * `--cngx-space-*` density scale. Defaults to `0px` (no floor) so a
+   * use-site `max(<current>, var(--cngx-target-min, 0px))` is inert
+   * until the coarse-pointer media block below lifts it to 44px — a
+   * fixed non-zero initial would have defeated that use-site fallback.
+   * @group Layout
+   */
+  @property --cngx-target-min {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 0px;
+  }
+
+  /**
    * Corner radius — small (4px).
    * @group Layout
    */
@@ -488,5 +503,36 @@
     --cngx-color-success: oklch(0.6 0.15 145);
     --cngx-color-warning: oklch(0.72 0.15 75);
     --cngx-color-info: oklch(0.65 0.12 240);
+  }
+
+  /* Touch-target floor — env-derived default plus explicit opt-in /
+   * opt-out, mirroring the colour-scheme Blocks 2-4 above. The floor
+   * is orthogonal to density: it clamps hit-area, never spacing.
+   *
+   * Block 1 — coarse-pointer default. A touch/pen pointer lifts the
+   * floor to the WCAG 2.5.5 / Apple-HIG 44px. Both opt-out signals are
+   * excluded so a page/section pinned `off` wins over the media query,
+   * exactly as a pinned light island wins over OS dark. */
+  @media (any-pointer: coarse) {
+    :root:not([data-touch='off']):not(.cngx-touch-off) {
+      --cngx-target-min: 44px;
+    }
+  }
+
+  /* Block 2 — explicit on. Either signal — the typed attribute
+   * `data-touch="on"` or the bare `.cngx-touch-on` class — forces the
+   * 44px floor on a fine pointer too (e.g. a kiosk with a mouse but
+   * touch-sized targets). Set on `<html>`, a section wrapper, or a
+   * single component. */
+  [data-touch='on'],
+  .cngx-touch-on {
+    --cngx-target-min: 44px;
+  }
+
+  /* Block 3 — explicit off. Mirror of Block 2 so a mouse-first island
+   * inside a coarse-pointer document resets the floor to 0px cleanly. */
+  [data-touch='off'],
+  .cngx-touch-off {
+    --cngx-target-min: 0px;
   }
 }
