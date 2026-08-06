@@ -5,15 +5,9 @@
  * @module @cngx/testing/geometry
  */
 export {
-  boxOf,
   containerState,
-  expectBoxesMatch,
   gridTracks,
   resolvedToken,
-  winningValue,
-  withRoot,
-  type Box,
   type ContainerState,
   type GridAxis,
-  type RootAttrs,
 } from './geometry';

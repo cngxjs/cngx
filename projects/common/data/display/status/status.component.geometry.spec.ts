@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { resolvedToken, winningValue } from '@cngx/testing/geometry';
+import { resolvedToken } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { CngxStatus, type StatusTone } from './status.component';
@@ -39,7 +39,7 @@ afterEach(() => {
 describe('CngxStatus geometry', () => {
   it('sizes the dot from the registered dot-size default', () => {
     const { dot } = mount();
-    expect(parseFloat(winningValue(dot, 'inline-size'))).toBeCloseTo(16, 1);
+    expect(parseFloat(resolvedToken(dot, 'inline-size'))).toBeCloseTo(16, 1);
   });
 
   it('lets a host-set dot-size reach the dot - the #250 inherits contract', () => {
@@ -48,14 +48,14 @@ describe('CngxStatus geometry', () => {
     const { host, dot } = mount();
     host.style.setProperty('--cngx-status-dot-size', '40px');
     expect(resolvedToken(dot, '--cngx-status-dot-size')).toBe('40px');
-    expect(parseFloat(winningValue(dot, 'inline-size'))).toBeCloseTo(40, 1);
+    expect(parseFloat(resolvedToken(dot, 'inline-size'))).toBeCloseTo(40, 1);
   });
 
   it('derives the gap from the space scale rather than the registered initial', () => {
     const { host } = mount();
-    const before = parseFloat(winningValue(host, 'column-gap'));
+    const before = parseFloat(resolvedToken(host, 'column-gap'));
     host.style.setProperty('--cngx-space-sm', '20px');
-    const after = parseFloat(winningValue(host, 'column-gap'));
+    const after = parseFloat(resolvedToken(host, 'column-gap'));
     expect(after).toBeCloseTo(20, 1);
     expect(after).not.toBeCloseTo(before, 1);
   });
@@ -67,9 +67,9 @@ describe('CngxStatus geometry', () => {
     // this divergence would vanish.
     const { host, dot } = mount('success');
     host.setAttribute('data-color-scheme', 'light');
-    const light = winningValue(dot, 'background-color');
+    const light = resolvedToken(dot, 'background-color');
     host.setAttribute('data-color-scheme', 'dark');
-    const dark = winningValue(dot, 'background-color');
+    const dark = resolvedToken(dot, 'background-color');
     expect(light).not.toBe('');
     expect(dark).not.toBe('');
     expect(dark).not.toBe(light);

@@ -1,17 +1,16 @@
-import { expect } from 'vitest';
-
 /**
  * Geometry assertion helpers for `*.geometry.spec.ts`, which run in a real
  * Chromium (the `test-geometry` builder target) rather than jsdom.
  *
- * These are thin reads over `getComputedStyle` / `getBoundingClientRect` that
- * each return a plain value, so the spec keeps the assertion and reads a real
- * diff. A custom matcher would hide the read behind a name; the locked
- * decision for this layer is functions, not matchers.
+ * These are thin reads over `getComputedStyle` that each return a plain value,
+ * so the spec keeps the assertion and reads a real diff. A custom matcher would
+ * hide the read behind a name; the locked decision for this layer is functions,
+ * not matchers.
  *
  * Every read here comes back `''` under jsdom, which is exactly why the default
  * `test` target excludes these specs and this module is only ever loaded in the
- * browser target.
+ * browser target - reachable through the `@cngx/testing/geometry` subpath, not
+ * the root `@cngx/testing` barrel.
  */
 
 export type GridAxis = 'columns' | 'rows';
@@ -29,51 +28,19 @@ export function gridTracks(el: Element, axis: GridAxis = 'columns'): string[] {
 }
 
 /**
- * The computed value of a custom property at `el`. Catches the two recorded
- * cascade traps a text-level guard cannot see: a `@property inherits: false`
- * token that never reaches a descendant, and a registered token whose fixed
- * `initial-value` defeats a use-site `var(token, fallback)`. For a registered
- * `<length>` / `<color>` token this is the resolved value (`6px`, an `oklch`),
- * not the authored expression.
+ * The computed value of a property at `el`, by name.
+ *
+ * For a custom property it catches the two recorded cascade traps a text-level
+ * guard cannot see: a `@property inherits: false` token that never reaches a
+ * descendant, and a registered token whose fixed `initial-value` defeats a
+ * use-site `var(token, fallback)`. For a registered `<length>` / `<color>`
+ * token this is the resolved value (`6px`, an `oklch`), not the authored
+ * expression. For a standard property it is the resolved value used to pin a
+ * cascade tie (two selectors at equal specificity, source order decides) or to
+ * read a laid-out dimension.
  */
-export function resolvedToken(el: Element, name: string): string {
-  return getComputedStyle(el).getPropertyValue(name).trim();
-}
-
-/**
- * The resolved value of one standard property at `el` - for pinning a cascade
- * tie, where two selectors land at equal specificity and source order decides
- * the winner.
- */
-export function winningValue(el: Element, property: string): string {
+export function resolvedToken(el: Element, property: string): string {
   return getComputedStyle(el).getPropertyValue(property).trim();
-}
-
-/** A viewport-relative box, the subset of `DOMRect` geometry parity needs. */
-export interface Box {
-  readonly top: number;
-  readonly left: number;
-  readonly width: number;
-  readonly height: number;
-}
-
-/** `el`'s box in viewport coordinates. */
-export function boxOf(el: Element): Box {
-  const rect = el.getBoundingClientRect();
-  return { top: rect.top, left: rect.left, width: rect.width, height: rect.height };
-}
-
-/**
- * Assert two boxes coincide within `tolerancePx` on every edge and dimension -
- * "this projected atom fills its container". The one assertion helper in the
- * set: a four-dimension parity check reads worse inlined than named, and the
- * per-edge `expect` still surfaces which edge drifted.
- */
-export function expectBoxesMatch(a: Box, b: Box, tolerancePx = 0.5): void {
-  expect(Math.abs(a.top - b.top)).toBeLessThanOrEqual(tolerancePx);
-  expect(Math.abs(a.left - b.left)).toBeLessThanOrEqual(tolerancePx);
-  expect(Math.abs(a.width - b.width)).toBeLessThanOrEqual(tolerancePx);
-  expect(Math.abs(a.height - b.height)).toBeLessThanOrEqual(tolerancePx);
 }
 
 /** The resolved containment context declared at `el`. */
@@ -93,47 +60,4 @@ export function containerState(el: Element): ContainerState {
     type: style.getPropertyValue('container-type').trim(),
     name: style.getPropertyValue('container-name').trim(),
   };
-}
-
-/** Root attributes a geometry spec swaps: density, theme, direction. */
-export interface RootAttrs {
-  readonly density?: string;
-  readonly theme?: string;
-  readonly dir?: string;
-}
-
-/**
- * Stamp `data-density` / `data-theme` / `dir` on `document.documentElement`
- * for the duration of `body`, then restore the prior values (removing any
- * attribute that was absent). Returns whatever `body` returns.
- *
- * Density, dark mode and RTL all read a root attribute, so this is how a
- * geometry spec asserts them. Safe because the browser provider sets
- * `colorScheme: null`, so `prefers-color-scheme` reports the emulated value
- * rather than a pinned light.
- */
-export function withRoot<T>(attrs: RootAttrs, body: () => T): T {
-  const root = document.documentElement;
-  const saved: (readonly [string, string | null])[] = [];
-  const apply = (attr: string, value: string | undefined): void => {
-    if (value === undefined) {
-      return;
-    }
-    saved.push([attr, root.getAttribute(attr)]);
-    root.setAttribute(attr, value);
-  };
-  apply('data-density', attrs.density);
-  apply('data-theme', attrs.theme);
-  apply('dir', attrs.dir);
-  try {
-    return body();
-  } finally {
-    for (const [attr, previous] of saved) {
-      if (previous === null) {
-        root.removeAttribute(attr);
-      } else {
-        root.setAttribute(attr, previous);
-      }
-    }
-  }
 }
