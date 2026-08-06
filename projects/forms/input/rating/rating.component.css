@@ -20,6 +20,10 @@
   margin: 0;
   border: none;
   background: transparent;
+  /* Floor the star tap area to the pointer-derived target on a coarse pointer;
+     the glyph keeps its font-size and stays centred by the inline-flex. */
+  min-inline-size: var(--cngx-target-min, 0px);
+  min-block-size: var(--cngx-target-min, 0px);
   cursor: pointer;
   color: var(--cngx-rating-color, inherit);
   font-size: var(--cngx-rating-size, 1.5rem);
