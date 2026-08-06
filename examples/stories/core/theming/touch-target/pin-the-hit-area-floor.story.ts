@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     '<code>[cngxTouchTarget]="\'on\'"</code> pins the 44px touch floor on a subtree; <code>\'off\'</code> keeps it dense. The default derives from <code>(any-pointer: coarse)</code>, so the directive is override-only.',
   description:
-    'CngxTouchTarget reflects its value onto <code>[data-touch]</code>, scoping the inheritable <code>--cngx-target-min</code> floor to a subtree. Every interactive atom inside clamps its host box with <code>max(&lt;natural&gt;, var(--cngx-target-min, 0px))</code>, so the indicator glyphs keep their design size inside a larger hit area. On a mouse (fine pointer) the floor is inert at 0px, so pick <strong>on</strong> to see the 44px lift here; a touch device gets it automatically from <strong>auto</strong>.',
+    'CngxTouchTarget reflects its value onto <code>[data-touch]</code>, scoping the inheritable <code>--cngx-target-min</code> floor to a subtree. Every interactive atom inside clamps its host box with <code>max(&lt;natural&gt;, var(--cngx-target-min, 0px))</code>, so the indicator glyphs keep their design size inside a larger hit area. On a mouse (fine pointer) the floor is inert at 0px, so pick <strong>on</strong> to see the 44px lift here; a touch device gets it automatically from <strong>auto</strong>. The floor now sweeps the whole interactive surface - the tab headers and paginator controls below lift with the same token, as do the select trigger and options, breadcrumb items, stepper headers and the treetable expander. A companion <code>--cngx-target-gap</code> spaces dense chip rows so a small, closely-packed target row stays WCAG 2.5.8 compliant.',
   level: 'atom',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
@@ -15,6 +15,9 @@ export const STORY: DemoSpec = {
     "import { CngxTouchTarget } from '@cngx/core';",
     "import { CngxCheckbox, CngxToggle, CngxRadioGroup, CngxRadio, CngxButtonToggleGroup, CngxButtonToggle, CngxCloseButton } from '@cngx/common/interactive';",
     "import { CngxChip } from '@cngx/common/display';",
+    "import { CngxTab, CngxTabContent } from '@cngx/common/tabs';",
+    "import { CngxTabGroup } from '@cngx/ui/tabs';",
+    "import { CngxPaginator, CngxPaginatorFirst, CngxPaginatorPrev, CngxPaginatorPages, CngxPaginatorNext, CngxPaginatorLast } from '@cngx/ui/paginator';",
   ],
   imports: [
     'CngxTouchTarget',
@@ -26,6 +29,15 @@ export const STORY: DemoSpec = {
     'CngxButtonToggle',
     'CngxCloseButton',
     'CngxChip',
+    'CngxTab',
+    'CngxTabContent',
+    'CngxTabGroup',
+    'CngxPaginator',
+    'CngxPaginatorFirst',
+    'CngxPaginatorPrev',
+    'CngxPaginatorPages',
+    'CngxPaginatorNext',
+    'CngxPaginatorLast',
   ],
   references: [
     {
@@ -44,6 +56,8 @@ export const STORY: DemoSpec = {
   protected readonly payment = signal<'card' | 'cash' | 'invoice' | undefined>(undefined);
   protected readonly view = signal<'grid' | 'list' | 'table' | undefined>('grid');
   protected readonly tags = signal<string[]>(['Design', 'Review']);
+  protected readonly activeTab = signal(0);
+  protected readonly pageIndex = signal(2);
 
   protected handleRemove(tag: string): void {
     this.tags.update((current) => current.filter((entry) => entry !== tag));
@@ -80,6 +94,26 @@ export const STORY: DemoSpec = {
     </div>
 
     <cngx-close-button class="tt-hitbox" label="Dismiss notice" />
+
+    <cngx-tab-group [(activeIndex)]="activeTab" aria-label="Account settings">
+      <div cngxTab [label]="'Profile'">
+        <ng-template cngxTabContent><p>Profile</p></ng-template>
+      </div>
+      <div cngxTab [label]="'Account'">
+        <ng-template cngxTabContent><p>Account</p></ng-template>
+      </div>
+      <div cngxTab [label]="'Privacy'">
+        <ng-template cngxTabContent><p>Privacy</p></ng-template>
+      </div>
+    </cngx-tab-group>
+
+    <cngx-paginator [total]="120" [pageIndex]="pageIndex()" (pageIndexChange)="pageIndex.set($event)">
+      <cngx-pgn-first />
+      <cngx-pgn-prev />
+      <cngx-pgn-pages />
+      <cngx-pgn-next />
+      <cngx-pgn-last />
+    </cngx-paginator>
   </div>`,
   templateChromeBefore: `
   <div class="cngx-ex-chrome" style="margin-bottom:12px">
