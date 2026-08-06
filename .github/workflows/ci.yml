@@ -31,6 +31,17 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-angular-${{ hashFiles('package-lock.json') }}-
 
+      # Keyed on the lockfile so the cache invalidates when the pinned
+      # @playwright/test version changes - the browser build the geometry
+      # specs (and the timeline e2e) drive Chromium with.
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+
       - name: Install dependencies
         run: npm ci
 
@@ -60,6 +71,12 @@ jobs:
       # neither of which jsdom's CSSOM parses.
       - name: Install Playwright chromium
         run: npx playwright install --with-deps chromium
+
+      # Geometry specs run in the same job as the unit tests - same pipeline,
+      # a different environment. CI sets CI=1, so the vitest browser provider
+      # runs Chromium headless with no flag. A geometry regression fails the PR.
+      - name: Run geometry specs
+        run: npm run test:geometry
 
       - name: Timeline layout e2e
         run: npx playwright test e2e/timeline-layout.spec.ts --project=chromium

@@ -65,6 +65,9 @@ CNGX_LLM_REFERENCE.md
 /playwright/.cache/
 .vscode/
 
+# Vitest browser-mode failure screenshots, written next to a *.geometry.spec.ts.
+**/__screenshots__/
+
 # E2E ephemera (screenshots, traces, transient artifacts)
 .tmp/
 

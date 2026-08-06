@@ -76,6 +76,9 @@ export const NON_LIBRARY_SCOPES = [
   'changelog',
   'deps',
   'release',
+  'testing',
+  'scripts',
+  'e2e',
 ];
 
 export const ALL_SCOPES = [...LIBRARY_SCOPES, ...NON_LIBRARY_SCOPES];
