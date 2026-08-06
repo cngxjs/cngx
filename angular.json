@@ -49,17 +49,6 @@
           "options": {
             "lintFilePatterns": ["projects/common/**/*.ts"]
           }
-        },
-        "e2e": {
-          "builder": "playwright-ng-schematics:playwright",
-          "options": {
-            "devServerTarget": "common:serve"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "common:serve:production"
-            }
-          }
         }
       }
     },
@@ -92,17 +81,6 @@
           "builder": "@angular-eslint/builder:lint",
           "options": {
             "lintFilePatterns": ["projects/utils/**/*.ts"]
-          }
-        },
-        "e2e": {
-          "builder": "playwright-ng-schematics:playwright",
-          "options": {
-            "devServerTarget": "utils:serve"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "utils:serve:production"
-            }
           }
         }
       }
@@ -137,17 +115,6 @@
           "options": {
             "lintFilePatterns": ["projects/core/**/*.ts"]
           }
-        },
-        "e2e": {
-          "builder": "playwright-ng-schematics:playwright",
-          "options": {
-            "devServerTarget": "core:serve"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "core:serve:production"
-            }
-          }
         }
       }
     },
@@ -180,17 +147,6 @@
           "builder": "@angular-eslint/builder:lint",
           "options": {
             "lintFilePatterns": ["projects/forms/**/*.ts"]
-          }
-        },
-        "e2e": {
-          "builder": "playwright-ng-schematics:playwright",
-          "options": {
-            "devServerTarget": "forms:serve"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "forms:serve:production"
-            }
           }
         }
       }
@@ -236,17 +192,6 @@
           "options": {
             "lintFilePatterns": ["projects/ui/**/*.ts", "projects/ui/**/*.html"]
           }
-        },
-        "e2e": {
-          "builder": "playwright-ng-schematics:playwright",
-          "options": {
-            "devServerTarget": "ui:serve"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "ui:serve:production"
-            }
-          }
         }
       }
     },
@@ -279,17 +224,6 @@
           "builder": "@angular-eslint/builder:lint",
           "options": {
             "lintFilePatterns": ["projects/data-display/**/*.ts", "projects/data-display/**/*.html"]
-          }
-        },
-        "e2e": {
-          "builder": "playwright-ng-schematics:playwright",
-          "options": {
-            "devServerTarget": "data-display:serve"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "data-display:serve:production"
-            }
           }
         }
       }
