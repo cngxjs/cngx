@@ -91,6 +91,7 @@ export const STORY: DemoSpec = {
   }`,
   template: `
   <div
+    class="tt-hitboxes"
     [cngxTouchTarget]="mode() === 'auto' ? undefined : mode()"
     style="display:flex; flex-direction:column; gap:16px; align-items:flex-start"
   >
