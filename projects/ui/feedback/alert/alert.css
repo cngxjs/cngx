@@ -626,6 +626,9 @@
       border: 1px solid var(--cngx-alert-icon-color, currentColor);
       border-radius: var(--cngx-alert-action-radius, 4px);
       padding: var(--cngx-alert-action-padding, 4px 10px);
+      /* Floor the action-row height to the pointer-derived target on a coarse
+         pointer; inert (0px) on a fine pointer. */
+      min-block-size: var(--cngx-target-min, 0px);
       cursor: pointer;
       font-size: var(--cngx-alert-action-font-size, 0.875rem);
       font-weight: var(--cngx-alert-action-font-weight, 600);
@@ -649,6 +652,13 @@
 
     .cngx-alert__dismiss {
       flex-shrink: 0;
+      /* Floor the dismiss tap area to the pointer-derived target on a coarse
+         pointer; the glyph keeps its size and stays centred. */
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-inline-size: var(--cngx-target-min, 0px);
+      min-block-size: var(--cngx-target-min, 0px);
     }
 
     :scope.cngx-alert--hidden {
