@@ -55,6 +55,9 @@
      header-button inline padding here and push the chevron off the leading track. */
   padding-block: var(--cngx-dga-row-py, 0.5rem);
   padding-inline: 0;
+  /* Floor the clickable summary-row height to the pointer-derived target on a
+     coarse pointer; inert (0px) on a fine pointer. */
+  min-block-size: var(--cngx-target-min, 0px);
   border: 0;
   background: var(--cngx-dga-row-bg, transparent);
   color: var(--cngx-dga-row-color, inherit);
