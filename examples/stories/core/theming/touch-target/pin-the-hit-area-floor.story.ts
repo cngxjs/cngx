@@ -134,7 +134,7 @@ export const STORY: DemoSpec = {
       </div>
     </cngx-tab-group>
 
-    <cngx-paginator [total]="120" [pageIndex]="pageIndex()" (pageIndexChange)="pageIndex.set($event)">
+    <cngx-paginator [total]="28" [pageIndex]="pageIndex()" (pageIndexChange)="pageIndex.set($event)" style="width: min(420px, 100%)">
       <cngx-pgn-first />
       <cngx-pgn-prev />
       <cngx-pgn-pages />
