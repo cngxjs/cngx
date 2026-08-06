@@ -1,15 +1,19 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 
-const ROUTE = '/#/forms/select';
+const R = {
+  basic: '/#/forms/select/multi-select/multi-basic',
+  clearable: '/#/forms/select/multi-select/multi-clearable',
+  custom: '/#/forms/select/multi-select/multi-custom-cngxmultiselectchip-template',
+};
 
-function card(page: Page, title: string): Locator {
-  return page.locator('app-example-card').filter({ hasText: title });
+function ex(page: Page): Locator {
+  return page.locator('main');
 }
 
 test.describe('CngxMultiSelect demo', () => {
   test('basic: picking two options renders two chips, panel stays open', async ({ page }) => {
-    await page.goto(ROUTE);
-    const section = card(page, 'Multi — basic');
+    await page.goto(R.basic);
+    const section = ex(page);
     const trigger = section.locator('cngx-multi-select .cngx-multi-select__trigger').first();
     await trigger.click();
 
@@ -28,9 +32,11 @@ test.describe('CngxMultiSelect demo', () => {
   });
 
   test('chip × removes a value', async ({ page }) => {
-    await page.goto(ROUTE);
-    const section = card(page, 'Multi — basic');
+    await page.goto(R.basic);
+    const section = ex(page);
     const chips = section.locator('cngx-chip');
+    // Preloaded chips hydrate after first render — wait before counting.
+    await expect(chips.first()).toBeVisible();
     const initialCount = await chips.count();
     expect(initialCount).toBeGreaterThan(0);
 
@@ -39,8 +45,8 @@ test.describe('CngxMultiSelect demo', () => {
   });
 
   test('clear-all empties every selected value', async ({ page }) => {
-    await page.goto(ROUTE);
-    const section = card(page, 'Multi — clearable');
+    await page.goto(R.clearable);
+    const section = ex(page);
     const clearAll = section.locator('.cngx-multi-select__clear-all');
     await expect(clearAll).toBeVisible();
 
@@ -52,8 +58,8 @@ test.describe('CngxMultiSelect demo', () => {
   });
 
   test('custom *cngxMultiSelectChip template renders consumer markup', async ({ page }) => {
-    await page.goto(ROUTE);
-    const section = card(page, 'Multi — custom');
+    await page.goto(R.custom);
+    const section = ex(page);
     // The default <cngx-chip> host is absent — consumer template replaces it.
     await expect(section.locator('cngx-chip')).toHaveCount(0);
     // Hash-prefix label from the demo template.
