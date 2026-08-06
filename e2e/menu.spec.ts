@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-const ROUTE = '/#/common/interactive/menu';
+const ROUTE = '/#/common/interactive/menu/base/action-menu-with-separator';
 
 test.describe('CngxMenu demo', () => {
   test('renders role="menu" and menuitem children', async ({ page }) => {

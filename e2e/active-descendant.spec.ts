@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 
-const ROUTE = '/#/common/a11y/active-descendant';
+const ROUTE = '/#/common/a11y/active-descendant/listbox-with-items-input';
+const TYPEAHEAD_ROUTE = '/#/common/a11y/active-descendant/typeahead';
 
 test.describe('CngxActiveDescendant demo', () => {
   test('renders the listbox section with aria attributes', async ({ page }) => {
@@ -53,7 +54,7 @@ test.describe('CngxActiveDescendant demo', () => {
   });
 
   test('typeahead jumps to matching label', async ({ page }) => {
-    await page.goto(ROUTE);
+    await page.goto(TYPEAHEAD_ROUTE);
     const typeaheadBox = page.locator('[role="listbox"][aria-label="Fruit typeahead"]');
     await typeaheadBox.focus();
     await page.keyboard.type('e');

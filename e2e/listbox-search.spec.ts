@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-const ROUTE = '/#/common/interactive/listbox-search';
+const ROUTE = '/#/common/interactive/listbox/search/command-palette';
 
 test.describe('CngxListboxSearch demo', () => {
   test('all commands shown when search is empty', async ({ page }) => {
@@ -22,7 +22,7 @@ test.describe('CngxListboxSearch demo', () => {
     await page.goto(ROUTE);
     const search = page.locator('input[cngxListboxSearch]');
     await search.fill('zzz');
-    const empty = page.locator('.empty');
+    const empty = page.locator('.demo-listbox-empty');
     await expect(empty).toHaveText('No matching commands.');
   });
 
