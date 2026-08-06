@@ -18,7 +18,8 @@ const FLOOR = 44;
 
 // Every clamped surface. `axis` is the constrained dimension the floor
 // lifts: 'block' for row controls, 'inline' where noted. The first group is
-// the foundation set; the second is the completion sweep. The treetable
+// the foundation set; the second is the completion sweep; the third is the
+// third-tier sweep (always-rendered surfaces only). The treetable
 // expander is clamped and guarded by the source-CSS coverage spec, but
 // @cngx/data-display ships no demo route, so it has no behavioural entry here.
 // `coarse` overrides the mobile viewport for a surface whose responsive
@@ -122,6 +123,41 @@ const ATOMS: {
     name: 'breadcrumb-overflow',
     route: '/#/ui/breadcrumb/overflow/collapsed-menu',
     selector: '.cngx-breadcrumb__overflow-trigger',
+    axis: 'block',
+  },
+  // Third-tier sweep. Only always-rendered surfaces appear here. Interaction-
+  // gated hosts (tab-overflow popover, breadcrumb-siblings dropdown, tree-select
+  // panel node + twisty, popover action) are guarded by the source-CSS coverage
+  // spec only: revealing them needs a click the navigate-only harness does not
+  // perform, mirroring the treetable exclusion above.
+  {
+    name: 'rating-item',
+    route: '/#/forms/input/rating/basic',
+    selector: '.cngx-rating__item',
+    axis: 'block',
+  },
+  {
+    name: 'speak-button',
+    route: '/#/ui/speak/speak-button/styled-speaker-icon',
+    selector: '.cngx-speak-button__btn',
+    axis: 'block',
+  },
+  {
+    name: 'action-button',
+    route: '/#/ui/action-button/async-button/string-labels',
+    selector: '.cngx-action-button',
+    axis: 'block',
+  },
+  {
+    name: 'alert-dismiss',
+    route: '/#/ui/feedback/alert/closable',
+    selector: '.cngx-alert__dismiss',
+    axis: 'inline',
+  },
+  {
+    name: 'tab-nav-link',
+    route: '/#/ui/tabs/tab-nav/leaf-links',
+    selector: '.cngx-tab-nav__link',
     axis: 'block',
   },
 ];
