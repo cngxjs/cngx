@@ -40,9 +40,13 @@
       --cngx-multi-chip-group-gap: var(--cngx-space-sm);
       display: inline-flex;
       flex-direction: column;
-      gap: var(
-        --cngx-multi-chip-group-gap,
-        var(--cngx-chip-group-gap, var(--cngx-space-sm, 0.5rem))
+      /* Adjacent-target spacing floor (WCAG 2.5.8) - a dense chip row keeps at
+         least the pointer-derived gap so small, closely-packed chips stay
+         distinguishable as separate tap targets. Inert at 0px on a fine
+         pointer, so the natural density gap is unchanged. */
+      gap: max(
+        var(--cngx-multi-chip-group-gap, var(--cngx-chip-group-gap, var(--cngx-space-sm, 0.5rem))),
+        var(--cngx-target-gap, 0px)
       );
     }
 

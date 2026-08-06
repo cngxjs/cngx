@@ -306,6 +306,16 @@
     min-block-size: var(--cngx-target-min, 0px);
   }
 
+  /* Adjacent-target spacing floor (WCAG 2.5.8) - stacked menu rows keep at
+     least the pointer-derived gap between neighbours so densely packed items
+     stay distinguishable as separate tap targets. An adjacent-sibling margin
+     avoids changing the container's block-flow layout model; inert at 0px on a
+     fine pointer, and a vertical margin is a no-op on a horizontal menubar. */
+  :is([cngxMenuItem], [cngxMenuItemCheckbox], [cngxMenuItemRadio], [cngxMenuItemSubmenu])
+    + :is([cngxMenuItem], [cngxMenuItemCheckbox], [cngxMenuItemRadio], [cngxMenuItemSubmenu]) {
+    margin-block-start: var(--cngx-target-gap, 0px);
+  }
+
   .cngx-menu-item--highlighted {
     background: var(--cngx-menu-item-highlight-bg, oklch(0.66 0.19 50 / 0.1));
   }
