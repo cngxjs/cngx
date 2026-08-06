@@ -183,7 +183,9 @@
       display: flex;
       align-items: center;
       gap: var(--cngx-tree-select-trigger-gap, 0.5rem);
-      min-height: var(--cngx-tree-select-trigger-height, 2.25rem);
+      /* Touch-target floor - lift the trigger tap target to the pointer-
+         derived minimum; inert at 0px on a fine pointer. */
+      min-height: max(var(--cngx-tree-select-trigger-height, 2.25rem), var(--cngx-target-min, 0px));
       padding: var(--cngx-tree-select-trigger-padding, 0.25rem 0.5rem);
       border: var(
         --cngx-tree-select-trigger-border,

@@ -217,14 +217,17 @@
   }
 
   /**
-   * Minimum height of an option row - defaults to `auto` so dense
-   * rows stay compact.
+   * Minimum height of an option row - defaults to `0px` (content-driven,
+   * so dense rows stay compact) and composes into the touch-target floor
+   * via `max()`. A `0px` rather than `auto` default is deliberate: `auto`
+   * cannot be an argument to `max()`, and the floor needs to compose the
+   * row height against `--cngx-target-min`.
    * @group Layout
    */
   @property --cngx-select-option-min-height {
     syntax: '*';
     inherits: false;
-    initial-value: auto;
+    initial-value: 0px;
   }
 
   /**
@@ -948,7 +951,10 @@
     align-items: center;
     gap: var(--cngx-option-gap, 0.5rem);
     padding: var(--cngx-select-option-padding, 0.375rem 0.5rem);
-    min-height: var(--cngx-select-option-min-height, auto);
+    /* Touch-target floor - the panel option row is a tap target; floor it to
+       the pointer-derived minimum while the token still lets a consumer force
+       a taller row. 0px default renders at content height on a fine pointer. */
+    min-height: max(var(--cngx-select-option-min-height, 0px), var(--cngx-target-min, 0px));
     cursor: pointer;
     border-radius: var(--cngx-select-option-radius, 0.125rem);
   }

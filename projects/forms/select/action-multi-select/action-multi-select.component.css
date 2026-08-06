@@ -242,9 +242,11 @@
       );
       font: inherit;
       cursor: text;
-      min-height: var(
-        --cngx-action-multi-select-min-height,
-        var(--cngx-combobox-min-height, 2.25rem)
+      /* Touch-target floor - lift the trigger tap target to the pointer-
+         derived minimum; inert at 0px on a fine pointer. */
+      min-height: max(
+        var(--cngx-action-multi-select-min-height, var(--cngx-combobox-min-height, 2.25rem)),
+        var(--cngx-target-min, 0px)
       );
       flex-wrap: nowrap;
     }
