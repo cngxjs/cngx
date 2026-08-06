@@ -193,6 +193,9 @@
 .cngx-dga-sort-header {
   cursor: pointer;
   user-select: none;
+  /* Floor the clickable sort-header height to the pointer-derived target on a
+     coarse pointer; inert (0px) on a fine pointer. */
+  min-block-size: var(--cngx-target-min, 0px);
 }
 
 .cngx-dga-sort-header:focus-visible {
