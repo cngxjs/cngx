@@ -111,6 +111,13 @@
     );
   }
 
+  /*
+   * Keep this rule at specificity (0,1,0). `ui/paginator`'s `@container` collapse
+   * tiers qualify their `display: none` as `.cngx-paginator__segment:is(...)`
+   * (0,1,1) to out-rank this in the same `@layer cngx.components`; raising this
+   * to (0,2,0)+ would silently re-defeat that collapse. Guarded by
+   * `projects/ui/paginator/paginator.geometry.spec.ts`.
+   */
   .cngx-paginator__segment {
     display: inline-flex;
     align-items: center;
