@@ -17,16 +17,16 @@ import {
 // Runs in a real Chromium (the `test-geometry` target). The default `numbered`
 // skin is used deliberately: the `bar` skin opts out of inline-size containment.
 //
-// FINDING (filed, not fixed here): the two bare-element collapse rules
-// `cngx-pgn-goto { display: none }` (paginator.component.css:929) and
-// `cngx-pgn-first, cngx-pgn-last { display: none }` (:935) are specificity
-// (0,1,0)-outranked in the SAME `@layer cngx.components` by
-// `.cngx-paginator__segment { display: inline-flex }` (paginator-base.css:114),
-// so the container query matches but the segment never hides. The two tests
-// below are `it.fails` until the paginator family raises the collapse selectors'
-// specificity. The `[data-responsive]` swap works (its selectors carry
-// `.cngx-paginator[data-responsive]`, specificity 0,2,1) and is the positive
-// control proving the query itself fires.
+// FINDING (fixed): the two bare-element collapse rules `cngx-pgn-goto` (0,0,1)
+// and `cngx-pgn-first, cngx-pgn-last` (0,0,1) were specificity-outranked in the
+// SAME `@layer cngx.components` by `.cngx-paginator__segment { display:
+// inline-flex }` (paginator-base.css:114, 0,1,0), so the container query matched
+// but the segment never hid. Fixed by qualifying the collapse selectors with the
+// segment class - `.cngx-paginator__segment:is(cngx-pgn-goto)` and
+// `.cngx-paginator__segment:is(cngx-pgn-first, cngx-pgn-last)` - which reach
+// (0,1,1) and win. The two guards below now assert the collapse for real. The
+// `[data-responsive]` swap (its selectors carry `.cngx-paginator[data-responsive]`,
+// specificity 0,2,1) is the positive control proving the query itself fires.
 
 @Component({
   selector: 'cngx-paginator-geometry-host',
@@ -103,16 +103,12 @@ describe('CngxPaginator geometry', () => {
     expect(segmentDisplay(host, 'cngx-pgn-status')).not.toBe('none');
   });
 
-  it.fails('collapses the go-to input below the 30rem breakpoint', () => {
-    // KNOWN FAILURE (filed): `.cngx-paginator__segment` (0,1,0) outranks the
-    // collapse rule `cngx-pgn-goto { display:none }` (0,0,1) in the same layer.
-    // Remove `.fails` once the paginator family raises the collapse specificity.
+  it('collapses the go-to input below the 30rem breakpoint', () => {
     const host = mount(430);
     expect(segmentDisplay(host, 'cngx-pgn-goto')).toBe('none');
   });
 
-  it.fails('collapses first/last below the 24rem breakpoint', () => {
-    // KNOWN FAILURE (filed): same specificity defeat as the go-to collapse.
+  it('collapses first/last below the 24rem breakpoint', () => {
     const host = mount(300);
     expect(segmentDisplay(host, 'cngx-pgn-first')).toBe('none');
     expect(segmentDisplay(host, 'cngx-pgn-last')).toBe('none');
