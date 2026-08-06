@@ -110,6 +110,9 @@
     gap: var(--cngx-accordion-header-gap, 0.5rem);
     inline-size: 100%;
     padding: var(--cngx-accordion-header-padding, 0.75rem 1rem);
+    /* Floor the header row height to the pointer-derived target on a coarse
+       pointer; inert (0px) on a fine pointer. */
+    min-block-size: var(--cngx-target-min, 0px);
     border: 0;
     border-block-end: 1px solid var(--cngx-accordion-border-color, oklch(0.88 0.005 250));
     background: var(--cngx-color-surface, oklch(1 0 0));
