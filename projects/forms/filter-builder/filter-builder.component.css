@@ -502,6 +502,9 @@
       align-items: center;
       gap: var(--cngx-filter-builder-action-gap, 0.25rem);
       padding: var(--cngx-filter-builder-action-padding, 0.25rem 0.625rem);
+      /* Floor the row height to the pointer-derived target on a coarse pointer;
+         inert (0px) on a fine pointer, so the natural inline size is kept. */
+      min-block-size: var(--cngx-target-min, 0px);
       font: inherit;
       font-size: var(--cngx-filter-builder-action-font-size, 0.875rem);
       color: var(--cngx-filter-builder-action-fg, inherit);
