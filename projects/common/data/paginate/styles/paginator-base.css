@@ -160,8 +160,12 @@
     align-items: center;
     justify-content: center;
     box-sizing: border-box;
-    min-width: var(--cngx-paginator-button-size, 2.25rem);
+    /* Touch-target floor - every page control is a tap target; floor its hit
+       box to the pointer-derived minimum on both axes while the glyph keeps
+       its design size, centred. Inert at 0px on a fine pointer. */
+    min-width: max(var(--cngx-paginator-button-size, 2.25rem), var(--cngx-target-min, 0px));
     height: var(--cngx-paginator-button-size, 2.25rem);
+    min-block-size: var(--cngx-target-min, 0px);
     padding: var(--cngx-paginator-button-padding, 0 0.5rem);
     border: var(--cngx-paginator-button-border-width, 1px) solid
       var(--cngx-paginator-button-border-color, transparent);
