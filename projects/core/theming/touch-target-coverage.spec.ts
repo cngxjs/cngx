@@ -19,8 +19,13 @@ import { resolve } from 'node:path';
 // The manifest alone gives false confidence: it only proves the ENROLLED files
 // still carry the token, never that every interactive host is enrolled. The
 // source-scan completeness guard below closes that hole - it walks every
-// `projects/**/*.css` that declares `cursor: pointer` and fails when one is
-// neither floored (SIZE_FLOOR_HOSTS) nor consciously excluded (EXCLUDED_HOSTS).
+// `projects/**/*.css` that declares a pointer-affordance cursor (`cursor:
+// pointer` OR `cursor: grab`, so a drag handle is not missed) and fails when
+// one is neither floored (SIZE_FLOOR_HOSTS) nor consciously excluded
+// (EXCLUDED_HOSTS). The heuristic still assumes an interactive host declares
+// one of those cursors; a control that sets neither (bare `<button>`,
+// `[role=button]`, `[tabindex]` with the UA cursor) is out of the scan's reach
+// and stays a manifest-review responsibility.
 
 const REPO_ROOT = resolve(__dirname, '..', '..', '..');
 
@@ -176,9 +181,13 @@ const walkCss = (relDir: string): string[] => {
   return out;
 };
 
-const INTERACTIVE_CSS = walkCss('projects').filter((file) =>
-  readRepoCss(file).includes('cursor: pointer'),
-);
+// A pointer-affordance cursor marks a discrete tap/drag target. `grab` is
+// included so a drag handle (reorder / chip-drag) cannot slip the scan even
+// when it never sets `pointer`.
+const declaresTapCursor = (css: string): boolean =>
+  css.includes('cursor: pointer') || css.includes('cursor: grab');
+
+const INTERACTIVE_CSS = walkCss('projects').filter((file) => declaresTapCursor(readRepoCss(file)));
 
 describe('touch-target size-floor coverage manifest', () => {
   it.each(SIZE_FLOOR_HOSTS)('$file references var(--cngx-target-min ($note)', ({ file }) => {
@@ -206,9 +215,10 @@ describe('touch-target size-floor completeness (source scan)', () => {
     const accounted = floored.has(file) || excluded.has(file);
     expect(
       accounted,
-      `${file} declares "cursor: pointer" but is neither in SIZE_FLOOR_HOSTS nor ` +
-        `EXCLUDED_HOSTS. Floor its tap target with var(--cngx-target-min, 0px) and ` +
-        `enroll it, or add it to EXCLUDED_HOSTS with a one-clause reason.`,
+      `${file} declares a tap-affordance cursor (pointer/grab) but is neither in ` +
+        `SIZE_FLOOR_HOSTS nor EXCLUDED_HOSTS. Floor its tap target with ` +
+        `var(--cngx-target-min, 0px) and enroll it, or add it to EXCLUDED_HOSTS ` +
+        `with a one-clause reason.`,
     ).toBe(true);
   });
 });
