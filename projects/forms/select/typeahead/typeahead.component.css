@@ -137,7 +137,9 @@
       align-items: center;
       gap: var(--cngx-typeahead-gap, 0.5rem);
       width: 100%;
-      min-height: var(--cngx-typeahead-min-height, 2.25rem);
+      /* Touch-target floor - lift the trigger tap target to the pointer-
+         derived minimum; inert at 0px on a fine pointer. */
+      min-height: max(var(--cngx-typeahead-min-height, 2.25rem), var(--cngx-target-min, 0px));
       padding: var(--cngx-typeahead-padding, 0 0.75rem);
       border: var(
         --cngx-typeahead-border,

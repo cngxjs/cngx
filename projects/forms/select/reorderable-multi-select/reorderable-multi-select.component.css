@@ -231,7 +231,12 @@
       text-align: start;
       justify-content: space-between;
       flex-wrap: nowrap;
-      min-height: var(--cngx-reorderable-multi-select-min-height, 2.25rem);
+      /* Touch-target floor - lift the trigger tap target to the pointer-
+         derived minimum; inert at 0px on a fine pointer. */
+      min-height: max(
+        var(--cngx-reorderable-multi-select-min-height, 2.25rem),
+        var(--cngx-target-min, 0px)
+      );
       user-select: none;
     }
 

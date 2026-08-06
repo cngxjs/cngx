@@ -87,6 +87,14 @@
     color: var(--cngx-color-primary, oklch(0.66 0.19 50));
     text-decoration: none;
     font-size: var(--cngx-font-size-sm, 0.8125rem);
+
+    /* Touch-target floor - a crumb is a discrete nav tap target. An inline
+       <a> ignores min-block-size, so switch to inline-flex and centre the
+       label, then floor the hit box on the block axis. Inert at 0px on a
+       fine pointer, so the trail keeps its natural line height. */
+    display: inline-flex;
+    align-items: center;
+    min-block-size: var(--cngx-target-min, 0px);
   }
 
   [cngxBreadcrumbItem]:hover {

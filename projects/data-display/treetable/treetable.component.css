@@ -641,6 +641,14 @@
       font-size: var(--cngx-treetable-toggle-font-size, 0.875rem);
       line-height: 1;
       border-radius: var(--cngx-treetable-toggle-radius, 4px);
+      /* Touch-target floor - the expand/collapse twisty is a small nested tap
+         target; floor its hit box to the pointer-derived minimum on both axes
+         while the glyph stays centred. Inert at 0px on a fine pointer. */
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-inline-size: var(--cngx-target-min, 0px);
+      min-block-size: var(--cngx-target-min, 0px);
       transition:
         background var(--cngx-treetable-toggle-transition-duration, 120ms),
         color var(--cngx-treetable-toggle-transition-duration, 120ms);

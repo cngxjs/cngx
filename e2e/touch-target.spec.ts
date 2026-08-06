@@ -16,9 +16,22 @@ import { expect, test, type Browser, type Page } from '@playwright/test';
 
 const FLOOR = 44;
 
-// The atoms clamped in Phase 2. `axis` is the constrained dimension the
-// floor lifts: 'block' for row controls, 'inline' where noted.
-const ATOMS: { name: string; route: string; selector: string; axis: 'block' | 'inline' }[] = [
+// Every clamped surface. `axis` is the constrained dimension the floor
+// lifts: 'block' for row controls, 'inline' where noted. The first group is
+// the foundation set; the second is the completion sweep. The treetable
+// expander is clamped and guarded by the source-CSS coverage spec, but
+// @cngx/data-display ships no demo route, so it has no behavioural entry here.
+// `coarse` overrides the mobile viewport for a surface whose responsive
+// design collapses at phone width (the stepper swaps its step rail for a
+// mobile summary below a tablet breakpoint, so it is measured on a touch
+// tablet that still reports `(any-pointer: coarse)`).
+const ATOMS: {
+  name: string;
+  route: string;
+  selector: string;
+  axis: 'block' | 'inline';
+  coarse?: { width: number; height: number };
+}[] = [
   {
     name: 'checkbox',
     route: '/#/common/interactive/checkbox/base/basic-two-way-binding',
@@ -67,6 +80,50 @@ const ATOMS: { name: string; route: string; selector: string; axis: 'block' | 'i
     selector: '[cngxMenuItem]',
     axis: 'block',
   },
+  // Completion sweep.
+  {
+    name: 'select-trigger',
+    route: '/#/forms/select/single-select/clearable',
+    selector: '.cngx-select__trigger',
+    axis: 'block',
+  },
+  {
+    name: 'listbox-option',
+    route: '/#/common/interactive/listbox/base/single-select',
+    selector: '[cngxOption]',
+    axis: 'block',
+  },
+  {
+    name: 'tab-header',
+    route: '/#/ui/tabs/tab-layout/fitted-and-tab-alignment',
+    selector: '.cngx-tabs__tab',
+    axis: 'block',
+  },
+  {
+    name: 'breadcrumb-item',
+    route: '/#/common/interactive/breadcrumb/basic-trail',
+    selector: '[cngxBreadcrumbItem]',
+    axis: 'block',
+  },
+  {
+    name: 'paginator-button',
+    route: '/#/ui/paginator/paginator-skins/numbered',
+    selector: '.cngx-paginator__button',
+    axis: 'block',
+  },
+  {
+    name: 'stepper-step',
+    route: '/#/ui/stepper/stepper-footer/complete-finish-button',
+    selector: '.cngx-stepper__step',
+    axis: 'block',
+    coarse: { width: 834, height: 1112 },
+  },
+  {
+    name: 'breadcrumb-overflow',
+    route: '/#/ui/breadcrumb/overflow/collapsed-menu',
+    selector: '.cngx-breadcrumb__overflow-trigger',
+    axis: 'block',
+  },
 ];
 
 const applyCompact = () => document.documentElement.setAttribute('data-density', 'compact');
@@ -75,10 +132,11 @@ async function open(
   browser: Browser,
   route: string,
   pointer: 'coarse' | 'fine',
+  coarseViewport: { width: number; height: number } = { width: 390, height: 844 },
 ): Promise<{ close: () => Promise<void>; page: Page }> {
   const context = await browser.newContext(
     pointer === 'coarse'
-      ? { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true }
+      ? { viewport: coarseViewport, isMobile: true, hasTouch: true }
       : { viewport: { width: 1280, height: 800 } },
   );
   const page = await context.newPage();
@@ -98,8 +156,12 @@ async function constrainedSize(page: Page, selector: string, axis: 'block' | 'in
 for (const atom of ATOMS) {
   test(`touch-target: ${atom.name} clamps to the ${FLOOR}px floor under a coarse pointer`, async ({
     browser,
+    browserName,
   }) => {
-    const { page, close } = await open(browser, atom.route, 'coarse');
+    // Playwright cannot open an `isMobile` (coarse-pointer) context in Firefox,
+    // so the coarse half runs on Chromium + WebKit; the fine half covers Firefox.
+    test.skip(browserName === 'firefox', 'isMobile context is unsupported in Firefox');
+    const { page, close } = await open(browser, atom.route, 'coarse', atom.coarse);
     try {
       const size = await constrainedSize(page, atom.selector, atom.axis);
       expect(size).toBeGreaterThanOrEqual(FLOOR);

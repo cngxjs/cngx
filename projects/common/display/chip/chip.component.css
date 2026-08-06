@@ -451,12 +451,16 @@
     :scope[tabindex],
     :scope:has(.cngx-chip__remove) {
       cursor: pointer;
-      /* Touch-target floor - an interactive (selectable / removable)
-         chip is a tap target, so lift the pill to the pointer-derived
-         hit-area minimum on the block axis. A static label chip is not
-         matched here and stays its natural size. Inert at 0px on a fine
-         pointer. */
+      /* Touch-target floor - an interactive (selectable / removable) chip is a
+         tap target, so lift the pill to the pointer-derived hit-area minimum on
+         BOTH axes: a short-label chip ("S", "M") would otherwise floor to 44px
+         tall while staying ~30px wide, rendering as a narrow egg. min-inline-size
+         only affects chips narrower than the floor; a wide chip keeps its natural
+         width. The label centres so it sits mid-pill. A static label chip is not
+         matched here and stays its natural size. Inert at 0px on a fine pointer. */
+      justify-content: center;
       min-block-size: var(--cngx-target-min, 0px);
+      min-inline-size: var(--cngx-target-min, 0px);
     }
     :scope[role='button']:hover,
     :scope[tabindex]:hover,

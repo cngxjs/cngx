@@ -132,7 +132,9 @@
       align-items: center;
       gap: var(--cngx-action-select-gap, 0.5rem);
       width: 100%;
-      min-height: var(--cngx-action-select-min-height, 2.25rem);
+      /* Touch-target floor - lift the trigger tap target to the pointer-
+         derived minimum; inert at 0px on a fine pointer. */
+      min-height: max(var(--cngx-action-select-min-height, 2.25rem), var(--cngx-target-min, 0px));
       padding: var(--cngx-action-select-padding, 0 0.75rem);
       border: var(
         --cngx-action-select-border,

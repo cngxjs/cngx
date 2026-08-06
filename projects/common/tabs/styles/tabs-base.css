@@ -466,6 +466,10 @@
     align-items: center;
     gap: var(--cngx-tab-gap, 0.5rem);
     padding: var(--cngx-tab-padding, 0.5rem 0.75rem);
+    /* Touch-target floor - the tab button is a tap target; floor its hit box
+       to the pointer-derived minimum on the block axis while the label keeps
+       its natural size, centred. Inert at 0px on a fine pointer. */
+    min-block-size: var(--cngx-target-min, 0px);
     border: 0;
     background: var(--cngx-tab-bg, transparent);
     color: var(--cngx-tab-color, currentColor);

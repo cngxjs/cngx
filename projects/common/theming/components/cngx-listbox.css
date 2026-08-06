@@ -205,6 +205,11 @@
     cursor: pointer;
     user-select: none;
     color: inherit;
+
+    /* Touch-target floor - each option is a tap target; floor its hit box to
+       the pointer-derived minimum on the block axis. Inert at 0px on a fine
+       pointer, so [data-density] still drives the natural row height. */
+    min-block-size: var(--cngx-target-min, 0px);
   }
 
   .cngx-option--highlighted {

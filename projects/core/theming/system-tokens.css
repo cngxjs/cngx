@@ -144,6 +144,24 @@
   }
 
   /**
+   * Adjacent-target spacing floor. Companion to `--cngx-target-min`:
+   * where a control is legitimately smaller than the 44px size floor
+   * (a dense row of small controls), WCAG 2.5.8 (AA) is still met if the
+   * targets carry adjacent spacing. `inherits: true` so a `[data-touch]`
+   * ancestor cascades it alongside the size floor. Defaults to `0px` so a
+   * use-site `max(<current>, var(--cngx-target-gap, 0px))` is inert until
+   * the coarse-pointer media block lifts it to 8px — a fixed non-zero
+   * initial would have defeated that use-site fallback, exactly as with
+   * `--cngx-target-min`.
+   * @group Layout
+   */
+  @property --cngx-target-gap {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 0px;
+  }
+
+  /**
    * Corner radius — small (4px).
    * @group Layout
    */
@@ -507,32 +525,45 @@
 
   /* Touch-target floor — env-derived default plus explicit opt-in /
    * opt-out, mirroring the colour-scheme Blocks 2-4 above. The floor
-   * is orthogonal to density: it clamps hit-area, never spacing.
+   * is orthogonal to density: it clamps hit-area, never spacing. The
+   * `--cngx-target-gap` companion travels the same three blocks — the
+   * WCAG 2.5.8 (AA) adjacent-spacing exception distinct from the 2.5.5
+   * size floor, so a dense small-target row that cannot reach 44px stays
+   * compliant via spacing instead.
    *
-   * Block 1 — coarse-pointer default. A touch/pen pointer lifts the
-   * floor to the WCAG 2.5.5 / Apple-HIG 44px. Both opt-out signals are
-   * excluded so a page/section pinned `off` wins over the media query,
-   * exactly as a pinned light island wins over OS dark. */
+   * Material-bridge stance: the floor is cngx-atom-only. Material-bridged
+   * widgets (`mat-*`) self-size via Material density, so neither
+   * `--cngx-target-min` nor `--cngx-target-gap` is wired into
+   * `@cngx/themes` — a missing bridge here is intentional, not an omission.
+   *
+   * Block 1 — coarse-pointer default. A touch/pen pointer lifts the size
+   * floor to the WCAG 2.5.5 / Apple-HIG 44px and the spacing floor to 8px.
+   * Both opt-out signals are excluded so a page/section pinned `off` wins
+   * over the media query, exactly as a pinned light island wins over OS
+   * dark. */
   @media (any-pointer: coarse) {
     :root:not([data-touch='off']):not(.cngx-touch-off) {
       --cngx-target-min: 44px;
+      --cngx-target-gap: 8px;
     }
   }
 
   /* Block 2 — explicit on. Either signal — the typed attribute
    * `data-touch="on"` or the bare `.cngx-touch-on` class — forces the
-   * 44px floor on a fine pointer too (e.g. a kiosk with a mouse but
-   * touch-sized targets). Set on `<html>`, a section wrapper, or a
-   * single component. */
+   * 44px floor and 8px gap on a fine pointer too (e.g. a kiosk with a
+   * mouse but touch-sized targets). Set on `<html>`, a section wrapper, or
+   * a single component. */
   [data-touch='on'],
   .cngx-touch-on {
     --cngx-target-min: 44px;
+    --cngx-target-gap: 8px;
   }
 
   /* Block 3 — explicit off. Mirror of Block 2 so a mouse-first island
-   * inside a coarse-pointer document resets the floor to 0px cleanly. */
+   * inside a coarse-pointer document resets both floors to 0px cleanly. */
   [data-touch='off'],
   .cngx-touch-off {
     --cngx-target-min: 0px;
+    --cngx-target-gap: 0px;
   }
 }

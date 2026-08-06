@@ -160,8 +160,12 @@
     align-items: center;
     justify-content: center;
     box-sizing: border-box;
-    min-width: var(--cngx-paginator-button-size, 2.25rem);
+    /* Touch-target floor - every page control is a tap target; floor its hit
+       box to the pointer-derived minimum on both axes while the glyph keeps
+       its design size, centred. Inert at 0px on a fine pointer. */
+    min-width: max(var(--cngx-paginator-button-size, 2.25rem), var(--cngx-target-min, 0px));
     height: var(--cngx-paginator-button-size, 2.25rem);
+    min-block-size: var(--cngx-target-min, 0px);
     padding: var(--cngx-paginator-button-padding, 0 0.5rem);
     border: var(--cngx-paginator-button-border-width, 1px) solid
       var(--cngx-paginator-button-border-color, transparent);
@@ -288,7 +292,10 @@
   .cngx-paginator__option {
     display: flex;
     align-items: center;
-    min-height: var(--cngx-paginator-option-size, 2rem);
+    /* Touch-target floor - a popover row (page-size option / hidden-page item)
+       is a tap target, so floor its height to the pointer-derived minimum.
+       Inert at 0px on a fine pointer. */
+    min-height: max(var(--cngx-paginator-option-size, 2rem), var(--cngx-target-min, 0px));
     padding: var(--cngx-paginator-option-padding, 0 0.75rem);
     border-radius: var(--cngx-paginator-option-radius, 0.25rem);
     cursor: pointer;
@@ -306,9 +313,12 @@
     padding: var(--cngx-paginator-panel-padding, 0.25rem);
     list-style: none;
     display: grid;
+    /* Touch-target floor on the column width - a hidden-page cell is a square
+       tap target, so floor both its axes (height is floored on the cell rule
+       below). Inert at 0px on a fine pointer. */
     grid-template-columns: repeat(
       var(--cngx-paginator-overflow-columns, 5),
-      var(--cngx-paginator-overflow-cell-size, 2rem)
+      max(var(--cngx-paginator-overflow-cell-size, 2rem), var(--cngx-target-min, 0px))
     );
     gap: var(--cngx-paginator-overflow-gap, 0.15rem);
     border: var(--cngx-paginator-button-border-width, 1px) solid
@@ -322,7 +332,7 @@
   /* Overflow rows render as centred square grid cells, not full-width list rows. */
   .cngx-paginator__overflow-panel .cngx-paginator__option {
     justify-content: center;
-    min-block-size: var(--cngx-paginator-overflow-cell-size, 2rem);
+    min-block-size: max(var(--cngx-paginator-overflow-cell-size, 2rem), var(--cngx-target-min, 0px));
     padding: var(--cngx-paginator-overflow-cell-padding, 0);
   }
 
