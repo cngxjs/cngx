@@ -12,11 +12,15 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 //   (e) vertical orientation flips data-orientation + aria-orientation
 //   (f) error-aggregation badge visibility + descriptor SR phrase
 
-const HORIZONTAL = '/#/ui/tabs/tab-group';
-const VERTICAL = '/#/ui/tabs/tab-group-vertical';
-const ERRORS = '/#/ui/tabs/tab-error-aggregation';
-const COMMIT_ACTION = '/#/ui/tabs/tab-commit-action';
-const OVERFLOW = '/#/ui/tabs/tab-overflow';
+// Per-example leaf routes (post examples-app migration): one story =
+// one example page. Each route below hosts the artifact that the
+// matching assertion group exercises.
+const HORIZONTAL = '/#/ui/tabs/tab-group/three-tab-navigation';
+const VERTICAL = '/#/ui/tabs/tab-group-vertical/vertical-sidebar-tabs';
+const ERRORS = '/#/ui/tabs/tab-error-aggregation/per-tab-error-badges';
+const COMMIT_ACTION =
+  '/#/ui/tabs/tab-commit-action/optimistic-pessimistic-commits-with-bridge-directives';
+const OVERFLOW = '/#/ui/tabs/tab-overflow/8-tabs-in-a-narrow-container';
 
 function tabGroup(page: Page): Locator {
   return page.locator('cngx-tab-group').first();
