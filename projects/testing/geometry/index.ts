@@ -5,9 +5,9 @@
  * @module @cngx/testing/geometry
  */
 export {
+  computedValue,
   containerState,
   gridTracks,
-  resolvedToken,
   type ContainerState,
   type GridAxis,
 } from './geometry';

@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { resolvedToken } from '@cngx/testing/geometry';
+import { computedValue } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { CngxSidenav } from './sidenav';
@@ -60,7 +60,7 @@ describe('CngxSidenav mini-rail geometry', () => {
     const { body } = mount();
     // The token set on the host must reach the body; inherits: false would leave
     // it at the 56px registered initial.
-    expect(resolvedToken(body, '--cngx-sidenav-mini-width')).toBe('72px');
-    expect(parseFloat(resolvedToken(body, 'min-width'))).toBeCloseTo(72, 1);
+    expect(computedValue(body, '--cngx-sidenav-mini-width')).toBe('72px');
+    expect(parseFloat(computedValue(body, 'min-width'))).toBeCloseTo(72, 1);
   });
 });

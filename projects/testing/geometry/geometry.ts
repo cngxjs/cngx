@@ -39,7 +39,7 @@ export function gridTracks(el: Element, axis: GridAxis = 'columns'): string[] {
  * cascade tie (two selectors at equal specificity, source order decides) or to
  * read a laid-out dimension.
  */
-export function resolvedToken(el: Element, property: string): string {
+export function computedValue(el: Element, property: string): string {
   return getComputedStyle(el).getPropertyValue(property).trim();
 }
 

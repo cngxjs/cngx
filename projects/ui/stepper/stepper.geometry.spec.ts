@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { CngxStep } from '@cngx/common/stepper';
-import { containerState, resolvedToken } from '@cngx/testing/geometry';
+import { computedValue, containerState } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { CngxStepper } from './stepper.component';
@@ -56,9 +56,9 @@ describe('CngxStepper geometry', () => {
 
   it('compacts the panel padding below the 600px container breakpoint', () => {
     const { host, panel } = mount(800);
-    const wide = resolvedToken(panel, 'padding-top');
+    const wide = computedValue(panel, 'padding-top');
     host.style.inlineSize = '400px';
-    const narrow = resolvedToken(panel, 'padding-top');
+    const narrow = computedValue(panel, 'padding-top');
     expect(parseFloat(wide)).toBeGreaterThan(0);
     expect(narrow).not.toBe(wide);
   });

@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { containerState, resolvedToken } from '@cngx/testing/geometry';
+import { computedValue, containerState } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import {
@@ -75,7 +75,7 @@ function segmentDisplay(host: HTMLElement, selector: string): string {
   if (!el) {
     throw new Error(`${selector} did not render`);
   }
-  return resolvedToken(el, 'display');
+  return computedValue(el, 'display');
 }
 
 afterEach(() => {

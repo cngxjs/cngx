@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { gridTracks, resolvedToken } from '@cngx/testing/geometry';
+import { computedValue, gridTracks } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { CngxTimelineItem, CngxTimelineOpposite } from './timeline-item.component';
@@ -72,8 +72,8 @@ describe('CngxTimelineItem geometry', () => {
 
   it('derives the rail inset as half the marker size', () => {
     const { row } = mount();
-    const inset = parseFloat(resolvedToken(row, '--cngx-timeline-rail-inset'));
-    const marker = parseFloat(resolvedToken(row, '--cngx-timeline-marker-size'));
+    const inset = parseFloat(computedValue(row, '--cngx-timeline-rail-inset'));
+    const marker = parseFloat(computedValue(row, '--cngx-timeline-marker-size'));
     expect(marker).toBeGreaterThan(0);
     expect(inset).toBeCloseTo(marker / 2, 3);
   });
