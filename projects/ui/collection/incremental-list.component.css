@@ -89,6 +89,9 @@
       border: 1px solid
         var(--cngx-incremental-list-button-border, var(--cngx-color-border, oklch(0.88 0.005 250)));
       border-radius: var(--cngx-incremental-list-button-radius, var(--cngx-radius-sm, 6px));
+      /* Floor the load-more/retry button height to the pointer-derived target on
+         a coarse pointer; inert (0px) on a fine pointer. */
+      min-block-size: var(--cngx-target-min, 0px);
       cursor: pointer;
     }
 
