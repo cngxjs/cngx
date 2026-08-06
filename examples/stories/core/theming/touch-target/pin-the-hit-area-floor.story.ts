@@ -146,7 +146,7 @@ export const STORY: DemoSpec = {
 
     <cngx-breadcrumb [items]="crumbs" [maxVisible]="3" label="Library breadcrumb" />
 
-    <cngx-stepper [(activeStepIndex)]="stepIndex" aria-label="Sign up">
+    <cngx-stepper [(activeStepIndex)]="stepIndex" aria-label="Sign up" style="width: min(440px, 100%)">
       <div cngxStep label="Account">
         <ng-template cngxStepContent><p>Create your account.</p></ng-template>
       </div>
