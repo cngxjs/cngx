@@ -169,6 +169,9 @@
       gap: var(--cngx-popover-action-gap, 6px);
       padding: var(--cngx-popover-action-padding-block, 6px)
         var(--cngx-popover-action-padding-inline, 14px);
+      /* Floor the action-row height to the pointer-derived target on a coarse
+         pointer; inert (0px) on a fine pointer, so the natural width is kept. */
+      min-block-size: var(--cngx-target-min, 0px);
       border: 1px solid var(--cngx-popover-panel-border, 1px solid oklch(0 0 0 / 0.08));
       border-radius: var(--cngx-popover-action-radius, 6px);
       background: transparent;

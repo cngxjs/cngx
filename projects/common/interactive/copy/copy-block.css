@@ -199,6 +199,10 @@
 
     .cngx-copy-block__button {
       flex-shrink: 0;
+      /* Floor the tap area to the pointer-derived target on a coarse pointer;
+         inert (0px) on a fine pointer. The native button centres its label. */
+      min-inline-size: var(--cngx-target-min, 0px);
+      min-block-size: var(--cngx-target-min, 0px);
       cursor: pointer;
       border: 1px solid var(--cngx-copy-block-btn-border, currentColor);
       background: var(--cngx-copy-block-btn-bg, transparent);

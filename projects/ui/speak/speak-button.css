@@ -162,8 +162,11 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: var(--cngx-speak-btn-size, 36px);
-      height: var(--cngx-speak-btn-size, 36px);
+      /* Floor the round button to the pointer-derived target on a coarse
+         pointer while keeping the 36px design size on a fine pointer; the
+         inline-flex keeps the icon centred and the button square. */
+      width: max(var(--cngx-speak-btn-size, 36px), var(--cngx-target-min, 0px));
+      height: max(var(--cngx-speak-btn-size, 36px), var(--cngx-target-min, 0px));
       padding: 0;
       border: var(--cngx-speak-btn-border-width, 1px) solid
         var(--cngx-color-border, oklch(0.87 0 0));

@@ -66,6 +66,9 @@
       align-items: center;
       gap: var(--cngx-tab-affordance-gap);
       padding: var(--cngx-tab-padding);
+      /* Floor the link height to the pointer-derived target on a coarse pointer;
+         inert (0px) on a fine pointer. */
+      min-block-size: var(--cngx-target-min, 0px);
       /* SET on the link, NOT :scope - --cngx-tab-focus-offset is registered
          inherits:false in tabs-base.css and read on this element's
          :focus-visible, so a host SET never reaches it and the registered

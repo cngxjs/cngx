@@ -253,6 +253,9 @@
     border: 1px solid var(--cngx-action-btn-border, var(--cngx-color-border, oklch(0.87 0 0)));
     border-radius: var(--cngx-action-btn-radius, 6px);
     padding: var(--cngx-action-btn-padding, 8px 16px);
+    /* Floor the button height to the pointer-derived target on a coarse pointer;
+       inert (0px) on a fine pointer, so the natural width is kept. */
+    min-block-size: var(--cngx-target-min, 0px);
     font: inherit;
     background: var(--cngx-action-btn-bg, transparent);
     color: inherit;

@@ -215,6 +215,10 @@
       align-items: center;
       gap: var(--cngx-tab-gap, 0.5rem);
       padding: var(--cngx-tab-padding, 0.5rem 0.75rem);
+      /* Floor the chevron trigger tap area to the pointer-derived target on a
+         coarse pointer; the glyph keeps its size and stays centred. */
+      min-inline-size: var(--cngx-target-min, 0px);
+      min-block-size: var(--cngx-target-min, 0px);
       border: 0;
       background: var(--cngx-tab-overflow-button-bg, transparent);
       color: var(--cngx-tab-color);
@@ -252,6 +256,9 @@
 
     .cngx-tab-overflow__item {
       padding: var(--cngx-tab-overflow-item-padding, 0.5rem 0.75rem);
+      /* Floor the row height to the pointer-derived target on a coarse pointer;
+         inert (0px) on a fine pointer. */
+      min-block-size: var(--cngx-target-min, 0px);
       cursor: pointer;
       user-select: none;
       white-space: nowrap;

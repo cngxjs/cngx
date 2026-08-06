@@ -50,6 +50,10 @@
   gap: var(--cngx-option-gap, 0.5rem);
   justify-content: var(--cngx-option-status-justify, flex-start);
   padding: var(--cngx-select-option-padding, 0.375rem 0.5rem);
+  /* Floor the row height to the pointer-derived target on a coarse pointer;
+     inert (0px) on a fine pointer. The bare <cngx-option> host carries no
+     .cngx-select__option class, so the base option-row floor never reaches it. */
+  min-block-size: var(--cngx-target-min, 0px);
   cursor: pointer;
   border-radius: var(--cngx-select-option-radius, 0.125rem);
 }

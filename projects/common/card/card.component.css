@@ -669,7 +669,10 @@
         box-shadow var(--cngx-duration-fast, 150ms) ease,
         border-color var(--cngx-duration-fast, 150ms) ease,
         background var(--cngx-duration-fast, 150ms) ease;
-      min-height: 44px;
+      /* Compose the touch floor from the token instead of a fixed literal, so
+         it is density-aware and the token participates in the clamp; the 44px
+         baseline keeps the fine-pointer height unchanged. */
+      min-height: max(44px, var(--cngx-target-min, 0px));
       min-width: var(--cngx-card-min-width, 120px);
       touch-action: manipulation;
     }

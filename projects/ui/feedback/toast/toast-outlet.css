@@ -569,6 +569,9 @@
       background: none;
       border: none;
       padding: var(--cngx-toast-action-padding, 4px 0);
+      /* Floor the action-row height to the pointer-derived target on a coarse
+         pointer; inert (0px) on a fine pointer. */
+      min-block-size: var(--cngx-target-min, 0px);
       cursor: pointer;
       font-weight: var(--cngx-toast-action-weight, 600);
       font-size: var(--cngx-toast-action-size, 0.8125rem);
@@ -578,6 +581,13 @@
 
     .cngx-toast__dismiss {
       flex-shrink: 0;
+      /* Floor the dismiss tap area to the pointer-derived target on a coarse
+         pointer; the glyph keeps its size and stays centred. */
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-inline-size: var(--cngx-target-min, 0px);
+      min-block-size: var(--cngx-target-min, 0px);
     }
 
     @media (prefers-reduced-motion: reduce) {

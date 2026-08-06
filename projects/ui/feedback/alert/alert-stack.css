@@ -352,6 +352,9 @@
       border: 1px dashed var(--cngx-alert-stack-overflow-border, oklch(0.85 0.005 250));
       border-radius: var(--cngx-alert-border-radius, 8px);
       padding: var(--cngx-alert-stack-overflow-padding, 8px 16px);
+      /* Floor the overflow toggle height to the pointer-derived target on a
+         coarse pointer; inert (0px) on a fine pointer. */
+      min-block-size: var(--cngx-target-min, 0px);
       cursor: pointer;
       font-size: var(--cngx-alert-stack-overflow-size, 0.8125rem);
       color: var(--cngx-alert-stack-overflow-color, oklch(0.5 0.01 250));
