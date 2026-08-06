@@ -1,16 +1,14 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { gridTracks, resolvedToken } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { CngxTimelineItem, CngxTimelineOpposite } from './timeline-item.component';
 
-// The first geometry spec: it runs in a real Chromium (the `test-geometry`
+// The first geometry spec. It runs in a real Chromium (the `test-geometry`
 // target), where `getComputedStyle` reports resolved grid tracks and custom
 // properties. The default jsdom `test` target excludes `*.geometry.spec.ts`
 // because there the same reads come back `''` and would pass vacuously.
-//
-// Deliberately plain TestBed + getComputedStyle, no helper: this proves the
-// mechanism before Phase 2 abstracts an API over it.
 
 @Component({
   selector: 'cngx-timeline-geometry-host',
@@ -59,41 +57,32 @@ afterEach(() => {
   mountedRoot = null;
 });
 
-// `grid-template-columns` reports the used track list as space-separated pixel
-// values, so the token count is the track count. The values themselves are
-// viewport-dependent; only the count is asserted.
-function columnTracks(el: HTMLElement): string[] {
-  const value = getComputedStyle(el).gridTemplateColumns.trim();
-  return value ? value.split(/\s+/) : [];
-}
-
 describe('CngxTimelineItem geometry', () => {
   it('rasters a narrative row on two column tracks', () => {
     const { row } = mount();
-    expect(columnTracks(row)).toHaveLength(2);
+    expect(gridTracks(row)).toHaveLength(2);
   });
 
   it('rasters an activity row on three column tracks', () => {
     const { host, row, detect } = mount();
     host.mode.set('activity');
     detect();
-    expect(columnTracks(row)).toHaveLength(3);
+    expect(gridTracks(row)).toHaveLength(3);
   });
 
   it('derives the rail inset as half the marker size', () => {
     const { row } = mount();
-    const style = getComputedStyle(row);
-    const inset = parseFloat(style.getPropertyValue('--cngx-timeline-rail-inset'));
-    const marker = parseFloat(style.getPropertyValue('--cngx-timeline-marker-size'));
+    const inset = parseFloat(resolvedToken(row, '--cngx-timeline-rail-inset'));
+    const marker = parseFloat(resolvedToken(row, '--cngx-timeline-marker-size'));
     expect(marker).toBeGreaterThan(0);
     expect(inset).toBeCloseTo(marker / 2, 3);
   });
 
   it('adds the opposite track only for a row that projects into it', () => {
     const { host, row, detect } = mount();
-    expect(columnTracks(row)).toHaveLength(2);
+    expect(gridTracks(row)).toHaveLength(2);
     host.opposite.set(true);
     detect();
-    expect(columnTracks(row)).toHaveLength(3);
+    expect(gridTracks(row)).toHaveLength(3);
   });
 });

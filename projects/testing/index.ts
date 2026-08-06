@@ -5,6 +5,7 @@
  *
  * @module @cngx/testing
  */
+export * from './geometry';
 export * from './helpers';
 export * from './matchers';
 export * from './mocks';
