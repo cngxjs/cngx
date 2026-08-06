@@ -114,7 +114,7 @@ export interface RootAttrs {
  */
 export function withRoot<T>(attrs: RootAttrs, body: () => T): T {
   const root = document.documentElement;
-  const saved: Array<readonly [string, string | null]> = [];
+  const saved: (readonly [string, string | null])[] = [];
   const apply = (attr: string, value: string | undefined): void => {
     if (value === undefined) {
       return;
