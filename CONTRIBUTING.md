@@ -206,9 +206,9 @@ Scope mirrors the source path under `projects/<lib>/<area>/`. Use `<lib>` or
 - `ui`, `ui/stepper`, `ui/overlay`, `ui/feedback`, `ui/mat-stepper`, ...
 - `themes/material`
 
-Non-library scopes - `examples`, `examples-gen`, `docs`, `ci`, `build`, `chore` -
-are valid for commits but are excluded from the generated changelog; they are
-not consumer-facing library changes.
+Non-library scopes - `examples`, `examples-gen`, `docs`, `ci`, `build`, `chore`,
+`testing`, `scripts`, `e2e` - are valid for commits but are excluded from the
+generated changelog; they are not consumer-facing library changes.
 
 ### Pull request title is the changelog line
 
