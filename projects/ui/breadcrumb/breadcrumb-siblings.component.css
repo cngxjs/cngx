@@ -12,8 +12,11 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: var(--cngx-breadcrumb-siblings-trigger-size, 22px);
-  height: var(--cngx-breadcrumb-siblings-trigger-size, 22px);
+  /* Floor the chevron trigger tap area to the pointer-derived target on a
+     coarse pointer while keeping the 22px design size on a fine pointer; the
+     inline-flex keeps the caret centred and the trigger square. */
+  width: max(var(--cngx-breadcrumb-siblings-trigger-size, 22px), var(--cngx-target-min, 0px));
+  height: max(var(--cngx-breadcrumb-siblings-trigger-size, 22px), var(--cngx-target-min, 0px));
   padding: 0;
   border: 0;
   border-radius: var(--cngx-breadcrumb-siblings-trigger-radius, var(--cngx-radius-sm, 4px));
@@ -58,6 +61,9 @@
   display: flex;
   align-items: center;
   padding: var(--cngx-breadcrumb-siblings-item-padding, 0.45em 0.55em);
+  /* Floor the row height to the pointer-derived target on a coarse pointer;
+     inert (0px) on a fine pointer. */
+  min-block-size: var(--cngx-target-min, 0px);
   border-radius: var(--cngx-breadcrumb-siblings-item-radius, var(--cngx-radius-sm, 4px));
   white-space: nowrap;
   color: var(--cngx-breadcrumb-siblings-item-color, var(--cngx-color-text-muted, oklch(0.5 0.01 250)));
