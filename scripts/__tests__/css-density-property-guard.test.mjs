@@ -77,6 +77,10 @@ const DENSITY_ALLOWLIST = new Map([
     'pure @property declaration file - the --cngx-dga-* SETs live in ui/data-grid-accordion.',
   ],
   [
+    '/projects/core/theming/system-tokens.css',
+    'pure @property declaration file - the foundation token registry that defines --cngx-space-* and registers --cngx-card-padding / --cngx-target-gap; not a component host, so it holds no scale SET (the card-padding SET lives at the card host; --cngx-target-gap is an environment-derived touch-target token, not compactness).',
+  ],
+  [
     '/projects/forms/filter-builder/filter-builder-row.component.css',
     'split stylesheet - the --cngx-filter-builder-gap SET lives in filter-builder.component.css.',
   ],
