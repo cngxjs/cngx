@@ -27,6 +27,15 @@ function comboPanelOf(section: Locator): Locator {
 }
 
 test.describe('CngxSelect — virtualized panel', () => {
+  // QUARANTINE: no virtualized-select example was migrated to the examples app.
+  // The dev-app demos (cngx-demo-virtual-select / cngx-demo-virtual-combo,
+  // withVirtualization(), 10k dataset) were never ported, so ROUTE and every
+  // selector below resolve to nothing. Assertions preserved; unfixme once a
+  // forms/select virtualization story ships. See finding + accepted-debt register.
+  test.beforeEach(() => {
+    test.fixme(true, 'no virtualized-select example migrated to the examples app');
+  });
+
   test('only a window of option rows is in the DOM for a 10k dataset', async ({ page }) => {
     await page.goto(ROUTE);
     const section = card(page, '10,000 options — CngxSelect');
