@@ -4,10 +4,8 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 const BASIC_ROUTE = '/#/forms/filter-builder/basic-two-way-binding-json-inspection';
 const SEEDED_ROUTE = '/#/forms/filter-builder/seeded-tree-and-or-composition';
 
-// UNRESOLVED: no example demonstrates the predicate-signal bridge
-// (a builder whose updates shrink a live filtered table). Route left as the
-// original dead path so the failure is honest rather than silently weakened.
-const BRIDGE_ROUTE = '/#/forms/filter-builder-bridge';
+const BRIDGE_ROUTE =
+  '/#/forms/filter-builder/predicate-bridge/filtered-table-with-active-filters-badge';
 
 // The example is a single naked page; scope to its <main> (artifact + chrome).
 function main(page: Page): Locator {
@@ -126,16 +124,9 @@ test.describe('CngxFilterBuilder demo — golden path', () => {
 });
 
 test.describe('CngxFilterBuilder bridge — predicate-signal integration', () => {
-  // QUARANTINE: no example demonstrates a predicate-signal-driven filtered table
-  // with an "Active filters" status badge. Assertions preserved; unfixme once a
-  // forms/filter-builder predicate-table bridge story ships. See register.
-  test.beforeEach(() => {
-    test.fixme(true, 'no predicate-signal bridge (filtered table) example migrated to the examples app');
-  });
-
   test('build: builder updates flow through presenter.predicate() and shrink the table', async ({ page }) => {
     await page.goto(BRIDGE_ROUTE);
-    const section = card(page, 'Builder + filtered table');
+    const section = main(page);
 
     const tableRows = section.locator('table.demo-table tbody tr');
     await expect.poll(() => tableRows.count(), { timeout: 5000 }).toBeGreaterThan(0);
@@ -165,7 +156,7 @@ test.describe('CngxFilterBuilder bridge — predicate-signal integration', () =>
 
   test('clear: removing the root expression returns the table to the unfiltered length', async ({ page }) => {
     await page.goto(BRIDGE_ROUTE);
-    const section = card(page, 'Builder + filtered table');
+    const section = main(page);
     const tableRows = section.locator('table.demo-table tbody tr');
     await expect.poll(() => tableRows.count(), { timeout: 5000 }).toBeGreaterThan(0);
     const initialCount = await tableRows.count();
@@ -190,7 +181,7 @@ test.describe('CngxFilterBuilder bridge — predicate-signal integration', () =>
 
   test('reuse: build → clear → build again, predicate signal toggles each cycle', async ({ page }) => {
     await page.goto(BRIDGE_ROUTE);
-    const section = card(page, 'Builder + filtered table');
+    const section = main(page);
     const tableRows = section.locator('table.demo-table tbody tr');
     await expect.poll(() => tableRows.count(), { timeout: 5000 }).toBeGreaterThan(0);
     const initialCount = await tableRows.count();
