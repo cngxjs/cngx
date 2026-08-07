@@ -140,7 +140,18 @@
           "builder": "@angular/build:unit-test",
           "options": {
             "tsConfig": "projects/forms/tsconfig.spec.json",
-            "setupFiles": ["projects/testing/setup/vitest-setup.ts"]
+            "setupFiles": ["projects/testing/setup/vitest-setup.ts"],
+            "exclude": ["**/*.geometry.spec.ts"]
+          }
+        },
+        "test-geometry": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "projects/forms/tsconfig.spec.json",
+            "setupFiles": ["projects/testing/setup/vitest-setup.ts"],
+            "browsers": ["chromium"],
+            "include": ["**/*.geometry.spec.ts"],
+            "browserViewport": "1280x720"
           }
         },
         "lint": {
@@ -217,7 +228,18 @@
           "builder": "@angular/build:unit-test",
           "options": {
             "tsConfig": "projects/data-display/tsconfig.spec.json",
-            "setupFiles": ["projects/testing/setup/vitest-setup.ts"]
+            "setupFiles": ["projects/testing/setup/vitest-setup.ts"],
+            "exclude": ["**/*.geometry.spec.ts"]
+          }
+        },
+        "test-geometry": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "projects/data-display/tsconfig.spec.json",
+            "setupFiles": ["projects/testing/setup/vitest-setup.ts"],
+            "browsers": ["chromium"],
+            "include": ["**/*.geometry.spec.ts"],
+            "browserViewport": "1280x720"
           }
         },
         "lint": {

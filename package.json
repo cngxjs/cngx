@@ -34,7 +34,7 @@
     "test:core": "ng test core",
     "test:forms": "ng test forms",
     "test:ui": "ng test ui",
-    "test:geometry": "ng run common:test-geometry && ng run ui:test-geometry",
+    "test:geometry": "ng run common:test-geometry && ng run ui:test-geometry && ng run forms:test-geometry && ng run data-display:test-geometry",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix && prettier --write \"projects/**/src/**/*.{ts,html,scss}\" \"scripts/examples-gen/**/*.mjs\" --ignore-pattern \"**/*.spec.ts\"",
     "docs": "rm -rf docs && compodocx && node scripts/docs-post.mjs",
