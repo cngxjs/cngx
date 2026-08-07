@@ -13,12 +13,22 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 //       aria-roledescription="step group"
 //   (f) error-aggregation badge visibility + descriptor SR phrase
 
-const HORIZONTAL = '/#/ui/stepper/stepper-horizontal';
-const VERTICAL = '/#/ui/stepper/stepper-vertical';
-const HIERARCHICAL = '/#/ui/stepper/stepper-hierarchical';
-const ERRORS = '/#/ui/stepper/stepper-error-aggregation';
-const COMMIT_ACTION = '/#/ui/stepper/stepper-commit-action';
-const ROUTER_SYNC = '/#/ui/stepper/stepper-router-sync';
+// Per-example leaf routes (post examples-app migration): one story =
+// one example page.
+const HORIZONTAL = '/#/ui/stepper/stepper-horizontal/three-step-wizard';
+const VERTICAL = '/#/ui/stepper/stepper-vertical/vertical-sidebar-layout';
+const HIERARCHICAL =
+  '/#/ui/stepper/stepper-hierarchical/group-nested-steps-trailing-root-step';
+const ERRORS =
+  '/#/ui/stepper/stepper-error-aggregation/per-step-error-badges';
+const COMMIT_ACTION =
+  '/#/ui/stepper/stepper-commit-action/pessimistic-optimistic-commits-with-bridge-directives';
+const ROUTER_SYNC =
+  '/#/ui/stepper/stepper-router-sync/deep-linking-with-fragment-queryparam-modes';
+// The cngxMatStepper directive now ships a single example: a cngx footer
+// driving a vanilla <mat-stepper>. No mat-stepper commitAction or
+// router-sync example exists in the examples app.
+const MAT_FOOTER = '/#/ui/stepper/stepper-footer/mat-stepper-footer';
 const MAT_COMMIT = '/#/ui/mat-stepper/mat-stepper';
 const MAT_ROUTER_SYNC = '/#/ui/mat-stepper/mat-stepper-router-sync';
 
@@ -195,8 +205,9 @@ test.describe('CngxStepper W3C step pattern (Phase 2 baseline)', () => {
     page,
   }) => {
     await page.goto(ROUTER_SYNC);
-    // Switch to queryParam mode.
-    await page.getByRole('button', { name: 'queryParam (?)', exact: true }).click();
+    // Switch to queryParam mode. The mode toggle renders as a radio
+    // group in the example chrome (label text "queryParam (?)").
+    await page.getByRole('radio', { name: 'queryParam (?)' }).click();
     const buttons = stepButtons(page);
     await buttons.nth(2).click();
     await expect(buttons.nth(2)).toHaveAttribute('aria-current', 'step');
@@ -217,19 +228,23 @@ test.describe('CngxStepper W3C step pattern (Phase 2 baseline)', () => {
     await expect(reloaded.nth(2)).toHaveAttribute('aria-current', 'step');
   });
 
-  test('(i) mat-stepper: renders <mat-stepper> with one <mat-step> per cngxStep child', async ({
+  test('(i) mat-stepper: renders <mat-stepper> with one <mat-step> per step under the cngx directive', async ({
     page,
   }) => {
-    await page.goto(MAT_COMMIT);
-    const matStepper = page.locator('cngx-mat-stepper mat-stepper');
+    await page.goto(MAT_FOOTER);
+    // cngxMatStepper is an attribute directive on <mat-stepper> (no
+    // <cngx-mat-stepper> host element). The footer example declares 3
+    // <mat-step> children.
+    const matStepper = page.locator('mat-stepper[cngxMatStepper]');
     await expect(matStepper).toHaveCount(1);
-    const matSteps = page.locator('cngx-mat-stepper mat-step-header');
+    const matSteps = matStepper.locator('mat-step-header');
     await expect(matSteps).toHaveCount(3);
   });
 
   test('(i) mat-stepper: pessimistic commitAction holds Material on origin until success', async ({
     page,
   }) => {
+    test.fixme(true, 'no mat-stepper commitAction example migrated to the examples app (only mat-stepper-footer exists)');
     await page.goto(MAT_COMMIT);
     const headers = page.locator('cngx-mat-stepper mat-step-header');
     await expect(headers).toHaveCount(3);
@@ -245,6 +260,7 @@ test.describe('CngxStepper W3C step pattern (Phase 2 baseline)', () => {
   test('(i) mat-stepper + router-sync: clicking a Material step writes ?step=<id>', async ({
     page,
   }) => {
+    test.fixme(true, 'no mat-stepper router-sync example migrated to the examples app');
     await page.goto(MAT_ROUTER_SYNC);
     const headers = page.locator('cngx-mat-stepper mat-step-header');
     await expect(headers).toHaveCount(4);

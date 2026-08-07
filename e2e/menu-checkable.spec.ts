@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-const ROUTE = '/#/common/interactive/menu-checkable';
+const ROUTE = '/#/common/interactive/menu/checkable/text-formatting-menu';
 
 test.describe('CngxMenuItemCheckbox + CngxMenuItemRadio demo', () => {
   test('renders initial aria-checked state', async ({ page }) => {

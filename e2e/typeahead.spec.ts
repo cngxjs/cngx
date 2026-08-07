@@ -1,15 +1,15 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 
-const ROUTE = '/#/forms/select';
+const ROUTE = '/#/forms/select/typeahead/typeahead-single-value-async-autocomplete';
 
-function card(page: Page, title: string): Locator {
-  return page.locator('app-example-card').filter({ hasText: title });
+function ex(page: Page): Locator {
+  return page.locator('main');
 }
 
 test.describe('CngxTypeahead demo', () => {
   test('basic: role="combobox" + aria-autocomplete="list" on the input', async ({ page }) => {
     await page.goto(ROUTE);
-    const section = card(page, 'Typeahead — single-value');
+    const section = ex(page);
     const input = section.locator('input.cngx-typeahead__input').first();
     await expect(input).toHaveAttribute('role', 'combobox');
     await expect(input).toHaveAttribute('aria-autocomplete', 'list');
@@ -18,7 +18,7 @@ test.describe('CngxTypeahead demo', () => {
 
   test('typing filters suggestions and toggles aria-expanded', async ({ page }) => {
     await page.goto(ROUTE);
-    const section = card(page, 'Typeahead — single-value');
+    const section = ex(page);
     const input = section.locator('input.cngx-typeahead__input').first();
     await input.click();
     await input.fill('Ali');
@@ -30,7 +30,7 @@ test.describe('CngxTypeahead demo', () => {
 
   test('picking an option commits the value and seeds the input via displayWith', async ({ page }) => {
     await page.goto(ROUTE);
-    const section = card(page, 'Typeahead — single-value');
+    const section = ex(page);
     const input = section.locator('input.cngx-typeahead__input').first();
     await input.click();
     await input.fill('Bob');
@@ -46,7 +46,7 @@ test.describe('CngxTypeahead demo', () => {
 
   test('clearOnBlur=true restores last-committed display when user types stray text', async ({ page }) => {
     await page.goto(ROUTE);
-    const section = card(page, 'Typeahead — single-value');
+    const section = ex(page);
     const input = section.locator('input.cngx-typeahead__input').first();
     // First, commit a real pick.
     await input.click();
@@ -64,7 +64,7 @@ test.describe('CngxTypeahead demo', () => {
 
   test('clearable button appears when a value is set and resets it to undefined', async ({ page }) => {
     await page.goto(ROUTE);
-    const section = card(page, 'Typeahead — single-value');
+    const section = ex(page);
     const input = section.locator('input.cngx-typeahead__input').first();
     // Pick something so the clear button is rendered.
     await input.click();

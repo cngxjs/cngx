@@ -52,7 +52,7 @@
     "publish:dry": "node scripts/publish.mjs --dry-run --bump patch",
     "publish:rc": "node scripts/publish.mjs --bump prerelease --tag next",
     "publish:rc:dry": "node scripts/publish.mjs --dry-run --bump prerelease --tag next",
-    "e2e": "ng e2e"
+    "e2e": "playwright test"
   },
   "private": true,
   "packageManager": "npm@10.9.0",

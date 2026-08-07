@@ -84,6 +84,16 @@ async function disableSimulateError(page: Page): Promise<void> {
 }
 
 test.describe('CngxMatTabs sticky-error UX (mat-tabs-instrumentation demo)', () => {
+  // QUARANTINE: the entire CngxMatTabs instrumentation demo (mode toggle,
+  // simulate-error, "Clear last failed", toast/banner outlets, smart-overflow)
+  // was never ported from the dev-app to the examples app. No leaf route renders
+  // cngxMatTabs, so every test below has nothing to target. Assertions preserved;
+  // unfixme once an ui/mat-tabs/mat-tabs-instrumentation story ships. See
+  // finding + accepted-debt register.
+  test.beforeEach(() => {
+    test.fixme(true, 'CngxMatTabs instrumentation demo not migrated to the examples app');
+  });
+
   test('(a) baseline: 3 mat-tabs render; tab 0 active; no rejection class anywhere', async ({
     page,
   }) => {

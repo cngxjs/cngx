@@ -1,15 +1,18 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 
-const ROUTE = '/#/forms/select';
+const R = {
+  basic: '/#/forms/select/combobox/combobox-basic-tag-picker-with-typeahead-filter',
+  async: '/#/forms/select/combobox/combobox-async-via-state-skipinitial-searchtermchange',
+};
 
-function card(page: Page, title: string): Locator {
-  return page.locator('app-example-card').filter({ hasText: title });
+function ex(page: Page): Locator {
+  return page.locator('main');
 }
 
 test.describe('CngxCombobox demo', () => {
   test('basic: role="combobox" on input, role="group" on wrapper — no nested buttons', async ({ page }) => {
-    await page.goto(ROUTE);
-    const section = card(page, 'Combobox — basic');
+    await page.goto(R.basic);
+    const section = ex(page);
     const input = section.locator('input.cngx-combobox__input').first();
     await expect(input).toHaveAttribute('role', 'combobox');
     const wrapper = section.locator('.cngx-combobox__trigger').first();
@@ -21,8 +24,8 @@ test.describe('CngxCombobox demo', () => {
   });
 
   test('typing filters options and toggles aria-expanded', async ({ page }) => {
-    await page.goto(ROUTE);
-    const section = card(page, 'Combobox — basic');
+    await page.goto(R.basic);
+    const section = ex(page);
     const wrapper = section.locator('.cngx-combobox__trigger').first();
     const input = section.locator('input.cngx-combobox__input').first();
     await wrapper.click();
@@ -35,8 +38,8 @@ test.describe('CngxCombobox demo', () => {
   });
 
   test('clicking an option adds a chip, panel stays open', async ({ page }) => {
-    await page.goto(ROUTE);
-    const section = card(page, 'Combobox — basic');
+    await page.goto(R.basic);
+    const section = ex(page);
     const wrapper = section.locator('.cngx-combobox__trigger').first();
     const input = section.locator('input.cngx-combobox__input').first();
     await wrapper.click();
@@ -52,8 +55,8 @@ test.describe('CngxCombobox demo', () => {
   });
 
   test('Backspace on empty input removes the trailing chip', async ({ page }) => {
-    await page.goto(ROUTE);
-    const section = card(page, 'Combobox — basic');
+    await page.goto(R.basic);
+    const section = ex(page);
     const wrapper = section.locator('.cngx-combobox__trigger').first();
     const input = section.locator('input.cngx-combobox__input').first();
     await wrapper.click();
@@ -65,8 +68,8 @@ test.describe('CngxCombobox demo', () => {
   });
 
   test('click outside the trigger closes the panel', async ({ page }) => {
-    await page.goto(ROUTE);
-    const section = card(page, 'Combobox — basic');
+    await page.goto(R.basic);
+    const section = ex(page);
     const wrapper = section.locator('.cngx-combobox__trigger').first();
     const input = section.locator('input.cngx-combobox__input').first();
     await wrapper.click();
@@ -78,8 +81,8 @@ test.describe('CngxCombobox demo', () => {
   });
 
   test('skipInitial + searchTermChange: last-term row never shows the hydrate-time empty', async ({ page }) => {
-    await page.goto(ROUTE);
-    const section = card(page, 'Combobox — async');
+    await page.goto(R.async);
+    const section = ex(page);
     // On mount, Last term stays '—' because skipInitial drops the first emit.
     const lastTermRow = section
       .locator('.event-row', { hasText: 'Last term' })

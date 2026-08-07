@@ -925,14 +925,13 @@
   }
 
   @container cngx-paginator (max-width: 30rem) {
-    cngx-pgn-goto {
+    .cngx-paginator__segment:is(cngx-pgn-goto) {
       display: none;
     }
   }
 
   @container cngx-paginator (max-width: 24rem) {
-    cngx-pgn-first,
-    cngx-pgn-last {
+    .cngx-paginator__segment:is(cngx-pgn-first, cngx-pgn-last) {
       display: none;
     }
   }

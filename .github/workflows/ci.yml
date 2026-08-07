@@ -63,12 +63,9 @@ jobs:
       - name: Build examples app
         run: npm run build:examples
 
-      # Scoped to one spec on one browser by design. The repo has ~30 e2e
-      # specs CI has never run; adopting them here would make this step the
-      # owner of their current health and would be the fastest route to
-      # having it disabled. This one guards the timeline row raster, which
-      # no unit test can observe: the grid lives inside @layer and @scope,
-      # neither of which jsdom's CSSOM parses.
+      # The whole e2e suite is gated below (npm run e2e). The Playwright
+      # webServer boots `ng serve examples`; the Build-examples step above has
+      # already generated the feature components it serves.
       - name: Install Playwright chromium
         run: npx playwright install --with-deps chromium
 
@@ -78,5 +75,11 @@ jobs:
       - name: Run geometry specs
         run: npm run test:geometry
 
-      - name: Timeline layout e2e
-        run: npx playwright test e2e/timeline-layout.spec.ts --project=chromium
+      # Gate the whole e2e suite on every PR (replaces the single-spec timeline
+      # step; the timeline e2e is now one spec in the gated suite). Route-drift
+      # specs with no migrated example are test.fixme-quarantined in-file. Three
+      # pre-existing flaky specs are excluded here pending triage
+      # (CngxContextMenuTrigger dismissal timing, examples-followup document.title
+      # races, and the stock Playwright placeholder) - by test-title match.
+      - name: e2e suite
+        run: npm run e2e -- --project=chromium --grep-invert "CngxContextMenuTrigger|examples followup|has title"

@@ -1,10 +1,11 @@
 import { expect, test } from '@playwright/test';
 
-const ROUTE = '/#/common/interactive/option';
+const FLAT = '/#/common/interactive/option/flat-options-with-ad';
+const GROUPED = '/#/common/interactive/option/grouped-options';
 
 test.describe('CngxOption demo', () => {
   test('renders options with role="option" and stable ids', async ({ page }) => {
-    await page.goto(ROUTE);
+    await page.goto(FLAT);
     const listbox = page.locator('[role="listbox"][aria-label="Flat options"]');
     const options = listbox.locator('[cngxOption]');
     await expect(options).toHaveCount(4);
@@ -13,7 +14,7 @@ test.describe('CngxOption demo', () => {
   });
 
   test('click on enabled option highlights and activates', async ({ page }) => {
-    await page.goto(ROUTE);
+    await page.goto(FLAT);
     const listbox = page.locator('[role="listbox"][aria-label="Flat options"]');
     await listbox.locator('[cngxOption]').nth(1).click();
     const lastActivatedRow = page.locator('.event-row', { hasText: 'Last activated' });
@@ -21,17 +22,17 @@ test.describe('CngxOption demo', () => {
   });
 
   test('disabled option has aria-disabled and does not activate on click', async ({ page }) => {
-    await page.goto(ROUTE);
+    await page.goto(FLAT);
     const listbox = page.locator('[role="listbox"][aria-label="Flat options"]');
     const disabled = listbox.locator('[cngxOption]').nth(2);
     await expect(disabled).toHaveAttribute('aria-disabled', 'true');
     await disabled.click({ force: true });
     const lastActivatedRow = page.locator('.event-row', { hasText: 'Last activated' });
-    await expect(lastActivatedRow.locator('.event-value')).toHaveText('—');
+    await expect(lastActivatedRow.locator('.event-value')).toHaveText('-');
   });
 
   test('arrow keys skip disabled options', async ({ page }) => {
-    await page.goto(ROUTE);
+    await page.goto(FLAT);
     const listbox = page.locator('[role="listbox"][aria-label="Flat options"]');
     await listbox.focus();
     // Default highlight: none. ArrowDown -> paste
@@ -46,7 +47,7 @@ test.describe('CngxOption demo', () => {
   });
 
   test('grouped options render role="group" with aria-label', async ({ page }) => {
-    await page.goto(ROUTE);
+    await page.goto(GROUPED);
     const groupedBox = page.locator('[role="listbox"][aria-label="Grouped options"]');
     const groups = groupedBox.locator('[role="group"]');
     await expect(groups).toHaveCount(2);

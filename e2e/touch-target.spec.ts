@@ -111,6 +111,9 @@ const ATOMS: {
     route: '/#/ui/paginator/paginator-skins/numbered',
     selector: '.cngx-paginator__button',
     axis: 'block',
+    // Tablet coarse viewport: below 24rem the first/last chevrons collapse out
+    // (container query), so a phone-width run would measure a hidden button.
+    coarse: { width: 834, height: 1112 },
   },
   {
     name: 'stepper-step',
