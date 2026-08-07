@@ -4,5 +4,5 @@
     "outDir": "../../out-tsc/spec",
     "types": ["vitest/globals", "node"]
   },
-  "include": ["*.d.ts", "*.spec.ts", "../testing/setup/vitest-setup.ts", "a11y/**/*.spec.ts", "audio/**/*.spec.ts", "interactive/**/*.spec.ts", "layout/**/*.spec.ts", "data/**/*.spec.ts", "dialog/**/*.spec.ts", "popover/**/*.spec.ts", "card/**/*.spec.ts", "chart/**/*.spec.ts", "display/**/*.spec.ts", "stepper/**/*.spec.ts", "tabs/**/*.spec.ts", "timeline/**/*.spec.ts"]
+  "include": ["*.d.ts", "*.spec.ts", "../testing/setup/vitest-setup.ts", "a11y/**/*.spec.ts", "audio/**/*.spec.ts", "interactive/**/*.spec.ts", "layout/**/*.spec.ts", "data/**/*.spec.ts", "dialog/**/*.spec.ts", "popover/**/*.spec.ts", "card/**/*.spec.ts", "chart/**/*.spec.ts", "display/**/*.spec.ts", "stepper/**/*.spec.ts", "tabs/**/*.spec.ts", "timeline/**/*.spec.ts", "theming/**/*.spec.ts"]
 }
