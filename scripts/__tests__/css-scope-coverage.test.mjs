@@ -17,12 +17,12 @@ import { describe, expect, it } from 'vitest';
  * non-static `position`); a `@scope` file that only assigns colour tokens lays
  * nothing out and is not counted.
  *
- * REPORTING ONLY in this release: the unclassified count is a `console.warn`
- * and an `it.todo`, not a failing assertion. Phase 4 flips the todo to
- * `expect(unclassified).toEqual([])`. Structure mirrors
- * `css-density-property-guard.test.mjs` - same walk, same `Map`-with-reasons
- * allowlist, same failure-message style - rather than inventing a second
- * mechanism for the same job.
+ * BLOCKING: every layout-bearing `@scope` stylesheet must be guarded (a
+ * `*.geometry.spec.ts` in its component folder) or carry a
+ * `SCOPE_COVERAGE_ALLOWLIST` entry with a reason; an unclassified one fails the
+ * suite. Structure mirrors `css-density-property-guard.test.mjs` - same walk,
+ * same `Map`-with-reasons allowlist, same failure-message style - rather than
+ * inventing a second mechanism for the same job.
  */
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -90,7 +90,7 @@ const LAYOUT_SCOPE_FILES = walk(PROJECTS, (e) => e.endsWith('.css'))
   .filter(({ full }) => isLayoutBearingScope(stripComments(readFileSync(full, 'utf8'))));
 
 describe('css @scope layout-coverage inventory (spec existence, not rule coverage)', () => {
-  it('reports guarded / allowlisted / unclassified counts (non-blocking this release)', () => {
+  it('every layout-bearing @scope stylesheet is guarded or allowlisted', () => {
     const guarded = [];
     const allowlisted = [];
     const exempt = [];
@@ -108,26 +108,19 @@ describe('css @scope layout-coverage inventory (spec existence, not rule coverag
       }
     }
 
-    const classified = guarded.length + allowlisted.length;
-    console.warn(
-      `[css-scope-coverage] layout-bearing @scope stylesheets: ${LAYOUT_SCOPE_FILES.length}` +
-        ` (skin/theme-exempt ${exempt.length}). ` +
-        `guarded ${guarded.length}, allowlisted ${allowlisted.length}, unclassified ${unclassified.length}.`,
-    );
-    if (unclassified.length) {
-      console.warn(
-        `[css-scope-coverage] unclassified (no geometry spec, no allowlist entry):\n` +
-          unclassified.map((r) => `  ${r}`).join('\n'),
-      );
-    }
+    // Blocking gate: a new layout-bearing @scope stylesheet with neither a
+    // geometry spec in its folder nor an allowlist entry fails here. The message
+    // lists exactly which files to guard.
+    expect(
+      unclassified,
+      unclassified.length
+        ? `Unclassified layout-bearing @scope stylesheets (add a *.geometry.spec.ts ` +
+            `in the component folder, or a SCOPE_COVERAGE_ALLOWLIST entry with a reason):\n` +
+            unclassified.map((r) => `  ${r}`).join('\n')
+        : undefined,
+    ).toEqual([]);
 
-    // Non-blocking this release: the count is a report, not a gate. The two
-    // sanity checks below just keep the inventory itself honest.
-    expect(classified).toBeGreaterThan(0);
+    // The inventory itself stays honest: the guard must still find real specs.
     expect(guarded.length).toBeGreaterThan(0);
   });
-
-  it.todo(
-    'every layout-bearing @scope stylesheet is guarded or allowlisted (Phase 4: flip to expect(unclassified).toEqual([]))',
-  );
 });
