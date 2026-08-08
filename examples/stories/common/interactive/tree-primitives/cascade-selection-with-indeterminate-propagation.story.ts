@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'Cascade selection with indeterminate propagation',
   subtitle:
-    'A checkbox <code>role="tree"</code> where each node\'s tri-state is <em>derived</em>, never stored: a parent is full (<code>●</code>) when every leaf under it is picked, indeterminate (<code>◐</code>) when only some are, empty (<code>○</code>) otherwise. One <code>selected</code> set is the single source; the per-node states are a <code>computed()</code> map and <code>aria-checked</code> reads the same derivation. Clicking a node cascades the toggle to its whole subtree. Keyboard nav (ArrowUp / ArrowDown / Home / End, ArrowRight / ArrowLeft to expand / collapse and traverse) composes <code>CngxActiveDescendant</code> + <code>[cngxHierarchicalNav]</code>, so the tree carries correct per-level <code>aria-posinset</code> / <code>aria-setsize</code> / <code>aria-expanded</code>.',
+    'A checkbox <code>role="tree"</code> where each node\'s tri-state is <em>derived</em>, never stored: a parent is full (<code>●</code>) when every leaf under it is picked, indeterminate (<code>◐</code>) when only some are, empty (<code>○</code>) otherwise. One <code>selected</code> set is the single source; the per-node states are a <code>computed()</code> map and <code>aria-checked</code> reads the same derivation. Clicking a node - or pressing Space / Enter on the keyboard cursor - cascades the toggle to its whole subtree. Keyboard nav (ArrowUp / ArrowDown / Home / End move the cursor, ArrowRight / ArrowLeft expand / collapse and traverse) composes <code>CngxActiveDescendant</code> + <code>[cngxHierarchicalNav]</code>, so the tree carries correct per-level <code>aria-posinset</code> / <code>aria-setsize</code> / <code>aria-expanded</code>.',
   level: 'molecule',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
@@ -41,7 +41,7 @@ export const STORY: DemoSpec = {
       ],
     },
   ]);
-  protected readonly leavesById = this.buildLeaves(this.treeData());
+  protected readonly leavesById = computed(() => this.buildLeaves(this.treeData()));
   protected readonly selected = signal<ReadonlySet<string>>(new Set(['wireframes']));
 
   protected readonly ctrl = createTreeController<{ id: string; name: string }>({
@@ -56,7 +56,7 @@ export const STORY: DemoSpec = {
     () => {
       const sel = this.selected();
       const map = new Map<string, 'full' | 'mixed' | 'empty'>();
-      for (const [id, leaves] of this.leavesById) {
+      for (const [id, leaves] of this.leavesById()) {
         const hit = leaves.filter((leaf) => sel.has(leaf)).length;
         map.set(id, hit === 0 ? 'empty' : hit === leaves.length ? 'full' : 'mixed');
       }
@@ -100,7 +100,7 @@ export const STORY: DemoSpec = {
     return state === 'full' ? 'true' : state === 'mixed' ? 'mixed' : 'false';
   }
   protected toggleCascade(id: string): void {
-    const leaves = this.leavesById.get(id) ?? [];
+    const leaves = this.leavesById().get(id) ?? [];
     const sel = new Set(this.selected());
     const isFull = leaves.every((leaf) => sel.has(leaf));
     for (const leaf of leaves) {
@@ -111,6 +111,12 @@ export const STORY: DemoSpec = {
       }
     }
     this.selected.set(sel);
+  }
+  protected onActivate(value: unknown): void {
+    const id = (value as { id: string } | null)?.id;
+    if (id) {
+      this.toggleCascade(id);
+    }
   }`,
   template: `  <ul
     role="tree"
@@ -120,6 +126,7 @@ export const STORY: DemoSpec = {
     [cngxHierarchicalNav]="ctrl"
     tabindex="0"
     #ad="cngxActiveDescendant"
+    (activated)="onActivate($event)"
     style="display:flex;flex-direction:column;gap:2px;list-style:none;padding:0;margin:0;max-width:24rem"
   >
     @for (node of ctrl.visibleNodes(); track node.id) {
@@ -133,6 +140,8 @@ export const STORY: DemoSpec = {
         [attr.aria-expanded]="node.hasChildren ? ctrl.isExpanded(node.id)() : null"
         [attr.aria-checked]="ariaCheckedFor(state)"
         [style.padding-inline-start.rem]="node.depth * 1.5"
+        [style.outline]="ad.activeId() === node.id ? '2px solid var(--cngx-color-focus-ring, #2563eb)' : null"
+        [style.outline-offset.px]="-2"
         style="display:flex;align-items:center;gap:6px;cursor:pointer"
         (click)="toggleCascade(node.id)"
       >
@@ -146,9 +155,9 @@ export const STORY: DemoSpec = {
       </li>
     }
   </ul>`,
-  templateChromeBefore: `<p style="margin-bottom:12px">Click a node to cascade-select its subtree. Tab into the tree, then <kbd>ArrowUp</kbd> / <kbd>ArrowDown</kbd> move the cursor, <kbd>ArrowRight</kbd> / <kbd>ArrowLeft</kbd> expand / collapse.</p>`,
+  templateChromeBefore: `<p style="margin-bottom:12px">Click a node to cascade-select its subtree. Tab into the tree, then <kbd>ArrowUp</kbd> / <kbd>ArrowDown</kbd> move the cursor, <kbd>Space</kbd> / <kbd>Enter</kbd> toggle it, <kbd>ArrowRight</kbd> / <kbd>ArrowLeft</kbd> expand / collapse.</p>`,
   templateChrome: `<div class="event-grid" style="margin-top:12px">
-    <div class="event-row"><span class="event-label">Count</span><span class="event-value">{{ fullCount() }} / {{ leavesById.size }}</span></div>
+    <div class="event-row"><span class="event-label">Count</span><span class="event-value">{{ fullCount() }} / {{ leavesById().size }}</span></div>
     <div class="event-row"><span class="event-label">Cursor</span><span class="event-value">{{ ad.activeId() ?? '-' }}</span></div>
   </div>`,
 };
