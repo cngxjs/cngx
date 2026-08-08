@@ -19,13 +19,16 @@ export const STORY: DemoSpec = {
   protected readonly people = FILTER_BUILDER_PEOPLE;
   protected readonly tree = signal<FilterGroup>(createEmptyFilterRoot());
   private readonly builder = viewChild(CngxFilterBuilderPresenter);
-  protected readonly rows = computed<readonly FilterBuilderPerson[]>(() => {
-    const predicate = this.builder()?.predicate() as
-      | ((item: FilterBuilderPerson) => boolean)
-      | null
-      | undefined;
-    return predicate ? this.people.filter(predicate) : this.people;
-  });
+  protected readonly rows = computed<readonly FilterBuilderPerson[]>(
+    () => {
+      const predicate = this.builder()?.predicate() as
+        | ((item: FilterBuilderPerson) => boolean)
+        | null
+        | undefined;
+      return predicate ? this.people.filter(predicate) : this.people;
+    },
+    { equal: (a, b) => a.length === b.length && a.every((row, i) => row === b[i]) },
+  );
   protected readonly activeCount = computed(() => this.countExpressions(this.tree()));
   protected countExpressions(node: FilterNode): number {
     if (node.type === 'expression') {
