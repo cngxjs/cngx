@@ -21,7 +21,6 @@ export const STORY: DemoSpec = {
   setup: `protected readonly active = signal(0);`,
   template: `  <mat-stepper
     cngxMatStepper
-    #s="cngxMatStepper"
     [(activeStepIndex)]="active"
     cngxStepperRouterSync
     [mode]="'queryParam'"

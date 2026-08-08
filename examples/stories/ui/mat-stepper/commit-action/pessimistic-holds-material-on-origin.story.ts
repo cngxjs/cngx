@@ -27,7 +27,6 @@ export const STORY: DemoSpec = {
     });`,
   template: `  <mat-stepper
     cngxMatStepper
-    #s="cngxMatStepper"
     [(activeStepIndex)]="active"
     [commitAction]="commitAction"
     [commitMode]="'pessimistic'"
