@@ -3843,3 +3843,18 @@ mat-icon.demo-breadcrumb-icon {
   border: var(--cngx-border-width, 1px) dashed var(--cngx-color-border, #cbd5e1);
   border-radius: var(--cngx-radius-md, 0.5rem);
 }
+
+/* mat-tabs instrumentation demo: give the auto-mounted overflow "More"
+   affordance an opaque backdrop so scrolled tabs do not bleed through it.
+   Both --cngx-tab-overflow-bg (read on the wrapper) and
+   --cngx-tab-overflow-button-bg (read on the trigger) are registered
+   @property inherits:false, so each must be set on the element that reads it -
+   an ancestor declaration would not cascade. The examples app loads
+   @cngx/themes/cngx.css but not the per-lib @cngx/ui/mat-tabs Track-B sheet,
+   so these are the consumer-side surface tokens that sheet would otherwise set. */
+.cngx-mat-tabs-more {
+  --cngx-tab-overflow-bg: var(--cngx-color-surface, oklch(1 0 0));
+}
+.cngx-mat-tabs-more .cngx-tab-overflow__trigger {
+  --cngx-tab-overflow-button-bg: var(--cngx-color-surface, oklch(1 0 0));
+}

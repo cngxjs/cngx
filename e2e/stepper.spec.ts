@@ -29,8 +29,10 @@ const ROUTER_SYNC =
 // driving a vanilla <mat-stepper>. No mat-stepper commitAction or
 // router-sync example exists in the examples app.
 const MAT_FOOTER = '/#/ui/stepper/stepper-footer/mat-stepper-footer';
-const MAT_COMMIT = '/#/ui/mat-stepper/mat-stepper';
-const MAT_ROUTER_SYNC = '/#/ui/mat-stepper/mat-stepper-router-sync';
+const MAT_COMMIT =
+  '/#/ui/mat-stepper/commit-action/pessimistic-holds-material-on-origin';
+const MAT_ROUTER_SYNC =
+  '/#/ui/mat-stepper/router-sync/query-param-step-in-url';
 
 function stepper(page: Page): Locator {
   return page.locator('cngx-stepper').first();
@@ -244,9 +246,8 @@ test.describe('CngxStepper W3C step pattern (Phase 2 baseline)', () => {
   test('(i) mat-stepper: pessimistic commitAction holds Material on origin until success', async ({
     page,
   }) => {
-    test.fixme(true, 'no mat-stepper commitAction example migrated to the examples app (only mat-stepper-footer exists)');
     await page.goto(MAT_COMMIT);
-    const headers = page.locator('cngx-mat-stepper mat-step-header');
+    const headers = page.locator('mat-stepper[cngxMatStepper] mat-step-header');
     await expect(headers).toHaveCount(3);
     // Click step 2 — pessimistic mode is default; Material should NOT
     // advance immediately.
@@ -260,9 +261,8 @@ test.describe('CngxStepper W3C step pattern (Phase 2 baseline)', () => {
   test('(i) mat-stepper + router-sync: clicking a Material step writes ?step=<id>', async ({
     page,
   }) => {
-    test.fixme(true, 'no mat-stepper router-sync example migrated to the examples app');
     await page.goto(MAT_ROUTER_SYNC);
-    const headers = page.locator('cngx-mat-stepper mat-step-header');
+    const headers = page.locator('mat-stepper[cngxMatStepper] mat-step-header');
     await expect(headers).toHaveCount(4);
     await headers.nth(2).click();
     await expect.poll(() => page.url()).toMatch(/(step=security|#step=security)/);

@@ -52,7 +52,6 @@ import { createFieldSync } from '../shared/field-sync';
 import { CNGX_LOCAL_ITEMS_BUFFER_FACTORY } from '../shared/local-items-buffer';
 import { createTypeaheadController } from '../shared/typeahead-controller';
 import { CNGX_FLAT_NAV_STRATEGY } from '../shared/flat-nav-strategy';
-import { CNGX_SELECT_GLYPHS } from '../shared/internal/glyphs';
 import { CNGX_SELECT_PANEL_HOST, CNGX_SELECT_PANEL_VIEW_HOST } from '../shared/panel-host';
 import type {
   CngxSelectCommitAction,
@@ -258,10 +257,11 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   readonly reorderAriaLabel = input<string>(this.reorderableConfig.ariaLabel);
 
   /**
-   * Custom drag-handle glyph. Replaces the default `⋮⋮` grip before
-   * each chip body. Handle span stays `aria-hidden="true"` - the
-   * semantic move belongs to the chip wrapper's keyboard handler +
-   * the directive.
+   * Optional drag-handle template. By default no grip renders and the
+   * whole chip is the drag surface; supply a template here (or via
+   * `*cngxMultiSelectChipHandle`) to render an `aria-hidden` grip before
+   * each chip body. The semantic move always belongs to the chip
+   * wrapper's keyboard handler + the directive, never the grip.
    */
   readonly chipDragHandle = input<TemplateRef<void> | null>(this.reorderableConfig.dragHandle);
 
@@ -350,16 +350,13 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
    * Drag-handle template cascade:
    *   1. `*cngxMultiSelectChipHandle` (highest).
    *   2. `[chipDragHandle]` input.
-   *   3. `null` → renders {@link defaultDragHandleGlyph}.
+   *   3. `null` → no grip renders; the whole chip is the drag surface.
    *
    * @internal
    */
   protected readonly chipDragHandleTpl = computed<TemplateRef<void> | null>(
     () => this.chipHandleDirective()?.templateRef ?? this.chipDragHandle(),
   );
-
-  /** @internal - default `⋮⋮` grip when no template is supplied. */
-  protected readonly defaultDragHandleGlyph = CNGX_SELECT_GLYPHS.dragHandle;
 
   private readonly triggerBtn = viewChild<ElementRef<HTMLElement>>('triggerBtn');
   private readonly listboxRef = viewChild<CngxListbox>(CngxListbox);

@@ -1,44 +1,34 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 
-const ROUTE = '/#/forms/select-virtual';
+const ROUTE = '/#/forms/select/virtualization/ten-thousand-option-window';
 
+// Each control lives in its own aria-labelled <section> (role="region") on
+// the one story page; scope by the region's accessible name.
 function card(page: Page, title: string): Locator {
-  return page.locator('app-example-card').filter({ hasText: title });
+  return page.getByRole('region', { name: title });
 }
 
 function triggerOf(section: Locator): Locator {
-  return section
-    .locator('cngx-demo-virtual-select cngx-select [role="combobox"]')
-    .first();
+  return section.locator('cngx-select [role="combobox"]').first();
 }
 
 function panelOf(section: Locator): Locator {
-  return section.locator('cngx-demo-virtual-select .cngx-select__panel').first();
+  return section.locator('.cngx-select__panel').first();
 }
 
 function comboTriggerOf(section: Locator): Locator {
-  return section
-    .locator('cngx-demo-virtual-combo cngx-combobox [role="combobox"]')
-    .first();
+  return section.locator('cngx-combobox [role="combobox"]').first();
 }
 
 function comboPanelOf(section: Locator): Locator {
-  return section.locator('cngx-demo-virtual-combo .cngx-select__panel').first();
+  return section.locator('.cngx-select__panel').first();
 }
 
 test.describe('CngxSelect — virtualized panel', () => {
   // QUARANTINE: no virtualized-select example was migrated to the examples app.
-  // The dev-app demos (cngx-demo-virtual-select / cngx-demo-virtual-combo,
-  // withVirtualization(), 10k dataset) were never ported, so ROUTE and every
-  // selector below resolve to nothing. Assertions preserved; unfixme once a
-  // forms/select virtualization story ships. See finding + accepted-debt register.
-  test.beforeEach(() => {
-    test.fixme(true, 'no virtualized-select example migrated to the examples app');
-  });
-
   test('only a window of option rows is in the DOM for a 10k dataset', async ({ page }) => {
     await page.goto(ROUTE);
-    const section = card(page, '10,000 options — CngxSelect');
+    const section = card(page, '10,000 options - CngxSelect');
     const trigger = triggerOf(section);
 
     await trigger.click();
@@ -56,7 +46,7 @@ test.describe('CngxSelect — virtualized panel', () => {
 
   test('option rows carry aria-setsize = 10000 + valid aria-posinset', async ({ page }) => {
     await page.goto(ROUTE);
-    const section = card(page, '10,000 options — CngxSelect');
+    const section = card(page, '10,000 options - CngxSelect');
     const trigger = triggerOf(section);
 
     await trigger.click();
@@ -75,7 +65,7 @@ test.describe('CngxSelect — virtualized panel', () => {
 
   test('scrolling the panel surfaces a different window', async ({ page }) => {
     await page.goto(ROUTE);
-    const section = card(page, '10,000 options — CngxSelect');
+    const section = card(page, '10,000 options - CngxSelect');
     const trigger = triggerOf(section);
     await trigger.click();
     const panel = panelOf(section);

@@ -11,10 +11,8 @@ const TREE_CONTROLLER =
   '/#/common/interactive/tree/controller/basic-expand-collapse';
 const HIERARCHICAL_NAV =
   '/#/common/interactive/tree/hierarchical-nav/with-active-descendant';
-// No example demonstrates inline-tree cascade selection (parent toggle
-// flips descendants + up-propagates indeterminate on role="treeitem"
-// rows). See the report — this test is UNRESOLVED.
-const CASCADE = '/#/common/interactive/tree-primitives';
+const CASCADE =
+  '/#/common/interactive/tree-primitives/cascade-selection-with-indeterminate-propagation';
 
 function artifact(page: Page): Locator {
   return page.locator('.cngx-ex-artifact');
@@ -110,18 +108,10 @@ test.describe('Tree primitives demo', () => {
   test('cascade selection — clicking a parent flips all descendants + propagates indeterminate up', async ({
     page,
   }) => {
-    test.fixme(true, 'no inline tree-primitives cascade example migrated to the examples app; the tree-select cascade demo is a different component surface (popover + checkboxes)');
     await page.goto(CASCADE);
-    // UNRESOLVED: no example in the examples app demonstrates inline
-    // cascade selection over role="treeitem" rows with ◐/● selection
-    // glyphs and an indeterminate-up-propagation event readout. The
-    // forms/select/tree-select cascade example demonstrates the same
-    // behaviour but through a completely different component surface
-    // (a <cngx-tree-select> popover with checkboxes), which this
-    // assertion set cannot map onto. Original assertions preserved.
-    const section = page.locator('app-example-card').filter({
-      hasText: 'Cascade selection',
-    });
+    // The cascade demo is a single naked page; scope to its <main>
+    // (artifact tree + the Count readout in the chrome section).
+    const section = page.locator('main');
     // Leaf-selected pre-seed: "Wireframes" is checked → parent "Design" is
     // indeterminate, grandparent "Project Alpha" indeterminate.
     const design = section

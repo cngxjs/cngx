@@ -145,11 +145,6 @@ test.describe('CngxReorderableMultiSelect demo', () => {
   test('custom drag-handle template adds an opt-in glyph (default = no grip)', async ({
     page,
   }) => {
-    // QUARANTINE (possible library regression, see finding): the basic example
-    // now renders `.cngx-select__chip-handle` unconditionally with the default
-    // `⋮⋮` glyph, so "default = no grip" no longer holds. Kept asserting the
-    // original opt-in contract; unfixme once the drag-handle default is triaged.
-    test.fixme(true, 'reorderable drag-handle renders by default; opt-in-grip contract needs library triage');
     await page.goto(ROUTES.basic);
     // Default chip strip in the basic example has NO grip glyph — the ✕
     // hover state is the only divider between drag and remove.
