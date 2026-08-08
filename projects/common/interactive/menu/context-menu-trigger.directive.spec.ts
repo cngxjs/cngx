@@ -256,6 +256,19 @@ describe('CngxContextMenuTrigger', () => {
       });
     });
 
+    it('attaches the dismiss listeners synchronously on open, before the effect flushes', () => {
+      const ctx = setupWithFactory([withDismissOnOutsideClick(true)]);
+      ctx.triggerEl.dispatchEvent(
+        new MouseEvent('contextmenu', { bubbles: true, clientX: 3, clientY: 3 }),
+      );
+      // No flushEffects(): openAt() must attach eagerly so there is no
+      // visible-but-not-listening window. The `isOpen` effect's later attach()
+      // is an idempotent no-op, so the count stays at one.
+      expect(ctx.attach).toHaveBeenCalledTimes(1);
+      TestBed.flushEffects();
+      expect(ctx.attach).toHaveBeenCalledTimes(1);
+    });
+
     it('teardown invoked on close', () => {
       const ctx = setupWithFactory([withDismissOnOutsideClick(true)]);
       ctx.triggerEl.dispatchEvent(
