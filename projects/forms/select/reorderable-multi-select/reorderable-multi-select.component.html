@@ -90,13 +90,11 @@
             (focus)="handleChipFocus(i)"
             (click)="$event.stopPropagation()"
           >
-            <span class="cngx-select__chip-handle" aria-hidden="true">
-              @if (chipDragHandleTpl(); as handleT) {
+            @if (chipDragHandleTpl(); as handleT) {
+              <span class="cngx-select__chip-handle" aria-hidden="true">
                 <ng-container *ngTemplateOutlet="handleT" />
-              } @else {
-                {{ defaultDragHandleGlyph }}
-              }
-            </span>
+              </span>
+            }
             @if (chipTpl(); as chipT) {
               <ng-container
                 *ngTemplateOutlet="
