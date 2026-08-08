@@ -41,7 +41,14 @@ export const STORY: DemoSpec = {
       ],
     },
   ]);
-  protected readonly leavesById = computed(() => this.buildLeaves(this.treeData()));
+  protected readonly leavesById = computed(() => this.buildLeaves(this.treeData()), {
+    equal: (a, b) =>
+      a.size === b.size &&
+      [...a].every(([id, leaves]) => {
+        const other = b.get(id);
+        return !!other && other.length === leaves.length && leaves.every((leaf, i) => leaf === other[i]);
+      }),
+  });
   protected readonly selected = signal<ReadonlySet<string>>(new Set(['wireframes']));
 
   protected readonly ctrl = createTreeController<{ id: string; name: string }>({
