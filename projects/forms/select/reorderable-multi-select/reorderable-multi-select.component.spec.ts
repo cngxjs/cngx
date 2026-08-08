@@ -451,11 +451,47 @@ describe('CngxReorderableMultiSelect — selection preservation', () => {
   });
 });
 
-describe('CngxReorderableMultiSelect — custom drag-handle template', () => {
-  // Bound via a [chipDragHandle] input carrying a ng-template — covered
-  // in the e2e demo suite (Commits 4+5) since the input wants a
-  // TemplateRef reference, not a structural directive.
-  it.todo('custom chipDragHandle template replaces the default grip glyph');
+@Component({
+  template: `
+    <cngx-reorderable-multi-select
+      [label]="'Handles'"
+      [options]="options"
+      [chipDragHandle]="grip"
+      [(values)]="values"
+    />
+    <ng-template #grip><i class="custom-grip">::</i></ng-template>
+  `,
+  imports: [CngxReorderableMultiSelect],
+})
+class HandleHost {
+  readonly options = OPTIONS;
+  readonly values = signal<string[]>(['a', 'b']);
+}
+
+describe('CngxReorderableMultiSelect — drag-handle default', () => {
+  it('renders no grip by default — the whole chip is the drag surface', () => {
+    const fixture = TestBed.createComponent(Host);
+    flush(fixture);
+    const root = fixture.nativeElement as HTMLElement;
+
+    // Four selected values render four chips.
+    expect(root.querySelectorAll('.cngx-select__chip-wrap').length).toBe(4);
+    // No opt-in template supplied → no grip handle anywhere. Restores the
+    // documented grip-less default (the always-⋮⋮ render was a regression).
+    expect(root.querySelectorAll('.cngx-select__chip-handle').length).toBe(0);
+  });
+
+  it('renders an aria-hidden grip when a [chipDragHandle] template is supplied', () => {
+    const fixture = TestBed.createComponent(HandleHost);
+    flush(fixture);
+    const root = fixture.nativeElement as HTMLElement;
+
+    const handles = root.querySelectorAll<HTMLElement>('.cngx-select__chip-handle');
+    // One grip per chip, each projecting the custom template + aria-hidden.
+    expect(handles.length).toBe(2);
+    expect(handles[0].getAttribute('aria-hidden')).toBe('true');
+    expect(handles[0].querySelector('.custom-grip')).not.toBeNull();
+  });
 });
 
 describe('CngxReorderableMultiSelect — panel Escape handling', () => {
