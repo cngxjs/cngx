@@ -170,6 +170,14 @@ export class CngxContextMenuTrigger {
     if (!this.popover().isVisible()) {
       this.popover().show();
     }
+    // Attach the dismiss listeners eagerly here, not only from the `isOpen`
+    // effect below: `showPopover()` makes the menu visible synchronously, but
+    // the effect runs a change-detection flush later, leaving a
+    // visible-but-not-listening window in which an immediate scroll / blur /
+    // outside-pointerdown would fail to dismiss. Mirrors the eager `savedFocus`
+    // capture above. `attach()` is idempotent, so the effect's later call is a
+    // no-op.
+    this.dismissBinding.attach();
     this.menu().ad.highlightFirst();
     // Defer one microtask so showPopover()'s top-layer DOM mutation
     // settles before focus moves into the menu container - matches the

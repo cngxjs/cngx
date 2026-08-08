@@ -20,11 +20,7 @@ test.describe('CngxContextMenuTrigger demo', () => {
     await expect(page.locator('[role="menu"]')).toBeVisible();
   });
 
-  test('Escape closes and restores focus to the zone', async ({ page, browserName }) => {
-    // Quarantined on chromium: this dismissal path is flaky there while
-    // firefox/webkit pass deterministically. Tracked as Group D of the e2e
-    // drain; do not chase the timing until the root cause is triaged.
-    test.fixme(browserName === 'chromium', 'flaky Escape dismissal on chromium');
+  test('Escape closes and restores focus to the zone', async ({ page }) => {
     await page.goto(ROUTE);
     const zone = page.locator('.demo-context-menu-zone');
     await zone.focus();
@@ -45,10 +41,7 @@ test.describe('CngxContextMenuTrigger demo', () => {
     await expect(page.locator('[role="menu"]')).toBeHidden();
   });
 
-  test('window blur dismisses the menu', async ({ page, browserName }) => {
-    // Quarantined on chromium: flaky there, passes on firefox/webkit.
-    // Group D of the e2e drain; triage before chasing the timing.
-    test.fixme(browserName === 'chromium', 'flaky window-blur dismissal on chromium');
+  test('window blur dismisses the menu', async ({ page }) => {
     await page.goto(ROUTE);
     const zone = page.locator('.demo-context-menu-zone');
     await zone.click({ button: 'right' });
@@ -67,10 +60,7 @@ test.describe('CngxContextMenuTrigger demo', () => {
     await expect(page.locator('[role="menu"]')).toBeHidden();
   });
 
-  test('scroll-dismiss demo: scrolling closes the opt-in menu', async ({ page, browserName }) => {
-    // Quarantined on chromium: flaky there, passes on firefox/webkit.
-    // Group D of the e2e drain; triage before chasing the timing.
-    test.fixme(browserName === 'chromium', 'flaky scroll dismissal on chromium');
+  test('scroll-dismiss demo: scrolling closes the opt-in menu', async ({ page }) => {
     await page.goto('/#/common/interactive/context-menu/scroll-dismisses-menu');
     const zone = page.locator('.demo-scroll-zone');
     await zone.click({ button: 'right' });
