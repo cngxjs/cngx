@@ -93,8 +93,8 @@ describe('CngxPaginator geometry', () => {
 
   it('swaps the page row for the status readout below the 24rem breakpoint', () => {
     // Positive control: proves the @container query fires. The responsive-swap
-    // selectors carry enough specificity to win, unlike the bare-element rules
-    // exercised by the two `it.fails` guards below.
+    // selectors carry enough specificity to win, which the two collapse guards
+    // below now assert for the goto/first/last rules as well.
     const host = mount(800);
     expect(segmentDisplay(host, 'cngx-pgn-pages')).not.toBe('none');
     expect(segmentDisplay(host, 'cngx-pgn-status')).toBe('none');
