@@ -61,6 +61,8 @@ jobs:
             dist
             .compodoc
             examples/src/app/features
+            examples/src/app/app.routes.ts
+            examples/src/app/_routes-meta.ts
           retention-days: 1
           include-hidden-files: true
 
