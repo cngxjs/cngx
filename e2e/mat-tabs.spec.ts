@@ -28,7 +28,7 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 // the default commit latency is 600ms; CI machines run slower than
 // dev boxes and the toast outlet has its own enter animation.
 
-const ROUTE = '/#/ui/mat-tabs/mat-tabs-instrumentation';
+const ROUTE = '/#/ui/mat-tabs/instrumentation/sticky-error-commit-action-with-bridges';
 
 // Material renders the clickable tab buttons inside `MatTabHeader`
 // as `<button class="mat-mdc-tab">` siblings of the active-bar.
@@ -53,12 +53,17 @@ function overflowMoreButton(page: Page): Locator {
 
 function activeTab(page: Page): Locator {
   // Material applies `mdc-tab--active` to the currently-selected
-  // tab regardless of cngx instrumentation.
-  return page.locator('mat-tab-group .mat-mdc-tab.mdc-tab--active');
+  // tab regardless of cngx instrumentation. Scoped to the FIRST
+  // mat-tab-group — the smart-overflow group below carries its own
+  // active tab, so an unscoped match would count both.
+  return page.locator('mat-tab-group').first().locator('.mat-mdc-tab.mdc-tab--active');
 }
 
 function rejectedTab(page: Page): Locator {
-  return page.locator('mat-tab-group .mat-mdc-tab.cngx-mat-tab--error');
+  return page
+    .locator('mat-tab-group')
+    .first()
+    .locator('.mat-mdc-tab.cngx-mat-tab--error');
 }
 
 function toastCards(page: Page): Locator {
@@ -84,16 +89,6 @@ async function disableSimulateError(page: Page): Promise<void> {
 }
 
 test.describe('CngxMatTabs sticky-error UX (mat-tabs-instrumentation demo)', () => {
-  // QUARANTINE: the entire CngxMatTabs instrumentation demo (mode toggle,
-  // simulate-error, "Clear last failed", toast/banner outlets, smart-overflow)
-  // was never ported from the dev-app to the examples app. No leaf route renders
-  // cngxMatTabs, so every test below has nothing to target. Assertions preserved;
-  // unfixme once an ui/mat-tabs/mat-tabs-instrumentation story ships. See
-  // finding + accepted-debt register.
-  test.beforeEach(() => {
-    test.fixme(true, 'CngxMatTabs instrumentation demo not migrated to the examples app');
-  });
-
   test('(a) baseline: 3 mat-tabs render; tab 0 active; no rejection class anywhere', async ({
     page,
   }) => {
