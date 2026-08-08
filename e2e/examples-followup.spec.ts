@@ -25,13 +25,13 @@ test.describe('examples followup', () => {
     for (const story of SAMPLE_STORIES) {
       test(`route ${story.path} sets document.title from data.title`, async ({ page }) => {
         await page.goto(`/${story.path}`);
-        await expect(page).toHaveTitle(new RegExp(`${story.titleFragment}.*cngx examples`));
+        await expect(page).toHaveTitle(new RegExp(`${story.titleFragment}.*CNGX examples`));
       });
     }
 
     test('root path falls back to a stable title', async ({ page }) => {
       await page.goto('/');
-      await expect(page).toHaveTitle(/cngx examples/);
+      await expect(page).toHaveTitle(/CNGX examples/);
     });
   });
 
