@@ -12,12 +12,10 @@ function main(page: Page): Locator {
   return page.locator('main');
 }
 
-// Retained only for the UNRESOLVED bridge / form-field tests below, whose
-// behaviours (predicate-driven table, Signal/Reactive Forms disabled bridge)
-// have no example under examples/stories/forms/filter-builder/**. Their bodies
-// are kept verbatim so the original intent is preserved, not weakened.
+// Scopes to a named region on the form-field-bridge example page, which ships
+// two aria-labelled <section>s: "Signal Forms" and "Reactive Forms".
 function card(page: Page, title: string): Locator {
-  return page.locator('app-example-card').filter({ hasText: title });
+  return page.getByRole('region', { name: title });
 }
 
 test.describe('CngxFilterBuilder demo — golden path', () => {
@@ -240,20 +238,16 @@ test.describe('CngxFilterBuilder — reset journey', () => {
 });
 
 test.describe('CngxFilterBuilder — form-field bridge browser flow', () => {
-  const FORM_FIELD_ROUTE = '/#/forms/filter-builder-form-field';
-  // QUARANTINE: no filter-builder form-field bridge example (Signal Forms +
-  // Reactive Forms disabled propagation, .status-badge) migrated to the examples
-  // app. Assertions preserved; unfixme once that story ships. See register.
-  test.beforeEach(() => {
-    test.fixme(true, 'no filter-builder form-field bridge example migrated to the examples app');
-  });
+  const FORM_FIELD_ROUTE =
+    '/#/forms/filter-builder/form-field-bridge/signal-and-reactive-forms-disabled-touched';
 
-  // Interactive flows (Add Filter → mark touched → focus first incomplete)
-  // currently corrupt the tree via the CngxSelect+form-field auto-sync
-  // interaction (`logic.toUpperCase is not a function` in dev mode); the bug
-  // lives in @cngx/forms/select and is tracked separately. The two tests
-  // below only exercise the static-bridge contract (disabled toggle in RF,
-  // initial badge state in Signal Forms), which does not trigger the bug.
+  // The CngxSelect+form-field auto-sync corruption these tests once tripped
+  // (`logic.toUpperCase is not a function`, issue #98 - a descendant logic
+  // <cngx-select> syncing the ambient FilterGroup into its own scalar value) is
+  // fixed: cngxFilterBuilderFormFieldControl provides CNGX_SELECT_DISABLE_FIELD_SYNC
+  // (see filter-builder-form-field.spec.ts). These two verify the bridge surface
+  // on the migrated example - initial state in Signal Forms, disabled propagation
+  // in Reactive Forms.
   test('Signal Forms — static bridge surface mounts and exposes the contract', async ({ page }) => {
     await page.goto(FORM_FIELD_ROUTE);
     const section = card(page, 'Signal Forms');
