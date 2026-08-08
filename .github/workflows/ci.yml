@@ -10,13 +10,23 @@ permissions:
   actions: read
   contents: read
 
+# Cancel a superseded run when a PR gets a new push. Main pushes are never
+# cancelled (they mark the release history), so gate the cancel on PR events.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
-  main:
+  # Single build pass: produce the lib dist, the compodoc JSON and the
+  # generated example feature components once, then hand them to every
+  # downstream job as an artifact. This is the only job that compiles the
+  # libraries; lint/test/geometry/e2e/build-examples fan out in parallel and
+  # each restores this exact output, so their environment matches the old
+  # serial pipeline byte-for-byte.
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -31,17 +41,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-angular-${{ hashFiles('package-lock.json') }}-
 
-      # Keyed on the lockfile so the cache invalidates when the pinned
-      # @playwright/test version changes - the browser build the geometry
-      # specs (and the timeline e2e) drive Chromium with.
-      - name: Cache Playwright browsers
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-playwright-
-
       - name: Install dependencies
         run: npm ci
 
@@ -54,32 +53,147 @@ jobs:
       - name: Generate examples components
         run: npm run examples:generate
 
+      - name: Upload build output
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: |
+            dist
+            .compodoc
+            examples/src/app/features
+            examples/src/app/app.routes.ts
+            examples/src/app/_routes-meta.ts
+          retention-days: 1
+          include-hidden-files: true
+
+  lint:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Download build output
+        uses: actions/download-artifact@v4
+        with:
+          name: build-output
       - name: Lint
         run: npm run lint
 
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Download build output
+        uses: actions/download-artifact@v4
+        with:
+          name: build-output
       - name: Run tests
         run: npm run test
 
-      - name: Build examples app
-        run: npm run build:examples
-
-      # The whole e2e suite is gated below (npm run e2e). The Playwright
-      # webServer boots `ng serve examples`; the Build-examples step above has
-      # already generated the feature components it serves.
+  geometry:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+      - name: Install dependencies
+        run: npm ci
+      - name: Download build output
+        uses: actions/download-artifact@v4
+        with:
+          name: build-output
       - name: Install Playwright chromium
         run: npx playwright install --with-deps chromium
-
-      # Geometry specs run in the same job as the unit tests - same pipeline,
-      # a different environment. CI sets CI=1, so the vitest browser provider
-      # runs Chromium headless with no flag. A geometry regression fails the PR.
+      # Geometry specs run in the browser-mode vitest provider. CI sets CI=1,
+      # so Chromium runs headless. A geometry regression fails the PR.
       - name: Run geometry specs
         run: npm run test:geometry
 
-      # Gate the whole e2e suite on every PR (replaces the single-spec timeline
-      # step; the timeline e2e is now one spec in the gated suite). Route-drift
+  e2e:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - name: Cache Angular build cache
+        uses: actions/cache@v4
+        with:
+          path: .angular/cache
+          key: ${{ runner.os }}-angular-${{ hashFiles('package-lock.json') }}-${{ github.ref_name }}
+          restore-keys: |
+            ${{ runner.os }}-angular-${{ hashFiles('package-lock.json') }}-
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+      - name: Install dependencies
+        run: npm ci
+      - name: Download build output
+        uses: actions/download-artifact@v4
+        with:
+          name: build-output
+      - name: Install Playwright chromium
+        run: npx playwright install --with-deps chromium
+      # The Playwright webServer boots `ng serve examples`; it serves the
+      # generated feature components restored from the build artifact. Route-drift
       # specs with no migrated example are test.fixme-quarantined in-file. Three
       # pre-existing flaky specs are excluded here pending triage
       # (CngxContextMenuTrigger dismissal timing, examples-followup document.title
       # races, and the stock Playwright placeholder) - by test-title match.
       - name: e2e suite
         run: npm run e2e -- --project=chromium --grep-invert "CngxContextMenuTrigger|examples followup|has title"
+
+  build-examples:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - name: Cache Angular build cache
+        uses: actions/cache@v4
+        with:
+          path: .angular/cache
+          key: ${{ runner.os }}-angular-${{ hashFiles('package-lock.json') }}-${{ github.ref_name }}
+          restore-keys: |
+            ${{ runner.os }}-angular-${{ hashFiles('package-lock.json') }}-
+      - name: Install dependencies
+        run: npm ci
+      - name: Download build output
+        uses: actions/download-artifact@v4
+        with:
+          name: build-output
+      # `npm run build:examples` regenerates docs:json + feature components via
+      # its prebuild hook, so the production build validates against a fresh tree.
+      - name: Build examples app
+        run: npm run build:examples
