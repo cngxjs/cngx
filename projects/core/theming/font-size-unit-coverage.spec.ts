@@ -14,18 +14,28 @@ import { resolve } from 'node:path';
 // precondition for the future global `[data-text-size]` S/M/L switch (a strict
 // rem baseline lets that switch ride one root-font-size multiplier).
 //
-// Two scans over every shipped `projects/**/*.css`:
+// Three scans over every shipped `projects/**/*.css`:
 //   (a) every `font-size:` declaration value, and
 //   (b) every `--*font-size*`-named custom-property DEFINITION, closing the hole
 //       where a `--x-font-size: 14px` token is consumed via `var()` in a
-//       `font-size`.
-// Any captured value carrying a `px` literal fails. `font-size: 0` glyph /
-// whitespace resets carry no `px` and pass by construction.
+//       `font-size`, and
+//   (c) VAR-CHAIN resolution: for every `font-size` value, follow its
+//       `var(--token)` references (transitively) to the token's definitions -
+//       plain declarations AND `@property { initial-value: ... }` - and fail when
+//       a font-size-feeding token is px-ONLY (a nonzero-px definition with no
+//       relative-unit definition anywhere in its chain). Scan (c) catches the
+//       registered-`<length>`-`initial-value: px` trap that (a)/(b) miss: a
+//       registered `@property` always supplies its px initial-value, so the
+//       `var(..., 1rem)` fallback never fires and the text is pinned regardless
+//       of what name the token carries (`--*-glyph-size`, `--*-font-size`, ...).
+// Any captured value carrying a nonzero `px` fails. `font-size: 0` / `0px` resets
+// carry no scalable text and pass by construction.
 //
-// Naming-heuristic limitation: the guard keys on the `font-size` name. A size
-// token used for a `font-size` but NOT named `font-size` (e.g. a shared
-// glyph-size token) is out of reach and stays a manifest-review responsibility -
-// the same caveat `touch-target-coverage.spec.ts` documents.
+// Residual limitation: scan (c) exempts a token that has BOTH a px and a
+// relative-unit definition (a scaling override may exist elsewhere in the
+// cascade), so a token pinned to px under only one selector is out of static
+// reach and stays a manifest-review responsibility - the same class of caveat
+// `touch-target-coverage.spec.ts` documents.
 //
 // Deliberate deviation from the touch-target guard: demo scaffolds under
 // `/examples/` are skipped WHOLESALE rather than enrolled per-file, because they
@@ -159,6 +169,107 @@ describe('font-size unit coverage (source scan)', () => {
     expect(
       stale,
       `stale EXCLUDED_FONT_SIZE_FILES entries (no px font-size to exclude): ${stale.join(', ')}`,
+    ).toEqual([]);
+  });
+});
+
+// ---- Scan (c): var-chain resolution from font-size into token definitions ----
+
+// Every custom-property definition across shipped CSS: a plain `--token: value`
+// declaration OR an `@property --token { initial-value: value }`. One token can
+// carry several definitions (host SET + `:root` default + skin/density overrides).
+const collectDefs = (files: readonly string[]): Map<string, string[]> => {
+  const defs = new Map<string, string[]>();
+  const add = (name: string, value: string): void => {
+    const list = defs.get(name) ?? [];
+    list.push(value.trim());
+    defs.set(name, list);
+  };
+  for (const file of files) {
+    const css = stripComments(readRepoCss(file));
+    let match: RegExpExecArray | null;
+    // Plain `--token: value` declarations. The `@property --token {` header has no
+    // colon after the name, so it is not caught here; `initial-value` is scanned
+    // separately below.
+    const decl = /(--[a-z0-9-]+)\s*:\s*([^;{}]+)/gi;
+    while ((match = decl.exec(css)) !== null) {
+      add(match[1], match[2]);
+    }
+    const prop = /@property\s+(--[a-z0-9-]+)\s*\{([^}]*)\}/gi;
+    while ((match = prop.exec(css)) !== null) {
+      const initial = /initial-value\s*:\s*([^;}]+)/i.exec(match[2]);
+      if (initial) {
+        add(match[1], initial[1]);
+      }
+    }
+  }
+  return defs;
+};
+
+// Custom-property names referenced by a `var()` inside a value.
+const varsIn = (value: string): string[] => {
+  const out: string[] = [];
+  const re = /var\(\s*(--[a-z0-9-]+)/gi;
+  let match: RegExpExecArray | null;
+  while ((match = re.exec(value)) !== null) {
+    out.push(match[1]);
+  }
+  return out;
+};
+
+// A value carries a root-relative length (so it scales). `var()` refs are NOT
+// treated as relative here - they are followed transitively instead.
+const RELATIVE_UNIT = /\d\s*(rem|em|%|vh|vw|vmin|vmax|vi|vb|ch|ex|lh|rlh)\b/i;
+
+// Every definition value reachable from a token, following `var()` refs
+// transitively (cycle-guarded).
+const chainValues = (token: string, defs: Map<string, string[]>, seen = new Set<string>()): string[] => {
+  if (seen.has(token)) {
+    return [];
+  }
+  seen.add(token);
+  const values: string[] = [];
+  for (const value of defs.get(token) ?? []) {
+    values.push(value);
+    for (const child of varsIn(value)) {
+      values.push(...chainValues(child, defs, seen));
+    }
+  }
+  return values;
+};
+
+describe('font-size unit coverage (var-chain resolution)', () => {
+  const defs = collectDefs(SHIPPED_CSS);
+  const excluded = new Set(EXCLUDED_FONT_SIZE_FILES.map((e) => e.file));
+
+  it('no font-size reads a px-only token (registered <length> initial-value trap)', () => {
+    const offenders: string[] = [];
+    for (const file of SHIPPED_CSS) {
+      if (excluded.has(file)) {
+        continue;
+      }
+      const css = stripComments(readRepoCss(file));
+      const fontSize = /font-size\s*:\s*([^;}]+)/gi;
+      let match: RegExpExecArray | null;
+      while ((match = fontSize.exec(css)) !== null) {
+        const line = lineOf(css, match.index);
+        for (const token of varsIn(match[1])) {
+          const chain = chainValues(token, defs);
+          const pinnedPx = chain.some(hasNonZeroPx) && !chain.some((value) => RELATIVE_UNIT.test(value));
+          if (pinnedPx) {
+            const pxDef = chain.find(hasNonZeroPx) ?? '';
+            offenders.push(`${file}:${line} font-size reads ${token} = "${pxDef}" (px-only)`);
+          }
+        }
+      }
+    }
+    const report = [...new Set(offenders)];
+    expect(
+      report,
+      `font-size(s) read a px-ONLY token, so the text is pinned and cannot scale ` +
+        `(WCAG 1.4.4/1.4.10). A registered @property <length> always supplies its ` +
+        `px initial-value, defeating the var() rem fallback - unregister the token ` +
+        `or give it a rem/em/% definition.`,
     ).toEqual([]);
   });
 });
