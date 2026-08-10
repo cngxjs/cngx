@@ -53,14 +53,15 @@
  * Attribute-primary (`[data-text-size='lg']`) with a class twin
  * (`.cngx-text-size-lg`) for Tailwind/shadcn-style conventions - the
  * same dual-signal pattern as the density and colour-scheme blocks. The
- * ergonomic `provideTextScale()` / `CngxTextScale` layer
- * (`@cngx/core/theming`) reflects a signal onto this attribute.
+ * ergonomic `provideTextScale()` / `injectTextScale()` layer
+ * (`@cngx/core/theming`) reflects a signal onto this attribute at the
+ * root; text-scale is a global axis, so there is no subtree directive.
  *
  * **Pair with**
  *
  * - `@cngx/core/theming/system-tokens` - registers the rem type ramp
  *   (`--cngx-font-size-*`) this multiplier scales
- * - `@cngx/core/theming/text-scale` - `provideTextScale` / `CngxTextScale`
+ * - `@cngx/core/theming/text-scale` - `provideTextScale` / `injectTextScale`
  */
 
 @layer cngx.theme {

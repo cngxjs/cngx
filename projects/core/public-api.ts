@@ -17,7 +17,6 @@ export {
   provideTextScale,
   injectTextScale,
 } from './theming/text-scale';
-export { CngxTextScale } from './theming/cngx-text-scale.directive';
 export {
   CNGX_TOUCH_TARGET,
   type CngxTouchTargetValue,
