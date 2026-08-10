@@ -72,3 +72,24 @@ it (defaults to `computed(() => false)`).
 - `parseKeyCombo()`, `matchesKeyCombo()` -- keyboard shortcut parsing
 - `hasTransition()`, `onTransitionDone()` -- CSS transition detection
 - `nextUid()` -- unique ID generator
+
+## Theming
+
+### Typography units
+
+Library `font-size` is always root-relative -- `rem`, `em`, or `%`, never `px`.
+A root-relative size lets the browser user-font-size setting and page zoom scale
+all text for free (WCAG 1.4.4 Resize Text, 1.4.10 Reflow); a single `px`
+`font-size` literal silently opts that node out. `font-size: 0` glyph/whitespace
+resets are allowed -- they carry no `px`.
+
+Enforcement is a source-scan guard, `theming/font-size-unit-coverage.spec.ts`,
+which fails on any `px` in a `font-size:` value or a `--*font-size*`-named token
+definition across shipped `projects/**/*.css`. The guard keys on the `font-size`
+name: a `px` that reaches `font-size` through a differently-named length token
+(e.g. a `--*-glyph-size` custom property or a registered `@property` with a `px`
+`initial-value`) is out of its heuristic and stays a manifest-review
+responsibility -- the same caveat the touch-target guard carries. This rem-only
+baseline is the precondition for the future global `[data-text-size]` S/M/L
+switch: a strict root-relative baseline lets that switch ride one root-font-size
+multiplier instead of a per-token rule.

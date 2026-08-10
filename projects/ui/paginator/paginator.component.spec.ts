@@ -335,10 +335,16 @@ describe('CngxPaginator — host typography', () => {
       .join('\n');
   }
 
-  test('registers the font-size + row-gap tokens with the prototype defaults', async () => {
+  test('leaves the host font-size unregistered (scales) but registers row-gap', async () => {
     await setup();
     const css = paginatorCss();
-    expect(css).toMatch(/--cngx-paginator-font-size\s*\{[^}]*initial-value:\s*14px/);
+    // The host font-size token is intentionally NOT @property-registered: a
+    // registered <length> freezes a rem to an absolute px, which would pin the
+    // paginator text to a fixed size and opt it out of browser font-size scaling
+    // and the global text-scale switch. It scales via the rem fallback at the
+    // use-site instead (asserted in the next test). Row-gap has no such
+    // constraint and stays registered with its pixel prototype default.
+    expect(css).not.toMatch(/@property\s+--cngx-paginator-font-size\s*\{/);
     expect(css).toMatch(/--cngx-paginator-row-gap\s*\{[^}]*initial-value:\s*12px/);
   });
 

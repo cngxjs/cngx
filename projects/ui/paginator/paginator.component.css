@@ -3,10 +3,14 @@
  * Thematic tokens + the `numbered`, `pill`, `segmented`, `minimal`, `rail`,
  * and `bar` skins for `CngxPaginator`. Structural layout
  * lives in `paginator-base.css` (`@cngx/common/data`); this file only paints.
- * Every token is registered with `inherits: true` so a value set on the host
- * (skin block, density, consumer override) cascades to the descendant buttons
- * and the popover rows - `inherits: false` would strand the descendant on the
- * initial value. The `Popover` group themes the panel shared by the
+ * Every token except the host font size is registered with `inherits: true` so
+ * a value set on the host (skin block, density, consumer override) cascades to
+ * the descendant buttons and the popover rows - `inherits: false` would strand
+ * the descendant on the initial value. `--cngx-paginator-font-size` is the one
+ * exception: left unregistered so its `rem` fallback scales with the browser
+ * font-size and the global text-scale switch (a registered `<length>` freezes a
+ * `rem` to px); it still cascades, because unregistered custom properties
+ * inherit by default. The `Popover` group themes the panel shared by the
  * items-per-page / page-of-pages listbox segments and the ellipsis overflow
  * menu.
  *
@@ -40,17 +44,16 @@
     initial-value: 12px;
   }
 
-  /**
-   * Host font size. Cascades to every numeral and label; density shifts it.
-   * The font stack stays an unregistered custom property - no `@property`
-   * syntax token describes a font-family list.
-   * @group Layout
+  /*
+   * Host font size. Intentionally NOT @property-registered - the one exception
+   * to the all-tokens-registered note above. A registered `<length>` freezes a
+   * `rem` value to an absolute px, which would pin the paginator text to a fixed
+   * size and opt it out of browser font-size scaling and the global text-scale
+   * switch. Left unregistered so the `var(--cngx-paginator-font-size, 0.875rem)`
+   * fallback in paginator-base.css scales; it still cascades to descendants
+   * because unregistered custom properties inherit by default, and skin / density
+   * / consumer overrides still set it on the host.
    */
-  @property --cngx-paginator-font-size {
-    syntax: '<length>';
-    inherits: true;
-    initial-value: 14px;
-  }
 
   /**
    * Hit-target size (min-width and height) of every paginator button.

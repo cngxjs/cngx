@@ -42,10 +42,13 @@
  *
  * **Material wiring**
  *
- * Every `--cngx-mat-tab-*` token is `@property`-registered with a literal
- * oklch initial value, so a registered value always wins over an inline
- * `var()` fallback - this stylesheet therefore carries no `--mat-sys-*`
- * fallbacks of its own. The Material alignment is delivered by the
+ * Every `--cngx-mat-tab-*` token except the has-errors glyph size is
+ * `@property`-registered with a literal oklch initial value, so a registered
+ * value always wins over an inline `var()` fallback - this stylesheet
+ * therefore carries no `--mat-sys-*` fallbacks of its own. The one exception,
+ * `--cngx-mat-tab-has-errors-glyph-size`, is deliberately left unregistered so
+ * its `rem` fallback scales with text-only zoom (see its note below). The
+ * Material alignment is delivered by the
  * `@cngx/themes/material/tabs-theme` bridge (`@include tabs.theme($theme)`),
  * which sets the colour tokens on `.mat-mdc-tab-group`:
  *
@@ -132,15 +135,17 @@
     initial-value: 6px;
   }
 
-  /**
-   * Diameter of the `has-errors` glyph disc.
-   * @group State / HasErrors
+  /*
+   * Diameter of the `has-errors` glyph disc. Intentionally NOT
+   * @property-registered - the one exception to the all-tokens-registered
+   * note above. A registered `<length>` computes a `rem` value to an absolute
+   * px once, pinning the badge to a fixed size and defeating text-only zoom.
+   * Left unregistered so the `var(--..., 1rem)` fallbacks at the glyph rule
+   * scale the disc and glyph together with the root font-size. Still
+   * consumer-overridable - set `--cngx-mat-tab-has-errors-glyph-size` on any
+   * ancestor and the `var()` use-sites pick it up; it just no longer appears on
+   * the compodoc Theming tab (unregistered tokens carry no typed metadata).
    */
-  @property --cngx-mat-tab-has-errors-glyph-size {
-    syntax: '<length>';
-    inherits: false;
-    initial-value: 16px;
-  }
 
   /**
    * Background of the `has-errors` glyph disc. Wired to `--mat-sys-error`
@@ -303,14 +308,14 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: var(--cngx-mat-tab-has-errors-glyph-size, 16px);
-    height: var(--cngx-mat-tab-has-errors-glyph-size, 16px);
+    width: var(--cngx-mat-tab-has-errors-glyph-size, 1rem);
+    height: var(--cngx-mat-tab-has-errors-glyph-size, 1rem);
     margin: 0;
     border: 0;
     border-radius: 50%;
     background: var(--cngx-mat-tab-has-errors-color, oklch(0.45 0.15 25));
     color: var(--cngx-mat-tab-has-errors-glyph-color, oklch(1 0 0));
-    font-size: calc(var(--cngx-mat-tab-has-errors-glyph-size, 16px) * 0.75);
+    font-size: calc(var(--cngx-mat-tab-has-errors-glyph-size, 1rem) * 0.75);
     font-weight: var(--cngx-mat-tab-has-errors-font-weight, 700);
     line-height: 1;
     pointer-events: none;
