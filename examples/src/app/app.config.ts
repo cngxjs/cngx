@@ -1,6 +1,6 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideRouter, TitleStrategy, withHashLocation } from '@angular/router';
-import { provideTextScale } from '@cngx/core';
+import { provideMotion, provideTextScale } from '@cngx/core';
 import { provideDialog } from '@cngx/common/dialog';
 import {
   provideFormField,
@@ -41,6 +41,12 @@ export const appConfig: ApplicationConfig = {
     // re-scales the whole rem type ramp globally. Seeded from the persisted
     // toggle preference so a reload keeps the chosen size.
     provideTextScale(initialTextScale()),
+    // Install the motion reflector at app root so the motion demo's
+    // injectMotion().set(...) reflects onto <html data-motion> and drives the
+    // reduced-motion safety net globally. Default 'auto' removes the attribute
+    // so the OS prefers-reduced-motion preference stays in charge until a user
+    // opts into an explicit override.
+    provideMotion(),
     // Hash routing - GitHub Pages serves a single index.html and cannot rewrite
     // deep paths to it. With withHashLocation() every route resolves client-side
     // off the `#` fragment, no 404 fallback trick required.
