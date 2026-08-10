@@ -12,6 +12,13 @@ export {
 } from './theming/density';
 export { CngxDensity } from './theming/cngx-density.directive';
 export {
+  CNGX_TEXT_SCALE,
+  type CngxTextScaleValue,
+  provideTextScale,
+  injectTextScale,
+} from './theming/text-scale';
+export { CngxTextScale } from './theming/cngx-text-scale.directive';
+export {
   CNGX_TOUCH_TARGET,
   type CngxTouchTargetValue,
   provideTouchTargets,
