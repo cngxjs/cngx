@@ -164,12 +164,10 @@ jobs:
         run: npx playwright install --with-deps chromium
       # The Playwright webServer boots `ng serve examples`; it serves the
       # generated feature components restored from the build artifact. Route-drift
-      # specs with no migrated example are test.fixme-quarantined in-file. Three
-      # pre-existing flaky specs are excluded here pending triage
-      # (CngxContextMenuTrigger dismissal timing, examples-followup document.title
-      # races, and the stock Playwright placeholder) - by test-title match.
+      # specs with no migrated example are test.fixme-quarantined in-file; the
+      # whole remaining suite gates the PR.
       - name: e2e suite
-        run: npm run e2e -- --project=chromium --grep-invert "CngxContextMenuTrigger|examples followup|has title"
+        run: npm run e2e -- --project=chromium
 
   build-examples:
     needs: build
