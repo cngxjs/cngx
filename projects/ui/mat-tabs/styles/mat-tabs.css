@@ -303,14 +303,14 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: var(--cngx-mat-tab-has-errors-glyph-size, 16px);
-    height: var(--cngx-mat-tab-has-errors-glyph-size, 16px);
+    width: var(--cngx-mat-tab-has-errors-glyph-size, 1rem);
+    height: var(--cngx-mat-tab-has-errors-glyph-size, 1rem);
     margin: 0;
     border: 0;
     border-radius: 50%;
     background: var(--cngx-mat-tab-has-errors-color, oklch(0.45 0.15 25));
     color: var(--cngx-mat-tab-has-errors-glyph-color, oklch(1 0 0));
-    font-size: calc(var(--cngx-mat-tab-has-errors-glyph-size, 16px) * 0.75);
+    font-size: calc(var(--cngx-mat-tab-has-errors-glyph-size, 1rem) * 0.75);
     font-weight: var(--cngx-mat-tab-has-errors-font-weight, 700);
     line-height: 1;
     pointer-events: none;
