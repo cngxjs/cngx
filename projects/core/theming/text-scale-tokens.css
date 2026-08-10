@@ -1,0 +1,85 @@
+/**
+ * @overview
+ * The `[data-text-size]` swap for the global text scale. Setting
+ * `data-text-size` (or the equivalent `.cngx-text-size-*` class) on the
+ * root (or any ancestor) re-scales every root-relative `font-size` for
+ * its subtree, the same way `data-density` re-scales the spacing scale
+ * in `density-tokens.css`. Because the type ramp is authored in `rem`
+ * (`--cngx-font-size-{sm|md|lg}` in `system-tokens.css`), a single
+ * multiplier applied once at `html` scales all text at once - no
+ * per-token SET rule like `--cngx-space-*` needs.
+ *
+ * **Presets**
+ *
+ * - `md` - the library default (multiplier `1`, identity). An explicit
+ *   block, not just the `var(..., 1)` fallback, so an `md` island resets
+ *   cleanly inside an `sm`/`lg` ancestor (mirrors the `comfortable`
+ *   reset block in `density-tokens.css`).
+ * - `sm` - smaller rung (multiplier `0.9375`).
+ * - `lg` - larger rung (multiplier `1.125`).
+ *
+ * **Application**
+ *
+ * The one application point is `html`:
+ * `font-size: calc(var(--cngx-font-base, 100%) * var(--cngx-font-scale, 1))`.
+ * Both defaults make it a no-op: base `100%` inherits the user's own
+ * browser font-size, and scale `1` leaves it untouched. Nothing is
+ * overridden until a consumer opts in via `provideTextScale()` /
+ * `[cngxTextScale]`, so WCAG 1.4.4 (Resize Text) is honoured - the app
+ * multiplies the user's setting rather than replacing it. A consumer
+ * with a bespoke root size sets `--cngx-font-base` and the app scale
+ * still multiplies on top.
+ *
+ * `--cngx-font-scale` is a plain custom property, deliberately NOT a
+ * registered `@property`: it is read once at `html`, and a registered
+ * fixed `initial-value` would defeat the `var(..., 1)` fallback that
+ * keeps the unset case a no-op.
+ *
+ * **Layer**
+ *
+ * These blocks live in `@layer cngx.theme` - the documented
+ * theme-override layer (`layers.css`) that sits ABOVE `cngx.tokens`,
+ * matching the density swap.
+ *
+ * **Form**
+ *
+ * Attribute-primary (`[data-text-size='lg']`) with a class twin
+ * (`.cngx-text-size-lg`) for Tailwind/shadcn-style conventions - the
+ * same dual-signal pattern as the density and colour-scheme blocks. The
+ * ergonomic `provideTextScale()` / `CngxTextScale` layer
+ * (`@cngx/core/theming`) reflects a signal onto this attribute.
+ *
+ * **Pair with**
+ *
+ * - `@cngx/core/theming/system-tokens` - registers the rem type ramp
+ *   (`--cngx-font-size-*`) this multiplier scales
+ * - `@cngx/core/theming/text-scale` - `provideTextScale` / `CngxTextScale`
+ */
+
+@layer cngx.theme {
+  /* md — the library default (identity). Declared explicitly so a nested
+   * md island resets inside an sm/lg ancestor. */
+  [data-text-size='md'],
+  .cngx-text-size-md {
+    --cngx-font-scale: 1;
+  }
+
+  /* sm — smaller rung. */
+  [data-text-size='sm'],
+  .cngx-text-size-sm {
+    --cngx-font-scale: 0.9375;
+  }
+
+  /* lg — larger rung. */
+  [data-text-size='lg'],
+  .cngx-text-size-lg {
+    --cngx-font-scale: 1.125;
+  }
+
+  /* The single application point: multiply the consumer's base
+   * (defaulting to the user's 100%) by the active scale (defaulting to
+   * the 1 no-op). Reads root-relative, so every rem font-size scales. */
+  html {
+    font-size: calc(var(--cngx-font-base, 100%) * var(--cngx-font-scale, 1));
+  }
+}
