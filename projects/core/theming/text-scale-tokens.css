@@ -64,20 +64,20 @@
  */
 
 @layer cngx.theme {
-  /* md — the library default (identity). Declared explicitly so a nested
+  /* md - the library default (identity). Declared explicitly so a nested
    * md island resets inside an sm/lg ancestor. */
   [data-text-size='md'],
   .cngx-text-size-md {
     --cngx-font-scale: 1;
   }
 
-  /* sm — smaller rung. */
+  /* sm - smaller rung. */
   [data-text-size='sm'],
   .cngx-text-size-sm {
     --cngx-font-scale: 0.9375;
   }
 
-  /* lg — larger rung. */
+  /* lg - larger rung. */
   [data-text-size='lg'],
   .cngx-text-size-lg {
     --cngx-font-scale: 1.125;
