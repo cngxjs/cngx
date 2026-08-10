@@ -2,6 +2,7 @@
  * Parsed keyboard combo.
  *
  * @category core/utils/keyboard
+ * @since 0.1.0
  */
 export interface KeyCombo {
   readonly key: string;
@@ -25,6 +26,7 @@ export interface KeyCombo {
  * ```
  *
  * @category core/utils/keyboard
+ * @since 0.1.0
  */
 export function parseKeyCombo(combo: string): KeyCombo {
   const parts = combo
@@ -61,6 +63,7 @@ export function parseKeyCombo(combo: string): KeyCombo {
  * @param isMac Whether the current platform is macOS (affects `mod` resolution).
  *
  * @category core/utils/keyboard
+ * @since 0.1.0
  */
 export function matchesKeyCombo(event: KeyboardEvent, combo: KeyCombo, isMac: boolean): boolean {
   if (event.key.toLowerCase() !== combo.key) {

@@ -5,6 +5,7 @@
  * All other falsy values return `false`.
  *
  * @category core/utils
+ * @since 0.1.0
  */
 export function coerceBooleanProperty(value: unknown): boolean {
   if (value == null) {
@@ -24,6 +25,7 @@ export function coerceBooleanProperty(value: unknown): boolean {
  * Returns `fallback` when the value is null, undefined, NaN, or non-numeric.
  *
  * @category core/utils
+ * @since 0.1.0
  */
 export function coerceNumberProperty(value: unknown, fallback = 0): number {
   if (value == null) {
