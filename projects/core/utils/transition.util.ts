@@ -4,6 +4,7 @@
  * @returns `true` if at least one `transition-duration` value is greater than 0.
  *
  * @category core/utils
+ * @since 0.1.0
  */
 export function hasTransition(el: HTMLElement): boolean {
   const duration = getComputedStyle(el).transitionDuration;
@@ -18,6 +19,7 @@ export function hasTransition(el: HTMLElement): boolean {
  * @returns A cleanup function that removes the listener and clears the fallback timer.
  *
  * @category core/utils
+ * @since 0.1.0
  */
 export function onTransitionDone(el: HTMLElement, onDone: () => void): () => void {
   const style = getComputedStyle(el);

@@ -11,6 +11,7 @@ import { DestroyRef, effect, inject, type Signal, signal } from '@angular/core';
  *
  * @returns A readonly signal that is `true` when the indicator should be visible.
  * @internal
+ * @since 0.1.0
  */
 export function createVisibilityGate(
   isActive: Signal<boolean>,

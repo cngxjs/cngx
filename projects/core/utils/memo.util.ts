@@ -7,6 +7,7 @@
  * expensive('a'); // cached
  *
  * @category core/utils
+ * @since 0.1.0
  */
 export function memoize<K, V>(fn: (key: K) => V): (key: K) => V {
   const cache = new Map<K, V>();

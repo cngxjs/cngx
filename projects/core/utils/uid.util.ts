@@ -8,6 +8,7 @@ let counter = 0;
  * Used internally for ARIA `id` attributes on dialogs, popovers, and tooltips.
  *
  * @category core/utils
+ * @since 0.1.0
  */
 export function nextUid(prefix: string): string {
   return `${prefix}-${counter++}`;

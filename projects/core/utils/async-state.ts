@@ -4,6 +4,7 @@ import type { Signal } from '@angular/core';
  * Discriminated status of an async operation lifecycle.
  *
  * @category core/utils/async-state
+ * @since 0.1.0
  */
 export type AsyncStatus = 'idle' | 'loading' | 'pending' | 'refreshing' | 'success' | 'error';
 
@@ -22,6 +23,7 @@ export type AsyncStatus = 'idle' | 'loading' | 'pending' | 'refreshing' | 'succe
  * typed on the interface, not on a concrete implementation.
  *
  * @category core/utils/async-state
+ * @since 0.1.0
  */
 export interface CngxAsyncState<T> {
   /** Current status of the async operation. Single source of truth. */

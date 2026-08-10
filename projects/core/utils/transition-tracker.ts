@@ -8,6 +8,7 @@ import type { AsyncStatus } from './async-state';
  * with a fully reactive, `linkedSignal`-based approach.
  *
  * @category core/utils/async-state
+ * @since 0.1.0
  */
 export interface StatusTransition {
   /** The current status value. */
@@ -35,6 +36,7 @@ export interface StatusTransition {
  * ```
  *
  * @category core/utils/async-state
+ * @since 0.1.0
  */
 export function createTransitionTracker(source: () => AsyncStatus): StatusTransition {
   const state = linkedSignal<AsyncStatus, { current: AsyncStatus; previous: AsyncStatus }>({
