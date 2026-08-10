@@ -24,6 +24,14 @@
  *   cannot re-enable motion (a pure-CSS ancestor selector has no
  *   nearest-ancestor-wins against an inherited media state) - subtree
  *   scoping is for the accessibility-critical *reducing* direction.
+ * - Essential-motion carve-out: freezing a loading affordance into a dead
+ *   ring removes the "still working" signal (a communication failure), so
+ *   `[role='status']` and `[role='progressbar']` hosts swap the freeze for
+ *   a slow opacity pulse instead of stopping. Keyed on the ARIA role the
+ *   loading components already expose (`CngxLoadingIndicator` /
+ *   `CngxProgress`), never on component class names, so core stays
+ *   layer-clean. A skeleton is deliberately NOT carved out: its static
+ *   placeholder shape still reads as loading, so its shimmer may freeze.
  *
  * **Duration tokens**
  *
@@ -67,6 +75,17 @@
   scroll-behavior: auto !important;
 }
 
+/* Essential-motion carve-out: a loading affordance must keep communicating
+ * "still working" rather than freeze into a dead ring. Higher specificity
+ * than the freeze rule above (0,2,0 vs 0,1,0), so its !important pulse wins
+ * on the role host while the freeze still stops the host's decorative
+ * children. Role-keyed so core never references a ui component class. */
+[data-motion='reduced'] [role='status'],
+[data-motion='reduced'] [role='progressbar'] {
+  animation: cngx-motion-loading-pulse var(--cngx-pulse-duration, 2s)
+    var(--cngx-pulse-easing, ease-in-out) infinite !important;
+}
+
 /* OS-driven reset with a root `full` escape. `:root:not([data-motion='full'])`
  * keeps the reduce behaviour for `auto` and `reduced` while letting an
  * explicit `data-motion='full'` opt the whole document back into motion. */
@@ -78,5 +97,26 @@
     transition-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
+  }
+
+  /* Essential-motion carve-out under the OS preference - same intent as the
+   * attribute rule above. Specificity (0,3,0) beats the (0,2,0) freeze. */
+  :root:not([data-motion='full']) [role='status'],
+  :root:not([data-motion='full']) [role='progressbar'] {
+    animation: cngx-motion-loading-pulse var(--cngx-pulse-duration, 2s)
+      var(--cngx-pulse-easing, ease-in-out) infinite !important;
+  }
+}
+
+/* The gentle opacity pulse essential loading affordances fall back to under
+ * reduced motion. Opacity only - no transform/movement, so it carries no
+ * vestibular risk while still reading as "still working". */
+@keyframes cngx-motion-loading-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
   }
 }

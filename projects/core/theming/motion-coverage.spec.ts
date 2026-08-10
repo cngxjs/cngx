@@ -97,6 +97,16 @@ describe('reduced-motion safety-net integrity', () => {
     expect(net).toContain('@media (prefers-reduced-motion: reduce)');
     expect(net).toContain(":root:not([data-motion='full'])");
   });
+
+  it('carves out essential loading motion (role=status/progressbar) to a pulse', () => {
+    // Freezing a loader into a dead ring loses the "still working" signal, so
+    // the net must swap the freeze for a pulse on the ARIA-role hosts the
+    // loading components expose - never on a component class name (layering).
+    expect(net).toContain("[role='status']");
+    expect(net).toContain("[role='progressbar']");
+    expect(net).toContain('cngx-motion-loading-pulse');
+    expect(net).toContain('@keyframes cngx-motion-loading-pulse');
+  });
 });
 
 describe('reduced-motion safety-net cascade wiring', () => {
