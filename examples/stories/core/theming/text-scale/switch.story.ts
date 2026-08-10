@@ -10,7 +10,6 @@ export const STORY: DemoSpec = {
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
   focus: ['a11y-pattern', 'behavior'],
-  apiComponents: ['CngxTextScale'],
   moduleImports: [
     "import { injectTextScale } from '@cngx/core';",
     "import { CngxButtonToggleGroup, CngxButtonToggle } from '@cngx/common/interactive';",
