@@ -1,5 +1,6 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideRouter, TitleStrategy, withHashLocation } from '@angular/router';
+import { provideTextScale } from '@cngx/core';
 import { provideDialog } from '@cngx/common/dialog';
 import {
   provideFormField,
@@ -16,9 +17,30 @@ import {
 import { routes } from './app.routes';
 import { CngxExamplesTitleStrategy } from './cngx-examples-title-strategy';
 
+// Seed the text scale from the floating toggle's persisted preference
+// (localStorage 'cngx_text_size', written by main.ts) so the initial paint
+// matches the last choice with no md->persisted flash. 'md' is the identity
+// base; the key is only present for 'sm' / 'lg'.
+function initialTextScale(): 'sm' | 'md' | 'lg' {
+  try {
+    const v = localStorage.getItem('cngx_text_size');
+    if (v === 'sm' || v === 'lg') {
+      return v;
+    }
+  } catch {
+    // localStorage may be unavailable; fall back to the md base.
+  }
+  return 'md';
+}
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
+    // Install the text-scale reflector at app root so the text-scale demo's
+    // injectTextScale().set(...) reflects onto <html data-text-size> and
+    // re-scales the whole rem type ramp globally. Seeded from the persisted
+    // toggle preference so a reload keeps the chosen size.
+    provideTextScale(initialTextScale()),
     // Hash routing - GitHub Pages serves a single index.html and cannot rewrite
     // deep paths to it. With withHashLocation() every route resolves client-side
     // off the `#` fragment, no 404 fallback trick required.

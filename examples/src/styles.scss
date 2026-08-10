@@ -22,7 +22,12 @@
     -apple-system,
     'Segoe UI',
     sans-serif;
-  font-size: 16px;
+  // Feed the text-scale multiplier its base rather than hard-pinning
+  // font-size: the foundation's text-scale-tokens.css owns the root
+  // font-size via calc(var(--cngx-font-base) * var(--cngx-font-scale)),
+  // so the global S/M/L switch can scale on top of this 16px base. A
+  // direct `font-size: 16px` here would out-rank and defeat that rule.
+  --cngx-font-base: 16px;
   line-height: 1.5;
   --cngx-ex-bg: #ffffff;
   --cngx-ex-text: #1f2937;
@@ -82,12 +87,14 @@ body {
 }
 
 // Floating debug toggles (mounted by main.ts after bootstrapApplication):
-// color-scheme (bottom-most) and density (stacked just above it).
+// color-scheme (bottom-most), density (above it), text-scale (top-most).
 // Monospace + sharp corners to match the Apache mod_autoindex aesthetic of
 // the home directory listing. Color-scheme cycles auto → dark → light;
-// density cycles comfortable → compact → spacious.
+// density cycles comfortable → compact → spacious; text-scale cycles
+// medium → small → large.
 #cngx-ex-color-scheme-toggle,
-#cngx-ex-density-toggle {
+#cngx-ex-density-toggle,
+#cngx-ex-text-scale-toggle {
   position: fixed;
   right: 16px;
   bottom: 16px;
@@ -103,17 +110,22 @@ body {
   font-size: 0.8125rem;
   line-height: 1.2;
 }
-// Stack the density toggle one row above the color-scheme toggle so the two
-// never overlap.
+// Stack the toggles so the three never overlap: color-scheme at the bottom,
+// density above it, text-scale on top.
 #cngx-ex-density-toggle {
   bottom: 44px;
 }
+#cngx-ex-text-scale-toggle {
+  bottom: 72px;
+}
 #cngx-ex-color-scheme-toggle:hover,
-#cngx-ex-density-toggle:hover {
+#cngx-ex-density-toggle:hover,
+#cngx-ex-text-scale-toggle:hover {
   background: color-mix(in oklch, var(--cngx-color-surface, #fff), currentColor 6%);
 }
 #cngx-ex-color-scheme-toggle:focus-visible,
-#cngx-ex-density-toggle:focus-visible {
+#cngx-ex-density-toggle:focus-visible,
+#cngx-ex-text-scale-toggle:focus-visible {
   outline: 1px solid var(--cngx-color-primary, #4a8cff);
   outline-offset: 1px;
 }

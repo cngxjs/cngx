@@ -1,4 +1,6 @@
+import { effect, untracked, type Injector } from '@angular/core';
 import { bootstrapApplication } from '@angular/platform-browser';
+import { CNGX_TEXT_SCALE, type CngxTextScaleValue } from '@cngx/core';
 import { appConfig } from './app/app.config';
 import { App } from './app/app';
 
@@ -217,6 +219,87 @@ function installDensityToggle(): void {
   render();
 }
 
+// Text-size coordination + floating toggle.
+//
+// Unlike density (a bare `data-density` attribute), text-scale is backed by
+// a real signal API: `provideTextScale()` (app.config, seeded from the same
+// localStorage key so the first paint matches the persisted choice) installs
+// a reflector that writes `<html data-text-size>` from the `CNGX_TEXT_SCALE`
+// signal, and the foundation's text-scale-tokens.css multiplies the root
+// font-size from there. So the toggle drives the SIGNAL, not the attribute:
+// that keeps it a single source of truth shared with any in-page control
+// (e.g. the /core/theming/text-scale/switch demo binds the same signal). One
+// `effect` persists the signal to localStorage and renders the button, so a
+// change from either surface stays in sync. Standalone-only, same rationale
+// as the density toggle. Cycles md (base) -> sm -> lg -> md; the `md` base
+// clears the key.
+const CNGX_TEXT_SIZE_KEY = 'cngx_text_size';
+
+function installTextScaleToggle(injector: Injector): void {
+  const scale = injector.get(CNGX_TEXT_SCALE);
+
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.id = 'cngx-ex-text-scale-toggle';
+  document.body.appendChild(btn);
+
+  // Paint the button from a rung value. Bracket marker matches the sibling
+  // toggles (T for type size, -/=/+ echoing the density magnitude glyphs);
+  // the accessible name carries the active size because a 3-state cycle has
+  // no correct aria-pressed and the glyph is not exposed to AT.
+  const render = (value: CngxTextScaleValue): void => {
+    btn.textContent = value === 'sm' ? '[T-]' : value === 'lg' ? '[T+]' : '[T=]';
+    const label = value === 'sm' ? 'small' : value === 'lg' ? 'large' : 'medium (base)';
+    btn.title = `Text size: ${label} - click to cycle`;
+    btn.setAttribute('aria-label', `Text size: ${label}. Activate to cycle.`);
+  };
+
+  // Paint immediately so the button never shows empty before the first
+  // effect flush.
+  render(scale());
+
+  btn.addEventListener('click', () => {
+    const current = scale();
+    // md (base) -> sm -> lg -> md
+    const next = current === 'md' ? 'sm' : current === 'sm' ? 'lg' : 'md';
+    scale.set(next);
+  });
+
+  // Multi-tab: another tab wrote the key -> mirror it onto this tab's signal.
+  globalThis.addEventListener('storage', (event) => {
+    if (event.key !== CNGX_TEXT_SIZE_KEY) {
+      return;
+    }
+    const v = localStorage.getItem(CNGX_TEXT_SIZE_KEY);
+    scale.set(v === 'sm' || v === 'lg' ? v : 'md');
+  });
+
+  // Single source of truth: whenever the signal changes (from this toggle OR
+  // an in-page control), persist it and re-render the button glyph. The `md`
+  // base clears the key so a fresh visit starts unscaled. The body is
+  // side-effect only (localStorage + DOM), so it is wrapped in untracked()
+  // to match the core reflector and guard against a future signal read here
+  // silently subscribing the effect.
+  effect(
+    () => {
+      const value = scale();
+      untracked(() => {
+        try {
+          if (value === 'md') {
+            localStorage.removeItem(CNGX_TEXT_SIZE_KEY);
+          } else {
+            localStorage.setItem(CNGX_TEXT_SIZE_KEY, value);
+          }
+        } catch {
+          // localStorage may be unavailable; the toggle still updates the DOM.
+        }
+        render(value);
+      });
+    },
+    { injector },
+  );
+}
+
 // Only install the floating toggles when the examples app runs standalone.
 // Inside the compodocx iframe the parent already exposes its own dark-mode
 // toggle, and the floating buttons would overlap demo content.
@@ -230,10 +313,11 @@ function isEmbeddedInIframe(): boolean {
 }
 
 bootstrapApplication(App, appConfig)
-  .then(() => {
+  .then((appRef) => {
     if (!isEmbeddedInIframe()) {
       installColorSchemeToggle();
       installDensityToggle();
+      installTextScaleToggle(appRef.injector);
     }
   })
   .catch((err) => console.error(err));
