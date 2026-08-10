@@ -280,6 +280,10 @@ function installTextScaleToggle(injector: Injector): void {
       btn.textContent = value === 'sm' ? '[T-]' : value === 'lg' ? '[T+]' : '[T=]';
       const label = value === 'sm' ? 'small' : value === 'lg' ? 'large' : 'medium (base)';
       btn.title = `Text size: ${label} - click to cycle`;
+      // Reflect the current rung in the accessible name so an AT user hears
+      // the active size (the glyph alone is not exposed); a 3-state cycle has
+      // no correct aria-pressed, so the name carries the state.
+      btn.setAttribute('aria-label', `Text size: ${label}. Activate to cycle.`);
     },
     { injector },
   );
