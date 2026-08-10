@@ -22,7 +22,12 @@
     -apple-system,
     'Segoe UI',
     sans-serif;
-  font-size: 16px;
+  // Feed the text-scale multiplier its base rather than hard-pinning
+  // font-size: the foundation's text-scale-tokens.css owns the root
+  // font-size via calc(var(--cngx-font-base) * var(--cngx-font-scale)),
+  // so the global S/M/L switch can scale on top of this 16px base. A
+  // direct `font-size: 16px` here would out-rank and defeat that rule.
+  --cngx-font-base: 16px;
   line-height: 1.5;
   --cngx-ex-bg: #ffffff;
   --cngx-ex-text: #1f2937;
