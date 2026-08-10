@@ -85,7 +85,11 @@ resets are allowed -- they carry no `px`.
 
 Enforcement is a source-scan guard, `theming/font-size-unit-coverage.spec.ts`,
 which fails on any `px` in a `font-size:` value or a `--*font-size*`-named token
-definition across shipped `projects/**/*.css`. This rem-only baseline is the
-precondition for the future global `[data-text-size]` S/M/L switch: a strict
-root-relative baseline lets that switch ride one root-font-size multiplier
-instead of a per-token rule.
+definition across shipped `projects/**/*.css`. The guard keys on the `font-size`
+name: a `px` that reaches `font-size` through a differently-named length token
+(e.g. a `--*-glyph-size` custom property or a registered `@property` with a `px`
+`initial-value`) is out of its heuristic and stays a manifest-review
+responsibility -- the same caveat the touch-target guard carries. This rem-only
+baseline is the precondition for the future global `[data-text-size]` S/M/L
+switch: a strict root-relative baseline lets that switch ride one root-font-size
+multiplier instead of a per-token rule.
