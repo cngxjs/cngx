@@ -1,6 +1,6 @@
-import { effect, type Injector } from '@angular/core';
+import { effect, untracked, type Injector } from '@angular/core';
 import { bootstrapApplication } from '@angular/platform-browser';
-import { CNGX_TEXT_SCALE } from '@cngx/core';
+import { CNGX_TEXT_SCALE, type CngxTextScaleValue } from '@cngx/core';
 import { appConfig } from './app/app.config';
 import { App } from './app/app';
 
@@ -241,8 +241,22 @@ function installTextScaleToggle(injector: Injector): void {
   const btn = document.createElement('button');
   btn.type = 'button';
   btn.id = 'cngx-ex-text-scale-toggle';
-  btn.setAttribute('aria-label', 'Cycle text size: medium / small / large');
   document.body.appendChild(btn);
+
+  // Paint the button from a rung value. Bracket marker matches the sibling
+  // toggles (T for type size, -/=/+ echoing the density magnitude glyphs);
+  // the accessible name carries the active size because a 3-state cycle has
+  // no correct aria-pressed and the glyph is not exposed to AT.
+  const render = (value: CngxTextScaleValue): void => {
+    btn.textContent = value === 'sm' ? '[T-]' : value === 'lg' ? '[T+]' : '[T=]';
+    const label = value === 'sm' ? 'small' : value === 'lg' ? 'large' : 'medium (base)';
+    btn.title = `Text size: ${label} - click to cycle`;
+    btn.setAttribute('aria-label', `Text size: ${label}. Activate to cycle.`);
+  };
+
+  // Paint immediately so the button never shows empty before the first
+  // effect flush.
+  render(scale());
 
   btn.addEventListener('click', () => {
     const current = scale();
@@ -262,28 +276,25 @@ function installTextScaleToggle(injector: Injector): void {
 
   // Single source of truth: whenever the signal changes (from this toggle OR
   // an in-page control), persist it and re-render the button glyph. The `md`
-  // base clears the key so a fresh visit starts unscaled.
+  // base clears the key so a fresh visit starts unscaled. The body is
+  // side-effect only (localStorage + DOM), so it is wrapped in untracked()
+  // to match the core reflector and guard against a future signal read here
+  // silently subscribing the effect.
   effect(
     () => {
       const value = scale();
-      try {
-        if (value === 'md') {
-          localStorage.removeItem(CNGX_TEXT_SIZE_KEY);
-        } else {
-          localStorage.setItem(CNGX_TEXT_SIZE_KEY, value);
+      untracked(() => {
+        try {
+          if (value === 'md') {
+            localStorage.removeItem(CNGX_TEXT_SIZE_KEY);
+          } else {
+            localStorage.setItem(CNGX_TEXT_SIZE_KEY, value);
+          }
+        } catch {
+          // localStorage may be unavailable; the toggle still updates the DOM.
         }
-      } catch {
-        // localStorage may be unavailable; the toggle still updates the DOM.
-      }
-      // Bracket marker matching the sibling toggles: T for type size,
-      // -/=/+ echoing the density magnitude glyphs.
-      btn.textContent = value === 'sm' ? '[T-]' : value === 'lg' ? '[T+]' : '[T=]';
-      const label = value === 'sm' ? 'small' : value === 'lg' ? 'large' : 'medium (base)';
-      btn.title = `Text size: ${label} - click to cycle`;
-      // Reflect the current rung in the accessible name so an AT user hears
-      // the active size (the glyph alone is not exposed); a 3-state cycle has
-      // no correct aria-pressed, so the name carries the state.
-      btn.setAttribute('aria-label', `Text size: ${label}. Activate to cycle.`);
+        render(value);
+      });
     },
     { injector },
   );
