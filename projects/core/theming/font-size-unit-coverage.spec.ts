@@ -73,8 +73,20 @@ const EXCLUDED_FONT_SIZE_FILES: ReadonlyArray<{ file: string; note: string }> = 
 const FONT_SIZE_VALUE = /font-size\s*:\s*([^;}]+)/g;
 // (b) `--*font-size*`-named custom-property definitions.
 const FONT_SIZE_TOKEN = /--[a-z-]*font-size[a-z-]*\s*:\s*([^;}]+)/g;
-// A `px` literal anywhere in the captured value.
-const PX_LITERAL = /\d+\s*px/;
+// A `px` length with a NON-ZERO value anywhere in the captured value. A zero px
+// (`0px`) carries no scalable text and is allowed, mirroring the `font-size: 0`
+// reset allowance - so `font-size: 0px` passes, `font-size: 1px` fails.
+const PX_NUMBER = /(\d*\.?\d+)\s*px/g;
+const hasNonZeroPx = (value: string): boolean => {
+  PX_NUMBER.lastIndex = 0;
+  let match: RegExpExecArray | null;
+  while ((match = PX_NUMBER.exec(value)) !== null) {
+    if (parseFloat(match[1]) !== 0) {
+      return true;
+    }
+  }
+  return false;
+};
 
 const lineOf = (css: string, index: number): number => css.slice(0, index).split('\n').length;
 
@@ -90,7 +102,7 @@ const scanValues = (file: string, css: string, re: RegExp): Offender[] => {
   let match: RegExpExecArray | null;
   while ((match = re.exec(css)) !== null) {
     const value = match[1].trim();
-    if (PX_LITERAL.test(value)) {
+    if (hasNonZeroPx(value)) {
       offenders.push({ file, line: lineOf(css, match.index), value });
     }
   }
@@ -105,7 +117,11 @@ const collectOffenders = (files: readonly string[]): Offender[] => {
   }
   // A `--*-font-size` token definition is matched by BOTH regexes (its name ends
   // in `font-size`, so the value scan sees it too). Dedupe to one row per
-  // physical declaration.
+  // physical declaration. Keyed on `file:line -> value` deliberately: the two
+  // hits for one token def sit on the same line with the same value, so this key
+  // collapses them; keying on match offset instead would stop collapsing them.
+  // Two genuinely distinct offenders sharing one line AND value (not possible in
+  // one-declaration-per-line CSS) would also collapse - an accepted trade-off.
   const seen = new Set<string>();
   return offenders.filter((o) => {
     const key = `${o.file}:${o.line} -> ${o.value}`;
@@ -132,15 +148,17 @@ describe('font-size unit coverage (source scan)', () => {
     ).toEqual([]);
   });
 
-  it('never lists a file as both a scanned offender and excluded', () => {
+  it('lists no stale exclusion (every excluded file is a real offender)', () => {
+    // Every EXCLUDED_FONT_SIZE_FILES entry must actually carry a px font-size the
+    // full scan would flag - otherwise the exclusion is dead weight. (Vacuous
+    // while the list is empty; has teeth the moment an entry is added.) The
+    // scanned pass already drops excluded files, so a reported-vs-excluded check
+    // would be tautological; this stale check is the one with real force.
     const offenderFiles = new Set(collectOffenders(SHIPPED_CSS).map((o) => o.file));
-    const both = [...excluded].filter((file) => offenderFiles.has(file));
-    // An excluded file whose px font-size the scan would otherwise flag must not
-    // also surface as a reported offender - the exclusion is the only owner.
-    const reported = new Set(collectOffenders(scanned).map((o) => o.file));
-    expect([...excluded].filter((file) => reported.has(file))).toEqual([]);
-    // Cross-check the exclusion list is not stale: every excluded file actually
-    // carries a px font-size the scan would flag. (Vacuous while the list is empty.)
-    expect(both).toEqual([...excluded]);
+    const stale = [...excluded].filter((file) => !offenderFiles.has(file));
+    expect(
+      stale,
+      `stale EXCLUDED_FONT_SIZE_FILES entries (no px font-size to exclude): ${stale.join(', ')}`,
+    ).toEqual([]);
   });
 });
