@@ -1,5 +1,6 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideRouter, TitleStrategy, withHashLocation } from '@angular/router';
+import { provideTextScale } from '@cngx/core';
 import { provideDialog } from '@cngx/common/dialog';
 import {
   provideFormField,
@@ -19,6 +20,11 @@ import { CngxExamplesTitleStrategy } from './cngx-examples-title-strategy';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
+    // Install the text-scale reflector at app root so the text-scale demo's
+    // injectTextScale().set(...) reflects onto <html data-text-size> and
+    // re-scales the whole rem type ramp globally. Default 'md' is the identity
+    // rung, so nothing changes until the switch is used.
+    provideTextScale(),
     // Hash routing - GitHub Pages serves a single index.html and cannot rewrite
     // deep paths to it. With withHashLocation() every route resolves client-side
     // off the `#` fragment, no 404 fallback trick required.
