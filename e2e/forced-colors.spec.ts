@@ -100,8 +100,10 @@ test.describe('forced-colors (WHCM) affordance survival', () => {
       .first();
     await expect(dot).toBeVisible();
     const s = await readAffordance(dot);
-    expect(isOpaque(s.backgroundColor)).toBe(true);
-    expect(s.backgroundColor).not.toBe(s.canvas);
+    // Exactly CanvasText, not merely "not Canvas": a coloured dot that was
+    // never forced would also differ from Canvas, so the strict equality is
+    // what proves the forced re-draw actually ran.
+    expect(s.backgroundColor).toBe(s.canvasText);
   });
 
   test('badge --dot survives (textless background-only indicator would vanish)', async ({ page }) => {
@@ -112,7 +114,7 @@ test.describe('forced-colors (WHCM) affordance survival', () => {
       .first();
     await expect(dot).toBeVisible();
     const s = await readAffordance(dot);
-    expect(s.backgroundColor).not.toBe(s.canvas);
+    expect(s.backgroundColor).toBe(s.canvasText);
   });
 
   test('divider line survives (background-drawn separator would collapse to Canvas)', async ({ page }) => {
@@ -120,8 +122,7 @@ test.describe('forced-colors (WHCM) affordance survival', () => {
     const divider = page.locator('.cngx-ex-artifact cngx-divider').first();
     await expect(divider).toBeVisible();
     const s = await readAffordance(divider);
-    expect(isOpaque(s.backgroundColor)).toBe(true);
-    expect(s.backgroundColor).not.toBe(s.canvas);
+    expect(s.backgroundColor).toBe(s.canvasText);
   });
 
   test('checkbox box self-heals via its currentColor border (no block needed)', async ({ page }) => {
