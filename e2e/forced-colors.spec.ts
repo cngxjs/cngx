@@ -61,6 +61,8 @@ test.describe('forced-colors (WHCM) affordance survival', () => {
       const ps = getComputedStyle(probe);
       const canvas = ps.backgroundColor;
       const canvasText = ps.color;
+      probe.style.backgroundColor = 'Highlight';
+      const highlight = getComputedStyle(probe).backgroundColor;
       probe.remove();
       return {
         backgroundColor: cs.backgroundColor,
@@ -69,6 +71,7 @@ test.describe('forced-colors (WHCM) affordance survival', () => {
         borderTopStyle: cs.borderTopStyle,
         canvas,
         canvasText,
+        highlight,
       };
     });
 
@@ -141,5 +144,46 @@ test.describe('forced-colors (WHCM) affordance survival', () => {
     const s = await readAffordance(tag);
     expect(parseFloat(s.borderTopWidth)).toBeGreaterThan(0);
     expect(isOpaque(s.borderTopColor)).toBe(true);
+  });
+
+  // Phase B - @cngx/common selected/checked states re-signal with Highlight.
+  // These exercise the two failure modes the static guard cannot see: a base
+  // `:scope.MODIFIER` rule winning the scope-proximity tiebreak, and a <button>
+  // whose background the UA forces to ButtonFace. Both are why the re-signals
+  // carry !important (and forced-color-adjust on the button).
+
+  test('button-toggle checked segment fills with Highlight (button UA-forcing beaten)', async ({ page }) => {
+    await openForced(page, '/#/common/interactive/button-toggle/group/basic-view-switcher');
+    const checked = page.locator('.cngx-ex-artifact .cngx-button-toggle--checked').first();
+    await expect(checked).toBeVisible();
+    const s = await readAffordance(checked);
+    expect(s.backgroundColor).toBe(s.highlight);
+  });
+
+  test('selected card re-signals with a Highlight border (base :scope rule beaten)', async ({ page }) => {
+    await openForced(page, '/#/common/card/action-card-with-selection');
+    const clickable = page.locator('.cngx-ex-artifact .cngx-card--interactive').first();
+    await expect(clickable).toBeVisible();
+    await clickable.click({ force: true });
+    const card = page.locator('.cngx-ex-artifact .cngx-card--selected').first();
+    await expect(card).toBeVisible();
+    // The card animates border-color over 150ms; let it settle before reading so
+    // the assertion sees the resolved Highlight, not a mid-transition frame.
+    await page.waitForTimeout(300);
+    const s = await readAffordance(card);
+    expect(s.borderTopColor).toBe(s.highlight);
+  });
+
+  test('checked toggle track fills with Highlight (base :scope descendant rule beaten)', async ({ page }) => {
+    await openForced(page, '/#/common/interactive/toggle/basic-two-way-binding');
+    const toggle = page.locator('.cngx-ex-artifact .cngx-toggle').first();
+    await expect(toggle).toBeVisible();
+    await toggle.click({ force: true });
+    const track = page.locator('.cngx-ex-artifact .cngx-toggle--checked .cngx-toggle__track').first();
+    await expect(track).toBeVisible();
+    // The track animates background over ~150ms; settle before reading.
+    await page.waitForTimeout(300);
+    const s = await readAffordance(track);
+    expect(s.backgroundColor).toBe(s.highlight);
   });
 });
