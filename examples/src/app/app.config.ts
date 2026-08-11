@@ -1,6 +1,6 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideRouter, TitleStrategy, withHashLocation } from '@angular/router';
-import { provideMotion, provideTextScale } from '@cngx/core';
+import { provideContrast, provideMotion, provideTextScale } from '@cngx/core';
 import { provideDialog } from '@cngx/common/dialog';
 import {
   provideFormField,
@@ -47,6 +47,12 @@ export const appConfig: ApplicationConfig = {
     // so the OS prefers-reduced-motion preference stays in charge until a user
     // opts into an explicit override.
     provideMotion(),
+    // Install the contrast reflector at app root so the contrast demo's
+    // injectContrast().set(...) reflects onto <html data-contrast> and drives
+    // the higher-contrast token overrides globally. Default 'auto' removes the
+    // attribute so the OS prefers-contrast preference stays in charge until a
+    // user opts into an explicit override.
+    provideContrast(),
     // Hash routing - GitHub Pages serves a single index.html and cannot rewrite
     // deep paths to it. With withHashLocation() every route resolves client-side
     // off the `#` fragment, no 404 fallback trick required.
