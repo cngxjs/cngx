@@ -36,8 +36,13 @@ const THEMES_ENTRY_CSS = 'projects/themes/cngx.css';
 describe('contrast-axis override integrity', () => {
   const net = readRepoCss(CONTRAST_TOKENS_CSS);
 
-  it('ships the attribute-forced `more` override with a class twin', () => {
+  it('ships the `more` override UNANCHORED (so the subtree escape-hatch works) with a class twin', () => {
+    // The attribute rule must match any host carrying data-contrast='more',
+    // not only :root - otherwise `cngxContrast="more"` on a subtree does
+    // nothing. Presence of the bare selector + absence of the :root-anchored
+    // form pins that, parity with motion-coverage.spec.ts.
     expect(net).toContain("[data-contrast='more']");
+    expect(net).not.toContain(":root[data-contrast='more']");
     expect(net).toContain('.cngx-contrast-more');
   });
 

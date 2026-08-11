@@ -36,9 +36,12 @@
  *
  * **Form**
  *
- * Attribute-forced (`:root[data-contrast='more']`) with a class twin
+ * Attribute-forced (`[data-contrast='more']`) with a class twin
  * (`.cngx-contrast-more`) for Tailwind/shadcn-style conventions - same
- * dual-signal pattern as the colour-scheme and density blocks. The OS rule
+ * dual-signal pattern as the colour-scheme and density blocks. The
+ * attribute rule is deliberately UNANCHORED (not `:root`-keyed) so the
+ * `CngxContrast` subtree escape-hatch boosts just its section, mirroring
+ * `density-tokens.css` / `motion-tokens.css`. The OS rule
  * is deliberately UNLAYERED so it avoids the `@scope`/layer cascade trap
  * that bites nested state-driven overrides
  * (`feedback_media_inside_scope_cascade`); it keys on
@@ -57,12 +60,15 @@
  */
 
 @layer cngx.theme {
-  /* Attribute-forced boost with a class twin. Muted demotes to the full
-   * text colour; border strengthens to a mid rung mixed from text and
-   * surface. Border is NOT derived from --cngx-color-text-muted: that token
-   * is demoted in the same rule, so a var() reference to it would resolve
-   * to the demoted value and collapse both surfaces onto text. */
-  :root[data-contrast='more'],
+  /* Attribute-forced boost with a class twin. Deliberately UNANCHORED (not
+   * :root-keyed) so the CngxContrast subtree escape-hatch reflects
+   * data-contrast onto a section and boosts just that subtree, mirroring
+   * density-tokens.css / motion-tokens.css. Muted demotes to the full text
+   * colour; border strengthens to a mid rung mixed from text and surface.
+   * Border is NOT derived from --cngx-color-text-muted: that token is
+   * demoted in the same rule, so a var() reference to it would resolve to
+   * the demoted value and collapse both surfaces onto text. */
+  [data-contrast='more'],
   .cngx-contrast-more {
     --cngx-color-border: color-mix(in oklab, var(--cngx-color-text) 60%, var(--cngx-color-surface));
     --cngx-color-text-muted: var(--cngx-color-text);
