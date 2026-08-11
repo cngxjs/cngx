@@ -69,7 +69,7 @@ describe('contrast-axis override integrity', () => {
     }
   });
 
-  it('remaps only via var(--cngx-color-*) references — no colour literal (scheme-agnostic)', () => {
+  it('remaps only via var(--cngx-color-*) references - no colour literal (scheme-agnostic)', () => {
     // Every custom-property assignment in the file is an override; each must
     // reference a ramp token so light and dark schemes both stay correct.
     // A hardcoded oklch()/rgb()/hsl()/hex would pin one scheme and is banned.

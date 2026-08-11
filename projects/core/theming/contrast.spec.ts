@@ -50,13 +50,13 @@ describe('provideContrast / injectContrast', () => {
     fixture.detectChanges();
     expect(contrastAttr()).toBe('normal');
 
-    // Back to auto — the attribute is removed, handing control to the OS.
+    // Back to auto - the attribute is removed, handing control to the OS.
     contrast.set('auto');
     fixture.detectChanges();
     expect(hasContrastAttr()).toBe(false);
   });
 
-  it('is idempotent — setting the same value twice does not re-write (no loop)', () => {
+  it('is idempotent - setting the same value twice does not re-write (no loop)', () => {
     const setSpy = vi.spyOn(document.documentElement, 'setAttribute');
     TestBed.configureTestingModule({ providers: [provideContrast('more')] });
     const fixture = TestBed.createComponent(Host);
@@ -69,7 +69,7 @@ describe('provideContrast / injectContrast', () => {
     const afterInit = contrastWrites();
     expect(afterInit).toBeGreaterThanOrEqual(1);
 
-    contrast.set('more'); // same value — signal equality short-circuits the effect
+    contrast.set('more'); // same value - signal equality short-circuits the effect
     fixture.detectChanges();
     expect(contrastWrites()).toBe(afterInit);
   });
