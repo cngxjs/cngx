@@ -12,12 +12,16 @@
  * **Scheme-agnostic remap**
  *
  * The overrides never hardcode a colour literal - a light-only literal
- * would break dark mode. Instead they *reference* existing ramp tokens
- * (`--cngx-color-text-muted` / `--cngx-color-text`), which already carry
+ * would break dark mode. Instead they derive from existing ramp tokens
+ * (`--cngx-color-text` / `--cngx-color-surface`), which already carry
  * correct light/dark values in `system-tokens.css`, so the boost stays
- * correct in both schemes. `--cngx-color-border` and
- * `--cngx-color-text-muted` demote toward the full text colour, closing
- * the contrast gap against the surface.
+ * correct in both schemes. `--cngx-color-text-muted` demotes to the full
+ * text colour; `--cngx-color-border` strengthens to a mid rung mixed from
+ * text and surface. Border is derived from text+surface on purpose, not
+ * from `--cngx-color-text-muted`: both overrides land in one rule, so a
+ * `var(--cngx-color-text-muted)` on the border would resolve against the
+ * *already-demoted* muted (now full text) and collapse both surfaces onto
+ * text. Mixing against surface keeps the two tiers distinct.
  *
  * **Layer**
  *
@@ -53,11 +57,14 @@
  */
 
 @layer cngx.theme {
-  /* Attribute-forced boost with a class twin. Both remaps reference ramp
-   * tokens (never literals) so light and dark schemes stay correct. */
+  /* Attribute-forced boost with a class twin. Muted demotes to the full
+   * text colour; border strengthens to a mid rung mixed from text and
+   * surface. Border is NOT derived from --cngx-color-text-muted: that token
+   * is demoted in the same rule, so a var() reference to it would resolve
+   * to the demoted value and collapse both surfaces onto text. */
   :root[data-contrast='more'],
   .cngx-contrast-more {
-    --cngx-color-border: var(--cngx-color-text-muted);
+    --cngx-color-border: color-mix(in oklab, var(--cngx-color-text) 60%, var(--cngx-color-surface));
     --cngx-color-text-muted: var(--cngx-color-text);
   }
 }
@@ -68,7 +75,7 @@
  * the layered scheme blocks and sidesteps the @scope/layer cascade trap. */
 @media (prefers-contrast: more) {
   :root:not([data-contrast='normal']) {
-    --cngx-color-border: var(--cngx-color-text-muted);
+    --cngx-color-border: color-mix(in oklab, var(--cngx-color-text) 60%, var(--cngx-color-surface));
     --cngx-color-text-muted: var(--cngx-color-text);
   }
 }

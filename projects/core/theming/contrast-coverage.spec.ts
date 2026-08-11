@@ -51,6 +51,19 @@ describe('contrast-axis override integrity', () => {
     expect(net).toContain('--cngx-color-text-muted:');
   });
 
+  it('derives the border without reading the simultaneously-demoted muted (anti-collapse)', () => {
+    // Both overrides land in one rule. If the border read
+    // var(--cngx-color-text-muted), it would resolve against the demoted
+    // muted (now full text) and collapse both surfaces onto text - killing
+    // the two-tier boost. Pin that the border declaration never references
+    // the muted token.
+    const borderDecls = net.match(/--cngx-color-border:\s*[^;]+;/g) ?? [];
+    expect(borderDecls.length).toBeGreaterThan(0);
+    for (const decl of borderDecls) {
+      expect(decl).not.toContain('text-muted');
+    }
+  });
+
   it('remaps only via var(--cngx-color-*) references — no colour literal (scheme-agnostic)', () => {
     // Every custom-property assignment in the file is an override; each must
     // reference a ramp token so light and dark schemes both stay correct.
