@@ -107,3 +107,17 @@
     }
   }
 }
+
+/* forced-colors (WHCM): the checked segment is a primary background fill (with a
+ * primary border-color and on-primary text); the fill flattens to Canvas and the
+ * border/text force to the same system colours as an unchecked segment, so the
+ * pressed state is lost. Re-signal with the system Highlight pair. The resting
+ * 1px border self-heals. Unlayered + direct selector (outside @scope) to beat
+ * the layered component rule and sidestep the @scope/layer cascade trap. */
+@media (forced-colors: active) {
+  .cngx-button-toggle--checked {
+    background: Highlight;
+    color: HighlightText;
+    border-color: Highlight;
+  }
+}
