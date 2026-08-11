@@ -109,6 +109,10 @@ const EXCLUDED_HOSTS: ReadonlyArray<{ file: string; note: string }> = [
     file: 'projects/core/theming/system-tokens.css',
     note: 'the word "box-shadow" appears only in a token-doc comment; the file is the @property registry, not an affordance',
   },
+  {
+    file: 'projects/common/popover/popover-panel.component.css',
+    note: 'the box-shadow is decorative elevation only; the panel keeps a real 1px border that self-heals, so the shadow loss leaves a visible edge',
+  },
 ];
 
 // Recursively collect every `.css` under a repo-relative directory, returning
