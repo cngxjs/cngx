@@ -97,6 +97,8 @@ const FORCED_COLORS_HARDENED_HOSTS: readonly string[] = [
   'projects/common/tabs/styles/tabs-base.css',
   // @cngx/common/timeline (Phase B) - marker fill + box-shadow ring break
   'projects/common/timeline/marker.component.css',
+  // @cngx/common/layout (Phase B) - borderless tooltip pill merges into Canvas
+  'projects/common/theming/components/cngx-tooltip.css',
 ];
 
 // Files the box-shadow scan flags but that legitimately do NOT need a
@@ -165,7 +167,7 @@ describe('forced-colors hardened-hosts manifest', () => {
   });
 
   it('fixes the manifest size so a bulk edit dropping several hosts is caught', () => {
-    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(15);
+    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(16);
   });
 });
 
