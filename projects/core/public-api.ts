@@ -31,3 +31,10 @@ export {
   injectMotion,
 } from './theming/motion';
 export { CngxMotionScope } from './theming/cngx-motion-scope.directive';
+export {
+  CNGX_CONTRAST,
+  type CngxContrastPreference,
+  provideContrast,
+  injectContrast,
+} from './theming/contrast';
+export { CngxContrast } from './theming/cngx-contrast.directive';
