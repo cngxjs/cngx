@@ -1,0 +1,87 @@
+/**
+ * @overview
+ * The higher-contrast token overrides for the `[data-contrast]` axis.
+ * Setting `data-contrast='more'` on the root (or an OS
+ * `prefers-contrast: more` preference, unless the root opts out with
+ * `data-contrast='normal'`) boosts the two lowest-contrast foundation
+ * surfaces app-wide: `--cngx-color-border` and `--cngx-color-text-muted`.
+ * Every component that paints hairlines or muted captions from those
+ * tokens then strengthens for free - no per-component input, the same way
+ * `density-tokens.css` re-scales spacing from a single attribute.
+ *
+ * **Scheme-agnostic remap**
+ *
+ * The overrides never hardcode a colour literal - a light-only literal
+ * would break dark mode. Instead they derive from existing ramp tokens
+ * (`--cngx-color-text` / `--cngx-color-surface`), which already carry
+ * correct light/dark values in `system-tokens.css`, so the boost stays
+ * correct in both schemes. `--cngx-color-text-muted` demotes to the full
+ * text colour; `--cngx-color-border` strengthens to a mid rung mixed from
+ * text and surface. Border is derived from text+surface on purpose, not
+ * from `--cngx-color-text-muted`: both overrides land in one rule, so a
+ * `var(--cngx-color-text-muted)` on the border would resolve against the
+ * *already-demoted* muted (now full text) and collapse both surfaces onto
+ * text. Mixing against surface keeps the two tiers distinct.
+ *
+ * **Layer**
+ *
+ * These blocks live in `@layer cngx.theme` - the documented
+ * theme-override layer (`layers.css`) that sits ABOVE `cngx.tokens`, where
+ * the ramp `@property` registrations and the light/dark colour-scheme
+ * blocks live. The override must beat those regardless of specificity, and
+ * only a higher layer guarantees that against the `@property`
+ * `initial-value` and the scheme blocks. The `inherits: true` flip on the
+ * ramp registrations (`system-tokens.css`) is the prerequisite that lets a
+ * value set here reach a descendant.
+ *
+ * **Form**
+ *
+ * Attribute-forced (`[data-contrast='more']`) with a class twin
+ * (`.cngx-contrast-more`) for Tailwind/shadcn-style conventions - same
+ * dual-signal pattern as the colour-scheme and density blocks. The
+ * attribute rule is deliberately UNANCHORED (not `:root`-keyed) so the
+ * `CngxContrast` subtree escape-hatch boosts just its section, mirroring
+ * `density-tokens.css` / `motion-tokens.css`. The OS rule
+ * is deliberately UNLAYERED so it avoids the `@scope`/layer cascade trap
+ * that bites nested state-driven overrides
+ * (`feedback_media_inside_scope_cascade`); it keys on
+ * `:root:not([data-contrast='normal'])` so `auto` and `more` honour the OS
+ * preference while an explicit `normal` opts out. The ergonomic
+ * `provideContrast()` / `injectContrast()` / `CngxContrast` layer
+ * (`@cngx/core/theming`) reflects a signal onto `[data-contrast]`;
+ * `'auto'` removes the attribute so the OS rule takes over.
+ *
+ * **Pair with**
+ *
+ * - `@cngx/core/theming/system-tokens` - registers the boosted ramp tokens
+ *   (`--cngx-color-border`, `--cngx-color-text-muted`, `--cngx-color-text`)
+ * - `@cngx/core/theming/contrast` - `provideContrast` / `injectContrast` /
+ *   `CngxContrast`
+ */
+
+@layer cngx.theme {
+  /* Attribute-forced boost with a class twin. Deliberately UNANCHORED (not
+   * :root-keyed) so the CngxContrast subtree escape-hatch reflects
+   * data-contrast onto a section and boosts just that subtree, mirroring
+   * density-tokens.css / motion-tokens.css. Muted demotes to the full text
+   * colour; border strengthens to a mid rung mixed from text and surface.
+   * Border is NOT derived from --cngx-color-text-muted: that token is
+   * demoted in the same rule, so a var() reference to it would resolve to
+   * the demoted value and collapse both surfaces onto text. */
+  [data-contrast='more'],
+  .cngx-contrast-more {
+    --cngx-color-border: color-mix(in oklab, var(--cngx-color-text) 60%, var(--cngx-color-surface));
+    --cngx-color-text-muted: var(--cngx-color-text);
+  }
+}
+
+/* OS-driven boost with a `normal` escape. `:root:not([data-contrast='normal'])`
+ * keeps the boost for `auto` and `more` while letting an explicit
+ * `data-contrast='normal'` opt the whole document out. Unlayered so it beats
+ * the layered scheme blocks and sidesteps the @scope/layer cascade trap. */
+@media (prefers-contrast: more) {
+  :root:not([data-contrast='normal']) {
+    --cngx-color-border: color-mix(in oklab, var(--cngx-color-text) 60%, var(--cngx-color-surface));
+    --cngx-color-text-muted: var(--cngx-color-text);
+  }
+}
