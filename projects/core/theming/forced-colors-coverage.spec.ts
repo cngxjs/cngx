@@ -87,6 +87,10 @@ const FORCED_COLORS_HARDENED_HOSTS: readonly string[] = [
   // @cngx/common/data (Phase B) - current-page tint + goal bar background breaks
   'projects/common/data/paginate/styles/paginator-base.css',
   'projects/common/data/display/goal/goal.component.css',
+  // @cngx/common overlay surfaces (Phase B) - dialog border-less-under-WHCM +
+  // bottom-sheet drag-handle background breaks
+  'projects/common/theming/components/cngx-dialog.css',
+  'projects/common/theming/components/cngx-bottom-sheet.css',
 ];
 
 // Files the box-shadow scan flags but that legitimately do NOT need a
@@ -155,7 +159,7 @@ describe('forced-colors hardened-hosts manifest', () => {
   });
 
   it('fixes the manifest size so a bulk edit dropping several hosts is caught', () => {
-    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(10);
+    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(12);
   });
 });
 
