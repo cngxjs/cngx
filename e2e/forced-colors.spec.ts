@@ -186,4 +186,42 @@ test.describe('forced-colors (WHCM) affordance survival', () => {
     const s = await readAffordance(track);
     expect(s.backgroundColor).toBe(s.highlight);
   });
+
+  // Phase C - @cngx/forms select family. The trigger self-heals via its 1px
+  // solid border; the keyboard-active option row and tree node signal only with
+  // a background tint that collapses to Canvas, so each re-signals with the
+  // Highlight pair (a plain two-class compound, unlayered beats layered).
+
+  test('select trigger self-heals via its 1px border (solid border forced to an opaque system colour)', async ({ page }) => {
+    await openForced(page, '/#/forms/select/single-select/clearable');
+    const trigger = page.locator('.cngx-ex-artifact .cngx-select__trigger').first();
+    await expect(trigger).toBeVisible();
+    const s = await readAffordance(trigger);
+    expect(parseFloat(s.borderTopWidth)).toBeGreaterThan(0);
+    expect(isOpaque(s.borderTopColor)).toBe(true);
+  });
+
+  test('keyboard-active option row re-signals with Highlight (tint-only row would collapse to Canvas)', async ({ page }) => {
+    await openForced(page, '/#/forms/select/single-select/clearable');
+    const trigger = page.locator('.cngx-ex-artifact .cngx-select__trigger').first();
+    await expect(trigger).toBeVisible();
+    await trigger.click();
+    await page.keyboard.press('ArrowDown');
+    const active = page.locator('.cngx-option--highlighted').first();
+    await expect(active).toBeVisible();
+    const s = await readAffordance(active);
+    expect(s.backgroundColor).toBe(s.highlight);
+  });
+
+  test('keyboard-active tree node re-signals with Highlight (tint-only node would collapse to Canvas)', async ({ page }) => {
+    await openForced(page, '/#/forms/select/tree-select/basic-single-level-toggle');
+    const trigger = page.locator('.cngx-ex-artifact .cngx-tree-select__trigger').first();
+    await expect(trigger).toBeVisible();
+    await trigger.click();
+    await page.keyboard.press('ArrowDown');
+    const active = page.locator('.cngx-tree-select__node--active').first();
+    await expect(active).toBeVisible();
+    const s = await readAffordance(active);
+    expect(s.backgroundColor).toBe(s.highlight);
+  });
 });
