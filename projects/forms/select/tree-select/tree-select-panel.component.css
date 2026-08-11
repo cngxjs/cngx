@@ -341,3 +341,18 @@
     }
   }
 }
+
+/* Forced-colors (Windows High Contrast Mode) survival. The keyboard-active
+ * cursor signals only with a background tint (the shared flat-list highlight
+ * token), which the forced palette flattens to Canvas. Re-signal it with the
+ * Highlight pair, mirroring the flat option list. Node selection self-heals
+ * via the checkbox indicator (a currentColor border the UA forces to an opaque
+ * system colour), so the selected-row tint needs no block. Kept top-level and
+ * unlayered so it beats the layered `--active` base rule; the plain two-class
+ * compound wins without !important (unlayered beats layered). */
+@media (forced-colors: active) {
+  .cngx-tree-select__node.cngx-tree-select__node--active {
+    background: Highlight;
+    color: HighlightText;
+  }
+}

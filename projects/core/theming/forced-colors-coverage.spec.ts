@@ -99,6 +99,11 @@ const FORCED_COLORS_HARDENED_HOSTS: readonly string[] = [
   'projects/common/timeline/marker.component.css',
   // @cngx/common/layout (Phase B) - borderless tooltip pill merges into Canvas
   'projects/common/theming/components/cngx-tooltip.css',
+  // @cngx/forms/select (Phase C) - the keyboard-active option row and tree node
+  // signal only with a background tint that collapses to Canvas; both re-signal
+  // with Highlight. Triggers/panels self-heal via their solid borders.
+  'projects/forms/select/shared/select-base.css',
+  'projects/forms/select/tree-select/tree-select-panel.component.css',
 ];
 
 // Files the box-shadow scan flags but that legitimately do NOT need a
@@ -112,6 +117,34 @@ const EXCLUDED_HOSTS: ReadonlyArray<{ file: string; note: string }> = [
   {
     file: 'projects/common/popover/popover-panel.component.css',
     note: 'the box-shadow is decorative elevation only; the panel keeps a real 1px border that self-heals, so the shadow loss leaves a visible edge',
+  },
+  // @cngx/forms/select (Phase C) - each select variant paints a focus-time glow
+  // halo on the invalid trigger with `box-shadow`, forced to `none` under WHCM.
+  // The trigger keeps a self-healing 1px danger border plus its outline focus
+  // ring, so the glow loss leaves a visible boundary - no re-draw needed.
+  {
+    file: 'projects/forms/select/single-select/select.component.css',
+    note: 'the box-shadow is a decorative invalid-trigger glow halo; the invalid trigger keeps a self-healing 1px danger border and outline focus ring',
+  },
+  {
+    file: 'projects/forms/select/combobox/combobox.component.css',
+    note: 'the box-shadow is a decorative invalid-trigger glow halo; the invalid trigger keeps a self-healing 1px danger border and outline focus ring',
+  },
+  {
+    file: 'projects/forms/select/multi-select/multi-select.component.css',
+    note: 'the box-shadow is a decorative invalid-trigger glow halo; the invalid trigger keeps a self-healing 1px danger border and outline focus ring',
+  },
+  {
+    file: 'projects/forms/select/typeahead/typeahead.component.css',
+    note: 'the box-shadow is a decorative invalid-trigger glow halo; the invalid trigger keeps a self-healing 1px danger border and outline focus ring',
+  },
+  {
+    file: 'projects/forms/select/reorderable-multi-select/reorderable-multi-select.component.css',
+    note: 'the box-shadow is a decorative invalid-trigger glow halo; the invalid trigger keeps a self-healing 1px danger border and outline focus ring',
+  },
+  {
+    file: 'projects/forms/select/tree-select/tree-select.component.css',
+    note: 'the box-shadow is a decorative invalid-trigger glow halo; the invalid trigger keeps a self-healing 1px danger border and outline focus ring',
   },
 ];
 
@@ -171,7 +204,7 @@ describe('forced-colors hardened-hosts manifest', () => {
   });
 
   it('fixes the manifest size so a bulk edit dropping several hosts is caught', () => {
-    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(16);
+    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(18);
   });
 });
 
