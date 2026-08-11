@@ -24,3 +24,10 @@ export {
   injectTouchTargets,
 } from './theming/touch-target';
 export { CngxTouchTarget } from './theming/cngx-touch-target.directive';
+export {
+  CNGX_MOTION,
+  type CngxMotionPreference,
+  provideMotion,
+  injectMotion,
+} from './theming/motion';
+export { CngxMotionScope } from './theming/cngx-motion-scope.directive';

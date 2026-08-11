@@ -1,0 +1,122 @@
+/**
+ * @overview
+ * The global reduced-motion safety net for the `[data-motion]` axis.
+ * Setting `data-motion='reduced'` on the root (or any ancestor) collapses
+ * animation and transition durations to near-zero for its whole subtree,
+ * and an OS `prefers-reduced-motion: reduce` preference does the same
+ * unless the root explicitly opts back in with `data-motion='full'`. This
+ * makes reduced-motion correct app-wide for every animating stylesheet
+ * without editing any of them - the same way `density-tokens.css`
+ * re-scales spacing app-wide from a single attribute.
+ *
+ * **Rules**
+ *
+ * - Attribute-forced (`[data-motion='reduced']`): matches any host that
+ *   carries the attribute plus its descendants. Deliberately UNANCHORED
+ *   (not `:root`-keyed) so a subtree escape-hatch (`cngxMotionScope`)
+ *   actually reduces just that section, mirroring how `density-tokens.css`
+ *   / `text-scale-tokens.css` use bare `[data-…]` selectors.
+ * - OS-driven with a `full` escape
+ *   (`@media (prefers-reduced-motion: reduce)`): reduces the whole
+ *   document unless `:root[data-motion='full']` opts back into motion. So
+ *   `auto` (default) and `reduced` honour the OS/override, and `full`
+ *   re-enables motion app-wide. A subtree `full` under an OS reduce pref
+ *   cannot re-enable motion (a pure-CSS ancestor selector has no
+ *   nearest-ancestor-wins against an inherited media state) - subtree
+ *   scoping is for the accessibility-critical *reducing* direction.
+ * - Essential-motion carve-out: freezing a loading affordance into a dead
+ *   ring removes the "still working" signal (a communication failure), so
+ *   `[role='status']` and `[role='progressbar']` hosts swap the freeze for
+ *   a slow opacity pulse instead of stopping. Keyed on the ARIA role the
+ *   loading components already expose (`CngxLoadingIndicator` /
+ *   `CngxProgress`), never on component class names, so core stays
+ *   layer-clean. A skeleton is deliberately NOT carved out: its static
+ *   placeholder shape still reads as loading, so its shimmer may freeze.
+ *
+ * **Duration tokens**
+ *
+ * This file declares **no** tokens. `--cngx-duration-fast/base/slow` are
+ * already registered `@property` tokens (150 / 200 / 320ms) in
+ * `system-tokens.css`; the net overrides `animation-duration` /
+ * `transition-duration` directly with `!important`, so it needs none of
+ * its own.
+ *
+ * **Layer**
+ *
+ * Both rules are deliberately UNLAYERED. They set real animation /
+ * transition properties (not custom-property assignments) with
+ * `!important`, so they must beat any layered component rule regardless of
+ * specificity or order. The unlayered `@media` block also avoids the
+ * `@scope`/layer cascade trap that bites nested state-driven overrides.
+ *
+ * **Form**
+ *
+ * The ergonomic `provideMotion()` / `injectMotion()` / `CngxMotionScope`
+ * layer (`@cngx/core/theming`) reflects a signal onto `[data-motion]`;
+ * `'auto'` removes the attribute so this file's OS-driven rule takes over.
+ *
+ * **Pair with**
+ *
+ * - `@cngx/core/theming/system-tokens` - registers `--cngx-duration-*`
+ * - `@cngx/core/theming/motion` - `provideMotion` / `injectMotion` /
+ *   `CngxMotionScope`
+ */
+
+/* Attribute-forced reset. Unanchored so a subtree host carrying
+ * data-motion='reduced' (the CngxMotionScope escape-hatch) reduces just
+ * that section, not only the root. */
+[data-motion='reduced'],
+[data-motion='reduced'] *,
+[data-motion='reduced'] ::before,
+[data-motion='reduced'] ::after {
+  animation-duration: 0.01ms !important;
+  transition-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  scroll-behavior: auto !important;
+}
+
+/* Essential-motion carve-out: a loading affordance must keep communicating
+ * "still working" rather than freeze into a dead ring. Higher specificity
+ * than the freeze rule above (0,2,0 vs 0,1,0), so its !important pulse wins
+ * on the role host while the freeze still stops the host's decorative
+ * children. Role-keyed so core never references a ui component class. */
+[data-motion='reduced'] [role='status'],
+[data-motion='reduced'] [role='progressbar'] {
+  animation: cngx-motion-loading-pulse var(--cngx-pulse-duration, 2s)
+    var(--cngx-pulse-easing, ease-in-out) infinite !important;
+}
+
+/* OS-driven reset with a root `full` escape. `:root:not([data-motion='full'])`
+ * keeps the reduce behaviour for `auto` and `reduced` while letting an
+ * explicit `data-motion='full'` opt the whole document back into motion. */
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion='full']) *,
+  :root:not([data-motion='full']) ::before,
+  :root:not([data-motion='full']) ::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Essential-motion carve-out under the OS preference - same intent as the
+   * attribute rule above. Specificity (0,3,0) beats the (0,2,0) freeze. */
+  :root:not([data-motion='full']) [role='status'],
+  :root:not([data-motion='full']) [role='progressbar'] {
+    animation: cngx-motion-loading-pulse var(--cngx-pulse-duration, 2s)
+      var(--cngx-pulse-easing, ease-in-out) infinite !important;
+  }
+}
+
+/* The gentle opacity pulse essential loading affordances fall back to under
+ * reduced motion. Opacity only - no transform/movement, so it carries no
+ * vestibular risk while still reading as "still working". */
+@keyframes cngx-motion-loading-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
