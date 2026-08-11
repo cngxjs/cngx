@@ -79,6 +79,7 @@
 @import '../core/theming/text-scale-tokens.css';
 @import '../core/theming/motion-tokens.css';
 @import '../core/theming/contrast-tokens.css';
+@import '../core/theming/forced-colors.css';
 @import '../core/theming/reset.css';
 @import '../core/theming/base.css';
 @import '../core/theming/utilities.css';

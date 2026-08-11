@@ -1,0 +1,88 @@
+/**
+ * @overview
+ * The global forced-colors (Windows High Contrast Mode) net. Under
+ * `forced-colors: active` the OS replaces the page palette with a small
+ * set of system colours: the UA forces `color`, `background-color`,
+ * `border-color`, and `outline-color` to system colours - including
+ * `transparent` - and forces `box-shadow` to `none`. This net is the
+ * documented baseline for that regime; it does NOT toggle the palette
+ * (the OS does), it survives it.
+ *
+ * Unlike the reduced-motion net, forced-colors cannot be solved from one
+ * global reset: only the owning component knows whether a shadow was
+ * decorative or its sole boundary, or whether a tint was its only state
+ * signal. So this file carries just the two things that ARE global - the
+ * `forced-color-adjust` baseline and the per-component contract - and the
+ * breaking-class fixes live in each component's own stylesheet under an
+ * `@media (forced-colors: active)` block.
+ *
+ * **What the net does**
+ *
+ * - Preserve-image policy: genuinely pictorial content (`img`, `picture`,
+ *   `video`) carries information in its own colours, so it opts out of the
+ *   forced palette with `forced-color-adjust: none`. Replaced media would
+ *   otherwise read as a flattened block. Decorative icon / glyph fills are
+ *   deliberately NOT opted out here - they SHOULD adapt to the forced
+ *   palette; a component that paints a multicolour glyph whose colours
+ *   carry meaning opts THAT element out itself.
+ *
+ * **What the net does NOT do**
+ *
+ * - It does not touch focus. cngx's universal focus ring is the `outline`
+ *   in `reset.css`; under forced colors the UA forces `outline-color`
+ *   (even `transparent`) to a system colour, so the ring self-heals with
+ *   no rule here. Adding a focus rule would fight the forcing.
+ * - It sets no component boundaries. Transparent-border affordances also
+ *   self-heal (a `1px solid transparent` edge gains an opaque system
+ *   colour). Only the breaking classes need per-component work.
+ *
+ * **Per-component contract** (the sweep each component stylesheet follows)
+ *
+ * 1. `box-shadow`-drawn elevation / focus / selected rings are forced to
+ *    `none`. Re-draw the lost boundary with an `outline` or a
+ *    `1px solid ButtonBorder` border.
+ * 2. A boundary or separator drawn with `background-color` (a hairline, a
+ *    dot, a tint-only surface) collapses to `Canvas`. Re-draw it with a
+ *    system colour (`CanvasText` ink, `ButtonBorder` edge).
+ * 3. Selected / active state signalled only by a background tint gains a
+ *    `Highlight` / `HighlightText` pair (or a `ButtonBorder` edge) so the
+ *    state survives the flattening.
+ * 4. Never pin a `--cngx-*` colour literal inside a forced-colors block -
+ *    the UA overrides custom colours anyway, so only system keywords
+ *    communicate. Re-drawn boundaries use `ButtonBorder` (affordance edge)
+ *    or `CanvasText` (content hairline); selected uses `Highlight` /
+ *    `HighlightText`; links use `LinkText`.
+ * 5. Transparent-border / outline-based affordances get NO block - they
+ *    already self-heal.
+ *
+ * Every component that ships a block enrols its stylesheet in
+ * `forced-colors-coverage.spec.ts` (`FORCED_COLORS_HARDENED_HOSTS`).
+ *
+ * **Layer**
+ *
+ * Deliberately UNLAYERED (mirrors `motion-tokens.css`). Per-component
+ * forced-colors blocks are unlayered too, outside their `@scope`, so they
+ * beat any layered component rule and sidestep the `@scope`/layer cascade
+ * trap that bites nested state-driven overrides.
+ *
+ * **Pair with**
+ *
+ * - `@cngx/core/theming/reset` - the universal `outline` focus ring that
+ *   self-heals under WHCM; this net relies on it and adds no focus rule.
+ * - `@cngx/core/theming/contrast-tokens` - the settable `prefers-contrast`
+ *   axis. Separate concern: a user-settable in-app boost, not the
+ *   OS-forced palette this net survives.
+ */
+
+@media (forced-colors: active) {
+  /* Preserve-image policy: pictorial content carries meaning in its own
+   * colours, so keep them instead of letting the forced palette flatten
+   * the pixels. Bare replaced elements only - never a component class, so
+   * core stays layer-clean. Decorative glyph fills are intentionally left
+   * to adapt (no opt-out here). */
+  img,
+  picture,
+  video {
+    forced-color-adjust: none;
+  }
+}
