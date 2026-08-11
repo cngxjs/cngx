@@ -1019,10 +1019,10 @@
  * border. Unlayered + direct selectors (outside @scope) to beat the layered
  * component rule and sidestep the @scope/layer cascade trap. */
 @media (forced-colors: active) {
-  .cngx-card--selected {
-    border-color: Highlight;
+  .cngx-card.cngx-card--selected {
+    border-color: Highlight !important;
   }
-  .cngx-card--selected::before {
-    background: Highlight;
+  .cngx-card.cngx-card--selected::before {
+    background: Highlight !important;
   }
 }

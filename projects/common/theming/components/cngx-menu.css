@@ -399,10 +399,15 @@
  * direct selectors (outside @layer) to beat the layered component rule. */
 @media (forced-colors: active) {
   .cngx-menu-item--highlighted {
-    background: Highlight;
-    color: HighlightText;
+    /* Menu items are typically <button>s; the UA forces a form-control
+     * background to ButtonFace, so opt out with forced-color-adjust and mark the
+     * declarations !important to beat both the UA forcing and the base rule's
+     * scope proximity. */
+    forced-color-adjust: none;
+    background: Highlight !important;
+    color: HighlightText !important;
   }
   [cngxMenuSeparator] {
-    background: CanvasText;
+    background: CanvasText !important;
   }
 }

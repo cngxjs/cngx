@@ -653,8 +653,12 @@
  * selector (outside @layer) to beat the layered component rule. */
 @media (forced-colors: active) {
   .cngx-paginator__page[aria-current='page'] {
-    background: Highlight;
-    color: HighlightText;
-    border-color: Highlight;
+    /* The page control is a <button>; the UA forces a form-control background to
+     * ButtonFace, so opt out with forced-color-adjust and mark the declarations
+     * !important to beat both the UA forcing and the scope-proximity base rule. */
+    forced-color-adjust: none;
+    background: Highlight !important;
+    color: HighlightText !important;
+    border-color: Highlight !important;
   }
 }

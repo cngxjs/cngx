@@ -390,7 +390,11 @@
   .cngx-toggle__thumb {
     border: 1px solid ButtonText;
   }
-  .cngx-toggle--checked .cngx-toggle__track {
-    background: Highlight;
+  .cngx-toggle.cngx-toggle--checked .cngx-toggle__track {
+    /* Host-class specificity to match the base `:scope.cngx-toggle--checked
+     * .cngx-toggle__track` (0,3,0) plus !important to beat its scope proximity.
+     * The track is a child span (not the button host), so no forced-color-adjust
+     * is needed - only the button's own background is UA-forced. */
+    background: Highlight !important;
   }
 }

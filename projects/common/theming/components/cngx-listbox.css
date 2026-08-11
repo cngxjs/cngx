@@ -239,8 +239,11 @@
  * component rule. */
 @media (forced-colors: active) {
   .cngx-option--selected {
-    background: Highlight;
-    color: HighlightText;
+    /* The option is a <div cngxOption> (not a form control), so no
+     * forced-color-adjust is needed; !important beats the base rule's scope
+     * proximity so the Highlight selection wins. */
+    background: Highlight !important;
+    color: HighlightText !important;
   }
   .cngx-option--highlighted {
     outline: 2px solid CanvasText;

@@ -111,13 +111,19 @@
 /* forced-colors (WHCM): the checked segment is a primary background fill (with a
  * primary border-color and on-primary text); the fill flattens to Canvas and the
  * border/text force to the same system colours as an unchecked segment, so the
- * pressed state is lost. Re-signal with the system Highlight pair. The resting
- * 1px border self-heals. Unlayered + direct selector (outside @scope) to beat
- * the layered component rule and sidestep the @scope/layer cascade trap. */
+ * pressed state is lost. Re-signal with the system Highlight pair. Two rules are
+ * load-bearing here: (1) the host is a `<button>`, and the UA forces a
+ * form-control's background to ButtonFace with a priority that beats an author
+ * `background: Highlight`, so `forced-color-adjust: none` is required to opt this
+ * segment out of the forcing and let the Highlight through; (2) the base rule is
+ * `:scope.cngx-button-toggle--checked` (specificity 0,2,0), so the override
+ * repeats the host class (`.cngx-button-toggle.cngx-button-toggle--checked`) to
+ * match it. Unlayered + direct selector (outside @scope). */
 @media (forced-colors: active) {
-  .cngx-button-toggle--checked {
-    background: Highlight;
-    color: HighlightText;
-    border-color: Highlight;
+  .cngx-button-toggle.cngx-button-toggle--checked {
+    forced-color-adjust: none;
+    background: Highlight !important;
+    color: HighlightText !important;
+    border-color: Highlight !important;
   }
 }

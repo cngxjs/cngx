@@ -560,8 +560,13 @@
   }
   .cngx-chip[aria-selected='true'],
   .cngx-chip[aria-pressed='true'] {
-    background: Highlight;
-    color: HighlightText;
-    border-color: Highlight;
+    /* The base selected rule is `:scope[aria-selected='true']`; a `:scope`
+     * compound wins the scope-proximity tiebreak against this same-specificity
+     * unlayered rule, so !important is required for the Highlight selection to
+     * take. The chip is a role=button element (not a form control), so no
+     * forced-color-adjust is needed. */
+    background: Highlight !important;
+    color: HighlightText !important;
+    border-color: Highlight !important;
   }
 }
