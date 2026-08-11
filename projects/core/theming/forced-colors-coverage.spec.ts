@@ -72,7 +72,14 @@ const SCAN_HARD_FAIL = false;
 // here whether its break was a scannable `box-shadow` or an author-reviewed
 // tint/background collapse - the per-file assertion below only checks that the
 // block exists.
-const FORCED_COLORS_HARDENED_HOSTS: readonly string[] = [];
+const FORCED_COLORS_HARDENED_HOSTS: readonly string[] = [
+  // @cngx/common/display - tint/background-drawn breaks (not box-shadow; caught
+  // by author review, not the flat scan)
+  'projects/common/display/chip/chip.component.css',
+  'projects/common/display/radio-indicator/radio-indicator.component.css',
+  'projects/common/theming/components/cngx-badge.css',
+  'projects/common/theming/components/cngx-divider.css',
+];
 
 // Files the box-shadow scan flags but that legitimately do NOT need a
 // forced-colors block. Each carries a one-clause reason. The scan asserts every
@@ -140,7 +147,7 @@ describe('forced-colors hardened-hosts manifest', () => {
   });
 
   it('fixes the manifest size so a bulk edit dropping several hosts is caught', () => {
-    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(0);
+    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(4);
   });
 });
 

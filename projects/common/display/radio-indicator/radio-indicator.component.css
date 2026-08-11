@@ -265,3 +265,15 @@
     }
   }
 }
+
+/* forced-colors (WHCM): the checked signal is the inner dot, painted with
+ * background-color - which the forced palette flattens to Canvas, erasing the
+ * dot so a checked radio reads as unchecked. Re-draw it in the system
+ * foreground ink so "selected" survives; the ring's border-color self-heals.
+ * Unlayered + direct selector (outside @scope) to beat the layered component
+ * rule and sidestep the @scope/layer cascade trap. */
+@media (forced-colors: active) {
+  .cngx-radio-indicator__dot {
+    background: CanvasText;
+  }
+}
