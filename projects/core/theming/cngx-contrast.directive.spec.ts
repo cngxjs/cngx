@@ -22,7 +22,13 @@ describe('CngxContrast', () => {
     expect(section.hasAttribute('data-contrast')).toBe(false);
   });
 
-  it('a nested directive overrides an ancestor', () => {
+  it('reflects a nested [cngxContrast] onto its own host, independent of the ancestor', () => {
+    // Attribute reflection only. Whether a subtree value re-resolves the
+    // boosted tokens is CSS's job: the boost is unanchored (guarded in
+    // contrast-coverage.spec.ts) and the subtree un-boost limit for
+    // normal/auto is documented on CngxContrast. jsdom resolves neither
+    // custom-property inheritance nor color-mix, so a computed-value
+    // assertion belongs in an e2e, not here.
     @Component({
       imports: [CngxContrast],
       template: `<section cngxContrast="more"><article cngxContrast="normal"></article></section>`,
