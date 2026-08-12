@@ -240,10 +240,11 @@
 @media (forced-colors: active) {
   .cngx-option--selected {
     /* The option is a <div cngxOption> (not a form control), so no
-     * forced-color-adjust is needed; !important beats the base rule's scope
-     * proximity so the Highlight selection wins. */
-    background: Highlight !important;
-    color: HighlightText !important;
+     * forced-color-adjust is needed. The base rule is a plain class in
+     * @layer cngx.components with no @scope, so this unlayered block wins
+     * without !important (unlayered beats layered). */
+    background: Highlight;
+    color: HighlightText;
   }
   .cngx-option--highlighted {
     outline: 2px solid CanvasText;

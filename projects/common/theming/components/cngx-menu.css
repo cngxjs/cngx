@@ -400,14 +400,15 @@
 @media (forced-colors: active) {
   .cngx-menu-item--highlighted {
     /* Menu items are typically <button>s; the UA forces a form-control
-     * background to ButtonFace, so opt out with forced-color-adjust and mark the
-     * declarations !important to beat both the UA forcing and the base rule's
-     * scope proximity. */
+     * background to ButtonFace, so opt out with forced-color-adjust, then set
+     * the Highlight pair. The base rule is a plain class in @layer
+     * cngx.components with no @scope, so this unlayered block wins without
+     * !important (unlayered beats layered; the opt-out beats the UA forcing). */
     forced-color-adjust: none;
-    background: Highlight !important;
-    color: HighlightText !important;
+    background: Highlight;
+    color: HighlightText;
   }
   [cngxMenuSeparator] {
-    background: CanvasText !important;
+    background: CanvasText;
   }
 }
