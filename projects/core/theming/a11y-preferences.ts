@@ -265,9 +265,14 @@ function installAxisPersistence<T extends string>(
       return;
     }
     untracked(() => {
-      const next = readStored(storage, storageKey);
-      next[axisKey] = value;
-      storage.setItem(storageKey, JSON.stringify(next));
+      try {
+        const next = readStored(storage, storageKey);
+        next[axisKey] = value;
+        storage.setItem(storageKey, JSON.stringify(next));
+      } catch {
+        // A full quota or a private-mode storage that rejects writes must
+        // not crash the reflector effect: drop the persist, keep the UI.
+      }
     });
   });
 }

@@ -199,6 +199,26 @@ describe('provideA11yPreferences + withPersistence', () => {
     expect(densityWrites[0]).toBe('compact');
   });
 
+  it('swallows a throwing storage write (quota / private mode) without crashing the reflector', () => {
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new DOMException('QuotaExceededError');
+    });
+    TestBed.configureTestingModule({
+      providers: [provideA11yPreferences(withPersistence())],
+    });
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+
+    expect(() => {
+      TestBed.inject(CNGX_MOTION).set('reduced');
+      fixture.detectChanges();
+    }).not.toThrow();
+
+    // The persist is dropped, but the signal and its reflection still update.
+    expect(TestBed.inject(CNGX_MOTION)()).toBe('reduced');
+    expect(attr('data-motion')).toBe('reduced');
+  });
+
   it('is a no-op when localStorage is unavailable (server)', () => {
     localStorage.setItem(KEY, JSON.stringify({ motion: 'reduced' }));
     vi.spyOn(window, 'localStorage', 'get').mockReturnValue(undefined as unknown as Storage);
