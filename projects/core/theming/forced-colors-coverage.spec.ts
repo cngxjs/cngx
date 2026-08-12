@@ -159,6 +159,32 @@ const EXCLUDED_HOSTS: ReadonlyArray<{ file: string; note: string }> = [
     file: 'projects/forms/select/tree-select/tree-select.component.css',
     note: 'the box-shadow is a decorative invalid-trigger glow halo; the invalid trigger keeps a self-healing 1px danger border and outline focus ring',
   },
+  // @cngx/ui (Phase D) - box-shadow hosts whose boundary survives WHCM another
+  // way, so a re-draw would be redundant (Success-Kriterium: 0 redundant blocks).
+  {
+    file: 'projects/ui/accordion/accordion-skins.css',
+    note: 'the box-shadows are decorative card elevation, a self-healing focus-glow ring, and leading-tile chrome; every accordion item keeps a self-healing 1px border and expand state is communicated via aria-expanded + chevron',
+  },
+  {
+    file: 'projects/ui/data-grid-accordion/data-grid-accordion-skins.css',
+    note: 'the inset box-shadow is a decorative primary-zone accent on the detail region, which keeps a self-healing border-block-start; expand state is communicated via aria-expanded',
+  },
+  {
+    file: 'projects/ui/tabs/tab-group.component.css',
+    note: 'the selected tab re-signals via the common tabs-base.css Highlight underline (.cngx-tabs__tab[aria-selected=true]); the box-shadows here are decorative skin ink-bars and base-ink-bar suppressions',
+  },
+  {
+    file: 'projects/ui/tabs/tab-nav.component.css',
+    note: 'the selected tab re-signals via the common tabs-base.css Highlight underline (.cngx-tabs__tab[aria-selected=true]); the segmented-skin box-shadow is a decorative active-tab elevation',
+  },
+  {
+    file: 'projects/ui/paginator/paginator.component.css',
+    note: 'the current page re-signals via the common paginator-base.css Highlight (.cngx-paginator__page[aria-current=page]); the box-shadow here is a decorative segmented-skin elevation and motion transition',
+  },
+  {
+    file: 'projects/ui/mat-tabs/styles/mat-tabs.css',
+    note: 'mat-tabs is a Material bridge entry and Material ships its own forced-colors handling; the box-shadow is a decorative scroll-hint on the overflow button (plan Out-of-Scope)',
+  },
 ];
 
 // Recursively collect every `.css` under a repo-relative directory, returning
