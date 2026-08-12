@@ -46,5 +46,6 @@ export {
   withMotion,
   withContrast,
   withPersistence,
+  CNGX_A11Y_STORAGE,
   injectA11yPreferences,
 } from './theming/a11y-preferences';

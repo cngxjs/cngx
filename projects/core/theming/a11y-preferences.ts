@@ -2,6 +2,7 @@ import { DOCUMENT } from '@angular/common';
 import {
   effect,
   inject,
+  InjectionToken,
   makeEnvironmentProviders,
   provideEnvironmentInitializer,
   untracked,
@@ -95,8 +96,32 @@ export function withContrast(value: CngxContrastPreference): CngxA11yPrefFeature
 }
 
 /**
- * Persist explicit accessibility choices to `localStorage` under
- * `storageKey` and rehydrate them on the next load. On startup a stored
+ * The `Storage` backend {@link withPersistence} reads from and writes to.
+ * Defaults to the browser `localStorage`, or `null` on the server (where
+ * persistence is skipped). Override it to persist elsewhere -
+ * `sessionStorage`, or a server-backed `Storage` shim for signed-in users -
+ * without forking:
+ *
+ * ```ts
+ * providers: [
+ *   { provide: CNGX_A11Y_STORAGE, useFactory: () => sessionStorage },
+ *   provideA11yPreferences(withPersistence()),
+ * ];
+ * ```
+ *
+ * @category core/theming
+ * @relatedTo withPersistence
+ * @since 0.1.0
+ */
+export const CNGX_A11Y_STORAGE = new InjectionToken<Storage | null>('CNGX_A11Y_STORAGE', {
+  providedIn: 'root',
+  factory: () => inject(DOCUMENT).defaultView?.localStorage ?? null,
+});
+
+/**
+ * Persist explicit accessibility choices via {@link CNGX_A11Y_STORAGE}
+ * (browser `localStorage` by default) under `storageKey` and rehydrate them
+ * on the next load. On startup a stored
  * value overrides an axis only when it is a known-valid member of that
  * axis' union; an unknown, invalid, or missing value leaves the axis at
  * its own default, so a motion/contrast `auto` stays OS-driven and is
@@ -280,9 +305,9 @@ function installAxisPersistence<T extends string>(
 function providePersistence(storageKey: string): EnvironmentProviders {
   return makeEnvironmentProviders([
     provideEnvironmentInitializer(() => {
-      const storage = inject(DOCUMENT).defaultView?.localStorage;
+      const storage = inject(CNGX_A11Y_STORAGE);
       if (!storage) {
-        // Server / no `localStorage`: rehydrate and write-back are skipped.
+        // Server / no storage backend: rehydrate and write-back are skipped.
         return;
       }
       installAxisPersistence(storage, storageKey, 'density', inject(CNGX_DENSITY), DENSITY_VALUES);

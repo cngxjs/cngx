@@ -7,6 +7,7 @@ import { CNGX_DENSITY } from './density';
 import { CNGX_MOTION } from './motion';
 import { CNGX_TEXT_SCALE } from './text-scale';
 import {
+  CNGX_A11Y_STORAGE,
   injectA11yPreferences,
   provideA11yPreferences,
   withContrast,
@@ -217,6 +218,41 @@ describe('provideA11yPreferences + withPersistence', () => {
     // The persist is dropped, but the signal and its reflection still update.
     expect(TestBed.inject(CNGX_MOTION)()).toBe('reduced');
     expect(attr('data-motion')).toBe('reduced');
+  });
+
+  it('reads and writes the CNGX_A11Y_STORAGE override instead of localStorage', () => {
+    const store = new Map<string, string>();
+    const fake: Storage = {
+      get length() {
+        return store.size;
+      },
+      clear: () => store.clear(),
+      getItem: (key) => store.get(key) ?? null,
+      key: (index) => Array.from(store.keys())[index] ?? null,
+      removeItem: (key) => void store.delete(key),
+      setItem: (key, value) => void store.set(key, value),
+    };
+    fake.setItem(KEY, JSON.stringify({ contrast: 'more' }));
+
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: CNGX_A11Y_STORAGE, useValue: fake },
+        provideA11yPreferences(withPersistence()),
+      ],
+    });
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+
+    // Rehydrated from the override, not from window.localStorage.
+    expect(TestBed.inject(CNGX_CONTRAST)()).toBe('more');
+
+    // Write-back lands in the override, merged with the rehydrated key.
+    TestBed.inject(CNGX_DENSITY).set('spacious');
+    fixture.detectChanges();
+    expect(JSON.parse(fake.getItem(KEY) ?? '{}')).toEqual({ contrast: 'more', density: 'spacious' });
+
+    // The real localStorage was never touched.
+    expect(localStorage.getItem(KEY)).toBeNull();
   });
 
   it('is a no-op when localStorage is unavailable (server)', () => {
