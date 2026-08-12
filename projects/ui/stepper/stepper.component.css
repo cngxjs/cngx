@@ -2190,3 +2190,29 @@
       box-shadow 120ms ease;
   }
 }
+
+/* Forced-colors (WHCM). Two step-indicator states signal only with a
+   box-shadow or a background tint, both forced away under a system palette;
+   re-draw each with a forced-safe property. Unlayered + outside @scope so it
+   beats the @layer cngx.components / cngx.skins base rules without !important
+   (unlayered wins over any layer). */
+@media (forced-colors: active) {
+  /* Error step: the whole disc ring is an `inset 0 0 0 2px` box-shadow over a
+     transparent background (forced to `none`), so the errored step loses its
+     only outline. An `outline` with a negative offset is the exact,
+     layout-safe equivalent of the inset ring; it sits on the indicator span,
+     not the step button, so it never competes with the focus ring. */
+  .cngx-stepper__indicator[data-state='error'] {
+    outline: 2px solid CanvasText;
+    outline-offset: -2px;
+  }
+
+  /* Active step: the current indicator is signalled with a background fill
+     (forced to Canvas) and, on the card skins, an inset box-shadow ring
+     (forced to `none`), so the current step stops standing out. Re-signal
+     with Highlight - the span is not a form control, so the fill paints. */
+  .cngx-stepper__step[aria-current='step'] .cngx-stepper__indicator {
+    background: Highlight;
+    color: HighlightText;
+  }
+}
