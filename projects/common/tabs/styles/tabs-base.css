@@ -829,3 +829,25 @@
     background: var(--cngx-tab-rejected-bg, oklch(0.45 0.15 25 / 0.1));
   }
 }
+
+/* forced-colors (WHCM): the active tab is marked only by an inset box-shadow
+ * underline (its text colour matches resting tabs), and box-shadow is forced to
+ * none, so the selected tab loses its sole signal. Re-draw the underline with a
+ * Highlight bottom border; box-sizing:border-box keeps the bordered tab at the
+ * same height so the row does not shift. The rejected tab's wash also drops, but
+ * its persistent "!" rejection glyph survives as forced ink, so no block is
+ * needed there. Unlayered + direct selector (outside @layer) to beat the layered
+ * component rule. */
+@media (forced-colors: active) {
+  .cngx-tabs__tab[aria-selected='true'] {
+    /* The underline is a NEW border-bottom (the base drew it with box-shadow,
+     * now forced to none), so there is no competing border rule to beat. This
+     * override is unlayered while the base sits in @layer cngx.components, so it
+     * wins without !important - and this file has no @scope, so no scope-
+     * proximity tiebreak applies. The UA forces border-COLOR to a system colour
+     * but the author Highlight keyword holds, so the 2px underline stays present
+     * on the active tab only - a real "selected" signal. */
+    box-sizing: border-box;
+    border-bottom: var(--cngx-tab-active-indicator-width, 2px) solid Highlight;
+  }
+}

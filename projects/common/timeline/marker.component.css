@@ -152,3 +152,20 @@
     animation: none;
   }
 }
+
+/* forced-colors (WHCM): the marker is a background-filled circle whose
+ * separation from the rail is a box-shadow ring; the forced palette flattens the
+ * fill to Canvas and drops the ring, so the done / active / rejected / default
+ * markers vanish. Re-draw each as a hollow CanvasText ring (box-sizing:border-box
+ * so the marker keeps its size) - the interior stays Canvas, so a projected
+ * status glyph (which forces to CanvasText ink) stays visible instead of being
+ * swallowed by a solid fill. The `upcoming` variant already carries its own
+ * dashed border (self-heals), so it is excluded here and stays distinct from the
+ * solid-ring statuses. Unlayered + direct selector (outside @scope) to beat the
+ * layered component rule and sidestep the @scope/layer cascade trap. */
+@media (forced-colors: active) {
+  .cngx-timeline-marker:not([data-status='upcoming']) {
+    box-sizing: border-box;
+    border: var(--cngx-timeline-connector-width, 2px) solid CanvasText;
+  }
+}

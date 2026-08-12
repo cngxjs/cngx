@@ -269,3 +269,14 @@
     }
   }
 }
+
+/* forced-colors (WHCM): the tooltip is a background-filled pill with border:none,
+ * so the forced palette turns its surface to Canvas and it merges into the page
+ * beneath with no visible edge. Re-draw a system-colour border so the call-out
+ * stays bounded. Unlayered + direct selector (outside @scope) to beat the
+ * layered component rule and sidestep the @scope/layer cascade trap. */
+@media (forced-colors: active) {
+  .cngx-tooltip {
+    border: 1px solid ButtonBorder;
+  }
+}

@@ -125,3 +125,20 @@
     }
   }
 }
+
+/* forced-colors (WHCM): the goal bar is drawn from two background-only elements
+ * (the track groove and the fill) with no border, so the forced palette flattens
+ * both to Canvas and the whole bar disappears. Border the track with CanvasText
+ * (box-sizing:border-box so the 100%-wide track does not overflow) and fill the
+ * attained portion with Highlight - the fill width still tracks --cngx-goal-fill,
+ * so attainment survives. Unlayered + direct selectors (outside @scope) to beat
+ * the layered component rule and sidestep the @scope/layer cascade trap. */
+@media (forced-colors: active) {
+  .cngx-goal__track {
+    box-sizing: border-box;
+    border: 1px solid CanvasText;
+  }
+  .cngx-goal__fill {
+    background: Highlight;
+  }
+}

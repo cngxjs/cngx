@@ -643,3 +643,24 @@
     }
   }
 }
+
+/* forced-colors (WHCM): the current page is signalled by a background tint
+ * (currentColor 12%) plus font-weight; the tint flattens to Canvas, leaving only
+ * the bold weight - too weak a "you are here" signal. Re-signal the current page
+ * with the system Highlight pair. Every page button already carries a 1px border
+ * that self-heals, and the popover panels' elevation box-shadows are decorative
+ * (each panel keeps a real border), so neither needs a block. Unlayered + direct
+ * selector (outside @layer) to beat the layered component rule. */
+@media (forced-colors: active) {
+  .cngx-paginator__page[aria-current='page'] {
+    /* The page control is a <button>; the UA forces a form-control background to
+     * ButtonFace, so opt out with forced-color-adjust: none. The override is
+     * unlayered while the base rule sits in @layer cngx.components, so it wins
+     * the cascade without !important - this file has no @scope, so there is no
+     * scope-proximity tiebreak to beat. */
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
+    border-color: Highlight;
+  }
+}

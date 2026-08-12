@@ -229,3 +229,25 @@
     display: none;
   }
 }
+
+/* forced-colors (WHCM): both the selected option and the keyboard-highlighted
+ * option (aria-activedescendant cursor) are background tints with no border, and
+ * both flatten to Canvas - the committed selection and the cursor vanish.
+ * Re-signal the committed selection with the Highlight pair, and draw the
+ * transient cursor as an inset CanvasText outline so the two stay distinct and
+ * combinable. Unlayered + direct selectors (outside @layer) to beat the layered
+ * component rule. */
+@media (forced-colors: active) {
+  .cngx-option--selected {
+    /* The option is a <div cngxOption> (not a form control), so no
+     * forced-color-adjust is needed. The base rule is a plain class in
+     * @layer cngx.components with no @scope, so this unlayered block wins
+     * without !important (unlayered beats layered). */
+    background: Highlight;
+    color: HighlightText;
+  }
+  .cngx-option--highlighted {
+    outline: 2px solid CanvasText;
+    outline-offset: -2px;
+  }
+}

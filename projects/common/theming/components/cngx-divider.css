@@ -147,3 +147,15 @@
     }
   }
 }
+
+/* forced-colors (WHCM): the divider line is painted with background-color on a
+ * 1px-thin block (both the horizontal and vertical variants), and the forced
+ * palette flattens it to Canvas - the separator vanishes. Re-draw it in the
+ * system foreground ink so the line survives (a bare <hr> gets its border
+ * forced the same way). Unlayered + direct selector (outside @scope) to beat
+ * the layered component rule and sidestep the @scope/layer cascade trap. */
+@media (forced-colors: active) {
+  .cngx-divider {
+    background: CanvasText;
+  }
+}

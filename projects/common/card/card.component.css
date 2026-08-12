@@ -1009,3 +1009,20 @@
     border: 0;
   }
 }
+
+/* forced-colors (WHCM): the --selected card carries a background tint, a primary
+ * border-color, and a background-color inset bar (::before). The tint and the
+ * bar flatten to Canvas and the border-color forces to the same system colour as
+ * an unselected card, so a selected card reads identically to an unselected one.
+ * Re-signal with a Highlight border and repaint the inset bar with Highlight.
+ * The decorative elevation box-shadow loss is harmless - the card keeps a real
+ * border. Unlayered + direct selectors (outside @scope) to beat the layered
+ * component rule and sidestep the @scope/layer cascade trap. */
+@media (forced-colors: active) {
+  .cngx-card.cngx-card--selected {
+    border-color: Highlight !important;
+  }
+  .cngx-card.cngx-card--selected::before {
+    background: Highlight !important;
+  }
+}

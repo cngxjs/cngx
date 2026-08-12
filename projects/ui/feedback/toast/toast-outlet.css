@@ -551,6 +551,7 @@
     .cngx-toast__description {
       display: -webkit-box;
       -webkit-line-clamp: var(--cngx-toast-description-max-lines, 3);
+      line-clamp: var(--cngx-toast-description-max-lines, 3);
       -webkit-box-orient: vertical;
       overflow: hidden;
       font-size: var(--cngx-toast-description-font-size, 0.8125rem);
@@ -606,5 +607,17 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* Forced-colors (WHCM): the toast is an overlay whose only edge is the
+   box-shadow elevation - forced to `none` - plus a one-sided colour accent, so
+   it merges into Canvas on the other three sides. Re-draw a full boundary with
+   ButtonBorder. Additive (the base has no full border), so no `!important` and
+   no forced-color-adjust: `.cngx-toast` is a <div>, not a form control.
+   Unlayered + outside @scope per the cngx WHCM placement rule. */
+@media (forced-colors: active) {
+  .cngx-toast {
+    border: 1px solid ButtonBorder;
   }
 }

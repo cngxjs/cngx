@@ -206,3 +206,15 @@
     }
   }
 }
+
+/* forced-colors (WHCM): the drag-handle pill (::before) is a background-color
+ * bar with no border, so it flattens to Canvas and the drag affordance vanishes.
+ * Re-draw it with CanvasText ink. The sheet surface itself is bounded by the
+ * dialog[cngxDialog] forced-colors border (the sheet carries cngxDialog).
+ * Unlayered + direct selector (outside @scope) to beat the layered component
+ * rule. */
+@media (forced-colors: active) {
+  dialog.cngx-bottom-sheet::before {
+    background: CanvasText;
+  }
+}

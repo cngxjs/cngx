@@ -1487,3 +1487,23 @@
   --cngx-select-caret-color: oklch(0 0 0 / 0.5);
   --cngx-select-clear-color: oklch(0 0 0 / 0.5);
 }
+
+/* Forced-colors (Windows High Contrast Mode) survival. The trigger and panel
+ * keep a 1px solid border and the focus ring is `outline`-based, so all three
+ * self-heal - the UA forces their colour to an opaque system colour. Chosen
+ * options survive via the check glyph. The one genuine break is the
+ * keyboard-active option row: it signals only with a background tint, which
+ * the forced palette flattens to Canvas. Re-signal it (and its check glyph)
+ * with the Highlight pair so the active row keeps a visible cursor. Kept top-
+ * level and unlayered (outside @layer/@scope) so it beats the layered
+ * `.cngx-select__option.cngx-option--highlighted` base rule; the plain two-
+ * class compound wins without !important (unlayered beats layered). */
+@media (forced-colors: active) {
+  .cngx-select__option.cngx-option--highlighted {
+    background: Highlight;
+    color: HighlightText;
+  }
+  .cngx-select__option.cngx-option--highlighted .cngx-select__check {
+    color: HighlightText;
+  }
+}

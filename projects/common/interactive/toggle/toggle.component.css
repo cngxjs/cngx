@@ -374,3 +374,27 @@
     }
   }
 }
+
+/* forced-colors (WHCM): the switch is pure background-color - the track fill
+ * (off / on), the white thumb, and a box-shadow lift. All flatten to Canvas and
+ * the shadow is dropped, so the control vanishes and on/off cannot be told
+ * apart. Border the track and thumb so the switch stays visible (thumb position
+ * still reads state), and fill the checked track with Highlight so on/off is
+ * distinguishable. Bordering the thumb (not filling it) keeps a projected
+ * [thumbGlyph] visible. Unlayered + direct selectors (outside @scope) to beat
+ * the layered component rule and sidestep the @scope/layer cascade trap. */
+@media (forced-colors: active) {
+  .cngx-toggle__track {
+    border: 1px solid ButtonBorder;
+  }
+  .cngx-toggle__thumb {
+    border: 1px solid ButtonText;
+  }
+  .cngx-toggle.cngx-toggle--checked .cngx-toggle__track {
+    /* Host-class specificity to match the base `:scope.cngx-toggle--checked
+     * .cngx-toggle__track` (0,3,0) plus !important to beat its scope proximity.
+     * The track is a child span (not the button host), so no forced-color-adjust
+     * is needed - only the button's own background is UA-forced. */
+    background: Highlight !important;
+  }
+}

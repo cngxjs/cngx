@@ -802,3 +802,18 @@
     user-select: none;
   }
 }
+
+/* Forced-colors (WHCM): the active nav link signals only with a background tint
+   (forced to Canvas) plus a heavier font-weight, so under a forced palette the
+   active item is left with weight alone - too weak a lone cue. Re-signal it with
+   Highlight. The rail's own edge border and the focus outline self-heal, so only
+   the active-item tint needs a re-draw. Unlayered + outside @layer beats the
+   layered base rule; forced-color-adjust:none opts the control out of the UA
+   background forcing in case CngxNavLink renders a <button>, so Highlight paints. */
+@media (forced-colors: active) {
+  cngx-sidenav .cngx-nav-link--active {
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
+  }
+}

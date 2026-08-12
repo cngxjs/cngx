@@ -11,10 +11,11 @@
  *
  * Applied to `cdk-row` by the renderer:
  *
- * - `--highlighted` - keyboard-cursor row tint
+ * - `--highlighted` - hover-highlight row tint (applied while the row
+ *   is hovered, driven by `highlight() && hovered()`)
  * - `--selected` - selection-state row tint
- * - `--focused` - inset focus-ring outline (offset negative so the
- *   ring stays inside the row border)
+ * - `--focused` - inset focus-ring outline on the keyboard-focused row
+ *   (offset negative so the ring stays inside the row border)
  *
  * **Slots**
  *
@@ -712,5 +713,27 @@
         font-size: var(--cngx-treetable-narrow-toggle-font-size, 1rem);
       }
     }
+  }
+}
+
+/* Forced-colors (Windows High Contrast Mode) survival. Under WHCM the UA forces
+   `background-color` to a system colour, so the selected row's `--selected` tint
+   (its only selection signal) collapses into Canvas and the selection state goes
+   invisible. Re-signal it with the guaranteed Highlight / HighlightText system
+   pair - the same idiom as the listbox selected option. `cdk-row` is a custom
+   element (not a form control), and the base rule is a `cdk-row.MODIFIER`
+   descendant selector inside `@scope` (not a `:scope.MODIFIER` compound), so this
+   unlayered block wins the cascade without `!important`. HighlightText is set on
+   the cells because each `cdk-cell` paints its own `color`. The `--focused`
+   keyboard cursor self-heals via its `outline`; `--highlighted` is a transient
+   hover tint with no persistent meaning, left to collapse (no component in the
+   sweep hardens a pure hover state). */
+@media (forced-colors: active) {
+  .cngx-treetable cdk-row.cngx-treetable__row--selected {
+    background: Highlight;
+  }
+
+  .cngx-treetable cdk-row.cngx-treetable__row--selected cdk-cell {
+    color: HighlightText;
   }
 }

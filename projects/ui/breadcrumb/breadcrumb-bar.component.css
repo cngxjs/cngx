@@ -1502,3 +1502,17 @@
     font-size: var(--cngx-breadcrumb-record-font-size);
   }
 }
+
+/* Forced-colors (WHCM): several skins signal the current page with a background
+   tint (plus a box-shadow on the pill skin) and no border, and the pill skin
+   hides the `>` separator - so under a forced palette the current item collapses
+   into its siblings. Re-signal it with Highlight across every skin. Unlayered +
+   outside @scope; `!important` guards the cross-skin win over each skin's scoped
+   `[aria-current]` rule. The current item is an <a>/<span>, not a form control,
+   so the Highlight background paints without forced-color-adjust. */
+@media (forced-colors: active) {
+  .cngx-breadcrumb__link[aria-current='page'] {
+    background: Highlight !important;
+    color: HighlightText !important;
+  }
+}

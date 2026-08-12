@@ -546,3 +546,27 @@
     }
   }
 }
+
+/* forced-colors (WHCM): a chip is a background tint with a zero-width border
+ * (0 solid transparent), and its selected state is a darker tint - both
+ * flatten to Canvas, erasing the pill boundary and the selected distinction. A
+ * zero-width transparent border does NOT self-heal (no edge to force), so give
+ * every chip a real forced boundary, and re-signal selected with the system
+ * Highlight pair. Unlayered + direct selectors (outside @scope) to beat the
+ * layered component rule and sidestep the @scope/layer cascade trap. */
+@media (forced-colors: active) {
+  .cngx-chip {
+    border: 1px solid ButtonBorder;
+  }
+  .cngx-chip[aria-selected='true'],
+  .cngx-chip[aria-pressed='true'] {
+    /* The base selected rule is `:scope[aria-selected='true']`; a `:scope`
+     * compound wins the scope-proximity tiebreak against this same-specificity
+     * unlayered rule, so !important is required for the Highlight selection to
+     * take. The chip is a role=button element (not a form control), so no
+     * forced-color-adjust is needed. */
+    background: Highlight !important;
+    color: HighlightText !important;
+    border-color: Highlight !important;
+  }
+}

@@ -360,3 +360,15 @@
     }
   }
 }
+
+/* forced-colors (WHCM): the dialog border defaults to `none`, so its sole
+ * boundary is the elevation box-shadow, which is forced to none - and the
+ * surface flattens to Canvas, leaving the modal edgeless against the page.
+ * Re-draw a real edge with a system-colour border. Unlayered + direct selector
+ * (outside @scope) to beat the layered component rule and sidestep the
+ * @scope/layer cascade trap. */
+@media (forced-colors: active) {
+  dialog[cngxDialog] {
+    border: 1px solid ButtonBorder;
+  }
+}

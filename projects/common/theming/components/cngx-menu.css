@@ -390,3 +390,25 @@
     list-style: none;
   }
 }
+
+/* forced-colors (WHCM): the highlighted item (keyboard cursor) is a background
+ * tint and the separator is a 1px background-color hairline - both flatten to
+ * Canvas, erasing the cursor and the dividers. Re-signal the active item with
+ * the Highlight pair and re-draw the separator with CanvasText ink. The checked
+ * item self-heals (its ::before glyph + bolder weight survive). Unlayered +
+ * direct selectors (outside @layer) to beat the layered component rule. */
+@media (forced-colors: active) {
+  .cngx-menu-item--highlighted {
+    /* Menu items are typically <button>s; the UA forces a form-control
+     * background to ButtonFace, so opt out with forced-color-adjust, then set
+     * the Highlight pair. The base rule is a plain class in @layer
+     * cngx.components with no @scope, so this unlayered block wins without
+     * !important (unlayered beats layered; the opt-out beats the UA forcing). */
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
+  }
+  [cngxMenuSeparator] {
+    background: CanvasText;
+  }
+}

@@ -344,3 +344,19 @@
     }
   }
 }
+
+/* forced-colors (WHCM): a badge indicator is a background-filled pill with no
+ * border by default; the fill flattens to Canvas, so a corner-anchored count
+ * loses its pill outline and a textless --dot indicator disappears entirely.
+ * Give every indicator a forced outline so the overlay stays bounded (no
+ * layout shift, unlike a border), and fill the dot with system ink so a
+ * textless status survives. Unlayered + direct selectors (outside @scope) to
+ * beat the layered component rule and sidestep the @scope/layer cascade trap. */
+@media (forced-colors: active) {
+  .cngx-badge-indicator {
+    outline: 1px solid CanvasText;
+  }
+  .cngx-badge-indicator--dot {
+    background: CanvasText;
+  }
+}
