@@ -62,10 +62,11 @@ const THEMES_ENTRY_CSS = 'projects/themes/cngx.css';
 // a reviewable guard change, never a silent widening.
 const AFFORDANCE_SUBSTRINGS = ['box-shadow'] as const;
 
-// Phase A: warn. The source scan surfaces unhardened box-shadow hosts in
-// not-yet-swept libs but does not fail. Phase E flips this to `true`, turning
-// the completeness scan into a hard CI gate.
-const SCAN_HARD_FAIL = false;
+// Phase E: hard-fail. Every lib's box-shadow hosts are now hardened or
+// consciously excluded, so the source scan is a hard CI gate - a new
+// interactive/bordered stylesheet that carries a `box-shadow` and ships no
+// forced-colors block (and is not in EXCLUDED_HOSTS) fails CI from here on.
+const SCAN_HARD_FAIL = true;
 
 // Every stylesheet that ships a hand-authored `@media (forced-colors: active)`
 // block. Grows one wave at a time (parity with MOTION_AWARE_HOSTS). A file lands
@@ -131,6 +132,10 @@ const EXCLUDED_HOSTS: ReadonlyArray<{ file: string; note: string }> = [
   {
     file: 'projects/core/theming/system-tokens.css',
     note: 'the word "box-shadow" appears only in a token-doc comment; the file is the @property registry, not an affordance',
+  },
+  {
+    file: 'projects/core/theming/forced-colors.css',
+    note: 'the word "box-shadow" appears only in the @overview contract prose describing the WHCM forcing; the net itself is the forced-color-adjust baseline, not an affordance',
   },
   {
     file: 'projects/common/popover/popover-panel.component.css',
