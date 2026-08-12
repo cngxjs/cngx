@@ -117,6 +117,11 @@ const FORCED_COLORS_HARDENED_HOSTS: readonly string[] = [
   // tint + weight only (rail edge + focus outline self-heal); re-signalled with
   // Highlight. The expanded-rail box-shadow is decorative over the edge border.
   'projects/ui/sidenav/sidenav.css',
+  // @cngx/data-display/treetable (Phase E) - the selected row's `--selected`
+  // tint is its only selection signal and collapses to Canvas under WHCM;
+  // re-signalled with Highlight/HighlightText. The `--focused` keyboard cursor
+  // self-heals via its outline, so only the selection state carries a block.
+  'projects/data-display/treetable/treetable.component.css',
 ];
 
 // Files the box-shadow scan flags but that legitimately do NOT need a
@@ -243,7 +248,7 @@ describe('forced-colors hardened-hosts manifest', () => {
   });
 
   it('fixes the manifest size so a bulk edit dropping several hosts is caught', () => {
-    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(22);
+    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(23);
   });
 });
 
