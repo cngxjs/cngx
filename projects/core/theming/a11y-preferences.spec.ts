@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { CNGX_CONTRAST } from './contrast';
 import { CNGX_DENSITY } from './density';
@@ -12,6 +12,7 @@ import {
   withContrast,
   withDensity,
   withMotion,
+  withPersistence,
   withTextScale,
 } from './a11y-preferences';
 
@@ -94,5 +95,121 @@ describe('provideAccessibilityPreferences', () => {
     prefs.contrast.set('more');
     fixture.detectChanges();
     expect(attr('data-contrast')).toBe('more');
+  });
+});
+
+describe('provideAccessibilityPreferences + withPersistence', () => {
+  const KEY = 'cngx-a11y';
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    localStorage.clear();
+    for (const name of ['data-density', 'data-text-size', 'data-motion', 'data-contrast']) {
+      document.documentElement.removeAttribute(name);
+    }
+  });
+
+  it('rehydrates a stored value on init and reflects it', () => {
+    localStorage.setItem(KEY, JSON.stringify({ motion: 'reduced' }));
+    TestBed.configureTestingModule({
+      providers: [provideAccessibilityPreferences(withPersistence())],
+    });
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+
+    expect(TestBed.inject(CNGX_MOTION)()).toBe('reduced');
+    expect(attr('data-motion')).toBe('reduced');
+  });
+
+  it('writes back a runtime set', () => {
+    TestBed.configureTestingModule({
+      providers: [provideAccessibilityPreferences(withPersistence())],
+    });
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+
+    TestBed.inject(CNGX_DENSITY).set('spacious');
+    fixture.detectChanges();
+
+    expect(JSON.parse(localStorage.getItem(KEY) ?? '{}')).toEqual({ density: 'spacious' });
+  });
+
+  it('does not persist an untouched axis (first-run skip)', () => {
+    TestBed.configureTestingModule({
+      providers: [provideAccessibilityPreferences(withPersistence())],
+    });
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+
+    // No change was made, so no key is ever written.
+    expect(localStorage.getItem(KEY)).toBeNull();
+  });
+
+  it('leaves an invalid stored value at the axis default without re-persisting it', () => {
+    localStorage.setItem(KEY, JSON.stringify({ density: 'bogus' }));
+    TestBed.configureTestingModule({
+      providers: [provideAccessibilityPreferences(withPersistence())],
+    });
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+
+    // Fell back to the axis default...
+    expect(TestBed.inject(CNGX_DENSITY)()).toBe('comfortable');
+    // ...and did not overwrite the garbage key with that default.
+    expect(JSON.parse(localStorage.getItem(KEY) ?? '{}')).toEqual({ density: 'bogus' });
+  });
+
+  it('flushes exactly one write per changed signal (no loop)', () => {
+    const setSpy = vi.spyOn(Storage.prototype, 'setItem');
+    TestBed.configureTestingModule({
+      providers: [provideAccessibilityPreferences(withPersistence())],
+    });
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+
+    const writes = () => setSpy.mock.calls.filter(([key]) => key === KEY).length;
+    const before = writes();
+
+    TestBed.inject(CNGX_MOTION).set('reduced');
+    fixture.detectChanges();
+    expect(writes() - before).toBe(1);
+
+    // Same value again: signal equality short-circuits the effect.
+    TestBed.inject(CNGX_MOTION).set('reduced');
+    fixture.detectChanges();
+    expect(writes() - before).toBe(1);
+  });
+
+  it('rehydrates before the first reflect (no default-value flash)', () => {
+    localStorage.setItem(KEY, JSON.stringify({ density: 'compact' }));
+    const setAttrSpy = vi.spyOn(document.documentElement, 'setAttribute');
+    TestBed.configureTestingModule({
+      providers: [provideAccessibilityPreferences(withPersistence())],
+    });
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+
+    const densityWrites = setAttrSpy.mock.calls
+      .filter(([name]) => name === 'data-density')
+      .map(([, value]) => value);
+
+    expect(attr('data-density')).toBe('compact');
+    // The reflector never flashed the axis default before the stored value.
+    expect(densityWrites).not.toContain('comfortable');
+    expect(densityWrites[0]).toBe('compact');
+  });
+
+  it('is a no-op when localStorage is unavailable (server)', () => {
+    localStorage.setItem(KEY, JSON.stringify({ motion: 'reduced' }));
+    vi.spyOn(window, 'localStorage', 'get').mockReturnValue(undefined as unknown as Storage);
+
+    TestBed.configureTestingModule({
+      providers: [provideAccessibilityPreferences(withPersistence())],
+    });
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+
+    // Persistence skipped entirely: motion stayed at its default, not rehydrated.
+    expect(TestBed.inject(CNGX_MOTION)()).toBe('auto');
   });
 });

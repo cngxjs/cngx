@@ -45,5 +45,6 @@ export {
   withTextScale,
   withMotion,
   withContrast,
+  withPersistence,
   injectA11yPreferences,
 } from './theming/a11y-preferences';
