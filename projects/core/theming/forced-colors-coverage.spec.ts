@@ -104,6 +104,9 @@ const FORCED_COLORS_HARDENED_HOSTS: readonly string[] = [
   // with Highlight. Triggers/panels self-heal via their solid borders.
   'projects/forms/select/shared/select-base.css',
   'projects/forms/select/tree-select/tree-select-panel.component.css',
+  // @cngx/ui/feedback (Phase D) - the toast overlay's only edge is its
+  // box-shadow elevation (plus a one-sided accent); re-drawn with ButtonBorder.
+  'projects/ui/feedback/toast/toast-outlet.css',
 ];
 
 // Files the box-shadow scan flags but that legitimately do NOT need a
@@ -204,7 +207,7 @@ describe('forced-colors hardened-hosts manifest', () => {
   });
 
   it('fixes the manifest size so a bulk edit dropping several hosts is caught', () => {
-    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(18);
+    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(19);
   });
 });
 
