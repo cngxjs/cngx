@@ -841,11 +841,13 @@
 @media (forced-colors: active) {
   .cngx-tabs__tab[aria-selected='true'] {
     /* The underline is a NEW border-bottom (the base drew it with box-shadow,
-     * now forced to none), so there is no competing border rule; !important
-     * guards against the tab button's own border forcing zeroing it. The UA
-     * forces border-COLOR (not width), so the 2px underline stays present in a
-     * visible system colour on the active tab only - a real "selected" signal. */
+     * now forced to none), so there is no competing border rule to beat. This
+     * override is unlayered while the base sits in @layer cngx.components, so it
+     * wins without !important - and this file has no @scope, so no scope-
+     * proximity tiebreak applies. The UA forces border-COLOR to a system colour
+     * but the author Highlight keyword holds, so the 2px underline stays present
+     * on the active tab only - a real "selected" signal. */
     box-sizing: border-box;
-    border-bottom: var(--cngx-tab-active-indicator-width, 2px) solid Highlight !important;
+    border-bottom: var(--cngx-tab-active-indicator-width, 2px) solid Highlight;
   }
 }
