@@ -11,10 +11,11 @@
  *
  * Applied to `cdk-row` by the renderer:
  *
- * - `--highlighted` - keyboard-cursor row tint
+ * - `--highlighted` - hover-highlight row tint (applied while the row
+ *   is hovered, driven by `highlight() && hovered()`)
  * - `--selected` - selection-state row tint
- * - `--focused` - inset focus-ring outline (offset negative so the
- *   ring stays inside the row border)
+ * - `--focused` - inset focus-ring outline on the keyboard-focused row
+ *   (offset negative so the ring stays inside the row border)
  *
  * **Slots**
  *
