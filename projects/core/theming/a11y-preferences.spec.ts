@@ -8,7 +8,7 @@ import { CNGX_MOTION } from './motion';
 import { CNGX_TEXT_SCALE } from './text-scale';
 import {
   injectA11yPreferences,
-  provideAccessibilityPreferences,
+  provideA11yPreferences,
   withContrast,
   withDensity,
   withMotion,
@@ -23,7 +23,7 @@ class Host {}
 
 const attr = (name: string) => document.documentElement.getAttribute(name);
 
-describe('provideAccessibilityPreferences', () => {
+describe('provideA11yPreferences', () => {
   afterEach(() => {
     for (const name of ['data-density', 'data-text-size', 'data-motion', 'data-contrast']) {
       document.documentElement.removeAttribute(name);
@@ -31,7 +31,7 @@ describe('provideAccessibilityPreferences', () => {
   });
 
   it('installs all four axes at their defaults when no feature is passed', () => {
-    TestBed.configureTestingModule({ providers: [provideAccessibilityPreferences()] });
+    TestBed.configureTestingModule({ providers: [provideA11yPreferences()] });
     const fixture = TestBed.createComponent(Host);
     fixture.detectChanges();
 
@@ -44,7 +44,7 @@ describe('provideAccessibilityPreferences', () => {
   it('applies the supplied initial per axis and reflects each onto <html>', () => {
     TestBed.configureTestingModule({
       providers: [
-        provideAccessibilityPreferences(
+        provideA11yPreferences(
           withDensity('compact'),
           withTextScale('lg'),
           withMotion('reduced'),
@@ -68,7 +68,7 @@ describe('provideAccessibilityPreferences', () => {
 
   it('is last-wins on a duplicate axis feature', () => {
     TestBed.configureTestingModule({
-      providers: [provideAccessibilityPreferences(withDensity('compact'), withDensity('spacious'))],
+      providers: [provideA11yPreferences(withDensity('compact'), withDensity('spacious'))],
     });
     const fixture = TestBed.createComponent(Host);
     fixture.detectChanges();
@@ -78,7 +78,7 @@ describe('provideAccessibilityPreferences', () => {
 
   it('injectA11yPreferences() returns the writable axis signals wired to the tokens', () => {
     TestBed.configureTestingModule({
-      providers: [provideAccessibilityPreferences(withMotion('full'))],
+      providers: [provideA11yPreferences(withMotion('full'))],
     });
     const fixture = TestBed.createComponent(Host);
     fixture.detectChanges();
@@ -98,7 +98,7 @@ describe('provideAccessibilityPreferences', () => {
   });
 });
 
-describe('provideAccessibilityPreferences + withPersistence', () => {
+describe('provideA11yPreferences + withPersistence', () => {
   const KEY = 'cngx-a11y';
 
   afterEach(() => {
@@ -112,7 +112,7 @@ describe('provideAccessibilityPreferences + withPersistence', () => {
   it('rehydrates a stored value on init and reflects it', () => {
     localStorage.setItem(KEY, JSON.stringify({ motion: 'reduced' }));
     TestBed.configureTestingModule({
-      providers: [provideAccessibilityPreferences(withPersistence())],
+      providers: [provideA11yPreferences(withPersistence())],
     });
     const fixture = TestBed.createComponent(Host);
     fixture.detectChanges();
@@ -123,7 +123,7 @@ describe('provideAccessibilityPreferences + withPersistence', () => {
 
   it('writes back a runtime set', () => {
     TestBed.configureTestingModule({
-      providers: [provideAccessibilityPreferences(withPersistence())],
+      providers: [provideA11yPreferences(withPersistence())],
     });
     const fixture = TestBed.createComponent(Host);
     fixture.detectChanges();
@@ -136,7 +136,7 @@ describe('provideAccessibilityPreferences + withPersistence', () => {
 
   it('does not persist an untouched axis (first-run skip)', () => {
     TestBed.configureTestingModule({
-      providers: [provideAccessibilityPreferences(withPersistence())],
+      providers: [provideA11yPreferences(withPersistence())],
     });
     const fixture = TestBed.createComponent(Host);
     fixture.detectChanges();
@@ -148,7 +148,7 @@ describe('provideAccessibilityPreferences + withPersistence', () => {
   it('leaves an invalid stored value at the axis default without re-persisting it', () => {
     localStorage.setItem(KEY, JSON.stringify({ density: 'bogus' }));
     TestBed.configureTestingModule({
-      providers: [provideAccessibilityPreferences(withPersistence())],
+      providers: [provideA11yPreferences(withPersistence())],
     });
     const fixture = TestBed.createComponent(Host);
     fixture.detectChanges();
@@ -162,7 +162,7 @@ describe('provideAccessibilityPreferences + withPersistence', () => {
   it('flushes exactly one write per changed signal (no loop)', () => {
     const setSpy = vi.spyOn(Storage.prototype, 'setItem');
     TestBed.configureTestingModule({
-      providers: [provideAccessibilityPreferences(withPersistence())],
+      providers: [provideA11yPreferences(withPersistence())],
     });
     const fixture = TestBed.createComponent(Host);
     fixture.detectChanges();
@@ -184,7 +184,7 @@ describe('provideAccessibilityPreferences + withPersistence', () => {
     localStorage.setItem(KEY, JSON.stringify({ density: 'compact' }));
     const setAttrSpy = vi.spyOn(document.documentElement, 'setAttribute');
     TestBed.configureTestingModule({
-      providers: [provideAccessibilityPreferences(withPersistence())],
+      providers: [provideA11yPreferences(withPersistence())],
     });
     const fixture = TestBed.createComponent(Host);
     fixture.detectChanges();
@@ -204,7 +204,7 @@ describe('provideAccessibilityPreferences + withPersistence', () => {
     vi.spyOn(window, 'localStorage', 'get').mockReturnValue(undefined as unknown as Storage);
 
     TestBed.configureTestingModule({
-      providers: [provideAccessibilityPreferences(withPersistence())],
+      providers: [provideA11yPreferences(withPersistence())],
     });
     const fixture = TestBed.createComponent(Host);
     fixture.detectChanges();

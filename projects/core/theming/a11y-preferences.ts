@@ -25,7 +25,7 @@ import {
 } from './text-scale';
 
 /**
- * A feature for {@link provideAccessibilityPreferences}. Each `with*`
+ * A feature for {@link provideA11yPreferences}. Each `with*`
  * helper returns one of these carrying a hidden `_target` discriminator
  * the aggregator dispatches on. This mirrors the Select-family config
  * cascade (`provideCngxSelect`), but the aggregator *reduces* the axis
@@ -34,7 +34,7 @@ import {
  * same-kind features.
  *
  * @category core/theming
- * @relatedTo provideAccessibilityPreferences
+ * @relatedTo provideA11yPreferences
  * @since 0.1.0
  */
 export type CngxA11yPrefFeature =
@@ -49,7 +49,7 @@ export type CngxA11yPrefFeature =
  * feature leaves density at its `comfortable` default.
  *
  * @category core/theming
- * @relatedTo provideAccessibilityPreferences
+ * @relatedTo provideA11yPreferences
  * @since 0.1.0
  */
 export function withDensity(value: CngxDensityValue): CngxA11yPrefFeature {
@@ -61,7 +61,7 @@ export function withDensity(value: CngxDensityValue): CngxA11yPrefFeature {
  * feature leaves text-scale at its `md` (identity) default.
  *
  * @category core/theming
- * @relatedTo provideAccessibilityPreferences
+ * @relatedTo provideA11yPreferences
  * @since 0.1.0
  */
 export function withTextScale(value: CngxTextScaleValue): CngxA11yPrefFeature {
@@ -74,7 +74,7 @@ export function withTextScale(value: CngxTextScaleValue): CngxA11yPrefFeature {
  * `prefers-reduced-motion` query.
  *
  * @category core/theming
- * @relatedTo provideAccessibilityPreferences
+ * @relatedTo provideA11yPreferences
  * @since 0.1.0
  */
 export function withMotion(value: CngxMotionPreference): CngxA11yPrefFeature {
@@ -87,7 +87,7 @@ export function withMotion(value: CngxMotionPreference): CngxA11yPrefFeature {
  * OS `prefers-contrast` query.
  *
  * @category core/theming
- * @relatedTo provideAccessibilityPreferences
+ * @relatedTo provideA11yPreferences
  * @since 0.1.0
  */
 export function withContrast(value: CngxContrastPreference): CngxA11yPrefFeature {
@@ -107,12 +107,12 @@ export function withContrast(value: CngxContrastPreference): CngxA11yPrefFeature
  *
  * ```ts
  * bootstrapApplication(AppComponent, {
- *   providers: [provideAccessibilityPreferences(withPersistence())],
+ *   providers: [provideA11yPreferences(withPersistence())],
  * });
  * ```
  *
  * @category core/theming
- * @relatedTo provideAccessibilityPreferences
+ * @relatedTo provideA11yPreferences
  * @since 0.1.0
  */
 export function withPersistence(storageKey = 'cngx-a11y'): CngxA11yPrefFeature {
@@ -134,7 +134,7 @@ export function withPersistence(storageKey = 'cngx-a11y'): CngxA11yPrefFeature {
  * ```ts
  * bootstrapApplication(AppComponent, {
  *   providers: [
- *     provideAccessibilityPreferences(withTextScale('lg'), withMotion('reduced')),
+ *     provideA11yPreferences(withTextScale('lg'), withMotion('reduced')),
  *   ],
  * });
  * ```
@@ -147,7 +147,7 @@ export function withPersistence(storageKey = 'cngx-a11y'): CngxA11yPrefFeature {
  * @relatedTo withContrast
  * @since 0.1.0
  */
-export function provideAccessibilityPreferences(
+export function provideA11yPreferences(
   ...features: CngxA11yPrefFeature[]
 ): EnvironmentProviders {
   let density: CngxDensityValue | undefined;
@@ -199,7 +199,7 @@ export function provideAccessibilityPreferences(
  * through it (`injectA11yPreferences().motion.set('reduced')`).
  *
  * @category core/theming
- * @relatedTo provideAccessibilityPreferences
+ * @relatedTo provideA11yPreferences
  * @since 0.1.0
  */
 export function injectA11yPreferences(): {

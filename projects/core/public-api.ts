@@ -40,7 +40,7 @@ export {
 export { CngxContrast } from './theming/cngx-contrast.directive';
 export {
   type CngxA11yPrefFeature,
-  provideAccessibilityPreferences,
+  provideA11yPreferences,
   withDensity,
   withTextScale,
   withMotion,
