@@ -69,6 +69,9 @@ test.describe('forced-colors (WHCM) affordance survival', () => {
         borderTopColor: cs.borderTopColor,
         borderTopWidth: cs.borderTopWidth,
         borderTopStyle: cs.borderTopStyle,
+        borderBottomColor: cs.borderBottomColor,
+        borderBottomWidth: cs.borderBottomWidth,
+        borderBottomStyle: cs.borderBottomStyle,
         canvas,
         canvasText,
         highlight,
@@ -222,6 +225,42 @@ test.describe('forced-colors (WHCM) affordance survival', () => {
     const active = page.locator('.cngx-tree-select__node--active').first();
     await expect(active).toBeVisible();
     const s = await readAffordance(active);
+    expect(s.backgroundColor).toBe(s.highlight);
+  });
+
+  // Phase D - @cngx/ui organisms. The dialog re-draws its shadow-lost boundary
+  // with ButtonBorder; the selected tab re-signals via the common tabs-base
+  // Highlight underline (box-shadow ink-bar forced to none); the active step
+  // indicator's background tint would collapse to Canvas, so it fills with
+  // Highlight (the indicator span is not a form control, so the fill paints).
+
+  test('open dialog re-draws a ButtonBorder boundary (box-shadow elevation forced to none)', async ({ page }) => {
+    await openForced(page, '/#/common/dialog/alert-dialog');
+    await page.getByRole('button', { name: 'Show Alert' }).first().click();
+    const dialog = page.locator('dialog[cngxDialog]').first();
+    await expect(dialog).toBeVisible();
+    const s = await readAffordance(dialog);
+    expect(parseFloat(s.borderTopWidth)).toBeGreaterThan(0);
+    expect(s.borderTopStyle).toBe('solid');
+    expect(isOpaque(s.borderTopColor)).toBe(true);
+  });
+
+  test('selected tab re-signals with a Highlight underline (base ink-bar box-shadow forced to none)', async ({ page }) => {
+    await openForced(page, '/#/ui/tabs/tab-layout/fitted-and-tab-alignment');
+    const tab = page.locator('.cngx-ex-artifact .cngx-tabs__tab[aria-selected="true"]').first();
+    await expect(tab).toBeVisible();
+    const s = await readAffordance(tab);
+    expect(parseFloat(s.borderBottomWidth)).toBeGreaterThan(0);
+    expect(s.borderBottomColor).toBe(s.highlight);
+  });
+
+  test('active step indicator fills with Highlight (background tint would collapse to Canvas)', async ({ page }) => {
+    await openForced(page, '/#/ui/stepper/stepper-footer/back-continue');
+    const indicator = page
+      .locator('.cngx-ex-artifact .cngx-stepper__step[aria-current="step"] .cngx-stepper__indicator')
+      .first();
+    await expect(indicator).toBeVisible();
+    const s = await readAffordance(indicator);
     expect(s.backgroundColor).toBe(s.highlight);
   });
 });
