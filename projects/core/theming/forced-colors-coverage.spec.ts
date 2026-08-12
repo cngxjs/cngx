@@ -113,6 +113,10 @@ const FORCED_COLORS_HARDENED_HOSTS: readonly string[] = [
   // @cngx/ui/breadcrumb (Phase D) - the current-page item signals with a
   // borderless background tint (+ pill shadow); re-signalled with Highlight.
   'projects/ui/breadcrumb/breadcrumb-bar.component.css',
+  // @cngx/ui/sidenav (Phase D) - the active nav link signals with a background
+  // tint + weight only (rail edge + focus outline self-heal); re-signalled with
+  // Highlight. The expanded-rail box-shadow is decorative over the edge border.
+  'projects/ui/sidenav/sidenav.css',
 ];
 
 // Files the box-shadow scan flags but that legitimately do NOT need a
@@ -213,7 +217,7 @@ describe('forced-colors hardened-hosts manifest', () => {
   });
 
   it('fixes the manifest size so a bulk edit dropping several hosts is caught', () => {
-    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(21);
+    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(22);
   });
 });
 
