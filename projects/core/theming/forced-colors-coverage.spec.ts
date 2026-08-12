@@ -110,6 +110,9 @@ const FORCED_COLORS_HARDENED_HOSTS: readonly string[] = [
   // @cngx/ui/stepper (Phase D) - the errored step's inset box-shadow ring and
   // the active step's fill/ring signal; re-drawn with outline + Highlight.
   'projects/ui/stepper/stepper.component.css',
+  // @cngx/ui/breadcrumb (Phase D) - the current-page item signals with a
+  // borderless background tint (+ pill shadow); re-signalled with Highlight.
+  'projects/ui/breadcrumb/breadcrumb-bar.component.css',
 ];
 
 // Files the box-shadow scan flags but that legitimately do NOT need a
@@ -210,7 +213,7 @@ describe('forced-colors hardened-hosts manifest', () => {
   });
 
   it('fixes the manifest size so a bulk edit dropping several hosts is caught', () => {
-    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(20);
+    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(21);
   });
 });
 
