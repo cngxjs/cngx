@@ -100,10 +100,11 @@ export function withContrast(value: CngxContrastPreference): CngxA11yPrefFeature
  * value overrides an axis only when it is a known-valid member of that
  * axis' union; an unknown, invalid, or missing value leaves the axis at
  * its own default, so a motion/contrast `auto` stays OS-driven and is
- * never clobbered. The write-back skips the initial value, so only an
- * actual change (a user pick, or a valid rehydrate) is stored: an
- * untouched default is never written. The whole feature is browser-guarded
- * via `DOCUMENT.defaultView` and is a no-op on the server.
+ * never clobbered. The write-back skips the initial flush, so an untouched
+ * default is never written and a rehydrated value is not re-written (it is
+ * already in storage); only a later change (a user pick) is persisted. The
+ * whole feature is browser-guarded via `DOCUMENT.defaultView` and is a
+ * no-op on the server.
  *
  * ```ts
  * bootstrapApplication(AppComponent, {
