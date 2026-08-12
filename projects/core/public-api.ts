@@ -38,3 +38,12 @@ export {
   injectContrast,
 } from './theming/contrast';
 export { CngxContrast } from './theming/cngx-contrast.directive';
+export {
+  type CngxA11yPrefFeature,
+  provideAccessibilityPreferences,
+  withDensity,
+  withTextScale,
+  withMotion,
+  withContrast,
+  injectA11yPreferences,
+} from './theming/a11y-preferences';
