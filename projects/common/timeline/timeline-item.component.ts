@@ -166,6 +166,11 @@ const FOCUSABLE =
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/timeline/timeline-item.component.ts
  * @relatedTo CngxTimelineMarker, CngxTimelineConnector, CNGX_TIMELINE_CONFIG
+ * <example-url>http://localhost:4200/#/ui/timeline/basics/standalone-atoms</example-url>
+ * <example-url>http://localhost:4200/#/ui/timeline/basics/custom-date-header-and-marker</example-url>
+ * <example-url>http://localhost:4200/#/ui/timeline/basics/marker-precedence</example-url>
+ * <example-url>http://localhost:4200/#/ui/timeline/layout/media-markers</example-url>
+ * <example-url>http://localhost:4200/#/ui/timeline/layout/placement-end</example-url>
  * @since 0.1.0
  */
 @Component({

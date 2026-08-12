@@ -166,6 +166,18 @@ export type CngxTimelineOrientation = 'vertical' | 'horizontal';
  * @slot cngxTimelineError Rendered when the load fails; gets the error and a retry callback.
  * @slot cngxTimelineRetryButton Replaces the retry control on the error surface.
  * @slot cngxTimelineLoadingTail Rendered below the rows while more history streams in.
+ * <example-url>http://localhost:4200/#/ui/timeline/basics/flat-array</example-url>
+ * <example-url>http://localhost:4200/#/ui/timeline/basics/group-by-week</example-url>
+ * <example-url>http://localhost:4200/#/ui/timeline/basics/direction</example-url>
+ * <example-url>http://localhost:4200/#/ui/timeline/basics/ungrouped</example-url>
+ * <example-url>http://localhost:4200/#/ui/timeline/layout/horizontal</example-url>
+ * <example-url>http://localhost:4200/#/ui/timeline/layout/alternating-infographic</example-url>
+ * <example-url>http://localhost:4200/#/ui/timeline/layout/opposite-time</example-url>
+ * <example-url>http://localhost:4200/#/ui/timeline/integration/data-source</example-url>
+ * <example-url>http://localhost:4200/#/ui/timeline/integration/scroll-spy-nav</example-url>
+ * <example-url>http://localhost:4200/#/ui/timeline/async/error-retry</example-url>
+ * <example-url>http://localhost:4200/#/ui/timeline/async/refreshing-tail</example-url>
+ * <example-url>http://localhost:4200/#/ui/timeline/skins/activity-vs-narrative</example-url>
  * @since 0.1.0
  */
 @Component({
