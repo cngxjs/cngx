@@ -59,6 +59,7 @@ const TONE_GLYPH: Record<StatusTone, string> = {
  * @relatedTo CngxBadge, CngxTag, CngxChip
  *
  * <example-url>http://localhost:4200/#/common/display/status/tone-matrix</example-url>
+ * <example-url>http://localhost:4200/#/common/display/status/dot-only</example-url>
  */
 @Component({
   selector: 'cngx-status',
