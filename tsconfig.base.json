@@ -67,6 +67,7 @@
       "@cngx/ui/stat-card": ["projects/ui/stat-card/public-api.ts"],
       "@cngx/ui/chart-panel": ["projects/ui/chart-panel/public-api.ts"],
       "@cngx/ui/timeline": ["projects/ui/timeline/public-api.ts"],
+      "@cngx/ui/a11y": ["projects/ui/a11y/public-api.ts"],
       "@cngx/utils": ["projects/utils/public-api.ts"],
       "@cngx/utils/rxjs-interop": ["projects/utils/rxjs-interop/public-api.ts"],
       "@cngx/data-display": ["projects/data-display/public-api.ts"],

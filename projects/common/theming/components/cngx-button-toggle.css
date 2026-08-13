@@ -11,7 +11,10 @@
  *
  * - `--checked` - primary fill, on-primary text, primary border
  * - `--disabled` - opacity 0.5, `cursor: not-allowed`
- * - `:hover:not(--disabled)` - 8% primary tint over the surface
+ * - `:hover:not(--disabled):not(--checked)` - 8% primary tint over the surface
+ * - `--checked:hover:not(--disabled)` - primary fill darkened for feedback,
+ *   keeping the on-primary text contrast (an unguarded plain hover would drop
+ *   a checked segment to the pale tint under near-white text)
  *
  * **Segmented-control geometry**
  *
@@ -91,7 +94,13 @@
       border-end-end-radius: var(--cngx-radius-md, 0.375rem);
     }
 
-    :scope:hover:not(.cngx-button-toggle--disabled) {
+    /* Hover on an UNCHECKED segment: 8% primary tint over the surface. The
+     * `:not(--checked)` guard is load-bearing - this rule sets only the
+     * background, and it out-specifies the checked rule below (0,3,0 vs 0,2,0),
+     * so without the guard a hovered checked segment would drop to the pale
+     * tint while keeping its on-primary (near-white) text: white-on-pale, an
+     * invisible label. Checked hover is handled by its own rule. */
+    :scope:hover:not(.cngx-button-toggle--disabled):not(.cngx-button-toggle--checked) {
       background: color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 8%, var(--cngx-color-surface, oklch(1 0 0)));
     }
 
@@ -99,6 +108,15 @@
       background: var(--cngx-color-primary, oklch(0.66 0.19 50));
       color: var(--cngx-color-on-primary, oklch(0.99 0.01 250));
       border-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+    }
+
+    /* Hover on a CHECKED segment: keep the primary fill (so the on-primary text
+     * stays legible) and darken it a touch for feedback. Darkening toward black
+     * only deepens the fill, so the on-primary text contrast is preserved in
+     * light and dark. */
+    :scope.cngx-button-toggle--checked:hover:not(.cngx-button-toggle--disabled) {
+      background: color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 88%, black);
+      border-color: color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 88%, black);
     }
 
     :scope.cngx-button-toggle--disabled {
