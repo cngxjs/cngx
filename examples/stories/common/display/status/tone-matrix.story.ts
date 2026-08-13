@@ -11,7 +11,7 @@ export const STORY: DemoSpec = {
   artifact: 'standalone',
   focus: ['visual-variants', 'a11y-pattern'],
   apiComponents: ['CngxStatus'],
-  moduleImports: ["import { CngxStatus } from '@cngx/common/data';"],
+  moduleImports: ["import { CngxStatus } from '@cngx/common/display';"],
   imports: ['CngxStatus'],
   template: `<div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start">
     <cngx-status tone="success" label="Operational" />
