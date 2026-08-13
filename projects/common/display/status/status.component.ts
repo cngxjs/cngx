@@ -43,14 +43,14 @@ const TONE_GLYPH: Record<StatusTone, string> = {
  * <cngx-status tone="danger" label="Outage" live="assertive" />
  * ```
  *
- * @category common/data/metric
+ * @category common/display
  * @docsKind primary
  * @wcag AA
- * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/display/status/status.component.ts
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/status/status.component.ts
  * @since 0.1.0
  * @relatedTo CngxBadge, CngxTag, CngxChip
  *
- * <example-url>http://localhost:4200/#/common/data/status/tone-matrix</example-url>
+ * <example-url>http://localhost:4200/#/common/display/status/tone-matrix</example-url>
  */
 @Component({
   selector: 'cngx-status',
