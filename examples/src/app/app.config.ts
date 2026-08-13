@@ -1,6 +1,6 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideRouter, TitleStrategy, withHashLocation } from '@angular/router';
-import { provideContrast, provideMotion, provideTextScale } from '@cngx/core';
+import { provideContrast, provideDensity, provideMotion, provideTextScale } from '@cngx/core';
 import { provideDialog } from '@cngx/common/dialog';
 import {
   provideFormField,
@@ -36,6 +36,10 @@ function initialTextScale(): 'sm' | 'md' | 'lg' {
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
+    // Install the density reflector at app root so the accessibility-panel demo's
+    // injectDensity().set(...) reflects onto <html data-density>. The other three
+    // axes are already installed below; density completes the set the panel binds.
+    provideDensity(),
     // Install the text-scale reflector at app root so the text-scale demo's
     // injectTextScale().set(...) reflects onto <html data-text-size> and
     // re-scales the whole rem type ramp globally. Seeded from the persisted
