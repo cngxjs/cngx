@@ -102,10 +102,11 @@ export class CngxA11yPanel {
   // returns object literals with nested arrow functions, hanging docs:json.
   private buildAxisViews(): readonly CngxA11yPanelAxisView[] {
     return this.config.axes.map((spec) => {
-      // The config guarantees every option value is a valid member of this
-      // axis' union, so erasing the invariant signal type to `string` at this
-      // single boundary is honest: reads widen safely, writes only ever receive
-      // a configured (valid) option value or the axis' own `reset` default.
+      // `CngxA11yPanelAxisSpec` is a discriminated union whose options/reset are
+      // typed to each axis' value union, so every value reaching this write is
+      // compile-checked valid. Erasing the invariant signal type to `string`
+      // here is then safe-by-construction - the union just can't be narrowed
+      // through a runtime `spec.axis` index without duplicating the map per axis.
       const sig = this.prefs[spec.axis] as unknown as WritableSignal<string>;
       return {
         axis: spec.axis,

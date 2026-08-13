@@ -8,6 +8,7 @@ export {
   CNGX_A11Y_PANEL_CONFIG,
   CNGX_A11Y_PANEL_DEFAULTS,
   provideA11yPanelConfig,
+  provideA11yPanelConfigAt,
   withA11yPanelLabels,
   withA11yPanelAxes,
   injectA11yPanelConfig,

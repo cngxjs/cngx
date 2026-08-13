@@ -1,11 +1,14 @@
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
+import { Component } from '@angular/core';
+
 import {
   CNGX_A11Y_PANEL_CONFIG,
   CNGX_A11Y_PANEL_DEFAULTS,
   injectA11yPanelConfig,
   provideA11yPanelConfig,
+  provideA11yPanelConfigAt,
   withA11yPanelAxes,
   withA11yPanelLabels,
 } from './a11y-panel.config';
@@ -75,5 +78,27 @@ describe('a11y-panel config cascade', () => {
     const cfg = TestBed.inject(CNGX_A11Y_PANEL_CONFIG);
 
     expect(cfg).toBe(CNGX_A11Y_PANEL_DEFAULTS);
+  });
+
+  it('merges provideA11yPanelConfigAt on top of the root config at component scope', () => {
+    @Component({
+      template: '',
+      viewProviders: [provideA11yPanelConfigAt(withA11yPanelLabels({ reset: 'Scoped reset' }))],
+    })
+    class ScopedHost {
+      readonly cfg = injectA11yPanelConfig();
+    }
+
+    TestBed.configureTestingModule({
+      providers: [provideA11yPanelConfig(withA11yPanelLabels({ heading: 'Root heading' }))],
+    });
+    const { cfg } = TestBed.createComponent(ScopedHost).componentInstance;
+
+    // Component-scope override wins for `reset`...
+    expect(cfg.labels.reset).toBe('Scoped reset');
+    // ...while the root-provided `heading` still cascades through the parent merge.
+    expect(cfg.labels.heading).toBe('Root heading');
+    // Untouched keys fall back to the library default.
+    expect(cfg.labels.axes.density).toBe('Spacing');
   });
 });
