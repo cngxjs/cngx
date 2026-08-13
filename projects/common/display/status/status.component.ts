@@ -1,5 +1,6 @@
 import {
   afterNextRender,
+  booleanAttribute,
   ChangeDetectionStrategy,
   Component,
   computed,
@@ -103,7 +104,7 @@ export class CngxStatus {
    * (GitHub-style) - sound only when a visible `label` carries the meaning,
    * since colour alone fails a sighted colour-blind reader (Pillar 2).
    */
-  readonly glyph = input<boolean>(true);
+  readonly glyph = input(true, { transform: booleanAttribute });
 
   /** @internal Tone glyph char bound into the decorative dot. */
   protected readonly glyphChar = computed(() => TONE_GLYPH[this.tone()]);

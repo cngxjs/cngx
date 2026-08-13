@@ -14,6 +14,15 @@ class TestHost {
   glyph = signal<boolean>(true);
 }
 
+@Component({
+  template: `
+    <cngx-status tone="success" label="Bare" glyph />
+    <cngx-status tone="success" label="String-false" glyph="false" />
+  `,
+  imports: [CngxStatus],
+})
+class AttrHost {}
+
 describe('CngxStatus', () => {
   beforeEach(() => TestBed.configureTestingModule({ imports: [TestHost] }));
   afterEach(() => vi.restoreAllMocks());
@@ -57,6 +66,14 @@ describe('CngxStatus', () => {
     expect(dot.textContent!.trim()).toBe('');
     expect(el.classList.contains('cngx-status--success')).toBe(true);
     expect(dot.getAttribute('aria-hidden')).toBe('true');
+  });
+
+  it('coerces the glyph attribute via booleanAttribute (bare shows, "false" hides)', () => {
+    const fixture = TestBed.createComponent(AttrHost);
+    fixture.detectChanges();
+    const dots = fixture.nativeElement.querySelectorAll('.cngx-status__dot');
+    expect(dots[0].textContent!.trim()).toBe('✓');
+    expect(dots[1].textContent!.trim()).toBe('');
   });
 
   it('warns in dev mode when the glyph is hidden and no visible label is set', async () => {
