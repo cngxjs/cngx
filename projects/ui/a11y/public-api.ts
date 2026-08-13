@@ -2,6 +2,8 @@
  * @module @cngx/ui/a11y
  */
 
+export { CngxA11yPanel } from './a11y-panel.component';
+
 export {
   CNGX_A11Y_PANEL_CONFIG,
   CNGX_A11Y_PANEL_DEFAULTS,
