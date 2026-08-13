@@ -12,6 +12,7 @@
   --cngx-a11y-panel-gap: var(--cngx-space-md, 1rem);
   --cngx-a11y-panel-axis-gap: var(--cngx-space-sm, 0.5rem);
   --cngx-a11y-panel-reset-pad-x: var(--cngx-space-md, 1rem);
+  --cngx-a11y-panel-reset-pad-y: var(--cngx-space-sm, 0.5rem);
 }
 
 .cngx-a11y-panel__heading {
@@ -50,6 +51,7 @@
  */
 .cngx-a11y-panel__reset {
   min-block-size: var(--cngx-target-min, 0px);
+  padding-block: var(--cngx-a11y-panel-reset-pad-y, 0.5rem);
   padding-inline: var(--cngx-a11y-panel-reset-pad-x, 1rem);
   cursor: pointer;
   color: var(--cngx-a11y-panel-reset-color, inherit);

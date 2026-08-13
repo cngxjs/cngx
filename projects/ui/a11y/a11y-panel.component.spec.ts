@@ -122,7 +122,7 @@ describe('CngxA11yPanel', () => {
     // tracking claim is verified the way the touch-target guard reads CSS
     // source: each spacing token must be assigned from var(--cngx-space-*).
     const css = readFileSync(resolve(__dirname, 'a11y-panel.component.css'), 'utf-8');
-    for (const token of ['gap', 'axis-gap', 'reset-pad-x']) {
+    for (const token of ['gap', 'axis-gap', 'reset-pad-x', 'reset-pad-y']) {
       expect(css).toContain(`--cngx-a11y-panel-${token}: var(--cngx-space-`);
     }
   });
