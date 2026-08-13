@@ -85,11 +85,12 @@ export interface CngxA11yPanelConfig {
 }
 
 /**
- * Partial text override accepted by {@link withA11yPanelLabels}. The `axes`
+ * Partial text override accepted by `withA11yPanelLabels`. The `axes`
  * record merges key-by-key, so a consumer can relabel one axis group without
  * restating the rest.
  *
  * @category ui/a11y
+ * @relatedTo withA11yPanelLabels
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/a11y/a11y-panel.config.ts
  * @since 0.1.0
  */

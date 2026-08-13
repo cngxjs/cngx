@@ -63,7 +63,7 @@ interface CngxA11yPanelAxisView {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/a11y/a11y-panel.component.ts
  * @selector cngx-a11y-panel
  * @since 0.1.0
- * @relatedTo CngxCard, CngxButtonToggleGroup, provideA11yPreferences, provideA11yPanelConfig
+ * @relatedTo CngxCard, CngxButtonToggleGroup, CngxLiveAnnouncer, provideA11yPreferences, provideA11yPanelConfig
  * <example-url>http://localhost:4200/#/ui/a11y/panel/inline</example-url>
  */
 @Component({
