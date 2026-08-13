@@ -1,0 +1,21 @@
+/**
+ * @module @cngx/ui/a11y
+ */
+
+export {
+  CNGX_A11Y_PANEL_CONFIG,
+  CNGX_A11Y_PANEL_DEFAULTS,
+  provideA11yPanelConfig,
+  withA11yPanelLabels,
+  withA11yPanelAxes,
+  injectA11yPanelConfig,
+} from './a11y-panel.config';
+export type {
+  CngxA11yPanelConfig,
+  CngxA11yPanelAxis,
+  CngxA11yPanelAxisSpec,
+  CngxA11yPanelAxisOption,
+  CngxA11yPanelLabels,
+  CngxA11yPanelLabelsOverride,
+  CngxA11yPanelConfigFeature,
+} from './a11y-panel.config';

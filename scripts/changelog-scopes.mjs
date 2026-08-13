@@ -62,6 +62,7 @@ export const LIBRARY_SCOPES = [
   'ui/stat-card',
   'ui/chart-panel',
   'ui/timeline',
+  'ui/a11y',
   'themes/material',
 ];
 
