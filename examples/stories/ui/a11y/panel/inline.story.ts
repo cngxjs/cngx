@@ -1,11 +1,11 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxA11yPanel: Inline on a settings page',
+  title: 'CngxA11yPanel: A placeable preferences card',
   subtitle:
-    'The panel is a plain in-flow card. Drop <code>&lt;cngx-a11y-panel /&gt;</code> where it belongs; it ships no trigger and no overlay. Each group is split-bound to the app-wide preference signal, so a pick reflects onto the root <code>&lt;html data-*&gt;</code> attribute live.',
+    'The panel is a plain in-flow card - it ships no trigger and no overlay of its own, so you render <code>&lt;cngx-a11y-panel /&gt;</code> wherever it belongs: inline on a settings page, inside a drawer or dialog, or behind your own popover trigger. Each group is split-bound to the app-wide preference signal, so a pick reflects onto the root <code>&lt;html data-*&gt;</code> attribute live.',
   description:
-    'The four axis groups are CngxButtonToggleGroup radiogroups; the shell is a CngxCard. The panel writes injectA11yPreferences() and nothing else - placement, persistence, and the axis reflectors are the consumer/app concern. This examples app installs all four reflectors at its root, so a pick here re-themes the whole page. Reset restores every axis default and announces through the shared live region.',
+    'Placement is entirely the consumer&apos;s call - the panel owns the axis controls, you own where it appears (the same split as CngxListbox under CngxSelect). The four axis groups are CngxButtonToggleGroup radiogroups; the shell is a CngxCard. The panel writes injectA11yPreferences() and nothing else - persistence and the axis reflectors are the app concern. This examples app installs all four reflectors at its root, so a pick here re-themes the whole page. Reset restores every axis default and announces through the shared live region.',
   level: 'organism',
   audience: ['dev', 'a11y'],
   artifact: 'standalone',

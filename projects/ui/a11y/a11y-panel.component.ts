@@ -65,7 +65,6 @@ interface CngxA11yPanelAxisView {
  * @since 0.1.0
  * @relatedTo CngxCard, CngxButtonToggleGroup, provideA11yPreferences, provideA11yPanelConfig
  * <example-url>http://localhost:4200/#/ui/a11y/panel/inline</example-url>
- * <example-url>http://localhost:4200/#/ui/a11y/panel/in-drawer</example-url>
  */
 @Component({
   selector: 'cngx-a11y-panel',
