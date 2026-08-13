@@ -8,10 +8,7 @@ import {
   type WritableSignal,
 } from '@angular/core';
 import { CngxLiveAnnouncer } from '@cngx/common/a11y';
-import {
-  CngxButtonToggle,
-  CngxButtonToggleGroup,
-} from '@cngx/common/interactive';
+import { CngxButtonToggle, CngxButtonToggleGroup } from '@cngx/common/interactive';
 import { CngxCard, CngxCardBody, CngxCardFooter, CngxCardHeader } from '@cngx/common/card';
 import { injectA11yPreferences } from '@cngx/core';
 import { nextUid } from '@cngx/core/utils';
@@ -99,28 +96,35 @@ export class CngxA11yPanel {
    * is its own one-axis `computed`, so a change to one axis re-renders only its
    * group's bound value, not the whole list.
    */
-  protected readonly axisViews: readonly CngxA11yPanelAxisView[] = this.config.axes.map((spec) => {
-    // The config guarantees every option value is a valid member of this axis'
-    // union, so erasing the invariant signal type to `string` at this single
-    // boundary is honest: reads widen safely, writes only ever receive a
-    // configured (valid) option value or the axis' own `reset` default.
-    const sig = this.prefs[spec.axis] as unknown as WritableSignal<string>;
-    return {
-      axis: spec.axis,
-      label: this.config.labels.axes[spec.axis],
-      labelId: `${this.uid}-${spec.axis}`,
-      options: spec.options,
-      value: computed(() => sig()),
-      commit: (next: string | undefined) => {
-        // `CngxButtonToggleGroup.value` is `model<T | undefined>`; this group
-        // never deselects, so `undefined` is never emitted, but the guard keeps
-        // the non-undefined axis setter type-safe under strictTemplates.
-        if (next !== undefined) {
-          sig.set(next);
-        }
-      },
-    };
-  });
+  protected readonly axisViews: readonly CngxA11yPanelAxisView[] = this.buildAxisViews();
+
+  // Kept as a method, not an inline `.map()` field initializer: compodocx's
+  // property-default serializer catastrophically backtracks on a `.map` that
+  // returns object literals with nested arrow functions, hanging docs:json.
+  private buildAxisViews(): readonly CngxA11yPanelAxisView[] {
+    return this.config.axes.map((spec) => {
+      // The config guarantees every option value is a valid member of this
+      // axis' union, so erasing the invariant signal type to `string` at this
+      // single boundary is honest: reads widen safely, writes only ever receive
+      // a configured (valid) option value or the axis' own `reset` default.
+      const sig = this.prefs[spec.axis] as unknown as WritableSignal<string>;
+      return {
+        axis: spec.axis,
+        label: this.config.labels.axes[spec.axis],
+        labelId: `${this.uid}-${spec.axis}`,
+        options: spec.options,
+        value: computed(() => sig()),
+        commit: (next: string | undefined) => {
+          // `CngxButtonToggleGroup.value` is `model<T | undefined>`; this group
+          // never deselects, so `undefined` is never emitted, but the guard
+          // keeps the non-undefined axis setter type-safe under strictTemplates.
+          if (next !== undefined) {
+            sig.set(next);
+          }
+        },
+      };
+    });
+  }
 
   protected reset(): void {
     for (const spec of this.config.axes) {
