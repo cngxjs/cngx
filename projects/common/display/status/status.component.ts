@@ -43,6 +43,14 @@ const TONE_GLYPH: Record<StatusTone, string> = {
  * <cngx-status tone="danger" label="Outage" live="assertive" />
  * ```
  *
+ * ### Dot-only (bare coloured dot + label)
+ * ```html
+ * <cngx-status tone="success" label="Operational" [glyph]="false" />
+ * ```
+ * `[glyph]="false"` drops the glyph for a GitHub-style coloured dot. Keep a
+ * visible `label`: without the glyph, colour is the dot's only signal, which a
+ * sighted colour-blind reader cannot resolve (a dev-mode warning enforces this).
+ *
  * @category common/display
  * @docsKind primary
  * @wcag AA
@@ -67,7 +75,7 @@ const TONE_GLYPH: Record<StatusTone, string> = {
     '[attr.aria-live]': 'live()',
   },
   template: `
-    <span class="cngx-status__dot" aria-hidden="true">{{ glyph() }}</span>
+    <span class="cngx-status__dot" aria-hidden="true">@if (glyph()) { {{ glyphChar() }} }</span>
     @if (label()) {
       <span class="cngx-status__label">{{ label() }}</span>
     }
@@ -89,8 +97,15 @@ export class CngxStatus {
    */
   readonly live = input<'off' | 'polite' | 'assertive'>('off');
 
-  /** @internal Tone glyph bound into the decorative dot. */
-  protected readonly glyph = computed(() => TONE_GLYPH[this.tone()]);
+  /**
+   * Show the tone glyph inside the dot. `false` renders a bare coloured dot
+   * (GitHub-style) - sound only when a visible `label` carries the meaning,
+   * since colour alone fails a sighted colour-blind reader (Pillar 2).
+   */
+  readonly glyph = input<boolean>(true);
+
+  /** @internal Tone glyph char bound into the decorative dot. */
+  protected readonly glyphChar = computed(() => TONE_GLYPH[this.tone()]);
 
   constructor() {
     if (isDevMode()) {
@@ -101,6 +116,13 @@ export class CngxStatus {
             'cngx-status: no `label` and no external `aria-label`/`aria-labelledby`; ' +
               'the status has no accessible name and reads only as a coloured dot. ' +
               'Set [label] or an aria-label on the host.',
+          );
+        }
+        if (!this.glyph() && !this.label()) {
+          console.warn(
+            'cngx-status: [glyph]="false" with no visible `label`; a bare coloured ' +
+              'dot is colour-only for a sighted colour-blind reader even with an ' +
+              'aria-label. Set [label] or show the glyph.',
           );
         }
       });

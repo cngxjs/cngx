@@ -4,13 +4,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CngxStatus, type StatusTone } from './status.component';
 
 @Component({
-  template: `<cngx-status [tone]="tone()" [label]="label()" [live]="live()" />`,
+  template: `<cngx-status [tone]="tone()" [label]="label()" [live]="live()" [glyph]="glyph()" />`,
   imports: [CngxStatus],
 })
 class TestHost {
   tone = signal<StatusTone>('neutral');
   label = signal<string | undefined>('Operational');
   live = signal<'off' | 'polite' | 'assertive'>('off');
+  glyph = signal<boolean>(true);
 }
 
 describe('CngxStatus', () => {
@@ -45,6 +46,36 @@ describe('CngxStatus', () => {
     const { el } = setup();
     expect(el.querySelector('.cngx-status__label')!.textContent!.trim()).toBe('Operational');
     expect(el.querySelector('.cngx-status__dot')!.getAttribute('aria-hidden')).toBe('true');
+  });
+
+  it('hides the glyph char when [glyph]="false" but keeps the coloured dot', () => {
+    const { fixture, el, host } = setup();
+    host.tone.set('success');
+    host.glyph.set(false);
+    fixture.detectChanges();
+    const dot = el.querySelector('.cngx-status__dot')!;
+    expect(dot.textContent!.trim()).toBe('');
+    expect(el.classList.contains('cngx-status--success')).toBe(true);
+    expect(dot.getAttribute('aria-hidden')).toBe('true');
+  });
+
+  it('warns in dev mode when the glyph is hidden and no visible label is set', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const fixture = TestBed.createComponent(TestHost);
+    fixture.componentInstance.glyph.set(false);
+    fixture.componentInstance.label.set(undefined);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(warn.mock.calls.some((c) => String(c[0]).includes('[glyph]="false"'))).toBe(true);
+  });
+
+  it('does not warn colour-only when the glyph is hidden but a label is present', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const fixture = TestBed.createComponent(TestHost);
+    fixture.componentInstance.glyph.set(false);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(warn).not.toHaveBeenCalled();
   });
 
   it('reflects aria-live from the input', () => {
