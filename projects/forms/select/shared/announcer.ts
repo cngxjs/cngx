@@ -3,8 +3,10 @@ import { inject, Injectable } from '@angular/core';
 import { CngxLiveAnnouncer } from '@cngx/common/a11y';
 
 /**
- * Select-family live-region announcer. One container per politeness per
- * document.
+ * Select-family live-region announcer. Delegates to the shared
+ * {@link CngxLiveAnnouncer}; kept as the select family's injectable
+ * identity (consumed by `createCommitErrorAnnouncer` and `select-core`)
+ * so its `announce(message, politeness)` signature stays stable.
  *
  * @category forms/select
  * @wcag AA
