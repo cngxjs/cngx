@@ -1,10 +1,12 @@
+import type { CngxCommandPaletteLegendEntry } from '../config/command-palette-config';
+
 /**
  * @internal
  * Built-in English strings for the default palette. Never exported from
  * `public-api.ts` - mirrors the select family's `CNGX_SELECT_GLYPHS` precedent,
- * so no strings are inlined in templates before the Phase 3 public config
- * cascade lands. German (or any locale) is consumer-supplied through that
- * cascade, never hard-coded here.
+ * so no strings are inlined in templates before the public config cascade
+ * resolves. German (or any locale) is consumer-supplied through that cascade,
+ * never hard-coded here.
  */
 export interface CngxCommandPaletteDefaults {
   readonly searchPlaceholder: string;
@@ -17,12 +19,6 @@ export interface CngxCommandPaletteDefaults {
   readonly resultCount: (count: number) => string;
   /** Keyboard-legend rows rendered in the footer. */
   readonly footerLegend: readonly CngxCommandPaletteLegendEntry[];
-}
-
-/** @internal One keyboard-legend row: the key glyphs and what they do. */
-export interface CngxCommandPaletteLegendEntry {
-  readonly keys: string;
-  readonly label: string;
 }
 
 /** @internal */

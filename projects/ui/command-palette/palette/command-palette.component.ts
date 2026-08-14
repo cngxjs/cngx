@@ -18,7 +18,7 @@ import type { CommandGroup } from '@cngx/common/command';
 import { CngxDialog } from '@cngx/common/dialog';
 import { parseKeyCombo, type CngxAsyncState } from '@cngx/core/utils';
 
-import { CNGX_COMMAND_PALETTE_DEFAULTS } from '../panel/command-palette-defaults';
+import { injectCommandPaletteConfig } from '../config/command-palette-config';
 import { CngxCommandPanel } from '../panel/command-panel.component';
 import { CngxCommandPanelShell } from '../panel/command-panel-shell.component';
 import { CNGX_COMMAND_PALETTE_HOST, type CngxCommandPaletteHost } from '../panel/panel-host.token';
@@ -69,7 +69,7 @@ import { CNGX_PALETTE_KEYBINDING_FACTORY } from './palette-keybinding';
         <cngx-command-panel [results]="results()" [(scope)]="scope" [debounceMs]="debounceMs()" />
       </cngx-command-panel-shell>
       <footer class="cngx-command-footer">
-        @for (entry of defaults.footerLegend; track entry.label) {
+        @for (entry of config.footerLegend; track entry.label) {
           <span class="cngx-command-legend"><kbd>{{ entry.keys }}</kbd> {{ entry.label }}</span>
         }
       </footer>
@@ -92,7 +92,7 @@ export class CngxCommandPalette implements CngxCommandPaletteHost {
   /** Fired when the user asks to retry a failed result load. */
   readonly retry = output<void>();
 
-  protected readonly defaults = CNGX_COMMAND_PALETTE_DEFAULTS;
+  protected readonly config = injectCommandPaletteConfig();
 
   private readonly dialog = viewChild(CngxDialog);
 

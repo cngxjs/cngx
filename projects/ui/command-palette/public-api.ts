@@ -13,3 +13,15 @@ export {
   type CngxPaletteKeybinding,
   type CngxPaletteKeybindingFactory,
 } from './palette/palette-keybinding';
+export {
+  CNGX_COMMAND_PALETTE_CONFIG,
+  provideCommandPaletteConfig,
+  provideCommandPaletteConfigAt,
+  injectCommandPaletteConfig,
+  withCommandPaletteLabels,
+  withKeyboardLegend,
+  withResultCountFormatter,
+  type CngxCommandPaletteConfig,
+  type CngxCommandPaletteConfigFeature,
+  type CngxCommandPaletteLegendEntry,
+} from './config/command-palette-config';

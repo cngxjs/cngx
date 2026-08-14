@@ -11,7 +11,7 @@ import type { CommandGroup } from '@cngx/common/command';
 import { resolveAsyncView, type AsyncView } from '@cngx/common/data';
 import type { CngxAsyncState } from '@cngx/core/utils';
 
-import { CNGX_COMMAND_PALETTE_DEFAULTS } from './command-palette-defaults';
+import { injectCommandPaletteConfig } from '../config/command-palette-config';
 
 /**
  * @internal
@@ -33,22 +33,22 @@ import { CNGX_COMMAND_PALETTE_DEFAULTS } from './command-palette-defaults';
   template: `
     @switch (view()) {
       @case ('skeleton') {
-        <div class="cngx-command-state" aria-busy="true">{{ defaults.loadingLabel }}</div>
+        <div class="cngx-command-state" aria-busy="true">{{ config.loadingLabel }}</div>
       }
       @case ('empty') {
-        <div class="cngx-command-state cngx-command-state--empty">{{ defaults.emptyLabel }}</div>
+        <div class="cngx-command-state cngx-command-state--empty">{{ config.emptyLabel }}</div>
       }
       @case ('error') {
         <div class="cngx-command-state cngx-command-state--error" role="alert">
-          <span>{{ defaults.errorLabel }}</span>
+          <span>{{ config.errorLabel }}</span>
           <button type="button" class="cngx-command-retry" (click)="retry.emit()">
-            {{ defaults.retryLabel }}
+            {{ config.retryLabel }}
           </button>
         </div>
       }
       @default {
         @if (view() === 'content+error') {
-          <div class="cngx-command-state--error-banner" role="alert">{{ defaults.errorLabel }}</div>
+          <div class="cngx-command-state--error-banner" role="alert">{{ config.errorLabel }}</div>
         }
         <ng-content />
       }
@@ -62,7 +62,7 @@ export class CngxCommandPanelShell {
   /** Fired when the user clicks Retry in the error state. */
   readonly retry = output<void>();
 
-  protected readonly defaults = CNGX_COMMAND_PALETTE_DEFAULTS;
+  protected readonly config = injectCommandPaletteConfig();
 
   /** The resolved view. `content` when no async source is bound. */
   protected readonly view = computed<AsyncView>(() => {

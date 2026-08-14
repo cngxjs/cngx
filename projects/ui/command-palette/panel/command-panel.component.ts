@@ -24,7 +24,7 @@ import { CngxListbox, CngxOption, CngxSearch } from '@cngx/common/interactive';
 import { CngxHighlight } from '@cngx/common/layout';
 import { nextUid, type CngxAsyncState } from '@cngx/core/utils';
 
-import { CNGX_COMMAND_PALETTE_DEFAULTS } from './command-palette-defaults';
+import { injectCommandPaletteConfig } from '../config/command-palette-config';
 import { CNGX_COMMAND_PALETTE_HOST } from './panel-host.token';
 
 /**
@@ -74,8 +74,8 @@ interface RenderGroup {
         [attr.aria-expanded]="true"
         [attr.aria-controls]="listboxId"
         [attr.aria-activedescendant]="lb.ad.activeId()"
-        [attr.aria-label]="defaults.searchPlaceholder"
-        [placeholder]="defaults.searchPlaceholder"
+        [attr.aria-label]="config.searchPlaceholder"
+        [placeholder]="config.searchPlaceholder"
         [debounceMs]="debounceMs()"
         (searchChange)="onTerm($event, lb)"
         (keydown)="onKeydown($event, lb)"
@@ -87,7 +87,7 @@ interface RenderGroup {
       #lb="cngxListbox"
       [id]="listboxId"
       class="cngx-command-panel-listbox"
-      [label]="defaults.listboxLabel"
+      [label]="config.listboxLabel"
       [autoHighlightFirst]="true"
       [externalActivation]="true"
     >
@@ -130,7 +130,7 @@ export class CngxCommandPanel {
   /** Debounce for the search input (proxied to `CngxSearch`). */
   readonly debounceMs = input<number>(150);
 
-  protected readonly defaults = CNGX_COMMAND_PALETTE_DEFAULTS;
+  protected readonly config = injectCommandPaletteConfig();
   protected readonly listboxId = nextUid('cngx-command-listbox');
 
   private readonly commands = injectCommands();
@@ -164,7 +164,7 @@ export class CngxCommandPanel {
   readonly resultCount = computed<number>(() => this.flatItems().length);
 
   protected readonly countMessage = computed<string>(() =>
-    this.defaults.resultCount(this.resultCount()),
+    this.config.resultCount(this.resultCount()),
   );
 
   constructor() {
