@@ -1,13 +1,16 @@
+import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  contentChild,
   DestroyRef,
   effect,
   inject,
   input,
   model,
   output,
+  signal,
   untracked,
   viewChild,
   ViewEncapsulation,
@@ -22,6 +25,14 @@ import { injectCommandPaletteConfig } from '../config/command-palette-config';
 import { CngxCommandPanel } from '../panel/command-panel.component';
 import { CngxCommandPanelShell } from '../panel/command-panel-shell.component';
 import { CNGX_COMMAND_PALETTE_HOST, type CngxCommandPaletteHost } from '../panel/panel-host.token';
+import {
+  CngxCommandGroupHeader,
+  CngxCommandPaletteEmpty,
+  CngxCommandPaletteError,
+  CngxCommandPaletteFooter,
+  CngxCommandPaletteLoading,
+  CngxCommandRow,
+} from '../slots/command-slots';
 import { CNGX_PALETTE_KEYBINDING_FACTORY } from './palette-keybinding';
 
 /**
@@ -55,7 +66,7 @@ import { CNGX_PALETTE_KEYBINDING_FACTORY } from './palette-keybinding';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [CngxDialog, CngxCommandPanelShell, CngxCommandPanel],
+  imports: [CngxDialog, CngxCommandPanelShell, CngxCommandPanel, NgTemplateOutlet],
   providers: [{ provide: CNGX_COMMAND_PALETTE_HOST, useExisting: CngxCommandPalette }],
   styleUrl: './command-palette.component.css',
   template: `
@@ -65,12 +76,30 @@ import { CNGX_PALETTE_KEYBINDING_FACTORY } from './palette-keybinding';
       class="cngx-command-palette"
       [attr.aria-label]="ariaLabel()"
     >
-      <cngx-command-panel-shell [results]="results()" (retry)="retry.emit()">
-        <cngx-command-panel [results]="results()" [(scope)]="scope" [debounceMs]="debounceMs()" />
+      <cngx-command-panel-shell
+        [results]="results()"
+        [term]="term()"
+        [emptyTpl]="emptyTpl()"
+        [loadingTpl]="loadingTpl()"
+        [errorTpl]="errorTpl()"
+        (retry)="retry.emit()"
+      >
+        <cngx-command-panel
+          [results]="results()"
+          [(scope)]="scope"
+          [debounceMs]="debounceMs()"
+          [rowTpl]="rowTpl()"
+          [groupHeaderTpl]="groupHeaderTpl()"
+          (termChange)="term.set($event)"
+        />
       </cngx-command-panel-shell>
       <footer class="cngx-command-footer">
-        @for (entry of config.footerLegend; track entry.label) {
-          <span class="cngx-command-legend"><kbd>{{ entry.keys }}</kbd> {{ entry.label }}</span>
+        @if (footerTpl(); as tpl) {
+          <ng-container [ngTemplateOutlet]="tpl" [ngTemplateOutletContext]="{}" />
+        } @else {
+          @for (entry of config.footerLegend; track entry.label) {
+            <span class="cngx-command-legend"><kbd>{{ entry.keys }}</kbd> {{ entry.label }}</span>
+          }
         }
       </footer>
     </dialog>
@@ -93,6 +122,37 @@ export class CngxCommandPalette implements CngxCommandPaletteHost {
   readonly retry = output<void>();
 
   protected readonly config = injectCommandPaletteConfig();
+
+  /** Mirror of the panel's debounced term, so the empty slot can read it. */
+  protected readonly term = signal('');
+
+  // Instance slot directives (content-projected). contentChild must be a direct
+  // field initializer (AOT NG8110). Each resolves instance > config > null.
+  private readonly rowSlot = contentChild(CngxCommandRow);
+  private readonly groupHeaderSlot = contentChild(CngxCommandGroupHeader);
+  private readonly emptySlot = contentChild(CngxCommandPaletteEmpty);
+  private readonly loadingSlot = contentChild(CngxCommandPaletteLoading);
+  private readonly errorSlot = contentChild(CngxCommandPaletteError);
+  private readonly footerSlot = contentChild(CngxCommandPaletteFooter);
+
+  protected readonly rowTpl = computed(
+    () => this.rowSlot()?.templateRef ?? this.config.templates?.row ?? null,
+  );
+  protected readonly groupHeaderTpl = computed(
+    () => this.groupHeaderSlot()?.templateRef ?? this.config.templates?.groupHeader ?? null,
+  );
+  protected readonly emptyTpl = computed(
+    () => this.emptySlot()?.templateRef ?? this.config.templates?.empty ?? null,
+  );
+  protected readonly loadingTpl = computed(
+    () => this.loadingSlot()?.templateRef ?? this.config.templates?.loading ?? null,
+  );
+  protected readonly errorTpl = computed(
+    () => this.errorSlot()?.templateRef ?? this.config.templates?.error ?? null,
+  );
+  protected readonly footerTpl = computed(
+    () => this.footerSlot()?.templateRef ?? this.config.templates?.footer ?? null,
+  );
 
   private readonly dialog = viewChild(CngxDialog);
 

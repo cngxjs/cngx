@@ -76,7 +76,7 @@ describe('CngxCommandPanel', () => {
 
     const headers = Array.from(
       fixture.nativeElement.querySelectorAll('.cngx-command-group-header'),
-    ).map((el) => (el as HTMLElement).textContent);
+    ).map((el) => (el as HTMLElement).textContent?.trim());
     expect(headers[0]).toBe('Recents');
     expect(labels()).toEqual(expect.arrayContaining(['Recent one', 'Static A']));
   });

@@ -21,7 +21,23 @@ export {
   withCommandPaletteLabels,
   withKeyboardLegend,
   withResultCountFormatter,
+  withCommandPaletteTemplates,
   type CngxCommandPaletteConfig,
   type CngxCommandPaletteConfigFeature,
   type CngxCommandPaletteLegendEntry,
+  type CngxCommandPaletteTemplates,
 } from './config/command-palette-config';
+export {
+  CngxCommandRow,
+  CngxCommandGroupHeader,
+  CngxCommandPaletteEmpty,
+  CngxCommandPaletteLoading,
+  CngxCommandPaletteError,
+  CngxCommandPaletteFooter,
+  type CngxCommandRowContext,
+  type CngxCommandGroupHeaderContext,
+  type CngxCommandPaletteEmptyContext,
+  type CngxCommandPaletteLoadingContext,
+  type CngxCommandPaletteErrorContext,
+  type CngxCommandPaletteFooterContext,
+} from './slots/command-slots';

@@ -9,6 +9,31 @@ import {
 } from '@angular/core';
 
 import { CNGX_COMMAND_PALETTE_DEFAULTS } from '../panel/command-palette-defaults';
+import type {
+  CngxCommandGroupHeaderContext,
+  CngxCommandPaletteEmptyContext,
+  CngxCommandPaletteErrorContext,
+  CngxCommandPaletteFooterContext,
+  CngxCommandPaletteLoadingContext,
+  CngxCommandRowContext,
+} from '../slots/command-slots';
+import type { TemplateRef } from '@angular/core';
+
+/**
+ * Global default template overrides, keyed by slot. Resolution order for any
+ * fragment is instance `*cngxCommand*` slot > this map > the built-in default.
+ *
+ * @category ui/command-palette
+ * @since 0.1.0
+ */
+export interface CngxCommandPaletteTemplates {
+  readonly row?: TemplateRef<CngxCommandRowContext>;
+  readonly groupHeader?: TemplateRef<CngxCommandGroupHeaderContext>;
+  readonly empty?: TemplateRef<CngxCommandPaletteEmptyContext>;
+  readonly loading?: TemplateRef<CngxCommandPaletteLoadingContext>;
+  readonly error?: TemplateRef<CngxCommandPaletteErrorContext>;
+  readonly footer?: TemplateRef<CngxCommandPaletteFooterContext>;
+}
 
 /**
  * One keyboard-legend row in the palette footer: the key glyphs and what they
@@ -48,6 +73,8 @@ export interface CngxCommandPaletteConfig {
   readonly resultCount: (count: number) => string;
   /** Keyboard-legend rows rendered in the footer. */
   readonly footerLegend: readonly CngxCommandPaletteLegendEntry[];
+  /** Global default slot templates (config = strings, slots = structure). */
+  readonly templates?: CngxCommandPaletteTemplates;
 }
 
 /**
@@ -207,4 +234,20 @@ export function withResultCountFormatter(
   formatter: (count: number) => string,
 ): CngxCommandPaletteConfigFeature {
   return defineFeature((config) => ({ ...config, resultCount: formatter }));
+}
+
+/**
+ * Register global default slot templates. Merged over any already set; a
+ * per-instance `*cngxCommand*` slot still wins over these.
+ *
+ * @category ui/command-palette
+ * @since 0.1.0
+ */
+export function withCommandPaletteTemplates(
+  templates: CngxCommandPaletteTemplates,
+): CngxCommandPaletteConfigFeature {
+  return defineFeature((config) => ({
+    ...config,
+    templates: { ...config.templates, ...templates },
+  }));
 }

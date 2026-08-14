@@ -1,3 +1,4 @@
+import { NgTemplateOutlet } from '@angular/common';
 import {
   afterNextRender,
   ChangeDetectionStrategy,
@@ -7,10 +8,12 @@ import {
   inject,
   input,
   model,
+  output,
   signal,
   viewChild,
   ViewEncapsulation,
   type Signal,
+  type TemplateRef,
 } from '@angular/core';
 
 import {
@@ -25,6 +28,10 @@ import { CngxHighlight } from '@cngx/common/layout';
 import { nextUid, type CngxAsyncState } from '@cngx/core/utils';
 
 import { injectCommandPaletteConfig } from '../config/command-palette-config';
+import type {
+  CngxCommandGroupHeaderContext,
+  CngxCommandRowContext,
+} from '../slots/command-slots';
 import { CNGX_COMMAND_PALETTE_HOST } from './panel-host.token';
 
 /**
@@ -57,7 +64,7 @@ interface RenderGroup {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [CngxSearch, CngxListbox, CngxOption, CngxHighlight],
+  imports: [CngxSearch, CngxListbox, CngxOption, CngxHighlight, NgTemplateOutlet],
   styleUrl: './command-panel.component.css',
   template: `
     <div class="cngx-command-panel-input-row">
@@ -94,7 +101,16 @@ interface RenderGroup {
       @for (group of groups(); track group.id) {
         <div role="group" [attr.aria-labelledby]="group.label ? group.id + '-h' : null">
           @if (group.label; as header) {
-            <div class="cngx-command-group-header" [id]="group.id + '-h'">{{ header }}</div>
+            <div class="cngx-command-group-header" [id]="group.id + '-h'">
+              @if (groupHeaderTpl(); as tpl) {
+                <ng-container
+                  [ngTemplateOutlet]="tpl"
+                  [ngTemplateOutletContext]="{ $implicit: toCommandGroup(group) }"
+                />
+              } @else {
+                {{ header }}
+              }
+            </div>
           }
           @for (entry of group.items; track entry.command.id) {
             <div
@@ -105,9 +121,21 @@ interface RenderGroup {
               [disabled]="isDisabled(entry.command)"
               [attr.aria-describedby]="describedBy(entry.command)"
             >
-              <span class="cngx-command-row-label" [cngxHighlight]="term()">{{
-                entry.command.label
-              }}</span>
+              @if (rowTpl(); as tpl) {
+                <ng-container
+                  [ngTemplateOutlet]="tpl"
+                  [ngTemplateOutletContext]="{
+                    $implicit: entry,
+                    term: term(),
+                    data: entry.command.data,
+                    active: lb.ad.activeValue() === entry.command.id,
+                  }"
+                />
+              } @else {
+                <span class="cngx-command-row-label" [cngxHighlight]="term()">{{
+                  entry.command.label
+                }}</span>
+              }
               @if (isDisabled(entry.command) && entry.command.disabledReason; as reason) {
                 <span class="cngx-sr-only" [id]="reasonId(entry.command)">{{ reason }}</span>
               }
@@ -129,6 +157,14 @@ export class CngxCommandPanel {
 
   /** Debounce for the search input (proxied to `CngxSearch`). */
   readonly debounceMs = input<number>(150);
+
+  /** Resolved row slot template (instance > config > null). Built-in default when null. */
+  readonly rowTpl = input<TemplateRef<CngxCommandRowContext> | null>(null);
+  /** Resolved group-header slot template. Built-in default when null. */
+  readonly groupHeaderTpl = input<TemplateRef<CngxCommandGroupHeaderContext> | null>(null);
+
+  /** Emits the debounced term so the surface can mirror it (e.g. for the empty slot). */
+  readonly termChange = output<string>();
 
   protected readonly config = injectCommandPaletteConfig();
   protected readonly listboxId = nextUid('cngx-command-listbox');
@@ -180,9 +216,19 @@ export class CngxCommandPanel {
 
   protected onTerm(term: string, lb: CngxListbox): void {
     this.termState.set(term);
+    this.termChange.emit(term);
     // Reset the highlight so autoHighlightFirst re-fires the top result after a
     // re-rank shrinks the list below the previously active index.
     lb.ad.resetHighlight();
+  }
+
+  /** Maps an internal render group to the public `CommandGroup` slot context. */
+  protected toCommandGroup(group: RenderGroup): CommandGroup {
+    return {
+      id: group.id,
+      label: group.label ?? '',
+      commands: group.items.map((entry) => entry.command),
+    };
   }
 
   protected onKeydown(event: KeyboardEvent, lb: CngxListbox): void {

@@ -1,3 +1,4 @@
+import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -5,6 +6,7 @@ import {
   input,
   output,
   ViewEncapsulation,
+  type TemplateRef,
 } from '@angular/core';
 
 import type { CommandGroup } from '@cngx/common/command';
@@ -12,6 +14,11 @@ import { resolveAsyncView, type AsyncView } from '@cngx/common/data';
 import type { CngxAsyncState } from '@cngx/core/utils';
 
 import { injectCommandPaletteConfig } from '../config/command-palette-config';
+import type {
+  CngxCommandPaletteEmptyContext,
+  CngxCommandPaletteErrorContext,
+  CngxCommandPaletteLoadingContext,
+} from '../slots/command-slots';
 
 /**
  * @internal
@@ -22,29 +29,46 @@ import { injectCommandPaletteConfig } from '../config/command-palette-config';
  * projected panel for `content` / `content+error` / `none`. `content+error`
  * keeps the stale results visible while a re-query on the next keystroke errors.
  *
- * With no `[results]` bound (static registry only) the view is always
- * `content`, so the panel renders unconditionally.
+ * Each state resolves its slot template (instance > config > built-in default),
+ * passed down from the palette. With no `[results]` bound (static registry
+ * only) the view is always `content`, so the panel renders unconditionally.
  */
 @Component({
   selector: 'cngx-command-panel-shell',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
+  imports: [NgTemplateOutlet],
   template: `
     @switch (view()) {
       @case ('skeleton') {
-        <div class="cngx-command-state" aria-busy="true">{{ config.loadingLabel }}</div>
+        @if (loadingTpl(); as tpl) {
+          <ng-container [ngTemplateOutlet]="tpl" [ngTemplateOutletContext]="{}" />
+        } @else {
+          <div class="cngx-command-state" aria-busy="true">{{ config.loadingLabel }}</div>
+        }
       }
       @case ('empty') {
-        <div class="cngx-command-state cngx-command-state--empty">{{ config.emptyLabel }}</div>
+        @if (emptyTpl(); as tpl) {
+          <ng-container [ngTemplateOutlet]="tpl" [ngTemplateOutletContext]="{ term: term() }" />
+        } @else {
+          <div class="cngx-command-state cngx-command-state--empty">{{ config.emptyLabel }}</div>
+        }
       }
       @case ('error') {
-        <div class="cngx-command-state cngx-command-state--error" role="alert">
-          <span>{{ config.errorLabel }}</span>
-          <button type="button" class="cngx-command-retry" (click)="retry.emit()">
-            {{ config.retryLabel }}
-          </button>
-        </div>
+        @if (errorTpl(); as tpl) {
+          <ng-container
+            [ngTemplateOutlet]="tpl"
+            [ngTemplateOutletContext]="{ error: errorValue(), retry: emitRetry }"
+          />
+        } @else {
+          <div class="cngx-command-state cngx-command-state--error" role="alert">
+            <span>{{ config.errorLabel }}</span>
+            <button type="button" class="cngx-command-retry" (click)="retry.emit()">
+              {{ config.retryLabel }}
+            </button>
+          </div>
+        }
       }
       @default {
         @if (view() === 'content+error') {
@@ -59,6 +83,14 @@ export class CngxCommandPanelShell {
   /** Consumer-derived async result state driving the view switch. */
   readonly results = input<CngxAsyncState<CommandGroup[]> | undefined>(undefined);
 
+  /** Current term, mirrored from the panel - the empty slot's context. */
+  readonly term = input<string>('');
+
+  /** Resolved slot templates (instance > config > null). Built-in default when null. */
+  readonly emptyTpl = input<TemplateRef<CngxCommandPaletteEmptyContext> | null>(null);
+  readonly loadingTpl = input<TemplateRef<CngxCommandPaletteLoadingContext> | null>(null);
+  readonly errorTpl = input<TemplateRef<CngxCommandPaletteErrorContext> | null>(null);
+
   /** Fired when the user clicks Retry in the error state. */
   readonly retry = output<void>();
 
@@ -72,4 +104,9 @@ export class CngxCommandPanelShell {
     }
     return resolveAsyncView(state.status(), state.isFirstLoad(), state.isEmpty());
   });
+
+  protected readonly errorValue = computed<unknown>(() => this.results()?.error());
+
+  /** Stable bound callback for the error slot's `retry`. */
+  protected readonly emitRetry = (): void => this.retry.emit();
 }
