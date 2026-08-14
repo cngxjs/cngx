@@ -8,3 +8,13 @@ export {
   injectCommands,
   type CngxCommandSource,
 } from './provide-commands';
+export {
+  createDefaultCommandMatcher,
+  resolveKeybinding,
+  type CngxCommandMatcher,
+  type RankedCommand,
+} from './match';
+export {
+  CNGX_COMMAND_MATCH_FACTORY,
+  type CngxCommandMatchFactory,
+} from './match-strategy.token';
