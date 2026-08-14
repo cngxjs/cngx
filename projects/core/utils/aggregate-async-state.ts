@@ -6,7 +6,7 @@ import { buildAsyncStateView } from './build-async-state-view';
 /**
  * Aggregate N independent `CngxAsyncState`s into one derived `CngxAsyncState`.
  *
- * Pure, keyless, and injection-context-free — it reuses `buildAsyncStateView`
+ * Pure, keyless, and injection-context-free - it reuses `buildAsyncStateView`
  * so every derived flag (`isLoading`, `isSettled`, `hasData`, ...) stays
  * single-source-consistent with every other producer. The result **is** a
  * `CngxAsyncState`, so it flows through `cngx-async-container`, the transition
@@ -23,8 +23,8 @@ import { buildAsyncStateView } from './build-async-state-view';
  * `data` is the per-source `data()` values in input order; each element is
  * `T | undefined` because a source carries no data until it reaches `success`.
  * `error` is the first error in input order (raw, for the single-error bridge
- * path). Emptiness is the aggregate rule — empty only when it has at least one
- * source and every source is itself empty — which the data shape cannot infer
+ * path). Emptiness is the aggregate rule - empty only when it has at least one
+ * source and every source is itself empty - which the data shape cannot infer
  * (an N-element array is never length 0), so it is supplied explicitly.
  *
  * @category core/utils/async-state
