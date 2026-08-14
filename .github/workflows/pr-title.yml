@@ -88,6 +88,7 @@ jobs:
             ui/chart-panel
             ui/timeline
             ui/a11y
+            ui/command-palette
             themes/material
             examples
             examples-gen
