@@ -22,6 +22,7 @@
       "@cngx/common": ["projects/common/public-api.ts"],
       "@cngx/common/a11y": ["projects/common/a11y/public-api.ts"],
       "@cngx/common/audio": ["projects/common/audio/public-api.ts"],
+      "@cngx/common/command": ["projects/common/command/public-api.ts"],
       "@cngx/common/interactive": ["projects/common/interactive/public-api.ts"],
       "@cngx/common/layout": ["projects/common/layout/public-api.ts"],
       "@cngx/common/data": ["projects/common/data/public-api.ts"],

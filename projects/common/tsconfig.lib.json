@@ -27,6 +27,6 @@
       "@cngx/common/timeline": ["projects/common/timeline/public-api.ts"]
     }
   },
-  "include": ["*.ts", "a11y/**/*.ts", "audio/**/*.ts", "interactive/**/*.ts", "layout/**/*.ts", "data/**/*.ts", "dialog/**/*.ts", "popover/**/*.ts", "card/**/*.ts", "chart/**/*.ts", "display/**/*.ts", "stepper/**/*.ts", "tabs/**/*.ts", "timeline/**/*.ts"],
+  "include": ["*.ts", "a11y/**/*.ts", "audio/**/*.ts", "command/**/*.ts", "interactive/**/*.ts", "layout/**/*.ts", "data/**/*.ts", "dialog/**/*.ts", "popover/**/*.ts", "card/**/*.ts", "chart/**/*.ts", "display/**/*.ts", "stepper/**/*.ts", "tabs/**/*.ts", "timeline/**/*.ts"],
   "exclude": ["**/*.spec.ts", "**/examples/**"]
 }

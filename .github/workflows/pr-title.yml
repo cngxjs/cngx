@@ -40,6 +40,7 @@ jobs:
             common
             common/a11y
             common/audio
+            common/command
             common/interactive
             common/display
             common/popover
