@@ -25,6 +25,13 @@ export interface AsyncStateViewSources<T> {
   readonly isFirstLoad?: Signal<boolean>;
   /** Timestamp of the last successful load. */
   readonly lastUpdated?: Signal<Date | undefined>;
+  /**
+   * Whether the state is empty. Defaults to a shape-derived computed that
+   * treats `null`/`undefined` and empty arrays as empty — correct for every
+   * data-carrying producer. Aggregates whose emptiness cannot be read off the
+   * data shape (an N-element array is never length 0) pass their own signal.
+   */
+  readonly isEmpty?: Signal<boolean>;
 }
 
 /** @internal */
@@ -61,16 +68,18 @@ export function buildAsyncStateView<T>(sources: AsyncStateViewSources<T>): CngxA
   const isPending = computed(() => status() === 'pending');
   const isRefreshing = computed(() => status() === 'refreshing');
 
-  const isEmpty = computed(() => {
-    const d = data();
-    if (d == null) {
-      return true;
-    }
-    if (Array.isArray(d)) {
-      return d.length === 0;
-    }
-    return false;
-  });
+  const isEmpty =
+    sources.isEmpty ??
+    computed(() => {
+      const d = data();
+      if (d == null) {
+        return true;
+      }
+      if (Array.isArray(d)) {
+        return d.length === 0;
+      }
+      return false;
+    });
 
   const hasData = computed(() => !isEmpty());
 

@@ -138,6 +138,20 @@ describe('buildAsyncStateView', () => {
       const view = buildAsyncStateView(sources);
       expect(view.isEmpty()).toBe(false);
     });
+
+    it('uses the isEmpty override when provided, ignoring the data shape', () => {
+      const sources = createSources<number[]>();
+      sources.data.set([1, 2, 3]);
+      const override = signal(true);
+      const view = buildAsyncStateView({ ...sources, isEmpty: override });
+
+      expect(view.isEmpty()).toBe(true);
+      expect(view.hasData()).toBe(false);
+
+      override.set(false);
+      expect(view.isEmpty()).toBe(false);
+      expect(view.hasData()).toBe(true);
+    });
   });
 
   describe('isFirstLoad', () => {
