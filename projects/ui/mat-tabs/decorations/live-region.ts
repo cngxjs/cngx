@@ -1,4 +1,3 @@
-import { DOCUMENT } from '@angular/common';
 import {
   type DestroyRef,
   effect,
@@ -9,6 +8,8 @@ import {
   type Signal,
   untracked,
 } from '@angular/core';
+
+import { CngxLiveAnnouncer } from '@cngx/common/a11y';
 
 /**
  * Options for {@link mountLiveRegionAnnouncer}.
@@ -28,19 +29,23 @@ export interface CngxMatTabLiveRegionOptions {
 }
 
 /**
- * Mount a polite ARIA live region under `document.body` and keep
- * its `textContent` in sync with the supplied `announcement`
- * signal. Empty string between transitions so AT readers stay quiet
- * on no-op CD ticks.
+ * Keep the shared {@link CngxLiveAnnouncer} in sync with the supplied
+ * `announcement` signal: an `effect` reads the reactive text and
+ * forwards every non-empty value to the root announcer at the
+ * configured politeness (default `'polite'`). An empty string between
+ * transitions keeps the region quiet on no-op CD ticks.
  *
- * The span lives at body scope (matching the CDK `LiveAnnouncer`
- * placement convention) so Material's MDC tolerance for unexpected
- * children at the `<mat-tab-group>` host root is irrelevant — the
- * live-region never lands inside Material's component DOM. The
- * element's host bindings replicate {@link CngxLiveRegion}
- * imperatively (this attribute directive owns no template, so the
- * declarative `cngxLiveRegion` selector is unreachable).
- * Cleaned up via the supplied `DestroyRef`.
+ * Delegates to {@link CngxLiveAnnouncer} instead of mounting its own
+ * body span, so the announcer owns the persistent polite/assertive
+ * region pair, the clear-then-set re-announce, and teardown. The
+ * delegated region carries `aria-live` + `aria-atomic="true"` and no
+ * explicit `role`; `aria-atomic` re-reads full content and `aria-live`
+ * carries the politeness, so a tab-change status utterance still reads.
+ *
+ * The `effect` is created in `opts.injector`'s context, so it is torn
+ * down with the host directive; the service call is wrapped in
+ * `untracked` — the announcer owns its own clear-then-set timer, so it
+ * stays out of the effect's dependency graph.
  *
  * @internal — package-private helper for `[cngxMatTabs]`. Not
  * exported from `public-api.ts`.
@@ -48,28 +53,16 @@ export interface CngxMatTabLiveRegionOptions {
 export function mountLiveRegionAnnouncer(
   opts: CngxMatTabLiveRegionOptions,
 ): void {
-  const srOnlyClassName = opts.srOnlyClassName ?? 'cngx-sr-only';
   const politeness = opts.politeness ?? 'polite';
-  const role = politeness === 'assertive' ? 'alert' : 'status';
-  const doc = runInInjectionContext(opts.injector, () => inject(DOCUMENT));
-  const liveRegionEl = opts.renderer.createElement('span') as HTMLElement;
-  opts.renderer.addClass(liveRegionEl, srOnlyClassName);
-  opts.renderer.setAttribute(liveRegionEl, 'aria-live', politeness);
-  opts.renderer.setAttribute(liveRegionEl, 'aria-atomic', 'true');
-  opts.renderer.setAttribute(liveRegionEl, 'aria-relevant', 'additions text');
-  opts.renderer.setAttribute(liveRegionEl, 'role', role);
-  opts.renderer.appendChild(doc.body, liveRegionEl);
 
   runInInjectionContext(opts.injector, () => {
+    const announcer = inject(CngxLiveAnnouncer);
     effect(() => {
       const text = opts.announcement();
-      untracked(() => {
-        opts.renderer.setProperty(liveRegionEl, 'textContent', text);
-      });
+      if (!text) {
+        return;
+      }
+      untracked(() => announcer.announce(text, politeness));
     });
-  });
-
-  opts.destroyRef.onDestroy(() => {
-    opts.renderer.removeChild(doc.body, liveRegionEl);
   });
 }
