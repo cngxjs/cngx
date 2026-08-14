@@ -1,0 +1,110 @@
+/*
+ * Command panel body. Structural layout is split from thematic color/surface:
+ * every colour and spacing value is var(--cngx-*, literal). Spacing tokens are
+ * SET from the scale on the palette host (command-palette.component.css), so a
+ * root [data-density] swap cascades here; use-sites read them bare.
+ */
+
+.cngx-command-panel-input-row {
+  display: flex;
+  align-items: center;
+  gap: var(--cngx-command-input-gap, var(--cngx-space-sm, 0.5rem));
+  padding: var(--cngx-command-input-pad, var(--cngx-space-md, 1rem));
+  border-block-end: var(--cngx-command-border-width, 1px) solid
+    var(--cngx-command-border, var(--cngx-color-border, #e5e7eb));
+}
+
+.cngx-command-panel-input {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  font: inherit;
+  color: var(--cngx-command-input-color, inherit);
+  background: transparent;
+  border: 0;
+  outline: none;
+}
+
+.cngx-command-panel-input::placeholder {
+  color: var(--cngx-command-placeholder-color, var(--cngx-color-muted-foreground, #9ca3af));
+}
+
+/* Scope chip - floored to the pointer-derived target minimum (WCAG 2.5.5),
+   inert at 0px on a fine pointer. */
+.cngx-command-scope-chip {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: var(--cngx-target-min, 0px);
+  padding-inline: var(--cngx-command-chip-pad, var(--cngx-space-sm, 0.5rem));
+  border-radius: var(--cngx-command-chip-radius, var(--cngx-radius-sm, 0.25rem));
+  background: var(--cngx-command-chip-bg, var(--cngx-color-muted, #f3f4f6));
+  color: var(--cngx-command-chip-color, inherit);
+  font-size: var(--cngx-command-chip-size, 0.8125rem);
+}
+
+.cngx-command-panel-listbox {
+  display: block;
+  max-block-size: var(--cngx-command-listbox-max-h, 22rem);
+  overflow-y: auto;
+  padding: var(--cngx-command-listbox-pad, var(--cngx-space-xs, 0.25rem));
+}
+
+.cngx-command-group-header {
+  padding-block: var(--cngx-command-header-pad-y, var(--cngx-space-xs, 0.25rem));
+  padding-inline: var(--cngx-command-header-pad-x, var(--cngx-space-sm, 0.5rem));
+  font-size: var(--cngx-command-header-size, 0.75rem);
+  font-weight: var(--cngx-command-header-weight, 600);
+  color: var(--cngx-command-header-color, var(--cngx-color-muted-foreground, #6b7280));
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Command row - a discrete tap target. Floor its hit area to the pointer-
+   derived minimum on the block axis (WCAG 2.5.5); inert at 0px on a fine
+   pointer so [data-density] drives the natural size. */
+.cngx-command-row {
+  display: flex;
+  align-items: center;
+  gap: var(--cngx-command-row-gap, var(--cngx-space-sm, 0.5rem));
+  min-block-size: var(--cngx-target-min, 0px);
+  padding: var(--cngx-command-row-pad, var(--cngx-space-sm, 0.5rem));
+  border-radius: var(--cngx-command-row-radius, var(--cngx-radius-sm, 0.25rem));
+  cursor: pointer;
+  color: var(--cngx-command-row-color, inherit);
+}
+
+.cngx-command-row.cngx-option--highlighted {
+  background: var(--cngx-command-row-active-bg, var(--cngx-color-accent, #eef2ff));
+  color: var(--cngx-command-row-active-color, inherit);
+}
+
+.cngx-command-row.cngx-option--disabled {
+  cursor: not-allowed;
+  opacity: var(--cngx-command-row-disabled-opacity, 0.5);
+}
+
+.cngx-command-row-label mark {
+  background: var(--cngx-command-mark-bg, var(--cngx-color-highlight, #fde68a));
+  color: inherit;
+}
+
+/* Focus ring - contrast >= 3:1 against the surface on both the input and the
+   active row. */
+.cngx-command-panel-input:focus-visible,
+.cngx-command-row:focus-visible {
+  outline: var(--cngx-command-focus-outline, 2px solid var(--cngx-color-focus, #2563eb));
+  outline-offset: var(--cngx-command-focus-offset, 2px);
+}
+
+/* Local duplicate of the layered utility - an unlayered Track-A component
+   stylesheet cannot rely on a layered rule winning against future overrides. */
+.cngx-sr-only {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

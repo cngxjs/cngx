@@ -57,6 +57,7 @@ import { CNGX_PALETTE_KEYBINDING_FACTORY } from './palette-keybinding';
   encapsulation: ViewEncapsulation.None,
   imports: [CngxDialog, CngxCommandPanelShell, CngxCommandPanel],
   providers: [{ provide: CNGX_COMMAND_PALETTE_HOST, useExisting: CngxCommandPalette }],
+  styleUrl: './command-palette.component.css',
   template: `
     <dialog
       cngxDialog

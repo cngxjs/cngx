@@ -58,6 +58,7 @@ interface RenderGroup {
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   imports: [CngxSearch, CngxListbox, CngxOption, CngxHighlight],
+  styleUrl: './command-panel.component.css',
   template: `
     <div class="cngx-command-panel-input-row">
       @if (scope(); as activeScope) {
