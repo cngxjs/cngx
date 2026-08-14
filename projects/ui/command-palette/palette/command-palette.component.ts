@@ -2,9 +2,13 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  DestroyRef,
+  effect,
+  inject,
   input,
   model,
   output,
+  untracked,
   viewChild,
   ViewEncapsulation,
   type Signal,
@@ -12,12 +16,13 @@ import {
 
 import type { CommandGroup } from '@cngx/common/command';
 import { CngxDialog } from '@cngx/common/dialog';
-import type { CngxAsyncState } from '@cngx/core/utils';
+import { parseKeyCombo, type CngxAsyncState } from '@cngx/core/utils';
 
 import { CNGX_COMMAND_PALETTE_DEFAULTS } from '../panel/command-palette-defaults';
 import { CngxCommandPanel } from '../panel/command-panel.component';
 import { CngxCommandPanelShell } from '../panel/command-panel-shell.component';
 import { CNGX_COMMAND_PALETTE_HOST, type CngxCommandPaletteHost } from '../panel/panel-host.token';
+import { CNGX_PALETTE_KEYBINDING_FACTORY } from './palette-keybinding';
 
 /**
  * The opinionated Cmd/Ctrl+K command palette preset. Renders the panel body +
@@ -94,6 +99,20 @@ export class CngxCommandPalette implements CngxCommandPaletteHost {
   readonly isOpen: Signal<boolean> = computed(
     () => (this.dialog()?.lifecycle() ?? 'closed') !== 'closed',
   );
+
+  constructor() {
+    // The swappable factory installs the global open combo (default Cmd/Ctrl+K)
+    // and pulses `triggered`; a guarded effect opens the palette on each pulse
+    // (skipping the initial 0). The listener is torn down with the component.
+    const keybinding = inject(CNGX_PALETTE_KEYBINDING_FACTORY)(parseKeyCombo('mod+k'));
+    effect(() => {
+      const pulses = keybinding.triggered();
+      if (pulses > 0) {
+        untracked(() => this.open());
+      }
+    });
+    inject(DestroyRef).onDestroy(() => keybinding.teardown());
+  }
 
   /** Open the palette. */
   open(): void {

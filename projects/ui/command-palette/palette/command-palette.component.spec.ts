@@ -1,12 +1,18 @@
-import { Component, viewChild } from '@angular/core';
+import { Component, viewChild, type Provider } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { provideCommands, type CngxCommand } from '@cngx/common/command';
+import { parseKeyCombo } from '@cngx/core/utils';
 import { CNGX_FORM_FIELD_CONTROL } from '@cngx/forms/field';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxCommandPalette } from './command-palette.component';
 import { CngxCommandPaletteTrigger } from './command-palette-trigger.directive';
+import {
+  CNGX_PALETTE_KEYBINDING_FACTORY,
+  createPaletteKeybinding,
+  type CngxPaletteKeybindingFactory,
+} from './palette-keybinding';
 
 function cmd(id: string, label: string, extra: Partial<CngxCommand> = {}): CngxCommand {
   return { id, label, run: () => {}, ...extra };
@@ -55,13 +61,19 @@ describe('CngxCommandPalette', () => {
     vi.restoreAllMocks();
   });
 
-  function configure(commands: CngxCommand[] = []): void {
-    TestBed.configureTestingModule({ providers: [provideCommands(commands)] });
+  function configure(commands: CngxCommand[] = [], extraProviders: Provider[] = []): void {
+    TestBed.configureTestingModule({ providers: [provideCommands(commands), ...extraProviders] });
     fixture = TestBed.createComponent(Host);
     fixture.detectChanges();
     TestBed.flushEffects();
     dialogEl = fixture.nativeElement.querySelector('dialog') as HTMLDialogElement;
     stubDialogElement(dialogEl);
+  }
+
+  function optionIds(): string[] {
+    return Array.from(fixture.nativeElement.querySelectorAll('[role="option"]')).map(
+      (el) => (el as HTMLElement).id,
+    );
   }
 
   function openFully(): void {
@@ -82,6 +94,40 @@ describe('CngxCommandPalette', () => {
   it('opens when the trigger is clicked', () => {
     configure();
     (fixture.nativeElement.querySelector('#trigger') as HTMLButtonElement).click();
+    vi.advanceTimersByTime(16);
+    fixture.detectChanges();
+    expect(fixture.componentInstance.palette().isOpen()).toBe(true);
+  });
+
+  it('opens on the Cmd/Ctrl+K global combo', () => {
+    configure();
+    document.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, metaKey: true }),
+    );
+    vi.advanceTimersByTime(16);
+    fixture.detectChanges();
+    expect(fixture.componentInstance.palette().isOpen()).toBe(true);
+  });
+
+  it('moves aria-activedescendant with ArrowDown', () => {
+    configure([cmd('save', 'Save'), cmd('reload', 'Reload')]);
+    openFully();
+    const input = fixture.nativeElement.querySelector('input') as HTMLInputElement;
+    const ids = optionIds();
+    expect(input.getAttribute('aria-activedescendant')).toBe(ids[0]);
+
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(input.getAttribute('aria-activedescendant')).toBe(ids[1]);
+  });
+
+  it('opens via an overridden keybinding factory with zero palette edits', () => {
+    const factory: CngxPaletteKeybindingFactory = () =>
+      createPaletteKeybinding(parseKeyCombo('f2'), false);
+    configure([], [{ provide: CNGX_PALETTE_KEYBINDING_FACTORY, useValue: factory }]);
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'F2' }));
     vi.advanceTimersByTime(16);
     fixture.detectChanges();
     expect(fixture.componentInstance.palette().isOpen()).toBe(true);

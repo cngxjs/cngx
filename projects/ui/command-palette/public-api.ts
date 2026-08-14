@@ -7,3 +7,9 @@ export {
   CNGX_COMMAND_PALETTE_HOST,
   type CngxCommandPaletteHost,
 } from './panel/panel-host.token';
+export {
+  CNGX_PALETTE_KEYBINDING_FACTORY,
+  createPaletteKeybinding,
+  type CngxPaletteKeybinding,
+  type CngxPaletteKeybindingFactory,
+} from './palette/palette-keybinding';
