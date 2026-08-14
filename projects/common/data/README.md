@@ -101,6 +101,8 @@ readonly residents = injectAsyncState(() =>
 
 All return `CngxAsyncState<T>` - the same interface every UI component accepts.
 
+Depending on **several** of these at once? `createAggregateAsyncState(sources)` (from `@cngx/core/utils`) folds N states into one `CngxAsyncState`, and the headless `CngxAsyncBoundary` directive wires the keyed list, exposes a per-source `failures` list, and provides `CNGX_STATEFUL`. See the async-state entry README.
+
 
 
 ## 1. injectAsyncState - Reactive Query

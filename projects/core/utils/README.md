@@ -8,6 +8,7 @@ This entry is the engine room of the cngx feedback and selection layers. You tou
 
 - A standard shape for "value that arrives over time" - load, refresh, commit, error. The `CngxAsyncState<T>` interface is consumed by every cngx surface that displays loading, empty, and error states (skeletons, dialogs, tables, the select panel).
 - A way to react to **status transitions**, not status values, without writing your own previous-state bookkeeping or infinite-loop dance with `effect()`.
+- One derived `CngxAsyncState` from several independent ones - `createAggregateAsyncState(sources)` folds N states into a single one (loading while any loads, errored on the first failure, empty only when all are empty), reusing `buildAsyncStateView` so every flag stays consistent. The headless `CngxAsyncBoundary` in `@cngx/common/data` wires it.
 - A signal-native selection engine for "the user has picked some subset of these things" - with stable signal identity per value so OnPush children do not thrash.
 - The minimal contract that lets descendant feedback bridges (`[cngxToastOn]`, `[cngxBannerOn]`, `[cngxAlertOn]`) discover your component's state without explicit binding.
 - Debounced show / min-dwell timing for any loading surface, so fast operations never flash a placeholder and shown indicators never flicker out - `createVisibilityGate` plus the `CNGX_LOADING_CONFIG` cascade (`provideLoadingConfig`, `withShowDelay`, `withMinDwell`, `withSpinnerVsSkeletonCutoff`).
