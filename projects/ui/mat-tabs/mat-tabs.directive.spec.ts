@@ -1301,7 +1301,7 @@ describe('CngxMatTabs instrumentation directive', () => {
     expect(destroyed).toBe(true);
   });
 
-  test('axis 32: no eager live-region span is mounted — the directive delegates to the shared CngxLiveAnnouncer', async () => {
+  test('axis 32: no eager live-region span is mounted - the directive delegates to the shared CngxLiveAnnouncer', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });

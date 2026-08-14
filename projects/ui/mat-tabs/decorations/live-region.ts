@@ -38,10 +38,10 @@ export interface CngxMatTabLiveRegionOptions {
  *
  * The `effect` is created in `opts.injector`'s context, so it is torn
  * down with the host directive; the service call is wrapped in
- * `untracked` — the announcer owns its own clear-then-set timer, so it
+ * `untracked` - the announcer owns its own clear-then-set timer, so it
  * stays out of the effect's dependency graph.
  *
- * @internal — package-private helper for `[cngxMatTabs]`. Not
+ * @internal - package-private helper for `[cngxMatTabs]`. Not
  * exported from `public-api.ts`.
  */
 export function mountLiveRegionAnnouncer(
