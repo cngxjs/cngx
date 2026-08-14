@@ -1,5 +1,6 @@
-import { DOCUMENT } from '@angular/common';
 import { inject, Injectable, InjectionToken } from '@angular/core';
+
+import { CngxLiveAnnouncer } from '@cngx/common/a11y';
 
 /**
  * Public surface every menu-side consumer talks to. The class
@@ -43,9 +44,7 @@ export type CngxMenuAnnouncerFactory = () => CngxMenuAnnouncerLike;
  */
 @Injectable({ providedIn: 'root' })
 export class CngxMenuAnnouncer implements CngxMenuAnnouncerLike {
-  private readonly doc = inject(DOCUMENT);
-  private politeElement: HTMLElement | null = null;
-  private clearTimer: ReturnType<typeof setTimeout> | null = null;
+  private readonly announcer = inject(CngxLiveAnnouncer);
 
   /**
    * Announce a message via the polite live region. Empty messages are
@@ -56,38 +55,7 @@ export class CngxMenuAnnouncer implements CngxMenuAnnouncerLike {
     if (!message) {
       return;
     }
-    const element = this.ensureRegion();
-    if (!element) {
-      return;
-    }
-    element.textContent = '';
-    if (this.clearTimer) {
-      clearTimeout(this.clearTimer);
-    }
-    this.clearTimer = setTimeout(() => {
-      element.textContent = message;
-      this.clearTimer = null;
-    }, 16);
-  }
-
-  private ensureRegion(): HTMLElement | null {
-    if (this.politeElement) {
-      return this.politeElement;
-    }
-    const body = this.doc.body;
-    if (!body) {
-      return null;
-    }
-    const el = this.doc.createElement('div');
-    el.setAttribute('aria-live', 'polite');
-    el.setAttribute('role', 'status');
-    el.setAttribute('aria-atomic', 'true');
-    el.className = 'cngx-menu-announcer';
-    el.style.cssText =
-      'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0';
-    body.appendChild(el);
-    this.politeElement = el;
-    return el;
+    this.announcer.announce(message, 'polite');
   }
 }
 
