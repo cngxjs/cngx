@@ -7,6 +7,11 @@ export {
   type InjectAsyncStateOptions,
 } from './inject-async-state';
 export { resolveAsyncView, type AsyncView } from './resolve-view';
+export {
+  CngxAsyncBoundary,
+  type AggregateSource,
+  type AggregateFailure,
+} from './async-boundary.directive';
 export { fromResource } from './from-resource';
 export { fromHttpResource } from './from-http-resource';
 export { tapAsyncState, tapAsyncProgress, tapHttpAsyncState } from './operators';
