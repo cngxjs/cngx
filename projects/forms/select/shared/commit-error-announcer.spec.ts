@@ -1,18 +1,15 @@
 import { signal } from '@angular/core';
-import { describe, expect, it, vi } from 'vitest';
+import { TestBed } from '@angular/core/testing';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { CngxLiveAnnouncer } from '@cngx/common/a11y';
 
 import {
   createCommitErrorAnnouncer,
   type CngxCommitErrorAnnouncePolicy,
 } from './commit-error-announcer';
-import type { CngxSelectAnnouncer } from './announcer';
+import { CngxSelectAnnouncer } from './announcer';
 import type { CngxSelectOptionDef } from './option.model';
-
-function makeMockAnnouncer(): CngxSelectAnnouncer {
-  return {
-    announce: vi.fn(),
-  } as unknown as CngxSelectAnnouncer;
-}
 
 function makeMockSoftAnnounce(): (
   opt: CngxSelectOptionDef<unknown> | null,
@@ -23,9 +20,24 @@ function makeMockSoftAnnounce(): (
   return vi.fn();
 }
 
+// Non-generic vi.spyOn call so the spy type is inferred; the explicit
+// vi.spyOn<T, K> generic form trips vitest's overload constraint here.
+function makeLiveSpy(): ReturnType<typeof vi.fn> {
+  return vi.spyOn(TestBed.inject(CngxLiveAnnouncer), 'announce').mockImplementation(() => {});
+}
+
 describe('createCommitErrorAnnouncer', () => {
-  it("verbose policy pushes the formatted error into the announcer's live region", () => {
-    const announcer = makeMockAnnouncer();
+  // A real CngxSelectAnnouncer so the verbose path is asserted end-to-end
+  // through the delegation to CngxLiveAnnouncer, not against a stubbed method.
+  let announcer: CngxSelectAnnouncer;
+  let live: ReturnType<typeof makeLiveSpy>;
+
+  beforeEach(() => {
+    announcer = TestBed.inject(CngxSelectAnnouncer);
+    live = makeLiveSpy();
+  });
+
+  it("verbose policy forwards the formatted error assertively to the live region", () => {
     const softAnnounce = makeMockSoftAnnounce();
     const callback = createCommitErrorAnnouncer({
       deps: {
@@ -39,15 +51,11 @@ describe('createCommitErrorAnnouncer', () => {
       }),
     });
     callback(new Error('boom'));
-    expect(announcer.announce).toHaveBeenCalledExactlyOnceWith(
-      'Commit failed: Error: boom',
-      'assertive',
-    );
+    expect(live).toHaveBeenCalledExactlyOnceWith('Commit failed: Error: boom', 'assertive');
     expect(softAnnounce).not.toHaveBeenCalled();
   });
 
   it('verbose with polite severity forwards the polite flag', () => {
-    const announcer = makeMockAnnouncer();
     const softAnnounce = makeMockSoftAnnounce();
     const callback = createCommitErrorAnnouncer({
       deps: { announcer, commitErrorMessage: () => 'x', softAnnounce },
@@ -57,11 +65,10 @@ describe('createCommitErrorAnnouncer', () => {
       }),
     });
     callback(new Error('x'));
-    expect(announcer.announce).toHaveBeenCalledWith('x', 'polite');
+    expect(live).toHaveBeenCalledWith('x', 'polite');
   });
 
-  it("soft policy delegates to the configured announcer format via softAnnounce('removed')", () => {
-    const announcer = makeMockAnnouncer();
+  it("soft policy delegates via softAnnounce and never touches the live region", () => {
     const softAnnounce = makeMockSoftAnnounce();
     const callback = createCommitErrorAnnouncer({
       deps: { announcer, commitErrorMessage: () => 'should-not-appear', softAnnounce },
@@ -69,11 +76,10 @@ describe('createCommitErrorAnnouncer', () => {
     });
     callback(new Error('boom'));
     expect(softAnnounce).toHaveBeenCalledExactlyOnceWith(null, 'removed', 0, false);
-    expect(announcer.announce).not.toHaveBeenCalled();
+    expect(live).not.toHaveBeenCalled();
   });
 
   it('policy signal change flips strategy between calls without rebuilding the callback', () => {
-    const announcer = makeMockAnnouncer();
     const softAnnounce = makeMockSoftAnnounce();
     const policy = signal<CngxCommitErrorAnnouncePolicy>({
       kind: 'verbose',
@@ -84,12 +90,12 @@ describe('createCommitErrorAnnouncer', () => {
       policy,
     });
     callback(new Error('first'));
-    expect(announcer.announce).toHaveBeenCalledTimes(1);
+    expect(live).toHaveBeenCalledTimes(1);
     expect(softAnnounce).toHaveBeenCalledTimes(0);
 
     policy.set({ kind: 'soft' });
     callback(new Error('second'));
-    expect(announcer.announce).toHaveBeenCalledTimes(1);
+    expect(live).toHaveBeenCalledTimes(1);
     expect(softAnnounce).toHaveBeenCalledTimes(1);
   });
 });
