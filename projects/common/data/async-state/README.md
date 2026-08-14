@@ -15,11 +15,17 @@ import {
   tapAsyncProgress,
   tapHttpAsyncState,
   resolveAsyncView,
+  CngxAsyncBoundary,
   type ManualAsyncState,
   type MutableAsyncState,
   type ReactiveAsyncState,
   type CngxAsyncState,
+  type AggregateSource,
+  type AggregateFailure,
 } from '@cngx/common/data';
+
+// The keyless aggregation kernel lives one layer down:
+import { createAggregateAsyncState } from '@cngx/core/utils';
 ```
 
 ## Core Concepts
@@ -230,6 +236,37 @@ const view = resolveAsyncView(
 // view === 'error' → show error
 // view === 'content+error' → show data with error bar overlay
 ```
+
+## Aggregating Multiple States
+
+A screen that depends on several independent async sources at once (user + permissions + feature flags, or several parallel resources behind one panel) aggregates them into **one** `CngxAsyncState` instead of hand-rolling nested `@if` blocks.
+
+### `createAggregateAsyncState<T>(sources): CngxAsyncState<readonly (T | undefined)[]>`
+
+Pure, keyless factory from `@cngx/core/utils`. Derives one state from N: loading while any loads, errored on the first failure, empty only when all are empty, success only when all succeed. It reuses `buildAsyncStateView`, so every derived flag stays single-source-consistent - a consumer cannot tell an aggregate from a leaf state. Combined `status` priority: `error` > `loading`/`pending` > `refreshing` > all-`success` > `idle`.
+
+### `CngxAsyncBoundary` (`[cngxAsyncBoundary]`)
+
+Headless directive that takes a keyed source list, builds the aggregate, and provides `CNGX_STATEFUL`. It exposes `state` (the aggregate) and `failures` (the errored sources, keyed for attribution). Because the aggregate is a `CngxAsyncState`, `cngx-async-container` renders it unchanged, and nested transition bridges fire on the combined status with no `[state]` wiring.
+
+```typescript
+type AggregateSource<T = unknown> = { key: string; label?: string; state: CngxAsyncState<T> };
+type AggregateFailure = { key: string; label?: string; error: unknown };
+```
+
+```html
+<div [cngxAsyncBoundary]="sources()" #b="cngxAsyncBoundary" cngxToastOn [toastError]="'Bootstrap failed'">
+  <cngx-async-container [state]="b.state">
+    <ng-template cngxAsyncContent let-data> ...render the ordered data... </ng-template>
+  </cngx-async-container>
+
+  @for (f of b.failures(); track f.key) {
+    <cngx-alert severity="error" [title]="f.label ?? f.key">{{ f.error }}</cngx-alert>
+  }
+</div>
+```
+
+The aggregate's own `error` stays the first error in input order (the single-error bridge/toast path); `failures()` is the persistent per-source breakdown, rendered by the consumer through any feedback component.
 
 ## CngxAsyncState Interface
 
