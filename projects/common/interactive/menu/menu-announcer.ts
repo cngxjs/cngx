@@ -24,13 +24,13 @@ export interface CngxMenuAnnouncerLike {
 export type CngxMenuAnnouncerFactory = () => CngxMenuAnnouncerLike;
 
 /**
- * Global polite live-region announcer for the menu family. Maintains a
- * single hidden `aria-live="polite"` element per document and announces
- * menu state transitions (submenu open/close, item activation).
+ * Global polite live-region announcer for the menu family. Delegates to
+ * the shared {@link CngxLiveAnnouncer}, announcing menu state transitions
+ * (submenu open/close, item activation) through its polite region.
  *
  * Scoped `providedIn: 'root'` so every menu in the app shares the same
- * region; messages are de-duped via a short clear-then-set cycle so
- * screen readers treat repeated identical messages as fresh events.
+ * region; the announcer clears then re-sets one frame later so screen
+ * readers treat repeated identical messages as fresh events.
  *
  * Default factory output for {@link CNGX_MENU_ANNOUNCER_FACTORY}.
  * Consumers obtain the announcer via the factory token, never by
