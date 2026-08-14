@@ -3,6 +3,8 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { CngxLiveAnnouncer } from '@cngx/common/a11y';
+
 import { CngxMenuItem } from './menu-item.directive';
 import { CngxMenu } from './menu.directive';
 
@@ -114,8 +116,10 @@ describe('CngxMenu', () => {
   });
 
   it('click on disabled item announces itemDisabled to the live region', () => {
-    document.body.querySelectorAll('.cngx-menu-announcer').forEach((el) => el.remove());
+    // The menu announcer now delegates to the shared CngxLiveAnnouncer, which
+    // writes to its polite span[aria-live] one frame later.
     vi.useFakeTimers();
+    const live = TestBed.inject(CngxLiveAnnouncer);
     try {
       const { fixture } = setup();
       const items = fixture.debugElement
@@ -124,11 +128,13 @@ describe('CngxMenu', () => {
       items[2].click();
       TestBed.flushEffects();
       vi.advanceTimersByTime(20);
-      const region = document.querySelector('.cngx-menu-announcer');
+      const region = document.querySelector('span[aria-live="polite"]');
       expect(region?.textContent).toBe('Item disabled');
     } finally {
       vi.useRealTimers();
-      document.body.querySelectorAll('.cngx-menu-announcer').forEach((el) => el.remove());
+      // ngOnDestroy removes the region and clears the cached handle, so the
+      // shared root singleton is not left pointing at a detached node.
+      live.ngOnDestroy();
     }
   });
 

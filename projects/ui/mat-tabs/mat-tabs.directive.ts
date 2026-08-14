@@ -215,9 +215,7 @@ export class CngxMatTabs {
     // bindings imperatively.
     mountLiveRegionAnnouncer({
       announcement: this.rejectionState.liveAnnouncement,
-      renderer: this.renderer,
       injector: this.injector,
-      destroyRef: this.destroyRef,
     });
 
     // Decoration projectors own DOM-mutation state plus `effect()`

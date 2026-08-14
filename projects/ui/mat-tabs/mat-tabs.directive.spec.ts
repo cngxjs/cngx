@@ -9,6 +9,7 @@ import { TestBed } from '@angular/core/testing';
 import { MatTab, MatTabsModule, MatTabGroup } from '@angular/material/tabs';
 import { describe, expect, test, vi } from 'vitest';
 
+import { CngxLiveAnnouncer } from '@cngx/common/a11y';
 import {
   CNGX_DOM_ANCHOR_RETRY_FACTORY,
   CngxTabGroupPresenter,
@@ -1300,42 +1301,31 @@ describe('CngxMatTabs instrumentation directive', () => {
     expect(destroyed).toBe(true);
   });
 
-  test('axis 32: live-region polite span is mounted under document.body with aria-live attributes', async () => {
+  test('axis 32: no eager live-region span is mounted - the directive delegates to the shared CngxLiveAnnouncer', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
     // Snapshot the body-scope live-region count BEFORE setup so the
-    // assertion handles a non-clean DOM (other test fixtures may
-    // leave their own regions; the per-test count delta is what
-    // matters).
+    // assertion handles a non-clean DOM (other test fixtures may leave
+    // their own regions; the per-test count delta is what matters).
     const baselineCount = document.body.querySelectorAll<HTMLElement>(
       ':scope > span[aria-live].cngx-sr-only',
     ).length;
     await setupPlumbing();
+    // liveAnnouncement is empty at rest, so the empty-quiet contract holds:
+    // the directive mounts no span of its own. The shared CngxLiveAnnouncer
+    // creates its region lazily on the first non-empty announcement (axes
+    // 33/34), so there is no fourth competing body region here.
     const liveRegions = document.body.querySelectorAll<HTMLElement>(
       ':scope > span[aria-live].cngx-sr-only',
     );
-    expect(liveRegions.length).toBe(baselineCount + 1);
-    const liveRegion = liveRegions[liveRegions.length - 1];
-    expect(liveRegion.getAttribute('aria-live')).toBe('polite');
-    expect(liveRegion.getAttribute('aria-atomic')).toBe('true');
-    expect(liveRegion.getAttribute('role')).toBe('status');
-    expect(liveRegion.classList.contains('cngx-sr-only')).toBe(true);
-    // Empty between transitions — the live-region stays quiet on
-    // no-op CD ticks so AT readers don't hear an utterance for every
-    // mat-tab-group instantiation. Body-scope placement (CDK
-    // LiveAnnouncer convention) keeps the span outside Material's
-    // <mat-tab-group> subtree so MDC tolerance is irrelevant.
-    expect(liveRegion.textContent).toBe('');
+    expect(liveRegions.length).toBe(baselineCount);
   });
 
   test('axis 33: live-region announces commitInFlight while a pessimistic commit is pending', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
-    const baselineCount = document.body.querySelectorAll<HTMLElement>(
-      ':scope > span[aria-live].cngx-sr-only',
-    ).length;
     const fixture = TestBed.createComponent(CommitHostCmp);
     fixture.detectChanges();
     await fixture.whenStable();
@@ -1343,26 +1333,30 @@ describe('CngxMatTabs instrumentation directive', () => {
       (el) => el.componentInstance instanceof MatTabGroup,
     );
     const presenter = matEl.injector.get(CngxTabGroupPresenter);
-    const liveRegions = document.body.querySelectorAll<HTMLElement>(
-      ':scope > span[aria-live].cngx-sr-only',
-    );
-    expect(liveRegions.length).toBe(baselineCount + 1);
-    const liveRegion = liveRegions[liveRegions.length - 1];
 
     presenter.select(2);
     fixture.detectChanges();
     await fixture.whenStable();
     expect(presenter.commitState.status()).toBe('pending');
-    expect(liveRegion.textContent).toBe('Switching tab…');
+
+    // The shared announcer writes one frame later (its clear-then-set timer);
+    // a real delay flushes that timer without mixing fake timers into the
+    // whenStable-driven Material async above.
+    await new Promise((resolve) => setTimeout(resolve, 24));
+    const politeRegions = document.body.querySelectorAll<HTMLElement>(
+      'span[aria-live="polite"].cngx-sr-only',
+    );
+    try {
+      expect(politeRegions[politeRegions.length - 1]?.textContent).toBe('Switching tab…');
+    } finally {
+      TestBed.inject(CngxLiveAnnouncer).ngOnDestroy();
+    }
   });
 
   test('axis 34: live-region announces commitRolledBackTo(originLabel) when an optimistic commit rejects', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
-    const baselineCount = document.body.querySelectorAll<HTMLElement>(
-      ':scope > span[aria-live].cngx-sr-only',
-    ).length;
     const fixture = TestBed.createComponent(CommitHostCmp);
     // Synchronous-rejection commit so the error arm fires inside the
     // single CD pass following the click — no need to flush a real
@@ -1375,21 +1369,27 @@ describe('CngxMatTabs instrumentation directive', () => {
       (el) => el.componentInstance instanceof MatTabGroup,
     );
     const presenter = matEl.injector.get(CngxTabGroupPresenter);
-    const liveRegions = document.body.querySelectorAll<HTMLElement>(
-      ':scope > span[aria-live].cngx-sr-only',
-    );
-    expect(liveRegions.length).toBe(baselineCount + 1);
-    const liveRegion = liveRegions[liveRegions.length - 1];
 
     presenter.select(2);
     fixture.detectChanges();
     await fixture.whenStable();
     expect(presenter.lastFailedIndex()).toBe(2);
-    // CommitHostCmp's first tab labels are 'One' / 'Two' / 'Three';
-    // the rollback origin is 'One' (active before the failed pick).
-    expect(liveRegion.textContent).toBe(
-      'Could not save changes — reverted to "One".',
+
+    // The shared announcer writes one frame later; a real delay flushes that
+    // timer without mixing fake timers into the whenStable-driven async above.
+    // CommitHostCmp's first tab labels are 'One' / 'Two' / 'Three'; the
+    // rollback origin is 'One' (active before the failed pick).
+    await new Promise((resolve) => setTimeout(resolve, 24));
+    const politeRegions = document.body.querySelectorAll<HTMLElement>(
+      'span[aria-live="polite"].cngx-sr-only',
     );
+    try {
+      expect(politeRegions[politeRegions.length - 1]?.textContent).toBe(
+        'Could not save changes — reverted to "One".',
+      );
+    } finally {
+      TestBed.inject(CngxLiveAnnouncer).ngOnDestroy();
+    }
   });
 
   test('axis 35: CNGX_MAT_TAB_HANDLE_FACTORY swap — viewProviders override is honoured', async () => {

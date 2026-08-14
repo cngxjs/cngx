@@ -169,10 +169,12 @@ test.describe('CngxReorderableMultiSelect demo', () => {
     // Library default reorder modifier is Alt (not Ctrl).
     await page.keyboard.press('Alt+End');
 
-    // The shared CngxSelectAnnouncer publishes to a body-level
-    // aria-live region. A 'reordered' action flows through the default
-    // English formatter → "<label>: <value> moved to position N".
-    const live = page.locator('.cngx-select-announcer--polite').first();
+    // CngxSelectAnnouncer now delegates to the shared CngxLiveAnnouncer,
+    // which publishes to a body-level polite aria-live region (a direct
+    // child of <body>, so it does not collide with in-component regions).
+    // A 'reordered' action flows through the default English formatter to
+    // "<label>: <value> moved to position N".
+    const live = page.locator('body > span.cngx-sr-only[aria-live="polite"]').first();
     await expect(live).toContainText(/moved to position/i);
   });
 });

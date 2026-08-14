@@ -2,6 +2,8 @@ import { Injector, runInInjectionContext } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { CngxLiveAnnouncer } from '@cngx/common/a11y';
+
 import {
   CNGX_MENU_ANNOUNCER_FACTORY,
   CngxMenuAnnouncer,
@@ -9,67 +11,38 @@ import {
   injectMenuAnnouncer,
 } from './menu-announcer';
 
+// Non-generic vi.spyOn call so the spy type is inferred; the explicit
+// vi.spyOn<T, K> generic form trips vitest's overload constraint here.
+function makeLiveSpy(): ReturnType<typeof vi.fn> {
+  return vi.spyOn(TestBed.inject(CngxLiveAnnouncer), 'announce').mockImplementation(() => {});
+}
+
 describe('CngxMenuAnnouncer', () => {
+  let live: ReturnType<typeof makeLiveSpy>;
+
   beforeEach(() => {
-    document.body.querySelectorAll('.cngx-menu-announcer').forEach((el) => el.remove());
-    vi.useFakeTimers();
     TestBed.configureTestingModule({});
+    live = makeLiveSpy();
   });
 
   afterEach(() => {
-    vi.useRealTimers();
-    document.body.querySelectorAll('.cngx-menu-announcer').forEach((el) => el.remove());
+    vi.restoreAllMocks();
   });
 
-  it('creates a polite live region on first announce', () => {
+  it('delegates a non-empty message to the shared live region as polite', () => {
     const announcer = TestBed.inject(CngxMenuAnnouncer);
-    expect(document.querySelector('.cngx-menu-announcer')).toBeNull();
-
     announcer.announce('Submenu opened');
-
-    const region = document.querySelector('.cngx-menu-announcer');
-    expect(region).not.toBeNull();
-    expect(region?.getAttribute('aria-live')).toBe('polite');
-    expect(region?.getAttribute('role')).toBe('status');
-    expect(region?.getAttribute('aria-atomic')).toBe('true');
+    expect(live).toHaveBeenCalledExactlyOnceWith('Submenu opened', 'polite');
   });
 
-  it('writes the message after the clear-then-set debounce', () => {
-    const announcer = TestBed.inject(CngxMenuAnnouncer);
-    announcer.announce('Item activated');
-    const region = document.querySelector('.cngx-menu-announcer') as HTMLElement;
-    expect(region.textContent).toBe('');
-
-    vi.advanceTimersByTime(20);
-    expect(region.textContent).toBe('Item activated');
-  });
-
-  it('reuses the same region across announces', () => {
-    const announcer = TestBed.inject(CngxMenuAnnouncer);
-    announcer.announce('First');
-    vi.advanceTimersByTime(20);
-    announcer.announce('Second');
-    vi.advanceTimersByTime(20);
-    expect(document.querySelectorAll('.cngx-menu-announcer')).toHaveLength(1);
-    expect(document.querySelector('.cngx-menu-announcer')?.textContent).toBe('Second');
-  });
-
-  it('ignores empty messages', () => {
+  it('ignores empty messages so the live region is never touched', () => {
     const announcer = TestBed.inject(CngxMenuAnnouncer);
     announcer.announce('');
-    expect(document.querySelector('.cngx-menu-announcer')).toBeNull();
+    expect(live).not.toHaveBeenCalled();
   });
 });
 
 describe('CNGX_MENU_ANNOUNCER_FACTORY', () => {
-  beforeEach(() => {
-    document.body.querySelectorAll('.cngx-menu-announcer').forEach((el) => el.remove());
-  });
-
-  afterEach(() => {
-    document.body.querySelectorAll('.cngx-menu-announcer').forEach((el) => el.remove());
-  });
-
   it('default factory resolves to the root-scoped CngxMenuAnnouncer', () => {
     TestBed.configureTestingModule({});
     const factory = TestBed.inject(CNGX_MENU_ANNOUNCER_FACTORY);
@@ -93,7 +66,6 @@ describe('CNGX_MENU_ANNOUNCER_FACTORY', () => {
     announcer.announce('Submenu opened');
     expect(announcer).toBe(stub);
     expect(calls).toEqual(['Submenu opened']);
-    expect(document.querySelector('.cngx-menu-announcer')).toBeNull();
   });
 
   it('injectMenuAnnouncer resolves through the factory token', () => {
