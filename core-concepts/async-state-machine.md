@@ -89,6 +89,7 @@ The interface and the low-level `buildAsyncStateView` kernel live in `@cngx/core
 |Producer|Lives in|Use when|
 |-|-|-|
 |`buildAsyncStateView<T>(sources)`|`@cngx/core/utils`|You already have separate `status`/`data`/`error` signals and want to assemble them into the standard interface. Used by `CngxActionButton`, the select family, and other bespoke organisms.|
+|`createAggregateAsyncState<T>(sources)`|`@cngx/core/utils`|You have N independent `CngxAsyncState`s and want one derived state: loading while any loads, errored on the first failure, empty only when all are empty, success only when all succeed. Pure `computed()` over the `data()` of each source; the result is itself a `CngxAsyncState`. Wire the keyed list through `CngxAsyncBoundary` (see [Aggregating multiple states](#aggregating-multiple-states)).|
 |`createManualState<T>()`|`@cngx/common/data`|You drive status transitions imperatively (typical inside a commit controller or a Web Worker pipeline). No injection context required. Returns `ManualAsyncState<T>` with `set` / `setSuccess` / `setError` / `setProgress` / `reset`.|
 |`createAsyncState<T>()`|`@cngx/common/data`|Explicit user-triggered mutation (POST/PUT/DELETE). Returns `MutableAsyncState<T>` with an `execute(fn)` method that runs the action, manages cancellation through an internal `AbortController`, and transitions through `pending` -> `success`/`error`. Requires an injection context.|
 |`injectAsyncState<T>(fn, options?)`|`@cngx/common/data`|Auto-loading reactive query. Re-runs `fn` when any signal it reads changes, debounced (default 50 ms). First call -> `loading`, subsequent calls -> `refreshing`. Returns `ReactiveAsyncState<T>` with a `refresh()` method. Requires an injection context.|
@@ -127,7 +128,7 @@ Each consumer derives its own concern from the bound `state`:
 
 - `cngx-skeleton` shows placeholders when `state.isFirstLoad()` is `true`. The skeleton owns the first-load phase and steps aside on refresh - prior data stays visible while the underlying query re-runs.
 - `cngx-empty-state` hides itself when `state.isLoading() || !state.isEmpty()` and shows the empty message otherwise. The skeleton owns the loading phase; empty-state defers to it.
-- `*cngxAsync` and `cngx-async-container` switch view based on `resolveAsyncView(...)` (see below).
+- `*cngxAsync` and `cngx-async-container` switch view based on `resolveAsyncView(...)` (see below). An aggregate is just another `CngxAsyncState`, so `cngx-async-container` renders one unchanged - driven by `CngxAsyncBoundary` over its `state` (see [Aggregating multiple states](#aggregating-multiple-states)).
 - The select family routes its panel through `createSelectCore<T,TCommit>` and `resolveAsyncView` for the panel content.
 - A `[cngxToastOn]` / `[cngxAlertOn]` / `[cngxBannerOn]` bridge fires a transition handler on `success` / `error` / `idle`.
 
@@ -170,6 +171,51 @@ Consumers call `resolveAsyncView` from a `computed` and switch on the result.
 `*cngxAsync` collapses `content+error` to `content` because a structural directive cannot render two views at once; pair it with `[cngxAlertOn]` or `[cngxBannerOn]` for the inline-error half.
 
 The select family wires the full six-variant switch through `createSelectCore<T,TCommit>` (source: `projects/forms/select/shared/select-core.ts`) into the shared `panel-shell.component.ts`.
+
+---
+
+## Aggregating multiple states
+
+A screen often depends on several independent async sources at once (user + permissions + feature flags, or three parallel resources behind one panel). `createAggregateAsyncState` derives **one** `CngxAsyncState` from N of them, so the whole screen renders through a single consumer instead of hand-rolled nested `@if` blocks.
+
+`createAggregateAsyncState<T>(sources: Signal<readonly CngxAsyncState<unknown>[]>)` is a pure factory in `@cngx/core/utils` (source: `projects/core/utils/aggregate-async-state.ts`). It reuses `buildAsyncStateView`, so every derived flag (`isLoading`, `isSettled`, `hasData`, ...) stays single-source-consistent with every other producer - a consumer cannot tell an aggregate from a leaf state.
+
+### The status rule
+
+Combined `status` follows a fixed priority (first match wins):
+
+|Priority|Condition|Combined status|
+|-|-|-|
+|1|any source `error`|`error`|
+|2|any source `loading` / `pending`|`loading`|
+|3|any source `refreshing`|`refreshing`|
+|4|every source `success`|`success`|
+|5|otherwise (empty list, or any remaining `idle`)|`idle`|
+
+`data` is the per-source `data()` in input order (each element `T | undefined`, since a source carries no data until it reaches `success`). Emptiness cannot be read off the data shape - an N-element array is never length 0 - so the aggregate defines empty as **at least one source and every source itself empty**, and supplies that signal explicitly.
+
+### Wiring it: CngxAsyncBoundary
+
+`CngxAsyncBoundary` (`[cngxAsyncBoundary]`, `@cngx/common/data`) is the headless directive that takes the keyed source list, builds the aggregate, and provides `CNGX_STATEFUL`. It exposes `state` (the aggregate) and `failures` (the errored sources, keyed for attribution).
+
+```html
+<div [cngxAsyncBoundary]="sources()" #b="cngxAsyncBoundary" cngxToastOn [toastError]="'Bootstrap failed'">
+  <cngx-async-container [state]="b.state">
+    <ng-template cngxAsyncContent let-data> ...render the ordered data... </ng-template>
+  </cngx-async-container>
+
+  @for (f of b.failures(); track f.key) {
+    <cngx-alert severity="error" [title]="f.label ?? f.key">{{ f.error }}</cngx-alert>
+  }
+</div>
+```
+
+Two channels, no conflict:
+
+- The aggregate's own `error` stays the **first** error in input order - the single "something failed" that a nested `cngxToastOn` / `cngxAlertOn` / `cngxBannerOn` bridge picks up via `CNGX_STATEFUL`, with zero `[state]` wiring.
+- `failures()` is the persistent per-source breakdown - keyed, so a consumer's `@for` attributes each failure through any feedback component.
+
+Because the aggregate **is** a `CngxAsyncState`, `cngx-async-container` renders it through the same four-slot switch as any leaf state, and every existing consumer and bridge composes unchanged.
 
 ---
 
@@ -396,6 +442,7 @@ Current providers:
 - The tabs presenter.
 - The stepper presenter.
 - `CngxChipInput`.
+- `CngxAsyncBoundary` - provides the aggregate over its keyed source list, so a bridge nested in the boundary fires on the combined status with no `[state]` binding.
 
 <aside class="cc-note">
 
