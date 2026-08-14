@@ -1,4 +1,4 @@
-import { Component, DestroyRef, Injector, Renderer2, inject, signal } from '@angular/core';
+import { Component, Injector, inject, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -18,9 +18,7 @@ class PoliteHost {
   constructor() {
     mountLiveRegionAnnouncer({
       announcement: this.text,
-      renderer: inject(Renderer2),
       injector: inject(Injector),
-      destroyRef: inject(DestroyRef),
     });
   }
 }
@@ -31,9 +29,7 @@ class AssertiveHost {
   constructor() {
     mountLiveRegionAnnouncer({
       announcement: this.text,
-      renderer: inject(Renderer2),
       injector: inject(Injector),
-      destroyRef: inject(DestroyRef),
       politeness: 'assertive',
     });
   }

@@ -96,9 +96,7 @@ export class CngxMatTabNav {
   constructor() {
     mountLiveRegionAnnouncer({
       announcement: this.rejectionState.liveAnnouncement,
-      renderer: this.renderer,
       injector: this.injector,
-      destroyRef: this.destroyRef,
     });
 
     // Same projector bodies as `[cngxMatTabs]`; only the per-tab element

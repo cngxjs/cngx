@@ -1,9 +1,7 @@
 import {
-  type DestroyRef,
   effect,
   inject,
   type Injector,
-  type Renderer2,
   runInInjectionContext,
   type Signal,
   untracked,
@@ -19,11 +17,7 @@ import { CngxLiveAnnouncer } from '@cngx/common/a11y';
 export interface CngxMatTabLiveRegionOptions {
   /** Reactive announcement text. Empty string keeps the region quiet. */
   readonly announcement: Signal<string>;
-  readonly renderer: Renderer2;
   readonly injector: Injector;
-  readonly destroyRef: DestroyRef;
-  /** Default: `'cngx-sr-only'`. */
-  readonly srOnlyClassName?: string;
   /** Default: `'polite'`. */
   readonly politeness?: 'polite' | 'assertive';
 }
