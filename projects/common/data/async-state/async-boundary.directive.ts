@@ -47,7 +47,7 @@ export interface AggregateFailure {
  * through `<cngx-async-container [state]="b.state">` and every other consumer
  * unchanged, and any transition bridge (`cngxToastOn`, `cngxAlertOn`,
  * `cngxBannerOn`) nested in the host fires on the combined status with zero
- * `[state]` wiring. `failures` exposes the errored sources — keyed, so a
+ * `[state]` wiring. `failures` exposes the errored sources - keyed, so a
  * consumer's `@for` can render per-source attribution through any feedback
  * component. `state.error` stays the first error for the single-error path.
  *
@@ -82,7 +82,7 @@ export class CngxAsyncBoundary implements CngxStateful<readonly unknown[]> {
     equal: (a, b) => a.length === b.length && a.every((s, i) => s === b[i]),
   });
 
-  /** The derived aggregate state — also exposed via `CNGX_STATEFUL`. */
+  /** The derived aggregate state - also exposed via `CNGX_STATEFUL`. */
   readonly state = createAggregateAsyncState(this.states);
 
   /** The errored sources, keyed for per-source attribution. */
