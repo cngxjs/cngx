@@ -21,14 +21,21 @@
   inline-size: var(--cngx-command-width, min(40rem, calc(100vw - 2rem)));
   max-block-size: var(--cngx-command-max-h, min(32rem, calc(100vh - 6rem)));
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
   border: var(--cngx-command-border-width, 1px) solid
     var(--cngx-command-border, var(--cngx-color-border, #e5e7eb));
   border-radius: var(--cngx-command-radius, var(--cngx-radius-lg, 0.75rem));
   background: var(--cngx-command-bg, var(--cngx-color-surface, #ffffff));
   color: var(--cngx-command-color, inherit);
   box-shadow: var(--cngx-command-shadow, 0 10px 40px rgb(0 0 0 / 0.2));
+}
+
+/* Column layout only while open. The base rule must NOT set `display`, or it
+   would override the UA `dialog:not([open]) { display: none }` and render the
+   palette in normal flow when closed. `showModal()` sets `[open]`, which also
+   promotes the dialog to the centred top layer. */
+.cngx-command-palette[open] {
+  display: flex;
+  flex-direction: column;
 }
 
 .cngx-command-palette::backdrop {
