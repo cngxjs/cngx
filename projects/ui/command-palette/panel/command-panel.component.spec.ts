@@ -112,6 +112,16 @@ describe('CngxCommandPanel', () => {
     expect(reason.textContent).toBe('Offline');
   });
 
+  it('keeps the reason target in the DOM but omits the reference while enabled', () => {
+    configure([cmd('sync', 'Sync', { disabled: signal(false), disabledReason: 'Offline' })]);
+    const option = options()[0];
+    // Reference gated off while enabled...
+    expect(option.getAttribute('aria-describedby')).toBeNull();
+    // ...but the target node is present, so it never appears/disappears mid-interaction.
+    const reason = fixture.nativeElement.querySelector('[id$="-reason-sync"]') as HTMLElement;
+    expect(reason?.textContent).toBe('Offline');
+  });
+
   it('does not run a command when its run is invoked through a disabled row', () => {
     const run = vi.fn();
     configure([cmd('sync', 'Sync', { disabled: signal(true), disabledReason: 'Offline', run })]);

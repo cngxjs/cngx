@@ -136,7 +136,10 @@ interface RenderGroup {
                   entry.command.label
                 }}</span>
               }
-              @if (isDisabled(entry.command) && entry.command.disabledReason; as reason) {
+              @if (entry.command.disabledReason; as reason) {
+                <!-- Target stays in the DOM whenever a reason exists; only the
+                     aria-describedby reference (describedBy) is gated on disabled
+                     state, so no referenced node ever appears/disappears mid-interaction. -->
                 <span class="cngx-sr-only" [id]="reasonId(entry.command)">{{ reason }}</span>
               }
             </div>
