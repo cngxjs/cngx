@@ -78,25 +78,19 @@ export interface CngxCommandPaletteConfig {
 }
 
 /**
- * A partial-config override produced by a `with*` helper. Carries a hidden
- * `_target` discriminator so future palette config surfaces compose through one
- * aggregator without breaking the public API (mirrors the menu family).
+ * A partial-config override produced by a `with*` helper.
+ *
+ * There is one config surface today, so this is a plain mutator - no
+ * `_target` discriminator. If a second palette config surface ever lands and a
+ * `provideCngxCommandPalette` aggregator is introduced, add the discriminator
+ * then (the menu family's `_target` pattern), not preemptively.
  *
  * @category ui/command-palette
  * @since 0.1.0
  */
-export type CngxCommandPaletteConfigFeature = ((
+export type CngxCommandPaletteConfigFeature = (
   config: CngxCommandPaletteConfig,
-) => CngxCommandPaletteConfig) & {
-  readonly _target?: 'config';
-};
-
-/** @internal Brands a config mutator with the `_target` discriminator. */
-function defineFeature(
-  fn: (config: CngxCommandPaletteConfig) => CngxCommandPaletteConfig,
-): CngxCommandPaletteConfigFeature {
-  return Object.assign(fn, { _target: 'config' as const });
-}
+) => CngxCommandPaletteConfig;
 
 /**
  * Library-default palette configuration, built from the internal defaults
@@ -208,7 +202,7 @@ export function withCommandPaletteLabels(
     >
   >,
 ): CngxCommandPaletteConfigFeature {
-  return defineFeature((config) => ({ ...config, ...labels }));
+  return (config) => ({ ...config, ...labels });
 }
 
 /**
@@ -220,7 +214,7 @@ export function withCommandPaletteLabels(
 export function withKeyboardLegend(
   entries: readonly CngxCommandPaletteLegendEntry[],
 ): CngxCommandPaletteConfigFeature {
-  return defineFeature((config) => ({ ...config, footerLegend: entries }));
+  return (config) => ({ ...config, footerLegend: entries });
 }
 
 /**
@@ -233,7 +227,7 @@ export function withKeyboardLegend(
 export function withResultCountFormatter(
   formatter: (count: number) => string,
 ): CngxCommandPaletteConfigFeature {
-  return defineFeature((config) => ({ ...config, resultCount: formatter }));
+  return (config) => ({ ...config, resultCount: formatter });
 }
 
 /**
@@ -246,8 +240,8 @@ export function withResultCountFormatter(
 export function withCommandPaletteTemplates(
   templates: CngxCommandPaletteTemplates,
 ): CngxCommandPaletteConfigFeature {
-  return defineFeature((config) => ({
+  return (config) => ({
     ...config,
     templates: { ...config.templates, ...templates },
-  }));
+  });
 }
