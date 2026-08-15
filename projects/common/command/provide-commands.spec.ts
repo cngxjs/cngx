@@ -1,4 +1,4 @@
-import { signal, type Signal } from '@angular/core';
+import { Component, signal, type Signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
@@ -23,6 +23,20 @@ describe('provideCommands / injectCommands', () => {
     });
 
     expect(merged()().map((x) => x.id)).toEqual(['a', 'b', 'c']);
+  });
+
+  it('registers at component scope via viewProviders (Provider[], not env-only)', () => {
+    @Component({
+      standalone: true,
+      template: '',
+      viewProviders: [provideCommands([cmd('scoped')])],
+    })
+    class Host {
+      readonly commands = injectCommands();
+    }
+
+    const fixture = TestBed.createComponent(Host);
+    expect(fixture.componentInstance.commands().map((x) => x.id)).toEqual(['scoped']);
   });
 
   it('returns an empty list when no source is registered', () => {

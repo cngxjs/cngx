@@ -2,8 +2,7 @@ import {
   computed,
   inject,
   InjectionToken,
-  makeEnvironmentProviders,
-  type EnvironmentProviders,
+  type Provider,
   type Signal,
 } from '@angular/core';
 
@@ -33,26 +32,27 @@ export const CNGX_COMMAND_SOURCE = new InjectionToken<readonly CngxCommandSource
 );
 
 /**
- * Registers one or more command sources with the environment injector. Each
- * source becomes a `multi` entry on {@link CNGX_COMMAND_SOURCE}; a consumer may
- * call `provideCommands` from several app parts and `injectCommands` merges all
- * of them.
+ * Registers one or more command sources. Each source becomes a `multi` entry
+ * on {@link CNGX_COMMAND_SOURCE}; call `provideCommands` from several app parts
+ * and `injectCommands` merges all of them.
+ *
+ * Returns `Provider[]` (not `EnvironmentProviders`), so it registers at any
+ * injector scope - app root, a lazy route, or a component's `providers` /
+ * `viewProviders` - letting a route or component contribute a scoped command
+ * set without reaching for the raw {@link CNGX_COMMAND_SOURCE} multi-provider.
  *
  * ```ts
- * bootstrapApplication(AppComponent, {
- *   providers: [
- *     provideCommands(fileCommands, computed(() => editorCommands())),
- *   ],
- * });
+ * // app root
+ * bootstrapApplication(AppComponent, { providers: [provideCommands(fileCommands)] });
+ * // or component scope
+ * @Component({ viewProviders: [provideCommands(editorCommands)] })
  * ```
  *
  * @category common/command
  * @since 0.1.0
  */
-export function provideCommands(...sources: CngxCommandSource[]): EnvironmentProviders {
-  return makeEnvironmentProviders(
-    sources.map((source) => ({ provide: CNGX_COMMAND_SOURCE, useValue: source, multi: true })),
-  );
+export function provideCommands(...sources: CngxCommandSource[]): Provider[] {
+  return sources.map((source) => ({ provide: CNGX_COMMAND_SOURCE, useValue: source, multi: true }));
 }
 
 /**

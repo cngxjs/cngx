@@ -17,18 +17,14 @@ export const STORY: DemoSpec = {
     },
   ],
   apiComponents: ['CngxCommandPalette', 'CngxCommandRow'],
-  moduleImports: ["import { CNGX_COMMAND_SOURCE } from '@cngx/common/command';"],
+  moduleImports: ["import { provideCommands } from '@cngx/common/command';"],
   imports: ['CngxCommandPalette', 'CngxCommandPaletteTrigger', 'CngxCommandRow'],
   viewProviders: [
-    `{
-      provide: CNGX_COMMAND_SOURCE,
-      multi: true,
-      useValue: [
-        { id: 'new', label: 'New file', keywords: ['create'], group: 'File', data: { icon: '📄', shortcut: 'Cmd N' }, run: () => window.scrollTo({ top: 0, behavior: 'smooth' }) },
-        { id: 'save', label: 'Save', keywords: ['write'], group: 'File', data: { icon: '💾', shortcut: 'Cmd S' }, run: () => (document.documentElement.dataset['theme'] = 'light') },
-        { id: 'theme', label: 'Toggle theme', keywords: ['dark', 'light'], group: 'View', data: { icon: '🌓', shortcut: 'Cmd J' }, run: () => (document.documentElement.dataset['theme'] = 'dark') },
-      ],
-    }`,
+    `provideCommands([
+      { id: 'new', label: 'New file', keywords: ['create'], group: 'File', data: { icon: '📄', shortcut: 'Cmd N' }, run: () => window.scrollTo({ top: 0, behavior: 'smooth' }) },
+      { id: 'save', label: 'Save', keywords: ['write'], group: 'File', data: { icon: '💾', shortcut: 'Cmd S' }, run: () => (document.documentElement.dataset['theme'] = 'light') },
+      { id: 'theme', label: 'Toggle theme', keywords: ['dark', 'light'], group: 'View', data: { icon: '🌓', shortcut: 'Cmd J' }, run: () => (document.documentElement.dataset['theme'] = 'dark') },
+    ])`,
   ],
   templateChromeBefore: `<p class="demo-hint">
     Open with <kbd>Cmd</kbd>/<kbd>Ctrl</kbd> + <kbd>K</kbd> or the button. Each row renders
