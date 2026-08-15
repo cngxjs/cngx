@@ -10,7 +10,6 @@ export {
 } from './provide-commands';
 export {
   createDefaultCommandMatcher,
-  resolveKeybinding,
   type CngxCommandMatcher,
   type RankedCommand,
 } from './match';

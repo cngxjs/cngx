@@ -1,5 +1,3 @@
-import { matchesKeyCombo } from '@cngx/core/utils';
-
 import type { CngxCommand } from './command';
 
 /**
@@ -88,28 +86,4 @@ function scoreCommand(command: CngxCommand, query: string): number {
     }
   }
   return 0;
-}
-
-/**
- * Resolves the first command whose `keybinding` matches a keyboard event, via
- * `matchesKeyCombo`. Returns `undefined` when nothing matches. Pure: pass
- * `isMac` explicitly (defaults to detecting the current platform) so the
- * result is deterministic under test.
- *
- * @category common/command
- * @since 0.1.0
- */
-export function resolveKeybinding(
-  commands: readonly CngxCommand[],
-  event: KeyboardEvent,
-  isMac: boolean = detectMac(),
-): CngxCommand | undefined {
-  return commands.find(
-    (command) => command.keybinding !== undefined && matchesKeyCombo(event, command.keybinding, isMac),
-  );
-}
-
-/** @internal Best-effort macOS detection; overridable via the `isMac` argument. */
-function detectMac(): boolean {
-  return typeof navigator !== 'undefined' && /mac/i.test(navigator.platform);
 }

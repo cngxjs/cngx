@@ -1,9 +1,8 @@
 import { TestBed } from '@angular/core/testing';
-import { parseKeyCombo } from '@cngx/core/utils';
 import { describe, expect, it } from 'vitest';
 
 import type { CngxCommand } from './command';
-import { createDefaultCommandMatcher, resolveKeybinding, type CngxCommandMatcher } from './match';
+import { createDefaultCommandMatcher, type CngxCommandMatcher } from './match';
 import { CNGX_COMMAND_MATCH_FACTORY } from './match-strategy.token';
 
 function cmd(id: string, overrides: Partial<CngxCommand> = {}): CngxCommand {
@@ -45,23 +44,6 @@ describe('createDefaultCommandMatcher', () => {
       cmd('b', { label: 'alpha too', group: 'edit' }),
     ];
     expect(match(commands, 'alpha', 'files').map((r) => r.command.id)).toEqual(['a']);
-  });
-});
-
-describe('resolveKeybinding', () => {
-  it('resolves the command whose keybinding matches the event', () => {
-    const target = cmd('palette', { keybinding: parseKeyCombo('mod+k') });
-    const commands = [cmd('noop'), target];
-    const event = new KeyboardEvent('keydown', { key: 'k', metaKey: true });
-
-    expect(resolveKeybinding(commands, event, true)).toBe(target);
-  });
-
-  it('returns undefined when nothing matches', () => {
-    const commands = [cmd('a', { keybinding: parseKeyCombo('mod+k') })];
-    const event = new KeyboardEvent('keydown', { key: 'j', metaKey: true });
-
-    expect(resolveKeybinding(commands, event, true)).toBeUndefined();
   });
 });
 

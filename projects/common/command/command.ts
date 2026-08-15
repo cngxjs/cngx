@@ -1,5 +1,4 @@
 import type { Signal } from '@angular/core';
-import type { KeyCombo } from '@cngx/core/utils';
 
 /**
  * A single registrable command - a labelled action the command palette can
@@ -25,8 +24,6 @@ export interface CngxCommand {
   readonly group?: string;
   /** Optional icon token; the consumer's row template resolves it against its own design system. */
   readonly icon?: string;
-  /** Parsed combo that fires this command directly; resolved via `resolveKeybinding`. */
-  readonly keybinding?: KeyCombo;
   /** Runs the command. May be async; the palette does not await the result. */
   run(): void | Promise<void>;
   /** Reactive disabled state. A disabled command stays perceivable and communicates its why. */
