@@ -1,8 +1,13 @@
-/* Structural only. Surface, hover/active colors, spacing tokens, the touch
-   target floor and the Material bridge land in Phase 4 (theming).
+/* Structural + touch-target floor. Surface, hover/active colours and the
+   spacing token family remain themable via --cngx-* custom properties.
    ViewEncapsulation.None - selector-scoped. */
 cngx-context-menu-item,
 button[cngxContextMenuItem] {
   display: flex;
   align-items: center;
+  /* WCAG 2.5.5: the menu row is a discrete tap target. The base cngxMenuItem
+     floor is keyed on the [cngxMenuItem] attribute selector, which
+     hostDirectives never stamps onto this host, so the organism floors its
+     own row. */
+  min-block-size: var(--cngx-target-min, 0px);
 }
