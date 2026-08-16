@@ -13,6 +13,7 @@ import { CngxMenu } from '@cngx/common/interactive';
 import { CngxPopover } from '@cngx/common/popover';
 
 import { CngxContextMenuContent } from './context-menu-content.directive';
+import type { CngxContextMenuPanel } from './context-menu-panel';
 
 /**
  * Declarative context-menu panel. Stacks `CngxPopover` (the top-layer popup
@@ -78,7 +79,7 @@ import { CngxContextMenuContent } from './context-menu-content.directive';
   `,
   styleUrl: './context-menu.component.css',
 })
-export class CngxContextMenu<T = unknown> {
+export class CngxContextMenu<T = unknown> implements CngxContextMenuPanel<T> {
   /** The popover surface this panel drives. Consumed by the trigger core. */
   readonly popover = inject(CngxPopover, { self: true });
   /** The menu brain (`role="menu"`, active-descendant registry). */

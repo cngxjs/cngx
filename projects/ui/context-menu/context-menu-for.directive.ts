@@ -19,7 +19,7 @@ import {
   injectMenuConfig,
 } from '@cngx/common/interactive';
 
-import type { CngxContextMenu } from './context-menu.component';
+import type { CngxContextMenuPanel } from './context-menu-panel';
 
 /**
  * Docks a {@link CngxContextMenu} onto a target element. Opens the panel at
@@ -63,8 +63,8 @@ import type { CngxContextMenu } from './context-menu.component';
   },
 })
 export class CngxContextMenuFor<T = unknown> {
-  /** Panel this trigger opens. */
-  readonly panel = input.required<CngxContextMenu<T>>({ alias: 'cngxContextMenuFor' });
+  /** Panel this trigger opens. Typed to the {@link CngxContextMenuPanel} seam. */
+  readonly panel = input.required<CngxContextMenuPanel<T>>({ alias: 'cngxContextMenuFor' });
 
   /** Fixed datum handed to the panel for this single target. */
   readonly data = input<T | undefined>(undefined, { alias: 'cngxContextMenuData' });

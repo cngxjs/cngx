@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import { CngxContextMenu } from './context-menu.component';
 import { CngxContextMenuContent } from './context-menu-content.directive';
+import type { CngxContextMenuPanel } from './context-menu-panel';
 
 function polyfillPopover(): void {
   const proto = HTMLElement.prototype as unknown as {
@@ -71,6 +72,17 @@ describe('CngxContextMenu', () => {
     const { panel } = setupTemplate();
     expect(panel.popover).toBeTruthy();
     expect(panel.menuHost).toBeTruthy();
+  });
+
+  it('satisfies the CngxContextMenuPanel seam the trigger depends on', () => {
+    const { panel } = setupTemplate();
+    // Assigns through the interface: the trigger consumes this shape, not the
+    // concrete class, so an ejected panel skin can satisfy the same seam.
+    const seam: CngxContextMenuPanel<Row> = panel;
+    expect(seam.popover.isVisible()).toBe(false);
+    expect(seam.menuHost.ad).toBeTruthy();
+    expect(typeof seam.setContext).toBe('function');
+    expect(seam.context()).toBeNull();
   });
 
   it('carries role=menu and the forwarded accessible name', () => {
