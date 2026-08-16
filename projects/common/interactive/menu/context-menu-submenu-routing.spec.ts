@@ -32,7 +32,12 @@ function mockMenu(): MockMenu {
     highlightFirst,
     activateCurrent: vi.fn(),
   } as unknown as CngxActiveDescendant;
-  return { host: { ad, submenuItems: submenus, focus: vi.fn() }, activeId, highlightFirst, submenus };
+  return {
+    host: { ad, submenuItems: submenus, focus: vi.fn(), registerSubmenuItem: () => () => {} },
+    activeId,
+    highlightFirst,
+    submenus,
+  };
 }
 
 function mockSubmenu(id: string, inner: CngxMenuHost): CngxMenuSubmenuLike {

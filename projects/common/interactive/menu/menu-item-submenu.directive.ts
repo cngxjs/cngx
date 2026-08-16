@@ -17,7 +17,7 @@ import { nextUid } from '@cngx/core/utils';
 
 import { CNGX_MENU_ANNOUNCER_FACTORY } from './menu-announcer';
 import { injectMenuConfig } from './menu-config';
-import type { CngxMenuHost } from './menu-host.token';
+import { CNGX_MENU_HOST, type CngxMenuHost } from './menu-host.token';
 import { CngxMenuItem } from './menu-item.directive';
 import { CNGX_MENU_SUBMENU_ITEM, type CngxMenuSubmenuLike } from './menu-submenu.token';
 
@@ -89,6 +89,7 @@ export class CngxMenuItemSubmenu implements CngxMenuSubmenuLike {
 
   private readonly elementRef = inject(ElementRef<HTMLElement>);
   private readonly menuItem = inject(CngxMenuItem, { optional: true, self: true });
+  private readonly menuHost = inject(CNGX_MENU_HOST, { optional: true });
   private readonly ownId = nextUid('cngx-menu-submenu');
 
   /**
@@ -181,6 +182,15 @@ export class CngxMenuItemSubmenu implements CngxMenuSubmenuLike {
   });
 
   constructor() {
+    // Register with the surrounding menu via DI (not a content query) so this
+    // submenu is discovered even when declared inside a wrapper component's
+    // template. The menu reads `id` / `inner` / `isOpen` lazily at routing
+    // time, by which point the required inputs are bound.
+    const deregister = this.menuHost?.registerSubmenuItem(this);
+    if (deregister) {
+      this.destroyRef.onDestroy(deregister);
+    }
+
     effect(() => {
       const { current, previous } = this.transition();
       if (current === previous) {

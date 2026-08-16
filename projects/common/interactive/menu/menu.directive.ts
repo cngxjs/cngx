@@ -1,12 +1,4 @@
-import {
-  contentChildren,
-  Directive,
-  ElementRef,
-  inject,
-  input,
-  isDevMode,
-  untracked,
-} from '@angular/core';
+import { Directive, ElementRef, inject, input, isDevMode, signal, untracked } from '@angular/core';
 import {
   outputFromObservable,
   outputToObservable,
@@ -18,7 +10,15 @@ import { CngxActiveDescendant } from '@cngx/common/a11y';
 import { CNGX_MENU_ANNOUNCER_FACTORY } from './menu-announcer';
 import { injectMenuConfig } from './menu-config';
 import { CNGX_MENU_HOST, type CngxMenuHost } from './menu-host.token';
-import { CNGX_MENU_SUBMENU_ITEM, type CngxMenuSubmenuLike } from './menu-submenu.token';
+import type { CngxMenuSubmenuLike } from './menu-submenu.token';
+
+/** Shallow identity/length equality for the submenu registry signal. */
+function sameSubmenuItems(
+  a: readonly CngxMenuSubmenuLike[],
+  b: readonly CngxMenuSubmenuLike[],
+): boolean {
+  return a.length === b.length && a.every((item, i) => item === b[i]);
+}
 
 const warnedFocusHosts = new WeakSet<HTMLElement>();
 
@@ -68,14 +68,31 @@ export class CngxMenu implements CngxMenuHost {
   private readonly announcer = inject(CNGX_MENU_ANNOUNCER_FACTORY)();
   private readonly menuConfig = injectMenuConfig();
 
-  /**
-   * Submenu directives registered inside this menu's content tree. Empty
-   * when the menu has no submenus. Drives the trigger's focus-stack
-   * arrow-right / arrow-left semantics.
-   */
-  readonly submenuItems = contentChildren<CngxMenuSubmenuLike>(CNGX_MENU_SUBMENU_ITEM, {
-    descendants: true,
+  /** Internal registry backing {@link submenuItems}. */
+  private readonly _submenuItems = signal<readonly CngxMenuSubmenuLike[]>([], {
+    equal: sameSubmenuItems,
   });
+
+  /**
+   * Submenu directives registered against this menu via DI. Empty when the
+   * menu has no submenus. Drives the trigger's focus-stack arrow-right /
+   * arrow-left semantics. Registration (not a content query) so a
+   * `[cngxMenuItemSubmenu]` declared inside a wrapper component's template
+   * is still discovered - see {@link registerSubmenuItem}.
+   */
+  readonly submenuItems = this._submenuItems.asReadonly();
+
+  /**
+   * Register a submenu companion (a {@link CngxMenuSubmenuLike}) and return
+   * its deregister callback. Called from `CngxMenuItemSubmenu`'s constructor;
+   * the companion invokes the returned callback on destroy.
+   */
+  registerSubmenuItem(item: CngxMenuSubmenuLike): () => void {
+    this._submenuItems.update((items) => [...items, item]);
+    return () => {
+      this._submenuItems.update((items) => items.filter((i) => i !== item));
+    };
+  }
 
   /** Emits the activated item's value on Enter/Space/click. */
   readonly itemActivated = outputFromObservable(
