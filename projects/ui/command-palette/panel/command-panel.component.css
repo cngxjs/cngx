@@ -91,6 +91,16 @@
   color: var(--cngx-command-row-active-color, inherit);
 }
 
+@media (forced-colors: active) {
+  /* The keyboard-active row signals only with a background tint, which
+     collapses to Canvas under WHCM; re-signal with the system Highlight pair
+     so the active command stays perceivable. */
+  .cngx-command-row.cngx-option--highlighted {
+    background: Highlight;
+    color: HighlightText;
+  }
+}
+
 .cngx-command-row.cngx-option--disabled {
   cursor: not-allowed;
   opacity: var(--cngx-command-row-disabled-opacity, 0.5);

@@ -40,6 +40,15 @@
   background: var(--cngx-command-backdrop, rgb(0 0 0 / 0.4));
 }
 
+@media (forced-colors: active) {
+  /* The elevation box-shadow that separates the modal from the page is dropped
+     under WHCM; the solid border carries the separation, so pin it to a system
+     color and keep the retry button's edge visible. */
+  .cngx-command-palette {
+    border-color: CanvasText;
+  }
+}
+
 /* Async-state chrome (skeleton / empty / error). */
 .cngx-command-state {
   padding: var(--cngx-command-state-pad, var(--cngx-space-lg, 1.5rem));

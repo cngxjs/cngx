@@ -123,6 +123,11 @@ const FORCED_COLORS_HARDENED_HOSTS: readonly string[] = [
   // re-signalled with Highlight/HighlightText. The `--focused` keyboard cursor
   // self-heals via its outline, so only the selection state carries a block.
   'projects/data-display/treetable/treetable.component.css',
+  // @cngx/ui/command-palette - the keyboard-active command row signals only with
+  // a background tint (re-signalled with Highlight); the palette's elevation
+  // box-shadow drops under WHCM and its border is pinned to CanvasText.
+  'projects/ui/command-palette/panel/command-panel.component.css',
+  'projects/ui/command-palette/palette/command-palette.component.css',
 ];
 
 // Files the box-shadow scan flags but that legitimately do NOT need a
@@ -253,7 +258,7 @@ describe('forced-colors hardened-hosts manifest', () => {
   });
 
   it('fixes the manifest size so a bulk edit dropping several hosts is caught', () => {
-    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(23);
+    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(25);
   });
 });
 
