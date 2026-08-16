@@ -8,8 +8,10 @@ import {
   type CngxContextMenuTriggerPopoverRef,
 } from './context-menu-trigger-core';
 import type { CngxMenuDismissHandlerFactory } from './dismiss-handler';
+import { createMenuFocusStack } from './menu-focus-stack';
 import { DEFAULT_MENU_CONFIG } from './menu-config';
 import type { CngxMenuHost } from './menu-host.token';
+import { createW3CMenuStrategy } from './menu-nav-strategy';
 
 function mockPopover(): CngxContextMenuTriggerPopoverRef & {
   show: ReturnType<typeof vi.fn>;
@@ -68,6 +70,8 @@ describe('createContextMenuTriggerCore', () => {
       menuConfig: DEFAULT_MENU_CONFIG,
       dismissFactory: noopDismissFactory,
       announcer: { announce: vi.fn() },
+      nav: createW3CMenuStrategy(),
+      focusStackFactory: createMenuFocusStack,
       ...over,
     });
   }

@@ -8,7 +8,9 @@ import {
 } from './dismiss-handler';
 import type { CngxMenuAnnouncerLike } from './menu-announcer';
 import type { CngxMenuConfig } from './menu-config';
+import type { CngxMenuFocusStackFactory } from './menu-focus-stack';
 import type { CngxMenuHost } from './menu-host.token';
+import type { CngxMenuNavStrategy } from './menu-nav-strategy';
 
 /**
  * Popover surface the context-menu core drives at pointer coordinates.
@@ -60,6 +62,10 @@ export interface CngxContextMenuTriggerCoreDeps {
   readonly dismissFactory: CngxMenuDismissHandlerFactory;
   /** Announcer for AT dismissal messages. */
   readonly announcer: CngxMenuAnnouncerLike;
+  /** Keyboard policy for ArrowRight/ArrowLeft submenu routing. */
+  readonly nav: CngxMenuNavStrategy;
+  /** Focus-stack factory (from `CNGX_MENU_FOCUS_STACK_FACTORY`). */
+  readonly focusStackFactory: CngxMenuFocusStackFactory;
   /**
    * Veto/datum seam. Evaluated as the FIRST thing in the `contextmenu`
    * handler, BEFORE `preventDefault()`. `{ open: false }` leaves the native
@@ -114,6 +120,17 @@ export function createContextMenuTriggerCore(
   deps: CngxContextMenuTriggerCoreDeps,
 ): CngxContextMenuTriggerCore {
   const resolveOpen = deps.resolveOpen ?? DEFAULT_RESOLVE_OPEN;
+
+  // Shared submenu focus-stack model - identical W3C APG keyboard contract to
+  // CngxMenuTrigger. The core owns the ArrowRight/ArrowLeft/Escape routing;
+  // whoever forwards keydown into `handleKeydown` (the trigger host, and the
+  // organism panel in @cngx/ui/context-menu) drives it.
+  const focusStack = deps.focusStackFactory({
+    rootMenu: () => deps.menu(),
+    popover: () => deps.popover(),
+    nav: deps.nav,
+    document: deps.document,
+  });
 
   const dismissBinding = createMenuTriggerDismissBinding({
     popover: () => deps.popover(),
@@ -203,12 +220,33 @@ export function createContextMenuTriggerCore(
       openAt(event.clientX, event.clientY);
     },
     handleKeydown(event: KeyboardEvent): void {
-      // Escape is owned by CngxPopover's global listener; focus has moved
-      // into the menu container by the time the user can press it.
       if (event.key === 'F10' && event.shiftKey) {
         event.preventDefault();
         const rect = deps.hostElement.getBoundingClientRect();
         openAt(rect.left + rect.width / 2, rect.top + rect.height / 2);
+        return;
+      }
+      // Submenu keyboard routing while the menu is open. Down/Up/Home/End/Enter
+      // are owned by the menu container's CngxActiveDescendant; the focus stack
+      // adds ArrowRight/ArrowLeft (open/close a submenu) and innermost-first
+      // Escape. Root-level Escape stays owned by CngxPopover's global listener,
+      // so it is only routed here once a submenu is on the stack.
+      if (!deps.popover().isVisible()) {
+        return;
+      }
+      const menu = focusStack.effectiveMenu();
+      switch (event.key) {
+        case 'ArrowRight':
+          focusStack.handleArrowRight(menu, event);
+          return;
+        case 'ArrowLeft':
+          focusStack.handleArrowLeft(menu, event);
+          return;
+        case 'Escape':
+          if (focusStack.stack().length > 0) {
+            focusStack.handleEscape(event);
+          }
+          return;
       }
     },
     syncOpenState(open: boolean): void {

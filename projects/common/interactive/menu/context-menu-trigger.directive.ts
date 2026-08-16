@@ -17,7 +17,9 @@ import {
 import { CNGX_MENU_DISMISS_HANDLER_FACTORY } from './dismiss-handler';
 import { CNGX_MENU_ANNOUNCER_FACTORY } from './menu-announcer';
 import { injectMenuConfig } from './menu-config';
+import { CNGX_MENU_FOCUS_STACK_FACTORY } from './menu-focus-stack';
 import type { CngxMenuHost } from './menu-host.token';
+import { CNGX_MENU_NAV_STRATEGY } from './menu-nav-strategy';
 
 /**
  * Opens a `CngxMenu`-bearing popover at pointer coordinates in response to
@@ -96,6 +98,8 @@ export class CngxContextMenuTrigger {
     menuConfig: injectMenuConfig(),
     dismissFactory: inject(CNGX_MENU_DISMISS_HANDLER_FACTORY),
     announcer: inject(CNGX_MENU_ANNOUNCER_FACTORY)(),
+    nav: inject(CNGX_MENU_NAV_STRATEGY),
+    focusStackFactory: inject(CNGX_MENU_FOCUS_STACK_FACTORY),
   });
 
   /**
