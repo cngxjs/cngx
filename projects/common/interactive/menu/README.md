@@ -205,7 +205,9 @@ Substitutable seams. Override via `providers` / `viewProviders` to swap behaviou
 | `CNGX_MENU_NAV_STRATEGY` | `createW3CMenuStrategy()` | Plug a non-W3C ArrowLeft / ArrowRight policy. Strategy steps are pure decisions. |
 | `CNGX_MENU_ANNOUNCER_FACTORY` | `createMenuAnnouncer` (root singleton) | Telemetry-wrapping, locale-aware, or test-doubled announcer. |
 | `CNGX_MENU_RADIO_GROUP` | `CngxMenuGroup` (via `useExisting`) | Hand-built menu host that needs to provide a radio-group contract. |
-| `CNGX_MENU_SUBMENU_ITEM` | `CngxMenuItemSubmenu` (via `useExisting`) | Alternative submenu-companion implementation. |
+| `CNGX_MENU_SUBMENU_ITEM` | `CngxMenuItemSubmenu` (via `useExisting`) | DI-resolvable `CngxMenuSubmenuLike` contract for a submenu companion. The menu discovers submenus via `registerSubmenuItem`, not this token. |
+| `CNGX_MENU_FOCUS_STACK_FACTORY` | `createMenuFocusStack` | Swap the submenu focus-stack model (non-W3C keyboard routing, telemetry-wrapping, test-doubled stack). Shared by `CngxMenuTrigger` and the context-menu trigger core. |
+| `CNGX_MENU_SUBMENU_WIRING` | (none) | Provide from a component shell to wire `CngxMenuItemSubmenu`'s popover + inner menu from DI instead of `[cngxMenuItemSubmenu]` / `[submenuMenu]` inputs. |
 
 `createMenuRadioController({ selectedValue, name })` is the pure factory for the radio-group contract when there is no `CngxMenuGroup` directive in play.
 

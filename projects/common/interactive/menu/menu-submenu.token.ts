@@ -23,9 +23,15 @@ export interface CngxMenuSubmenuLike {
 }
 
 /**
- * DI token a submenu-companion directive provides. The surrounding menu
- * collects every provider via `contentChildren(CNGX_MENU_SUBMENU_ITEM,
- * { descendants: true })` and exposes the array on `CngxMenuHost.submenuItems`.
+ * DI token a submenu-companion directive provides so composers can resolve
+ * its {@link CngxMenuSubmenuLike} contract via `inject(CNGX_MENU_SUBMENU_ITEM)`
+ * from within the submenu subtree.
+ *
+ * Note: the surrounding `CngxMenu` does NOT discover submenus through this
+ * token. Discovery is DI registration via
+ * {@link CngxMenuHost.registerSubmenuItem} (which crosses component view
+ * boundaries a content query cannot), and the result is exposed on
+ * `CngxMenuHost.submenuItems`.
  *
  * @category common/interactive/menu
  * @wcag AA
