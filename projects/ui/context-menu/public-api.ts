@@ -6,3 +6,4 @@ export {
   CngxContextMenuContent,
   type CngxContextMenuContentContext,
 } from './context-menu-content.directive';
+export { CngxContextMenuFor } from './context-menu-for.directive';
