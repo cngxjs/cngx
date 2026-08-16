@@ -20,18 +20,23 @@ export const STORY: DemoSpec = {
       href: 'https://www.w3.org/WAI/WCAG21/Understanding/keyboard.html',
     },
   ],
-  apiComponents: ['CngxContextMenu', 'CngxContextMenuFor', 'CngxContextMenuContent'],
+  apiComponents: [
+    'CngxContextMenu',
+    'CngxContextMenuFor',
+    'CngxContextMenuItem',
+    'CngxContextMenuDivider',
+    'CngxContextMenuContent',
+  ],
   moduleImports: [
-    "import { CngxContextMenu, CngxContextMenuContent, CngxContextMenuFor } from '@cngx/ui/context-menu';",
-    "import { CngxMenuItem, CngxMenuSeparator } from '@cngx/common/interactive';",
+    "import { CngxContextMenu, CngxContextMenuContent, CngxContextMenuDivider, CngxContextMenuFor, CngxContextMenuItem } from '@cngx/ui/context-menu';",
     "import { PEOPLE, type Person } from '../../../../fixtures';",
   ],
   imports: [
     'CngxContextMenu',
     'CngxContextMenuContent',
+    'CngxContextMenuDivider',
     'CngxContextMenuFor',
-    'CngxMenuItem',
-    'CngxMenuSeparator',
+    'CngxContextMenuItem',
   ],
   setup: `protected readonly rows: Person[] = PEOPLE.slice(0, 3);
 protected readonly lastAction = signal<string | null>(null);
@@ -58,21 +63,20 @@ protected act(action: string, person: Person): void {
 
   <cngx-context-menu ariaLabel="Row actions" #menu="cngxContextMenu">
     <ng-template cngxContextMenuContent let-row>
-      <button cngxMenuItem type="button" (click)="act('Open', row); menu.popover.hide()">
+      <cngx-context-menu-item value="open" (select)="act('Open', row); menu.popover.hide()">
         Open {{ row.name }}
-      </button>
-      <button cngxMenuItem type="button" (click)="act('Duplicate', row); menu.popover.hide()">
+      </cngx-context-menu-item>
+      <cngx-context-menu-item value="duplicate" (select)="act('Duplicate', row); menu.popover.hide()">
         Duplicate
-      </button>
-      <hr cngxMenuSeparator />
-      <button
-        cngxMenuItem
-        type="button"
+      </cngx-context-menu-item>
+      <cngx-context-menu-divider />
+      <cngx-context-menu-item
+        value="delete"
         [disabled]="row.role === 'Manager'"
-        (click)="act('Delete', row); menu.popover.hide()"
+        (select)="act('Delete', row); menu.popover.hide()"
       >
         Delete
-      </button>
+      </cngx-context-menu-item>
     </ng-template>
   </cngx-context-menu>`,
   templateChrome: `<div class="event-grid" style="margin-top:12px">
