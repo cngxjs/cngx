@@ -122,6 +122,20 @@ class NestedOptOutHost {
   readonly inner = viewChild.required('inner', { read: CngxPopover });
 }
 
+@Component({
+  template: `
+    <div cngxPopover #a="cngxPopover" [exclusive]="aExclusive()">A</div>
+    <div cngxPopover #b="cngxPopover" [exclusive]="bExclusive()">B</div>
+  `,
+  imports: [CngxPopover],
+})
+class OverrideHost {
+  readonly aExclusive = signal(true);
+  readonly bExclusive = signal(true);
+  readonly a = viewChild.required('a', { read: CngxPopover });
+  readonly b = viewChild.required('b', { read: CngxPopover });
+}
+
 function setup<T>(hostType: new () => T) {
   const fixture = TestBed.createComponent(hostType);
   fixture.detectChanges();
@@ -566,6 +580,36 @@ describe('CngxPopover', () => {
       fixture.detectChanges();
       expect(host.inner().state()).toBe('closed');
       expect(host.sibling().state()).toBe('closed');
+    });
+
+    it('exclusiveOverride(false) opens non-exclusively even when [exclusive] is true', () => {
+      const { host } = nestedSetup(OverrideHost);
+      host.b().exclusiveOverride.set(false);
+      host.a().show();
+      host.b().show();
+      expect(host.a().state()).not.toBe('closed');
+      expect(host.b().state()).not.toBe('closed');
+    });
+
+    it('exclusiveOverride(true) forces eviction even when [exclusive] is false', () => {
+      const { fixture, host } = nestedSetup(OverrideHost);
+      host.bExclusive.set(false);
+      fixture.detectChanges();
+      host.b().exclusiveOverride.set(true);
+      host.a().show();
+      host.b().show();
+      expect(host.a().state()).toBe('closed');
+      expect(host.b().state()).not.toBe('closed');
+    });
+
+    it('a null exclusiveOverride defers to the [exclusive] input', () => {
+      const { fixture, host } = nestedSetup(OverrideHost);
+      host.bExclusive.set(false);
+      fixture.detectChanges();
+      host.a().show();
+      host.b().show();
+      expect(host.a().state()).not.toBe('closed');
+      expect(host.b().state()).not.toBe('closed');
     });
   });
 

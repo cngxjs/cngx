@@ -314,6 +314,22 @@ export class CngxPopover {
    */
   readonly exclusive = input(true);
 
+  /**
+   * @internal
+   * Programmatic override of {@link exclusive}. `null` (default) defers to the
+   * `[exclusive]` input; a boolean wins over it. Lets a composing organism
+   * (e.g. a submenu wiring in `@cngx/ui/context-menu`) open a nested panel
+   * non-exclusively without a consumer-side `[exclusive]="false"` handgrip.
+   * Controlled+uncontrolled derivation: {@link effectiveExclusive} resolves
+   * the override first, then the input.
+   */
+  readonly exclusiveOverride = signal<boolean | null>(null);
+
+  /** Effective exclusivity - override wins, else the `[exclusive]` input. */
+  private readonly effectiveExclusive = computed<boolean>(
+    () => this.exclusiveOverride() ?? this.exclusive(),
+  );
+
   private readonly stateSignal = signal<PopoverState>('closed');
   private readonly idSignal = signal(nextUid('cngx-popover'));
 
@@ -456,7 +472,7 @@ export class CngxPopover {
     if (this.stateSignal() !== 'closed') {
       return;
     }
-    if (this.exclusive()) {
+    if (this.effectiveExclusive()) {
       // Snapshot the set: hide() mutates `openPopovers` mid-loop. An ancestor
       // is this popover's container, not a rival - hiding it would take this
       // panel down with it (the ancestor's display: none cascades).
