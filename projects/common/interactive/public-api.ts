@@ -270,6 +270,13 @@ export {
   type CngxMenuAnnouncerLike,
 } from './menu/menu-announcer';
 export { CngxContextMenuTrigger } from './menu/context-menu-trigger.directive';
+export {
+  createContextMenuTriggerCore,
+  type CngxContextMenuOpenDecision,
+  type CngxContextMenuTriggerCore,
+  type CngxContextMenuTriggerCoreDeps,
+  type CngxContextMenuTriggerPopoverRef,
+} from './menu/context-menu-trigger-core';
 export { provideCngxMenu, type CngxMenuFeature } from './menu/provide-cngx-menu';
 export {
   CNGX_MENU_RADIO_GROUP,
