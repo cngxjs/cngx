@@ -196,7 +196,10 @@ export { CngxMenu } from './menu/menu.directive';
 export { CNGX_MENU_HOST, type CngxMenuHost } from './menu/menu-host.token';
 export {
   CNGX_MENU_SUBMENU_ITEM,
+  CNGX_MENU_SUBMENU_WIRING,
   type CngxMenuSubmenuLike,
+  type CngxMenuSubmenuPopoverRef,
+  type CngxMenuSubmenuWiring,
 } from './menu/menu-submenu.token';
 export { CngxMenuItem } from './menu/menu-item.directive';
 export {

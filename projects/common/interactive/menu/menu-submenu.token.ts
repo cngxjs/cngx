@@ -35,3 +35,49 @@ export interface CngxMenuSubmenuLike {
 export const CNGX_MENU_SUBMENU_ITEM = new InjectionToken<CngxMenuSubmenuLike>(
   'CNGX_MENU_SUBMENU_ITEM',
 );
+
+/**
+ * Structural popover surface the submenu brain drives. Typed structurally so
+ * `@cngx/common/interactive` stays free of a `@cngx/common/popover` import
+ * (menu-accepted-debt §7) - a concrete `CngxPopover` satisfies it.
+ *
+ * @category common/interactive/menu
+ */
+export interface CngxMenuSubmenuPopoverRef {
+  readonly isVisible: () => boolean;
+  show(): void;
+  hide(): void;
+  readonly anchorElement: { set(el: HTMLElement | null): void };
+  /** Popover unique id signal - composes the `anchor-name` CSS value. */
+  readonly id: () => string;
+  /** Popover host element - submenu hover listeners attach here. */
+  readonly elementRef: { readonly nativeElement: HTMLElement };
+}
+
+/**
+ * Wiring a component shell provides so `CngxMenuItemSubmenu` resolves its
+ * popover and inner menu from DI instead of from `[cngxMenuItemSubmenu]` /
+ * `[submenuMenu]` inputs. Lets `@cngx/ui/context-menu` wire the submenu
+ * brain internally (Bridge-Input-Regel) - the brain stays inert (no
+ * `aria-haspopup` / `aria-expanded`) until one source is present.
+ *
+ * @category common/interactive/menu
+ */
+export interface CngxMenuSubmenuWiring {
+  popover(): CngxMenuSubmenuPopoverRef;
+  menu(): CngxMenuHost;
+}
+
+/**
+ * DI token a component shell provides to wire `CngxMenuItemSubmenu`'s popover
+ * and inner menu without template inputs. Resolution order in the brain:
+ * explicit input first, then this token, else inert.
+ *
+ * @category common/interactive/menu
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-submenu.token.ts
+ * @since 0.1.0
+ */
+export const CNGX_MENU_SUBMENU_WIRING = new InjectionToken<CngxMenuSubmenuWiring>(
+  'CNGX_MENU_SUBMENU_WIRING',
+);

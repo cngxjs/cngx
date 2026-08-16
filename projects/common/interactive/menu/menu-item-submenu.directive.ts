@@ -19,25 +19,12 @@ import { CNGX_MENU_ANNOUNCER_FACTORY } from './menu-announcer';
 import { injectMenuConfig } from './menu-config';
 import { CNGX_MENU_HOST, type CngxMenuHost } from './menu-host.token';
 import { CngxMenuItem } from './menu-item.directive';
-import { CNGX_MENU_SUBMENU_ITEM, type CngxMenuSubmenuLike } from './menu-submenu.token';
-
-/** See `CngxListboxTrigger` - same structural contract. */
-interface PopoverController {
-  readonly isVisible: () => boolean;
-  show(): void;
-  hide(): void;
-  readonly anchorElement: { set(el: HTMLElement | null): void };
-  /**
-   * Popover unique id signal - used to compose the `anchor-name` CSS value
-   * the browser's CSS Anchor Positioning expects on the anchor element.
-   */
-  readonly id: () => string;
-  /**
-   * Popover host element - the submenu directive attaches hover listeners to
-   * it so the submenu stays open while the user mouses over its items.
-   */
-  readonly elementRef: ElementRef<HTMLElement>;
-}
+import {
+  CNGX_MENU_SUBMENU_ITEM,
+  CNGX_MENU_SUBMENU_WIRING,
+  type CngxMenuSubmenuLike,
+  type CngxMenuSubmenuPopoverRef,
+} from './menu-submenu.token';
 
 /**
  * Companion directive applied to a `[cngxMenuItem]` that opens a nested
@@ -47,10 +34,14 @@ interface PopoverController {
  * submenu source so the menu trigger can drive arrow-right / arrow-left
  * focus-stack semantics.
  *
- * Two inputs:
- * - `cngxMenuItemSubmenu`: the popover wrapping the submenu.
- * - `submenuMenu`: the inner `CngxMenu` (or any `CngxMenuHost`) the
- *   trigger transfers focus to when the submenu opens.
+ * Wiring, two ways (Bridge-Input-Regel):
+ * - `cngxMenuItemSubmenu` + `submenuMenu` inputs bind the popover and the
+ *   inner `CngxMenu` directly, or
+ * - a component shell provides `CNGX_MENU_SUBMENU_WIRING` and omits both
+ *   inputs, so the brain resolves them from DI.
+ *
+ * Until one source is present the brain stays inert: it renders neither
+ * `aria-haspopup` nor `aria-expanded` and opens nothing.
  *
  * The submenu popover needs no `[exclusive]` binding: a popover nested
  * inside another never evicts its ancestor, so opening the submenu leaves
@@ -73,56 +64,101 @@ interface PopoverController {
   providers: [{ provide: CNGX_MENU_SUBMENU_ITEM, useExisting: CngxMenuItemSubmenu }],
   host: {
     '[id]': 'id',
-    '[attr.aria-haspopup]': '"menu"',
-    '[attr.aria-expanded]': 'isOpen()',
+    '[attr.aria-haspopup]': 'ariaHaspopup()',
+    '[attr.aria-expanded]': 'ariaExpanded()',
     '[style.anchor-name]': 'cssAnchorName()',
     '(pointerenter)': 'handleParentEnter()',
     '(pointerleave)': 'handleParentLeave()',
   },
 })
 export class CngxMenuItemSubmenu implements CngxMenuSubmenuLike {
-  /** Popover wrapping the submenu. Required. */
-  readonly popover = input.required<PopoverController>({ alias: 'cngxMenuItemSubmenu' });
+  /**
+   * Popover wrapping the submenu. Optional - a component shell can instead
+   * provide `CNGX_MENU_SUBMENU_WIRING` (Bridge-Input-Regel: an optional DI
+   * fallback forbids `input.required`; the empty-string transform keeps a
+   * bare `cngxMenuItemSubmenu` attribute from binding `''`).
+   */
+  readonly popover = input<
+    CngxMenuSubmenuPopoverRef | undefined,
+    CngxMenuSubmenuPopoverRef | '' | undefined
+  >(undefined, {
+    alias: 'cngxMenuItemSubmenu',
+    transform: (v) => (typeof v === 'string' ? undefined : v),
+  });
 
-  /** Inner `CngxMenuHost` (the submenu's own `CngxMenu`). Required. */
-  readonly submenuMenu = input.required<CngxMenuHost>();
+  /** Inner `CngxMenuHost` (the submenu's own `CngxMenu`). Optional; resolved from DI wiring when omitted. */
+  readonly submenuMenu = input<CngxMenuHost | undefined, CngxMenuHost | '' | undefined>(undefined, {
+    transform: (v) => (typeof v === 'string' ? undefined : v),
+  });
 
   private readonly elementRef = inject(ElementRef<HTMLElement>);
   private readonly menuItem = inject(CngxMenuItem, { optional: true, self: true });
   private readonly menuHost = inject(CNGX_MENU_HOST, { optional: true });
+  private readonly wiring = inject(CNGX_MENU_SUBMENU_WIRING, { optional: true });
+  private readonly announcer = inject(CNGX_MENU_ANNOUNCER_FACTORY)();
+  private readonly menuConfig = injectMenuConfig();
+  private readonly destroyRef = inject(DestroyRef);
   private readonly ownId = nextUid('cngx-menu-submenu');
 
+  /** Popover resolved from the input, else the DI wiring fallback. */
+  private readonly resolvedPopover = computed<CngxMenuSubmenuPopoverRef | null>(
+    () => this.popover() ?? this.wiring?.popover() ?? null,
+  );
+  /** Inner menu resolved from the input, else the DI wiring fallback. */
+  private readonly resolvedMenu = computed<CngxMenuHost | null>(
+    () => this.submenuMenu() ?? this.wiring?.menu() ?? null,
+  );
+  /** True once both the popover and inner menu are wired (input or DI). */
+  private readonly wired = computed<boolean>(
+    () => this.resolvedPopover() !== null && this.resolvedMenu() !== null,
+  );
+
   /**
-   * Effective id used by `CngxMenuTrigger.submenuItems().find(s => s.id ===
+   * Effective id used by `CngxMenuHost.submenuItems().find(s => s.id ===
    * activeId)`. When applied alongside `[cngxMenuItem]` the directive
    * mirrors the sibling's id so the trigger's lookup matches the AD's
    * `activeId`. When applied alone (no sibling), falls back to a fresh
-   * `nextUid` - the AD will never highlight this element so the trigger
-   * lookup is moot, but the host element still receives a valid id.
+   * `nextUid`.
    */
   get id(): string {
     return this.menuItem?.id ?? this.ownId;
   }
 
-  readonly isOpen = computed<boolean>(() => this.popover().isVisible());
+  readonly isOpen = computed<boolean>(() => this.resolvedPopover()?.isVisible() ?? false);
 
-  /** CSS Anchor Positioning name - matches the popover's `position-anchor`. */
-  protected readonly cssAnchorName = computed(() => `--cngx-pop-${this.popover().id()}`);
+  /** `aria-haspopup="menu"` only while wired; `null` keeps the brain inert. */
+  protected readonly ariaHaspopup = computed<string | null>(() => (this.wired() ? 'menu' : null));
+  /** `aria-expanded` mirrors open state while wired; `null` otherwise. */
+  protected readonly ariaExpanded = computed<boolean | null>(() =>
+    this.wired() ? this.isOpen() : null,
+  );
+  /** CSS Anchor Positioning name - `null` while unwired. */
+  protected readonly cssAnchorName = computed<string | null>(() => {
+    const popover = this.resolvedPopover();
+    return popover ? `--cngx-pop-${popover.id()}` : null;
+  });
 
   get inner(): CngxMenuHost {
-    return this.submenuMenu();
+    // Non-null by contract: `inner` is only read during routing, which the
+    // trigger reaches only once the submenu is wired and open.
+    return this.resolvedMenu()!;
   }
 
   open(): void {
-    this.popover().anchorElement.set(this.elementRef.nativeElement as HTMLElement);
-    if (!this.popover().isVisible()) {
-      this.popover().show();
+    const popover = this.resolvedPopover();
+    if (!popover) {
+      return;
+    }
+    popover.anchorElement.set(this.elementRef.nativeElement as HTMLElement);
+    if (!popover.isVisible()) {
+      popover.show();
     }
   }
 
   close(): void {
-    if (this.popover().isVisible()) {
-      this.popover().hide();
+    const popover = this.resolvedPopover();
+    if (popover?.isVisible()) {
+      popover.hide();
     }
   }
 
@@ -163,10 +199,6 @@ export class CngxMenuItemSubmenu implements CngxMenuSubmenuLike {
     }, delay);
   }
 
-  private readonly announcer = inject(CNGX_MENU_ANNOUNCER_FACTORY)();
-  private readonly menuConfig = injectMenuConfig();
-  private readonly destroyRef = inject(DestroyRef);
-
   /**
    * Transition tracker for `isOpen`. `linkedSignal` carries an explicit
    * structural `equal` so the effect below only fires on a real
@@ -185,7 +217,7 @@ export class CngxMenuItemSubmenu implements CngxMenuSubmenuLike {
     // Register with the surrounding menu via DI (not a content query) so this
     // submenu is discovered even when declared inside a wrapper component's
     // template. The menu reads `id` / `inner` / `isOpen` lazily at routing
-    // time, by which point the required inputs are bound.
+    // time, by which point the wiring (input or DI) is resolved.
     const deregister = this.menuHost?.registerSubmenuItem(this);
     if (deregister) {
       this.destroyRef.onDestroy(deregister);
@@ -211,14 +243,18 @@ export class CngxMenuItemSubmenu implements CngxMenuSubmenuLike {
         if (hovered) {
           this.cancelCloseTimer();
           this.open();
-        } else if (this.popover().isVisible()) {
+        } else if (this.resolvedPopover()?.isVisible()) {
           this.scheduleClose();
         }
       });
     });
 
     afterNextRender(() => {
-      const popoverEl = this.popover().elementRef.nativeElement;
+      const popover = this.resolvedPopover();
+      if (!popover) {
+        return;
+      }
+      const popoverEl = popover.elementRef.nativeElement;
       const onEnter = (): void => this.popoverHovered.set(true);
       const onLeave = (): void => this.popoverHovered.set(false);
       popoverEl.addEventListener('pointerenter', onEnter);
@@ -240,7 +276,17 @@ export class CngxMenuItemSubmenu implements CngxMenuSubmenuLike {
               'Add [cngxMenuItem] alongside [cngxMenuItemSubmenu] on the same element.',
           );
         }
-        warnMissingSubmenuFallbacks(this.popover().elementRef.nativeElement);
+        if (!this.wired()) {
+          console.warn(
+            '[cngxMenuItemSubmenu] has no popover/menu source. Bind [cngxMenuItemSubmenu] and ' +
+              '[submenuMenu], or provide CNGX_MENU_SUBMENU_WIRING from a wrapping component. ' +
+              'The brain stays inert (no aria-haspopup / aria-expanded) until one is present.',
+          );
+        }
+        const popover = this.resolvedPopover();
+        if (popover) {
+          warnMissingSubmenuFallbacks(popover.elementRef.nativeElement);
+        }
       });
     }
   }
