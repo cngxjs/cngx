@@ -141,25 +141,6 @@ export function createContextMenuTriggerCore(
   });
 
   let virtualAnchor: HTMLElement | null = null;
-  let savedFocus: HTMLElement | null = null;
-
-  const captureFocus = (): void => {
-    if (savedFocus === null) {
-      const active = deps.document.activeElement;
-      savedFocus = active instanceof HTMLElement ? active : null;
-    }
-  };
-
-  const restoreFocus = (): void => {
-    const target = savedFocus;
-    savedFocus = null;
-    if (!target) {
-      return;
-    }
-    queueMicrotask(() => {
-      target.focus();
-    });
-  };
 
   const ensureVirtualAnchor = (): HTMLElement => {
     if (virtualAnchor) {
@@ -180,12 +161,12 @@ export function createContextMenuTriggerCore(
   };
 
   const openAt = (x: number, y: number): void => {
-    // Capture savedFocus eagerly BEFORE show(): the effect-driven capture
-    // races the queueMicrotask focus transfer below in real browsers and
-    // ends up storing the menu UL instead of the pre-open target. The
-    // effect still runs (it also attaches the dismiss binding) but the
-    // `savedFocus === null` guard keeps this earlier capture.
-    captureFocus();
+    // Capture the pre-open focus eagerly BEFORE show(): the effect-driven
+    // capture races the queueMicrotask focus transfer below in real browsers
+    // and ends up storing the menu UL instead of the pre-open target. The
+    // effect still runs (it also attaches the dismiss binding) but the focus
+    // stack's own `savedFocus === null` guard keeps this earlier capture.
+    focusStack.captureFocus();
     const anchor = ensureVirtualAnchor();
     anchor.style.left = `${x}px`;
     anchor.style.top = `${y}px`;
@@ -251,11 +232,11 @@ export function createContextMenuTriggerCore(
     },
     syncOpenState(open: boolean): void {
       if (open) {
-        captureFocus();
+        focusStack.captureFocus();
         dismissBinding.attach();
       } else {
         dismissBinding.detach();
-        restoreFocus();
+        focusStack.restoreFocus();
       }
     },
     destroy(): void {
