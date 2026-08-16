@@ -1,0 +1,8 @@
+/* Structural only. Surface, hover/active colors, spacing tokens, the touch
+   target floor and the Material bridge land in Phase 4 (theming).
+   ViewEncapsulation.None - selector-scoped. */
+cngx-context-menu-item,
+button[cngxContextMenuItem] {
+  display: flex;
+  align-items: center;
+}
