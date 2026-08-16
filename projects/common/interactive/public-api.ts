@@ -219,6 +219,14 @@ export {
   type CngxMenuNavStrategy,
 } from './menu/menu-nav-strategy';
 export {
+  CNGX_MENU_FOCUS_STACK_FACTORY,
+  createMenuFocusStack,
+  type CngxMenuFocusStack,
+  type CngxMenuFocusStackDeps,
+  type CngxMenuFocusStackFactory,
+  type CngxMenuFocusStackPopoverRef,
+} from './menu/menu-focus-stack';
+export {
   CNGX_MENU_CONFIG,
   DEFAULT_MENU_CONFIG,
   injectMenuConfig,

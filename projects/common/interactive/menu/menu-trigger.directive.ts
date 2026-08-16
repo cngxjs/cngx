@@ -7,7 +7,6 @@ import {
   ElementRef,
   inject,
   input,
-  signal,
   untracked,
 } from '@angular/core';
 
@@ -18,9 +17,9 @@ import {
 } from './dismiss-handler';
 import { CNGX_MENU_ANNOUNCER_FACTORY } from './menu-announcer';
 import { injectMenuConfig } from './menu-config';
+import { CNGX_MENU_FOCUS_STACK_FACTORY } from './menu-focus-stack';
 import type { CngxMenuHost } from './menu-host.token';
 import { CNGX_MENU_NAV_STRATEGY } from './menu-nav-strategy';
-import type { CngxMenuSubmenuLike } from './menu-submenu.token';
 
 /** See `CngxListboxTrigger` - same structural contract. */
 interface PopoverController extends CngxMenuDismissPopoverRef {
@@ -39,7 +38,9 @@ interface PopoverController extends CngxMenuDismissPopoverRef {
  * its inner `CngxMenu` is pushed onto the stack so subsequent ArrowDown /
  * Up / Home / End / Enter target the submenu's items via its own
  * `CngxActiveDescendant`. ArrowLeft / Escape pop the stack and close the
- * top submenu.
+ * top submenu. The stack model is supplied by
+ * {@link CNGX_MENU_FOCUS_STACK_FACTORY}, so it is shared verbatim with the
+ * context-menu trigger core and swappable enterprise-wide.
  *
  * ### Focus model
  *
@@ -92,28 +93,24 @@ export class CngxMenuTrigger {
   /** Mirrors `CngxPopover.isVisible()`. */
   readonly isOpen = computed<boolean>(() => this.popover().isVisible());
 
-  private readonly nav = inject(CNGX_MENU_NAV_STRATEGY);
-
-  /**
-   * Active submenu chain - empty when only the outer menu is open. Each
-   * entry is the `inner` host of an open submenu, top entry being the
-   * deepest. Keystrokes target the top entry's AD.
-   */
-  private readonly submenuStack = signal<readonly CngxMenuHost[]>([]);
-
-  /**
-   * Focused element captured at popover-open time. Restored after close via
-   * `queueMicrotask` so the focus write happens after the popover-close DOM
-   * mutation settles. Captured reactively via the `isOpen` effect below so
-   * mouse-driven open paths (consumer's `(click)="pop.toggle()"`) get the
-   * same treatment as keyboard-driven open paths.
-   */
-  private savedFocus: HTMLElement | null = null;
-
   private readonly doc = inject(DOCUMENT);
   private readonly hostElRef = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly menuConfig = injectMenuConfig();
   private readonly announcer = inject(CNGX_MENU_ANNOUNCER_FACTORY)();
+
+  /**
+   * Submenu focus-stack model - the active submenu chain, the saved-focus
+   * slot restored after close, and the ArrowRight / ArrowLeft / Escape /
+   * activation routing that consults `CNGX_MENU_NAV_STRATEGY`. Shared with
+   * the context-menu trigger core via {@link CNGX_MENU_FOCUS_STACK_FACTORY}.
+   */
+  private readonly focusStack = inject(CNGX_MENU_FOCUS_STACK_FACTORY)({
+    rootMenu: () => this.menu(),
+    popover: () => this.popover(),
+    nav: inject(CNGX_MENU_NAV_STRATEGY),
+    document: this.doc,
+  });
+
   private readonly dismissBinding = createMenuTriggerDismissBinding({
     popover: () => this.popover(),
     hostElement: this.hostElRef.nativeElement,
@@ -135,24 +132,14 @@ export class CngxMenuTrigger {
       const open = this.isOpen();
       untracked(() => {
         if (open) {
-          if (this.savedFocus === null) {
-            const active = this.doc.activeElement;
-            this.savedFocus = active instanceof HTMLElement ? active : null;
-          }
+          this.focusStack.captureFocus();
           this.dismissBinding.attach();
         } else {
           this.dismissBinding.detach();
-          if (this.savedFocus !== null) {
-            this.restoreFocus();
-          }
+          this.focusStack.restoreFocus();
         }
       });
     });
-  }
-
-  private effectiveMenu(): CngxMenuHost {
-    const stack = this.submenuStack();
-    return stack.length === 0 ? this.menu() : stack[stack.length - 1];
   }
 
   protected handleKeydown(event: KeyboardEvent): void {
@@ -174,18 +161,12 @@ export class CngxMenuTrigger {
       return;
     }
 
-    const menu = this.effectiveMenu();
+    const menu = this.focusStack.effectiveMenu();
     const ad = menu.ad;
 
     switch (key) {
       case 'Escape':
-        event.preventDefault();
-        if (this.submenuStack().length > 0) {
-          event.stopPropagation();
-          this.popSubmenu();
-        } else {
-          this.popover().hide();
-        }
+        this.focusStack.handleEscape(event);
         return;
       case 'ArrowDown':
         event.preventDefault();
@@ -204,107 +185,15 @@ export class CngxMenuTrigger {
         ad.highlightLast();
         return;
       case 'ArrowRight':
-        this.handleArrowRight(menu, ad, event);
+        this.focusStack.handleArrowRight(menu, event);
         return;
       case 'ArrowLeft':
-        this.handleArrowLeft(ad, event);
+        this.focusStack.handleArrowLeft(menu, event);
         return;
       case 'Enter':
       case ' ':
-        this.handleActivation(menu, ad, event);
+        this.focusStack.handleActivation(menu, event);
         return;
     }
-  }
-
-  private handleArrowRight(menu: CngxMenuHost, ad: CngxMenuHost['ad'], event: KeyboardEvent): void {
-    const activeId = ad.activeId();
-    const submenu = this.findSubmenu(menu, activeId);
-    const action = this.nav.onArrowRight({
-      activeId,
-      hasSubmenu: !!submenu,
-      submenuOpen: submenu?.isOpen() ?? false,
-    });
-    if (action.kind === 'open-submenu' && submenu) {
-      event.preventDefault();
-      this.openSubmenu(submenu);
-    }
-  }
-
-  private handleArrowLeft(ad: CngxMenuHost['ad'], event: KeyboardEvent): void {
-    const stackOpen = this.submenuStack().length > 0;
-    const action = this.nav.onArrowLeft({
-      activeId: ad.activeId(),
-      hasSubmenu: false,
-      submenuOpen: stackOpen,
-    });
-    if (action.kind === 'close-submenu' && stackOpen) {
-      event.preventDefault();
-      this.popSubmenu();
-    }
-  }
-
-  private handleActivation(menu: CngxMenuHost, ad: CngxMenuHost['ad'], event: KeyboardEvent): void {
-    if (!ad.activeItem()) {
-      return;
-    }
-    event.preventDefault();
-    const submenu = this.findSubmenu(menu, ad.activeId());
-    if (submenu) {
-      this.openSubmenu(submenu);
-    } else {
-      ad.activateCurrent();
-      this.closeAll();
-    }
-  }
-
-  private findSubmenu(
-    menu: CngxMenuHost,
-    activeId: string | null,
-  ): CngxMenuSubmenuLike | undefined {
-    if (!activeId) {
-      return undefined;
-    }
-    return menu.submenuItems().find((s) => s.id === activeId);
-  }
-
-  private openSubmenu(submenu: CngxMenuSubmenuLike): void {
-    submenu.open();
-    this.submenuStack.update((s) => [...s, submenu.inner]);
-    submenu.inner.ad.highlightFirst();
-  }
-
-  private popSubmenu(): void {
-    const stack = this.submenuStack();
-    if (stack.length === 0) {
-      return;
-    }
-    const top = stack[stack.length - 1];
-    const parent = stack.length === 1 ? this.menu() : stack[stack.length - 2];
-    const submenu = parent.submenuItems().find((s) => s.inner === top);
-    submenu?.close();
-    this.submenuStack.update((prev) => prev.slice(0, -1));
-  }
-
-  private closeAll(): void {
-    const stack = this.submenuStack();
-    for (let i = stack.length - 1; i >= 0; i--) {
-      const inner = stack[i];
-      const parent = i === 0 ? this.menu() : stack[i - 1];
-      const submenu = parent.submenuItems().find((s) => s.inner === inner);
-      submenu?.close();
-    }
-    this.submenuStack.set([]);
-    this.popover().hide();
-  }
-
-  private restoreFocus(): void {
-    const target = this.savedFocus;
-    this.savedFocus = null;
-    if (!target) {
-      return;
-    }
-    queueMicrotask(() => {
-      target.focus();
-    });
   }
 }
