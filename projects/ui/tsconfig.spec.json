@@ -33,6 +33,7 @@
     "stat-card/**/*.spec.ts",
     "chart-panel/**/*.spec.ts",
     "timeline/**/*.spec.ts",
-    "a11y/**/*.spec.ts"
+    "a11y/**/*.spec.ts",
+    "context-menu/**/*.spec.ts"
   ]
 }

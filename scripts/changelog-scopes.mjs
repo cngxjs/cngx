@@ -65,6 +65,7 @@ export const LIBRARY_SCOPES = [
   'ui/timeline',
   'ui/a11y',
   'ui/command-palette',
+  'ui/context-menu',
   'themes/material',
 ];
 

@@ -89,6 +89,7 @@ jobs:
             ui/timeline
             ui/a11y
             ui/command-palette
+            ui/context-menu
             themes/material
             examples
             examples-gen

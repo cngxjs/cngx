@@ -1,0 +1,7 @@
+/* Structural only. Surface, borders, radius, spacing tokens and the Material
+   bridge land in Phase 4 (theming). ViewEncapsulation.None - selector-scoped. */
+cngx-context-menu {
+  display: flex;
+  flex-direction: column;
+  min-inline-size: max-content;
+}
