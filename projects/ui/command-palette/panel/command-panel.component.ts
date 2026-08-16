@@ -66,6 +66,7 @@ interface RenderGroup {
   encapsulation: ViewEncapsulation.None,
   imports: [CngxSearch, CngxListbox, CngxOption, CngxHighlight, NgTemplateOutlet],
   styleUrl: './command-panel.component.css',
+  host: { class: 'cngx-command-panel' },
   template: `
     <div class="cngx-command-panel-input-row">
       @if (scope(); as activeScope) {

@@ -5,6 +5,20 @@
  * root [data-density] swap cascades here; use-sites read them bare.
  */
 
+/* SET the panel's spacing tokens from the global scale at the panel's own
+   host, so a root [data-density] swap re-scales the input row, listbox, rows,
+   and chip whether or not the palette wrapper is present. Descendants read the
+   tokens bare. */
+.cngx-command-panel {
+  display: block;
+  --cngx-command-input-gap: var(--cngx-space-sm, 0.5rem);
+  --cngx-command-input-pad: var(--cngx-space-md, 1rem);
+  --cngx-command-row-gap: var(--cngx-space-sm, 0.5rem);
+  --cngx-command-row-pad: var(--cngx-space-sm, 0.5rem);
+  --cngx-command-listbox-pad: var(--cngx-space-xs, 0.25rem);
+  --cngx-command-chip-pad: var(--cngx-space-sm, 0.5rem);
+}
+
 .cngx-command-panel-input-row {
   display: flex;
   align-items: center;

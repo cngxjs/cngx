@@ -7,11 +7,9 @@
  */
 
 .cngx-command-palette {
-  --cngx-command-input-gap: var(--cngx-space-sm, 0.5rem);
-  --cngx-command-input-pad: var(--cngx-space-md, 1rem);
-  --cngx-command-row-gap: var(--cngx-space-sm, 0.5rem);
-  --cngx-command-row-pad: var(--cngx-space-sm, 0.5rem);
-  --cngx-command-listbox-pad: var(--cngx-space-xs, 0.25rem);
+  /* Panel spacing tokens (input/row/listbox/chip) are SET on the panel's own
+     host in command-panel.component.css; the palette host owns only the
+     surface-level tokens below. */
   --cngx-command-footer-gap: var(--cngx-space-md, 1rem);
   --cngx-command-footer-pad-y: var(--cngx-space-sm, 0.5rem);
   --cngx-command-footer-pad-x: var(--cngx-space-md, 1rem);
