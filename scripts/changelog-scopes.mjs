@@ -16,6 +16,7 @@ export const LIBRARY_SCOPES = [
   'common',
   'common/a11y',
   'common/audio',
+  'common/command',
   'common/interactive',
   'common/display',
   'common/popover',
@@ -63,6 +64,7 @@ export const LIBRARY_SCOPES = [
   'ui/chart-panel',
   'ui/timeline',
   'ui/a11y',
+  'ui/command-palette',
   'themes/material',
 ];
 

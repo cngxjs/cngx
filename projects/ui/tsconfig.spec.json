@@ -10,6 +10,7 @@
     "*.d.ts",
     "*.spec.ts",
     "../testing/setup/vitest-setup.ts",
+    "command-palette/**/*.spec.ts",
     "action-button/**/*.spec.ts",
     "sidenav/**/*.spec.ts",
     "skeleton/**/*.spec.ts",

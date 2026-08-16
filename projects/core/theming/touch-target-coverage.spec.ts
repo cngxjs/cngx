@@ -111,6 +111,15 @@ const SIZE_FLOOR_HOSTS: ReadonlyArray<{ file: string; note: string }> = [
   { file: 'projects/ui/stepper/styles/stepper-base.css', note: 'stepper step header' },
   // @cngx/ui - a11y panel
   { file: 'projects/ui/a11y/a11y-panel.component.css', note: 'accessibility-panel reset button' },
+  // @cngx/ui - command palette
+  {
+    file: 'projects/ui/command-palette/panel/command-panel.component.css',
+    note: 'command row + scope chip',
+  },
+  {
+    file: 'projects/ui/command-palette/palette/command-palette.component.css',
+    note: 'command-palette retry button',
+  },
 ];
 
 // Interactive-role stylesheets that legitimately do NOT floor a discrete tap
@@ -200,7 +209,7 @@ describe('touch-target size-floor coverage manifest', () => {
     // The registry itself (system-tokens.css) declares the token and is not a
     // consumer, so it is excluded by construction. This count is the coarse net
     // alongside the per-file assertions and the source scan below.
-    expect(SIZE_FLOOR_HOSTS.length).toBe(46);
+    expect(SIZE_FLOOR_HOSTS.length).toBe(48);
   });
 });
 

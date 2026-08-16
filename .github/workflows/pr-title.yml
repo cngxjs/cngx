@@ -40,6 +40,7 @@ jobs:
             common
             common/a11y
             common/audio
+            common/command
             common/interactive
             common/display
             common/popover
@@ -87,6 +88,7 @@ jobs:
             ui/chart-panel
             ui/timeline
             ui/a11y
+            ui/command-palette
             themes/material
             examples
             examples-gen

@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'Typing the input feeds CngxListboxSearch (debounced via the CngxSearch host directive); the listbox reads term + matchFn reactively, palette.hasSearchResults() drives the empty state, and aria-controls links the input to the listbox.',
   description:
-    'Search-filtered command palette: a separate <input cngxListboxSearch> drives a sibling listbox via [cngxSearchRef], and the listbox owns aria-activedescendant while the input keeps focus and native text-editing keystrokes.',
+    'Search-filtered command palette: a separate <input cngxListboxSearch> drives a sibling listbox via [cngxSearchRef], and the listbox owns aria-activedescendant while the input keeps focus and native text-editing keystrokes. This is the molecule seam; the full Cmd/Ctrl+K organism preset built on the command registry lives at /ui/command-palette/basic.',
   level: 'molecule',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',

@@ -1,0 +1,114 @@
+/*
+ * Command palette surface. The host SETs every spacing token from the global
+ * scale, so a root [data-density] swap (and the Material density bridge)
+ * re-scales the whole palette - the panel rows, scope chip, and footer read
+ * these inherited tokens bare. Structural layout is split from thematic
+ * color/surface/elevation; all values are var(--cngx-*, literal).
+ */
+
+.cngx-command-palette {
+  /* Panel spacing tokens (input/row/listbox/chip) are SET on the panel's own
+     host in command-panel.component.css; the palette host owns only the
+     surface-level tokens below. */
+  --cngx-command-footer-gap: var(--cngx-space-md, 1rem);
+  --cngx-command-footer-pad-y: var(--cngx-space-sm, 0.5rem);
+  --cngx-command-footer-pad-x: var(--cngx-space-md, 1rem);
+  --cngx-command-state-pad: var(--cngx-space-lg, 1.5rem);
+
+  padding: 0;
+  inline-size: var(--cngx-command-width, min(40rem, calc(100vw - 2rem)));
+  max-block-size: var(--cngx-command-max-h, min(32rem, calc(100vh - 6rem)));
+  overflow: hidden;
+  border: var(--cngx-command-border-width, 1px) solid
+    var(--cngx-command-border, var(--cngx-color-border, #e5e7eb));
+  border-radius: var(--cngx-command-radius, var(--cngx-radius-lg, 0.75rem));
+  background: var(--cngx-command-bg, var(--cngx-color-surface, #ffffff));
+  color: var(--cngx-command-color, inherit);
+  box-shadow: var(--cngx-command-shadow, 0 10px 40px rgb(0 0 0 / 0.2));
+}
+
+/* Column layout only while open. The base rule must NOT set `display`, or it
+   would override the UA `dialog:not([open]) { display: none }` and render the
+   palette in normal flow when closed. `showModal()` sets `[open]`, which also
+   promotes the dialog to the centred top layer. */
+.cngx-command-palette[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.cngx-command-palette::backdrop {
+  background: var(--cngx-command-backdrop, rgb(0 0 0 / 0.4));
+}
+
+@media (forced-colors: active) {
+  /* The elevation box-shadow that separates the modal from the page is dropped
+     under WHCM; the solid border carries the separation, so pin it to a system
+     color and keep the retry button's edge visible. */
+  .cngx-command-palette {
+    border-color: CanvasText;
+  }
+}
+
+/* Async-state chrome (skeleton / empty / error). */
+.cngx-command-state {
+  padding: var(--cngx-command-state-pad, var(--cngx-space-lg, 1.5rem));
+  text-align: center;
+  color: var(--cngx-command-state-color, var(--cngx-color-muted-foreground, #6b7280));
+}
+
+.cngx-command-state--error {
+  color: var(--cngx-command-error-color, var(--cngx-color-danger, #dc2626));
+}
+
+.cngx-command-state--error-banner {
+  padding: var(--cngx-space-sm, 0.5rem) var(--cngx-space-md, 1rem);
+  color: var(--cngx-command-error-color, var(--cngx-color-danger, #dc2626));
+}
+
+/* Retry button - a discrete tap target; floor its hit area to the pointer-
+   derived minimum (WCAG 2.5.5), inert at 0px on a fine pointer. */
+.cngx-command-retry {
+  min-block-size: var(--cngx-target-min, 0px);
+  margin-inline-start: var(--cngx-space-sm, 0.5rem);
+  padding-inline: var(--cngx-space-md, 1rem);
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  background: var(--cngx-command-retry-bg, transparent);
+  border: 1px solid currentColor;
+  border-radius: var(--cngx-radius-sm, 0.25rem);
+}
+
+.cngx-command-retry:focus-visible {
+  outline: var(--cngx-command-focus-outline, 2px solid var(--cngx-color-focus, #2563eb));
+  outline-offset: 2px;
+}
+
+/* Keyboard-legend footer (informational; not tap targets). */
+.cngx-command-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cngx-command-footer-gap, var(--cngx-space-md, 1rem));
+  padding: var(--cngx-command-footer-pad-y, var(--cngx-space-sm, 0.5rem))
+    var(--cngx-command-footer-pad-x, var(--cngx-space-md, 1rem));
+  border-block-start: var(--cngx-command-border-width, 1px) solid
+    var(--cngx-command-border, var(--cngx-color-border, #e5e7eb));
+  font-size: var(--cngx-command-footer-size, 0.75rem);
+  color: var(--cngx-command-footer-color, var(--cngx-color-muted-foreground, #6b7280));
+}
+
+.cngx-command-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cngx-space-xs, 0.25rem);
+}
+
+.cngx-command-legend kbd {
+  padding: 0.1em 0.4em;
+  font-family: inherit;
+  font-size: 0.9em;
+  color: var(--cngx-command-kbd-color, inherit);
+  background: var(--cngx-command-kbd-bg, var(--cngx-color-muted, #f3f4f6));
+  border: 1px solid var(--cngx-command-border, var(--cngx-color-border, #e5e7eb));
+  border-radius: var(--cngx-radius-xs, 0.1875rem);
+}
