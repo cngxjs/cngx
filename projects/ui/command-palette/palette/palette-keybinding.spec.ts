@@ -1,33 +1,38 @@
 import { parseKeyCombo } from '@cngx/core/utils';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { createPaletteKeybinding } from './palette-keybinding';
 
 describe('createPaletteKeybinding', () => {
-  it('pulses triggered when the combo is pressed', () => {
-    const keybinding = createPaletteKeybinding(parseKeyCombo('mod+k'), false);
-    expect(keybinding.triggered()).toBe(0);
+  it('calls onOpen when the combo is pressed', () => {
+    const onOpen = vi.fn();
+    const keybinding = createPaletteKeybinding(parseKeyCombo('mod+k'), onOpen, false);
 
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }));
-    expect(keybinding.triggered()).toBe(1);
+    expect(onOpen).toHaveBeenCalledTimes(1);
 
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }));
-    expect(keybinding.triggered()).toBe(2);
+    expect(onOpen).toHaveBeenCalledTimes(2);
 
     keybinding.teardown();
   });
 
   it('ignores non-matching keys', () => {
-    const keybinding = createPaletteKeybinding(parseKeyCombo('mod+k'), false);
+    const onOpen = vi.fn();
+    const keybinding = createPaletteKeybinding(parseKeyCombo('mod+k'), onOpen, false);
+
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'j', ctrlKey: true }));
-    expect(keybinding.triggered()).toBe(0);
+    expect(onOpen).not.toHaveBeenCalled();
+
     keybinding.teardown();
   });
 
-  it('stops pulsing after teardown', () => {
-    const keybinding = createPaletteKeybinding(parseKeyCombo('mod+k'), false);
+  it('stops calling onOpen after teardown', () => {
+    const onOpen = vi.fn();
+    const keybinding = createPaletteKeybinding(parseKeyCombo('mod+k'), onOpen, false);
     keybinding.teardown();
+
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }));
-    expect(keybinding.triggered()).toBe(0);
+    expect(onOpen).not.toHaveBeenCalled();
   });
 });

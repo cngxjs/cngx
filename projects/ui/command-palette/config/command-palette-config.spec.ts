@@ -7,6 +7,7 @@ import {
   provideCommandPaletteConfig,
   withCommandPaletteLabels,
   withKeyboardLegend,
+  withPaletteShortcut,
   withResultCountFormatter,
 } from './command-palette-config';
 
@@ -15,12 +16,20 @@ function resolve() {
 }
 
 describe('command palette config cascade', () => {
-  it('defaults to the English internal labels', () => {
+  it('defaults to the English internal labels and the mod+k open combo', () => {
     TestBed.configureTestingModule({});
     const config = resolve();
     expect(config.searchPlaceholder).toBe('Type a command or search...');
     expect(config.emptyLabel).toBe('No matching commands.');
     expect(config.footerLegend.length).toBeGreaterThan(0);
+    expect(config.openShortcut).toBe('mod+k');
+  });
+
+  it('overrides the open combo via withPaletteShortcut', () => {
+    TestBed.configureTestingModule({
+      providers: [provideCommandPaletteConfig(withPaletteShortcut('mod+shift+p'))],
+    });
+    expect(resolve().openShortcut).toBe('mod+shift+p');
   });
 
   it('overrides only the labels named by withCommandPaletteLabels', () => {

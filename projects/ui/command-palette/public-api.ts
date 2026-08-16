@@ -19,6 +19,7 @@ export {
   provideCommandPaletteConfigAt,
   injectCommandPaletteConfig,
   withCommandPaletteLabels,
+  withPaletteShortcut,
   withKeyboardLegend,
   withResultCountFormatter,
   withCommandPaletteTemplates,

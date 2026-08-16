@@ -1,35 +1,37 @@
-import { InjectionToken, signal, type Signal } from '@angular/core';
+import { InjectionToken } from '@angular/core';
 
 import { matchesKeyCombo, type KeyCombo } from '@cngx/core/utils';
 
 /**
- * Handle returned by a palette keybinding: a pulse signal that increments each
- * time the open combo is pressed, plus a teardown that removes the document
- * listener. The palette tracks `triggered` in a guarded effect to open, and
- * registers `teardown` on its `DestroyRef` so nothing leaks document-wide.
+ * Handle returned by a palette keybinding: a teardown that removes the document
+ * listener. The palette recreates the keybinding whenever the resolved combo
+ * changes and tears the previous one down, so nothing leaks document-wide.
  *
  * @category ui/command-palette
  * @since 0.1.0
  */
 export interface CngxPaletteKeybinding {
-  /** Increments on every matching key press. Starts at `0` (no open). */
-  readonly triggered: Signal<number>;
   /** Removes the installed document keydown listener. */
   teardown(): void;
 }
 
 /**
- * Factory producing a {@link CngxPaletteKeybinding} for a combo. Captured as a
- * type alias so an override matches the exact signature.
+ * Factory producing a {@link CngxPaletteKeybinding} for a combo. It installs a
+ * global listener that invokes `onOpen` whenever the combo is pressed. Captured
+ * as a type alias so an override matches the exact signature - a consumer can
+ * swap in an enterprise key-capture policy without touching the palette.
  *
  * @category ui/command-palette
  * @since 0.1.0
  */
-export type CngxPaletteKeybindingFactory = (combo: KeyCombo) => CngxPaletteKeybinding;
+export type CngxPaletteKeybindingFactory = (
+  combo: KeyCombo,
+  onOpen: () => void,
+) => CngxPaletteKeybinding;
 
 /**
- * Default palette keybinding: installs a document keydown listener that pulses
- * `triggered` whenever the combo is pressed (matched via `matchesKeyCombo`).
+ * Default palette keybinding: installs a document keydown listener that calls
+ * `onOpen` whenever the combo is pressed (matched via `matchesKeyCombo`).
  * Side-effectful by design - it owns the global listener - so its `teardown`
  * must be called on destroy.
  *
@@ -41,26 +43,24 @@ export type CngxPaletteKeybindingFactory = (combo: KeyCombo) => CngxPaletteKeybi
  */
 export function createPaletteKeybinding(
   combo: KeyCombo,
+  onOpen: () => void,
   isMac: boolean = detectMac(),
 ): CngxPaletteKeybinding {
-  const triggered = signal(0);
   const handler = (event: KeyboardEvent): void => {
     if (matchesKeyCombo(event, combo, isMac)) {
       event.preventDefault();
-      triggered.update((count) => count + 1);
+      onOpen();
     }
   };
   document.addEventListener('keydown', handler);
-  return {
-    triggered: triggered.asReadonly(),
-    teardown: () => document.removeEventListener('keydown', handler),
-  };
+  return { teardown: () => document.removeEventListener('keydown', handler) };
 }
 
 /**
  * Swappable open-trigger seam. Defaults to {@link createPaletteKeybinding}.
  * Override it to install an enterprise key-capture policy without touching the
- * palette.
+ * palette. To only change the *combo*, prefer `withPaletteShortcut(...)` or the
+ * `[openShortcut]` input - this token is for replacing the whole listener.
  *
  * @category ui/command-palette
  * @since 0.1.0

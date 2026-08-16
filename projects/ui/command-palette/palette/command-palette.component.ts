@@ -4,14 +4,12 @@ import {
   Component,
   computed,
   contentChild,
-  DestroyRef,
   effect,
   inject,
   input,
   model,
   output,
   signal,
-  untracked,
   viewChild,
   ViewEncapsulation,
   type Signal,
@@ -118,6 +116,14 @@ export class CngxCommandPalette implements CngxCommandPaletteHost {
   /** Accessible name for the dialog. */
   readonly ariaLabel = input<string>('Command palette');
 
+  /**
+   * Per-instance open combo (parsed via `parseKeyCombo`, e.g. `'mod+shift+p'`).
+   * Wins over `CNGX_COMMAND_PALETTE_CONFIG.openShortcut` (`withPaletteShortcut`),
+   * which wins over the `'mod+k'` default. Changing it live re-installs the
+   * listener. For a full listener swap, override `CNGX_PALETTE_KEYBINDING_FACTORY`.
+   */
+  readonly openShortcut = input<string | undefined>(undefined);
+
   /** Fired when the user asks to retry a failed result load. */
   readonly retry = output<void>();
 
@@ -161,18 +167,21 @@ export class CngxCommandPalette implements CngxCommandPaletteHost {
     () => (this.dialog()?.lifecycle() ?? 'closed') !== 'closed',
   );
 
+  /** Resolved open combo: instance input > config > `'mod+k'` default. */
+  private readonly resolvedShortcut = computed(
+    () => this.openShortcut() ?? this.config.openShortcut,
+  );
+
   constructor() {
-    // The swappable factory installs the global open combo (default Cmd/Ctrl+K)
-    // and pulses `triggered`; a guarded effect opens the palette on each pulse
-    // (skipping the initial 0). The listener is torn down with the component.
-    const keybinding = inject(CNGX_PALETTE_KEYBINDING_FACTORY)(parseKeyCombo('mod+k'));
-    effect(() => {
-      const pulses = keybinding.triggered();
-      if (pulses > 0) {
-        untracked(() => this.open());
-      }
+    // The swappable factory installs the global open combo and calls back to
+    // open the palette. The effect re-installs the listener whenever the
+    // resolved combo changes; onCleanup tears down the previous listener (and
+    // the last one on destroy), so nothing leaks document-wide.
+    const factory = inject(CNGX_PALETTE_KEYBINDING_FACTORY);
+    effect((onCleanup) => {
+      const keybinding = factory(parseKeyCombo(this.resolvedShortcut()), () => this.open());
+      onCleanup(() => keybinding.teardown());
     });
-    inject(DestroyRef).onDestroy(() => keybinding.teardown());
   }
 
   /** Open the palette. */

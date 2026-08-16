@@ -9,6 +9,8 @@ import type { CngxCommandPaletteLegendEntry } from '../config/command-palette-co
  * never hard-coded here.
  */
 export interface CngxCommandPaletteDefaults {
+  /** Combo string that opens the palette (parsed via `parseKeyCombo`). */
+  readonly openShortcut: string;
   readonly searchPlaceholder: string;
   readonly listboxLabel: string;
   readonly emptyLabel: string;
@@ -23,6 +25,7 @@ export interface CngxCommandPaletteDefaults {
 
 /** @internal */
 export const CNGX_COMMAND_PALETTE_DEFAULTS: CngxCommandPaletteDefaults = {
+  openShortcut: 'mod+k',
   searchPlaceholder: 'Type a command or search...',
   listboxLabel: 'Commands',
   emptyLabel: 'No matching commands.',

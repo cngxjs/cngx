@@ -1,4 +1,11 @@
-import { Component, viewChild, type Provider } from '@angular/core';
+import {
+  Component,
+  signal,
+  viewChild,
+  type EnvironmentProviders,
+  type Provider,
+  type WritableSignal,
+} from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { provideCommands, type CngxCommand } from '@cngx/common/command';
@@ -6,6 +13,7 @@ import { parseKeyCombo } from '@cngx/core/utils';
 import { CNGX_FORM_FIELD_CONTROL } from '@cngx/forms/field';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { provideCommandPaletteConfig, withPaletteShortcut } from '../config/command-palette-config';
 import { CngxCommandPalette } from './command-palette.component';
 import { CngxCommandPaletteTrigger } from './command-palette-trigger.directive';
 import {
@@ -41,11 +49,12 @@ function stubDialogElement(el: HTMLDialogElement): void {
   imports: [CngxCommandPalette, CngxCommandPaletteTrigger],
   template: `
     <button id="trigger" [cngxCommandPaletteTrigger]="palette">Open</button>
-    <cngx-command-palette #palette />
+    <cngx-command-palette #palette [openShortcut]="shortcut()" />
   `,
 })
 class Host {
   readonly palette = viewChild.required(CngxCommandPalette);
+  readonly shortcut: WritableSignal<string | undefined> = signal(undefined);
 }
 
 describe('CngxCommandPalette', () => {
@@ -61,9 +70,16 @@ describe('CngxCommandPalette', () => {
     vi.restoreAllMocks();
   });
 
-  function configure(commands: CngxCommand[] = [], extraProviders: Provider[] = []): void {
+  function configure(
+    commands: CngxCommand[] = [],
+    extraProviders: (Provider | EnvironmentProviders)[] = [],
+    shortcut?: string,
+  ): void {
     TestBed.configureTestingModule({ providers: [provideCommands(commands), ...extraProviders] });
     fixture = TestBed.createComponent(Host);
+    if (shortcut !== undefined) {
+      fixture.componentInstance.shortcut.set(shortcut);
+    }
     fixture.detectChanges();
     TestBed.flushEffects();
     dialogEl = fixture.nativeElement.querySelector('dialog') as HTMLDialogElement;
@@ -123,11 +139,41 @@ describe('CngxCommandPalette', () => {
   });
 
   it('opens via an overridden keybinding factory with zero palette edits', () => {
-    const factory: CngxPaletteKeybindingFactory = () =>
-      createPaletteKeybinding(parseKeyCombo('f2'), false);
+    const factory: CngxPaletteKeybindingFactory = (_combo, onOpen) =>
+      createPaletteKeybinding(parseKeyCombo('f2'), onOpen, false);
     configure([], [{ provide: CNGX_PALETTE_KEYBINDING_FACTORY, useValue: factory }]);
 
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'F2' }));
+    vi.advanceTimersByTime(16);
+    fixture.detectChanges();
+    expect(fixture.componentInstance.palette().isOpen()).toBe(true);
+  });
+
+  it('opens on a per-instance [openShortcut] combo', () => {
+    configure([], [], 'mod+p');
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'p', ctrlKey: true, metaKey: true }));
+    vi.advanceTimersByTime(16);
+    fixture.detectChanges();
+    expect(fixture.componentInstance.palette().isOpen()).toBe(true);
+  });
+
+  it('opens on the combo set globally by withPaletteShortcut', () => {
+    configure([], [provideCommandPaletteConfig(withPaletteShortcut('mod+j'))]);
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'j', ctrlKey: true, metaKey: true }));
+    vi.advanceTimersByTime(16);
+    fixture.detectChanges();
+    expect(fixture.componentInstance.palette().isOpen()).toBe(true);
+  });
+
+  it('per-instance [openShortcut] wins over the config combo', () => {
+    configure([], [provideCommandPaletteConfig(withPaletteShortcut('mod+j'))], 'mod+p');
+    // The config combo must NOT open it...
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'j', ctrlKey: true, metaKey: true }));
+    vi.advanceTimersByTime(16);
+    fixture.detectChanges();
+    expect(fixture.componentInstance.palette().isOpen()).toBe(false);
+    // ...the instance combo does.
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'p', ctrlKey: true, metaKey: true }));
     vi.advanceTimersByTime(16);
     fixture.detectChanges();
     expect(fixture.componentInstance.palette().isOpen()).toBe(true);

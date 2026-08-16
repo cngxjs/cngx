@@ -57,6 +57,11 @@ export interface CngxCommandPaletteLegendEntry {
  * @since 0.1.0
  */
 export interface CngxCommandPaletteConfig {
+  /**
+   * Combo string that opens the palette (parsed via `parseKeyCombo`, e.g.
+   * `'mod+k'`, `'mod+shift+p'`). A per-instance `[openShortcut]` wins over this.
+   */
+  readonly openShortcut: string;
   /** Placeholder + accessible name for the search input. */
   readonly searchPlaceholder: string;
   /** Accessible label for the results listbox. */
@@ -100,6 +105,7 @@ export type CngxCommandPaletteConfigFeature = (
  * @since 0.1.0
  */
 export const DEFAULT_COMMAND_PALETTE_CONFIG: CngxCommandPaletteConfig = {
+  openShortcut: CNGX_COMMAND_PALETTE_DEFAULTS.openShortcut,
   searchPlaceholder: CNGX_COMMAND_PALETTE_DEFAULTS.searchPlaceholder,
   listboxLabel: CNGX_COMMAND_PALETTE_DEFAULTS.listboxLabel,
   emptyLabel: CNGX_COMMAND_PALETTE_DEFAULTS.emptyLabel,
@@ -203,6 +209,19 @@ export function withCommandPaletteLabels(
   >,
 ): CngxCommandPaletteConfigFeature {
   return (config) => ({ ...config, ...labels });
+}
+
+/**
+ * Set the combo that opens the palette (parsed via `parseKeyCombo`, e.g.
+ * `'mod+k'`, `'mod+shift+p'`). Applies app-wide via `provideCommandPaletteConfig`
+ * or per-scope via `provideCommandPaletteConfigAt`. A per-instance
+ * `[openShortcut]` input still wins over this.
+ *
+ * @category ui/command-palette
+ * @since 0.1.0
+ */
+export function withPaletteShortcut(combo: string): CngxCommandPaletteConfigFeature {
+  return (config) => ({ ...config, openShortcut: combo });
 }
 
 /**
