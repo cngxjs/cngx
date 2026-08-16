@@ -11,24 +11,13 @@ import {
 } from '@angular/core';
 
 import {
-  CNGX_MENU_DISMISS_HANDLER_FACTORY,
-  createMenuTriggerDismissBinding,
-  type CngxMenuDismissPopoverRef,
-} from './dismiss-handler';
+  createContextMenuTriggerCore,
+  type CngxContextMenuTriggerPopoverRef,
+} from './context-menu-trigger-core';
+import { CNGX_MENU_DISMISS_HANDLER_FACTORY } from './dismiss-handler';
 import { CNGX_MENU_ANNOUNCER_FACTORY } from './menu-announcer';
 import { injectMenuConfig } from './menu-config';
 import type { CngxMenuHost } from './menu-host.token';
-
-/** See `CngxListboxTrigger` - same structural contract. */
-interface PopoverController extends CngxMenuDismissPopoverRef {
-  show(): void;
-  readonly anchorElement: { set(el: HTMLElement | null): void };
-  /**
-   * Popover unique id signal - used to compose the `anchor-name` CSS value
-   * the browser's CSS Anchor Positioning expects on the anchor element.
-   */
-  readonly id: () => string;
-}
 
 /**
  * Opens a `CngxMenu`-bearing popover at pointer coordinates in response to
@@ -40,6 +29,13 @@ interface PopoverController extends CngxMenuDismissPopoverRef {
  * - `popover`: the `CngxPopover` panel containing the menu. Must be marked
  *   `[exclusive]="true"` (default) so that opening this menu light-dismisses
  *   any other popover.
+ *
+ * A thin shell over {@link createContextMenuTriggerCore}: the core owns the
+ * `contextmenu` / `Shift+F10` handling, the transient pointer anchor, the
+ * dismiss binding, and focus save/restore, so `CngxContextMenuFor`
+ * (`@cngx/ui/context-menu`) can reuse the same implementation without
+ * inheritance. This directive supplies no `resolveOpen` seam, so it keeps
+ * the always-open, always-`preventDefault` behaviour.
  *
  * Anchoring uses a transient zero-size DOM element positioned at the
  * pointer coords, set on the popover's `anchorElement` signal - virtual
@@ -87,130 +83,41 @@ export class CngxContextMenuTrigger {
   /** Menu controlled by this trigger. */
   readonly menu = input.required<CngxMenuHost>({ alias: 'cngxContextMenuTrigger' });
   /** Popover that wraps the menu panel. */
-  readonly popover = input.required<PopoverController>();
+  readonly popover = input.required<CngxContextMenuTriggerPopoverRef>();
 
   /** Mirrors `popover.isVisible()`. */
   readonly isOpen = computed<boolean>(() => this.popover().isVisible());
 
-  private readonly doc = inject(DOCUMENT);
-  private readonly hostElRef = inject<ElementRef<HTMLElement>>(ElementRef);
-  private readonly menuConfig = injectMenuConfig();
-  private readonly announcer = inject(CNGX_MENU_ANNOUNCER_FACTORY)();
-  private readonly dismissBinding = createMenuTriggerDismissBinding({
+  private readonly core = createContextMenuTriggerCore({
+    menu: () => this.menu(),
     popover: () => this.popover(),
-    hostElement: this.hostElRef.nativeElement,
-    menuConfig: this.menuConfig,
-    factory: inject(CNGX_MENU_DISMISS_HANDLER_FACTORY),
-    onDismiss: () => this.announcer.announce(this.menuConfig.ariaLabels.menuDismissed),
+    hostElement: inject<ElementRef<HTMLElement>>(ElementRef).nativeElement,
+    document: inject(DOCUMENT),
+    menuConfig: injectMenuConfig(),
+    dismissFactory: inject(CNGX_MENU_DISMISS_HANDLER_FACTORY),
+    announcer: inject(CNGX_MENU_ANNOUNCER_FACTORY)(),
   });
-  private virtualAnchor: HTMLElement | null = null;
-  private savedFocus: HTMLElement | null = null;
 
   /**
    * The dismissal source that closed the menu most recently. `null`
    * before the first close. Surface for demos, telemetry, and audit
    * sinks - reads which path fired without re-installing listeners.
    */
-  readonly lastDismissSource = this.dismissBinding.lastSource;
+  readonly lastDismissSource = this.core.lastDismissSource;
 
   constructor() {
-    inject(DestroyRef).onDestroy(() => {
-      this.removeVirtualAnchor();
-      this.dismissBinding.detach();
-    });
+    inject(DestroyRef).onDestroy(() => this.core.destroy());
     effect(() => {
       const open = this.isOpen();
-      untracked(() => {
-        if (open) {
-          if (this.savedFocus === null) {
-            const active = this.doc.activeElement;
-            this.savedFocus = active instanceof HTMLElement ? active : null;
-          }
-          this.dismissBinding.attach();
-        } else {
-          this.dismissBinding.detach();
-          if (this.savedFocus !== null) {
-            this.restoreFocus();
-          }
-        }
-      });
+      untracked(() => this.core.syncOpenState(open));
     });
   }
 
   protected handleContextMenu(event: MouseEvent): void {
-    event.preventDefault();
-    this.openAt(event.clientX, event.clientY);
+    this.core.handleContextMenu(event);
   }
 
   protected handleKeydown(event: KeyboardEvent): void {
-    // Escape is owned by CngxPopover's global listener; focus has moved
-    // into the menu container by the time the user can press it.
-    if (event.key === 'F10' && event.shiftKey) {
-      event.preventDefault();
-      const rect = this.hostElRef.nativeElement.getBoundingClientRect();
-      this.openAt(rect.left + rect.width / 2, rect.top + rect.height / 2);
-    }
-  }
-
-  private openAt(x: number, y: number): void {
-    // Capture savedFocus eagerly BEFORE show(): the effect-driven capture
-    // races the queueMicrotask focus transfer below in real browsers and
-    // ends up storing the menu UL instead of the pre-open target. The
-    // effect still runs (it also attaches the dismiss binding) but the
-    // `savedFocus === null` guard keeps this earlier capture.
-    if (this.savedFocus === null) {
-      const active = this.doc.activeElement;
-      this.savedFocus = active instanceof HTMLElement ? active : null;
-    }
-    const anchor = this.ensureVirtualAnchor();
-    anchor.style.left = `${x}px`;
-    anchor.style.top = `${y}px`;
-    anchor.style.setProperty('anchor-name', `--cngx-pop-${this.popover().id()}`);
-    this.popover().anchorElement.set(anchor);
-    if (!this.popover().isVisible()) {
-      this.popover().show();
-    }
-    // Attach the dismiss listeners eagerly here, not only from the `isOpen`
-    // effect below: `showPopover()` makes the menu visible synchronously, but
-    // the effect runs a change-detection flush later, leaving a
-    // visible-but-not-listening window in which an immediate scroll / blur /
-    // outside-pointerdown would fail to dismiss. Mirrors the eager `savedFocus`
-    // capture above. `attach()` is idempotent, so the effect's later call is a
-    // no-op.
-    this.dismissBinding.attach();
-    this.menu().ad.highlightFirst();
-    // Defer one microtask so showPopover()'s top-layer DOM mutation
-    // settles before focus moves into the menu container - matches the
-    // existing close-time `restoreFocus` pattern below.
-    queueMicrotask(() => this.menu().focus());
-  }
-
-  private restoreFocus(): void {
-    const target = this.savedFocus;
-    this.savedFocus = null;
-    if (!target) {
-      return;
-    }
-    queueMicrotask(() => {
-      target.focus();
-    });
-  }
-
-  private ensureVirtualAnchor(): HTMLElement {
-    if (this.virtualAnchor) {
-      return this.virtualAnchor;
-    }
-    const el = this.doc.createElement('div');
-    el.setAttribute('aria-hidden', 'true');
-    el.className = 'cngx-context-menu-anchor';
-    el.style.cssText = 'position:fixed;width:0;height:0;pointer-events:none';
-    this.doc.body.appendChild(el);
-    this.virtualAnchor = el;
-    return el;
-  }
-
-  private removeVirtualAnchor(): void {
-    this.virtualAnchor?.remove();
-    this.virtualAnchor = null;
+    this.core.handleKeydown(event);
   }
 }

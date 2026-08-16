@@ -1,0 +1,228 @@
+import { type Signal } from '@angular/core';
+
+import {
+  createMenuTriggerDismissBinding,
+  type CngxMenuDismissHandlerFactory,
+  type CngxMenuDismissPopoverRef,
+  type CngxMenuDismissSource,
+} from './dismiss-handler';
+import type { CngxMenuAnnouncerLike } from './menu-announcer';
+import type { CngxMenuConfig } from './menu-config';
+import type { CngxMenuHost } from './menu-host.token';
+
+/**
+ * Popover surface the context-menu core drives at pointer coordinates.
+ * Typed structurally to keep `@cngx/common/interactive` free of a
+ * `@cngx/common/popover` import (menu-accepted-debt §7).
+ *
+ * @category common/interactive/menu
+ */
+export interface CngxContextMenuTriggerPopoverRef extends CngxMenuDismissPopoverRef {
+  show(): void;
+  readonly anchorElement: { set(el: HTMLElement | null): void };
+  /**
+   * Popover unique id signal - used to compose the `anchor-name` CSS value
+   * the browser's CSS Anchor Positioning expects on the anchor element.
+   */
+  readonly id: () => string;
+}
+
+/**
+ * Decision returned by the {@link CngxContextMenuTriggerCoreDeps.resolveOpen}
+ * seam. `open: false` leaves the native context menu untouched; `open: true`
+ * carries the per-open context handed to `commitContext`.
+ *
+ * @category common/interactive/menu
+ */
+export type CngxContextMenuOpenDecision =
+  | { readonly open: false }
+  | { readonly open: true; readonly context: unknown };
+
+/**
+ * Dependencies for {@link createContextMenuTriggerCore}. The caller injects
+ * the DI-backed collaborators (dismiss factory, announcer, config) and
+ * passes them in, keeping the core a pure factory.
+ *
+ * @category common/interactive/menu
+ */
+export interface CngxContextMenuTriggerCoreDeps {
+  /** Menu the popover wraps. */
+  readonly menu: () => CngxMenuHost;
+  /** Popover panel opened at pointer coordinates. */
+  readonly popover: () => CngxContextMenuTriggerPopoverRef;
+  /** Trigger host element - anchor for Shift+F10 and the dismiss filter. */
+  readonly hostElement: HTMLElement;
+  /** Document used for the transient anchor and focus capture. */
+  readonly document: Document;
+  /** Menu config supplying dismissal aria-labels. */
+  readonly menuConfig: CngxMenuConfig;
+  /** Dismiss-handler factory (from `CNGX_MENU_DISMISS_HANDLER_FACTORY`). */
+  readonly dismissFactory: CngxMenuDismissHandlerFactory;
+  /** Announcer for AT dismissal messages. */
+  readonly announcer: CngxMenuAnnouncerLike;
+  /**
+   * Veto/datum seam. Evaluated as the FIRST thing in the `contextmenu`
+   * handler, BEFORE `preventDefault()`. `{ open: false }` leaves the native
+   * menu untouched (no `preventDefault`, no anchor, no open).
+   * `{ open: true, context }` prevents default, hands `context` to
+   * {@link commitContext}, then opens. Defaults to always-open with
+   * `undefined` context, so a consumer that omits it keeps the plain
+   * right-click-always-opens behaviour.
+   */
+  readonly resolveOpen?: (event: MouseEvent) => CngxContextMenuOpenDecision;
+  /** Receives the resolved context on a successful open. No-op by default. */
+  readonly commitContext?: (context: unknown) => void;
+}
+
+/**
+ * Shared context-menu trigger core. Owns the `contextmenu` / `Shift+F10`
+ * handling, the transient pointer-anchor lifecycle, the dismiss binding,
+ * announcer calls, and focus save/restore. Consumed by both
+ * `CngxContextMenuTrigger` (directive) and `CngxContextMenuFor` (organism
+ * trigger) so the two share one implementation without inheritance.
+ *
+ * @category common/interactive/menu
+ */
+export interface CngxContextMenuTriggerCore {
+  /** The dismissal source that closed the menu most recently. */
+  readonly lastDismissSource: Signal<CngxMenuDismissSource | null>;
+  /** `contextmenu` host handler - consults `resolveOpen` before opening. */
+  handleContextMenu(event: MouseEvent): void;
+  /** Keydown host handler - `Shift+F10` opens at the host centre. */
+  handleKeydown(event: KeyboardEvent): void;
+  /** Drive from the directive's `isOpen` effect (inside `untracked`). */
+  syncOpenState(open: boolean): void;
+  /** Teardown - call from the directive's `DestroyRef.onDestroy`. */
+  destroy(): void;
+}
+
+const DEFAULT_RESOLVE_OPEN = (): CngxContextMenuOpenDecision => ({
+  open: true,
+  context: undefined,
+});
+
+/**
+ * Build a {@link CngxContextMenuTriggerCore} from its dependencies. Pure
+ * factory - no Angular DI; the caller resolves collaborators and passes
+ * them in.
+ *
+ * @category common/interactive/menu
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/context-menu-trigger-core.ts
+ * @since 0.1.0
+ */
+export function createContextMenuTriggerCore(
+  deps: CngxContextMenuTriggerCoreDeps,
+): CngxContextMenuTriggerCore {
+  const resolveOpen = deps.resolveOpen ?? DEFAULT_RESOLVE_OPEN;
+
+  const dismissBinding = createMenuTriggerDismissBinding({
+    popover: () => deps.popover(),
+    hostElement: deps.hostElement,
+    menuConfig: deps.menuConfig,
+    factory: deps.dismissFactory,
+    onDismiss: () => deps.announcer.announce(deps.menuConfig.ariaLabels.menuDismissed),
+  });
+
+  let virtualAnchor: HTMLElement | null = null;
+  let savedFocus: HTMLElement | null = null;
+
+  const captureFocus = (): void => {
+    if (savedFocus === null) {
+      const active = deps.document.activeElement;
+      savedFocus = active instanceof HTMLElement ? active : null;
+    }
+  };
+
+  const restoreFocus = (): void => {
+    const target = savedFocus;
+    savedFocus = null;
+    if (!target) {
+      return;
+    }
+    queueMicrotask(() => {
+      target.focus();
+    });
+  };
+
+  const ensureVirtualAnchor = (): HTMLElement => {
+    if (virtualAnchor) {
+      return virtualAnchor;
+    }
+    const el = deps.document.createElement('div');
+    el.setAttribute('aria-hidden', 'true');
+    el.className = 'cngx-context-menu-anchor';
+    el.style.cssText = 'position:fixed;width:0;height:0;pointer-events:none';
+    deps.document.body.appendChild(el);
+    virtualAnchor = el;
+    return el;
+  };
+
+  const removeVirtualAnchor = (): void => {
+    virtualAnchor?.remove();
+    virtualAnchor = null;
+  };
+
+  const openAt = (x: number, y: number): void => {
+    // Capture savedFocus eagerly BEFORE show(): the effect-driven capture
+    // races the queueMicrotask focus transfer below in real browsers and
+    // ends up storing the menu UL instead of the pre-open target. The
+    // effect still runs (it also attaches the dismiss binding) but the
+    // `savedFocus === null` guard keeps this earlier capture.
+    captureFocus();
+    const anchor = ensureVirtualAnchor();
+    anchor.style.left = `${x}px`;
+    anchor.style.top = `${y}px`;
+    anchor.style.setProperty('anchor-name', `--cngx-pop-${deps.popover().id()}`);
+    deps.popover().anchorElement.set(anchor);
+    if (!deps.popover().isVisible()) {
+      deps.popover().show();
+    }
+    // Attach the dismiss listeners eagerly here, not only from the `isOpen`
+    // effect: `showPopover()` makes the menu visible synchronously, but the
+    // effect runs a change-detection flush later, leaving a
+    // visible-but-not-listening window in which an immediate scroll / blur /
+    // outside-pointerdown would fail to dismiss. `attach()` is idempotent, so
+    // the effect's later call is a no-op.
+    dismissBinding.attach();
+    deps.menu().ad.highlightFirst();
+    // Defer one microtask so showPopover()'s top-layer DOM mutation settles
+    // before focus moves into the menu container - matches the close-time
+    // `restoreFocus` pattern.
+    queueMicrotask(() => deps.menu().focus());
+  };
+
+  return {
+    lastDismissSource: dismissBinding.lastSource,
+    handleContextMenu(event: MouseEvent): void {
+      const decision = resolveOpen(event);
+      if (!decision.open) {
+        return;
+      }
+      event.preventDefault();
+      deps.commitContext?.(decision.context);
+      openAt(event.clientX, event.clientY);
+    },
+    handleKeydown(event: KeyboardEvent): void {
+      // Escape is owned by CngxPopover's global listener; focus has moved
+      // into the menu container by the time the user can press it.
+      if (event.key === 'F10' && event.shiftKey) {
+        event.preventDefault();
+        const rect = deps.hostElement.getBoundingClientRect();
+        openAt(rect.left + rect.width / 2, rect.top + rect.height / 2);
+      }
+    },
+    syncOpenState(open: boolean): void {
+      if (open) {
+        captureFocus();
+        dismissBinding.attach();
+      } else {
+        dismissBinding.detach();
+        restoreFocus();
+      }
+    },
+    destroy(): void {
+      removeVirtualAnchor();
+      dismissBinding.detach();
+    },
+  };
+}
