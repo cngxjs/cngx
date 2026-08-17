@@ -589,7 +589,7 @@ export class CngxPopover {
 
     const fb = this.floatingFallback;
     const el = this.popoverElement;
-    const placement = FLOATING_PLACEMENT[this.placement()];
+    const placement = FLOATING_PLACEMENT[this.effectivePlacement()];
     const offsetVal = this.offset();
 
     const middleware = fb.middleware ?? [];
@@ -627,7 +627,7 @@ export class CngxPopover {
       return;
     }
     const triggerRect = anchor.getBoundingClientRect();
-    const edge = resolveActualEdge(triggerRect, panelRect, this.placement());
+    const edge = resolveActualEdge(triggerRect, panelRect, this.effectivePlacement());
     this.resolvedEdgeSignal.set(edge);
     const horizontal = edge === 'top' || edge === 'bottom';
     const triggerCentre = horizontal
