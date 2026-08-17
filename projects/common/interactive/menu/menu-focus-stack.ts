@@ -129,13 +129,17 @@ export function createMenuFocusStack(deps: CngxMenuFocusStackDeps): CngxMenuFocu
   // Push the submenu's inner menu onto the stack and highlight its first item,
   // but only once - the terminal show (organism hover facade) and the open
   // paths (ArrowRight / click) both funnel here, so the guard keeps a submenu
-  // from being pushed or re-highlighted twice.
+  // from being pushed or re-highlighted twice. `inner` is null for an inert
+  // brain: the context-menu organism applies CngxMenuItemSubmenu to every item,
+  // so leaf items register a submenu-less brain whose `inner` never resolves.
+  // Skip those - a leaf has no submenu to track.
   const pushIfAbsent = (submenu: CngxMenuSubmenuLike): void => {
-    if (submenuStack().includes(submenu.inner)) {
+    const inner = submenu.inner as CngxMenuHost | null;
+    if (inner === null || submenuStack().includes(inner)) {
       return;
     }
-    submenuStack.update((s) => [...s, submenu.inner]);
-    submenu.inner.ad.highlightFirst();
+    submenuStack.update((s) => [...s, inner]);
+    inner.ad.highlightFirst();
   };
 
   const openSubmenu = (submenu: CngxMenuSubmenuLike): void => {
