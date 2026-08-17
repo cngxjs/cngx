@@ -16,13 +16,21 @@ export const STORY: DemoSpec = {
       href: 'https://www.w3.org/WAI/ARIA/apg/patterns/menu/',
     },
   ],
-  apiComponents: ['CngxContextMenu', 'CngxContextMenuFor', 'CngxContextMenuItem'],
+  apiComponents: ['CngxContextMenu', 'CngxContextMenuFor', 'CngxContextMenuItem', 'CngxContextMenuItemCheckbox'],
   moduleImports: [
-    "import { CngxContextMenu, CngxContextMenuFor, CngxContextMenuItem } from '@cngx/ui/context-menu';",
+    "import { CngxContextMenu, CngxContextMenuDivider, CngxContextMenuFor, CngxContextMenuItem, CngxContextMenuItemCheckbox } from '@cngx/ui/context-menu';",
     "import { CngxMenuItemIcon } from '@cngx/common/interactive';",
   ],
-  imports: ['CngxContextMenu', 'CngxContextMenuFor', 'CngxContextMenuItem', 'CngxMenuItemIcon'],
+  imports: [
+    'CngxContextMenu',
+    'CngxContextMenuDivider',
+    'CngxContextMenuFor',
+    'CngxContextMenuItem',
+    'CngxContextMenuItemCheckbox',
+    'CngxMenuItemIcon',
+  ],
   setup: `protected readonly lastAction = signal<string | null>(null);
+protected readonly wrap = signal(true);
 
 protected act(action: string): void {
   this.lastAction.set(action);
@@ -63,6 +71,15 @@ protected act(action: string): void {
       </svg>
       Delete
     </cngx-context-menu-item>
+
+    <cngx-context-menu-divider />
+
+    <cngx-context-menu-item-checkbox value="wrap" [(checked)]="wrap">
+      <svg cngxMenuItemIcon viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4">
+        <path d="M2 4.5h12M2 8h9M2 11.5h6" />
+      </svg>
+      Word wrap
+    </cngx-context-menu-item-checkbox>
   </cngx-context-menu>`,
   templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">

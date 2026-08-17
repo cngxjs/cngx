@@ -61,7 +61,9 @@ export class CngxContextMenuItemRadio {
   /**
    * Leading glyph shorthand rendered in the icon slot (decorative,
    * `aria-hidden`). Suppressed when the consumer projects a richer
-   * `[cngxMenuItemIcon]` marker, which replaces the default checked indicator.
+   * `[cngxMenuItemIcon]` marker. The checked-indicator gutter renders
+   * independently of the icon, so a checked item stays visibly checked beside
+   * a custom icon.
    */
   readonly icon = input<string>();
   /** Keyboard-shortcut hint rendered in the kbd slot (decorative). */

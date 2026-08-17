@@ -124,13 +124,15 @@
 
   /* Checked indicator - the base skin draws this via a [cngxMenuItemCheckbox]
      / [cngxMenuItemRadio] attribute ::before that never reaches the shell, so
-     re-draw it keyed on the role the brain sets. Suppressed when the consumer
-     projects an explicit icon (mirrors the base :has() guard). The glyph is the
-     single source in CNGX_MENU_GLYPHS, seeded onto the host as
-     --cngx-context-menu-item-check-glyph by the component (checkbox -> tick,
-     radio -> filled dot); no literal here so the const cannot silently drift. */
-  cngx-context-menu-item-checkbox.cngx-menu-item--checked:not(:has(.cngx-menu-item__icon))::before,
-  button[cngxContextMenuItemCheckbox].cngx-menu-item--checked:not(:has(.cngx-menu-item__icon))::before {
+     re-draw it keyed on the role the brain sets. Rendered as a leading gutter
+     even when the consumer projects an icon, so a checked item always keeps a
+     visible checked affordance beside its icon (Pillar 2), not only
+     aria-checked. The glyph is the single source in CNGX_MENU_GLYPHS, seeded
+     onto the host as --cngx-context-menu-item-check-glyph by the component
+     (checkbox -> tick, radio -> filled dot); no literal here so the const
+     cannot silently drift. */
+  cngx-context-menu-item-checkbox.cngx-menu-item--checked::before,
+  button[cngxContextMenuItemCheckbox].cngx-menu-item--checked::before {
     content: var(--cngx-context-menu-item-check-glyph);
     display: inline-flex;
     align-items: center;
@@ -139,8 +141,8 @@
     color: var(--cngx-context-menu-item-check-color, var(--cngx-color-primary, oklch(0.66 0.19 50)));
     font-weight: 700;
   }
-  cngx-context-menu-item-radio.cngx-menu-item--checked:not(:has(.cngx-menu-item__icon))::before,
-  button[cngxContextMenuItemRadio].cngx-menu-item--checked:not(:has(.cngx-menu-item__icon))::before {
+  cngx-context-menu-item-radio.cngx-menu-item--checked::before,
+  button[cngxContextMenuItemRadio].cngx-menu-item--checked::before {
     content: var(--cngx-context-menu-item-check-glyph);
     display: inline-flex;
     align-items: center;
