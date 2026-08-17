@@ -23,6 +23,7 @@ import {
 } from '@cngx/common/interactive';
 
 import type { CngxContextMenu } from './context-menu.component';
+import { createContextMenuItemSubmenuFacade } from './context-menu-item-submenu-facade';
 import { CNGX_CONTEXT_MENU_PANEL } from './context-menu-panel';
 
 /** @internal Default caret glyph for an item that opens a submenu (decorative). */
@@ -118,25 +119,16 @@ export class CngxContextMenuItem implements CngxMenuSubmenuWiring {
    * input. `show()` opens the target panel non-exclusively and mirrors the
    * parent panel's row context in first; every other member delegates to the
    * target's `CngxPopover`. Built once, reads `submenu()` lazily so it stays
-   * valid across target changes.
+   * valid across target changes. The adapter itself lives in
+   * `createContextMenuItemSubmenuFacade` so this class stays a thin shell.
    */
-  private readonly submenuPopoverFacade: CngxMenuSubmenuPopoverRef;
+  private readonly submenuPopoverFacade: CngxMenuSubmenuPopoverRef =
+    createContextMenuItemSubmenuFacade(
+      () => this.submenu(),
+      () => this.openSubmenu(),
+    );
 
   constructor() {
-    const target = this.submenu;
-    this.submenuPopoverFacade = {
-      isVisible: () => target()?.popover.isVisible() ?? false,
-      show: () => this.openSubmenu(),
-      hide: () => target()?.popover.hide(),
-      anchorElement: { set: (el) => target()?.popover.anchorElement.set(el) },
-      id: () => target()?.popover.id() ?? '',
-      elementRef: {
-        get nativeElement(): HTMLElement {
-          return target()!.popover.elementRef.nativeElement;
-        },
-      },
-    };
-
     const brain = inject(CngxMenuItem);
     const ad = inject(CngxActiveDescendant, { optional: true });
     if (!ad) {
