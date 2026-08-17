@@ -128,6 +128,10 @@ const FORCED_COLORS_HARDENED_HOSTS: readonly string[] = [
   // box-shadow drops under WHCM and its border is pinned to CanvasText.
   'projects/ui/command-palette/panel/command-panel.component.css',
   'projects/ui/command-palette/palette/command-palette.component.css',
+  // @cngx/ui/context-menu - the popup's elevation box-shadow drops under WHCM but
+  // its 1px border self-heals; the forced-colors block re-draws the
+  // background-drawn divider hairline that would otherwise collapse to Canvas.
+  'projects/ui/context-menu/context-menu.component.css',
 ];
 
 // Files the box-shadow scan flags but that legitimately do NOT need a
@@ -258,7 +262,7 @@ describe('forced-colors hardened-hosts manifest', () => {
   });
 
   it('fixes the manifest size so a bulk edit dropping several hosts is caught', () => {
-    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(25);
+    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(26);
   });
 });
 
