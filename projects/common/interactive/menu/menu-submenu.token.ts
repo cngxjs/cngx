@@ -70,8 +70,10 @@ export interface CngxMenuSubmenuPopoverRef {
  * @category common/interactive/menu
  */
 export interface CngxMenuSubmenuWiring {
-  popover(): CngxMenuSubmenuPopoverRef;
-  menu(): CngxMenuHost;
+  /** The submenu popover surface, or `undefined` while no submenu is wired. */
+  popover(): CngxMenuSubmenuPopoverRef | undefined;
+  /** The inner menu host, or `undefined` while no submenu is wired. */
+  menu(): CngxMenuHost | undefined;
 }
 
 /**

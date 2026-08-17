@@ -156,16 +156,14 @@ export class CngxContextMenuItem implements CngxMenuSubmenuWiring {
 
   /** @internal `CngxMenuSubmenuWiring` - the nested panel's menu brain, or
    * `undefined` while no `[submenu]` is bound so the brain stays inert. */
-  menu(): CngxMenuHost {
-    return this.submenu()?.menuHost as CngxMenuHost;
+  menu(): CngxMenuHost | undefined {
+    return this.submenu()?.menuHost;
   }
 
   /** @internal `CngxMenuSubmenuWiring` - the popover facade the brain drives,
    * or `undefined` while no `[submenu]` is bound so the brain stays inert. */
-  popover(): CngxMenuSubmenuPopoverRef {
-    return this.submenu()
-      ? this.submenuPopoverFacade
-      : (undefined as unknown as CngxMenuSubmenuPopoverRef);
+  popover(): CngxMenuSubmenuPopoverRef | undefined {
+    return this.submenu() ? this.submenuPopoverFacade : undefined;
   }
 
   private openSubmenu(): void {
