@@ -629,5 +629,20 @@ describe('CngxPopover', () => {
       const popover = host.popover();
       expect(popover.resolvedEdge()).toBe('bottom');
     });
+
+    it('placementOverride wins over the [placement] input, and null defers back', () => {
+      const { fixture } = setup(BasicHost);
+      const host = fixture.componentInstance as BasicHost;
+      const popover = host.popover();
+      expect(popover.resolvedEdge()).toBe('bottom');
+
+      popover.placementOverride.set('right-start');
+      fixture.detectChanges();
+      expect(popover.resolvedEdge()).toBe('right');
+
+      popover.placementOverride.set(null);
+      fixture.detectChanges();
+      expect(popover.resolvedEdge()).toBe('bottom');
+    });
   });
 });
