@@ -1,7 +1,194 @@
-/* Structural only. Surface, borders, radius and the spacing token family are
-   themable via --cngx-* custom properties. ViewEncapsulation.None - selector-scoped. */
-cngx-context-menu {
-  display: flex;
-  flex-direction: column;
-  min-inline-size: max-content;
+/**
+ * @overview
+ * Default visuals for `CngxContextMenu`. The organism stacks `CngxPopover`
+ * and `CngxMenu` as host directives, so the base menu-family skin's
+ * container rules (`[cngxMenu]`, `cngx-menu.css`) never reach this host -
+ * a host directive applies behaviour, not its selector attribute. The
+ * container therefore paints its own popup surface here (the chrome a
+ * `CngxPopoverPanel` would otherwise supply), while the item slot and
+ * state painting (`.cngx-menu-item__label`, `.cngx-menu-item--highlighted`,
+ * ...) is adopted from the base skin via the classes the brains stamp
+ * programmatically. The `--cngx-context-menu-*` family carries the surface
+ * chrome; spacing derives from `--cngx-space-*` so a root `[data-density]`
+ * compacts the menu.
+ *
+ * **Slots**
+ *
+ * - projected `cngx-context-menu-item` / `-divider` rows, or a lazy
+ *   `ng-template[cngxContextMenuContent]` outlet
+ * - `cngx-context-menu-divider` - hairline separator painted here (the
+ *   base `[cngxMenuSeparator]` attribute rule does not reach the shell)
+ *
+ * **Inheritance**
+ *
+ * Surface tokens delegate to the foundation so a brand or dark-mode swap
+ * cascades through one `:root` pass - no per-component dark 4-block needed:
+ *
+ * - `--cngx-context-menu-surface` -> `--cngx-color-surface`
+ * - `--cngx-context-menu-color` -> `--cngx-color-text`
+ * - `--cngx-context-menu-border` -> `--cngx-color-border`
+ * - `--cngx-context-menu-shadow` -> `--cngx-shadow-md`
+ * - `--cngx-context-menu-separator-color` -> `--cngx-color-border`
+ *
+ * **Forced colors**
+ *
+ * The separator is a 1px background hairline that flattens to Canvas under
+ * WHCM; an unlayered `forced-colors` rule re-draws it with CanvasText ink.
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/context-menu-theme` - Material 3 surface
+ */
+
+@layer cngx.tokens {
+  /**
+   * Popup surface background. Falls back through `--cngx-color-surface`.
+   * @group Surface
+   * @see [[--cngx-color-surface]]
+   */
+  @property --cngx-context-menu-surface {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(1 0 0);
+  }
+
+  /**
+   * Menu text color. Falls back through `--cngx-color-text`.
+   * @group Surface
+   * @see [[--cngx-color-text]]
+   */
+  @property --cngx-context-menu-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.2 0.01 250);
+  }
+
+  /**
+   * Border shorthand around the popup surface. Falls back through
+   * `--cngx-color-border`.
+   * @group Surface
+   * @see [[--cngx-color-border]]
+   */
+  @property --cngx-context-menu-border {
+    syntax: '*';
+    inherits: true;
+    initial-value: 1px solid oklch(0.88 0.005 250);
+  }
+
+  /**
+   * Corner radius of the popup surface.
+   * @group Layout
+   */
+  @property --cngx-context-menu-radius {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 8px;
+  }
+
+  /**
+   * Drop-shadow shorthand for the popup. `inherits: true` so a `:root`
+   * override reaches the open surface. Falls back through `--cngx-shadow-md`.
+   * @group Surface
+   */
+  @property --cngx-context-menu-shadow {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0 4px 16px oklch(0 0 0 / 0.12);
+  }
+
+  /**
+   * Padding inside the popup surface (around the item stack). Derived from
+   * `--cngx-space-xs` at the host so density tracks; the registered pixel
+   * initial defeats the use-site fallback, so the `:scope` SET is the only
+   * mechanism that re-scales it.
+   * @group Layout
+   */
+  @property --cngx-context-menu-padding {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 4px;
+  }
+
+  /**
+   * Color of the separator hairline. Falls back through `--cngx-color-border`.
+   * @group Surface
+   * @see [[--cngx-color-border]]
+   */
+  @property --cngx-context-menu-separator-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.88 0.005 250);
+  }
+
+  /**
+   * Block margin above and below the separator hairline. Derived from
+   * `--cngx-space-xs` at the host.
+   * @group Layout
+   */
+  @property --cngx-context-menu-separator-inset {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 4px;
+  }
+
+  /* Delegating pass - surface tokens track the foundation so any consumer
+     dark-mode signal cascades through automatically. */
+  :root {
+    --cngx-context-menu-surface: var(--cngx-color-surface, oklch(1 0 0));
+    --cngx-context-menu-color: var(--cngx-color-text, oklch(0.2 0.01 250));
+    --cngx-context-menu-border: 1px solid var(--cngx-color-border, oklch(0.88 0.005 250));
+    --cngx-context-menu-shadow: var(--cngx-shadow-md, 0 4px 16px oklch(0 0 0 / 0.12));
+    --cngx-context-menu-separator-color: var(--cngx-color-border, oklch(0.88 0.005 250));
+  }
+}
+
+@layer cngx.components {
+  cngx-context-menu {
+    /* SET-from-scale so a root [data-density] compacts the popup (the
+       registered pixel initials defeat the use-site fallbacks). */
+    --cngx-context-menu-padding: var(--cngx-space-xs);
+    --cngx-context-menu-separator-inset: var(--cngx-space-xs);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    min-inline-size: max-content;
+    background: var(--cngx-context-menu-surface, var(--cngx-color-surface, oklch(1 0 0)));
+    color: var(--cngx-context-menu-color, var(--cngx-color-text, oklch(0.2 0.01 250)));
+    border: var(--cngx-context-menu-border, 1px solid oklch(0.88 0.005 250));
+    border-radius: var(--cngx-context-menu-radius, 8px);
+    box-shadow: var(--cngx-context-menu-shadow, 0 4px 16px oklch(0 0 0 / 0.12));
+    padding: var(--cngx-context-menu-padding, 4px);
+    outline: none;
+  }
+
+  /* The menu container carries keyboard focus (aria-activedescendant), so the
+     ring lands here, not on the highlighted item. Primary-on-surface clears
+     the 3:1 non-text contrast floor. */
+  cngx-context-menu:focus-visible {
+    outline: 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50));
+    outline-offset: -2px;
+  }
+
+  /* Divider painting - the base [cngxMenuSeparator] rule is attribute-keyed
+     and never reaches the shell, so the menu-family stylesheet paints its own
+     separator (mirrors cngx-menu.css). Dual selector: element or bare <hr>. */
+  cngx-context-menu-divider,
+  hr[cngxContextMenuDivider] {
+    display: block;
+    block-size: 1px;
+    border: 0;
+    margin-block: var(--cngx-context-menu-separator-inset, 4px);
+    margin-inline: var(--cngx-space-sm, 8px);
+    background: var(--cngx-context-menu-separator-color, var(--cngx-color-border, oklch(0.88 0.005 250)));
+  }
+}
+
+/* forced-colors (WHCM): the 1px background hairline flattens to Canvas.
+   Unlayered + direct selector re-draws it with CanvasText ink so groups stay
+   visually separated. */
+@media (forced-colors: active) {
+  cngx-context-menu-divider,
+  hr[cngxContextMenuDivider] {
+    background: CanvasText;
+  }
 }
