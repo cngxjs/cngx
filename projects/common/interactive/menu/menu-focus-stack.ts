@@ -68,6 +68,15 @@ export interface CngxMenuFocusStack {
    * hover never double-pushes.
    */
   openSubmenuFor(submenu: CngxMenuSubmenuLike): void;
+  /**
+   * Record that a submenu is already open, pushing its inner menu onto the
+   * stack and highlighting the first item WITHOUT calling `submenu.open()`.
+   * The organism's hover path shows the submenu popover through its own facade
+   * and then calls this, so a hover-opened submenu is stack-tracked (ArrowLeft
+   * / Escape pop it) exactly like a keyboard- or click-opened one, with no risk
+   * of re-entering the open path. Idempotent once the submenu is on the stack.
+   */
+  noteSubmenuOpened(submenu: CngxMenuSubmenuLike): void;
   /** Close every open submenu innermost-first, then hide the popover. */
   closeAll(): void;
   /**
@@ -117,10 +126,21 @@ export function createMenuFocusStack(deps: CngxMenuFocusStackDeps): CngxMenuFocu
     return menu.submenuItems().find((s) => s.id === activeId);
   };
 
-  const openSubmenu = (submenu: CngxMenuSubmenuLike): void => {
-    submenu.open();
+  // Push the submenu's inner menu onto the stack and highlight its first item,
+  // but only once - the terminal show (organism hover facade) and the open
+  // paths (ArrowRight / click) both funnel here, so the guard keeps a submenu
+  // from being pushed or re-highlighted twice.
+  const pushIfAbsent = (submenu: CngxMenuSubmenuLike): void => {
+    if (submenuStack().includes(submenu.inner)) {
+      return;
+    }
     submenuStack.update((s) => [...s, submenu.inner]);
     submenu.inner.ad.highlightFirst();
+  };
+
+  const openSubmenu = (submenu: CngxMenuSubmenuLike): void => {
+    submenu.open();
+    pushIfAbsent(submenu);
   };
 
   const popSubmenu = (): void => {
@@ -223,6 +243,9 @@ export function createMenuFocusStack(deps: CngxMenuFocusStackDeps): CngxMenuFocu
         return;
       }
       openSubmenu(submenu);
+    },
+    noteSubmenuOpened(submenu: CngxMenuSubmenuLike): void {
+      pushIfAbsent(submenu);
     },
     closeAll,
     reset,

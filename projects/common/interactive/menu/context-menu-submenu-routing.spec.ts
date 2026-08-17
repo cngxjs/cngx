@@ -133,6 +133,32 @@ describe('context-menu trigger core - submenu keyboard routing', () => {
     expect(inner.highlightFirst).toHaveBeenCalledOnce();
   });
 
+  it('noteActiveSubmenuOpened stack-tracks the active submenu without opening it, so ArrowLeft pops it', () => {
+    const inner = mockMenu();
+    const submenu = mockSubmenu('sub-1', inner.host);
+    root.submenus.set([submenu]);
+    root.activeId.set('sub-1');
+
+    core.noteActiveSubmenuOpened();
+    expect(submenu.open).not.toHaveBeenCalled();
+    expect(inner.highlightFirst).toHaveBeenCalledOnce();
+
+    core.handleKeydown(key('ArrowLeft'));
+    expect(submenu.close).toHaveBeenCalledOnce();
+  });
+
+  it('noteActiveSubmenuOpened is a no-op on a leaf item', () => {
+    const inner = mockMenu();
+    const submenu = mockSubmenu('sub-1', inner.host);
+    root.submenus.set([submenu]);
+    root.activeId.set('leaf-item');
+
+    core.noteActiveSubmenuOpened();
+
+    expect(submenu.open).not.toHaveBeenCalled();
+    expect(inner.highlightFirst).not.toHaveBeenCalled();
+  });
+
   it('ArrowLeft pops the current submenu level', () => {
     const inner = mockMenu();
     const submenu = mockSubmenu('sub-1', inner.host);

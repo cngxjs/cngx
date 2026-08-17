@@ -107,6 +107,14 @@ export interface CngxContextMenuTriggerCore {
    * factory - only the imperative open.
    */
   openActiveSubmenu(): void;
+  /**
+   * Record that the active item's submenu is already open (shown by the
+   * organism's hover facade), pushing it onto the focus stack WITHOUT
+   * re-opening it, so ArrowLeft / Escape pop a hover-opened submenu the same as
+   * a keyboard-opened one. No-op on a leaf and idempotent once the submenu is
+   * on the stack. The DI host calls this from the item's hover terminal.
+   */
+  noteActiveSubmenuOpened(): void;
   /** Drive from the directive's `isOpen` effect (inside `untracked`). */
   syncOpenState(open: boolean): void;
   /** Teardown - call from the directive's `DestroyRef.onDestroy`. */
@@ -250,6 +258,17 @@ export function createContextMenuTriggerCore(
       const submenu = menu.submenuItems().find((s) => s.id === activeId);
       if (submenu) {
         focusStack.openSubmenuFor(submenu);
+      }
+    },
+    noteActiveSubmenuOpened(): void {
+      const menu = focusStack.effectiveMenu();
+      const activeId = menu.ad.activeId();
+      if (!activeId) {
+        return;
+      }
+      const submenu = menu.submenuItems().find((s) => s.id === activeId);
+      if (submenu) {
+        focusStack.noteSubmenuOpened(submenu);
       }
     },
     syncOpenState(open: boolean): void {
