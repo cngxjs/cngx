@@ -115,6 +115,13 @@
     color: var(--cngx-context-menu-item-caret-color, var(--cngx-color-text-muted, oklch(0.5 0.01 250)));
   }
 
+  /* The caret is a directional glyph; flip it inline under RTL rather than
+     swapping to a mirrored character (mirrors the paginator nav-icon flip). */
+  [dir='rtl'] cngx-context-menu-item .cngx-menu-item__suffix,
+  [dir='rtl'] button[cngxContextMenuItem] .cngx-menu-item__suffix {
+    transform: scaleX(-1);
+  }
+
   /* Checked indicator - the base skin draws this via a [cngxMenuItemCheckbox]
      / [cngxMenuItemRadio] attribute ::before that never reaches the shell, so
      re-draw it keyed on the role the brain sets. Suppressed when the consumer
@@ -122,7 +129,7 @@
      radio -> filled dot, matching the standard form-control vocabulary. */
   cngx-context-menu-item-checkbox.cngx-menu-item--checked:not(:has(.cngx-menu-item__icon))::before,
   button[cngxContextMenuItemCheckbox].cngx-menu-item--checked:not(:has(.cngx-menu-item__icon))::before {
-    content: '✓';
+    content: var(--cngx-context-menu-item-check-glyph, '✓');
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -132,7 +139,7 @@
   }
   cngx-context-menu-item-radio.cngx-menu-item--checked:not(:has(.cngx-menu-item__icon))::before,
   button[cngxContextMenuItemRadio].cngx-menu-item--checked:not(:has(.cngx-menu-item__icon))::before {
-    content: '●';
+    content: var(--cngx-context-menu-item-check-glyph, '●');
     display: inline-flex;
     align-items: center;
     justify-content: center;

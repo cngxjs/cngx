@@ -26,9 +26,7 @@ import {
 import type { CngxContextMenu } from './context-menu.component';
 import { createContextMenuItemSubmenuFacade } from './context-menu-item-submenu-facade';
 import { CNGX_CONTEXT_MENU_PANEL } from './context-menu-panel';
-
-/** @internal Default caret glyph for an item that opens a submenu (decorative). */
-const CONTEXT_MENU_SUBMENU_CARET = '▸';
+import { CNGX_MENU_GLYPHS } from './menu-glyphs';
 
 /**
  * A single actionable context-menu item. Thin shell over `CngxMenuItem`: the
@@ -122,8 +120,10 @@ export class CngxContextMenuItem implements CngxMenuSubmenuWiring {
   /** Fires when this item is activated by click or Enter/Space. */
   readonly select = output<void>();
 
-  /** @internal Decorative caret rendered while `submenu` is set. */
-  protected readonly caret = CONTEXT_MENU_SUBMENU_CARET;
+  /** @internal Decorative caret rendered while `submenu` is set. RTL flip is
+   * a CSS concern (`.cngx-menu-item__suffix` under `[dir='rtl']`), not a
+   * swapped glyph. */
+  protected readonly caret = CNGX_MENU_GLYPHS.submenuCaret;
 
   private readonly parentPanel = inject(CNGX_CONTEXT_MENU_PANEL, { optional: true });
 

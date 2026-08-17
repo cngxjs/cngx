@@ -13,6 +13,8 @@ import {
   CngxMenuItemLabel,
 } from '@cngx/common/interactive';
 
+import { CNGX_MENU_GLYPHS } from './menu-glyphs';
+
 /**
  * A checkable context-menu item (`role="menuitemcheckbox"`). Thin shell over
  * `CngxMenuItemCheckbox`: the brain owns the role, the active-descendant
@@ -38,6 +40,7 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   exportAs: 'cngxContextMenuItemCheckbox',
+  host: { '[style.--cngx-context-menu-item-check-glyph]': 'checkGlyph' },
   hostDirectives: [
     {
       directive: CngxMenuItemCheckbox,
@@ -72,4 +75,8 @@ export class CngxContextMenuItemCheckbox {
    * string `[icon]` shorthand off so the projected icon is the only one drawn.
    */
   protected readonly projectedIcon = contentChild(CngxMenuItemIcon);
+
+  /** @internal Seeds the CSS `content` of the default checked indicator from
+   * the shared glyph const (CSS-string quoted for `content:`). */
+  protected readonly checkGlyph = `'${CNGX_MENU_GLYPHS.checkboxChecked}'`;
 }
