@@ -21,6 +21,15 @@ export interface CngxContextMenuPanel<T = unknown> {
   /** Store the per-open datum. Called by the trigger before the popover opens. */
   setContext(value: T | null): void;
   /**
+   * @internal Open this panel as a nested submenu of a parent item: flank the
+   * inline-end (`right-start` + the submenu flip chain), open non-exclusively so
+   * the parent panel survives, and mirror the parent's per-open datum. Owns the
+   * submenu placement policy so a projected item drives one seam instead of
+   * reaching into the popover's override signals. Optional: an ejected panel
+   * skin may omit it and drive its own popover directly.
+   */
+  openAsSubmenu?(context: T | null): void;
+  /**
    * @internal Register the trigger core's keydown handler so the panel can
    * forward ArrowRight/ArrowLeft/Escape submenu routing to it. The core owns
    * that routing, but open moves focus into the panel (a sibling of the

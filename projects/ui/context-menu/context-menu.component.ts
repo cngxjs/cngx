@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import { outputToObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
-import { CngxMenu } from '@cngx/common/interactive';
+import { CngxMenu, CNGX_SUBMENU_TRY_FALLBACKS } from '@cngx/common/interactive';
 import { CngxPopover } from '@cngx/common/popover';
 
 import { CngxContextMenuContent } from './context-menu-content.directive';
@@ -111,6 +111,22 @@ export class CngxContextMenu<T = unknown> implements CngxContextMenuPanel<T> {
    */
   setContext(value: T | null): void {
     this.datum.set(value);
+  }
+
+  /**
+   * @internal Open this panel as a nested submenu of a parent item. Installs the
+   * inline-end placement + flip chain, opens non-exclusively (the parent panel
+   * survives), mirrors the parent's per-open datum, then shows. Owns the submenu
+   * placement policy so `CngxContextMenuItem` drives one seam rather than
+   * reaching into the popover's `@internal` override signals - the ejected item
+   * skin stays off `CngxPopover` internals (decompose).
+   */
+  openAsSubmenu(context: T | null): void {
+    this.popover.exclusiveOverride.set(false);
+    this.popover.placementOverride.set('right-start');
+    this.popover.positionTryFallbacksOverride.set(CNGX_SUBMENU_TRY_FALLBACKS);
+    this.setContext(context);
+    this.popover.show();
   }
 
   /** Keydown forwarder registered by the trigger; `null` while none is bound. */

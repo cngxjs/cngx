@@ -3,6 +3,8 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it } from 'vitest';
 
+import { CNGX_SUBMENU_TRY_FALLBACKS } from '@cngx/common/interactive';
+
 import { CngxContextMenu } from './context-menu.component';
 import { CngxContextMenuContent } from './context-menu-content.directive';
 import type { CngxContextMenuPanel } from './context-menu-panel';
@@ -106,6 +108,23 @@ describe('CngxContextMenu', () => {
     TestBed.flushEffects();
     fixture.detectChanges();
     expect(panel.context()).toBeNull();
+  });
+
+  it('openAsSubmenu installs the inline-end placement policy and mirrors the datum', () => {
+    const { fixture, panel } = setupTemplate();
+    const row: Row = { id: 9, name: 'Delta' };
+
+    // The panel owns the submenu-open policy so a projected item drives one
+    // seam instead of reaching into the popover override signals.
+    panel.openAsSubmenu(row);
+    TestBed.flushEffects();
+    fixture.detectChanges();
+
+    expect(panel.popover.placementOverride()).toBe('right-start');
+    expect(panel.popover.positionTryFallbacksOverride()).toEqual([...CNGX_SUBMENU_TRY_FALLBACKS]);
+    expect(panel.popover.exclusiveOverride()).toBe(false);
+    expect(panel.popover.isVisible()).toBe(true);
+    expect(panel.context()).toBe(row);
   });
 
   it('instantiates the lazy content template only while open', () => {

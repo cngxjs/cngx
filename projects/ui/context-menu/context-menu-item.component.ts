@@ -18,7 +18,6 @@ import {
   CngxMenuItemSubmenu,
   CngxMenuItemSuffix,
   CNGX_MENU_SUBMENU_WIRING,
-  CNGX_SUBMENU_TRY_FALLBACKS,
   type CngxMenuHost,
   type CngxMenuSubmenuPopoverRef,
   type CngxMenuSubmenuWiring,
@@ -180,19 +179,12 @@ export class CngxContextMenuItem implements CngxMenuSubmenuWiring {
     if (!target) {
       return;
     }
-    // Open non-exclusively so the parent panel survives, and mirror its row
-    // context once, in the event path - closing stays derived from the
-    // popover's own visibility (Pillar 1).
-    target.popover.exclusiveOverride.set(false);
-    // A submenu flanks its parent at the inline-end. The panel's popover
-    // otherwise defaults to placement="bottom" and would open downward like a
-    // dropdown, so install the submenu placement + flip chain through the same
-    // override seam as exclusiveOverride.
-    target.popover.placementOverride.set('right-start');
-    target.popover.positionTryFallbacksOverride.set(CNGX_SUBMENU_TRY_FALLBACKS);
-    target.setContext(this.parentPanel?.context() ?? null);
-    target.popover.show();
-    // The show above is the raw terminal for every open path (hover, keyboard,
+    // Delegate the whole submenu-open policy - inline-end placement, flip chain,
+    // non-exclusive open, parent-datum mirror - to the panel. The item drives
+    // one seam instead of reaching into the popover's override signals, so an
+    // ejected item skin never carries CngxPopover internals (decompose).
+    target.openAsSubmenu(this.parentPanel?.context() ?? null);
+    // openAsSubmenu is the terminal for every open path (hover, keyboard,
     // click). Record the now-open submenu on the trigger's focus stack so
     // ArrowLeft / Escape pop a hover-opened submenu the same as a
     // keyboard-opened one. Push-only - it never re-enters the open path, so no
