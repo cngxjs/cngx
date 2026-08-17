@@ -276,7 +276,7 @@ export class CngxMenuItemSubmenu implements CngxMenuSubmenuLike {
               'Add [cngxMenuItem] alongside [cngxMenuItemSubmenu] on the same element.',
           );
         }
-        if (!this.wired()) {
+        if (!this.wired() && !this.wiring) {
           console.warn(
             '[cngxMenuItemSubmenu] has no popover/menu source. Bind [cngxMenuItemSubmenu] and ' +
               '[submenuMenu], or provide CNGX_MENU_SUBMENU_WIRING from a wrapping component. ' +
