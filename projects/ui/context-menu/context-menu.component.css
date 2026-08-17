@@ -148,9 +148,13 @@
        registered pixel initials defeat the use-site fallbacks). */
     --cngx-context-menu-padding: var(--cngx-space-xs);
     --cngx-context-menu-separator-inset: var(--cngx-space-xs);
-    display: flex;
-    flex-direction: column;
     box-sizing: border-box;
+    /* The organism IS the popover surface; CngxPopover promotes it to the top
+       layer. position:fixed + inset:unset lets CSS anchor positioning place it
+       (mirrors CngxPopoverPanel). Display is gated on :popover-open below so a
+       closed [popover] stays hidden. */
+    position: fixed;
+    inset: unset;
     min-inline-size: max-content;
     background: var(--cngx-context-menu-surface, var(--cngx-color-surface, oklch(1 0 0)));
     color: var(--cngx-context-menu-color, var(--cngx-color-text, oklch(0.2 0.01 250)));
@@ -159,6 +163,34 @@
     box-shadow: var(--cngx-context-menu-shadow, 0 4px 16px oklch(0 0 0 / 0.12));
     padding: var(--cngx-context-menu-padding, 4px);
     outline: none;
+    transition:
+      opacity var(--cngx-duration-base, 200ms) var(--cngx-easing-standard, cubic-bezier(0.4, 0, 0.2, 1)),
+      transform var(--cngx-duration-base, 200ms) var(--cngx-easing-standard, cubic-bezier(0.4, 0, 0.2, 1));
+  }
+
+  /* The browser hides [popover] until shown; restore the flex layout only while
+     open, so the author display never wins over the UA popover-hiding and a
+     closed menu occupies no layout. */
+  cngx-context-menu:popover-open {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Open / close transition, driven by CngxPopover's state classes. */
+  cngx-context-menu.cngx-popover--opening,
+  cngx-context-menu.cngx-popover--closing {
+    opacity: 0;
+    transform: translateY(4px) scale(0.98);
+  }
+  cngx-context-menu.cngx-popover--open {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    cngx-context-menu {
+      transition: none;
+    }
   }
 
   /* The menu container carries keyboard focus (aria-activedescendant), so the
