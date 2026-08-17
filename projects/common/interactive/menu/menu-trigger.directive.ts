@@ -9,6 +9,7 @@ import {
   input,
   untracked,
 } from '@angular/core';
+import { outputToObservable } from '@angular/core/rxjs-interop';
 
 import {
   CNGX_MENU_DISMISS_HANDLER_FACTORY,
@@ -144,6 +145,28 @@ export class CngxMenuTrigger {
         }
       });
     });
+    // Click on a submenu-parent item routes through the menu's `activated`
+    // output (CngxMenuItem funnels click into `activateCurrent`), so open the
+    // parent's submenu off that deterministic event rather than the keydown
+    // path. Enter/Space already open it via `handleActivation`; both funnel to
+    // the idempotent `openSubmenuFor`, so the parent never double-opens.
+    effect((onCleanup) => {
+      const menu = this.menu();
+      const sub = outputToObservable(menu.ad.activated).subscribe(() => this.openActiveSubmenu());
+      onCleanup(() => sub.unsubscribe());
+    });
+  }
+
+  private openActiveSubmenu(): void {
+    const menu = this.focusStack.effectiveMenu();
+    const activeId = menu.ad.activeId();
+    if (!activeId) {
+      return;
+    }
+    const submenu = menu.submenuItems().find((s) => s.id === activeId);
+    if (submenu) {
+      this.focusStack.openSubmenuFor(submenu);
+    }
   }
 
   protected handleKeydown(event: KeyboardEvent): void {

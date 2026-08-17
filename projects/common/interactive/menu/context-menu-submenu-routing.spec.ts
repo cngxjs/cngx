@@ -97,6 +97,42 @@ describe('context-menu trigger core - submenu keyboard routing', () => {
     expect(inner.highlightFirst).toHaveBeenCalledOnce();
   });
 
+  it('openActiveSubmenu opens the active parent submenu and highlights its first item', () => {
+    const inner = mockMenu();
+    const submenu = mockSubmenu('sub-1', inner.host);
+    root.submenus.set([submenu]);
+    root.activeId.set('sub-1');
+
+    core.openActiveSubmenu();
+
+    expect(submenu.open).toHaveBeenCalledOnce();
+    expect(inner.highlightFirst).toHaveBeenCalledOnce();
+  });
+
+  it('openActiveSubmenu is a no-op on a leaf item', () => {
+    const inner = mockMenu();
+    const submenu = mockSubmenu('sub-1', inner.host);
+    root.submenus.set([submenu]);
+    root.activeId.set('leaf-item');
+
+    core.openActiveSubmenu();
+
+    expect(submenu.open).not.toHaveBeenCalled();
+  });
+
+  it('openActiveSubmenu does not double-push an already-open submenu', () => {
+    const inner = mockMenu();
+    const submenu = mockSubmenu('sub-1', inner.host);
+    root.submenus.set([submenu]);
+    root.activeId.set('sub-1');
+
+    core.openActiveSubmenu();
+    core.openActiveSubmenu();
+
+    expect(submenu.open).toHaveBeenCalledOnce();
+    expect(inner.highlightFirst).toHaveBeenCalledOnce();
+  });
+
   it('ArrowLeft pops the current submenu level', () => {
     const inner = mockMenu();
     const submenu = mockSubmenu('sub-1', inner.host);

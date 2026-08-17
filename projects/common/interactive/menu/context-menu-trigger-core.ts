@@ -96,6 +96,17 @@ export interface CngxContextMenuTriggerCore {
   handleContextMenu(event: MouseEvent): void;
   /** Keydown host handler - `Shift+F10` opens at the host centre. */
   handleKeydown(event: KeyboardEvent): void;
+  /**
+   * Open the submenu of the effective menu's active item through the focus
+   * stack. No-op when the active item is a leaf (or nothing is active) and
+   * idempotent when that submenu is already open. The DI host wires the
+   * surrounding menu's `CngxActiveDescendant.activated` output to this method
+   * so pointer click and Enter/Space open a submenu parent deterministically,
+   * off the `activated` event rather than a forwarded keydown that races the
+   * AD's own listener. No `activated` subscription lives inside this pure
+   * factory - only the imperative open.
+   */
+  openActiveSubmenu(): void;
   /** Drive from the directive's `isOpen` effect (inside `untracked`). */
   syncOpenState(open: boolean): void;
   /** Teardown - call from the directive's `DestroyRef.onDestroy`. */
@@ -228,6 +239,17 @@ export function createContextMenuTriggerCore(
             focusStack.handleEscape(event);
           }
           return;
+      }
+    },
+    openActiveSubmenu(): void {
+      const menu = focusStack.effectiveMenu();
+      const activeId = menu.ad.activeId();
+      if (!activeId) {
+        return;
+      }
+      const submenu = menu.submenuItems().find((s) => s.id === activeId);
+      if (submenu) {
+        focusStack.openSubmenuFor(submenu);
       }
     },
     syncOpenState(open: boolean): void {
