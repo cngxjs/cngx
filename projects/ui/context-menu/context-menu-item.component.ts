@@ -144,11 +144,14 @@ export class CngxContextMenuItem implements CngxMenuSubmenuWiring {
     }
     // Activation flows through the surrounding CngxActiveDescendant (click and
     // keyboard both funnel into activateCurrent). Filter to this item's brain
-    // id so only the activated row emits - the same identity CngxMenu uses.
+    // id so only the activated row emits - the same identity CngxMenu uses. A
+    // submenu parent never emits a leaf action: activating it opens the submenu
+    // (the panel routes `activated` to the trigger core), so gate on
+    // `!submenu()` to keep leaf `select` from firing on a parent.
     outputToObservable(ad.activated)
       .pipe(takeUntilDestroyed())
       .subscribe(() => {
-        if (ad.activeId() === brain.id) {
+        if (ad.activeId() === brain.id && !this.submenu()) {
           this.select.emit();
         }
       });
@@ -177,5 +180,12 @@ export class CngxContextMenuItem implements CngxMenuSubmenuWiring {
     target.popover.exclusiveOverride.set(false);
     target.setContext(this.parentPanel?.context() ?? null);
     target.popover.show();
+    // The show above is the raw terminal for every open path (hover, keyboard,
+    // click). Record the now-open submenu on the trigger's focus stack so
+    // ArrowLeft / Escape pop a hover-opened submenu the same as a
+    // keyboard-opened one. Push-only - it never re-enters the open path, so no
+    // recursion; the stack stays the single source of the active chain
+    // (Pillar 1).
+    this.parentPanel?.noteActiveSubmenuOpened?.();
   }
 }

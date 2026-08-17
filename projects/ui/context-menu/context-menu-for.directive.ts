@@ -111,13 +111,27 @@ export class CngxContextMenuFor<T = unknown> {
     });
     // Open moves focus into the panel (a sibling of this trigger), so submenu
     // ArrowRight/ArrowLeft/Escape land on the panel. Forward the panel's
-    // keydown into the core, which owns that routing.
+    // keydown into the core, which owns that routing. The panel also drives the
+    // core's activation (open a submenu parent off `ad.activated`) and the
+    // push-only note (stack-track a hover-opened submenu) through the same
+    // register-a-handler seam.
     const forwardKeydown = (event: KeyboardEvent): void => this.core.handleKeydown(event);
+    const openActiveSubmenu = (): void => this.core.openActiveSubmenu();
+    const noteActiveSubmenuOpened = (): void => this.core.noteActiveSubmenuOpened();
     effect(() => {
       const panel = this.panel();
-      untracked(() => panel.setKeydownHandler?.(forwardKeydown));
+      untracked(() => {
+        panel.setKeydownHandler?.(forwardKeydown);
+        panel.setActivationHandler?.(openActiveSubmenu);
+        panel.setSubmenuNoteHandler?.(noteActiveSubmenuOpened);
+      });
     });
-    destroyRef.onDestroy(() => this.panel().setKeydownHandler?.(null));
+    destroyRef.onDestroy(() => {
+      const panel = this.panel();
+      panel.setKeydownHandler?.(null);
+      panel.setActivationHandler?.(null);
+      panel.setSubmenuNoteHandler?.(null);
+    });
   }
 
   protected handleContextMenu(event: MouseEvent): void {

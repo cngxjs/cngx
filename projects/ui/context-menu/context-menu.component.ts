@@ -8,6 +8,7 @@ import {
   signal,
   ViewEncapsulation,
 } from '@angular/core';
+import { outputToObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { CngxMenu } from '@cngx/common/interactive';
 import { CngxPopover } from '@cngx/common/popover';
@@ -114,6 +115,21 @@ export class CngxContextMenu<T = unknown> implements CngxContextMenuPanel<T> {
 
   /** Keydown forwarder registered by the trigger; `null` while none is bound. */
   private keydownHandler: ((event: KeyboardEvent) => void) | null = null;
+  /** Activation forwarder registered by the trigger; `null` while none bound. */
+  private activationHandler: (() => void) | null = null;
+  /** Push-only submenu-note forwarder registered by the trigger; `null` while none bound. */
+  private submenuNoteHandler: (() => void) | null = null;
+
+  constructor() {
+    // Open moves focus into the menu container, so the container's
+    // CngxActiveDescendant owns Enter/Space and a forwarded keydown reaches the
+    // trigger core too late to open a submenu parent. Drive the open off the
+    // deterministic `activated` event instead - it fires once, after the AD
+    // decides, on both keyboard activation and pointer click.
+    outputToObservable(this.menuHost.ad.activated)
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => this.activationHandler?.());
+  }
 
   /**
    * @internal Register the trigger core's keydown handler. The core owns
@@ -122,6 +138,27 @@ export class CngxContextMenu<T = unknown> implements CngxContextMenuPanel<T> {
    */
   setKeydownHandler(handler: ((event: KeyboardEvent) => void) | null): void {
     this.keydownHandler = handler;
+  }
+
+  /**
+   * @internal Register the trigger core's activation handler, invoked on every
+   * `CngxActiveDescendant.activated` (keyboard activation + pointer click) so a
+   * submenu parent opens deterministically off the event rather than a racing
+   * keydown.
+   */
+  setActivationHandler(handler: (() => void) | null): void {
+    this.activationHandler = handler;
+  }
+
+  /** @internal Register the trigger core's push-only submenu-note handler. */
+  setSubmenuNoteHandler(handler: (() => void) | null): void {
+    this.submenuNoteHandler = handler;
+  }
+
+  /** @internal A projected item calls this after opening its submenu through
+   * its own hover facade, so the trigger's focus stack tracks it. */
+  noteActiveSubmenuOpened(): void {
+    this.submenuNoteHandler?.();
   }
 
   protected handleKeydown(event: KeyboardEvent): void {
