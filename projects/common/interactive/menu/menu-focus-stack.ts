@@ -60,6 +60,14 @@ export interface CngxMenuFocusStack {
   handleActivation(menu: CngxMenuHost, event: KeyboardEvent): void;
   /** Close every open submenu innermost-first, then hide the popover. */
   closeAll(): void;
+  /**
+   * Close every open submenu innermost-first and clear the stack WITHOUT
+   * hiding the root popover. Called on the trigger's close path so a stale
+   * submenu chain never survives a non-Escape dismissal (outside-click, blur,
+   * scroll): the root popover is already closing, and a reopened menu must
+   * start from the root, not a submenu that no longer exists.
+   */
+  reset(): void;
 }
 
 /**
@@ -117,7 +125,7 @@ export function createMenuFocusStack(deps: CngxMenuFocusStackDeps): CngxMenuFocu
     submenuStack.update((prev) => prev.slice(0, -1));
   };
 
-  const closeAll = (): void => {
+  const reset = (): void => {
     const stack = submenuStack();
     for (let i = stack.length - 1; i >= 0; i--) {
       const inner = stack[i];
@@ -126,6 +134,10 @@ export function createMenuFocusStack(deps: CngxMenuFocusStackDeps): CngxMenuFocu
       submenu?.close();
     }
     submenuStack.set([]);
+  };
+
+  const closeAll = (): void => {
+    reset();
     deps.popover().hide();
   };
 
@@ -197,6 +209,7 @@ export function createMenuFocusStack(deps: CngxMenuFocusStackDeps): CngxMenuFocu
       }
     },
     closeAll,
+    reset,
   };
 }
 

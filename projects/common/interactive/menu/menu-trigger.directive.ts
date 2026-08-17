@@ -136,6 +136,10 @@ export class CngxMenuTrigger {
           this.dismissBinding.attach();
         } else {
           this.dismissBinding.detach();
+          // Clear any open submenu chain so a non-Escape dismissal never leaves
+          // a stale submenu on the stack for the next open (mirrors the
+          // context-menu trigger core).
+          this.focusStack.reset();
           this.focusStack.restoreFocus();
         }
       });

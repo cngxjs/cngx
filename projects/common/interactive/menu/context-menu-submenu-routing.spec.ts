@@ -154,4 +154,26 @@ describe('context-menu trigger core - submenu keyboard routing', () => {
 
     expect(submenu.open).not.toHaveBeenCalled();
   });
+
+  it('resets the submenu stack on a non-Escape dismissal so a reopen starts from the root', () => {
+    const inner = mockMenu();
+    const submenu = mockSubmenu('sub-1', inner.host);
+    root.submenus.set([submenu]);
+    root.activeId.set('sub-1');
+
+    // Open the submenu by keyboard, then dismiss the root the way outside-click
+    // / blur / scroll do - via the isOpen effect calling syncOpenState(false),
+    // not through Escape (which pops the stack itself).
+    core.handleKeydown(key('ArrowRight'));
+    expect(submenu.open).toHaveBeenCalledOnce();
+    core.syncOpenState(false);
+    expect(submenu.close).toHaveBeenCalledOnce();
+
+    // Reopen: the stack is empty again, so ArrowRight opens the root's submenu
+    // a second time. Without the reset, effectiveMenu() would still be the
+    // (now-closed) inner submenu and ArrowRight would be a no-op.
+    visible.set(true);
+    core.handleKeydown(key('ArrowRight'));
+    expect(submenu.open).toHaveBeenCalledTimes(2);
+  });
 });

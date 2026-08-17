@@ -147,6 +147,25 @@ describe('createMenuFocusStack', () => {
     expect(popover.hide).not.toHaveBeenCalled();
   });
 
+  it('reset closes open submenus innermost-first and clears the stack without hiding the popover', () => {
+    const inner = mockMenu();
+    const submenu = mockSubmenu('sub-1', inner.host);
+    root.submenus.set([submenu]);
+    root.ad.activeId.set('sub-1');
+
+    const stack = build();
+    stack.handleArrowRight(root.host, keyEvent());
+    expect(stack.stack().length).toBe(1);
+
+    stack.reset();
+
+    expect(submenu.close).toHaveBeenCalledOnce();
+    expect(stack.stack().length).toBe(0);
+    expect(stack.effectiveMenu()).toBe(root.host);
+    // The close path hides the root popover itself; reset must not double-hide.
+    expect(popover.hide).not.toHaveBeenCalled();
+  });
+
   it('captureFocus snapshots the active element and restoreFocus returns focus after the microtask', async () => {
     const button = document.createElement('button');
     document.body.appendChild(button);

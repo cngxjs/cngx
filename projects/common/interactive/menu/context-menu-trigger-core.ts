@@ -236,6 +236,11 @@ export function createContextMenuTriggerCore(
         dismissBinding.attach();
       } else {
         dismissBinding.detach();
+        // Clear any open submenu chain: a non-Escape dismissal (outside-click,
+        // blur, scroll) hides the root popover without touching the stack, so
+        // without this a reopened menu's effectiveMenu() would be a submenu
+        // that no longer exists and Arrow/Home/Enter would route into thin air.
+        focusStack.reset();
         focusStack.restoreFocus();
       }
     },
