@@ -125,11 +125,13 @@
   /* Checked indicator - the base skin draws this via a [cngxMenuItemCheckbox]
      / [cngxMenuItemRadio] attribute ::before that never reaches the shell, so
      re-draw it keyed on the role the brain sets. Suppressed when the consumer
-     projects an explicit icon (mirrors the base :has() guard). Checkbox -> tick,
-     radio -> filled dot, matching the standard form-control vocabulary. */
+     projects an explicit icon (mirrors the base :has() guard). The glyph is the
+     single source in CNGX_MENU_GLYPHS, seeded onto the host as
+     --cngx-context-menu-item-check-glyph by the component (checkbox -> tick,
+     radio -> filled dot); no literal here so the const cannot silently drift. */
   cngx-context-menu-item-checkbox.cngx-menu-item--checked:not(:has(.cngx-menu-item__icon))::before,
   button[cngxContextMenuItemCheckbox].cngx-menu-item--checked:not(:has(.cngx-menu-item__icon))::before {
-    content: var(--cngx-context-menu-item-check-glyph, '✓');
+    content: var(--cngx-context-menu-item-check-glyph);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -139,7 +141,7 @@
   }
   cngx-context-menu-item-radio.cngx-menu-item--checked:not(:has(.cngx-menu-item__icon))::before,
   button[cngxContextMenuItemRadio].cngx-menu-item--checked:not(:has(.cngx-menu-item__icon))::before {
-    content: var(--cngx-context-menu-item-check-glyph, '●');
+    content: var(--cngx-context-menu-item-check-glyph);
     display: inline-flex;
     align-items: center;
     justify-content: center;
