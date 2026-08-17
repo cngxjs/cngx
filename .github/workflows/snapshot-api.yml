@@ -1,0 +1,93 @@
+name: Snapshot API
+
+# Archives the compodocx API snapshots for every release tag as GitHub
+# Release assets, so later tooling can diff one released version against
+# another (`compodocx diff --old <documentation.json> --new <documentation.json>`)
+# without ever having kept the old build around. Two assets per tag:
+#
+#   documentation.json  - full compodocx JSON export (the diff substrate)
+#   llm-context.md      - llm-md dump (the grounding substrate)
+#
+# Triggered on release tag push (scripts/publish.mjs pushes `v<version>`),
+# and manually via workflow_dispatch to backfill an existing tag.
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing tag to snapshot (e.g. v0.1.0-rc.6)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: 'snapshot-api-${{ github.event.inputs.tag || github.ref_name }}'
+  cancel-in-progress: false
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG: ${{ github.event.inputs.tag || github.ref_name }}
+
+    steps:
+      - name: Checkout tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref_name }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # compodocx parses TypeScript source directly, so no lib build is
+      # needed (mirrors deploy-docs.yml, which runs docs without build:libs).
+      - name: Generate API snapshots
+        run: |
+          npm run docs:json
+          npm run docs:llm
+
+      - name: Upload snapshots as release assets
+        run: |
+          set -euo pipefail
+          if [ ! -f .compodoc/documentation.json ]; then
+            echo "::error::.compodoc/documentation.json missing after docs:json"
+            exit 1
+          fi
+          if [ ! -f .compodoc-llm/llm-context.md ]; then
+            echo "::error::.compodoc-llm/llm-context.md missing after docs:llm"
+            exit 1
+          fi
+
+          PRERELEASE_FLAG=""
+          case "$TAG" in
+            *-*) PRERELEASE_FLAG="--prerelease" ;;
+          esac
+
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG already exists - uploading assets only."
+          else
+            echo "Creating release $TAG."
+            gh release create "$TAG" \
+              --title "$TAG" \
+              --notes "API snapshots for $TAG (documentation.json + llm-context.md)." \
+              $PRERELEASE_FLAG
+          fi
+
+          gh release upload "$TAG" \
+            .compodoc/documentation.json \
+            .compodoc-llm/llm-context.md \
+            --clobber
+
+          echo "Snapshotted $TAG: documentation.json + llm-context.md."
