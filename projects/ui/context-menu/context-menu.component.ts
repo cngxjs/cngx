@@ -13,7 +13,7 @@ import { CngxMenu } from '@cngx/common/interactive';
 import { CngxPopover } from '@cngx/common/popover';
 
 import { CngxContextMenuContent } from './context-menu-content.directive';
-import type { CngxContextMenuPanel } from './context-menu-panel';
+import { CNGX_CONTEXT_MENU_PANEL, type CngxContextMenuPanel } from './context-menu-panel';
 
 /**
  * Declarative context-menu panel. Stacks `CngxPopover` (the top-layer popup
@@ -64,6 +64,10 @@ import type { CngxContextMenuPanel } from './context-menu-panel';
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   exportAs: 'cngxContextMenu',
+  providers: [{ provide: CNGX_CONTEXT_MENU_PANEL, useExisting: CngxContextMenu }],
+  host: {
+    '(keydown)': 'handleKeydown($event)',
+  },
   hostDirectives: [
     { directive: CngxPopover, inputs: ['offset', 'closeOnEscape'] },
     { directive: CngxMenu, inputs: ['label: ariaLabel'] },
@@ -102,5 +106,21 @@ export class CngxContextMenu<T = unknown> implements CngxContextMenuPanel<T> {
    */
   setContext(value: T | null): void {
     this.datum.set(value);
+  }
+
+  /** Keydown forwarder registered by the trigger; `null` while none is bound. */
+  private keydownHandler: ((event: KeyboardEvent) => void) | null = null;
+
+  /**
+   * @internal Register the trigger core's keydown handler. The core owns
+   * submenu ArrowRight/ArrowLeft/Escape routing, but open moves focus into
+   * this panel, so keydown lands here rather than on the trigger host.
+   */
+  setKeydownHandler(handler: ((event: KeyboardEvent) => void) | null): void {
+    this.keydownHandler = handler;
+  }
+
+  protected handleKeydown(event: KeyboardEvent): void {
+    this.keydownHandler?.(event);
   }
 }

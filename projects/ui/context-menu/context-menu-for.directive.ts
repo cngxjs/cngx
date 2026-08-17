@@ -102,11 +102,21 @@ export class CngxContextMenuFor<T = unknown> {
   });
 
   constructor() {
-    inject(DestroyRef).onDestroy(() => this.core.destroy());
+    const destroyRef = inject(DestroyRef);
+    destroyRef.onDestroy(() => this.core.destroy());
     effect(() => {
       const open = this.isOpen();
       untracked(() => this.core.syncOpenState(open));
     });
+    // Open moves focus into the panel (a sibling of this trigger), so submenu
+    // ArrowRight/ArrowLeft/Escape land on the panel. Forward the panel's
+    // keydown into the core, which owns that routing.
+    const forwardKeydown = (event: KeyboardEvent): void => this.core.handleKeydown(event);
+    effect(() => {
+      const panel = this.panel();
+      untracked(() => panel.setKeydownHandler?.(forwardKeydown));
+    });
+    destroyRef.onDestroy(() => this.panel().setKeydownHandler?.(null));
   }
 
   protected handleContextMenu(event: MouseEvent): void {

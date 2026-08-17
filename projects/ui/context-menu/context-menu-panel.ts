@@ -1,4 +1,4 @@
-import type { Signal } from '@angular/core';
+import { InjectionToken, type Signal } from '@angular/core';
 
 import type { CngxContextMenuTriggerPopoverRef, CngxMenuHost } from '@cngx/common/interactive';
 
@@ -20,4 +20,24 @@ export interface CngxContextMenuPanel<T = unknown> {
   readonly context: Signal<T | null>;
   /** Store the per-open datum. Called by the trigger before the popover opens. */
   setContext(value: T | null): void;
+  /**
+   * @internal Register the trigger core's keydown handler so the panel can
+   * forward ArrowRight/ArrowLeft/Escape submenu routing to it. The core owns
+   * that routing, but open moves focus into the panel (a sibling of the
+   * trigger), so the panel - not the trigger host - is where those keys land.
+   * `null` deregisters. Optional: an ejected panel skin may omit it, in which
+   * case keyboard submenu routing is simply not wired.
+   */
+  setKeydownHandler?(handler: ((event: KeyboardEvent) => void) | null): void;
 }
+
+/**
+ * @internal DI token the panel provides via `useExisting` so a projected
+ * `CngxContextMenuItem` can read its enclosing panel's `context()` and mirror
+ * it into a sibling-declared submenu. Not part of the public API - the child
+ * talks to the panel through this structural seam rather than injecting the
+ * concrete `CngxContextMenu` class (`CNGX_MENU_HOST` precedent).
+ */
+export const CNGX_CONTEXT_MENU_PANEL = new InjectionToken<CngxContextMenuPanel>(
+  'CNGX_CONTEXT_MENU_PANEL',
+);
