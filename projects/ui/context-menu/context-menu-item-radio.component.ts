@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  contentChild,
   input,
   ViewEncapsulation,
 } from '@angular/core';
@@ -42,7 +43,8 @@ import {
   exportAs: 'cngxContextMenuItemRadio',
   hostDirectives: [{ directive: CngxMenuItemRadio, inputs: ['disabled', 'value', 'label'] }],
   template: `
-    @if (icon(); as glyph) {
+    <ng-content select="[cngxMenuItemIcon]" />
+    @if (!projectedIcon() && icon(); as glyph) {
       <span cngxMenuItemIcon>{{ glyph }}</span>
     }
     <span cngxMenuItemLabel><ng-content /></span>
@@ -53,8 +55,18 @@ import {
   styleUrl: './context-menu-item.component.css',
 })
 export class CngxContextMenuItemRadio {
-  /** Leading glyph rendered in the icon slot (decorative, `aria-hidden`). */
+  /**
+   * Leading glyph shorthand rendered in the icon slot (decorative,
+   * `aria-hidden`). Suppressed when the consumer projects a richer
+   * `[cngxMenuItemIcon]` marker, which replaces the default checked indicator.
+   */
   readonly icon = input<string>();
   /** Keyboard-shortcut hint rendered in the kbd slot (decorative). */
   readonly kbd = input<string>();
+
+  /**
+   * A consumer-projected `[cngxMenuItemIcon]` marker, when present. Gates the
+   * string `[icon]` shorthand off so the projected icon is the only one drawn.
+   */
+  protected readonly projectedIcon = contentChild(CngxMenuItemIcon);
 }

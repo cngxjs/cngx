@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  contentChild,
   inject,
   input,
   output,
@@ -81,7 +82,8 @@ const CONTEXT_MENU_SUBMENU_CARET = '▸';
     CngxMenuItemSubmenu,
   ],
   template: `
-    @if (icon(); as glyph) {
+    <ng-content select="[cngxMenuItemIcon]" />
+    @if (!projectedIcon() && icon(); as glyph) {
       <span cngxMenuItemIcon>{{ glyph }}</span>
     }
     <span cngxMenuItemLabel><ng-content /></span>
@@ -95,8 +97,19 @@ const CONTEXT_MENU_SUBMENU_CARET = '▸';
   styleUrl: './context-menu-item.component.css',
 })
 export class CngxContextMenuItem implements CngxMenuSubmenuWiring {
-  /** Leading glyph rendered in the icon slot (decorative, `aria-hidden`). */
+  /**
+   * Leading glyph shorthand rendered in the icon slot (decorative,
+   * `aria-hidden`). A convenience for single-character icons; suppressed when
+   * the consumer projects a richer `[cngxMenuItemIcon]` marker (SVG / icon
+   * component), which wins.
+   */
   readonly icon = input<string>();
+
+  /**
+   * A consumer-projected `[cngxMenuItemIcon]` marker, when present. Gates the
+   * string `[icon]` shorthand off so the projected icon is the only one drawn.
+   */
+  protected readonly projectedIcon = contentChild(CngxMenuItemIcon);
   /** Keyboard-shortcut hint rendered in the kbd slot (decorative). */
   readonly kbd = input<string>();
   /**
