@@ -3,6 +3,8 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
+import { CNGX_SUBMENU_TRY_FALLBACKS } from '@cngx/common/interactive';
+
 import { CngxContextMenu } from './context-menu.component';
 import { CngxContextMenuContent } from './context-menu-content.directive';
 import { CngxContextMenuFor } from './context-menu-for.directive';
@@ -114,6 +116,20 @@ describe('CngxContextMenuItem submenu wiring', () => {
     expect(sub.popover.isVisible()).toBe(true);
     expect(parent.popover.isVisible()).toBe(true);
     expect(sub.context()).toEqual({ id: 1, name: 'Alpha' });
+  });
+
+  it('flanks the submenu at the inline-end (right-start) with the submenu flip chain', () => {
+    openParent();
+    arrow(parentEl(), 'ArrowRight');
+    TestBed.flushEffects();
+    fixture.detectChanges();
+
+    expect(sub.popover.isVisible()).toBe(true);
+    // A submenu opens beside its parent, not below it: the item installs the
+    // inline-end placement + flip fallbacks via the popover override seam,
+    // overriding the panel popover's default placement="bottom".
+    expect(sub.popover.placementOverride()).toBe('right-start');
+    expect(sub.popover.positionTryFallbacksOverride()).toEqual([...CNGX_SUBMENU_TRY_FALLBACKS]);
   });
 
   it('ArrowLeft closes the nested panel and leaves the parent open', () => {

@@ -18,6 +18,7 @@ import {
   CngxMenuItemSubmenu,
   CngxMenuItemSuffix,
   CNGX_MENU_SUBMENU_WIRING,
+  CNGX_SUBMENU_TRY_FALLBACKS,
   type CngxMenuHost,
   type CngxMenuSubmenuPopoverRef,
   type CngxMenuSubmenuWiring,
@@ -183,6 +184,12 @@ export class CngxContextMenuItem implements CngxMenuSubmenuWiring {
     // context once, in the event path - closing stays derived from the
     // popover's own visibility (Pillar 1).
     target.popover.exclusiveOverride.set(false);
+    // A submenu flanks its parent at the inline-end. The panel's popover
+    // otherwise defaults to placement="bottom" and would open downward like a
+    // dropdown, so install the submenu placement + flip chain through the same
+    // override seam as exclusiveOverride.
+    target.popover.placementOverride.set('right-start');
+    target.popover.positionTryFallbacksOverride.set(CNGX_SUBMENU_TRY_FALLBACKS);
     target.setContext(this.parentPanel?.context() ?? null);
     target.popover.show();
     // The show above is the raw terminal for every open path (hover, keyboard,
