@@ -13,6 +13,8 @@ import { CngxMenuSeparator } from '@cngx/common/interactive';
  * <hr cngxContextMenuDivider />
  * ```
  *
+ * <example-url>http://localhost:4200/#/ui/context-menu/basic/static-items</example-url>
+ * <example-url>http://localhost:4200/#/ui/context-menu/attribute-form/native-buttons</example-url>
  * @category ui/context-menu
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/context-menu/context-menu-divider.component.ts

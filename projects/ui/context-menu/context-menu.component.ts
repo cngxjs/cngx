@@ -50,6 +50,10 @@ import { CNGX_CONTEXT_MENU_PANEL, type CngxContextMenuPanel } from './context-me
  * </cngx-context-menu>
  * ```
  *
+ * <example-url>http://localhost:4200/#/ui/context-menu/basic/static-items</example-url>
+ * <example-url>http://localhost:4200/#/ui/context-menu/grid/delegated-resolver</example-url>
+ * <example-url>http://localhost:4200/#/ui/context-menu/submenu/nested-export-menu</example-url>
+ * <example-url>http://localhost:4200/#/ui/context-menu/selection/checkbox-radio-items</example-url>
  * @category ui/context-menu
  * @docsKind primary
  * @wcag AA

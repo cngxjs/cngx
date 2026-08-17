@@ -26,6 +26,8 @@ export interface CngxContextMenuContentContext<T = unknown> {
  * </cngx-context-menu>
  * ```
  *
+ * <example-url>http://localhost:4200/#/ui/context-menu/grid/delegated-resolver</example-url>
+ * <example-url>http://localhost:4200/#/ui/context-menu/table/row-context-data</example-url>
  * @category ui/context-menu
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/context-menu/context-menu-content.directive.ts
