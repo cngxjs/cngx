@@ -95,6 +95,97 @@ describe('createMenuFocusStack', () => {
     expect(inner.ad.highlightFirst).toHaveBeenCalledOnce();
   });
 
+  it('openSubmenuFor opens the submenu, pushes the stack, and highlights the inner first item', () => {
+    const inner = mockMenu();
+    const submenu = mockSubmenu('sub-1', inner.host);
+    root.submenus.set([submenu]);
+
+    const stack = build();
+    stack.openSubmenuFor(submenu);
+
+    expect(submenu.open).toHaveBeenCalledOnce();
+    expect(stack.stack()).toEqual([inner.host]);
+    expect(stack.effectiveMenu()).toBe(inner.host);
+    expect(inner.ad.highlightFirst).toHaveBeenCalledOnce();
+  });
+
+  it('openSubmenuFor is a no-op when the submenu is already on the stack', () => {
+    const inner = mockMenu();
+    const submenu = mockSubmenu('sub-1', inner.host);
+    root.submenus.set([submenu]);
+
+    const stack = build();
+    stack.openSubmenuFor(submenu);
+    stack.openSubmenuFor(submenu);
+
+    expect(submenu.open).toHaveBeenCalledOnce();
+    expect(stack.stack()).toEqual([inner.host]);
+    expect(inner.ad.highlightFirst).toHaveBeenCalledOnce();
+  });
+
+  it('noteSubmenuOpened pushes and highlights the inner first item without opening the submenu', () => {
+    const inner = mockMenu();
+    const submenu = mockSubmenu('sub-1', inner.host);
+    root.submenus.set([submenu]);
+
+    const stack = build();
+    stack.noteSubmenuOpened(submenu);
+
+    expect(submenu.open).not.toHaveBeenCalled();
+    expect(stack.stack()).toEqual([inner.host]);
+    expect(stack.effectiveMenu()).toBe(inner.host);
+    expect(inner.ad.highlightFirst).toHaveBeenCalledOnce();
+  });
+
+  it('noteSubmenuOpened is a no-op when the submenu is already on the stack', () => {
+    const inner = mockMenu();
+    const submenu = mockSubmenu('sub-1', inner.host);
+    root.submenus.set([submenu]);
+    root.ad.activeId.set('sub-1');
+
+    const stack = build();
+    stack.openSubmenuFor(submenu);
+    stack.noteSubmenuOpened(submenu);
+
+    expect(submenu.open).toHaveBeenCalledOnce();
+    expect(stack.stack()).toEqual([inner.host]);
+    expect(inner.ad.highlightFirst).toHaveBeenCalledOnce();
+  });
+
+  it('activeSubmenu resolves the effective menu active item submenu, else undefined', () => {
+    const inner = mockMenu();
+    const submenu = mockSubmenu('sub-1', inner.host);
+    root.submenus.set([submenu]);
+
+    const stack = build();
+    expect(stack.activeSubmenu()).toBeUndefined();
+
+    root.ad.activeId.set('sub-1');
+    expect(stack.activeSubmenu()).toBe(submenu);
+
+    root.ad.activeId.set('leaf');
+    expect(stack.activeSubmenu()).toBeUndefined();
+  });
+
+  it('ignores an inert submenu brain whose inner menu never resolves (leaf item in the organism)', () => {
+    const inert: CngxMenuSubmenuLike = {
+      id: 'leaf',
+      inner: null as unknown as CngxMenuHost,
+      isOpen: signal(false),
+      open: vi.fn(),
+      close: vi.fn(),
+    };
+    root.submenus.set([inert]);
+    root.ad.activeId.set('leaf');
+
+    const stack = build();
+    stack.openSubmenuFor(inert);
+    stack.noteSubmenuOpened(inert);
+    stack.handleArrowRight(root.host, keyEvent());
+
+    expect(stack.stack().length).toBe(0);
+  });
+
   it('ArrowLeft pops the innermost submenu level', () => {
     const inner = mockMenu();
     const submenu = mockSubmenu('sub-1', inner.host);

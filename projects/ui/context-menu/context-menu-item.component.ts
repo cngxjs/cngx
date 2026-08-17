@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  contentChild,
   inject,
   input,
   output,
@@ -23,10 +24,9 @@ import {
 } from '@cngx/common/interactive';
 
 import type { CngxContextMenu } from './context-menu.component';
+import { createContextMenuItemSubmenuFacade } from './context-menu-item-submenu-facade';
 import { CNGX_CONTEXT_MENU_PANEL } from './context-menu-panel';
-
-/** @internal Default caret glyph for an item that opens a submenu (decorative). */
-const CONTEXT_MENU_SUBMENU_CARET = '▸';
+import { CNGX_MENU_GLYPHS } from './menu-glyphs';
 
 /**
  * A single actionable context-menu item. Thin shell over `CngxMenuItem`: the
@@ -80,7 +80,8 @@ const CONTEXT_MENU_SUBMENU_CARET = '▸';
     CngxMenuItemSubmenu,
   ],
   template: `
-    @if (icon(); as glyph) {
+    <ng-content select="[cngxMenuItemIcon]" />
+    @if (!projectedIcon() && icon(); as glyph) {
       <span cngxMenuItemIcon>{{ glyph }}</span>
     }
     <span cngxMenuItemLabel><ng-content /></span>
@@ -94,8 +95,19 @@ const CONTEXT_MENU_SUBMENU_CARET = '▸';
   styleUrl: './context-menu-item.component.css',
 })
 export class CngxContextMenuItem implements CngxMenuSubmenuWiring {
-  /** Leading glyph rendered in the icon slot (decorative, `aria-hidden`). */
+  /**
+   * Leading glyph shorthand rendered in the icon slot (decorative,
+   * `aria-hidden`). A convenience for single-character icons; suppressed when
+   * the consumer projects a richer `[cngxMenuItemIcon]` marker (SVG / icon
+   * component), which wins.
+   */
   readonly icon = input<string>();
+
+  /**
+   * A consumer-projected `[cngxMenuItemIcon]` marker, when present. Gates the
+   * string `[icon]` shorthand off so the projected icon is the only one drawn.
+   */
+  protected readonly projectedIcon = contentChild(CngxMenuItemIcon);
   /** Keyboard-shortcut hint rendered in the kbd slot (decorative). */
   readonly kbd = input<string>();
   /**
@@ -108,8 +120,10 @@ export class CngxContextMenuItem implements CngxMenuSubmenuWiring {
   /** Fires when this item is activated by click or Enter/Space. */
   readonly select = output<void>();
 
-  /** @internal Decorative caret rendered while `submenu` is set. */
-  protected readonly caret = CONTEXT_MENU_SUBMENU_CARET;
+  /** @internal Decorative caret rendered while `submenu` is set. RTL flip is
+   * a CSS concern (`.cngx-menu-item__suffix` under `[dir='rtl']`), not a
+   * swapped glyph. */
+  protected readonly caret = CNGX_MENU_GLYPHS.submenuCaret;
 
   private readonly parentPanel = inject(CNGX_CONTEXT_MENU_PANEL, { optional: true });
 
@@ -118,25 +132,16 @@ export class CngxContextMenuItem implements CngxMenuSubmenuWiring {
    * input. `show()` opens the target panel non-exclusively and mirrors the
    * parent panel's row context in first; every other member delegates to the
    * target's `CngxPopover`. Built once, reads `submenu()` lazily so it stays
-   * valid across target changes.
+   * valid across target changes. The adapter itself lives in
+   * `createContextMenuItemSubmenuFacade` so this class stays a thin shell.
    */
-  private readonly submenuPopoverFacade: CngxMenuSubmenuPopoverRef;
+  private readonly submenuPopoverFacade: CngxMenuSubmenuPopoverRef =
+    createContextMenuItemSubmenuFacade(
+      () => this.submenu(),
+      () => this.openSubmenu(),
+    );
 
   constructor() {
-    const target = this.submenu;
-    this.submenuPopoverFacade = {
-      isVisible: () => target()?.popover.isVisible() ?? false,
-      show: () => this.openSubmenu(),
-      hide: () => target()?.popover.hide(),
-      anchorElement: { set: (el) => target()?.popover.anchorElement.set(el) },
-      id: () => target()?.popover.id() ?? '',
-      elementRef: {
-        get nativeElement(): HTMLElement {
-          return target()!.popover.elementRef.nativeElement;
-        },
-      },
-    };
-
     const brain = inject(CngxMenuItem);
     const ad = inject(CngxActiveDescendant, { optional: true });
     if (!ad) {
@@ -144,11 +149,14 @@ export class CngxContextMenuItem implements CngxMenuSubmenuWiring {
     }
     // Activation flows through the surrounding CngxActiveDescendant (click and
     // keyboard both funnel into activateCurrent). Filter to this item's brain
-    // id so only the activated row emits - the same identity CngxMenu uses.
+    // id so only the activated row emits - the same identity CngxMenu uses. A
+    // submenu parent never emits a leaf action: activating it opens the submenu
+    // (the panel routes `activated` to the trigger core), so gate on
+    // `!submenu()` to keep leaf `select` from firing on a parent.
     outputToObservable(ad.activated)
       .pipe(takeUntilDestroyed())
       .subscribe(() => {
-        if (ad.activeId() === brain.id) {
+        if (ad.activeId() === brain.id && !this.submenu()) {
           this.select.emit();
         }
       });
@@ -171,11 +179,17 @@ export class CngxContextMenuItem implements CngxMenuSubmenuWiring {
     if (!target) {
       return;
     }
-    // Open non-exclusively so the parent panel survives, and mirror its row
-    // context once, in the event path - closing stays derived from the
-    // popover's own visibility (Pillar 1).
-    target.popover.exclusiveOverride.set(false);
-    target.setContext(this.parentPanel?.context() ?? null);
-    target.popover.show();
+    // Delegate the whole submenu-open policy - inline-end placement, flip chain,
+    // non-exclusive open, parent-datum mirror - to the panel. The item drives
+    // one seam instead of reaching into the popover's override signals, so an
+    // ejected item skin never carries CngxPopover internals (decompose).
+    target.openAsSubmenu(this.parentPanel?.context() ?? null);
+    // openAsSubmenu is the terminal for every open path (hover, keyboard,
+    // click). Record the now-open submenu on the trigger's focus stack so
+    // ArrowLeft / Escape pop a hover-opened submenu the same as a
+    // keyboard-opened one. Push-only - it never re-enters the open path, so no
+    // recursion; the stack stays the single source of the active chain
+    // (Pillar 1).
+    this.parentPanel?.noteActiveSubmenuOpened?.();
   }
 }

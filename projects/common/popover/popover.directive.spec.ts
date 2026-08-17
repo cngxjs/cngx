@@ -3,7 +3,11 @@ import { TestBed } from '@angular/core/testing';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxPopover, __resetFloatingMiddlewareWarnings } from './popover.directive';
-import { CNGX_FLOATING_FALLBACK, provideFloatingFallback } from './floating-fallback';
+import {
+  CNGX_FLOATING_FALLBACK,
+  FLOATING_PLACEMENT,
+  provideFloatingFallback,
+} from './floating-fallback';
 import {
   CNGX_POPOVER_ARROW_BOUNDS,
   type CngxPopoverArrowBounds,
@@ -475,6 +479,29 @@ describe('CngxPopover', () => {
     it('compiles against the typed CNGX_FLOATING_FALLBACK token shape', () => {
       expect(CNGX_FLOATING_FALLBACK).toBeDefined();
     });
+
+    it('honours placementOverride on the floating-ui fallback path', () => {
+      __resetFloatingMiddlewareWarnings(document);
+      const computePosition = vi.fn().mockResolvedValue({ x: 0, y: 0, placement: 'right-start' });
+      TestBed.configureTestingModule({
+        imports: [BasicHost],
+        providers: [
+          provideFloatingFallback(computePosition, [{ name: 'flip' }, { name: 'shift' }]),
+        ],
+      });
+      const { fixture, popoverEl } = setup(BasicHost);
+      const popover = (fixture.componentInstance as BasicHost).popover();
+      popover.anchorElement.set(popoverEl);
+      // The override must reach the Floating-UI path, not just the CSS-Anchor
+      // path: a submenu using the fallback would otherwise open at the default
+      // placement="bottom" instead of the flanking right-start.
+      popover.placementOverride.set('right-start');
+      popover.show();
+
+      expect(computePosition).toHaveBeenCalled();
+      const opts = computePosition.mock.calls[0][2] as { placement: string };
+      expect(opts.placement).toBe(FLOATING_PLACEMENT['right-start']);
+    });
   });
 
   describe('arrow bounds contract', () => {
@@ -627,6 +654,21 @@ describe('CngxPopover', () => {
       const { fixture } = setup(BasicHost);
       const host = fixture.componentInstance as BasicHost;
       const popover = host.popover();
+      expect(popover.resolvedEdge()).toBe('bottom');
+    });
+
+    it('placementOverride wins over the [placement] input, and null defers back', () => {
+      const { fixture } = setup(BasicHost);
+      const host = fixture.componentInstance as BasicHost;
+      const popover = host.popover();
+      expect(popover.resolvedEdge()).toBe('bottom');
+
+      popover.placementOverride.set('right-start');
+      fixture.detectChanges();
+      expect(popover.resolvedEdge()).toBe('right');
+
+      popover.placementOverride.set(null);
+      fixture.detectChanges();
       expect(popover.resolvedEdge()).toBe('bottom');
     });
   });

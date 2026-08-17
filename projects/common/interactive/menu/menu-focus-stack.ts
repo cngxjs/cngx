@@ -46,6 +46,13 @@ export interface CngxMenuFocusStack {
   readonly stack: Signal<readonly CngxMenuHost[]>;
   /** Top-of-stack menu host, or the root when the stack is empty. */
   effectiveMenu(): CngxMenuHost;
+  /**
+   * The submenu companion of the effective menu's active item, or `undefined`
+   * when the active item is a leaf (or nothing is active). The single lookup
+   * shared by keyboard, click, and hover activation - callers guard on the
+   * result and route it to {@link openSubmenuFor} / {@link noteSubmenuOpened}.
+   */
+  activeSubmenu(): CngxMenuSubmenuLike | undefined;
   /** Capture the currently focused element (once) for post-close restore. */
   captureFocus(): void;
   /** Restore focus to the captured element after the close DOM settles. */
@@ -58,6 +65,25 @@ export interface CngxMenuFocusStack {
   handleArrowLeft(menu: CngxMenuHost, event: KeyboardEvent): void;
   /** Enter/Space: open a submenu parent, else activate the leaf and close. */
   handleActivation(menu: CngxMenuHost, event: KeyboardEvent): void;
+  /**
+   * Open a specific submenu through the stack - the single open-only primitive
+   * shared by keyboard activation, pointer click, and hover. Delegates to the
+   * same private open the ArrowRight path uses: opens the submenu popover
+   * (flipping its `aria-expanded`), pushes the inner menu onto the stack, and
+   * highlights the inner menu's first item. Idempotent - a no-op when the
+   * submenu's inner menu is already on the stack, so repeated activation or
+   * hover never double-pushes.
+   */
+  openSubmenuFor(submenu: CngxMenuSubmenuLike): void;
+  /**
+   * Record that a submenu is already open, pushing its inner menu onto the
+   * stack and highlighting the first item WITHOUT calling `submenu.open()`.
+   * The organism's hover path shows the submenu popover through its own facade
+   * and then calls this, so a hover-opened submenu is stack-tracked (ArrowLeft
+   * / Escape pop it) exactly like a keyboard- or click-opened one, with no risk
+   * of re-entering the open path. Idempotent once the submenu is on the stack.
+   */
+  noteSubmenuOpened(submenu: CngxMenuSubmenuLike): void;
   /** Close every open submenu innermost-first, then hide the popover. */
   closeAll(): void;
   /**
@@ -107,10 +133,25 @@ export function createMenuFocusStack(deps: CngxMenuFocusStackDeps): CngxMenuFocu
     return menu.submenuItems().find((s) => s.id === activeId);
   };
 
+  // Push the submenu's inner menu onto the stack and highlight its first item,
+  // but only once - the terminal show (organism hover facade) and the open
+  // paths (ArrowRight / click) both funnel here, so the guard keeps a submenu
+  // from being pushed or re-highlighted twice. `inner` is null for an inert
+  // brain: the context-menu organism applies CngxMenuItemSubmenu to every item,
+  // so leaf items register a submenu-less brain whose `inner` never resolves.
+  // Skip those - a leaf has no submenu to track.
+  const pushIfAbsent = (submenu: CngxMenuSubmenuLike): void => {
+    const inner = submenu.inner as CngxMenuHost | null;
+    if (inner === null || submenuStack().includes(inner)) {
+      return;
+    }
+    submenuStack.update((s) => [...s, inner]);
+    inner.ad.highlightFirst();
+  };
+
   const openSubmenu = (submenu: CngxMenuSubmenuLike): void => {
     submenu.open();
-    submenuStack.update((s) => [...s, submenu.inner]);
-    submenu.inner.ad.highlightFirst();
+    pushIfAbsent(submenu);
   };
 
   const popSubmenu = (): void => {
@@ -144,6 +185,10 @@ export function createMenuFocusStack(deps: CngxMenuFocusStackDeps): CngxMenuFocu
   return {
     stack: submenuStack.asReadonly(),
     effectiveMenu,
+    activeSubmenu(): CngxMenuSubmenuLike | undefined {
+      const menu = effectiveMenu();
+      return findSubmenu(menu, menu.ad.activeId());
+    },
     captureFocus(): void {
       if (savedFocus === null) {
         const active = deps.document.activeElement;
@@ -207,6 +252,15 @@ export function createMenuFocusStack(deps: CngxMenuFocusStackDeps): CngxMenuFocu
         ad.activateCurrent();
         closeAll();
       }
+    },
+    openSubmenuFor(submenu: CngxMenuSubmenuLike): void {
+      if (submenuStack().includes(submenu.inner)) {
+        return;
+      }
+      openSubmenu(submenu);
+    },
+    noteSubmenuOpened(submenu: CngxMenuSubmenuLike): void {
+      pushIfAbsent(submenu);
     },
     closeAll,
     reset,

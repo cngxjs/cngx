@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  contentChild,
   input,
   ViewEncapsulation,
 } from '@angular/core';
@@ -11,6 +12,8 @@ import {
   CngxMenuItemKbd,
   CngxMenuItemLabel,
 } from '@cngx/common/interactive';
+
+import { CNGX_MENU_GLYPHS } from './menu-glyphs';
 
 /**
  * A checkable context-menu item (`role="menuitemcheckbox"`). Thin shell over
@@ -37,6 +40,7 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   exportAs: 'cngxContextMenuItemCheckbox',
+  host: { '[style.--cngx-context-menu-item-check-glyph]': 'checkGlyph' },
   hostDirectives: [
     {
       directive: CngxMenuItemCheckbox,
@@ -45,7 +49,8 @@ import {
     },
   ],
   template: `
-    @if (icon(); as glyph) {
+    <ng-content select="[cngxMenuItemIcon]" />
+    @if (!projectedIcon() && icon(); as glyph) {
       <span cngxMenuItemIcon>{{ glyph }}</span>
     }
     <span cngxMenuItemLabel><ng-content /></span>
@@ -56,8 +61,24 @@ import {
   styleUrl: './context-menu-item.component.css',
 })
 export class CngxContextMenuItemCheckbox {
-  /** Leading glyph rendered in the icon slot (decorative, `aria-hidden`). */
+  /**
+   * Leading glyph shorthand rendered in the icon slot (decorative,
+   * `aria-hidden`). Suppressed when the consumer projects a richer
+   * `[cngxMenuItemIcon]` marker. The checked-indicator gutter renders
+   * independently of the icon, so a checked item stays visibly checked beside
+   * a custom icon.
+   */
   readonly icon = input<string>();
   /** Keyboard-shortcut hint rendered in the kbd slot (decorative). */
   readonly kbd = input<string>();
+
+  /**
+   * A consumer-projected `[cngxMenuItemIcon]` marker, when present. Gates the
+   * string `[icon]` shorthand off so the projected icon is the only one drawn.
+   */
+  protected readonly projectedIcon = contentChild(CngxMenuItemIcon);
+
+  /** @internal Seeds the CSS `content` of the default checked indicator from
+   * the shared glyph const (CSS-string quoted for `content:`). */
+  protected readonly checkGlyph = `'${CNGX_MENU_GLYPHS.checkboxChecked}'`;
 }

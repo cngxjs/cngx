@@ -96,6 +96,25 @@ export interface CngxContextMenuTriggerCore {
   handleContextMenu(event: MouseEvent): void;
   /** Keydown host handler - `Shift+F10` opens at the host centre. */
   handleKeydown(event: KeyboardEvent): void;
+  /**
+   * Open the submenu of the effective menu's active item through the focus
+   * stack. No-op when the active item is a leaf (or nothing is active) and
+   * idempotent when that submenu is already open. The DI host wires the
+   * surrounding menu's `CngxActiveDescendant.activated` output to this method
+   * so pointer click and Enter/Space open a submenu parent deterministically,
+   * off the `activated` event rather than a forwarded keydown that races the
+   * AD's own listener. No `activated` subscription lives inside this pure
+   * factory - only the imperative open.
+   */
+  openActiveSubmenu(): void;
+  /**
+   * Record that the active item's submenu is already open (shown by the
+   * organism's hover facade), pushing it onto the focus stack WITHOUT
+   * re-opening it, so ArrowLeft / Escape pop a hover-opened submenu the same as
+   * a keyboard-opened one. No-op on a leaf and idempotent once the submenu is
+   * on the stack. The DI host calls this from the item's hover terminal.
+   */
+  noteActiveSubmenuOpened(): void;
   /** Drive from the directive's `isOpen` effect (inside `untracked`). */
   syncOpenState(open: boolean): void;
   /** Teardown - call from the directive's `DestroyRef.onDestroy`. */
@@ -228,6 +247,18 @@ export function createContextMenuTriggerCore(
             focusStack.handleEscape(event);
           }
           return;
+      }
+    },
+    openActiveSubmenu(): void {
+      const submenu = focusStack.activeSubmenu();
+      if (submenu) {
+        focusStack.openSubmenuFor(submenu);
+      }
+    },
+    noteActiveSubmenuOpened(): void {
+      const submenu = focusStack.activeSubmenu();
+      if (submenu) {
+        focusStack.noteSubmenuOpened(submenu);
       }
     },
     syncOpenState(open: boolean): void {

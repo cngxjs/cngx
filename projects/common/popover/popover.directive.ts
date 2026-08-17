@@ -330,6 +330,37 @@ export class CngxPopover {
     () => this.exclusiveOverride() ?? this.exclusive(),
   );
 
+  /**
+   * @internal
+   * Programmatic override of {@link placement}. `null` (default) defers to the
+   * `[placement]` input; a value wins over it. Lets a composing organism (the
+   * submenu wiring in `@cngx/ui/context-menu`) flank a nested panel to the
+   * inline-end without a consumer-side `[placement]` handgrip. Mirrors
+   * {@link exclusiveOverride}; {@link effectivePlacement} resolves the override
+   * first, then the input.
+   */
+  readonly placementOverride = signal<PopoverPlacement | null>(null);
+
+  /** Effective placement - override wins, else the `[placement]` input. */
+  private readonly effectivePlacement = computed<PopoverPlacement>(
+    () => this.placementOverride() ?? this.placement(),
+  );
+
+  /**
+   * @internal
+   * Programmatic override of {@link positionTryFallbacks}, paired with
+   * {@link placementOverride} so a submenu wiring installs the flip chain too.
+   * `null` (default) defers to the `[positionTryFallbacks]` input.
+   */
+  readonly positionTryFallbacksOverride = signal<readonly PopoverPositionTryFallback[] | null>(
+    null,
+  );
+
+  /** Effective try-fallbacks - override wins, else the `[positionTryFallbacks]` input. */
+  private readonly effectivePositionTryFallbacks = computed<readonly PopoverPositionTryFallback[]>(
+    () => this.positionTryFallbacksOverride() ?? this.positionTryFallbacks(),
+  );
+
   private readonly stateSignal = signal<PopoverState>('closed');
   private readonly idSignal = signal(nextUid('cngx-popover'));
 
@@ -405,7 +436,7 @@ export class CngxPopover {
    * their own glyph to match the rendered placement.
    */
   readonly resolvedEdge = computed<ArrowEdge>(
-    () => this.resolvedEdgeSignal() ?? (this.placement().split('-')[0] as ArrowEdge),
+    () => this.resolvedEdgeSignal() ?? (this.effectivePlacement().split('-')[0] as ArrowEdge),
   );
 
   protected readonly cssMargin = computed(() => (SUPPORTS_ANCHOR ? `${this.offset()}px` : null));
@@ -417,7 +448,7 @@ export class CngxPopover {
    * gating on `SUPPORTS_ANCHOR` would only suppress a harmless write.
    */
   protected readonly cssPositionTryFallbacks = computed(() => {
-    const list = this.positionTryFallbacks();
+    const list = this.effectivePositionTryFallbacks();
     return list.length > 0 ? list.join(', ') : null;
   });
 
@@ -427,7 +458,7 @@ export class CngxPopover {
       effect(() => {
         this.elRef.nativeElement.style.setProperty(
           ANCHOR_AREA_PROPERTY,
-          POSITION_AREA[this.placement()],
+          POSITION_AREA[this.effectivePlacement()],
         );
       });
     }
@@ -558,7 +589,7 @@ export class CngxPopover {
 
     const fb = this.floatingFallback;
     const el = this.popoverElement;
-    const placement = FLOATING_PLACEMENT[this.placement()];
+    const placement = FLOATING_PLACEMENT[this.effectivePlacement()];
     const offsetVal = this.offset();
 
     const middleware = fb.middleware ?? [];
@@ -596,7 +627,7 @@ export class CngxPopover {
       return;
     }
     const triggerRect = anchor.getBoundingClientRect();
-    const edge = resolveActualEdge(triggerRect, panelRect, this.placement());
+    const edge = resolveActualEdge(triggerRect, panelRect, this.effectivePlacement());
     this.resolvedEdgeSignal.set(edge);
     const horizontal = edge === 'top' || edge === 'bottom';
     const triggerCentre = horizontal
