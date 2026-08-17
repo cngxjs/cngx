@@ -118,19 +118,21 @@ export class CngxContextMenuFor<T = unknown> {
     const forwardKeydown = (event: KeyboardEvent): void => this.core.handleKeydown(event);
     const openActiveSubmenu = (): void => this.core.openActiveSubmenu();
     const noteActiveSubmenuOpened = (): void => this.core.noteActiveSubmenuOpened();
-    effect(() => {
+    effect((onCleanup) => {
       const panel = this.panel();
       untracked(() => {
         panel.setKeydownHandler?.(forwardKeydown);
         panel.setActivationHandler?.(openActiveSubmenu);
         panel.setSubmenuNoteHandler?.(noteActiveSubmenuOpened);
       });
-    });
-    destroyRef.onDestroy(() => {
-      const panel = this.panel();
-      panel.setKeydownHandler?.(null);
-      panel.setActivationHandler?.(null);
-      panel.setSubmenuNoteHandler?.(null);
+      // Clear the handlers on the panel this run registered - fires before the
+      // next run (panel rebind) and on destroy, so a swapped-out panel never
+      // keeps stale handlers pointing at this trigger's core.
+      onCleanup(() => {
+        panel.setKeydownHandler?.(null);
+        panel.setActivationHandler?.(null);
+        panel.setSubmenuNoteHandler?.(null);
+      });
     });
   }
 
