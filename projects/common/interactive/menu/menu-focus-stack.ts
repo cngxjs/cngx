@@ -46,6 +46,13 @@ export interface CngxMenuFocusStack {
   readonly stack: Signal<readonly CngxMenuHost[]>;
   /** Top-of-stack menu host, or the root when the stack is empty. */
   effectiveMenu(): CngxMenuHost;
+  /**
+   * The submenu companion of the effective menu's active item, or `undefined`
+   * when the active item is a leaf (or nothing is active). The single lookup
+   * shared by keyboard, click, and hover activation - callers guard on the
+   * result and route it to {@link openSubmenuFor} / {@link noteSubmenuOpened}.
+   */
+  activeSubmenu(): CngxMenuSubmenuLike | undefined;
   /** Capture the currently focused element (once) for post-close restore. */
   captureFocus(): void;
   /** Restore focus to the captured element after the close DOM settles. */
@@ -178,6 +185,10 @@ export function createMenuFocusStack(deps: CngxMenuFocusStackDeps): CngxMenuFocu
   return {
     stack: submenuStack.asReadonly(),
     effectiveMenu,
+    activeSubmenu(): CngxMenuSubmenuLike | undefined {
+      const menu = effectiveMenu();
+      return findSubmenu(menu, menu.ad.activeId());
+    },
     captureFocus(): void {
       if (savedFocus === null) {
         const active = deps.document.activeElement;

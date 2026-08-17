@@ -152,6 +152,21 @@ describe('createMenuFocusStack', () => {
     expect(inner.ad.highlightFirst).toHaveBeenCalledOnce();
   });
 
+  it('activeSubmenu resolves the effective menu active item submenu, else undefined', () => {
+    const inner = mockMenu();
+    const submenu = mockSubmenu('sub-1', inner.host);
+    root.submenus.set([submenu]);
+
+    const stack = build();
+    expect(stack.activeSubmenu()).toBeUndefined();
+
+    root.ad.activeId.set('sub-1');
+    expect(stack.activeSubmenu()).toBe(submenu);
+
+    root.ad.activeId.set('leaf');
+    expect(stack.activeSubmenu()).toBeUndefined();
+  });
+
   it('ignores an inert submenu brain whose inner menu never resolves (leaf item in the organism)', () => {
     const inert: CngxMenuSubmenuLike = {
       id: 'leaf',

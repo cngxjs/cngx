@@ -158,12 +158,7 @@ export class CngxMenuTrigger {
   }
 
   private openActiveSubmenu(): void {
-    const menu = this.focusStack.effectiveMenu();
-    const activeId = menu.ad.activeId();
-    if (!activeId) {
-      return;
-    }
-    const submenu = menu.submenuItems().find((s) => s.id === activeId);
+    const submenu = this.focusStack.activeSubmenu();
     if (submenu) {
       this.focusStack.openSubmenuFor(submenu);
     }

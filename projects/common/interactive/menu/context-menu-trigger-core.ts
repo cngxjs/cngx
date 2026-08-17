@@ -250,23 +250,13 @@ export function createContextMenuTriggerCore(
       }
     },
     openActiveSubmenu(): void {
-      const menu = focusStack.effectiveMenu();
-      const activeId = menu.ad.activeId();
-      if (!activeId) {
-        return;
-      }
-      const submenu = menu.submenuItems().find((s) => s.id === activeId);
+      const submenu = focusStack.activeSubmenu();
       if (submenu) {
         focusStack.openSubmenuFor(submenu);
       }
     },
     noteActiveSubmenuOpened(): void {
-      const menu = focusStack.effectiveMenu();
-      const activeId = menu.ad.activeId();
-      if (!activeId) {
-        return;
-      }
-      const submenu = menu.submenuItems().find((s) => s.id === activeId);
+      const submenu = focusStack.activeSubmenu();
       if (submenu) {
         focusStack.noteSubmenuOpened(submenu);
       }
