@@ -14,9 +14,19 @@ export type RuleCategory = 'signal-hygiene' | 'wiring' | 'opt-in';
 
 export type RuleSeverity = 'error' | 'warn' | 'off';
 
+/**
+ * Which AST a rule operates on. `ts` rules run under the TypeScript parser;
+ * `template` rules run under the Angular template parser (a different, heavier
+ * processor bound to `*.html`). Consumers of this metadata (e.g. the planned
+ * `@cngx/doctor` CLI) need this to know which parser a rule requires without
+ * loading the rule module.
+ */
+export type RuleAstSurface = 'ts' | 'template';
+
 export interface RuleMetadata {
   readonly id: string;
   readonly category: RuleCategory;
+  readonly astSurface: RuleAstSurface;
   readonly messages: Readonly<Record<string, string>>;
   readonly fixHint: string;
   readonly recommendedSeverity: RuleSeverity;
@@ -26,6 +36,7 @@ export const RULE_METADATA = {
   'no-effect-in-ngoninit': {
     id: 'no-effect-in-ngoninit',
     category: 'signal-hygiene',
+    astSurface: 'ts',
     messages: {
       effectInNgOnInit:
         'effect() inside ngOnInit throws NG0203. Move it to the constructor or a field initializer.',
@@ -36,6 +47,7 @@ export const RULE_METADATA = {
   'untracked-in-effect': {
     id: 'untracked-in-effect',
     category: 'opt-in',
+    astSurface: 'ts',
     messages: {
       unwrappedCallInEffect:
         'A service/side-effect call inside effect() should be wrapped in untracked() so the effect does not subscribe to the callee dedup signals.',
@@ -46,6 +58,7 @@ export const RULE_METADATA = {
   'no-behaviorsubject-local-state': {
     id: 'no-behaviorsubject-local-state',
     category: 'signal-hygiene',
+    astSurface: 'ts',
     messages: {
       behaviorSubjectLocalState:
         'Local component state belongs in a signal(), not a BehaviorSubject/Subject field.',
@@ -56,6 +69,7 @@ export const RULE_METADATA = {
   'model-for-two-way': {
     id: 'model-for-two-way',
     category: 'wiring',
+    astSurface: 'ts',
     messages: {
       useModelForTwoWay:
         'An input(x) plus output(xChange) pair only binds one-way. Use a single model() for two-way binding.',
@@ -66,6 +80,7 @@ export const RULE_METADATA = {
   'no-required-on-bridge-input': {
     id: 'no-required-on-bridge-input',
     category: 'wiring',
+    astSurface: 'ts',
     messages: {
       requiredOnBridgeInput:
         'A bridge input backed by an optional fallback token must not be input.required(). Use an optional input with an empty-string transform.',
@@ -77,6 +92,7 @@ export const RULE_METADATA = {
   'menu-trigger-needs-popover-anchor': {
     id: 'menu-trigger-needs-popover-anchor',
     category: 'wiring',
+    astSurface: 'template',
     messages: {
       menuTriggerNeedsAnchor:
         'cngxMenuTrigger opening a popover panel needs cngxPopoverTrigger on the same element to set the CSS anchor.',

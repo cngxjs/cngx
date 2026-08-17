@@ -25,6 +25,12 @@ describe('@cngx/eslint-plugin harness', () => {
       expect(meta.id).toBeTruthy();
       expect(Object.keys(meta.messages).length).toBeGreaterThan(0);
       expect(['error', 'warn', 'off']).toContain(meta.recommendedSeverity);
+      expect(['ts', 'template']).toContain(meta.astSurface);
     }
+  });
+
+  it('marks exactly one rule as template-AST (menu-trigger)', () => {
+    const template = Object.values(RULE_METADATA).filter((m) => m.astSurface === 'template');
+    expect(template.map((m) => m.id)).toEqual(['menu-trigger-needs-popover-anchor']);
   });
 });

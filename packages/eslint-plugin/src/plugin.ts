@@ -14,7 +14,8 @@ import type { ESLint, Linter } from 'eslint';
 export const plugin: ESLint.Plugin = {
   meta: {
     name: '@cngx/eslint-plugin',
-    version: '0.1.0-rc.0',
+    // Version is not duplicated here; package.json is the single source of
+    // truth. ESLint reads the installed package version when it needs one.
   },
   rules: {},
 };
