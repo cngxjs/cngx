@@ -196,7 +196,10 @@ export { CngxMenu } from './menu/menu.directive';
 export { CNGX_MENU_HOST, type CngxMenuHost } from './menu/menu-host.token';
 export {
   CNGX_MENU_SUBMENU_ITEM,
+  CNGX_MENU_SUBMENU_WIRING,
   type CngxMenuSubmenuLike,
+  type CngxMenuSubmenuPopoverRef,
+  type CngxMenuSubmenuWiring,
 } from './menu/menu-submenu.token';
 export { CngxMenuItem } from './menu/menu-item.directive';
 export {
@@ -218,6 +221,14 @@ export {
   type CngxMenuNavContext,
   type CngxMenuNavStrategy,
 } from './menu/menu-nav-strategy';
+export {
+  CNGX_MENU_FOCUS_STACK_FACTORY,
+  createMenuFocusStack,
+  type CngxMenuFocusStack,
+  type CngxMenuFocusStackDeps,
+  type CngxMenuFocusStackFactory,
+  type CngxMenuFocusStackPopoverRef,
+} from './menu/menu-focus-stack';
 export {
   CNGX_MENU_CONFIG,
   DEFAULT_MENU_CONFIG,
@@ -259,6 +270,13 @@ export {
   type CngxMenuAnnouncerLike,
 } from './menu/menu-announcer';
 export { CngxContextMenuTrigger } from './menu/context-menu-trigger.directive';
+export {
+  createContextMenuTriggerCore,
+  type CngxContextMenuOpenDecision,
+  type CngxContextMenuTriggerCore,
+  type CngxContextMenuTriggerCoreDeps,
+  type CngxContextMenuTriggerPopoverRef,
+} from './menu/context-menu-trigger-core';
 export { provideCngxMenu, type CngxMenuFeature } from './menu/provide-cngx-menu';
 export {
   CNGX_MENU_RADIO_GROUP,

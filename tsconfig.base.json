@@ -70,6 +70,7 @@
       "@cngx/ui/timeline": ["projects/ui/timeline/public-api.ts"],
       "@cngx/ui/a11y": ["projects/ui/a11y/public-api.ts"],
       "@cngx/ui/command-palette": ["projects/ui/command-palette/public-api.ts"],
+      "@cngx/ui/context-menu": ["projects/ui/context-menu/public-api.ts"],
       "@cngx/utils": ["projects/utils/public-api.ts"],
       "@cngx/utils/rxjs-interop": ["projects/utils/rxjs-interop/public-api.ts"],
       "@cngx/data-display": ["projects/data-display/public-api.ts"],

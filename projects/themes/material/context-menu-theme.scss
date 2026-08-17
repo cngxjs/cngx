@@ -1,0 +1,40 @@
+@use '@angular/material' as mat;
+
+// Material bridge for CngxContextMenu (+ item / divider shells). Default
+// visuals ship with the component (context-menu.component.css +
+// context-menu-item.component.css); this file aligns the popup surface,
+// border, elevation, and the caret / checked-indicator ink with Material.
+// Spacing stays derived from the global --cngx-space-* scale in the component
+// CSS, so Material density flows through the system density bridge - no
+// per-component density mixin here.
+//
+//   @use '@cngx/themes/material/context-menu-theme' as context-menu;
+//   html { @include context-menu.theme($theme); }
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-context-menu-surface: var(--mat-sys-surface-container);
+    --cngx-context-menu-color: var(--mat-sys-on-surface);
+    --cngx-context-menu-border: 1px solid var(--mat-sys-outline-variant);
+    --cngx-context-menu-shadow: 0 4px 16px color-mix(in srgb, var(--mat-sys-shadow) 18%, transparent);
+    --cngx-context-menu-separator-color: var(--mat-sys-outline-variant);
+    --cngx-context-menu-item-caret-color: var(--mat-sys-on-surface-variant);
+    --cngx-context-menu-item-check-color: var(--mat-sys-primary);
+  } @else {
+    --cngx-context-menu-surface: #{mat.get-theme-color($theme, background, card)};
+    --cngx-context-menu-color: #{mat.get-theme-color($theme, foreground, text)};
+    --cngx-context-menu-separator-color: #{mat.get-theme-color($theme, foreground, divider)};
+    --cngx-context-menu-item-caret-color: #{mat.get-theme-color($theme, foreground, secondary-text)};
+    --cngx-context-menu-item-check-color: #{mat.get-theme-color($theme, primary, default)};
+  }
+}
+
+@mixin theme($theme) {
+  @layer cngx.components {
+    // The item colour tokens are inherits:true, so setting the whole family on
+    // the container cascades to every projected item / divider row.
+    :where(cngx-context-menu) {
+      @include color($theme);
+    }
+  }
+}

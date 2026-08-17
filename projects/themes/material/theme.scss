@@ -39,6 +39,7 @@
 @use './chart-panel-theme' as chart-panel;
 @use './chip-theme' as chip;
 @use './close-button-theme' as close-button;
+@use './context-menu-theme' as context-menu;
 @use './copy-block-theme' as copy-block;
 @use './data-grid-accordion-theme' as data-grid-accordion;
 @use './delta-theme' as delta;
@@ -99,6 +100,7 @@
   @include chart-panel.theme($theme);
   @include chip.theme($theme);
   @include close-button.theme($theme);
+  @include context-menu.theme($theme);
   @include controls.theme($theme);
   @include copy-block.theme($theme);
   @include data-grid-accordion.theme($theme);

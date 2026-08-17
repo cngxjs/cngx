@@ -1,0 +1,143 @@
+/**
+ * @overview
+ * Default visuals for `CngxContextMenuItem` and the checkbox / radio shells
+ * that share this stylesheet. The item brains are host directives, so the
+ * base `[cngxMenuItem]` attribute rules in `cngx-menu.css` never reach these
+ * hosts - the row geometry (padding, gap, radius, cursor, tap-target floor)
+ * is painted here, while the slot layout (`.cngx-menu-item__label`, `__icon`,
+ * `__kbd`) and the highlighted / disabled state painting is adopted from the
+ * base skin via the classes the brains stamp. The checked-indicator glyph is
+ * likewise attribute-keyed in the base skin, so the organism re-draws it
+ * keyed on the `role` the brain sets.
+ *
+ * **Inheritance**
+ *
+ * - `--cngx-context-menu-item-caret-color` -> `--cngx-color-text-muted`
+ * - `--cngx-context-menu-item-check-color` -> `--cngx-color-primary`
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/context-menu-theme` - Material 3 palette
+ */
+
+@layer cngx.tokens {
+  /**
+   * Padding shorthand on each item row. Derived from the `--cngx-space-*`
+   * scale at the host so density tracks (the registered pixel initial defeats
+   * the use-site fallback).
+   * @group Layout
+   */
+  @property --cngx-context-menu-item-padding {
+    syntax: '*';
+    inherits: false;
+    initial-value: 6px 10px;
+  }
+
+  /**
+   * Inline gap between an item's slots (icon / label / kbd / caret). Derived
+   * from `--cngx-space-sm`.
+   * @group Layout
+   */
+  @property --cngx-context-menu-item-gap {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 8px;
+  }
+
+  /**
+   * Corner radius of each item row.
+   * @group Layout
+   */
+  @property --cngx-context-menu-item-radius {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 4px;
+  }
+
+  /**
+   * Color of the trailing submenu caret. Falls back through
+   * `--cngx-color-text-muted`.
+   * @group Surface
+   * @see [[--cngx-color-text-muted]]
+   */
+  @property --cngx-context-menu-item-caret-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.5 0.01 250);
+  }
+
+  /**
+   * Color of the leading checkbox / radio indicator glyph on a checked item.
+   * Falls back through `--cngx-color-primary`.
+   * @group State / Checked
+   * @see [[--cngx-color-primary]]
+   */
+  @property --cngx-context-menu-item-check-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.66 0.19 50);
+  }
+
+  :root {
+    --cngx-context-menu-item-caret-color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
+    --cngx-context-menu-item-check-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+  }
+}
+
+@layer cngx.components {
+  cngx-context-menu-item,
+  button[cngxContextMenuItem],
+  cngx-context-menu-item-checkbox,
+  button[cngxContextMenuItemCheckbox],
+  cngx-context-menu-item-radio,
+  button[cngxContextMenuItemRadio] {
+    /* SET-from-scale (padding 6/10 -> xs/sm, gap 8 -> sm). */
+    --cngx-context-menu-item-padding: var(--cngx-space-xs) var(--cngx-space-sm);
+    --cngx-context-menu-item-gap: var(--cngx-space-sm);
+    display: flex;
+    align-items: center;
+    gap: var(--cngx-context-menu-item-gap, 8px);
+    padding: var(--cngx-context-menu-item-padding, 6px 10px);
+    border-radius: var(--cngx-context-menu-item-radius, 4px);
+    cursor: pointer;
+    user-select: none;
+    color: inherit;
+    /* WCAG 2.5.5: the menu row is a discrete tap target. The base cngxMenuItem
+       floor is keyed on the [cngxMenuItem] attribute selector, which
+       hostDirectives never stamp onto these hosts, so the organism floors its
+       own rows. Inert at 0px on a fine pointer. */
+    min-block-size: var(--cngx-target-min, 0px);
+  }
+
+  /* Submenu caret in the suffix slot - muted secondary ink next to the label. */
+  cngx-context-menu-item .cngx-menu-item__suffix,
+  button[cngxContextMenuItem] .cngx-menu-item__suffix {
+    color: var(--cngx-context-menu-item-caret-color, var(--cngx-color-text-muted, oklch(0.5 0.01 250)));
+  }
+
+  /* Checked indicator - the base skin draws this via a [cngxMenuItemCheckbox]
+     / [cngxMenuItemRadio] attribute ::before that never reaches the shell, so
+     re-draw it keyed on the role the brain sets. Suppressed when the consumer
+     projects an explicit icon (mirrors the base :has() guard). Checkbox -> tick,
+     radio -> filled dot, matching the standard form-control vocabulary. */
+  cngx-context-menu-item-checkbox.cngx-menu-item--checked:not(:has(.cngx-menu-item__icon))::before,
+  button[cngxContextMenuItemCheckbox].cngx-menu-item--checked:not(:has(.cngx-menu-item__icon))::before {
+    content: '✓';
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.25rem;
+    color: var(--cngx-context-menu-item-check-color, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+    font-weight: 700;
+  }
+  cngx-context-menu-item-radio.cngx-menu-item--checked:not(:has(.cngx-menu-item__icon))::before,
+  button[cngxContextMenuItemRadio].cngx-menu-item--checked:not(:has(.cngx-menu-item__icon))::before {
+    content: '●';
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.25rem;
+    color: var(--cngx-context-menu-item-check-color, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+    font-size: 0.875em;
+  }
+}

@@ -28,6 +28,16 @@ export interface CngxMenuHost {
    * `CngxMenu.focus()`.
    */
   focus(): void;
+  /**
+   * Register a submenu companion with this menu so ArrowRight / ArrowLeft
+   * focus-stack routing can discover it. Returns a deregister callback the
+   * companion invokes on destroy. Preferred over a content query because DI
+   * registration crosses the component view boundaries that
+   * `contentChildren` cannot see (a `[cngxMenuItemSubmenu]` declared inside a
+   * wrapper component's own template is invisible to the surrounding menu's
+   * content query, but its element injector still resolves `CNGX_MENU_HOST`).
+   */
+  registerSubmenuItem(item: CngxMenuSubmenuLike): () => void;
 }
 
 /**
