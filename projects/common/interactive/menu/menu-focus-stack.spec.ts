@@ -95,6 +95,34 @@ describe('createMenuFocusStack', () => {
     expect(inner.ad.highlightFirst).toHaveBeenCalledOnce();
   });
 
+  it('openSubmenuFor opens the submenu, pushes the stack, and highlights the inner first item', () => {
+    const inner = mockMenu();
+    const submenu = mockSubmenu('sub-1', inner.host);
+    root.submenus.set([submenu]);
+
+    const stack = build();
+    stack.openSubmenuFor(submenu);
+
+    expect(submenu.open).toHaveBeenCalledOnce();
+    expect(stack.stack()).toEqual([inner.host]);
+    expect(stack.effectiveMenu()).toBe(inner.host);
+    expect(inner.ad.highlightFirst).toHaveBeenCalledOnce();
+  });
+
+  it('openSubmenuFor is a no-op when the submenu is already on the stack', () => {
+    const inner = mockMenu();
+    const submenu = mockSubmenu('sub-1', inner.host);
+    root.submenus.set([submenu]);
+
+    const stack = build();
+    stack.openSubmenuFor(submenu);
+    stack.openSubmenuFor(submenu);
+
+    expect(submenu.open).toHaveBeenCalledOnce();
+    expect(stack.stack()).toEqual([inner.host]);
+    expect(inner.ad.highlightFirst).toHaveBeenCalledOnce();
+  });
+
   it('ArrowLeft pops the innermost submenu level', () => {
     const inner = mockMenu();
     const submenu = mockSubmenu('sub-1', inner.host);

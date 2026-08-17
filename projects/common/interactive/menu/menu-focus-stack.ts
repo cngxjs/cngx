@@ -58,6 +58,16 @@ export interface CngxMenuFocusStack {
   handleArrowLeft(menu: CngxMenuHost, event: KeyboardEvent): void;
   /** Enter/Space: open a submenu parent, else activate the leaf and close. */
   handleActivation(menu: CngxMenuHost, event: KeyboardEvent): void;
+  /**
+   * Open a specific submenu through the stack - the single open-only primitive
+   * shared by keyboard activation, pointer click, and hover. Delegates to the
+   * same private open the ArrowRight path uses: opens the submenu popover
+   * (flipping its `aria-expanded`), pushes the inner menu onto the stack, and
+   * highlights the inner menu's first item. Idempotent - a no-op when the
+   * submenu's inner menu is already on the stack, so repeated activation or
+   * hover never double-pushes.
+   */
+  openSubmenuFor(submenu: CngxMenuSubmenuLike): void;
   /** Close every open submenu innermost-first, then hide the popover. */
   closeAll(): void;
   /**
@@ -207,6 +217,12 @@ export function createMenuFocusStack(deps: CngxMenuFocusStackDeps): CngxMenuFocu
         ad.activateCurrent();
         closeAll();
       }
+    },
+    openSubmenuFor(submenu: CngxMenuSubmenuLike): void {
+      if (submenuStack().includes(submenu.inner)) {
+        return;
+      }
+      openSubmenu(submenu);
     },
     closeAll,
     reset,
