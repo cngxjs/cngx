@@ -5,6 +5,7 @@
 
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import { jsonResult } from './tool-result.js';
 import type { DocsIndex } from '../data/loader.js';
 import { resolveEntry } from '../query.js';
 
@@ -54,9 +55,6 @@ export function registerGetThemeTokens(server: McpServer, docs: DocsIndex): void
         name: z.string().describe('A component/directive class name or selector, e.g. "CngxSelect".'),
       },
     },
-    ({ name }) => {
-      const result = getThemeTokens(docs, name);
-      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
-    },
+    ({ name }) => jsonResult(getThemeTokens(docs, name)),
   );
 }

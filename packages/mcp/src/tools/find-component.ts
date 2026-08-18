@@ -5,6 +5,7 @@
 
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import { jsonResult } from './tool-result.js';
 import type { DocsIndex } from '../data/loader.js';
 import type { EntryKind } from '../query.js';
 import { searchEntries } from '../query.js';
@@ -41,9 +42,6 @@ export function registerFindComponent(server: McpServer, docs: DocsIndex): void 
         query: z.string().describe('A name, selector, or category fragment, e.g. "select" or "cngx-chip".'),
       },
     },
-    ({ query }) => {
-      const matches = findComponents(docs, query);
-      return { content: [{ type: 'text', text: JSON.stringify(matches, null, 2) }] };
-    },
+    ({ query }) => jsonResult(findComponents(docs, query)),
   );
 }

@@ -4,6 +4,7 @@
 
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import { jsonResult } from './tool-result.js';
 import type { DocsIndex } from '../data/loader.js';
 
 export interface DiTokenView {
@@ -36,9 +37,6 @@ export function registerGetDiTokens(server: McpServer, docs: DocsIndex): void {
         query: z.string().optional().describe('A DI-token name fragment, e.g. "SELECT". Omit for all DI tokens.'),
       },
     },
-    ({ query }) => {
-      const tokens = getDiTokens(docs, query);
-      return { content: [{ type: 'text', text: JSON.stringify(tokens, null, 2) }] };
-    },
+    ({ query }) => jsonResult(getDiTokens(docs, query)),
   );
 }

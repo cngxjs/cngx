@@ -7,6 +7,7 @@
 
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import { jsonResult } from './tool-result.js';
 import type { DocsIndex } from '../data/loader.js';
 import type { DocPlayground } from '../data/types.js';
 import type { EntryKind } from '../query.js';
@@ -56,9 +57,6 @@ export function registerGetStoryExample(server: McpServer, docs: DocsIndex): voi
         name: z.string().describe('A component/directive class name or selector, e.g. "CngxSelect".'),
       },
     },
-    ({ name }) => {
-      const example = getStoryExample(docs, name);
-      return { content: [{ type: 'text', text: JSON.stringify(example, null, 2) }] };
-    },
+    ({ name }) => jsonResult(getStoryExample(docs, name)),
   );
 }
