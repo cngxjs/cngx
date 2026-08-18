@@ -1,0 +1,38 @@
+{
+  "name": "@cngx/mcp",
+  "version": "0.1.0-rc.0",
+  "description": "Model Context Protocol server exposing the cngx public-API surface as typed, queryable tools for LLM coding agents.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "cngx-mcp": "dist/index.js"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "data"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.0",
+    "typescript": "~5.9.2",
+    "vitest": "^4.0.8"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "angular",
+    "cngx",
+    "llm"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}
