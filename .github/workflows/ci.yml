@@ -217,3 +217,31 @@ jobs:
         run: npm run build:eslint-plugin
       - name: Test eslint-plugin
         run: npm run test:eslint-plugin
+
+  # The @cngx/mcp package queries the compodoc documentation.json, so unlike
+  # eslint-plugin it declares needs: build and restores the .compodoc artifact
+  # the build job already produced rather than regenerating docs:json here. Like
+  # eslint-plugin it lives under packages/ (no npm workspace), so it carries its
+  # own package-lock and a package-local install on top of the root one.
+  mcp:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - name: Install root dependencies
+        run: npm ci
+      - name: Install mcp dependencies
+        run: npm ci
+        working-directory: packages/mcp
+      - name: Download build output
+        uses: actions/download-artifact@v4
+        with:
+          name: build-output
+      - name: Build mcp
+        run: npm run build:mcp
+      - name: Test mcp
+        run: npm run test:mcp
