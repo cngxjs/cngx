@@ -4,6 +4,7 @@ import { noEffectInNgOnInit } from './rules/no-effect-in-ngoninit';
 import { untrackedInEffect } from './rules/untracked-in-effect';
 import { noBehaviorsubjectLocalState } from './rules/no-behaviorsubject-local-state';
 import { modelForTwoWay } from './rules/model-for-two-way';
+import { noRequiredOnBridgeInput } from './rules/no-required-on-bridge-input';
 
 /**
  * The `@cngx/eslint-plugin` plugin object.
@@ -24,6 +25,7 @@ export const plugin: TSESLint.FlatConfig.Plugin = {
     'untracked-in-effect': untrackedInEffect,
     'no-behaviorsubject-local-state': noBehaviorsubjectLocalState,
     'model-for-two-way': modelForTwoWay,
+    'no-required-on-bridge-input': noRequiredOnBridgeInput,
   },
 };
 
