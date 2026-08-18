@@ -195,3 +195,25 @@ jobs:
       # its prebuild hook, so the production build validates against a fresh tree.
       - name: Build examples app
         run: npm run build:examples
+
+  # The standalone @cngx/eslint-plugin package lives under packages/ (no npm
+  # workspace), so it carries its own package-lock and needs its own install
+  # in addition to the root one. It does not consume the Angular build output,
+  # so it runs independently of `build`.
+  eslint-plugin:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - name: Install root dependencies
+        run: npm ci
+      - name: Install eslint-plugin dependencies
+        run: npm ci
+        working-directory: packages/eslint-plugin
+      - name: Build eslint-plugin
+        run: npm run build:eslint-plugin
+      - name: Test eslint-plugin
+        run: npm run test:eslint-plugin
