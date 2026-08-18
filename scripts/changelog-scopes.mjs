@@ -85,6 +85,7 @@ export const NON_LIBRARY_SCOPES = [
   'e2e',
   'eslint-plugin',
   'mcp',
+  'plugin',
 ];
 
 export const ALL_SCOPES = [...LIBRARY_SCOPES, ...NON_LIBRARY_SCOPES];
