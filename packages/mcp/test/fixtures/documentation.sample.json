@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-17T11:21:23.588Z",
+  "compodocxVersion": "0.8.0",
+  "cngxVersion": "0.1.0-rc.6",
+  "components": [
+    {
+      "name": "CngxSelect",
+      "selector": "cngx-select",
+      "category": "forms/select/single-select",
+      "file": "projects/forms/select/single-select/select.component.ts",
+      "description": "Native-feeling single-select dropdown.",
+      "signal": true,
+      "inputsClass": [
+        { "name": "value", "type": "T", "defaultValue": "undefined", "description": "The selected value." },
+        { "name": "disabled", "type": "boolean", "defaultValue": "false", "description": "Disables the control." }
+      ],
+      "outputsClass": [
+        { "name": "valueChange", "type": "EventEmitter<T>", "description": "Emits on selection." }
+      ],
+      "hostBindings": [
+        { "name": "id", "defaultValue": "resolvedId()", "description": "host: { '[id]': 'resolvedId()' }" }
+      ],
+      "methodsClass": [
+        { "name": "open", "args": [], "returnType": "void", "rawdescription": "Open the panel." }
+      ],
+      "slots": [
+        { "name": "cngxSelectCaret", "description": "Replaces the trigger caret glyph." },
+        { "name": "cngxSelectEmpty", "description": "Rendered when no options match." }
+      ],
+      "themeTokens": [
+        {
+          "name": "--cngx-select-panel-border",
+          "kind": "css-at-property",
+          "type": "*",
+          "defaultValue": "1px solid oklch(0.85 0.01 250)",
+          "description": "Border shorthand of the dropdown panel."
+        }
+      ],
+      "themeOverview": "Structural styles shared across the CngxSelect family.",
+      "playgrounds": [
+        { "title": "Material theme", "fileRef": "./examples/material-theme/material-theme.component.ts", "line": 0 }
+      ],
+      "exampleUrls": [
+        "https://cngxjs.github.io/cngx/examples/#/forms/select/single-select/clearable"
+      ],
+      "stackblitzUrl": ""
+    },
+    {
+      "name": "CngxAccordionItem",
+      "selector": "cngx-accordion-item",
+      "category": "ui/accordion",
+      "file": "projects/ui/accordion/accordion-item.component.ts",
+      "description": "A single expandable accordion item.",
+      "signal": true,
+      "inputsClass": [{ "name": "expanded", "type": "boolean", "defaultValue": "false" }],
+      "outputsClass": [],
+      "slots": [{ "name": "cngxAccordionItemIcon", "description": "Replaces the item's expand/collapse chevron." }],
+      "themeTokens": [],
+      "exampleUrls": ["https://cngxjs.github.io/cngx/examples/#/ui/accordion/basic"]
+    }
+  ],
+  "directives": [
+    {
+      "name": "CngxRipple",
+      "selector": "[cngxRipple]",
+      "category": "common/interactive",
+      "file": "projects/common/interactive/ripple.directive.ts",
+      "description": "Material-style ripple on interaction.",
+      "signal": false,
+      "inputsClass": [{ "name": "cngxRippleDisabled", "type": "boolean", "defaultValue": "false" }],
+      "outputsClass": []
+    }
+  ],
+  "tokens": [
+    {
+      "name": "CNGX_SELECT_CONFIG",
+      "file": "projects/forms/select/shared/select-config.ts",
+      "type": "token",
+      "description": "DI override for select-family defaults."
+    }
+  ]
+}
