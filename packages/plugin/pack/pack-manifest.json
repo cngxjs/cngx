@@ -1,4 +1,11 @@
 {
   "schemaVersion": "1",
-  "sources": []
+  "sources": [
+    {
+      "artifact": "pack/theming-tokens.md",
+      "source": "packages/mcp/data/documentation.json",
+      "contentHash": "sha256:bd80a6ee0a5057851ef64ea5a704d443fabdbecdc203a9edea6cef796e04412d",
+      "tokenCount": 1791
+    }
+  ]
 }
