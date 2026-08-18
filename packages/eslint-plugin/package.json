@@ -1,0 +1,47 @@
+{
+  "name": "@cngx/eslint-plugin",
+  "version": "0.1.0-rc.0",
+  "description": "ESLint rules that encode the cngx signal/effect idioms and wiring contracts for consumer Angular apps.",
+  "license": "MIT",
+  "type": "commonjs",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./metadata": {
+      "types": "./dist/metadata/index.d.ts",
+      "default": "./dist/metadata/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "peerDependencies": {
+    "eslint": ">=9"
+  },
+  "dependencies": {
+    "@typescript-eslint/utils": "^8.56.1"
+  },
+  "devDependencies": {
+    "@typescript-eslint/rule-tester": "^8.56.1",
+    "typescript": "~5.9.2",
+    "vitest": "^4.0.8"
+  },
+  "keywords": [
+    "eslint",
+    "eslintplugin",
+    "angular",
+    "signals",
+    "cngx"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}
