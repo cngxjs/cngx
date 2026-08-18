@@ -15,6 +15,7 @@ import { registerFindComponent } from './tools/find-component.js';
 import { registerGetApi } from './tools/get-api.js';
 import { registerGetSlots } from './tools/get-slots.js';
 import { registerGetTokens } from './tools/get-tokens.js';
+import { registerGetStoryExample } from './tools/get-story-example.js';
 
 const pkg = JSON.parse(
   readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'package.json'), 'utf8'),
@@ -42,6 +43,7 @@ async function main(): Promise<void> {
   registerGetApi(server, docs);
   registerGetSlots(server, docs);
   registerGetTokens(server, docs);
+  registerGetStoryExample(server, docs);
 
   const transport = new StdioServerTransport();
   await server.connect(transport);
