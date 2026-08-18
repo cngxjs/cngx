@@ -56,6 +56,7 @@ vitest.config.*.timestamp*
 .internal/
 .compodoc/
 .compodoc-llm/
+packages/mcp/data/
 /screenshots
 CNGX_LLM_REFERENCE.md
 
