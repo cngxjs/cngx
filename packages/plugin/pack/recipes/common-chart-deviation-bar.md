@@ -12,8 +12,14 @@ Same four-state machine the other chart presets follow. Empty is reached by ente
 
 - `CngxDeviationBar`
 
+## Setup
+
+```ts
+protected readonly state = createManualState<number>();
+```
+
 ## Wiring
 
-```
+```html
 <cngx-deviation-bar [value]="35" [magnitude]="100" [state]="state" aria-label="Demo variance" />
 ```

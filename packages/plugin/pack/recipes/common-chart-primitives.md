@@ -20,9 +20,16 @@ Same four-state machine the presets follow, but applied to the lowest-level prim
 - `CngxChartError`
 - `CngxEmptyState`
 
+## Setup
+
+```ts
+protected readonly chartStateData: readonly number[] = [8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32];
+  protected readonly chartState = createManualState<readonly number[]>();
+```
+
 ## Wiring
 
-```
+```html
 <div class="cngx-ex-chart-frame">
     <cngx-chart
       [data]="chartStateData"

@@ -12,8 +12,14 @@ Single-value indicator with a four-state demo. Empty is reached by entering succ
 
 - `CngxMiniBar`
 
+## Setup
+
+```ts
+protected readonly state = createManualState<number>();
+```
+
 ## Wiring
 
-```
+```html
 <cngx-mini-bar [value]="64" [state]="state" aria-label="Demo metric" />
 ```

@@ -12,9 +12,15 @@ Wraps a click handler in an async-state machine. The action factory you bind to 
 
 - `CngxAsyncClick`
 
+## Setup
+
+```ts
+protected readonly saveAction = () => of(undefined).pipe(delay(800));
+```
+
 ## Wiring
 
-```
+```html
 <button type="button" [cngxAsyncClick]="saveAction" #btn="cngxAsyncClick">
     @switch (btn.status()) {
       @case ('pending') { Saving... }

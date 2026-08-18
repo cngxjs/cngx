@@ -12,9 +12,19 @@ The organism cannot work the reason out for itself - only the consumer knows whe
 
 - `CngxTimeline`
 
+## Setup
+
+```ts
+protected readonly feed = createManualState<{ id: number; at: Date; summary: string }[]>();
+  protected readonly reason = signal<'first-use' | 'no-results' | 'cleared'>('first-use');
+
+  protected readonly at = (event: { at: Date }): Date => event.at;
+  protected readonly byId = (event: { id: number }): number => event.id;
+```
+
 ## Wiring
 
-```
+```html
 <cngx-timeline
     [state]="feed"
     [dateAccessor]="at"

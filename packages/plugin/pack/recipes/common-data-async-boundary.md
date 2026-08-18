@@ -15,9 +15,23 @@ The aggregate's own error stays the first error for the single-error toast/bridg
 - `CngxAlert`
 - `CngxBannerTrigger`
 
+## Setup
+
+```ts
+protected readonly user = createManualState<string>();
+  protected readonly permissions = createManualState<string[]>();
+  protected readonly flags = createManualState<string>();
+
+  protected readonly sources = signal<readonly AggregateSource[]>([
+    { key: 'user', label: 'User', state: this.user },
+    { key: 'permissions', label: 'Permissions', state: this.permissions },
+    { key: 'flags', label: 'Feature flags', state: this.flags },
+  ]);
+```
+
 ## Wiring
 
-```
+```html
 <div [cngxAsyncBoundary]="sources()" #b="cngxAsyncBoundary">
     <cngx-async-container [state]="b.state" ariaLabel="Account bootstrap">
       <ng-template cngxAsyncSkeleton>

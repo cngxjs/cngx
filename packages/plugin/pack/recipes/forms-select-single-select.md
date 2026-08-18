@@ -12,9 +12,9 @@ symbols: [CngxSelect]
 
 - `CngxSelect`
 
-## Wiring
+## Setup
 
-```
+```ts
 protected readonly loading = signal(true);
   protected readonly asyncOptions: CngxSelectOptionDef<string>[] = [
     { value: 'de', label: 'Deutsch' },
@@ -31,4 +31,23 @@ protected readonly loading = signal(true);
     this.asyncState.set('loading');
     setTimeout(() => this.asyncState.setSuccess(this.asyncOptions), 600);
   };
+```
+
+## Wiring
+
+```html
+<cngx-select
+    [label]="'Language'"
+    [state]="asyncState"
+    [retryFn]="asyncReload"
+    [(value)]="asyncValue"
+    placeholder="Choose language…"
+  >
+    <ng-template cngxSelectError let-error let-retry="retry">
+      <div class="demo-async-error-strip">
+        Load failed: {{ error?.message ?? error }}
+      </div>
+      <button type="button" class="chip" style="margin:0 0.75rem 0.5rem" (click)="retry()">Retry</button>
+    </ng-template>
+  </cngx-select>
 ```

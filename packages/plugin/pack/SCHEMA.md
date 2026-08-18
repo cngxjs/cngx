@@ -16,7 +16,8 @@ this prose and the schema stay in sync.
 |`title`|yes|Short imperative name of what the recipe wires.|
 |`whenToUse`|yes|The consumer situation this recipe answers.|
 |`symbols`|yes|The `@cngx/*` exports the recipe composes (array of strings).|
-|`wiring`|yes|The how - the composition steps that connect the symbols.|
+|`wiring`|yes|The how - the template that composes the symbols.|
+|`setup`|no|Class-level TypeScript backing the wiring (state, signals, handlers).|
 |`a11y`|no|Accessibility notes specific to this composition.|
 |`theming`|no|Which `--cngx-*` tokens matter here.|
 

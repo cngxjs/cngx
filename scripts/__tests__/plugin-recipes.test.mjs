@@ -83,6 +83,18 @@ describe('storyToRecipe', () => {
     expect(recipe.whenToUse).not.toContain('<code>');
   });
 
+  it('takes the template as wiring and carries the class setup alongside', () => {
+    const recipe = storyToRecipe(ASYNC_STORY);
+    expect(recipe.wiring).toBe(ASYNC_STORY.template);
+    expect(recipe.setup).toBe(ASYNC_STORY.setup);
+  });
+
+  it('omits setup when the story has only a template', () => {
+    const recipe = storyToRecipe({ ...ASYNC_STORY, setup: undefined });
+    expect(recipe.wiring).toBe(ASYNC_STORY.template);
+    expect(recipe).not.toHaveProperty('setup');
+  });
+
   it('returns null when no cngx symbol resolves', () => {
     expect(storyToRecipe({ title: 'plain', template: '<div></div>' })).toBeNull();
   });
@@ -108,8 +120,18 @@ describe('selectRecipeStories', () => {
 });
 
 describe('renderRecipe', () => {
+  const md = renderRecipe(storyToRecipe(ASYNC_STORY));
+
+  it('renders both the setup block and the template wiring', () => {
+    expect(md).toContain('## Setup');
+    expect(md).toContain('```ts');
+    expect(md).toContain(ASYNC_STORY.setup);
+    expect(md).toContain('## Wiring');
+    expect(md).toContain('```html');
+    expect(md).toContain(ASYNC_STORY.template);
+  });
+
   it('leaks no maintainer-internal reference or localhost', () => {
-    const md = renderRecipe(storyToRecipe(ASYNC_STORY));
     const forbidden = [`cngx-${'guru'}`, `cngx-${'designer'}`, `.intern${'al'}/`, 'localhost'];
     for (const token of forbidden) {
       expect(md, `recipe leaks "${token}"`).not.toContain(token);

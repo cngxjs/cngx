@@ -15,9 +15,16 @@ The paginator is an async-state consumer. While busy, setPage is a no-op, so a p
 - `CngxPaginatorPages`
 - `CngxPaginatorNext`
 
+## Setup
+
+```ts
+protected readonly pageIndex = signal(2);
+  protected readonly loading = createManualState<unknown>();
+```
+
 ## Wiring
 
-```
+```html
 <cngx-paginator skin="numbered" [total]="120" [state]="loading" [pageIndex]="pageIndex()" (pageIndexChange)="pageIndex.set($event)">
     <cngx-pgn-prev />
     <cngx-pgn-pages />

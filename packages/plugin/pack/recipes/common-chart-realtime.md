@@ -16,9 +16,21 @@ The buffer caps at 1000 samples and downsamples to 600 perceptually-faithful poi
 - `CngxThreshold`
 - `CngxChartAnnouncer`
 
+## Setup
+
+```ts
+protected readonly buffer = injectChartBuffer<number>({
+    capacity: 1000,
+    downsampleTo: 600,
+    xAccessor: (_d, i) => i,
+    yAccessor: (d) => d,
+  });
+  protected readonly connection = createManualState<unknown>();
+```
+
 ## Wiring
 
-```
+```html
 <div class="cngx-ex-chart-frame">
     <cngx-chart
       #chart

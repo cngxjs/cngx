@@ -12,9 +12,21 @@ Array-valued chart, so the empty branch is reached by passing an empty array (st
 
 - `CngxSparkline`
 
-## Wiring
+## Setup
 
-```
+```ts
 protected readonly stateDemoData: readonly number[] = [12, 18, 14, 22, 19, 28, 24];
   protected readonly state = createManualState<readonly number[]>();
+```
+
+## Wiring
+
+```html
+<cngx-sparkline
+    [data]="stateDemoData"
+    [state]="state"
+    [showArea]="true"
+    [width]="160"
+    [height]="40"
+  />
 ```

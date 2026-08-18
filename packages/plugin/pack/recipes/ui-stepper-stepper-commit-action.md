@@ -15,9 +15,33 @@ Async commit gating across both modes. Pessimistic keeps the user on the origin 
 - `CngxStep`
 - `CngxStepContent`
 
+## Setup
+
+```ts
+protected readonly active = signal(0);
+  protected readonly mode = signal<'optimistic' | 'pessimistic'>('pessimistic');
+  protected readonly shouldFail = signal(false);
+  protected readonly latencyMs = signal(800);
+  protected readonly commitAction: CngxStepperCommitAction = (from, to) => {
+    const ms = this.latencyMs();
+    const fail = this.shouldFail();
+    return new Observable<boolean>((sub) => {
+      const handle = setTimeout(() => {
+        if (fail) {
+          sub.error(new Error('Server refused step ' + from + ' -> ' + to));
+        } else {
+          sub.next(true);
+          sub.complete();
+        }
+      }, ms);
+      return () => clearTimeout(handle);
+    });
+  };
+```
+
 ## Wiring
 
-```
+```html
 <cngx-stepper
     [(activeStepIndex)]="active"
     [commitAction]="commitAction"

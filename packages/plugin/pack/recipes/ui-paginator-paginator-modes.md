@@ -13,9 +13,9 @@ The segment composes CngxInfiniteScroll on an in-template sentinel: [enabled] bi
 - `CngxPaginator`
 - `CngxPaginatorInfinite`
 
-## Wiring
+## Setup
 
-```
+```ts
 protected readonly people = signal<Person[]>(
     Array.from({ length: 6 }, (_, copy: number) =>
       PEOPLE.map((p: Person) => (copy === 0 ? p : { ...p, name: p.name + ' #' + (copy + 1) })),
@@ -53,4 +53,28 @@ protected readonly people = signal<Person[]>(
       }, 500);
     });
   });
+```
+
+## Wiring
+
+```html
+<div class="demo-pgn-infinite-frame">
+    @for (group of revealed(); track group.page) {
+      <div class="demo-page-divider">Page {{ group.page }}</div>
+      <ul class="demo-list-flush">
+        @for (p of group.items; track p.name) {
+          <li class="demo-list-row"><strong>{{ p.name }}</strong> - {{ p.role }}, {{ p.location }}</li>
+        }
+      </ul>
+    }
+    <cngx-paginator
+      aria-label="People"
+      [total]="people().length"
+      [state]="loadState"
+      [pageIndex]="pageIndex()" (pageIndexChange)="pageIndex.set($event)"
+      [pageSize]="pageSize()" (pageSizeChange)="pageSize.set($event)"
+    >
+      <cngx-pgn-infinite root=".demo-pgn-infinite-frame" rootMargin="0px 0px 48px 0px" />
+    </cngx-paginator>
+  </div>
 ```

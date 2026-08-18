@@ -12,9 +12,28 @@ withRetry() wraps any AsyncAction with bounded retries (defaults: 3 attempts, ex
 
 - `CngxAsyncClick`
 
+## Setup
+
+```ts
+private readonly flakyAction = () => new Promise<void>((resolve, reject) =>
+    setTimeout(() => (Math.random() > 0.6
+      ? resolve()
+      : reject(new Error('Network error'))), 500),
+  );
+
+  private readonly retryTuple = withRetry(this.flakyAction, {
+    maxAttempts: 3,
+    delay: 800,
+    backoff: 'exponential',
+  });
+
+  protected readonly retryAction = this.retryTuple[0];
+  protected readonly retryState = this.retryTuple[1];
+```
+
 ## Wiring
 
-```
+```html
 <div class="button-row">
     <button
       [cngxAsyncClick]="retryAction"

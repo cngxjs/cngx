@@ -17,9 +17,27 @@ The async [results] path and the five non-row slots. Pick a result state below, 
 - `CngxCommandPaletteError`
 - `CngxCommandPaletteFooter`
 
+## Setup
+
+```ts
+protected readonly statusState = signal<AsyncStatus>('success');
+  protected readonly dataState = signal<CommandGroup[]>([
+    { id: 'recents', label: 'Recents', commands: [{ id: 'reopen', label: 'Reopen closed tab', run: () => {} }] },
+  ]);
+  protected readonly errorState = signal<unknown>(undefined);
+  protected readonly firstLoadState = signal(false);
+  // A consumer derives this from term()/scope() + their own HTTP; here we drive it by hand.
+  protected readonly results = buildAsyncStateView<CommandGroup[]>({
+    status: this.statusState,
+    data: this.dataState,
+    error: this.errorState,
+    isFirstLoad: this.firstLoadState,
+  });
+```
+
 ## Wiring
 
-```
+```html
 <button type="button" class="demo-cmdk-trigger" [cngxCommandPaletteTrigger]="palette">
     Open commands <kbd>Cmd K</kbd>
   </button>

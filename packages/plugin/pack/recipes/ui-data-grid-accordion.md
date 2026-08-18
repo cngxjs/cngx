@@ -15,9 +15,48 @@ Each row&apos;s [state] is driven by a per-row manual async state. There is no o
 - `CngxDgaRowBusy`
 - `CngxDgaRowError`
 
+## Setup
+
+```ts
+protected readonly overviewState = createManualState<string>();
+  protected readonly metricsState = createManualState<string>();
+  protected readonly auditState = createManualState<string>();
+
+  private fetch(state: ManualAsyncState<string>, payload: string, fail: boolean): void {
+    if (state.status() === 'loading' || state.status() === 'success') {
+      return;
+    }
+    state.set('loading');
+    setTimeout(() => {
+      if (fail) {
+        state.setError(new Error('Request failed'));
+      } else {
+        state.setSuccess(payload);
+      }
+    }, 900);
+  }
+
+  protected onOpenChange(open: ReadonlySet<string>): void {
+    if (open.has('overview')) {
+      this.fetch(this.overviewState, 'Traffic is up 12% week over week across all regions.', false);
+    }
+    if (open.has('metrics')) {
+      this.fetch(this.metricsState, 'p95 latency 180ms, error rate 0.2%, 4 active alerts.', false);
+    }
+    if (open.has('audit')) {
+      this.fetch(this.auditState, '', true);
+    }
+  }
+
+  protected retry(state: ManualAsyncState<string>): void {
+    state.reset();
+    this.fetch(state, '', true);
+  }
+```
+
 ## Wiring
 
-```
+```html
 <div style="max-width:40rem">
     <cngx-data-grid-accordion
       [skin]="'ledger'"

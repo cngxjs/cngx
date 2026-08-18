@@ -13,9 +13,32 @@ Wraps in for state-driven UI. Demonstrates the consumer-side loading / error / r
 - `CngxFilterBuilder`
 - `CngxAsyncContainer`
 
+## Setup
+
+```ts
+protected readonly state = createManualState<readonly FilterFieldDef[]>();
+  protected readonly tree = signal<FilterGroup>(createEmptyFilterRoot());
+  protected loadFields(): void {
+    this.state.set('loading');
+    setTimeout(() => this.state.setSuccess(FILTER_BUILDER_FIELDS), 600);
+  }
+  protected failFields(): void {
+    this.state.set('loading');
+    setTimeout(() => this.state.setError(new Error('Field schema unavailable')), 400);
+  }
+  protected refreshFields(): void {
+    this.state.set('refreshing');
+    setTimeout(() => this.state.setSuccess(FILTER_BUILDER_FIELDS), 500);
+  }
+  protected resetState(): void {
+    this.state.reset();
+    this.tree.set(createEmptyFilterRoot());
+  }
+```
+
 ## Wiring
 
-```
+```html
 <div class="demo-form">
     <div class="button-row">
       <button type="button" class="chip" (click)="loadFields()">Load</button>

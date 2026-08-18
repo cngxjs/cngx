@@ -12,9 +12,18 @@ Upload composes CngxAsyncClick with CngxAudioStatus. The explicit [state]="uploa
 
 - `CngxAudioStatus`
 
+## Setup
+
+```ts
+protected readonly upload = () =>
+    new Promise<void>((resolve, reject) =>
+      setTimeout(() => (this.failNext ? reject(new Error('Upload failed')) : resolve()), 900),
+    );
+```
+
 ## Wiring
 
-```
+```html
 <button
     type="button"
     class="demo-button"

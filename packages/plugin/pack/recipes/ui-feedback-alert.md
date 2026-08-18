@@ -14,9 +14,9 @@ Async-state-driven alert: the same alert switches severity and message as the st
 - `CngxAlertAction`
 - `CngxAlertIcon`
 
-## Wiring
+## Setup
 
-```
+```ts
 protected readonly saveState = createManualState<string>();
   protected simulateError(): void {
     this.saveState.setError('Network timeout');
@@ -30,4 +30,16 @@ protected readonly saveState = createManualState<string>();
   protected resetState(): void {
     this.saveState.reset();
   }
+```
+
+## Wiring
+
+```html
+<cngx-alert [state]="saveState" severity="error" title="Operation Status" [closable]="true">
+    @switch (saveState.status()) {
+      @case ('error') { {{ saveState.error() }} }
+      @case ('success') { Saved successfully. This will auto-dismiss in 5s. Hover to pause. }
+      @case ('loading') { Loading... please wait. }
+    }
+  </cngx-alert>
 ```

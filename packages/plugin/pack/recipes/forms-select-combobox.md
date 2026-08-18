@@ -12,11 +12,24 @@ CngxCombobox - tag-input filter with live typeahead. Multi-value tag strip + fre
 
 - `CngxCombobox`
 
-## Wiring
+## Setup
 
-```
+```ts
 protected readonly comboLastTerm = signal<string>('');
   protected readonly comboAsyncValues = signal<string[]>([]);
   protected readonly comboAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
     createManualState<CngxSelectOptionsInput<string>>();
+```
+
+## Wiring
+
+```html
+<cngx-combobox
+    [label]="'Topics'"
+    [state]="comboAsyncState"
+    [(values)]="comboAsyncValues"
+    [skipInitial]="true"
+    (searchTermChange)="comboLastTerm.set($event)"
+    placeholder="Search topics…"
+  />
 ```

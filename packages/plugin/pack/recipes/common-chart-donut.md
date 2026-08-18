@@ -12,8 +12,14 @@ Drives a single donut through every async-state branch. The empty button reaches
 
 - `CngxDonut`
 
+## Setup
+
+```ts
+protected readonly state = createManualState<number>();
+```
+
 ## Wiring
 
-```
+```html
 <cngx-donut [value]="72" [max]="100" [size]="80" [thickness]="10" [label]="'72%'" [state]="state" aria-label="Demo score" />
 ```

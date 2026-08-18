@@ -12,9 +12,15 @@ The treatment is pinned to skeleton here so the view switch is what you see. Lef
 
 - `CngxStatCard`
 
+## Setup
+
+```ts
+protected readonly revenue = createManualState<number>();
+```
+
 ## Wiring
 
-```
+```html
 <cngx-stat-card
     [state]="revenue"
     loadingTreatment="skeleton"

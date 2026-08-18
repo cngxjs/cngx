@@ -12,9 +12,15 @@ Array-valued chart: an empty array is a natural empty state, so the four-state m
 
 - `CngxMiniArea`
 
-## Wiring
+## Setup
 
-```
+```ts
 protected readonly stateDemoData: readonly number[] = [10, 14, 18, 16, 22, 28, 32];
   protected readonly state = createManualState<readonly number[]>();
+```
+
+## Wiring
+
+```html
+<cngx-mini-area [data]="stateDemoData" [state]="state" [width]="160" [height]="40" />
 ```

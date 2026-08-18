@@ -12,9 +12,9 @@ The probe measures the registry busy-envelope (first start to last end). The nex
 
 - `CngxAsyncRegistry`
 
-## Wiring
+## Setup
 
-```
+```ts
 private readonly config = injectLoadingConfig();
   protected readonly cutoff = this.config.spinnerVsSkeletonCutoff;
 
@@ -55,4 +55,20 @@ private readonly config = injectLoadingConfig();
     }
     return this.displayedKind() === 'skeleton' ? 'Preparing content' : 'Loading';
   });
+```
+
+## Wiring
+
+```html
+<div class="latency-indicator" [attr.aria-busy]="probe.isBusy()">
+    @if (gatedBusy()) {
+      @if (displayedKind() === 'skeleton') {
+        <div class="demo-skeleton-row" style="height:48px" aria-hidden="true"></div>
+        <div class="demo-skeleton-row" style="height:48px;width:70%" aria-hidden="true"></div>
+      } @else {
+        <div class="cngx-ex-demo-spinner" aria-hidden="true"></div>
+      }
+    }
+    <span class="demo-sr-only" role="status" aria-live="polite">{{ announcement() }}</span>
+  </div>
 ```

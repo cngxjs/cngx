@@ -15,9 +15,23 @@ Zero-handler integration: a button driven by a CngxAsyncState shows a success or
 - `CngxToaster`
 - `CngxToast`
 
+## Setup
+
+```ts
+protected readonly saveState = createManualState<string>();
+  protected simulateSave(): void {
+    this.saveState.set('pending');
+    setTimeout(() => this.saveState.setSuccess('done'), 1500);
+  }
+  protected simulateError(): void {
+    this.saveState.set('pending');
+    setTimeout(() => this.saveState.setError('Network timeout'), 1500);
+  }
+```
+
 ## Wiring
 
-```
+```html
 <div class="button-row" style="margin-bottom:12px">
     <button (click)="simulateSave()"
       [cngxToastOn]="saveState" toastSuccess="Saved successfully" toastError="Save failed" [toastErrorDetail]="true"

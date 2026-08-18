@@ -26,7 +26,11 @@
     "wiring": {
       "type": "string",
       "minLength": 1,
-      "description": "The how - the composition steps that connect the symbols."
+      "description": "The how - the template that composes the symbols."
+    },
+    "setup": {
+      "type": "string",
+      "description": "Optional class-level TypeScript backing the wiring (state, signals, handlers)."
     },
     "a11y": {
       "type": "string",

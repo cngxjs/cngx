@@ -12,9 +12,9 @@ CngxTypeahead - scalar async autocomplete. Single-value input bound to an async 
 
 - `CngxTypeahead`
 
-## Wiring
+## Setup
 
-```
+```ts
 protected readonly typeaheadUsers: CngxSelectOptionDef<{ id: number; name: string }>[] = [
     { value: { id: 1, name: 'Alice Meier' },  label: 'Alice Meier' },
     { value: { id: 2, name: 'Bob Schmidt' },  label: 'Bob Schmidt' },
@@ -28,4 +28,19 @@ protected readonly typeaheadUsers: CngxSelectOptionDef<{ id: number; name: strin
   protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
     createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
   protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);
+```
+
+## Wiring
+
+```html
+<cngx-typeahead
+    [label]="'User'"
+    [options]="typeaheadUsers"
+    [compareWith]="typeaheadCompare"
+    [displayWith]="typeaheadDisplay"
+    [state]="typeaheadAsyncState"
+    [clearable]="true"
+    placeholder="Search by name…"
+    [(value)]="typeaheadAsyncValue"
+  />
 ```

@@ -13,9 +13,9 @@ One cngxMatTabs attribute upgrades a vanilla &lt;mat-tab-group&gt; with the asyn
 - `CngxMatTabs`
 - `CngxMatTabError`
 
-## Wiring
+## Setup
 
-```
+```ts
 protected readonly mode = signal<'optimistic' | 'pessimistic'>('optimistic');
   protected readonly simulateError = signal(false);
 
@@ -75,4 +75,64 @@ protected readonly mode = signal<'optimistic' | 'pessimistic'>('optimistic');
   // Ten tabs in a narrow container so the directive's auto-mounted
   // cngx-tab-overflow "More" affordance engages.
   protected readonly overflowTabs = Array.from({ length: 10 }, (_, i) => 'Section ' + (i + 1));
+```
+
+## Wiring
+
+```html
+<section aria-label="Commit lifecycle and error bridges">
+    <mat-tab-group
+      cngxMatTabs
+      #mt="cngxMatTabs"
+      [commitAction]="commitAction"
+      [commitMode]="mode()"
+      cngxToastOn
+      [toastError]="'Tab transition failed'"
+      [toastErrorDetail]="true"
+      cngxBannerOn
+      bannerId="mat-tabs:commit-error"
+      [bannerError]="'Tab transition refused by the server'"
+      aria-label="Account settings"
+    >
+      <mat-tab label="Profile" [cngxMatTabError]="profileErrors">
+        <form
+          [formGroup]="profileForm"
+          style="display:flex;flex-direction:column;gap:6px;padding:12px"
+        >
+          <label style="display:flex;flex-direction:column;gap:4px">
+            <span>Name</span>
+            <input type="text" formControlName="name" />
+          </label>
+          <small style="opacity:0.7">Required, min 2 characters</small>
+        </form>
+      </mat-tab>
+
+      <mat-tab label="Account" [cngxMatTabError]="accountErrors">
+        <form
+          [formGroup]="accountForm"
+          style="display:flex;flex-direction:column;gap:6px;padding:12px"
+        >
+          <label style="display:flex;flex-direction:column;gap:4px">
+            <span>Email</span>
+            <input type="email" formControlName="email" />
+          </label>
+          <small style="opacity:0.7">Required, valid email address</small>
+        </form>
+      </mat-tab>
+
+      <mat-tab label="Notifications">
+        <p style="padding:12px">No aggregator bound - this tab never gains the error badge.</p>
+      </mat-tab>
+    </mat-tab-group>
+  </section>
+
+  <section aria-label="Smart overflow" style="max-width:600px;margin-top:24px">
+    <mat-tab-group cngxMatTabs aria-label="Workspace sections">
+      @for (label of overflowTabs; track label) {
+        <mat-tab [label]="label">
+          <p style="padding:12px">{{ label }} content.</p>
+        </mat-tab>
+      }
+    </mat-tab-group>
+  </section>
 ```

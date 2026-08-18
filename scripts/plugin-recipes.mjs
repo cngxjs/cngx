@@ -77,29 +77,34 @@ export function recipeSymbols(story) {
   return [...new Set(imported)];
 }
 
-function buildWiring(story) {
-  const template = (story.template ?? '').trim();
-  const setup = (story.setup ?? '').trim();
-  const chosen = template.length >= setup.length ? template || setup : setup || template;
-  return chosen ? normalizeDashes(chosen) : null;
-}
-
 export function storyToRecipe(story) {
   const symbols = recipeSymbols(story);
   if (symbols.length === 0) {
     return null;
   }
-  const wiring = buildWiring(story);
+  const template = normalizeDashes((story.template ?? '').trim());
+  const setup = normalizeDashes((story.setup ?? '').trim());
+  // The template is the composition surface a recipe teaches, so it is the
+  // wiring. The class setup that backs it rides alongside as its own field
+  // rather than replacing the template (the old "longer wins" rule hid the
+  // template on setup-heavy async examples).
+  const wiring = template || setup;
   if (!wiring) {
     return null;
   }
   const whenToUse = normalizeDashes(
     stripHtml(story.description) || stripHtml(story.subtitle) || story.title,
   );
-  return { title: story.title, whenToUse, symbols, wiring };
+  const recipe = { title: story.title, whenToUse, symbols, wiring };
+  if (template && setup) {
+    recipe.setup = setup;
+  }
+  return recipe;
 }
 
 const yamlString = (value) => `"${String(value).replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
+
+const wiringLang = (wiring) => (wiring.trimStart().startsWith('<') ? 'html' : 'ts');
 
 export function renderRecipe(recipe) {
   const lines = [
@@ -117,13 +122,11 @@ export function renderRecipe(recipe) {
     '',
     ...recipe.symbols.map((symbol) => `- \`${symbol}\``),
     '',
-    '## Wiring',
-    '',
-    '```',
-    recipe.wiring,
-    '```',
-    '',
   ];
+  if (recipe.setup) {
+    lines.push('## Setup', '', '```ts', recipe.setup, '```', '');
+  }
+  lines.push('## Wiring', '', `\`\`\`${wiringLang(recipe.wiring)}`, recipe.wiring, '```', '');
   if (recipe.theming) {
     lines.push('## Theming', '', recipe.theming, '');
   }

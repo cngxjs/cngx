@@ -12,9 +12,15 @@ Drives the bullet through every async-state branch via four buttons. The single-
 
 - `CngxBullet`
 
+## Setup
+
+```ts
+protected readonly state = createManualState<number>();
+```
+
 ## Wiring
 
-```
+```html
 <div style="max-width:400px">
     <cngx-bullet
       [actual]="78"

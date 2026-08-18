@@ -14,9 +14,20 @@ The *cngxPaginatorLoading structural slot in isolation - project a template insi
 - `CngxPaginator`
 - `CngxPaginatorPages`
 
+## Setup
+
+```ts
+protected readonly pageIndex = signal(2);
+  protected readonly loading = createManualState<unknown>();
+
+  constructor() {
+    this.loading.set('loading');
+  }
+```
+
 ## Wiring
 
-```
+```html
 <cngx-paginator
     [total]="120"
     [state]="loading"
