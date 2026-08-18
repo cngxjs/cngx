@@ -71,8 +71,7 @@ export function buildContext(cwd) {
     }
   }
 
-  lines.push('Use the cngx MCP tools to look up exact @cngx/* API shapes before wiring any symbol.');
-  lines.push(`cngx docs for LLMs: ${LLMS_TXT} (index), ${LLMS_FULL} (full text).`);
+  lines.push('Use the cngx MCP tools to look up exact @cngx/* API shapes before wiring any symbol.', `cngx docs for LLMs: ${LLMS_TXT} (index), ${LLMS_FULL} (full text).`);
 
   return lines.join('\n');
 }
