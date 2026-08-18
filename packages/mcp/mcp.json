@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "cngx": {
+      "command": "npx",
+      "args": ["-y", "@cngx/mcp"]
+    }
+  }
+}
