@@ -13,6 +13,7 @@ import { fileURLToPath } from 'node:url';
 import { loadBundledDocs } from './data/loader.js';
 import { registerFindComponent } from './tools/find-component.js';
 import { registerGetApi } from './tools/get-api.js';
+import { registerGetSlots } from './tools/get-slots.js';
 
 const pkg = JSON.parse(
   readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'package.json'), 'utf8'),
@@ -38,6 +39,7 @@ async function main(): Promise<void> {
 
   registerFindComponent(server, docs);
   registerGetApi(server, docs);
+  registerGetSlots(server, docs);
 
   const transport = new StdioServerTransport();
   await server.connect(transport);
