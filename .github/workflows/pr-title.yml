@@ -104,6 +104,7 @@ jobs:
             scripts
             e2e
             eslint-plugin
+            mcp
           requireScope: true
           # Subject must not start with an uppercase letter (imperative, lower case).
           subjectPattern: ^(?![A-Z]).+$
