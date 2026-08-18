@@ -23,14 +23,18 @@ export interface StoryExampleResult {
 /** Pure query behind the tool - returns `null` when the name resolves to nothing. */
 export function getStoryExample(docs: DocsIndex, name: string): StoryExampleResult | null {
   const match = resolveEntry(docs, name);
-  if (!match) return null;
+  if (!match) {
+    return null;
+  }
   const { entry, kind } = match;
   const stackblitzUrl = entry.stackblitzUrl?.trim();
   return {
     name: entry.name,
     kind,
     exampleUrls: entry.exampleUrls ?? [],
-    stackblitzUrl: stackblitzUrl ? stackblitzUrl : null,
+    // stackblitzUrl is empty ("") across the current surface; surface a real
+    // link only when non-empty, else null. Not `??` - "" is not nullish.
+    stackblitzUrl: stackblitzUrl && stackblitzUrl.length > 0 ? stackblitzUrl : null,
     sourceReferences: (entry.playgrounds ?? []).map((playground) => ({
       title: playground.title,
       fileRef: playground.fileRef,
@@ -52,7 +56,7 @@ export function registerGetStoryExample(server: McpServer, docs: DocsIndex): voi
         name: z.string().describe('A component/directive class name or selector, e.g. "CngxSelect".'),
       },
     },
-    async ({ name }) => {
+    ({ name }) => {
       const example = getStoryExample(docs, name);
       return { content: [{ type: 'text', text: JSON.stringify(example, null, 2) }] };
     },

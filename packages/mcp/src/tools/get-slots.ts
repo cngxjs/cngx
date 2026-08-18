@@ -19,7 +19,9 @@ export interface SlotsResult {
 /** Pure query behind the tool - returns `null` when the name resolves to nothing. */
 export function getSlots(docs: DocsIndex, name: string): SlotsResult | null {
   const match = resolveEntry(docs, name);
-  if (!match) return null;
+  if (!match) {
+    return null;
+  }
   return {
     name: match.entry.name,
     kind: match.kind,
@@ -40,7 +42,7 @@ export function registerGetSlots(server: McpServer, docs: DocsIndex): void {
         name: z.string().describe('A component/directive class name or selector, e.g. "CngxSelect".'),
       },
     },
-    async ({ name }) => {
+    ({ name }) => {
       const slots = getSlots(docs, name);
       return { content: [{ type: 'text', text: JSON.stringify(slots, null, 2) }] };
     },

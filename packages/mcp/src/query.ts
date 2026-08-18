@@ -27,7 +27,9 @@ function allEntries(docs: DocsIndex): KindedEntry[] {
  */
 export function resolveEntry(docs: DocsIndex, name: string): KindedEntry | undefined {
   const needle = name.trim().toLowerCase();
-  if (needle === '') return undefined;
+  if (needle === '') {
+    return undefined;
+  }
   const entries = allEntries(docs);
   return (
     entries.find(({ entry }) => entry.name.toLowerCase() === needle) ??
@@ -42,7 +44,9 @@ export function resolveEntry(docs: DocsIndex, name: string): KindedEntry | undef
  */
 export function searchEntries(docs: DocsIndex, query: string): KindedEntry[] {
   const needle = query.trim().toLowerCase();
-  if (needle === '') return [];
+  if (needle === '') {
+    return [];
+  }
   return allEntries(docs).filter(({ entry }) => {
     const haystack = [entry.name, entry.selector, entry.category].filter(Boolean).join(' ').toLowerCase();
     return haystack.includes(needle);

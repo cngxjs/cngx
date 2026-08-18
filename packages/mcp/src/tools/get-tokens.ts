@@ -89,7 +89,7 @@ export function registerGetTokens(server: McpServer, docs: DocsIndex): void {
           .describe('A component name/selector (theming tokens) or a DI-token name fragment. Omit for all DI tokens.'),
       },
     },
-    async ({ name }) => {
+    ({ name }) => {
       const tokens = getTokens(docs, name);
       return { content: [{ type: 'text', text: JSON.stringify(tokens, null, 2) }] };
     },

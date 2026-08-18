@@ -41,7 +41,7 @@ export function registerFindComponent(server: McpServer, docs: DocsIndex): void 
         query: z.string().describe('A name, selector, or category fragment, e.g. "select" or "cngx-chip".'),
       },
     },
-    async ({ query }) => {
+    ({ query }) => {
       const matches = findComponents(docs, query);
       return { content: [{ type: 'text', text: JSON.stringify(matches, null, 2) }] };
     },

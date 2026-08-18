@@ -41,7 +41,9 @@ export interface ApiResult {
 /** Pure query behind the tool - returns `null` when the name resolves to nothing. */
 export function getApi(docs: DocsIndex, name: string): ApiResult | null {
   const match = resolveEntry(docs, name);
-  if (!match) return null;
+  if (!match) {
+    return null;
+  }
   const { entry, kind } = match;
   return {
     name: entry.name,
@@ -83,7 +85,7 @@ export function registerGetApi(server: McpServer, docs: DocsIndex): void {
         name: z.string().describe('A component/directive class name or selector, e.g. "CngxSelect" or "cngx-select".'),
       },
     },
-    async ({ name }) => {
+    ({ name }) => {
       const api = getApi(docs, name);
       return { content: [{ type: 'text', text: JSON.stringify(api, null, 2) }] };
     },
