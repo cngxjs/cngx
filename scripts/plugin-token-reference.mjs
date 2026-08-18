@@ -13,6 +13,13 @@ const DEFAULT_DOC = 'packages/mcp/data/documentation.json';
 const OUT = 'packages/plugin/pack/theming-tokens.md';
 const MANIFEST = 'packages/plugin/pack/pack-manifest.json';
 
+const cell = (value) => String(value).replace(/\|/g, '\\|');
+
+// Token descriptions come from source JSDoc that may use em/en dashes (U+2014,
+// U+2013). The shipped reference is a generated artifact, so normalise them to a
+// plain ASCII hyphen rather than distribute em-dashes.
+const normalizeDashes = (text) => text.replace(/\s*[\u2014\u2013]\s*/g, ' - ');
+
 // Keep only artifacts that declare at least one theming token, and drop the
 // absolute source path / line - the consumer reference needs the token, its
 // default and its role, never the maintainer's filesystem.
@@ -31,15 +38,13 @@ export function collectThemeTokens(doc) {
         name: token.name,
         default: token.defaultValue ?? '',
         group: token.group ?? '',
-        description: (token.description ?? '').split('\n')[0].trim(),
+        description: normalizeDashes((token.description ?? '').split('\n')[0].trim()),
       })),
     });
   }
   groups.sort((a, b) => a.component.localeCompare(b.component));
   return groups;
 }
-
-const cell = (value) => String(value).replace(/\|/g, '\\|');
 
 export function renderTokenReference(doc) {
   const groups = collectThemeTokens(doc);

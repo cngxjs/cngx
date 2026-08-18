@@ -60,6 +60,31 @@ describe('renderTokenReference', () => {
   });
 });
 
+describe('normalizeDashes', () => {
+  const EM = String.fromCharCode(0x2014);
+  const EN = String.fromCharCode(0x2013);
+
+  it('rewrites em/en dashes in descriptions to a plain hyphen', () => {
+    const doc = {
+      components: [
+        {
+          name: 'CngxDemo',
+          themeTokens: [
+            { name: '--cngx-demo', defaultValue: '0', group: 'X', description: `outline ${EM} dashed reads as active` },
+            { name: '--cngx-demo-2', defaultValue: '0', group: 'X', description: `range 1${EN}9 inclusive` },
+          ],
+        },
+      ],
+      directives: [],
+    };
+    const [group] = collectThemeTokens(doc);
+    expect(group.tokens[0].description).toBe('outline - dashed reads as active');
+    expect(group.tokens[1].description).toBe('range 1 - 9 inclusive');
+    expect(renderTokenReference(doc)).not.toContain(EM);
+    expect(renderTokenReference(doc)).not.toContain(EN);
+  });
+});
+
 describe('provenance helpers', () => {
   it('hashes deterministically with a sha256 prefix', () => {
     expect(computeSourceHash('abc')).toBe(computeSourceHash('abc'));

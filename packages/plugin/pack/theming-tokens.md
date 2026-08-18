@@ -863,9 +863,9 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-filter-builder-radius`|`0.375rem`|Layout|Corner radius of group containers and action buttons.|
 |`--cngx-filter-builder-indent`|`1.25rem`|Layout|Indent applied to nested (non-root) groups so the hierarchy reads|
 |`--cngx-filter-builder-rail`|`2px solid oklch(0.87 0 0)`|Surface|Left rail border shorthand for nested groups. `inherits: true`|
-|`--cngx-filter-builder-negated-border-style`|`dashed`|Variant / Negated|Border-style applied to negated groups — dashed reads as|
+|`--cngx-filter-builder-negated-border-style`|`dashed`|Variant / Negated|Border-style applied to negated groups - dashed reads as|
 |`--cngx-filter-builder-empty-padding`|`0.75rem`|Layout|Padding shorthand of the empty-state slot.|
-|`--cngx-filter-builder-empty-fg`|`oklch(0.45 0 0)`|State / Empty|Text color of the empty-state slot — muted by default.|
+|`--cngx-filter-builder-empty-fg`|`oklch(0.45 0 0)`|State / Empty|Text color of the empty-state slot - muted by default.|
 |`--cngx-filter-builder-action-gap`|`0.25rem`|Layout|Gap between an action button's glyph and its label.|
 |`--cngx-filter-builder-action-padding`|`0.25rem 0.625rem`|Layout|Padding shorthand of an action button.|
 |`--cngx-filter-builder-action-font-size`|`0.875rem`|Typography|Font-size of an action button's label.|
@@ -886,14 +886,14 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 
 |Token|Default|Group|Description|
 |-|-|-|-|
-|`--cngx-filter-builder-incomplete-outline`|`1px dashed oklch(0.55 0.15 65)`|State / Incomplete|Outline shorthand for the incomplete-expression state — dashed|
+|`--cngx-filter-builder-incomplete-outline`|`1px dashed oklch(0.55 0.15 65)`|State / Incomplete|Outline shorthand for the incomplete-expression state - dashed|
 |`--cngx-filter-builder-incomplete-outline-offset`|`2px`|State / Incomplete|Outline offset of the incomplete-expression outline.|
 
 ## CngxFilterRow
 
 |Token|Default|Group|Description|
 |-|-|-|-|
-|`--cngx-filter-builder-empty-row-opacity`|`0.85`|State / Empty|Opacity multiplier applied to the empty row variant — fades the|
+|`--cngx-filter-builder-empty-row-opacity`|`0.85`|State / Empty|Opacity multiplier applied to the empty row variant - fades the|
 
 ## CngxFormErrors
 
