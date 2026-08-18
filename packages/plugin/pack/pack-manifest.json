@@ -6,6 +6,196 @@
       "source": "packages/mcp/data/documentation.json",
       "contentHash": "sha256:bd80a6ee0a5057851ef64ea5a704d443fabdbecdc203a9edea6cef796e04412d",
       "tokenCount": 1791
+    },
+    {
+      "artifact": "pack/recipes/common-audio-status-bridge.md",
+      "source": "examples/stories/common/audio/status-bridge/async-click.story.ts",
+      "contentHash": "sha256:eefaf06d99329f63afd6d2074597e4f72c8cc8cb736cade3388a2d040d403fac"
+    },
+    {
+      "artifact": "pack/recipes/common-chart-bullet.md",
+      "source": "examples/stories/common/chart/bullet/async-state-machine.story.ts",
+      "contentHash": "sha256:c55628d7b8cf530488ede893a97a8f1af5158a786172757f6fecc90acfea682c"
+    },
+    {
+      "artifact": "pack/recipes/common-chart-deviation-bar.md",
+      "source": "examples/stories/common/chart/deviation-bar/async-state-machine.story.ts",
+      "contentHash": "sha256:81efa38ee118c27aa551eb33d658a5044489223019a33a28820f8d8755aabb8e"
+    },
+    {
+      "artifact": "pack/recipes/common-chart-donut.md",
+      "source": "examples/stories/common/chart/donut/async-state-machine.story.ts",
+      "contentHash": "sha256:142cecebdaf2d4d98a6d7b332a6282c005096ef1c3a59e06e30d0f7f0e6ffaad"
+    },
+    {
+      "artifact": "pack/recipes/common-chart-mini-area.md",
+      "source": "examples/stories/common/chart/mini-area/async-state-machine.story.ts",
+      "contentHash": "sha256:b30a149abf00359ab52d6286bf4065c4d7a76d8a0e6b696d03610c42cbf14cef"
+    },
+    {
+      "artifact": "pack/recipes/common-chart-mini-bar.md",
+      "source": "examples/stories/common/chart/mini-bar/async-state-machine.story.ts",
+      "contentHash": "sha256:6325f8c36fe573b08233774045feea14f241a528588962183804065f1f424e6c"
+    },
+    {
+      "artifact": "pack/recipes/common-chart-primitives.md",
+      "source": "examples/stories/common/chart/primitives/async-state-machine-on-the-primitive.story.ts",
+      "contentHash": "sha256:81c2f0349011065994b55a19e881ae1e91a793dda1950504c9dcd733e9674e35"
+    },
+    {
+      "artifact": "pack/recipes/common-chart-realtime.md",
+      "source": "examples/stories/common/chart/realtime/streaming-telemetry.story.ts",
+      "contentHash": "sha256:f911729fa2275d1915ec98d03d45078118baed7f6a3f83ccd7f4a7c2b415274c"
+    },
+    {
+      "artifact": "pack/recipes/common-chart-sparkline.md",
+      "source": "examples/stories/common/chart/sparkline/async-state-machine.story.ts",
+      "contentHash": "sha256:2e112c2a6fa34bbfcfac9f6a808dbf342c7b4aaf959902a01e8f9d152795cfec"
+    },
+    {
+      "artifact": "pack/recipes/common-chart-stacked-bar.md",
+      "source": "examples/stories/common/chart/stacked-bar/async-state-machine.story.ts",
+      "contentHash": "sha256:d0d08e8f515a56f660ce1ed8a5779575fe391a1bfd2cb5c175e9abf19c7481a7"
+    },
+    {
+      "artifact": "pack/recipes/common-data-async-boundary.md",
+      "source": "examples/stories/common/data/async-boundary/per-source-errors-surface.story.ts",
+      "contentHash": "sha256:510b73a3110c247ce19a177dca8c389dd5b8fb379bfffb07cbb17636d488e76f"
+    },
+    {
+      "artifact": "pack/recipes/common-data-async-registry.md",
+      "source": "examples/stories/common/data/async-registry/latency-selected-indicator.story.ts",
+      "contentHash": "sha256:a03b1f3ab1d80f71e4802a5c366447e299bec962585a524c5c59f77b41f4e67d"
+    },
+    {
+      "artifact": "pack/recipes/common-data-recycler.md",
+      "source": "examples/stories/common/data/recycler/with-cngxasyncstate-skeleton-first-load.story.ts",
+      "contentHash": "sha256:bc229f20ae331e8bbf75a4100e2ab3d9d67dcd486873a2fef3b7ff57e382d423"
+    },
+    {
+      "artifact": "pack/recipes/common-interactive-async-click.md",
+      "source": "examples/stories/common/interactive/async-click/basic-happy-path.story.ts",
+      "contentHash": "sha256:ddf3b94c053cc15149e063b72611f0f33e78a7e185b7ecdb2f1c404f0349adf8"
+    },
+    {
+      "artifact": "pack/recipes/common-interactive-retry.md",
+      "source": "examples/stories/common/interactive/retry/withretry-cngxasyncclick.story.ts",
+      "contentHash": "sha256:0d0243a82567ec35af5f35bf20e0939a6aa1543cbc91a4d41d5a7d0066daa299"
+    },
+    {
+      "artifact": "pack/recipes/forms-filter-builder-filter-builder-async-state.md",
+      "source": "examples/stories/forms/filter-builder/filter-builder-async-state/loading-error-content-branches-via-cngx-async-container.story.ts",
+      "contentHash": "sha256:8ea35a51099f66609980d47779c783285b986e473b2c16e9c3dc5690aeec0cc6"
+    },
+    {
+      "artifact": "pack/recipes/forms-select-combobox.md",
+      "source": "examples/stories/forms/select/combobox/combobox-async-via-state-skipinitial-searchtermchange.story.ts",
+      "contentHash": "sha256:d4568dc4a9116219ae3dcf8c38f03f654a731d66d70bcdbc76deb124226bd0bf"
+    },
+    {
+      "artifact": "pack/recipes/forms-select-multi-select.md",
+      "source": "examples/stories/forms/select/multi-select/multi-async-options-via-state.story.ts",
+      "contentHash": "sha256:085183eea30faa8bf823dfd2d2b31e5ada2550d63c3e9539b73cf8fa304ad082"
+    },
+    {
+      "artifact": "pack/recipes/forms-select-single-select.md",
+      "source": "examples/stories/forms/select/single-select/async-state-consumer.story.ts",
+      "contentHash": "sha256:64e7fca418da42ea25f925fe52b78dfe863e18da14b4054ea21dadc0fba45a7e"
+    },
+    {
+      "artifact": "pack/recipes/forms-select-typeahead.md",
+      "source": "examples/stories/forms/select/typeahead/typeahead-async-state-load-error-retry.story.ts",
+      "contentHash": "sha256:f0e55f1544f2d1b0619fd2bedb267f8c5b7cd6bb818ee5f5fa5d6e761c1e0af1"
+    },
+    {
+      "artifact": "pack/recipes/ui-accordion-async-panel.md",
+      "source": "examples/stories/ui/accordion/async-panel/lazy-fetch.story.ts",
+      "contentHash": "sha256:0f50b2771c8aaec018b486b1343194ed73952d8004de4fd1c28734842504393f"
+    },
+    {
+      "artifact": "pack/recipes/ui-chart-panel-async.md",
+      "source": "examples/stories/ui/chart-panel/async/panel-chrome-vs-chart-state.story.ts",
+      "contentHash": "sha256:912992da6e9a79500f102976adfcd3572138ac38917570d8d3582d4ec00e2851"
+    },
+    {
+      "artifact": "pack/recipes/ui-collection-incremental-list.md",
+      "source": "examples/stories/ui/collection/incremental-list/empty.story.ts",
+      "contentHash": "sha256:b3142f074b824901ae4a2fa0b10cc36e7459ea8e8ce1b9e5f63881cfd2440515"
+    },
+    {
+      "artifact": "pack/recipes/ui-collection-incremental-list-skins.md",
+      "source": "examples/stories/ui/collection/incremental-list/skins/card.story.ts",
+      "contentHash": "sha256:3a05de9aabe2e127d4a28534eedc40fa7510de4ae3c8834ea44db9344bd9d075"
+    },
+    {
+      "artifact": "pack/recipes/ui-command-palette.md",
+      "source": "examples/stories/ui/command-palette/async-results.story.ts",
+      "contentHash": "sha256:805f79e7bebcdb536e26a72b9d82f2e924eaa432e92e3fc5c687d74ddbf3a08e"
+    },
+    {
+      "artifact": "pack/recipes/ui-data-grid-accordion.md",
+      "source": "examples/stories/ui/data-grid-accordion/lazy-row.story.ts",
+      "contentHash": "sha256:f065de5b44cbd23e0c1caab43df2c1e2bc6e12684ef72270a27dc7285e578f92"
+    },
+    {
+      "artifact": "pack/recipes/ui-feedback-alert.md",
+      "source": "examples/stories/ui/feedback/alert/state-driven-visibility.story.ts",
+      "contentHash": "sha256:abb82b9584a7d982cd573bf02267a23c147d8ec14cd0ba87a73daebe6f5da98a"
+    },
+    {
+      "artifact": "pack/recipes/ui-feedback-async-container.md",
+      "source": "examples/stories/ui/feedback/async-container/cngxasync-one-line.story.ts",
+      "contentHash": "sha256:8b069979b13353b89a8a404e1ab21dff5a0ac30739d8944775b5d9cc079307ec"
+    },
+    {
+      "artifact": "pack/recipes/ui-feedback-toast.md",
+      "source": "examples/stories/ui/feedback/toast/state-bridge-cngxtoaston.story.ts",
+      "contentHash": "sha256:8c0af1360f00cda038c663af7949be50a0be423cd3f574a5c26cc3d547e55531"
+    },
+    {
+      "artifact": "pack/recipes/ui-mat-tabs-instrumentation.md",
+      "source": "examples/stories/ui/mat-tabs/instrumentation/sticky-error-commit-action-with-bridges.story.ts",
+      "contentHash": "sha256:6c5f0d696f9302f58f8472750d3439df0305dab90057dc4acc71ba2aa75b7877"
+    },
+    {
+      "artifact": "pack/recipes/ui-paginator-paginator-modes.md",
+      "source": "examples/stories/ui/paginator/paginator-modes/infinite.story.ts",
+      "contentHash": "sha256:5f70887cc29614f590d776a0d6cf1cf7f5e76bbb407f80c189459f10dc9df965"
+    },
+    {
+      "artifact": "pack/recipes/ui-paginator-paginator-parts-loading.md",
+      "source": "examples/stories/ui/paginator/paginator-parts/loading/busy.story.ts",
+      "contentHash": "sha256:3154ebcd646c1c29da38835dd607772ff6e5894bedc0419d1d987816bcebccc1"
+    },
+    {
+      "artifact": "pack/recipes/ui-paginator-paginator-segments.md",
+      "source": "examples/stories/ui/paginator/paginator-segments/async-loading.story.ts",
+      "contentHash": "sha256:7103590b1d361e45e5c81a3d6dc17c872a8ef555a60ae5344e66ba7f698617a1"
+    },
+    {
+      "artifact": "pack/recipes/ui-stat-card-async.md",
+      "source": "examples/stories/ui/stat-card/async/error-and-refresh.story.ts",
+      "contentHash": "sha256:66be0cc079f956248f3eee2ef3d9d4c4b769eab55f4593e0925efc6f657084a2"
+    },
+    {
+      "artifact": "pack/recipes/ui-stepper-stepper-commit-action.md",
+      "source": "examples/stories/ui/stepper/stepper-commit-action/pessimistic-optimistic-commits-with-bridge-directives.story.ts",
+      "contentHash": "sha256:09cedad030f8c9ff93705d371bd5924df1afe555cce19adb80d3089eeb2e1998"
+    },
+    {
+      "artifact": "pack/recipes/ui-tabs-tab-commit-action.md",
+      "source": "examples/stories/ui/tabs/tab-commit-action/optimistic-pessimistic-commits-with-bridge-directives.story.ts",
+      "contentHash": "sha256:87530ae635942b776fec494a91814d8535791bab011ab85eba23c2312b259ae4"
+    },
+    {
+      "artifact": "pack/recipes/ui-timeline-async.md",
+      "source": "examples/stories/ui/timeline/async/empty.story.ts",
+      "contentHash": "sha256:33f20fb84a2302dbc93bcfdc7cb13d09db6abbc374786b1bec5548459a35f0c0"
+    },
+    {
+      "artifact": "pack/recipes/ui-timeline-integration.md",
+      "source": "examples/stories/ui/timeline/integration/data-source.story.ts",
+      "contentHash": "sha256:0313b4b8b72fe08731d67f3c7c4af65ad8e8bbb3bb11863fa7166cf8e2b3322e"
     }
   ]
 }

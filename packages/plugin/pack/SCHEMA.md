@@ -22,18 +22,20 @@ this prose and the schema stay in sync.
 
 ## Curation criterion
 
-Pack v1 does not cover all stories. A story becomes a recipe when it demonstrates
-one of:
+Pack v1 is async-state-machine-first. A demo folder yields one recipe when at
+least one of its examples exercises the cngx async state machine - its artifact
+references one of `AsyncStatus`, `CngxAsyncState`, `createAsyncState`,
+`createManualState`, `injectAsyncState`, `resolveAsyncView`, `buildAsyncStateView`,
+`CngxAsyncContainer`, `CngxAsyncClick`, `CngxAsync`, or the `CngxAlertOn` /
+`CngxToastOn` / `CngxBannerOn` transition bridges. That folder's async example is
+the representative: a `basic`/`happy-path` slug wins over an `async`/`state` slug,
+which wins over the shortest title.
 
-- a Level-3 organism (one recipe per organism: the select family, treetable,
-  stepper, tabs, dialog, and the other composed feature units), or
-- a flagship atom that consumers reach for constantly (`CngxIcon`, `CngxButton`
-  interactions, `CngxTag`, the form-field bridge).
-
-Everything else - variant permutations, demo-chrome-only stories, internal
-fixtures - stays out of pack v1. Breadth across the full story set is a later
-milestone. The rule is checkable: a reviewer can point at any recipe and name
-which clause admitted it.
+The async wiring - loading, pending, refreshing, success, error, commit - is the
+hardest surface to get right and the most valuable to teach, so it anchors pack
+v1. Static atoms, variant permutations, and demo-chrome-only stories stay out
+until a later milestone. The rule is checkable: grep any recipe's source story
+for the async surface above.
 
 ## Provenance
 
