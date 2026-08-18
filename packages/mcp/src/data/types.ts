@@ -71,12 +71,9 @@ export interface DocEntry {
   file?: string;
   description?: string;
   signal?: boolean;
-  // cngx components declare their API with signal `input()`/`output()`/`model()`,
-  // which compodocx records in `inputsClass`/`outputsClass`. The legacy
-  // decorator arrays `inputs`/`outputs` are present but empty across the surface,
-  // so the API tool reads the `*Class` keys.
-  inputs?: DocInput[];
-  outputs?: DocOutput[];
+  // cngx declares its API with signal `input()`/`output()`/`model()`, which
+  // compodocx records in `inputsClass`/`outputsClass` (the legacy decorator
+  // `inputs`/`outputs` arrays are empty across the surface, so they are not read).
   inputsClass?: DocInput[];
   outputsClass?: DocOutput[];
   hostBindings?: DocHostBinding[];
