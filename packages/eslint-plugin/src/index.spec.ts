@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { plugin } from './plugin';
-import { RULE_METADATA } from './metadata';
+import { RULE_METADATA, type RuleId } from './metadata';
+
+const ruleIds = Object.keys(plugin.rules ?? {});
+const recommendedRules = (plugin.configs?.recommended as { rules: Record<string, unknown> }[])[0].rules;
+const allRules = (plugin.configs?.all as { rules: Record<string, unknown> }[])[0].rules;
 
 describe('@cngx/eslint-plugin harness', () => {
   it('exposes plugin meta and both flat configs', () => {
@@ -9,13 +13,40 @@ describe('@cngx/eslint-plugin harness', () => {
     expect(Array.isArray(plugin.configs?.all)).toBe(true);
   });
 
-  it('registers no rules yet (Phase 1 scaffold)', () => {
-    expect(Object.keys(plugin.rules ?? {})).toHaveLength(0);
-  });
-
   it('wires each config to the single shared plugin instance', () => {
     const recommended = plugin.configs?.recommended as { plugins: { cngx: unknown } }[];
     expect(recommended[0].plugins.cngx).toBe(plugin);
+  });
+
+  it('registers only known metadata rule ids', () => {
+    for (const id of ruleIds) {
+      expect(RULE_METADATA[id as RuleId]).toBeDefined();
+    }
+  });
+
+  it('derives recommended from metadata: every registered non-off TS rule at its severity', () => {
+    for (const id of ruleIds) {
+      const meta = RULE_METADATA[id as RuleId];
+      if (meta.astSurface !== 'ts') {
+        continue;
+      }
+      if (meta.recommendedSeverity === 'off') {
+        expect(recommendedRules[`cngx/${id}`]).toBeUndefined();
+      } else {
+        expect(recommendedRules[`cngx/${id}`]).toBe(meta.recommendedSeverity);
+      }
+    }
+  });
+
+  it('derives all from metadata: every registered TS rule, opt-in lifted to warn', () => {
+    for (const id of ruleIds) {
+      const meta = RULE_METADATA[id as RuleId];
+      if (meta.astSurface !== 'ts') {
+        continue;
+      }
+      const expected = meta.recommendedSeverity === 'off' ? 'warn' : meta.recommendedSeverity;
+      expect(allRules[`cngx/${id}`]).toBe(expected);
+    }
   });
 
   it('ships dependency-free metadata for all six planned rules', () => {
