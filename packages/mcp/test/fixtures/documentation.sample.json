@@ -11,11 +11,11 @@
       "file": "projects/forms/select/single-select/select.component.ts",
       "description": "Native-feeling single-select dropdown.",
       "signal": true,
-      "inputs": [
+      "inputsClass": [
         { "name": "value", "type": "T", "defaultValue": "undefined", "description": "The selected value." },
         { "name": "disabled", "type": "boolean", "defaultValue": "false", "description": "Disables the control." }
       ],
-      "outputs": [
+      "outputsClass": [
         { "name": "valueChange", "type": "EventEmitter<T>", "description": "Emits on selection." }
       ],
       "hostBindings": [
@@ -53,8 +53,8 @@
       "file": "projects/ui/accordion/accordion-item.component.ts",
       "description": "A single expandable accordion item.",
       "signal": true,
-      "inputs": [{ "name": "expanded", "type": "boolean", "defaultValue": "false" }],
-      "outputs": [],
+      "inputsClass": [{ "name": "expanded", "type": "boolean", "defaultValue": "false" }],
+      "outputsClass": [],
       "slots": [{ "name": "cngxAccordionItemIcon", "description": "Replaces the item's expand/collapse chevron." }],
       "themeTokens": [],
       "exampleUrls": ["https://cngxjs.github.io/cngx/examples/#/ui/accordion/basic"]
@@ -68,8 +68,8 @@
       "file": "projects/common/interactive/ripple.directive.ts",
       "description": "Material-style ripple on interaction.",
       "signal": false,
-      "inputs": [{ "name": "cngxRippleDisabled", "type": "boolean", "defaultValue": "false" }],
-      "outputs": []
+      "inputsClass": [{ "name": "cngxRippleDisabled", "type": "boolean", "defaultValue": "false" }],
+      "outputsClass": []
     }
   ],
   "tokens": [

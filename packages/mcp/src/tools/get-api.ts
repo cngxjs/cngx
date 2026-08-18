@@ -49,13 +49,15 @@ export function getApi(docs: DocsIndex, name: string): ApiResult | null {
     selector: entry.selector ?? null,
     description: entry.description ?? null,
     signal: entry.signal ?? false,
-    inputs: (entry.inputs ?? []).map((input) => ({
+    // Signal inputs/outputs live in inputsClass/outputsClass; the legacy
+    // inputs/outputs arrays are empty across the cngx surface.
+    inputs: (entry.inputsClass ?? []).map((input) => ({
       name: input.name,
       type: input.type ?? null,
       defaultValue: input.defaultValue ?? null,
       description: input.description ?? null,
     })),
-    outputs: (entry.outputs ?? []).map((output) => ({
+    outputs: (entry.outputsClass ?? []).map((output) => ({
       name: output.name,
       type: output.type ?? null,
       description: output.description ?? null,
