@@ -1,0 +1,18 @@
+{
+  "name": "cngx",
+  "version": "0.1.0-rc.0",
+  "description": "Grounds a consumer app's coding agent in cngx: auto-starts the @cngx/mcp server and surfaces the published cngx docs.",
+  "author": {
+    "name": "cngxjs"
+  },
+  "homepage": "https://cngxjs.github.io/cngx",
+  "repository": "https://github.com/cngxjs/cngx",
+  "license": "MIT",
+  "keywords": [
+    "cngx",
+    "angular",
+    "mcp",
+    "llm"
+  ],
+  "mcpServers": "./.mcp.json"
+}
