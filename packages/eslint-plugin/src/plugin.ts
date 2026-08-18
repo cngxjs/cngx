@@ -1,6 +1,7 @@
 import type { TSESLint } from '@typescript-eslint/utils';
 import { RULE_METADATA, type RuleId, type RuleSeverity } from './metadata';
 import { noEffectInNgOnInit } from './rules/no-effect-in-ngoninit';
+import { untrackedInEffect } from './rules/untracked-in-effect';
 
 /**
  * The `@cngx/eslint-plugin` plugin object.
@@ -18,6 +19,7 @@ export const plugin: TSESLint.FlatConfig.Plugin = {
   },
   rules: {
     'no-effect-in-ngoninit': noEffectInNgOnInit,
+    'untracked-in-effect': untrackedInEffect,
   },
 };
 
