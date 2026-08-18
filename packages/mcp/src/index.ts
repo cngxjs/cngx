@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // @cngx/mcp - stdio Model Context Protocol server over a bundled compodocx
-// snapshot of the cngx (@cngx/*) public API. Phase 1: the server starts cleanly
-// and registers no tools; the five query tools land in Phase 2. Nothing writes
+// snapshot of the cngx (@cngx/*) public API. Loads the snapshot, reports its
+// provenance at connect, and registers the read-only query tools. Nothing writes
 // to stdout before the transport connects - stdio is the protocol channel, so
 // diagnostics go to stderr only.
 
