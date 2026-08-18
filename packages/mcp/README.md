@@ -16,14 +16,58 @@ npx @cngx/mcp
 ```
 
 The server speaks MCP over stdio. Register it with any MCP-capable client (see
-the client-config snippet shipped alongside this package).
+Client setup below), then call the tools.
 
 ## Tools
 
-The five read-only query tools (`find_component`, `get_api`, `get_slots`,
-`get_tokens`, `get_story_example`) land in a follow-up release. This build starts
-the server and reports, at connect, which cngx release the bundled snapshot
-grounds against.
+|Tool|Input|Returns|
+|-|-|-|
+|`find_component`|`{ query: string }`|Components and directives whose name, selector, or category matches the fragment: name, kind, selector, category, file.|
+|`get_api`|`{ name: string }`|One component/directive's API: inputs, outputs, signal flag, host bindings, public methods, description. Resolves by class name or selector.|
+|`get_slots`|`{ name: string }`|The component's projected template slots, each a slot directive selector name plus its one-line doc.|
+|`get_tokens`|`{ name?: string }`|With a component name, that component's theming tokens and theme overview. With any other string, the DI token list filtered by name. With no argument, the full DI token list.|
+|`get_story_example`|`{ name: string }`|The component's runnable example URLs (public documentation links) and a StackBlitz URL when one exists. Playground entries are labelled source references, not openable links.|
+
+Every tool returns `null` (or an empty list) when a name resolves to nothing, so
+an agent can tell "no such symbol" from "symbol with no data".
+
+## Client setup
+
+The package ships the same snippet as `mcp.json`.
+
+### Claude Code
+
+```bash
+claude mcp add cngx -- npx -y @cngx/mcp
+```
+
+Or add it to your project's `.mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "cngx": {
+      "command": "npx",
+      "args": ["-y", "@cngx/mcp"]
+    }
+  }
+}
+```
+
+### Claude Desktop
+
+Add the same block to `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "cngx": {
+      "command": "npx",
+      "args": ["-y", "@cngx/mcp"]
+    }
+  }
+}
+```
 
 ## Provenance
 
