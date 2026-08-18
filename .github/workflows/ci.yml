@@ -262,3 +262,8 @@ jobs:
         run: npm ci
       - name: Validate plugin manifests
         run: npm run test:plugin
+      # Fail when the committed pack (theming tokens + recipes) has fallen behind
+      # its recorded sources - a story or the mcp snapshot changed without a pack
+      # regeneration in the same change.
+      - name: Check pack drift
+        run: npm run plugin:drift

@@ -2,12 +2,6 @@
   "schemaVersion": "1",
   "sources": [
     {
-      "artifact": "pack/theming-tokens.md",
-      "source": "packages/mcp/data/documentation.json",
-      "contentHash": "sha256:bd80a6ee0a5057851ef64ea5a704d443fabdbecdc203a9edea6cef796e04412d",
-      "tokenCount": 1791
-    },
-    {
       "artifact": "pack/recipes/common-audio-status-bridge.md",
       "source": "examples/stories/common/audio/status-bridge/async-click.story.ts",
       "contentHash": "sha256:eefaf06d99329f63afd6d2074597e4f72c8cc8cb736cade3388a2d040d403fac"
@@ -197,5 +191,11 @@
       "source": "examples/stories/ui/timeline/integration/data-source.story.ts",
       "contentHash": "sha256:0313b4b8b72fe08731d67f3c7c4af65ad8e8bbb3bb11863fa7166cf8e2b3322e"
     }
-  ]
+  ],
+  "theming": {
+    "artifact": "pack/theming-tokens.md",
+    "source": "packages/mcp/data/documentation.json",
+    "contentHash": "sha256:bd80a6ee0a5057851ef64ea5a704d443fabdbecdc203a9edea6cef796e04412d",
+    "tokenCount": 1791
+  }
 }
