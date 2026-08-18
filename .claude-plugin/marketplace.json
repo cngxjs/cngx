@@ -1,0 +1,14 @@
+{
+  "name": "cngxjs",
+  "owner": {
+    "name": "cngxjs",
+    "url": "https://github.com/cngxjs"
+  },
+  "plugins": [
+    {
+      "name": "cngx",
+      "source": "./packages/plugin",
+      "description": "Grounds a consumer app's coding agent in cngx via the @cngx/mcp server and the published cngx docs."
+    }
+  ]
+}
