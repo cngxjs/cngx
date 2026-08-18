@@ -14,7 +14,8 @@ import { loadBundledDocs } from './data/loader.js';
 import { registerFindComponent } from './tools/find-component.js';
 import { registerGetApi } from './tools/get-api.js';
 import { registerGetSlots } from './tools/get-slots.js';
-import { registerGetTokens } from './tools/get-tokens.js';
+import { registerGetThemeTokens } from './tools/get-theme-tokens.js';
+import { registerGetDiTokens } from './tools/get-di-tokens.js';
 import { registerGetStoryExample } from './tools/get-story-example.js';
 
 const pkg = JSON.parse(
@@ -42,7 +43,8 @@ async function main(): Promise<void> {
   registerFindComponent(server, docs);
   registerGetApi(server, docs);
   registerGetSlots(server, docs);
-  registerGetTokens(server, docs);
+  registerGetThemeTokens(server, docs);
+  registerGetDiTokens(server, docs);
   registerGetStoryExample(server, docs);
 
   const transport = new StdioServerTransport();

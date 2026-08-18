@@ -25,7 +25,8 @@ Client setup below), then call the tools.
 |`find_component`|`{ query: string }`|Components and directives whose name, selector, or category matches the fragment: name, kind, selector, category, file.|
 |`get_api`|`{ name: string }`|One component/directive's API: inputs, outputs, signal flag, host bindings, public methods, description. Resolves by class name or selector.|
 |`get_slots`|`{ name: string }`|The component's projected template slots, each a slot directive selector name plus its one-line doc.|
-|`get_tokens`|`{ name?: string }`|With a component name, that component's theming tokens and theme overview. With any other string, the DI token list filtered by name. With no argument, the full DI token list.|
+|`get_theme_tokens`|`{ name: string }`|A component's theming tokens (the CSS custom properties it exposes) and theme overview, by class name or selector.|
+|`get_di_tokens`|`{ query?: string }`|The top-level DI injection tokens, optionally filtered by a name fragment. Omit the argument for the full list.|
 |`get_story_example`|`{ name: string }`|The component's runnable example URLs (public documentation links) and a StackBlitz URL when one exists. Playground entries are labelled source references, not openable links.|
 
 Every tool returns `null` (or an empty list) when a name resolves to nothing, so
