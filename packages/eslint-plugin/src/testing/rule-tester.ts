@@ -1,3 +1,4 @@
+import * as templateParser from '@angular-eslint/template-parser';
 import * as parser from '@typescript-eslint/parser';
 import { RuleTester } from '@typescript-eslint/rule-tester';
 import { afterAll, describe, it } from 'vitest';
@@ -18,6 +19,15 @@ export function createRuleTester(): RuleTester {
       parser,
       ecmaVersion: 2022,
       sourceType: 'module',
+    },
+  });
+}
+
+/** A RuleTester on the Angular template parser, for `*.html` template-AST rules. */
+export function createTemplateRuleTester(): RuleTester {
+  return new RuleTester({
+    languageOptions: {
+      parser: templateParser,
     },
   });
 }

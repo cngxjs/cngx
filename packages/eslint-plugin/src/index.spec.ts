@@ -49,6 +49,14 @@ describe('@cngx/eslint-plugin harness', () => {
     }
   });
 
+  it('attaches the template rule to *.html in recommended and all', () => {
+    for (const config of [plugin.configs?.recommended, plugin.configs?.all]) {
+      const blocks = config as { files?: string[]; rules?: Record<string, unknown> }[];
+      const htmlBlock = blocks.find((b) => b.files?.includes('**/*.html'));
+      expect(htmlBlock?.rules?.['cngx/menu-trigger-needs-popover-anchor']).toBe('error');
+    }
+  });
+
   it('ships dependency-free metadata for all six planned rules', () => {
     const ids = Object.keys(RULE_METADATA);
     expect(ids).toHaveLength(6);

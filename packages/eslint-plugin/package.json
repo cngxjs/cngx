@@ -24,12 +24,14 @@
     "test": "vitest run"
   },
   "peerDependencies": {
-    "eslint": ">=9"
+    "eslint": ">=9",
+    "@angular-eslint/template-parser": ">=19"
   },
   "dependencies": {
     "@typescript-eslint/utils": "^8.56.1"
   },
   "devDependencies": {
+    "@angular-eslint/template-parser": "^21.3.0",
     "@typescript-eslint/rule-tester": "^8.56.1",
     "typescript": "~5.9.2",
     "vitest": "^4.0.8"
