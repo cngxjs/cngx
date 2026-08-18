@@ -164,7 +164,7 @@ module.exports = tseslint.config(
 
     // Ignored paths
     {
-        ignores: ['dist/', 'packages/**/dist/', 'node_modules/', '.angular/', 'out-tsc/', 'docs/', '.internal/', '**/*.spec.ts', 'playwright.config.ts', 'e2e/', 'sheriff.config.ts', 'projects/**/examples/**', 'examples/**'],
+        ignores: ['dist/', 'packages/**/dist/', 'packages/**/testing/**', 'node_modules/', '.angular/', 'out-tsc/', 'docs/', '.internal/', '**/*.spec.ts', 'playwright.config.ts', 'e2e/', 'sheriff.config.ts', 'projects/**/examples/**', 'examples/**'],
     },
 
     // Re-enable rules that Prettier disables but we want to enforce.
