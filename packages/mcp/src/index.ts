@@ -11,6 +11,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadBundledDocs } from './data/loader.js';
+import { registerFindComponent } from './tools/find-component.js';
 
 const pkg = JSON.parse(
   readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'package.json'), 'utf8'),
@@ -33,6 +34,8 @@ async function main(): Promise<void> {
         `Confirm the consuming app runs a matching cngx release before relying on an answer.`,
     },
   );
+
+  registerFindComponent(server, docs);
 
   const transport = new StdioServerTransport();
   await server.connect(transport);
