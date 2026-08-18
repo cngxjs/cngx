@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://cngxjs.github.io/cngx/pack/recipe.schema.json",
+  "title": "cngx recipe",
+  "description": "The machine-readable contract every pack/recipes/*.md front matter validates against.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["title", "whenToUse", "symbols", "wiring"],
+  "properties": {
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Short imperative name of what the recipe wires."
+    },
+    "whenToUse": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The consumer situation this recipe answers."
+    },
+    "symbols": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string" },
+      "description": "The @cngx/* exports the recipe composes."
+    },
+    "wiring": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The how - the template that composes the symbols."
+    },
+    "setup": {
+      "type": "string",
+      "description": "Optional class-level TypeScript backing the wiring (state, signals, handlers)."
+    },
+    "a11y": {
+      "type": "string",
+      "description": "Optional accessibility notes specific to this composition."
+    },
+    "theming": {
+      "type": "string",
+      "description": "Optional theming notes - which --cngx-* tokens matter here."
+    }
+  }
+}

@@ -245,3 +245,20 @@ jobs:
         run: npm run build:mcp
       - name: Test mcp
         run: npm run test:mcp
+
+  # The cngx consumer plugin is static configuration (marketplace + plugin
+  # manifests, a bundled .mcp.json) checked by a plain vitest spec. It has no
+  # build step and no package-local dependencies, so unlike eslint-plugin and
+  # mcp it runs on the root install alone and declares no needs: build.
+  plugin:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Validate plugin manifests
+        run: npm run test:plugin
