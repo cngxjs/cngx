@@ -1,16 +1,14 @@
-// The pack's maintenance guard. pack-manifest.json records, per generated
-// artifact, the source it was distilled from and that source's content hash at
-// generation time. This recomputes each source hash against the file on disk
-// now and fails when any has moved - the shipped artifact is then stale and its
-// generator must be re-run.
+// The pack's maintenance guard. pack-manifest.json's `sources[]` records, per
+// generated artifact, the COMMITTED source it was distilled from and that
+// source's content hash at generation time. This recomputes each source hash
+// against the file on disk now and fails when any has moved or vanished - the
+// shipped artifact is then stale and its generator must be re-run.
 //
-// The hash is over the whole source file. For a recipe that is its story (a
-// precise signal). For pack/theming-tokens.md the source is the compodoc
-// documentation.json, so any doc change trips the check even when no --cngx-*
-// token moved. That is deliberate: a false positive costs one regeneration; a
-// false negative would ship a stale token reference. Hashing only the token
-// projection would need this guard to import each generator, and the coupling
-// is not worth the reduced noise.
+// Only committed sources belong in `sources[]`: recipes, whose sources are the
+// example stories. The theming reference is distilled from documentation.json,
+// a gitignored build artifact, so it has no committed source to re-hash on a
+// fresh checkout; its provenance lives under `manifest.theming` and is not
+// drift-checked here. It is refreshed at release time via plugin:release.
 
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';

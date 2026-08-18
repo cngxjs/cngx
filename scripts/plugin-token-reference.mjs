@@ -91,13 +91,22 @@ function main() {
   writeFileSync(resolve(OUT), `${renderTokenReference(doc)}\n`);
 
   const manifest = JSON.parse(readFileSync(resolve(MANIFEST), 'utf8'));
-  const entry = {
-    artifact: 'pack/theming-tokens.md',
-    source: DEFAULT_DOC,
-    contentHash: computeSourceHash(raw),
-    tokenCount,
+  // theming-tokens.md is distilled from documentation.json, a gitignored build
+  // artifact (packages/mcp/data/ is not committed). A fresh checkout has no such
+  // file to re-hash, so this provenance is informational and lives under
+  // `theming`, out of the drift-checked `sources[]` - which holds only committed
+  // sources (the recipe stories). Filter out any legacy theming entry there.
+  const next = {
+    ...manifest,
+    sources: (manifest.sources ?? []).filter((s) => s.artifact !== 'pack/theming-tokens.md'),
+    theming: {
+      artifact: 'pack/theming-tokens.md',
+      source: DEFAULT_DOC,
+      contentHash: computeSourceHash(raw),
+      tokenCount,
+    },
   };
-  writeFileSync(resolve(MANIFEST), `${JSON.stringify(upsertManifestEntry(manifest, entry), null, 2)}\n`);
+  writeFileSync(resolve(MANIFEST), `${JSON.stringify(next, null, 2)}\n`);
 
   process.stdout.write(`theming-tokens.md: ${tokenCount} tokens across ${groups.length} components\n`);
 }

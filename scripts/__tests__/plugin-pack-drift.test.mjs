@@ -39,4 +39,14 @@ describe('computeDrift', () => {
     expect(computeDrift({ sources: [] }, () => null)).toEqual([]);
     expect(computeDrift({}, () => null)).toEqual([]);
   });
+
+  it('ignores the theming provenance (its source is a gitignored build artifact)', () => {
+    const manifest = {
+      sources: [],
+      theming: { artifact: 'pack/theming-tokens.md', source: 'packages/mcp/data/documentation.json' },
+    };
+    // readSource returns null (the build artifact is absent on a fresh checkout);
+    // theming lives outside sources[], so drift must not flag it.
+    expect(computeDrift(manifest, () => null)).toEqual([]);
+  });
 });
