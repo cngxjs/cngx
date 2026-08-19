@@ -40,6 +40,8 @@ docs):
   cngx symbol mapping and the idiom shifts the move requires.
 - **`cngx-doctor`** - act on a doctor finding: read the machine finding contract
   and apply the fix it names.
+- **`cngx-theme`** - theme a consumer app: import the theme bundle so directive
+  styling renders, then set brand tokens via the `--cngx-*` custom properties.
 
 ## Doctor
 
