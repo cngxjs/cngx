@@ -35,7 +35,7 @@ bootstrap providers / global style entry when the finding is a project-level gap
 that no single file owns.
 
 **3. Confirm the symbol before you wire it.** The `fixHint` names a provider or a
-symbol; confirm its real shape with the MCP tools (`get_api`, `get_di_tokens`)
+symbol; confirm it via `find_component` to locate it, then `get_di_tokens` for its provider surface,
 before you add it - a remembered provider signature is a guess. The
 discover-confirm-compose loop itself is `cngx-wire`'s job; route there for the
 composition rather than reasoning it out here.
