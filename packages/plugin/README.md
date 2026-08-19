@@ -22,6 +22,21 @@ Add the cngx marketplace, then install the plugin:
   data, building only on the public MCP server and the published docs at
   <https://cngxjs.github.io/cngx>.
 
+## Skills
+
+The plugin ships auto-discovered skills that teach the agent how to work with
+cngx and route it to the drift-free API sources (the MCP tools and the published
+docs):
+
+- **`cngx`** - the index: the three design principles and the grounding this
+  plugin bundles.
+- **`cngx-wire`** - build a screen or feature: discover the component, confirm
+  its API, and compose it over configuring it.
+- **`cngx-async`** - wire loading/error/success state: the async state machine,
+  projecting a branch, and bridging transitions to toasts/alerts/banners.
+- **`cngx-forms`** - wire a form: the Signal-Forms-first field pattern, the
+  select-family decision tree, the Reactive-Forms adapter, and error surfaces.
+
 ## Notes
 
 The bundled `.mcp.json` pins an explicit `@cngx/mcp` version rather than
