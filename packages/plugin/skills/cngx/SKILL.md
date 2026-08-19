@@ -50,6 +50,8 @@ For the daily work, reach for the focused skill instead of this index:
   projecting a branch, and bridging transitions to toasts/alerts/banners.
 - **`cngx-forms`** - wire a form: the Signal-Forms-first field pattern, the
   select-family decision tree, the Reactive-Forms adapter, and error surfaces.
+- **`cngx-from-material`** - migrate an Angular Material screen: the `mat-*` to
+  cngx symbol mapping and the idiom shifts the move requires.
 
 ## What this plugin ships, and when to use it
 
