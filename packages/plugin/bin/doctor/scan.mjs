@@ -27,6 +27,7 @@ const STYLE_CANDIDATES = ['src/styles.css', 'src/styles.scss', 'src/styles.sass'
  * @property {string} projectDir
  * @property {Record<string, string>} dependencies  merged deps + devDeps
  * @property {number | null} packageMtimeMs
+ * @property {number | null} angularMtimeMs
  * @property {Record<string, string>} sources        relative path -> file text
  * @property {StyleEntry[]} styleEntries
  */
@@ -145,6 +146,7 @@ function fullScan(projectDir) {
     projectDir: root,
     dependencies,
     packageMtimeMs,
+    angularMtimeMs: safeMtime(join(root, 'angular.json')),
     sources,
     styleEntries: resolveStyleEntries(root),
   };
@@ -175,10 +177,20 @@ function incrementalScan(prior, projectDir, changedFile) {
     ({ dependencies, packageMtimeMs } = readPackageJson(root));
   }
 
-  const styleDrifted = prior.styleEntries.some((e) => safeMtime(join(root, e.path)) !== e.mtimeMs);
-  const styleEntries = styleDrifted ? resolveStyleEntries(root) : prior.styleEntries;
+  // Re-resolve the style entries when a tracked entry moved, when angular.json
+  // moved (it may declare new global styles), or when a conventional stylesheet
+  // that was absent at cold-walk time now exists - a consumer following the
+  // Track-B fixHint by adding the import must clear the finding on the warm path.
+  const angularMtimeMs = safeMtime(join(root, 'angular.json'));
+  const priorStyleDrifted = prior.styleEntries.some((e) => safeMtime(join(root, e.path)) !== e.mtimeMs);
+  const angularDrifted = angularMtimeMs !== (prior.angularMtimeMs ?? null);
+  const newCandidateAppeared = STYLE_CANDIDATES.some(
+    (rel) => existsSync(join(root, rel)) && !prior.styleEntries.some((e) => e.path === rel),
+  );
+  const styleEntries =
+    priorStyleDrifted || angularDrifted || newCandidateAppeared ? resolveStyleEntries(root) : prior.styleEntries;
 
-  return { projectDir: root, dependencies, packageMtimeMs, sources, styleEntries };
+  return { projectDir: root, dependencies, packageMtimeMs, angularMtimeMs, sources, styleEntries };
 }
 
 /**

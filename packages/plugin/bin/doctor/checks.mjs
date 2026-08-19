@@ -16,14 +16,23 @@
 import { DOCTOR_CHECK_METADATA } from './metadata.mjs';
 import { TRACK_B_SYMBOLS } from './track-b-symbols.mjs';
 
-// A source "imports" a symbol from @cngx when an import statement pulling from a
-// '@cngx/...' module names it. Heuristic, but it ignores comments and unrelated
-// text far better than a bare substring scan.
+// A source "imports" a symbol from @cngx when a runtime import statement pulling
+// from a '@cngx/...' module names it. A type-only import (`import type { X }` or
+// an inline `type X` specifier) is discarded - it emits no runtime code, so it
+// must not trip a wiring check. An optional default import before the braces is
+// tolerated so `import Foo, { CngxToaster } from '...'` still matches.
 function importsCngxSymbol(text, symbol) {
-  const importRe = /import\s+(?:type\s+)?\{([^}]*)\}\s*from\s*['"](@cngx\/[^'"]+)['"]/g;
+  const importRe = /import\s+(type\s+)?(?:[\w$]+\s*,\s*)?\{([^}]*)\}\s*from\s*['"]@cngx\/[^'"]+['"]/g;
   let match;
   while ((match = importRe.exec(text)) !== null) {
-    const named = match[1].split(',').map((s) => s.trim().split(/\s+as\s+/)[0].trim());
+    if (match[1]) {
+      continue;
+    }
+    const named = match[2]
+      .split(',')
+      .map((s) => s.trim())
+      .filter((s) => s && !s.startsWith('type '))
+      .map((s) => s.split(/\s+as\s+/)[0].trim());
     if (named.includes(symbol)) {
       return true;
     }
@@ -40,9 +49,20 @@ function findSourceImporting(sources, symbol) {
   return null;
 }
 
-function anySourceContains(sources, needle) {
-  return Object.values(sources).some((text) => text.includes(needle));
+// Strip comments before an opt-in scan so a commented-out `// withToasts()`
+// (or one inside a block comment) does not falsely suppress a finding.
+function stripComments(text) {
+  return text.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
 }
+
+function anySourceContainsCode(sources, needle) {
+  return Object.values(sources).some((text) => stripComments(text).includes(needle));
+}
+
+// A Track-B directive is styled either by the single-import bundle or by the
+// documented by-hand assembly that pulls the individual component partials from
+// `@cngx/common/theming/components/`. Either marker means the consumer opted in.
+const TRACK_B_STYLE_MARKERS = ['@cngx/themes/cngx.css', '@cngx/common/theming/components/'];
 
 const FEEDBACK_FAMILIES = [
   { symbols: ['CngxToaster', 'CngxToastOn'], optIn: 'withToasts(', messageId: 'toastsUsedWithoutOptIn' },
@@ -66,7 +86,7 @@ export function toasterCheck(snapshot) {
     if (!usedIn) {
       continue;
     }
-    if (anySourceContains(snapshot.sources, family.optIn)) {
+    if (anySourceContainsCode(snapshot.sources, family.optIn)) {
       continue;
     }
     findings.push({
@@ -93,7 +113,9 @@ export function trackBCheck(snapshot) {
   if (!usedIn) {
     return [];
   }
-  const stylesheetImported = snapshot.styleEntries.some((e) => e.text.includes('@cngx/themes/cngx.css'));
+  const stylesheetImported = snapshot.styleEntries.some((e) =>
+    TRACK_B_STYLE_MARKERS.some((marker) => e.text.includes(marker)),
+  );
   if (stylesheetImported) {
     return [];
   }
@@ -117,7 +139,7 @@ export function floatingFallbackCheck(snapshot) {
   if (!('@floating-ui/dom' in snapshot.dependencies)) {
     return [];
   }
-  if (anySourceContains(snapshot.sources, 'provideFloatingFallback(')) {
+  if (anySourceContainsCode(snapshot.sources, 'provideFloatingFallback(')) {
     return [];
   }
   return [

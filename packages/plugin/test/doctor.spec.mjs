@@ -4,7 +4,11 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it } from 'vitest';
+import { runChecks } from '../bin/doctor/checks.mjs';
+import { DOCTOR_CHECK_METADATA } from '../bin/doctor/metadata.mjs';
+import { scan } from '../bin/doctor/scan.mjs';
 import { TRACK_B_SYMBOLS } from '../bin/doctor/track-b-symbols.mjs';
+import { RULE_METADATA } from '../../eslint-plugin/src/metadata/index.ts';
 
 const CLI = fileURLToPath(new URL('../bin/cngx-doctor.mjs', import.meta.url));
 const created = [];
@@ -112,6 +116,39 @@ describe('cngx-doctor CLI', () => {
     expect(JSON.parse(stdout)).toEqual([]);
   });
 
+  it('does not flag a Track-B directive styled via the by-hand partial import', () => {
+    const dir = project({
+      sources: {
+        'src/app.ts': "import { CngxTooltip } from '@cngx/common';\nexport class App {}\n",
+      },
+      styles: { 'src/styles.css': "@import '@cngx/common/theming/components/cngx-tooltip.css';\n" },
+    });
+    const { status, stdout } = runCli(dir, ['--json']);
+    expect(status).toBe(0);
+    expect(JSON.parse(stdout)).toEqual([]);
+  });
+
+  it('does not flag a type-only import of a feedback symbol', () => {
+    const dir = project({
+      sources: { 'src/app.ts': "import type { CngxToaster } from '@cngx/ui/feedback';\n" },
+    });
+    const { status, stdout } = runCli(dir, ['--json']);
+    expect(status).toBe(0);
+    expect(JSON.parse(stdout)).toEqual([]);
+  });
+
+  it('still flags when the only withToasts() reference is commented out', () => {
+    const dir = project({
+      sources: {
+        'src/app.ts': "import { CngxToaster } from '@cngx/ui/feedback';\n// provideFeedback(withToasts())\n",
+      },
+    });
+    const json = runCli(dir, ['--json']);
+    const findings = JSON.parse(json.stdout);
+    expect(json.status).toBe(1);
+    expect(findings[0].id).toBe('toaster-without-withtoasts');
+  });
+
   it('flags @floating-ui/dom installed without provideFloatingFallback()', () => {
     const dir = project({
       pkg: { name: 'floating', dependencies: { '@floating-ui/dom': '^1.6.0' } },
@@ -161,5 +198,38 @@ describe('track-b-symbols drift guard', () => {
     const block = end > -1 ? rest.slice(0, end) : rest;
     const symbols = [...block.matchAll(/`(Cngx\w+)`/g)].map((m) => m[1]);
     expect([...symbols].sort()).toEqual([...TRACK_B_SYMBOLS].sort());
+  });
+});
+
+describe('incremental scan style resolution', () => {
+  it('clears a Track-B finding on the warm path when a stylesheet appears', () => {
+    const dir = project({
+      sources: { 'src/app.ts': "import { CngxTooltip } from '@cngx/common';\n" },
+    });
+    const cold = scan(dir);
+    expect(runChecks(cold).some((f) => f.id === 'track-b-css-not-imported')).toBe(true);
+    // Consumer follows the fixHint: add the global stylesheet that was absent
+    // at cold-walk time. The warm path must pick up the new candidate.
+    writeFileSync(join(dir, 'src', 'styles.css'), "@import '@cngx/themes/cngx.css';\n");
+    const warm = scan(dir, { prior: cold, changedFile: join(dir, 'src', 'app.ts') });
+    expect(runChecks(warm).some((f) => f.id === 'track-b-css-not-imported')).toBe(false);
+  });
+});
+
+describe('doctor metadata mirrors the eslint-plugin RuleMetadata seam', () => {
+  it('each doctor record carries the RuleMetadata field set minus astSurface', () => {
+    const ruleKeys = Object.keys(Object.values(RULE_METADATA)[0])
+      .filter((k) => k !== 'astSurface')
+      .sort();
+    for (const record of Object.values(DOCTOR_CHECK_METADATA)) {
+      expect(Object.keys(record).sort()).toEqual(ruleKeys);
+    }
+  });
+
+  it('no doctor check id collides with a lint rule id', () => {
+    const lintIds = new Set(Object.keys(RULE_METADATA));
+    for (const id of Object.keys(DOCTOR_CHECK_METADATA)) {
+      expect(lintIds.has(id)).toBe(false);
+    }
   });
 });
