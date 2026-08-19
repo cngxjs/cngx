@@ -38,6 +38,8 @@ docs):
   select-family decision tree, the Reactive-Forms adapter, and error surfaces.
 - **`cngx-from-material`** - migrate an Angular Material screen: the `mat-*` to
   cngx symbol mapping and the idiom shifts the move requires.
+- **`cngx-doctor`** - act on a doctor finding: read the machine finding contract
+  and apply the fix it names.
 
 ## Doctor
 
