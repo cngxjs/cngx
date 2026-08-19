@@ -37,18 +37,25 @@ docs):
 - **`cngx-forms`** - wire a form: the Signal-Forms-first field pattern, the
   select-family decision tree, the Reactive-Forms adapter, and error surfaces.
 
-## Doctor CLI
+## Doctor
 
-`@cngx/doctor` is a deterministic project-wiring scan that catches the mistakes
-ESLint's per-file scope cannot see - the ones that need a whole-project view.
-Run it over a consumer project:
+The doctor is a deterministic project-wiring scan that catches the mistakes
+ESLint's per-file scope cannot see - the ones that need a whole-project view. It
+ships inside this plugin and runs automatically through the guard hook (below);
+you rarely invoke it by hand.
+
+To run it manually against a project, call the engine from the installed plugin
+root:
 
 ```
-node node_modules/cngx/bin/cngx-doctor.mjs [projectDir] [--json]
+node "${CLAUDE_PLUGIN_ROOT}/bin/cngx-doctor.mjs" [projectDir] [--json]
 ```
 
-It checks three project-level wirings and exits non-zero when any trips, so
-consumer CI can gate on it:
+A standalone `@cngx/doctor` npm package with a `bin` entry - the form a consumer
+CI job would depend on directly - is a later release; today the scan is delivered
+as this plugin's guard hook.
+
+It checks three project-level wirings and exits non-zero when any trips:
 
 - **`toaster-without-withtoasts`** - a `CngxToaster` / `CngxAlerter` / `CngxBanner`
   (or the `*On` bridges) is used but the matching
