@@ -22,7 +22,7 @@ Import the single bundle once, at your app's global style entry:
 That pulls in the whole cascade-layer setup - the design tokens, the reset, and
 the per-component styling - in one line. If you need finer control over what
 loads, the bundle can be assembled by hand from its parts (the core theming layers
-plus the `@cngx/common/theming/components/*.css` partials for the directives you
+plus the `@cngx/<lib>/theming/components/*.css` partials for the directives you
 actually use); reach for that only when the single import is too coarse.
 
 ## 2. Know which styling needs the import
@@ -33,7 +33,7 @@ There are two kinds of cngx styling, and only one is automatic:
   `styleUrl`. It renders whether or not you import the bundle.
 - **Directive CSS (Track B)** lives in the theme stylesheet, not on a component.
   A cngx *directive* renders unstyled until the bundle (or its matching
-  `@cngx/common/theming/components/*.css` partial) is imported.
+  `@cngx/<lib>/theming/components/*.css` partial) is imported.
 
 That gap is exactly what the doctor's `track-b-css-not-imported` finding reports.
 When a cngx directive looks unstyled, this is almost always why - import the
