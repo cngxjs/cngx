@@ -47,6 +47,19 @@ docs):
 - **`cngx-a11y`** - keep a cngx screen accessible: preserve the ARIA cngx derives
   in the reactive graph, and wire the `@cngx/common/a11y` atoms.
 
+## Agents
+
+The plugin ships auto-discovered agents - locked-persona, restricted-tool
+reviewers that a skill cannot be. A skill body can only ask the agent not to
+edit; an agent's `tools` allow-list mechanically forbids it, so a read-only
+review cannot mutate the reviewed code. Both cite the same rule ids the linter
+and doctor use, so the three never contradict.
+
+- **`cngx:reviewer`** - a read-only, Pillar-grounded review of a cngx change:
+  reviews holistically, cites the `@cngx/eslint-plugin` rule ids and the doctor
+  check ids where they apply, and routes the mechanical verdict to the linter and
+  the doctor. Edits nothing.
+
 ## Doctor
 
 The doctor is a deterministic project-wiring scan that catches the mistakes

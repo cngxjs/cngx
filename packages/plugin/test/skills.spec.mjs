@@ -2,6 +2,7 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import { FORBIDDEN, bodyOf, frontmatterOf } from './guard-helpers.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const pluginRoot = resolve(here, '..');
@@ -13,22 +14,6 @@ const skillDirs = readdirSync(skillsRoot, { withFileTypes: true })
   .filter((entry) => entry.isDirectory())
   .map((entry) => entry.name)
   .sort();
-
-const frontmatterOf = (source) => {
-  const match = /^---\n([\s\S]*?)\n---/.exec(source);
-  return match ? match[1] : null;
-};
-
-const bodyOf = (source) => source.replace(/^---\n[\s\S]*?\n---/, '');
-
-// Tokens assembled from fragments on purpose: the guard must not itself carry
-// the maintainer-internal literals verbatim (mirrors command-cngx-init.spec).
-const FORBIDDEN = [
-  `cngx-${'guru'}`,
-  `cngx-${'designer'}`,
-  `.intern${'al'}/`,
-  'localhost',
-];
 
 // The one drift-prone literal a thin router must never carry: a hardcoded
 // count of slots or tokens. The concrete list lives behind the MCP tools.
