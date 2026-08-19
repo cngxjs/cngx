@@ -50,6 +50,16 @@ For the daily work, reach for the focused skill instead of this index:
   projecting a branch, and bridging transitions to toasts/alerts/banners.
 - **`cngx-forms`** - wire a form: the Signal-Forms-first field pattern, the
   select-family decision tree, the Reactive-Forms adapter, and error surfaces.
+- **`cngx-from-material`** - migrate an Angular Material screen: the `mat-*` to
+  cngx symbol mapping and the idiom shifts the move requires.
+- **`cngx-doctor`** - act on a doctor finding: read the machine finding contract
+  and apply the fix it names.
+- **`cngx-theme`** - theme a consumer app: import the theme bundle so directive
+  styling renders, then set brand tokens via the `--cngx-*` custom properties.
+- **`cngx-data`** - wire a sortable/filterable/paginated collection: compose the
+  orthogonal data directives through one `computed()` chain.
+- **`cngx-a11y`** - keep a cngx screen accessible: preserve the ARIA cngx derives
+  in the reactive graph, and wire the `@cngx/common/a11y` atoms.
 
 ## What this plugin ships, and when to use it
 
