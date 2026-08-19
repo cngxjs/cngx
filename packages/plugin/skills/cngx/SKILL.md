@@ -48,6 +48,8 @@ For the daily work, reach for the focused skill instead of this index:
   its API, and compose it rather than configure it.
 - **`cngx-async`** - wire loading/error/success: the async state machine,
   projecting a branch, and bridging transitions to toasts/alerts/banners.
+- **`cngx-forms`** - wire a form: the Signal-Forms-first field pattern, the
+  select-family decision tree, the Reactive-Forms adapter, and error surfaces.
 
 ## What this plugin ships, and when to use it
 
