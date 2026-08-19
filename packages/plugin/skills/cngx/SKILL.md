@@ -40,6 +40,13 @@ with `CngxToastOn` / `CngxAlertOn` / `CngxBannerOn`, and wrap the service call
 inside the bridge effect in `untracked()` to avoid a reactive loop. Most recipes
 in this pack demonstrate exactly this wiring.
 
+## Specialized skills
+
+For the daily work, reach for the focused skill instead of this index:
+
+- **`cngx-wire`** - build a screen or feature: discover the component, confirm
+  its API, and compose it rather than configure it.
+
 ## What this plugin ships, and when to use it
 
 - **`pack/recipes/*.md`** - async-state wiring recipes distilled from the cngx

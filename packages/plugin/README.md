@@ -22,6 +22,17 @@ Add the cngx marketplace, then install the plugin:
   data, building only on the public MCP server and the published docs at
   <https://cngxjs.github.io/cngx>.
 
+## Skills
+
+The plugin ships auto-discovered skills that teach the agent how to work with
+cngx and route it to the drift-free API sources (the MCP tools and the published
+docs):
+
+- **`cngx`** - the index: the three design principles and the grounding this
+  plugin bundles.
+- **`cngx-wire`** - build a screen or feature: discover the component, confirm
+  its API, and compose it over configuring it.
+
 ## Notes
 
 The bundled `.mcp.json` pins an explicit `@cngx/mcp` version rather than
