@@ -32,6 +32,8 @@ docs):
   plugin bundles.
 - **`cngx-wire`** - build a screen or feature: discover the component, confirm
   its API, and compose it over configuring it.
+- **`cngx-async`** - wire loading/error/success state: the async state machine,
+  projecting a branch, and bridging transitions to toasts/alerts/banners.
 
 ## Notes
 
