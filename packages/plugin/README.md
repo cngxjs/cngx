@@ -42,6 +42,8 @@ docs):
   and apply the fix it names.
 - **`cngx-theme`** - theme a consumer app: import the theme bundle so directive
   styling renders, then set brand tokens via the `--cngx-*` custom properties.
+- **`cngx-data`** - wire a sortable/filterable/paginated collection: compose the
+  orthogonal data directives through one `computed()` chain.
 
 ## Doctor
 
