@@ -44,6 +44,8 @@ docs):
   styling renders, then set brand tokens via the `--cngx-*` custom properties.
 - **`cngx-data`** - wire a sortable/filterable/paginated collection: compose the
   orthogonal data directives through one `computed()` chain.
+- **`cngx-a11y`** - keep a cngx screen accessible: preserve the ARIA cngx derives
+  in the reactive graph, and wire the `@cngx/common/a11y` atoms.
 
 ## Doctor
 

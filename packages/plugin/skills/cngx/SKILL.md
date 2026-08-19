@@ -58,6 +58,8 @@ For the daily work, reach for the focused skill instead of this index:
   styling renders, then set brand tokens via the `--cngx-*` custom properties.
 - **`cngx-data`** - wire a sortable/filterable/paginated collection: compose the
   orthogonal data directives through one `computed()` chain.
+- **`cngx-a11y`** - keep a cngx screen accessible: preserve the ARIA cngx derives
+  in the reactive graph, and wire the `@cngx/common/a11y` atoms.
 
 ## What this plugin ships, and when to use it
 
