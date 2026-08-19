@@ -29,15 +29,17 @@ reads sort, filter, page, and data and returns the rows; change any input and th
 rows recompute. If you are synchronising two lists by hand, collapse them into one
 `computed()`.
 
-## Route to the recipe
+## Adjacent recipes (there is none for the bare chain)
 
-Committed recipes show the working shapes - read the one that matches before
-writing the chain yourself:
+No committed recipe demonstrates the bare sort/filter/paginate `computed()` chain
+itself - for that, `get_api` plus `get_story_example` are the source of record; do
+not assume a recipe exists where it does not. Two committed recipes cover the
+shapes next to it - read the one that matches when your collection needs it:
 
-- `pack/recipes/common-data-async-boundary.md` - a collection whose data arrives
-  asynchronously, wired to the async state boundary.
-- `pack/recipes/common-data-recycler.md` - a virtualised, recycled list for large
-  collections.
+- `pack/recipes/common-data-async-boundary.md` - per-source error attribution when
+  the data arrives from several async sources.
+- `pack/recipes/common-data-recycler.md` - a recycled, virtualised list with a
+  first-load skeleton for large collections.
 
 ## The async boundary is cngx-async's job
 
