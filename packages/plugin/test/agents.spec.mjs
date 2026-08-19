@@ -23,7 +23,7 @@ const agentFiles = existsSync(agentsRoot)
 // The read-only tool whitelist. An agent may only declare Read/Grep/Glob or a
 // read-only cngx MCP query (mcp__cngx__*). A whitelist rejects any unknown
 // future write-capable or agent-spawning tool a fixed denylist would miss.
-const READ_ONLY_TOOL = /^(Read|Grep|Glob|mcp__cngx__[a-z_]+)$/;
+const READ_ONLY_TOOL = /^(Read|Grep|Glob|mcp__cngx__[a-z0-9_]+)$/;
 
 // The one shared id set both real sources define: the six @cngx/eslint-plugin
 // rule ids and the three doctor check ids. Derived at test time from the actual
@@ -57,6 +57,19 @@ const citedRuleIds = (body) => {
 
 it('derives a non-empty shared rule-id set from both real sources', () => {
   expect(RULE_IDS.size).toBeGreaterThan(0);
+});
+
+// The citation matcher keys on RULE_ID_SHAPE (>=2 hyphens) to tell a rule-id
+// citation from incidental two-segment prose (aria-describedby, opt-in). That is
+// only sound while every real id has that shape. Assert it here so the day a
+// one-hyphen id lands, this fails loud - instead of that id silently dropping out
+// of every agent-body citation check.
+it('every derived rule id has the shape the citation matcher keys on', () => {
+  for (const id of RULE_IDS) {
+    expect(id, `rule id "${id}" is shorter than the matcher's citation shape`).toMatch(
+      RULE_ID_SHAPE,
+    );
+  }
 });
 
 describe.each(agentFiles)('agent %s', (fileName) => {
