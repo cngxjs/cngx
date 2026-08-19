@@ -37,7 +37,8 @@ exact variant for your need.
 | `mat-dialog` | `CngxDialog` |
 | bottom sheet | `CngxBottomSheet` |
 | `mat-menu` | `CngxMenu` |
-| `mat-tooltip` / anchored popover | `CngxPopover` |
+| `mat-tooltip` | `CngxTooltip` |
+| `cdk-overlay` / anchored panel | `CngxPopover` / `CngxOverlay` |
 | `mat-sidenav` / `mat-drawer` | `CngxDrawer` |
 | `mat-tab-group` | `CngxTabGroup` / `CngxTab` |
 | `mat-stepper` | `CngxStepGroup` / `CngxStep` |
@@ -46,6 +47,7 @@ exact variant for your need.
 | `mat-icon` | `CngxIcon` |
 | `mat-divider` | `CngxDivider` |
 | `mat-badge` | `CngxBadge` |
+| `mat-table` | no drop-in - compose `CngxSort` / `CngxFilter` / `CngxPaginate` + `injectDataSource` (see `cngx-data` / `cngx-wire`) |
 | `mat-paginator` | `CngxPaginate` |
 | `matSort` | `CngxSort` |
 | skeleton / shimmer | `CngxSkeleton` |
