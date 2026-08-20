@@ -59,6 +59,11 @@ and doctor use, so the three never contradict.
   reviews holistically, cites the `@cngx/eslint-plugin` rule ids and the doctor
   check ids where they apply, and routes the mechanical verdict to the linter and
   the doctor. Edits nothing.
+- **`cngx:a11y-auditor`** - a read-only accessibility sweep of a cngx screen:
+  finds where the consumer has silenced an accessibility guarantee the contract
+  already ships (an `aria-describedby` target removed, a disabled control that no
+  longer says why, focus not restored after an overlay closes, a live region
+  toggled out) and reports what to restore. Edits nothing.
 
 ## Doctor
 
