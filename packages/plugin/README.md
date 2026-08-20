@@ -38,6 +38,9 @@ docs):
   select-family decision tree, the Reactive-Forms adapter, and error surfaces.
 - **`cngx-from-material`** - migrate an Angular Material screen: the `mat-*` to
   cngx symbol mapping and the idiom shifts the move requires.
+- **`cngx-migrate`** - upgrade a consumer app across cngx versions: pull the
+  machine API delta from `migrate_usage`, confirm each changed symbol, and produce
+  an ordered edit plan handed to `cngx:upgrader`.
 - **`cngx-doctor`** - act on a doctor finding: read the machine finding contract
   and apply the fix it names.
 - **`cngx-theme`** - theme a consumer app: import the theme bundle so directive
@@ -46,6 +49,32 @@ docs):
   orthogonal data directives through one `computed()` chain.
 - **`cngx-a11y`** - keep a cngx screen accessible: preserve the ARIA cngx derives
   in the reactive graph, and wire the `@cngx/common/a11y` atoms.
+
+## Agents
+
+The plugin ships auto-discovered agents - locked-persona, restricted-tool workers a
+skill cannot be. A skill body can only ask an agent not to edit; an agent's `tools`
+allow-list decides it mechanically. Read-only is the default and the guard enforces
+it: an unclassified agent that declares a write tool fails the agent test. The
+reviewers below carry no write tool, so a read-only review cannot mutate the reviewed
+code. One agent - `cngx:upgrader` - is a classified executor with edit rights, held
+to an audited executor tool set instead. The reviewers cite the same rule ids the
+linter and doctor use, so the three never contradict.
+
+- **`cngx:reviewer`** - a read-only, Pillar-grounded review of a cngx change:
+  reviews holistically, cites the `@cngx/eslint-plugin` rule ids and the doctor
+  check ids where they apply, and routes the mechanical verdict to the linter and
+  the doctor. Edits nothing.
+- **`cngx:a11y-auditor`** - a read-only accessibility sweep of a cngx screen:
+  finds where the consumer has silenced an accessibility guarantee the contract
+  already ships (an `aria-describedby` target removed, a disabled control that no
+  longer says why, focus not restored after an overlay closes, a live region
+  toggled out) and reports what to restore. Edits nothing.
+- **`cngx:upgrader`** - the one edit-capable agent: executes a cngx version upgrade by
+  applying the ordered plan `cngx-migrate` produces, one file at a time, running the
+  consumer's own build/test/lint between steps and halting on the first failure. Edit
+  rights plus an isolated context are why it is an agent and not a skill; the
+  validation gate between steps is why it is safe to let it edit.
 
 ## Doctor
 

@@ -17,6 +17,7 @@ import { registerGetSlots } from './tools/get-slots.js';
 import { registerGetThemeTokens } from './tools/get-theme-tokens.js';
 import { registerGetDiTokens } from './tools/get-di-tokens.js';
 import { registerGetStoryExample } from './tools/get-story-example.js';
+import { registerMigrateUsage } from './tools/migrate-usage.js';
 
 const pkg = JSON.parse(
   readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'package.json'), 'utf8'),
@@ -33,10 +34,12 @@ async function main(): Promise<void> {
     { name: '@cngx/mcp', version: pkg.version },
     {
       instructions:
-        `Read-only query layer over the cngx (@cngx/*) public API. ` +
+        `Query layer over the cngx (@cngx/*) public API. ` +
         `Answers ground against cngx ${cngxVersion ?? 'unknown'} ` +
         `(snapshot ${generatedAt ?? 'unknown'}, schemaVersion ${schemaVersion}). ` +
-        `Confirm the consuming app runs a matching cngx release before relying on an answer.`,
+        `Confirm the consuming app runs a matching cngx release before relying on an answer. ` +
+        `The six query tools are read-only and offline; migrate_usage additionally answers ` +
+        `cross-version deltas and may fetch a non-bundled release snapshot via the gh CLI.`,
     },
   );
 
@@ -46,6 +49,7 @@ async function main(): Promise<void> {
   registerGetThemeTokens(server, docs);
   registerGetDiTokens(server, docs);
   registerGetStoryExample(server, docs);
+  registerMigrateUsage(server, docs);
 
   const transport = new StdioServerTransport();
   await server.connect(transport);
