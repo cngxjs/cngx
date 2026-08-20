@@ -1,0 +1,28 @@
+{
+  "name": "@cngx/doctor",
+  "version": "0.1.0",
+  "description": "Deterministic project-wiring scanner for cngx consumer apps: the whole-project checks ESLint's per-file scope cannot see, as an npx-able CI gate.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "cngx-doctor": "cngx-doctor.mjs"
+  },
+  "files": [
+    "cngx-doctor.mjs",
+    "doctor",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "vitest run"
+  },
+  "keywords": [
+    "angular",
+    "cngx",
+    "doctor",
+    "lint",
+    "wiring"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

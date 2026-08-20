@@ -267,3 +267,26 @@ jobs:
       # regeneration in the same change.
       - name: Check pack drift
         run: npm run plugin:drift
+
+  # The standalone @cngx/doctor package is the canonical home of the project-
+  # wiring engine. It is zero-dependency .mjs run through the root vitest, so
+  # like the plugin job it needs no build and no package-local install - it runs
+  # on the root install alone and declares no needs: build. The copy guard keeps
+  # the plugin's in-process copy byte-identical to this package.
+  doctor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Test doctor
+        run: npm run test:doctor
+      # Assert the plugin's in-process engine copy is byte-identical to this
+      # package - the guard that makes "one engine, not two" true, in both
+      # divergence directions.
+      - name: Check doctor copy
+        run: npm run doctor:copy-check

@@ -106,6 +106,7 @@ jobs:
             eslint-plugin
             mcp
             plugin
+            doctor
           requireScope: true
           # Subject must not start with an uppercase letter (imperative, lower case).
           subjectPattern: ^(?![A-Z]).+$
