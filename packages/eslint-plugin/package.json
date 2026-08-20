@@ -1,6 +1,6 @@
 {
   "name": "@cngx/eslint-plugin",
-  "version": "0.1.0-rc.0",
+  "version": "0.1.0",
   "description": "ESLint rules that encode the cngx signal/effect idioms and wiring contracts for consumer Angular apps.",
   "license": "MIT",
   "type": "commonjs",
