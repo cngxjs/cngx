@@ -43,6 +43,45 @@ describe('diffSnapshots', () => {
   });
 });
 
+describe('diffSnapshots rename inference is fingerprint-gated', () => {
+  const index = (cngxVersion, components, tokens = []) => ({
+    meta: { schemaVersion: 2, cngxVersion, generatedAt: null, compodocxVersion: null },
+    components,
+    directives: [],
+    tokens,
+  });
+
+  it('reports a removed input as removed even when a same-typed input is added', () => {
+    const from = index('1.0.0', [
+      { name: 'CngxX', inputsClass: [{ name: 'disabled', type: 'boolean' }, { name: 'value', type: 'string' }] },
+    ]);
+    const to = index('2.0.0', [
+      { name: 'CngxX', inputsClass: [{ name: 'checked', type: 'boolean' }, { name: 'value', type: 'string' }] },
+    ]);
+    const delta = diffSnapshots(from, to);
+
+    expect(delta.inputs.removed).toEqual([{ name: 'disabled', owner: 'CngxX' }]);
+    expect(delta.inputs.renamed).toEqual([]);
+  });
+
+  it('reports a removed DI token as removed, never a bare-type rename', () => {
+    const from = index('1.0.0', [], [{ name: 'CNGX_OLD', type: 'InjectionToken<Cfg>' }]);
+    const to = index('2.0.0', [], [{ name: 'CNGX_NEW', type: 'InjectionToken<Cfg>' }]);
+    const delta = diffSnapshots(from, to);
+
+    expect(delta.diTokens.removed).toEqual([{ name: 'CNGX_OLD' }]);
+    expect(delta.diTokens.renamed).toEqual([]);
+  });
+
+  it('still infers a top-level rename from the entry-shape fingerprint', () => {
+    const from = index('1.0.0', [{ name: 'CngxOld', category: 'ui', inputsClass: [{ name: 'open', type: 'boolean' }] }]);
+    const to = index('2.0.0', [{ name: 'CngxNew', category: 'ui', inputsClass: [{ name: 'open', type: 'boolean' }] }]);
+    const delta = diffSnapshots(from, to);
+
+    expect(delta.components.renamed).toEqual([{ from: 'CngxOld', to: 'CngxNew' }]);
+  });
+});
+
 describe('fetchSnapshot failure classification', () => {
   const stubDir = { makeTempDir: () => '/tmp/cngx-mcp-snapshot-test' };
 
