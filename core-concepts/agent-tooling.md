@@ -7,11 +7,11 @@
 
 <aside class="cc-tldr">
 
-cngx ships an MCP server and a plugin of skills and agents so an LLM coding agent works cngx from a drift-free source of truth, not from memory.
+CNGX ships an MCP server and a plugin of skills and agents so an LLM coding agent works CNGX from a drift-free source of truth, not from memory.
 
 </aside>
 
-cngx publishes more than libraries. It ships a tooling surface for LLM coding
+CNGX publishes more than libraries. It ships a tooling surface for LLM coding
 agents working in consumer apps, so an agent reaches for the real API instead of
 guessing one. The surface has three layers, and the division of labor is the whole
 design:
@@ -32,10 +32,10 @@ cite rather than re-derive.
 ## The MCP server
 
 `@cngx/mcp` is a stdio [Model Context Protocol](https://modelcontextprotocol.io)
-server over a `documentation.json` snapshot of the cngx public API, bundled into
+server over a `documentation.json` snapshot of the CNGX public API, bundled into
 the package at build time. It answers `get_api CngxSelect` with a few hundred bytes
 of typed API instead of a multi-megabyte docs dump, and it runs standalone with no
-cngx repository present:
+CNGX repository present:
 
 ```bash
 npx @cngx/mcp
@@ -53,9 +53,9 @@ fail-safe.
 |`get_theme_tokens`|`{ name }`|The theming tokens (the CSS custom properties a component exposes) and its theme overview.|
 |`get_di_tokens`|`{ query? }`|The top-level DI injection tokens, optionally filtered by a name fragment.|
 |`get_story_example`|`{ name }`|The runnable example URLs (public documentation links) and a StackBlitz URL when one exists.|
-|`migrate_usage`|`{ from, to? }`|A structured API delta between two cngx releases: removed, renamed, and signature-changed components, inputs, outputs, slots, and DI tokens. `to` defaults to the bundled snapshot version.|
+|`migrate_usage`|`{ from, to? }`|A structured API delta between two CNGX releases: removed, renamed, and signature-changed components, inputs, outputs, slots, and DI tokens. `to` defaults to the bundled snapshot version.|
 
-Each answer grounds against one pinned cngx release; the server reports that
+Each answer grounds against one pinned CNGX release; the server reports that
 version and the snapshot timestamp in its connect-time instructions. Confirm the
 consuming app runs a matching release before relying on an answer.
 
@@ -94,15 +94,15 @@ is doing.
 |`cngx-forms`|Wire a form: the Signal-Forms-first field pattern, the select-family decision tree, the Reactive-Forms adapter, and error surfaces.|
 |`cngx-data`|Wire a sortable, filterable, paginated collection: compose the orthogonal data directives through one `computed()` chain.|
 |`cngx-async`|Wire loading, error, and success state: the async state machine, projecting a branch, and bridging transitions to toasts, alerts, and banners.|
-|`cngx-a11y`|Keep a screen accessible: preserve the ARIA cngx derives in the reactive graph, and wire the `@cngx/common/a11y` atoms.|
+|`cngx-a11y`|Keep a screen accessible: preserve the ARIA CNGX derives in the reactive graph, and wire the `@cngx/common/a11y` atoms.|
 |`cngx-theme`|Theme an app: import the theme bundle so directive styling renders, then set brand tokens via the `--cngx-*` custom properties.|
-|`cngx-from-material`|Migrate an Angular Material screen: the `mat-*` to cngx symbol mapping and the idiom shifts the move requires.|
-|`cngx-migrate`|Upgrade an app across cngx versions: pull the machine API delta from `migrate_usage`, confirm each changed symbol, and produce an ordered edit plan.|
+|`cngx-from-material`|Migrate an Angular Material screen: the `mat-*` to CNGX symbol mapping and the idiom shifts the move requires.|
+|`cngx-migrate`|Upgrade an app across CNGX versions: pull the machine API delta from `migrate_usage`, confirm each changed symbol, and produce an ordered edit plan.|
 |`cngx-doctor`|Act on a doctor finding: read the machine finding contract and apply the fix it names.|
 
 `cngx-from-material` and `cngx-migrate` are two different migrations and must not be
-confused. `cngx-from-material` moves an app *off Angular Material onto cngx*.
-`cngx-migrate` moves an app *already on cngx from one version to the next*.
+confused. `cngx-from-material` moves an app *off Angular Material onto CNGX*.
+`cngx-migrate` moves an app *already on CNGX from one version to the next*.
 
 ---
 
@@ -115,7 +115,7 @@ skills: a read-only review cannot mutate the code it reviews.
 
 |Agent|Class|Does|
 |-|-|-|
-|`cngx:reviewer`|read-only|A Pillar-grounded review of a cngx change. Reviews holistically, cites the mechanical rule ids where they apply, routes that verdict to the linter and the doctor. Edits nothing.|
+|`cngx:reviewer`|read-only|A Pillar-grounded review of a CNGX change. Reviews holistically, cites the mechanical rule ids where they apply, routes that verdict to the linter and the doctor. Edits nothing.|
 |`cngx:a11y-auditor`|read-only|An accessibility sweep of a screen. Finds where the consumer has silenced a guarantee the contract already ships (a described-by target removed, a disabled control that no longer says why, focus not restored after an overlay closes). Edits nothing.|
 |`cngx:upgrader`|executor|Executes a version upgrade. Applies the ordered plan `cngx-migrate` produces one file at a time, runs the consumer's own build, test, and lint between steps, and halts on the first failure. The one edit-capable agent.|
 
