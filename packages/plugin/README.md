@@ -38,6 +38,9 @@ docs):
   select-family decision tree, the Reactive-Forms adapter, and error surfaces.
 - **`cngx-from-material`** - migrate an Angular Material screen: the `mat-*` to
   cngx symbol mapping and the idiom shifts the move requires.
+- **`cngx-migrate`** - upgrade a consumer app across cngx versions: pull the
+  machine API delta from `migrate_usage`, confirm each changed symbol, and produce
+  an ordered edit plan handed to `cngx:upgrader`.
 - **`cngx-doctor`** - act on a doctor finding: read the machine finding contract
   and apply the fix it names.
 - **`cngx-theme`** - theme a consumer app: import the theme bundle so directive
