@@ -37,6 +37,28 @@ describe('migrateUsage', () => {
     expect(delta.components.renamed).toEqual([{ from: 'CngxOldPanel', to: 'CngxNewPanel' }]);
   });
 
+  it('falls back the resolved label to the requested version when a fetched snapshot is unstamped', () => {
+    // The M0 Release asset is the raw, un-stamped compodocx export (cngxVersion null).
+    const rawUnstamped = {
+      meta: { schemaVersion: 2, cngxVersion: null, generatedAt: null, compodocxVersion: null },
+      components: [],
+      directives: [],
+      tokens: [],
+    };
+    const deps: MigrateUsageDeps = {
+      fetchSnapshot: () => ({ ok: true, path: '/tmp/raw-unstamped.json' }),
+      loadDocs: () => rawUnstamped,
+    };
+
+    const result = migrateUsage(bundledNew, { from: '0.1.0', to: '0.2.0' }, deps);
+
+    expect(result.ok).toBe(true);
+    const delta = result as UsageDelta;
+    // `from` fetched the unstamped raw asset -> resolvedFrom falls back to '0.1.0';
+    // `to` matched the stamped bundle -> resolvedTo keeps its real '0.2.0'.
+    expect(delta.meta).toEqual({ from: '0.1.0', to: '0.2.0', resolvedFrom: '0.1.0', resolvedTo: '0.2.0' });
+  });
+
   it('surfaces a fetch failure as a typed result, never a throw', () => {
     const deps: MigrateUsageDeps = {
       fetchSnapshot: () => ({ ok: false, reason: 'asset-missing', message: 'release not found' }),

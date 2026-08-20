@@ -72,9 +72,20 @@ export function migrateUsage(bundled: DocsIndex, args: MigrateUsageArgs, deps: M
   }
 
   const delta = diffSnapshots(fromResolved.docs, toResolved.docs);
-  // Record the requested versions in meta; `resolvedFrom`/`resolvedTo` keep the
-  // versions the loaded snapshots actually carried.
-  return { ...delta, meta: { ...delta.meta, from, to } };
+  // Record the requested versions, and fall back the resolved labels to them when a
+  // snapshot is unstamped. The M0 Release asset is the raw compodocx export with no
+  // `cngxVersion`; a successful `gh release download v<version>` still means the
+  // asset IS that version, so the requested string is the truthful resolved label
+  // rather than the raw file's null.
+  return {
+    ...delta,
+    meta: {
+      from,
+      to,
+      resolvedFrom: fromResolved.docs.meta.cngxVersion ?? from,
+      resolvedTo: toResolved.docs.meta.cngxVersion ?? to,
+    },
+  };
 }
 
 export function registerMigrateUsage(server: McpServer, docs: DocsIndex): void {
