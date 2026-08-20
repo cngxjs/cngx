@@ -52,11 +52,14 @@ docs):
 
 ## Agents
 
-The plugin ships auto-discovered agents - locked-persona, restricted-tool
-reviewers that a skill cannot be. A skill body can only ask the agent not to
-edit; an agent's `tools` allow-list mechanically forbids it, so a read-only
-review cannot mutate the reviewed code. Both cite the same rule ids the linter
-and doctor use, so the three never contradict.
+The plugin ships auto-discovered agents - locked-persona, restricted-tool workers a
+skill cannot be. A skill body can only ask an agent not to edit; an agent's `tools`
+allow-list decides it mechanically. Read-only is the default and the guard enforces
+it: an unclassified agent that declares a write tool fails the agent test. The
+reviewers below carry no write tool, so a read-only review cannot mutate the reviewed
+code. One agent - `cngx:upgrader` - is a classified executor with edit rights, held
+to an audited executor tool set instead. The reviewers cite the same rule ids the
+linter and doctor use, so the three never contradict.
 
 - **`cngx:reviewer`** - a read-only, Pillar-grounded review of a cngx change:
   reviews holistically, cites the `@cngx/eslint-plugin` rule ids and the doctor
@@ -67,6 +70,11 @@ and doctor use, so the three never contradict.
   already ships (an `aria-describedby` target removed, a disabled control that no
   longer says why, focus not restored after an overlay closes, a live region
   toggled out) and reports what to restore. Edits nothing.
+- **`cngx:upgrader`** - the one edit-capable agent: executes a cngx version upgrade by
+  applying the ordered plan `cngx-migrate` produces, one file at a time, running the
+  consumer's own build/test/lint between steps and halting on the first failure. Edit
+  rights plus an isolated context are why it is an agent and not a skill; the
+  validation gate between steps is why it is safe to let it edit.
 
 ## Doctor
 
