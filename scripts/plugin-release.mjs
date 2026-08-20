@@ -8,8 +8,9 @@
 //
 //   1. bump packages/plugin/.claude-plugin/plugin.json version
 //   2. bump the @cngx/mcp pin in packages/plugin/.mcp.json (when --mcp given)
-//   3. regenerate the pack from current public data
-//   4. run the drift check - the release must ship a pack that is in sync
+//   3. regenerate the plugin's doctor copy from the canonical @cngx/doctor package
+//   4. regenerate the pack from current public data
+//   5. run the drift check - the release must ship a pack that is in sync
 
 import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -93,6 +94,7 @@ function main() {
     writeJson(MCP_CONFIG, nextMcp);
   }
 
+  execFileSync('node', ['scripts/sync-doctor.mjs'], { stdio: 'inherit' });
   execFileSync('node', ['scripts/plugin-token-reference.mjs'], { stdio: 'inherit' });
   execFileSync('node', ['scripts/plugin-recipes.mjs'], { stdio: 'inherit' });
   execFileSync('node', ['scripts/plugin-pack-drift.mjs'], { stdio: 'inherit' });
