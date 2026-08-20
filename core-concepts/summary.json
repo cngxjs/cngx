@@ -42,5 +42,9 @@
     {
         "title": "Forms Integration",
         "file": "forms-integration.md"
+    },
+    {
+        "title": "Agent Tooling",
+        "file": "agent-tooling.md"
     }
 ]
