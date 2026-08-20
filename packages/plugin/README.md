@@ -90,9 +90,21 @@ root:
 node "${CLAUDE_PLUGIN_ROOT}/bin/cngx-doctor.mjs" [projectDir] [--json]
 ```
 
-A standalone `@cngx/doctor` npm package with a `bin` entry - the form a consumer
-CI job would depend on directly - is a later release; today the scan is delivered
-as this plugin's guard hook.
+The same engine also ships as the standalone `@cngx/doctor` npm package, so a
+consumer CI job can gate on project wiring without this plugin installed:
+
+```
+npx @cngx/doctor [projectDir] [--json]
+```
+
+It exits non-zero when any finding exists. The plugin keeps its own byte-identical
+copy of the engine (the guard hook imports it in-process), so the two never drift.
+
+The doctor's charter is deliberately narrow: it owns only **silent wiring
+failures** - the mistakes that throw nothing and log nothing, so the app just
+renders wrong with no signal. Throw-based missing-provider errors are out of
+scope; Angular's dependency injector already throws for those and Angular's
+`ErrorHandler` already surfaces them.
 
 It checks three project-level wirings and exits non-zero when any trips:
 
