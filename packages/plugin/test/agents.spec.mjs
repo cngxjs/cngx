@@ -25,6 +25,15 @@ const agentFiles = existsSync(agentsRoot)
 // future write-capable or agent-spawning tool a fixed denylist would miss.
 const READ_ONLY_TOOL = /^(Read|Grep|Glob|mcp__cngx__[a-z0-9_]+)$/;
 
+// The executor tool class - the one exception to read-only-by-default. A named
+// executor agent (EXECUTOR_AGENTS) may additionally declare the edit and shell
+// tools an isolated-context migration executor needs. Read-only stays the default:
+// an agent NOT in this set is still held to READ_ONLY_TOOL, so an unclassified
+// future agent that declares a write tool still fails the guard. A per-class
+// whitelist is stricter than dropping the guard and keeps the M7 safety property.
+const EXECUTOR_AGENTS = new Set(['upgrader']);
+const EXECUTOR_TOOL = /^(Read|Grep|Glob|Edit|Write|Bash|mcp__cngx__[a-z0-9_]+)$/;
+
 // The one shared id set both real sources define: the six @cngx/eslint-plugin
 // rule ids and the three doctor check ids. Derived at test time from the actual
 // metadata, so an agent citation can never drift out from under either source.
@@ -72,6 +81,19 @@ it('every derived rule id has the shape the citation matcher keys on', () => {
   }
 });
 
+// Read-only is the default. An agent not classified as an executor is held to the
+// read-only whitelist, so a write/shell tool it declares must fail - the property
+// M7 established and M8 must not drop while admitting the one audited executor. The
+// same tools are legitimate only inside the classified executor class.
+it('keeps read-only the default: an unclassified agent cannot declare a write tool', () => {
+  const unclassified = 'unclassified-future-agent';
+  expect(EXECUTOR_AGENTS.has(unclassified)).toBe(false);
+  for (const writeTool of ['Edit', 'Write', 'Bash']) {
+    expect(READ_ONLY_TOOL.test(writeTool), `${writeTool} must fail the default read-only whitelist`).toBe(false);
+    expect(EXECUTOR_TOOL.test(writeTool), `${writeTool} must pass the executor whitelist`).toBe(true);
+  }
+});
+
 describe.each(agentFiles)('agent %s', (fileName) => {
   const stem = fileName.replace(/\.md$/, '');
   const agentPath = resolve(agentsRoot, fileName);
@@ -91,13 +113,16 @@ describe.each(agentFiles)('agent %s', (fileName) => {
     expect(declared).toBe(stem);
   });
 
-  it('declares only read-only tools (Read/Grep/Glob or mcp__cngx__*)', () => {
+  it('declares only tools its class permits (read-only by default, executor if classified)', () => {
     const tools = toolsOf(frontmatterOf(source));
     expect(tools.length, `${fileName}: no tools declared`).toBeGreaterThan(0);
+    const isExecutor = EXECUTOR_AGENTS.has(stem);
+    const allowed = isExecutor ? EXECUTOR_TOOL : READ_ONLY_TOOL;
     for (const tool of tools) {
-      expect(READ_ONLY_TOOL.test(tool), `${fileName} declares a non-read-only tool: "${tool}"`).toBe(
-        true,
-      );
+      expect(
+        allowed.test(tool),
+        `${fileName} (${isExecutor ? 'executor' : 'read-only'} class) declares a disallowed tool: "${tool}"`,
+      ).toBe(true);
     }
   });
 
