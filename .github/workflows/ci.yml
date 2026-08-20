@@ -285,3 +285,8 @@ jobs:
         run: npm ci
       - name: Test doctor
         run: npm run test:doctor
+      # Assert the plugin's in-process engine copy is byte-identical to this
+      # package - the guard that makes "one engine, not two" true, in both
+      # divergence directions.
+      - name: Check doctor copy
+        run: npm run doctor:copy-check

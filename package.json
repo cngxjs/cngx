@@ -50,6 +50,7 @@
     "test:mcp": "vitest run --config packages/mcp/vitest.config.mjs",
     "test:plugin": "vitest run --config packages/plugin/vitest.config.mjs",
     "test:doctor": "vitest run --config packages/doctor/vitest.config.mjs",
+    "doctor:copy-check": "node scripts/doctor-copy-check.mjs",
     "plugin:drift": "node scripts/plugin-pack-drift.mjs",
     "plugin:release": "node scripts/plugin-release.mjs",
     "changelog": "git-cliff -o CHANGELOG.md",
