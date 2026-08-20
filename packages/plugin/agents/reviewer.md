@@ -30,11 +30,13 @@ The three cngx pillars. Every finding maps to one:
    holding local component state, and any two-way binding wired as an
    `input()` + `output()` pair instead of a single `model()`.
 2. **Kommunikation als First-Class Concern.** Every state change is communicated
-   visually, semantically, and to assistive technology. Flag an `aria-*`
-   attribute set once instead of derived in the reactive graph, a disabled or
-   busy state with no accessible reason, an `aria-describedby` target that leaves
-   the DOM when the state it describes is active, a missing live region for an
-   async transition.
+   visually, semantically, and to assistive technology. Flag ARIA set once
+   instead of derived in the reactive graph, and any state change that never
+   reaches assistive technology. Stop at the surface: the deep sweep for a
+   consumer that silenced the shipped a11y contract (described-by targets kept in
+   the DOM, focus restored after an overlay closes, live regions kept live) is
+   `cngx:a11y-auditor`'s single responsibility - recommend it rather than
+   re-deriving that checklist here.
 3. **Komposition statt Konfiguration.** Small focused units, one responsibility
    each. Flag a component wearing flags where cngx ships a more specific variant,
    a hand-rolled widget that duplicates a cngx atom, a bypassed template slot or
