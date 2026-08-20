@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-15T00:00:00.000Z",
+  "compodocxVersion": "1.0.0",
+  "cngxVersion": "0.2.0",
+  "components": [
+    {
+      "name": "CngxSelect",
+      "selector": "cngx-select",
+      "category": "forms/select/single-select",
+      "description": "Native-feeling single-select dropdown.",
+      "signal": true,
+      "inputsClass": [{ "name": "value", "type": "T", "description": "The selected value." }],
+      "outputsClass": [{ "name": "valueChange", "type": "EventEmitter<T>", "description": "Emits on selection." }],
+      "slots": [{ "name": "cngxSelectCaret", "description": "The caret glyph; now also fires on hover." }]
+    },
+    {
+      "name": "CngxNewPanel",
+      "selector": "cngx-new-panel",
+      "category": "ui/overlay",
+      "description": "Overlay panel.",
+      "signal": true,
+      "inputsClass": [{ "name": "open", "type": "boolean", "description": "Whether the panel is open." }],
+      "outputsClass": []
+    }
+  ],
+  "directives": [],
+  "tokens": [{ "name": "CNGX_SELECT_CONFIG", "type": "InjectionToken<SelectConfig>", "description": "Select defaults." }]
+}
