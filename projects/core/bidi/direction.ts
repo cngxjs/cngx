@@ -119,6 +119,12 @@ export function injectDirection(): Signal<CngxDirection> {
  * });
  * ```
  *
+ * This overload takes a fixed value. To drive the reported direction from a
+ * *reactive* source (a router-derived locale signal, a settings store),
+ * override {@link CNGX_DIRECTION} directly with a `useFactory` returning your
+ * own `Signal<CngxDirection>`:
+ * `{ provide: CNGX_DIRECTION, useFactory: () => myLocaleDirection }`.
+ *
  * @category core/bidi
  * @relatedTo CNGX_DIRECTION
  * @relatedTo injectDirection
