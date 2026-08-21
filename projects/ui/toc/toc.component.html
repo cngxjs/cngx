@@ -6,7 +6,7 @@
   [rootMargin]="rootMargin()"
   [threshold]="threshold()"
 >
-  <ng-container *ngTemplateOutlet="list; context: { $implicit: items(), depth: 0 }" />
+  <ng-container *ngTemplateOutlet="list; context: { $implicit: resolvedItems(), depth: 0 }" />
 </nav>
 
 <ng-template #list let-nodes let-depth="depth">
