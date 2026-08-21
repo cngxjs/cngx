@@ -316,6 +316,37 @@ via the CSS `grid-template-rows: 0fr/1fr` trick (no `@angular/animations` needed
 
 **Material theme:** `@use '@cngx/themes/material/sidenav-theme'` - includes nav-link theme automatically
 
+### CngxToc (`@cngx/ui/toc`)
+
+"On this page" navigation rail. Renders a `<nav>` of anchor links from a
+`CngxTocItem[]` outline, tracks the most-visible section through an internal
+`CngxScrollSpy`, and reflects it on `aria-current` inside the `computed()`
+graph. Activating a link scrolls the section into view (honouring
+`prefers-reduced-motion`) and moves focus to it.
+
+```html
+<cngx-toc [items]="toc" contentRoot="#article"></cngx-toc>
+```
+
+**Inputs:** `items` (required, `CngxTocItem[]`), `contentRoot` (scroll-container
+selector, default viewport), `rootMargin`, `threshold` (forwarded to the spy).
+**Output:** `activated` (the item whose link was clicked).
+**Slot:** `*cngxTocItem` (context `$implicit` / `active` / `depth`).
+**Router sync:** add `[cngxTocRouterSync]` on the same host to deep-link the
+active section into the URL fragment (opt-in, `CNGX_TOC` contract token).
+
+A toc is a **navigation landmark of links, not a tree**. Nesting is communicated
+structurally (nested `<ul>`, indentation) so native tab order and link semantics
+stay intact - the APG treeview pattern is deliberately not applied. Reach for
+`CngxSidenav` instead when you need a collapsible primary-navigation rail with a
+selection model; `CngxToc` is a passive reflection of scroll position.
+
+**Focus contract:** to move focus to a scrolled-to section, `CngxToc` sets
+`tabindex="-1"` on the target element only when it is not focusable by default
+and carries no author-set `tabindex`; an author value is never overwritten.
+
+**Material theme:** `@use '@cngx/themes/material/toc-theme'`
+
 ### CngxToaster - Toast API (`@cngx/ui/feedback`)
 
 Programmatic toast service. Not `providedIn: 'root'` - provide via
