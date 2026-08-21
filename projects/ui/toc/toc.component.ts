@@ -12,7 +12,7 @@ import {
   viewChild,
   type Signal,
 } from '@angular/core';
-import { CngxScrollSpy } from '@cngx/common/layout';
+import { CngxScrollSpy, injectMediaQuery } from '@cngx/common/layout';
 
 import { injectTocConfig } from './config/inject-toc-config';
 import { CngxTocItemSlot } from './toc-item-slot';
@@ -62,6 +62,7 @@ function idsEqual(a: readonly string[], b: readonly string[]): boolean {
 export class CngxToc implements CngxTocContract {
   private readonly doc = inject(DOCUMENT);
   private readonly cfg = injectTocConfig();
+  private readonly reducedMotion = injectMediaQuery('(prefers-reduced-motion: reduce)');
 
   /** The outline to render. Tree-shaped; nested `children` become sub-lists. */
   readonly items = input.required<readonly CngxTocItem[]>();
@@ -111,13 +112,49 @@ export class CngxToc implements CngxTocContract {
     () => this.itemSlot()?.templateRef ?? this.cfg.templates?.item ?? null,
   );
 
-  /** Scroll the section with this id into view. Enriched with reduced-motion + focus handoff in a later commit. */
+  /**
+   * Scroll the section with this id into view and move focus to it. Honours
+   * `prefers-reduced-motion` - the configured `scrollBehavior` is swapped for
+   * `'auto'` (instant) whenever reduced motion is requested. A visual-only
+   * jump is a silent state change for screen-reader users, so focus follows
+   * the scroll (Pillar 2).
+   */
   scrollTo(id: string): void {
     const target = this.doc.getElementById(id);
     if (target === null) {
       return;
     }
-    target.scrollIntoView({ behavior: this.cfg.scrollBehavior ?? 'smooth' });
+    const behavior = this.reducedMotion() ? 'auto' : (this.cfg.scrollBehavior ?? 'smooth');
+    target.scrollIntoView({ behavior });
+    this.focusTarget(target);
+  }
+
+  /** Click / Enter handler: takes over the native anchor jump, scrolls, and announces the activation. */
+  protected handleActivate(item: CngxTocItem, event?: Event): void {
+    event?.preventDefault();
+    this.scrollTo(item.id);
+    this.activated.emit(item);
+  }
+
+  /**
+   * Move focus to the scrolled-to section. `preventScroll` keeps `focus()`
+   * from fighting the smooth `scrollIntoView` above with a second instant
+   * jump. Section elements are consumer-owned DOM, so `tabindex="-1"` is set
+   * imperatively only when the element is not focusable by default and the
+   * consumer set no `tabindex` - an author-set value is never overwritten.
+   * That persistent attribute on borrowed DOM is the entry's tracked debt.
+   */
+  private focusTarget(target: HTMLElement): void {
+    const needsTabindex = !target.hasAttribute('tabindex') && !this.isFocusableByDefault(target);
+    if (needsTabindex) {
+      target.setAttribute('tabindex', '-1');
+    }
+    target.focus({ preventScroll: true });
+  }
+
+  /** Elements that take focus without an author `tabindex`. */
+  private isFocusableByDefault(el: HTMLElement): boolean {
+    return /^(a|button|input|select|textarea|summary|iframe)$/i.test(el.tagName);
   }
 
   /** Depth-first collect of every id in the outline. */

@@ -40,6 +40,12 @@ class MockIntersectionObserver {
 // never bleeds into a run that expects the built-in label.
 const cfgItemTpl = signal<TemplateRef<CngxTocItemContext> | undefined>(undefined);
 
+// prefers-reduced-motion state. jsdom ships no matchMedia, so the suite
+// assigns one on globalThis (the inject-media-query.spec.ts convention) and
+// deletes it in afterEach. injectMediaQuery seeds its signal at construction,
+// so a test sets this BEFORE creating the component.
+let reducedMotionState = false;
+
 const TOC: readonly CngxTocItem[] = [
   { id: 'intro', label: 'Intro' },
   {
@@ -127,7 +133,20 @@ function getToc(fixture: { debugElement: import('@angular/core').DebugElement })
 describe('CngxToc', () => {
   beforeEach(() => {
     cfgItemTpl.set(undefined);
+    reducedMotionState = false;
     vi.stubGlobal('IntersectionObserver', MockIntersectionObserver);
+    (globalThis as Record<string, unknown>)['matchMedia'] = vi.fn().mockImplementation((query: string) => ({
+      get matches() {
+        return reducedMotionState;
+      },
+      media: query,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }));
     TestBed.configureTestingModule({
       providers: [
         {
@@ -140,7 +159,11 @@ describe('CngxToc', () => {
     });
   });
 
-  afterEach(() => vi.unstubAllGlobals());
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+    delete (globalThis as Record<string, unknown>)['matchMedia'];
+  });
 
   function setup() {
     const fixture = TestBed.createComponent(TocHost);
@@ -241,6 +264,68 @@ describe('CngxToc', () => {
     const contract = fixture.componentInstance.probe().contract;
     expect(contract.activeId()).toBeNull();
     expect(typeof contract.scrollTo).toBe('function');
+  });
+
+  it('scrolls with behavior "auto" under prefers-reduced-motion', () => {
+    reducedMotionState = true;
+    const { toc } = setup();
+    const target = document.getElementById('intro')!;
+    const scrollFn = (target.scrollIntoView = vi.fn());
+    vi.spyOn(target, 'focus').mockImplementation(() => {});
+
+    toc.scrollTo('intro');
+
+    expect(scrollFn).toHaveBeenCalledWith({ behavior: 'auto' });
+  });
+
+  it('scrolls with the configured behavior when motion is allowed', () => {
+    reducedMotionState = false;
+    const { toc } = setup();
+    const target = document.getElementById('intro')!;
+    const scrollFn = (target.scrollIntoView = vi.fn());
+    vi.spyOn(target, 'focus').mockImplementation(() => {});
+
+    toc.scrollTo('intro');
+
+    expect(scrollFn).toHaveBeenCalledWith({ behavior: 'smooth' });
+  });
+
+  it('moves focus to the target, making a non-focusable section programmatically focusable', () => {
+    const { toc } = setup();
+    const target = document.getElementById('intro')!;
+    target.scrollIntoView = vi.fn();
+    const focusFn = vi.spyOn(target, 'focus').mockImplementation(() => {});
+
+    toc.scrollTo('intro');
+
+    expect(target.getAttribute('tabindex')).toBe('-1');
+    expect(focusFn).toHaveBeenCalledWith({ preventScroll: true });
+  });
+
+  it('never overwrites an author-set tabindex on the target', () => {
+    const { toc } = setup();
+    const target = document.getElementById('intro')!;
+    target.setAttribute('tabindex', '0');
+    target.scrollIntoView = vi.fn();
+    vi.spyOn(target, 'focus').mockImplementation(() => {});
+
+    toc.scrollTo('intro');
+
+    expect(target.getAttribute('tabindex')).toBe('0');
+  });
+
+  it('emits activated when a link is activated', () => {
+    const { fixture, toc } = setup();
+    const emitted: CngxTocItem[] = [];
+    toc.activated.subscribe((item) => emitted.push(item));
+    const target = document.getElementById('intro')!;
+    target.scrollIntoView = vi.fn();
+    vi.spyOn(target, 'focus').mockImplementation(() => {});
+
+    (fixture.nativeElement.querySelector('.cngx-toc__link') as HTMLAnchorElement).click();
+
+    expect(emitted).toHaveLength(1);
+    expect(emitted[0].id).toBe('intro');
   });
 
   // Drive the captured IO callback to make one section the most-visible.

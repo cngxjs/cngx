@@ -17,6 +17,7 @@
           class="cngx-toc__link"
           [href]="'#' + item.id"
           [attr.aria-current]="activeId() === item.id ? 'location' : null"
+          (click)="handleActivate(item, $event)"
         >
           @if (resolvedItemTpl(); as tpl) {
             <ng-container
