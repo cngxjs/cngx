@@ -29,6 +29,10 @@ export type CngxTocConfigFeature =
       readonly payload: { readonly scrollBehavior: NonNullable<CngxTocConfig['scrollBehavior']> };
     }
   | {
+      readonly kind: 'spy';
+      readonly payload: NonNullable<CngxTocConfig['spy']>;
+    }
+  | {
       readonly kind: 'templates';
       readonly payload: NonNullable<CngxTocConfig['templates']>;
     };
@@ -44,6 +48,7 @@ function reduceFeatures(features: readonly CngxTocConfigFeature[]): Partial<Cngx
   const out: {
     ariaLabels?: NonNullable<CngxTocConfig['ariaLabels']>;
     scrollBehavior?: NonNullable<CngxTocConfig['scrollBehavior']>;
+    spy?: NonNullable<CngxTocConfig['spy']>;
     templates?: NonNullable<CngxTocConfig['templates']>;
   } = {};
   for (const f of features) {
@@ -53,6 +58,9 @@ function reduceFeatures(features: readonly CngxTocConfigFeature[]): Partial<Cngx
         break;
       case 'scrollBehavior':
         out.scrollBehavior = f.payload.scrollBehavior;
+        break;
+      case 'spy':
+        out.spy = { ...out.spy, ...f.payload };
         break;
       case 'templates':
         out.templates = { ...out.templates, ...f.payload };
@@ -78,7 +86,7 @@ function mergeConfig(
   return {
     ariaLabels: { ...base.ariaLabels, ...partial.ariaLabels },
     scrollBehavior: partial.scrollBehavior ?? base.scrollBehavior,
-    spy: { ...base.spy },
+    spy: { ...base.spy, ...partial.spy },
     templates: { ...base.templates, ...partial.templates },
   };
 }

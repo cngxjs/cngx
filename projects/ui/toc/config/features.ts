@@ -38,6 +38,23 @@ export function withTocScrollBehavior(
 }
 
 /**
+ * Move the app-wide `CngxScrollSpy` defaults - the `rootMargin` and
+ * `threshold` the rail forwards to its internal spy. Per-instance
+ * `[rootMargin]` / `[threshold]` bindings still win; this only sets the
+ * cascade default (e.g. a fixed-header offset every toc should share).
+ *
+ * ```ts
+ * provideTocConfig(withTocSpy({ rootMargin: '-80px 0px 0px 0px' }));
+ * ```
+ *
+ * @category ui/toc
+ * @since 0.1.0
+ */
+export function withTocSpy(payload: NonNullable<CngxTocConfig['spy']>): CngxTocConfigFeature {
+  return { kind: 'spy', payload };
+}
+
+/**
  * Register a global default item template. Resolves after a per-instance
  * `*cngxTocItem` slot and before the built-in plain-label rendering, so every
  * un-slotted toc renders the same custom item markup.

@@ -115,6 +115,7 @@ activation subscription is torn down with the directive. Without
 provideTocConfig(
   withTocAriaLabels({ nav: 'On this page' }),
   withTocScrollBehavior('smooth'),
+  withTocSpy({ rootMargin: '-80px 0px 0px 0px' }),
   withTocTemplates({ item: myItemTemplate }),
 );
 ```

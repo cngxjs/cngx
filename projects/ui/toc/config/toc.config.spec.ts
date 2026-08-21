@@ -4,7 +4,12 @@ import { describe, expect, it } from 'vitest';
 
 import type { CngxTocItemContext } from '../toc.types';
 import { CNGX_TOC_CONFIG, CNGX_TOC_DEFAULTS } from './toc.config.defaults';
-import { withTocAriaLabels, withTocScrollBehavior, withTocTemplates } from './features';
+import {
+  withTocAriaLabels,
+  withTocScrollBehavior,
+  withTocSpy,
+  withTocTemplates,
+} from './features';
 import { injectTocConfig } from './inject-toc-config';
 import { provideTocConfig, provideTocConfigAt } from './provide-toc-config';
 
@@ -59,6 +64,18 @@ describe('CNGX_TOC_CONFIG', () => {
     const cfg = TestBed.inject(CNGX_TOC_CONFIG);
 
     expect(cfg.scrollBehavior).toBe('auto');
+    expect(cfg.ariaLabels?.nav).toBe('On this page');
+  });
+
+  it('withTocSpy overrides the spy defaults and deep-merges the untouched key', () => {
+    TestBed.configureTestingModule({
+      providers: [provideTocConfig(withTocSpy({ threshold: 0.5 }))],
+    });
+    const cfg = TestBed.inject(CNGX_TOC_CONFIG);
+
+    expect(cfg.spy?.threshold).toBe(0.5);
+    // rootMargin keeps the default (deep-merge, not replace)
+    expect(cfg.spy?.rootMargin).toBe('0px');
     expect(cfg.ariaLabels?.nav).toBe('On this page');
   });
 
