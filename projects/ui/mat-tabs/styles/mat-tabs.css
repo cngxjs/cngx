@@ -301,7 +301,6 @@
     content: '!';
     position: absolute;
     top: var(--cngx-mat-tab-has-errors-glyph-offset, 4px);
-    right: var(--cngx-mat-tab-has-errors-glyph-offset, 4px);
     inset-inline-end: var(--cngx-mat-tab-has-errors-glyph-offset, 4px);
     inset-inline-start: auto;
     bottom: auto;
@@ -331,7 +330,6 @@
   .mat-mdc-tab.cngx-mat-tab--error.cngx-mat-tab--has-errors::before,
   .mat-mdc-tab-link.cngx-mat-tab--error.cngx-mat-tab--has-errors::before {
     top: var(--cngx-mat-tab-has-errors-glyph-offset-stacked, 6px);
-    right: var(--cngx-mat-tab-has-errors-glyph-offset-stacked, 6px);
     inset-inline-end: var(--cngx-mat-tab-has-errors-glyph-offset-stacked, 6px);
   }
 
