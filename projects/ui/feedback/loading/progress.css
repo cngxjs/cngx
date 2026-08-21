@@ -214,7 +214,7 @@
       font-size: var(--cngx-progress-label-size, 0.75rem);
       color: var(--cngx-progress-label-color, currentColor);
       min-width: 3ch;
-      text-align: right;
+      text-align: end;
     }
 
     :scope.cngx-progress--circular {
