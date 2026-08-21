@@ -24,6 +24,7 @@ import type { CngxTocItemContext } from './toc.types';
  * @category ui/toc
  * @since 0.1.0
  * @relatedTo CngxToc
+ * <example-url>http://localhost:4200/#/ui/toc/slots/custom-item-template</example-url>
  */
 @Directive({
   selector: 'ng-template[cngxTocItem]',

@@ -61,6 +61,7 @@ function idsEqual(a: readonly string[], b: readonly string[]): boolean {
  * @since 0.1.0
  * @relatedTo CngxScrollSpy, CngxTocRouterSync, CngxSidenav
  * <example-url>http://localhost:4200/#/ui/toc/basic/on-this-page-rail</example-url>
+ * <example-url>http://localhost:4200/#/ui/toc/auto/heading-auto-discovery</example-url>
  */
 @Component({
   selector: 'cngx-toc',
