@@ -3,6 +3,7 @@
  */
 
 export { CngxToc } from './toc.component';
+export { CngxTocRouterSync } from './toc-router-sync.directive';
 export { CngxTocItemSlot } from './toc-item-slot';
 export { CNGX_TOC, type CngxTocContract } from './toc-token';
 export type { CngxTocItem, CngxTocItemContext } from './toc.types';
