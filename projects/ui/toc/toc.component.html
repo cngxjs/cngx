@@ -1,0 +1,40 @@
+<nav
+  class="cngx-toc__nav"
+  [attr.aria-label]="navLabel()"
+  [cngxScrollSpy]="flatIds()"
+  [root]="contentRoot()"
+  [rootMargin]="rootMargin()"
+  [threshold]="threshold()"
+>
+  <ng-container *ngTemplateOutlet="list; context: { $implicit: items(), depth: 0 }" />
+</nav>
+
+<ng-template #list let-nodes let-depth="depth">
+  <ul class="cngx-toc__list" [style.--cngx-toc-depth]="depth">
+    @for (item of nodes; track item.id) {
+      <li class="cngx-toc__item" [attr.data-active-trail]="activeTrail().includes(item.id) ? '' : null">
+        <a
+          class="cngx-toc__link"
+          [href]="'#' + item.id"
+          [attr.aria-current]="activeId() === item.id ? 'location' : null"
+        >
+          @if (resolvedItemTpl(); as tpl) {
+            <ng-container
+              *ngTemplateOutlet="
+                tpl;
+                context: { $implicit: item, active: activeId() === item.id, depth: depth }
+              "
+            />
+          } @else {
+            {{ item.label }}
+          }
+        </a>
+        @if (item.children?.length) {
+          <ng-container
+            *ngTemplateOutlet="list; context: { $implicit: item.children, depth: depth + 1 }"
+          />
+        }
+      </li>
+    }
+  </ul>
+</ng-template>
