@@ -71,7 +71,7 @@
     :scope {
       position: absolute;
       top: 0;
-      left: 0;
+      inset-inline-start: 0;
       width: var(--cngx-ripple-size, 100px);
       height: var(--cngx-ripple-size, 100px);
       border-radius: 50%;
