@@ -49,6 +49,15 @@ class ManualHost {
   readonly items: CngxTocItem[] = [{ id: 'a', label: 'Alpha' }];
 }
 
+@Component({
+  imports: [CngxToc],
+  template: `
+    <cngx-toc autoDiscover contentRoot=".does-not-exist" />
+    <article class="article"><h2>Overview</h2><h2>Usage</h2></article>
+  `,
+})
+class MissingRootHost {}
+
 function getToc(fixture: { debugElement: import('@angular/core').DebugElement }): CngxToc {
   return fixture.debugElement.query(By.directive(CngxToc)).componentInstance;
 }
@@ -149,6 +158,26 @@ describe('CngxToc autoDiscover', () => {
     toc.refresh();
     fixture.detectChanges();
     expect(linkTexts(fixture.nativeElement)).toContain('Appendix');
+  });
+
+  it('scans nothing when contentRoot matches no element (no whole-document fallback)', () => {
+    const { fixture, toc } = setup(MissingRootHost);
+    toc.refresh();
+    fixture.detectChanges();
+
+    // Headings exist under .article, but the set-but-unmatched root must not
+    // sweep them in.
+    expect(linkTexts(fixture.nativeElement)).toEqual([]);
+  });
+
+  it('keeps the discovered reference stable across an unchanged re-scan', () => {
+    const { toc } = setup(DiscoverHost);
+    toc.refresh();
+    const first = toc['discovered']();
+
+    toc.refresh();
+
+    expect(toc['discovered']()).toBe(first);
   });
 
   it('no-ops off the browser (server platform)', () => {

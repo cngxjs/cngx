@@ -41,6 +41,28 @@ function idsEqual(a: readonly string[], b: readonly string[]): boolean {
 }
 
 /**
+ * Structural compare of two discovered outlines (id + label + nesting). Guards
+ * the `discovered` signal so a re-scan of unchanged headings keeps the same
+ * reference and never re-stamps the outline outlet.
+ */
+function itemsEqual(a: readonly CngxTocItem[], b: readonly CngxTocItem[]): boolean {
+  if (a.length !== b.length) {
+    return false;
+  }
+  for (let i = 0; i < a.length; i++) {
+    const x = a[i];
+    const y = b[i];
+    if (x.id !== y.id || x.label !== y.label) {
+      return false;
+    }
+    if (!itemsEqual(x.children ?? EMPTY_ITEMS, y.children ?? EMPTY_ITEMS)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
  * "On this page" navigation rail. Renders a `<nav>` of anchor links from a
  * {@link CngxTocItem} outline, tracks the most-visible section through an
  * internal {@link CngxScrollSpy}, and communicates the active link via
@@ -113,7 +135,7 @@ export class CngxToc implements CngxTocContract {
   private readonly itemSlot = contentChild(CngxTocItemSlot);
 
   /** Headings discovered by the last `[autoDiscover]` scan. */
-  private readonly discovered = signal<readonly CngxTocItem[]>(EMPTY_ITEMS);
+  private readonly discovered = signal<readonly CngxTocItem[]>(EMPTY_ITEMS, { equal: itemsEqual });
 
   /** The outline actually rendered: the discovered headings when `[autoDiscover]` is on, else `[items]`. */
   protected readonly resolvedItems = computed(() =>
@@ -262,7 +284,16 @@ export class CngxToc implements CngxTocContract {
   /** Walk the headings under `contentRoot` into a level-nested outline. */
   private scanHeadings(): readonly CngxTocItem[] {
     const rootSelector = this.contentRoot();
-    const root: ParentNode = rootSelector ? (this.doc.querySelector(rootSelector) ?? this.doc) : this.doc;
+    let root: ParentNode = this.doc;
+    if (rootSelector) {
+      const matched = this.doc.querySelector(rootSelector);
+      // A set-but-unmatched root scans nothing, not the whole document -
+      // falling back to `doc` would sweep site chrome into the outline.
+      if (matched === null) {
+        return EMPTY_ITEMS;
+      }
+      root = matched;
+    }
     const headings = Array.from(root.querySelectorAll<HTMLElement>(this.headingSelector()));
     if (headings.length === 0) {
       return EMPTY_ITEMS;
