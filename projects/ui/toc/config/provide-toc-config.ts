@@ -10,7 +10,8 @@ import { CNGX_TOC_CONFIG, CNGX_TOC_DEFAULTS } from './toc.config.defaults';
 
 /**
  * Discriminated-union shape returned by the toc config features -
- * `withTocAriaLabels`, `withTocScrollBehavior`, and `withTocTemplates`. The
+ * `withTocAriaLabels`, `withTocScrollBehavior`, `withTocSpy`, and
+ * `withTocTemplates`. The
  * reducer in `provideTocConfig` / `provideTocConfigAt` matches on `kind` and
  * merges `payload` into the corresponding config sub-tree. Mirrors
  * `CngxBreadcrumbConfigFeature` so the consumer's mental model is one across
@@ -93,8 +94,8 @@ function mergeConfig(
 
 /**
  * Application-root configuration cascade for the toc organism. Pass any
- * combination of `withTocAriaLabels`, `withTocScrollBehavior`, and
- * `withTocTemplates` features in `bootstrapApplication`'s providers array.
+ * combination of `withTocAriaLabels`, `withTocScrollBehavior`, `withTocSpy`,
+ * and `withTocTemplates` features in `bootstrapApplication`'s providers array.
  *
  * Resolution priority (high -> low):
  *   1. Per-instance Input binding.
