@@ -44,6 +44,7 @@ export {
   injectDirection,
   provideDirection,
 } from './bidi/direction';
+export { CngxDir } from './bidi/cngx-dir.directive';
 export {
   type CngxA11yPrefFeature,
   provideA11yPreferences,
