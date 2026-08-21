@@ -39,6 +39,12 @@ export {
 } from './theming/contrast';
 export { CngxContrast } from './theming/cngx-contrast.directive';
 export {
+  CNGX_DIRECTION,
+  type CngxDirection,
+  injectDirection,
+  provideDirection,
+} from './bidi/direction';
+export {
   type CngxA11yPrefFeature,
   provideA11yPreferences,
   withDensity,

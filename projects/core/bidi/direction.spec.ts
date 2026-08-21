@@ -1,0 +1,81 @@
+import { DestroyRef } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { CNGX_DIRECTION, injectDirection, provideDirection } from './direction';
+
+const rootDir = () => document.documentElement.getAttribute('dir');
+
+const flushObserver = async () => {
+  // MutationObserver callbacks land on the microtask queue, not the Angular
+  // effect queue, so TestBed.flushEffects() would never drive them.
+  await Promise.resolve();
+  await Promise.resolve();
+};
+
+describe('injectDirection / CNGX_DIRECTION reader', () => {
+  afterEach(() => {
+    document.documentElement.removeAttribute('dir');
+    vi.restoreAllMocks();
+  });
+
+  it("resolves 'ltr' when documentElement has no dir", () => {
+    const direction = TestBed.runInInjectionContext(() => injectDirection());
+    expect(direction()).toBe('ltr');
+  });
+
+  it("resolves 'rtl' when documentElement.dir = 'rtl' at construction", () => {
+    document.documentElement.dir = 'rtl';
+    const direction = TestBed.runInInjectionContext(() => injectDirection());
+    expect(direction()).toBe('rtl');
+  });
+
+  it('re-signals when the root dir flips to rtl at runtime', async () => {
+    const direction = TestBed.runInInjectionContext(() => injectDirection());
+    expect(direction()).toBe('ltr');
+
+    document.documentElement.dir = 'rtl';
+    await flushObserver();
+
+    expect(direction()).toBe('rtl');
+  });
+
+  it("normalises dir=\"auto\" to 'ltr'", () => {
+    document.documentElement.dir = 'auto';
+    const direction = TestBed.runInInjectionContext(() => injectDirection());
+    expect(direction()).toBe('ltr');
+  });
+
+  it("provideDirection('rtl') overrides the reported value without touching documentElement.dir", () => {
+    TestBed.configureTestingModule({ providers: [provideDirection('rtl')] });
+    const direction = TestBed.runInInjectionContext(() => injectDirection());
+    expect(direction()).toBe('rtl');
+    expect(rootDir()).toBeNull();
+  });
+
+  it('disconnects the observer exactly once on injector destroy', () => {
+    const disconnectSpy = vi.spyOn(MutationObserver.prototype, 'disconnect');
+    TestBed.runInInjectionContext(() => injectDirection());
+    // A resolved reader owns a live observer; destroying the environment
+    // injector must run the DestroyRef teardown that disconnects it.
+    TestBed.inject(DestroyRef);
+    TestBed.resetTestingModule();
+    expect(disconnectSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('installs exactly one observer and reuses the root signal on a second inject', () => {
+    // One installed observer => exactly one observe() call. Spying the
+    // constructor is unreliable (a newed vitest spy yields a mock instance
+    // without observe()), so observe() is the stable single-observer proxy.
+    const observeSpy = vi.spyOn(MutationObserver.prototype, 'observe');
+    const first = TestBed.runInInjectionContext(() => injectDirection());
+    const second = TestBed.runInInjectionContext(() => injectDirection());
+    expect(observeSpy).toHaveBeenCalledTimes(1);
+    expect(second).toBe(first);
+  });
+
+  it('injectDirection() returns the same signal as CNGX_DIRECTION', () => {
+    const viaFn = TestBed.runInInjectionContext(() => injectDirection());
+    const viaToken = TestBed.inject(CNGX_DIRECTION);
+    expect(viaFn).toBe(viaToken);
+  });
+});
