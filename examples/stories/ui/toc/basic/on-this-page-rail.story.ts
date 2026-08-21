@@ -53,7 +53,7 @@ export const STORY: DemoSpec = {
               contentRoot=".toc-article"
               (activated)="lastActivated.set($event.label)"
               style="position:sticky; top:0; align-self:flex-start; min-width:160px"></cngx-toc>
-    <div class="toc-article" style="height:320px; overflow-y:auto; flex:1; padding-inline-end:8px">
+    <div class="toc-article demo-toc-scroll" style="height:320px; overflow-y:auto; flex:1">
       @for (s of sections; track s.id) {
         <section [id]="s.id" style="min-height:220px">
           <h3 style="margin-top:0">{{ s.label }}</h3>

@@ -28,7 +28,7 @@ export const STORY: DemoSpec = {
   setupChrome: `private readonly route = inject(ActivatedRoute);
   protected readonly fragment = toSignal(this.route.fragment);`,
   templateChromeBefore: `
-  <p style="margin:0 0 0.75rem; color:var(--cngx-color-text-muted, #71717a)">
+  <p class="demo-toc-hint" style="margin:0 0 0.75rem">
     Click a link, then check the URL fragment. Reload or share it to jump back to the section.
   </p>`,
   template: `  <div style="display:flex; gap:24px; max-width:680px">
@@ -36,7 +36,7 @@ export const STORY: DemoSpec = {
               [items]="toc"
               contentRoot=".toc-article-router"
               style="position:sticky; top:0; align-self:flex-start; min-width:160px"></cngx-toc>
-    <div class="toc-article-router" style="height:320px; overflow-y:auto; flex:1; padding-inline-end:8px">
+    <div class="toc-article-router demo-toc-scroll" style="height:320px; overflow-y:auto; flex:1">
       @for (s of sections; track s.id) {
         <section [id]="s.id" style="min-height:220px">
           <h3 style="margin-top:0">{{ s.label }}</h3>

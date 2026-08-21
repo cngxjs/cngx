@@ -46,7 +46,7 @@ export const STORY: DemoSpec = {
               position="inline">{{ item.label }}</span>
       </ng-template>
     </cngx-toc>
-    <div class="toc-article-slots" style="height:320px; overflow-y:auto; flex:1; padding-inline-end:8px">
+    <div class="toc-article-slots demo-toc-scroll" style="height:320px; overflow-y:auto; flex:1">
       @for (s of sections; track s.id) {
         <section [id]="s.id" style="min-height:220px">
           <h3 style="margin-top:0">{{ s.label }}</h3>

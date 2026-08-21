@@ -17,7 +17,7 @@ export const STORY: DemoSpec = {
     <cngx-toc autoDiscover
               contentRoot=".toc-article-auto"
               style="position:sticky; top:0; align-self:flex-start; min-width:180px"></cngx-toc>
-    <div class="toc-article-auto" style="height:320px; overflow-y:auto; flex:1; padding-inline-end:8px">
+    <div class="toc-article-auto demo-toc-scroll" style="height:320px; overflow-y:auto; flex:1">
       <h2>Overview</h2>
       <p style="margin:0 0 180px">The rail below was built from these headings, not a hand-written array.</p>
       <h2>Installation</h2>
