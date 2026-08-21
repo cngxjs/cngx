@@ -460,12 +460,12 @@
     }
 
     .cngx-filter-builder__group:not(.cngx-filter-group-root) {
-      margin-left: var(--cngx-filter-builder-indent, 1.25rem);
-      border-left: var(
+      margin-inline-start: var(--cngx-filter-builder-indent, 1.25rem);
+      border-inline-start: var(
         --cngx-filter-builder-rail,
         2px solid var(--cngx-filter-builder-border-color, var(--cngx-color-border, oklch(0.87 0 0)))
       );
-      padding-left: var(--cngx-filter-builder-group-padding, 0.5rem);
+      padding-inline-start: var(--cngx-filter-builder-group-padding, 0.5rem);
     }
 
     .cngx-filter-builder__group.cngx-filter-group-negated {
