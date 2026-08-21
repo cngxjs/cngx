@@ -42,6 +42,40 @@ to. `contentRoot` is the scroll container's CSS selector - leave it off to
 observe the viewport. `[rootMargin]` and `[threshold]` pass straight through to
 the internal spy.
 
+## Heading auto-discovery
+
+Set `autoDiscover` and the outline is derived from the headings under
+`contentRoot` instead of a hand-maintained `[items]` array:
+
+```html
+<cngx-toc autoDiscover contentRoot="#article"></cngx-toc>
+<article id="article">
+  <h2>Overview</h2>
+  <h2>Installation</h2>
+  <h3>Using npm</h3>
+</article>
+```
+
+Headings nest by their level (`h2 > h3`); `[headingSelector]` controls which
+headings are collected (default `'h2, h3'`). A heading with no `id` gets a
+slugified one written onto it so its link has a target (collisions get a `-N`
+suffix); an author-set `id` is kept verbatim. Writing that `id` mutates
+consumer DOM, so like the focus contract it is a documented, guarded mutation.
+
+The scan runs **once** after the first render - it is not a live observer.
+After you inject or remove sections at runtime, call `refresh()`:
+
+```typescript
+@ViewChild(CngxToc) toc!: CngxToc;
+loadMoreSections() {
+  // ...append sections to the DOM...
+  this.toc.refresh();
+}
+```
+
+Off the browser (SSR) the scan is inert - the rail renders empty and never
+touches `document`.
+
 ## Overview
 
 The organism owns very little. Active-section detection is `CngxScrollSpy`
