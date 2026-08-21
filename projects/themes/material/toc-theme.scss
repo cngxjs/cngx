@@ -1,0 +1,46 @@
+@use '@angular/material' as mat;
+
+// Material bridge for CngxToc. Default visuals ship with the artifact itself -
+// projects/ui/toc/toc.component.css - and read the cngx foundation
+// --cngx-color-* tokens with literal oklch fallbacks. This file is the single
+// place that re-points the toc's leaf tokens at Material, so an "on this page"
+// rail reads as native next to Material surfaces. --mat-sys-* appears only
+// here (feedback_mat_sys_only_in_bridge).
+//
+// Spacing is deliberately absent. The toc derives its indentation, gap and
+// link padding from --cngx-space-*, which density-bridge.scss already maps to
+// the Material density scale; forking those here would fight it.
+//
+//   @use '@angular/material' as mat;
+//   @use '@cngx/themes/material/toc-theme' as toc;
+//   html { @include toc.theme($theme); }
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-toc-color: var(--mat-sys-on-surface-variant);
+    --cngx-toc-color-hover: var(--mat-sys-on-surface);
+    --cngx-toc-color-active: var(--mat-sys-primary);
+    --cngx-toc-color-trail: var(--mat-sys-on-surface);
+    --cngx-toc-rail-active: var(--mat-sys-primary);
+    --cngx-toc-focus-ring: var(--mat-sys-primary);
+  } @else {
+    $primary: mat.get-theme-color($theme, primary);
+    $secondary: mat.get-theme-color($theme, foreground, secondary-text);
+    $text: mat.get-theme-color($theme, foreground, text);
+
+    --cngx-toc-color: #{$secondary};
+    --cngx-toc-color-hover: #{$text};
+    --cngx-toc-color-active: #{$primary};
+    --cngx-toc-color-trail: #{$text};
+    --cngx-toc-rail-active: #{$primary};
+    --cngx-toc-focus-ring: #{$primary};
+  }
+}
+
+@mixin theme($theme) {
+  @layer cngx.components {
+    :where(cngx-toc) {
+      @include color($theme);
+    }
+  }
+}
