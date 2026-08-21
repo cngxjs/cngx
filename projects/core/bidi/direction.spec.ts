@@ -1,4 +1,4 @@
-import { DestroyRef } from '@angular/core';
+import { DestroyRef, PLATFORM_ID } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CNGX_DIRECTION, injectDirection, provideDirection } from './direction';
@@ -71,6 +71,20 @@ describe('injectDirection / CNGX_DIRECTION reader', () => {
     const second = TestBed.runInInjectionContext(() => injectDirection());
     expect(observeSpy).toHaveBeenCalledTimes(1);
     expect(second).toBe(first);
+  });
+
+  it('seeds once and installs no observer on a non-browser platform', async () => {
+    const observeSpy = vi.spyOn(MutationObserver.prototype, 'observe');
+    TestBed.configureTestingModule({ providers: [{ provide: PLATFORM_ID, useValue: 'server' }] });
+
+    const direction = TestBed.runInInjectionContext(() => injectDirection());
+    expect(direction()).toBe('ltr');
+    expect(observeSpy).not.toHaveBeenCalled();
+
+    // No observer => a runtime root flip must NOT re-signal on the server.
+    document.documentElement.dir = 'rtl';
+    await flushObserver();
+    expect(direction()).toBe('ltr');
   });
 
   it('injectDirection() returns the same signal as CNGX_DIRECTION', () => {
