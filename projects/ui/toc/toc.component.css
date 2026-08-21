@@ -35,7 +35,12 @@ cngx-toc {
 }
 
 .cngx-toc__link {
-  display: block;
+  /* Floor the tap target to the pointer-derived minimum (WCAG 2.5.5): 44px on
+     a coarse pointer, 0 and inert on a fine one. A nav link is a discrete tap
+     target, same as the breadcrumb and tab-nav siblings. */
+  display: flex;
+  align-items: center;
+  min-block-size: var(--cngx-target-min, 0px);
   padding-block: var(--cngx-toc-link-pad-block);
   padding-inline: var(--cngx-toc-link-pad-inline);
   border-inline-start: var(--cngx-toc-rail-width, 2px) solid transparent;
