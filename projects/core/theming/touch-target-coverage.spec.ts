@@ -90,6 +90,8 @@ const SIZE_FLOOR_HOSTS: ReadonlyArray<{ file: string; note: string }> = [
   // @cngx/ui - tabs
   { file: 'projects/ui/tabs/tab-nav.component.css', note: 'tab-nav link' },
   { file: 'projects/ui/tabs/tab-overflow.component.css', note: 'tab-overflow trigger + item' },
+  // @cngx/ui - toc
+  { file: 'projects/ui/toc/toc.component.css', note: 'toc nav link' },
   // @cngx/ui - accordion + controls
   { file: 'projects/ui/accordion/accordion-item.component.css', note: 'accordion-item header' },
   { file: 'projects/ui/action-button/action-button.css', note: 'action button' },
@@ -211,7 +213,7 @@ describe('touch-target size-floor coverage manifest', () => {
     // The registry itself (system-tokens.css) declares the token and is not a
     // consumer, so it is excluded by construction. This count is the coarse net
     // alongside the per-file assertions and the source scan below.
-    expect(SIZE_FLOOR_HOSTS.length).toBe(49);
+    expect(SIZE_FLOOR_HOSTS.length).toBe(50);
   });
 });
 

@@ -1,0 +1,72 @@
+/* Track A structural CSS for CngxToc. Spacing tokens are SET from the
+   --cngx-space-* scale at the host so a root [data-density] swap re-scales the
+   rail; colours delegate to the --cngx-color-* foundation set (which already
+   carries light/dark) with literal oklch fallbacks. No --mat-sys-* here - the
+   Material mapping lives in projects/themes/material/toc-theme.scss. */
+
+cngx-toc {
+  /* Density-tracked spacing (SET from scale). */
+  --cngx-toc-indent: var(--cngx-space-lg, 1rem);
+  --cngx-toc-gap: var(--cngx-space-xs, 0.25rem);
+  --cngx-toc-link-pad-block: var(--cngx-space-xs, 0.25rem);
+  --cngx-toc-link-pad-inline: var(--cngx-space-sm, 0.5rem);
+
+  display: block;
+}
+
+.cngx-toc__nav {
+  display: block;
+}
+
+.cngx-toc__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cngx-toc-gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Per-depth indentation: a nested list compounds one indent through DOM
+   nesting, so the outline reads as an indented tree without depth math. */
+.cngx-toc__item .cngx-toc__list {
+  margin-block-start: var(--cngx-toc-gap);
+  padding-inline-start: var(--cngx-toc-indent);
+}
+
+.cngx-toc__link {
+  /* Floor the tap target to the pointer-derived minimum (WCAG 2.5.5): 44px on
+     a coarse pointer, 0 and inert on a fine one. A nav link is a discrete tap
+     target, same as the breadcrumb and tab-nav siblings. */
+  display: flex;
+  align-items: center;
+  min-block-size: var(--cngx-target-min, 0px);
+  padding-block: var(--cngx-toc-link-pad-block);
+  padding-inline: var(--cngx-toc-link-pad-inline);
+  border-inline-start: var(--cngx-toc-rail-width, 2px) solid transparent;
+  color: var(--cngx-toc-color, var(--cngx-color-text-muted, oklch(0.5 0.01 250)));
+  line-height: 1.4;
+  text-decoration: none;
+}
+
+.cngx-toc__link:hover {
+  color: var(--cngx-toc-color-hover, var(--cngx-color-text, oklch(0.2 0.01 250)));
+}
+
+.cngx-toc__link:focus-visible {
+  outline: var(--cngx-toc-focus-ring-width, 2px) solid
+    var(--cngx-toc-focus-ring, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+  outline-offset: 2px;
+}
+
+/* Exactly one link carries aria-current at a time (spec-asserted invariant). */
+.cngx-toc__link[aria-current] {
+  border-inline-start-color: var(--cngx-toc-rail-active, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+  color: var(--cngx-toc-color-active, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+  font-weight: var(--cngx-toc-weight-active, 600);
+}
+
+/* Ancestor links of the active leaf: a subtle styling hook, no ARIA. */
+.cngx-toc__item[data-active-trail] > .cngx-toc__link {
+  color: var(--cngx-toc-color-trail, var(--cngx-color-text, oklch(0.2 0.01 250)));
+}

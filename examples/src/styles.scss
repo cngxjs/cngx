@@ -3870,3 +3870,13 @@ mat-icon.demo-breadcrumb-icon {
 .cngx-mat-tabs-more .cngx-tab-overflow__trigger {
   --cngx-tab-overflow-button-bg: var(--cngx-color-surface, oklch(1 0 0));
 }
+
+/* Toc demos: scrollbar gutter on the scroll container and the muted hint
+   paragraph. Static demo styling moved off inline styles so thematic
+   properties stay theme-owned, not baked into the story template. */
+.demo-toc-scroll {
+  padding-inline-end: var(--demo-toc-scroll-gutter, 8px);
+}
+.demo-toc-hint {
+  color: var(--cngx-color-text-muted, #71717a);
+}
