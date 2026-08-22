@@ -557,6 +557,18 @@
     transform: translateX(100%);
   }
 
+  /* RTL: the off-canvas hide translate is physical (self-relative), so flip its
+     sign under dir=rtl - a --start drawer pinned to the right edge must slide off
+     the right, not across the viewport. The open state (translateX(0)) is
+     symmetric; :not(--open) keeps it winning by source order. */
+  [dir='rtl'] cngx-sidenav.cngx-sidenav--over.cngx-sidenav--start:not(.cngx-sidenav--open) {
+    transform: translateX(100%);
+  }
+
+  [dir='rtl'] cngx-sidenav.cngx-sidenav--over.cngx-sidenav--end:not(.cngx-sidenav--open) {
+    transform: translateX(-100%);
+  }
+
   cngx-sidenav.cngx-sidenav--over.cngx-sidenav--open {
     transform: translateX(0);
     visibility: visible;
@@ -786,6 +798,16 @@
   .cngx-sidenav--end .cngx-sidenav__resize-handle {
     inset-inline-start: 0;
     transform: translateX(-50%);
+  }
+
+  /* RTL: the straddle translate is physical; flip it so the handle stays centred
+     on the drawer inner edge under dir=rtl. */
+  [dir='rtl'] .cngx-sidenav--start .cngx-sidenav__resize-handle {
+    transform: translateX(-50%);
+  }
+
+  [dir='rtl'] .cngx-sidenav--end .cngx-sidenav__resize-handle {
+    transform: translateX(50%);
   }
 
   .cngx-sidenav__resize-handle:hover,
