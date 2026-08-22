@@ -558,14 +558,15 @@
   }
 
   /* RTL: the off-canvas hide translate is physical (self-relative), so flip its
-     sign under dir=rtl - a --start drawer pinned to the right edge must slide off
+     sign for a resolved-RTL drawer (:dir(rtl) matches resolved direction, not an
+     ancestor attribute, so a CngxDir island stays correct) - a --start drawer pinned to the right edge must slide off
      the right, not across the viewport. The open state (translateX(0)) is
      symmetric; :not(--open) keeps it winning by source order. */
-  [dir='rtl'] cngx-sidenav.cngx-sidenav--over.cngx-sidenav--start:not(.cngx-sidenav--open) {
+  cngx-sidenav.cngx-sidenav--over.cngx-sidenav--start:not(.cngx-sidenav--open):dir(rtl) {
     transform: translateX(100%);
   }
 
-  [dir='rtl'] cngx-sidenav.cngx-sidenav--over.cngx-sidenav--end:not(.cngx-sidenav--open) {
+  cngx-sidenav.cngx-sidenav--over.cngx-sidenav--end:not(.cngx-sidenav--open):dir(rtl) {
     transform: translateX(-100%);
   }
 
@@ -800,13 +801,13 @@
     transform: translateX(-50%);
   }
 
-  /* RTL: the straddle translate is physical; flip it so the handle stays centred
-     on the drawer inner edge under dir=rtl. */
-  [dir='rtl'] .cngx-sidenav--start .cngx-sidenav__resize-handle {
+  /* RTL: the straddle translate is physical; :dir(rtl) flips it (island-safe) so the handle stays
+     centred on the drawer inner edge. */
+  .cngx-sidenav--start:dir(rtl) .cngx-sidenav__resize-handle {
     transform: translateX(-50%);
   }
 
-  [dir='rtl'] .cngx-sidenav--end .cngx-sidenav__resize-handle {
+  .cngx-sidenav--end:dir(rtl) .cngx-sidenav__resize-handle {
     transform: translateX(50%);
   }
 
