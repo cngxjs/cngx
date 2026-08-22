@@ -1258,6 +1258,25 @@
         color 120ms ease;
     }
 
+    /* The horizontal chevron points along the reading flow, so mirror the
+       polygon (every x -> 100% - x) under RTL. Reflecting the shape, not
+       scaleX(-1) the tile, keeps the label text upright. `:where()` keeps the
+       gate at zero added specificity: the vertical skin below shares this
+       [data-skin='path-chevron'] scope, so a specificity bump would leak this
+       mirror onto the neutral vertical tiles (both scope roots are the same
+       element, so scope-proximity ties). At equal specificity source order
+       wins, and the later vertical scope keeps its own polygon. */
+    .cngx-stepper__step:where(:dir(rtl)) {
+      clip-path: polygon(
+        100% 0,
+        0.75rem 0,
+        0 50%,
+        0.75rem 100%,
+        100% 100%,
+        calc(100% - 0.75rem) 50%
+      );
+    }
+
     .cngx-stepper__step .cngx-stepper__label {
       flex: 0 0 auto;
     }
@@ -1266,8 +1285,16 @@
       clip-path: polygon(0 0, calc(100% - 0.75rem) 0, 100% 50%, calc(100% - 0.75rem) 100%, 0 100%);
     }
 
+    .cngx-stepper__step:first-child:where(:dir(rtl)) {
+      clip-path: polygon(100% 0, 0.75rem 0, 0 50%, 0.75rem 100%, 100% 100%);
+    }
+
     .cngx-stepper__step:last-child {
       clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 0.75rem 50%);
+    }
+
+    .cngx-stepper__step:last-child:where(:dir(rtl)) {
+      clip-path: polygon(100% 0, 0 0, 0 100%, 100% 100%, calc(100% - 0.75rem) 50%);
     }
 
     .cngx-stepper__step:only-child {
