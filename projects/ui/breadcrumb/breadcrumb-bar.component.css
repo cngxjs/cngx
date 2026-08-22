@@ -320,7 +320,10 @@
   }
 
   .cngx-breadcrumb__link {
-    /* structural: arrow silhouette + segment overlap - the ribbon's identity */
+    /* structural: arrow silhouette + segment overlap - the ribbon's identity.
+       The clip-path chevron is a physical shape and does NOT mirror under
+       dir=rtl; the logical margins/padding flip but the silhouette stays -
+       RTL shape mirroring is a separate follow-up the property guard can't see. */
     display: inline-flex;
     align-items: center;
     padding: 0.5em 1.1em 0.5em 1.4em;
