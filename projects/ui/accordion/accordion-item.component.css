@@ -113,6 +113,20 @@
   transform: rotate(225deg);
 }
 
+/* The chevron is a direction-neutral down/up glyph, but it regresses in RTL:
+   border-inline-end flips to the left while the physical rotate does not, so
+   the corner points left instead of down. Sign-flip the rotate to compensate
+   and keep it pointing down/up. `:where()` adds no specificity so the later
+   plus-minus / none marker container queries (equal specificity, source order)
+   still win and stay neutral - a specificity bump would re-rotate the plus. */
+.cngx-accordion-item__chevron:where(:dir(rtl)) {
+  transform: rotate(-45deg);
+}
+
+.cngx-accordion-item[data-expanded] .cngx-accordion-item__chevron:where(:dir(rtl)) {
+  transform: rotate(-225deg);
+}
+
 /* Marker variants driven by the --cngx-accordion-marker token, not a mode input
    (Pillar 3). Token unset keeps the CSS chevron above; a skin's [data-skin]
    block sets the token and a style container query re-paints the same chevron
