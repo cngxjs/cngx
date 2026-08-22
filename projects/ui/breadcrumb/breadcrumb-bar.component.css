@@ -321,9 +321,9 @@
 
   .cngx-breadcrumb__link {
     /* structural: arrow silhouette + segment overlap - the ribbon's identity.
-       The clip-path chevron is a physical shape and does NOT mirror under
-       dir=rtl; the logical margins/padding flip but the silhouette stays -
-       RTL shape mirroring is a separate follow-up the property guard can't see. */
+       The clip-path chevron is directional and mirrors under dir=rtl below
+       (every coordinate x -> 100% - x). We reflect the polygon rather than
+       scaleX(-1) the element, which would also mirror the child label text. */
     display: inline-flex;
     align-items: center;
     padding: 0.5em 1.1em 0.5em 1.4em;
@@ -336,11 +336,19 @@
     color: var(--cngx-breadcrumb-ribbon-color);
   }
 
+  .cngx-breadcrumb__link:dir(rtl) {
+    clip-path: polygon(100% 0, 12px 0, 0 50%, 12px 100%, 100% 100%, calc(100% - 12px) 50%);
+  }
+
   .cngx-breadcrumb__crumb:first-child .cngx-breadcrumb__link {
     padding-inline-start: 1em;
     margin-inline-start: 0;
     clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%);
     border-radius: var(--cngx-breadcrumb-ribbon-radius) 0 0 var(--cngx-breadcrumb-ribbon-radius);
+  }
+
+  .cngx-breadcrumb__crumb:first-child .cngx-breadcrumb__link:dir(rtl) {
+    clip-path: polygon(100% 0, 12px 0, 0 50%, 12px 100%, 100% 100%);
   }
 
   .cngx-breadcrumb__link:hover {

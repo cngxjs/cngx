@@ -29,10 +29,32 @@ class BreadcrumbHost {
   readonly items = TRAIL;
 }
 
+@Component({
+  selector: 'cngx-breadcrumb-ribbon-geometry-host',
+  standalone: true,
+  imports: [CngxBreadcrumbBar],
+  template: `<cngx-breadcrumb [items]="items" [label]="'Breadcrumb'" skin="ribbon" />`,
+})
+class RibbonBreadcrumbHost {
+  readonly items = TRAIL;
+}
+
 let mountedRoot: HTMLElement | null = null;
 
 function mount(): HTMLElement {
   const fixture = TestBed.createComponent(BreadcrumbHost);
+  mountedRoot = fixture.nativeElement as HTMLElement;
+  document.body.appendChild(mountedRoot);
+  fixture.detectChanges();
+  const host = mountedRoot.querySelector('.cngx-breadcrumb');
+  if (!host) {
+    throw new Error('cngx-breadcrumb did not render');
+  }
+  return host as HTMLElement;
+}
+
+function mountRibbon(): HTMLElement {
+  const fixture = TestBed.createComponent(RibbonBreadcrumbHost);
   mountedRoot = fixture.nativeElement as HTMLElement;
   document.body.appendChild(mountedRoot);
   fixture.detectChanges();
@@ -54,6 +76,9 @@ function query(root: HTMLElement, selector: string): HTMLElement {
 afterEach(() => {
   mountedRoot?.remove();
   mountedRoot = null;
+  // isolate:false shares the browser env across specs, so a forced dir would
+  // leak into every later geometry read. Reset it after each RTL case.
+  document.documentElement.removeAttribute('dir');
 });
 
 describe('CngxBreadcrumbBar geometry', () => {
@@ -86,5 +111,32 @@ describe('CngxBreadcrumbBar geometry', () => {
     expect(computedValue(list, 'column-gap')).toBe('4px');
     host.style.setProperty('--cngx-space-sm', '16px');
     expect(computedValue(list, 'column-gap')).toBe('16px');
+  });
+});
+
+describe('CngxBreadcrumbBar ribbon clip-path direction', () => {
+  it('mirrors the ribbon silhouette under dir=rtl and keeps LTR byte-stable', () => {
+    const host = mountRibbon();
+    const link = query(host, '.cngx-breadcrumb__crumb:not(:first-child) .cngx-breadcrumb__link');
+    const ltr = computedValue(link, 'clip-path');
+    expect(ltr).not.toBe('');
+    expect(ltr).not.toBe('none');
+
+    document.documentElement.dir = 'rtl';
+    const rtl = computedValue(link, 'clip-path');
+    expect(rtl).not.toBe(ltr);
+
+    document.documentElement.dir = 'ltr';
+    expect(computedValue(link, 'clip-path')).toBe(ltr);
+  });
+
+  it('mirrors the first-crumb ribbon cap under dir=rtl', () => {
+    const host = mountRibbon();
+    const cap = query(host, '.cngx-breadcrumb__crumb:first-child .cngx-breadcrumb__link');
+    const ltr = computedValue(cap, 'clip-path');
+    expect(ltr).not.toBe('');
+
+    document.documentElement.dir = 'rtl';
+    expect(computedValue(cap, 'clip-path')).not.toBe(ltr);
   });
 });
