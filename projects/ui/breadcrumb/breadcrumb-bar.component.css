@@ -359,6 +359,10 @@
 
   .cngx-breadcrumb__crumb:first-child .cngx-breadcrumb__link:dir(rtl) {
     clip-path: polygon(100% 0, 12px 0, 0 50%, 12px 100%, 100% 100%);
+    /* The flat cap edge mirrors to x=100%, so the rounded corners follow it
+       to the inline-end side; otherwise the RTL first crumb shows a sharp
+       flat edge where LTR shows a rounded one. */
+    border-radius: 0 var(--cngx-breadcrumb-ribbon-radius) var(--cngx-breadcrumb-ribbon-radius) 0;
   }
 
   .cngx-breadcrumb__link:hover {

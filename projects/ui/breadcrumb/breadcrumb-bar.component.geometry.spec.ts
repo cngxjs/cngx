@@ -137,29 +137,40 @@ describe('CngxBreadcrumbBar geometry', () => {
 });
 
 describe('CngxBreadcrumbBar ribbon clip-path direction', () => {
-  it('mirrors the ribbon silhouette under dir=rtl and keeps LTR byte-stable', () => {
+  // Pin the exact reflected polygons: an inequality-only assertion would pass
+  // for any wrong-but-different reflection. These are the computed (browser-
+  // serialized) forms of the authored mid/cap polygons and their x -> 100% - x
+  // mirrors.
+  const MID_LTR = 'polygon(0px 0px, calc(100% - 12px) 0px, 100% 50%, calc(100% - 12px) 100%, 0px 100%, 12px 50%)';
+  const MID_RTL = 'polygon(100% 0px, 12px 0px, 0px 50%, 12px 100%, 100% 100%, calc(100% - 12px) 50%)';
+  const CAP_LTR = 'polygon(0px 0px, calc(100% - 12px) 0px, 100% 50%, calc(100% - 12px) 100%, 0px 100%)';
+  const CAP_RTL = 'polygon(100% 0px, 12px 0px, 0px 50%, 12px 100%, 100% 100%)';
+
+  it('reflects the mid-crumb silhouette under dir=rtl and keeps LTR byte-stable', () => {
     const host = mountRibbon();
     const link = query(host, '.cngx-breadcrumb__crumb:not(:first-child) .cngx-breadcrumb__link');
-    const ltr = computedValue(link, 'clip-path');
-    expect(ltr).not.toBe('');
-    expect(ltr).not.toBe('none');
+    expect(computedValue(link, 'clip-path')).toBe(MID_LTR);
 
     document.documentElement.dir = 'rtl';
-    const rtl = computedValue(link, 'clip-path');
-    expect(rtl).not.toBe(ltr);
+    expect(computedValue(link, 'clip-path')).toBe(MID_RTL);
 
     document.documentElement.dir = 'ltr';
-    expect(computedValue(link, 'clip-path')).toBe(ltr);
+    expect(computedValue(link, 'clip-path')).toBe(MID_LTR);
   });
 
-  it('mirrors the first-crumb ribbon cap under dir=rtl', () => {
+  it('reflects the first-crumb cap silhouette and its rounded edge under dir=rtl', () => {
     const host = mountRibbon();
+    // Pin the radius so the mirrored border-radius is asserted against a known
+    // value rather than the resolved `--cngx-radius-sm` fallback.
+    host.style.setProperty('--cngx-breadcrumb-ribbon-radius', '8px');
     const cap = query(host, '.cngx-breadcrumb__crumb:first-child .cngx-breadcrumb__link');
-    const ltr = computedValue(cap, 'clip-path');
-    expect(ltr).not.toBe('');
+    expect(computedValue(cap, 'clip-path')).toBe(CAP_LTR);
+    expect(computedValue(cap, 'border-radius')).toBe('8px 0px 0px 8px');
 
     document.documentElement.dir = 'rtl';
-    expect(computedValue(cap, 'clip-path')).not.toBe(ltr);
+    expect(computedValue(cap, 'clip-path')).toBe(CAP_RTL);
+    // The rounded corners follow the flat edge to the inline-end side.
+    expect(computedValue(cap, 'border-radius')).toBe('0px 8px 8px 0px');
   });
 });
 
