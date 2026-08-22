@@ -116,9 +116,10 @@
   }
 
   /* The caret is a directional glyph; flip it inline under RTL rather than
-     swapping to a mirrored character (mirrors the paginator nav-icon flip). */
-  [dir='rtl'] cngx-context-menu-item .cngx-menu-item__suffix,
-  [dir='rtl'] button[cngxContextMenuItem] .cngx-menu-item__suffix {
+     swapping to a mirrored character. `:dir(rtl)` is resolved-direction, so it
+     stays island-safe (mirrors the paginator nav-icon flip). */
+  cngx-context-menu-item:dir(rtl) .cngx-menu-item__suffix,
+  button[cngxContextMenuItem]:dir(rtl) .cngx-menu-item__suffix {
     transform: scaleX(-1);
   }
 

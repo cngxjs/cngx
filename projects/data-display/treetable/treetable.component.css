@@ -558,7 +558,7 @@
         var(--cngx-treetable-cell-padding-inline, 1rem);
       font-weight: var(--cngx-treetable-header-font-weight, 600);
       color: var(--cngx-treetable-header-color, var(--cngx-color-text, oklch(0.34 0.015 250)));
-      text-align: left;
+      text-align: start;
       white-space: nowrap;
     }
 

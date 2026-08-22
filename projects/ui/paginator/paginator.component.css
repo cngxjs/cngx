@@ -969,12 +969,14 @@
   }
 
   /*
-   * RTL: mirror the directional nav chevrons. Outside @scope because `[dir]`
-   * sits on an ancestor, above the scope root. A static flip, not motion - so
-   * it is intentionally NOT gated by reduced-motion. Everything else is RTL-safe
-   * already via logical properties in the base + skin layers.
+   * RTL: mirror the directional nav chevrons. `:dir(rtl)` matches the element's
+   * RESOLVED direction, so the flip stays correct inside a CngxDir directional
+   * island (an ancestor `[dir]` selector would leak the outer direction in). A
+   * static flip, not motion - so it is intentionally NOT gated by reduced-motion.
+   * Everything else is RTL-safe already via logical properties in the base + skin
+   * layers.
    */
-  [dir='rtl'] .cngx-paginator__nav .cngx-icon {
+  .cngx-paginator__nav:dir(rtl) .cngx-icon {
     transform: scaleX(-1);
   }
 }

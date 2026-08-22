@@ -320,11 +320,14 @@
   }
 
   .cngx-breadcrumb__link {
-    /* structural: arrow silhouette + segment overlap - the ribbon's identity */
+    /* structural: arrow silhouette + segment overlap - the ribbon's identity.
+       The clip-path chevron is a physical shape and does NOT mirror under
+       dir=rtl; the logical margins/padding flip but the silhouette stays -
+       RTL shape mirroring is a separate follow-up the property guard can't see. */
     display: inline-flex;
     align-items: center;
     padding: 0.5em 1.1em 0.5em 1.4em;
-    margin-left: -10px;
+    margin-inline-start: -10px;
     clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%, 12px 50%);
     font-size: var(--cngx-breadcrumb-ribbon-font-size);
     font-weight: 560;
@@ -334,8 +337,8 @@
   }
 
   .cngx-breadcrumb__crumb:first-child .cngx-breadcrumb__link {
-    padding-left: 1em;
-    margin-left: 0;
+    padding-inline-start: 1em;
+    margin-inline-start: 0;
     clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%);
     border-radius: var(--cngx-breadcrumb-ribbon-radius) 0 0 var(--cngx-breadcrumb-ribbon-radius);
   }
@@ -739,7 +742,7 @@
     font-size: var(--cngx-breadcrumb-toolbar-font-size);
     font-weight: 550;
     text-decoration: none;
-    border-right: 1px solid var(--cngx-breadcrumb-toolbar-cell-border);
+    border-inline-end: 1px solid var(--cngx-breadcrumb-toolbar-cell-border);
     border-radius: 0;
     color: var(--cngx-breadcrumb-toolbar-color);
   }
@@ -753,7 +756,7 @@
     background: var(--cngx-breadcrumb-toolbar-active-bg);
     color: var(--cngx-breadcrumb-toolbar-active-color);
     font-weight: 640;
-    border-right: none;
+    border-inline-end: none;
   }
 
   .cngx-breadcrumb__separator {

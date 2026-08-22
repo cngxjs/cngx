@@ -47,6 +47,9 @@ function mount(): { host: HTMLElement; body: HTMLElement } {
 afterEach(() => {
   mountedRoot?.remove();
   mountedRoot = null;
+  // isolate: false shares one environment across the file - a leaked dir would
+  // corrupt every later spec's resolved direction.
+  document.documentElement.removeAttribute('dir');
 });
 
 describe('CngxSidenav mini-rail geometry', () => {
@@ -62,5 +65,60 @@ describe('CngxSidenav mini-rail geometry', () => {
     // it at the 56px registered initial.
     expect(computedValue(body, '--cngx-sidenav-mini-width')).toBe('72px');
     expect(parseFloat(computedValue(body, 'min-width'))).toBeCloseTo(72, 1);
+  });
+});
+
+// The overlay drawer parks off-canvas via a physical `translateX(±100%)` (the
+// hide transform is self-relative, so it cannot be expressed logically). The
+// `:dir(rtl)` override flips that sign by RESOLVED direction - the assertion
+// that the drawer parks off the opposite edge under `dir=rtl` is what proves the
+// override fired, and doing it by resolved direction is what makes it survive a
+// CngxDir directional island (an `[dir='rtl']` ancestor selector would not).
+@Component({
+  selector: 'cngx-sidenav-rtl-host',
+  standalone: true,
+  imports: [CngxSidenavLayout, CngxSidenav, CngxSidenavContent],
+  template: `
+    <cngx-sidenav-layout>
+      <cngx-sidenav mode="over" position="start" ariaLabel="Nav">Nav</cngx-sidenav>
+      <cngx-sidenav-content>Main content body</cngx-sidenav-content>
+    </cngx-sidenav-layout>
+  `,
+})
+class SidenavOverHost {}
+
+function mountOver(dir: 'ltr' | 'rtl'): { host: HTMLElement; layout: HTMLElement } {
+  document.documentElement.setAttribute('dir', dir);
+  const fixture = TestBed.createComponent(SidenavOverHost);
+  mountedRoot = fixture.nativeElement as HTMLElement;
+  document.body.appendChild(mountedRoot);
+  fixture.detectChanges();
+  const layout = mountedRoot.querySelector('cngx-sidenav-layout');
+  const host = mountedRoot.querySelector('cngx-sidenav.cngx-sidenav--over');
+  if (!layout || !host) {
+    throw new Error('over cngx-sidenav did not render');
+  }
+  return { host: host as HTMLElement, layout: layout as HTMLElement };
+}
+
+describe('CngxSidenav RTL geometry (:dir scoping)', () => {
+  it('parks the closed overlay drawer off the inline-start (left) edge in LTR', () => {
+    const { host, layout } = mountOver('ltr');
+    const h = host.getBoundingClientRect();
+    const l = layout.getBoundingClientRect();
+    // translateX(-100%) pushes the drawer fully off the left edge: its right edge
+    // lands at (or before) the layout's left edge.
+    expect(h.right).toBeLessThanOrEqual(l.left + 1);
+  });
+
+  it('parks the closed overlay drawer off the inline-start (right) edge under :dir(rtl)', () => {
+    const { host, layout } = mountOver('rtl');
+    const h = host.getBoundingClientRect();
+    const l = layout.getBoundingClientRect();
+    // :dir(rtl) flips the physical translate to translateX(100%): the drawer parks
+    // off the now-right inline-start edge, its left edge at (or after) the layout's
+    // right edge. If the override had NOT matched, the base translateX(-100%) would
+    // leave the drawer on-screen at the right and this would fail.
+    expect(h.left).toBeGreaterThanOrEqual(l.right - 1);
   });
 });

@@ -388,7 +388,7 @@
     /* Status indicator dot */
     .cngx-avatar__status {
       position: absolute;
-      right: -2px;
+      inset-inline-end: -2px;
       bottom: -2px;
       width: var(--cngx-avatar-status-size, 0.65em);
       height: var(--cngx-avatar-status-size, 0.65em);

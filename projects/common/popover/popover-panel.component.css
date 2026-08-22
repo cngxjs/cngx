@@ -485,22 +485,22 @@
     :scope.cngx-popover-panel--info {
       --cngx-popover-panel-accent: oklch(0.92 0.05 250);
       --cngx-popover-panel-accent-text: oklch(0.38 0.16 260);
-      border-left: 3px solid var(--cngx-popover-panel-accent-text);
+      border-inline-start: 3px solid var(--cngx-popover-panel-accent-text);
     }
     :scope.cngx-popover-panel--success {
       --cngx-popover-panel-accent: oklch(0.94 0.07 155);
       --cngx-popover-panel-accent-text: oklch(0.42 0.1 155);
-      border-left: 3px solid var(--cngx-popover-panel-accent-text);
+      border-inline-start: 3px solid var(--cngx-popover-panel-accent-text);
     }
     :scope.cngx-popover-panel--warning {
       --cngx-popover-panel-accent: oklch(0.95 0.06 75);
       --cngx-popover-panel-accent-text: oklch(0.46 0.12 60);
-      border-left: 3px solid var(--cngx-popover-panel-accent-text);
+      border-inline-start: 3px solid var(--cngx-popover-panel-accent-text);
     }
     :scope.cngx-popover-panel--danger {
       --cngx-popover-panel-accent: oklch(0.93 0.04 25);
       --cngx-popover-panel-accent-text: oklch(0.42 0.18 25);
-      border-left: 3px solid var(--cngx-popover-panel-accent-text);
+      border-inline-start: 3px solid var(--cngx-popover-panel-accent-text);
     }
 
     .cngx-popover-panel__loading,

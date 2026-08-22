@@ -314,7 +314,7 @@
     .cngx-stepper__indicator .cngx-stepper__badge {
       position: absolute;
       top: -8px;
-      right: -8px;
+      inset-inline-end: -8px;
       margin-inline-start: 0;
     }
 
@@ -946,7 +946,7 @@
     .cngx-stepper__step + .cngx-stepper__step::before {
       content: '';
       position: absolute;
-      left: calc(-1 * var(--cngx-step-gap, 0.5rem));
+      inset-inline-start: calc(-1 * var(--cngx-step-gap, 0.5rem));
       top: 50%;
       width: var(--cngx-step-gap, 0.5rem);
       height: 0;
@@ -958,12 +958,12 @@
   /* Vertical orientation: solid bar connector running between dots. */
   @scope (.cngx-stepper[data-skin='linear-minimal'][data-orientation='vertical']) {
     .cngx-stepper__step + .cngx-stepper__step::before {
-      left: calc(var(--cngx-step-indicator-size, 1.75rem) / 2);
+      inset-inline-start: calc(var(--cngx-step-indicator-size, 1.75rem) / 2);
       top: calc(-1 * var(--cngx-step-gap, 0.5rem));
       width: 1px;
       height: var(--cngx-step-gap, 0.5rem);
       border-top: 0;
-      border-left: 2px solid color-mix(in srgb, currentColor 35%, transparent);
+      border-inline-start: 2px solid color-mix(in srgb, currentColor 35%, transparent);
       transform: none;
     }
   }
@@ -1083,7 +1083,7 @@
       content: '';
       position: absolute;
       /* Symmetric inset of var(--cngx-step-connector-inset) from each disc edge. */
-      left: calc(
+      inset-inline-start: calc(
         -50% + var(--cngx-step-indicator-size, 1.75rem) / 2 + var(--cngx-step-connector-inset, 6px)
       );
       width: calc(
@@ -1144,7 +1144,7 @@
     }
 
     .cngx-stepper__step + .cngx-stepper__step::before {
-      left: calc(
+      inset-inline-start: calc(
         0.75rem + var(--cngx-step-indicator-size, 1.75rem) / 2 -
           var(--cngx-step-connector-width, 2px) / 2
       );
