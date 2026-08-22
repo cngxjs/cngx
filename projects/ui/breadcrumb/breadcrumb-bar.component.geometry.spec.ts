@@ -39,6 +39,16 @@ class RibbonBreadcrumbHost {
   readonly items = TRAIL;
 }
 
+@Component({
+  selector: 'cngx-breadcrumb-header-geometry-host',
+  standalone: true,
+  imports: [CngxBreadcrumbBar],
+  template: `<cngx-breadcrumb [items]="items" [label]="'Breadcrumb'" skin="header" />`,
+})
+class HeaderBreadcrumbHost {
+  readonly items = TRAIL;
+}
+
 let mountedRoot: HTMLElement | null = null;
 
 function mount(): HTMLElement {
@@ -55,6 +65,18 @@ function mount(): HTMLElement {
 
 function mountRibbon(): HTMLElement {
   const fixture = TestBed.createComponent(RibbonBreadcrumbHost);
+  mountedRoot = fixture.nativeElement as HTMLElement;
+  document.body.appendChild(mountedRoot);
+  fixture.detectChanges();
+  const host = mountedRoot.querySelector('.cngx-breadcrumb');
+  if (!host) {
+    throw new Error('cngx-breadcrumb did not render');
+  }
+  return host as HTMLElement;
+}
+
+function mountHeader(): HTMLElement {
+  const fixture = TestBed.createComponent(HeaderBreadcrumbHost);
   mountedRoot = fixture.nativeElement as HTMLElement;
   document.body.appendChild(mountedRoot);
   fixture.detectChanges();
@@ -138,5 +160,31 @@ describe('CngxBreadcrumbBar ribbon clip-path direction', () => {
 
     document.documentElement.dir = 'rtl';
     expect(computedValue(cap, 'clip-path')).not.toBe(ltr);
+  });
+});
+
+describe('CngxBreadcrumbBar separator glyph direction', () => {
+  function separatorContent(host: HTMLElement): string {
+    const sep = host.querySelector('.cngx-breadcrumb__separator');
+    if (!sep) {
+      throw new Error('.cngx-breadcrumb__separator did not render');
+    }
+    // The token lives on the ::after use-site, not the element, so read the
+    // pseudo directly - computedValue() only reads the element itself.
+    return getComputedStyle(sep, '::after').getPropertyValue('content').trim();
+  }
+
+  it('flips the routed separator glyph from › to ‹ under dir=rtl, LTR stable', () => {
+    const host = mountHeader();
+    const ltr = separatorContent(host);
+    expect(ltr).toContain('›');
+
+    document.documentElement.dir = 'rtl';
+    const rtl = separatorContent(host);
+    expect(rtl).toContain('‹');
+    expect(rtl).not.toBe(ltr);
+
+    document.documentElement.dir = 'ltr';
+    expect(separatorContent(host)).toBe(ltr);
   });
 });
