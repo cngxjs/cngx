@@ -3,6 +3,8 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it } from 'vitest';
 
+import { provideDirection } from '@cngx/core';
+
 import { CngxRovingItem, CngxRovingTabindex } from './roving-tabindex.directive';
 
 @Component({
@@ -290,5 +292,59 @@ describe('CngxRovingTabindex — virtual mode', () => {
     TestBed.flushEffects();
     fixture.detectChanges();
     expect(dir.activeIndex()).toBe(0);
+  });
+});
+
+describe('CngxRovingTabindex — dir=rtl', () => {
+  beforeEach(() =>
+    TestBed.configureTestingModule({
+      imports: [TestHost],
+      providers: [provideDirection('rtl')],
+    }),
+  );
+
+  function setup() {
+    const fixture = TestBed.createComponent(TestHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const container = fixture.debugElement.query(By.directive(CngxRovingTabindex));
+    const dir = container.injector.get(CngxRovingTabindex);
+    const buttons = fixture.debugElement.queryAll(By.css('button'));
+    return { fixture, container, dir, buttons };
+  }
+
+  function tabindex(el: { nativeElement: HTMLElement }): string {
+    return el.nativeElement.getAttribute('tabindex') ?? '';
+  }
+
+  it('moves focus backward on ArrowRight (horizontal reading order is reversed)', () => {
+    const { container, dir, buttons, fixture } = setup();
+    dir.activeIndex.set(2);
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    container.triggerEventHandler('keydown', new KeyboardEvent('keydown', { key: 'ArrowRight' }));
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    expect(tabindex(buttons[1])).toBe('0');
+  });
+
+  it('moves focus forward on ArrowLeft (horizontal reading order is reversed)', () => {
+    const { container, buttons, fixture } = setup();
+    container.triggerEventHandler('keydown', new KeyboardEvent('keydown', { key: 'ArrowLeft' }));
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    expect(tabindex(buttons[0])).toBe('-1');
+    expect(tabindex(buttons[1])).toBe('0');
+  });
+
+  it('leaves the vertical axis direction-invariant (ArrowDown still advances)', () => {
+    const { container, buttons, fixture } = setup();
+    fixture.componentInstance.orientation.set('vertical');
+    fixture.detectChanges();
+    container.triggerEventHandler('keydown', new KeyboardEvent('keydown', { key: 'ArrowDown' }));
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    expect(tabindex(buttons[1])).toBe('0');
   });
 });
