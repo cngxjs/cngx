@@ -38,6 +38,8 @@ afterEach(() => {
   mountedRoot?.remove();
   mountedRoot = null;
   document.documentElement.removeAttribute('dir');
+  document.documentElement.style.removeProperty('--cngx-trend-bidi');
+  document.documentElement.style.removeProperty('--cngx-trend-direction');
 });
 
 describe('CngxTrend geometry (rtl)', () => {
@@ -46,5 +48,14 @@ describe('CngxTrend geometry (rtl)', () => {
     const host = mount();
     expect(computedValue(host, 'unicode-bidi')).toBe('isolate');
     expect(computedValue(host, 'direction')).toBe('ltr');
+  });
+
+  it('lets a consumer opt out via --cngx-trend-bidi / --cngx-trend-direction', () => {
+    document.documentElement.dir = 'rtl';
+    document.documentElement.style.setProperty('--cngx-trend-bidi', 'normal');
+    document.documentElement.style.setProperty('--cngx-trend-direction', 'rtl');
+    const host = mount();
+    expect(computedValue(host, 'unicode-bidi')).toBe('normal');
+    expect(computedValue(host, 'direction')).toBe('rtl');
   });
 });

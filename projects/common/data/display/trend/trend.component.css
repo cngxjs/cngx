@@ -134,9 +134,10 @@
       /* `formatDelta` wraps the Intl magnitude in an ASCII `+`/`%` outside Intl,
          so the host is a composite, not a single Intl run: under `isolate`
          alone the neutral `+` detaches to the RTL base level. A forced LTR
-         island keeps the sign attached left of the order-invariant digits. */
-      unicode-bidi: isolate;
-      direction: ltr;
+         island keeps the sign attached left of the order-invariant digits.
+         Consumer opt-out: set --cngx-trend-bidi / --cngx-trend-direction. */
+      unicode-bidi: var(--cngx-trend-bidi, isolate);
+      direction: var(--cngx-trend-direction, ltr);
     }
 
     :scope.cngx-trend--up {

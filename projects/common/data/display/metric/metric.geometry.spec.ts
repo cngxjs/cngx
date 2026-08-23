@@ -36,6 +36,7 @@ afterEach(() => {
   mountedRoot?.remove();
   mountedRoot = null;
   document.documentElement.removeAttribute('dir');
+  document.documentElement.style.removeProperty('--cngx-metric-bidi');
 });
 
 describe('CngxMetric geometry (rtl)', () => {
@@ -46,5 +47,12 @@ describe('CngxMetric geometry (rtl)', () => {
     // Bucket A never forces LTR: the single Intl run keeps its resolved
     // direction so genuinely RTL-locale digits are not corrupted.
     expect(computedValue(value, 'direction')).toBe('rtl');
+  });
+
+  it('lets a consumer opt out via --cngx-metric-bidi', () => {
+    document.documentElement.dir = 'rtl';
+    document.documentElement.style.setProperty('--cngx-metric-bidi', 'normal');
+    const value = mount();
+    expect(computedValue(value, 'unicode-bidi')).toBe('normal');
   });
 });

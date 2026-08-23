@@ -39,6 +39,8 @@ afterEach(() => {
   mountedRoot?.remove();
   mountedRoot = null;
   document.documentElement.removeAttribute('dir');
+  document.documentElement.style.removeProperty('--cngx-delta-bidi');
+  document.documentElement.style.removeProperty('--cngx-delta-direction');
 });
 
 describe('CngxDelta geometry (rtl)', () => {
@@ -49,5 +51,14 @@ describe('CngxDelta geometry (rtl)', () => {
     // The order proof: the ASCII `+`/`%` stays left of the magnitude only
     // because the run is forced LTR, not merely fenced.
     expect(computedValue(host, 'direction')).toBe('ltr');
+  });
+
+  it('lets a consumer opt out via --cngx-delta-bidi / --cngx-delta-direction', () => {
+    document.documentElement.dir = 'rtl';
+    document.documentElement.style.setProperty('--cngx-delta-bidi', 'normal');
+    document.documentElement.style.setProperty('--cngx-delta-direction', 'rtl');
+    const host = mount();
+    expect(computedValue(host, 'unicode-bidi')).toBe('normal');
+    expect(computedValue(host, 'direction')).toBe('rtl');
   });
 });
