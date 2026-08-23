@@ -12,9 +12,10 @@ import { CngxCharCount } from './char-count.component';
 // root: "12/100" is a raw ASCII ratio, definitionally LTR (bucket B). The host
 // stays `display: contents` (no box), so the forced LTR island lives on the
 // span that actually renders the ratio and must compute `unicode-bidi: isolate`
-// AND `direction: ltr` - the `direction: ltr` read is the order proof that the
-// count stays before the max. A property-only host assertion would false-green
-// (the display:contents host has no box to isolate). jsdom reports `''`.
+// AND `direction: ltr` - asserting the resolved `direction` on the span (not
+// just the property) is the order proof that the count stays before the max.
+// The `display: contents` host has no box to isolate, which is why the island
+// lives on the span. jsdom reports `''`.
 
 let mountedRoot: HTMLElement | null = null;
 

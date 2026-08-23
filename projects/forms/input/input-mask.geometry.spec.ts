@@ -9,8 +9,8 @@ import { CngxInputMask } from './input-mask.directive';
 // root: a masked value is a structured code that reads left-to-right
 // regardless of locale (bucket B), so its host must compute `unicode-bidi:
 // isolate` AND `direction: ltr` - a true forced LTR island, not just a fenced
-// run. The `direction: ltr` read is the order proof; a property-only assertion
-// would false-green (the plan-review blocker). jsdom reports `''`.
+// run. Asserting the resolved `direction` (not just the property) is the order
+// proof that the code renders left-to-right under RTL. jsdom reports `''`.
 
 let mountedRoot: HTMLElement | null = null;
 
