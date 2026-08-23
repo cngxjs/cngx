@@ -356,6 +356,10 @@
     color: var(--cngx-breadcrumb-ribbon-color);
   }
 
+  /* Bare :dir(rtl) here, not :where(:dir(rtl)) as in stepper/accordion: those
+     share a scope/container with a direction-neutral sibling a specificity bump
+     would clobber. The ribbon has no such shared-scope neutral, so the bump is
+     harmless - keep bare unless a neutral sibling is ever added to this scope. */
   .cngx-breadcrumb__link:dir(rtl) {
     clip-path: polygon(
       100% 0,
