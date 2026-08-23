@@ -132,6 +132,11 @@
       font-weight: var(--cngx-metric-value-weight, 600);
       color: var(--cngx-metric-value-color, var(--cngx-color-text, oklch(0.2 0.01 290)));
       line-height: 1.2;
+      /* The value is a single Intl.NumberFormat run (sign/grouping/decimal all
+         from Intl); isolate fences its bidi boundary against surrounding RTL
+         text without forcing a direction, so RTL-locale digits stay correct.
+         Consumer opt-out: set --cngx-metric-bidi: normal. */
+      unicode-bidi: var(--cngx-metric-bidi, isolate);
     }
 
     .cngx-metric__unit {

@@ -215,6 +215,12 @@
       color: var(--cngx-progress-label-color, currentColor);
       min-width: 3ch;
       text-align: end;
+      /* "42%" is a rounded integer + ASCII `%` concatenated outside Intl
+         (bucket B); a forced LTR island keeps the percent attached to its
+         number under `dir="rtl"`. The label is aria-hidden decorative.
+         Consumer opt-out: --cngx-progress-bidi / --cngx-progress-direction. */
+      unicode-bidi: var(--cngx-progress-bidi, isolate);
+      direction: var(--cngx-progress-direction, ltr);
     }
 
     :scope.cngx-progress--circular {

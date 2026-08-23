@@ -146,6 +146,11 @@ function isAllowedChar(
     // `--cngx-numeric-input-numeric-variant: normal` when the body font's
     // proportional digits are wanted.
     '[style.font-variant-numeric]': '"var(--cngx-numeric-input-numeric-variant, tabular-nums)"',
+    // Bucket A: the field value is a single Intl.NumberFormat run (sign,
+    // grouping and decimal all from Intl), so isolate fences its bidi boundary
+    // against surrounding RTL text without forcing a direction - RTL-locale
+    // digits keep their own resolved order.
+    '[style.unicode-bidi]': '"var(--cngx-numeric-input-bidi, isolate)"',
     '(beforeinput)': 'handleBeforeInput($event)',
     '(keydown)': 'handleKeyDown($event)',
     '(focus)': 'handleFocus()',

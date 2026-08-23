@@ -57,9 +57,9 @@ import { CngxFormFieldPresenter } from '@cngx/forms/field';
   template: `@if (customTpl()) {
       <ng-container *ngTemplateOutlet="customTpl()!; context: tplContext()" />
     } @else if (resolvedMax() != null) {
-      <span>{{ currentLength() }}/{{ resolvedMax() }}</span>
+      <span class="cngx-char-count__readout">{{ currentLength() }}/{{ resolvedMax() }}</span>
     } @else if (resolvedMin() != null) {
-      <span>{{ currentLength() }} (min {{ resolvedMin() }})</span>
+      <span class="cngx-char-count__readout">{{ currentLength() }} (min {{ resolvedMin() }})</span>
     }`,
   styleUrls: ['./char-count.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
