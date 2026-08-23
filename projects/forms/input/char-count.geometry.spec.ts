@@ -41,7 +41,7 @@ async function mountSpan(): Promise<HTMLElement> {
   TestBed.flushEffects();
   await fixture.whenStable();
   fixture.detectChanges();
-  const span = mountedRoot.querySelector('.cngx-char-count span');
+  const span = mountedRoot.querySelector('.cngx-char-count__readout');
   if (!span) {
     throw new Error('cngx-char-count readout span did not render');
   }
