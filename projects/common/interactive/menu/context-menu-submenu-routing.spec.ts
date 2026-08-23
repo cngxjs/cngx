@@ -79,6 +79,7 @@ describe('context-menu trigger core - submenu keyboard routing', () => {
       dismissFactory: noopDismissFactory,
       announcer: { announce: vi.fn() },
       nav: createW3CMenuStrategy(),
+      direction: signal<'ltr' | 'rtl'>('ltr'),
       focusStackFactory: createMenuFocusStack,
     });
   });

@@ -10,6 +10,7 @@ import {
   untracked,
 } from '@angular/core';
 import { outputToObservable } from '@angular/core/rxjs-interop';
+import { injectDirection, resolveInlineArrowKey } from '@cngx/core';
 
 import {
   CNGX_MENU_DISMISS_HANDLER_FACTORY,
@@ -95,6 +96,7 @@ export class CngxMenuTrigger {
   readonly isOpen = computed<boolean>(() => this.popover().isVisible());
 
   private readonly doc = inject(DOCUMENT);
+  private readonly direction = injectDirection();
   private readonly hostElRef = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly menuConfig = injectMenuConfig();
   private readonly announcer = inject(CNGX_MENU_ANNOUNCER_FACTORY)();
@@ -186,7 +188,10 @@ export class CngxMenuTrigger {
     const menu = this.focusStack.effectiveMenu();
     const ad = menu.ad;
 
-    switch (key) {
+    // Resolve the physical arrow to its inline-logical intent: under `rtl`
+    // physical ArrowLeft opens the submenu and physical ArrowRight pops it.
+    // Vertical / Home / End / activation keys pass through unchanged.
+    switch (resolveInlineArrowKey(key, this.direction())) {
       case 'Escape':
         this.focusStack.handleEscape(event);
         return;

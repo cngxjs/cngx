@@ -8,7 +8,7 @@ import {
   type CngxContextMenuTriggerPopoverRef,
 } from './context-menu-trigger-core';
 import type { CngxMenuDismissHandlerFactory } from './dismiss-handler';
-import { createMenuFocusStack } from './menu-focus-stack';
+import { createMenuFocusStack, type CngxMenuFocusStack } from './menu-focus-stack';
 import { DEFAULT_MENU_CONFIG } from './menu-config';
 import type { CngxMenuHost } from './menu-host.token';
 import { createW3CMenuStrategy } from './menu-nav-strategy';
@@ -72,9 +72,32 @@ describe('createContextMenuTriggerCore', () => {
       dismissFactory: noopDismissFactory,
       announcer: { announce: vi.fn() },
       nav: createW3CMenuStrategy(),
+      direction: signal<'ltr' | 'rtl'>('ltr'),
       focusStackFactory: createMenuFocusStack,
       ...over,
     });
+  }
+
+  function spyFocusStack() {
+    const handleArrowRight = vi.fn();
+    const handleArrowLeft = vi.fn();
+    const stack = {
+      stack: signal<readonly CngxMenuHost[]>([]).asReadonly(),
+      effectiveMenu: () => menu,
+      activeSubmenu: () => undefined,
+      handleEscape: vi.fn(),
+      handleArrowRight,
+      handleArrowLeft,
+      handleActivation: vi.fn(),
+      openSubmenuFor: vi.fn(),
+      noteSubmenuOpened: vi.fn(),
+      closeAll: vi.fn(),
+    } as unknown as CngxMenuFocusStack;
+    return { stack, handleArrowRight, handleArrowLeft };
+  }
+
+  function arrow(k: 'ArrowLeft' | 'ArrowRight'): KeyboardEvent {
+    return { key: k, preventDefault: vi.fn() } as unknown as KeyboardEvent;
   }
 
   it('default resolveOpen prevents default and opens the popover on contextmenu', () => {
@@ -134,5 +157,33 @@ describe('createContextMenuTriggerCore', () => {
 
     expect(event.preventDefault).not.toHaveBeenCalled();
     expect(popover.show).not.toHaveBeenCalled();
+  });
+
+  describe('submenu arrow routing under dir', () => {
+    it('ltr: physical ArrowRight opens the submenu, physical ArrowLeft pops it', () => {
+      const { stack, handleArrowRight, handleArrowLeft } = spyFocusStack();
+      const core = build({ direction: signal('ltr'), focusStackFactory: () => stack });
+      popover.show();
+
+      core.handleKeydown(arrow('ArrowRight'));
+      expect(handleArrowRight).toHaveBeenCalledOnce();
+      expect(handleArrowLeft).not.toHaveBeenCalled();
+
+      core.handleKeydown(arrow('ArrowLeft'));
+      expect(handleArrowLeft).toHaveBeenCalledOnce();
+    });
+
+    it('rtl: physical ArrowLeft opens the submenu, physical ArrowRight pops it', () => {
+      const { stack, handleArrowRight, handleArrowLeft } = spyFocusStack();
+      const core = build({ direction: signal('rtl'), focusStackFactory: () => stack });
+      popover.show();
+
+      core.handleKeydown(arrow('ArrowLeft'));
+      expect(handleArrowRight).toHaveBeenCalledOnce();
+      expect(handleArrowLeft).not.toHaveBeenCalled();
+
+      core.handleKeydown(arrow('ArrowRight'));
+      expect(handleArrowLeft).toHaveBeenCalledOnce();
+    });
   });
 });

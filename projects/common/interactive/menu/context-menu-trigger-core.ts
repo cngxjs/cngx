@@ -1,4 +1,5 @@
 import { type Signal } from '@angular/core';
+import { resolveInlineArrowKey, type CngxDirection } from '@cngx/core';
 
 import {
   createMenuTriggerDismissBinding,
@@ -64,6 +65,12 @@ export interface CngxContextMenuTriggerCoreDeps {
   readonly announcer: CngxMenuAnnouncerLike;
   /** Keyboard policy for ArrowRight/ArrowLeft submenu routing. */
   readonly nav: CngxMenuNavStrategy;
+  /**
+   * Document writing direction. Resolves the physical arrow to its
+   * inline-logical intent at the dispatch site, so under `rtl` physical
+   * ArrowLeft opens the submenu and physical ArrowRight pops it.
+   */
+  readonly direction: Signal<CngxDirection>;
   /** Focus-stack factory (from `CNGX_MENU_FOCUS_STACK_FACTORY`). */
   readonly focusStackFactory: CngxMenuFocusStackFactory;
   /**
@@ -235,7 +242,7 @@ export function createContextMenuTriggerCore(
         return;
       }
       const menu = focusStack.effectiveMenu();
-      switch (event.key) {
+      switch (resolveInlineArrowKey(event.key, deps.direction())) {
         case 'ArrowRight':
           focusStack.handleArrowRight(menu, event);
           return;

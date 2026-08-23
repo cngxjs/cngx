@@ -60,6 +60,13 @@ const NOOP: CngxMenuNavAction = { kind: 'noop' };
  *   `close-submenu`. Otherwise → `move-to-parent` (an enclosing menubar
  *   interprets that; a standalone menu trigger treats it as noop).
  *
+ * `onArrowRight` / `onArrowLeft` are the inline-forward / inline-back
+ * intents, not physical keys. The dispatch site resolves the physical
+ * arrow to its logical intent by writing direction before calling the
+ * strategy (`resolveInlineArrowKey`), so under `rtl` physical ArrowLeft
+ * routes to `onArrowRight`. Custom strategies therefore stay
+ * direction-naive and inherit correct RTL behaviour for free.
+ *
  * @category common/interactive/menu
  */
 export function createW3CMenuStrategy(): CngxMenuNavStrategy {

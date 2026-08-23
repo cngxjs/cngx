@@ -3,12 +3,19 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { provideDirection } from '@cngx/core';
+
 import { CngxPopover } from '@cngx/common/popover';
 
 import {
   CNGX_MENU_DISMISS_HANDLER_FACTORY,
   type CngxMenuDismissHandler,
 } from './dismiss-handler';
+import {
+  CNGX_MENU_FOCUS_STACK_FACTORY,
+  createMenuFocusStack,
+  type CngxMenuFocusStack,
+} from './menu-focus-stack';
 import { provideMenuConfig } from './menu-config';
 import {
   withDismissOnBlur,
@@ -314,5 +321,66 @@ describe('CngxMenuTrigger', () => {
       TestBed.flushEffects();
       expect(getTrigger(fixture).lastDismissSource()).toBe('escape');
     });
+  });
+});
+
+describe('CngxMenuTrigger — submenu arrows under dir', () => {
+  // Spy the REAL focus stack (via the factory token) so every directive path
+  // the effect touches still works, while we assert the physical->logical
+  // routing at the trigger dispatch: under `rtl` a physical ArrowLeft must
+  // reach handleArrowRight (open), ArrowRight must reach handleArrowLeft (pop).
+  function configure(dir: 'ltr' | 'rtl') {
+    polyfillPopover();
+    let stack: CngxMenuFocusStack | undefined;
+    TestBed.configureTestingModule({
+      imports: [TriggerHost],
+      providers: [
+        provideDirection(dir),
+        {
+          provide: CNGX_MENU_FOCUS_STACK_FACTORY,
+          useValue: (deps: Parameters<typeof createMenuFocusStack>[0]) => {
+            const real = createMenuFocusStack(deps);
+            vi.spyOn(real, 'handleArrowRight');
+            vi.spyOn(real, 'handleArrowLeft');
+            stack = real;
+            return real;
+          },
+        },
+      ],
+    });
+    const fixture = TestBed.createComponent(TriggerHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const triggerEl = fixture.debugElement.query(By.directive(CngxMenuTrigger))
+      .nativeElement as HTMLElement;
+    const popover = fixture.debugElement
+      .query(By.directive(CngxPopover))
+      .injector.get(CngxPopover);
+    popover.show();
+    TestBed.flushEffects();
+    return { triggerEl, stack: stack as CngxMenuFocusStack };
+  }
+
+  afterEach(() => {
+    document.body.querySelectorAll('.cngx-menu-announcer').forEach((el) => el.remove());
+  });
+
+  it('ltr: physical ArrowRight opens the submenu, physical ArrowLeft pops it', () => {
+    const { triggerEl, stack } = configure('ltr');
+    triggerEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+    expect(stack.handleArrowRight).toHaveBeenCalledOnce();
+    expect(stack.handleArrowLeft).not.toHaveBeenCalled();
+    triggerEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+    expect(stack.handleArrowLeft).toHaveBeenCalledOnce();
+  });
+
+  it('rtl: physical ArrowLeft opens the submenu, physical ArrowRight pops it', () => {
+    const { triggerEl, stack } = configure('rtl');
+    triggerEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+    expect(stack.handleArrowRight).toHaveBeenCalledOnce();
+    expect(stack.handleArrowLeft).not.toHaveBeenCalled();
+    triggerEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+    expect(stack.handleArrowLeft).toHaveBeenCalledOnce();
   });
 });
