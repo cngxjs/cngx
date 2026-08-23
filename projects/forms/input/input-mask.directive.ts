@@ -434,6 +434,13 @@ export type MaskTokenMap = Record<string, MaskTokenDef>;
     '(blur)': 'handleBlurCva()',
     '(paste)': 'handlePaste($event)',
     '[attr.aria-placeholder]': 'ariaPlaceholder()',
+    // Bucket B: masked values are structured codes (dates, cards, IDs, phone
+    // numbers via CngxPhoneInput) that read left-to-right regardless of locale.
+    // A forced LTR island keeps the separators and groups in order under RTL;
+    // `[style.direction]` sets only the field's text direction, not the
+    // surrounding layout direction.
+    '[style.unicode-bidi]': "'isolate'",
+    '[style.direction]': "'ltr'",
   },
 })
 export class CngxInputMask {
