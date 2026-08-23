@@ -333,12 +333,22 @@
     /* structural: arrow silhouette + segment overlap - the ribbon's identity.
        The clip-path chevron is directional and mirrors under dir=rtl below
        (every coordinate x -> 100% - x). We reflect the polygon rather than
-       scaleX(-1) the element, which would also mirror the child label text. */
+       scaleX(-1) the element, which would also mirror the child label text.
+       The arrow depth is one token so the LTR base and RTL mirror cannot
+       drift, and a consumer can tune the chevron. */
+    --cngx-breadcrumb-ribbon-notch: 12px;
     display: inline-flex;
     align-items: center;
     padding: 0.5em 1.1em 0.5em 1.4em;
     margin-inline-start: -10px;
-    clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%, 12px 50%);
+    clip-path: polygon(
+      0 0,
+      calc(100% - var(--cngx-breadcrumb-ribbon-notch, 12px)) 0,
+      100% 50%,
+      calc(100% - var(--cngx-breadcrumb-ribbon-notch, 12px)) 100%,
+      0 100%,
+      var(--cngx-breadcrumb-ribbon-notch, 12px) 50%
+    );
     font-size: var(--cngx-breadcrumb-ribbon-font-size);
     font-weight: 560;
     text-decoration: none;
@@ -347,18 +357,37 @@
   }
 
   .cngx-breadcrumb__link:dir(rtl) {
-    clip-path: polygon(100% 0, 12px 0, 0 50%, 12px 100%, 100% 100%, calc(100% - 12px) 50%);
+    clip-path: polygon(
+      100% 0,
+      var(--cngx-breadcrumb-ribbon-notch, 12px) 0,
+      0 50%,
+      var(--cngx-breadcrumb-ribbon-notch, 12px) 100%,
+      100% 100%,
+      calc(100% - var(--cngx-breadcrumb-ribbon-notch, 12px)) 50%
+    );
   }
 
   .cngx-breadcrumb__crumb:first-child .cngx-breadcrumb__link {
     padding-inline-start: 1em;
     margin-inline-start: 0;
-    clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%);
+    clip-path: polygon(
+      0 0,
+      calc(100% - var(--cngx-breadcrumb-ribbon-notch, 12px)) 0,
+      100% 50%,
+      calc(100% - var(--cngx-breadcrumb-ribbon-notch, 12px)) 100%,
+      0 100%
+    );
     border-radius: var(--cngx-breadcrumb-ribbon-radius) 0 0 var(--cngx-breadcrumb-ribbon-radius);
   }
 
   .cngx-breadcrumb__crumb:first-child .cngx-breadcrumb__link:dir(rtl) {
-    clip-path: polygon(100% 0, 12px 0, 0 50%, 12px 100%, 100% 100%);
+    clip-path: polygon(
+      100% 0,
+      var(--cngx-breadcrumb-ribbon-notch, 12px) 0,
+      0 50%,
+      var(--cngx-breadcrumb-ribbon-notch, 12px) 100%,
+      100% 100%
+    );
     /* The flat cap edge mirrors to x=100%, so the rounded corners follow it
        to the inline-end side; otherwise the RTL first crumb shows a sharp
        flat edge where LTR shows a rounded one. */
