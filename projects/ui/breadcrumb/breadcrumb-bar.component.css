@@ -9,6 +9,16 @@
   font: inherit;
 }
 
+/* The `›` separator is directional. Custom properties inherit into every
+   skin's `.cngx-breadcrumb__separator::after` use-site, so one override flips
+   all six skins to `‹` under RTL - swap the codepoint, never scaleX (a
+   mirrored `›` is not a real `‹`). No @property registration: a registered
+   initial-value would defeat the var(token, fallback) that keeps LTR. The
+   token also makes the separator consumer-themeable. */
+.cngx-breadcrumb:dir(rtl) {
+  --cngx-breadcrumb-separator: '\2039';
+}
+
 .cngx-breadcrumb__list {
   display: flex;
   flex-wrap: wrap;
@@ -321,14 +331,24 @@
 
   .cngx-breadcrumb__link {
     /* structural: arrow silhouette + segment overlap - the ribbon's identity.
-       The clip-path chevron is a physical shape and does NOT mirror under
-       dir=rtl; the logical margins/padding flip but the silhouette stays -
-       RTL shape mirroring is a separate follow-up the property guard can't see. */
+       The clip-path chevron is directional and mirrors under dir=rtl below
+       (every coordinate x -> 100% - x). We reflect the polygon rather than
+       scaleX(-1) the element, which would also mirror the child label text.
+       The arrow depth is one token so the LTR base and RTL mirror cannot
+       drift, and a consumer can tune the chevron. */
+    --cngx-breadcrumb-ribbon-notch: 12px;
     display: inline-flex;
     align-items: center;
     padding: 0.5em 1.1em 0.5em 1.4em;
     margin-inline-start: -10px;
-    clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%, 12px 50%);
+    clip-path: polygon(
+      0 0,
+      calc(100% - var(--cngx-breadcrumb-ribbon-notch, 12px)) 0,
+      100% 50%,
+      calc(100% - var(--cngx-breadcrumb-ribbon-notch, 12px)) 100%,
+      0 100%,
+      var(--cngx-breadcrumb-ribbon-notch, 12px) 50%
+    );
     font-size: var(--cngx-breadcrumb-ribbon-font-size);
     font-weight: 560;
     text-decoration: none;
@@ -336,11 +356,46 @@
     color: var(--cngx-breadcrumb-ribbon-color);
   }
 
+  /* Bare :dir(rtl) here, not :where(:dir(rtl)) as in stepper/accordion: those
+     share a scope/container with a direction-neutral sibling a specificity bump
+     would clobber. The ribbon has no such shared-scope neutral, so the bump is
+     harmless - keep bare unless a neutral sibling is ever added to this scope. */
+  .cngx-breadcrumb__link:dir(rtl) {
+    clip-path: polygon(
+      100% 0,
+      var(--cngx-breadcrumb-ribbon-notch, 12px) 0,
+      0 50%,
+      var(--cngx-breadcrumb-ribbon-notch, 12px) 100%,
+      100% 100%,
+      calc(100% - var(--cngx-breadcrumb-ribbon-notch, 12px)) 50%
+    );
+  }
+
   .cngx-breadcrumb__crumb:first-child .cngx-breadcrumb__link {
     padding-inline-start: 1em;
     margin-inline-start: 0;
-    clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%);
+    clip-path: polygon(
+      0 0,
+      calc(100% - var(--cngx-breadcrumb-ribbon-notch, 12px)) 0,
+      100% 50%,
+      calc(100% - var(--cngx-breadcrumb-ribbon-notch, 12px)) 100%,
+      0 100%
+    );
     border-radius: var(--cngx-breadcrumb-ribbon-radius) 0 0 var(--cngx-breadcrumb-ribbon-radius);
+  }
+
+  .cngx-breadcrumb__crumb:first-child .cngx-breadcrumb__link:dir(rtl) {
+    clip-path: polygon(
+      100% 0,
+      var(--cngx-breadcrumb-ribbon-notch, 12px) 0,
+      0 50%,
+      var(--cngx-breadcrumb-ribbon-notch, 12px) 100%,
+      100% 100%
+    );
+    /* The flat cap edge mirrors to x=100%, so the rounded corners follow it
+       to the inline-end side; otherwise the RTL first crumb shows a sharp
+       flat edge where LTR shows a rounded one. */
+    border-radius: 0 var(--cngx-breadcrumb-ribbon-radius) var(--cngx-breadcrumb-ribbon-radius) 0;
   }
 
   .cngx-breadcrumb__link:hover {
@@ -520,7 +575,7 @@
   }
 
   .cngx-breadcrumb__separator::after {
-    content: '\203A';
+    content: var(--cngx-breadcrumb-separator, '\203A');
     font-size: var(--cngx-breadcrumb-header-font-size);
   }
 
@@ -888,7 +943,7 @@
   }
 
   .cngx-breadcrumb__separator::after {
-    content: '\203A';
+    content: var(--cngx-breadcrumb-separator, '\203A');
     font-size: var(--cngx-breadcrumb-chips-font-size);
   }
 }
@@ -1099,7 +1154,7 @@
   }
 
   .cngx-breadcrumb__separator::after {
-    content: '\203A';
+    content: var(--cngx-breadcrumb-separator, '\203A');
     font-size: var(--cngx-breadcrumb-iconlabel-font-size);
   }
 }
@@ -1253,7 +1308,7 @@
   }
 
   .cngx-breadcrumb__separator::after {
-    content: '\203A';
+    content: var(--cngx-breadcrumb-separator, '\203A');
     font-size: var(--cngx-breadcrumb-icononly-font-size);
   }
 }
@@ -1362,7 +1417,7 @@
   }
 
   .cngx-breadcrumb__separator::after {
-    content: '\203A';
+    content: var(--cngx-breadcrumb-separator, '\203A');
     font-size: var(--cngx-breadcrumb-shell-font-size);
   }
 }
@@ -1501,7 +1556,7 @@
   }
 
   .cngx-breadcrumb__separator::after {
-    content: '\203A';
+    content: var(--cngx-breadcrumb-separator, '\203A');
     font-size: var(--cngx-breadcrumb-record-font-size);
   }
 }

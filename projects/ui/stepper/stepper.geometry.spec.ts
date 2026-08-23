@@ -25,6 +25,34 @@ import { CngxStepper } from './stepper.component';
 })
 class StepperHost {}
 
+@Component({
+  selector: 'cngx-stepper-chevron-geometry-host',
+  standalone: true,
+  imports: [CngxStepper, CngxStep],
+  template: `
+    <cngx-stepper aria-label="Wizard" skin="path-chevron">
+      <div cngxStep label="A">Panel A</div>
+      <div cngxStep label="B">Panel B</div>
+      <div cngxStep label="C">Panel C</div>
+    </cngx-stepper>
+  `,
+})
+class ChevronStepperHost {}
+
+@Component({
+  selector: 'cngx-stepper-chevron-vertical-geometry-host',
+  standalone: true,
+  imports: [CngxStepper, CngxStep],
+  template: `
+    <cngx-stepper aria-label="Wizard" skin="path-chevron" orientation="vertical">
+      <div cngxStep label="A">Panel A</div>
+      <div cngxStep label="B">Panel B</div>
+      <div cngxStep label="C">Panel C</div>
+    </cngx-stepper>
+  `,
+})
+class VerticalChevronStepperHost {}
+
 let mountedRoot: HTMLElement | null = null;
 
 function mount(width: number): { host: HTMLElement; panel: HTMLElement } {
@@ -41,9 +69,24 @@ function mount(width: number): { host: HTMLElement; panel: HTMLElement } {
   return { host: host as HTMLElement, panel: panel as HTMLElement };
 }
 
+function mountSteps(component: typeof ChevronStepperHost | typeof VerticalChevronStepperHost): HTMLElement[] {
+  const fixture = TestBed.createComponent(component);
+  mountedRoot = fixture.nativeElement as HTMLElement;
+  document.body.appendChild(mountedRoot);
+  fixture.detectChanges();
+  const steps = Array.from(mountedRoot.querySelectorAll('.cngx-stepper__step')) as HTMLElement[];
+  if (steps.length < 3) {
+    throw new Error('cngx-stepper did not render three steps');
+  }
+  return steps;
+}
+
 afterEach(() => {
   mountedRoot?.remove();
   mountedRoot = null;
+  // isolate:false shares the browser env across specs; reset the forced dir so
+  // a later geometry read never sees a leaked RTL root.
+  document.documentElement.removeAttribute('dir');
 });
 
 describe('CngxStepper geometry', () => {
@@ -61,5 +104,52 @@ describe('CngxStepper geometry', () => {
     const narrow = computedValue(panel, 'padding-top');
     expect(parseFloat(wide)).toBeGreaterThan(0);
     expect(narrow).not.toBe(wide);
+  });
+});
+
+describe('CngxStepper path-chevron direction', () => {
+  // Pin root font-size so the authored 0.75rem resolves to a deterministic 12px
+  // in the computed clip-path, independent of the browser default. Reset below.
+  // Expected forms are the browser-serialized authored polygons and their exact
+  // x -> 100% - x mirrors.
+  const MID_LTR = 'polygon(0px 0px, calc(100% - 12px) 0px, 100% 50%, calc(100% - 12px) 100%, 0px 100%, 12px 50%)';
+  const MID_RTL = 'polygon(100% 0px, 12px 0px, 0px 50%, 12px 100%, 100% 100%, calc(100% - 12px) 50%)';
+  const FIRST_LTR = 'polygon(0px 0px, calc(100% - 12px) 0px, 100% 50%, calc(100% - 12px) 100%, 0px 100%)';
+  const FIRST_RTL = 'polygon(100% 0px, 12px 0px, 0px 50%, 12px 100%, 100% 100%)';
+  const LAST_LTR = 'polygon(0px 0px, 100% 0px, 100% 100%, 0px 100%, 12px 50%)';
+  const LAST_RTL = 'polygon(100% 0px, 0px 0px, 0px 100%, 100% 100%, calc(100% - 12px) 50%)';
+
+  afterEach(() => {
+    document.documentElement.style.removeProperty('font-size');
+  });
+
+  it('reflects each horizontal chevron tile under dir=rtl and keeps LTR byte-stable', () => {
+    document.documentElement.style.fontSize = '16px';
+    const [first, mid, last] = mountSteps(ChevronStepperHost);
+
+    expect(computedValue(first, 'clip-path')).toBe(FIRST_LTR);
+    expect(computedValue(mid, 'clip-path')).toBe(MID_LTR);
+    expect(computedValue(last, 'clip-path')).toBe(LAST_LTR);
+
+    document.documentElement.dir = 'rtl';
+    expect(computedValue(first, 'clip-path')).toBe(FIRST_RTL);
+    expect(computedValue(mid, 'clip-path')).toBe(MID_RTL);
+    expect(computedValue(last, 'clip-path')).toBe(LAST_RTL);
+
+    document.documentElement.dir = 'ltr';
+    expect(computedValue(mid, 'clip-path')).toBe(MID_LTR);
+  });
+
+  it('leaves the vertical (block-axis) chevron tiles identical LTR vs RTL', () => {
+    const [, mid] = mountSteps(VerticalChevronStepperHost);
+    const ltr = computedValue(mid, 'clip-path');
+    expect(ltr).not.toBe('');
+    expect(ltr).not.toBe('none');
+
+    document.documentElement.dir = 'rtl';
+    // The vertical polygon is notch-at-50%, symmetric about the vertical axis:
+    // no :dir(rtl) override, so it must render identically. This is the guard
+    // that a future blanket mirror does not touch the neutral skin.
+    expect(computedValue(mid, 'clip-path')).toBe(ltr);
   });
 });

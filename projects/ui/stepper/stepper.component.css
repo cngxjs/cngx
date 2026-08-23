@@ -1235,16 +1235,24 @@
     }
 
     .cngx-stepper__step {
+      /* Single source for the arrow depth so the LTR base and the RTL mirror
+         below cannot drift; the inline padding clears the same notch. Mirrors
+         the existing --cngx-step-chevron-vertical-notch token and lets a
+         consumer tune the arrow. */
+      --cngx-step-chevron-horizontal-notch: 0.75rem;
       flex: 1 1 0;
       clip-path: polygon(
         0 0,
-        calc(100% - 0.75rem) 0,
+        calc(100% - var(--cngx-step-chevron-horizontal-notch, 0.75rem)) 0,
         100% 50%,
-        calc(100% - 0.75rem) 100%,
+        calc(100% - var(--cngx-step-chevron-horizontal-notch, 0.75rem)) 100%,
         0 100%,
-        0.75rem 50%
+        var(--cngx-step-chevron-horizontal-notch, 0.75rem) 50%
       );
-      padding-inline: calc(var(--cngx-step-padding-inline, 0.75rem) + 0.75rem);
+      padding-inline: calc(
+        var(--cngx-step-padding-inline, 0.75rem) +
+          var(--cngx-step-chevron-horizontal-notch, 0.75rem)
+      );
       justify-content: center;
       text-align: center;
       background: var(
@@ -1258,16 +1266,67 @@
         color 120ms ease;
     }
 
+    /* The horizontal chevron points along the reading flow, so mirror the
+       polygon (every x -> 100% - x) under RTL. Reflecting the shape, not
+       scaleX(-1) the tile, keeps the label text upright. `:where()` keeps the
+       gate at zero added specificity: the vertical skin below shares this
+       [data-skin='path-chevron'] scope, so a specificity bump would leak this
+       mirror onto the neutral vertical tiles (both scope roots are the same
+       element, so scope-proximity ties). At equal specificity source order
+       wins, and the later vertical scope keeps its own polygon. */
+    .cngx-stepper__step:where(:dir(rtl)) {
+      clip-path: polygon(
+        100% 0,
+        var(--cngx-step-chevron-horizontal-notch, 0.75rem) 0,
+        0 50%,
+        var(--cngx-step-chevron-horizontal-notch, 0.75rem) 100%,
+        100% 100%,
+        calc(100% - var(--cngx-step-chevron-horizontal-notch, 0.75rem)) 50%
+      );
+    }
+
     .cngx-stepper__step .cngx-stepper__label {
       flex: 0 0 auto;
     }
 
     .cngx-stepper__step:first-child {
-      clip-path: polygon(0 0, calc(100% - 0.75rem) 0, 100% 50%, calc(100% - 0.75rem) 100%, 0 100%);
+      clip-path: polygon(
+        0 0,
+        calc(100% - var(--cngx-step-chevron-horizontal-notch, 0.75rem)) 0,
+        100% 50%,
+        calc(100% - var(--cngx-step-chevron-horizontal-notch, 0.75rem)) 100%,
+        0 100%
+      );
+    }
+
+    .cngx-stepper__step:first-child:where(:dir(rtl)) {
+      clip-path: polygon(
+        100% 0,
+        var(--cngx-step-chevron-horizontal-notch, 0.75rem) 0,
+        0 50%,
+        var(--cngx-step-chevron-horizontal-notch, 0.75rem) 100%,
+        100% 100%
+      );
     }
 
     .cngx-stepper__step:last-child {
-      clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 0.75rem 50%);
+      clip-path: polygon(
+        0 0,
+        100% 0,
+        100% 100%,
+        0 100%,
+        var(--cngx-step-chevron-horizontal-notch, 0.75rem) 50%
+      );
+    }
+
+    .cngx-stepper__step:last-child:where(:dir(rtl)) {
+      clip-path: polygon(
+        100% 0,
+        0 0,
+        0 100%,
+        100% 100%,
+        calc(100% - var(--cngx-step-chevron-horizontal-notch, 0.75rem)) 50%
+      );
     }
 
     .cngx-stepper__step:only-child {
