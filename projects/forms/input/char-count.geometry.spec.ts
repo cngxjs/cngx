@@ -52,6 +52,8 @@ afterEach(() => {
   mountedRoot?.remove();
   mountedRoot = null;
   document.documentElement.removeAttribute('dir');
+  document.documentElement.style.removeProperty('--cngx-field-char-count-bidi');
+  document.documentElement.style.removeProperty('--cngx-field-char-count-direction');
 });
 
 describe('CngxCharCount geometry (rtl)', () => {
@@ -60,5 +62,14 @@ describe('CngxCharCount geometry (rtl)', () => {
     const span = await mountSpan();
     expect(computedValue(span, 'unicode-bidi')).toBe('isolate');
     expect(computedValue(span, 'direction')).toBe('ltr');
+  });
+
+  it('lets a consumer opt out via --cngx-field-char-count-bidi / -direction', async () => {
+    document.documentElement.dir = 'rtl';
+    document.documentElement.style.setProperty('--cngx-field-char-count-bidi', 'normal');
+    document.documentElement.style.setProperty('--cngx-field-char-count-direction', 'rtl');
+    const span = await mountSpan();
+    expect(computedValue(span, 'unicode-bidi')).toBe('normal');
+    expect(computedValue(span, 'direction')).toBe('rtl');
   });
 });

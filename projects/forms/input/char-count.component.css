@@ -97,10 +97,11 @@
        the ratio - `unicode-bidi` needs a box and does not inherit. Scoped to
        the library's own default readout, not a bare `span`, so a consumer's
        custom-template content is left untouched. This keeps the count before
-       the max under `dir="rtl"`. The readout is aria-hidden decorative. */
+       the max under `dir="rtl"`. The readout is aria-hidden decorative.
+       Consumer opt-out: set --cngx-field-char-count-bidi / -direction. */
     .cngx-char-count__readout {
-      unicode-bidi: isolate;
-      direction: ltr;
+      unicode-bidi: var(--cngx-field-char-count-bidi, isolate);
+      direction: var(--cngx-field-char-count-direction, ltr);
     }
 
     :scope.cngx-char-count--over {
