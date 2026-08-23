@@ -39,6 +39,8 @@ afterEach(() => {
   mountedRoot?.remove();
   mountedRoot = null;
   document.documentElement.removeAttribute('dir');
+  document.documentElement.style.removeProperty('--cngx-input-mask-bidi');
+  document.documentElement.style.removeProperty('--cngx-input-mask-direction');
 });
 
 describe('CngxInputMask geometry (rtl)', () => {
@@ -47,5 +49,14 @@ describe('CngxInputMask geometry (rtl)', () => {
     const input = mount();
     expect(computedValue(input, 'unicode-bidi')).toBe('isolate');
     expect(computedValue(input, 'direction')).toBe('ltr');
+  });
+
+  it('lets a consumer opt out via --cngx-input-mask-bidi / --cngx-input-mask-direction', () => {
+    document.documentElement.dir = 'rtl';
+    document.documentElement.style.setProperty('--cngx-input-mask-bidi', 'normal');
+    document.documentElement.style.setProperty('--cngx-input-mask-direction', 'rtl');
+    const input = mount();
+    expect(computedValue(input, 'unicode-bidi')).toBe('normal');
+    expect(computedValue(input, 'direction')).toBe('rtl');
   });
 });

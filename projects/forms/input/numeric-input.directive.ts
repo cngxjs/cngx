@@ -150,7 +150,7 @@ function isAllowedChar(
     // grouping and decimal all from Intl), so isolate fences its bidi boundary
     // against surrounding RTL text without forcing a direction - RTL-locale
     // digits keep their own resolved order.
-    '[style.unicode-bidi]': "'isolate'",
+    '[style.unicode-bidi]': '"var(--cngx-numeric-input-bidi, isolate)"',
     '(beforeinput)': 'handleBeforeInput($event)',
     '(keydown)': 'handleKeyDown($event)',
     '(focus)': 'handleFocus()',

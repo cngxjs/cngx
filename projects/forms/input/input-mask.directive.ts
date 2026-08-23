@@ -439,8 +439,8 @@ export type MaskTokenMap = Record<string, MaskTokenDef>;
     // A forced LTR island keeps the separators and groups in order under RTL;
     // `[style.direction]` sets only the field's text direction, not the
     // surrounding layout direction.
-    '[style.unicode-bidi]': "'isolate'",
-    '[style.direction]': "'ltr'",
+    '[style.unicode-bidi]': '"var(--cngx-input-mask-bidi, isolate)"',
+    '[style.direction]': '"var(--cngx-input-mask-direction, ltr)"',
   },
 })
 export class CngxInputMask {

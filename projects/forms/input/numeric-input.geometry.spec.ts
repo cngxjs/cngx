@@ -36,6 +36,7 @@ afterEach(() => {
   mountedRoot?.remove();
   mountedRoot = null;
   document.documentElement.removeAttribute('dir');
+  document.documentElement.style.removeProperty('--cngx-numeric-input-bidi');
 });
 
 describe('CngxNumericInput geometry (rtl)', () => {
@@ -44,5 +45,12 @@ describe('CngxNumericInput geometry (rtl)', () => {
     const input = mount();
     expect(computedValue(input, 'unicode-bidi')).toBe('isolate');
     expect(computedValue(input, 'direction')).toBe('rtl');
+  });
+
+  it('lets a consumer opt out via --cngx-numeric-input-bidi', () => {
+    document.documentElement.dir = 'rtl';
+    document.documentElement.style.setProperty('--cngx-numeric-input-bidi', 'normal');
+    const input = mount();
+    expect(computedValue(input, 'unicode-bidi')).toBe('normal');
   });
 });
