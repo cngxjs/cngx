@@ -91,6 +91,17 @@
       color: var(--cngx-field-char-count-color, var(--cngx-field-hint-color, oklch(0.45 0 0)));
     }
 
+    /* Bucket B: "12/100" is a raw ASCII ratio (not Intl-formatted),
+       definitionally LTR. The host stays `display: contents` and generates no
+       box, so the forced LTR island must sit on the span that actually renders
+       the ratio - `unicode-bidi` needs a box and does not inherit. This keeps
+       the count before the max under `dir="rtl"`. The readout is aria-hidden
+       decorative. */
+    :scope span {
+      unicode-bidi: isolate;
+      direction: ltr;
+    }
+
     :scope.cngx-char-count--over {
       color: var(
         --cngx-field-char-count-over-color,
