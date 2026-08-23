@@ -9,8 +9,9 @@ import { CngxTrend } from './trend.component';
 // root: `CngxTrend` renders `formatDelta(value, 'percent', ...)` - an ASCII
 // `+`/`%` around the Intl magnitude - so the host is a composite (bucket B)
 // and must force a true LTR island: `unicode-bidi: isolate` AND
-// `direction: ltr`. The `direction: ltr` read is the order proof; a
-// property-only assertion would false-green (the plan-review blocker).
+// `direction: ltr`. Asserting the resolved `direction` (not just the property)
+// is the order proof: the ASCII `+`/`%` only stays attached when the run is
+// forced LTR.
 
 let mountedRoot: HTMLElement | null = null;
 

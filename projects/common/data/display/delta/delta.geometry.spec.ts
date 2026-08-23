@@ -10,8 +10,9 @@ import { CngxDelta } from './delta.component';
 // magnitude, so the host is a composite (bucket B) and must force a true LTR
 // island - `unicode-bidi: isolate` AND `direction: ltr` - so the sign stays
 // attached left of the digits instead of detaching at the RTL base level.
-// The `direction: ltr` read is the order proof; asserting the property alone
-// would false-green (the plan-review blocker). jsdom reports `''`.
+// Asserting the resolved `direction` (not just the property) is the order
+// proof: the ASCII sign only stays left of the digits when the run is forced
+// LTR. jsdom reports `''`.
 
 let mountedRoot: HTMLElement | null = null;
 
