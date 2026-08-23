@@ -40,6 +40,9 @@ import { CNGX_INPUT_CONFIG, DEFAULT_INPUT_ARIA_LABELS } from './input-config';
     '[attr.autocomplete]': 'index() === 0 ? "one-time-code" : "off"',
     '[attr.inputmode]': 'inputMode()',
     '[attr.aria-label]': 'slotLabel()',
+    // Bucket A: each slot holds a single digit - no internal run to reorder -
+    // so isolate fences its bidi boundary against surrounding RTL text.
+    '[style.unicode-bidi]': "'isolate'",
     '(input)': 'handleInput($event)',
     '(keydown)': 'handleKeyDown($event)',
     '(paste)': 'handlePaste($event)',
