@@ -131,6 +131,12 @@
       font-size: var(--cngx-delta-size, 0.8125rem);
       font-weight: var(--cngx-delta-weight, 500);
       color: var(--cngx-delta-neutral-color, oklch(0.36 0.02 290));
+      /* `formatDelta` wraps the Intl magnitude in an ASCII `+`/`%` outside Intl,
+         so the host is a composite, not a single Intl run: under `isolate`
+         alone the neutral `+` detaches to the RTL base level. A forced LTR
+         island keeps the sign attached left of the order-invariant digits. */
+      unicode-bidi: isolate;
+      direction: ltr;
     }
 
     :scope.cngx-delta--positive {
