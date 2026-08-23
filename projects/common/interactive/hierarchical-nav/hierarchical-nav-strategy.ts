@@ -69,6 +69,13 @@ const NOOP: CngxHierarchicalNavAction = { kind: 'noop' };
  * `'noop'` when it didn't - so consumers bound to `(movedToChild)` /
  * `(movedToParent)` only see state-change-truthful emissions.
  *
+ * `onArrowRight` / `onArrowLeft` are the inline-forward / inline-back
+ * intents, not physical keys. `CngxHierarchicalNav` resolves the physical
+ * arrow to its logical intent by writing direction (`resolveInlineArrowKey`)
+ * before calling the strategy, so under `rtl` physical ArrowLeft routes to
+ * `onArrowRight`. Custom strategies stay direction-naive and inherit correct
+ * RTL behaviour for free.
+ *
  * @category common/interactive/tree
  */
 export function createW3CTreeStrategy(): CngxHierarchicalNavStrategy {

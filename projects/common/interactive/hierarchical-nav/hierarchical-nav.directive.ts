@@ -1,10 +1,18 @@
 import { Directive, inject, input, output } from '@angular/core';
+import { injectDirection, resolveInlineArrowKey } from '@cngx/core';
 import { CngxActiveDescendant } from '@cngx/common/a11y';
 import { type CngxTreeController } from '../tree-controller/tree-controller';
 import {
   CNGX_HIERARCHICAL_NAV_STRATEGY,
   type CngxHierarchicalNavAction,
 } from './hierarchical-nav-strategy';
+
+/** Context a hierarchical-nav strategy step receives on each arrow dispatch. */
+interface HierarchicalNavContext<T> {
+  readonly controller: CngxTreeController<T>;
+  readonly ad: CngxActiveDescendant;
+  readonly activeId: string;
+}
 
 /**
  * W3C-tree keyboard extension. Wires `ArrowRight` / `ArrowLeft` to a
@@ -78,6 +86,8 @@ export class CngxHierarchicalNav<T = unknown> {
 
   private readonly strategy = inject(CNGX_HIERARCHICAL_NAV_STRATEGY);
 
+  private readonly direction = injectDirection();
+
   /** Emitted with the id that was just expanded via ArrowRight. */
   readonly expand = output<string>();
   /** Emitted with the id that was just collapsed via ArrowLeft. */
@@ -88,11 +98,25 @@ export class CngxHierarchicalNav<T = unknown> {
   readonly movedToChild = output<string>();
 
   handleRight(event: Event): void {
-    this.dispatch(event, (ctx) => this.strategy.onArrowRight(ctx));
+    this.handlePhysicalArrow('ArrowRight', event);
   }
 
   handleLeft(event: Event): void {
-    this.dispatch(event, (ctx) => this.strategy.onArrowLeft(ctx));
+    this.handlePhysicalArrow('ArrowLeft', event);
+  }
+
+  /**
+   * Resolve the physical arrow to its inline-logical intent before routing:
+   * under `rtl` physical ArrowLeft expands / moves-to-child and physical
+   * ArrowRight collapses / moves-to-parent. The strategy stays direction-naive.
+   */
+  private handlePhysicalArrow(key: 'ArrowLeft' | 'ArrowRight', event: Event): void {
+    const logical = resolveInlineArrowKey(key, this.direction());
+    const step =
+      logical === 'ArrowRight'
+        ? (ctx: HierarchicalNavContext<T>) => this.strategy.onArrowRight(ctx)
+        : (ctx: HierarchicalNavContext<T>) => this.strategy.onArrowLeft(ctx);
+    this.dispatch(event, step);
   }
 
   /**
@@ -101,11 +125,7 @@ export class CngxHierarchicalNav<T = unknown> {
    */
   private dispatch(
     event: Event,
-    step: (ctx: {
-      readonly controller: CngxTreeController<T>;
-      readonly ad: CngxActiveDescendant;
-      readonly activeId: string;
-    }) => CngxHierarchicalNavAction,
+    step: (ctx: HierarchicalNavContext<T>) => CngxHierarchicalNavAction,
   ): void {
     const ad = this.ad;
     if (!ad) {
