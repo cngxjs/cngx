@@ -1235,16 +1235,24 @@
     }
 
     .cngx-stepper__step {
+      /* Single source for the arrow depth so the LTR base and the RTL mirror
+         below cannot drift; the inline padding clears the same notch. Mirrors
+         the existing --cngx-step-chevron-vertical-notch token and lets a
+         consumer tune the arrow. */
+      --cngx-step-chevron-horizontal-notch: 0.75rem;
       flex: 1 1 0;
       clip-path: polygon(
         0 0,
-        calc(100% - 0.75rem) 0,
+        calc(100% - var(--cngx-step-chevron-horizontal-notch, 0.75rem)) 0,
         100% 50%,
-        calc(100% - 0.75rem) 100%,
+        calc(100% - var(--cngx-step-chevron-horizontal-notch, 0.75rem)) 100%,
         0 100%,
-        0.75rem 50%
+        var(--cngx-step-chevron-horizontal-notch, 0.75rem) 50%
       );
-      padding-inline: calc(var(--cngx-step-padding-inline, 0.75rem) + 0.75rem);
+      padding-inline: calc(
+        var(--cngx-step-padding-inline, 0.75rem) +
+          var(--cngx-step-chevron-horizontal-notch, 0.75rem)
+      );
       justify-content: center;
       text-align: center;
       background: var(
@@ -1269,11 +1277,11 @@
     .cngx-stepper__step:where(:dir(rtl)) {
       clip-path: polygon(
         100% 0,
-        0.75rem 0,
+        var(--cngx-step-chevron-horizontal-notch, 0.75rem) 0,
         0 50%,
-        0.75rem 100%,
+        var(--cngx-step-chevron-horizontal-notch, 0.75rem) 100%,
         100% 100%,
-        calc(100% - 0.75rem) 50%
+        calc(100% - var(--cngx-step-chevron-horizontal-notch, 0.75rem)) 50%
       );
     }
 
@@ -1282,19 +1290,43 @@
     }
 
     .cngx-stepper__step:first-child {
-      clip-path: polygon(0 0, calc(100% - 0.75rem) 0, 100% 50%, calc(100% - 0.75rem) 100%, 0 100%);
+      clip-path: polygon(
+        0 0,
+        calc(100% - var(--cngx-step-chevron-horizontal-notch, 0.75rem)) 0,
+        100% 50%,
+        calc(100% - var(--cngx-step-chevron-horizontal-notch, 0.75rem)) 100%,
+        0 100%
+      );
     }
 
     .cngx-stepper__step:first-child:where(:dir(rtl)) {
-      clip-path: polygon(100% 0, 0.75rem 0, 0 50%, 0.75rem 100%, 100% 100%);
+      clip-path: polygon(
+        100% 0,
+        var(--cngx-step-chevron-horizontal-notch, 0.75rem) 0,
+        0 50%,
+        var(--cngx-step-chevron-horizontal-notch, 0.75rem) 100%,
+        100% 100%
+      );
     }
 
     .cngx-stepper__step:last-child {
-      clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 0.75rem 50%);
+      clip-path: polygon(
+        0 0,
+        100% 0,
+        100% 100%,
+        0 100%,
+        var(--cngx-step-chevron-horizontal-notch, 0.75rem) 50%
+      );
     }
 
     .cngx-stepper__step:last-child:where(:dir(rtl)) {
-      clip-path: polygon(100% 0, 0 0, 0 100%, 100% 100%, calc(100% - 0.75rem) 50%);
+      clip-path: polygon(
+        100% 0,
+        0 0,
+        0 100%,
+        100% 100%,
+        calc(100% - var(--cngx-step-chevron-horizontal-notch, 0.75rem)) 50%
+      );
     }
 
     .cngx-stepper__step:only-child {
