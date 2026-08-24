@@ -443,6 +443,10 @@
       font-size: var(--cngx-tab-badge-font-size, 0.75em);
       font-weight: var(--cngx-tab-badge-font-weight, 700);
       line-height: 1;
+      /* The disc holds a single self-contained error count; isolate fences its
+         bidi boundary against surrounding RTL tab text without forcing a
+         direction (metric bucket-A). Consumer opt-out: --cngx-tab-badge-bidi. */
+      unicode-bidi: var(--cngx-tab-badge-bidi, isolate);
     }
 
     /*
