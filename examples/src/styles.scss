@@ -87,11 +87,12 @@ body {
 }
 
 // Floating debug toggles (mounted by main.ts after bootstrapApplication):
-// color-scheme, density, text-scale - laid out as a single horizontal row,
-// bottom-right of the viewport, by the #cngx-ex-toggles container. Monospace
-// + sharp corners to match the Apache mod_autoindex aesthetic of the home
-// directory listing. Color-scheme cycles auto → dark → light; density cycles
-// comfortable → compact → spacious; text-scale cycles medium → small → large.
+// color-scheme, density, text-scale, direction - laid out as a single
+// horizontal row, bottom-right of the viewport, by the #cngx-ex-toggles
+// container. Monospace + sharp corners to match the Apache mod_autoindex
+// aesthetic of the home directory listing. Color-scheme cycles
+// auto → dark → light; density cycles comfortable → compact → spacious;
+// text-scale cycles medium → small → large; direction flips ltr ↔ rtl.
 #cngx-ex-toggles {
   position: fixed;
   right: 16px;
@@ -103,7 +104,8 @@ body {
 }
 #cngx-ex-color-scheme-toggle,
 #cngx-ex-density-toggle,
-#cngx-ex-text-scale-toggle {
+#cngx-ex-text-scale-toggle,
+#cngx-ex-direction-toggle {
   display: inline-block;
   padding: 2px 6px;
   border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
@@ -117,12 +119,14 @@ body {
 }
 #cngx-ex-color-scheme-toggle:hover,
 #cngx-ex-density-toggle:hover,
-#cngx-ex-text-scale-toggle:hover {
+#cngx-ex-text-scale-toggle:hover,
+#cngx-ex-direction-toggle:hover {
   background: color-mix(in oklch, var(--cngx-color-surface, #fff), currentColor 6%);
 }
 #cngx-ex-color-scheme-toggle:focus-visible,
 #cngx-ex-density-toggle:focus-visible,
-#cngx-ex-text-scale-toggle:focus-visible {
+#cngx-ex-text-scale-toggle:focus-visible,
+#cngx-ex-direction-toggle:focus-visible {
   outline: 1px solid var(--cngx-color-primary, #4a8cff);
   outline-offset: 1px;
 }
