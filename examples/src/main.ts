@@ -122,6 +122,20 @@ globalThis.addEventListener('storage', (event) => {
   syncDensityFromState();
 });
 
+// Shared container for the floating debug toggles. Created once, lazily, and
+// appended to <body>; every install* function drops its button in here so the
+// cluster lays out as a single flex row (see #cngx-ex-toggles in styles.scss).
+// A new toggle needs no per-id bottom offset - the row's gap composes it.
+let togglesEl: HTMLElement | null = null;
+function togglesContainer(): HTMLElement {
+  if (togglesEl === null) {
+    togglesEl = document.createElement('div');
+    togglesEl.id = 'cngx-ex-toggles';
+    document.body.appendChild(togglesEl);
+  }
+  return togglesEl;
+}
+
 // Floating dark-mode debug toggle. Bottom-right of the viewport,
 // cycles auto → dark → light → auto by writing the same localStorage
 // key compodocx uses. Useful when running the examples app standalone
@@ -132,7 +146,7 @@ function installColorSchemeToggle(): void {
   btn.type = 'button';
   btn.id = 'cngx-ex-color-scheme-toggle';
   btn.setAttribute('aria-label', 'Cycle color scheme: auto / dark / light');
-  document.body.appendChild(btn);
+  togglesContainer().appendChild(btn);
 
   function setPersistedColorScheme(mode: ColorScheme): void {
     try {
@@ -184,7 +198,7 @@ function installDensityToggle(): void {
   btn.type = 'button';
   btn.id = 'cngx-ex-density-toggle';
   btn.setAttribute('aria-label', 'Cycle density: comfortable / compact / spacious');
-  document.body.appendChild(btn);
+  togglesContainer().appendChild(btn);
 
   function setPersistedDensity(pref: DensityPref): void {
     try {
@@ -241,7 +255,7 @@ function installTextScaleToggle(injector: Injector): void {
   const btn = document.createElement('button');
   btn.type = 'button';
   btn.id = 'cngx-ex-text-scale-toggle';
-  document.body.appendChild(btn);
+  togglesContainer().appendChild(btn);
 
   // Paint the button from a rung value. Bracket marker matches the sibling
   // toggles (T for type size, -/=/+ echoing the density magnitude glyphs);

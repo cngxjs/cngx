@@ -87,18 +87,23 @@ body {
 }
 
 // Floating debug toggles (mounted by main.ts after bootstrapApplication):
-// color-scheme (bottom-most), density (above it), text-scale (top-most).
-// Monospace + sharp corners to match the Apache mod_autoindex aesthetic of
-// the home directory listing. Color-scheme cycles auto → dark → light;
-// density cycles comfortable → compact → spacious; text-scale cycles
-// medium → small → large.
-#cngx-ex-color-scheme-toggle,
-#cngx-ex-density-toggle,
-#cngx-ex-text-scale-toggle {
+// color-scheme, density, text-scale - laid out as a single horizontal row,
+// bottom-right of the viewport, by the #cngx-ex-toggles container. Monospace
+// + sharp corners to match the Apache mod_autoindex aesthetic of the home
+// directory listing. Color-scheme cycles auto → dark → light; density cycles
+// comfortable → compact → spacious; text-scale cycles medium → small → large.
+#cngx-ex-toggles {
   position: fixed;
   right: 16px;
   bottom: 16px;
   z-index: 99999;
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+}
+#cngx-ex-color-scheme-toggle,
+#cngx-ex-density-toggle,
+#cngx-ex-text-scale-toggle {
   display: inline-block;
   padding: 2px 6px;
   border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
@@ -109,14 +114,6 @@ body {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 0.8125rem;
   line-height: 1.2;
-}
-// Stack the toggles so the three never overlap: color-scheme at the bottom,
-// density above it, text-scale on top.
-#cngx-ex-density-toggle {
-  bottom: 44px;
-}
-#cngx-ex-text-scale-toggle {
-  bottom: 72px;
 }
 #cngx-ex-color-scheme-toggle:hover,
 #cngx-ex-density-toggle:hover,
