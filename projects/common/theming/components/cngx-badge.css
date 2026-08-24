@@ -279,6 +279,12 @@
       line-height: 1;
       pointer-events: none;
       user-select: none;
+      /* The count is a single self-contained run (`"99+"`, `formatCount`
+         caps at max+). isolate fences its bidi boundary against surrounding
+         RTL text without forcing a direction (metric bucket-A), so an
+         RTL-locale digit run keeps its own resolved order.
+         Consumer opt-out: set --cngx-badge-bidi: normal. */
+      unicode-bidi: var(--cngx-badge-bidi, isolate);
     }
 
     /* Dot mode - no text, fixed size */

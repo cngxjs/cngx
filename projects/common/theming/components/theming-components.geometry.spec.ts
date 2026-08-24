@@ -29,6 +29,7 @@ function mount<T>(type: new () => T, selector: string): HTMLElement {
 afterEach(() => {
   mountedRoot?.remove();
   mountedRoot = null;
+  document.documentElement.removeAttribute('dir');
 });
 
 // ── cngx-backdrop.css ──────────────────────────────────────────────────────
@@ -85,6 +86,14 @@ describe('CngxBadge geometry (Track-B)', () => {
     expect(computedValue(host, 'min-width')).toBe('16px');
     // The above-end variant anchors the pill absolutely off the host corner.
     expect(computedValue(host, 'position')).toBe('absolute');
+  });
+
+  it('isolates the count run under dir=rtl (bucket A, isolate only)', () => {
+    document.documentElement.dir = 'rtl';
+    const host = mount(BadgeHost, '.cngx-badge-indicator');
+    // Single self-contained count (`"99+"`); isolate fences the bidi boundary
+    // without forcing a direction, so RTL-locale digits keep their own order.
+    expect(computedValue(host, 'unicode-bidi')).toBe('isolate');
   });
 });
 
