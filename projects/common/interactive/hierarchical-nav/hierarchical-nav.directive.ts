@@ -5,14 +5,8 @@ import { type CngxTreeController } from '../tree-controller/tree-controller';
 import {
   CNGX_HIERARCHICAL_NAV_STRATEGY,
   type CngxHierarchicalNavAction,
+  type CngxHierarchicalNavContext,
 } from './hierarchical-nav-strategy';
-
-/** Context a hierarchical-nav strategy step receives on each arrow dispatch. */
-interface HierarchicalNavContext<T> {
-  readonly controller: CngxTreeController<T>;
-  readonly ad: CngxActiveDescendant;
-  readonly activeId: string;
-}
 
 /**
  * W3C-tree keyboard extension. Wires `ArrowRight` / `ArrowLeft` to a
@@ -114,8 +108,8 @@ export class CngxHierarchicalNav<T = unknown> {
     const logical = resolveInlineArrowKey(key, this.direction());
     const step =
       logical === 'ArrowRight'
-        ? (ctx: HierarchicalNavContext<T>) => this.strategy.onArrowRight(ctx)
-        : (ctx: HierarchicalNavContext<T>) => this.strategy.onArrowLeft(ctx);
+        ? (ctx: CngxHierarchicalNavContext<T>) => this.strategy.onArrowRight(ctx)
+        : (ctx: CngxHierarchicalNavContext<T>) => this.strategy.onArrowLeft(ctx);
     this.dispatch(event, step);
   }
 
@@ -125,7 +119,7 @@ export class CngxHierarchicalNav<T = unknown> {
    */
   private dispatch(
     event: Event,
-    step: (ctx: HierarchicalNavContext<T>) => CngxHierarchicalNavAction,
+    step: (ctx: CngxHierarchicalNavContext<T>) => CngxHierarchicalNavAction,
   ): void {
     const ad = this.ad;
     if (!ad) {
