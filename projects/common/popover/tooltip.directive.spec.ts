@@ -516,6 +516,17 @@ describe('CngxTooltip', () => {
       expect(showWithFallback('top', 'rtl').placement).toBe(FLOATING_PLACEMENT['top']);
     });
 
+    it('does NOT pre-flip vertical-placement alignment under rtl (top-start stays top-start)', () => {
+      // Guards the double-flip regression: @floating-ui/dom flips the alignment
+      // of vertical placements itself under rtl, so the tooltip must mirror the
+      // side only and leave top-start alignment to floating-ui.
+      expect(showWithFallback('top-start', 'rtl').placement).toBe(FLOATING_PLACEMENT['top-start']);
+    });
+
+    it('side-mirrors an edge-aligned side placement under rtl (left-end -> right-end)', () => {
+      expect(showWithFallback('left-end', 'rtl').placement).toBe(FLOATING_PLACEMENT['right-end']);
+    });
+
     it('leaves the bottom block edge unchanged under rtl', () => {
       expect(showWithFallback('bottom', 'rtl').placement).toBe(FLOATING_PLACEMENT['bottom']);
     });

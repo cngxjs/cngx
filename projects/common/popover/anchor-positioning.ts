@@ -67,44 +67,83 @@ export const POSITION_AREA: Record<PopoverPlacement, string> = {
 
 /**
  * @internal
- * Physical mirror of every inline-axis placement token. Used only under
- * `rtl` - the block axis (`top`/`bottom` and their `-start`/`-end`
- * alignment) mirrors its inline component, the left/right edges swap. Any
- * token absent from this map has no inline component to flip (`top`,
- * `bottom`) and is returned unchanged by {@link resolveDirectionalPlacement}.
+ * Full physical mirror of every placement token under `rtl`: the left/right
+ * side swaps, and a block-placement's inline *alignment* (`-start <-> -end`)
+ * swaps too. Feeds the CSS-anchor path only - {@link POSITION_AREA} uses
+ * physical keywords with no direction awareness, so the whole mirror must
+ * happen in TS. The block edge (`top`/`bottom`) never flips.
+ *
+ * Total `Record` (identity entries for `top`/`bottom`) so a future placement
+ * token fails the exhaustiveness check at compile time rather than silently
+ * losing its mirror at runtime - the same guard {@link POSITION_AREA} and
+ * `FLOATING_PLACEMENT` already carry.
  */
-const INLINE_MIRROR: Partial<Record<PopoverPlacement, PopoverPlacement>> = {
+const INLINE_MIRROR: Record<PopoverPlacement, PopoverPlacement> = {
+  top: 'top',
+  bottom: 'bottom',
+  'top-start': 'top-end',
+  'top-end': 'top-start',
+  'bottom-start': 'bottom-end',
+  'bottom-end': 'bottom-start',
   left: 'right',
   right: 'left',
   'left-start': 'right-start',
   'right-start': 'left-start',
   'left-end': 'right-end',
   'right-end': 'left-end',
-  'top-start': 'top-end',
-  'top-end': 'top-start',
-  'bottom-start': 'bottom-end',
-  'bottom-end': 'bottom-start',
 };
 
 /**
  * @internal
- * Resolve a logical placement token against the writing direction, mirroring
- * the inline (horizontal) axis under `rtl` and returning the token unchanged
- * under `ltr`. `POSITION_AREA` and `FLOATING_PLACEMENT` are keyed by physical
- * placement, so mirroring the key here - before either lookup - keeps both
- * maps correct as-is while placing the panel on the direction-forward side.
+ * Side-only mirror for the floating-ui path under `rtl`: the left/right side
+ * swaps (keeping any `-start`/`-end` suffix), but a block-placement's inline
+ * alignment is left untouched. `@floating-ui/dom`'s `computePosition` already
+ * flips the alignment of vertical placements under `rtl` (its default
+ * `platform.isRTL` reads the floating element's `direction`), while keeping
+ * the side physical. Pre-flipping the alignment here as well would double-flip
+ * `top-start` / `bottom-end` back to their ltr position - so the floating path
+ * mirrors the side and defers alignment to floating-ui.
+ *
+ * Total `Record` for the same compile-time exhaustiveness guard as
+ * {@link INLINE_MIRROR}.
+ */
+const FLOATING_MIRROR: Record<PopoverPlacement, PopoverPlacement> = {
+  top: 'top',
+  bottom: 'bottom',
+  'top-start': 'top-start',
+  'top-end': 'top-end',
+  'bottom-start': 'bottom-start',
+  'bottom-end': 'bottom-end',
+  left: 'right',
+  right: 'left',
+  'left-start': 'right-start',
+  'right-start': 'left-start',
+  'left-end': 'right-end',
+  'right-end': 'left-end',
+};
+
+/**
+ * @internal
+ * Resolve a logical placement token for the **CSS-anchor** path against the
+ * writing direction: full inline mirror under `rtl`, identity under `ltr`.
+ * {@link POSITION_AREA} is keyed by physical placement with no direction
+ * awareness, so mirroring the key here - before the lookup - is what places
+ * the panel on the direction-forward side.
  *
  * The block axis never flips: `top`/`bottom` (no inline component) are the
  * identity, and `top-start`/`bottom-start` mirror only their inline
  * *alignment* (`-start <-> -end`), not the block edge. Same inline-only rule
  * the keyboard direction-awareness applies (`resolveInlineStep`).
  *
+ * NOTE: the floating-ui path must NOT use this - floating-ui flips vertical
+ * alignment itself under `rtl`. Use {@link resolveFloatingPlacement} there.
+ *
  * Pure, O(1) lookup - a mechanical kernel, not a DI chokepoint; each surface
- * injects its own direction and calls this at its placement source.
+ * injects its own direction and calls this at its CSS-anchor placement source.
  *
  * @param placement The logical placement token the consumer requested.
  * @param direction The document writing direction from `injectDirection`.
- * @returns The inline-mirrored token under `rtl`, else `placement` unchanged.
+ * @returns The fully inline-mirrored token under `rtl`, else `placement`.
  */
 export function resolveDirectionalPlacement(
   placement: PopoverPlacement,
@@ -113,5 +152,28 @@ export function resolveDirectionalPlacement(
   if (direction !== 'rtl') {
     return placement;
   }
-  return INLINE_MIRROR[placement] ?? placement;
+  return INLINE_MIRROR[placement];
+}
+
+/**
+ * @internal
+ * Resolve a logical placement token for the **floating-ui fallback** path
+ * against the writing direction: side-only mirror under `rtl`, identity under
+ * `ltr`. `@floating-ui/dom` already flips the inline alignment of vertical
+ * placements under `rtl`, so this mirrors the side (`left <-> right`, suffix
+ * preserved) and leaves the alignment for floating-ui - avoiding the
+ * double-flip that a full mirror would cause on `top-start` / `bottom-end`.
+ *
+ * @param placement The logical placement token the consumer requested.
+ * @param direction The document writing direction from `injectDirection`.
+ * @returns The side-mirrored token under `rtl`, else `placement`.
+ */
+export function resolveFloatingPlacement(
+  placement: PopoverPlacement,
+  direction: CngxDirection,
+): PopoverPlacement {
+  if (direction !== 'rtl') {
+    return placement;
+  }
+  return FLOATING_MIRROR[placement];
 }

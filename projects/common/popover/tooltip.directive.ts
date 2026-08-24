@@ -19,6 +19,7 @@ import {
   ANCHOR_AREA_PROPERTY,
   POSITION_AREA,
   resolveDirectionalPlacement,
+  resolveFloatingPlacement,
   SUPPORTS_ANCHOR,
 } from './anchor-positioning';
 import { CNGX_FLOATING_FALLBACK, FLOATING_PLACEMENT } from './floating-fallback';
@@ -96,14 +97,23 @@ export class CngxTooltip {
 
   /**
    * @internal
-   * `placement` mirrored against the ambient writing direction. The tooltip
-   * has no single placement source to fold into (the anchor effect and the
-   * floating fallback each read the raw input), so one resolved computed read
-   * at both sites keeps the CSS-anchor and floating paths from diverging under
-   * `rtl`.
+   * `placement` fully mirrored against the ambient writing direction, for the
+   * CSS-anchor path (`POSITION_AREA`, physical keywords, no direction
+   * awareness).
    */
   private readonly directionalPlacement = computed(() =>
     resolveDirectionalPlacement(this.placement(), this.direction()),
+  );
+
+  /**
+   * @internal
+   * `placement` mirrored side-only, for the floating-ui fallback path.
+   * `@floating-ui/dom` flips the inline alignment of vertical placements under
+   * `rtl` itself, so a full mirror would double-flip `top-start` / `bottom-end`
+   * here. This path mirrors the side and defers alignment to floating-ui.
+   */
+  private readonly floatingPlacement = computed(() =>
+    resolveFloatingPlacement(this.placement(), this.direction()),
   );
 
   /** Gap between trigger and tooltip in px. */
@@ -294,7 +304,7 @@ export class CngxTooltip {
     const fb = this.floatingFallback;
     const trigger = this.elRef.nativeElement;
     const tooltip = this.tooltipEl;
-    const placement = FLOATING_PLACEMENT[this.directionalPlacement()];
+    const placement = FLOATING_PLACEMENT[this.floatingPlacement()];
     const middleware = fb.middleware ?? [];
 
     void fb.computePosition(trigger, tooltip, { placement, middleware }).then(({ x, y }) => {

@@ -729,9 +729,12 @@ describe('CngxPopover', () => {
       expect(opts.placement).toBe(FLOATING_PLACEMENT['left-start']);
     });
 
-    it('mirrors the inline alignment of a block placement on the floating path (top-start -> top-end)', () => {
+    it('does NOT pre-flip vertical-placement alignment on the floating path (top-start stays top-start)', () => {
+      // @floating-ui/dom flips the alignment of vertical placements under rtl
+      // itself; pre-flipping to top-end here would double-flip back to the ltr
+      // position. The floating path mirrors the side only and defers alignment.
       __resetFloatingMiddlewareWarnings(document);
-      const computePosition = vi.fn().mockResolvedValue({ x: 0, y: 0, placement: 'top-end' });
+      const computePosition = vi.fn().mockResolvedValue({ x: 0, y: 0, placement: 'top-start' });
       TestBed.configureTestingModule({
         imports: [BasicHost],
         providers: [
@@ -747,7 +750,7 @@ describe('CngxPopover', () => {
       popover.show();
 
       const opts = computePosition.mock.calls[0][2] as { placement: string };
-      expect(opts.placement).toBe(FLOATING_PLACEMENT['top-end']);
+      expect(opts.placement).toBe(FLOATING_PLACEMENT['top-start']);
     });
 
     it('is the identity under ltr (right-start stays right-start on the floating path)', () => {
