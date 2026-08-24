@@ -117,6 +117,7 @@ const TWO_PI = Math.PI * 2;
         font-size: var(--cngx-donut-label-font-size, 0.875rem);
         line-height: 1;
         color: var(--cngx-chart-text-color, currentColor);
+        unicode-bidi: var(--cngx-chart-numeric-bidi, isolate);
       }
       cngx-donut .cngx-preset-skeleton {
         display: inline-block;

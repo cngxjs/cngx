@@ -158,4 +158,10 @@
   );
   --cngx-chart-text-color: var(--text-primary, var(--cngx-color-text, oklch(0.25 0.015 250)));
   --cngx-skeleton-bg: color-mix(in oklch, currentColor 14%, transparent);
+  /* One shared bidi-isolation token for every numeric label (axis / legend /
+     donut / threshold / band / mini-bar) so the whole subsystem isolates
+     consistently and a consumer opts out once. A single value is robust, but a
+     consumer range label on threshold/band escalates - isolate fences the run
+     against surrounding RTL text. Consumer opt-out: set to normal. */
+  --cngx-chart-numeric-bidi: isolate;
 }

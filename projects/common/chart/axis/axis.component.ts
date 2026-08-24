@@ -234,6 +234,7 @@ interface TickRendering {
       .cngx-axis__tick-label {
         fill: var(--cngx-axis-text-color, var(--cngx-chart-text-color, currentColor));
         font-size: var(--cngx-axis-font-size, 11px);
+        unicode-bidi: var(--cngx-chart-numeric-bidi, isolate);
       }
       .cngx-axis__grid-line {
         stroke: var(--cngx-axis-grid-color, var(--cngx-chart-grid-color, currentColor));
