@@ -83,6 +83,9 @@ cngx-slider .cngx-slider__value {
   color: var(--cngx-color-text, oklch(0.2 0.01 250));
   pointer-events: none;
   white-space: nowrap;
+  /* Self-contained single value; isolate fences it against surrounding RTL text
+     (metric bucket-A). Consumer opt-out: --cngx-slider-value-bidi. */
+  unicode-bidi: var(--cngx-slider-value-bidi, isolate);
 }
 
 /* Discrete value bubble: a primary pill above the thumb, shown only while the
@@ -102,6 +105,8 @@ cngx-slider .cngx-slider__bubble {
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.12s ease;
+  /* Self-contained single value; isolate-only (metric bucket-A). */
+  unicode-bidi: var(--cngx-slider-value-bidi, isolate);
 }
 
 cngx-slider:focus .cngx-slider__bubble,
@@ -126,6 +131,8 @@ cngx-slider .cngx-slider__tick-label {
   font-variant-numeric: tabular-nums;
   color: var(--cngx-slider-tick-label-color, var(--cngx-color-text-muted, oklch(0.55 0.01 250)));
   white-space: nowrap;
+  /* Self-contained single value; isolate-only (metric bucket-A). */
+  unicode-bidi: var(--cngx-slider-value-bidi, isolate);
 }
 
 cngx-slider:focus-visible {

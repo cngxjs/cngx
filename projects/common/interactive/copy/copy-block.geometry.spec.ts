@@ -43,6 +43,7 @@ function query(root: HTMLElement, selector: string): HTMLElement {
 afterEach(() => {
   mountedRoot?.remove();
   mountedRoot = null;
+  document.documentElement.removeAttribute('dir');
 });
 
 describe('CngxCopyBlock geometry', () => {
@@ -63,5 +64,12 @@ describe('CngxCopyBlock geometry', () => {
     host.style.setProperty('--cngx-target-min', '44px');
     expect(computedValue(button, 'min-inline-size')).toBe('44px');
     expect(computedValue(button, 'min-block-size')).toBe('44px');
+  });
+
+  it('isolates the projected payload under dir=rtl (isolate-only)', () => {
+    document.documentElement.dir = 'rtl';
+    const host = mount();
+    const content = query(host, '.cngx-copy-block__content');
+    expect(computedValue(content, 'unicode-bidi')).toBe('isolate');
   });
 });

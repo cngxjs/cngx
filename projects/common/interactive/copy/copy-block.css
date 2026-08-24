@@ -195,6 +195,11 @@
       flex: 1;
       min-width: 0;
       overflow: hidden;
+      /* Projected consumer code / token / command that reorders on its neutral
+         characters under RTL. isolate fences the payload as one unit; isolate-
+         ONLY because the content may legitimately be RTL text (metric bucket-A).
+         Consumer opt-out: --cngx-copy-block-bidi. */
+      unicode-bidi: var(--cngx-copy-block-bidi, isolate);
     }
 
     .cngx-copy-block__button {
