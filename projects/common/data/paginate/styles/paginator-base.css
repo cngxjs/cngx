@@ -290,6 +290,9 @@
     color: var(--cngx-paginator-button-color, currentColor);
     font: inherit;
     font-variant-numeric: tabular-nums;
+    /* Lone page-number input; isolate for #316 policy consistency (D17).
+       Consumer opt-out: --cngx-paginator-goto-input-bidi. */
+    unicode-bidi: var(--cngx-paginator-goto-input-bidi, isolate);
   }
 
   .cngx-paginator__goto-input:focus-visible {
@@ -301,6 +304,9 @@
   .cngx-paginator__select {
     gap: var(--cngx-paginator-select-gap, 0.25rem);
     font-variant-numeric: tabular-nums;
+    /* Select trigger holding a lone int / caret; isolate for #316 policy
+       consistency (D17). Consumer opt-out: --cngx-paginator-select-bidi. */
+    unicode-bidi: var(--cngx-paginator-select-bidi, isolate);
   }
 
   .cngx-paginator__select-caret {
@@ -334,6 +340,9 @@
     border-radius: var(--cngx-paginator-option-radius, 0.25rem);
     cursor: pointer;
     font-variant-numeric: tabular-nums;
+    /* Popover row holding a lone page-size int; isolate for #316 policy
+       consistency (D17). Consumer opt-out: --cngx-paginator-option-bidi. */
+    unicode-bidi: var(--cngx-paginator-option-bidi, isolate);
   }
 
   /*
