@@ -7,6 +7,7 @@ import {
   type Signal,
   type WritableSignal,
 } from '@angular/core';
+import { injectDirection } from '@cngx/core';
 
 import { createSliderCore } from './slider-core';
 import { createSliderInteraction } from './slider-interaction';
@@ -122,5 +123,6 @@ export class CngxSliderThumb {
     disabled: () => this.range.disabled(),
     pageStep: () => this.pageStep(),
     fractionFromPointer: (x, y) => this.range.fractionFromPointer(x, y),
+    direction: injectDirection(),
   });
 }

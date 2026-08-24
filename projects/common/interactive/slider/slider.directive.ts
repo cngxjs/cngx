@@ -1,4 +1,5 @@
 import { computed, Directive, ElementRef, inject, input, model } from '@angular/core';
+import { injectDirection } from '@cngx/core';
 
 import { createSliderCore } from './slider-core';
 import { createSliderInteraction, pointerFraction } from './slider-interaction';
@@ -116,5 +117,6 @@ export class CngxSliderTrack {
     disabled: () => this.disabled(),
     pageStep: () => this.pageStep(),
     fractionFromPointer: (x, y) => pointerFraction(this.el, this.orientation(), x, y),
+    direction: injectDirection(),
   });
 }
