@@ -30,6 +30,12 @@
   font-size: var(--cngx-avatar-group-pill-font-size, 0.8125rem);
   font-weight: 600;
   line-height: 1;
+  /* `+N` is a self-contained `+` sign fixed to the digits; under RTL the box
+     inherits direction:rtl and detaches the `+` to the right. isolate fences
+     the boundary; direction:ltr keeps the `+` left of the count.
+     Consumer opt-out: --cngx-avatar-group-overflow-bidi / -direction. */
+  unicode-bidi: var(--cngx-avatar-group-overflow-bidi, isolate);
+  direction: var(--cngx-avatar-group-overflow-direction, ltr);
 }
 
 .cngx-avatar-group--square .cngx-avatar-group__overflow {
