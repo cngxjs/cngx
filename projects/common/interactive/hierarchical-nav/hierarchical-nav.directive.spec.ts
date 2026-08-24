@@ -192,7 +192,7 @@ describe('CngxHierarchicalNav', () => {
   });
 });
 
-describe('CngxHierarchicalNav — dir=rtl', () => {
+describe('CngxHierarchicalNav under dir=rtl', () => {
   let f: Fixture;
 
   beforeEach(() => {

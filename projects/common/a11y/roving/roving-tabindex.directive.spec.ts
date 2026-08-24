@@ -295,7 +295,7 @@ describe('CngxRovingTabindex — virtual mode', () => {
   });
 });
 
-describe('CngxRovingTabindex — dir=rtl', () => {
+describe('CngxRovingTabindex under dir=rtl', () => {
   beforeEach(() =>
     TestBed.configureTestingModule({
       imports: [TestHost],

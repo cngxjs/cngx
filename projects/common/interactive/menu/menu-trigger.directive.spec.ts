@@ -324,7 +324,7 @@ describe('CngxMenuTrigger', () => {
   });
 });
 
-describe('CngxMenuTrigger — submenu arrows under dir', () => {
+describe('CngxMenuTrigger submenu arrows under dir', () => {
   // Spy the REAL focus stack (via the factory token) so every directive path
   // the effect touches still works, while we assert the physical->logical
   // routing at the trigger dispatch: under `rtl` a physical ArrowLeft must

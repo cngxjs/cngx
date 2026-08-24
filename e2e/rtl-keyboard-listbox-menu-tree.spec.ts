@@ -17,7 +17,7 @@ function setRtl(page: Page): Promise<void> {
   return page.locator('html').evaluate((el) => el.setAttribute('dir', 'rtl'));
 }
 
-test.describe('RTL keyboard navigation — listbox, menu, tree', () => {
+test.describe('RTL keyboard navigation: listbox, menu, tree', () => {
   test('roving toolbar: ArrowLeft advances in reading order, ArrowRight retreats', async ({
     page,
   }) => {
@@ -76,7 +76,7 @@ test.describe('RTL keyboard navigation — listbox, menu, tree', () => {
     const pdfItem = page.getByRole('menuitem', { name: 'PDF' });
     await expect(pdfItem).toBeHidden();
 
-    // Rename (0), Duplicate (1), Export as (2) — two ArrowDowns land on the submenu parent.
+    // Rename (0), Duplicate (1), Export as (2) - two ArrowDowns land on the submenu parent.
     await page.keyboard.press('ArrowDown');
     await page.keyboard.press('ArrowDown');
 
