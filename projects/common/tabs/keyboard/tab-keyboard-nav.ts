@@ -1,3 +1,6 @@
+import type { Signal } from '@angular/core';
+import { resolveInlineStep, type CngxDirection } from '@cngx/core';
+
 import type { CngxTabGroupHost, CngxTabHandle } from '../tab-group-host.token';
 
 /**
@@ -11,6 +14,11 @@ import type { CngxTabGroupHost, CngxTabHandle } from '../tab-group-host.token';
 export interface CngxTabKeyboardNavOptions {
   readonly host: CngxTabGroupHost;
   readonly hostElement: HTMLElement;
+  /**
+   * Document writing direction. Flips the horizontal-arrow step under
+   * `rtl` (APG); the vertical axis and Home/End stay direction-invariant.
+   */
+  readonly direction: Signal<CngxDirection>;
 }
 
 /**
@@ -140,13 +148,20 @@ export function createTabKeyboardNav(
     tabTabindex: (tab) => (tab.id === opts.host.activeId() ? 0 : -1),
     handleKeydown: (event) => {
       const horizontal = opts.host.orientation() === 'horizontal';
+      const inlineStep = (key: string): number | null => {
+        if (!horizontal) {
+          return null;
+        }
+        const dir = resolveInlineStep(key, opts.direction());
+        return dir === null ? null : step(dir);
+      };
       let target: number | null;
       switch (event.key) {
         case 'ArrowRight':
-          target = horizontal ? step(1) : null;
+          target = inlineStep('ArrowRight');
           break;
         case 'ArrowLeft':
-          target = horizontal ? step(-1) : null;
+          target = inlineStep('ArrowLeft');
           break;
         case 'ArrowDown':
           target = horizontal ? null : step(1);
