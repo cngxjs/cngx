@@ -1,4 +1,5 @@
 import { effect, InjectionToken, signal, untracked, type Signal } from '@angular/core';
+import { injectDirection, resolveInlineStep } from '@cngx/core';
 
 /**
  * Configuration for {@link createChipStripRoving}.
@@ -114,6 +115,7 @@ export function createChipStripRoving(
 ): CngxChipStripRovingController {
   const attr = opts.indexAttr ?? 'data-reorder-index';
   const activeIndexState = signal<number>(0);
+  const direction = injectDirection();
 
   // Clamp on count shrink - a removed-last-chip or clear-all must not
   // leave `activeIndex` pointing past the end. Reading the signal
@@ -162,14 +164,22 @@ export function createChipStripRoving(
     const current = activeIndexState();
     let nextIdx: number;
     switch (event.key) {
-      case 'ArrowLeft':
       case 'ArrowUp':
         nextIdx = Math.max(0, current - 1);
         break;
-      case 'ArrowRight':
       case 'ArrowDown':
         nextIdx = Math.min(count - 1, current + 1);
         break;
+      case 'ArrowLeft':
+      case 'ArrowRight': {
+        // Inline axis: rove-forward/back flips under rtl.
+        const step = resolveInlineStep(event.key, direction());
+        if (step === null) {
+          return;
+        }
+        nextIdx = Math.min(count - 1, Math.max(0, current + step));
+        break;
+      }
       case 'Home':
         nextIdx = 0;
         break;

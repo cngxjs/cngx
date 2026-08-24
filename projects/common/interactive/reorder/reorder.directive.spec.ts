@@ -3,6 +3,8 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it } from 'vitest';
 
+import { provideDirection } from '@cngx/core';
+
 import { CngxReorder, type CngxReorderEvent } from './reorder.directive';
 
 interface Item {
@@ -360,5 +362,55 @@ describe('CngxReorder — ignoreSelector', () => {
       new PointerEvent('pointerup', { bubbles: true, pointerId: 1 }),
     );
     expect(fixture.componentInstance.reorders).toHaveLength(0);
+  });
+});
+
+describe('CngxReorder under dir=rtl', () => {
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      imports: [TestHost],
+      providers: [provideDirection('rtl')],
+    });
+  });
+
+  function setup() {
+    const fixture = TestBed.createComponent(TestHost);
+    fixture.detectChanges();
+    const host = fixture.componentInstance;
+    const listEl = fixture.debugElement.query(By.directive(CngxReorder))
+      .nativeElement as HTMLElement;
+    return { fixture, host, listEl };
+  }
+
+  function item(listEl: HTMLElement, index: number): HTMLElement {
+    const el = listEl.querySelector<HTMLElement>(`[data-reorder-index="${index}"]`);
+    if (!el) {
+      throw new Error(`no item at index ${index}`);
+    }
+    return el;
+  }
+
+  function fireAlt(target: HTMLElement, key: string): void {
+    target.dispatchEvent(
+      new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, altKey: true }),
+    );
+  }
+
+  it('Alt+ArrowLeft moves an item toward the end (inline flip)', () => {
+    const { host, listEl } = setup();
+    fireAlt(item(listEl, 0), 'ArrowLeft');
+    expect(host.reorders.at(-1)?.toIndex).toBe(1);
+  });
+
+  it('Alt+ArrowRight moves an item toward the start (inline flip)', () => {
+    const { host, listEl } = setup();
+    fireAlt(item(listEl, 1), 'ArrowRight');
+    expect(host.reorders.at(-1)?.toIndex).toBe(0);
+  });
+
+  it('Alt+ArrowDown / ArrowUp stay direction-invariant', () => {
+    const { host, listEl } = setup();
+    fireAlt(item(listEl, 0), 'ArrowDown');
+    expect(host.reorders.at(-1)?.toIndex).toBe(1);
   });
 });
