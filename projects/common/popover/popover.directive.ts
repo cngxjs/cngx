@@ -15,9 +15,16 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { fromEvent } from 'rxjs';
 
+import { injectDirection } from '@cngx/core';
 import { hasTransition, nextUid, onTransitionDone } from '@cngx/core/utils';
 
-import { ANCHOR_AREA_PROPERTY, POSITION_AREA, SUPPORTS_ANCHOR } from './anchor-positioning';
+import {
+  ANCHOR_AREA_PROPERTY,
+  POSITION_AREA,
+  resolveDirectionalPlacement,
+  resolveFloatingPlacement,
+  SUPPORTS_ANCHOR,
+} from './anchor-positioning';
 import { CNGX_POPOVER_ARROW_BOUNDS, type CngxPopoverArrowBounds } from './popover-arrow-bounds';
 import { CNGX_FLOATING_FALLBACK, FLOATING_PLACEMENT } from './floating-fallback';
 import type {
@@ -251,6 +258,7 @@ export class CngxPopover {
   private readonly doc = inject(DOCUMENT);
   private readonly floatingFallback = inject(CNGX_FLOATING_FALLBACK, { optional: true });
   private readonly _injector = inject(Injector);
+  private readonly direction = injectDirection();
   /**
    * Arrow-bounds contract resolved lazily on first use.
    * Eager inject() would loop: CngxPopover (host directive on the panel)
@@ -341,9 +349,29 @@ export class CngxPopover {
    */
   readonly placementOverride = signal<PopoverPlacement | null>(null);
 
-  /** Effective placement - override wins, else the `[placement]` input. */
-  private readonly effectivePlacement = computed<PopoverPlacement>(
-    () => this.placementOverride() ?? this.placement(),
+  /**
+   * Effective placement for the CSS-anchor path - override wins, else the
+   * `[placement]` input, then fully mirrored against the ambient writing
+   * direction. Feeds the `POSITION_AREA` write, the token-split arrow edge,
+   * and `resolveActualEdge`: `POSITION_AREA` uses physical keywords with no
+   * direction awareness, so the whole mirror happens here. A submenu that
+   * flanks inline-end under `ltr` flanks the physically-opposite side under
+   * `rtl`, matching the shipped keyboard direction-awareness.
+   */
+  private readonly effectivePlacement = computed<PopoverPlacement>(() =>
+    resolveDirectionalPlacement(this.placementOverride() ?? this.placement(), this.direction()),
+  );
+
+  /**
+   * Effective placement for the floating-ui fallback path - the same source
+   * as {@link effectivePlacement} but mirrored side-only. `@floating-ui/dom`
+   * flips the inline alignment of vertical placements under `rtl` itself, so
+   * feeding it the fully-mirrored token would double-flip `top-start` /
+   * `bottom-end`. This path mirrors the side and defers alignment to
+   * floating-ui.
+   */
+  private readonly floatingPlacement = computed<PopoverPlacement>(() =>
+    resolveFloatingPlacement(this.placementOverride() ?? this.placement(), this.direction()),
   );
 
   /**
@@ -589,7 +617,7 @@ export class CngxPopover {
 
     const fb = this.floatingFallback;
     const el = this.popoverElement;
-    const placement = FLOATING_PLACEMENT[this.effectivePlacement()];
+    const placement = FLOATING_PLACEMENT[this.floatingPlacement()];
     const offsetVal = this.offset();
 
     const middleware = fb.middleware ?? [];
