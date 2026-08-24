@@ -122,6 +122,66 @@ globalThis.addEventListener('storage', (event) => {
   syncDensityFromState();
 });
 
+// Direction coordination.
+//
+// The RTL direction primitive (projects/core/bidi/direction.ts) reads
+// `documentElement.dir` and re-signals on a runtime flip via a
+// MutationObserver, so setting the attribute is all the wiring any
+// direction-aware component needs. We persist an explicit preference to
+// `localStorage['cngx_direction']` and reflect it onto `<html dir>`. The app
+// default is `ltr` (attribute cleared); only `rtl` is persisted, so a cleared
+// key just means the ltr default. There is no OS-level direction signal.
+// Compodocx has no direction control, so no parent sync is needed; the
+// `storage` listener only keeps multiple tabs aligned.
+const CNGX_DIRECTION_KEY = 'cngx_direction';
+
+type DirectionPref = 'rtl' | null;
+
+function applyDirection(pref: DirectionPref): void {
+  const el = document.documentElement;
+  if (pref === null) {
+    el.removeAttribute('dir');
+  } else el.setAttribute('dir', 'rtl');
+}
+
+function readPersistedDirection(): DirectionPref {
+  try {
+    if (localStorage.getItem(CNGX_DIRECTION_KEY) === 'rtl') {
+      return 'rtl';
+    }
+  } catch {
+    // localStorage may be unavailable in restrictive contexts; treat as ltr.
+  }
+  return null;
+}
+
+function syncDirectionFromState(): void {
+  applyDirection(readPersistedDirection());
+}
+
+syncDirectionFromState();
+
+globalThis.addEventListener('storage', (event) => {
+  if (event.key !== CNGX_DIRECTION_KEY) {
+    return;
+  }
+  syncDirectionFromState();
+});
+
+// Shared container for the floating debug toggles. Created once, lazily, and
+// appended to <body>; every install* function drops its button in here so the
+// cluster lays out as a single flex row (see #cngx-ex-toggles in styles.scss).
+// A new toggle needs no per-id bottom offset - the row's gap composes it.
+let togglesEl: HTMLElement | null = null;
+function togglesContainer(): HTMLElement {
+  if (togglesEl === null) {
+    togglesEl = document.createElement('div');
+    togglesEl.id = 'cngx-ex-toggles';
+    document.body.appendChild(togglesEl);
+  }
+  return togglesEl;
+}
+
 // Floating dark-mode debug toggle. Bottom-right of the viewport,
 // cycles auto → dark → light → auto by writing the same localStorage
 // key compodocx uses. Useful when running the examples app standalone
@@ -132,7 +192,7 @@ function installColorSchemeToggle(): void {
   btn.type = 'button';
   btn.id = 'cngx-ex-color-scheme-toggle';
   btn.setAttribute('aria-label', 'Cycle color scheme: auto / dark / light');
-  document.body.appendChild(btn);
+  togglesContainer().appendChild(btn);
 
   function setPersistedColorScheme(mode: ColorScheme): void {
     try {
@@ -184,7 +244,7 @@ function installDensityToggle(): void {
   btn.type = 'button';
   btn.id = 'cngx-ex-density-toggle';
   btn.setAttribute('aria-label', 'Cycle density: comfortable / compact / spacious');
-  document.body.appendChild(btn);
+  togglesContainer().appendChild(btn);
 
   function setPersistedDensity(pref: DensityPref): void {
     try {
@@ -219,6 +279,53 @@ function installDensityToggle(): void {
   render();
 }
 
+// Floating direction debug toggle. Flips `<html dir>` between ltr (default,
+// attribute cleared) and rtl by writing the `cngx_direction` localStorage key.
+// The single attribute write drives the shipped CNGX_DIRECTION signal through
+// its MutationObserver, so the flip reaches every direction-aware component
+// with no import. Standalone-only, same rationale as the density toggle.
+function installDirectionToggle(): void {
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.id = 'cngx-ex-direction-toggle';
+  togglesContainer().appendChild(btn);
+
+  function setPersistedDirection(pref: DirectionPref): void {
+    try {
+      if (pref === null) {
+        localStorage.removeItem(CNGX_DIRECTION_KEY);
+      } else {
+        localStorage.setItem(CNGX_DIRECTION_KEY, pref);
+      }
+    } catch {
+      // localStorage may be unavailable; the toggle still updates the DOM.
+    }
+  }
+
+  function render(): void {
+    const pref = readPersistedDirection();
+    // Directional bracket marker: [->] ltr, [<-] rtl. Deliberately not
+    // [L]/[R] - [L] already means "light" on the color-scheme toggle. A
+    // 2-state cycle has no correct aria-pressed, so the accessible name
+    // carries the active direction (same rationale as the text-scale toggle).
+    btn.textContent = pref === 'rtl' ? '[<-]' : '[->]';
+    const label = pref === 'rtl' ? 'right-to-left' : 'left-to-right';
+    btn.title = `Direction: ${label} - click to toggle`;
+    btn.setAttribute('aria-label', `Direction: ${label}. Activate to toggle.`);
+  }
+
+  btn.addEventListener('click', () => {
+    const current = readPersistedDirection();
+    // ltr (null) <-> rtl
+    const next: DirectionPref = current === null ? 'rtl' : null;
+    setPersistedDirection(next);
+    applyDirection(next);
+    render();
+  });
+
+  render();
+}
+
 // Text-size coordination + floating toggle.
 //
 // Unlike density (a bare `data-density` attribute), text-scale is backed by
@@ -241,7 +348,7 @@ function installTextScaleToggle(injector: Injector): void {
   const btn = document.createElement('button');
   btn.type = 'button';
   btn.id = 'cngx-ex-text-scale-toggle';
-  document.body.appendChild(btn);
+  togglesContainer().appendChild(btn);
 
   // Paint the button from a rung value. Bracket marker matches the sibling
   // toggles (T for type size, -/=/+ echoing the density magnitude glyphs);
@@ -318,6 +425,7 @@ bootstrapApplication(App, appConfig)
       installColorSchemeToggle();
       installDensityToggle();
       installTextScaleToggle(appRef.injector);
+      installDirectionToggle();
     }
   })
   .catch((err) => console.error(err));
