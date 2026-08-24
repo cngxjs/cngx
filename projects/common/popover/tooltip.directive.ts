@@ -12,9 +12,15 @@ import {
 } from '@angular/core';
 
 import { CngxReducedMotion } from '@cngx/common/a11y';
+import { injectDirection } from '@cngx/core';
 import { nextUid } from '@cngx/core/utils';
 
-import { ANCHOR_AREA_PROPERTY, POSITION_AREA, SUPPORTS_ANCHOR } from './anchor-positioning';
+import {
+  ANCHOR_AREA_PROPERTY,
+  POSITION_AREA,
+  resolveDirectionalPlacement,
+  SUPPORTS_ANCHOR,
+} from './anchor-positioning';
 import { CNGX_FLOATING_FALLBACK, FLOATING_PLACEMENT } from './floating-fallback';
 import type {
   PopoverPlacement,
@@ -80,12 +86,25 @@ export class CngxTooltip {
   private readonly elRef = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly destroyRef = inject(DestroyRef);
   private readonly floatingFallback = inject(CNGX_FLOATING_FALLBACK, { optional: true });
+  private readonly direction = injectDirection();
 
   /** Tooltip text content. */
   readonly text = input.required<string>({ alias: 'cngxTooltip' });
 
   /** Anchor-relative placement. */
   readonly placement = input<PopoverPlacement>('top', { alias: 'tooltipPlacement' });
+
+  /**
+   * @internal
+   * `placement` mirrored against the ambient writing direction. The tooltip
+   * has no single placement source to fold into (the anchor effect and the
+   * floating fallback each read the raw input), so one resolved computed read
+   * at both sites keeps the CSS-anchor and floating paths from diverging under
+   * `rtl`.
+   */
+  private readonly directionalPlacement = computed(() =>
+    resolveDirectionalPlacement(this.placement(), this.direction()),
+  );
 
   /** Gap between trigger and tooltip in px. */
   readonly offset = input(8, { alias: 'tooltipOffset' });
@@ -145,7 +164,7 @@ export class CngxTooltip {
     });
 
     effect(() => {
-      const placement = this.placement();
+      const placement = this.directionalPlacement();
       const offset = this.offset();
       const el = untracked(() => this.tooltipEl);
       if (!el) {
@@ -275,7 +294,7 @@ export class CngxTooltip {
     const fb = this.floatingFallback;
     const trigger = this.elRef.nativeElement;
     const tooltip = this.tooltipEl;
-    const placement = FLOATING_PLACEMENT[this.placement()];
+    const placement = FLOATING_PLACEMENT[this.directionalPlacement()];
     const middleware = fb.middleware ?? [];
 
     void fb.computePosition(trigger, tooltip, { placement, middleware }).then(({ x, y }) => {

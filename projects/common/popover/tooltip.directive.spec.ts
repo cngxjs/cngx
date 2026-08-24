@@ -2,8 +2,11 @@ import { Component, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { provideDirection } from '@cngx/core';
+
 import { CngxTooltip } from './tooltip.directive';
-import type { PopoverPositionTryFallback } from './popover.types';
+import { FLOATING_PLACEMENT, provideFloatingFallback } from './floating-fallback';
+import type { PopoverPlacement, PopoverPositionTryFallback } from './popover.types';
 
 // Test helpers
 
@@ -97,6 +100,25 @@ class FallbackTooltipHost {
   imports: [CngxTooltip],
 })
 class ManualTooltipHost {
+  readonly tooltip = viewChild.required(CngxTooltip);
+}
+
+@Component({
+  template: `
+    <button
+      cngxTooltip="Directional tip"
+      [tooltipPlacement]="placement()"
+      [tooltipDelay]="0"
+      [closeDelay]="0"
+      id="trigger"
+    >
+      Btn
+    </button>
+  `,
+  imports: [CngxTooltip],
+})
+class PlacementTooltipHost {
+  readonly placement = signal<PopoverPlacement>('right');
   readonly tooltip = viewChild.required(CngxTooltip);
 }
 
@@ -449,6 +471,57 @@ describe('CngxTooltip', () => {
       fixture.detectChanges();
       TestBed.flushEffects();
       expect(tooltipEl.style.getPropertyValue('position-try-fallbacks')).toBe('');
+    });
+  });
+
+  describe('dir=rtl placement mirror', () => {
+    // jsdom reports no CSS Anchor support, so the `position-area` write is
+    // gated off; the floating fallback path is the observable surface. Both
+    // the anchor effect and the floating path read the same
+    // `directionalPlacement` computed, so asserting the floating key proves
+    // the mirror the anchor path also receives.
+    function showWithFallback(
+      placement: PopoverPlacement,
+      direction: 'ltr' | 'rtl',
+    ): { placement: string } {
+      const computePosition = vi.fn().mockResolvedValue({ x: 0, y: 0 });
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        imports: [PlacementTooltipHost],
+        providers: [
+          provideDirection(direction),
+          provideFloatingFallback(computePosition),
+        ],
+      });
+      const { fixture } = setup(PlacementTooltipHost);
+      fixture.componentInstance.placement.set(placement);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      fixture.componentInstance.tooltip().show();
+      expect(computePosition).toHaveBeenCalled();
+      return computePosition.mock.calls[0][2] as { placement: string };
+    }
+
+    it('mirrors a side placement to the inline-start side under rtl (right -> left)', () => {
+      expect(showWithFallback('right', 'rtl').placement).toBe(FLOATING_PLACEMENT['left']);
+    });
+
+    it('mirrors an edge-aligned side placement under rtl (right-start -> left-start)', () => {
+      expect(showWithFallback('right-start', 'rtl').placement).toBe(
+        FLOATING_PLACEMENT['left-start'],
+      );
+    });
+
+    it('leaves the top block edge unchanged under rtl', () => {
+      expect(showWithFallback('top', 'rtl').placement).toBe(FLOATING_PLACEMENT['top']);
+    });
+
+    it('leaves the bottom block edge unchanged under rtl', () => {
+      expect(showWithFallback('bottom', 'rtl').placement).toBe(FLOATING_PLACEMENT['bottom']);
+    });
+
+    it('is the identity under ltr (right stays right)', () => {
+      expect(showWithFallback('right', 'ltr').placement).toBe(FLOATING_PLACEMENT['right']);
     });
   });
 });
