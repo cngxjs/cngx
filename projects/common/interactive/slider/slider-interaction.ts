@@ -1,3 +1,6 @@
+import type { Signal } from '@angular/core';
+import { resolveInlineStep, type CngxDirection } from '@cngx/core';
+
 import type { CngxSliderCore } from './slider-core';
 
 /**
@@ -40,6 +43,12 @@ export interface CngxSliderInteractionOptions {
   pageStep(): number;
   /** Map a pointer position to a `0..1` track fraction. */
   fractionFromPointer(clientX: number, clientY: number): number;
+  /**
+   * Document writing direction. Flips the inline-axis arrows (increase /
+   * decrease) under `rtl` per the APG slider pattern; the block axis
+   * (`ArrowUp`/`ArrowDown`) and `Page`/`Home`/`End` stay invariant.
+   */
+  readonly direction: Signal<CngxDirection>;
 }
 
 /** APG keyboard + pointer-drag handlers produced by {@link createSliderInteraction}. */
@@ -80,14 +89,22 @@ export function createSliderInteraction(
       }
       const big = options.pageStep();
       switch (event.key) {
-        case 'ArrowRight':
         case 'ArrowUp':
           core.stepBy(1);
           break;
-        case 'ArrowLeft':
         case 'ArrowDown':
           core.stepBy(-1);
           break;
+        case 'ArrowRight':
+        case 'ArrowLeft': {
+          // Inline axis: increase/decrease meaning flips under rtl.
+          const step = resolveInlineStep(event.key, options.direction());
+          if (step === null) {
+            return;
+          }
+          core.stepBy(step);
+          break;
+        }
         case 'PageUp':
           core.setValue(core.clampedValue() + big);
           break;

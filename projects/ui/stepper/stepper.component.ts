@@ -14,6 +14,7 @@ import {
   type Signal,
   type TemplateRef,
 } from '@angular/core';
+import { injectDirection } from '@cngx/core';
 
 import {
   CngxFocusRestore,
@@ -535,6 +536,7 @@ export class CngxStepper implements CngxStepPanelHost {
   protected readonly handleStripKeyDown = createStepperStripKeyboardNav({
     presenter: this.presenter,
     hostElement: this.hostElement,
+    direction: injectDirection(),
     flatStepCount: () => this.flatSteps().length,
     stepButtonIdFor: (id) => `${id}-header`,
     // Defers the post-move focus to afterNextRender so arrow-key

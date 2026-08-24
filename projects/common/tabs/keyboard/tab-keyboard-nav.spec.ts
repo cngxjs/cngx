@@ -66,7 +66,7 @@ describe('createTabKeyboardNav', () => {
     const handles = [handle('a'), handle('b'), handle('c')];
     const { host } = makeHost(handles, { active: 1 });
     const { el } = makeDom(3);
-    const nav = createTabKeyboardNav({ host, hostElement: el });
+    const nav = createTabKeyboardNav({ host, hostElement: el, direction: signal<'ltr' | 'rtl'>('ltr') });
     expect(handles.map((h) => nav.tabTabindex(h))).toEqual([-1, 0, -1]);
   });
 
@@ -74,7 +74,7 @@ describe('createTabKeyboardNav', () => {
     const handles = [handle('a'), handle('b'), handle('c')];
     const { host, select } = makeHost(handles);
     const { el, buttons } = makeDom(3);
-    const nav = createTabKeyboardNav({ host, hostElement: el });
+    const nav = createTabKeyboardNav({ host, hostElement: el, direction: signal<'ltr' | 'rtl'>('ltr') });
     const ev = press('ArrowRight');
     nav.handleKeydown(ev);
     expect(ev.defaultPrevented).toBe(true);
@@ -86,7 +86,7 @@ describe('createTabKeyboardNav', () => {
     const handles = [handle('a'), handle('b'), handle('c')];
     const { host, select } = makeHost(handles, { loop: true });
     const { el, buttons } = makeDom(3);
-    const nav = createTabKeyboardNav({ host, hostElement: el });
+    const nav = createTabKeyboardNav({ host, hostElement: el, direction: signal<'ltr' | 'rtl'>('ltr') });
     nav.handleKeydown(press('ArrowLeft'));
     expect(select).toHaveBeenCalledWith(2);
     expect(document.activeElement).toBe(buttons[2]);
@@ -96,7 +96,7 @@ describe('createTabKeyboardNav', () => {
     const handles = [handle('a'), handle('b')];
     const { host, select } = makeHost(handles, { loop: false });
     const { el } = makeDom(2);
-    const nav = createTabKeyboardNav({ host, hostElement: el });
+    const nav = createTabKeyboardNav({ host, hostElement: el, direction: signal<'ltr' | 'rtl'>('ltr') });
     const ev = press('ArrowLeft');
     nav.handleKeydown(ev);
     expect(select).not.toHaveBeenCalled();
@@ -107,7 +107,7 @@ describe('createTabKeyboardNav', () => {
     const handles = [handle('a'), handle('b', true), handle('c')];
     const { host, select } = makeHost(handles);
     const { el } = makeDom(3);
-    const nav = createTabKeyboardNav({ host, hostElement: el });
+    const nav = createTabKeyboardNav({ host, hostElement: el, direction: signal<'ltr' | 'rtl'>('ltr') });
     nav.handleKeydown(press('ArrowRight'));
     expect(select).toHaveBeenCalledWith(2);
   });
@@ -116,7 +116,7 @@ describe('createTabKeyboardNav', () => {
     const handles = [handle('a'), handle('b'), handle('c')];
     const { host, select } = makeHost(handles, { active: 1 });
     const { el } = makeDom(3);
-    const nav = createTabKeyboardNav({ host, hostElement: el });
+    const nav = createTabKeyboardNav({ host, hostElement: el, direction: signal<'ltr' | 'rtl'>('ltr') });
     nav.handleKeydown(press('End'));
     expect(select).toHaveBeenLastCalledWith(2);
     nav.handleKeydown(press('Home'));
@@ -127,7 +127,7 @@ describe('createTabKeyboardNav', () => {
     const handles = [handle('a'), handle('b')];
     const { host, select } = makeHost(handles, { orientation: 'vertical' });
     const { el } = makeDom(2);
-    const nav = createTabKeyboardNav({ host, hostElement: el });
+    const nav = createTabKeyboardNav({ host, hostElement: el, direction: signal<'ltr' | 'rtl'>('ltr') });
     const ignored = press('ArrowRight');
     nav.handleKeydown(ignored);
     expect(ignored.defaultPrevented).toBe(false);
@@ -140,7 +140,7 @@ describe('createTabKeyboardNav', () => {
     const handles = [handle('a'), handle('b')];
     const { host, select } = makeHost(handles);
     const { el } = makeDom(2);
-    const nav = createTabKeyboardNav({ host, hostElement: el });
+    const nav = createTabKeyboardNav({ host, hostElement: el, direction: signal<'ltr' | 'rtl'>('ltr') });
     const ev = press('Enter');
     nav.handleKeydown(ev);
     expect(select).not.toHaveBeenCalled();
@@ -162,9 +162,52 @@ describe('createTabKeyboardNav', () => {
       byId[id] = b;
     }
     document.body.appendChild(el);
-    const nav = createTabKeyboardNav({ host, hostElement: el });
+    const nav = createTabKeyboardNav({ host, hostElement: el, direction: signal<'ltr' | 'rtl'>('ltr') });
     nav.handleKeydown(press('ArrowRight'));
     expect(select).toHaveBeenCalledWith(1);
     expect(document.activeElement).toBe(byId['b']);
+  });
+});
+
+describe('createTabKeyboardNav under dir=rtl', () => {
+  it('ArrowLeft activates the next tab in reading order', () => {
+    const handles = [handle('a'), handle('b'), handle('c')];
+    const { host, select } = makeHost(handles, { active: 0 });
+    const { el, buttons } = makeDom(3);
+    const nav = createTabKeyboardNav({
+      host,
+      hostElement: el,
+      direction: signal<'ltr' | 'rtl'>('rtl'),
+    });
+    nav.handleKeydown(press('ArrowLeft'));
+    expect(select).toHaveBeenCalledWith(1);
+    expect(document.activeElement).toBe(buttons[1]);
+  });
+
+  it('ArrowRight activates the previous tab in reading order', () => {
+    const handles = [handle('a'), handle('b'), handle('c')];
+    const { host, select } = makeHost(handles, { active: 1 });
+    const { el, buttons } = makeDom(3);
+    const nav = createTabKeyboardNav({
+      host,
+      hostElement: el,
+      direction: signal<'ltr' | 'rtl'>('rtl'),
+    });
+    nav.handleKeydown(press('ArrowRight'));
+    expect(select).toHaveBeenCalledWith(0);
+    expect(document.activeElement).toBe(buttons[0]);
+  });
+
+  it('leaves the vertical axis direction-invariant (ArrowDown still advances)', () => {
+    const handles = [handle('a'), handle('b'), handle('c')];
+    const { host, select } = makeHost(handles, { active: 0, orientation: 'vertical' });
+    const { el } = makeDom(3);
+    const nav = createTabKeyboardNav({
+      host,
+      hostElement: el,
+      direction: signal<'ltr' | 'rtl'>('rtl'),
+    });
+    nav.handleKeydown(press('ArrowDown'));
+    expect(select).toHaveBeenCalledWith(1);
   });
 });

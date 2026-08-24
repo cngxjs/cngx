@@ -9,6 +9,7 @@ import {
   model,
   signal,
 } from '@angular/core';
+import { injectDirection, resolveInlineStep } from '@cngx/core';
 
 /**
  * Marker directive for items managed by `CngxRovingTabindex`.
@@ -148,6 +149,9 @@ export class CngxRovingTabindex {
 
   private readonly pendingFocusState = signal<number | null>(null);
 
+  /** Document writing direction - flips the horizontal-arrow index deltas under `rtl` (APG). */
+  private readonly direction = injectDirection();
+
   /**
    * Set true just before a navigation key (arrow / Home / End) moves focus to a
    * new item, cleared by {@link consumeNavigationKey}. Transient handshake, not
@@ -242,9 +246,17 @@ export class CngxRovingTabindex {
         ? this.findNextVirtual(currentActive, total, direction)
         : this.findNext(currentActive, allItems, direction);
 
+    const inlineNav = (key: string): number | null => {
+      if (!this.isHorizontal()) {
+        return null;
+      }
+      const step = resolveInlineStep(key, this.direction());
+      return step === null ? null : navigate(step);
+    };
+
     const keyMap: Record<string, () => number | null> = {
-      ArrowRight: () => (this.isHorizontal() ? navigate(1) : null),
-      ArrowLeft: () => (this.isHorizontal() ? navigate(-1) : null),
+      ArrowRight: () => inlineNav('ArrowRight'),
+      ArrowLeft: () => inlineNav('ArrowLeft'),
       ArrowDown: () => (this.isVertical() ? navigate(1) : null),
       ArrowUp: () => (this.isVertical() ? navigate(-1) : null),
       Home: () => (isVirtual ? 0 : this.findFirst(allItems)),

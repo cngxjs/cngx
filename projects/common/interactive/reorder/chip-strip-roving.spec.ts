@@ -2,6 +2,8 @@ import { Injector, runInInjectionContext, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
 
+import { provideDirection } from '@cngx/core';
+
 import { createChipStripRoving } from './chip-strip-roving';
 
 function makeContainer(chipCount: number): HTMLElement {
@@ -31,6 +33,19 @@ describe('createChipStripRoving', () => {
       createChipStripRoving({ container, count }),
     );
     expect(ctrl.activeIndex()).toBe(0);
+  });
+
+  it('honours an explicit direction option over the ambient signal (controlled wins)', () => {
+    const root = makeContainer(4);
+    const container = signal<HTMLElement | null>(root);
+    const count = signal(4);
+    // Ambient DOM direction is ltr here; the rtl option must win.
+    const ctrl = runInInjectionContext(injector, () =>
+      createChipStripRoving({ container, count, direction: signal<'ltr' | 'rtl'>('rtl') }),
+    );
+    ctrl.handleKeydown(new KeyboardEvent('keydown', { key: 'ArrowLeft' }));
+    expect(ctrl.activeIndex()).toBe(1);
+    root.remove();
   });
 
   it('plain ArrowRight / ArrowLeft move activeIndex within bounds and focus the chip', () => {
@@ -149,6 +164,43 @@ describe('createChipStripRoving', () => {
     expect(document.activeElement).toBe(
       root.querySelector('[data-chip-index="1"]'),
     );
+    root.remove();
+  });
+});
+
+describe('createChipStripRoving under dir=rtl', () => {
+  let injector: Injector;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({ providers: [provideDirection('rtl')] });
+    injector = TestBed.inject(Injector);
+  });
+
+  it('ArrowLeft roves forward and ArrowRight back in reading order', () => {
+    const root = makeContainer(4);
+    const container = signal<HTMLElement | null>(root);
+    const count = signal(4);
+    const ctrl = runInInjectionContext(injector, () =>
+      createChipStripRoving({ container, count }),
+    );
+    ctrl.handleKeydown(new KeyboardEvent('keydown', { key: 'ArrowLeft' }));
+    expect(ctrl.activeIndex()).toBe(1);
+    ctrl.handleKeydown(new KeyboardEvent('keydown', { key: 'ArrowRight' }));
+    expect(ctrl.activeIndex()).toBe(0);
+    root.remove();
+  });
+
+  it('ArrowUp / ArrowDown stay direction-invariant', () => {
+    const root = makeContainer(4);
+    const container = signal<HTMLElement | null>(root);
+    const count = signal(4);
+    const ctrl = runInInjectionContext(injector, () =>
+      createChipStripRoving({ container, count }),
+    );
+    ctrl.handleKeydown(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
+    expect(ctrl.activeIndex()).toBe(1);
+    ctrl.handleKeydown(new KeyboardEvent('keydown', { key: 'ArrowUp' }));
+    expect(ctrl.activeIndex()).toBe(0);
     root.remove();
   });
 });

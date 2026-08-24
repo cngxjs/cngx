@@ -1,4 +1,5 @@
 import { effect, InjectionToken, signal, untracked, type Signal } from '@angular/core';
+import { injectDirection, resolveInlineStep, type CngxDirection } from '@cngx/core';
 
 /**
  * Configuration for {@link createChipStripRoving}.
@@ -20,6 +21,14 @@ export interface CngxChipStripRovingOptions {
    * legitimate idle state - the controller becomes a no-op focuser.
    */
   readonly container: Signal<HTMLElement | null | undefined>;
+  /**
+   * Document writing direction. Omit to read the ambient
+   * {@link injectDirection} signal (the common case); pass an explicit
+   * signal to force a direction for this strip. Mirrors the `direction`
+   * option the tab / stepper / slider keyboard factories take, so under
+   * `rtl` plain ArrowLeft roves forward and ArrowRight back on the inline axis.
+   */
+  readonly direction?: Signal<CngxDirection>;
   /**
    * Attribute name used to identify each chip wrapper. Combined with
    * the active index into a `[attr="index"]` query. Defaults to
@@ -114,6 +123,7 @@ export function createChipStripRoving(
 ): CngxChipStripRovingController {
   const attr = opts.indexAttr ?? 'data-reorder-index';
   const activeIndexState = signal<number>(0);
+  const direction = opts.direction ?? injectDirection();
 
   // Clamp on count shrink - a removed-last-chip or clear-all must not
   // leave `activeIndex` pointing past the end. Reading the signal
@@ -162,14 +172,22 @@ export function createChipStripRoving(
     const current = activeIndexState();
     let nextIdx: number;
     switch (event.key) {
-      case 'ArrowLeft':
       case 'ArrowUp':
         nextIdx = Math.max(0, current - 1);
         break;
-      case 'ArrowRight':
       case 'ArrowDown':
         nextIdx = Math.min(count - 1, current + 1);
         break;
+      case 'ArrowLeft':
+      case 'ArrowRight': {
+        // Inline axis: rove-forward/back flips under rtl.
+        const step = resolveInlineStep(event.key, direction());
+        if (step === null) {
+          return;
+        }
+        nextIdx = Math.min(count - 1, Math.max(0, current + step));
+        break;
+      }
       case 'Home':
         nextIdx = 0;
         break;

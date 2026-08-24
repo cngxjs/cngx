@@ -12,6 +12,7 @@ import {
   signal,
   type Signal,
 } from '@angular/core';
+import { injectDirection, resolveInlineStep } from '@cngx/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter, fromEvent, map, merge, switchMap, takeUntil, tap } from 'rxjs';
 
@@ -188,6 +189,7 @@ export class CngxReorder<T = unknown> {
 
   private readonly hostEl = inject(ElementRef<HTMLElement>).nativeElement as HTMLElement;
   private readonly doc = inject(DOCUMENT);
+  private readonly direction = injectDirection();
   private readonly destroyRef = inject(DestroyRef);
 
   constructor() {
@@ -344,14 +346,22 @@ export class CngxReorder<T = unknown> {
           }
           let toIndex: number;
           switch (e.key) {
-            case 'ArrowLeft':
             case 'ArrowUp':
               toIndex = fromIndex - 1;
               break;
-            case 'ArrowRight':
             case 'ArrowDown':
               toIndex = fromIndex + 1;
               break;
+            case 'ArrowLeft':
+            case 'ArrowRight': {
+              // Inline axis: move-forward/back flips under rtl.
+              const step = resolveInlineStep(e.key, this.direction());
+              if (step === null) {
+                return;
+              }
+              toIndex = fromIndex + step;
+              break;
+            }
             case 'Home':
               toIndex = 0;
               break;

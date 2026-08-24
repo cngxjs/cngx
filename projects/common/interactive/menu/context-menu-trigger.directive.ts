@@ -9,6 +9,7 @@ import {
   input,
   untracked,
 } from '@angular/core';
+import { injectDirection } from '@cngx/core';
 
 import {
   createContextMenuTriggerCore,
@@ -99,6 +100,7 @@ export class CngxContextMenuTrigger {
     dismissFactory: inject(CNGX_MENU_DISMISS_HANDLER_FACTORY),
     announcer: inject(CNGX_MENU_ANNOUNCER_FACTORY)(),
     nav: inject(CNGX_MENU_NAV_STRATEGY),
+    direction: injectDirection(),
     focusStackFactory: inject(CNGX_MENU_FOCUS_STACK_FACTORY),
   });
 

@@ -1,4 +1,5 @@
-import { afterNextRender, type Injector } from '@angular/core';
+import { afterNextRender, type Injector, type Signal } from '@angular/core';
+import { resolveInlineStep, type CngxDirection } from '@cngx/core';
 
 import type { CngxStepperHost } from './stepper-host.token';
 
@@ -12,6 +13,11 @@ export interface CngxStepperStripKeyboardNavOptions {
   readonly presenter: CngxStepperHost;
   /** Host element used to locate the active step button after the move. */
   readonly hostElement: HTMLElement;
+  /**
+   * Document writing direction. Flips the horizontal-strip inline arrows
+   * under `rtl` (APG); the vertical strip and Home/End stay invariant.
+   */
+  readonly direction: Signal<CngxDirection>;
   /** Returns the current flat-step count so `End` lands on the last step. */
   readonly flatStepCount: () => number;
   /**
@@ -98,13 +104,16 @@ export function createStepperStripKeyboardNav(
       return;
     }
     const isHorizontal = options.presenter.orientation() === 'horizontal';
-    const nextKey = isHorizontal ? 'ArrowRight' : 'ArrowDown';
-    const prevKey = isHorizontal ? 'ArrowLeft' : 'ArrowUp';
-    if (event.key === nextKey) {
+    // Horizontal: the inline arrows flip under rtl. Vertical: the block
+    // arrows (ArrowUp/ArrowDown) never flip.
+    const inlineStep = isHorizontal ? resolveInlineStep(event.key, options.direction()) : null;
+    const isNext = inlineStep === 1 || (!isHorizontal && event.key === 'ArrowDown');
+    const isPrev = inlineStep === -1 || (!isHorizontal && event.key === 'ArrowUp');
+    if (isNext) {
       event.preventDefault();
       options.presenter.selectNext();
       focusActive();
-    } else if (event.key === prevKey) {
+    } else if (isPrev) {
       event.preventDefault();
       options.presenter.selectPrevious();
       focusActive();

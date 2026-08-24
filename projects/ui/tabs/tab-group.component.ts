@@ -17,6 +17,7 @@ import {
   type Signal,
   type TemplateRef,
 } from '@angular/core';
+import { injectDirection } from '@cngx/core';
 
 import { CNGX_FOCUSABLE_SELECTOR, CngxFocusRestore, CngxLiveRegion } from '@cngx/common/a11y';
 import {
@@ -234,6 +235,7 @@ export class CngxTabGroup implements CngxTabPanelHost {
   protected readonly keyboard: CngxTabKeyboardNav = createTabKeyboardNav({
     host: this.presenter,
     hostElement: this.hostElement,
+    direction: injectDirection(),
   });
 
   /**

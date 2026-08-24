@@ -1,6 +1,7 @@
 import { Component, signal, type Signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { provideDirection } from '@cngx/core';
 import { CngxActiveDescendant, type ActiveDescendantItem } from '@cngx/common/a11y';
 import { type CngxTreeNode } from '@cngx/utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -188,5 +189,45 @@ describe('CngxHierarchicalNav', () => {
     // refused. Directive must NOT emit movedToChild on a rejected move.
     expect(f.host.onMovedToChild).not.toHaveBeenCalled();
     expect(f.ad.activeId()).toBe('a');
+  });
+});
+
+describe('CngxHierarchicalNav under dir=rtl', () => {
+  let f: Fixture;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({ providers: [provideDirection('rtl')] });
+    f = setup();
+  });
+
+  it('ArrowLeft on a collapsed parent expands it (inline-forward under rtl)', () => {
+    f.ad.highlightByIndex(0);
+    expect(f.ctrl.isExpanded('a')()).toBe(false);
+
+    f.press('ArrowLeft');
+    expect(f.ctrl.isExpanded('a')()).toBe(true);
+    expect(f.host.onExpand).toHaveBeenCalledWith('a');
+    expect(f.host.onCollapse).not.toHaveBeenCalled();
+  });
+
+  it('ArrowRight on an expanded parent collapses it (inline-back under rtl)', () => {
+    f.ctrl.expand('a');
+    f.fixture.detectChanges();
+    f.ad.highlightByIndex(0);
+
+    f.press('ArrowRight');
+    expect(f.ctrl.isExpanded('a')()).toBe(false);
+    expect(f.host.onCollapse).toHaveBeenCalledWith('a');
+    expect(f.host.onExpand).not.toHaveBeenCalled();
+  });
+
+  it('ArrowLeft on an expanded parent moves active to the first child under rtl', () => {
+    f.ad.highlightByIndex(0);
+    f.ctrl.expand('a');
+    f.fixture.detectChanges();
+
+    f.press('ArrowLeft');
+    expect(f.host.onMovedToChild).toHaveBeenCalledWith('a1');
+    expect(f.ad.activeId()).toBe('a1');
   });
 });

@@ -3,6 +3,8 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { describe, expect, it } from 'vitest';
 
+import { provideDirection } from '@cngx/core';
+
 import { CngxSliderTrack } from './slider.directive';
 
 @Component({
@@ -124,5 +126,38 @@ describe('CngxSliderTrack', () => {
     );
     fixture.detectChanges();
     expect(host.v()).toBe(75);
+  });
+});
+
+describe('CngxSliderTrack under dir=rtl', () => {
+  function setupRtl() {
+    TestBed.configureTestingModule({ providers: [provideDirection('rtl')] });
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+    const de = fixture.debugElement.query(By.directive(CngxSliderTrack));
+    return { fixture, host: fixture.componentInstance, el: de.nativeElement as HTMLElement };
+  }
+
+  it('ArrowLeft increases and ArrowRight decreases the value (inline axis flips)', () => {
+    const { fixture, host, el } = setupRtl();
+    press(el, 'ArrowLeft');
+    fixture.detectChanges();
+    expect(host.v()).toBe(51);
+    expect(el.getAttribute('aria-valuenow')).toBe('51');
+
+    press(el, 'ArrowRight');
+    fixture.detectChanges();
+    expect(host.v()).toBe(50);
+  });
+
+  it('ArrowUp increases and ArrowDown decreases regardless of direction (block axis fixed)', () => {
+    const { fixture, host, el } = setupRtl();
+    press(el, 'ArrowUp');
+    fixture.detectChanges();
+    expect(host.v()).toBe(51);
+
+    press(el, 'ArrowDown');
+    fixture.detectChanges();
+    expect(host.v()).toBe(50);
   });
 });
