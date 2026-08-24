@@ -102,5 +102,13 @@
     .cngx-card-timestamp__prefix {
       font-weight: var(--cngx-card-timestamp-prefix-weight, 400);
     }
+
+    /* An `Intl.DateTimeFormat` timestamp (`24.08.2026`) is digit groups joined
+       by dot separators that reorder inside an RTL run. isolate fences the date
+       as one unit; isolate-ONLY so an Arabic-locale timestamp keeps its native
+       order (metric bucket-A). Consumer opt-out: --cngx-card-timestamp-bidi. */
+    .cngx-card-timestamp__date {
+      unicode-bidi: var(--cngx-card-timestamp-bidi, isolate);
+    }
   }
 }
