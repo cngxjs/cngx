@@ -15,9 +15,15 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { fromEvent } from 'rxjs';
 
+import { injectDirection } from '@cngx/core';
 import { hasTransition, nextUid, onTransitionDone } from '@cngx/core/utils';
 
-import { ANCHOR_AREA_PROPERTY, POSITION_AREA, SUPPORTS_ANCHOR } from './anchor-positioning';
+import {
+  ANCHOR_AREA_PROPERTY,
+  POSITION_AREA,
+  resolveDirectionalPlacement,
+  SUPPORTS_ANCHOR,
+} from './anchor-positioning';
 import { CNGX_POPOVER_ARROW_BOUNDS, type CngxPopoverArrowBounds } from './popover-arrow-bounds';
 import { CNGX_FLOATING_FALLBACK, FLOATING_PLACEMENT } from './floating-fallback';
 import type {
@@ -251,6 +257,7 @@ export class CngxPopover {
   private readonly doc = inject(DOCUMENT);
   private readonly floatingFallback = inject(CNGX_FLOATING_FALLBACK, { optional: true });
   private readonly _injector = inject(Injector);
+  private readonly direction = injectDirection();
   /**
    * Arrow-bounds contract resolved lazily on first use.
    * Eager inject() would loop: CngxPopover (host directive on the panel)
@@ -341,9 +348,18 @@ export class CngxPopover {
    */
   readonly placementOverride = signal<PopoverPlacement | null>(null);
 
-  /** Effective placement - override wins, else the `[placement]` input. */
-  private readonly effectivePlacement = computed<PopoverPlacement>(
-    () => this.placementOverride() ?? this.placement(),
+  /**
+   * Effective placement - override wins, else the `[placement]` input, then
+   * mirrored against the ambient writing direction. This is the single source
+   * every placement consumer reads (the `POSITION_AREA` write, the
+   * `FLOATING_PLACEMENT` lookup, the token-split arrow edge, and
+   * `resolveActualEdge`), so resolving direction here mirrors all of them in
+   * one derivation - a submenu that flanks inline-end under `ltr` flanks the
+   * physically-opposite side under `rtl` on every path, matching the shipped
+   * keyboard direction-awareness.
+   */
+  private readonly effectivePlacement = computed<PopoverPlacement>(() =>
+    resolveDirectionalPlacement(this.placementOverride() ?? this.placement(), this.direction()),
   );
 
   /**

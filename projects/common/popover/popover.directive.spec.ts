@@ -2,6 +2,8 @@ import { Component, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { provideDirection } from '@cngx/core';
+
 import { CngxPopover, __resetFloatingMiddlewareWarnings } from './popover.directive';
 import {
   CNGX_FLOATING_FALLBACK,
@@ -670,6 +672,103 @@ describe('CngxPopover', () => {
       popover.placementOverride.set(null);
       fixture.detectChanges();
       expect(popover.resolvedEdge()).toBe('bottom');
+    });
+  });
+
+  describe('dir=rtl placement mirror', () => {
+    it('mirrors the inline-axis arrow edge under rtl (right-start -> left)', () => {
+      TestBed.configureTestingModule({
+        imports: [BasicHost],
+        providers: [provideDirection('rtl')],
+      });
+      const { fixture } = setup(BasicHost);
+      const popover = (fixture.componentInstance as BasicHost).popover();
+
+      popover.placementOverride.set('right-start');
+      fixture.detectChanges();
+      // Under rtl `right-start` resolves to `left-start`; the arrow edge (the
+      // token-split consumer) follows the mirrored source and points left.
+      expect(popover.resolvedEdge()).toBe('left');
+    });
+
+    it('leaves the block edge invariant under rtl (top-start stays top)', () => {
+      TestBed.configureTestingModule({
+        imports: [BasicHost],
+        providers: [provideDirection('rtl')],
+      });
+      const { fixture } = setup(BasicHost);
+      const popover = (fixture.componentInstance as BasicHost).popover();
+
+      popover.placementOverride.set('top-start');
+      fixture.detectChanges();
+      expect(popover.resolvedEdge()).toBe('top');
+    });
+
+    it('mirrors the FLOATING_PLACEMENT token under rtl (right-start -> left-start)', () => {
+      __resetFloatingMiddlewareWarnings(document);
+      const computePosition = vi.fn().mockResolvedValue({ x: 0, y: 0, placement: 'left-start' });
+      TestBed.configureTestingModule({
+        imports: [BasicHost],
+        providers: [
+          provideDirection('rtl'),
+          provideFloatingFallback(computePosition, [{ name: 'flip' }, { name: 'shift' }]),
+        ],
+      });
+      const { fixture, popoverEl } = setup(BasicHost);
+      const popover = (fixture.componentInstance as BasicHost).popover();
+      popover.anchorElement.set(popoverEl);
+
+      popover.placementOverride.set('right-start');
+      popover.show();
+
+      expect(computePosition).toHaveBeenCalled();
+      const opts = computePosition.mock.calls[0][2] as { placement: string };
+      // The mirror is applied at the effectivePlacement source, so the
+      // floating path sees the mirrored key - the CSS-anchor and floating
+      // paths cannot diverge under rtl.
+      expect(opts.placement).toBe(FLOATING_PLACEMENT['left-start']);
+    });
+
+    it('mirrors the inline alignment of a block placement on the floating path (top-start -> top-end)', () => {
+      __resetFloatingMiddlewareWarnings(document);
+      const computePosition = vi.fn().mockResolvedValue({ x: 0, y: 0, placement: 'top-end' });
+      TestBed.configureTestingModule({
+        imports: [BasicHost],
+        providers: [
+          provideDirection('rtl'),
+          provideFloatingFallback(computePosition, [{ name: 'flip' }, { name: 'shift' }]),
+        ],
+      });
+      const { fixture, popoverEl } = setup(BasicHost);
+      const popover = (fixture.componentInstance as BasicHost).popover();
+      popover.anchorElement.set(popoverEl);
+
+      popover.placementOverride.set('top-start');
+      popover.show();
+
+      const opts = computePosition.mock.calls[0][2] as { placement: string };
+      expect(opts.placement).toBe(FLOATING_PLACEMENT['top-end']);
+    });
+
+    it('is the identity under ltr (right-start stays right-start on the floating path)', () => {
+      __resetFloatingMiddlewareWarnings(document);
+      const computePosition = vi.fn().mockResolvedValue({ x: 0, y: 0, placement: 'right-start' });
+      TestBed.configureTestingModule({
+        imports: [BasicHost],
+        providers: [
+          provideDirection('ltr'),
+          provideFloatingFallback(computePosition, [{ name: 'flip' }, { name: 'shift' }]),
+        ],
+      });
+      const { fixture, popoverEl } = setup(BasicHost);
+      const popover = (fixture.componentInstance as BasicHost).popover();
+      popover.anchorElement.set(popoverEl);
+
+      popover.placementOverride.set('right-start');
+      popover.show();
+
+      const opts = computePosition.mock.calls[0][2] as { placement: string };
+      expect(opts.placement).toBe(FLOATING_PLACEMENT['right-start']);
     });
   });
 });
