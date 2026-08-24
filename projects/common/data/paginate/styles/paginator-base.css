@@ -219,6 +219,12 @@
     font-variant-numeric: tabular-nums;
     color: var(--cngx-paginator-range-color, currentColor);
     white-space: nowrap;
+    /* `1-10 of 100` is two number groups joined by a neutral `-`/word run that
+       inverts under RTL. isolate fences the boundary; direction:ltr pins the
+       internal `a-b of c` order (char-count precedent).
+       Consumer opt-out: --cngx-paginator-range-bidi / -direction. */
+    unicode-bidi: var(--cngx-paginator-range-bidi, isolate);
+    direction: var(--cngx-paginator-range-direction, ltr);
   }
 
   /*
@@ -229,6 +235,10 @@
     font-variant-numeric: tabular-nums;
     color: var(--cngx-paginator-range-color, currentColor);
     white-space: nowrap;
+    /* Word-anchored `Page n of m` - the words carry the order, so isolate-only
+       fences the boundary without pinning direction (metric bucket-A).
+       Consumer opt-out: --cngx-paginator-status-bidi. */
+    unicode-bidi: var(--cngx-paginator-status-bidi, isolate);
   }
 
   /*
@@ -248,6 +258,23 @@
       --cngx-paginator-load-more-count-color,
       color-mix(in oklch, currentColor 60%, transparent)
     );
+    /* `40 / 100` is two number groups joined by a neutral `/` that swaps under
+       RTL. isolate fences the boundary; direction:ltr pins the `shown / total`
+       order. Consumer opt-out: --cngx-paginator-load-more-count-bidi / -direction. */
+    unicode-bidi: var(--cngx-paginator-load-more-count-bidi, isolate);
+    direction: var(--cngx-paginator-load-more-count-direction, ltr);
+  }
+
+  /*
+   * Page-of-pages `n / m` and page-size lone-int trigger label. Defined inline
+   * in the two segment components (ViewEncapsulation.None), so its rule lives
+   * here in the shared base and reaches both. isolate fences the boundary; the
+   * `n / m` composite needs direction:ltr to keep the slash order (harmless on
+   * the lone int). Consumer opt-out: --cngx-paginator-select-label-bidi / -direction.
+   */
+  .cngx-paginator__select-label {
+    unicode-bidi: var(--cngx-paginator-select-label-bidi, isolate);
+    direction: var(--cngx-paginator-select-label-direction, ltr);
   }
 
   /* Go-to-page number input. */

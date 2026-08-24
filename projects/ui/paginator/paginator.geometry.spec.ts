@@ -8,9 +8,12 @@ import {
   CngxPaginatorFirst,
   CngxPaginatorGoto,
   CngxPaginatorLast,
+  CngxPaginatorLoadMore,
   CngxPaginatorNext,
+  CngxPaginatorPageOfPages,
   CngxPaginatorPages,
   CngxPaginatorPrev,
+  CngxPaginatorRange,
   CngxPaginatorStatus,
 } from '@cngx/ui/paginator';
 
@@ -81,6 +84,7 @@ function segmentDisplay(host: HTMLElement, selector: string): string {
 afterEach(() => {
   mountedRoot?.remove();
   mountedRoot = null;
+  document.documentElement.removeAttribute('dir');
 });
 
 describe('CngxPaginator geometry', () => {
@@ -112,5 +116,79 @@ describe('CngxPaginator geometry', () => {
     const host = mount(300);
     expect(segmentDisplay(host, 'cngx-pgn-first')).toBe('none');
     expect(segmentDisplay(host, 'cngx-pgn-last')).toBe('none');
+  });
+});
+
+// ── RTL bidi isolation of the numeric readouts (paginator-base.css) ──────────
+
+@Component({
+  selector: 'cngx-paginator-rtl-host',
+  standalone: true,
+  imports: [
+    CngxPaginator,
+    CngxPaginatorRange,
+    CngxPaginatorStatus,
+    CngxPaginatorLoadMore,
+    CngxPaginatorPageOfPages,
+  ],
+  template: `
+    <cngx-paginator aria-label="Pager" [total]="100" [pageIndex]="0" [pageSize]="10">
+      <cngx-pgn-range />
+      <cngx-pgn-status />
+      <cngx-pgn-load-more />
+      <cngx-pgn-page-of-pages />
+    </cngx-paginator>
+  `,
+})
+class PaginatorRtlHost {}
+
+function mountRtl(): HTMLElement {
+  const fixture = TestBed.createComponent(PaginatorRtlHost);
+  mountedRoot = fixture.nativeElement as HTMLElement;
+  document.body.appendChild(mountedRoot);
+  fixture.detectChanges();
+  const host = mountedRoot.querySelector('cngx-paginator');
+  if (!host) {
+    throw new Error('cngx-paginator did not render');
+  }
+  return host as HTMLElement;
+}
+
+function readout(host: HTMLElement, selector: string): HTMLElement {
+  const el = host.querySelector(selector);
+  if (!el) {
+    throw new Error(`${selector} did not render`);
+  }
+  return el as HTMLElement;
+}
+
+describe('CngxPaginator numeric readouts isolate under dir=rtl', () => {
+  it('pins range / load-more / page-of-pages to isolate + direction:ltr', () => {
+    document.documentElement.dir = 'rtl';
+    const host = mountRtl();
+
+    // `1-10 of 100`, `40 / 100`, `1 / 10` are number groups joined by a neutral
+    // separator that invert under RTL; direction:ltr is what actually gates the
+    // `2 / 9 -> 9 / 2` reorder (vacuous without the rtl mount).
+    const range = readout(host, '.cngx-paginator__range');
+    expect(computedValue(range, 'unicode-bidi')).toBe('isolate');
+    expect(computedValue(range, 'direction')).toBe('ltr');
+
+    const loadMore = readout(host, '.cngx-paginator__load-more-count');
+    expect(computedValue(loadMore, 'unicode-bidi')).toBe('isolate');
+    expect(computedValue(loadMore, 'direction')).toBe('ltr');
+
+    const selectLabel = readout(host, '.cngx-paginator__select-label');
+    expect(computedValue(selectLabel, 'unicode-bidi')).toBe('isolate');
+    expect(computedValue(selectLabel, 'direction')).toBe('ltr');
+  });
+
+  it('isolates the word-anchored status readout (isolate-only)', () => {
+    document.documentElement.dir = 'rtl';
+    const host = mountRtl();
+    // `Page n of m` carries its order in the words; isolate-only fences the
+    // boundary without pinning direction.
+    const status = readout(host, '.cngx-paginator__status');
+    expect(computedValue(status, 'unicode-bidi')).toBe('isolate');
   });
 });
