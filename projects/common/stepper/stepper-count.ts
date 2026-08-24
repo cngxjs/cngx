@@ -66,8 +66,10 @@ export interface CngxStepperCountHost {
   template: '<span [attr.aria-live]="live() ? \'polite\' : null">{{ label() }}</span>',
   // The `N/M` shapes (`N/M`, `N/M complete`, `round(c/t*100)%`) are two number
   // groups joined by a neutral `/` that swaps under RTL. isolate fences the
-  // boundary; direction:ltr pins the `current/total` order (metric bucket-B).
-  // Consumer opt-out: --cngx-stepper-count-bidi / -direction.
+  // boundary; direction:ltr pins the `current/total` order (the CngxDelta
+  // composite pattern). The declaration lands on the same span that carries
+  // aria-live, but bidi is visual-only - AT reads DOM order, so the announced
+  // string is unchanged. Consumer opt-out: --cngx-stepper-count-bidi / -direction.
   styles: `
     .cngx-stepper-count span {
       unicode-bidi: var(--cngx-stepper-count-bidi, isolate);
