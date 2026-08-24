@@ -615,6 +615,16 @@
         var(--cngx-treetable-cell-padding-inline, 1rem);
       color: var(--cngx-treetable-cell-color, var(--cngx-color-text, oklch(0.34 0.015 250)));
       vertical-align: middle;
+      /* A data cell renders arbitrary consumer values - dates (`2024-06-01`),
+         codes (`PROJ-100-2`), numbers - that reorder on their neutral
+         separators under RTL. isolate-ONLY by default so a genuinely RTL text
+         cell keeps its native order; the direction token stays `revert` (the
+         inherited direction is untouched) so a pure-numeric/code/date column
+         can opt into LTR pinning via --cngx-treetable-cell-direction: ltr
+         without a template change.
+         Consumer opt-out: --cngx-treetable-cell-bidi / -direction. */
+      unicode-bidi: var(--cngx-treetable-cell-bidi, isolate);
+      direction: var(--cngx-treetable-cell-direction, revert);
     }
 
     cdk-cell.cngx-treetable__expand-cell {
