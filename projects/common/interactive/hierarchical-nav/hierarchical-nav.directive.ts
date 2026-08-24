@@ -97,11 +97,11 @@ export class CngxHierarchicalNav<T = unknown> {
   /** Emitted with the id of the child the active-descendant moved to. */
   readonly movedToChild = output<string>();
 
-  handleRight(event: Event): void {
+  protected handleRight(event: Event): void {
     this.handlePhysicalArrow('ArrowRight', event);
   }
 
-  handleLeft(event: Event): void {
+  protected handleLeft(event: Event): void {
     this.handlePhysicalArrow('ArrowLeft', event);
   }
 
