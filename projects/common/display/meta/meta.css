@@ -13,4 +13,9 @@
 
 .cngx-meta__value {
   min-inline-size: 0;
+  /* Purpose-built for consumer code / id / hash (`trace 9f31c0d4`) that reorders
+     on its neutral characters under RTL. isolate fences the value as one unit;
+     isolate-ONLY because the value may legitimately be RTL text (metric
+     bucket-A). Consumer opt-out: --cngx-meta-value-bidi. */
+  unicode-bidi: var(--cngx-meta-value-bidi, isolate);
 }

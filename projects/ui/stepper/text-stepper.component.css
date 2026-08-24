@@ -19,6 +19,10 @@
 .cngx-text-stepper__text {
   font: inherit;
   color: inherit;
+  /* Word-anchored `Step n of m` - localizable and robust; isolate-only fences
+     the readout against surrounding RTL text, consistent with the other numeric
+     surfaces (metric bucket-A). Consumer opt-out: --cngx-text-stepper-bidi. */
+  unicode-bidi: var(--cngx-text-stepper-bidi, isolate);
 }
 
 .cngx-text-stepper__error {

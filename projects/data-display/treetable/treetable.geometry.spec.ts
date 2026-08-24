@@ -69,6 +69,7 @@ function displayOf(root: HTMLElement, selector: string): string {
 afterEach(() => {
   mountedRoot?.remove();
   mountedRoot = null;
+  document.documentElement.removeAttribute('dir');
 });
 
 describe('CngxTreetable geometry', () => {
@@ -122,5 +123,35 @@ describe('CngxTreetable geometry', () => {
     expect(computedValue(cell, 'padding-inline-start')).toBe('8px');
     host.style.setProperty('--cngx-space-md', '24px');
     expect(computedValue(cell, 'padding-inline-start')).toBe('24px');
+  });
+
+  it('isolates data cells under dir=rtl (isolate-only by default; direction untouched)', () => {
+    document.documentElement.dir = 'rtl';
+    const host = mount();
+    const cell = host.querySelector(
+      'cdk-cell:not(.cngx-treetable__expand-cell):not(.cngx-treetable__select-cell):not(.cngx-treetable__first-data-cell)',
+    );
+    if (!cell) {
+      throw new Error('plain data cell did not render');
+    }
+    // Default: isolate fences arbitrary consumer content without forcing a
+    // direction, so a genuinely RTL text cell keeps its native order.
+    expect(computedValue(cell, 'unicode-bidi')).toBe('isolate');
+    expect(computedValue(cell, 'direction')).toBe('rtl');
+  });
+
+  it('pins direction:ltr on a numeric column via the opt-in token under dir=rtl', () => {
+    document.documentElement.dir = 'rtl';
+    const host = mount();
+    const cell = host.querySelector(
+      'cdk-cell:not(.cngx-treetable__expand-cell):not(.cngx-treetable__select-cell):not(.cngx-treetable__first-data-cell)',
+    ) as HTMLElement | null;
+    if (!cell) {
+      throw new Error('plain data cell did not render');
+    }
+    // A pure-numeric/code/date column opts into LTR pinning without a template
+    // change: the direction token flips the isolated box to ltr.
+    host.style.setProperty('--cngx-treetable-cell-direction', 'ltr');
+    expect(computedValue(cell, 'direction')).toBe('ltr');
   });
 });

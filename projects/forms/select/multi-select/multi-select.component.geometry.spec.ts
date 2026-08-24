@@ -52,6 +52,7 @@ function query(root: HTMLElement, selector: string): HTMLElement {
 afterEach(() => {
   mountedRoot?.remove();
   mountedRoot = null;
+  document.documentElement.removeAttribute('dir');
 });
 
 describe('CngxMultiSelect geometry', () => {
@@ -63,5 +64,40 @@ describe('CngxMultiSelect geometry', () => {
     const host = mount();
     expect(computedValue(query(host, '.cngx-multi-select__trigger'), 'display')).toMatch(/flex$/);
     expect(computedValue(query(host, '.cngx-multi-select__caret'), 'flex-grow')).toBe('0');
+  });
+});
+
+// ── RTL bidi isolation of the +N chip-overflow badge (select-base.css) ───────
+
+@Component({
+  selector: 'cngx-multi-select-overflow-host',
+  standalone: true,
+  imports: [CngxMultiSelect],
+  template: `
+    <cngx-multi-select
+      [label]="'Colour'"
+      [options]="options"
+      [chipOverflow]="'truncate'"
+      [maxVisibleChips]="1"
+      [(values)]="values"
+    />
+  `,
+})
+class OverflowHost {
+  readonly options = OPTIONS;
+  readonly values = signal<string[]>(['red', 'green']);
+}
+
+describe('CngxMultiSelect chip-overflow badge isolates under dir=rtl', () => {
+  it('pins the +N badge to isolate + direction:ltr', () => {
+    document.documentElement.dir = 'rtl';
+    const fixture = TestBed.createComponent(OverflowHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    const badge = query(mountedRoot, '.cngx-select__chip-overflow-badge');
+    // `+N` detaches its `+` under RTL; direction:ltr keeps sign left of digits.
+    expect(computedValue(badge, 'unicode-bidi')).toBe('isolate');
+    expect(computedValue(badge, 'direction')).toBe('ltr');
   });
 });

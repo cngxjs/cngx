@@ -81,6 +81,7 @@ import { CNGX_CHART_LAYER, type CngxChartLayer, type LayerGeometry } from './cha
       .cngx-band__label {
         fill: var(--cngx-band-text-color, var(--cngx-chart-text-color, currentColor));
         font-size: var(--cngx-band-font-size, 11px);
+        unicode-bidi: var(--cngx-chart-numeric-bidi, isolate);
         animation: cngx-band-enter var(--cngx-chart-enter-duration, 480ms)
           var(--cngx-chart-enter-easing, cubic-bezier(0.4, 0, 0.2, 1));
       }

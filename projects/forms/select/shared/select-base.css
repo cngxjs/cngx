@@ -1186,6 +1186,13 @@
     border-radius: var(--cngx-select-chip-wrap-radius, 999px);
     background: var(--cngx-select-chip-overflow-badge-bg, oklch(0 0 0 / 0.08));
     color: var(--cngx-select-chip-overflow-badge-color, oklch(0 0 0 / 0.6));
+    /* `+N` self-contained sign-fixed count across multi-select /
+       action-multi-select / combobox; under RTL the box inherits direction:rtl
+       and detaches the `+`. isolate fences the boundary; direction:ltr keeps
+       the `+` left of the count. One edit covers all three variants.
+       Consumer opt-out: --cngx-select-chip-overflow-badge-bidi / -direction. */
+    unicode-bidi: var(--cngx-select-chip-overflow-badge-bidi, isolate);
+    direction: var(--cngx-select-chip-overflow-badge-direction, ltr);
   }
 
   /*

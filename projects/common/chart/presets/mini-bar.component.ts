@@ -83,6 +83,7 @@ import { injectPresetState } from './preset-state';
         display: block;
         font-size: var(--cngx-mini-bar-label-font-size, 0.75rem);
         color: var(--cngx-mini-bar-label-color, inherit);
+        unicode-bidi: var(--cngx-chart-numeric-bidi, isolate);
       }
       cngx-mini-bar .cngx-mini-bar__track {
         position: relative;

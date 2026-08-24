@@ -125,6 +125,12 @@ cngx-range-slider .cngx-slider__value--range {
   color: var(--cngx-color-text, oklch(0.2 0.01 250));
   pointer-events: none;
   white-space: nowrap;
+  /* `20 - 80` is two number groups joined by a neutral `-`; under RTL the box
+     inherits direction:rtl and the run reorders to `80 - 20`, inverting the
+     range meaning. isolate fences the boundary; direction:ltr pins the `a - b`
+     order. Consumer opt-out: --cngx-slider-range-bidi / -direction. */
+  unicode-bidi: var(--cngx-slider-range-bidi, isolate);
+  direction: var(--cngx-slider-range-direction, ltr);
 }
 
 /* Bubble variant: a primary pill shown only while a thumb is focused / dragged. */

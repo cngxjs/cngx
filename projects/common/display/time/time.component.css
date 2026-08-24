@@ -4,6 +4,11 @@
   font-size: var(--cngx-time-size, inherit);
   font-variant-numeric: var(--cngx-time-numeric, tabular-nums);
   color: var(--cngx-time-color, inherit);
+  /* An `Intl` absolute date (`Feb 5, 2024`) reorders on its comma inside an
+     RTL run. isolate fences the whole date as one unit against surrounding
+     RTL text; isolate-ONLY so an Arabic-locale date keeps its native digit
+     order (metric bucket-A). Consumer opt-out: --cngx-time-bidi. */
+  unicode-bidi: var(--cngx-time-bidi, isolate);
 }
 
 .cngx-time time {

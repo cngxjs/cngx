@@ -83,6 +83,7 @@ import { CNGX_CHART_LAYER, type CngxChartLayer, type LayerGeometry } from './cha
       .cngx-threshold__label {
         fill: var(--cngx-threshold-text-color, var(--cngx-chart-danger, currentColor));
         font-size: var(--cngx-threshold-font-size, 11px);
+        unicode-bidi: var(--cngx-chart-numeric-bidi, isolate);
         animation: cngx-threshold-enter var(--cngx-chart-enter-duration, 480ms)
           var(--cngx-chart-enter-easing, cubic-bezier(0.4, 0, 0.2, 1));
       }

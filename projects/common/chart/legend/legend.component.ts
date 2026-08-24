@@ -118,6 +118,7 @@ export interface CngxChartLegendItem<T = unknown> {
       cngx-chart-legend .cngx-chart-legend__value {
         color: var(--cngx-chart-legend-value-color, inherit);
         font-weight: var(--cngx-chart-legend-value-font-weight, 600);
+        unicode-bidi: var(--cngx-chart-numeric-bidi, isolate);
       }
     `,
   ],

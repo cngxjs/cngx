@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { CngxTab, CngxTabContent, CngxTabLabel } from '@cngx/common/tabs';
+import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
 import { computedValue, containerState } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
 
@@ -58,9 +59,38 @@ function query(root: HTMLElement, selector: string): HTMLElement {
   return el as HTMLElement;
 }
 
+function stubAggregator(): CngxErrorAggregatorContract {
+  return {
+    hasError: signal(true),
+    errorCount: signal(3),
+    activeErrors: signal<readonly string[]>([]),
+    errorLabels: signal<readonly string[]>([]),
+    shouldShow: signal(true),
+    announcement: signal('3 errors'),
+    addSource: () => {},
+    removeSource: () => {},
+  };
+}
+
+@Component({
+  selector: 'cngx-tab-badge-geometry-host',
+  standalone: true,
+  imports: [CngxTabGroup, CngxTab],
+  template: `
+    <cngx-tab-group aria-label="Settings">
+      <div cngxTab [label]="'A'" [errorAggregator]="agg"></div>
+      <div cngxTab [label]="'B'"></div>
+    </cngx-tab-group>
+  `,
+})
+class TabBadgeHost {
+  agg = stubAggregator();
+}
+
 afterEach(() => {
   mountedRoot?.remove();
   mountedRoot = null;
+  document.documentElement.removeAttribute('dir');
 });
 
 describe('CngxTabGroup geometry', () => {
@@ -83,5 +113,17 @@ describe('CngxTabGroup geometry', () => {
     expect(computedValue(strip, 'flex-direction')).toBe('row');
     expect(computedValue(strip, 'flex-wrap')).toBe('nowrap');
     expect(computedValue(strip, 'align-items')).toBe('stretch');
+  });
+
+  it('isolates the error-badge count as a bidi run under dir=rtl', () => {
+    document.documentElement.dir = 'rtl';
+    const fixture = TestBed.createComponent(TabBadgeHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    const badge = query(mountedRoot, '.cngx-tabs__badge');
+    // Single self-contained error count; isolate fences the bidi boundary
+    // without forcing a direction (metric bucket-A).
+    expect(computedValue(badge, 'unicode-bidi')).toBe('isolate');
   });
 });
