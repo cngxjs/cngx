@@ -1,3 +1,5 @@
+import type { CngxDirection } from '@cngx/core';
+
 import type { PopoverPlacement } from './popover.types';
 
 /**
@@ -62,3 +64,54 @@ export const POSITION_AREA: Record<PopoverPlacement, string> = {
   'right-start': 'right span-bottom',
   'right-end': 'right span-top',
 };
+
+/**
+ * @internal
+ * Physical mirror of every inline-axis placement token. Used only under
+ * `rtl` - the block axis (`top`/`bottom` and their `-start`/`-end`
+ * alignment) mirrors its inline component, the left/right edges swap. Any
+ * token absent from this map has no inline component to flip (`top`,
+ * `bottom`) and is returned unchanged by {@link resolveDirectionalPlacement}.
+ */
+const INLINE_MIRROR: Partial<Record<PopoverPlacement, PopoverPlacement>> = {
+  left: 'right',
+  right: 'left',
+  'left-start': 'right-start',
+  'right-start': 'left-start',
+  'left-end': 'right-end',
+  'right-end': 'left-end',
+  'top-start': 'top-end',
+  'top-end': 'top-start',
+  'bottom-start': 'bottom-end',
+  'bottom-end': 'bottom-start',
+};
+
+/**
+ * @internal
+ * Resolve a logical placement token against the writing direction, mirroring
+ * the inline (horizontal) axis under `rtl` and returning the token unchanged
+ * under `ltr`. `POSITION_AREA` and `FLOATING_PLACEMENT` are keyed by physical
+ * placement, so mirroring the key here - before either lookup - keeps both
+ * maps correct as-is while placing the panel on the direction-forward side.
+ *
+ * The block axis never flips: `top`/`bottom` (no inline component) are the
+ * identity, and `top-start`/`bottom-start` mirror only their inline
+ * *alignment* (`-start <-> -end`), not the block edge. Same inline-only rule
+ * the keyboard direction-awareness applies (`resolveInlineStep`).
+ *
+ * Pure, O(1) lookup - a mechanical kernel, not a DI chokepoint; each surface
+ * injects its own direction and calls this at its placement source.
+ *
+ * @param placement The logical placement token the consumer requested.
+ * @param direction The document writing direction from `injectDirection`.
+ * @returns The inline-mirrored token under `rtl`, else `placement` unchanged.
+ */
+export function resolveDirectionalPlacement(
+  placement: PopoverPlacement,
+  direction: CngxDirection,
+): PopoverPlacement {
+  if (direction !== 'rtl') {
+    return placement;
+  }
+  return INLINE_MIRROR[placement] ?? placement;
+}
