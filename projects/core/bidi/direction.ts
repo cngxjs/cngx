@@ -7,6 +7,7 @@ import {
   PLATFORM_ID,
   signal,
   type EnvironmentProviders,
+  type Provider,
   type Signal,
 } from '@angular/core';
 
@@ -134,4 +135,32 @@ export function provideDirection(value: CngxDirection): EnvironmentProviders {
   return makeEnvironmentProviders([
     { provide: CNGX_DIRECTION, useFactory: () => signal<CngxDirection>(value).asReadonly() },
   ]);
+}
+
+/**
+ * Element-injector twin of {@link provideDirection}. Returns `Provider[]`
+ * so it can go in a component's `viewProviders` (or `providers`) array,
+ * forcing the direction {@link injectDirection} reports for that DI subtree
+ * without touching `documentElement.dir`. Reach for it when a composite's
+ * keyboard-nav logic must honour a forced subtree direction; the
+ * environment-scoped {@link provideDirection} returns `EnvironmentProviders`,
+ * which an element injector rejects.
+ *
+ * ```ts
+ * @Component({
+ *   selector: 'rtl-panel',
+ *   viewProviders: [provideDirectionAt('rtl')],
+ *   // ...
+ * })
+ * export class RtlPanel {}
+ * ```
+ *
+ * @category core/bidi
+ * @relatedTo CNGX_DIRECTION
+ * @relatedTo provideDirection
+ * @relatedTo injectDirection
+ * @since 0.1.0
+ */
+export function provideDirectionAt(value: CngxDirection): Provider[] {
+  return [{ provide: CNGX_DIRECTION, useFactory: () => signal<CngxDirection>(value).asReadonly() }];
 }

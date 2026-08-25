@@ -1,7 +1,8 @@
-import { DestroyRef, PLATFORM_ID } from '@angular/core';
+import { Component, DestroyRef, PLATFORM_ID } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { CNGX_DIRECTION, injectDirection, provideDirection } from './direction';
+import { CNGX_DIRECTION, injectDirection, provideDirection, provideDirectionAt } from './direction';
 
 const rootDir = () => document.documentElement.getAttribute('dir');
 
@@ -11,6 +12,32 @@ const flushObserver = async () => {
   await Promise.resolve();
   await Promise.resolve();
 };
+
+@Component({
+  selector: 'test-direction-reader',
+  template: '',
+})
+class DirectionReader {
+  readonly direction = injectDirection();
+}
+
+@Component({
+  selector: 'test-direction-host',
+  imports: [DirectionReader],
+  // viewProviders scopes the override to this component's OWN view: the
+  // reader below is a view child, so it resolves the forced 'rtl'. A
+  // content-projected reader would fall outside viewProviders and read 'ltr'.
+  viewProviders: [provideDirectionAt('rtl')],
+  template: '<test-direction-reader />',
+})
+class DirectionHost {}
+
+@Component({
+  selector: 'test-direction-plain-host',
+  imports: [DirectionReader],
+  template: '<test-direction-reader />',
+})
+class PlainDirectionHost {}
 
 describe('injectDirection / CNGX_DIRECTION reader', () => {
   afterEach(() => {
@@ -91,5 +118,24 @@ describe('injectDirection / CNGX_DIRECTION reader', () => {
     const viaFn = TestBed.runInInjectionContext(() => injectDirection());
     const viaToken = TestBed.inject(CNGX_DIRECTION);
     expect(viaFn).toBe(viaToken);
+  });
+
+  it("provideDirectionAt('rtl') in viewProviders makes a view child report 'rtl' without touching documentElement.dir", () => {
+    const fixture = TestBed.createComponent(DirectionHost);
+    fixture.detectChanges();
+
+    const reader = fixture.debugElement.query(By.directive(DirectionReader))
+      .componentInstance as DirectionReader;
+    expect(reader.direction()).toBe('rtl');
+    expect(rootDir()).toBeNull();
+  });
+
+  it("a sibling host without provideDirectionAt reads the document default 'ltr'", () => {
+    const fixture = TestBed.createComponent(PlainDirectionHost);
+    fixture.detectChanges();
+
+    const reader = fixture.debugElement.query(By.directive(DirectionReader))
+      .componentInstance as DirectionReader;
+    expect(reader.direction()).toBe('ltr');
   });
 });
