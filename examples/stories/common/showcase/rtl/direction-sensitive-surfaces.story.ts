@@ -71,7 +71,6 @@ export const STORY: DemoSpec = {
         [cngxMenuTrigger]="fileMenu"
         [cngxPopoverTrigger]="menuPop"
         [popover]="menuPop"
-        [haspopup]="'menu'"
         (click)="menuPop.toggle()"
         aria-label="File menu"
         class="chip"
