@@ -40,6 +40,7 @@ const TAG_DIMS: readonly { key: string; label: string; values: readonly string[]
       'error-handling',
       'async-state',
       'composition',
+      'rtl',
     ],
   },
   { key: 'stability', label: 'stability', values: ['experimental', 'deprecated'] },

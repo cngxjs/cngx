@@ -727,7 +727,7 @@ export interface RouteMeta {
   level: 'atom' | 'molecule' | 'organism' | null;
   audience: ('dev' | 'design' | 'a11y')[];
   artifact: 'standalone' | 'building-block' | null;
-  focus: ('visual-variants' | 'behavior' | 'a11y-pattern' | 'integration' | 'error-handling' | 'async-state' | 'composition')[];
+  focus: ('visual-variants' | 'behavior' | 'a11y-pattern' | 'integration' | 'error-handling' | 'async-state' | 'composition' | 'rtl')[];
   stability: 'stable' | 'experimental' | 'deprecated' | null;
   framework: 'signal-forms' | 'reactive-forms' | 'template-only' | 'programmatic' | null;
 }

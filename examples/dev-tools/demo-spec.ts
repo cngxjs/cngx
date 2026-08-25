@@ -29,7 +29,8 @@ export type Focus =
   | 'integration'
   | 'error-handling'
   | 'async-state'
-  | 'composition';
+  | 'composition'
+  | 'rtl';
 
 /** Release / maintenance stability. Default is `stable` and renders no chip. */
 export type Stability = 'stable' | 'experimental' | 'deprecated';
