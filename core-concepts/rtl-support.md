@@ -107,3 +107,18 @@ Pair them when a subtree needs both: `cngxDir` for the CSS and bidi flip, `provi
 ## RTL keyboard and anchor coverage
 
 Every keyboard family and every anchor family that reacts to direction ships an RTL end-to-end assertion, so a family cannot lose its mirror without a test going red. The matrix below maps each family to the spec that proves it under `dir="rtl"`.
+
+|Family|What mirrors|RTL spec|
+|-|-|-|
+|Roving toolbar, menu, submenu, context menu, tree|Inline arrow keys|`rtl-keyboard-listbox-menu-tree.spec.ts`|
+|Standalone hierarchical-nav tree|Expand / collapse arrows|`rtl-hierarchical-nav.spec.ts`|
+|Tabs, stepper, tab overflow|Inline arrow keys|`rtl-keyboard-tabs-stepper.spec.ts`|
+|Slider, reorderable multi-select, chip strip|Inline arrow keys|`rtl-keyboard-slider-reorder.spec.ts`|
+|Popover, tooltip, menu, context menu, tree-select|Anchor placement geometry|`rtl-anchor-positioning.spec.ts` (Chromium only)|
+|Paginator nav row|Inline-axis layout|`css-contract-rtl.spec.ts`|
+|Timeline horizontal run|Inline-axis layout|`timeline-layout.spec.ts`|
+|Sidenav and sibling organisms|CSS-logical layout|Per-organism geometry specs (for example `sidenav.geometry.spec.ts`)|
+
+Anchor geometry is asserted in Chromium only: the examples app wires no floating-ui fallback, and CSS Anchor Positioning is Chromium-only today, so the geometry path is Chromium-only by construction.
+
+The sweep found one uncovered family: the standalone hierarchical-nav tree runs the same keyboard strategy as tree-select but on its own `role="tree"` route, which no existing spec touched. That gap is closed here by `rtl-hierarchical-nav.spec.ts`. The breadcrumb strip was checked and needs no RTL keyboard spec: it navigates with Tab between links and runs no direction-dependent arrow logic. No family is left unmapped.
