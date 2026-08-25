@@ -673,6 +673,15 @@
       color: var(--cngx-treetable-header-color, var(--cngx-color-text, oklch(0.34 0.015 250)));
     }
 
+    /* The collapsed twisty `▸` is directional: mirror it inline under RTL so it
+       points inline-end at the row it discloses. Gate off aria-expanded=false -
+       the state the button already exposes - so the neutral expanded `▾` stays
+       put. `:where()` keeps zero specificity so the narrow container queries
+       above still win. scaleX is safe: the button holds only the glyph. */
+    .cngx-treetable__toggle[aria-expanded='false']:where(:dir(rtl)) {
+      transform: scaleX(-1);
+    }
+
     @media (max-width: 960px) {
       :scope {
         --cngx-treetable-indent-size: var(--cngx-treetable-narrow-indent-size, 1.25rem);

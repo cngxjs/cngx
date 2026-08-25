@@ -320,6 +320,17 @@
       transform: rotate(90deg);
     }
 
+    /* The collapsed twisty `▸` is directional: it points inline-end at the node
+       it discloses (left under RTL). Mirror it inline under RTL. Gated with
+       `:not(--open)` so the open twisty - rotated 90deg to a neutral down-caret
+       - is excluded and keeps its rotate. `:where()` keeps zero specificity so
+       the `--open` rotate still wins by source order (context-menu precedent
+       context-menu-item.component.css). scaleX is safe: the twisty button holds
+       only the glyph span, no label text a mirror reverses. */
+    .cngx-tree-select__twisty:not(.cngx-tree-select__twisty--open):where(:dir(rtl)) {
+      transform: scaleX(-1);
+    }
+
     @media (prefers-reduced-motion: reduce) {
       .cngx-tree-select__twisty {
         transition: none;

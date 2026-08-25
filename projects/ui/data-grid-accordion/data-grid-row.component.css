@@ -166,6 +166,20 @@
   transform: rotate(225deg);
 }
 
+/* The chevron is a direction-neutral down/up glyph, but it regresses in RTL:
+   border-inline-end flips to the left while the physical rotate does not, so
+   the corner points left instead of down. Sign-flip the rotate to compensate
+   and keep it pointing down/up. Exact analog of the shipped accordion fix
+   (accordion-item.component.css). `:where()` adds no specificity so any later
+   marker container query still wins. */
+.cngx-dga-row__chevron:where(:dir(rtl)) {
+  transform: rotate(-45deg);
+}
+
+.cngx-dga-row[data-expanded] .cngx-dga-row__chevron:where(:dir(rtl)) {
+  transform: rotate(-225deg);
+}
+
 /* The detail zone is row 2 of the row subgrid, spanning every column (including the
    chevron track) so its background, border, and accent edge run frame to frame like a
    normal disclosure panel. The inner grid has no inline padding, so `1 / -1` already

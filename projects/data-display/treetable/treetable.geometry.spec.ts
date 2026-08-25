@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { TestBed } from '@angular/core/testing';
+import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import { computedValue } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
 
@@ -153,5 +153,52 @@ describe('CngxTreetable geometry', () => {
     // change: the direction token flips the isolated box to ltr.
     host.style.setProperty('--cngx-treetable-cell-direction', 'ltr');
     expect(computedValue(cell, 'direction')).toBe('ltr');
+  });
+});
+
+// The collapsed toggle glyph `▸` is directional and must point inline-end
+// (left under RTL) at the row it discloses. The `--collapsed` hook keys a
+// scaleX(-1) mirror; the neutral expanded `▾` (no hook) stays put. jsdom
+// reports `transform: ''`, so this reads the browser matrix. Mirrors the
+// accordion chevron-direction recipe.
+const IDENTITY = 'none';
+const MIRROR_X = 'matrix(-1, 0, 0, 1, 0, 0)';
+
+function mountToggle(): { fixture: ComponentFixture<TreetableHost>; toggle: HTMLElement } {
+  const fixture = TestBed.createComponent(TreetableHost);
+  mountedRoot = fixture.nativeElement as HTMLElement;
+  document.body.appendChild(mountedRoot);
+  fixture.detectChanges();
+  const toggle = mountedRoot.querySelector('.cngx-treetable__toggle');
+  if (!toggle) {
+    throw new Error('cngx-treetable did not render an expand toggle');
+  }
+  return { fixture, toggle: toggle as HTMLElement };
+}
+
+describe('CngxTreetable toggle glyph direction', () => {
+  it('mirrors the collapsed toggle under dir=rtl, LTR stable', () => {
+    // The unbound treetable defaults to fully-expanded, so click to collapse
+    // the directional `▸` state before reading the mirror.
+    const { fixture, toggle } = mountToggle();
+    toggle.click();
+    fixture.detectChanges();
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    expect(computedValue(toggle, 'transform')).toBe(IDENTITY);
+
+    document.documentElement.dir = 'rtl';
+    expect(computedValue(toggle, 'transform')).toBe(MIRROR_X);
+
+    document.documentElement.dir = 'ltr';
+    expect(computedValue(toggle, 'transform')).toBe(IDENTITY);
+  });
+
+  it('leaves the expanded toggle glyph unmirrored in both directions', () => {
+    const { toggle } = mountToggle();
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
+    expect(computedValue(toggle, 'transform')).toBe(IDENTITY);
+
+    document.documentElement.dir = 'rtl';
+    expect(computedValue(toggle, 'transform')).toBe(IDENTITY);
   });
 });
