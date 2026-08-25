@@ -9,6 +9,7 @@ import { expect, test, type Page } from '@playwright/test';
 const TABS = '/#/ui/tabs/tab-group/three-tab-navigation';
 const TABS_OVERFLOW = '/#/ui/tabs/tab-overflow/8-tabs-in-a-narrow-container';
 const STEPPER = '/#/ui/stepper/stepper-horizontal/three-step-wizard';
+const DOT_STEPPER = '/#/ui/stepper/dot-stepper/mobile-carousel';
 
 function setRtl(page: Page): Promise<void> {
   return page.locator('html').evaluate((el) => el.setAttribute('dir', 'rtl'));
@@ -40,6 +41,23 @@ test.describe('RTL keyboard navigation: tabs and stepper', () => {
     await buttons.nth(0).focus();
     await page.keyboard.press('ArrowLeft');
     await expect(buttons.nth(1)).toHaveAttribute('aria-current', 'step');
+  });
+
+  test('dot-stepper: ArrowLeft advances the active dot under rtl, ArrowRight retreats', async ({
+    page,
+  }) => {
+    await page.goto(DOT_STEPPER);
+    await setRtl(page);
+    const group = page.locator('cngx-dot-stepper[role="group"]');
+    await expect(group).toBeVisible();
+    const dots = page.locator('cngx-dot-stepper .cngx-dot-stepper__dot');
+
+    await group.focus();
+    await page.keyboard.press('ArrowLeft');
+    await expect(dots.nth(1)).toHaveAttribute('aria-current', 'step');
+
+    await page.keyboard.press('ArrowRight');
+    await expect(dots.nth(0)).toHaveAttribute('aria-current', 'step');
   });
 
   test('overflow: End jumps to the last tab and scrollIntoView brings it into the viewport under rtl', async ({

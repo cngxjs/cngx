@@ -25,6 +25,7 @@ import {
   type CngxStepNode,
 } from '@cngx/common/stepper';
 import { CngxSwipe } from '@cngx/common/interactive';
+import { injectDirection, resolveInlineStep } from '@cngx/core';
 
 /**
  * Dot stepper variant. Mobile-first sequential-flow indicator. Renders
@@ -98,6 +99,9 @@ export class CngxDotStepper {
   protected readonly config = injectStepperConfig();
   /** Mobile-swipe routing surface composed via hostDirectives. */
   protected readonly swipeNav = inject(CngxStepperSwipeNav, { host: true });
+
+  /** Document writing direction - flips the inline next/previous arrows under `rtl` (APG). */
+  private readonly direction = injectDirection();
 
   protected readonly stepNodes: Signal<readonly CngxStepNode[]> = this.presenter.stepsOnly;
   protected readonly activeIndex = computed<number>(() => this.presenter.activeStepIndex());
@@ -180,10 +184,15 @@ export class CngxDotStepper {
     // are incomplete. Disabling the whole handler in linear mode
     // killed back-nav too, which is the inverse of the W3C APG
     // step-indicator pattern (read-back should always be reachable).
-    if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
+    // The inline pair (ArrowLeft/ArrowRight) flips under rtl via the kernel;
+    // the block pair (ArrowUp/ArrowDown) and Home/End never flip.
+    const inlineStep = resolveInlineStep(event.key, this.direction());
+    const isNext = inlineStep === 1 || event.key === 'ArrowDown';
+    const isPrev = inlineStep === -1 || event.key === 'ArrowUp';
+    if (isNext) {
       event.preventDefault();
       this.presenter.selectNext();
-    } else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
+    } else if (isPrev) {
       event.preventDefault();
       this.presenter.selectPrevious();
     } else if (event.key === 'Home') {

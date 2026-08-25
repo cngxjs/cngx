@@ -1,6 +1,7 @@
 import { Component, signal, TemplateRef, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
+import { provideDirection } from '@cngx/core';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -108,6 +109,34 @@ describe('CngxDotStepper', () => {
     expect(fixture.componentInstance.active()).toBe(2);
 
     host.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+    fixture.detectChanges();
+    expect(fixture.componentInstance.active()).toBe(1);
+  });
+
+  it('arrow keys flip under dir=rtl: ArrowLeft advances, ArrowRight retreats; block axis invariant', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), provideDirection('rtl')],
+    });
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+    const host = fixture.nativeElement.querySelector('cngx-dot-stepper') as HTMLElement;
+
+    // Under rtl the physical ArrowLeft is inline-forward -> selectNext.
+    host.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+    fixture.detectChanges();
+    expect(fixture.componentInstance.active()).toBe(2);
+
+    // ArrowRight is inline-back -> selectPrevious.
+    host.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+    fixture.detectChanges();
+    expect(fixture.componentInstance.active()).toBe(1);
+
+    // Block axis never flips: ArrowDown still advances, ArrowUp still retreats.
+    host.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+    fixture.detectChanges();
+    expect(fixture.componentInstance.active()).toBe(2);
+
+    host.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true }));
     fixture.detectChanges();
     expect(fixture.componentInstance.active()).toBe(1);
   });
