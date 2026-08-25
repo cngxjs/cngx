@@ -183,7 +183,7 @@ describe('CngxTreetable toggle glyph direction', () => {
     const { fixture, toggle } = mountToggle();
     toggle.click();
     fixture.detectChanges();
-    expect(toggle.classList.contains('cngx-treetable__toggle--collapsed')).toBe(true);
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
     expect(computedValue(toggle, 'transform')).toBe(IDENTITY);
 
     document.documentElement.dir = 'rtl';
@@ -195,7 +195,7 @@ describe('CngxTreetable toggle glyph direction', () => {
 
   it('leaves the expanded toggle glyph unmirrored in both directions', () => {
     const { toggle } = mountToggle();
-    expect(toggle.classList.contains('cngx-treetable__toggle--collapsed')).toBe(false);
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
     expect(computedValue(toggle, 'transform')).toBe(IDENTITY);
 
     document.documentElement.dir = 'rtl';
