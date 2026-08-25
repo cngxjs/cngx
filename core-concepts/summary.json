@@ -46,5 +46,9 @@
     {
         "title": "Agent Tooling",
         "file": "agent-tooling.md"
+    },
+    {
+        "title": "RTL Support",
+        "file": "rtl-support.md"
     }
 ]
