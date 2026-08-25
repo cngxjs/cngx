@@ -1,5 +1,5 @@
 import { Component, signal } from '@angular/core';
-import { TestBed } from '@angular/core/testing';
+import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import { computedValue } from '@cngx/testing/geometry';
 import type { CngxTreeNode } from '@cngx/utils';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -74,6 +74,9 @@ function query(root: HTMLElement, selector: string): HTMLElement {
 afterEach(() => {
   mountedRoot?.remove();
   mountedRoot = null;
+  // isolate:false shares the browser env; reset the forced dir so a later
+  // geometry read never sees a leaked RTL root.
+  document.documentElement.removeAttribute('dir');
 });
 
 describe('CngxTreeSelect geometry', () => {
@@ -86,5 +89,69 @@ describe('CngxTreeSelect geometry', () => {
     const host = mount();
     expect(computedValue(query(host, '.cngx-tree-select__trigger'), 'display')).toMatch(/flex$/);
     expect(computedValue(query(host, '.cngx-tree-select__caret'), 'flex-grow')).toBe('0');
+  });
+});
+
+// The collapsed panel twisty `▸` is directional and must point inline-end (left
+// under RTL) at the node it discloses. The `:not(--open)` gate mirrors only the
+// collapsed twisty; the open twisty (rotated 90deg to a neutral down-caret)
+// keeps its rotate. jsdom reports `transform: ''`, so this reads the browser
+// matrix. The panel renders in the popover on open (real Chromium supports the
+// native popover the `test-geometry` target needs).
+const TWISTY_IDENTITY = 'none';
+const TWISTY_MIRROR = 'matrix(-1, 0, 0, 1, 0, 0)';
+
+function mountOpenTwisty(): { fixture: ComponentFixture<TreeHost>; twisty: HTMLElement } {
+  const fixture = TestBed.createComponent(TreeHost);
+  mountedRoot = fixture.nativeElement as HTMLElement;
+  document.body.appendChild(mountedRoot);
+  fixture.detectChanges();
+  const trigger = mountedRoot.querySelector<HTMLElement>('[role="combobox"]');
+  if (!trigger) {
+    throw new Error('cngx-tree-select did not render a combobox trigger');
+  }
+  trigger.dispatchEvent(
+    new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }),
+  );
+  fixture.detectChanges();
+  TestBed.flushEffects();
+  fixture.detectChanges();
+  const twisty = mountedRoot.querySelector<HTMLElement>('.cngx-tree-select__twisty');
+  if (!twisty) {
+    throw new Error('cngx-tree-select panel did not render a twisty');
+  }
+  // The twisty animates `transform` over 150ms; kill it so getComputedStyle
+  // returns the resolved target after a dir flip, not the tween.
+  twisty.style.transition = 'none';
+  return { fixture, twisty };
+}
+
+describe('CngxTreeSelect twisty glyph direction', () => {
+  it('mirrors the collapsed twisty under dir=rtl, LTR stable', () => {
+    const { twisty } = mountOpenTwisty();
+    expect(twisty.classList.contains('cngx-tree-select__twisty--open')).toBe(false);
+    expect(computedValue(twisty, 'transform')).toBe(TWISTY_IDENTITY);
+
+    document.documentElement.dir = 'rtl';
+    expect(computedValue(twisty, 'transform')).toBe(TWISTY_MIRROR);
+
+    document.documentElement.dir = 'ltr';
+    expect(computedValue(twisty, 'transform')).toBe(TWISTY_IDENTITY);
+  });
+
+  it('leaves the open twisty rotate untouched in both directions', () => {
+    const { fixture, twisty } = mountOpenTwisty();
+    twisty.click();
+    fixture.detectChanges();
+    twisty.style.transition = 'none';
+    expect(twisty.classList.contains('cngx-tree-select__twisty--open')).toBe(true);
+    // The open twisty is a neutral down-caret (rotate 90deg): the same resolved
+    // transform under both directions, never the RTL mirror.
+    const openLtr = computedValue(twisty, 'transform');
+    expect(openLtr).not.toBe(TWISTY_IDENTITY);
+    expect(openLtr).not.toBe(TWISTY_MIRROR);
+
+    document.documentElement.dir = 'rtl';
+    expect(computedValue(twisty, 'transform')).toBe(openLtr);
   });
 });
