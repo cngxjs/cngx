@@ -12,6 +12,7 @@
         <button
           type="button"
           class="cngx-treetable__toggle"
+          [class.cngx-treetable__toggle--collapsed]="!expandedIds().has(node.id)"
           (click)="toggle(node); $event.stopPropagation()"
           [attr.aria-expanded]="expandedIds().has(node.id)"
           [attr.aria-label]="expandedIds().has(node.id) ? 'Collapse' : 'Expand'"

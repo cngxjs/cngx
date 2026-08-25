@@ -673,6 +673,17 @@
       color: var(--cngx-treetable-header-color, var(--cngx-color-text, oklch(0.34 0.015 250)));
     }
 
+    /* The collapsed twisty `▸` is directional: it must point inline-end at the
+       label it discloses (left under RTL). Its glyph is physical, so mirror it
+       inline under RTL. Gated to the collapsed state via the derived
+       `--collapsed` hook so the neutral expanded `▾` is left untouched.
+       `:where()` keeps zero specificity so the narrow container queries above
+       still win (accordion precedent accordion-item.component.css). scaleX is
+       safe: the button holds only the glyph, no label text a mirror reverses. */
+    .cngx-treetable__toggle--collapsed:where(:dir(rtl)) {
+      transform: scaleX(-1);
+    }
+
     @media (max-width: 960px) {
       :scope {
         --cngx-treetable-indent-size: var(--cngx-treetable-narrow-indent-size, 1.25rem);
