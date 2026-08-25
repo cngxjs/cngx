@@ -43,6 +43,7 @@ export {
   type CngxDirection,
   injectDirection,
   provideDirection,
+  provideDirectionAt,
 } from './bidi/direction';
 export { resolveInlineStep, resolveInlineArrowKey } from './bidi/inline-nav';
 export { CngxDir } from './bidi/cngx-dir.directive';

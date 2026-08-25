@@ -16,7 +16,7 @@ import type { CngxDirection } from './direction';
  * {@link injectDirection} DI signal - that reader stays document-root
  * scoped (registered debt: subtree/re-parenting is untracked). A composite
  * whose keyboard-nav logic must honour a forced subtree direction supplies
- * `provideDirection(...)` in its `viewProviders`; `CngxDir` alone changes
+ * {@link provideDirectionAt} in its `viewProviders`; `CngxDir` alone changes
  * what the browser lays out, not what `injectDirection()` reports.
  *
  * The input is optional (a bare `cngxDir` attribute binds the empty string,
@@ -25,6 +25,7 @@ import type { CngxDirection } from './direction';
  *
  * @category core/bidi
  * @relatedTo provideDirection
+ * @relatedTo provideDirectionAt
  * @relatedTo CNGX_DIRECTION
  * @since 0.1.0
  */
