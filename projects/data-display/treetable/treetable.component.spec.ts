@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { provideDirection } from '@cngx/core';
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { FlatNode, Node } from './models';
 import { CngxTreetable } from './treetable.component';
@@ -231,6 +232,77 @@ describe('CngxTreetable', () => {
       expect(fixture.componentInstance.expandedIds().has('__sentinel__')).toBe(true);
       // Sanity: sentinel doesn't blow up the visible-nodes pipeline.
       expect(preset.size).toBe(0);
+    });
+  });
+
+  describe('keyboard direction (dir=rtl)', () => {
+    function mount(direction: 'ltr' | 'rtl') {
+      TestBed.configureTestingModule({ providers: [provideDirection(direction)] });
+      const fixture = TestBed.createComponent(CngxTreetable<Item>);
+      fixture.componentRef.setInput('tree', tree);
+      fixture.detectChanges();
+      return fixture;
+    }
+
+    function key(k: string): KeyboardEvent {
+      return new KeyboardEvent('keydown', { key: k });
+    }
+
+    it('rtl: physical ArrowLeft expands a collapsed parent, ArrowRight collapses it', () => {
+      const fixture = mount('rtl');
+      const t = fixture.componentInstance;
+      const root = t.visibleNodes()[0];
+      t.toggle(root);
+      fixture.detectChanges();
+      expect(t.visibleNodes().length).toBe(1);
+
+      t.focusedNodeId.set(root.id);
+      // Under rtl the physical ArrowLeft is inline-forward -> expand.
+      t.handleKeyDown(key('ArrowLeft'));
+      fixture.detectChanges();
+      expect(t.visibleNodes().length).toBe(3);
+
+      // Under rtl the physical ArrowRight is inline-back -> collapse.
+      t.handleKeyDown(key('ArrowRight'));
+      fixture.detectChanges();
+      expect(t.visibleNodes().length).toBe(1);
+    });
+
+    it('ltr: physical ArrowRight expands a collapsed parent, ArrowLeft collapses it', () => {
+      const fixture = mount('ltr');
+      const t = fixture.componentInstance;
+      const root = t.visibleNodes()[0];
+      t.toggle(root);
+      fixture.detectChanges();
+      expect(t.visibleNodes().length).toBe(1);
+
+      t.focusedNodeId.set(root.id);
+      t.handleKeyDown(key('ArrowRight'));
+      fixture.detectChanges();
+      expect(t.visibleNodes().length).toBe(3);
+
+      t.handleKeyDown(key('ArrowLeft'));
+      fixture.detectChanges();
+      expect(t.visibleNodes().length).toBe(1);
+    });
+
+    it('block axis: ArrowDown/ArrowUp move the focused row identically in both directions', () => {
+      for (const direction of ['ltr', 'rtl'] as const) {
+        const fixture = mount(direction);
+        const t = fixture.componentInstance;
+        const [root, child1] = t.visibleNodes();
+        t.focusedNodeId.set(root.id);
+
+        t.handleKeyDown(key('ArrowDown'));
+        fixture.detectChanges();
+        expect(t.focusedNodeId()).toBe(child1.id);
+
+        t.handleKeyDown(key('ArrowUp'));
+        fixture.detectChanges();
+        expect(t.focusedNodeId()).toBe(root.id);
+
+        TestBed.resetTestingModule();
+      }
     });
   });
 });

@@ -28,6 +28,7 @@ import {
 } from '@angular/cdk/table';
 import { NgTemplateOutlet } from '@angular/common';
 import type { CngxAsyncState } from '@cngx/core/utils';
+import { injectDirection, resolveInlineArrowKey } from '@cngx/core';
 import { arrayEqual } from '@cngx/utils';
 import { CngxTreetableRow } from './treetable-row.directive';
 import { CngxCellTpl, CngxEmptyTpl, CngxHeaderTpl } from './column-template.directive';
@@ -244,6 +245,9 @@ export class CngxTreetable<T = unknown> {
   readonly nodeCollapsed = output<FlatNode<T>>();
 
   private readonly config = inject(CNGX_TREETABLE_CONFIG);
+
+  /** Document writing direction - swaps the physical expand/collapse arrows under `rtl` (APG treegrid). */
+  private readonly direction = injectDirection();
 
   /** @internal */
   protected readonly cellTpls = contentChildren(CngxCellTpl);
@@ -562,7 +566,12 @@ export class CngxTreetable<T = unknown> {
     const currentId = this.focusedNodeId();
     const currentIndex = currentId ? nodes.findIndex((n) => n.id === currentId) : -1;
 
-    switch (event.key) {
+    // Resolve the physical arrow to its logical inline intent: under rtl the
+    // physical ArrowLeft/ArrowRight swap, so expand/collapse follow reading
+    // order. Vertical keys, Home, End are returned verbatim by the kernel.
+    const key = resolveInlineArrowKey(event.key, this.direction());
+
+    switch (key) {
       case 'ArrowDown': {
         event.preventDefault();
         const next = nodes[currentIndex + 1];
