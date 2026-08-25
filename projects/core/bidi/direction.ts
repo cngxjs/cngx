@@ -48,7 +48,7 @@ export type CngxDirection = 'ltr' | 'rtl';
  * register), not oversights:
  * - **Subtree / re-parenting is untracked.** The observer is scoped to
  *   `documentElement` `dir` only. A subtree that needs a forced direction
- *   uses {@link CngxDir} (CSS/bidi) or `provideDirection()` in
+ *   uses {@link CngxDir} (CSS/bidi) or {@link provideDirectionAt} in
  *   `viewProviders` (the reported signal). The reader does not walk
  *   `closest('[dir]')` or observe the ancestor chain.
  * - **`dir="auto"` resolves to `'ltr'`.** The signal is a binary logic
@@ -109,10 +109,12 @@ export function injectDirection(): Signal<CngxDirection> {
 
 /**
  * Override the direction the {@link CNGX_DIRECTION} signal *reports* with a
- * fixed value, without touching `documentElement.dir`. Use it in tests, in
- * SSR with a known locale, or in a composite's `viewProviders` to force the
- * direction its keyboard-nav logic honours for that DI subtree. It installs
- * no observer and never writes the DOM - `dir` stays the app's to set.
+ * fixed value, without touching `documentElement.dir`. This is the
+ * **environment-scoped** entry - bootstrap `providers` or route `providers`.
+ * Use it in tests or in SSR with a known locale. It installs no observer and
+ * never writes the DOM - `dir` stays the app's to set. For a per-subtree
+ * override in a component's `viewProviders`, use {@link provideDirectionAt}
+ * (element injectors reject the `EnvironmentProviders` this returns).
  *
  * ```ts
  * bootstrapApplication(AppComponent, {
@@ -128,6 +130,7 @@ export function injectDirection(): Signal<CngxDirection> {
  *
  * @category core/bidi
  * @relatedTo CNGX_DIRECTION
+ * @relatedTo provideDirectionAt
  * @relatedTo injectDirection
  * @since 0.1.0
  */
