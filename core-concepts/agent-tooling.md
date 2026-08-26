@@ -41,23 +41,42 @@ CNGX repository present:
 npx @cngx/mcp
 ```
 
-It is read-only over source. Six of its tools are pure and offline; the seventh,
-`migrate_usage`, is the one tool that reaches the network, and it does so
-fail-safe.
+It is read-only over source, and every tool answers offline against the bundled
+snapshot by default. The server reaches the network only when a caller asks for
+another release: `migrate_usage` always spans two versions, and the shape and
+config queries fetch a different release's snapshot when handed an optional
+`version`. Every such fetch is fail-safe.
 
 |Tool|Input|Returns|
 |-|-|-|
-|`find_component`|`{ query }`|Components and directives whose name, selector, or category matches the fragment: name, kind, selector, category, file.|
-|`get_api`|`{ name }`|One component or directive's API: inputs, outputs, signal flag, host bindings, public methods, description. Resolves by class name or selector.|
-|`get_slots`|`{ name }`|The projected template slots, each a slot directive selector name plus its one-line doc.|
-|`get_theme_tokens`|`{ name }`|The theming tokens (the CSS custom properties a component exposes) and its theme overview.|
-|`get_di_tokens`|`{ query? }`|The top-level DI injection tokens, optionally filtered by a name fragment.|
+|`find_component`|`{ query, version? }`|Components and directives whose name, selector, or category matches the fragment: name, kind, selector, category, file.|
+|`list_components`|`{ lib?, kind? }`|The deterministic catalog: every component and directive as name, kind, selector, category, lib, sorted by name. Optionally filtered by lib and/or kind.|
+|`get_api`|`{ name, version? }`|One component or directive's API: inputs, outputs, signal flag, host bindings, public methods, description. Resolves by class name or selector.|
+|`get_slots`|`{ name, version? }`|The projected template slots, each a slot directive selector name plus its one-line doc.|
+|`get_theme_tokens`|`{ name, version? }`|The theming tokens (the CSS custom properties a component exposes) and its theme overview.|
+|`get_di_tokens`|`{ query?, version? }`|The top-level DI injection tokens, optionally filtered by a name fragment.|
+|`get_config`|`{ name, version? }`|A configuration cascade by config token name, stem, or component name: the config token, its provider functions, the `with*` feature functions, and the resolution-priority ordering.|
 |`get_story_example`|`{ name }`|The runnable example URLs (public documentation links) and a StackBlitz URL when one exists.|
 |`migrate_usage`|`{ from, to? }`|A structured API delta between two CNGX releases: removed, renamed, and signature-changed components, inputs, outputs, slots, and DI tokens. `to` defaults to the bundled snapshot version.|
 
-Each answer grounds against one pinned CNGX release; the server reports that
-version and the snapshot timestamp in its connect-time instructions. Confirm the
-consuming app runs a matching release before relying on an answer.
+Each answer grounds against one CNGX release; the server reports the bundled
+version and the snapshot timestamp in its connect-time instructions. An answer
+carries the release it grounded against, so a caller always knows which version
+it reflects. Confirm the consuming app runs a matching release, or pass a
+`version`, before relying on an answer.
+
+### Version-scoped queries
+
+The shape and config queries - `find_component`, `get_api`, `get_slots`,
+`get_theme_tokens`, `get_di_tokens`, and `get_config` - take an optional `version`.
+Omitted, or equal to the bundled snapshot, they answer offline against the bundled
+release with no fetch. Given a different version they resolve that release's
+snapshot from the release assets via `gh release download`, cache it in memory for
+the session, and query that instead. Either way the answer names the release it
+grounded against, so a caller reading one component's API at an older version knows
+the reply reflects that version and not the bundled one. A fetch that fails returns
+the same typed error result `migrate_usage` uses, so the query answers as data
+rather than throwing.
 
 ### Cross-version deltas
 
@@ -77,6 +96,17 @@ absent asset returns a typed error result instead:
 |`gh-missing`|The `gh` CLI is not installed or not on PATH.|
 |`network`|The download failed for a network reason.|
 |`asset-missing`|The release or its `documentation.json` asset does not exist.|
+
+### Resources and prompts
+
+The same offline snapshot is served as two further MCP surfaces beyond the tools.
+Resources let a client browse and attach CNGX documents without an imperative
+call: `cngx://catalog` (every component and directive), `cngx://tokens` (the DI
+tokens), `cngx://provenance` (the snapshot's version and timestamp), and a
+`cngx://api/{name}` template whose `{name}` autocompletes against the catalog.
+Prompts are single framing messages a client exposes as slash-commands -
+`wire_component`, `theme_component`, and `migrate_cngx` - each names the tools to
+ground against, carries no data, and never writes code.
 
 ---
 
