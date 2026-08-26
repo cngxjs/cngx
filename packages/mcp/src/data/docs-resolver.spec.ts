@@ -100,4 +100,12 @@ describe('answerVersioned', () => {
     expect(answer).toEqual({ ok: false, reason: 'asset-missing', message: 'no release' });
     expect(query).not.toHaveBeenCalled();
   });
+
+  it('surfaces a throwing query as a typed failure, never a throw across the boundary', () => {
+    const answer = answerVersioned(bundled, undefined, () => {
+      throw new Error('boom');
+    });
+
+    expect(answer).toEqual({ ok: false, reason: 'asset-missing', message: 'boom' });
+  });
 });

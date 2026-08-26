@@ -93,5 +93,12 @@ export function answerVersioned<T>(
   if (!resolution.ok) {
     return { ok: false, reason: resolution.reason, message: resolution.message };
   }
-  return { groundedVersion: resolution.version, result: query(resolution.docs) };
+  try {
+    return { groundedVersion: resolution.version, result: query(resolution.docs) };
+  } catch (error) {
+    // The query runs over an already-resolved snapshot, so a throw here is unexpected -
+    // but a version-scoped tool reaches the network and must answer as data, never throw
+    // across the stdio boundary. Map to the catch-all reason migrate_usage's outer net uses.
+    return { ok: false, reason: 'asset-missing', message: error instanceof Error ? error.message : String(error) };
+  }
 }
