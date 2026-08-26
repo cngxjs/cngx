@@ -2,7 +2,7 @@ import { fileURLToPath } from 'node:url';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { loadDocsFromFile, SchemaVersionError } from './loader.js';
 import type { DocsResolverDeps } from './docs-resolver.js';
-import { answerVersioned, resetDocsCache, resolveDocs } from './docs-resolver.js';
+import { answerVersioned, DOCS_CACHE_LIMIT, resetDocsCache, resolveDocs } from './docs-resolver.js';
 import type { SnapshotFetchFailureReason } from '../diff/types.js';
 
 const SAMPLE = fileURLToPath(new URL('../../test/fixtures/documentation.sample.json', import.meta.url));
@@ -71,6 +71,30 @@ describe('resolveDocs', () => {
       expect(resolution).toEqual({ ok: false, reason, message: `${reason} detail` });
     },
   );
+
+  it('bounds the cache to DOCS_CACHE_LIMIT, evicting the oldest entry', () => {
+    const fetchCounts = new Map<string, number>();
+    const deps: DocsResolverDeps = {
+      fetchSnapshot: (v) => {
+        fetchCounts.set(v, (fetchCounts.get(v) ?? 0) + 1);
+        return { ok: true, path: NEW };
+      },
+      loadDocs: loadDocsFromFile,
+    };
+
+    // One past capacity: "9.0.0" .. "9.<LIMIT>.0" is LIMIT+1 distinct versions.
+    for (let i = 0; i <= DOCS_CACHE_LIMIT; i++) {
+      resolveDocs(bundled, `9.${i}.0`, deps);
+    }
+
+    // The most-recent version stays cached: a re-query does not re-fetch.
+    resolveDocs(bundled, `9.${DOCS_CACHE_LIMIT}.0`, deps);
+    expect(fetchCounts.get(`9.${DOCS_CACHE_LIMIT}.0`)).toBe(1);
+
+    // The oldest version was evicted: a re-query fetches it a second time.
+    resolveDocs(bundled, '9.0.0', deps);
+    expect(fetchCounts.get('9.0.0')).toBe(2);
+  });
 });
 
 describe('answerVersioned', () => {

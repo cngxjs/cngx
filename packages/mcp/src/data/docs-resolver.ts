@@ -29,6 +29,24 @@ const defaultDeps: DocsResolverDeps = { fetchSnapshot, loadDocs: loadDocsFromFil
 // only - a session-scoped stdio server needs no disk-backed cache.
 const cache = new Map<string, DocsIndex>();
 
+/**
+ * Upper bound on distinct release snapshots held at once. A parsed snapshot is a few
+ * hundred KB, and no realistic session grounds against more than a handful of releases;
+ * the bound keeps a pathological caller from growing the map without limit.
+ */
+export const DOCS_CACHE_LIMIT = 16;
+
+/** Cache a fetched snapshot, evicting the oldest entry (insertion order) once at capacity. */
+function cacheDocs(version: string, docs: DocsIndex): void {
+  if (cache.size >= DOCS_CACHE_LIMIT) {
+    const oldest = cache.keys().next().value;
+    if (oldest !== undefined) {
+      cache.delete(oldest);
+    }
+  }
+  cache.set(version, docs);
+}
+
 /** Drop the in-memory cache. Test seam so a cache-hit assertion starts from empty. */
 export function resetDocsCache(): void {
   cache.clear();
@@ -59,7 +77,7 @@ export function resolveDocs(bundled: DocsIndex, version?: string, deps: DocsReso
   }
   try {
     const docs = deps.loadDocs(fetched.path);
-    cache.set(requested, docs);
+    cacheDocs(requested, docs);
     // A successful `gh release download v<version>` means the asset IS that version,
     // so an unstamped raw export still resolves to the requested label.
     return { ok: true, docs, version: docs.meta.cngxVersion ?? requested };
