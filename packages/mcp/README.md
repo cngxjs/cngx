@@ -42,6 +42,32 @@ missing `gh`, no network, or an absent asset returns a typed error result
 (`{ ok: false, reason }`, one of `gh-missing` / `network` / `asset-missing`),
 never a crash.
 
+## Resources
+
+The same offline snapshot is also served as browseable MCP resources, so a client
+can list and attach cngx documents without an imperative tool call.
+
+|URI|Returns|
+|-|-|
+|`cngx://catalog`|Every component and directive as `{ name, kind, selector, category, lib }`, sorted by name. The browse view of `list_components`.|
+|`cngx://tokens`|The top-level DI injection tokens as `{ name, file, description }`.|
+|`cngx://provenance`|Snapshot meta: cngx version, `generatedAt`, `schemaVersion`, compodocx version.|
+|`cngx://api/{name}`|One component/directive's API surface by class name or selector. The `{name}` variable autocompletes against the catalog; an unknown name yields an empty resource.|
+
+Every resource returns `application/json`.
+
+## Prompts
+
+Server-provided message templates a client exposes as slash-commands. Each is a
+single framing message that names the tools to ground against; prompts carry no
+data and never write code.
+
+|Prompt|Arguments|Frames|
+|-|-|-|
+|`wire_component`|`{ component: string }`|Wiring one component - grounds via `get_api`, `get_slots`, `get_config`.|
+|`theme_component`|`{ component: string }`|Theming one component through its exposed custom properties - grounds via `get_theme_tokens`, `get_config`.|
+|`migrate_cngx`|`{ from: string, to?: string }`|A cross-version migration - grounds via `migrate_usage` then per-symbol `get_api`. `to` defaults to the bundled snapshot version.|
+
 ## Client setup
 
 The package ships the same snippet as `mcp.json`.
