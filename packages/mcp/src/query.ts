@@ -13,11 +13,27 @@ export interface KindedEntry {
   kind: EntryKind;
 }
 
-function allEntries(docs: DocsIndex): KindedEntry[] {
+/**
+ * The one canonical `components + directives` union. Every enumeration - search,
+ * resolve, and the `list_components` browse tool - walks this so there is a single
+ * source for "what entries exist".
+ */
+export function allEntries(docs: DocsIndex): KindedEntry[] {
   return [
     ...docs.components.map((entry) => ({ entry, kind: 'component' as const })),
     ...docs.directives.map((entry) => ({ entry, kind: 'directive' as const })),
   ];
+}
+
+/**
+ * Derive the owning lib from an entry's `file` path. Files live at
+ * `projects/<lib>/...`, so the first segment under `projects/` is the lib.
+ * Returns `null` when `file` is absent or off-pattern - a lib could not be
+ * derived, and a category string is not a lib, so nothing is substituted.
+ */
+export function entryLib(entry: DocEntry): string | null {
+  const match = entry.file?.match(/^projects\/([^/]+)\//);
+  return match ? match[1] : null;
 }
 
 /**
