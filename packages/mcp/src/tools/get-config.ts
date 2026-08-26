@@ -4,7 +4,7 @@
 // the static resolution-priority ordering, and how the input resolved.
 //
 // The correlation anchors on the token's own `file`, never a reconstructed
-// provider name: 6 of 29 config surfaces deviate from the provide<Stem>Config
+// provider name: several config surfaces deviate from the provide<Stem>Config
 // shape (provideCngxPaginatorConfig, provideFeedback, provideFormField, ...), so
 // a name-reconstruction join returns null for them. Reading the co-located
 // functions instead survives every naming deviation and the shared
@@ -171,7 +171,7 @@ export function getConfig(docs: DocsIndex, name: string): ConfigResult | null {
 
   // Features carry exactly one config-feature returnType, read from the
   // co-located functions. Skip functions whose returnType is absent rather than
-  // throwing (2 of 603 functions carry none; neither is a config feature).
+  // throwing (a few non-config functions carry none).
   const features: ConfigFeature[] = collectByKind(docs, tokenFile, 'feature')
     .filter((fn): fn is DocFunction & { returnType: string } => fn.returnType !== undefined)
     .map((fn) => ({ name: fn.name, returnType: fn.returnType }));

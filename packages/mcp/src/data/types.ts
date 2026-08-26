@@ -97,9 +97,9 @@ export interface DocToken {
 /**
  * A `miscellaneous.functions[]` entry. `factoryKind` (`'provider' | 'feature' |
  * 'inject' | 'factory'`) and `file` drive the config-cascade join; `returnType`
- * labels the config-feature group. `returnType` is optional: 601 of 603 functions
- * carry it, 2 do not (`withCngxAsyncState`, `provideRecyclerI18n`) - neither is a
- * config-cascade feature, but the type must not require it.
+ * labels the config-feature group. `returnType` is optional: nearly every
+ * function carries it, a few do not (`withCngxAsyncState`, `provideRecyclerI18n`
+ * among them) - none is a config-cascade feature, but the type must not require it.
  */
 export interface DocFunction {
   name: string;
