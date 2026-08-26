@@ -41,3 +41,35 @@ describe('createDocsIndex schema guard', () => {
     expect(createDocsIndex(raw).meta.cngxVersion).toBeNull();
   });
 });
+
+describe('createDocsIndex functions projection', () => {
+  it('projects miscellaneous.functions into docs.functions', () => {
+    const raw: DocumentationJson = {
+      ...readFixture(),
+      miscellaneous: {
+        functions: [
+          { name: 'provideSelectConfig', file: 'projects/forms/select/shared/config.ts', factoryKind: 'provider' },
+          {
+            name: 'withPanelWidth',
+            file: 'projects/forms/select/shared/config.ts',
+            factoryKind: 'feature',
+            returnType: 'CngxSelectConfigFeature',
+          },
+        ],
+      },
+    };
+
+    const index = createDocsIndex(raw);
+
+    expect(index.functions).toHaveLength(2);
+    expect(index.functions.map((fn) => fn.name)).toEqual(['provideSelectConfig', 'withPanelWidth']);
+    expect(index.functions[1].returnType).toBe('CngxSelectConfigFeature');
+  });
+
+  it('defaults docs.functions to an empty array when miscellaneous is absent', () => {
+    const raw = readFixture();
+    delete raw.miscellaneous;
+
+    expect(createDocsIndex(raw).functions).toEqual([]);
+  });
+});

@@ -6,7 +6,7 @@
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { DocEntry, DocToken, DocumentationJson } from './types.js';
+import type { DocEntry, DocFunction, DocToken, DocumentationJson } from './types.js';
 
 /** The single `documentation.json` schema version this server supports. */
 export const SUPPORTED_SCHEMA_VERSION = 2;
@@ -29,6 +29,7 @@ export interface DocsIndex {
   components: DocEntry[];
   directives: DocEntry[];
   tokens: DocToken[];
+  functions: DocFunction[];
 }
 
 /** Thrown when a snapshot's `schemaVersion` is one the server cannot read. */
@@ -64,6 +65,7 @@ export function createDocsIndex(doc: DocumentationJson): DocsIndex {
     components: doc.components ?? [],
     directives: doc.directives ?? [],
     tokens: doc.tokens ?? [],
+    functions: doc.miscellaneous?.functions ?? [],
   };
 }
 
