@@ -48,12 +48,13 @@ never a crash.
 
 `find_component`, `get_api`, `get_slots`, `get_theme_tokens`, and `get_di_tokens`
 take an optional `version` (e.g. `"0.2.0"`). Omitted, or equal to the bundled
-snapshot version, they answer offline against the bundled snapshot exactly as
-before. Given a different version they resolve that release's `documentation.json`
-from the GitHub Release assets via `gh` (fetched once, then cached in memory for
-the session), query it, and wrap the answer as
-`{ groundedVersion, result }` so the caller always knows which release the answer
-grounds against. A fetch that fails returns the same typed
+snapshot version, they answer offline against the bundled snapshot with no fetch.
+Given a different version they resolve that release's `documentation.json` from the
+GitHub Release assets via `gh` (fetched once, then cached in memory for the
+session) and query that instead. Either way the answer is wrapped as
+`{ groundedVersion, result }` so the caller always knows which release it grounds
+against - the previously bare payload now sits under `result`, including on the
+offline default. A fetch that fails returns the same typed
 `{ ok: false, reason }` shape `migrate_usage` uses - the query never throws. Only
 tagged releases (`v<version>`) are fetchable; branches and SHAs are not.
 
