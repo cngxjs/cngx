@@ -1,5 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { createDocsIndex } from '../data/loader.js';
+import type { DocsResolverDeps } from '../data/docs-resolver.js';
+import { answerVersioned, resetDocsCache } from '../data/docs-resolver.js';
 import type { DocFunction, DocumentationJson } from '../data/types.js';
 import { getConfig } from './get-config.js';
 
@@ -175,5 +177,47 @@ describe('getConfig', () => {
     expect(result?.token).toBe('CNGX_NO_FILE_CONFIG');
     expect(result?.providers).toEqual([]);
     expect(result?.features).toEqual([]);
+  });
+});
+
+describe('get_config version wiring', () => {
+  beforeEach(() => resetDocsCache());
+
+  const bundled = createDocsIndex({
+    schemaVersion: 2,
+    cngxVersion: '0.1.0',
+    components: [],
+    directives: [],
+    tokens: [],
+    miscellaneous: { functions: [] },
+  } as DocumentationJson);
+  const fetched = createDocsIndex({
+    schemaVersion: 2,
+    cngxVersion: '0.2.0',
+    components: [],
+    directives: [],
+    tokens: [{ name: 'CNGX_FOO_CONFIG', file: 'projects/foo/foo-config.ts' }],
+    miscellaneous: { functions: [] },
+  } as DocumentationJson);
+
+  it('grounds the config answer against a fetched non-bundled version', () => {
+    const deps: DocsResolverDeps = { fetchSnapshot: () => ({ ok: true, path: '/tmp/fetched.json' }), loadDocs: () => fetched };
+
+    const answer = answerVersioned(bundled, '0.2.0', (resolved) => getConfig(resolved, 'CNGX_FOO_CONFIG'), deps);
+
+    expect(answer).toMatchObject({ groundedVersion: '0.2.0' });
+    // The bundled snapshot has no config tokens; only the fetched v0.2.0 resolves this one.
+    expect((answer as { result: { token: string } }).result.token).toBe('CNGX_FOO_CONFIG');
+  });
+
+  it('passes a fetch failure through as a typed result', () => {
+    const deps: DocsResolverDeps = {
+      fetchSnapshot: () => ({ ok: false, reason: 'asset-missing', message: 'no release' }),
+      loadDocs: () => fetched,
+    };
+
+    const answer = answerVersioned(bundled, '999.0.0', (resolved) => getConfig(resolved, 'CNGX_FOO_CONFIG'), deps);
+
+    expect(answer).toEqual({ ok: false, reason: 'asset-missing', message: 'no release' });
   });
 });
