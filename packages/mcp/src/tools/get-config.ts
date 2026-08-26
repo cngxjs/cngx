@@ -128,7 +128,7 @@ function resolveComponentToken(docs: DocsIndex, tokens: DocToken[], name: string
   const componentDir = dirOf(match.entry.file);
   const candidates = tokens
     .filter((token) => token.file !== undefined)
-    .map((token) => ({ token, root: featureDir(token.file as string) }))
+    .map((token) => ({ token, root: featureDir(token.file!) }))
     .filter(({ root }) => root !== '' && isAncestorOrEqual(root, componentDir))
     .sort((a, b) => b.root.length - a.root.length || a.token.name.length - b.token.name.length);
   return candidates[0]?.token ?? null;
