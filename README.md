@@ -120,7 +120,7 @@ Forms organisms across 7 entries. 130 source files, zero CDK touchpoints.
 - `field` - Signal Forms bridge.
 - `controls` - CVA adapter for Reactive Forms.
 - `validators`, `input`.
-- `select` - eight composites: single, multi, combobox, typeahead, tree-select, reorderable-multi, action-select, action-multi.
+- `select` - nine composites: single, multi, combobox, typeahead, tree-select, reorderable-multi, action-select, action-multi, select-shell.
 - `filter-builder` - declarative compound-filter UI.
 
 ### `@cngx/data-display` - Level 3
@@ -148,9 +148,31 @@ Plain-CSS theme bundle. No JS, no SCSS at runtime in the default bundle.
 
 ---
 
+## Tooling & LLM support
+
+Beyond the libraries, cngx ships tooling for authoring and for LLM coding agents. All three packages are published on npm at `0.1.0`.
+
+### `@cngx/eslint-plugin`
+
+Lint rules that enforce the cngx conventions - signal-first APIs, no artifact suffixes on class names, the bridge-input rule, the layer hierarchy.
+
+### `@cngx/mcp`
+
+A stdio [Model Context Protocol](https://modelcontextprotocol.io) server over a bundled snapshot of the `@cngx/*` public API. It answers `get_api CngxSelect` with a few hundred bytes of typed API instead of a multi-megabyte dump. Read-only, offline by default: typed query tools (component, API, slot, theme-token, DI-token, and config queries, catalog browse, story examples, plus cross-version `migrate_usage`) alongside MCP resources and prompts. The shape and config queries take an optional `version` to ground an answer against another release. Runs standalone: `npx @cngx/mcp`.
+
+### `@cngx/doctor`
+
+A CLI plus guard hook that checks a consumer app against the cngx conventions and reports drift.
+
+### Claude Code plugin
+
+One plugin bundles the three packages above, a session grounding hook (reads your app's `@cngx/*` versions and injects a version pointer), a knowledge pack of composition recipes distilled from the demos, consumer agents, and skills. Install with `/plugin marketplace add cngxjs/cngx`.
+
+---
+
 ## Highlights
 
-- **Select family.** Eight composites share one `createSelectCore<T, TCommit>` engine, exposing 17 template slots and 18 DI override tokens. 
+- **Select family.** Nine composites share one `createSelectCore<T, TCommit>` engine, exposing 27 template slots and 23 DI override tokens. 
 Swap the panel host, the announcer, the commit controller, the trigger focus strategy. Same engine drives async commit, optimistic update, refresh state and tree multi-select. Zero CDK.
 - **Popover system.** CSS Anchor Positioning by default, Floating-UI opt-in via `provideFloatingFallback()`. 
 Arrow tracking, position-area fallback chain, accessible dismissal paths. No `cdk/overlay` in the path.
