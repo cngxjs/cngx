@@ -31,6 +31,8 @@ const DOC: DocumentationJson = {
     { name: 'CNGX_PAGINATOR_CONFIG', file: 'projects/ui/paginator/paginator-config.ts' },
     { name: 'CNGX_FEEDBACK_CONFIG', file: 'projects/ui/feedback/config/feedback-config.ts' },
     { name: 'CNGX_FORM_FIELD_CONFIG', file: 'projects/forms/field/form-field.token.ts' },
+    // A malformed token carrying no file - the anchor must yield empty, not over-capture.
+    { name: 'CNGX_NO_FILE_CONFIG' },
   ],
   miscellaneous: {
     functions: [
@@ -60,6 +62,9 @@ const DOC: DocumentationJson = {
       fn('provideFormField', 'projects/forms/field/form-field.token.ts', 'provider'),
       fn('provideErrorMessages', 'projects/forms/field/form-field.token.ts', 'provider'),
       fn('withErrorMessages', 'projects/forms/field/form-field.token.ts', 'feature', 'FormFieldFeature'),
+      // Root-level functions (no directory) - must never be captured by a file-less token.
+      fn('provideOrphan', 'orphan.ts', 'provider'),
+      fn('withOrphan', 'orphan.ts', 'feature', 'OrphanFeature'),
     ],
   },
 };
@@ -141,5 +146,14 @@ describe('getConfig', () => {
 
   it('returns null when the input maps to no config token', () => {
     expect(getConfig(docs, 'no-such-surface')).toBeNull();
+  });
+
+  it('resolves a file-less config token to empty collections without over-capturing root-level functions', () => {
+    const result = getConfig(docs, 'CNGX_NO_FILE_CONFIG');
+
+    expect(result).not.toBeNull();
+    expect(result?.token).toBe('CNGX_NO_FILE_CONFIG');
+    expect(result?.providers).toEqual([]);
+    expect(result?.features).toEqual([]);
   });
 });

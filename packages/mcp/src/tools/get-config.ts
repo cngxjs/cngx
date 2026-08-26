@@ -136,6 +136,11 @@ function resolveComponentToken(docs: DocsIndex, tokens: DocToken[], name: string
 
 /** Providers/features co-located with the token's file, falling back to its directory. */
 function collectByKind(docs: DocsIndex, tokenFile: string, kind: DocFunction['factoryKind']): DocFunction[] {
+  // A token with no file has nothing to anchor on. Return empty rather than let
+  // dirOf('') === '' capture every function whose file carries no directory.
+  if (tokenFile === '') {
+    return [];
+  }
   const inFile = docs.functions.filter((fn) => fn.factoryKind === kind && fn.file === tokenFile);
   if (inFile.length > 0) {
     return inFile;
