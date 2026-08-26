@@ -12,6 +12,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadBundledDocs } from './data/loader.js';
 import { registerFindComponent } from './tools/find-component.js';
+import { registerListComponents } from './tools/list-components.js';
 import { registerGetApi } from './tools/get-api.js';
 import { registerGetSlots } from './tools/get-slots.js';
 import { registerGetThemeTokens } from './tools/get-theme-tokens.js';
@@ -39,12 +40,13 @@ async function main(): Promise<void> {
         `Answers ground against cngx ${cngxVersion ?? 'unknown'} ` +
         `(snapshot ${generatedAt ?? 'unknown'}, schemaVersion ${schemaVersion}). ` +
         `Confirm the consuming app runs a matching cngx release before relying on an answer. ` +
-        `The seven query tools are read-only and offline; migrate_usage additionally answers ` +
+        `The eight query tools are read-only and offline; migrate_usage additionally answers ` +
         `cross-version deltas and may fetch a non-bundled release snapshot via the gh CLI.`,
     },
   );
 
   registerFindComponent(server, docs);
+  registerListComponents(server, docs);
   registerGetApi(server, docs);
   registerGetSlots(server, docs);
   registerGetThemeTokens(server, docs);

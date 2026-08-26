@@ -23,6 +23,7 @@ Client setup below), then call the tools.
 |Tool|Input|Returns|
 |-|-|-|
 |`find_component`|`{ query: string }`|Components and directives whose name, selector, or category matches the fragment: name, kind, selector, category, file.|
+|`list_components`|`{ lib?: string, kind?: 'component' \| 'directive' }`|The deterministic catalog: every component and directive as `{ name, kind, selector, category, lib }`, sorted by name. Optionally filtered by lib and/or kind. Omit both for the full surface; an unmatched filter returns an empty list.|
 |`get_api`|`{ name: string }`|One component/directive's API: inputs, outputs, signal flag, host bindings, public methods, description. Resolves by class name or selector.|
 |`get_slots`|`{ name: string }`|The component's projected template slots, each a slot directive selector name plus its one-line doc.|
 |`get_theme_tokens`|`{ name: string }`|A component's theming tokens (the CSS custom properties it exposes) and theme overview, by class name or selector.|
@@ -34,7 +35,7 @@ Client setup below), then call the tools.
 Every read-only tool returns `null` (or an empty list) when a name resolves to
 nothing, so an agent can tell "no such symbol" from "symbol with no data".
 
-The first seven tools are read-only and offline. `migrate_usage` is the one tool
+The first eight tools are read-only and offline. `migrate_usage` is the one tool
 that reaches the network: a version other than the bundled snapshot is fetched
 from the GitHub Release assets via the `gh` CLI. That fetch is fail-safe - a
 missing `gh`, no network, or an absent asset returns a typed error result
