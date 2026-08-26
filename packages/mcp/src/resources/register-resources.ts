@@ -8,6 +8,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { ReadResourceResult } from '@modelcontextprotocol/sdk/types.js';
 import type { Variables } from '@modelcontextprotocol/sdk/shared/uriTemplate.js';
 import type { DocsIndex } from '../data/loader.js';
+import { allEntries } from '../query.js';
 import { listComponents } from '../tools/list-components.js';
 import { getDiTokens } from '../tools/get-di-tokens.js';
 import { getApi } from '../tools/get-api.js';
@@ -50,6 +51,21 @@ export function readApi(docs: DocsIndex, name: string, uri: URL | string): ReadR
     return { contents: [] };
   }
   return jsonResource(uri, api);
+}
+
+/**
+ * Autocomplete candidates for the `{name}` variable of `cngx://api/{name}` -
+ * component/directive class names matching the partial the client has typed
+ * (case-insensitive substring), sorted. An empty partial offers the whole
+ * surface. Capped at the MCP 100-item completion ceiling.
+ */
+export function completeApiName(docs: DocsIndex, value: string): string[] {
+  const needle = value.trim().toLowerCase();
+  return allEntries(docs)
+    .map(({ entry }) => entry.name)
+    .filter((name) => needle === '' || name.toLowerCase().includes(needle))
+    .sort((a, b) => a.localeCompare(b))
+    .slice(0, 100);
 }
 
 // A single URI-template variable resolves to a string, but the SDK types it as
@@ -96,7 +112,10 @@ export function registerResources(server: McpServer, docs: DocsIndex): void {
 
   server.registerResource(
     'api',
-    new ResourceTemplate('cngx://api/{name}', { list: undefined }),
+    new ResourceTemplate('cngx://api/{name}', {
+      list: undefined,
+      complete: { name: (value) => completeApiName(docs, value) },
+    }),
     {
       title: 'cngx component API',
       description:

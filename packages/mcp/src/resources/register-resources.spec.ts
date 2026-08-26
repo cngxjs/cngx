@@ -2,7 +2,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { loadDocsFromFile, type DocsIndex } from '../data/loader.js';
 import type { ComponentSummary } from '../tools/list-components.js';
-import { readApi, readCatalog, readProvenance, readTokens } from './register-resources.js';
+import { completeApiName, readApi, readCatalog, readProvenance, readTokens } from './register-resources.js';
 
 const FIXTURE = fileURLToPath(new URL('../../test/fixtures/documentation.sample.json', import.meta.url));
 const docs = loadDocsFromFile(FIXTURE);
@@ -75,5 +75,20 @@ describe('readApi (cngx://api/{name})', () => {
     const result = readApi(docs, 'CngxNope', 'cngx://api/CngxNope');
 
     expect(result.contents).toEqual([]);
+  });
+});
+
+describe('completeApiName (cngx://api/{name} autocomplete)', () => {
+  it('offers the whole surface, sorted, for an empty partial', () => {
+    expect(completeApiName(docs, '')).toEqual(['CngxAccordionItem', 'CngxRipple', 'CngxSelect']);
+  });
+
+  it('filters by case-insensitive substring', () => {
+    expect(completeApiName(docs, 'sel')).toEqual(['CngxSelect']);
+    expect(completeApiName(docs, 'CNGX')).toEqual(['CngxAccordionItem', 'CngxRipple', 'CngxSelect']);
+  });
+
+  it('returns an empty list when nothing matches', () => {
+    expect(completeApiName(docs, 'zzz')).toEqual([]);
   });
 });

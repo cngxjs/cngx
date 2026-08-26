@@ -52,7 +52,7 @@ can list and attach cngx documents without an imperative tool call.
 |`cngx://catalog`|Every component and directive as `{ name, kind, selector, category, lib }`, sorted by name. The browse view of `list_components`.|
 |`cngx://tokens`|The top-level DI injection tokens as `{ name, file, description }`.|
 |`cngx://provenance`|Snapshot meta: cngx version, `generatedAt`, `schemaVersion`, compodocx version.|
-|`cngx://api/{name}`|One component/directive's API surface by class name or selector. An unknown name yields an empty resource.|
+|`cngx://api/{name}`|One component/directive's API surface by class name or selector. The `{name}` variable autocompletes against the catalog; an unknown name yields an empty resource.|
 
 Every resource returns `application/json`.
 
