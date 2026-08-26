@@ -22,12 +22,12 @@ Client setup below), then call the tools.
 
 |Tool|Input|Returns|
 |-|-|-|
-|`find_component`|`{ query: string }`|Components and directives whose name, selector, or category matches the fragment: name, kind, selector, category, file.|
+|`find_component`|`{ query: string, version?: string }`|Components and directives whose name, selector, or category matches the fragment: name, kind, selector, category, file.|
 |`list_components`|`{ lib?: string, kind?: 'component' \| 'directive' }`|The deterministic catalog: every component and directive as `{ name, kind, selector, category, lib }`, sorted by name. Optionally filtered by lib and/or kind. Omit both for the full surface; an unmatched filter returns an empty list.|
-|`get_api`|`{ name: string }`|One component/directive's API: inputs, outputs, signal flag, host bindings, public methods, description. Resolves by class name or selector.|
-|`get_slots`|`{ name: string }`|The component's projected template slots, each a slot directive selector name plus its one-line doc.|
-|`get_theme_tokens`|`{ name: string }`|A component's theming tokens (the CSS custom properties it exposes) and theme overview, by class name or selector.|
-|`get_di_tokens`|`{ query?: string }`|The top-level DI injection tokens, optionally filtered by a name fragment. Omit the argument for the full list.|
+|`get_api`|`{ name: string, version?: string }`|One component/directive's API: inputs, outputs, signal flag, host bindings, public methods, description. Resolves by class name or selector.|
+|`get_slots`|`{ name: string, version?: string }`|The component's projected template slots, each a slot directive selector name plus its one-line doc.|
+|`get_theme_tokens`|`{ name: string, version?: string }`|A component's theming tokens (the CSS custom properties it exposes) and theme overview, by class name or selector.|
+|`get_di_tokens`|`{ query?: string, version?: string }`|The top-level DI injection tokens, optionally filtered by a name fragment. Omit the argument for the full list.|
 |`get_config`|`{ name: string }`|A configuration cascade by config token name (`CNGX_SELECT_CONFIG`), stem (`select`), or best-effort component name (`CngxCombobox`): the config token, its co-located provider functions, the `with*` feature functions, and the resolution-priority ordering. Returns null when the name maps to no config token.|
 |`get_story_example`|`{ name: string }`|The component's runnable example URLs (public documentation links) and a StackBlitz URL when one exists. Playground entries are labelled source references, not openable links.|
 |`migrate_usage`|`{ from: string, to?: string }`|A structured API delta between two cngx releases: removed / renamed / signature-changed components, inputs, outputs, slots, and DI tokens. `to` defaults to the bundled snapshot version.|
@@ -35,12 +35,27 @@ Client setup below), then call the tools.
 Every read-only tool returns `null` (or an empty list) when a name resolves to
 nothing, so an agent can tell "no such symbol" from "symbol with no data".
 
-The first eight tools are read-only and offline. `migrate_usage` is the one tool
-that reaches the network: a version other than the bundled snapshot is fetched
-from the GitHub Release assets via the `gh` CLI. That fetch is fail-safe - a
-missing `gh`, no network, or an absent asset returns a typed error result
-(`{ ok: false, reason }`, one of `gh-missing` / `network` / `asset-missing`),
+Every tool is read-only, and read-only tools answer offline against the bundled
+snapshot by default. The network is reached only when a caller asks for another
+release: `migrate_usage` always spans two versions, and `find_component`,
+`get_api`, `get_slots`, `get_theme_tokens`, and `get_di_tokens` reach it only when
+their optional `version` differs from the bundled one. Every such fetch is
+fail-safe - a missing `gh`, no network, or an absent asset returns a typed error
+result (`{ ok: false, reason }`, one of `gh-missing` / `network` / `asset-missing`),
 never a crash.
+
+### Version-scoped queries
+
+`find_component`, `get_api`, `get_slots`, `get_theme_tokens`, and `get_di_tokens`
+take an optional `version` (e.g. `"0.2.0"`). Omitted, or equal to the bundled
+snapshot version, they answer offline against the bundled snapshot exactly as
+before. Given a different version they resolve that release's `documentation.json`
+from the GitHub Release assets via `gh` (fetched once, then cached in memory for
+the session), query it, and wrap the answer as
+`{ groundedVersion, result }` so the caller always knows which release the answer
+grounds against. A fetch that fails returns the same typed
+`{ ok: false, reason }` shape `migrate_usage` uses - the query never throws. Only
+tagged releases (`v<version>`) are fetchable; branches and SHAs are not.
 
 ## Resources
 
