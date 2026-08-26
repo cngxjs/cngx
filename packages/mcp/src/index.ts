@@ -20,6 +20,8 @@ import { registerGetDiTokens } from './tools/get-di-tokens.js';
 import { registerGetConfig } from './tools/get-config.js';
 import { registerGetStoryExample } from './tools/get-story-example.js';
 import { registerMigrateUsage } from './tools/migrate-usage.js';
+import { registerResources } from './resources/register-resources.js';
+import { registerPrompts } from './prompts/register-prompts.js';
 
 const pkg = JSON.parse(
   readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'package.json'), 'utf8'),
@@ -41,7 +43,10 @@ async function main(): Promise<void> {
         `(snapshot ${generatedAt ?? 'unknown'}, schemaVersion ${schemaVersion}). ` +
         `Confirm the consuming app runs a matching cngx release before relying on an answer. ` +
         `The eight query tools are read-only and offline; migrate_usage additionally answers ` +
-        `cross-version deltas and may fetch a non-bundled release snapshot via the gh CLI.`,
+        `cross-version deltas and may fetch a non-bundled release snapshot via the gh CLI. ` +
+        `The server also serves resources (browse: cngx://catalog, cngx://tokens, cngx://provenance, ` +
+        `and the cngx://api/{name} template) and prompts (wire_component, theme_component, migrate_cngx) - ` +
+        `all three MCP surface types over the same offline snapshot.`,
     },
   );
 
@@ -54,6 +59,9 @@ async function main(): Promise<void> {
   registerGetConfig(server, docs);
   registerGetStoryExample(server, docs);
   registerMigrateUsage(server, docs);
+
+  registerResources(server, docs);
+  registerPrompts(server);
 
   const transport = new StdioServerTransport();
   await server.connect(transport);
