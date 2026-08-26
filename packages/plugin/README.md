@@ -16,8 +16,10 @@ Add the cngx marketplace, then install the plugin:
 ## What it does
 
 - Bundles a version-pinned MCP wiring (`.mcp.json`) that starts
-  `@cngx/mcp@0.1.0-rc.0` via `npx`, exposing the cngx public-API surface as
-  typed, queryable tools.
+  `@cngx/mcp@0.1.0` via `npx`, exposing the cngx public-API surface as typed,
+  queryable tools, browseable resources, and grounding prompts. The shape and
+  config queries are version-aware - they can ground an answer against another
+  cngx release.
 - Serves as the delivery vehicle for cngx agent grounding; it invents no new
   data, building only on the public MCP server and the published docs at
   <https://cngxjs.github.io/cngx>.
