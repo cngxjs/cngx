@@ -172,7 +172,7 @@ One plugin bundles the three packages above, a session grounding hook (reads you
 
 ## Highlights
 
-- **Select family.** Eight composites share one `createSelectCore<T, TCommit>` engine, exposing 17 template slots and 18 DI override tokens. 
+- **Select family.** Nine composites share one `createSelectCore<T, TCommit>` engine, exposing 27 template slots and 23 DI override tokens. 
 Swap the panel host, the announcer, the commit controller, the trigger focus strategy. Same engine drives async commit, optimistic update, refresh state and tree multi-select. Zero CDK.
 - **Popover system.** CSS Anchor Positioning by default, Floating-UI opt-in via `provideFloatingFallback()`. 
 Arrow tracking, position-area fallback chain, accessible dismissal paths. No `cdk/overlay` in the path.
