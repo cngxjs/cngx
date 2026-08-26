@@ -20,6 +20,11 @@ const DOC: DocumentationJson = {
   schemaVersion: 2,
   components: [
     { name: 'CngxCombobox', selector: 'cngx-combobox', file: 'projects/forms/select/combobox/combobox.component.ts' },
+    {
+      name: 'CngxActionSelect',
+      selector: 'cngx-action-select',
+      file: 'projects/forms/select/action-select/action-select.component.ts',
+    },
   ],
   directives: [
     { name: 'CngxDivider', selector: 'cngx-divider', file: 'projects/common/display/divider/divider.directive.ts' },
@@ -138,6 +143,21 @@ describe('getConfig', () => {
 
   it('resolves a component by selector as readily as by class name', () => {
     expect(getConfig(docs, 'cngx-combobox')?.token).toBe('CNGX_SELECT_CONFIG');
+  });
+
+  it('intentionally collapses a select-family sub-config component to the generic token (best-effort priority-3)', () => {
+    // The three select tokens share forms/select/shared/, so the component path
+    // cannot distinguish a sub-config surface: every select-family component
+    // resolves to the generic CNGX_SELECT_CONFIG. This is documented best-effort -
+    // callers wanting the sub-config pass the token name or stem (priority 1/2).
+    const result = getConfig(docs, 'CngxActionSelect');
+
+    expect(result?.token).toBe('CNGX_SELECT_CONFIG');
+    expect(result?.token).not.toBe('CNGX_ACTION_SELECT_CONFIG');
+    expect(result?.resolvedVia).toBe('component');
+    // The precise path still resolves the sub-config by token name and stem.
+    expect(getConfig(docs, 'CNGX_ACTION_SELECT_CONFIG')?.resolvedVia).toBe('token');
+    expect(getConfig(docs, 'action-select')?.token).toBe('CNGX_ACTION_SELECT_CONFIG');
   });
 
   it('returns null for a component with no ancestor config token', () => {
