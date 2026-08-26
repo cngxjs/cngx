@@ -10,9 +10,10 @@ import { z } from 'zod';
 import { jsonResult } from './tool-result.js';
 import type { DocsIndex } from '../data/loader.js';
 import { loadDocsFromFile } from '../data/loader.js';
+import { resolveDocs } from '../data/docs-resolver.js';
 import { diffSnapshots } from '../diff/snapshot-diff.js';
 import { fetchSnapshot } from '../diff/snapshot-fetch.js';
-import type { MigrateUsageResult, SnapshotFetchFailureReason, UsageDeltaError } from '../diff/types.js';
+import type { MigrateUsageResult, UsageDeltaError } from '../diff/types.js';
 
 export interface MigrateUsageArgs {
   from: string;
@@ -27,63 +28,39 @@ export interface MigrateUsageDeps {
 
 const defaultDeps: MigrateUsageDeps = { fetchSnapshot, loadDocs: loadDocsFromFile };
 
-type ResolvedVersion =
-  | { ok: true; docs: DocsIndex }
-  | { ok: false; reason: SnapshotFetchFailureReason; message: string };
-
-/** Resolve a requested version to a snapshot: the bundled one when it matches, else fetched. */
-function resolveVersion(version: string, bundled: DocsIndex, deps: MigrateUsageDeps): ResolvedVersion {
-  if (bundled.meta.cngxVersion !== null && version === bundled.meta.cngxVersion) {
-    return { ok: true, docs: bundled };
-  }
-  const fetched = deps.fetchSnapshot(version);
-  if (!fetched.ok) {
-    return { ok: false, reason: fetched.reason, message: fetched.message };
-  }
-  try {
-    return { ok: true, docs: deps.loadDocs(fetched.path) };
-  } catch (error) {
-    // A fetched-but-unreadable snapshot (bad schema, corrupt JSON) is, from the
-    // consumer's view, an unusable asset - kept inside the typed reason set.
-    return {
-      ok: false,
-      reason: 'asset-missing',
-      message: `Fetched snapshot for v${version} could not be read: ${error instanceof Error ? error.message : String(error)}`,
-    };
-  }
-}
-
 /**
  * Pure query behind the tool. `to` defaults to the bundled snapshot's `cngxVersion`.
  * Returns the structured {@link MigrateUsageResult} - a delta on success, a typed
- * failure when a non-bundled snapshot cannot be resolved.
+ * failure when a non-bundled snapshot cannot be resolved. Both endpoints resolve
+ * through the shared {@link resolveDocs}, so the bundled short-circuit, the fetch
+ * seam, the schema-error mapping, and the in-memory cache are the same ones the
+ * version-scoped query tools use.
  */
 export function migrateUsage(bundled: DocsIndex, args: MigrateUsageArgs, deps: MigrateUsageDeps = defaultDeps): MigrateUsageResult {
   const from = args.from;
   const to = args.to ?? bundled.meta.cngxVersion ?? 'unknown';
 
-  const fromResolved = resolveVersion(from, bundled, deps);
+  const fromResolved = resolveDocs(bundled, from, deps);
   if (!fromResolved.ok) {
     return { ok: false, meta: { from, to }, reason: fromResolved.reason, message: fromResolved.message };
   }
-  const toResolved = resolveVersion(to, bundled, deps);
+  const toResolved = resolveDocs(bundled, to, deps);
   if (!toResolved.ok) {
     return { ok: false, meta: { from, to }, reason: toResolved.reason, message: toResolved.message };
   }
 
   const delta = diffSnapshots(fromResolved.docs, toResolved.docs);
-  // Record the requested versions, and fall back the resolved labels to them when a
-  // snapshot is unstamped. The M0 Release asset is the raw compodocx export with no
-  // `cngxVersion`; a successful `gh release download v<version>` still means the
-  // asset IS that version, so the requested string is the truthful resolved label
-  // rather than the raw file's null.
+  // `resolveDocs` already labels an unstamped fetched asset with its requested version
+  // (a successful `gh release download v<version>` means the asset IS that version),
+  // so `.version` is the truthful resolved label; fall back to the request only for the
+  // theoretical null case an unstamped bundled short-circuit would produce.
   return {
     ...delta,
     meta: {
       from,
       to,
-      resolvedFrom: fromResolved.docs.meta.cngxVersion ?? from,
-      resolvedTo: toResolved.docs.meta.cngxVersion ?? to,
+      resolvedFrom: fromResolved.version ?? from,
+      resolvedTo: toResolved.version ?? to,
     },
   };
 }

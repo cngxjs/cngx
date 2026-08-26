@@ -6,6 +6,7 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { jsonResult } from './tool-result.js';
+import { answerVersioned } from '../data/docs-resolver.js';
 import type { DocsIndex } from '../data/loader.js';
 import type { DocSlot } from '../data/types.js';
 import type { EntryKind } from '../query.js';
@@ -41,8 +42,15 @@ export function registerGetSlots(server: McpServer, docs: DocsIndex): void {
         'no overridable slots. Returns null when the name resolves to nothing.',
       inputSchema: {
         name: z.string().describe('A component/directive class name or selector, e.g. "CngxSelect".'),
+        version: z
+          .string()
+          .optional()
+          .describe(
+            'Optional cngx version to ground the answer against, e.g. "0.2.0". Omit to answer from the ' +
+              'bundled snapshot offline; a non-bundled version fetches that release snapshot via gh (fail-safe).',
+          ),
       },
     },
-    ({ name }) => jsonResult(getSlots(docs, name)),
+    ({ name, version }) => jsonResult(answerVersioned(docs, version, (resolved) => getSlots(resolved, name))),
   );
 }

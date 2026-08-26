@@ -41,9 +41,13 @@ async function main(): Promise<void> {
         `Query layer over the cngx (@cngx/*) public API. ` +
         `Answers ground against cngx ${cngxVersion ?? 'unknown'} ` +
         `(snapshot ${generatedAt ?? 'unknown'}, schemaVersion ${schemaVersion}). ` +
-        `Confirm the consuming app runs a matching cngx release before relying on an answer. ` +
-        `The eight query tools are read-only and offline; migrate_usage additionally answers ` +
-        `cross-version deltas and may fetch a non-bundled release snapshot via the gh CLI. ` +
+        `Confirm the consuming app runs a matching cngx release before relying on an answer, ` +
+        `or pass an optional version argument to ground a query against another release. ` +
+        `The eight query tools are read-only and answer offline by default; find_component, get_api, ` +
+        `get_slots, get_theme_tokens, and get_di_tokens accept an optional version that - when it differs ` +
+        `from the bundled snapshot - fetches that release snapshot via the gh CLI (fail-safe: a missing gh, ` +
+        `no network, or an absent asset returns a typed { ok: false, reason }) and reports the groundedVersion ` +
+        `it resolved. migrate_usage additionally answers cross-version deltas over the same fetch. ` +
         `The server also serves resources (browse: cngx://catalog, cngx://tokens, cngx://provenance, ` +
         `and the cngx://api/{name} template) and prompts (wire_component, theme_component, migrate_cngx) - ` +
         `all three MCP surface types over the same offline snapshot.`,

@@ -1,9 +1,12 @@
 import { fileURLToPath } from 'node:url';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { loadDocsFromFile } from '../data/loader.js';
+import type { DocsResolverDeps } from '../data/docs-resolver.js';
+import { answerVersioned, resetDocsCache } from '../data/docs-resolver.js';
 import { getThemeTokens } from './get-theme-tokens.js';
 
 const FIXTURE = fileURLToPath(new URL('../../test/fixtures/documentation.sample.json', import.meta.url));
+const NEW = fileURLToPath(new URL('../../test/fixtures/documentation.v-new.sample.json', import.meta.url));
 const docs = loadDocsFromFile(FIXTURE);
 
 describe('getThemeTokens', () => {
@@ -29,5 +32,31 @@ describe('getThemeTokens', () => {
 
   it('returns null for an unknown name', () => {
     expect(getThemeTokens(docs, 'CngxDoesNotExist')).toBeNull();
+  });
+});
+
+describe('get_theme_tokens version wiring', () => {
+  beforeEach(() => resetDocsCache());
+
+  it('grounds the answer against a fetched non-bundled version', () => {
+    const deps: DocsResolverDeps = { fetchSnapshot: () => ({ ok: true, path: NEW }), loadDocs: loadDocsFromFile };
+
+    const answer = answerVersioned(docs, '0.2.0', (resolved) => getThemeTokens(resolved, 'CngxSelect'), deps);
+
+    expect(answer).toMatchObject({ groundedVersion: '0.2.0' });
+    // v0.2.0 exposes no theme tokens; the bundled snapshot lists one.
+    const result = (answer as { result: { themeTokens: unknown[] } }).result;
+    expect(result.themeTokens).toEqual([]);
+  });
+
+  it('passes a fetch failure through as a typed result', () => {
+    const deps: DocsResolverDeps = {
+      fetchSnapshot: () => ({ ok: false, reason: 'asset-missing', message: 'no release' }),
+      loadDocs: loadDocsFromFile,
+    };
+
+    const answer = answerVersioned(docs, '999.0.0', (resolved) => getThemeTokens(resolved, 'CngxSelect'), deps);
+
+    expect(answer).toEqual({ ok: false, reason: 'asset-missing', message: 'no release' });
   });
 });

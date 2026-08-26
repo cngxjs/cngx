@@ -6,6 +6,7 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { jsonResult } from './tool-result.js';
+import { answerVersioned } from '../data/docs-resolver.js';
 import type { DocsIndex } from '../data/loader.js';
 import type { EntryKind } from '../query.js';
 import { searchEntries } from '../query.js';
@@ -40,8 +41,15 @@ export function registerFindComponent(server: McpServer, docs: DocsIndex): void 
         'point for get_api, get_slots, get_theme_tokens, get_di_tokens, and get_story_example.',
       inputSchema: {
         query: z.string().describe('A name, selector, or category fragment, e.g. "select" or "cngx-chip".'),
+        version: z
+          .string()
+          .optional()
+          .describe(
+            'Optional cngx version to ground the answer against, e.g. "0.2.0". Omit to answer from the ' +
+              'bundled snapshot offline; a non-bundled version fetches that release snapshot via gh (fail-safe).',
+          ),
       },
     },
-    ({ query }) => jsonResult(findComponents(docs, query)),
+    ({ query, version }) => jsonResult(answerVersioned(docs, version, (resolved) => findComponents(resolved, query))),
   );
 }
