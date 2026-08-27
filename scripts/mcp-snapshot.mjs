@@ -26,6 +26,11 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SOURCE = join(ROOT, '.compodoc', 'documentation.json');
 const DEST_DIR = join(ROOT, 'packages', 'mcp', 'data');
 const DEST = join(DEST_DIR, 'documentation.json');
+// The verbatim compodocx llm-md dump (npm run docs:llm). Optional to the build:
+// copied when present, warned-and-skipped when absent so a docs-less checkout
+// still builds; the cngx://llms-full resource degrades to an empty read.
+const LLM_DUMP_SOURCE = join(ROOT, '.compodoc-llm', 'llm-context.md');
+const LLM_DUMP_DEST = join(DEST_DIR, 'llm-context.md');
 
 const args = new Map(process.argv.slice(2).map((a) => a.split('=', 2)).map(([k, v]) => [k, v ?? '']));
 // Precedence: --base=… CLI flag > EXAMPLES_BASE_URL env var > GH Pages default.
@@ -78,6 +83,17 @@ function main() {
     `mcp-snapshot: wrote packages/mcp/data/documentation.json ` +
       `(cngxVersion ${cngxVersion}, schemaVersion ${doc.schemaVersion}, ${rebased} example URL(s) rebased to ${BASE_URL}).`,
   );
+
+  if (existsSync(LLM_DUMP_SOURCE)) {
+    const dump = readFileSync(LLM_DUMP_SOURCE);
+    writeFileSync(LLM_DUMP_DEST, dump);
+    console.log(`mcp-snapshot: copied packages/mcp/data/llm-context.md (${dump.byteLength} bytes).`);
+  } else {
+    console.warn(
+      `mcp-snapshot: ${LLM_DUMP_SOURCE} not found; skipping the llm-md dump. ` +
+        `Run \`npm run docs:llm\` before \`npm run build:mcp\` to bundle the cngx://llms-full body.`,
+    );
+  }
 }
 
 main();
