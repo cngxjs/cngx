@@ -20,23 +20,92 @@ function jsonResource(uri: URL | string, value: unknown): ReadResourceResult {
   return { contents: [{ uri: href, mimeType: JSON_MIME, text: JSON.stringify(value, null, 2) }] };
 }
 
+const MARKDOWN_MIME = 'text/markdown';
+
+function textResource(uri: URL | string, mimeType: string, text: string): ReadResourceResult {
+  const href = typeof uri === 'string' ? uri : uri.href;
+  return { contents: [{ uri: href, mimeType, text }] };
+}
+
+// The base for the `cngx://llms` pointer links - the same production GH Pages
+// root `scripts/llms-publish.mjs` writes into its `llms.txt`. No trailing slash.
+// Kept in step with the script's `DEFAULT_BASE_URL` by a spec assertion, not by hand.
+const DOCS_BASE_URL = 'https://cngxjs.github.io/cngx';
+
+// The package list has no runtime source - `projects/*` is not in the published
+// package - so it is a static mirror of what `scripts/llms-publish.mjs` derives at
+// build time (`readPackages`, alphabetical, verbatim `package.json` descriptions).
+// The mirror is not trusted to convention: `register-resources.spec.ts` re-runs
+// `readPackages` over `projects/*` and asserts the emitted index matches it, so a new
+// lib or a changed description turns the spec red until this list is brought in step.
+const CNGX_PACKAGES: readonly { name: string; description: string }[] = [
+  {
+    name: '@cngx/common',
+    description:
+      'Atoms and molecules (a11y, interactive, layout, dialog, popover, display) for the CNGX Angular component library.',
+  },
+  {
+    name: '@cngx/core',
+    description:
+      'Core tokens, async state primitives, selection controller, and DI utilities for the CNGX Angular component library.',
+  },
+  {
+    name: '@cngx/data-display',
+    description: 'Data-display organisms for the CNGX Angular component library.',
+  },
+  {
+    name: '@cngx/forms',
+    description:
+      'Forms-related organisms (controls, validators, field bridge, select family) for the CNGX Angular component library. Signal-Forms first.',
+  },
+  {
+    name: '@cngx/interop',
+    description:
+      'Adapters bridging external state engines (TanStack Query, NgRx SignalStore) onto the CNGX async-state protocol.',
+  },
+  {
+    name: '@cngx/themes',
+    description:
+      'Single-import default theme and example brand theme for the CNGX Angular component library.',
+  },
+  {
+    name: '@cngx/ui',
+    description:
+      'Organism layer (layout, overlay, feedback, stepper, tabs) for the CNGX Angular component library. Material opt-in (mat-stepper, mat-tabs, material).',
+  },
+  {
+    name: '@cngx/utils',
+    description:
+      'Framework-agnostic TypeScript utilities (array, tree, version primitives) for the CNGX Angular component library.',
+  },
+];
+
 /**
  * `cngx://catalog` body - the full component + directive catalog. Reuses
  * `listComponents` verbatim so the resource and the `list_components` tool share
  * one enumeration and one `lib` derivation (via `entryLib`); the catalog is that
  * tool served as a browseable resource, not a re-projection.
  */
-export function readCatalog(docs: DocsIndex, uri: URL | string = 'cngx://catalog'): ReadResourceResult {
+export function readCatalog(
+  docs: DocsIndex,
+  uri: URL | string = 'cngx://catalog',
+): ReadResourceResult {
   return jsonResource(uri, listComponents(docs));
 }
 
 /** `cngx://tokens` body - the top-level DI token list, reusing `getDiTokens`. */
-export function readTokens(docs: DocsIndex, uri: URL | string = 'cngx://tokens'): ReadResourceResult {
+export function readTokens(
+  docs: DocsIndex,
+  uri: URL | string = 'cngx://tokens',
+): ReadResourceResult {
   return jsonResource(uri, getDiTokens(docs));
 }
 
 /** `cngx://provenance` body - the snapshot meta (cngx version, generatedAt, schemaVersion). */
-export function readProvenance(docs: DocsIndex, uri: URL | string = 'cngx://provenance'): ReadResourceResult {
+export function readProvenance(
+  docs: DocsIndex,
+  uri: URL | string = 'cngx://provenance',
+): ReadResourceResult {
   return jsonResource(uri, docs.meta);
 }
 
@@ -66,6 +135,49 @@ export function completeApiName(docs: DocsIndex, value: string): string[] {
     .filter((name) => needle === '' || name.toLowerCase().includes(needle))
     .sort((a, b) => a.localeCompare(b))
     .slice(0, 100);
+}
+
+/**
+ * `cngx://llms` body - the `llms.txt`-equivalent index composed at read-time from
+ * the bundled `DocsIndex`: title + tagline, the per-kind documented-exports count,
+ * the API-reference pointer links against {@link DOCS_BASE_URL}, and the package
+ * list. Conceptually aligned with `buildIndex` in `scripts/llms-publish.mjs` but
+ * grounded against the runtime snapshot (`docs.<kind>.length`) instead of the
+ * build-time llm-md dump, so the index is offline and version-pinned rather than
+ * a live GitHub Pages fetch.
+ */
+export function readLlms(docs: DocsIndex, uri: URL | string = 'cngx://llms'): ReadResourceResult {
+  const counts = [
+    { kind: 'components', count: docs.components.length },
+    { kind: 'directives', count: docs.directives.length },
+    { kind: 'tokens', count: docs.tokens.length },
+    { kind: 'functions', count: docs.functions.length },
+  ];
+  const total = counts.reduce((sum, entry) => sum + entry.count, 0);
+  const breakdown = counts.map((entry) => `${entry.count} ${entry.kind}`).join(', ');
+  const body = [
+    '# cngx',
+    '',
+    '> Signal-native Angular component library: atoms, molecules and organisms',
+    '> composed on plain Angular Signals and modern DOM. CDK and Material are',
+    '> opt-in primitives, not foundations. A11y is part of the computed() graph.',
+    '',
+    `${total} documented exports (${breakdown}).`,
+    '',
+    '## API Reference',
+    '',
+    `- [Full API dump, llm-md format](${DOCS_BASE_URL}/llms-full.txt): every exported artifact with selector, inputs, outputs, description and live-example URLs`,
+    `- [Documentation site](${DOCS_BASE_URL}/): rendered docs including core concepts and per-component theming tokens`,
+    `- [Live examples](${DOCS_BASE_URL}/examples/): runnable demos, one route per example`,
+    '',
+    '## Packages',
+    '',
+    ...CNGX_PACKAGES.map(
+      (pkg) => `- [${pkg.name}](https://www.npmjs.com/package/${pkg.name}): ${pkg.description}`,
+    ),
+    '',
+  ].join('\n');
+  return textResource(uri, MARKDOWN_MIME, body);
 }
 
 // A single URI-template variable resolves to a string, but the SDK types it as
@@ -124,5 +236,18 @@ export function registerResources(server: McpServer, docs: DocsIndex): void {
       mimeType: JSON_MIME,
     },
     (uri, variables) => readApi(docs, firstValue(variables.name), uri),
+  );
+
+  server.registerResource(
+    'llms',
+    'cngx://llms',
+    {
+      title: 'cngx llms.txt index',
+      description:
+        'The llms.txt-equivalent entry index - documented-exports counts, API-reference ' +
+        'pointer links and the package list - composed offline from the bundled snapshot.',
+      mimeType: MARKDOWN_MIME,
+    },
+    (uri) => readLlms(docs, uri),
   );
 }

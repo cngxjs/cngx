@@ -104,6 +104,10 @@ Resources let a client browse and attach CNGX documents without an imperative
 call: `cngx://catalog` (every component and directive), `cngx://tokens` (the DI
 tokens), `cngx://provenance` (the snapshot's version and timestamp), and a
 `cngx://api/{name}` template whose `{name}` autocompletes against the catalog.
+A fifth resource, `cngx://llms`, serves the `llms.txt`-equivalent API index -
+counts, reference links and packages - as `text/markdown` composed offline from
+the snapshot, so an agent gets the index through the MCP rather than a live
+GitHub Pages fetch.
 Prompts are single framing messages a client exposes as slash-commands -
 `wire_component`, `theme_component`, and `migrate_cngx` - each names the tools to
 ground against, carries no data, and never writes code.

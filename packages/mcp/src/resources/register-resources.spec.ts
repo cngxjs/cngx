@@ -1,11 +1,25 @@
+import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { loadDocsFromFile, type DocsIndex } from '../data/loader.js';
 import type { ComponentSummary } from '../tools/list-components.js';
-import { completeApiName, readApi, readCatalog, readProvenance, readTokens } from './register-resources.js';
+import {
+  completeApiName,
+  readApi,
+  readCatalog,
+  readLlms,
+  readProvenance,
+  readTokens,
+} from './register-resources.js';
+import { DEFAULT_BASE_URL, readPackages } from '../../../../scripts/llms-publish.mjs';
 
-const FIXTURE = fileURLToPath(new URL('../../test/fixtures/documentation.sample.json', import.meta.url));
+const FIXTURE = fileURLToPath(
+  new URL('../../test/fixtures/documentation.sample.json', import.meta.url),
+);
 const docs = loadDocsFromFile(FIXTURE);
+
+// Repo root is four levels up from this spec (src/resources -> src -> mcp -> packages -> root).
+const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..', '..');
 
 function bodyOf<T>(result: { contents: { text?: string }[] }): T {
   return JSON.parse(result.contents[0].text ?? 'null') as T;
@@ -30,7 +44,10 @@ describe('readCatalog (cngx://catalog)', () => {
   it('derives lib through entryLib, surfacing lib: null (never category) for an off-pattern file', () => {
     const withOrphan: DocsIndex = {
       ...docs,
-      components: [...docs.components, { name: 'CngxOrphan', selector: 'cngx-orphan', category: 'ui/accordion' }],
+      components: [
+        ...docs.components,
+        { name: 'CngxOrphan', selector: 'cngx-orphan', category: 'ui/accordion' },
+      ],
     };
 
     const summaries = bodyOf<ComponentSummary[]>(readCatalog(withOrphan));
@@ -85,10 +102,59 @@ describe('completeApiName (cngx://api/{name} autocomplete)', () => {
 
   it('filters by case-insensitive substring', () => {
     expect(completeApiName(docs, 'sel')).toEqual(['CngxSelect']);
-    expect(completeApiName(docs, 'CNGX')).toEqual(['CngxAccordionItem', 'CngxRipple', 'CngxSelect']);
+    expect(completeApiName(docs, 'CNGX')).toEqual([
+      'CngxAccordionItem',
+      'CngxRipple',
+      'CngxSelect',
+    ]);
   });
 
   it('returns an empty list when nothing matches', () => {
     expect(completeApiName(docs, 'zzz')).toEqual([]);
+  });
+});
+
+describe('readLlms (cngx://llms)', () => {
+  it('serves the llms.txt index as text/markdown, echoing the uri', () => {
+    const result = readLlms(docs);
+
+    expect(result.contents[0].uri).toBe('cngx://llms');
+    expect(result.contents[0].mimeType).toBe('text/markdown');
+  });
+
+  it('breaks the documented-exports count down per kind from the DocsIndex array lengths', () => {
+    const body = readLlms(docs).contents[0].text ?? '';
+    const total =
+      docs.components.length + docs.directives.length + docs.tokens.length + docs.functions.length;
+
+    expect(body).toContain(
+      `${total} documented exports (${docs.components.length} components, ${docs.directives.length} directives, ` +
+        `${docs.tokens.length} tokens, ${docs.functions.length} functions).`,
+    );
+  });
+
+  it("carries the API-reference pointer links against the build script's base URL", () => {
+    const body = readLlms(docs).contents[0].text ?? '';
+
+    expect(body).toContain(`${DEFAULT_BASE_URL}/llms-full.txt`);
+    expect(body).toContain(`${DEFAULT_BASE_URL}/examples/`);
+  });
+
+  it('mirrors the published package list llms-publish.mjs derives from projects/*', async () => {
+    const body = readLlms(docs).contents[0].text ?? '';
+    const published = await readPackages(resolve(REPO_ROOT, 'projects'));
+
+    // The static CNGX_PACKAGES mirror must match the build-time derivation exactly -
+    // same set, same descriptions - or the offline index drifts from the published llms.txt.
+    expect(published.length).toBeGreaterThan(0);
+    for (const pkg of published) {
+      expect(body).toContain(
+        `- [${pkg.name}](https://www.npmjs.com/package/${pkg.name}): ${pkg.description}`,
+      );
+    }
+
+    // No stale or extra entries: the emitted @cngx/* line count equals the derived set.
+    const emitted = (body.match(/^- \[@cngx\//gm) ?? []).length;
+    expect(emitted).toBe(published.length);
   });
 });
