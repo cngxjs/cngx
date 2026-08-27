@@ -12,10 +12,11 @@ npx @cngx/doctor [projectDir] [--json]
 ```
 
 `projectDir` defaults to the current directory. Default output is human-readable;
-`--json` emits the machine contract. The exit code follows lint semantics: `0`
-when clean or when only warn-severity findings exist (they are still reported in
-the output), non-zero when any error-severity finding exists - wire it straight
-into a CI step:
+`--json` emits the machine contract. `--help` and `--version` do what they say,
+and an unknown flag is warned about on stderr rather than silently ignored. The
+exit code follows lint semantics: `0` when clean or when only warn-severity
+findings exist (they are still reported in the output), non-zero when any
+error-severity finding exists - wire it straight into a CI step:
 
 ```yaml
 - run: npx @cngx/doctor
@@ -64,3 +65,8 @@ genuinely missing at runtime, Angular's dependency injector already throws and
 Angular's `ErrorHandler` already surfaces it; that path is loud on its own and is
 out of scope here. The check set stays small and silent-wiring-only on purpose -
 adding checks outside that charter is a separate decision, not a drop-in.
+
+One known detection bound: symbol usage is read from named runtime imports
+(`import { CngxToaster } from '@cngx/...'`). A namespace import
+(`import * as feedback from '@cngx/...'`) is not matched - the miss direction is
+a skipped finding, never a false positive.
