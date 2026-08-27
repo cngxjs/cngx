@@ -180,13 +180,30 @@ export function readLlms(docs: DocsIndex, uri: URL | string = 'cngx://llms'): Re
   return textResource(uri, MARKDOWN_MIME, body);
 }
 
+/**
+ * `cngx://llms-full` body - the verbatim compodocx llm-md dump (the full API
+ * export with every artifact's selector, inputs, outputs, description and
+ * live-example URLs), served as `text/markdown` over the bundled snapshot. It is
+ * the offline, version-pinned companion to the {@link readLlms} index, so an
+ * agent reaches the whole API surface through the MCP rather than a live GitHub
+ * Pages fetch. Returns the dump untouched - no second projection. When no dump is
+ * bundled (a checkout that has not run `docs:llm`), degrades to an empty resource,
+ * the same contract {@link readApi} uses for an unresolved read.
+ */
+export function readLlmsFull(
+  dump: string | null,
+  uri: URL | string = 'cngx://llms-full',
+): ReadResourceResult {
+  return dump === null ? { contents: [] } : textResource(uri, MARKDOWN_MIME, dump);
+}
+
 // A single URI-template variable resolves to a string, but the SDK types it as
 // `string | string[]`; take the first when an array slips through.
 function firstValue(value: Variables[string]): string {
   return Array.isArray(value) ? (value[0] ?? '') : value;
 }
 
-export function registerResources(server: McpServer, docs: DocsIndex): void {
+export function registerResources(server: McpServer, docs: DocsIndex, llmDump: string | null): void {
   server.registerResource(
     'catalog',
     'cngx://catalog',
@@ -249,5 +266,20 @@ export function registerResources(server: McpServer, docs: DocsIndex): void {
       mimeType: MARKDOWN_MIME,
     },
     (uri) => readLlms(docs, uri),
+  );
+
+  server.registerResource(
+    'llms-full',
+    'cngx://llms-full',
+    {
+      title: 'cngx llms-full API dump',
+      description:
+        'The verbatim compodocx llm-md dump - the full API export with every artifact\'s ' +
+        'selector, inputs, outputs, description and live-example URLs - served offline from ' +
+        'the bundled snapshot. The companion to the cngx://llms index; an absent dump yields ' +
+        'an empty resource.',
+      mimeType: MARKDOWN_MIME,
+    },
+    (uri) => readLlmsFull(llmDump, uri),
   );
 }

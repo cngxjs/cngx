@@ -10,7 +10,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { loadBundledDocs } from './data/loader.js';
+import { loadBundledDocs, loadBundledLlmDump } from './data/loader.js';
 import { registerFindComponent } from './tools/find-component.js';
 import { registerListComponents } from './tools/list-components.js';
 import { registerGetApi } from './tools/get-api.js';
@@ -29,6 +29,7 @@ const pkg = JSON.parse(
 
 async function main(): Promise<void> {
   const docs = loadBundledDocs();
+  const llmDump = loadBundledLlmDump();
   const { cngxVersion, generatedAt, schemaVersion } = docs.meta;
 
   // The instructions report the snapshot provenance once, at connect, so an
@@ -49,7 +50,8 @@ async function main(): Promise<void> {
         `no network, or an absent asset returns a typed { ok: false, reason }) and reports the groundedVersion ` +
         `it resolved. migrate_usage additionally answers cross-version deltas over the same fetch. ` +
         `The server also serves resources (browse: cngx://catalog, cngx://tokens, cngx://provenance, ` +
-        `and the cngx://api/{name} template) and prompts (wire_component, theme_component, migrate_cngx) - ` +
+        `the cngx://api/{name} template, the cngx://llms index and the cngx://llms-full API dump) ` +
+        `and prompts (wire_component, theme_component, migrate_cngx) - ` +
         `all three MCP surface types over the same offline snapshot.`,
     },
   );
@@ -64,7 +66,7 @@ async function main(): Promise<void> {
   registerGetStoryExample(server, docs);
   registerMigrateUsage(server, docs);
 
-  registerResources(server, docs);
+  registerResources(server, docs, llmDump);
   registerPrompts(server);
 
   const transport = new StdioServerTransport();

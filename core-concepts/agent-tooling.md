@@ -107,7 +107,10 @@ tokens), `cngx://provenance` (the snapshot's version and timestamp), and a
 A fifth resource, `cngx://llms`, serves the `llms.txt`-equivalent API index -
 counts, reference links and packages - as `text/markdown` composed offline from
 the snapshot, so an agent gets the index through the MCP rather than a live
-GitHub Pages fetch.
+GitHub Pages fetch. A sixth, `cngx://llms-full`, serves the verbatim compodocx
+llm-md dump - the full API text with every artifact's selector, inputs, outputs
+and live-example URLs - as `text/markdown` over the same snapshot, so the whole
+API surface, index and full text, is reachable offline through the MCP.
 Prompts are single framing messages a client exposes as slash-commands -
 `wire_component`, `theme_component`, and `migrate_cngx` - each names the tools to
 ground against, carries no data, and never writes code.
