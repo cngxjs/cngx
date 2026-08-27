@@ -17,7 +17,8 @@
   "files": [
     "cngx-doctor.mjs",
     "doctor",
-    "README.md"
+    "README.md",
+    "CHANGELOG.md"
   ],
   "scripts": {
     "test": "vitest run"

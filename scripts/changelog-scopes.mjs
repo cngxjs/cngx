@@ -70,7 +70,12 @@ export const LIBRARY_SCOPES = [
   'themes/material',
 ];
 
-// Non-library scopes - valid on commits/PRs but excluded from the changelog.
+// Non-library scopes - valid on commits/PRs. Which of these reach the root
+// changelog is cliff.toml's decision, not this list's: its commit_parsers skip
+// examples/examples-gen/docs/ci/build/chore/changelog, while the tooling scopes
+// (mcp, doctor, eslint-plugin, plugin, ...) do land under the library release
+// they were merged into. Per-version tooling release notes live in each
+// package's own hand-maintained packages/<pkg>/CHANGELOG.md.
 export const NON_LIBRARY_SCOPES = [
   'examples',
   'examples-gen',
