@@ -88,7 +88,7 @@ describe('cngx-doctor CLI', () => {
     expect(JSON.parse(stdout)).toEqual([]);
   });
 
-  it('flags a Track-B directive when @cngx/themes/cngx.css is not imported', () => {
+  it('reports a Track-B directive without the stylesheet, but a warn alone exits 0', () => {
     const dir = project({
       sources: {
         'src/app.ts': "import { CngxTooltip } from '@cngx/common';\nexport class App {}\n",
@@ -97,9 +97,11 @@ describe('cngx-doctor CLI', () => {
     });
     const json = runCli(dir, ['--json']);
     const findings = JSON.parse(json.stdout);
-    expect(json.status).toBe(1);
+    // warn severity: reported in the JSON contract, but the job is not failed.
+    expect(json.status).toBe(0);
     expect(findings).toHaveLength(1);
     expect(findings[0].id).toBe('track-b-css-not-imported');
+    expect(findings[0].severity).toBe('warn');
   });
 
   it('does not flag a Track-B directive when the stylesheet is imported', () => {
@@ -147,16 +149,32 @@ describe('cngx-doctor CLI', () => {
     expect(findings[0].id).toBe('toaster-without-withtoasts');
   });
 
-  it('flags @floating-ui/dom installed without provideFloatingFallback()', () => {
+  it('reports @floating-ui/dom without provideFloatingFallback() as a warn (exit 0)', () => {
     const dir = project({
       pkg: { name: 'floating', dependencies: { '@floating-ui/dom': '^1.6.0' } },
       sources: { 'src/app.ts': 'export class App {}\n' },
     });
     const json = runCli(dir, ['--json']);
     const findings = JSON.parse(json.stdout);
-    expect(json.status).toBe(1);
+    expect(json.status).toBe(0);
     expect(findings).toHaveLength(1);
     expect(findings[0].id).toBe('floating-fallback-missing');
+  });
+
+  it('gates the exit code on error severity: one error among warns exits 1', () => {
+    const dir = project({
+      sources: {
+        // toaster-without-withtoasts is error severity; the missing Track-B
+        // stylesheet for CngxTooltip is warn - the error decides the exit code.
+        'src/app.ts':
+          "import { CngxToaster } from '@cngx/ui/feedback';\nimport { CngxTooltip } from '@cngx/common';\n",
+      },
+      styles: { 'src/styles.css': 'body { margin: 0; }\n' },
+    });
+    const json = runCli(dir, ['--json']);
+    const findings = JSON.parse(json.stdout);
+    expect(json.status).toBe(1);
+    expect(findings.map((f) => f.severity).sort()).toEqual(['error', 'warn']);
   });
 
   it('does not flag @floating-ui/dom when provideFloatingFallback() is called', () => {

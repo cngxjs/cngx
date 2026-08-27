@@ -2,8 +2,8 @@
 
 A deterministic project-wiring scanner for apps that consume `@cngx/*`. It
 catches the mistakes ESLint's per-file scope cannot see - the ones that need a
-whole-project view - and exits non-zero when any trips, so a consumer CI job can
-gate on it directly.
+whole-project view - and exits non-zero when an error-severity finding trips, so
+a consumer CI job can gate on it directly.
 
 ## Usage
 
@@ -12,8 +12,10 @@ npx @cngx/doctor [projectDir] [--json]
 ```
 
 `projectDir` defaults to the current directory. Default output is human-readable;
-`--json` emits the machine contract. Exit code is `0` when clean, non-zero when
-any finding exists - wire it straight into a CI step:
+`--json` emits the machine contract. The exit code follows lint semantics: `0`
+when clean or when only warn-severity findings exist (they are still reported in
+the output), non-zero when any error-severity finding exists - wire it straight
+into a CI step:
 
 ```yaml
 - run: npx @cngx/doctor

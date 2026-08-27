@@ -99,8 +99,10 @@ consumer CI job can gate on project wiring without this plugin installed:
 npx @cngx/doctor [projectDir] [--json]
 ```
 
-It exits non-zero when any finding exists. The plugin keeps its own byte-identical
-copy of the engine (the guard hook imports it in-process), so the two never drift.
+It exits non-zero when an error-severity finding exists; warn findings are
+reported without failing the job, the same split a lint run gives. The plugin
+keeps its own byte-identical copy of the engine (the guard hook imports it
+in-process), so the two never drift.
 
 The doctor's charter is deliberately narrow: it owns only **silent wiring
 failures** - the mistakes that throw nothing and log nothing, so the app just
@@ -123,9 +125,10 @@ It checks three project-level wirings and exits non-zero when any trips:
 
 Default output is human-readable; `--json` emits the machine contract (an array
 of `{ id, message, fixHint, severity, file? }` findings) that the guard hook and
-future tooling read. Exit code is `0` when clean, non-zero when findings exist.
-Each finding mirrors the `@cngx/eslint-plugin` metadata shape, so a doctor
-finding is explainable identically to a lint finding.
+future tooling read. Exit code is `0` when clean or when only warn findings
+exist, non-zero when an error-severity finding exists. Each finding mirrors the
+`@cngx/eslint-plugin` metadata shape, so a doctor finding is explainable
+identically to a lint finding.
 
 ## Guard hook
 
