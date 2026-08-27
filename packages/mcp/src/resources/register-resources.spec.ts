@@ -1,3 +1,4 @@
+import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { loadDocsFromFile, type DocsIndex } from '../data/loader.js';
@@ -10,11 +11,15 @@ import {
   readProvenance,
   readTokens,
 } from './register-resources.js';
+import { DEFAULT_BASE_URL, readPackages } from '../../../../scripts/llms-publish.mjs';
 
 const FIXTURE = fileURLToPath(
   new URL('../../test/fixtures/documentation.sample.json', import.meta.url),
 );
 const docs = loadDocsFromFile(FIXTURE);
+
+// Repo root is four levels up from this spec (src/resources -> src -> mcp -> packages -> root).
+const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..', '..');
 
 function bodyOf<T>(result: { contents: { text?: string }[] }): T {
   return JSON.parse(result.contents[0].text ?? 'null') as T;
@@ -128,16 +133,28 @@ describe('readLlms (cngx://llms)', () => {
     );
   });
 
-  it('carries the API-reference pointer links against the documented base URL', () => {
+  it("carries the API-reference pointer links against the build script's base URL", () => {
     const body = readLlms(docs).contents[0].text ?? '';
 
-    expect(body).toContain('https://cngxjs.github.io/cngx/llms-full.txt');
-    expect(body).toContain('https://cngxjs.github.io/cngx/examples/');
+    expect(body).toContain(`${DEFAULT_BASE_URL}/llms-full.txt`);
+    expect(body).toContain(`${DEFAULT_BASE_URL}/examples/`);
   });
 
-  it('lists at least one @cngx/* package', () => {
+  it('mirrors the published package list llms-publish.mjs derives from projects/*', async () => {
     const body = readLlms(docs).contents[0].text ?? '';
+    const published = await readPackages(resolve(REPO_ROOT, 'projects'));
 
-    expect(body).toMatch(/- \[@cngx\/[a-z-]+\]/);
+    // The static CNGX_PACKAGES mirror must match the build-time derivation exactly -
+    // same set, same descriptions - or the offline index drifts from the published llms.txt.
+    expect(published.length).toBeGreaterThan(0);
+    for (const pkg of published) {
+      expect(body).toContain(
+        `- [${pkg.name}](https://www.npmjs.com/package/${pkg.name}): ${pkg.description}`,
+      );
+    }
+
+    // No stale or extra entries: the emitted @cngx/* line count equals the derived set.
+    const emitted = (body.match(/^- \[@cngx\//gm) ?? []).length;
+    expect(emitted).toBe(published.length);
   });
 });

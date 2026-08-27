@@ -13,7 +13,7 @@ import { copyFile, readFile, readdir, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const DEFAULT_BASE_URL = 'https://cngxjs.github.io/cngx';
+export const DEFAULT_BASE_URL = 'https://cngxjs.github.io/cngx';
 
 /** Count `### artifact` entries per `## kind` section of the llm-md dump. */
 export function parseKindCounts(dump) {

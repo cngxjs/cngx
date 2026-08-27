@@ -28,33 +28,56 @@ function textResource(uri: URL | string, mimeType: string, text: string): ReadRe
 }
 
 // The base for the `cngx://llms` pointer links - the same production GH Pages
-// root `scripts/llms-publish.mjs` writes into its `llms.txt`, kept in sync by hand
-// (the published script's `DEFAULT_BASE_URL`). No trailing slash.
+// root `scripts/llms-publish.mjs` writes into its `llms.txt`. No trailing slash.
+// Kept in step with the script's `DEFAULT_BASE_URL` by a spec assertion, not by hand.
 const DOCS_BASE_URL = 'https://cngxjs.github.io/cngx';
 
-// The one part of the index with no runtime source: the published package list.
-// Seven stable `@cngx/*` names; a new lib adds one line here, tracked like the
-// other per-lib registration touchpoints. Pinned non-empty + `@cngx/*` by spec.
+// The package list has no runtime source - `projects/*` is not in the published
+// package - so it is a static mirror of what `scripts/llms-publish.mjs` derives at
+// build time (`readPackages`, alphabetical, verbatim `package.json` descriptions).
+// The mirror is not trusted to convention: `register-resources.spec.ts` re-runs
+// `readPackages` over `projects/*` and asserts the emitted index matches it, so a new
+// lib or a changed description turns the spec red until this list is brought in step.
 const CNGX_PACKAGES: readonly { name: string; description: string }[] = [
-  { name: '@cngx/utils', description: 'Framework-agnostic utilities and tree helpers.' },
-  { name: '@cngx/core', description: 'DI tokens, coercion, selection and async-state primitives.' },
   {
     name: '@cngx/common',
-    description: 'Signal-native atoms and molecules: a11y, interactive, display, data.',
+    description:
+      'Atoms and molecules (a11y, interactive, layout, dialog, popover, display) for the CNGX Angular component library.',
   },
   {
-    name: '@cngx/forms',
-    description: 'Signal-Forms controls, validators, field bridges and the select family.',
+    name: '@cngx/core',
+    description:
+      'Core tokens, async state primitives, selection controller, and DI utilities for the CNGX Angular component library.',
   },
   {
     name: '@cngx/data-display',
-    description: 'Data-display organisms including the CDK treetable.',
+    description: 'Data-display organisms for the CNGX Angular component library.',
+  },
+  {
+    name: '@cngx/forms',
+    description:
+      'Forms-related organisms (controls, validators, field bridge, select family) for the CNGX Angular component library. Signal-Forms first.',
+  },
+  {
+    name: '@cngx/interop',
+    description:
+      'Adapters bridging external state engines (TanStack Query, NgRx SignalStore) onto the CNGX async-state protocol.',
+  },
+  {
+    name: '@cngx/themes',
+    description:
+      'Single-import default theme and example brand theme for the CNGX Angular component library.',
   },
   {
     name: '@cngx/ui',
-    description: 'Composed UI organisms with opt-in Material and overlay layers.',
+    description:
+      'Organism layer (layout, overlay, feedback, stepper, tabs) for the CNGX Angular component library. Material opt-in (mat-stepper, mat-tabs, material).',
   },
-  { name: '@cngx/themes', description: 'Material bridge mixins and theming tokens.' },
+  {
+    name: '@cngx/utils',
+    description:
+      'Framework-agnostic TypeScript utilities (array, tree, version primitives) for the CNGX Angular component library.',
+  },
 ];
 
 /**
