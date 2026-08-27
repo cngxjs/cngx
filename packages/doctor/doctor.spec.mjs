@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it } from 'vitest';
+import { parseArgs, runDoctor, USAGE } from './cngx-doctor.mjs';
 import { runChecks } from './doctor/checks.mjs';
 import { scan } from './doctor/scan.mjs';
 import { TRACK_B_SYMBOLS } from './doctor/track-b-symbols.mjs';
@@ -253,6 +254,37 @@ describe('cngx-doctor CLI', () => {
     expect(status).toBe(1);
     expect(stdout).toContain('toaster-without-withtoasts');
     expect(stdout).toContain('fix:');
+  });
+});
+
+describe('CLI flags', () => {
+  it('--help prints the usage and exits 0 without scanning', () => {
+    const { status, stdout } = runCli('.', ['--help']);
+    expect(status).toBe(0);
+    expect(stdout).toBe(USAGE);
+  });
+
+  it('--version prints the package version and exits 0', () => {
+    const { status, stdout } = runCli('.', ['--version']);
+    expect(status).toBe(0);
+    expect(stdout.trim()).toMatch(/^\d+\.\d+\.\d+/);
+  });
+
+  it('collects an unknown flag as a warning instead of silently ignoring it', () => {
+    const dir = project({ sources: { 'src/app.ts': 'export class App {}\n' } });
+    const { warnings, exitCode } = runDoctor(['--jsno', dir]);
+    expect(warnings).toEqual(["cngx-doctor: unknown option '--jsno' (see --help)"]);
+    expect(exitCode).toBe(0);
+  });
+
+  it('parseArgs keeps the positional projectDir alongside flags', () => {
+    expect(parseArgs(['some/dir', '--json'])).toEqual({
+      projectDir: 'some/dir',
+      json: true,
+      help: false,
+      version: false,
+      unknownFlags: [],
+    });
   });
 });
 

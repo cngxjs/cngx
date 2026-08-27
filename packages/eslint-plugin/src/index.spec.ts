@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { plugin } from './plugin';
 import { RULE_METADATA, type RuleId } from './metadata';
@@ -11,6 +13,13 @@ describe('@cngx/eslint-plugin harness', () => {
     expect(plugin.meta?.name).toBe('@cngx/eslint-plugin');
     expect(Array.isArray(plugin.configs?.recommended)).toBe(true);
     expect(Array.isArray(plugin.configs?.all)).toBe(true);
+  });
+
+  it('carries the package version in meta, in step with package.json', () => {
+    const pkg = JSON.parse(
+      readFileSync(fileURLToPath(new URL('../package.json', import.meta.url)), 'utf8'),
+    ) as { version: string };
+    expect(plugin.meta?.version).toBe(pkg.version);
   });
 
   it('wires each config to the single shared plugin instance', () => {

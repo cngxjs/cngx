@@ -29,6 +29,15 @@ createRuleTester().run('no-required-on-bridge-input', noRequiredOnBridgeInput, {
         }
       `,
     },
+    {
+      name: 'an unrelated optional inject (config token) does not make it a bridge',
+      code: `
+        class C {
+          private config = inject(CNGX_SELECT_CONFIG, { optional: true });
+          value = input.required();
+        }
+      `,
+    },
   ],
   invalid: [
     {
@@ -42,13 +51,14 @@ createRuleTester().run('no-required-on-bridge-input', noRequiredOnBridgeInput, {
       errors: [{ messageId: 'requiredOnBridgeInput' }],
     },
     {
-      name: 'required input alongside an optional inject fallback',
+      name: 'required input alongside a fallback token named via the tokens option',
       code: `
         class C {
-          private dep = inject(SomeToken, { optional: true });
+          private dep = inject(MY_STATEFUL_BRIDGE, { optional: true });
           value = input.required();
         }
       `,
+      options: [{ tokens: ['MY_STATEFUL_BRIDGE'] }],
       errors: [{ messageId: 'requiredOnBridgeInput' }],
     },
   ],

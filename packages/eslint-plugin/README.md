@@ -47,7 +47,7 @@ the advisory `untracked-in-effect` rule at `warn`.
 |`no-effect-in-ngoninit`|`effect()` called inside `ngOnInit` (throws NG0203)|signal-hygiene|error|error|
 |`no-behaviorsubject-local-state`|`new BehaviorSubject()`/`new Subject()` field for local state on a `@Component`/`@Directive`|signal-hygiene|error|error|
 |`model-for-two-way`|an `input(x)` + `output(xChange)` pair that should be a single `model()`|wiring|error|error|
-|`no-required-on-bridge-input`|`input.required()` on a class injecting an optional fallback token (`CNGX_STATEFUL` / `inject(X, { optional: true })`)|wiring|error|error|
+|`no-required-on-bridge-input`|`input.required()` on a class injecting a named bridge fallback token (`CNGX_STATEFUL` by default; extend via the `tokens` option)|wiring|error|error|
 |`menu-trigger-needs-popover-anchor`|an element with `cngxMenuTrigger` but no `cngxPopoverTrigger` on the same element (template)|wiring|error|error|
 |`untracked-in-effect`|a `this`-rooted call inside `effect()` not wrapped in `untracked()`|opt-in|off|warn|
 
