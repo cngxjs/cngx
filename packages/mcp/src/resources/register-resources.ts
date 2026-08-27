@@ -20,23 +20,69 @@ function jsonResource(uri: URL | string, value: unknown): ReadResourceResult {
   return { contents: [{ uri: href, mimeType: JSON_MIME, text: JSON.stringify(value, null, 2) }] };
 }
 
+const MARKDOWN_MIME = 'text/markdown';
+
+function textResource(uri: URL | string, mimeType: string, text: string): ReadResourceResult {
+  const href = typeof uri === 'string' ? uri : uri.href;
+  return { contents: [{ uri: href, mimeType, text }] };
+}
+
+// The base for the `cngx://llms` pointer links - the same production GH Pages
+// root `scripts/llms-publish.mjs` writes into its `llms.txt`, kept in sync by hand
+// (the published script's `DEFAULT_BASE_URL`). No trailing slash.
+const DOCS_BASE_URL = 'https://cngxjs.github.io/cngx';
+
+// The one part of the index with no runtime source: the published package list.
+// Seven stable `@cngx/*` names; a new lib adds one line here, tracked like the
+// other per-lib registration touchpoints. Pinned non-empty + `@cngx/*` by spec.
+const CNGX_PACKAGES: readonly { name: string; description: string }[] = [
+  { name: '@cngx/utils', description: 'Framework-agnostic utilities and tree helpers.' },
+  { name: '@cngx/core', description: 'DI tokens, coercion, selection and async-state primitives.' },
+  {
+    name: '@cngx/common',
+    description: 'Signal-native atoms and molecules: a11y, interactive, display, data.',
+  },
+  {
+    name: '@cngx/forms',
+    description: 'Signal-Forms controls, validators, field bridges and the select family.',
+  },
+  {
+    name: '@cngx/data-display',
+    description: 'Data-display organisms including the CDK treetable.',
+  },
+  {
+    name: '@cngx/ui',
+    description: 'Composed UI organisms with opt-in Material and overlay layers.',
+  },
+  { name: '@cngx/themes', description: 'Material bridge mixins and theming tokens.' },
+];
+
 /**
  * `cngx://catalog` body - the full component + directive catalog. Reuses
  * `listComponents` verbatim so the resource and the `list_components` tool share
  * one enumeration and one `lib` derivation (via `entryLib`); the catalog is that
  * tool served as a browseable resource, not a re-projection.
  */
-export function readCatalog(docs: DocsIndex, uri: URL | string = 'cngx://catalog'): ReadResourceResult {
+export function readCatalog(
+  docs: DocsIndex,
+  uri: URL | string = 'cngx://catalog',
+): ReadResourceResult {
   return jsonResource(uri, listComponents(docs));
 }
 
 /** `cngx://tokens` body - the top-level DI token list, reusing `getDiTokens`. */
-export function readTokens(docs: DocsIndex, uri: URL | string = 'cngx://tokens'): ReadResourceResult {
+export function readTokens(
+  docs: DocsIndex,
+  uri: URL | string = 'cngx://tokens',
+): ReadResourceResult {
   return jsonResource(uri, getDiTokens(docs));
 }
 
 /** `cngx://provenance` body - the snapshot meta (cngx version, generatedAt, schemaVersion). */
-export function readProvenance(docs: DocsIndex, uri: URL | string = 'cngx://provenance'): ReadResourceResult {
+export function readProvenance(
+  docs: DocsIndex,
+  uri: URL | string = 'cngx://provenance',
+): ReadResourceResult {
   return jsonResource(uri, docs.meta);
 }
 
@@ -66,6 +112,49 @@ export function completeApiName(docs: DocsIndex, value: string): string[] {
     .filter((name) => needle === '' || name.toLowerCase().includes(needle))
     .sort((a, b) => a.localeCompare(b))
     .slice(0, 100);
+}
+
+/**
+ * `cngx://llms` body - the `llms.txt`-equivalent index composed at read-time from
+ * the bundled `DocsIndex`: title + tagline, the per-kind documented-exports count,
+ * the API-reference pointer links against {@link DOCS_BASE_URL}, and the package
+ * list. Conceptually aligned with `buildIndex` in `scripts/llms-publish.mjs` but
+ * grounded against the runtime snapshot (`docs.<kind>.length`) instead of the
+ * build-time llm-md dump, so the index is offline and version-pinned rather than
+ * a live GitHub Pages fetch.
+ */
+export function readLlms(docs: DocsIndex, uri: URL | string = 'cngx://llms'): ReadResourceResult {
+  const counts = [
+    { kind: 'components', count: docs.components.length },
+    { kind: 'directives', count: docs.directives.length },
+    { kind: 'tokens', count: docs.tokens.length },
+    { kind: 'functions', count: docs.functions.length },
+  ];
+  const total = counts.reduce((sum, entry) => sum + entry.count, 0);
+  const breakdown = counts.map((entry) => `${entry.count} ${entry.kind}`).join(', ');
+  const body = [
+    '# cngx',
+    '',
+    '> Signal-native Angular component library: atoms, molecules and organisms',
+    '> composed on plain Angular Signals and modern DOM. CDK and Material are',
+    '> opt-in primitives, not foundations. A11y is part of the computed() graph.',
+    '',
+    `${total} documented exports (${breakdown}).`,
+    '',
+    '## API Reference',
+    '',
+    `- [Full API dump, llm-md format](${DOCS_BASE_URL}/llms-full.txt): every exported artifact with selector, inputs, outputs, description and live-example URLs`,
+    `- [Documentation site](${DOCS_BASE_URL}/): rendered docs including core concepts and per-component theming tokens`,
+    `- [Live examples](${DOCS_BASE_URL}/examples/): runnable demos, one route per example`,
+    '',
+    '## Packages',
+    '',
+    ...CNGX_PACKAGES.map(
+      (pkg) => `- [${pkg.name}](https://www.npmjs.com/package/${pkg.name}): ${pkg.description}`,
+    ),
+    '',
+  ].join('\n');
+  return textResource(uri, MARKDOWN_MIME, body);
 }
 
 // A single URI-template variable resolves to a string, but the SDK types it as
@@ -124,5 +213,18 @@ export function registerResources(server: McpServer, docs: DocsIndex): void {
       mimeType: JSON_MIME,
     },
     (uri, variables) => readApi(docs, firstValue(variables.name), uri),
+  );
+
+  server.registerResource(
+    'llms',
+    'cngx://llms',
+    {
+      title: 'cngx llms.txt index',
+      description:
+        'The llms.txt-equivalent entry index - documented-exports counts, API-reference ' +
+        'pointer links and the package list - composed offline from the bundled snapshot.',
+      mimeType: MARKDOWN_MIME,
+    },
+    (uri) => readLlms(docs, uri),
   );
 }

@@ -2,9 +2,18 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { loadDocsFromFile, type DocsIndex } from '../data/loader.js';
 import type { ComponentSummary } from '../tools/list-components.js';
-import { completeApiName, readApi, readCatalog, readProvenance, readTokens } from './register-resources.js';
+import {
+  completeApiName,
+  readApi,
+  readCatalog,
+  readLlms,
+  readProvenance,
+  readTokens,
+} from './register-resources.js';
 
-const FIXTURE = fileURLToPath(new URL('../../test/fixtures/documentation.sample.json', import.meta.url));
+const FIXTURE = fileURLToPath(
+  new URL('../../test/fixtures/documentation.sample.json', import.meta.url),
+);
 const docs = loadDocsFromFile(FIXTURE);
 
 function bodyOf<T>(result: { contents: { text?: string }[] }): T {
@@ -30,7 +39,10 @@ describe('readCatalog (cngx://catalog)', () => {
   it('derives lib through entryLib, surfacing lib: null (never category) for an off-pattern file', () => {
     const withOrphan: DocsIndex = {
       ...docs,
-      components: [...docs.components, { name: 'CngxOrphan', selector: 'cngx-orphan', category: 'ui/accordion' }],
+      components: [
+        ...docs.components,
+        { name: 'CngxOrphan', selector: 'cngx-orphan', category: 'ui/accordion' },
+      ],
     };
 
     const summaries = bodyOf<ComponentSummary[]>(readCatalog(withOrphan));
@@ -85,10 +97,47 @@ describe('completeApiName (cngx://api/{name} autocomplete)', () => {
 
   it('filters by case-insensitive substring', () => {
     expect(completeApiName(docs, 'sel')).toEqual(['CngxSelect']);
-    expect(completeApiName(docs, 'CNGX')).toEqual(['CngxAccordionItem', 'CngxRipple', 'CngxSelect']);
+    expect(completeApiName(docs, 'CNGX')).toEqual([
+      'CngxAccordionItem',
+      'CngxRipple',
+      'CngxSelect',
+    ]);
   });
 
   it('returns an empty list when nothing matches', () => {
     expect(completeApiName(docs, 'zzz')).toEqual([]);
+  });
+});
+
+describe('readLlms (cngx://llms)', () => {
+  it('serves the llms.txt index as text/markdown, echoing the uri', () => {
+    const result = readLlms(docs);
+
+    expect(result.contents[0].uri).toBe('cngx://llms');
+    expect(result.contents[0].mimeType).toBe('text/markdown');
+  });
+
+  it('breaks the documented-exports count down per kind from the DocsIndex array lengths', () => {
+    const body = readLlms(docs).contents[0].text ?? '';
+    const total =
+      docs.components.length + docs.directives.length + docs.tokens.length + docs.functions.length;
+
+    expect(body).toContain(
+      `${total} documented exports (${docs.components.length} components, ${docs.directives.length} directives, ` +
+        `${docs.tokens.length} tokens, ${docs.functions.length} functions).`,
+    );
+  });
+
+  it('carries the API-reference pointer links against the documented base URL', () => {
+    const body = readLlms(docs).contents[0].text ?? '';
+
+    expect(body).toContain('https://cngxjs.github.io/cngx/llms-full.txt');
+    expect(body).toContain('https://cngxjs.github.io/cngx/examples/');
+  });
+
+  it('lists at least one @cngx/* package', () => {
+    const body = readLlms(docs).contents[0].text ?? '';
+
+    expect(body).toMatch(/- \[@cngx\/[a-z-]+\]/);
   });
 });
