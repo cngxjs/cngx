@@ -28,6 +28,7 @@ export interface DocsIndex {
   meta: DocsMeta;
   components: DocEntry[];
   directives: DocEntry[];
+  injectables: DocEntry[];
   tokens: DocToken[];
   functions: DocFunction[];
 }
@@ -64,6 +65,7 @@ export function createDocsIndex(doc: DocumentationJson): DocsIndex {
     },
     components: doc.components ?? [],
     directives: doc.directives ?? [],
+    injectables: doc.injectables ?? [],
     tokens: doc.tokens ?? [],
     functions: doc.miscellaneous?.functions ?? [],
   };

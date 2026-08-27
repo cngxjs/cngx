@@ -26,7 +26,15 @@ describe('loadDocsFromFile', () => {
     expect(index.meta.generatedAt).toBe('2026-08-17T11:21:23.588Z');
     expect(index.components.length).toBeGreaterThan(0);
     expect(index.directives.length).toBeGreaterThan(0);
+    expect(index.injectables.length).toBeGreaterThan(0);
     expect(index.tokens.length).toBeGreaterThan(0);
+  });
+
+  it('defaults injectables to an empty array for a snapshot that predates them', () => {
+    const raw = readFixture();
+    delete raw.injectables;
+
+    expect(createDocsIndex(raw).injectables).toEqual([]);
   });
 });
 

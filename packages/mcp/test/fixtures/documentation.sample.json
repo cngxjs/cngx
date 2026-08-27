@@ -12,21 +12,50 @@
       "description": "Native-feeling single-select dropdown.",
       "signal": true,
       "inputsClass": [
-        { "name": "value", "type": "T", "defaultValue": "undefined", "description": "The selected value." },
-        { "name": "disabled", "type": "boolean", "defaultValue": "false", "description": "Disables the control." }
+        {
+          "name": "value",
+          "type": "T",
+          "defaultValue": "undefined",
+          "description": "The selected value."
+        },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "defaultValue": "false",
+          "description": "Disables the control."
+        }
       ],
       "outputsClass": [
-        { "name": "valueChange", "type": "EventEmitter<T>", "description": "Emits on selection." }
+        {
+          "name": "valueChange",
+          "type": "EventEmitter<T>",
+          "description": "Emits on selection."
+        }
       ],
       "hostBindings": [
-        { "name": "id", "defaultValue": "resolvedId()", "description": "host: { '[id]': 'resolvedId()' }" }
+        {
+          "name": "id",
+          "defaultValue": "resolvedId()",
+          "description": "host: { '[id]': 'resolvedId()' }"
+        }
       ],
       "methodsClass": [
-        { "name": "open", "args": [], "returnType": "void", "rawdescription": "Open the panel." }
+        {
+          "name": "open",
+          "args": [],
+          "returnType": "void",
+          "rawdescription": "Open the panel."
+        }
       ],
       "slots": [
-        { "name": "cngxSelectCaret", "description": "Replaces the trigger caret glyph." },
-        { "name": "cngxSelectEmpty", "description": "Rendered when no options match." }
+        {
+          "name": "cngxSelectCaret",
+          "description": "Replaces the trigger caret glyph."
+        },
+        {
+          "name": "cngxSelectEmpty",
+          "description": "Rendered when no options match."
+        }
       ],
       "themeTokens": [
         {
@@ -39,7 +68,11 @@
       ],
       "themeOverview": "Structural styles shared across the CngxSelect family.",
       "playgrounds": [
-        { "title": "Material theme", "fileRef": "./examples/material-theme/material-theme.component.ts", "line": 0 }
+        {
+          "title": "Material theme",
+          "fileRef": "./examples/material-theme/material-theme.component.ts",
+          "line": 0
+        }
       ],
       "exampleUrls": [
         "https://cngxjs.github.io/cngx/examples/#/forms/select/single-select/clearable"
@@ -53,11 +86,24 @@
       "file": "projects/ui/accordion/accordion-item.component.ts",
       "description": "A single expandable accordion item.",
       "signal": true,
-      "inputsClass": [{ "name": "expanded", "type": "boolean", "defaultValue": "false" }],
+      "inputsClass": [
+        {
+          "name": "expanded",
+          "type": "boolean",
+          "defaultValue": "false"
+        }
+      ],
       "outputsClass": [],
-      "slots": [{ "name": "cngxAccordionItemIcon", "description": "Replaces the item's expand/collapse chevron." }],
+      "slots": [
+        {
+          "name": "cngxAccordionItemIcon",
+          "description": "Replaces the item's expand/collapse chevron."
+        }
+      ],
       "themeTokens": [],
-      "exampleUrls": ["https://cngxjs.github.io/cngx/examples/#/ui/accordion/basic"]
+      "exampleUrls": [
+        "https://cngxjs.github.io/cngx/examples/#/ui/accordion/basic"
+      ]
     }
   ],
   "directives": [
@@ -68,8 +114,28 @@
       "file": "projects/common/interactive/ripple.directive.ts",
       "description": "Material-style ripple on interaction.",
       "signal": false,
-      "inputsClass": [{ "name": "cngxRippleDisabled", "type": "boolean", "defaultValue": "false" }],
+      "inputsClass": [
+        {
+          "name": "cngxRippleDisabled",
+          "type": "boolean",
+          "defaultValue": "false"
+        }
+      ],
       "outputsClass": []
+    }
+  ],
+  "injectables": [
+    {
+      "name": "CngxToaster",
+      "category": "ui/feedback/toast",
+      "file": "projects/ui/feedback/toast/toast.service.ts",
+      "description": "Feature-scoped toast service - not providedIn: 'root'.",
+      "methods": [
+        {
+          "name": "show",
+          "returnType": "CngxToastRef"
+        }
+      ]
     }
   ],
   "tokens": [

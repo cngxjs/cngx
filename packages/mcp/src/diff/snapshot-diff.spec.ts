@@ -22,8 +22,13 @@ describe('diffSnapshots', () => {
 
   it('infers a component rename from a stable category and shape', () => {
     expect(delta.components.renamed).toEqual([{ from: 'CngxOldPanel', to: 'CngxNewPanel' }]);
-    expect(delta.components.removed).toEqual([]);
     expect(delta.components.signatureChanged).toEqual([]);
+  });
+
+  it('reports a removed injectable service as removed, never rename-inferred', () => {
+    // CngxLegacyAnnouncer exists only in v0.1.0; injectables carry no rename key,
+    // so the removal is reported plainly instead of being paired with an addition.
+    expect(delta.components.removed).toEqual([{ name: 'CngxLegacyAnnouncer' }]);
   });
 
   it('reports a changed slot as a signature change, not a removal', () => {
@@ -48,6 +53,7 @@ describe('diffSnapshots rename inference is fingerprint-gated', () => {
     meta: { schemaVersion: 2, cngxVersion, generatedAt: null, compodocxVersion: null },
     components,
     directives: [],
+    injectables: [],
     tokens,
   });
 

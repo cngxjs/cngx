@@ -25,6 +25,15 @@ describe('getApi', () => {
     expect(getApi(docs, 'cngx-select')?.name).toBe('CngxSelect');
   });
 
+  it('resolves an injectable service, reading its methods from the `methods` key', () => {
+    const api = getApi(docs, 'CngxToaster');
+
+    expect(api).toMatchObject({ name: 'CngxToaster', kind: 'injectable', selector: null, signal: false });
+    expect(api?.inputs).toEqual([]);
+    expect(api?.outputs).toEqual([]);
+    expect(api?.methods).toEqual([{ name: 'show', returnType: 'CngxToastRef' }]);
+  });
+
   it('returns null for an unknown name', () => {
     expect(getApi(docs, 'CngxDoesNotExist')).toBeNull();
   });

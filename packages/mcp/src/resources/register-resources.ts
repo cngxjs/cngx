@@ -210,8 +210,8 @@ export function registerResources(server: McpServer, docs: DocsIndex, llmDump: s
     {
       title: 'cngx component catalog',
       description:
-        'Every cngx component and directive as { name, kind, selector, category, lib }, ' +
-        'sorted by name. The browse view of list_components.',
+        'Every cngx component, directive, and injectable service as { name, kind, selector, ' +
+        'category, lib }, sorted by name. The browse view of list_components.',
       mimeType: JSON_MIME,
     },
     (uri) => readCatalog(docs, uri),

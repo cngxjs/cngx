@@ -1,7 +1,7 @@
 // list_components - the deterministic browse complement to find_component's fuzzy
-// search. It enumerates the whole components + directives surface, optionally
-// filtered by lib and/or kind, each entry summarised to the five keys that
-// identify it. Offline, read-only, over the same union the query layer walks.
+// search. It enumerates the whole components + directives + injectables surface,
+// optionally filtered by lib and/or kind, each entry summarised to the five keys
+// that identify it. Offline, read-only, over the same union the query layer walks.
 
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
@@ -47,16 +47,16 @@ export function registerListComponents(server: McpServer, docs: DocsIndex): void
   server.registerTool(
     'list_components',
     {
-      title: 'List cngx components and directives',
+      title: 'List cngx components, directives, and services',
       description:
-        'Enumerate every cngx component and directive as a compact summary ' +
+        'Enumerate every cngx component, directive, and injectable service as a compact summary ' +
         '({ name, kind, selector, category, lib }), sorted by name. Optionally filter by ' +
-        '`lib` (exact lib name, e.g. "common") and/or `kind` ("component" | "directive"); ' +
+        '`lib` (exact lib name, e.g. "common") and/or `kind` ("component" | "directive" | "injectable"); ' +
         'omit both for the full catalog. The deterministic browse complement to ' +
         "find_component's fuzzy search. An unmatched filter returns an empty list, not null.",
       inputSchema: {
         lib: z.string().optional().describe('Exact owning lib name, e.g. "forms" or "common".'),
-        kind: z.enum(['component', 'directive']).optional().describe('Restrict to one entry kind.'),
+        kind: z.enum(['component', 'directive', 'injectable']).optional().describe('Restrict to one entry kind.'),
       },
     },
     ({ lib, kind }) => jsonResult(listComponents(docs, { lib, kind })),

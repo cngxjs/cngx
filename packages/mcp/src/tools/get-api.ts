@@ -1,6 +1,7 @@
 // get_api - the typed-query payoff over the multi-megabyte llms-full dump. Given
-// a resolved name, it returns just that component/directive's API surface:
-// inputs, outputs, signal flag, host bindings, public methods, and description.
+// a resolved name, it returns just that component's, directive's, or injectable
+// service's API surface: inputs, outputs, signal flag, host bindings, public
+// methods, and description.
 
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
@@ -67,7 +68,9 @@ export function getApi(docs: DocsIndex, name: string): ApiResult | null {
       description: output.description ?? null,
     })),
     hostBindings: (entry.hostBindings ?? []).map((binding) => binding.name),
-    methods: (entry.methodsClass ?? []).map((method) => ({
+    // Components/directives record methods under methodsClass, injectables
+    // under methods - read whichever the entry carries.
+    methods: (entry.methodsClass ?? entry.methods ?? []).map((method) => ({
       name: method.name,
       returnType: method.returnType ?? null,
     })),
@@ -80,11 +83,13 @@ export function registerGetApi(server: McpServer, docs: DocsIndex): void {
     {
       title: 'Get cngx component API',
       description:
-        "Return a single component or directive's API surface - inputs, outputs, signal flag, " +
-        'host bindings, public methods, and description - by class name or selector. ' +
-        'Returns null when the name resolves to nothing.',
+        "Return a single component's, directive's, or injectable service's API surface - inputs, " +
+        'outputs, signal flag, host bindings, public methods, and description - by class name or ' +
+        'selector. Returns null when the name resolves to nothing.',
       inputSchema: {
-        name: z.string().describe('A component/directive class name or selector, e.g. "CngxSelect" or "cngx-select".'),
+        name: z
+          .string()
+          .describe('A component/directive/service class name or selector, e.g. "CngxSelect" or "cngx-select".'),
         version: z
           .string()
           .optional()

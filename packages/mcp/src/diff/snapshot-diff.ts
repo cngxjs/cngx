@@ -114,9 +114,12 @@ function mergeCategoryDeltas(deltas: CategoryDelta[]): CategoryDelta {
 export function diffSnapshots(fromDocs: DocsIndex, toDocs: DocsIndex): UsageDelta {
   // Top-level artifacts diffed within kind so a component never pairs with a
   // directive of the same shape (the conservative "same kind" rename constraint).
+  // Injectables carry no selector and no input/output sets, so no rename key is
+  // strong enough: a removed service reports as removed, never as a rename.
   const components = mergeCategoryDeltas([
     diffNamedList(fromDocs.components, toDocs.components, { renameKeyOf: entryShapeKey, signatureOf: selectorOf }),
     diffNamedList(fromDocs.directives, toDocs.directives, { renameKeyOf: entryShapeKey, signatureOf: selectorOf }),
+    diffNamedList(fromDocs.injectables, toDocs.injectables, { signatureOf: () => '' }),
   ]);
 
   // Member deltas only for artifacts present under the same name in both snapshots.

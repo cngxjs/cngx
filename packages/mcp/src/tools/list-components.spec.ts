@@ -11,7 +11,7 @@ describe('listComponents', () => {
   it('enumerates the full catalog as sorted summaries', () => {
     const result = listComponents(docs);
 
-    expect(result.map((s) => s.name)).toEqual(['CngxAccordionItem', 'CngxRipple', 'CngxSelect']);
+    expect(result.map((s) => s.name)).toEqual(['CngxAccordionItem', 'CngxRipple', 'CngxSelect', 'CngxToaster']);
     expect(result).toContainEqual({
       name: 'CngxSelect',
       kind: 'component',
@@ -38,6 +38,20 @@ describe('listComponents', () => {
     const result = listComponents(docs, { kind: 'directive' });
 
     expect(result.map((s) => s.name)).toEqual(['CngxRipple']);
+  });
+
+  it('surfaces injectable services with a null selector and a derived lib', () => {
+    const result = listComponents(docs, { kind: 'injectable' });
+
+    expect(result).toEqual([
+      {
+        name: 'CngxToaster',
+        kind: 'injectable',
+        selector: null,
+        category: 'ui/feedback/toast',
+        lib: 'ui',
+      },
+    ]);
   });
 
   it('composes the lib and kind filters', () => {

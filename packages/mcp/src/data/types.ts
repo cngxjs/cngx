@@ -63,7 +63,11 @@ export interface DocPlayground {
   line: number;
 }
 
-/** A component or directive entry. */
+/**
+ * A component, directive, or injectable-service entry. Injectables carry no
+ * selector and no input/output sets; their methods land under `methods` (not
+ * `methodsClass`), so both keys are declared and `get_api` reads whichever is set.
+ */
 export interface DocEntry {
   name: string;
   selector?: string;
@@ -78,6 +82,7 @@ export interface DocEntry {
   outputsClass?: DocOutput[];
   hostBindings?: DocHostBinding[];
   methodsClass?: DocMethod[];
+  methods?: DocMethod[];
   slots?: DocSlot[];
   themeTokens?: DocThemeToken[];
   themeOverview?: string;
@@ -121,6 +126,7 @@ export interface DocumentationJson {
   cngxVersion?: string;
   components?: DocEntry[];
   directives?: DocEntry[];
+  injectables?: DocEntry[];
   tokens?: DocToken[];
   miscellaneous?: { functions?: DocFunction[] };
 }

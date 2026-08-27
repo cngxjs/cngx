@@ -31,6 +31,13 @@ describe('findComponents', () => {
     expect(matches.map((m) => m.name)).toContain('CngxAccordionItem');
   });
 
+  it('matches an injectable service by name fragment', () => {
+    const matches = findComponents(docs, 'toaster');
+
+    expect(matches).toHaveLength(1);
+    expect(matches[0]).toMatchObject({ name: 'CngxToaster', kind: 'injectable', selector: null });
+  });
+
   it('returns an empty array for an empty query and for no match', () => {
     expect(findComponents(docs, '')).toEqual([]);
     expect(findComponents(docs, 'no-such-symbol')).toEqual([]);

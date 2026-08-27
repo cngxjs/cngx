@@ -11,11 +11,30 @@
       "description": "Native-feeling single-select dropdown.",
       "signal": true,
       "inputsClass": [
-        { "name": "value", "type": "T", "description": "The selected value." },
-        { "name": "legacyMode", "type": "boolean", "description": "Old opt-in behaviour." }
+        {
+          "name": "value",
+          "type": "T",
+          "description": "The selected value."
+        },
+        {
+          "name": "legacyMode",
+          "type": "boolean",
+          "description": "Old opt-in behaviour."
+        }
       ],
-      "outputsClass": [{ "name": "valueChange", "type": "EventEmitter<T>", "description": "Emits on selection." }],
-      "slots": [{ "name": "cngxSelectCaret", "description": "The caret glyph." }]
+      "outputsClass": [
+        {
+          "name": "valueChange",
+          "type": "EventEmitter<T>",
+          "description": "Emits on selection."
+        }
+      ],
+      "slots": [
+        {
+          "name": "cngxSelectCaret",
+          "description": "The caret glyph."
+        }
+      ]
     },
     {
       "name": "CngxOldPanel",
@@ -23,10 +42,48 @@
       "category": "ui/overlay",
       "description": "Overlay panel.",
       "signal": true,
-      "inputsClass": [{ "name": "open", "type": "boolean", "description": "Whether the panel is open." }],
+      "inputsClass": [
+        {
+          "name": "open",
+          "type": "boolean",
+          "description": "Whether the panel is open."
+        }
+      ],
       "outputsClass": []
     }
   ],
   "directives": [],
-  "tokens": [{ "name": "CNGX_SELECT_CONFIG", "type": "InjectionToken<SelectConfig>", "description": "Select defaults." }]
+  "injectables": [
+    {
+      "name": "CngxToaster",
+      "category": "ui/feedback/toast",
+      "file": "projects/ui/feedback/toast/toast.service.ts",
+      "description": "Feature-scoped toast service.",
+      "methods": [
+        {
+          "name": "show",
+          "returnType": "CngxToastRef"
+        }
+      ]
+    },
+    {
+      "name": "CngxLegacyAnnouncer",
+      "category": "common/a11y",
+      "file": "projects/common/a11y/legacy-announcer.service.ts",
+      "description": "Removed in 0.2.0.",
+      "methods": [
+        {
+          "name": "announce",
+          "returnType": "void"
+        }
+      ]
+    }
+  ],
+  "tokens": [
+    {
+      "name": "CNGX_SELECT_CONFIG",
+      "type": "InjectionToken<SelectConfig>",
+      "description": "Select defaults."
+    }
+  ]
 }
