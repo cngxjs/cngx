@@ -52,17 +52,20 @@ about in your own stylesheet, scoped to `:root` or a subtree:
 ```
 
 Do not hard-code a colour, size, or radius that a component already reads from a
-token: override the token and every component that consumes it follows. The
-`--cngx-*` properties, their defaults, and what each controls live in this
-plugin's token reference - read `pack/theming-tokens.md` and set the ones your
-brand needs. This skill deliberately lists none of them; the reference is the
-source of record.
+token: override the token and every component that consumes it follows. For the
+component you are theming, query `get_theme_tokens` - it returns that component's
+`--cngx-*` properties, defaults, and theme overview from the live snapshot, and
+it takes an optional `version` to ground against the release your app actually
+runs. For a config-level theming hook (`provide*`/`with*`), `get_config` names
+it. The full cross-component list ships as `pack/theming-tokens.md` - the offline
+browse view when you need everything at once. This skill deliberately lists no
+token; the tools are the source of record.
 
 ## Never guess a token
 
-Do not invent a `--cngx-*` name from memory - confirm it against
-`pack/theming-tokens.md` (or the published docs,
-`https://cngxjs.github.io/cngx/llms.txt` index, `llms-full.txt` full text) before
-you override it. A guessed token name silently does nothing. For composing the
-components you are theming, hand off to `cngx-wire`; this skill is the theme layer,
-not the composition.
+Do not invent a `--cngx-*` name from memory - confirm it with `get_theme_tokens`
+for the component at hand, or against `pack/theming-tokens.md` / the published
+docs (`https://cngxjs.github.io/cngx/llms.txt` index, `llms-full.txt` full text)
+when you are browsing wider. A guessed token name silently does nothing. For
+composing the components you are theming, hand off to `cngx-wire`; this skill is
+the theme layer, not the composition.

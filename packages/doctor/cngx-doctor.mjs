@@ -7,7 +7,9 @@
  * Runs the three project-level checks (toaster-without-withtoasts,
  * track-b-css-not-imported, floating-fallback-missing) over a consumer project
  * and reports the findings in human (default) or `--json` form. Exits non-zero
- * when findings exist, so consumer CI can gate on it.
+ * only when an error-severity finding exists, so consumer CI gates on errors
+ * while warn findings are reported without failing the job - the same
+ * error-gates/warn-reports split a lint run gives.
  */
 
 import { pathToFileURL } from 'node:url';
@@ -54,7 +56,10 @@ export function runDoctor(argv) {
   const { projectDir, json } = parseArgs(argv);
   const findings = runChecks(scan(projectDir));
   const output = json ? `${JSON.stringify(findings)}\n` : formatHuman(findings);
-  return { findings, output, exitCode: findings.length > 0 ? 1 : 0 };
+  // Severity gates the exit code the way a lint run does: an error fails the
+  // job, a warn is reported in the output (human or JSON) without failing it.
+  const hasError = findings.some((f) => f.severity === 'error');
+  return { findings, output, exitCode: hasError ? 1 : 0 };
 }
 
 function main() {

@@ -88,7 +88,7 @@ describe('cngx-doctor CLI', () => {
     expect(JSON.parse(stdout)).toEqual([]);
   });
 
-  it('flags a Track-B directive when @cngx/themes/cngx.css is not imported', () => {
+  it('reports a Track-B directive without the stylesheet, but a warn alone exits 0', () => {
     const dir = project({
       sources: {
         'src/app.ts': "import { CngxTooltip } from '@cngx/common';\nexport class App {}\n",
@@ -97,9 +97,11 @@ describe('cngx-doctor CLI', () => {
     });
     const json = runCli(dir, ['--json']);
     const findings = JSON.parse(json.stdout);
-    expect(json.status).toBe(1);
+    // warn severity: reported in the JSON contract, but the job is not failed.
+    expect(json.status).toBe(0);
     expect(findings).toHaveLength(1);
     expect(findings[0].id).toBe('track-b-css-not-imported');
+    expect(findings[0].severity).toBe('warn');
   });
 
   it('does not flag a Track-B directive when the stylesheet is imported', () => {
@@ -112,6 +114,61 @@ describe('cngx-doctor CLI', () => {
     const { status, stdout } = runCli(dir, ['--json']);
     expect(status).toBe(0);
     expect(JSON.parse(stdout)).toEqual([]);
+  });
+
+  it('does not flag when the stylesheet is listed in an angular.json styles array by path', () => {
+    const dir = project({
+      sources: {
+        'src/app.ts': "import { CngxTooltip } from '@cngx/common';\nexport class App {}\n",
+      },
+      styles: {
+        'angular.json': JSON.stringify({
+          projects: {
+            app: { architect: { build: { options: { styles: ['node_modules/@cngx/themes/cngx.css'] } } } },
+          },
+        }),
+        // The published file's text carries no self-referencing marker - the
+        // path alone must satisfy the check.
+        'node_modules/@cngx/themes/cngx.css': '@layer cngx.components { .cngx-tooltip { opacity: 1; } }\n',
+      },
+    });
+    const { status, stdout } = runCli(dir, ['--json']);
+    expect(status).toBe(0);
+    expect(JSON.parse(stdout)).toEqual([]);
+  });
+
+  it('resolves style entries from Nx project.json files (no angular.json)', () => {
+    const clean = project({
+      sources: {
+        'apps/web/src/app.ts': "import { CngxTooltip } from '@cngx/common';\nexport class App {}\n",
+      },
+      styles: {
+        'apps/web/project.json': JSON.stringify({
+          name: 'web',
+          targets: { build: { options: { styles: ['apps/web/src/styles.css'] } } },
+        }),
+        'apps/web/src/styles.css': "@import '@cngx/themes/cngx.css';\n",
+      },
+    });
+    const cleanRun = runCli(clean, ['--json']);
+    expect(JSON.parse(cleanRun.stdout)).toEqual([]);
+
+    // Same layout without the import: the Nx-declared entry is read, found
+    // lacking, and the warn is reported.
+    const tripping = project({
+      sources: {
+        'apps/web/src/app.ts': "import { CngxTooltip } from '@cngx/common';\nexport class App {}\n",
+      },
+      styles: {
+        'apps/web/project.json': JSON.stringify({
+          name: 'web',
+          targets: { build: { options: { styles: ['apps/web/src/styles.css'] } } },
+        }),
+        'apps/web/src/styles.css': 'body { margin: 0; }\n',
+      },
+    });
+    const trippingRun = runCli(tripping, ['--json']);
+    expect(JSON.parse(trippingRun.stdout).map((f) => f.id)).toEqual(['track-b-css-not-imported']);
   });
 
   it('does not flag a Track-B directive styled via the by-hand partial import', () => {
@@ -147,16 +204,32 @@ describe('cngx-doctor CLI', () => {
     expect(findings[0].id).toBe('toaster-without-withtoasts');
   });
 
-  it('flags @floating-ui/dom installed without provideFloatingFallback()', () => {
+  it('reports @floating-ui/dom without provideFloatingFallback() as a warn (exit 0)', () => {
     const dir = project({
       pkg: { name: 'floating', dependencies: { '@floating-ui/dom': '^1.6.0' } },
       sources: { 'src/app.ts': 'export class App {}\n' },
     });
     const json = runCli(dir, ['--json']);
     const findings = JSON.parse(json.stdout);
-    expect(json.status).toBe(1);
+    expect(json.status).toBe(0);
     expect(findings).toHaveLength(1);
     expect(findings[0].id).toBe('floating-fallback-missing');
+  });
+
+  it('gates the exit code on error severity: one error among warns exits 1', () => {
+    const dir = project({
+      sources: {
+        // toaster-without-withtoasts is error severity; the missing Track-B
+        // stylesheet for CngxTooltip is warn - the error decides the exit code.
+        'src/app.ts':
+          "import { CngxToaster } from '@cngx/ui/feedback';\nimport { CngxTooltip } from '@cngx/common';\n",
+      },
+      styles: { 'src/styles.css': 'body { margin: 0; }\n' },
+    });
+    const json = runCli(dir, ['--json']);
+    const findings = JSON.parse(json.stdout);
+    expect(json.status).toBe(1);
+    expect(findings.map((f) => f.severity).sort()).toEqual(['error', 'warn']);
   });
 
   it('does not flag @floating-ui/dom when provideFloatingFallback() is called', () => {

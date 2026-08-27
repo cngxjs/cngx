@@ -20,6 +20,16 @@ const cell = (value) => String(value).replace(/\|/g, '\\|');
 // plain ASCII hyphen rather than distribute em-dashes.
 const normalizeDashes = (text) => text.replace(/\s*[\u2014\u2013]\s*/g, ' - ');
 
+// Source JSDoc wraps long descriptions across lines; a table cell needs one
+// line. Join the wrapped lines with a space instead of truncating at the first
+// newline - the old first-line cut shipped sentences broken mid-word.
+const singleLine = (text) =>
+  text
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .join(' ');
+
 // Keep only artifacts that declare at least one theming token, and drop the
 // absolute source path / line - the consumer reference needs the token, its
 // default and its role, never the maintainer's filesystem.
@@ -38,7 +48,7 @@ export function collectThemeTokens(doc) {
         name: token.name,
         default: token.defaultValue ?? '',
         group: token.group ?? '',
-        description: normalizeDashes((token.description ?? '').split('\n')[0].trim()),
+        description: normalizeDashes(singleLine(token.description ?? '')),
       })),
     });
   }

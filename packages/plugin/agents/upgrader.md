@@ -1,7 +1,7 @@
 ---
 name: upgrader
 description: Executes a cngx version upgrade in a consumer app - applies an ordered migration plan file by file, running the consumer's own build/test/lint between steps and halting on the first failure. Use when the task is "execute a cngx version upgrade", "apply the migration plan", "run the upgrade cngx-migrate planned", or when an ordered cngx migration plan exists and needs to be carried out. This is the one edit-capable cngx agent; it consumes the plan cngx-migrate produces and never improvises a migration.
-tools: Read, Grep, Glob, Edit, Write, Bash, mcp__cngx__find_component, mcp__cngx__get_api, mcp__cngx__get_slots, mcp__cngx__get_di_tokens
+tools: Read, Grep, Glob, Edit, Write, Bash, mcp__cngx__find_component, mcp__cngx__get_api, mcp__cngx__get_slots, mcp__cngx__get_config, mcp__cngx__get_di_tokens
 ---
 
 # cngx upgrader
@@ -32,8 +32,10 @@ Apply the plan one file at a time, in the plan's order:
 2. **Confirm the new API before you edit.** A renamed or signature-changed symbol is
    never a blind find and replace. Before writing the new usage, confirm its real
    shape via `mcp__cngx__get_api` (inputs, outputs, two-way signals),
-   `mcp__cngx__get_slots` (template slots), and `mcp__cngx__get_di_tokens` (factory
-   and config tokens). The plan names the target; the MCP names its exact API.
+   `mcp__cngx__get_slots` (template slots), `mcp__cngx__get_config` (the config
+   token and its `provide*`/`with*` functions when the plan touches a config
+   surface), and `mcp__cngx__get_di_tokens` (the wider token list). The plan names
+   the target; the MCP names its exact API.
 3. **Apply only the planned edit.** Make the single change the plan specifies for this
    file. Do not fold in unrelated cleanup.
 4. **Validate before moving on.** Run the consumer's own validation - their build,

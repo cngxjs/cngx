@@ -54,11 +54,19 @@ describe('buildContext', () => {
     expect(out).toContain('src/styles/brand.css');
   });
 
-  it('emits a graceful minimal note when no @cngx deps are present', () => {
+  it('stays silent when the workspace has no cngx footprint at all', () => {
     const dir = workspace({ pkg: { name: 'plain-app', dependencies: { rxjs: '^7.8.0' } } });
+    expect(buildContext(dir)).toBe('');
+  });
+
+  it('still speaks for a profile-only workspace (declared footprint, nothing installed yet)', () => {
+    const dir = workspace({
+      pkg: { name: 'plain-app', dependencies: { rxjs: '^7.8.0' } },
+      profile: { libs: ['@cngx/forms'] },
+    });
     const out = buildContext(dir);
     expect(out).toContain('No @cngx/* packages');
-    expect(out).not.toMatch(/@cngx\/\w+@/);
+    expect(out).toContain('@cngx/forms');
     expect(out).toContain('https://cngxjs.github.io/cngx/llms.txt');
   });
 });

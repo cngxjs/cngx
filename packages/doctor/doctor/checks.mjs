@@ -113,8 +113,12 @@ export function trackBCheck(snapshot) {
   if (!usedIn) {
     return [];
   }
+  // Match the marker in the entry's TEXT (an @import in the consumer's own
+  // stylesheet) or its PATH (the published css listed directly in a build
+  // `styles` array, e.g. node_modules/@cngx/themes/cngx.css) - the path form
+  // must not depend on the shipped file's own comments carrying its name.
   const stylesheetImported = snapshot.styleEntries.some((e) =>
-    TRACK_B_STYLE_MARKERS.some((marker) => e.text.includes(marker)),
+    TRACK_B_STYLE_MARKERS.some((marker) => e.text.includes(marker) || e.path.includes(marker)),
   );
   if (stylesheetImported) {
     return [];

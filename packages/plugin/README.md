@@ -99,8 +99,10 @@ consumer CI job can gate on project wiring without this plugin installed:
 npx @cngx/doctor [projectDir] [--json]
 ```
 
-It exits non-zero when any finding exists. The plugin keeps its own byte-identical
-copy of the engine (the guard hook imports it in-process), so the two never drift.
+It exits non-zero when an error-severity finding exists; warn findings are
+reported without failing the job, the same split a lint run gives. The plugin
+keeps its own byte-identical copy of the engine (the guard hook imports it
+in-process), so the two never drift.
 
 The doctor's charter is deliberately narrow: it owns only **silent wiring
 failures** - the mistakes that throw nothing and log nothing, so the app just
@@ -108,24 +110,28 @@ renders wrong with no signal. Throw-based missing-provider errors are out of
 scope; Angular's dependency injector already throws for those and Angular's
 `ErrorHandler` already surfaces them.
 
-It checks three project-level wirings and exits non-zero when any trips:
+It checks three project-level wirings:
 
 - **`toaster-without-withtoasts`** - a `CngxToaster` / `CngxAlerter` / `CngxBanner`
   (or the `*On` bridges) is used but the matching
   `provideFeedback(withToasts()/withAlerts()/withBanners())` root opt-in is
   missing, so the feedback surface has no host to render into.
 - **`track-b-css-not-imported`** - a cngx directive whose visual theming lives in
-  the Track-B stylesheet is imported, but no app style entry imports
-  `@cngx/themes/cngx.css`, so it renders unstyled.
+  the Track-B stylesheet is imported, but no app style entry wires
+  `@cngx/themes/cngx.css` - neither an `@import` in a global stylesheet nor a
+  direct listing in a build `styles` array - so it renders unstyled. Style
+  entries resolve from `angular.json`, from Nx `project.json` files (root,
+  `apps/*`, `libs/*`), and from the conventional `src/styles.*` defaults.
 - **`floating-fallback-missing`** - `@floating-ui/dom` is installed but
   `provideFloatingFallback()` is never called, so browsers without CSS Anchor
   Positioning get no fallback.
 
 Default output is human-readable; `--json` emits the machine contract (an array
 of `{ id, message, fixHint, severity, file? }` findings) that the guard hook and
-future tooling read. Exit code is `0` when clean, non-zero when findings exist.
-Each finding mirrors the `@cngx/eslint-plugin` metadata shape, so a doctor
-finding is explainable identically to a lint finding.
+future tooling read. Exit code is `0` when clean or when only warn findings
+exist, non-zero when an error-severity finding exists. Each finding mirrors the
+`@cngx/eslint-plugin` metadata shape, so a doctor finding is explainable
+identically to a lint finding.
 
 ## Guard hook
 

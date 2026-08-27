@@ -18,7 +18,7 @@ const DOC = {
           kind: 'css-custom-property',
           defaultValue: 'currentColor',
           group: 'Surface',
-          description: 'Badge background.\nSecond line is dropped.',
+          description: 'Badge background.\nWrapped lines join into one.',
           file: '/Users/someone/repo/projects/common/display/badge.css',
           line: 10,
         },
@@ -36,12 +36,12 @@ describe('collectThemeTokens', () => {
     expect(groups[0].component).toBe('CngxBadge');
   });
 
-  it('reduces each token to name/default/group and the first description line only', () => {
+  it('reduces each token to name/default/group and joins wrapped description lines', () => {
     expect(groups[0].tokens[0]).toEqual({
       name: '--cngx-badge-bg',
       default: 'currentColor',
       group: 'Surface',
-      description: 'Badge background.',
+      description: 'Badge background. Wrapped lines join into one.',
     });
   });
 });
@@ -52,7 +52,7 @@ describe('renderTokenReference', () => {
   it('renders a dense table row with token, default and group', () => {
     expect(md).toContain('## CngxBadge');
     expect(md).toContain('|-|-|-|-|');
-    expect(md).toContain('|`--cngx-badge-bg`|`currentColor`|Surface|Badge background.|');
+    expect(md).toContain('|`--cngx-badge-bg`|`currentColor`|Surface|Badge background. Wrapped lines join into one.|');
   });
 
   it('leaks no absolute source path from the token file field', () => {
