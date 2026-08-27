@@ -1,6 +1,6 @@
 {
   "name": "cngx",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Grounds a consumer app's coding agent in cngx: auto-starts the @cngx/mcp server and surfaces the published cngx docs.",
   "author": {
     "name": "cngxjs"

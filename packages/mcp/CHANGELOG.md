@@ -5,7 +5,7 @@ library releases; this file tracks the MCP server package. The cngx release an
 answer grounds against is a runtime property (`cngx://provenance`,
 `groundedVersion`), not this version.
 
-## 0.2.0 - unreleased
+## 0.2.0 - 2026-08-27
 
 ### Breaking
 
