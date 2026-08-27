@@ -70,8 +70,9 @@ can list and attach cngx documents without an imperative tool call.
 |`cngx://provenance`|Snapshot meta: cngx version, `generatedAt`, `schemaVersion`, compodocx version.|
 |`cngx://api/{name}`|One component/directive's API surface by class name or selector. The `{name}` variable autocompletes against the catalog; an unknown name yields an empty resource.|
 |`cngx://llms`|The `llms.txt`-equivalent entry index - documented-exports counts, API-reference pointer links and the package list - composed offline from the bundled snapshot.|
+|`cngx://llms-full`|The verbatim compodocx llm-md dump - the full API export with every artifact's selector, inputs, outputs, description and live-example URLs. The offline companion to the `cngx://llms` index; an absent dump yields an empty resource.|
 
-Every resource returns `application/json` except `cngx://llms`, which is `text/markdown` (the index is itself a Markdown document, faithful to `llms.txt`).
+Every resource returns `application/json` except `cngx://llms` and `cngx://llms-full`, which are `text/markdown` (the index and the full dump are both Markdown documents, faithful to `llms.txt` / `llms-full.txt`).
 
 ## Prompts
 
