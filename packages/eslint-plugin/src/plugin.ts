@@ -19,8 +19,10 @@ import { menuTriggerNeedsPopoverAnchor } from './rules/menu-trigger-needs-popove
 export const plugin: TSESLint.FlatConfig.Plugin = {
   meta: {
     name: '@cngx/eslint-plugin',
-    // Version is not duplicated here; package.json is the single source of
-    // truth. ESLint reads the installed package version when it needs one.
+    // ESLint does not read package.json for a plugin's version - flat-config
+    // introspection (--print-config, cache keys) uses meta.version or nothing.
+    // The literal is drift-guarded against package.json by index.spec.ts.
+    version: '0.1.0',
   },
   rules: {
     'no-effect-in-ngoninit': noEffectInNgOnInit,
