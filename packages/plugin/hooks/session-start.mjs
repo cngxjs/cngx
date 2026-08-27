@@ -51,8 +51,15 @@ export function buildContext(cwd) {
   const versions = resolveCngxVersions(cwd);
   const names = Object.keys(versions).sort();
   const profile = readProfile(cwd);
-  const lines = [];
 
+  // No cngx footprint at all - no installed or declared @cngx/* package and no
+  // profile - means this session has nothing to ground. Stay silent rather than
+  // injecting cngx pointers into every session of every unrelated project.
+  if (names.length === 0 && !profile) {
+    return '';
+  }
+
+  const lines = [];
   if (names.length === 0) {
     lines.push('No @cngx/* packages are installed in this workspace.');
   } else {
@@ -87,11 +94,15 @@ function readStdin() {
 function main() {
   const input = readStdin();
   const cwd = typeof input.cwd === 'string' && input.cwd ? input.cwd : process.cwd();
+  const context = buildContext(cwd);
+  if (context === '') {
+    return;
+  }
   process.stdout.write(
     JSON.stringify({
       hookSpecificOutput: {
         hookEventName: 'SessionStart',
-        additionalContext: buildContext(cwd),
+        additionalContext: context,
       },
     }),
   );
