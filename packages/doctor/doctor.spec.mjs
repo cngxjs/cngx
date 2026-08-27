@@ -116,6 +116,61 @@ describe('cngx-doctor CLI', () => {
     expect(JSON.parse(stdout)).toEqual([]);
   });
 
+  it('does not flag when the stylesheet is listed in an angular.json styles array by path', () => {
+    const dir = project({
+      sources: {
+        'src/app.ts': "import { CngxTooltip } from '@cngx/common';\nexport class App {}\n",
+      },
+      styles: {
+        'angular.json': JSON.stringify({
+          projects: {
+            app: { architect: { build: { options: { styles: ['node_modules/@cngx/themes/cngx.css'] } } } },
+          },
+        }),
+        // The published file's text carries no self-referencing marker - the
+        // path alone must satisfy the check.
+        'node_modules/@cngx/themes/cngx.css': '@layer cngx.components { .cngx-tooltip { opacity: 1; } }\n',
+      },
+    });
+    const { status, stdout } = runCli(dir, ['--json']);
+    expect(status).toBe(0);
+    expect(JSON.parse(stdout)).toEqual([]);
+  });
+
+  it('resolves style entries from Nx project.json files (no angular.json)', () => {
+    const clean = project({
+      sources: {
+        'apps/web/src/app.ts': "import { CngxTooltip } from '@cngx/common';\nexport class App {}\n",
+      },
+      styles: {
+        'apps/web/project.json': JSON.stringify({
+          name: 'web',
+          targets: { build: { options: { styles: ['apps/web/src/styles.css'] } } },
+        }),
+        'apps/web/src/styles.css': "@import '@cngx/themes/cngx.css';\n",
+      },
+    });
+    const cleanRun = runCli(clean, ['--json']);
+    expect(JSON.parse(cleanRun.stdout)).toEqual([]);
+
+    // Same layout without the import: the Nx-declared entry is read, found
+    // lacking, and the warn is reported.
+    const tripping = project({
+      sources: {
+        'apps/web/src/app.ts': "import { CngxTooltip } from '@cngx/common';\nexport class App {}\n",
+      },
+      styles: {
+        'apps/web/project.json': JSON.stringify({
+          name: 'web',
+          targets: { build: { options: { styles: ['apps/web/src/styles.css'] } } },
+        }),
+        'apps/web/src/styles.css': 'body { margin: 0; }\n',
+      },
+    });
+    const trippingRun = runCli(tripping, ['--json']);
+    expect(JSON.parse(trippingRun.stdout).map((f) => f.id)).toEqual(['track-b-css-not-imported']);
+  });
+
   it('does not flag a Track-B directive styled via the by-hand partial import', () => {
     const dir = project({
       sources: {

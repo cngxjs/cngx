@@ -27,7 +27,7 @@ const STYLE_CANDIDATES = ['src/styles.css', 'src/styles.scss', 'src/styles.sass'
  * @property {string} projectDir
  * @property {Record<string, string>} dependencies  merged deps + devDeps
  * @property {number | null} packageMtimeMs
- * @property {number | null} angularMtimeMs
+ * @property {Record<string, number | null>} configFiles  style-config file -> mtime (angular.json + Nx project.json)
  * @property {Record<string, string>} sources        relative path -> file text
  * @property {StyleEntry[]} styleEntries
  */
@@ -91,26 +91,75 @@ function safeMtime(path) {
   }
 }
 
-// Resolve the app's global style entries: the angular.json `styles` arrays when
-// present, plus the conventional src/styles.* defaults. The Track-B check reads
-// their text to see whether @cngx/themes/cngx.css is imported anywhere.
+// Where Nx keeps per-project config. An Nx workspace has no angular.json; each
+// app's `project.json` declares its own build styles under `targets` instead of
+// `architect`. Scanning root + apps/* + libs/* covers the conventional layout
+// without walking the whole tree for config files.
+const NX_PROJECT_PARENT_DIRS = ['apps', 'libs'];
+
+/**
+ * The style-config files this scan honors, relative to the project root:
+ * `angular.json` plus every conventional Nx `project.json`. The list doubles as
+ * the incremental invalidation key - when any of these moves (or one appears),
+ * the style entries are re-resolved.
+ */
+export function listStyleConfigFiles(projectDir) {
+  const files = [];
+  for (const rel of ['angular.json', 'project.json']) {
+    if (existsSync(join(projectDir, rel))) {
+      files.push(rel);
+    }
+  }
+  for (const parent of NX_PROJECT_PARENT_DIRS) {
+    let entries;
+    try {
+      entries = readdirSync(join(projectDir, parent), { withFileTypes: true });
+    } catch {
+      continue;
+    }
+    for (const entry of entries) {
+      const rel = join(parent, entry.name, 'project.json');
+      if (entry.isDirectory() && existsSync(join(projectDir, rel))) {
+        files.push(rel);
+      }
+    }
+  }
+  return files;
+}
+
+// Pull the declared style paths out of one parsed config. angular.json nests
+// projects under `projects` and uses `architect`; an Nx project.json IS the
+// project and uses `targets`. Both shapes funnel through the same walk.
+function stylesFromConfig(config) {
+  const projects = config?.projects ? Object.values(config.projects) : [config];
+  const paths = [];
+  for (const project of projects) {
+    const targets = project?.architect ?? project?.targets ?? {};
+    const styles = targets?.build?.options?.styles ?? [];
+    for (const style of styles) {
+      const path = typeof style === 'string' ? style : style?.input;
+      if (typeof path === 'string') {
+        paths.push(path);
+      }
+    }
+  }
+  return paths;
+}
+
+// Resolve the app's global style entries: the `styles` arrays of angular.json
+// and any Nx project.json when present, plus the conventional src/styles.*
+// defaults. The Track-B check reads their text (and path) to see whether
+// @cngx/themes/cngx.css is wired anywhere.
 function resolveStyleEntries(projectDir) {
   const candidates = new Set(STYLE_CANDIDATES);
-  const angularJson = join(projectDir, 'angular.json');
-  if (existsSync(angularJson)) {
+  for (const configRel of listStyleConfigFiles(projectDir)) {
     try {
-      const config = JSON.parse(readFileSync(angularJson, 'utf8'));
-      for (const project of Object.values(config.projects ?? {})) {
-        const styles = project?.architect?.build?.options?.styles ?? [];
-        for (const style of styles) {
-          const path = typeof style === 'string' ? style : style?.input;
-          if (typeof path === 'string') {
-            candidates.add(path);
-          }
-        }
+      const config = JSON.parse(readFileSync(join(projectDir, configRel), 'utf8'));
+      for (const path of stylesFromConfig(config)) {
+        candidates.add(path);
       }
     } catch {
-      /* malformed angular.json - fall back to conventional defaults */
+      /* malformed config file - fall back to conventional defaults */
     }
   }
 
@@ -146,10 +195,34 @@ function fullScan(projectDir) {
     projectDir: root,
     dependencies,
     packageMtimeMs,
-    angularMtimeMs: safeMtime(join(root, 'angular.json')),
+    configFiles: readConfigMtimes(root),
     sources,
     styleEntries: resolveStyleEntries(root),
   };
+}
+
+/** The current style-config files and their mtimes - the invalidation key. */
+function readConfigMtimes(root) {
+  /** @type {Record<string, number | null>} */
+  const mtimes = {};
+  for (const rel of listStyleConfigFiles(root)) {
+    mtimes[rel] = safeMtime(join(root, rel));
+  }
+  return mtimes;
+}
+
+function configFilesDrifted(prior, current) {
+  // A cached snapshot from before the configFiles key (or a corrupt one)
+  // cannot prove freshness - treat it as drifted and re-resolve.
+  if (!prior || typeof prior !== 'object') {
+    return true;
+  }
+  const priorKeys = Object.keys(prior);
+  const currentKeys = Object.keys(current);
+  if (priorKeys.length !== currentKeys.length) {
+    return true;
+  }
+  return currentKeys.some((rel) => prior[rel] !== current[rel]);
 }
 
 /** @returns {Snapshot} */
@@ -177,20 +250,21 @@ function incrementalScan(prior, projectDir, changedFile) {
     ({ dependencies, packageMtimeMs } = readPackageJson(root));
   }
 
-  // Re-resolve the style entries when a tracked entry moved, when angular.json
-  // moved (it may declare new global styles), or when a conventional stylesheet
-  // that was absent at cold-walk time now exists - a consumer following the
-  // Track-B fixHint by adding the import must clear the finding on the warm path.
-  const angularMtimeMs = safeMtime(join(root, 'angular.json'));
+  // Re-resolve the style entries when a tracked entry moved, when a style-config
+  // file (angular.json or an Nx project.json) moved or appeared, or when a
+  // conventional stylesheet that was absent at cold-walk time now exists - a
+  // consumer following the Track-B fixHint by adding the import must clear the
+  // finding on the warm path.
+  const configFiles = readConfigMtimes(root);
   const priorStyleDrifted = prior.styleEntries.some((e) => safeMtime(join(root, e.path)) !== e.mtimeMs);
-  const angularDrifted = angularMtimeMs !== (prior.angularMtimeMs ?? null);
+  const configDrifted = configFilesDrifted(prior.configFiles, configFiles);
   const newCandidateAppeared = STYLE_CANDIDATES.some(
     (rel) => existsSync(join(root, rel)) && !prior.styleEntries.some((e) => e.path === rel),
   );
   const styleEntries =
-    priorStyleDrifted || angularDrifted || newCandidateAppeared ? resolveStyleEntries(root) : prior.styleEntries;
+    priorStyleDrifted || configDrifted || newCandidateAppeared ? resolveStyleEntries(root) : prior.styleEntries;
 
-  return { projectDir: root, dependencies, packageMtimeMs, angularMtimeMs, sources, styleEntries };
+  return { projectDir: root, dependencies, packageMtimeMs, configFiles, sources, styleEntries };
 }
 
 /**

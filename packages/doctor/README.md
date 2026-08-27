@@ -43,8 +43,11 @@ emits the array of these objects.
   `provideFeedback(withToasts()/withAlerts()/withBanners())` root opt-in is
   missing, so the feedback surface has no host to render into.
 - **`track-b-css-not-imported`** - a cngx directive whose visual theming lives in
-  the Track-B stylesheet is imported, but no app style entry imports
-  `@cngx/themes/cngx.css`, so it renders unstyled.
+  the Track-B stylesheet is imported, but no app style entry wires
+  `@cngx/themes/cngx.css` - neither an `@import` in a global stylesheet nor a
+  direct listing in a build `styles` array - so it renders unstyled. Style
+  entries resolve from `angular.json`, from Nx `project.json` files (root,
+  `apps/*`, `libs/*`), and from the conventional `src/styles.*` defaults.
 - **`floating-fallback-missing`** - `@floating-ui/dom` is installed but
   `provideFloatingFallback()` is never called, so browsers without CSS Anchor
   Positioning get no positioning fallback.
