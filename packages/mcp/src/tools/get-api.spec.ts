@@ -25,6 +25,15 @@ describe('getApi', () => {
     expect(getApi(docs, 'cngx-select')?.name).toBe('CngxSelect');
   });
 
+  it('resolves an injectable service, reading its methods from the `methods` key', () => {
+    const api = getApi(docs, 'CngxToaster');
+
+    expect(api).toMatchObject({ name: 'CngxToaster', kind: 'injectable', selector: null, signal: false });
+    expect(api?.inputs).toEqual([]);
+    expect(api?.outputs).toEqual([]);
+    expect(api?.methods).toEqual([{ name: 'show', returnType: 'CngxToastRef' }]);
+  });
+
   it('returns null for an unknown name', () => {
     expect(getApi(docs, 'CngxDoesNotExist')).toBeNull();
   });
@@ -38,7 +47,7 @@ describe('get_api version wiring', () => {
 
     const answer = answerVersioned(docs, '0.2.0', (resolved) => getApi(resolved, 'CngxSelect'), deps);
 
-    expect(answer).toMatchObject({ groundedVersion: '0.2.0' });
+    expect(answer).toMatchObject({ ok: true, groundedVersion: '0.2.0' });
     // v0.2.0 dropped the `disabled` input the bundled snapshot still lists.
     const result = (answer as { result: { inputs: { name: string }[] } }).result;
     expect(result.inputs.map((i) => i.name)).toEqual(['value']);

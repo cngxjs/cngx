@@ -48,6 +48,7 @@ describe('migrateUsage', () => {
       meta: { schemaVersion: 2, cngxVersion: null, generatedAt: null, compodocxVersion: null },
       components: [],
       directives: [],
+      injectables: [],
       tokens: [],
     };
     const deps: MigrateUsageDeps = {

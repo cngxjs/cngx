@@ -43,7 +43,7 @@ describe('get_theme_tokens version wiring', () => {
 
     const answer = answerVersioned(docs, '0.2.0', (resolved) => getThemeTokens(resolved, 'CngxSelect'), deps);
 
-    expect(answer).toMatchObject({ groundedVersion: '0.2.0' });
+    expect(answer).toMatchObject({ ok: true, groundedVersion: '0.2.0' });
     // v0.2.0 exposes no theme tokens; the bundled snapshot lists one.
     const result = (answer as { result: { themeTokens: unknown[] } }).result;
     expect(result.themeTokens).toEqual([]);

@@ -2,6 +2,9 @@
 // assets via `gh release download`. This is the server's only network/shell touch,
 // scoped to `migrate_usage`. It never throws across its boundary: a missing `gh`,
 // no network, or an absent asset returns a typed failure the tool surfaces as data.
+// The download is pinned to the cngx repo with `--repo`: without it, `gh` resolves
+// the repo from the git remote of the CURRENT working directory - and `npx @cngx/mcp`
+// runs inside the consumer's checkout, not the cngx one.
 
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync } from 'node:fs';
@@ -24,13 +27,19 @@ export interface SnapshotFetchDeps {
   makeTempDir: () => string;
 }
 
+/** The release source. Never derived from the working directory's git remote. */
+export const CNGX_REPO = 'cngxjs/cngx';
+
+/**
+ * The exact `gh` argv for one snapshot download. Exported so the spec pins the
+ * `--repo` pin itself - the standalone `npx` contract lives in these args.
+ */
+export function ghDownloadArgs(version: string, dir: string): string[] {
+  return ['release', 'download', `v${version}`, '--repo', CNGX_REPO, '--pattern', 'documentation.json', '--dir', dir];
+}
+
 const defaultDeps: SnapshotFetchDeps = {
-  download: (version, dir) =>
-    execFileSync(
-      'gh',
-      ['release', 'download', `v${version}`, '--pattern', 'documentation.json', '--dir', dir],
-      { stdio: 'pipe' },
-    ),
+  download: (version, dir) => execFileSync('gh', ghDownloadArgs(version, dir), { stdio: 'pipe' }),
   makeTempDir: () => mkdtempSync(join(tmpdir(), 'cngx-mcp-snapshot-')),
 };
 

@@ -101,8 +101,8 @@ describe('readApi (cngx://api/{name})', () => {
 });
 
 describe('completeApiName (cngx://api/{name} autocomplete)', () => {
-  it('offers the whole surface, sorted, for an empty partial', () => {
-    expect(completeApiName(docs, '')).toEqual(['CngxAccordionItem', 'CngxRipple', 'CngxSelect']);
+  it('offers the whole surface - injectables included - sorted, for an empty partial', () => {
+    expect(completeApiName(docs, '')).toEqual(['CngxAccordionItem', 'CngxRipple', 'CngxSelect', 'CngxToaster']);
   });
 
   it('filters by case-insensitive substring', () => {
@@ -111,6 +111,7 @@ describe('completeApiName (cngx://api/{name} autocomplete)', () => {
       'CngxAccordionItem',
       'CngxRipple',
       'CngxSelect',
+      'CngxToaster',
     ]);
   });
 

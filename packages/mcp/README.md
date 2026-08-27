@@ -22,15 +22,15 @@ Client setup below), then call the tools.
 
 |Tool|Input|Returns|
 |-|-|-|
-|`find_component`|`{ query: string, version?: string }`|Components and directives whose name, selector, or category matches the fragment: name, kind, selector, category, file.|
-|`list_components`|`{ lib?: string, kind?: 'component' \| 'directive' }`|The deterministic catalog: every component and directive as `{ name, kind, selector, category, lib }`, sorted by name. Optionally filtered by lib and/or kind. Omit both for the full surface; an unmatched filter returns an empty list.|
-|`get_api`|`{ name: string, version?: string }`|One component/directive's API: inputs, outputs, signal flag, host bindings, public methods, description. Resolves by class name or selector.|
+|`find_component`|`{ query: string, version?: string }`|Components, directives, and injectable services whose name, selector, or category matches the fragment: name, kind, selector, category, file.|
+|`list_components`|`{ lib?: string, kind?: 'component' \| 'directive' \| 'injectable' }`|The deterministic catalog: every component, directive, and injectable service as `{ name, kind, selector, category, lib }`, sorted by name. Optionally filtered by lib and/or kind. Omit both for the full surface; an unmatched filter returns an empty list.|
+|`get_api`|`{ name: string, version?: string }`|One component's, directive's, or injectable service's API: inputs, outputs, signal flag, host bindings, public methods, description. Resolves by class name or selector; services resolve by name (they carry no selector).|
 |`get_slots`|`{ name: string, version?: string }`|The component's projected template slots, each a slot directive selector name plus its one-line doc.|
 |`get_theme_tokens`|`{ name: string, version?: string }`|A component's theming tokens (the CSS custom properties it exposes) and theme overview, by class name or selector.|
 |`get_di_tokens`|`{ query?: string, version?: string }`|The top-level DI injection tokens, optionally filtered by a name fragment. Omit the argument for the full list.|
 |`get_config`|`{ name: string, version?: string }`|A configuration cascade by config token name (`CNGX_SELECT_CONFIG`), stem (`select`), or best-effort component name (`CngxCombobox`): the config token, its co-located provider functions, the `with*` feature functions, and the resolution-priority ordering. Returns null when the name maps to no config token.|
 |`get_story_example`|`{ name: string }`|The component's runnable example URLs (public documentation links) and a StackBlitz URL when one exists. Playground entries are labelled source references, not openable links.|
-|`migrate_usage`|`{ from: string, to?: string }`|A structured API delta between two cngx releases: removed / renamed / signature-changed components, inputs, outputs, slots, and DI tokens. `to` defaults to the bundled snapshot version.|
+|`migrate_usage`|`{ from: string, to?: string }`|A structured API delta between two cngx releases: removed / renamed / signature-changed components (injectable services included), inputs, outputs, slots, and DI tokens. `to` defaults to the bundled snapshot version.|
 
 Every read-only tool returns `null` (or an empty list) when a name resolves to
 nothing, so an agent can tell "no such symbol" from "symbol with no data".
@@ -50,12 +50,14 @@ never a crash.
 `get_config` take an optional `version` (e.g. `"0.2.0"`). Omitted, or equal to the bundled
 snapshot version, they answer offline against the bundled snapshot with no fetch.
 Given a different version they resolve that release's `documentation.json` from the
-GitHub Release assets via `gh` (fetched once, then cached in memory for the
-session) and query that instead. Either way the answer is wrapped as
-`{ groundedVersion, result }` so the caller always knows which release it grounds
-against - the previously bare payload now sits under `result`, including on the
-offline default. A fetch that fails returns the same typed
-`{ ok: false, reason }` shape `migrate_usage` uses - the query never throws. Only
+cngx GitHub Release assets via `gh` (pinned to `cngxjs/cngx` with `--repo`, so the
+fetch works from any working directory, not just a cngx checkout; fetched once,
+then cached in memory for the session) and query that instead. Either way the answer is wrapped as
+`{ ok: true, groundedVersion, result }` so the caller always knows which release it
+grounds against - the previously bare payload sits under `result`, including on the
+offline default, and `ok` discriminates success from failure. A fetch that fails
+returns the same typed `{ ok: false, reason }` shape `migrate_usage` uses - the
+query never throws. Only
 tagged releases (`v<version>`) are fetchable; branches and SHAs are not.
 
 ## Resources
@@ -65,10 +67,10 @@ can list and attach cngx documents without an imperative tool call.
 
 |URI|Returns|
 |-|-|
-|`cngx://catalog`|Every component and directive as `{ name, kind, selector, category, lib }`, sorted by name. The browse view of `list_components`.|
+|`cngx://catalog`|Every component, directive, and injectable service as `{ name, kind, selector, category, lib }`, sorted by name. The browse view of `list_components`.|
 |`cngx://tokens`|The top-level DI injection tokens as `{ name, file, description }`.|
 |`cngx://provenance`|Snapshot meta: cngx version, `generatedAt`, `schemaVersion`, compodocx version.|
-|`cngx://api/{name}`|One component/directive's API surface by class name or selector. The `{name}` variable autocompletes against the catalog; an unknown name yields an empty resource.|
+|`cngx://api/{name}`|One component's, directive's, or injectable service's API surface by class name or selector. The `{name}` variable autocompletes against the catalog; an unknown name yields an empty resource.|
 |`cngx://llms`|The `llms.txt`-equivalent entry index - documented-exports counts, API-reference pointer links and the package list - composed offline from the bundled snapshot.|
 |`cngx://llms-full`|The verbatim compodocx llm-md dump - the full API export with every artifact's selector, inputs, outputs, description and live-example URLs. The offline companion to the `cngx://llms` index; an absent dump yields an empty resource.|
 

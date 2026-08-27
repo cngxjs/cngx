@@ -10,9 +10,26 @@
       "category": "forms/select/single-select",
       "description": "Native-feeling single-select dropdown.",
       "signal": true,
-      "inputsClass": [{ "name": "value", "type": "T", "description": "The selected value." }],
-      "outputsClass": [{ "name": "valueChange", "type": "EventEmitter<T>", "description": "Emits on selection." }],
-      "slots": [{ "name": "cngxSelectCaret", "description": "The caret glyph; now also fires on hover." }]
+      "inputsClass": [
+        {
+          "name": "value",
+          "type": "T",
+          "description": "The selected value."
+        }
+      ],
+      "outputsClass": [
+        {
+          "name": "valueChange",
+          "type": "EventEmitter<T>",
+          "description": "Emits on selection."
+        }
+      ],
+      "slots": [
+        {
+          "name": "cngxSelectCaret",
+          "description": "The caret glyph; now also fires on hover."
+        }
+      ]
     },
     {
       "name": "CngxNewPanel",
@@ -20,10 +37,36 @@
       "category": "ui/overlay",
       "description": "Overlay panel.",
       "signal": true,
-      "inputsClass": [{ "name": "open", "type": "boolean", "description": "Whether the panel is open." }],
+      "inputsClass": [
+        {
+          "name": "open",
+          "type": "boolean",
+          "description": "Whether the panel is open."
+        }
+      ],
       "outputsClass": []
     }
   ],
   "directives": [],
-  "tokens": [{ "name": "CNGX_SELECT_CONFIG", "type": "InjectionToken<SelectConfig>", "description": "Select defaults." }]
+  "injectables": [
+    {
+      "name": "CngxToaster",
+      "category": "ui/feedback/toast",
+      "file": "projects/ui/feedback/toast/toast.service.ts",
+      "description": "Feature-scoped toast service.",
+      "methods": [
+        {
+          "name": "show",
+          "returnType": "CngxToastRef"
+        }
+      ]
+    }
+  ],
+  "tokens": [
+    {
+      "name": "CNGX_SELECT_CONFIG",
+      "type": "InjectionToken<SelectConfig>",
+      "description": "Select defaults."
+    }
+  ]
 }

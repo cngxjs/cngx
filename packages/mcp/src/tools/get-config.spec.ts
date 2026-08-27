@@ -205,7 +205,7 @@ describe('get_config version wiring', () => {
 
     const answer = answerVersioned(bundled, '0.2.0', (resolved) => getConfig(resolved, 'CNGX_FOO_CONFIG'), deps);
 
-    expect(answer).toMatchObject({ groundedVersion: '0.2.0' });
+    expect(answer).toMatchObject({ ok: true, groundedVersion: '0.2.0' });
     // The bundled snapshot has no config tokens; only the fetched v0.2.0 resolves this one.
     expect((answer as { result: { token: string } }).result.token).toBe('CNGX_FOO_CONFIG');
   });

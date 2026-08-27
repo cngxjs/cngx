@@ -13,6 +13,7 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { jsonResult } from './tool-result.js';
+import { versionInput } from './version-input.js';
 import { answerVersioned } from '../data/docs-resolver.js';
 import type { DocsIndex } from '../data/loader.js';
 import type { DocFunction, DocToken } from '../data/types.js';
@@ -200,13 +201,7 @@ export function registerGetConfig(server: McpServer, docs: DocsIndex): void {
         name: z
           .string()
           .describe('A config token (CNGX_SELECT_CONFIG), a stem (select), or a component name (CngxSelect).'),
-        version: z
-          .string()
-          .optional()
-          .describe(
-            'Optional cngx version to ground the answer against, e.g. "0.2.0". Omit to answer from the ' +
-              'bundled snapshot offline; a non-bundled version fetches that release snapshot via gh (fail-safe).',
-          ),
+        version: versionInput,
       },
     },
     ({ name, version }) => jsonResult(answerVersioned(docs, version, (resolved) => getConfig(resolved, name))),

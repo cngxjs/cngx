@@ -6,7 +6,7 @@
 import type { DocsIndex } from './data/loader.js';
 import type { DocEntry } from './data/types.js';
 
-export type EntryKind = 'component' | 'directive';
+export type EntryKind = 'component' | 'directive' | 'injectable';
 
 export interface KindedEntry {
   entry: DocEntry;
@@ -14,14 +14,17 @@ export interface KindedEntry {
 }
 
 /**
- * The one canonical `components + directives` union. Every enumeration - search,
- * resolve, and the `list_components` browse tool - walks this so there is a single
- * source for "what entries exist".
+ * The one canonical `components + directives + injectables` union. Every
+ * enumeration - search, resolve, and the `list_components` browse tool - walks
+ * this so there is a single source for "what entries exist". Injectables are the
+ * scoped services (CngxToaster, CngxDialogOpener, ...) - part of the public API,
+ * so part of the query surface; they resolve by name only (no selector).
  */
 export function allEntries(docs: DocsIndex): KindedEntry[] {
   return [
     ...docs.components.map((entry) => ({ entry, kind: 'component' as const })),
     ...docs.directives.map((entry) => ({ entry, kind: 'directive' as const })),
+    ...docs.injectables.map((entry) => ({ entry, kind: 'injectable' as const })),
   ];
 }
 
