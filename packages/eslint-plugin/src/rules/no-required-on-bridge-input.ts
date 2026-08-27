@@ -1,5 +1,6 @@
 import { AST_NODE_TYPES, type TSESTree } from '@typescript-eslint/utils';
 import { RULE_METADATA } from '../metadata';
+import { isMemberCall } from './ast-utils';
 import { createRule } from './create-rule';
 
 const META = RULE_METADATA['no-required-on-bridge-input'];
@@ -38,14 +39,7 @@ function isOptionalFallbackInject(value: TSESTree.Expression | null | undefined)
 
 /** input.required(...) */
 function isRequiredInput(value: TSESTree.Expression | null | undefined): boolean {
-  return (
-    value?.type === AST_NODE_TYPES.CallExpression &&
-    value.callee.type === AST_NODE_TYPES.MemberExpression &&
-    value.callee.object.type === AST_NODE_TYPES.Identifier &&
-    value.callee.object.name === 'input' &&
-    value.callee.property.type === AST_NODE_TYPES.Identifier &&
-    value.callee.property.name === 'required'
-  );
+  return isMemberCall(value, 'input', 'required');
 }
 
 /**
