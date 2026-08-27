@@ -53,10 +53,11 @@ Given a different version they resolve that release's `documentation.json` from 
 cngx GitHub Release assets via `gh` (pinned to `cngxjs/cngx` with `--repo`, so the
 fetch works from any working directory, not just a cngx checkout; fetched once,
 then cached in memory for the session) and query that instead. Either way the answer is wrapped as
-`{ groundedVersion, result }` so the caller always knows which release it grounds
-against - the previously bare payload now sits under `result`, including on the
-offline default. A fetch that fails returns the same typed
-`{ ok: false, reason }` shape `migrate_usage` uses - the query never throws. Only
+`{ ok: true, groundedVersion, result }` so the caller always knows which release it
+grounds against - the previously bare payload sits under `result`, including on the
+offline default, and `ok` discriminates success from failure. A fetch that fails
+returns the same typed `{ ok: false, reason }` shape `migrate_usage` uses - the
+query never throws. Only
 tagged releases (`v<version>`) are fetchable; branches and SHAs are not.
 
 ## Resources

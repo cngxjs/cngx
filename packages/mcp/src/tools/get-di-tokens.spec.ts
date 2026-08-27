@@ -37,7 +37,7 @@ describe('get_di_tokens version wiring', () => {
     const answer = answerVersioned(docs, '0.2.0', (resolved) => getDiTokens(resolved), deps);
 
     // Array-returning tool: the version rides the envelope, not the payload.
-    expect(answer).toMatchObject({ groundedVersion: '0.2.0' });
+    expect(answer).toMatchObject({ ok: true, groundedVersion: '0.2.0' });
     const result = (answer as { result: { name: string }[] }).result;
     expect(result.map((t) => t.name)).toContain('CNGX_SELECT_CONFIG');
   });

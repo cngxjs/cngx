@@ -98,10 +98,10 @@ describe('resolveDocs', () => {
 });
 
 describe('answerVersioned', () => {
-  it('wraps a bundled answer with the bundled groundedVersion', () => {
+  it('wraps a bundled answer with ok: true and the bundled groundedVersion', () => {
     const answer = answerVersioned(bundled, undefined, (docs) => docs.components.length);
 
-    expect(answer).toEqual({ groundedVersion: '0.1.0-rc.6', result: bundled.components.length });
+    expect(answer).toEqual({ ok: true, groundedVersion: '0.1.0-rc.6', result: bundled.components.length });
   });
 
   it('grounds the query against a fetched non-bundled snapshot', () => {
@@ -109,7 +109,7 @@ describe('answerVersioned', () => {
 
     const answer = answerVersioned(bundled, '0.2.0', (docs) => docs.meta.cngxVersion, deps);
 
-    expect(answer).toEqual({ groundedVersion: '0.2.0', result: '0.2.0' });
+    expect(answer).toEqual({ ok: true, groundedVersion: '0.2.0', result: '0.2.0' });
   });
 
   it('returns the typed failure instead of running the query on a fetch failure', () => {

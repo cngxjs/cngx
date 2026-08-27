@@ -5,6 +5,7 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { jsonResult } from './tool-result.js';
+import { versionInput } from './version-input.js';
 import { answerVersioned } from '../data/docs-resolver.js';
 import type { DocsIndex } from '../data/loader.js';
 
@@ -36,13 +37,7 @@ export function registerGetDiTokens(server: McpServer, docs: DocsIndex): void {
         "argument for the full list. For a component's theming tokens, use get_theme_tokens.",
       inputSchema: {
         query: z.string().optional().describe('A DI-token name fragment, e.g. "SELECT". Omit for all DI tokens.'),
-        version: z
-          .string()
-          .optional()
-          .describe(
-            'Optional cngx version to ground the answer against, e.g. "0.2.0". Omit to answer from the ' +
-              'bundled snapshot offline; a non-bundled version fetches that release snapshot via gh (fail-safe).',
-          ),
+        version: versionInput,
       },
     },
     ({ query, version }) => jsonResult(answerVersioned(docs, version, (resolved) => getDiTokens(resolved, query))),

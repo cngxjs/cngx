@@ -53,7 +53,7 @@ describe('find_component version wiring', () => {
     // `CngxNewPanel` exists only in v0.2.0; the bundled snapshot has no "Panel" match.
     const answer = answerVersioned(docs, '0.2.0', (resolved) => findComponents(resolved, 'Panel'), deps);
 
-    expect(answer).toMatchObject({ groundedVersion: '0.2.0' });
+    expect(answer).toMatchObject({ ok: true, groundedVersion: '0.2.0' });
     const result = (answer as { result: { name: string }[] }).result;
     expect(result.map((m) => m.name)).toEqual(['CngxNewPanel']);
   });

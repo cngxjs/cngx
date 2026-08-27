@@ -90,9 +90,13 @@ export function resolveDocs(bundled: DocsIndex, version?: string, deps: DocsReso
   }
 }
 
-/** A tool answer wrapped with the version it grounded against, or a typed failure. */
+/**
+ * A tool answer wrapped with the version it grounded against, or a typed failure.
+ * `ok` discriminates both arms: a caller narrows on `ok === true`, never on the
+ * presence or absence of `groundedVersion`.
+ */
 export type VersionedAnswer<T> =
-  | { groundedVersion: string | null; result: T }
+  | { ok: true; groundedVersion: string | null; result: T }
   | { ok: false; reason: SnapshotFetchFailureReason; message: string };
 
 /**
@@ -112,7 +116,7 @@ export function answerVersioned<T>(
     return { ok: false, reason: resolution.reason, message: resolution.message };
   }
   try {
-    return { groundedVersion: resolution.version, result: query(resolution.docs) };
+    return { ok: true, groundedVersion: resolution.version, result: query(resolution.docs) };
   } catch (error) {
     // The query runs over an already-resolved snapshot, so a throw here is unexpected -
     // but a version-scoped tool reaches the network and must answer as data, never throw

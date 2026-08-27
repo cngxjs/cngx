@@ -6,6 +6,7 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { jsonResult } from './tool-result.js';
+import { versionInput } from './version-input.js';
 import { answerVersioned } from '../data/docs-resolver.js';
 import type { DocsIndex } from '../data/loader.js';
 import { resolveEntry } from '../query.js';
@@ -54,13 +55,7 @@ export function registerGetThemeTokens(server: McpServer, docs: DocsIndex): void
         'none. Returns null when the name resolves to nothing. For DI tokens, use get_di_tokens.',
       inputSchema: {
         name: z.string().describe('A component/directive class name or selector, e.g. "CngxSelect".'),
-        version: z
-          .string()
-          .optional()
-          .describe(
-            'Optional cngx version to ground the answer against, e.g. "0.2.0". Omit to answer from the ' +
-              'bundled snapshot offline; a non-bundled version fetches that release snapshot via gh (fail-safe).',
-          ),
+        version: versionInput,
       },
     },
     ({ name, version }) => jsonResult(answerVersioned(docs, version, (resolved) => getThemeTokens(resolved, name))),

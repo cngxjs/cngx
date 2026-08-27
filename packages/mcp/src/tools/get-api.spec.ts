@@ -47,7 +47,7 @@ describe('get_api version wiring', () => {
 
     const answer = answerVersioned(docs, '0.2.0', (resolved) => getApi(resolved, 'CngxSelect'), deps);
 
-    expect(answer).toMatchObject({ groundedVersion: '0.2.0' });
+    expect(answer).toMatchObject({ ok: true, groundedVersion: '0.2.0' });
     // v0.2.0 dropped the `disabled` input the bundled snapshot still lists.
     const result = (answer as { result: { inputs: { name: string }[] } }).result;
     expect(result.inputs.map((i) => i.name)).toEqual(['value']);

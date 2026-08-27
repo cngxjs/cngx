@@ -37,7 +37,7 @@ describe('get_slots version wiring', () => {
 
     const answer = answerVersioned(docs, '0.2.0', (resolved) => getSlots(resolved, 'CngxSelect'), deps);
 
-    expect(answer).toMatchObject({ groundedVersion: '0.2.0' });
+    expect(answer).toMatchObject({ ok: true, groundedVersion: '0.2.0' });
     // v0.2.0 dropped the `cngxSelectEmpty` slot the bundled snapshot still lists.
     const result = (answer as { result: { slots: { name: string }[] } }).result;
     expect(result.slots.map((s) => s.name)).toEqual(['cngxSelectCaret']);
