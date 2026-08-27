@@ -22,7 +22,7 @@ export const plugin: TSESLint.FlatConfig.Plugin = {
     // ESLint does not read package.json for a plugin's version - flat-config
     // introspection (--print-config, cache keys) uses meta.version or nothing.
     // The literal is drift-guarded against package.json by index.spec.ts.
-    version: '0.1.0',
+    version: '0.2.0',
   },
   rules: {
     'no-effect-in-ngoninit': noEffectInNgOnInit,

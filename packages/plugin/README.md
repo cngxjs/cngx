@@ -16,7 +16,7 @@ Add the cngx marketplace, then install the plugin:
 ## What it does
 
 - Bundles a version-pinned MCP wiring (`.mcp.json`) that starts
-  `@cngx/mcp@0.1.0` via `npx`, exposing the cngx public-API surface as typed,
+  `@cngx/mcp@0.2.0` via `npx`, exposing the cngx public-API surface as typed,
   queryable tools, browseable resources, and grounding prompts. The shape and
   config queries are version-aware - they can ground an answer against another
   cngx release.
