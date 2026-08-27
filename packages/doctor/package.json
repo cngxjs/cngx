@@ -3,6 +3,13 @@
   "version": "0.1.0",
   "description": "Deterministic project-wiring scanner for cngx consumer apps: the whole-project checks ESLint's per-file scope cannot see, as an npx-able CI gate.",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cngxjs/cngx.git",
+    "directory": "packages/doctor"
+  },
+  "homepage": "https://cngxjs.github.io/cngx",
+  "bugs": "https://github.com/cngxjs/cngx/issues",
   "type": "module",
   "bin": {
     "cngx-doctor": "cngx-doctor.mjs"
