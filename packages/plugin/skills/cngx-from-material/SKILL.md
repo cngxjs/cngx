@@ -92,9 +92,11 @@ over, and leaving them in place is where a migration goes wrong:
 The mapping names the symbol; it never names the symbol's API, because inputs,
 slots, and tokens move between releases. For each target you land on:
 `get_api` for its real inputs, outputs, and two-way signals; `get_slots` for the
-template slots; `get_di_tokens` for the factory and config tokens. Then compose it
-with `cngx-wire` (screens and features) or `cngx-forms` (anything form-shaped),
-which carry the composition procedure this skill deliberately does not repeat.
+template slots; `get_config` for the configuration cascade (the config token and
+its `provide*`/`with*` functions); `get_di_tokens` for the wider DI-token list.
+Then compose it with `cngx-wire` (screens and features) or `cngx-forms` (anything
+form-shaped), which carry the composition procedure this skill deliberately does
+not repeat.
 
 ## Never guess
 

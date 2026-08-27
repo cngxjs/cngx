@@ -68,12 +68,16 @@ For the daily work, reach for the focused skill instead of this index:
   template. Read the recipe whose symbols match what you are building before
   writing the composition yourself.
 - **`pack/theming-tokens.md`** - the generated `--cngx-*` custom-property
-  reference: every token, its default, and what it controls. Consumers theme by
-  setting these in their own stylesheet; never hard-code a colour or size a
-  component already exposes as a token.
-- **The cngx MCP tools** - query these for the exact current API shape (inputs,
-  outputs, signals, slots, DI tokens) of any `@cngx/*` symbol before you wire it.
-  The recipes teach *how*; the MCP answers *what*.
+  reference: every token, its default, and what it controls - the offline browse
+  view. For one component's tokens, prefer the live `get_theme_tokens` MCP tool.
+  Consumers theme by setting these in their own stylesheet; never hard-code a
+  colour or size a component already exposes as a token.
+- **The cngx MCP tools** - query these for the exact current API shape of any
+  `@cngx/*` symbol before you wire it: `find_component`/`list_components` to
+  discover, `get_api` for inputs/outputs/signals, `get_slots` for template slots,
+  `get_config` for a configuration cascade, `get_theme_tokens` for theming
+  tokens, `get_di_tokens` for the DI-token list. The recipes teach *how*; the
+  MCP answers *what*.
 - **The published docs** - `https://cngxjs.github.io/cngx/llms.txt` (index) and
   `https://cngxjs.github.io/cngx/llms-full.txt` (full text) when you need more
   than a single symbol.

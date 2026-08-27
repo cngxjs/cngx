@@ -50,8 +50,10 @@ Every composite exposes template slots (for the trigger label, the option
 rendering, the empty and loading states, the chips) and DI override tokens (for
 the commit handler, the display binding, the panel host, and more). These are the
 single most drift-prone surface in the library, so this skill names none of them.
-Query `get_slots` for the slot selectors and `get_di_tokens` for the override
-tokens of the exact composite you picked, every time.
+Query `get_slots` for the slot selectors, `get_config` for the family's config
+cascade (the config token plus its `provide*`/`with*` functions - it resolves
+from the composite name, e.g. `CngxCombobox`), and `get_di_tokens` for the wider
+override-token list of the exact composite you picked, every time.
 
 ## Validation and error surfaces
 

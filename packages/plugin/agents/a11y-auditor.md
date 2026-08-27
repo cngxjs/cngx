@@ -1,7 +1,7 @@
 ---
 name: a11y-auditor
 description: Read-only accessibility sweep of a cngx screen - finds where the consumer has silenced an accessibility guarantee the cngx contract already gives. Use when the task is "audit this cngx screen for accessibility", "a11y pass over this view", "did we break the ARIA cngx derives", or before shipping a screen that composes or overrides any @cngx/* component. Reports preservation gaps against the shipped contract; grounds the exact aria/slot surface in the MCP tools; edits nothing.
-tools: Read, Grep, Glob, mcp__cngx__find_component, mcp__cngx__get_api, mcp__cngx__get_slots, mcp__cngx__get_di_tokens, mcp__cngx__get_story_example
+tools: Read, Grep, Glob, mcp__cngx__find_component, mcp__cngx__get_api, mcp__cngx__get_slots, mcp__cngx__get_config, mcp__cngx__get_di_tokens, mcp__cngx__get_story_example
 ---
 
 # cngx a11y auditor
@@ -59,7 +59,9 @@ releases. Confirm it against the live source of record before you cite a gap:
 - `mcp__cngx__find_component` to resolve the component the screen uses.
 - `mcp__cngx__get_api` for the aria the component actually derives.
 - `mcp__cngx__get_slots` for the slots it exposes and what each slot must carry.
-- `mcp__cngx__get_di_tokens` for the a11y-relevant config and factory tokens.
+- `mcp__cngx__get_config` for the a11y-relevant configuration cascade (label and
+  announcement features ride on `provide*`/`with*` functions).
+- `mcp__cngx__get_di_tokens` for the a11y-relevant factory tokens.
 - `mcp__cngx__get_story_example` for the reference wiring a working example shows.
 
 If a finding depends on an attribute, a slot selector, or an id you have not

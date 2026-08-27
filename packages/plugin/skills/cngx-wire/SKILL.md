@@ -17,12 +17,16 @@ them live from the MCP tools, never from this file.
 **1. Discover the component.** Start from `find_component` with what the feature
 needs in plain words (a filterable single choice, a dismissable banner, a
 paginated list). It returns the matching `@cngx/*` symbols and the package each
-lives in. Reach for the returned symbol before building anything by hand.
+lives in. To browse instead of search - "what does `@cngx/ui` ship?" -
+`list_components` enumerates the whole catalog, filterable by lib and kind.
+Reach for the returned symbol before building anything by hand.
 
 **2. Confirm the exact API before you wire it.** Query `get_api` for the symbol
 to see its real inputs, outputs, and two-way signals; `get_slots` for the
-template slots it exposes; `get_di_tokens` for the factory and config tokens it
-accepts. Do this every time. An input name or a slot selector you remember from a
+template slots it exposes; `get_config` for its configuration cascade - the
+config token, the `provide*`/`with*` functions, and the resolution-priority
+order; `get_di_tokens` when you need the wider DI-token list beyond one config
+surface. Do this every time. An input name or a slot selector you remember from a
 previous release may have moved. The MCP answers *what*; this skill only teaches
 *how*.
 
@@ -36,6 +40,10 @@ before you consider a flag:
   an optional capability,
 - a **`provide*` config** at the right injector level to set defaults for a
   subtree.
+
+`get_config` names the last two for any config surface - the exact `provide*`
+and `with*` functions and where in the cascade each applies - so you never
+reconstruct a provider name from memory.
 
 Only if none of those fit does another boolean input belong on the table, and
 usually it does not: if you are tempted to add one, you probably want a

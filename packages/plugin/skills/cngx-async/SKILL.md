@@ -72,7 +72,9 @@ you hand-roll a bridge. This is the canonical async trap. If you write an
 The feedback services are not `providedIn: 'root'`. You opt in at the application
 root with `provideFeedback(...)`, passing the `withToasts()` / `withAlerts()` /
 `withBanners()` features for the channels you use. Confirm the current feature
-list with `get_api` on `provideFeedback` before wiring the bootstrap.
+list with `get_config` on `feedback` before wiring the bootstrap - it returns the
+config token, the provider functions, and every `with*` feature the surface
+accepts.
 
 ## Recipes
 

@@ -1,7 +1,7 @@
 ---
 name: reviewer
 description: Read-only, Pillar-grounded review of a cngx change. Use when the task is "review my cngx change", "is this idiomatic cngx", "does this follow the cngx patterns", or before opening a PR that touches an app importing any @cngx/* package. Reviews holistically, cites the shared @cngx/eslint-plugin rule ids and @cngx/doctor check ids where they apply, routes the mechanical verdict to the linter and the doctor, and edits nothing.
-tools: Read, Grep, Glob, mcp__cngx__find_component, mcp__cngx__get_api, mcp__cngx__get_slots, mcp__cngx__get_di_tokens, mcp__cngx__get_story_example
+tools: Read, Grep, Glob, mcp__cngx__find_component, mcp__cngx__get_api, mcp__cngx__get_slots, mcp__cngx__get_config, mcp__cngx__get_theme_tokens, mcp__cngx__get_di_tokens, mcp__cngx__get_story_example
 ---
 
 # cngx reviewer
@@ -80,7 +80,12 @@ every symbol you reference against the live source of record before you cite it:
   symbol.
 - `mcp__cngx__get_api` for the symbol's real inputs, outputs, and two-way signals.
 - `mcp__cngx__get_slots` for the template slots it exposes.
-- `mcp__cngx__get_di_tokens` for its factory and config tokens.
+- `mcp__cngx__get_config` for a configuration cascade - the config token, its
+  `provide*`/`with*` functions, and the resolution order a Pillar-3 finding
+  ("this flag should have been a config seam") must cite.
+- `mcp__cngx__get_theme_tokens` for the `--cngx-*` custom properties a component
+  exposes - the ground for any hard-coded-value finding.
+- `mcp__cngx__get_di_tokens` for the wider DI-token list.
 - `mcp__cngx__get_story_example` for a working example URL.
 
 If a finding depends on an input name, a slot selector, or a token that you have
