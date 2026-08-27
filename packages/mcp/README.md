@@ -50,8 +50,9 @@ never a crash.
 `get_config` take an optional `version` (e.g. `"0.2.0"`). Omitted, or equal to the bundled
 snapshot version, they answer offline against the bundled snapshot with no fetch.
 Given a different version they resolve that release's `documentation.json` from the
-GitHub Release assets via `gh` (fetched once, then cached in memory for the
-session) and query that instead. Either way the answer is wrapped as
+cngx GitHub Release assets via `gh` (pinned to `cngxjs/cngx` with `--repo`, so the
+fetch works from any working directory, not just a cngx checkout; fetched once,
+then cached in memory for the session) and query that instead. Either way the answer is wrapped as
 `{ groundedVersion, result }` so the caller always knows which release it grounds
 against - the previously bare payload now sits under `result`, including on the
 offline default. A fetch that fails returns the same typed

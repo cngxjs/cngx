@@ -71,8 +71,9 @@ The shape and config queries - `find_component`, `get_api`, `get_slots`,
 `get_theme_tokens`, `get_di_tokens`, and `get_config` - take an optional `version`.
 Omitted, or equal to the bundled snapshot, they answer offline against the bundled
 release with no fetch. Given a different version they resolve that release's
-snapshot from the release assets via `gh release download`, cache it in memory for
-the session, and query that instead. Either way the answer names the release it
+snapshot from the CNGX release assets via `gh release download` (pinned to the
+CNGX repo, so it works from any working directory), cache it in memory for the
+session, and query that instead. Either way the answer names the release it
 grounded against, so a caller reading one component's API at an older version knows
 the reply reflects that version and not the bundled one. A fetch that fails returns
 the same typed error result `migrate_usage` uses, so the query answers as data
