@@ -3,6 +3,13 @@
   "version": "0.1.0",
   "description": "ESLint rules that encode the cngx signal/effect idioms and wiring contracts for consumer Angular apps.",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cngxjs/cngx.git",
+    "directory": "packages/eslint-plugin"
+  },
+  "homepage": "https://cngxjs.github.io/cngx",
+  "bugs": "https://github.com/cngxjs/cngx/issues",
   "type": "commonjs",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
