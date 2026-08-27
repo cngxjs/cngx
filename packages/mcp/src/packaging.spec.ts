@@ -25,7 +25,7 @@ describe('package manifest', () => {
     expect(pkg.bin['cngx-mcp']).toBe('dist/index.js');
   });
 
-  it('publishes dist, data, and the mcp.json snippet', () => {
-    expect(pkg.files).toEqual(expect.arrayContaining(['dist', 'data', 'mcp.json']));
+  it('publishes dist, data, the mcp.json snippet, and the changelog', () => {
+    expect(pkg.files).toEqual(expect.arrayContaining(['dist', 'data', 'mcp.json', 'CHANGELOG.md']));
   });
 });

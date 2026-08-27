@@ -19,7 +19,8 @@
   "files": [
     "dist",
     "data",
-    "mcp.json"
+    "mcp.json",
+    "CHANGELOG.md"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
