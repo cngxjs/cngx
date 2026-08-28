@@ -8,6 +8,7 @@ import {
   input,
   model,
   signal,
+  untracked,
 } from '@angular/core';
 import { injectDirection, resolveInlineStep } from '@cngx/core';
 
@@ -115,6 +116,7 @@ export class CngxRovingItem {
   standalone: true,
   host: {
     '(keydown)': 'handleKeyDown($event)',
+    '(focusin)': 'handleFocusIn($event)',
   },
 })
 export class CngxRovingTabindex {
@@ -179,19 +181,40 @@ export class CngxRovingTabindex {
       const vc = this.virtualCount();
 
       if (vc != null) {
-        // Virtual mode: match by data-cngx-recycle-index attribute
+        // Virtual mode: match by data-cngx-recycle-index attribute. Clamp the
+        // model itself when the virtual space shrinks below it - a ghost
+        // index would otherwise anchor the next arrow press. An empty space
+        // (vc 0) keeps the model untouched so a repopulated list restores it.
+        const clamped = vc > 0 ? Math.max(0, Math.min(active, vc - 1)) : active;
+        if (clamped !== active) {
+          untracked(() => this.activeIndex.set(clamped));
+        }
         items.forEach((item) => {
           const el = item.elementRef.nativeElement as HTMLElement;
           const idx = el.dataset['cngxRecycleIndex'];
-          el.setAttribute('tabindex', idx != null && Number(idx) === active ? '0' : '-1');
+          el.setAttribute('tabindex', idx != null && Number(idx) === clamped ? '0' : '-1');
         });
       } else {
-        // Standard mode: match by array index
-        const clamped = Math.max(0, Math.min(active, items.length - 1));
+        // Standard mode: match by array index. The tab stop must land on an
+        // enabled item - fall back to the first enabled one when the clamped
+        // target is disabled (initial index into a disabled leaf, or the
+        // active item got disabled). The model is written back so keyboard
+        // navigation anchors where the tab stop actually sits. An empty list
+        // keeps the model untouched so a repopulated list restores it.
+        if (items.length === 0) {
+          return;
+        }
+        let target = Math.max(0, Math.min(active, items.length - 1));
+        if (items[target]?.disabled()) {
+          target = this.findFirst(items) ?? target;
+        }
+        if (target !== active) {
+          untracked(() => this.activeIndex.set(target));
+        }
         items.forEach((item, i) =>
           (item.elementRef.nativeElement as HTMLElement).setAttribute(
             'tabindex',
-            i === clamped ? '0' : '-1',
+            i === target ? '0' : '-1',
           ),
         );
       }
@@ -228,6 +251,12 @@ export class CngxRovingTabindex {
    * based on whether `virtualCount` is set.
    */
   protected handleKeyDown(event: KeyboardEvent): void {
+    // Never hijack browser/app shortcuts: Ctrl/Cmd/Alt combos pass through
+    // untouched (Ctrl+Home, Cmd+ArrowLeft and friends belong to the app).
+    if (event.ctrlKey || event.metaKey || event.altKey) {
+      return;
+    }
+
     const vc = this.virtualCount();
     const allItems = this.items();
     const isVirtual = vc != null;
@@ -283,6 +312,35 @@ export class CngxRovingTabindex {
       }
     } else if (nextIndex === currentActive) {
       event.preventDefault();
+    }
+  }
+
+  /**
+   * Keeps `activeIndex` in sync with real focus (APG): when an item gains
+   * focus by any means - pointer click, script focus, assistive tech - the
+   * tab stop follows it instead of staying on the last arrow-key target.
+   */
+  protected handleFocusIn(event: FocusEvent): void {
+    const target = event.target as HTMLElement | null;
+    if (target === null) {
+      return;
+    }
+    const vc = this.virtualCount();
+    if (vc != null) {
+      const holder = target.closest('[data-cngx-recycle-index]');
+      const idx = holder === null ? NaN : Number(holder.getAttribute('data-cngx-recycle-index'));
+      if (Number.isInteger(idx) && idx >= 0 && idx < vc && idx !== this.activeIndex()) {
+        this.activeIndex.set(idx);
+      }
+      return;
+    }
+    const items = this.items();
+    const idx = items.findIndex((item) => {
+      const el = item.elementRef.nativeElement as HTMLElement;
+      return el === target || el.contains(target);
+    });
+    if (idx >= 0 && !items[idx].disabled() && idx !== this.activeIndex()) {
+      this.activeIndex.set(idx);
     }
   }
 

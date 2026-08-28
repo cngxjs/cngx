@@ -10,7 +10,9 @@ import {
   input,
   output,
   signal,
+  untracked,
 } from '@angular/core';
+import { injectDirection, resolveInlineStep } from '@cngx/core';
 
 import { CNGX_AD_ITEM, type ActiveDescendantItem, type CngxAdItemHandle } from './ad-item.token';
 
@@ -109,6 +111,9 @@ export class CngxActiveDescendant {
 
   private readonly hostEl = inject(ElementRef<HTMLElement>);
   private readonly registered = contentChildren(CNGX_AD_ITEM, { descendants: true });
+
+  /** Document writing direction - flips the horizontal-arrow steps under `rtl` (APG). */
+  private readonly direction = injectDirection();
 
   /** Guards host attribute writes until after first render. */
   private readonly initialized = signal(false);
@@ -210,6 +215,17 @@ export class CngxActiveDescendant {
       queueMicrotask(() => this.scrollActiveIntoView());
     });
 
+    // Clamp the active STATE, not just the derived display, when the item
+    // space shrinks below it - otherwise the next arrow press navigates
+    // relative to a ghost index.
+    effect(() => {
+      const total = this.totalCount();
+      const idx = this.activeIndexState();
+      if (idx >= total) {
+        untracked(() => this.activeIndexState.set(total > 0 ? total - 1 : -1));
+      }
+    });
+
     inject(DestroyRef).onDestroy(() => {
       if (this.typeaheadTimer !== null) {
         clearTimeout(this.typeaheadTimer);
@@ -297,6 +313,13 @@ export class CngxActiveDescendant {
   }
 
   protected handleKeydown(event: KeyboardEvent): void {
+    // Never hijack browser/app shortcuts: Ctrl/Cmd/Alt combos pass through
+    // untouched (Ctrl+C would otherwise hit the typeahead branch and get
+    // preventDefault'd). Shift stays allowed - it produces printable chars.
+    if (event.ctrlKey || event.metaKey || event.altKey) {
+      return;
+    }
+
     // Skip events from editable descendants. Without this, every
     // printable key typed into a descendant <input> hits AD's typeahead
     // branch, gets preventDefault'd, and never reaches the input.
@@ -352,18 +375,22 @@ export class CngxActiveDescendant {
           this.highlightNext();
         }
         return;
-      case 'ArrowUp':
-        if (orientation === 'vertical') {
+      case 'ArrowRight':
+      case 'ArrowLeft': {
+        if (orientation !== 'horizontal') {
+          return;
+        }
+        // RTL flips the horizontal arrows (same kernel roving uses).
+        const step = resolveInlineStep(key, this.direction());
+        if (step === 1) {
+          this.highlightNext();
+        } else if (step === -1) {
           this.highlightPrev();
         }
         return;
-      case 'ArrowRight':
-        if (orientation === 'horizontal') {
-          this.highlightNext();
-        }
-        return;
-      case 'ArrowLeft':
-        if (orientation === 'horizontal') {
+      }
+      case 'ArrowUp':
+        if (orientation === 'vertical') {
           this.highlightPrev();
         }
         return;
