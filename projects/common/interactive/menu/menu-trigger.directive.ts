@@ -178,6 +178,13 @@ export class CngxMenuTrigger {
   }
 
   protected handleKeydown(event: KeyboardEvent): void {
+    // Never hijack browser/app shortcuts: Ctrl/Cmd/Alt combos pass through
+    // untouched - the same guard the nav strategies and CngxListboxTrigger
+    // apply. Shift stays allowed.
+    if (event.ctrlKey || event.metaKey || event.altKey) {
+      return;
+    }
+
     const key = event.key;
 
     if (!this.isOpen()) {

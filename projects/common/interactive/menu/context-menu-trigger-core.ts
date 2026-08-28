@@ -235,6 +235,12 @@ export function createContextMenuTriggerCore(
       openAt(event.clientX, event.clientY);
     },
     handleKeydown(event: KeyboardEvent): void {
+      // Never hijack browser/app shortcuts: Ctrl/Cmd/Alt combos pass through
+      // untouched - the same guard the nav strategies apply. Shift stays
+      // allowed (Shift+F10 below is the open gesture).
+      if (event.ctrlKey || event.metaKey || event.altKey) {
+        return;
+      }
       if (event.key === 'F10' && event.shiftKey) {
         event.preventDefault();
         const rect = deps.hostElement.getBoundingClientRect();
