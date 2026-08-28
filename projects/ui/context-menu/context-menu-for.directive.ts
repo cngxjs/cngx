@@ -117,6 +117,7 @@ export class CngxContextMenuFor<T = unknown> {
     connectSubmenuHoverToFocusStack({
       focusStack: this.core.focusStack,
       rootMenu: () => this.panel().menuHost,
+      rootOpen: () => this.isOpen(),
     });
     // Open moves focus into the panel (a sibling of this trigger), so submenu
     // ArrowRight/ArrowLeft/Escape land on the panel. Forward the panel's

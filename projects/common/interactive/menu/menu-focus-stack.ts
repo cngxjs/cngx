@@ -77,7 +77,10 @@ export interface CngxMenuFocusStack {
    * another branch is open), so any levels above the submenu's parent menu
    * are popped first and the stack stays a strict chain. A no-op on an inert
    * brain (`inner` never resolved - an organism leaf item): there is nothing
-   * to open and the open branch must survive a sweep across a leaf row.
+   * to open and the open branch must survive a sweep across a leaf row. Also
+   * a no-op when the submenu's parent menu is not part of the open chain
+   * (its branch was popped since the caller resolved the submenu) - opening
+   * there would show an orphaned popover and fork the stack.
    */
   openSubmenuFor(submenu: CngxMenuSubmenuLike): void;
   /**
@@ -285,10 +288,14 @@ export function createMenuFocusStack(deps: CngxMenuFocusStackDeps): CngxMenuFocu
       // always call with the parent already on top, so the loop no-ops there.
       const chain = [deps.rootMenu(), ...submenuStack()];
       const parentIndex = chain.findIndex((menu) => menu.submenuItems().includes(submenu));
-      if (parentIndex >= 0) {
-        while (submenuStack().length > parentIndex) {
-          popSubmenu();
-        }
+      if (parentIndex < 0) {
+        // Parent menu is not part of the open chain (its branch was popped
+        // between the intent edge and this call): opening would show an
+        // orphaned popover and push a forked stack entry.
+        return;
+      }
+      while (submenuStack().length > parentIndex) {
+        popSubmenu();
       }
       openSubmenu(submenu);
     },
@@ -326,6 +333,16 @@ export interface CngxSubmenuHoverRoutingDeps {
   readonly focusStack: CngxMenuFocusStack;
   /** Root menu host - the bottom of the submenu chain. */
   readonly rootMenu: () => CngxMenuHost;
+  /**
+   * Open-state of the root popover. When provided, a settled hover intent
+   * opens only while the root menu is open: a dwell timer can outlive a
+   * dismissal (hidden elements do not reliably fire `pointerleave`), and its
+   * late true edge must not show an orphaned submenu popover. The edge is
+   * still consumed, so reopening the root never retroactively opens a
+   * submenu from a stale dwell. Close edges route regardless - closing is
+   * always safe. Absent: opens are not gated.
+   */
+  readonly rootOpen?: () => boolean;
 }
 
 /**
@@ -369,6 +386,9 @@ export function connectSubmenuHoverToFocusStack(deps: CngxSubmenuHoverRoutingDep
         lastIntent.set(submenu, intent);
         untracked(() => {
           if (intent) {
+            if (deps.rootOpen?.() === false) {
+              return;
+            }
             deps.focusStack.openSubmenuFor(submenu);
           } else {
             deps.focusStack.closeSubmenuFor(submenu);

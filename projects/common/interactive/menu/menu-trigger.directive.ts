@@ -167,6 +167,7 @@ export class CngxMenuTrigger {
     connectSubmenuHoverToFocusStack({
       focusStack: this.focusStack,
       rootMenu: () => this.menu(),
+      rootOpen: () => this.isOpen(),
     });
   }
 

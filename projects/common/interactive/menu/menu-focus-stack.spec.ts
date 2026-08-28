@@ -262,6 +262,23 @@ describe('createMenuFocusStack', () => {
     expect(stack.stack()).toEqual([innerA.host]);
   });
 
+  it('openSubmenuFor bails when the submenu parent menu is not in the open chain', () => {
+    const innerA = mockMenu();
+    const innerB = mockMenu();
+    const submenuA = mockSubmenu('sub-a', innerA.host);
+    const submenuB = mockSubmenu('sub-b', innerB.host);
+    root.submenus.set([submenuA]);
+    innerA.submenus.set([submenuB]);
+
+    // A's branch is closed, so B's parent menu is unreachable: a stale open
+    // request for B must not show an orphaned popover or fork the stack.
+    const stack = build();
+    stack.openSubmenuFor(submenuB);
+
+    expect(submenuB.open).not.toHaveBeenCalled();
+    expect(stack.stack()).toEqual([]);
+  });
+
   it('closeSubmenuFor on an inert brain is a no-op', () => {
     const inertLeaf: CngxMenuSubmenuLike = {
       id: 'leaf',
@@ -382,7 +399,7 @@ describe('connectSubmenuHoverToFocusStack', () => {
     popover = { hide: vi.fn(() => {}) };
   });
 
-  function buildConnected() {
+  function buildConnected(rootOpen?: () => boolean) {
     const stack = createMenuFocusStack({
       rootMenu: () => root.host,
       popover: () => popover,
@@ -390,7 +407,7 @@ describe('connectSubmenuHoverToFocusStack', () => {
       document,
     });
     TestBed.runInInjectionContext(() =>
-      connectSubmenuHoverToFocusStack({ focusStack: stack, rootMenu: () => root.host }),
+      connectSubmenuHoverToFocusStack({ focusStack: stack, rootMenu: () => root.host, rootOpen }),
     );
     TestBed.tick();
     return stack;
@@ -466,6 +483,37 @@ describe('connectSubmenuHoverToFocusStack', () => {
 
     expect(submenuB.open).toHaveBeenCalledTimes(2);
     expect(stack.stack()).toEqual([innerA.host, innerB.host]);
+  });
+
+  it('a stale true edge while the root menu is closed does not open, and reopening does not replay it', () => {
+    const inner = mockMenu();
+    const hoverIntent = signal(false);
+    const submenu: CngxMenuSubmenuLike = { ...mockSubmenu('sub-1', inner.host), hoverIntent };
+    root.submenus.set([submenu]);
+    const rootOpen = signal(true);
+
+    const stack = buildConnected(() => rootOpen());
+    hoverIntent.set(true);
+    TestBed.tick();
+    expect(submenu.open).toHaveBeenCalledOnce();
+
+    // Dismissal: chain cleared, root closed; the dwell decays late...
+    stack.reset();
+    rootOpen.set(false);
+    hoverIntent.set(false);
+    TestBed.tick();
+
+    // ...and a stray re-hover settles true while the root is still closed.
+    hoverIntent.set(true);
+    TestBed.tick();
+    expect(submenu.open).toHaveBeenCalledOnce();
+    expect(stack.stack()).toEqual([]);
+
+    // The suppressed edge is consumed: reopening the root does not replay it.
+    rootOpen.set(true);
+    root.submenus.set([submenu]);
+    TestBed.tick();
+    expect(submenu.open).toHaveBeenCalledOnce();
   });
 
   it('leaves a keyboard-opened submenu alone while its intent never settled true', () => {
