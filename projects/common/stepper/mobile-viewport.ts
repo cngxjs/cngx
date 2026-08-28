@@ -1,4 +1,5 @@
-import { computed, signal, type DestroyRef, type Signal } from '@angular/core';
+import { computed, type DestroyRef, type Signal } from '@angular/core';
+import { createMediaQuerySignal } from '@cngx/core/utils';
 
 import type { CngxStepperMobileCollapse } from './stepper-config';
 
@@ -8,7 +9,8 @@ import type { CngxStepperMobileCollapse } from './stepper-config';
  * `<cngx-stepper>` to drive its mobile auto-collapse template branch.
  *
  * In SSR / non-DOM environments the signal stays `false` and the
- * listener is never wired.
+ * listener is never wired. Thin wrapper over `createMediaQuerySignal`
+ * from `@cngx/core/utils`, bound to `globalThis`.
  *
  * @category common/stepper
  */
@@ -16,16 +18,7 @@ export function createMobileViewportSignal(
   mediaQuery: string,
   destroyRef: DestroyRef,
 ): Signal<boolean> {
-  const matches = signal<boolean>(false);
-  if (typeof globalThis.matchMedia !== 'function') {
-    return matches.asReadonly();
-  }
-  const mql = globalThis.matchMedia(mediaQuery);
-  matches.set(mql.matches);
-  const listener = (event: MediaQueryListEvent): void => matches.set(event.matches);
-  mql.addEventListener('change', listener);
-  destroyRef.onDestroy(() => mql.removeEventListener('change', listener));
-  return matches.asReadonly();
+  return createMediaQuerySignal(mediaQuery, destroyRef, globalThis);
 }
 
 /**

@@ -1,5 +1,6 @@
 import { DOCUMENT } from '@angular/common';
-import { DestroyRef, Directive, inject, signal, type Signal } from '@angular/core';
+import { DestroyRef, Directive, inject, type Signal } from '@angular/core';
+import { createMediaQuerySignal } from '@cngx/core/utils';
 
 /**
  * Reflects the user's `prefers-reduced-motion` media query as a reactive signal.
@@ -45,17 +46,10 @@ export class CngxReducedMotion {
   readonly prefersReducedMotion: Signal<boolean>;
 
   constructor() {
-    const win = inject(DOCUMENT).defaultView;
-    const pref = signal(false);
-
-    if (win) {
-      const mq = win.matchMedia('(prefers-reduced-motion: reduce)');
-      pref.set(mq.matches);
-      const listener = (e: MediaQueryListEvent) => pref.set(e.matches);
-      mq.addEventListener('change', listener);
-      inject(DestroyRef).onDestroy(() => mq.removeEventListener('change', listener));
-    }
-
-    this.prefersReducedMotion = pref.asReadonly();
+    this.prefersReducedMotion = createMediaQuerySignal(
+      '(prefers-reduced-motion: reduce)',
+      inject(DestroyRef),
+      inject(DOCUMENT).defaultView,
+    );
   }
 }

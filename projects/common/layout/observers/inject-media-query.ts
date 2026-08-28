@@ -1,5 +1,6 @@
 import { DOCUMENT } from '@angular/common';
-import { DestroyRef, inject, signal, type Signal } from '@angular/core';
+import { DestroyRef, inject, type Signal } from '@angular/core';
+import { createMediaQuerySignal } from '@cngx/core/utils';
 
 /**
  * Inject-form of {@link CngxMediaQuery}: returns a reactive
@@ -38,16 +39,5 @@ import { DestroyRef, inject, signal, type Signal } from '@angular/core';
  * <example-url>http://localhost:4200/#/common/layout/media-query/inject-breakpoint-signal</example-url>
  */
 export function injectMediaQuery(query: string): Signal<boolean> {
-  const win = inject(DOCUMENT).defaultView;
-  if (!win || typeof win.matchMedia !== 'function') {
-    return signal(false).asReadonly();
-  }
-
-  const mql = win.matchMedia(query);
-  const matches = signal(mql.matches);
-  const handler = (event: MediaQueryListEvent): void => matches.set(event.matches);
-  mql.addEventListener('change', handler);
-  inject(DestroyRef).onDestroy(() => mql.removeEventListener('change', handler));
-
-  return matches.asReadonly();
+  return createMediaQuerySignal(query, inject(DestroyRef), inject(DOCUMENT).defaultView);
 }

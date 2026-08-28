@@ -30,6 +30,11 @@ export {
   injectLoadingConfig,
 } from './loading-config';
 export { createControlledSource } from './controlled-source';
+export {
+  createMediaQuerySignal,
+  observeMediaQuery,
+  type MediaQueryHost,
+} from './media-query-signal';
 export { CNGX_STATEFUL, type CngxStateful } from './stateful';
 export {
   CNGX_SELECTION_CONTROLLER_FACTORY,
