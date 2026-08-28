@@ -73,8 +73,12 @@ export class CngxSliderTrack {
    * larger of one step and a tenth of the range.
    */
   readonly largeStep = input<number | undefined>(undefined);
-  /** Whether the slider is disabled (blocks keyboard and pointer, `tabindex=-1`). */
-  readonly disabled = input<boolean>(false);
+  /**
+   * Whether the slider is disabled (blocks keyboard and pointer, `tabindex=-1`).
+   * A `ModelSignal` so form-field bridges can drive it programmatically,
+   * mirroring the checkbox/toggle family's bridge write path.
+   */
+  readonly disabled = model<boolean>(false);
   /** Track axis. Drives `aria-orientation` and the pointer-to-fraction math. */
   readonly orientation = input<'horizontal' | 'vertical'>('horizontal');
   /** Optional `aria-valuetext` formatter (currency, dates, named stops). */

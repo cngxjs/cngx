@@ -1,4 +1,4 @@
-import { computed, Directive, inject, signal } from '@angular/core';
+import { computed, Directive, effect, inject, signal, untracked } from '@angular/core';
 
 import { CngxRangeSliderTrack } from '@cngx/common/interactive';
 
@@ -86,6 +86,17 @@ export class CngxRangeSliderFieldBridge implements CngxFormFieldControl {
   protected readonly ariaReadonly = computed(() => (this.presenter?.readonly() ? true : null));
 
   constructor() {
+    const presenter = this.presenter;
+    if (presenter !== null) {
+      // The track's disabled model gates keyboard, pointer and tabindex in the
+      // atom itself - without this write a Signal-Forms-disabled field leaves
+      // the range slider fully operable.
+      effect(() => {
+        const disabled = presenter.disabled();
+        untracked(() => this.slider.disabled.set(disabled));
+      });
+    }
+
     // A range slider always asserts its own tuple: a non-tuple field is skipped
     // on read but still seeded on write. `toFieldValue` spreads so the field
     // owns a fresh array. The coerceFromField fallback is unreachable -

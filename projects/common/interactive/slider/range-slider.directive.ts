@@ -63,8 +63,12 @@ export class CngxRangeSliderTrack implements CngxSliderRangeHost {
    * Defaults to the larger of one step and a tenth of the range.
    */
   readonly largeStep = input<number | undefined>(undefined);
-  /** Whether the range slider is disabled. */
-  readonly disabled = input<boolean>(false);
+  /**
+   * Whether the range slider is disabled. A `ModelSignal` so form-field
+   * bridges can drive it programmatically, mirroring the checkbox/toggle
+   * family's bridge write path.
+   */
+  readonly disabled = model<boolean>(false);
   /** Track axis shared by both thumbs. */
   readonly orientation = input<'horizontal' | 'vertical'>('horizontal');
   /** Optional `aria-valuetext` formatter shared across both thumbs. */

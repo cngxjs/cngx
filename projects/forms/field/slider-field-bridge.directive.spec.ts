@@ -81,6 +81,32 @@ describe('CngxSliderFieldBridge', () => {
     expect(bridge.empty()).toBe(false);
   });
 
+  it('propagates field disabled into the track and back out again', () => {
+    const { fixture, brain, bridge, ref } = setup();
+    expect(brain.disabled()).toBe(false);
+
+    ref.disabled.set(true);
+    flush(fixture);
+    expect(bridge.disabled()).toBe(true);
+    expect(brain.disabled()).toBe(true);
+
+    ref.disabled.set(false);
+    flush(fixture);
+    expect(brain.disabled()).toBe(false);
+  });
+
+  it('reflects field disabled on the track host (aria-disabled, tabindex=-1)', () => {
+    const { fixture, ref } = setup();
+    const host = fixture.debugElement.query(By.directive(CngxSlider)).nativeElement as HTMLElement;
+    expect(host.getAttribute('aria-disabled')).toBeNull();
+    expect(host.getAttribute('tabindex')).toBe('0');
+
+    ref.disabled.set(true);
+    flush(fixture);
+    expect(host.getAttribute('aria-disabled')).toBe('true');
+    expect(host.getAttribute('tabindex')).toBe('-1');
+  });
+
   it('reflects errorState from the presenter', () => {
     const { fixture, bridge, ref } = setup();
     expect(bridge.errorState()).toBe(false);
