@@ -9,9 +9,6 @@ function setupEngine(opts?: { reducedMotion?: boolean; config?: Partial<CngxAudi
   ctx: AudioContextMock;
   flipReducedMotion: (v: boolean) => void;
 } {
-  // jsdom ships no window.matchMedia; seed a placeholder so the shared mock's
-  // install() has something to bind/restore.
-  (window as unknown as Record<string, unknown>)['matchMedia'] = vi.fn();
   const mm = createMatchMediaMock(opts?.reducedMotion ?? false);
   mm.install(window);
   const ctx = createAudioContextMock('suspended');
@@ -29,7 +26,6 @@ function setupEngine(opts?: { reducedMotion?: boolean; config?: Partial<CngxAudi
 
 afterEach(() => {
   vi.restoreAllMocks();
-  delete (window as unknown as Record<string, unknown>)['matchMedia'];
 });
 
 describe('createAudioEngine', () => {
@@ -148,7 +144,6 @@ describe('createAudioEngine', () => {
     });
 
     it('reports unsupported when no AudioContext can be created', () => {
-      (window as unknown as Record<string, unknown>)['matchMedia'] = vi.fn();
       const mm = createMatchMediaMock(false);
       mm.install(window);
       TestBed.configureTestingModule({ providers: [] });

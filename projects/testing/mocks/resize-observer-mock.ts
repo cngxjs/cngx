@@ -36,14 +36,20 @@ export function createResizeObserverMock(): ResizeObserverMock {
   return {
     install(win: Window & { ResizeObserver?: typeof ResizeObserver }) {
       originalRO = win.ResizeObserver ?? null;
-      win.ResizeObserver = class MockResizeObserver {
-        constructor(cb: ResizeObserverCallback) {
-          callback = cb;
-        }
-        observe = observe;
-        unobserve = vi.fn();
-        disconnect = disconnect;
-      } as unknown as typeof ResizeObserver;
+      // stubGlobal keeps the mock inside vitest-setup's unstubAllGlobals net;
+      // a direct assignment would survive into later spec files sharing the
+      // worker (the builder runs with isolate: false).
+      vi.stubGlobal(
+        'ResizeObserver',
+        class MockResizeObserver {
+          constructor(cb: ResizeObserverCallback) {
+            callback = cb;
+          }
+          observe = observe;
+          unobserve = vi.fn();
+          disconnect = disconnect;
+        } as unknown as typeof ResizeObserver,
+      );
     },
     triggerResize(entry: Partial<ResizeObserverEntry>) {
       callback?.([entry as ResizeObserverEntry], null!);
@@ -52,7 +58,10 @@ export function createResizeObserverMock(): ResizeObserverMock {
     disconnect,
     restore(win: Window & { ResizeObserver?: typeof ResizeObserver }) {
       if (originalRO) {
-        win.ResizeObserver = originalRO;
+        vi.stubGlobal('ResizeObserver', originalRO);
+      } else {
+        // jsdom ships no ResizeObserver: restoring means removing the property.
+        delete win.ResizeObserver;
       }
     },
   };
