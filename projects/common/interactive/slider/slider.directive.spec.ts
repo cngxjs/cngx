@@ -127,6 +127,68 @@ describe('CngxSliderTrack', () => {
     fixture.detectChanges();
     expect(host.v()).toBe(75);
   });
+
+  describe('disabled-reason describedby (Toggle/Radio convergence)', () => {
+    @Component({
+      template: `<div
+        cngxSliderTrack
+        [(value)]="v"
+        [disabled]="off()"
+        [disabledReason]="reason()"
+        [cngxDescribedBy]="customId()"
+      ></div>`,
+      imports: [CngxSliderTrack],
+    })
+    class ReasonHost {
+      v = signal(50);
+      off = signal(false);
+      reason = signal('');
+      customId = signal<string | null>(null);
+    }
+
+    function setupReason() {
+      const fixture = TestBed.createComponent(ReasonHost);
+      fixture.detectChanges();
+      const el = fixture.debugElement.query(By.directive(CngxSliderTrack))
+        .nativeElement as HTMLElement;
+      return { fixture, host: fixture.componentInstance, el };
+    }
+
+    it('gates the reason id and the sr-only span on disabled AND a reason', () => {
+      const { fixture, host, el } = setupReason();
+      const span = el.querySelector('[id^="cngx-slider-desc"]');
+      expect(span).not.toBeNull();
+      expect(el.getAttribute('aria-describedby')).toBeNull();
+
+      host.reason.set('Locked while playback is active');
+      fixture.detectChanges();
+      expect(el.getAttribute('aria-describedby')).toBeNull();
+      expect(span?.getAttribute('aria-hidden')).toBe('true');
+
+      host.off.set(true);
+      fixture.detectChanges();
+      expect(el.getAttribute('aria-describedby')).toBe(span?.id);
+      expect(span?.getAttribute('aria-hidden')).toBeNull();
+      expect(span?.textContent).toContain('Locked while playback is active');
+
+      host.off.set(false);
+      fixture.detectChanges();
+      expect(el.getAttribute('aria-describedby')).toBeNull();
+      expect(span?.getAttribute('aria-hidden')).toBe('true');
+    });
+
+    it('falls back to the consumer cngxDescribedBy id while the reason does not apply', () => {
+      const { fixture, host, el } = setupReason();
+      host.customId.set('vol-help');
+      host.reason.set('Locked');
+      fixture.detectChanges();
+      expect(el.getAttribute('aria-describedby')).toBe('vol-help');
+
+      host.off.set(true);
+      fixture.detectChanges();
+      expect(el.getAttribute('aria-describedby')).toMatch(/^cngx-slider-desc/);
+    });
+  });
 });
 
 describe('CngxSliderTrack under dir=rtl', () => {

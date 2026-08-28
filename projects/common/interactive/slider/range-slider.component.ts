@@ -49,7 +49,18 @@ import { createSliderTicks } from './slider-ticks';
   hostDirectives: [
     {
       directive: CngxRangeSliderTrack,
-      inputs: ['value', 'min', 'max', 'step', 'largeStep', 'disabled', 'orientation', 'valueText'],
+      inputs: [
+        'value',
+        'min',
+        'max',
+        'step',
+        'largeStep',
+        'disabled',
+        'disabledReason',
+        'cngxDescribedBy',
+        'orientation',
+        'valueText',
+      ],
       outputs: ['valueChange'],
     },
   ],

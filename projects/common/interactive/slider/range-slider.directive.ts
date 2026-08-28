@@ -1,5 +1,6 @@
 import { computed, Directive, ElementRef, inject, input, model } from '@angular/core';
 
+import { createSliderDisabledReason } from './slider-disabled-reason';
 import { pointerFraction } from './slider-interaction';
 import {
   CNGX_SLIDER_RANGE,
@@ -44,6 +45,7 @@ import {
   host: {
     role: 'group',
     '[attr.aria-disabled]': 'disabled() || null',
+    '[attr.aria-describedby]': 'reason.resolvedDescribedBy()',
     '[attr.aria-orientation]': 'orientation()',
     '[style.--cngx-slider-start-fraction]': 'startFraction()',
     '[style.--cngx-slider-end-fraction]': 'endFraction()',
@@ -69,10 +71,34 @@ export class CngxRangeSliderTrack implements CngxSliderRangeHost {
    * family's bridge write path.
    */
   readonly disabled = model<boolean>(false);
+  /**
+   * Consumer-supplied "why" for the disabled state (no library default per
+   * the EN-defaults rule). Announced via an sr-only span the directive
+   * appends to the group host; both the span's visibility and the host's
+   * `aria-describedby` reference are gated on `disabled() &&
+   * disabledReason()` (Toggle/Radio convergence).
+   */
+  readonly disabledReason = input<string>('');
+  /**
+   * Optional consumer-supplied id of an external description element.
+   * Consumers bind via `[cngxDescribedBy]="someId"` - same surface as
+   * `CngxChipInteraction`. The active disabled-reason wins.
+   */
+  readonly describedBy = input<string | null>(null, {
+    alias: 'cngxDescribedBy',
+  });
   /** Track axis shared by both thumbs. */
   readonly orientation = input<'horizontal' | 'vertical'>('horizontal');
   /** Optional `aria-valuetext` formatter shared across both thumbs. */
   readonly valueText = input<((value: number) => string) | undefined>(undefined);
+
+  /** Disabled-"why" span + gated `aria-describedby` resolution. */
+  protected readonly reason = createSliderDisabledReason({
+    idPrefix: 'cngx-range-slider-desc',
+    disabled: () => this.disabled(),
+    reason: () => this.disabledReason(),
+    describedBy: () => this.describedBy(),
+  });
 
   // Sibling-clamp bounds. The start thumb's ceiling tracks the end value;
   // the end thumb's floor tracks the start value. Held as stable signals
