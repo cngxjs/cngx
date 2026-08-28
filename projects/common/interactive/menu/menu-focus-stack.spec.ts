@@ -6,6 +6,7 @@ import type { CngxActiveDescendant } from '@cngx/common/a11y';
 
 import {
   CNGX_MENU_FOCUS_STACK_FACTORY,
+  connectSubmenuHoverToFocusStack,
   createMenuFocusStack,
   type CngxMenuFocusStackPopoverRef,
 } from './menu-focus-stack';
@@ -121,6 +122,58 @@ describe('createMenuFocusStack', () => {
     expect(submenu.open).toHaveBeenCalledOnce();
     expect(stack.stack()).toEqual([inner.host]);
     expect(inner.ad.highlightFirst).toHaveBeenCalledOnce();
+  });
+
+  it('openSubmenuFor chain-corrects: opening a sibling parent pops the other branch first', () => {
+    const innerA = mockMenu();
+    const innerB = mockMenu();
+    const submenuA = mockSubmenu('sub-a', innerA.host);
+    const submenuB = mockSubmenu('sub-b', innerB.host);
+    root.submenus.set([submenuA, submenuB]);
+
+    const stack = build();
+    stack.openSubmenuFor(submenuA);
+    expect(stack.stack()).toEqual([innerA.host]);
+
+    stack.openSubmenuFor(submenuB);
+
+    expect(submenuA.close).toHaveBeenCalledOnce();
+    expect(submenuB.open).toHaveBeenCalledOnce();
+    expect(stack.stack()).toEqual([innerB.host]);
+    expect(stack.effectiveMenu()).toBe(innerB.host);
+  });
+
+  it('closeSubmenuFor pops the submenu and its open descendants innermost-first', () => {
+    const innerA = mockMenu();
+    const innerB = mockMenu();
+    const submenuA = mockSubmenu('sub-a', innerA.host);
+    const submenuB = mockSubmenu('sub-b', innerB.host);
+    root.submenus.set([submenuA]);
+    innerA.submenus.set([submenuB]);
+
+    const stack = build();
+    stack.openSubmenuFor(submenuA);
+    stack.openSubmenuFor(submenuB);
+    expect(stack.stack()).toEqual([innerA.host, innerB.host]);
+
+    stack.closeSubmenuFor(submenuA);
+
+    expect(submenuB.close).toHaveBeenCalledOnce();
+    expect(submenuA.close).toHaveBeenCalledOnce();
+    expect(stack.stack()).toEqual([]);
+    expect(stack.effectiveMenu()).toBe(root.host);
+  });
+
+  it('closeSubmenuFor on a non-stack-tracked submenu only closes the popover', () => {
+    const inner = mockMenu();
+    const submenu = mockSubmenu('sub-1', inner.host);
+    root.submenus.set([submenu]);
+
+    const stack = build();
+    stack.closeSubmenuFor(submenu);
+
+    expect(submenu.close).toHaveBeenCalledOnce();
+    expect(stack.stack()).toEqual([]);
   });
 
   it('noteSubmenuOpened pushes and highlights the inner first item without opening the submenu', () => {
@@ -276,6 +329,85 @@ describe('createMenuFocusStack', () => {
 
     button.remove();
     other.remove();
+  });
+});
+
+describe('connectSubmenuHoverToFocusStack', () => {
+  let root: ReturnType<typeof mockMenu>;
+  let popover: CngxMenuFocusStackPopoverRef;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({});
+    root = mockMenu();
+    popover = { hide: vi.fn(() => {}) };
+  });
+
+  function buildConnected() {
+    const stack = createMenuFocusStack({
+      rootMenu: () => root.host,
+      popover: () => popover,
+      nav: createW3CMenuStrategy(),
+      document,
+    });
+    TestBed.runInInjectionContext(() =>
+      connectSubmenuHoverToFocusStack({ focusStack: stack, rootMenu: () => root.host }),
+    );
+    TestBed.tick();
+    return stack;
+  }
+
+  it('routes settled hover-intent edges through openSubmenuFor / closeSubmenuFor', () => {
+    const inner = mockMenu();
+    const hoverIntent = signal(false);
+    const submenu: CngxMenuSubmenuLike = { ...mockSubmenu('sub-1', inner.host), hoverIntent };
+    root.submenus.set([submenu]);
+
+    const stack = buildConnected();
+    hoverIntent.set(true);
+    TestBed.tick();
+
+    expect(submenu.open).toHaveBeenCalledOnce();
+    expect(stack.stack()).toEqual([inner.host]);
+    expect(inner.ad.highlightFirst).toHaveBeenCalledOnce();
+
+    hoverIntent.set(false);
+    TestBed.tick();
+
+    expect(submenu.close).toHaveBeenCalledOnce();
+    expect(stack.stack()).toEqual([]);
+  });
+
+  it('routes intent of a submenu registered inside an open submenu level', () => {
+    const innerA = mockMenu();
+    const innerB = mockMenu();
+    const hoverIntent = signal(false);
+    const submenuA = mockSubmenu('sub-a', innerA.host);
+    const submenuB: CngxMenuSubmenuLike = { ...mockSubmenu('sub-b', innerB.host), hoverIntent };
+    root.submenus.set([submenuA]);
+    innerA.submenus.set([submenuB]);
+
+    const stack = buildConnected();
+    stack.openSubmenuFor(submenuA);
+    TestBed.tick();
+    hoverIntent.set(true);
+    TestBed.tick();
+
+    expect(submenuB.open).toHaveBeenCalledOnce();
+    expect(stack.stack()).toEqual([innerA.host, innerB.host]);
+  });
+
+  it('leaves a keyboard-opened submenu alone while its intent never settled true', () => {
+    const inner = mockMenu();
+    const hoverIntent = signal(false);
+    const submenu: CngxMenuSubmenuLike = { ...mockSubmenu('sub-1', inner.host), hoverIntent };
+    root.submenus.set([submenu]);
+
+    const stack = buildConnected();
+    stack.openSubmenuFor(submenu);
+    TestBed.tick();
+
+    expect(submenu.close).not.toHaveBeenCalled();
+    expect(stack.stack()).toEqual([inner.host]);
   });
 });
 

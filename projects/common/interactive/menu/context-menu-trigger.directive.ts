@@ -18,7 +18,10 @@ import {
 import { CNGX_MENU_DISMISS_HANDLER_FACTORY } from './dismiss-handler';
 import { CNGX_MENU_ANNOUNCER_FACTORY } from './menu-announcer';
 import { injectMenuConfig } from './menu-config';
-import { CNGX_MENU_FOCUS_STACK_FACTORY } from './menu-focus-stack';
+import {
+  CNGX_MENU_FOCUS_STACK_FACTORY,
+  connectSubmenuHoverToFocusStack,
+} from './menu-focus-stack';
 import type { CngxMenuHost } from './menu-host.token';
 import { CNGX_MENU_NAV_STRATEGY } from './menu-nav-strategy';
 
@@ -116,6 +119,12 @@ export class CngxContextMenuTrigger {
     effect(() => {
       const open = this.isOpen();
       untracked(() => this.core.syncOpenState(open));
+    });
+    // Hover routing: route submenu hover-intent edges through the core's
+    // focus stack, same primitives as keyboard/click (see CngxMenuTrigger).
+    connectSubmenuHoverToFocusStack({
+      focusStack: this.core.focusStack,
+      rootMenu: () => this.menu(),
     });
   }
 

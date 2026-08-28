@@ -16,6 +16,7 @@ import {
   CNGX_MENU_DISMISS_HANDLER_FACTORY,
   CNGX_MENU_FOCUS_STACK_FACTORY,
   CNGX_MENU_NAV_STRATEGY,
+  connectSubmenuHoverToFocusStack,
   createContextMenuTriggerCore,
   injectMenuConfig,
 } from '@cngx/common/interactive';
@@ -110,6 +111,12 @@ export class CngxContextMenuFor<T = unknown> {
     effect(() => {
       const open = this.isOpen();
       untracked(() => this.core.syncOpenState(open));
+    });
+    // Hover routing: route submenu hover-intent edges through the core's
+    // focus stack, same primitives as keyboard/click (see CngxMenuTrigger).
+    connectSubmenuHoverToFocusStack({
+      focusStack: this.core.focusStack,
+      rootMenu: () => this.panel().menuHost,
     });
     // Open moves focus into the panel (a sibling of this trigger), so submenu
     // ArrowRight/ArrowLeft/Escape land on the panel. Forward the panel's

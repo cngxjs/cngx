@@ -9,7 +9,7 @@ import {
 } from './dismiss-handler';
 import type { CngxMenuAnnouncerLike } from './menu-announcer';
 import type { CngxMenuConfig } from './menu-config';
-import type { CngxMenuFocusStackFactory } from './menu-focus-stack';
+import type { CngxMenuFocusStack, CngxMenuFocusStackFactory } from './menu-focus-stack';
 import type { CngxMenuHost } from './menu-host.token';
 import type { CngxMenuNavStrategy } from './menu-nav-strategy';
 
@@ -99,6 +99,13 @@ export interface CngxContextMenuTriggerCoreDeps {
 export interface CngxContextMenuTriggerCore {
   /** The dismissal source that closed the menu most recently. */
   readonly lastDismissSource: Signal<CngxMenuDismissSource | null>;
+  /**
+   * The core's submenu focus-stack model. Exposed for host-side wiring the
+   * pure factory cannot install itself - the DI hosts pass it to
+   * `connectSubmenuHoverToFocusStack` (an `effect`, so it needs their
+   * injection context) to route submenu hover intent through the stack.
+   */
+  readonly focusStack: CngxMenuFocusStack;
   /** `contextmenu` host handler - consults `resolveOpen` before opening. */
   handleContextMenu(event: MouseEvent): void;
   /** Keydown host handler - `Shift+F10` opens at the host centre. */
@@ -217,6 +224,7 @@ export function createContextMenuTriggerCore(
 
   return {
     lastDismissSource: dismissBinding.lastSource,
+    focusStack,
     handleContextMenu(event: MouseEvent): void {
       const decision = resolveOpen(event);
       if (!decision.open) {

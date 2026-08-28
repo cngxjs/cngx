@@ -218,6 +218,88 @@ describe('CngxMenuItemSubmenu', () => {
     expect(submenu.id).toBe(menuItemDe);
     expect(submenu.id).toMatch(/^cngx-menu-item-/);
   });
+
+  // Hover routes through the trigger's focus stack (same openSubmenuFor /
+  // closeSubmenuFor primitives as keyboard), so a hover-opened submenu is
+  // keyboard-visible and hover-close never leaves a stale stack entry.
+  function openOuter(triggerEl: HTMLElement): void {
+    triggerEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+    TestBed.tick();
+  }
+
+  function settleHover(ms: number): void {
+    vi.advanceTimersByTime(ms);
+    TestBed.tick();
+  }
+
+  it('hover-open lands on the focus stack: submenu opens, first item highlighted, keyboard navigates inside', () => {
+    const { triggerEl, innerMenu, innerPop, submenuEl } = setup();
+    openOuter(triggerEl);
+    vi.useFakeTimers();
+
+    submenuEl.dispatchEvent(new PointerEvent('pointerenter'));
+    settleHover(0);
+
+    expect(innerPop.isVisible()).toBe(true);
+    expect(innerMenu.ad.activeValue()).toBe('file1');
+
+    triggerEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+    TestBed.tick();
+    expect(innerMenu.ad.activeValue()).toBe('file2');
+  });
+
+  it('hover-close pops the stack after submenuCloseDelay: keyboard falls back to the parent menu', () => {
+    const { triggerEl, outerMenu, innerPop, submenuEl } = setup();
+    openOuter(triggerEl);
+    vi.useFakeTimers();
+    submenuEl.dispatchEvent(new PointerEvent('pointerenter'));
+    settleHover(0);
+    expect(innerPop.isVisible()).toBe(true);
+
+    submenuEl.dispatchEvent(new PointerEvent('pointerleave'));
+    settleHover(150);
+
+    expect(innerPop.isVisible()).toBe(false);
+    // Keyboard is back at the parent level: ArrowDown continues from the
+    // hovered parent item (pointerenter highlighted 'recent') to 'paste'.
+    triggerEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+    TestBed.tick();
+    expect(outerMenu.ad.activeValue()).toBe('paste');
+  });
+
+  it('crossing the gap from parent item to popover keeps the submenu open; leaving the popover closes it', () => {
+    const { fixture, triggerEl, innerPop, submenuEl } = setup();
+    const innerPopEl = fixture.debugElement.queryAll(By.directive(CngxPopover))[1]
+      .nativeElement as HTMLElement;
+    openOuter(triggerEl);
+    vi.useFakeTimers();
+    submenuEl.dispatchEvent(new PointerEvent('pointerenter'));
+    settleHover(0);
+
+    submenuEl.dispatchEvent(new PointerEvent('pointerleave'));
+    vi.advanceTimersByTime(100);
+    innerPopEl.dispatchEvent(new PointerEvent('pointerenter'));
+    settleHover(300);
+    expect(innerPop.isVisible()).toBe(true);
+
+    innerPopEl.dispatchEvent(new PointerEvent('pointerleave'));
+    settleHover(150);
+    expect(innerPop.isVisible()).toBe(false);
+  });
+
+  it('destroy while a hover-close timer is pending cleans up without a late close', () => {
+    const { fixture, triggerEl, submenuEl } = setup();
+    openOuter(triggerEl);
+    vi.useFakeTimers();
+    submenuEl.dispatchEvent(new PointerEvent('pointerenter'));
+    settleHover(0);
+
+    submenuEl.dispatchEvent(new PointerEvent('pointerleave'));
+    fixture.destroy();
+
+    expect(() => vi.advanceTimersByTime(500)).not.toThrow();
+    expect(vi.getTimerCount()).toBe(0);
+  });
 });
 
 @Component({

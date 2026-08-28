@@ -18,6 +18,16 @@ export interface CngxMenuSubmenuLike {
   readonly isOpen: Signal<boolean>;
   /** The submenu's inner menu host (its `CngxMenu` instance). */
   readonly inner: CngxMenuHost;
+  /**
+   * Debounced pointer intent over the submenu's combined hover surface
+   * (parent item plus popover panel). The companion only DERIVES this signal;
+   * it never opens or closes anything off it - the surrounding trigger routes
+   * intent edges through the focus stack via
+   * `connectSubmenuHoverToFocusStack`, so a hover-opened submenu is
+   * keyboard-visible exactly like a keyboard-opened one. Optional: a
+   * companion without a pointer surface omits it and stays keyboard-only.
+   */
+  readonly hoverIntent?: Signal<boolean>;
   open(): void;
   close(): void;
 }

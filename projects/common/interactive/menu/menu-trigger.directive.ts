@@ -19,7 +19,10 @@ import {
 } from './dismiss-handler';
 import { CNGX_MENU_ANNOUNCER_FACTORY } from './menu-announcer';
 import { injectMenuConfig } from './menu-config';
-import { CNGX_MENU_FOCUS_STACK_FACTORY } from './menu-focus-stack';
+import {
+  CNGX_MENU_FOCUS_STACK_FACTORY,
+  connectSubmenuHoverToFocusStack,
+} from './menu-focus-stack';
 import type { CngxMenuHost } from './menu-host.token';
 import { CNGX_MENU_NAV_STRATEGY } from './menu-nav-strategy';
 
@@ -156,6 +159,14 @@ export class CngxMenuTrigger {
       const menu = this.menu();
       const sub = outputToObservable(menu.ad.activated).subscribe(() => this.openActiveSubmenu());
       onCleanup(() => sub.unsubscribe());
+    });
+    // Hover routing: submenu companions only derive debounced hover intent;
+    // this connector routes the edges through the same openSubmenuFor /
+    // closeSubmenuFor primitives keyboard and click use, so a hover-opened
+    // submenu is stack-tracked (keyboard-visible, ArrowLeft/Escape pop it).
+    connectSubmenuHoverToFocusStack({
+      focusStack: this.focusStack,
+      rootMenu: () => this.menu(),
     });
   }
 
