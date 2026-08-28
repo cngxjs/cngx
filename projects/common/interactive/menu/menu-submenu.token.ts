@@ -17,13 +17,12 @@ export interface CngxMenuSubmenuLike {
   /** Reactive open state, mirrored from the wrapped popover. */
   readonly isOpen: Signal<boolean>;
   /**
-   * The submenu's inner menu host (its `CngxMenu` instance). Typed non-null
-   * for the wired contract, but an inert companion (a leaf item in the
-   * context-menu organism, where every item carries the directive) resolves
-   * `null` at runtime - stack consumers read it defensively and treat `null`
-   * as inert.
+   * The submenu's inner menu host (its `CngxMenu` instance), or `null` while
+   * unwired. An inert companion never resolves one - the context-menu
+   * organism applies the directive to every item, so leaf items register a
+   * brain whose `inner` stays `null`; the focus stack treats those as inert.
    */
-  readonly inner: CngxMenuHost;
+  readonly inner: CngxMenuHost | null;
   /**
    * Debounced pointer intent over the submenu's combined hover surface
    * (parent item plus popover panel). The companion only DERIVES this signal;

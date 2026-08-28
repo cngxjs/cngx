@@ -223,7 +223,7 @@ describe('createMenuFocusStack', () => {
   it('ignores an inert submenu brain whose inner menu never resolves (leaf item in the organism)', () => {
     const inert: CngxMenuSubmenuLike = {
       id: 'leaf',
-      inner: null as unknown as CngxMenuHost,
+      inner: null,
       isOpen: signal(false),
       open: vi.fn(),
       close: vi.fn(),
@@ -244,7 +244,7 @@ describe('createMenuFocusStack', () => {
     const submenuA = mockSubmenu('sub-a', innerA.host);
     const inertLeaf: CngxMenuSubmenuLike = {
       id: 'leaf',
-      inner: null as unknown as CngxMenuHost,
+      inner: null,
       isOpen: signal(false),
       open: vi.fn(),
       close: vi.fn(),
@@ -282,7 +282,7 @@ describe('createMenuFocusStack', () => {
   it('closeSubmenuFor on an inert brain is a no-op', () => {
     const inertLeaf: CngxMenuSubmenuLike = {
       id: 'leaf',
-      inner: null as unknown as CngxMenuHost,
+      inner: null,
       isOpen: signal(false),
       open: vi.fn(),
       close: vi.fn(),

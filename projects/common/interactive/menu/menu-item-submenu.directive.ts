@@ -156,13 +156,8 @@ export class CngxMenuItemSubmenu implements CngxMenuSubmenuLike {
     return popover ? `--cngx-pop-${popover.id()}` : null;
   });
 
-  get inner(): CngxMenuHost {
-    // Typed non-null for the wired contract, but resolves null while unwired -
-    // the context-menu organism applies this directive to every item, so leaf
-    // items register an inert brain whose inner never resolves. The stack
-    // primitives read it defensively (cast to `CngxMenuHost | null`) and treat
-    // null as inert.
-    return this.resolvedMenu()!;
+  get inner(): CngxMenuHost | null {
+    return this.resolvedMenu();
   }
 
   open(): void {

@@ -162,7 +162,7 @@ export function createMenuFocusStack(deps: CngxMenuFocusStackDeps): CngxMenuFocu
   // so leaf items register a submenu-less brain whose `inner` never resolves.
   // Skip those - a leaf has no submenu to track.
   const pushIfAbsent = (submenu: CngxMenuSubmenuLike): void => {
-    const inner = submenu.inner as CngxMenuHost | null;
+    const inner = submenu.inner;
     if (inner === null || submenuStack().includes(inner)) {
       return;
     }
@@ -278,7 +278,7 @@ export function createMenuFocusStack(deps: CngxMenuFocusStackDeps): CngxMenuFocu
       // Inert brain (organism leaf item - no popover, `inner` never resolves):
       // nothing to open, and chain-correcting for it would tear down the open
       // branch on an incidental pointer sweep across a leaf row.
-      const inner = submenu.inner as CngxMenuHost | null;
+      const inner = submenu.inner;
       if (inner === null || submenuStack().includes(inner)) {
         return;
       }
@@ -300,7 +300,7 @@ export function createMenuFocusStack(deps: CngxMenuFocusStackDeps): CngxMenuFocu
       openSubmenu(submenu);
     },
     closeSubmenuFor(submenu: CngxMenuSubmenuLike): void {
-      const inner = submenu.inner as CngxMenuHost | null;
+      const inner = submenu.inner;
       if (inner === null) {
         // Inert brain - nothing was ever open.
         return;
@@ -395,7 +395,7 @@ export function connectSubmenuHoverToFocusStack(deps: CngxSubmenuHoverRoutingDep
           }
         });
       }
-      const inner = submenu.inner as CngxMenuHost | null;
+      const inner = submenu.inner;
       if (inner !== null) {
         visit(inner);
       }
