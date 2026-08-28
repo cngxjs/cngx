@@ -85,10 +85,16 @@ export class CngxFormFieldPresenter implements CngxFormFieldHostContract {
   readonly errorId = computed(() => `cngx-${this.name()}-error`);
 
   /**
-   * Always contains both hint and error IDs.
-   * `aria-hidden` on the respective containers controls what the screen reader actually reads.
+   * Space-separated `aria-describedby` target list for the field's input.
+   *
+   * The hint ID is always present; the error ID is emitted only while
+   * {@link showError} is true. A directly-referenced node contributes to the
+   * accessible description even when it is `aria-hidden` (accname 1.2 §2A),
+   * so the reference itself is the gate - the containers stay in the DOM.
    */
-  readonly describedBy = computed(() => `${this.hintId()} ${this.errorId()}`);
+  readonly describedBy = computed(() =>
+    this.showError() ? `${this.hintId()} ${this.errorId()}` : this.hintId(),
+  );
 
   /** Whether the field has a `required` validator. */
   readonly required = computed(() => this.fieldState().required());

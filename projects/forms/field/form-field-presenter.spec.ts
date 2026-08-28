@@ -76,8 +76,19 @@ describe('CngxFormFieldPresenter', () => {
       expect(presenter.errorId()).toBe('cngx-email-error');
     });
 
-    it('describedBy contains both hint and error IDs', () => {
+    it('describedBy contains only the hint ID while no error is shown', () => {
+      expect(presenter.describedBy()).toBe('cngx-email-hint');
+    });
+
+    it('describedBy references the error ID only while showError is true', () => {
+      ref.invalid.set(true);
+      ref.touched.set(true);
+      TestBed.flushEffects();
       expect(presenter.describedBy()).toBe('cngx-email-hint cngx-email-error');
+
+      ref.invalid.set(false);
+      TestBed.flushEffects();
+      expect(presenter.describedBy()).toBe('cngx-email-hint');
     });
 
     it('updates IDs when field name changes', () => {
@@ -87,7 +98,7 @@ describe('CngxFormFieldPresenter', () => {
       expect(presenter.labelId()).toBe('cngx-username-label');
       expect(presenter.hintId()).toBe('cngx-username-hint');
       expect(presenter.errorId()).toBe('cngx-username-error');
-      expect(presenter.describedBy()).toBe('cngx-username-hint cngx-username-error');
+      expect(presenter.describedBy()).toBe('cngx-username-hint');
     });
   });
 

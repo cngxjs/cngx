@@ -65,7 +65,15 @@ describe('CngxInput', () => {
 
     // ── aria-describedby ─────────────────────────────────────────
 
-    it('sets aria-describedby to hint + error IDs', () => {
+    it('sets aria-describedby to the hint ID while no error is shown', () => {
+      expect(inputEl.getAttribute('aria-describedby')).toBe('cngx-email-hint');
+    });
+
+    it('adds the error ID to aria-describedby while showError is true', () => {
+      ref.invalid.set(true);
+      ref.touched.set(true);
+      fixture.detectChanges();
+      TestBed.flushEffects();
       expect(inputEl.getAttribute('aria-describedby')).toBe('cngx-email-hint cngx-email-error');
     });
 

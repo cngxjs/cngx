@@ -155,10 +155,23 @@ describe('CngxFormField', () => {
       expect(labelEl.id).toBe('cngx-email-label');
     });
 
-    it('links input to hint and error via aria-describedby', () => {
-      expect(inputEl.getAttribute('aria-describedby')).toBe('cngx-email-hint cngx-email-error');
+    it('links input to hint via aria-describedby while no error is shown', () => {
+      expect(inputEl.getAttribute('aria-describedby')).toBe('cngx-email-hint');
       expect(hintEl.id).toBe('cngx-email-hint');
       expect(errorsEl.id).toBe('cngx-email-error');
+    });
+
+    it('adds the error ID to aria-describedby only while the error is shown', () => {
+      ref.touched.set(true);
+      ref.invalid.set(true);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(inputEl.getAttribute('aria-describedby')).toBe('cngx-email-hint cngx-email-error');
+
+      ref.invalid.set(false);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(inputEl.getAttribute('aria-describedby')).toBe('cngx-email-hint');
     });
 
     it('all IDs are deterministic from field name', () => {
