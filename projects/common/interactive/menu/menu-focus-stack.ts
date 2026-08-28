@@ -328,13 +328,21 @@ export interface CngxSubmenuHoverRoutingDeps {
 /**
  * Route submenu hover intent through the focus stack. Watches the
  * {@link CngxMenuSubmenuLike.hoverIntent} signal of every submenu companion
- * registered in the open menu chain and routes its edges through the same
+ * registered anywhere in the menu tree and routes its edges through the same
  * primitives keyboard and click use: a settled hover opens via
  * {@link CngxMenuFocusStack.openSubmenuFor} (stack-tracked, first item
  * highlighted, keyboard-visible), a settled un-hover closes via
  * {@link CngxMenuFocusStack.closeSubmenuFor} (stack popped innermost-first).
  * The submenu companion itself owns NO open/close mechanics for hover - it
  * only derives intent.
+ *
+ * The walk covers the WHOLE registered tree, not just the open chain: a
+ * submenu whose menu drops out of the chain (popped by a chain-correcting
+ * open, cleared by `reset()`) still decays its intent afterwards, and that
+ * false edge must be observed or the bookkeeping would go stale and fire a
+ * spurious close when the menu re-enters the chain. Items in a hidden menu
+ * cannot produce real pointer events, so the extra tracking never opens
+ * anything on its own.
  *
  * Edge-driven, not state-reconciling: a keyboard-opened submenu whose intent
  * never settled `true` is left alone, so pointer-less operation is unchanged.
@@ -351,14 +359,10 @@ export interface CngxSubmenuHoverRoutingDeps {
  */
 export function connectSubmenuHoverToFocusStack(deps: CngxSubmenuHoverRoutingDeps): void {
   const lastIntent = new WeakMap<CngxMenuSubmenuLike, boolean>();
-  effect(() => {
-    const chain = [deps.rootMenu(), ...deps.focusStack.stack()];
-    for (const menu of chain) {
-      for (const submenu of menu.submenuItems()) {
-        const intent = submenu.hoverIntent?.() ?? false;
-        if ((lastIntent.get(submenu) ?? false) === intent) {
-          continue;
-        }
+  const visit = (menu: CngxMenuHost): void => {
+    for (const submenu of menu.submenuItems()) {
+      const intent = submenu.hoverIntent?.() ?? false;
+      if ((lastIntent.get(submenu) ?? false) !== intent) {
         lastIntent.set(submenu, intent);
         untracked(() => {
           if (intent) {
@@ -368,8 +372,13 @@ export function connectSubmenuHoverToFocusStack(deps: CngxSubmenuHoverRoutingDep
           }
         });
       }
+      const inner = submenu.inner as CngxMenuHost | null;
+      if (inner !== null) {
+        visit(inner);
+      }
     }
-  });
+  };
+  effect(() => visit(deps.rootMenu()));
 }
 
 /**

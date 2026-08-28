@@ -436,6 +436,38 @@ describe('connectSubmenuHoverToFocusStack', () => {
     expect(stack.stack()).toEqual([innerA.host, innerB.host]);
   });
 
+  it('observes intent decay of a submenu whose menu left the chain (no stale suppression)', () => {
+    const innerA = mockMenu();
+    const innerB = mockMenu();
+    const hoverIntent = signal(false);
+    const submenuA = mockSubmenu('sub-a', innerA.host);
+    const submenuB: CngxMenuSubmenuLike = { ...mockSubmenu('sub-b', innerB.host), hoverIntent };
+    root.submenus.set([submenuA]);
+    innerA.submenus.set([submenuB]);
+
+    const stack = buildConnected();
+    stack.openSubmenuFor(submenuA);
+    TestBed.tick();
+    hoverIntent.set(true);
+    TestBed.tick();
+    expect(stack.stack()).toEqual([innerA.host, innerB.host]);
+
+    // Non-Escape dismissal clears the chain; the pointer decays afterwards,
+    // while B's menu is no longer part of the open chain.
+    stack.reset();
+    hoverIntent.set(false);
+    TestBed.tick();
+
+    // Re-open the branch and hover B again: the false edge above must have
+    // been observed, or this true edge would be swallowed as a non-change.
+    stack.openSubmenuFor(submenuA);
+    hoverIntent.set(true);
+    TestBed.tick();
+
+    expect(submenuB.open).toHaveBeenCalledTimes(2);
+    expect(stack.stack()).toEqual([innerA.host, innerB.host]);
+  });
+
   it('leaves a keyboard-opened submenu alone while its intent never settled true', () => {
     const inner = mockMenu();
     const hoverIntent = signal(false);
