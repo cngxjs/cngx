@@ -7,7 +7,7 @@ import { MaterialPrivateSurfaces } from '../material-bridge/private-surfaces';
  *
  * `resolveStripRoot` walks from host up to `<mat-tab-header>` and
  * locates `.mat-mdc-tab-label-container` via any rendered
- * `.mat-mdc-tab` descendant — Material's IO-friendly scroll
+ * `.mat-mdc-tab` descendant - Material's IO-friendly scroll
  * container.
  *
  * `resolveTabButton` indexes positionally; Material owns the DOM
@@ -32,7 +32,7 @@ import { MaterialPrivateSurfaces } from '../material-bridge/private-surfaces';
 export function createCngxMatTabOverflowDomAdapter(): CngxTabOverflowDomAdapter {
   return {
     resolveStripRoot(_panelHost, host) {
-      // Returning null is a retry signal — the rAF loop polls again
+      // Returning null is a retry signal - the rAF loop polls again
       // on the next frame, succeeds once MatTabHeader has committed.
       const header = host.closest<HTMLElement>(
         MaterialPrivateSurfaces.MAT_MDC_TAB_HEADER_SELECTOR,

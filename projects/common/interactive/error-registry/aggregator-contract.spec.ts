@@ -190,7 +190,7 @@ describe('createErrorAggregatorContract', () => {
     });
   });
 
-  // Cascade-witness regression — mirrors the directive-level pattern at
+  // Cascade-witness regression - mirrors the directive-level pattern at
   // error-aggregator.directive.spec.ts:122-186 to lock in that the
   // shared computed graph routes its emissions through the same
   // errorSourceMapEqual + shallowReadonlyArrayEqual contract.

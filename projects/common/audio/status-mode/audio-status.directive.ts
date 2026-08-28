@@ -17,7 +17,7 @@ import { parseStatusBindings } from './parse-status-bindings';
 
 /**
  * Status-mode audio bridge. Maps `CngxAsyncState` lifecycle transitions to
- * earcons via the `status:earcon` grammar — the audition counterpart of
+ * earcons via the `status:earcon` grammar - the audition counterpart of
  * `CngxToastOn`. Fires only on a real status transition, never on the initial
  * `idle`, and at most once per transition.
  *
@@ -32,7 +32,7 @@ import { parseStatusBindings } from './parse-status-bindings';
  *
  * The state source resolves the same way the feedback bridges do: an explicit
  * `[state]` input wins, otherwise it falls back to an ancestor's
- * `CNGX_STATEFUL`. The grammar keys are lifecycle statuses only — DOM-event
+ * `CNGX_STATEFUL`. The grammar keys are lifecycle statuses only - DOM-event
  * keys (`click`, `focus`, …) belong to `[cngxAudio]` and are rejected with a
  * dev-error. `succeeded`/`failed` are accepted as aliases for `success`/`error`.
  *
@@ -56,7 +56,7 @@ export class CngxAudioStatus {
   readonly spec = input<string>('', { alias: 'cngxAudioStatus' });
 
   /**
-   * The async state to watch. Optional — when omitted, the bridge falls back to
+   * The async state to watch. Optional - when omitted, the bridge falls back to
    * an ancestor `CNGX_STATEFUL`. A bare `[state]` attribute (empty string) is
    * treated as "no input bound" so the fallback kicks in.
    */
@@ -73,7 +73,7 @@ export class CngxAudioStatus {
   /** Suppress this element's audio without unbinding. */
   readonly audioDisabled = input(false, { transform: booleanAttribute });
 
-  /** Effective state — explicit input wins over ancestor `CNGX_STATEFUL`. */
+  /** Effective state - explicit input wins over ancestor `CNGX_STATEFUL`. */
   private readonly effectiveState = computed<CngxAsyncState<unknown> | undefined>(
     () => this.state() ?? this.statefulFallback?.state,
   );

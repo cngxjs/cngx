@@ -35,7 +35,7 @@ class BulletHost {
   state: ManualAsyncState<number> = createManualState<number>();
 }
 
-describe('preset state — activeView wiring', () => {
+describe('preset state - activeView wiring', () => {
   beforeEach(() => {
     vi.stubGlobal('ResizeObserver', ResizeObserverMock);
   });
@@ -43,7 +43,7 @@ describe('preset state — activeView wiring', () => {
   afterEach(() => vi.unstubAllGlobals());
 
   describe('CngxSparkline (representative)', () => {
-    it('renders content (svg path) when state is idle without data — initial bind', () => {
+    it('renders content (svg path) when state is idle without data - initial bind', () => {
       TestBed.configureTestingModule({ imports: [SparklineHost] });
       const fixture = TestBed.createComponent(SparklineHost);
       fixture.detectChanges();

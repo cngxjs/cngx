@@ -12,14 +12,14 @@ export type AsyncStatus = 'idle' | 'loading' | 'pending' | 'refreshing' | 'succe
  * UX state machine interface for any asynchronous operation.
  *
  * This is **UX state**, not data state. It answers "What should the user
- * see right now?" — not "What is the data?" It drives skeleton, loading bar,
+ * see right now?" - not "What is the data?" It drives skeleton, loading bar,
  * toast, empty state, and ARIA communication. It does not replace SignalStore,
- * NgRx, or any data store — it composes with them.
+ * NgRx, or any data store - it composes with them.
  *
  * Every derived value is a `computed()` from a single source (`status`).
  * The system cannot become inconsistent.
  *
- * All UI feedback components accept `CngxAsyncState<unknown>` as input —
+ * All UI feedback components accept `CngxAsyncState<unknown>` as input -
  * typed on the interface, not on a concrete implementation.
  *
  * @category core/utils/async-state
@@ -49,7 +49,7 @@ export interface CngxAsyncState<T> {
 
   /**
    * ARIA-oriented alias for `isLoading`.
-   * Maps directly to `aria-busy` — always `true` when any operation runs.
+   * Maps directly to `aria-busy` - always `true` when any operation runs.
    */
   readonly isBusy: Signal<boolean>;
 

@@ -18,7 +18,7 @@ import { type CngxAudioDomEvent, parseEventBindings } from './parse-bindings';
 
 /**
  * Event-mode audio binder. Maps DOM events on the host to earcons via the
- * `event:earcon` grammar — a pure DOM-event-to-sound directive with no state
+ * `event:earcon` grammar - a pure DOM-event-to-sound directive with no state
  * coupling (that is `[cngxAudioStatus]`'s job).
  *
  * ```html
@@ -127,7 +127,7 @@ export class CngxAudio {
       if (this.bound.has(type)) {
         continue;
       }
-      // Captures the type only — the earcon is read fresh at fire time, so
+      // Captures the type only - the earcon is read fresh at fire time, so
       // renaming it in the grammar needs no rebind.
       const listener: EventListener = () => this.handleEvent(type);
       // Not passive: none of the bindable types are scroll-blocking, so the

@@ -8,7 +8,7 @@ import { CngxNumericInput } from './numeric-input.directive';
 
 /**
  * After dropping CVA, each value-transformer directive exposes its primary
- * channel as `value = model<T>()` — the same shape Signal Forms' native
+ * channel as `value = model<T>()` - the same shape Signal Forms' native
  * `[control]` directive binds against (a `FormValueControl<T>` is any
  * directive with a `value` model signal).
  *
@@ -46,7 +46,7 @@ class MaskHost {
   readonly directive = viewChild.required(CngxInputMask);
 }
 
-describe('value-transformer directives — Signal-Forms style two-way binding', () => {
+describe('value-transformer directives - Signal-Forms style two-way binding', () => {
   describe('CngxNumericInput', () => {
     it('host signal -> directive -> formatted DOM', () => {
       TestBed.configureTestingModule({

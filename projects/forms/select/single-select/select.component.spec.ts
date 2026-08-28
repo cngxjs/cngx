@@ -29,7 +29,7 @@ import type {
   CngxSelectCommitMode,
 } from '../shared/commit-action.types';
 
-// jsdom does not implement the Popover API — polyfill so CngxPopover can toggle.
+// jsdom does not implement the Popover API - polyfill so CngxPopover can toggle.
 function polyfillPopover(): void {
   const proto = HTMLElement.prototype as unknown as {
     showPopover?: () => void;
@@ -167,7 +167,7 @@ class PopoverWrappedHost {
   readonly options = OPTIONS;
 }
 
-describe('CngxSelect — standalone', () => {
+describe('CngxSelect - standalone', () => {
   beforeEach(() => {
     polyfillPopover();
     TestBed.configureTestingModule({ imports: [StandaloneHost] });
@@ -281,14 +281,14 @@ describe('CngxSelect — standalone', () => {
     flush(fixture);
     expect(popover.isVisible()).toBe(true);
 
-    // Flip the action-slot dirty flag via the bridge's callback bundle —
+    // Flip the action-slot dirty flag via the bridge's callback bundle -
     // simulates a consumer-authored *cngxSelectAction template calling
     // setDirty(true) after the user starts typing in an inline form.
     select.actionCallbacks().setDirty(true);
     flush(fixture);
     expect(select.actionDirty()).toBe(true);
 
-    // `handleClickOutside` is `protected` (template binding) — reach it
+    // `handleClickOutside` is `protected` (template binding) - reach it
     // directly via bracket access so the guard gets exercised without
     // depending on CngxClickOutside's document listener, which jsdom
     // handles inconsistently.
@@ -307,7 +307,7 @@ describe('CngxSelect — standalone', () => {
   });
 });
 
-describe('CngxSelect — nested inside a CngxPopover', () => {
+describe('CngxSelect - nested inside a CngxPopover', () => {
   beforeEach(() => {
     polyfillPopover();
     TestBed.configureTestingModule({ imports: [PopoverWrappedHost] });
@@ -335,7 +335,7 @@ describe('CngxSelect — nested inside a CngxPopover', () => {
   });
 });
 
-describe('CngxSelect — standalone a11y', () => {
+describe('CngxSelect - standalone a11y', () => {
   beforeEach(() => {
     polyfillPopover();
     TestBed.configureTestingModule({ imports: [StandaloneA11yHost] });
@@ -381,7 +381,7 @@ describe('CngxSelect — standalone a11y', () => {
   });
 });
 
-describe('CngxSelect — grouped options', () => {
+describe('CngxSelect - grouped options', () => {
   beforeEach(() => {
     polyfillPopover();
     TestBed.configureTestingModule({ imports: [GroupedHost] });
@@ -422,7 +422,7 @@ describe('inject helpers', () => {
   });
 });
 
-describe('CngxSelect — form-field integration', () => {
+describe('CngxSelect - form-field integration', () => {
   beforeEach(() => {
     polyfillPopover();
     TestBed.configureTestingModule({ imports: [FormFieldHost] });
@@ -528,7 +528,7 @@ class StateConsumerHost {
   };
 }
 
-describe('CngxSelect — async state consumer', () => {
+describe('CngxSelect - async state consumer', () => {
   beforeEach(() => {
     polyfillPopover();
     TestBed.configureTestingModule({ imports: [StateConsumerHost] });
@@ -559,7 +559,7 @@ describe('CngxSelect — async state consumer', () => {
     host.state.setSuccess(OPTIONS);
     flush(fixture);
     const optionList = select.options();
-    // options input is still empty array — the flatOptions must come from state
+    // options input is still empty array - the flatOptions must come from state
     expect(optionList.length).toBe(0);
     const flatOptions = (select as unknown as { flatOptions: () => CngxSelectOptionDef<string>[] })
       .flatOptions();
@@ -774,7 +774,7 @@ describe('CngxSelect — async state consumer', () => {
   });
 
   it('falls back to [options] when state is null', () => {
-    // Re-render with a host that has no state binding — ensures static array still works.
+    // Re-render with a host that has no state binding - ensures static array still works.
     @Component({
       selector: 'static-options-host',
       template: `<cngx-select [options]="options" [(value)]="value" />`,
@@ -830,7 +830,7 @@ class CommitHost {
   };
 }
 
-describe('CngxSelect — commit action producer', () => {
+describe('CngxSelect - commit action producer', () => {
   beforeEach(() => {
     polyfillPopover();
     TestBed.configureTestingModule({ imports: [CommitHost] });
@@ -973,7 +973,7 @@ describe('CngxSelect — commit action producer', () => {
     flush(fixture);
     expect(host.commitCallCount).toBeGreaterThan(firstCount);
 
-    // First pending resolves too late — should be ignored
+    // First pending resolves too late - should be ignored
     const statusesBefore = [...host.statuses];
     firstPending.next('green');
     firstPending.complete();
@@ -1021,7 +1021,7 @@ class AnnouncerOffHost {
   readonly value = signal<string | undefined>(undefined);
 }
 
-describe('CngxSelect — announcer', () => {
+describe('CngxSelect - announcer', () => {
   beforeEach(() => polyfillPopover());
 
   it('announces selection changes via the live region', () => {
@@ -1077,7 +1077,7 @@ class AutofocusHost {
   readonly value = signal<string | undefined>(undefined);
 }
 
-describe('CngxSelect — autofocus', () => {
+describe('CngxSelect - autofocus', () => {
   beforeEach(() => polyfillPopover());
 
   it('[autofocus]="true" focuses the trigger after first render', async () => {
@@ -1115,7 +1115,7 @@ class ConfigCascadeInputHost {
   readonly value = signal<string | undefined>(undefined);
 }
 
-describe('CngxSelect — config cascade (input > component-scope > app-scope > default)', () => {
+describe('CngxSelect - config cascade (input > component-scope > app-scope > default)', () => {
   beforeEach(() => polyfillPopover());
 
   it('app-scope provideSelectConfig sets default panelWidth', () => {

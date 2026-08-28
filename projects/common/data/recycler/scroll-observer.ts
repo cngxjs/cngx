@@ -13,7 +13,7 @@ import {
 
 /**
  * Reactive scroll state of a container element.
- * Both signals are updated synchronously inside the same rAF callback —
+ * Both signals are updated synchronously inside the same rAF callback -
  * Angular's Signal scheduling coalesces the two writes so consumers
  * evaluate once per frame, not twice.
  */
@@ -29,7 +29,7 @@ export interface ScrollState {
  *
  * Element resolution happens **lazily inside the effect**, not at call time.
  * This is critical because `injectRecycler` is called in a field initializer
- * where template DOM does not yet exist — `querySelector` would return `null`.
+ * where template DOM does not yet exist - `querySelector` would return `null`.
  * The effect runs after the first CD cycle when the DOM is stable.
  *
  * @internal Not exported from `@cngx/common/data` public API.
@@ -43,7 +43,7 @@ export function createScrollObserver(
   const clientHeightState = signal(0);
   const elementState = signal<HTMLElement | null>(null);
 
-  // Retry trigger — incremented by afterNextRender to re-run the effect
+  // Retry trigger - incremented by afterNextRender to re-run the effect
   // when the element wasn't found on the first attempt (routed components,
   // content projection, lazy rendering).
   const retryTick = signal(0);
@@ -63,7 +63,7 @@ export function createScrollObserver(
 
   function attachListeners(el: HTMLElement, onCleanup: (fn: () => void) => void): void {
     // A viewport resolved: the late-mount watcher has done its job. Disconnect
-    // it on attach so it can never outlive a resolved element — the node is
+    // it on attach so it can never outlive a resolved element - the node is
     // already in the DOM, so the observer would otherwise never fire again and
     // leak until destroy.
     disconnectMutationObserver();
@@ -111,7 +111,7 @@ export function createScrollObserver(
   });
 
   // If the element wasn't found on the first effect run (before DOM is ready),
-  // retry after the next render cycle. Fires for ALL input shapes — string
+  // retry after the next render cycle. Fires for ALL input shapes - string
   // selectors resolve lazily via `querySelector`, but `ElementRef` from a
   // `viewChild` also starts out with `nativeElement == null` until Angular
   // resolves the query. `HTMLElement` inputs that are non-null at call time
@@ -128,7 +128,7 @@ export function createScrollObserver(
     retryTick.update((v) => v + 1);
 
     // A string selector can still be unresolved because its viewport mounts
-    // arbitrarily late — an async-gated list, a skeleton->content swap. Watch
+    // arbitrarily late - an async-gated list, a skeleton->content swap. Watch
     // the document and attach the instant it appears. Non-string refs
     // (HTMLElement / ElementRef) are not document-queryable, so the watcher
     // cannot help them; they stay on the single-retry path. Guard MutationObserver

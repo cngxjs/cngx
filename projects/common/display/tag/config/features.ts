@@ -4,7 +4,7 @@ import type { CngxTagConfigFeature } from './provide-tag-config';
 /**
  * Override the default `CngxTag` input values (`variant`, `color`,
  * `size`, `truncate`, `maxWidth`). Per-instance bindings still win
- * over the cascade — this only sets the *fallback* per directive.
+ * over the cascade - this only sets the *fallback* per directive.
  *
  * ```ts
  * provideTagConfig(
@@ -72,12 +72,12 @@ export function withTagColors(
 
 /**
  * Register app-wide template overrides for the five Tag-family
- * slots. Resolved in tier 2 of the slot cascade — instance
+ * slots. Resolved in tier 2 of the slot cascade - instance
  * directives still win, the host's `<ng-template>` default body is
  * the floor.
  *
  * **Staging note.** This factory ships ahead of a documented second
- * consumer — the headless `CngxTag` + `CngxTagGroup` are the only
+ * consumer - the headless `CngxTag` + `CngxTagGroup` are the only
  * current consumers. The staging is intentional and tracked in
  * `display-accepted-debt.md §2` (Material organism deferral): a
  * future `cngx-mat-tag` / `cngx-mat-tag-group` wrapper inherits the

@@ -91,7 +91,7 @@ describe('CNGX_OPTION_CONTAINER', () => {
     const group = fixture.debugElement.query(By.directive(CngxOptionGroup)).injector.get(CngxOptionGroup);
     const first = group.options();
 
-    // Mutate a child option's [disabled] — the children themselves are
+    // Mutate a child option's [disabled] - the children themselves are
     // identical instances, so options() must return the same reference.
     fixture.componentInstance.cherryDisabled.set(true);
     TestBed.flushEffects();

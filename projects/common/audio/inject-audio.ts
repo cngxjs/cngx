@@ -9,7 +9,7 @@ import {
 import { CNGX_AUDIO_ENGINE_FACTORY, type CngxAudioEngine } from './engine/audio-engine';
 
 /**
- * The public audio handle — what {@link injectCngxAudio} returns.
+ * The public audio handle - what {@link injectCngxAudio} returns.
  *
  * An alias for {@link CngxAudioEngine} rather than a second interface: the two
  * contracts were member-for-member identical, so a separate declaration was
@@ -26,9 +26,9 @@ export type CngxAudioHandle = CngxAudioEngine;
 /**
  * The shared engine instance. Lazily built from `CNGX_AUDIO_ENGINE_FACTORY` and
  * memoised per injector so every directive shares one `AudioContext`, mute
- * state, and volume. `@internal` — the public entry point is {@link injectCngxAudio};
+ * state, and volume. `@internal` - the public entry point is {@link injectCngxAudio};
  * consumers override the swappable factory, not this instance anchor. To scope
- * audio to a subtree, use {@link provideCngxAudioAt} — it re-provides this token
+ * audio to a subtree, use {@link provideCngxAudioAt} - it re-provides this token
  * for you alongside the scoped config.
  *
  * @internal
@@ -61,7 +61,7 @@ export function injectCngxAudio(): CngxAudioHandle {
 }
 
 /**
- * Component-scope audio config — place in a component's `viewProviders` so a
+ * Component-scope audio config - place in a component's `viewProviders` so a
  * subtree runs its own muted / volume / earcon set, independent of the app-wide
  * `provideCngxAudio(...)`.
  *
@@ -80,19 +80,19 @@ export function injectCngxAudio(): CngxAudioHandle {
  * registered on a lazy route never reaches it.
  *
  * Features **layer over** the ancestor config (root, or an enclosing scope)
- * rather than replacing it — the `provideMenuConfigAt` pattern. Scalar fields
+ * rather than replacing it - the `provideMenuConfigAt` pattern. Scalar fields
  * (`muted`, `volume`, `debounceMs`, `respectReducedMotion`) override; `earcons`
  * merge, so a subtree adds or overrides individual earcons without dropping the
  * app-wide registry.
  *
  * The default shared engine is a single, process-global `AudioContext`; this
  * deliberately re-provides {@link CNGX_AUDIO_ENGINE} so the subtree gets an
- * **isolated engine** reading the scoped {@link CNGX_AUDIO_CONFIG} — a
+ * **isolated engine** reading the scoped {@link CNGX_AUDIO_CONFIG} - a
  * config-only override would be inert against the already-built root engine.
  * That engine owns a **second `AudioContext`**, created lazily on its first play
  * and closed with the component's `DestroyRef`. Browsers cap the number of live
  * `AudioContext`s, so reach for this only when a subtree genuinely needs an
- * independent audio scope — per-element `[audioVolume]` / `[audioDisabled]`
+ * independent audio scope - per-element `[audioVolume]` / `[audioDisabled]`
  * cover the common case without a second context.
  *
  * @category common/audio

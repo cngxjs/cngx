@@ -132,7 +132,7 @@ describe('CngxRequired', () => {
       const el = fixture.debugElement.query(By.directive(CngxRequired))
         .nativeElement as HTMLElement;
       expect(el.querySelector('.custom-dot')).not.toBeNull();
-      // The default text marker (*) should not be present — only the custom template
+      // The default text marker (*) should not be present - only the custom template
       expect(el.textContent).not.toContain('*');
     });
 

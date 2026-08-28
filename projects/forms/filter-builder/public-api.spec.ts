@@ -10,7 +10,7 @@ import {
   type FilterNode,
 } from './public-api';
 
-describe('@cngx/forms/filter-builder — public-api re-exports', () => {
+describe('@cngx/forms/filter-builder - public-api re-exports', () => {
   it('re-exports DEFAULT_OPERATORS from the package entry', () => {
     expect(DEFAULT_OPERATORS.string).toContain('contains');
     expect(DEFAULT_OPERATORS.number).toContain('gt');

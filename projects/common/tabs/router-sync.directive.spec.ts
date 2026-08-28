@@ -100,7 +100,7 @@ class ProjectedSeedHost {}
 // Drains pending microtasks so the directive's effect() chain (which
 // reads activeId, then calls router.navigate inside untracked()) has
 // a chance to fire and the spy captures the call. Mirrors the
-// stepper router-sync spec — `whenStable()` has been observed to hang
+// stepper router-sync spec - `whenStable()` has been observed to hang
 // under Node 20 + zoneless tests with Router in providers.
 async function flushMicrotasks(rounds = 5): Promise<void> {
   for (let i = 0; i < rounds; i++) {

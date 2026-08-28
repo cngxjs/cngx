@@ -1,10 +1,10 @@
 /**
  * Fixed-capacity FIFO ring. Once full, every `push` overwrites the oldest
- * entry — the buffer never grows past `capacity`, so a high-frequency
+ * entry - the buffer never grows past `capacity`, so a high-frequency
  * producer cannot leak memory into it. Pure TS, no signal dependency; the
  * reactive wrapper is {@link injectChartBuffer}.
  *
- * @internal — the public realtime surface is {@link injectChartBuffer};
+ * @internal - the public realtime surface is {@link injectChartBuffer};
  * consumers never touch the raw ring.
  *
  * @category common/chart/buffer
@@ -22,7 +22,7 @@ export interface RingBuffer<T> {
   clear(): void;
   /**
    * A fresh in-order array (oldest first, newest last). Allocates on every
-   * call — the caller is the cascade boundary and owns dedup.
+   * call - the caller is the cascade boundary and owns dedup.
    */
   snapshot(): readonly T[];
   /** Current element count, `0..capacity`. */

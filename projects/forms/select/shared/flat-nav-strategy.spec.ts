@@ -187,7 +187,7 @@ describe('createDefaultFlatNavStrategy', () => {
     });
   });
 
-  describe('onPageJump — custom pageStep', () => {
+  describe('onPageJump - custom pageStep', () => {
     it('respects a custom pageStep override', () => {
       const s = createDefaultFlatNavStrategy({ pageStep: 3 });
       const ctx = makeContext({ currentListboxIndex: 0 });

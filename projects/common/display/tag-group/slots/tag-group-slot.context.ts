@@ -5,12 +5,12 @@ import type { CngxTagGroupAlign, CngxTagGroupGap } from '../tag-group.component'
 // land without breaking sibling consumers. Mirrors `tag-slot.context.ts`.
 
 /**
- * Context exposed by the `*cngxTagGroupHeader` slot — the full
+ * Context exposed by the `*cngxTagGroupHeader` slot - the full
  * reactive group state plus the live `count` of projected
  * `CngxTag` children. Lets consumer headers render
  * `"Filters ({{ count }})"` without injecting the group.
  *
- * `$implicit` is `void` because the slot has no positional payload —
+ * `$implicit` is `void` because the slot has no positional payload -
  * consumers reach for the named fields below.
  *
  * @category common/display

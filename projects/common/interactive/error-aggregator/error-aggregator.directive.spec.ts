@@ -163,18 +163,18 @@ describe('CngxErrorAggregator', () => {
     const baseline = witness.mock.calls.length;
     expect(baseline).toBeGreaterThanOrEqual(1);
 
-    // (1) Genuine change — A flips false → true. Witness MUST re-fire.
+    // (1) Genuine change - A flips false → true. Witness MUST re-fire.
     conditionA.set(true);
     TestBed.flushEffects();
     expect(witness.mock.calls.length).toBe(baseline + 1);
 
-    // (2) A.set(true) again — Object.is short-circuits the condition signal,
+    // (2) A.set(true) again - Object.is short-circuits the condition signal,
     // no upstream emission. Witness does NOT re-fire.
     conditionA.set(true);
     TestBed.flushEffects();
     expect(witness.mock.calls.length).toBe(baseline + 1);
 
-    // (3) Re-add A with the same key + same condition Signal reference —
+    // (3) Re-add A with the same key + same condition Signal reference -
     // Map `equal` rejects the redundant emission. Witness does NOT re-fire.
     agg.addSource({ key: 'a', condition: refA, label: 'A' });
     TestBed.flushEffects();
@@ -188,17 +188,17 @@ describe('CngxErrorAggregator', () => {
     TestBed.flushEffects();
     expect(witness.mock.calls.length).toBe(baseline + 1);
 
-    // (5) Flip C to true — real change to activeErrors → witness MUST fire.
+    // (5) Flip C to true - real change to activeErrors → witness MUST fire.
     conditionC.set(true);
     TestBed.flushEffects();
     expect(witness.mock.calls.length).toBe(baseline + 2);
 
-    // (6) Remove C — real change → witness MUST fire.
+    // (6) Remove C - real change → witness MUST fire.
     agg.removeSource('c');
     TestBed.flushEffects();
     expect(witness.mock.calls.length).toBe(baseline + 3);
 
-    // (7) Remove a non-existent key — no Map emission → witness does NOT fire.
+    // (7) Remove a non-existent key - no Map emission → witness does NOT fire.
     agg.removeSource('nonexistent');
     TestBed.flushEffects();
     expect(witness.mock.calls.length).toBe(baseline + 3);

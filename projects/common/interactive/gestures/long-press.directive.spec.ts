@@ -81,7 +81,7 @@ describe('CngxLongPress', () => {
   it('cancels when pointer moves beyond threshold', () => {
     const { host, dir, fixture } = setup();
     host.dispatchEvent(new PointerEvent('pointerdown', { clientX: 100, clientY: 100 }));
-    // Move 15px — beyond 10px threshold
+    // Move 15px - beyond 10px threshold
     document.dispatchEvent(new PointerEvent('pointermove', { clientX: 115, clientY: 100 }));
     expect(dir.longPressing()).toBe(false);
     vi.advanceTimersByTime(500);
@@ -91,7 +91,7 @@ describe('CngxLongPress', () => {
   it('does not cancel on small movement', () => {
     const { host, fixture } = setup();
     host.dispatchEvent(new PointerEvent('pointerdown', { clientX: 100, clientY: 100 }));
-    // Move 5px — within threshold
+    // Move 5px - within threshold
     document.dispatchEvent(new PointerEvent('pointermove', { clientX: 105, clientY: 100 }));
     vi.advanceTimersByTime(500);
     expect(fixture.componentInstance.longPressCount).toBe(1);

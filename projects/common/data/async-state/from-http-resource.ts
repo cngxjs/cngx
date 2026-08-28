@@ -2,7 +2,7 @@ import { computed, effect, type Resource, signal } from '@angular/core';
 import type { AsyncStatus, CngxAsyncState } from '@cngx/core/utils';
 
 /**
- * Shape of an `HttpResourceRef` — only the signals we need.
+ * Shape of an `HttpResourceRef` - only the signals we need.
  *
  * Declared here to avoid a hard dependency on `@angular/common/http`.
  * The consumer passes the actual `httpResource()` return value which
@@ -28,7 +28,7 @@ interface HttpResourceLike<T> extends Resource<T> {
  *
  * readonly items = fromHttpResource(this.res);
  * // items.progress() tracks upload/download progress
- * // <cngx-progress [state]="items"> — auto-wired progress bar
+ * // <cngx-progress [state]="items"> - auto-wired progress bar
  * ```
  *
  * @category common/data/async-state

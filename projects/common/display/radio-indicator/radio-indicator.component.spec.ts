@@ -123,7 +123,7 @@ describe('CngxRadioIndicator', () => {
     expect(host.getAttribute('aria-hidden')).toBe('true');
   });
 
-  it('host click is a no-op — no output emitters defined', () => {
+  it('host click is a no-op - no output emitters defined', () => {
     const fixture = TestBed.createComponent(Host);
     flush(fixture);
     const host = hostEl(fixture);
@@ -170,7 +170,7 @@ describe('CngxRadioIndicator', () => {
       expect(custom?.textContent).toBe('o');
     });
 
-    it('custom dotGlyph still gates on checked — unchecked → nothing rendered', () => {
+    it('custom dotGlyph still gates on checked - unchecked → nothing rendered', () => {
       const fixture = TestBed.createComponent(GlyphHost);
       fixture.componentInstance.activeDotGlyph.set(fixture.componentInstance.dotTpl());
       flush(fixture);

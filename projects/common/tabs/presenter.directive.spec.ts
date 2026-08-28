@@ -68,7 +68,7 @@ describe('CngxTabGroupPresenter', () => {
     expect(presenter.activeId()).toBe('a');
   });
 
-  it('register is idempotent — re-registering the same id replaces in place', () => {
+  it('register is idempotent - re-registering the same id replaces in place', () => {
     const { presenter } = setup();
     presenter.register(handle('a'));
     presenter.register(handle('b'));
@@ -338,13 +338,13 @@ describe('CngxTabGroupPresenter', () => {
     // Persistence-of-error + origin-tracking surface (Phase 1 of
     // tabs-commit-ux-refine plan). Six axes, each isolated so a
     // failure points to one invariant.
-    it('axis 1 — lastFailedIndex and originIndexDuringCommit are undefined initially', () => {
+    it('axis 1 - lastFailedIndex and originIndexDuringCommit are undefined initially', () => {
       const { presenter } = setup();
       expect(presenter.lastFailedIndex()).toBeUndefined();
       expect(presenter.originIndexDuringCommit()).toBeUndefined();
     });
 
-    it('axis 2 — originIndexDuringCommit is NOT written on the no-action fast path', () => {
+    it('axis 2 - originIndexDuringCommit is NOT written on the no-action fast path', () => {
       const { presenter } = setup();
       presenter.register(handle('a'));
       presenter.register(handle('b'));
@@ -353,7 +353,7 @@ describe('CngxTabGroupPresenter', () => {
       expect(presenter.originIndexDuringCommit()).toBeUndefined();
     });
 
-    it('axis 3a — optimistic reject sets lastFailedIndex AND retains originIndexDuringCommit', () => {
+    it('axis 3a - optimistic reject sets lastFailedIndex AND retains originIndexDuringCommit', () => {
       const { presenter } = commitFixture('optimistic', () => false);
       presenter.select(2);
       expect(presenter.activeIndex()).toBe(0);
@@ -361,7 +361,7 @@ describe('CngxTabGroupPresenter', () => {
       expect(presenter.originIndexDuringCommit()).toBe(0);
     });
 
-    it('axis 3b — pessimistic reject sets lastFailedIndex AND retains originIndexDuringCommit', () => {
+    it('axis 3b - pessimistic reject sets lastFailedIndex AND retains originIndexDuringCommit', () => {
       const { presenter } = commitFixture('pessimistic', () => false);
       presenter.select(2);
       expect(presenter.activeIndex()).toBe(0);
@@ -369,7 +369,7 @@ describe('CngxTabGroupPresenter', () => {
       expect(presenter.originIndexDuringCommit()).toBe(0);
     });
 
-    it('axis 4a — successful re-pick of the failed target clears BOTH lastFailedIndex and originIndexDuringCommit', () => {
+    it('axis 4a - successful re-pick of the failed target clears BOTH lastFailedIndex and originIndexDuringCommit', () => {
       let next = false;
       const { presenter } = commitFixture('optimistic', () => next);
       presenter.select(2);
@@ -382,7 +382,7 @@ describe('CngxTabGroupPresenter', () => {
       expect(presenter.originIndexDuringCommit()).toBeUndefined();
     });
 
-    it('axis 4b — successful navigation to a non-failed target clears originIndexDuringCommit but RETAINS lastFailedIndex', () => {
+    it('axis 4b - successful navigation to a non-failed target clears originIndexDuringCommit but RETAINS lastFailedIndex', () => {
       let next = false;
       const { presenter } = commitFixture('optimistic', () => next);
       presenter.select(2);
@@ -393,11 +393,11 @@ describe('CngxTabGroupPresenter', () => {
       expect(presenter.activeIndex()).toBe(1);
       // Failed target stays flagged for visual decoration.
       expect(presenter.lastFailedIndex()).toBe(2);
-      // Successful commit window closed — origin no longer needed.
+      // Successful commit window closed - origin no longer needed.
       expect(presenter.originIndexDuringCommit()).toBeUndefined();
     });
 
-    it('axis 5 — clearLastFailed() clears lastFailedIndex without unwinding originIndexDuringCommit', () => {
+    it('axis 5 - clearLastFailed() clears lastFailedIndex without unwinding originIndexDuringCommit', () => {
       const { presenter } = commitFixture('optimistic', () => false);
       presenter.select(2);
       expect(presenter.lastFailedIndex()).toBe(2);
@@ -454,7 +454,7 @@ describe('CngxTabGroupPresenter', () => {
     expect(presenter.tabs().map((t) => t.id)).toEqual(['a', 'b']);
   });
 
-  describe('requestClose — dismissable tabs', () => {
+  describe('requestClose - dismissable tabs', () => {
     function withTabs(ids: string[]): {
       presenter: CngxTabGroupPresenter;
       remove: (id: string) => void;
@@ -526,7 +526,7 @@ describe('CngxTabGroupPresenter', () => {
     });
   });
 
-  describe('requestAdd — addable tabs', () => {
+  describe('requestAdd - addable tabs', () => {
     it('emits tabAdd', () => {
       const { presenter } = setup();
       let count = 0;
@@ -539,7 +539,7 @@ describe('CngxTabGroupPresenter', () => {
 
 });
 
-describe('CngxTabGroupPresenter — CNGX_TABS_COMMIT_ACTION DI fallback', () => {
+describe('CngxTabGroupPresenter - CNGX_TABS_COMMIT_ACTION DI fallback', () => {
   function fallbackFixture(
     source: CngxTabsCommitActionSource,
     inputs: { commitAction?: CngxTabsCommitAction | null; commitMode?: 'optimistic' | 'pessimistic' } = {},

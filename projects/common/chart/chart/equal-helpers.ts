@@ -2,7 +2,7 @@
  * Internal `equal` fn helpers shared by the chart graph's bespoke
  * cascade guards. Each helper is two-line trivial; the bespoke fns on
  * heterogeneous shapes (axis tick rendering, layer rect/circle arrays)
- * stay inline at their call sites — this file only carries the
+ * stay inline at their call sites - this file only carries the
  * recurring shapes (numeric arrays, dimension objects).
  *
  * Not exported from `public-api.ts`. Internal to `@cngx/common/chart`.

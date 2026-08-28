@@ -31,7 +31,7 @@ function makeHarness(): Harness {
   document.body.appendChild(hostElement);
 
   const scrollSpy = vi.fn();
-  // jsdom doesn't implement scrollIntoView — install the spy on the
+  // jsdom doesn't implement scrollIntoView - install the spy on the
   // prototype so every <button> gets it.
   for (const btn of Array.from(hostElement.querySelectorAll('button'))) {
     (btn as HTMLElement).scrollIntoView = scrollSpy;
@@ -105,7 +105,7 @@ describe('createOrganismScrollSync', () => {
     });
   });
 
-  test('axis 5: untracked() discipline — DOM read+call do not retrigger the effect', () => {
+  test('axis 5: untracked() discipline - DOM read+call do not retrigger the effect', () => {
     const h = makeHarness();
     let runs = 0;
     const customSpy = vi.fn(() => {
@@ -138,7 +138,7 @@ describe('CNGX_ORGANISM_SCROLL_SYNC_FACTORY', () => {
   });
 
   it('consumer-provided factory replaces createOrganismScrollSync', () => {
-    // Swap axis — guards the override surface that organism shells
+    // Swap axis - guards the override surface that organism shells
     // route through. A custom policy (instant scroll, custom selector,
     // reduced-motion opt-out, telemetry) installs via this token
     // without forking the organism.

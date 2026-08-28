@@ -5,11 +5,11 @@ import { CngxBannerOn, CngxBannerOutlet, CngxToastOn, CngxToastOutlet } from '@c
 
 // Re-export triggers compodocx file-walker so app.config.ts lands in the
 // StackBlitz manifest as src/app/app.config.ts, overriding the hardcoded
-// stub — the only way to inject EnvironmentProviders into the playground.
+// stub - the only way to inject EnvironmentProviders into the playground.
 export { appConfig } from './app.config';
 
 /**
- * Async-state bridges — toast + banner without service plumbing.
+ * Async-state bridges - toast + banner without service plumbing.
  *
  * One `createManualState<string>()` slot drives two declarative bridges
  * (`cngxToastOn`, `cngxBannerOn`) attached to the same host element.
@@ -18,7 +18,7 @@ export { appConfig } from './app.config';
  * toast; `loading → error` fires an error toast AND opens a banner. No
  * subscriptions, no `inject(CngxToaster)`, no `show()` calls.
  *
- * Same pattern composes with any `CngxAsyncState` producer — `injectAsyncState`,
+ * Same pattern composes with any `CngxAsyncState` producer - `injectAsyncState`,
  * `fromResource`, `fromHttpResource`, the manual state shown here, or a
  * commit-action's exposed `commitState` (see Example 3 / 6).
  */
@@ -41,7 +41,7 @@ export { appConfig } from './app.config';
       [toastError]="'Save failed'"
       [cngxBannerOn]="saveState"
       bannerId="save:error"
-      [bannerError]="'Save failed — check your connection.'"
+      [bannerError]="'Save failed - check your connection.'"
       style="display: flex; gap: 8px; flex-direction: column; align-items: flex-start"
     >
       <div style="display: flex; gap: 8px">

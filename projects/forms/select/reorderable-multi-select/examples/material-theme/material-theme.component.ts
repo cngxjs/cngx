@@ -29,7 +29,7 @@ import { CngxReorderableMultiSelect, type CngxSelectOptionDef } from '@cngx/form
         [(values)]="values"
         placeholder="Pick steps…"
       />
-      <p class="demo__readout">Order: {{ values().join(', ') || '—' }}</p>
+      <p class="demo__readout">Order: {{ values().join(', ') || '-' }}</p>
     </div>
   `,
 })

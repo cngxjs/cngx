@@ -11,7 +11,7 @@ import {
 /**
  * Minimal write interface for async state operators.
  *
- * Any `ManualAsyncState<T>` satisfies this — operators only need the write side.
+ * Any `ManualAsyncState<T>` satisfies this - operators only need the write side.
  */
 interface AsyncStateSink<T> {
   set(status: 'loading' | 'refreshing' | 'pending'): void;
@@ -27,7 +27,7 @@ interface AsyncStateSink<T> {
  * On next: calls `setSuccess(value)`.
  * On error: calls `setError(err)` and **re-throws** (does not swallow).
  *
- * The Observable passes through unchanged — `tapAsyncState` is a side-effect operator.
+ * The Observable passes through unchanged - `tapAsyncState` is a side-effect operator.
  *
  * ```typescript
  * readonly residents = createManualState<Resident[]>();
@@ -59,7 +59,7 @@ export function tapAsyncState<T>(
 }
 
 /**
- * Shape of an Angular `HttpProgressEvent` — declared structurally to
+ * Shape of an Angular `HttpProgressEvent` - declared structurally to
  * avoid a hard import on `@angular/common/http` from this entry point.
  */
 interface HttpProgressLike {
@@ -69,7 +69,7 @@ interface HttpProgressLike {
 }
 
 /**
- * Shape of an Angular `HttpResponse` — declared structurally.
+ * Shape of an Angular `HttpResponse` - declared structurally.
  */
 interface HttpResponseLike<T> {
   type: number; // HttpEventType.Response = 4
@@ -146,7 +146,7 @@ export function tapAsyncProgress<E>(
  *     tapHttpAsyncState(this.upload),
  *     takeUntilDestroyed(this.destroyRef),
  *   ).subscribe();
- *   // upload.status(), upload.progress(), upload.data() — all wired
+ *   // upload.status(), upload.progress(), upload.data() - all wired
  * }
  * ```
  *

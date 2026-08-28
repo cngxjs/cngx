@@ -335,13 +335,13 @@ describe('CngxPopoverPanel', () => {
     });
 
     it('CNGX_POPOVER_PANEL_CONFIG.templates.arrow wins over the default diamond when no contentChild', () => {
-      // Step 1 — extract a real TemplateRef from a throwaway source component.
+      // Step 1 - extract a real TemplateRef from a throwaway source component.
       const sourceFixture = TestBed.createComponent(ConfigArrowTplSource);
       sourceFixture.detectChanges();
       const tpl = sourceFixture.componentInstance.t();
       sourceFixture.destroy();
 
-      // Step 2 — re-configure TestBed with that template wired into the cascade.
+      // Step 2 - re-configure TestBed with that template wired into the cascade.
       TestBed.resetTestingModule();
       const { panelEl } = setup(ArrowDefaultHost, [
         providePopoverPanel(withArrow(), withArrowTemplate(tpl)),

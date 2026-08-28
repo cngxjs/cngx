@@ -14,7 +14,7 @@ import type { CngxRecycler } from './recycler';
  * Must be called in an injection context (constructor or field initializer)
  * **on the component that hosts both the recycler's scroll container and the
  * `CngxRovingTabindex` directive**. The injected `ElementRef` is used to query
- * `[data-cngx-recycle-index]` — calling from a child component would query the
+ * `[data-cngx-recycle-index]` - calling from a child component would query the
  * wrong subtree.
  *
  * ```typescript
@@ -39,7 +39,7 @@ export function connectRecyclerToRoving(recycler: CngxRecycler, roving: CngxRovi
   const hostEl = inject(ElementRef).nativeElement as HTMLElement;
 
   // Debounce scrollToIndex via rAF to avoid scroll jitter on rapid keypresses.
-  // Each keypress overwrites pendingFocus — only the latest target is scrolled to.
+  // Each keypress overwrites pendingFocus - only the latest target is scrolled to.
   let scrollRafId: number | null = null;
 
   effect((onCleanup) => {
@@ -78,7 +78,7 @@ export function connectRecyclerToRoving(recycler: CngxRecycler, roving: CngxRovi
       return;
     }
 
-    // Target is within rendered range — DOM will be updated after CD.
+    // Target is within rendered range - DOM will be updated after CD.
     // Use rAF to wait for Angular's rendering pass to complete.
     focusRafId = requestAnimationFrame(() => {
       focusRafId = null;

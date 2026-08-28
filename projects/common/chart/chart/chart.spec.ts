@@ -488,7 +488,7 @@ class SwitchHost {
   readonly data = signal<readonly number[]>([1, 2, 3, 4, 5]);
 }
 
-describe('CngxChart — auto-switch backend (Phase 3)', () => {
+describe('CngxChart - auto-switch backend (Phase 3)', () => {
   beforeEach(() => vi.stubGlobal('ResizeObserver', ResizeObserverMock));
   afterEach(() => vi.unstubAllGlobals());
 
@@ -506,13 +506,13 @@ describe('CngxChart — auto-switch backend (Phase 3)', () => {
     return { fixture, chart };
   }
 
-  it('stays on SVG below the threshold — layer atoms render, no canvas', () => {
+  it('stays on SVG below the threshold - layer atoms render, no canvas', () => {
     const { chart } = mount();
     expect(chart.querySelector('.cngx-line')).not.toBeNull();
     expect(chart.querySelector('canvas')).toBeNull();
   });
 
-  it('switches to canvas above the threshold — canvas mounts, layer SVG suppressed', () => {
+  it('switches to canvas above the threshold - canvas mounts, layer SVG suppressed', () => {
     const { chart } = mount(
       [],
       Array.from({ length: 501 }, (_, i) => i % 10),
@@ -570,7 +570,7 @@ describe('CngxChart — auto-switch backend (Phase 3)', () => {
   });
 });
 
-describe('CngxChart — [connectionState] envelope (Phase 4)', () => {
+describe('CngxChart - [connectionState] envelope (Phase 4)', () => {
   beforeEach(() => vi.stubGlobal('ResizeObserver', ResizeObserverMock));
   afterEach(() => vi.unstubAllGlobals());
 
@@ -703,13 +703,13 @@ describe('CngxChart — [connectionState] envelope (Phase 4)', () => {
     fixture.componentInstance.cs.setError(new Error('blip'));
     fixture.detectChanges();
     const chart = fixture.nativeElement.querySelector('[data-testid="chart"]') as HTMLElement;
-    // Data content renders (svg), connection error overlays on top — no precedence contention.
+    // Data content renders (svg), connection error overlays on top - no precedence contention.
     expect(chart.querySelector('svg')).not.toBeNull();
     expect(chart.querySelector('.cngx-chart__connection-overlay--error')).not.toBeNull();
   });
 });
 
-describe('CngxChart — canvas overlay gated on the content view (Phase 3 blocker fix)', () => {
+describe('CngxChart - canvas overlay gated on the content view (Phase 3 blocker fix)', () => {
   beforeEach(() => vi.stubGlobal('ResizeObserver', ResizeObserverMock));
   afterEach(() => vi.unstubAllGlobals());
 

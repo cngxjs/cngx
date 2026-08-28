@@ -136,7 +136,7 @@ describe('provideCngxTabs', () => {
         ],
       });
       const cfg = TestBed.inject(CNGX_TABS_CONFIG);
-      // Stale feature was dropped — config stays at the library default.
+      // Stale feature was dropped - config stays at the library default.
       expect(cfg.defaultOrientation).toBe('horizontal');
       // Dev-mode warning surfaced.
       expect(warnSpy).toHaveBeenCalledWith(

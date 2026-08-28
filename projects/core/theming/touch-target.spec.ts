@@ -54,7 +54,7 @@ describe('provideTouchTargets / injectTouchTargets', () => {
     expect(document.documentElement.hasAttribute('data-touch')).toBe(false);
   });
 
-  it('is idempotent — setting the same value twice does not re-write (no loop)', () => {
+  it('is idempotent - setting the same value twice does not re-write (no loop)', () => {
     const spy = vi.spyOn(document.documentElement, 'setAttribute');
     TestBed.configureTestingModule({ providers: [provideTouchTargets('on')] });
     const fixture = TestBed.createComponent(Host);
@@ -66,7 +66,7 @@ describe('provideTouchTargets / injectTouchTargets', () => {
     const afterInit = touchWrites();
     expect(afterInit).toBeGreaterThanOrEqual(1);
 
-    touch.set('on'); // same value — signal equality short-circuits the effect
+    touch.set('on'); // same value - signal equality short-circuits the effect
     fixture.detectChanges();
     expect(touchWrites()).toBe(afterInit);
   });

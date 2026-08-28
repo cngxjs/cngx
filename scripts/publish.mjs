@@ -18,7 +18,7 @@ const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const ROOT = resolve(__dirname, '..');
 const LIBS = ['utils', 'core', 'common', 'interop', 'forms', 'data-display', 'ui', 'themes'];
 
-// CSS-only libs that don't have an angular.json build target — built via
+// CSS-only libs that don't have an angular.json build target - built via
 // a dedicated node script that copies sources to dist/<lib>/.
 const CSS_ONLY_LIBS = new Set(['themes']);
 const PLACEHOLDER = '0.0.0-PLACEHOLDER';
@@ -239,7 +239,7 @@ function main() {
 
     if (skipGitTag) {
       console.log('\nGit tagging skipped (--skip-git-tag).');
-      console.log('Note: root package.json was bumped — remember to commit it.');
+      console.log('Note: root package.json was bumped - remember to commit it.');
     } else {
       console.log('\nCreating git tag...');
       // Refresh the changelog for this version, then commit it together with

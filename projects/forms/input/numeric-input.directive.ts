@@ -279,7 +279,7 @@ export class CngxNumericInput {
   }
 
   /**
-   * @internal — surface for the `CNGX_VALUE_TRANSFORMER` factory.
+   * @internal - surface for the `CNGX_VALUE_TRANSFORMER` factory.
    * Mirrors what the format effect would write to el.value for a given raw.
    */
   toDisplay(raw: number | null): string {
@@ -293,7 +293,7 @@ export class CngxNumericInput {
     return decimal === '.' ? String(raw) : String(raw).replace('.', decimal);
   }
 
-  /** @internal — surface for the `CNGX_VALUE_TRANSFORMER` factory. */
+  /** @internal - surface for the `CNGX_VALUE_TRANSFORMER` factory. */
   fromDisplay(display: string): number | null {
     if (!display.trim()) {
       return null;

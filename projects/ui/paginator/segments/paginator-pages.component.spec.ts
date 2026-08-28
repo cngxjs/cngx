@@ -133,7 +133,7 @@ describe('CngxPaginatorPages', () => {
   });
 });
 
-describe('CngxPaginatorPages — configurable truncation', () => {
+describe('CngxPaginatorPages - configurable truncation', () => {
   async function setupConfigurable(): Promise<ComponentFixture<ConfigurableHostCmp>> {
     TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
     const fixture = TestBed.createComponent(ConfigurableHostCmp);

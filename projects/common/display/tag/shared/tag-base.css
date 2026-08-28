@@ -57,7 +57,7 @@
 
 @layer cngx.components {
 
-  /* CngxTag — single decorative tag, inline-flex container */
+  /* CngxTag - single decorative tag, inline-flex container */
   @scope (.cngx-tag) {
     :scope {
       /* Derive tag spacing from the global scale so a root [data-density]
@@ -81,7 +81,7 @@
       font-size: var(--cngx-tag-font-size, var(--cngx-font-size-sm, 0.75rem));
     }
 
-    /* Density modifiers — sm/lg/xl override the tail of the cascade.
+    /* Density modifiers - sm/lg/xl override the tail of the cascade.
      * `md` is the default and resolves through the base :scope rule. */
     :scope.cngx-tag--sm {
       padding: var(--cngx-tag-sm-padding, 0 6px);
@@ -96,20 +96,20 @@
       font-size: var(--cngx-tag-xl-font-size, 1rem);
     }
 
-    /* Label slot — shrinkable so ellipsis can engage */
+    /* Label slot - shrinkable so ellipsis can engage */
     .cngx-tag__label {
       min-width: 0;
       overflow: hidden;
     }
 
-    /* Truncate modifier — single line + ellipsis */
+    /* Truncate modifier - single line + ellipsis */
     :scope.cngx-tag--truncate .cngx-tag__label {
       text-overflow: ellipsis;
       white-space: nowrap;
     }
   }
 
-  /* CngxTagGroup — vertical three-zone stack (header / row / accessory) */
+  /* CngxTagGroup - vertical three-zone stack (header / row / accessory) */
   @scope (.cngx-tag-group) {
     :scope {
       /* stack-gap read on the host; derive from the scale. 8 -> sm. */
@@ -130,7 +130,7 @@
       gap: var(--cngx-tag-group-gap, var(--cngx-space-sm, 8px));
     }
 
-    /* Gap modifiers — sm is default, xs/md modifiers override */
+    /* Gap modifiers - sm is default, xs/md modifiers override */
     :scope.cngx-tag-group--gap-xs > .cngx-tag-group__row {
       --cngx-tag-group-gap-xs: var(--cngx-space-xs);
       gap: var(--cngx-tag-group-gap-xs, var(--cngx-space-xs, 4px));
@@ -140,7 +140,7 @@
       gap: var(--cngx-tag-group-gap-md, 12px);
     }
 
-    /* Alignment modifiers — start is default */
+    /* Alignment modifiers - start is default */
     :scope.cngx-tag-group--align-start > .cngx-tag-group__row   { justify-content: flex-start; }
     :scope.cngx-tag-group--align-center > .cngx-tag-group__row  { justify-content: center; }
     :scope.cngx-tag-group--align-end > .cngx-tag-group__row     { justify-content: flex-end; }

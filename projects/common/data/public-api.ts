@@ -78,7 +78,7 @@ export { CngxRecyclerAnnouncer } from './recycler/recycler-announcer.component';
 export { connectRecyclerToRoving } from './recycler/connect-recycler-roving';
 export { connectRecyclerToActiveDescendant } from './recycler/connect-recycler-active-descendant';
 
-// Commit controller — generic async-commit state machine shared by
+// Commit controller - generic async-commit state machine shared by
 // the select family and the stepper / wizard family.
 export {
   createCommitController,
@@ -90,7 +90,7 @@ export {
   type CngxCommitControllerFactory,
 } from './commit';
 
-// Material bidirectional sync — shared factory consumed by cngx
+// Material bidirectional sync - shared factory consumed by cngx
 // organisms / directives that bridge a cngx presenter against a
 // Material parent (`<mat-tab-group>`, `<mat-stepper>`, etc.).
 // Material types never enter the signature; the caller maps at the

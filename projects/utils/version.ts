@@ -20,5 +20,5 @@ export function makeVersion(full: string): Version {
   return { full, major, minor, patch };
 }
 
-/** @internal — replaced at publish time, not part of consumer API. */
+/** @internal - replaced at publish time, not part of consumer API. */
 export const VERSION = makeVersion('0.0.0-PLACEHOLDER');

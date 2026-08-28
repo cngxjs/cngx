@@ -10,11 +10,11 @@ import type {
 // trigger tracked in `display-accepted-debt.md §3`.
 
 /**
- * Context exposed by the `*cngxTagLabel` slot — the full reactive
+ * Context exposed by the `*cngxTagLabel` slot - the full reactive
  * Tag state bundled so consumer templates can switch on variant /
  * colour / size / truncate without injecting the directive.
  *
- * `$implicit` is `void` because the slot has no positional payload —
+ * `$implicit` is `void` because the slot has no positional payload -
  * consumers reach for the named fields below. Pattern mirrors
  * `CngxSelectInputSlotContext` in `@cngx/forms/select/shared`.
  *

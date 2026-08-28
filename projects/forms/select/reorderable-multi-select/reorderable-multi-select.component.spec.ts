@@ -104,7 +104,7 @@ function handleOf(chip: HTMLElement): HTMLElement {
   // The ⠇⠇ grip is a visual hint only (pointer-events: none); the
   // whole chip wrap is drag-enabled. This helper returns the grip
   // element for tests that want to cover the "user grabs the grip"
-  // path specifically — fallback to the chip body when no grip is
+  // path specifically - fallback to the chip body when no grip is
   // rendered (e.g. disabled or custom-chip consumers).
   const h =
     chip.querySelector<HTMLElement>('.cngx-select__chip-handle') ?? chip;
@@ -178,7 +178,7 @@ beforeEach(() => {
   polyfillPopover();
 });
 
-describe('CngxReorderableMultiSelect — pointer reorder', () => {
+describe('CngxReorderableMultiSelect - pointer reorder', () => {
   it('drag-right via pointer on the chip body writes reordered values', () => {
     const fixture = TestBed.createComponent(Host);
     flush(fixture);
@@ -227,7 +227,7 @@ describe('CngxReorderableMultiSelect — pointer reorder', () => {
     pointerUp();
     flush(fixture);
 
-    // No drag started — values untouched, and the remove-button's own
+    // No drag started - values untouched, and the remove-button's own
     // click handler (if fired by the pointerup→click sequence in a
     // real browser) stays owned by the chip.
     expect(fixture.componentInstance.values()).toEqual(['a', 'b', 'c', 'd']);
@@ -235,7 +235,7 @@ describe('CngxReorderableMultiSelect — pointer reorder', () => {
   });
 });
 
-describe('CngxReorderableMultiSelect — keyboard reorder', () => {
+describe('CngxReorderableMultiSelect - keyboard reorder', () => {
   it('Ctrl+ArrowRight on chip index 1 moves value to index 2', () => {
     const fixture = TestBed.createComponent(Host);
     flush(fixture);
@@ -262,7 +262,7 @@ describe('CngxReorderableMultiSelect — keyboard reorder', () => {
   });
 });
 
-describe('CngxReorderableMultiSelect — commit action', () => {
+describe('CngxReorderableMultiSelect - commit action', () => {
   it('optimistic: applies immediately, rolls back on error', async () => {
     const fixture = TestBed.createComponent(Host);
     const host = fixture.componentInstance;
@@ -321,7 +321,7 @@ describe('CngxReorderableMultiSelect — commit action', () => {
   });
 });
 
-describe('CngxReorderableMultiSelect — a11y + surface', () => {
+describe('CngxReorderableMultiSelect - a11y + surface', () => {
   it('chip strip carries role="group" and the reorderAriaLabel', () => {
     const fixture = TestBed.createComponent(Host);
     flush(fixture);
@@ -338,7 +338,7 @@ describe('CngxReorderableMultiSelect — a11y + surface', () => {
     expect(chipAt(root, 0).getAttribute('tabindex')).toBe('0');
     expect(chipAt(root, 1).getAttribute('tabindex')).toBe('-1');
 
-    // Focus a later chip — roving moves.
+    // Focus a later chip - roving moves.
     chipAt(root, 2).dispatchEvent(new FocusEvent('focus'));
     flush(fixture);
 
@@ -433,13 +433,13 @@ describe('CngxReorderableMultiSelect — a11y + surface', () => {
   });
 });
 
-describe('CngxReorderableMultiSelect — selection preservation', () => {
-  it('reorder preserves membership exactly — only position changes', () => {
+describe('CngxReorderableMultiSelect - selection preservation', () => {
+  it('reorder preserves membership exactly - only position changes', () => {
     const fixture = TestBed.createComponent(Host);
     flush(fixture);
     const root = fixture.nativeElement as HTMLElement;
 
-    // Multiple keyboard moves — membership stays {a,b,c,d}.
+    // Multiple keyboard moves - membership stays {a,b,c,d}.
     fireKey(chipAt(root, 0), 'End', { alt: true });
     flush(fixture);
     fireKey(chipAt(root, 0), 'End', { alt: true });
@@ -468,8 +468,8 @@ class HandleHost {
   readonly values = signal<string[]>(['a', 'b']);
 }
 
-describe('CngxReorderableMultiSelect — drag-handle default', () => {
-  it('renders no grip by default — the whole chip is the drag surface', () => {
+describe('CngxReorderableMultiSelect - drag-handle default', () => {
+  it('renders no grip by default - the whole chip is the drag surface', () => {
     const fixture = TestBed.createComponent(Host);
     flush(fixture);
     const root = fixture.nativeElement as HTMLElement;
@@ -494,7 +494,7 @@ describe('CngxReorderableMultiSelect — drag-handle default', () => {
   });
 });
 
-describe('CngxReorderableMultiSelect — panel Escape handling', () => {
+describe('CngxReorderableMultiSelect - panel Escape handling', () => {
   it('Escape on the trigger while the panel is open closes the panel', () => {
     const fixture = TestBed.createComponent(Host);
     flush(fixture);
@@ -503,7 +503,7 @@ describe('CngxReorderableMultiSelect — panel Escape handling', () => {
     trigger.click();
     flush(fixture);
 
-    // Simulate the listbox's Escape behavior — close by calling close().
+    // Simulate the listbox's Escape behavior - close by calling close().
     const cmp = fixture.debugElement.query(By.directive(CngxReorderableMultiSelect))
       .componentInstance as CngxReorderableMultiSelect<string>;
     expect(cmp.panelOpen()).toBe(true);

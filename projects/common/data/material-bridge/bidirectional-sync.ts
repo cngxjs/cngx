@@ -22,7 +22,7 @@ import type { Observable } from 'rxjs';
 export interface CngxMaterialBidirectionalSyncOptions {
   /**
    * Reactive source for the presenter's current index. The factory's
-   * `effect()` tracks this signal — when it changes, Material is
+   * `effect()` tracks this signal - when it changes, Material is
    * written (subject to the equality guard against the Material
    * read-side).
    */
@@ -88,7 +88,7 @@ export interface CngxMaterialBidirectionalSyncHandle {
  * (`<mat-tab-group>`, `<mat-stepper>`, etc.).
  *
  * Lives at Level 2 in `@cngx/common/data` parallel to
- * `createCommitController`. Material types never enter the signature —
+ * `createCommitController`. Material types never enter the signature -
  * the caller maps Material-specific events and property accessors to a
  * host-agnostic shape at the directive boundary.
  *
@@ -102,7 +102,7 @@ export interface CngxMaterialBidirectionalSyncHandle {
  * 2. A Material→presenter subscription that forwards each
  *    `selectionChange$` emission to `onMaterialSelection`
  *    (equality-guarded against `presenterIndex()` so a Material event
- *    whose value already matches the presenter is dropped — closes
+ *    whose value already matches the presenter is dropped - closes
  *    the re-entrancy loop).
  *
  * Both sides clean up via `destroyRef`.
@@ -130,7 +130,7 @@ export interface CngxMaterialBidirectionalSyncHandle {
  * load-bearing for an ASYNC commit-action: Material emits the echo a
  * microtask later, by which point the commit may have advanced
  * `presenterIndex`, so an equality-only guard (`presenterIndex() ===
- * idx`) would FAIL to drop the echo — it would re-enter the subscriber
+ * idx`) would FAIL to drop the echo - it would re-enter the subscriber
  * and ping-pong against the in-flight navigation (the demo freezes).
  * Matching the echo by the value we wrote drops it regardless of where
  * the presenter has moved.

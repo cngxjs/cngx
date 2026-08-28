@@ -172,7 +172,7 @@ describe('CngxCheckboxIndicator', () => {
     expect(host.getAttribute('aria-hidden')).toBe('true');
   });
 
-  it('host click is a no-op — no output emitters defined', () => {
+  it('host click is a no-op - no output emitters defined', () => {
     const fixture = TestBed.createComponent(Host);
     flush(fixture);
     const host = hostEl(fixture);

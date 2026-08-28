@@ -207,7 +207,7 @@ describe('CngxNumericInput', () => {
       directive.setValue(1234.56);
       flush(fixture);
       expect(directive.numericValue()).toBe(1234.56);
-      // Swiss uses various group separators — just verify the value round-trips
+      // Swiss uses various group separators - just verify the value round-trips
       expect(input.value).toBeTruthy();
     });
   });

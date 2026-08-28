@@ -19,7 +19,7 @@ import { CngxMatTabs } from './mat-tabs.directive';
 import { CngxMatTabError } from './mat-tab-error.directive';
 
 // Minimal aggregator stub with a stable reference. Sources are not
-// exercised — the directive only writes the contract reference into
+// exercised - the directive only writes the contract reference into
 // the handle slot; downstream consumers (Renderer2 badge effect, AT)
 // read `shouldShow` / `announcement` directly off the slot.
 function makeStubAggregator(
@@ -114,7 +114,7 @@ describe('CngxMatTabError attribute directive', () => {
     // Bare attribute (`cngxMatTabError` without a value) binds the
     // empty string per Angular's attribute-binding semantics. The
     // input transform coerces strings to `undefined`, so the slot
-    // never receives a non-contract value — `shouldShow()` is never
+    // never receives a non-contract value - `shouldShow()` is never
     // called on a `''` reference and the badge effect stays at its
     // default no-op state.
     expect(presenter.tabs()[0].errorAggregator()).toBeUndefined();
@@ -142,12 +142,12 @@ describe('CngxMatTabError attribute directive', () => {
 
     expect(presenter.tabs()[0].errorAggregator()).toBeDefined();
 
-    // Consumer's natural cleanup path — unbind the aggregator
+    // Consumer's natural cleanup path - unbind the aggregator
     // (e.g. form is no longer relevant for this tab); the directive's
     // effect re-runs with `undefined` and resets the handle slot to
     // its per-handle default. Mirrors the destroyRef.onDestroy path
     // for the (rare) case of `*ngIf`-toggling the directive while
-    // keeping the MatTab alive — both routes converge on the same
+    // keeping the MatTab alive - both routes converge on the same
     // slot-undefined invariant.
     aggA.set(undefined);
     fixture.detectChanges();

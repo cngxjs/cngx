@@ -45,7 +45,7 @@ function makePopover(): { popoverRef: Signal<CngxPopover | null>; hideCount: { n
   };
 }
 
-// ── Host probe — installs the dispatcher in its constructor ────────────
+// ── Host probe - installs the dispatcher in its constructor ────────────
 
 interface ProbeInputs {
   readonly listboxRef: WritableSignal<CngxListbox<unknown> | null>;
@@ -115,7 +115,7 @@ describe('createADActivationDispatcher', () => {
       onCommit: (v, o) => onCommitCalls.push([v, o]),
       onActivate: (v, o) => onActivateCalls.push([v, o]),
     });
-    // No subscription yet — emitting on the mock should do nothing.
+    // No subscription yet - emitting on the mock should do nothing.
     activated.next('a');
     expect(onActivateCalls).toEqual([]);
 
@@ -252,7 +252,7 @@ describe('createADActivationDispatcher', () => {
     expect(hideCount.n).toBe(0);
   });
 
-  it('unsubscribes on host teardown — no activations after destroy', () => {
+  it('unsubscribes on host teardown - no activations after destroy', () => {
     const { lb, activated } = makeListbox();
     const fixture = installProbe({
       listboxRef,

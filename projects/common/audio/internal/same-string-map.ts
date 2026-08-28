@@ -6,7 +6,7 @@
  * parsed bindings are identical (the signal-hygiene Equality Rule). Same size,
  * same value per key.
  *
- * @internal — not exported from `public-api.ts`.
+ * @internal - not exported from `public-api.ts`.
  */
 export function sameStringMap<K>(a: ReadonlyMap<K, string>, b: ReadonlyMap<K, string>): boolean {
   if (a.size !== b.size) {

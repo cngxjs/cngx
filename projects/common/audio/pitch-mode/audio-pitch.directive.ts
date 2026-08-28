@@ -3,14 +3,14 @@ import { Directive, booleanAttribute, effect, input, linkedSignal, untracked } f
 import { createDebouncer } from '../debouncer/debouncer';
 import { injectCngxAudio } from '../inject-audio';
 
-/** Throttle key — the pitch directive plays a single ad-hoc voice. */
+/** Throttle key - the pitch directive plays a single ad-hoc voice. */
 const PITCH_VOICE = 'pitch';
 
 /**
  * Pitch-mode audio binder. Sonifies a continuous numeric value: each change of
  * `[cngxAudioPitch]` clamps against a fixed domain, linear-scales into an output
  * frequency range, and plays a short tone. Useful for sliders, gauges, and live
- * metrics — the ear tracks a value without looking.
+ * metrics - the ear tracks a value without looking.
  *
  * ```html
  * <input type="range" min="0" max="100"
@@ -20,7 +20,7 @@ const PITCH_VOICE = 'pitch';
  * ```
  *
  * The inputs are discrete rather than an options record so `[cngxAudioPitch]`
- * stays a native reactive input — passing `[cngxAudioPitch]="volume()"` binds a
+ * stays a native reactive input - passing `[cngxAudioPitch]="volume()"` binds a
  * signal value directly, never a `Signal` smuggled inside a config object. The
  * domain is caller-supplied and fixed; it is never accumulated from observed
  * values, so the directive holds no hidden state. Value-to-frequency is a pure

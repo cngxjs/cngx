@@ -66,7 +66,7 @@ function flush(fixture: { detectChanges: () => void }): void {
   fixture.detectChanges();
 }
 
-describe('CngxListboxFieldBridge — single select', () => {
+describe('CngxListboxFieldBridge - single select', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({ imports: [SingleHost] });
   });
@@ -155,7 +155,7 @@ describe('CngxListboxFieldBridge — single select', () => {
   });
 });
 
-describe('CngxListboxFieldBridge — multi select', () => {
+describe('CngxListboxFieldBridge - multi select', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({ imports: [MultiHost] });
   });
@@ -241,7 +241,7 @@ class EmptyMultiHost {
   }
 }
 
-describe('CngxListboxFieldBridge — empty field mount', () => {
+describe('CngxListboxFieldBridge - empty field mount', () => {
   it('leaves an undefined single-select field untouched (nothing selected to push)', () => {
     TestBed.configureTestingModule({ imports: [EmptySingleHost] });
     const fixture = TestBed.createComponent(EmptySingleHost);

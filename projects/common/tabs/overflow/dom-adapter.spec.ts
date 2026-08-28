@@ -21,7 +21,7 @@ function makeHandle(id: string): CngxTabHandle {
 
 const stubPanelHost = {} as CngxTabPanelHost;
 
-describe('CngxTabOverflowDomAdapter — default factory', () => {
+describe('CngxTabOverflowDomAdapter - default factory', () => {
   let wrapper: HTMLElement;
   let strip: HTMLElement;
   let host: HTMLElement;
@@ -65,7 +65,7 @@ describe('CngxTabOverflowDomAdapter — default factory', () => {
     expect(adapter.resolveTabButton(makeHandle('tab-1'), strip, 0)).toBe(button);
   });
 
-  it('resolveTabButton ignores idx — id contract is positional-independent', () => {
+  it('resolveTabButton ignores idx - id contract is positional-independent', () => {
     const buttonA = document.createElement('button');
     buttonA.id = 'tab-1-header';
     const buttonB = document.createElement('button');

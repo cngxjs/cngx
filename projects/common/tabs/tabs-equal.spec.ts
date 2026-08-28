@@ -76,7 +76,7 @@ describe('tabsEqual', () => {
     expect(tabsEqual(a, b)).toBe(false);
   });
 
-  it('does NOT compare errorAggregator references — equal returns true even when aggregators differ', () => {
+  it('does NOT compare errorAggregator references - equal returns true even when aggregators differ', () => {
     const stubAggregator = (hasErrorValue: boolean): CngxErrorAggregatorContract => ({
       hasError: signal(hasErrorValue),
       errorCount: signal(hasErrorValue ? 1 : 0),

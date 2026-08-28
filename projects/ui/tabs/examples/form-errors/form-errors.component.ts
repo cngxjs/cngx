@@ -19,9 +19,9 @@ import { CngxTabGroup } from '@cngx/ui/tabs';
  * built with `injectErrorAggregator`. The aggregator's source signal reads
  * the form group's `statusChanges` (via `toSignal` + `startWith`) and the
  * matching tab header gains a `cngx-tabs__badge` plus an SR descriptor
- * span — fully signal-derived, no manual toggles. Both tabs start with
+ * span - fully signal-derived, no manual toggles. Both tabs start with
  * valid pre-filled values; clear a field to trigger its badge. The two
- * aggregators are independent — fixing one tab does not affect the other.
+ * aggregators are independent - fixing one tab does not affect the other.
  */
 @Component({
   selector: 'app-root',
@@ -31,7 +31,7 @@ import { CngxTabGroup } from '@cngx/ui/tabs';
   template: `
     <p style="margin: 0 0 12px; opacity: 0.8; font-size: 0.875rem">
       Two tabs, each bound to a reactive <code>FormGroup</code>. Clear a
-      field — the per-tab error aggregator reads
+      field - the per-tab error aggregator reads
       <code>statusChanges</code> and a badge lights up on the tab header.
     </p>
     <cngx-tab-group aria-label="Form error aggregation demo">
@@ -65,7 +65,7 @@ import { CngxTabGroup } from '@cngx/ui/tabs';
       </div>
       <div cngxTab label="Notifications">
         <ng-template cngxTabContent>
-          <p style="padding: 12px">No aggregator bound — no badge on this tab.</p>
+          <p style="padding: 12px">No aggregator bound - no badge on this tab.</p>
         </ng-template>
       </div>
     </cngx-tab-group>

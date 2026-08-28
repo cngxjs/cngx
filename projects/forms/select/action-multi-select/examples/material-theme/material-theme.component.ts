@@ -31,7 +31,7 @@ import { CngxActionMultiSelect, type CngxSelectOptionDef } from '@cngx/forms/sel
         [chipOverflow]="'truncate'"
         placeholder="Pick colors…"
       />
-      <p class="demo__readout">Selected: {{ values().join(', ') || '—' }}</p>
+      <p class="demo__readout">Selected: {{ values().join(', ') || '-' }}</p>
     </div>
   `,
 })

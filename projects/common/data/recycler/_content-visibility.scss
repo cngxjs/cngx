@@ -1,5 +1,5 @@
 /// Applies `content-visibility: auto` to skip rendering of off-screen items.
-/// Zero-JS optimization complementary to `injectRecycler` — the browser skips
+/// Zero-JS optimization complementary to `injectRecycler` - the browser skips
 /// layout/paint for items outside the viewport. Works with or without the recycler.
 ///
 /// @param {length} $height - Estimated intrinsic height per item (e.g. 48px).

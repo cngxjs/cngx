@@ -191,7 +191,7 @@
   }
 
   /**
-   * Border-style applied to negated groups — dashed reads as
+   * Border-style applied to negated groups - dashed reads as
    * "exclusion" without changing the color.
    * @group Variant / Negated
    */
@@ -212,7 +212,7 @@
   }
 
   /**
-   * Text color of the empty-state slot — muted by default.
+   * Text color of the empty-state slot - muted by default.
    * `inherits: true` so the :root dark-mode override reaches the
    * empty slot inside the builder host.
    * @group State / Empty
@@ -380,7 +380,7 @@
     initial-value: 1em;
   }
 
-  /* Delegating tokens — borders + remove-tone track the foundation
+  /* Delegating tokens - borders + remove-tone track the foundation
    * chain so a dark-mode swap on `--cngx-color-border` /
    * `--cngx-color-danger` cascades through. Group/rail shorthands
    * pin their structural part (1px solid / 2px solid) and inherit
@@ -394,7 +394,7 @@
     --cngx-filter-builder-error-fg: var(--cngx-color-danger);
   }
 
-  /* Dark-mode component-local swap — alpha-on-black hover-bg
+  /* Dark-mode component-local swap - alpha-on-black hover-bg
    * vanishes on dark surfaces, so the dark block lifts it to
    * alpha-on-white. Muted empty-state text inverts from a dim
    * dark gray to a soft light gray so it keeps its

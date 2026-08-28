@@ -96,7 +96,7 @@ describe('CngxInputFormat', () => {
   });
 
   it('termination guard: external value.set while unfocused formats el.value exactly once and value() still reads raw', () => {
-    // Non-idempotent format (wrap in brackets) — a missing termination guard
+    // Non-idempotent format (wrap in brackets) - a missing termination guard
     // would re-feed "[hello]" as raw, then "[[hello]]", etc.
     @Component({
       template: `<input [cngxInputFormat]="formatFn" />`,
@@ -113,7 +113,7 @@ describe('CngxInputFormat', () => {
     const input = fixture.nativeElement.querySelector('input') as HTMLInputElement;
     const directive = fixture.componentInstance.directive();
 
-    // Ensure the input is not focused — the effect's "don't fight the cursor"
+    // Ensure the input is not focused - the effect's "don't fight the cursor"
     // branch would otherwise short-circuit the test.
     input.blur();
     expect(document.activeElement).not.toBe(input);

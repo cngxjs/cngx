@@ -562,7 +562,7 @@ export class CngxInputMask {
     },
   );
 
-  /** Primary value channel — raw unmasked value (digits/letters only, no literals unless `includeLiterals`). */
+  /** Primary value channel - raw unmasked value (digits/letters only, no literals unless `includeLiterals`). */
   readonly value = model<string>('', { alias: 'value' });
 
   /**
@@ -680,7 +680,7 @@ export class CngxInputMask {
   }
 
   /**
-   * @internal — surface for the `CNGX_VALUE_TRANSFORMER` factory.
+   * @internal - surface for the `CNGX_VALUE_TRANSFORMER` factory.
    * Mirrors what the mask effect would render for a given raw string.
    */
   toMaskedDisplay(raw: string): string {
@@ -694,7 +694,7 @@ export class CngxInputMask {
   }
 
   /**
-   * @internal — surface for the `CNGX_VALUE_TRANSFORMER` factory.
+   * @internal - surface for the `CNGX_VALUE_TRANSFORMER` factory.
    * Strips prefix/suffix and extracts slot characters from a masked display.
    */
   fromMaskedDisplay(display: string): string {

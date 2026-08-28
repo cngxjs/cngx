@@ -30,7 +30,7 @@ export interface DirectiveFixture<D, H> {
  * Creates a minimal test fixture for a directive.
  *
  * @param directive The directive class to test.
- * @param template The template string — must include the directive's selector.
+ * @param template The template string - must include the directive's selector.
  * @param hostType A pre-defined host component class with signal inputs.
  * @param options Additional configuration.
  *

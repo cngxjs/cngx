@@ -42,7 +42,7 @@ class ConfigTemplateSource {
     viewChild.required<TemplateRef<CngxFilterBuilderExpressionTemplateContext>>('expressionTemplate');
 }
 
-describe('filter-builder slot precedence — expression template cascade', () => {
+describe('filter-builder slot precedence - expression template cascade', () => {
   it('default cascade mounts CngxFilterExpressionRow', () => {
     @Component({
       standalone: true,
@@ -63,7 +63,7 @@ describe('filter-builder slot precedence — expression template cascade', () =>
     expect(fixture.debugElement.query(By.css('[data-test="content-tier-template"]'))).toBeNull();
   });
 
-  it('contentChild cngxFilterBuilderExpressionTemplate wins — row is NOT mounted', () => {
+  it('contentChild cngxFilterBuilderExpressionTemplate wins - row is NOT mounted', () => {
     @Component({
       standalone: true,
       template: `
@@ -165,7 +165,7 @@ class ConfigValueEditorSource {
     viewChild.required<TemplateRef<CngxFilterBuilderValueEditorContext<unknown>>>('valueEditor');
 }
 
-describe('filter-builder slot precedence — valueEditor cascade', () => {
+describe('filter-builder slot precedence - valueEditor cascade', () => {
   it('contentChild cngxFilterBuilderValueEditor wins over the CONFIG.templates valueEditor on the resolved registry', () => {
     const sourceFixture = TestBed.createComponent(ConfigValueEditorSource);
     sourceFixture.detectChanges();
@@ -199,7 +199,7 @@ describe('filter-builder slot precedence — valueEditor cascade', () => {
     fixture.detectChanges();
     TestBed.flushEffects();
 
-    // Reach into the resolved template registry — content-tier wins.
+    // Reach into the resolved template registry - content-tier wins.
     const registry = (fixture.componentInstance.fb() as unknown as {
       templates: CngxFilterBuilderTemplateRegistry;
     }).templates;

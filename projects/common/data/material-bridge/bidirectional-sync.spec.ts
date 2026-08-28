@@ -74,7 +74,7 @@ describe('createMaterialBidirectionalSync', () => {
     });
   });
 
-  test('axis 1: presenter→Material idempotence — write suppressed when already at target', () => {
+  test('axis 1: presenter→Material idempotence - write suppressed when already at target', () => {
     const h = makeHarness(0);
     h.install();
     TestBed.flushEffects();
@@ -85,14 +85,14 @@ describe('createMaterialBidirectionalSync', () => {
     expect(h.writeSpy).toHaveBeenCalledTimes(1);
     expect(h.matIndex.value).toBe(2);
 
-    // Re-set to the same value — Material is already there, no write.
+    // Re-set to the same value - Material is already there, no write.
     h.matIndex.value = 2;
     h.presenterIndex.set(2);
     TestBed.flushEffects();
     expect(h.writeSpy).toHaveBeenCalledTimes(1);
   });
 
-  test('axis 2: Material→presenter routing — each emission invokes onMaterialSelection once', () => {
+  test('axis 2: Material→presenter routing - each emission invokes onMaterialSelection once', () => {
     const h = makeHarness(0);
     h.install();
     TestBed.flushEffects();
@@ -106,18 +106,18 @@ describe('createMaterialBidirectionalSync', () => {
     expect(h.onMaterialSelectionSpy).toHaveBeenCalledWith(3);
   });
 
-  test('axis 3: untracked() discipline — write does not re-trigger the same effect', () => {
+  test('axis 3: untracked() discipline - write does not re-trigger the same effect', () => {
     const h = makeHarness(0);
     // Custom write spy that touches signals to prove tracking would
     // re-fire if the write were tracked. The `readSelectedIndex` call
-    // inside the effect is also wrapped in untracked() — confirm that
+    // inside the effect is also wrapped in untracked() - confirm that
     // by reading a sentinel signal in writeSelectedIndex and asserting
     // a write to it does NOT re-trigger the effect.
     const sentinel = signal(0);
     let effectFires = 0;
     const writeSpy = vi.fn((idx: number) => {
       h.matIndex.value = idx;
-      // Read + write a signal — if the effect tracked this, we'd loop.
+      // Read + write a signal - if the effect tracked this, we'd loop.
       sentinel.update((v) => v + 1);
     });
     h.install({
@@ -199,7 +199,7 @@ describe('createMaterialBidirectionalSync', () => {
     expect(h.presenterIndex()).toBe(0);
   });
 
-  test('axis 6: self-echo suppression — a reconcile write-echo is dropped by value even after the presenter advanced (async-commit ping-pong)', () => {
+  test('axis 6: self-echo suppression - a reconcile write-echo is dropped by value even after the presenter advanced (async-commit ping-pong)', () => {
     const h = makeHarness(0);
     const holding = vi.fn((_idx: number) => {});
     h.install({ onMaterialSelection: holding });
@@ -230,7 +230,7 @@ describe('createMaterialBidirectionalSync', () => {
     expect(h.matIndex.value).toBe(1);
   });
 
-  test('axis 6b: self-echo suppression — a coalesced echo prunes earlier un-echoed writes (no queue leak)', () => {
+  test('axis 6b: self-echo suppression - a coalesced echo prunes earlier un-echoed writes (no queue leak)', () => {
     const h = makeHarness(0);
     h.install();
     TestBed.flushEffects();
@@ -256,7 +256,7 @@ describe('createMaterialBidirectionalSync', () => {
     expect(h.onMaterialSelectionSpy).toHaveBeenCalledWith(1);
   });
 
-  test('axis 5: re-entrancy guard — Material event during presenter→Material write does not double-fire', () => {
+  test('axis 5: re-entrancy guard - Material event during presenter→Material write does not double-fire', () => {
     const h = makeHarness(0);
     // Simulate the natural loop: presenter writes 2 → Material setter
     // fires its own selectionChange event (carrying the same index)

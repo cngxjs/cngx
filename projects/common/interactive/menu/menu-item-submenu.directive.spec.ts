@@ -235,7 +235,7 @@ describe('CngxMenuItemSubmenu', () => {
 })
 class StandaloneSubmenuHost {}
 
-describe('CngxMenuItemSubmenu — applied without a sibling [cngxMenuItem]', () => {
+describe('CngxMenuItemSubmenu - applied without a sibling [cngxMenuItem]', () => {
   beforeEach(() => {
     polyfillPopover();
     TestBed.configureTestingModule({ imports: [StandaloneSubmenuHost] });

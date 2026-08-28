@@ -45,7 +45,7 @@ function makeTree(): CngxTreeNode<Row>[] {
   ];
 }
 
-/** Minimal shell-host stub — shell only cares about activeView='content'. */
+/** Minimal shell-host stub - shell only cares about activeView='content'. */
 function makeShellHost(): CngxSelectPanelHost {
   const nullTpl = signal<null>(null);
   return {
@@ -148,7 +148,7 @@ class TreeHost implements CngxTreeSelectPanelHost<Row> {
   readonly selected = signal<Set<string>>(new Set());
   readonly useSlot = signal(false);
   readonly panelOpen = signal(true).asReadonly();
-  // Glyph overrides + i18n labels — null / default literals keep the
+  // Glyph overrides + i18n labels - null / default literals keep the
   // harness on the built-in node-row visuals.
   readonly twistyGlyph = signal<TemplateRef<void> | null>(null).asReadonly();
   readonly twistyOpenGlyph = signal<TemplateRef<void> | null>(null).asReadonly();
@@ -236,7 +236,7 @@ describe('CngxTreeSelectPanel', () => {
 
     const b = items[1];
     expect(b.getAttribute('aria-level')).toBe('1');
-    // Leaf — no aria-expanded attribute at all
+    // Leaf - no aria-expanded attribute at all
     expect(b.hasAttribute('aria-expanded')).toBe(false);
 
     // Expand Alpha → Alpha-1 + Alpha-2 enter the visible set

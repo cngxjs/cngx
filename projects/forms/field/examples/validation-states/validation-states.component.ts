@@ -160,6 +160,6 @@ export class ValidationStatesExample {
 
   /** Joins the active error kinds for the readout, or a dash when valid. */
   protected kinds(errors: readonly ValidationError[]): string {
-    return errors.length ? errors.map((e) => e.kind).join(', ') : '—';
+    return errors.length ? errors.map((e) => e.kind).join(', ') : '-';
   }
 }

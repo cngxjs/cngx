@@ -21,7 +21,7 @@ import { CngxSelectAction } from '../../template-slots';
 import { CngxSelectPanelShell } from './panel-shell.component';
 
 /**
- * Minimal host fixture — exposes the writable signals under test so
+ * Minimal host fixture - exposes the writable signals under test so
  * each case can flip `activeView` / `showInlineError` / … and verify
  * the shell's template branching.
  */
@@ -125,7 +125,7 @@ function createMockHost(): {
     isIndeterminate: () => false,
     isCommittingOption: () => false,
     patchData: () => {
-      /* stub — panel shell never writes the buffer */
+      /* stub - panel shell never writes the buffer */
     },
     clearLocalItems: () => {
       /* stub */
@@ -215,7 +215,7 @@ describe('CngxSelectPanelShell', () => {
     expect(root.querySelector('.cngx-select__error--inline')).toBeNull();
     expect(root.querySelector('.cngx-select__refreshing')).toBeNull();
 
-    // Turn on all three surfaces — inline error, commit-error banner, refreshing
+    // Turn on all three surfaces - inline error, commit-error banner, refreshing
     controls.showInlineError.set(true);
     controls.showCommitError.set(true);
     controls.showRefreshIndicator.set(true);
@@ -232,7 +232,7 @@ describe('CngxSelectPanelShell', () => {
 });
 
 /**
- * Action-slot fixture — projects a `*cngxSelectAction` template, wires
+ * Action-slot fixture - projects a `*cngxSelectAction` template, wires
  * the optional view-host fields through writable signals, and flips
  * `actionPosition` via a component input.
  */
@@ -341,7 +341,7 @@ function setupAction() {
   return { fixture, host, controls };
 }
 
-describe('CngxSelectPanelShell — action slot', () => {
+describe('CngxSelectPanelShell - action slot', () => {
   it("renders the action template above the projected body when position='top'", () => {
     const { fixture } = setupAction();
     fixture.componentInstance.actionPosition.set('top');
@@ -379,7 +379,7 @@ describe('CngxSelectPanelShell — action slot', () => {
     fixture.detectChanges();
     root = fixture.nativeElement as HTMLElement;
     expect(root.querySelectorAll('.action-button').length).toBe(0);
-    // Projected body still renders — only the action slots drop.
+    // Projected body still renders - only the action slots drop.
     expect(root.querySelector('.projected-body')).toBeTruthy();
   });
 
@@ -425,14 +425,14 @@ describe('CngxSelectPanelShell — action slot', () => {
     fixture.detectChanges();
     // Allow the CDK trap's microtask-scheduled focus to settle.
     await Promise.resolve();
-    // Restore — no errors thrown on toggle in either direction.
+    // Restore - no errors thrown on toggle in either direction.
     fixture.componentInstance.trapEnabled.set(false);
     fixture.detectChanges();
     expect(shellEl.isConnected).toBe(true);
   });
 
   // Note: Escape-intercept now lives in `createActionHostBridge` (attached to
-  // the variant root) instead of the panel shell — the trigger input is a
+  // the variant root) instead of the panel shell - the trigger input is a
   // sibling of the popover, so a shell-level listener couldn't catch Escape
   // pressed in the trigger. Bridge-level coverage lives in
   // `action-host-bridge.spec.ts`.
@@ -462,7 +462,7 @@ class RetryHost {
   readonly retryTpl = viewChild<TemplateRef<unknown>>('retryTpl');
 }
 
-describe('CngxSelectPanelShell — *cngxSelectRetryButton override', () => {
+describe('CngxSelectPanelShell - *cngxSelectRetryButton override', () => {
   it('renders the override at the load-error retry surface', () => {
     const { host, controls } = createMockHost();
     // The default mock uses ONE shared `nullTpl` signal across every slot;
@@ -525,7 +525,7 @@ class GlyphHost {
   readonly glyphTpl = viewChild<TemplateRef<void>>('glyphTpl');
 }
 
-describe('CngxSelectPanelShell — *cngxSelectLoadingGlyph override', () => {
+describe('CngxSelectPanelShell - *cngxSelectLoadingGlyph override', () => {
   it('replaces the default spinner glyph in the loading view', () => {
     const { host, controls } = createMockHost();
     const glyphSlot = signal<TemplateRef<void> | null>(null);

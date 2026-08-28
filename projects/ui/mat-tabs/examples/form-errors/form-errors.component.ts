@@ -21,7 +21,7 @@ import { CngxMatTabError, CngxMatTabs } from '@cngx/ui/mat-tabs';
  * `injectErrorAggregator`. The aggregator's source signal reads
  * `statusChanges` (via `toSignal` + `startWith`) and the matching
  * Material tab header gains a `cngx-mat-tab--has-errors` badge plus
- * an SR descriptor span — fully signal-derived, no manual toggles.
+ * an SR descriptor span - fully signal-derived, no manual toggles.
  * Both tabs start with valid pre-filled values; clear a field and
  * switch tabs to watch the badge appear on the header.
  */
@@ -35,7 +35,7 @@ import { CngxMatTabError, CngxMatTabs } from '@cngx/ui/mat-tabs';
   template: `
     <p style="margin: 0 0 12px; opacity: 0.8; font-size: 0.875rem">
       Vanilla <code>&lt;mat-tab-group&gt;</code> + <code>cngxMatTabs</code>.
-      Clear a field — the per-tab error aggregator reads
+      Clear a field - the per-tab error aggregator reads
       <code>statusChanges</code> and a badge lights up on the tab header.
     </p>
     <mat-tab-group cngxMatTabs aria-label="Form error aggregation demo">
@@ -64,7 +64,7 @@ import { CngxMatTabError, CngxMatTabs } from '@cngx/ui/mat-tabs';
         </form>
       </mat-tab>
       <mat-tab label="Notifications">
-        <p style="padding: 12px">No aggregator bound — no badge on this tab.</p>
+        <p style="padding: 12px">No aggregator bound - no badge on this tab.</p>
       </mat-tab>
     </mat-tab-group>
   `,

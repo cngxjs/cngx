@@ -48,7 +48,7 @@ function setupHost(): { host: HostCmp; hostEl: HTMLElement } {
   return { host: fixture.componentInstance, hostEl };
 }
 
-describe('createMatTabAggregatorDecoration — half-wired slot warning', () => {
+describe('createMatTabAggregatorDecoration - half-wired slot warning', () => {
   it('fires onHalfWiredSlot once when contentTemplate is bound but viewContainerRef is missing', () => {
     const { host, hostEl } = setupHost();
     const onHalfWired =
@@ -134,10 +134,10 @@ describe('createMatTabAggregatorDecoration — half-wired slot warning', () => {
   });
 });
 
-describe('createMatTabRejectionDecoration — aria-describedby contract (5.2)', () => {
+describe('createMatTabRejectionDecoration - aria-describedby contract (5.2)', () => {
   /**
    * Builds a host element carrying three `.mat-mdc-tab` buttons with
-   * pre-existing `aria-describedby` tokens on tab 0 — used to prove
+   * pre-existing `aria-describedby` tokens on tab 0 - used to prove
    * the projector's token-list-append path preserves consumer-supplied
    * tokens across decorate / clear cycles.
    */
@@ -181,7 +181,7 @@ describe('createMatTabRejectionDecoration — aria-describedby contract (5.2)', 
     const buttons = hostEl.querySelectorAll<HTMLElement>('.mat-mdc-tab');
     const target = buttons[1];
     expect(target.classList.contains('cngx-mat-tab--error')).toBe(true);
-    // aria-invalid is form-field vocabulary per ARIA 1.2 — must NOT
+    // aria-invalid is form-field vocabulary per ARIA 1.2 - must NOT
     // be set on a tab button. Regression fence: pre-fix this projector
     // wrote `aria-invalid="true"`; the new contract uses
     // aria-describedby + a hidden descriptor span instead.
@@ -236,7 +236,7 @@ describe('createMatTabRejectionDecoration — aria-describedby contract (5.2)', 
       .filter(Boolean);
     expect(tokens).toEqual(['consumer-tooltip-7', 'cngx-mat-tab-1-rejected']);
 
-    // Clear — restoration must drop the projector's id but keep the
+    // Clear - restoration must drop the projector's id but keep the
     // consumer-supplied token.
     failedHandleId.set(null);
     failedIndex.set(undefined);
@@ -251,7 +251,7 @@ describe('createMatTabRejectionDecoration — aria-describedby contract (5.2)', 
 
   it('preserves third-party aria-describedby tokens written between decoration apply and clear (diff-restore, not whole-attribute restore)', () => {
     const { host } = setupHost();
-    // Pre-existing consumer token at apply time — captured by the
+    // Pre-existing consumer token at apply time - captured by the
     // projector as `priorAriaDescribedby`.
     const hostEl = buildHostWithButtons([null, 'consumer-tooltip-7', null]);
     const failedHandleId = signal<string | null>(null);
@@ -310,7 +310,7 @@ describe('createMatTabRejectionDecoration — aria-describedby contract (5.2)', 
 
   it('removes aria-describedby entirely when no priorAriaDescribedby and no surviving third-party tokens', () => {
     const { host } = setupHost();
-    // Tab 0 has no aria-describedby at apply time — priorAriaDescribedby = null.
+    // Tab 0 has no aria-describedby at apply time - priorAriaDescribedby = null.
     const hostEl = buildHostWithButtons();
     const failedHandleId = signal<string | null>('cngx-mat-tab-0');
     const failedIndex = signal<number | undefined>(0);
@@ -336,7 +336,7 @@ describe('createMatTabRejectionDecoration — aria-describedby contract (5.2)', 
     failedIndex.set(undefined);
     TestBed.flushEffects();
 
-    // No prior tokens, no third-party additions — attribute must be
+    // No prior tokens, no third-party additions - attribute must be
     // removed entirely. An empty `aria-describedby=""` would leave a
     // dangling reference some AT readers misinterpret as malformed.
     expect(target.hasAttribute('aria-describedby')).toBe(false);
@@ -367,7 +367,7 @@ describe('createMatTabRejectionDecoration — aria-describedby contract (5.2)', 
     );
     expect(initialSpan?.textContent).toBe('Tab change refused — retry?');
 
-    // Origin label resolves later — text mutates in place; the span
+    // Origin label resolves later - text mutates in place; the span
     // identity must be stable so AT does not reset its descriptor
     // pointer.
     descriptorText.set('Reverted to "Settings".');
@@ -384,7 +384,7 @@ describe('createMatTabRejectionDecoration — aria-describedby contract (5.2)', 
     const { host } = setupHost();
     const hostEl = buildHostWithButtons();
     // `equal: () => false` bypasses signal's default Object.is dedup
-    // so every `set()` re-fires the consuming effect — simulating an
+    // so every `set()` re-fires the consuming effect - simulating an
     // upstream where `tabs()`-driven churn re-evaluates a `computed`
     // whose memoization the projector cannot rely on (e.g. a future
     // consumer pushing a custom equality fn). Without the projector's
@@ -416,7 +416,7 @@ describe('createMatTabRejectionDecoration — aria-describedby contract (5.2)', 
     );
     expect(initialSpan).not.toBeNull();
 
-    // Re-emit the same id — the slot guard returns early, the
+    // Re-emit the same id - the slot guard returns early, the
     // descriptor span identity is preserved, and AT readers
     // mid-announcement keep their referenced node.
     failedHandleId.set('cngx-mat-tab-1');
@@ -456,7 +456,7 @@ describe('createMatTabRejectionDecoration — aria-describedby contract (5.2)', 
     );
     expect(firstSpan).not.toBeNull();
 
-    // Clear — decoration leaves the DOM, but cachedSpan is retained
+    // Clear - decoration leaves the DOM, but cachedSpan is retained
     // across the projector's lifetime so AT-reader references survive.
     failedHandleId.set(null);
     failedIndex.set(undefined);
@@ -466,7 +466,7 @@ describe('createMatTabRejectionDecoration — aria-describedby contract (5.2)', 
     ).toBeNull();
     expect(target.classList.contains('cngx-mat-tab--error')).toBe(false);
 
-    // Re-mount the same id — the cached span is reattached, so JS
+    // Re-mount the same id - the cached span is reattached, so JS
     // identity is preserved across clear+remount cycles. AT readers
     // / animation observers holding the node reference keep them
     // pointing at a live DOM object.
@@ -511,7 +511,7 @@ describe('createMatTabRejectionDecoration — aria-describedby contract (5.2)', 
     expect(spanA?.parentElement).toBe(buttons[0]);
 
     // Flip to B: same span element should now hang under B's button
-    // with id rewritten — no second `createElement` call.
+    // with id rewritten - no second `createElement` call.
     failedHandleId.set('cngx-mat-tab-B');
     failedIndex.set(1);
     TestBed.flushEffects();
@@ -578,7 +578,7 @@ describe('createMatTabRejectionDecoration — aria-describedby contract (5.2)', 
   });
 });
 
-describe('createMatTabRejectionDecoration — *cngxMatTabRejectionContent slot cascade (4.1)', () => {
+describe('createMatTabRejectionDecoration - *cngxMatTabRejectionContent slot cascade (4.1)', () => {
   function buildHostWithButtons(): HTMLElement {
     const hostEl = document.createElement('div');
     for (let i = 0; i < 3; i++) {
@@ -634,7 +634,7 @@ describe('createMatTabRejectionDecoration — *cngxMatTabRejectionContent slot c
     return { host: fixture.componentInstance, hostEl };
   }
 
-  it('built-in default — imperative span+textContent when neither contentTemplate nor viewContainerRef is supplied', () => {
+  it('built-in default - imperative span+textContent when neither contentTemplate nor viewContainerRef is supplied', () => {
     const { host, hostEl } = setupRejectionHost();
     const failedHandleId = signal<string | null>(null);
     const failedIndex = signal<number | undefined>(undefined);
@@ -665,7 +665,7 @@ describe('createMatTabRejectionDecoration — *cngxMatTabRejectionContent slot c
     expect(span?.querySelector('[data-testid="rejection-slot"]')).toBeNull();
   });
 
-  it('per-instance contentTemplate wins — embedded-view rendering picks up failedHandleId / originLabel / fallbackText context', () => {
+  it('per-instance contentTemplate wins - embedded-view rendering picks up failedHandleId / originLabel / fallbackText context', () => {
     const { host, hostEl } = setupRejectionHost();
     const failedHandleId = signal<string | null>(null);
     const failedIndex = signal<number | undefined>(undefined);
@@ -706,7 +706,7 @@ describe('createMatTabRejectionDecoration — *cngxMatTabRejectionContent slot c
     );
   });
 
-  it('half-wired slot — contentTemplate without viewContainerRef falls back to the imperative path silently', () => {
+  it('half-wired slot - contentTemplate without viewContainerRef falls back to the imperative path silently', () => {
     const { host, hostEl } = setupRejectionHost();
     const failedHandleId = signal<string | null>(null);
     const failedIndex = signal<number | undefined>(undefined);
@@ -739,7 +739,7 @@ describe('createMatTabRejectionDecoration — *cngxMatTabRejectionContent slot c
     expect(span?.querySelector('[data-testid="rejection-slot"]')).toBeNull();
   });
 
-  it('descriptorText re-emit — the embedded-view re-renders with the fresh fallbackText', () => {
+  it('descriptorText re-emit - the embedded-view re-renders with the fresh fallbackText', () => {
     const { host, hostEl } = setupRejectionHost();
     const failedHandleId = signal<string | null>('cngx-mat-tab-2');
     const failedIndex = signal<number | undefined>(2);

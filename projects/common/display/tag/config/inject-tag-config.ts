@@ -9,7 +9,7 @@ import { CNGX_TAG_CONFIG } from './tag.config.defaults';
  * (per-instance Input → `provideTagConfigAt` → `provideTagConfig`
  * → library defaults).
  *
- * Equivalent to `inject(CNGX_TAG_CONFIG)` — the helper exists so
+ * Equivalent to `inject(CNGX_TAG_CONFIG)` - the helper exists so
  * consumers don't need to import the token directly. Mirrors
  * `injectSelectConfig` in `@cngx/forms/select`.
  *

@@ -83,7 +83,7 @@ export class CngxInputFormat {
   /** Parse function applied on focus (inverse of format). Default: identity. */
   readonly parse = input<ParseFn>((v: string) => v);
 
-  /** Primary value channel — raw (unformatted) string. */
+  /** Primary value channel - raw (unformatted) string. */
   readonly value = model<string>('', { alias: 'value' });
 
   /**

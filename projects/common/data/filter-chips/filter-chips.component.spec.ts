@@ -65,7 +65,7 @@ describe('CngxFilterChips', () => {
     expect(filter.predicates().size).toBe(1);
   });
 
-  it('empty selectedValues — predicate returns true for every item (no-filter short-circuit)', async () => {
+  it('empty selectedValues - predicate returns true for every item (no-filter short-circuit)', async () => {
     const { filter } = await setup();
     const pred = filter.predicate();
     expect(pred).not.toBeNull();
@@ -74,7 +74,7 @@ describe('CngxFilterChips', () => {
     }
   });
 
-  it('selected values — predicate keeps matching items, drops the rest', async () => {
+  it('selected values - predicate keeps matching items, drops the rest', async () => {
     const { fixture, bridge, filter } = await setup();
     bridge.selectedValues.set(['red', 'blue']);
     fixture.detectChanges();
@@ -100,14 +100,14 @@ describe('CngxFilterChips', () => {
     expect(addSpy).toHaveBeenCalledTimes(0);
   });
 
-  it('predicate closure reads selectedValues lazily — pure derivation, not effect-driven', async () => {
+  it('predicate closure reads selectedValues lazily - pure derivation, not effect-driven', async () => {
     const { fixture, bridge, filter } = await setup();
     const initial = filter.predicate();
     expect(initial).not.toBeNull();
     bridge.selectedValues.set(['red']);
     fixture.detectChanges();
     const afterToggle = filter.predicate();
-    // Predicate identity stays — only the closure's read of selectedValues changes.
+    // Predicate identity stays - only the closure's read of selectedValues changes.
     expect(afterToggle).toBe(initial);
     expect(afterToggle!({ id: 'green', label: 'Green' })).toBe(false);
     expect(afterToggle!({ id: 'red', label: 'Red' })).toBe(true);
@@ -148,7 +148,7 @@ describe('CngxFilterChips', () => {
     expect(html).toContain('Blue');
   });
 
-  it('*cngxFilterChip slot — bridge wraps decoration in cngxChipInGroup; selection works end-to-end', async () => {
+  it('*cngxFilterChip slot - bridge wraps decoration in cngxChipInGroup; selection works end-to-end', async () => {
     @Component({
       template: `
         <ng-container [cngxFilter]="null" #filter="cngxFilter">
@@ -180,7 +180,7 @@ describe('CngxFilterChips', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    // Decoration projects into the bridge-wrapped chip — both the
+    // Decoration projects into the bridge-wrapped chip - both the
     // custom span AND the cngxChipInGroup chip are rendered.
     const customDeco = (fixture.nativeElement as HTMLElement).querySelectorAll(
       '[data-test="custom-deco"]',
@@ -253,7 +253,7 @@ describe('CngxFilterChips', () => {
     ) as HTMLElement;
     expect(groupEl).not.toBeNull();
 
-    // Initial state — no aria attributes set.
+    // Initial state - no aria attributes set.
     expect(groupEl.getAttribute('aria-disabled')).toBeNull();
     expect(groupEl.getAttribute('aria-required')).toBeNull();
     expect(groupEl.getAttribute('aria-invalid')).toBeNull();
@@ -279,7 +279,7 @@ describe('CngxFilterChips', () => {
     ).toBe(false);
   });
 
-  it('keyFn — object-valued TValue with stable id survives re-emission with fresh references', async () => {
+  it('keyFn - object-valued TValue with stable id survives re-emission with fresh references', async () => {
     interface Tagged {
       readonly id: string;
       readonly label: string;
@@ -332,7 +332,7 @@ describe('CngxFilterChips', () => {
     const filter = fixture.componentInstance.filterRef;
     const pred = filter.predicate();
     expect(pred).not.toBeNull();
-    // Refetch with a FRESH OBJECT reference for the same id — Object.is
+    // Refetch with a FRESH OBJECT reference for the same id - Object.is
     // alone would fail; keyFn extracts a stable string key so membership
     // holds across the re-emission.
     const refreshed: OptionRow = { tag: { id: 'a', label: 'A' } };

@@ -6,7 +6,7 @@ import { CngxErrorRegistry } from './error-registry';
  * Creates a programmatic {@link CngxErrorScopeContract}, optionally
  * registered under `name` in the ambient {@link CngxErrorRegistry}.
  *
- * Use when an error scope must exist without a DOM host — e.g. inside a
+ * Use when an error scope must exist without a DOM host - e.g. inside a
  * route guard, an HTTP interceptor, or a service that drives error
  * visibility programmatically. When `name` is set and a registry is
  * provided in the host environment, the scope auto-registers and
@@ -15,7 +15,7 @@ import { CngxErrorRegistry } from './error-registry';
  * Must be called in an injection context (constructor, factory provider,
  * `runInInjectionContext`).
  *
- * @internal Staged API — single-consumer.
+ * @internal Staged API - single-consumer.
  * See form-primitives-accepted-debt.md §A for the re-evaluation trigger
  * and collapse plan.
  */

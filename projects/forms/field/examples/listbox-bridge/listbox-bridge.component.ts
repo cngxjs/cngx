@@ -108,7 +108,7 @@ interface PrefsModel {
         </cngx-form-field>
 
         <dl class="state">
-          <dt>value</dt><dd>{{ model().size || '—' }}</dd>
+          <dt>value</dt><dd>{{ model().size || '-' }}</dd>
           <dt>empty</dt><dd>{{ sizeBf.empty() }}</dd>
           <dt>focused</dt><dd>{{ sizeBf.focused() }}</dd>
           <dt>touched</dt><dd>{{ f.size().touched() }}</dd>
@@ -139,7 +139,7 @@ interface PrefsModel {
         </cngx-form-field>
 
         <dl class="state">
-          <dt>value</dt><dd>{{ model().toppings.join(', ') || '—' }}</dd>
+          <dt>value</dt><dd>{{ model().toppings.join(', ') || '-' }}</dd>
           <dt>empty</dt><dd>{{ topBf.empty() }}</dd>
           <dt>focused</dt><dd>{{ topBf.focused() }}</dd>
           <dt>touched</dt><dd>{{ f.toppings().touched() }}</dd>
@@ -168,6 +168,6 @@ export class ListboxBridgeExample {
 
   /** Joins the active error kinds for the readout, or a dash when valid. */
   protected kinds(errors: readonly ValidationError[]): string {
-    return errors.length ? errors.map((e) => e.kind).join(', ') : '—';
+    return errors.length ? errors.map((e) => e.kind).join(', ') : '-';
   }
 }

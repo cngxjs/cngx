@@ -115,7 +115,7 @@ describe('createTabOverflowTemplateBindings', () => {
     expect(bindings.itemTemplate()).toBeNull();
   });
 
-  it('triggerContext is structural-equal — stable identity across no-op re-derivations', () => {
+  it('triggerContext is structural-equal - stable identity across no-op re-derivations', () => {
     const tabs = [makeHandle('A')] as readonly CngxTabHandle[];
     const hiddenCount = signal(1);
     const hiddenTabs = signal<readonly CngxTabHandle[]>(tabs);
@@ -133,7 +133,7 @@ describe('createTabOverflowTemplateBindings', () => {
     // Re-emit `hiddenTabs` with the same reference and re-read count.
     hiddenTabs.set(tabs);
     const ctx2 = bindings.triggerContext();
-    // Same reference identity — structural-equal short-circuited.
+    // Same reference identity - structural-equal short-circuited.
     expect(ctx2).toBe(ctx1);
   });
 
@@ -157,13 +157,13 @@ describe('createTabOverflowTemplateBindings', () => {
     expect(ctx.disabled).toBe(true);
   });
 
-  it('buildItemContext caches per-tab — same context reference returned when disabled+index unchanged', () => {
+  it('buildItemContext caches per-tab - same context reference returned when disabled+index unchanged', () => {
     const tab = makeHandle('A', false);
     const bindings = build({});
     const ctx1 = bindings.buildItemContext(tab, 0);
     const ctx2 = bindings.buildItemContext(tab, 0);
     expect(ctx2).toBe(ctx1);
-    // Cached `pick` closure identity is stable too — important for
+    // Cached `pick` closure identity is stable too - important for
     // ngTemplateOutlet not re-binding the embedded view.
     expect(ctx2.pick).toBe(ctx1.pick);
   });
@@ -221,7 +221,7 @@ describe('createTabOverflowTemplateBindings', () => {
     expect(items[2].id).toBe('C-overflow-option');
   });
 
-  it('adItems is structural-equal — identity-stable when ids + disabled flags unchanged', () => {
+  it('adItems is structural-equal - identity-stable when ids + disabled flags unchanged', () => {
     const tabs = [makeHandle('A'), makeHandle('B')] as readonly CngxTabHandle[];
     const hiddenCount = signal(2);
     const hiddenTabs = signal<readonly CngxTabHandle[]>(tabs);
@@ -237,7 +237,7 @@ describe('createTabOverflowTemplateBindings', () => {
     });
     const items1 = bindings.adItems();
     // Re-emit hiddenTabs with a fresh array carrying the same handle
-    // identities and disabled flags — structural-equal short-circuits.
+    // identities and disabled flags - structural-equal short-circuits.
     hiddenTabs.set([...tabs]);
     const items2 = bindings.adItems();
     expect(items2).toBe(items1);

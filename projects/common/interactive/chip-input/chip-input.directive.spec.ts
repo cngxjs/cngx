@@ -244,14 +244,14 @@ describe('CngxChipInput', () => {
     el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
     fixture.detectChanges();
 
-    // Resolve first AFTER second is in flight — must be dropped
+    // Resolve first AFTER second is in flight - must be dropped
     resolveFirst('first-resolved');
     await Promise.resolve();
     fixture.detectChanges();
     expect(dir.state.status()).toBe('pending');
     expect(host.created()).toEqual([]);
 
-    // Resolve second — its result wins
+    // Resolve second - its result wins
     resolveSecond('second-resolved');
     await Promise.resolve();
     await Promise.resolve();

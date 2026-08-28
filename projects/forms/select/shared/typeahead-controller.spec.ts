@@ -77,11 +77,11 @@ describe('createTypeaheadController', () => {
 
   it('accumulates the buffer across fast calls for multi-char resolve', () => {
     const { controller } = makeController([opt('Sand'), opt('Salt'), opt('Salmon')]);
-    // No current selection — walk inclusively from 0. 's' → Sand.
+    // No current selection - walk inclusively from 0. 's' → Sand.
     expect(controller.matchFromIndex('s', -1)).toEqual(opt('Sand'));
-    // Still no current; buffer 'sa' — all three qualify, first is Sand.
+    // Still no current; buffer 'sa' - all three qualify, first is Sand.
     expect(controller.matchFromIndex('a', -1)).toEqual(opt('Sand'));
-    // Buffer 'sal' — only Salt + Salmon qualify; first is Salt.
+    // Buffer 'sal' - only Salt + Salmon qualify; first is Salt.
     expect(controller.matchFromIndex('l', -1)).toEqual(opt('Salt'));
   });
 
@@ -90,7 +90,7 @@ describe('createTypeaheadController', () => {
     controller.matchFromIndex('s', -1);
     controller.matchFromIndex('a', -1);
     vi.advanceTimersByTime(250);
-    // Buffer has reset — a fresh 's' should match Sand again, not stay locked on 'sas...'.
+    // Buffer has reset - a fresh 's' should match Sand again, not stay locked on 'sas...'.
     expect(controller.matchFromIndex('s', -1)).toEqual(opt('Sand'));
   });
 

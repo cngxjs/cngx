@@ -1,6 +1,6 @@
 /**
  * Largest-Triangle-Three-Buckets downsampling. Reduces a dense series to
- * `targetSize` points while preserving the perceptual shape of the line —
+ * `targetSize` points while preserving the perceptual shape of the line -
  * peaks, troughs, and inflections survive where naive uniform (every-Nth)
  * sampling would drop them. This is the realtime-charting literature's
  * default downsampler (Steinarsson 2013).
@@ -17,7 +17,7 @@
  *
  * @param data source series, read-only.
  * @param targetSize desired output length. When `>= data.length` (or `<= 0`),
- *   the input is returned unchanged by reference — no allocation, no copy.
+ *   the input is returned unchanged by reference - no allocation, no copy.
  * @param xAccessor projects a row to its numeric X (typically a timestamp or
  *   positional index).
  * @param yAccessor projects a row to its numeric Y (the value the triangle

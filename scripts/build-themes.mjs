@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /**
- * Build @cngx/themes — copies CSS + SCSS assets + package.json to dist/themes.
+ * Build @cngx/themes - copies CSS + SCSS assets + package.json to dist/themes.
  *
  * Two consumer paths:
  *
- *   - dist/themes/cngx.css         — single-import default theme (CDK only)
- *   - dist/themes/material/<comp>-theme.scss — opt-in Material-bridge mixins
+ *   - dist/themes/cngx.css         - single-import default theme (CDK only)
+ *   - dist/themes/material/<comp>-theme.scss - opt-in Material-bridge mixins
  *     for consumers who pair cngx with @angular/material. Each file exports
  *     a Sass @mixin theme($theme) that wires the cngx component to Material's
  *     theme variables. Consumer @use's the file alongside their Material setup.

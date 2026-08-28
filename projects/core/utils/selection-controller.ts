@@ -27,7 +27,7 @@ export interface SelectionControllerOptions<T> {
   readonly childrenFn?: (value: T) => readonly T[];
   /**
    * Optional cap on the per-value `isSelected` / `isIndeterminate` signal
-   * cache. Default: unlimited — preserves the signal-identity guarantee
+   * cache. Default: unlimited - preserves the signal-identity guarantee
    * (`isSelected(v) === isSelected(v)` always holds for the lifetime of the
    * controller).
    *
@@ -42,7 +42,7 @@ export interface SelectionControllerOptions<T> {
 
 /**
  * Signal-based selection engine. Reads + writes an external
- * `WritableSignal<T[]>` — does not own the values.
+ * `WritableSignal<T[]>` - does not own the values.
  *
  * Memoizes per-value `isSelected` / `isIndeterminate` signals by key so
  * template diff stays stable and consumers can pass the handle into child
@@ -61,7 +61,7 @@ export interface SelectionController<T> {
   readonly hasSelection: Signal<boolean>;
   /**
    * Reactive membership for a single value. Same value (by `keyFn`) always
-   * returns the SAME `Signal` instance — safe to pass into OnPush children
+   * returns the SAME `Signal` instance - safe to pass into OnPush children
    * or compare with `===`.
    */
   isSelected(value: T): Signal<boolean>;
@@ -131,7 +131,7 @@ export function createSelectionController<T>(
   const cacheLimit = options?.cacheLimit;
   let destroyed = false;
 
-  // Membership Map — rebuilds only when values() identity changes.
+  // Membership Map - rebuilds only when values() identity changes.
   const membership = computed<Map<unknown, true>>(() => {
     const m = new Map<unknown, true>();
     for (const v of values()) {
@@ -160,13 +160,13 @@ export function createSelectionController<T>(
   const isEmpty = computed(() => selectedCount() === 0);
   const hasSelection = computed(() => selectedCount() > 0);
 
-  // Per-value isSelected cache — stable signal identity per key.
+  // Per-value isSelected cache - stable signal identity per key.
   const selectedCache = new Map<unknown, Signal<boolean>>();
   const evictOldest = (map: Map<unknown, Signal<boolean>>): void => {
     if (cacheLimit === undefined || map.size <= cacheLimit) {
       return;
     }
-    // Map preserves insertion order — first key is the oldest entry.
+    // Map preserves insertion order - first key is the oldest entry.
     const oldest = map.keys().next();
     if (!oldest.done) {
       map.delete(oldest.value);
@@ -307,7 +307,7 @@ export function createSelectionController<T>(
 }
 
 /**
- * Factory signature for {@link SelectionController} — the exact shape of
+ * Factory signature for {@link SelectionController} - the exact shape of
  * {@link createSelectionController}, carried as a DI-overridable symbol so
  * consumers can swap the selection engine app-wide (telemetry wrappers,
  * audit logging, server-synced selections, …) without forking any component
@@ -326,7 +326,7 @@ export type CngxSelectionControllerFactory = <T>(
  * override app-wide via `providers: [{ provide: CNGX_SELECTION_CONTROLLER_FACTORY, useValue: customFactory }]`
  * or per-component via `viewProviders` to inject cross-cutting concerns.
  *
- * Symmetrical to `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY` in `@cngx/forms/select` —
+ * Symmetrical to `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY` in `@cngx/forms/select` -
  * same pattern, applied at the selection-primitive level so future
  * `@cngx/data-display` grid/tree components share the override surface.
  *

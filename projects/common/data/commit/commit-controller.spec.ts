@@ -16,13 +16,13 @@ import {
 // Lifted-controller spec covers the three Phase-0 assertions
 // demanded by stepper-wizard-plan.md:
 //
-//   (a) Controller works without any forms/select import — proves
+//   (a) Controller works without any forms/select import - proves
 //       Sheriff `lib:common` allow-list compliance.
 //   (b) Generic T = number instantiation drives the supersede id
-//       correctly under rapid `begin(...)` calls — mirrors the
+//       correctly under rapid `begin(...)` calls - mirrors the
 //       stepper's planned activeStepIndex shape.
 //   (c) The previous runner's cancel handle fires synchronously
-//       after a superseding `begin(...)` call — equivalent to the
+//       after a superseding `begin(...)` call - equivalent to the
 //       plan's "isCancelled() returns true synchronously" assertion
 //       expressed via a closure flag (no public interface change
 //       needed on the handle type).
@@ -42,7 +42,7 @@ describe('createCommitController', () => {
     });
   });
 
-  test('(a) Sheriff allow-list — controller imports nothing from forms/*', () => {
+  test('(a) Sheriff allow-list - controller imports nothing from forms/*', () => {
     // Self-evident at compile time: this file imports only from
     // `./commit-controller` and `./commit-controller.token`. Both
     // live in `@cngx/common/data`. Sheriff would have rejected
@@ -72,7 +72,7 @@ describe('createCommitController', () => {
         if (captured === 3) {
           // Capture the success callback so we can resolve it after
           // the loop completes. The earlier two runners receive
-          // their callbacks but never invoke them — the controller
+          // their callbacks but never invoke them - the controller
           // itself must drop the late calls via the supersede id
           // even if they did.
           resolveLast = handlers.onSuccess;
@@ -91,7 +91,7 @@ describe('createCommitController', () => {
     expect(ctrl.state.status()).toBe('pending');
     expect(ctrl.intendedValue()).toBe(3);
 
-    // Resolve only the third — first two were superseded.
+    // Resolve only the third - first two were superseded.
     resolveLast!(3);
     expect(calls).toEqual([{ id: 3, outcome: 'success' }]);
     expect(ctrl.state.status()).toBe('success');
@@ -119,7 +119,7 @@ describe('createCommitController', () => {
     );
 
     // First handle's cancel ran SYNCHRONOUSLY inside the second
-    // begin() — supersede semantics. Second handle still active.
+    // begin() - supersede semantics. Second handle still active.
     expect(firstCancelled).toBe(true);
     expect(secondCancelled).toBe(false);
   });
@@ -192,7 +192,7 @@ describe('createCommitController', () => {
     );
 
     ctrl.cancel();
-    // Late callback from the aborted runner — must be ignored.
+    // Late callback from the aborted runner - must be ignored.
     lateSuccess!('green');
     expect(outcomeFired).toBe(false);
   });
@@ -216,7 +216,7 @@ describe('CNGX_COMMIT_CONTROLLER_FACTORY', () => {
   test('viewProviders override cascades to the resolved factory', () => {
     const customFactory: CngxCommitControllerFactory = <T>() => {
       const real = createCommitController<T>();
-      // Tag the controller by overlaying a sentinel — proves the
+      // Tag the controller by overlaying a sentinel - proves the
       // override factory is what TestBed resolved.
       return Object.assign(real, { __overrideTag: 'custom' as const });
     };

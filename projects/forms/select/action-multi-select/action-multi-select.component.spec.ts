@@ -147,7 +147,7 @@ function setup(): {
   };
 }
 
-describe('CngxActionMultiSelect — surface + defaults', () => {
+describe('CngxActionMultiSelect - surface + defaults', () => {
   it('renders the inline input with role=combobox and empty values by default', () => {
     const { select, fixture } = setup();
     const input = fixture.debugElement.nativeElement.querySelector('input');
@@ -187,7 +187,7 @@ describe('CngxActionMultiSelect — surface + defaults', () => {
   });
 });
 
-describe('CngxActionMultiSelect — quick-create flow', () => {
+describe('CngxActionMultiSelect - quick-create flow', () => {
   it('appends the new value to values[] on successful sync create', () => {
     const { fixture, host, select } = setup();
     host.values.set([{ id: 't1', name: 'Design' }]);
@@ -280,7 +280,7 @@ describe('CngxActionMultiSelect — quick-create flow', () => {
     select.actionCallbacks().commit({ label: 'Purple' });
     flush(fixture);
     expect(select.values().some((v) => v.id === 'p')).toBe(true);
-    // Server refetches WITHOUT Purple — selection persists because the
+    // Server refetches WITHOUT Purple - selection persists because the
     // local buffer still holds it and the selected lookup resolves it.
     host.options.set([...TAGS]);
     flush(fixture);
@@ -288,7 +288,7 @@ describe('CngxActionMultiSelect — quick-create flow', () => {
   });
 });
 
-describe('CngxActionMultiSelect — async + error flow', () => {
+describe('CngxActionMultiSelect - async + error flow', () => {
   it('transitions stateChange pending → success over an Observable create', () => {
     const { fixture, host, select } = setup();
     const subject = new Subject<Tag>();
@@ -322,7 +322,7 @@ describe('CngxActionMultiSelect — async + error flow', () => {
   });
 });
 
-describe('CngxActionMultiSelect — dismiss guard', () => {
+describe('CngxActionMultiSelect - dismiss guard', () => {
   it('blocks click-outside while actionDirty() is true', () => {
     const { fixture, select } = setup();
     select.open();

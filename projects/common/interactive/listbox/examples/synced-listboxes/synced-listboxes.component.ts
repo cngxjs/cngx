@@ -114,7 +114,7 @@ import { CngxListbox, CngxOption } from '@cngx/common/interactive';
       </div>
 
       <dl class="shared">
-        <dt>shared pick()</dt><dd>{{ pick() ?? '—' }}</dd>
+        <dt>shared pick()</dt><dd>{{ pick() ?? '-' }}</dd>
       </dl>
     </div>
   `,

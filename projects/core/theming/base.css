@@ -69,7 +69,7 @@
    *    overlay bars rather than fat Windows defaults.
    *  - caret-color tints the text-input caret with the brand. accent-color
    *    on :root from cngx.tokens already covers checkbox / radio / range /
-   *    progress — caret-color is the one knob that doesn't piggyback on it. */
+   *    progress - caret-color is the one knob that doesn't piggyback on it. */
   :root {
     scrollbar-color: var(--cngx-color-border, oklch(0.88 0.005 250)) transparent;
     scrollbar-width: thin;
@@ -77,14 +77,14 @@
 
   /* Bare <button>: render as the user agent draws it. Per cngx's
    * browser-native default-theme rule, bare HTML should NOT carry
-   * cngx token styling — that's a half-contract that forces every
+   * cngx token styling - that's a half-contract that forces every
    * component-projected button (`cngxAlertAction`, banner action,
    * etc.) to override. Components that need a styled button MUST ship
    * their own `.cngx-<comp>__action` rule. */
 
   /* Bare <input> / <textarea> / <select>: transparent + hairline, same
    * footprint cngx inputs use. Focus ring comes from cngx.reset
-   * :focus-visible — using outline (not border) so the layout doesn't
+   * :focus-visible - using outline (not border) so the layout doesn't
    * shift between resting and focused state. */
   input,
   textarea,
@@ -131,7 +131,7 @@
     font-variant-numeric: tabular-nums;
   }
 
-  /* Bare <hr>: native default is inset 1px with auto block margins —
+  /* Bare <hr>: native default is inset 1px with auto block margins -
    * the inset bevel looks 1990s. Render as a hairline matching the
    * cngx border token, with rhythmic vertical spacing from --cngx-space-md. */
   hr {

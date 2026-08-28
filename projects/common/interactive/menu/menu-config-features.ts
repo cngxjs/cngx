@@ -48,7 +48,7 @@ export function withSubmenuCloseDelay(ms: number): CngxMenuConfigFeature {
 
 /**
  * Whether activating a leaf item closes the menu. Default: `true`
- * (menu semantics — distinct from listbox/combobox which stay open).
+ * (menu semantics - distinct from listbox/combobox which stay open).
  *
  * @category common/interactive/menu
  */

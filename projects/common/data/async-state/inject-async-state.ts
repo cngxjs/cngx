@@ -50,7 +50,7 @@ export interface ReactiveAsyncState<T> extends CngxAsyncState<T> {
  * Create a reactive async state that auto-loads when signal dependencies change.
  *
  * Must be called in an injection context (field initializer or constructor).
- * The computation function is tracked by Angular's `effect()` — any signal
+ * The computation function is tracked by Angular's `effect()` - any signal
  * read inside `fn` will cause a re-load when it changes.
  *
  * ```typescript
@@ -158,7 +158,7 @@ export function injectAsyncState<T>(
     try {
       result = fn();
     } catch (err: unknown) {
-      // sync throw (e.g. required signal not yet set) — debounce the error
+      // sync throw (e.g. required signal not yet set) - debounce the error
       // to match the async path
       if (debounceTimer !== undefined) {
         clearTimeout(debounceTimer);

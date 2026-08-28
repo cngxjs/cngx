@@ -220,7 +220,7 @@ describe('CngxTooltip', () => {
       triggerEl.dispatchEvent(new MouseEvent('mouseenter'));
       fixture.detectChanges();
 
-      // Default delay is 300ms — tooltip should still be closed
+      // Default delay is 300ms - tooltip should still be closed
       expect(host.tooltip().state()).toBe('closed');
 
       vi.advanceTimersByTime(300);

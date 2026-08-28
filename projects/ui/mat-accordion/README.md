@@ -41,7 +41,7 @@ Bind `[(openIds)]` to a `ReadonlySet<string>` signal and `[multi]` to pick singl
 ```ts
 protected readonly openIds = signal<ReadonlySet<string>>(new Set());
 
-// Programmatic control — collapse everything:
+// Programmatic control - collapse everything:
 this.openIds.set(new Set());
 ```
 

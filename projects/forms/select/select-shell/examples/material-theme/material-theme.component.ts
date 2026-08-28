@@ -35,7 +35,7 @@ import { CngxSelectShell, CngxSelectOption } from '@cngx/forms/select';
         <cngx-option [value]="'amber'">Amber</cngx-option>
         <cngx-option [value]="'violet'">Violet</cngx-option>
       </cngx-select-shell>
-      <p class="demo__readout">Selected: {{ value() ?? '—' }}</p>
+      <p class="demo__readout">Selected: {{ value() ?? '-' }}</p>
     </div>
   `,
 })

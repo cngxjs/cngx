@@ -84,7 +84,7 @@ A `cngxMenu` with `cngxMenuItem` children. The menu fires `itemActivated` on Ent
 
 #### Submenu collision recovery
 
-When the preferred edge clips the viewport, CSS Anchor Positioning's `position-try-fallbacks` flips the submenu to a fitting edge. The library ships `CNGX_SUBMENU_TRY_FALLBACKS` (`['flip-inline', 'flip-block', 'flip-block flip-inline']`) as the recommended chain — matches the `@cngx/forms/select` panel precedent and covers right-edge, bottom-edge, and diagonal clipping.
+When the preferred edge clips the viewport, CSS Anchor Positioning's `position-try-fallbacks` flips the submenu to a fitting edge. The library ships `CNGX_SUBMENU_TRY_FALLBACKS` (`['flip-inline', 'flip-block', 'flip-block flip-inline']`) as the recommended chain - matches the `@cngx/forms/select` panel precedent and covers right-edge, bottom-edge, and diagonal clipping.
 
 ```ts
 import { CNGX_SUBMENU_TRY_FALLBACKS } from '@cngx/common/interactive';

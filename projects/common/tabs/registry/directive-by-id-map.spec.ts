@@ -35,21 +35,21 @@ describe('createDirectiveByIdMap', () => {
     expect(result.get('b')).toBe(b);
   });
 
-  test('axis 2: structural-equal — same input set returns same Signal value', () => {
+  test('axis 2: structural-equal - same input set returns same Signal value', () => {
     const a = makeDir('a');
     const b = makeDir('b');
     const source = signal<readonly FakeDir[]>([a, b]);
     const map = createDirectiveByIdMap({ source });
 
     const first = map();
-    // Source re-emits with a fresh array of the SAME instances —
+    // Source re-emits with a fresh array of the SAME instances -
     // structural-equal must keep the value reference stable.
     source.set([a, b]);
     const second = map();
     expect(Object.is(first, second)).toBe(true);
   });
 
-  test('axis 3: change detection — adding/removing a directive yields a new Map', () => {
+  test('axis 3: change detection - adding/removing a directive yields a new Map', () => {
     const a = makeDir('a');
     const b = makeDir('b');
     const c = makeDir('c');
@@ -100,7 +100,7 @@ describe('CNGX_DIRECTIVE_BY_ID_MAP_FACTORY', () => {
   });
 
   it('consumer-provided factory replaces createDirectiveByIdMap', () => {
-    // Swap axis — guards the override surface that 3 organism shells
+    // Swap axis - guards the override surface that 3 organism shells
     // route through (`<cngx-tab-group>` plus `<cngx-stepper>` /
     // `<cngx-mat-stepper>` post-Phase-1.8). A custom policy
     // (WeakMap-based, telemetry, custom equality) installs via this

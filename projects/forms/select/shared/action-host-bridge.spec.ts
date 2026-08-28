@@ -64,7 +64,7 @@ describe('createActionHostBridge', () => {
     expect(bridge.shouldBlockDismiss()).toBe(false);
   });
 
-  it("resolves shouldTrapFocus from the config — 'always' vs 'never' vs 'dirty'", () => {
+  it("resolves shouldTrapFocus from the config - 'always' vs 'never' vs 'dirty'", () => {
     const always = makeBridge(
       { close: () => undefined },
       [{ provide: CNGX_ACTION_SELECT_CONFIG, useValue: { focusTrapBehavior: 'always' as CngxActionFocusTrapBehavior } }],

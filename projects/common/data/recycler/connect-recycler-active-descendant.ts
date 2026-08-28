@@ -21,7 +21,7 @@ import type { CngxRecycler } from './recycler';
  *
  * Unlike {@link /projects/common/data/src/recycler/connect-recycler-roving.ts
  * connectRecyclerToRoving}, we don't re-focus a DOM element after the
- * scroll — AD doesn't move real focus, it only rebinds
+ * scroll - AD doesn't move real focus, it only rebinds
  * `aria-activedescendant`. Once the target index enters the rendered
  * range, the `[attr.aria-activedescendant]` binding on the combobox
  * trigger resolves to the now-present option element for free.

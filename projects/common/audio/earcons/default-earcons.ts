@@ -1,7 +1,7 @@
 import type { ToneStep } from '../tone-generator/tone-generator';
 
 /**
- * A named earcon — an ordered sequence of tone steps.
+ * A named earcon - an ordered sequence of tone steps.
  * @category common/audio
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/earcons/default-earcons.ts
  * @since 0.1.0
@@ -12,7 +12,7 @@ export interface EarconConfig {
 }
 
 /**
- * The six built-in earcons, synthesised entirely from `OscillatorNode` — zero
+ * The six built-in earcons, synthesised entirely from `OscillatorNode` - zero
  * audio assets. Plain `as const` (mirrors `CNGX_SELECT_GLYPHS`): tree-shakeable,
  * compile-time exhaustive keys, and NOT exported from `public-api.ts`. The
  * consumer override surface is `withEarcons({...})` and the engine's runtime
@@ -30,7 +30,7 @@ export const CNGX_AUDIO_DEFAULT_EARCONS = {
       { freq: 880, duration: 120 },
     ],
   },
-  /** Falling sawtooth pair for a failure — deliberately harsher. */
+  /** Falling sawtooth pair for a failure - deliberately harsher. */
   error: {
     sequence: [
       { freq: 400, duration: 100, type: 'sawtooth', gain: 0.15 },

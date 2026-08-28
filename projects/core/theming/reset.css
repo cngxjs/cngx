@@ -48,7 +48,7 @@
    *    auto-inflating body text in landscape orientation.
    *  - font-synthesis: none disables the browser's synthetic bold/italic
    *    for weights that don't ship in the font. Matters once a webfont
-   *    enters the final theme — synthetic faces drift from the designed
+   *    enters the final theme - synthetic faces drift from the designed
    *    glyphs and break the type ramp. */
   html {
     text-rendering: optimizeLegibility;
@@ -68,7 +68,7 @@
 
   /* Focus ring offset bumped 2px -> 3px so the ring breathes against
    * the new tighter borders from the foundation pass. Same accent
-   * color as the primary token — Ember in the default. */
+   * color as the primary token - Ember in the default. */
   :focus-visible {
     outline: 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50));
     outline-offset: 3px;

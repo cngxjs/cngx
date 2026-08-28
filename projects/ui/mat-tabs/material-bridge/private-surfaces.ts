@@ -18,7 +18,7 @@
  * type façades and the selector constants. The TS namespace also
  * lets cross-package consumers (`@cngx/ui/mat-stepper`) read the
  * grouped name through ESLint's `@typescript-eslint` type resolver
- * — a flat `export * as` re-export from `public-api.ts` does not
+ * - a flat `export * as` re-export from `public-api.ts` does not
  * resolve nested members through the path-alias.
  *
  * @category ui/mat-tabs
@@ -50,7 +50,7 @@ export namespace MaterialPrivateSurfaces {
    * `afterNextRender` to forward consumer-projected
    * `<ng-template matStepperIcon>` declarations through the wrapper
    * into Material's per-header indicator bindings (the only
-   * deterministic forwarding path — `<ng-content>` projection
+   * deterministic forwarding path - `<ng-content>` projection
    * inside `<mat-stepper>` does not reach
    * `@ContentChildren(MatStepperIcon)` due to content-init
    * lifecycle ordering).
@@ -66,25 +66,25 @@ export namespace MaterialPrivateSurfaces {
    * it through the getter and re-fires whenever Material flips
    * completion. Documented limitation: `hasError` writes that are
    * not paired with a `completed` change do not retrigger the
-   * computed — sharper note lives on `createMatStepHandle`'s JSDoc.
+   * computed - sharper note lives on `createMatStepHandle`'s JSDoc.
    */
   export interface CompletedOverrideSource {
     readonly _completedOverride: WritableSignal<boolean | null>;
   }
 
   /**
-   * `.mat-mdc-tab` — the class Material applies to the rendered
+   * `.mat-mdc-tab` - the class Material applies to the rendered
    * tab `<button>` elements inside `MatTabHeader`. cngx
    * index-correlates `presenter.tabs()` registration order against
    * `host.querySelectorAll('.mat-mdc-tab')` because `MatTab` is a
-   * portal — the rendered buttons live inside `MatTabHeader`'s
+   * portal - the rendered buttons live inside `MatTabHeader`'s
    * template, not on the `<mat-tab>` declaration site, and Material
    * exposes no public per-tab element accessor.
    */
   export const MAT_MDC_TAB_SELECTOR = '.mat-mdc-tab';
 
   /**
-   * `.mat-mdc-tab-header` — the strip element rendered by
+   * `.mat-mdc-tab-header` - the strip element rendered by
    * `MatTabHeader`. `[cngxMatTabs]` walks
    * `host.querySelector('.mat-mdc-tab-header')` to locate the mount
    * anchor for the cngx overflow molecule (so the More button pins
@@ -94,7 +94,7 @@ export namespace MaterialPrivateSurfaces {
   export const MAT_MDC_TAB_HEADER_SELECTOR = '.mat-mdc-tab-header';
 
   /**
-   * `.mat-mdc-tab-label-container` — Material's IO-friendly scroll
+   * `.mat-mdc-tab-label-container` - Material's IO-friendly scroll
    * viewport ancestor of the rendered tab buttons. The Material-
    * twin overflow adapter walks `host → header → any tab → closest
    * label-container` to attach the molecule's

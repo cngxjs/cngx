@@ -1,4 +1,4 @@
-// Single-consumer factory — staged under family-uniformity
+// Single-consumer factory - staged under family-uniformity
 // (`createTabGroupTemplateBindings` and `CngxMatTabAggregatorContent`).
 // Re-eval on second consumer or sibling debt closure.
 import { computed, linkedSignal, type Signal } from '@angular/core';
@@ -10,7 +10,7 @@ import type { CngxTabGroupHost, CngxTabHandle } from '../tab-group-host.token';
 /**
  * Inputs the announcements bundle reads from the host organism.
  * Passing presenter / i18n / config in (instead of re-injecting)
- * keeps the factory pure — one call returns the bundle, no
+ * keeps the factory pure - one call returns the bundle, no
  * injection context required.
  *
  * @category common/tabs/announcements
@@ -56,7 +56,7 @@ export interface CngxTabGroupAnnouncements {
   readonly resolvedAriaLabel: Signal<string | null>;
 
   /**
-   * Polite live-region content — declarative, never an imperative
+   * Polite live-region content - declarative, never an imperative
    * `announce()`. Empty between transitions so the region stays
    * quiet on no-op ticks.
    *
@@ -81,7 +81,7 @@ export interface CngxTabGroupAnnouncements {
   statusPhrase(tab: CngxTabHandle): string;
 
   /**
-   * Verbose tab-button `aria-label` — `selectedTab(label, position,
+   * Verbose tab-button `aria-label` - `selectedTab(label, position,
    * count)` so AT hears "Tab 2 of 5: Settings" instead of inferring
    * position from tablist enumeration. The visual span keeps the
    * bare label.
@@ -92,7 +92,7 @@ export interface CngxTabGroupAnnouncements {
 /**
  * Pure factory bundling the `<cngx-tab-group>` AT-announcement +
  * descriptor surfaces. Owns one internal `linkedSignal`
- * (prior-active-index, drives the success-arm direction prefix) —
+ * (prior-active-index, drives the success-arm direction prefix) -
  * lazy by `linkedSignal` semantics, so the organism reads
  * `liveAnnouncement` once at construction to seed it.
  *
@@ -140,7 +140,7 @@ export function createTabGroupAnnouncements(
     return ariaLabel() ?? config.ariaLabels?.tabsRegion ?? i18n.tabsLabel;
   });
 
-  // `prev?.source` = source value before the most recent change —
+  // `prev?.source` = source value before the most recent change -
   // prior activeIndex without an `effect`-driven slot (Pillar 1).
   // Coalesce to current on first emission.
   const priorActiveIndex = linkedSignal<number, number>({
@@ -155,7 +155,7 @@ export function createTabGroupAnnouncements(
       return i18n.commitInFlight;
     }
     if (current === 'error') {
-      // No `previous === 'pending'` guard — sync rejections collapse
+      // No `previous === 'pending'` guard - sync rejections collapse
       // pending → error in one flush, so the tracker captures
       // `previous = 'idle'` and an unguarded read keeps the
       // announcement reachable for `commitAction = () => false`.
@@ -214,7 +214,7 @@ export function createTabGroupAnnouncements(
     return i18n.selectedTab(labelPart, position, tabs.length);
   }
 
-  // Eager seed — `linkedSignal` is lazy and the success arm doesn't
+  // Eager seed - `linkedSignal` is lazy and the success arm doesn't
   // touch the tracker at construction (commitTransition is `idle`),
   // so without this read `prev?.source` is undefined on the first
   // nav and the direction prefix is silently lost.

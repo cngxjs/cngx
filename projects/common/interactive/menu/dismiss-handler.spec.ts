@@ -502,7 +502,7 @@ describe('createMenuTriggerDismissBinding', () => {
     dispatchPointerDownOn(outside);
     expect(binding.lastSource()).toBe('outside-click');
     binding.detach();
-    // lastSource sticks between opens — consumer telemetry reads the
+    // lastSource sticks between opens - consumer telemetry reads the
     // most recent close even when the menu is closed.
     expect(binding.lastSource()).toBe('outside-click');
     popoverFake.popover.setVisible(true);

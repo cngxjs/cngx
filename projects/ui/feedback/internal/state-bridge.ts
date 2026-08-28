@@ -4,7 +4,7 @@ import { type AsyncStatus, createTransitionTracker } from '@cngx/core/utils';
 /**
  * Shared transition plumbing for the alert/toast/banner state bridges.
  *
- * Owns the `createTransitionTracker` + guarded `effect` + `untracked` body —
+ * Owns the `createTransitionTracker` + guarded `effect` + `untracked` body -
  * the three directives supply the status source and the per-transition body.
  * Keeping `createTransitionTracker` as the single tracker source preserves
  * its `linkedSignal` equal-fn loop fix (the documented vitest-hang guard);
@@ -14,7 +14,7 @@ import { type AsyncStatus, createTransitionTracker } from '@cngx/core/utils';
  * Constructor-only: installs an `effect`, so callers must invoke from an
  * injection context.
  *
- * @internal — not exported from `public-api.ts`; consumed by the bridge
+ * @internal - not exported from `public-api.ts`; consumed by the bridge
  *   directives via relative path.
  */
 export function createStateBridge(

@@ -58,7 +58,7 @@ function basicSetup(initial: FilterGroup = createEmptyFilterRoot()): {
   };
 }
 
-describe('CngxFilterBuilder — empty state', () => {
+describe('CngxFilterBuilder - empty state', () => {
   it('renders the default empty message when no slot is provided', () => {
     const { hostEl } = basicSetup();
     expect(hostEl.textContent).toContain('No filters defined');
@@ -87,7 +87,7 @@ class EmptySlotHost {
   value: FilterGroup = createEmptyFilterRoot();
 }
 
-describe('CngxFilterBuilder — custom empty slot', () => {
+describe('CngxFilterBuilder - custom empty slot', () => {
   it('renders the consumer-supplied *cngxFilterBuilderEmpty template when present', () => {
     const fixture = TestBed.createComponent(EmptySlotHost);
     fixture.detectChanges();
@@ -98,7 +98,7 @@ describe('CngxFilterBuilder — custom empty slot', () => {
   });
 });
 
-describe('CngxFilterBuilder — recursive tree rendering', () => {
+describe('CngxFilterBuilder - recursive tree rendering', () => {
   it('renders a 3-level group-in-group-in-group structure', () => {
     const innermost = createFilterGroup('and', [createFilterExpression('name', 'eq', 'leaf')]);
     const middle = createFilterGroup('or', [innermost]);
@@ -112,7 +112,7 @@ describe('CngxFilterBuilder — recursive tree rendering', () => {
   });
 });
 
-describe('CngxFilterBuilder — body mount', () => {
+describe('CngxFilterBuilder - body mount', () => {
   it('mounts CngxFilterBuilderBody as the default body resolved through CNGX_FILTER_BUILDER_BODY_HOST', () => {
     const { fixture } = basicSetup();
     expect(TestBed.inject(CNGX_FILTER_BUILDER_BODY_HOST)).toBe(CngxFilterBuilderBody);
@@ -143,7 +143,7 @@ describe('CngxFilterBuilder — body mount', () => {
   });
 });
 
-describe('CngxFilterBuilder — announcer text', () => {
+describe('CngxFilterBuilder - announcer text', () => {
   it('announces "Filter added: Name" when add filter button is clicked', () => {
     const { fixture, hostEl, presenter } = basicSetup();
     const addButton = Array.from(hostEl.querySelectorAll('button')).find(
@@ -183,7 +183,7 @@ describe('CngxFilterBuilder — announcer text', () => {
   });
 });
 
-describe('CngxFilterBuilder — decorative glyphs hidden from AT', () => {
+describe('CngxFilterBuilder - decorative glyphs hidden from AT', () => {
   it('wraps the empty-state add button glyphs in aria-hidden spans', () => {
     const { hostEl } = basicSetup();
     const spans = hostEl.querySelectorAll('button > span[aria-hidden="true"]');
@@ -191,7 +191,7 @@ describe('CngxFilterBuilder — decorative glyphs hidden from AT', () => {
   });
 });
 
-describe('CngxFilterBuilder — ARIA labels reactive', () => {
+describe('CngxFilterBuilder - ARIA labels reactive', () => {
   it('updates group aria-label when logic changes', () => {
     const initial = createFilterGroup('and', [createFilterExpression('name', 'eq', 'x')]);
     const { fixture, hostEl, presenter } = basicSetup(initial);
@@ -227,7 +227,7 @@ function bodyOf(fixture: ReturnType<typeof basicSetup>['fixture']): BodyProbe {
   return debugBody.componentInstance as unknown as BodyProbe;
 }
 
-describe('CngxFilterBuilderBody — identity-keyed template caches evict on remove', () => {
+describe('CngxFilterBuilderBody - identity-keyed template caches evict on remove', () => {
   it('clears group/expression template caches when a remove-filter mutation lands', () => {
     const initial = createFilterGroup('and', [createFilterExpression('name', 'eq', 'x')]);
     const { fixture, presenter } = basicSetup(initial);
@@ -245,7 +245,7 @@ describe('CngxFilterBuilderBody — identity-keyed template caches evict on remo
   });
 });
 
-describe('CngxFilterBuilderBody — cache teardown on destroy', () => {
+describe('CngxFilterBuilderBody - cache teardown on destroy', () => {
   it('clears identity-keyed template caches when the body is destroyed', () => {
     const initial = createFilterGroup('and', [createFilterExpression('name', 'eq', 'x')]);
     const { fixture } = basicSetup(initial);
@@ -261,7 +261,7 @@ describe('CngxFilterBuilderBody — cache teardown on destroy', () => {
   });
 });
 
-describe('CngxFilterBuilderBody — emptyContext stability', () => {
+describe('CngxFilterBuilderBody - emptyContext stability', () => {
   it('emptyContext is a frozen field, stable across reads', () => {
     const { fixture } = basicSetup();
     const body = bodyOf(fixture) as unknown as { readonly emptyContext: unknown };
@@ -269,7 +269,7 @@ describe('CngxFilterBuilderBody — emptyContext stability', () => {
   });
 });
 
-describe('CngxFilterBuilderBody — child path stability', () => {
+describe('CngxFilterBuilderBody - child path stability', () => {
   it('childPath returns the same reference when (parent, child, index) is unchanged', () => {
     const initial = createFilterGroup('and', [createFilterExpression('name', 'eq', 'x')]);
     const { fixture } = basicSetup(initial);
@@ -307,7 +307,7 @@ class GroupTemplateSlotHost {
   value: FilterGroup = createFilterGroup('and', [createFilterExpression('name', 'eq', 'x')]);
 }
 
-describe('CngxFilterBuilder — group template slot', () => {
+describe('CngxFilterBuilder - group template slot', () => {
   it('replaces the default recursive group body when supplied', () => {
     const fixture = TestBed.createComponent(GroupTemplateSlotHost);
     fixture.detectChanges();
@@ -336,7 +336,7 @@ class ExpressionTemplateSlotHost {
   value: FilterGroup = createFilterGroup('and', [createFilterExpression('name', 'eq', 'foo')]);
 }
 
-describe('CngxFilterBuilder — expression template slot', () => {
+describe('CngxFilterBuilder - expression template slot', () => {
   it('replaces the default expression rendering when supplied', () => {
     const fixture = TestBed.createComponent(ExpressionTemplateSlotHost);
     fixture.detectChanges();
@@ -349,7 +349,7 @@ describe('CngxFilterBuilder — expression template slot', () => {
   });
 });
 
-describe('CngxFilterBuilder — two-way binding', () => {
+describe('CngxFilterBuilder - two-way binding', () => {
   it('flows mutator writes back into the consumer value model', () => {
     const { fixture, host, presenter } = basicSetup();
     presenter.addExpression([], createFilterExpression('name', 'eq', 'foo'));
@@ -377,7 +377,7 @@ class AddButtonSlotsHost {
   value: FilterGroup = createEmptyFilterRoot();
 }
 
-describe('CngxFilterBuilder — action button slots', () => {
+describe('CngxFilterBuilder - action button slots', () => {
   it('renders the consumer-supplied addFilterButton and addGroupButton in the empty fallback', () => {
     const fixture = TestBed.createComponent(AddButtonSlotsHost);
     fixture.detectChanges();
@@ -415,7 +415,7 @@ class RemoveButtonSlotHost {
   value: FilterGroup = createFilterGroup('and', [createFilterExpression('name', 'eq', 'x')]);
 }
 
-describe('CngxFilterBuilder — remove button slot', () => {
+describe('CngxFilterBuilder - remove button slot', () => {
   it('renders the consumer-supplied removeButton on each expression', () => {
     const fixture = TestBed.createComponent(RemoveButtonSlotHost);
     fixture.detectChanges();
@@ -455,7 +455,7 @@ class NegationToggleSlotHost {
   value: FilterGroup = { ...createFilterGroup('and', [createFilterExpression('name', 'eq', 'x')]), negated: true };
 }
 
-describe('CngxFilterBuilder — negation toggle slot', () => {
+describe('CngxFilterBuilder - negation toggle slot', () => {
   it('renders the consumer-supplied negationToggle template when withNegation is enabled', () => {
     TestBed.configureTestingModule({
       providers: [provideFilterBuilderConfig(withNegation(true))],
@@ -471,7 +471,7 @@ describe('CngxFilterBuilder — negation toggle slot', () => {
   });
 });
 
-describe('CngxFilterBuilder — logic toggle slot', () => {
+describe('CngxFilterBuilder - logic toggle slot', () => {
   it('renders the consumer-supplied logicToggle template with the current logic in context', () => {
     const fixture = TestBed.createComponent(LogicToggleSlotHost);
     fixture.detectChanges();

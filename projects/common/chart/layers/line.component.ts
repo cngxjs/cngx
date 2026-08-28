@@ -21,7 +21,7 @@ import {
  * points projected through the parent chart's scales. Reads scales
  * from {@link CNGX_CHART_CONTEXT}, NOT from a parent class.
  *
- * Attribute-selector on `<svg:g>` — the host element IS the SVG group.
+ * Attribute-selector on `<svg:g>` - the host element IS the SVG group.
  * Element selectors create XHTML-namespaced custom elements inside
  * SVG, which break layout for the namespaced children. Apply this
  * directive on an `<svg:g>` host instead.
@@ -29,7 +29,7 @@ import {
  * The `d` string is cascade-guarded with string equality on its
  * `computed` so downstream effects only re-run when the path
  * geometry actually changes. The `createPathBuilder` cache provides
- * the **compute guard** — same `(data, xScale, yScale)` triple by
+ * the **compute guard** - same `(data, xScale, yScale)` triple by
  * reference skips the per-datapoint projection work.
  *
  * A single-point series draws no visible path (`M x y` has no length),

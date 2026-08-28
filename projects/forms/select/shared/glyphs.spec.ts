@@ -30,7 +30,7 @@ describe('CNGX_SELECT_GLYPHS', () => {
   });
 
   it('is readonly at the type level (as const)', () => {
-    // Compile-time assertion — would fail `tsc --noEmit` if the const
+    // Compile-time assertion - would fail `tsc --noEmit` if the const
     // assertion drifts off the declaration.
     const _typeCheck: Readonly<Record<CngxSelectGlyphKey, string>> = CNGX_SELECT_GLYPHS;
     expect(_typeCheck).toBe(CNGX_SELECT_GLYPHS);

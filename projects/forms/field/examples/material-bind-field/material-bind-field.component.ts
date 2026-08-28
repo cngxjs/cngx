@@ -62,7 +62,7 @@ import {
           <dt>focused</dt><dd>{{ bf.focused() }}</dd>
           <dt>empty</dt><dd>{{ bf.empty() }}</dd>
           <dt>errorState</dt><dd>{{ bf.errorState() }}</dd>
-          <dt>value</dt><dd>{{ value() || '—' }}</dd>
+          <dt>value</dt><dd>{{ value() || '-' }}</dd>
           <dt>touched</dt><dd>{{ sizeControl.touched }}</dd>
           <dt>valid</dt><dd>{{ sizeControl.valid }}</dd>
         </dl>

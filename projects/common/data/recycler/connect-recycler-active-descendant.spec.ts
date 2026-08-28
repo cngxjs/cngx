@@ -13,9 +13,9 @@ import type { CngxRecycler } from './recycler';
 
 // The bridge only touches two surfaces on CngxActiveDescendant:
 // - pendingHighlight(): Signal<number | null>
-// - (no writes — AD clears its own state when the target enters range)
+// - (no writes - AD clears its own state when the target enters range)
 //
-// Same for CngxRecycler — just scrollToIndex is called. Minimal mocks.
+// Same for CngxRecycler - just scrollToIndex is called. Minimal mocks.
 type BridgeAd = { pendingHighlight: WritableSignal<number | null> };
 type BridgeRecycler = { scrollToIndex: (i: number) => void };
 
@@ -78,7 +78,7 @@ describe('connectRecyclerToActiveDescendant', () => {
     runBridge(ad, recycler);
     TestBed.flushEffects();
 
-    // Simulate ArrowDown held — pendingHighlight updates many times before
+    // Simulate ArrowDown held - pendingHighlight updates many times before
     // any rAF fires.
     for (let i = 100; i <= 105; i++) {
       ad.pendingHighlight.set(i);
@@ -104,7 +104,7 @@ describe('connectRecyclerToActiveDescendant', () => {
     TestBed.flushEffects();
     flushRaf();
 
-    // AD cleared the pending state in the same frame — the bridge must not
+    // AD cleared the pending state in the same frame - the bridge must not
     // fire a stale scroll.
     expect(scrollToIndex).not.toHaveBeenCalled();
   });

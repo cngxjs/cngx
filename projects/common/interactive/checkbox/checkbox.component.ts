@@ -147,7 +147,7 @@ export class CngxCheckbox implements CngxControlValue<boolean>, CngxFormFieldCon
    * Optional id of an external error message element (e.g. a sibling
    * rendered by `<cngx-form-field>` or a consumer-owned `<span>`).
    * The host emits `aria-errormessage="<id>"` only when
-   * `aria-invalid="true"` — symmetric with the sibling `aria-invalid`
+   * `aria-invalid="true"` - symmetric with the sibling `aria-invalid`
    * host binding (both gate on `invalid() || errorState()`). Consumers
    * MUST render an element with the supplied id; passing an id without
    * a matching element produces a dangling AT reference. Default

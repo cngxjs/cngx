@@ -39,7 +39,7 @@
     initial-value: oklch(0.55 0.21 27);
   }
 
-  /* Delegating token — required-marker tracks the danger chain so a
+  /* Delegating token - required-marker tracks the danger chain so a
    * dark-mode swap on `--cngx-color-danger` cascades through. */
   :root {
     --cngx-field-required-color: var(--cngx-color-danger);
@@ -51,7 +51,7 @@
     :scope {
       /* Native <label> default. `display: contents` here previously
        * made the label disappear and its children flow up as
-       * separate items in any grid/flex parent — breaking the
+       * separate items in any grid/flex parent - breaking the
        * stacked-field layout (`display:grid; gap:16px`) used by
        * every demo and most consumer forms, because the marker
        * would land on a new row.

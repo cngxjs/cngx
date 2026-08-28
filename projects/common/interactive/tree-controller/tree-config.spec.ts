@@ -27,7 +27,7 @@ const tree: CngxTreeNode<Row>[] = [
   },
 ];
 
-describe('provideTreeConfig — app-wide defaults', () => {
+describe('provideTreeConfig - app-wide defaults', () => {
   it('withDefaultNodeIdFn is picked up when options omit nodeIdFn', () => {
     TestBed.configureTestingModule({
       providers: [provideTreeConfig(withDefaultNodeIdFn<Row>((v) => v.id))],

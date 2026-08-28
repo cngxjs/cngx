@@ -77,8 +77,8 @@ export interface TreetableOptions<T> {
  * @category data-display/treetable
  */
 export interface CngxCellTplContext<T> {
-  /** The full {@link FlatNode} for the current row — available as `let-node`. */
+  /** The full {@link FlatNode} for the current row - available as `let-node`. */
   $implicit: FlatNode<T>;
-  /** The raw cell value for the column (`node.value[column]`) — available as `let-value="value"`. */
+  /** The raw cell value for the column (`node.value[column]`) - available as `let-value="value"`. */
   value: unknown;
 }

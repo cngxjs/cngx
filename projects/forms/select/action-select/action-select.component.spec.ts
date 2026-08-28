@@ -146,7 +146,7 @@ function setup(): {
   };
 }
 
-describe('CngxActionSelect — surface + defaults', () => {
+describe('CngxActionSelect - surface + defaults', () => {
   it('renders the inline input and exposes empty state by default', () => {
     const { host, select, input } = setup();
     expect(input).toBeTruthy();
@@ -182,7 +182,7 @@ describe('CngxActionSelect — surface + defaults', () => {
   });
 });
 
-describe('CngxActionSelect — quick-create flow', () => {
+describe('CngxActionSelect - quick-create flow', () => {
   it('dispatches quickCreateAction with draft label on commit()', () => {
     const { fixture, host, select } = setup();
     const spy = vi.fn<CngxSelectCreateAction<Tag>>((_term, draft) => ({
@@ -219,7 +219,7 @@ describe('CngxActionSelect — quick-create flow', () => {
     flush(fixture);
     expect(select.value()).toEqual({ id: 'p', name: 'Purple' });
 
-    // Server refetch without Purple — local item persists via mergeLocalItems;
+    // Server refetch without Purple - local item persists via mergeLocalItems;
     // selection remains resolvable.
     host.options.set([...TAGS]);
     flush(fixture);
@@ -228,7 +228,7 @@ describe('CngxActionSelect — quick-create flow', () => {
 
     // Server catches up and emits its own entry matching the id. The
     // `mergeLocalItems` dedup drops the local copy at merge-time (the
-    // `selected()` cache may hold its compareWith-equal reference —
+    // `selected()` cache may hold its compareWith-equal reference -
     // that's an intentional identity-stability optimization; what
     // matters here is that effectiveOptions only contains ONE entry
     // matching the id, not two.
@@ -237,12 +237,12 @@ describe('CngxActionSelect — quick-create flow', () => {
       { value: { id: 'p', name: 'Purple-server' }, label: 'Purple-server' },
     ]);
     flush(fixture);
-    // Selection stays resolvable — we're no longer holding a phantom
+    // Selection stays resolvable - we're no longer holding a phantom
     // entry.
     expect(select.selected()).not.toBeNull();
   });
 
-  it("honours closeOnCreate — default true closes the panel on success", () => {
+  it("honours closeOnCreate - default true closes the panel on success", () => {
     const { fixture, select } = setup();
     fixture.componentInstance.quickCreateAction.set(() => ({ id: 'p', name: 'Purple' }));
     select.open();
@@ -253,7 +253,7 @@ describe('CngxActionSelect — quick-create flow', () => {
     expect(select.panelOpen()).toBe(false);
   });
 
-  it("honours closeOnCreate=false — panel stays open after a successful create", () => {
+  it("honours closeOnCreate=false - panel stays open after a successful create", () => {
     const { fixture, host, select } = setup();
     host.closeOnCreate.set(false);
     host.quickCreateAction.set(() => ({ id: 'p', name: 'Purple' }));
@@ -270,7 +270,7 @@ describe('CngxActionSelect — quick-create flow', () => {
     const { fixture, host, select } = setup();
     const spy = vi.fn<CngxSelectCreateAction<Tag>>(() => ({ id: 'x', name: 'x' }));
     host.quickCreateAction.set(spy);
-    // No searchTerm set, empty explicit draft — must not fire.
+    // No searchTerm set, empty explicit draft - must not fire.
     select.actionCallbacks().commit({ label: '' });
     flush(fixture);
     expect(spy).not.toHaveBeenCalled();
@@ -286,7 +286,7 @@ describe('CngxActionSelect — quick-create flow', () => {
   });
 });
 
-describe('CngxActionSelect — async + error flow', () => {
+describe('CngxActionSelect - async + error flow', () => {
   it('transitions stateChange pending → success across an Observable create', () => {
     const { fixture, host, select } = setup();
     const subject = new Subject<Tag>();
@@ -334,8 +334,8 @@ describe('CngxActionSelect — async + error flow', () => {
     flush(fixture);
     select.actionCallbacks().commit({ label: 'Second' });
     flush(fixture);
-    // First resolves AFTER supersede — the commit controller's supersede
-    // guard (captured id check) drops the stale success — value stays
+    // First resolves AFTER supersede - the commit controller's supersede
+    // guard (captured id check) drops the stale success - value stays
     // undefined until second's resolution.
     first.next({ id: 'first', name: 'First' });
     first.complete();
@@ -361,7 +361,7 @@ describe('CngxActionSelect — async + error flow', () => {
   });
 });
 
-describe('CngxActionSelect — dismiss guard', () => {
+describe('CngxActionSelect - dismiss guard', () => {
   it('blocks click-outside dismissal while actionDirty() is true', () => {
     const { fixture, select } = setup();
     select.open();

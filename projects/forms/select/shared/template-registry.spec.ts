@@ -27,7 +27,7 @@ import {
 import { provideSelectConfig } from './config';
 
 // Probe that performs all 14 contentChild queries AT class-field level
-// (Angular's AOT-enforced constraint — see NG8110) and hands them into
+// (Angular's AOT-enforced constraint - see NG8110) and hands them into
 // the factory. Mirrors how every real select-family variant will wire.
 @Component({
   selector: 'registry-probe',

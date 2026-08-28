@@ -88,7 +88,7 @@ describe('provideCngxSelect (app-wide aggregator)', () => {
       providers: [provideCngxSelect(withPanelWidth(320))],
     });
     // Only CNGX_SELECT_CONFIG is registered. The action + reorderable
-    // tokens are NOT provided — consumers using `resolveActionSelectConfig`
+    // tokens are NOT provided - consumers using `resolveActionSelectConfig`
     // / `resolveReorderableSelectConfig` get the library defaults via
     // `inject(token, { optional: true })` ?? defaults.
     expect(TestBed.inject(CNGX_SELECT_CONFIG).panelWidth).toBe(320);

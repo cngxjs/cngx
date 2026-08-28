@@ -23,7 +23,7 @@ function deferred<T>(): {
 }
 
 // ---------------------------------------------------------------------------
-// Host component — injectAsyncState must be called in injection context
+// Host component - injectAsyncState must be called in injection context
 // ---------------------------------------------------------------------------
 
 @Component({ template: '' })
@@ -41,7 +41,7 @@ class Host {
   }
 
   readonly state: ReactiveAsyncState<string> = injectAsyncState(() => {
-    this.filter(); // tracked signal — triggers re-query on change
+    this.filter(); // tracked signal - triggers re-query on change
     const d = deferred<string>();
     this.pending.set(d);
     return d.promise;
@@ -95,7 +95,7 @@ describe('injectAsyncState', () => {
     await vi.runAllTimersAsync();
     expect(host.state.data()).toBe('first');
 
-    // Change filter — triggers re-load
+    // Change filter - triggers re-load
     host.filter.set('updated');
     TestBed.flushEffects();
     vi.advanceTimersByTime(50);
@@ -130,7 +130,7 @@ describe('injectAsyncState', () => {
     await vi.runAllTimersAsync();
 
     host.state.refresh();
-    // refresh() calls executeQuery immediately — no debounce
+    // refresh() calls executeQuery immediately - no debounce
     expect(host.state.status()).toBe('refreshing');
 
     host.current!.resolve('refreshed');
@@ -168,12 +168,12 @@ describe('injectAsyncState', () => {
     vi.advanceTimersByTime(50);
     const secondDeferred = host.current!;
 
-    // Resolve the first — should be ignored (aborted)
+    // Resolve the first - should be ignored (aborted)
     firstDeferred.resolve('stale');
     await vi.runAllTimersAsync();
     expect(host.state.data()).not.toBe('stale');
 
-    // Resolve the second — should be accepted
+    // Resolve the second - should be accepted
     secondDeferred.resolve('fresh');
     await vi.runAllTimersAsync();
     expect(host.state.status()).toBe('success');

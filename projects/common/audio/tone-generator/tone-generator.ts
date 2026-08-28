@@ -1,8 +1,8 @@
 import { InjectionToken } from '@angular/core';
 
-/** Attack ramp, seconds — lifts gain from 0 so the oscillator start is click-free. */
+/** Attack ramp, seconds - lifts gain from 0 so the oscillator start is click-free. */
 const ATTACK_SEC = 0.005;
-/** Release ramp, seconds — drops gain to 0 before stop so the end is click-free. */
+/** Release ramp, seconds - drops gain to 0 before stop so the end is click-free. */
 const RELEASE_SEC = 0.03;
 /** A tone shorter than attack+release cannot host both ramps; clamp up to this floor. */
 const MIN_DURATION_SEC = ATTACK_SEC + RELEASE_SEC;
@@ -70,14 +70,14 @@ export interface CngxToneGenerator {
  * @since 0.1.0
  */
 export interface ToneGeneratorDeps {
-  /** Lazy getter for the shared context — called per tone so the engine controls resume. */
+  /** Lazy getter for the shared context - called per tone so the engine controls resume. */
   readonly context: () => BaseAudioContext;
   /** Node to connect each tone into (typically the engine's master-volume gain). */
   readonly destination: () => AudioNode;
 }
 
 /**
- * Signature of the tone-generator factory — the shape an override must match.
+ * Signature of the tone-generator factory - the shape an override must match.
  * @category common/audio
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/tone-generator/tone-generator.ts
  * @since 0.1.0
@@ -85,7 +85,7 @@ export interface ToneGeneratorDeps {
 export type CngxAudioToneGeneratorFactory = (deps: ToneGeneratorDeps) => CngxToneGenerator;
 
 /**
- * Pure `OscillatorNode` synthesis — no audio assets. Each tone is an
+ * Pure `OscillatorNode` synthesis - no audio assets. Each tone is an
  * oscillator through a per-note gain envelope (5 ms attack, 30 ms release)
  * into the engine's master-volume node. The envelope is not decoration: a
  * bare `start()`/`stop()` on a full-amplitude oscillator produces an audible
@@ -150,7 +150,7 @@ export const createToneGenerator: CngxAudioToneGeneratorFactory = (deps) => {
 /**
  * Swappable tone-generator factory. Defaults to {@link createToneGenerator}
  * (oscillator synthesis). Override to swap in sample-based playback without
- * forking the engine — the documented second consumer of this boundary token.
+ * forking the engine - the documented second consumer of this boundary token.
  *
  * @relatedTo createToneGenerator, CNGX_AUDIO_ENGINE_FACTORY
  * @category common/audio

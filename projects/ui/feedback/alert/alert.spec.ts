@@ -190,7 +190,7 @@ describe('CngxAlert', () => {
     const { fixture, alert } = setup();
     TestBed.flushEffects();
     fixture.detectChanges();
-    // Don't fire animationend — simulate reduced-motion
+    // Don't fire animationend - simulate reduced-motion
     vi.advanceTimersByTime(1);
     fixture.detectChanges();
     expect(alert.classList.contains('cngx-alert--visible')).toBe(true);
@@ -354,7 +354,7 @@ describe('CngxAlert', () => {
     host.when.set(false);
     host.state.set(state);
     flushAll(fixture);
-    // State says visible (error), when says hidden — state wins
+    // State says visible (error), when says hidden - state wins
     expect(alert.hasAttribute('hidden')).toBe(false);
   });
 
@@ -380,7 +380,7 @@ describe('CngxAlert', () => {
     alert.dispatchEvent(new PointerEvent('pointerenter'));
     fixture.detectChanges();
 
-    // Advance past the remaining 500ms — should NOT dismiss
+    // Advance past the remaining 500ms - should NOT dismiss
     vi.advanceTimersByTime(1000);
     fixture.detectChanges();
     expect(alert.hasAttribute('hidden')).toBe(false);

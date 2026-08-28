@@ -40,7 +40,7 @@ import type {
   CngxSelectCommitMode,
 } from '../shared/commit-action.types';
 
-// jsdom does not implement the Popover API — polyfill so CngxPopover can toggle.
+// jsdom does not implement the Popover API - polyfill so CngxPopover can toggle.
 function polyfillPopover(): void {
   const proto = HTMLElement.prototype as unknown as {
     showPopover?: () => void;
@@ -216,7 +216,7 @@ class CommitHost {
   };
 }
 
-describe('CngxSelectShell — Phase 5 scaffold', () => {
+describe('CngxSelectShell - Phase 5 scaffold', () => {
   beforeEach(() => {
     polyfillPopover();
     TestBed.configureTestingModule({});
@@ -299,7 +299,7 @@ describe('CngxSelectShell — Phase 5 scaffold', () => {
     flush(fixture);
     const baseline = count;
 
-    // Flip an unrelated input — clearable is shell-level state, not part
+    // Flip an unrelated input - clearable is shell-level state, not part
     // of any option's value/label/disabled. derivedOptions must not
     // re-emit.
     fixture.componentInstance.clearable.set(true);
@@ -316,7 +316,7 @@ describe('CngxSelectShell — Phase 5 scaffold', () => {
     const lbDe = fixture.debugElement.query(By.directive(CngxListbox));
     const listbox = lbDe.injector.get(CngxListbox);
 
-    // [items] forwarded via host directive overrides contentChildren —
+    // [items] forwarded via host directive overrides contentChildren -
     // the AD reports the explicit array even though projection scoping
     // would otherwise hide content-projected options.
     expect(listbox.ad.resolvedItems().length).toBe(3);
@@ -339,7 +339,7 @@ describe('CngxSelectShell — Phase 5 scaffold', () => {
 
     expect(shell.triggerValue()).toBe('Premium Service');
     expect(labelEl.textContent).toBe('Premium Service');
-    // Plain-text trigger guarantee — closed-trigger label region renders
+    // Plain-text trigger guarantee - closed-trigger label region renders
     // text only, even when the underlying option carries `<b>` markup.
     expect(labelEl.querySelectorAll('*').length).toBe(0);
   });
@@ -426,7 +426,7 @@ describe('CngxSelectShell — Phase 5 scaffold', () => {
     // Click the second projected option (`green`). The option's own
     // `inject(CngxActiveDescendant, { optional: true })` returns null in
     // the consumer's authoring view, so it falls back to the shell's
-    // CNGX_OPTION_INTERACTION_HOST contract — `host.activate(value)`
+    // CNGX_OPTION_INTERACTION_HOST contract - `host.activate(value)`
     // routes through the listbox AD.
     const greenOption = shellDe.nativeElement.querySelectorAll('cngx-option')[1] as HTMLElement;
     greenOption.click();
@@ -528,7 +528,7 @@ describe('CngxSelectShell — Phase 5 scaffold', () => {
     // 'content' via the [loading] flag. Same invariant the plan-review
     // concern targeted (the @case unmount of <ng-content /> tears down
     // projected directives, then the return to @default re-instantiates
-    // them) — uses [loading] instead of [state] because [state]'s
+    // them) - uses [loading] instead of [state] because [state]'s
     // success/error path additionally interacts with the core's
     // effectiveOptions merge in a way that's orthogonal to the
     // re-registration invariant under test.
@@ -601,7 +601,7 @@ describe('CngxSelectShell — Phase 5 scaffold', () => {
 
     const activeId = listbox.ad.activeId();
     expect(activeId).toBe(blueOption.id);
-    // Visual class applied through the option's own host binding —
+    // Visual class applied through the option's own host binding -
     // `option.isHighlighted` reads the host's `activeId` signal.
     expect(blueOption.classList.contains('cngx-option--highlighted')).toBe(true);
   });
@@ -634,7 +634,7 @@ describe('CngxSelectShell — Phase 5 scaffold', () => {
     fixture.destroy();
     const after = shell.statusFor('red');
 
-    // After destroy, the cache is cleared — a fresh call yields a new
+    // After destroy, the cache is cleared - a fresh call yields a new
     // Signal instance. This also exercises the `DestroyRef.onDestroy`
     // teardown path, ensuring we don't leak the per-value cache across
     // component lifetimes.
@@ -657,7 +657,7 @@ describe('CngxSelectShell — Phase 5 scaffold', () => {
 
     // Without the equal fn, the computed re-allocates a fresh array on
     // every read and cascades into CngxListbox.[items] +
-    // CngxActiveDescendant.items — re-running keyboard-nav memoisation
+    // CngxActiveDescendant.items - re-running keyboard-nav memoisation
     // on every CD pass. The structural equal (length + per-entry
     // id/value/label/disabled) keeps the reference stable when the
     // underlying option set hasn't changed.
@@ -665,7 +665,7 @@ describe('CngxSelectShell — Phase 5 scaffold', () => {
   });
 });
 
-describe('CngxSelectShell — form-field integration', () => {
+describe('CngxSelectShell - form-field integration', () => {
   beforeEach(() => {
     polyfillPopover();
     TestBed.configureTestingModule({});
@@ -738,7 +738,7 @@ describe('CngxSelectShell — form-field integration', () => {
   });
 });
 
-describe('CngxSelectShell — commit action producer', () => {
+describe('CngxSelectShell - commit action producer', () => {
   beforeEach(() => {
     polyfillPopover();
     TestBed.configureTestingModule({});
@@ -799,12 +799,12 @@ describe('CngxSelectShell — commit action producer', () => {
     const firstPending = host.pending!;
     const firstCount = host.commitCallCount;
 
-    // Second pick while first is pending — supersedes via commitId.
+    // Second pick while first is pending - supersedes via commitId.
     pickValue(listbox, 'blue');
     flush(fixture);
     expect(host.commitCallCount).toBeGreaterThan(firstCount);
 
-    // First pending resolves too late — must be ignored by the commit
+    // First pending resolves too late - must be ignored by the commit
     // controller's supersede check.
     const statusesBefore = [...host.statuses];
     firstPending.next('green');
@@ -875,7 +875,7 @@ describe('CngxSelectShell — commit action producer', () => {
 
     // Status-host contract: failed option carries data-status="error" on
     // the host element, and the consumer-projected error glyph renders
-    // inside the option's reserved internal slot — never alongside user
+    // inside the option's reserved internal slot - never alongside user
     // content. Plan locked decision: the glyph is in `.cngx-option__status`,
     // adjacent to (not inside) the consumer's `<ng-content/>`.
     expect(greenOption.getAttribute('data-status')).toBe('error');
@@ -887,7 +887,7 @@ describe('CngxSelectShell — commit action producer', () => {
   });
 });
 
-describe('CngxSelectShell — factory token wiring', () => {
+describe('CngxSelectShell - factory token wiring', () => {
   beforeEach(() => {
     polyfillPopover();
   });
@@ -963,7 +963,7 @@ describe('CngxSelectShell — factory token wiring', () => {
       .componentInstance as CngxSelectShell<string>;
 
     expect(factoryCalls()).toBe(1);
-    // Stub returns empty derivedOptions even though FlatHost projects 3 options —
+    // Stub returns empty derivedOptions even though FlatHost projects 3 options -
     // proves the shell consumes the factory's output, not its own inline computation.
     expect(shellInternals(shell).derivedOptions().length).toBe(0);
     expect(shellInternals(shell).adItems().length).toBe(0);
@@ -998,7 +998,7 @@ describe('CngxSelectShell — factory token wiring', () => {
   });
 });
 
-describe('CngxSelectShell — trigger slot-cascade tier-1', () => {
+describe('CngxSelectShell - trigger slot-cascade tier-1', () => {
   beforeEach(() => {
     polyfillPopover();
     TestBed.configureTestingModule({});

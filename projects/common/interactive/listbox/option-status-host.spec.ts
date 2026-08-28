@@ -132,7 +132,7 @@ describe('CNGX_OPTION_STATUS_HOST', () => {
     fixture.detectChanges();
     expect(targetEl.getAttribute('data-status')).toBe('error');
 
-    // Same DOM node — host element wasn't re-created.
+    // Same DOM node - host element wasn't re-created.
     expect(byOption(fixture)[1].el).toBe(beforeFlip);
   });
 
@@ -160,7 +160,7 @@ describe('CNGX_OPTION_STATUS_HOST', () => {
     fixture.detectChanges();
     const afterFirstSet = emissionCount;
 
-    // Same target — same kind, same tpl. Equal predicate should suppress.
+    // Same target - same kind, same tpl. Equal predicate should suppress.
     host.target.set({ value: 'a', kind: 'pending' });
     TestBed.flushEffects();
     fixture.detectChanges();

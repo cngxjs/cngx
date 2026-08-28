@@ -12,7 +12,7 @@ import type { CngxErrorAggregatorSourceEntry } from '../error-aggregator/error-a
  * **Swap-is-noop semantics.** Combined with the registry's
  * `register*(name, ref)` helpers, this equal fn means re-registering a
  * *different* contract instance under an *existing* name is absorbed
- * silently — `getScope(name)`/`getAggregator(name)` continue returning
+ * silently - `getScope(name)`/`getAggregator(name)` continue returning
  * the originally registered instance until either an `unregister*(name)`
  * + `register*(name, newRef)` cycle runs (the unregister changes the key
  * set, breaking the equal short-circuit) or a different name is added.

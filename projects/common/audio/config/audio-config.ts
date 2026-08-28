@@ -30,7 +30,7 @@ export interface CngxAudioConfig {
 }
 
 /**
- * Library defaults — English, browser-native.
+ * Library defaults - English, browser-native.
  * @category common/audio
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/config/audio-config.ts
  * @since 0.1.0
@@ -84,7 +84,7 @@ export interface CngxAudioFeature {
 /**
  * Fold a `with*` feature list into a single partial config.
  *
- * @internal — shared by {@link provideCngxAudio} and `provideCngxAudioAt`;
+ * @internal - shared by {@link provideCngxAudio} and `provideCngxAudioAt`;
  *   not exported from `public-api.ts`.
  */
 export function foldAudioFeatures(features: readonly CngxAudioFeature[]): Partial<CngxAudioConfig> {
@@ -96,7 +96,7 @@ export function foldAudioFeatures(features: readonly CngxAudioFeature[]): Partia
 }
 
 /**
- * Register global audio defaults. Mirrors `provideFeedback` — a single small
+ * Register global audio defaults. Mirrors `provideFeedback` - a single small
  * config object folded through `with*` features.
  *
  * ```ts
@@ -113,7 +113,7 @@ export function foldAudioFeatures(features: readonly CngxAudioFeature[]): Partia
  * Register this at **application bootstrap**. The shared engine is
  * `providedIn: 'root'` and reads its configuration once, when it is first built,
  * so config registered in a lazy route's `providers` never reaches it. To
- * configure a subtree, use `provideCngxAudioAt(...)` in `viewProviders` — it
+ * configure a subtree, use `provideCngxAudioAt(...)` in `viewProviders` - it
  * layers over this one and re-provides the engine so the scope actually applies.
  *
  * @category common/audio

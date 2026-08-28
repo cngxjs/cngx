@@ -19,7 +19,7 @@ import { createMatExpansionSetSync } from './material-bridge/set-sync';
  * a vanilla `<mat-accordion>` and it is driven by the headless
  * {@link CngxAccordion} brain. Consumers gain the controlled
  * `[(openIds)]` group model and single-open arbitration on Material
- * markup — neither of which `<mat-accordion>` exposes (Material has only
+ * markup - neither of which `<mat-accordion>` exposes (Material has only
  * per-panel `[expanded]`). Mirrors `[cngxMatStepper]` / `[cngxMatTabs]`.
  *
  * This is the instrumentation pattern: Material owns rendering and the
@@ -42,7 +42,7 @@ import { createMatExpansionSetSync } from './material-bridge/set-sync';
  *
  * `multi` is authoritative on the cngx side. `MatAccordion` inherits its
  * own `multi` input from `CdkAccordion`, and both directives sit on the
- * same host element, so a single `[multi]` binding feeds both — the
+ * same host element, so a single `[multi]` binding feeds both - the
  * directive therefore pins `matAccordion.multi = true` (via an `effect`
  * that re-asserts on every `multi` change) so Material never runs its own
  * single-open close while the cngx `effectiveOpenIds` clamp arbitrates.
@@ -71,7 +71,7 @@ export class CngxMatAccordion {
   private readonly matAccordion = inject(MatAccordion, { self: true });
   /**
    * The accordion brain on this host element (declared in
-   * `hostDirectives`). Same-host ownership — not a child→parent inject —
+   * `hostDirectives`). Same-host ownership - not a child→parent inject -
    * so it stays decompose-safe.
    */
   private readonly accordion = inject(CngxAccordion, { self: true });
@@ -80,7 +80,7 @@ export class CngxMatAccordion {
 
   private readonly panels = contentChildren(MatExpansionPanel, { descendants: true });
 
-  // Stable id per panel — the key the brain's open-set stores. A WeakMap:
+  // Stable id per panel - the key the brain's open-set stores. A WeakMap:
   // the id is assigned first-seen and never needs enumeration, so a removed
   // panel's entry drops with the panel instead of accumulating over churn.
   private readonly idByPanel = new WeakMap<MatExpansionPanel, string>();

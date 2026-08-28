@@ -2,7 +2,7 @@
  * Pure tree utilities for hierarchical data. Framework-agnostic (Level 0).
  *
  * Used by `@cngx/common/interactive` (CngxTreeController) and
- * `@cngx/forms/select` (CngxTreeSelect). Fresh implementation — deliberately
+ * `@cngx/forms/select` (CngxTreeSelect). Fresh implementation - deliberately
  * not shared with `@cngx/data-display/treetable`.
  */
 
@@ -63,7 +63,7 @@ const defaultLabelFn: LabelFn<unknown> = (value) => String(value);
  *
  * @param nodes Root-level tree nodes.
  * @param idFn Derives a stable id from `(value, path)`. Defaults to
- *   `path.join('.')` — adequate for static trees; supply a key-based `idFn`
+ *   `path.join('.')` - adequate for static trees; supply a key-based `idFn`
  *   for data that may be re-ordered without changing identity.
  * @param labelFn Derives visible label. Defaults to `String(value)`.
  *
@@ -176,7 +176,7 @@ export function collectDescendantValues<T>(node: CngxTreeNode<T>): T[] {
  * preserved so the path is never broken; branches with zero matches are
  * dropped entirely.
  *
- * Fresh implementation — not ported from `@cngx/data-display/treetable`.
+ * Fresh implementation - not ported from `@cngx/data-display/treetable`.
  *
  * @category utils/tree
  */
@@ -202,10 +202,10 @@ export function filterTree<T>(
 
 /**
  * Return a new tree where each level's siblings are sorted independently by
- * the `by` extractor. Child ordering is stable within its own level only —
+ * the `by` extractor. Child ordering is stable within its own level only -
  * the relative position of nodes across different parents is irrelevant.
  *
- * Fresh implementation — not ported from `@cngx/data-display/treetable`.
+ * Fresh implementation - not ported from `@cngx/data-display/treetable`.
  *
  * @category utils/tree
  */

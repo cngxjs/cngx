@@ -23,7 +23,7 @@ import { injectAudioConfig } from '../config/audio-config';
 
 /**
  * Lifecycle state of the shared `AudioContext`, surfaced for debug panels and
- * headless e2e. Mute is a separate `muted` signal — this tracks the context,
+ * headless e2e. Mute is a separate `muted` signal - this tracks the context,
  * not the play gate.
  * @category common/audio
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/engine/audio-engine.ts
@@ -57,7 +57,7 @@ export interface CngxAudioEngine {
   /**
    * Play a registered earcon by name. Gated + debounced centrally here.
    * `scale` (a `[0, 1]` multiplier over the per-tone default) scales just this
-   * play — used by the directives' per-element `audioVolume` without touching
+   * play - used by the directives' per-element `audioVolume` without touching
    * the shared master volume.
    */
   play(name: string, scale?: number): void;
@@ -88,7 +88,7 @@ export interface CngxAudioEngine {
 }
 
 /**
- * Signature of the engine factory — the shape a telemetry/audit override matches.
+ * Signature of the engine factory - the shape a telemetry/audit override matches.
  * @category common/audio
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/engine/audio-engine.ts
  * @since 0.1.0
@@ -204,7 +204,7 @@ export const createAudioEngine: CngxAudioEngineFactory = (options) => {
     return muted() || (config.respectReducedMotion && reducedMotion()) || !gate.armed();
   }
 
-  // Volume is communicated to the master node reactively — the single writer is
+  // Volume is communicated to the master node reactively - the single writer is
   // setVolume(), but binding through an effect keeps the node in sync from any
   // future volume source too.
   effect(() => {
@@ -306,7 +306,7 @@ export const createAudioEngine: CngxAudioEngineFactory = (options) => {
 
 /**
  * Swappable engine factory. Defaults to {@link createAudioEngine}. Override to
- * wrap the engine with telemetry/audit logging — the documented second consumer
+ * wrap the engine with telemetry/audit logging - the documented second consumer
  * of this boundary token.
  *
  * Register the override at **application bootstrap**. The shared engine instance

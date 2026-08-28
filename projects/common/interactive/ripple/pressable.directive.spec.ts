@@ -84,7 +84,7 @@ describe('CngxPressable', () => {
     const { button, dir } = setup();
     button.triggerEventHandler('pointerdown');
     button.triggerEventHandler('pointerup');
-    // Timer running — press again before it fires
+    // Timer running - press again before it fires
     button.triggerEventHandler('pointerdown');
     vi.advanceTimersByTime(80);
     expect(dir.pressed()).toBe(true); // still pressed from second press

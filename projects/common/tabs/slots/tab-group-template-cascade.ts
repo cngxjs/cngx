@@ -13,7 +13,7 @@ import type {
 
 /**
  * Inputs to {@link createTabGroupTemplateBindings}. \
- * The organism owns the `contentChild()` queries (NG8110 — must run in component
+ * The organism owns the `contentChild()` queries (NG8110 - must run in component
  * injection context) and the resolved {@link CngxTabsConfig}; the
  * factory runs the 3-stage cascade per slot key.
  *
@@ -62,10 +62,10 @@ export interface CngxTabGroupTemplateBindings {
  * span for the state decorations, the `CNGX_TABS_GLYPHS` glyph for
  * `closeIcon` / `addIcon`, and nothing for `icon`.
  *
- * Pure — no DI, no side effects. Safe in field-init. Sibling to
+ * Pure - no DI, no side effects. Safe in field-init. Sibling to
  * `createStepperTemplateBindings` and `createTabOverflowTemplateBindings`.
  *
- * Single-consumer today: `[cngxMatTabs]` does not consume this —
+ * Single-consumer today: `[cngxMatTabs]` does not consume this -
  * Material owns the rendered tab-button chrome via its own MDC
  * template, leaving no DOM seam. See `tabs-accepted-debt §9`.
  *

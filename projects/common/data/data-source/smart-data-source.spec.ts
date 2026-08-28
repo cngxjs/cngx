@@ -19,7 +19,7 @@ const ITEMS: Item[] = [
   { name: 'Bob', age: 35 },
 ];
 
-describe('CngxSmartDataSource — no directives', () => {
+describe('CngxSmartDataSource - no directives', () => {
   it('passes data through unchanged', () => {
     TestBed.runInInjectionContext(() => {
       const data = signal(ITEMS);
@@ -58,7 +58,7 @@ class WithDirectivesHost {}
 })
 class PaginateHost {}
 
-describe('CngxSmartDataSource — with directives', () => {
+describe('CngxSmartDataSource - with directives', () => {
   beforeEach(() => TestBed.configureTestingModule({ imports: [WithDirectivesHost] }));
 
   it('sorts ascending via CngxSort', () => {
@@ -157,7 +157,7 @@ describe('CngxSmartDataSource — with directives', () => {
   });
 });
 
-describe('CngxSmartDataSource — with CngxAsyncState source', () => {
+describe('CngxSmartDataSource - with CngxAsyncState source', () => {
   it('derives data from state.data()', () => {
     TestBed.runInInjectionContext(() => {
       const state = createManualState<Item[]>();
@@ -254,7 +254,7 @@ describe('CngxSmartDataSource — with CngxAsyncState source', () => {
   });
 });
 
-describe('CngxSmartDataSource — options-passed atoms', () => {
+describe('CngxSmartDataSource - options-passed atoms', () => {
   beforeEach(() =>
     TestBed.configureTestingModule({ imports: [WithDirectivesHost, PaginateHost] }),
   );
@@ -367,7 +367,7 @@ describe('CngxSmartDataSource — options-passed atoms', () => {
   });
 });
 
-describe('CngxSmartDataSource — reactivity equality', () => {
+describe('CngxSmartDataSource - reactivity equality', () => {
   it('connect() does not re-emit when source resets to a positionally-identical array', () => {
     TestBed.runInInjectionContext(() => {
       const data = signal(ITEMS);
