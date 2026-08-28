@@ -528,6 +528,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   readonly panelRenderer = this.virtualSetup.panelRenderer;
   /** @internal */
   protected readonly virtualItemCount = this.virtualSetup.virtualItemCount;
+  protected readonly virtualWindowStart = this.virtualSetup.virtualWindowStart;
 
   readonly selected: Signal<readonly CngxSelectOptionDef<T>[]> = computed(
     () => this.selectedOptions(),
