@@ -1,20 +1,27 @@
 import { createMatchMediaMock } from '@cngx/testing';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const COMPACT = '(max-width: 640px)';
 const MOTION = '(prefers-reduced-motion: reduce)';
 
-type MaybeMatchMedia = Window & { matchMedia?: typeof window.matchMedia };
+type MaybeMatchMedia = { matchMedia?: typeof window.matchMedia };
 
 // Characterization of the shared @cngx/testing matchMedia mock, co-located
 // with the media-query consumers (projects/testing has no test runner).
 describe('createMatchMediaMock', () => {
+  beforeEach(() => {
+    // isolate: false shares the jsdom window across the spec files in a
+    // worker, and an earlier file can leak a directly assigned matchMedia
+    // past the unstubAllGlobals net. Arrange the no-original precondition
+    // these tests characterize instead of assuming the environment ships it.
+    delete (window as MaybeMatchMedia).matchMedia;
+  });
+
   afterEach(() => {
     vi.unstubAllGlobals();
   });
 
   it('installs without an original matchMedia (jsdom ships none)', () => {
-    expect((window as MaybeMatchMedia).matchMedia).toBeUndefined();
     const mock = createMatchMediaMock();
     expect(() => mock.install(window)).not.toThrow();
     expect(typeof window.matchMedia).toBe('function');
