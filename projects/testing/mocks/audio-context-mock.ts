@@ -100,6 +100,12 @@ function createGain(): GainNodeMock {
   };
 }
 
+// The real API rejects state transitions on a closed context; mirroring that
+// keeps consumer double-close guards testable against the mock.
+function rejectClosed(): Promise<void> {
+  return Promise.reject(new DOMException('AudioContext is closed', 'InvalidStateError'));
+}
+
 /**
  * Create a fresh, assertable `AudioContext` stub. Shared across the tone-
  * generator, engine, and any downstream consumer spec so all Web Audio
@@ -134,14 +140,23 @@ export function createAudioContextMock(initialState: AudioContextState = 'suspen
       return gain;
     },
     resume() {
+      if (mock.state === 'closed') {
+        return rejectClosed();
+      }
       mock.state = 'running';
       return Promise.resolve();
     },
     suspend() {
+      if (mock.state === 'closed') {
+        return rejectClosed();
+      }
       mock.state = 'suspended';
       return Promise.resolve();
     },
     close() {
+      if (mock.state === 'closed') {
+        return rejectClosed();
+      }
       mock.state = 'closed';
       return Promise.resolve();
     },
