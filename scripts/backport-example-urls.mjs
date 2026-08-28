@@ -1,12 +1,12 @@
 // Rebase the base URL of existing <example-url> JSDoc tags across the library
-// source. The example-url set is HAND-CURATED in each class's JSDoc — this
+// source. The example-url set is HAND-CURATED in each class's JSDoc - this
 // script never adds or removes a tag, it only swaps the scheme+host(+path)
 // prefix (everything before `/#/`) for BASE_URL so production docs point at
 // the hosted examples app instead of a dev port.
 //
 // To surface a demo as an iframe on a component's Example tab, add the tag by
 // hand:  * <example-url>http://localhost:4200/#/<route-path></example-url>
-// To drop one, delete the line — it stays gone (nothing re-derives it).
+// To drop one, delete the line - it stays gone (nothing re-derives it).
 //
 // Usage:
 //   node scripts/backport-example-urls.mjs                                   # localhost default (idempotent)
@@ -61,7 +61,7 @@ async function main() {
   }
 
   console.log(`\nDone. ${editedFiles} file(s) touched, ${rebasedTags} <example-url> tag(s) rebased to ${BASE_URL}.`);
-  console.log('No tags added or removed — the example-url set is hand-curated in JSDoc.');
+  console.log('No tags added or removed - the example-url set is hand-curated in JSDoc.');
 }
 
 await main().catch((err) => {

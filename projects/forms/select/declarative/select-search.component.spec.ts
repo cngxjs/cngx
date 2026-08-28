@@ -60,7 +60,7 @@ function setup<T>(component: new () => T): { input: HTMLInputElement } {
   return { input };
 }
 
-describe('CngxSelectSearch — aria-label cascade', () => {
+describe('CngxSelectSearch - aria-label cascade', () => {
   it('falls back to the library default English when neither instance nor config sets a label', () => {
     const { input } = setup(HostNoLabel);
     expect(input.getAttribute('aria-label')).toBe('Search options');

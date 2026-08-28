@@ -37,7 +37,7 @@ function makeHost(): TplHost {
   return fixture.componentInstance;
 }
 
-describe('createTabGroupTemplateBindings — 3-stage cascade', () => {
+describe('createTabGroupTemplateBindings - 3-stage cascade', () => {
   it('returns null on every key when no instance + no config template is supplied', () => {
     const cfg: CngxTabsConfig = {};
     const bindings = createTabGroupTemplateBindings({

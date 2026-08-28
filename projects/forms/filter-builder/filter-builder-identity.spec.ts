@@ -46,7 +46,7 @@ function setup(): {
   return { fixture, host, directive: host.builder() };
 }
 
-describe('CngxFilterBuilder — DOM identity across content edits', () => {
+describe('CngxFilterBuilder - DOM identity across content edits', () => {
   it('setValue preserves the host element of every expression row', () => {
     const { fixture, directive } = setup();
     const before = fixture.debugElement

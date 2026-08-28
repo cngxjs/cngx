@@ -1,5 +1,5 @@
 /**
- * Reason why a card grid is empty — drives empty-state template selection.
+ * Reason why a card grid is empty - drives empty-state template selection.
  *
  * @category common/card
  */

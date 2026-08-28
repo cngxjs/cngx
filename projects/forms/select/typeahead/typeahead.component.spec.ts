@@ -129,7 +129,7 @@ class FieldHost {
 
 // ── Tests ──────────────────────────────────────────────────────────────
 
-describe('CngxTypeahead — standalone', () => {
+describe('CngxTypeahead - standalone', () => {
   beforeEach(() => {
     polyfillPopover();
     TestBed.configureTestingModule({ imports: [StandaloneHost] });
@@ -246,7 +246,7 @@ describe('CngxTypeahead — standalone', () => {
 
 // ── Form-field integration ─────────────────────────────────────────────
 
-describe('CngxTypeahead — form-field integration', () => {
+describe('CngxTypeahead - form-field integration', () => {
   beforeEach(() => {
     polyfillPopover();
     TestBed.configureTestingModule({ imports: [FieldHost] });
@@ -282,7 +282,7 @@ describe('CngxTypeahead — form-field integration', () => {
 
 // ── clearOnBlur ────────────────────────────────────────────────────────
 
-describe('CngxTypeahead — clearOnBlur', () => {
+describe('CngxTypeahead - clearOnBlur', () => {
   @Component({
     template: `
       <cngx-typeahead
@@ -320,9 +320,9 @@ describe('CngxTypeahead — clearOnBlur', () => {
   });
 });
 
-// ── Config cascade — searchDebounceMs honors typeaheadDebounceInterval ─
+// ── Config cascade - searchDebounceMs honors typeaheadDebounceInterval ─
 
-describe('CngxTypeahead — searchDebounceMs config integration', () => {
+describe('CngxTypeahead - searchDebounceMs config integration', () => {
   @Component({
     template: `<cngx-typeahead [options]="options" />`,
     imports: [CngxTypeahead],
@@ -357,7 +357,7 @@ describe('CngxTypeahead — searchDebounceMs config integration', () => {
 
 // ── Glyph-slot & input-prefix/suffix pattern ────────────────────────────
 
-describe('CngxTypeahead — glyph inputs + input prefix/suffix', () => {
+describe('CngxTypeahead - glyph inputs + input prefix/suffix', () => {
   @Component({
     template: `
       <ng-template #myClear><span data-custom="clear">🗑</span></ng-template>

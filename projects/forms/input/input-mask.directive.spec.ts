@@ -659,7 +659,7 @@ describe('CngxInputMask', () => {
   describe('multi-pattern', () => {
     it('should select pattern based on input length', () => {
       const { input, directive, fixture } = setup({ mask: '(00) 0000-0000|(00) 00000-0000' });
-      // Type 10 digits — should use first pattern (10 slots)
+      // Type 10 digits - should use first pattern (10 slots)
       typeSequence(input, '1198765432', directive, fixture);
       expect(input.value).toBe('(11) 9876-5432');
       expect(directive.isComplete()).toBe(true);

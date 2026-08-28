@@ -4,7 +4,7 @@ The generator that turns `examples/stories/**/*.story.ts` into the
 runnable example components under `examples/src/app/features/**`.
 One story file equals one rendered example.
 
-Run via `npm run examples:generate` (or any of the wrappers — `npm
+Run via `npm run examples:generate` (or any of the wrappers - `npm
 start`, `npm run build:examples` and their `:examples` aliases fire
 the generator as a `pre*` hook). The generated tree is gitignored;
 CI regenerates it before building.
@@ -31,7 +31,7 @@ The path becomes:
 (`@cngx/forms/select`, `@cngx/common/a11y`, ...). Deeper nesting is
 fine; navigation derives from the path.
 
-## DemoSpec — the contract
+## DemoSpec - the contract
 
 Every story exports a single `STORY` constant typed as `DemoSpec`
 (`examples/dev-tools/demo-spec.ts`). Fields:
@@ -53,8 +53,8 @@ Every story exports a single `STORY` constant typed as `DemoSpec`
 | `hostDirectives` | Class names attached to the host element via `hostDirectives`. Required when a service uses `inject(X, { host: true })`. |
 | `setup` | TypeScript class-body statements for the **artifact**. Emitted into the live class AND shown in the TypeScript code panel. |
 | `template` | Angular template fragment for the **artifact**. Rendered live AND shown in the Template code panel. |
-| `setupChrome` | TypeScript class-body for **demo chrome** — mode toggles, fail flags, log buffers. Live in the class, hidden from the displayed TypeScript panel. |
-| `templateChrome` | Template fragment for **demo chrome** — radio rows, fail checkboxes, state readouts. Live below the artifact, hidden from the displayed Template panel. |
+| `setupChrome` | TypeScript class-body for **demo chrome** - mode toggles, fail flags, log buffers. Live in the class, hidden from the displayed TypeScript panel. |
+| `templateChrome` | Template fragment for **demo chrome** - radio rows, fail checkboxes, state readouts. Live below the artifact, hidden from the displayed Template panel. |
 | `templateChromeBefore` | Chrome that should render **above** the artifact instead of below: usage hints, intro callouts. Same stripping rules as `templateChrome`. |
 | `references` | Optional `readonly { label; href }[]`. Standards / patterns the artifact implements (WAI-ARIA APG, WCAG SC, RFC numbers). Rendered as a small `Implements: …` link list in the intro header. |
 | `css` | Optional. Demo-specific CSS shown in the source view. |
@@ -68,8 +68,8 @@ source uses only `template` / `setup`.
 
 | Half | Contents |
 |-|-|
-| **Artifact** | The component or directive the page documents — the single `<cngx-…>` tag, the directive applied to its host, the form-field wiring. |
-| **Chrome** | Interactive instrumentation around the artifact — mode-switch radios, "Server fails" checkboxes, state-readout `event-grid`, commit log. |
+| **Artifact** | The component or directive the page documents - the single `<cngx-…>` tag, the directive applied to its host, the form-field wiring. |
+| **Chrome** | Interactive instrumentation around the artifact - mode-switch radios, "Server fails" checkboxes, state-readout `event-grid`, commit log. |
 
 Chrome conventions in templates:
 
@@ -89,7 +89,7 @@ puts chrome in `template`. New stories should write chrome into
 A setup decl belongs in `setupChrome` when it's only read or written
 by `templateChrome`. If both halves use it (`commitMode` is set by
 the chrome's radios and read by the artifact's `[commitMode]` input),
-keep it in `setup` — the artifact's data wins.
+keep it in `setup` - the artifact's data wins.
 
 ## A minimal story
 
@@ -99,7 +99,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'Clearable',
   subtitle: '<code>[clearable]="true"</code> adds a ✕ button when a value is selected.',
-  description: 'CngxSelect — native single-select with template overrides.',
+  description: 'CngxSelect - native single-select with template overrides.',
   level: 'organism',
   audience: ['dev'],
   artifact: 'standalone',
@@ -128,7 +128,7 @@ export const STORY: DemoSpec = {
 
 ```ts
 export const STORY: DemoSpec = {
-  title: 'Commit action — optimistic / pessimistic',
+  title: 'Commit action - optimistic / pessimistic',
   // ... metadata as above
   setup: `
   protected readonly colors: CngxSelectOptionDef<string>[] = [ /* … */ ];
@@ -164,7 +164,7 @@ export const STORY: DemoSpec = {
   <div class="event-grid">
     <div class="event-row">
       <span class="event-label">Value</span>
-      <span class="event-value">{{ value() ?? '—' }}</span>
+      <span class="event-value">{{ value() ?? '-' }}</span>
     </div>
     @for (entry of commitLog(); track entry) {
       <div class="event-row">
@@ -178,7 +178,7 @@ export const STORY: DemoSpec = {
 
 The Template panel shows only the `<cngx-select>` block. The
 TypeScript panel shows `colors`, `value`, `commitMode`, `commitAction`
-— but not `commitLog` or `commitShouldFail`. The live iframe renders
+- but not `commitLog` or `commitShouldFail`. The live iframe renders
 all of it.
 
 ## Things the generator does for you
@@ -205,7 +205,7 @@ all of it.
 - Validate that the story actually renders. `examples:generate`
   succeeds even on broken stories; the typescript-compiler catches
   invalid templates at `build:examples`.
-- Detect dead chrome — a story can leave config controls in `template`
+- Detect dead chrome - a story can leave config controls in `template`
   and the displayed Template panel scrubs the chrome-class divs as a
   defensive fallback, but the right fix is to move them to
   `templateChrome`. See `cngx-examples-audit` for batch checks.

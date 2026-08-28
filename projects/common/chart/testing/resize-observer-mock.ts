@@ -10,7 +10,7 @@
  * Specs install via `vi.stubGlobal('ResizeObserver',
  * ResizeObserverMock)` in `beforeEach` and clean up via
  * `vi.unstubAllGlobals()` in `afterEach`. The mock is intentionally
- * minimal — chart specs drive `dimensions()` through the
+ * minimal - chart specs drive `dimensions()` through the
  * `[width]`/`[height]` inputs, never via simulated resize ticks.
  *
  * @internal

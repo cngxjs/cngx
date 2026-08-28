@@ -4,7 +4,7 @@ import { buildAsyncStateView, type AsyncStatus, type CngxAsyncState } from '@cng
 /**
  * Writable extension of `CngxAsyncState` for manual control.
  *
- * Returned by `createManualState()` — provides imperative setters
+ * Returned by `createManualState()` - provides imperative setters
  * while the read-side stays the standard `CngxAsyncState` interface.
  *
  * @category common/data/async-state
@@ -27,10 +27,10 @@ export interface ManualAsyncState<T> extends CngxAsyncState<T> {
 }
 
 /**
- * Create a fully manual async state — no HTTP, no automatic loading.
+ * Create a fully manual async state - no HTTP, no automatic loading.
  *
  * Use for local operations: heavy computations, Web Workers, complex local processes.
- * Does **not** require an injection context — uses only `signal()` and `computed()`.
+ * Does **not** require an injection context - uses only `signal()` and `computed()`.
  *
  * ```typescript
  * readonly processState = createManualState<ProcessResult>();

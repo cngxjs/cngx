@@ -91,7 +91,7 @@ function setup(initial: FilterGroup): { body: CngxFilterBuilderBody; internals: 
   return { body, internals: body as unknown as BodyInternals };
 }
 
-describe('CngxFilterBuilderBody — non-caching per-state contexts', () => {
+describe('CngxFilterBuilderBody - non-caching per-state contexts', () => {
   const ROOT: FilterGroup = { type: 'group', id: 'root', logic: 'and', negated: false, filters: [] };
   const PATH: readonly number[] = [0];
 

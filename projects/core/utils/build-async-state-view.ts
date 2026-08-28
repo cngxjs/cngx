@@ -8,7 +8,7 @@ import type { AsyncStatus, CngxAsyncState } from './async-state';
  * @since 0.1.0
  */
 export interface AsyncStateViewSources<T> {
-  /** Single source of truth — the current status. */
+  /** Single source of truth - the current status. */
   readonly status: Signal<AsyncStatus>;
   /** The most recent successful result. */
   readonly data: Signal<T | undefined>;
@@ -18,7 +18,7 @@ export interface AsyncStateViewSources<T> {
   readonly progress?: Signal<number | undefined>;
   /**
    * Whether the first successful load has not yet completed.
-   * Defaults to `computed(() => false)` when omitted — appropriate for
+   * Defaults to `computed(() => false)` when omitted - appropriate for
    * mutation producers that never show a skeleton.
    * Query producers should pass `computed(() => !hadSuccess())`.
    */
@@ -27,7 +27,7 @@ export interface AsyncStateViewSources<T> {
   readonly lastUpdated?: Signal<Date | undefined>;
   /**
    * Whether the state is empty. Defaults to a shape-derived computed that
-   * treats `null`/`undefined` and empty arrays as empty — correct for every
+   * treats `null`/`undefined` and empty arrays as empty - correct for every
    * data-carrying producer. Aggregates whose emptiness cannot be read off the
    * data shape (an N-element array is never length 0) pass their own signal.
    */
@@ -45,11 +45,11 @@ const ALWAYS_UNDEFINED_DATE: Signal<Date | undefined> = computed(() => undefined
  * Build a read-only `CngxAsyncState<T>` view from source signals.
  *
  * All derived fields (`isLoading`, `isPending`, `isEmpty`, etc.) are `computed()`
- * from the provided sources — the result is a consistent, single-source-of-truth
+ * from the provided sources - the result is a consistent, single-source-of-truth
  * state object that cannot become inconsistent.
  *
  * This is the shared kernel used by all async state factories and state producers.
- * No injection context required — uses only `computed()`.
+ * No injection context required - uses only `computed()`.
  *
  * @category core/utils/async-state
  * @since 0.1.0

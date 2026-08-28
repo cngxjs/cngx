@@ -63,7 +63,7 @@ describe('CngxFocusRestore', () => {
       const fixture = TestBed.createComponent(FallbackHost);
       fixture.detectChanges();
 
-      // No specific element focused — activeElement is body or fixture root
+      // No specific element focused - activeElement is body or fixture root
       fixture.componentInstance.showPanel.set(true);
       fixture.detectChanges();
 

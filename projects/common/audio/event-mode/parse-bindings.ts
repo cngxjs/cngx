@@ -31,7 +31,7 @@ export interface ParsedEventBindings {
   readonly bindings: ReadonlyMap<CngxAudioDomEvent, string>;
   /** Keys that are neither DOM events nor lifecycle keys. */
   readonly unknownKeys: readonly string[];
-  /** Lifecycle keys — the grammar of `[cngxAudioStatus]`, not `[cngxAudio]`. */
+  /** Lifecycle keys - the grammar of `[cngxAudioStatus]`, not `[cngxAudio]`. */
   readonly lifecycleKeys: readonly string[];
 }
 
@@ -40,7 +40,7 @@ const LIFECYCLE_SET = new Set<string>(LIFECYCLE_KEYS);
 
 /**
  * Parse the `event:earcon` grammar (`'click:tap, focus:notification'`) into a
- * DOM-event map. Pure — no DOM, no `inject()`. Keys are categorised so the
+ * DOM-event map. Pure - no DOM, no `inject()`. Keys are categorised so the
  * directive can dev-warn on unknown earcon keys and, separately, on lifecycle
  * keys that should have used `[cngxAudioStatus]`.
  */

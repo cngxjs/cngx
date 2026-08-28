@@ -175,7 +175,7 @@ describe('CngxFilterBuilderPresenter', () => {
     expect(presenter.focused()).toBe(true);
   });
 
-  it('does not implement CngxStateful — no `state` property leaks onto the presenter', () => {
+  it('does not implement CngxStateful - no `state` property leaks onto the presenter', () => {
     const { directive } = setup();
     expect(directive).not.toHaveProperty('state');
     expect(directive).not.toHaveProperty('stateInput');
@@ -349,7 +349,7 @@ describe('CngxFilterBuilderPresenter', () => {
   });
 });
 
-describe('CngxFilterBuilderPresenter — dev-mode guards', () => {
+describe('CngxFilterBuilderPresenter - dev-mode guards', () => {
   let warnSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {

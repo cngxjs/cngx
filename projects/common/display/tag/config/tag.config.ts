@@ -21,7 +21,7 @@ import type {
  *   3. `provideTagConfig(...)` at the application root.
  *   4. Library defaults (English; merged in via `CNGX_TAG_DEFAULTS`).
  *
- * Every key is optional — partial overrides are deep-merged with
+ * Every key is optional - partial overrides are deep-merged with
  * the library defaults so consumers only declare the keys they want
  * to override.
  *
@@ -48,7 +48,7 @@ export interface CngxTagConfig {
    * Consumer-defined colour map. Each entry adds a `[data-color="<key>"]`
    * cascade entry that resolves through `--cngx-tag-bg/-color/-border`
    * custom properties. Predefined keys (`neutral`/`success`/`warning`/
-   * `error`/`info`) ship in `tag.css` and are not part of this map —
+   * `error`/`info`) ship in `tag.css` and are not part of this map -
    * extending the predefined palette overrides the consumer key only.
    */
   readonly colors?: Readonly<

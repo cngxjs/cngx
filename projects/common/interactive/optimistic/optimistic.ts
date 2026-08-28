@@ -29,7 +29,7 @@ export interface OptimisticState {
  * On success, applies the server-confirmed value. On failure, rolls back to the
  * previous value.
  *
- * This is a utility function, not a directive — it composes with any signal.
+ * This is a utility function, not a directive - it composes with any signal.
  *
  * ```typescript
  * readonly name = signal('Alice');
@@ -44,7 +44,7 @@ export interface OptimisticState {
  * @if (nameState.rolledBack()) { <span>Reverted</span> }
  * ```
  *
- * **Note:** The internal subscription is unmanaged — there is no `DestroyRef` available
+ * **Note:** The internal subscription is unmanaged - there is no `DestroyRef` available
  * in a plain factory function. If the component is destroyed mid-flight, the subscription
  * completes silently. For long-running actions, ensure the component outlives the action
  * or cancel via the Observable itself.
@@ -75,12 +75,12 @@ export function optimistic<T>(
     state: asyncState,
   };
 
-  // Last confirmed value — rollback target under concurrent calls.
+  // Last confirmed value - rollback target under concurrent calls.
   let confirmedValue = current();
   let activeSub: Subscription | undefined;
 
   const apply = (newValue: T): void => {
-    // Cancel in-flight subscription — prevents stale closure rollback
+    // Cancel in-flight subscription - prevents stale closure rollback
     activeSub?.unsubscribe();
 
     rolledBackState.set(false);

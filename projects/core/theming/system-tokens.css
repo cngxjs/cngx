@@ -77,7 +77,7 @@
 
 @layer cngx.tokens {
   /**
-   * Spacing T-shirt scale — extra-small (4px). `inherits: true` so a
+   * Spacing T-shirt scale - extra-small (4px). `inherits: true` so a
    * `[data-density]` ancestor re-scales it; the swap presets live in
    * `density-tokens.css` (`cngx.theme` layer).
    * @group Layout
@@ -89,7 +89,7 @@
   }
 
   /**
-   * Spacing T-shirt scale — small (8px).
+   * Spacing T-shirt scale - small (8px).
    * @group Layout
    */
   @property --cngx-space-sm {
@@ -99,7 +99,7 @@
   }
 
   /**
-   * Spacing T-shirt scale — medium (16px).
+   * Spacing T-shirt scale - medium (16px).
    * @group Layout
    */
   @property --cngx-space-md {
@@ -109,7 +109,7 @@
   }
 
   /**
-   * Spacing T-shirt scale — large (24px).
+   * Spacing T-shirt scale - large (24px).
    * @group Layout
    */
   @property --cngx-space-lg {
@@ -119,7 +119,7 @@
   }
 
   /**
-   * Spacing T-shirt scale — extra-large (32px).
+   * Spacing T-shirt scale - extra-large (32px).
    * @group Layout
    */
   @property --cngx-space-xl {
@@ -133,7 +133,7 @@
    * ancestor cascades the floor to the subtree, orthogonal to the
    * `--cngx-space-*` density scale. Defaults to `0px` (no floor) so a
    * use-site `max(<current>, var(--cngx-target-min, 0px))` is inert
-   * until the coarse-pointer media block below lifts it to 44px — a
+   * until the coarse-pointer media block below lifts it to 44px - a
    * fixed non-zero initial would have defeated that use-site fallback.
    * @group Layout
    */
@@ -150,7 +150,7 @@
    * targets carry adjacent spacing. `inherits: true` so a `[data-touch]`
    * ancestor cascades it alongside the size floor. Defaults to `0px` so a
    * use-site `max(<current>, var(--cngx-target-gap, 0px))` is inert until
-   * the coarse-pointer media block lifts it to 8px — a fixed non-zero
+   * the coarse-pointer media block lifts it to 8px - a fixed non-zero
    * initial would have defeated that use-site fallback, exactly as with
    * `--cngx-target-min`.
    * @group Layout
@@ -162,7 +162,7 @@
   }
 
   /**
-   * Corner radius — small (4px).
+   * Corner radius - small (4px).
    * @group Layout
    */
   @property --cngx-radius-sm {
@@ -172,7 +172,7 @@
   }
 
   /**
-   * Corner radius — medium (8px).
+   * Corner radius - medium (8px).
    * @group Layout
    */
   @property --cngx-radius-md {
@@ -182,7 +182,7 @@
   }
 
   /**
-   * Corner radius — large (12px).
+   * Corner radius - large (12px).
    * @group Layout
    */
   @property --cngx-radius-lg {
@@ -192,7 +192,7 @@
   }
 
   /**
-   * Corner radius — pill (999px). Used by chips, badges, toggle
+   * Corner radius - pill (999px). Used by chips, badges, toggle
    * tracks, and other fully-rounded surfaces.
    * @group Layout
    */
@@ -203,7 +203,7 @@
   }
 
   /**
-   * Motion duration — fast (150ms). Hover state-layers, focus
+   * Motion duration - fast (150ms). Hover state-layers, focus
    * crossfades, micro-interactions.
    * @group Motion
    */
@@ -214,7 +214,7 @@
   }
 
   /**
-   * Motion duration — base (200ms). Default for most component
+   * Motion duration - base (200ms). Default for most component
    * transitions (overlays, dropdowns, dialogs).
    * @group Motion
    */
@@ -225,7 +225,7 @@
   }
 
   /**
-   * Motion duration — slow (320ms). Major surface transitions
+   * Motion duration - slow (320ms). Major surface transitions
    * (dialog open / close, page-level fades).
    * @group Motion
    */
@@ -236,7 +236,7 @@
   }
 
   /**
-   * Standard easing curve — material-style accelerate-decelerate.
+   * Standard easing curve - material-style accelerate-decelerate.
    * `syntax: '*'` because cubic-bezier() isn't an animatable type
    * and interpolation across transition timing-functions isn't a
    * thing browsers do.
@@ -249,7 +249,7 @@
   }
 
   /**
-   * Decelerate easing — for enter / show transitions.
+   * Decelerate easing - for enter / show transitions.
    * @group Motion
    */
   @property --cngx-easing-decelerate {
@@ -259,7 +259,7 @@
   }
 
   /**
-   * Accelerate easing — for exit / hide transitions.
+   * Accelerate easing - for exit / hide transitions.
    * @group Motion
    */
   @property --cngx-easing-accelerate {
@@ -269,7 +269,7 @@
   }
 
   /**
-   * Surface color — page / panel background. Static initial-value
+   * Surface color - page / panel background. Static initial-value
    * here is the light default; the four blocks at the bottom of
    * this file swap it under OS auto, explicit `data-color-scheme`,
    * and light/dark islands.
@@ -282,7 +282,7 @@
   }
 
   /**
-   * Text color — primary foreground against surface.
+   * Text color - primary foreground against surface.
    * @group Surface
    */
   @property --cngx-color-text {
@@ -292,7 +292,7 @@
   }
 
   /**
-   * Muted text color — secondary labels, helper copy, timestamps,
+   * Muted text color - secondary labels, helper copy, timestamps,
    * disabled-looking captions. Same hue + chroma as `--cngx-color-text`
    * with a single-step lightness delta so the muted variant tracks
    * theme inversions automatically.
@@ -305,7 +305,7 @@
   }
 
   /**
-   * Neutral border color — hairlines, dividers, input strokes.
+   * Neutral border color - hairlines, dividers, input strokes.
    * @group Surface
    */
   @property --cngx-color-border {
@@ -315,7 +315,7 @@
   }
 
   /**
-   * Brand primary color — Ember. Drives focus rings, selected
+   * Brand primary color - Ember. Drives focus rings, selected
    * surfaces, accent stripes across every cngx-prefixed component.
    * @group Surface
    */
@@ -326,7 +326,7 @@
   }
 
   /**
-   * Semantic danger color — red. Drives error states, destructive
+   * Semantic danger color - red. Drives error states, destructive
    * actions, validation errors.
    * @group Surface
    */
@@ -337,7 +337,7 @@
   }
 
   /**
-   * Semantic success color — green. Drives confirmations,
+   * Semantic success color - green. Drives confirmations,
    * completed states, validation passes.
    * @group Surface
    */
@@ -348,7 +348,7 @@
   }
 
   /**
-   * Semantic warning color — amber. Drives caution states,
+   * Semantic warning color - amber. Drives caution states,
    * incomplete data, soft errors.
    * @group Surface
    */
@@ -359,7 +359,7 @@
   }
 
   /**
-   * Semantic info color — blue. Drives informational banners,
+   * Semantic info color - blue. Drives informational banners,
    * neutral notifications.
    * @group Surface
    */
@@ -370,7 +370,7 @@
   }
 
   /**
-   * Font-size — small (0.8125rem). `syntax: '*'` because CSS
+   * Font-size - small (0.8125rem). `syntax: '*'` because CSS
    * `@property` forbids `rem` in `<length>` initial-value (must be
    * "computationally independent"). The tradeoff is no animation
    * interpolation, which font-size rarely needs.
@@ -383,7 +383,7 @@
   }
 
   /**
-   * Font-size — medium (0.9375rem). Default body / control font.
+   * Font-size - medium (0.9375rem). Default body / control font.
    * @group Typography
    */
   @property --cngx-font-size-md {
@@ -393,7 +393,7 @@
   }
 
   /**
-   * Font-size — large (1.0625rem). Emphasized headings, dialog
+   * Font-size - large (1.0625rem). Emphasized headings, dialog
    * titles.
    * @group Typography
    */
@@ -414,7 +414,7 @@
   }
 
   /**
-   * Elevation — small (subtle 1px shadow). `syntax: '*'` because
+   * Elevation - small (subtle 1px shadow). `syntax: '*'` because
    * box-shadow is a composite value that doesn't smoothly
    * interpolate component-by-component.
    * @group Surface
@@ -426,7 +426,7 @@
   }
 
   /**
-   * Elevation — medium. Dropdowns, popovers, sticky headers.
+   * Elevation - medium. Dropdowns, popovers, sticky headers.
    * @group Surface
    */
   @property --cngx-shadow-md {
@@ -436,7 +436,7 @@
   }
 
   /**
-   * Elevation — large. Dialogs, full-screen modals.
+   * Elevation - large. Dialogs, full-screen modals.
    * @group Surface
    */
   @property --cngx-shadow-lg {
@@ -445,7 +445,7 @@
     initial-value: 0 16px 40px oklch(0 0 0 / 0.18);
   }
 
-  /* Block 1 — light defaults. Single source of truth for every
+  /* Block 1 - light defaults. Single source of truth for every
    * semantic color. `accent-color` cascades to every native form
    * control (checkbox, radio, range, progress) so the browser-
    * rendered atoms match the cngx accent out of the box. */
@@ -463,10 +463,10 @@
     accent-color: var(--cngx-color-primary);
   }
 
-  /* Block 2 — OS auto-follow. Both opt-out signals are excluded
+  /* Block 2 - OS auto-follow. Both opt-out signals are excluded
    * here so a user-pinned light island wins over OS dark.
    * Semantic colors lift +0.06-0.08 L and shed ~0.01 C in dark
-   * mode — keeps the hue identity while staying readable against
+   * mode - keeps the hue identity while staying readable against
    * the dark surface without crossing into neon territory. */
   @media (prefers-color-scheme: dark) {
     :root:not([data-color-scheme='light']):not(.light) {
@@ -483,8 +483,8 @@
     }
   }
 
-  /* Block 3 — explicit dark. Either signal — the typed attribute
-   * `data-color-scheme="dark"` or the bare `.dark` class — can be
+  /* Block 3 - explicit dark. Either signal - the typed attribute
+   * `data-color-scheme="dark"` or the bare `.dark` class - can be
    * set on `<html>` (user toggle), on a section wrapper (dark
    * island in a light page), or on a single component. The class
    * form is for direct compatibility with Tailwind/shadcn-style
@@ -504,7 +504,7 @@
     --cngx-color-info: oklch(0.72 0.11 240);
   }
 
-  /* Block 4 — explicit light. Mirror of Block 3 so a light island
+  /* Block 4 - explicit light. Mirror of Block 3 so a light island
    * inside a dark ancestor (`<aside data-color-scheme="light">` or
    * `<aside class="light">`) resets cleanly. Same values as Block
    * 1; declared once more so the override works without `:root`
@@ -523,10 +523,10 @@
     --cngx-color-info: oklch(0.65 0.12 240);
   }
 
-  /* Touch-target floor — env-derived default plus explicit opt-in /
+  /* Touch-target floor - env-derived default plus explicit opt-in /
    * opt-out, mirroring the colour-scheme Blocks 2-4 above. The floor
    * is orthogonal to density: it clamps hit-area, never spacing. The
-   * `--cngx-target-gap` companion travels the same three blocks — the
+   * `--cngx-target-gap` companion travels the same three blocks - the
    * WCAG 2.5.8 (AA) adjacent-spacing exception distinct from the 2.5.5
    * size floor, so a dense small-target row that cannot reach 44px stays
    * compliant via spacing instead.
@@ -534,9 +534,9 @@
    * Material-bridge stance: the floor is cngx-atom-only. Material-bridged
    * widgets (`mat-*`) self-size via Material density, so neither
    * `--cngx-target-min` nor `--cngx-target-gap` is wired into
-   * `@cngx/themes` — a missing bridge here is intentional, not an omission.
+   * `@cngx/themes` - a missing bridge here is intentional, not an omission.
    *
-   * Block 1 — coarse-pointer default. A touch/pen pointer lifts the size
+   * Block 1 - coarse-pointer default. A touch/pen pointer lifts the size
    * floor to the WCAG 2.5.5 / Apple-HIG 44px and the spacing floor to 8px.
    * Both opt-out signals are excluded so a page/section pinned `off` wins
    * over the media query, exactly as a pinned light island wins over OS
@@ -548,8 +548,8 @@
     }
   }
 
-  /* Block 2 — explicit on. Either signal — the typed attribute
-   * `data-touch="on"` or the bare `.cngx-touch-on` class — forces the
+  /* Block 2 - explicit on. Either signal - the typed attribute
+   * `data-touch="on"` or the bare `.cngx-touch-on` class - forces the
    * 44px floor and 8px gap on a fine pointer too (e.g. a kiosk with a
    * mouse but touch-sized targets). Set on `<html>`, a section wrapper, or
    * a single component. */
@@ -559,7 +559,7 @@
     --cngx-target-gap: 8px;
   }
 
-  /* Block 3 — explicit off. Mirror of Block 2 so a mouse-first island
+  /* Block 3 - explicit off. Mirror of Block 2 so a mouse-first island
    * inside a coarse-pointer document resets both floors to 0px cleanly. */
   [data-touch='off'],
   .cngx-touch-off {

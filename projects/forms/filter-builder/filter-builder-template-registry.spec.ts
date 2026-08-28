@@ -36,7 +36,7 @@ function fakeTemplate<Ctx>(): TemplateRef<Ctx> {
   return { elementRef: undefined } as unknown as TemplateRef<Ctx>;
 }
 
-describe('createFilterBuilderTemplateRegistry — 3-stage cascade', () => {
+describe('createFilterBuilderTemplateRegistry - 3-stage cascade', () => {
   it('returns the directive templateRef when contentChild signal resolves', () => {
     TestBed.configureTestingModule({});
     const injector = TestBed.inject(Injector);

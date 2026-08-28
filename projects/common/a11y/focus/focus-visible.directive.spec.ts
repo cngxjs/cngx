@@ -66,7 +66,7 @@ describe('CngxFocusVisible', () => {
     buttons[0].triggerEventHandler('pointerdown');
     buttons[0].triggerEventHandler('focusin');
     expect(dirA.focusVisible()).toBe(false);
-    // Tab to B (keyboard — no pointerdown on B)
+    // Tab to B (keyboard - no pointerdown on B)
     buttons[0].triggerEventHandler('focusout');
     buttons[1].triggerEventHandler('focusin');
     expect(dirB.focusVisible()).toBe(true);

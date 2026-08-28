@@ -156,7 +156,7 @@ describe('createScrollObserver', () => {
     expect(fixture.componentInstance.state.element()).toBe(first);
     expect(disconnectSpy).toHaveBeenCalled(); // torn down on attach
 
-    // A second matching mount must not re-resolve — the observer is gone.
+    // A second matching mount must not re-resolve - the observer is gone.
     const second = sizedDiv('late-teardown', 999);
     document.body.appendChild(second);
     await flushMutations();

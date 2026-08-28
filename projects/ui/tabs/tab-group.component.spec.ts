@@ -116,7 +116,7 @@ describe('CngxTabGroup organism', () => {
   });
 
   it('every tab button carries an i18n.selectedTab(label, position, count) aria-label', () => {
-    // Pillar 2 — verbose accessible name in-band. Without this AT
+    // Pillar 2 - verbose accessible name in-band. Without this AT
     // users hear only the bare label text and the tablist's enumeration
     // ("Tab 2"); the i18n phrase "Tab 2 of 5: Settings" carries
     // position context inside the announcement that AT renders on
@@ -431,7 +431,7 @@ describe('CngxTabGroup organism', () => {
     });
 
     it('descriptor falls back to i18n.tabHasErrors(count) when shouldShow() is true but announcement is empty', () => {
-      // Pillar 2 — when an aggregator wants reveal but supplies no
+      // Pillar 2 - when an aggregator wants reveal but supplies no
       // announcement string (legacy aggregators, partial integrations,
       // localisation gaps), the SR descriptor falls back to the i18n
       // `tabHasErrors(errorCount)` phrase rather than going silent.
@@ -472,7 +472,7 @@ describe('CngxTabGroup organism', () => {
       const span = fixture.nativeElement.querySelector(
         `#${descId}`,
       ) as HTMLElement;
-      // Default English: `${count} error(s)` — 3 → "3 errors".
+      // Default English: `${count} error(s)` - 3 → "3 errors".
       expect(span.textContent?.trim()).toBe('3 errors');
     });
 
@@ -593,7 +593,7 @@ describe('CngxTabGroup organism', () => {
         providers: [provideZonelessChangeDetection()],
       });
       const fixture = TestBed.createComponent(CommitHost);
-      // Action that never resolves — synchronous Subject would also
+      // Action that never resolves - synchronous Subject would also
       // work but `new Promise(() => {})` keeps the runtime simple.
       fixture.componentInstance.action = () =>
         new Promise<boolean>(() => undefined);
@@ -708,7 +708,7 @@ describe('CngxTabGroup organism', () => {
       fixture.detectChanges();
       expect(tabs[2].classList.contains('cngx-tab--rejected')).toBe(true);
       expect(tabs[2].querySelector('.cngx-tabs__rejection-icon')).not.toBeNull();
-      // Untouched tabs stay clean — visual decoration is index-precise.
+      // Untouched tabs stay clean - visual decoration is index-precise.
       expect(tabs[0].classList.contains('cngx-tab--rejected')).toBe(false);
       expect(tabs[1].classList.contains('cngx-tab--rejected')).toBe(false);
       expect(tabs[0].querySelector('.cngx-tabs__rejection-icon')).toBeNull();
@@ -718,7 +718,7 @@ describe('CngxTabGroup organism', () => {
       // Idempotent case: a sync rejection on `select(target === activeIndex)`
       // is filtered upstream by the no-op guard. To force the
       // `error`-branch fallback we'd need an originIndexDuringCommit ===
-      // undefined error edge — which currently happens only in a torn
+      // undefined error edge - which currently happens only in a torn
       // state (programmatic rejection without a prior select() opening
       // the window). Cover the contract by clearLastFailed-then-error:
       TestBed.resetTestingModule();
@@ -739,7 +739,7 @@ describe('CngxTabGroup organism', () => {
       ) as HTMLElement;
       tabs[1].click();
       fixture.detectChanges();
-      // First reject — rich phrase fires.
+      // First reject - rich phrase fires.
       expect(region.textContent?.trim()).toBe(
         'Could not save changes — reverted to "A".',
       );
@@ -781,7 +781,7 @@ describe('CngxTabGroup organism', () => {
     });
 
     it('liveAnnouncement success arm announces selectedTab with nextTab prefix on forward nav', () => {
-      // Pillar 2 — every state change reaches AT, including the
+      // Pillar 2 - every state change reaches AT, including the
       // success transition. Without this binding the live region
       // collapsed back to empty after a successful commit, leaving
       // mouse-only sighted users with feedback (the active tab visibly
@@ -802,7 +802,7 @@ describe('CngxTabGroup organism', () => {
       const region = fixture.nativeElement.querySelector(
         '.cngx-tabs__live-region',
       ) as HTMLElement;
-      // Forward nav — 0 → 2. Direction prefix uses i18n.nextTab.
+      // Forward nav - 0 → 2. Direction prefix uses i18n.nextTab.
       tabs[2].click();
       fixture.detectChanges();
       expect(region.textContent?.trim()).toBe('Next tab: Tab 3 of 3: C');
@@ -829,7 +829,7 @@ describe('CngxTabGroup organism', () => {
       tabs[2].click();
       fixture.detectChanges();
       expect(region.textContent?.trim()).toBe('Next tab: Tab 3 of 3: C');
-      // Backward nav — 2 → 0. Direction prefix uses i18n.previousTab.
+      // Backward nav - 2 → 0. Direction prefix uses i18n.previousTab.
       tabs[0].click();
       fixture.detectChanges();
       expect(region.textContent?.trim()).toBe('Previous tab: Tab 1 of 3: A');
@@ -942,7 +942,7 @@ describe('CngxTabGroup organism', () => {
     ) as HTMLElement;
     // tabsRoleDescription falls through fallbackLabels.tabRoleDescription
     // (library default 'tab list', the W3C ARIA tablist convention).
-    // Override of i18n.tabsLabel does not change the role-description —
+    // Override of i18n.tabsLabel does not change the role-description -
     // the fallbackLabels tier wins, AND the in-component fallback
     // (when fallbackLabels.tabRoleDescription is undefined) is also
     // 'tab list', deliberately distinct from i18n.tabsLabel. Pillar 2:
@@ -956,13 +956,13 @@ describe('CngxTabGroup organism', () => {
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
-        // Consumer localises the tabs landmark name — aria-label
+        // Consumer localises the tabs landmark name - aria-label
         // resolves through `ariaLabels.tabsRegion`. aria-roledescription
         // must NOT pick up the same string; it stays at the W3C default
         // 'tab list'. Pre-fix, when `fallbackLabels.tabRoleDescription`
         // was unset (hand-rolled config bypassing `with*`), the
         // role-description cascade fell through to `i18n.tabsLabel` and
-        // collapsed onto 'Bereiche' — Pillar 2 silent collision.
+        // collapsed onto 'Bereiche' - Pillar 2 silent collision.
         provideCngxTabs(withTabsAriaLabels({ tabsRegion: 'Bereiche' })),
       ],
     });
@@ -993,7 +993,7 @@ describe('CngxTabGroup organism', () => {
     // CNGX_TABS_CONFIG provider that clears `fallbackLabels.
     // tabRoleDescription` previously fell through to
     // `i18n.tabsLabel`. Post-fix, the in-component fallback is
-    // 'tab list' instead — collision impossible regardless of how
+    // 'tab list' instead - collision impossible regardless of how
     // fallbackLabels was zeroed.
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
@@ -1002,7 +1002,7 @@ describe('CngxTabGroup organism', () => {
         provideTabsConfig(withTabsAriaLabels({ tabsRegion: 'Bereiche' })),
         provideTabsI18n(withTabsI18nLabels({ tabsLabel: 'Bereiche' })),
         // Override the resolved CNGX_TABS_CONFIG with one that has
-        // `fallbackLabels` cleared — simulates a hand-rolled provider
+        // `fallbackLabels` cleared - simulates a hand-rolled provider
         // that bypassed `withTabsFallbackLabels`.
         {
           provide: CNGX_TABS_CONFIG,
@@ -1046,7 +1046,7 @@ describe('CngxTabGroup organism', () => {
     }
 
     it('errorBadgeContextFor returns a WeakMap-stable reference for the same tab handle', () => {
-      // Reference-stability fence — *ngTemplateOutlet's input-diff
+      // Reference-stability fence - *ngTemplateOutlet's input-diff
       // (via Object.is) short-circuits the embedded-view context-update
       // path only when the context REFERENCE is unchanged across CD
       // ticks. Per-CD allocation triggers the rebind path. The WeakMap
@@ -1329,7 +1329,7 @@ describe('CngxTabGroup organism', () => {
         '[data-testid="custom-spin"]',
       ) as HTMLElement;
       expect(custom).not.toBeNull();
-      // Tab id default is `cngx-tab-N` (presenter auto-id) — assert the
+      // Tab id default is `cngx-tab-N` (presenter auto-id) - assert the
       // intendedIndex segment instead which is a stable integer.
       expect(custom.textContent).toContain('@2');
       // Default spinner span suppressed.

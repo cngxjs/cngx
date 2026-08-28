@@ -195,7 +195,7 @@ function emptyQueriesWithValueEditor(): CngxFilterBuilderTemplateRegistryQueries
   };
 }
 
-describe('cngxFilterBuilderValueEditor — 3-stage cascade resolution', () => {
+describe('cngxFilterBuilderValueEditor - 3-stage cascade resolution', () => {
   it('returns the directive templateRef when contentChild resolves', () => {
     TestBed.configureTestingModule({});
     const injector = TestBed.inject(Injector);

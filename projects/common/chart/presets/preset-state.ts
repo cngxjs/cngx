@@ -21,7 +21,7 @@ export interface PresetStateContext {
  * the select family uses; presets render skeleton / empty / error /
  * content branches off the same enum.
  *
- * Returns `'content'` when `state` is unbound — the preset renders its
+ * Returns `'content'` when `state` is unbound - the preset renders its
  * SVG/DOM body without any state envelope. Treats `'content+error'`
  * the same as `'content'` for v1: a four-rect chart preset has no
  * room for an inline-error overlay; consumers compose

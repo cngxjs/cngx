@@ -114,7 +114,7 @@ describe('CngxLoadingIndicator', () => {
     expect(el.getAttribute('aria-label')).toBeNull();
   });
 
-  it('should respect delay — not visible before delay elapses', () => {
+  it('should respect delay - not visible before delay elapses', () => {
     const { fixture, host, el } = setup();
     host.delay.set(300);
     host.loading.set(true);
@@ -128,7 +128,7 @@ describe('CngxLoadingIndicator', () => {
     expect(el.querySelector('svg')).toBeNull();
   });
 
-  it('should respect minDuration — stays visible after loading stops', () => {
+  it('should respect minDuration - stays visible after loading stops', () => {
     const { fixture, host, el } = setup();
     host.delay.set(100);
     host.minDuration.set(400);
@@ -140,7 +140,7 @@ describe('CngxLoadingIndicator', () => {
     fixture.detectChanges();
     expect(el.classList.contains('cngx-loading-indicator--visible')).toBe(true);
 
-    // Stop loading — should stay visible for minDuration
+    // Stop loading - should stay visible for minDuration
     host.loading.set(false);
     fixture.detectChanges();
     TestBed.flushEffects();

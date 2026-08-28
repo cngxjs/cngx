@@ -10,13 +10,13 @@ import {
 } from '@cngx/ui/feedback';
 
 /**
- * Async-container data flow — one signal, four view states.
+ * Async-container data flow - one signal, four view states.
  *
  * `injectAsyncState` wraps a simulated HTTP call that re-fires whenever
  * a tracked signal (the filter) changes. The returned `ReactiveAsyncState`
  * is fed into `<cngx-async-container>` via `[state]`, and four projected
  * templates (`cngxAsyncSkeleton`, `cngxAsyncContent`, `cngxAsyncEmpty`,
- * `cngxAsyncError`) render the appropriate view — no manual `@if` chains.
+ * `cngxAsyncError`) render the appropriate view - no manual `@if` chains.
  * The first load shows the skeleton; subsequent refetches show the existing
  * content plus a top-bar refresh indicator. Empty results route to the
  * empty template; errors to the error template with the thrown value.
@@ -34,7 +34,7 @@ import {
   ],
   template: `
     <p style="margin: 0 0 12px; opacity: 0.8; font-size: 0.875rem">
-      Type into the filter — <code>injectAsyncState</code> re-fires the
+      Type into the filter - <code>injectAsyncState</code> re-fires the
       query, and <code>&lt;cngx-async-container&gt;</code> switches between
       skeleton, content, empty, and error views from a single
       <code>[state]</code> input.

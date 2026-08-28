@@ -240,19 +240,19 @@ describe('css logical-property (RTL) regression guard', () => {
     expect(findOffenders('.x { border-inline-start: 3px solid red; }')).toEqual([]);
     expect(findOffenders('.x { inset-inline-end: -2px; text-align: end; }')).toEqual([]);
 
-    // allowlist (a) centering — ONLY with the paired half-shift transform
+    // allowlist (a) centering - ONLY with the paired half-shift transform
     expect(findOffenders('.x { left: 50%; transform: translateX(-50%); }')).toEqual([]);
     expect(findOffenders('.x { left: 50%; translate: -50% 0; }')).toEqual([]);
     // a lone left:50% with no centering transform is a real directional pin
     expect(findOffenders('.x { left: 50%; }')).toHaveLength(1);
     expect(findOffenders('.x { left: 50%; transform: translateY(-50%); }')).toHaveLength(1);
 
-    // allowlist (b) arrow geometry — the whole rule is exempt
+    // allowlist (b) arrow geometry - the whole rule is exempt
     expect(
       findOffenders(".p[data-arrow-placement='top'] > .cngx-popover-panel__arrow { border-left: none; left: calc(-8px); }"),
     ).toEqual([]);
 
-    // allowlist (d) spinner-ring geometry — border-color longhand only
+    // allowlist (d) spinner-ring geometry - border-color longhand only
     expect(findOffenders('.cngx-tabs__busy-spinner { border-right-color: red; }')).toEqual([]);
     // but a non-geometry directional prop in a spinner rule is still caught
     expect(findOffenders('.cngx-spinner-label { text-align: left; }')).toHaveLength(1);

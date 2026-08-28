@@ -29,7 +29,7 @@ import {
 import { CngxSelectAnnouncer } from '../shared/announcer';
 import { createMockField, type MockFieldRef } from '@cngx/forms/field/testing';
 
-// jsdom has no Popover API — polyfill so CngxPopover can toggle.
+// jsdom has no Popover API - polyfill so CngxPopover can toggle.
 function polyfillPopover(): void {
   const proto = HTMLElement.prototype as unknown as {
     showPopover?: () => void;
@@ -95,7 +95,7 @@ beforeEach(() => {
   polyfillPopover();
 });
 
-describe('CngxMultiSelect — skeleton', () => {
+describe('CngxMultiSelect - skeleton', () => {
   it('renders the placeholder when no value is selected', () => {
     const fixture = TestBed.createComponent(Host);
     flush(fixture);
@@ -266,7 +266,7 @@ describe('CngxMultiSelect — skeleton', () => {
     trigger.dispatchEvent(new KeyboardEvent('keydown', { key: 'r', bubbles: true }));
     flush(fixture);
     expect(fixture.componentInstance.values()).toEqual(['red']);
-    // Panel remained closed — aria-expanded is false.
+    // Panel remained closed - aria-expanded is false.
     expect(trigger.getAttribute('aria-expanded')).toBe('false');
 
     // Second press of 'r' toggles it back off.
@@ -335,7 +335,7 @@ class MultiCommitHost {
   };
 }
 
-describe('CngxMultiSelect — commit action producer', () => {
+describe('CngxMultiSelect - commit action producer', () => {
   beforeEach(() => {
     polyfillPopover();
     TestBed.configureTestingModule({ imports: [MultiCommitHost] });
@@ -451,7 +451,7 @@ describe('CngxMultiSelect — commit action producer', () => {
     host.pending!.error(new Error('nope'));
     flush(fixture);
 
-    // Pessimistic never wrote in the first place — values unchanged.
+    // Pessimistic never wrote in the first place - values unchanged.
     expect(host.values()).toEqual([]);
     expect(multi.panelOpen()).toBe(true);
     expect(host.statuses[host.statuses.length - 1]).toBe('error');
@@ -462,13 +462,13 @@ describe('CngxMultiSelect — commit action producer', () => {
 
     triggerBtn.click();
     flush(fixture);
-    optionAt(0).click(); // red — pending 1
+    optionAt(0).click(); // red - pending 1
     flush(fixture);
     const firstPending = host.pending!;
     const firstCount = host.commitCallCount;
 
     // Second toggle while first is still pending (panel stays open in multi).
-    optionAt(1).click(); // green — pending 2, supersedes
+    optionAt(1).click(); // green - pending 2, supersedes
     flush(fixture);
     expect(host.commitCallCount).toBeGreaterThan(firstCount);
 
@@ -574,7 +574,7 @@ class ChipTemplateHost {
   readonly values = signal<string[]>(['red', 'green']);
 }
 
-describe('CngxMultiSelect — chip template + announcer', () => {
+describe('CngxMultiSelect - chip template + announcer', () => {
   beforeEach(() => {
     polyfillPopover();
   });
@@ -652,7 +652,7 @@ class TriggerLabelHost {
   readonly values = signal<string[]>(['red', 'green']);
 }
 
-describe('CngxMultiSelect — trigger label slot', () => {
+describe('CngxMultiSelect - trigger label slot', () => {
   beforeEach(() => {
     polyfillPopover();
   });
@@ -660,7 +660,7 @@ describe('CngxMultiSelect — trigger label slot', () => {
   it('renders the trigger-label template instead of the default chip strip', () => {
     const fixture = TestBed.createComponent(TriggerLabelHost);
     flush(fixture);
-    // Chip molecules are gone — summary span replaces them.
+    // Chip molecules are gone - summary span replaces them.
     expect(fixture.nativeElement.querySelectorAll('cngx-chip').length).toBe(0);
     const summary: HTMLElement = fixture.nativeElement.querySelector('.trigger-summary');
     expect(summary).not.toBeNull();
@@ -705,7 +705,7 @@ class ClearButtonHost {
   readonly values = signal<string[]>(['red', 'green']);
 }
 
-describe('CngxMultiSelect — clear-button / option-pending / option-error slots', () => {
+describe('CngxMultiSelect - clear-button / option-pending / option-error slots', () => {
   beforeEach(() => {
     polyfillPopover();
   });
@@ -753,7 +753,7 @@ describe('CngxMultiSelect — clear-button / option-pending / option-error slots
     const fixture = TestBed.createComponent(Host2);
     fixture.detectChanges();
     flush(fixture);
-    // Open + click first option — pessimistic commit, spinner slot shows.
+    // Open + click first option - pessimistic commit, spinner slot shows.
     const trigger: HTMLElement = fixture.nativeElement.querySelector(
       '.cngx-multi-select__trigger',
     );
@@ -811,7 +811,7 @@ describe('CngxMultiSelect — clear-button / option-pending / option-error slots
     const options = fixture.nativeElement.querySelectorAll('[cngxOption]');
     (options[0] as HTMLElement).click();
     flush(fixture);
-    // Optimistic wrote 'red'. Commit errors — inline error glyph shows on the selected row.
+    // Optimistic wrote 'red'. Commit errors - inline error glyph shows on the selected row.
     fixture.componentInstance.pending!.error(new Error('nope'));
     flush(fixture);
     // Values rolled back, but commitErrorDisplay='inline' + showCommitError triggers the slot
@@ -847,7 +847,7 @@ class MultiFormFieldHost {
   readonly ref: MockFieldRef<string[]> = this._mock.ref;
 }
 
-describe('CngxMultiSelect — form-field integration', () => {
+describe('CngxMultiSelect - form-field integration', () => {
   beforeEach(() => {
     polyfillPopover();
     TestBed.configureTestingModule({ imports: [MultiFormFieldHost] });
@@ -883,7 +883,7 @@ describe('CngxMultiSelect — form-field integration', () => {
     trigger.click();
     flush(fixture);
     const options = fixture.nativeElement.querySelectorAll('[cngxOption]');
-    // Second option = 'green' — toggles ON (not yet in [red]).
+    // Second option = 'green' - toggles ON (not yet in [red]).
     (options[1] as HTMLElement).click();
     flush(fixture);
     expect(fixture.componentInstance.ref.value()).toEqual(['red', 'green']);
@@ -892,7 +892,7 @@ describe('CngxMultiSelect — form-field integration', () => {
 
 // ── Phase 3: withAriaLabels integration ────────────────────────────────
 
-describe('CngxMultiSelect — withAriaLabels config override', () => {
+describe('CngxMultiSelect - withAriaLabels config override', () => {
   beforeEach(() => {
     polyfillPopover();
   });
@@ -923,7 +923,7 @@ describe('CngxMultiSelect — withAriaLabels config override', () => {
     const chipRemove = fixture.nativeElement.querySelector(
       '.cngx-chip__remove',
     ) as HTMLElement;
-    // `removeAriaLabel + ': ' + opt.label` composition — prefix comes from config.
+    // `removeAriaLabel + ': ' + opt.label` composition - prefix comes from config.
     expect(chipRemove.getAttribute('aria-label')).toMatch(/^Remove:/);
   });
 

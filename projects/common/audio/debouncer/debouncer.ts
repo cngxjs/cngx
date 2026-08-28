@@ -21,13 +21,13 @@ export interface CngxDebouncer {
 /**
  * Per-name time-window debouncer: suppresses repeated fires of the same earcon
  * within `windowMs`. A separate composed factory rather than logic buried in
- * the engine (Pillar 3). Plain factory, no DI token — `withDebounceMs` covers
+ * the engine (Pillar 3). Plain factory, no DI token - `withDebounceMs` covers
  * configuration and there is no independent swap consumer.
  *
  * `windowMs` accepts a getter so a caller whose window is a reactive input can
  * hold ONE debouncer instance for its lifetime and still track changes: the
  * window is resolved per `shouldFire` call, not captured at construction. That
- * keeps the (stateful) debouncer out of the signal graph — minting one inside a
+ * keeps the (stateful) debouncer out of the signal graph - minting one inside a
  * `computed` would return a fresh object per evaluation and break the equality
  * rule. `CngxAudioPitch` is the getter consumer; the engine passes a number.
  *

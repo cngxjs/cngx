@@ -34,7 +34,7 @@ function flush(fixture: { detectChanges: () => void }): void {
   fixture.detectChanges();
 }
 
-describe('CngxTagConfig — resolution priority (Phase 4)', () => {
+describe('CngxTagConfig - resolution priority (Phase 4)', () => {
   it('(a) library default reaches the directive when no provider is present', () => {
     const fixture = TestBed.createComponent(TagHost);
     flush(fixture);
@@ -76,7 +76,7 @@ describe('CngxTagConfig — resolution priority (Phase 4)', () => {
   });
 
   it('(e) injectResolvedTagTemplate resolves to config.templates[key] when no slot directive is projected (tier-2 cascade)', () => {
-    // Synthetic `TemplateRef` — the helper only checks reference
+    // Synthetic `TemplateRef` - the helper only checks reference
     // identity, never invokes `createEmbeddedView`. A mock object
     // exercises the cascade without TemplateRef materialisation
     // plumbing (capturing a real ref via viewChild before the
@@ -88,7 +88,7 @@ describe('CngxTagConfig — resolution priority (Phase 4)', () => {
     });
 
     const result = TestBed.runInInjectionContext(() => {
-      // Empty content-child signal — simulates "no consumer projected
+      // Empty content-child signal - simulates "no consumer projected
       // *cngxTagLabel": tier 1 misses, tier 2 wins.
       const noSlot = signal<undefined>(undefined);
       return injectResolvedTagTemplate(noSlot, 'label');
@@ -138,7 +138,7 @@ describe('CngxTagConfig — resolution priority (Phase 4)', () => {
       providers: [provideTagConfig()],
     });
     const cfg = TestBed.runInInjectionContext(() => injectTagConfig());
-    // Reference equality — the empty-features guard skips re-providing the
+    // Reference equality - the empty-features guard skips re-providing the
     // token, so the root factory's `CNGX_TAG_DEFAULTS` reference flows
     // through unchanged. A fresh `mergeConfig(...)` would compare equal
     // structurally but break this `.toBe` identity check.

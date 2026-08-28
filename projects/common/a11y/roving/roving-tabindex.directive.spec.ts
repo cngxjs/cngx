@@ -187,7 +187,7 @@ class VirtualTestHost {
   readonly renderedItems = signal(Array.from({ length: 10 }, (_, i) => ({ index: i })));
 }
 
-describe('CngxRovingTabindex — virtual mode', () => {
+describe('CngxRovingTabindex - virtual mode', () => {
   beforeEach(() => TestBed.configureTestingModule({ imports: [VirtualTestHost] }));
 
   function setupVirtual() {
@@ -276,7 +276,7 @@ describe('CngxRovingTabindex — virtual mode', () => {
 
   it('does not clamp activeIndex to contentChildren length in virtual mode', () => {
     const { dir, fixture } = setupVirtual();
-    // 10 items in DOM, but virtualCount is 100 — activeIndex 50 should not be clamped
+    // 10 items in DOM, but virtualCount is 100 - activeIndex 50 should not be clamped
     dir.activeIndex.set(50);
     TestBed.flushEffects();
     fixture.detectChanges();

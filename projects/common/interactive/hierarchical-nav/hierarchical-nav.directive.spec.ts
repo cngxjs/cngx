@@ -97,7 +97,7 @@ describe('CngxHierarchicalNav', () => {
 
   it('ArrowRight on a collapsed parent expands it and emits expand', () => {
     f.ad.highlightByValue({ id: 'a', name: 'Alpha' });
-    // value lookup won't match — the AD has the actual option refs; fall back
+    // value lookup won't match - the AD has the actual option refs; fall back
     // to index-based highlighting for the test harness:
     f.ad.highlightByIndex(0);
     expect(f.ctrl.isExpanded('a')()).toBe(false);
@@ -121,7 +121,7 @@ describe('CngxHierarchicalNav', () => {
   });
 
   it('ArrowRight on a leaf is a no-op', () => {
-    // Bravo (root leaf) — no children, ArrowRight has nothing to do.
+    // Bravo (root leaf) - no children, ArrowRight has nothing to do.
     f.ctrl.expand('a');
     f.fixture.detectChanges();
     // After expanding a, visible is [a, a1, a2, b]; b is at index 3.
@@ -158,7 +158,7 @@ describe('CngxHierarchicalNav', () => {
   });
 
   it('ArrowLeft on a root leaf is a no-op', () => {
-    // Bravo — root leaf. No parent, not expanded. Nothing to do.
+    // Bravo - root leaf. No parent, not expanded. Nothing to do.
     f.ad.highlightByIndex(1); // b at index 1 (a collapsed, so visible is a, b)
     expect(f.ad.activeId()).toBe('b');
 

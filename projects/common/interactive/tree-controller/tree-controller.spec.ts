@@ -37,7 +37,7 @@ function makeController(tree = makeTree()) {
   );
 }
 
-describe('createTreeController — derivation contract', () => {
+describe('createTreeController - derivation contract', () => {
   it('flattens DFS with stable ids and exposes node backref per FlatTreeNode', () => {
     const ctrl = makeController();
     const flat = ctrl.flatNodes();
@@ -145,7 +145,7 @@ describe('createTreeController — derivation contract', () => {
     ctrl.expandAll();
     const snapshot = ctrl.expandedIds();
     ctrl.expandAll();
-    // Same reference — no signal write happened.
+    // Same reference - no signal write happened.
     expect(ctrl.expandedIds()).toBe(snapshot);
 
     ctrl.collapseAll();
@@ -185,14 +185,14 @@ describe('createTreeController — derivation contract', () => {
   // Perf follow-up: `childrenOfValue` / `descendantsOfValue` allocate a
   // fresh array per call. SelectionController's `isIndeterminate` cascade
   // walk triggers O(descendants) allocations per recompute. Benchmark slot
-  // reserved — fill in when the 10k demo (Commit 10) gives us a realistic
+  // reserved - fill in when the 10k demo (Commit 10) gives us a realistic
   // cascade scenario to measure against.
-  it.todo('perf baseline — childrenOfValue allocation during cascade isIndeterminate walk');
-  it.todo('perf baseline — descendantsOfValue allocation on wide-subtree cascade toggle');
+  it.todo('perf baseline - childrenOfValue allocation during cascade isIndeterminate walk');
+  it.todo('perf baseline - descendantsOfValue allocation on wide-subtree cascade toggle');
 
   // The budget here protects against an order-of-magnitude regression, not a
   // per-frame guarantee. A strict 16ms (one 60fps frame) was flaky on the
-  // GitHub Actions runner — local hits ~5ms, CI has been observed at 17ms
+  // GitHub Actions runner - local hits ~5ms, CI has been observed at 17ms
   // and 22ms. 50ms still catches anything that would block UI updates while
   // tolerating noisy shared runners.
   it('10k-node flatten + visibleNodes stays under 50ms budget', () => {

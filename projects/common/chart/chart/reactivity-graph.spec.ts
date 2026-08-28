@@ -34,7 +34,7 @@ class TestHost {
   height = signal<number | undefined>(100);
 }
 
-describe('Chart graph cascade — reference-stability invariant', () => {
+describe('Chart graph cascade - reference-stability invariant', () => {
   beforeEach(() => {
     vi.stubGlobal('ResizeObserver', ResizeObserverMock);
     TestBed.configureTestingModule({ imports: [TestHost] });

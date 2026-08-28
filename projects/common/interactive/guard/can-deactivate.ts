@@ -7,7 +7,7 @@ import { DOCUMENT } from '@angular/common';
  * Works with Angular's `CanDeactivateFn`. The `isDirty` callback is evaluated
  * on each navigation attempt. When dirty, shows a `confirm` dialog.
  *
- * Uses `DOCUMENT` injection for SSR safety — returns `true` (allow) when
+ * Uses `DOCUMENT` injection for SSR safety - returns `true` (allow) when
  * no window is available.
  *
  * Pair with `CngxBeforeUnload` for full coverage (browser close + route change):
@@ -35,7 +35,7 @@ export function canDeactivateWhenClean(
     if (!isDirty()) {
       return true;
     }
-    // inject() is valid here — Angular calls the guard in an injection context
+    // inject() is valid here - Angular calls the guard in an injection context
     const win = inject(DOCUMENT).defaultView;
     if (!win) {
       return true;

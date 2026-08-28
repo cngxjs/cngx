@@ -32,7 +32,7 @@ describe('createTreeAdItems', () => {
     return { ctrl, adItems };
   }
 
-  it('mirrors visibleNodes — collapsed descendants are hidden from AD', () => {
+  it('mirrors visibleNodes - collapsed descendants are hidden from AD', () => {
     const { ctrl, adItems } = setup();
     expect(adItems().map((i) => i.id)).toEqual(['a', 'b']);
     ctrl.expand('a');
@@ -49,7 +49,7 @@ describe('createTreeAdItems', () => {
     });
   });
 
-  it('is structurally memoised — identical re-reads return the same array ref', () => {
+  it('is structurally memoised - identical re-reads return the same array ref', () => {
     const { adItems } = setup();
     const first = adItems();
     const second = adItems();

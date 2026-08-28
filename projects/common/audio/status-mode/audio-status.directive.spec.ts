@@ -138,7 +138,7 @@ describe('CngxAudioStatus directive', () => {
       createMockHandle(),
       [{ provide: CNGX_STATEFUL, useValue: { state: makeState(ancestor) } }],
     );
-    // Only the ancestor moves — the directive watches the explicit input, so nothing fires.
+    // Only the ancestor moves - the directive watches the explicit input, so nothing fires.
     ancestor.set('success');
     TestBed.flushEffects();
     expect(handle.play).not.toHaveBeenCalled();

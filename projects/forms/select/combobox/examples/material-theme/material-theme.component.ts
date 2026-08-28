@@ -29,7 +29,7 @@ import { CngxCombobox, type CngxSelectOptionDef } from '@cngx/forms/select';
         [(values)]="values"
         placeholder="Type to filter…"
       />
-      <p class="demo__readout">Selected: {{ values().length ? values().join(', ') : '—' }}</p>
+      <p class="demo__readout">Selected: {{ values().length ? values().join(', ') : '-' }}</p>
     </div>
   `,
 })

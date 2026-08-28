@@ -8,7 +8,7 @@ import { CngxTreeSelect } from './tree-select.component';
 import { CngxTreeSelectChip } from './tree-select-chip.directive';
 import { CngxTreeSelectTriggerLabel } from './tree-select-trigger-label.directive';
 
-// jsdom does not implement the Popover API — polyfill so CngxPopover can toggle.
+// jsdom does not implement the Popover API - polyfill so CngxPopover can toggle.
 function polyfillPopover(): void {
   const proto = HTMLElement.prototype as unknown as {
     showPopover?: () => void;
@@ -111,7 +111,7 @@ describe('CngxTreeSelect', () => {
   it('implements CngxFormFieldControl (empty, disabled, id + focus wiring)', () => {
     expect(f.tree.empty()).toBe(true);
     expect(f.tree.disabled()).toBe(false);
-    // `focused` is an honest mirror of the DOM focus lifecycle — the
+    // `focused` is an honest mirror of the DOM focus lifecycle - the
     // initial value depends on whether the test harness focused the
     // trigger during detectChanges, so we assert the blur path instead
     // of relying on the initial state.

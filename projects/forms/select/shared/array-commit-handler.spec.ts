@@ -108,7 +108,7 @@ describe('createArrayCommitHandler', () => {
     h = makeHarness(['a']);
   });
 
-  describe('beginToggle — success path', () => {
+  describe('beginToggle - success path', () => {
     it('emits pending → success and reconciles values', () => {
       const action: CngxSelectCommitAction<T[]> = (next) => next;
       h.handler.beginToggle(['a', 'b'], ['a'], opt('b'), action);
@@ -138,7 +138,7 @@ describe('createArrayCommitHandler', () => {
     });
   });
 
-  describe('beginToggle — error path', () => {
+  describe('beginToggle - error path', () => {
     it('in optimistic mode, rolls values back to rollbackTo', async () => {
       h.values.set(['a', 'b']); // optimistic write already done by consumer
       const action: CngxSelectCommitAction<T[]> = () => {

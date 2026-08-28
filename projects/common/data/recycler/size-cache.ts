@@ -13,7 +13,7 @@ export interface SizeCache {
   get(index: number): number | undefined;
   /** Set measured size. Increments `version` to trigger recomputation. */
   set(index: number, size: number): void;
-  /** Signal that increments on every `set()` — use as a dependency in `computed()`. */
+  /** Signal that increments on every `set()` - use as a dependency in `computed()`. */
   readonly version: Signal<number>;
   /** Get size for an index, falling back to `estimateSize` if not measured. */
   resolve(index: number, estimateSize: number | ((i: number) => number)): number;

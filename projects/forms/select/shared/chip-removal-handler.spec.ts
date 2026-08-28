@@ -127,7 +127,7 @@ describe('createChipRemovalHandler', () => {
     it('is a no-op when the value is not present in values()', () => {
       h.handler.removeByValue(opt('zzz'));
       expect(h.values()).toEqual(['a', 'b', 'c']);
-      // onSyncFinalize still fires — the consumer's finalize callback
+      // onSyncFinalize still fires - the consumer's finalize callback
       // decides whether to emit a change. (Matches current variant
       // behaviour: removing a chip that isn't there is a no-op on the
       // data side but not a hard early-return in the factory.)
@@ -137,7 +137,7 @@ describe('createChipRemovalHandler', () => {
 
   describe('commit branch (commit action set)', () => {
     beforeEach(() => {
-      // Factory doesn't invoke the action — only `beginCommit` callback is
+      // Factory doesn't invoke the action - only `beginCommit` callback is
       // dispatched. A no-op sync action (returning the next array) is fine.
       h.commitAction.set((next) => next as T[]);
     });
@@ -151,7 +151,7 @@ describe('createChipRemovalHandler', () => {
       expect(h.beginCommitCalls[0].previous).toEqual(['a', 'b', 'c']);
     });
 
-    it('pessimistic mode: leaves values() untouched — consumer waits for success', () => {
+    it('pessimistic mode: leaves values() untouched - consumer waits for success', () => {
       h.commitMode.set('pessimistic');
       h.handler.removeByValue(opt('b'));
       expect(h.values()).toEqual(['a', 'b', 'c']);
@@ -245,7 +245,7 @@ describe('createChipRemovalHandler', () => {
   });
 
   describe('custom item shape (tree-select compatibility)', () => {
-    it('accepts items with only .value — label/disabled not required', () => {
+    it('accepts items with only .value - label/disabled not required', () => {
       interface TreeItem {
         readonly value: string;
       }

@@ -20,7 +20,7 @@ export interface StatusTransition {
 /**
  * Creates a reactive transition tracker for an `AsyncStatus` source.
  *
- * Uses `linkedSignal` internally — when `source()` changes, `previous` holds
+ * Uses `linkedSignal` internally - when `source()` changes, `previous` holds
  * the prior value and `current` holds the new one. Both are memoized signals.
  *
  * @param source Reactive function that reads the current `AsyncStatus`.
@@ -30,7 +30,7 @@ export interface StatusTransition {
  *
  * effect(() => {
  *   const { current, previous } = tracker;
- *   if (current() === previous()) return; // no change — deduplicated by linkedSignal
+ *   if (current() === previous()) return; // no change - deduplicated by linkedSignal
  *   if (current() === 'success') { ... }
  * });
  * ```

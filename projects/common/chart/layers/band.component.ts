@@ -16,7 +16,7 @@ import { CNGX_CHART_LAYER, type CngxChartLayer, type LayerGeometry } from './cha
  * Default opacity is low (`var(--cngx-band-opacity, 0.12)`) so the
  * band sits behind line / area / bar layers without dominating.
  *
- * Attribute-selector on `<svg:g>` — see {@link CngxLine} for why.
+ * Attribute-selector on `<svg:g>` - see {@link CngxLine} for why.
  *
  * @category common/chart/layers
  * @docsKind primary

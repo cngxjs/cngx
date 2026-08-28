@@ -16,7 +16,7 @@ export interface CngxAudioZoneBinding {
 
 /**
  * Zone-mode audio binder. Plays earcons as the pointer or keyboard focus enters
- * and leaves the host — a spatial complement to `[cngxAudio]`. The record input
+ * and leaves the host - a spatial complement to `[cngxAudio]`. The record input
  * makes the four zone transitions explicit rather than encoding them in the
  * `event:earcon` string grammar, because the listener set (pointer/focus zone)
  * and the shape (record vs string) are semantically distinct from event-mode.
@@ -64,7 +64,7 @@ export class CngxAudioZone {
   /**
    * `focusin`/`focusout` bubble, so a zone wrapping focusable children would
    * otherwise fire on every internal tab move. Only a crossing of the zone
-   * boundary counts — the focus counterpart of pointerenter/pointerleave.
+   * boundary counts - the focus counterpart of pointerenter/pointerleave.
    */
   protected handleFocusCross(kind: 'focus' | 'blur', event: FocusEvent): void {
     if (this.host.nativeElement.contains(event.relatedTarget as Node | null)) {

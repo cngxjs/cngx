@@ -100,6 +100,6 @@ export {
   type CreateFilterGroupOptions,
 } from './filter-builder.helpers';
 // CngxFilterBuilderHost interface and CNGX_FILTER_BUILDER_HOST token are both
-// @internal — they describe the contract between the presenter and the recursive
+// @internal - they describe the contract between the presenter and the recursive
 // context atoms. Consumers reach the host through the presenter directive, never
 // through the token directly.

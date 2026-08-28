@@ -35,7 +35,7 @@ function makePresenter(): CngxTabGroupHost {
   } as unknown as CngxTabGroupHost;
 }
 
-describe('createTabGroupAnnouncements — statusPhrase', () => {
+describe('createTabGroupAnnouncements - statusPhrase', () => {
   let i18n: CngxTabsI18n;
   let config: CngxTabsConfig;
 

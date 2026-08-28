@@ -67,7 +67,7 @@ describe('CngxDgaCount', () => {
  * resolve the injected cascade, so the placement is asserted off the compiled rule
  * (comments stripped) plus the rendered DOM structure.
  */
-describe('CngxDgaCount — bare footer placement', () => {
+describe('CngxDgaCount - bare footer placement', () => {
   function gridCss(): string {
     return Array.from(document.querySelectorAll('style'))
       .map((s) => s.textContent ?? '')

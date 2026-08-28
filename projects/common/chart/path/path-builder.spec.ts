@@ -5,7 +5,7 @@ import type { ScaleFn, XScaleInput } from '../chart/chart-context';
 const xScale: ScaleFn<XScaleInput> = (v) => Number(v);
 const yScale: ScaleFn<number> = (v) => v;
 
-describe('createPathBuilder — compute-guard (isolated)', () => {
+describe('createPathBuilder - compute-guard (isolated)', () => {
   it('rebuilds once for the very first call', () => {
     const builder = createPathBuilder<number>({
       y: (v) => v,
@@ -88,7 +88,7 @@ describe('createPathBuilder — compute-guard (isolated)', () => {
     expect(d).toBe('M 10 1 L 30 2');
   });
 
-  it('returns a fresh builder instance per call — no cross-consumer state', () => {
+  it('returns a fresh builder instance per call - no cross-consumer state', () => {
     const opts = { y: (v: number) => v, curve: 'linear' as const };
     const a = createPathBuilder<number>(opts);
     const b = createPathBuilder<number>(opts);

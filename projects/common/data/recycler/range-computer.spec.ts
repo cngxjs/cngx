@@ -194,7 +194,7 @@ describe('computeRange', () => {
     it('should ignore columns for variable estimateSize', () => {
       const varSize = (i: number) => (i < 10 ? 100 : 50);
       const result = computeRange(0, 500, 50, varSize, 5, columns);
-      // Should behave like list mode — start not necessarily row-aligned
+      // Should behave like list mode - start not necessarily row-aligned
       expect(result.start).toBe(0);
     });
   });

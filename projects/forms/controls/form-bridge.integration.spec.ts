@@ -20,8 +20,8 @@ import { CngxFormBridge } from './form-bridge.directive';
  * Per-atom-shape RF integration coverage for `CngxFormBridge`. Asserts the
  * four contractual behaviours the plan requires (value round-trip,
  * disabled propagation, touched on focusout, aria-invalid reflection on
- * invalid + touched). One spec per atom shape — boolean / scalar /
- * array — since the bridge is generic over `T` and the per-shape
+ * invalid + touched). One spec per atom shape - boolean / scalar /
+ * array - since the bridge is generic over `T` and the per-shape
  * variations are mechanical.
  *
  * Companion to `form-bridge.directive.spec.ts` which covers the bridge
@@ -104,7 +104,7 @@ function getHostEl(fixture: ReturnType<typeof TestBed.createComponent<unknown>>,
   return el;
 }
 
-describe('CngxFormBridge — RF integration per atom shape', () => {
+describe('CngxFormBridge - RF integration per atom shape', () => {
   // ── Boolean shape ──────────────────────────────────────────────────
 
   describe('boolean shape (CngxToggle)', () => {
@@ -124,7 +124,7 @@ describe('CngxFormBridge — RF integration per atom shape', () => {
       };
     }
 
-    it('value round-trip — RF setValue sinks into atom; atom mutate emerges in ctrl', () => {
+    it('value round-trip - RF setValue sinks into atom; atom mutate emerges in ctrl', () => {
       const { fixture, host } = setup();
 
       host.ctrl.setValue(true);
@@ -138,7 +138,7 @@ describe('CngxFormBridge — RF integration per atom shape', () => {
       expect(host.ctrl.value).toBe(false);
     });
 
-    it('disabled propagation — ctrl.disable() flips host aria-disabled', () => {
+    it('disabled propagation - ctrl.disable() flips host aria-disabled', () => {
       const { fixture, host, el } = setup();
       expect(el.getAttribute('aria-disabled')).toBeNull();
 
@@ -153,7 +153,7 @@ describe('CngxFormBridge — RF integration per atom shape', () => {
       expect(el.getAttribute('aria-disabled')).toBeNull();
     });
 
-    it('touched on focusout — focusout dispatch flips ctrl.touched', () => {
+    it('touched on focusout - focusout dispatch flips ctrl.touched', () => {
       const { fixture, host, el } = setup();
       expect(host.ctrl.touched).toBe(false);
 
@@ -182,7 +182,7 @@ describe('CngxFormBridge — RF integration per atom shape', () => {
       };
     }
 
-    it('value round-trip — string|null', () => {
+    it('value round-trip - string|null', () => {
       const { fixture, host } = setup();
 
       host.ctrl.setValue('cash');
@@ -231,7 +231,7 @@ describe('CngxFormBridge — RF integration per atom shape', () => {
       };
     }
 
-    it('value round-trip — array shape', () => {
+    it('value round-trip - array shape', () => {
       const { fixture, host } = setup();
 
       host.ctrl.setValue(['a', 'b']);

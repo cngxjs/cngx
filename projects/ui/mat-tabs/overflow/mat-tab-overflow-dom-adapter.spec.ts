@@ -78,7 +78,7 @@ describe('CngxMatTabOverflowDomAdapter', () => {
     emptyHeader.remove();
   });
 
-  it('resolveTabButton indexes positionally into .mat-mdc-tab — handle.id ignored', () => {
+  it('resolveTabButton indexes positionally into .mat-mdc-tab - handle.id ignored', () => {
     const adapter = createCngxMatTabOverflowDomAdapter();
     // Handle id deliberately does NOT match any DOM id; positional
     // resolution must still return the correct button.

@@ -81,7 +81,7 @@ describe('CngxErrorRegistry', () => {
 
     // The internal scopesState signal carries `equal: mapKeySetEqual` (length +
     // key set), so re-registering under an existing name with a fresh
-    // reference is absorbed silently — same key set, no emission. This is the
+    // reference is absorbed silently - same key set, no emission. This is the
     // cascade-suppression contract; the cascade-witness test below documents
     // the same behaviour for the aggregator surface.
 

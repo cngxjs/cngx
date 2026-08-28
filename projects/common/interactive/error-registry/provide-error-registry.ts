@@ -12,7 +12,7 @@ import { filter } from 'rxjs';
 import { CngxErrorRegistry } from './error-registry';
 
 /**
- * @internal Staged API — single-consumer.
+ * @internal Staged API - single-consumer.
  * See form-primitives-accepted-debt.md §A for the re-evaluation trigger
  * and collapse plan.
  */
@@ -22,7 +22,7 @@ export interface _ErrorRegistryConfig {
 }
 
 /**
- * @internal Staged API — single-consumer.
+ * @internal Staged API - single-consumer.
  * See form-primitives-accepted-debt.md §A for the re-evaluation trigger
  * and collapse plan.
  */
@@ -50,7 +50,7 @@ export interface ErrorRegistryFeature {
  * });
  * ```
  *
- * @internal Staged API — single-consumer.
+ * @internal Staged API - single-consumer.
  * See form-primitives-accepted-debt.md §A for the re-evaluation trigger
  * and collapse plan.
  */
@@ -105,7 +105,7 @@ export function provideErrorRegistry(
 /**
  * Reveals every registered scope on any DOM `submit` event.
  *
- * **Coarse-grained — affects every registered scope, every form.** The
+ * **Coarse-grained - affects every registered scope, every form.** The
  * feature installs a capture-phase document listener that calls
  * `registry.revealAll()` on any submit anywhere in the document, even
  * when the submit fires from a form unrelated to the scope of interest.
@@ -114,10 +114,10 @@ export function provideErrorRegistry(
  *
  * For finer-grained reveals (per-form, per-flow), skip this feature and
  * call `registry.reveal(name)` from the consumer's submit handler
- * instead — the scope-name registration path stays available without
+ * instead - the scope-name registration path stays available without
  * the global listener.
  *
- * @internal Staged API — single-consumer.
+ * @internal Staged API - single-consumer.
  * See form-primitives-accepted-debt.md §A for the re-evaluation trigger
  * and collapse plan.
  */
@@ -138,7 +138,7 @@ export function withGlobalRevealOnSubmit(): ErrorRegistryFeature {
  * the common pattern (reveal-all on attempted navigation) but surface
  * the implication when wiring a guard that cancels based on form errors.
  *
- * @internal Staged API — single-consumer.
+ * @internal Staged API - single-consumer.
  * See form-primitives-accepted-debt.md §A for the re-evaluation trigger
  * and collapse plan.
  */

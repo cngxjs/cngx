@@ -4,10 +4,10 @@ import { isPlatformBrowser } from '@angular/common';
 /**
  * Provides access to the browser `Window` object. Returns `null` in SSR.
  *
- * Always null-check the injected value — do not assert with `!`:
+ * Always null-check the injected value - do not assert with `!`:
  * ```typescript
  * const win = injectWindow();
- * if (!win) return; // SSR — no window available
+ * if (!win) return; // SSR - no window available
  * win.matchMedia('(min-width: 1024px)');
  * ```
  *

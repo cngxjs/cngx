@@ -44,7 +44,7 @@
  */
 
 @layer cngx.theme {
-  /* comfortable — the library default. Declared explicitly so a nested
+  /* comfortable - the library default. Declared explicitly so a nested
    * comfortable island resets inside a compact/spacious ancestor. */
   [data-density='comfortable'],
   .cngx-density-comfortable {
@@ -55,7 +55,7 @@
     --cngx-space-xl: 32px;
   }
 
-  /* compact — dense rung. */
+  /* compact - dense rung. */
   [data-density='compact'],
   .cngx-density-compact {
     --cngx-space-xs: 2px;
@@ -65,7 +65,7 @@
     --cngx-space-xl: 16px;
   }
 
-  /* spacious — roomy rung. */
+  /* spacious - roomy rung. */
   [data-density='spacious'],
   .cngx-density-spacious {
     --cngx-space-xs: 6px;

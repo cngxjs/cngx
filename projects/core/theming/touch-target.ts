@@ -14,7 +14,7 @@ import {
 /**
  * The three touch-target modes the `[data-touch]` floor accepts.
  * `auto` (the default) writes no attribute and leaves the
- * `(any-pointer: coarse)` media query in control — the environment
+ * `(any-pointer: coarse)` media query in control - the environment
  * derives the 44px floor. `on` / `off` pin the floor explicitly,
  * overriding the media query for the subtree.
  *

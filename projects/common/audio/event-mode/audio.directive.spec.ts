@@ -63,7 +63,7 @@ interface ListenerCall {
 /**
  * Record every add/removeEventListener call on HTMLElement while still calling
  * through, so the directive keeps working and the spec can assert what it
- * registered. Install before createComponent — the effect binds on first CD.
+ * registered. Install before createComponent - the effect binds on first CD.
  */
 function trackListenerCalls(): { added: ListenerCall[]; removed: ListenerCall[] } {
   const added: ListenerCall[] = [];

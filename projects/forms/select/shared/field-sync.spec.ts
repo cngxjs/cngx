@@ -115,7 +115,7 @@ describe('createFieldSync', () => {
       const fixture = TestBed.createComponent(ScalarProbe<string>);
       flush(fixture);
       expect(fixture.componentInstance.value()).toBeUndefined();
-      // Any mutations still work — the factory simply didn't install effects.
+      // Any mutations still work - the factory simply didn't install effects.
       fixture.componentInstance.value.set('local-only');
       expect(fixture.componentInstance.value()).toBe('local-only');
     });
@@ -241,7 +241,7 @@ describe('createFieldSync', () => {
         ...createMockField<string>({ value: 'frozen' }).ref,
         value: readonlySignal,
       } as CngxFieldRef<string>;
-      // No TypeError — writing to a non-writable ref is a documented silent no-op.
+      // No TypeError - writing to a non-writable ref is a documented silent no-op.
       expect(() => {
         const signalLike = fakeRef.value as unknown;
         if (

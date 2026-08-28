@@ -183,7 +183,7 @@ describe('CngxPaginate', () => {
     expect(spy).not.toHaveBeenCalled();
   });
 
-  describe('state input — async busy guard', () => {
+  describe('state input - async busy guard', () => {
     function createMockState(busy: boolean): CngxAsyncState<unknown> {
       const isBusy = signal(busy);
       return {

@@ -23,6 +23,9 @@
     "directory": "projects/interop"
   },
   "peerDependencies": {
+    "@cngx/utils": "0.0.0-PLACEHOLDER",
+    "@cngx/core": "0.0.0-PLACEHOLDER",
+    "@cngx/common": "0.0.0-PLACEHOLDER",
     "@angular/core": "^21.2.0",
     "@ngrx/signals": "^21.0.0",
     "@tanstack/angular-query-experimental": "^5.0.0"

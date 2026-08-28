@@ -90,7 +90,7 @@ function setup<T>(hostType: new () => T) {
   return { fixture, dialogEl };
 }
 
-/** Open dialog fully — flushes the rAF so state becomes 'open'. */
+/** Open dialog fully - flushes the rAF so state becomes 'open'. */
 function openFully<T extends { dialog: ReturnType<typeof viewChild.required<CngxDialog>> }>(
   fixture: { componentInstance: T; detectChanges: () => void },
   dialogEl: HTMLDialogElement,
@@ -134,7 +134,7 @@ describe('CngxDialog', () => {
       expect(dialog.lifecycle()).toBe('opening');
       expect(dialogEl.showModal).toHaveBeenCalled();
 
-      // Simulate afterNextRender — flush effects
+      // Simulate afterNextRender - flush effects
       fixture.detectChanges();
       TestBed.flushEffects();
     });
@@ -445,11 +445,11 @@ describe('CngxDialog submitAction', () => {
     TestBed.flushEffects();
     expect(dialog.isPending()).toBe(true);
 
-    // Try to dismiss while pending — should be blocked
+    // Try to dismiss while pending - should be blocked
     dialog.dismiss();
     expect(dialog.lifecycle()).not.toBe('closed');
 
-    // Try to close again while pending — should be blocked
+    // Try to close again while pending - should be blocked
     dialog.close(99 as never);
     expect(submitFn).toHaveBeenCalledTimes(1);
 
@@ -481,7 +481,7 @@ describe('CngxDialog submitAction', () => {
     dialog.dismiss();
     fixture.detectChanges();
 
-    // Re-open — submit state should reset
+    // Re-open - submit state should reset
     dialog.open();
     fixture.detectChanges();
     TestBed.flushEffects();

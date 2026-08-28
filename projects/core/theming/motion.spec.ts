@@ -50,13 +50,13 @@ describe('provideMotion / injectMotion', () => {
     fixture.detectChanges();
     expect(motionAttr()).toBe('full');
 
-    // Back to auto — the attribute is removed, handing control to the OS.
+    // Back to auto - the attribute is removed, handing control to the OS.
     motion.set('auto');
     fixture.detectChanges();
     expect(hasMotionAttr()).toBe(false);
   });
 
-  it('is idempotent — setting the same value twice does not re-write (no loop)', () => {
+  it('is idempotent - setting the same value twice does not re-write (no loop)', () => {
     const setSpy = vi.spyOn(document.documentElement, 'setAttribute');
     TestBed.configureTestingModule({ providers: [provideMotion('reduced')] });
     const fixture = TestBed.createComponent(Host);
@@ -69,7 +69,7 @@ describe('provideMotion / injectMotion', () => {
     const afterInit = motionWrites();
     expect(afterInit).toBeGreaterThanOrEqual(1);
 
-    motion.set('reduced'); // same value — signal equality short-circuits the effect
+    motion.set('reduced'); // same value - signal equality short-circuits the effect
     fixture.detectChanges();
     expect(motionWrites()).toBe(afterInit);
   });

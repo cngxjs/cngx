@@ -10,7 +10,7 @@ export type AsyncView = 'none' | 'skeleton' | 'content' | 'empty' | 'error' | 'c
 /**
  * Pure function that resolves which view to show based on async state.
  *
- * Encodes the state machine as a lookup table — no branching:
+ * Encodes the state machine as a lookup table - no branching:
  *
  * | status      | firstLoad | empty | view          |
  * |-------------|-----------|-------|---------------|

@@ -9,7 +9,7 @@ import {
 } from '@cngx/forms/select';
 
 /**
- * CngxSelect commit-action — optimistic / pessimistic with rollback.
+ * CngxSelect commit-action - optimistic / pessimistic with rollback.
  *
  * `[commitAction]` runs an async save operation before the selection
  * actually commits. In `optimistic` mode the option is selected
@@ -20,7 +20,7 @@ import {
  *
  * Toggle "Simulate error" and the mode buttons to exercise all four
  * quadrants. The `*cngxSelectCommitError` slot template controls the
- * inline error UI inside the panel — by default a banner above the
+ * inline error UI inside the panel - by default a banner above the
  * options carries `error.message`.
  */
 @Component({
@@ -30,7 +30,7 @@ import {
   imports: [CngxSelect, CngxSelectCommitError],
   template: `
     <p style="margin: 0 0 12px; opacity: 0.8; font-size: 0.875rem">
-      Pick a status — the commit-action simulates a server save. Tick
+      Pick a status - the commit-action simulates a server save. Tick
       "Simulate error" and watch the rollback (optimistic) or the panel
       staying open with the per-row spinner (pessimistic).
     </p>

@@ -90,7 +90,7 @@ function setup(): {
   return { fixture, host, dir, key };
 }
 
-describe('CngxActiveDescendant — registration & activeId', () => {
+describe('CngxActiveDescendant - registration & activeId', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({ imports: [TestHost] });
   });
@@ -127,7 +127,7 @@ describe('CngxActiveDescendant — registration & activeId', () => {
   });
 });
 
-describe('CngxActiveDescendant — primitives', () => {
+describe('CngxActiveDescendant - primitives', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({ imports: [TestHost] });
   });
@@ -192,7 +192,7 @@ describe('CngxActiveDescendant — primitives', () => {
   });
 });
 
-describe('CngxActiveDescendant — skipDisabled', () => {
+describe('CngxActiveDescendant - skipDisabled', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({ imports: [TestHost] });
   });
@@ -236,7 +236,7 @@ describe('CngxActiveDescendant — skipDisabled', () => {
   });
 });
 
-describe('CngxActiveDescendant — keyboard', () => {
+describe('CngxActiveDescendant - keyboard', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({ imports: [TestHost] });
   });
@@ -314,7 +314,7 @@ describe('CngxActiveDescendant — keyboard', () => {
   });
 });
 
-describe('CngxActiveDescendant — typeahead', () => {
+describe('CngxActiveDescendant - typeahead', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     TestBed.configureTestingModule({ imports: [TestHost] });
@@ -387,7 +387,7 @@ class VirtualHost {
   );
 }
 
-describe('CngxActiveDescendant — virtual mode', () => {
+describe('CngxActiveDescendant - virtual mode', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({ imports: [VirtualHost] });
   });
@@ -452,7 +452,7 @@ class InputItemsHost {
   ]);
 }
 
-describe('CngxActiveDescendant — items input', () => {
+describe('CngxActiveDescendant - items input', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({ imports: [InputItemsHost] });
   });

@@ -23,7 +23,7 @@ export type CngxTagTemplateKey =
 /**
  * Directive shape accepted by {@link injectResolvedTagTemplate}.
  * Every `*cngxTag*` template-slot directive in `@cngx/common/display`
- * conforms — the helper only looks at `.templateRef`.
+ * conforms - the helper only looks at `.templateRef`.
  *
  * @internal
  */
@@ -35,7 +35,7 @@ interface TagTemplateRefHolder<Ctx> {
  * Wraps a `contentChild` directive query in a 3-stage slot-resolution
  * cascade:
  *
- *   1. Instance directive (highest) — consumer-projected
+ *   1. Instance directive (highest) - consumer-projected
  *      `<ng-template cngxTag*>` template.
  *   2. `CNGX_TAG_CONFIG.templates[<key>]` (app-wide cascade via
  *      `provideTagConfig` / `provideTagConfigAt`).
@@ -44,7 +44,7 @@ interface TagTemplateRefHolder<Ctx> {
  *      label fallback).
  *
  * `inject(CNGX_TAG_CONFIG, { optional: true })` mirrors the select-
- * shared helper exactly — `providedIn: 'root'` always resolves so
+ * shared helper exactly - `providedIn: 'root'` always resolves so
  * the optional flag is defensive, not load-bearing.
  *
  * **Why a copy and not an import from `@cngx/forms/select/shared`.**
@@ -54,7 +54,7 @@ interface TagTemplateRefHolder<Ctx> {
  * select call site and belongs in a separate utils-consolidation
  * plan (see
  * `.internal/architektur/plans/tag-family-architectural-a-plus-pass-plan.md`,
- * "Architectural decisions (locked)" — `injectResolvedTemplate
+ * "Architectural decisions (locked)" - `injectResolvedTemplate
  * location` row).
  *
  * @internal

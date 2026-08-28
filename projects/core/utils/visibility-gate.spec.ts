@@ -73,7 +73,7 @@ describe('createVisibilityGate', () => {
     isActive.set(false);
     TestBed.flushEffects();
 
-    // Still visible — minDwell not elapsed
+    // Still visible - minDwell not elapsed
     vi.advanceTimersByTime(300);
     expect(visible()).toBe(true);
   });
@@ -101,7 +101,7 @@ describe('createVisibilityGate', () => {
     vi.advanceTimersByTime(200);
     expect(visible()).toBe(true);
 
-    // Do not deactivate — wait for minDwell to pass
+    // Do not deactivate - wait for minDwell to pass
     vi.advanceTimersByTime(500);
     expect(visible()).toBe(true);
   });

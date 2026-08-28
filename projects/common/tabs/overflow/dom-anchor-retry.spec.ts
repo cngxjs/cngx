@@ -38,7 +38,7 @@ describe('createDomAnchorRetry', () => {
         return null;
       },
       maxAttempts: 3,
-      // Synchronous scheduler — drives the loop to completion in one
+      // Synchronous scheduler - drives the loop to completion in one
       // tick so the spec can assert observable counts without timer
       // bookkeeping.
       schedule: (cb) => {
@@ -131,7 +131,7 @@ describe('createDomAnchorRetry', () => {
       onGiveUp,
     });
     expect(() => retry.start()).not.toThrow();
-    // Throw is terminal — exactly one attempt, no further schedule,
+    // Throw is terminal - exactly one attempt, no further schedule,
     // no give-up signal (give-up means "ran out of retries", which
     // is a different signal from "host environment broke").
     expect(attempt).toHaveBeenCalledTimes(1);
@@ -173,7 +173,7 @@ describe('CNGX_DOM_ANCHOR_RETRY_FACTORY', () => {
   });
 
   it('consumer-provided factory replaces createDomAnchorRetry', () => {
-    // Swap axis — guards the override surface that the molecule and
+    // Swap axis - guards the override surface that the molecule and
     // [cngxMatTabs] route through. A custom policy (e.g. exponential
     // backoff, telemetry on give-up) injects via this token without
     // forking the consumer organism.

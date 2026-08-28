@@ -38,7 +38,7 @@ describe('createSelectionController', () => {
       expect(c.hasSelection()).toBe(true);
     });
 
-    it('select is idempotent — does not duplicate', () => {
+    it('select is idempotent - does not duplicate', () => {
       const values = signal<number[]>([]);
       const c = TestBed.runInInjectionContext(() => createSelectionController(values));
 
@@ -200,7 +200,7 @@ describe('createSelectionController', () => {
     });
   });
 
-  describe('tree — isIndeterminate with childrenFn', () => {
+  describe('tree - isIndeterminate with childrenFn', () => {
     interface Node {
       readonly id: number;
       readonly children?: readonly Node[];
@@ -267,7 +267,7 @@ describe('createSelectionController', () => {
     });
   });
 
-  describe('flat — isIndeterminate without childrenFn', () => {
+  describe('flat - isIndeterminate without childrenFn', () => {
     it('returns the SAME shared Signal<false> constant for every value', () => {
       const values = signal<number[]>([]);
       const c = TestBed.runInInjectionContext(() => createSelectionController(values));
@@ -313,7 +313,7 @@ describe('createSelectionController', () => {
       expect(s1()).toBe(false);
     });
 
-    it('is idempotent — calling destroy twice does not throw', () => {
+    it('is idempotent - calling destroy twice does not throw', () => {
       const values = signal<number[]>([1]);
       const c = TestBed.runInInjectionContext(() => createSelectionController(values));
 
@@ -373,14 +373,14 @@ describe('createSelectionController', () => {
       expect(c.isSelected(1)()).toBe(true);
     });
 
-    it('can be overridden via DI — consumer-supplied factory wraps the default', () => {
+    it('can be overridden via DI - consumer-supplied factory wraps the default', () => {
       const calls: Array<readonly [unknown[], unknown]> = [];
       const wrappingFactory: CngxSelectionControllerFactory = <T>(
         values: ReturnType<typeof signal<T[]>>,
         options?: Parameters<typeof createSelectionController<T>>[1],
       ): SelectionController<T> => {
         const inner = createSelectionController<T>(values, options);
-        // Wrap `select` to record calls — proof the consumer's logic runs.
+        // Wrap `select` to record calls - proof the consumer's logic runs.
         return {
           ...inner,
           select(value: T): void {

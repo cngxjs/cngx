@@ -33,7 +33,7 @@ export const CNGX_AUDIO_STATUS_DOM_EVENTS = [
 export interface ParsedStatusBindings {
   /** Valid `status -> earcon` pairs, keyed by canonical `AsyncStatus`. */
   readonly bindings: ReadonlyMap<AsyncStatus, string>;
-  /** DOM-event keys — the grammar of `[cngxAudio]`, not `[cngxAudioStatus]`. */
+  /** DOM-event keys - the grammar of `[cngxAudio]`, not `[cngxAudioStatus]`. */
   readonly domEventKeys: readonly string[];
   /** Keys that are neither lifecycle statuses nor DOM events. */
   readonly unknownKeys: readonly string[];
@@ -43,7 +43,7 @@ const DOM_EVENT_SET = new Set<string>(CNGX_AUDIO_STATUS_DOM_EVENTS);
 
 /**
  * Parse the `status:earcon` grammar (`'pending:tap, succeeded:success'`) into a
- * status map. Pure — no DOM, no `inject()`. Keys are categorised so the
+ * status map. Pure - no DOM, no `inject()`. Keys are categorised so the
  * directive can dev-error on DOM-event keys that should have used `[cngxAudio]`
  * and dev-warn on unknown keys. `succeeded`/`failed` normalise to
  * `success`/`error` so a lookup by the tracker's raw `AsyncStatus` hits.

@@ -5,7 +5,7 @@ import { createRecyclerPanelRendererFactory } from './recycler-panel-renderer';
 import type { CngxSelectOptionDef } from './option.model';
 import type { CngxRecycler } from '@cngx/common/data';
 
-// Minimal mock surface — the factory only touches five recycler signals.
+// Minimal mock surface - the factory only touches five recycler signals.
 function makeMockRecycler(overrides?: {
   start?: number;
   end?: number;
@@ -49,7 +49,7 @@ describe('createRecyclerPanelRendererFactory', () => {
     const flatOptions = signal(options);
     const renderer = factory({ flatOptions });
 
-    // Reference equality — no slice allocation on the fast path.
+    // Reference equality - no slice allocation on the fast path.
     expect(renderer.renderOptions()).toBe(flatOptions());
   });
 
@@ -96,7 +96,7 @@ describe('createRecyclerPanelRendererFactory', () => {
     const renderer = factory({ flatOptions: signal(options) });
 
     const first = renderer.renderOptions();
-    // Invalidate via unrelated signal change downstream — re-read the
+    // Invalidate via unrelated signal change downstream - re-read the
     // slice. The `equal` fn should recognise the new slice as equal to
     // the previous (same refs) and keep the cached reference.
     // We test the equality contract by asserting the slice contents
@@ -104,7 +104,7 @@ describe('createRecyclerPanelRendererFactory', () => {
     const second = renderer.renderOptions();
     expect(second).toEqual(first);
     expect(second).toHaveLength(20);
-    // Shift the window — equal should now report unequal.
+    // Shift the window - equal should now report unequal.
     start.set(15);
     end.set(35);
     const third = renderer.renderOptions();

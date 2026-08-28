@@ -23,7 +23,7 @@ class TestHost {
   mode = signal<'auto' | 'off'>('auto');
 }
 
-describe('CngxChart — aria-describedby always-in-DOM invariant', () => {
+describe('CngxChart - aria-describedby always-in-DOM invariant', () => {
   beforeEach(() => {
     vi.stubGlobal('ResizeObserver', ResizeObserverMock);
     TestBed.configureTestingModule({ imports: [TestHost] });
@@ -46,7 +46,7 @@ describe('CngxChart — aria-describedby always-in-DOM invariant', () => {
     };
   }
 
-  it('mode=off + data.length=3 — host carries aria-describedby pointing at the data-table id; table is aria-hidden=true', () => {
+  it('mode=off + data.length=3 - host carries aria-describedby pointing at the data-table id; table is aria-hidden=true', () => {
     const { chart, table, fixture } = setup();
     fixture.componentInstance.mode.set('off');
     fixture.detectChanges();
@@ -57,7 +57,7 @@ describe('CngxChart — aria-describedby always-in-DOM invariant', () => {
     expect(table().getAttribute('aria-hidden')).toBe('true');
   });
 
-  it('mode=auto + data.length>1 — aria-describedby UNCHANGED (same id); table is aria-hidden=false', () => {
+  it('mode=auto + data.length>1 - aria-describedby UNCHANGED (same id); table is aria-hidden=false', () => {
     const { chart, table, fixture } = setup();
     fixture.componentInstance.mode.set('off');
     fixture.detectChanges();
@@ -70,7 +70,7 @@ describe('CngxChart — aria-describedby always-in-DOM invariant', () => {
     expect(table().getAttribute('aria-hidden')).toBe('false');
   });
 
-  it('mode=auto + data.length<=1 — aria-describedby STILL present (id unchanged); table is aria-hidden=true', () => {
+  it('mode=auto + data.length<=1 - aria-describedby STILL present (id unchanged); table is aria-hidden=true', () => {
     const { chart, table, fixture } = setup();
     fixture.componentInstance.mode.set('auto');
     fixture.detectChanges();
@@ -84,7 +84,7 @@ describe('CngxChart — aria-describedby always-in-DOM invariant', () => {
     expect(table().getAttribute('aria-hidden')).toBe('true');
   });
 
-  it('mode=off (after auto) — aria-describedby STILL present (id unchanged); table is aria-hidden=true', () => {
+  it('mode=off (after auto) - aria-describedby STILL present (id unchanged); table is aria-hidden=true', () => {
     const { chart, table, fixture } = setup();
     fixture.componentInstance.mode.set('auto');
     fixture.detectChanges();
@@ -98,7 +98,7 @@ describe('CngxChart — aria-describedby always-in-DOM invariant', () => {
     expect(table().getAttribute('aria-hidden')).toBe('true');
   });
 
-  it('combined sweep — aria-describedby id is invariant across all four (mode, data.length) combinations', () => {
+  it('combined sweep - aria-describedby id is invariant across all four (mode, data.length) combinations', () => {
     const { chart, fixture } = setup();
     const seen = new Set<string>();
     const combos: readonly ['auto' | 'off', readonly number[]][] = [

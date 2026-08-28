@@ -19,7 +19,7 @@ export interface CngxCommitHandle {
 /**
  * Action runner contract. Receives the controller's success/error
  * routes and returns a cancel handle. The runner is opaque to the
- * controller — it can wrap any async source (Observable, Promise,
+ * controller - it can wrap any async source (Observable, Promise,
  * sync value) and any cancellation primitive.
  *
  * Variants supply their own runner adapter (e.g. select's
@@ -72,7 +72,7 @@ export interface CngxCommitController<T> {
   readonly isCommitting: Signal<boolean>;
 
   /**
-   * The most recent intended value — what the user was trying to
+   * The most recent intended value - what the user was trying to
    * commit. Used by the option-row spinner and the commit-error
    * template context to identify *which* option the failure belongs
    * to.
@@ -88,7 +88,7 @@ export interface CngxCommitController<T> {
    *                 action and the intended value)
    * @param intended the value the user clicked
    * @param previous the value to roll back to on error
-   * @param handlers success/error routes — the controller only
+   * @param handlers success/error routes - the controller only
    *                 updates its own state and calls these; it does
    *                 NOT touch external value signals, panel open
    *                 state, or component outputs.
@@ -111,7 +111,7 @@ export interface CngxCommitController<T> {
 /**
  * Factory for the commit controller.
  *
- * Plain function, not a class — matches the rest of the repo
+ * Plain function, not a class - matches the rest of the repo
  * (`createManualState`, `createAsyncState`, `createTransitionTracker`).
  * See `reference_api_prefix_convention.md`.
  *

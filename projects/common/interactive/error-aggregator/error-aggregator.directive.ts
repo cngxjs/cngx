@@ -43,7 +43,7 @@ import {
  * toggles. The span carries `role="status"` (or `role="alert"` when
  * politeness is `'assertive'`), `aria-live`, `aria-atomic="true"`, and
  * `aria-relevant="additions text"`. Visually-hidden styling is applied
- * inline via `--cngx-sr-only-*` CSS custom properties — no global
+ * inline via `--cngx-sr-only-*` CSS custom properties - no global
  * stylesheet required.
  *
  * Set `[autoAnnounce]="false"` to take ownership of the live region in

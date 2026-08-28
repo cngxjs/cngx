@@ -19,7 +19,7 @@ import type { PopoverPositionTryFallback } from './popover.types';
 // Test helpers
 
 // JSDOM Popover API support varies by version. Always install own-property
-// stubs that shadow whatever sits on the prototype — `??=` would skip the
+// stubs that shadow whatever sits on the prototype - `??=` would skip the
 // assignment when JSDOM (or cross-file pollution) provides a real
 // `showPopover`/`hidePopover`/`togglePopover`, leaving us with the native
 // function instead of a vi.fn() spy and failing every `toHaveBeenCalled`
@@ -511,7 +511,7 @@ describe('CngxPopover', () => {
       // The pre-inversion code read the panel's border-radius from the
       // directive side via getComputedStyle inside the show() rAF
       // callback. After the bounds-contract inversion the directive must
-      // not reach into the panel's CSS custom properties — the panel
+      // not reach into the panel's CSS custom properties - the panel
       // provides them through CNGX_POPOVER_ARROW_BOUNDS instead.
       const propertySpy = vi.fn().mockReturnValue('');
       vi.spyOn(globalThis, 'getComputedStyle').mockReturnValue({

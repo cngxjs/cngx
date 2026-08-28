@@ -7,7 +7,7 @@ import type { AsyncStatus, CngxAsyncState } from '@cngx/core/utils';
  * Must be called in an injection context (the `effect()` that tracks
  * `hadSuccess` requires one).
  *
- * All signals are derived reactively from the resource — no manual
+ * All signals are derived reactively from the resource - no manual
  * synchronization. The resource stays the single source of truth.
  *
  * ```typescript
@@ -19,8 +19,8 @@ import type { AsyncStatus, CngxAsyncState } from '@cngx/core/utils';
  * });
  *
  * readonly items = fromResource(this.res);
- * // items.status(), items.data(), items.isFirstLoad() — all work
- * // <cngx-async-container [state]="items"> — direct binding
+ * // items.status(), items.data(), items.isFirstLoad() - all work
+ * // <cngx-async-container [state]="items"> - direct binding
  * ```
  *
  * @category common/data/async-state

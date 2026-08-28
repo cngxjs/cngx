@@ -21,8 +21,12 @@
     "directory": "projects/utils"
   },
   "peerDependencies": {
-    "@angular/core": "^21.2.0",
     "rxjs": "~7.8.0"
+  },
+  "peerDependenciesMeta": {
+    "rxjs": {
+      "optional": true
+    }
   },
   "dependencies": {
     "tslib": "^2.3.0"

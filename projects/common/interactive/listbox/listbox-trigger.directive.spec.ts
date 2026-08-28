@@ -34,7 +34,7 @@ class TriggerHost {
   readonly dummy = signal(0);
 }
 
-// jsdom does not implement the Popover API — polyfill minimally so CngxPopover
+// jsdom does not implement the Popover API - polyfill minimally so CngxPopover
 // can toggle state without throwing.
 function polyfillPopover(): void {
   const proto = HTMLElement.prototype as unknown as {

@@ -131,7 +131,7 @@ describe('withRevealOnNavigate', () => {
         providers: [provideErrorRegistry(withRevealOnNavigate())],
       });
       // Forcing the env initializer to run by injecting any token from the
-      // environment is enough — the registry itself is the side-effect-free
+      // environment is enough - the registry itself is the side-effect-free
       // checkpoint.
       TestBed.inject(CngxErrorRegistry);
     }).not.toThrow();

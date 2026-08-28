@@ -1,5 +1,5 @@
 /**
- * @cngx/testing — Test utilities for the cngx component library.
+ * @cngx/testing - Test utilities for the cngx component library.
  *
  * Not published to npm. Consumed directly from source via tsconfig paths.
  *

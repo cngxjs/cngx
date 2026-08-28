@@ -108,7 +108,7 @@ describe('createDisplayBinding', () => {
     host.binding.writeFromValue('dave');
     expect(input.value).toBe('DAVE');
 
-    // Second call with same value is a no-op — input stays as-is.
+    // Second call with same value is a no-op - input stays as-is.
     host.binding.writeFromValue('dave');
     expect(input.value).toBe('DAVE');
   });
@@ -133,7 +133,7 @@ describe('CNGX_DISPLAY_BINDING_FACTORY', () => {
     expect(factory).toBe(createDisplayBinding);
   });
 
-  it('can be overridden via DI — consumer-supplied factory is returned from the token', () => {
+  it('can be overridden via DI - consumer-supplied factory is returned from the token', () => {
     const calls: string[] = [];
     const wrappingFactory: CngxDisplayBindingFactory = <U>(
       opts: Parameters<typeof createDisplayBinding<U>>[0],
@@ -157,7 +157,7 @@ describe('CNGX_DISPLAY_BINDING_FACTORY', () => {
       TestBed.inject(CNGX_DISPLAY_BINDING_FACTORY),
     );
     expect(factory).toBe(wrappingFactory);
-    // Log still empty — nobody invoked the factory yet; the override is
+    // Log still empty - nobody invoked the factory yet; the override is
     // wired but dormant until a component resolves it (CngxTypeahead does).
     expect(calls).toEqual([]);
   });

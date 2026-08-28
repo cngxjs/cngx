@@ -103,7 +103,7 @@ describe('CngxChipInteraction', () => {
     closeBtn.click();
     fixture.detectChanges();
     // Close-button click bubbles to host (click), but the directive's
-    // isCloseButtonClick guard short-circuits — the chip stays unselected.
+    // isCloseButtonClick guard short-circuits - the chip stays unselected.
     expect(host.bound()).toBe(false);
   });
 
@@ -113,7 +113,7 @@ describe('CngxChipInteraction', () => {
   });
 
   // NOTE: the dev-mode ancestor-guard is intentionally not unit-tested
-  // here — the throw fires inside `afterNextRender`, after TestBed's
+  // here - the throw fires inside `afterNextRender`, after TestBed's
   // synchronous assertions have already returned. Production-mode
   // behaviour (no ancestor read, no throw) and the guard's correctness
   // when a misuse is wired (throws "must NOT be used inside …") are

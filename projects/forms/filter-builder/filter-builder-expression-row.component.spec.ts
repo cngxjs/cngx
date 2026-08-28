@@ -112,7 +112,7 @@ function setup(
   return { fixture, host: mockHost };
 }
 
-describe('CngxFilterExpressionRow — embedded mode', () => {
+describe('CngxFilterExpressionRow - embedded mode', () => {
   it('renders one CngxSelect each for field and operator with the right options', () => {
     const expression: FilterExpression = {
       type: 'expression',

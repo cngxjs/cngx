@@ -28,7 +28,7 @@
 
 @layer cngx.tokens {
   /**
-   * Opacity multiplier applied to the empty row variant — fades the
+   * Opacity multiplier applied to the empty row variant - fades the
    * placeholder slot without removing it from the layout.
    * @group State / Empty
    */

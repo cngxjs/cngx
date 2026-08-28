@@ -85,11 +85,11 @@ describe('CngxLine', () => {
     }).toThrow(/missing CNGX_CHART_CONTEXT/);
   });
 
-  it('cascade guard — a downstream effect on the line component does NOT re-fire when the d string is unchanged', () => {
+  it('cascade guard - a downstream effect on the line component does NOT re-fire when the d string is unchanged', () => {
     const { fixture } = setup();
     const lineEl = fixture.debugElement.query((el) => el.componentInstance instanceof CngxLine);
     const line = lineEl.componentInstance as CngxLine<number>;
-    // Reach the protected `d` signal through the runtime instance — the spec
+    // Reach the protected `d` signal through the runtime instance - the spec
     // is the spec, not consumer surface; testing the cascade guard
     // requires reading the value the template binds to.
     const dSignal = (line as unknown as { d: () => string }).d;
@@ -108,7 +108,7 @@ describe('CngxLine', () => {
     // Swap the data array to a fresh-reference copy with the same coordinates
     // AND keep the scales constant (yDomain and xDomain unchanged). The
     // path-builder rebuilds (data ref changed) but the resulting d string
-    // is identical — the cascade guard must short-circuit.
+    // is identical - the cascade guard must short-circuit.
     fixture.componentInstance.data.set([1, 2, 3, 4, 5]);
     fixture.detectChanges();
     TestBed.tick();

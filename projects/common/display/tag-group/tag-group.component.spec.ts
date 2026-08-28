@@ -399,7 +399,7 @@ describe('CngxTagGroup', () => {
     warnSpy.mockRestore();
   });
 
-  // Case (r) — production-mode suppression — would require module-level
+  // Case (r) - production-mode suppression - would require module-level
   // mocking of `@angular/core`'s `isDevMode()` via `vi.mock`, which
   // contaminates the worker for all later specs. `enableProdMode()` is
   // irreversible per process. The dev-mode gating is Angular's

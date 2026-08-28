@@ -141,7 +141,7 @@ export class CngxCheckboxGroup<T = unknown> implements CngxControlValue<T[]>, Cn
   readonly invalid = model<boolean>(false);
   /**
    * Optional id of an external error message element. The host emits
-   * `aria-errormessage="<id>"` only when `aria-invalid="true"` —
+   * `aria-errormessage="<id>"` only when `aria-invalid="true"` -
    * symmetric with the sibling `aria-invalid` host binding (both gate
    * on `invalid() || errorState()`). Consumers MUST render an element
    * with the supplied id. Default `null` skips the attribute.

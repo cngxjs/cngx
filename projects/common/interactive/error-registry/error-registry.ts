@@ -12,12 +12,12 @@ import { mapKeySetEqual, shallowReadonlyArrayEqual } from './equal-fns';
  * inputs auto-register here when the registry is provided in the host
  * environment (via {@link provideErrorRegistry}, ships in commit 3).
  *
- * Not `providedIn: 'root'` — consumers opt in by including
+ * Not `providedIn: 'root'` - consumers opt in by including
  * `provideErrorRegistry()` in their `bootstrapApplication` providers. When
  * the registry is absent, the directives skip registration and keep their
  * pure DOM behaviour.
  *
- * @internal Staged API — single-consumer.
+ * @internal Staged API - single-consumer.
  * See form-primitives-accepted-debt.md §A for the re-evaluation trigger
  * and collapse plan.
  */
@@ -75,7 +75,7 @@ export class CngxErrorRegistry {
    * registered instance.
    *
    * To perform a true swap, call `unregisterScope(name)` first, then
-   * `registerScope(name, newScope)` — the unregister cycle changes the
+   * `registerScope(name, newScope)` - the unregister cycle changes the
    * key set, the equal fn emits, and the new instance becomes the live
    * value.
    */

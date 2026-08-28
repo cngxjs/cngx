@@ -39,7 +39,7 @@
     initial-value: oklch(0.55 0.21 27);
   }
 
-  /* Delegating token — required-marker tracks the danger chain so a
+  /* Delegating token - required-marker tracks the danger chain so a
    * dark-mode swap on `--cngx-color-danger` cascades through. */
   :root {
     --cngx-field-required-color: var(--cngx-color-danger);
@@ -51,7 +51,7 @@
     :scope {
       /* Inline so the marker sits next to the label text. `display:
        * contents` here pushed the inner <span> up into the
-       * label's parent — when that parent was a grid (the standard
+       * label's parent - when that parent was a grid (the standard
        * stacked-field layout), the asterisk ended up on its own
        * row.
        */

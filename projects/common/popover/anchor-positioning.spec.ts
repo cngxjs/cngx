@@ -37,7 +37,7 @@ describe('POSITION_AREA mapping', () => {
 
   it('never emits a corner-cell value (the pre-fix shape)', () => {
     // Corner cells (two-direction pairs) are valid `position-area` syntax
-    // but produce diagonal placement — wrong for edge-aligned popovers.
+    // but produce diagonal placement - wrong for edge-aligned popovers.
     const cornerCells = ['top left', 'top right', 'bottom left', 'bottom right'];
     for (const value of Object.values(POSITION_AREA)) {
       expect(cornerCells).not.toContain(value);
@@ -185,7 +185,7 @@ describe('anchor-support resolution', () => {
 
   it('jsdom defaults to position-area when CSS.supports rejects both', () => {
     // jsdom's CSS.supports returns false for both `position-area` and
-    // `inset-area` — the unsupported path falls back to `position-area`
+    // `inset-area` - the unsupported path falls back to `position-area`
     // as the canonical property name (Chrome 129+ default).
     if (!SUPPORTS_ANCHOR) {
       expect(ANCHOR_AREA_PROPERTY).toBe('position-area');

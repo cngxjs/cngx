@@ -21,7 +21,7 @@ import {
  * (same compute guard as `[cngxLine]`) and closes the polygon to a
  * `[baseline]` (default `0`) so SVG can fill it.
  *
- * Attribute-selector on `<svg:g>` — see {@link CngxLine} for why.
+ * Attribute-selector on `<svg:g>` - see {@link CngxLine} for why.
  *
  * The `d` string is cascade-guarded with string equality on its
  * `computed` so a no-op data refresh does not force a fill repaint.

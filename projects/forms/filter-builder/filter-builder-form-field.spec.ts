@@ -121,7 +121,7 @@ function setupReactiveFormsHost(): {
   return { fixture };
 }
 
-describe('CngxFilterBuilder — form-field bridge', () => {
+describe('CngxFilterBuilder - form-field bridge', () => {
   it('registers CngxFilterBuilderPresenter as CNGX_FORM_FIELD_CONTROL via the opt-in directive', () => {
     const { fixture } = setupSignalFormsHost();
     const builderEl = fixture.debugElement.query(

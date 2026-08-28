@@ -99,7 +99,7 @@ describe('createEmptyFilterRoot', () => {
   });
 });
 
-describe('toFilterPredicate — null tree', () => {
+describe('toFilterPredicate - null tree', () => {
   it('returns null for null tree', () => {
     expect(toFilterPredicate(null, FIELDS)).toBeNull();
   });
@@ -111,7 +111,7 @@ describe('toFilterPredicate — null tree', () => {
   });
 });
 
-describe('toFilterPredicate — logic operators', () => {
+describe('toFilterPredicate - logic operators', () => {
   it('and: every child must match', () => {
     const tree = createFilterGroup('and', [exprEq('name', 'alice'), exprEq('age', 30)]);
     const predicate = toFilterPredicate(tree, FIELDS)!;
@@ -195,7 +195,7 @@ describe('toFilterPredicate — logic operators', () => {
   });
 });
 
-describe('toFilterPredicate — negated modifier (no nand/nor operator)', () => {
+describe('toFilterPredicate - negated modifier (no nand/nor operator)', () => {
   it('negated + and denotes nand (the rejected operator)', () => {
     const tree = createFilterGroup('and', [exprEq('name', 'alice'), exprEq('age', 30)], {
       negated: true,
@@ -226,7 +226,7 @@ describe('toFilterPredicate — negated modifier (no nand/nor operator)', () => 
   });
 });
 
-describe('evaluateExpression — every default operator', () => {
+describe('evaluateExpression - every default operator', () => {
   const item = {
     name: 'Alice',
     age: 30,
@@ -330,7 +330,7 @@ describe('evaluateExpression — every default operator', () => {
   });
 });
 
-describe('toFilterPredicate — incomplete expressions are skipped', () => {
+describe('toFilterPredicate - incomplete expressions are skipped', () => {
   it('and-group: an expression with undefined value does not exclude items', () => {
     const tree = createFilterGroup('and', [
       createFilterExpression('name', 'contains'),
@@ -351,7 +351,7 @@ describe('toFilterPredicate — incomplete expressions are skipped', () => {
   });
 });
 
-describe('toFilterPredicate — missing fields', () => {
+describe('toFilterPredicate - missing fields', () => {
   it('returns false for expressions whose field is not in the fields list', () => {
     const tree: FilterGroup = createFilterGroup('and', [exprEq('ghost', 'x')]);
     expect(toFilterPredicate(tree, FIELDS)!({ ghost: 'x' })).toBe(false);

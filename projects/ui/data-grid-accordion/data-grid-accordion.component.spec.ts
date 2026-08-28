@@ -477,7 +477,7 @@ describe('CngxDataGridAccordion open-set survives sort + filter', () => {
  * resolve the injected cascade, so the guard asserts the compiled declaration -
  * comments stripped so it matches the property, not the prose describing it.
  */
-describe('CngxDataGridAccordion — layout containment', () => {
+describe('CngxDataGridAccordion - layout containment', () => {
   function dgaCss(): string {
     return Array.from(document.querySelectorAll('style'))
       .map((s) => s.textContent ?? '')
@@ -534,7 +534,7 @@ class MaxBlockSizeHost {
   readonly max = signal<string | number | undefined>(undefined);
 }
 
-describe('CngxDataGridAccordion — [maxBlockSize] input', () => {
+describe('CngxDataGridAccordion - [maxBlockSize] input', () => {
   beforeEach(() => TestBed.configureTestingModule({ imports: [MaxBlockSizeHost] }));
 
   function setup() {

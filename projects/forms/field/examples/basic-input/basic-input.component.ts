@@ -52,7 +52,7 @@ interface ProfileModel {
         <input cngxInput [formField]="profile.fullName" placeholder="Ada Lovelace" />
         <span cngxHint>As it appears on your ID</span>
       </cngx-form-field>
-      <p class="readout">Value: {{ model().fullName || '—' }}</p>
+      <p class="readout">Value: {{ model().fullName || '-' }}</p>
     </div>
   `,
 })

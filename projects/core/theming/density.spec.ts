@@ -35,7 +35,7 @@ describe('provideDensity / injectDensity', () => {
     expect(densityAttr()).toBe('spacious');
   });
 
-  it('is idempotent — setting the same value twice does not re-write (no loop)', () => {
+  it('is idempotent - setting the same value twice does not re-write (no loop)', () => {
     const spy = vi.spyOn(document.documentElement, 'setAttribute');
     TestBed.configureTestingModule({ providers: [provideDensity('compact')] });
     const fixture = TestBed.createComponent(Host);
@@ -48,7 +48,7 @@ describe('provideDensity / injectDensity', () => {
     const afterInit = densityWrites();
     expect(afterInit).toBeGreaterThanOrEqual(1);
 
-    density.set('compact'); // same value — signal equality short-circuits the effect
+    density.set('compact'); // same value - signal equality short-circuits the effect
     fixture.detectChanges();
     expect(densityWrites()).toBe(afterInit);
   });

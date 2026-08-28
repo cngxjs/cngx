@@ -16,13 +16,13 @@ describe('filter-builder.types', () => {
     });
 
     it('rejects nand at compile time', () => {
-      // @ts-expect-error — `nand` is not a FilterLogic; consumers express it as negated:true + and
+      // @ts-expect-error - `nand` is not a FilterLogic; consumers express it as negated:true + and
       const nand: FilterLogic = 'nand';
       expect(nand).toBe('nand');
     });
 
     it('rejects nor at compile time', () => {
-      // @ts-expect-error — `nor` is not a FilterLogic; consumers express it as negated:true + or
+      // @ts-expect-error - `nor` is not a FilterLogic; consumers express it as negated:true + or
       const nor: FilterLogic = 'nor';
       expect(nor).toBe('nor');
     });

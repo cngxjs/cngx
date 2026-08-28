@@ -361,7 +361,7 @@ describe('injectRecycler', () => {
         layout: 'grid',
       });
       expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('requires explicit `columns`'));
-      // Still functional — degrades to single-column list
+      // Still functional - degrades to single-column list
       expect(recycler.start()).toBe(0);
       errorSpy.mockRestore();
     });
@@ -437,7 +437,7 @@ describe('injectRecycler', () => {
       recycler.scrollToIndex(100);
       expect(recycler.pendingTarget()).toBe(100);
 
-      // Now scroll to a reachable index — clears pending
+      // Now scroll to a reachable index - clears pending
       recycler.scrollToIndex(10);
       expect(recycler.pendingTarget()).toBeNull();
     });

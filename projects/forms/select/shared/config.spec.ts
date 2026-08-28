@@ -114,7 +114,7 @@ describe('withAriaLabels', () => {
   });
 });
 
-describe('default announcer format — reordered action', () => {
+describe('default announcer format - reordered action', () => {
   it('speaks the new 1-based position when toIndex is supplied', () => {
     const config = resolveIn([]);
     const message = config.announcer.format({
@@ -163,7 +163,7 @@ describe('default announcer format — reordered action', () => {
   });
 });
 
-describe('default announcer format — created action', () => {
+describe('default announcer format - created action', () => {
   it("speaks 'created and selected' for single-select when a label is supplied", () => {
     const config = resolveIn([]);
     const message = config.announcer.format({
@@ -199,7 +199,7 @@ describe('default announcer format — created action', () => {
   });
 });
 
-describe('CngxMultiSelectChipContext — optional index', () => {
+describe('CngxMultiSelectChipContext - optional index', () => {
   it('accepts contexts without an index (CngxMultiSelect back-compat)', () => {
     const opt: CngxSelectOptionDef<string> = { value: 'a', label: 'A' };
     const ctx: CngxMultiSelectChipContext<string> = {

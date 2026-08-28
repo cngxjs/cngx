@@ -130,7 +130,7 @@ describe('CngxCardGrid', () => {
     host.items.set([]);
     host.emptyReason.set('cleared');
     fixture.detectChanges();
-    // No 'cleared' template defined — falls back to default
+    // No 'cleared' template defined - falls back to default
     expect(grid.querySelector('.empty-default')).toBeTruthy();
   });
 });

@@ -5,7 +5,7 @@
  * Web Audio adapter: zero asset weight (earcons synthesised from
  * `OscillatorNode`), a single shared `AudioContext` behind the engine, and
  * the `provideCngxAudio(...)` aggregator. Mirrors the shape of the sibling
- * feedback primitives (`CngxRipple`, `CngxPressable`, `CngxSpeak`) — the
+ * feedback primitives (`CngxRipple`, `CngxPressable`, `CngxSpeak`) - the
  * fourth sense, audition, as composable atoms.
  */
 
@@ -27,7 +27,7 @@ export {
   type CngxAudioFeature,
 } from './config/audio-config';
 
-// Engine — boundary DI token + factory + alias
+// Engine - boundary DI token + factory + alias
 export {
   createAudioEngine,
   CNGX_AUDIO_ENGINE_FACTORY,
@@ -37,7 +37,7 @@ export {
   type AudioStatus,
 } from './engine/audio-engine';
 
-// Tone generator — boundary DI token + factory + alias
+// Tone generator - boundary DI token + factory + alias
 export {
   createToneGenerator,
   CNGX_AUDIO_TONE_GENERATOR_FACTORY,

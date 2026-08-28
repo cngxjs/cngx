@@ -1,5 +1,6 @@
 import { DOCUMENT } from '@angular/common';
 import { Directive, effect, inject, input, signal } from '@angular/core';
+import { observeMediaQuery } from '@cngx/core/utils';
 
 /**
  * Reactive media query directive that exposes a `matches` signal.
@@ -49,18 +50,9 @@ export class CngxMediaQuery {
 
   constructor() {
     effect((onCleanup) => {
-      const win = this.win;
-      if (!win) {
-        this.matchesState.set(false);
-        return;
-      }
-
-      const mql = win.matchMedia(this.query());
-      this.matchesState.set(mql.matches);
-
-      const handler = (e: MediaQueryListEvent): void => this.matchesState.set(e.matches);
-      mql.addEventListener('change', handler);
-      onCleanup(() => mql.removeEventListener('change', handler));
+      onCleanup(
+        observeMediaQuery(this.win, this.query(), (matches) => this.matchesState.set(matches)),
+      );
     });
   }
 }

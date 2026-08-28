@@ -82,7 +82,7 @@ export class CngxChartDataTable {
   readonly hidden = input.required<boolean>();
   /**
    * Stable id consumed by the chart's `aria-describedby` binding.
-   * Optional input — when omitted, falls back to a per-instance
+   * Optional input - when omitted, falls back to a per-instance
    * `nextUid`-allocated default. Two standalone tables without an
    * explicit `[id]` therefore receive different ids; the always-in-
    * DOM rule cannot be violated by an unset input.
@@ -93,7 +93,7 @@ export class CngxChartDataTable {
   private readonly i18n = inject(CNGX_CHART_I18N);
 
   /**
-   * Resolved host id — the explicit `[id]` input wins over the
+   * Resolved host id - the explicit `[id]` input wins over the
    * per-instance default. The host binding reads this signal so
    * external `aria-describedby` references stay live across input
    * changes.

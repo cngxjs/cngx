@@ -32,7 +32,7 @@ import type { CngxTreeNode } from '@cngx/utils';
         [cascadeChildren]="true"
         placeholder="Pick regions…"
       />
-      <p class="demo__readout">Selected: {{ values().join(', ') || '—' }}</p>
+      <p class="demo__readout">Selected: {{ values().join(', ') || '-' }}</p>
     </div>
   `,
 })

@@ -18,7 +18,7 @@ function makeScopeStub(showErrors: Signal<boolean>): CngxErrorScopeContract {
   return {
     showErrors,
     reveal: () => {
-      /* noop — tests drive the underlying writable signal directly */
+      /* noop - tests drive the underlying writable signal directly */
     },
     reset: () => {
       /* noop */
@@ -361,19 +361,19 @@ describe('CngxFormFieldPresenter', () => {
   // The presenter widens showError to track (invalid, touched, dirty,
   // reveal.showErrors). The strategy callback runs inside untracked() so
   // strategy-internal signal reads do not widen the dependency graph
-  // beyond the four tracked sources — flat dependency graphs per
+  // beyond the four tracked sources - flat dependency graphs per
   // reference_signal_architecture §3.
   //
   // Mechanic: instrument an effect with vi.fn(() => presenter.showError());
   // mutate reveal.showErrors through 5 toggles while invalid stays true and
   // touched / dirty stay constant; assert the witness fires baseline + 5.
-  // The strategy is wired to read a hidden signal — if the untracked() wrap
+  // The strategy is wired to read a hidden signal - if the untracked() wrap
   // were removed, that hidden signal would also become tracked and any
   // mutation to it (none in this test) would cascade unrelated effects.
   // The assertion asserts the FORWARD path: reveal toggles propagate cleanly,
   // one cascade per genuine reveal change.
 
-  describe('cascade-witness — untracked() wrap on strategy callback', () => {
+  describe('cascade-witness - untracked() wrap on strategy callback', () => {
     it('reveal toggles produce exactly one downstream re-fire each', () => {
       const showErrors = signal(false);
       const hiddenStrategySignal = signal(0);
@@ -425,7 +425,7 @@ describe('CngxFormFieldPresenter', () => {
       expect(witness.mock.calls.length).toBe(baseline + 5);
 
       // Mutating the strategy-internal hidden signal does NOT cascade
-      // — it lives behind the untracked() wrap on the strategy call.
+      // - it lives behind the untracked() wrap on the strategy call.
       hiddenStrategySignal.set(42);
       TestBed.flushEffects();
       expect(witness.mock.calls.length).toBe(baseline + 5);

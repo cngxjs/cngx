@@ -20,7 +20,7 @@ describe('mergeLocalItems', () => {
     ];
     const merged = mergeLocalItems(provided, local, identityCompare);
     expect(flattenSelectOptions(merged).map((o) => o.value)).toEqual(['a', 'b', 'c']);
-    // The trailing local item retains its label — the merge never mutates.
+    // The trailing local item retains its label - the merge never mutates.
     expect(flattenSelectOptions(merged)[2].label).toBe('C (local)');
   });
 
@@ -30,13 +30,13 @@ describe('mergeLocalItems', () => {
       { value: 'b', label: 'B-server' },
     ];
     const local: readonly CngxSelectOptionDef<string>[] = [
-      { value: 'b', label: 'B-local' }, // server now knows B — drop.
+      { value: 'b', label: 'B-local' }, // server now knows B - drop.
       { value: 'c', label: 'C-local' },
     ];
     const merged = mergeLocalItems(provided, local, identityCompare);
     const flat = flattenSelectOptions(merged);
     expect(flat.map((o) => o.value)).toEqual(['a', 'b', 'c']);
-    // The server's "B-server" label survives — not the local override.
+    // The server's "B-server" label survives - not the local override.
     expect(flat.find((o) => o.value === 'b')?.label).toBe('B-server');
   });
 
@@ -67,7 +67,7 @@ describe('mergeLocalItems', () => {
     expect(merged).toBe(provided);
   });
 
-  it('preserves group structure — locals append flat after the groups', () => {
+  it('preserves group structure - locals append flat after the groups', () => {
     const provided: CngxSelectOptionsInput<string> = [
       {
         label: 'Group',
@@ -79,7 +79,7 @@ describe('mergeLocalItems', () => {
       { value: 'flat', label: 'Flat' },
     ];
     const local: readonly CngxSelectOptionDef<string>[] = [
-      { value: 'g2', label: 'already in group — dropped' },
+      { value: 'g2', label: 'already in group - dropped' },
       { value: 'n', label: 'new' },
     ];
     const merged = mergeLocalItems(provided, local, identityCompare);

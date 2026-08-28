@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Postprocess compodocx output.
 // Idempotently appends rules to docs/styles/compodocx.css so the playground
-// tab shows only the launch button — the source snippet is redundant when
+// tab shows only the launch button - the source snippet is redundant when
 // the runnable StackBlitz manifest carries the same code.
 
 import { readFile, writeFile } from 'node:fs/promises';

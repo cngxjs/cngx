@@ -10,7 +10,7 @@ import { createRingBuffer } from './ring-buffer';
  * @category common/chart/buffer
  */
 export interface ChartBufferOptions<T> {
-  /** Ring capacity — the maximum rows retained before eviction. */
+  /** Ring capacity - the maximum rows retained before eviction. */
   readonly capacity: number;
   /**
    * When set and the ring holds more than this many rows, `points` is
@@ -47,7 +47,7 @@ export interface CngxChartBuffer<T> {
   readonly capacity: number;
   /** Current retained row count, `0..capacity`, reflecting the last flush. */
   readonly length: Signal<number>;
-  /** `true` while a flush is scheduled but not yet applied — drive a busy hint. */
+  /** `true` while a flush is scheduled but not yet applied - drive a busy hint. */
   readonly pendingFlush: Signal<boolean>;
 }
 
@@ -60,7 +60,7 @@ export interface CngxChartBuffer<T> {
  * collapse into a single `points` emission: each mutation writes the ring
  * imperatively and schedules one `requestAnimationFrame(flush)`; the flush
  * bumps a revision signal that `points` derives from. The flush is a plain
- * callback writing a signal — not an `effect()` body — so no reactive
+ * callback writing a signal - not an `effect()` body - so no reactive
  * exception class is involved.
  *
  * Runs in an injection context; the rAF handle is cancelled via `DestroyRef`.

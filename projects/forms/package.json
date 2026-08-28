@@ -24,6 +24,9 @@
     "directory": "projects/forms"
   },
   "peerDependencies": {
+    "@cngx/utils": "0.0.0-PLACEHOLDER",
+    "@cngx/core": "0.0.0-PLACEHOLDER",
+    "@cngx/common": "0.0.0-PLACEHOLDER",
     "@angular/common": "^21.2.0",
     "@angular/core": "^21.2.0",
     "@angular/forms": "^21.2.0"

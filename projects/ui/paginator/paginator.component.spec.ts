@@ -327,7 +327,7 @@ class SlotHostCmp {
  * (`0.8125rem` compact), and the host row gap `0.75rem` split from the
  * `0.25rem` inter-page gap.
  */
-describe('CngxPaginator — host typography', () => {
+describe('CngxPaginator - host typography', () => {
   function paginatorCss(): string {
     return Array.from(document.querySelectorAll('style'))
       .map((s) => s.textContent ?? '')
@@ -400,7 +400,7 @@ describe('CngxPaginator — host typography', () => {
   });
 });
 
-describe('CngxPaginator — loading slot', () => {
+describe('CngxPaginator - loading slot', () => {
   test('a *cngxPaginatorLoading override renders the consumer template instead of the default bar', async () => {
     TestBed.configureTestingModule({ providers });
     const fixture = TestBed.createComponent(SlotHostCmp);

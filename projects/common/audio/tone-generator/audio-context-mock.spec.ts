@@ -56,6 +56,14 @@ describe('createAudioContextMock', () => {
     expect(ctx.state).toBe('closed');
   });
 
+  it('rejects resume, suspend, and close on a closed context like the real API', async () => {
+    const ctx = createAudioContextMock('closed');
+    await expect(ctx.resume()).rejects.toMatchObject({ name: 'InvalidStateError' });
+    await expect(ctx.suspend()).rejects.toMatchObject({ name: 'InvalidStateError' });
+    await expect(ctx.close()).rejects.toMatchObject({ name: 'InvalidStateError' });
+    expect(ctx.state).toBe('closed');
+  });
+
   it('advanceTime moves the clock forward', () => {
     const ctx = createAudioContextMock();
     ctx.advanceTime(2);

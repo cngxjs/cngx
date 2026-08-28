@@ -487,7 +487,7 @@ describe('CngxActionButton', () => {
       const fixture = TestBed.createComponent(ToastHost);
       fixture.detectChanges();
       const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
-      // Should not throw — toaster is optional
+      // Should not throw - toaster is optional
       btn.click();
       await vi.waitFor(() => {
         flush(fixture);

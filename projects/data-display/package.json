@@ -23,6 +23,9 @@
     "directory": "projects/data-display"
   },
   "peerDependencies": {
+    "@cngx/utils": "0.0.0-PLACEHOLDER",
+    "@cngx/core": "0.0.0-PLACEHOLDER",
+    "@cngx/common": "0.0.0-PLACEHOLDER",
     "@angular/cdk": "^21.2.0",
     "@angular/core": "^21.2.0"
   },

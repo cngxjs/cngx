@@ -163,7 +163,7 @@ describe('CngxFormBridge', () => {
       const host = fixture.componentInstance;
 
       // RF's initial writeValue(null) lands on the group's
-      // value model — null overrides the model's undefined default.
+      // value model - null overrides the model's undefined default.
       expect(host.group.value()).toBeNull();
 
       host.ctrl.setValue('cash');
@@ -237,7 +237,7 @@ describe('CngxFormBridge', () => {
       host.bridge.registerOnChange(fn);
       TestBed.flushEffects();
       const baseline = fn.mock.calls.length;
-      expect(baseline).toBe(0); // initial-fire skip — value was already delivered via writeValue
+      expect(baseline).toBe(0); // initial-fire skip - value was already delivered via writeValue
 
       host.toggle.value.set(true);
       TestBed.flushEffects();
@@ -273,7 +273,7 @@ describe('CngxFormBridge', () => {
       // re-routing the writeValue back into onChange.
       expect(fn).not.toHaveBeenCalled();
 
-      // User-driven write — must fire.
+      // User-driven write - must fire.
       host.toggle.value.set(false);
       TestBed.flushEffects();
       expect(fn).toHaveBeenCalledTimes(1);
@@ -309,7 +309,7 @@ describe('CngxFormBridge', () => {
       // and would re-fire here, calling fn again.
       externalProbe.set('b');
       TestBed.flushEffects();
-      expect(fn).toHaveBeenCalledTimes(1); // wrap held — no cascade
+      expect(fn).toHaveBeenCalledTimes(1); // wrap held - no cascade
     });
   });
 

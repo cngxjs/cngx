@@ -19,7 +19,7 @@ export interface RetryConfig {
 }
 
 /**
- * State exposed by the retryable action — read-only signals for UI feedback.
+ * State exposed by the retryable action - read-only signals for UI feedback.
  *
  * @category common/interactive/retry
  */
@@ -38,11 +38,11 @@ export interface RetryState {
    * Full `CngxAsyncState` view of the retry lifecycle.
    *
    * Bind to any `[state]` consumer to connect the feedback system.
-   * `retrying` (delay between retries) maps to `'pending'` — the feedback
+   * `retrying` (delay between retries) maps to `'pending'` - the feedback
    * system sees "still working" during retry delays.
    */
   readonly state: CngxAsyncState<unknown>;
-  /** Manually reset — clears exhausted state, resets attempt counter. */
+  /** Manually reset - clears exhausted state, resets attempt counter. */
   reset(): void;
 }
 

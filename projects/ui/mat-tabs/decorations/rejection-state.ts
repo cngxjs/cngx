@@ -11,18 +11,18 @@ import type { CngxTabGroupHost, injectTabsI18n } from '@cngx/common/tabs';
  * the lookup and keeps `[cngxMatTabs]` thin enough to pass the
  * organism-LOC guard.
  *
- * @internal — package-private helper for `[cngxMatTabs]`. Not
+ * @internal - package-private helper for `[cngxMatTabs]`. Not
  * exported from `public-api.ts`.
  */
 export interface CngxMatTabRejectionState {
   /**
-   * Reactive label of the rollback origin — `undefined` when no
+   * Reactive label of the rollback origin - `undefined` when no
    * rejection is pinned, when the origin index is unresolved, or
    * when the origin tab carries no label.
    */
   readonly originLabel: Signal<string | undefined>;
   /**
-   * Reactive descriptor phrase — the `commitRolledBackTo(originLabel)`
+   * Reactive descriptor phrase - the `commitRolledBackTo(originLabel)`
    * variant when an origin label resolves, falling back to
    * `commitFailedRetry` otherwise. Empty string between rejections
    * (the projector clears the decoration entirely on
@@ -42,7 +42,7 @@ export interface CngxMatTabRejectionState {
    *   3. anything else → empty string (region stays quiet on no-op
    *      CD ticks; mat-tabs does not announce success transitions
    *      because Material's own ARIA already narrates the
-   *      activeIndex change — duplicating would make AT readers
+   *      activeIndex change - duplicating would make AT readers
    *      hear two utterances per nav)
    */
   readonly liveAnnouncement: Signal<string>;
@@ -52,7 +52,7 @@ export interface CngxMatTabRejectionState {
  * Build the {@link CngxMatTabRejectionState} bundle for a given
  * presenter + i18n pair. Two computeds share one source-walk
  * (`lastFailedIndex` → `originIndexDuringCommit` → `tabs[idx].label()`)
- * via Angular's signal memoisation — the second computed re-uses
+ * via Angular's signal memoisation - the second computed re-uses
  * the first's cached `originLabel` value, so the `tabs()` traversal
  * happens at most once per state change.
  *

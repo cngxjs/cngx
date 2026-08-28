@@ -1,5 +1,6 @@
 import { DOCUMENT } from '@angular/common';
-import { computed, DestroyRef, Directive, inject, input, signal, type Signal } from '@angular/core';
+import { computed, DestroyRef, Directive, inject, input, type Signal } from '@angular/core';
+import { createMediaQuerySignal } from '@cngx/core/utils';
 
 /**
  * Headless skeleton loading placeholder.
@@ -74,18 +75,11 @@ export class CngxSkeleton {
   private readonly prefersReducedMotion: Signal<boolean>;
 
   constructor() {
-    const win = inject(DOCUMENT).defaultView;
-    const pref = signal(false);
-
-    if (win?.matchMedia) {
-      const mq = win.matchMedia('(prefers-reduced-motion: reduce)');
-      pref.set(mq.matches);
-      const listener = (e: MediaQueryListEvent) => pref.set(e.matches);
-      mq.addEventListener('change', listener);
-      inject(DestroyRef).onDestroy(() => mq.removeEventListener('change', listener));
-    }
-
-    this.prefersReducedMotion = pref.asReadonly();
+    this.prefersReducedMotion = createMediaQuerySignal(
+      '(prefers-reduced-motion: reduce)',
+      inject(DestroyRef),
+      inject(DOCUMENT).defaultView,
+    );
   }
 
   /** Whether the skeleton is in loading state. Mirrors the `cngxSkeleton` input. */

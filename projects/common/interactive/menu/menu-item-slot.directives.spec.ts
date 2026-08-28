@@ -89,7 +89,7 @@ describe('Menu item slot marker directives', () => {
     expect(kbd.getAttribute('aria-hidden')).toBe('true');
   });
 
-  it('CngxMenuItemLabel does not get aria-hidden — it carries the accessible name', () => {
+  it('CngxMenuItemLabel does not get aria-hidden - it carries the accessible name', () => {
     const fixture = setup();
     const label = fixture.debugElement.query(By.directive(CngxMenuItemLabel))
       .nativeElement as HTMLElement;

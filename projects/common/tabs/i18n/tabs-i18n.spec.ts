@@ -42,20 +42,20 @@ describe('CngxTabsI18n', () => {
         provideTabsI18n(
           withTabsI18nLabels({
             commitRolledBackTo: (label) =>
-              `Speichern fehlgeschlagen — zurück auf „${label}".`,
+              `Speichern fehlgeschlagen - zurück auf „${label}".`,
           }),
         ),
       ],
     });
     const i18n = TestBed.inject(CNGX_TABS_I18N);
     expect(i18n.commitRolledBackTo('Einstellungen')).toBe(
-      'Speichern fehlgeschlagen — zurück auf „Einstellungen".',
+      'Speichern fehlgeschlagen - zurück auf „Einstellungen".',
     );
     // Other keys keep their defaults.
     expect(i18n.commitFailedRetry).toBe('Tab change refused — retry?');
   });
 
-  it('provideTabsI18n shallow-merges over the defaults — unset keys keep English', () => {
+  it('provideTabsI18n shallow-merges over the defaults - unset keys keep English', () => {
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),

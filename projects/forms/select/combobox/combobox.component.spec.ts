@@ -23,7 +23,7 @@ import type {
   CngxSelectCommitMode,
 } from '../shared/commit-action.types';
 
-// jsdom has no Popover API — polyfill so CngxPopover can toggle.
+// jsdom has no Popover API - polyfill so CngxPopover can toggle.
 function polyfillPopover(): void {
   const proto = HTMLElement.prototype as unknown as {
     showPopover?: () => void;
@@ -89,7 +89,7 @@ beforeEach(() => {
   polyfillPopover();
 });
 
-describe('CngxCombobox — skeleton', () => {
+describe('CngxCombobox - skeleton', () => {
   it('renders role="combobox" on the inner <input> and role="group" on the wrapper', () => {
     const fixture = TestBed.createComponent(Host);
     flush(fixture);
@@ -244,7 +244,7 @@ describe('CngxCombobox — skeleton', () => {
   });
 });
 
-// ── Phase B — search + filter + backspace + searchTermChange ──────────
+// ── Phase B - search + filter + backspace + searchTermChange ──────────
 
 function setInputValue(el: HTMLInputElement, value: string): void {
   el.value = value;
@@ -290,7 +290,7 @@ describe('filterSelectOptions (helper)', () => {
   });
 });
 
-describe('CngxCombobox — search + filter', () => {
+describe('CngxCombobox - search + filter', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     polyfillPopover();
@@ -544,7 +544,7 @@ describe('CngxCombobox — search + filter', () => {
   });
 });
 
-// ── Phase C — commit-flow producer (per-toggle [commitAction]) ────────
+// ── Phase C - commit-flow producer (per-toggle [commitAction]) ────────
 
 @Component({
   selector: 'commit-host',
@@ -583,7 +583,7 @@ class CommitHost {
   };
 }
 
-describe('CngxCombobox — commit action producer', () => {
+describe('CngxCombobox - commit action producer', () => {
   beforeEach(() => {
     polyfillPopover();
     TestBed.configureTestingModule({ imports: [CommitHost] });
@@ -773,9 +773,9 @@ describe('CngxCombobox — commit action producer', () => {
     optionAt(0).click(); // commit pending on 'red'
     flush(fixture);
 
-    // User types to filter — 'red' (Rot) stays, but 'green' / 'blue'
+    // User types to filter - 'red' (Rot) stays, but 'green' / 'blue'
     // disappear from the rendered panel. The commit in flight is
-    // orthogonal to the filter — it still completes on 'red'.
+    // orthogonal to the filter - it still completes on 'red'.
     input.focus();
     flush(fixture);
     setInputValue(input, 'gr');
@@ -834,9 +834,9 @@ describe('CngxCombobox — commit action producer', () => {
   });
 });
 
-// ── Phase C — a11y audit (nested buttons) ─────────────────────────────
+// ── Phase C - a11y audit (nested buttons) ─────────────────────────────
 
-describe('CngxCombobox — a11y', () => {
+describe('CngxCombobox - a11y', () => {
   beforeEach(() => {
     polyfillPopover();
   });
@@ -899,7 +899,7 @@ class ComboboxChipTemplateHost {
   readonly values = signal<string[]>(['red', 'green']);
 }
 
-describe('CngxCombobox — *cngxComboboxChip slot', () => {
+describe('CngxCombobox - *cngxComboboxChip slot', () => {
   beforeEach(() => {
     polyfillPopover();
   });

@@ -76,7 +76,7 @@
     initial-value: oklch(0.55 0.21 27);
   }
 
-  /* Delegating token — over-color tracks the danger chain so a
+  /* Delegating token - over-color tracks the danger chain so a
    * dark-mode swap on `--cngx-color-danger` cascades through. */
   :root {
     --cngx-field-char-count-over-color: var(--cngx-color-danger);

@@ -115,7 +115,7 @@ describe('CngxReorder', () => {
     targetEl: HTMLElement,
     pointerId = 1,
   ): void {
-    // jsdom does not implement elementFromPoint — define + stub it so
+    // jsdom does not implement elementFromPoint - define + stub it so
     // the directive's drop-target resolver can pick the right index.
     const proto = Document.prototype as unknown as {
       elementFromPoint?: (x: number, y: number) => Element | null;
@@ -195,7 +195,7 @@ describe('CngxReorder', () => {
     expect(host.reorders[0].next.map((i) => i.id)).toEqual(['a', 'd', 'b', 'c']);
   });
 
-  it('Escape during drag cancels the move — no (reordered), dragEnd still fires', () => {
+  it('Escape during drag cancels the move - no (reordered), dragEnd still fires', () => {
     const { host, listEl, dir } = setup();
     pointerDown(handleOf(itemAt(listEl, 0)));
     pointerMoveOver(itemAt(listEl, 2));
@@ -241,7 +241,7 @@ describe('CngxReorder', () => {
 
   it('pointerdown outside a drag-handle is a no-op', () => {
     const { host, listEl } = setup();
-    // Fire on the item body, not the handle — no drag should start.
+    // Fire on the item body, not the handle - no drag should start.
     pointerDown(itemAt(listEl, 0));
     pointerMoveOver(itemAt(listEl, 2));
     pointerUp();
@@ -268,7 +268,7 @@ describe('CngxReorder', () => {
   });
 });
 
-describe('CngxReorder — ignoreSelector', () => {
+describe('CngxReorder - ignoreSelector', () => {
   @Component({
     template: `
       <ul

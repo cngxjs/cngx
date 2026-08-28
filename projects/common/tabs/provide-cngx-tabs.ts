@@ -35,7 +35,7 @@ function partitionFeatures(features: readonly CngxTabsFeature[]): PartitionedFea
       config.push(feat);
       continue;
     }
-    // Unbranded feature — runtime escape from the `_target` type.
+    // Unbranded feature - runtime escape from the `_target` type.
     // Drop with dev-warn so an i18n-shaped override never lands
     // silently in `CNGX_TABS_CONFIG`.
     if (isDevMode()) {
@@ -58,7 +58,7 @@ function partitionFeatures(features: readonly CngxTabsFeature[]): PartitionedFea
  * - `provideCngxSelect`;
  * apply once in the app providers array. \
  * Returns {@link EnvironmentProviders}; for
- * - `viewProviders` use {@link provideCngxTabsAt} — opaque
+ * - `viewProviders` use {@link provideCngxTabsAt} - opaque
  * - `EnvironmentProviders` cannot live there.
  *
  * ```ts

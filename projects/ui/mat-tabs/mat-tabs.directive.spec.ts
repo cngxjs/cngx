@@ -229,7 +229,7 @@ async function setupPlumbing(): Promise<Plumbing> {
   const fixture = TestBed.createComponent(HostCmp);
   fixture.detectChanges();
   await fixture.whenStable();
-  // Second CD cycle — gives the contentChildren signal an extra
+  // Second CD cycle - gives the contentChildren signal an extra
   // tick to propagate from initial empty into the actual MatTab list,
   // and lets the directive's register-effect commit handles into the
   // presenter before the test asserts.
@@ -244,7 +244,7 @@ async function setupPlumbing(): Promise<Plumbing> {
 }
 
 describe('CngxMatTabs instrumentation directive', () => {
-  test('axis 1: presenter→Material write — presenter.select(2) updates matTabGroup.selectedIndex', async () => {
+  test('axis 1: presenter→Material write - presenter.select(2) updates matTabGroup.selectedIndex', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
@@ -257,7 +257,7 @@ describe('CngxMatTabs instrumentation directive', () => {
     expect(matTabGroup.selectedIndex).toBe(2);
   });
 
-  test('axis 2: Material→presenter routing — selectedIndexChange writes presenter.activeIndex', async () => {
+  test('axis 2: Material→presenter routing - selectedIndexChange writes presenter.activeIndex', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
@@ -268,14 +268,14 @@ describe('CngxMatTabs instrumentation directive', () => {
     // tick, which is gated in zoneless tests; emitting directly proves
     // the bridge route without coupling to Material's animation
     // schedule (still uses the public Output the directive subscribes
-    // to — no implementation-detail spelunking).
+    // to - no implementation-detail spelunking).
     matTabGroup.selectedIndexChange.emit(1);
     fixture.detectChanges();
     await fixture.whenStable();
     expect(presenter.activeIndex()).toBe(1);
   });
 
-  test('axis 3: MatTab add/remove — toggling a tab reflects in presenter.tabs()', async () => {
+  test('axis 3: MatTab add/remove - toggling a tab reflects in presenter.tabs()', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
@@ -301,7 +301,7 @@ describe('CngxMatTabs instrumentation directive', () => {
     expect(presenter.tabs().length).toBe(3);
   });
 
-  test('axis 4: pessimistic pending — Material stays at origin while commit pending', async () => {
+  test('axis 4: pessimistic pending - Material stays at origin while commit pending', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
@@ -315,7 +315,7 @@ describe('CngxMatTabs instrumentation directive', () => {
     const presenter = matEl.injector.get(CngxTabGroupPresenter);
 
     expect(matTabGroup.selectedIndex).toBe(0);
-    // Pessimistic + never-resolving commit — presenter stays on origin
+    // Pessimistic + never-resolving commit - presenter stays on origin
     // and Material does not advance.
     presenter.select(2);
     fixture.detectChanges();
@@ -324,7 +324,7 @@ describe('CngxMatTabs instrumentation directive', () => {
     expect(matTabGroup.selectedIndex).toBe(0);
   });
 
-  test('axis 5: pessimistic resolve — Material flips to target after commit success', async () => {
+  test('axis 5: pessimistic resolve - Material flips to target after commit success', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
@@ -354,7 +354,7 @@ describe('CngxMatTabs instrumentation directive', () => {
     expect(matTabGroup.selectedIndex).toBe(1);
   });
 
-  test('axis 6: optimistic rollback — sync rejection reverts Material', async () => {
+  test('axis 6: optimistic rollback - sync rejection reverts Material', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
@@ -371,12 +371,12 @@ describe('CngxMatTabs instrumentation directive', () => {
     const presenter = matEl.injector.get(CngxTabGroupPresenter);
 
     presenter.select(2);
-    // Optimistic — Material moves immediately.
+    // Optimistic - Material moves immediately.
     fixture.detectChanges();
     await fixture.whenStable();
     expect(matTabGroup.selectedIndex).toBe(2);
 
-    // Microtask flush — rejection rolls presenter (and therefore
+    // Microtask flush - rejection rolls presenter (and therefore
     // Material) back.
     await Promise.resolve();
     await fixture.whenStable();
@@ -385,14 +385,14 @@ describe('CngxMatTabs instrumentation directive', () => {
     expect(matTabGroup.selectedIndex).toBe(0);
   });
 
-  test('axis 7: untracked() discipline — re-entrant Material event during write does not double-fire', async () => {
+  test('axis 7: untracked() discipline - re-entrant Material event during write does not double-fire', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
     const { fixture, matTabGroup, presenter } = await setupPlumbing();
     await fixture.whenStable();
 
-    // Synchronous double-set on the presenter side — the equality
+    // Synchronous double-set on the presenter side - the equality
     // guard inside the factory must coalesce so Material lands on
     // the final value once, not multiple times. We assert observable
     // outcome (final index) since per-emission counting requires
@@ -405,7 +405,7 @@ describe('CngxMatTabs instrumentation directive', () => {
     expect(presenter.activeIndex()).toBe(2);
   });
 
-  test('axis 8: DestroyRef teardown — destroy stops further sync', async () => {
+  test('axis 8: DestroyRef teardown - destroy stops further sync', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
@@ -425,7 +425,7 @@ describe('CngxMatTabs instrumentation directive', () => {
     expect(matTabGroup.selectedIndex).toBe(1);
   });
 
-  test('axis 9: duplicate-label MatTabs get distinct handle ids — no presenter-registry collision', async () => {
+  test('axis 9: duplicate-label MatTabs get distinct handle ids - no presenter-registry collision', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
@@ -444,7 +444,7 @@ describe('CngxMatTabs instrumentation directive', () => {
     expect(new Set(ids).size).toBe(3);
   });
 
-  test('axis 9b: Material API contract pin — MatTab._stateChanges Subject exists at runtime', () => {
+  test('axis 9b: Material API contract pin - MatTab._stateChanges Subject exists at runtime', () => {
     // Load-bearing coupling check. The directive subscribes to
     // `MatTab._stateChanges` (Material-internal underscore field) to
     // pump live `label`/`disabled` projections; if Material renames
@@ -479,7 +479,7 @@ describe('CngxMatTabs instrumentation directive', () => {
     ).toBe(true);
   });
 
-  test('axis 10: live MatTab.disabled — toggling Material input propagates to presenter handle', async () => {
+  test('axis 10: live MatTab.disabled - toggling Material input propagates to presenter handle', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
@@ -506,7 +506,7 @@ describe('CngxMatTabs instrumentation directive', () => {
     expect(presenter.tabs()[0].disabled()).toBe(false);
   });
 
-  test('axis 11: rejection decoration set — reject decorates the matching <mat-tab> with cngx-mat-tab--error + aria-describedby descriptor span (no aria-invalid)', async () => {
+  test('axis 11: rejection decoration set - reject decorates the matching <mat-tab> with cngx-mat-tab--error + aria-describedby descriptor span (no aria-invalid)', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
@@ -529,7 +529,7 @@ describe('CngxMatTabs instrumentation directive', () => {
     ) as NodeListOf<HTMLElement>;
     expect(matTabEls.length).toBe(3);
     expect(matTabEls[2].classList.contains('cngx-mat-tab--error')).toBe(true);
-    // ARIA 1.2 contract — aria-invalid is form-field vocabulary and
+    // ARIA 1.2 contract - aria-invalid is form-field vocabulary and
     // does not apply to a tab button. The new contract uses
     // aria-describedby + a hidden descriptor span instead.
     expect(matTabEls[2].getAttribute('aria-invalid')).toBeNull();
@@ -550,7 +550,7 @@ describe('CngxMatTabs instrumentation directive', () => {
     expect(matTabEls[1].classList.contains('cngx-mat-tab--error')).toBe(false);
   });
 
-  test('axis 12: rejection decoration cleared — successful re-pick of the failed tab strips the class, removes the descriptor span, and restores aria-describedby', async () => {
+  test('axis 12: rejection decoration cleared - successful re-pick of the failed tab strips the class, removes the descriptor span, and restores aria-describedby', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
@@ -645,7 +645,7 @@ describe('CngxMatTabs instrumentation directive', () => {
     // The per-tab handle registry lives on the [cngxMatTabsRegistry]
     // host-directive; the parent [cngxMatTabs] composes it via
     // `hostDirectives`. Reach the registry through the host
-    // element's injector — same instance both directives see.
+    // element's injector - same instance both directives see.
     const registry = matEl.injector.get(CngxMatTabsRegistry);
     const setupsByTab = (
       registry as unknown as {
@@ -656,7 +656,7 @@ describe('CngxMatTabs instrumentation directive', () => {
       }
     ).setupsByTab;
 
-    // Default slot for every registered handle is `undefined` —
+    // Default slot for every registered handle is `undefined` -
     // the read-only-by-default behaviour the prior shared constant
     // produced is preserved when no consumer binds [cngxMatTabError].
     for (const tab of presenter.tabs()) {
@@ -665,7 +665,7 @@ describe('CngxMatTabs instrumentation directive', () => {
 
     // The writable is reachable through setupsByTab so the per-tab
     // attribute directive can pump bound aggregators into the slot.
-    // Use a minimal contract-shaped stub — the parent's
+    // Use a minimal contract-shaped stub - the parent's
     // `aggregatedErrorTabs` computed reads `shouldShow()` /
     // `announcement()` whenever any handle's slot is non-undefined,
     // so an opaque marker would crash the downstream effect.
@@ -676,7 +676,7 @@ describe('CngxMatTabs instrumentation directive', () => {
     await fixture.whenStable();
     expect(presenter.tabs()[0].errorAggregator()).toBe(stub.contract);
 
-    // Resetting back to undefined restores the default — used by the
+    // Resetting back to undefined restores the default - used by the
     // attribute directive's destroyRef cleanup path.
     firstEntry.setup.errorAggregator.set(undefined);
     fixture.detectChanges();
@@ -684,7 +684,7 @@ describe('CngxMatTabs instrumentation directive', () => {
     expect(presenter.tabs()[0].errorAggregator()).toBeUndefined();
   });
 
-  test('axis 13: rejection decoration follows index shift — decorated element moves when lastFailedIndex changes', async () => {
+  test('axis 13: rejection decoration follows index shift - decorated element moves when lastFailedIndex changes', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
@@ -707,7 +707,7 @@ describe('CngxMatTabs instrumentation directive', () => {
     ) as NodeListOf<HTMLElement>;
     expect(matTabEls[2].classList.contains('cngx-mat-tab--error')).toBe(true);
 
-    // Reject a different target — decoration should move.
+    // Reject a different target - decoration should move.
     presenter.select(1);
     fixture.detectChanges();
     await fixture.whenStable();
@@ -723,7 +723,7 @@ describe('CngxMatTabs instrumentation directive', () => {
     expect(matTabEls[1].getAttribute('aria-describedby')).toContain(
       `${movedHandleId}-rejected`,
     );
-    // Prior target is clean — only one decorated element at a time.
+    // Prior target is clean - only one decorated element at a time.
     expect(matTabEls[2].classList.contains('cngx-mat-tab--error')).toBe(false);
     expect(matTabEls[2].getAttribute('aria-invalid')).toBeNull();
     expect(
@@ -807,7 +807,7 @@ describe('CngxMatTabs instrumentation directive', () => {
       true,
     );
 
-    // Flip back — class drops, span goes away, aria-describedby
+    // Flip back - class drops, span goes away, aria-describedby
     // returns to whatever Material had set originally (may be null).
     fixture.componentInstance.aggOneHandle.show.set(false);
     fixture.detectChanges();
@@ -869,7 +869,7 @@ describe('CngxMatTabs instrumentation directive', () => {
     expect(panelHost.contentTemplateFor('any-id')).toBeNull();
   });
 
-  test('axis 19: provided adapter is the Material variant — strip-root + index-based per-tab resolution', async () => {
+  test('axis 19: provided adapter is the Material variant - strip-root + index-based per-tab resolution', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
@@ -894,7 +894,7 @@ describe('CngxMatTabs instrumentation directive', () => {
     expect(labelContainer).not.toBeNull();
 
     // resolveStripRoot: walk a host element placed inside the rendered
-    // .mat-mdc-tab-header up to .mat-mdc-tab-label-container — the
+    // .mat-mdc-tab-header up to .mat-mdc-tab-label-container - the
     // structural guarantee Material 19/20/21 ships.
     const probe = document.createElement('div');
     header.appendChild(probe);
@@ -938,7 +938,7 @@ describe('CngxMatTabs instrumentation directive', () => {
     expect(overflowEl.parentElement).toBe(headerEl);
     // Convenience class for the trailing-edge CSS skin.
     expect(overflowEl.classList.contains('cngx-mat-tabs-more')).toBe(true);
-    // The molecule sits AFTER the label-container in the flex flow —
+    // The molecule sits AFTER the label-container in the flex flow -
     // the appendChild ordering controls visual placement (right of the
     // tab list). The label-container is the IO root, so the molecule
     // being AFTER it in DOM order matches the visual "trailing-edge
@@ -968,7 +968,7 @@ describe('CngxMatTabs instrumentation directive', () => {
     // ComponentRef.destroy() detaches the rendered element from the
     // DOM and runs the molecule's own DestroyRef callbacks. Asserting
     // against `document` rather than `fixture.nativeElement` because
-    // the fixture host is also detached on destroy — only document-
+    // the fixture host is also detached on destroy - only document-
     // root reachability proves the molecule went away with it.
     expect(document.querySelector('cngx-tab-overflow')).toBeNull();
   });
@@ -1004,7 +1004,7 @@ describe('CngxMatTabs instrumentation directive', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    // Reject a transition INTO tab 0 — commit returns false →
+    // Reject a transition INTO tab 0 - commit returns false →
     // lastFailedIndex pins on 0, optimistic mode rolls active back
     // to the prior tab (1).
     presenter.select(0);
@@ -1018,7 +1018,7 @@ describe('CngxMatTabs instrumentation directive', () => {
     expect(matTabEls[0].getAttribute('aria-invalid')).toBeNull();
     const handleId = presenter.tabs()[0].id;
     // Both projector descriptor ids land in the aria-describedby
-    // token list together — the rejection projector's `-rejected`
+    // token list together - the rejection projector's `-rejected`
     // suffix and the aggregator projector's `-errors` suffix coexist
     // without collision (distinct ids; both follow the shared
     // token-list-append pattern).
@@ -1067,7 +1067,7 @@ describe('CngxMatTabs instrumentation directive', () => {
     expect(slotContent).not.toBeNull();
     expect(slotContent.textContent?.trim()).toBe('Profile==3');
     // The imperative `announcement` text is NOT the descriptor
-    // textContent when the slot owns the body — proves the slot
+    // textContent when the slot owns the body - proves the slot
     // path replaced the imperative `setProperty(textContent, ...)`
     // fallback.
     expect(descriptorSpan.textContent?.trim()).not.toBe(
@@ -1099,7 +1099,7 @@ describe('CngxMatTabs instrumentation directive', () => {
     ) as HTMLElement;
     expect(slotContent.textContent?.trim()).toBe('Profile==2');
 
-    // Bump count — the projector destroys + remounts the embedded
+    // Bump count - the projector destroys + remounts the embedded
     // view with the fresh context.
     fixture.componentInstance.aggOneHandle.count.set(7);
     fixture.componentInstance.aggOneHandle.announcement.set('b');
@@ -1194,7 +1194,7 @@ describe('CngxMatTabs instrumentation directive', () => {
 
   test('axis 29: provideMatTabsConfig(withHalfWiredSlotSink(fn)) routes the half-wired diagnostic through the configured sink', async () => {
     const sink = vi.fn<(missing: 'contentTemplate' | 'viewContainerRef') => void>();
-    // No CNGX_DOM_ANCHOR_RETRY_FACTORY stub here — the half-wired path
+    // No CNGX_DOM_ANCHOR_RETRY_FACTORY stub here - the half-wired path
     // fires synchronously in the projector's constructor, well before
     // the anchor retry runs, so the default factory is fine.
     TestBed.configureTestingModule({
@@ -1204,10 +1204,10 @@ describe('CngxMatTabs instrumentation directive', () => {
       ],
     });
     // Mount the half-wired host (template binds *cngxMatTabAggregatorContent
-    // but the directive's own ViewContainerRef is — by construction —
+    // but the directive's own ViewContainerRef is - by construction -
     // present, so this scenario doesn't fire half-wired through the
     // aggregator host fixture). Instead, mount a host that explicitly
-    // skips the aggregator content slot — the directive's projector
+    // skips the aggregator content slot - the directive's projector
     // is configured with `contentTemplate` always present (signal of
     // the consumer slot), but ViewContainerRef stays present too.
     // Half-wired only fires when consumer wires ONE half. The
@@ -1219,7 +1219,7 @@ describe('CngxMatTabs instrumentation directive', () => {
     expect(resolved.halfWiredSlotSink).toBe(sink);
   });
 
-  test('axis 30: rapid _stateChanges emissions land — final write wins on the cngx handle', async () => {
+  test('axis 30: rapid _stateChanges emissions land - final write wins on the cngx handle', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
@@ -1238,12 +1238,12 @@ describe('CngxMatTabs instrumentation directive', () => {
     const firstMatTab = Array.from(setupsByTab.keys())[0];
     expect(firstMatTab).toBeDefined();
 
-    // Rapid burst — three Material `_stateChanges` emissions inside
+    // Rapid burst - three Material `_stateChanges` emissions inside
     // the same microtask. The takeUntilDestroyed-bridged subscriber
     // writes the cngx setup's `label` signal synchronously on each
     // emission; the final write wins on the handle's read-only
     // projection. Equivalent to the prior `Subscription`-based
-    // shape — only the cleanup mechanism has changed.
+    // shape - only the cleanup mechanism has changed.
     firstMatTab.textLabel = 'A';
     firstMatTab._stateChanges.next();
     firstMatTab.textLabel = 'B';
@@ -1253,7 +1253,7 @@ describe('CngxMatTabs instrumentation directive', () => {
     expect(firstHandle.label()).toBe('C');
   });
 
-  test('axis 31: tab unregister destroys the per-tab child injector — takeUntilDestroyed cleanup', async () => {
+  test('axis 31: tab unregister destroys the per-tab child injector - takeUntilDestroyed cleanup', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
@@ -1291,7 +1291,7 @@ describe('CngxMatTabs instrumentation directive', () => {
     // Drop the third tab; the directive's syncHandles loop must
     // call childInjector.destroy() on the leaving tab so the
     // takeUntilDestroyed-bridged `_stateChanges` subscription tears
-    // down deterministically — same cleanup precision as the prior
+    // down deterministically - same cleanup precision as the prior
     // `Map<MatTab, Subscription>`, with the destroy hook driven
     // through `DestroyRef` instead of explicit `unsubscribe()`.
     fixture.componentInstance['setShowThird'](false);
@@ -1359,7 +1359,7 @@ describe('CngxMatTabs instrumentation directive', () => {
     });
     const fixture = TestBed.createComponent(CommitHostCmp);
     // Synchronous-rejection commit so the error arm fires inside the
-    // single CD pass following the click — no need to flush a real
+    // single CD pass following the click - no need to flush a real
     // async timer.
     fixture.componentInstance['mode'] = 'optimistic';
     fixture.componentInstance['commit'] = (() => false) as CngxTabsCommitAction;
@@ -1392,7 +1392,7 @@ describe('CngxMatTabs instrumentation directive', () => {
     }
   });
 
-  test('axis 35: CNGX_MAT_TAB_HANDLE_FACTORY swap — viewProviders override is honoured', async () => {
+  test('axis 35: CNGX_MAT_TAB_HANDLE_FACTORY swap - viewProviders override is honoured', async () => {
     const calls: string[] = [];
     const wrappedFactory: CngxMatTabHandleFactory = (tab, idSeed, injector) => {
       const setup = createMatTabHandle(tab, idSeed, injector);
@@ -1411,7 +1411,7 @@ describe('CngxMatTabs instrumentation directive', () => {
     expect(new Set(calls).size).toBe(3);
   });
 
-  test('axis 36: CNGX_MAT_TAB_HANDLE_FACTORY default — token resolves to createMatTabHandle without override', async () => {
+  test('axis 36: CNGX_MAT_TAB_HANDLE_FACTORY default - token resolves to createMatTabHandle without override', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
@@ -1419,7 +1419,7 @@ describe('CngxMatTabs instrumentation directive', () => {
     expect(resolved).toBe(createMatTabHandle);
   });
 
-  test('axis 37: user-click rejection — clicking a Material tab whose commitAction returns false lands cngx-mat-tab--error on the clicked button', async () => {
+  test('axis 37: user-click rejection - clicking a Material tab whose commitAction returns false lands cngx-mat-tab--error on the clicked button', async () => {
     // Existing rejection axes (11–13) drive `presenter.select(...)`
     // directly; that path bypasses Material's MDC click handler and
     // therefore did not catch the user-flow gap where the Material
@@ -1427,8 +1427,8 @@ describe('CngxMatTabs instrumentation directive', () => {
     // rejection class on the clicked button (the failure mode behind
     // the *cngxMatTabRejectionContent demo "no outline" report). The
     // CSS-cascade specificity that Material's `.mdc-tab` requires
-    // lives in `mat-tabs.css` and is not unit-testable here — jsdom
-    // does not run Material's component-scoped <style> injection — so
+    // lives in `mat-tabs.css` and is not unit-testable here - jsdom
+    // does not run Material's component-scoped <style> injection - so
     // this axis pins ONLY the JS contract (class lands, presenter rolls
     // back, Material rolls back). The skin's specificity bump to
     // `.mat-mdc-tab.cngx-mat-tab--error` is the matching CSS guarantee
@@ -1466,13 +1466,13 @@ describe('CngxMatTabs instrumentation directive', () => {
     expect((matEl.componentInstance as MatTabGroup).selectedIndex).toBe(0);
   });
 
-  test('axis 38: routed guard-cancel — an async pessimistic commit resolving false leaves selectedIndex AND activeIndex at origin and sets lastFailedIndex', async () => {
+  test('axis 38: routed guard-cancel - an async pessimistic commit resolving false leaves selectedIndex AND activeIndex at origin and sets lastFailedIndex', async () => {
     // Routed tabs gate through the same commit lifecycle: a CanDeactivate
     // guard surfaces as createTabRouterCommit() resolving false on
     // NavigationCancel. This generalizes the sync-reject axis (37) to the
     // async router outcome, proving the bridge's selectedIndex sync reads
     // the COMMITTED activeIndex (which never advances in pessimistic mode)
-    // rather than the transition intent — Material does not fight the
+    // rather than the transition intent - Material does not fight the
     // router commit. The Material→presenter click direction is covered by
     // axis 37; this axis drives presenter.select to keep the async
     // pending/resolve timing deterministic (Material defers its own

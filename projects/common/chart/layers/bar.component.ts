@@ -31,13 +31,13 @@ const FALLBACK_BASELINE = 0;
  * Bar layer atom. Renders one `<rect>` per datapoint. Bar width comes
  * from `dimensions.width / dataLength` (one slot per datapoint) shrunk
  * by the optional `[gap]` ratio. Bar height runs from `yScale(value)`
- * down to `yScale(baseline)` (default 0) — SVG bottom-anchored.
+ * down to `yScale(baseline)` (default 0) - SVG bottom-anchored.
  *
  * Bar does NOT require a band X scale; the slot width is purely
  * geometric. This keeps the atom usable with linear or band X axes
  * interchangeably.
  *
- * Attribute-selector on `<svg:g>` — see {@link CngxLine} for why.
+ * Attribute-selector on `<svg:g>` - see {@link CngxLine} for why.
  *
  * @category common/chart/layers
  * @docsKind primary

@@ -17,7 +17,7 @@ export interface MutableAsyncState<T> extends CngxAsyncState<T> {
    * Execute an async action.
    *
    * Sets status to `pending`, then `success` or `error` on completion.
-   * Supersedes any in-flight execution — the previous result is discarded
+   * Supersedes any in-flight execution - the previous result is discarded
    * but the underlying network request is not aborted.
    */
   execute(fn: () => Promise<T> | Observable<T>): Promise<void>;
@@ -30,7 +30,7 @@ export interface MutableAsyncState<T> extends CngxAsyncState<T> {
 }
 
 /**
- * Create a mutation async state — for explicit user-triggered actions.
+ * Create a mutation async state - for explicit user-triggered actions.
  *
  * Must be called in an injection context (field initializer or constructor)
  * because it uses `inject(DestroyRef)` for cleanup.

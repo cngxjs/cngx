@@ -32,7 +32,7 @@ export interface CngxPopoverPanelConfig {
 
   /**
    * App-wide template overrides for the panel's visible regions. Each
-   * entry is the third tier of the slot cascade — per-instance
+   * entry is the third tier of the slot cascade - per-instance
    * `contentChild` directives still win, the library defaults still
    * lose. Set via `withArrowTemplate(...)` and friends.
    */

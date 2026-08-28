@@ -170,7 +170,7 @@ function setup(
   return { fixture, host: mockHost };
 }
 
-describe('CngxFilterExpressionRow — editor wiring matrix', () => {
+describe('CngxFilterExpressionRow - editor wiring matrix', () => {
   it('string editor: input event writes the raw string through to the host tree', () => {
     const expression: FilterExpression = {
       type: 'expression',

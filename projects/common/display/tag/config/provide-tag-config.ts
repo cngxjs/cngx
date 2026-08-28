@@ -42,7 +42,7 @@ export type CngxTagConfigFeature =
     };
 
 /**
- * Reduces a list of feature objects into a partial config — last
+ * Reduces a list of feature objects into a partial config - last
  * write wins per sub-tree. Inner objects are spread-merged so
  * partial overrides (e.g. just `variant` without `color`) compose
  * cleanly with prior writes.
@@ -159,7 +159,7 @@ export function provideTagConfig(
  *
  * Unlike `provideTagConfig` (root-only), `provideTagConfigAt` injects
  * the parent injector's `CNGX_TAG_CONFIG` value (resolves through
- * the priority chain — root provider, library defaults, or another
+ * the priority chain - root provider, library defaults, or another
  * `provideTagConfigAt` further up) and deep-merges the supplied
  * features on top. This produces cumulative cascade behaviour:
  * descendant tag instances see the merged config, sibling sub-trees

@@ -104,7 +104,7 @@ class EmptyHost {
   }
 }
 
-describe('CngxRangeSliderFieldBridge — empty field mount', () => {
+describe('CngxRangeSliderFieldBridge - empty field mount', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({ imports: [EmptyHost] });
   });

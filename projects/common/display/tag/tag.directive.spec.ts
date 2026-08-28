@@ -182,7 +182,7 @@ describe('CngxTag', () => {
     expect(host.getAttribute('data-color')).toBe('my-brand');
   });
 
-  it('(g) <a cngxTag> preserves native anchor semantics — no synthetic role attr', () => {
+  it('(g) <a cngxTag> preserves native anchor semantics - no synthetic role attr', () => {
     const fixture = TestBed.createComponent(LinkTagHost);
     flush(fixture);
     const host: HTMLAnchorElement = fixture.nativeElement.querySelector('[data-testid="link-tag"]');
@@ -266,12 +266,12 @@ describe('CngxTag', () => {
     const ctx2 = tagInstance.slotContext();
     expect(ctx2).toBe(ctx1);
 
-    // Identical write — signal dedupes, computed never re-evaluates.
+    // Identical write - signal dedupes, computed never re-evaluates.
     fixture.componentInstance.variant.set('filled');
     flush(fixture);
     expect(tagInstance.slotContext()).toBe(ctx1);
 
-    // Real change — equal fn rejects, new reference emitted.
+    // Real change - equal fn rejects, new reference emitted.
     fixture.componentInstance.variant.set('outline');
     flush(fixture);
     expect(tagInstance.slotContext()).not.toBe(ctx1);

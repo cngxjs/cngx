@@ -4,7 +4,7 @@ import { type DestroyRef, type Signal, signal } from '@angular/core';
 const GESTURE_EVENTS = ['pointerdown', 'keydown', 'touchstart'] as const;
 
 /**
- * A minimal `EventTarget` surface — only what the gate installs. Accepting
+ * A minimal `EventTarget` surface - only what the gate installs. Accepting
  * this narrow shape (rather than a concrete `Document`) keeps the factory
  * inject-free and trivially fakeable in a spec.
  * @category common/audio
@@ -22,7 +22,7 @@ export type GestureEventTarget = Pick<EventTarget, 'addEventListener' | 'removeE
 export interface CngxAutoplayGate {
   /**
    * `true` once a user gesture (or an explicit {@link arm}) has satisfied the
-   * browser autoplay policy. Derived from a single gesture event — never
+   * browser autoplay policy. Derived from a single gesture event - never
    * synced from multiple handlers.
    */
   readonly armed: Signal<boolean>;
@@ -38,14 +38,14 @@ export interface CngxAutoplayGate {
  * `AudioContext`, honouring the browser autoplay policy without a permission
  * prompt.
  *
- * Pure factory — takes its `target` and `destroyRef` as arguments rather than
+ * Pure factory - takes its `target` and `destroyRef` as arguments rather than
  * calling `inject()`, so it composes inside the engine's injection context yet
  * stays testable with a fake target. No DI token: the gate has no independent
  * swap consumer (severity ladder `concern: over-abstraction`), so it ships
  * token-less and the engine owns it.
  *
  * @param deps.target The event target to listen on (typically the `Document`).
- * @param deps.destroyRef Cleanup owner — removes any surviving listeners on destroy.
+ * @param deps.destroyRef Cleanup owner - removes any surviving listeners on destroy.
  * @category common/audio
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/autoplay-gate/autoplay-gate.ts
  * @since 0.1.0

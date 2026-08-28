@@ -74,7 +74,7 @@ async function flushMicrotasks(rounds = 5): Promise<void> {
 
 // Wait out the molecule's IO-debounce window plus a microtask drain
 // so the visibilityState write has committed before assertions run.
-// Real-timer based — the molecule uses setTimeout, and per
+// Real-timer based - the molecule uses setTimeout, and per
 // `feedback_afternextrender_in_zoneless_tests` we avoid mixing fake
 // timers with whenStable. CngxTabOverflow.STABILIZE_MS is 100ms;
 // 130ms gives a safety margin for jsdom timer jitter.
@@ -161,7 +161,7 @@ describe('CngxTabOverflow', () => {
   });
 
   it('binds aria-label on the popover surface from i18n.moreTabsLabel for landmark naming', async () => {
-    // WAI-ARIA 1.2 §5.2.6.4 — every landmark must be nameable. The
+    // WAI-ARIA 1.2 §5.2.6.4 - every landmark must be nameable. The
     // trigger button's aria-label names the BUTTON; the popover
     // surface needs its own accessible name reflecting the same i18n
     // string so AT consistently identifies the popup landmark.
@@ -214,7 +214,7 @@ describe('CngxTabOverflow', () => {
     await Promise.resolve();
     fixture.detectChanges();
 
-    // Mouse-driven open should not pre-highlight any option — pre-
+    // Mouse-driven open should not pre-highlight any option - pre-
     // highlighting on every open looks like "something is already
     // selected" to mouse-only users. AD's keydown handler still
     // highlights on first ArrowDown.
@@ -293,7 +293,7 @@ describe('CngxTabOverflow', () => {
       ) as NodeListOf<HTMLElement>,
     );
     // After mouse-driven re-open, no option should be pre-highlighted
-    // — the previous keyboard-set "last" index from the End press
+    // - the previous keyboard-set "last" index from the End press
     // before close must NOT leak into the new open. AD's keydown
     // handler will highlight again on the next ArrowDown / etc.
     expect(
@@ -366,7 +366,7 @@ describe('CngxTabOverflow', () => {
     expect((overflow as unknown as { popover: () => { show: () => void; hide: () => void; isVisible: () => boolean } }).popover().isVisible()).toBe(false);
   });
 
-  it('option <li> ids follow the tabOverflowOptionId contract — aria-activedescendant resolves to a real DOM element', async () => {
+  it('option <li> ids follow the tabOverflowOptionId contract - aria-activedescendant resolves to a real DOM element', async () => {
     const { instances } = installMockIntersectionObserver();
     stubPopoverApi();
     const fixture = TestBed.createComponent(OverflowHost);
@@ -448,7 +448,7 @@ describe('CngxTabOverflow', () => {
   it('AD-active option carries the cngx-tab-overflow__item--active class for visible keyboard feedback', async () => {
     // Without this class binding, ArrowUp/Down/Home/End/typeahead
     // still update aria-activedescendant correctly but the user sees
-    // nothing change in the popover — APG combobox pattern requires
+    // nothing change in the popover - APG combobox pattern requires
     // visible indication of the highlighted option.
     const { instances } = installMockIntersectionObserver();
     stubPopoverApi();
@@ -480,7 +480,7 @@ describe('CngxTabOverflow', () => {
         ) as NodeListOf<HTMLElement>,
       );
 
-    // No nav key pressed yet — no option carries the active class.
+    // No nav key pressed yet - no option carries the active class.
     expect(items().some((li) => li.classList.contains('cngx-tab-overflow__item--active'))).toBe(false);
 
     trigger.dispatchEvent(
@@ -502,7 +502,7 @@ describe('CngxTabOverflow', () => {
       li.classList.contains('cngx-tab-overflow__item--active'),
     );
     // The active class moved to a different option after the second
-    // ArrowDown — exact-once invariant: a single option is active at
+    // ArrowDown - exact-once invariant: a single option is active at
     // any given time.
     expect(active2).toBeGreaterThanOrEqual(0);
     expect(after2.filter((li) => li.classList.contains('cngx-tab-overflow__item--active')).length).toBe(1);
@@ -544,7 +544,7 @@ describe('CngxTabOverflow', () => {
     );
     fixture.detectChanges();
 
-    // Pre-existing tab `buttons[2]` is the first hidden tab — picking
+    // Pre-existing tab `buttons[2]` is the first hidden tab - picking
     // it routes through panelHost.selectById and the strip activates.
     expect(buttons[2].getAttribute('aria-selected')).toBe('true');
   });
@@ -552,7 +552,7 @@ describe('CngxTabOverflow', () => {
   it('mounts role=menu on the popover surface, role=presentation on the <ul>, aria-haspopup=menu on the trigger (ARIA menu-button pattern)', async () => {
     // The hidden-tabs popover is a quick-jump navigation surface, not
     // a value-selecting listbox. Picking an item triggers selectById
-    // on the panel host — there is no persistent "selected option"
+    // on the panel host - there is no persistent "selected option"
     // semantics, so menu/menuitem is the spec-correct contract.
     // listbox/option implies aria-selected state per ARIA 1.2 §5.4
     // which does not apply to a transient navigation popup.
@@ -560,7 +560,7 @@ describe('CngxTabOverflow', () => {
     //   trigger → plain `<button>` (no explicit role; default button
     //             role applies) + aria-haspopup="menu". The combobox
     //             role is deliberately NOT used: WAI-ARIA 1.2 forbids
-    //             pairing combobox with aria-haspopup="menu" — the
+    //             pairing combobox with aria-haspopup="menu" - the
     //             role must point at listbox/tree/grid/dialog.
     //   popover surface → role="menu" (the popup target)
     //   <ul> → role="presentation" so each <li role="menuitem"> is a
@@ -579,7 +579,7 @@ describe('CngxTabOverflow', () => {
     const list = fixture.nativeElement.querySelector(
       '.cngx-tab-overflow__list',
     ) as HTMLElement;
-    // Trigger is a plain button — no explicit role attribute (regression
+    // Trigger is a plain button - no explicit role attribute (regression
     // fence: a future re-introduction of role="combobox" would fail
     // because combobox + aria-haspopup="menu" is invalid per WAI-ARIA 1.2).
     expect(trigger.tagName).toBe('BUTTON');
@@ -592,7 +592,7 @@ describe('CngxTabOverflow', () => {
   it('hidden-tab items use role=menuitem and carry NO aria-selected attribute (menu pattern, not listbox)', async () => {
     // Pre-fix the items rendered with role="option" + a hard-coded
     // aria-selected="false". Both are wrong contract for a quick-jump
-    // navigation popup — aria-selected is listbox/option vocabulary
+    // navigation popup - aria-selected is listbox/option vocabulary
     // and AT consumers reading it would interpret every hidden tab
     // as a deselectable value-state. The fix-axis pins the new
     // contract so a regression cannot silently re-introduce either.
@@ -655,7 +655,7 @@ describe('CngxTabOverflow', () => {
     expect(buttons.length).toBe(4);
     // Mark the last two as clipped. Partial-clip cases
     // (isIntersecting=true, ratio<1) count as visible under
-    // threshold-0 semantics — the user can still see *some*
+    // threshold-0 semantics - the user can still see *some*
     // pixels of the tab, no need to surface it in the dropdown.
     observer.fire([
       { target: buttons[0], isIntersecting: true, intersectionRatio: 1 },
@@ -730,7 +730,7 @@ describe('CngxTabOverflow', () => {
       '.cngx-tab-overflow__trigger',
     ) as HTMLElement;
     expect(triggerBefore.hidden).toBe(false);
-    // Remove the last two tabs from the registry — hiddenTabs should
+    // Remove the last two tabs from the registry - hiddenTabs should
     // re-derive to empty since the stale ids drop out.
     fixture.componentInstance.labels.set(['A', 'B']);
     fixture.detectChanges();
@@ -745,12 +745,12 @@ describe('CngxTabOverflow', () => {
     // Rule. The IO callback's `update((prev) => new Map(prev))`
     // produces a fresh Map reference on every fire. Without
     // `mapBoolEqual` on the source `visibilityState` signal, every
-    // IO event would invalidate the signal — and every downstream
+    // IO event would invalidate the signal - and every downstream
     // `effect`/`computed` that reads it would re-fire / recompute,
     // even when no tab actually flipped visibility. The cascading
     // recompute is the cost we want to avoid. Asserting against
     // `hiddenTabs` (which already carries `tabIdListEqual` on its
-    // computed) does NOT prove the source-signal gate works —
+    // computed) does NOT prove the source-signal gate works -
     // `tabIdListEqual` would suppress the value write regardless,
     // producing a coincidence pass. Instead, install an
     // `effect()` that reads `visibilityState` directly via the
@@ -760,14 +760,14 @@ describe('CngxTabOverflow', () => {
     // Implementation-detail trade-off (intentional): the cast at
     // line ~292 reaches into the private `visibilityState` field via
     // a type assertion. cngx testing convention discourages
-    // implementation-detail coupling — but this regression-fence
+    // implementation-detail coupling - but this regression-fence
     // CANNOT be expressed against the public surface (`hiddenTabs`)
     // without relying on the very downstream gate (`tabIdListEqual`)
     // that masks the bug we're testing for. Exposing a public
     // testing proxy for `visibilityState` would be worse: it
     // architecturally formalises a private slot. Future readers
     // tempted to "clean this up" by routing through `hiddenTabs`
-    // should re-read this paragraph first — the cast is the price
+    // should re-read this paragraph first - the cast is the price
     // of admission for a load-bearing fence.
     const { instances } = installMockIntersectionObserver();
     const fixture = TestBed.createComponent(OverflowHost);
@@ -785,7 +785,7 @@ describe('CngxTabOverflow', () => {
 
     // Install a tracking effect against the private signal. If
     // `mapBoolEqual` correctly suppresses identity-only writes, the
-    // effect runs ONCE per real change — not once per IO emission.
+    // effect runs ONCE per real change - not once per IO emission.
     const visibilityRef = (
       overflow as unknown as {
         visibilityState: () => ReadonlyMap<string, boolean>;
@@ -812,7 +812,7 @@ describe('CngxTabOverflow', () => {
     const afterFirst = runs;
 
     // Second fire with IDENTICAL entries. `mapBoolEqual` MUST gate
-    // the source signal — effect run count must NOT increment.
+    // the source signal - effect run count must NOT increment.
     observer.fire([
       { target: buttons[0], isIntersecting: true, intersectionRatio: 1 },
       { target: buttons[1], isIntersecting: true, intersectionRatio: 1 },
@@ -881,7 +881,7 @@ describe('CngxTabOverflow', () => {
     // keep clearing the stabilize timer indefinitely. The counter
     // would freeze on a stale value the entire time. The cap MUST
     // force a commit within MAX_DEFER_MS regardless of further
-    // resets — proven here by counting visibilityState emissions
+    // resets - proven here by counting visibilityState emissions
     // during a sustained-churn window that exceeds the cap.
     const { instances } = installMockIntersectionObserver();
     const fixture = TestBed.createComponent(OverflowHost);
@@ -927,17 +927,17 @@ describe('CngxTabOverflow', () => {
       ]);
       await new Promise((res) => setTimeout(res, 50));
     }
-    // Tail wait — let the cap-driven flush land before assertions.
+    // Tail wait - let the cap-driven flush land before assertions.
     await new Promise((res) => setTimeout(res, 130));
     TestBed.flushEffects();
 
     expect(emissions).toBeGreaterThan(baseline);
   });
 
-  it('respects withTabOverflowMaxDeferMs override — a tighter cap forces a commit sooner', async () => {
+  it('respects withTabOverflowMaxDeferMs override - a tighter cap forces a commit sooner', async () => {
     // Pins the cascade contract: per-instance > viewProviders >
     // root provider > library default. Library default is 250ms.
-    // Override to 80ms — under sustained 50ms-period IO churn, the
+    // Override to 80ms - under sustained 50ms-period IO churn, the
     // tighter cap MUST flush at least one commit within ~120ms
     // wall-clock (well below the library default that would never
     // flush in this window).
@@ -980,7 +980,7 @@ describe('CngxTabOverflow', () => {
     // Drive the same churn pattern as the library-default test: 5
     // IO fires every 50ms (faster than the 100ms quiescence). With
     // the 80ms cap, the very first cycle exhausts the budget and
-    // the next IO event triggers the cap-driven flush — at least
+    // the next IO event triggers the cap-driven flush - at least
     // one emission lands within the loop.
     for (let i = 0; i < 4; i++) {
       observer.fire([
@@ -992,7 +992,7 @@ describe('CngxTabOverflow', () => {
       ]);
       await new Promise((res) => setTimeout(res, 50));
     }
-    // Tail wait — short, just enough to drain the cap-driven flush.
+    // Tail wait - short, just enough to drain the cap-driven flush.
     await new Promise((res) => setTimeout(res, 30));
     TestBed.flushEffects();
 
@@ -1010,7 +1010,7 @@ describe('CngxTabOverflow', () => {
     // visibility map via a target→handle id WeakMap populated at
     // observe time. This axis pins that contract by simulating a
     // custom adapter that returns buttons whose DOM ids deliberately
-    // do NOT correlate to the cngx handle ids — the popover must
+    // do NOT correlate to the cngx handle ids - the popover must
     // still surface the right hidden tabs.
     const { instances } = installMockIntersectionObserver();
     const customStrip = document.createElement('div');
@@ -1056,7 +1056,7 @@ describe('CngxTabOverflow', () => {
 
     const observer = instances[0];
     expect(observer).toBeDefined();
-    // Mark trailing 2 buttons as fully clipped — the IO entry's
+    // Mark trailing 2 buttons as fully clipped - the IO entry's
     // target.id is `foreign-scheme-charlie` / `-delta`, which has
     // no relationship to the cngx handle ids of the 'C' / 'D' tabs
     // (those are nextUid-generated). Without the WeakMap fix, the
@@ -1080,14 +1080,14 @@ describe('CngxTabOverflow', () => {
     customStrip.remove();
   });
 
-  it('delegates DOM resolution to the injected adapter (cascade axis — default vs override)', async () => {
+  it('delegates DOM resolution to the injected adapter (cascade axis - default vs override)', async () => {
     // The default `CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY` mirrors the
     // cngx-native selector contract, so the existing axes already
     // pin the default cascade. This axis pins the OTHER side of the
     // cascade: a custom adapter override flows through the molecule
     // unchanged. The contract is structural (host element passed +
     // panelHost reference + per-tab idx), so a delegation spy is the
-    // right shape — driving the IO callback through a fabricated
+    // right shape - driving the IO callback through a fabricated
     // strip would test IO plumbing again, not the adapter swap.
     installMockIntersectionObserver();
     const customStrip = document.createElement('div');
@@ -1129,14 +1129,14 @@ describe('CngxTabOverflow', () => {
 
     expect(resolveStripRootSpy).toHaveBeenCalled();
     // Adapter receives the molecule's <cngx-tab-overflow> host element
-    // — pins the contract that variants like the Material adapter rely
+    // - pins the contract that variants like the Material adapter rely
     // on for `closest('.mat-mdc-tab-header')` walks.
     const stripCall = resolveStripRootSpy.mock.calls[0];
     expect(stripCall[1]).toBeInstanceOf(HTMLElement);
     expect((stripCall[1] as HTMLElement).tagName).toBe('CNGX-TAB-OVERFLOW');
 
     // Each of the four registered tab handles flows through
-    // `resolveTabButton` with its positional idx — pins the index
+    // `resolveTabButton` with its positional idx - pins the index
     // contract the Material adapter consumes.
     expect(resolveTabButtonSpy).toHaveBeenCalledTimes(4);
     const indices = resolveTabButtonSpy.mock.calls.map((c) => c[2]);
@@ -1193,7 +1193,7 @@ describe('CngxTabOverflow', () => {
       const overflow = fixture.debugElement.query(
         (el) => el.componentInstance instanceof CngxTabOverflow,
       ).componentInstance as InstanceType<typeof CngxTabOverflow>;
-      // Pull a real tab id from the molecule's panel-host registry —
+      // Pull a real tab id from the molecule's panel-host registry -
       // CngxTab auto-generates ids; hardcoding 'A'/'B' would not match.
       const realIds = (
         overflow as unknown as {
@@ -1202,7 +1202,7 @@ describe('CngxTabOverflow', () => {
       ).panelHost.tabs().map((t) => t.id);
       const targetId = realIds[1];
 
-      // Force a hidden state by writing the visibility map directly —
+      // Force a hidden state by writing the visibility map directly -
       // bypasses IO-debounce timing and pins the cascade contract
       // independent of intersection observer plumbing.
       (
@@ -1234,7 +1234,7 @@ describe('CngxTabOverflow', () => {
     });
 
     // Middle-tier (config) cascade is covered by the factory-level
-    // spec at projects/common/tabs/src/overflow/overflow-template-cascade.spec.ts —
+    // spec at projects/common/tabs/src/overflow/overflow-template-cascade.spec.ts -
     // reproducing the TemplateRef-through-config integration here adds
     // jsdom plumbing complexity without proving anything beyond what
     // the factory spec already pins. Per-instance + default tiers stay
@@ -1271,7 +1271,7 @@ describe('CngxTabOverflow', () => {
       TestBed.flushEffects();
       fixture.detectChanges();
 
-      // Default branch — built-in span renders the i18n moreTabsLabel
+      // Default branch - built-in span renders the i18n moreTabsLabel
       // (English library default `${count} more`). The exact phrasing
       // is brittle to lock; assert the fallback fired by checking for
       // the EN keyword `more` and absence of any consumer-template
