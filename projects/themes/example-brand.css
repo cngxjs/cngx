@@ -8,16 +8,26 @@
  *
  * **Variants**
  *
- * Override groups demonstrated, each in its own `:root` block:
+ * Override groups demonstrated:
  *
  * - **System tokens** - color, spacing, radius, motion, typography,
- *   elevation; affect everything that consumes them
- * - **Component tokens** - `--cngx-backdrop-*`, `--cngx-chip-*`;
- *   affect only the named component
- * - **Density switches** - `:root[data-density='compact']` and
- *   `[data-density='comfortable']` re-pin spacing + chip padding
+ *   elevation; one `:root` block, they inherit everywhere (every
+ *   system token registers `inherits: true`)
+ * - **Component tokens** - `--cngx-backdrop-*`, `--cngx-chip-*`.
+ *   Placement follows the registration: tokens registered
+ *   `inherits: true` sit on `:root`; tokens registered
+ *   `inherits: false` sit on the element that consumes them
+ *   (`.cngx-chip`, `.cngx-chip__remove`, `.cngx-backdrop`) - a
+ *   `:root` pin on a non-inheriting token is a silent no-op
+ * - **Axis switches** - brand re-pins for the density rungs
+ *   (`[data-density='compact'|'comfortable'|'spacious']`), the
+ *   contrast boost (`[data-contrast='more']`), the text scale
+ *   (`--cngx-font-base`), and the touch-target floor
+ *   (`[data-touch='on']`)
  * - **Mode switch** - `:root[data-theme='dark']` opts into a forced
- *   dark palette when `light-dark()` alone isn't enough
+ *   dark palette when `light-dark()` alone isn't enough; its
+ *   `color-scheme` declaration is a real property and therefore
+ *   lives in the `app` layer at the bottom of this file
  *
  * **Customisation**
  *
@@ -75,6 +85,7 @@
      * dark variants. */
     --cngx-color-surface: light-dark(oklch(0.99 0.005 290), oklch(0.16 0.01 290));
     --cngx-color-text: light-dark(oklch(0.15 0.02 290), oklch(0.95 0.005 290));
+    --cngx-color-text-muted: light-dark(oklch(0.45 0.03 290), oklch(0.7 0.02 290));
     --cngx-color-border: light-dark(oklch(0.88 0.015 290), oklch(0.32 0.02 290));
     --cngx-color-primary: oklch(0.55 0.18 290); /* brand purple */
     --cngx-color-danger: oklch(0.6 0.2 25);
@@ -119,53 +130,108 @@
   /* COMPONENT TOKENS - affect only the named Component             */
   /* ============================================================ */
 
+  /* Tokens registered `inherits: true` cascade from :root like the
+   * system tokens above. */
   :root {
     /* CngxBackdrop (directive) */
     --cngx-backdrop-bg: oklch(0 0 0 / 0.7);
-    --cngx-backdrop-transition-duration: 150ms;
 
-    /* CngxChip - static appearance */
+    /* CngxChip - inheriting color pair + remove-button focus color */
+    --cngx-chip-bg: oklch(0.55 0.18 290 / 0.15);
+    --cngx-chip-color: inherit;
+    --cngx-chip-remove-focus-color: oklch(0.55 0.18 290);
+  }
+
+  /* Tokens registered `inherits: false` (paint containment) must sit
+   * on the element that consumes them - a :root pin never reaches it. */
+  .cngx-backdrop {
+    --cngx-backdrop-transition-duration: 150ms;
+  }
+
+  .cngx-chip {
     --cngx-chip-inner-gap: 6px;
     --cngx-chip-padding-block: 4px;
     --cngx-chip-padding-inline: 12px;
     --cngx-chip-radius: 4px;
-    --cngx-chip-bg: oklch(0.55 0.18 290 / 0.15);
-    --cngx-chip-color: inherit;
     --cngx-chip-font-size: 0.875rem;
+  }
 
-    /* CngxChip - remove-button states */
+  .cngx-chip__remove {
     --cngx-chip-remove-opacity: 0.6;
     --cngx-chip-remove-opacity-hover: 1;
     --cngx-chip-remove-radius: 2px;
     --cngx-chip-remove-focus-width: 3px;
-    --cngx-chip-remove-focus-color: oklch(0.55 0.18 290);
     --cngx-chip-remove-focus-offset: 2px;
   }
 
   /* ============================================================ */
-  /* DENSITY & MODE SWITCHES - opt-in via data-* attributes         */
+  /* AXIS & MODE SWITCHES - opt-in via data-* attributes           */
   /* ============================================================ */
 
   :root[data-density='compact'] {
     --cngx-space-md: 12px;
     --cngx-space-lg: 16px;
-    --cngx-chip-padding-block: 2px;
-    --cngx-chip-padding-inline: 8px;
-    --cngx-chip-radius: 2px;
   }
 
   :root[data-density='comfortable'] {
     --cngx-space-md: 20px;
     --cngx-space-lg: 32px;
+  }
+
+  :root[data-density='spacious'] {
+    --cngx-space-md: 24px;
+    --cngx-space-lg: 36px;
+    --cngx-space-xl: 48px;
+  }
+
+  /* Chip re-pins per density rung - non-inheriting tokens, so the
+   * rung selector wraps the consuming element, not :root. */
+  [data-density='compact'] .cngx-chip {
+    --cngx-chip-padding-block: 2px;
+    --cngx-chip-padding-inline: 8px;
+    --cngx-chip-radius: 2px;
+  }
+
+  [data-density='comfortable'] .cngx-chip {
     --cngx-chip-padding-inline: 16px;
+  }
+
+  /* Contrast boost - brand-hued re-pin of the two tokens the
+   * [data-contrast] axis swaps (border strengthens, muted text
+   * promotes). Unanchored so a CngxContrast subtree island works. */
+  [data-contrast='more'] {
+    --cngx-color-border: color-mix(in oklab, var(--cngx-color-text) 70%, var(--cngx-color-surface));
+    --cngx-color-text-muted: var(--cngx-color-text);
+  }
+
+  /* Text scale - feed the base the [data-text-size] multiplier scales.
+   * The brand renders at a 17px base instead of the browser default. */
+  :root {
+    --cngx-font-base: 106.25%;
+  }
+
+  /* Touch-target floor - raise the brand's floor above the 44px
+   * default when the touch axis is forced on, and give adjacent
+   * targets a wider brand gap than the 8px coarse-pointer lift. */
+  [data-touch='on'] {
+    --cngx-target-min: 48px;
+    --cngx-target-gap: 10px;
   }
 
   /* Force-dark - opt-in alternative when OS-based light-dark() isn't enough */
   :root[data-theme='dark'] {
-    color-scheme: dark;
     --cngx-color-surface: oklch(0.16 0.01 290);
     --cngx-color-text: oklch(0.95 0.005 290);
     --cngx-color-border: oklch(0.32 0.02 290);
     --cngx-backdrop-bg: oklch(0 0 0 / 0.8);
+  }
+}
+
+/* color-scheme is a real property, not a token - per the layering
+ * guidance above it belongs in the consumer's app layer, which
+ * cascades after cngx.theme. */
+@layer app {
+  :root[data-theme='dark'] {
+    color-scheme: dark;
   }
 }
