@@ -66,13 +66,16 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  * toggle does not double-fire alongside the chip's `(remove)`
  * output.
  *
- * **Disabled "why".** When `disabledReason` is set, the directive
- * appends a hidden span to the host via `Renderer2` (always-in-DOM
- * per Pillar 2 - the id stays stable across renders). When
- * `disabledReason` is empty, consumers may still pass a custom id
- * via `cngxDescribedBy` and the `aria-describedby` host binding
- * routes to that. The two paths are mutually exclusive: a non-empty
- * `disabledReason` wins.
+ * **Disabled "why".** The directive appends a hidden span to the host
+ * via `Renderer2` (always-in-DOM per Pillar 2 - the id stays stable
+ * across renders). Both the span's `aria-hidden` and the host's
+ * `aria-describedby` reference are gated on `disabled() &&
+ * disabledReason()` (Toggle/Radio convergence): a reason set on an
+ * enabled chip announces nothing and stays out of reading order.
+ * Outside that state, consumers may still pass a custom id via
+ * `cngxDescribedBy` and the `aria-describedby` host binding routes to
+ * that. The two paths are mutually exclusive: the active
+ * disabled-reason wins.
  *
  * ```html
  * <cngx-chip cngxChipInteraction [value]="'red'" [(selected)]="redOn">
@@ -195,7 +198,11 @@ export class CngxChipInteraction<T = unknown>
   private readonly describedId = nextUid('cngx-chip-desc');
 
   protected readonly resolvedDescribedBy = computed<string | null>(() => {
-    if (this.disabledReason()) {
+    // Gate on the effective disabled state, not the reason text alone
+    // (Toggle/Radio convergence): accname 1.2 §2A traverses a directly
+    // referenced hidden node, so the id must only be emitted while the
+    // description applies.
+    if (this.disabled() && this.disabledReason()) {
       return this.describedId;
     }
     return this.describedBy();
@@ -248,7 +255,7 @@ export class CngxChipInteraction<T = unknown>
     });
 
     effect(() => {
-      const reason = this.disabledReason();
+      const reason = this.disabled() && this.disabledReason() ? this.disabledReason() : '';
       untracked(() => {
         if (reason) {
           renderer.removeAttribute(span, 'aria-hidden');

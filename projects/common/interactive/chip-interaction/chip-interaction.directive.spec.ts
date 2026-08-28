@@ -121,6 +121,72 @@ describe('CngxChipInteraction', () => {
   // throw through TestBed without zone-aware infrastructure produces
   // noisy unhandled-error stderr without a meaningful assertion target.
 
+  describe('aria-describedby gating (Toggle/Radio convergence)', () => {
+    @Component({
+      template: `
+        <cngx-chip
+          cngxChipInteraction
+          [value]="'tag-1'"
+          [disabled]="off()"
+          [disabledReason]="reason()"
+          [cngxDescribedBy]="customId()"
+        >Tag 1</cngx-chip>
+      `,
+      imports: [CngxChip, CngxChipInteraction],
+    })
+    class GateHost {
+      off = signal(false);
+      reason = signal('');
+      customId = signal<string | null>(null);
+    }
+
+    function setupGate() {
+      const fixture = TestBed.createComponent(GateHost);
+      fixture.detectChanges();
+      const de = fixture.debugElement.query(By.directive(CngxChipInteraction));
+      return { fixture, host: fixture.componentInstance, el: de.nativeElement as HTMLElement };
+    }
+
+    it('gates the reason id and the span visibility on disabled AND a reason', () => {
+      const { fixture, host, el } = setupGate();
+      expect(el.getAttribute('aria-describedby')).toBeNull();
+
+      // reason set while enabled describes a state the chip is not in
+      host.reason.set('Tag is locked by your role');
+      fixture.detectChanges();
+      expect(el.getAttribute('aria-describedby')).toBeNull();
+      const span = el.querySelector('[id^="cngx-chip-desc"]');
+      expect(span?.getAttribute('aria-hidden')).toBe('true');
+      expect(span?.textContent).toBe('');
+
+      // disabled with the reason: it applies and is announced
+      host.off.set(true);
+      fixture.detectChanges();
+      expect(el.getAttribute('aria-describedby')).toBe(span?.id);
+      expect(span?.getAttribute('aria-hidden')).toBeNull();
+      expect(span?.textContent).toContain('Tag is locked by your role');
+
+      // re-enabling retracts the reference and re-hides the span
+      host.off.set(false);
+      fixture.detectChanges();
+      expect(el.getAttribute('aria-describedby')).toBeNull();
+      expect(span?.getAttribute('aria-hidden')).toBe('true');
+    });
+
+    it('falls back to the consumer cngxDescribedBy id while the reason does not apply', () => {
+      const { fixture, host, el } = setupGate();
+      host.customId.set('chip-custom-desc');
+      host.reason.set('Locked');
+      fixture.detectChanges();
+      expect(el.getAttribute('aria-describedby')).toBe('chip-custom-desc');
+
+      // the active disabled-reason wins over the custom id
+      host.off.set(true);
+      fixture.detectChanges();
+      expect(el.getAttribute('aria-describedby')).toMatch(/^cngx-chip-desc/);
+    });
+  });
+
   describe('aria-invalid + aria-errormessage symmetric semantics', () => {
     it('aria-invalid reflects invalid() alone (no form-field host)', () => {
       const { fixture, dir, el } = setup();
