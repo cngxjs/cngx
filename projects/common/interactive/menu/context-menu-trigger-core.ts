@@ -122,11 +122,12 @@ export interface CngxContextMenuTriggerCore {
    */
   openActiveSubmenu(): void;
   /**
-   * Record that the active item's submenu is already open (shown by the
-   * organism's hover facade), pushing it onto the focus stack WITHOUT
-   * re-opening it, so ArrowLeft / Escape pop a hover-opened submenu the same as
-   * a keyboard-opened one. No-op on a leaf and idempotent once the submenu is
-   * on the stack. The DI host calls this from the item's hover terminal.
+   * Record that the active item's submenu is already open, pushing it onto
+   * the focus stack WITHOUT re-opening it. Safety net for opens the stack did
+   * not perform itself - the organism panel forwards it from the item's
+   * `openAsSubmenu` terminal, covering programmatic opens; for hover and
+   * click the stack already opened the submenu and this is an idempotent
+   * no-op. No-op on a leaf.
    */
   noteActiveSubmenuOpened(): void;
   /** Drive from the directive's `isOpen` effect (inside `untracked`). */

@@ -93,10 +93,13 @@ export interface CngxMenuFocusStack {
   /**
    * Record that a submenu is already open, pushing its inner menu onto the
    * stack and highlighting the first item WITHOUT calling `submenu.open()`.
-   * The organism's hover path shows the submenu popover through its own facade
-   * and then calls this, so a hover-opened submenu is stack-tracked (ArrowLeft
-   * / Escape pop it) exactly like a keyboard- or click-opened one, with no risk
-   * of re-entering the open path. Idempotent once the submenu is on the stack.
+   * Safety net for opens the stack did not perform itself - e.g. the
+   * organism's programmatic `openAsSubmenu` seam - so an externally opened
+   * submenu is stack-tracked (ArrowLeft / Escape pop it) exactly like a
+   * keyboard-opened one, with no risk of re-entering the open path. Hover
+   * does not need it: it routes through {@link openSubmenuFor} via
+   * `connectSubmenuHoverToFocusStack`, and this call is then an idempotent
+   * no-op because the submenu is already on the stack.
    */
   noteSubmenuOpened(submenu: CngxMenuSubmenuLike): void;
   /** Close every open submenu innermost-first, then hide the popover. */
@@ -149,7 +152,7 @@ export function createMenuFocusStack(deps: CngxMenuFocusStackDeps): CngxMenuFocu
   };
 
   // Push the submenu's inner menu onto the stack and highlight its first item,
-  // but only once - the terminal show (organism hover facade) and the open
+  // but only once - the external-open note (organism openAsSubmenu) and the open
   // paths (ArrowRight / click) both funnel here, so the guard keeps a submenu
   // from being pushed or re-highlighted twice. `inner` is null for an inert
   // brain: the context-menu organism applies CngxMenuItemSubmenu to every item,

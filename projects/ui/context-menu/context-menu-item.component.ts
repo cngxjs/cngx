@@ -185,9 +185,10 @@ export class CngxContextMenuItem implements CngxMenuSubmenuWiring {
     // ejected item skin never carries CngxPopover internals (decompose).
     target.openAsSubmenu(this.parentPanel?.context() ?? null);
     // openAsSubmenu is the terminal for every open path (hover, keyboard,
-    // click). Record the now-open submenu on the trigger's focus stack so
-    // ArrowLeft / Escape pop a hover-opened submenu the same as a
-    // keyboard-opened one. Push-only - it never re-enters the open path, so no
+    // click all funnel here through the trigger's focus stack). The note is
+    // the safety net for opens the stack did not perform itself
+    // (programmatic openAsSubmenu); for stack-driven opens it is an
+    // idempotent no-op. Push-only - it never re-enters the open path, so no
     // recursion; the stack stays the single source of the active chain
     // (Pillar 1).
     this.parentPanel?.noteActiveSubmenuOpened?.();
