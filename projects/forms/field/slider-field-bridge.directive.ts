@@ -1,4 +1,4 @@
-import { computed, Directive, inject, signal } from '@angular/core';
+import { computed, Directive, effect, inject, signal, untracked } from '@angular/core';
 
 import { CngxSliderTrack } from '@cngx/common/interactive';
 
@@ -92,6 +92,17 @@ export class CngxSliderFieldBridge implements CngxFormFieldControl {
   protected readonly ariaReadonly = computed(() => (this.presenter?.readonly() ? true : null));
 
   constructor() {
+    const presenter = this.presenter;
+    if (presenter !== null) {
+      // The track's disabled model gates keyboard, pointer and tabindex in the
+      // atom itself - without this write a Signal-Forms-disabled field leaves
+      // the slider fully operable.
+      effect(() => {
+        const disabled = presenter.disabled();
+        untracked(() => this.slider.disabled.set(disabled));
+      });
+    }
+
     // A numeric slider always asserts its own value: an absent/non-finite field
     // is skipped on read but still seeded on write (createFieldSync's
     // shouldSkipFieldValue). Number() coercion covers string field values.

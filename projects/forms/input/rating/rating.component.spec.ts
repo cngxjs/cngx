@@ -336,7 +336,7 @@ describe('CngxRating', () => {
       '.cngx-rating__disabled-reason',
     ) as HTMLElement;
     const describedBy = group.getAttribute('aria-describedby') ?? '';
-    expect(describedBy.length).toBeGreaterThan(0); // field hint/error ids unconditional
+    expect(describedBy.length).toBeGreaterThan(0); // field hint id unconditional
     expect(describedBy).not.toContain(reasonSpan.id); // reason id gated out
   });
 

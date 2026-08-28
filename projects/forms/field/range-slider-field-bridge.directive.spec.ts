@@ -80,6 +80,31 @@ describe('CngxRangeSliderFieldBridge', () => {
     const { bridge } = setup();
     expect(bridge.empty()).toBe(false);
   });
+
+  it('propagates field disabled into the track and back out again', () => {
+    const { fixture, brain, bridge, ref } = setup();
+    expect(brain.disabled()).toBe(false);
+
+    ref.disabled.set(true);
+    flush(fixture);
+    expect(bridge.disabled()).toBe(true);
+    expect(brain.disabled()).toBe(true);
+
+    ref.disabled.set(false);
+    flush(fixture);
+    expect(brain.disabled()).toBe(false);
+  });
+
+  it('reflects field disabled on the track host via aria-disabled', () => {
+    const { fixture, ref } = setup();
+    const host = fixture.debugElement.query(By.directive(CngxRangeSlider))
+      .nativeElement as HTMLElement;
+    expect(host.getAttribute('aria-disabled')).toBeNull();
+
+    ref.disabled.set(true);
+    flush(fixture);
+    expect(host.getAttribute('aria-disabled')).toBe('true');
+  });
 });
 
 // Characterises the mount-time init-push: a range slider always has a tuple, so

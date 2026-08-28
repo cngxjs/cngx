@@ -8,7 +8,10 @@ import { CngxFormFieldPresenter } from './form-field-presenter';
  * For automatic error rendering from a message registry, use `CngxFieldErrors` instead.
  *
  * The container is always in the DOM. `aria-hidden` toggles based on the `showError` gate
- * (touched AND invalid). `role="alert"` ensures screen readers announce errors.
+ * (touched AND invalid), and the presenter references the container in the input's
+ * `aria-describedby` only while the error is shown - a directly referenced node lands in
+ * the accessible description even when `aria-hidden` (accname 1.2 §2A), so the reference
+ * itself is the gate. `role="alert"` ensures screen readers announce errors.
  *
  * ```html
  * <div cngxError>
