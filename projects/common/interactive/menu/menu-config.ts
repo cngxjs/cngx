@@ -33,7 +33,12 @@ export interface CngxMenuAriaLabels {
 export interface CngxMenuConfig {
   readonly ariaLabels: CngxMenuAriaLabels;
   readonly typeaheadDebounce: number;
+  /** Hover dwell (ms) before a hovered submenu parent opens. Default `0`. */
   readonly submenuOpenDelay: number;
+  /**
+   * Hover dwell (ms) before a hover-opened submenu closes once the pointer
+   * has left both the parent item and the popover. Default `150`.
+   */
   readonly submenuCloseDelay: number;
   readonly closeOnSelect: boolean;
   /**
