@@ -6,6 +6,7 @@ import type { CngxActiveDescendant } from '@cngx/common/a11y';
 
 import {
   CNGX_MENU_FOCUS_STACK_FACTORY,
+  connectSubmenuHoverToFocusStack,
   createMenuFocusStack,
   type CngxMenuFocusStackPopoverRef,
 } from './menu-focus-stack';
@@ -123,6 +124,58 @@ describe('createMenuFocusStack', () => {
     expect(inner.ad.highlightFirst).toHaveBeenCalledOnce();
   });
 
+  it('openSubmenuFor chain-corrects: opening a sibling parent pops the other branch first', () => {
+    const innerA = mockMenu();
+    const innerB = mockMenu();
+    const submenuA = mockSubmenu('sub-a', innerA.host);
+    const submenuB = mockSubmenu('sub-b', innerB.host);
+    root.submenus.set([submenuA, submenuB]);
+
+    const stack = build();
+    stack.openSubmenuFor(submenuA);
+    expect(stack.stack()).toEqual([innerA.host]);
+
+    stack.openSubmenuFor(submenuB);
+
+    expect(submenuA.close).toHaveBeenCalledOnce();
+    expect(submenuB.open).toHaveBeenCalledOnce();
+    expect(stack.stack()).toEqual([innerB.host]);
+    expect(stack.effectiveMenu()).toBe(innerB.host);
+  });
+
+  it('closeSubmenuFor pops the submenu and its open descendants innermost-first', () => {
+    const innerA = mockMenu();
+    const innerB = mockMenu();
+    const submenuA = mockSubmenu('sub-a', innerA.host);
+    const submenuB = mockSubmenu('sub-b', innerB.host);
+    root.submenus.set([submenuA]);
+    innerA.submenus.set([submenuB]);
+
+    const stack = build();
+    stack.openSubmenuFor(submenuA);
+    stack.openSubmenuFor(submenuB);
+    expect(stack.stack()).toEqual([innerA.host, innerB.host]);
+
+    stack.closeSubmenuFor(submenuA);
+
+    expect(submenuB.close).toHaveBeenCalledOnce();
+    expect(submenuA.close).toHaveBeenCalledOnce();
+    expect(stack.stack()).toEqual([]);
+    expect(stack.effectiveMenu()).toBe(root.host);
+  });
+
+  it('closeSubmenuFor on a non-stack-tracked submenu only closes the popover', () => {
+    const inner = mockMenu();
+    const submenu = mockSubmenu('sub-1', inner.host);
+    root.submenus.set([submenu]);
+
+    const stack = build();
+    stack.closeSubmenuFor(submenu);
+
+    expect(submenu.close).toHaveBeenCalledOnce();
+    expect(stack.stack()).toEqual([]);
+  });
+
   it('noteSubmenuOpened pushes and highlights the inner first item without opening the submenu', () => {
     const inner = mockMenu();
     const submenu = mockSubmenu('sub-1', inner.host);
@@ -170,7 +223,7 @@ describe('createMenuFocusStack', () => {
   it('ignores an inert submenu brain whose inner menu never resolves (leaf item in the organism)', () => {
     const inert: CngxMenuSubmenuLike = {
       id: 'leaf',
-      inner: null as unknown as CngxMenuHost,
+      inner: null,
       isOpen: signal(false),
       open: vi.fn(),
       close: vi.fn(),
@@ -184,6 +237,63 @@ describe('createMenuFocusStack', () => {
     stack.handleArrowRight(root.host, keyEvent());
 
     expect(stack.stack().length).toBe(0);
+  });
+
+  it('openSubmenuFor on an inert brain leaves an open sibling branch untouched (leaf hover sweep)', () => {
+    const innerA = mockMenu();
+    const submenuA = mockSubmenu('sub-a', innerA.host);
+    const inertLeaf: CngxMenuSubmenuLike = {
+      id: 'leaf',
+      inner: null,
+      isOpen: signal(false),
+      open: vi.fn(),
+      close: vi.fn(),
+    };
+    root.submenus.set([submenuA, inertLeaf]);
+
+    const stack = build();
+    stack.openSubmenuFor(submenuA);
+    expect(stack.stack()).toEqual([innerA.host]);
+
+    stack.openSubmenuFor(inertLeaf);
+
+    expect(submenuA.close).not.toHaveBeenCalled();
+    expect(inertLeaf.open).not.toHaveBeenCalled();
+    expect(stack.stack()).toEqual([innerA.host]);
+  });
+
+  it('openSubmenuFor bails when the submenu parent menu is not in the open chain', () => {
+    const innerA = mockMenu();
+    const innerB = mockMenu();
+    const submenuA = mockSubmenu('sub-a', innerA.host);
+    const submenuB = mockSubmenu('sub-b', innerB.host);
+    root.submenus.set([submenuA]);
+    innerA.submenus.set([submenuB]);
+
+    // A's branch is closed, so B's parent menu is unreachable: a stale open
+    // request for B must not show an orphaned popover or fork the stack.
+    const stack = build();
+    stack.openSubmenuFor(submenuB);
+
+    expect(submenuB.open).not.toHaveBeenCalled();
+    expect(stack.stack()).toEqual([]);
+  });
+
+  it('closeSubmenuFor on an inert brain is a no-op', () => {
+    const inertLeaf: CngxMenuSubmenuLike = {
+      id: 'leaf',
+      inner: null,
+      isOpen: signal(false),
+      open: vi.fn(),
+      close: vi.fn(),
+    };
+    root.submenus.set([inertLeaf]);
+
+    const stack = build();
+    stack.closeSubmenuFor(inertLeaf);
+
+    expect(inertLeaf.close).not.toHaveBeenCalled();
+    expect(stack.stack()).toEqual([]);
   });
 
   it('ArrowLeft pops the innermost submenu level', () => {
@@ -276,6 +386,148 @@ describe('createMenuFocusStack', () => {
 
     button.remove();
     other.remove();
+  });
+});
+
+describe('connectSubmenuHoverToFocusStack', () => {
+  let root: ReturnType<typeof mockMenu>;
+  let popover: CngxMenuFocusStackPopoverRef;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({});
+    root = mockMenu();
+    popover = { hide: vi.fn(() => {}) };
+  });
+
+  function buildConnected(rootOpen?: () => boolean) {
+    const stack = createMenuFocusStack({
+      rootMenu: () => root.host,
+      popover: () => popover,
+      nav: createW3CMenuStrategy(),
+      document,
+    });
+    TestBed.runInInjectionContext(() =>
+      connectSubmenuHoverToFocusStack({ focusStack: stack, rootMenu: () => root.host, rootOpen }),
+    );
+    TestBed.tick();
+    return stack;
+  }
+
+  it('routes settled hover-intent edges through openSubmenuFor / closeSubmenuFor', () => {
+    const inner = mockMenu();
+    const hoverIntent = signal(false);
+    const submenu: CngxMenuSubmenuLike = { ...mockSubmenu('sub-1', inner.host), hoverIntent };
+    root.submenus.set([submenu]);
+
+    const stack = buildConnected();
+    hoverIntent.set(true);
+    TestBed.tick();
+
+    expect(submenu.open).toHaveBeenCalledOnce();
+    expect(stack.stack()).toEqual([inner.host]);
+    expect(inner.ad.highlightFirst).toHaveBeenCalledOnce();
+
+    hoverIntent.set(false);
+    TestBed.tick();
+
+    expect(submenu.close).toHaveBeenCalledOnce();
+    expect(stack.stack()).toEqual([]);
+  });
+
+  it('routes intent of a submenu registered inside an open submenu level', () => {
+    const innerA = mockMenu();
+    const innerB = mockMenu();
+    const hoverIntent = signal(false);
+    const submenuA = mockSubmenu('sub-a', innerA.host);
+    const submenuB: CngxMenuSubmenuLike = { ...mockSubmenu('sub-b', innerB.host), hoverIntent };
+    root.submenus.set([submenuA]);
+    innerA.submenus.set([submenuB]);
+
+    const stack = buildConnected();
+    stack.openSubmenuFor(submenuA);
+    TestBed.tick();
+    hoverIntent.set(true);
+    TestBed.tick();
+
+    expect(submenuB.open).toHaveBeenCalledOnce();
+    expect(stack.stack()).toEqual([innerA.host, innerB.host]);
+  });
+
+  it('observes intent decay of a submenu whose menu left the chain (no stale suppression)', () => {
+    const innerA = mockMenu();
+    const innerB = mockMenu();
+    const hoverIntent = signal(false);
+    const submenuA = mockSubmenu('sub-a', innerA.host);
+    const submenuB: CngxMenuSubmenuLike = { ...mockSubmenu('sub-b', innerB.host), hoverIntent };
+    root.submenus.set([submenuA]);
+    innerA.submenus.set([submenuB]);
+
+    const stack = buildConnected();
+    stack.openSubmenuFor(submenuA);
+    TestBed.tick();
+    hoverIntent.set(true);
+    TestBed.tick();
+    expect(stack.stack()).toEqual([innerA.host, innerB.host]);
+
+    // Non-Escape dismissal clears the chain; the pointer decays afterwards,
+    // while B's menu is no longer part of the open chain.
+    stack.reset();
+    hoverIntent.set(false);
+    TestBed.tick();
+
+    // Re-open the branch and hover B again: the false edge above must have
+    // been observed, or this true edge would be swallowed as a non-change.
+    stack.openSubmenuFor(submenuA);
+    hoverIntent.set(true);
+    TestBed.tick();
+
+    expect(submenuB.open).toHaveBeenCalledTimes(2);
+    expect(stack.stack()).toEqual([innerA.host, innerB.host]);
+  });
+
+  it('a stale true edge while the root menu is closed does not open, and reopening does not replay it', () => {
+    const inner = mockMenu();
+    const hoverIntent = signal(false);
+    const submenu: CngxMenuSubmenuLike = { ...mockSubmenu('sub-1', inner.host), hoverIntent };
+    root.submenus.set([submenu]);
+    const rootOpen = signal(true);
+
+    const stack = buildConnected(() => rootOpen());
+    hoverIntent.set(true);
+    TestBed.tick();
+    expect(submenu.open).toHaveBeenCalledOnce();
+
+    // Dismissal: chain cleared, root closed; the dwell decays late...
+    stack.reset();
+    rootOpen.set(false);
+    hoverIntent.set(false);
+    TestBed.tick();
+
+    // ...and a stray re-hover settles true while the root is still closed.
+    hoverIntent.set(true);
+    TestBed.tick();
+    expect(submenu.open).toHaveBeenCalledOnce();
+    expect(stack.stack()).toEqual([]);
+
+    // The suppressed edge is consumed: reopening the root does not replay it.
+    rootOpen.set(true);
+    root.submenus.set([submenu]);
+    TestBed.tick();
+    expect(submenu.open).toHaveBeenCalledOnce();
+  });
+
+  it('leaves a keyboard-opened submenu alone while its intent never settled true', () => {
+    const inner = mockMenu();
+    const hoverIntent = signal(false);
+    const submenu: CngxMenuSubmenuLike = { ...mockSubmenu('sub-1', inner.host), hoverIntent };
+    root.submenus.set([submenu]);
+
+    const stack = buildConnected();
+    stack.openSubmenuFor(submenu);
+    TestBed.tick();
+
+    expect(submenu.close).not.toHaveBeenCalled();
+    expect(stack.stack()).toEqual([inner.host]);
   });
 });
 

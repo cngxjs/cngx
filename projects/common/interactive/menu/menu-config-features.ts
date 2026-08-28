@@ -25,9 +25,11 @@ export function withTypeaheadDebounce(ms: number): CngxMenuConfigFeature {
 }
 
 /**
- * Override the delay between hovering a submenu parent and opening the
- * submenu (milliseconds). Default: `0` (open immediately on activation).
- * Reserved for hover-driven menubar implementations.
+ * Override the hover dwell (milliseconds) before a hovered submenu parent
+ * opens its submenu. Feeds the enter delay of the hover intent
+ * `CngxMenuItemSubmenu` composes - a pointer that merely sweeps across the
+ * parent never opens. Default: `0` (open on the first settled hover tick).
+ * Keyboard and click open paths are unaffected.
  *
  * @category common/interactive/menu
  */
@@ -36,9 +38,11 @@ export function withSubmenuOpenDelay(ms: number): CngxMenuConfigFeature {
 }
 
 /**
- * Override the delay between leaving a submenu parent and closing the
- * submenu (milliseconds). Default: `0`. Reserved for hover-driven
- * menubar implementations.
+ * Override the hover dwell (milliseconds) before a hover-opened submenu
+ * closes after the pointer has left both the parent item and the submenu
+ * popover. Feeds the leave delay of the hover intent `CngxMenuItemSubmenu`
+ * composes - the grace window for crossing the gap between parent and
+ * popover. Default: `150`.
  *
  * @category common/interactive/menu
  */

@@ -108,6 +108,25 @@ describe('CngxHierarchicalNav', () => {
     expect(f.host.onMovedToChild).not.toHaveBeenCalled();
   });
 
+  it('Ctrl/Cmd/Alt+ArrowRight neither expands nor swallows the event', () => {
+    f.ad.highlightByIndex(0);
+    expect(f.ctrl.isExpanded('a')()).toBe(false);
+
+    for (const modifier of [{ ctrlKey: true }, { metaKey: true }, { altKey: true }]) {
+      const event = new KeyboardEvent('keydown', {
+        key: 'ArrowRight',
+        bubbles: true,
+        cancelable: true,
+        ...modifier,
+      });
+      const prevented = !f.el.dispatchEvent(event);
+      f.fixture.detectChanges();
+      expect(prevented).toBe(false);
+    }
+    expect(f.ctrl.isExpanded('a')()).toBe(false);
+    expect(f.host.onExpand).not.toHaveBeenCalled();
+  });
+
   it('ArrowRight on an expanded parent moves active to the first child', () => {
     f.ad.highlightByIndex(0);
     f.ctrl.expand('a');

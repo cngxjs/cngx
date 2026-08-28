@@ -9,12 +9,15 @@ import {
   input,
   isDevMode,
   linkedSignal,
-  signal,
   untracked,
 } from '@angular/core';
 
 import { nextUid } from '@cngx/core/utils';
 
+import {
+  CNGX_HOVER_INTENT_DEFAULTS,
+  CngxHoverIntent,
+} from '../hover-intent/hover-intent.directive';
 import { CNGX_MENU_ANNOUNCER_FACTORY } from './menu-announcer';
 import { injectMenuConfig } from './menu-config';
 import { CNGX_MENU_HOST, type CngxMenuHost } from './menu-host.token';
@@ -61,14 +64,29 @@ import {
   selector: '[cngxMenuItemSubmenu]',
   exportAs: 'cngxMenuItemSubmenu',
   standalone: true,
-  providers: [{ provide: CNGX_MENU_SUBMENU_ITEM, useExisting: CngxMenuItemSubmenu }],
+  // Debounced hover intent over the parent item: CngxHoverIntent's own
+  // pointerenter/pointerleave listeners replace hand-rolled ones; the popover
+  // panel is fed in as a satellite surface (see the constructor effect), so
+  // ONE debounce covers parent + panel and crossing the gap never flickers.
+  hostDirectives: [CngxHoverIntent],
+  // Element-injector provider: the composed CngxHoverIntent resolves its dwell
+  // defaults from here, so the menu config's submenuOpenDelay/submenuCloseDelay
+  // reach the atom without per-instance inputs (mirrors CngxSidenav).
+  providers: [
+    { provide: CNGX_MENU_SUBMENU_ITEM, useExisting: CngxMenuItemSubmenu },
+    {
+      provide: CNGX_HOVER_INTENT_DEFAULTS,
+      useFactory: () => {
+        const cfg = injectMenuConfig();
+        return { enterDelay: cfg.submenuOpenDelay, leaveDelay: cfg.submenuCloseDelay };
+      },
+    },
+  ],
   host: {
     '[id]': 'id',
     '[attr.aria-haspopup]': 'ariaHaspopup()',
     '[attr.aria-expanded]': 'ariaExpanded()',
     '[style.anchor-name]': 'cssAnchorName()',
-    '(pointerenter)': 'handleParentEnter()',
-    '(pointerleave)': 'handleParentLeave()',
   },
 })
 export class CngxMenuItemSubmenu implements CngxMenuSubmenuLike {
@@ -138,10 +156,8 @@ export class CngxMenuItemSubmenu implements CngxMenuSubmenuLike {
     return popover ? `--cngx-pop-${popover.id()}` : null;
   });
 
-  get inner(): CngxMenuHost {
-    // Non-null by contract: `inner` is only read during routing, which the
-    // trigger reaches only once the submenu is wired and open.
-    return this.resolvedMenu()!;
+  get inner(): CngxMenuHost | null {
+    return this.resolvedMenu();
   }
 
   open(): void {
@@ -162,42 +178,23 @@ export class CngxMenuItemSubmenu implements CngxMenuSubmenuLike {
     }
   }
 
-  // Submenu opens on parent hover; stays open while the pointer is over the
-  // parent OR the popover. Closes `submenuCloseDelay` ms after leaving both.
+  /**
+   * Composed hover-intent atom (hostDirective). Its own host listeners cover
+   * the parent item; the constructor effect feeds the popover panel in as a
+   * satellite surface, so `active()` settles `true` after `submenuOpenDelay`
+   * ms over either element and back `false` after `submenuCloseDelay` ms off
+   * both. The atom owns every timer (and its destroy cleanup).
+   */
+  private readonly intent = inject(CngxHoverIntent, { host: true });
 
-  private readonly parentHovered = signal(false);
-  private readonly popoverHovered = signal(false);
-  private readonly anyHovered = computed(() => this.parentHovered() || this.popoverHovered());
-
-  private closeTimer: ReturnType<typeof setTimeout> | null = null;
-
-  protected handleParentEnter(): void {
-    this.parentHovered.set(true);
-  }
-
-  protected handleParentLeave(): void {
-    this.parentHovered.set(false);
-  }
-
-  private cancelCloseTimer(): void {
-    if (this.closeTimer !== null) {
-      clearTimeout(this.closeTimer);
-      this.closeTimer = null;
-    }
-  }
-
-  private scheduleClose(): void {
-    this.cancelCloseTimer();
-    const delay = this.menuConfig.submenuCloseDelay;
-    if (delay <= 0) {
-      this.close();
-      return;
-    }
-    this.closeTimer = setTimeout(() => {
-      this.closeTimer = null;
-      this.close();
-    }, delay);
-  }
+  /**
+   * `CngxMenuSubmenuLike.hoverIntent` - the debounced combined-surface hover
+   * state. Derivation only: the brain never opens or closes anything off it.
+   * The surrounding trigger routes the edges through its focus stack
+   * (`connectSubmenuHoverToFocusStack`), so a hover-opened submenu is
+   * stack-tracked and keyboard-visible exactly like a keyboard-opened one.
+   */
+  readonly hoverIntent = this.intent.active;
 
   /**
    * Transition tracker for `isOpen`. `linkedSignal` carries an explicit
@@ -237,32 +234,23 @@ export class CngxMenuItemSubmenu implements CngxMenuSubmenuLike {
       });
     });
 
-    effect(() => {
-      const hovered = this.anyHovered();
-      untracked(() => {
-        if (hovered) {
-          this.cancelCloseTimer();
-          this.open();
-        } else if (this.resolvedPopover()?.isVisible()) {
-          this.scheduleClose();
-        }
-      });
-    });
-
-    afterNextRender(() => {
+    // Feed the popover panel into the composed hover intent as a satellite
+    // surface. An effect (not a one-shot afterNextRender) so a popover that
+    // resolves late - DI wiring bound after first render - still gets its
+    // listeners, and `onCleanup` removes them unconditionally on destroy.
+    effect((onCleanup) => {
       const popover = this.resolvedPopover();
       if (!popover) {
         return;
       }
       const popoverEl = popover.elementRef.nativeElement;
-      const onEnter = (): void => this.popoverHovered.set(true);
-      const onLeave = (): void => this.popoverHovered.set(false);
+      const onEnter = (): void => this.intent.notifyEnter();
+      const onLeave = (): void => this.intent.notifyLeave();
       popoverEl.addEventListener('pointerenter', onEnter);
       popoverEl.addEventListener('pointerleave', onLeave);
-      this.destroyRef.onDestroy(() => {
+      onCleanup(() => {
         popoverEl.removeEventListener('pointerenter', onEnter);
         popoverEl.removeEventListener('pointerleave', onLeave);
-        this.cancelCloseTimer();
       });
     });
 

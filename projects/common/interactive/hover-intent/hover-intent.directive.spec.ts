@@ -107,6 +107,30 @@ describe('CngxHoverIntent', () => {
     expect(fixture.componentInstance.edges).toEqual([true]);
   });
 
+  it('notifyEnter cancels a pending host leave: a satellite element keeps the intent active', () => {
+    const { host, dir, fixture } = setup();
+    fixture.componentInstance.leaveDelay.set(150);
+    fixture.detectChanges();
+
+    host.dispatchEvent(new PointerEvent('pointerenter'));
+    vi.advanceTimersByTime(120);
+    expect(dir.active()).toBe(true);
+
+    // Pointer crosses from the host to a satellite element (e.g. a popover
+    // panel) whose listeners forward into notifyEnter/notifyLeave.
+    host.dispatchEvent(new PointerEvent('pointerleave'));
+    vi.advanceTimersByTime(100);
+    dir.notifyEnter();
+    vi.advanceTimersByTime(500);
+    expect(dir.active()).toBe(true);
+    expect(fixture.componentInstance.edges).toEqual([true]);
+
+    dir.notifyLeave();
+    vi.advanceTimersByTime(150);
+    expect(dir.active()).toBe(false);
+    expect(fixture.componentInstance.edges).toEqual([true, false]);
+  });
+
   it('clears a pending timer on destroy (no late set after teardown)', () => {
     const { host, fixture } = setup();
     host.dispatchEvent(new PointerEvent('pointerenter'));

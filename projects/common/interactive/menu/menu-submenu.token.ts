@@ -16,8 +16,23 @@ export interface CngxMenuSubmenuLike {
   readonly id: string;
   /** Reactive open state, mirrored from the wrapped popover. */
   readonly isOpen: Signal<boolean>;
-  /** The submenu's inner menu host (its `CngxMenu` instance). */
-  readonly inner: CngxMenuHost;
+  /**
+   * The submenu's inner menu host (its `CngxMenu` instance), or `null` while
+   * unwired. An inert companion never resolves one - the context-menu
+   * organism applies the directive to every item, so leaf items register a
+   * brain whose `inner` stays `null`; the focus stack treats those as inert.
+   */
+  readonly inner: CngxMenuHost | null;
+  /**
+   * Debounced pointer intent over the submenu's combined hover surface
+   * (parent item plus popover panel). The companion only DERIVES this signal;
+   * it never opens or closes anything off it - the surrounding trigger routes
+   * intent edges through the focus stack via
+   * `connectSubmenuHoverToFocusStack`, so a hover-opened submenu is
+   * keyboard-visible exactly like a keyboard-opened one. Optional: a
+   * companion without a pointer surface omits it and stays keyboard-only.
+   */
+  readonly hoverIntent?: Signal<boolean>;
   open(): void;
   close(): void;
 }

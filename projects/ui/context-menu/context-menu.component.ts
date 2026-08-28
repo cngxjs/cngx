@@ -171,8 +171,9 @@ export class CngxContextMenu<T = unknown> implements CngxContextMenuPanel<T> {
     this.submenuNoteHandler = handler;
   }
 
-  /** @internal A projected item calls this after opening its submenu through
-   * its own hover facade, so the trigger's focus stack tracks it. */
+  /** @internal A projected item calls this after its openAsSubmenu terminal
+   * ran, so the trigger's focus stack records an externally opened submenu
+   * (idempotent no-op for stack-driven hover/click opens). */
   noteActiveSubmenuOpened(): void {
     this.submenuNoteHandler?.();
   }

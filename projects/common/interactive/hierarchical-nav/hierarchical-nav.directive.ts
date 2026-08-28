@@ -105,6 +105,14 @@ export class CngxHierarchicalNav<T = unknown> {
    * ArrowRight collapses / moves-to-parent. The strategy stays direction-naive.
    */
   private handlePhysicalArrow(key: 'ArrowLeft' | 'ArrowRight', event: Event): void {
+    // Never hijack browser/app shortcuts: Ctrl/Cmd/Alt+Arrow combos pass
+    // through untouched - the same guard the nav strategies apply. The
+    // key-filtered host listener types `$event` as plain Event; keydown
+    // always delivers a KeyboardEvent.
+    const kbd = event as KeyboardEvent;
+    if (kbd.ctrlKey || kbd.metaKey || kbd.altKey) {
+      return;
+    }
     const logical = resolveInlineArrowKey(key, this.direction());
     const step =
       logical === 'ArrowRight'

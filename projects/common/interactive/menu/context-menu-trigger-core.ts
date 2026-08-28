@@ -9,7 +9,7 @@ import {
 } from './dismiss-handler';
 import type { CngxMenuAnnouncerLike } from './menu-announcer';
 import type { CngxMenuConfig } from './menu-config';
-import type { CngxMenuFocusStackFactory } from './menu-focus-stack';
+import type { CngxMenuFocusStack, CngxMenuFocusStackFactory } from './menu-focus-stack';
 import type { CngxMenuHost } from './menu-host.token';
 import type { CngxMenuNavStrategy } from './menu-nav-strategy';
 
@@ -99,6 +99,13 @@ export interface CngxContextMenuTriggerCoreDeps {
 export interface CngxContextMenuTriggerCore {
   /** The dismissal source that closed the menu most recently. */
   readonly lastDismissSource: Signal<CngxMenuDismissSource | null>;
+  /**
+   * The core's submenu focus-stack model. Exposed for host-side wiring the
+   * pure factory cannot install itself - the DI hosts pass it to
+   * `connectSubmenuHoverToFocusStack` (an `effect`, so it needs their
+   * injection context) to route submenu hover intent through the stack.
+   */
+  readonly focusStack: CngxMenuFocusStack;
   /** `contextmenu` host handler - consults `resolveOpen` before opening. */
   handleContextMenu(event: MouseEvent): void;
   /** Keydown host handler - `Shift+F10` opens at the host centre. */
@@ -115,11 +122,12 @@ export interface CngxContextMenuTriggerCore {
    */
   openActiveSubmenu(): void;
   /**
-   * Record that the active item's submenu is already open (shown by the
-   * organism's hover facade), pushing it onto the focus stack WITHOUT
-   * re-opening it, so ArrowLeft / Escape pop a hover-opened submenu the same as
-   * a keyboard-opened one. No-op on a leaf and idempotent once the submenu is
-   * on the stack. The DI host calls this from the item's hover terminal.
+   * Record that the active item's submenu is already open, pushing it onto
+   * the focus stack WITHOUT re-opening it. Safety net for opens the stack did
+   * not perform itself - the organism panel forwards it from the item's
+   * `openAsSubmenu` terminal, covering programmatic opens; for hover and
+   * click the stack already opened the submenu and this is an idempotent
+   * no-op. No-op on a leaf.
    */
   noteActiveSubmenuOpened(): void;
   /** Drive from the directive's `isOpen` effect (inside `untracked`). */
@@ -217,6 +225,7 @@ export function createContextMenuTriggerCore(
 
   return {
     lastDismissSource: dismissBinding.lastSource,
+    focusStack,
     handleContextMenu(event: MouseEvent): void {
       const decision = resolveOpen(event);
       if (!decision.open) {
@@ -227,6 +236,12 @@ export function createContextMenuTriggerCore(
       openAt(event.clientX, event.clientY);
     },
     handleKeydown(event: KeyboardEvent): void {
+      // Never hijack browser/app shortcuts: Ctrl/Cmd/Alt combos pass through
+      // untouched - the same guard the nav strategies apply. Shift stays
+      // allowed (Shift+F10 below is the open gesture).
+      if (event.ctrlKey || event.metaKey || event.altKey) {
+        return;
+      }
       if (event.key === 'F10' && event.shiftKey) {
         event.preventDefault();
         const rect = deps.hostElement.getBoundingClientRect();

@@ -98,6 +98,20 @@ describe('context-menu trigger core - submenu keyboard routing', () => {
     expect(inner.highlightFirst).toHaveBeenCalledOnce();
   });
 
+  it('Ctrl/Cmd/Alt+ArrowRight neither opens the submenu nor swallows the event', () => {
+    const inner = mockMenu();
+    const submenu = mockSubmenu('sub-1', inner.host);
+    root.submenus.set([submenu]);
+    root.activeId.set('sub-1');
+
+    for (const modifier of ['ctrlKey', 'metaKey', 'altKey'] as const) {
+      const event = { ...key('ArrowRight'), [modifier]: true } as unknown as KeyboardEvent;
+      core.handleKeydown(event);
+      expect(submenu.open).not.toHaveBeenCalled();
+      expect(event.preventDefault).not.toHaveBeenCalled();
+    }
+  });
+
   it('openActiveSubmenu opens the active parent submenu and highlights its first item', () => {
     const inner = mockMenu();
     const submenu = mockSubmenu('sub-1', inner.host);

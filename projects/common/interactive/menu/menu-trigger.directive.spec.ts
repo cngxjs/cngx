@@ -142,6 +142,32 @@ describe('CngxMenuTrigger', () => {
     expect(popover.isVisible()).toBe(false);
   });
 
+  it('Ctrl/Cmd/Alt+ArrowDown on a closed trigger neither opens nor swallows the event', () => {
+    const { triggerEl, popover } = setup();
+    for (const modifier of [{ ctrlKey: true }, { metaKey: true }, { altKey: true }]) {
+      const event = new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true, ...modifier });
+      const prevented = !triggerEl.dispatchEvent(event);
+      TestBed.flushEffects();
+      expect(popover.isVisible()).toBe(false);
+      expect(prevented).toBe(false);
+    }
+  });
+
+  it('Ctrl+ArrowDown on an open menu neither navigates nor swallows the event', () => {
+    const { triggerEl, menu, popover } = setup();
+    popover.show();
+    TestBed.flushEffects();
+    menu.ad.highlightByValue('cut');
+    TestBed.flushEffects();
+
+    const event = new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true, ctrlKey: true });
+    const prevented = !triggerEl.dispatchEvent(event);
+    TestBed.flushEffects();
+
+    expect(menu.ad.activeValue()).toBe('cut');
+    expect(prevented).toBe(false);
+  });
+
   it('keyboard-opening then Escape restores focus to the trigger', async () => {
     const { triggerEl, popover } = setup();
     const probe = document.createElement('button');

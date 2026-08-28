@@ -114,10 +114,27 @@ export class CngxHoverIntent {
   }
 
   protected handleEnter(): void {
-    this.schedule(true, this.enterDelay());
+    this.notifyEnter();
   }
 
   protected handleLeave(): void {
+    this.notifyLeave();
+  }
+
+  /**
+   * Feed a satellite element's `pointerenter` into the debounce. For hosts
+   * whose hover surface spans more than the directive's own element (a submenu
+   * parent item plus its popover panel), forward the extra element's pointer
+   * events here so ONE debounced intent covers the combined surface: an enter
+   * on either element cancels a pending leave timer exactly like the host's
+   * own listeners, so crossing the gap between the elements never flickers.
+   */
+  notifyEnter(): void {
+    this.schedule(true, this.enterDelay());
+  }
+
+  /** Satellite counterpart to {@link notifyEnter} for `pointerleave`. */
+  notifyLeave(): void {
     this.schedule(false, this.leaveDelay());
   }
 

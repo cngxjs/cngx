@@ -223,11 +223,13 @@ export {
 } from './menu/menu-nav-strategy';
 export {
   CNGX_MENU_FOCUS_STACK_FACTORY,
+  connectSubmenuHoverToFocusStack,
   createMenuFocusStack,
   type CngxMenuFocusStack,
   type CngxMenuFocusStackDeps,
   type CngxMenuFocusStackFactory,
   type CngxMenuFocusStackPopoverRef,
+  type CngxSubmenuHoverRoutingDeps,
 } from './menu/menu-focus-stack';
 export {
   CNGX_MENU_CONFIG,

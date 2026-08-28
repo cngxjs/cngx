@@ -1,4 +1,4 @@
-import { InjectionToken, signal, type Signal } from '@angular/core';
+import { effect, InjectionToken, signal, untracked, type Signal } from '@angular/core';
 
 import type { CngxMenuHost } from './menu-host.token';
 import type { CngxMenuNavStrategy } from './menu-nav-strategy';
@@ -72,16 +72,37 @@ export interface CngxMenuFocusStack {
    * (flipping its `aria-expanded`), pushes the inner menu onto the stack, and
    * highlights the inner menu's first item. Idempotent - a no-op when the
    * submenu's inner menu is already on the stack, so repeated activation or
-   * hover never double-pushes.
+   * hover never double-pushes. Chain-correcting: hover can target a submenu
+   * whose parent menu is not the top of the stack (a sibling parent while
+   * another branch is open), so any levels above the submenu's parent menu
+   * are popped first and the stack stays a strict chain. A no-op on an inert
+   * brain (`inner` never resolved - an organism leaf item): there is nothing
+   * to open and the open branch must survive a sweep across a leaf row. Also
+   * a no-op when the submenu's parent menu is not part of the open chain
+   * (its branch was popped since the caller resolved the submenu) - opening
+   * there would show an orphaned popover and fork the stack.
    */
   openSubmenuFor(submenu: CngxMenuSubmenuLike): void;
   /**
+   * Close a specific submenu through the stack - the close counterpart to
+   * {@link openSubmenuFor} shared by hover leave and programmatic close.
+   * Pops the stack innermost-first until the submenu's inner menu is off it
+   * (closing any open descendants on the way), so keyboard routing falls
+   * back to the parent level. When the submenu is not stack-tracked (already
+   * popped by a sibling's chain-correcting open) it only ensures the popover
+   * is hidden. Idempotent on a closed submenu; a no-op on an inert brain.
+   */
+  closeSubmenuFor(submenu: CngxMenuSubmenuLike): void;
+  /**
    * Record that a submenu is already open, pushing its inner menu onto the
    * stack and highlighting the first item WITHOUT calling `submenu.open()`.
-   * The organism's hover path shows the submenu popover through its own facade
-   * and then calls this, so a hover-opened submenu is stack-tracked (ArrowLeft
-   * / Escape pop it) exactly like a keyboard- or click-opened one, with no risk
-   * of re-entering the open path. Idempotent once the submenu is on the stack.
+   * Safety net for opens the stack did not perform itself - e.g. the
+   * organism's programmatic `openAsSubmenu` seam - so an externally opened
+   * submenu is stack-tracked (ArrowLeft / Escape pop it) exactly like a
+   * keyboard-opened one, with no risk of re-entering the open path. Hover
+   * does not need it: it routes through {@link openSubmenuFor} via
+   * `connectSubmenuHoverToFocusStack`, and this call is then an idempotent
+   * no-op because the submenu is already on the stack.
    */
   noteSubmenuOpened(submenu: CngxMenuSubmenuLike): void;
   /** Close every open submenu innermost-first, then hide the popover. */
@@ -134,14 +155,14 @@ export function createMenuFocusStack(deps: CngxMenuFocusStackDeps): CngxMenuFocu
   };
 
   // Push the submenu's inner menu onto the stack and highlight its first item,
-  // but only once - the terminal show (organism hover facade) and the open
+  // but only once - the external-open note (organism openAsSubmenu) and the open
   // paths (ArrowRight / click) both funnel here, so the guard keeps a submenu
   // from being pushed or re-highlighted twice. `inner` is null for an inert
   // brain: the context-menu organism applies CngxMenuItemSubmenu to every item,
   // so leaf items register a submenu-less brain whose `inner` never resolves.
   // Skip those - a leaf has no submenu to track.
   const pushIfAbsent = (submenu: CngxMenuSubmenuLike): void => {
-    const inner = submenu.inner as CngxMenuHost | null;
+    const inner = submenu.inner;
     if (inner === null || submenuStack().includes(inner)) {
       return;
     }
@@ -254,10 +275,45 @@ export function createMenuFocusStack(deps: CngxMenuFocusStackDeps): CngxMenuFocu
       }
     },
     openSubmenuFor(submenu: CngxMenuSubmenuLike): void {
-      if (submenuStack().includes(submenu.inner)) {
+      // Inert brain (organism leaf item - no popover, `inner` never resolves):
+      // nothing to open, and chain-correcting for it would tear down the open
+      // branch on an incidental pointer sweep across a leaf row.
+      const inner = submenu.inner;
+      if (inner === null || submenuStack().includes(inner)) {
         return;
       }
+      // Chain correction: locate the submenu's parent menu in the open chain
+      // and pop any levels above it, so a hover onto a sibling parent while
+      // another branch is open never produces a forked stack. Keyboard paths
+      // always call with the parent already on top, so the loop no-ops there.
+      const chain = [deps.rootMenu(), ...submenuStack()];
+      const parentIndex = chain.findIndex((menu) => menu.submenuItems().includes(submenu));
+      if (parentIndex < 0) {
+        // Parent menu is not part of the open chain (its branch was popped
+        // between the intent edge and this call): opening would show an
+        // orphaned popover and push a forked stack entry.
+        return;
+      }
+      while (submenuStack().length > parentIndex) {
+        popSubmenu();
+      }
       openSubmenu(submenu);
+    },
+    closeSubmenuFor(submenu: CngxMenuSubmenuLike): void {
+      const inner = submenu.inner;
+      if (inner === null) {
+        // Inert brain - nothing was ever open.
+        return;
+      }
+      if (!submenuStack().includes(inner)) {
+        // Not stack-tracked (e.g. already popped by a sibling's
+        // chain-correcting open) - only ensure the popover is hidden.
+        submenu.close();
+        return;
+      }
+      while (submenuStack().includes(inner)) {
+        popSubmenu();
+      }
     },
     noteSubmenuOpened(submenu: CngxMenuSubmenuLike): void {
       pushIfAbsent(submenu);
@@ -265,6 +321,87 @@ export function createMenuFocusStack(deps: CngxMenuFocusStackDeps): CngxMenuFocu
     closeAll,
     reset,
   };
+}
+
+/**
+ * Dependencies for {@link connectSubmenuHoverToFocusStack}.
+ *
+ * @category common/interactive/menu
+ */
+export interface CngxSubmenuHoverRoutingDeps {
+  /** The trigger's focus-stack model that owns the open submenu chain. */
+  readonly focusStack: CngxMenuFocusStack;
+  /** Root menu host - the bottom of the submenu chain. */
+  readonly rootMenu: () => CngxMenuHost;
+  /**
+   * Open-state of the root popover. When provided, a settled hover intent
+   * opens only while the root menu is open: a dwell timer can outlive a
+   * dismissal (hidden elements do not reliably fire `pointerleave`), and its
+   * late true edge must not show an orphaned submenu popover. The edge is
+   * still consumed, so reopening the root never retroactively opens a
+   * submenu from a stale dwell. Close edges route regardless - closing is
+   * always safe. Absent: opens are not gated.
+   */
+  readonly rootOpen?: () => boolean;
+}
+
+/**
+ * Route submenu hover intent through the focus stack. Watches the
+ * {@link CngxMenuSubmenuLike.hoverIntent} signal of every submenu companion
+ * registered anywhere in the menu tree and routes its edges through the same
+ * primitives keyboard and click use: a settled hover opens via
+ * {@link CngxMenuFocusStack.openSubmenuFor} (stack-tracked, first item
+ * highlighted, keyboard-visible), a settled un-hover closes via
+ * {@link CngxMenuFocusStack.closeSubmenuFor} (stack popped innermost-first).
+ * The submenu companion itself owns NO open/close mechanics for hover - it
+ * only derives intent.
+ *
+ * The walk covers the WHOLE registered tree, not just the open chain: a
+ * submenu whose menu drops out of the chain (popped by a chain-correcting
+ * open, cleared by `reset()`) still decays its intent afterwards, and that
+ * false edge must be observed or the bookkeeping would go stale and fire a
+ * spurious close when the menu re-enters the chain. Items in a hidden menu
+ * cannot produce real pointer events, so the extra tracking never opens
+ * anything on its own.
+ *
+ * Edge-driven, not state-reconciling: a keyboard-opened submenu whose intent
+ * never settled `true` is left alone, so pointer-less operation is unchanged.
+ *
+ * Must run in an injection context (constructor / field initializer) - it
+ * installs an `effect`. Every focus-stack owner wires it once:
+ * `CngxMenuTrigger`, `CngxContextMenuTrigger`, and `CngxContextMenuFor`.
+ *
+ * @category common/interactive/menu
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-focus-stack.ts
+ * @since 0.1.0
+ * @relatedTo CngxMenuItemSubmenu, CngxMenuTrigger, CngxContextMenuTrigger, CNGX_MENU_FOCUS_STACK_FACTORY
+ */
+export function connectSubmenuHoverToFocusStack(deps: CngxSubmenuHoverRoutingDeps): void {
+  const lastIntent = new WeakMap<CngxMenuSubmenuLike, boolean>();
+  const visit = (menu: CngxMenuHost): void => {
+    for (const submenu of menu.submenuItems()) {
+      const intent = submenu.hoverIntent?.() ?? false;
+      if ((lastIntent.get(submenu) ?? false) !== intent) {
+        lastIntent.set(submenu, intent);
+        untracked(() => {
+          if (intent) {
+            if (deps.rootOpen?.() === false) {
+              return;
+            }
+            deps.focusStack.openSubmenuFor(submenu);
+          } else {
+            deps.focusStack.closeSubmenuFor(submenu);
+          }
+        });
+      }
+      const inner = submenu.inner;
+      if (inner !== null) {
+        visit(inner);
+      }
+    }
+  };
+  effect(() => visit(deps.rootMenu()));
 }
 
 /**

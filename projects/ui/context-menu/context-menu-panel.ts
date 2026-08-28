@@ -49,18 +49,19 @@ export interface CngxContextMenuPanel<T = unknown> {
   setActivationHandler?(handler: (() => void) | null): void;
   /**
    * @internal Register the trigger core's push-only "submenu opened" handler.
-   * A projected item that opens its submenu through its own hover facade calls
-   * {@link noteActiveSubmenuOpened} afterwards; the panel forwards to this
-   * handler so the trigger's focus stack tracks the hover-opened submenu.
-   * `null` deregisters. Optional: an ejected panel skin may omit it.
+   * A projected item calls {@link noteActiveSubmenuOpened} after its
+   * `openAsSubmenu` terminal ran; the panel forwards to this handler so the
+   * trigger's focus stack records an externally opened submenu (hover and
+   * click already route through the stack and no-op here). `null`
+   * deregisters. Optional: an ejected panel skin may omit it.
    */
   setSubmenuNoteHandler?(handler: (() => void) | null): void;
   /**
-   * @internal Called by a projected item after it shows its submenu through its
-   * own hover facade, so the trigger's focus stack records the now-open submenu
-   * (ArrowLeft / Escape then pop it like a keyboard-opened one). Routes to the
-   * handler registered via {@link setSubmenuNoteHandler}; a no-op when none is
-   * wired.
+   * @internal Called by a projected item after its `openAsSubmenu` terminal
+   * showed the submenu, so the trigger's focus stack records it when the open
+   * did not come from the stack itself (programmatic opens; idempotent no-op
+   * for hover/click). Routes to the handler registered via
+   * {@link setSubmenuNoteHandler}; a no-op when none is wired.
    */
   noteActiveSubmenuOpened?(): void;
 }
