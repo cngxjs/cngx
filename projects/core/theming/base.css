@@ -10,6 +10,9 @@
  *
  * **Elements styled**
  *
+ * - `<body>` - `line-height: var(--cngx-line-height-base)`, the
+ *   application point of the registered line-height token. Everything
+ *   below inherits the rhythm unless a component pins its own.
  * - `:root` scrollbar - `scrollbar-color: var(--cngx-color-border)`
  *   on a transparent track, `scrollbar-width: thin`. Trims fat
  *   Windows-style bars to a macOS-overlay feel and matches the
@@ -73,6 +76,14 @@
   :root {
     scrollbar-color: var(--cngx-color-border, oklch(0.88 0.005 250)) transparent;
     scrollbar-width: thin;
+  }
+
+  /* Body typography rhythm - the application point of
+   * --cngx-line-height-base (registered inherits: true in
+   * system-tokens.css). One declaration here lets a theme pin on the
+   * token re-rhythm every element that doesn't set its own. */
+  body {
+    line-height: var(--cngx-line-height-base, 1.5);
   }
 
   /* Bare <button>: render as the user agent draws it. Per cngx's
