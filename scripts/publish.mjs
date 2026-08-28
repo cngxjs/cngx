@@ -209,10 +209,10 @@ function main() {
 
     distPkg.version = nextVersion;
 
-    // peerDependencies may carry PLACEHOLDER (e.g. @cngx/themes pins
-    // peer @cngx/core/common/forms/ui to the same release). Rewrite
-    // those inline so the published package locks to the wave it ships
-    // with — keeps the cross-package version graph consistent.
+    // Workspace convention: every publishable lib declares its
+    // cross-@cngx runtime imports as PLACEHOLDER peers. Rewrite those
+    // inline so the published package locks to the wave it ships
+    // with - keeps the cross-package version graph consistent.
     if (distPkg.peerDependencies) {
       for (const dep of Object.keys(distPkg.peerDependencies)) {
         if (distPkg.peerDependencies[dep] === PLACEHOLDER) {

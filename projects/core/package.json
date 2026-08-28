@@ -22,6 +22,7 @@
     "directory": "projects/core"
   },
   "peerDependencies": {
+    "@cngx/utils": "0.0.0-PLACEHOLDER",
     "@angular/common": "^21.2.0",
     "@angular/core": "^21.2.0"
   },
