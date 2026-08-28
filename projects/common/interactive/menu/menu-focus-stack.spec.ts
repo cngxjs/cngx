@@ -239,6 +239,46 @@ describe('createMenuFocusStack', () => {
     expect(stack.stack().length).toBe(0);
   });
 
+  it('openSubmenuFor on an inert brain leaves an open sibling branch untouched (leaf hover sweep)', () => {
+    const innerA = mockMenu();
+    const submenuA = mockSubmenu('sub-a', innerA.host);
+    const inertLeaf: CngxMenuSubmenuLike = {
+      id: 'leaf',
+      inner: null as unknown as CngxMenuHost,
+      isOpen: signal(false),
+      open: vi.fn(),
+      close: vi.fn(),
+    };
+    root.submenus.set([submenuA, inertLeaf]);
+
+    const stack = build();
+    stack.openSubmenuFor(submenuA);
+    expect(stack.stack()).toEqual([innerA.host]);
+
+    stack.openSubmenuFor(inertLeaf);
+
+    expect(submenuA.close).not.toHaveBeenCalled();
+    expect(inertLeaf.open).not.toHaveBeenCalled();
+    expect(stack.stack()).toEqual([innerA.host]);
+  });
+
+  it('closeSubmenuFor on an inert brain is a no-op', () => {
+    const inertLeaf: CngxMenuSubmenuLike = {
+      id: 'leaf',
+      inner: null as unknown as CngxMenuHost,
+      isOpen: signal(false),
+      open: vi.fn(),
+      close: vi.fn(),
+    };
+    root.submenus.set([inertLeaf]);
+
+    const stack = build();
+    stack.closeSubmenuFor(inertLeaf);
+
+    expect(inertLeaf.close).not.toHaveBeenCalled();
+    expect(stack.stack()).toEqual([]);
+  });
+
   it('ArrowLeft pops the innermost submenu level', () => {
     const inner = mockMenu();
     const submenu = mockSubmenu('sub-1', inner.host);

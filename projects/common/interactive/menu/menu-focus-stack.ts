@@ -75,7 +75,9 @@ export interface CngxMenuFocusStack {
    * hover never double-pushes. Chain-correcting: hover can target a submenu
    * whose parent menu is not the top of the stack (a sibling parent while
    * another branch is open), so any levels above the submenu's parent menu
-   * are popped first and the stack stays a strict chain.
+   * are popped first and the stack stays a strict chain. A no-op on an inert
+   * brain (`inner` never resolved - an organism leaf item): there is nothing
+   * to open and the open branch must survive a sweep across a leaf row.
    */
   openSubmenuFor(submenu: CngxMenuSubmenuLike): void;
   /**
@@ -85,7 +87,7 @@ export interface CngxMenuFocusStack {
    * (closing any open descendants on the way), so keyboard routing falls
    * back to the parent level. When the submenu is not stack-tracked (already
    * popped by a sibling's chain-correcting open) it only ensures the popover
-   * is hidden. Idempotent on a closed submenu.
+   * is hidden. Idempotent on a closed submenu; a no-op on an inert brain.
    */
   closeSubmenuFor(submenu: CngxMenuSubmenuLike): void;
   /**
@@ -267,7 +269,11 @@ export function createMenuFocusStack(deps: CngxMenuFocusStackDeps): CngxMenuFocu
       }
     },
     openSubmenuFor(submenu: CngxMenuSubmenuLike): void {
-      if (submenuStack().includes(submenu.inner)) {
+      // Inert brain (organism leaf item - no popover, `inner` never resolves):
+      // nothing to open, and chain-correcting for it would tear down the open
+      // branch on an incidental pointer sweep across a leaf row.
+      const inner = submenu.inner as CngxMenuHost | null;
+      if (inner === null || submenuStack().includes(inner)) {
         return;
       }
       // Chain correction: locate the submenu's parent menu in the open chain
@@ -284,13 +290,18 @@ export function createMenuFocusStack(deps: CngxMenuFocusStackDeps): CngxMenuFocu
       openSubmenu(submenu);
     },
     closeSubmenuFor(submenu: CngxMenuSubmenuLike): void {
-      if (!submenuStack().includes(submenu.inner)) {
+      const inner = submenu.inner as CngxMenuHost | null;
+      if (inner === null) {
+        // Inert brain - nothing was ever open.
+        return;
+      }
+      if (!submenuStack().includes(inner)) {
         // Not stack-tracked (e.g. already popped by a sibling's
         // chain-correcting open) - only ensure the popover is hidden.
         submenu.close();
         return;
       }
-      while (submenuStack().includes(submenu.inner)) {
+      while (submenuStack().includes(inner)) {
         popSubmenu();
       }
     },
