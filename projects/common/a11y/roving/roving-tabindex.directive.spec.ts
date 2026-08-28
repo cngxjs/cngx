@@ -348,3 +348,107 @@ describe('CngxRovingTabindex under dir=rtl', () => {
     expect(tabindex(buttons[1])).toBe('0');
   });
 });
+
+/* --- Keyboard hygiene: modifiers, focusin, clamps ------------------------ */
+
+@Component({
+  template: `
+    <div cngxRovingTabindex orientation="horizontal" #rv="cngxRovingTabindex">
+      @for (item of items(); track item.label) {
+        <button cngxRovingItem [cngxRovingItemDisabled]="item.disabled">
+          {{ item.label }}
+        </button>
+      }
+    </div>
+  `,
+  imports: [CngxRovingTabindex, CngxRovingItem],
+})
+class DynamicHost {
+  readonly items = signal<Array<{ label: string; disabled: boolean }>>([
+    { label: 'One', disabled: false },
+    { label: 'Two', disabled: false },
+    { label: 'Three', disabled: false },
+  ]);
+}
+
+describe('CngxRovingTabindex - keyboard hygiene', () => {
+  beforeEach(() => TestBed.configureTestingModule({ imports: [DynamicHost] }));
+
+  function setup() {
+    const fixture = TestBed.createComponent(DynamicHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const container = fixture.debugElement.query(By.directive(CngxRovingTabindex));
+    const dir = container.injector.get(CngxRovingTabindex);
+    const buttons = () => fixture.debugElement.queryAll(By.css('button'));
+    return { fixture, container, dir, buttons };
+  }
+
+  function tabindex(el: { nativeElement: HTMLElement }): string {
+    return el.nativeElement.getAttribute('tabindex') ?? '';
+  }
+
+  it('ignores arrow keys with ctrl/meta/alt held (browser shortcuts pass through)', () => {
+    const { container, dir } = setup();
+    for (const modifier of [{ ctrlKey: true }, { metaKey: true }, { altKey: true }]) {
+      const event = new KeyboardEvent('keydown', { key: 'ArrowRight', ...modifier });
+      container.triggerEventHandler('keydown', event);
+      TestBed.flushEffects();
+      expect(dir.activeIndex()).toBe(0);
+      expect(event.defaultPrevented).toBe(false);
+    }
+  });
+
+  it('follows real focus via focusin (pointer click moves the tab stop)', () => {
+    const { fixture, dir, buttons } = setup();
+    buttons()[2].nativeElement.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    expect(dir.activeIndex()).toBe(2);
+    expect(tabindex(buttons()[2])).toBe('0');
+    expect(tabindex(buttons()[0])).toBe('-1');
+  });
+
+  it('falls back to the first enabled item when the initial target is disabled', () => {
+    const { fixture, dir, buttons } = setup();
+    fixture.componentInstance.items.set([
+      { label: 'One', disabled: true },
+      { label: 'Two', disabled: false },
+      { label: 'Three', disabled: false },
+    ]);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    expect(tabindex(buttons()[0])).toBe('-1');
+    expect(tabindex(buttons()[1])).toBe('0');
+    expect(dir.activeIndex()).toBe(1);
+  });
+
+  it('clamps the activeIndex model when the item list shrinks below it', () => {
+    const { fixture, dir, buttons } = setup();
+    dir.activeIndex.set(2);
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    fixture.componentInstance.items.set([
+      { label: 'One', disabled: false },
+      { label: 'Two', disabled: false },
+    ]);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    expect(dir.activeIndex()).toBe(1);
+    expect(tabindex(buttons()[1])).toBe('0');
+  });
+
+  it('keeps the activeIndex model untouched while the list is empty', () => {
+    const { fixture, dir } = setup();
+    dir.activeIndex.set(2);
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    fixture.componentInstance.items.set([]);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(dir.activeIndex()).toBe(2);
+  });
+});

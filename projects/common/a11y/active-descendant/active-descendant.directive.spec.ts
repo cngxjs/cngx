@@ -3,6 +3,8 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { provideDirection } from '@cngx/core';
+
 import { CNGX_AD_ITEM, type ActiveDescendantItem, type CngxAdItemHandle } from './ad-item.token';
 import { CngxActiveDescendant } from './active-descendant.directive';
 
@@ -741,5 +743,106 @@ describe('CngxActiveDescendant - items input', () => {
     TestBed.flushEffects();
     expect(dir.activeId()).toBe('y-1');
     expect(dir.activeItem()?.label).toBe('Yankee');
+  });
+});
+
+/* --- Keyboard hygiene: modifiers, RTL, state clamp ------------------------ */
+
+describe('CngxActiveDescendant - keyboard hygiene', () => {
+  beforeEach(() => {
+    TestBed.configureTestingModule({ imports: [TestHost] });
+  });
+
+  it('ignores nav keys with ctrl/meta/alt held (browser shortcuts pass through)', () => {
+    const { fixture, dir } = setup();
+    dir.highlightFirst();
+    TestBed.flushEffects();
+    const container = fixture.debugElement.query(By.directive(CngxActiveDescendant));
+    for (const modifier of [{ ctrlKey: true }, { metaKey: true }, { altKey: true }]) {
+      const event = new KeyboardEvent('keydown', { key: 'ArrowDown', ...modifier });
+      container.triggerEventHandler('keydown', event);
+      TestBed.flushEffects();
+      expect(dir.activeItem()?.value).toBe('a');
+      expect(event.defaultPrevented).toBe(false);
+    }
+  });
+
+  it('does not swallow Ctrl+C style combos into typeahead', () => {
+    const { fixture, dir } = setup();
+    const container = fixture.debugElement.query(By.directive(CngxActiveDescendant));
+    const event = new KeyboardEvent('keydown', { key: 'c', ctrlKey: true });
+    container.triggerEventHandler('keydown', event);
+    TestBed.flushEffects();
+    expect(dir.activeItem()).toBeNull();
+    expect(event.defaultPrevented).toBe(false);
+  });
+
+  it('clamps the active state, not just the display, when the list shrinks', () => {
+    const { fixture, dir, key } = setup();
+    dir.highlightByIndex(2);
+    TestBed.flushEffects();
+    expect(dir.activeItem()?.value).toBe('c');
+
+    fixture.componentInstance.options.set([{ value: 'a', label: 'Apple' }]);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    // State clamped to the last remaining item - not a ghost index.
+    expect(dir.activeIndex()).toBe(0);
+    expect(dir.activeItem()?.value).toBe('a');
+    // Navigation anchors at the clamped state.
+    key('ArrowDown');
+    expect(dir.activeItem()?.value).toBe('a');
+  });
+});
+
+describe('CngxActiveDescendant under dir=rtl', () => {
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      imports: [TestHost],
+      providers: [provideDirection('rtl')],
+    });
+  });
+
+  function setupRtl() {
+    const fixture = TestBed.createComponent(TestHost);
+    fixture.componentInstance.orientation.set('horizontal');
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const container = fixture.debugElement.query(By.directive(CngxActiveDescendant));
+    const dir = container.injector.get(CngxActiveDescendant);
+    const key = (k: string): void => {
+      container.triggerEventHandler('keydown', new KeyboardEvent('keydown', { key: k }));
+      TestBed.flushEffects();
+      fixture.detectChanges();
+    };
+    return { fixture, dir, key };
+  }
+
+  it('ArrowLeft advances in reading order (reversed horizontal axis)', () => {
+    const { dir, key } = setupRtl();
+    dir.highlightFirst();
+    TestBed.flushEffects();
+    key('ArrowLeft');
+    expect(dir.activeItem()?.value).toBe('b');
+  });
+
+  it('ArrowRight retreats in reading order (reversed horizontal axis)', () => {
+    const { dir, key } = setupRtl();
+    dir.highlightByIndex(2);
+    TestBed.flushEffects();
+    key('ArrowRight');
+    expect(dir.activeItem()?.value).toBe('b');
+  });
+
+  it('leaves the vertical axis direction-invariant', () => {
+    const { fixture, dir, key } = setupRtl();
+    fixture.componentInstance.orientation.set('vertical');
+    fixture.detectChanges();
+    dir.highlightFirst();
+    TestBed.flushEffects();
+    key('ArrowDown');
+    expect(dir.activeItem()?.value).toBe('b');
   });
 });
