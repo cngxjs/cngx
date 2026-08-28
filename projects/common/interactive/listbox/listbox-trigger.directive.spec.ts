@@ -99,6 +99,30 @@ describe('CngxListboxTrigger', () => {
     expect(triggerEl.getAttribute('aria-haspopup')).toBe('listbox');
   });
 
+  it('ignores keys with ctrl/meta/alt held (browser shortcuts pass through)', () => {
+    const { popover, triggerEl, ad } = setup();
+    triggerEl.focus();
+    for (const modifier of [{ ctrlKey: true }, { metaKey: true }, { altKey: true }]) {
+      const event = new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, ...modifier });
+      triggerEl.dispatchEvent(event);
+      TestBed.flushEffects();
+      expect(popover.isVisible()).toBe(false);
+      expect(ad.activeItem()).toBeNull();
+      expect(event.defaultPrevented).toBe(false);
+    }
+  });
+
+  it('ignores navigation with modifiers while open', () => {
+    const { popover, triggerEl, ad } = setup();
+    popover.show();
+    TestBed.flushEffects();
+    const event = new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, ctrlKey: true });
+    triggerEl.dispatchEvent(event);
+    TestBed.flushEffects();
+    expect(ad.activeItem()).toBeNull();
+    expect(event.defaultPrevented).toBe(false);
+  });
+
   it('ArrowDown opens popover and highlights first item when closed', () => {
     const { triggerEl, popover, ad } = setup();
     triggerEl.focus();

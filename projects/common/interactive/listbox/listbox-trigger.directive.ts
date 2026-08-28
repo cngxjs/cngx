@@ -87,6 +87,13 @@ export class CngxListboxTrigger<T = unknown> {
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
 
   protected handleKeydown(event: KeyboardEvent): void {
+    // Never hijack browser/app shortcuts: Ctrl/Cmd/Alt combos pass through
+    // untouched - the same guard the nav strategies apply. Without it,
+    // Ctrl+ArrowDown on a trigger would navigate and swallow the event.
+    if (event.ctrlKey || event.metaKey || event.altKey) {
+      return;
+    }
+
     const key = event.key;
     const ad = this.listbox().ad;
 
