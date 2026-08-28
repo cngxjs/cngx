@@ -35,9 +35,13 @@ import { CNGX_AD_ITEM, type ActiveDescendantItem, type CngxAdItemHandle } from '
  *
  * ### Virtualization
  *
- * When `virtualCount` is set, navigation can address indices not currently
- * in the DOM. `pendingHighlight` tells the consumer to scroll the missing
- * item into view; the consumer calls `clearPendingHighlight()` afterwards.
+ * When `virtualCount` is set, navigation addresses the absolute index space
+ * `[0, virtualCount)` even when only a window is rendered. Bind `windowStart`
+ * to the recycler's window start so item lookups (id resolution, disabled
+ * checks, typeahead labels) map absolute indices onto the rendered subset.
+ * Targets outside the window surface as `pendingHighlight`; the consumer
+ * scrolls them into view (`connectRecyclerToActiveDescendant`) and the
+ * directive clears the pending state once the target renders.
  *
  * ### Material/CDK equivalent
  *
@@ -90,6 +94,13 @@ export class CngxActiveDescendant {
    * range surface as `pendingHighlight` for scroll-and-retry protocols.
    */
   readonly virtualCount = input<number | undefined>(undefined);
+  /**
+   * Absolute index of the first rendered item in virtual mode - the recycler
+   * window start. All rendered-item lookups are offset by it so absolute
+   * indices resolve the right item once the window has scrolled past 0.
+   * Ignored when `virtualCount` is unset.
+   */
+  readonly windowStart = input<number>(0);
 
   /** Emitted when `activateCurrent()` is called with an active item. */
   readonly activated = output<unknown>();
@@ -140,9 +151,19 @@ export class CngxActiveDescendant {
     if (idx < 0) {
       return null;
     }
-    const list = this.resolvedItems();
-    return list[idx] ?? null;
+    return this.itemAt(idx);
   });
+
+  /**
+   * `activeItem` pinned to the item id for the `highlighted` emission: a
+   * re-render that produces a fresh object for the same item must not
+   * re-emit. `activeItem` itself stays identity-equal so `activeValue`
+   * tracks value changes on an unchanged id.
+   */
+  private readonly highlightedItem = computed<ActiveDescendantItem | null>(
+    () => this.activeItem(),
+    { equal: (a, b) => a === b || (a !== null && b !== null && a.id === b.id) },
+  );
 
   readonly activeId = computed<string | null>(() => this.activeItem()?.id ?? null);
   readonly activeValue = computed<unknown>(() => this.activeItem()?.value ?? null);
@@ -162,8 +183,16 @@ export class CngxActiveDescendant {
       }
     });
 
+    // Leading nulls are start-up state, not a highlight change - emit only
+    // once something was highlighted (later resets back to null still emit).
+    let hadHighlight = false;
     effect(() => {
-      this.highlighted.emit(this.activeItem());
+      const item = this.highlightedItem();
+      if (!hadHighlight && item === null) {
+        return;
+      }
+      hadHighlight = true;
+      this.highlighted.emit(item);
     });
 
     effect(() => {
@@ -232,8 +261,10 @@ export class CngxActiveDescendant {
   }
 
   /**
-   * Highlight the first item whose value matches (via `Object.is`). No-op if
-   * no match. Disabled items are rejected when `skipDisabled()` is true.
+   * Highlight the first rendered item whose value matches (via `Object.is`).
+   * No-op if no match. Disabled items are rejected when `skipDisabled()` is
+   * true. In virtual mode only the rendered window is searched; the resolved
+   * index is absolute.
    */
   highlightByValue(value: unknown): void {
     const items = this.resolvedItems();
@@ -244,7 +275,7 @@ export class CngxActiveDescendant {
     if (this.skipDisabled() && items[idx].disabled) {
       return;
     }
-    this.activeIndexState.set(idx);
+    this.activeIndexState.set(idx + this.windowOffset());
   }
 
   /** Clear the highlight. */
@@ -373,18 +404,32 @@ export class CngxActiveDescendant {
       this.typeaheadTimer = null;
     }, this.typeaheadDebounce());
 
+    // Labels exist only for rendered items, so the search space is the
+    // rendered window; matches map back to absolute indices in virtual mode.
     const items = this.resolvedItems();
     const skip = this.skipDisabled();
-    const start = Math.max(0, this.activeIndexState());
-    const total = items.length;
-    for (let offset = 0; offset < total; offset++) {
-      const i = (start + offset) % total;
-      const candidate = items[i];
+    const count = items.length;
+    if (count === 0) {
+      return;
+    }
+    const windowOffset = this.windowOffset();
+    const activeRel = this.activeIndexState() < 0 ? -1 : this.activeIndexState() - windowOffset;
+    // APG cycle: a single-character query (including a repeated letter, whose
+    // buffer collapses back to that letter) searches AFTER the active item so
+    // each press advances through the matches. A genuine multi-character query
+    // keeps matching the current item first.
+    const sameChar = next.length > 1 && [...next].every((c) => c === next[0]);
+    const term = sameChar ? next[0] : next;
+    const cycles = term.length === 1;
+    const startRel = cycles ? activeRel + 1 : Math.max(0, activeRel);
+    for (let step = 0; step < count; step++) {
+      const rel = (((startRel + step) % count) + count) % count;
+      const candidate = items[rel];
       if (skip && candidate.disabled) {
         continue;
       }
-      if (candidate.label.toLowerCase().startsWith(next)) {
-        this.activeIndexState.set(i);
+      if (candidate.label.toLowerCase().startsWith(term)) {
+        this.activeIndexState.set(rel + windowOffset);
         return;
       }
     }
@@ -395,7 +440,6 @@ export class CngxActiveDescendant {
     if (total === 0) {
       return null;
     }
-    const items = this.resolvedItems();
     const skip = this.skipDisabled();
     const loop = this.loop();
 
@@ -408,29 +452,34 @@ export class CngxActiveDescendant {
         }
         idx = ((idx % total) + total) % total;
       }
-      if (!skip || !items[idx]?.disabled) {
+      if (!skip || !this.isDisabledAt(idx)) {
         return idx;
       }
     }
     return null;
   }
 
+  /**
+   * First/last navigable absolute index. Spans the full virtual range - End
+   * targets `totalCount - 1` even when that item is not rendered (it surfaces
+   * as `pendingHighlight`); unrendered items count as enabled because their
+   * disabled state is unknowable.
+   */
   private findBoundary(direction: 1 | -1): number | null {
-    const items = this.resolvedItems();
-    const total = items.length;
+    const total = this.totalCount();
     if (total === 0) {
       return null;
     }
     const skip = this.skipDisabled();
     if (direction === 1) {
       for (let i = 0; i < total; i++) {
-        if (!skip || !items[i].disabled) {
+        if (!skip || !this.isDisabledAt(i)) {
           return i;
         }
       }
     } else {
       for (let i = total - 1; i >= 0; i--) {
-        if (!skip || !items[i].disabled) {
+        if (!skip || !this.isDisabledAt(i)) {
           return i;
         }
       }
@@ -446,14 +495,27 @@ export class CngxActiveDescendant {
     return this.resolvedItems().length;
   }
 
-  private isDisabledAt(index: number): boolean {
+  /** Rendered-window offset: `windowStart` in virtual mode, `0` otherwise. */
+  private windowOffset(): number {
+    return this.virtualCount() != null ? this.windowStart() : 0;
+  }
+
+  /** Item at an absolute index, `null` when outside the rendered window. */
+  private itemAt(index: number): ActiveDescendantItem | null {
+    const rel = index - this.windowOffset();
     const items = this.resolvedItems();
-    return !!items[index]?.disabled;
+    if (rel < 0 || rel >= items.length) {
+      return null;
+    }
+    return items[rel] ?? null;
+  }
+
+  private isDisabledAt(index: number): boolean {
+    return !!this.itemAt(index)?.disabled;
   }
 
   private isRendered(index: number): boolean {
-    const items = this.resolvedItems();
-    return index >= 0 && index < items.length && !!items[index];
+    return this.itemAt(index) !== null;
   }
 
   private scrollActiveIntoView(): void {
@@ -461,7 +523,10 @@ export class CngxActiveDescendant {
     if (!id) {
       return;
     }
-    const el = (this.hostEl.nativeElement as HTMLElement).querySelector(`#${cssEscape(id)}`);
+    // Document-wide by escaped id: aria-owns layouts render the option list
+    // outside the host subtree, a host-scoped query never finds those.
+    const doc = (this.hostEl.nativeElement as HTMLElement).ownerDocument;
+    const el = doc.querySelector(`#${cssEscape(id)}`);
     if (el instanceof HTMLElement && typeof el.scrollIntoView === 'function') {
       el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
     }

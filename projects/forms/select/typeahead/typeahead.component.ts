@@ -498,6 +498,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   readonly panelRenderer = this.virtualSetup.panelRenderer;
   /** @internal */
   protected readonly virtualItemCount = this.virtualSetup.virtualItemCount;
+  protected readonly virtualWindowStart = this.virtualSetup.virtualWindowStart;
 
   /**
    * Currently selected option, resolved against `options`. Structural

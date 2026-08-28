@@ -554,6 +554,7 @@ export class CngxSelectShell<T = unknown>
   });
   readonly panelRenderer = this.virtualSetup.panelRenderer;
   protected readonly virtualItemCount = this.virtualSetup.virtualItemCount;
+  protected readonly virtualWindowStart = this.virtualSetup.virtualWindowStart;
 
   readonly disabled = this.core.disabled;
   readonly id = computed<string>(() => this.core.resolvedId() ?? '');

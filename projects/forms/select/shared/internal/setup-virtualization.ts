@@ -24,6 +24,7 @@ export function setupVirtualization<T, TCommit>(opts: {
 }): {
   readonly panelRenderer: PanelRenderer<T>;
   readonly virtualItemCount: Signal<number | undefined>;
+  readonly virtualWindowStart: Signal<number>;
 } {
   const injected = inject(CNGX_PANEL_RENDERER_FACTORY)<T>({
     flatOptions: opts.core.flatOptions,
@@ -44,6 +45,21 @@ export function setupVirtualization<T, TCommit>(opts: {
     return panelRenderer.virtualizer !== undefined ? total : undefined;
   });
 
+  // Absolute index of the first option the renderer actually rendered - the
+  // listbox forwards it to AD's windowStart. Derived from the slice, not
+  // from the recycler directly: in threshold-identity mode the full list
+  // renders while the attached recycler's startIndex can drift after
+  // scrolling, so a full render always reports 0.
+  const virtualWindowStart = computed<number>(() => {
+    const v = panelRenderer.virtualizer;
+    if (v === undefined) {
+      return 0;
+    }
+    const rendered = panelRenderer.renderOptions().length;
+    const total = panelRenderer.totalCount?.() ?? rendered;
+    return rendered >= total ? 0 : v.startIndex();
+  });
+
   // AD ↔ recycler scroll bridge. AD auto-clears pendingHighlight once
   // the target enters the rendered range - no explicit clear here.
   effect(() => {
@@ -62,7 +78,7 @@ export function setupVirtualization<T, TCommit>(opts: {
     untracked(() => v.scrollToIndex(target));
   });
 
-  return { panelRenderer, virtualItemCount };
+  return { panelRenderer, virtualItemCount, virtualWindowStart };
 }
 
 export { type CngxSelectCompareFn } from './select-core';

@@ -123,6 +123,7 @@
       [explicitOptions]="panelRef.options()"
       [items]="panelRef.items()"
       [virtualCount]="virtualItemCount()"
+      [windowStart]="virtualWindowStart()"
       [(value)]="value"
     >
       <cngx-select-panel #panelRef="cngxSelectPanel" />

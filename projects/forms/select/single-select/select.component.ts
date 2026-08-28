@@ -445,6 +445,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   readonly panelRenderer = this.virtualSetup.panelRenderer;
   /** @internal */
   protected readonly virtualItemCount = this.virtualSetup.virtualItemCount;
+  protected readonly virtualWindowStart = this.virtualSetup.virtualWindowStart;
   /** @internal */ protected readonly resolvedId = this.core.resolvedId;
   /** @internal */ protected readonly resolvedListboxLabel = this.core.resolvedListboxLabel;
   /** @internal */ protected readonly resolvedShowSelectionIndicator =
