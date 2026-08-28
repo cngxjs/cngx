@@ -1,11 +1,17 @@
 import { createResizeObserverMock } from '@cngx/testing';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-type MaybeResizeObserver = Window & { ResizeObserver?: typeof ResizeObserver };
+type MaybeResizeObserver = { ResizeObserver?: typeof ResizeObserver };
 
 // Characterization of the shared @cngx/testing ResizeObserver mock, co-located
 // with the resize-observer consumers (projects/testing has no test runner).
 describe('createResizeObserverMock', () => {
+  beforeEach(() => {
+    // Same worker-shared-window caveat as in match-media-mock.spec.ts:
+    // arrange the no-original precondition instead of assuming it.
+    delete (window as MaybeResizeObserver).ResizeObserver;
+  });
+
   afterEach(() => {
     vi.unstubAllGlobals();
     delete (window as MaybeResizeObserver).ResizeObserver;

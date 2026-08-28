@@ -13,6 +13,15 @@
  * (cannot nest inside a selector) but lives inside `@layer cngx.tokens`
  * to keep cascade order intact.
  *
+ * Every registration carries `inherits: true`. System tokens are
+ * set-once theme knobs, not perf-hot per-element properties, and a
+ * registered `inherits: false` silently kills the whole theming
+ * contract: a value set on `:root` (or any ancestor) never reaches a
+ * descendant - every element computes the registered initial-value
+ * instead. Component-level tokens may still register `inherits: false`
+ * for paint containment; those are overridden on the consuming element
+ * selector, never on `:root` (see `example-brand.css`).
+ *
  * **Token families**
  *
  * - **Spacing** - `--cngx-space-{xs|sm|md|lg|xl}` (4 / 8 / 16 / 24 /
@@ -167,7 +176,7 @@
    */
   @property --cngx-radius-sm {
     syntax: '<length>';
-    inherits: false;
+    inherits: true;
     initial-value: 4px;
   }
 
@@ -177,7 +186,7 @@
    */
   @property --cngx-radius-md {
     syntax: '<length>';
-    inherits: false;
+    inherits: true;
     initial-value: 8px;
   }
 
@@ -187,7 +196,7 @@
    */
   @property --cngx-radius-lg {
     syntax: '<length>';
-    inherits: false;
+    inherits: true;
     initial-value: 12px;
   }
 
@@ -198,7 +207,7 @@
    */
   @property --cngx-radius-pill {
     syntax: '<length>';
-    inherits: false;
+    inherits: true;
     initial-value: 999px;
   }
 
@@ -209,7 +218,7 @@
    */
   @property --cngx-duration-fast {
     syntax: '<time>';
-    inherits: false;
+    inherits: true;
     initial-value: 150ms;
   }
 
@@ -220,7 +229,7 @@
    */
   @property --cngx-duration-base {
     syntax: '<time>';
-    inherits: false;
+    inherits: true;
     initial-value: 200ms;
   }
 
@@ -231,7 +240,7 @@
    */
   @property --cngx-duration-slow {
     syntax: '<time>';
-    inherits: false;
+    inherits: true;
     initial-value: 320ms;
   }
 
@@ -244,7 +253,7 @@
    */
   @property --cngx-easing-standard {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
@@ -254,7 +263,7 @@
    */
   @property --cngx-easing-decelerate {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: cubic-bezier(0, 0, 0.2, 1);
   }
 
@@ -264,7 +273,7 @@
    */
   @property --cngx-easing-accelerate {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: cubic-bezier(0.4, 0, 1, 1);
   }
 
@@ -378,7 +387,7 @@
    */
   @property --cngx-font-size-sm {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.8125rem;
   }
 
@@ -388,7 +397,7 @@
    */
   @property --cngx-font-size-md {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.9375rem;
   }
 
@@ -399,7 +408,7 @@
    */
   @property --cngx-font-size-lg {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 1.0625rem;
   }
 
@@ -421,7 +430,7 @@
    */
   @property --cngx-shadow-sm {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0 1px 2px oklch(0 0 0 / 0.05);
   }
 
@@ -431,7 +440,7 @@
    */
   @property --cngx-shadow-md {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0 4px 16px oklch(0 0 0 / 0.12);
   }
 
@@ -441,7 +450,7 @@
    */
   @property --cngx-shadow-lg {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0 16px 40px oklch(0 0 0 / 0.18);
   }
 

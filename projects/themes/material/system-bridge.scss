@@ -20,6 +20,14 @@
 //     @include mat.all-component-themes($theme);
 //     @include cngx-system.theme($theme);
 //   }
+//
+// Placement contract: assigning on the html host is enough ONLY because
+// every system token registers `@property ... inherits: true`
+// (core system-tokens.css, the coordinated inherits cut) - descendants
+// inherit the Material value. Component-level bridges whose tokens
+// register `inherits: false` must assign on the consuming element
+// instead (see select-theme.scss for the broadcast pattern); a host-only
+// assignment of a non-inheriting token is a silent no-op.
 
 @mixin _m3() {
   // Surfaces and text

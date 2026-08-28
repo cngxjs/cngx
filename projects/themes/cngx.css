@@ -14,8 +14,9 @@
  * - `cngx.reset` - box-sizing, button neutralize, focus-ring base
  * - `cngx.tokens` - `@property` registration + `light-dark()`
  *   defaults for every system token
- * - `cngx.base` - bare-element atoms: button, input, kbd, dl, hr
- * - `cngx.utilities` - `.cngx-sr-only`
+ * - `cngx.base` - bare-element atoms (input, textarea, select, kbd,
+ *   dl, hr; bare button deliberately stays browser-native) plus the
+ *   `.cngx-sr-only` utility - utilities.css appends into this layer
  * - `cngx.components` - externalised directive CSS (`CngxAccordion`,
  *   `CngxAsync`, `CngxBackdrop`, `CngxBadge`, `CngxBottomSheet`,
  *   `CngxBreadcrumb`, `CngxButtonToggle`, `CngxDialog`, `CngxDivider`,
