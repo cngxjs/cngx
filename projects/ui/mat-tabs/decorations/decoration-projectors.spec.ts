@@ -348,7 +348,7 @@ describe('createMatTabRejectionDecoration — aria-describedby contract (5.2)', 
     const failedHandleId = signal<string | null>('cngx-mat-tab-2');
     const failedIndex = signal<number | undefined>(2);
     // Initial fallback phrase, before the origin label resolves.
-    const descriptorText = signal<string>('Tab change refused — retry?');
+    const descriptorText = signal<string>('Tab change refused - retry?');
 
     createMatTabRejectionDecoration({
       hostEl,
@@ -365,7 +365,7 @@ describe('createMatTabRejectionDecoration — aria-describedby contract (5.2)', 
     const initialSpan = target.querySelector<HTMLSpanElement>(
       'span.cngx-sr-only#cngx-mat-tab-2-rejected',
     );
-    expect(initialSpan?.textContent).toBe('Tab change refused — retry?');
+    expect(initialSpan?.textContent).toBe('Tab change refused - retry?');
 
     // Origin label resolves later — text mutates in place; the span
     // identity must be stable so AT does not reset its descriptor
@@ -743,7 +743,7 @@ describe('createMatTabRejectionDecoration — *cngxMatTabRejectionContent slot c
     const { host, hostEl } = setupRejectionHost();
     const failedHandleId = signal<string | null>('cngx-mat-tab-2');
     const failedIndex = signal<number | undefined>(2);
-    const descriptorText = signal<string>('Tab change refused — retry?');
+    const descriptorText = signal<string>('Tab change refused - retry?');
     const originLabel = signal<string | undefined>(undefined);
     const contentTemplate = signal<TemplateRef<
       CngxMatTabRejectionContentContext
@@ -768,7 +768,7 @@ describe('createMatTabRejectionDecoration — *cngxMatTabRejectionContent slot c
       '[data-testid="rejection-slot"]',
     );
     expect(slotChild?.textContent).toBe(
-      'slot cngx-mat-tab-2/∅/Tab change refused — retry?',
+      'slot cngx-mat-tab-2/∅/Tab change refused - retry?',
     );
 
     descriptorText.set('Reverted to "Settings".');

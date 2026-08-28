@@ -686,7 +686,7 @@ describe('CngxTabGroup organism', () => {
       tabs[1].click();
       fixture.detectChanges();
       expect(region.textContent?.trim()).toBe(
-        'Could not save changes — reverted to "A".',
+        'Could not save changes - reverted to "A".',
       );
     });
 
@@ -741,7 +741,7 @@ describe('CngxTabGroup organism', () => {
       fixture.detectChanges();
       // First reject — rich phrase fires.
       expect(region.textContent?.trim()).toBe(
-        'Could not save changes — reverted to "A".',
+        'Could not save changes - reverted to "A".',
       );
       // Sanity: clearing lastFailedIndex while still in the error
       // state collapses the rich resolution back to the generic phrase
@@ -752,7 +752,7 @@ describe('CngxTabGroup organism', () => {
       );
       host.clearLastFailed();
       fixture.detectChanges();
-      expect(region.textContent?.trim()).toBe('Tab change refused — retry?');
+      expect(region.textContent?.trim()).toBe('Tab change refused - retry?');
     });
 
     it('successful re-pick of the failed tab clears cngx-tab--rejected + rejection-icon span', () => {

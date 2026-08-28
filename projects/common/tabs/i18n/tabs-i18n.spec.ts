@@ -23,10 +23,10 @@ describe('CngxTabsI18n', () => {
     expect(i18n.tabsLabel).toBe('Tabs');
     expect(i18n.previousTab).toBe('Previous tab');
     expect(i18n.nextTab).toBe('Next tab');
-    expect(i18n.commitFailedRetry).toBe('Tab change refused — retry?');
+    expect(i18n.commitFailedRetry).toBe('Tab change refused - retry?');
     expect(i18n.commitInFlight).toBe('Switching tab…');
     expect(i18n.commitRolledBackTo('Profile')).toBe(
-      'Could not save changes — reverted to "Profile".',
+      'Could not save changes - reverted to "Profile".',
     );
     expect(i18n.selectedTab('Settings', 2, 5)).toBe('Tab 2 of 5: Settings');
     expect(i18n.tabLabelWithDetail('Bookmarks', '45')).toBe('Bookmarks, 45');
@@ -52,7 +52,7 @@ describe('CngxTabsI18n', () => {
       'Speichern fehlgeschlagen — zurück auf „Einstellungen".',
     );
     // Other keys keep their defaults.
-    expect(i18n.commitFailedRetry).toBe('Tab change refused — retry?');
+    expect(i18n.commitFailedRetry).toBe('Tab change refused - retry?');
   });
 
   it('provideTabsI18n shallow-merges over the defaults — unset keys keep English', () => {

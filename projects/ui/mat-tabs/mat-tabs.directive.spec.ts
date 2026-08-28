@@ -1385,7 +1385,7 @@ describe('CngxMatTabs instrumentation directive', () => {
     );
     try {
       expect(politeRegions[politeRegions.length - 1]?.textContent).toBe(
-        'Could not save changes — reverted to "One".',
+        'Could not save changes - reverted to "One".',
       );
     } finally {
       TestBed.inject(CngxLiveAnnouncer).ngOnDestroy();

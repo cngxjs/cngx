@@ -58,9 +58,9 @@ const TABS_I18N_DEFAULTS: CngxTabsI18n = {
   nextTab: 'Next tab',
   closeTab: (label) => `Close "${label}"`,
   addTab: 'Add tab',
-  commitFailedRetry: 'Tab change refused — retry?',
+  commitFailedRetry: 'Tab change refused - retry?',
   commitInFlight: 'Switching tab…',
-  commitRolledBackTo: (originLabel) => `Could not save changes — reverted to "${originLabel}".`,
+  commitRolledBackTo: (originLabel) => `Could not save changes - reverted to "${originLabel}".`,
 };
 
 /**
