@@ -33,7 +33,7 @@ import type { CngxRecycler } from './recycler';
  * ```typescript
  * @Component({
  *   hostDirectives: [
- *     { directive: CngxActiveDescendant, inputs: ['items', 'virtualCount'] },
+ *     { directive: CngxActiveDescendant, inputs: ['items', 'virtualCount', 'windowStart'] },
  *   ],
  * })
  * class MyVirtualSelect {

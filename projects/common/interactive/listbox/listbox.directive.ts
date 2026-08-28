@@ -65,7 +65,15 @@ import { CngxOption } from './option.directive';
   hostDirectives: [
     {
       directive: CngxActiveDescendant,
-      inputs: ['items', 'orientation', 'loop', 'typeahead', 'autoHighlightFirst', 'virtualCount'],
+      inputs: [
+        'items',
+        'orientation',
+        'loop',
+        'typeahead',
+        'autoHighlightFirst',
+        'virtualCount',
+        'windowStart',
+      ],
     },
   ],
   host: {
