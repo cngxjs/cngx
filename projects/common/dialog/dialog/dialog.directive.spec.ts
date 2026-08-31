@@ -332,6 +332,32 @@ describe('CngxDialog', () => {
       expect(describedBy).toMatch(/-desc$/);
     });
 
+    it('emits neither labelling attribute without title and description sources', () => {
+      const { fixture, dialogEl } = setup(ModalToggleHost);
+      fixture.componentInstance.dialog().open();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      expect(dialogEl.getAttribute('aria-labelledby')).toBeNull();
+      expect(dialogEl.getAttribute('aria-describedby')).toBeNull();
+    });
+
+    it('merges registered supplemental ids after the description id and releases them', () => {
+      const { fixture, dialogEl } = setup(FullDialogHost);
+      const dialog = fixture.componentInstance.dialog();
+      const descId = dialogEl.getAttribute('aria-describedby');
+
+      const release = dialog.registerDescribedBy(signal('extra-instruction'));
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(dialogEl.getAttribute('aria-describedby')).toBe(`${descId} extra-instruction`);
+
+      release();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(dialogEl.getAttribute('aria-describedby')).toBe(descId);
+    });
+
     it('sets aria-modal only when modal and not closed', () => {
       const { fixture, dialogEl } = setup(FullDialogHost);
       const dialog = fixture.componentInstance.dialog();

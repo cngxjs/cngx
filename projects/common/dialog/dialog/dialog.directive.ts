@@ -11,6 +11,7 @@ import {
   isDevMode,
   Renderer2,
   signal,
+  type Signal,
   untracked,
 } from '@angular/core';
 
@@ -20,6 +21,11 @@ import { createScrollLock } from '@cngx/common/layout';
 import { firstValueFrom, isObservable, type Observable } from 'rxjs';
 
 import { DIALOG_REF, type DialogRef, type DialogState } from './dialog-ref';
+import {
+  CNGX_DIALOG_ARIA_REGISTRY,
+  type CngxDialogAriaRegistry,
+  type DialogLabelHandle,
+} from './dialog-aria-registry';
 import { CngxDialogStack } from './dialog-stack';
 import { CngxDialogTitle } from './dialog-title.directive';
 import { CngxDialogDescription } from './dialog-description.directive';
@@ -101,7 +107,10 @@ import { CngxDialogDescription } from './dialog-description.directive';
   selector: 'dialog[cngxDialog]',
   exportAs: 'cngxDialog',
   standalone: true,
-  providers: [{ provide: DIALOG_REF, useExisting: CngxDialog }],
+  providers: [
+    { provide: DIALOG_REF, useExisting: CngxDialog },
+    { provide: CNGX_DIALOG_ARIA_REGISTRY, useExisting: CngxDialog },
+  ],
   host: {
     '[class.cngx-dialog--opening]': 'isOpening()',
     '[class.cngx-dialog--open]': 'isOpen()',
@@ -119,7 +128,7 @@ import { CngxDialogDescription } from './dialog-description.directive';
     '(click)': 'handleClick($event)',
   },
 })
-export class CngxDialog<T = unknown> implements DialogRef<T> {
+export class CngxDialog<T = unknown> implements DialogRef<T>, CngxDialogAriaRegistry {
   private readonly elRef = inject<ElementRef<HTMLDialogElement>>(ElementRef);
   private readonly doc = inject(DOCUMENT);
   private readonly renderer = inject(Renderer2);
@@ -128,6 +137,13 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
 
   private readonly titleDirective = contentChild(CngxDialogTitle);
   private readonly descriptionDirective = contentChild(CngxDialogDescription);
+
+  // Push-registered counterparts of the content queries above. Programmatic
+  // content lives in a dynamically created view the queries cannot see, so
+  // sources register through CNGX_DIALOG_ARIA_REGISTRY instead.
+  private readonly registeredTitle = signal<DialogLabelHandle | null>(null);
+  private readonly registeredDescription = signal<DialogLabelHandle | null>(null);
+  private readonly supplementalDescribedByIds = signal<readonly Signal<string>[]>([]);
 
   /**
    * Whether the dialog opens as modal (`showModal()`) or non-modal (`show()`).
@@ -304,9 +320,23 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
     this.openedAsModal() && this.lifecycleSignal() !== 'closed' ? 'true' : null,
   );
 
-  protected readonly ariaLabelledBy = computed(() => this.titleDirective()?.id() ?? null);
+  protected readonly ariaLabelledBy = computed(
+    () => (this.titleDirective() ?? this.registeredTitle())?.id() ?? null,
+  );
 
-  protected readonly ariaDescribedBy = computed(() => this.descriptionDirective()?.id() ?? null);
+  protected readonly ariaDescribedBy = computed(() => {
+    const ids: string[] = [];
+
+    const descriptionId = (this.descriptionDirective() ?? this.registeredDescription())?.id();
+    if (descriptionId) {
+      ids.push(descriptionId);
+    }
+    for (const id of this.supplementalDescribedByIds()) {
+      ids.push(id());
+    }
+
+    return ids.length > 0 ? ids.join(' ') : null;
+  });
 
   protected readonly backdropOpacity = computed(() =>
     this.dialogStack.topmost() === this.idSignal() ? '1' : '0',
@@ -328,7 +358,9 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
 
     effect(() => {
       if (this.lifecycleSignal() === 'open') {
-        const titleText = untracked(() => this.titleDirective()?.textContent() ?? '');
+        const titleText = untracked(
+          () => (this.titleDirective() ?? this.registeredTitle())?.textContent?.() ?? '',
+        );
         if (titleText && this.liveRegion) {
           this.liveRegion.textContent = titleText;
           // Clear after one frame so subsequent opens re-announce
@@ -363,6 +395,42 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
         this.finalize();
       }
     });
+  }
+
+  /**
+   * Register the labelling source for `aria-labelledby` and the open announce.
+   *
+   * A present content-queried title wins over the registered handle (same
+   * directive in the declarative case - identical id either way).
+   *
+   * @internal CNGX_DIALOG_ARIA_REGISTRY implementation - not public API.
+   */
+  registerTitle(handle: DialogLabelHandle): () => void {
+    this.registeredTitle.set(handle);
+    return () =>
+      this.registeredTitle.update((current) => (current === handle ? null : current));
+  }
+
+  /**
+   * Register the primary description source for `aria-describedby`.
+   *
+   * @internal CNGX_DIALOG_ARIA_REGISTRY implementation - not public API.
+   */
+  registerDescription(handle: DialogLabelHandle): () => void {
+    this.registeredDescription.set(handle);
+    return () =>
+      this.registeredDescription.update((current) => (current === handle ? null : current));
+  }
+
+  /**
+   * Register a supplemental `aria-describedby` id, merged after the
+   * description id in registration order.
+   *
+   * @internal CNGX_DIALOG_ARIA_REGISTRY implementation - not public API.
+   */
+  registerDescribedBy(id: Signal<string>): () => void {
+    this.supplementalDescribedByIds.update((ids) => [...ids, id]);
+    return () => this.supplementalDescribedByIds.update((ids) => ids.filter((x) => x !== id));
   }
 
   /**

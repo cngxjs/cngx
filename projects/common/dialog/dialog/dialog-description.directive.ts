@@ -1,6 +1,7 @@
-import { Directive, inject, signal } from '@angular/core';
+import { DestroyRef, Directive, inject, signal } from '@angular/core';
 import { nextUid } from '@cngx/core/utils';
 
+import { CNGX_DIALOG_ARIA_REGISTRY } from './dialog-aria-registry';
 import { DIALOG_REF } from './dialog-ref';
 
 /**
@@ -44,6 +45,8 @@ import { DIALOG_REF } from './dialog-ref';
 })
 export class CngxDialogDescription {
   private readonly dialogRef = inject(DIALOG_REF, { optional: true });
+  private readonly ariaRegistry = inject(CNGX_DIALOG_ARIA_REGISTRY, { optional: true });
+  private readonly destroyRef = inject(DestroyRef);
 
   private readonly idState = signal(nextUid('cngx-dialog-desc'));
 
@@ -59,6 +62,11 @@ export class CngxDialogDescription {
   constructor() {
     if (this.dialogRef) {
       this.idState.set(`${this.dialogRef.id()}-desc`);
+    }
+    // Push registration: content queries cannot see dynamically created
+    // views, so programmatic dialogs rely on this channel exclusively.
+    if (this.ariaRegistry) {
+      this.destroyRef.onDestroy(this.ariaRegistry.registerDescription(this));
     }
   }
 }
