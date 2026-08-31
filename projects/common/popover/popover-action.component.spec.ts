@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CngxFailed, CngxPending, CngxSucceeded } from '@cngx/common/interactive';
 
 import { CngxPopoverAction } from './popover-action.component';
+import { providePopoverPanel, withCloseOnSuccess } from './popover-panel.config';
 import { CngxPopover } from './popover.directive';
 
 // ── Test helpers ────────────────────────────────────────────────────────
@@ -210,6 +211,91 @@ describe('CngxPopoverAction', () => {
     it('stays idle for role="dismiss"', () => {
       const { fixture } = setup(DismissHost);
       expect(fixture.componentInstance.action().status()).toBe('idle');
+    });
+  });
+
+  describe('withCloseOnSuccess', () => {
+    function closeOnSuccessSetup(delay?: number) {
+      if (delay !== undefined) {
+        TestBed.configureTestingModule({
+          imports: [ConfirmHost],
+          providers: [providePopoverPanel(withCloseOnSuccess(delay))],
+        });
+      }
+      const { fixture, popoverEl } = setup(ConfirmHost);
+      const host = fixture.componentInstance;
+      host.popover().show();
+      fixture.detectChanges();
+      return { fixture, host, popoverEl };
+    }
+
+    function clickConfirm(fixture: { nativeElement: HTMLElement }): void {
+      const btn = fixture.nativeElement.querySelector('.cngx-popover-action') as HTMLButtonElement;
+      btn.click();
+    }
+
+    async function settle(fixture: {
+      detectChanges(): void;
+    }): Promise<void> {
+      await vi.advanceTimersByTimeAsync(0);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+    }
+
+    it('closes the composing popover after the configured delay', async () => {
+      const { fixture, host, popoverEl } = closeOnSuccessSetup(300);
+      clickConfirm(fixture);
+      await settle(fixture);
+      host.resolveFn();
+      await settle(fixture);
+
+      await vi.advanceTimersByTimeAsync(299);
+      expect(popoverEl.hidePopover).not.toHaveBeenCalled();
+
+      await vi.advanceTimersByTimeAsync(1);
+      expect(popoverEl.hidePopover).toHaveBeenCalled();
+      expect(host.popover().state()).toBe('closed');
+    });
+
+    it('closes immediately with delay 0', async () => {
+      const { fixture, host, popoverEl } = closeOnSuccessSetup(0);
+      clickConfirm(fixture);
+      await settle(fixture);
+      host.resolveFn();
+      await settle(fixture);
+
+      await vi.runOnlyPendingTimersAsync();
+      expect(popoverEl.hidePopover).toHaveBeenCalled();
+      expect(host.popover().state()).toBe('closed');
+    });
+
+    it('does not auto-close without the feature', async () => {
+      const { fixture, host, popoverEl } = closeOnSuccessSetup();
+      clickConfirm(fixture);
+      await settle(fixture);
+      host.resolveFn();
+      await settle(fixture);
+
+      await vi.advanceTimersByTimeAsync(5000);
+      expect(popoverEl.hidePopover).not.toHaveBeenCalled();
+      expect(host.popover().state()).not.toBe('closed');
+    });
+
+    it('cancels the scheduled close when the action is re-triggered', async () => {
+      const { fixture, host, popoverEl } = closeOnSuccessSetup(1000);
+      clickConfirm(fixture);
+      await settle(fixture);
+      host.resolveFn();
+      await settle(fixture);
+
+      // Re-run before the close fires; the new pending run must cancel it.
+      await vi.advanceTimersByTimeAsync(100);
+      clickConfirm(fixture);
+      await settle(fixture);
+
+      await vi.advanceTimersByTimeAsync(5000);
+      expect(popoverEl.hidePopover).not.toHaveBeenCalled();
+      expect(host.popover().state()).not.toBe('closed');
     });
   });
 

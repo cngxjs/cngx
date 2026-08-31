@@ -5,9 +5,12 @@ import {
   Component,
   computed,
   contentChild,
+  DestroyRef,
+  effect,
   inject,
   input,
   isDevMode,
+  untracked,
   ViewEncapsulation,
   viewChild,
 } from '@angular/core';
@@ -20,6 +23,7 @@ import {
   type AsyncAction,
 } from '@cngx/common/interactive';
 
+import { CNGX_POPOVER_PANEL_CONFIG } from './popover-panel.config';
 import { CngxPopover } from './popover.directive';
 
 /**
@@ -144,6 +148,8 @@ export type PopoverActionVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
 })
 export class CngxPopoverAction {
   private readonly popover = inject(CngxPopover, { optional: true });
+  private readonly config = inject(CNGX_POPOVER_PANEL_CONFIG);
+  private readonly destroyRef = inject(DestroyRef);
 
   /** Button role: `'dismiss'` closes immediately, `'confirm'` runs an async action. */
   readonly role = input<'dismiss' | 'confirm'>('confirm');
@@ -170,7 +176,30 @@ export class CngxPopoverAction {
    */
   readonly status = computed<AsyncStatus>(() => this.asyncClick()?.status() ?? 'idle');
 
+  private closeOnSuccessTimer: ReturnType<typeof setTimeout> | null = null;
+
   constructor() {
+    // withCloseOnSuccess(): a confirmed footer action hides the composing
+    // popover after the configured delay. A follow-up run cancels the
+    // pending close so a re-triggered action never yanks the panel away
+    // mid-interaction.
+    effect(() => {
+      const status = this.status();
+      const delay = untracked(() => this.config.closeOnSuccessDelay);
+      if (status === 'pending') {
+        this.clearCloseOnSuccessTimer();
+      }
+      if (status === 'success' && delay !== undefined && this.popover) {
+        this.clearCloseOnSuccessTimer();
+        this.closeOnSuccessTimer = setTimeout(() => {
+          this.closeOnSuccessTimer = null;
+          this.popover?.hide();
+        }, delay);
+      }
+    });
+
+    this.destroyRef.onDestroy(() => this.clearCloseOnSuccessTimer());
+
     if (isDevMode()) {
       afterNextRender(() => {
         if (this.role() === 'confirm' && !this.action()) {
@@ -185,5 +214,12 @@ export class CngxPopoverAction {
 
   protected handleDismiss(): void {
     this.popover?.hide();
+  }
+
+  private clearCloseOnSuccessTimer(): void {
+    if (this.closeOnSuccessTimer) {
+      clearTimeout(this.closeOnSuccessTimer);
+      this.closeOnSuccessTimer = null;
+    }
   }
 }
