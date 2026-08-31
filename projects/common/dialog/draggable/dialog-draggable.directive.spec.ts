@@ -2,6 +2,8 @@ import { Component, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it, vi } from 'vitest';
 
+import { CngxDialog } from '../dialog/dialog.directive';
+import { CngxDialogDescription } from '../dialog/dialog-description.directive';
 import { CngxDialogDraggable } from './dialog-draggable.directive';
 
 @Component({
@@ -34,6 +36,20 @@ class FormFieldHost {
   imports: [CngxDialogDraggable],
 })
 class SwappableHandleHost {
+  readonly handle = signal<HTMLElement | undefined>(undefined);
+  readonly draggable = viewChild.required(CngxDialogDraggable);
+}
+
+@Component({
+  template: `
+    <dialog cngxDialog cngxDialogDraggable [handle]="handle()">
+      <p cngxDialogDescription>Body</p>
+      <div id="explicit-handle">drag me</div>
+    </dialog>
+  `,
+  imports: [CngxDialog, CngxDialogDescription, CngxDialogDraggable],
+})
+class DialogDraggableHost {
   readonly handle = signal<HTMLElement | undefined>(undefined);
   readonly draggable = viewChild.required(CngxDialogDraggable);
 }
@@ -250,6 +266,50 @@ describe('CngxDialogDraggable', () => {
       TestBed.flushEffects();
 
       expect(handleA.getAttribute('tabindex')).toBe('-1');
+    });
+  });
+
+  describe('keyboard affordance instruction', () => {
+    it('renders a hidden instruction node in host-as-handle mode', () => {
+      const { el } = setup();
+      const hint = el.querySelector('[id^="cngx-dialog-drag-hint"]') as HTMLElement;
+      expect(hint).not.toBeNull();
+      expect(hint.textContent).toBe('Use arrow keys to move the dialog; Shift for larger steps');
+    });
+
+    it('links the instruction into the dialog aria-describedby after the description', () => {
+      const fixture = TestBed.createComponent(DialogDraggableHost);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      fixture.detectChanges();
+
+      const dialogEl = fixture.nativeElement.querySelector('dialog') as HTMLDialogElement;
+      const descId = (dialogEl.querySelector('[cngxDialogDescription]') as HTMLElement).id;
+      const hint = dialogEl.querySelector('[id^="cngx-dialog-drag-hint"]') as HTMLElement;
+
+      expect(dialogEl.getAttribute('aria-describedby')).toBe(`${descId} ${hint.id}`);
+    });
+
+    it('removes node and reference atomically on swap to an explicit handle', () => {
+      const fixture = TestBed.createComponent(DialogDraggableHost);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      fixture.detectChanges();
+
+      const dialogEl = fixture.nativeElement.querySelector('dialog') as HTMLDialogElement;
+      const descId = (dialogEl.querySelector('[cngxDialogDescription]') as HTMLElement).id;
+      const explicitHandle = dialogEl.querySelector('#explicit-handle') as HTMLElement;
+      expect(dialogEl.querySelector('[id^="cngx-dialog-drag-hint"]')).not.toBeNull();
+
+      fixture.componentInstance.handle.set(explicitHandle);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      fixture.detectChanges();
+
+      // The described capability (arrow keys on the dialog host) is gone -
+      // node and id reference must leave together, no dangling ref.
+      expect(dialogEl.querySelector('[id^="cngx-dialog-drag-hint"]')).toBeNull();
+      expect(dialogEl.getAttribute('aria-describedby')).toBe(descId);
     });
   });
 });

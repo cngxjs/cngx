@@ -8,7 +8,11 @@ import {
   inject,
   input,
   signal,
+  untracked,
 } from '@angular/core';
+import { nextUid } from '@cngx/core/utils';
+
+import { CNGX_DIALOG_ARIA_REGISTRY } from '../dialog/dialog-aria-registry';
 
 /**
  * Opt-in drag behavior for `CngxDialog`.
@@ -71,6 +75,7 @@ export class CngxDialogDraggable {
   private readonly elRef = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly doc = inject(DOCUMENT);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly ariaRegistry = inject(CNGX_DIALOG_ARIA_REGISTRY, { optional: true });
 
   /** Handle element for initiating drag. If not set, entire dialog is the handle. */
   readonly handle = input<HTMLElement | undefined>(undefined);
@@ -127,7 +132,9 @@ export class CngxDialogDraggable {
   constructor() {
     effect(() => {
       const handleEl = this.handle() ?? this.elRef.nativeElement;
-      this.setupHandle(handleEl);
+      // untracked: setupHandle registers with the dialog's aria registry -
+      // a signal write that must not become a tracked dependency.
+      untracked(() => this.setupHandle(handleEl));
     });
 
     this.destroyRef.onDestroy(() => this.cleanup());
@@ -159,6 +166,14 @@ export class CngxDialogDraggable {
       el.setAttribute('aria-roledescription', 'draggable');
       el.setAttribute('aria-label', 'Move dialog');
       this.handleAddedAria = true;
+    }
+    // Host-as-handle: the keyboard path exists but nothing names it -
+    // aria-label on the dialog would clobber its accessible name, and a
+    // second aria-describedby host binding would clobber CngxDialog's.
+    // A hidden instruction node registered through the shared registry is
+    // the only collision-free channel.
+    if (el === this.elRef.nativeElement) {
+      this.createInstructionNode(el);
     }
     el.style.cursor = 'var(--cngx-dialog-drag-cursor, grab)';
     el.style.touchAction = 'none';
@@ -302,12 +317,50 @@ export class CngxDialogDraggable {
     };
   }
 
+  private instructionNode: HTMLElement | null = null;
+  private releaseInstruction: (() => void) | null = null;
+
+  /**
+   * Visually hidden keyboard-drag instruction, described-by-linked through
+   * the dialog's aria registry. Same hidden technique as the dialog's live
+   * region - a referenced node must stay perceivable to AT, not `display:
+   * none`.
+   */
+  private createInstructionNode(dialogEl: HTMLElement): void {
+    const node = this.doc.createElement('span');
+    node.id = nextUid('cngx-dialog-drag-hint');
+    node.textContent = 'Use arrow keys to move the dialog; Shift for larger steps';
+    node.className = 'cngx-sr-only';
+    node.style.position = 'absolute';
+    node.style.width = '1px';
+    node.style.height = '1px';
+    node.style.padding = '0';
+    node.style.margin = '-1px';
+    node.style.overflow = 'hidden';
+    node.style.clip = 'rect(0, 0, 0, 0)';
+    node.style.whiteSpace = 'nowrap';
+    node.style.border = '0';
+    dialogEl.appendChild(node);
+    this.instructionNode = node;
+    this.releaseInstruction = this.ariaRegistry?.registerDescribedBy(signal(node.id)) ?? null;
+  }
+
   /**
    * Detach listeners from the current handle and restore every attribute and
    * style this directive added. A demoted handle must not stay focusable or
    * keep announcing "Move dialog" with a dead keyboard path behind it.
+   *
+   * The instruction node and its describedby registration leave atomically
+   * with the capability they describe: a handle swap away from host-as-handle
+   * removes the arrow-keys-on-the-dialog path itself, so keeping an orphan
+   * description would misinform AT, not inform it.
    */
   private teardownHandle(): void {
+    this.releaseInstruction?.();
+    this.releaseInstruction = null;
+    this.instructionNode?.remove();
+    this.instructionNode = null;
+
     const handle = this.currentHandle;
     if (!handle) {
       return;
