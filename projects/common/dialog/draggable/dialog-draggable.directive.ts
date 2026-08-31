@@ -22,6 +22,11 @@ import {
  * - Shift + Arrow moves 50px
  * - Home resets to origin
  *
+ * Keys move the dialog only while the handle element itself has focus -
+ * arrows inside form fields keep moving the caret. Without an explicit
+ * `[handle]` the dialog element becomes focusable (`tabindex="0"`) and is
+ * the keyboard drag surface.
+ *
  * ```html
  * <dialog cngxDialog cngxDialogDraggable>
  *   <div class="dialog-header" #handle>Title</div>
@@ -138,10 +143,15 @@ export class CngxDialogDraggable {
 
     this.currentHandle = el;
 
-    // A11y: make handle focusable and describe as draggable
-    if (!el.hasAttribute('tabindex') && el !== this.elRef.nativeElement) {
+    // A11y: the handle must be keyboard-reachable - the target-scoped keydown
+    // guard makes it the only element arrow keys can move the dialog from,
+    // so an unfocusable handle would strip the keyboard path entirely.
+    if (!el.hasAttribute('tabindex')) {
       el.setAttribute('tabindex', '0');
     }
+    // Labelling stays off the host-as-handle: aria-label/aria-roledescription
+    // on the dialog element itself would clobber its accessible name (the
+    // title) and its role text.
     if (!el.hasAttribute('aria-roledescription') && el !== this.elRef.nativeElement) {
       el.setAttribute('aria-roledescription', 'draggable');
       el.setAttribute('aria-label', 'Move dialog');

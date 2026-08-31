@@ -111,6 +111,19 @@ describe('CngxDialogDraggable', () => {
     expect(el.classList.contains('cngx-dialog--dragging')).toBe(false);
   });
 
+  describe('whole-dialog handle keyboard path', () => {
+    it('makes the host focusable so the keyboard drag surface exists', () => {
+      const { el } = setup();
+      expect(el.getAttribute('tabindex')).toBe('0');
+    });
+
+    it('does not clobber the host accessible name or role text', () => {
+      const { el } = setup();
+      expect(el.getAttribute('aria-label')).toBeNull();
+      expect(el.getAttribute('aria-roledescription')).toBeNull();
+    });
+  });
+
   describe('keydown target scoping', () => {
     it('ignores arrow keys typed into form fields inside the handle', () => {
       const { fixture, directive } = setup(FormFieldHost);
