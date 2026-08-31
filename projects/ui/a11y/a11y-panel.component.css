@@ -1,62 +1,71 @@
-.cngx-a11y-panel-host {
-  display: block;
-}
-
 /*
- * Spacing tokens are SET from the density scale here at the default host, so a
- * root [data-density] swap (and the Material density bridge) re-scales the
- * panel. Use-sites read the token bare; a bare var(--token, <literal>) with no
- * SET rule would silently opt out of density.
+ * Layered per the standard cascade contract (layers.css: cngx.reset <
+ * cngx.tokens < cngx.base < cngx.components < cngx.theme < app): component
+ * rules live in cngx.components so the @cngx/themes Material bridge
+ * (cngx.theme) and unlayered consumer overrides win without !important.
+ * No cngx.tokens block - the panel registers no @property tokens.
  */
-.cngx-a11y-panel {
-  --cngx-a11y-panel-gap: var(--cngx-space-md, 1rem);
-  --cngx-a11y-panel-axis-gap: var(--cngx-space-sm, 0.5rem);
-  --cngx-a11y-panel-reset-pad-x: var(--cngx-space-md, 1rem);
-  --cngx-a11y-panel-reset-pad-y: var(--cngx-space-sm, 0.5rem);
-}
+@layer cngx.components {
+  .cngx-a11y-panel-host {
+    display: block;
+  }
 
-.cngx-a11y-panel__heading {
-  margin: 0;
-  font-size: var(--cngx-a11y-panel-heading-size, 1.125rem);
-  font-weight: var(--cngx-a11y-panel-heading-weight, 600);
-  color: var(--cngx-a11y-panel-heading-color, inherit);
-}
+  /*
+   * Spacing tokens are SET from the density scale here at the default host, so a
+   * root [data-density] swap (and the Material density bridge) re-scales the
+   * panel. Use-sites read the token bare; a bare var(--token, <literal>) with no
+   * SET rule would silently opt out of density.
+   */
+  .cngx-a11y-panel {
+    --cngx-a11y-panel-gap: var(--cngx-space-md, 1rem);
+    --cngx-a11y-panel-axis-gap: var(--cngx-space-sm, 0.5rem);
+    --cngx-a11y-panel-reset-pad-x: var(--cngx-space-md, 1rem);
+    --cngx-a11y-panel-reset-pad-y: var(--cngx-space-sm, 0.5rem);
+  }
 
-.cngx-a11y-panel__body {
-  display: flex;
-  flex-direction: column;
-  gap: var(--cngx-a11y-panel-gap, 1rem);
-}
+  .cngx-a11y-panel__heading {
+    margin: 0;
+    font-size: var(--cngx-a11y-panel-heading-size, 1.125rem);
+    font-weight: var(--cngx-a11y-panel-heading-weight, 600);
+    color: var(--cngx-a11y-panel-heading-color, inherit);
+  }
 
-.cngx-a11y-panel__axis {
-  display: flex;
-  flex-direction: column;
-  gap: var(--cngx-a11y-panel-axis-gap, 0.5rem);
-}
+  .cngx-a11y-panel__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cngx-a11y-panel-gap, 1rem);
+  }
 
-.cngx-a11y-panel__axis-label {
-  font-weight: var(--cngx-a11y-panel-label-weight, 600);
-  color: var(--cngx-a11y-panel-label-color, inherit);
-}
+  .cngx-a11y-panel__axis {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cngx-a11y-panel-axis-gap, 0.5rem);
+  }
 
-.cngx-a11y-panel__footer {
-  display: flex;
-  justify-content: flex-end;
-}
+  .cngx-a11y-panel__axis-label {
+    font-weight: var(--cngx-a11y-panel-label-weight, 600);
+    color: var(--cngx-a11y-panel-label-color, inherit);
+  }
 
-/*
- * Reset is the panel's only own interactive host. Floor its hit area to the
- * pointer-derived target minimum (44px on coarse, inert on fine) per WCAG
- * 2.5.5; enrolled in the touch-target coverage guard.
- */
-.cngx-a11y-panel__reset {
-  min-block-size: var(--cngx-target-min, 0px);
-  padding-block: var(--cngx-a11y-panel-reset-pad-y, 0.5rem);
-  padding-inline: var(--cngx-a11y-panel-reset-pad-x, 1rem);
-  cursor: pointer;
-  color: var(--cngx-a11y-panel-reset-color, inherit);
-  background: var(--cngx-a11y-panel-reset-bg, transparent);
-  border: var(--cngx-a11y-panel-reset-border-width, 1px) solid
-    var(--cngx-a11y-panel-reset-border-color, currentColor);
-  border-radius: var(--cngx-a11y-panel-reset-radius, 0.375rem);
+  .cngx-a11y-panel__footer {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  /*
+   * Reset is the panel's only own interactive host. Floor its hit area to the
+   * pointer-derived target minimum (44px on coarse, inert on fine) per WCAG
+   * 2.5.5; enrolled in the touch-target coverage guard.
+   */
+  .cngx-a11y-panel__reset {
+    min-block-size: var(--cngx-target-min, 0px);
+    padding-block: var(--cngx-a11y-panel-reset-pad-y, 0.5rem);
+    padding-inline: var(--cngx-a11y-panel-reset-pad-x, 1rem);
+    cursor: pointer;
+    color: var(--cngx-a11y-panel-reset-color, inherit);
+    background: var(--cngx-a11y-panel-reset-bg, transparent);
+    border: var(--cngx-a11y-panel-reset-border-width, 1px) solid
+      var(--cngx-a11y-panel-reset-border-color, currentColor);
+    border-radius: var(--cngx-a11y-panel-reset-radius, 0.375rem);
+  }
 }
