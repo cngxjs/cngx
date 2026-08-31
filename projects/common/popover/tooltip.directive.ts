@@ -231,6 +231,9 @@ export class CngxTooltip {
       return;
     }
     this.stateSignal.set('opening');
+    // The element ships aria-hidden while closed; an open tooltip must be
+    // exposed - it is the live target of the trigger's aria-describedby.
+    this.tooltipEl!.removeAttribute('aria-hidden');
     this.tooltipEl!.showPopover();
     this.applyFloatingPosition();
     requestAnimationFrame(() => {

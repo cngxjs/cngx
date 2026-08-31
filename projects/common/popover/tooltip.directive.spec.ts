@@ -172,6 +172,20 @@ describe('CngxTooltip', () => {
       const tooltipEl = getTooltipEl(triggerEl);
       expect(tooltipEl!.getAttribute('aria-hidden')).toBe('true');
     });
+
+    it('removes aria-hidden while open and restores it on close', () => {
+      const { fixture, triggerEl } = setup(BasicTooltipHost);
+      const host = fixture.componentInstance as BasicTooltipHost;
+      const tooltipEl = getTooltipEl(triggerEl)!;
+
+      host.tooltip().show();
+      fixture.detectChanges();
+      expect(tooltipEl.getAttribute('aria-hidden')).toBeNull();
+
+      host.tooltip().hide();
+      fixture.detectChanges();
+      expect(tooltipEl.getAttribute('aria-hidden')).toBe('true');
+    });
   });
 
   describe('ARIA on trigger', () => {
