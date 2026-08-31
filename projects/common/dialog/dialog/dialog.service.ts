@@ -4,6 +4,7 @@ import {
   type ComponentRef,
   createComponent,
   effect,
+  type EffectRef,
   EnvironmentInjector,
   inject,
   Injectable,
@@ -11,6 +12,7 @@ import {
   type Provider,
   type TemplateRef,
   type Type,
+  untracked,
 } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { filter, map, type Observable, take } from 'rxjs';
@@ -50,6 +52,13 @@ import { CngxDialogOutlet } from './dialog-outlet';
 export class CngxDialogRef<T = unknown> {
   /** @internal */
   readonly _outletRef: ComponentRef<CngxDialogOutlet>;
+
+  /**
+   * @internal The per-open close-watcher effect. Owned by `CngxDialogOpener`,
+   * destroyed in its cleanup - the effect's injector outlives the dialog, so
+   * without the explicit destroy every `open()` leaks one live effect.
+   */
+  _cleanupEffect: EffectRef | null = null;
 
   /** @internal */
   constructor(
@@ -268,14 +277,14 @@ export class CngxDialogOpener {
     const dialogInstance = outletRef.instance.dialog();
     dialogInstance.open();
 
-    effect(
+    dialogRef._cleanupEffect = effect(
       () => {
         if (
           innerDialog.lifecycle() === 'closed' &&
           outletRef.hostView &&
           !outletRef.hostView.destroyed
         ) {
-          this.cleanup(dialogRef);
+          untracked(() => this.cleanup(dialogRef));
         }
       },
       { injector: childInjector },
@@ -297,6 +306,9 @@ export class CngxDialogOpener {
   }
 
   private cleanup(ref: CngxDialogRef<unknown>): void {
+    ref._cleanupEffect?.destroy();
+    ref._cleanupEffect = null;
+
     const idx = this.openDialogs.indexOf(ref);
     if (idx >= 0) {
       this.openDialogs.splice(idx, 1);
