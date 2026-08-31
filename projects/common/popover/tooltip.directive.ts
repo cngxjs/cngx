@@ -83,7 +83,6 @@ const FOCUS_DEBOUNCE_MS = 50;
     '(mouseleave)': 'handleMouseLeave()',
     '(focus)': 'handleFocus()',
     '(blur)': 'handleBlur()',
-    '(keydown.escape)': 'handleEscape($event)',
   },
 })
 export class CngxTooltip {
@@ -221,6 +220,11 @@ export class CngxTooltip {
     this.destroyRef.onDestroy(() => {
       this.clearTimers();
       this.floatingPositioner?.stop();
+      this.elRef.nativeElement.ownerDocument.removeEventListener(
+        'keydown',
+        this.handleDocumentEscape,
+        true,
+      );
       this.tooltipEl?.remove();
     });
   }
@@ -235,6 +239,11 @@ export class CngxTooltip {
     // exposed - it is the live target of the trigger's aria-describedby.
     this.tooltipEl!.removeAttribute('aria-hidden');
     this.tooltipEl!.showPopover();
+    this.elRef.nativeElement.ownerDocument.addEventListener(
+      'keydown',
+      this.handleDocumentEscape,
+      true,
+    );
     this.applyFloatingPosition();
     requestAnimationFrame(() => {
       if (this.stateSignal() === 'opening') {
@@ -296,13 +305,20 @@ export class CngxTooltip {
     this.hide();
   }
 
-  protected handleEscape(event: Event): void {
-    if (this.stateSignal() !== 'closed') {
-      // Prevent Escape from bubbling to parent overlays (e.g. dialog)
-      event.stopPropagation();
-      this.hide();
+  /**
+   * Document-level Escape while open (capture phase). A hover-opened tooltip
+   * has no focus relationship with its trigger, so a host keydown binding
+   * never fires - WCAG 1.4.13 requires Escape to dismiss regardless of where
+   * the keyboard focus sits. stopPropagation keeps parent overlays (dialog,
+   * popover) open: Escape dismisses the innermost surface only.
+   */
+  private readonly handleDocumentEscape = (event: KeyboardEvent): void => {
+    if (event.key !== 'Escape' || this.stateSignal() === 'closed') {
+      return;
     }
-  }
+    event.stopPropagation();
+    this.hide();
+  };
 
   /**
    * Shared fallback engine (same as `CngxPopover`) - offset middleware,
@@ -340,7 +356,10 @@ export class CngxTooltip {
     if (trigger.parentElement) {
       this.renderer.insertBefore(trigger.parentElement, el, trigger.nextSibling);
     } else {
-      this.renderer.appendChild(trigger, el);
+      // A parentless trigger cannot host the tooltip inside itself: void and
+      // replaced elements drop the child silently. The tooltip renders in the
+      // top layer anyway, so body is the correct fallback host.
+      this.renderer.appendChild(trigger.ownerDocument.body, el);
     }
 
     this.tooltipEl = el;
@@ -348,6 +367,11 @@ export class CngxTooltip {
 
   private finalize(): void {
     this.floatingPositioner?.stop();
+    this.elRef.nativeElement.ownerDocument.removeEventListener(
+      'keydown',
+      this.handleDocumentEscape,
+      true,
+    );
     if (this.tooltipEl) {
       try {
         this.tooltipEl.hidePopover();

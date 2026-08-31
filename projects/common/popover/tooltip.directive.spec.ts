@@ -1,4 +1,4 @@
-import { Component, signal, viewChild } from '@angular/core';
+import { Component, ElementRef, Renderer2, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -377,6 +377,68 @@ describe('CngxTooltip', () => {
       fixture.detectChanges();
 
       expect(stopSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('document-level Escape (WCAG 1.4.13)', () => {
+    it('dismisses a hover-opened tooltip when Escape is pressed elsewhere', () => {
+      const { fixture, triggerEl } = setup(ConfiguredTooltipHost);
+      const host = fixture.componentInstance as ConfiguredTooltipHost;
+
+      triggerEl.dispatchEvent(new MouseEvent('mouseenter'));
+      fixture.detectChanges();
+      expect(host.tooltip().state()).not.toBe('closed');
+
+      // Hover-opened: keyboard focus (and thus the event target) is NOT the
+      // trigger - a host keydown binding would never see this event.
+      document.body.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      fixture.detectChanges();
+      expect(host.tooltip().state()).toBe('closed');
+    });
+
+    it('detaches the document listener after close', () => {
+      const { fixture } = setup(ConfiguredTooltipHost);
+      const host = fixture.componentInstance as ConfiguredTooltipHost;
+      host.tooltip().show();
+      host.tooltip().hide();
+      fixture.detectChanges();
+
+      const event = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true });
+      const stopSpy = vi.spyOn(event, 'stopPropagation');
+      document.body.dispatchEvent(event);
+      expect(stopSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('parentless trigger', () => {
+    it('appends the tooltip element to body instead of into the trigger', () => {
+      installMatchMediaStub();
+      installPopoverStubs();
+      const orphan = document.createElement('button');
+      const rendererStub = {
+        createElement: (name: string) => document.createElement(name),
+        insertBefore: (parent: Node, el: Node, ref: Node | null) => parent.insertBefore(el, ref),
+        appendChild: (parent: Node, el: Node) => parent.appendChild(el),
+      } as unknown as Renderer2;
+      TestBed.configureTestingModule({
+        providers: [
+          { provide: ElementRef, useValue: new ElementRef(orphan) },
+          { provide: Renderer2, useValue: rendererStub },
+        ],
+      });
+
+      // The template harness cannot produce a parentless trigger (view nodes
+      // always have a render parent), so the branch is exercised by direct
+      // construction against the orphan element.
+      const tooltip = TestBed.runInInjectionContext(() => new CngxTooltip());
+      try {
+        expect(tooltip.state()).toBe('closed');
+        expect(orphan.querySelector('[role="tooltip"]')).toBeNull();
+        const attached = document.body.querySelector(':scope > [role="tooltip"]');
+        expect(attached).not.toBeNull();
+      } finally {
+        document.body.querySelector(':scope > [role="tooltip"]')?.remove();
+      }
     });
   });
 
