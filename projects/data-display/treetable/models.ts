@@ -23,6 +23,14 @@ export interface Node<T> {
  * `disabled`, and the `node` back-reference) alongside the original
  * `id` / `value` / `depth` / `hasChildren` / `parentIds` fields.
  *
+ * **Migration note.** The alias widened the type: code that only *reads*
+ * `FlatNode` values (templates, `nodeClicked` handlers, `trackBy`) is
+ * unaffected, but code that *constructs* `FlatNode` literals (tests,
+ * custom data sources) must now supply the kernel fields
+ * (`label`, `disabled`, `posinset`, `setsize`, `node`) as well.
+ * Nodes produced by {@link flattenTree} always carry the full shape,
+ * with `label` fixed to `''`.
+ *
  * @typeParam T - The shape of the data value carried by the node.
  *
  * @category data-display/treetable

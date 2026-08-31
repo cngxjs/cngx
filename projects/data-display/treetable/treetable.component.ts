@@ -60,8 +60,10 @@ import { CNGX_TREETABLE_CONFIG } from './treetable.token';
  *   on first render via an init effect that seeds from `flatNodes`.
  * - Selection state via the `selectedIds` model, reconciled against
  *   `selectionMode` changes (`'none'` clears; `'single'` truncates).
- * - Keyboard navigation state via the `focusedNodeId` signal (the
- *   *logical* focus row, distinct from `document.activeElement`).
+ * - The roving focus model: `focusedNodeId` tracks the last-focused row,
+ *   `effectiveFocusedId` reconciles it against the visible rows to keep
+ *   exactly one row tab stop, and keyboard navigation moves real DOM
+ *   focus (`document.activeElement` follows).
  * - Resolved column list including the synthetic `_expand` column and
  *   the optional `_select` checkbox column.
  *
