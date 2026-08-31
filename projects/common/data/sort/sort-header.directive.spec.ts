@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it } from 'vitest';
@@ -26,11 +26,26 @@ class TestHost {}
 })
 class MultiSortHost {}
 
+@Component({
+  template: `
+    <div cngxSort [cngxSortActive]="active()" [cngxSortDirection]="direction()" #sort="cngxSort">
+      <button cngxSortHeader="name" [cngxSortRef]="sort" #header="cngxSortHeader">Name</button>
+    </div>
+  `,
+  imports: [CngxSort, CngxSortHeader],
+})
+class ControlledHost {
+  readonly active = signal('name');
+  readonly direction = signal<'asc' | 'desc'>('asc');
+}
+
 const click = new MouseEvent('click', { shiftKey: false });
 const shiftClick = new MouseEvent('click', { shiftKey: true });
 
 describe('CngxSortHeader', () => {
-  beforeEach(() => TestBed.configureTestingModule({ imports: [TestHost, MultiSortHost] }));
+  beforeEach(() =>
+    TestBed.configureTestingModule({ imports: [TestHost, MultiSortHost, ControlledHost] }),
+  );
 
   function setup() {
     const fixture = TestBed.createComponent(TestHost);
@@ -135,6 +150,43 @@ describe('CngxSortHeader', () => {
       ageBtn.triggerEventHandler('click', shiftClick); // age asc appended
       nameBtn.triggerEventHandler('click', click); // plain → replace, name was asc → now desc
       expect(sortDir.sorts()).toEqual([{ active: 'name', direction: 'desc' }]);
+    });
+  });
+
+  describe('controlled mode', () => {
+    function setupControlled() {
+      const fixture = TestBed.createComponent(ControlledHost);
+      fixture.detectChanges();
+      const btn = fixture.debugElement.query(By.css('button'));
+      const header = btn.injector.get(CngxSortHeader);
+      const sortDir = fixture.debugElement.query(By.directive(CngxSort)).injector.get(CngxSort);
+      return { fixture, btn, header, sortDir };
+    }
+
+    it('marks the pinned column active with aria-sort from the controlled pin', () => {
+      const { btn, header } = setupControlled();
+      expect(header.isActive()).toBe(true);
+      expect(header.isAsc()).toBe(true);
+      expect(btn.nativeElement.getAttribute('aria-sort')).toBe('ascending');
+      expect(btn.nativeElement.classList.contains('cngx-sort-header--active')).toBe(true);
+    });
+
+    it('tracks controlled pin updates in aria-sort', () => {
+      const { fixture, btn } = setupControlled();
+      fixture.componentInstance.direction.set('desc');
+      fixture.detectChanges();
+      expect(btn.nativeElement.getAttribute('aria-sort')).toBe('descending');
+      fixture.componentInstance.active.set('');
+      fixture.detectChanges();
+      expect(btn.nativeElement.getAttribute('aria-sort')).toBeNull();
+    });
+
+    it('click on the pinned column continues the cycle instead of restarting it', () => {
+      const { btn, sortDir } = setupControlled();
+      const emitted: (unknown | undefined)[] = [];
+      sortDir.sortChange.subscribe((e) => emitted.push(e));
+      btn.triggerEventHandler('click', click);
+      expect(emitted).toEqual([{ active: 'name', direction: 'desc' }]);
     });
   });
 });

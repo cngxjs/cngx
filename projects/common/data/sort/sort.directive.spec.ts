@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createDirectiveFixture, spyOnOutput, type DirectiveFixture } from '@cngx/testing';
 import { CngxSort, type SortEntry } from './sort.directive';
@@ -23,6 +23,21 @@ class InitialSortHost {
 })
 class ControlledPinHost {
   seed: SortEntry = { active: 'name', direction: 'desc' };
+}
+
+@Component({
+  template: '<div cngxSort cngxSortActive="age"></div>',
+  imports: [CngxSort],
+})
+class ControlledActiveHost {}
+
+@Component({
+  template: '<div cngxSort [cngxSortActive]="active()" [cngxSortDirection]="direction()"></div>',
+  imports: [CngxSort],
+})
+class ControlledFullHost {
+  readonly active = signal('age');
+  readonly direction = signal<'asc' | 'desc'>('desc');
 }
 
 describe('CngxSort', () => {
@@ -193,8 +208,64 @@ describe('CngxSort initial sort seed', () => {
 
   it('does not seed when a controlled cngxSortActive pin is bound', async () => {
     const ctx = await createDirectiveFixture(CngxSort, ControlledPinHost);
-    // The seed no-ops so nothing surfaces if the controlled pin later unbinds.
-    expect(ctx.directive.sorts()).toEqual([]);
+    // The seed no-ops: sorts() reflects only the controlled pin, not the seed.
+    expect(ctx.directive.sorts()).toEqual([{ active: 'age', direction: 'asc' }]);
     expect(ctx.directive.active()).toBe('age');
+  });
+});
+
+describe('CngxSort controlled mode', () => {
+  it('derives sorts() from the controlled pin (direction defaults to asc)', async () => {
+    const ctx = await createDirectiveFixture(CngxSort, ControlledActiveHost);
+    expect(ctx.directive.sorts()).toEqual([{ active: 'age', direction: 'asc' }]);
+    expect(ctx.directive.isActive()).toBe(true);
+    expect(ctx.directive.direction()).toBe('asc');
+  });
+
+  it('controlled entry wins over internal state in sorts()', async () => {
+    const ctx = await createDirectiveFixture(CngxSort, ControlledFullHost);
+    ctx.directive.setSort('name');
+    expect(ctx.directive.sorts()).toEqual([{ active: 'age', direction: 'desc' }]);
+    expect(ctx.directive.sort()).toEqual({ active: 'age', direction: 'desc' });
+  });
+
+  it('an empty controlled active key means no sort', async () => {
+    const ctx = await createDirectiveFixture(CngxSort, ControlledFullHost);
+    ctx.host.active.set('');
+    ctx.fixture.detectChanges();
+    expect(ctx.directive.sorts()).toEqual([]);
+    expect(ctx.directive.isActive()).toBe(false);
+  });
+
+  it('setSort continues the cycle from the controlled entry (asc -> desc)', async () => {
+    const ctx = await createDirectiveFixture(CngxSort, ControlledActiveHost);
+    const spy = spyOnOutput(ctx.directive.sortChange);
+    ctx.directive.setSort('age');
+    expect(spy.lastValue()).toEqual({ active: 'age', direction: 'desc' });
+    spy.destroy();
+  });
+
+  it('setSort clears after the controlled entry is desc (desc -> cleared)', async () => {
+    const ctx = await createDirectiveFixture(CngxSort, ControlledFullHost);
+    const spy = spyOnOutput(ctx.directive.sortChange);
+    ctx.directive.setSort('age');
+    expect(spy.lastValue()).toBeUndefined();
+    spy.destroy();
+  });
+
+  it('setSort on a different field emits asc for that field', async () => {
+    const ctx = await createDirectiveFixture(CngxSort, ControlledFullHost);
+    const spy = spyOnOutput(ctx.directive.sortChange);
+    ctx.directive.setSort('name');
+    expect(spy.lastValue()).toEqual({ active: 'name', direction: 'asc' });
+    spy.destroy();
+  });
+
+  it('sorts() follows controlled pin updates', async () => {
+    const ctx = await createDirectiveFixture(CngxSort, ControlledFullHost);
+    ctx.host.active.set('name');
+    ctx.host.direction.set('asc');
+    ctx.fixture.detectChanges();
+    expect(ctx.directive.sorts()).toEqual([{ active: 'name', direction: 'asc' }]);
   });
 });

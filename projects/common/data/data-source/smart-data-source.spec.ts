@@ -58,8 +58,16 @@ class WithDirectivesHost {}
 })
 class PaginateHost {}
 
+@Component({
+  template: `<div cngxSort cngxSortActive="name" cngxSortDirection="desc"></div>`,
+  imports: [CngxSort],
+})
+class ControlledSortHost {}
+
 describe('CngxSmartDataSource - with directives', () => {
-  beforeEach(() => TestBed.configureTestingModule({ imports: [WithDirectivesHost] }));
+  beforeEach(() =>
+    TestBed.configureTestingModule({ imports: [WithDirectivesHost, ControlledSortHost] }),
+  );
 
   it('sorts ascending via CngxSort', () => {
     const fixture = TestBed.createComponent(WithDirectivesHost);
@@ -96,6 +104,25 @@ describe('CngxSmartDataSource - with directives', () => {
 
     sortDir.setSort('name');
     sortDir.setSort('name'); // toggle to desc
+
+    const values: Item[][] = [];
+    const sub = ds.connect().subscribe((v: Item[]) => values.push(v));
+    TestBed.flushEffects();
+
+    const sorted = values.at(-1)!;
+    expect(sorted.map((i) => i.name)).toEqual(['Charlie', 'Bob', 'Alice']);
+    sub.unsubscribe();
+  });
+
+  it('sorts by the controlled pin without any interaction', () => {
+    const fixture = TestBed.createComponent(ControlledSortHost);
+    fixture.detectChanges();
+
+    const divDebug = fixture.debugElement.query(By.directive(CngxSort));
+    const elemInjector: Injector = divDebug.injector;
+
+    const data = signal(ITEMS);
+    const ds = runInInjectionContext(elemInjector, () => injectSmartDataSource(data));
 
     const values: Item[][] = [];
     const sub = ds.connect().subscribe((v: Item[]) => values.push(v));
