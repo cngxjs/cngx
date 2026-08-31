@@ -4,8 +4,9 @@ import type { FlatNode } from './models';
 
 /**
  * Row directive applied to every rendered table row in `CngxTreetable`.
- * Handles depth-based CSS indentation, hover highlight, and selection
- * styling.
+ * Handles depth-based CSS indentation, hover highlight, selection styling,
+ * and the APG treegrid row semantics (`aria-level`, `aria-posinset`,
+ * `aria-setsize`, `aria-expanded`, `aria-selected`).
  *
  * Sets the `--cngx-row-depth` CSS custom property on the host element so that
  * cell padding can drive indentation via `calc()` in component stylesheets.
@@ -29,6 +30,11 @@ import type { FlatNode } from './models';
     '[style.--cngx-row-depth]': 'node().depth',
     '[class.cngx-treetable__row--highlighted]': 'highlighted()',
     '[class.cngx-treetable__row--selected]': 'selected()',
+    '[attr.aria-level]': 'node().depth + 1',
+    '[attr.aria-posinset]': 'node().posinset',
+    '[attr.aria-setsize]': 'node().setsize',
+    '[attr.aria-expanded]': 'expanded()',
+    '[attr.aria-selected]': 'selectionEnabled() ? selected() : null',
   },
 })
 export class CngxTreetableRow<T = unknown> {
@@ -46,6 +52,21 @@ export class CngxTreetableRow<T = unknown> {
    * @defaultValue `false`
    */
   readonly selected = input(false);
+  /**
+   * Expansion state announced via `aria-expanded`. `true` / `false` for
+   * parent rows; `null` (the default) for leaves, which suppresses the
+   * attribute entirely - APG treegrid leaves carry no `aria-expanded`.
+   * @defaultValue `null`
+   */
+  readonly expanded = input<boolean | null>(null);
+  /**
+   * Gates the `aria-selected` binding. When `false` (the default) the
+   * attribute is suppressed; when `true` it reflects `selected()`. Emit
+   * the state only when selection applies - a non-selectable grid must
+   * not announce every row as "not selected".
+   * @defaultValue `false`
+   */
+  readonly selectionEnabled = input(false);
 
   private readonly hoverable = inject(CngxHoverable, { host: true });
   /** `true` when both `highlight` is enabled and the row is currently hovered. */

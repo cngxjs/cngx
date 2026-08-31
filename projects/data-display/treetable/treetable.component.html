@@ -2,6 +2,7 @@
   [dataSource]="visibleNodes()"
   [trackBy]="trackByFn"
   role="treegrid"
+  [attr.aria-multiselectable]="selectionMode() === 'multi' ? 'true' : null"
   (keydown)="handleKeyDown($event)"
 >
   <!-- expand/collapse toggle column -->
@@ -83,9 +84,10 @@
     [node]="node"
     [highlight]="resolvedOptions().highlightRowOnHover ?? false"
     [selected]="isSelected(node.id)"
+    [expanded]="node.hasChildren ? expandedIds().has(node.id) : null"
+    [selectionEnabled]="selectionMode() !== 'none'"
     [tabindex]="focusedNodeId() === node.id ? 0 : -1"
     [class.cngx-treetable__row--focused]="focusedNodeId() === node.id"
-    role="row"
     (click)="handleRowClick(node)"
   >
   </cdk-row>

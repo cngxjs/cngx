@@ -235,6 +235,84 @@ describe('CngxTreetable', () => {
     });
   });
 
+  describe('APG row semantics (ARIA)', () => {
+    function mount(selectionMode: 'none' | 'single' | 'multi' = 'none') {
+      const fixture = TestBed.createComponent(CngxTreetable<Item>);
+      fixture.componentRef.setInput('tree', tree);
+      fixture.componentRef.setInput('selectionMode', selectionMode);
+      fixture.detectChanges();
+      return fixture;
+    }
+
+    function rowEls(fixture: ReturnType<typeof mount>): HTMLElement[] {
+      return fixture.debugElement
+        .queryAll(By.css('cdk-row'))
+        .map((de) => de.nativeElement as HTMLElement);
+    }
+
+    it('binds aria-level, aria-posinset, and aria-setsize per row', () => {
+      const [root, child1, child2] = rowEls(mount());
+      expect(root.getAttribute('aria-level')).toBe('1');
+      expect(root.getAttribute('aria-posinset')).toBe('1');
+      expect(root.getAttribute('aria-setsize')).toBe('1');
+      expect(child1.getAttribute('aria-level')).toBe('2');
+      expect(child1.getAttribute('aria-posinset')).toBe('1');
+      expect(child1.getAttribute('aria-setsize')).toBe('2');
+      expect(child2.getAttribute('aria-level')).toBe('2');
+      expect(child2.getAttribute('aria-posinset')).toBe('2');
+      expect(child2.getAttribute('aria-setsize')).toBe('2');
+    });
+
+    it('binds aria-expanded on parent rows and flips it with toggle', () => {
+      const fixture = mount();
+      const t = fixture.componentInstance;
+      expect(rowEls(fixture)[0].getAttribute('aria-expanded')).toBe('true');
+
+      t.toggle(t.flatNodes()[0]);
+      fixture.detectChanges();
+      expect(rowEls(fixture)[0].getAttribute('aria-expanded')).toBe('false');
+    });
+
+    it('suppresses aria-expanded on leaf rows', () => {
+      const [, child1, child2] = rowEls(mount());
+      expect(child1.hasAttribute('aria-expanded')).toBe(false);
+      expect(child2.hasAttribute('aria-expanded')).toBe(false);
+    });
+
+    it('suppresses aria-selected when selection is disabled', () => {
+      for (const row of rowEls(mount('none'))) {
+        expect(row.hasAttribute('aria-selected')).toBe(false);
+      }
+    });
+
+    it('binds aria-selected to the selection state when selection is enabled', () => {
+      const fixture = mount('multi');
+      const t = fixture.componentInstance;
+      expect(rowEls(fixture).map((r) => r.getAttribute('aria-selected'))).toEqual([
+        'false',
+        'false',
+        'false',
+      ]);
+
+      t.toggleSelection(t.flatNodes()[0]);
+      fixture.detectChanges();
+      expect(rowEls(fixture)[0].getAttribute('aria-selected')).toBe('true');
+      expect(rowEls(fixture)[1].getAttribute('aria-selected')).toBe('false');
+    });
+
+    it('binds aria-multiselectable on the treegrid exactly in multi mode', () => {
+      const treegrid = (fixture: ReturnType<typeof mount>) =>
+        fixture.debugElement.query(By.css('cdk-table')).nativeElement as HTMLElement;
+      expect(treegrid(mount('none')).hasAttribute('aria-multiselectable')).toBe(false);
+      expect(treegrid(mount('single')).hasAttribute('aria-multiselectable')).toBe(false);
+      expect(treegrid(mount('multi')).getAttribute('aria-multiselectable')).toBe('true');
+    });
+
+    it('keeps role="row" on rows via the CDK after dropping the explicit attribute', () => {
+      expect(rowEls(mount())[0].getAttribute('role')).toBe('row');
+    });
+  });
+
   describe('keyboard direction (dir=rtl)', () => {
     function mount(direction: 'ltr' | 'rtl') {
       TestBed.configureTestingModule({ providers: [provideDirection(direction)] });
