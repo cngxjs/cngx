@@ -96,6 +96,17 @@ export class CngxDialogRef<T = unknown> {
   }
 
   /**
+   * Async state of the submit channel - same surface a declarative dialog
+   * exposes. Populated when the open config carries a `submitAction`;
+   * remains at `'idle'` otherwise.
+   *
+   * Bind to any state consumer: `<cngx-alert [state]="ref.submitState" />`.
+   */
+  get submitState() {
+    return this.inner.submitState;
+  }
+
+  /**
    * Close the dialog with a typed result value.
    *
    * @param value - The result to deliver to consumers.
@@ -206,7 +217,7 @@ export class CngxDialogOpener {
    */
   open<T = unknown, D = unknown>(
     component: Type<unknown>,
-    config?: CngxDialogConfig<D>,
+    config?: CngxDialogConfig<D, T>,
   ): CngxDialogRef<T>;
 
   /**
@@ -218,12 +229,12 @@ export class CngxDialogOpener {
    */
   open<T = unknown, D = unknown>(
     templateRef: TemplateRef<unknown>,
-    config?: CngxDialogConfig<D>,
+    config?: CngxDialogConfig<D, T>,
   ): CngxDialogRef<T>;
 
   open<T = unknown, D = unknown>(
     content: Type<unknown> | TemplateRef<unknown>,
-    config: CngxDialogConfig<D> = {},
+    config: CngxDialogConfig<D, T> = {},
   ): CngxDialogRef<T> {
     const outletRef = createComponent(CngxDialogOutlet, {
       environmentInjector: this.envInjector,
@@ -234,6 +245,18 @@ export class CngxDialogOpener {
     outletRef.setInput('closeOnEscape', config.closeOnEscape ?? true);
     if (config.autoFocus) {
       outletRef.setInput('autoFocus', config.autoFocus);
+    }
+    if (config.submitAction) {
+      outletRef.setInput('submitAction', config.submitAction);
+    }
+    if (config.state) {
+      outletRef.setInput('state', config.state);
+    }
+    if (config.error !== undefined) {
+      outletRef.setInput('error', config.error);
+    }
+    if (config.focusFallback) {
+      outletRef.setInput('focusFallback', config.focusFallback);
     }
 
     // Attach to ApplicationRef so change detection runs

@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
+import { ApplicationRef, Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxDialogOpener, provideDialog } from './dialog.service';
 
@@ -56,6 +56,99 @@ describe('CngxDialogOpener', () => {
     // The effect's injector outlives the dialog - without the explicit
     // destroy every open() would leak one live effect.
     expect(ref._cleanupEffect).toBeNull();
+  });
+
+  describe('programmatic parity with the declarative surface', () => {
+    async function settle(): Promise<void> {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      TestBed.flushEffects();
+    }
+
+    // The outlet's inputs reach the inner cngxDialog via template bindings,
+    // which propagate on the next change-detection tick - in production that
+    // tick precedes any user interaction; the harness runs it explicitly.
+    function tick(): void {
+      TestBed.inject(ApplicationRef).tick();
+    }
+
+    it('runs the configured submitAction and exposes submitState on the ref', async () => {
+      const opener = createOpener();
+      let resolveFn!: () => void;
+      const submitFn = vi.fn().mockReturnValue(new Promise<void>((resolve) => (resolveFn = resolve)));
+      const ref = opener.open<number>(TestContent, { submitAction: submitFn });
+      tick();
+
+      ref.close(7);
+      expect(submitFn).toHaveBeenCalledWith(7);
+      expect(ref.submitState.status()).toBe('pending');
+
+      resolveFn();
+      await settle();
+
+      expect(ref.submitState.status()).toBe('success');
+      expect(ref.result()).toBe(7);
+      expect(document.body.querySelector('cngx-dialog-outlet')).toBeNull();
+    });
+
+    it('keeps the dialog open and reports the error on submit failure', async () => {
+      const opener = createOpener();
+      const ref = opener.open<number>(TestContent, {
+        submitAction: () => Promise.reject(new Error('fail')),
+      });
+      tick();
+
+      ref.close(7);
+      await settle();
+
+      expect(ref.submitState.status()).toBe('error');
+      expect(ref.submitState.error()).toBeInstanceOf(Error);
+      expect(document.body.querySelector('cngx-dialog-outlet')).not.toBeNull();
+
+      ref.dismiss();
+      await settle();
+    });
+
+    it('submitState stays idle without a submitAction', () => {
+      const opener = createOpener();
+      const ref = opener.open<number>(TestContent);
+      expect(ref.submitState.status()).toBe('idle');
+      ref.close(1);
+      TestBed.flushEffects();
+    });
+
+    it('forwards the error flag to the dialog host', () => {
+      const opener = createOpener();
+      const ref = opener.open(TestContent, { error: true });
+      tick();
+
+      const dialogEl = document.body.querySelector('dialog') as HTMLDialogElement;
+      expect(dialogEl.classList.contains('cngx-dialog--error')).toBe(true);
+
+      ref.dismiss();
+      TestBed.flushEffects();
+    });
+
+    it('returns focus to the configured fallback when the trigger is gone', () => {
+      const opener = createOpener();
+      const trigger = document.createElement('button');
+      const fallback = document.createElement('button');
+      document.body.appendChild(trigger);
+      document.body.appendChild(fallback);
+      trigger.focus();
+      try {
+        const ref = opener.open(TestContent, { focusFallback: fallback });
+        tick();
+        trigger.remove();
+
+        ref.dismiss();
+        TestBed.flushEffects();
+
+        expect(document.activeElement).toBe(fallback);
+      } finally {
+        trigger.remove();
+        fallback.remove();
+      }
+    });
   });
 
   it('closeAll dismisses every open dialog', () => {
