@@ -85,12 +85,15 @@
 
   /**
    * Color of the top divider rule. The Material bridge maps this to
-   * `--mat-sys-outline-variant`.
+   * `--mat-sys-outline-variant`. Registered `inherits: true` so an
+   * ancestor-level consumer assignment (e.g. on `:root`) reaches the
+   * footer host - `inherits: false` would pin the divider to the
+   * registered initial for every ancestor-set value.
    * @group Border
    */
   @property --cngx-stepper-footer-border-color {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: #e0e0e0;
   }
 

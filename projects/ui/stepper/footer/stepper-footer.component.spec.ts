@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { Component, provideZonelessChangeDetection, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
@@ -197,5 +199,14 @@ describe('CngxStepperFooter', () => {
       expect(back.getAttribute('aria-disabled')).toBe('true');
       expect(next.getAttribute('aria-disabled')).toBeNull();
     });
+
+  it('registers the border-color token inherits: true so ancestor overrides reach the host', () => {
+    // jsdom does not evaluate @property; asserted at CSS source like the
+    // density/touch-target guards. inherits: false would pin the divider to
+    // the registered initial for any value set above the footer host.
+    const css = readFileSync(resolve(__dirname, 'stepper-footer.css'), 'utf-8');
+    const block = /@property --cngx-stepper-footer-border-color \{[^}]*\}/.exec(css)?.[0] ?? '';
+    expect(block).toContain('inherits: true');
+  });
   });
 });
