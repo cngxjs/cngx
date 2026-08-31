@@ -99,7 +99,12 @@ export class CngxDialogDraggable {
    */
   readonly snapMode = input<'live' | 'release'>('live');
 
-  private readonly positionState = signal({ x: 0, y: 0 });
+  // equal keeps live grid-snap quiet: every pointermove produces a fresh
+  // {x, y} literal, and under snapping most of them carry identical values.
+  private readonly positionState = signal(
+    { x: 0, y: 0 },
+    { equal: (a, b) => a.x === b.x && a.y === b.y },
+  );
   private readonly draggingState = signal(false);
 
   /** Current offset position. */

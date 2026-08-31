@@ -60,6 +60,18 @@ describe('CngxDialogDraggable', () => {
     expect(directive.isDragging()).toBe(false);
   });
 
+  it('keeps the position reference stable for value-equal writes', () => {
+    const { el, directive, fixture } = setup();
+    const before = directive.position();
+
+    // Home at origin writes a fresh { x: 0, y: 0 } literal - the equal fn
+    // must swallow it so per-frame snap writes do not notify consumers.
+    el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Home', bubbles: true }));
+    fixture.detectChanges();
+
+    expect(directive.position()).toBe(before);
+  });
+
   it('sets CSS custom properties on host', () => {
     const { el } = setup();
     expect(el.style.getPropertyValue('--cngx-dialog-x')).toBe('0px');
