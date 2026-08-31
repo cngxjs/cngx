@@ -36,8 +36,8 @@ class ControlledActiveHost {}
   imports: [CngxSort],
 })
 class ControlledFullHost {
-  readonly active = signal('age');
-  readonly direction = signal<'asc' | 'desc'>('desc');
+  readonly active = signal<string | undefined>('age');
+  readonly direction = signal<'asc' | 'desc' | undefined>('desc');
 }
 
 describe('CngxSort', () => {
@@ -267,5 +267,43 @@ describe('CngxSort controlled mode', () => {
     ctx.host.direction.set('asc');
     ctx.fixture.detectChanges();
     expect(ctx.directive.sorts()).toEqual([{ active: 'name', direction: 'asc' }]);
+  });
+
+  it('sorts() keeps its identity when a recompute yields equal content', async () => {
+    const ctx = await createDirectiveFixture(CngxSort, ControlledFullHost);
+    ctx.host.direction.set(undefined);
+    ctx.fixture.detectChanges();
+    const before = ctx.directive.sorts();
+    expect(before).toEqual([{ active: 'age', direction: 'asc' }]);
+    // undefined -> explicit 'asc': the input changes, the derived entry does
+    // not - downstream consumers (header state, smart source) must not see a
+    // fresh array identity.
+    ctx.host.direction.set('asc');
+    ctx.fixture.detectChanges();
+    expect(ctx.directive.sorts()).toBe(before);
+  });
+
+  it('setSort leaves the internal state untouched while a pin is bound', async () => {
+    const ctx = await createDirectiveFixture(CngxSort, ControlledFullHost);
+    ctx.directive.setSort('name');
+    // Unbind the pin: nothing stale may surface from the controlled-mode click.
+    ctx.host.active.set(undefined);
+    ctx.host.direction.set(undefined);
+    ctx.fixture.detectChanges();
+    expect(ctx.directive.sorts()).toEqual([]);
+    expect(ctx.directive.isActive()).toBe(false);
+  });
+
+  it('additive setSort degrades to the single-sort cycle while a pin is bound', async () => {
+    const ctx = await createDirectiveFixture(CngxSort, ControlledFullHost);
+    const spy = spyOnOutput(ctx.directive.sortChange);
+    // Controlled entry is age/desc: an additive click on another field must
+    // behave like a plain click (replace, asc), not append to a hidden stack.
+    ctx.directive.setSort('name', true);
+    expect(spy.lastValue()).toEqual({ active: 'name', direction: 'asc' });
+    ctx.host.active.set(undefined);
+    ctx.fixture.detectChanges();
+    expect(ctx.directive.sorts()).toEqual([]);
+    spy.destroy();
   });
 });
