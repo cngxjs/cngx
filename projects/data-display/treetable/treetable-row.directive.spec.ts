@@ -9,9 +9,14 @@ import { CngxTreetableRow } from './treetable-row.directive';
 const mockNode: FlatNode<{ name: string }> = {
   id: '1',
   value: { name: 'test' },
+  label: '',
   depth: 2,
   hasChildren: false,
   parentIds: [],
+  disabled: false,
+  posinset: 1,
+  setsize: 1,
+  node: { value: { name: 'test' } },
 };
 
 @Component({

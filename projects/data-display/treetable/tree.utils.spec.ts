@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Node } from './models';
+import type { FlatNode, Node } from './models';
 import {
   capitalise,
   extractColumns,
@@ -10,6 +10,26 @@ import {
   nodeMatchesSearch,
   sortTree,
 } from './tree.utils';
+
+function makeFlat(
+  id: string,
+  depth: number,
+  hasChildren: boolean,
+  parentIds: readonly string[],
+): FlatNode<Record<string, never>> {
+  return {
+    id,
+    value: {},
+    label: '',
+    depth,
+    parentIds,
+    hasChildren,
+    disabled: false,
+    posinset: 1,
+    setsize: 1,
+    node: { value: {} },
+  };
+}
 
 describe('flattenTree', () => {
   it('flattens a single leaf node', () => {
@@ -97,6 +117,63 @@ describe('flattenTree', () => {
     expect(result[1].value.name).toBe('first');
     expect(result[2].value.name).toBe('second');
   });
+
+  it('joins default ids with "-" per path level', () => {
+    const tree: Node<{ name: string }> = {
+      value: { name: 'root' },
+      children: [
+        {
+          value: { name: 'child' },
+          children: [{ value: { name: 'grandchild' } }, { value: { name: 'grandchild2' } }],
+        },
+      ],
+    };
+    const ids = flattenTree(tree).map((n) => n.id);
+    expect(ids).toEqual(['0', '0-0', '0-0-0', '0-0-1']);
+  });
+
+  it('passes the custom nodeId function through to the kernel', () => {
+    const tree: Node<{ key: string }> = {
+      value: { key: 'r' },
+      children: [{ value: { key: 'c' } }],
+    };
+    const result = flattenTree(tree, (node, path) => `${node.key}@${path.join('/')}`);
+    expect(result.map((n) => n.id)).toEqual(['r@0', 'c@0/0']);
+  });
+
+  it('assigns posinset/setsize across a forest of roots', () => {
+    const trees: Node<{ name: string }>[] = [
+      { value: { name: 'a' } },
+      { value: { name: 'b' } },
+      { value: { name: 'c' } },
+    ];
+    const result = flattenTree(trees);
+    expect(result.map((n) => n.posinset)).toEqual([1, 2, 3]);
+    expect(result.every((n) => n.setsize === 3)).toBe(true);
+  });
+
+  it('assigns posinset/setsize per sibling level in a nested tree', () => {
+    const tree: Node<{ name: string }> = {
+      value: { name: 'root' },
+      children: [
+        { value: { name: 'first' }, children: [{ value: { name: 'only' } }] },
+        { value: { name: 'second' } },
+      ],
+    };
+    const [root, first, only, second] = flattenTree(tree);
+    expect([root.posinset, root.setsize]).toEqual([1, 1]);
+    expect([first.posinset, first.setsize]).toEqual([1, 2]);
+    expect([second.posinset, second.setsize]).toEqual([2, 2]);
+    expect([only.posinset, only.setsize]).toEqual([1, 1]);
+  });
+
+  it('fixes the label to an empty string (the treetable never consumes labels)', () => {
+    const tree: Node<{ name: string }> = {
+      value: { name: 'root' },
+      children: [{ value: { name: 'child' } }],
+    };
+    expect(flattenTree(tree).every((n) => n.label === '')).toBe(true);
+  });
 });
 
 describe('extractColumns', () => {
@@ -127,18 +204,18 @@ describe('extractColumns', () => {
 
 describe('isNodeVisible', () => {
   it('root nodes are always visible (no parentIds)', () => {
-    const node = { id: '1', value: {}, depth: 0, hasChildren: false, parentIds: [] };
+    const node = makeFlat('1', 0, false, []);
     expect(isNodeVisible(node, new Set())).toBe(true);
   });
 
   it('child is visible only when parent is in expandedIds', () => {
-    const node = { id: '2', value: {}, depth: 1, hasChildren: false, parentIds: ['p1'] };
+    const node = makeFlat('2', 1, false, ['p1']);
     expect(isNodeVisible(node, new Set(['p1']))).toBe(true);
     expect(isNodeVisible(node, new Set())).toBe(false);
   });
 
   it('deeply nested node requires all ancestors to be expanded', () => {
-    const node = { id: '3', value: {}, depth: 2, hasChildren: false, parentIds: ['p1', 'p2'] };
+    const node = makeFlat('3', 2, false, ['p1', 'p2']);
     expect(isNodeVisible(node, new Set(['p1', 'p2']))).toBe(true);
     expect(isNodeVisible(node, new Set(['p1']))).toBe(false);
     expect(isNodeVisible(node, new Set(['p2']))).toBe(false);
@@ -147,20 +224,14 @@ describe('isNodeVisible', () => {
 
 describe('getInitialExpandedIds', () => {
   it('contains ids of all nodes that have children', () => {
-    const nodes = [
-      { id: 'a', value: {}, depth: 0, hasChildren: true, parentIds: [] },
-      { id: 'b', value: {}, depth: 1, hasChildren: false, parentIds: ['a'] },
-    ];
+    const nodes = [makeFlat('a', 0, true, []), makeFlat('b', 1, false, ['a'])];
     const ids = getInitialExpandedIds(nodes);
     expect(ids.has('a')).toBe(true);
     expect(ids.has('b')).toBe(false);
   });
 
   it('returns empty set for flat list', () => {
-    const nodes = [
-      { id: 'a', value: {}, depth: 0, hasChildren: false, parentIds: [] },
-      { id: 'b', value: {}, depth: 0, hasChildren: false, parentIds: [] },
-    ];
+    const nodes = [makeFlat('a', 0, false, []), makeFlat('b', 0, false, [])];
     expect(getInitialExpandedIds(nodes).size).toBe(0);
   });
 });
@@ -207,7 +278,9 @@ describe('filterTree', () => {
   it('keeps parent when it directly matches even if children do not', () => {
     const result = filterTree(tree, (v) => v.name === 'parent');
     expect(result).toHaveLength(1);
-    expect(result[0].children).toHaveLength(0);
+    // Kernel normalization: an emptied children array becomes `undefined`
+    // (never `[]`) - both shapes mean "leaf".
+    expect(result[0].children).toBeUndefined();
   });
 
   it('returns empty array for empty input', () => {
