@@ -1,6 +1,6 @@
 import { Component, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { CngxDialogDraggable } from './dialog-draggable.directive';
 
@@ -12,12 +12,26 @@ class SimpleHost {
   readonly draggable = viewChild.required(CngxDialogDraggable);
 }
 
-function setup() {
-  const fixture = TestBed.createComponent(SimpleHost);
+@Component({
+  template: `
+    <div cngxDialogDraggable>
+      <input id="field" type="text" />
+    </div>
+  `,
+  imports: [CngxDialogDraggable],
+})
+class FormFieldHost {
+  readonly draggable = viewChild.required(CngxDialogDraggable);
+}
+
+function setup<T = SimpleHost>(hostType: new () => T = SimpleHost as new () => T) {
+  const fixture = TestBed.createComponent(hostType);
   fixture.detectChanges();
   TestBed.flushEffects();
   const el = fixture.nativeElement.querySelector('[cngxDialogDraggable]') as HTMLElement;
-  const directive = fixture.componentInstance.draggable();
+  const directive = (
+    fixture.componentInstance as { draggable: () => CngxDialogDraggable }
+  ).draggable();
   return { fixture, el, directive };
 }
 
@@ -95,5 +109,49 @@ describe('CngxDialogDraggable', () => {
     const { el } = setup();
     // Can't easily test pointer events in JSDOM, but verify class binding exists
     expect(el.classList.contains('cngx-dialog--dragging')).toBe(false);
+  });
+
+  describe('keydown target scoping', () => {
+    it('ignores arrow keys typed into form fields inside the handle', () => {
+      const { fixture, directive } = setup(FormFieldHost);
+      const field = fixture.nativeElement.querySelector('#field') as HTMLInputElement;
+
+      const event = new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true });
+      field.dispatchEvent(event);
+      fixture.detectChanges();
+
+      expect(directive.position()).toEqual({ x: 0, y: 0 });
+      expect(event.defaultPrevented).toBe(false);
+    });
+
+    it('still moves when the key originates on the handle element itself', () => {
+      const { el, directive, fixture } = setup(FormFieldHost);
+      el.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+      fixture.detectChanges();
+      expect(directive.position().x).toBe(10);
+    });
+  });
+
+  describe('pointercancel', () => {
+    function startDrag(el: HTMLElement) {
+      const rec = el as unknown as Record<string, unknown>;
+      rec['setPointerCapture'] = vi.fn();
+      rec['releasePointerCapture'] = vi.fn();
+      const down = new MouseEvent('pointerdown', { button: 0, clientX: 10, clientY: 10 });
+      el.dispatchEvent(down);
+    }
+
+    it('ends the drag when the pointer is cancelled', () => {
+      const { el, directive, fixture } = setup();
+      startDrag(el);
+      fixture.detectChanges();
+      expect(directive.isDragging()).toBe(true);
+
+      document.dispatchEvent(new MouseEvent('pointercancel'));
+      fixture.detectChanges();
+
+      expect(directive.isDragging()).toBe(false);
+      expect(document.documentElement.style.userSelect).toBe('');
+    });
   });
 });

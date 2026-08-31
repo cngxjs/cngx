@@ -188,6 +188,9 @@ export class CngxDialogDraggable {
     this.boundUp = (e: PointerEvent) => this.handlePointerUp(e);
     this.doc.addEventListener('pointermove', this.boundMove);
     this.doc.addEventListener('pointerup', this.boundUp);
+    // A cancelled pointer (touch interrupted, capture stolen) never fires
+    // pointerup - without this the drag state sticks and userSelect stays off.
+    this.doc.addEventListener('pointercancel', this.boundUp);
   }
 
   private handlePointerMove(event: PointerEvent): void {
@@ -231,12 +234,19 @@ export class CngxDialogDraggable {
     }
     if (this.boundUp) {
       this.doc.removeEventListener('pointerup', this.boundUp);
+      this.doc.removeEventListener('pointercancel', this.boundUp);
     }
     this.boundMove = null;
     this.boundUp = null;
   }
 
   private handleKeyDown(event: KeyboardEvent): void {
+    // When the whole dialog is the handle, every keydown inside it bubbles
+    // here - arrows typed into form fields must move the caret, not the
+    // dialog. Only keys originating on the handle element itself may drag.
+    if (event.target !== this.currentHandle) {
+      return;
+    }
     const grid = this.gridSize();
     // When grid is active, Arrow keys step by grid size (Shift = 5x grid)
     const step = grid > 0 ? (event.shiftKey ? grid * 5 : grid) : event.shiftKey ? 50 : 10;
@@ -284,6 +294,7 @@ export class CngxDialogDraggable {
     }
     if (this.boundUp) {
       this.doc.removeEventListener('pointerup', this.boundUp);
+      this.doc.removeEventListener('pointercancel', this.boundUp);
     }
     if (this.currentHandle && this.boundPointerDown) {
       this.currentHandle.removeEventListener('pointerdown', this.boundPointerDown);
