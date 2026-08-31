@@ -196,6 +196,68 @@ describe('createCommitController', () => {
     lateSuccess!('green');
     expect(outcomeFired).toBe(false);
   });
+
+  test('a runner that errors synchronously from its cancel() is superseded by begin()', () => {
+    const ctrl = createCommitController<number>();
+    let firstErrored = false;
+
+    ctrl.begin(
+      (handlers) => ({
+        cancel: () => {
+          // e.g. an aborted HTTP request rejecting synchronously on teardown
+          handlers.onError(new Error('aborted'));
+        },
+      }),
+      1,
+      0,
+      {
+        onSuccess: () => {},
+        onError: () => {
+          firstErrored = true;
+        },
+      },
+    );
+
+    ctrl.begin(() => noopHandle(), 2, 1, {
+      onSuccess: () => {},
+      onError: () => {},
+    });
+
+    // The superseding begin() bumps the id BEFORE cancelling, so the aborted
+    // runner's synchronous error is already stale: no handler call, and the
+    // fresh commit stays pending instead of flipping to error.
+    expect(firstErrored).toBe(false);
+    expect(ctrl.state.status()).toBe('pending');
+    expect(ctrl.intendedValue()).toBe(2);
+  });
+
+  test('a runner that errors synchronously from its cancel() is superseded by cancel()', () => {
+    const ctrl = createCommitController<number>();
+    let errored = false;
+
+    ctrl.begin(
+      (handlers) => ({
+        cancel: () => {
+          handlers.onError(new Error('aborted'));
+        },
+      }),
+      1,
+      0,
+      {
+        onSuccess: () => {},
+        onError: () => {
+          errored = true;
+        },
+      },
+    );
+
+    ctrl.cancel();
+
+    // cancel() promises "without firing callbacks" - the synchronous error
+    // from the aborted runner must not reach the handlers or the state slot.
+    expect(errored).toBe(false);
+    expect(ctrl.state.status()).not.toBe('error');
+  });
 });
 
 describe('CNGX_COMMIT_CONTROLLER_FACTORY', () => {

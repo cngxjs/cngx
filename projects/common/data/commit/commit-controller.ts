@@ -136,10 +136,11 @@ export function createCommitController<T>(): CngxCommitController<T> {
     intendedValue: intendedState.asReadonly(),
 
     begin(runner, intended, previous, handlers) {
-      // tear down previous runner BEFORE bumping commitId, otherwise its
-      // supersede-check would pass and fire after all
-      active?.cancel();
+      // bump commitId BEFORE tearing down the previous runner: a runner that
+      // cancels synchronously would otherwise still pass the supersede check
+      // and fire its callbacks after all
       const id = ++commitId;
+      active?.cancel();
       intendedState.set(intended);
       slot.set('pending');
 
@@ -164,10 +165,11 @@ export function createCommitController<T>(): CngxCommitController<T> {
     },
 
     cancel() {
+      // bump first: callbacks of a synchronously-cancelling runner must
+      // already see themselves superseded
+      commitId++;
       active?.cancel();
       active = null;
-      // bump id so late callbacks from the aborted runner are superseded
-      commitId++;
     },
   };
 }
