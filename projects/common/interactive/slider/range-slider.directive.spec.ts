@@ -117,4 +117,45 @@ describe('CngxRangeSliderTrack + CngxSliderThumb', () => {
     expect(host.v()).toEqual([21, 80]);
     expect(end.getAttribute('aria-valuemin')).toBe('21');
   });
+
+  describe('disabled-reason describedby (Toggle/Radio convergence)', () => {
+    @Component({
+      template: `<div
+        cngxRangeSliderTrack
+        [(value)]="v"
+        [disabled]="off()"
+        [disabledReason]="reason()"
+      >
+        <span cngxSliderThumb="start"></span>
+        <span cngxSliderThumb="end"></span>
+      </div>`,
+      imports: [CngxRangeSliderTrack, CngxSliderThumb],
+    })
+    class ReasonHost {
+      v = signal<[number, number]>([20, 80]);
+      off = signal(false);
+      reason = signal('');
+    }
+
+    it('gates the group reason id and the sr-only span on disabled AND a reason', () => {
+      const fixture = TestBed.createComponent(ReasonHost);
+      fixture.detectChanges();
+      const el = fixture.debugElement.query(By.directive(CngxRangeSliderTrack))
+        .nativeElement as HTMLElement;
+      const span = el.querySelector('[id^="cngx-range-slider-desc"]');
+      expect(span).not.toBeNull();
+      expect(el.getAttribute('aria-describedby')).toBeNull();
+
+      fixture.componentInstance.reason.set('Locked by the active preset');
+      fixture.detectChanges();
+      expect(el.getAttribute('aria-describedby')).toBeNull();
+      expect(span?.getAttribute('aria-hidden')).toBe('true');
+
+      fixture.componentInstance.off.set(true);
+      fixture.detectChanges();
+      expect(el.getAttribute('aria-describedby')).toBe(span?.id);
+      expect(span?.getAttribute('aria-hidden')).toBeNull();
+      expect(span?.textContent).toContain('Locked by the active preset');
+    });
+  });
 });

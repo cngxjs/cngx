@@ -201,8 +201,8 @@ describe('CngxCheckbox', () => {
     });
   });
 
-  describe('aria-describedby stability', () => {
-    it('the SR-only span carries the stable describedId even when disabledReason is empty', () => {
+  describe('aria-describedby gating (Toggle/Radio convergence)', () => {
+    it('the SR-only span stays in the DOM with a stable id while nothing applies', () => {
       const { fixture } = setup();
       const srSpan = fixture.debugElement.query(By.css('.cngx-checkbox__sr-only'))
         .nativeElement as HTMLElement;
@@ -211,40 +211,43 @@ describe('CngxCheckbox', () => {
       expect(srSpan.textContent?.trim()).toBe('');
     });
 
-    it('host aria-describedby always carries describedId across (disabled, invalid) state combinations', () => {
+    it('gates aria-describedby on disabled AND a reason, not the reason alone', () => {
       @Component({
-        template: `<cngx-checkbox [(invalid)]="bad" [disabled]="off()">L</cngx-checkbox>`,
+        template: `<cngx-checkbox [disabled]="off()" [disabledReason]="reason()">L</cngx-checkbox>`,
         imports: [CngxCheckbox],
       })
-      class MatrixHost {
-        bad = signal(false);
+      class GateHost {
         off = signal(false);
+        reason = signal('');
       }
-      const fixture = TestBed.createComponent(MatrixHost);
+      const fixture = TestBed.createComponent(GateHost);
       fixture.detectChanges();
       const el = fixture.debugElement.query(By.directive(CngxCheckbox))
         .nativeElement as HTMLElement;
-      const srSpan = fixture.debugElement.query(By.css('.cngx-checkbox__sr-only'))
-        .nativeElement as HTMLElement;
-      const expectedId = srSpan.id;
+      expect(el.getAttribute('aria-describedby')).toBeNull();
 
-      // disabled=false, invalid=false
-      expect(el.getAttribute('aria-describedby')).toBe(expectedId);
-
-      // disabled=false, invalid=true
-      fixture.componentInstance.bad.set(true);
+      // reason set while enabled describes a state the control is not in, so
+      // nothing is referenced and the span stays out of reading order
+      fixture.componentInstance.reason.set('Locked by your role');
       fixture.detectChanges();
-      expect(el.getAttribute('aria-describedby')).toBe(expectedId);
+      expect(el.getAttribute('aria-describedby')).toBeNull();
+      expect(el.querySelector('.cngx-checkbox__sr-only')?.getAttribute('aria-hidden')).toBe(
+        'true',
+      );
 
-      // disabled=true, invalid=true
+      // disabled with the reason: it now applies and is announced
       fixture.componentInstance.off.set(true);
       fixture.detectChanges();
-      expect(el.getAttribute('aria-describedby')).toBe(expectedId);
+      const id = el.getAttribute('aria-describedby');
+      expect(id).toBeTruthy();
+      const span = el.querySelector(`#${id}`);
+      expect(span?.getAttribute('aria-hidden')).toBeNull();
+      expect(span?.textContent).toContain('Locked by your role');
 
-      // disabled=true, invalid=false
-      fixture.componentInstance.bad.set(false);
+      // disabled without a reason: nothing to describe, no dangling reference
+      fixture.componentInstance.reason.set('');
       fixture.detectChanges();
-      expect(el.getAttribute('aria-describedby')).toBe(expectedId);
+      expect(el.getAttribute('aria-describedby')).toBeNull();
     });
   });
 

@@ -45,8 +45,11 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  *
  * `aria-checked` is a reactive computed: `indeterminate() ? 'mixed' :
  * value() ? 'true' : 'false'`. The description span for
- * `disabledReason` follows the same always-in-DOM rule as
- * `CngxToggle`.
+ * `disabledReason` follows the same rule as `CngxToggle`: always in the
+ * DOM, but both its `aria-hidden` and the host's `aria-describedby`
+ * reference are gated on `disabled() && disabledReason()`, so a reason
+ * set on an enabled checkbox announces nothing and stays out of reading
+ * order.
  *
  * ```html
  * <cngx-checkbox [(value)]="acceptTerms">I accept the terms</cngx-checkbox>
@@ -95,7 +98,7 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
     '[attr.aria-disabled]': 'disabled() ? "true" : null',
     '[attr.aria-invalid]': 'ariaInvalid() ? "true" : null',
     '[attr.aria-errormessage]': 'ariaInvalid() ? errorMessageId() : null',
-    '[attr.aria-describedby]': 'describedId',
+    '[attr.aria-describedby]': 'describedById()',
     '[attr.tabindex]': 'hostTabindex()',
     '[class.cngx-checkbox--checked]': 'value()',
     '[class.cngx-checkbox--indeterminate]': 'indeterminate()',
@@ -125,7 +128,7 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
     <span
       [id]="describedId"
       class="cngx-checkbox__sr-only"
-      [attr.aria-hidden]="disabledReason() ? null : 'true'"
+      [attr.aria-hidden]="disabled() && disabledReason() ? null : 'true'"
       >{{ disabledReason() }}</span
     >
   `,
@@ -159,6 +162,16 @@ export class CngxCheckbox implements CngxControlValue<boolean>, CngxFormFieldCon
   readonly dashGlyph = input<TemplateRef<void> | null>(null);
 
   protected readonly describedId = nextUid('cngx-checkbox-desc');
+
+  /**
+   * `aria-describedby` reference, gated on `disabled() && disabledReason()`
+   * (Toggle/Radio convergence): accname 1.2 §2A traverses a directly
+   * referenced hidden node, so the id must only be emitted while the
+   * description applies.
+   */
+  protected readonly describedById = computed<string | null>(() =>
+    this.disabled() && this.disabledReason() ? this.describedId : null,
+  );
 
   private readonly rovingParent = inject(CngxRovingTabindex, {
     optional: true,

@@ -2,6 +2,7 @@ import { computed, Directive, ElementRef, inject, input, model } from '@angular/
 import { injectDirection } from '@cngx/core';
 
 import { createSliderCore } from './slider-core';
+import { createSliderDisabledReason } from './slider-disabled-reason';
 import { createSliderInteraction, pointerFraction } from './slider-interaction';
 
 /**
@@ -49,6 +50,7 @@ import { createSliderInteraction, pointerFraction } from './slider-interaction';
     '[attr.aria-valuetext]': 'core.ariaValueText()',
     '[attr.aria-orientation]': 'orientation()',
     '[attr.aria-disabled]': 'disabled() || null',
+    '[attr.aria-describedby]': 'reason.resolvedDescribedBy()',
     '[attr.tabindex]': 'disabled() ? -1 : 0',
     '[style.touch-action]': "'none'",
     '[style.--cngx-slider-fraction]': 'core.fraction()',
@@ -79,12 +81,36 @@ export class CngxSliderTrack {
    * mirroring the checkbox/toggle family's bridge write path.
    */
   readonly disabled = model<boolean>(false);
+  /**
+   * Consumer-supplied "why" for the disabled state (no library default per
+   * the EN-defaults rule). Announced via an sr-only span the directive
+   * appends to the host; both the span's visibility and the host's
+   * `aria-describedby` reference are gated on `disabled() &&
+   * disabledReason()` (Toggle/Radio convergence).
+   */
+  readonly disabledReason = input<string>('');
+  /**
+   * Optional consumer-supplied id of an external description element.
+   * Consumers bind via `[cngxDescribedBy]="someId"` - same surface as
+   * `CngxChipInteraction`. The active disabled-reason wins.
+   */
+  readonly describedBy = input<string | null>(null, {
+    alias: 'cngxDescribedBy',
+  });
   /** Track axis. Drives `aria-orientation` and the pointer-to-fraction math. */
   readonly orientation = input<'horizontal' | 'vertical'>('horizontal');
   /** Optional `aria-valuetext` formatter (currency, dates, named stops). */
   readonly valueText = input<((value: number) => string) | undefined>(undefined);
 
   private readonly el = inject(ElementRef<HTMLElement>).nativeElement as HTMLElement;
+
+  /** Disabled-"why" span + gated `aria-describedby` resolution. */
+  protected readonly reason = createSliderDisabledReason({
+    idPrefix: 'cngx-slider-desc',
+    disabled: () => this.disabled(),
+    reason: () => this.disabledReason(),
+    describedBy: () => this.describedBy(),
+  });
 
   /** Shared value/step/aria derivation. */
   protected readonly core = createSliderCore({
