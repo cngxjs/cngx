@@ -26,7 +26,11 @@ import {
   SUPPORTS_ANCHOR,
 } from './anchor-positioning';
 import { CNGX_POPOVER_ARROW_BOUNDS, type CngxPopoverArrowBounds } from './popover-arrow-bounds';
-import { CNGX_FLOATING_FALLBACK, FLOATING_PLACEMENT } from './floating-fallback';
+import {
+  CNGX_FLOATING_FALLBACK,
+  createFloatingPositioner,
+  FLOATING_PLACEMENT,
+} from './floating-fallback';
 import type {
   ArrowEdge,
   PopoverHaspopup,
@@ -606,34 +610,36 @@ export class CngxPopover {
   }
 
   /**
+   * Shared fallback engine - offset middleware, scroll/resize re-run while
+   * open, state-guarded writes. `null` when no fallback is provided.
+   */
+  private readonly floatingPositioner = this.floatingFallback
+    ? createFloatingPositioner({
+        fallback: this.floatingFallback,
+        getAnchor: () => this.anchorElement(),
+        getElement: () => this.popoverElement,
+        getPlacement: () => FLOATING_PLACEMENT[this.floatingPlacement()],
+        getOffset: () => this.offset(),
+        isOpen: () => this.stateSignal() !== 'closed',
+        onPositioned: () => this.updateArrowOffset(),
+      })
+    : null;
+
+  /**
    * Apply Floating UI positioning when CSS Anchor is not supported
    * and the consumer has provided the fallback via `provideFloatingFallback()`.
    */
   private applyFloatingPosition(): void {
-    if (SUPPORTS_ANCHOR || !this.floatingFallback) {
+    if (SUPPORTS_ANCHOR || !this.floatingPositioner) {
       return;
     }
-    const anchor = this.anchorElement();
-    if (!anchor) {
+    if (!this.anchorElement()) {
       return;
     }
-
-    const fb = this.floatingFallback;
-    const el = this.popoverElement;
-    const placement = FLOATING_PLACEMENT[this.floatingPlacement()];
-    const offsetVal = this.offset();
-
-    const middleware = fb.middleware ?? [];
-    if (middleware.length === 0) {
-      warnMissingFloatingMiddleware(el.ownerDocument);
+    if ((this.floatingFallback?.middleware ?? []).length === 0) {
+      warnMissingFloatingMiddleware(this.popoverElement.ownerDocument);
     }
-
-    void fb.computePosition(anchor, el, { placement, middleware }).then(({ x, y }) => {
-      el.style.left = `${x}px`;
-      el.style.top = `${y}px`;
-      el.style.margin = `${offsetVal}px`;
-      this.updateArrowOffset();
-    });
+    this.floatingPositioner.start();
   }
 
   /**
@@ -695,6 +701,7 @@ export class CngxPopover {
   }
 
   private finalize(): void {
+    this.floatingPositioner?.stop();
     openPopovers.delete(this);
     this._arrowOffset.set(null);
     this.resolvedEdgeSignal.set(null);

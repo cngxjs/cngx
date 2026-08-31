@@ -5,7 +5,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { provideDirection } from '@cngx/core';
 
 import { CngxTooltip } from './tooltip.directive';
-import { FLOATING_PLACEMENT, provideFloatingFallback } from './floating-fallback';
+import {
+  type ComputePositionFn,
+  FLOATING_PLACEMENT,
+  provideFloatingFallback,
+} from './floating-fallback';
 import type { PopoverPlacement, PopoverPositionTryFallback } from './popover.types';
 
 // Test helpers
@@ -471,6 +475,98 @@ describe('CngxTooltip', () => {
       fixture.detectChanges();
       TestBed.flushEffects();
       expect(tooltipEl.style.getPropertyValue('position-try-fallbacks')).toBe('');
+    });
+  });
+
+  describe('shared floating fallback positioner', () => {
+    async function flushMicrotasks(): Promise<void> {
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    }
+
+    // Runs the middleware chain like @floating-ui/dom would, so the
+    // cngxOffset middleware is observable through the written coordinates.
+    function middlewareRunningComputePosition() {
+      return vi.fn<ComputePositionFn>(
+        (
+          _ref: HTMLElement,
+          _fl: HTMLElement,
+          opts?: { placement?: string; middleware?: unknown[] },
+        ) => {
+          let x = 100;
+          let y = 100;
+          for (const mw of opts?.middleware ?? []) {
+            const entry = mw as {
+              fn?: (s: { x: number; y: number; placement: string }) => { x?: number; y?: number };
+            };
+            const result = entry.fn?.({ x, y, placement: opts?.placement ?? 'top' });
+            x = result?.x ?? x;
+            y = result?.y ?? y;
+          }
+          return Promise.resolve({ x, y, placement: opts?.placement ?? 'top' });
+        },
+      );
+    }
+
+    function fallbackSetup(computePosition: ReturnType<typeof vi.fn<ComputePositionFn>>) {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        imports: [BasicTooltipHost],
+        providers: [provideFloatingFallback(computePosition, [{ name: 'flip' }])],
+      });
+      const { fixture, triggerEl } = setup(BasicTooltipHost);
+      const tooltip = (fixture.componentInstance as BasicTooltipHost).tooltip();
+      return { fixture, triggerEl, tooltip };
+    }
+
+    it('applies the tooltip offset through middleware on the fallback path', async () => {
+      const computePosition = middlewareRunningComputePosition();
+      const { triggerEl, tooltip } = fallbackSetup(computePosition);
+      tooltip.show();
+      await flushMicrotasks();
+
+      const tooltipEl = getTooltipEl(triggerEl)!;
+      const opts = computePosition.mock.calls[0][2] as { middleware: { name?: string }[] };
+      expect(opts.middleware[0]?.name).toBe('cngxOffset');
+      expect(opts.middleware[1]?.name).toBe('flip');
+      // default placement top, offset 8 -> y shifted up from the mock's base 100
+      expect(tooltipEl.style.top).toBe('92px');
+      expect(tooltipEl.style.left).toBe('100px');
+      expect(tooltipEl.style.margin).toBe('');
+    });
+
+    it('re-runs positioning on scroll while open and stops after hide', () => {
+      const computePosition = middlewareRunningComputePosition();
+      const { tooltip } = fallbackSetup(computePosition);
+      tooltip.show();
+      expect(computePosition).toHaveBeenCalledTimes(1);
+
+      document.dispatchEvent(new Event('scroll'));
+      expect(computePosition).toHaveBeenCalledTimes(2);
+
+      tooltip.hide();
+      document.dispatchEvent(new Event('scroll'));
+      expect(computePosition).toHaveBeenCalledTimes(2);
+    });
+
+    it('drops the stale write when the tooltip closes before computePosition resolves', async () => {
+      let resolvePosition!: (v: { x: number; y: number; placement: string }) => void;
+      const computePosition = vi.fn<ComputePositionFn>().mockReturnValue(
+        new Promise((resolve) => {
+          resolvePosition = resolve as never;
+        }),
+      );
+      const { triggerEl, tooltip } = fallbackSetup(computePosition);
+      tooltip.show();
+      tooltip.hide();
+
+      resolvePosition({ x: 42, y: 42, placement: 'top' });
+      await flushMicrotasks();
+
+      const tooltipEl = getTooltipEl(triggerEl)!;
+      expect(tooltipEl.style.left).not.toBe('42px');
+      expect(tooltipEl.style.top).not.toBe('42px');
     });
   });
 

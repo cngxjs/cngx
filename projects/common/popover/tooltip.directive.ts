@@ -22,7 +22,11 @@ import {
   resolveFloatingPlacement,
   SUPPORTS_ANCHOR,
 } from './anchor-positioning';
-import { CNGX_FLOATING_FALLBACK, FLOATING_PLACEMENT } from './floating-fallback';
+import {
+  CNGX_FLOATING_FALLBACK,
+  createFloatingPositioner,
+  FLOATING_PLACEMENT,
+} from './floating-fallback';
 import type {
   PopoverPlacement,
   PopoverPositionTryFallback,
@@ -216,6 +220,7 @@ export class CngxTooltip {
 
     this.destroyRef.onDestroy(() => {
       this.clearTimers();
+      this.floatingPositioner?.stop();
       this.tooltipEl?.remove();
     });
   }
@@ -296,21 +301,28 @@ export class CngxTooltip {
     }
   }
 
+  /**
+   * Shared fallback engine (same as `CngxPopover`) - offset middleware,
+   * scroll/resize re-run while open, state-guarded writes. First step of
+   * folding the tooltip onto the popover state machine. `null` when no
+   * fallback is provided.
+   */
+  private readonly floatingPositioner = this.floatingFallback
+    ? createFloatingPositioner({
+        fallback: this.floatingFallback,
+        getAnchor: () => this.elRef.nativeElement,
+        getElement: () => this.tooltipEl,
+        getPlacement: () => FLOATING_PLACEMENT[this.floatingPlacement()],
+        getOffset: () => this.offset(),
+        isOpen: () => this.stateSignal() !== 'closed',
+      })
+    : null;
+
   private applyFloatingPosition(): void {
-    if (SUPPORTS_ANCHOR || !this.floatingFallback || !this.tooltipEl) {
+    if (SUPPORTS_ANCHOR || !this.floatingPositioner) {
       return;
     }
-
-    const fb = this.floatingFallback;
-    const trigger = this.elRef.nativeElement;
-    const tooltip = this.tooltipEl;
-    const placement = FLOATING_PLACEMENT[this.floatingPlacement()];
-    const middleware = fb.middleware ?? [];
-
-    void fb.computePosition(trigger, tooltip, { placement, middleware }).then(({ x, y }) => {
-      tooltip.style.left = `${x}px`;
-      tooltip.style.top = `${y}px`;
-    });
+    this.floatingPositioner.start();
   }
 
   private createTooltipElement(): void {
@@ -332,6 +344,7 @@ export class CngxTooltip {
   }
 
   private finalize(): void {
+    this.floatingPositioner?.stop();
     if (this.tooltipEl) {
       try {
         this.tooltipEl.hidePopover();
