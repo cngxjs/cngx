@@ -5,7 +5,7 @@ squash-merged pull request. Non-library scopes (examples, examples-gen, docs,
 ci, build, chore) and non-consumer-facing types are omitted by design.
 See CONTRIBUTING.md for the workflow.
 
-## Unreleased
+## 0.1.0-rc.7 (2026-08-31)
 
 
 ### Features
@@ -15,6 +15,7 @@ See CONTRIBUTING.md for the workflow.
 - **common/chart:** realtime buffer, auto-switching Canvas renderer, and live a11y ([#245](https://github.com/cngxjs/cngx/issues/245)) ([687787c](https://github.com/cngxjs/cngx/commit/687787c5706b82ad144d6cdb68cfa319061e1a01))
 - **common/chart:** add the *cngxChartOverlay slot ([#262](https://github.com/cngxjs/cngx/issues/262)) ([2a37528](https://github.com/cngxjs/cngx/commit/2a37528b11060879764f3d18e01618fcfad8d536))
 - **common/data:** async suspense boundary (CngxAsyncBoundary + createAggregateAsyncState) ([#295](https://github.com/cngxjs/cngx/issues/295)) ([9cfaa7d](https://github.com/cngxjs/cngx/commit/9cfaa7d30a98def317861a608e5389983ebc60da))
+- **common/dialog:** programmatic dialog labelling via an aria registry ([#350](https://github.com/cngxjs/cngx/issues/350)) ([9541665](https://github.com/cngxjs/cngx/commit/95416655d41299844edacc1c755b9b6085a0546e))
 - **common/display:** relocate CngxStatus and add a dot-only glyph toggle ([#292](https://github.com/cngxjs/cngx/issues/292)) ([b4804e7](https://github.com/cngxjs/cngx/commit/b4804e7fb1ef0db4b6554722a8d549d8f3c63da7))
 - **common/popover:** honour dir=rtl in popover and tooltip anchor placement ([#319](https://github.com/cngxjs/cngx/issues/319)) ([259c1e3](https://github.com/cngxjs/cngx/commit/259c1e3581c8b3b7bf013b91a1ef65394b9b011b))
 - **core:** latency-aware loading primitives and registry-sourced spinner-vs-skeleton selection ([#246](https://github.com/cngxjs/cngx/issues/246)) ([add323d](https://github.com/cngxjs/cngx/commit/add323df03da9d9da60f94039788c8231d0a51cf))
@@ -33,6 +34,7 @@ See CONTRIBUTING.md for the workflow.
 - **data-display,ui:** honour dir=rtl in treetable and dot-stepper keyboard nav ([#322](https://github.com/cngxjs/cngx/issues/322)) ([eacb062](https://github.com/cngxjs/cngx/commit/eacb062fa547f460486782720631455074d6a35a))
 - **doctor:** extract the project-wiring scanner as the standalone @cngx/doctor package ([#311](https://github.com/cngxjs/cngx/issues/311)) ([75740ee](https://github.com/cngxjs/cngx/commit/75740ee25b8d886f763838450a3d06fa1f56a9e5))
 - **eslint-plugin:** implement the six lint rules with CI and docs ([#302](https://github.com/cngxjs/cngx/issues/302)) ([2e951d0](https://github.com/cngxjs/cngx/commit/2e951d0a9681156205ca5c533e43f93c37e743fb))
+- **eslint-plugin:** scope the bridge rule, ship the rule docs, and polish the doctor CLI ([#337](https://github.com/cngxjs/cngx/issues/337)) ([23050c8](https://github.com/cngxjs/cngx/commit/23050c8945bac4b182d4d00039f1c3f6e7bc316f))
 - **forms/input:** isolate numeric and code render surfaces as bidi runs under dir=rtl ([#316](https://github.com/cngxjs/cngx/issues/316)) ([0b1abda](https://github.com/cngxjs/cngx/commit/0b1abdafc98e494768816748b10c50952ba9e89d))
 - **mcp:** add @cngx/mcp model context protocol server ([#303](https://github.com/cngxjs/cngx/issues/303)) ([88e48aa](https://github.com/cngxjs/cngx/commit/88e48aad1ec097d4496004f811f853c24a752ef5))
 - **mcp:** add the get_config configuration-cascade query tool ([#325](https://github.com/cngxjs/cngx/issues/325)) ([88ee701](https://github.com/cngxjs/cngx/commit/88ee701711bc46e3f4ca8af1c7724d029751a2d6))
@@ -40,11 +42,16 @@ See CONTRIBUTING.md for the workflow.
 - **mcp:** add the list_components browse tool ([#327](https://github.com/cngxjs/cngx/issues/327)) ([993383a](https://github.com/cngxjs/cngx/commit/993383a0a423ef0952020a3fc75e3ae48bfe4535))
 - **mcp:** add resources and prompts surfaces ([#328](https://github.com/cngxjs/cngx/issues/328)) ([97594a6](https://github.com/cngxjs/cngx/commit/97594a6e9ac0026d491257616ffed1ac6239cb1a))
 - **mcp:** version-parameterized queries on the entry-shape tools ([#329](https://github.com/cngxjs/cngx/issues/329)) ([19d86ee](https://github.com/cngxjs/cngx/commit/19d86eea20db5db5f2d4d7cbc0594f4aaf760041))
+- **mcp:** accept an optional version on get_config ([#330](https://github.com/cngxjs/cngx/issues/330)) ([f0d76e9](https://github.com/cngxjs/cngx/commit/f0d76e9b2496cbd212ed402cf5c78f42658e8797))
+- **mcp:** serve the llms.txt index as the cngx://llms resource ([#333](https://github.com/cngxjs/cngx/issues/333)) ([8ac739c](https://github.com/cngxjs/cngx/commit/8ac739cefc8a60391ee9588da27ae536fb964bfb))
+- **mcp:** serve the compodocx llm-md dump as the cngx://llms-full resource ([#334](https://github.com/cngxjs/cngx/issues/334)) ([7e5b94b](https://github.com/cngxjs/cngx/commit/7e5b94b4099690a27cbff149b9f228e18dfeb6d9))
+- **mcp:** cover injectable services and harden the version-scoped fetch ([#335](https://github.com/cngxjs/cngx/issues/335)) ([3ac1320](https://github.com/cngxjs/cngx/commit/3ac1320972624a4db9c6991681941051689d620a))
 - **plugin:** add the cngx consumer plugin ([#304](https://github.com/cngxjs/cngx/issues/304)) ([36c0403](https://github.com/cngxjs/cngx/commit/36c0403b9782354451c918687afc97b5efa02e89))
 - **plugin:** add the three core consumer skills (cngx-wire, cngx-async, cngx-forms) ([#306](https://github.com/cngxjs/cngx/issues/306)) ([267c2ee](https://github.com/cngxjs/cngx/commit/267c2eeffc0dc5332b65963613e58023b55d976d))
 - **plugin:** add the @cngx/doctor project-wiring CLI and PostToolUse guard hook ([#307](https://github.com/cngxjs/cngx/issues/307)) ([fca0e69](https://github.com/cngxjs/cngx/commit/fca0e69ca9be395377492e6c1eab325817e478b5))
 - **plugin:** add the five remaining consumer skills ([#308](https://github.com/cngxjs/cngx/issues/308)) ([7c7d323](https://github.com/cngxjs/cngx/commit/7c7d323226c9e6d8510e9d8d92bc812e499cdaf1))
 - **plugin:** consumer review, a11y, and migration tooling (agents, cngx-migrate, migrate_usage) ([#309](https://github.com/cngxjs/cngx/issues/309)) ([c8787c2](https://github.com/cngxjs/cngx/commit/c8787c283434316b9fdec7898a974c500570d7cd))
+- **plugin:** route the grounding surface to the full MCP and harden the doctor ([#336](https://github.com/cngxjs/cngx/issues/336)) ([3d68bd9](https://github.com/cngxjs/cngx/commit/3d68bd9184e7431e9137d8bd8d8665e7986c9282))
 - **ui:** stat-card and chart-panel dashboard organisms ([#248](https://github.com/cngxjs/cngx/issues/248)) ([1e90ae3](https://github.com/cngxjs/cngx/commit/1e90ae38695486e7bfc4950ebd36c6d7fa0ef883))
 - **ui:** honour dir=rtl in shipped CSS via logical properties ([#314](https://github.com/cngxjs/cngx/issues/314)) ([099a93a](https://github.com/cngxjs/cngx/commit/099a93ae07cbc4241d8a6b450b339221361afe27))
 - **ui:** mirror RTL directional glyphs in breadcrumb, stepper, accordion ([#315](https://github.com/cngxjs/cngx/issues/315)) ([d81b8ba](https://github.com/cngxjs/cngx/commit/d81b8bab0149d987d4068500d5a865aabc1a0fd7))
@@ -63,14 +70,25 @@ See CONTRIBUTING.md for the workflow.
 - **common:** render undrawn inputs and draw single-datum chart marks ([#254](https://github.com/cngxjs/cngx/issues/254)) ([2905681](https://github.com/cngxjs/cngx/commit/2905681bd2dad9570fe331e9b11623201f6eb4b3))
 - **common:** correct false ARIA state communication in card, button-toggle, and key combos ([#255](https://github.com/cngxjs/cngx/issues/255)) ([74ce946](https://github.com/cngxjs/cngx/commit/74ce9462b35d04cdc915974b2c776969483311ca))
 - **common,ui:** containment-aware popover eviction, options-passed data-source atoms, and longhand page bindings ([#257](https://github.com/cngxjs/cngx/issues/257)) ([268df52](https://github.com/cngxjs/cngx/commit/268df52800388ca063bb77472ca365ba83bda2d4))
+- **common/a11y:** active-descendant virtual-window resolution, APG typeahead cycle, stable highlighted emissions ([#344](https://github.com/cngxjs/cngx/issues/344)) ([25d53c9](https://github.com/cngxjs/cngx/commit/25d53c9405a05598516e8a6195c06fea5d48361d))
+- **common/a11y:** keyboard hygiene for the roving and active-descendant nav strategies ([#345](https://github.com/cngxjs/cngx/issues/345)) ([d2d05b8](https://github.com/cngxjs/cngx/commit/d2d05b8b60f617a7324ba5841d8c124014f29215))
 - **common/chart:** reserve axis room inside the chart box ([#258](https://github.com/cngxjs/cngx/issues/258)) ([2720510](https://github.com/cngxjs/cngx/commit/2720510b3b14e189aaf24b4d88ae10808e6445e2))
 - **common/data:** make CngxStatus dot-size and gap tokens inheritable ([#250](https://github.com/cngxjs/cngx/issues/250)) ([002e5f7](https://github.com/cngxjs/cngx/commit/002e5f780f2bb21b54e0b2f4d6a88d310b22ce06))
+- **common/dialog:** draggable guards, opener parity, backdrop origin, and a shared scroll lock ([#349](https://github.com/cngxjs/cngx/issues/349)) ([7270874](https://github.com/cngxjs/cngx/commit/72708746f15097b4d7ed1c5b13a994eeb1208b99))
 - **common/interactive:** gate CngxToggle/CngxRadio disabled-reason describedby on the disabled state ([#265](https://github.com/cngxjs/cngx/issues/265)) ([4a36279](https://github.com/cngxjs/cngx/commit/4a36279e1330e7bc94cc65ccde39283384a4a6c0))
 - **common/interactive:** attach context-menu dismiss listeners eagerly on open ([#278](https://github.com/cngxjs/cngx/issues/278)) ([5fc7d80](https://github.com/cngxjs/cngx/commit/5fc7d80d2a390973f2081b3a9d3f93454b4f7a27))
+- **common/interactive:** route submenu hover through the menu focus stack ([#346](https://github.com/cngxjs/cngx/issues/346)) ([8943a66](https://github.com/cngxjs/cngx/commit/8943a661b0aaf74f1400ed5ea491aee6391e073b))
+- **common/interactive:** describedby gating convergence for checkbox, chip, and the sliders ([#347](https://github.com/cngxjs/cngx/issues/347)) ([07f64e4](https://github.com/cngxjs/cngx/commit/07f64e4815301a6145c940e9bfdedb052ea40a2d))
+- **common/popover:** light-dismiss finalize, ARIA gates, tooltip aria-hidden, and a shared floating fallback ([#348](https://github.com/cngxjs/cngx/issues/348)) ([eb0e410](https://github.com/cngxjs/cngx/commit/eb0e410dc72220a643a838ba6937e8d4570418d5))
 - **common/stepper:** deep-linking honors bound step ids and lands on first paint ([#264](https://github.com/cngxjs/cngx/issues/264)) ([40f2b4b](https://github.com/cngxjs/cngx/commit/40f2b4bae3e618095f077140d3c7fb01c1f374fc))
 - **common/tabs:** prefix matching for section navs and pre-render URL seeding ([#256](https://github.com/cngxjs/cngx/issues/256)) ([a06d1de](https://github.com/cngxjs/cngx/commit/a06d1dedf6cf2decea50d34fa21efe9058fde1b4))
+- **common/tabs:** replace the em-dash in the SR live-region defaults with a hyphen ([#341](https://github.com/cngxjs/cngx/issues/341)) ([8d662b3](https://github.com/cngxjs/cngx/commit/8d662b3dcb2ac5ff66557ebdd04001885181f018))
 - **common/timeline:** register item inline-size @property with a valid absolute initial-value ([#272](https://github.com/cngxjs/cngx/issues/272)) ([0410222](https://github.com/cngxjs/cngx/commit/0410222541d59d4402fae33cd21ffc64d6904629))
+- **core/theming:** register system tokens inherits: true and revive the example brand theme ([#342](https://github.com/cngxjs/cngx/issues/342)) ([10fa314](https://github.com/cngxjs/cngx/commit/10fa3146898adbd6789631576cd1781180955eb0))
+- **data-display:** treegrid roving focus model and APG row semantics ([#351](https://github.com/cngxjs/cngx/issues/351)) ([6afe575](https://github.com/cngxjs/cngx/commit/6afe575cf5b7c225315f86b5063536eee1912eab))
+- **forms/field:** gate aria-describedby error id on showError and propagate field disabled into slider bridges ([#343](https://github.com/cngxjs/cngx/issues/343)) ([e3efb11](https://github.com/cngxjs/cngx/commit/e3efb11be3ee3906cbe47137335faa3fdfed05bd))
 - **plugin:** scope the pack drift-check to committed sources and run it in CI ([#305](https://github.com/cngxjs/cngx/issues/305)) ([9ca0c37](https://github.com/cngxjs/cngx/commit/9ca0c3733aa9ebb0756fc05f2b39e8b57849faa9))
+- **ui:** describedby gating, panel layering, and density-scale residue ([#352](https://github.com/cngxjs/cngx/issues/352)) ([381eb08](https://github.com/cngxjs/cngx/commit/381eb08b97da6353d0a2c9a00d3bc791a87ba6cd))
 
 ### BREAKING CHANGES
 
