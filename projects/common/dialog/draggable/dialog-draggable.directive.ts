@@ -167,13 +167,18 @@ export class CngxDialogDraggable {
       el.setAttribute('aria-label', 'Move dialog');
       this.handleAddedAria = true;
     }
-    // Host-as-handle: the keyboard path exists but nothing names it -
-    // aria-label on the dialog would clobber its accessible name, and a
-    // second aria-describedby host binding would clobber CngxDialog's.
-    // A hidden instruction node registered through the shared registry is
-    // the only collision-free channel.
+    // The keyboard path is live on every handle, so the instruction is too.
+    // Host-as-handle routes through the dialog's registry (a second
+    // aria-describedby host binding would clobber CngxDialog's); an explicit
+    // handle is not the dialog host, so the attribute is set directly -
+    // guarded like tabindex, a consumer-authored describedby wins.
+    const instruction = this.createInstructionNode();
     if (el === this.elRef.nativeElement) {
-      this.createInstructionNode(el);
+      this.releaseInstruction =
+        this.ariaRegistry?.registerDescribedBy(signal(instruction.id)) ?? null;
+    } else if (!el.hasAttribute('aria-describedby')) {
+      el.setAttribute('aria-describedby', instruction.id);
+      this.handleAddedDescribedBy = true;
     }
     el.style.cursor = 'var(--cngx-dialog-drag-cursor, grab)';
     el.style.touchAction = 'none';
@@ -319,14 +324,15 @@ export class CngxDialogDraggable {
 
   private instructionNode: HTMLElement | null = null;
   private releaseInstruction: (() => void) | null = null;
+  private handleAddedDescribedBy = false;
 
   /**
-   * Visually hidden keyboard-drag instruction, described-by-linked through
-   * the dialog's aria registry. Same hidden technique as the dialog's live
-   * region - a referenced node must stay perceivable to AT, not `display:
-   * none`.
+   * Visually hidden keyboard-drag instruction, appended to the host so it
+   * lives inside the dialog for both handle modes. Same hidden technique as
+   * the dialog's live region - a referenced node must stay perceivable to
+   * AT, not `display: none`.
    */
-  private createInstructionNode(dialogEl: HTMLElement): void {
+  private createInstructionNode(): HTMLElement {
     const node = this.doc.createElement('span');
     node.id = nextUid('cngx-dialog-drag-hint');
     node.textContent = 'Use arrow keys to move the dialog; Shift for larger steps';
@@ -340,9 +346,9 @@ export class CngxDialogDraggable {
     node.style.clip = 'rect(0, 0, 0, 0)';
     node.style.whiteSpace = 'nowrap';
     node.style.border = '0';
-    dialogEl.appendChild(node);
+    this.elRef.nativeElement.appendChild(node);
     this.instructionNode = node;
-    this.releaseInstruction = this.ariaRegistry?.registerDescribedBy(signal(node.id)) ?? null;
+    return node;
   }
 
   /**
@@ -364,6 +370,10 @@ export class CngxDialogDraggable {
     const handle = this.currentHandle;
     if (!handle) {
       return;
+    }
+    if (this.handleAddedDescribedBy) {
+      handle.removeAttribute('aria-describedby');
+      this.handleAddedDescribedBy = false;
     }
     if (this.boundPointerDown) {
       handle.removeEventListener('pointerdown', this.boundPointerDown);

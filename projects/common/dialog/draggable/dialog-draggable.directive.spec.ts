@@ -290,7 +290,7 @@ describe('CngxDialogDraggable', () => {
       expect(dialogEl.getAttribute('aria-describedby')).toBe(`${descId} ${hint.id}`);
     });
 
-    it('removes node and reference atomically on swap to an explicit handle', () => {
+    it('moves the instruction to the explicit handle on swap, no dangling dialog ref', () => {
       const fixture = TestBed.createComponent(DialogDraggableHost);
       fixture.detectChanges();
       TestBed.flushEffects();
@@ -299,17 +299,59 @@ describe('CngxDialogDraggable', () => {
       const dialogEl = fixture.nativeElement.querySelector('dialog') as HTMLDialogElement;
       const descId = (dialogEl.querySelector('[cngxDialogDescription]') as HTMLElement).id;
       const explicitHandle = dialogEl.querySelector('#explicit-handle') as HTMLElement;
-      expect(dialogEl.querySelector('[id^="cngx-dialog-drag-hint"]')).not.toBeNull();
+      const hostHint = dialogEl.querySelector('[id^="cngx-dialog-drag-hint"]') as HTMLElement;
+      expect(dialogEl.getAttribute('aria-describedby')).toBe(`${descId} ${hostHint.id}`);
 
       fixture.componentInstance.handle.set(explicitHandle);
       fixture.detectChanges();
       TestBed.flushEffects();
       fixture.detectChanges();
 
-      // The described capability (arrow keys on the dialog host) is gone -
-      // node and id reference must leave together, no dangling ref.
-      expect(dialogEl.querySelector('[id^="cngx-dialog-drag-hint"]')).toBeNull();
+      // The dialog-level reference leaves with the host-as-handle capability;
+      // the recreated instruction is now referenced from the handle itself.
+      const handleHint = dialogEl.querySelector('[id^="cngx-dialog-drag-hint"]') as HTMLElement;
       expect(dialogEl.getAttribute('aria-describedby')).toBe(descId);
+      expect(handleHint).not.toBe(hostHint);
+      expect(explicitHandle.getAttribute('aria-describedby')).toBe(handleHint.id);
+    });
+
+    it('restores the explicit handle describedby on swap back to host-as-handle', () => {
+      const fixture = TestBed.createComponent(DialogDraggableHost);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      const dialogEl = fixture.nativeElement.querySelector('dialog') as HTMLDialogElement;
+      const explicitHandle = dialogEl.querySelector('#explicit-handle') as HTMLElement;
+
+      fixture.componentInstance.handle.set(explicitHandle);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(explicitHandle.getAttribute('aria-describedby')).not.toBeNull();
+
+      fixture.componentInstance.handle.set(undefined);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(explicitHandle.getAttribute('aria-describedby')).toBeNull();
+    });
+
+    it('does not clobber a consumer-authored describedby on the explicit handle', () => {
+      const fixture = TestBed.createComponent(DialogDraggableHost);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      const dialogEl = fixture.nativeElement.querySelector('dialog') as HTMLDialogElement;
+      const explicitHandle = dialogEl.querySelector('#explicit-handle') as HTMLElement;
+      explicitHandle.setAttribute('aria-describedby', 'consumer-hint');
+
+      fixture.componentInstance.handle.set(explicitHandle);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(explicitHandle.getAttribute('aria-describedby')).toBe('consumer-hint');
+
+      fixture.componentInstance.handle.set(undefined);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(explicitHandle.getAttribute('aria-describedby')).toBe('consumer-hint');
     });
   });
 });
