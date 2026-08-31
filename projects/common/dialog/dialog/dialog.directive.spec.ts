@@ -350,6 +350,23 @@ describe('CngxDialog', () => {
       const liveRegion = dialogEl.querySelector('[aria-live="polite"]');
       expect(liveRegion).not.toBeNull();
     });
+
+    it('announces the current title text on each open, not a cached first read', () => {
+      const { fixture, dialogEl } = setup(FullDialogHost);
+      const dialog = openFully(fixture, dialogEl);
+      const liveRegion = dialogEl.querySelector('[aria-live="polite"]') as HTMLElement;
+      expect(liveRegion.textContent).toBe('Test Title');
+
+      dialog.dismiss();
+      fixture.detectChanges();
+
+      // Title changed between opens (translation swap, interpolated data).
+      const titleEl = fixture.nativeElement.querySelector('[cngxDialogTitle]') as HTMLElement;
+      titleEl.textContent = 'Changed Title';
+
+      openFully(fixture, dialogEl);
+      expect(liveRegion.textContent).toBe('Changed Title');
+    });
   });
 
   describe('CSS classes', () => {

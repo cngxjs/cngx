@@ -1,4 +1,4 @@
-import { computed, Directive, ElementRef, inject, signal } from '@angular/core';
+import { Directive, ElementRef, inject, signal } from '@angular/core';
 import { nextUid } from '@cngx/core/utils';
 
 import { DIALOG_REF } from './dialog-ref';
@@ -55,14 +55,15 @@ export class CngxDialogTitle {
   readonly id = signal(nextUid('cngx-dialog-title'));
 
   /**
-   * Text content of the title element.
+   * Text content of the title element, read fresh on every call.
    *
-   * Read by `CngxDialog` on open to announce the dialog title via
-   * an `aria-live` region for screen readers.
+   * Read by `CngxDialog` at announce time (each `'open'` transition) so a
+   * changed title - translation swap, interpolated data - is what screen
+   * readers hear. A `computed` would cache the first non-reactive DOM read
+   * forever.
    */
-  readonly textContent = computed(
-    () => (this.elRef.nativeElement as HTMLElement).textContent?.trim() ?? '',
-  );
+  readonly textContent = (): string =>
+    (this.elRef.nativeElement as HTMLElement).textContent?.trim() ?? '';
 
   constructor() {
     if (this.dialogRef) {
