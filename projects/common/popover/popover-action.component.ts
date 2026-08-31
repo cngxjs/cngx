@@ -1,12 +1,20 @@
 import { NgTemplateOutlet } from '@angular/common';
 import {
+  afterNextRender,
   ChangeDetectionStrategy,
   Component,
+  computed,
   contentChild,
+  DestroyRef,
+  effect,
   inject,
   input,
+  isDevMode,
+  untracked,
   ViewEncapsulation,
+  viewChild,
 } from '@angular/core';
+import type { AsyncStatus } from '@cngx/core/utils';
 import {
   CngxAsyncClick,
   CngxFailed,
@@ -15,6 +23,7 @@ import {
   type AsyncAction,
 } from '@cngx/common/interactive';
 
+import { CNGX_POPOVER_PANEL_CONFIG } from './popover-panel.config';
 import { CngxPopover } from './popover.directive';
 
 /**
@@ -139,6 +148,8 @@ export type PopoverActionVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
 })
 export class CngxPopoverAction {
   private readonly popover = inject(CngxPopover, { optional: true });
+  private readonly config = inject(CNGX_POPOVER_PANEL_CONFIG);
+  private readonly destroyRef = inject(DestroyRef);
 
   /** Button role: `'dismiss'` closes immediately, `'confirm'` runs an async action. */
   readonly role = input<'dismiss' | 'confirm'>('confirm');
@@ -156,7 +167,59 @@ export class CngxPopoverAction {
   protected readonly succeededTpl = contentChild(CngxSucceeded);
   protected readonly failedTpl = contentChild(CngxFailed);
 
+  private readonly asyncClick = viewChild(CngxAsyncClick);
+
+  /**
+   * Lifecycle status of the confirm action - `'idle' | 'pending' | 'success'
+   * | 'error'`, mirroring the internal `CngxAsyncClick`. Always `'idle'` for
+   * `role="dismiss"` (there is no async lifecycle to report).
+   */
+  readonly status = computed<AsyncStatus>(() => this.asyncClick()?.status() ?? 'idle');
+
+  private closeOnSuccessTimer: ReturnType<typeof setTimeout> | null = null;
+
+  constructor() {
+    // withCloseOnSuccess(): a confirmed footer action hides the composing
+    // popover after the configured delay. A follow-up run cancels the
+    // pending close so a re-triggered action never yanks the panel away
+    // mid-interaction.
+    effect(() => {
+      const status = this.status();
+      const delay = untracked(() => this.config.closeOnSuccessDelay);
+      if (status === 'pending') {
+        this.clearCloseOnSuccessTimer();
+      }
+      if (status === 'success' && delay !== undefined && this.popover) {
+        this.clearCloseOnSuccessTimer();
+        this.closeOnSuccessTimer = setTimeout(() => {
+          this.closeOnSuccessTimer = null;
+          this.popover?.hide();
+        }, delay);
+      }
+    });
+
+    this.destroyRef.onDestroy(() => this.clearCloseOnSuccessTimer());
+
+    if (isDevMode()) {
+      afterNextRender(() => {
+        if (this.role() === 'confirm' && !this.action()) {
+          console.warn(
+            'CngxPopoverAction: role="confirm" without an [action] renders a button whose ' +
+              'click does nothing. Bind [action] or use role="dismiss".',
+          );
+        }
+      });
+    }
+  }
+
   protected handleDismiss(): void {
     this.popover?.hide();
+  }
+
+  private clearCloseOnSuccessTimer(): void {
+    if (this.closeOnSuccessTimer) {
+      clearTimeout(this.closeOnSuccessTimer);
+      this.closeOnSuccessTimer = null;
+    }
   }
 }

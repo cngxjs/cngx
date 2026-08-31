@@ -108,7 +108,7 @@ import type { PopoverPanelRole } from './popover.types';
   host: {
     '[class]': 'hostClass()',
     '[attr.role]': 'role()',
-    '[attr.aria-labelledby]': 'headerId',
+    '[attr.aria-labelledby]': 'ariaLabelledBy()',
     '[attr.aria-describedby]': 'ariaDescribedBy()',
     '[attr.aria-busy]': 'effectiveLoading() || null',
   },
@@ -302,6 +302,13 @@ export class CngxPopoverPanel implements CngxPopoverArrowBounds {
   private readonly uid = nextUid('cngx-pp');
   protected readonly headerId = `${this.uid}-header`;
   protected readonly bodyId = `${this.uid}-body`;
+
+  /**
+   * Only point to the header when one is projected - a bare id reference
+   * resolves even against an element that never renders (the header row is
+   * gated on `hasHeader()`), leaving AT with an empty accessible name.
+   */
+  protected readonly ariaLabelledBy = computed(() => (this.hasHeader() ? this.headerId : null));
 
   /** Only point to body when default content is showing (not loading/error/empty). */
   protected readonly ariaDescribedBy = computed(() =>

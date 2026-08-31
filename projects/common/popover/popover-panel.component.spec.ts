@@ -283,6 +283,14 @@ describe('CngxPopoverPanel', () => {
     expect(panelEl.getAttribute('aria-labelledby')).toBe(headerId);
   });
 
+  it('should not emit aria-labelledby without a projected header', () => {
+    // aria-hidden does not suppress a directly-referenced node, and here the
+    // header row never renders at all - the reference must be gated, not the
+    // target.
+    const { panelEl } = setup(BodyOnlyHost);
+    expect(panelEl.getAttribute('aria-labelledby')).toBeNull();
+  });
+
   it('should set role="dialog" on the host by default', () => {
     const { panelEl } = setup(BasicHost);
     expect(panelEl.getAttribute('role')).toBe('dialog');

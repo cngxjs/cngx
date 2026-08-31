@@ -7,6 +7,7 @@ import { provideDirection } from '@cngx/core';
 import { CngxPopover, __resetFloatingMiddlewareWarnings } from './popover.directive';
 import {
   CNGX_FLOATING_FALLBACK,
+  type ComputePositionFn,
   FLOATING_PLACEMENT,
   provideFloatingFallback,
 } from './floating-fallback';
@@ -331,6 +332,60 @@ describe('CngxPopover', () => {
     });
   });
 
+  describe('browser light dismiss', () => {
+    function dispatchLightDismiss(el: HTMLElement): void {
+      // jsdom has no ToggleEvent constructor; a plain Event with the
+      // duck-typed newState field matches what the host listener reads.
+      const ev = new Event('toggle');
+      (ev as unknown as Record<string, unknown>)['newState'] = 'closed';
+      el.dispatchEvent(ev);
+    }
+
+    it('runs the full teardown when the browser closes the popover', () => {
+      const { fixture, popoverEl } = setup(AutoModeHost);
+      const host = fixture.componentInstance as AutoModeHost;
+      host.popover().show();
+
+      dispatchLightDismiss(popoverEl);
+      fixture.detectChanges();
+
+      expect(host.popover().state()).toBe('closed');
+      expect(popoverEl.hidePopover).toHaveBeenCalled();
+      expect(host.popover().arrowOffset()).toBeNull();
+    });
+
+    it('does not swallow the next document Escape after a light dismiss', () => {
+      const { fixture, popoverEl } = setup(AutoModeHost);
+      const host = fixture.componentInstance as AutoModeHost;
+      const windowSpy = vi.fn();
+      window.addEventListener('keydown', windowSpy);
+      try {
+        host.popover().show();
+        dispatchLightDismiss(popoverEl);
+        fixture.detectChanges();
+
+        // A stale registry entry would stopPropagation here and the event
+        // would never bubble up to window.
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+        expect(windowSpy).toHaveBeenCalledTimes(1);
+      } finally {
+        window.removeEventListener('keydown', windowSpy);
+      }
+    });
+
+    it('can reopen after a light dismiss', () => {
+      const { fixture, popoverEl } = setup(AutoModeHost);
+      const host = fixture.componentInstance as AutoModeHost;
+      host.popover().show();
+      dispatchLightDismiss(popoverEl);
+      fixture.detectChanges();
+
+      host.popover().show();
+      expect(host.popover().state()).toBe('opening');
+      expect(popoverEl.showPopover).toHaveBeenCalledTimes(2);
+    });
+  });
+
   describe('host classes', () => {
     it('should apply cngx-popover--opening during opening', () => {
       const { fixture, popoverEl } = setup(BasicHost);
@@ -503,6 +558,95 @@ describe('CngxPopover', () => {
       expect(computePosition).toHaveBeenCalled();
       const opts = computePosition.mock.calls[0][2] as { placement: string };
       expect(opts.placement).toBe(FLOATING_PLACEMENT['right-start']);
+    });
+  });
+
+  describe('shared floating fallback positioner', () => {
+    // Runs the middleware chain like @floating-ui/dom would, so the
+    // cngxOffset middleware is observable through the written coordinates.
+    function middlewareRunningComputePosition() {
+      return vi.fn<ComputePositionFn>(
+        (
+          _ref: HTMLElement,
+          _fl: HTMLElement,
+          opts?: { placement?: string; middleware?: unknown[] },
+        ) => {
+          let x = 100;
+          let y = 100;
+          for (const mw of opts?.middleware ?? []) {
+            const entry = mw as {
+              fn?: (s: { x: number; y: number; placement: string }) => { x?: number; y?: number };
+            };
+            const result = entry.fn?.({ x, y, placement: opts?.placement ?? 'bottom' });
+            x = result?.x ?? x;
+            y = result?.y ?? y;
+          }
+          return Promise.resolve({ x, y, placement: opts?.placement ?? 'bottom' });
+        },
+      );
+    }
+
+    function fallbackSetup(computePosition: ReturnType<typeof vi.fn<ComputePositionFn>>) {
+      __resetFloatingMiddlewareWarnings(document);
+      TestBed.configureTestingModule({
+        imports: [BasicHost],
+        providers: [provideFloatingFallback(computePosition, [{ name: 'flip' }])],
+      });
+      const { fixture, popoverEl } = setup(BasicHost);
+      const popover = (fixture.componentInstance as BasicHost).popover();
+      popover.anchorElement.set(popoverEl);
+      return { fixture, popoverEl, popover };
+    }
+
+    it('applies the offset as leading middleware instead of a margin write', async () => {
+      const computePosition = middlewareRunningComputePosition();
+      const { popover, popoverEl } = fallbackSetup(computePosition);
+      popover.show();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      const opts = computePosition.mock.calls[0][2] as { middleware: { name?: string }[] };
+      expect(opts.middleware[0]?.name).toBe('cngxOffset');
+      expect(opts.middleware[1]?.name).toBe('flip');
+      // default placement bottom, offset 8 -> y shifted from the mock's base 100
+      expect(popoverEl.style.top).toBe('108px');
+      expect(popoverEl.style.left).toBe('100px');
+      expect(popoverEl.style.margin).toBe('');
+    });
+
+    it('re-runs positioning on scroll and resize while open, stops after close', () => {
+      const computePosition = middlewareRunningComputePosition();
+      const { popover } = fallbackSetup(computePosition);
+      popover.show();
+      expect(computePosition).toHaveBeenCalledTimes(1);
+
+      document.dispatchEvent(new Event('scroll'));
+      expect(computePosition).toHaveBeenCalledTimes(2);
+
+      window.dispatchEvent(new Event('resize'));
+      expect(computePosition).toHaveBeenCalledTimes(3);
+
+      popover.hide();
+      document.dispatchEvent(new Event('scroll'));
+      window.dispatchEvent(new Event('resize'));
+      expect(computePosition).toHaveBeenCalledTimes(3);
+    });
+
+    it('drops the stale write when the popover closes before computePosition resolves', async () => {
+      let resolvePosition!: (v: { x: number; y: number; placement: string }) => void;
+      const computePosition = vi.fn<ComputePositionFn>().mockReturnValue(
+        new Promise((resolve) => {
+          resolvePosition = resolve as never;
+        }),
+      );
+      const { popover, popoverEl } = fallbackSetup(computePosition);
+      popover.show();
+      popover.hide();
+
+      resolvePosition({ x: 42, y: 42, placement: 'bottom' });
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      expect(popoverEl.style.left).not.toBe('42px');
+      expect(popoverEl.style.top).not.toBe('42px');
     });
   });
 
