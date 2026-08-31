@@ -5,6 +5,7 @@ import {
   inject,
   input,
   type OnInit,
+  signal,
   untracked,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -54,9 +55,21 @@ export class CngxPaginateRouting implements OnInit {
   /** Query-param name for the page size. */
   readonly sizeParam = input('pageSize', { alias: 'cngxPaginateSizeParam' });
 
-  // Set while applying a URL change to the brain, so the brain -> URL effect
-  // does not bounce the same value straight back as a redundant navigation.
+  // Set synchronously around brain writes driven by the URL, so the
+  // pageChange subscription below can tell a URL-driven change from a user
+  // navigation (setPage/setPageSize emit synchronously).
   private applyingFromUrl = false;
+
+  // A deep-linked page index the brain could not represent yet: setPage
+  // clamps against totalPages (1 while the default total=0 is still in
+  // effect) and no-ops entirely while the bound async state is busy. The raw
+  // index is parked here and re-applied once total/busy settle; while it is
+  // parked, the brain -> URL effect leaves the URL alone so the deep link
+  // survives until the data lands. `size` is null once the size half has
+  // been applied.
+  private readonly pendingUrl = signal<{ index: number; size: number | null } | null>(null, {
+    equal: (a, b) => a?.index === b?.index && a?.size === b?.size,
+  });
 
   constructor() {
     const router = this.router;
@@ -71,17 +84,32 @@ export class CngxPaginateRouting implements OnInit {
       return;
     }
 
+    // A user navigation supersedes a still-parked deep link.
+    this.paginate.pageChange.subscribe(() => {
+      if (!this.applyingFromUrl) {
+        this.pendingUrl.set(null);
+      }
+    });
+
     // brain -> URL. Tracks the effective page / size; merges into the existing
     // query string and replaces history so paging does not stack back entries.
     // The param-name inputs are read lazily inside untracked, so a late-bound
-    // alias is already set by the time the first navigation fires.
+    // alias is already set by the time the first navigation fires. Skipped
+    // while a deep link is parked and when the URL already carries the values
+    // (the echo after a URL -> brain apply must not renavigate).
     effect(() => {
       const page = this.paginate.pageIndex() + 1;
       const size = this.paginate.pageSize();
-      if (this.applyingFromUrl) {
+      if (this.pendingUrl() !== null) {
         return;
       }
       untracked(() => {
+        const params = route.snapshot.queryParamMap;
+        const samePage = Number(params.get(this.pageParam())) === page;
+        const sameSize = Number(params.get(this.sizeParam())) === size;
+        if (samePage && sameSize) {
+          return;
+        }
         void router.navigate([], {
           relativeTo: route,
           queryParams: { [this.pageParam()]: page, [this.sizeParam()]: size },
@@ -89,6 +117,19 @@ export class CngxPaginateRouting implements OnInit {
           replaceUrl: true,
         });
       });
+    });
+
+    // Re-apply a parked deep link whenever the clamp inputs move (total
+    // landed, busy released). The equal fn on pendingUrl keeps the re-park
+    // write from retriggering this effect in a loop.
+    effect(() => {
+      const pending = this.pendingUrl();
+      if (pending === null) {
+        return;
+      }
+      this.paginate.totalPages();
+      this.paginate.isBusy();
+      untracked(() => this.applyFromUrl(pending.index, pending.size));
     });
   }
 
@@ -102,20 +143,39 @@ export class CngxPaginateRouting implements OnInit {
     // deep-linked page / size therefore lands before first paint). The
     // subscription stays live for back / forward navigation.
     route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
-      const size = Number(params.get(this.sizeParam()));
-      const page = Number(params.get(this.pageParam()));
-      this.applyingFromUrl = true;
-      try {
-        if (Number.isFinite(size) && size > 0 && size !== this.paginate.pageSize()) {
-          this.paginate.setPageSize(size, false);
-        }
-        const index = (Number.isFinite(page) && page > 0 ? page : 1) - 1;
-        if (index !== this.paginate.pageIndex()) {
-          this.paginate.setPage(index);
-        }
-      } finally {
-        this.applyingFromUrl = false;
-      }
+      const rawSize = Number(params.get(this.sizeParam()));
+      const rawPage = Number(params.get(this.pageParam()));
+      const size = Number.isFinite(rawSize) && rawSize > 0 ? rawSize : null;
+      const index = (Number.isFinite(rawPage) && rawPage > 0 ? rawPage : 1) - 1;
+      this.applyFromUrl(index, size);
     });
+  }
+
+  private applyFromUrl(index: number, size: number | null): void {
+    const paginate = this.paginate;
+    if (paginate.isBusy()) {
+      // Both setters no-op while busy - park the whole request and retry.
+      this.pendingUrl.set({ index, size });
+      return;
+    }
+    this.applyingFromUrl = true;
+    try {
+      if (size !== null && size !== paginate.pageSize()) {
+        paginate.setPageSize(size, false);
+      }
+      if (index !== paginate.pageIndex()) {
+        paginate.setPage(index);
+      }
+    } finally {
+      this.applyingFromUrl = false;
+    }
+    if (paginate.pageIndex() === index || paginate.total() > 0) {
+      // Landed, or clamped against a real total - the deep link is resolved.
+      this.pendingUrl.set(null);
+    } else {
+      // Clamped against the default total=0: the real total has not arrived
+      // yet, so keep the raw index parked (size, if any, is applied already).
+      this.pendingUrl.set({ index, size: null });
+    }
   }
 }
