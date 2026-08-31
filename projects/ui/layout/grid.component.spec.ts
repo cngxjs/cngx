@@ -33,4 +33,15 @@ describe('CngxGrid', () => {
     fixture.detectChanges();
     expect(host.style.gridTemplateColumns).toBe('200px 1fr');
   });
+
+  it('defaults the gap to the override hook backed by the density scale', () => {
+    fixture.detectChanges();
+    expect(host.style.gap).toBe('var(--cngx-gap-md, var(--cngx-space-md, 16px))');
+  });
+
+  it('passes a raw gap value through unchanged', () => {
+    fixture.componentRef.setInput('gap', '2rem');
+    fixture.detectChanges();
+    expect(host.style.gap).toBe('2rem');
+  });
 });
