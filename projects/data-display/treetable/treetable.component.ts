@@ -13,6 +13,7 @@ import {
   signal,
   type TrackByFunction,
   untracked,
+  viewChildren,
 } from '@angular/core';
 import {
   CdkCell,
@@ -398,17 +399,45 @@ export class CngxTreetable<T = unknown> {
   readonly trackByFn: TrackByFunction<FlatNode<T>> = (_, node) => this.trackBy()(node);
 
   /**
-   * Logical focus tracker - the id of the row that should be styled as
-   * focused, decoupled from `document.activeElement`. Updated by
-   * `handleRowClick` (on click activation) and `handleKeyDown` (on arrow
-   * navigation, Home/End, ArrowLeft jump-to-parent).
+   * Logical focus tracker - the id of the row the user last focused.
+   * Updated by `handleRowClick` (on click activation), `handleKeyDown`
+   * (on arrow navigation, Home/End, ArrowLeft jump-to-parent), and the
+   * row-level `focused` output (when DOM focus lands in a row via Tab
+   * or click). `null` while no row has ever been focused.
    *
-   * Templates apply `:focus-visible`-style chrome based on this signal,
-   * so the focus ring renders the same way whether the user reached the
-   * row by mouse or by keyboard. `null` while no row has ever been
-   * focused.
+   * The template never reads this raw signal - it binds against
+   * {@link effectiveFocusedId}, which reconciles the value against the
+   * currently visible rows.
    */
   readonly focusedNodeId = signal<string | null>(null);
+
+  /**
+   * The single roving tab-stop anchor: `focusedNodeId` while that row is
+   * still among `visibleNodes`, otherwise the first visible row's id,
+   * otherwise `null` (empty grid). Self-reconciles when the focused row
+   * is collapsed or filtered away, so exactly one row keeps
+   * `tabindex="0"` at all times.
+   */
+  readonly effectiveFocusedId = computed<string | null>(() => {
+    const nodes = this.visibleNodes();
+    if (nodes.length === 0) {
+      return null;
+    }
+    const focused = this.focusedNodeId();
+    if (focused !== null && nodes.some((n) => n.id === focused)) {
+      return focused;
+    }
+    return nodes[0].id;
+  });
+
+  private readonly rowRefs = viewChildren(CngxTreetableRow);
+
+  /** Moves DOM focus to the rendered row whose node id matches `id`. */
+  private moveFocusTo(id: string): void {
+    this.rowRefs()
+      .find((row) => row.node().id === id)
+      ?.focus();
+  }
 
   constructor() {
     // Seed expandedIds with the default fully-expanded set on first non-empty
@@ -549,7 +578,19 @@ export class CngxTreetable<T = unknown> {
   }
 
   /**
+   * Syncs the logical focus row when DOM focus lands inside a row (Tab
+   * into the grid, click, or programmatic focus). Bound to each row's
+   * `focused` output.
+   * @internal
+   */
+  protected handleRowFocusIn(node: FlatNode<T>): void {
+    this.focusedNodeId.set(node.id);
+  }
+
+  /**
    * Keyboard navigation handler. Bind to the table's `(keydown)` event.
+   * Modified keys (Ctrl / Alt / Meta) are left to the browser so user
+   * shortcuts keep working.
    *
    * | Key | Action |
    * |---|---|
@@ -562,8 +603,14 @@ export class CngxTreetable<T = unknown> {
    * | `End` | Focus last visible row |
    */
   handleKeyDown(event: KeyboardEvent): void {
+    if (event.ctrlKey || event.altKey || event.metaKey) {
+      // Seam for modified combos the grid does own (Ctrl/Cmd+A select-all);
+      // everything else stays with the browser.
+      return;
+    }
+
     const nodes = this.visibleNodes();
-    const currentId = this.focusedNodeId();
+    const currentId = this.effectiveFocusedId();
     const currentIndex = currentId ? nodes.findIndex((n) => n.id === currentId) : -1;
 
     // Resolve the physical arrow to its logical inline intent: under rtl the
@@ -577,6 +624,7 @@ export class CngxTreetable<T = unknown> {
         const next = nodes[currentIndex + 1];
         if (next) {
           this.focusedNodeId.set(next.id);
+          this.moveFocusTo(next.id);
         }
         break;
       }
@@ -585,6 +633,7 @@ export class CngxTreetable<T = unknown> {
         const prev = nodes[currentIndex - 1];
         if (prev) {
           this.focusedNodeId.set(prev.id);
+          this.moveFocusTo(prev.id);
         }
         break;
       }
@@ -608,6 +657,7 @@ export class CngxTreetable<T = unknown> {
           const parentId = node.parentIds.at(-1);
           if (parentId) {
             this.focusedNodeId.set(parentId);
+            this.moveFocusTo(parentId);
           }
         }
         break;
@@ -623,8 +673,10 @@ export class CngxTreetable<T = unknown> {
       }
       case 'Home': {
         event.preventDefault();
-        if (nodes[0]) {
-          this.focusedNodeId.set(nodes[0].id);
+        const first = nodes[0];
+        if (first) {
+          this.focusedNodeId.set(first.id);
+          this.moveFocusTo(first.id);
         }
         break;
       }
@@ -633,6 +685,7 @@ export class CngxTreetable<T = unknown> {
         const last = nodes.at(-1);
         if (last) {
           this.focusedNodeId.set(last.id);
+          this.moveFocusTo(last.id);
         }
         break;
       }

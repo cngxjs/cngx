@@ -313,6 +313,101 @@ describe('CngxTreetable', () => {
     });
   });
 
+  describe('roving focus model', () => {
+    function mount(opts: { selectionMode?: 'none' | 'single' | 'multi'; showCheckboxes?: boolean } = {}) {
+      const fixture = TestBed.createComponent(CngxTreetable<Item>);
+      fixture.componentRef.setInput('tree', tree);
+      fixture.componentRef.setInput('selectionMode', opts.selectionMode ?? 'none');
+      fixture.componentRef.setInput('showCheckboxes', opts.showCheckboxes ?? false);
+      fixture.detectChanges();
+      return fixture;
+    }
+
+    function rowEls(fixture: ReturnType<typeof mount>): HTMLElement[] {
+      return fixture.debugElement
+        .queryAll(By.css('cdk-row'))
+        .map((de) => de.nativeElement as HTMLElement);
+    }
+
+    function key(k: string, init: KeyboardEventInit = {}): KeyboardEvent {
+      return new KeyboardEvent('keydown', { key: k, ...init });
+    }
+
+    it('gives the first visible row tabindex="0" before any interaction', () => {
+      const rows = rowEls(mount());
+      expect(rows.map((r) => r.getAttribute('tabindex'))).toEqual(['0', '-1', '-1']);
+    });
+
+    it('moves DOM focus to the next row on ArrowDown', () => {
+      const fixture = mount();
+      const t = fixture.componentInstance;
+      t.handleKeyDown(key('ArrowDown'));
+      fixture.detectChanges();
+      const rows = rowEls(fixture);
+      expect(document.activeElement).toBe(rows[1]);
+      expect(rows.map((r) => r.getAttribute('tabindex'))).toEqual(['-1', '0', '-1']);
+    });
+
+    it('re-anchors the tab stop to the first visible row when the focused row is collapsed away', () => {
+      const fixture = mount();
+      const t = fixture.componentInstance;
+      const [root, child1] = t.visibleNodes();
+      t.focusedNodeId.set(child1.id);
+      fixture.detectChanges();
+      expect(rowEls(fixture)[1].getAttribute('tabindex')).toBe('0');
+
+      t.toggle(root);
+      fixture.detectChanges();
+      const rows = rowEls(fixture);
+      expect(rows).toHaveLength(1);
+      expect(rows[0].getAttribute('tabindex')).toBe('0');
+    });
+
+    it('keeps toggle buttons and body-row checkboxes out of the tab order', () => {
+      const fixture = mount({ selectionMode: 'multi', showCheckboxes: true });
+      const toggles = fixture.debugElement.queryAll(By.css('.cngx-treetable__toggle'));
+      for (const toggle of toggles) {
+        expect((toggle.nativeElement as HTMLElement).getAttribute('tabindex')).toBe('-1');
+      }
+      const bodyCheckboxes = fixture.debugElement.queryAll(
+        By.css('cdk-cell .cngx-treetable__checkbox'),
+      );
+      expect(bodyCheckboxes.length).toBeGreaterThan(0);
+      for (const checkbox of bodyCheckboxes) {
+        expect((checkbox.nativeElement as HTMLElement).getAttribute('tabindex')).toBe('-1');
+      }
+      // The header select-all checkbox stays the one fixed extra stop.
+      const headerCheckbox = fixture.debugElement.query(
+        By.css('cdk-header-cell .cngx-treetable__checkbox'),
+      );
+      expect((headerCheckbox.nativeElement as HTMLElement).getAttribute('tabindex')).toBeNull();
+    });
+
+    it('syncs the logical focus when DOM focus lands in a row', () => {
+      const fixture = mount();
+      const t = fixture.componentInstance;
+      const child2 = t.visibleNodes()[2];
+      rowEls(fixture)[2].dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+      fixture.detectChanges();
+      expect(t.focusedNodeId()).toBe(child2.id);
+      expect(rowEls(fixture)[2].getAttribute('tabindex')).toBe('0');
+    });
+
+    it('leaves modifier-key arrows to the browser', () => {
+      const fixture = mount();
+      const t = fixture.componentInstance;
+      const root = t.visibleNodes()[0];
+      t.focusedNodeId.set(root.id);
+      for (const init of [{ ctrlKey: true }, { altKey: true }, { metaKey: true }]) {
+        const event = key('ArrowDown', init);
+        t.handleKeyDown(event);
+        fixture.detectChanges();
+        expect(t.focusedNodeId()).toBe(root.id);
+        expect(event.defaultPrevented).toBe(false);
+      }
+    });
+  });
+
   describe('keyboard direction (dir=rtl)', () => {
     function mount(direction: 'ltr' | 'rtl') {
       TestBed.configureTestingModule({ providers: [provideDirection(direction)] });

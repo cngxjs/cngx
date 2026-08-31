@@ -13,6 +13,7 @@
         <button
           type="button"
           class="cngx-treetable__toggle"
+          tabindex="-1"
           (click)="toggle(node); $event.stopPropagation()"
           [attr.aria-expanded]="expandedIds().has(node.id)"
           [attr.aria-label]="expandedIds().has(node.id) ? 'Collapse' : 'Expand'"
@@ -41,6 +42,7 @@
       <input
         type="checkbox"
         class="cngx-treetable__checkbox"
+        tabindex="-1"
         [checked]="isSelected(node.id)"
         [attr.aria-label]="'Select row'"
         (click)="$event.stopPropagation()"
@@ -86,8 +88,9 @@
     [selected]="isSelected(node.id)"
     [expanded]="node.hasChildren ? expandedIds().has(node.id) : null"
     [selectionEnabled]="selectionMode() !== 'none'"
-    [tabindex]="focusedNodeId() === node.id ? 0 : -1"
-    [class.cngx-treetable__row--focused]="focusedNodeId() === node.id"
+    [tabindex]="effectiveFocusedId() === node.id ? 0 : -1"
+    [class.cngx-treetable__row--focused]="effectiveFocusedId() === node.id"
+    (focused)="handleRowFocusIn(node)"
     (click)="handleRowClick(node)"
   >
   </cdk-row>

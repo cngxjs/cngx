@@ -1,4 +1,4 @@
-import { computed, Directive, inject, input } from '@angular/core';
+import { computed, Directive, ElementRef, inject, input, output } from '@angular/core';
 import { CngxHoverable } from '@cngx/common';
 import type { FlatNode } from './models';
 
@@ -35,6 +35,7 @@ import type { FlatNode } from './models';
     '[attr.aria-setsize]': 'node().setsize',
     '[attr.aria-expanded]': 'expanded()',
     '[attr.aria-selected]': 'selectionEnabled() ? selected() : null',
+    '(focusin)': 'focused.emit()',
   },
 })
 export class CngxTreetableRow<T = unknown> {
@@ -68,7 +69,21 @@ export class CngxTreetableRow<T = unknown> {
    */
   readonly selectionEnabled = input(false);
 
+  /**
+   * Fires when DOM focus lands inside the row (Tab, click, or programmatic
+   * focus). {@link CngxTreetable} binds this to keep its logical focus row
+   * in sync with the real focus position.
+   */
+  readonly focused = output<void>();
+
   private readonly hoverable = inject(CngxHoverable, { host: true });
+  private readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
+
   /** `true` when both `highlight` is enabled and the row is currently hovered. */
   readonly highlighted = computed(() => this.highlight() && this.hoverable.hovered());
+
+  /** Moves DOM focus onto the row's host element (the roving tab stop). */
+  focus(): void {
+    this.elementRef.nativeElement.focus();
+  }
 }
