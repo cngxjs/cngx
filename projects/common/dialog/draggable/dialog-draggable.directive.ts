@@ -8,7 +8,12 @@ import {
   inject,
   input,
   signal,
+  untracked,
 } from '@angular/core';
+import { nextUid } from '@cngx/core/utils';
+
+import { CNGX_DIALOG_ARIA_REGISTRY } from '../dialog/dialog-aria-registry';
+import { applySrOnly } from '../dialog/sr-only';
 
 /**
  * Opt-in drag behavior for `CngxDialog`.
@@ -71,6 +76,7 @@ export class CngxDialogDraggable {
   private readonly elRef = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly doc = inject(DOCUMENT);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly ariaRegistry = inject(CNGX_DIALOG_ARIA_REGISTRY, { optional: true });
 
   /** Handle element for initiating drag. If not set, entire dialog is the handle. */
   readonly handle = input<HTMLElement | undefined>(undefined);
@@ -127,7 +133,9 @@ export class CngxDialogDraggable {
   constructor() {
     effect(() => {
       const handleEl = this.handle() ?? this.elRef.nativeElement;
-      this.setupHandle(handleEl);
+      // untracked: setupHandle registers with the dialog's aria registry -
+      // a signal write that must not become a tracked dependency.
+      untracked(() => this.setupHandle(handleEl));
     });
 
     this.destroyRef.onDestroy(() => this.cleanup());
@@ -159,6 +167,19 @@ export class CngxDialogDraggable {
       el.setAttribute('aria-roledescription', 'draggable');
       el.setAttribute('aria-label', 'Move dialog');
       this.handleAddedAria = true;
+    }
+    // The keyboard path is live on every handle, so the instruction is too.
+    // The registry channel exists only because CngxDialog owns
+    // aria-describedby on its host; everywhere else (explicit handle,
+    // draggable on a non-dialog element) nothing owns the attribute and it
+    // is set directly - guarded like tabindex, a consumer-authored
+    // describedby wins.
+    const instruction = this.createInstructionNode();
+    if (el === this.elRef.nativeElement && this.ariaRegistry) {
+      this.releaseInstruction = this.ariaRegistry.registerDescribedBy(instruction.id);
+    } else if (!el.hasAttribute('aria-describedby')) {
+      el.setAttribute('aria-describedby', instruction.id);
+      this.handleAddedDescribedBy = true;
     }
     el.style.cursor = 'var(--cngx-dialog-drag-cursor, grab)';
     el.style.touchAction = 'none';
@@ -302,15 +323,49 @@ export class CngxDialogDraggable {
     };
   }
 
+  private instructionNode: HTMLElement | null = null;
+  private releaseInstruction: (() => void) | null = null;
+  private handleAddedDescribedBy = false;
+
+  /**
+   * Visually hidden keyboard-drag instruction, appended to the host so it
+   * lives inside the dialog for both handle modes. Same hidden technique as
+   * the dialog's live region - a referenced node must stay perceivable to
+   * AT, not `display: none`.
+   */
+  private createInstructionNode(): HTMLElement {
+    const node = this.doc.createElement('span');
+    node.id = nextUid('cngx-dialog-drag-hint');
+    node.textContent = 'Use arrow keys to move the dialog; Shift for larger steps';
+    applySrOnly(node);
+    this.elRef.nativeElement.appendChild(node);
+    this.instructionNode = node;
+    return node;
+  }
+
   /**
    * Detach listeners from the current handle and restore every attribute and
    * style this directive added. A demoted handle must not stay focusable or
    * keep announcing "Move dialog" with a dead keyboard path behind it.
+   *
+   * The instruction node and its describedby registration leave atomically
+   * with the capability they describe: a handle swap away from host-as-handle
+   * removes the arrow-keys-on-the-dialog path itself, so keeping an orphan
+   * description would misinform AT, not inform it.
    */
   private teardownHandle(): void {
+    this.releaseInstruction?.();
+    this.releaseInstruction = null;
+    this.instructionNode?.remove();
+    this.instructionNode = null;
+
     const handle = this.currentHandle;
     if (!handle) {
       return;
+    }
+    if (this.handleAddedDescribedBy) {
+      handle.removeAttribute('aria-describedby');
+      this.handleAddedDescribedBy = false;
     }
     if (this.boundPointerDown) {
       handle.removeEventListener('pointerdown', this.boundPointerDown);

@@ -1,6 +1,7 @@
-import { Directive, ElementRef, inject, signal } from '@angular/core';
+import { DestroyRef, Directive, ElementRef, inject, signal } from '@angular/core';
 import { nextUid } from '@cngx/core/utils';
 
+import { CNGX_DIALOG_ARIA_REGISTRY } from './dialog-aria-registry';
 import { DIALOG_REF } from './dialog-ref';
 
 /**
@@ -43,8 +44,10 @@ import { DIALOG_REF } from './dialog-ref';
   },
 })
 export class CngxDialogTitle {
-  private readonly elRef = inject(ElementRef<HTMLElement>);
+  private readonly elRef = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly dialogRef = inject(DIALOG_REF, { optional: true });
+  private readonly ariaRegistry = inject(CNGX_DIALOG_ARIA_REGISTRY, { optional: true });
+  private readonly destroyRef = inject(DestroyRef);
 
   private readonly idState = signal(nextUid('cngx-dialog-title'));
 
@@ -65,12 +68,16 @@ export class CngxDialogTitle {
    * readers hear. A `computed` would cache the first non-reactive DOM read
    * forever.
    */
-  readonly textContent = (): string =>
-    (this.elRef.nativeElement as HTMLElement).textContent?.trim() ?? '';
+  readonly textContent = (): string => this.elRef.nativeElement.textContent?.trim() ?? '';
 
   constructor() {
     if (this.dialogRef) {
       this.idState.set(`${this.dialogRef.id()}-title`);
+    }
+    // Push registration: content queries cannot see dynamically created
+    // views, so programmatic dialogs rely on this channel exclusively.
+    if (this.ariaRegistry) {
+      this.destroyRef.onDestroy(this.ariaRegistry.registerTitle(this));
     }
   }
 }

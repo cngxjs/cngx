@@ -15,10 +15,13 @@ import { CngxDialogStack, provideDialogStack } from './dialog-stack';
 
 // JSDOM does not implement HTMLDialogElement.showModal/show/close, so we stub them.
 function stubDialogElement(el: HTMLDialogElement): void {
-  el.showModal ??= vi.fn(() => {
+  // Unconditional instance assignment: the builder runs with isolate:false,
+  // and dialog.service.spec.ts polyfills these on the shared prototype - a
+  // ??= here would then skip the spy and toHaveBeenCalled() blows up.
+  el.showModal = vi.fn(() => {
     el.setAttribute('open', '');
   });
-  el.show ??= vi.fn(() => {
+  el.show = vi.fn(() => {
     el.setAttribute('open', '');
   });
   const originalClose = el.close?.bind(el);
@@ -332,6 +335,65 @@ describe('CngxDialog', () => {
       expect(describedBy).toMatch(/-desc$/);
     });
 
+    it('emits neither labelling attribute without title and description sources', () => {
+      const { fixture, dialogEl } = setup(ModalToggleHost);
+      fixture.componentInstance.dialog().open();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      expect(dialogEl.getAttribute('aria-labelledby')).toBeNull();
+      expect(dialogEl.getAttribute('aria-describedby')).toBeNull();
+    });
+
+    it('merges registered supplemental ids after the description id and releases them', () => {
+      const { fixture, dialogEl } = setup(FullDialogHost);
+      const dialog = fixture.componentInstance.dialog();
+      const descId = dialogEl.getAttribute('aria-describedby');
+
+      // Both channel shapes: reactive id and fixed plain-string id.
+      const releaseSignal = dialog.registerDescribedBy(signal('extra-instruction'));
+      const releasePlain = dialog.registerDescribedBy('plain-instruction');
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(dialogEl.getAttribute('aria-describedby')).toBe(
+        `${descId} extra-instruction plain-instruction`,
+      );
+
+      releaseSignal();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(dialogEl.getAttribute('aria-describedby')).toBe(`${descId} plain-instruction`);
+
+      releasePlain();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(dialogEl.getAttribute('aria-describedby')).toBe(descId);
+    });
+
+    it('warns in dev mode when a second title registers while one is live', () => {
+      const { fixture } = setup(FullDialogHost);
+      const dialog = fixture.componentInstance.dialog();
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      // FullDialogHost's declarative title is already registered.
+      const release = dialog.registerTitle({ id: signal('rogue-title') });
+      expect(warnSpy).toHaveBeenCalledTimes(1);
+      expect(warnSpy.mock.calls[0][0]).toContain('second title');
+
+      release();
+    });
+
+    it('does not warn when the first description registers', () => {
+      const { fixture } = setup(ModalToggleHost);
+      const dialog = fixture.componentInstance.dialog();
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      const release = dialog.registerDescription({ id: signal('only-desc') });
+      expect(warnSpy).not.toHaveBeenCalled();
+
+      release();
+    });
+
     it('sets aria-modal only when modal and not closed', () => {
       const { fixture, dialogEl } = setup(FullDialogHost);
       const dialog = fixture.componentInstance.dialog();
@@ -351,6 +413,16 @@ describe('CngxDialog', () => {
       const { dialogEl } = setup(FullDialogHost);
       const liveRegion = dialogEl.querySelector('[aria-live="polite"]');
       expect(liveRegion).not.toBeNull();
+    });
+
+    it('keeps the live region visually hidden but perceivable to AT', () => {
+      const { dialogEl } = setup(FullDialogHost);
+      const liveRegion = dialogEl.querySelector('[aria-live="polite"]') as HTMLElement;
+      // sr-only recipe: off-screen clip, never display:none - a hidden live
+      // region would silence every announce.
+      expect(liveRegion.className).toBe('cngx-sr-only');
+      expect(liveRegion.style.position).toBe('absolute');
+      expect(liveRegion.style.display).not.toBe('none');
     });
 
     it('announces the current title text on each open, not a cached first read', () => {

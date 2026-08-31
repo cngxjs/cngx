@@ -2,6 +2,8 @@ import { Component, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it, vi } from 'vitest';
 
+import { CngxDialog } from '../dialog/dialog.directive';
+import { CngxDialogDescription } from '../dialog/dialog-description.directive';
 import { CngxDialogDraggable } from './dialog-draggable.directive';
 
 @Component({
@@ -34,6 +36,20 @@ class FormFieldHost {
   imports: [CngxDialogDraggable],
 })
 class SwappableHandleHost {
+  readonly handle = signal<HTMLElement | undefined>(undefined);
+  readonly draggable = viewChild.required(CngxDialogDraggable);
+}
+
+@Component({
+  template: `
+    <dialog cngxDialog cngxDialogDraggable [handle]="handle()">
+      <p cngxDialogDescription>Body</p>
+      <div id="explicit-handle">drag me</div>
+    </dialog>
+  `,
+  imports: [CngxDialog, CngxDialogDescription, CngxDialogDraggable],
+})
+class DialogDraggableHost {
   readonly handle = signal<HTMLElement | undefined>(undefined);
   readonly draggable = viewChild.required(CngxDialogDraggable);
 }
@@ -250,6 +266,110 @@ describe('CngxDialogDraggable', () => {
       TestBed.flushEffects();
 
       expect(handleA.getAttribute('tabindex')).toBe('-1');
+    });
+  });
+
+  describe('keyboard affordance instruction', () => {
+    it('renders a hidden instruction node in host-as-handle mode', () => {
+      const { el } = setup();
+      const hint = el.querySelector('[id^="cngx-dialog-drag-hint"]') as HTMLElement;
+      expect(hint).not.toBeNull();
+      expect(hint.textContent).toBe('Use arrow keys to move the dialog; Shift for larger steps');
+    });
+
+    it('references the instruction directly on a registry-less host', () => {
+      // No cngxDialog on the host, so no registry and no attribute owner -
+      // the direct reference is the only channel left.
+      const { el } = setup();
+      const hint = el.querySelector('[id^="cngx-dialog-drag-hint"]') as HTMLElement;
+      expect(el.getAttribute('aria-describedby')).toBe(hint.id);
+    });
+
+    it('does not clobber a consumer-authored describedby on a registry-less host', () => {
+      const fixture = TestBed.createComponent(SimpleHost);
+      const el = fixture.nativeElement.querySelector('[cngxDialogDraggable]') as HTMLElement;
+      el.setAttribute('aria-describedby', 'consumer-hint');
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      expect(el.getAttribute('aria-describedby')).toBe('consumer-hint');
+    });
+
+    it('links the instruction into the dialog aria-describedby after the description', () => {
+      const fixture = TestBed.createComponent(DialogDraggableHost);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      fixture.detectChanges();
+
+      const dialogEl = fixture.nativeElement.querySelector('dialog') as HTMLDialogElement;
+      const descId = (dialogEl.querySelector('[cngxDialogDescription]') as HTMLElement).id;
+      const hint = dialogEl.querySelector('[id^="cngx-dialog-drag-hint"]') as HTMLElement;
+
+      expect(dialogEl.getAttribute('aria-describedby')).toBe(`${descId} ${hint.id}`);
+    });
+
+    it('moves the instruction to the explicit handle on swap, no dangling dialog ref', () => {
+      const fixture = TestBed.createComponent(DialogDraggableHost);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      fixture.detectChanges();
+
+      const dialogEl = fixture.nativeElement.querySelector('dialog') as HTMLDialogElement;
+      const descId = (dialogEl.querySelector('[cngxDialogDescription]') as HTMLElement).id;
+      const explicitHandle = dialogEl.querySelector('#explicit-handle') as HTMLElement;
+      const hostHint = dialogEl.querySelector('[id^="cngx-dialog-drag-hint"]') as HTMLElement;
+      expect(dialogEl.getAttribute('aria-describedby')).toBe(`${descId} ${hostHint.id}`);
+
+      fixture.componentInstance.handle.set(explicitHandle);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      fixture.detectChanges();
+
+      // The dialog-level reference leaves with the host-as-handle capability;
+      // the recreated instruction is now referenced from the handle itself.
+      const handleHint = dialogEl.querySelector('[id^="cngx-dialog-drag-hint"]') as HTMLElement;
+      expect(dialogEl.getAttribute('aria-describedby')).toBe(descId);
+      expect(handleHint).not.toBe(hostHint);
+      expect(explicitHandle.getAttribute('aria-describedby')).toBe(handleHint.id);
+    });
+
+    it('restores the explicit handle describedby on swap back to host-as-handle', () => {
+      const fixture = TestBed.createComponent(DialogDraggableHost);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      const dialogEl = fixture.nativeElement.querySelector('dialog') as HTMLDialogElement;
+      const explicitHandle = dialogEl.querySelector('#explicit-handle') as HTMLElement;
+
+      fixture.componentInstance.handle.set(explicitHandle);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(explicitHandle.getAttribute('aria-describedby')).not.toBeNull();
+
+      fixture.componentInstance.handle.set(undefined);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(explicitHandle.getAttribute('aria-describedby')).toBeNull();
+    });
+
+    it('does not clobber a consumer-authored describedby on the explicit handle', () => {
+      const fixture = TestBed.createComponent(DialogDraggableHost);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      const dialogEl = fixture.nativeElement.querySelector('dialog') as HTMLDialogElement;
+      const explicitHandle = dialogEl.querySelector('#explicit-handle') as HTMLElement;
+      explicitHandle.setAttribute('aria-describedby', 'consumer-hint');
+
+      fixture.componentInstance.handle.set(explicitHandle);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(explicitHandle.getAttribute('aria-describedby')).toBe('consumer-hint');
+
+      fixture.componentInstance.handle.set(undefined);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(explicitHandle.getAttribute('aria-describedby')).toBe('consumer-hint');
     });
   });
 });

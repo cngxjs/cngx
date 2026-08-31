@@ -3,6 +3,8 @@ import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxDialogOpener, provideDialog } from './dialog.service';
+import { CngxDialogTitle } from './dialog-title.directive';
+import { CngxDialogDescription } from './dialog-description.directive';
 
 // jsdom versions differ in HTMLDialogElement support; the outlet's <dialog>
 // is created dynamically, so the missing methods are polyfilled on the
@@ -24,6 +26,15 @@ beforeEach(() => {
   template: `<p id="dialog-content">content</p>`,
 })
 class TestContent {}
+
+@Component({
+  template: `
+    <h2 cngxDialogTitle>Programmatic Title</h2>
+    <p cngxDialogDescription>Programmatic Description</p>
+  `,
+  imports: [CngxDialogTitle, CngxDialogDescription],
+})
+class LabelledContent {}
 
 function createOpener(): CngxDialogOpener {
   TestBed.configureTestingModule({ providers: [provideDialog()] });
@@ -133,6 +144,43 @@ describe('CngxDialogOpener', () => {
 
       const dialogEl = document.body.querySelector('dialog') as HTMLDialogElement;
       expect(dialogEl.classList.contains('cngx-dialog--error')).toBe(true);
+
+      ref.dismiss();
+      TestBed.flushEffects();
+    });
+
+    it('labels the dialog from content directives in the dynamic view', () => {
+      const opener = createOpener();
+      const ref = opener.open(LabelledContent);
+      tick();
+
+      const dialogEl = document.body.querySelector('dialog') as HTMLDialogElement;
+      const labelledBy = dialogEl.getAttribute('aria-labelledby');
+      const describedBy = dialogEl.getAttribute('aria-describedby');
+
+      // Same id convention as the declarative path: `${dialogId}-title/-desc`.
+      expect(labelledBy).toBe(`${ref.id()}-title`);
+      expect(describedBy).toBe(`${ref.id()}-desc`);
+      expect(document.getElementById(labelledBy!)?.textContent).toBe('Programmatic Title');
+      expect(document.getElementById(describedBy!)?.textContent).toBe('Programmatic Description');
+
+      ref.dismiss();
+      TestBed.flushEffects();
+    });
+
+    it('announces the programmatic title via the live region on open', async () => {
+      const opener = createOpener();
+      const ref = opener.open(LabelledContent);
+      tick();
+
+      // open() promotes 'opening' -> 'open' on the next animation frame.
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      TestBed.flushEffects();
+
+      const liveRegion = document.body.querySelector(
+        'dialog [aria-live="polite"]',
+      ) as HTMLElement;
+      expect(liveRegion.textContent).toBe('Programmatic Title');
 
       ref.dismiss();
       TestBed.flushEffects();

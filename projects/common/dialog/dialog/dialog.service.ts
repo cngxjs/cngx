@@ -17,6 +17,7 @@ import {
 import { toObservable } from '@angular/core/rxjs-interop';
 import { filter, map, type Observable, take } from 'rxjs';
 
+import { CNGX_DIALOG_ARIA_REGISTRY } from './dialog-aria-registry';
 import type { CngxDialogConfig } from './dialog-config';
 import { CNGX_DIALOG_DATA } from './dialog-config';
 import { DIALOG_REF, type DialogRef } from './dialog-ref';
@@ -278,6 +279,9 @@ export class CngxDialogOpener {
       parent: this.injector,
       providers: [
         { provide: DIALOG_REF, useValue: innerDialog },
+        // Content lives in a dynamically created view the dialog's content
+        // queries cannot see - labelling flows through the registry instead.
+        { provide: CNGX_DIALOG_ARIA_REGISTRY, useValue: dialogInstance },
         { provide: CNGX_DIALOG_DATA, useValue: config.data ?? null },
       ],
     });
