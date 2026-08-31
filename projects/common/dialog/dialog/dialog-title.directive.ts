@@ -44,7 +44,7 @@ import { DIALOG_REF } from './dialog-ref';
   },
 })
 export class CngxDialogTitle {
-  private readonly elRef = inject(ElementRef<HTMLElement>);
+  private readonly elRef = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly dialogRef = inject(DIALOG_REF, { optional: true });
   private readonly ariaRegistry = inject(CNGX_DIALOG_ARIA_REGISTRY, { optional: true });
   private readonly destroyRef = inject(DestroyRef);
