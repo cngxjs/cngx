@@ -144,7 +144,7 @@ export class CngxDialog<T = unknown> implements DialogRef<T>, CngxDialogAriaRegi
   // sources register through CNGX_DIALOG_ARIA_REGISTRY instead.
   private readonly registeredTitle = signal<DialogLabelHandle | null>(null);
   private readonly registeredDescription = signal<DialogLabelHandle | null>(null);
-  private readonly supplementalDescribedByIds = signal<readonly Signal<string>[]>([]);
+  private readonly supplementalDescribedByIds = signal<readonly (string | Signal<string>)[]>([]);
 
   /**
    * Whether the dialog opens as modal (`showModal()`) or non-modal (`show()`).
@@ -333,7 +333,7 @@ export class CngxDialog<T = unknown> implements DialogRef<T>, CngxDialogAriaRegi
       ids.push(descriptionId);
     }
     for (const id of this.supplementalDescribedByIds()) {
-      ids.push(id());
+      ids.push(typeof id === 'string' ? id : id());
     }
 
     return ids.length > 0 ? ids.join(' ') : null;
@@ -429,7 +429,7 @@ export class CngxDialog<T = unknown> implements DialogRef<T>, CngxDialogAriaRegi
    *
    * @internal CNGX_DIALOG_ARIA_REGISTRY implementation - not public API.
    */
-  registerDescribedBy(id: Signal<string>): () => void {
+  registerDescribedBy(id: string | Signal<string>): () => void {
     this.supplementalDescribedByIds.update((ids) => [...ids, id]);
     return () => this.supplementalDescribedByIds.update((ids) => ids.filter((x) => x !== id));
   }

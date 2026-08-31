@@ -68,8 +68,7 @@ export class CngxDialogTitle {
    * readers hear. A `computed` would cache the first non-reactive DOM read
    * forever.
    */
-  readonly textContent = (): string =>
-    (this.elRef.nativeElement as HTMLElement).textContent?.trim() ?? '';
+  readonly textContent = (): string => this.elRef.nativeElement.textContent?.trim() ?? '';
 
   constructor() {
     if (this.dialogRef) {

@@ -44,8 +44,12 @@ export interface CngxDialogAriaRegistry {
   /** Register the primary description source for `aria-describedby`. */
   registerDescription(handle: DialogLabelHandle): () => void;
 
-  /** Register a supplemental `aria-describedby` id (e.g. an interaction instruction). */
-  registerDescribedBy(id: Signal<string>): () => void;
+  /**
+   * Register a supplemental `aria-describedby` id (e.g. an interaction
+   * instruction). Accepts a plain string for ids that are fixed for the
+   * registration's lifetime; pass a signal only when the id itself changes.
+   */
+  registerDescribedBy(id: string | Signal<string>): () => void;
 }
 
 /**

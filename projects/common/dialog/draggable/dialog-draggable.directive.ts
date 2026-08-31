@@ -175,8 +175,7 @@ export class CngxDialogDraggable {
     // guarded like tabindex, a consumer-authored describedby wins.
     const instruction = this.createInstructionNode();
     if (el === this.elRef.nativeElement) {
-      this.releaseInstruction =
-        this.ariaRegistry?.registerDescribedBy(signal(instruction.id)) ?? null;
+      this.releaseInstruction = this.ariaRegistry?.registerDescribedBy(instruction.id) ?? null;
     } else if (!el.hasAttribute('aria-describedby')) {
       el.setAttribute('aria-describedby', instruction.id);
       this.handleAddedDescribedBy = true;

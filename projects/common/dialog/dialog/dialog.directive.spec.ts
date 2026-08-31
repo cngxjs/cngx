@@ -347,12 +347,21 @@ describe('CngxDialog', () => {
       const dialog = fixture.componentInstance.dialog();
       const descId = dialogEl.getAttribute('aria-describedby');
 
-      const release = dialog.registerDescribedBy(signal('extra-instruction'));
+      // Both channel shapes: reactive id and fixed plain-string id.
+      const releaseSignal = dialog.registerDescribedBy(signal('extra-instruction'));
+      const releasePlain = dialog.registerDescribedBy('plain-instruction');
       fixture.detectChanges();
       TestBed.flushEffects();
-      expect(dialogEl.getAttribute('aria-describedby')).toBe(`${descId} extra-instruction`);
+      expect(dialogEl.getAttribute('aria-describedby')).toBe(
+        `${descId} extra-instruction plain-instruction`,
+      );
 
-      release();
+      releaseSignal();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(dialogEl.getAttribute('aria-describedby')).toBe(`${descId} plain-instruction`);
+
+      releasePlain();
       fixture.detectChanges();
       TestBed.flushEffects();
       expect(dialogEl.getAttribute('aria-describedby')).toBe(descId);
