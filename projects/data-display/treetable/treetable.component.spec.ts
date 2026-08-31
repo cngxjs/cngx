@@ -235,6 +235,251 @@ describe('CngxTreetable', () => {
     });
   });
 
+  describe('APG row semantics (ARIA)', () => {
+    function mount(selectionMode: 'none' | 'single' | 'multi' = 'none') {
+      const fixture = TestBed.createComponent(CngxTreetable<Item>);
+      fixture.componentRef.setInput('tree', tree);
+      fixture.componentRef.setInput('selectionMode', selectionMode);
+      fixture.detectChanges();
+      return fixture;
+    }
+
+    function rowEls(fixture: ReturnType<typeof mount>): HTMLElement[] {
+      return fixture.debugElement
+        .queryAll(By.css('cdk-row'))
+        .map((de) => de.nativeElement as HTMLElement);
+    }
+
+    it('binds aria-level, aria-posinset, and aria-setsize per row', () => {
+      const [root, child1, child2] = rowEls(mount());
+      expect(root.getAttribute('aria-level')).toBe('1');
+      expect(root.getAttribute('aria-posinset')).toBe('1');
+      expect(root.getAttribute('aria-setsize')).toBe('1');
+      expect(child1.getAttribute('aria-level')).toBe('2');
+      expect(child1.getAttribute('aria-posinset')).toBe('1');
+      expect(child1.getAttribute('aria-setsize')).toBe('2');
+      expect(child2.getAttribute('aria-level')).toBe('2');
+      expect(child2.getAttribute('aria-posinset')).toBe('2');
+      expect(child2.getAttribute('aria-setsize')).toBe('2');
+    });
+
+    it('binds aria-expanded on parent rows and flips it with toggle', () => {
+      const fixture = mount();
+      const t = fixture.componentInstance;
+      expect(rowEls(fixture)[0].getAttribute('aria-expanded')).toBe('true');
+
+      t.toggle(t.flatNodes()[0]);
+      fixture.detectChanges();
+      expect(rowEls(fixture)[0].getAttribute('aria-expanded')).toBe('false');
+    });
+
+    it('suppresses aria-expanded on leaf rows', () => {
+      const [, child1, child2] = rowEls(mount());
+      expect(child1.hasAttribute('aria-expanded')).toBe(false);
+      expect(child2.hasAttribute('aria-expanded')).toBe(false);
+    });
+
+    it('suppresses aria-selected when selection is disabled', () => {
+      for (const row of rowEls(mount('none'))) {
+        expect(row.hasAttribute('aria-selected')).toBe(false);
+      }
+    });
+
+    it('binds aria-selected to the selection state when selection is enabled', () => {
+      const fixture = mount('multi');
+      const t = fixture.componentInstance;
+      expect(rowEls(fixture).map((r) => r.getAttribute('aria-selected'))).toEqual([
+        'false',
+        'false',
+        'false',
+      ]);
+
+      t.toggleSelection(t.flatNodes()[0]);
+      fixture.detectChanges();
+      expect(rowEls(fixture)[0].getAttribute('aria-selected')).toBe('true');
+      expect(rowEls(fixture)[1].getAttribute('aria-selected')).toBe('false');
+    });
+
+    it('binds aria-multiselectable on the treegrid exactly in multi mode', () => {
+      const treegrid = (fixture: ReturnType<typeof mount>) =>
+        fixture.debugElement.query(By.css('cdk-table')).nativeElement as HTMLElement;
+      expect(treegrid(mount('none')).hasAttribute('aria-multiselectable')).toBe(false);
+      expect(treegrid(mount('single')).hasAttribute('aria-multiselectable')).toBe(false);
+      expect(treegrid(mount('multi')).getAttribute('aria-multiselectable')).toBe('true');
+    });
+
+    it('keeps role="row" on rows via the CDK after dropping the explicit attribute', () => {
+      expect(rowEls(mount())[0].getAttribute('role')).toBe('row');
+    });
+  });
+
+  describe('roving focus model', () => {
+    function mount(opts: { selectionMode?: 'none' | 'single' | 'multi'; showCheckboxes?: boolean } = {}) {
+      const fixture = TestBed.createComponent(CngxTreetable<Item>);
+      fixture.componentRef.setInput('tree', tree);
+      fixture.componentRef.setInput('selectionMode', opts.selectionMode ?? 'none');
+      fixture.componentRef.setInput('showCheckboxes', opts.showCheckboxes ?? false);
+      fixture.detectChanges();
+      return fixture;
+    }
+
+    function rowEls(fixture: ReturnType<typeof mount>): HTMLElement[] {
+      return fixture.debugElement
+        .queryAll(By.css('cdk-row'))
+        .map((de) => de.nativeElement as HTMLElement);
+    }
+
+    function key(k: string, init: KeyboardEventInit = {}): KeyboardEvent {
+      return new KeyboardEvent('keydown', { key: k, cancelable: true, ...init });
+    }
+
+    it('gives the first visible row tabindex="0" before any interaction', () => {
+      const rows = rowEls(mount());
+      expect(rows.map((r) => r.getAttribute('tabindex'))).toEqual(['0', '-1', '-1']);
+    });
+
+    it('moves DOM focus to the next row on ArrowDown', () => {
+      const fixture = mount();
+      const t = fixture.componentInstance;
+      t.handleKeyDown(key('ArrowDown'));
+      fixture.detectChanges();
+      const rows = rowEls(fixture);
+      expect(document.activeElement).toBe(rows[1]);
+      expect(rows.map((r) => r.getAttribute('tabindex'))).toEqual(['-1', '0', '-1']);
+    });
+
+    it('re-anchors the tab stop to the first visible row when the focused row is collapsed away', () => {
+      const fixture = mount();
+      const t = fixture.componentInstance;
+      const [root, child1] = t.visibleNodes();
+      t.focusedNodeId.set(child1.id);
+      fixture.detectChanges();
+      expect(rowEls(fixture)[1].getAttribute('tabindex')).toBe('0');
+
+      t.toggle(root);
+      fixture.detectChanges();
+      const rows = rowEls(fixture);
+      expect(rows).toHaveLength(1);
+      expect(rows[0].getAttribute('tabindex')).toBe('0');
+    });
+
+    it('keeps toggle buttons and body-row checkboxes out of the tab order', () => {
+      const fixture = mount({ selectionMode: 'multi', showCheckboxes: true });
+      const toggles = fixture.debugElement.queryAll(By.css('.cngx-treetable__toggle'));
+      for (const toggle of toggles) {
+        expect((toggle.nativeElement as HTMLElement).getAttribute('tabindex')).toBe('-1');
+      }
+      const bodyCheckboxes = fixture.debugElement.queryAll(
+        By.css('cdk-cell .cngx-treetable__checkbox'),
+      );
+      expect(bodyCheckboxes.length).toBeGreaterThan(0);
+      for (const checkbox of bodyCheckboxes) {
+        expect((checkbox.nativeElement as HTMLElement).getAttribute('tabindex')).toBe('-1');
+      }
+      // The header select-all checkbox is folded too - the roving row is the
+      // grid's only tab stop; Ctrl+A is the keyboard path to select-all.
+      const headerCheckbox = fixture.debugElement.query(
+        By.css('cdk-header-cell .cngx-treetable__checkbox'),
+      );
+      expect((headerCheckbox.nativeElement as HTMLElement).getAttribute('tabindex')).toBe('-1');
+    });
+
+    it('syncs the logical focus when DOM focus lands in a row', () => {
+      const fixture = mount();
+      const t = fixture.componentInstance;
+      const child2 = t.visibleNodes()[2];
+      rowEls(fixture)[2].dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+      fixture.detectChanges();
+      expect(t.focusedNodeId()).toBe(child2.id);
+      expect(rowEls(fixture)[2].getAttribute('tabindex')).toBe('0');
+    });
+
+    it('keeps the bulk-selection live region in the DOM at all times', () => {
+      const fixture = mount();
+      const region = fixture.debugElement.query(By.css('.cngx-treetable__sr'));
+      expect(region).not.toBeNull();
+      const el = region.nativeElement as HTMLElement;
+      expect(el.getAttribute('aria-live')).toBe('polite');
+      expect(el.textContent?.trim()).toBe('');
+    });
+
+    it('announces bulk selection and clearing through the live region', () => {
+      const fixture = mount({ selectionMode: 'multi' });
+      const t = fixture.componentInstance;
+      const region = () =>
+        (fixture.debugElement.query(By.css('.cngx-treetable__sr')).nativeElement as HTMLElement)
+          .textContent?.trim();
+
+      t.handleKeyDown(key('a', { ctrlKey: true }));
+      fixture.detectChanges();
+      expect(region()).toBe('3 rows selected');
+
+      t.handleKeyDown(key('a', { ctrlKey: true }));
+      fixture.detectChanges();
+      expect(region()).toBe('Selection cleared');
+    });
+
+    it('stays silent in the live region on per-row selection toggles', () => {
+      const fixture = mount({ selectionMode: 'multi' });
+      const t = fixture.componentInstance;
+      t.toggleSelection(t.flatNodes()[0]);
+      fixture.detectChanges();
+      const region = fixture.debugElement.query(By.css('.cngx-treetable__sr'))
+        .nativeElement as HTMLElement;
+      expect(region.textContent?.trim()).toBe('');
+    });
+
+    it('Ctrl+A selects all visible rows in multi mode and a second Ctrl+A clears', () => {
+      const fixture = mount({ selectionMode: 'multi' });
+      const t = fixture.componentInstance;
+      const event = key('a', { ctrlKey: true });
+      t.handleKeyDown(event);
+      fixture.detectChanges();
+      expect(event.defaultPrevented).toBe(true);
+      expect(t.selectedIds().size).toBe(3);
+
+      t.handleKeyDown(key('a', { ctrlKey: true }));
+      fixture.detectChanges();
+      expect(t.selectedIds().size).toBe(0);
+    });
+
+    it('Cmd+A selects all visible rows in multi mode', () => {
+      const fixture = mount({ selectionMode: 'multi' });
+      const t = fixture.componentInstance;
+      t.handleKeyDown(key('a', { metaKey: true }));
+      fixture.detectChanges();
+      expect(t.selectedIds().size).toBe(3);
+    });
+
+    it('Ctrl+A is inert in single and none mode', () => {
+      for (const selectionMode of ['single', 'none'] as const) {
+        const fixture = mount({ selectionMode });
+        const t = fixture.componentInstance;
+        const event = key('a', { ctrlKey: true });
+        t.handleKeyDown(event);
+        fixture.detectChanges();
+        expect(t.selectedIds().size).toBe(0);
+        expect(event.defaultPrevented).toBe(false);
+        TestBed.resetTestingModule();
+        TestBed.configureTestingModule({ imports: [TestHost] });
+      }
+    });
+
+    it('leaves modifier-key arrows to the browser', () => {
+      const fixture = mount();
+      const t = fixture.componentInstance;
+      const root = t.visibleNodes()[0];
+      t.focusedNodeId.set(root.id);
+      for (const init of [{ ctrlKey: true }, { altKey: true }, { metaKey: true }]) {
+        const event = key('ArrowDown', init);
+        t.handleKeyDown(event);
+        fixture.detectChanges();
+        expect(t.focusedNodeId()).toBe(root.id);
+        expect(event.defaultPrevented).toBe(false);
+      }
+    });
+  });
+
   describe('keyboard direction (dir=rtl)', () => {
     function mount(direction: 'ltr' | 'rtl') {
       TestBed.configureTestingModule({ providers: [provideDirection(direction)] });

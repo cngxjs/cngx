@@ -1,9 +1,10 @@
 /**
  * Pure tree utilities for hierarchical data. Framework-agnostic (Level 0).
  *
- * Used by `@cngx/common/interactive` (CngxTreeController) and
- * `@cngx/forms/select` (CngxTreeSelect). Fresh implementation - deliberately
- * not shared with `@cngx/data-display/treetable`.
+ * Used by `@cngx/common/interactive` (CngxTreeController),
+ * `@cngx/forms/select` (CngxTreeSelect), and `@cngx/data-display/treetable`
+ * (which wraps `flattenTree` / `isNodeVisible` / `filterTree` behind its
+ * public signatures).
  */
 
 /**
@@ -176,8 +177,6 @@ export function collectDescendantValues<T>(node: CngxTreeNode<T>): T[] {
  * preserved so the path is never broken; branches with zero matches are
  * dropped entirely.
  *
- * Fresh implementation - not ported from `@cngx/data-display/treetable`.
- *
  * @category utils/tree
  */
 export function filterTree<T>(
@@ -205,7 +204,9 @@ export function filterTree<T>(
  * the `by` extractor. Child ordering is stable within its own level only -
  * the relative position of nodes across different parents is irrelevant.
  *
- * Fresh implementation - not ported from `@cngx/data-display/treetable`.
+ * The treetable keeps its own numeric-aware `localeCompare` collation - this
+ * comparator (`<` / `>` on the extractor output) is not a drop-in
+ * replacement for it.
  *
  * @category utils/tree
  */

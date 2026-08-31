@@ -2,6 +2,7 @@
   [dataSource]="visibleNodes()"
   [trackBy]="trackByFn"
   role="treegrid"
+  [attr.aria-multiselectable]="selectionMode() === 'multi' ? 'true' : null"
   (keydown)="handleKeyDown($event)"
 >
   <!-- expand/collapse toggle column -->
@@ -12,6 +13,7 @@
         <button
           type="button"
           class="cngx-treetable__toggle"
+          tabindex="-1"
           (click)="toggle(node); $event.stopPropagation()"
           [attr.aria-expanded]="expandedIds().has(node.id)"
           [attr.aria-label]="expandedIds().has(node.id) ? 'Collapse' : 'Expand'"
@@ -29,6 +31,7 @@
         <input
           type="checkbox"
           class="cngx-treetable__checkbox"
+          tabindex="-1"
           [checked]="isAllSelected()"
           [indeterminate]="isIndeterminate()"
           [attr.aria-label]="'Select all rows'"
@@ -40,6 +43,7 @@
       <input
         type="checkbox"
         class="cngx-treetable__checkbox"
+        tabindex="-1"
         [checked]="isSelected(node.id)"
         [attr.aria-label]="'Select row'"
         (click)="$event.stopPropagation()"
@@ -83,13 +87,19 @@
     [node]="node"
     [highlight]="resolvedOptions().highlightRowOnHover ?? false"
     [selected]="isSelected(node.id)"
-    [tabindex]="focusedNodeId() === node.id ? 0 : -1"
-    [class.cngx-treetable__row--focused]="focusedNodeId() === node.id"
-    role="row"
+    [expanded]="node.hasChildren ? expandedIds().has(node.id) : null"
+    [selectionEnabled]="selectionMode() !== 'none'"
+    [tabindex]="effectiveFocusedId() === node.id ? 0 : -1"
+    [class.cngx-treetable__row--focused]="effectiveFocusedId() === node.id"
+    (focused)="handleRowFocusIn(node)"
     (click)="handleRowClick(node)"
   >
   </cdk-row>
 </cdk-table>
+
+<span aria-live="polite" aria-atomic="true" class="cngx-treetable__sr">{{
+  selectionAnnouncement()
+}}</span>
 
 @if (isEmpty()) {
   @if (emptyTpl(); as tpl) {

@@ -1,3 +1,5 @@
+import type { FlatTreeNode } from '@cngx/utils';
+
 /**
  * A node in the input tree structure.
  *
@@ -16,25 +18,24 @@ export interface Node<T> {
  * A flattened representation of a single tree node, produced by {@link flattenTree}.
  * All properties are readonly to prevent accidental mutation.
  *
+ * Alias of the `@cngx/utils` {@link FlatTreeNode} kernel type, so every flat
+ * node carries the ARIA metadata (`posinset`, `setsize`, plus `label`,
+ * `disabled`, and the `node` back-reference) alongside the original
+ * `id` / `value` / `depth` / `hasChildren` / `parentIds` fields.
+ *
+ * **Migration note.** The alias widened the type: code that only *reads*
+ * `FlatNode` values (templates, `nodeClicked` handlers, `trackBy`) is
+ * unaffected, but code that *constructs* `FlatNode` literals (tests,
+ * custom data sources) must now supply the kernel fields
+ * (`label`, `disabled`, `posinset`, `setsize`, `node`) as well.
+ * Nodes produced by {@link flattenTree} always carry the full shape,
+ * with `label` fixed to `''`.
+ *
  * @typeParam T - The shape of the data value carried by the node.
  *
  * @category data-display/treetable
  */
-export interface FlatNode<T> {
-  /** Stable identifier for this node within the current tree. */
-  readonly id: string;
-  /** The original data value. */
-  readonly value: T;
-  /** Zero-based nesting depth; root nodes have depth `0`. */
-  readonly depth: number;
-  /** `true` when the node has at least one child. */
-  readonly hasChildren: boolean;
-  /**
-   * Ordered list of ancestor IDs from root to direct parent.
-   * A root node has an empty array.
-   */
-  readonly parentIds: readonly string[];
-}
+export type FlatNode<T> = FlatTreeNode<T>;
 
 /**
  * Per-instance display options for `CngxTreetable`.
