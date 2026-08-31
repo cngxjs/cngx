@@ -330,7 +330,7 @@ describe('CngxTreetable', () => {
     }
 
     function key(k: string, init: KeyboardEventInit = {}): KeyboardEvent {
-      return new KeyboardEvent('keydown', { key: k, ...init });
+      return new KeyboardEvent('keydown', { key: k, cancelable: true, ...init });
     }
 
     it('gives the first visible row tabindex="0" before any interaction', () => {
@@ -391,6 +391,42 @@ describe('CngxTreetable', () => {
       fixture.detectChanges();
       expect(t.focusedNodeId()).toBe(child2.id);
       expect(rowEls(fixture)[2].getAttribute('tabindex')).toBe('0');
+    });
+
+    it('Ctrl+A selects all visible rows in multi mode and a second Ctrl+A clears', () => {
+      const fixture = mount({ selectionMode: 'multi' });
+      const t = fixture.componentInstance;
+      const event = key('a', { ctrlKey: true });
+      t.handleKeyDown(event);
+      fixture.detectChanges();
+      expect(event.defaultPrevented).toBe(true);
+      expect(t.selectedIds().size).toBe(3);
+
+      t.handleKeyDown(key('a', { ctrlKey: true }));
+      fixture.detectChanges();
+      expect(t.selectedIds().size).toBe(0);
+    });
+
+    it('Cmd+A selects all visible rows in multi mode', () => {
+      const fixture = mount({ selectionMode: 'multi' });
+      const t = fixture.componentInstance;
+      t.handleKeyDown(key('a', { metaKey: true }));
+      fixture.detectChanges();
+      expect(t.selectedIds().size).toBe(3);
+    });
+
+    it('Ctrl+A is inert in single and none mode', () => {
+      for (const selectionMode of ['single', 'none'] as const) {
+        const fixture = mount({ selectionMode });
+        const t = fixture.componentInstance;
+        const event = key('a', { ctrlKey: true });
+        t.handleKeyDown(event);
+        fixture.detectChanges();
+        expect(t.selectedIds().size).toBe(0);
+        expect(event.defaultPrevented).toBe(false);
+        TestBed.resetTestingModule();
+        TestBed.configureTestingModule({ imports: [TestHost] });
+      }
     });
 
     it('leaves modifier-key arrows to the browser', () => {

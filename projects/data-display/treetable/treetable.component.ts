@@ -590,7 +590,8 @@ export class CngxTreetable<T = unknown> {
   /**
    * Keyboard navigation handler. Bind to the table's `(keydown)` event.
    * Modified keys (Ctrl / Alt / Meta) are left to the browser so user
-   * shortcuts keep working.
+   * shortcuts keep working - except `Ctrl+A` / `Cmd+A`, which toggles
+   * select-all in `'multi'` mode.
    *
    * | Key | Action |
    * |---|---|
@@ -601,11 +602,19 @@ export class CngxTreetable<T = unknown> {
    * | `Enter` / `Space` | Activate focused row (`handleRowClick`) |
    * | `Home` | Focus first visible row |
    * | `End` | Focus last visible row |
+   * | `Ctrl+A` / `Cmd+A` | Toggle select-all over the visible rows (`'multi'` mode only) |
    */
   handleKeyDown(event: KeyboardEvent): void {
     if (event.ctrlKey || event.altKey || event.metaKey) {
-      // Seam for modified combos the grid does own (Ctrl/Cmd+A select-all);
-      // everything else stays with the browser.
+      const isSelectAllCombo =
+        (event.ctrlKey || event.metaKey) &&
+        !event.altKey &&
+        (event.key === 'a' || event.key === 'A');
+      if (isSelectAllCombo && this.selectionMode() === 'multi') {
+        event.preventDefault();
+        this.toggleAll();
+      }
+      // Every other modified combo stays with the browser.
       return;
     }
 
