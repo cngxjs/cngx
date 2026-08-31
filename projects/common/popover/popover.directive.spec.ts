@@ -331,6 +331,60 @@ describe('CngxPopover', () => {
     });
   });
 
+  describe('browser light dismiss', () => {
+    function dispatchLightDismiss(el: HTMLElement): void {
+      // jsdom has no ToggleEvent constructor; a plain Event with the
+      // duck-typed newState field matches what the host listener reads.
+      const ev = new Event('toggle');
+      (ev as unknown as Record<string, unknown>)['newState'] = 'closed';
+      el.dispatchEvent(ev);
+    }
+
+    it('runs the full teardown when the browser closes the popover', () => {
+      const { fixture, popoverEl } = setup(AutoModeHost);
+      const host = fixture.componentInstance as AutoModeHost;
+      host.popover().show();
+
+      dispatchLightDismiss(popoverEl);
+      fixture.detectChanges();
+
+      expect(host.popover().state()).toBe('closed');
+      expect(popoverEl.hidePopover).toHaveBeenCalled();
+      expect(host.popover().arrowOffset()).toBeNull();
+    });
+
+    it('does not swallow the next document Escape after a light dismiss', () => {
+      const { fixture, popoverEl } = setup(AutoModeHost);
+      const host = fixture.componentInstance as AutoModeHost;
+      const windowSpy = vi.fn();
+      window.addEventListener('keydown', windowSpy);
+      try {
+        host.popover().show();
+        dispatchLightDismiss(popoverEl);
+        fixture.detectChanges();
+
+        // A stale registry entry would stopPropagation here and the event
+        // would never bubble up to window.
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+        expect(windowSpy).toHaveBeenCalledTimes(1);
+      } finally {
+        window.removeEventListener('keydown', windowSpy);
+      }
+    });
+
+    it('can reopen after a light dismiss', () => {
+      const { fixture, popoverEl } = setup(AutoModeHost);
+      const host = fixture.componentInstance as AutoModeHost;
+      host.popover().show();
+      dispatchLightDismiss(popoverEl);
+      fixture.detectChanges();
+
+      host.popover().show();
+      expect(host.popover().state()).toBe('opening');
+      expect(popoverEl.showPopover).toHaveBeenCalledTimes(2);
+    });
+  });
+
   describe('host classes', () => {
     it('should apply cngx-popover--opening during opening', () => {
       const { fixture, popoverEl } = setup(BasicHost);

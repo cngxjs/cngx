@@ -578,9 +578,12 @@ export class CngxPopover {
   }
 
   protected handleToggle(e: ToggleEvent): void {
-    // Sync with browser when it closes the popover (e.g. popover="auto" light dismiss)
+    // Sync with browser when it closes the popover (e.g. popover="auto" light
+    // dismiss). Must run the full finalize() teardown, not just the state
+    // write: a bare state sync leaves the instance in the module registry,
+    // where it swallows the next Escape and leaks past destroy.
     if (e.newState === 'closed' && this.stateSignal() !== 'closed') {
-      this.stateSignal.set('closed');
+      this.finalize();
     }
   }
 
