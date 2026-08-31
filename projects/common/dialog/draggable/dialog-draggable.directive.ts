@@ -22,6 +22,11 @@ import {
  * - Shift + Arrow moves 50px
  * - Home resets to origin
  *
+ * Keys move the dialog only while the handle element itself has focus -
+ * arrows inside form fields keep moving the caret. Without an explicit
+ * `[handle]` the dialog element becomes focusable (`tabindex="0"`) and is
+ * the keyboard drag surface.
+ *
  * ```html
  * <dialog cngxDialog cngxDialogDraggable>
  *   <div class="dialog-header" #handle>Title</div>
@@ -94,7 +99,12 @@ export class CngxDialogDraggable {
    */
   readonly snapMode = input<'live' | 'release'>('live');
 
-  private readonly positionState = signal({ x: 0, y: 0 });
+  // equal keeps live grid-snap quiet: every pointermove produces a fresh
+  // {x, y} literal, and under snapping most of them carry identical values.
+  private readonly positionState = signal(
+    { x: 0, y: 0 },
+    { equal: (a, b) => a.x === b.x && a.y === b.y },
+  );
   private readonly draggingState = signal(false);
 
   /** Current offset position. */
@@ -126,25 +136,29 @@ export class CngxDialogDraggable {
   private currentHandle: HTMLElement | null = null;
   private boundPointerDown: ((e: PointerEvent) => void) | null = null;
   private boundKeyDown: ((e: KeyboardEvent) => void) | null = null;
+  private handleAddedTabindex = false;
+  private handleAddedAria = false;
 
   /** Attach pointer and keyboard listeners to `el`, cleaning up the previous handle first. */
   private setupHandle(el: HTMLElement): void {
-    if (this.currentHandle && this.boundPointerDown) {
-      this.currentHandle.removeEventListener('pointerdown', this.boundPointerDown);
-    }
-    if (this.currentHandle && this.boundKeyDown) {
-      this.currentHandle.removeEventListener('keydown', this.boundKeyDown);
-    }
+    this.teardownHandle();
 
     this.currentHandle = el;
 
-    // A11y: make handle focusable and describe as draggable
-    if (!el.hasAttribute('tabindex') && el !== this.elRef.nativeElement) {
+    // A11y: the handle must be keyboard-reachable - the target-scoped keydown
+    // guard makes it the only element arrow keys can move the dialog from,
+    // so an unfocusable handle would strip the keyboard path entirely.
+    if (!el.hasAttribute('tabindex')) {
       el.setAttribute('tabindex', '0');
+      this.handleAddedTabindex = true;
     }
+    // Labelling stays off the host-as-handle: aria-label/aria-roledescription
+    // on the dialog element itself would clobber its accessible name (the
+    // title) and its role text.
     if (!el.hasAttribute('aria-roledescription') && el !== this.elRef.nativeElement) {
       el.setAttribute('aria-roledescription', 'draggable');
       el.setAttribute('aria-label', 'Move dialog');
+      this.handleAddedAria = true;
     }
     el.style.cursor = 'var(--cngx-dialog-drag-cursor, grab)';
     el.style.touchAction = 'none';
@@ -188,6 +202,9 @@ export class CngxDialogDraggable {
     this.boundUp = (e: PointerEvent) => this.handlePointerUp(e);
     this.doc.addEventListener('pointermove', this.boundMove);
     this.doc.addEventListener('pointerup', this.boundUp);
+    // A cancelled pointer (touch interrupted, capture stolen) never fires
+    // pointerup - without this the drag state sticks and userSelect stays off.
+    this.doc.addEventListener('pointercancel', this.boundUp);
   }
 
   private handlePointerMove(event: PointerEvent): void {
@@ -231,12 +248,19 @@ export class CngxDialogDraggable {
     }
     if (this.boundUp) {
       this.doc.removeEventListener('pointerup', this.boundUp);
+      this.doc.removeEventListener('pointercancel', this.boundUp);
     }
     this.boundMove = null;
     this.boundUp = null;
   }
 
   private handleKeyDown(event: KeyboardEvent): void {
+    // When the whole dialog is the handle, every keydown inside it bubbles
+    // here - arrows typed into form fields must move the caret, not the
+    // dialog. Only keys originating on the handle element itself may drag.
+    if (event.target !== this.currentHandle) {
+      return;
+    }
     const grid = this.gridSize();
     // When grid is active, Arrow keys step by grid size (Shift = 5x grid)
     const step = grid > 0 ? (event.shiftKey ? grid * 5 : grid) : event.shiftKey ? 50 : 10;
@@ -278,18 +302,47 @@ export class CngxDialogDraggable {
     };
   }
 
+  /**
+   * Detach listeners from the current handle and restore every attribute and
+   * style this directive added. A demoted handle must not stay focusable or
+   * keep announcing "Move dialog" with a dead keyboard path behind it.
+   */
+  private teardownHandle(): void {
+    const handle = this.currentHandle;
+    if (!handle) {
+      return;
+    }
+    if (this.boundPointerDown) {
+      handle.removeEventListener('pointerdown', this.boundPointerDown);
+    }
+    if (this.boundKeyDown) {
+      handle.removeEventListener('keydown', this.boundKeyDown);
+    }
+    if (this.handleAddedTabindex) {
+      handle.removeAttribute('tabindex');
+      this.handleAddedTabindex = false;
+    }
+    if (this.handleAddedAria) {
+      handle.removeAttribute('aria-roledescription');
+      handle.removeAttribute('aria-label');
+      this.handleAddedAria = false;
+    }
+    handle.style.cursor = '';
+    handle.style.touchAction = '';
+    this.currentHandle = null;
+  }
+
   private cleanup(): void {
     if (this.boundMove) {
       this.doc.removeEventListener('pointermove', this.boundMove);
     }
     if (this.boundUp) {
       this.doc.removeEventListener('pointerup', this.boundUp);
+      this.doc.removeEventListener('pointercancel', this.boundUp);
     }
-    if (this.currentHandle && this.boundPointerDown) {
-      this.currentHandle.removeEventListener('pointerdown', this.boundPointerDown);
-    }
-    if (this.currentHandle && this.boundKeyDown) {
-      this.currentHandle.removeEventListener('keydown', this.boundKeyDown);
-    }
+    // A destroy mid-drag skips handlePointerUp - the global style must not
+    // outlive the directive.
+    this.doc.documentElement.style.userSelect = '';
+    this.teardownHandle();
   }
 }

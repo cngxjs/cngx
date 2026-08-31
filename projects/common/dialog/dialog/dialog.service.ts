@@ -4,6 +4,7 @@ import {
   type ComponentRef,
   createComponent,
   effect,
+  type EffectRef,
   EnvironmentInjector,
   inject,
   Injectable,
@@ -11,6 +12,7 @@ import {
   type Provider,
   type TemplateRef,
   type Type,
+  untracked,
 } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { filter, map, type Observable, take } from 'rxjs';
@@ -84,6 +86,17 @@ export class CngxDialogRef<T = unknown> {
   /** Unique auto-generated ID for this dialog instance. */
   get id() {
     return this.inner.id;
+  }
+
+  /**
+   * Async state of the submit channel - same surface a declarative dialog
+   * exposes. Populated when the open config carries a `submitAction`;
+   * remains at `'idle'` otherwise.
+   *
+   * Bind to any state consumer: `<cngx-alert [state]="ref.submitState" />`.
+   */
+  get submitState() {
+    return this.inner.submitState;
   }
 
   /**
@@ -189,6 +202,14 @@ export class CngxDialogOpener {
   private readonly openDialogs: CngxDialogRef<unknown>[] = [];
 
   /**
+   * Per-open close-watcher effects, keyed by ref. Owned here (not on the
+   * public `CngxDialogRef`) - the effect's injector outlives the dialog, so
+   * without the explicit destroy in `cleanup()` every `open()` would leak
+   * one live effect.
+   */
+  private readonly cleanupEffects = new WeakMap<CngxDialogRef<unknown>, EffectRef>();
+
+  /**
    * Open a dialog with the given component.
    *
    * @param component - The component type to render inside the dialog.
@@ -197,7 +218,7 @@ export class CngxDialogOpener {
    */
   open<T = unknown, D = unknown>(
     component: Type<unknown>,
-    config?: CngxDialogConfig<D>,
+    config?: CngxDialogConfig<D, T>,
   ): CngxDialogRef<T>;
 
   /**
@@ -209,12 +230,12 @@ export class CngxDialogOpener {
    */
   open<T = unknown, D = unknown>(
     templateRef: TemplateRef<unknown>,
-    config?: CngxDialogConfig<D>,
+    config?: CngxDialogConfig<D, T>,
   ): CngxDialogRef<T>;
 
   open<T = unknown, D = unknown>(
     content: Type<unknown> | TemplateRef<unknown>,
-    config: CngxDialogConfig<D> = {},
+    config: CngxDialogConfig<D, T> = {},
   ): CngxDialogRef<T> {
     const outletRef = createComponent(CngxDialogOutlet, {
       environmentInjector: this.envInjector,
@@ -226,6 +247,18 @@ export class CngxDialogOpener {
     if (config.autoFocus) {
       outletRef.setInput('autoFocus', config.autoFocus);
     }
+    if (config.submitAction) {
+      outletRef.setInput('submitAction', config.submitAction);
+    }
+    if (config.state) {
+      outletRef.setInput('state', config.state);
+    }
+    if (config.error !== undefined) {
+      outletRef.setInput('error', config.error);
+    }
+    if (config.focusFallback) {
+      outletRef.setInput('focusFallback', config.focusFallback);
+    }
 
     // Attach to ApplicationRef so change detection runs
     this.appRef.attachView(outletRef.hostView);
@@ -233,7 +266,10 @@ export class CngxDialogOpener {
     const hostEl = outletRef.location.nativeElement as HTMLElement;
     this.doc.body.appendChild(hostEl);
 
-    const innerDialog = outletRef.instance.dialog() as DialogRef<T>;
+    // CngxDialog has open() but the DialogRef<T> interface does not - keep
+    // the concrete instance for the open() call below.
+    const dialogInstance = outletRef.instance.dialog();
+    const innerDialog = dialogInstance as DialogRef<T>;
 
     const outletVcr = outletRef.instance.contentOutlet();
     let contentRef: ComponentRef<unknown> | null = null;
@@ -264,21 +300,22 @@ export class CngxDialogOpener {
 
     this.openDialogs.push(dialogRef as CngxDialogRef<unknown>);
 
-    // CngxDialog has open() but the DialogRef<T> interface does not - call the concrete instance.
-    const dialogInstance = outletRef.instance.dialog();
     dialogInstance.open();
 
-    effect(
-      () => {
-        if (
-          innerDialog.lifecycle() === 'closed' &&
-          outletRef.hostView &&
-          !outletRef.hostView.destroyed
-        ) {
-          this.cleanup(dialogRef);
-        }
-      },
-      { injector: childInjector },
+    this.cleanupEffects.set(
+      dialogRef as CngxDialogRef<unknown>,
+      effect(
+        () => {
+          if (
+            innerDialog.lifecycle() === 'closed' &&
+            outletRef.hostView &&
+            !outletRef.hostView.destroyed
+          ) {
+            untracked(() => this.cleanup(dialogRef));
+          }
+        },
+        { injector: childInjector },
+      ),
     );
 
     return dialogRef;
@@ -297,6 +334,9 @@ export class CngxDialogOpener {
   }
 
   private cleanup(ref: CngxDialogRef<unknown>): void {
+    this.cleanupEffects.get(ref)?.destroy();
+    this.cleanupEffects.delete(ref);
+
     const idx = this.openDialogs.indexOf(ref);
     if (idx >= 0) {
       this.openDialogs.splice(idx, 1);

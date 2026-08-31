@@ -5,6 +5,8 @@ import {
   viewChild,
   ViewContainerRef,
 } from '@angular/core';
+import type { CngxAsyncState } from '@cngx/core/utils';
+import type { Observable } from 'rxjs';
 
 import { CngxDialog } from './dialog.directive';
 
@@ -28,6 +30,10 @@ import { CngxDialog } from './dialog.directive';
       [closeOnBackdropClick]="closeOnBackdropClick()"
       [closeOnEscape]="closeOnEscape()"
       [autoFocus]="autoFocus()"
+      [submitAction]="submitAction()"
+      [state]="state()"
+      [error]="error()"
+      [focusFallback]="focusFallback()"
       #dialog="cngxDialog"
     >
       <ng-container #contentOutlet />
@@ -45,6 +51,12 @@ export class CngxDialogOutlet {
   readonly closeOnBackdropClick = input(true);
   readonly closeOnEscape = input(true);
   readonly autoFocus = input<string>('first-focusable');
+  readonly submitAction = input<
+    ((value: unknown) => Promise<unknown> | Observable<unknown>) | undefined
+  >(undefined);
+  readonly state = input<CngxAsyncState<unknown> | undefined>(undefined);
+  readonly error = input(false);
+  readonly focusFallback = input<HTMLElement | undefined>(undefined);
 
   readonly dialog = viewChild.required(CngxDialog);
   readonly contentOutlet = viewChild('contentOutlet', { read: ViewContainerRef });

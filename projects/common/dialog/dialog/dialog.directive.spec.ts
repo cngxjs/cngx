@@ -3,6 +3,8 @@ import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { of, type Observable } from 'rxjs';
 
+import { createScrollLock } from '@cngx/common/layout';
+
 import { CngxDialog } from './dialog.directive';
 import { CngxDialogTitle } from './dialog-title.directive';
 import { CngxDialogDescription } from './dialog-description.directive';
@@ -233,12 +235,8 @@ describe('CngxDialog', () => {
   });
 
   describe('backdrop click', () => {
-    it('dismisses when click is outside dialog rect', () => {
-      const { fixture, dialogEl } = setup(FullDialogHost);
-      const dialog = openFully(fixture, dialogEl);
-      expect(dialog.lifecycle()).toBe('open');
-
-      // Mock getBoundingClientRect to simulate a dialog at (100, 100) to (400, 300)
+    /** Simulate a dialog content rect at (100, 100) to (400, 300). */
+    function mockRect(dialogEl: HTMLDialogElement): void {
       vi.spyOn(dialogEl, 'getBoundingClientRect').mockReturnValue({
         left: 100,
         right: 400,
@@ -250,33 +248,61 @@ describe('CngxDialog', () => {
         y: 100,
         toJSON: () => ({}),
       });
+    }
 
-      // Click outside (at 50, 50)
-      const click = new MouseEvent('click', { clientX: 50, clientY: 50, bubbles: true });
-      dialogEl.dispatchEvent(click);
+    function pointerDownAt(dialogEl: HTMLDialogElement, x: number, y: number): void {
+      dialogEl.dispatchEvent(new MouseEvent('pointerdown', { clientX: x, clientY: y }));
+    }
+
+    it('dismisses when the interaction starts and ends on the backdrop', () => {
+      const { fixture, dialogEl } = setup(FullDialogHost);
+      const dialog = openFully(fixture, dialogEl);
+      expect(dialog.lifecycle()).toBe('open');
+      mockRect(dialogEl);
+
+      pointerDownAt(dialogEl, 50, 50);
+      dialogEl.dispatchEvent(new MouseEvent('click', { clientX: 50, clientY: 50, bubbles: true }));
       fixture.detectChanges();
 
       expect(dialog.result()).toBe('dismissed');
     });
 
+    it('does not dismiss a text-selection drag that started inside the content', () => {
+      const { fixture, dialogEl } = setup(FullDialogHost);
+      const dialog = openFully(fixture, dialogEl);
+      mockRect(dialogEl);
+
+      // Selection starts inside the content rect, mouseup lands on the
+      // backdrop - the browser synthesises a click on the dialog with
+      // outside coordinates.
+      pointerDownAt(dialogEl, 200, 200);
+      dialogEl.dispatchEvent(new MouseEvent('click', { clientX: 50, clientY: 50, bubbles: true }));
+      fixture.detectChanges();
+
+      expect(dialog.lifecycle()).toBe('open');
+    });
+
+    it('does not dismiss keyboard clicks from child controls reporting (0, 0)', () => {
+      const { fixture, dialogEl } = setup(FullDialogHost);
+      const dialog = openFully(fixture, dialogEl);
+      mockRect(dialogEl);
+
+      // Enter/Space on a child control fires a click with (0, 0) coordinates
+      // whose target is the control, never the dialog element.
+      const titleEl = fixture.nativeElement.querySelector('[cngxDialogTitle]') as HTMLElement;
+      titleEl.dispatchEvent(new MouseEvent('click', { clientX: 0, clientY: 0, bubbles: true }));
+      fixture.detectChanges();
+
+      expect(dialog.lifecycle()).toBe('open');
+    });
+
     it('does not dismiss when closeOnBackdropClick is false', () => {
       const { fixture, dialogEl } = setup(BlockingDialogHost);
       const dialog = openFully(fixture, dialogEl);
+      mockRect(dialogEl);
 
-      vi.spyOn(dialogEl, 'getBoundingClientRect').mockReturnValue({
-        left: 100,
-        right: 400,
-        top: 100,
-        bottom: 300,
-        width: 300,
-        height: 200,
-        x: 100,
-        y: 100,
-        toJSON: () => ({}),
-      });
-
-      const click = new MouseEvent('click', { clientX: 50, clientY: 50, bubbles: true });
-      dialogEl.dispatchEvent(click);
+      pointerDownAt(dialogEl, 50, 50);
+      dialogEl.dispatchEvent(new MouseEvent('click', { clientX: 50, clientY: 50, bubbles: true }));
       fixture.detectChanges();
 
       expect(dialog.lifecycle()).not.toBe('closed');
@@ -326,6 +352,23 @@ describe('CngxDialog', () => {
       const liveRegion = dialogEl.querySelector('[aria-live="polite"]');
       expect(liveRegion).not.toBeNull();
     });
+
+    it('announces the current title text on each open, not a cached first read', () => {
+      const { fixture, dialogEl } = setup(FullDialogHost);
+      const dialog = openFully(fixture, dialogEl);
+      const liveRegion = dialogEl.querySelector('[aria-live="polite"]') as HTMLElement;
+      expect(liveRegion.textContent).toBe('Test Title');
+
+      dialog.dismiss();
+      fixture.detectChanges();
+
+      // Title changed between opens (translation swap, interpolated data).
+      const titleEl = fixture.nativeElement.querySelector('[cngxDialogTitle]') as HTMLElement;
+      titleEl.textContent = 'Changed Title';
+
+      openFully(fixture, dialogEl);
+      expect(liveRegion.textContent).toBe('Changed Title');
+    });
   });
 
   describe('CSS classes', () => {
@@ -346,6 +389,79 @@ describe('CngxDialog', () => {
       TestBed.flushEffects();
       expect(dialogEl.classList.contains('cngx-dialog--open')).toBe(true);
       expect(dialogEl.classList.contains('cngx-dialog--opening')).toBe(false);
+    });
+  });
+
+  describe('modal mode latched at open', () => {
+    it('keeps Escape dismissal alive after [modal] flips off while open', () => {
+      const { fixture, dialogEl } = setup(ModalToggleHost);
+      const host = fixture.componentInstance;
+      const dialog = host.dialog();
+      dialog.open();
+
+      host.modal.set(false);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      // The backdrop is still rendered from the modal open - Escape must
+      // keep working against the latched mode, not the live input.
+      dialogEl.dispatchEvent(new Event('cancel', { cancelable: true }));
+      fixture.detectChanges();
+      expect(dialog.result()).toBe('dismissed');
+    });
+
+    it('keeps aria-modal reflecting the latched mode while open', () => {
+      const { fixture, dialogEl } = setup(ModalToggleHost);
+      const host = fixture.componentInstance;
+      host.dialog().open();
+      fixture.detectChanges();
+      expect(dialogEl.getAttribute('aria-modal')).toBe('true');
+
+      host.modal.set(false);
+      fixture.detectChanges();
+      expect(dialogEl.getAttribute('aria-modal')).toBe('true');
+    });
+
+    it('releases the scroll lock on close even when [modal] was toggled off while open', () => {
+      const { fixture } = setup(ModalToggleHost);
+      const host = fixture.componentInstance;
+      const dialog = host.dialog();
+
+      dialog.open();
+      expect(document.documentElement.style.overflow).toBe('hidden');
+
+      host.modal.set(false);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      dialog.close(true as unknown as never);
+      expect(document.documentElement.style.overflow).not.toBe('hidden');
+    });
+
+    it('does not release a lock it never acquired when [modal] flips on while open', () => {
+      const { fixture } = setup(ModalToggleHost);
+      const host = fixture.componentInstance;
+      host.modal.set(false);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      // Another holder owns the only lock; the dialog opened non-modal and
+      // must not decrement that holder's count at close.
+      const releaseExternal = createScrollLock(document.documentElement);
+      try {
+        const dialog = host.dialog();
+        dialog.open();
+
+        host.modal.set(true);
+        fixture.detectChanges();
+        TestBed.flushEffects();
+
+        dialog.close(true as unknown as never);
+        expect(document.documentElement.style.overflow).toBe('hidden');
+      } finally {
+        releaseExternal();
+      }
+      expect(document.documentElement.style.overflow).not.toBe('hidden');
     });
   });
 
@@ -506,6 +622,33 @@ describe('CngxDialog submitAction', () => {
     expect(dialog.lifecycle()).toBe('closed');
   });
 
+  it('re-announces a repeated identical submit error', async () => {
+    const { fixture, dialogEl } = setup(SubmitDialogHost);
+    const submitFn = vi.fn().mockRejectedValue('Save failed');
+    fixture.componentInstance.action.set(submitFn);
+    fixture.detectChanges();
+
+    const dialog = openFully(fixture, dialogEl);
+    const liveRegion = dialogEl.querySelector('[aria-live="polite"]') as HTMLElement;
+
+    dialog.close(42 as never);
+    await vi.advanceTimersByTimeAsync(0);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(liveRegion.textContent).toBe('Save failed');
+
+    // The clear-after-a-frame makes the next identical message a fresh
+    // mutation instead of a silent same-string re-assignment.
+    vi.advanceTimersByTime(16);
+    expect(liveRegion.textContent).toBe('');
+
+    dialog.close(42 as never);
+    await vi.advanceTimersByTimeAsync(0);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(liveRegion.textContent).toBe('Save failed');
+  });
+
   it('closes immediately when no submitAction is set', () => {
     const { fixture, dialogEl } = setup(SubmitDialogHost);
     // action is undefined by default
@@ -555,6 +698,13 @@ describe('CngxDialogTitle', () => {
     const { fixture } = setup(FullDialogHost);
     const titleEl = fixture.nativeElement.querySelector('[cngxDialogTitle]') as HTMLElement;
     expect(titleEl.id).toMatch(/-title$/);
+  });
+
+  it('derives its id from the parent dialog id', () => {
+    const { fixture } = setup(FullDialogHost);
+    const dialog = fixture.componentInstance.dialog();
+    const titleEl = fixture.nativeElement.querySelector('[cngxDialogTitle]') as HTMLElement;
+    expect(titleEl.id).toBe(`${dialog.id()}-title`);
   });
 });
 

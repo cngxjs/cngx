@@ -45,17 +45,20 @@ import { DIALOG_REF } from './dialog-ref';
 export class CngxDialogDescription {
   private readonly dialogRef = inject(DIALOG_REF, { optional: true });
 
+  private readonly idState = signal(nextUid('cngx-dialog-desc'));
+
   /**
    * Auto-generated unique ID bound to the host `[id]` attribute.
    *
    * Used by `CngxDialog` for `aria-describedby`. When a parent `CngxDialog`
    * is present, the ID is derived from the dialog's ID (e.g. `cngx-dialog-0-desc`).
+   * Read-only: an externally mutated id would silently break the ARIA wiring.
    */
-  readonly id = signal(nextUid('cngx-dialog-desc'));
+  readonly id = this.idState.asReadonly();
 
   constructor() {
     if (this.dialogRef) {
-      this.id.set(`${this.dialogRef.id()}-desc`);
+      this.idState.set(`${this.dialogRef.id()}-desc`);
     }
   }
 }

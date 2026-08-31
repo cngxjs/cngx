@@ -44,6 +44,7 @@ import { DIALOG_REF } from '../dialog/dialog-ref';
   standalone: true,
   host: {
     class: 'cngx-bottom-sheet',
+    '[class.cngx-bottom-sheet--handle]': 'showHandle()',
   },
 })
 export class CngxBottomSheet {
@@ -53,7 +54,8 @@ export class CngxBottomSheet {
   /**
    * Whether the drag handle bar is visible.
    *
-   * The handle itself is rendered via CSS (`::before` pseudo-element on the host).
+   * The handle itself is rendered via CSS (`::before` pseudo-element, gated
+   * on the `cngx-bottom-sheet--handle` modifier class this input binds).
    * Set to `false` to hide it.
    *
    * @defaultValue `true`

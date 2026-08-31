@@ -11,57 +11,18 @@ import {
   isDevMode,
   Renderer2,
   signal,
+  untracked,
 } from '@angular/core';
 
 import { buildAsyncStateView, type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
 import { hasTransition, nextUid, onTransitionDone } from '@cngx/core/utils';
+import { createScrollLock } from '@cngx/common/layout';
 import { firstValueFrom, isObservable, type Observable } from 'rxjs';
 
 import { DIALOG_REF, type DialogRef, type DialogState } from './dialog-ref';
 import { CngxDialogStack } from './dialog-stack';
 import { CngxDialogTitle } from './dialog-title.directive';
 import { CngxDialogDescription } from './dialog-description.directive';
-
-/**
- * Ref-count map for scroll lock - one lock per document root, shared across stacked modals.
- *
- * @internal
- */
-const lockCounts = new WeakMap<HTMLElement, number>();
-
-/**
- * Acquire a scroll lock on the document root, preserving prior overflow styles.
- *
- * @internal
- */
-function acquireScrollLock(html: HTMLElement): void {
-  const count = lockCounts.get(html) ?? 0;
-  if (count === 0) {
-    html.dataset['cngxPrevOverflow'] = html.style.overflow;
-    html.dataset['cngxPrevScrollbarGutter'] = html.style.scrollbarGutter;
-    html.style.overflow = 'hidden';
-    html.style.scrollbarGutter = 'stable';
-  }
-  lockCounts.set(html, count + 1);
-}
-
-/**
- * Release a scroll lock. Restores prior overflow styles when the count reaches zero.
- *
- * @internal
- */
-function releaseScrollLock(html: HTMLElement): void {
-  const count = lockCounts.get(html) ?? 0;
-  if (count <= 1) {
-    html.style.overflow = html.dataset['cngxPrevOverflow'] ?? '';
-    html.style.scrollbarGutter = html.dataset['cngxPrevScrollbarGutter'] ?? '';
-    delete html.dataset['cngxPrevOverflow'];
-    delete html.dataset['cngxPrevScrollbarGutter'];
-    lockCounts.set(html, 0);
-  } else {
-    lockCounts.set(html, count - 1);
-  }
-}
 
 /**
  * Signal-driven state machine for native `<dialog>`.
@@ -154,6 +115,7 @@ function releaseScrollLock(html: HTMLElement): void {
     '[class.cngx-dialog--error]': 'effectiveError()',
     '[style.--cngx-dialog-backdrop-opacity]': 'backdropOpacity()',
     '(cancel)': 'handleCancel($event)',
+    '(pointerdown)': 'handlePointerDown($event)',
     '(click)': 'handleClick($event)',
   },
 })
@@ -339,7 +301,7 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
   protected readonly isClosing = computed(() => this.lifecycleSignal() === 'closing');
 
   protected readonly ariaModal = computed(() =>
-    this.modal() && this.lifecycleSignal() !== 'closed' ? 'true' : null,
+    this.openedAsModal() && this.lifecycleSignal() !== 'closed' ? 'true' : null,
   );
 
   protected readonly ariaLabelledBy = computed(() => this.titleDirective()?.id() ?? null);
@@ -352,12 +314,21 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
 
   private liveRegion: HTMLSpanElement | null = null;
 
+  /**
+   * The modal mode latched at `open()`. Everything that depends on how the
+   * dialog actually opened derives from this - scroll-lock release, stack
+   * pop, Escape/backdrop dismissal, focus strategy, and `aria-modal` -
+   * so toggling `[modal]` while open can neither unbalance the ref count
+   * nor strand a rendered backdrop without its dismissal surface.
+   */
+  private readonly openedAsModal = signal(false);
+
   constructor() {
     this.createLiveRegion();
 
     effect(() => {
       if (this.lifecycleSignal() === 'open') {
-        const titleText = this.titleDirective()?.textContent() ?? '';
+        const titleText = untracked(() => this.titleDirective()?.textContent() ?? '');
         if (titleText && this.liveRegion) {
           this.liveRegion.textContent = titleText;
           // Clear after one frame so subsequent opens re-announce
@@ -371,9 +342,19 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
     });
 
     effect(() => {
+      // The error VALUE is the announce trigger and stays tracked: the
+      // boolean effectiveError() alone is equal-cut on true -> false -> true,
+      // so a retried identical failure would never re-fire this effect.
       if (this.effectiveError() && this.liveRegion) {
         const errMsg = this.state()?.error() ?? this.submitErrorState();
         this.liveRegion.textContent = typeof errMsg === 'string' ? errMsg : 'An error occurred';
+        // Clear after one frame (same pattern as the title announce) so a
+        // repeated identical error is a fresh mutation the SR re-announces.
+        requestAnimationFrame(() => {
+          if (this.liveRegion) {
+            this.liveRegion.textContent = '';
+          }
+        });
       }
     });
 
@@ -408,7 +389,8 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
 
     this.lifecycleSignal.set('opening');
 
-    if (this.modal()) {
+    this.openedAsModal.set(this.modal());
+    if (this.openedAsModal()) {
       dialog.showModal();
       this.acquireScrollLock();
       this.dialogStack.push(this.idSignal());
@@ -511,29 +493,50 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
 
   protected handleCancel(event: Event): void {
     event.preventDefault();
-    if (this.closeOnEscape() && this.modal()) {
+    if (this.closeOnEscape() && this.openedAsModal()) {
       this.dismiss();
     }
   }
 
+  /**
+   * `true` when the last pointerdown landed on the backdrop (the dialog
+   * element itself, outside the content rect). Backdrop dismissal requires
+   * the interaction to START there: a text-selection drag that begins inside
+   * the content and releases over the backdrop synthesises a click with
+   * outside coordinates and must not dismiss.
+   */
+  private pointerDownOnBackdrop = false;
+
+  protected handlePointerDown(event: PointerEvent): void {
+    this.pointerDownOnBackdrop =
+      event.target === this.dialogElement && this.isOutsideContentRect(event.clientX, event.clientY);
+  }
+
   protected handleClick(event: MouseEvent): void {
-    if (!this.modal() || !this.closeOnBackdropClick()) {
+    const startedOnBackdrop = this.pointerDownOnBackdrop;
+    this.pointerDownOnBackdrop = false;
+
+    if (!this.openedAsModal() || !this.closeOnBackdropClick()) {
       return;
     }
     if (this.lifecycleSignal() !== 'open') {
       return;
     }
-
-    // Detect backdrop click: click coordinates outside dialog content rect
-    const rect = this.dialogElement.getBoundingClientRect();
-    if (
-      event.clientX < rect.left ||
-      event.clientX > rect.right ||
-      event.clientY < rect.top ||
-      event.clientY > rect.bottom
-    ) {
+    // Keyboard "clicks" (Enter/Space on a child control) report (0, 0)
+    // coordinates - the target guard rejects them because they target the
+    // control, never the dialog element itself.
+    if (event.target !== this.dialogElement || !startedOnBackdrop) {
+      return;
+    }
+    if (this.isOutsideContentRect(event.clientX, event.clientY)) {
       this.dismiss();
     }
+  }
+
+  /** Backdrop test: coordinates outside the dialog's content rect. */
+  private isOutsideContentRect(x: number, y: number): boolean {
+    const rect = this.dialogElement.getBoundingClientRect();
+    return x < rect.left || x > rect.right || y < rect.top || y > rect.bottom;
   }
 
   private get dialogElement(): HTMLDialogElement {
@@ -556,9 +559,10 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
       dialog.close();
     }
 
-    if (this.modal()) {
+    if (this.openedAsModal()) {
       this.releaseScrollLock();
       this.dialogStack.pop(this.idSignal());
+      this.openedAsModal.set(false);
     }
 
     this.lifecycleSignal.set('closed');
@@ -566,7 +570,7 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
   }
 
   private moveFocus(): void {
-    if (!this.modal()) {
+    if (!this.openedAsModal()) {
       return;
     }
 
@@ -626,12 +630,22 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
     this.liveRegion = span;
   }
 
+  /**
+   * Release function of the currently held scroll lock, `null` while not
+   * locked. The shared `createScrollLock` core (single WeakMap owner in
+   * `@cngx/common/layout`) keeps this instance's count in the same registry
+   * as `CngxScrollLock`, so interleaved dialog + directive locks restore the
+   * saved overflow values correctly.
+   */
+  private scrollLockRelease: (() => void) | null = null;
+
   private acquireScrollLock(): void {
-    acquireScrollLock(this.doc.documentElement);
+    this.scrollLockRelease ??= createScrollLock(this.doc.documentElement);
   }
 
   private releaseScrollLock(): void {
-    releaseScrollLock(this.doc.documentElement);
+    this.scrollLockRelease?.();
+    this.scrollLockRelease = null;
   }
 
   private warnNonModalA11y(): void {

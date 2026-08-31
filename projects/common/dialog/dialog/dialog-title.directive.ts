@@ -1,4 +1,4 @@
-import { computed, Directive, ElementRef, inject, signal } from '@angular/core';
+import { Directive, ElementRef, inject, signal } from '@angular/core';
 import { nextUid } from '@cngx/core/utils';
 
 import { DIALOG_REF } from './dialog-ref';
@@ -46,27 +46,31 @@ export class CngxDialogTitle {
   private readonly elRef = inject(ElementRef<HTMLElement>);
   private readonly dialogRef = inject(DIALOG_REF, { optional: true });
 
+  private readonly idState = signal(nextUid('cngx-dialog-title'));
+
   /**
    * Auto-generated unique ID bound to the host `[id]` attribute.
    *
    * Used by `CngxDialog` for `aria-labelledby`. When a parent `CngxDialog`
    * is present, the ID is derived from the dialog's ID (e.g. `cngx-dialog-0-title`).
+   * Read-only: an externally mutated id would silently break the ARIA wiring.
    */
-  readonly id = signal(nextUid('cngx-dialog-title'));
+  readonly id = this.idState.asReadonly();
 
   /**
-   * Text content of the title element.
+   * Text content of the title element, read fresh on every call.
    *
-   * Read by `CngxDialog` on open to announce the dialog title via
-   * an `aria-live` region for screen readers.
+   * Read by `CngxDialog` at announce time (each `'open'` transition) so a
+   * changed title - translation swap, interpolated data - is what screen
+   * readers hear. A `computed` would cache the first non-reactive DOM read
+   * forever.
    */
-  readonly textContent = computed(
-    () => (this.elRef.nativeElement as HTMLElement).textContent?.trim() ?? '',
-  );
+  readonly textContent = (): string =>
+    (this.elRef.nativeElement as HTMLElement).textContent?.trim() ?? '';
 
   constructor() {
     if (this.dialogRef) {
-      this.id.set(`${this.dialogRef.id()}-title`);
+      this.idState.set(`${this.dialogRef.id()}-title`);
     }
   }
 }

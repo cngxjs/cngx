@@ -1,38 +1,7 @@
 import { DOCUMENT } from '@angular/common';
 import { DestroyRef, Directive, effect, inject, input } from '@angular/core';
 
-/**
- * Shared ref-count for scroll lock instances on the same document.
- *
- * @internal
- */
-const lockCounts = new WeakMap<HTMLElement, number>();
-
-/** @internal */
-function acquireScrollLock(html: HTMLElement): void {
-  const count = lockCounts.get(html) ?? 0;
-  if (count === 0) {
-    html.dataset['cngxPrevOverflow'] = html.style.overflow;
-    html.dataset['cngxPrevScrollbarGutter'] = html.style.scrollbarGutter;
-    html.style.overflow = 'hidden';
-    html.style.scrollbarGutter = 'stable';
-  }
-  lockCounts.set(html, count + 1);
-}
-
-/** @internal */
-function releaseScrollLock(html: HTMLElement): void {
-  const count = lockCounts.get(html) ?? 0;
-  if (count <= 1) {
-    html.style.overflow = html.dataset['cngxPrevOverflow'] ?? '';
-    html.style.scrollbarGutter = html.dataset['cngxPrevScrollbarGutter'] ?? '';
-    delete html.dataset['cngxPrevOverflow'];
-    delete html.dataset['cngxPrevScrollbarGutter'];
-    lockCounts.set(html, 0);
-  } else {
-    lockCounts.set(html, count - 1);
-  }
-}
+import { createScrollLock } from './scroll-lock-core';
 
 /**
  * Prevents scrolling on the document body when enabled.
@@ -74,22 +43,19 @@ export class CngxScrollLock {
 
   constructor() {
     const html = inject(DOCUMENT).documentElement;
-    let locked = false;
+    let release: (() => void) | null = null;
 
     effect(() => {
-      if (this.enabled() && !locked) {
-        acquireScrollLock(html);
-        locked = true;
-      } else if (!this.enabled() && locked) {
-        releaseScrollLock(html);
-        locked = false;
+      if (this.enabled() && !release) {
+        release = createScrollLock(html);
+      } else if (!this.enabled() && release) {
+        release();
+        release = null;
       }
     });
 
     inject(DestroyRef).onDestroy(() => {
-      if (locked) {
-        releaseScrollLock(html);
-      }
+      release?.();
     });
   }
 }
