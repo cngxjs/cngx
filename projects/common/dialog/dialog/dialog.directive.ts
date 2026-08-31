@@ -15,53 +15,13 @@ import {
 
 import { buildAsyncStateView, type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
 import { hasTransition, nextUid, onTransitionDone } from '@cngx/core/utils';
+import { createScrollLock } from '@cngx/common/layout';
 import { firstValueFrom, isObservable, type Observable } from 'rxjs';
 
 import { DIALOG_REF, type DialogRef, type DialogState } from './dialog-ref';
 import { CngxDialogStack } from './dialog-stack';
 import { CngxDialogTitle } from './dialog-title.directive';
 import { CngxDialogDescription } from './dialog-description.directive';
-
-/**
- * Ref-count map for scroll lock - one lock per document root, shared across stacked modals.
- *
- * @internal
- */
-const lockCounts = new WeakMap<HTMLElement, number>();
-
-/**
- * Acquire a scroll lock on the document root, preserving prior overflow styles.
- *
- * @internal
- */
-function acquireScrollLock(html: HTMLElement): void {
-  const count = lockCounts.get(html) ?? 0;
-  if (count === 0) {
-    html.dataset['cngxPrevOverflow'] = html.style.overflow;
-    html.dataset['cngxPrevScrollbarGutter'] = html.style.scrollbarGutter;
-    html.style.overflow = 'hidden';
-    html.style.scrollbarGutter = 'stable';
-  }
-  lockCounts.set(html, count + 1);
-}
-
-/**
- * Release a scroll lock. Restores prior overflow styles when the count reaches zero.
- *
- * @internal
- */
-function releaseScrollLock(html: HTMLElement): void {
-  const count = lockCounts.get(html) ?? 0;
-  if (count <= 1) {
-    html.style.overflow = html.dataset['cngxPrevOverflow'] ?? '';
-    html.style.scrollbarGutter = html.dataset['cngxPrevScrollbarGutter'] ?? '';
-    delete html.dataset['cngxPrevOverflow'];
-    delete html.dataset['cngxPrevScrollbarGutter'];
-    lockCounts.set(html, 0);
-  } else {
-    lockCounts.set(html, count - 1);
-  }
-}
 
 /**
  * Signal-driven state machine for native `<dialog>`.
@@ -626,12 +586,22 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
     this.liveRegion = span;
   }
 
+  /**
+   * Release function of the currently held scroll lock, `null` while not
+   * locked. The shared `createScrollLock` core (single WeakMap owner in
+   * `@cngx/common/layout`) keeps this instance's count in the same registry
+   * as `CngxScrollLock`, so interleaved dialog + directive locks restore the
+   * saved overflow values correctly.
+   */
+  private scrollLockRelease: (() => void) | null = null;
+
   private acquireScrollLock(): void {
-    acquireScrollLock(this.doc.documentElement);
+    this.scrollLockRelease ??= createScrollLock(this.doc.documentElement);
   }
 
   private releaseScrollLock(): void {
-    releaseScrollLock(this.doc.documentElement);
+    this.scrollLockRelease?.();
+    this.scrollLockRelease = null;
   }
 
   private warnNonModalA11y(): void {

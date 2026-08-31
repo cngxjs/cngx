@@ -14,6 +14,7 @@ export {
 } from './router/inject-query-param-sync';
 export { CngxResizeObserver } from './observers/resize-observer.directive';
 export { CngxScrollLock } from './scroll/scroll-lock.directive';
+export { createScrollLock } from './scroll/scroll-lock-core';
 export { CngxSkeleton } from './text/skeleton.directive';
 export { CngxInfiniteScroll } from './scroll/infinite-scroll.directive';
 export { CngxStickyHeader } from './scroll/sticky-header.directive';
