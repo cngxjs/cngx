@@ -84,12 +84,16 @@ export class CngxPaginateRouting implements OnInit {
       return;
     }
 
-    // A user navigation supersedes a still-parked deep link.
-    this.paginate.pageChange.subscribe(() => {
+    // A user navigation supersedes a still-parked deep link. The brain is
+    // resolved through the element injector and may live on an ancestor, so
+    // the subscription is torn down explicitly instead of relying on shared
+    // lifecycles.
+    const pageChangeSub = this.paginate.pageChange.subscribe(() => {
       if (!this.applyingFromUrl) {
         this.pendingUrl.set(null);
       }
     });
+    this.destroyRef.onDestroy(() => pageChangeSub.unsubscribe());
 
     // brain -> URL. Tracks the effective page / size; merges into the existing
     // query string and replaces history so paging does not stack back entries.
@@ -104,6 +108,9 @@ export class CngxPaginateRouting implements OnInit {
         return;
       }
       untracked(() => {
+        // Snapshot read while router.navigate is async: a still-pending
+        // navigation can slip past this check and renavigate - benign under
+        // replaceUrl + merge (same params, no history entry).
         const params = route.snapshot.queryParamMap;
         const samePage = Number(params.get(this.pageParam())) === page;
         const sameSize = Number(params.get(this.sizeParam())) === size;
@@ -120,16 +127,18 @@ export class CngxPaginateRouting implements OnInit {
     });
 
     // Re-apply a parked deep link whenever the clamp inputs move (total
-    // landed, busy released). The equal fn on pendingUrl keeps the re-park
-    // write from retriggering this effect in a loop.
+    // landed, busy released). Only those two triggers are tracked; the parked
+    // value is read untracked, so the re-park write inside applyFromUrl can
+    // never feed back into this effect's own dependency graph.
     effect(() => {
-      const pending = this.pendingUrl();
-      if (pending === null) {
-        return;
-      }
       this.paginate.totalPages();
       this.paginate.isBusy();
-      untracked(() => this.applyFromUrl(pending.index, pending.size));
+      untracked(() => {
+        const pending = this.pendingUrl();
+        if (pending !== null) {
+          this.applyFromUrl(pending.index, pending.size);
+        }
+      });
     });
   }
 
