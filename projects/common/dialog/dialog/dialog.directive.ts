@@ -313,6 +313,13 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
 
   private liveRegion: HTMLSpanElement | null = null;
 
+  /**
+   * The modal mode latched at `open()`. `finalize()` releases the scroll
+   * lock and pops the stack based on how the dialog actually opened -
+   * toggling `[modal]` while open must not unbalance the ref count.
+   */
+  private openedAsModal = false;
+
   constructor() {
     this.createLiveRegion();
 
@@ -369,7 +376,8 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
 
     this.lifecycleSignal.set('opening');
 
-    if (this.modal()) {
+    this.openedAsModal = this.modal();
+    if (this.openedAsModal) {
       dialog.showModal();
       this.acquireScrollLock();
       this.dialogStack.push(this.idSignal());
@@ -538,9 +546,10 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
       dialog.close();
     }
 
-    if (this.modal()) {
+    if (this.openedAsModal) {
       this.releaseScrollLock();
       this.dialogStack.pop(this.idSignal());
+      this.openedAsModal = false;
     }
 
     this.lifecycleSignal.set('closed');

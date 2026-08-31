@@ -3,6 +3,8 @@ import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { of, type Observable } from 'rxjs';
 
+import { createScrollLock } from '@cngx/common/layout';
+
 import { CngxDialog } from './dialog.directive';
 import { CngxDialogTitle } from './dialog-title.directive';
 import { CngxDialogDescription } from './dialog-description.directive';
@@ -387,6 +389,50 @@ describe('CngxDialog', () => {
       TestBed.flushEffects();
       expect(dialogEl.classList.contains('cngx-dialog--open')).toBe(true);
       expect(dialogEl.classList.contains('cngx-dialog--opening')).toBe(false);
+    });
+  });
+
+  describe('modal mode latched at open', () => {
+    it('releases the scroll lock on close even when [modal] was toggled off while open', () => {
+      const { fixture } = setup(ModalToggleHost);
+      const host = fixture.componentInstance;
+      const dialog = host.dialog();
+
+      dialog.open();
+      expect(document.documentElement.style.overflow).toBe('hidden');
+
+      host.modal.set(false);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      dialog.close(true as unknown as never);
+      expect(document.documentElement.style.overflow).not.toBe('hidden');
+    });
+
+    it('does not release a lock it never acquired when [modal] flips on while open', () => {
+      const { fixture } = setup(ModalToggleHost);
+      const host = fixture.componentInstance;
+      host.modal.set(false);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      // Another holder owns the only lock; the dialog opened non-modal and
+      // must not decrement that holder's count at close.
+      const releaseExternal = createScrollLock(document.documentElement);
+      try {
+        const dialog = host.dialog();
+        dialog.open();
+
+        host.modal.set(true);
+        fixture.detectChanges();
+        TestBed.flushEffects();
+
+        dialog.close(true as unknown as never);
+        expect(document.documentElement.style.overflow).toBe('hidden');
+      } finally {
+        releaseExternal();
+      }
+      expect(document.documentElement.style.overflow).not.toBe('hidden');
     });
   });
 
