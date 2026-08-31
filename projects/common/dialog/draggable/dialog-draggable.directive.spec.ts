@@ -277,6 +277,24 @@ describe('CngxDialogDraggable', () => {
       expect(hint.textContent).toBe('Use arrow keys to move the dialog; Shift for larger steps');
     });
 
+    it('references the instruction directly on a registry-less host', () => {
+      // No cngxDialog on the host, so no registry and no attribute owner -
+      // the direct reference is the only channel left.
+      const { el } = setup();
+      const hint = el.querySelector('[id^="cngx-dialog-drag-hint"]') as HTMLElement;
+      expect(el.getAttribute('aria-describedby')).toBe(hint.id);
+    });
+
+    it('does not clobber a consumer-authored describedby on a registry-less host', () => {
+      const fixture = TestBed.createComponent(SimpleHost);
+      const el = fixture.nativeElement.querySelector('[cngxDialogDraggable]') as HTMLElement;
+      el.setAttribute('aria-describedby', 'consumer-hint');
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      expect(el.getAttribute('aria-describedby')).toBe('consumer-hint');
+    });
+
     it('links the instruction into the dialog aria-describedby after the description', () => {
       const fixture = TestBed.createComponent(DialogDraggableHost);
       fixture.detectChanges();

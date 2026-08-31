@@ -169,13 +169,14 @@ export class CngxDialogDraggable {
       this.handleAddedAria = true;
     }
     // The keyboard path is live on every handle, so the instruction is too.
-    // Host-as-handle routes through the dialog's registry (a second
-    // aria-describedby host binding would clobber CngxDialog's); an explicit
-    // handle is not the dialog host, so the attribute is set directly -
-    // guarded like tabindex, a consumer-authored describedby wins.
+    // The registry channel exists only because CngxDialog owns
+    // aria-describedby on its host; everywhere else (explicit handle,
+    // draggable on a non-dialog element) nothing owns the attribute and it
+    // is set directly - guarded like tabindex, a consumer-authored
+    // describedby wins.
     const instruction = this.createInstructionNode();
-    if (el === this.elRef.nativeElement) {
-      this.releaseInstruction = this.ariaRegistry?.registerDescribedBy(instruction.id) ?? null;
+    if (el === this.elRef.nativeElement && this.ariaRegistry) {
+      this.releaseInstruction = this.ariaRegistry.registerDescribedBy(instruction.id);
     } else if (!el.hasAttribute('aria-describedby')) {
       el.setAttribute('aria-describedby', instruction.id);
       this.handleAddedDescribedBy = true;
