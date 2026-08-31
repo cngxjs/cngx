@@ -258,6 +258,34 @@ describe('createCommitController', () => {
     expect(errored).toBe(false);
     expect(ctrl.state.status()).not.toBe('error');
   });
+
+  test('a runner that succeeds synchronously never has its handle cancelled later', () => {
+    const ctrl = createCommitController<number>();
+    let staleCancel = false;
+
+    ctrl.begin(
+      (handlers) => {
+        // Settles before the handle is returned (e.g. a cache hit).
+        handlers.onSuccess(1);
+        return {
+          cancel: () => {
+            staleCancel = true;
+          },
+        };
+      },
+      1,
+      0,
+      { onSuccess: () => {}, onError: () => {} },
+    );
+
+    expect(ctrl.state.status()).toBe('success');
+
+    // Neither a superseding begin nor an explicit cancel may reach the
+    // already-settled runner's handle.
+    ctrl.begin(() => noopHandle(), 2, 1, { onSuccess: () => {}, onError: () => {} });
+    ctrl.cancel();
+    expect(staleCancel).toBe(false);
+  });
 });
 
 describe('CNGX_COMMIT_CONTROLLER_FACTORY', () => {

@@ -144,11 +144,17 @@ export function createCommitController<T>(): CngxCommitController<T> {
       intendedState.set(intended);
       slot.set('pending');
 
-      active = runner({
+      // A runner may settle synchronously, i.e. before its handle is even
+      // returned. The settled flag keeps such a finished handle out of
+      // `active`, so a later begin()/cancel() never calls cancel() on a
+      // completed runner (CngxCommitHandle does not require idempotence).
+      let settled = false;
+      const handle = runner({
         onSuccess: (committed) => {
           if (id !== commitId) {
             return;
           }
+          settled = true;
           slot.setSuccess(committed);
           active = null;
           handlers.onSuccess(committed);
@@ -157,11 +163,13 @@ export function createCommitController<T>(): CngxCommitController<T> {
           if (id !== commitId) {
             return;
           }
+          settled = true;
           slot.setError(err);
           active = null;
           handlers.onError(err, previous);
         },
       });
+      active = settled ? null : handle;
     },
 
     cancel() {
