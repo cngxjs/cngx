@@ -407,6 +407,7 @@ export class CngxDialog<T = unknown> implements DialogRef<T>, CngxDialogAriaRegi
    * @internal CNGX_DIALOG_ARIA_REGISTRY implementation - not public API.
    */
   registerTitle(handle: DialogLabelHandle): () => void {
+    this.warnDoubleRegistration('title', untracked(this.registeredTitle), handle);
     this.registeredTitle.set(handle);
     return () =>
       this.registeredTitle.update((current) => (current === handle ? null : current));
@@ -418,6 +419,7 @@ export class CngxDialog<T = unknown> implements DialogRef<T>, CngxDialogAriaRegi
    * @internal CNGX_DIALOG_ARIA_REGISTRY implementation - not public API.
    */
   registerDescription(handle: DialogLabelHandle): () => void {
+    this.warnDoubleRegistration('description', untracked(this.registeredDescription), handle);
     this.registeredDescription.set(handle);
     return () =>
       this.registeredDescription.update((current) => (current === handle ? null : current));
@@ -706,6 +708,26 @@ export class CngxDialog<T = unknown> implements DialogRef<T>, CngxDialogAriaRegi
   private releaseScrollLock(): void {
     this.scrollLockRelease?.();
     this.scrollLockRelease = null;
+  }
+
+  /**
+   * The registry is single-slot per kind, so a second live registration
+   * silently wins - surface the authoring error instead of letting the
+   * two open paths resolve different labelling.
+   */
+  private warnDoubleRegistration(
+    kind: 'title' | 'description',
+    current: DialogLabelHandle | null,
+    next: DialogLabelHandle,
+  ): void {
+    if (!isDevMode() || current === null || current === next) {
+      return;
+    }
+    console.warn(
+      `CngxDialog [${this.idSignal()}]: a second ${kind} registered while another ` +
+        `is live. The dialog references one ${kind} id - the newest registration ` +
+        `wins. Remove the extra cngxDialog${kind === 'title' ? 'Title' : 'Description'} element.`,
+    );
   }
 
   private warnNonModalA11y(): void {

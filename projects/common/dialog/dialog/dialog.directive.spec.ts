@@ -370,6 +370,30 @@ describe('CngxDialog', () => {
       expect(dialogEl.getAttribute('aria-describedby')).toBe(descId);
     });
 
+    it('warns in dev mode when a second title registers while one is live', () => {
+      const { fixture } = setup(FullDialogHost);
+      const dialog = fixture.componentInstance.dialog();
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      // FullDialogHost's declarative title is already registered.
+      const release = dialog.registerTitle({ id: signal('rogue-title') });
+      expect(warnSpy).toHaveBeenCalledTimes(1);
+      expect(warnSpy.mock.calls[0][0]).toContain('second title');
+
+      release();
+    });
+
+    it('does not warn when the first description registers', () => {
+      const { fixture } = setup(ModalToggleHost);
+      const dialog = fixture.componentInstance.dialog();
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      const release = dialog.registerDescription({ id: signal('only-desc') });
+      expect(warnSpy).not.toHaveBeenCalled();
+
+      release();
+    });
+
     it('sets aria-modal only when modal and not closed', () => {
       const { fixture, dialogEl } = setup(FullDialogHost);
       const dialog = fixture.componentInstance.dialog();
