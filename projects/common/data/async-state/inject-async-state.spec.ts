@@ -192,4 +192,26 @@ describe('injectAsyncState', () => {
     expect(host.state.error()).toBeInstanceOf(Error);
     expect((host.state.error() as Error).message).toBe('network failure');
   });
+
+  it('a superseded capture that rejects never surfaces as unhandled', async () => {
+    const host = setup();
+    TestBed.flushEffects();
+    const firstDeferred = host.current!;
+
+    // Second dependency change within the debounce window supersedes the
+    // first capture before the timer ever consumes it.
+    host.filter.set('changed');
+    TestBed.flushEffects();
+    const secondDeferred = host.current!;
+
+    // The superseded promise rejects; without the pre-attached no-op catch
+    // this would blow up as an unhandled rejection and fail the test run.
+    firstDeferred.reject(new Error('superseded failure'));
+    vi.advanceTimersByTime(50);
+    secondDeferred.resolve('fresh');
+    await vi.runAllTimersAsync();
+
+    expect(host.state.status()).toBe('success');
+    expect(host.state.data()).toBe('fresh');
+  });
 });
