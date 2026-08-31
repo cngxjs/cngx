@@ -216,7 +216,7 @@ describe('CngxStepper organism', () => {
     expect(calls).toContain(buttons[2]);
   });
 
-  it('panel carries aria-describedby pointing at the step descriptor span (always-rendered)', () => {
+  it('panel carries aria-describedby pointing at the step descriptor span (reference gated on the phrase)', () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
@@ -226,15 +226,17 @@ describe('CngxStepper organism', () => {
       '.cngx-stepper__panel',
     ) as HTMLElement;
     const descId = panel.getAttribute('aria-describedby');
+    // The reference is emitted because a step's status phrase is never
+    // empty (positional fallback); the gate suppresses it only where the
+    // phrase is empty (group headers without a status). Pillar 2 + the
+    // corrected gated-reference rule.
     expect(descId).toBeTruthy();
-    // Descriptor span lives in the step button (single source of truth)
-    // and is always rendered - Pillar 2 + cngx A11y rule "IDs always
-    // present".
     const desc = fixture.nativeElement.querySelector(
       `#${descId}`,
     ) as HTMLElement;
     expect(desc).not.toBeNull();
     expect(desc.classList.contains('cngx-sr-only')).toBe(true);
+    expect(desc.textContent?.trim()).toBeTruthy();
   });
 
   it('hierarchical: group renders with role="group" + aria-roledescription="step group"', () => {
@@ -253,6 +255,22 @@ describe('CngxStepper organism', () => {
       'button.cngx-stepper__step',
     ) as NodeListOf<HTMLButtonElement>;
     expect(buttons.length).toBe(3);
+  });
+
+  it('hierarchical: group header omits aria-describedby while its status phrase is empty', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(HierarchicalHost);
+    fixture.detectChanges();
+    const group = fixture.nativeElement.querySelector(
+      '.cngx-stepper__group-header',
+    ) as HTMLElement;
+    // A pristine group has neither error nor success status - the phrase is
+    // empty, so the descriptor reference is gated off while the sr-only
+    // descriptor span itself stays rendered.
+    expect(group.getAttribute('aria-describedby')).toBeNull();
+    expect(group.querySelector('.cngx-sr-only[id$="-desc"]')).not.toBeNull();
   });
 
   describe('focus-driven group collapse', () => {

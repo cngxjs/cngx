@@ -157,16 +157,22 @@ test.describe('CngxTabGroup W3C tabs pattern (Phase 2 baseline)', () => {
     await expect(profileTab.locator('.cngx-tabs__badge')).toBeVisible();
   });
 
-  test('(f) error-aggregation: aria-describedby span ID is always present in the DOM', async ({
+  test('(f) error-aggregation: aria-describedby reference is gated on the error state', async ({
     page,
   }) => {
     await page.goto(ERRORS);
     const tab = tabButtons(page).nth(0);
+    // Profile is invalid by default -> the descriptor is referenced.
     const descId = await tab.getAttribute('aria-describedby');
     expect(descId).toBeTruthy();
     const span = page.locator(`#${descId}`);
     await expect(span).toHaveCount(1);
     await expect(span).toHaveClass(/cngx-sr-only/);
+    // Clearing the error drops the reference; the sr-only span stays in
+    // the DOM (a referenced empty span would still be traversed by AT).
+    await page.getByLabel('profile invalid').click();
+    await expect(tab).not.toHaveAttribute('aria-describedby');
+    await expect(span).toHaveCount(1);
   });
 
   test('(h) optimistic (default): clicking advances immediately and stays on success', async ({

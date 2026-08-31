@@ -11,7 +11,7 @@
     [disabled]="disabled()"
     [id]="headerId"
     [attr.aria-labelledby]="titleId"
-    [attr.aria-describedby]="describedBy"
+    [attr.aria-describedby]="describedBy()"
   >
     <span class="cngx-accordion-item__text">
       <span class="cngx-accordion-item__title" [id]="titleId">
@@ -41,7 +41,11 @@
   </span>
 </div>
 
-<span [id]="reasonId" class="cngx-visually-hidden" [attr.aria-hidden]="!disabled()">
+<span
+  [id]="reasonId"
+  class="cngx-visually-hidden"
+  [attr.aria-hidden]="disabled() && disabledReason() ? null : 'true'"
+>
   @if (disabled()) {
     {{ disabledReason() }}
   }

@@ -41,6 +41,16 @@ export interface CngxStepperAnnouncementBuilders {
   readonly statusPhrase: (node: CngxStepNode) => string;
   /** Group descriptor - rolls up children's aggregated status. */
   readonly groupStatusPhrase: (node: CngxStepNode) => string;
+  /** Stable descriptor-span id for a node (`<node-id>-desc`). */
+  readonly descriptorId: (node: CngxStepNode) => string;
+  /**
+   * `aria-describedby` value for a node: `descriptorId(node)` while the
+   * node's phrase (`statusPhrase` for steps, `groupStatusPhrase` for
+   * groups) is non-empty, else `null`. The descriptor span stays in the
+   * DOM; only the reference is gated - accname 1.2 §2A traverses a
+   * directly-referenced node even when it is empty or hidden.
+   */
+  readonly describedBy: (node: CngxStepNode) => string | null;
 }
 
 /**
@@ -105,5 +115,12 @@ export function createStepperAnnouncementBuilders(
     return '';
   };
 
-  return { liveAnnouncement, statusPhrase, groupStatusPhrase };
+  const descriptorId = (node: CngxStepNode): string => `${node.id}-desc`;
+
+  const describedBy = (node: CngxStepNode): string | null => {
+    const phrase = node.kind === 'step' ? statusPhrase(node) : groupStatusPhrase(node);
+    return phrase ? descriptorId(node) : null;
+  };
+
+  return { liveAnnouncement, statusPhrase, groupStatusPhrase, descriptorId, describedBy };
 }

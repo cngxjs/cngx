@@ -25,7 +25,7 @@
         role="region"
         [id]="stepPanelId(node)"
         [attr.aria-labelledby]="stepHeaderId(node)"
-        [attr.aria-describedby]="stepDescriptorId(node)"
+        [attr.aria-describedby]="announcement.describedBy(node)"
         [hidden]="!slotContext.isActive(node)"
       >
         @let contentTpl = contentTemplateFor(node.id);
@@ -99,7 +99,7 @@
         role="region"
         [id]="stepPanelId(node)"
         [attr.aria-labelledby]="stepHeaderId(node)"
-        [attr.aria-describedby]="stepDescriptorId(node)"
+        [attr.aria-describedby]="announcement.describedBy(node)"
         [hidden]="!slotContext.isActive(node)"
       >
         @let contentTpl = contentTemplateFor(node.id);
@@ -133,7 +133,7 @@
           [attr.data-step-depth]="node.depth"
           [attr.data-state]="node.state()"
           [attr.aria-disabled]="node.disabled() ? 'true' : null"
-          [attr.aria-describedby]="stepDescriptorId(node)"
+          [attr.aria-describedby]="announcement.describedBy(node)"
           (click)="groupNavigation.select(node)"
         >
           <ng-container
@@ -154,7 +154,7 @@
           @if (groupSummary.srText(node); as srSummary) {
             <span class="cngx-sr-only">{{ srSummary }}</span>
           }
-          <span class="cngx-sr-only" [id]="stepDescriptorId(node)">{{ announcement.groupStatusPhrase(node) }}</span>
+          <span class="cngx-sr-only" [id]="announcement.descriptorId(node)">{{ announcement.groupStatusPhrase(node) }}</span>
         </div>
       } @else if (resolvedHeaderNavigation() === 'none') {
         <!--
@@ -174,7 +174,7 @@
           [attr.aria-current]="slotContext.isActive(node) ? 'step' : null"
           [attr.aria-disabled]="node.disabled() ? 'true' : null"
           [attr.aria-busy]="slotContext.isStepBusy(node) ? 'true' : null"
-          [attr.aria-describedby]="stepDescriptorId(node)"
+          [attr.aria-describedby]="announcement.describedBy(node)"
         >
           <ng-container *ngTemplateOutlet="stepHeaderInner; context: { $implicit: node }"></ng-container>
         </span>
@@ -193,7 +193,7 @@
           [attr.aria-controls]="stepPanelId(node)"
           [attr.aria-disabled]="headerAriaDisabled(node)"
           [attr.aria-busy]="slotContext.isStepBusy(node) ? 'true' : null"
-          [attr.aria-describedby]="stepDescriptorId(node)"
+          [attr.aria-describedby]="announcement.describedBy(node)"
           [cngxRovingItemDisabled]="node.disabled()"
           (click)="handleHeaderClick(node)"
         >
@@ -233,7 +233,7 @@
         role="region"
         [id]="stepPanelId(node)"
         [attr.aria-labelledby]="stepHeaderId(node)"
-        [attr.aria-describedby]="stepDescriptorId(node)"
+        [attr.aria-describedby]="announcement.describedBy(node)"
         [hidden]="!slotContext.isActive(node)"
       >
         @let contentTpl = contentTemplateFor(node.id);
@@ -316,7 +316,7 @@
       ></ng-container>
     </span>
   }
-  <span class="cngx-sr-only" [id]="stepDescriptorId(node)">{{ announcement.statusPhrase(node) }}</span>
+  <span class="cngx-sr-only" [id]="announcement.descriptorId(node)">{{ announcement.statusPhrase(node) }}</span>
 </ng-template>
 
 <ng-template #defaultIndicator let-position>

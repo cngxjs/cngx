@@ -370,7 +370,7 @@ describe('CngxTabGroup organism', () => {
       expect(tabs[1].querySelector('.cngx-tabs__badge')).toBeNull();
     });
 
-    it('aria-describedby ID is always present in the DOM (sr-only span lives even when empty)', () => {
+    it('gates the aria-describedby reference on the status phrase (sr-only span stays in the DOM)', () => {
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({
         providers: [provideZonelessChangeDetection()],
@@ -382,15 +382,17 @@ describe('CngxTabGroup organism', () => {
           'button[role="tab"]',
         ) as NodeListOf<HTMLButtonElement>,
       );
-      for (const tab of tabs) {
-        const descId = tab.getAttribute('aria-describedby');
-        expect(descId).toBeTruthy();
-        const span = fixture.nativeElement.querySelector(
-          `#${descId}`,
-        ) as HTMLElement;
-        expect(span).not.toBeNull();
-        expect(span.classList.contains('cngx-sr-only')).toBe(true);
-      }
+      // The error tab is referenced and the target is its sr-only span.
+      const descId = tabs[0].getAttribute('aria-describedby');
+      expect(descId).toBeTruthy();
+      const span = fixture.nativeElement.querySelector(`#${descId}`) as HTMLElement;
+      expect(span).not.toBeNull();
+      expect(span.classList.contains('cngx-sr-only')).toBe(true);
+      // The error-free tab keeps its descriptor span in the DOM but emits no
+      // reference - a directly-referenced empty span would still be traversed
+      // by accname 1.2 §2A.
+      expect(tabs[1].getAttribute('aria-describedby')).toBeNull();
+      expect(tabs[1].querySelector('.cngx-sr-only')).not.toBeNull();
     });
 
     it('descriptor content reflects the aggregator announcement when revealed', () => {
@@ -410,7 +412,7 @@ describe('CngxTabGroup organism', () => {
       expect(span.textContent?.trim()).toBe('2 errors');
     });
 
-    it('descriptor content collapses to empty when shouldShow() flips to false', () => {
+    it('descriptor collapses and the reference is dropped when shouldShow() flips to false', () => {
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({
         providers: [provideZonelessChangeDetection()],
@@ -423,10 +425,11 @@ describe('CngxTabGroup organism', () => {
         'button[role="tab"]',
       )[0] as HTMLButtonElement;
       expect(tabA.querySelector('.cngx-tabs__badge')).toBeNull();
-      const descId = tabA.getAttribute('aria-describedby')!;
-      const span = fixture.nativeElement.querySelector(
-        `#${descId}`,
-      ) as HTMLElement;
+      // No status phrase -> the reference is gated off; the sr-only span
+      // stays in the DOM, empty.
+      expect(tabA.getAttribute('aria-describedby')).toBeNull();
+      const span = tabA.querySelector('.cngx-sr-only') as HTMLElement;
+      expect(span).not.toBeNull();
       expect(span.textContent?.trim()).toBe('');
     });
 
@@ -497,10 +500,10 @@ describe('CngxTabGroup organism', () => {
         'button[role="tab"]',
       ) as HTMLButtonElement;
       expect(tab.querySelector('.cngx-tabs__badge')).toBeNull();
-      const descId = tab.getAttribute('aria-describedby')!;
-      const span = fixture.nativeElement.querySelector(
-        `#${descId}`,
-      ) as HTMLElement;
+      // Error-free tab: no phrase, so no reference; the descriptor span
+      // stays rendered and empty.
+      expect(tab.getAttribute('aria-describedby')).toBeNull();
+      const span = tab.querySelector('.cngx-sr-only') as HTMLElement;
       expect(span).not.toBeNull();
       expect(span.textContent?.trim()).toBe('');
     });
