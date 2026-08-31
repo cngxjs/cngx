@@ -1,6 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createAsyncState, type MutableAsyncState } from './create-async-state';
+import { CngxAsyncRegistry } from '../async-registry/async-registry';
+import { provideAsyncRegistry } from '../async-registry/provide-async-registry';
 
 describe('createAsyncState', () => {
   let state: MutableAsyncState<string>;
@@ -85,5 +87,28 @@ describe('createAsyncState', () => {
 
     await vi.runAllTimersAsync();
     await promise;
+  });
+});
+
+describe('createAsyncState registry enrollment', () => {
+  it('register: true enrolls the mutation in the ambient CngxAsyncRegistry', () => {
+    TestBed.configureTestingModule({ providers: [provideAsyncRegistry()] });
+    const registry = TestBed.inject(CngxAsyncRegistry);
+    const state = TestBed.runInInjectionContext(() =>
+      createAsyncState<string>({ register: true, label: 'save' }),
+    );
+
+    expect(registry.isAnythingLoading()).toBe(false);
+    void state.execute(() => new Promise<string>(() => {}));
+    expect(registry.isAnythingLoading()).toBe(true);
+  });
+
+  it('without register the mutation stays invisible to the registry', () => {
+    TestBed.configureTestingModule({ providers: [provideAsyncRegistry()] });
+    const registry = TestBed.inject(CngxAsyncRegistry);
+    const state = TestBed.runInInjectionContext(() => createAsyncState<string>());
+
+    void state.execute(() => new Promise<string>(() => {}));
+    expect(registry.isAnythingLoading()).toBe(false);
   });
 });
