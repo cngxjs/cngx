@@ -187,6 +187,51 @@ describe('injectRecycler', () => {
       const recycler = createRecycler();
       expect(recycler.skeletonSlots()).toBe(Math.ceil(500 / 48));
     });
+
+    it('announces the empty phrase when a load settles with zero items', () => {
+      const status = signal<AsyncStatus>('loading');
+      const mockState = createMockState({ status });
+
+      let recycler!: CngxRecycler;
+      TestBed.runInInjectionContext(() => {
+        recycler = injectRecycler({
+          scrollElement: mockContainer,
+          totalCount: () => 0,
+          estimateSize: 48,
+          state: mockState,
+        });
+      });
+      TestBed.flushEffects();
+
+      status.set('success');
+      TestBed.flushEffects();
+
+      // Routed by result: zero items is the empty phrase, not "0 results found".
+      expect(recycler.announcement()).toBe('No results.');
+    });
+
+    it('announces the filtered phrase when a reload settles with fewer items', () => {
+      const status = signal<AsyncStatus>('refreshing');
+      const mockState = createMockState({ status });
+      const total = signal(7);
+
+      let recycler!: CngxRecycler;
+      TestBed.runInInjectionContext(() => {
+        recycler = injectRecycler({
+          scrollElement: mockContainer,
+          totalCount: () => total(),
+          estimateSize: 48,
+          state: mockState,
+        });
+      });
+      TestBed.flushEffects();
+
+      total.set(3);
+      status.set('success');
+      TestBed.flushEffects();
+
+      expect(recycler.announcement()).toBe('3 results found.');
+    });
   });
 
   describe('showSkeleton with delay', () => {

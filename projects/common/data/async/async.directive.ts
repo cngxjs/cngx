@@ -5,7 +5,6 @@ import {
   type EmbeddedViewRef,
   inject,
   input,
-  signal,
   TemplateRef,
   ViewContainerRef,
 } from '@angular/core';
@@ -35,7 +34,10 @@ export interface CngxAsyncContext<T> {
  * - **success + empty** → empty template (or nothing)
  * - **error (first load)** → error template (or nothing)
  * - **refreshing / loading (with data)** → content template (old data stays visible)
- * - **error (with data)** → content template (old data stays visible)
+ * - **error (with data)** → content template (old data stays visible) -
+ *   `resolveAsyncView` reports this as `content+error`, but a structural
+ *   directive renders exactly one template, so the error half is flattened
+ *   away here; surface it separately (toast, alert) when it must be visible
  *
  * ### Minimal - just content
  * ```html
@@ -102,7 +104,10 @@ export class CngxAsync<T> {
     return resolveAsyncView(s.status(), s.isFirstLoad(), s.isEmpty());
   });
 
-  private readonly currentView = signal<AsyncView>('none');
+  // Plain field, not a signal: it is only ever read and written inside the
+  // render effect - as a signal it fed the effect's own dependency graph and
+  // caused one spurious re-run per view switch.
+  private currentView: AsyncView = 'none';
   private contentViewRef: EmbeddedViewRef<CngxAsyncContext<T>> | null = null;
 
   constructor() {
@@ -112,14 +117,14 @@ export class CngxAsync<T> {
       // content+error → show content (structural directive has no dual-render)
       const effective = view === 'content+error' ? 'content' : view;
 
-      if (effective === this.currentView()) {
+      if (effective === this.currentView) {
         this.updateContentContext(s);
         return;
       }
 
       this.vcr.clear();
       this.contentViewRef = null;
-      this.currentView.set(effective);
+      this.currentView = effective;
 
       this.renderView(effective, s);
     });

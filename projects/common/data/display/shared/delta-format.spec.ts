@@ -64,5 +64,11 @@ describe('delta-format', () => {
       expect(formatDelta(1234, 'absolute', 'en-US')).toBe('+1,234');
       expect(formatDelta(-1234, 'absolute', 'en-US')).toBe('1,234');
     });
+
+    it('percent mode is locale-aware like absolute mode', () => {
+      // de-DE writes the decimal separator as a comma; toFixed would print ".".
+      expect(formatDelta(5.3, 'percent', 'de-DE')).toBe('+5,3\u202f%');
+      expect(formatDelta(0, 'percent', 'de-DE')).toBe('0,0\u202f%');
+    });
   });
 });
