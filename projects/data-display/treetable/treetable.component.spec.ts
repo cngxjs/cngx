@@ -376,11 +376,12 @@ describe('CngxTreetable', () => {
       for (const checkbox of bodyCheckboxes) {
         expect((checkbox.nativeElement as HTMLElement).getAttribute('tabindex')).toBe('-1');
       }
-      // The header select-all checkbox stays the one fixed extra stop.
+      // The header select-all checkbox is folded too - the roving row is the
+      // grid's only tab stop; Ctrl+A is the keyboard path to select-all.
       const headerCheckbox = fixture.debugElement.query(
         By.css('cdk-header-cell .cngx-treetable__checkbox'),
       );
-      expect((headerCheckbox.nativeElement as HTMLElement).getAttribute('tabindex')).toBeNull();
+      expect((headerCheckbox.nativeElement as HTMLElement).getAttribute('tabindex')).toBe('-1');
     });
 
     it('syncs the logical focus when DOM focus lands in a row', () => {
