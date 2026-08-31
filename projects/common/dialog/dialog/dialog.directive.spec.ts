@@ -15,10 +15,13 @@ import { CngxDialogStack, provideDialogStack } from './dialog-stack';
 
 // JSDOM does not implement HTMLDialogElement.showModal/show/close, so we stub them.
 function stubDialogElement(el: HTMLDialogElement): void {
-  el.showModal ??= vi.fn(() => {
+  // Unconditional instance assignment: the builder runs with isolate:false,
+  // and dialog.service.spec.ts polyfills these on the shared prototype - a
+  // ??= here would then skip the spy and toHaveBeenCalled() blows up.
+  el.showModal = vi.fn(() => {
     el.setAttribute('open', '');
   });
-  el.show ??= vi.fn(() => {
+  el.show = vi.fn(() => {
     el.setAttribute('open', '');
   });
   const originalClose = el.close?.bind(el);
