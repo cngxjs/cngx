@@ -4,6 +4,7 @@ import {
   type OperatorFunction,
   defer,
   filter,
+  finalize,
   map,
   tap,
 } from 'rxjs';
@@ -14,18 +15,27 @@ import {
  * Any `ManualAsyncState<T>` satisfies this - operators only need the write side.
  */
 interface AsyncStateSink<T> {
-  set(status: 'loading' | 'refreshing' | 'pending'): void;
+  set(status: 'idle' | 'loading' | 'refreshing' | 'pending'): void;
   setSuccess(data: T): void;
   setError(error: unknown): void;
   setProgress(value: number | undefined): void;
+  /**
+   * Optional read side: when present, `tapAsyncState` picks `refreshing`
+   * over `loading` for a re-subscribe after data has already landed.
+   * Any `ManualAsyncState<T>` provides it.
+   */
+  isFirstLoad?: () => boolean;
 }
 
 /**
  * RxJS operator that wires an Observable's lifecycle to a `ManualAsyncState`.
  *
- * On subscribe: sets `loading` (or `refreshing` if data was already loaded).
+ * On subscribe: sets `loading` (or `refreshing` if data was already loaded,
+ * read via the sink's `isFirstLoad`; an explicit `options.status` wins).
  * On next: calls `setSuccess(value)`.
  * On error: calls `setError(err)` and **re-throws** (does not swallow).
+ * On teardown without a value (unsubscribe mid-flight, empty complete):
+ * resets the sink to `idle` so a cancelled request never leaves it busy.
  *
  * The Observable passes through unchanged - `tapAsyncState` is a side-effect operator.
  *
@@ -48,11 +58,25 @@ export function tapAsyncState<T>(
 ): MonoTypeOperatorFunction<T> {
   return (source: Observable<T>) =>
     defer(() => {
-      state.set(options?.status ?? 'loading');
+      state.set(options?.status ?? (state.isFirstLoad?.() === false ? 'refreshing' : 'loading'));
+      let settled = false;
       return source.pipe(
         tap({
-          next: (value) => state.setSuccess(value),
-          error: (err: unknown) => state.setError(err),
+          next: (value) => {
+            settled = true;
+            state.setSuccess(value);
+          },
+          error: (err: unknown) => {
+            settled = true;
+            state.setError(err);
+          },
+        }),
+        finalize(() => {
+          // Torn down without ever settling (cancelled mid-flight or an
+          // empty complete) - do not leave the sink busy forever.
+          if (!settled) {
+            state.set('idle');
+          }
         }),
       );
     });
@@ -159,6 +183,7 @@ export function tapHttpAsyncState<T>(
   return (source: Observable<unknown>) =>
     defer(() => {
       state.set(options?.status ?? 'loading');
+      let settled = false;
       return source.pipe(
         tapAsyncProgress<unknown>(state),
         filter((event): event is HttpResponseLike<T> => {
@@ -171,8 +196,19 @@ export function tapHttpAsyncState<T>(
           return response.body;
         }),
         tap({
-          next: (value) => state.setSuccess(value),
-          error: (err: unknown) => state.setError(err),
+          next: (value) => {
+            settled = true;
+            state.setSuccess(value);
+          },
+          error: (err: unknown) => {
+            settled = true;
+            state.setError(err);
+          },
+        }),
+        finalize(() => {
+          if (!settled) {
+            state.set('idle');
+          }
         }),
       );
     });
