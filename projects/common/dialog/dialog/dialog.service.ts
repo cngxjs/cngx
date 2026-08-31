@@ -53,13 +53,6 @@ export class CngxDialogRef<T = unknown> {
   /** @internal */
   readonly _outletRef: ComponentRef<CngxDialogOutlet>;
 
-  /**
-   * @internal The per-open close-watcher effect. Owned by `CngxDialogOpener`,
-   * destroyed in its cleanup - the effect's injector outlives the dialog, so
-   * without the explicit destroy every `open()` leaks one live effect.
-   */
-  _cleanupEffect: EffectRef | null = null;
-
   /** @internal */
   constructor(
     private readonly inner: DialogRef<T>,
@@ -209,6 +202,14 @@ export class CngxDialogOpener {
   private readonly openDialogs: CngxDialogRef<unknown>[] = [];
 
   /**
+   * Per-open close-watcher effects, keyed by ref. Owned here (not on the
+   * public `CngxDialogRef`) - the effect's injector outlives the dialog, so
+   * without the explicit destroy in `cleanup()` every `open()` would leak
+   * one live effect.
+   */
+  private readonly cleanupEffects = new WeakMap<CngxDialogRef<unknown>, EffectRef>();
+
+  /**
    * Open a dialog with the given component.
    *
    * @param component - The component type to render inside the dialog.
@@ -300,17 +301,20 @@ export class CngxDialogOpener {
     const dialogInstance = outletRef.instance.dialog();
     dialogInstance.open();
 
-    dialogRef._cleanupEffect = effect(
-      () => {
-        if (
-          innerDialog.lifecycle() === 'closed' &&
-          outletRef.hostView &&
-          !outletRef.hostView.destroyed
-        ) {
-          untracked(() => this.cleanup(dialogRef));
-        }
-      },
-      { injector: childInjector },
+    this.cleanupEffects.set(
+      dialogRef as CngxDialogRef<unknown>,
+      effect(
+        () => {
+          if (
+            innerDialog.lifecycle() === 'closed' &&
+            outletRef.hostView &&
+            !outletRef.hostView.destroyed
+          ) {
+            untracked(() => this.cleanup(dialogRef));
+          }
+        },
+        { injector: childInjector },
+      ),
     );
 
     return dialogRef;
@@ -329,8 +333,8 @@ export class CngxDialogOpener {
   }
 
   private cleanup(ref: CngxDialogRef<unknown>): void {
-    ref._cleanupEffect?.destroy();
-    ref._cleanupEffect = null;
+    this.cleanupEffects.get(ref)?.destroy();
+    this.cleanupEffects.delete(ref);
 
     const idx = this.openDialogs.indexOf(ref);
     if (idx >= 0) {

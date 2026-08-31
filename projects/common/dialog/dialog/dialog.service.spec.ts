@@ -45,17 +45,19 @@ describe('CngxDialogOpener', () => {
     expect(document.body.querySelector('cngx-dialog-outlet')).toBeNull();
   });
 
-  it('destroys the per-open cleanup effect after close', () => {
+  it('runs cleanup exactly once per open (the close-watcher effect is destroyed)', () => {
     const opener = createOpener();
+    const detachSpy = vi.spyOn(TestBed.inject(ApplicationRef), 'detachView');
     const ref = opener.open<number>(TestContent);
-    expect(ref._cleanupEffect).not.toBeNull();
 
     ref.close(1);
     TestBed.flushEffects();
+    // A surviving close-watcher effect would re-enter cleanup on the next
+    // flush; a destroyed one cannot.
+    TestBed.flushEffects();
 
-    // The effect's injector outlives the dialog - without the explicit
-    // destroy every open() would leak one live effect.
-    expect(ref._cleanupEffect).toBeNull();
+    expect(document.body.querySelector('cngx-dialog-outlet')).toBeNull();
+    expect(detachSpy).toHaveBeenCalledTimes(1);
   });
 
   describe('programmatic parity with the declarative surface', () => {
