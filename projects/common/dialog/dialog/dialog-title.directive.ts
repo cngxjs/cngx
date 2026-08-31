@@ -46,13 +46,16 @@ export class CngxDialogTitle {
   private readonly elRef = inject(ElementRef<HTMLElement>);
   private readonly dialogRef = inject(DIALOG_REF, { optional: true });
 
+  private readonly idState = signal(nextUid('cngx-dialog-title'));
+
   /**
    * Auto-generated unique ID bound to the host `[id]` attribute.
    *
    * Used by `CngxDialog` for `aria-labelledby`. When a parent `CngxDialog`
    * is present, the ID is derived from the dialog's ID (e.g. `cngx-dialog-0-title`).
+   * Read-only: an externally mutated id would silently break the ARIA wiring.
    */
-  readonly id = signal(nextUid('cngx-dialog-title'));
+  readonly id = this.idState.asReadonly();
 
   /**
    * Text content of the title element, read fresh on every call.
@@ -67,7 +70,7 @@ export class CngxDialogTitle {
 
   constructor() {
     if (this.dialogRef) {
-      this.id.set(`${this.dialogRef.id()}-title`);
+      this.idState.set(`${this.dialogRef.id()}-title`);
     }
   }
 }

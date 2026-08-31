@@ -699,6 +699,13 @@ describe('CngxDialogTitle', () => {
     const titleEl = fixture.nativeElement.querySelector('[cngxDialogTitle]') as HTMLElement;
     expect(titleEl.id).toMatch(/-title$/);
   });
+
+  it('derives its id from the parent dialog id', () => {
+    const { fixture } = setup(FullDialogHost);
+    const dialog = fixture.componentInstance.dialog();
+    const titleEl = fixture.nativeElement.querySelector('[cngxDialogTitle]') as HTMLElement;
+    expect(titleEl.id).toBe(`${dialog.id()}-title`);
+  });
 });
 
 describe('CngxDialogDescription', () => {
