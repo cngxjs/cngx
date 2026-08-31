@@ -175,8 +175,8 @@
       --cngx-dialog-max-height: var(--cngx-bottom-sheet-max-height, 80vh);
     }
 
-    /* Drag handle. */
-    :scope::before {
+    /* Drag handle - gated on the [showHandle] modifier class. */
+    :scope.cngx-bottom-sheet--handle::before {
       content: '';
       display: block;
       width: var(--cngx-bottom-sheet-handle-width, 40px);
@@ -214,7 +214,7 @@
  * Unlayered + direct selector (outside @scope) to beat the layered component
  * rule. */
 @media (forced-colors: active) {
-  dialog.cngx-bottom-sheet::before {
+  dialog.cngx-bottom-sheet.cngx-bottom-sheet--handle::before {
     background: CanvasText;
   }
 }
