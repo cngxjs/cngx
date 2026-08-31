@@ -266,7 +266,10 @@ export class CngxDialogOpener {
     const hostEl = outletRef.location.nativeElement as HTMLElement;
     this.doc.body.appendChild(hostEl);
 
-    const innerDialog = outletRef.instance.dialog() as DialogRef<T>;
+    // CngxDialog has open() but the DialogRef<T> interface does not - keep
+    // the concrete instance for the open() call below.
+    const dialogInstance = outletRef.instance.dialog();
+    const innerDialog = dialogInstance as DialogRef<T>;
 
     const outletVcr = outletRef.instance.contentOutlet();
     let contentRef: ComponentRef<unknown> | null = null;
@@ -297,8 +300,6 @@ export class CngxDialogOpener {
 
     this.openDialogs.push(dialogRef as CngxDialogRef<unknown>);
 
-    // CngxDialog has open() but the DialogRef<T> interface does not - call the concrete instance.
-    const dialogInstance = outletRef.instance.dialog();
     dialogInstance.open();
 
     this.cleanupEffects.set(

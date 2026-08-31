@@ -45,6 +45,14 @@ describe('CngxDialogOpener', () => {
     expect(document.body.querySelector('cngx-dialog-outlet')).toBeNull();
   });
 
+  it('exposes the inner dialog identity on the ref', () => {
+    const opener = createOpener();
+    const ref = opener.open<number>(TestContent);
+    expect(ref.id()).toMatch(/^cngx-dialog-\d+$/);
+    ref.close(1);
+    TestBed.flushEffects();
+  });
+
   it('runs cleanup exactly once per open (the close-watcher effect is destroyed)', () => {
     const opener = createOpener();
     const detachSpy = vi.spyOn(TestBed.inject(ApplicationRef), 'detachView');
