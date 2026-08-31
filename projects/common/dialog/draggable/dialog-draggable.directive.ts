@@ -13,6 +13,7 @@ import {
 import { nextUid } from '@cngx/core/utils';
 
 import { CNGX_DIALOG_ARIA_REGISTRY } from '../dialog/dialog-aria-registry';
+import { applySrOnly } from '../dialog/sr-only';
 
 /**
  * Opt-in drag behavior for `CngxDialog`.
@@ -336,16 +337,7 @@ export class CngxDialogDraggable {
     const node = this.doc.createElement('span');
     node.id = nextUid('cngx-dialog-drag-hint');
     node.textContent = 'Use arrow keys to move the dialog; Shift for larger steps';
-    node.className = 'cngx-sr-only';
-    node.style.position = 'absolute';
-    node.style.width = '1px';
-    node.style.height = '1px';
-    node.style.padding = '0';
-    node.style.margin = '-1px';
-    node.style.overflow = 'hidden';
-    node.style.clip = 'rect(0, 0, 0, 0)';
-    node.style.whiteSpace = 'nowrap';
-    node.style.border = '0';
+    applySrOnly(node);
     this.elRef.nativeElement.appendChild(node);
     this.instructionNode = node;
     return node;

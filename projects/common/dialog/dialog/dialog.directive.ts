@@ -29,6 +29,7 @@ import {
 import { CngxDialogStack } from './dialog-stack';
 import { CngxDialogTitle } from './dialog-title.directive';
 import { CngxDialogDescription } from './dialog-description.directive';
+import { applySrOnly } from './sr-only';
 
 /**
  * Signal-driven state machine for native `<dialog>`.
@@ -684,16 +685,7 @@ export class CngxDialog<T = unknown> implements DialogRef<T>, CngxDialogAriaRegi
     const span = this.renderer.createElement('span') as HTMLSpanElement;
     span.setAttribute('aria-live', 'polite');
     span.setAttribute('aria-atomic', 'true');
-    span.className = 'cngx-sr-only';
-    span.style.position = 'absolute';
-    span.style.width = '1px';
-    span.style.height = '1px';
-    span.style.padding = '0';
-    span.style.margin = '-1px';
-    span.style.overflow = 'hidden';
-    span.style.clip = 'rect(0, 0, 0, 0)';
-    span.style.whiteSpace = 'nowrap';
-    span.style.border = '0';
+    applySrOnly(span);
     this.renderer.appendChild(this.dialogElement, span);
     this.liveRegion = span;
   }

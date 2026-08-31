@@ -379,6 +379,16 @@ describe('CngxDialog', () => {
       expect(liveRegion).not.toBeNull();
     });
 
+    it('keeps the live region visually hidden but perceivable to AT', () => {
+      const { dialogEl } = setup(FullDialogHost);
+      const liveRegion = dialogEl.querySelector('[aria-live="polite"]') as HTMLElement;
+      // sr-only recipe: off-screen clip, never display:none - a hidden live
+      // region would silence every announce.
+      expect(liveRegion.className).toBe('cngx-sr-only');
+      expect(liveRegion.style.position).toBe('absolute');
+      expect(liveRegion.style.display).not.toBe('none');
+    });
+
     it('announces the current title text on each open, not a cached first read', () => {
       const { fixture, dialogEl } = setup(FullDialogHost);
       const dialog = openFully(fixture, dialogEl);
