@@ -233,12 +233,8 @@ describe('CngxDialog', () => {
   });
 
   describe('backdrop click', () => {
-    it('dismisses when click is outside dialog rect', () => {
-      const { fixture, dialogEl } = setup(FullDialogHost);
-      const dialog = openFully(fixture, dialogEl);
-      expect(dialog.lifecycle()).toBe('open');
-
-      // Mock getBoundingClientRect to simulate a dialog at (100, 100) to (400, 300)
+    /** Simulate a dialog content rect at (100, 100) to (400, 300). */
+    function mockRect(dialogEl: HTMLDialogElement): void {
       vi.spyOn(dialogEl, 'getBoundingClientRect').mockReturnValue({
         left: 100,
         right: 400,
@@ -250,33 +246,61 @@ describe('CngxDialog', () => {
         y: 100,
         toJSON: () => ({}),
       });
+    }
 
-      // Click outside (at 50, 50)
-      const click = new MouseEvent('click', { clientX: 50, clientY: 50, bubbles: true });
-      dialogEl.dispatchEvent(click);
+    function pointerDownAt(dialogEl: HTMLDialogElement, x: number, y: number): void {
+      dialogEl.dispatchEvent(new MouseEvent('pointerdown', { clientX: x, clientY: y }));
+    }
+
+    it('dismisses when the interaction starts and ends on the backdrop', () => {
+      const { fixture, dialogEl } = setup(FullDialogHost);
+      const dialog = openFully(fixture, dialogEl);
+      expect(dialog.lifecycle()).toBe('open');
+      mockRect(dialogEl);
+
+      pointerDownAt(dialogEl, 50, 50);
+      dialogEl.dispatchEvent(new MouseEvent('click', { clientX: 50, clientY: 50, bubbles: true }));
       fixture.detectChanges();
 
       expect(dialog.result()).toBe('dismissed');
     });
 
+    it('does not dismiss a text-selection drag that started inside the content', () => {
+      const { fixture, dialogEl } = setup(FullDialogHost);
+      const dialog = openFully(fixture, dialogEl);
+      mockRect(dialogEl);
+
+      // Selection starts inside the content rect, mouseup lands on the
+      // backdrop - the browser synthesises a click on the dialog with
+      // outside coordinates.
+      pointerDownAt(dialogEl, 200, 200);
+      dialogEl.dispatchEvent(new MouseEvent('click', { clientX: 50, clientY: 50, bubbles: true }));
+      fixture.detectChanges();
+
+      expect(dialog.lifecycle()).toBe('open');
+    });
+
+    it('does not dismiss keyboard clicks from child controls reporting (0, 0)', () => {
+      const { fixture, dialogEl } = setup(FullDialogHost);
+      const dialog = openFully(fixture, dialogEl);
+      mockRect(dialogEl);
+
+      // Enter/Space on a child control fires a click with (0, 0) coordinates
+      // whose target is the control, never the dialog element.
+      const titleEl = fixture.nativeElement.querySelector('[cngxDialogTitle]') as HTMLElement;
+      titleEl.dispatchEvent(new MouseEvent('click', { clientX: 0, clientY: 0, bubbles: true }));
+      fixture.detectChanges();
+
+      expect(dialog.lifecycle()).toBe('open');
+    });
+
     it('does not dismiss when closeOnBackdropClick is false', () => {
       const { fixture, dialogEl } = setup(BlockingDialogHost);
       const dialog = openFully(fixture, dialogEl);
+      mockRect(dialogEl);
 
-      vi.spyOn(dialogEl, 'getBoundingClientRect').mockReturnValue({
-        left: 100,
-        right: 400,
-        top: 100,
-        bottom: 300,
-        width: 300,
-        height: 200,
-        x: 100,
-        y: 100,
-        toJSON: () => ({}),
-      });
-
-      const click = new MouseEvent('click', { clientX: 50, clientY: 50, bubbles: true });
-      dialogEl.dispatchEvent(click);
+      pointerDownAt(dialogEl, 50, 50);
+      dialogEl.dispatchEvent(new MouseEvent('click', { clientX: 50, clientY: 50, bubbles: true }));
       fixture.detectChanges();
 
       expect(dialog.lifecycle()).not.toBe('closed');

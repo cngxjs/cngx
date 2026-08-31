@@ -114,6 +114,7 @@ import { CngxDialogDescription } from './dialog-description.directive';
     '[class.cngx-dialog--error]': 'effectiveError()',
     '[style.--cngx-dialog-backdrop-opacity]': 'backdropOpacity()',
     '(cancel)': 'handleCancel($event)',
+    '(pointerdown)': 'handlePointerDown($event)',
     '(click)': 'handleClick($event)',
   },
 })
@@ -476,24 +477,45 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
     }
   }
 
+  /**
+   * `true` when the last pointerdown landed on the backdrop (the dialog
+   * element itself, outside the content rect). Backdrop dismissal requires
+   * the interaction to START there: a text-selection drag that begins inside
+   * the content and releases over the backdrop synthesises a click with
+   * outside coordinates and must not dismiss.
+   */
+  private pointerDownOnBackdrop = false;
+
+  protected handlePointerDown(event: PointerEvent): void {
+    this.pointerDownOnBackdrop =
+      event.target === this.dialogElement && this.isOutsideContentRect(event.clientX, event.clientY);
+  }
+
   protected handleClick(event: MouseEvent): void {
+    const startedOnBackdrop = this.pointerDownOnBackdrop;
+    this.pointerDownOnBackdrop = false;
+
     if (!this.modal() || !this.closeOnBackdropClick()) {
       return;
     }
     if (this.lifecycleSignal() !== 'open') {
       return;
     }
-
-    // Detect backdrop click: click coordinates outside dialog content rect
-    const rect = this.dialogElement.getBoundingClientRect();
-    if (
-      event.clientX < rect.left ||
-      event.clientX > rect.right ||
-      event.clientY < rect.top ||
-      event.clientY > rect.bottom
-    ) {
+    // Keyboard "clicks" (Enter/Space on a child control) report (0, 0)
+    // coordinates - the target guard rejects them because they target the
+    // control, never the dialog element itself.
+    if (event.target !== this.dialogElement || !startedOnBackdrop) {
+      return;
+    }
+    if (this.isOutsideContentRect(event.clientX, event.clientY)) {
       this.dismiss();
     }
+  }
+
+  /** Backdrop test: coordinates outside the dialog's content rect. */
+  private isOutsideContentRect(x: number, y: number): boolean {
+    const rect = this.dialogElement.getBoundingClientRect();
+    return x < rect.left || x > rect.right || y < rect.top || y > rect.bottom;
   }
 
   private get dialogElement(): HTMLDialogElement {
