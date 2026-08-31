@@ -185,7 +185,7 @@ export function injectAsyncState<T>(
       // tracking probe). A rapid follow-up change supersedes this capture
       // before the timer consumes it - observe the rejection here so a
       // superseded failure never surfaces as an unhandled rejection.
-      captured.then(undefined, () => {});
+      captured.then(undefined, () => undefined);
     }
     debounceTimer = setTimeout(() => {
       debounceTimer = undefined;
