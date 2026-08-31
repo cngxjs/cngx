@@ -10,6 +10,14 @@ export interface SortEntry {
   direction: 'asc' | 'desc';
 }
 
+function entryEqual(a: SortEntry | null | undefined, b: SortEntry | null | undefined): boolean {
+  return a === b || (!!a && !!b && a.active === b.active && a.direction === b.direction);
+}
+
+function entriesEqual(a: SortEntry[], b: SortEntry[]): boolean {
+  return a === b || (a.length === b.length && a.every((entry, i) => entryEqual(entry, b[i])));
+}
+
 /**
  * Atom directive that tracks sort state (active field + direction).
  *
@@ -27,6 +35,8 @@ export interface SortEntry {
  * adds it as a secondary (tertiary, …) sort key instead of replacing the
  * primary one. Shift-clicking an active column cycles it asc → desc → removed.
  * Multi-sort state is always uncontrolled; use `sortsChange` to read it.
+ * While a controlled pin is bound, additive clicks degrade to the
+ * single-sort cycle.
  *
  * Consumer connects this to a table or list via a `computed()` - nothing is
  * injected automatically.
@@ -82,23 +92,42 @@ export class CngxSort {
   }
 
   /** The active sort column of the primary entry (controlled takes precedence in single-sort mode). */
-  readonly active = computed(() => this.activeInput() ?? this.sortsState()[0]?.active);
+  readonly active = computed(() => this.activeInput() ?? this.sorts()[0]?.active);
   /** The active sort direction of the primary entry (controlled takes precedence in single-sort mode). */
-  readonly direction = computed(() => this.directionInput() ?? this.sortsState()[0]?.direction);
+  readonly direction = computed(() => this.directionInput() ?? this.sorts()[0]?.direction);
 
   /**
    * The primary sort state, or `null` when no sort is active.
    * In multi-sort mode this is the first entry in `sorts`.
    */
-  readonly sort = computed(() =>
-    this.active() ? { active: this.active(), direction: this.direction() ?? 'asc' } : null,
+  readonly sort = computed(
+    () => (this.active() ? { active: this.active(), direction: this.direction() ?? 'asc' } : null),
+    { equal: entryEqual },
   );
 
   /**
    * All active sort entries in priority order.
    * Contains at most one entry when additive mode has not been used.
+   * In controlled mode the entry is derived from `cngxSortActive` /
+   * `cngxSortDirection` (a falsy active key means no sort); headers and
+   * data sources read this signal, so the controlled pin drives them too.
    */
-  readonly sorts = this.sortsState.asReadonly();
+  readonly sorts = computed<SortEntry[]>(
+    () => {
+      const controlledActive = this.activeInput();
+      if (controlledActive !== undefined) {
+        if (!controlledActive) {
+          return [];
+        }
+        return [{ active: controlledActive, direction: this.directionInput() ?? 'asc' }];
+      }
+      return this.sortsState();
+    },
+    // Structural equal: the controlled branch builds a fresh entry literal on
+    // every recompute; identity churn here would cascade into header state and
+    // a full re-sort in CngxSmartDataSource.processed.
+    { equal: entriesEqual },
+  );
 
   /** `true` when at least one sort is active. */
   readonly isActive = computed(() => this.sorts().length > 0);
@@ -122,9 +151,15 @@ export class CngxSort {
    * - Field not in stack → append as asc
    * - Field in stack as asc → change to desc
    * - Field in stack as desc → remove from stack
+   *
+   * With a controlled `cngxSortActive` pin bound, the sort is event-only: the
+   * cycle is computed off the effective entry and emitted, the internal state
+   * stays untouched (nothing stale surfaces if the pin unbinds later). Since
+   * multi-sort is always uncontrolled, an additive call degrades to the
+   * non-additive controlled cycle while a pin is bound.
    */
   setSort(field: string, additive = false): void {
-    if (additive) {
+    if (additive && this.activeInput() === undefined) {
       const current = this.sortsState();
       const idx = current.findIndex((s) => s.active === field);
       let next: SortEntry[];
@@ -139,16 +174,26 @@ export class CngxSort {
       this.sortsChange.emit(next);
       this.sortChange.emit(next[0]);
     } else {
-      const current = this.sortsState();
+      // Cycle off the effective state: with a controlled pin bound, the first
+      // click on the pinned column must continue the cycle (asc -> desc), not
+      // restart it from the empty internal state. In that case the write is
+      // skipped too - the consumer owns the state, and a shadow copy would
+      // surface as stale sort once the pin unbinds.
+      const controlled = this.activeInput() !== undefined;
+      const current = this.sorts();
       if (field === current[0]?.active && current[0].direction === 'desc') {
         // Third click on the active column: cycle desc -> cleared.
-        this.sortsState.set([]);
+        if (!controlled) {
+          this.sortsState.set([]);
+        }
         this.sortChange.emit(undefined);
         this.sortsChange.emit([]);
       } else {
         const dir: 'asc' | 'desc' = field === current[0]?.active ? 'desc' : 'asc';
         const entry: SortEntry = { active: field, direction: dir };
-        this.sortsState.set([entry]);
+        if (!controlled) {
+          this.sortsState.set([entry]);
+        }
         this.sortChange.emit(entry);
         this.sortsChange.emit([entry]);
       }

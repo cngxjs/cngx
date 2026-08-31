@@ -1,4 +1,4 @@
-import { DestroyRef, effect, inject } from '@angular/core';
+import { DestroyRef, effect, inject, untracked } from '@angular/core';
 
 import type { CngxPaginate } from './paginate.directive';
 
@@ -78,14 +78,16 @@ export function connectPaginateEmit(
     const index = paginate.pageIndex();
     if (index !== lastIndex) {
       lastIndex = index;
-      handlers.onIndex(index);
+      // Consumer handlers run synchronously - keep their signal reads/writes
+      // out of this effect's dependency graph.
+      untracked(() => handlers.onIndex(index));
     }
   });
   effect(() => {
     const size = paginate.pageSize();
     if (size !== lastSize) {
       lastSize = size;
-      handlers.onSize(size);
+      untracked(() => handlers.onSize(size));
     }
   });
 }
