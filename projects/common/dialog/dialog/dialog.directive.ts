@@ -11,6 +11,7 @@ import {
   isDevMode,
   Renderer2,
   signal,
+  untracked,
 } from '@angular/core';
 
 import { buildAsyncStateView, type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
@@ -327,7 +328,7 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
 
     effect(() => {
       if (this.lifecycleSignal() === 'open') {
-        const titleText = this.titleDirective()?.textContent() ?? '';
+        const titleText = untracked(() => this.titleDirective()?.textContent() ?? '');
         if (titleText && this.liveRegion) {
           this.liveRegion.textContent = titleText;
           // Clear after one frame so subsequent opens re-announce
@@ -341,9 +342,19 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
     });
 
     effect(() => {
+      // The error VALUE is the announce trigger and stays tracked: the
+      // boolean effectiveError() alone is equal-cut on true -> false -> true,
+      // so a retried identical failure would never re-fire this effect.
       if (this.effectiveError() && this.liveRegion) {
         const errMsg = this.state()?.error() ?? this.submitErrorState();
         this.liveRegion.textContent = typeof errMsg === 'string' ? errMsg : 'An error occurred';
+        // Clear after one frame (same pattern as the title announce) so a
+        // repeated identical error is a fresh mutation the SR re-announces.
+        requestAnimationFrame(() => {
+          if (this.liveRegion) {
+            this.liveRegion.textContent = '';
+          }
+        });
       }
     });
 

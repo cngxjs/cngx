@@ -622,6 +622,33 @@ describe('CngxDialog submitAction', () => {
     expect(dialog.lifecycle()).toBe('closed');
   });
 
+  it('re-announces a repeated identical submit error', async () => {
+    const { fixture, dialogEl } = setup(SubmitDialogHost);
+    const submitFn = vi.fn().mockRejectedValue('Save failed');
+    fixture.componentInstance.action.set(submitFn);
+    fixture.detectChanges();
+
+    const dialog = openFully(fixture, dialogEl);
+    const liveRegion = dialogEl.querySelector('[aria-live="polite"]') as HTMLElement;
+
+    dialog.close(42 as never);
+    await vi.advanceTimersByTimeAsync(0);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(liveRegion.textContent).toBe('Save failed');
+
+    // The clear-after-a-frame makes the next identical message a fresh
+    // mutation instead of a silent same-string re-assignment.
+    vi.advanceTimersByTime(16);
+    expect(liveRegion.textContent).toBe('');
+
+    dialog.close(42 as never);
+    await vi.advanceTimersByTimeAsync(0);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(liveRegion.textContent).toBe('Save failed');
+  });
+
   it('closes immediately when no submitAction is set', () => {
     const { fixture, dialogEl } = setup(SubmitDialogHost);
     // action is undefined by default
