@@ -42,8 +42,12 @@ export class CngxGrid {
   readonly columns = input<number | string, number | string>(1, {
     transform: coerceColumns,
   });
-  /** CSS gap between cells. */
-  readonly gap = input('16px');
+  /**
+   * CSS gap between cells. The default reads the `--cngx-gap-md` override
+   * hook and falls back to the density scale (`--cngx-space-md`), so a root
+   * `[data-density]` swap rescales the grid; any CSS gap value is accepted.
+   */
+  readonly gap = input('var(--cngx-gap-md, var(--cngx-space-md, 16px))');
 
   /** @internal */
   protected readonly gridTemplateColumns = computed(() => {

@@ -37,9 +37,9 @@ The organism's body is template + reactive ARIA only. All state lives in the pre
 The organism is W3C step-pattern compliant:
 
 - Host element: `role="group"` + `aria-roledescription` (configurable via `withStepperFallbackLabels({ stepRoleDescription })`) + `aria-orientation` + `data-orientation` (for CSS hooks) + `aria-label` / `aria-labelledby`.
-- Step button: `aria-current="step"` (when active) + `aria-controls="<step-id>-panel"` + `aria-disabled` (when disabled) + `aria-busy="true"` (during commit-action pending) + `aria-describedby="<step-id>-desc"` (always present; visibility via SR phrase).
+- Step button: `aria-current="step"` (when active) + `aria-controls="<step-id>-panel"` + `aria-disabled` (when disabled) + `aria-busy="true"` (during commit-action pending) + `aria-describedby="<step-id>-desc"` (the reference is emitted only while the step's SR status phrase is non-empty; the sr-only descriptor span itself always stays in the DOM).
 - Step panel: `role="region"` + `aria-labelledby="<step-id>-header"` + `[hidden]="!isActive"`.
-- Group header: `role="group"` + `aria-roledescription="step group"` + `data-step-depth` + `data-state` + `aria-describedby` (rolls up children's aggregated status).
+- Group header: `role="group"` + `aria-roledescription="step group"` + `data-step-depth` + `data-state` + `aria-describedby` (rolls up children's aggregated status; the reference is gated off while no status applies).
 - Live region: planned for Phase 3 commit-lifecycle SR announcements; deliberately NOT composed via `hostDirectives` because `CngxLiveRegion` would clobber the host's `role="group"` landmark.
 
 ## Skins

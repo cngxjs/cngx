@@ -128,11 +128,18 @@ export class CngxAccordionItem {
   /**
    * The button's `aria-describedby`: subtitle first (an informative secondary
    * line the title-only name-pin would otherwise hide from AT), then the
-   * disabled-reason element. Both IDREFs are always present in the DOM - the
-   * subtitle span toggles `aria-hidden` by presence, the reason span toggles by
-   * `disabled()`. Constant string: the ids never change, so no `computed()`.
+   * disabled-reason element. Both target spans stay in the DOM; each ID
+   * reference is emitted only while its description applies - accname 1.2
+   * §2A traverses a directly-referenced node even when it is hidden, so
+   * `aria-hidden` alone would not suppress a dangling reference.
    */
-  protected readonly describedBy = `${this.subtitleId} ${this.reasonId}`;
+  protected readonly describedBy = computed(() => {
+    const ids = [
+      this.subtitleSlot() ? this.subtitleId : null,
+      this.disabled() && this.disabledReason() ? this.reasonId : null,
+    ].filter((id): id is string => id !== null);
+    return ids.length > 0 ? ids.join(' ') : null;
+  });
 
   /** Lazy region-body slot; absent means the body projects eagerly through the default slot. */
   protected readonly contentSlot = contentChild(CngxAccordionItemContent);

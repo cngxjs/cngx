@@ -478,11 +478,11 @@ export class CngxStepper implements CngxStepPanelHost {
     return `${node.id}-panel`;
   }
 
-  protected stepDescriptorId(node: CngxStepNode): string {
-    return `${node.id}-desc`;
-  }
-
-  /** Live-region + per-step + group SR phrase builders (Level-2 factory). */
+  /**
+   * Live-region + per-step + group SR phrase builders (Level-2 factory);
+   * also owns the descriptor-span id scheme and the gated
+   * `aria-describedby` reference the template binds directly.
+   */
   protected readonly announcement = createStepperAnnouncementBuilders({
     presenter: this.presenter,
     stepsOnly: this.stepsOnly,

@@ -117,6 +117,17 @@ describe('CngxA11yPanel', () => {
     expect(attr('data-motion')).toBeNull();
   });
 
+  it('layers every stylesheet rule so the theme bridge and consumer overrides win', () => {
+    // jsdom does not evaluate @layer; asserted the way the density spec below
+    // reads CSS source. Every rule must sit inside @layer cngx.components -
+    // an unlayered rule would beat the @layer'd Material bridge (cngx.theme).
+    const css = readFileSync(resolve(__dirname, 'a11y-panel.component.css'), 'utf-8');
+    expect(css).toContain('@layer cngx.components {');
+    expect(css.indexOf('@layer cngx.components {')).toBeLessThan(
+      css.indexOf('.cngx-a11y-panel'),
+    );
+  });
+
   it('SETs every --cngx-a11y-panel spacing token from the density scale', () => {
     // jsdom does not resolve the custom-property cascade, so the density-
     // tracking claim is verified the way the touch-target guard reads CSS

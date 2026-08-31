@@ -21,7 +21,7 @@
       [attr.aria-controls]="tabPanelId(tab)"
       [attr.aria-disabled]="tab.disabled() ? 'true' : null"
       [attr.aria-busy]="isTabBusy(tab) ? 'true' : null"
-      [attr.aria-describedby]="tabDescriptorId(tab)"
+      [attr.aria-describedby]="tabDescribedBy(tab)"
       [attr.aria-keyshortcuts]="dismiss.isTabClosable(tab) ? 'Delete' : null"
       (click)="handleHeaderClick(tab)"
       (keydown)="handleTabKeydown(tab, $event)"

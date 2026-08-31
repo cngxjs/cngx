@@ -171,11 +171,13 @@ describe('CngxAccordionItem', () => {
     el.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
   }
 
-  // The button's aria-describedby is `${subtitleId} ${reasonId}`; the reason is
-  // the visually-hidden element among the referenced ids.
+  // The button's aria-describedby carries the reason id only while the item
+  // is disabled with a reason; the reason is the visually-hidden element
+  // among the referenced ids (undefined when the reference is gated off).
   function describedReason(root: HTMLElement, button: HTMLElement): HTMLElement | undefined {
     return (button.getAttribute('aria-describedby') ?? '')
       .split(/\s+/)
+      .filter((id) => id.length > 0)
       .map((id) => root.querySelector<HTMLElement>(`#${id}`))
       .find((el): el is HTMLElement => el?.classList.contains('cngx-visually-hidden') ?? false);
   }
@@ -242,11 +244,11 @@ describe('CngxAccordionItem', () => {
     fixture.detectChanges();
 
     expect(headers[1].getAttribute('aria-disabled')).toBe('true');
-    // aria-describedby now carries `${subtitleId} ${reasonId}`; pick the reason
-    // element (the visually-hidden one) out of the id list.
+    // While disabled with a reason, aria-describedby carries the reason id;
+    // pick the reason element (the visually-hidden one) out of the id list.
     const reason = describedReason(root, headers[1]);
     expect(reason?.textContent?.trim()).toBeTruthy();
-    expect(reason?.getAttribute('aria-hidden')).toBe('false');
+    expect(reason?.getAttribute('aria-hidden')).toBeNull();
 
     headers[0].focus();
     keydown(headers[0], 'ArrowDown');
@@ -254,12 +256,18 @@ describe('CngxAccordionItem', () => {
     expect(document.activeElement).toBe(headers[2]);
   });
 
-  it('keeps the aria-describedby reason IDREF present but hidden when enabled', () => {
+  it('omits the reason id from aria-describedby while enabled (span stays in the DOM)', () => {
     const { headers, root } = setup();
-    const reason = describedReason(root, headers[1]);
-    expect(reason).toBeTruthy();
-    expect(reason?.getAttribute('aria-hidden')).toBe('true');
-    expect(reason?.textContent?.trim()).toBe('');
+    // The reference is gated - a directly-referenced node is traversed by
+    // accname 1.2 §2A even when aria-hidden, so the id must not dangle.
+    expect(describedReason(root, headers[1])).toBeUndefined();
+    // The target span itself stays rendered, hidden and empty.
+    const reasonSpans = root.querySelectorAll<HTMLElement>('.cngx-visually-hidden');
+    expect(reasonSpans.length).toBeGreaterThan(0);
+    for (const span of Array.from(reasonSpans)) {
+      expect(span.getAttribute('aria-hidden')).toBe('true');
+      expect(span.textContent?.trim()).toBe('');
+    }
   });
 
   it('instantiates *cngxAccordionItemContent only after first open', () => {
@@ -348,18 +356,17 @@ describe('CngxAccordionItem', () => {
     expect(button.contains(subtitleWrapper)).toBe(true);
   });
 
-  it('hides the subtitle IDREF wrapper when no subtitle is projected', () => {
+  it('omits the subtitle id from aria-describedby when no subtitle is projected', () => {
     const { headers, root } = setup();
     const button = headers[0];
-    const ids = (button.getAttribute('aria-describedby') ?? '').split(/\s+/);
-    const subtitleWrapper = ids
-      .map((id) => root.querySelector<HTMLElement>(`#${id}`))
-      .find((el) => el?.classList.contains('cngx-accordion-item__subtitle'));
-    // IDREF stays in the DOM (always-present describedby), but is aria-hidden
-    // and empty when unbound.
+    // The wrapper span stays in the DOM (hidden, empty) but its id is not
+    // referenced - the gated reference replaces the old always-present rule.
+    const subtitleWrapper = root.querySelector<HTMLElement>('.cngx-accordion-item__subtitle');
     expect(subtitleWrapper).toBeTruthy();
     expect(subtitleWrapper?.getAttribute('aria-hidden')).toBe('true');
     expect(subtitleWrapper?.textContent?.trim()).toBe('');
+    const ids = (button.getAttribute('aria-describedby') ?? '').split(/\s+/);
+    expect(ids).not.toContain(subtitleWrapper?.id);
   });
 
   it('renders leading aria-hidden and meta as real content, both button siblings', () => {

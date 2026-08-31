@@ -426,6 +426,17 @@ export class CngxTabGroup implements CngxTabPanelHost {
   }
 
   /**
+   * `aria-describedby` for a tab header: the descriptor id while the
+   * status phrase (error state) is non-empty, else `null`. The sr-only
+   * descriptor span stays in the DOM; only the reference is gated -
+   * accname 1.2 §2A traverses a directly-referenced node even when it
+   * is empty or hidden.
+   */
+  protected tabDescribedBy(tab: CngxTabHandle): string | null {
+    return this.announcements.statusPhrase(tab) ? this.tabDescriptorId(tab) : null;
+  }
+
+  /**
    * `true` when the tab is in error - the folded `hasError` (direct
    * `[error]` flag OR the aggregator's reveal-gated `shouldShow()`), so
    * a direct-error tab lights the badge without an aggregator while

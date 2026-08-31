@@ -19,21 +19,26 @@ export type StackAlign = 'start' | 'center' | 'end' | 'stretch';
  */
 export type StackGap = 'none' | 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 
+// Chain per rung: consumer override hook (--cngx-gap-*, set nowhere by the
+// library) -> density scale (--cngx-space-*, registered inherits: true, so a
+// root [data-density] swap rescales the stack) -> literal for token-less
+// environments.
 const GAP_DEFAULTS: Record<StackGap, string> = {
   none: '0',
-  xs: 'var(--cngx-gap-xs, 4px)',
-  sm: 'var(--cngx-gap-sm, 8px)',
-  md: 'var(--cngx-gap-md, 16px)',
-  lg: 'var(--cngx-gap-lg, 24px)',
-  xl: 'var(--cngx-gap-xl, 32px)',
+  xs: 'var(--cngx-gap-xs, var(--cngx-space-xs, 4px))',
+  sm: 'var(--cngx-gap-sm, var(--cngx-space-sm, 8px))',
+  md: 'var(--cngx-gap-md, var(--cngx-space-md, 16px))',
+  lg: 'var(--cngx-gap-lg, var(--cngx-space-lg, 24px))',
+  xl: 'var(--cngx-gap-xl, var(--cngx-space-xl, 32px))',
 };
 
 /**
  * Composable flex-based stack layout component.
  *
  * Gap tokens use CSS custom properties (`--cngx-gap-xs` through `--cngx-gap-xl`)
- * with sensible fallback defaults. Override them at any scope to match your
- * application's spacing scale.
+ * that fall back to the density scale (`--cngx-space-*`), so a root
+ * `[data-density]` swap rescales the stack. Override the `--cngx-gap-*`
+ * hooks at any scope to detach a stack from the scale.
  *
  * <cngx-stack direction="row" gap="md" align="center">
  *   <div>Item 1</div>
