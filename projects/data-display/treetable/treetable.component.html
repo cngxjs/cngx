@@ -97,6 +97,10 @@
   </cdk-row>
 </cdk-table>
 
+<span aria-live="polite" aria-atomic="true" class="cngx-treetable__sr">{{
+  selectionAnnouncement()
+}}</span>
+
 @if (isEmpty()) {
   @if (emptyTpl(); as tpl) {
     <ng-container *ngTemplateOutlet="tpl.template"></ng-container>

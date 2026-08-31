@@ -413,6 +413,17 @@ export class CngxTreetable<T = unknown> {
    */
   readonly focusedNodeId = signal<string | null>(null);
 
+  private readonly selectionAnnouncementState = signal('');
+
+  /**
+   * SR live-region content for bulk selection changes. `toggleAll`
+   * (header checkbox or Ctrl/Cmd+A) writes a polite announcement here;
+   * the region itself stays in the DOM permanently, only its content
+   * is reactive. Per-row toggles stay silent - the row's
+   * `aria-selected` flip is the announcement.
+   */
+  protected readonly selectionAnnouncement = this.selectionAnnouncementState.asReadonly();
+
   /**
    * The single roving tab-stop anchor: `focusedNodeId` while that row is
    * still among `visibleNodes`, otherwise the first visible row's id,
@@ -554,6 +565,7 @@ export class CngxTreetable<T = unknown> {
     }
     if (this.isAllSelected()) {
       this.selectedIds.set(new Set());
+      this.selectionAnnouncementState.set('Selection cleared');
       return;
     }
     const visibleIds = this.visibleNodes().map((n) => n.id);
@@ -564,6 +576,8 @@ export class CngxTreetable<T = unknown> {
       }
       return next;
     });
+    const count = visibleIds.length;
+    this.selectionAnnouncementState.set(count === 1 ? '1 row selected' : `${count} rows selected`);
   }
 
   /**

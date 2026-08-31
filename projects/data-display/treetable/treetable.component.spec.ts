@@ -394,6 +394,41 @@ describe('CngxTreetable', () => {
       expect(rowEls(fixture)[2].getAttribute('tabindex')).toBe('0');
     });
 
+    it('keeps the bulk-selection live region in the DOM at all times', () => {
+      const fixture = mount();
+      const region = fixture.debugElement.query(By.css('.cngx-treetable__sr'));
+      expect(region).not.toBeNull();
+      const el = region.nativeElement as HTMLElement;
+      expect(el.getAttribute('aria-live')).toBe('polite');
+      expect(el.textContent?.trim()).toBe('');
+    });
+
+    it('announces bulk selection and clearing through the live region', () => {
+      const fixture = mount({ selectionMode: 'multi' });
+      const t = fixture.componentInstance;
+      const region = () =>
+        (fixture.debugElement.query(By.css('.cngx-treetable__sr')).nativeElement as HTMLElement)
+          .textContent?.trim();
+
+      t.handleKeyDown(key('a', { ctrlKey: true }));
+      fixture.detectChanges();
+      expect(region()).toBe('3 rows selected');
+
+      t.handleKeyDown(key('a', { ctrlKey: true }));
+      fixture.detectChanges();
+      expect(region()).toBe('Selection cleared');
+    });
+
+    it('stays silent in the live region on per-row selection toggles', () => {
+      const fixture = mount({ selectionMode: 'multi' });
+      const t = fixture.componentInstance;
+      t.toggleSelection(t.flatNodes()[0]);
+      fixture.detectChanges();
+      const region = fixture.debugElement.query(By.css('.cngx-treetable__sr'))
+        .nativeElement as HTMLElement;
+      expect(region.textContent?.trim()).toBe('');
+    });
+
     it('Ctrl+A selects all visible rows in multi mode and a second Ctrl+A clears', () => {
       const fixture = mount({ selectionMode: 'multi' });
       const t = fixture.componentInstance;
