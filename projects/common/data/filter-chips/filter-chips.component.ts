@@ -2,14 +2,14 @@ import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
-  DestroyRef,
   Directive,
   TemplateRef,
-  afterNextRender,
   contentChild,
+  effect,
   inject,
   input,
   model,
+  untracked,
   type Signal,
 } from '@angular/core';
 import { CngxChip } from '@cngx/common/display';
@@ -89,17 +89,19 @@ export class CngxFilterChip<TItem = unknown, TValue = unknown> {
  * is intentionally out of scope. Consumers needing a single-select
  * filter wire `<cngx-chip-group>` to a custom predicate themselves.
  *
- * **Sync contract - derivation, not effect.** The bridge calls
- * `filterRef.addPredicate(filterKey, predicateFn)` EXACTLY ONCE
- * during mount (in `afterNextRender`, because `input.required()`
- * cannot be read from the constructor body). `predicateFn` is a
+ * **Sync contract - derivation, not effect.** `predicateFn` is a
  * closure that reads `this.selectedValues()` and
- * `this.optionValueFn()` on every invocation. Because
+ * `this.optionValue()` on every invocation. Because
  * `CngxFilter.predicate` is itself a `computed()` consumed by
  * downstream filtered lists, each item-evaluation flows through
  * `selectedValues()` in the consumer's reactive context - chip
  * toggles propagate without any `effect()` writing back into the
- * filter.
+ * filter. Registration itself is reactive: a binding effect tracks
+ * `filterRef`/`filterKey` (a rebind moves the registration), and an
+ * eviction watcher re-registers the key after `filter.clear()` wiped
+ * the stack, so visible chip selection and predicate stack cannot
+ * diverge. Selections whose option vanished from `[options]` are
+ * pruned - a removed option never keeps filtering invisibly.
  *
  * **Empty-selection semantics.** When `selectedValues()` is `[]`,
  * the closure returns `true` for every item - equivalent to "no
@@ -109,13 +111,10 @@ export class CngxFilterChip<TItem = unknown, TValue = unknown> {
  * re-registering on every empty/non-empty boundary, and keeps the
  * predicate-stack stable (no `predicatesChange` emission churn).
  *
- * **Teardown.** `DestroyRef.onDestroy` calls `removePredicate` only
- * when registration actually happened (`registered` flag) - guards
- * against the case where the component is destroyed before
- * `afterNextRender` fires. The destroy callback reads `filterRef`
- * and `filterKey` lazily so a consumer that re-binds these between
- * mount and unmount cleans the latest binding (per
- * `reference_signal_architecture` memory-hygiene rule).
+ * **Teardown.** The binding effect's cleanup removes the key only
+ * while it still maps to this strip's own `predicateFn` (identity
+ * guard) - destroying one of two strips that share a key never
+ * detaches the live sibling's registration.
  *
  * **Visible caption.** The required `label` renders as a
  * `.cngx-filter-chips__label` caption above the strip so a sighted user
@@ -268,8 +267,6 @@ export class CngxFilterChips<TItem = unknown, TValue = unknown> {
    */
   readonly selectedValues = model<TValue[]>([]);
 
-  private registered = false;
-
   constructor() {
     const predicateFn = (item: TItem): boolean => {
       const values = this.selectedValues();
@@ -281,16 +278,44 @@ export class CngxFilterChips<TItem = unknown, TValue = unknown> {
       return values.some((v) => Object.is(extract(v), key));
     };
 
-    afterNextRender(() => {
-      this.filterRef().addPredicate(this.filterKey(), predicateFn);
-      this.registered = true;
+    // Binding effect: tracks only filterRef/filterKey, so a rebind moves the
+    // registration. Cleanup is identity-guarded - it removes the key only
+    // while it still maps to THIS strip's predicate, so tearing down one of
+    // two strips sharing a key never detaches the live sibling.
+    effect((onCleanup) => {
+      const filter = this.filterRef();
+      const key = this.filterKey();
+      untracked(() => filter.addPredicate(key, predicateFn));
+      onCleanup(() => {
+        if (untracked(filter.predicates).get(key) === predicateFn) {
+          untracked(() => filter.removePredicate(key));
+        }
+      });
     });
 
-    inject(DestroyRef).onDestroy(() => {
-      if (!this.registered) {
-        return;
+    // Eviction watcher: filter.clear() wipes the whole predicate map while
+    // the chips stay visually selected. Re-register when our key is missing
+    // so UI and predicate stack cannot diverge. A foreign same-key
+    // registration is present, not missing - it is left alone (no fighting,
+    // no loop).
+    effect(() => {
+      const filter = this.filterRef();
+      const key = this.filterKey();
+      if (!filter.predicates().has(key)) {
+        untracked(() => filter.addPredicate(key, predicateFn));
       }
-      this.filterRef().removePredicate(this.filterKey());
+    });
+
+    // Prune selections whose option vanished from [options]: without this a
+    // removed option keeps filtering invisibly (no chip renders for it).
+    effect(() => {
+      const extract = this.keyFn();
+      const valid = new Set(this.options().map((o) => extract(this.optionValue()(o))));
+      const current = untracked(this.selectedValues);
+      const pruned = current.filter((v) => valid.has(extract(v)));
+      if (pruned.length !== current.length) {
+        untracked(() => this.selectedValues.set(pruned));
+      }
     });
   }
 }
