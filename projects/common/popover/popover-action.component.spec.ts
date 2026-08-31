@@ -66,6 +66,18 @@ class ConfirmHost {
     });
 }
 
+@Component({
+  template: `
+    <div cngxPopover #pop="cngxPopover">
+      <cngx-popover-action role="confirm" #act="cngxPopoverAction">Broken</cngx-popover-action>
+    </div>
+  `,
+  imports: [CngxPopover, CngxPopoverAction],
+})
+class ActionlessConfirmHost {
+  readonly action = viewChild.required(CngxPopoverAction);
+}
+
 function setup<T>(hostType: new () => T) {
   const fixture = TestBed.createComponent(hostType);
   fixture.detectChanges();
@@ -153,6 +165,80 @@ describe('CngxPopoverAction', () => {
     fixture.detectChanges();
 
     expect(btn.textContent).toContain('Saved!');
+  });
+
+  describe('status passthrough', () => {
+    it('mirrors the confirm lifecycle on the exported status()', async () => {
+      const { fixture } = setup(ConfirmHost);
+      const host = fixture.componentInstance;
+      const act = host.action();
+      expect(act.status()).toBe('idle');
+
+      const btn = (fixture.nativeElement as HTMLElement).querySelector(
+        '.cngx-popover-action',
+      ) as HTMLButtonElement;
+      btn.click();
+      fixture.detectChanges();
+      await vi.advanceTimersByTimeAsync(0);
+      expect(act.status()).toBe('pending');
+
+      host.resolveFn();
+      await vi.advanceTimersByTimeAsync(0);
+      expect(act.status()).toBe('success');
+
+      // feedbackDuration=500 resets the async-click state back to idle
+      await vi.advanceTimersByTimeAsync(500);
+      expect(act.status()).toBe('idle');
+    });
+
+    it('reports error status after a failed action', async () => {
+      const { fixture } = setup(ConfirmHost);
+      const host = fixture.componentInstance;
+
+      const btn = (fixture.nativeElement as HTMLElement).querySelector(
+        '.cngx-popover-action',
+      ) as HTMLButtonElement;
+      btn.click();
+      fixture.detectChanges();
+      await vi.advanceTimersByTimeAsync(0);
+
+      host.rejectFn('boom');
+      await vi.advanceTimersByTimeAsync(0);
+      expect(host.action().status()).toBe('error');
+    });
+
+    it('stays idle for role="dismiss"', () => {
+      const { fixture } = setup(DismissHost);
+      expect(fixture.componentInstance.action().status()).toBe('idle');
+    });
+  });
+
+  describe('confirm without [action] dev warning', () => {
+    it('warns when role="confirm" has no bound action', () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      try {
+        setup(ActionlessConfirmHost);
+        const actionWarn = warnSpy.mock.calls.find((call) =>
+          String(call[0]).includes('CngxPopoverAction'),
+        );
+        expect(actionWarn).toBeDefined();
+      } finally {
+        warnSpy.mockRestore();
+      }
+    });
+
+    it('does not warn when [action] is bound', () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      try {
+        setup(ConfirmHost);
+        const actionWarn = warnSpy.mock.calls.find((call) =>
+          String(call[0]).includes('CngxPopoverAction'),
+        );
+        expect(actionWarn).toBeUndefined();
+      } finally {
+        warnSpy.mockRestore();
+      }
+    });
   });
 
   it('should show failed template with error context after failure', async () => {

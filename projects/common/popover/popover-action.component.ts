@@ -1,12 +1,17 @@
 import { NgTemplateOutlet } from '@angular/common';
 import {
+  afterNextRender,
   ChangeDetectionStrategy,
   Component,
+  computed,
   contentChild,
   inject,
   input,
+  isDevMode,
   ViewEncapsulation,
+  viewChild,
 } from '@angular/core';
+import type { AsyncStatus } from '@cngx/core/utils';
 import {
   CngxAsyncClick,
   CngxFailed,
@@ -155,6 +160,28 @@ export class CngxPopoverAction {
   protected readonly pendingTpl = contentChild(CngxPending);
   protected readonly succeededTpl = contentChild(CngxSucceeded);
   protected readonly failedTpl = contentChild(CngxFailed);
+
+  private readonly asyncClick = viewChild(CngxAsyncClick);
+
+  /**
+   * Lifecycle status of the confirm action - `'idle' | 'pending' | 'success'
+   * | 'error'`, mirroring the internal `CngxAsyncClick`. Always `'idle'` for
+   * `role="dismiss"` (there is no async lifecycle to report).
+   */
+  readonly status = computed<AsyncStatus>(() => this.asyncClick()?.status() ?? 'idle');
+
+  constructor() {
+    if (isDevMode()) {
+      afterNextRender(() => {
+        if (this.role() === 'confirm' && !this.action()) {
+          console.warn(
+            'CngxPopoverAction: role="confirm" without an [action] renders a button whose ' +
+              'click does nothing. Bind [action] or use role="dismiss".',
+          );
+        }
+      });
+    }
+  }
 
   protected handleDismiss(): void {
     this.popover?.hide();
