@@ -1,4 +1,4 @@
-import { Component, viewChild } from '@angular/core';
+import { Component, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -21,6 +21,20 @@ class SimpleHost {
   imports: [CngxDialogDraggable],
 })
 class FormFieldHost {
+  readonly draggable = viewChild.required(CngxDialogDraggable);
+}
+
+@Component({
+  template: `
+    <div cngxDialogDraggable [handle]="handle()">
+      <div id="handle-a">A</div>
+      <div id="handle-b">B</div>
+    </div>
+  `,
+  imports: [CngxDialogDraggable],
+})
+class SwappableHandleHost {
+  readonly handle = signal<HTMLElement | undefined>(undefined);
   readonly draggable = viewChild.required(CngxDialogDraggable);
 }
 
@@ -165,6 +179,65 @@ describe('CngxDialogDraggable', () => {
 
       expect(directive.isDragging()).toBe(false);
       expect(document.documentElement.style.userSelect).toBe('');
+    });
+
+    it('resets the page-wide userSelect when destroyed mid-drag', () => {
+      const { el, fixture } = setup();
+      startDrag(el);
+      fixture.detectChanges();
+      expect(document.documentElement.style.userSelect).toBe('none');
+
+      fixture.destroy();
+      expect(document.documentElement.style.userSelect).toBe('');
+    });
+  });
+
+  describe('handle swap teardown', () => {
+    it('restores attributes and styles on the demoted handle', () => {
+      const fixture = TestBed.createComponent(SwappableHandleHost);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const host = fixture.componentInstance;
+      const handleA = fixture.nativeElement.querySelector('#handle-a') as HTMLElement;
+      const handleB = fixture.nativeElement.querySelector('#handle-b') as HTMLElement;
+
+      host.handle.set(handleA);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(handleA.getAttribute('tabindex')).toBe('0');
+      expect(handleA.getAttribute('aria-label')).toBe('Move dialog');
+
+      host.handle.set(handleB);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      // The demoted handle must not stay focusable or keep announcing a
+      // drag affordance whose keyboard path is gone.
+      expect(handleA.getAttribute('tabindex')).toBeNull();
+      expect(handleA.getAttribute('aria-label')).toBeNull();
+      expect(handleA.getAttribute('aria-roledescription')).toBeNull();
+      expect(handleA.style.cursor).toBe('');
+      expect(handleB.getAttribute('tabindex')).toBe('0');
+      expect(handleB.getAttribute('aria-label')).toBe('Move dialog');
+    });
+
+    it('does not strip a consumer-authored tabindex on teardown', () => {
+      const fixture = TestBed.createComponent(SwappableHandleHost);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const host = fixture.componentInstance;
+      const handleA = fixture.nativeElement.querySelector('#handle-a') as HTMLElement;
+      const handleB = fixture.nativeElement.querySelector('#handle-b') as HTMLElement;
+      handleA.setAttribute('tabindex', '-1');
+
+      host.handle.set(handleA);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      host.handle.set(handleB);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      expect(handleA.getAttribute('tabindex')).toBe('-1');
     });
   });
 });

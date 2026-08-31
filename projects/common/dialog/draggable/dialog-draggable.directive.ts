@@ -131,15 +131,12 @@ export class CngxDialogDraggable {
   private currentHandle: HTMLElement | null = null;
   private boundPointerDown: ((e: PointerEvent) => void) | null = null;
   private boundKeyDown: ((e: KeyboardEvent) => void) | null = null;
+  private handleAddedTabindex = false;
+  private handleAddedAria = false;
 
   /** Attach pointer and keyboard listeners to `el`, cleaning up the previous handle first. */
   private setupHandle(el: HTMLElement): void {
-    if (this.currentHandle && this.boundPointerDown) {
-      this.currentHandle.removeEventListener('pointerdown', this.boundPointerDown);
-    }
-    if (this.currentHandle && this.boundKeyDown) {
-      this.currentHandle.removeEventListener('keydown', this.boundKeyDown);
-    }
+    this.teardownHandle();
 
     this.currentHandle = el;
 
@@ -148,6 +145,7 @@ export class CngxDialogDraggable {
     // so an unfocusable handle would strip the keyboard path entirely.
     if (!el.hasAttribute('tabindex')) {
       el.setAttribute('tabindex', '0');
+      this.handleAddedTabindex = true;
     }
     // Labelling stays off the host-as-handle: aria-label/aria-roledescription
     // on the dialog element itself would clobber its accessible name (the
@@ -155,6 +153,7 @@ export class CngxDialogDraggable {
     if (!el.hasAttribute('aria-roledescription') && el !== this.elRef.nativeElement) {
       el.setAttribute('aria-roledescription', 'draggable');
       el.setAttribute('aria-label', 'Move dialog');
+      this.handleAddedAria = true;
     }
     el.style.cursor = 'var(--cngx-dialog-drag-cursor, grab)';
     el.style.touchAction = 'none';
@@ -298,6 +297,36 @@ export class CngxDialogDraggable {
     };
   }
 
+  /**
+   * Detach listeners from the current handle and restore every attribute and
+   * style this directive added. A demoted handle must not stay focusable or
+   * keep announcing "Move dialog" with a dead keyboard path behind it.
+   */
+  private teardownHandle(): void {
+    const handle = this.currentHandle;
+    if (!handle) {
+      return;
+    }
+    if (this.boundPointerDown) {
+      handle.removeEventListener('pointerdown', this.boundPointerDown);
+    }
+    if (this.boundKeyDown) {
+      handle.removeEventListener('keydown', this.boundKeyDown);
+    }
+    if (this.handleAddedTabindex) {
+      handle.removeAttribute('tabindex');
+      this.handleAddedTabindex = false;
+    }
+    if (this.handleAddedAria) {
+      handle.removeAttribute('aria-roledescription');
+      handle.removeAttribute('aria-label');
+      this.handleAddedAria = false;
+    }
+    handle.style.cursor = '';
+    handle.style.touchAction = '';
+    this.currentHandle = null;
+  }
+
   private cleanup(): void {
     if (this.boundMove) {
       this.doc.removeEventListener('pointermove', this.boundMove);
@@ -306,11 +335,9 @@ export class CngxDialogDraggable {
       this.doc.removeEventListener('pointerup', this.boundUp);
       this.doc.removeEventListener('pointercancel', this.boundUp);
     }
-    if (this.currentHandle && this.boundPointerDown) {
-      this.currentHandle.removeEventListener('pointerdown', this.boundPointerDown);
-    }
-    if (this.currentHandle && this.boundKeyDown) {
-      this.currentHandle.removeEventListener('keydown', this.boundKeyDown);
-    }
+    // A destroy mid-drag skips handlePointerUp - the global style must not
+    // outlive the directive.
+    this.doc.documentElement.style.userSelect = '';
+    this.teardownHandle();
   }
 }
