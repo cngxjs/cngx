@@ -300,7 +300,7 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
   protected readonly isClosing = computed(() => this.lifecycleSignal() === 'closing');
 
   protected readonly ariaModal = computed(() =>
-    this.modal() && this.lifecycleSignal() !== 'closed' ? 'true' : null,
+    this.openedAsModal() && this.lifecycleSignal() !== 'closed' ? 'true' : null,
   );
 
   protected readonly ariaLabelledBy = computed(() => this.titleDirective()?.id() ?? null);
@@ -314,11 +314,13 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
   private liveRegion: HTMLSpanElement | null = null;
 
   /**
-   * The modal mode latched at `open()`. `finalize()` releases the scroll
-   * lock and pops the stack based on how the dialog actually opened -
-   * toggling `[modal]` while open must not unbalance the ref count.
+   * The modal mode latched at `open()`. Everything that depends on how the
+   * dialog actually opened derives from this - scroll-lock release, stack
+   * pop, Escape/backdrop dismissal, focus strategy, and `aria-modal` -
+   * so toggling `[modal]` while open can neither unbalance the ref count
+   * nor strand a rendered backdrop without its dismissal surface.
    */
-  private openedAsModal = false;
+  private readonly openedAsModal = signal(false);
 
   constructor() {
     this.createLiveRegion();
@@ -376,8 +378,8 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
 
     this.lifecycleSignal.set('opening');
 
-    this.openedAsModal = this.modal();
-    if (this.openedAsModal) {
+    this.openedAsModal.set(this.modal());
+    if (this.openedAsModal()) {
       dialog.showModal();
       this.acquireScrollLock();
       this.dialogStack.push(this.idSignal());
@@ -480,7 +482,7 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
 
   protected handleCancel(event: Event): void {
     event.preventDefault();
-    if (this.closeOnEscape() && this.modal()) {
+    if (this.closeOnEscape() && this.openedAsModal()) {
       this.dismiss();
     }
   }
@@ -503,7 +505,7 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
     const startedOnBackdrop = this.pointerDownOnBackdrop;
     this.pointerDownOnBackdrop = false;
 
-    if (!this.modal() || !this.closeOnBackdropClick()) {
+    if (!this.openedAsModal() || !this.closeOnBackdropClick()) {
       return;
     }
     if (this.lifecycleSignal() !== 'open') {
@@ -546,10 +548,10 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
       dialog.close();
     }
 
-    if (this.openedAsModal) {
+    if (this.openedAsModal()) {
       this.releaseScrollLock();
       this.dialogStack.pop(this.idSignal());
-      this.openedAsModal = false;
+      this.openedAsModal.set(false);
     }
 
     this.lifecycleSignal.set('closed');
@@ -557,7 +559,7 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
   }
 
   private moveFocus(): void {
-    if (!this.modal()) {
+    if (!this.openedAsModal()) {
       return;
     }
 

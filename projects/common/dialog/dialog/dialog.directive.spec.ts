@@ -393,6 +393,35 @@ describe('CngxDialog', () => {
   });
 
   describe('modal mode latched at open', () => {
+    it('keeps Escape dismissal alive after [modal] flips off while open', () => {
+      const { fixture, dialogEl } = setup(ModalToggleHost);
+      const host = fixture.componentInstance;
+      const dialog = host.dialog();
+      dialog.open();
+
+      host.modal.set(false);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      // The backdrop is still rendered from the modal open - Escape must
+      // keep working against the latched mode, not the live input.
+      dialogEl.dispatchEvent(new Event('cancel', { cancelable: true }));
+      fixture.detectChanges();
+      expect(dialog.result()).toBe('dismissed');
+    });
+
+    it('keeps aria-modal reflecting the latched mode while open', () => {
+      const { fixture, dialogEl } = setup(ModalToggleHost);
+      const host = fixture.componentInstance;
+      host.dialog().open();
+      fixture.detectChanges();
+      expect(dialogEl.getAttribute('aria-modal')).toBe('true');
+
+      host.modal.set(false);
+      fixture.detectChanges();
+      expect(dialogEl.getAttribute('aria-modal')).toBe('true');
+    });
+
     it('releases the scroll lock on close even when [modal] was toggled off while open', () => {
       const { fixture } = setup(ModalToggleHost);
       const host = fixture.componentInstance;
