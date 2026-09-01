@@ -1,4 +1,5 @@
 import { InjectionToken } from '@angular/core';
+import { PRIMARY_OUTLET } from '@angular/router';
 import type { ActivatedRoute, Router, UrlSegmentGroup, UrlTree } from '@angular/router';
 
 import type { CngxTabHandle } from './tab-group-host.token';
@@ -68,17 +69,35 @@ function urlTreeSegmentCount(tree: UrlTree): number {
 }
 
 /**
+ * Primary-outlet path segments of the current URL, decoded. Going
+ * through `router.parseUrl` (not a hand-rolled split) keeps matrix
+ * params (`;theme=dark`) out of the compared paths, decodes
+ * percent-encoded segments so they compare against raw `routeFor`
+ * commands, and confines the walk to the primary outlet so an aux
+ * outlet (`(aside:x)`) can neither pollute the tail nor match.
+ */
+function primaryPathSegments(router: Router): string[] {
+  const segments: string[] = [];
+  let group: UrlSegmentGroup | undefined = router.parseUrl(router.url).root;
+  while (group !== undefined) {
+    segments.push(...group.segments.map((segment) => segment.path));
+    group = group.children[PRIMARY_OUTLET];
+  }
+  return segments;
+}
+
+/**
  * Find the tab whose route is the trailing segment(s) of the current URL
  * path. Anchors on position, not a loose "appears anywhere" scan - a tab
  * id that happens to equal an unrelated parent segment cannot win. The
- * path is taken before any query/fragment. If two tabs produce the same
+ * path is the decoded primary-outlet segment list (query, fragment,
+ * matrix params, and aux outlets excluded). If two tabs produce the same
  * trailing segment(s) (only possible with a colliding custom `routeFor`),
  * the first registered tab wins; the default id-based mapping never
  * collides.
  */
 function resolveBySuffix(ctx: CngxTabUrlMatchContext): string | null {
-  const path = ctx.router.url.split(/[?#]/)[0];
-  const segments = path.split('/').filter(Boolean);
+  const segments = primaryPathSegments(ctx.router);
   for (const tab of ctx.tabs) {
     const route = ctx.routeFor(tab).map((command) => String(command));
     if (route.length === 0 || route.length > segments.length) {
