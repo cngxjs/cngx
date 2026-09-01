@@ -220,10 +220,19 @@ describe('CngxTabLink', () => {
       return fixture.nativeElement.querySelector(`#${id}-desc`);
     }
 
-    it('always references a permanent descriptor id via aria-describedby', () => {
-      const { anchor } = setup();
-      expect(anchor(0).getAttribute('aria-describedby')).toBe('overview-desc');
+    it('references the descriptor id only while the link has an error', () => {
+      const { fixture, anchor } = setup();
+      // No error: the reference must be absent - aria-hidden on the span
+      // would not suppress a direct reference.
+      expect(anchor(0).getAttribute('aria-describedby')).toBeNull();
+      expect(anchor(1).getAttribute('aria-describedby')).toBeNull();
+      fixture.componentInstance.profileError.set('Required fields missing');
+      fixture.detectChanges();
       expect(anchor(1).getAttribute('aria-describedby')).toBe('profile-desc');
+      expect(anchor(0).getAttribute('aria-describedby')).toBeNull();
+      fixture.componentInstance.profileError.set(false);
+      fixture.detectChanges();
+      expect(anchor(1).getAttribute('aria-describedby')).toBeNull();
     });
 
     it('injects the descriptor as a hidden sibling, not a child of the anchor', () => {
