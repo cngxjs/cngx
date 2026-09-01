@@ -146,6 +146,10 @@ export class CngxToaster {
         timer.clear();
       }
       this.timers.clear();
+      for (const t of this.toasts()) {
+        t.dismissed$.next();
+        t.dismissed$.complete();
+      }
     });
   }
 
@@ -157,13 +161,15 @@ export class CngxToaster {
     const dismissible = config.dismissible ?? true;
 
     // Dedup key includes title but excludes description - same event with
-    // different context detail is still the same event.
+    // different context detail is still the same event. Distinct content
+    // templates never merge: the second template would be silently dropped.
     const now = Date.now();
     const existing = this.toasts().find(
       (t) =>
         t.config.message === config.message &&
         t.config.severity === severity &&
         (t.config.title ?? '') === (config.title ?? '') &&
+        t.config.contentTemplate === config.contentTemplate &&
         now - t.createdAt < this.dedupWindow(),
     );
 

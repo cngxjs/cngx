@@ -145,6 +145,27 @@ describe('CngxToast', () => {
     expect(el.querySelector('.cngx-toast__body')?.textContent).toContain('Something went');
   });
 
+  it('does not dedup two toasts with equal text but distinct content templates', () => {
+    @Component({
+      selector: 'test-toast-twins',
+      template: `
+        <cngx-toast [when]="show()" message="Same"><em>First body</em></cngx-toast>
+        <cngx-toast [when]="show()" message="Same"><em>Second body</em></cngx-toast>
+        <cngx-toast-outlet />
+      `,
+      imports: [CngxToast, CngxToastOutlet],
+    })
+    class TwinsHost {
+      readonly show = signal(false);
+    }
+
+    const { toaster, fixture } = setup(TwinsHost);
+    fixture.componentInstance.show.set(true);
+    fixture.detectChanges();
+
+    expect(toaster.toasts().length).toBe(2);
+  });
+
   it('falls back to message when nothing is projected', () => {
     const { toaster, fixture } = setup(EmptyProjectionHost);
     fixture.componentInstance.show.set(true);

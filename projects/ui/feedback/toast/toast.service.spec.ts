@@ -203,6 +203,16 @@ describe('CngxToaster', () => {
     expect(toaster.toasts().length).toBe(1);
   });
 
+  // --- Teardown ---
+
+  it('completes dismissed$ for remaining toasts on service destroy', () => {
+    let completed = 0;
+    const ref = toaster.show({ message: 'Alive', duration: 'persistent' });
+    ref.afterDismissed().subscribe({ complete: () => completed++ });
+    TestBed.resetTestingModule();
+    expect(completed).toBe(1);
+  });
+
   // --- Action config ---
 
   it('stores action config when provided', () => {
