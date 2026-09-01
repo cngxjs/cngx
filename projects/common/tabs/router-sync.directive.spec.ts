@@ -8,6 +8,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CngxTabGroupPresenter } from './presenter.directive';
 import { CngxTab } from './tab.directive';
 import { CngxTabsFragmentSync } from './router-sync.directive';
+import { provideTabsConfig, withTabsFragmentSync } from './tabs-config';
 
 @Component({
   standalone: true,
@@ -140,6 +141,35 @@ describe('CngxTabsFragmentSync', () => {
     };
     expect(lastExtras.fragment).toMatch(/^tab=cngx-tab-/);
     expect(lastExtras.queryParams).toBeUndefined();
+  });
+
+  it('falls back to provideTabsConfig fragment-sync keys when Inputs unbound', async () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideRouter([]),
+        provideTabsConfig(withTabsFragmentSync('queryParam', 'section')),
+      ],
+    });
+    const router = TestBed.inject(Router);
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    const fixture = TestBed.createComponent(FragmentHost);
+    fixture.detectChanges();
+    await flushMicrotasks();
+    const presenter = fixture.debugElement.injector.get(CngxTabGroupPresenter);
+    presenter.select(1);
+    fixture.detectChanges();
+    await flushMicrotasks();
+
+    const calls = navigateSpy.mock.calls;
+    expect(calls.length).toBeGreaterThan(0);
+    const lastExtras = calls[calls.length - 1][1] as {
+      fragment?: string;
+      queryParams?: Record<string, string>;
+    };
+    expect(lastExtras.queryParams).toEqual({ section: expect.stringMatching(/^cngx-tab-/) });
+    expect(lastExtras.fragment).toBeUndefined();
   });
 
   it('writes a queryParam in queryParam mode', async () => {

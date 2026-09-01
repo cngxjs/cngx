@@ -1,5 +1,6 @@
 import {
   afterNextRender,
+  computed,
   DestroyRef,
   Directive,
   effect,
@@ -14,6 +15,7 @@ import { filter } from 'rxjs/operators';
 
 import { warnTabsRouterAbsent } from './router-absent-warning';
 import { CNGX_TAB_GROUP_HOST } from './tab-group-host.token';
+import { injectTabsConfig } from './tabs-config';
 
 /**
  * URL deep-linking for tab groups. \
@@ -59,8 +61,23 @@ import { CNGX_TAB_GROUP_HOST } from './tab-group-host.token';
   standalone: true,
 })
 export class CngxTabsFragmentSync implements AfterContentInit {
-  readonly mode = input<'fragment' | 'queryParam'>('fragment');
-  readonly paramName = input<string>('tab');
+  // Default undefined so the cascade resolves through CNGX_TABS_CONFIG.
+  // Init-only: the seed and the write effect capture the resolved mode /
+  // param on their first run; changing either after init leaves the old
+  // URL key behind. Rebuild the directive to change them.
+  readonly modeInput = input<'fragment' | 'queryParam' | undefined>(undefined, { alias: 'mode' });
+  readonly paramNameInput = input<string | undefined>(undefined, {
+    alias: 'paramName',
+  });
+
+  private readonly config = injectTabsConfig();
+
+  readonly mode = computed<'fragment' | 'queryParam'>(
+    () => this.modeInput() ?? this.config.fragmentSyncMode ?? 'fragment',
+  );
+  readonly paramName = computed<string>(
+    () => this.paramNameInput() ?? this.config.fragmentSyncParam ?? 'tab',
+  );
 
   /**
    * Whether reflecting the active tab into the URL replaces the current
