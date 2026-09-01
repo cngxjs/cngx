@@ -159,6 +159,12 @@ export class CngxLoadingOverlay {
       const vis = this.visible();
       if (vis) {
         queueMicrotask(() => {
+          // Grab focus only when it was inside the wrapper at activation -
+          // the restore branch is gated on the same savedFocus, so grab and
+          // restore stay symmetric and outside focus is never stolen.
+          if (this.savedFocus() === null) {
+            return;
+          }
           const spinner = this.spinnerEl()?.nativeElement;
           if (spinner) {
             spinner.focus({ preventScroll: true });
