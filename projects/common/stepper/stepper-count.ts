@@ -116,8 +116,13 @@ export class CngxStepperCount {
     if (!host) {
       return '';
     }
-    const current = host.activeStepIndex() + 1;
     const total = host.stepsOnly().length;
+    if (total === 0) {
+      return '';
+    }
+    // Clamp against the live total - a transiently out-of-range active
+    // index (steps removed at runtime) must not render "Step 5 of 3".
+    const current = Math.min(Math.max(host.activeStepIndex() + 1, 1), total);
     const fmt = this.format() ?? this.i18n.textStepperFormat;
     return fmt(current, total);
   });

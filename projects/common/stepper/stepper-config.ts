@@ -564,8 +564,9 @@ export function withStepperAriaLabels(labels: CngxStepperAriaLabels): CngxSteppe
 }
 
 /**
- * Merge text fallback labels (button captions, error strings) into the
- * cascade. Used when a slot directive is not present.
+ * Merge fallback role descriptions (`groupRoleDescription` /
+ * `stepRoleDescription`) into the cascade. These feed the strip's
+ * `aria-roledescription` attributes when the consumer supplies none.
  *
  * @category common/stepper
  */
