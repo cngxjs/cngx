@@ -76,6 +76,10 @@ export const CNGX_FEEDBACK_CONFIG = new InjectionToken<FeedbackConfig>('CngxFeed
 /**
  * A feature configuration function returned by `withXxx()` helpers.
  *
+ * Merge rule (all features): an explicitly passed option wins; an omitted
+ * option preserves the value an earlier feature wrote. No feature clears
+ * fields it was not given.
+ *
  * @category ui/feedback
  */
 export interface FeedbackFeature {
@@ -254,8 +258,8 @@ export function withToasts(opts?: {
   return {
     _apply: (c) => ({
       ...c,
-      toastDefaultDuration: opts?.defaultDuration,
-      toastDedupWindow: opts?.dedupWindow,
+      toastDefaultDuration: opts?.defaultDuration ?? c.toastDefaultDuration,
+      toastDedupWindow: opts?.dedupWindow ?? c.toastDedupWindow,
     }),
     _providers: [CngxToaster],
   };
@@ -293,7 +297,7 @@ export function withAlerts(opts?: {
   return {
     _apply: (c) => ({
       ...c,
-      alertDefaultDuration: opts?.defaultDuration,
+      alertDefaultDuration: opts?.defaultDuration ?? c.alertDefaultDuration,
       alertDedupWindow: opts?.dedupWindow ?? c.alertDedupWindow,
       alertMaxVisible: opts?.maxVisible ?? c.alertMaxVisible,
     }),
