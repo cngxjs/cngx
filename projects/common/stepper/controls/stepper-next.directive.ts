@@ -1,5 +1,5 @@
 import {
-  afterNextRender,
+  afterEveryRender,
   computed,
   Directive,
   ElementRef,
@@ -80,20 +80,28 @@ export class CngxStepperNext {
   });
 
   constructor() {
-    // Fallback accessible name for icon-only hosts: when the element
+    // Fallback accessible name for icon-only hosts: while the element
     // renders no text and the consumer supplied no label of their own,
-    // the i18n `nextStep` phrase fills the gap. One-shot - the i18n
-    // bundle is resolve-once DI, and a consumer-authored visible label
-    // must win (label-in-name, WCAG 2.5.3), so a labelled host is
-    // never overridden.
-    afterNextRender(() => {
+    // the i18n `nextStep` phrase fills the gap. Re-checked after every
+    // render (cheap string read) so a late-arriving visible label wins
+    // again - a forced aria-label over visible text would break
+    // label-in-name (WCAG 2.5.3). The data flag marks ownership so a
+    // consumer-authored aria-label is never touched.
+    afterEveryRender(() => {
       const el = this.elementRef.nativeElement;
-      const hasOwnLabel =
-        el.hasAttribute('aria-label') ||
-        el.hasAttribute('aria-labelledby') ||
-        (el.textContent ?? '').trim() !== '';
-      if (!hasOwnLabel) {
+      const ownsFallback = el.hasAttribute('data-cngx-label-fallback');
+      const consumerLabelled =
+        (!ownsFallback && el.hasAttribute('aria-label')) || el.hasAttribute('aria-labelledby');
+      if (consumerLabelled) {
+        return;
+      }
+      const hasText = (el.textContent ?? '').trim() !== '';
+      if (hasText && ownsFallback) {
+        el.removeAttribute('aria-label');
+        el.removeAttribute('data-cngx-label-fallback');
+      } else if (!hasText && !ownsFallback) {
         el.setAttribute('aria-label', this.i18n.nextStep);
+        el.setAttribute('data-cngx-label-fallback', '');
       }
     });
 
