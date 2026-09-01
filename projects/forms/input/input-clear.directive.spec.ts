@@ -59,6 +59,26 @@ describe('CngxInputClear', () => {
     expect(emitted).toBe(true);
   });
 
+  it('reports hasValue for a pre-filled target from first render, without interaction', async () => {
+    const { directive, fixture } = setup();
+    // afterNextRender attaches the listener; no click, no clear().
+    await fixture.whenStable();
+    expect(directive.hasValue()).toBe(true);
+  });
+
+  it('tracks typing from first render, without a prior clear()', async () => {
+    const { directive, input, fixture } = setup();
+    await fixture.whenStable();
+
+    input.value = '';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    expect(directive.hasValue()).toBe(false);
+
+    input.value = 'typed';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    expect(directive.hasValue()).toBe(true);
+  });
+
   it('should track hasValue after clear triggers listener', () => {
     const { directive, button, input, fixture } = setup();
     // Click to initialize the listener and clear
