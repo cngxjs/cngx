@@ -122,10 +122,18 @@ export function createTabDismissals(opts: CngxTabDismissalsOptions): CngxTabDism
   const closedAnnouncementState = signal<string>('');
 
   const restoreFocus = (): void => {
-    const active = opts.hostElement.querySelector<HTMLElement>(
-      '.cngx-tabs__tab[aria-selected="true"]',
-    );
-    const add = opts.hostElement.querySelector<HTMLElement>('.cngx-tabs__add');
+    // Skin-agnostic lookup: `[role="tab"]` + `data-tab-id` are the
+    // ARIA/data contract every skin must honour (mirrors the keyboard
+    // nav's focus targeting); class names are skin-owned and a rename
+    // must not silently break focus restoration.
+    const activeId = opts.host.activeId();
+    const active =
+      activeId === null
+        ? null
+        : (Array.from(
+            opts.hostElement.querySelectorAll<HTMLElement>('[role="tab"]'),
+          ).find((button) => button.getAttribute('data-tab-id') === activeId) ?? null);
+    const add = opts.hostElement.querySelector<HTMLElement>('[data-tab-add]');
     const target = active ?? add;
     if (target) {
       target.focus();
