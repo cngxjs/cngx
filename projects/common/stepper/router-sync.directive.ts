@@ -43,6 +43,9 @@ import { CNGX_STEPPER_HOST } from './stepper-host.token';
 })
 export class CngxStepperRouterSync implements AfterContentInit {
   // Default undefined so the cascade resolves through CNGX_STEPPER_CONFIG.
+  // Init-only: the seed and the write effect capture the resolved mode /
+  // param on their first run; changing either after init leaves the old
+  // URL key behind. Rebuild the directive to change them.
   readonly modeInput = input<'fragment' | 'queryParam' | undefined>(undefined, { alias: 'mode' });
   readonly paramNameInput = input<string | undefined>(undefined, {
     alias: 'paramName',
@@ -98,21 +101,7 @@ export class CngxStepperRouterSync implements AfterContentInit {
       if (!id) {
         return;
       }
-      untracked(() => {
-        const navigation =
-          this.mode() === 'fragment'
-            ? router.navigate([], {
-                fragment: `${this.paramName()}=${id}`,
-                queryParamsHandling: 'merge',
-                replaceUrl: true,
-              })
-            : router.navigate([], {
-                queryParams: { [this.paramName()]: id },
-                queryParamsHandling: 'merge',
-                replaceUrl: true,
-              });
-        navigation.catch?.((err: unknown) => this.syncError.emit(err));
-      });
+      untracked(() => this.writeUrl(router, id));
     });
 
     const navEnd = toSignal(
@@ -138,10 +127,11 @@ export class CngxStepperRouterSync implements AfterContentInit {
 
   /**
    * Seed from the URL before the stepper renders its panels. `CngxStep`
-   * registers in its constructor, so the registry is populated by the time
-   * this runs, and the host view has not rendered yet - which is what keeps
-   * a `panelMode="lazy"` default step from counting its first render as a
-   * first activation on a deep link that named another step.
+   * registers in `ngOnInit` (so a bound `[id]` reaches the registry), which
+   * runs before the host's `ngAfterContentInit` - the registry is populated
+   * by the time this runs, and the host view has not rendered yet, which is
+   * what keeps a `panelMode="lazy"` default step from counting its first
+   * render as a first activation on a deep link that named another step.
    *
    * Own router guard: the constructor's early return does not stop
    * lifecycle hooks from running.
@@ -168,7 +158,50 @@ export class CngxStepperRouterSync implements AfterContentInit {
       return;
     }
     this.seeded = true;
-    untracked(() => this.host.selectById(initial));
+    untracked(() => {
+      this.host.selectById(initial);
+      // A sync refusal (linear-blocked / disabled target) leaves the URL
+      // pointing at a step the stepper refused - rewrite it from the
+      // actual active id so the address bar never lies. Async commit
+      // outcomes are reflected by the activeStepId effect on accept.
+      if (!this.host.busy() && this.host.activeStepId() !== initial) {
+        const actual = this.host.activeStepId();
+        if (actual) {
+          this.writeUrl(router, actual);
+        }
+      }
+    });
+  }
+
+  /**
+   * Reflect `id` into the URL. Fragment mode re-serializes the existing
+   * fragment params so foreign state (`#foo=1&step=x`) survives the
+   * write; values are URI-encoded symmetric to {@link parseFragment}.
+   */
+  private writeUrl(router: Router, id: string): void {
+    const navigation =
+      this.mode() === 'fragment'
+        ? router.navigate([], {
+            fragment: this.serializeFragment(router, id),
+            queryParamsHandling: 'merge',
+            replaceUrl: true,
+          })
+        : router.navigate([], {
+            queryParams: { [this.paramName()]: id },
+            queryParamsHandling: 'merge',
+            replaceUrl: true,
+          });
+    navigation.catch?.((err: unknown) => this.syncError.emit(err));
+  }
+
+  private serializeFragment(router: Router, id: string): string {
+    const param = this.paramName();
+    const current = router.routerState.snapshot.root.fragment ?? '';
+    const segments = current
+      .split('&')
+      .filter((seg) => seg !== '' && seg.split('=')[0] !== param);
+    segments.push(`${param}=${encodeURIComponent(id)}`);
+    return segments.join('&');
   }
 
   private readUrlValue(router: Router): string | null {
@@ -184,7 +217,7 @@ export class CngxStepperRouterSync implements AfterContentInit {
     for (const seg of segments) {
       const [key, val] = seg.split('=');
       if (key === param && val) {
-        return val;
+        return decodeURIComponent(val);
       }
     }
     return null;
