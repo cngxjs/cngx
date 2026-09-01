@@ -482,3 +482,4 @@ describe('CngxFilterBuilder - logic toggle slot', () => {
     expect(custom?.textContent?.trim()).toBe('or');
   });
 });
+

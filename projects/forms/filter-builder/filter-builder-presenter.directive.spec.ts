@@ -400,3 +400,47 @@ describe('CngxFilterBuilderPresenter - dev-mode guards', () => {
     );
   });
 });
+
+describe('CngxFilterBuilderPresenter - errorState incomplete definition', () => {
+  function touchedSetup(tree: FilterGroup) {
+    provideFormFieldStub({ touched: true });
+    const fixture = TestBed.createComponent(Host);
+    fixture.componentInstance.value = tree;
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    return fixture.componentInstance.directive();
+  }
+
+  it('does not flag valueless isEmpty / isNotEmpty rows as incomplete', () => {
+    const directive = touchedSetup({
+      type: 'group',
+      id: 'r',
+      logic: 'and',
+      negated: false,
+      filters: [{ type: 'expression', id: 'e1', field: 'name', operator: 'isEmpty', value: undefined }],
+    });
+    expect(directive.errorState()).toBe(false);
+  });
+
+  it('flags rows with an empty-string value', () => {
+    const directive = touchedSetup({
+      type: 'group',
+      id: 'r',
+      logic: 'and',
+      negated: false,
+      filters: [{ type: 'expression', id: 'e1', field: 'name', operator: 'eq', value: '' }],
+    });
+    expect(directive.errorState()).toBe(true);
+  });
+
+  it('flags rows with a missing operator even when a value is set', () => {
+    const directive = touchedSetup({
+      type: 'group',
+      id: 'r',
+      logic: 'and',
+      negated: false,
+      filters: [{ type: 'expression', id: 'e1', field: 'name', operator: '', value: 'x' }],
+    });
+    expect(directive.errorState()).toBe(true);
+  });
+});

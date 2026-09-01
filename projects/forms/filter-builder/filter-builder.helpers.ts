@@ -7,6 +7,7 @@ import type {
   FilterLogic,
   FilterNode,
 } from './filter-builder.types';
+import { isExpressionValueEmpty } from './filter-builder-internal';
 
 /**
  * Pure helpers - zero Angular dependency, zero `inject()`. Importing this
@@ -166,12 +167,12 @@ export function evaluateExpression<TItem>(
   if (!fieldDef) {
     return false;
   }
-  // Expressions that have not been filled in yet (value === undefined) are
-  // treated as no-ops: the user picked a field and an operator but did not
-  // type a value yet, so the row should not exclude every item. The
-  // `isEmpty` / `isNotEmpty` family is exempt - they target the item value,
-  // not the expression target, so undefined is still a valid query.
-  if (expr.value === undefined && expr.operator !== 'isEmpty' && expr.operator !== 'isNotEmpty') {
+  // Expressions that have not been filled in yet are treated as no-ops: the
+  // user picked a field and an operator but did not type a value, so the row
+  // must not exclude every item. The shared definition covers null /
+  // undefined / '' and exempts the valueless isEmpty / isNotEmpty family -
+  // same test that drives errorState and the row's incomplete CSS state.
+  if (isExpressionValueEmpty(expr)) {
     return true;
   }
   const record = item as Record<string, unknown>;

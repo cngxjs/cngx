@@ -23,6 +23,7 @@ import type {
   FilterNode,
 } from './filter-builder.types';
 import { injectFilterBuilderConfig } from './filter-builder.config';
+import { isExpressionIncomplete } from './filter-builder-internal';
 import { CNGX_FILTER_BUILDER_HOST, type CngxFilterBuilderHost } from './filter-builder-host.token';
 import { EMPTY_ROOT, ensureFilterTreeIds, toFilterPredicate } from './filter-builder.helpers';
 import {
@@ -283,12 +284,6 @@ function findFirstIncompletePath(
     }
   }
   return null;
-}
-
-/** @internal */
-function isExpressionIncomplete(expression: FilterExpression): boolean {
-  const value = expression.value;
-  return value === null || value === undefined || value === '';
 }
 
 /** @internal */
