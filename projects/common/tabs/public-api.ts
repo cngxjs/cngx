@@ -86,7 +86,7 @@ export {
 // consume them across the secondary-entry boundary (ng-packagr has no
 // cross-entry private surface). `disableInternal: true` hides them from
 // generated docs; the LLM-md export honours the same tag. Precedent:
-// `CNGX_TABS_GLYPHS`, `tabsEqual`.
+// `CNGX_TABS_GLYPHS`.
 export {
   createTabsHostAttrs,
   type CngxTabsHostAttrs,
