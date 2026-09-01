@@ -70,9 +70,16 @@ export function createStepperAnnouncementBuilders(
     if (current === 'pending') {
       return i18n.commitInFlight;
     }
-    if (current === 'success' && presenter.commitTransition.previous() === 'pending') {
+    if (
+      current === 'success' &&
+      presenter.commitTransition.previous() === 'pending' &&
+      presenter.commitMode() === 'pessimistic'
+    ) {
       // Announce where the commit landed - without this arm a pessimistic
       // accept moves the step silently (the pending phrase just goes quiet).
+      // Pessimistic only: an optimistic accept already moved (and thereby
+      // announced) the step at dispatch - repeating it here would
+      // double-announce a position the SR user already reached.
       const landed = presenter.stepsOnly()[presenter.activeStepIndex()];
       if (landed) {
         return i18n.selectedStep(

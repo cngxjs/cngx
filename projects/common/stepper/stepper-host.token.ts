@@ -166,6 +166,14 @@ export interface CngxStepperHost {
 
   readonly linear: Signal<boolean>;
   readonly orientation: Signal<'horizontal' | 'vertical'>;
+  /**
+   * Resolved commit mode (`input ?? config ?? default`, with the DI
+   * fallback's pinned mode winning while a routed action is active).
+   * On the contract so Level-2 builders can gate mode-dependent
+   * behaviour - e.g. the pending-to-success announcement only applies
+   * in pessimistic mode, where the accept is what moves the step.
+   */
+  readonly commitMode: Signal<'optimistic' | 'pessimistic'>;
   readonly commitState: CngxAsyncState<number | undefined>;
   readonly intendedStepIndex: Signal<number | undefined>;
 
