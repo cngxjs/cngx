@@ -165,7 +165,7 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
 
   /**
    * Emitted when a tab's close affordance is activated (the close
-   * button or Delete/Backspace on the focused tab). The presenter has
+   * button or Delete on the focused tab). The presenter has
    * already moved the active index onto the surviving neighbour; the
    * consumer removes the tab from its own data in the handler.
    */
@@ -382,14 +382,20 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
       return;
     }
     const active = this.clampedIndex();
-    // Only closing a tab BEFORE the active one needs a pre-emptive
-    // index shift: the active tab moves down one slot once the consumer
+    // Closing a tab BEFORE the active one needs a pre-emptive index
+    // shift: the active tab moves down one slot once the consumer
     // removes the closed tab, so decrement to keep the same tab active.
-    // Closing the active tab (or one after it) needs no write -
-    // `clampedIndex` re-derives against the shorter array and lands on
-    // the next tab (or the new last when the closed tab was last).
+    // Closing the active tab mid-strip (or one after the active) needs
+    // no write - `clampedIndex` re-derives against the shorter array
+    // and lands on the next tab.
     if (index < active) {
       this.activeIndex.set(active - 1);
+    } else if (index === active && index === tabs.length - 1 && index > 0) {
+      // Closing the ACTIVE LAST tab: the derived clamp would land on the
+      // new last, but the [(activeIndex)] model itself would keep the
+      // now out-of-range value - clamp-write so two-way consumers see
+      // the real position.
+      this.activeIndex.set(index - 1);
     }
     this.tabClose.emit({ id, index });
   }

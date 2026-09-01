@@ -613,6 +613,43 @@ describe('CngxTabGroup organism', () => {
       expect(tabs[0].getAttribute('aria-selected')).toBe('true');
     });
 
+    it('releases focus back to the origin tab when a pessimistic commit is rejected', async () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(CommitHost);
+      let rejectCommit!: (v: boolean) => void;
+      fixture.componentInstance.action = () =>
+        new Promise<boolean>((resolve) => {
+          rejectCommit = resolve;
+        });
+      fixture.detectChanges();
+      const tabs = Array.from(
+        fixture.nativeElement.querySelectorAll(
+          'button[role="tab"]',
+        ) as NodeListOf<HTMLButtonElement>,
+      );
+      // Arrow to the target: focus follows the intended tab while the
+      // commit is in flight.
+      tabs[0].focus();
+      tabs[0].dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, cancelable: true }),
+      );
+      fixture.detectChanges();
+      expect(document.activeElement).toBe(tabs[1]);
+
+      rejectCommit(false);
+      await Promise.resolve();
+      await Promise.resolve();
+      fixture.detectChanges();
+      TestBed.tick();
+      // The refusal kept the roving stop on the origin - focus must not
+      // stay stranded on the tabindex="-1" target button.
+      expect(document.activeElement).toBe(tabs[0]);
+      expect(tabs[0].getAttribute('tabindex')).toBe('0');
+    });
+
     it('mounts a polite live-region span that carries the in-flight phrase', () => {
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({

@@ -526,6 +526,16 @@ describe('CngxTabGroupPresenter', () => {
       expect(presenter.activeId()).toBe('b');
     });
 
+    it('closing the active last tab clamp-writes the activeIndex model', () => {
+      const { presenter, remove } = withTabs(['a', 'b', 'c']);
+      presenter.activeIndex.set(2);
+      presenter.requestClose('c');
+      remove('c');
+      // The [(activeIndex)] model itself must carry the real position -
+      // a derived-only clamp would leave two-way consumers holding 2.
+      expect(presenter.activeIndex()).toBe(1);
+    });
+
     it('closing a tab before the active one keeps the same tab active', () => {
       const { presenter, remove } = withTabs(['a', 'b', 'c']);
       presenter.activeIndex.set(2);

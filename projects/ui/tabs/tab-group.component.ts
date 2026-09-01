@@ -236,6 +236,7 @@ export class CngxTabGroup implements CngxTabPanelHost {
     host: this.presenter,
     hostElement: this.hostElement,
     direction: injectDirection(),
+    injector: this.injector,
   });
 
   /**

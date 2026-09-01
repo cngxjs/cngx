@@ -242,5 +242,33 @@ describe('createTabOverflowTemplateBindings', () => {
     const items2 = bindings.adItems();
     expect(items2).toBe(items1);
   });
+
+  it('adItems re-emits when a hidden tab label changes (typeahead reads it)', () => {
+    let label = 'A';
+    const labelled = {
+      id: 'a',
+      label: () => label,
+      disabled: () => false,
+      errorAggregator: () => null,
+    } as unknown as CngxTabHandle;
+    const hiddenTabs = signal<readonly CngxTabHandle[]>([labelled]);
+    const bindings = createTabOverflowTemplateBindings({
+      triggerSlot: signal<CngxTabOverflowTrigger | undefined>(
+        undefined,
+      ).asReadonly(),
+      itemSlot: signal<CngxTabOverflowItem | undefined>(undefined).asReadonly(),
+      config: {},
+      hiddenCount: signal(1).asReadonly(),
+      hiddenTabs: hiddenTabs.asReadonly(),
+      pickTab: () => {},
+    });
+    const items1 = bindings.adItems();
+    expect(items1[0].label).toBe('A');
+    label = 'Renamed';
+    hiddenTabs.set([labelled]);
+    const items2 = bindings.adItems();
+    expect(items2).not.toBe(items1);
+    expect(items2[0].label).toBe('Renamed');
+  });
 });
 

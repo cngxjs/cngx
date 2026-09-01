@@ -99,10 +99,12 @@ function triggerContextEqual(
 }
 
 /**
- * Structural equal - same length + per-index `id` and `disabled`.
- * Without this, every IO emission yields fresh
+ * Structural equal - same length + per-index `id`, `label`, and
+ * `disabled`. Without this, every IO emission yields fresh
  * `ActiveDescendantItem[]` references and AD's `resolvedItems`
- * cascade fires for an unchanged visible-tab set.
+ * cascade fires for an unchanged visible-tab set. `label` is compared
+ * because typeahead matches on it - omitting it would leave the
+ * overflow list matching against stale labels after a rename.
  *
  * @internal
  */
@@ -114,7 +116,7 @@ function adItemsEqual(a: ActiveDescendantItem[], b: ActiveDescendantItem[]): boo
     return false;
   }
   for (let i = 0; i < a.length; i++) {
-    if (a[i].id !== b[i].id || a[i].disabled !== b[i].disabled) {
+    if (a[i].id !== b[i].id || a[i].label !== b[i].label || a[i].disabled !== b[i].disabled) {
       return false;
     }
   }
