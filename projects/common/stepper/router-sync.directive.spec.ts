@@ -14,12 +14,12 @@ import {
 import type { CngxStepRegistration } from './stepper-host.token';
 
 /** Minimal step registration for a late-added step (no template atom). */
-function reg(id: string): CngxStepRegistration {
+function reg(id: string, disabled = false): CngxStepRegistration {
   return {
     id,
     kind: 'step',
     label: signal(id),
-    disabled: signal(false),
+    disabled: signal(disabled),
     state: signal('idle'),
   };
 }
@@ -294,5 +294,101 @@ describe('CngxStepperRouterSync', () => {
 
       warnSpy.mockRestore();
     });
+  });
+});
+
+describe('CngxStepperRouterSync - fragment hygiene and refused seed', () => {
+  it('preserves foreign fragment params and URI-encodes the step id on write', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), provideRouter([])],
+    });
+    const router = TestBed.inject(Router);
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    Object.defineProperty(router.routerState.snapshot.root, 'fragment', {
+      get: () => 'foo=1&step=a&bar=2',
+      configurable: true,
+    });
+
+    const fixture = TestBed.createComponent(SeedShell);
+    fixture.detectChanges();
+    await flushMicrotasks();
+    fixture.componentInstance.presenter.select(1);
+    fixture.detectChanges();
+    await flushMicrotasks();
+
+    const calls = navigateSpy.mock.calls;
+    const extras = calls[calls.length - 1][1] as { fragment?: string };
+    expect(extras.fragment).toContain('foo=1');
+    expect(extras.fragment).toContain('bar=2');
+    expect(extras.fragment).toContain('step=b');
+  });
+
+  it('round-trips an encoded step id through the fragment', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), provideRouter([])],
+    });
+    const router = TestBed.inject(Router);
+    vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    Object.defineProperty(router.routerState.snapshot.root, 'fragment', {
+      get: () => `step=${encodeURIComponent('a b')}`,
+      configurable: true,
+    });
+
+    @Component({
+      standalone: true,
+      selector: 'encoded-seed-shell',
+      hostDirectives: [CngxStepperPresenter, CngxStepperRouterSync],
+      template: '',
+    })
+    class EncodedSeedShell {
+      readonly presenter = inject(CngxStepperPresenter);
+      constructor() {
+        this.presenter.register(reg('x'));
+        this.presenter.register(reg('a b'));
+      }
+    }
+
+    const fixture = TestBed.createComponent(EncodedSeedShell);
+    fixture.detectChanges();
+    expect(fixture.componentInstance.presenter.activeStepId()).toBe('a b');
+  });
+
+  it('rewrites the URL from the actual step after a refused (disabled) seed', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), provideRouter([])],
+    });
+    const router = TestBed.inject(Router);
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    Object.defineProperty(router.routerState.snapshot.root, 'fragment', {
+      get: () => 'step=locked',
+      configurable: true,
+    });
+
+    @Component({
+      standalone: true,
+      selector: 'refused-seed-shell',
+      hostDirectives: [CngxStepperPresenter, CngxStepperRouterSync],
+      template: '',
+    })
+    class RefusedSeedShell {
+      readonly presenter = inject(CngxStepperPresenter);
+      constructor() {
+        this.presenter.register(reg('start'));
+        this.presenter.register(reg('locked', true));
+      }
+    }
+
+    const fixture = TestBed.createComponent(RefusedSeedShell);
+    fixture.detectChanges();
+    await flushMicrotasks();
+
+    // The disabled target refused the seed; the URL must reflect the
+    // step the stepper actually sits on.
+    expect(fixture.componentInstance.presenter.activeStepId()).toBe('start');
+    const fragments = navigateSpy.mock.calls
+      .map((c) => (c[1] as { fragment?: string }).fragment)
+      .filter((f): f is string => f !== undefined);
+    expect(fragments.some((f) => f.includes('step=start'))).toBe(true);
+    expect(fragments[fragments.length - 1]).not.toContain('step=locked');
   });
 });

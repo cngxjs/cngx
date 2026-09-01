@@ -14,7 +14,8 @@ import type { CngxStepRegistration } from './stepper-host.token';
  */
 export interface CngxStepGroupHost {
   register(handle: CngxStepRegistration): void;
-  unregister(id: string): void;
+  /** Instance-guarded like `CngxStepperHost.unregister` - see there. */
+  unregister(id: string, handle?: CngxStepRegistration): void;
 }
 
 /**

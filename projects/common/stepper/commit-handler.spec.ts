@@ -76,3 +76,28 @@ describe('createStepperCommitHandler', () => {
     });
   });
 });
+
+describe('createStepperCommitHandler - complete-without-emit', () => {
+  it('resolves an EMPTY-style source to onResolve(false) instead of hanging', () => {
+    const controller = createCommitController<number>();
+    const handler = createStepperCommitHandler({ controller });
+    const calls: boolean[] = [];
+    const empty = new Subject<boolean>();
+    handler.beginTransition(0, 1, () => empty, (accept) => calls.push(accept));
+    expect(controller.isCommitting()).toBe(true);
+    empty.complete();
+    expect(calls).toEqual([false]);
+    expect(controller.isCommitting()).toBe(false);
+  });
+
+  it('does not double-resolve when the source emits and then completes', () => {
+    const controller = createCommitController<number>();
+    const handler = createStepperCommitHandler({ controller });
+    const calls: boolean[] = [];
+    const src = new Subject<boolean>();
+    handler.beginTransition(0, 1, () => src, (accept) => calls.push(accept));
+    src.next(true);
+    src.complete();
+    expect(calls).toEqual([true]);
+  });
+});

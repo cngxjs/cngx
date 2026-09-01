@@ -1,4 +1,5 @@
 import { computed, Directive, inject, input } from '@angular/core';
+import { injectDirection } from '@cngx/core';
 
 import type { SwipeDirection } from '@cngx/common/interactive';
 
@@ -16,10 +17,10 @@ import { CNGX_STEPPER_HOST } from './stepper-host.token';
  * `CNGX_STEPPER_CONFIG.mobileSwipe` -> library default `true`.
  *
  * Direction routing is asymmetric, matching the presenter's existing
- * navigation surface: `left` -> `selectNext()` -> `select()` (linear
- * gate + commit window apply identically to a click); `right` ->
- * `selectPrevious()` (ungated direct back-move, same path as the
- * existing strip back-nav).
+ * navigation surface: the forward swipe (`left` under `ltr`, `right`
+ * under `rtl`) -> `selectNext()` -> `select()` (linear gate + commit
+ * window apply identically to a click); the back swipe ->
+ * `selectPrevious()`, gated on `busy()` like the strip back-arrow.
  *
  * @category common/stepper
  * @docsKind primary
@@ -40,6 +41,7 @@ export class CngxStepperSwipeNav {
 
   private readonly host = inject(CNGX_STEPPER_HOST);
   private readonly config = injectStepperConfig();
+  private readonly direction = injectDirection();
 
   /** Resolved enabled flag (Input -> config -> default(true)). Boolean output, no `equal` fn required. */
   readonly swipeEnabled = computed<boolean>(
@@ -47,14 +49,24 @@ export class CngxStepperSwipeNav {
   );
 
   /**
-   * Route a swipe direction into the presenter. `left` and `right`
-   * map onto `selectNext` and `selectPrevious`; vertical directions
-   * are ignored.
+   * Route a swipe direction into the presenter. The inline mapping
+   * resolves against the document direction like the keyboard path:
+   * under `ltr` a left swipe advances; under `rtl` the roles flip.
+   * Vertical directions are ignored. The back path waits while a
+   * commit is in flight - a stray gesture must not supersede it (the
+   * programmatic `selectPrevious()` cancels deliberately).
    */
   handleSwipe(direction: SwipeDirection): void {
-    if (direction === 'left') {
+    if (direction !== 'left' && direction !== 'right') {
+      return;
+    }
+    const forward = direction === (this.direction() === 'rtl' ? 'right' : 'left');
+    if (forward) {
       this.host.selectNext();
-    } else if (direction === 'right') {
+    } else {
+      if (this.host.busy()) {
+        return;
+      }
       this.host.selectPrevious();
     }
   }

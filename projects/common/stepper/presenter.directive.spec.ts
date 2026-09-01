@@ -794,3 +794,82 @@ describe('CngxStepperPresenter', () => {
     });
   });
 });
+
+describe('CngxStepperPresenter - back-nav supersede and rollback origin', () => {
+  function commitSetup(mode: 'optimistic' | 'pessimistic') {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    @Component({
+      standalone: true,
+      hostDirectives: [
+        { directive: CngxStepperPresenter, inputs: ['commitAction', 'commitMode'] },
+      ],
+      template: '',
+    })
+    class CommitHost {}
+    const subjects: Subject<boolean>[] = [];
+    const fixture = TestBed.createComponent(CommitHost);
+    fixture.componentRef.setInput('commitAction', () => {
+      const s = new Subject<boolean>();
+      subjects.push(s);
+      return s;
+    });
+    fixture.componentRef.setInput('commitMode', mode);
+    fixture.detectChanges();
+    const presenter = fixture.debugElement.injector.get(CngxStepperPresenter);
+    presenter.register(reg('a'));
+    presenter.register(reg('b'));
+    presenter.register(reg('c'));
+    return { presenter, subjects };
+  }
+
+  it('selectPrevious supersedes an in-flight commit and settles busy to idle', () => {
+    const { presenter, subjects } = commitSetup('pessimistic');
+    presenter.select(1);
+    subjects[0].next(true);
+    subjects[0].complete();
+    expect(presenter.activeStepIndex()).toBe(1);
+
+    presenter.select(2);
+    expect(presenter.busy()).toBe(true);
+
+    presenter.selectPrevious();
+    expect(presenter.activeStepIndex()).toBe(0);
+    expect(presenter.busy()).toBe(false);
+    expect(presenter.commitState.status()).toBe('idle');
+
+    // A late resolve of the superseded runner must not yank forward.
+    subjects[1].next(true);
+    subjects[1].complete();
+    expect(presenter.activeStepIndex()).toBe(0);
+  });
+
+  it('reset mid-commit settles the commit state to idle', () => {
+    const { presenter } = commitSetup('pessimistic');
+    presenter.select(1);
+    expect(presenter.busy()).toBe(true);
+    presenter.reset();
+    expect(presenter.activeStepIndex()).toBe(0);
+    expect(presenter.busy()).toBe(false);
+    expect(presenter.commitState.status()).toBe('idle');
+  });
+
+  it('optimistic rollback lands on the last truly-committed index, not the superseded hop', () => {
+    const { presenter, subjects } = commitSetup('optimistic');
+    // a -> b: optimistic move, commit in flight.
+    presenter.select(1);
+    expect(presenter.activeStepIndex()).toBe(1);
+    // b -> c while the first commit is still pending: supersedes it.
+    presenter.select(2);
+    expect(presenter.activeStepIndex()).toBe(2);
+    // The second commit is rejected: rollback must land on 'a' (the only
+    // truly committed index) - not on the never-committed 'b'.
+    subjects[1].next(false);
+    subjects[1].complete();
+    expect(presenter.activeStepIndex()).toBe(0);
+    expect(presenter.originIndexDuringCommit()).toBe(0);
+    expect(presenter.lastFailedIndex()).toBe(2);
+  });
+});

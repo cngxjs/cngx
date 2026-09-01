@@ -60,8 +60,7 @@ export function stepTreeEqual(a: readonly CngxStepNode[], b: readonly CngxStepNo
  * a sibling is inserted) on top of the {@link stepTreeEqual} fields.
  *
  * Use only on projections where every step carries a real
- * DFS-assigned `flatIndex` and `depth` - for `-1` placeholders, use
- * {@link stepNodesEqual}.
+ * DFS-assigned `flatIndex` and `depth`.
  *
  * @internal Exported from `public-api.ts` so the cngx-stepper and
  * cngx-mat-stepper organisms share the comparator across the
@@ -83,28 +82,6 @@ export function flatStepsEqual(a: readonly CngxStepNode[], b: readonly CngxStepN
       a[i].depth !== b[i].depth ||
       a[i].flatIndex !== b[i].flatIndex
     ) {
-      return false;
-    }
-  }
-  return true;
-}
-
-/**
- * Structural equality for any flat node array - `id`, `kind`,
- * `parentId` only, ignoring `flatIndex` and `depth`. Use for
- * `CngxStepGroup.children` and other `-1`-placeholder projections.
- *
- * @internal
- */
-export function stepNodesEqual(a: readonly CngxStepNode[], b: readonly CngxStepNode[]): boolean {
-  if (a === b) {
-    return true;
-  }
-  if (a.length !== b.length) {
-    return false;
-  }
-  for (let i = 0; i < a.length; i++) {
-    if (a[i].id !== b[i].id || a[i].kind !== b[i].kind || a[i].parentId !== b[i].parentId) {
       return false;
     }
   }

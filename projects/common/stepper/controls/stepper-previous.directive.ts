@@ -1,7 +1,17 @@
-import { computed, Directive, inject, input, isDevMode, type Signal } from '@angular/core';
+import {
+  afterEveryRender,
+  computed,
+  Directive,
+  ElementRef,
+  inject,
+  input,
+  isDevMode,
+  type Signal,
+} from '@angular/core';
 
 import { CngxAsyncClick } from '@cngx/common/interactive';
 
+import { injectStepperI18n } from '../i18n/stepper-i18n';
 import { CNGX_STEPPER_HOST, type CngxStepperHost } from '../stepper-host.token';
 
 /**
@@ -56,7 +66,35 @@ export class CngxStepperPrevious {
 
   private readonly coPlacedAsyncClick = inject(CngxAsyncClick, { self: true, optional: true });
 
+  private readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly i18n = injectStepperI18n();
+
   constructor() {
+    // Fallback accessible name for icon-only hosts: while the element
+    // renders no text and the consumer supplied no label of their own,
+    // the i18n `previousStep` phrase fills the gap. Re-checked after every
+    // render (cheap string read) so a late-arriving visible label wins
+    // again - a forced aria-label over visible text would break
+    // label-in-name (WCAG 2.5.3). The data flag marks ownership so a
+    // consumer-authored aria-label is never touched.
+    afterEveryRender(() => {
+      const el = this.elementRef.nativeElement;
+      const ownsFallback = el.hasAttribute('data-cngx-label-fallback');
+      const consumerLabelled =
+        (!ownsFallback && el.hasAttribute('aria-label')) || el.hasAttribute('aria-labelledby');
+      if (consumerLabelled) {
+        return;
+      }
+      const hasText = (el.textContent ?? '').trim() !== '';
+      if (hasText && ownsFallback) {
+        el.removeAttribute('aria-label');
+        el.removeAttribute('data-cngx-label-fallback');
+      } else if (!hasText && !ownsFallback) {
+        el.setAttribute('aria-label', this.i18n.previousStep);
+        el.setAttribute('data-cngx-label-fallback', '');
+      }
+    });
+
     if (isDevMode() && this.coPlacedAsyncClick) {
       console.warn(
         'CngxStepperPrevious: [cngxStepperPrevious] and [cngxAsyncClick] on the same element ' +

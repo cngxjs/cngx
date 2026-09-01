@@ -18,8 +18,6 @@ export interface CngxStepperStripKeyboardNavOptions {
    * under `rtl` (APG); the vertical strip and Home/End stay invariant.
    */
   readonly direction: Signal<CngxDirection>;
-  /** Returns the current flat-step count so `End` lands on the last step. */
-  readonly flatStepCount: () => number;
   /**
    * Maps a CngxStepNode id to its DOM button id (e.g. `${id}-header`).
    * The strip selects by stable DOM id rather than waiting for the
@@ -83,11 +81,23 @@ export function createStepperStripKeyboardNav(
     }
   };
   const focusActive = (): void => {
-    const activeId = options.presenter.activeStepId();
-    if (!activeId) {
+    // Focus the INTENDED target only while the commit is actually in
+    // flight (pessimistic mode holds activeStepId at the origin until
+    // the action settles). The controller retains intendedValue after a
+    // rejection for the commit-error surface, so an unguarded read
+    // would teleport focus to the refused step on any later no-op key.
+    const intendedIdx = options.presenter.busy()
+      ? options.presenter.intendedStepIndex()
+      : undefined;
+    const intendedId =
+      intendedIdx !== undefined
+        ? (options.presenter.stepsOnly()[intendedIdx]?.id ?? null)
+        : null;
+    const targetId = intendedId ?? options.presenter.activeStepId();
+    if (!targetId) {
       return;
     }
-    const buttonId = options.stepButtonIdFor(activeId);
+    const buttonId = options.stepButtonIdFor(targetId);
     scheduleFocus(() => {
       const el = options.hostElement.querySelector(`[id="${buttonId}"]`);
       if (el instanceof HTMLElement) {
@@ -115,16 +125,32 @@ export function createStepperStripKeyboardNav(
       focusActive();
     } else if (isPrev) {
       event.preventDefault();
+      // A stray back-arrow must not supersede an in-flight commit - the
+      // programmatic selectPrevious() cancels deliberately; the gesture
+      // path waits.
+      if (options.presenter.busy()) {
+        return;
+      }
       options.presenter.selectPrevious();
       focusActive();
     } else if (event.key === 'Home') {
       event.preventDefault();
-      options.presenter.select(0);
-      focusActive();
+      const first = options.presenter.stepsOnly().findIndex((n) => !n.disabled());
+      if (first >= 0) {
+        options.presenter.select(first);
+        focusActive();
+      }
     } else if (event.key === 'End') {
       event.preventDefault();
-      options.presenter.select(options.flatStepCount() - 1);
-      focusActive();
+      const stepsOnly = options.presenter.stepsOnly();
+      let last = stepsOnly.length - 1;
+      while (last >= 0 && stepsOnly[last].disabled()) {
+        last--;
+      }
+      if (last >= 0) {
+        options.presenter.select(last);
+        focusActive();
+      }
     }
   };
 }

@@ -377,6 +377,7 @@ export class CngxStepper implements CngxStepPanelHost {
   protected readonly groupSummary = createStepperGroupSummary({
     summaryMode: () => this.config.groupCollapseSummary,
     isCollapsed: (node) => this.isGroupCollapsed(node),
+    i18n: this.i18n,
   });
 
   /**
@@ -437,6 +438,7 @@ export class CngxStepper implements CngxStepPanelHost {
     presenter: this.presenter,
     stepsOnly: this.stepsOnly,
     i18n: this.i18n,
+    isGroupCollapsed: (node) => this.isGroupCollapsed(node),
   });
 
   /**
@@ -537,7 +539,6 @@ export class CngxStepper implements CngxStepPanelHost {
     presenter: this.presenter,
     hostElement: this.hostElement,
     direction: injectDirection(),
-    flatStepCount: () => this.flatSteps().length,
     stepButtonIdFor: (id) => `${id}-header`,
     // Defers the post-move focus to afterNextRender so arrow-key
     // navigation across a collapsed group boundary lands on the target

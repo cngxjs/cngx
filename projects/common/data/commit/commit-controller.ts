@@ -104,8 +104,14 @@ export interface CngxCommitController<T> {
    * Abort the currently in-flight commit without firing callbacks.
    * Use when the host component is destroyed or the commit-action
    * input changes mid-flight.
+   *
+   * By default the state slot keeps its current status (a destroyed
+   * host never reads it again). Pass `settle: true` when the surface
+   * lives on - an explicit back-navigation or reset that supersedes a
+   * pending commit must return `state` to `'idle'`, or `busy` latches
+   * true forever.
    */
-  cancel(): void;
+  cancel(options?: { readonly settle?: boolean }): void;
 }
 
 /**
@@ -172,12 +178,18 @@ export function createCommitController<T>(): CngxCommitController<T> {
       active = settled ? null : handle;
     },
 
-    cancel() {
+    cancel(options?: { readonly settle?: boolean }) {
       // bump first: callbacks of a synchronously-cancelling runner must
       // already see themselves superseded
       commitId++;
       active?.cancel();
       active = null;
+      if (options?.settle) {
+        // Full settle: idle status plus cleared data/error, so a stale
+        // rejection cannot resurface on the next commit window.
+        slot.reset();
+        intendedState.set(undefined);
+      }
     },
   };
 }

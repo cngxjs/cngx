@@ -8,15 +8,25 @@ import type { CngxStepperHost } from './stepper-host.token';
 interface FakeHostOptions {
   readonly activeId?: string;
   readonly orientation?: 'horizontal' | 'vertical';
+  readonly busy?: boolean;
+  readonly stepIds?: readonly string[];
+  readonly disabledIds?: readonly string[];
 }
 
 function makeHost(opts: FakeHostOptions = {}) {
   const selectNext = vi.fn();
   const selectPrevious = vi.fn();
   const select = vi.fn();
+  const stepIds = opts.stepIds ?? ['s0', 's1', 's2'];
+  const disabled = new Set(opts.disabledIds ?? []);
   const host = {
     activeStepId: signal<string | null>(opts.activeId ?? 's0'),
     orientation: signal(opts.orientation ?? 'horizontal'),
+    busy: signal(opts.busy ?? false),
+    intendedStepIndex: signal<number | undefined>(undefined),
+    stepsOnly: signal(
+      stepIds.map((id) => ({ id, disabled: () => disabled.has(id) })),
+    ),
     selectNext,
     selectPrevious,
     select,
@@ -39,7 +49,6 @@ function nav(host: CngxStepperHost, el: HTMLElement, direction: 'ltr' | 'rtl') {
     presenter: host,
     hostElement: el,
     direction: signal<'ltr' | 'rtl'>(direction),
-    flatStepCount: () => 3,
     stepButtonIdFor: (id) => `${id}-header`,
   });
 }
@@ -123,4 +132,70 @@ describe('createStepperStripKeyboardNav (vertical) is direction-invariant', () =
       expect(selectPrevious).toHaveBeenCalledOnce();
     });
   }
+});
+
+describe('createStepperStripKeyboardNav - busy gate and disabled-skip', () => {
+  it('swallows the back-arrow while a commit is in flight', () => {
+    const { host, selectPrevious } = makeHost({ busy: true });
+    const { el, button } = makeStrip();
+    const handler = nav(host, el, 'ltr');
+
+    const event = press(el, button, handler, 'ArrowLeft');
+    expect(event.defaultPrevented).toBe(true);
+    expect(selectPrevious).not.toHaveBeenCalled();
+  });
+
+  it('Home skips leading disabled steps, End skips trailing ones', () => {
+    const { host, select } = makeHost({ disabledIds: ['s0', 's2'] });
+    const { el, button } = makeStrip();
+    const handler = nav(host, el, 'ltr');
+
+    press(el, button, handler, 'Home');
+    expect(select).toHaveBeenCalledWith(1);
+    press(el, button, handler, 'End');
+    expect(select).toHaveBeenLastCalledWith(1);
+  });
+});
+
+describe('createStepperStripKeyboardNav - stale intended target', () => {
+  async function flushMicrotasks(): Promise<void> {
+    await Promise.resolve();
+    await Promise.resolve();
+  }
+
+  function addStepButton(el: HTMLElement, id: string): HTMLButtonElement {
+    const btn = document.createElement('button');
+    btn.className = 'cngx-stepper__step';
+    btn.id = `${id}-header`;
+    el.appendChild(btn);
+    return btn;
+  }
+
+  it('focuses the active step, not the retained rejected target, once the commit settled', async () => {
+    // Rejection retains intendedStepIndex for the commit-error surface;
+    // with busy back at false, focus must follow activeStepId.
+    const { host } = makeHost({ activeId: 's0' });
+    (host as unknown as { intendedStepIndex: ReturnType<typeof signal<number | undefined>> })
+      .intendedStepIndex.set(1);
+    const { el, button } = makeStrip();
+    addStepButton(el, 's1');
+    const handler = nav(host, el, 'ltr');
+
+    press(el, button, handler, 'Home');
+    await flushMicrotasks();
+    expect(document.activeElement?.id).toBe('s0-header');
+  });
+
+  it('prefers the intended target while the commit is in flight', async () => {
+    const { host } = makeHost({ activeId: 's0', busy: true });
+    (host as unknown as { intendedStepIndex: ReturnType<typeof signal<number | undefined>> })
+      .intendedStepIndex.set(2);
+    const { el, button } = makeStrip();
+    addStepButton(el, 's2');
+    const handler = nav(host, el, 'ltr');
+
+    press(el, button, handler, 'ArrowRight');
+    await flushMicrotasks();
+    expect(document.activeElement?.id).toBe('s2-header');
+  });
 });

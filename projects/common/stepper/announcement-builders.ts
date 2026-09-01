@@ -70,6 +70,19 @@ export function createStepperAnnouncementBuilders(
     if (current === 'pending') {
       return i18n.commitInFlight;
     }
+    if (current === 'success' && presenter.commitTransition.previous() === 'pending') {
+      // Announce where the commit landed - without this arm a pessimistic
+      // accept moves the step silently (the pending phrase just goes quiet).
+      const landed = presenter.stepsOnly()[presenter.activeStepIndex()];
+      if (landed) {
+        return i18n.selectedStep(
+          landed.label(),
+          landed.flatIndex + 1,
+          presenter.stepsOnly().length,
+        );
+      }
+      return '';
+    }
     if (current === 'error') {
       // Sync commit-handler errors collapse pending -> error in one signal
       // flush; tracker sees `previous === 'idle'`. Guard stays loose so
@@ -104,13 +117,16 @@ export function createStepperAnnouncementBuilders(
       : base;
   };
 
+  // Converged on `statusLabels` - the same phrase map the status pill
+  // (resolveStepperStatusLabel) renders, so a group's SR description can
+  // never disagree with its visible pill.
   const groupStatusPhrase = (node: CngxStepNode): string => {
     const status = node.state();
     if (status === 'error') {
-      return i18n.stepErrored;
+      return i18n.statusLabels.errored;
     }
     if (status === 'success') {
-      return i18n.stepCompleted;
+      return i18n.statusLabels.done;
     }
     return '';
   };

@@ -133,6 +133,14 @@ export class CngxStepperPresenter implements CngxStepperHost {
   // Persistence-of-error surface - see CngxStepperHost.lastFailedIndex
   // / originIndexDuringCommit for the contract.
   private readonly lastFailedIndexState = signal<number | undefined>(undefined);
+
+  // Last index a commit actually landed on (or a sync/back move settled
+  // on). Rollback + origin resolution use this instead of the per-call
+  // `previous`: a rapid second select() supersedes the first while
+  // `previous` already points at the never-committed optimistic index,
+  // and rolling back there would strand the user mid-air. Plain field -
+  // read only inside handlers, never rendered.
+  private lastCommittedIndex: number | undefined;
   private readonly originIndexDuringCommitState = signal<number | undefined>(undefined);
   /** {@inheritDoc CngxStepperHost.lastFailedIndex} */
   readonly lastFailedIndex: Signal<number | undefined> = this.lastFailedIndexState.asReadonly();
@@ -357,9 +365,14 @@ export class CngxStepperPresenter implements CngxStepperHost {
     this.rebuildTree();
   }
 
-  unregister(id: string): void {
+  unregister(id: string, handle?: CngxStepRegistration): void {
     const entry = this.registry.get(id);
     if (!entry) {
+      return;
+    }
+    // Instance guard: after an idempotent re-register replaced the stored
+    // handle, the superseded instance's destroy is a no-op.
+    if (handle !== undefined && entry.reg !== handle) {
       return;
     }
     if (entry.parentId !== null) {
@@ -462,6 +475,7 @@ export class CngxStepperPresenter implements CngxStepperHost {
       // `originIndexDuringCommit` stays untouched. Clear the rejection
       // flag if the user re-picked a previously-failed target.
       this.activeStepIndex.set(target);
+      this.lastCommittedIndex = target;
       if (this.lastFailedIndexState() === target) {
         this.lastFailedIndexState.set(undefined);
       }
@@ -475,8 +489,15 @@ export class CngxStepperPresenter implements CngxStepperHost {
     //
     // Capture the safe-harbour origin exactly once on commit-window
     // open. Written ONLY on this path so a stale origin never lingers
-    // into a non-commit navigation.
-    this.originIndexDuringCommitState.set(previous);
+    // into a non-commit navigation. The origin is the last TRULY
+    // committed index, not `previous`: under a superseded optimistic
+    // commit `previous` is the never-committed optimistic position.
+    const origin = this.lastCommittedIndex ?? previous;
+    // Record the origin as truly committed on window open: for the first
+    // window `previous` IS the settled start position; for a superseding
+    // select the field already holds the real one (idempotent).
+    this.lastCommittedIndex = origin;
+    this.originIndexDuringCommitState.set(origin);
     const mode = this.commitMode();
     if (mode === 'optimistic') {
       this.activeStepIndex.set(target);
@@ -485,6 +506,7 @@ export class CngxStepperPresenter implements CngxStepperHost {
       if (accept) {
         // Success - origin no longer needed; clear the rejection
         // flag if the user re-picked the failed target.
+        this.lastCommittedIndex = target;
         this.originIndexDuringCommitState.set(undefined);
         if (this.lastFailedIndexState() === target) {
           this.lastFailedIndexState.set(undefined);
@@ -495,11 +517,11 @@ export class CngxStepperPresenter implements CngxStepperHost {
       } else {
         // Reject - flag the target; RETAIN the origin so
         // `liveAnnouncement` can resolve the origin label for the
-        // rich rollback phrase. Optimistic rolls back; pessimistic
-        // never moved.
+        // rich rollback phrase. Optimistic rolls back to the last
+        // truly-committed index; pessimistic never moved off it.
         this.lastFailedIndexState.set(target);
         if (mode === 'optimistic') {
-          this.activeStepIndex.set(previous);
+          this.activeStepIndex.set(origin);
         }
       }
     });
@@ -512,9 +534,18 @@ export class CngxStepperPresenter implements CngxStepperHost {
     }
   }
 
+  /**
+   * Ungated back-move. Supersedes an in-flight commit: the runner is
+   * canceled and the commit state settles to idle, so `busy` cannot
+   * latch and a late resolve cannot yank the user forward off the step
+   * they explicitly returned to.
+   */
   selectPrevious(): void {
     const prev = this.previousEnabledIndex();
     if (prev >= 0) {
+      this.cancelAndSettleCommit();
+      this.originIndexDuringCommitState.set(undefined);
+      this.lastCommittedIndex = prev;
       this.activeStepIndex.set(prev);
     }
   }
@@ -529,7 +560,29 @@ export class CngxStepperPresenter implements CngxStepperHost {
 
   reset(): void {
     this.activeStepIndex.set(0);
-    this.commitController.cancel();
+    this.lastCommittedIndex = 0;
+    this.originIndexDuringCommitState.set(undefined);
+    this.lastFailedIndexState.set(undefined);
+    // Settle mid-commit resets to idle - the surface lives on, so a
+    // dangling 'pending' would latch busy() forever.
+    this.cancelAndSettleCommit();
+  }
+
+  /**
+   * Cancels the in-flight commit and settles the state to idle. The
+   * settle option is load-bearing here - a custom
+   * `CNGX_COMMIT_CONTROLLER_FACTORY` implementation that ignores it
+   * leaves `busy` latched, which is invisible until a user backs out
+   * mid-commit; the dev-mode probe surfaces that immediately.
+   */
+  private cancelAndSettleCommit(): void {
+    this.commitController.cancel({ settle: true });
+    if (isDevMode() && this.commitState.status() === 'pending') {
+      console.warn(
+        '[cngxStepper] the commit controller ignored cancel({ settle: true }) - busy stays ' +
+          'latched. Honor the settle option in your CNGX_COMMIT_CONTROLLER_FACTORY override.',
+      );
+    }
   }
 }
 

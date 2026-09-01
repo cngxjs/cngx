@@ -64,7 +64,10 @@ export class CngxStepGroup implements CngxStepGroupHost, OnInit {
       if (states.some((s) => s === 'error')) {
         return 'error';
       }
-      if (states.some((s) => s === 'pending' || s === 'busy')) {
+      if (states.some((s) => s === 'pending')) {
+        // 'pending' can only come from a nested group's own rollup; leaf
+        // steps never produce it ('busy' is a per-step presenter concern,
+        // not a step state, so no 'busy' arm exists here).
         return 'pending';
       }
       if (states.every((s) => s === 'success')) {
@@ -76,6 +79,15 @@ export class CngxStepGroup implements CngxStepGroupHost, OnInit {
   );
 
   private readonly stepperHost = inject(CNGX_STEPPER_HOST, { optional: true });
+
+  // A group nested inside another group must register through its parent
+  // (skipSelf past our own CNGX_STEP_GROUP_HOST provider), or it would
+  // silently register as a root and flatten the tree.
+  private readonly parentGroupHost = inject(CNGX_STEP_GROUP_HOST, {
+    optional: true,
+    skipSelf: true,
+  });
+
   private readonly destroyRef = inject(DestroyRef);
 
   /**
@@ -117,16 +129,17 @@ export class CngxStepGroup implements CngxStepGroupHost, OnInit {
     // ancestor group before its descendant steps, so that order holds, and
     // groups and steps share one lifecycle phase - keeping the presenter's
     // insertion-order tree identical to the previous constructor ordering.
-    const stepperHost = this.stepperHost!;
+    const registrationHost = this.parentGroupHost ?? this.stepperHost!;
     const groupId = this.id();
-    stepperHost.register({
+    const handle: CngxStepRegistration = {
       id: groupId,
       kind: 'group',
       label: this.label,
       disabled: this.disabled,
       state: this.aggregatedStatus,
-    });
-    this.destroyRef.onDestroy(() => stepperHost.unregister(groupId));
+    };
+    registrationHost.register(handle);
+    this.destroyRef.onDestroy(() => registrationHost.unregister(groupId, handle));
   }
 
   register(handle: CngxStepRegistration): void {
@@ -135,8 +148,12 @@ export class CngxStepGroup implements CngxStepGroupHost, OnInit {
     this.stepperHost!.register(handle, this.id());
   }
 
-  unregister(id: string): void {
-    this.childRegistry.update((cur) => cur.filter((c) => c.id !== id));
-    this.stepperHost!.unregister(id);
+  unregister(id: string, handle?: CngxStepRegistration): void {
+    // Same instance guard as the presenter: only evict the exact handle
+    // (or fall back to id-keyed removal for handle-less callers).
+    this.childRegistry.update((cur) =>
+      cur.filter((c) => (handle !== undefined ? c !== handle : c.id !== id)),
+    );
+    this.stepperHost!.unregister(id, handle);
   }
 }

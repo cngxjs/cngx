@@ -5,7 +5,6 @@ import {
   Directive,
   inject,
   input,
-  linkedSignal,
   type OnInit,
   type Signal,
 } from '@angular/core';
@@ -17,14 +16,18 @@ import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
 import { CNGX_STEP_GROUP_HOST } from './step-group-host.token';
 import { CngxStepContent } from './step-content.directive';
 import { CngxStepLabel } from './step-label.directive';
-import { CNGX_STEPPER_HOST, type CngxStepStatus } from './stepper-host.token';
+import {
+  CNGX_STEPPER_HOST,
+  type CngxStepRegistration,
+  type CngxStepStatus,
+} from './stepper-host.token';
 
 /**
  * Single-step atom. Registers with the nearest host - either a
  * `CngxStepGroup` ({@link CNGX_STEP_GROUP_HOST}) or the root
  * `CngxStepperPresenter` ({@link CNGX_STEPPER_HOST}).
  *
- * `state` is a `linkedSignal` over `[disabled]`, `[completed]`, and
+ * `state` is a pure `computed` over `[disabled]`, `[completed]`, and
  * the optional `[errorAggregator]`'s `hasError()`.
  *
  * @category common/stepper
@@ -76,34 +79,22 @@ export class CngxStep implements OnInit {
   readonly labelTemplate = this.labelSlot;
   readonly contentTemplate = this.contentSlot;
 
-  /**
-   * Per-step status derived from inputs + aggregator. `linkedSignal`
-   * with structural equal - never written via `effect`.
-   */
-  readonly state: Signal<CngxStepStatus> = linkedSignal({
-    source: () => {
-      const directError = this.error();
-      return {
-        disabled: this.disabled(),
-        completed: this.completed(),
-        errored:
-          (directError !== false && directError !== '') ||
-          (this.errorAggregator()?.hasError?.() ?? false),
-      };
-    },
-    computation: ({ disabled, completed, errored }) => {
-      if (disabled) {
-        return 'disabled';
-      }
-      if (errored) {
-        return 'error';
-      }
-      if (completed) {
-        return 'success';
-      }
-      return 'idle';
-    },
-    equal: Object.is,
+  /** Per-step status derived from inputs + aggregator - never written. */
+  readonly state: Signal<CngxStepStatus> = computed(() => {
+    if (this.disabled()) {
+      return 'disabled';
+    }
+    const directError = this.error();
+    const errored =
+      (directError !== false && directError !== '') ||
+      (this.errorAggregator()?.hasError?.() ?? false);
+    if (errored) {
+      return 'error';
+    }
+    if (this.completed()) {
+      return 'success';
+    }
+    return 'idle';
   });
 
   private readonly groupHost = inject(CNGX_STEP_GROUP_HOST, { optional: true });
@@ -130,7 +121,7 @@ export class CngxStep implements OnInit {
     // the presenter's insertion-order tree is unchanged. Mirrors CngxTab.
     const host = this.groupHost ?? this.stepperHost!;
     const stepId = this.id();
-    host.register({
+    const handle: CngxStepRegistration = {
       id: stepId,
       kind: 'step',
       label: this.label,
@@ -138,7 +129,8 @@ export class CngxStep implements OnInit {
       state: this.state,
       errorAggregator: this.errorAggregator,
       errorMessage: this.errorMessage,
-    });
-    this.destroyRef.onDestroy(() => host.unregister(stepId));
+    };
+    host.register(handle);
+    this.destroyRef.onDestroy(() => host.unregister(stepId, handle));
   }
 }

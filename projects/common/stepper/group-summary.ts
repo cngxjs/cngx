@@ -1,5 +1,6 @@
 import { computed, type Signal } from '@angular/core';
 
+import type { CngxStepperI18n } from './i18n/stepper-i18n';
 import type { CngxStepperGroupSummary } from './stepper-config';
 import type { CngxStepNode } from './stepper-host.token';
 
@@ -32,6 +33,8 @@ export interface CngxStepperGroupSummaryOptions {
   readonly summaryMode: () => CngxStepperGroupSummary | undefined;
   /** Whether a given group node is currently collapsed. */
   readonly isCollapsed: (node: CngxStepNode) => boolean;
+  /** Resolved i18n bundle for the SR phrases. */
+  readonly i18n: Pick<CngxStepperI18n, 'groupSummaryCount' | 'groupSummaryProgress'>;
 }
 
 /** Terminal-step totals for a group's subtree; reads each step `state()`. */
@@ -55,8 +58,8 @@ function subtreeStats(node: CngxStepNode): { total: number; completed: number } 
  * Builds the collapsed-group summary view. Level-2 helper so the
  * organism stays a thin renderer. `status` mode defers its SR phrasing
  * to the group's existing status-phrase span, so {@link srText} returns
- * `null` there. English defaults (locale via the i18n cascade is a
- * follow-up).
+ * `null` there. SR phrases resolve through the `CngxStepperI18n` bundle
+ * when passed; English defaults otherwise.
  *
  * @category common/stepper
  */
@@ -83,7 +86,10 @@ export function createStepperGroupSummary(
       return null;
     }
     const { total, completed } = subtreeStats(node);
-    return current === 'count' ? `${total} steps` : `${completed} of ${total} steps complete`;
+    if (current === 'count') {
+      return options.i18n.groupSummaryCount(total);
+    }
+    return options.i18n.groupSummaryProgress(completed, total);
   };
 
   return { mode, text, showStatus, srText };
