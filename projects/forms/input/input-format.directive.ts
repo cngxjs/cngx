@@ -105,7 +105,7 @@ export class CngxInputFormat {
       const formatFn = this.format();
       untracked(() => {
         const el = this.el.nativeElement;
-        if (document.activeElement === el) {
+        if (el.ownerDocument.activeElement === el) {
           return;
         }
         const formatted = formatFn(raw);

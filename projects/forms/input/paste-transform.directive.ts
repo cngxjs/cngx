@@ -1,4 +1,5 @@
 import { Directive, ElementRef, inject, input } from '@angular/core';
+import { CngxInputMask } from './input-mask.directive';
 
 /**
  * Sanitizes pasted content before it enters the field.
@@ -11,6 +12,13 @@ import { Directive, ElementRef, inject, input } from '@angular/core';
  *
  * One behaviour, one directive (Pillar 3); the synthetic `input` dispatch feeds
  * the existing one-way path, no second managed copy.
+ *
+ * Do not stack with `CngxInputMask` on the same element: both directives
+ * cancel the native paste and write the field independently, so the clipboard
+ * text is inserted twice through two uncoordinated paths (this directive
+ * writes `el.value` directly, the mask routes the untransformed clipboard
+ * text through its slot filter). Masks already filter per slot and accept a
+ * per-character `transform`; use those instead.
  *
  * ```html
  * <input cngxInput [cngxPasteTransform]="stripSpaces" />
@@ -38,6 +46,20 @@ export class CngxPasteTransform {
 
   /** Transform applied to the pasted text before insertion. */
   readonly transform = input.required<(pasted: string) => string>({ alias: 'cngxPasteTransform' });
+
+  constructor() {
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+      const mask = inject(CngxInputMask, { optional: true, self: true });
+      if (mask) {
+        console.warn(
+          '[cngxPasteTransform]: stacked on a cngxInputMask input - both directives ' +
+            'cancel the native paste and insert independently, so pasted text is ' +
+            'applied twice through uncoordinated paths. Remove cngxPasteTransform; ' +
+            "use the mask's [transform] / customTokens for per-character cleanup.",
+        );
+      }
+    }
+  }
 
   /** @internal - sanitize the clipboard text and insert it at the caret. */
   protected handlePaste(event: Event): void {

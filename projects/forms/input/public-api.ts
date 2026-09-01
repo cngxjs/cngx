@@ -47,6 +47,7 @@ export {
   provideInputConfig,
   withInputAriaLabels,
   withPhonePatterns,
+  withPhoneDefaultRegion,
   withIbanPatterns,
   withZipPatterns,
   withDateFormats,

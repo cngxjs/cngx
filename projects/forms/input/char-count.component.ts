@@ -91,7 +91,36 @@ export class CngxCharCount {
 
   /** @internal - current character count, updated via DOM input events. */
   private readonly lengthState = signal(0);
-  protected readonly currentLength = this.lengthState.asReadonly();
+
+  /** @internal - true once a sibling DOM input was found and wired up. */
+  private readonly domBound = signal(false);
+
+  /** @internal - the wired sibling input, for connectivity re-checks. */
+  private boundEl: HTMLInputElement | HTMLTextAreaElement | null = null;
+
+  /**
+   * @internal - DOM-driven length while a connected sibling input is wired;
+   * otherwise derives from the presenter's FieldState value signal, so the
+   * counter stays live for custom controls and after the bound input leaves
+   * the DOM. The field value is read unconditionally: its signal keeps the
+   * computed re-evaluating (and re-checking `isConnected`, which is not
+   * reactive on its own) even while the DOM branch wins.
+   */
+  protected readonly currentLength = computed(() => {
+    const value = this.presenter.fieldState().value();
+    const domLength = this.lengthState();
+    if (this.domBound() && this.boundEl?.isConnected) {
+      return domLength;
+    }
+    if (typeof value === 'string') {
+      return value.length;
+    }
+    if (typeof value === 'number' || typeof value === 'bigint') {
+      return String(value).length;
+    }
+    // Objects/booleans/null have no meaningful character count.
+    return 0;
+  });
 
   /** Whether current length exceeds maxLength. */
   readonly isOver = computed(() => {
@@ -119,10 +148,14 @@ export class CngxCharCount {
         | null;
 
       if (!inputEl) {
+        // No sibling DOM input: currentLength keeps deriving from the
+        // presenter's FieldState value signal.
         return;
       }
 
       this.lengthState.set(inputEl.value.length);
+      this.boundEl = inputEl;
+      this.domBound.set(true);
 
       const handler = () => this.lengthState.set(inputEl.value.length);
       inputEl.addEventListener('input', handler);

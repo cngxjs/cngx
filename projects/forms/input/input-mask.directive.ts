@@ -1,5 +1,6 @@
 import {
   computed,
+  DestroyRef,
   Directive,
   effect,
   ElementRef,
@@ -399,6 +400,12 @@ export type MaskTokenMap = Record<string, MaskTokenDef>;
  * <!-- Credit card with auto-format switching -->
  * <input cngxInputMask="creditcard" />
  * ```
+ *
+ * Do not stack `CngxPasteTransform` on a masked input: both directives cancel
+ * the native paste and insert independently (double insertion through two
+ * uncoordinated paths). The mask's own paste handling filters clipboard text
+ * per slot; per-character cleanup belongs in `[transform]` / `customTokens`.
+ *
  * @category forms/input
  * @docsKind primary
  * @wcag AA
@@ -427,6 +434,8 @@ export type MaskTokenMap = Record<string, MaskTokenDef>;
   ],
   host: {
     '(beforeinput)': 'handleBeforeInput($event)',
+    '(compositionstart)': 'handleCompositionStart()',
+    '(compositionend)': 'handleCompositionEnd($event)',
     '(keydown)': 'handleKeyDown($event)',
     '(mousedown)': 'focusedViaClick = true',
     '(focus)': 'handleFocus()',
@@ -445,6 +454,7 @@ export type MaskTokenMap = Record<string, MaskTokenDef>;
 })
 export class CngxInputMask {
   private readonly el = inject<ElementRef<HTMLInputElement>>(ElementRef);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly locale = inject(LOCALE_ID);
   private readonly config = inject(CNGX_INPUT_CONFIG);
   private readonly host = inject(CNGX_FORM_FIELD_HOST, { optional: true });
@@ -621,6 +631,12 @@ export class CngxInputMask {
   private caretRawIndex = 0;
 
   constructor() {
+    this.destroyRef.onDestroy(() => {
+      if (this.focusRafHandle !== null) {
+        cancelAnimationFrame(this.focusRafHandle);
+      }
+    });
+
     // Lazily import the preset table the current mask needs. Side effect, so it
     // lives in an effect (not the resolvedPatterns computed); the import's
     // signal write lands back in maskPresetTables and recomputes the mask.
@@ -773,8 +789,60 @@ export class CngxInputMask {
       return;
     }
 
+    if (
+      event.inputType === 'insertCompositionText' ||
+      event.inputType === 'deleteCompositionText'
+    ) {
+      // IME composition writes interim text straight into the field (the
+      // event is not cancelable mid-composition per the Input Events spec).
+      // Let it proceed; handleCompositionEnd reconciles the committed text
+      // through the regular insert path.
+      return;
+    }
+
     if (event.inputType.startsWith('insert') || event.inputType.startsWith('delete')) {
       event.preventDefault();
+    }
+  }
+
+  // Selection captured at compositionstart (raw mask coordinates, prefix
+  // already stripped) so the committed text lands where composition began.
+  private compositionSelStart = 0;
+  private compositionSelEnd = 0;
+
+  /** @internal */
+  protected handleCompositionStart(): void {
+    const el = this.el.nativeElement;
+    const prefixLen = this.prefix().length;
+    this.compositionSelStart = Math.max(0, (el.selectionStart ?? 0) - prefixLen);
+    this.compositionSelEnd = Math.max(0, (el.selectionEnd ?? 0) - prefixLen);
+  }
+
+  /** @internal */
+  protected handleCompositionEnd(event: CompositionEvent): void {
+    const el = this.el.nativeElement;
+    const tokens = this.tokens();
+    const prefixLen = this.prefix().length;
+
+    // Discard the interim IME buffer the browser rendered into the field and
+    // restore the last masked render, then run the committed text through the
+    // regular insert path (token filtering, transforms, pattern switching).
+    const hadInterim = el.value !== this.maskedValue();
+    el.value = this.maskedValue();
+    const caret = Math.min(this.compositionSelStart, tokens.length) + prefixLen;
+    el.setSelectionRange(caret, caret);
+
+    if (event.data) {
+      this.insertChars(event.data, this.compositionSelStart, this.compositionSelEnd, tokens);
+    }
+
+    // Composition is the one edit path where co-located listeners (CngxInput,
+    // char-count, matInput) saw native interim input events; the silent
+    // restore above would leave them holding the discarded buffer. One
+    // corrective event with the final value re-synchronizes them - the mask
+    // itself has no input host binding, so this cannot re-enter.
+    if (hadInterim || event.data) {
+      el.dispatchEvent(new Event('input', { bubbles: true }));
     }
   }
 
@@ -843,6 +911,10 @@ export class CngxInputMask {
   /** @internal */
   protected focusedViaClick = false;
 
+  // Pending focus-scheduled rAF; canceled on destroy so the callback cannot
+  // touch a detached input.
+  private focusRafHandle: number | null = null;
+
   protected handleFocus(): void {
     if (!this.resolvedGuide()) {
       return;
@@ -856,7 +928,11 @@ export class CngxInputMask {
     const masked = this.maskedValueCore();
     const prefixLen = this.prefix().length;
     const emptyPos = firstEmptySlot(tokens, masked, this.resolvedPlaceholder());
-    requestAnimationFrame(() => {
+    if (this.focusRafHandle !== null) {
+      cancelAnimationFrame(this.focusRafHandle);
+    }
+    this.focusRafHandle = requestAnimationFrame(() => {
+      this.focusRafHandle = null;
       el.setSelectionRange(emptyPos + prefixLen, emptyPos + prefixLen);
     });
   }

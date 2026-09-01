@@ -88,6 +88,18 @@ export function ensureMaskPreset(key: MaskPresetKey): Promise<void> {
   return load;
 }
 
+/**
+ * Test-only reset for the module-level registry state. The loaded tables and
+ * the in-flight import cache are singletons shared across TestBed instances
+ * (vitest runs with `isolate: false`), so a spec that needs the cold
+ * lazy-load path must clear them explicitly. Not part of the public API.
+ * @internal
+ */
+export function resetMaskPresetsForTesting(): void {
+  tables.set({});
+  inflight.clear();
+}
+
 const ALL_PRESET_KEYS: readonly MaskPresetKey[] = ['phone', 'date', 'iban', 'zip'];
 
 /**

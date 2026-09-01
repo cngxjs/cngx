@@ -1,4 +1,5 @@
 import {
+  afterNextRender,
   computed,
   DestroyRef,
   Directive,
@@ -66,6 +67,12 @@ export class CngxInputClear {
 
   private initialized = false;
 
+  constructor() {
+    // Eager attach: hasValue() must reflect a pre-filled target from first
+    // render, not only after the first clear() interaction.
+    afterNextRender(() => this.ensureListener());
+  }
+
   /** Clears the target value, dispatches an input event, and focuses the target. */
   clear(): void {
     this.ensureListener();
@@ -77,7 +84,10 @@ export class CngxInputClear {
     this.cleared.emit();
   }
 
-  /** Lazily attaches the input event listener the first time the target is interacted with. */
+  /**
+   * Attaches the input event listener once - normally via `afterNextRender`;
+   * `clear()` keeps the call as a pre-render safety net.
+   */
   private ensureListener(): void {
     if (this.initialized) {
       return;
