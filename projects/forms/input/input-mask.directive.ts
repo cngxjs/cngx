@@ -1,5 +1,6 @@
 import {
   computed,
+  DestroyRef,
   Directive,
   effect,
   ElementRef,
@@ -447,6 +448,7 @@ export type MaskTokenMap = Record<string, MaskTokenDef>;
 })
 export class CngxInputMask {
   private readonly el = inject<ElementRef<HTMLInputElement>>(ElementRef);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly locale = inject(LOCALE_ID);
   private readonly config = inject(CNGX_INPUT_CONFIG);
   private readonly host = inject(CNGX_FORM_FIELD_HOST, { optional: true });
@@ -623,6 +625,12 @@ export class CngxInputMask {
   private caretRawIndex = 0;
 
   constructor() {
+    this.destroyRef.onDestroy(() => {
+      if (this.focusRafHandle !== null) {
+        cancelAnimationFrame(this.focusRafHandle);
+      }
+    });
+
     // Lazily import the preset table the current mask needs. Side effect, so it
     // lives in an effect (not the resolvedPatterns computed); the import's
     // signal write lands back in maskPresetTables and recomputes the mask.
@@ -887,6 +895,10 @@ export class CngxInputMask {
   /** @internal */
   protected focusedViaClick = false;
 
+  // Pending focus-scheduled rAF; canceled on destroy so the callback cannot
+  // touch a detached input.
+  private focusRafHandle: number | null = null;
+
   protected handleFocus(): void {
     if (!this.resolvedGuide()) {
       return;
@@ -900,7 +912,11 @@ export class CngxInputMask {
     const masked = this.maskedValueCore();
     const prefixLen = this.prefix().length;
     const emptyPos = firstEmptySlot(tokens, masked, this.resolvedPlaceholder());
-    requestAnimationFrame(() => {
+    if (this.focusRafHandle !== null) {
+      cancelAnimationFrame(this.focusRafHandle);
+    }
+    this.focusRafHandle = requestAnimationFrame(() => {
+      this.focusRafHandle = null;
       el.setSelectionRange(emptyPos + prefixLen, emptyPos + prefixLen);
     });
   }
