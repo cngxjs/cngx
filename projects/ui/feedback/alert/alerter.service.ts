@@ -51,7 +51,8 @@ export interface AlertRef {
 }
 
 /**
- * @internal - tracked state for a single alert in the stack.
+ * Tracked state for a single alert - the element type of the public
+ * `CngxAlerter.alerts` signal. Immutable per slot; treat as read-only.
  *
  * @category ui/feedback/alert
  */

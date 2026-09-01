@@ -284,6 +284,23 @@ describe('CngxAlertStack', () => {
 
   // ── Overflow disclosure ARIA ─────────────────────────────
 
+  it('hands focus to the first newly revealed item when the overflow button removes itself', async () => {
+    const { fixture, stackEl, alerter } = setup();
+    for (let i = 0; i < 5; i++) {
+      alerter.show({ message: `Alert ${i}`, severity: 'error', scope: 'test' });
+    }
+    fixture.detectChanges();
+
+    const overflow = stackEl.querySelector('.cngx-alert-stack__overflow') as HTMLElement;
+    overflow.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const items = stackEl.querySelectorAll<HTMLElement>('.cngx-alert-stack__item');
+    expect(items.length).toBe(5);
+    expect(document.activeElement).toBe(items[3]);
+  });
+
   it('overflow button carries no dangling disclosure ARIA, only a label', () => {
     const { fixture, stackEl, alerter } = setup();
     for (let i = 0; i < 5; i++) {

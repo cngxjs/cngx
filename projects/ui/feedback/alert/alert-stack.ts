@@ -1,11 +1,13 @@
 import { NgComponentOutlet } from '@angular/common';
 import {
+  afterNextRender,
   ChangeDetectionStrategy,
   Component,
   computed,
   effect,
   ElementRef,
   inject,
+  Injector,
   input,
   linkedSignal,
   untracked,
@@ -94,6 +96,7 @@ function entriesEqual(a: readonly StackEntry[], b: readonly StackEntry[]): boole
     @for (entry of visibleEntries(); track entry.key) {
       <div
         class="cngx-alert-stack__item"
+        tabindex="-1"
         [class.cngx-alert-stack__item--info]="entry.state.config.severity === 'info'"
         [class.cngx-alert-stack__item--success]="entry.state.config.severity === 'success'"
         [class.cngx-alert-stack__item--warning]="entry.state.config.severity === 'warning'"
@@ -159,6 +162,7 @@ export class CngxAlertStack {
 
   private readonly config = inject(CNGX_FEEDBACK_CONFIG, { optional: true });
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly injector = inject(Injector);
 
   /** Scope filter - only shows alerts matching this scope. */
   readonly scope = input<string | undefined>(undefined);
@@ -263,8 +267,20 @@ export class CngxAlertStack {
     return this.config?.alertIcons?.[alert.config.severity] ?? null;
   }
 
-  /** @internal */
+  /**
+   * @internal - the overflow button removes itself on expansion, so focus is
+   * handed to the first newly revealed alert item instead of falling to body.
+   */
   protected handleExpandOverflow(): void {
+    const revealIndex = this.position() === 'bottom' ? 0 : this.visibleEntries().length;
     this.expanded.set(true);
+    afterNextRender(
+      () => {
+        const items =
+          this.host.nativeElement.querySelectorAll<HTMLElement>('.cngx-alert-stack__item');
+        items[revealIndex]?.focus({ preventScroll: true });
+      },
+      { injector: this.injector },
+    );
   }
 }
