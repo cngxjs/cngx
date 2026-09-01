@@ -1,6 +1,7 @@
 import {
   DestroyRef,
   type EnvironmentProviders,
+  type TemplateRef,
   type Type,
   inject,
   Injectable,
@@ -57,6 +58,14 @@ export interface ToastConfig {
 
   /** Inputs passed to the `content` component via `NgComponentOutlet`. */
   contentInputs?: Record<string, unknown>;
+
+  /**
+   * Template rendered as the toast body - takes precedence over `content`
+   * and `message`. `CngxToast` passes its projected content through here.
+   *
+   * A11y: same rule as `content` - avoid focusable elements inside.
+   */
+  contentTemplate?: TemplateRef<unknown>;
 }
 
 /**
@@ -79,7 +88,10 @@ export interface ToastRef {
 export interface ToastState {
   readonly id: number;
   readonly config: Required<Pick<ToastConfig, 'message' | 'severity' | 'dismissible'>> &
-    Pick<ToastConfig, 'action' | 'title' | 'description' | 'content' | 'contentInputs'> & {
+    Pick<
+      ToastConfig,
+      'action' | 'title' | 'description' | 'content' | 'contentInputs' | 'contentTemplate'
+    > & {
       duration: number | 'persistent';
     };
   readonly createdAt: number;
@@ -179,6 +191,7 @@ export class CngxToaster {
         description: config.description,
         content: config.content,
         contentInputs: config.contentInputs,
+        contentTemplate: config.contentTemplate,
       },
       createdAt: now,
       count: 1,
