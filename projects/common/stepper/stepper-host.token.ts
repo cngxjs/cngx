@@ -217,7 +217,13 @@ export interface CngxStepperHost {
   clearLastFailed(): void;
 
   register(handle: CngxStepRegistration, parentId?: string | null): void;
-  unregister(id: string): void;
+  /**
+   * Remove a registration. Pass the registering `handle` so a destroyed
+   * instance can only evict itself: under an id collision the presenter's
+   * idempotent re-register replaces the stored handle, and the OLD
+   * instance's late destroy must not tear down the NEW instance's entry.
+   */
+  unregister(id: string, handle?: CngxStepRegistration): void;
 }
 
 /**

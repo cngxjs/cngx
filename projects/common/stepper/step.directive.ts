@@ -17,7 +17,11 @@ import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
 import { CNGX_STEP_GROUP_HOST } from './step-group-host.token';
 import { CngxStepContent } from './step-content.directive';
 import { CngxStepLabel } from './step-label.directive';
-import { CNGX_STEPPER_HOST, type CngxStepStatus } from './stepper-host.token';
+import {
+  CNGX_STEPPER_HOST,
+  type CngxStepRegistration,
+  type CngxStepStatus,
+} from './stepper-host.token';
 
 /**
  * Single-step atom. Registers with the nearest host - either a
@@ -130,7 +134,7 @@ export class CngxStep implements OnInit {
     // the presenter's insertion-order tree is unchanged. Mirrors CngxTab.
     const host = this.groupHost ?? this.stepperHost!;
     const stepId = this.id();
-    host.register({
+    const handle: CngxStepRegistration = {
       id: stepId,
       kind: 'step',
       label: this.label,
@@ -138,7 +142,8 @@ export class CngxStep implements OnInit {
       state: this.state,
       errorAggregator: this.errorAggregator,
       errorMessage: this.errorMessage,
-    });
-    this.destroyRef.onDestroy(() => host.unregister(stepId));
+    };
+    host.register(handle);
+    this.destroyRef.onDestroy(() => host.unregister(stepId, handle));
   }
 }
