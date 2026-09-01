@@ -11,6 +11,7 @@ import { type Observable, Subject } from 'rxjs';
 
 import type { AlertSeverity } from '../alert/alert';
 import { CNGX_FEEDBACK_CONFIG } from '../config/feedback-config';
+import { createPausableTimer, type PausableTimer } from '../internal/pausable-timer';
 
 /**
  * Configuration for a single toast.
@@ -82,14 +83,8 @@ export interface ToastState {
       duration: number | 'persistent';
     };
   readonly createdAt: number;
-  /** Timestamp when the current timer started (created or last resumed). */
-  readonly timerStartedAt: number;
   /** Dedup counter - incremented when identical toast fires again. */
   readonly count: number;
-  /** Remaining ms when timer was paused (hover/focus). `undefined` = not paused. */
-  readonly pausedRemaining: number | undefined;
-  /** Timer handle for auto-dismiss. */
-  readonly timer: ReturnType<typeof setTimeout> | undefined;
   /** Subject that emits on dismiss. */
   readonly dismissed$: Subject<void>;
 }
@@ -130,13 +125,15 @@ export class CngxToaster {
   /** Dedup window in ms - identical toasts within this window are merged. */
   readonly dedupWindow = signal<number>(this.config?.toastDedupWindow ?? 1000);
 
+  /** Auto-dismiss timers keyed by toast id - not part of the public state shape. */
+  private readonly timers = new Map<number, PausableTimer>();
+
   constructor() {
     this.destroyRef.onDestroy(() => {
-      for (const t of this.toasts()) {
-        if (t.timer !== undefined) {
-          clearTimeout(t.timer);
-        }
+      for (const timer of this.timers.values()) {
+        timer.clear();
       }
+      this.timers.clear();
     });
   }
 
@@ -159,17 +156,11 @@ export class CngxToaster {
     );
 
     if (existing) {
-      if (existing.timer !== undefined) {
-        clearTimeout(existing.timer);
-      }
-      const newTimer =
-        duration !== 'persistent' ? this.startTimer(existing.id, duration) : undefined;
+      // Dedup restart: full new duration, fresh clock - a repeated event
+      // keeps the merged toast up as long as a brand-new one would be.
+      this.startTimer(existing.id, duration);
       this.toasts.update((ts) =>
-        ts.map((t) =>
-          t.id === existing.id
-            ? { ...t, count: t.count + 1, timer: newTimer, pausedRemaining: undefined }
-            : t,
-        ),
+        ts.map((t) => (t.id === existing.id ? { ...t, count: t.count + 1 } : t)),
       );
       return this.createRef(existing);
     }
@@ -190,50 +181,23 @@ export class CngxToaster {
         contentInputs: config.contentInputs,
       },
       createdAt: now,
-      timerStartedAt: now,
       count: 1,
-      pausedRemaining: undefined,
-      timer: duration !== 'persistent' ? this.startTimer(id, duration) : undefined,
       dismissed$,
     };
 
     this.toasts.update((ts) => [state, ...ts]);
+    this.startTimer(id, duration);
     return this.createRef(state);
   }
 
-  /** @internal - called by toast-outlet on hover/focus. */
+  /** @internal - called by toast-outlet on hover/focus (WCAG 2.2.1). */
   pauseTimer(id: number): void {
-    this.toasts.update((ts) =>
-      ts.map((t) => {
-        if (t.id !== id || t.timer === undefined) {
-          return t;
-        }
-        const elapsed = Date.now() - t.timerStartedAt;
-        const duration = t.config.duration;
-        if (typeof duration !== 'number') {
-          return t;
-        }
-        clearTimeout(t.timer);
-        return { ...t, timer: undefined, pausedRemaining: Math.max(0, duration - elapsed) };
-      }),
-    );
+    this.timers.get(id)?.pause();
   }
 
   /** @internal - called by toast-outlet on mouse-leave/focus-out. */
   resumeTimer(id: number): void {
-    this.toasts.update((ts) =>
-      ts.map((t) => {
-        if (t.id !== id || t.pausedRemaining === undefined) {
-          return t;
-        }
-        return {
-          ...t,
-          pausedRemaining: undefined,
-          timerStartedAt: Date.now(),
-          timer: this.startTimer(t.id, t.pausedRemaining),
-        };
-      }),
-    );
+    this.timers.get(id)?.resume();
   }
 
   /** Dismiss a toast by id. */
@@ -242,9 +206,7 @@ export class CngxToaster {
     if (!toast) {
       return;
     }
-    if (toast.timer !== undefined) {
-      clearTimeout(toast.timer);
-    }
+    this.clearTimer(id);
     this.toasts.update((ts) => ts.filter((t) => t.id !== id));
     toast.dismissed$.next();
     toast.dismissed$.complete();
@@ -253,17 +215,29 @@ export class CngxToaster {
   /** Dismiss all toasts. */
   dismissAll(): void {
     for (const t of this.toasts()) {
-      if (t.timer !== undefined) {
-        clearTimeout(t.timer);
-      }
+      this.clearTimer(t.id);
       t.dismissed$.next();
       t.dismissed$.complete();
     }
     this.toasts.set([]);
   }
 
-  private startTimer(id: number, ms: number): ReturnType<typeof setTimeout> {
-    return setTimeout(() => this.dismiss(id), ms);
+  private startTimer(id: number, duration: number | 'persistent'): void {
+    if (duration === 'persistent') {
+      this.clearTimer(id);
+      return;
+    }
+    let timer = this.timers.get(id);
+    if (!timer) {
+      timer = createPausableTimer();
+      this.timers.set(id, timer);
+    }
+    timer.start(duration, () => this.dismiss(id));
+  }
+
+  private clearTimer(id: number): void {
+    this.timers.get(id)?.clear();
+    this.timers.delete(id);
   }
 
   private createRef(state: ToastState): ToastRef {
