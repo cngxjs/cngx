@@ -21,6 +21,7 @@ import { CngxCloseButton } from '@cngx/common/interactive';
 
 import { CNGX_FEEDBACK_CONFIG } from '../config/feedback-config';
 import { CngxSeverityIcon } from '../config/severity-icon';
+import { createPausableTimer } from '../internal/pausable-timer';
 
 /**
  * Severity level for the alert - determines visual style, icon, and ARIA role.
@@ -35,63 +36,6 @@ export type AlertSeverity = 'info' | 'success' | 'warning' | 'error';
  * @category ui/feedback/alert
  */
 export type AlertVisibilityPhase = 'hidden' | 'entering' | 'visible' | 'exiting';
-
-/** @internal - timer with pause/resume support for hover/focus interactions. */
-interface PausableTimer {
-  start(duration: number, onComplete: () => void): void;
-  pause(): void;
-  resume(): void;
-  clear(): void;
-}
-
-/** @internal */
-function createPausableTimer(): PausableTimer {
-  let id: ReturnType<typeof setTimeout> | undefined;
-  let remaining = 0;
-  let startedAt = 0;
-  let onComplete: (() => void) | undefined;
-
-  const clear = (): void => {
-    if (id !== undefined) {
-      clearTimeout(id);
-      id = undefined;
-    }
-    remaining = 0;
-    onComplete = undefined;
-  };
-
-  const resume = (): void => {
-    if (remaining > 0 && id === undefined && onComplete) {
-      startedAt = Date.now();
-      const cb = onComplete;
-      id = setTimeout(() => {
-        id = undefined;
-        remaining = 0;
-        cb();
-      }, remaining);
-    }
-  };
-
-  const pause = (): void => {
-    if (id !== undefined) {
-      clearTimeout(id);
-      id = undefined;
-      remaining = Math.max(0, remaining - (Date.now() - startedAt));
-    }
-  };
-
-  return {
-    start: (duration, cb) => {
-      clear();
-      onComplete = cb;
-      remaining = duration;
-      resume();
-    },
-    pause,
-    resume,
-    clear,
-  };
-}
 
 /**
  * Content slot directive for custom alert icons.
