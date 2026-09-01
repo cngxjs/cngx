@@ -182,9 +182,15 @@ export class CngxMatTabs {
   private readonly aggregatorContentSlot = contentChild(CngxMatTabAggregatorContent);
   private readonly aggregatorContentTemplate: Signal<TemplateRef<CngxMatTabAggregatorContentContext> | null> =
     computed(() => this.aggregatorContentSlot()?.templateRef ?? null);
+  private readonly matTabsConfig = injectMatTabsConfig();
   private readonly rejectionContentSlot = contentChild(CngxMatTabRejectionContent);
   private readonly rejectionContentTemplate: Signal<TemplateRef<CngxMatTabRejectionContentContext> | null> =
-    computed(() => this.rejectionContentSlot()?.templateRef ?? null);
+    computed(
+      () =>
+        this.rejectionContentSlot()?.templateRef ??
+        this.matTabsConfig.templates.rejection ??
+        null,
+    );
   private readonly i18n = injectTabsI18n();
 
   // Identity equal on `string | null` - collapses `tabs()` re-emits
@@ -207,7 +213,7 @@ export class CngxMatTabs {
   private readonly aggregatedErrorTabs = createAggregatedErrorTabs(this.presenter);
 
   constructor() {
-    const matTabsConfig = injectMatTabsConfig();
+    const matTabsConfig = this.matTabsConfig;
 
     // Polite live region - attribute directive owns no template, so
     // the helper attaches the span at document.body (CDK

@@ -14,7 +14,9 @@ import {
   provideMatTabsConfigAt,
   withAnchorRetryAttempts,
   withHalfWiredSlotSink,
+  withMatTabRejectionTemplate,
 } from './mat-tabs-config';
+import type { CngxMatTabRejectionContentContext } from './decorations/mat-tab-rejection-content.directive';
 import type { CngxMatTabHalfWiredSlotSink } from './decorations/half-wired-slot-sink';
 
 describe('provideMatTabsConfig + injectMatTabsConfig', () => {
@@ -40,6 +42,21 @@ describe('provideMatTabsConfig + injectMatTabsConfig', () => {
     const config = inject1(() => injectMatTabsConfig());
     expect(config.anchorMaxAttempts).toBe(5);
     expect(typeof config.halfWiredSlotSink).toBe('function');
+    expect(config.templates).toEqual({});
+  });
+
+  it('carries templates.rejection via withMatTabRejectionTemplate and merges nested', () => {
+    const tpl = {} as import('@angular/core').TemplateRef<CngxMatTabRejectionContentContext>;
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideMatTabsConfig(withAnchorRetryAttempts(9), withMatTabRejectionTemplate(tpl)),
+      ],
+    });
+    const config = inject1(() => injectMatTabsConfig());
+    // The nested-merge keeps sibling keys and the flat keys intact.
+    expect(config.templates.rejection).toBe(tpl);
+    expect(config.anchorMaxAttempts).toBe(9);
   });
 
   it('overrides anchorMaxAttempts via withAnchorRetryAttempts', () => {

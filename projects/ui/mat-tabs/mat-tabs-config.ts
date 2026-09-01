@@ -4,12 +4,32 @@ import {
   InjectionToken,
   makeEnvironmentProviders,
   type Provider,
+  type TemplateRef,
 } from '@angular/core';
 
 import {
   type CngxMatTabHalfWiredSlotSink,
   CNGX_DEFAULT_HALF_WIRED_SLOT_SINK,
 } from './decorations/half-wired-slot-sink';
+import type { CngxMatTabRejectionContentContext } from './decorations/mat-tab-rejection-content.directive';
+
+/**
+ * App-wide template defaults for the `[cngxMatTabs]` decorations -
+ * the middle cascade tier between a per-instance structural slot and
+ * the built-in fallback. Sibling of `CngxTabsTemplates` /
+ * `CngxStepperTemplates` so consumer templates port across families.
+ *
+ * @category ui/mat-tabs
+ */
+export interface CngxMatTabsTemplates {
+  /**
+   * Default for the rejection SR-descriptor content
+   * (`*cngxMatTabRejectionContent`). Per-instance slot still wins;
+   * without either tier the imperative fallback writes the resolved
+   * i18n phrase verbatim.
+   */
+  readonly rejection?: TemplateRef<CngxMatTabRejectionContentContext>;
+}
 
 /**
  * Behaviour knobs for `[cngxMatTabs]`. Single canonical surface
@@ -56,6 +76,13 @@ export interface CngxMatTabsConfig {
    * (Sentry breadcrumbs, custom logger, CI fail-fast).
    */
   readonly halfWiredSlotSink?: CngxMatTabHalfWiredSlotSink;
+
+  /**
+   * App-wide decoration template defaults - the middle cascade tier.
+   * Per-instance structural slots still win; see
+   * {@link CngxMatTabsTemplates}.
+   */
+  readonly templates?: CngxMatTabsTemplates;
 }
 
 /**
@@ -68,6 +95,7 @@ export interface CngxMatTabsConfig {
 export const CNGX_MAT_TABS_CONFIG_DEFAULTS = {
   anchorMaxAttempts: 5,
   halfWiredSlotSink: CNGX_DEFAULT_HALF_WIRED_SLOT_SINK,
+  templates: {},
 } as const satisfies Required<CngxMatTabsConfig>;
 
 /**
@@ -123,12 +151,32 @@ export function withHalfWiredSlotSink(sink: CngxMatTabHalfWiredSlotSink): CngxMa
   return feature({ halfWiredSlotSink: sink });
 }
 
+/**
+ * App-wide override for the rejection SR-descriptor content. Middle
+ * tier; per-instance `*cngxMatTabRejectionContent` still wins.
+ * Sibling of {@link withTabRejectionIconTemplate} in the cngx-native
+ * family.
+ *
+ * @category ui/mat-tabs
+ */
+export function withMatTabRejectionTemplate(
+  template: TemplateRef<CngxMatTabRejectionContentContext>,
+): CngxMatTabsConfigFeature {
+  return feature({ templates: { rejection: template } });
+}
+
 function mergeFeatures(features: readonly CngxMatTabsConfigFeature[]): Partial<CngxMatTabsConfig> {
   const merged: {
     -readonly [K in keyof CngxMatTabsConfig]?: CngxMatTabsConfig[K];
   } = {};
   for (const f of features) {
-    Object.assign(merged, f.config);
+    const { templates, ...rest } = f.config;
+    Object.assign(merged, rest);
+    if (templates) {
+      // Nested-merge so several template features compose instead of the
+      // last one overwriting the whole templates object.
+      merged.templates = { ...merged.templates, ...templates };
+    }
   }
   return merged;
 }
@@ -198,5 +246,6 @@ export function injectMatTabsConfig(): Required<CngxMatTabsConfig> {
   return {
     anchorMaxAttempts: user.anchorMaxAttempts ?? CNGX_MAT_TABS_CONFIG_DEFAULTS.anchorMaxAttempts,
     halfWiredSlotSink: user.halfWiredSlotSink ?? CNGX_MAT_TABS_CONFIG_DEFAULTS.halfWiredSlotSink,
+    templates: { ...CNGX_MAT_TABS_CONFIG_DEFAULTS.templates, ...user.templates },
   };
 }
