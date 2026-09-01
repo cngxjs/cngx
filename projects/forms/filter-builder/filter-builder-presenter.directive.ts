@@ -5,6 +5,7 @@ import {
   effect,
   ElementRef,
   inject,
+  Injector,
   input,
   isDevMode,
   model,
@@ -108,6 +109,8 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
   });
 
   private readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
+
+  private readonly injector = inject(Injector);
 
   /**
    * `CngxFormFieldControl` disabled - mirrors the ambient form-field
@@ -225,8 +228,19 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
     this.core.addGroup(path, group);
   }
 
+  /**
+   * Removes the node at `path`. When the removal unmounts the DOM that
+   * currently holds focus (the row's remove button, an editor input), focus
+   * is restored after the next render: to the sibling that slid into the
+   * removed index, else the previous sibling, else the parent group
+   * container - instead of dropping to `<body>`.
+   */
   removeNode(path: readonly number[]): void {
+    const restoreFocus = this.shouldRestoreFocusAfterRemove(path);
     this.core.removeNode(path);
+    if (restoreFocus) {
+      this.scheduleRemovalFocusRestore(path);
+    }
   }
 
   setLogic(path: readonly number[], logic: FilterLogic): void {
@@ -255,6 +269,55 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
 
   getFieldDef(fieldKey: string): FilterFieldDef<TValue> | undefined {
     return this.core.getFieldDef(fieldKey);
+  }
+
+  /**
+   * True when the node at `path` exists and the DOM about to be unmounted
+   * contains the active element. Read before the tree write so the check
+   * sees the pre-removal DOM.
+   */
+  private shouldRestoreFocusAfterRemove(path: readonly number[]): boolean {
+    if (path.length === 0 || !this.core.getNodeAtPath(path)) {
+      return false;
+    }
+    const host = this.elementRef.nativeElement;
+    const active = host.ownerDocument.activeElement;
+    const removedEl = host.querySelector(`[data-cngx-filter-path="${path.join('.')}"]`);
+    return !!active && !!removedEl && removedEl.contains(active);
+  }
+
+  /**
+   * After the next render, focus the first focusable inside the node that
+   * now occupies the removed index (or the last remaining sibling), falling
+   * back to the parent group container, then the host.
+   */
+  private scheduleRemovalFocusRestore(path: readonly number[]): void {
+    const parentPath = path.slice(0, -1);
+    const removedIndex = path[path.length - 1];
+    afterNextRender(
+      () => {
+        const host = this.elementRef.nativeElement;
+        const parent = this.core.getNodeAtPath(parentPath);
+        const siblingCount = parent?.type === 'group' ? parent.filters.length : 0;
+        const containerPath =
+          siblingCount > 0
+            ? [...parentPath, Math.min(removedIndex, siblingCount - 1)]
+            : parentPath;
+        const container = host.querySelector<HTMLElement>(
+          `[data-cngx-filter-path="${containerPath.join('.')}"]`,
+        );
+        // When the tree emptied, the group container is gone too (the empty
+        // state renders instead) - fall back to the first focusable in the
+        // host, which is the empty state's add-filter button.
+        const target =
+          container?.querySelector<HTMLElement>(':is(input, button, [tabindex])') ??
+          container ??
+          host.querySelector<HTMLElement>(':is(input, button, [tabindex])') ??
+          host;
+        target.focus();
+      },
+      { injector: this.injector },
+    );
   }
 
   /**

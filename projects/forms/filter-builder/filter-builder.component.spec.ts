@@ -536,3 +536,49 @@ describe('CngxFilterBuilder - maxNestingDepth', () => {
     expect(inner.type === 'group' && inner.filters.length).toBe(0);
   });
 });
+
+describe('CngxFilterBuilder - focus restoration on remove', () => {
+  it('moves focus to the sibling that slides into the removed index', async () => {
+    const { hostEl, fixture } = basicSetup(
+      createFilterGroup('and', [
+        createFilterExpression('name', 'eq', 'a'),
+        createFilterExpression('age', 'gt', 1),
+      ]),
+    );
+    const firstRow = hostEl.querySelector<HTMLElement>('[data-cngx-filter-path="0"]');
+    const removeBtn = firstRow?.querySelector<HTMLButtonElement>(
+      '.cngx-filter-builder__action-button--remove',
+    );
+    removeBtn?.focus();
+    removeBtn?.click();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    await fixture.whenStable();
+
+    const active = hostEl.ownerDocument.activeElement;
+    const survivor = hostEl.querySelector('[data-cngx-filter-path="0"]');
+    expect(survivor).toBeTruthy();
+    expect(active && survivor?.contains(active)).toBe(true);
+  });
+
+  it('falls back to the empty-state add-filter button when the last row is removed', async () => {
+    const { hostEl, fixture } = basicSetup(
+      createFilterGroup('and', [createFilterExpression('name', 'eq', 'a')]),
+    );
+    const row = hostEl.querySelector<HTMLElement>('[data-cngx-filter-path="0"]');
+    const removeBtn = row?.querySelector<HTMLButtonElement>(
+      '.cngx-filter-builder__action-button--remove',
+    );
+    removeBtn?.focus();
+    removeBtn?.click();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    await fixture.whenStable();
+
+    // The tree emptied, so the group container is gone and the empty state
+    // renders; focus must land on its first focusable instead of <body>.
+    const active = hostEl.ownerDocument.activeElement;
+    expect(active && hostEl.contains(active)).toBe(true);
+    expect(active?.textContent).toContain('Add filter');
+  });
+});

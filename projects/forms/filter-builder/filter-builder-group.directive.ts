@@ -35,6 +35,7 @@ const EMPTY_FILTERS: readonly FilterNode[] = Object.freeze([]) as readonly Filte
   host: {
     role: 'group',
     '[attr.aria-label]': 'groupLabel()',
+    '[attr.data-cngx-filter-path]': 'pathAttr()',
     '[class.cngx-filter-group-root]': 'isRoot()',
     '[class.cngx-filter-group-negated]': 'negated()',
     '[style.--cngx-filter-builder-depth]': 'depth()',
@@ -42,6 +43,13 @@ const EMPTY_FILTERS: readonly FilterNode[] = Object.freeze([]) as readonly Filte
 })
 export class CngxFilterGroup {
   readonly path = input.required<readonly number[]>({ alias: 'cngxFilterGroup' });
+
+  /**
+   * @internal Same presenter->DOM correlation the expression rows carry -
+   * lets `focus()` delegation and post-remove focus restoration resolve
+   * group containers by path.
+   */
+  protected readonly pathAttr = computed(() => this.path().join('.'));
 
   private readonly host = inject(CNGX_FILTER_BUILDER_HOST);
   private readonly config = injectFilterBuilderConfig();
