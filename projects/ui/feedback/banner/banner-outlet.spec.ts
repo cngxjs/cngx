@@ -23,12 +23,33 @@ describe('CngxBannerOutlet', () => {
     const fixture = TestBed.createComponent(TestHost);
     fixture.detectChanges();
     const outletEl: HTMLElement = fixture.nativeElement.querySelector('cngx-banner-outlet');
-    return { fixture, outletEl };
+    const banner = TestBed.inject(CngxBanner);
+    return { fixture, outletEl, banner };
   }
 
   it('renders with the cngx-banner-outlet host class', () => {
     const { outletEl } = setup();
     expect(outletEl.classList.contains('cngx-banner-outlet')).toBe(true);
+  });
+
+  it('announces warning banners assertively, matching their role="alert"', () => {
+    const { fixture, outletEl, banner } = setup();
+    banner.show({ id: 'w', message: 'Warn', severity: 'warning' });
+    fixture.detectChanges();
+
+    const el = outletEl.querySelector('.cngx-banner');
+    expect(el?.getAttribute('role')).toBe('alert');
+    expect(el?.getAttribute('aria-live')).toBe('assertive');
+  });
+
+  it('announces info banners politely as role="status"', () => {
+    const { fixture, outletEl, banner } = setup();
+    banner.show({ id: 'i', message: 'Info', severity: 'info' });
+    fixture.detectChanges();
+
+    const el = outletEl.querySelector('.cngx-banner');
+    expect(el?.getAttribute('role')).toBe('status');
+    expect(el?.getAttribute('aria-live')).toBe('polite');
   });
 
   it('pins the dismiss close-button with flex-shrink: 0 to survive narrow widths', () => {

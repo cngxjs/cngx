@@ -52,7 +52,12 @@ export class CngxBannerTrigger {
   /** Banner message text. */
   readonly message = input.required<string>();
 
-  /** Required unique id - dedup key. */
+  /**
+   * Required unique id - dedup key, shared by design. Any code (or another
+   * trigger) using the same id updates and dismisses the same banner; there
+   * is no per-instance guard. Namespace ids (`net:offline`, `auth:session`)
+   * to avoid unintended collisions.
+   */
   readonly id = input.required<string>();
 
   /** Visual severity. */

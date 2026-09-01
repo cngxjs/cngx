@@ -63,7 +63,11 @@ import { CngxBanner, type BannerState } from './banner.service';
             ? 'alert'
             : 'status'
         "
-        [attr.aria-live]="banner.config.severity === 'error' ? 'assertive' : 'polite'"
+        [attr.aria-live]="
+          banner.config.severity === 'error' || banner.config.severity === 'warning'
+            ? 'assertive'
+            : 'polite'
+        "
         [attr.aria-busy]="banner.actionPending || null"
       >
         <div class="cngx-banner__icon">
