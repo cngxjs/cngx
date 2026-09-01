@@ -6,6 +6,7 @@ import { CNGX_STATEFUL, type CngxStateful } from '@cngx/core/utils';
 
 import { CngxAlerter } from './alerter.service';
 import { CngxAlertOn } from './alert-on.directive';
+import { CngxAlertStack } from './alert-stack';
 
 @Component({
   selector: 'test-alert-explicit',
@@ -35,6 +36,18 @@ class FallbackHost { }
   imports: [CngxAlertOn],
 })
 class MissingSourceHost { }
+
+@Component({
+  selector: 'test-alert-wiring',
+  template: `
+    <cngx-alert-stack scope="form" />
+    <div [cngxAlertOn]="state()" alertError="Save failed" alertScope="form"></div>
+  `,
+  imports: [CngxAlertOn, CngxAlertStack],
+})
+class WiringHost {
+  readonly state = signal<ManualAsyncState<string> | undefined>(createManualState<string>());
+}
 
 describe('CngxAlertOn', () => {
   it('uses explicit state input when provided', () => {
@@ -74,6 +87,25 @@ describe('CngxAlertOn', () => {
     TestBed.flushEffects();
 
     expect(alerter.alerts().length).toBe(1);
+  });
+
+  it('routes alerts into a sibling CngxAlertStack via the environment alerter', () => {
+    TestBed.configureTestingModule({
+      imports: [WiringHost],
+      providers: [CngxAlerter],
+    });
+    const fixture = TestBed.createComponent(WiringHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    fixture.componentInstance.state()!.setError(new Error('boom'));
+    TestBed.flushEffects();
+    fixture.detectChanges();
+
+    const stackEl: HTMLElement = fixture.nativeElement.querySelector('cngx-alert-stack');
+    const items = stackEl.querySelectorAll('.cngx-alert-stack__item');
+    expect(items.length).toBe(1);
+    expect(items[0].textContent).toContain('Save failed');
   });
 
   it('logs dev-mode error when neither state input nor CNGX_STATEFUL is available', () => {
