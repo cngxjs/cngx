@@ -2,6 +2,7 @@ import {
   afterNextRender,
   computed,
   effect,
+  linkedSignal,
   signal,
   untracked,
   type Injector,
@@ -53,8 +54,11 @@ export interface CngxTabDismissals {
   closeIconContextFor(tab: CngxTabHandle): CngxTabCloseIconContext;
   /**
    * Live-region phrase confirming a landed close (`i18n.closedTab`).
-   * Set when the closed tab actually leaves the registry, so an async
-   * consumer removal announces on completion, not on request.
+   * Derived from the registry transition - it updates when a requested
+   * close's id actually leaves the registry, so an async consumer
+   * removal announces on completion, not on request. Feed it into
+   * `createTabGroupAnnouncements` (options.closedAnnouncement) so the
+   * live region resolves one priority chain.
    */
   readonly closedAnnouncement: Signal<string>;
   /** Close a tab and restore focus to the new active tab / add button. */
@@ -116,10 +120,32 @@ export function createTabDismissals(opts: CngxTabDismissalsOptions): CngxTabDism
 
   // The close request only ASKS the consumer to remove the tab - the
   // removal may land asynchronously (or never). Focus restore and the
-  // closed announcement key on the closed id actually leaving the
-  // registry, not on the next render after the request.
-  const pendingClose = signal<{ readonly id: string; readonly label: string } | null>(null);
-  const closedAnnouncementState = signal<string>('');
+  // closed announcement key on a requested id actually leaving the
+  // registry, not on the next render after the request. Requests enter
+  // via handleClose (the only writer); landed ids are pruned on the
+  // next request, so the map stays interaction-bounded.
+  const pendingCloseLabels = signal<ReadonlyMap<string, string>>(new Map());
+
+  // Landed-close phrase, purely derived from the registry transition:
+  // an id that was present in the previous registry emission, carries a
+  // pending close request, and is gone from the current one has landed.
+  // `prev.source` supplies the departed handle (and its label) without
+  // a managed side-slot.
+  const closedAnnouncement = linkedSignal<readonly CngxTabHandle[], string>({
+    source: () => opts.host.tabs(),
+    computation: (tabs, prev) => {
+      if (prev === undefined) {
+        return '';
+      }
+      const pending = pendingCloseLabels();
+      const currentIds = new Set(tabs.map((tab) => tab.id));
+      const landed = prev.source.find((tab) => !currentIds.has(tab.id) && pending.has(tab.id));
+      if (landed === undefined) {
+        return prev.value;
+      }
+      return opts.i18n.closedTab(pending.get(landed.id) ?? '');
+    },
+  });
 
   const restoreFocus = (): void => {
     // Skin-agnostic lookup: `[role="tab"]` + `data-tab-id` are the
@@ -143,19 +169,23 @@ export function createTabDismissals(opts: CngxTabDismissalsOptions): CngxTabDism
     opts.hostElement.focus();
   };
 
+  // Pure side effect - no signal writes. The once-per-landing guard is
+  // plain imperative bookkeeping, not reactive state.
+  const focusRestoredIds = new Set<string>();
   effect(
     () => {
-      const pending = pendingClose();
-      if (pending === null) {
-        return;
-      }
-      const stillRegistered = opts.host.tabs().some((tab) => tab.id === pending.id);
-      if (stillRegistered) {
-        return;
-      }
+      const tabs = opts.host.tabs();
+      const pending = pendingCloseLabels();
       untracked(() => {
-        pendingClose.set(null);
-        closedAnnouncementState.set(opts.i18n.closedTab(pending.label));
+        const landed = [...pending.keys()].filter(
+          (id) => !tabs.some((tab) => tab.id === id) && !focusRestoredIds.has(id),
+        );
+        if (landed.length === 0) {
+          return;
+        }
+        for (const id of landed) {
+          focusRestoredIds.add(id);
+        }
         // Restore focus once the removal has rendered: the new active
         // tab, then the add button, and finally the group element itself
         // (made programmatically focusable) so focus never falls to
@@ -171,7 +201,17 @@ export function createTabDismissals(opts: CngxTabDismissalsOptions): CngxTabDism
     if (!isTabClosable(tab)) {
       return;
     }
-    pendingClose.set({ id: tab.id, label: tab.label() ?? '' });
+    pendingCloseLabels.update((current) => {
+      const next = new Map(
+        // Prune requests that already landed - keeps the map bounded and
+        // stops a later consumer-driven removal of a RE-ADDED same id
+        // from reading as a close.
+        [...current].filter(([id]) => opts.host.tabs().some((tab2) => tab2.id === id)),
+      );
+      next.set(tab.id, tab.label() ?? '');
+      focusRestoredIds.delete(tab.id);
+      return next;
+    });
     opts.host.requestClose(tab.id);
   };
 
@@ -188,7 +228,7 @@ export function createTabDismissals(opts: CngxTabDismissalsOptions): CngxTabDism
       }
       return ctx;
     },
-    closedAnnouncement: closedAnnouncementState.asReadonly(),
+    closedAnnouncement: closedAnnouncement.asReadonly(),
     handleClose,
     handleTabKeydown: (tab, event) => {
       if (event.key === 'Delete' && isTabClosable(tab)) {

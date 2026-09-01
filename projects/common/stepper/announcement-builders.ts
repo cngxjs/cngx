@@ -73,7 +73,7 @@ export function createStepperAnnouncementBuilders(
     if (
       current === 'success' &&
       presenter.commitTransition.previous() === 'pending' &&
-      presenter.commitMode() === 'pessimistic'
+      (presenter.commitMode?.() ?? 'pessimistic') === 'pessimistic'
     ) {
       // Announce where the commit landed - without this arm a pessimistic
       // accept moves the step silently (the pending phrase just goes quiet).

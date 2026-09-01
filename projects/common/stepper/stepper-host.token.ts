@@ -172,8 +172,11 @@ export interface CngxStepperHost {
    * On the contract so Level-2 builders can gate mode-dependent
    * behaviour - e.g. the pending-to-success announcement only applies
    * in pessimistic mode, where the accept is what moves the step.
+   * Optional so pre-existing custom host implementations stay
+   * assignable; readers treat absence as `'pessimistic'` (the stepper
+   * default).
    */
-  readonly commitMode: Signal<'optimistic' | 'pessimistic'>;
+  readonly commitMode?: Signal<'optimistic' | 'pessimistic'>;
   readonly commitState: CngxAsyncState<number | undefined>;
   readonly intendedStepIndex: Signal<number | undefined>;
 

@@ -2081,6 +2081,41 @@ describe('CngxTabGroup dismissable focus restoration', () => {
     ) as HTMLButtonElement;
     expect(document.activeElement).toBe(active);
   });
+
+  it('handles OVERLAPPING async closes - each landing announces and restores focus', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(AsyncCloseHost);
+    fixture.detectChanges();
+    const closeButtons = fixture.nativeElement.querySelectorAll(
+      '.cngx-tabs__close',
+    ) as NodeListOf<HTMLButtonElement>;
+    const live = fixture.nativeElement.querySelector(
+      '.cngx-tabs__live-region',
+    ) as HTMLElement;
+
+    // Close b, then close c before b's removal has landed.
+    closeButtons[1].click();
+    fixture.detectChanges();
+    closeButtons[2].click();
+    fixture.detectChanges();
+    expect(live.textContent).toBe('');
+
+    fixture.componentInstance.flushRemoval(); // b lands
+    fixture.detectChanges();
+    TestBed.tick();
+    expect(live.textContent).toBe('Closed "b"');
+
+    fixture.componentInstance.flushRemoval(); // c lands later
+    fixture.detectChanges();
+    TestBed.tick();
+    expect(live.textContent).toBe('Closed "c"');
+    const active = fixture.nativeElement.querySelector(
+      'button[role="tab"][aria-selected="true"]',
+    ) as HTMLButtonElement;
+    expect(document.activeElement).toBe(active);
+  });
 });
 
 @Component({
@@ -2100,15 +2135,19 @@ describe('CngxTabGroup dismissable focus restoration', () => {
 })
 class AsyncCloseHost {
   readonly items = signal(['a', 'b', 'c']);
-  pendingId: string | null = null;
+  readonly pendingIds: string[] = [];
+  get pendingId(): string | null {
+    return this.pendingIds[0] ?? null;
+  }
   onClose(id: string): void {
     // Deferred removal - e.g. waiting for a server round-trip.
-    this.pendingId = id;
+    this.pendingIds.push(id);
   }
   flushRemoval(): void {
-    const id = this.pendingId;
-    this.pendingId = null;
-    this.items.update((list) => list.filter((x) => x !== id));
+    const id = this.pendingIds.shift();
+    if (id !== undefined) {
+      this.items.update((list) => list.filter((x) => x !== id));
+    }
   }
 }
 

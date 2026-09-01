@@ -35,6 +35,80 @@ function makePresenter(): CngxTabGroupHost {
   } as unknown as CngxTabGroupHost;
 }
 
+type CommitStatus = 'idle' | 'pending' | 'error' | 'success';
+
+function makeCommitPresenter(): {
+  presenter: CngxTabGroupHost;
+  current: ReturnType<typeof signal<CommitStatus>>;
+  previous: ReturnType<typeof signal<CommitStatus>>;
+} {
+  const current = signal<CommitStatus>('idle');
+  const previous = signal<CommitStatus>('idle');
+  const presenter = {
+    activeIndex: signal(0),
+    tabs: signal([] as readonly CngxTabHandle[]),
+    lastFailedIndex: signal<number | undefined>(undefined),
+    originIndexDuringCommit: signal<number | undefined>(undefined),
+    commitTransition: { current: current.asReadonly(), previous: previous.asReadonly() },
+  } as unknown as CngxTabGroupHost;
+  return { presenter, current, previous };
+}
+
+describe('createTabGroupAnnouncements - closedAnnouncement priority chain', () => {
+  let i18n: CngxTabsI18n;
+  let config: CngxTabsConfig;
+
+  beforeEach(() => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    i18n = TestBed.inject(CNGX_TABS_I18N);
+    config = TestBed.inject(CNGX_TABS_CONFIG);
+  });
+
+  function chainSetup() {
+    const { presenter, current } = makeCommitPresenter();
+    const closed = signal('');
+    const bundle = createTabGroupAnnouncements({
+      presenter,
+      i18n,
+      config,
+      ariaLabel: signal<string | undefined>(undefined),
+      ariaLabelledBy: signal<string | undefined>(undefined),
+      closedAnnouncement: closed.asReadonly(),
+    });
+    return { bundle, closed, current };
+  }
+
+  it('surfaces the landed-close phrase while the commit state is idle', () => {
+    const { bundle, closed } = chainSetup();
+    expect(bundle.liveAnnouncement()).toBe('');
+    closed.set('Closed "B"');
+    expect(bundle.liveAnnouncement()).toBe('Closed "B"');
+  });
+
+  it('a commit phrase wins over the close phrase', () => {
+    const { bundle, closed, current } = chainSetup();
+    closed.set('Closed "B"');
+    current.set('pending');
+    expect(bundle.liveAnnouncement()).toBe(i18n.commitInFlight);
+  });
+
+  it('a stale close phrase does not re-enter after commit activity returns to idle', () => {
+    const { bundle, closed, current } = chainSetup();
+    closed.set('Closed "B"');
+    expect(bundle.liveAnnouncement()).toBe('Closed "B"');
+    // Commit activity spends the phrase...
+    current.set('pending');
+    expect(bundle.liveAnnouncement()).toBe(i18n.commitInFlight);
+    current.set('idle');
+    // ...so returning to idle must not re-announce the old close.
+    expect(bundle.liveAnnouncement()).toBe('');
+    // A NEW landed close re-arms the chain.
+    closed.set('Closed "C"');
+    expect(bundle.liveAnnouncement()).toBe('Closed "C"');
+  });
+});
+
 describe('createTabGroupAnnouncements - statusPhrase', () => {
   let i18n: CngxTabsI18n;
   let config: CngxTabsConfig;
