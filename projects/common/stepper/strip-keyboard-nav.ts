@@ -81,11 +81,14 @@ export function createStepperStripKeyboardNav(
     }
   };
   const focusActive = (): void => {
-    // Focus the INTENDED target while a commit is in flight (pessimistic
-    // mode holds activeStepId at the origin until the action settles);
-    // otherwise the active step. Reading at schedule time keeps the
-    // lookup on the same tick as the select* call.
-    const intendedIdx = options.presenter.intendedStepIndex();
+    // Focus the INTENDED target only while the commit is actually in
+    // flight (pessimistic mode holds activeStepId at the origin until
+    // the action settles). The controller retains intendedValue after a
+    // rejection for the commit-error surface, so an unguarded read
+    // would teleport focus to the refused step on any later no-op key.
+    const intendedIdx = options.presenter.busy()
+      ? options.presenter.intendedStepIndex()
+      : undefined;
     const intendedId =
       intendedIdx !== undefined
         ? (options.presenter.stepsOnly()[intendedIdx]?.id ?? null)
