@@ -1,6 +1,25 @@
 import { ApplicationInitStatus } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { maskPresetTables, provideEagerMaskPresets } from './registry';
+import {
+  ensureMaskPreset,
+  maskPresetTables,
+  provideEagerMaskPresets,
+  resetMaskPresetsForTesting,
+} from './registry';
+
+describe('resetMaskPresetsForTesting', () => {
+  it('clears loaded tables so the lazy-load path starts cold again', async () => {
+    await ensureMaskPreset('zip');
+    expect(maskPresetTables().zip).toBeDefined();
+
+    resetMaskPresetsForTesting();
+    expect(maskPresetTables().zip).toBeUndefined();
+
+    // A fresh ensure re-imports and repopulates.
+    await ensureMaskPreset('zip');
+    expect(maskPresetTables().zip).toBeDefined();
+  });
+});
 
 describe('provideEagerMaskPresets', () => {
   it('loads the requested preset table during app init', async () => {
