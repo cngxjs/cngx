@@ -162,7 +162,7 @@ export class CngxMatTabsRegistry implements CngxMatTabsRegistryHost {
       }
       entry.childInjector.destroy();
       this.setupsByTab.delete(tab);
-      this.presenter.unregister(entry.setup.handle.id);
+      this.presenter.unregister(entry.setup.handle.id, entry.setup.handle);
     }
   }
 }

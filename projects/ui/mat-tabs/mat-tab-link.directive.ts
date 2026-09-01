@@ -103,6 +103,6 @@ export class CngxMatTabLink implements OnInit {
       closable: signal(undefined),
     };
     this.host.register(handle);
-    this.destroyRef.onDestroy(() => this.host.unregister(handle.id));
+    this.destroyRef.onDestroy(() => this.host.unregister(handle.id, handle));
   }
 }

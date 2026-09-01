@@ -94,6 +94,21 @@ describe('CngxTabGroupPresenter', () => {
     expect(presenter.tabs()).toBe(before);
   });
 
+  it('unregister with the registering handle only evicts that exact instance', () => {
+    const { presenter } = setup();
+    const original = handle('a');
+    presenter.register(original);
+    const replacement = handle('a');
+    presenter.register(replacement); // idempotent re-register replaces the entry
+    // The OLD instance's late destroy must not tear down the NEW entry.
+    presenter.unregister('a', original);
+    expect(presenter.tabs().map((t) => t.id)).toEqual(['a']);
+    expect(presenter.tabs()[0]).toBe(replacement);
+    // The live instance evicts itself normally.
+    presenter.unregister('a', replacement);
+    expect(presenter.tabs()).toEqual([]);
+  });
+
   it('select clamps the index against the registry length', () => {
     const { presenter } = setup();
     presenter.register(handle('a'));
@@ -179,16 +194,18 @@ describe('CngxTabGroupPresenter', () => {
     expect(presenter.activeIndex()).toBe(0);
   });
 
-  it('tabs() applies tabsEqual short-circuit on idempotent re-register', () => {
+  it('tabs() re-emits on idempotent re-register - the replacement instance must land', () => {
     const { presenter } = setup();
-    const a = handle('a');
-    presenter.register(a);
+    presenter.register(handle('a'));
     const before = presenter.tabs();
-    presenter.register(handle('a')); // same id, equal disabled+label
+    const replacement = handle('a'); // same id, value-identical fields
+    presenter.register(replacement);
     const after = presenter.tabs();
-    // Structural-equal short-circuit keeps the same array reference,
-    // preventing downstream computed cascades.
-    expect(after).toBe(before);
+    // Reference inequality is the change signal (tabsEqual): a
+    // value-compare would discard this write and leave the registry
+    // serving the superseded instance's signals.
+    expect(after).not.toBe(before);
+    expect(after[0]).toBe(replacement);
   });
 
   it('exposes commitState via the CNGX_STATEFUL contract', () => {

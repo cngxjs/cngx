@@ -206,7 +206,7 @@ export class CngxTabLink implements OnInit {
     this.syncDescriptor(descriptor);
 
     this.destroyRef.onDestroy(() => {
-      host.unregister(handle.id);
+      host.unregister(handle.id, handle);
       if (parent) {
         this.renderer.removeChild(parent, descriptor);
       }

@@ -16,7 +16,7 @@ import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
 import { CngxTabContent } from './tab-content.directive';
 import { CngxTabLabel } from './tab-label.directive';
 import { CngxTabSubLabel } from './slots/tab-sub-label.directive';
-import { CNGX_TAB_GROUP_HOST } from './tab-group-host.token';
+import { CNGX_TAB_GROUP_HOST, type CngxTabHandle } from './tab-group-host.token';
 
 /**
  * Single-tab atom. \
@@ -137,9 +137,12 @@ export class CngxTab implements OnInit {
     // change detection, so a constructor read would capture the default
     // auto-id. The handle id is the stable key consumers map `(tabClose)`
     // back to their data with, so it must reflect the bound `[id]`.
+    // The id is captured once here - init-stable by contract. A later
+    // `[id]` rebind does not re-register; the auto-uid default makes a
+    // stable consumer-supplied id the normal case. Mirrors CngxStep.
     const host = this.host!;
     const tabId = this.id();
-    host.register({
+    const handle: CngxTabHandle = {
       id: tabId,
       label: this.label,
       subLabel: this.subLabel,
@@ -148,7 +151,8 @@ export class CngxTab implements OnInit {
       hasError: this.hasError,
       errorMessage: this.errorMessage,
       closable: this.closable,
-    });
-    this.destroyRef.onDestroy(() => host.unregister(tabId));
+    };
+    host.register(handle);
+    this.destroyRef.onDestroy(() => host.unregister(tabId, handle));
   }
 }

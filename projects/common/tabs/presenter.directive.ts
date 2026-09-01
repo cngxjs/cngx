@@ -218,12 +218,18 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
     this.tabsState.set([...current, handle]);
   }
 
-  unregister(id: string): void {
+  unregister(id: string, handle?: CngxTabHandle): void {
     const current = this.tabsState();
-    const next = current.filter((h) => h.id !== id);
-    if (next.length !== current.length) {
-      this.tabsState.set(next);
+    const entry = current.find((h) => h.id === id);
+    if (entry === undefined) {
+      return;
     }
+    // Instance guard: after an idempotent re-register replaced the stored
+    // handle, the superseded instance's destroy is a no-op.
+    if (handle !== undefined && entry !== handle) {
+      return;
+    }
+    this.tabsState.set(current.filter((h) => h !== entry));
   }
 
   /** {@inheritDoc CngxTabGroupHost.clearLastFailed} */
@@ -370,20 +376,19 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
 }
 
 /**
- * Structural equality for the tab registry. Compares length and
- * per-entry `id`, `disabled()`, `label()`, `subLabel()`, and
- * `closable()`.
+ * Registry equality for the tab registry signal: element-wise reference
+ * identity, not structural comparison. Two arrays are equal only when
+ * they carry the exact same handle instances in the same order.
  *
- * `errorAggregator`, `hasError`, and `errorMessage` are left out on
- * purpose. The handle is a stable per-tab reference injected once, and
- * the organism reads `tab.hasError()` / `tab.errorMessage()` reactively
- * off that handle (not off array identity), so the badge + descriptor
- * update on error-state changes without the registry array re-emitting.
- * Comparing them here would push the memoisation burden onto consumers
- * and break the structural-equal contract.
- *
- * Reading the signals here doesn't subscribe - the comparator runs
- * synchronously inside `signal.set()`, outside any tracking context.
+ * Handles are stable per-tab references - `label`, `disabled`,
+ * `hasError` and friends propagate through the handle's signals, so
+ * consumers update off the handle without the registry array
+ * re-emitting, and value comparison here would be redundant for an
+ * unchanged handle. For a REPLACED handle (idempotent re-register
+ * under an id collision) a value compare is actively wrong: it reports
+ * the value-identical new instance as equal, discards the write, and
+ * leaves the registry serving the destroyed instance's signals.
+ * Reference inequality is the change signal.
  *
  * @internal
  */
@@ -395,13 +400,7 @@ export function tabsEqual(a: readonly CngxTabHandle[], b: readonly CngxTabHandle
     return false;
   }
   for (let i = 0; i < a.length; i++) {
-    if (
-      a[i].id !== b[i].id ||
-      a[i].disabled() !== b[i].disabled() ||
-      a[i].label() !== b[i].label() ||
-      a[i].subLabel() !== b[i].subLabel() ||
-      a[i].closable() !== b[i].closable()
-    ) {
+    if (a[i] !== b[i]) {
       return false;
     }
   }
