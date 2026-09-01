@@ -1,4 +1,12 @@
-import { afterNextRender, computed, type Injector, type Signal } from '@angular/core';
+import {
+  afterNextRender,
+  computed,
+  effect,
+  signal,
+  untracked,
+  type Injector,
+  type Signal,
+} from '@angular/core';
 
 import type { CngxTabsI18n } from '../i18n/tabs-i18n';
 import type { CngxTabCloseIconContext } from '../slots/tab-close-icon.directive';
@@ -43,6 +51,12 @@ export interface CngxTabDismissals {
   closeButtonLabel(tab: CngxTabHandle): string;
   /** Stable `*cngxTabCloseIcon` context (`{ tab }`) per tab. */
   closeIconContextFor(tab: CngxTabHandle): CngxTabCloseIconContext;
+  /**
+   * Live-region phrase confirming a landed close (`i18n.closedTab`).
+   * Set when the closed tab actually leaves the registry, so an async
+   * consumer removal announces on completion, not on request.
+   */
+  readonly closedAnnouncement: Signal<string>;
   /** Close a tab and restore focus to the new active tab / add button. */
   handleClose(tab: CngxTabHandle, event?: Event): void;
   /** Delete on a focused closable tab requests its close (APG). */
@@ -100,32 +114,57 @@ export function createTabDismissals(opts: CngxTabDismissalsOptions): CngxTabDism
 
   const isTabClosable = (tab: CngxTabHandle): boolean => tab.closable() ?? resolvedClosable();
 
+  // The close request only ASKS the consumer to remove the tab - the
+  // removal may land asynchronously (or never). Focus restore and the
+  // closed announcement key on the closed id actually leaving the
+  // registry, not on the next render after the request.
+  const pendingClose = signal<{ readonly id: string; readonly label: string } | null>(null);
+  const closedAnnouncementState = signal<string>('');
+
+  const restoreFocus = (): void => {
+    const active = opts.hostElement.querySelector<HTMLElement>(
+      '.cngx-tabs__tab[aria-selected="true"]',
+    );
+    const add = opts.hostElement.querySelector<HTMLElement>('.cngx-tabs__add');
+    const target = active ?? add;
+    if (target) {
+      target.focus();
+      return;
+    }
+    opts.hostElement.tabIndex = -1;
+    opts.hostElement.focus();
+  };
+
+  effect(
+    () => {
+      const pending = pendingClose();
+      if (pending === null) {
+        return;
+      }
+      const stillRegistered = opts.host.tabs().some((tab) => tab.id === pending.id);
+      if (stillRegistered) {
+        return;
+      }
+      untracked(() => {
+        pendingClose.set(null);
+        closedAnnouncementState.set(opts.i18n.closedTab(pending.label));
+        // Restore focus once the removal has rendered: the new active
+        // tab, then the add button, and finally the group element itself
+        // (made programmatically focusable) so focus never falls to
+        // `<body>` when the strip empties with no add button (APG).
+        afterNextRender(restoreFocus, { injector: opts.injector });
+      });
+    },
+    { injector: opts.injector },
+  );
+
   const handleClose = (tab: CngxTabHandle, event?: Event): void => {
     event?.stopPropagation();
     if (!isTabClosable(tab)) {
       return;
     }
+    pendingClose.set({ id: tab.id, label: tab.label() ?? '' });
     opts.host.requestClose(tab.id);
-    // Restore focus once the consumer's removal has rendered: the new
-    // active tab, then the add button, and finally the group element
-    // itself (made programmatically focusable) so focus never falls to
-    // `<body>` when the strip empties with no add button (APG).
-    afterNextRender(
-      () => {
-        const active = opts.hostElement.querySelector<HTMLElement>(
-          '.cngx-tabs__tab[aria-selected="true"]',
-        );
-        const add = opts.hostElement.querySelector<HTMLElement>('.cngx-tabs__add');
-        const target = active ?? add;
-        if (target) {
-          target.focus();
-          return;
-        }
-        opts.hostElement.tabIndex = -1;
-        opts.hostElement.focus();
-      },
-      { injector: opts.injector },
-    );
   };
 
   return {
@@ -141,6 +180,7 @@ export function createTabDismissals(opts: CngxTabDismissalsOptions): CngxTabDism
       }
       return ctx;
     },
+    closedAnnouncement: closedAnnouncementState.asReadonly(),
     handleClose,
     handleTabKeydown: (tab, event) => {
       if (event.key === 'Delete' && isTabClosable(tab)) {

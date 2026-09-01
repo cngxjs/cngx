@@ -2011,7 +2011,69 @@ describe('CngxTabGroup dismissable focus restoration', () => {
     // Focus did not fall to <body>; the group holds it.
     expect(document.activeElement).toBe(host);
   });
+
+  it('waits for an ASYNC removal before restoring focus and announces the landed close', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(AsyncCloseHost);
+    fixture.detectChanges();
+    const closeButtons = fixture.nativeElement.querySelectorAll(
+      '.cngx-tabs__close',
+    ) as NodeListOf<HTMLButtonElement>;
+    const live = fixture.nativeElement.querySelector(
+      '.cngx-tabs__live-region',
+    ) as HTMLElement;
+
+    closeButtons[1].click();
+    fixture.detectChanges();
+    TestBed.tick();
+    // The consumer has not removed the tab yet - no premature restore,
+    // no premature announcement.
+    expect(fixture.componentInstance.pendingId).toBe('b');
+    expect(live.textContent).toBe('');
+
+    fixture.componentInstance.flushRemoval();
+    fixture.detectChanges();
+    TestBed.tick();
+    TestBed.tick();
+
+    expect(live.textContent).toBe('Closed "b"');
+    const active = fixture.nativeElement.querySelector(
+      'button[role="tab"][aria-selected="true"]',
+    ) as HTMLButtonElement;
+    expect(document.activeElement).toBe(active);
+  });
 });
+
+@Component({
+  standalone: true,
+  imports: [CngxTabGroup, CngxTab],
+  template: `
+    <cngx-tab-group
+      [closable]="true"
+      aria-label="Async close"
+      (tabClose)="onClose($event.id)"
+    >
+      @for (t of items(); track t) {
+        <div cngxTab [id]="t" [label]="t"></div>
+      }
+    </cngx-tab-group>
+  `,
+})
+class AsyncCloseHost {
+  readonly items = signal(['a', 'b', 'c']);
+  pendingId: string | null = null;
+  onClose(id: string): void {
+    // Deferred removal - e.g. waiting for a server round-trip.
+    this.pendingId = id;
+  }
+  flushRemoval(): void {
+    const id = this.pendingId;
+    this.pendingId = null;
+    this.items.update((list) => list.filter((x) => x !== id));
+  }
+}
 
 @Component({
   standalone: true,
