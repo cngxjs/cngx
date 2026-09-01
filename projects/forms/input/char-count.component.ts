@@ -95,16 +95,23 @@ export class CngxCharCount {
   /** @internal - true once a sibling DOM input was found and wired up. */
   private readonly domBound = signal(false);
 
+  /** @internal - the wired sibling input, for connectivity re-checks. */
+  private boundEl: HTMLInputElement | HTMLTextAreaElement | null = null;
+
   /**
-   * @internal - DOM-driven length once an input is wired; before that (and
-   * when no sibling DOM input exists) falls back to the presenter's
-   * FieldState value signal, so the counter stays live for custom controls.
+   * @internal - DOM-driven length while a connected sibling input is wired;
+   * otherwise derives from the presenter's FieldState value signal, so the
+   * counter stays live for custom controls and after the bound input leaves
+   * the DOM. The field value is read unconditionally: its signal keeps the
+   * computed re-evaluating (and re-checking `isConnected`, which is not
+   * reactive on its own) even while the DOM branch wins.
    */
   protected readonly currentLength = computed(() => {
-    if (this.domBound()) {
-      return this.lengthState();
-    }
     const value = this.presenter.fieldState().value();
+    const domLength = this.lengthState();
+    if (this.domBound() && this.boundEl?.isConnected) {
+      return domLength;
+    }
     if (typeof value === 'string') {
       return value.length;
     }
@@ -147,6 +154,7 @@ export class CngxCharCount {
       }
 
       this.lengthState.set(inputEl.value.length);
+      this.boundEl = inputEl;
       this.domBound.set(true);
 
       const handler = () => this.lengthState.set(inputEl.value.length);

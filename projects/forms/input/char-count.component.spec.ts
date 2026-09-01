@@ -133,6 +133,30 @@ describe('CngxCharCount', () => {
       fix.detectChanges();
       expect(el.classList.contains('cngx-char-count--over')).toBe(true);
     });
+
+    it('falls back to the FieldState value after the bound input leaves the DOM', async () => {
+      const mock = createMockField({ name: 'bio', maxLength: 64 });
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({ imports: [TestHost] });
+      const fix = TestBed.createComponent(TestHost);
+      fix.componentInstance.field.set(mock.accessor);
+      fix.detectChanges();
+      TestBed.flushEffects();
+      await fix.whenStable();
+      fix.detectChanges();
+
+      const el = fix.debugElement.query(By.directive(CngxCharCount)).nativeElement as HTMLElement;
+      const inputEl = fix.debugElement.query(By.css('input')).nativeElement as HTMLInputElement;
+      inputEl.value = 'Hi';
+      inputEl.dispatchEvent(new Event('input'));
+      fix.detectChanges();
+      expect(el.textContent?.trim()).toBe('2/64');
+
+      inputEl.remove();
+      mock.ref.value.set('Hello, world');
+      fix.detectChanges();
+      expect(el.textContent?.trim()).toBe('12/64');
+    });
   });
 });
 
