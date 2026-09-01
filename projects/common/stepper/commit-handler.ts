@@ -122,22 +122,38 @@ function runStepperAction(
     // before the assignment binds - `sub` would be in TDZ. Declare
     // the handle on a `let` first.
     let sub: Subscription | null = null;
-    let emitted = false;
+    let done = false;
     sub = result.subscribe({
       next: (accept) => {
-        emitted = true;
+        if (done) {
+          return;
+        }
+        // Done-latch, not just unsubscribe: a synchronous emission fires
+        // while `sub` is still null, so a non-completing source would
+        // otherwise stay live and re-resolve on its next emission.
+        done = true;
         safeSuccess(accept);
         sub?.unsubscribe();
       },
-      error: (err: unknown) => safeError(err),
+      error: (err: unknown) => {
+        if (done) {
+          return;
+        }
+        safeError(err);
+      },
       complete: () => {
         // EMPTY-style sources complete without emitting; without this arm
         // the commit stays 'pending' forever and busy() latches true.
-        if (!emitted) {
+        if (!done) {
           safeError(new Error('Stepper commitAction completed without emitting'));
         }
       },
     });
+    if (done) {
+      // The in-next unsubscribe was a no-op for a sync emission; close
+      // the still-live subscription now that `sub` is bound.
+      sub.unsubscribe();
+    }
     unsubscribe = () => sub?.unsubscribe();
   } else if (result != null && typeof (result as { then?: unknown }).then === 'function') {
     (result as Promise<boolean>).then(safeSuccess, safeError);
