@@ -22,6 +22,7 @@ import { CngxCloseButton } from '@cngx/common/interactive';
 import { CNGX_FEEDBACK_CONFIG } from '../config/feedback-config';
 import { CngxSeverityIcon } from '../config/severity-icon';
 import { createPausableTimer } from '../internal/pausable-timer';
+import { createStateBridge } from '../internal/state-bridge';
 
 /**
  * Severity level for the alert - determines visual style, icon, and ARIA role.
@@ -307,30 +308,30 @@ export class CngxAlert {
   );
 
   constructor() {
-    effect(() => {
-      const s = this.state();
-      if (!s) {
-        return;
-      }
-      const status = s.status();
-
-      if (status === 'error') {
-        this.manualDismissed.set(false);
-        this.autoDismissed.set(false);
-        this.autoDismissTimer.clear();
-      } else if (status === 'success') {
-        this.manualDismissed.set(false);
-        this.autoDismissed.set(false);
-        const delay = this.autoDismissDelay();
-        if (delay !== undefined) {
-          this.autoDismissTimer.start(delay, () => this.autoDismissed.set(true));
+    createStateBridge(
+      () => this.state()?.status() ?? 'idle',
+      (status) => {
+        if (status === 'error') {
+          this.manualDismissed.set(false);
+          this.autoDismissed.set(false);
+          this.autoDismissTimer.clear();
+        } else if (status === 'success') {
+          this.manualDismissed.set(false);
+          this.autoDismissed.set(false);
+          const delay = this.autoDismissDelay();
+          if (delay !== undefined) {
+            this.autoDismissTimer.start(delay, () => this.autoDismissed.set(true));
+          }
+        } else if (status === 'idle') {
+          this.autoDismissTimer.clear();
         }
-      } else if (status === 'idle') {
-        this.autoDismissTimer.clear();
-      }
-      // loading/pending/refreshing: no branch - leaves current dismiss + timers intact.
-    });
+        // loading/pending/refreshing: no branch - leaves current dismiss + timers intact.
+      },
+    );
 
+    // Guarded transition write: phase is otherwise event-owned (animationend +
+    // fallback timer); this effect only kicks off enter/exit on the derived
+    // visibility edge.
     effect(() => {
       const show = this.shouldBeVisible();
       const phase = untracked(() => this.visibilityPhase());

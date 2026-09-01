@@ -5,6 +5,7 @@ import {
   effect,
   inject,
   input,
+  linkedSignal,
   untracked,
   viewChild,
   type TemplateRef,
@@ -99,7 +100,20 @@ export class CngxToast {
     viewChild<TemplateRef<unknown>>('projectedContent');
 
   private activeRef: ToastRef | null = null;
-  private hasProjectedContent: boolean | undefined;
+
+  /**
+   * @internal - edge detection derived via linkedSignal, not managed in the
+   * effect. The pre-bind baseline is `false`, so an initial `[when]="true"`
+   * counts as a rising edge.
+   */
+  private readonly whenEdge = linkedSignal<boolean, { when: boolean; changed: boolean }>({
+    source: this.when,
+    computation: (when, prev) => ({
+      when,
+      changed: prev === undefined ? when : when !== prev.value.when,
+    }),
+    equal: (a, b) => a.when === b.when && a.changed === b.changed,
+  });
 
   constructor() {
     if (!this.toaster) {
@@ -113,15 +127,12 @@ export class CngxToast {
 
     // Edge-triggered: false→true shows, true→false dismisses (a no-op when
     // the toast already auto-dismissed). The toast owns its own timer.
-    let previousWhen = false;
-
     effect(() => {
-      const show = this.when();
+      const { when: show, changed } = this.whenEdge();
 
-      if (show === previousWhen) {
+      if (!changed) {
         return;
       }
-      previousWhen = show;
 
       untracked(() => {
         if (show) {
@@ -153,25 +164,24 @@ export class CngxToast {
 
   /**
    * Returns the content template when something was actually projected,
-   * `undefined` otherwise (then `message` renders). Presence is probed once
-   * via a throwaway embedded view - deferred projection re-attaches the
-   * nodes wherever the template instantiates next.
+   * `undefined` otherwise (then `message` renders). Presence is probed per
+   * show via a throwaway embedded view - conditional content may appear
+   * between edges, so the result is never cached. Deferred projection
+   * re-attaches the nodes wherever the template instantiates next.
    */
   private captureProjectedContent(): TemplateRef<unknown> | undefined {
     const tpl = this.projectedContent();
     if (!tpl) {
       return undefined;
     }
-    if (this.hasProjectedContent === undefined) {
-      const view = tpl.createEmbeddedView(undefined);
-      view.detectChanges();
-      this.hasProjectedContent = view.rootNodes.some(
-        (node: Node) =>
-          node.nodeType === Node.ELEMENT_NODE ||
-          (node.nodeType === Node.TEXT_NODE && (node.textContent ?? '').trim().length > 0),
-      );
-      view.destroy();
-    }
-    return this.hasProjectedContent ? tpl : undefined;
+    const view = tpl.createEmbeddedView(undefined);
+    view.detectChanges();
+    const hasContent = view.rootNodes.some(
+      (node: Node) =>
+        node.nodeType === Node.ELEMENT_NODE ||
+        (node.nodeType === Node.TEXT_NODE && (node.textContent ?? '').trim().length > 0),
+    );
+    view.destroy();
+    return hasContent ? tpl : undefined;
   }
 }
