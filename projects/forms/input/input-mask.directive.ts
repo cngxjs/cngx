@@ -827,12 +827,22 @@ export class CngxInputMask {
     // Discard the interim IME buffer the browser rendered into the field and
     // restore the last masked render, then run the committed text through the
     // regular insert path (token filtering, transforms, pattern switching).
+    const hadInterim = el.value !== this.maskedValue();
     el.value = this.maskedValue();
     const caret = Math.min(this.compositionSelStart, tokens.length) + prefixLen;
     el.setSelectionRange(caret, caret);
 
     if (event.data) {
       this.insertChars(event.data, this.compositionSelStart, this.compositionSelEnd, tokens);
+    }
+
+    // Composition is the one edit path where co-located listeners (CngxInput,
+    // char-count, matInput) saw native interim input events; the silent
+    // restore above would leave them holding the discarded buffer. One
+    // corrective event with the final value re-synchronizes them - the mask
+    // itself has no input host binding, so this cannot re-enter.
+    if (hadInterim || event.data) {
+      el.dispatchEvent(new Event('input', { bubbles: true }));
     }
   }
 

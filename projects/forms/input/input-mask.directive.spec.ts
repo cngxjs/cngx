@@ -257,7 +257,8 @@ describe('CngxInputMask', () => {
     ): void {
       input.setSelectionRange(cursorPos, cursorPos);
       input.dispatchEvent(new CompositionEvent('compositionstart'));
-      // The IME writes interim text straight into the field.
+      // The IME writes interim text straight into the field and fires a
+      // native (non-cancelable) input event that co-located listeners see.
       input.dispatchEvent(
         new InputEvent('beforeinput', {
           inputType: 'insertCompositionText',
@@ -266,6 +267,7 @@ describe('CngxInputMask', () => {
         }),
       );
       input.value = interim;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
       input.dispatchEvent(new CompositionEvent('compositionend', { data: committed }));
     }
 
@@ -314,6 +316,86 @@ describe('CngxInputMask', () => {
       flush(fixture);
       expect(directive.value()).toBe('1234');
       expect(input.value).toBe('1234');
+    });
+
+    it('re-synchronizes co-located input listeners after a canceled composition', () => {
+      const { input, directive, fixture } = setup({ mask: '0000' });
+      typeSequence(input, '12', directive, fixture);
+      const seen: string[] = [];
+      input.addEventListener('input', () => seen.push(input.value));
+      composeText(input, 'x', '', 2);
+      flush(fixture);
+      expect(seen.at(-1)).toBe('12__');
+    });
+
+    it('re-synchronizes co-located input listeners when every committed char is rejected', () => {
+      const { input, fixture } = setup({ mask: '0000' });
+      const seen: string[] = [];
+      input.addEventListener('input', () => seen.push(input.value));
+      composeText(input, 'かな', 'かな', 0);
+      flush(fixture);
+      expect(seen.at(-1)).toBe('____');
+    });
+
+    it('notifies co-located input listeners with the final value after a commit', () => {
+      const { input, fixture } = setup({ mask: '0000' });
+      const seen: string[] = [];
+      input.addEventListener('input', () => seen.push(input.value));
+      composeText(input, '１２３', '123', 0);
+      flush(fixture);
+      expect(seen.at(-1)).toBe('123_');
+    });
+
+    it('single-inserts when WebKit fires insertFromComposition before compositionend', () => {
+      const { input, directive, fixture } = setup({ mask: '0000' });
+      input.setSelectionRange(0, 0);
+      input.dispatchEvent(new CompositionEvent('compositionstart'));
+      input.dispatchEvent(
+        new InputEvent('beforeinput', {
+          inputType: 'insertCompositionText',
+          data: '１２３',
+          cancelable: true,
+        }),
+      );
+      input.value = '１２３';
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      const commit = new InputEvent('beforeinput', {
+        inputType: 'insertFromComposition',
+        data: '123',
+        cancelable: true,
+      });
+      input.dispatchEvent(commit);
+      expect(commit.defaultPrevented).toBe(true);
+      input.dispatchEvent(new CompositionEvent('compositionend', { data: '123' }));
+      flush(fixture);
+      expect(directive.value()).toBe('123');
+      expect(input.value).toBe('123_');
+    });
+
+    it('single-inserts when insertFromComposition trails compositionend', () => {
+      const { input, directive, fixture } = setup({ mask: '0000' });
+      input.setSelectionRange(0, 0);
+      input.dispatchEvent(new CompositionEvent('compositionstart'));
+      input.dispatchEvent(
+        new InputEvent('beforeinput', {
+          inputType: 'insertCompositionText',
+          data: '１２３',
+          cancelable: true,
+        }),
+      );
+      input.value = '１２３';
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      input.dispatchEvent(new CompositionEvent('compositionend', { data: '123' }));
+      const trailing = new InputEvent('beforeinput', {
+        inputType: 'insertFromComposition',
+        data: '123',
+        cancelable: true,
+      });
+      input.dispatchEvent(trailing);
+      expect(trailing.defaultPrevented).toBe(true);
+      flush(fixture);
+      expect(directive.value()).toBe('123');
+      expect(input.value).toBe('123_');
     });
   });
 
