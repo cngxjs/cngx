@@ -206,7 +206,22 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
     this.core.addExpression(path, expression);
   }
 
+  /**
+   * Adds `group` under the group at `path`. No-op beyond
+   * `maxNestingDepth`: a group appended at `path` sits at depth
+   * `path.length + 1` (root is depth 0), and the config cap applies to
+   * programmatic writes exactly like to the add-group UI.
+   */
   addGroup(path: readonly number[], group: FilterGroup): void {
+    if (path.length >= this.config.maxNestingDepth) {
+      if (isDevMode()) {
+        console.warn(
+          `[CngxFilterBuilder] addGroup at depth ${path.length + 1} exceeds maxNestingDepth ` +
+            `${this.config.maxNestingDepth} - ignored. Raise it via withMaxNestingDepth(...).`,
+        );
+      }
+      return;
+    }
     this.core.addGroup(path, group);
   }
 

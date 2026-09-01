@@ -9,6 +9,7 @@ import { CngxFilterBuilder } from './filter-builder.component';
 import { CNGX_FILTER_BUILDER_HOST } from './filter-builder-host.token';
 import { CngxFilterBuilderFormFieldControl } from './filter-builder-form-field-control.directive';
 import { CngxFilterBuilderPresenter } from './filter-builder-presenter.directive';
+import { provideFilterBuilderConfig, withMaxNestingDepth } from './filter-builder.config';
 
 interface FormFieldStub {
   disabled: ReturnType<typeof signal<boolean>>;
@@ -398,6 +399,37 @@ describe('CngxFilterBuilderPresenter - dev-mode guards', () => {
     expect(warnSpy).toHaveBeenCalledWith(
       expect.stringContaining('unknown field key(s): bogus'),
     );
+  });
+});
+
+describe('CngxFilterBuilderPresenter - maxNestingDepth guard', () => {
+  let warnSpy: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(() => {
+    warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+  });
+
+  afterEach(() => {
+    warnSpy.mockRestore();
+  });
+
+  it('accepts programmatic addGroup below the cap and refuses beyond it', () => {
+    TestBed.configureTestingModule({
+      providers: [provideFilterBuilderConfig(withMaxNestingDepth(1))],
+    });
+    const { fixture, directive } = setup();
+
+    directive.addGroup([], { type: 'group', id: 'g1', logic: 'or', negated: false, filters: [] });
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(directive.tree().filters.length).toBe(1);
+
+    directive.addGroup([0], { type: 'group', id: 'g2', logic: 'and', negated: false, filters: [] });
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const inner = directive.tree().filters[0];
+    expect(inner.type === 'group' && inner.filters.length).toBe(0);
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('maxNestingDepth'));
   });
 });
 

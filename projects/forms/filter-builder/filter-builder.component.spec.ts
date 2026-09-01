@@ -21,7 +21,7 @@ import { CngxFilterBuilderPresenter } from './filter-builder-presenter.directive
 import type { CngxFilterBuilderTemplateRegistry } from './filter-builder-template-registry';
 import { createEmptyFilterRoot, createFilterExpression, createFilterGroup } from './filter-builder.helpers';
 import type { FilterFieldDef, FilterGroup } from './filter-builder.types';
-import { provideFilterBuilderConfig, withNegation } from './filter-builder.config';
+import { provideFilterBuilderConfig, withMaxNestingDepth, withNegation } from './filter-builder.config';
 
 const FIELD_NAME: FilterFieldDef = { key: 'name', label: 'Name', editorType: 'string' };
 const FIELD_AGE: FilterFieldDef = { key: 'age', label: 'Age', editorType: 'number' };
@@ -483,3 +483,56 @@ describe('CngxFilterBuilder - logic toggle slot', () => {
   });
 });
 
+describe('CngxFilterBuilder - maxNestingDepth', () => {
+  function depthOneSetup(initial: FilterGroup) {
+    TestBed.configureTestingModule({
+      providers: [provideFilterBuilderConfig(withMaxNestingDepth(1))],
+    });
+    return basicSetup(initial);
+  }
+
+  it('disables the nested add-group button at the depth cap', () => {
+    const { hostEl } = depthOneSetup(
+      createFilterGroup('and', [createFilterGroup('or', [createFilterExpression('name', 'eq', 'x')])]),
+    );
+    const groups = hostEl.querySelectorAll('.cngx-filter-builder__group');
+    expect(groups.length).toBe(2);
+    const rootAdd = groups[0].querySelector<HTMLButtonElement>(
+      ':scope > .cngx-filter-builder__actions .cngx-filter-builder__action-button--add-group',
+    );
+    const nestedAdd = groups[1].querySelector<HTMLButtonElement>(
+      '.cngx-filter-builder__action-button--add-group',
+    );
+    expect(rootAdd?.disabled).toBe(false);
+    expect(nestedAdd?.disabled).toBe(true);
+  });
+
+  it('allows adding at the root while below the cap', () => {
+    const { hostEl, presenter, fixture } = depthOneSetup(
+      createFilterGroup('and', [createFilterExpression('name', 'eq', 'x')]),
+    );
+    const rootAdd = hostEl.querySelector<HTMLButtonElement>(
+      '.cngx-filter-builder__action-button--add-group',
+    );
+    expect(rootAdd?.disabled).toBe(false);
+    rootAdd?.click();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(presenter.tree().filters.some((f) => f.type === 'group')).toBe(true);
+  });
+
+  it('ignores clicks on the capped add-group button', () => {
+    const { hostEl, presenter, fixture } = depthOneSetup(
+      createFilterGroup('and', [createFilterGroup('or', [])]),
+    );
+    const nested = hostEl.querySelectorAll('.cngx-filter-builder__group')[1];
+    const nestedAdd = nested.querySelector<HTMLButtonElement>(
+      '.cngx-filter-builder__action-button--add-group',
+    );
+    nestedAdd?.click();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const inner = presenter.tree().filters[0];
+    expect(inner.type === 'group' && inner.filters.length).toBe(0);
+  });
+});
