@@ -400,6 +400,12 @@ export type MaskTokenMap = Record<string, MaskTokenDef>;
  * <!-- Credit card with auto-format switching -->
  * <input cngxInputMask="creditcard" />
  * ```
+ *
+ * Do not stack `CngxPasteTransform` on a masked input: both directives cancel
+ * the native paste and insert independently (double insertion through two
+ * uncoordinated paths). The mask's own paste handling filters clipboard text
+ * per slot; per-character cleanup belongs in `[transform]` / `customTokens`.
+ *
  * @category forms/input
  * @docsKind primary
  * @wcag AA

@@ -12,6 +12,13 @@ import { Directive, ElementRef, inject, input } from '@angular/core';
  * One behaviour, one directive (Pillar 3); the synthetic `input` dispatch feeds
  * the existing one-way path, no second managed copy.
  *
+ * Do not stack with `CngxInputMask` on the same element: both directives
+ * cancel the native paste and write the field independently, so the clipboard
+ * text is inserted twice through two uncoordinated paths (this directive
+ * writes `el.value` directly, the mask routes the untransformed clipboard
+ * text through its slot filter). Masks already filter per slot and accept a
+ * per-character `transform`; use those instead.
+ *
  * ```html
  * <input cngxInput [cngxPasteTransform]="stripSpaces" />
  * <!-- component: stripSpaces = (s: string) => s.replace(/\s+/g, '') -->
