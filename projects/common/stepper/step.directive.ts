@@ -79,30 +79,23 @@ export class CngxStep implements OnInit {
   readonly labelTemplate = this.labelSlot;
   readonly contentTemplate = this.contentSlot;
 
-  /**
-   * Per-step status derived from inputs + aggregator. Pure `computed` -
-   * nothing ever writes it, so the writable `linkedSignal` shape it
-   * shipped with was surface without a writer.
-   */
-  readonly state: Signal<CngxStepStatus> = computed(
-    () => {
-      if (this.disabled()) {
-        return 'disabled';
-      }
-      const directError = this.error();
-      const errored =
-        (directError !== false && directError !== '') ||
-        (this.errorAggregator()?.hasError?.() ?? false);
-      if (errored) {
-        return 'error';
-      }
-      if (this.completed()) {
-        return 'success';
-      }
-      return 'idle';
-    },
-    { equal: Object.is },
-  );
+  /** Per-step status derived from inputs + aggregator - never written. */
+  readonly state: Signal<CngxStepStatus> = computed(() => {
+    if (this.disabled()) {
+      return 'disabled';
+    }
+    const directError = this.error();
+    const errored =
+      (directError !== false && directError !== '') ||
+      (this.errorAggregator()?.hasError?.() ?? false);
+    if (errored) {
+      return 'error';
+    }
+    if (this.completed()) {
+      return 'success';
+    }
+    return 'idle';
+  });
 
   private readonly groupHost = inject(CNGX_STEP_GROUP_HOST, { optional: true });
   private readonly stepperHost = inject(CNGX_STEPPER_HOST, { optional: true });

@@ -543,7 +543,7 @@ export class CngxStepperPresenter implements CngxStepperHost {
   selectPrevious(): void {
     const prev = this.previousEnabledIndex();
     if (prev >= 0) {
-      this.commitController.cancel({ settle: true });
+      this.cancelAndSettleCommit();
       this.originIndexDuringCommitState.set(undefined);
       this.lastCommittedIndex = prev;
       this.activeStepIndex.set(prev);
@@ -565,7 +565,24 @@ export class CngxStepperPresenter implements CngxStepperHost {
     this.lastFailedIndexState.set(undefined);
     // Settle mid-commit resets to idle - the surface lives on, so a
     // dangling 'pending' would latch busy() forever.
+    this.cancelAndSettleCommit();
+  }
+
+  /**
+   * Cancels the in-flight commit and settles the state to idle. The
+   * settle option is load-bearing here - a custom
+   * `CNGX_COMMIT_CONTROLLER_FACTORY` implementation that ignores it
+   * leaves `busy` latched, which is invisible until a user backs out
+   * mid-commit; the dev-mode probe surfaces that immediately.
+   */
+  private cancelAndSettleCommit(): void {
     this.commitController.cancel({ settle: true });
+    if (isDevMode() && this.commitState.status() === 'pending') {
+      console.warn(
+        '[cngxStepper] the commit controller ignored cancel({ settle: true }) - busy stays ' +
+          'latched. Honor the settle option in your CNGX_COMMIT_CONTROLLER_FACTORY override.',
+      );
+    }
   }
 }
 

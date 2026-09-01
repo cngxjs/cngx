@@ -33,11 +33,8 @@ export interface CngxStepperGroupSummaryOptions {
   readonly summaryMode: () => CngxStepperGroupSummary | undefined;
   /** Whether a given group node is currently collapsed. */
   readonly isCollapsed: (node: CngxStepNode) => boolean;
-  /**
-   * Resolved i18n bundle for the SR phrases. Optional so existing
-   * callers keep compiling; omitted, the English defaults render.
-   */
-  readonly i18n?: Pick<CngxStepperI18n, 'groupSummaryCount' | 'groupSummaryProgress'>;
+  /** Resolved i18n bundle for the SR phrases. */
+  readonly i18n: Pick<CngxStepperI18n, 'groupSummaryCount' | 'groupSummaryProgress'>;
 }
 
 /** Terminal-step totals for a group's subtree; reads each step `state()`. */
@@ -90,12 +87,9 @@ export function createStepperGroupSummary(
     }
     const { total, completed } = subtreeStats(node);
     if (current === 'count') {
-      return options.i18n?.groupSummaryCount(total) ?? `${total} steps`;
+      return options.i18n.groupSummaryCount(total);
     }
-    return (
-      options.i18n?.groupSummaryProgress(completed, total) ??
-      `${completed} of ${total} steps complete`
-    );
+    return options.i18n.groupSummaryProgress(completed, total);
   };
 
   return { mode, text, showStatus, srText };
