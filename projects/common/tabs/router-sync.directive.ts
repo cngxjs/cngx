@@ -124,28 +124,21 @@ export class CngxTabsFragmentSync implements AfterContentInit {
       this.seedFromUrl(router);
     });
 
+    let initialReflect = true;
     effect(() => {
       const id = this.host.activeId();
       if (!id) {
         return;
       }
-      untracked(() => {
-        const replaceUrl = this.replaceUrl();
-        const navigation =
-          this.mode() === 'fragment'
-            ? router.navigate([], {
-                fragment: `${this.paramName()}=${id}`,
-                queryParamsHandling: 'merge',
-                replaceUrl,
-              })
-            : router.navigate([], {
-                queryParams: { [this.paramName()]: id },
-                queryParamsHandling: 'merge',
-                replaceUrl,
-              });
-        // Router rejection (e.g. cancelled navigation) has no recovery path.
-        navigation.catch?.(() => undefined);
-      });
+      if (initialReflect) {
+        // Bare mount is not an interaction: the first resolved active id
+        // (default tab or URL seed) must not stamp the URL - a page that
+        // merely renders tabs would otherwise rewrite its own history
+        // entry. The URL starts changing when the active tab does.
+        initialReflect = false;
+        return;
+      }
+      untracked(() => this.writeUrl(router, id));
     });
 
     const navEnd = toSignal(
@@ -209,6 +202,39 @@ export class CngxTabsFragmentSync implements AfterContentInit {
     untracked(() => this.host.selectById(initial));
   }
 
+  /**
+   * Reflect `id` into the URL. Fragment mode re-serializes the existing
+   * fragment params so foreign state (`#foo=1&tab=x`) survives the
+   * write; values are URI-encoded symmetric to {@link parseFragment}.
+   */
+  private writeUrl(router: Router, id: string): void {
+    const replaceUrl = this.replaceUrl();
+    const navigation =
+      this.mode() === 'fragment'
+        ? router.navigate([], {
+            fragment: this.serializeFragment(router, id),
+            queryParamsHandling: 'merge',
+            replaceUrl,
+          })
+        : router.navigate([], {
+            queryParams: { [this.paramName()]: id },
+            queryParamsHandling: 'merge',
+            replaceUrl,
+          });
+    // Router rejection (e.g. cancelled navigation) has no recovery path.
+    navigation.catch?.(() => undefined);
+  }
+
+  private serializeFragment(router: Router, id: string): string {
+    const param = this.paramName();
+    const current = router.routerState.snapshot.root.fragment ?? '';
+    const segments = current
+      .split('&')
+      .filter((seg) => seg !== '' && seg.split('=')[0] !== param);
+    segments.push(`${param}=${encodeURIComponent(id)}`);
+    return segments.join('&');
+  }
+
   private readUrlValue(router: Router): string | null {
     if (this.mode() === 'fragment') {
       const fragment = router.routerState.snapshot.root.fragment ?? '';
@@ -223,7 +249,7 @@ export class CngxTabsFragmentSync implements AfterContentInit {
     for (const seg of segments) {
       const [key, val] = seg.split('=');
       if (key === param && val) {
-        return val;
+        return decodeURIComponent(val);
       }
     }
     return null;

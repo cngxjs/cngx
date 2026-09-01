@@ -98,6 +98,19 @@ class CommitSeedHost {
 })
 class ProjectedSeedHost {}
 
+@Component({
+  standalone: true,
+  selector: 'encoded-seed-host',
+  imports: [SeedShell, CngxTab],
+  template: `
+    <seed-shell>
+      <div cngxTab id="a" [label]="'A'"></div>
+      <div cngxTab id="b c" [label]="'B C'"></div>
+    </seed-shell>
+  `,
+})
+class EncodedSeedHost {}
+
 // Drains pending microtasks so the directive's effect() chain (which
 // reads activeId, then calls router.navigate inside untracked()) has
 // a chance to fire and the spy captures the call. Mirrors the
@@ -170,6 +183,76 @@ describe('CngxTabsFragmentSync', () => {
     };
     expect(lastExtras.queryParams).toEqual({ section: expect.stringMatching(/^cngx-tab-/) });
     expect(lastExtras.fragment).toBeUndefined();
+  });
+
+  it('does not stamp the URL on bare mount - the first write waits for a tab change', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), provideRouter([])],
+    });
+    const router = TestBed.inject(Router);
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    const fixture = TestBed.createComponent(FragmentHost);
+    fixture.detectChanges();
+    await flushMicrotasks();
+    // Rendering tabs is not an interaction - no history rewrite.
+    expect(navigateSpy).not.toHaveBeenCalled();
+
+    const presenter = fixture.debugElement.injector.get(CngxTabGroupPresenter);
+    presenter.select(1);
+    fixture.detectChanges();
+    await flushMicrotasks();
+    expect(navigateSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('preserves foreign fragment params and URI-encodes the tab id on write', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), provideRouter([])],
+    });
+    const router = TestBed.inject(Router);
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    Object.defineProperty(router.routerState.snapshot.root, 'fragment', {
+      get: () => 'foo=1&tab=a&bar=2',
+      configurable: true,
+    });
+
+    const fixture = TestBed.createComponent(EncodedSeedHost);
+    fixture.detectChanges();
+    await flushMicrotasks();
+    const presenter = fixture.debugElement
+      .query(By.directive(SeedShell))
+      .injector.get(CngxTabGroupPresenter);
+    presenter.select(1);
+    fixture.detectChanges();
+    await flushMicrotasks();
+
+    const calls = navigateSpy.mock.calls;
+    expect(calls.length).toBeGreaterThan(0);
+    const extras = calls[calls.length - 1][1] as { fragment?: string };
+    expect(extras.fragment).toContain('foo=1');
+    expect(extras.fragment).toContain('bar=2');
+    expect(extras.fragment).toContain('tab=b%20c');
+    expect(extras.fragment).not.toContain('tab=a');
+  });
+
+  it('round-trips an encoded tab id through the fragment', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), provideRouter([])],
+    });
+    const router = TestBed.inject(Router);
+    vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    Object.defineProperty(router.routerState.snapshot.root, 'fragment', {
+      get: () => 'tab=b%20c',
+      configurable: true,
+    });
+
+    const fixture = TestBed.createComponent(EncodedSeedHost);
+    fixture.detectChanges();
+    await flushMicrotasks();
+    const presenter = fixture.debugElement
+      .query(By.directive(SeedShell))
+      .injector.get(CngxTabGroupPresenter);
+    expect(presenter.activeId()).toBe('b c');
   });
 
   it('writes a queryParam in queryParam mode', async () => {
