@@ -122,12 +122,21 @@ function runStepperAction(
     // before the assignment binds - `sub` would be in TDZ. Declare
     // the handle on a `let` first.
     let sub: Subscription | null = null;
+    let emitted = false;
     sub = result.subscribe({
       next: (accept) => {
+        emitted = true;
         safeSuccess(accept);
         sub?.unsubscribe();
       },
       error: (err: unknown) => safeError(err),
+      complete: () => {
+        // EMPTY-style sources complete without emitting; without this arm
+        // the commit stays 'pending' forever and busy() latches true.
+        if (!emitted) {
+          safeError(new Error('Stepper commitAction completed without emitting'));
+        }
+      },
     });
     unsubscribe = () => sub?.unsubscribe();
   } else if (result != null && typeof (result as { then?: unknown }).then === 'function') {
