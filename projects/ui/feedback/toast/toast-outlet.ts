@@ -147,13 +147,16 @@ export class CngxToastOutlet {
   /** @internal */
   protected readonly positionClass = computed(() => `cngx-toast-outlet--${this.position()}`);
 
-  /** @internal - slice to maxVisible, respecting insert position. */
-  protected readonly visibleToasts = computed(() => {
-    const all = this.service.toasts();
-    const max = this.maxVisible();
-    const sliced = all.length > max ? all.slice(0, max) : all;
-    return this.insertPosition() === 'end' ? [...sliced].reverse() : sliced;
-  });
+  /** @internal - slice to maxVisible, respecting insert position. ToastState is immutable per slot. */
+  protected readonly visibleToasts = computed(
+    () => {
+      const all = this.service.toasts();
+      const max = this.maxVisible();
+      const sliced = all.length > max ? all.slice(0, max) : all;
+      return this.insertPosition() === 'end' ? [...sliced].reverse() : sliced;
+    },
+    { equal: (a, b) => a.length === b.length && a.every((t, i) => t === b[i]) },
+  );
 
   /** @internal - resolve icon component from global config or null. */
   protected iconFor(toast: ToastState) {

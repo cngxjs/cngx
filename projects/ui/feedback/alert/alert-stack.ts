@@ -26,6 +26,11 @@ interface StackEntry {
   readonly owner: CngxAlerter;
 }
 
+/** @internal - AlertState objects are immutable, so reference equality per slot suffices. */
+function entriesEqual(a: readonly StackEntry[], b: readonly StackEntry[]): boolean {
+  return a.length === b.length && a.every((e, i) => e.state === b[i].state && e.key === b[i].key);
+}
+
 /**
  * Scoped alert stack - renders alerts from its own `CngxAlerter` instance
  * merged with the nearest ancestor/environment instance.
@@ -182,31 +187,37 @@ export class CngxAlertStack {
   });
 
   /** @internal - own + ancestor alerts, scope-filtered, newest first. */
-  private readonly entries = computed<readonly StackEntry[]>(() => {
-    const s = this.scope();
-    const matches = (a: AlertState): boolean => s === undefined || a.config.scope === s;
+  private readonly entries = computed<readonly StackEntry[]>(
+    () => {
+      const s = this.scope();
+      const matches = (a: AlertState): boolean => s === undefined || a.config.scope === s;
 
-    const own: StackEntry[] = this.alerter
-      .alerts()
-      .filter(matches)
-      .map((state) => ({ key: `own-${state.id}`, state, owner: this.alerter }));
-    const parent: StackEntry[] = this.parentAlerter
-      ? this.parentAlerter
-          .alerts()
-          .filter(matches)
-          .map((state) => ({ key: `env-${state.id}`, state, owner: this.parentAlerter! }))
-      : [];
+      const own: StackEntry[] = this.alerter
+        .alerts()
+        .filter(matches)
+        .map((state) => ({ key: `own-${state.id}`, state, owner: this.alerter }));
+      const parent: StackEntry[] = this.parentAlerter
+        ? this.parentAlerter
+            .alerts()
+            .filter(matches)
+            .map((state) => ({ key: `env-${state.id}`, state, owner: this.parentAlerter! }))
+        : [];
 
-    return [...own, ...parent].sort((a, b) => b.state.createdAt - a.state.createdAt);
-  });
+      return [...own, ...parent].sort((a, b) => b.state.createdAt - a.state.createdAt);
+    },
+    { equal: entriesEqual },
+  );
 
   /** @internal - entries within maxVisible, ordered per [position]. */
-  protected readonly visibleEntries = computed(() => {
-    const all = this.entries();
-    const max = this.effectiveMaxVisible();
-    const sliced = this.expanded() || all.length <= max ? all : all.slice(0, max);
-    return this.position() === 'bottom' ? [...sliced].reverse() : sliced;
-  });
+  protected readonly visibleEntries = computed(
+    () => {
+      const all = this.entries();
+      const max = this.effectiveMaxVisible();
+      const sliced = this.expanded() || all.length <= max ? all : all.slice(0, max);
+      return this.position() === 'bottom' ? [...sliced].reverse() : sliced;
+    },
+    { equal: entriesEqual },
+  );
 
   /** @internal - number of hidden overflow alerts. */
   protected readonly overflowCount = computed(() => {

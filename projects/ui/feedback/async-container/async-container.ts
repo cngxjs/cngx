@@ -257,14 +257,20 @@ export class CngxAsyncContainer<T> {
   );
 
   /** @internal */
-  protected readonly contentContext = computed(() => ({
-    $implicit: this.state().data() as T,
-  }));
+  protected readonly contentContext = computed(
+    () => ({
+      $implicit: this.state().data() as T,
+    }),
+    { equal: (a, b) => a.$implicit === b.$implicit },
+  );
 
   /** @internal */
-  protected readonly errorContext = computed(() => ({
-    $implicit: this.state().error(),
-  }));
+  protected readonly errorContext = computed(
+    () => ({
+      $implicit: this.state().error(),
+    }),
+    { equal: (a, b) => a.$implicit === b.$implicit },
+  );
 
   /** @internal */
   protected readonly announcement = signal<string>('');
