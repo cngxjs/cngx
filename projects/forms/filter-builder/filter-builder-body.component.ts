@@ -119,8 +119,16 @@ export class CngxFilterBuilderBody {
     return {
       add: () => this.addGroupAt(path),
       label: this.config.i18n.addGroup,
-      disabled: false,
+      disabled: !this.canAddGroupAt(path),
     };
+  }
+
+  /**
+   * A group added at `path` sits at depth `path.length + 1` (root is depth
+   * 0), so adding is allowed while `path.length < maxNestingDepth`.
+   */
+  protected canAddGroupAt(path: readonly number[]): boolean {
+    return path.length < this.config.maxNestingDepth;
   }
 
   protected removeButtonContext(path: readonly number[], label: string): RemoveButtonCtx {
@@ -221,6 +229,9 @@ export class CngxFilterBuilderBody {
   }
 
   protected addGroupAt(path: readonly number[]): void {
+    if (!this.canAddGroupAt(path)) {
+      return;
+    }
     this.host.addGroup(path, createFilterGroup());
   }
 

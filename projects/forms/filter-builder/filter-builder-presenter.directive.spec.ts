@@ -9,6 +9,7 @@ import { CngxFilterBuilder } from './filter-builder.component';
 import { CNGX_FILTER_BUILDER_HOST } from './filter-builder-host.token';
 import { CngxFilterBuilderFormFieldControl } from './filter-builder-form-field-control.directive';
 import { CngxFilterBuilderPresenter } from './filter-builder-presenter.directive';
+import { provideFilterBuilderConfig, withMaxNestingDepth } from './filter-builder.config';
 
 interface FormFieldStub {
   disabled: ReturnType<typeof signal<boolean>>;
@@ -398,5 +399,80 @@ describe('CngxFilterBuilderPresenter - dev-mode guards', () => {
     expect(warnSpy).toHaveBeenCalledWith(
       expect.stringContaining('unknown field key(s): bogus'),
     );
+  });
+});
+
+describe('CngxFilterBuilderPresenter - maxNestingDepth guard', () => {
+  let warnSpy: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(() => {
+    warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+  });
+
+  afterEach(() => {
+    warnSpy.mockRestore();
+  });
+
+  it('accepts programmatic addGroup below the cap and refuses beyond it', () => {
+    TestBed.configureTestingModule({
+      providers: [provideFilterBuilderConfig(withMaxNestingDepth(1))],
+    });
+    const { fixture, directive } = setup();
+
+    directive.addGroup([], { type: 'group', id: 'g1', logic: 'or', negated: false, filters: [] });
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(directive.tree().filters.length).toBe(1);
+
+    directive.addGroup([0], { type: 'group', id: 'g2', logic: 'and', negated: false, filters: [] });
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const inner = directive.tree().filters[0];
+    expect(inner.type === 'group' && inner.filters.length).toBe(0);
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('maxNestingDepth'));
+  });
+});
+
+describe('CngxFilterBuilderPresenter - errorState incomplete definition', () => {
+  function touchedSetup(tree: FilterGroup) {
+    provideFormFieldStub({ touched: true });
+    const fixture = TestBed.createComponent(Host);
+    fixture.componentInstance.value = tree;
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    return fixture.componentInstance.directive();
+  }
+
+  it('does not flag valueless isEmpty / isNotEmpty rows as incomplete', () => {
+    const directive = touchedSetup({
+      type: 'group',
+      id: 'r',
+      logic: 'and',
+      negated: false,
+      filters: [{ type: 'expression', id: 'e1', field: 'name', operator: 'isEmpty', value: undefined }],
+    });
+    expect(directive.errorState()).toBe(false);
+  });
+
+  it('flags rows with an empty-string value', () => {
+    const directive = touchedSetup({
+      type: 'group',
+      id: 'r',
+      logic: 'and',
+      negated: false,
+      filters: [{ type: 'expression', id: 'e1', field: 'name', operator: 'eq', value: '' }],
+    });
+    expect(directive.errorState()).toBe(true);
+  });
+
+  it('flags rows with a missing operator even when a value is set', () => {
+    const directive = touchedSetup({
+      type: 'group',
+      id: 'r',
+      logic: 'and',
+      negated: false,
+      filters: [{ type: 'expression', id: 'e1', field: 'name', operator: '', value: 'x' }],
+    });
+    expect(directive.errorState()).toBe(true);
   });
 });

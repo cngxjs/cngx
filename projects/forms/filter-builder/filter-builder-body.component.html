@@ -40,6 +40,7 @@
     <button
       type="button"
       class="cngx-filter-builder__action-button cngx-filter-builder__action-button--add-group"
+      [disabled]="!canAddGroupAt(path)"
       (click)="addGroupAt(path)"
     >
       <span aria-hidden="true" class="cngx-filter-builder__action-glyph">{{ glyphs.addGroup }}</span>

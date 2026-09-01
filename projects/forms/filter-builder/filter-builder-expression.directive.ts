@@ -3,7 +3,7 @@ import { computed, Directive, inject, input } from '@angular/core';
 import type { FilterExpression } from './filter-builder.types';
 import { injectFilterBuilderConfig } from './filter-builder.config';
 import { CNGX_FILTER_BUILDER_HOST } from './filter-builder-host.token';
-import { referenceEqual } from './filter-builder-internal';
+import { isExpressionIncomplete, referenceEqual } from './filter-builder-internal';
 
 /** @internal */
 const EMPTY_OPERATORS: readonly string[] = Object.freeze([]) as readonly string[];
@@ -90,7 +90,7 @@ export class CngxFilterExpression {
     if (!expr) {
       return true;
     }
-    return !expr.field || !expr.operator;
+    return isExpressionIncomplete(expr);
   });
 
   readonly expressionLabel = computed(() => {

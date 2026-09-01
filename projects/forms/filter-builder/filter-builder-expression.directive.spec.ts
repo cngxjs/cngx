@@ -186,3 +186,29 @@ describe('CngxFilterExpression', () => {
     expect(directive.node()).toBe(directive.node());
   });
 });
+
+describe('CngxFilterExpression - shared incomplete definition', () => {
+  it('flags incomplete when the value is unfilled for an ordinary operator', () => {
+    const tree: FilterGroup = {
+      type: 'group',
+      id: 'root',
+      logic: 'and',
+      negated: false,
+      filters: [{ type: 'expression', id: 'e1', field: 'name', operator: 'eq', value: '' }],
+    };
+    const { directive } = setup(tree, [FIELD_NAME]);
+    expect(directive.isIncomplete()).toBe(true);
+  });
+
+  it('treats valueless isEmpty rows as complete', () => {
+    const tree: FilterGroup = {
+      type: 'group',
+      id: 'root',
+      logic: 'and',
+      negated: false,
+      filters: [{ type: 'expression', id: 'e1', field: 'name', operator: 'isEmpty', value: undefined }],
+    };
+    const { directive } = setup(tree, [FIELD_NAME]);
+    expect(directive.isIncomplete()).toBe(false);
+  });
+});

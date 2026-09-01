@@ -8,7 +8,6 @@ export const CNGX_FILTER_BUILDER_GLYPHS = {
   remove: '✕',
   addFilter: '+',
   addGroup: '+',
-  expand: '▾',
   negate: '!',
 } as const;
 

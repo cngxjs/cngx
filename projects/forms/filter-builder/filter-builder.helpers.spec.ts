@@ -357,3 +357,17 @@ describe('toFilterPredicate - missing fields', () => {
     expect(toFilterPredicate(tree, FIELDS)!({ ghost: 'x' })).toBe(false);
   });
 });
+
+describe('evaluateExpression - widened no-op guard (null / undefined / empty string)', () => {
+  const item = { name: 'Ada', age: 36 };
+
+  it('treats null and empty-string values as no-ops like undefined', () => {
+    expect(evaluateExpression(createFilterExpression('name', 'eq', null), item, FIELD_NAME)).toBe(true);
+    expect(evaluateExpression(createFilterExpression('name', 'contains', ''), item, FIELD_NAME)).toBe(true);
+  });
+
+  it('keeps isEmpty active for an empty-string expression value', () => {
+    expect(evaluateExpression(createFilterExpression('name', 'isEmpty', ''), item, FIELD_NAME)).toBe(false);
+    expect(evaluateExpression(createFilterExpression('name', 'isNotEmpty', ''), item, FIELD_NAME)).toBe(true);
+  });
+});

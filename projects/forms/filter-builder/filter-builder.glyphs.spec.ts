@@ -3,11 +3,10 @@ import { describe, expect, it } from 'vitest';
 import { CNGX_FILTER_BUILDER_GLYPHS } from './filter-builder.glyphs';
 
 describe('CNGX_FILTER_BUILDER_GLYPHS', () => {
-  it('exposes the five expected glyph keys', () => {
+  it('exposes the four expected glyph keys', () => {
     expect(Object.keys(CNGX_FILTER_BUILDER_GLYPHS).sort()).toEqual([
       'addFilter',
       'addGroup',
-      'expand',
       'negate',
       'remove',
     ]);
