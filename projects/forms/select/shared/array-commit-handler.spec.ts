@@ -55,13 +55,14 @@ interface Harness {
   readonly coreMock: CoreMock;
   readonly stateLog: string[];
   readonly errorLog: unknown[];
+  readonly announceErrorLog: unknown[];
   readonly toggleFinalizeLog: Array<[CngxSelectOptionDef<T>, boolean]>;
   readonly clearFinalizeLog: Array<[T[], T[]]>;
   handler: ReturnType<typeof createArrayCommitHandler<T>>;
   lastCommitted: T[];
 }
 
-function makeHarness(initial: T[] = []): Harness {
+function makeHarness(initial: T[] = [], withAnnounceError = true): Harness {
   const values = signal<T[]>(initial);
   const compareWith = signal<CngxSelectCompareFn<T>>((a, b) => Object.is(a, b));
   const commitMode = signal<CngxSelectCommitMode>('optimistic');
@@ -69,6 +70,7 @@ function makeHarness(initial: T[] = []): Harness {
   const coreMock = makeCore();
   const stateLog: string[] = [];
   const errorLog: unknown[] = [];
+  const announceErrorLog: unknown[] = [];
   const toggleFinalizeLog: Harness['toggleFinalizeLog'] = [];
   const clearFinalizeLog: Harness['clearFinalizeLog'] = [];
   const harness: Harness = {
@@ -79,6 +81,7 @@ function makeHarness(initial: T[] = []): Harness {
     coreMock,
     stateLog,
     errorLog,
+    announceErrorLog,
     toggleFinalizeLog,
     clearFinalizeLog,
     handler: null as unknown as ReturnType<typeof createArrayCommitHandler<T>>,
@@ -97,6 +100,7 @@ function makeHarness(initial: T[] = []): Harness {
       clearFinalizeLog.push([previous, finalValues]),
     onStateChange: (s) => stateLog.push(s),
     onError: (err) => errorLog.push(err),
+    announceError: withAnnounceError ? (err) => announceErrorLog.push(err) : undefined,
   });
   return harness;
 }
@@ -160,16 +164,26 @@ describe('createArrayCommitHandler', () => {
       expect(h.values()).toEqual(['a']);
     });
 
-    it('emits "removed" announce on error', () => {
+    it('routes the real error into announceError instead of a "removed" announce', () => {
+      const boom = new Error('boom');
+      const action: CngxSelectCommitAction<T[]> = () => {
+        throw boom;
+      };
+      h.handler.beginToggle(['a', 'b'], ['a'], opt('b'), action);
+      // The old announce(null, 'removed') read "selection cleared" - a failed
+      // commit must never be announced as a successful clear.
+      expect(h.coreMock.announceCalls).toEqual([]);
+      expect(h.announceErrorLog).toEqual([boom]);
+    });
+
+    it('announces nothing on error when announceError is omitted', () => {
+      const silent = makeHarness(['a'], false);
       const action: CngxSelectCommitAction<T[]> = () => {
         throw new Error('boom');
       };
-      h.handler.beginToggle(['a', 'b'], ['a'], opt('b'), action);
-      expect(h.coreMock.announceCalls.at(-1)).toMatchObject({
-        option: null,
-        action: 'removed',
-        assertive: true,
-      });
+      silent.handler.beginToggle(['a', 'b'], ['a'], opt('b'), action);
+      expect(silent.coreMock.announceCalls).toEqual([]);
+      expect(silent.errorLog.length).toBe(1);
     });
   });
 
@@ -203,6 +217,27 @@ describe('createArrayCommitHandler', () => {
         count: 0,
         assertive: true,
       });
+    });
+  });
+
+  describe('beginClear togglingOption contract', () => {
+    it('nulls togglingOption itself so retryLast routes to clear', () => {
+      // A call site that forgot to null the toggle marker before clearing.
+      h.coreMock.togglingOption.set(opt('a'));
+      const clearCalls: T[][] = [];
+      const action: CngxSelectCommitAction<T[]> = (next) => {
+        clearCalls.push([...(next ?? [])]);
+        return next;
+      };
+      h.commitAction.set(action);
+      h.values.set([]);
+      h.handler.beginClear(['a'], action);
+      expect(h.coreMock.togglingOption()).toBeNull();
+
+      h.lastCommitted = [];
+      h.handler.retryLast();
+      // Both the original clear and the retry dispatched as clears ([]).
+      expect(clearCalls).toEqual([[], []]);
     });
   });
 
