@@ -2,7 +2,6 @@ import { Component, provideZonelessChangeDetection, type Type } from '@angular/c
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import {
-  NavigationCancel,
   NavigationEnd,
   provideRouter,
   Router,
@@ -280,7 +279,8 @@ describe('CngxTabsRouteSync', () => {
       providers: [provideZonelessChangeDetection(), provideRouter([])],
     });
     const router = TestBed.inject(Router);
-    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    // A guard-cancelled navigation resolves the navigate() promise false.
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(false);
     vi.spyOn(router, 'url', 'get').mockReturnValue('/');
 
     const fixture = TestBed.createComponent(RouteHost);
@@ -295,7 +295,6 @@ describe('CngxTabsRouteSync', () => {
     expect(navigateSpy).toHaveBeenCalledWith(['b']);
     expect(presenter.activeIndex()).toBe(0);
 
-    emit(router, new NavigationCancel(1, '/b', 'blocked by CanDeactivate'));
     fixture.detectChanges();
     await flushMicrotasks();
 
@@ -318,7 +317,7 @@ describe('CngxTabsRouteSync', () => {
 
     presenter.select(1);
     expect(presenter.activeIndex()).toBe(0);
-    emit(router, new NavigationEnd(1, '/b', '/b'));
+    // The mocked navigate() promise resolves true - the commit lands.
     fixture.detectChanges();
     await flushMicrotasks();
 

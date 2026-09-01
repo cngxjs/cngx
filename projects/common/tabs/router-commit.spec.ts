@@ -1,12 +1,6 @@
 import { provideZonelessChangeDetection, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import {
-  NavigationCancel,
-  NavigationEnd,
-  NavigationError,
-  provideRouter,
-  Router,
-} from '@angular/router';
+import { NavigationEnd, provideRouter, Router } from '@angular/router';
 import type { Observable } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -30,6 +24,11 @@ function emit(router: Router, event: unknown): void {
   (router.events as unknown as { next: (e: unknown) => void }).next(event);
 }
 
+async function flushMicrotasks(): Promise<void> {
+  await Promise.resolve();
+  await Promise.resolve();
+}
+
 describe('createTabRouterCommit', () => {
   const tabs = [handle('a'), handle('b'), handle('c')];
   let router: Router;
@@ -43,41 +42,52 @@ describe('createTabRouterCommit', () => {
     vi.spyOn(router, 'navigate').mockResolvedValue(true);
   });
 
-  it('navigates to routeFor(target) and resolves true on NavigationEnd', () => {
+  it('navigates to routeFor(target) and resolves true when the navigation lands', async () => {
     const action = createTabRouterCommit({ router, tabs: () => tabs });
     const seen: boolean[] = [];
     (action(0, 1) as Observable<boolean>).subscribe((v) => seen.push(v));
     expect(router.navigate).toHaveBeenCalledWith(['b']);
-    emit(router, new NavigationEnd(1, '/b', '/b'));
+    await flushMicrotasks();
     expect(seen).toEqual([true]);
   });
 
-  it('resolves false on NavigationCancel (a guard blocked the leave)', () => {
+  it('resolves false when the navigation is cancelled (a guard blocked the leave)', async () => {
+    vi.spyOn(router, 'navigate').mockResolvedValue(false);
     const action = createTabRouterCommit({ router, tabs: () => tabs });
     const seen: boolean[] = [];
     (action(0, 2) as Observable<boolean>).subscribe((v) => seen.push(v));
-    emit(router, new NavigationCancel(1, '/c', 'blocked by CanDeactivate'));
+    await flushMicrotasks();
     expect(seen).toEqual([false]);
   });
 
-  it('resolves false on NavigationError', () => {
+  it('resolves false when the navigation errors (guard/resolver threw)', async () => {
+    vi.spyOn(router, 'navigate').mockRejectedValue(new Error('resolver threw'));
     const action = createTabRouterCommit({ router, tabs: () => tabs });
     const seen: boolean[] = [];
     (action(0, 2) as Observable<boolean>).subscribe((v) => seen.push(v));
-    emit(router, new NavigationError(1, '/c', new Error('resolver threw')));
+    await flushMicrotasks();
     expect(seen).toEqual([false]);
   });
 
-  it('subscribes to events before navigating so a sync outcome is not missed', () => {
-    const order: string[] = [];
-    vi.spyOn(router, 'navigate').mockImplementation(() => {
-      order.push('navigate');
-      return Promise.resolve(true);
-    });
+  it('resolves true for a skipped same-URL navigation (promise resolves null)', async () => {
+    vi.spyOn(router, 'navigate').mockResolvedValue(null as unknown as boolean);
     const action = createTabRouterCommit({ router, tabs: () => tabs });
-    (action(0, 1) as Observable<boolean>).subscribe(() => order.push('resolve'));
-    emit(router, new NavigationEnd(1, '/b', '/b'));
-    expect(order).toEqual(['navigate', 'resolve']);
+    const seen: boolean[] = [];
+    (action(0, 1) as Observable<boolean>).subscribe((v) => seen.push(v));
+    await flushMicrotasks();
+    expect(seen).toEqual([true]);
+  });
+
+  it('ignores terminal events of an unrelated concurrent navigation', async () => {
+    // The commit correlates on its own navigate() promise; a foreign
+    // NavigationEnd on the events stream must not resolve it.
+    vi.spyOn(router, 'navigate').mockReturnValue(new Promise<boolean>(() => undefined));
+    const action = createTabRouterCommit({ router, tabs: () => tabs });
+    const seen: boolean[] = [];
+    (action(0, 1) as Observable<boolean>).subscribe((v) => seen.push(v));
+    emit(router, new NavigationEnd(99, '/elsewhere', '/elsewhere'));
+    await flushMicrotasks();
+    expect(seen).toEqual([]);
   });
 
   it('honours a custom routeFor', () => {
@@ -98,21 +108,19 @@ describe('createTabRouterCommit', () => {
     expect(router.navigate).not.toHaveBeenCalled();
   });
 
-  it('takes only the first navigation outcome', () => {
-    const action = createTabRouterCommit({ router, tabs: () => tabs });
-    const seen: boolean[] = [];
-    (action(0, 1) as Observable<boolean>).subscribe((v) => seen.push(v));
-    emit(router, new NavigationEnd(1, '/b', '/b'));
-    emit(router, new NavigationCancel(2, '/b', 'late'));
-    expect(seen).toEqual([true]);
-  });
-
-  it('stops listening after the subscription is torn down (supersede cancel)', () => {
+  it('drops a late resolution after the subscription is torn down (supersede cancel)', async () => {
+    let resolveNav!: (v: boolean) => void;
+    vi.spyOn(router, 'navigate').mockReturnValue(
+      new Promise<boolean>((resolve) => {
+        resolveNav = resolve;
+      }),
+    );
     const action = createTabRouterCommit({ router, tabs: () => tabs });
     const seen: boolean[] = [];
     const sub = (action(0, 1) as Observable<boolean>).subscribe((v) => seen.push(v));
     sub.unsubscribe();
-    emit(router, new NavigationEnd(1, '/b', '/b'));
+    resolveNav(true);
+    await flushMicrotasks();
     expect(seen).toEqual([]);
   });
 });
