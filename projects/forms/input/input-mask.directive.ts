@@ -427,6 +427,8 @@ export type MaskTokenMap = Record<string, MaskTokenDef>;
   ],
   host: {
     '(beforeinput)': 'handleBeforeInput($event)',
+    '(compositionstart)': 'handleCompositionStart()',
+    '(compositionend)': 'handleCompositionEnd($event)',
     '(keydown)': 'handleKeyDown($event)',
     '(mousedown)': 'focusedViaClick = true',
     '(focus)': 'handleFocus()',
@@ -773,8 +775,50 @@ export class CngxInputMask {
       return;
     }
 
+    if (
+      event.inputType === 'insertCompositionText' ||
+      event.inputType === 'deleteCompositionText'
+    ) {
+      // IME composition writes interim text straight into the field (the
+      // event is not cancelable mid-composition per the Input Events spec).
+      // Let it proceed; handleCompositionEnd reconciles the committed text
+      // through the regular insert path.
+      return;
+    }
+
     if (event.inputType.startsWith('insert') || event.inputType.startsWith('delete')) {
       event.preventDefault();
+    }
+  }
+
+  // Selection captured at compositionstart (raw mask coordinates, prefix
+  // already stripped) so the committed text lands where composition began.
+  private compositionSelStart = 0;
+  private compositionSelEnd = 0;
+
+  /** @internal */
+  protected handleCompositionStart(): void {
+    const el = this.el.nativeElement;
+    const prefixLen = this.prefix().length;
+    this.compositionSelStart = Math.max(0, (el.selectionStart ?? 0) - prefixLen);
+    this.compositionSelEnd = Math.max(0, (el.selectionEnd ?? 0) - prefixLen);
+  }
+
+  /** @internal */
+  protected handleCompositionEnd(event: CompositionEvent): void {
+    const el = this.el.nativeElement;
+    const tokens = this.tokens();
+    const prefixLen = this.prefix().length;
+
+    // Discard the interim IME buffer the browser rendered into the field and
+    // restore the last masked render, then run the committed text through the
+    // regular insert path (token filtering, transforms, pattern switching).
+    el.value = this.maskedValue();
+    const caret = Math.min(this.compositionSelStart, tokens.length) + prefixLen;
+    el.setSelectionRange(caret, caret);
+
+    if (event.data) {
+      this.insertChars(event.data, this.compositionSelStart, this.compositionSelEnd, tokens);
     }
   }
 

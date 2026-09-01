@@ -246,6 +246,77 @@ describe('CngxInputMask', () => {
     });
   });
 
+  // ── IME composition ─────────────────────────────────────────────────
+
+  describe('IME composition', () => {
+    function composeText(
+      input: HTMLInputElement,
+      interim: string,
+      committed: string,
+      cursorPos: number,
+    ): void {
+      input.setSelectionRange(cursorPos, cursorPos);
+      input.dispatchEvent(new CompositionEvent('compositionstart'));
+      // The IME writes interim text straight into the field.
+      input.dispatchEvent(
+        new InputEvent('beforeinput', {
+          inputType: 'insertCompositionText',
+          data: interim,
+          cancelable: true,
+        }),
+      );
+      input.value = interim;
+      input.dispatchEvent(new CompositionEvent('compositionend', { data: committed }));
+    }
+
+    it('does not cancel insertCompositionText mid-composition', () => {
+      const { input } = setup({ mask: '0000' });
+      input.setSelectionRange(0, 0);
+      input.dispatchEvent(new CompositionEvent('compositionstart'));
+      const event = new InputEvent('beforeinput', {
+        inputType: 'insertCompositionText',
+        data: '1',
+        cancelable: true,
+      });
+      input.dispatchEvent(event);
+      expect(event.defaultPrevented).toBe(false);
+    });
+
+    it('reconciles the committed text through the mask on compositionend', () => {
+      const { input, directive, fixture } = setup({ mask: '0000' });
+      composeText(input, '１２３', '123', 0);
+      flush(fixture);
+      expect(directive.value()).toBe('123');
+      expect(input.value).toBe('123_');
+    });
+
+    it('drops committed chars the mask rejects', () => {
+      const { input, directive, fixture } = setup({ mask: '0000' });
+      composeText(input, 'かな', 'かな', 0);
+      flush(fixture);
+      expect(directive.value()).toBe('');
+      expect(input.value).toBe('____');
+    });
+
+    it('restores the masked render when composition is canceled', () => {
+      const { input, directive, fixture } = setup({ mask: '0000' });
+      typeSequence(input, '12', directive, fixture);
+      composeText(input, 'x', '', 2);
+      flush(fixture);
+      expect(directive.value()).toBe('12');
+      expect(input.value).toBe('12__');
+    });
+
+    it('inserts the committed text at the composition start position', () => {
+      const { input, directive, fixture } = setup({ mask: '0000' });
+      typeSequence(input, '34', directive, fixture);
+      composeText(input, '１２', '12', 0);
+      flush(fixture);
+      expect(directive.value()).toBe('1234');
+      expect(input.value).toBe('1234');
+    });
+  });
+
   // ── Delete ──────────────────────────────────────────────────────────
 
   describe('delete backward', () => {
