@@ -113,7 +113,9 @@ export function provideCngxStepper(
 export function provideCngxStepperAt(...features: readonly CngxStepperFeature[]): Provider[] {
   const { config, i18n } = partitionFeatures(features);
   return [
-    ...provideStepperConfigAt(...config),
+    // Gate like i18n: an i18n-only call must not plant an empty config
+    // at this injector level and shadow an app-wide provideStepperConfig.
+    ...(config.length > 0 ? provideStepperConfigAt(...config) : []),
     ...(i18n.length > 0 ? [provideStepperI18n(...i18n)] : []),
   ];
 }

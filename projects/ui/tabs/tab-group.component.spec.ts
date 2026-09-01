@@ -308,10 +308,9 @@ describe('CngxTabGroup organism', () => {
     const host = fixture.nativeElement.querySelector(
       'cngx-tab-group',
     ) as HTMLElement;
-    // Note: presenter `orientation` Input has a literal default of
-    // 'horizontal'. This test pins the current behaviour so we
-    // notice if the cascade-from-config path ever lands.
-    expect(host.getAttribute('aria-orientation')).toBe('horizontal');
+    // The presenter resolves input ?? config ?? default, so an unset
+    // [orientation] lets the app-wide provideTabsConfig default win.
+    expect(host.getAttribute('aria-orientation')).toBe('vertical');
   });
 
   describe('error-aggregation badge + descriptor', () => {

@@ -6,6 +6,12 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import { CNGX_TABS_COMMIT_ACTION, type CngxTabsCommitActionSource } from './commit-action.token';
 import { CngxTabGroupPresenter, type CngxTabsCommitAction } from './presenter.directive';
+import {
+  provideTabsConfig,
+  withTabsCommitMode,
+  withTabsDefaultOrientation,
+  withTabsRovingLoop,
+} from './tabs-config';
 import type { CngxTabHandle } from './tab-group-host.token';
 
 function handle(
@@ -263,6 +269,26 @@ describe('CngxTabGroupPresenter', () => {
   it('loop defaults to true', () => {
     const { presenter } = setup();
     expect(presenter.loop()).toBe(true);
+  });
+
+  it('orientation / loop / commitMode resolve from CNGX_TABS_CONFIG when inputs are unset', () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideTabsConfig(
+          withTabsDefaultOrientation('vertical'),
+          withTabsRovingLoop(false),
+          withTabsCommitMode('pessimistic'),
+        ),
+      ],
+    });
+    const fixture = TestBed.createComponent(HostCmp);
+    fixture.detectChanges();
+    const presenter = fixture.debugElement.injector.get(CngxTabGroupPresenter);
+    expect(presenter.orientation()).toBe('vertical');
+    expect(presenter.loop()).toBe(false);
+    expect(presenter.commitMode()).toBe('pessimistic');
   });
 
   it('commitMode defaults to "optimistic"', () => {

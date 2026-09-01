@@ -195,4 +195,27 @@ describe('provideCngxStepperAt', () => {
     expect(scopedCfg.defaultOrientation).toBe('vertical');
     expect(scopedI18n.stepperLabel).toBe('Schrittfolge');
   });
+
+  it('an i18n-only call does not shadow an app-wide config with an empty one', () => {
+    @Component({
+      standalone: true,
+      template: '',
+      viewProviders: [
+        ...provideCngxStepperAt(withStepperI18nLabels({ stepperLabel: 'Schrittfolge' })),
+      ],
+    })
+    class I18nOnlyHost {}
+
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideCngxStepper(withStepperDefaultOrientation('vertical')),
+      ],
+    });
+    const fixture = TestBed.createComponent(I18nOnlyHost);
+    fixture.detectChanges();
+    const scopedCfg = fixture.debugElement.injector.get(CNGX_STEPPER_CONFIG);
+    // Root config must survive - the At call carried no config features.
+    expect(scopedCfg.defaultOrientation).toBe('vertical');
+  });
 });
