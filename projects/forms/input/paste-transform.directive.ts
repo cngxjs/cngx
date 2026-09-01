@@ -1,4 +1,5 @@
 import { Directive, ElementRef, inject, input } from '@angular/core';
+import { CngxInputMask } from './input-mask.directive';
 
 /**
  * Sanitizes pasted content before it enters the field.
@@ -45,6 +46,20 @@ export class CngxPasteTransform {
 
   /** Transform applied to the pasted text before insertion. */
   readonly transform = input.required<(pasted: string) => string>({ alias: 'cngxPasteTransform' });
+
+  constructor() {
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+      const mask = inject(CngxInputMask, { optional: true, self: true });
+      if (mask) {
+        console.warn(
+          '[cngxPasteTransform]: stacked on a cngxInputMask input - both directives ' +
+            'cancel the native paste and insert independently, so pasted text is ' +
+            'applied twice through uncoordinated paths. Remove cngxPasteTransform; ' +
+            "use the mask's [transform] / customTokens for per-character cleanup.",
+        );
+      }
+    }
+  }
 
   /** @internal - sanitize the clipboard text and insert it at the caret. */
   protected handlePaste(event: Event): void {

@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it, vi } from 'vitest';
 import { CngxPasteTransform } from './paste-transform.directive';
+import { CngxInputMask } from './input-mask.directive';
 
 const STRIP_NON_DIGITS = (s: string) => s.replace(/\D/g, '');
 
@@ -52,4 +53,27 @@ describe('CngxPasteTransform', () => {
     input.dispatchEvent(event);
     expect(event.defaultPrevented).toBe(false);
   });
+
+  it('warns in dev mode when stacked on a masked input', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const fixture = TestBed.createComponent(MaskedHost);
+    fixture.detectChanges();
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('[cngxPasteTransform]'));
+    warn.mockRestore();
+  });
+
+  it('does not warn without a co-located mask', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    setup();
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
+  });
 });
+
+@Component({
+  template: `<input cngxInputMask="0000" [cngxPasteTransform]="transform" />`,
+  imports: [CngxPasteTransform, CngxInputMask],
+})
+class MaskedHost {
+  readonly transform = STRIP_NON_DIGITS;
+}
