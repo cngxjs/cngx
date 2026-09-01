@@ -41,6 +41,11 @@ import {
 import { CNGX_ACTION_HOST_BRIDGE_FACTORY } from '../shared/action-host-bridge';
 import { createADActivationDispatcher } from '../shared/ad-activation-dispatcher';
 import { createArrayCommitHandler, type ArrayCommitHandler } from '../shared/array-commit-handler';
+import { CngxSelectAnnouncer } from '../shared/announcer';
+import {
+  CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY,
+  type CngxCommitErrorAnnouncePolicy,
+} from '../shared/commit-error-announcer';
 import {
   CNGX_CHIP_REMOVAL_HANDLER_FACTORY,
   type CngxChipRemovalHandler,
@@ -73,6 +78,7 @@ import {
 } from '../shared/option.model';
 import { CNGX_SELECT_PANEL_HOST, CNGX_SELECT_PANEL_VIEW_HOST } from '../shared/panel-host';
 import { resolveActionSelectConfig } from '../shared/action-select-config';
+import { mergeCommitState } from '../shared/internal/merged-commit-state';
 import { CNGX_DISMISS_HANDLER_FACTORY } from '../shared/dismiss-handler';
 import { resolveSelectConfig } from '../shared/internal/resolve-config';
 import { handlePageJumpKey } from '../shared/internal/page-jump-handler';
@@ -236,6 +242,16 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   readonly commitErrorDisplay = input<CngxSelectCommitErrorDisplay>(this.config.commitErrorDisplay);
   readonly announceChanges = input<boolean | null>(null);
   readonly announceTemplate = input<CngxSelectAnnouncerConfig['format'] | null>(null);
+  /**
+   * Commit-error announce policy. `'verbose'` reads the error message into
+   * the live region; `'soft'` announces a generic removal at the current
+   * selection count. Per-instance input wins over
+   * `CngxSelectConfig.commitErrorAnnouncePolicy`; default
+   * `{ kind: 'verbose', severity: 'assertive' }`.
+   */
+  readonly commitErrorAnnouncePolicy = input<CngxCommitErrorAnnouncePolicy>(
+    this.config.commitErrorAnnouncePolicy ?? { kind: 'verbose', severity: 'assertive' },
+  );
 
   /**
    * Quick-create handler. `null` disables the create path - slot still
@@ -550,7 +566,13 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     },
   );
 
-  readonly commitState = this.core.commitState;
+  /**
+   * Toggle/clear surface with the quick-create machine overlaid: create
+   * pending/error win while active, so `CNGX_STATEFUL` consumers see a
+   * quick-create in flight - the status counterpart of the `isCommitting`
+   * merge below.
+   */
+  readonly commitState = mergeCommitState(this.core.commitState, this.createCommitController.state);
   /**
    * `true` while either the toggle/clear or quick-create commit is
    * pending. The two run on separate controllers but a consumer
@@ -676,6 +698,24 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   private lastCommittedValues: T[] = [];
   private readonly hasEmittedInitial = signal(false);
 
+  private readonly commitErrorAnnouncer = inject(CngxSelectAnnouncer);
+  private readonly announceCommitError = inject(CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY)({
+    deps: {
+      announcer: this.commitErrorAnnouncer,
+      commitErrorMessage: (err) => this.core.commitErrorMessage(err),
+      // Soft policy: generic removal at the CURRENT selection count - the
+      // announcer's scalar-shaped count/multi args are replaced here.
+      softAnnounce: (opt, action) =>
+        this.core.announce(
+          opt as CngxSelectOptionDef<T> | null,
+          action,
+          this.values().length,
+          true,
+        ),
+    },
+    policy: this.commitErrorAnnouncePolicy,
+  });
+
   private readonly commitHandler: ArrayCommitHandler<T> = createArrayCommitHandler<T>({
     values: this.values,
     compareWith: this.compareWith,
@@ -699,6 +739,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     },
     onStateChange: (status) => this.stateChange.emit(status),
     onError: (err) => this.commitError.emit(err),
+    announceError: (err) => this.announceCommitError(err),
   });
 
   /**
