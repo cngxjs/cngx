@@ -359,6 +359,39 @@ describe('CngxActionSelect - async + error flow', () => {
     flush(fixture);
     expect(select.value()).toEqual({ id: 'p', name: 'Purple' });
   });
+
+  it('commitState surfaces a pending quick-create (dedicated controller, merged view)', () => {
+    const { fixture, host, select } = setup();
+    const subject = new Subject<Tag>();
+    host.quickCreateAction.set(() => subject);
+    flush(fixture);
+    select.actionCallbacks().commit({ label: 'Purple' });
+    flush(fixture);
+    // The create runs on its own controller, but CNGX_STATEFUL consumers of
+    // commitState still see it in flight through the merged view.
+    expect(select.commitState.isPending()).toBe(true);
+    expect(select.isCommitting()).toBe(true);
+    subject.next({ id: 'p', name: 'Purple' });
+    subject.complete();
+    flush(fixture);
+    expect(select.commitState.isPending()).toBe(false);
+    expect(select.isCommitting()).toBe(false);
+  });
+
+  it('commitState surfaces a quick-create failure with the real error', () => {
+    const { fixture, host, select } = setup();
+    const boom = new Error('server down');
+    host.quickCreateAction.set(() => {
+      throw boom;
+    });
+    flush(fixture);
+    select.actionCallbacks().commit({ label: 'Purple' });
+    flush(fixture);
+    expect(select.commitState.status()).toBe('error');
+    expect(select.commitState.error()).toBe(boom);
+    // The action slot's error context reads the create machine directly.
+    expect(select.actionError()).toBe(boom);
+  });
 });
 
 describe('CngxActionSelect - dismiss guard', () => {

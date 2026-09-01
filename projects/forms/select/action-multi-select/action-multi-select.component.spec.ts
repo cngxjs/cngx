@@ -320,6 +320,23 @@ describe('CngxActionMultiSelect - async + error flow', () => {
     expect(select.values()).toEqual([{ id: 't1', name: 'Design' }]);
     expect(host.stateLog[host.stateLog.length - 1]).toBe('error');
   });
+
+  it('commitState surfaces quick-create pending and error through the merged view', () => {
+    const { fixture, host, select } = setup();
+    const subject = new Subject<Tag>();
+    host.quickCreateAction.set(() => subject);
+    flush(fixture);
+    select.actionCallbacks().commit({ label: 'Purple' });
+    flush(fixture);
+    // Create runs on the dedicated controller; CNGX_STATEFUL consumers of
+    // commitState still see it pending - status counterpart of isCommitting.
+    expect(select.commitState.isPending()).toBe(true);
+    const boom = new Error('server down');
+    subject.error(boom);
+    flush(fixture);
+    expect(select.commitState.status()).toBe('error');
+    expect(select.commitState.error()).toBe(boom);
+  });
 });
 
 describe('CngxActionMultiSelect - dismiss guard', () => {
