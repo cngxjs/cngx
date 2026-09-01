@@ -101,4 +101,21 @@ describe('CngxStatCoordinator', () => {
     expect(coordinator.labelledBy()).toBeNull();
     expect(coordinator.orderedIds()).toEqual([]);
   });
+
+  it('a stale unregister does not evict a live same-kind replacement', () => {
+    const coordinator = TestBed.runInInjectionContext(() => new CngxStatCoordinator());
+    coordinator.register('label', 'old-id');
+    // Register-before-destroy: the replacement lands before the old slot
+    // tears down.
+    coordinator.register('label', 'new-id');
+    coordinator.unregister('label', 'old-id');
+    expect(coordinator.orderedIds()).toEqual(['new-id']);
+  });
+
+  it('an id-less unregister keeps the legacy unconditional behavior', () => {
+    const coordinator = TestBed.runInInjectionContext(() => new CngxStatCoordinator());
+    coordinator.register('label', 'id-1');
+    coordinator.unregister('label');
+    expect(coordinator.orderedIds()).toEqual([]);
+  });
 });

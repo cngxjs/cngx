@@ -434,7 +434,12 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
         return;
       }
 
-      if (current === 'success' && (previous === 'loading' || previous === 'refreshing')) {
+      // Route by result first: a load that settles with zero items is the
+      // empty phrase, no matter which busy status preceded it - "0 results
+      // found" is the filtered phrase, not the empty one.
+      if (current === 'success' && total === 0) {
+        announcementState.set(i18n.empty());
+      } else if (current === 'success' && (previous === 'loading' || previous === 'refreshing')) {
         const diff = total - prevTotal;
         if (diff > 0) {
           announcementState.set(i18n.loaded(diff, total));
@@ -443,8 +448,6 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
         }
       } else if (current === 'error') {
         announcementState.set(i18n.error());
-      } else if (current === 'success' && total === 0) {
-        announcementState.set(i18n.empty());
       }
 
       untracked(() => previousTotal.set(total));

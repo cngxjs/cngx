@@ -12,7 +12,7 @@ function useStatSlot(kind: CngxStatSlotKind): string {
   const registry = inject(CNGX_STAT, { optional: true });
   const id = nextUid(`cngx-stat-${kind}`);
   registry?.register(kind, id);
-  inject(DestroyRef).onDestroy(() => registry?.unregister(kind));
+  inject(DestroyRef).onDestroy(() => registry?.unregister(kind, id));
   return id;
 }
 

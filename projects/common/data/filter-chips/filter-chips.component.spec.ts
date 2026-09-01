@@ -123,6 +123,69 @@ describe('CngxFilterChips', () => {
     expect(filter.predicates().has('tags')).toBe(false);
   });
 
+  it('re-registers its predicate after filter.clear() wiped the stack', async () => {
+    const { fixture, filter } = await setup();
+    expect(filter.predicates().has('tags')).toBe(true);
+    filter.clear();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    // The chips are still visually selected-capable; UI and predicate stack
+    // must not diverge - the eviction watcher restores the registration.
+    expect(filter.predicates().has('tags')).toBe(true);
+  });
+
+  it('destroy leaves a foreign same-key registration alone (identity guard)', async () => {
+    const { fixture, host, filter } = await setup();
+    const foreign = (): boolean => true;
+    // A second party replaced our registration under the same key.
+    filter.addPredicate('tags', foreign);
+    host.mounted.set(false);
+    fixture.detectChanges();
+    expect(filter.predicates().get('tags')).toBe(foreign);
+  });
+
+  it('prunes selections whose option vanished from [options]', async () => {
+    TestBed.resetTestingModule();
+    @Component({
+      template: `
+        <ng-container [cngxFilter]="null" #filter="cngxFilter">
+          <cngx-filter-chips
+            label="Tags"
+            [options]="options()"
+            [optionLabel]="byLabel"
+            [optionValue]="byId"
+            [filterRef]="filter"
+            filterKey="tags"
+          />
+        </ng-container>
+      `,
+      imports: [CngxFilter, CngxFilterChips],
+    })
+    class ShrinkHost {
+      readonly options = signal<readonly unknown[]>(TAGS);
+      readonly byLabel = (t: unknown): string => (t as Tag).label;
+      readonly byId = (t: unknown): string => (t as Tag).id;
+      @ViewChild('filter', { static: true }) filterRef!: CngxFilter<unknown>;
+    }
+
+    const fixture = TestBed.createComponent(ShrinkHost);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const bridge = fixture.debugElement
+      .query(By.directive(CngxFilterChips))
+      .injector.get(CngxFilterChips) as CngxFilterChips<unknown, string>;
+
+    bridge.selectedValues.set(['red', 'blue']);
+    fixture.detectChanges();
+
+    fixture.componentInstance.options.set(TAGS.filter((t) => (t as Tag).id !== 'blue'));
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    // 'blue' has no chip anymore - it must not keep filtering invisibly.
+    expect(bridge.selectedValues()).toEqual(['red']);
+  });
+
   it('renders the required label as an aria-hidden visible caption; the inner group keeps the aria name', async () => {
     const { fixture } = await setup();
     const caption = (fixture.nativeElement as HTMLElement).querySelector(

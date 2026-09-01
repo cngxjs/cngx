@@ -134,4 +134,14 @@ describe('createManualState', () => {
     state.setSuccess(['x']);
     expect(state.isEmpty()).toBe(false);
   });
+
+  it('set("success") clears stale error and progress like setSuccess does', () => {
+    state.setError(new Error('boom'));
+    state.set('refreshing');
+    state.setProgress(40);
+    state.set('success');
+    expect(state.status()).toBe('success');
+    expect(state.error()).toBeUndefined();
+    expect(state.progress()).toBeUndefined();
+  });
 });

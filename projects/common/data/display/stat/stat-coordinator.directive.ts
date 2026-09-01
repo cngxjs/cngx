@@ -49,8 +49,13 @@ export class CngxStatCoordinator implements CngxStatRegistry {
   }
 
   /** {@inheritDoc CngxStatRegistry.unregister} */
-  unregister(kind: CngxStatSlotKind): void {
+  unregister(kind: CngxStatSlotKind, id?: string): void {
     this.slots.update((prev) => {
+      if (id !== undefined && prev.get(kind) !== id) {
+        // Register-before-destroy replacement: the outgoing slot must not
+        // evict the live slot's id from aria-labelledby.
+        return prev;
+      }
       const next = new Map(prev);
       next.delete(kind);
       return next;

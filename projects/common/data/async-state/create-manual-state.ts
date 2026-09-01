@@ -68,6 +68,10 @@ export function createManualState<T>(): ManualAsyncState<T> {
     set(newStatus: AsyncStatus): void {
       statusState.set(newStatus);
       if (newStatus === 'success') {
+        // Parity with setSuccess: a success transition must not leave stale
+        // error/progress residue behind.
+        errorState.set(undefined);
+        progressState.set(undefined);
         hadSuccess.set(true);
         lastUpdatedState.set(new Date());
       }

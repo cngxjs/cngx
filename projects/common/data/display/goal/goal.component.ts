@@ -20,7 +20,7 @@ import {
  * derived percent bound as a CSS custom property.
  *
  * ```html
- * <cngx-goal [value]="73" [max]="100" />
+ * <cngx-goal [value]="73" [max]="100" label="Quota attainment" />
  * <cngx-goal [value]="q()" [max]="target()" [valueTextFormat]="quotaText" />
  * ```
  *
@@ -45,6 +45,7 @@ import {
     '[attr.aria-valuemax]': 'maxValue()',
     '[attr.aria-valuenow]': 'now()',
     '[attr.aria-valuetext]': 'valueText()',
+    '[attr.aria-label]': 'label() ?? null',
     '[style.--cngx-goal-fill.%]': 'fillPercent()',
   },
   template: `<span class="cngx-goal__track"><span class="cngx-goal__fill"></span></span>`,
@@ -56,6 +57,14 @@ export class CngxGoal {
 
   /** Target the value works toward. Defaults to `100`. */
   readonly max = input<number>(100);
+
+  /**
+   * Accessible name for the progressbar (what the attainment measures, e.g.
+   * "Quarterly quota"). Mirrors the `label` input of the sibling KPI atoms;
+   * omit it only when an external `aria-labelledby` (e.g. a `cngxStatLabel`)
+   * names the bar instead.
+   */
+  readonly label = input<string | undefined>(undefined);
 
   /**
    * Override the `aria-valuetext` string. Receives `(now, max)` - the clamped

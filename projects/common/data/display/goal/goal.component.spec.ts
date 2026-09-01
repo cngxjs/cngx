@@ -31,6 +31,22 @@ describe('CngxGoal', () => {
     expect(el.getAttribute('aria-valuenow')).toBe('73');
   });
 
+  it('names the progressbar via [label] and stays silent without one', () => {
+    const { el } = setup();
+    expect(el.getAttribute('aria-label')).toBeNull();
+
+    TestBed.resetTestingModule();
+    @Component({
+      template: `<cngx-goal [value]="42" label="Quarterly quota" />`,
+      imports: [CngxGoal],
+    })
+    class LabelledHost {}
+    const fixture = TestBed.createComponent(LabelledHost);
+    fixture.detectChanges();
+    const labelled: HTMLElement = fixture.nativeElement.querySelector('cngx-goal');
+    expect(labelled.getAttribute('aria-label')).toBe('Quarterly quota');
+  });
+
   it('clamps aria-valuenow into [0, max]', () => {
     const { fixture, el, host } = setup();
     host.value.set(140);

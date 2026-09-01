@@ -13,7 +13,12 @@ import { injectAsyncRegistry } from '../async-registry/provide-async-registry';
 export interface InjectAsyncStateOptions {
   /**
    * Debounce time in ms for signal dependency changes.
-   * Prevents request storms when multiple signals change rapidly.
+   * Coalesces rapid changes into one state transition and one consumed
+   * result. Note: a promise-returning `fn` still runs once per change -
+   * the invocation is what tracks its signals - but only the freshest
+   * capture is consumed; superseded captures are observed and discarded.
+   * Cold Observables cost nothing until subscribed, so for them the
+   * debounce fully prevents request storms.
    * @default 50
    */
   debounce?: number;
@@ -175,6 +180,13 @@ export function injectAsyncState<T>(
     }
 
     const captured = result;
+    if (!isObservable(captured)) {
+      // The promise's work is already running (the invocation is the
+      // tracking probe). A rapid follow-up change supersedes this capture
+      // before the timer consumes it - observe the rejection here so a
+      // superseded failure never surfaces as an unhandled rejection.
+      captured.then(undefined, () => undefined);
+    }
     debounceTimer = setTimeout(() => {
       debounceTimer = undefined;
       void executeQuery(() => captured);

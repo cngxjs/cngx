@@ -70,7 +70,12 @@ export function formatDelta(
   const abs = Math.abs(value);
   const prefix = value > 0 ? '+' : '';
   if (mode === 'percent') {
-    const num = format ? new Intl.NumberFormat(locale, format).format(abs) : abs.toFixed(1);
+    // Locale-aware like absolute mode: toFixed would hardcode the "." decimal
+    // separator regardless of locale.
+    const num = new Intl.NumberFormat(
+      locale,
+      format ?? { minimumFractionDigits: 1, maximumFractionDigits: 1 },
+    ).format(abs);
     return `${prefix}${num}\u202f%`;
   }
   const num = format ? new Intl.NumberFormat(locale, format).format(abs) : abs.toLocaleString(locale);

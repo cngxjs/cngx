@@ -3,6 +3,28 @@ import type { CngxAsyncState } from '@cngx/core/utils';
 import { firstValueFrom, isObservable, type Observable } from 'rxjs';
 
 import { createManualState, type ManualAsyncState } from './create-manual-state';
+import { injectAsyncRegistry } from '../async-registry/provide-async-registry';
+
+/**
+ * Configuration options for `createAsyncState`.
+ *
+ * @category common/data/async-state
+ */
+export interface CreateAsyncStateOptions {
+  /**
+   * Human-readable label surfaced in `CngxAsyncRegistry.activeOperations`.
+   * Display only - never the registry key. Ignored unless `register` is set.
+   */
+  label?: string;
+
+  /**
+   * When `true`, register this state in the ambient `CngxAsyncRegistry` (if
+   * one is provided via `provideAsyncRegistry()`) for the injector's lifetime,
+   * and unregister automatically on destroy. Defaults to `false` - a no-op for
+   * existing callers, and a no-op when no registry is provided.
+   */
+  register?: boolean;
+}
 
 /**
  * Writable async state for mutations (POST/PUT/DELETE).
@@ -47,7 +69,7 @@ export interface MutableAsyncState<T> extends CngxAsyncState<T> {
  *
  * @category common/data/async-state
  */
-export function createAsyncState<T>(): MutableAsyncState<T> {
+export function createAsyncState<T>(options?: CreateAsyncStateOptions): MutableAsyncState<T> {
   const destroyRef = inject(DestroyRef);
   const state: ManualAsyncState<T> = createManualState<T>();
 
@@ -57,6 +79,16 @@ export function createAsyncState<T>(): MutableAsyncState<T> {
     abortController?.abort();
     abortController = undefined;
   });
+
+  // Same opt-in observability injectAsyncState offers: without it, mutations
+  // built here are invisible to CngxAsyncRegistry.isAnythingLoading.
+  if (options?.register) {
+    const registry = injectAsyncRegistry();
+    if (registry) {
+      const operationId = registry.register(state, options.label);
+      destroyRef.onDestroy(() => registry.unregister(operationId));
+    }
+  }
 
   return {
     status: state.status,

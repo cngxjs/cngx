@@ -14,8 +14,12 @@ export type CngxStatSlotKind = 'label' | 'value' | 'delta' | 'caption';
 export interface CngxStatRegistry {
   /** Register (or replace) the id contributed by `kind`. */
   register(kind: CngxStatSlotKind, id: string): void;
-  /** Withdraw the id contributed by `kind`. */
-  unregister(kind: CngxStatSlotKind): void;
+  /**
+   * Withdraw the id contributed by `kind`. When `id` is given, the
+   * withdrawal applies only while that id is still the registered one -
+   * a register-before-destroy replacement is left alone.
+   */
+  unregister(kind: CngxStatSlotKind, id?: string): void;
 }
 
 /** DI token carrying the {@link CngxStatRegistry} a `CngxStat` provides. */

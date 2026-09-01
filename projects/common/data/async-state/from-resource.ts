@@ -1,5 +1,7 @@
-import { computed, effect, type Resource, signal } from '@angular/core';
-import type { AsyncStatus, CngxAsyncState } from '@cngx/core/utils';
+import { type Resource } from '@angular/core';
+import type { CngxAsyncState } from '@cngx/core/utils';
+
+import { buildResourceBridge } from './resource-bridge';
 
 /**
  * Bridge that projects an Angular `Resource<T>` onto `CngxAsyncState<T>`.
@@ -26,72 +28,5 @@ import type { AsyncStatus, CngxAsyncState } from '@cngx/core/utils';
  * @category common/data/async-state
  */
 export function fromResource<T>(ref: Resource<T>): CngxAsyncState<T> {
-  // Track whether a successful load has ever occurred.
-  // Needed because ResourceStatus has no "first load" concept.
-  const hadSuccess = signal(false);
-
-  effect(() => {
-    const s = ref.status();
-    if (s === 'resolved' || s === 'local') {
-      hadSuccess.set(true);
-    }
-  });
-
-  const status = computed((): AsyncStatus => {
-    switch (ref.status()) {
-      case 'idle':
-        return 'idle';
-      case 'loading':
-        return 'loading';
-      case 'reloading':
-        return 'refreshing';
-      case 'resolved':
-      case 'local':
-        return 'success';
-      case 'error':
-        return 'error';
-    }
-  });
-
-  const data = computed(() => (ref.hasValue() ? ref.value() : undefined));
-  const error = computed(() => ref.error());
-
-  const isLoading = computed(() => status() === 'loading');
-  const isPending = computed(() => false); // resource() has no mutation concept
-  const isRefreshing = computed(() => status() === 'refreshing');
-  const isBusy = computed(() => ref.isLoading());
-  const isFirstLoad = computed(() => !hadSuccess() && (isBusy() || status() === 'idle'));
-  const isEmpty = computed(() => {
-    const d = data();
-    return d == null || (Array.isArray(d) && d.length === 0);
-  });
-  const hasData = computed(() => ref.hasValue() && !isEmpty());
-  const isSettled = computed(() => {
-    const s = status();
-    return s === 'success' || s === 'error';
-  });
-  const lastUpdated = signal<Date | undefined>(undefined);
-
-  effect(() => {
-    const s = ref.status();
-    if (s === 'resolved' || s === 'local') {
-      lastUpdated.set(new Date());
-    }
-  });
-
-  return {
-    status,
-    data,
-    error,
-    progress: signal(undefined).asReadonly(),
-    isLoading,
-    isPending,
-    isRefreshing,
-    isBusy,
-    isFirstLoad,
-    isEmpty,
-    hasData,
-    isSettled,
-    lastUpdated: lastUpdated.asReadonly(),
-  };
+  return buildResourceBridge(ref);
 }
