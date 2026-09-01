@@ -5,7 +5,6 @@ import {
   computed,
   contentChild,
   Directive,
-  effect,
   inject,
   input,
   signal,
@@ -20,6 +19,7 @@ import {
   type CngxAsyncState,
 } from '@cngx/core/utils';
 
+import { createStateBridge } from '../internal/state-bridge';
 import { CngxLoadingIndicator } from '../loading/loading-indicator';
 import { CngxToaster } from '../toast/toast.service';
 
@@ -118,7 +118,7 @@ export class CngxAsyncErrorTpl {
  * @slot cngxAsyncContent Rendered on success; gets the resolved value.
  * @slot cngxAsyncSkeleton Rendered during the first load.
  * @slot cngxAsyncEmpty Rendered when the value resolves to nothing.
- * @slot cngxAsyncError Rendered on failure; gets the error and a retry callback.
+ * @slot cngxAsyncError Rendered on failure; gets the error as `$implicit` (use `let-err`).
  *
  * <example-url>http://localhost:4200/#/forms/filter-builder/filter-builder-async-state/loading-error-content-branches-via-cngx-async-container</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/async-container/cngx-async-container-full-control-toast</example-url>
@@ -270,38 +270,32 @@ export class CngxAsyncContainer<T> {
   protected readonly announcement = signal<string>('');
 
   constructor() {
-    let previousStatus: AsyncStatus = 'idle';
+    // Shared bridge plumbing: tracker + guarded effect + untracked body -
+    // same seam as the *On directives, no hand-rolled previous tracking.
+    createStateBridge(
+      () => this.state().status(),
+      (status, prev) => {
+        if (status === 'pending' || prev === 'pending') {
+          return;
+        }
 
-    effect(() => {
-      const s = this.state();
-      const status = s.status();
+        if (prev === 'idle' && status === 'loading') {
+          this.announcement.set('Loading content');
+        } else if (prev === 'loading' && status === 'success') {
+          this.announcement.set('Content loaded');
+        } else if (prev === 'loading' && status === 'error') {
+          this.announcement.set('Error loading content');
+        } else if (status === 'refreshing') {
+          this.announcement.set('Refreshing content');
+        } else if (prev === 'refreshing' && status === 'success') {
+          this.announcement.set('Content refreshed');
+        } else if (prev === 'refreshing' && status === 'error') {
+          this.announcement.set('Refresh failed');
+        }
 
-      if (status === previousStatus) {
-        return;
-      }
-      const prev = previousStatus;
-      previousStatus = status;
-
-      if (status === 'pending' || prev === 'pending') {
-        return;
-      }
-
-      if (prev === 'idle' && status === 'loading') {
-        this.announcement.set('Loading content');
-      } else if (prev === 'loading' && status === 'success') {
-        this.announcement.set('Content loaded');
-      } else if (prev === 'loading' && status === 'error') {
-        this.announcement.set('Error loading content');
-      } else if (status === 'refreshing') {
-        this.announcement.set('Refreshing content');
-      } else if (prev === 'refreshing' && status === 'success') {
-        this.announcement.set('Content refreshed');
-      } else if (prev === 'refreshing' && status === 'error') {
-        this.announcement.set('Refresh failed');
-      }
-
-      this.fireToast(status);
-    });
+        this.fireToast(status);
+      },
+    );
   }
 
   private fireToast(status: AsyncStatus): void {

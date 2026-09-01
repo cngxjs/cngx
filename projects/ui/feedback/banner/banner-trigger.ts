@@ -1,4 +1,4 @@
-import { Component, DestroyRef, effect, inject, input } from '@angular/core';
+import { Component, DestroyRef, effect, inject, input, untracked } from '@angular/core';
 
 import type { AlertSeverity } from '../alert/alert';
 import { CngxBanner } from './banner.service';
@@ -75,6 +75,8 @@ export class CngxBannerTrigger {
     }
     const banner = this.banner;
 
+    // Input reads stay tracked (message/severity updates re-show under the
+    // same id); only the service calls leave the reactive graph.
     effect(() => {
       const show = this.when();
       const id = this.id();
@@ -82,15 +84,16 @@ export class CngxBannerTrigger {
       if (show) {
         const label = this.actionLabel();
         const handler = this.actionHandler();
-        banner.show({
+        const config = {
           message: this.message(),
           id,
           severity: this.severity(),
           dismissible: this.dismissible(),
           action: label && handler ? { label, handler } : undefined,
-        });
+        };
+        untracked(() => banner.show(config));
       } else {
-        banner.dismiss(id);
+        untracked(() => banner.dismiss(id));
       }
     });
 
