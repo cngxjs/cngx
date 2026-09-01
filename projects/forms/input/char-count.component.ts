@@ -91,7 +91,29 @@ export class CngxCharCount {
 
   /** @internal - current character count, updated via DOM input events. */
   private readonly lengthState = signal(0);
-  protected readonly currentLength = this.lengthState.asReadonly();
+
+  /** @internal - true once a sibling DOM input was found and wired up. */
+  private readonly domBound = signal(false);
+
+  /**
+   * @internal - DOM-driven length once an input is wired; before that (and
+   * when no sibling DOM input exists) falls back to the presenter's
+   * FieldState value signal, so the counter stays live for custom controls.
+   */
+  protected readonly currentLength = computed(() => {
+    if (this.domBound()) {
+      return this.lengthState();
+    }
+    const value = this.presenter.fieldState().value();
+    if (typeof value === 'string') {
+      return value.length;
+    }
+    if (typeof value === 'number' || typeof value === 'bigint') {
+      return String(value).length;
+    }
+    // Objects/booleans/null have no meaningful character count.
+    return 0;
+  });
 
   /** Whether current length exceeds maxLength. */
   readonly isOver = computed(() => {
@@ -119,10 +141,13 @@ export class CngxCharCount {
         | null;
 
       if (!inputEl) {
+        // No sibling DOM input: currentLength keeps deriving from the
+        // presenter's FieldState value signal.
         return;
       }
 
       this.lengthState.set(inputEl.value.length);
+      this.domBound.set(true);
 
       const handler = () => this.lengthState.set(inputEl.value.length);
       inputEl.addEventListener('input', handler);
