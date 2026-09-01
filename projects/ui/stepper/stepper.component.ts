@@ -537,7 +537,6 @@ export class CngxStepper implements CngxStepPanelHost {
     presenter: this.presenter,
     hostElement: this.hostElement,
     direction: injectDirection(),
-    flatStepCount: () => this.flatSteps().length,
     stepButtonIdFor: (id) => `${id}-header`,
     // Defers the post-move focus to afterNextRender so arrow-key
     // navigation across a collapsed group boundary lands on the target

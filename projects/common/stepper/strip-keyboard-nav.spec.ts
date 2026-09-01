@@ -8,15 +8,25 @@ import type { CngxStepperHost } from './stepper-host.token';
 interface FakeHostOptions {
   readonly activeId?: string;
   readonly orientation?: 'horizontal' | 'vertical';
+  readonly busy?: boolean;
+  readonly stepIds?: readonly string[];
+  readonly disabledIds?: readonly string[];
 }
 
 function makeHost(opts: FakeHostOptions = {}) {
   const selectNext = vi.fn();
   const selectPrevious = vi.fn();
   const select = vi.fn();
+  const stepIds = opts.stepIds ?? ['s0', 's1', 's2'];
+  const disabled = new Set(opts.disabledIds ?? []);
   const host = {
     activeStepId: signal<string | null>(opts.activeId ?? 's0'),
     orientation: signal(opts.orientation ?? 'horizontal'),
+    busy: signal(opts.busy ?? false),
+    intendedStepIndex: signal<number | undefined>(undefined),
+    stepsOnly: signal(
+      stepIds.map((id) => ({ id, disabled: () => disabled.has(id) })),
+    ),
     selectNext,
     selectPrevious,
     select,
@@ -39,7 +49,6 @@ function nav(host: CngxStepperHost, el: HTMLElement, direction: 'ltr' | 'rtl') {
     presenter: host,
     hostElement: el,
     direction: signal<'ltr' | 'rtl'>(direction),
-    flatStepCount: () => 3,
     stepButtonIdFor: (id) => `${id}-header`,
   });
 }
@@ -123,4 +132,27 @@ describe('createStepperStripKeyboardNav (vertical) is direction-invariant', () =
       expect(selectPrevious).toHaveBeenCalledOnce();
     });
   }
+});
+
+describe('createStepperStripKeyboardNav - busy gate and disabled-skip', () => {
+  it('swallows the back-arrow while a commit is in flight', () => {
+    const { host, selectPrevious } = makeHost({ busy: true });
+    const { el, button } = makeStrip();
+    const handler = nav(host, el, 'ltr');
+
+    const event = press(el, button, handler, 'ArrowLeft');
+    expect(event.defaultPrevented).toBe(true);
+    expect(selectPrevious).not.toHaveBeenCalled();
+  });
+
+  it('Home skips leading disabled steps, End skips trailing ones', () => {
+    const { host, select } = makeHost({ disabledIds: ['s0', 's2'] });
+    const { el, button } = makeStrip();
+    const handler = nav(host, el, 'ltr');
+
+    press(el, button, handler, 'Home');
+    expect(select).toHaveBeenCalledWith(1);
+    press(el, button, handler, 'End');
+    expect(select).toHaveBeenLastCalledWith(1);
+  });
 });
