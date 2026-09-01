@@ -308,10 +308,9 @@ describe('CngxTabGroup organism', () => {
     const host = fixture.nativeElement.querySelector(
       'cngx-tab-group',
     ) as HTMLElement;
-    // Note: presenter `orientation` Input has a literal default of
-    // 'horizontal'. This test pins the current behaviour so we
-    // notice if the cascade-from-config path ever lands.
-    expect(host.getAttribute('aria-orientation')).toBe('horizontal');
+    // The presenter resolves input ?? config ?? default, so an unset
+    // [orientation] lets the app-wide provideTabsConfig default win.
+    expect(host.getAttribute('aria-orientation')).toBe('vertical');
   });
 
   describe('error-aggregation badge + descriptor', () => {
@@ -612,6 +611,43 @@ describe('CngxTabGroup organism', () => {
       expect(tabs[2].querySelector('.cngx-tabs__busy-spinner')).not.toBeNull();
       // Origin stays selected during pending.
       expect(tabs[0].getAttribute('aria-selected')).toBe('true');
+    });
+
+    it('releases focus back to the origin tab when a pessimistic commit is rejected', async () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(CommitHost);
+      let rejectCommit!: (v: boolean) => void;
+      fixture.componentInstance.action = () =>
+        new Promise<boolean>((resolve) => {
+          rejectCommit = resolve;
+        });
+      fixture.detectChanges();
+      const tabs = Array.from(
+        fixture.nativeElement.querySelectorAll(
+          'button[role="tab"]',
+        ) as NodeListOf<HTMLButtonElement>,
+      );
+      // Arrow to the target: focus follows the intended tab while the
+      // commit is in flight.
+      tabs[0].focus();
+      tabs[0].dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, cancelable: true }),
+      );
+      fixture.detectChanges();
+      expect(document.activeElement).toBe(tabs[1]);
+
+      rejectCommit(false);
+      await Promise.resolve();
+      await Promise.resolve();
+      fixture.detectChanges();
+      TestBed.tick();
+      // The refusal kept the roving stop on the origin - focus must not
+      // stay stranded on the tabindex="-1" target button.
+      expect(document.activeElement).toBe(tabs[0]);
+      expect(tabs[0].getAttribute('tabindex')).toBe('0');
     });
 
     it('mounts a polite live-region span that carries the in-flight phrase', () => {
@@ -2012,7 +2048,108 @@ describe('CngxTabGroup dismissable focus restoration', () => {
     // Focus did not fall to <body>; the group holds it.
     expect(document.activeElement).toBe(host);
   });
+
+  it('waits for an ASYNC removal before restoring focus and announces the landed close', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(AsyncCloseHost);
+    fixture.detectChanges();
+    const closeButtons = fixture.nativeElement.querySelectorAll(
+      '.cngx-tabs__close',
+    ) as NodeListOf<HTMLButtonElement>;
+    const live = fixture.nativeElement.querySelector(
+      '.cngx-tabs__live-region',
+    ) as HTMLElement;
+
+    closeButtons[1].click();
+    fixture.detectChanges();
+    TestBed.tick();
+    // The consumer has not removed the tab yet - no premature restore,
+    // no premature announcement.
+    expect(fixture.componentInstance.pendingId).toBe('b');
+    expect(live.textContent).toBe('');
+
+    fixture.componentInstance.flushRemoval();
+    fixture.detectChanges();
+    TestBed.tick();
+    TestBed.tick();
+
+    expect(live.textContent).toBe('Closed "b"');
+    const active = fixture.nativeElement.querySelector(
+      'button[role="tab"][aria-selected="true"]',
+    ) as HTMLButtonElement;
+    expect(document.activeElement).toBe(active);
+  });
+
+  it('handles OVERLAPPING async closes - each landing announces and restores focus', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(AsyncCloseHost);
+    fixture.detectChanges();
+    const closeButtons = fixture.nativeElement.querySelectorAll(
+      '.cngx-tabs__close',
+    ) as NodeListOf<HTMLButtonElement>;
+    const live = fixture.nativeElement.querySelector(
+      '.cngx-tabs__live-region',
+    ) as HTMLElement;
+
+    // Close b, then close c before b's removal has landed.
+    closeButtons[1].click();
+    fixture.detectChanges();
+    closeButtons[2].click();
+    fixture.detectChanges();
+    expect(live.textContent).toBe('');
+
+    fixture.componentInstance.flushRemoval(); // b lands
+    fixture.detectChanges();
+    TestBed.tick();
+    expect(live.textContent).toBe('Closed "b"');
+
+    fixture.componentInstance.flushRemoval(); // c lands later
+    fixture.detectChanges();
+    TestBed.tick();
+    expect(live.textContent).toBe('Closed "c"');
+    const active = fixture.nativeElement.querySelector(
+      'button[role="tab"][aria-selected="true"]',
+    ) as HTMLButtonElement;
+    expect(document.activeElement).toBe(active);
+  });
 });
+
+@Component({
+  standalone: true,
+  imports: [CngxTabGroup, CngxTab],
+  template: `
+    <cngx-tab-group
+      [closable]="true"
+      aria-label="Async close"
+      (tabClose)="onClose($event.id)"
+    >
+      @for (t of items(); track t) {
+        <div cngxTab [id]="t" [label]="t"></div>
+      }
+    </cngx-tab-group>
+  `,
+})
+class AsyncCloseHost {
+  readonly items = signal(['a', 'b', 'c']);
+  readonly pendingIds: string[] = [];
+  get pendingId(): string | null {
+    return this.pendingIds[0] ?? null;
+  }
+  onClose(id: string): void {
+    // Deferred removal - e.g. waiting for a server round-trip.
+    this.pendingIds.push(id);
+  }
+  flushRemoval(): void {
+    const id = this.pendingIds.shift();
+    if (id !== undefined) {
+      this.items.update((list) => list.filter((x) => x !== id));
+    }
+  }
+}
 
 @Component({
   standalone: true,

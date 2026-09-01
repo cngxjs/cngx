@@ -1,4 +1,13 @@
-import { afterNextRender, computed, type Injector, type Signal } from '@angular/core';
+import {
+  afterNextRender,
+  computed,
+  effect,
+  linkedSignal,
+  signal,
+  untracked,
+  type Injector,
+  type Signal,
+} from '@angular/core';
 
 import type { CngxTabsI18n } from '../i18n/tabs-i18n';
 import type { CngxTabCloseIconContext } from '../slots/tab-close-icon.directive';
@@ -43,6 +52,15 @@ export interface CngxTabDismissals {
   closeButtonLabel(tab: CngxTabHandle): string;
   /** Stable `*cngxTabCloseIcon` context (`{ tab }`) per tab. */
   closeIconContextFor(tab: CngxTabHandle): CngxTabCloseIconContext;
+  /**
+   * Live-region phrase confirming a landed close (`i18n.closedTab`).
+   * Derived from the registry transition - it updates when a requested
+   * close's id actually leaves the registry, so an async consumer
+   * removal announces on completion, not on request. Feed it into
+   * `createTabGroupAnnouncements` (options.closedAnnouncement) so the
+   * live region resolves one priority chain.
+   */
+  readonly closedAnnouncement: Signal<string>;
   /** Close a tab and restore focus to the new active tab / add button. */
   handleClose(tab: CngxTabHandle, event?: Event): void;
   /** Delete on a focused closable tab requests its close (APG). */
@@ -100,32 +118,101 @@ export function createTabDismissals(opts: CngxTabDismissalsOptions): CngxTabDism
 
   const isTabClosable = (tab: CngxTabHandle): boolean => tab.closable() ?? resolvedClosable();
 
+  // The close request only ASKS the consumer to remove the tab - the
+  // removal may land asynchronously (or never). Focus restore and the
+  // closed announcement key on a requested id actually leaving the
+  // registry, not on the next render after the request. Requests enter
+  // via handleClose (the only writer); landed ids are pruned on the
+  // next request, so the map stays interaction-bounded.
+  const pendingCloseLabels = signal<ReadonlyMap<string, string>>(new Map());
+
+  // Landed-close phrase, purely derived from the registry transition:
+  // an id that was present in the previous registry emission, carries a
+  // pending close request, and is gone from the current one has landed.
+  // `prev.source` supplies the departed handle (and its label) without
+  // a managed side-slot.
+  const closedAnnouncement = linkedSignal<readonly CngxTabHandle[], string>({
+    source: () => opts.host.tabs(),
+    computation: (tabs, prev) => {
+      if (prev === undefined) {
+        return '';
+      }
+      const pending = pendingCloseLabels();
+      const currentIds = new Set(tabs.map((tab) => tab.id));
+      const landed = prev.source.find((tab) => !currentIds.has(tab.id) && pending.has(tab.id));
+      if (landed === undefined) {
+        return prev.value;
+      }
+      return opts.i18n.closedTab(pending.get(landed.id) ?? '');
+    },
+  });
+
+  const restoreFocus = (): void => {
+    // Skin-agnostic lookup: `[role="tab"]` + `data-tab-id` are the
+    // ARIA/data contract every skin must honour (mirrors the keyboard
+    // nav's focus targeting); class names are skin-owned and a rename
+    // must not silently break focus restoration.
+    const activeId = opts.host.activeId();
+    const active =
+      activeId === null
+        ? null
+        : (Array.from(
+            opts.hostElement.querySelectorAll<HTMLElement>('[role="tab"]'),
+          ).find((button) => button.getAttribute('data-tab-id') === activeId) ?? null);
+    const add = opts.hostElement.querySelector<HTMLElement>('[data-tab-add]');
+    const target = active ?? add;
+    if (target) {
+      target.focus();
+      return;
+    }
+    opts.hostElement.tabIndex = -1;
+    opts.hostElement.focus();
+  };
+
+  // Pure side effect - no signal writes. The once-per-landing guard is
+  // plain imperative bookkeeping, not reactive state.
+  const focusRestoredIds = new Set<string>();
+  effect(
+    () => {
+      const tabs = opts.host.tabs();
+      const pending = pendingCloseLabels();
+      untracked(() => {
+        const landed = [...pending.keys()].filter(
+          (id) => !tabs.some((tab) => tab.id === id) && !focusRestoredIds.has(id),
+        );
+        if (landed.length === 0) {
+          return;
+        }
+        for (const id of landed) {
+          focusRestoredIds.add(id);
+        }
+        // Restore focus once the removal has rendered: the new active
+        // tab, then the add button, and finally the group element itself
+        // (made programmatically focusable) so focus never falls to
+        // `<body>` when the strip empties with no add button (APG).
+        afterNextRender(restoreFocus, { injector: opts.injector });
+      });
+    },
+    { injector: opts.injector },
+  );
+
   const handleClose = (tab: CngxTabHandle, event?: Event): void => {
     event?.stopPropagation();
     if (!isTabClosable(tab)) {
       return;
     }
+    pendingCloseLabels.update((current) => {
+      const next = new Map(
+        // Prune requests that already landed - keeps the map bounded and
+        // stops a later consumer-driven removal of a RE-ADDED same id
+        // from reading as a close.
+        [...current].filter(([id]) => opts.host.tabs().some((tab2) => tab2.id === id)),
+      );
+      next.set(tab.id, tab.label() ?? '');
+      focusRestoredIds.delete(tab.id);
+      return next;
+    });
     opts.host.requestClose(tab.id);
-    // Restore focus once the consumer's removal has rendered: the new
-    // active tab, then the add button, and finally the group element
-    // itself (made programmatically focusable) so focus never falls to
-    // `<body>` when the strip empties with no add button (APG).
-    afterNextRender(
-      () => {
-        const active = opts.hostElement.querySelector<HTMLElement>(
-          '.cngx-tabs__tab[aria-selected="true"]',
-        );
-        const add = opts.hostElement.querySelector<HTMLElement>('.cngx-tabs__add');
-        const target = active ?? add;
-        if (target) {
-          target.focus();
-          return;
-        }
-        opts.hostElement.tabIndex = -1;
-        opts.hostElement.focus();
-      },
-      { injector: opts.injector },
-    );
   };
 
   return {
@@ -141,6 +228,7 @@ export function createTabDismissals(opts: CngxTabDismissalsOptions): CngxTabDism
       }
       return ctx;
     },
+    closedAnnouncement: closedAnnouncement.asReadonly(),
     handleClose,
     handleTabKeydown: (tab, event) => {
       if (event.key === 'Delete' && isTabClosable(tab)) {

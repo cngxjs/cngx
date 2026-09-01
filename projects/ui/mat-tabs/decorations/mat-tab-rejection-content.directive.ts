@@ -69,7 +69,9 @@ export interface CngxMatTabRejectionContentContext {
  * Cascade resolution:
  *   1. Per-instance `*cngxMatTabRejectionContent` template wins
  *      via `contentChild(CngxMatTabRejectionContent)`.
- *   2. Library default - imperative `Renderer2.createElement('span')`
+ *   2. `CNGX_MAT_TABS_CONFIG.templates.rejection` (app-wide middle
+ *      tier, set via `withMatTabRejectionTemplate`).
+ *   3. Library default - imperative `Renderer2.createElement('span')`
  *      with `textContent = fallbackText` (the resolved
  *      `commitRolledBackTo(originLabel)` / `commitFailedRetry`
  *      phrase from `injectTabsI18n()`).

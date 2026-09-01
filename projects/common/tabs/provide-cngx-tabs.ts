@@ -111,7 +111,9 @@ export function provideCngxTabs(...features: readonly CngxTabsFeature[]): Enviro
 export function provideCngxTabsAt(...features: readonly CngxTabsFeature[]): Provider[] {
   const { config, i18n } = partitionFeatures(features);
   return [
-    ...provideTabsConfigAt(...config),
+    // Gate like i18n: an i18n-only call must not plant an empty config
+    // at this injector level and shadow an app-wide provideTabsConfig.
+    ...(config.length > 0 ? provideTabsConfigAt(...config) : []),
     ...(i18n.length > 0 ? [provideTabsI18n(...i18n)] : []),
   ];
 }

@@ -236,6 +236,7 @@ export class CngxTabGroup implements CngxTabPanelHost {
     host: this.presenter,
     hostElement: this.hostElement,
     direction: injectDirection(),
+    injector: this.injector,
   });
 
   /**
@@ -250,6 +251,7 @@ export class CngxTabGroup implements CngxTabPanelHost {
     config: this.config,
     ariaLabel: this.ariaLabel,
     ariaLabelledBy: this.ariaLabelledBy,
+    closedAnnouncement: this.dismiss.closedAnnouncement,
   });
 
   /**

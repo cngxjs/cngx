@@ -20,6 +20,7 @@ import {
 import type { Observable } from 'rxjs';
 
 import { CNGX_TABS_COMMIT_ACTION, type CngxTabsCommitActionSource } from './commit-action.token';
+import { injectTabsConfig } from './tabs-config';
 import { CNGX_TABS_COMMIT_HANDLER_FACTORY, type CngxTabsCommitHandler } from './commit-handler';
 import {
   CNGX_TAB_GROUP_HOST,
@@ -71,9 +72,29 @@ export type CngxTabsCommitAction = (
   ],
 })
 export class CngxTabGroupPresenter implements CngxTabGroupHost {
+  private readonly config = injectTabsConfig();
+
   readonly activeIndex = model<number>(0);
-  readonly orientation = input<'horizontal' | 'vertical'>('horizontal');
-  readonly loop = input<boolean>(true);
+
+  /**
+   * @internal Two-field alias - bind the public `[orientation]`; read
+   * the resolved {@link orientation} computed (input ?? config ?? default).
+   */
+  readonly orientationInput = input<'horizontal' | 'vertical' | undefined>(undefined, {
+    alias: 'orientation',
+  });
+  readonly orientation = computed<'horizontal' | 'vertical'>(
+    () => this.orientationInput() ?? this.config.defaultOrientation ?? 'horizontal',
+  );
+
+  /**
+   * @internal Two-field alias - bind the public `[loop]`; read the
+   * resolved {@link loop} computed (input ?? config ?? default).
+   */
+  readonly loopInput = input<boolean | undefined>(undefined, {
+    alias: 'loop',
+  });
+  readonly loop = computed<boolean>(() => this.loopInput() ?? this.config.defaultLoop ?? true);
 
   /**
    * Async-commit action gating the transition.
@@ -96,9 +117,9 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
    *
    * @internal Two-field alias - bind the public `[commitMode]`; read
    * the resolved {@link commitMode} computed (DI fallback mode wins
-   * when a routed action is active).
+   * when a routed action is active, else input ?? config ?? default).
    */
-  readonly commitModeInput = input<'optimistic' | 'pessimistic'>('optimistic', {
+  readonly commitModeInput = input<'optimistic' | 'pessimistic' | undefined>(undefined, {
     alias: 'commitMode',
   });
 
@@ -136,12 +157,15 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
    */
   readonly commitMode = computed<'optimistic' | 'pessimistic'>(() => {
     const source = this.resolveInjectedAction();
-    return source?.action() ? source.mode() : this.commitModeInput();
+    if (source?.action()) {
+      return source.mode();
+    }
+    return this.commitModeInput() ?? this.config.defaultCommitMode ?? 'optimistic';
   });
 
   /**
    * Emitted when a tab's close affordance is activated (the close
-   * button or Delete/Backspace on the focused tab). The presenter has
+   * button or Delete on the focused tab). The presenter has
    * already moved the active index onto the surviving neighbour; the
    * consumer removes the tab from its own data in the handler.
    */
@@ -218,12 +242,18 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
     this.tabsState.set([...current, handle]);
   }
 
-  unregister(id: string): void {
+  unregister(id: string, handle?: CngxTabHandle): void {
     const current = this.tabsState();
-    const next = current.filter((h) => h.id !== id);
-    if (next.length !== current.length) {
-      this.tabsState.set(next);
+    const entry = current.find((h) => h.id === id);
+    if (entry === undefined) {
+      return;
     }
+    // Instance guard: after an idempotent re-register replaced the stored
+    // handle, the superseded instance's destroy is a no-op.
+    if (handle !== undefined && entry !== handle) {
+      return;
+    }
+    this.tabsState.set(current.filter((h) => h !== entry));
   }
 
   /** {@inheritDoc CngxTabGroupHost.clearLastFailed} */
@@ -352,14 +382,20 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
       return;
     }
     const active = this.clampedIndex();
-    // Only closing a tab BEFORE the active one needs a pre-emptive
-    // index shift: the active tab moves down one slot once the consumer
+    // Closing a tab BEFORE the active one needs a pre-emptive index
+    // shift: the active tab moves down one slot once the consumer
     // removes the closed tab, so decrement to keep the same tab active.
-    // Closing the active tab (or one after it) needs no write -
-    // `clampedIndex` re-derives against the shorter array and lands on
-    // the next tab (or the new last when the closed tab was last).
+    // Closing the active tab mid-strip (or one after the active) needs
+    // no write - `clampedIndex` re-derives against the shorter array
+    // and lands on the next tab.
     if (index < active) {
       this.activeIndex.set(active - 1);
+    } else if (index === active && index === tabs.length - 1 && index > 0) {
+      // Closing the ACTIVE LAST tab: the derived clamp would land on the
+      // new last, but the [(activeIndex)] model itself would keep the
+      // now out-of-range value - clamp-write so two-way consumers see
+      // the real position.
+      this.activeIndex.set(index - 1);
     }
     this.tabClose.emit({ id, index });
   }
@@ -370,20 +406,19 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
 }
 
 /**
- * Structural equality for the tab registry. Compares length and
- * per-entry `id`, `disabled()`, `label()`, `subLabel()`, and
- * `closable()`.
+ * Registry equality for the tab registry signal: element-wise reference
+ * identity, not structural comparison. Two arrays are equal only when
+ * they carry the exact same handle instances in the same order.
  *
- * `errorAggregator`, `hasError`, and `errorMessage` are left out on
- * purpose. The handle is a stable per-tab reference injected once, and
- * the organism reads `tab.hasError()` / `tab.errorMessage()` reactively
- * off that handle (not off array identity), so the badge + descriptor
- * update on error-state changes without the registry array re-emitting.
- * Comparing them here would push the memoisation burden onto consumers
- * and break the structural-equal contract.
- *
- * Reading the signals here doesn't subscribe - the comparator runs
- * synchronously inside `signal.set()`, outside any tracking context.
+ * Handles are stable per-tab references - `label`, `disabled`,
+ * `hasError` and friends propagate through the handle's signals, so
+ * consumers update off the handle without the registry array
+ * re-emitting, and value comparison here would be redundant for an
+ * unchanged handle. For a REPLACED handle (idempotent re-register
+ * under an id collision) a value compare is actively wrong: it reports
+ * the value-identical new instance as equal, discards the write, and
+ * leaves the registry serving the destroyed instance's signals.
+ * Reference inequality is the change signal.
  *
  * @internal
  */
@@ -395,13 +430,7 @@ export function tabsEqual(a: readonly CngxTabHandle[], b: readonly CngxTabHandle
     return false;
   }
   for (let i = 0; i < a.length; i++) {
-    if (
-      a[i].id !== b[i].id ||
-      a[i].disabled() !== b[i].disabled() ||
-      a[i].label() !== b[i].label() ||
-      a[i].subLabel() !== b[i].subLabel() ||
-      a[i].closable() !== b[i].closable()
-    ) {
+    if (a[i] !== b[i]) {
       return false;
     }
   }

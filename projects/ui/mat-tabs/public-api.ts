@@ -26,11 +26,13 @@ export {
   CNGX_MAT_TABS_CONFIG,
   type CngxMatTabsConfig,
   type CngxMatTabsConfigFeature,
+  type CngxMatTabsTemplates,
   injectMatTabsConfig,
   provideMatTabsConfig,
   provideMatTabsConfigAt,
   withAnchorRetryAttempts,
   withHalfWiredSlotSink,
+  withMatTabRejectionTemplate,
 } from './mat-tabs-config';
 export {
   CNGX_MAT_TAB_HANDLE_FACTORY,

@@ -1,8 +1,6 @@
 import { signal } from '@angular/core';
 import { describe, expect, it } from 'vitest';
 
-import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
-
 import { tabsEqual } from './presenter.directive';
 import type { CngxTabHandle } from './tab-group-host.token';
 
@@ -23,95 +21,35 @@ function handle(
 }
 
 describe('tabsEqual', () => {
-  it('returns true for identical references', () => {
+  it('returns true for the identical array reference', () => {
     const a = [handle('a'), handle('b')];
     expect(tabsEqual(a, a)).toBe(true);
   });
 
-  it('returns true for two arrays with the same id / label / disabled per entry', () => {
+  it('returns true for two array wrappers around the same handle instances', () => {
+    const first = handle('a');
+    const second = handle('b');
+    expect(tabsEqual([first, second], [first, second])).toBe(true);
+  });
+
+  it('returns false for value-identical arrays of DIFFERENT instances - reference is the change signal', () => {
+    // The idempotent re-register replace path: a new instance with the
+    // same id/label/disabled must NOT compare equal, or the signal
+    // discards the write and keeps serving the destroyed instance.
     const a = [handle('a', { label: 'A' }), handle('b', { label: 'B' })];
     const b = [handle('a', { label: 'A' }), handle('b', { label: 'B' })];
-    expect(tabsEqual(a, b)).toBe(true);
+    expect(tabsEqual(a, b)).toBe(false);
   });
 
   it('returns false on length mismatch', () => {
-    const a = [handle('a'), handle('b')];
-    const b = [handle('a')];
-    expect(tabsEqual(a, b)).toBe(false);
+    const first = handle('a');
+    expect(tabsEqual([first, handle('b')], [first])).toBe(false);
   });
 
-  it('returns false when one entry id differs', () => {
-    const a = [handle('a'), handle('b')];
-    const b = [handle('a'), handle('z')];
-    expect(tabsEqual(a, b)).toBe(false);
-  });
-
-  it('returns false when one entry disabled flag differs', () => {
-    const a = [handle('a'), handle('b', { disabled: false })];
-    const b = [handle('a'), handle('b', { disabled: true })];
-    expect(tabsEqual(a, b)).toBe(false);
-  });
-
-  it('returns false when one entry label text differs', () => {
-    const a = [handle('a', { label: 'A' })];
-    const b = [handle('a', { label: 'A2' })];
-    expect(tabsEqual(a, b)).toBe(false);
-  });
-
-  it('returns false when one entry sub-label text differs', () => {
-    const a = [handle('a', { label: 'A', subLabel: '45' })];
-    const b = [handle('a', { label: 'A', subLabel: '46' })];
-    expect(tabsEqual(a, b)).toBe(false);
-  });
-
-  it('returns false when a sub-label is added to an otherwise identical entry', () => {
-    const a = [handle('a', { label: 'A' })];
-    const b = [handle('a', { label: 'A', subLabel: '45' })];
-    expect(tabsEqual(a, b)).toBe(false);
-  });
-
-  it('returns false when one entry closable flag differs', () => {
-    const a = [handle('a', { closable: false })];
-    const b = [handle('a', { closable: true })];
-    expect(tabsEqual(a, b)).toBe(false);
-  });
-
-  it('does NOT compare errorAggregator references - equal returns true even when aggregators differ', () => {
-    const stubAggregator = (hasErrorValue: boolean): CngxErrorAggregatorContract => ({
-      hasError: signal(hasErrorValue),
-      errorCount: signal(hasErrorValue ? 1 : 0),
-      activeErrors: signal<readonly string[]>([]),
-      errorLabels: signal<readonly string[]>([]),
-      shouldShow: signal(hasErrorValue),
-      announcement: signal(''),
-      addSource: () => {},
-      removeSource: () => {},
-    });
-    const a: CngxTabHandle[] = [
-      {
-        id: 'a',
-        label: signal('A'),
-        subLabel: signal(undefined),
-        disabled: signal(false),
-        errorAggregator: signal(stubAggregator(false)),
-        hasError: signal(false),
-        errorMessage: signal(undefined),
-        closable: signal(undefined),
-      },
-    ];
-    const b: CngxTabHandle[] = [
-      {
-        id: 'a',
-        label: signal('A'),
-        subLabel: signal(undefined),
-        disabled: signal(false),
-        errorAggregator: signal(stubAggregator(true)),
-        hasError: signal(true),
-        errorMessage: signal(undefined),
-        closable: signal(undefined),
-      },
-    ];
-    expect(tabsEqual(a, b)).toBe(true);
+  it('returns false when the same instances are reordered', () => {
+    const first = handle('a');
+    const second = handle('b');
+    expect(tabsEqual([first, second], [second, first])).toBe(false);
   });
 
   it('returns true on two empty arrays', () => {

@@ -31,6 +31,12 @@ export interface CngxTabsI18n {
   /** Accessible name for the add-tab button. */
   readonly addTab: string;
   /**
+   * Live-region confirmation once a closed tab's removal has actually
+   * landed in the registry. Receives the closed tab's label (or an
+   * empty string when unlabeled).
+   */
+  readonly closedTab: (label: string) => string;
+  /**
    * @deprecated Superseded by {@link commitRolledBackTo}. Retained as
    * the defensive fallback in `liveAnnouncement` when the origin
    * label is unresolvable - fires for unlabeled tabs or programmatic
@@ -58,6 +64,7 @@ const TABS_I18N_DEFAULTS: CngxTabsI18n = {
   nextTab: 'Next tab',
   closeTab: (label) => `Close "${label}"`,
   addTab: 'Add tab',
+  closedTab: (label) => (label ? `Closed "${label}"` : 'Tab closed'),
   commitFailedRetry: 'Tab change refused - retry?',
   commitInFlight: 'Switching tab…',
   commitRolledBackTo: (originLabel) => `Could not save changes - reverted to "${originLabel}".`,

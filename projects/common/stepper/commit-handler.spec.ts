@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
-import { of, Subject, throwError } from 'rxjs';
+import { BehaviorSubject, of, Subject, throwError } from 'rxjs';
 import { describe, expect, it } from 'vitest';
 
 import { createCommitController } from '@cngx/common/data';
@@ -98,6 +98,20 @@ describe('createStepperCommitHandler - complete-without-emit', () => {
     handler.beginTransition(0, 1, () => src, (accept) => calls.push(accept));
     src.next(true);
     src.complete();
+    expect(calls).toEqual([true]);
+  });
+
+  it('resolves once for a sync-emitting non-completing source - later emissions are ignored', () => {
+    const controller = createCommitController<number>();
+    const handler = createStepperCommitHandler({ controller });
+    const calls: boolean[] = [];
+    // Emits synchronously on subscribe (before the subscription handle
+    // binds) and never completes - the shape that used to re-resolve.
+    const src = new BehaviorSubject<boolean>(true);
+    handler.beginTransition(0, 1, () => src, (accept) => calls.push(accept));
+    expect(calls).toEqual([true]);
+    expect(controller.isCommitting()).toBe(false);
+    src.next(false);
     expect(calls).toEqual([true]);
   });
 });

@@ -2,7 +2,6 @@ import { Component, provideZonelessChangeDetection, type Type } from '@angular/c
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import {
-  NavigationCancel,
   NavigationEnd,
   provideRouter,
   Router,
@@ -280,7 +279,8 @@ describe('CngxTabsRouteSync', () => {
       providers: [provideZonelessChangeDetection(), provideRouter([])],
     });
     const router = TestBed.inject(Router);
-    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    // A guard-cancelled navigation resolves the navigate() promise false.
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(false);
     vi.spyOn(router, 'url', 'get').mockReturnValue('/');
 
     const fixture = TestBed.createComponent(RouteHost);
@@ -295,7 +295,6 @@ describe('CngxTabsRouteSync', () => {
     expect(navigateSpy).toHaveBeenCalledWith(['b']);
     expect(presenter.activeIndex()).toBe(0);
 
-    emit(router, new NavigationCancel(1, '/b', 'blocked by CanDeactivate'));
     fixture.detectChanges();
     await flushMicrotasks();
 
@@ -318,7 +317,7 @@ describe('CngxTabsRouteSync', () => {
 
     presenter.select(1);
     expect(presenter.activeIndex()).toBe(0);
-    emit(router, new NavigationEnd(1, '/b', '/b'));
+    // The mocked navigate() promise resolves true - the commit lands.
     fixture.detectChanges();
     await flushMicrotasks();
 
@@ -394,6 +393,57 @@ describe('CngxTabsRouteSync', () => {
     await flushMicrotasks();
 
     expect(presenter.activeIndex()).toBe(0);
+  });
+
+  it('matches through matrix params, percent-encoding, and aux outlets on the URL tail', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), provideRouter([])],
+    });
+    const router = TestBed.inject(Router);
+    vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    const urlSpy = vi.spyOn(router, 'url', 'get').mockReturnValue('/');
+
+    const fixture = TestBed.createComponent(RouteHost);
+    fixture.detectChanges();
+    await flushMicrotasks();
+    const presenter = fixture.debugElement.injector.get(CngxTabGroupPresenter);
+    expect(presenter.activeIndex()).toBe(0);
+
+    // Matrix params ride the segment, not the path - `/b;draft=1` is tab b.
+    urlSpy.mockReturnValue('/b;draft=1');
+    emit(router, new NavigationEnd(1, '/b;draft=1', '/b;draft=1'));
+    fixture.detectChanges();
+    await flushMicrotasks();
+    expect(presenter.activeId()).toBe('b');
+
+    // An aux outlet after the tail must not break the primary match.
+    urlSpy.mockReturnValue('/c(aside:x)');
+    emit(router, new NavigationEnd(2, '/c(aside:x)', '/c(aside:x)'));
+    fixture.detectChanges();
+    await flushMicrotasks();
+    expect(presenter.activeId()).toBe('c');
+  });
+
+  it('decodes percent-encoded URL segments before comparing against routeFor', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), provideRouter([])],
+    });
+    const router = TestBed.inject(Router);
+    vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    const urlSpy = vi.spyOn(router, 'url', 'get').mockReturnValue('/');
+
+    const fixture = TestBed.createComponent(NestedRouteHost);
+    // A routeFor emitting a raw (decoded) value must match its encoded URL form.
+    fixture.componentRef.setInput('routeFor', (h: { id: string }) => ['tab group', h.id]);
+    fixture.detectChanges();
+    await flushMicrotasks();
+    const presenter = fixture.debugElement.injector.get(CngxTabGroupPresenter);
+
+    urlSpy.mockReturnValue('/tab%20group/b');
+    emit(router, new NavigationEnd(1, '/tab%20group/b', '/tab%20group/b'));
+    fixture.detectChanges();
+    await flushMicrotasks();
+    expect(presenter.activeId()).toBe('b');
   });
 
   it('stays purely reflective on the nav-link path: NavigationEnd writes activeIndex, the commit-action never fires', async () => {

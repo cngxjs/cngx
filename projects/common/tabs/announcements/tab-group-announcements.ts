@@ -23,6 +23,13 @@ export interface CngxTabGroupAnnouncementsOptions {
   readonly ariaLabel: Signal<string | undefined>;
   /** Per-instance `aria-labelledby` Input on the organism. */
   readonly ariaLabelledBy: Signal<string | undefined>;
+  /**
+   * Landed-close phrase from `createTabDismissals`. When supplied,
+   * `liveAnnouncement` surfaces it while no commit phrase applies and
+   * expires it on the next commit activity, so a stale close can never
+   * re-enter (and re-announce through) the live region.
+   */
+  readonly closedAnnouncement?: Signal<string>;
 }
 
 /**
@@ -124,6 +131,7 @@ export function createTabGroupAnnouncements(
   options: CngxTabGroupAnnouncementsOptions,
 ): CngxTabGroupAnnouncements {
   const { presenter, i18n, config, ariaLabel, ariaLabelledBy } = options;
+  const closedAnnouncement = options.closedAnnouncement ?? ((): string => '');
 
   const tabsRoleDescription = computed<string>(
     () => config.fallbackLabels?.tabRoleDescription ?? 'tab list',
@@ -149,7 +157,39 @@ export function createTabGroupAnnouncements(
     equal: Object.is,
   });
 
+  // Close phrase with commit-activity expiry. `prev.source` carries the
+  // last-seen (phrase, status) pair: a NEW phrase (re)arms; a commit
+  // status change while armed spends the phrase, so a later return to
+  // idle re-renders '' instead of re-announcing the stale close.
+  const closedPhrase = linkedSignal<
+    { readonly phrase: string; readonly status: string },
+    string
+  >({
+    source: () => ({
+      phrase: closedAnnouncement(),
+      status: presenter.commitTransition.current(),
+    }),
+    computation: (src, prev) => {
+      if (prev === undefined) {
+        return src.phrase;
+      }
+      if (src.phrase !== prev.source.phrase) {
+        return src.phrase;
+      }
+      if (src.status !== prev.source.status) {
+        return '';
+      }
+      return prev.value;
+    },
+    equal: Object.is,
+  });
+
   const liveAnnouncement = computed<string>(() => {
+    // Read the close phrase EAGERLY: linkedSignal only observes status
+    // snapshots it is actually read under, so a lazy read at the idle
+    // arm would skip the intermediate 'pending' and never spend the
+    // phrase.
+    const closeConfirmation = closedPhrase();
     const current = presenter.commitTransition.current();
     if (current === 'pending') {
       return i18n.commitInFlight;
@@ -187,7 +227,9 @@ export function createTabGroupAnnouncements(
       }
       return positionPhrase;
     }
-    return '';
+    // Idle: the landed-close confirmation is the only phrase that may
+    // hold the region, and only until the next commit activity.
+    return closeConfirmation;
   });
 
   function statusPhrase(tab: CngxTabHandle): string {

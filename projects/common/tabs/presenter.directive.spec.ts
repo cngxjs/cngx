@@ -6,6 +6,12 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import { CNGX_TABS_COMMIT_ACTION, type CngxTabsCommitActionSource } from './commit-action.token';
 import { CngxTabGroupPresenter, type CngxTabsCommitAction } from './presenter.directive';
+import {
+  provideTabsConfig,
+  withTabsCommitMode,
+  withTabsDefaultOrientation,
+  withTabsRovingLoop,
+} from './tabs-config';
 import type { CngxTabHandle } from './tab-group-host.token';
 
 function handle(
@@ -94,6 +100,21 @@ describe('CngxTabGroupPresenter', () => {
     expect(presenter.tabs()).toBe(before);
   });
 
+  it('unregister with the registering handle only evicts that exact instance', () => {
+    const { presenter } = setup();
+    const original = handle('a');
+    presenter.register(original);
+    const replacement = handle('a');
+    presenter.register(replacement); // idempotent re-register replaces the entry
+    // The OLD instance's late destroy must not tear down the NEW entry.
+    presenter.unregister('a', original);
+    expect(presenter.tabs().map((t) => t.id)).toEqual(['a']);
+    expect(presenter.tabs()[0]).toBe(replacement);
+    // The live instance evicts itself normally.
+    presenter.unregister('a', replacement);
+    expect(presenter.tabs()).toEqual([]);
+  });
+
   it('select clamps the index against the registry length', () => {
     const { presenter } = setup();
     presenter.register(handle('a'));
@@ -179,16 +200,18 @@ describe('CngxTabGroupPresenter', () => {
     expect(presenter.activeIndex()).toBe(0);
   });
 
-  it('tabs() applies tabsEqual short-circuit on idempotent re-register', () => {
+  it('tabs() re-emits on idempotent re-register - the replacement instance must land', () => {
     const { presenter } = setup();
-    const a = handle('a');
-    presenter.register(a);
+    presenter.register(handle('a'));
     const before = presenter.tabs();
-    presenter.register(handle('a')); // same id, equal disabled+label
+    const replacement = handle('a'); // same id, value-identical fields
+    presenter.register(replacement);
     const after = presenter.tabs();
-    // Structural-equal short-circuit keeps the same array reference,
-    // preventing downstream computed cascades.
-    expect(after).toBe(before);
+    // Reference inequality is the change signal (tabsEqual): a
+    // value-compare would discard this write and leave the registry
+    // serving the superseded instance's signals.
+    expect(after).not.toBe(before);
+    expect(after[0]).toBe(replacement);
   });
 
   it('exposes commitState via the CNGX_STATEFUL contract', () => {
@@ -246,6 +269,26 @@ describe('CngxTabGroupPresenter', () => {
   it('loop defaults to true', () => {
     const { presenter } = setup();
     expect(presenter.loop()).toBe(true);
+  });
+
+  it('orientation / loop / commitMode resolve from CNGX_TABS_CONFIG when inputs are unset', () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideTabsConfig(
+          withTabsDefaultOrientation('vertical'),
+          withTabsRovingLoop(false),
+          withTabsCommitMode('pessimistic'),
+        ),
+      ],
+    });
+    const fixture = TestBed.createComponent(HostCmp);
+    fixture.detectChanges();
+    const presenter = fixture.debugElement.injector.get(CngxTabGroupPresenter);
+    expect(presenter.orientation()).toBe('vertical');
+    expect(presenter.loop()).toBe(false);
+    expect(presenter.commitMode()).toBe('pessimistic');
   });
 
   it('commitMode defaults to "optimistic"', () => {
@@ -481,6 +524,16 @@ describe('CngxTabGroupPresenter', () => {
       presenter.requestClose('c');
       remove('c');
       expect(presenter.activeId()).toBe('b');
+    });
+
+    it('closing the active last tab clamp-writes the activeIndex model', () => {
+      const { presenter, remove } = withTabs(['a', 'b', 'c']);
+      presenter.activeIndex.set(2);
+      presenter.requestClose('c');
+      remove('c');
+      // The [(activeIndex)] model itself must carry the real position -
+      // a derived-only clamp would leave two-way consumers holding 2.
+      expect(presenter.activeIndex()).toBe(1);
     });
 
     it('closing a tab before the active one keeps the same tab active', () => {

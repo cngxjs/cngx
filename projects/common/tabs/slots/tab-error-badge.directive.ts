@@ -3,9 +3,10 @@ import { Directive, inject, TemplateRef } from '@angular/core';
 import type { CngxTabHandle } from '../tab-group-host.token';
 
 /**
- * Context for the `*cngxTabErrorBadge` template. Renders only when
- * the tab's `errorAggregator?.shouldShow()` is `true`; the visibility
- * gate stays library-owned. Sibling shape to `CngxStepBadgeContext`.
+ * Context for the `*cngxTabErrorBadge` template. Renders only while
+ * the tab's folded `hasError()` is `true` - the direct `[error]` flag
+ * OR the aggregator's `shouldShow()`; the visibility gate stays
+ * library-owned. Sibling shape to `CngxStepBadgeContext`.
  *
  * @category common/tabs/slots
  */

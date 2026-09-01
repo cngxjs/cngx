@@ -1,4 +1,4 @@
-import type { Signal } from '@angular/core';
+import { effect, untracked, type Injector, type Signal } from '@angular/core';
 import { resolveInlineStep, type CngxDirection } from '@cngx/core';
 
 import type { CngxTabGroupHost, CngxTabHandle } from '../tab-group-host.token';
@@ -19,6 +19,14 @@ export interface CngxTabKeyboardNavOptions {
    * `rtl` (APG); the vertical axis and Home/End stay direction-invariant.
    */
   readonly direction: Signal<CngxDirection>;
+  /**
+   * Enables the rejection focus-release effect. Under a pessimistic
+   * commit, focus follows the intended target while the action is in
+   * flight; a rejection keeps the roving stop on the origin, so
+   * without the release the user is stranded on a `tabindex="-1"`
+   * button. Omitted, the effect is skipped (headless usage).
+   */
+  readonly injector?: Injector;
 }
 
 /**
@@ -143,6 +151,36 @@ export function createTabKeyboardNav(
     );
     buttons.find((button) => button.getAttribute('data-tab-id') === id)?.focus();
   };
+
+  if (opts.injector) {
+    effect(
+      () => {
+        if (opts.host.commitTransition.current() !== 'error') {
+          return;
+        }
+        untracked(() => {
+          // Only release focus that this tablist is actually holding on a
+          // non-active tab button - never steal focus from elsewhere.
+          const focused = document.activeElement;
+          if (!(focused instanceof HTMLElement) || !opts.hostElement.contains(focused)) {
+            return;
+          }
+          if (focused.getAttribute('role') !== 'tab') {
+            return;
+          }
+          const activeId = opts.host.activeId();
+          if (activeId === null || focused.getAttribute('data-tab-id') === activeId) {
+            return;
+          }
+          const idx = opts.host.tabs().findIndex((tab) => tab.id === activeId);
+          if (idx >= 0) {
+            focusTabAt(idx);
+          }
+        });
+      },
+      { injector: opts.injector },
+    );
+  }
 
   return {
     tabTabindex: (tab) => (tab.id === opts.host.activeId() ? 0 : -1),

@@ -1,5 +1,6 @@
 import {
   afterNextRender,
+  computed,
   DestroyRef,
   Directive,
   effect,
@@ -14,6 +15,7 @@ import { filter } from 'rxjs/operators';
 
 import { warnTabsRouterAbsent } from './router-absent-warning';
 import { CNGX_TAB_GROUP_HOST } from './tab-group-host.token';
+import { injectTabsConfig } from './tabs-config';
 
 /**
  * URL deep-linking for tab groups. \
@@ -59,8 +61,23 @@ import { CNGX_TAB_GROUP_HOST } from './tab-group-host.token';
   standalone: true,
 })
 export class CngxTabsFragmentSync implements AfterContentInit {
-  readonly mode = input<'fragment' | 'queryParam'>('fragment');
-  readonly paramName = input<string>('tab');
+  // Default undefined so the cascade resolves through CNGX_TABS_CONFIG.
+  // Init-only: the seed and the write effect capture the resolved mode /
+  // param on their first run; changing either after init leaves the old
+  // URL key behind. Rebuild the directive to change them.
+  readonly modeInput = input<'fragment' | 'queryParam' | undefined>(undefined, { alias: 'mode' });
+  readonly paramNameInput = input<string | undefined>(undefined, {
+    alias: 'paramName',
+  });
+
+  private readonly config = injectTabsConfig();
+
+  readonly mode = computed<'fragment' | 'queryParam'>(
+    () => this.modeInput() ?? this.config.fragmentSyncMode ?? 'fragment',
+  );
+  readonly paramName = computed<string>(
+    () => this.paramNameInput() ?? this.config.fragmentSyncParam ?? 'tab',
+  );
 
   /**
    * Whether reflecting the active tab into the URL replaces the current
@@ -107,28 +124,21 @@ export class CngxTabsFragmentSync implements AfterContentInit {
       this.seedFromUrl(router);
     });
 
+    let initialReflect = true;
     effect(() => {
       const id = this.host.activeId();
       if (!id) {
         return;
       }
-      untracked(() => {
-        const replaceUrl = this.replaceUrl();
-        const navigation =
-          this.mode() === 'fragment'
-            ? router.navigate([], {
-                fragment: `${this.paramName()}=${id}`,
-                queryParamsHandling: 'merge',
-                replaceUrl,
-              })
-            : router.navigate([], {
-                queryParams: { [this.paramName()]: id },
-                queryParamsHandling: 'merge',
-                replaceUrl,
-              });
-        // Router rejection (e.g. cancelled navigation) has no recovery path.
-        navigation.catch?.(() => undefined);
-      });
+      if (initialReflect) {
+        // Bare mount is not an interaction: the first resolved active id
+        // (default tab or URL seed) must not stamp the URL - a page that
+        // merely renders tabs would otherwise rewrite its own history
+        // entry. The URL starts changing when the active tab does.
+        initialReflect = false;
+        return;
+      }
+      untracked(() => this.writeUrl(router, id));
     });
 
     const navEnd = toSignal(
@@ -192,6 +202,39 @@ export class CngxTabsFragmentSync implements AfterContentInit {
     untracked(() => this.host.selectById(initial));
   }
 
+  /**
+   * Reflect `id` into the URL. Fragment mode re-serializes the existing
+   * fragment params so foreign state (`#foo=1&tab=x`) survives the
+   * write; values are URI-encoded symmetric to {@link parseFragment}.
+   */
+  private writeUrl(router: Router, id: string): void {
+    const replaceUrl = this.replaceUrl();
+    const navigation =
+      this.mode() === 'fragment'
+        ? router.navigate([], {
+            fragment: this.serializeFragment(router, id),
+            queryParamsHandling: 'merge',
+            replaceUrl,
+          })
+        : router.navigate([], {
+            queryParams: { [this.paramName()]: id },
+            queryParamsHandling: 'merge',
+            replaceUrl,
+          });
+    // Router rejection (e.g. cancelled navigation) has no recovery path.
+    navigation.catch?.(() => undefined);
+  }
+
+  private serializeFragment(router: Router, id: string): string {
+    const param = this.paramName();
+    const current = router.routerState.snapshot.root.fragment ?? '';
+    const segments = current
+      .split('&')
+      .filter((seg) => seg !== '' && seg.split('=')[0] !== param);
+    segments.push(`${param}=${encodeURIComponent(id)}`);
+    return segments.join('&');
+  }
+
   private readUrlValue(router: Router): string | null {
     if (this.mode() === 'fragment') {
       const fragment = router.routerState.snapshot.root.fragment ?? '';
@@ -206,7 +249,7 @@ export class CngxTabsFragmentSync implements AfterContentInit {
     for (const seg of segments) {
       const [key, val] = seg.split('=');
       if (key === param && val) {
-        return val;
+        return decodeURIComponent(val);
       }
     }
     return null;

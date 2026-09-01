@@ -195,4 +195,25 @@ describe('provideCngxTabsAt', () => {
     expect(scopedCfg.defaultOrientation).toBe('vertical');
     expect(scopedI18n.tabsLabel).toBe('Bereiche');
   });
+
+  it('an i18n-only call does not shadow an app-wide config with an empty one', () => {
+    @Component({
+      standalone: true,
+      template: '',
+      viewProviders: [...provideCngxTabsAt(withTabsI18nLabels({ tabsLabel: 'Bereiche' }))],
+    })
+    class I18nOnlyHost {}
+
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideCngxTabs(withTabsDefaultOrientation('vertical')),
+      ],
+    });
+    const fixture = TestBed.createComponent(I18nOnlyHost);
+    fixture.detectChanges();
+    const scopedCfg = fixture.debugElement.injector.get(CNGX_TABS_CONFIG);
+    // Root config must survive - the At call carried no config features.
+    expect(scopedCfg.defaultOrientation).toBe('vertical');
+  });
 });

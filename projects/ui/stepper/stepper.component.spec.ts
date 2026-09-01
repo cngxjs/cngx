@@ -967,6 +967,63 @@ describe('CngxStepper organism', () => {
       expect(region.textContent?.trim()).toBe('Committing step…');
     });
 
+    it('pessimistic async accept announces the landed step (pending → success)', async () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(CommitHost);
+      let resolveCommit!: (v: boolean) => void;
+      fixture.componentInstance.action = () =>
+        new Promise<boolean>((resolve) => {
+          resolveCommit = resolve;
+        });
+      fixture.detectChanges();
+      const buttons = fixture.nativeElement.querySelectorAll(
+        'button.cngx-stepper__step',
+      ) as NodeListOf<HTMLButtonElement>;
+      buttons[1].click();
+      fixture.detectChanges();
+      resolveCommit(true);
+      await Promise.resolve();
+      await Promise.resolve();
+      fixture.detectChanges();
+      const region = fixture.nativeElement.querySelector(
+        '.cngx-stepper__live-region',
+      ) as HTMLElement;
+      expect(region.textContent?.trim()).toBe('Step 2 of 3: B');
+    });
+
+    it('optimistic async accept stays quiet - the step was announced at dispatch', async () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(CommitHost);
+      fixture.componentInstance.mode = 'optimistic';
+      let resolveCommit!: (v: boolean) => void;
+      fixture.componentInstance.action = () =>
+        new Promise<boolean>((resolve) => {
+          resolveCommit = resolve;
+        });
+      fixture.detectChanges();
+      const buttons = fixture.nativeElement.querySelectorAll(
+        'button.cngx-stepper__step',
+      ) as NodeListOf<HTMLButtonElement>;
+      buttons[1].click();
+      fixture.detectChanges();
+      resolveCommit(true);
+      await Promise.resolve();
+      await Promise.resolve();
+      fixture.detectChanges();
+      const region = fixture.nativeElement.querySelector(
+        '.cngx-stepper__live-region',
+      ) as HTMLElement;
+      // A repeat here would double-announce a position the SR user
+      // already reached when the optimistic move happened.
+      expect(region.textContent?.trim()).toBe('');
+    });
+
     it('error transition surfaces commitRolledBackTo with the origin step label', () => {
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({

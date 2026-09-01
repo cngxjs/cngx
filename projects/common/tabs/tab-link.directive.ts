@@ -62,7 +62,7 @@ import { injectTabsConfig } from './tabs-config';
     class: 'cngx-tab-nav__link',
     '[attr.aria-current]': 'selected() ? resolvedAriaCurrent() : null',
     '[attr.aria-invalid]': "hasError() ? 'true' : null",
-    '[attr.aria-describedby]': 'descriptorId()',
+    '[attr.aria-describedby]': 'hasError() ? descriptorId() : null',
     '[class.cngx-tab-nav__link--active]': 'selected()',
     '[class.cngx-tab-nav__link--error]': 'hasError()',
   },
@@ -149,9 +149,11 @@ export class CngxTabLink implements OnInit {
   );
 
   /**
-   * Id of the injected SR error-message descriptor. Always referenced by the
-   * `aria-describedby` host binding (Pillar 2 - the id is permanent; the
-   * span's content and `aria-hidden` toggle, never the id itself).
+   * Id of the injected SR error-message descriptor. The `aria-describedby`
+   * host binding emits it only while `hasError()` - `aria-hidden` on a
+   * directly-referenced node does not suppress it (accname 1.2 traverses
+   * the reference), so the id reference itself is gated, not just the
+   * span's visibility.
    */
   protected readonly descriptorId: Signal<string> = computed(() => `${this.id()}-desc`);
 
@@ -206,7 +208,7 @@ export class CngxTabLink implements OnInit {
     this.syncDescriptor(descriptor);
 
     this.destroyRef.onDestroy(() => {
-      host.unregister(handle.id);
+      host.unregister(handle.id, handle);
       if (parent) {
         this.renderer.removeChild(parent, descriptor);
       }
