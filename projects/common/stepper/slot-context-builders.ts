@@ -21,6 +21,12 @@ import type { CngxStepNode, CngxStepperHost } from './stepper-host.token';
 export interface CngxStepperSlotContextBuildersInputs {
   readonly presenter: CngxStepperHost;
   readonly stepsOnly: Signal<readonly CngxStepNode[]>;
+  /**
+   * Whether a group node is currently collapsed (focus-driven collapse
+   * policy). Optional so header contexts of collapse-free steppers keep
+   * reporting `expanded: true` without the caller wiring a predicate.
+   */
+  readonly isGroupCollapsed?: (node: CngxStepNode) => boolean;
   /** i18n bundle - supplies the `errored` status label as the message fallback. */
   readonly i18n: CngxStepperI18n;
 }
@@ -171,7 +177,7 @@ export function createStepperSlotContextBuilders(
 
   const groupHeaderContextFor = memoizeByNode<CngxStepGroupHeaderContext>((node) => ({
     group: node,
-    expanded: true,
+    expanded: !(inputs.isGroupCollapsed?.(node) ?? false),
     status: node.state(),
   }));
 

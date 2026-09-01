@@ -377,6 +377,7 @@ export class CngxStepper implements CngxStepPanelHost {
   protected readonly groupSummary = createStepperGroupSummary({
     summaryMode: () => this.config.groupCollapseSummary,
     isCollapsed: (node) => this.isGroupCollapsed(node),
+    i18n: this.i18n,
   });
 
   /**
@@ -437,6 +438,7 @@ export class CngxStepper implements CngxStepPanelHost {
     presenter: this.presenter,
     stepsOnly: this.stepsOnly,
     i18n: this.i18n,
+    isGroupCollapsed: (node) => this.isGroupCollapsed(node),
   });
 
   /**

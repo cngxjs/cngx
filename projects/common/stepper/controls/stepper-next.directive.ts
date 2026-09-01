@@ -1,7 +1,17 @@
-import { computed, Directive, inject, input, isDevMode, type Signal } from '@angular/core';
+import {
+  afterNextRender,
+  computed,
+  Directive,
+  ElementRef,
+  inject,
+  input,
+  isDevMode,
+  type Signal,
+} from '@angular/core';
 
 import { CngxAsyncClick } from '@cngx/common/interactive';
 
+import { injectStepperI18n } from '../i18n/stepper-i18n';
 import { CNGX_STEPPER_HOST, type CngxStepperHost } from '../stepper-host.token';
 
 /**
@@ -60,6 +70,9 @@ export class CngxStepperNext {
 
   private readonly coPlacedAsyncClick = inject(CngxAsyncClick, { self: true, optional: true });
 
+  private readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly i18n = injectStepperI18n();
+
   /** `true` when advancing is unavailable: no enabled next step or commit busy. */
   protected readonly disabled: Signal<boolean> = computed(() => {
     const host = this.resolvedHost();
@@ -67,6 +80,23 @@ export class CngxStepperNext {
   });
 
   constructor() {
+    // Fallback accessible name for icon-only hosts: when the element
+    // renders no text and the consumer supplied no label of their own,
+    // the i18n `nextStep` phrase fills the gap. One-shot - the i18n
+    // bundle is resolve-once DI, and a consumer-authored visible label
+    // must win (label-in-name, WCAG 2.5.3), so a labelled host is
+    // never overridden.
+    afterNextRender(() => {
+      const el = this.elementRef.nativeElement;
+      const hasOwnLabel =
+        el.hasAttribute('aria-label') ||
+        el.hasAttribute('aria-labelledby') ||
+        (el.textContent ?? '').trim() !== '';
+      if (!hasOwnLabel) {
+        el.setAttribute('aria-label', this.i18n.nextStep);
+      }
+    });
+
     if (isDevMode() && this.coPlacedAsyncClick) {
       console.warn(
         'CngxStepperNext: [cngxStepperNext] and [cngxAsyncClick] on the same element ' +

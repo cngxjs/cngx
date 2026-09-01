@@ -1,4 +1,13 @@
-import { computed, Directive, effect, inject, input, output, type Signal } from '@angular/core';
+import {
+  computed,
+  Directive,
+  effect,
+  inject,
+  input,
+  output,
+  untracked,
+  type Signal,
+} from '@angular/core';
 
 import { CngxAsyncClick } from '@cngx/common/interactive';
 import { createTransitionTracker } from '@cngx/core/utils';
@@ -77,7 +86,9 @@ export class CngxStepperComplete {
     const tracker = createTransitionTracker(() => this.runner.status());
     effect(() => {
       if (tracker.current() === 'success' && tracker.previous() !== 'success') {
-        this.completed.emit();
+        // Consumer handlers run outside the tracking context so their
+        // ambient signal reads cannot widen this effect's dep graph.
+        untracked(() => this.completed.emit());
       }
     });
   }
