@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Subject, type Observable } from 'rxjs';
 
@@ -408,6 +408,24 @@ describe('CngxMultiSelect - commit action producer', () => {
     expect(host.values()).toEqual([]);
     expect(host.errors).toEqual([err]);
     expect(host.statuses[host.statuses.length - 1]).toBe('error');
+  });
+
+  it('announces the real error assertively on a failed toggle (not "selection cleared")', () => {
+    const { fixture, host, triggerBtn, optionAt } = setup();
+    const announceSpy = vi.spyOn(TestBed.inject(CngxSelectAnnouncer), 'announce');
+
+    triggerBtn.click();
+    flush(fixture);
+    optionAt(0).click();
+    flush(fixture);
+
+    host.pending!.error(new Error('server down'));
+    flush(fixture);
+
+    const errorCall = announceSpy.mock.calls.at(-1)!;
+    expect(errorCall[0]).toBe('Farben: Save failed - server down');
+    expect(errorCall[1]).toBe('assertive');
+    announceSpy.mockRestore();
   });
 
   it('pessimistic: panel stays open, togglingOption drives per-row spinner, values deferred', () => {

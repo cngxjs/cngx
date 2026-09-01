@@ -70,6 +70,8 @@ import {
 } from '../shared/option.model';
 import { CNGX_SELECT_PANEL_HOST, CNGX_SELECT_PANEL_VIEW_HOST } from '../shared/panel-host';
 import { resolveActionSelectConfig } from '../shared/action-select-config';
+import { CNGX_SELECT_COMMIT_CONTROLLER_FACTORY } from '../shared/commit-controller.token';
+import { mergeCommitState } from '../shared/internal/merged-commit-state';
 import { CNGX_DISMISS_HANDLER_FACTORY } from '../shared/dismiss-handler';
 import { resolveSelectConfig } from '../shared/internal/resolve-config';
 import { handlePageJumpKey } from '../shared/internal/page-jump-handler';
@@ -417,7 +419,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
     close: () => this.close(),
     commit: (draft) => this.handleActionCommit(draft),
     retry: () => this.createHandler.retryLast(),
-    isPending: computed(() => this.core.isCommitting()),
+    isPending: computed(() => this.createCommitController.isCommitting()),
   });
   /** @internal */
   readonly actionDirty = this.actionBridge.dirty;
@@ -433,14 +435,14 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
    */
   readonly actionSearchTerm = this.searchTerm;
   /**
-   * Action context's `error` + `hasError` source. Single-select shares
-   * one commit controller across `[commitAction]` and quick-create, so
-   * `core.commitErrorValue` covers both - the slot's `error` reflects
-   * whichever was latched last.
+   * Action context's `error` + `hasError` source. Reflects create
+   * failures only - select errors flow through the shell's commit-error
+   * banner via `core.commitController`. Parity with
+   * `CngxActionMultiSelect`.
    *
    * @internal
    */
-  readonly actionError = computed<unknown>(() => this.core.commitErrorValue());
+  readonly actionError = computed<unknown>(() => this.createCommitController.state.error());
   /**
    * Action context's `value` source. Forwards the live scalar selection
    * so in-panel mini-forms can read it without re-injecting.
@@ -558,8 +560,27 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
     },
   );
 
-  readonly commitState = this.core.commitState;
-  readonly isCommitting = this.core.isCommitting;
+  /**
+   * Dedicated commit controller for quick-create, mirroring
+   * `CngxActionMultiSelect`. The select path runs through
+   * `core.commitController`; sharing it meant `begin()` superseded an
+   * in-flight create whenever an option was activated (and vice versa).
+   * Splitting preserves independent supersede semantics per machine.
+   *
+   * @internal
+   */
+  private readonly createCommitController = inject(CNGX_SELECT_COMMIT_CONTROLLER_FACTORY)<T>();
+
+  /**
+   * Select surface with the quick-create machine overlaid: create
+   * pending/error win while active, so `CNGX_STATEFUL` consumers see a
+   * quick-create in flight - parity with `CngxActionMultiSelect`.
+   */
+  readonly commitState = mergeCommitState(this.core.commitState, this.createCommitController.state);
+  /** `true` while either the select or the quick-create commit is pending. */
+  readonly isCommitting = computed<boolean>(
+    () => this.core.isCommitting() || this.createCommitController.isCommitting(),
+  );
   /** @internal */
   readonly commitErrorValue = this.core.commitErrorValue;
 
@@ -614,7 +635,6 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
     () => this.compareWith() as unknown as (a: unknown, b: unknown) => boolean,
   );
 
-  private readonly commitController = this.core.commitController;
   private readonly announcer = inject(CngxSelectAnnouncer);
   private readonly announceCommitError = inject(CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY)({
     deps: {
@@ -640,7 +660,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
     CNGX_CREATE_COMMIT_HANDLER_FACTORY,
   )<T, T | undefined>({
     quickCreateAction: this.quickCreateAction,
-    commitController: this.commitController,
+    commitController: this.createCommitController,
     localItemsBuffer: this.localItemsBuffer,
     closeOnSuccess: this.closeOnCreate,
     onCreated: (option, previousValue) => {

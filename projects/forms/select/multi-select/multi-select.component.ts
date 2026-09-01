@@ -33,6 +33,11 @@ import {
 
 import { createADActivationDispatcher } from '../shared/ad-activation-dispatcher';
 import { createArrayCommitHandler, type ArrayCommitHandler } from '../shared/array-commit-handler';
+import { CngxSelectAnnouncer } from '../shared/announcer';
+import {
+  CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY,
+  type CngxCommitErrorAnnouncePolicy,
+} from '../shared/commit-error-announcer';
 import {
   CNGX_CHIP_REMOVAL_HANDLER_FACTORY,
   type CngxChipRemovalHandler,
@@ -224,6 +229,16 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   readonly commitErrorDisplay = input<CngxSelectCommitErrorDisplay>(this.config.commitErrorDisplay);
   readonly announceChanges = input<boolean | null>(null);
   readonly announceTemplate = input<CngxSelectAnnouncerConfig['format'] | null>(null);
+  /**
+   * Commit-error announce policy. `'verbose'` reads the error message into
+   * the live region; `'soft'` announces a generic removal at the current
+   * selection count. Per-instance input wins over
+   * `CngxSelectConfig.commitErrorAnnouncePolicy`; default
+   * `{ kind: 'verbose', severity: 'assertive' }`.
+   */
+  readonly commitErrorAnnouncePolicy = input<CngxCommitErrorAnnouncePolicy>(
+    this.config.commitErrorAnnouncePolicy ?? { kind: 'verbose', severity: 'assertive' },
+  );
   readonly values = model<T[]>([]);
 
   readonly selectionChange = output<CngxMultiSelectChange<T>>();
@@ -574,6 +589,24 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
    * with `CngxCombobox`. Consumer emits change payloads via the
    * finalize callbacks.
    */
+  private readonly commitErrorAnnouncer = inject(CngxSelectAnnouncer);
+  private readonly announceCommitError = inject(CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY)({
+    deps: {
+      announcer: this.commitErrorAnnouncer,
+      commitErrorMessage: (err) => this.core.commitErrorMessage(err),
+      // Soft policy: generic removal at the CURRENT selection count - the
+      // announcer's scalar-shaped count/multi args are replaced here.
+      softAnnounce: (opt, action) =>
+        this.core.announce(
+          opt as CngxSelectOptionDef<T> | null,
+          action,
+          this.values().length,
+          true,
+        ),
+    },
+    policy: this.commitErrorAnnouncePolicy,
+  });
+
   private readonly commitHandler: ArrayCommitHandler<T> = createArrayCommitHandler<T>({
     values: this.values,
     compareWith: this.compareWith,
@@ -597,6 +630,7 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     },
     onStateChange: (status) => this.stateChange.emit(status),
     onError: (err) => this.commitError.emit(err),
+    announceError: (err) => this.announceCommitError(err),
   });
 
   /**

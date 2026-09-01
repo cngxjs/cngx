@@ -49,6 +49,10 @@ import { type CngxTreeNode, type FlatTreeNode } from '@cngx/utils';
 
 import { createArrayCommitHandler, type ArrayCommitHandler } from '../shared/array-commit-handler';
 import {
+  CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY,
+  type CngxCommitErrorAnnouncePolicy,
+} from '../shared/commit-error-announcer';
+import {
   CNGX_CHIP_REMOVAL_HANDLER_FACTORY,
   type CngxChipRemovalHandler,
 } from '../shared/chip-removal-handler';
@@ -284,6 +288,16 @@ export class CngxTreeSelect<T = unknown>
   readonly commitErrorDisplay = input<CngxSelectCommitErrorDisplay>(this.config.commitErrorDisplay);
   readonly announceChanges = input<boolean | null>(null);
   readonly announceTemplate = input<CngxSelectAnnouncerConfig['format'] | null>(null);
+  /**
+   * Commit-error announce policy for the clear-all commit. `'verbose'`
+   * reads the error message into the live region; `'soft'` announces a
+   * generic removal at the current selection count. Per-instance input
+   * wins over `CngxSelectConfig.commitErrorAnnouncePolicy`; default
+   * `{ kind: 'verbose', severity: 'assertive' }`.
+   */
+  readonly commitErrorAnnouncePolicy = input<CngxCommitErrorAnnouncePolicy>(
+    this.config.commitErrorAnnouncePolicy ?? { kind: 'verbose', severity: 'assertive' },
+  );
 
   readonly selectionChange = output<CngxTreeSelectChange<T>>();
   readonly openedChange = output<boolean>();
@@ -459,6 +473,29 @@ export class CngxTreeSelect<T = unknown>
   } as unknown as Parameters<typeof createArrayCommitHandler<T>>[0]['core'];
 
   /** @internal */
+  /**
+   * Mirrors `CngxSelectCore.commitErrorMessage` - tree-select composes a
+   * minimal core surface and has no shared formatter to delegate to.
+   */
+  private commitErrorMessage(err: unknown): string {
+    const label = this.label();
+    const aria = this.ariaLabel();
+    const fieldFallback = this.config.ariaLabels.fieldLabelFallback ?? 'Selection';
+    const failedMessage = this.config.ariaLabels.commitFailedMessage ?? 'Save failed';
+    const labelText = label !== '' ? label : (aria ?? fieldFallback);
+    const detail = err instanceof Error ? err.message : undefined;
+    return detail ? `${labelText}: ${failedMessage} - ${detail}` : `${labelText}: ${failedMessage}`;
+  }
+
+  private readonly announceCommitError = inject(CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY)({
+    deps: {
+      announcer: this.announcer,
+      commitErrorMessage: (err) => this.commitErrorMessage(err),
+      softAnnounce: (_opt, action) => this.announce(null, action, this.values().length),
+    },
+    policy: this.commitErrorAnnouncePolicy,
+  });
+
   private readonly commitHandler: ArrayCommitHandler<T> = createArrayCommitHandler<T>({
     values: this.values,
     compareWith: this.compareWith,
@@ -485,6 +522,7 @@ export class CngxTreeSelect<T = unknown>
     },
     onStateChange: (status) => this.stateChange.emit(status),
     onError: (err) => this.commitError.emit(err),
+    announceError: (err) => this.announceCommitError(err),
   });
 
   /** @internal */

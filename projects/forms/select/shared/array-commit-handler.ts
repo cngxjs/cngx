@@ -32,6 +32,15 @@ export interface ArrayCommitHandlerOptions<T> {
   readonly onClearFinalize: (previous: T[], finalValues: T[]) => void;
   readonly onStateChange: (status: AsyncStatus) => void;
   readonly onError: (err: unknown) => void;
+  /**
+   * Announce a failed commit to AT. Wire this to the commit-error
+   * announcer (`CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY`) so the live region
+   * carries real error content. When omitted the handler announces
+   * nothing on error - the visual error surface and `onError` still
+   * fire; it never falls back to the misleading "selection cleared"
+   * phrase.
+   */
+  readonly announceError?: (err: unknown) => void;
 }
 
 /**
@@ -63,9 +72,10 @@ export interface ArrayCommitHandler<T> {
 /**
  * Array-shape commit flow shared by `CngxMultiSelect` and `CngxCombobox`.
  * Owns commit-controller lifecycle, reconciliation via
- * {@link sameArrayContents}, `togglingOption.set(null)` on success,
- * optimistic rollback on error, live-region "removed" announce. Consumer
- * owns change-event payloads via the finalize callbacks.
+ * {@link sameArrayContents}, `togglingOption.set(null)` on success and at
+ * `beginClear` entry, optimistic rollback on error, live-region "removed"
+ * announce on a successful clear and the `announceError` hook on failure.
+ * Consumer owns change-event payloads via the finalize callbacks.
  *
  * No scalar twin: this handler is array-only by design.
  *
@@ -90,8 +100,11 @@ export function createArrayCommitHandler<T>(
     reconcileValues(rollbackTo ?? []);
   };
 
-  const announceOnError = (): void => {
-    opts.core.announce(null, 'removed', opts.values().length, true);
+  const announceOnError = (err: unknown): void => {
+    // Never the old announce(null, 'removed', ...) fallback: with a null
+    // option the default formatter reads "selection cleared" - announcing a
+    // FAILED commit as a successful clear.
+    opts.announceError?.(err);
   };
 
   const beginToggle = (
@@ -115,12 +128,15 @@ export function createArrayCommitHandler<T>(
         opts.onStateChange('error');
         opts.onError(err);
         rollbackIfOptimistic(rollbackTo);
-        announceOnError();
+        announceOnError(err);
       },
     });
   };
 
   const beginClear = (previous: T[], action: CngxSelectCommitAction<T[]>): void => {
+    // Enforce the retryLast disambiguation contract here instead of relying
+    // on call-site discipline: a clear is by definition option-less.
+    togglingOption.set(null);
     opts.onStateChange('pending');
     commitController.begin(action, [], previous, {
       onSuccess: (committed) => {
@@ -135,7 +151,7 @@ export function createArrayCommitHandler<T>(
         opts.onStateChange('error');
         opts.onError(err);
         rollbackIfOptimistic(rollbackTo);
-        announceOnError();
+        announceOnError(err);
       },
     });
   };
