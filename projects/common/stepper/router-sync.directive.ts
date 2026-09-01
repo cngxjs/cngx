@@ -158,19 +158,12 @@ export class CngxStepperRouterSync implements AfterContentInit {
       return;
     }
     this.seeded = true;
-    untracked(() => {
-      this.host.selectById(initial);
-      // A sync refusal (linear-blocked / disabled target) leaves the URL
-      // pointing at a step the stepper refused - rewrite it from the
-      // actual active id so the address bar never lies. Async commit
-      // outcomes are reflected by the activeStepId effect on accept.
-      if (!this.host.busy() && this.host.activeStepId() !== initial) {
-        const actual = this.host.activeStepId();
-        if (actual) {
-          this.writeUrl(router, actual);
-        }
-      }
-    });
+    // No explicit URL correction on a refused (linear-blocked / disabled)
+    // seed: the activeStepId write effect's first run flushes AFTER this
+    // content-init hook and unconditionally reflects the ACTUAL active id
+    // into the URL, so a refused deep link is rewritten on the same tick.
+    // The refused-seed spec pins that guarantee.
+    untracked(() => this.host.selectById(initial));
   }
 
   /**
