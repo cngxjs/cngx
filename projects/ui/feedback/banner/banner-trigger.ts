@@ -1,4 +1,12 @@
-import { Component, DestroyRef, effect, inject, input, untracked } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  effect,
+  inject,
+  input,
+  linkedSignal,
+  untracked,
+} from '@angular/core';
 
 import type { AlertSeverity } from '../alert/alert';
 import { CngxBanner } from './banner.service';
@@ -72,6 +80,16 @@ export class CngxBannerTrigger {
   /** Action button handler. */
   readonly actionHandler = input<(() => void | Promise<void>) | undefined>(undefined);
 
+  /** @internal - id transition derived via linkedSignal, not managed in the effect. */
+  private readonly idTransition = linkedSignal<
+    string,
+    { current: string; previous: string | undefined }
+  >({
+    source: this.id,
+    computation: (current, prev) => ({ current, previous: prev?.value.current }),
+    equal: (a, b) => a.current === b.current && a.previous === b.previous,
+  });
+
   constructor() {
     if (!this.banner) {
       throw new Error(
@@ -84,7 +102,13 @@ export class CngxBannerTrigger {
     // same id); only the service calls leave the reactive graph.
     effect(() => {
       const show = this.when();
-      const id = this.id();
+      const { current: id, previous } = this.idTransition();
+
+      // An id rebind while shown must not orphan the old banner - the old
+      // key would otherwise linger until destroy.
+      if (previous !== undefined && previous !== id) {
+        untracked(() => banner.dismiss(previous));
+      }
 
       if (show) {
         const label = this.actionLabel();
