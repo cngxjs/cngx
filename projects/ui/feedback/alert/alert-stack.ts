@@ -86,10 +86,13 @@ function entriesEqual(a: readonly StackEntry[], b: readonly StackEntry[]): boole
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   viewProviders: [CngxAlerter],
+  // Plain region host, not a live region: the items carry role="alert" /
+  // role="status" themselves - wrapping them in a polite log double-announces
+  // and downgrades assertive errors.
   host: {
     class: 'cngx-alert-stack',
-    role: 'log',
-    'aria-live': 'polite',
+    role: 'region',
+    'aria-label': 'Alerts',
     '[class.cngx-alert-stack--reserve-space]': 'reserveSpace()',
   },
   template: `

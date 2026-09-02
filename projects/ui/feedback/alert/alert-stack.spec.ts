@@ -38,10 +38,11 @@ describe('CngxAlertStack', () => {
     return { fixture, stackEl, alerter };
   }
 
-  it('renders as role="log" with aria-live="polite"', () => {
+  it('renders as a labelled region without its own live-region semantics', () => {
     const { stackEl } = setup();
-    expect(stackEl.getAttribute('role')).toBe('log');
-    expect(stackEl.getAttribute('aria-live')).toBe('polite');
+    expect(stackEl.getAttribute('role')).toBe('region');
+    expect(stackEl.getAttribute('aria-label')).toBe('Alerts');
+    expect(stackEl.hasAttribute('aria-live')).toBe(false);
   });
 
   it('provides CngxAlerter via viewProviders', () => {

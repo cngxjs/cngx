@@ -2,7 +2,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'CngxAlertStack: basic stack',
-  subtitle: 'Each <code>CngxAlertStack</code> provides its own <code>CngxAlerter</code> via <code>viewProviders</code>. Access via <code>viewChild</code> to add alerts programmatically. <code>role="log"</code> with <code>aria-live="polite"</code>.',
+  subtitle: 'Each <code>CngxAlertStack</code> provides its own <code>CngxAlerter</code> via <code>viewProviders</code>. Access via <code>viewChild</code> to add alerts programmatically. Labelled <code>role="region"</code>; each item announces itself as <code>alert</code> or <code>status</code>.',
   description: 'Programmatic push API: a single stack with four buttons that show error, warning, info alerts and a clear-all. Each <code>show()</code> goes through the stack-local <code>CngxAlerter</code> picked up via <code>viewChild</code>.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
