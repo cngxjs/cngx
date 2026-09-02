@@ -41,12 +41,12 @@ export interface CngxCommand {
 /**
  * A named cluster of commands. The palette renders grouped results (Recents on
  * an empty query, then categories) and the consumer's async result source is a
- * `CngxAsyncState<CommandGroup[]>`.
+ * `CngxAsyncState<CngxCommandGroup[]>`.
  *
  * @category common/command
  * @since 0.1.0
  */
-export interface CommandGroup {
+export interface CngxCommandGroup {
   /** Stable identity for the group header slot and change detection. */
   readonly id: string;
   /** Header label rendered above the group's commands. */
@@ -54,3 +54,12 @@ export interface CommandGroup {
   /** The commands in this group, in render order. */
   readonly commands: readonly CngxCommand[];
 }
+
+/**
+ * @deprecated Use {@link CngxCommandGroup}. Published under the unprefixed
+ * name by mistake; the alias remains for compatibility and will be removed in
+ * a future major.
+ * @category common/command
+ * @since 0.1.0
+ */
+export type CommandGroup = CngxCommandGroup;

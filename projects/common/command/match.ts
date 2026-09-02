@@ -8,12 +8,21 @@ import type { CngxCommand } from './command';
  * @category common/command
  * @since 0.1.0
  */
-export interface RankedCommand {
+export interface CngxRankedCommand {
   /** The matched command. */
   readonly command: CngxCommand;
   /** Relevance score for the query; higher ranks first. `0` for an empty query. */
   readonly score: number;
 }
+
+/**
+ * @deprecated Use {@link CngxRankedCommand}. Published under the unprefixed
+ * name by mistake; the alias remains for compatibility and will be removed in
+ * a future major.
+ * @category common/command
+ * @since 0.1.0
+ */
+export type RankedCommand = CngxRankedCommand;
 
 /**
  * Ranks and filters a command set against a query and optional scope. Swappable
@@ -27,7 +36,7 @@ export type CngxCommandMatcher = (
   commands: readonly CngxCommand[],
   term: string,
   scope?: string,
-) => readonly RankedCommand[];
+) => readonly CngxRankedCommand[];
 
 /**
  * Builds the default matcher: a pure label/keyword ranker. An empty query
@@ -47,7 +56,7 @@ export function createDefaultCommandMatcher(): CngxCommandMatcher {
       return scoped.map((command) => ({ command, score: 0 }));
     }
 
-    const ranked: RankedCommand[] = [];
+    const ranked: CngxRankedCommand[] = [];
     for (const command of scoped) {
       const score = scoreCommand(command, query);
       if (score > 0) {
