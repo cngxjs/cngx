@@ -21,13 +21,13 @@ The async [results] path and the five non-row slots. Pick a result state below, 
 
 ```ts
 protected readonly statusState = signal<AsyncStatus>('success');
-  protected readonly dataState = signal<CommandGroup[]>([
+  protected readonly dataState = signal<CngxCommandGroup[]>([
     { id: 'recents', label: 'Recents', commands: [{ id: 'reopen', label: 'Reopen closed tab', run: () => {} }] },
   ]);
   protected readonly errorState = signal<unknown>(undefined);
   protected readonly firstLoadState = signal(false);
   // A consumer derives this from term()/scope() + their own HTTP; here we drive it by hand.
-  protected readonly results = buildAsyncStateView<CommandGroup[]>({
+  protected readonly results = buildAsyncStateView<CngxCommandGroup[]>({
     status: this.statusState,
     data: this.dataState,
     error: this.errorState,
