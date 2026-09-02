@@ -4,10 +4,8 @@ import {
   Component,
   computed,
   contentChild,
-  effect,
   inject,
   signal,
-  untracked,
   ViewEncapsulation,
 } from '@angular/core';
 import { outputToObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -130,6 +128,14 @@ export class CngxContextMenu<T = unknown> implements CngxContextMenuPanel<T> {
   /** @internal Claim the current open for `owner`. See {@link CngxContextMenuPanel.claimOpen}. */
   claimOpen(owner: unknown): void {
     this.openOwnerState.set(owner);
+    // A trigger claim is always a ROOT open: it must not inherit the sticky
+    // submenu policy (non-exclusive, right-start + flip chain) a previous
+    // openAsSubmenu installed on this panel. Clearing here - in the open
+    // gesture, before show() - keeps the reset out of any effect;
+    // openAsSubmenu re-installs the overrides right before its own show().
+    this.popover.exclusiveOverride.set(null);
+    this.popover.placementOverride.set(null);
+    this.popover.positionTryFallbacksOverride.set(null);
   }
 
   /** @internal Release the open claim if `owner` still holds it. */
@@ -171,19 +177,6 @@ export class CngxContextMenu<T = unknown> implements CngxContextMenuPanel<T> {
     outputToObservable(this.menuHost.ad.activated)
       .pipe(takeUntilDestroyed())
       .subscribe(() => this.activationHandler?.());
-    // openAsSubmenu installs sticky popover overrides (non-exclusive,
-    // right-start + flip chain) that would otherwise leak into the next ROOT
-    // open of the same panel. Clear them on hide so each open starts from the
-    // panel's own inputs; a submenu open re-installs them right before show().
-    effect(() => {
-      if (!this.popover.isVisible()) {
-        untracked(() => {
-          this.popover.exclusiveOverride.set(null);
-          this.popover.placementOverride.set(null);
-          this.popover.positionTryFallbacksOverride.set(null);
-        });
-      }
-    });
   }
 
   /**

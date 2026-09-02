@@ -234,8 +234,15 @@ describe('CngxContextMenuFor', () => {
       expect(panel.openOwner()).toBeNull();
     });
 
-    it('Shift+F10 claims ownership for the keyboard opener', () => {
+    it('Shift+F10 claims ownership and commits the keyboard opener datum', () => {
       const { fixture, targetA, targetB, triggerB, panel } = setupShared();
+
+      // Seed a foreign datum via a pointer open on A, then close - the
+      // keyboard open on B must not serve this stale context.
+      rightClick(targetA);
+      flush(fixture);
+      panel.popover.hide();
+      flush(fixture);
 
       targetB.dispatchEvent(
         new KeyboardEvent('keydown', { key: 'F10', shiftKey: true, bubbles: true, cancelable: true }),
@@ -244,8 +251,29 @@ describe('CngxContextMenuFor', () => {
 
       expect(panel.popover.isVisible()).toBe(true);
       expect(panel.openOwner()).toBe(triggerB);
+      expect(panel.context()).toEqual({ id: 2, name: 'Beta' });
       expect(targetB.getAttribute('aria-expanded')).toBe('true');
       expect(targetA.getAttribute('aria-expanded')).toBe('false');
+    });
+
+    it('a takeover while the panel stays visible transfers ownership and datum', () => {
+      const { fixture, targetA, targetB, triggerB, panel } = setupShared();
+
+      rightClick(targetA);
+      flush(fixture);
+      expect(panel.context()).toEqual({ id: 1, name: 'Alpha' });
+
+      // No dismissal in between (outside-pointerdown never fired): B claims
+      // the still-visible panel. A must stand down without clobbering B's
+      // handlers or ownership, and the menu keeps serving B's datum.
+      rightClick(targetB);
+      flush(fixture);
+
+      expect(panel.popover.isVisible()).toBe(true);
+      expect(panel.openOwner()).toBe(triggerB);
+      expect(panel.context()).toEqual({ id: 2, name: 'Beta' });
+      expect(targetA.getAttribute('aria-expanded')).toBe('false');
+      expect(targetB.getAttribute('aria-expanded')).toBe('true');
     });
 
     it('a modified Shift+F10 (Ctrl held) neither claims nor opens', () => {

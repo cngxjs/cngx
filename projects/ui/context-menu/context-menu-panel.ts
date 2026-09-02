@@ -34,7 +34,9 @@ export interface CngxContextMenuPanel<T = unknown> {
    * @internal Claim the current open for `owner`. Called by the opening
    * trigger synchronously in its open gesture, before the popover shows, so
    * the handler registration that follows belongs to the opener even when
-   * other triggers dock the same panel. Optional alongside {@link openOwner}.
+   * other triggers dock the same panel. A claim always marks a ROOT open -
+   * the panel resets any sticky submenu policy a previous `openAsSubmenu`
+   * installed. Optional alongside {@link openOwner}.
    */
   claimOpen?(owner: unknown): void;
   /**

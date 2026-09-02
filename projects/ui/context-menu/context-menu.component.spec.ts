@@ -127,7 +127,7 @@ describe('CngxContextMenu', () => {
     expect(panel.context()).toBe(row);
   });
 
-  it('clears the sticky submenu overrides on hide so a root open starts clean', () => {
+  it('clears the sticky submenu overrides on the next root-open claim', () => {
     const { fixture, panel } = setupTemplate();
 
     panel.openAsSubmenu({ id: 9, name: 'Delta' });
@@ -137,11 +137,12 @@ describe('CngxContextMenu', () => {
     expect(panel.popover.exclusiveOverride()).toBe(false);
 
     panel.popover.hide();
+    panel.claimOpen({});
     TestBed.flushEffects();
     fixture.detectChanges();
 
-    // The submenu policy must not leak into the next root open: a panel once
-    // opened as a submenu falls back to its own placement/exclusive inputs.
+    // The submenu policy must not leak into a root open: a trigger claim
+    // resets the overrides so the panel falls back to its own inputs.
     expect(panel.popover.placementOverride()).toBeNull();
     expect(panel.popover.positionTryFallbacksOverride()).toBeNull();
     expect(panel.popover.exclusiveOverride()).toBeNull();

@@ -80,6 +80,8 @@ export class CngxContextMenuFor<T = unknown> {
   /**
    * Resolver run against the `contextmenu` event. Return the datum to open
    * with, or `null` to let the native menu show. Wins over `[cngxContextMenuData]`.
+   * Keyboard opens (`Shift+F10`) carry no pointer event, so they commit the
+   * fixed `[cngxContextMenuData]` datum (or `null`) instead of resolving.
    */
   readonly resolve = input<((event: MouseEvent) => T | null) | undefined>(undefined, {
     alias: 'cngxContextMenuResolve',
@@ -120,12 +122,16 @@ export class CngxContextMenuFor<T = unknown> {
       return { open: true, context: this.data() ?? null };
     },
     commitContext: (context) => {
-      // Runs exactly once per successful right-click open, before the popover
-      // shows - the claim must land here (not in an effect) so the handler
-      // registration below belongs to the opener when N triggers share a panel.
+      // Runs exactly once per successful open (pointer AND Shift+F10), before
+      // the popover shows - the claim must land here (not in an effect) so the
+      // handler registration belongs to the opener when N triggers share a panel.
       this.claimPanel();
       this.panel().setContext(context as T | null);
     },
+    // Shift+F10 has no MouseEvent for the resolver, so the keyboard open
+    // commits the fixed datum (null in resolver-only mode) instead of leaving
+    // whatever an earlier right-click stored on the shared panel.
+    resolveKeyboardOpen: () => ({ open: true, context: this.data() ?? null }),
   });
 
   /** Panel-forwarded seams, stable identities so registration is idempotent. */
@@ -167,7 +173,20 @@ export class CngxContextMenuFor<T = unknown> {
     destroyRef.onDestroy(() => this.core.destroy());
     effect(() => {
       const open = this.isOpen();
-      untracked(() => this.core.syncOpenState(open));
+      untracked(() => {
+        if (open) {
+          this.core.syncOpenState(true);
+          return;
+        }
+        if (this.panel().popover.isVisible()) {
+          // Ownership handoff: a sibling trigger claimed the still-visible
+          // panel. Stand down without restoring focus - the new owner's menu
+          // holds focus and a restore would yank it away.
+          this.core.standDown();
+        } else {
+          this.core.syncOpenState(false);
+        }
+      });
     });
     // Hover routing: route submenu hover-intent edges through the core's
     // focus stack, same primitives as keyboard/click (see CngxMenuTrigger).
@@ -199,18 +218,6 @@ export class CngxContextMenuFor<T = unknown> {
   }
 
   protected handleKeydown(event: KeyboardEvent): void {
-    // Shift+F10 is the keyboard open gesture and the core has no veto on it -
-    // claim before forwarding so the open belongs to this trigger (the
-    // modifier guard mirrors the core's own).
-    const isKeyboardOpen =
-      event.key === 'F10' &&
-      event.shiftKey &&
-      !event.ctrlKey &&
-      !event.metaKey &&
-      !event.altKey;
-    if (isKeyboardOpen) {
-      this.claimPanel();
-    }
     this.core.handleKeydown(event);
   }
 }

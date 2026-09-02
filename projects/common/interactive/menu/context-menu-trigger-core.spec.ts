@@ -146,6 +146,67 @@ describe('createContextMenuTriggerCore', () => {
     expect(resolveOpen).not.toHaveBeenCalled();
   });
 
+  it('Shift+F10 routes through resolveKeyboardOpen and commits its context', () => {
+    const commitContext = vi.fn();
+    const datum = { row: 7 };
+    const core = build({
+      resolveKeyboardOpen: () => ({ open: true, context: datum }),
+      commitContext,
+    });
+    const event = {
+      key: 'F10',
+      shiftKey: true,
+      preventDefault: vi.fn(),
+    } as unknown as KeyboardEvent;
+    core.handleKeydown(event);
+
+    expect(event.preventDefault).toHaveBeenCalledOnce();
+    expect(commitContext).toHaveBeenCalledWith(datum);
+    expect(popover.show).toHaveBeenCalledOnce();
+  });
+
+  it('resolveKeyboardOpen { open: false } vetoes the keyboard open', () => {
+    const core = build({ resolveKeyboardOpen: () => ({ open: false }) });
+    const event = {
+      key: 'F10',
+      shiftKey: true,
+      preventDefault: vi.fn(),
+    } as unknown as KeyboardEvent;
+    core.handleKeydown(event);
+
+    expect(event.preventDefault).not.toHaveBeenCalled();
+    expect(popover.show).not.toHaveBeenCalled();
+  });
+
+  it('standDown detaches, resets the stack, and discards focus without restoring', () => {
+    const reset = vi.fn();
+    const discardFocus = vi.fn();
+    const restoreFocus = vi.fn();
+    const captureFocus = vi.fn();
+    const stack = {
+      stack: signal<readonly CngxMenuHost[]>([]).asReadonly(),
+      effectiveMenu: () => menu,
+      activeSubmenu: () => undefined,
+      captureFocus,
+      restoreFocus,
+      discardFocus,
+      reset,
+      handleEscape: vi.fn(),
+      handleArrowRight: vi.fn(),
+      handleArrowLeft: vi.fn(),
+      openSubmenuFor: vi.fn(),
+      noteSubmenuOpened: vi.fn(),
+    } as unknown as CngxMenuFocusStack;
+    const core = build({ focusStackFactory: () => stack });
+
+    core.handleContextMenu(mouse());
+    core.standDown();
+
+    expect(reset).toHaveBeenCalled();
+    expect(discardFocus).toHaveBeenCalled();
+    expect(restoreFocus).not.toHaveBeenCalled();
+  });
+
   it('a non-Shift F10 keydown is ignored', () => {
     const core = build();
     const event = {

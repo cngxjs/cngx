@@ -83,6 +83,14 @@ export interface CngxContextMenuTriggerCoreDeps {
    * right-click-always-opens behaviour.
    */
   readonly resolveOpen?: (event: MouseEvent) => CngxContextMenuOpenDecision;
+  /**
+   * Veto/datum seam for the keyboard open gesture (`Shift+F10`). Evaluated
+   * before `preventDefault()`, mirroring {@link resolveOpen}; the resolved
+   * context goes through {@link commitContext} exactly like a pointer open,
+   * so a keyboard open never serves a stale datum from an earlier
+   * right-click. Defaults to always-open with `undefined` context.
+   */
+  readonly resolveKeyboardOpen?: (event: KeyboardEvent) => CngxContextMenuOpenDecision;
   /** Receives the resolved context on a successful open. No-op by default. */
   readonly commitContext?: (context: unknown) => void;
 }
@@ -132,6 +140,14 @@ export interface CngxContextMenuTriggerCore {
   noteActiveSubmenuOpened(): void;
   /** Drive from the directive's `isOpen` effect (inside `untracked`). */
   syncOpenState(open: boolean): void;
+  /**
+   * Relinquish an open WITHOUT restoring focus: detach the dismiss binding,
+   * clear the submenu stack, and discard the saved pre-open focus. For the
+   * shared-panel handoff - when a sibling trigger claims the still-visible
+   * panel, the losing core must stand down silently; a `syncOpenState(false)`
+   * would yank focus out of the menu the new owner just opened.
+   */
+  standDown(): void;
   /** Teardown - call from the directive's `DestroyRef.onDestroy`. */
   destroy(): void;
 }
@@ -140,6 +156,8 @@ const DEFAULT_RESOLVE_OPEN = (): CngxContextMenuOpenDecision => ({
   open: true,
   context: undefined,
 });
+
+const DEFAULT_RESOLVE_KEYBOARD_OPEN = DEFAULT_RESOLVE_OPEN;
 
 /**
  * Build a {@link CngxContextMenuTriggerCore} from its dependencies. Pure
@@ -154,6 +172,7 @@ export function createContextMenuTriggerCore(
   deps: CngxContextMenuTriggerCoreDeps,
 ): CngxContextMenuTriggerCore {
   const resolveOpen = deps.resolveOpen ?? DEFAULT_RESOLVE_OPEN;
+  const resolveKeyboardOpen = deps.resolveKeyboardOpen ?? DEFAULT_RESOLVE_KEYBOARD_OPEN;
 
   // Shared submenu focus-stack model - identical W3C APG keyboard contract to
   // CngxMenuTrigger. The core owns the ArrowRight/ArrowLeft/Escape routing;
@@ -243,7 +262,12 @@ export function createContextMenuTriggerCore(
         return;
       }
       if (event.key === 'F10' && event.shiftKey) {
+        const decision = resolveKeyboardOpen(event);
+        if (!decision.open) {
+          return;
+        }
         event.preventDefault();
+        deps.commitContext?.(decision.context);
         const rect = deps.hostElement.getBoundingClientRect();
         openAt(rect.left + rect.width / 2, rect.top + rect.height / 2);
         return;
@@ -296,6 +320,11 @@ export function createContextMenuTriggerCore(
         focusStack.reset();
         focusStack.restoreFocus();
       }
+    },
+    standDown(): void {
+      dismissBinding.detach();
+      focusStack.reset();
+      focusStack.discardFocus?.();
     },
     destroy(): void {
       removeVirtualAnchor();

@@ -57,6 +57,12 @@ export interface CngxMenuFocusStack {
   captureFocus(): void;
   /** Restore focus to the captured element after the close DOM settles. */
   restoreFocus(): void;
+  /**
+   * Drop the captured element without focusing it. For ownership handoffs
+   * where another opener now owns focus and a restore would yank it away.
+   * Optional so custom factory implementations stay assignable.
+   */
+  discardFocus?(): void;
   /** Escape: pop the innermost submenu, or hide the popover at the root. */
   handleEscape(event: KeyboardEvent): void;
   /** ArrowRight: open the active item's submenu when the policy allows. */
@@ -225,6 +231,9 @@ export function createMenuFocusStack(deps: CngxMenuFocusStackDeps): CngxMenuFocu
       queueMicrotask(() => {
         target.focus();
       });
+    },
+    discardFocus(): void {
+      savedFocus = null;
     },
     handleEscape(event: KeyboardEvent): void {
       event.preventDefault();
