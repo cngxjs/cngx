@@ -165,6 +165,34 @@ describe('CngxToaster', () => {
     expect(toaster.toasts().length).toBe(0);
   });
 
+  it('holds the pause until every source releases (hover + focus refcount)', () => {
+    toaster.show({ message: 'Held', duration: 3000 });
+    const id = toaster.toasts()[0].id;
+    toaster.pauseTimer(id); // pointer enters
+    toaster.pauseTimer(id); // focus moves in
+    toaster.resumeTimer(id); // pointer leaves - focus still inside
+    vi.advanceTimersByTime(60000);
+    expect(toaster.toasts().length).toBe(1);
+
+    toaster.resumeTimer(id); // focus leaves - last hold released
+    vi.advanceTimersByTime(3000);
+    expect(toaster.toasts().length).toBe(0);
+  });
+
+  it('keeps a dedup restart paused while a hold is active', () => {
+    toaster.show({ message: 'Held dup', duration: 3000 });
+    const id = toaster.toasts()[0].id;
+    toaster.pauseTimer(id);
+    vi.advanceTimersByTime(500);
+    toaster.show({ message: 'Held dup', duration: 3000 });
+    vi.advanceTimersByTime(60000);
+    expect(toaster.toasts().length).toBe(1);
+
+    toaster.resumeTimer(id);
+    vi.advanceTimersByTime(3000);
+    expect(toaster.toasts().length).toBe(0);
+  });
+
   it('tracks remaining per start across repeated pause/resume cycles', () => {
     // 5000ms toast: pause at 2000, resume, pause again after 1000 more -
     // exactly 2000ms must remain, not 4000 (remaining is per-start, not

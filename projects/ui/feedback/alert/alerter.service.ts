@@ -3,7 +3,7 @@ import { type Observable, Subject } from 'rxjs';
 
 import type { AlertSeverity } from './alert';
 import { CNGX_FEEDBACK_CONFIG } from '../config/feedback-config';
-import { createPausableTimer, type PausableTimer } from '../internal/pausable-timer';
+import { createHeldTimerRegistry } from '../internal/pausable-timer';
 
 /** Auto-dismiss fallback when neither `duration` nor `withAlerts({defaultDuration})` is set. */
 const ALERT_FALLBACK_DURATION = 5000;
@@ -23,7 +23,9 @@ export interface AlertConfig {
   /**
    * Whether the alert persists until explicitly dismissed.
    * Defaults to `true` unless a `duration` is passed or
-   * `withAlerts({ defaultDuration })` is configured.
+   * `withAlerts({ defaultDuration })` is configured. `error` alerts always
+   * default to persistent (matching the toaster) - opt out with an explicit
+   * `duration` or `persistent: false`.
    */
   persistent?: boolean;
   /**
@@ -63,6 +65,10 @@ export interface AlertState {
   > &
     Pick<AlertConfig, 'title' | 'duration' | 'scope'>;
   readonly createdAt: number;
+  /**
+   * @internal - library-owned dismissal lifecycle. Never call `next()` or
+   * `complete()` from consumer code; observe via `AlertRef.afterDismissed()`.
+   */
   readonly dismissed$: Subject<void>;
 }
 
@@ -98,14 +104,11 @@ export class CngxAlerter {
   private readonly defaultDuration = this.config?.alertDefaultDuration;
 
   /** Auto-dismiss timers keyed by alert id - not part of the public state shape. */
-  private readonly timers = new Map<number, PausableTimer>();
+  private readonly timers = createHeldTimerRegistry();
 
   constructor() {
     this.destroyRef.onDestroy(() => {
-      for (const timer of this.timers.values()) {
-        timer.clear();
-      }
-      this.timers.clear();
+      this.timers.clearAll();
       for (const a of this.alerts()) {
         a.dismissed$.next();
         a.dismissed$.complete();
@@ -116,17 +119,21 @@ export class CngxAlerter {
   /** Show an alert. Returns a ref for programmatic dismiss. */
   show(config: AlertConfig): AlertRef {
     const severity = config.severity ?? 'info';
-    // An explicit duration (or a configured defaultDuration) implies auto-dismiss.
+    // An explicit duration (or a configured defaultDuration) implies
+    // auto-dismiss - except for errors, which stay persistent by default on
+    // every feedback surface (toaster parity); opt out explicitly.
     const persistent =
-      config.persistent ?? (config.duration === undefined && this.defaultDuration === undefined);
+      config.persistent ??
+      (config.duration === undefined &&
+        (severity === 'error' || this.defaultDuration === undefined));
     const duration = persistent
       ? (config.duration ?? this.defaultDuration)
       : (config.duration ?? this.defaultDuration ?? ALERT_FALLBACK_DURATION);
     const dismissible = config.dismissible ?? true;
 
     // Dedup: message + severity + scope within window. Merges silently -
-    // no repeat counter (deliberate asymmetry with the toast x-count: the
-    // stack is a role="log" region, a mutating counter would re-announce).
+    // no repeat counter (deliberate asymmetry with the toast x-count: a
+    // mutating counter inside a rendered alert/status item would re-announce).
     // The auto-dismiss timer restarts so the merged alert stays a full duration.
     const now = Date.now();
     const existing = this.alerts().find(
@@ -164,14 +171,18 @@ export class CngxAlerter {
     return this.createRef(state);
   }
 
-  /** @internal - called by `CngxAlertStack` on hover/focus (WCAG 2.2.1). */
+  /**
+   * @internal - called by `CngxAlertStack` on hover/focus (WCAG 2.2.1).
+   * Hold-counted: hover and focus-within pause independently; the timer
+   * resumes only when the last hold releases.
+   */
   pauseTimer(id: number): void {
-    this.timers.get(id)?.pause();
+    this.timers.hold(id);
   }
 
   /** @internal - called by `CngxAlertStack` on pointer-leave/focus-out. */
   resumeTimer(id: number): void {
-    this.timers.get(id)?.resume();
+    this.timers.release(id);
   }
 
   /** Dismiss a single alert by id. */
@@ -205,17 +216,11 @@ export class CngxAlerter {
     if (state.config.persistent || state.config.duration === undefined) {
       return;
     }
-    let timer = this.timers.get(state.id);
-    if (!timer) {
-      timer = createPausableTimer();
-      this.timers.set(state.id, timer);
-    }
-    timer.start(state.config.duration, () => this.dismiss(state.id));
+    this.timers.start(state.id, state.config.duration, () => this.dismiss(state.id));
   }
 
   private clearTimer(id: number): void {
-    this.timers.get(id)?.clear();
-    this.timers.delete(id);
+    this.timers.clear(id);
   }
 
   private createRef(state: AlertState): AlertRef {

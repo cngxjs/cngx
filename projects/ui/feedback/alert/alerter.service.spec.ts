@@ -163,6 +163,19 @@ describe('CngxAlerter', () => {
     expect(configured.alerts().length).toBe(1);
   });
 
+  it('error alerts stay persistent under a configured defaultDuration (toaster parity)', () => {
+    const configured = reconfigure({ alertDefaultDuration: 2000 });
+    configured.show({ message: 'Boom', severity: 'error' });
+    vi.advanceTimersByTime(60000);
+    expect(configured.alerts().length).toBe(1);
+  });
+
+  it('an explicit duration still auto-dismisses an error alert', () => {
+    alerter.show({ message: 'Boom', severity: 'error', duration: 1000 });
+    vi.advanceTimersByTime(1000);
+    expect(alerter.alerts().length).toBe(0);
+  });
+
   // ── Pause / Resume (WCAG 2.2.1) ──────────────────────────
 
   it('pauseTimer() pauses auto-dismiss', () => {
@@ -172,6 +185,20 @@ describe('CngxAlerter', () => {
     alerter.pauseTimer(id);
     vi.advanceTimersByTime(60000);
     expect(alerter.alerts().length).toBe(1);
+  });
+
+  it('holds the pause until every source releases (hover + focus refcount)', () => {
+    alerter.show({ message: 'Held', duration: 3000 });
+    const id = alerter.alerts()[0].id;
+    alerter.pauseTimer(id); // pointer enters
+    alerter.pauseTimer(id); // focus moves in
+    alerter.resumeTimer(id); // pointer leaves - focus still inside
+    vi.advanceTimersByTime(60000);
+    expect(alerter.alerts().length).toBe(1);
+
+    alerter.resumeTimer(id); // focus leaves - last hold released
+    vi.advanceTimersByTime(3000);
+    expect(alerter.alerts().length).toBe(0);
   });
 
   it('resumeTimer() resumes with the per-start remaining time', () => {

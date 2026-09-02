@@ -12,7 +12,7 @@ import { type Observable, Subject } from 'rxjs';
 
 import type { AlertSeverity } from '../alert/alert';
 import { CNGX_FEEDBACK_CONFIG } from '../config/feedback-config';
-import { createPausableTimer, type PausableTimer } from '../internal/pausable-timer';
+import { createHeldTimerRegistry } from '../internal/pausable-timer';
 
 /**
  * Configuration for a single toast.
@@ -47,7 +47,7 @@ export interface ToastConfig {
   dismissible?: boolean;
 
   /**
-   * Custom component rendered as the toast body (Stufe 2).
+   * Custom component rendered as the toast body.
    * Replaces the default `message`/`description` text.
    * `title` is still rendered above the component if set.
    *
@@ -81,7 +81,8 @@ export interface ToastRef {
 }
 
 /**
- * Internal toast state tracked by the service.
+ * Tracked state for a single toast - the element type of the public
+ * `CngxToaster.toasts` signal. Immutable per slot; treat as read-only.
  *
  * @category ui/feedback/toast
  */
@@ -97,7 +98,10 @@ export interface ToastState {
   readonly createdAt: number;
   /** Dedup counter - incremented when identical toast fires again. */
   readonly count: number;
-  /** Subject that emits on dismiss. */
+  /**
+   * @internal - library-owned dismissal lifecycle. Never call `next()` or
+   * `complete()` from consumer code; observe via `ToastRef.afterDismissed()`.
+   */
   readonly dismissed$: Subject<void>;
 }
 
@@ -131,21 +135,18 @@ export class CngxToaster {
   /** Reactive toast stack - read by `CngxToastOutlet`. */
   readonly toasts = signal<readonly ToastState[]>([]);
 
-  /** Default duration for non-error toasts. */
-  readonly defaultDuration = signal<number>(this.config?.toastDefaultDuration ?? 5000);
+  /** Default duration for non-error toasts - configure via `withToasts({ defaultDuration })`. */
+  private readonly defaultDuration = this.config?.toastDefaultDuration ?? 5000;
 
-  /** Dedup window in ms - identical toasts within this window are merged. */
-  readonly dedupWindow = signal<number>(this.config?.toastDedupWindow ?? 1000);
+  /** Dedup window in ms - configure via `withToasts({ dedupWindow })`. */
+  private readonly dedupWindow = this.config?.toastDedupWindow ?? 1000;
 
   /** Auto-dismiss timers keyed by toast id - not part of the public state shape. */
-  private readonly timers = new Map<number, PausableTimer>();
+  private readonly timers = createHeldTimerRegistry();
 
   constructor() {
     this.destroyRef.onDestroy(() => {
-      for (const timer of this.timers.values()) {
-        timer.clear();
-      }
-      this.timers.clear();
+      this.timers.clearAll();
       for (const t of this.toasts()) {
         t.dismissed$.next();
         t.dismissed$.complete();
@@ -157,7 +158,7 @@ export class CngxToaster {
   show(config: ToastConfig): ToastRef {
     const severity = config.severity ?? 'info';
     const duration =
-      config.duration ?? (severity === 'error' ? ('persistent' as const) : this.defaultDuration());
+      config.duration ?? (severity === 'error' ? ('persistent' as const) : this.defaultDuration);
     const dismissible = config.dismissible ?? true;
 
     // Dedup key includes title but excludes description - same event with
@@ -170,7 +171,7 @@ export class CngxToaster {
         t.config.severity === severity &&
         (t.config.title ?? '') === (config.title ?? '') &&
         t.config.contentTemplate === config.contentTemplate &&
-        now - t.createdAt < this.dedupWindow(),
+        now - t.createdAt < this.dedupWindow,
     );
 
     if (existing) {
@@ -209,14 +210,18 @@ export class CngxToaster {
     return this.createRef(state);
   }
 
-  /** @internal - called by toast-outlet on hover/focus (WCAG 2.2.1). */
+  /**
+   * @internal - called by toast-outlet on hover/focus (WCAG 2.2.1).
+   * Hold-counted: hover and focus-within pause independently; the timer
+   * resumes only when the last hold releases.
+   */
   pauseTimer(id: number): void {
-    this.timers.get(id)?.pause();
+    this.timers.hold(id);
   }
 
   /** @internal - called by toast-outlet on mouse-leave/focus-out. */
   resumeTimer(id: number): void {
-    this.timers.get(id)?.resume();
+    this.timers.release(id);
   }
 
   /** Dismiss a toast by id. */
@@ -246,17 +251,11 @@ export class CngxToaster {
       this.clearTimer(id);
       return;
     }
-    let timer = this.timers.get(id);
-    if (!timer) {
-      timer = createPausableTimer();
-      this.timers.set(id, timer);
-    }
-    timer.start(duration, () => this.dismiss(id));
+    this.timers.start(id, duration, () => this.dismiss(id));
   }
 
   private clearTimer(id: number): void {
-    this.timers.get(id)?.clear();
-    this.timers.delete(id);
+    this.timers.clear(id);
   }
 
   private createRef(state: ToastState): ToastRef {
