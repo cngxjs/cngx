@@ -40,4 +40,15 @@ export {
   type CngxMatTabHandleFactory,
 } from './material-bridge/handle';
 export { MaterialPrivateSurfaces } from './material-bridge/private-surfaces';
+// Cross-entry internal surface: consumed by @cngx/ui/mat-stepper, same
+// pattern as MaterialPrivateSurfaces above. All @internal-tagged.
+export {
+  createOrderedRegistrationSeam,
+  type CngxOrderedRegistrationSeam,
+  type CngxOrderedRegistrationSeamOptions,
+} from './material-bridge/ordered-registration';
+export {
+  mountLiveRegionAnnouncer,
+  type CngxMatBridgeLiveRegionOptions,
+} from './material-bridge/live-region';
 export { createCngxMatTabOverflowDomAdapter } from './overflow/mat-tab-overflow-dom-adapter';

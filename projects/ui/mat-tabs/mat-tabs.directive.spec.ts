@@ -153,6 +153,41 @@ class DynamicHostCmp {
   standalone: true,
   imports: [MatTabsModule, CngxMatTabs],
   template: `
+    <mat-tab-group cngxMatTabs [(activeIndex)]="active">
+      @for (label of labels(); track label) {
+        <mat-tab [label]="label">{{ label }} content</mat-tab>
+      }
+    </mat-tab-group>
+  `,
+})
+class MidListInsertHostCmp {
+  readonly labels = signal<readonly string[]>(['One', 'Three']);
+  protected active = 0;
+}
+
+@Component({
+  standalone: true,
+  imports: [MatTabsModule, CngxMatTabs],
+  template: `
+    <mat-tab-group cngxMatTabs [(activeIndex)]="active">
+      <mat-tab label="Outer one">Outer one content</mat-tab>
+      <mat-tab label="Outer two">
+        <mat-tab-group>
+          <mat-tab label="Inner one">Inner one content</mat-tab>
+          <mat-tab label="Inner two">Inner two content</mat-tab>
+        </mat-tab-group>
+      </mat-tab>
+    </mat-tab-group>
+  `,
+})
+class NestedTabGroupHostCmp {
+  protected active = 0;
+}
+
+@Component({
+  standalone: true,
+  imports: [MatTabsModule, CngxMatTabs],
+  template: `
     <mat-tab-group
       cngxMatTabs
       [commitAction]="commit"
@@ -634,7 +669,7 @@ describe('CngxMatTabs instrumentation directive', () => {
     expect(presenter.lastFailedIndex()).toBeUndefined();
   });
 
-  test('axis 14: per-handle errorAggregator slot defaults to undefined and is writable through setupsByTab', async () => {
+  test('axis 14: per-handle errorAggregator slot defaults to undefined and is writable through the registry', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
@@ -647,14 +682,12 @@ describe('CngxMatTabs instrumentation directive', () => {
     // `hostDirectives`. Reach the registry through the host
     // element's injector - same instance both directives see.
     const registry = matEl.injector.get(CngxMatTabsRegistry);
-    const setupsByTab = (
-      registry as unknown as {
-        setupsByTab: Map<
-          unknown,
-          { setup: { errorAggregator: { set(v: unknown): void } } }
-        >;
-      }
-    ).setupsByTab;
+    // <mat-tab> host elements are consumed as content children and
+    // never stamped into the rendered DOM, so the debug tree cannot
+    // resolve them - read the registry's own contentChildren query.
+    const firstMatTab = (
+      registry as unknown as { matTabs: () => readonly MatTab[] }
+    ).matTabs()[0];
 
     // Default slot for every registered handle is `undefined` -
     // the read-only-by-default behaviour the prior shared constant
@@ -663,22 +696,24 @@ describe('CngxMatTabs instrumentation directive', () => {
       expect(tab.errorAggregator()).toBeUndefined();
     }
 
-    // The writable is reachable through setupsByTab so the per-tab
+    // The writable is reachable through getHandleSetup so the per-tab
     // attribute directive can pump bound aggregators into the slot.
     // Use a minimal contract-shaped stub - the parent's
     // `aggregatedErrorTabs` computed reads `shouldShow()` /
     // `announcement()` whenever any handle's slot is non-undefined,
     // so an opaque marker would crash the downstream effect.
-    const firstEntry = Array.from(setupsByTab.values())[0];
+    const firstEntry = registry.getHandleSetup(firstMatTab) as unknown as {
+      errorAggregator: { set(v: unknown): void };
+    };
     const stub = makeStubAggregator();
-    firstEntry.setup.errorAggregator.set(stub.contract as unknown);
+    firstEntry.errorAggregator.set(stub.contract as unknown);
     fixture.detectChanges();
     await fixture.whenStable();
     expect(presenter.tabs()[0].errorAggregator()).toBe(stub.contract);
 
     // Resetting back to undefined restores the default - used by the
     // attribute directive's destroyRef cleanup path.
-    firstEntry.setup.errorAggregator.set(undefined);
+    firstEntry.errorAggregator.set(undefined);
     fixture.detectChanges();
     await fixture.whenStable();
     expect(presenter.tabs()[0].errorAggregator()).toBeUndefined();
@@ -1230,12 +1265,11 @@ describe('CngxMatTabs instrumentation directive', () => {
       (el) => el.componentInstance instanceof MatTabGroup,
     );
     const registry = matEl.injector.get(CngxMatTabsRegistry);
-    const setupsByTab = (
-      registry as unknown as {
-        setupsByTab: Map<MatTab, { setup: unknown }>;
-      }
-    ).setupsByTab;
-    const firstMatTab = Array.from(setupsByTab.keys())[0];
+    // <mat-tab> hosts are not in the rendered DOM - read the
+    // registry's contentChildren query for the instance.
+    const firstMatTab = (
+      registry as unknown as { matTabs: () => readonly MatTab[] }
+    ).matTabs()[0];
     expect(firstMatTab).toBeDefined();
 
     // Rapid burst - three Material `_stateChanges` emissions inside
@@ -1266,30 +1300,36 @@ describe('CngxMatTabs instrumentation directive', () => {
       (el) => el.componentInstance instanceof MatTabGroup,
     );
     const registry = matEl.injector.get(CngxMatTabsRegistry);
-    const setupsByTab = (
+    const presenter = matEl.injector.get(CngxTabGroupPresenter);
+    const seam = (
       registry as unknown as {
-        setupsByTab: Map<
-          MatTab,
-          {
-            childInjector: {
-              destroy: () => void;
-              onDestroy: (cb: () => void) => void;
-            };
-          }
-        >;
+        seam: {
+          get(tab: MatTab):
+            | {
+                childInjector: {
+                  destroy: () => void;
+                  onDestroy: (cb: () => void) => void;
+                };
+              }
+            | undefined;
+        };
       }
-    ).setupsByTab;
-    expect(setupsByTab.size).toBe(3);
-    const thirdMatTab = Array.from(setupsByTab.keys())[2];
-    const thirdEntry = setupsByTab.get(thirdMatTab);
+    ).seam;
+    expect(presenter.tabs().length).toBe(3);
+    // <mat-tab> hosts are not in the rendered DOM - read the
+    // registry's contentChildren query for the instance.
+    const thirdMatTab = (
+      registry as unknown as { matTabs: () => readonly MatTab[] }
+    ).matTabs()[2];
+    const thirdEntry = seam.get(thirdMatTab);
     expect(thirdEntry).toBeDefined();
     let destroyed = false;
     thirdEntry!.childInjector.onDestroy(() => {
       destroyed = true;
     });
 
-    // Drop the third tab; the directive's syncHandles loop must
-    // call childInjector.destroy() on the leaving tab so the
+    // Drop the third tab; the seam's removal path must call
+    // childInjector.destroy() on the leaving tab so the
     // takeUntilDestroyed-bridged `_stateChanges` subscription tears
     // down deterministically - same cleanup precision as the prior
     // `Map<MatTab, Subscription>`, with the destroy hook driven
@@ -1297,7 +1337,8 @@ describe('CngxMatTabs instrumentation directive', () => {
     fixture.componentInstance['setShowThird'](false);
     fixture.detectChanges();
     await fixture.whenStable();
-    expect(setupsByTab.size).toBe(2);
+    expect(presenter.tabs().length).toBe(2);
+    expect(seam.get(thirdMatTab)).toBeUndefined();
     expect(destroyed).toBe(true);
   });
 
@@ -1523,4 +1564,52 @@ describe('CngxMatTabs instrumentation directive', () => {
     expect(matTabGroup.selectedIndex).toBe(0);
   });
 
+  test('axis 39: mid-list MatTab insert registers at its DOM position, keeping presenter order aligned with Material', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(MidListInsertHostCmp);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const matEl = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof MatTabGroup,
+    );
+    const presenter = matEl.injector.get(CngxTabGroupPresenter);
+    expect(presenter.tabs().map((h) => h.label())).toEqual(['One', 'Three']);
+    const idThreeBefore = presenter.tabs()[1].id;
+
+    // Insert "Two" between the existing tabs - Material renders it at
+    // DOM index 1, so the presenter registry must mirror that slot
+    // instead of appending at the tail.
+    fixture.componentInstance.labels.set(['One', 'Two', 'Three']);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(presenter.tabs().map((h) => h.label())).toEqual(['One', 'Two', 'Three']);
+    // The displaced suffix keeps its handle instance - same id, new slot.
+    expect(presenter.tabs()[2].id).toBe(idThreeBefore);
+  });
+
+  test('axis 40: ownership filter - tabs of a nested <mat-tab-group> do not register with the outer presenter', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(NestedTabGroupHostCmp);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const matEl = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof MatTabGroup,
+    );
+    const presenter = matEl.injector.get(CngxTabGroupPresenter);
+
+    // descendants:true surfaces all four MatTabs; only the two owned
+    // by the instrumented outer group may register.
+    expect(presenter.tabs().map((h) => h.label())).toEqual(['Outer one', 'Outer two']);
+  });
 });

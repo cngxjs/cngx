@@ -14,7 +14,7 @@ import { CngxLiveAnnouncer } from '@cngx/common/a11y';
  *
  * @internal
  */
-export interface CngxMatTabLiveRegionOptions {
+export interface CngxMatBridgeLiveRegionOptions {
   /** Reactive announcement text. Empty string keeps the region quiet. */
   readonly announcement: Signal<string>;
   readonly injector: Injector;
@@ -41,11 +41,14 @@ export interface CngxMatTabLiveRegionOptions {
  * `untracked` - the announcer owns its own clear-then-set timer, so it
  * stays out of the effect's dependency graph.
  *
- * @internal - package-private helper for `[cngxMatTabs]`. Not
- * exported from `public-api.ts`.
+ * @internal - helper shared by the Material bridge directives
+ * (`[cngxMatTabs]`, `[cngxMatTabNav]`, `[cngxMatStepper]`). Exported
+ * `@internal` from the mat-tabs barrel for cross-entry consumption
+ * (the `MaterialPrivateSurfaces` pattern) - ng-packagr rejects
+ * relative-import file sharing between entry points.
  */
 export function mountLiveRegionAnnouncer(
-  opts: CngxMatTabLiveRegionOptions,
+  opts: CngxMatBridgeLiveRegionOptions,
 ): void {
   const politeness = opts.politeness ?? 'polite';
 

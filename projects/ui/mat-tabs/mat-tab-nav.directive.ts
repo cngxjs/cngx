@@ -1,18 +1,10 @@
-import {
-  computed,
-  DestroyRef,
-  Directive,
-  ElementRef,
-  inject,
-  Injector,
-  Renderer2,
-  type Signal,
-} from '@angular/core';
+import { DestroyRef, Directive, ElementRef, inject, Injector, Renderer2 } from '@angular/core';
 
 import {
   CNGX_TAB_GROUP_HOST,
   CNGX_TAB_NAV_HOST,
   CngxTabGroupPresenter,
+  createTabNavAnnouncement,
   injectTabsI18n,
   type CngxTabGroupHost,
 } from '@cngx/common/tabs';
@@ -22,7 +14,7 @@ import {
   createMatTabRejectionDecoration,
 } from './decorations/decoration-projectors';
 import { createAggregatedErrorTabs } from './decorations/aggregated-error-tabs';
-import { mountLiveRegionAnnouncer } from './decorations/live-region';
+import { mountLiveRegionAnnouncer } from './material-bridge/live-region';
 import { createRejectionState } from './decorations/rejection-state';
 
 /**
@@ -42,7 +34,15 @@ import { createRejectionState } from './decorations/rejection-state';
  * reflects `NavigationEnd` onto `activeIndex` (its commit-action stays
  * dormant because link clicks navigate natively, never through
  * `presenter.select`). Ableitung statt Verwaltung - the route-active
- * link is the single source of the active index.
+ * link is the single source of the active index. `activeIndex` /
+ * `activeIndexChange` are forwarded from the presenter hostDirective,
+ * so a consumer without route-sync can two-way bind the active link
+ * the same way `[cngxMatTabs]` consumers do.
+ *
+ * Active-link changes speak: the shared nav announcement bundle
+ * ({@link createTabNavAnnouncement}) feeds the landing link's label to
+ * the shared live announcer - silent through the mount window, so a
+ * deep link's initial active state is not announced as a change.
  *
  * Composes {@link CngxTabGroupPresenter} via `hostDirectives` so the
  * `CNGX_STATEFUL` producer, the `lastFailedIndex` rejection slot, and
@@ -70,7 +70,13 @@ import { createRejectionState } from './decorations/rejection-state';
   // Presence-only marker: it tells a stacked [cngxTabsRouteSync] that its
   // links own subtrees, so the URL match is prefix rather than suffix.
   providers: [{ provide: CNGX_TAB_NAV_HOST, useValue: true }],
-  hostDirectives: [CngxTabGroupPresenter],
+  hostDirectives: [
+    {
+      directive: CngxTabGroupPresenter,
+      inputs: ['activeIndex'],
+      outputs: ['activeIndexChange'],
+    },
+  ],
 })
 export class CngxMatTabNav {
   private readonly presenter = inject<CngxTabGroupHost>(CNGX_TAB_GROUP_HOST);
@@ -79,16 +85,6 @@ export class CngxMatTabNav {
   private readonly renderer = inject(Renderer2);
   private readonly hostEl = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   private readonly i18n = injectTabsI18n();
-
-  // Stable id of the rejected link, or null. Identity equal collapses
-  // tabs() re-emits that don't change the failed-target id.
-  private readonly failedHandleId: Signal<string | null> = computed<string | null>(() => {
-    const idx = this.presenter.lastFailedIndex();
-    if (idx === undefined) {
-      return null;
-    }
-    return this.presenter.tabs()[idx]?.id ?? null;
-  });
 
   private readonly rejectionState = createRejectionState(this.presenter, this.i18n);
   private readonly aggregatedErrorTabs = createAggregatedErrorTabs(this.presenter);
@@ -99,11 +95,22 @@ export class CngxMatTabNav {
       injector: this.injector,
     });
 
+    // Active-link landing announcement - same bundle as the cngx-native
+    // <cngx-tab-nav>; the shared announcer coalesces both feeds into
+    // one polite region.
+    mountLiveRegionAnnouncer({
+      announcement: createTabNavAnnouncement({
+        presenter: this.presenter,
+        injector: this.injector,
+      }).liveAnnouncement,
+      injector: this.injector,
+    });
+
     // Same projector bodies as `[cngxMatTabs]`; only the per-tab element
     // selector differs (`.mat-mdc-tab-link` vs `.mat-mdc-tab`).
     createMatTabRejectionDecoration({
       hostEl: this.hostEl,
-      failedHandleId: this.failedHandleId,
+      failedHandleId: this.rejectionState.failedHandleId,
       failedIndex: this.presenter.lastFailedIndex,
       descriptorText: this.rejectionState.descriptorText,
       renderer: this.renderer,

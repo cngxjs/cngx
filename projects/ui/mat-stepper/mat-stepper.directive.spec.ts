@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { MatStepperModule, MatStepper } from '@angular/material/stepper';
 import { describe, expect, test } from 'vitest';
 
+import { CngxLiveAnnouncer } from '@cngx/common/a11y';
 import {
   CngxStepperPresenter,
   type CngxStepperCommitAction,
@@ -71,6 +72,41 @@ class DynamicHostCmp {
   setShowThird(next: boolean): void {
     this.showThird.set(next);
   }
+}
+
+@Component({
+  standalone: true,
+  imports: [MatStepperModule, CngxMatStepper],
+  template: `
+    <mat-stepper cngxMatStepper [(activeStepIndex)]="active">
+      @for (label of labels(); track label) {
+        <mat-step [label]="label"><p>{{ label }} content</p></mat-step>
+      }
+    </mat-stepper>
+  `,
+})
+class MidListInsertHostCmp {
+  readonly labels = signal<readonly string[]>(['One', 'Three']);
+  protected active = 0;
+}
+
+@Component({
+  standalone: true,
+  imports: [MatStepperModule, CngxMatStepper],
+  template: `
+    <mat-stepper cngxMatStepper [(activeStepIndex)]="active">
+      <mat-step label="Outer one"><p>Outer one</p></mat-step>
+      <mat-step label="Outer two">
+        <mat-stepper>
+          <mat-step label="Inner one"><p>Inner one</p></mat-step>
+          <mat-step label="Inner two"><p>Inner two</p></mat-step>
+        </mat-stepper>
+      </mat-step>
+    </mat-stepper>
+  `,
+})
+class NestedStepperHostCmp {
+  protected active = 0;
 }
 
 @Component({
@@ -348,5 +384,127 @@ describe('CngxMatStepper instrumentation directive', () => {
     fixture.detectChanges();
     await fixture.whenStable();
     expect(presenter.flatSteps()[0].state()).toBe('error');
+  });
+
+  test('axis 13: mid-list MatStep insert registers at its DOM position, keeping presenter order aligned with Material', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(MidListInsertHostCmp);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const matEl = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof MatStepper,
+    );
+    const presenter = matEl.injector.get(CngxStepperPresenter);
+    // Handle labels are snapshotted at registration (documented bridge
+    // limitation), and @for input bindings land after the query
+    // emission - so order is asserted via handle ids, not labels.
+    expect(presenter.flatSteps().length).toBe(2);
+    const idOneBefore = presenter.flatSteps()[0].id;
+    const idThreeBefore = presenter.flatSteps()[1].id;
+
+    // Insert "Two" between the existing steps - Material renders it at
+    // DOM index 1, so the presenter registry must mirror that slot
+    // instead of appending at the tail.
+    fixture.componentInstance.labels.set(['One', 'Two', 'Three']);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const idsAfter = presenter.flatSteps().map((n) => n.id);
+    expect(idsAfter.length).toBe(3);
+    // Prefix stays, the new step lands mid-list, the displaced suffix
+    // keeps its handle instance - same id, new slot.
+    expect(idsAfter[0]).toBe(idOneBefore);
+    expect(idsAfter[2]).toBe(idThreeBefore);
+    expect(idsAfter[1]).not.toBe(idOneBefore);
+    expect(idsAfter[1]).not.toBe(idThreeBefore);
+  });
+
+  test('axis 14: aria-busy rides the commit window - true while pending, removed after resolve', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(CommitHostCmp);
+    let resolveCommit: ((value: boolean) => void) | null = null;
+    fixture.componentInstance['commit'] = () =>
+      new Promise<boolean>((res) => {
+        resolveCommit = res;
+      });
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const matEl = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof MatStepper,
+    );
+    const presenter = matEl.injector.get(CngxStepperPresenter);
+    const hostEl = matEl.nativeElement as HTMLElement;
+    expect(hostEl.getAttribute('aria-busy')).toBeNull();
+
+    presenter.select(1);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(hostEl.getAttribute('aria-busy')).toBe('true');
+
+    (resolveCommit as ((value: boolean) => void) | null)?.(true);
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(hostEl.getAttribute('aria-busy')).toBeNull();
+  });
+
+  test('axis 15: live-region announces commitInFlight while a pessimistic commit is pending', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(CommitHostCmp);
+    fixture.componentInstance['commit'] = () =>
+      new Promise<boolean>(() => undefined);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const matEl = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof MatStepper,
+    );
+    const presenter = matEl.injector.get(CngxStepperPresenter);
+
+    presenter.select(2);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(presenter.commitState.status()).toBe('pending');
+
+    // The shared announcer writes one frame later (its clear-then-set
+    // timer); a real delay flushes it without fake timers.
+    await new Promise((resolve) => setTimeout(resolve, 24));
+    const politeRegions = document.body.querySelectorAll<HTMLElement>(
+      'span[aria-live="polite"].cngx-sr-only',
+    );
+    try {
+      expect(politeRegions[politeRegions.length - 1]?.textContent).toBe('Committing step\u2026');
+    } finally {
+      TestBed.inject(CngxLiveAnnouncer).ngOnDestroy();
+    }
+  });
+
+  test('axis 16: ownership filter - steps of a nested <mat-stepper> do not register with the outer presenter', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(NestedStepperHostCmp);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const matEl = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof MatStepper,
+    );
+    const presenter = matEl.injector.get(CngxStepperPresenter);
+
+    // descendants:true surfaces all four MatSteps; only the two owned
+    // by the instrumented outer stepper may register.
+    expect(presenter.flatSteps().length).toBe(2);
+    expect(presenter.flatSteps().map((n) => n.label())).toEqual(['Outer one', 'Outer two']);
   });
 });

@@ -13,6 +13,7 @@ import {
   type ViewContainerRef,
 } from '@angular/core';
 
+import { CNGX_DEFAULT_HALF_WIRED_SLOT_SINK } from './half-wired-slot-sink';
 import type { CngxMatTabAggregatorContentContext } from './mat-tab-aggregator-content.directive';
 import type { CngxMatTabRejectionContentContext } from './mat-tab-rejection-content.directive';
 import { MaterialPrivateSurfaces } from '../material-bridge/private-surfaces';
@@ -113,6 +114,14 @@ export interface CngxMatTabRejectionDecorationOptions {
    * projector's `'errors'` so both can stack on the same target.
    */
   readonly descriptorIdSuffix?: string;
+  /** Default: `5`. Cap on `afterNextRender` retry recursion. */
+  readonly maxRetryAttempts?: number;
+  /**
+   * Optional dev-mode sink invoked when the retry ceiling is hit.
+   * Defaults to a `console.warn` gated on `ngDevMode`. Mirrors the
+   * aggregator projector's same-name opt.
+   */
+  readonly onMaxRetriesReached?: () => void;
   /**
    * Optional `*cngxMatTabRejectionContent` slot template. When
    * non-null AND `viewContainerRef` is supplied, the projector
@@ -149,6 +158,13 @@ export interface CngxMatTabRejectionDecorationOptions {
  * resolution O(1) - no DOM rebuild when the origin label arrives
  * via a downstream `tabs()` re-emission.
  *
+ * Race recovery - when the effect fires before MatTabHeader has
+ * rendered the matching button (initial-render race), the failed id
+ * is NOT latched (a latched id would suppress every later attempt
+ * for the same failure) and a single `afterNextRender` retry is
+ * scheduled, bounded by `maxRetryAttempts` - same recovery shape as
+ * the aggregator projector.
+ *
  * @internal
  */
 export function createMatTabRejectionDecoration(
@@ -159,6 +175,9 @@ export function createMatTabRejectionDecoration(
   const className = opts.className ?? 'cngx-mat-tab--error';
   const srOnlyClassName = opts.srOnlyClassName ?? 'cngx-sr-only';
   const descriptorIdSuffix = opts.descriptorIdSuffix ?? 'rejected';
+  const maxRetryAttempts = opts.maxRetryAttempts ?? 5;
+  let pendingRetry = false;
+  let retryAttempts = 0;
   // Slot path needs both halves; either alone degrades to imperative
   // textContent. No diagnostic - single in-package consumer always
   // passes both.
@@ -242,12 +261,12 @@ export function createMatTabRejectionDecoration(
     priorAriaDescribedby = null;
   };
 
-  const applyDecorationAt = (failedIdx: number, handleId: string): void => {
+  const applyDecorationAt = (failedIdx: number, handleId: string): boolean => {
     clearDecoration();
     const buttons = opts.hostEl.querySelectorAll<HTMLElement>(buttonSelector);
     const targetEl = buttons.item(failedIdx);
     if (!targetEl) {
-      return;
+      return false;
     }
     opts.renderer.addClass(targetEl, className);
 
@@ -276,6 +295,49 @@ export function createMatTabRejectionDecoration(
 
     decoratedEl = targetEl;
     priorAriaDescribedby = prior;
+    return true;
+  };
+
+  const applyOrScheduleRetry = (id: string): void => {
+    const idx = opts.failedIndex();
+    if (idx === undefined) {
+      clearDecoration();
+      lastAppliedId = null;
+      return;
+    }
+    if (applyDecorationAt(idx, id)) {
+      lastAppliedId = id;
+      retryAttempts = 0;
+      return;
+    }
+    // Initial-render race - the matching button is not stamped yet.
+    // The id is deliberately NOT latched (a latched id would
+    // short-circuit every later run for the same failure); retry
+    // once per render, bounded like the aggregator projector.
+    if (pendingRetry) {
+      return;
+    }
+    if (retryAttempts >= maxRetryAttempts) {
+      retryAttempts = 0;
+      const sink =
+        opts.onMaxRetriesReached ??
+        defaultRetryCeilingWarn(maxRetryAttempts, 'rejection');
+      sink();
+      return;
+    }
+    pendingRetry = true;
+    retryAttempts++;
+    afterNextRender(
+      () => {
+        pendingRetry = false;
+        const current = opts.failedHandleId();
+        if (current === null || current === lastAppliedId) {
+          return;
+        }
+        applyOrScheduleRetry(current);
+      },
+      { injector: opts.injector },
+    );
   };
 
   runInInjectionContext(opts.injector, () => {
@@ -290,14 +352,7 @@ export function createMatTabRejectionDecoration(
           lastAppliedId = null;
           return;
         }
-        const idx = opts.failedIndex();
-        if (idx === undefined) {
-          clearDecoration();
-          lastAppliedId = null;
-          return;
-        }
-        applyDecorationAt(idx, id);
-        lastAppliedId = id;
+        applyOrScheduleRetry(id);
       });
     });
 
@@ -428,7 +483,7 @@ export function createMatTabAggregatorDecoration(
   if (!isFullyWired() && (opts.contentTemplate || opts.viewContainerRef)) {
     const missing: 'contentTemplate' | 'viewContainerRef' =
       opts.contentTemplate ? 'viewContainerRef' : 'contentTemplate';
-    const sink = opts.onHalfWiredSlot ?? defaultHalfWiredSlotWarn;
+    const sink = opts.onHalfWiredSlot ?? CNGX_DEFAULT_HALF_WIRED_SLOT_SINK;
     sink(missing);
   }
 
@@ -612,7 +667,7 @@ export function createMatTabAggregatorDecoration(
     if (retryAttempts >= maxRetryAttempts) {
       retryAttempts = 0;
       const sink =
-        opts.onMaxRetriesReached ?? defaultRetryCeilingWarn(maxRetryAttempts);
+        opts.onMaxRetriesReached ?? defaultRetryCeilingWarn(maxRetryAttempts, 'aggregator');
       sink();
       return;
     }
@@ -647,34 +702,21 @@ export function createMatTabAggregatorDecoration(
   });
 }
 
-function defaultHalfWiredSlotWarn(
-  missing: 'contentTemplate' | 'viewContainerRef',
-): void {
-  if (!isDevMode()) {
-    return;
-  }
-  console.warn(
-    '[cngxMatTabs] aggregator-content slot half-wired - ' +
-      `\`${missing}\` is missing while the other half is supplied. ` +
-      'The decoration projector will silently fall back to the ' +
-      'imperative `textContent` path, and the consumer-projected ' +
-      '`*cngxMatTabAggregatorContent` template will never render. ' +
-      'Wire both halves on the [cngxMatTabs] directive (or neither).',
-  );
-}
-
-function defaultRetryCeilingWarn(max: number): () => void {
+function defaultRetryCeilingWarn(
+  max: number,
+  decoration: 'aggregator' | 'rejection',
+): () => void {
   return () => {
     if (!isDevMode()) {
       return;
     }
     console.warn(
-      '[cngxMatTabs] aggregator decoration retry ceiling reached ' +
+      `[cngxMatTabs] ${decoration} decoration retry ceiling reached ` +
         `(${max} attempts) - MatTabHeader did not render ` +
         '`.mat-mdc-tab` buttons within the expected window. Likely ' +
         'cause: Material upgrade broke the `.mat-mdc-tab` selector ' +
         'contract or a consumer-side render stall. ' +
-        'Bound aggregators may remain visually undecorated ' +
+        'The decoration may remain visually missing ' +
         'until the next state change.',
     );
   };

@@ -11,9 +11,15 @@ import {
 } from '@angular/core';
 import { MatStep, MatStepper } from '@angular/material/stepper';
 
-import { CNGX_STEPPER_HOST, CngxStepperPresenter } from '@cngx/common/stepper';
+import {
+  CNGX_STEPPER_HOST,
+  CngxStepperPresenter,
+  createStepperAnnouncementBuilders,
+  injectStepperI18n,
+} from '@cngx/common/stepper';
 import { nextUid } from '@cngx/core/utils';
 
+import { createOrderedRegistrationSeam, mountLiveRegionAnnouncer } from '@cngx/ui/mat-tabs';
 import { createMatStepperBidirectionalSync } from './material-bridge/bidirectional-sync';
 import {
   CNGX_MAT_STEP_HANDLE_FACTORY,
@@ -35,6 +41,11 @@ import {
  * This is the instrumentation pattern: Material owns the rendering and
  * the consumer authors native `<mat-step>` markup; CNGX is the
  * behaviour layer. Topology mirrors `[cngxMatTabs]`.
+ *
+ * Commit-lifecycle transitions speak: the shared announcement builder
+ * feeds the root live announcer (pending / landed / rolled-back
+ * phrases, identical to `<cngx-stepper>`), and the host carries
+ * `aria-busy="true"` while a commit is in flight.
  *
  * Inputs/outputs are forwarded from {@link CngxStepperPresenter}:
  * - `activeStepIndex` (two-way, with `activeStepIndexChange`),
@@ -92,6 +103,11 @@ import {
       outputs: ['activeStepIndexChange'],
     },
   ],
+  host: {
+    // Communicated busy-state while a commit is in flight - same
+    // strict 'pending' gate the cngx-native organism uses per step.
+    '[attr.aria-busy]': "presenter.busy() ? 'true' : null",
+  },
 })
 export class CngxMatStepper {
   private readonly matStepper = inject(MatStepper, { self: true });
@@ -105,21 +121,48 @@ export class CngxMatStepper {
   private readonly injector: Injector = inject(InjectableInjector);
 
   private readonly matSteps = contentChildren(MatStep, { descendants: true });
-  // Map not WeakMap - syncHandles needs to iterate to find removed steps.
-  private readonly setupsByStep = new Map<MatStep, CngxMatStepHandleSetup>();
   private readonly createHandle = inject(CNGX_MAT_STEP_HANDLE_FACTORY);
+  private readonly i18n = injectStepperI18n();
+
+  // Shared with [cngxMatTabsRegistry]: the presenter registry appends
+  // new registrations, but Material renders steps at their DOM
+  // position - a mid-list <mat-step> insert must land at its query
+  // index, not at the tail. The seam re-registers the diverging
+  // suffix in query order while keeping surviving handle instances.
+  private readonly seam = createOrderedRegistrationSeam<MatStep, CngxMatStepHandleSetup>({
+    create: (step) => this.createHandle(step, () => nextUid('cngx-mat-step-')),
+    register: (setup) => this.presenter.register(setup.handle),
+    unregister: (setup) => this.presenter.unregister(setup.handle.id, setup.handle),
+    dispose: () => {
+      // Step setups carry no per-entry resources (no child injector).
+    },
+  });
 
   constructor() {
     effect(() => {
-      const steps = this.matSteps();
-      untracked(() => this.syncHandles(steps));
+      // Ownership filter: `descendants: true` also surfaces MatSteps of
+      // a stepper nested inside one of OUR steps' content. Each CdkStep
+      // carries its owning `_stepper` (public in the CDK typings), so
+      // foreign steps are dropped before they can register with this
+      // presenter.
+      const steps = this.matSteps().filter((step) => step._stepper === this.matStepper);
+      untracked(() => this.seam.sync(steps));
     });
 
-    this.destroyRef.onDestroy(() => {
-      for (const setup of this.setupsByStep.values()) {
-        this.presenter.unregister(setup.handle.id);
-      }
-      this.setupsByStep.clear();
+    this.destroyRef.onDestroy(() => this.seam.clear());
+
+    // Commit-lifecycle announcements (pending / landed / rolled-back).
+    // The shared builder computes the phrase; the shared announcer
+    // renders it - an attribute directive owns no template, so the
+    // polite region lives on the root CngxLiveAnnouncer, mirroring
+    // [cngxMatTabs].
+    mountLiveRegionAnnouncer({
+      announcement: createStepperAnnouncementBuilders({
+        presenter: this.presenter,
+        stepsOnly: this.presenter.stepsOnly,
+        i18n: this.i18n,
+      }).liveAnnouncement,
+      injector: this.injector,
     });
 
     createMatStepperBidirectionalSync({
@@ -128,28 +171,5 @@ export class CngxMatStepper {
       injector: this.injector,
       destroyRef: this.destroyRef,
     });
-  }
-
-  private syncHandles(steps: readonly MatStep[]): void {
-    const liveSteps = new Set<MatStep>(steps);
-
-    // Only fresh MatSteps get registered; cached ones survive untouched.
-    for (const step of steps) {
-      if (this.setupsByStep.has(step)) {
-        continue;
-      }
-      const setup = this.createHandle(step, () => nextUid('cngx-mat-step-'));
-      this.setupsByStep.set(step, setup);
-      this.presenter.register(setup.handle);
-    }
-
-    // Snapshot before iterating - guards against non-current-key deletes inside the body.
-    for (const [step, setup] of Array.from(this.setupsByStep.entries())) {
-      if (liveSteps.has(step)) {
-        continue;
-      }
-      this.setupsByStep.delete(step);
-      this.presenter.unregister(setup.handle.id);
-    }
   }
 }
