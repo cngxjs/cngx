@@ -466,13 +466,29 @@
   .cngx-paginator__dots {
     display: inline-flex;
     align-items: center;
+    /*
+     * Touch-target floor (WCAG 2.5.5/2.5.8). The visual dot stays at
+     * --cngx-paginator-dot-size; padding lifts each button's hit box onto
+     * max(dot-size, --cngx-target-min). The pad is 0 while no floor is active
+     * (target-min initial 0px), so the slot degrades to the bare dot size and
+     * the geometry below is unchanged on fine pointers.
+     */
+    --cngx-paginator-dot-pad: max(
+      (var(--cngx-target-min, 0px) - var(--cngx-paginator-dot-size, 0.5rem)) / 2,
+      0px
+    );
+    /* Layout size of one dot button (visual + hit padding); the viewport clip
+       and the track translate both derive from it so the glide stays exact. */
+    --cngx-paginator-dot-slot: calc(
+      var(--cngx-paginator-dot-size, 0.5rem) + 2 * var(--cngx-paginator-dot-pad)
+    );
   }
 
   .cngx-paginator__dots--windowed {
     overflow-x: clip;
     overflow-y: visible;
     max-width: calc(
-      7 * var(--cngx-paginator-dot-size, 0.5rem) + 6 * var(--cngx-paginator-dot-gap, 0.5rem)
+      7 * var(--cngx-paginator-dot-slot) + 6 * var(--cngx-paginator-dot-gap, 0.5rem)
     );
   }
 
@@ -487,36 +503,52 @@
     transform: translateX(
       calc(
         var(--cngx-paginator-dots-shift, 0) * -1 *
-          (var(--cngx-paginator-dot-size, 0.5rem) + var(--cngx-paginator-dot-gap, 0.5rem))
+          (var(--cngx-paginator-dot-slot) + var(--cngx-paginator-dot-gap, 0.5rem))
       )
     );
     transition: transform var(--cngx-paginator-motion-duration, 200ms) ease;
   }
 
+  /*
+   * The button is the hit box (slot-sized, transparent); the painted circle is
+   * its ::before. Keeping the scale tiers on the pseudo-element means the
+   * shrink never scales the hit area below the floor.
+   */
   .cngx-paginator__dot {
     box-sizing: border-box;
-    width: var(--cngx-paginator-dot-size, 0.5rem);
-    height: var(--cngx-paginator-dot-size, 0.5rem);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--cngx-paginator-dot-slot);
+    height: var(--cngx-paginator-dot-slot);
     padding: 0;
     border: 0;
     border-radius: 50%;
-    background: var(--cngx-paginator-dot-color, color-mix(in oklch, currentColor 35%, transparent));
+    background: transparent;
     cursor: pointer;
+  }
+
+  .cngx-paginator__dot::before {
+    content: '';
+    width: var(--cngx-paginator-dot-size, 0.5rem);
+    height: var(--cngx-paginator-dot-size, 0.5rem);
+    border-radius: 50%;
+    background: var(--cngx-paginator-dot-color, color-mix(in oklch, currentColor 35%, transparent));
     transition:
       transform var(--cngx-paginator-transition, 150ms ease),
       background var(--cngx-paginator-transition, 150ms ease);
   }
 
   /* Edge-shrink tiers (the transform is the resting size, not an animation). */
-  .cngx-paginator__dot[data-size='medium'] {
+  .cngx-paginator__dot[data-size='medium']::before {
     transform: scale(var(--cngx-paginator-dot-medium-scale, 0.7));
   }
 
-  .cngx-paginator__dot[data-size='small'] {
+  .cngx-paginator__dot[data-size='small']::before {
     transform: scale(var(--cngx-paginator-dot-small-scale, 0.45));
   }
 
-  .cngx-paginator__dot--current {
+  .cngx-paginator__dot--current::before {
     background: var(
       --cngx-paginator-dot-current-color,
       var(--cngx-color-primary, oklch(0.66 0.19 50))

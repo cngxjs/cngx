@@ -3,8 +3,11 @@ import {
   Component,
   computed,
   inject,
+  linkedSignal,
   ViewEncapsulation,
 } from '@angular/core';
+
+import { CngxRovingItem, CngxRovingTabindex } from '@cngx/common/a11y';
 
 import { injectPaginatorConfig } from '../paginator-config';
 import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
@@ -93,6 +96,14 @@ function dotsEqual(a: DotModel, b: DotModel): boolean {
  * transition) to keep the active dot centred, iOS page-control style, instead of
  * reshuffling the DOM. Dot DOM + windowing live here, not in a shared atom.
  *
+ * Keyboard/target contract matches the page row: the track is ONE tab stop via
+ * `CngxRovingTabindex` (arrows / Home / End move between dots, Enter/Space
+ * commits), the roving cursor re-syncs to the active page on every change, and
+ * dots clipped outside the visible window are skipped so focus never lands on
+ * an invisible ring. Each dot's hit area is lifted onto the
+ * `--cngx-target-min` floor by padding (base CSS); the painted circle stays at
+ * `--cngx-paginator-dot-size`.
+ *
  * @category ui/paginator
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/segments/paginator-dots.component.ts
@@ -106,12 +117,20 @@ function dotsEqual(a: DotModel, b: DotModel): boolean {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
+  imports: [CngxRovingTabindex, CngxRovingItem],
   template: `
     <div class="cngx-paginator__dots" [class.cngx-paginator__dots--windowed]="model().windowed">
-      <div class="cngx-paginator__dots-track" [style.--cngx-paginator-dots-shift]="model().firstVisible">
+      <div
+        class="cngx-paginator__dots-track"
+        cngxRovingTabindex
+        [(activeIndex)]="rovingIndex"
+        [style.--cngx-paginator-dots-shift]="model().firstVisible"
+      >
         @for (dot of model().dots; track dot.index) {
           <button
             type="button"
+            cngxRovingItem
+            [cngxRovingItemDisabled]="isOffWindow(dot.index)"
             class="cngx-paginator__dot"
             [class.cngx-paginator__dot--current]="isCurrent(dot.index)"
             [attr.data-size]="dot.size"
@@ -139,6 +158,24 @@ export class CngxPaginatorDots {
     () => buildDots(this.host.pageIndex(), this.host.totalPages()),
     { equal: dotsEqual },
   );
+
+  /**
+   * Roving focus cursor for the dot track, mirroring the page row: a
+   * `linkedSignal` so the single tab stop tracks the active page (Tab lands on
+   * `aria-current`) while arrow keys still move the cursor freely between
+   * commits. Dot index equals page index, so no window translation is needed.
+   */
+  protected readonly rovingIndex = linkedSignal<number>(() => this.host.pageIndex());
+
+  /**
+   * `true` for dots clipped outside the visible window of a glided track.
+   * They stay in the DOM (the glide needs the full strip) but are skipped by
+   * the roving cursor - focusing them would put the ring on an invisible dot.
+   */
+  protected isOffWindow(index: number): boolean {
+    const m = this.model();
+    return m.windowed && (index < m.firstVisible || index > m.firstVisible + VISIBLE - 1);
+  }
 
   protected isCurrent(index: number): boolean {
     return index === this.host.pageIndex();

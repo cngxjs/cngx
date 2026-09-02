@@ -116,6 +116,12 @@ const ATOMS: {
     coarse: { width: 834, height: 1112 },
   },
   {
+    name: 'paginator-dot',
+    route: '/#/ui/paginator/paginator-skins/dots',
+    selector: '.cngx-paginator__dot',
+    axis: 'block',
+  },
+  {
     name: 'stepper-step',
     route: '/#/ui/stepper/stepper-footer/complete-finish-button',
     selector: '.cngx-stepper__step',
