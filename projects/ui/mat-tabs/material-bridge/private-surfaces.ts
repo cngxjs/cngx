@@ -45,6 +45,19 @@ export namespace MaterialPrivateSurfaces {
   }
 
   /**
+   * Subset of Material's `MatTab` carrying the `_closestTabGroup`
+   * back-reference (the owning `MatTabGroup`, resolved via DI at
+   * construction). Material's own `_allTabs` filter compares against
+   * it for exactly the reason cngx does: a `descendants: true` query
+   * also surfaces tabs of a nested `<mat-tab-group>`, and only the
+   * ownership comparison separates them. Typed `unknown` because the
+   * upstream declaration is `any` - cngx only ever identity-compares.
+   */
+  export interface ClosestTabGroupSource {
+    readonly _closestTabGroup: unknown;
+  }
+
+  /**
    * Subset of Material's `MatStepper` carrying the `_iconOverrides`
    * map. `<cngx-mat-stepper>` patches this map inside
    * `afterNextRender` to forward consumer-projected

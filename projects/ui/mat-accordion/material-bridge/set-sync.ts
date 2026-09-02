@@ -176,10 +176,14 @@ export function createMatExpansionSetSync<P extends CngxExpansionPanelLike>(
           if (subscriptions.has(panel)) {
             continue;
           }
-          const id = panelId(panel);
+          // Resolve the id per event, not at subscribe time - a
+          // consumer-swapped panelId fn would otherwise leave this
+          // listener toggling the stale key forever.
           subscriptions.set(
             panel,
-            panel.expandedChange.subscribe((expanded) => writeBackFromMaterial(id, expanded)),
+            panel.expandedChange.subscribe((expanded) =>
+              writeBackFromMaterial(panelId(panel), expanded),
+            ),
           );
         }
         for (const [panel, subscription] of Array.from(subscriptions.entries())) {

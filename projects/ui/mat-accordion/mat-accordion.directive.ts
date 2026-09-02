@@ -116,7 +116,9 @@ export class CngxMatAccordion {
    * `cngx-mat-panel-N` ids are unknowable to consumers). The
    * function must return a stable, unique id per panel instance;
    * `MatExpansionPanel.id` (consumer-assignable) is a natural key.
-   * Unbound, ids fall back to generated `nextUid` values.
+   * Unbound, ids fall back to generated `nextUid` values. Swapping
+   * the bound function at runtime re-keys future events but does not
+   * migrate ids already stored in `openIds` - bind it once.
    */
   readonly panelIdFn = input<((panel: MatExpansionPanel) => string) | undefined>(undefined);
 

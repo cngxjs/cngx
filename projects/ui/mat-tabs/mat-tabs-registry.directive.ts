@@ -9,13 +9,14 @@ import {
   InjectionToken,
   untracked,
 } from '@angular/core';
-import { MatTab } from '@angular/material/tabs';
+import { MatTab, MatTabGroup } from '@angular/material/tabs';
 
 import { CNGX_TAB_GROUP_HOST, type CngxTabGroupHost } from '@cngx/common/tabs';
 import { nextUid } from '@cngx/core/utils';
 
-import { createOrderedRegistrationSeam } from '../material-bridge/ordered-registration';
+import { createOrderedRegistrationSeam } from '../material-bridge-shared/ordered-registration';
 import { CNGX_MAT_TAB_HANDLE_FACTORY, type CngxMatTabHandleSetup } from './material-bridge/handle';
+import type { MaterialPrivateSurfaces } from './material-bridge/private-surfaces';
 
 /**
  * Per-MatTab registry entry. The child `EnvironmentInjector` scopes
@@ -120,6 +121,7 @@ export class CngxMatTabsRegistry implements CngxMatTabsRegistryHost {
   private readonly destroyRef = inject(DestroyRef);
   private readonly envInjector = inject(EnvironmentInjector);
   private readonly createHandle = inject(CNGX_MAT_TAB_HANDLE_FACTORY);
+  private readonly matTabGroup = inject(MatTabGroup, { self: true });
 
   private readonly matTabs = contentChildren(MatTab, { descendants: true });
 
@@ -140,7 +142,17 @@ export class CngxMatTabsRegistry implements CngxMatTabsRegistryHost {
 
   constructor() {
     effect(() => {
-      const tabs = this.matTabs();
+      // Ownership filter: `descendants: true` also surfaces MatTabs of
+      // a tab-group nested inside one of OUR tabs' content. Each MatTab
+      // carries its owning `_closestTabGroup` (see
+      // MaterialPrivateSurfaces.ClosestTabGroupSource), so foreign tabs
+      // are dropped before they can register with this presenter -
+      // mirrors the mat-stepper/mat-accordion sibling filters.
+      const tabs = this.matTabs().filter(
+        (tab) =>
+          (tab as unknown as MaterialPrivateSurfaces.ClosestTabGroupSource)._closestTabGroup ===
+          this.matTabGroup,
+      );
       untracked(() => this.seam.sync(tabs));
     });
 

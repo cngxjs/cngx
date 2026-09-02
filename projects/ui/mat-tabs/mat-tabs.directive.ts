@@ -46,7 +46,7 @@ import {
   CngxMatTabRejectionContent,
   type CngxMatTabRejectionContentContext,
 } from './decorations/mat-tab-rejection-content.directive';
-import { mountLiveRegionAnnouncer } from '../material-bridge/live-region';
+import { mountLiveRegionAnnouncer } from '../material-bridge-shared/live-region';
 import { createRejectionState } from './decorations/rejection-state';
 import { CngxMatTabsRegistry } from './mat-tabs-registry.directive';
 import { MaterialPrivateSurfaces } from './material-bridge/private-surfaces';
@@ -219,9 +219,8 @@ export class CngxMatTabs {
     const matTabsConfig = this.matTabsConfig;
 
     // Polite live region - attribute directive owns no template, so
-    // the helper attaches the span at document.body (CDK
-    // LiveAnnouncer convention) and mirrors `CngxLiveRegion`'s host
-    // bindings imperatively.
+    // the helper forwards every non-empty announcement to the shared
+    // root CngxLiveAnnouncer, which owns the persistent region pair.
     mountLiveRegionAnnouncer({
       announcement: this.rejectionState.liveAnnouncement,
       injector: this.injector,

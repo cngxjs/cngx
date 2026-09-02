@@ -23,7 +23,7 @@
     "stepper/**/*.spec.ts",
     "mat-stepper/**/*.spec.ts",
     "mat-tabs/**/*.spec.ts",
-    "material-bridge/**/*.spec.ts",
+    "material-bridge-shared/**/*.spec.ts",
     "mat-accordion/**/*.spec.ts",
     "tabs/**/*.spec.ts",
     "accordion/**/*.spec.ts",

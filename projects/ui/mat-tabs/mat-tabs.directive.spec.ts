@@ -169,6 +169,25 @@ class MidListInsertHostCmp {
   standalone: true,
   imports: [MatTabsModule, CngxMatTabs],
   template: `
+    <mat-tab-group cngxMatTabs [(activeIndex)]="active">
+      <mat-tab label="Outer one">Outer one content</mat-tab>
+      <mat-tab label="Outer two">
+        <mat-tab-group>
+          <mat-tab label="Inner one">Inner one content</mat-tab>
+          <mat-tab label="Inner two">Inner two content</mat-tab>
+        </mat-tab-group>
+      </mat-tab>
+    </mat-tab-group>
+  `,
+})
+class NestedTabGroupHostCmp {
+  protected active = 0;
+}
+
+@Component({
+  standalone: true,
+  imports: [MatTabsModule, CngxMatTabs],
+  template: `
     <mat-tab-group
       cngxMatTabs
       [commitAction]="commit"
@@ -1575,4 +1594,22 @@ describe('CngxMatTabs instrumentation directive', () => {
     expect(presenter.tabs()[2].id).toBe(idThreeBefore);
   });
 
+  test('axis 40: ownership filter - tabs of a nested <mat-tab-group> do not register with the outer presenter', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(NestedTabGroupHostCmp);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const matEl = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof MatTabGroup,
+    );
+    const presenter = matEl.injector.get(CngxTabGroupPresenter);
+
+    // descendants:true surfaces all four MatTabs; only the two owned
+    // by the instrumented outer group may register.
+    expect(presenter.tabs().map((h) => h.label())).toEqual(['Outer one', 'Outer two']);
+  });
 });
