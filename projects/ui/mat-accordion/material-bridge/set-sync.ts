@@ -73,7 +73,15 @@ export interface CngxMatExpansionSetSyncOptions<P extends CngxExpansionPanelLike
  *    list) changes it writes `panel.expanded` to match, guarded by a
  *    re-entrancy flag so the resulting synchronous `expandedChange`
  *    echo does not loop back. The Material writes run inside
- *    `untracked()` per `reference_signal_architecture` rule 2.
+ *    `untracked()` per the signal-architecture rules. Before the
+ *    first write for a freshly-sighted panel, its authored
+ *    `[expanded]` state SEEDS the brain: a panel that arrives
+ *    already expanded toggles its id into the open-set instead of
+ *    being closed by the (initially empty) membership write.
+ *    Membership still flows through `toggle`, so single-open
+ *    arbitration applies to seeded panels exactly as it does to a
+ *    user click - two panels authored expanded clamp to one in
+ *    single mode.
  * 2. **subscription reconcile** - an `effect()` tracking only
  *    `panels()`; inside `untracked()` it subscribes freshly-added
  *    panels' `expandedChange` and drops removed ones (diff-only churn,
@@ -106,6 +114,9 @@ export function createMatExpansionSetSync<P extends CngxExpansionPanelLike>(
   let writingToMaterial = false;
 
   const subscriptions = new Map<P, { unsubscribe(): void }>();
+  // Panels whose authored `expanded` state has already been folded
+  // into the brain - seeding happens exactly once per panel lifetime.
+  const seeded = new WeakSet<P>();
 
   const writeBackFromMaterial = (id: string, expanded: boolean): void => {
     if (writingToMaterial) {
@@ -121,6 +132,23 @@ export function createMatExpansionSetSync<P extends CngxExpansionPanelLike>(
     // brain→Material.
     effect(() => {
       const list = panels();
+      // Seed first: a freshly-sighted panel authored `[expanded]`
+      // flows Material→brain BEFORE the membership write below runs,
+      // otherwise the initially-empty open-set would close it. Runs
+      // inside untracked() - `toggle` is a service call writing
+      // signals; the tracked `isOpen` reads below pick up the
+      // seeded membership synchronously.
+      untracked(() => {
+        for (const panel of list) {
+          if (seeded.has(panel)) {
+            continue;
+          }
+          seeded.add(panel);
+          if (panel.expanded && !accordion.isOpen(panelId(panel))) {
+            accordion.toggle(panelId(panel));
+          }
+        }
+      });
       const desired = list.map((panel) => accordion.isOpen(panelId(panel)));
       untracked(() => {
         writingToMaterial = true;

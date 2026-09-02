@@ -5,6 +5,7 @@ import {
   effect,
   inject,
   Injector,
+  input,
   untracked,
 } from '@angular/core';
 import { MatAccordion, MatExpansionPanel } from '@angular/material/expansion';
@@ -47,6 +48,20 @@ import { createMatExpansionSetSync } from './material-bridge/set-sync';
  * that re-asserts on every `multi` change) so Material never runs its own
  * single-open close while the cngx `effectiveOpenIds` clamp arbitrates.
  *
+ * Panels authored `[expanded]="true"` seed the open-set at first
+ * registration (Material→brain), so an initially-open Material panel
+ * is not closed by the initially-empty membership model. To make a
+ * pre-populated `[(openIds)]` addressable, bind `[panelIdFn]` - the
+ * hook replaces the generated per-panel ids with consumer-known keys:
+ *
+ * ```html
+ *   <mat-accordion
+ *     cngxMatAccordion
+ *     [(openIds)]="openIds"
+ *     [panelIdFn]="idFromPanel"
+ *   >
+ * ```
+ *
  * @playground Controlled open-set ./examples/bridge/bridge-example.component.ts
  * @category ui/mat-accordion
  * @docsKind primary
@@ -80,6 +95,17 @@ export class CngxMatAccordion {
 
   private readonly panels = contentChildren(MatExpansionPanel, { descendants: true });
 
+  /**
+   * Per-panel id hook. When bound, the returned key is what the
+   * open-set stores for that panel - making a pre-populated
+   * `[(openIds)]` model addressable (the generated
+   * `cngx-mat-panel-N` ids are unknowable to consumers). The
+   * function must return a stable, unique id per panel instance;
+   * `MatExpansionPanel.id` (consumer-assignable) is a natural key.
+   * Unbound, ids fall back to generated `nextUid` values.
+   */
+  readonly panelIdFn = input<((panel: MatExpansionPanel) => string) | undefined>(undefined);
+
   // Stable id per panel - the key the brain's open-set stores. A WeakMap:
   // the id is assigned first-seen and never needs enumeration, so a removed
   // panel's entry drops with the panel instead of accumulating over churn.
@@ -109,6 +135,10 @@ export class CngxMatAccordion {
   }
 
   private panelId(panel: MatExpansionPanel): string {
+    const idFn = this.panelIdFn();
+    if (idFn !== undefined) {
+      return idFn(panel);
+    }
     let id = this.idByPanel.get(panel);
     if (id === undefined) {
       id = nextUid('cngx-mat-panel-');

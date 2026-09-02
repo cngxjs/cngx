@@ -131,4 +131,44 @@ describe('createMatExpansionSetSync', () => {
     a.expanded = true;
     expect(host.openIds().has('a')).toBe(false);
   });
+
+  test('seeding: a panel arriving already expanded toggles its id into openIds instead of being closed', () => {
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const fixture = TestBed.createComponent(HostCmp);
+    const host = fixture.componentInstance;
+    const a = new FakePanel('a');
+    const b = new FakePanel('b');
+    // Authored [expanded]="true" - set BEFORE the sync ever sees the
+    // panel, mirroring Material applying the input during creation.
+    a.expanded = true;
+    host.panels.set([a, b]);
+    TestBed.flushEffects();
+
+    expect(host.openIds().has('a')).toBe(true);
+    expect(host.openIds().has('b')).toBe(false);
+    expect(a.expanded).toBe(true);
+    expect(b.expanded).toBe(false);
+  });
+
+  test('seeding happens once: a brain-side close of a seeded panel survives later panel-list emissions', () => {
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const fixture = TestBed.createComponent(HostCmp);
+    const host = fixture.componentInstance;
+    const a = new FakePanel('a');
+    a.expanded = true;
+    host.panels.set([a]);
+    TestBed.flushEffects();
+    expect(host.openIds().has('a')).toBe(true);
+
+    // Close via the brain; a later list emission must not re-seed the
+    // stale authored state back into the open-set.
+    host.toggle('a');
+    TestBed.flushEffects();
+    expect(a.expanded).toBe(false);
+
+    host.panels.set([a, new FakePanel('b')]);
+    TestBed.flushEffects();
+    expect(host.openIds().has('a')).toBe(false);
+    expect(a.expanded).toBe(false);
+  });
 });
