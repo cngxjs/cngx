@@ -22,6 +22,8 @@ import { CngxMatPaginator } from './mat-paginator-bridge.directive';
       [pageSizeOptions]="options()"
       [resetOn]="resetKey()"
       [announce]="announce()"
+      (pageChange)="indexEmits.push($event)"
+      (pageSizeChange)="sizeEmits.push($event)"
     />
   `,
 })
@@ -33,6 +35,8 @@ class HostCmp {
   readonly options = signal<number[]>([5, 10, 25]);
   readonly resetKey = signal<string | undefined>(undefined);
   readonly announce = signal(false);
+  readonly indexEmits: number[] = [];
+  readonly sizeEmits: number[] = [];
 }
 
 interface Plumbing {
@@ -247,5 +251,69 @@ describe('CngxMatPaginator (bridge)', () => {
     await settle(fixture);
     expect(live?.textContent).toContain('Page 2 of 10');
     expect(live?.textContent).toContain('items 11 to 20 of 100');
+  });
+
+  test('(l) a page click emits pageChange once and no spurious pageSizeChange', async () => {
+    TestBed.configureTestingModule({ providers });
+    const { fixture, matPaginator, host } = await setup();
+
+    // Every PageEvent carries the (unchanged) pageSize and the subscription
+    // calls setPageSize on each one; the shared guard must swallow the
+    // unchanged size instead of forwarding the brain's unconditional emit.
+    matPaginator.page.emit({ previousPageIndex: 0, pageIndex: 2, pageSize: 10, length: 100 });
+    await settle(fixture);
+    expect(host.indexEmits).toEqual([2]);
+    expect(host.sizeEmits).toEqual([]);
+
+    matPaginator.page.emit({ previousPageIndex: 2, pageIndex: 3, pageSize: 10, length: 100 });
+    await settle(fixture);
+    expect(host.indexEmits).toEqual([2, 3]);
+    expect(host.sizeEmits).toEqual([]);
+  });
+
+  test('(m) a real size change emits pageSizeChange exactly once', async () => {
+    TestBed.configureTestingModule({ providers });
+    const { fixture, matPaginator, host } = await setup();
+
+    matPaginator.page.emit({ previousPageIndex: 0, pageIndex: 0, pageSize: 25, length: 100 });
+    await settle(fixture);
+    expect(host.sizeEmits).toEqual([25]);
+    expect(host.indexEmits).toEqual([]);
+  });
+
+  test('(n) a total-shrink clamp reaches the bridge pageChange output', async () => {
+    TestBed.configureTestingModule({ providers });
+    const { fixture, paginate, host } = await setup();
+
+    paginate.setPage(5);
+    await settle(fixture);
+    expect(host.indexEmits).toEqual([5]);
+
+    // total 100 -> 20 clamps the effective page 5 -> 1 with no nav; the raw
+    // brain alias missed this entirely, the clamp path must report it once.
+    host.total.set(20);
+    await settle(fixture);
+    expect(paginate.pageIndex()).toBe(1);
+    expect(host.indexEmits).toEqual([5, 1]);
+  });
+
+  test('(o) a static announce attribute enables the live region (booleanAttribute)', async () => {
+    TestBed.configureTestingModule({ providers });
+
+    @Component({
+      standalone: true,
+      imports: [MatPaginatorModule, CngxMatPaginator],
+      template: '<mat-paginator cngxMatPaginator announce [total]="100" />',
+    })
+    class StaticAnnounceHost {}
+
+    const fixture = TestBed.createComponent(StaticAnnounceHost);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const live = fixture.nativeElement.querySelector('.cngx-mat-paginator-live');
+    expect(live).toBeTruthy();
   });
 });

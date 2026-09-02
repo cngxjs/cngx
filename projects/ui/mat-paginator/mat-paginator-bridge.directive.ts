@@ -1,4 +1,5 @@
 import {
+  booleanAttribute,
   computed,
   DestroyRef,
   Directive,
@@ -6,12 +7,13 @@ import {
   ElementRef,
   inject,
   input,
+  output,
   Renderer2,
   untracked,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatPaginator, type PageEvent } from '@angular/material/paginator';
-import { CngxPaginate, connectPaginateResetOn } from '@cngx/common/data';
+import { CngxPaginate, connectPaginateEmit, connectPaginateResetOn } from '@cngx/common/data';
 
 /**
  * Context handed to {@link CngxMatPaginator.announceLabel} to build the
@@ -99,7 +101,6 @@ const defaultAnnounceLabel = (c: CngxMatPaginatorAnnounceContext): string =>
     {
       directive: CngxPaginate,
       inputs: ['cngxPageIndex', 'cngxPageSize', 'total', 'state'],
-      outputs: ['pageChange', 'pageSizeChange'],
     },
   ],
 })
@@ -122,8 +123,21 @@ export class CngxMatPaginator {
    */
   readonly resetOn = input<unknown>(undefined, { alias: 'resetOn' });
 
-  /** Speak page changes through a visually-hidden `aria-live` region when `true`. */
-  readonly announce = input(false, { alias: 'announce' });
+  /**
+   * Emits the effective page index on every change - navigation or a
+   * `total`-shrink clamp - exactly once per change, through the shared
+   * `connectPaginateEmit` guard. Clamp emits are held back while the brain is
+   * busy or `total` is 0, matching the `CngxPaginator` shell.
+   */
+  readonly pageChange = output<number>();
+  /** Emits the effective page size exactly once per change. */
+  readonly pageSizeChange = output<number>();
+
+  /**
+   * Speak page changes through a visually-hidden `aria-live` region when set.
+   * `booleanAttribute` transform, so static `announce` markup enables it.
+   */
+  readonly announce = input(false, { alias: 'announce', transform: booleanAttribute });
 
   /** Builds the announcement string. Defaults to an English template. */
   readonly announceLabel = input<(context: CngxMatPaginatorAnnounceContext) => string>(
@@ -138,8 +152,8 @@ export class CngxMatPaginator {
   /** The live-region message - derived, so it never drifts from brain state. */
   private readonly announceMessage = computed(() => {
     const total = this.paginate.total();
-    const start = total === 0 ? 0 : this.paginate.range()[0] + 1;
-    const end = Math.min(this.paginate.range()[1], total);
+    const start = total === 0 ? 0 : this.paginate.clampedRange()[0] + 1;
+    const end = this.paginate.clampedRange()[1];
     return this.announceLabel()({
       page: this.paginate.pageIndex() + 1,
       totalPages: this.paginate.totalPages(),
@@ -180,6 +194,16 @@ export class CngxMatPaginator {
       // through this subscription; the path is loop-free without an echo guard.
       this.paginate.setPageSize(event.pageSize, false);
       this.paginate.setPage(event.pageIndex);
+    });
+
+    // Exactly-once output wiring, shared verbatim with the CngxPaginator shell
+    // and CngxIncrementalList. A raw hostDirectives alias of the brain outputs
+    // would bypass the shared last-emitted guard: setPageSize fires on every
+    // PageEvent, so each page click would also emit a spurious pageSizeChange,
+    // and a total-shrink clamp would move the page with no emission at all.
+    connectPaginateEmit(this.paginate, {
+      onIndex: (index) => this.pageChange.emit(index),
+      onSize: (size) => this.pageSizeChange.emit(size),
     });
 
     // Reset-on-change, shared verbatim with the shell input and the generic
