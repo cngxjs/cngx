@@ -4,8 +4,10 @@ import {
   Component,
   computed,
   contentChild,
+  effect,
   inject,
   signal,
+  untracked,
   ViewEncapsulation,
 } from '@angular/core';
 import { outputToObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -97,6 +99,18 @@ export class CngxContextMenu<T = unknown> implements CngxContextMenuPanel<T> {
   /** Per-open datum set by the trigger before `show()`. */
   private readonly datum = signal<T | null>(null);
 
+  /** Backing state for {@link openOwner}. */
+  private readonly openOwnerState = signal<unknown>(null);
+
+  /**
+   * @internal The trigger that owns the current open, `null` while unowned.
+   * Claimed by the opening `CngxContextMenuFor` before the popover shows;
+   * direct opens (`openAsSubmenu`, programmatic `popover.show()`) leave it
+   * `null`, so docked triggers keep `aria-expanded="false"` for opens they
+   * did not perform.
+   */
+  readonly openOwner = this.openOwnerState.asReadonly();
+
   /**
    * The datum the menu opened over while visible, `null` once closed. Gated on
    * `popover.isVisible()` so the reset on dismiss is derived, not synced.
@@ -111,6 +125,18 @@ export class CngxContextMenu<T = unknown> implements CngxContextMenuPanel<T> {
    */
   setContext(value: T | null): void {
     this.datum.set(value);
+  }
+
+  /** @internal Claim the current open for `owner`. See {@link CngxContextMenuPanel.claimOpen}. */
+  claimOpen(owner: unknown): void {
+    this.openOwnerState.set(owner);
+  }
+
+  /** @internal Release the open claim if `owner` still holds it. */
+  releaseOpen(owner: unknown): void {
+    if (this.openOwnerState() === owner) {
+      this.openOwnerState.set(null);
+    }
   }
 
   /**
@@ -145,6 +171,19 @@ export class CngxContextMenu<T = unknown> implements CngxContextMenuPanel<T> {
     outputToObservable(this.menuHost.ad.activated)
       .pipe(takeUntilDestroyed())
       .subscribe(() => this.activationHandler?.());
+    // openAsSubmenu installs sticky popover overrides (non-exclusive,
+    // right-start + flip chain) that would otherwise leak into the next ROOT
+    // open of the same panel. Clear them on hide so each open starts from the
+    // panel's own inputs; a submenu open re-installs them right before show().
+    effect(() => {
+      if (!this.popover.isVisible()) {
+        untracked(() => {
+          this.popover.exclusiveOverride.set(null);
+          this.popover.placementOverride.set(null);
+          this.popover.positionTryFallbacksOverride.set(null);
+        });
+      }
+    });
   }
 
   /**

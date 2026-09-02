@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxContextMenu } from './context-menu.component';
 import { CngxContextMenuFor } from './context-menu-for.directive';
@@ -69,6 +69,25 @@ class DataHost {
 class ResolverHost {
   readonly data = signal<Row>({ id: 1, name: 'FromData' });
   readonly resolver = signal<(event: MouseEvent) => Row | null>(() => ({ id: 9, name: 'FromResolver' }));
+}
+
+@Component({
+  template: `
+    <div class="target-a" tabindex="0" [cngxContextMenuFor]="menu" [cngxContextMenuData]="rowA">
+      Alpha
+    </div>
+    <div class="target-b" tabindex="0" [cngxContextMenuFor]="menu" [cngxContextMenuData]="rowB">
+      Beta
+    </div>
+    <cngx-context-menu ariaLabel="Shared actions" #menu="cngxContextMenu">
+      <button type="button">Copy</button>
+    </cngx-context-menu>
+  `,
+  imports: [CngxContextMenu, CngxContextMenuFor],
+})
+class SharedPanelHost {
+  readonly rowA: Row = { id: 1, name: 'Alpha' };
+  readonly rowB: Row = { id: 2, name: 'Beta' };
 }
 
 function rightClick(el: HTMLElement): MouseEvent {
@@ -147,7 +166,120 @@ describe('CngxContextMenuFor', () => {
     expect(panel.popover.isVisible()).toBe(false);
   });
 
-  it('aria-haspopup=menu and aria-expanded track visibility as computeds', () => {
+  describe('shared panel ownership', () => {
+    function setupShared() {
+      TestBed.configureTestingModule({ imports: [SharedPanelHost] });
+      const fixture = TestBed.createComponent(SharedPanelHost);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      fixture.detectChanges();
+      const targetA = fixture.nativeElement.querySelector('.target-a') as HTMLElement;
+      const targetB = fixture.nativeElement.querySelector('.target-b') as HTMLElement;
+      const triggers = fixture.debugElement
+        .queryAll(By.directive(CngxContextMenuFor))
+        .map((de) => de.injector.get(CngxContextMenuFor) as CngxContextMenuFor<Row>);
+      const panel = fixture.debugElement.query(By.directive(CngxContextMenu))
+        .componentInstance as CngxContextMenu<Row>;
+      return { fixture, targetA, targetB, triggerA: triggers[0], triggerB: triggers[1], panel };
+    }
+
+    function flush(fixture: { detectChanges(): void }): void {
+      TestBed.flushEffects();
+      fixture.detectChanges();
+    }
+
+    it('the opening trigger claims the panel; only it reports aria-expanded', () => {
+      const { fixture, targetA, targetB, triggerA, panel } = setupShared();
+
+      rightClick(targetA);
+      flush(fixture);
+
+      expect(panel.openOwner()).toBe(triggerA);
+      expect(panel.context()).toEqual({ id: 1, name: 'Alpha' });
+      expect(targetA.getAttribute('aria-expanded')).toBe('true');
+      expect(targetB.getAttribute('aria-expanded')).toBe('false');
+    });
+
+    it('a later open by the sibling takes over the claim', () => {
+      const { fixture, targetA, targetB, triggerB, panel } = setupShared();
+
+      rightClick(targetA);
+      flush(fixture);
+      panel.popover.hide();
+      flush(fixture);
+
+      rightClick(targetB);
+      flush(fixture);
+
+      expect(panel.openOwner()).toBe(triggerB);
+      expect(panel.context()).toEqual({ id: 2, name: 'Beta' });
+      expect(targetA.getAttribute('aria-expanded')).toBe('false');
+      expect(targetB.getAttribute('aria-expanded')).toBe('true');
+    });
+
+    it('registers the panel forwarders on open and clears them on close', () => {
+      const { fixture, targetA, panel } = setupShared();
+      const keydownSpy = vi.spyOn(panel, 'setKeydownHandler');
+      const activationSpy = vi.spyOn(panel, 'setActivationHandler');
+
+      rightClick(targetA);
+      flush(fixture);
+      expect(keydownSpy).toHaveBeenLastCalledWith(expect.any(Function));
+      expect(activationSpy).toHaveBeenLastCalledWith(expect.any(Function));
+
+      panel.popover.hide();
+      flush(fixture);
+      expect(keydownSpy).toHaveBeenLastCalledWith(null);
+      expect(activationSpy).toHaveBeenLastCalledWith(null);
+      expect(panel.openOwner()).toBeNull();
+    });
+
+    it('Shift+F10 claims ownership for the keyboard opener', () => {
+      const { fixture, targetA, targetB, triggerB, panel } = setupShared();
+
+      targetB.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'F10', shiftKey: true, bubbles: true, cancelable: true }),
+      );
+      flush(fixture);
+
+      expect(panel.popover.isVisible()).toBe(true);
+      expect(panel.openOwner()).toBe(triggerB);
+      expect(targetB.getAttribute('aria-expanded')).toBe('true');
+      expect(targetA.getAttribute('aria-expanded')).toBe('false');
+    });
+
+    it('a modified Shift+F10 (Ctrl held) neither claims nor opens', () => {
+      const { fixture, targetA, panel } = setupShared();
+
+      targetA.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'F10',
+          shiftKey: true,
+          ctrlKey: true,
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+      flush(fixture);
+
+      expect(panel.popover.isVisible()).toBe(false);
+      expect(panel.openOwner()).toBeNull();
+    });
+
+    it('a direct open (openAsSubmenu) claims no trigger ownership', () => {
+      const { fixture, targetA, targetB, panel } = setupShared();
+
+      panel.openAsSubmenu({ id: 7, name: 'Direct' });
+      flush(fixture);
+
+      expect(panel.popover.isVisible()).toBe(true);
+      expect(panel.openOwner()).toBeNull();
+      expect(targetA.getAttribute('aria-expanded')).toBe('false');
+      expect(targetB.getAttribute('aria-expanded')).toBe('false');
+    });
+  });
+
+  it('aria-haspopup=menu and aria-expanded track the owned open as computeds', () => {
     const { fixture, target, panel } = setupData();
     expect(target.getAttribute('aria-haspopup')).toBe('menu');
     expect(target.getAttribute('aria-expanded')).toBe('false');
