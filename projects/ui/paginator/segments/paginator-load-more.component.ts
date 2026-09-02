@@ -75,13 +75,12 @@ export class CngxPaginatorLoadMore {
   protected readonly disabled = computed(() => this.host.isLast() || this.host.isBusy());
 
   /**
-   * Items revealed so far. The brain's `cumulativeRange()` upper bound is
-   * uncapped (`(pageIndex + 1) * pageSize`), so a partial final page is clamped
-   * to `total` here for an honest readout.
+   * Items revealed so far. The brain's `clampedRange()` upper bound is the
+   * cumulative reveal count capped at `total` (`range()[1]` and
+   * `cumulativeRange()[1]` are the same number), so a partial final page reads
+   * honestly without a local clamp.
    */
-  protected readonly shown = computed<number>(() =>
-    Math.min(this.host.cumulativeRange()[1], this.host.total()),
-  );
+  protected readonly shown = computed<number>(() => this.host.clampedRange()[1]);
 
   /** Reveal the next page. Guarded so a disabled click is a no-op. */
   protected handleClick(): void {
