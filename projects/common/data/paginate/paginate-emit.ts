@@ -25,7 +25,10 @@ export interface CngxPaginateEmitHandlers {
  *   brain's `pageIndex()` stays pinned to the input until the consumer feeds it
  *   back;
  * - an `effect()` reads the effective `pageIndex()` / `pageSize()` and covers a
- *   `total`-shrink clamp the nav-only output misses.
+ *   `total`-shrink clamp the nav-only output misses. The index half of the
+ *   clamp path is suppressed while the brain is busy or `total` is 0, so a
+ *   transient total drop during a refetch never persists a page-0 clamp into a
+ *   controlled consumer; a clamp that survives the settle emits then.
  *
  * The shared guard makes a value one path already emitted a no-op on the other,
  * so each change emits exactly once. Seeded with the current effective values,
@@ -76,6 +79,15 @@ export function connectPaginateEmit(
   // nav path already emitted is a no-op here, so each change emits once.
   effect(() => {
     const index = paginate.pageIndex();
+    // A transient total drop (a refetch clearing [total] to 0) clamps the
+    // effective index to 0; forwarding that would persist the clamp into a
+    // controlled consumer's two-way state and pin page 0 after the data
+    // returns, where the brain's read-time clamp alone would recover. Both
+    // gates are tracked reads, so a clamp that survives the settle (a real
+    // total shrink) emits when busy flips off / total refills.
+    if (paginate.isBusy() || paginate.total() === 0) {
+      return;
+    }
     if (index !== lastIndex) {
       lastIndex = index;
       // Consumer handlers run synchronously - keep their signal reads/writes
