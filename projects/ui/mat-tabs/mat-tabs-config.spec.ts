@@ -113,4 +113,25 @@ describe('provideMatTabsConfig + injectMatTabsConfig', () => {
     const config = inject1(() => injectMatTabsConfig());
     expect(config.anchorMaxAttempts).toBe(15);
   });
+
+  it('provideMatTabsConfigAt merges over the outer config instead of reverting root overrides', () => {
+    const rootSink: CngxMatTabHalfWiredSlotSink = vi.fn();
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideMatTabsConfig(withAnchorRetryAttempts(9), withHalfWiredSlotSink(rootSink)),
+      ],
+    });
+    const child = Injector.create({
+      providers: provideMatTabsConfigAt(withAnchorRetryAttempts(20)),
+      parent: TestBed.inject(Injector),
+    });
+
+    const config = runInInjectionContext(child, () => injectMatTabsConfig());
+    // Local feature wins for its own key...
+    expect(config.anchorMaxAttempts).toBe(20);
+    // ...but the root override for the untouched key survives - the
+    // component-scope call must not revert it to the library default.
+    expect(config.halfWiredSlotSink).toBe(rootSink);
+  });
 });

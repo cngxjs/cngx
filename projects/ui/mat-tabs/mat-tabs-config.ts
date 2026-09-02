@@ -213,6 +213,11 @@ export function provideMatTabsConfig(
  * `providers` or `viewProviders` (which cannot accept opaque
  * environment providers).
  *
+ * Merges over the outer config (via `skipSelf`), so a component-scope
+ * call refines the root {@link provideMatTabsConfig} instead of
+ * reverting its untouched keys to library defaults - only the keys
+ * the local features set are overridden for the subtree.
+ *
  * ```ts
  * @Component({
  *   selector: 'app-tabs-page',
@@ -226,7 +231,22 @@ export function provideMatTabsConfig(
  * @category ui/mat-tabs
  */
 export function provideMatTabsConfigAt(...features: CngxMatTabsConfigFeature[]): Provider[] {
-  return [{ provide: CNGX_MAT_TABS_CONFIG, useValue: mergeFeatures(features) }];
+  return [
+    {
+      provide: CNGX_MAT_TABS_CONFIG,
+      useFactory: (): Partial<CngxMatTabsConfig> => {
+        const outer = inject(CNGX_MAT_TABS_CONFIG, { optional: true, skipSelf: true }) ?? {};
+        const local = mergeFeatures(features);
+        return {
+          ...outer,
+          ...local,
+          // Nested-merge so a local template feature refines the outer
+          // template set instead of replacing it wholesale.
+          templates: { ...outer.templates, ...local.templates },
+        };
+      },
+    },
+  ];
 }
 
 /**
