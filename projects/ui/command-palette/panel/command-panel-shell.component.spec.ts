@@ -1,6 +1,6 @@
 import { Component, signal, type WritableSignal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import type { CommandGroup } from '@cngx/common/command';
+import type { CngxCommandGroup } from '@cngx/common/command';
 import { buildAsyncStateView, type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
 import { beforeEach, describe, expect, it } from 'vitest';
 
@@ -9,9 +9,9 @@ import { CngxCommandPanelShell } from './command-panel-shell.component';
 function makeState(
   status: AsyncStatus,
   firstLoad: boolean,
-  data: CommandGroup[],
-): CngxAsyncState<CommandGroup[]> {
-  return buildAsyncStateView<CommandGroup[]>({
+  data: CngxCommandGroup[],
+): CngxAsyncState<CngxCommandGroup[]> {
+  return buildAsyncStateView<CngxCommandGroup[]>({
     status: signal(status),
     data: signal(data),
     error: signal(status === 'error' ? new Error('boom') : undefined),
@@ -19,7 +19,7 @@ function makeState(
   });
 }
 
-const NON_EMPTY: CommandGroup[] = [{ id: 'g', label: 'Group', commands: [] }];
+const NON_EMPTY: CngxCommandGroup[] = [{ id: 'g', label: 'Group', commands: [] }];
 
 @Component({
   standalone: true,
@@ -27,7 +27,7 @@ const NON_EMPTY: CommandGroup[] = [{ id: 'g', label: 'Group', commands: [] }];
   template: `<cngx-command-panel-shell [results]="state()"><p class="projected">body</p></cngx-command-panel-shell>`,
 })
 class Host {
-  readonly state: WritableSignal<CngxAsyncState<CommandGroup[]> | undefined> = signal(undefined);
+  readonly state: WritableSignal<CngxAsyncState<CngxCommandGroup[]> | undefined> = signal(undefined);
 }
 
 describe('CngxCommandPanelShell', () => {
@@ -55,10 +55,14 @@ describe('CngxCommandPanelShell', () => {
     expect(fixture.nativeElement.querySelector('.projected')).toBeNull();
   });
 
-  it('shows the empty state on an empty success', () => {
+  it('keeps the projected panel mounted on an empty success (input must survive)', () => {
     host.state.set(makeState('success', false, []));
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('.cngx-command-state--empty')).not.toBeNull();
+    // The empty rendering is the panel's job (keyed on its result count); the
+    // shell must not unmount the projected content - that would unmount the
+    // search input mid-typing.
+    expect(fixture.nativeElement.querySelector('.projected')).not.toBeNull();
+    expect(html()).not.toContain('cngx-command-state--empty');
   });
 
   it('shows the error state on a first-load failure', () => {

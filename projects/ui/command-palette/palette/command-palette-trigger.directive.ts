@@ -4,9 +4,11 @@ import type { CngxCommandPalette } from './command-palette.component';
 
 /**
  * Optional explicit trigger for a {@link CngxCommandPalette}. Opens the palette
- * on click and advertises the popup relationship to assistive tech. Pass the
- * palette by template reference - orthogonal composition, no ancestor
- * injection.
+ * on click and advertises the popup relationship to assistive tech:
+ * `aria-haspopup="dialog"` plus `aria-expanded` derived from the palette's
+ * `isOpen()` host seam, so the trigger communicates the open state without any
+ * synced local flag. Pass the palette by template reference - orthogonal
+ * composition, no ancestor injection.
  *
  * ```html
  * <button [cngxCommandPaletteTrigger]="palette">
@@ -27,6 +29,7 @@ import type { CngxCommandPalette } from './command-palette.component';
   standalone: true,
   host: {
     '[attr.aria-haspopup]': '"dialog"',
+    '[attr.aria-expanded]': 'palette().isOpen()',
     '(click)': 'open()',
   },
 })

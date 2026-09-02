@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxCommandPalette: async results + slots',
   subtitle:
-    'A consumer-derived CngxAsyncState<CommandGroup[]> drives the shell: skeleton on first load, empty on an empty success, error (with retry) on a first-load failure, content otherwise. The groupHeader / loading / empty / error / footer slots are all overridden here.',
+    'A consumer-derived CngxAsyncState<CngxCommandGroup[]> drives the shell: skeleton on first load, error (with retry) on a first-load failure, content otherwise. An empty success keeps the search input mounted and renders the empty slot below it. The groupHeader / loading / empty / error / footer slots are all overridden here.',
   description:
     'The async [results] path and the five non-row slots. Pick a result state below, then open the palette (Cmd/Ctrl+K or the button) to see that state - a modal dialog blocks the page, so toggle while closed. The row slot is demonstrated separately at /ui/command-palette/custom-row.',
   level: 'organism',
@@ -26,7 +26,7 @@ export const STORY: DemoSpec = {
   ],
   moduleImports: [
     "import { buildAsyncStateView, type AsyncStatus } from '@cngx/core/utils';",
-    "import { type CommandGroup } from '@cngx/common/command';",
+    "import { type CngxCommandGroup } from '@cngx/common/command';",
   ],
   imports: [
     'CngxCommandPalette',
@@ -38,13 +38,13 @@ export const STORY: DemoSpec = {
     'CngxCommandPaletteFooter',
   ],
   setup: `protected readonly statusState = signal<AsyncStatus>('success');
-  protected readonly dataState = signal<CommandGroup[]>([
+  protected readonly dataState = signal<CngxCommandGroup[]>([
     { id: 'recents', label: 'Recents', commands: [{ id: 'reopen', label: 'Reopen closed tab', run: () => {} }] },
   ]);
   protected readonly errorState = signal<unknown>(undefined);
   protected readonly firstLoadState = signal(false);
   // A consumer derives this from term()/scope() + their own HTTP; here we drive it by hand.
-  protected readonly results = buildAsyncStateView<CommandGroup[]>({
+  protected readonly results = buildAsyncStateView<CngxCommandGroup[]>({
     status: this.statusState,
     data: this.dataState,
     error: this.errorState,

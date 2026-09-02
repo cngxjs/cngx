@@ -15,7 +15,14 @@ import { InjectionToken, type Signal } from '@angular/core';
  * @since 0.1.0
  */
 export interface CngxCommandPaletteHost {
-  /** Whether the palette surface is currently open. */
+  /**
+   * Whether the palette surface is currently open. Two documented consumers:
+   * the panel resets its term and highlight when this flips to `false` (state
+   * must not leak into the next open), and a composing consumer derives open
+   * state from it instead of tracking its own flag -
+   * `CngxCommandPaletteTrigger` binds its `aria-expanded` to the palette's
+   * implementation of this member.
+   */
   readonly isOpen: Signal<boolean>;
   /** Dismiss the surface (e.g. after a command runs). */
   dismiss(): void;

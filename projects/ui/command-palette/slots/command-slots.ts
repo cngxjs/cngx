@@ -1,6 +1,6 @@
 import { Directive, inject, TemplateRef } from '@angular/core';
 
-import type { CommandGroup, RankedCommand } from '@cngx/common/command';
+import type { CngxCommandGroup, CngxRankedCommand } from '@cngx/common/command';
 
 /**
  * Context for the {@link CngxCommandRow} slot. Region granularity: the whole
@@ -12,7 +12,7 @@ import type { CommandGroup, RankedCommand } from '@cngx/common/command';
  * @since 0.1.0
  */
 export interface CngxCommandRowContext {
-  readonly $implicit: RankedCommand;
+  readonly $implicit: CngxRankedCommand;
   readonly term: string;
   readonly data: unknown;
   readonly active: boolean;
@@ -20,7 +20,7 @@ export interface CngxCommandRowContext {
 
 /** Context for the {@link CngxCommandGroupHeader} slot. Recents is a group. */
 export interface CngxCommandGroupHeaderContext {
-  readonly $implicit: CommandGroup;
+  readonly $implicit: CngxCommandGroup;
 }
 
 /** Context for the {@link CngxCommandPaletteEmpty} slot. */

@@ -5,23 +5,25 @@ import {
   Component,
   computed,
   DestroyRef,
+  effect,
   inject,
   input,
   model,
-  output,
   signal,
+  untracked,
   viewChild,
   ViewEncapsulation,
   type Signal,
   type TemplateRef,
 } from '@angular/core';
+import { outputToObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import {
   CNGX_COMMAND_MATCH_FACTORY,
   injectCommands,
   type CngxCommand,
-  type CommandGroup,
-  type RankedCommand,
+  type CngxCommandGroup,
+  type CngxRankedCommand,
 } from '@cngx/common/command';
 import { CngxListbox, CngxOption, CngxSearch } from '@cngx/common/interactive';
 import { CngxHighlight } from '@cngx/common/layout';
@@ -30,19 +32,38 @@ import { nextUid, type CngxAsyncState } from '@cngx/core/utils';
 import { injectCommandPaletteConfig } from '../config/command-palette-config';
 import type {
   CngxCommandGroupHeaderContext,
+  CngxCommandPaletteEmptyContext,
   CngxCommandRowContext,
 } from '../slots/command-slots';
 import { CNGX_COMMAND_PALETTE_HOST } from './panel-host.token';
 
 /**
  * One rendered result group: a header label (null for the ungrouped bucket)
- * plus its ranked commands, in render order.
+ * plus its ranked commands, in render order. `id` is a panel-unique DOM id
+ * minted by the panel (never a raw user string); `slot` is the stable
+ * `CngxCommandGroup` handed to the group-header slot template.
  * @internal
  */
 interface RenderGroup {
   readonly id: string;
   readonly label: string | null;
-  readonly items: readonly RankedCommand[];
+  readonly items: readonly CngxRankedCommand[];
+  readonly slot: CngxCommandGroup;
+}
+
+/**
+ * A result group before the panel mints its DOM id: `key` is a namespaced
+ * dedupe key (`s:` static registry bucket, `a:` async consumer group), so a
+ * static group literally labelled "ungrouped" can never collide with the
+ * unlabelled bucket, and async ids can never collide with static labels.
+ * `slotId` is the consumer-meaningful id echoed into the header slot context.
+ * @internal
+ */
+interface RawRenderGroup {
+  readonly key: string;
+  readonly slotId: string;
+  readonly label: string | null;
+  readonly items: readonly CngxRankedCommand[];
 }
 
 /**
@@ -106,7 +127,7 @@ interface RenderGroup {
               @if (groupHeaderTpl(); as tpl) {
                 <ng-container
                   [ngTemplateOutlet]="tpl"
-                  [ngTemplateOutletContext]="{ $implicit: toCommandGroup(group) }"
+                  [ngTemplateOutletContext]="{ $implicit: group.slot }"
                 />
               } @else {
                 {{ header }}
@@ -149,12 +170,20 @@ interface RenderGroup {
       }
     </div>
 
+    @if (resultCount() === 0) {
+      @if (emptyTpl(); as tpl) {
+        <ng-container [ngTemplateOutlet]="tpl" [ngTemplateOutletContext]="{ term: term() }" />
+      } @else {
+        <div class="cngx-command-state cngx-command-state--empty">{{ config.emptyLabel }}</div>
+      }
+    }
+
     <span class="cngx-sr-only" aria-live="polite">{{ countMessage() }}</span>
   `,
 })
 export class CngxCommandPanel {
   /** Consumer-derived async result source, merged in with the static registry. */
-  readonly results = input<CngxAsyncState<CommandGroup[]> | undefined>(undefined);
+  readonly results = input<CngxAsyncState<CngxCommandGroup[]> | undefined>(undefined);
 
   /** Persistent scope; feeds the matcher's scope filter and renders as a chip. */
   readonly scope = model<string | undefined>(undefined);
@@ -166,9 +195,13 @@ export class CngxCommandPanel {
   readonly rowTpl = input<TemplateRef<CngxCommandRowContext> | null>(null);
   /** Resolved group-header slot template. Built-in default when null. */
   readonly groupHeaderTpl = input<TemplateRef<CngxCommandGroupHeaderContext> | null>(null);
-
-  /** Emits the debounced term so the surface can mirror it (e.g. for the empty slot). */
-  readonly termChange = output<string>();
+  /**
+   * Resolved empty slot template. Rendered by the panel itself (below the
+   * listbox, input stays mounted) whenever the result count is zero - this
+   * covers both the static-registry mode, where the shell has no async state
+   * to switch on, and an empty async success.
+   */
+  readonly emptyTpl = input<TemplateRef<CngxCommandPaletteEmptyContext> | null>(null);
 
   protected readonly config = injectCommandPaletteConfig();
   protected readonly listboxId = nextUid('cngx-command-listbox');
@@ -177,25 +210,40 @@ export class CngxCommandPanel {
   private readonly matcher = inject(CNGX_COMMAND_MATCH_FACTORY)();
   private readonly host = inject(CNGX_COMMAND_PALETTE_HOST, { optional: true });
   private readonly destroyRef = inject(DestroyRef);
-  private readonly listbox = viewChild.required(CngxListbox);
+  private readonly listbox = viewChild(CngxListbox);
+  private readonly search = viewChild(CngxSearch);
 
   private readonly termState = signal('');
   /** Current debounced search term. Exposed for the consumer's result derivation. */
   readonly term: Signal<string> = this.termState.asReadonly();
+
+  /** Stable dedupe-key to DOM-id map behind {@link domGroupId}. */
+  private readonly groupDomIds = new Map<string, string>();
+  /** Stable command-id to reason-DOM-id map behind {@link reasonId}. */
+  private readonly reasonDomIds = new Map<string, string>();
 
   /** Grouped, ranked results: consumer async groups first, then the ranked registry. */
   protected readonly groups = computed<readonly RenderGroup[]>(
     () => {
       const ranked = this.matcher(this.commands(), this.term(), this.scope());
       const asyncState = this.results();
-      const asyncGroups = asyncState ? toRenderGroups(asyncState.data() ?? []) : [];
-      return [...asyncGroups, ...groupRanked(ranked)];
+      const asyncGroups = asyncState ? toRawGroups(asyncState.data() ?? []) : [];
+      return [...asyncGroups, ...groupRanked(ranked)].map((raw) => ({
+        id: this.domGroupId(raw.key),
+        label: raw.label,
+        items: raw.items,
+        slot: {
+          id: raw.slotId,
+          label: raw.label ?? '',
+          commands: raw.items.map((entry) => entry.command),
+        },
+      }));
     },
     { equal: renderGroupsEqual },
   );
 
   /** Flat ranked list in render order, for count + command lookup. */
-  private readonly flatItems = computed<readonly RankedCommand[]>(
+  private readonly flatItems = computed<readonly CngxRankedCommand[]>(
     () => this.groups().flatMap((group) => group.items),
     { equal: rankedListEqual },
   );
@@ -207,35 +255,91 @@ export class CngxCommandPanel {
     this.config.resultCount(this.resultCount()),
   );
 
+  /** The command id the user last saw highlighted; `null` after a term reset. */
+  private lastHighlightedId: string | null = null;
+  /** The AD item registry the highlight bookkeeping last saw (identity). */
+  private lastRegistry: unknown = null;
+
   constructor() {
     // Click on an option routes through the listbox's active-descendant, which
     // emits `activated`; Enter forwards through the same `activateCurrent` path.
     // One subscription runs the matching command for both. externalActivation
     // stops the listbox writing its own value on activation.
     afterNextRender(() => {
-      const subscription = this.listbox().ad.activated.subscribe((value) => this.runById(value));
-      this.destroyRef.onDestroy(() => subscription.unsubscribe());
+      const lb = this.listbox();
+      if (lb) {
+        outputToObservable(lb.ad.activated)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe((value) => this.runById(value));
+      }
+    });
+    // Async groups PREPEND above the static results, and the highlight is
+    // index-based - a prepend would silently move it onto a different command.
+    // Re-resolve by VALUE whenever the AD item registry changes (the registry,
+    // not the data list: options only register during change detection, and
+    // the index goes stale exactly when the registry re-orders) so Enter runs
+    // the item the user saw; when that item left the result set, reset so
+    // autoHighlightFirst re-fires on the fresh list.
+    effect(() => {
+      const lb = this.listbox();
+      if (!lb) {
+        return;
+      }
+      const registry = lb.ad.resolvedItems();
+      // Tracked so navigation keeps the bookkeeping current between registry changes.
+      const active = lb.ad.activeValue();
+      untracked(() => {
+        const wanted = this.lastHighlightedId;
+        const registryChanged = registry !== this.lastRegistry;
+        if (registryChanged && wanted !== null && active !== wanted) {
+          if (registry.some((item) => item.value === wanted)) {
+            lb.ad.highlightByValue(wanted);
+          } else {
+            lb.ad.resetHighlight();
+          }
+        }
+        this.lastRegistry = registry;
+        const current = lb.ad.activeValue();
+        this.lastHighlightedId = typeof current === 'string' ? current : null;
+      });
+    });
+    // The palette dialog keeps its content mounted across close, so term and
+    // highlight would leak into the next open. Reset when the host closes;
+    // clear() feeds searchChange, which routes through onTerm.
+    effect(() => {
+      const open = this.host?.isOpen() ?? true;
+      if (!open) {
+        untracked(() => this.search()?.clear());
+      }
     });
   }
 
   protected onTerm(term: string, lb: CngxListbox): void {
     this.termState.set(term);
-    this.termChange.emit(term);
     // Reset the highlight so autoHighlightFirst re-fires the top result after a
-    // re-rank shrinks the list below the previously active index.
+    // re-rank shrinks the list below the previously active index. The value
+    // bookkeeping resets too - a new term means the old highlight is void.
+    this.lastHighlightedId = null;
     lb.ad.resetHighlight();
   }
 
-  /** Maps an internal render group to the public `CommandGroup` slot context. */
-  protected toCommandGroup(group: RenderGroup): CommandGroup {
-    return {
-      id: group.id,
-      label: group.label ?? '',
-      commands: group.items.map((entry) => entry.command),
-    };
+  /** Panel-unique DOM id for a group dedupe key. Stable per key for the panel's lifetime. */
+  private domGroupId(key: string): string {
+    let id = this.groupDomIds.get(key);
+    if (!id) {
+      id = `${this.listboxId}-g${this.groupDomIds.size}`;
+      this.groupDomIds.set(key, id);
+    }
+    return id;
   }
 
   protected onKeydown(event: KeyboardEvent, lb: CngxListbox): void {
+    // Never hijack browser/app shortcuts: modified combos pass through
+    // untouched - the same guard the nav strategies apply. Without it,
+    // Ctrl+ArrowDown in the input would navigate and swallow the event.
+    if (event.ctrlKey || event.metaKey || event.altKey) {
+      return;
+    }
     const ad = lb.ad;
     switch (event.key) {
       case 'ArrowDown':
@@ -270,7 +374,14 @@ export class CngxCommandPanel {
   }
 
   protected reasonId(command: CngxCommand): string {
-    return `${this.listboxId}-reason-${command.id}`;
+    // Minted, never derived from the raw command id - user strings can carry
+    // characters that break DOM ids and aria-describedby references.
+    let id = this.reasonDomIds.get(command.id);
+    if (!id) {
+      id = `${this.listboxId}-reason-${this.reasonDomIds.size}`;
+      this.reasonDomIds.set(command.id, id);
+    }
+    return id;
   }
 
   protected describedBy(command: CngxCommand): string | null {
@@ -288,26 +399,32 @@ export class CngxCommandPanel {
 }
 
 /** @internal Groups ranked results by their `group` key, preserving rank order. */
-function groupRanked(ranked: readonly RankedCommand[]): RenderGroup[] {
-  const groups: RenderGroup[] = [];
-  const index = new Map<string, RankedCommand[]>();
+function groupRanked(ranked: readonly CngxRankedCommand[]): RawRenderGroup[] {
+  const groups: RawRenderGroup[] = [];
+  const index = new Map<string, CngxRankedCommand[]>();
   for (const entry of ranked) {
     const key = entry.command.group ?? '';
     let bucket = index.get(key);
     if (!bucket) {
       bucket = [];
       index.set(key, bucket);
-      groups.push({ id: `g-${key || 'ungrouped'}`, label: entry.command.group ?? null, items: bucket });
+      groups.push({
+        key: `s:${key}`,
+        slotId: key,
+        label: entry.command.group ?? null,
+        items: bucket,
+      });
     }
     bucket.push(entry);
   }
   return groups;
 }
 
-/** @internal Maps consumer async command groups into render groups (score 0). */
-function toRenderGroups(source: readonly CommandGroup[]): RenderGroup[] {
+/** @internal Maps consumer async command groups into raw render groups (score 0). */
+function toRawGroups(source: readonly CngxCommandGroup[]): RawRenderGroup[] {
   return source.map((group) => ({
-    id: `a-${group.id}`,
+    key: `a:${group.id}`,
+    slotId: group.id,
     label: group.label,
     items: group.commands.map((command) => ({ command, score: 0 })),
   }));
@@ -328,7 +445,7 @@ function renderGroupsEqual(a: readonly RenderGroup[], b: readonly RenderGroup[])
 }
 
 /** @internal Length + per-command identity. */
-function rankedListEqual(a: readonly RankedCommand[], b: readonly RankedCommand[]): boolean {
+function rankedListEqual(a: readonly CngxRankedCommand[], b: readonly CngxRankedCommand[]): boolean {
   if (a === b) {
     return true;
   }

@@ -115,6 +115,22 @@ describe('CngxCommandPalette', () => {
     expect(fixture.componentInstance.palette().isOpen()).toBe(true);
   });
 
+  it('derives the trigger aria-expanded from the isOpen host seam', () => {
+    configure();
+    const trigger = fixture.nativeElement.querySelector('#trigger') as HTMLButtonElement;
+    expect(trigger.getAttribute('aria-expanded')).toBe('false');
+
+    openFully();
+    expect(trigger.getAttribute('aria-expanded')).toBe('true');
+
+    fixture.componentInstance.palette().dismiss();
+    vi.advanceTimersByTime(300);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    expect(trigger.getAttribute('aria-expanded')).toBe('false');
+  });
+
   it('opens on the Cmd/Ctrl+K global combo', () => {
     configure();
     document.dispatchEvent(
