@@ -1,4 +1,16 @@
-import { Component, computed, DestroyRef, effect, inject, input } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  effect,
+  inject,
+  input,
+  linkedSignal,
+  output,
+  untracked,
+  viewChild,
+  type TemplateRef,
+} from '@angular/core';
 
 import type { AlertSeverity } from '../alert/alert';
 import { CngxToaster, type ToastRef } from './toast.service';
@@ -17,9 +29,14 @@ import { CngxToaster, type ToastRef } from './toast.service';
  * ```
  *
  * ### With custom content
+ * Projected content replaces `message` as the toast body. Keep it
+ * non-interactive - the toast renders inside a live region, where focusable
+ * elements are unreachable for screen reader users. For a button, use
+ * `actionLabel`/`actionHandler` instead.
  * ```html
- * <cngx-toast severity="error" [when]="hasError()">
- *   Something went wrong. <button (click)="retry()">Retry</button>
+ * <cngx-toast severity="error" [when]="hasError()"
+ *   actionLabel="Retry" [actionHandler]="retry">
+ *   Something went <strong>wrong</strong>.
  * </cngx-toast>
  * ```
  *
@@ -45,7 +62,9 @@ import { CngxToaster, type ToastRef } from './toast.service';
 @Component({
   selector: 'cngx-toast',
   standalone: true,
-  template: ``,
+  // Deferred projection: the ng-content only materializes where the captured
+  // template is instantiated (probe or outlet), never at the host position.
+  template: `<ng-template #projectedContent><ng-content /></ng-template>`,
   host: { style: 'display: none' },
 })
 export class CngxToast {
@@ -71,14 +90,37 @@ export class CngxToast {
   readonly actionLabel = input<string | undefined>(undefined);
   readonly actionHandler = input<(() => void) | undefined>(undefined);
 
+  /** Emitted when the shown toast is dismissed (auto, manual, or falling edge). */
+  readonly dismissed = output<void>();
+
   /** @internal */
-  private readonly action = computed(() => {
-    const label = this.actionLabel();
-    const handler = this.actionHandler();
-    return label && handler ? { label, handler } : undefined;
-  });
+  private readonly action = computed(
+    () => {
+      const label = this.actionLabel();
+      const handler = this.actionHandler();
+      return label && handler ? { label, handler } : undefined;
+    },
+    { equal: (a, b) => a?.label === b?.label && a?.handler === b?.handler },
+  );
+
+  private readonly projectedContent =
+    viewChild<TemplateRef<unknown>>('projectedContent');
 
   private activeRef: ToastRef | null = null;
+
+  /**
+   * @internal - edge detection derived via linkedSignal, not managed in the
+   * effect. The pre-bind baseline is `false`, so an initial `[when]="true"`
+   * counts as a rising edge.
+   */
+  private readonly whenEdge = linkedSignal<boolean, { when: boolean; changed: boolean }>({
+    source: this.when,
+    computation: (when, prev) => ({
+      when,
+      changed: prev === undefined ? when : when !== prev.value.when,
+    }),
+    equal: (a, b) => a.when === b.when && a.changed === b.changed,
+  });
 
   constructor() {
     if (!this.toaster) {
@@ -90,33 +132,64 @@ export class CngxToast {
 
     const toaster = this.toaster;
 
-    // Rising-edge trigger - only false→true fires a toast; the toast then
-    // owns its own lifecycle. false just re-arms the trigger.
-    let previousWhen = false;
-
+    // Edge-triggered: false→true shows, true→false dismisses (a no-op when
+    // the toast already auto-dismissed). The toast owns its own timer.
     effect(() => {
-      const show = this.when();
+      const { when: show, changed } = this.whenEdge();
 
-      if (show && !previousWhen) {
-        this.activeRef = toaster.show({
-          message: this.message(),
-          severity: this.severity(),
-          duration: this.duration(),
-          dismissible: this.dismissible(),
-          action: this.action(),
-        });
-
-        this.activeRef.afterDismissed().subscribe(() => {
-          this.activeRef = null;
-        });
+      if (!changed) {
+        return;
       }
 
-      previousWhen = show;
+      untracked(() => {
+        if (show) {
+          const contentTemplate = this.captureProjectedContent();
+          this.activeRef = toaster.show({
+            message: this.message(),
+            severity: this.severity(),
+            duration: this.duration(),
+            dismissible: this.dismissible(),
+            action: this.action(),
+            contentTemplate,
+          });
+
+          this.activeRef.afterDismissed().subscribe(() => {
+            this.activeRef = null;
+            this.dismissed.emit();
+          });
+        } else {
+          this.activeRef?.dismiss();
+          this.activeRef = null;
+        }
+      });
     });
 
     this.destroyRef.onDestroy(() => {
       this.activeRef?.dismiss();
       this.activeRef = null;
     });
+  }
+
+  /**
+   * Returns the content template when something was actually projected,
+   * `undefined` otherwise (then `message` renders). Presence is probed per
+   * show via a throwaway embedded view - conditional content may appear
+   * between edges, so the result is never cached. Deferred projection
+   * re-attaches the nodes wherever the template instantiates next.
+   */
+  private captureProjectedContent(): TemplateRef<unknown> | undefined {
+    const tpl = this.projectedContent();
+    if (!tpl) {
+      return undefined;
+    }
+    const view = tpl.createEmbeddedView(undefined);
+    view.detectChanges();
+    const hasContent = view.rootNodes.some(
+      (node: Node) =>
+        node.nodeType === Node.ELEMENT_NODE ||
+        (node.nodeType === Node.TEXT_NODE && (node.textContent ?? '').trim().length > 0),
+    );
+    view.destroy();
+    return hasContent ? tpl : undefined;
   }
 }

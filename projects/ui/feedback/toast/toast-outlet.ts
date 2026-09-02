@@ -1,4 +1,4 @@
-import { NgComponentOutlet } from '@angular/common';
+import { NgComponentOutlet, NgTemplateOutlet } from '@angular/common';
 import { CngxCloseButton } from '@cngx/common/interactive';
 import {
   ChangeDetectionStrategy,
@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 
 import { CNGX_FEEDBACK_CONFIG } from '../config/feedback-config';
+import { CngxSeverityIcon } from '../config/severity-icon';
 import { CngxToaster, type ToastState } from './toast.service';
 
 /**
@@ -30,6 +31,10 @@ export type ToastPosition =
  *
  * Place once in the app shell. Reads from `CngxToaster` reactively.
  * Requires `provideToasts()` or `provideFeedback(withToasts())`.
+ *
+ * One outlet per toaster instance: projected toast bodies (`CngxToast`
+ * content) are captured as templates whose DOM nodes exist exactly once -
+ * a second outlet on the same toaster renders those bodies empty.
  *
  * ```html
  * <cngx-toast-outlet position="bottom-end" [maxVisible]="5" />
@@ -53,7 +58,7 @@ export type ToastPosition =
 @Component({
   selector: 'cngx-toast-outlet',
   standalone: true,
-  imports: [NgComponentOutlet, CngxCloseButton],
+  imports: [NgComponentOutlet, NgTemplateOutlet, CngxCloseButton, CngxSeverityIcon],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   host: {
@@ -84,58 +89,26 @@ export type ToastPosition =
           @if (iconFor(toast); as iconCmp) {
             <ng-container *ngComponentOutlet="iconCmp" />
           } @else {
-            <svg
-              aria-hidden="true"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="cngx-toast__default-icon"
-            >
-              @switch (toast.config.severity) {
-                @case ('info') {
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="12" y1="16" x2="12" y2="12" />
-                  <line x1="12" y1="8" x2="12.01" y2="8" />
-                }
-                @case ('success') {
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                  <polyline points="22 4 12 14.01 9 11.01" />
-                }
-                @case ('warning') {
-                  <path
-                    d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
-                  />
-                  <line x1="12" y1="9" x2="12" y2="13" />
-                  <line x1="12" y1="17" x2="12.01" y2="17" />
-                }
-                @case ('error') {
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="15" y1="9" x2="9" y2="15" />
-                  <line x1="9" y1="9" x2="15" y2="15" />
-                }
-              }
-            </svg>
+            <cngx-severity-icon
+              [severity]="toast.config.severity"
+              iconClass="cngx-toast__default-icon"
+            />
           }
         </div>
         <div class="cngx-toast__body">
           @if (toast.config.title) {
             <span class="cngx-toast__title">{{ toast.config.title }}</span>
-            @if (toast.config.content) {
-              <ng-container
-                *ngComponentOutlet="toast.config.content; inputs: toast.config.contentInputs"
-              />
-            } @else {
-              <span class="cngx-toast__description">
-                {{ toast.config.description ?? toast.config.message }}
-              </span>
-            }
+          }
+          @if (toast.config.contentTemplate) {
+            <ng-container *ngTemplateOutlet="toast.config.contentTemplate" />
           } @else if (toast.config.content) {
             <ng-container
               *ngComponentOutlet="toast.config.content; inputs: toast.config.contentInputs"
             />
+          } @else if (toast.config.title) {
+            <span class="cngx-toast__description">
+              {{ toast.config.description ?? toast.config.message }}
+            </span>
           } @else {
             <span class="cngx-toast__message">
               {{ toast.config.message }}
@@ -178,13 +151,16 @@ export class CngxToastOutlet {
   /** @internal */
   protected readonly positionClass = computed(() => `cngx-toast-outlet--${this.position()}`);
 
-  /** @internal - slice to maxVisible, respecting insert position. */
-  protected readonly visibleToasts = computed(() => {
-    const all = this.service.toasts();
-    const max = this.maxVisible();
-    const sliced = all.length > max ? all.slice(0, max) : all;
-    return this.insertPosition() === 'end' ? [...sliced].reverse() : sliced;
-  });
+  /** @internal - slice to maxVisible, respecting insert position. ToastState is immutable per slot. */
+  protected readonly visibleToasts = computed(
+    () => {
+      const all = this.service.toasts();
+      const max = this.maxVisible();
+      const sliced = all.length > max ? all.slice(0, max) : all;
+      return this.insertPosition() === 'end' ? [...sliced].reverse() : sliced;
+    },
+    { equal: (a, b) => a.length === b.length && a.every((t, i) => t === b[i]) },
+  );
 
   /** @internal - resolve icon component from global config or null. */
   protected iconFor(toast: ToastState) {

@@ -151,7 +151,6 @@ describe('CngxToaster', () => {
     toaster.pauseTimer(id);
     vi.advanceTimersByTime(5000);
     expect(toaster.toasts().length).toBe(1);
-    expect(toaster.toasts()[0].pausedRemaining).toBeDefined();
   });
 
   it('resumeTimer() resumes auto-dismiss from remaining time', () => {
@@ -160,9 +159,86 @@ describe('CngxToaster', () => {
     vi.advanceTimersByTime(1000);
     toaster.pauseTimer(id);
     toaster.resumeTimer(id);
-    expect(toaster.toasts()[0].pausedRemaining).toBeUndefined();
-    vi.advanceTimersByTime(2000);
+    vi.advanceTimersByTime(1999);
+    expect(toaster.toasts().length).toBe(1);
+    vi.advanceTimersByTime(1);
     expect(toaster.toasts().length).toBe(0);
+  });
+
+  it('holds the pause until every source releases (hover + focus refcount)', () => {
+    toaster.show({ message: 'Held', duration: 3000 });
+    const id = toaster.toasts()[0].id;
+    toaster.pauseTimer(id); // pointer enters
+    toaster.pauseTimer(id); // focus moves in
+    toaster.resumeTimer(id); // pointer leaves - focus still inside
+    vi.advanceTimersByTime(60000);
+    expect(toaster.toasts().length).toBe(1);
+
+    toaster.resumeTimer(id); // focus leaves - last hold released
+    vi.advanceTimersByTime(3000);
+    expect(toaster.toasts().length).toBe(0);
+  });
+
+  it('keeps a dedup restart paused while a hold is active', () => {
+    toaster.show({ message: 'Held dup', duration: 3000 });
+    const id = toaster.toasts()[0].id;
+    toaster.pauseTimer(id);
+    vi.advanceTimersByTime(500);
+    toaster.show({ message: 'Held dup', duration: 3000 });
+    vi.advanceTimersByTime(60000);
+    expect(toaster.toasts().length).toBe(1);
+
+    toaster.resumeTimer(id);
+    vi.advanceTimersByTime(3000);
+    expect(toaster.toasts().length).toBe(0);
+  });
+
+  it('tracks remaining per start across repeated pause/resume cycles', () => {
+    // 5000ms toast: pause at 2000, resume, pause again after 1000 more -
+    // exactly 2000ms must remain, not 4000 (remaining is per-start, not
+    // recomputed against the full original duration).
+    toaster.show({ message: 'Cycle', duration: 5000 });
+    const id = toaster.toasts()[0].id;
+    vi.advanceTimersByTime(2000);
+    toaster.pauseTimer(id);
+    toaster.resumeTimer(id);
+    vi.advanceTimersByTime(1000);
+    toaster.pauseTimer(id);
+    toaster.resumeTimer(id);
+    vi.advanceTimersByTime(1999);
+    expect(toaster.toasts().length).toBe(1);
+    vi.advanceTimersByTime(1);
+    expect(toaster.toasts().length).toBe(0);
+  });
+
+  it('dedup restart resets the auto-dismiss clock', () => {
+    toaster.show({ message: 'Dup', duration: 3000 });
+    vi.advanceTimersByTime(500);
+    toaster.show({ message: 'Dup', duration: 3000 });
+    expect(toaster.toasts().length).toBe(1);
+    // Fresh full duration from the dedup restart at t=500.
+    vi.advanceTimersByTime(2999);
+    expect(toaster.toasts().length).toBe(1);
+    vi.advanceTimersByTime(1);
+    expect(toaster.toasts().length).toBe(0);
+  });
+
+  it('dedup with persistent duration clears the running timer', () => {
+    toaster.show({ message: 'Dup', duration: 3000 });
+    vi.advanceTimersByTime(500);
+    toaster.show({ message: 'Dup', duration: 'persistent' });
+    vi.advanceTimersByTime(60000);
+    expect(toaster.toasts().length).toBe(1);
+  });
+
+  // --- Teardown ---
+
+  it('completes dismissed$ for remaining toasts on service destroy', () => {
+    let completed = 0;
+    const ref = toaster.show({ message: 'Alive', duration: 'persistent' });
+    ref.afterDismissed().subscribe({ complete: () => completed++ });
+    TestBed.resetTestingModule();
+    expect(completed).toBe(1);
   });
 
   // --- Action config ---

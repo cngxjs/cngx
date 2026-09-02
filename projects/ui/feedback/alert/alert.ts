@@ -21,6 +21,8 @@ import { CngxCloseButton } from '@cngx/common/interactive';
 
 import { CNGX_FEEDBACK_CONFIG } from '../config/feedback-config';
 import { CngxSeverityIcon } from '../config/severity-icon';
+import { createPausableTimer } from '../internal/pausable-timer';
+import { createStateBridge } from '../internal/state-bridge';
 
 /**
  * Severity level for the alert - determines visual style, icon, and ARIA role.
@@ -35,63 +37,6 @@ export type AlertSeverity = 'info' | 'success' | 'warning' | 'error';
  * @category ui/feedback/alert
  */
 export type AlertVisibilityPhase = 'hidden' | 'entering' | 'visible' | 'exiting';
-
-/** @internal - timer with pause/resume support for hover/focus interactions. */
-interface PausableTimer {
-  start(duration: number, onComplete: () => void): void;
-  pause(): void;
-  resume(): void;
-  clear(): void;
-}
-
-/** @internal */
-function createPausableTimer(): PausableTimer {
-  let id: ReturnType<typeof setTimeout> | undefined;
-  let remaining = 0;
-  let startedAt = 0;
-  let onComplete: (() => void) | undefined;
-
-  const clear = (): void => {
-    if (id !== undefined) {
-      clearTimeout(id);
-      id = undefined;
-    }
-    remaining = 0;
-    onComplete = undefined;
-  };
-
-  const resume = (): void => {
-    if (remaining > 0 && id === undefined && onComplete) {
-      startedAt = Date.now();
-      const cb = onComplete;
-      id = setTimeout(() => {
-        id = undefined;
-        remaining = 0;
-        cb();
-      }, remaining);
-    }
-  };
-
-  const pause = (): void => {
-    if (id !== undefined) {
-      clearTimeout(id);
-      id = undefined;
-      remaining = Math.max(0, remaining - (Date.now() - startedAt));
-    }
-  };
-
-  return {
-    start: (duration, cb) => {
-      clear();
-      onComplete = cb;
-      remaining = duration;
-      resume();
-    },
-    pause,
-    resume,
-    clear,
-  };
-}
 
 /**
  * Content slot directive for custom alert icons.
@@ -191,8 +136,9 @@ export class CngxAlertAction {}
     // WAI-ARIA - role/aria-* present only while visible to avoid stale announcements.
     '[attr.role]': 'isVisible() ? ariaRole() : null',
     '[attr.aria-atomic]': 'isVisible() ? ariaAtomic() : null',
+    // No aria-expanded: collapse is visual-only (SR reads full content) and
+    // expanded-state ARIA belongs on a controlling widget, not on alert/status.
     '[attr.aria-label]': 'isVisible() ? (title() || null) : null',
-    '[attr.aria-expanded]': 'collapsible() ? !collapsed() : null',
     '[attr.aria-busy]': 'isStateBusy() || null',
     '[attr.hidden]': '!isVisible() || null',
     '(animationend)': 'handleAnimationEnd($event)',
@@ -293,6 +239,11 @@ export class CngxAlert {
   private readonly collapseTimer = createPausableTimer();
   private animationFallbackId: ReturnType<typeof setTimeout> | undefined;
 
+  /** Active pause holds - pointer hover and focus-within count independently. */
+  private interactionHolds = 0;
+  /** Set when interaction expanded an already-collapsed alert; release re-arms. */
+  private reCollapseOnRelease = false;
+
   /** @internal - global icon component for the current severity (from provideFeedback config). */
   protected readonly globalIcon = computed(
     () => this.config?.alertIcons?.[this.severity()] ?? null,
@@ -363,30 +314,30 @@ export class CngxAlert {
   );
 
   constructor() {
-    effect(() => {
-      const s = this.state();
-      if (!s) {
-        return;
-      }
-      const status = s.status();
-
-      if (status === 'error') {
-        this.manualDismissed.set(false);
-        this.autoDismissed.set(false);
-        this.autoDismissTimer.clear();
-      } else if (status === 'success') {
-        this.manualDismissed.set(false);
-        this.autoDismissed.set(false);
-        const delay = this.autoDismissDelay();
-        if (delay !== undefined) {
-          this.autoDismissTimer.start(delay, () => this.autoDismissed.set(true));
+    createStateBridge(
+      () => this.state()?.status() ?? 'idle',
+      (status) => {
+        if (status === 'error') {
+          this.manualDismissed.set(false);
+          this.autoDismissed.set(false);
+          this.autoDismissTimer.clear();
+        } else if (status === 'success') {
+          this.manualDismissed.set(false);
+          this.autoDismissed.set(false);
+          const delay = this.autoDismissDelay();
+          if (delay !== undefined) {
+            this.autoDismissTimer.start(delay, () => this.autoDismissed.set(true));
+          }
+        } else if (status === 'idle') {
+          this.autoDismissTimer.clear();
         }
-      } else if (status === 'idle') {
-        this.autoDismissTimer.clear();
-      }
-      // loading/pending/refreshing: no branch - leaves current dismiss + timers intact.
-    });
+        // loading/pending/refreshing: no branch - leaves current dismiss + timers intact.
+      },
+    );
 
+    // Guarded transition write: phase is otherwise event-owned (animationend +
+    // fallback timer); this effect only kicks off enter/exit on the derived
+    // visibility edge.
     effect(() => {
       const show = this.shouldBeVisible();
       const phase = untracked(() => this.visibilityPhase());
@@ -426,6 +377,10 @@ export class CngxAlert {
     this.autoDismissTimer.clear();
     this.collapseTimer.clear();
     this.collapsedState.set(false);
+    // Exit may skip pointerleave/focusout (element hides mid-interaction) -
+    // stale holds must not pin the next visibility cycle's timers.
+    this.interactionHolds = 0;
+    this.reCollapseOnRelease = false;
   }
 
   private scheduleAnimationFallback(): void {
@@ -481,35 +436,60 @@ export class CngxAlert {
 
   /** @internal - WCAG 2.2.1: pause auto-dismiss on hover. */
   protected handlePointerEnter(): void {
-    this.autoDismissTimer.pause();
-    this.collapseTimer.pause();
-    if (this.collapsedState()) {
-      this.collapsedState.set(false);
-    }
+    this.handleInteractionStart();
   }
 
   /** @internal - resume timers on pointer leave. */
   protected handlePointerLeave(): void {
-    this.autoDismissTimer.resume();
-    if (this.collapsible() && this.isVisible()) {
-      this.collapseTimer.start(this.effectiveCollapseDelay(), () => this.collapsedState.set(true));
-    }
+    this.handleInteractionEnd();
   }
 
   /** @internal - WCAG 2.2.1: pause auto-dismiss on focus. */
   protected handleFocusIn(): void {
-    this.autoDismissTimer.pause();
-    this.collapseTimer.pause();
-    if (this.collapsedState()) {
-      this.collapsedState.set(false);
-    }
+    this.handleInteractionStart();
   }
 
   /** @internal - resume timers on focus out. */
   protected handleFocusOut(): void {
+    this.handleInteractionEnd();
+  }
+
+  /**
+   * Hold-counted pause: hover and focus-within are independent holds on the
+   * same timers - leaving with the mouse must not resume auto-dismiss while
+   * keyboard focus is still inside, and vice versa.
+   */
+  private handleInteractionStart(): void {
+    this.interactionHolds++;
+    if (this.interactionHolds > 1) {
+      return;
+    }
+    this.autoDismissTimer.pause();
+    this.collapseTimer.pause();
+    if (this.collapsedState()) {
+      // Interaction expands an already-collapsed alert; its collapse timer
+      // has fired, so the final release re-arms a full delay (resume would
+      // be a no-op and the alert would stay expanded forever).
+      this.reCollapseOnRelease = true;
+      this.collapsedState.set(false);
+    }
+  }
+
+  private handleInteractionEnd(): void {
+    this.interactionHolds = Math.max(0, this.interactionHolds - 1);
+    if (this.interactionHolds > 0) {
+      return;
+    }
     this.autoDismissTimer.resume();
-    if (this.collapsible() && this.isVisible()) {
-      this.collapseTimer.start(this.effectiveCollapseDelay(), () => this.collapsedState.set(true));
+    if (this.reCollapseOnRelease) {
+      this.reCollapseOnRelease = false;
+      if (this.collapsible() && this.isVisible()) {
+        this.collapseTimer.start(this.effectiveCollapseDelay(), () =>
+          this.collapsedState.set(true),
+        );
+      }
+    } else {
+      this.collapseTimer.resume();
     }
   }
 }

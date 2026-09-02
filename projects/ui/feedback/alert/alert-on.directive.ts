@@ -7,9 +7,14 @@ import { CngxAlerter } from './alerter.service';
 /**
  * Declarative state-to-alert bridge for scoped alert stacks.
  *
- * Place on any element inside a `CngxAlertStack` subtree - fires an alert
- * when the bound `CngxAsyncState` transitions to `error` (or optionally `success`).
- * Only fires on actual transitions, not on initial `idle` state.
+ * Fires an alert when the bound `CngxAsyncState` transitions to `error`
+ * (or optionally `success`). Only fires on actual transitions, not on
+ * initial `idle` state.
+ *
+ * Alerts route through the injected `CngxAlerter` - the environment
+ * instance from `provideFeedback(withAlerts())` or one provided by an
+ * ancestor component. Every `CngxAlertStack` that resolves the same
+ * instance renders them, filtered by scope:
  *
  * ```html
  * <cngx-alert-stack scope="form" />
@@ -17,6 +22,7 @@ import { CngxAlerter } from './alerter.service';
  * <button [cngxAsyncClick]="save"
  *   [cngxAlertOn]="saveState"
  *   alertError="Save failed"
+ *   alertScope="form"
  *   [alertErrorDetail]="true">
  *   Save
  * </button>
@@ -71,7 +77,7 @@ export class CngxAlertOn {
     if (!this.alerter) {
       throw new Error(
         '[cngxAlertOn] CngxAlerter not found. ' +
-          'Place inside a CngxAlertStack subtree or add withAlerts() to provideFeedback().',
+          'Add withAlerts() to provideFeedback() or provide CngxAlerter in an ancestor component.',
       );
     }
     const alerter = this.alerter;

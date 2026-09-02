@@ -7,7 +7,6 @@ import {
   type ElementRef,
   inject,
   input,
-  signal,
   viewChild,
   ViewEncapsulation,
 } from '@angular/core';
@@ -136,7 +135,10 @@ export class CngxLoadingOverlay {
   /** @internal - debounced visibility via shared gate factory. */
   protected readonly visible = createVisibilityGate(this.isActive, this.delay, this.effectiveMinDwell);
 
-  private readonly savedFocus = signal<HTMLElement | null>(null);
+  // Plain field, not a signal: written and read only inside effects/microtasks,
+  // never by templates or computeds - a signal here would put focus bookkeeping
+  // on the reactive graph for no reader.
+  private savedFocus: HTMLElement | null = null;
 
   private readonly contentWrapper = viewChild.required<ElementRef<HTMLElement>>('contentWrapper');
 
@@ -150,7 +152,7 @@ export class CngxLoadingOverlay {
         const activeEl = this.doc.activeElement as HTMLElement | null;
         const wrapper = this.contentWrapper().nativeElement;
         if (activeEl && wrapper.contains(activeEl)) {
-          this.savedFocus.set(activeEl);
+          this.savedFocus = activeEl;
         }
       }
     });
@@ -159,6 +161,12 @@ export class CngxLoadingOverlay {
       const vis = this.visible();
       if (vis) {
         queueMicrotask(() => {
+          // Grab focus only when it was inside the wrapper at activation -
+          // the restore branch is gated on the same savedFocus, so grab and
+          // restore stay symmetric and outside focus is never stolen.
+          if (this.savedFocus === null) {
+            return;
+          }
           const spinner = this.spinnerEl()?.nativeElement;
           if (spinner) {
             spinner.focus({ preventScroll: true });
@@ -170,9 +178,9 @@ export class CngxLoadingOverlay {
     effect(() => {
       const active = this.isActive();
       if (!active) {
-        const saved = this.savedFocus();
+        const saved = this.savedFocus;
         if (saved) {
-          this.savedFocus.set(null);
+          this.savedFocus = null;
           queueMicrotask(() => {
             if (saved.isConnected && typeof saved.focus === 'function') {
               saved.focus({ preventScroll: true });

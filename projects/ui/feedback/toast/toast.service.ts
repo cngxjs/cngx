@@ -1,6 +1,7 @@
 import {
   DestroyRef,
   type EnvironmentProviders,
+  type TemplateRef,
   type Type,
   inject,
   Injectable,
@@ -11,6 +12,7 @@ import { type Observable, Subject } from 'rxjs';
 
 import type { AlertSeverity } from '../alert/alert';
 import { CNGX_FEEDBACK_CONFIG } from '../config/feedback-config';
+import { createHeldTimerRegistry } from '../internal/pausable-timer';
 
 /**
  * Configuration for a single toast.
@@ -45,7 +47,7 @@ export interface ToastConfig {
   dismissible?: boolean;
 
   /**
-   * Custom component rendered as the toast body (Stufe 2).
+   * Custom component rendered as the toast body.
    * Replaces the default `message`/`description` text.
    * `title` is still rendered above the component if set.
    *
@@ -56,6 +58,14 @@ export interface ToastConfig {
 
   /** Inputs passed to the `content` component via `NgComponentOutlet`. */
   contentInputs?: Record<string, unknown>;
+
+  /**
+   * Template rendered as the toast body - takes precedence over `content`
+   * and `message`. `CngxToast` passes its projected content through here.
+   *
+   * A11y: same rule as `content` - avoid focusable elements inside.
+   */
+  contentTemplate?: TemplateRef<unknown>;
 }
 
 /**
@@ -71,26 +81,27 @@ export interface ToastRef {
 }
 
 /**
- * Internal toast state tracked by the service.
+ * Tracked state for a single toast - the element type of the public
+ * `CngxToaster.toasts` signal. Immutable per slot; treat as read-only.
  *
  * @category ui/feedback/toast
  */
 export interface ToastState {
   readonly id: number;
   readonly config: Required<Pick<ToastConfig, 'message' | 'severity' | 'dismissible'>> &
-    Pick<ToastConfig, 'action' | 'title' | 'description' | 'content' | 'contentInputs'> & {
+    Pick<
+      ToastConfig,
+      'action' | 'title' | 'description' | 'content' | 'contentInputs' | 'contentTemplate'
+    > & {
       duration: number | 'persistent';
     };
   readonly createdAt: number;
-  /** Timestamp when the current timer started (created or last resumed). */
-  readonly timerStartedAt: number;
   /** Dedup counter - incremented when identical toast fires again. */
   readonly count: number;
-  /** Remaining ms when timer was paused (hover/focus). `undefined` = not paused. */
-  readonly pausedRemaining: number | undefined;
-  /** Timer handle for auto-dismiss. */
-  readonly timer: ReturnType<typeof setTimeout> | undefined;
-  /** Subject that emits on dismiss. */
+  /**
+   * @internal - library-owned dismissal lifecycle. Never call `next()` or
+   * `complete()` from consumer code; observe via `ToastRef.afterDismissed()`.
+   */
   readonly dismissed$: Subject<void>;
 }
 
@@ -124,18 +135,21 @@ export class CngxToaster {
   /** Reactive toast stack - read by `CngxToastOutlet`. */
   readonly toasts = signal<readonly ToastState[]>([]);
 
-  /** Default duration for non-error toasts. */
-  readonly defaultDuration = signal<number>(this.config?.toastDefaultDuration ?? 5000);
+  /** Default duration for non-error toasts - configure via `withToasts({ defaultDuration })`. */
+  private readonly defaultDuration = this.config?.toastDefaultDuration ?? 5000;
 
-  /** Dedup window in ms - identical toasts within this window are merged. */
-  readonly dedupWindow = signal<number>(this.config?.toastDedupWindow ?? 1000);
+  /** Dedup window in ms - configure via `withToasts({ dedupWindow })`. */
+  private readonly dedupWindow = this.config?.toastDedupWindow ?? 1000;
+
+  /** Auto-dismiss timers keyed by toast id - not part of the public state shape. */
+  private readonly timers = createHeldTimerRegistry();
 
   constructor() {
     this.destroyRef.onDestroy(() => {
+      this.timers.clearAll();
       for (const t of this.toasts()) {
-        if (t.timer !== undefined) {
-          clearTimeout(t.timer);
-        }
+        t.dismissed$.next();
+        t.dismissed$.complete();
       }
     });
   }
@@ -144,32 +158,28 @@ export class CngxToaster {
   show(config: ToastConfig): ToastRef {
     const severity = config.severity ?? 'info';
     const duration =
-      config.duration ?? (severity === 'error' ? ('persistent' as const) : this.defaultDuration());
+      config.duration ?? (severity === 'error' ? ('persistent' as const) : this.defaultDuration);
     const dismissible = config.dismissible ?? true;
 
     // Dedup key includes title but excludes description - same event with
-    // different context detail is still the same event.
+    // different context detail is still the same event. Distinct content
+    // templates never merge: the second template would be silently dropped.
     const now = Date.now();
     const existing = this.toasts().find(
       (t) =>
         t.config.message === config.message &&
         t.config.severity === severity &&
         (t.config.title ?? '') === (config.title ?? '') &&
-        now - t.createdAt < this.dedupWindow(),
+        t.config.contentTemplate === config.contentTemplate &&
+        now - t.createdAt < this.dedupWindow,
     );
 
     if (existing) {
-      if (existing.timer !== undefined) {
-        clearTimeout(existing.timer);
-      }
-      const newTimer =
-        duration !== 'persistent' ? this.startTimer(existing.id, duration) : undefined;
+      // Dedup restart: full new duration, fresh clock - a repeated event
+      // keeps the merged toast up as long as a brand-new one would be.
+      this.startTimer(existing.id, duration);
       this.toasts.update((ts) =>
-        ts.map((t) =>
-          t.id === existing.id
-            ? { ...t, count: t.count + 1, timer: newTimer, pausedRemaining: undefined }
-            : t,
-        ),
+        ts.map((t) => (t.id === existing.id ? { ...t, count: t.count + 1 } : t)),
       );
       return this.createRef(existing);
     }
@@ -188,52 +198,30 @@ export class CngxToaster {
         description: config.description,
         content: config.content,
         contentInputs: config.contentInputs,
+        contentTemplate: config.contentTemplate,
       },
       createdAt: now,
-      timerStartedAt: now,
       count: 1,
-      pausedRemaining: undefined,
-      timer: duration !== 'persistent' ? this.startTimer(id, duration) : undefined,
       dismissed$,
     };
 
     this.toasts.update((ts) => [state, ...ts]);
+    this.startTimer(id, duration);
     return this.createRef(state);
   }
 
-  /** @internal - called by toast-outlet on hover/focus. */
+  /**
+   * @internal - called by toast-outlet on hover/focus (WCAG 2.2.1).
+   * Hold-counted: hover and focus-within pause independently; the timer
+   * resumes only when the last hold releases.
+   */
   pauseTimer(id: number): void {
-    this.toasts.update((ts) =>
-      ts.map((t) => {
-        if (t.id !== id || t.timer === undefined) {
-          return t;
-        }
-        const elapsed = Date.now() - t.timerStartedAt;
-        const duration = t.config.duration;
-        if (typeof duration !== 'number') {
-          return t;
-        }
-        clearTimeout(t.timer);
-        return { ...t, timer: undefined, pausedRemaining: Math.max(0, duration - elapsed) };
-      }),
-    );
+    this.timers.hold(id);
   }
 
   /** @internal - called by toast-outlet on mouse-leave/focus-out. */
   resumeTimer(id: number): void {
-    this.toasts.update((ts) =>
-      ts.map((t) => {
-        if (t.id !== id || t.pausedRemaining === undefined) {
-          return t;
-        }
-        return {
-          ...t,
-          pausedRemaining: undefined,
-          timerStartedAt: Date.now(),
-          timer: this.startTimer(t.id, t.pausedRemaining),
-        };
-      }),
-    );
+    this.timers.release(id);
   }
 
   /** Dismiss a toast by id. */
@@ -242,9 +230,7 @@ export class CngxToaster {
     if (!toast) {
       return;
     }
-    if (toast.timer !== undefined) {
-      clearTimeout(toast.timer);
-    }
+    this.clearTimer(id);
     this.toasts.update((ts) => ts.filter((t) => t.id !== id));
     toast.dismissed$.next();
     toast.dismissed$.complete();
@@ -253,17 +239,23 @@ export class CngxToaster {
   /** Dismiss all toasts. */
   dismissAll(): void {
     for (const t of this.toasts()) {
-      if (t.timer !== undefined) {
-        clearTimeout(t.timer);
-      }
+      this.clearTimer(t.id);
       t.dismissed$.next();
       t.dismissed$.complete();
     }
     this.toasts.set([]);
   }
 
-  private startTimer(id: number, ms: number): ReturnType<typeof setTimeout> {
-    return setTimeout(() => this.dismiss(id), ms);
+  private startTimer(id: number, duration: number | 'persistent'): void {
+    if (duration === 'persistent') {
+      this.clearTimer(id);
+      return;
+    }
+    this.timers.start(id, duration, () => this.dismiss(id));
+  }
+
+  private clearTimer(id: number): void {
+    this.timers.clear(id);
   }
 
   private createRef(state: ToastState): ToastRef {

@@ -59,6 +59,19 @@ class StateHost {
   readonly firstLoadOnly = signal(false);
 }
 
+@Component({
+  template: `
+    <button type="button" class="outside">Outside</button>
+    <cngx-loading-overlay [loading]="loading()" [delay]="200" [minDuration]="0">
+      <button type="button" class="inside">Inside</button>
+    </cngx-loading-overlay>
+  `,
+  imports: [CngxLoadingOverlay],
+})
+class FocusHost {
+  readonly loading = signal(false);
+}
+
 function setupBool(opts: { delay?: number; minDuration?: number } = {}) {
   const fixture = TestBed.createComponent(BoolHost);
   if (opts.delay != null) fixture.componentInstance.delay.set(opts.delay);
@@ -184,6 +197,76 @@ describe('CngxLoadingOverlay', () => {
     const content = wrapper.querySelector('.content') as HTMLElement;
     expect(content).not.toBeNull();
     expect(content.textContent).toBe('Hello');
+  });
+
+  describe('focus management', () => {
+    async function flushMicrotasks(): Promise<void> {
+      vi.runAllTicks();
+      await Promise.resolve();
+      await Promise.resolve();
+    }
+
+    function setupFocus() {
+      const fixture = TestBed.createComponent(FocusHost);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const host = fixture.componentInstance;
+      const el = fixture.nativeElement as HTMLElement;
+      document.body.appendChild(el);
+      const inside = el.querySelector('.inside') as HTMLButtonElement;
+      const outside = el.querySelector('.outside') as HTMLButtonElement;
+      return { fixture, host, el, inside, outside };
+    }
+
+    it('focuses the spinner when focus was inside the wrapper', async () => {
+      const { fixture, host, el, inside } = setupFocus();
+      inside.focus();
+
+      host.loading.set(true);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      vi.advanceTimersByTime(200);
+      fixture.detectChanges();
+      await flushMicrotasks();
+
+      const spinner = el.querySelector('.cngx-loading-overlay__spinner-wrapper');
+      expect(document.activeElement).toBe(spinner);
+    });
+
+    it('does not steal focus when it was outside the wrapper', async () => {
+      const { fixture, host, outside } = setupFocus();
+      outside.focus();
+
+      host.loading.set(true);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      vi.advanceTimersByTime(200);
+      fixture.detectChanges();
+      await flushMicrotasks();
+
+      expect(document.activeElement).toBe(outside);
+    });
+
+    it('restores focus to the previously focused inside element on hide', async () => {
+      const { fixture, host, inside } = setupFocus();
+      inside.focus();
+
+      host.loading.set(true);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      vi.advanceTimersByTime(200);
+      fixture.detectChanges();
+      await flushMicrotasks();
+
+      host.loading.set(false);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      vi.advanceTimersByTime(500);
+      fixture.detectChanges();
+      await flushMicrotasks();
+
+      expect(document.activeElement).toBe(inside);
+    });
   });
 
   describe('firstLoadOnly', () => {

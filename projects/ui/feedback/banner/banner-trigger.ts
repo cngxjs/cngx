@@ -1,4 +1,12 @@
-import { Component, DestroyRef, effect, inject, input } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  effect,
+  inject,
+  input,
+  linkedSignal,
+  untracked,
+} from '@angular/core';
 
 import type { AlertSeverity } from '../alert/alert';
 import { CngxBanner } from './banner.service';
@@ -52,7 +60,12 @@ export class CngxBannerTrigger {
   /** Banner message text. */
   readonly message = input.required<string>();
 
-  /** Required unique id - dedup key. */
+  /**
+   * Required unique id - dedup key, shared by design. Any code (or another
+   * trigger) using the same id updates and dismisses the same banner; there
+   * is no per-instance guard. Namespace ids (`net:offline`, `auth:session`)
+   * to avoid unintended collisions.
+   */
   readonly id = input.required<string>();
 
   /** Visual severity. */
@@ -67,6 +80,16 @@ export class CngxBannerTrigger {
   /** Action button handler. */
   readonly actionHandler = input<(() => void | Promise<void>) | undefined>(undefined);
 
+  /** @internal - id transition derived via linkedSignal, not managed in the effect. */
+  private readonly idTransition = linkedSignal<
+    string,
+    { current: string; previous: string | undefined }
+  >({
+    source: this.id,
+    computation: (current, prev) => ({ current, previous: prev?.value.current }),
+    equal: (a, b) => a.current === b.current && a.previous === b.previous,
+  });
+
   constructor() {
     if (!this.banner) {
       throw new Error(
@@ -75,22 +98,31 @@ export class CngxBannerTrigger {
     }
     const banner = this.banner;
 
+    // Input reads stay tracked (message/severity updates re-show under the
+    // same id); only the service calls leave the reactive graph.
     effect(() => {
       const show = this.when();
-      const id = this.id();
+      const { current: id, previous } = this.idTransition();
+
+      // An id rebind while shown must not orphan the old banner - the old
+      // key would otherwise linger until destroy.
+      if (previous !== undefined && previous !== id) {
+        untracked(() => banner.dismiss(previous));
+      }
 
       if (show) {
         const label = this.actionLabel();
         const handler = this.actionHandler();
-        banner.show({
+        const config = {
           message: this.message(),
           id,
           severity: this.severity(),
           dismissible: this.dismissible(),
           action: label && handler ? { label, handler } : undefined,
-        });
+        };
+        untracked(() => banner.show(config));
       } else {
-        banner.dismiss(id);
+        untracked(() => banner.dismiss(id));
       }
     });
 
