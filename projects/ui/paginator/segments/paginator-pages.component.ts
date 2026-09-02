@@ -1,8 +1,11 @@
 import {
+  afterNextRender,
   ChangeDetectionStrategy,
   Component,
   computed,
+  ElementRef,
   inject,
+  Injector,
   input,
   linkedSignal,
   ViewEncapsulation,
@@ -91,7 +94,7 @@ import { CNGX_PAGINATOR_PAGE_WINDOW_FACTORY } from './paginator-page-window.toke
               class="cngx-paginator__overflow-panel"
               [label]="config.ariaLabels.morePages"
               [value]="null"
-              (valueChange)="onSelectOverflow($event)"
+              (valueChange)="onSelectOverflow($event, morePopover)"
             >
               @for (hidden of item.hidden; track hidden) {
                 <li cngxOption class="cngx-paginator__option" [value]="hidden">{{ hidden + 1 }}</li>
@@ -108,6 +111,15 @@ export class CngxPaginatorPages {
   protected readonly host = inject(CNGX_PAGINATOR_HOST);
   protected readonly config = injectPaginatorConfig();
   protected readonly glyphs = CNGX_PAGINATOR_GLYPHS;
+  private readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly injector = inject(Injector);
+
+  /**
+   * `true` between an overflow selection and its post-re-render focus restore.
+   * The selection closes the gap popover, whose toggle handler would otherwise
+   * bounce focus onto a trigger the re-render is about to destroy.
+   */
+  private selectionInFlight = false;
 
   /** Pages flanking the current page on each side. Defaults to the v1 window. */
   readonly siblingCount = input<number>(1);
@@ -177,20 +189,48 @@ export class CngxPaginatorPages {
   }
 
   /**
-   * Restore focus to the ellipsis trigger when the panel closes (Escape /
-   * outside click), so a keyboard user is not dropped to the page body. If a
-   * selection re-rendered the window away, the trigger is gone and the guard
-   * skips it.
+   * Restore focus to the ellipsis trigger when the panel closes without a
+   * selection (Escape / outside click), so a keyboard user is not dropped to
+   * the page body. A selection-driven close is handled by
+   * {@link onSelectOverflow} instead - the re-render replaces the window, so
+   * the trigger is (or is about to be) gone and the now-current page button is
+   * the correct focus target.
    */
   protected onOverflowToggle(event: Event, trigger: HTMLElement): void {
-    if ((event as ToggleEvent).newState === 'closed' && trigger.isConnected) {
+    if (
+      (event as ToggleEvent).newState === 'closed' &&
+      !this.selectionInFlight &&
+      trigger.isConnected
+    ) {
       trigger.focus();
     }
   }
 
-  protected onSelectOverflow(value: number | null | undefined): void {
-    if (typeof value === 'number') {
-      this.host.setPage(value);
+  /**
+   * Jump to the selected hidden page, close the gap popover, and focus the
+   * now-current page button once the window has re-rendered - the popover
+   * (where focus lives) does not survive the selection, and without an
+   * explicit restore focus drops to the page body.
+   */
+  protected onSelectOverflow(
+    value: number | null | undefined,
+    popover: { hide(): void },
+  ): void {
+    if (typeof value !== 'number') {
+      return;
     }
+    this.selectionInFlight = true;
+    this.host.setPage(value);
+    popover.hide();
+    afterNextRender(
+      () => {
+        this.selectionInFlight = false;
+        const current = this.elementRef.nativeElement.querySelector<HTMLElement>(
+          '.cngx-paginator__page[aria-current="page"]',
+        );
+        current?.focus();
+      },
+      { injector: this.injector },
+    );
   }
 }
