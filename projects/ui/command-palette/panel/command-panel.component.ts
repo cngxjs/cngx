@@ -228,7 +228,9 @@ export class CngxCommandPanel {
       const ranked = this.matcher(this.commands(), this.term(), this.scope());
       const asyncState = this.results();
       const asyncGroups = asyncState ? toRawGroups(asyncState.data() ?? []) : [];
-      return [...asyncGroups, ...groupRanked(ranked)].map((raw) => ({
+      const raws = [...asyncGroups, ...groupRanked(ranked)];
+      this.pruneDomIds(raws);
+      return raws.map((raw) => ({
         id: this.domGroupId(raw.key),
         label: raw.label,
         items: raw.items,
@@ -241,6 +243,29 @@ export class CngxCommandPanel {
     },
     { equal: renderGroupsEqual },
   );
+
+  /**
+   * Drop id-map entries whose group key / command id left the result set, so
+   * the memoized maps stay bounded when a long-lived palette streams rotating
+   * async group ids. Ids remain stable while their key is present; a key that
+   * leaves and returns simply gets a fresh id.
+   */
+  private pruneDomIds(raws: readonly RawRenderGroup[]): void {
+    const groupKeys = new Set(raws.map((raw) => raw.key));
+    for (const key of this.groupDomIds.keys()) {
+      if (!groupKeys.has(key)) {
+        this.groupDomIds.delete(key);
+      }
+    }
+    const commandIds = new Set(
+      raws.flatMap((raw) => raw.items.map((entry) => entry.command.id)),
+    );
+    for (const key of this.reasonDomIds.keys()) {
+      if (!commandIds.has(key)) {
+        this.reasonDomIds.delete(key);
+      }
+    }
+  }
 
   /** Flat ranked list in render order, for count + command lookup. */
   private readonly flatItems = computed<readonly CngxRankedCommand[]>(
