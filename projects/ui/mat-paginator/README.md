@@ -72,8 +72,12 @@ every change-detection pass and would reset on each.
 
 `<mat-paginator>` only relabels its own range text, which a screen reader does not
 announce. With `[announce]` the bridge mounts a visually-hidden `aria-live`
-region and speaks the new page plus visible range after every change. Localise
-the wording via `[announceLabel]`.
+region and speaks the new page after every change. The default phrasing
+resolves from the shared `CNGX_PAGINATOR_CONFIG` cascade
+(`announcements.pageChange`, "Page N of M" in the EN defaults), so
+`provideCngxPaginatorConfig(withPaginatorAnnouncements(...))` localises the
+bridge together with the `CngxPaginator` organism. Bind `[announceLabel]` for a
+richer per-instance message - its context also carries the visible item range.
 
 ```html
 <mat-paginator cngxMatPaginator [total]="items().length" announce></mat-paginator>

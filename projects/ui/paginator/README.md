@@ -131,4 +131,6 @@ without forking the shell. It mirrors the select family's
 roving tab stop on the page row (arrows / Home / End); `aria-current="page"` on
 the active page; a single computed `aria-busy` owner; live-region page-change,
 clamp, and async announcements. A `total`-shrink clamp is never silent - the
-clamped page is both emitted back to the consumer and announced.
+clamped page is announced, and emitted back to the consumer once the state is
+settled and non-empty (a transient total drop during a busy refetch is held
+back, so it never pins a controlled consumer to page 0).
