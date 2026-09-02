@@ -115,9 +115,14 @@ export class CngxPaginatorPages {
   private readonly injector = inject(Injector);
 
   /**
-   * `true` between an overflow selection and its post-re-render focus restore.
-   * The selection closes the gap popover, whose toggle handler would otherwise
-   * bounce focus onto a trigger the re-render is about to destroy.
+   * `true` from an overflow selection until the popover's close toggle is
+   * delivered. The selection closes the gap popover, whose toggle handler
+   * would otherwise bounce focus onto the (possibly reused) trigger and undo
+   * the current-page restore. Consumed by the toggle handler itself - the
+   * popover close event is a queued task that can outrun OR trail the render,
+   * so a render-tied reset would race it. If the close event is lost entirely
+   * (the re-render destroyed the popover view before delivery), the next
+   * popover OPEN clears the stale flag.
    */
   private selectionInFlight = false;
 
@@ -197,11 +202,21 @@ export class CngxPaginatorPages {
    * the correct focus target.
    */
   protected onOverflowToggle(event: Event, trigger: HTMLElement): void {
-    if (
-      (event as ToggleEvent).newState === 'closed' &&
-      !this.selectionInFlight &&
-      trigger.isConnected
-    ) {
+    if ((event as ToggleEvent).newState !== 'closed') {
+      // A fresh open supersedes any selection whose close event was lost with
+      // its destroyed popover view - clear the stale flag so this panel's own
+      // Escape/outside-click close restores the trigger normally.
+      this.selectionInFlight = false;
+      return;
+    }
+    if (this.selectionInFlight) {
+      // Selection-driven close: the focus restore is owned by the
+      // afterNextRender in onSelectOverflow - consuming the flag here (in the
+      // toggle task itself) is what makes the hand-off race-free.
+      this.selectionInFlight = false;
+      return;
+    }
+    if (trigger.isConnected) {
       trigger.focus();
     }
   }
@@ -224,7 +239,6 @@ export class CngxPaginatorPages {
     popover.hide();
     afterNextRender(
       () => {
-        this.selectionInFlight = false;
         const current = this.elementRef.nativeElement.querySelector<HTMLElement>(
           '.cngx-paginator__page[aria-current="page"]',
         );
