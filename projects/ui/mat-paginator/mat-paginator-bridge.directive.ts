@@ -212,9 +212,16 @@ export class CngxMatPaginator {
 
     // AT announcement. The region is created lazily on first opt-in, then its
     // text tracks the derived message. textContent is written through the
-    // renderer so it stays SSR-safe.
+    // renderer so it stays SSR-safe. Flipping [announce] off empties the
+    // mounted region - a stale last message would otherwise linger in the
+    // accessibility tree.
     effect(() => {
       if (!this.announce()) {
+        untracked(() => {
+          if (this.liveRegion) {
+            this.renderer.setProperty(this.liveRegion, 'textContent', '');
+          }
+        });
         return;
       }
       const message = this.announceMessage();

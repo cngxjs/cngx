@@ -152,15 +152,15 @@ describe('CngxPaginator a11y', () => {
     // On the first page: first/prev are at the bound, next/last are not.
     expect(navButton(paginatorEl, 'First page').getAttribute('aria-disabled')).toBe('true');
     expect(navButton(paginatorEl, 'Previous page').getAttribute('aria-disabled')).toBe('true');
-    expect(navButton(paginatorEl, 'Next page').getAttribute('aria-disabled')).toBe('false');
-    expect(navButton(paginatorEl, 'Last page').getAttribute('aria-disabled')).toBe('false');
+    expect(navButton(paginatorEl, 'Next page').getAttribute('aria-disabled')).toBeNull();
+    expect(navButton(paginatorEl, 'Last page').getAttribute('aria-disabled')).toBeNull();
     // aria-disabled (not native disabled) keeps the button in the AT focus order.
     expect(navButton(paginatorEl, 'First page').hasAttribute('disabled')).toBe(false);
 
     paginate.last();
     await settle(fixture);
-    expect(navButton(paginatorEl, 'First page').getAttribute('aria-disabled')).toBe('false');
-    expect(navButton(paginatorEl, 'Previous page').getAttribute('aria-disabled')).toBe('false');
+    expect(navButton(paginatorEl, 'First page').getAttribute('aria-disabled')).toBeNull();
+    expect(navButton(paginatorEl, 'Previous page').getAttribute('aria-disabled')).toBeNull();
     expect(navButton(paginatorEl, 'Next page').getAttribute('aria-disabled')).toBe('true');
     expect(navButton(paginatorEl, 'Last page').getAttribute('aria-disabled')).toBe('true');
   });

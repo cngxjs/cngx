@@ -253,6 +253,22 @@ describe('CngxMatPaginator (bridge)', () => {
     expect(live?.textContent).toContain('items 11 to 20 of 100');
   });
 
+  test('(k2) flipping [announce] off clears the mounted live region', async () => {
+    TestBed.configureTestingModule({ providers });
+    const { fixture, host } = await setup();
+
+    host.announce.set(true);
+    await settle(fixture);
+    const live = fixture.nativeElement.querySelector('.cngx-mat-paginator-live') as HTMLElement;
+    expect(live.textContent).not.toBe('');
+
+    // The region stays mounted, but a stale last message must not linger in
+    // the accessibility tree once announcements are opted out.
+    host.announce.set(false);
+    await settle(fixture);
+    expect(live.textContent).toBe('');
+  });
+
   test('(l) a page click emits pageChange once and no spurious pageSizeChange', async () => {
     TestBed.configureTestingModule({ providers });
     const { fixture, matPaginator, host } = await setup();

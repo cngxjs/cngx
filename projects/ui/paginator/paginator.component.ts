@@ -38,7 +38,7 @@ export type CngxPaginatorDensity = 'compact' | 'default' | 'comfortable';
  * Declarative, skinnable pagination organism. \
  * A thin shell over the `CngxPaginate` brain (applied as a `hostDirective`), assembled by the
  * consumer from projected segment parts in DOM order - no `show*` config inputs.
- * `skin` / `density` are single paint attributes reflected onto `[data-skin]` / `[data-density]`.  \
+ * `skin` / `density` are single paint attributes reflected onto `[data-skin]` / `[data-paginator-size]`.  \
  *
  * Page bindings are longhand pairs -
  * `[pageIndex]="pageIndex()" (pageIndexChange)="pageIndex.set($event)"` and

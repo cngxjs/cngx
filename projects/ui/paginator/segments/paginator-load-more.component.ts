@@ -43,7 +43,7 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
       class="cngx-paginator__button cngx-paginator__load-more"
       cngxRipple
       [attr.aria-label]="ariaLabel()"
-      [attr.aria-disabled]="disabled()"
+      [attr.aria-disabled]="disabled() ? 'true' : null"
       (click)="handleClick()"
     >
       <span class="cngx-paginator__load-more-label">{{ ariaLabel() }}</span>

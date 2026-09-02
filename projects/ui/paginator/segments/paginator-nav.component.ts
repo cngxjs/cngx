@@ -56,13 +56,15 @@ function createPaginatorNavCore(options: NavCoreOptions): NavCore {
 
 // Shared template - identical across the four segments; only the glyph differs.
 // `aria-disabled` (not native `disabled`) keeps the button focusable so AT users
-// hear the bound state; `activate()` guards the click.
+// hear the bound state; `activate()` guards the click. The attribute is emitted
+// only while actually disabled ('true' : null) - family parity with pages/dots,
+// and an idle button carries no aria-disabled="false" noise.
 const NAV_TEMPLATE = `
   <button
     type="button"
     class="cngx-paginator__button cngx-paginator__nav"
     cngxRipple
-    [attr.aria-disabled]="core.disabled()"
+    [attr.aria-disabled]="core.disabled() ? 'true' : null"
     (click)="core.activate()"
   >
     <cngx-icon aria-hidden="true">{{ glyph }}</cngx-icon>
