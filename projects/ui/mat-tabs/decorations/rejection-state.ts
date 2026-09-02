@@ -16,6 +16,13 @@ import type { CngxTabGroupHost, injectTabsI18n } from '@cngx/common/tabs';
  */
 export interface CngxMatTabRejectionState {
   /**
+   * Stable id of the currently-failed tab handle, or `null` when no
+   * rejection is pinned. Identity equal via the id lookup collapses
+   * `tabs()` re-emissions that do not change the failed target - the
+   * rejection projector keys its effect on exactly this signal.
+   */
+  readonly failedHandleId: Signal<string | null>;
+  /**
    * Reactive label of the rollback origin - `undefined` when no
    * rejection is pinned, when the origin index is unresolved, or
    * when the origin tab carries no label.
@@ -62,6 +69,14 @@ export function createRejectionState(
   presenter: CngxTabGroupHost,
   i18n: ReturnType<typeof injectTabsI18n>,
 ): CngxMatTabRejectionState {
+  const failedHandleId: Signal<string | null> = computed(() => {
+    const idx = presenter.lastFailedIndex();
+    if (idx === undefined) {
+      return null;
+    }
+    return presenter.tabs()[idx]?.id ?? null;
+  });
+
   const originLabel: Signal<string | undefined> = computed(() => {
     const failedIdx = presenter.lastFailedIndex();
     if (failedIdx === undefined) {
@@ -94,5 +109,5 @@ export function createRejectionState(
     return '';
   });
 
-  return { originLabel, descriptorText, liveAnnouncement };
+  return { failedHandleId, originLabel, descriptorText, liveAnnouncement };
 }

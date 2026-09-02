@@ -11,6 +11,7 @@ import { type DestroyRef, effect, type Injector, runInInjectionContext, type Sig
  * is an `EventEmitter<boolean>` whose `.subscribe` matches).
  *
  * @category ui/mat-accordion/material-bridge
+ * @internal
  */
 export interface CngxExpansionPanelLike {
   /** Current expanded state; assigning it drives the Material panel open/closed. */
@@ -32,6 +33,7 @@ export interface CngxExpansionPanelLike {
  * set-write, so it can never diverge from the brain's own DOM path.
  *
  * @category ui/mat-accordion/material-bridge
+ * @internal
  */
 export interface CngxAccordionOpenSet {
   /** Reactive membership read - reflects single-mode arbitration. Tracked inside the sync effect. */
@@ -44,6 +46,7 @@ export interface CngxAccordionOpenSet {
  * Options for {@link createMatExpansionSetSync}.
  *
  * @category ui/mat-accordion/material-bridge
+ * @internal
  */
 export interface CngxMatExpansionSetSyncOptions<P extends CngxExpansionPanelLike> {
   /** Reactive list of projected expansion panels (a `contentChildren` signal). */
@@ -101,6 +104,7 @@ export interface CngxMatExpansionSetSyncOptions<P extends CngxExpansionPanelLike
  * brain.
  *
  * @category ui/mat-accordion/material-bridge
+ * @internal
  */
 export function createMatExpansionSetSync<P extends CngxExpansionPanelLike>(
   opts: CngxMatExpansionSetSyncOptions<P>,

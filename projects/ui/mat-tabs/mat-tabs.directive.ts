@@ -105,6 +105,18 @@ export class CngxMatTabsPanelHostAdapter implements CngxTabPanelHost {
  * `./decorations/`; this directive supplies their reactive triggers
  * and the delegators consumer templates call.
  *
+ * **Inert on this bridge: `loop` and `orientation`.** Both are
+ * forwarded so templates stay portable between `<cngx-tab-group>` and
+ * the instrumented `<mat-tab-group>`, but Material owns the keyboard
+ * interaction and the strip layout here - `loop` never changes
+ * Material's Home/End/arrow behaviour, and `orientation` never
+ * rotates the Material strip (use `<mat-tab-group headerPosition>` /
+ * Material's own APIs for that). `orientation` still reaches the
+ * cngx side through the overflow panel-host adapter; `loop` feeds
+ * nothing Material does not already own. Deliberately kept in the
+ * forwarded input set for template portability - removing them would
+ * break `<cngx-tab-group>`-authored templates on paste.
+ *
  * @playground Form error aggregation ./examples/form-errors/form-errors.component.ts
  *
  * @category ui/mat-tabs
@@ -193,18 +205,9 @@ export class CngxMatTabs {
     );
   private readonly i18n = injectTabsI18n();
 
-  // Identity equal on `string | null` - collapses `tabs()` re-emits
-  // that don't change the failed-target id.
-  private readonly failedHandleId = computed<string | null>(() => {
-    const idx = this.presenter.lastFailedIndex();
-    if (idx === undefined) {
-      return null;
-    }
-    return this.presenter.tabs()[idx]?.id ?? null;
-  });
-
-  // Bundle shares one source-walk across descriptorText / originLabel
-  // / liveAnnouncement - pillar-2 phrasing parity with cngx-native.
+  // Bundle shares one source-walk across failedHandleId /
+  // descriptorText / originLabel / liveAnnouncement - pillar-2
+  // phrasing parity with cngx-native.
   private readonly rejectionState = createRejectionState(this.presenter, this.i18n);
 
   // Shared with `[cngxMatTabNav]` - one body, two hosts (Pillar 3).
@@ -228,7 +231,7 @@ export class CngxMatTabs {
     // registration; the directive only supplies reactive triggers.
     createMatTabRejectionDecoration({
       hostEl: this.hostEl,
-      failedHandleId: this.failedHandleId,
+      failedHandleId: this.rejectionState.failedHandleId,
       failedIndex: this.presenter.lastFailedIndex,
       descriptorText: this.rejectionState.descriptorText,
       renderer: this.renderer,

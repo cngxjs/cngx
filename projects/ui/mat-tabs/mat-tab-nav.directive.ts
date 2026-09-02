@@ -1,13 +1,4 @@
-import {
-  computed,
-  DestroyRef,
-  Directive,
-  ElementRef,
-  inject,
-  Injector,
-  Renderer2,
-  type Signal,
-} from '@angular/core';
+import { DestroyRef, Directive, ElementRef, inject, Injector, Renderer2 } from '@angular/core';
 
 import {
   CNGX_TAB_GROUP_HOST,
@@ -95,16 +86,6 @@ export class CngxMatTabNav {
   private readonly hostEl = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   private readonly i18n = injectTabsI18n();
 
-  // Stable id of the rejected link, or null. Identity equal collapses
-  // tabs() re-emits that don't change the failed-target id.
-  private readonly failedHandleId: Signal<string | null> = computed<string | null>(() => {
-    const idx = this.presenter.lastFailedIndex();
-    if (idx === undefined) {
-      return null;
-    }
-    return this.presenter.tabs()[idx]?.id ?? null;
-  });
-
   private readonly rejectionState = createRejectionState(this.presenter, this.i18n);
   private readonly aggregatedErrorTabs = createAggregatedErrorTabs(this.presenter);
 
@@ -129,7 +110,7 @@ export class CngxMatTabNav {
     // selector differs (`.mat-mdc-tab-link` vs `.mat-mdc-tab`).
     createMatTabRejectionDecoration({
       hostEl: this.hostEl,
-      failedHandleId: this.failedHandleId,
+      failedHandleId: this.rejectionState.failedHandleId,
       failedIndex: this.presenter.lastFailedIndex,
       descriptorText: this.rejectionState.descriptorText,
       renderer: this.renderer,

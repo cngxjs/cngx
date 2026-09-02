@@ -13,6 +13,7 @@ import {
   type ViewContainerRef,
 } from '@angular/core';
 
+import { CNGX_DEFAULT_HALF_WIRED_SLOT_SINK } from './half-wired-slot-sink';
 import type { CngxMatTabAggregatorContentContext } from './mat-tab-aggregator-content.directive';
 import type { CngxMatTabRejectionContentContext } from './mat-tab-rejection-content.directive';
 import { MaterialPrivateSurfaces } from '../material-bridge/private-surfaces';
@@ -482,7 +483,7 @@ export function createMatTabAggregatorDecoration(
   if (!isFullyWired() && (opts.contentTemplate || opts.viewContainerRef)) {
     const missing: 'contentTemplate' | 'viewContainerRef' =
       opts.contentTemplate ? 'viewContainerRef' : 'contentTemplate';
-    const sink = opts.onHalfWiredSlot ?? defaultHalfWiredSlotWarn;
+    const sink = opts.onHalfWiredSlot ?? CNGX_DEFAULT_HALF_WIRED_SLOT_SINK;
     sink(missing);
   }
 
@@ -699,22 +700,6 @@ export function createMatTabAggregatorDecoration(
       removeDecoration(id);
     }
   });
-}
-
-function defaultHalfWiredSlotWarn(
-  missing: 'contentTemplate' | 'viewContainerRef',
-): void {
-  if (!isDevMode()) {
-    return;
-  }
-  console.warn(
-    '[cngxMatTabs] aggregator-content slot half-wired - ' +
-      `\`${missing}\` is missing while the other half is supplied. ` +
-      'The decoration projector will silently fall back to the ' +
-      'imperative `textContent` path, and the consumer-projected ' +
-      '`*cngxMatTabAggregatorContent` template will never render. ' +
-      'Wire both halves on the [cngxMatTabs] directive (or neither).',
-  );
 }
 
 function defaultRetryCeilingWarn(
