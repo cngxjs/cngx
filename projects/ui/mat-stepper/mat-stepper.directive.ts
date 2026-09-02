@@ -14,6 +14,7 @@ import { MatStep, MatStepper } from '@angular/material/stepper';
 import { CNGX_STEPPER_HOST, CngxStepperPresenter } from '@cngx/common/stepper';
 import { nextUid } from '@cngx/core/utils';
 
+import { createOrderedRegistrationSeam } from '../material-bridge/ordered-registration';
 import { createMatStepperBidirectionalSync } from './material-bridge/bidirectional-sync';
 import {
   CNGX_MAT_STEP_HANDLE_FACTORY,
@@ -105,22 +106,29 @@ export class CngxMatStepper {
   private readonly injector: Injector = inject(InjectableInjector);
 
   private readonly matSteps = contentChildren(MatStep, { descendants: true });
-  // Map not WeakMap - syncHandles needs to iterate to find removed steps.
-  private readonly setupsByStep = new Map<MatStep, CngxMatStepHandleSetup>();
   private readonly createHandle = inject(CNGX_MAT_STEP_HANDLE_FACTORY);
+
+  // Shared with [cngxMatTabsRegistry]: the presenter registry appends
+  // new registrations, but Material renders steps at their DOM
+  // position - a mid-list <mat-step> insert must land at its query
+  // index, not at the tail. The seam re-registers the diverging
+  // suffix in query order while keeping surviving handle instances.
+  private readonly seam = createOrderedRegistrationSeam<MatStep, CngxMatStepHandleSetup>({
+    create: (step) => this.createHandle(step, () => nextUid('cngx-mat-step-')),
+    register: (setup) => this.presenter.register(setup.handle),
+    unregister: (setup) => this.presenter.unregister(setup.handle.id, setup.handle),
+    dispose: () => {
+      // Step setups carry no per-entry resources (no child injector).
+    },
+  });
 
   constructor() {
     effect(() => {
       const steps = this.matSteps();
-      untracked(() => this.syncHandles(steps));
+      untracked(() => this.seam.sync(steps));
     });
 
-    this.destroyRef.onDestroy(() => {
-      for (const setup of this.setupsByStep.values()) {
-        this.presenter.unregister(setup.handle.id);
-      }
-      this.setupsByStep.clear();
-    });
+    this.destroyRef.onDestroy(() => this.seam.clear());
 
     createMatStepperBidirectionalSync({
       matStepper: this.matStepper,
@@ -128,28 +136,5 @@ export class CngxMatStepper {
       injector: this.injector,
       destroyRef: this.destroyRef,
     });
-  }
-
-  private syncHandles(steps: readonly MatStep[]): void {
-    const liveSteps = new Set<MatStep>(steps);
-
-    // Only fresh MatSteps get registered; cached ones survive untouched.
-    for (const step of steps) {
-      if (this.setupsByStep.has(step)) {
-        continue;
-      }
-      const setup = this.createHandle(step, () => nextUid('cngx-mat-step-'));
-      this.setupsByStep.set(step, setup);
-      this.presenter.register(setup.handle);
-    }
-
-    // Snapshot before iterating - guards against non-current-key deletes inside the body.
-    for (const [step, setup] of Array.from(this.setupsByStep.entries())) {
-      if (liveSteps.has(step)) {
-        continue;
-      }
-      this.setupsByStep.delete(step);
-      this.presenter.unregister(setup.handle.id);
-    }
   }
 }

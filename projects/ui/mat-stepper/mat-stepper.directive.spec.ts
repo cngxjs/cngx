@@ -77,6 +77,22 @@ class DynamicHostCmp {
   standalone: true,
   imports: [MatStepperModule, CngxMatStepper],
   template: `
+    <mat-stepper cngxMatStepper [(activeStepIndex)]="active">
+      @for (label of labels(); track label) {
+        <mat-step [label]="label"><p>{{ label }} content</p></mat-step>
+      }
+    </mat-stepper>
+  `,
+})
+class MidListInsertHostCmp {
+  readonly labels = signal<readonly string[]>(['One', 'Three']);
+  protected active = 0;
+}
+
+@Component({
+  standalone: true,
+  imports: [MatStepperModule, CngxMatStepper],
+  template: `
     <mat-stepper
       cngxMatStepper
       [commitAction]="commit"
@@ -348,5 +364,44 @@ describe('CngxMatStepper instrumentation directive', () => {
     fixture.detectChanges();
     await fixture.whenStable();
     expect(presenter.flatSteps()[0].state()).toBe('error');
+  });
+
+  test('axis 13: mid-list MatStep insert registers at its DOM position, keeping presenter order aligned with Material', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(MidListInsertHostCmp);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const matEl = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof MatStepper,
+    );
+    const presenter = matEl.injector.get(CngxStepperPresenter);
+    // Handle labels are snapshotted at registration (documented bridge
+    // limitation), and @for input bindings land after the query
+    // emission - so order is asserted via handle ids, not labels.
+    expect(presenter.flatSteps().length).toBe(2);
+    const idOneBefore = presenter.flatSteps()[0].id;
+    const idThreeBefore = presenter.flatSteps()[1].id;
+
+    // Insert "Two" between the existing steps - Material renders it at
+    // DOM index 1, so the presenter registry must mirror that slot
+    // instead of appending at the tail.
+    fixture.componentInstance.labels.set(['One', 'Two', 'Three']);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const idsAfter = presenter.flatSteps().map((n) => n.id);
+    expect(idsAfter.length).toBe(3);
+    // Prefix stays, the new step lands mid-list, the displaced suffix
+    // keeps its handle instance - same id, new slot.
+    expect(idsAfter[0]).toBe(idOneBefore);
+    expect(idsAfter[2]).toBe(idThreeBefore);
+    expect(idsAfter[1]).not.toBe(idOneBefore);
+    expect(idsAfter[1]).not.toBe(idThreeBefore);
   });
 });
