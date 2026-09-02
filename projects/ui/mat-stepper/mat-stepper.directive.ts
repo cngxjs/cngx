@@ -11,9 +11,15 @@ import {
 } from '@angular/core';
 import { MatStep, MatStepper } from '@angular/material/stepper';
 
-import { CNGX_STEPPER_HOST, CngxStepperPresenter } from '@cngx/common/stepper';
+import {
+  CNGX_STEPPER_HOST,
+  CngxStepperPresenter,
+  createStepperAnnouncementBuilders,
+  injectStepperI18n,
+} from '@cngx/common/stepper';
 import { nextUid } from '@cngx/core/utils';
 
+import { mountLiveRegionAnnouncer } from '../material-bridge/live-region';
 import { createOrderedRegistrationSeam } from '../material-bridge/ordered-registration';
 import { createMatStepperBidirectionalSync } from './material-bridge/bidirectional-sync';
 import {
@@ -36,6 +42,11 @@ import {
  * This is the instrumentation pattern: Material owns the rendering and
  * the consumer authors native `<mat-step>` markup; CNGX is the
  * behaviour layer. Topology mirrors `[cngxMatTabs]`.
+ *
+ * Commit-lifecycle transitions speak: the shared announcement builder
+ * feeds the root live announcer (pending / landed / rolled-back
+ * phrases, identical to `<cngx-stepper>`), and the host carries
+ * `aria-busy="true"` while a commit is in flight.
  *
  * Inputs/outputs are forwarded from {@link CngxStepperPresenter}:
  * - `activeStepIndex` (two-way, with `activeStepIndexChange`),
@@ -93,6 +104,11 @@ import {
       outputs: ['activeStepIndexChange'],
     },
   ],
+  host: {
+    // Communicated busy-state while a commit is in flight - same
+    // strict 'pending' gate the cngx-native organism uses per step.
+    '[attr.aria-busy]': "presenter.busy() ? 'true' : null",
+  },
 })
 export class CngxMatStepper {
   private readonly matStepper = inject(MatStepper, { self: true });
@@ -107,6 +123,7 @@ export class CngxMatStepper {
 
   private readonly matSteps = contentChildren(MatStep, { descendants: true });
   private readonly createHandle = inject(CNGX_MAT_STEP_HANDLE_FACTORY);
+  private readonly i18n = injectStepperI18n();
 
   // Shared with [cngxMatTabsRegistry]: the presenter registry appends
   // new registrations, but Material renders steps at their DOM
@@ -129,6 +146,20 @@ export class CngxMatStepper {
     });
 
     this.destroyRef.onDestroy(() => this.seam.clear());
+
+    // Commit-lifecycle announcements (pending / landed / rolled-back).
+    // The shared builder computes the phrase; the shared announcer
+    // renders it - an attribute directive owns no template, so the
+    // polite region lives on the root CngxLiveAnnouncer, mirroring
+    // [cngxMatTabs].
+    mountLiveRegionAnnouncer({
+      announcement: createStepperAnnouncementBuilders({
+        presenter: this.presenter,
+        stepsOnly: this.presenter.stepsOnly,
+        i18n: this.i18n,
+      }).liveAnnouncement,
+      injector: this.injector,
+    });
 
     createMatStepperBidirectionalSync({
       matStepper: this.matStepper,

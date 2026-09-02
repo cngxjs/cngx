@@ -23,7 +23,7 @@ import {
   createMatTabRejectionDecoration,
 } from './decorations/decoration-projectors';
 import { createAggregatedErrorTabs } from './decorations/aggregated-error-tabs';
-import { mountLiveRegionAnnouncer } from './decorations/live-region';
+import { mountLiveRegionAnnouncer } from '../material-bridge/live-region';
 import { createRejectionState } from './decorations/rejection-state';
 
 /**

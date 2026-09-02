@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { MatStepperModule, MatStepper } from '@angular/material/stepper';
 import { describe, expect, test } from 'vitest';
 
+import { CngxLiveAnnouncer } from '@cngx/common/a11y';
 import {
   CngxStepperPresenter,
   type CngxStepperCommitAction,
@@ -403,5 +404,68 @@ describe('CngxMatStepper instrumentation directive', () => {
     expect(idsAfter[2]).toBe(idThreeBefore);
     expect(idsAfter[1]).not.toBe(idOneBefore);
     expect(idsAfter[1]).not.toBe(idThreeBefore);
+  });
+
+  test('axis 14: aria-busy rides the commit window - true while pending, removed after resolve', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(CommitHostCmp);
+    let resolveCommit: ((value: boolean) => void) | null = null;
+    fixture.componentInstance['commit'] = () =>
+      new Promise<boolean>((res) => {
+        resolveCommit = res;
+      });
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const matEl = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof MatStepper,
+    );
+    const presenter = matEl.injector.get(CngxStepperPresenter);
+    const hostEl = matEl.nativeElement as HTMLElement;
+    expect(hostEl.getAttribute('aria-busy')).toBeNull();
+
+    presenter.select(1);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(hostEl.getAttribute('aria-busy')).toBe('true');
+
+    (resolveCommit as ((value: boolean) => void) | null)?.(true);
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(hostEl.getAttribute('aria-busy')).toBeNull();
+  });
+
+  test('axis 15: live-region announces commitInFlight while a pessimistic commit is pending', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(CommitHostCmp);
+    fixture.componentInstance['commit'] = () =>
+      new Promise<boolean>(() => undefined);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const matEl = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof MatStepper,
+    );
+    const presenter = matEl.injector.get(CngxStepperPresenter);
+
+    presenter.select(2);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(presenter.commitState.status()).toBe('pending');
+
+    // The shared announcer writes one frame later (its clear-then-set
+    // timer); a real delay flushes it without fake timers.
+    await new Promise((resolve) => setTimeout(resolve, 24));
+    const politeRegions = document.body.querySelectorAll<HTMLElement>(
+      'span[aria-live="polite"].cngx-sr-only',
+    );
+    try {
+      expect(politeRegions[politeRegions.length - 1]?.textContent).toBe('Committing step\u2026');
+    } finally {
+      TestBed.inject(CngxLiveAnnouncer).ngOnDestroy();
+    }
   });
 });
