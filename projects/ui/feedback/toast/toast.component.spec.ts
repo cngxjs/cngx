@@ -108,6 +108,21 @@ describe('CngxToast', () => {
     expect(toaster.toasts().length).toBe(1);
   });
 
+  it('emits dismissed when the toast auto-dismisses while [when] stays true', () => {
+    vi.useFakeTimers();
+    TestBed.configureTestingModule({ imports: [MessageHost], providers: [provideToasts()] });
+    const fixture = TestBed.createComponent(MessageHost);
+    fixture.detectChanges();
+    const toast = fixture.debugElement.children[0].componentInstance as CngxToast;
+    let emitted = 0;
+    toast.dismissed.subscribe(() => emitted++);
+
+    fixture.componentInstance.show.set(true);
+    fixture.detectChanges();
+    vi.advanceTimersByTime(5000);
+    expect(emitted).toBe(1);
+  });
+
   it('dismisses the active toast on destroy', () => {
     const { toaster, fixture } = setup(MessageHost);
     fixture.componentInstance.show.set(true);

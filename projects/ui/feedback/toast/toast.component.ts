@@ -6,6 +6,7 @@ import {
   inject,
   input,
   linkedSignal,
+  output,
   untracked,
   viewChild,
   type TemplateRef,
@@ -89,12 +90,18 @@ export class CngxToast {
   readonly actionLabel = input<string | undefined>(undefined);
   readonly actionHandler = input<(() => void) | undefined>(undefined);
 
+  /** Emitted when the shown toast is dismissed (auto, manual, or falling edge). */
+  readonly dismissed = output<void>();
+
   /** @internal */
-  private readonly action = computed(() => {
-    const label = this.actionLabel();
-    const handler = this.actionHandler();
-    return label && handler ? { label, handler } : undefined;
-  });
+  private readonly action = computed(
+    () => {
+      const label = this.actionLabel();
+      const handler = this.actionHandler();
+      return label && handler ? { label, handler } : undefined;
+    },
+    { equal: (a, b) => a?.label === b?.label && a?.handler === b?.handler },
+  );
 
   private readonly projectedContent =
     viewChild<TemplateRef<unknown>>('projectedContent');
@@ -148,6 +155,7 @@ export class CngxToast {
 
           this.activeRef.afterDismissed().subscribe(() => {
             this.activeRef = null;
+            this.dismissed.emit();
           });
         } else {
           this.activeRef?.dismiss();
