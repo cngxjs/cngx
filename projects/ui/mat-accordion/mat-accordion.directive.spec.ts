@@ -74,6 +74,25 @@ class PanelIdFnHostCmp {
   readonly idFn = (panel: MatExpansionPanel): string => `panel-${this.panelRefs().indexOf(panel)}`;
 }
 
+@Component({
+  standalone: true,
+  imports: [MatExpansionModule, CngxMatAccordion],
+  template: `
+    <mat-accordion cngxMatAccordion [multi]="true">
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>Outer</mat-expansion-panel-header>
+        <mat-accordion>
+          <mat-expansion-panel [expanded]="true">
+            <mat-expansion-panel-header>Inner</mat-expansion-panel-header>
+            <p>inner body</p>
+          </mat-expansion-panel>
+        </mat-accordion>
+      </mat-expansion-panel>
+    </mat-accordion>
+  `,
+})
+class NestedAccordionHostCmp {}
+
 interface Plumbing {
   fixture: ReturnType<typeof TestBed.createComponent<HostCmp>>;
   host: HostCmp;
@@ -199,5 +218,26 @@ describe('CngxMatAccordion', () => {
     await fixture.whenStable();
     TestBed.flushEffects();
     expect(accordion.openIds().has('panel-0')).toBe(true);
+  });
+
+  test('ownership filter: panels of a nested <mat-accordion> stay out of the outer open-set', async () => {
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const fixture = TestBed.createComponent(NestedAccordionHostCmp);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const accEl = fixture.debugElement.query(By.directive(MatAccordion));
+    const accordion = accEl.injector.get(CngxAccordion);
+    const panels = fixture.debugElement
+      .queryAll(By.directive(MatExpansionPanel))
+      .map((el) => el.injector.get(MatExpansionPanel));
+
+    // The inner authored-expanded panel must neither seed the outer
+    // open-set nor be closed by the outer membership write - the
+    // nested accordion arbitrates its own children.
+    expect(accordion.openIds().size).toBe(0);
+    const inner = panels.find((p) => p.expanded);
+    expect(inner).toBeDefined();
   });
 });

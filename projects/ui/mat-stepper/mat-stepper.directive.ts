@@ -141,7 +141,12 @@ export class CngxMatStepper {
 
   constructor() {
     effect(() => {
-      const steps = this.matSteps();
+      // Ownership filter: `descendants: true` also surfaces MatSteps of
+      // a stepper nested inside one of OUR steps' content. Each CdkStep
+      // carries its owning `_stepper` (public in the CDK typings), so
+      // foreign steps are dropped before they can register with this
+      // presenter.
+      const steps = this.matSteps().filter((step) => step._stepper === this.matStepper);
       untracked(() => this.seam.sync(steps));
     });
 

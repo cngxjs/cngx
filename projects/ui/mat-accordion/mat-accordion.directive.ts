@@ -1,4 +1,5 @@
 import {
+  computed,
   contentChildren,
   DestroyRef,
   Directive,
@@ -95,6 +96,19 @@ export class CngxMatAccordion {
 
   private readonly panels = contentChildren(MatExpansionPanel, { descendants: true });
 
+  // Ownership filter: `descendants: true` also surfaces panels of an
+  // accordion nested inside one of OUR panels' bodies. Each panel
+  // carries its owning `accordion` (public on CdkAccordionItem), so
+  // foreign panels never enter the set-sync - the nested accordion
+  // arbitrates its own children. Element-wise equal keeps downstream
+  // effects quiet on identity-preserving query re-emissions.
+  private readonly ownPanels = computed(
+    () => this.panels().filter((panel) => panel.accordion === this.matAccordion),
+    {
+      equal: (a, b) => a.length === b.length && a.every((panel, i) => panel === b[i]),
+    },
+  );
+
   /**
    * Per-panel id hook. When bound, the returned key is what the
    * open-set stores for that panel - making a pre-populated
@@ -126,7 +140,7 @@ export class CngxMatAccordion {
     });
 
     createMatExpansionSetSync<MatExpansionPanel>({
-      panels: this.panels,
+      panels: this.ownPanels,
       panelId: (panel) => this.panelId(panel),
       accordion: this.accordion,
       injector: this.injector,

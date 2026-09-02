@@ -94,6 +94,25 @@ class MidListInsertHostCmp {
   standalone: true,
   imports: [MatStepperModule, CngxMatStepper],
   template: `
+    <mat-stepper cngxMatStepper [(activeStepIndex)]="active">
+      <mat-step label="Outer one"><p>Outer one</p></mat-step>
+      <mat-step label="Outer two">
+        <mat-stepper>
+          <mat-step label="Inner one"><p>Inner one</p></mat-step>
+          <mat-step label="Inner two"><p>Inner two</p></mat-step>
+        </mat-stepper>
+      </mat-step>
+    </mat-stepper>
+  `,
+})
+class NestedStepperHostCmp {
+  protected active = 0;
+}
+
+@Component({
+  standalone: true,
+  imports: [MatStepperModule, CngxMatStepper],
+  template: `
     <mat-stepper
       cngxMatStepper
       [commitAction]="commit"
@@ -467,5 +486,25 @@ describe('CngxMatStepper instrumentation directive', () => {
     } finally {
       TestBed.inject(CngxLiveAnnouncer).ngOnDestroy();
     }
+  });
+
+  test('axis 16: ownership filter - steps of a nested <mat-stepper> do not register with the outer presenter', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(NestedStepperHostCmp);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const matEl = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof MatStepper,
+    );
+    const presenter = matEl.injector.get(CngxStepperPresenter);
+
+    // descendants:true surfaces all four MatSteps; only the two owned
+    // by the instrumented outer stepper may register.
+    expect(presenter.flatSteps().length).toBe(2);
+    expect(presenter.flatSteps().map((n) => n.label())).toEqual(['Outer one', 'Outer two']);
   });
 });
