@@ -10,6 +10,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { NavigationEnd, provideRouter, Router } from '@angular/router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { CngxLiveAnnouncer } from '@cngx/common/a11y';
 import {
   CNGX_TABS_COMMIT_ACTION,
   CngxTabGroupPresenter,
@@ -128,6 +129,27 @@ class RejectionNavHostCmp {}
   `,
 })
 class RouteSyncNavHostCmp {}
+
+@Component({
+  standalone: true,
+  imports: [MatTabsModule, CngxMatTabNav, CngxMatTabLink],
+  template: `
+    <nav
+      mat-tab-nav-bar
+      cngxMatTabNav
+      [tabPanel]="panel"
+      [(activeIndex)]="idx"
+      aria-label="Sections"
+    >
+      <a mat-tab-link cngxMatTabLink id="a" label="A" [active]="idx() === 0">A</a>
+      <a mat-tab-link cngxMatTabLink id="b" label="B" [active]="idx() === 1">B</a>
+    </nav>
+    <mat-tab-nav-panel #panel>panel</mat-tab-nav-panel>
+  `,
+})
+class TwoWayNavHostCmp {
+  readonly idx = signal(0);
+}
 
 function navPresenter(
   fixture: ReturnType<typeof TestBed.createComponent>,
@@ -303,5 +325,55 @@ describe('CngxMatTabNav native nav-bar bridge', () => {
     fixture.detectChanges();
     await fixture.whenStable();
     expect(presenter.activeId()).toBe('b');
+  });
+
+  it('forwards activeIndex / activeIndexChange through the presenter hostDirective (two-way)', async () => {
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const fixture = TestBed.createComponent(TwoWayNavHostCmp);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const presenter = navPresenter(fixture);
+
+    // Input direction: the bound signal seeds the presenter.
+    expect(presenter.activeIndex()).toBe(0);
+
+    // Output direction: a presenter-side change propagates back into
+    // the consumer's model.
+    presenter.select(1);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(fixture.componentInstance.idx()).toBe(1);
+  });
+
+  it('announces the landing link label when the active link changes (not on mount)', async () => {
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const fixture = TestBed.createComponent(TwoWayNavHostCmp);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    // Mount window is closed by now (afterNextRender + microtask); the
+    // initial active link must NOT have been announced.
+    await new Promise((resolve) => setTimeout(resolve, 24));
+    const before = document.body.querySelectorAll<HTMLElement>(
+      'span[aria-live="polite"].cngx-sr-only',
+    );
+    expect(before[before.length - 1]?.textContent ?? '').not.toBe('A');
+
+    fixture.componentInstance.idx.set(1);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    // The shared announcer writes one frame later (clear-then-set timer).
+    await new Promise((resolve) => setTimeout(resolve, 24));
+    const politeRegions = document.body.querySelectorAll<HTMLElement>(
+      'span[aria-live="polite"].cngx-sr-only',
+    );
+    try {
+      expect(politeRegions[politeRegions.length - 1]?.textContent).toBe('B');
+    } finally {
+      TestBed.inject(CngxLiveAnnouncer).ngOnDestroy();
+    }
   });
 });

@@ -13,6 +13,7 @@ import {
   CNGX_TAB_GROUP_HOST,
   CNGX_TAB_NAV_HOST,
   CngxTabGroupPresenter,
+  createTabNavAnnouncement,
   injectTabsI18n,
   type CngxTabGroupHost,
 } from '@cngx/common/tabs';
@@ -42,7 +43,15 @@ import { createRejectionState } from './decorations/rejection-state';
  * reflects `NavigationEnd` onto `activeIndex` (its commit-action stays
  * dormant because link clicks navigate natively, never through
  * `presenter.select`). Ableitung statt Verwaltung - the route-active
- * link is the single source of the active index.
+ * link is the single source of the active index. `activeIndex` /
+ * `activeIndexChange` are forwarded from the presenter hostDirective,
+ * so a consumer without route-sync can two-way bind the active link
+ * the same way `[cngxMatTabs]` consumers do.
+ *
+ * Active-link changes speak: the shared nav announcement bundle
+ * ({@link createTabNavAnnouncement}) feeds the landing link's label to
+ * the shared live announcer - silent through the mount window, so a
+ * deep link's initial active state is not announced as a change.
  *
  * Composes {@link CngxTabGroupPresenter} via `hostDirectives` so the
  * `CNGX_STATEFUL` producer, the `lastFailedIndex` rejection slot, and
@@ -70,7 +79,13 @@ import { createRejectionState } from './decorations/rejection-state';
   // Presence-only marker: it tells a stacked [cngxTabsRouteSync] that its
   // links own subtrees, so the URL match is prefix rather than suffix.
   providers: [{ provide: CNGX_TAB_NAV_HOST, useValue: true }],
-  hostDirectives: [CngxTabGroupPresenter],
+  hostDirectives: [
+    {
+      directive: CngxTabGroupPresenter,
+      inputs: ['activeIndex'],
+      outputs: ['activeIndexChange'],
+    },
+  ],
 })
 export class CngxMatTabNav {
   private readonly presenter = inject<CngxTabGroupHost>(CNGX_TAB_GROUP_HOST);
@@ -96,6 +111,17 @@ export class CngxMatTabNav {
   constructor() {
     mountLiveRegionAnnouncer({
       announcement: this.rejectionState.liveAnnouncement,
+      injector: this.injector,
+    });
+
+    // Active-link landing announcement - same bundle as the cngx-native
+    // <cngx-tab-nav>; the shared announcer coalesces both feeds into
+    // one polite region.
+    mountLiveRegionAnnouncer({
+      announcement: createTabNavAnnouncement({
+        presenter: this.presenter,
+        injector: this.injector,
+      }).liveAnnouncement,
       injector: this.injector,
     });
 
