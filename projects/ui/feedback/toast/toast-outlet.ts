@@ -32,6 +32,10 @@ export type ToastPosition =
  * Place once in the app shell. Reads from `CngxToaster` reactively.
  * Requires `provideToasts()` or `provideFeedback(withToasts())`.
  *
+ * One outlet per toaster instance: projected toast bodies (`CngxToast`
+ * content) are captured as templates whose DOM nodes exist exactly once -
+ * a second outlet on the same toaster renders those bodies empty.
+ *
  * ```html
  * <cngx-toast-outlet position="bottom-end" [maxVisible]="5" />
  * ```

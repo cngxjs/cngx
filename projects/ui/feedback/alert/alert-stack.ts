@@ -43,6 +43,10 @@ function entriesEqual(a: readonly StackEntry[], b: readonly StackEntry[]): boole
  * `CngxAlertOn` and sibling components resolve) render here too, filtered by
  * `[scope]`. Nesting is supported - each stack stays independent.
  *
+ * Scope your stacks when more than one is mounted: two unscoped stacks
+ * under the same environment alerter both render (and announce) every
+ * shared alert.
+ *
  * ### In a dialog
  * The dialog component and the stack resolve the same environment alerter,
  * so programmatic alerts land in the stack below:
