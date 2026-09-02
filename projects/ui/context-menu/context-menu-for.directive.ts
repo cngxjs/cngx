@@ -28,18 +28,27 @@ import type { CngxContextMenuPanel } from './context-menu-panel';
  * pointer coordinates on `contextmenu` (right-click) or `Shift+F10`, feeding
  * the panel a per-open datum so one declaration serves many targets.
  *
- * Two ways to obtain the datum `T`:
+ * Three ways to obtain the datum `T`:
  * - `[cngxContextMenuData]` - a fixed datum for this single target.
  * - `[cngxContextMenuResolve]` - a resolver run against the `contextmenu`
  *   event, so a container (table, grid, treetable, virtualized list) keeps a
  *   single trigger instance and derives the row from `event.target`. The
  *   resolver wins when both are bound. A `null` resolver result leaves the
  *   native context menu untouched (no `preventDefault`, no open).
+ * - `[cngxContextMenuKeyboardResolve]` - the keyboard counterpart, run
+ *   against the `Shift+F10` keydown so a delegated container derives the
+ *   row from the focused element (`event.target`). Without it a keyboard
+ *   open commits `[cngxContextMenuData]` (or `null` in resolver-only mode).
  *
  * A thin shell over `createContextMenuTriggerCore` (shared with
  * `CngxContextMenuTrigger`): the core owns the preventDefault decision through
  * its `resolveOpen` seam, so the veto lives in one place and this directive
  * only feeds the resolver.
+ *
+ * Many triggers may dock the same panel. Each open claims ownership on the
+ * panel, so only the opening trigger reports `aria-expanded="true"`, forwards
+ * the panel's keydown into its core, and runs its dismiss binding - sibling
+ * triggers stay collapsed and inert for opens they did not perform.
  *
  * ```html
  * <tr [cngxContextMenuFor]="menu" [cngxContextMenuData]="row" tabindex="0"></tr>
@@ -75,13 +84,39 @@ export class CngxContextMenuFor<T = unknown> {
   /**
    * Resolver run against the `contextmenu` event. Return the datum to open
    * with, or `null` to let the native menu show. Wins over `[cngxContextMenuData]`.
+   * Keyboard opens (`Shift+F10`) carry no pointer event - they resolve via
+   * `[cngxContextMenuKeyboardResolve]`, or fall back to the fixed datum.
    */
   readonly resolve = input<((event: MouseEvent) => T | null) | undefined>(undefined, {
     alias: 'cngxContextMenuResolve',
   });
 
-  /** Mirrors the panel popover's visibility. */
-  readonly isOpen = computed<boolean>(() => this.panel().popover.isVisible());
+  /**
+   * Resolver run against the `Shift+F10` keydown. `event.target` is the
+   * focused element inside this trigger's host, so a delegated container
+   * (focusable rows, roving grid cells) derives the row for keyboard users
+   * exactly like `[cngxContextMenuResolve]` does for pointer users. Return
+   * `null` to skip the open (the browser's own Shift+F10 behaviour stays
+   * untouched). Wins over `[cngxContextMenuData]` for keyboard opens.
+   */
+  readonly keyboardResolve = input<((event: KeyboardEvent) => T | null) | undefined>(undefined, {
+    alias: 'cngxContextMenuKeyboardResolve',
+  });
+
+  /**
+   * `true` while the panel is visible AND this trigger performed the open.
+   * N triggers can dock one panel; each reports `aria-expanded` only for its
+   * own opens (a shared panel opened by a sibling trigger, `openAsSubmenu`,
+   * or a programmatic `popover.show()` leaves this trigger collapsed).
+   * Panels without the ownership seam fall back to plain visibility.
+   */
+  readonly isOpen = computed<boolean>(() => {
+    const panel = this.panel();
+    if (!panel.popover.isVisible()) {
+      return false;
+    }
+    return panel.openOwner ? panel.openOwner() === this : true;
+  });
 
   private readonly core = createContextMenuTriggerCore({
     menu: () => this.panel().menuHost,
@@ -102,15 +137,80 @@ export class CngxContextMenuFor<T = unknown> {
       }
       return { open: true, context: this.data() ?? null };
     },
-    commitContext: (context) => this.panel().setContext(context as T | null),
+    commitContext: (context) => {
+      // Runs exactly once per successful open (pointer AND Shift+F10), before
+      // the popover shows - the claim must land here (not in an effect) so the
+      // handler registration belongs to the opener when N triggers share a panel.
+      this.claimPanel();
+      this.panel().setContext(context as T | null);
+    },
+    resolveKeyboardOpen: (event) => {
+      // Shift+F10 has no MouseEvent for the pointer resolver; the keyboard
+      // resolver reads the focused element instead. Without one, commit the
+      // fixed datum (null in resolver-only mode) rather than leaving whatever
+      // an earlier right-click stored on the shared panel.
+      const resolver = this.keyboardResolve();
+      if (resolver) {
+        const resolved = resolver(event);
+        return resolved === null ? { open: false } : { open: true, context: resolved };
+      }
+      return { open: true, context: this.data() ?? null };
+    },
   });
+
+  /** Panel-forwarded seams, stable identities so registration is idempotent. */
+  private readonly forwardKeydown = (event: KeyboardEvent): void => this.core.handleKeydown(event);
+  private readonly forwardActivation = (): void => this.core.openActiveSubmenu();
+  private readonly forwardSubmenuNote = (): void => this.core.noteActiveSubmenuOpened();
+
+  /**
+   * Claim the shared panel for this trigger's open: record ownership, then
+   * register the keydown/activation/submenu-note forwarders. Registration
+   * happens on open (not on construction), so the OPENING trigger owns the
+   * handlers instead of whichever sibling was constructed last.
+   */
+  private claimPanel(): void {
+    const panel = this.panel();
+    panel.claimOpen?.(this);
+    panel.setKeydownHandler?.(this.forwardKeydown);
+    panel.setActivationHandler?.(this.forwardActivation);
+    panel.setSubmenuNoteHandler?.(this.forwardSubmenuNote);
+  }
+
+  /**
+   * Clear the panel's forwarders and release the claim - but only while this
+   * trigger still owns the open (or the panel has no ownership seam). A stale
+   * release must never clobber a sibling's newer claim.
+   */
+  private releasePanel(panel: CngxContextMenuPanel<T>): void {
+    if (panel.openOwner && panel.openOwner() !== this) {
+      return;
+    }
+    panel.setKeydownHandler?.(null);
+    panel.setActivationHandler?.(null);
+    panel.setSubmenuNoteHandler?.(null);
+    panel.releaseOpen?.(this);
+  }
 
   constructor() {
     const destroyRef = inject(DestroyRef);
     destroyRef.onDestroy(() => this.core.destroy());
     effect(() => {
       const open = this.isOpen();
-      untracked(() => this.core.syncOpenState(open));
+      untracked(() => {
+        if (open) {
+          this.core.syncOpenState(true);
+          return;
+        }
+        if (this.panel().popover.isVisible()) {
+          // Ownership handoff: a sibling trigger claimed the still-visible
+          // panel. Stand down without restoring focus - the new owner's menu
+          // holds focus and a restore would yank it away.
+          this.core.standDown();
+        } else {
+          this.core.syncOpenState(false);
+        }
+      });
     });
     // Hover routing: route submenu hover-intent edges through the core's
     // focus stack, same primitives as keyboard/click (see CngxMenuTrigger).
@@ -120,29 +220,20 @@ export class CngxContextMenuFor<T = unknown> {
       rootOpen: () => this.isOpen(),
     });
     // Open moves focus into the panel (a sibling of this trigger), so submenu
-    // ArrowRight/ArrowLeft/Escape land on the panel. Forward the panel's
-    // keydown into the core, which owns that routing. The panel also drives the
-    // core's activation (open a submenu parent off `ad.activated`) and the
-    // push-only note (stack-track a hover-opened submenu) through the same
-    // register-a-handler seam.
-    const forwardKeydown = (event: KeyboardEvent): void => this.core.handleKeydown(event);
-    const openActiveSubmenu = (): void => this.core.openActiveSubmenu();
-    const noteActiveSubmenuOpened = (): void => this.core.noteActiveSubmenuOpened();
+    // ArrowRight/ArrowLeft/Escape land on the panel and are forwarded to the
+    // core through the handlers claimPanel() registers per open. Release the
+    // claim when the popover closes, so the next opener starts clean.
+    effect(() => {
+      const panel = this.panel();
+      if (!panel.popover.isVisible()) {
+        untracked(() => this.releasePanel(panel));
+      }
+    });
+    // Release from a swapped-out panel (rebind) and on destroy, so a replaced
+    // panel never keeps stale handlers pointing at this trigger's core.
     effect((onCleanup) => {
       const panel = this.panel();
-      untracked(() => {
-        panel.setKeydownHandler?.(forwardKeydown);
-        panel.setActivationHandler?.(openActiveSubmenu);
-        panel.setSubmenuNoteHandler?.(noteActiveSubmenuOpened);
-      });
-      // Clear the handlers on the panel this run registered - fires before the
-      // next run (panel rebind) and on destroy, so a swapped-out panel never
-      // keeps stale handlers pointing at this trigger's core.
-      onCleanup(() => {
-        panel.setKeydownHandler?.(null);
-        panel.setActivationHandler?.(null);
-        panel.setSubmenuNoteHandler?.(null);
-      });
+      onCleanup(() => untracked(() => this.releasePanel(panel)));
     });
   }
 

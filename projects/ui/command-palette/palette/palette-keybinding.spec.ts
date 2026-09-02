@@ -35,4 +35,16 @@ describe('createPaletteKeybinding', () => {
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }));
     expect(onOpen).not.toHaveBeenCalled();
   });
+
+  it('returns an inert handle on the server (no document)', () => {
+    vi.stubGlobal('document', undefined);
+    try {
+      const keybinding = createPaletteKeybinding(parseKeyCombo('mod+k'), vi.fn(), false);
+      // No listener installed, teardown is a safe no-op.
+      expect(() => keybinding.teardown()).not.toThrow();
+    } finally {
+      // Restore for later tests in this file's shared environment.
+      vi.unstubAllGlobals();
+    }
+  });
 });

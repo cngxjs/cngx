@@ -127,6 +127,27 @@ describe('CngxContextMenu', () => {
     expect(panel.context()).toBe(row);
   });
 
+  it('clears the sticky submenu overrides on the next root-open claim', () => {
+    const { fixture, panel } = setupTemplate();
+
+    panel.openAsSubmenu({ id: 9, name: 'Delta' });
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    expect(panel.popover.placementOverride()).toBe('right-start');
+    expect(panel.popover.exclusiveOverride()).toBe(false);
+
+    panel.popover.hide();
+    panel.claimOpen({});
+    TestBed.flushEffects();
+    fixture.detectChanges();
+
+    // The submenu policy must not leak into a root open: a trigger claim
+    // resets the overrides so the panel falls back to its own inputs.
+    expect(panel.popover.placementOverride()).toBeNull();
+    expect(panel.popover.positionTryFallbacksOverride()).toBeNull();
+    expect(panel.popover.exclusiveOverride()).toBeNull();
+  });
+
   it('instantiates the lazy content template only while open', () => {
     const { fixture, panel } = setupTemplate();
     const label = (): HTMLElement | null =>

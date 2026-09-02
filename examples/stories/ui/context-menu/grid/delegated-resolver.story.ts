@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'One trigger, 24 rows. The single <code>[cngxContextMenuFor]</code> lives on the table body; <code>[cngxContextMenuResolve]</code> derives the row from the <code>contextmenu</code> event target, so a virtualized grid keeps exactly one trigger instance instead of one per row.',
   description:
-    'The resolver walks up from <code>event.target</code> to the nearest <code>[data-row-id]</code> and returns that row - or <code>null</code> to leave the native menu untouched (right-click the header). The menu content reads the resolved row via <code>let-row</code>; the Delete action disables itself for managers straight from the per-row datum.',
+    'The resolver walks up from <code>event.target</code> to the nearest <code>[data-row-id]</code> and returns that row - or <code>null</code> to leave the native menu untouched (right-click the header). <code>[cngxContextMenuKeyboardResolve]</code> does the same for <code>Shift+F10</code> on a focused row, so keyboard users get the identical per-row menu. The menu content reads the resolved row via <code>let-row</code>; the Delete action disables itself for managers straight from the per-row datum.',
   level: 'organism',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
@@ -34,14 +34,20 @@ export const STORY: DemoSpec = {
 );
 protected readonly lastAction = signal<string | null>(null);
 
-protected resolveRow = (event: MouseEvent): (Person & { id: number }) | null => {
-  const el = (event.target as HTMLElement).closest('[data-row-id]');
+private resolveRowFromTarget(target: EventTarget | null): (Person & { id: number }) | null {
+  const el = (target as HTMLElement | null)?.closest('[data-row-id]');
   if (!el) {
     return null;
   }
   const id = Number(el.getAttribute('data-row-id'));
   return this.rows.find((row) => row.id === id) ?? null;
-};
+}
+
+protected resolveRow = (event: MouseEvent): (Person & { id: number }) | null =>
+  this.resolveRowFromTarget(event.target);
+
+protected resolveRowFromKeyboard = (event: KeyboardEvent): (Person & { id: number }) | null =>
+  this.resolveRowFromTarget(event.target);
 
 protected act(action: string, row: Person): void {
   this.lastAction.set(action + ' → ' + row.name);
@@ -51,6 +57,7 @@ protected act(action: string, row: Person): void {
     style="width:100%;border-collapse:collapse"
     [cngxContextMenuFor]="menu"
     [cngxContextMenuResolve]="resolveRow"
+    [cngxContextMenuKeyboardResolve]="resolveRowFromKeyboard"
   >
     <thead>
       <tr>

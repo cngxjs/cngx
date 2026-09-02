@@ -124,7 +124,7 @@
     {
       "artifact": "pack/recipes/ui-command-palette.md",
       "source": "examples/stories/ui/command-palette/async-results.story.ts",
-      "contentHash": "sha256:805f79e7bebcdb536e26a72b9d82f2e924eaa432e92e3fc5c687d74ddbf3a08e"
+      "contentHash": "sha256:dc4d9f045fa5d0ed5d8ba2605367a8f411373b5f24324945d49cd39db9308686"
     },
     {
       "artifact": "pack/recipes/ui-data-grid-accordion.md",

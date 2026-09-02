@@ -9,13 +9,12 @@ import {
   input,
   model,
   output,
-  signal,
   viewChild,
   ViewEncapsulation,
   type Signal,
 } from '@angular/core';
 
-import type { CommandGroup } from '@cngx/common/command';
+import type { CngxCommandGroup } from '@cngx/common/command';
 import { CngxDialog } from '@cngx/common/dialog';
 import { parseKeyCombo, type CngxAsyncState } from '@cngx/core/utils';
 
@@ -76,8 +75,6 @@ import { CNGX_PALETTE_KEYBINDING_FACTORY } from './palette-keybinding';
     >
       <cngx-command-panel-shell
         [results]="results()"
-        [term]="term()"
-        [emptyTpl]="emptyTpl()"
         [loadingTpl]="loadingTpl()"
         [errorTpl]="errorTpl()"
         (retry)="retry.emit()"
@@ -88,7 +85,7 @@ import { CNGX_PALETTE_KEYBINDING_FACTORY } from './palette-keybinding';
           [debounceMs]="debounceMs()"
           [rowTpl]="rowTpl()"
           [groupHeaderTpl]="groupHeaderTpl()"
-          (termChange)="term.set($event)"
+          [emptyTpl]="emptyTpl()"
         />
       </cngx-command-panel-shell>
       <footer class="cngx-command-footer">
@@ -105,7 +102,7 @@ import { CNGX_PALETTE_KEYBINDING_FACTORY } from './palette-keybinding';
 })
 export class CngxCommandPalette implements CngxCommandPaletteHost {
   /** Consumer-derived async result source. */
-  readonly results = input<CngxAsyncState<CommandGroup[]> | undefined>(undefined);
+  readonly results = input<CngxAsyncState<CngxCommandGroup[]> | undefined>(undefined);
 
   /** Two-way scope; feeds the matcher's scope filter and the panel chip. */
   readonly scope = model<string | undefined>(undefined);
@@ -128,9 +125,6 @@ export class CngxCommandPalette implements CngxCommandPaletteHost {
   readonly retry = output<void>();
 
   protected readonly config = injectCommandPaletteConfig();
-
-  /** Mirror of the panel's debounced term, so the empty slot can read it. */
-  protected readonly term = signal('');
 
   // Instance slot directives (content-projected). contentChild must be a direct
   // field initializer (AOT NG8110). Each resolves instance > config > null.

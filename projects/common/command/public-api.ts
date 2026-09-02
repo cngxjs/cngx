@@ -1,7 +1,7 @@
 /**
  * @module @cngx/common/command
  */
-export { type CngxCommand, type CommandGroup } from './command';
+export { type CngxCommand, type CngxCommandGroup, type CommandGroup } from './command';
 export {
   CNGX_COMMAND_SOURCE,
   provideCommands,
@@ -11,6 +11,7 @@ export {
 export {
   createDefaultCommandMatcher,
   type CngxCommandMatcher,
+  type CngxRankedCommand,
   type RankedCommand,
 } from './match';
 export {

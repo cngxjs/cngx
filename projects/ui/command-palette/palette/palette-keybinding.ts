@@ -46,6 +46,11 @@ export function createPaletteKeybinding(
   onOpen: () => void,
   isMac: boolean = detectMac(),
 ): CngxPaletteKeybinding {
+  // SSR: no document, no global listener - an inert handle keeps the
+  // palette's effect/teardown cycle uniform across platforms.
+  if (typeof document === 'undefined') {
+    return { teardown: () => undefined };
+  }
   const handler = (event: KeyboardEvent): void => {
     if (matchesKeyCombo(event, combo, isMac)) {
       event.preventDefault();

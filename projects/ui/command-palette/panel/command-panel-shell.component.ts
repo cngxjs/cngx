@@ -9,13 +9,12 @@ import {
   type TemplateRef,
 } from '@angular/core';
 
-import type { CommandGroup } from '@cngx/common/command';
+import type { CngxCommandGroup } from '@cngx/common/command';
 import { resolveAsyncView, type AsyncView } from '@cngx/common/data';
 import type { CngxAsyncState } from '@cngx/core/utils';
 
 import { injectCommandPaletteConfig } from '../config/command-palette-config';
 import type {
-  CngxCommandPaletteEmptyContext,
   CngxCommandPaletteErrorContext,
   CngxCommandPaletteLoadingContext,
 } from '../slots/command-slots';
@@ -23,11 +22,13 @@ import type {
 /**
  * @internal
  * Async-state view switch that wraps {@link CngxCommandPanel}. Maps the
- * consumer's `CngxAsyncState<CommandGroup[]>` through `resolveAsyncView()` to
+ * consumer's `CngxAsyncState<CngxCommandGroup[]>` through `resolveAsyncView()` to
  * the six-state enum and renders the matching state: `skeleton` on first load,
- * `empty` on an empty success, `error` on a first-load failure, and the
- * projected panel for `content` / `content+error` / `none`. `content+error`
- * keeps the stale results visible while a re-query on the next keystroke errors.
+ * `error` on a first-load failure, and the projected panel for everything
+ * else. `content+error` keeps the stale results visible while a re-query on
+ * the next keystroke errors. An empty success maps to `content` too: the
+ * search input must stay mounted (the user keeps typing to refine the term),
+ * so the panel itself renders the empty slot keyed on its own result count.
  *
  * Each state resolves its slot template (instance > config > built-in default),
  * passed down from the palette. With no `[results]` bound (static registry
@@ -46,13 +47,6 @@ import type {
           <ng-container [ngTemplateOutlet]="tpl" [ngTemplateOutletContext]="{}" />
         } @else {
           <div class="cngx-command-state" aria-busy="true">{{ config.loadingLabel }}</div>
-        }
-      }
-      @case ('empty') {
-        @if (emptyTpl(); as tpl) {
-          <ng-container [ngTemplateOutlet]="tpl" [ngTemplateOutletContext]="{ term: term() }" />
-        } @else {
-          <div class="cngx-command-state cngx-command-state--empty">{{ config.emptyLabel }}</div>
         }
       }
       @case ('error') {
@@ -81,13 +75,9 @@ import type {
 })
 export class CngxCommandPanelShell {
   /** Consumer-derived async result state driving the view switch. */
-  readonly results = input<CngxAsyncState<CommandGroup[]> | undefined>(undefined);
-
-  /** Current term, mirrored from the panel - the empty slot's context. */
-  readonly term = input<string>('');
+  readonly results = input<CngxAsyncState<CngxCommandGroup[]> | undefined>(undefined);
 
   /** Resolved slot templates (instance > config > null). Built-in default when null. */
-  readonly emptyTpl = input<TemplateRef<CngxCommandPaletteEmptyContext> | null>(null);
   readonly loadingTpl = input<TemplateRef<CngxCommandPaletteLoadingContext> | null>(null);
   readonly errorTpl = input<TemplateRef<CngxCommandPaletteErrorContext> | null>(null);
 
@@ -102,7 +92,10 @@ export class CngxCommandPanelShell {
     if (!state) {
       return 'content';
     }
-    return resolveAsyncView(state.status(), state.isFirstLoad(), state.isEmpty());
+    const view = resolveAsyncView(state.status(), state.isFirstLoad(), state.isEmpty());
+    // An empty success keeps the panel (and its search input) mounted; the
+    // panel renders the empty slot off its own result count instead.
+    return view === 'empty' ? 'content' : view;
   });
 
   protected readonly errorValue = computed<unknown>(() => this.results()?.error());

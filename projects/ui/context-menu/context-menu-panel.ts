@@ -21,6 +21,32 @@ export interface CngxContextMenuPanel<T = unknown> {
   /** Store the per-open datum. Called by the trigger before the popover opens. */
   setContext(value: T | null): void;
   /**
+   * @internal The trigger that owns the current open, `null` while unowned.
+   * N triggers can dock one panel; only the opener may report
+   * `aria-expanded="true"`, forward keydown, and run its dismiss binding.
+   * A direct open (`openAsSubmenu`, programmatic `popover.show()`) claims no
+   * owner, so every docked trigger stays collapsed. Optional: an ejected
+   * panel skin may omit it, in which case a docked trigger falls back to
+   * mirroring plain popover visibility.
+   */
+  readonly openOwner?: Signal<unknown>;
+  /**
+   * @internal Claim the current open for `owner`. Called by the opening
+   * trigger synchronously in its open gesture, before the popover shows, so
+   * the handler registration that follows belongs to the opener even when
+   * other triggers dock the same panel. A claim always marks a ROOT open -
+   * the panel resets any sticky submenu policy a previous `openAsSubmenu`
+   * installed. Optional alongside {@link openOwner}.
+   */
+  claimOpen?(owner: unknown): void;
+  /**
+   * @internal Release the open claim if `owner` still holds it. A trigger
+   * calls this when the popover closes, when its panel binding swaps, and on
+   * destroy; the owner guard keeps a stale release from clobbering a newer
+   * claim. Optional alongside {@link openOwner}.
+   */
+  releaseOpen?(owner: unknown): void;
+  /**
    * @internal Open this panel as a nested submenu of a parent item: flank the
    * inline-end (`right-start` + the submenu flip chain), open non-exclusively so
    * the parent panel survives, and mirror the parent's per-open datum. Owns the

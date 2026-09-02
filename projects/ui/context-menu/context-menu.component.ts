@@ -97,6 +97,18 @@ export class CngxContextMenu<T = unknown> implements CngxContextMenuPanel<T> {
   /** Per-open datum set by the trigger before `show()`. */
   private readonly datum = signal<T | null>(null);
 
+  /** Backing state for {@link openOwner}. */
+  private readonly openOwnerState = signal<unknown>(null);
+
+  /**
+   * @internal The trigger that owns the current open, `null` while unowned.
+   * Claimed by the opening `CngxContextMenuFor` before the popover shows;
+   * direct opens (`openAsSubmenu`, programmatic `popover.show()`) leave it
+   * `null`, so docked triggers keep `aria-expanded="false"` for opens they
+   * did not perform.
+   */
+  readonly openOwner = this.openOwnerState.asReadonly();
+
   /**
    * The datum the menu opened over while visible, `null` once closed. Gated on
    * `popover.isVisible()` so the reset on dismiss is derived, not synced.
@@ -111,6 +123,26 @@ export class CngxContextMenu<T = unknown> implements CngxContextMenuPanel<T> {
    */
   setContext(value: T | null): void {
     this.datum.set(value);
+  }
+
+  /** @internal Claim the current open for `owner`. See {@link CngxContextMenuPanel.claimOpen}. */
+  claimOpen(owner: unknown): void {
+    this.openOwnerState.set(owner);
+    // A trigger claim is always a ROOT open: it must not inherit the sticky
+    // submenu policy (non-exclusive, right-start + flip chain) a previous
+    // openAsSubmenu installed on this panel. Clearing here - in the open
+    // gesture, before show() - keeps the reset out of any effect;
+    // openAsSubmenu re-installs the overrides right before its own show().
+    this.popover.exclusiveOverride.set(null);
+    this.popover.placementOverride.set(null);
+    this.popover.positionTryFallbacksOverride.set(null);
+  }
+
+  /** @internal Release the open claim if `owner` still holds it. */
+  releaseOpen(owner: unknown): void {
+    if (this.openOwnerState() === owner) {
+      this.openOwnerState.set(null);
+    }
   }
 
   /**
