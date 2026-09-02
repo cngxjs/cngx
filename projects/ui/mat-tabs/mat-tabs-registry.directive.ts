@@ -14,7 +14,7 @@ import { MatTab, MatTabGroup } from '@angular/material/tabs';
 import { CNGX_TAB_GROUP_HOST, type CngxTabGroupHost } from '@cngx/common/tabs';
 import { nextUid } from '@cngx/core/utils';
 
-import { createOrderedRegistrationSeam } from '../material-bridge-shared/ordered-registration';
+import { createOrderedRegistrationSeam } from './material-bridge/ordered-registration';
 import { CNGX_MAT_TAB_HANDLE_FACTORY, type CngxMatTabHandleSetup } from './material-bridge/handle';
 import type { MaterialPrivateSurfaces } from './material-bridge/private-surfaces';
 

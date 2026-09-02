@@ -19,8 +19,7 @@ import {
 } from '@cngx/common/stepper';
 import { nextUid } from '@cngx/core/utils';
 
-import { mountLiveRegionAnnouncer } from '../material-bridge-shared/live-region';
-import { createOrderedRegistrationSeam } from '../material-bridge-shared/ordered-registration';
+import { createOrderedRegistrationSeam, mountLiveRegionAnnouncer } from '@cngx/ui/mat-tabs';
 import { createMatStepperBidirectionalSync } from './material-bridge/bidirectional-sync';
 import {
   CNGX_MAT_STEP_HANDLE_FACTORY,

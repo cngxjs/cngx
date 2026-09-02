@@ -46,7 +46,7 @@ import {
   CngxMatTabRejectionContent,
   type CngxMatTabRejectionContentContext,
 } from './decorations/mat-tab-rejection-content.directive';
-import { mountLiveRegionAnnouncer } from '../material-bridge-shared/live-region';
+import { mountLiveRegionAnnouncer } from './material-bridge/live-region';
 import { createRejectionState } from './decorations/rejection-state';
 import { CngxMatTabsRegistry } from './mat-tabs-registry.directive';
 import { MaterialPrivateSurfaces } from './material-bridge/private-surfaces';

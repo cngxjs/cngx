@@ -37,6 +37,6 @@
       "@cngx/ui/speak": ["dist/ui/types/cngx-ui-speak.d.ts"]
     }
   },
-  "include": ["*.ts", "command-palette/**/*.ts", "action-button/**/*.ts", "sidenav/**/*.ts", "skeleton/**/*.ts", "speak/**/*.ts", "layout/**/*.ts", "overlay/**/*.ts", "mat-paginator/**/*.ts", "empty-state/**/*.ts", "feedback/**/*.ts", "stepper/**/*.ts", "mat-stepper/**/*.ts", "mat-tabs/**/*.ts", "material-bridge-shared/**/*.ts", "tabs/**/*.ts", "accordion/**/*.ts", "mat-accordion/**/*.ts", "data-grid-accordion/**/*.ts", "breadcrumb/**/*.ts", "paginator/**/*.ts", "collection/**/*.ts", "stat-card/**/*.ts", "chart-panel/**/*.ts", "timeline/**/*.ts", "a11y/**/*.ts", "context-menu/**/*.ts", "toc/**/*.ts"],
+  "include": ["*.ts", "command-palette/**/*.ts", "action-button/**/*.ts", "sidenav/**/*.ts", "skeleton/**/*.ts", "speak/**/*.ts", "layout/**/*.ts", "overlay/**/*.ts", "mat-paginator/**/*.ts", "empty-state/**/*.ts", "feedback/**/*.ts", "stepper/**/*.ts", "mat-stepper/**/*.ts", "mat-tabs/**/*.ts", "tabs/**/*.ts", "accordion/**/*.ts", "mat-accordion/**/*.ts", "data-grid-accordion/**/*.ts", "breadcrumb/**/*.ts", "paginator/**/*.ts", "collection/**/*.ts", "stat-card/**/*.ts", "chart-panel/**/*.ts", "timeline/**/*.ts", "a11y/**/*.ts", "context-menu/**/*.ts", "toc/**/*.ts"],
   "exclude": ["**/*.spec.ts", "**/examples/**"]
 }

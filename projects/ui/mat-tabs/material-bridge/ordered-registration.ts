@@ -14,11 +14,12 @@
  * with the SAME handle instances (per-entry resources such as child
  * injectors are never re-created for surviving items).
  *
- * Pure TypeScript, no Angular imports - the file is shared by
- * relative import from the `mat-tabs` and `mat-stepper` secondary
- * entries (it is part of neither public API; each entry bundles its
- * own copy, which is safe because nothing here carries identity
- * across bundles).
+ * Pure TypeScript, no Angular imports. Lives in the mat-tabs entry
+ * and is exported `@internal` from its barrel for cross-entry
+ * consumption by `@cngx/ui/mat-stepper` - ng-packagr rejects source
+ * files shared between entry points by relative import, so the
+ * export-plus-internal-tag route (the `MaterialPrivateSurfaces`
+ * pattern) is the supported sharing path.
  *
  * @internal
  */
