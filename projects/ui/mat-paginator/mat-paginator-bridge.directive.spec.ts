@@ -6,8 +6,12 @@ import { describe, expect, test } from 'vitest';
 
 import { CngxPaginate, createManualState } from '@cngx/common/data';
 import type { CngxAsyncState } from '@cngx/core/utils';
+import { provideCngxPaginatorConfig, withPaginatorAnnouncements } from '@cngx/ui/paginator';
 
-import { CngxMatPaginator } from './mat-paginator-bridge.directive';
+import {
+  CngxMatPaginator,
+  type CngxMatPaginatorAnnounceContext,
+} from './mat-paginator-bridge.directive';
 
 @Component({
   standalone: true,
@@ -235,7 +239,7 @@ describe('CngxMatPaginator (bridge)', () => {
     expect(paginate.pageIndex()).toBe(0);
   });
 
-  test('(k) [announce] mounts a polite live region tracking the page + range', async () => {
+  test('(k) [announce] mounts a polite live region speaking the config page phrase', async () => {
     TestBed.configureTestingModule({ providers });
     const { fixture, paginate, host } = await setup();
 
@@ -244,13 +248,60 @@ describe('CngxMatPaginator (bridge)', () => {
 
     const live = fixture.nativeElement.querySelector('.cngx-mat-paginator-live') as HTMLElement | null;
     expect(live).toBeTruthy();
-    expect(live?.textContent).toContain('Page 1 of 10');
-    expect(live?.textContent).toContain('items 1 to 10 of 100');
+    // Default phrasing comes from CNGX_PAGINATOR_CONFIG announcements.pageChange
+    // (EN default "Page N of M"), identical to the organism's live region.
+    expect(live?.textContent).toBe('Page 1 of 10');
 
     paginate.setPage(1);
     await settle(fixture);
-    expect(live?.textContent).toContain('Page 2 of 10');
-    expect(live?.textContent).toContain('items 11 to 20 of 100');
+    expect(live?.textContent).toBe('Page 2 of 10');
+  });
+
+  test('(k1) withPaginatorAnnouncements localises the bridge announcement', async () => {
+    TestBed.configureTestingModule({
+      providers: [
+        ...providers,
+        provideCngxPaginatorConfig(
+          withPaginatorAnnouncements({ pageChange: (page, total) => `Seite ${page} von ${total}` }),
+        ),
+      ],
+    });
+    const { fixture, host } = await setup();
+
+    host.announce.set(true);
+    await settle(fixture);
+    const live = fixture.nativeElement.querySelector('.cngx-mat-paginator-live') as HTMLElement;
+    expect(live.textContent).toBe('Seite 1 von 10');
+  });
+
+  test('(k3) a bound [announceLabel] overrides the config default with the range context', async () => {
+    TestBed.configureTestingModule({ providers });
+
+    @Component({
+      standalone: true,
+      imports: [MatPaginatorModule, CngxMatPaginator],
+      template: `
+        <mat-paginator
+          cngxMatPaginator
+          announce
+          [total]="100"
+          [announceLabel]="label"
+        />
+      `,
+    })
+    class LabelHost {
+      readonly label = (c: CngxMatPaginatorAnnounceContext): string =>
+        `p${c.page}/${c.totalPages} items ${c.start}-${c.end} of ${c.total}`;
+    }
+
+    const fixture = TestBed.createComponent(LabelHost);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const live = fixture.nativeElement.querySelector('.cngx-mat-paginator-live') as HTMLElement;
+    expect(live.textContent).toBe('p1/10 items 1-10 of 100');
   });
 
   test('(k2) flipping [announce] off clears the mounted live region', async () => {

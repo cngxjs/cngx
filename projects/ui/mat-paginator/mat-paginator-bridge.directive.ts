@@ -14,6 +14,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatPaginator, type PageEvent } from '@angular/material/paginator';
 import { CngxPaginate, connectPaginateEmit, connectPaginateResetOn } from '@cngx/common/data';
+import { injectPaginatorConfig } from '@cngx/ui/paginator';
 
 /**
  * Context handed to {@link CngxMatPaginator.announceLabel} to build the
@@ -34,10 +35,6 @@ export interface CngxMatPaginatorAnnounceContext {
   readonly total: number;
 }
 
-/** English default announcement. Localise via `[announceLabel]`. */
-const defaultAnnounceLabel = (c: CngxMatPaginatorAnnounceContext): string =>
-  `Page ${c.page} of ${c.totalPages}, showing items ${c.start} to ${c.end} of ${c.total}`;
-
 /**
  * The in-place adoption half of the Material paginator instrumentation: add
  * `cngxMatPaginator` to an existing `<mat-paginator>` and the signal-native
@@ -55,9 +52,12 @@ const defaultAnnounceLabel = (c: CngxMatPaginatorAnnounceContext): string =>
  *   search value) changes, so a filtered result set never strands the user on a
  *   now-empty page. Pass a primitive (or a `computed` string key); an inline
  *   array literal recomputes every change-detection pass and would reset on each.
- * - `[announce]` - mount a visually-hidden `aria-live` region that speaks the new
- *   page + visible range after every change; `<mat-paginator>` only relabels its
- *   own range text, which AT does not announce. Localise via `[announceLabel]`.
+ * - `[announce]` - mount a visually-hidden `aria-live` region that speaks the
+ *   page after every change; `<mat-paginator>` only relabels its own range
+ *   text, which AT does not announce. Phrasing resolves from the shared
+ *   `CNGX_PAGINATOR_CONFIG` cascade (`announcements.pageChange`), so app-wide
+ *   localisation covers the bridge and the organism together; bind
+ *   `[announceLabel]` for a richer per-instance message with the visible range.
  * - `[cngxPaginateRouting]` (generic companion directive from `@cngx/common/data`)
  *   - persist the page / size in the URL query string for deep-linkable,
  *   back-button-safe pagination.
@@ -139,11 +139,25 @@ export class CngxMatPaginator {
    */
   readonly announce = input(false, { alias: 'announce', transform: booleanAttribute });
 
-  /** Builds the announcement string. Defaults to an English template. */
-  readonly announceLabel = input<(context: CngxMatPaginatorAnnounceContext) => string>(
-    defaultAnnounceLabel,
-    { alias: 'announceLabel' },
-  );
+  /**
+   * Builds the announcement string from the page/range context. When unbound,
+   * the message resolves from the `CNGX_PAGINATOR_CONFIG` cascade
+   * (`announcements.pageChange`, "Page N of M" in the EN defaults), so
+   * `withPaginatorAnnouncements(...)` localises the bridge together with the
+   * `CngxPaginator` organism. Bind this for a richer per-instance message
+   * (the context also carries the visible item range).
+   */
+  readonly announceLabel = input<
+    ((context: CngxMatPaginatorAnnounceContext) => string) | undefined
+  >(undefined, { alias: 'announceLabel' });
+
+  /**
+   * Paginator config cascade - shared with the `CngxPaginator` organism, so
+   * one `provideCngxPaginatorConfig(...)` localises both surfaces. Busy /
+   * settle phrases stay unspoken here: the bridge communicates the updating
+   * state via `aria-busy` on the host instead of a spoken transition.
+   */
+  private readonly config = injectPaginatorConfig();
 
   private readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly renderer = inject(Renderer2);
@@ -151,16 +165,16 @@ export class CngxMatPaginator {
 
   /** The live-region message - derived, so it never drifts from brain state. */
   private readonly announceMessage = computed(() => {
+    const page = this.paginate.pageIndex() + 1;
+    const totalPages = this.paginate.totalPages();
+    const custom = this.announceLabel();
+    if (!custom) {
+      return this.config.announcements.pageChange(page, totalPages);
+    }
     const total = this.paginate.total();
     const start = total === 0 ? 0 : this.paginate.clampedRange()[0] + 1;
     const end = this.paginate.clampedRange()[1];
-    return this.announceLabel()({
-      page: this.paginate.pageIndex() + 1,
-      totalPages: this.paginate.totalPages(),
-      start,
-      end,
-      total,
-    });
+    return custom({ page, totalPages, start, end, total });
   });
 
   private liveRegion: HTMLElement | null = null;
