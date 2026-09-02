@@ -57,6 +57,7 @@ class DataHost {
       [cngxContextMenuFor]="menu"
       [cngxContextMenuData]="data()"
       [cngxContextMenuResolve]="resolver()"
+      [cngxContextMenuKeyboardResolve]="keyboardResolver()"
     >
       Right-click
     </div>
@@ -69,6 +70,7 @@ class DataHost {
 class ResolverHost {
   readonly data = signal<Row>({ id: 1, name: 'FromData' });
   readonly resolver = signal<(event: MouseEvent) => Row | null>(() => ({ id: 9, name: 'FromResolver' }));
+  readonly keyboardResolver = signal<((event: KeyboardEvent) => Row | null) | undefined>(undefined);
 }
 
 @Component({
@@ -305,6 +307,58 @@ describe('CngxContextMenuFor', () => {
       expect(targetA.getAttribute('aria-expanded')).toBe('false');
       expect(targetB.getAttribute('aria-expanded')).toBe('false');
     });
+  });
+
+  it('keyboard resolver derives the datum from the Shift+F10 target', () => {
+    const { fixture, target, host, panel } = setupResolver();
+    host.keyboardResolver.set((event) => {
+      const el = event.target as HTMLElement;
+      return el.classList.contains('target') ? { id: 5, name: 'FromKeyboard' } : null;
+    });
+    fixture.detectChanges();
+
+    target.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'F10', shiftKey: true, bubbles: true, cancelable: true }),
+    );
+    TestBed.flushEffects();
+    fixture.detectChanges();
+
+    expect(panel.popover.isVisible()).toBe(true);
+    expect(panel.context()).toEqual({ id: 5, name: 'FromKeyboard' });
+  });
+
+  it('keyboard resolver null result skips the open entirely', () => {
+    const { fixture, target, host, panel } = setupResolver();
+    host.keyboardResolver.set(() => null);
+    fixture.detectChanges();
+
+    const event = new KeyboardEvent('keydown', {
+      key: 'F10',
+      shiftKey: true,
+      bubbles: true,
+      cancelable: true,
+    });
+    target.dispatchEvent(event);
+    TestBed.flushEffects();
+    fixture.detectChanges();
+
+    expect(event.defaultPrevented).toBe(false);
+    expect(panel.popover.isVisible()).toBe(false);
+  });
+
+  it('without a keyboard resolver Shift+F10 falls back to the fixed datum', () => {
+    const { fixture, target, panel } = setupResolver();
+
+    target.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'F10', shiftKey: true, bubbles: true, cancelable: true }),
+    );
+    TestBed.flushEffects();
+    fixture.detectChanges();
+
+    expect(panel.popover.isVisible()).toBe(true);
+    // The pointer resolver is bound but never runs for keyboard opens; the
+    // fixed datum wins over stale pointer context.
+    expect(panel.context()).toEqual({ id: 1, name: 'FromData' });
   });
 
   it('aria-haspopup=menu and aria-expanded track the owned open as computeds', () => {

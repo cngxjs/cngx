@@ -28,13 +28,17 @@ import type { CngxContextMenuPanel } from './context-menu-panel';
  * pointer coordinates on `contextmenu` (right-click) or `Shift+F10`, feeding
  * the panel a per-open datum so one declaration serves many targets.
  *
- * Two ways to obtain the datum `T`:
+ * Three ways to obtain the datum `T`:
  * - `[cngxContextMenuData]` - a fixed datum for this single target.
  * - `[cngxContextMenuResolve]` - a resolver run against the `contextmenu`
  *   event, so a container (table, grid, treetable, virtualized list) keeps a
  *   single trigger instance and derives the row from `event.target`. The
  *   resolver wins when both are bound. A `null` resolver result leaves the
  *   native context menu untouched (no `preventDefault`, no open).
+ * - `[cngxContextMenuKeyboardResolve]` - the keyboard counterpart, run
+ *   against the `Shift+F10` keydown so a delegated container derives the
+ *   row from the focused element (`event.target`). Without it a keyboard
+ *   open commits `[cngxContextMenuData]` (or `null` in resolver-only mode).
  *
  * A thin shell over `createContextMenuTriggerCore` (shared with
  * `CngxContextMenuTrigger`): the core owns the preventDefault decision through
@@ -80,11 +84,23 @@ export class CngxContextMenuFor<T = unknown> {
   /**
    * Resolver run against the `contextmenu` event. Return the datum to open
    * with, or `null` to let the native menu show. Wins over `[cngxContextMenuData]`.
-   * Keyboard opens (`Shift+F10`) carry no pointer event, so they commit the
-   * fixed `[cngxContextMenuData]` datum (or `null`) instead of resolving.
+   * Keyboard opens (`Shift+F10`) carry no pointer event - they resolve via
+   * `[cngxContextMenuKeyboardResolve]`, or fall back to the fixed datum.
    */
   readonly resolve = input<((event: MouseEvent) => T | null) | undefined>(undefined, {
     alias: 'cngxContextMenuResolve',
+  });
+
+  /**
+   * Resolver run against the `Shift+F10` keydown. `event.target` is the
+   * focused element inside this trigger's host, so a delegated container
+   * (focusable rows, roving grid cells) derives the row for keyboard users
+   * exactly like `[cngxContextMenuResolve]` does for pointer users. Return
+   * `null` to skip the open (the browser's own Shift+F10 behaviour stays
+   * untouched). Wins over `[cngxContextMenuData]` for keyboard opens.
+   */
+  readonly keyboardResolve = input<((event: KeyboardEvent) => T | null) | undefined>(undefined, {
+    alias: 'cngxContextMenuKeyboardResolve',
   });
 
   /**
@@ -128,10 +144,18 @@ export class CngxContextMenuFor<T = unknown> {
       this.claimPanel();
       this.panel().setContext(context as T | null);
     },
-    // Shift+F10 has no MouseEvent for the resolver, so the keyboard open
-    // commits the fixed datum (null in resolver-only mode) instead of leaving
-    // whatever an earlier right-click stored on the shared panel.
-    resolveKeyboardOpen: () => ({ open: true, context: this.data() ?? null }),
+    resolveKeyboardOpen: (event) => {
+      // Shift+F10 has no MouseEvent for the pointer resolver; the keyboard
+      // resolver reads the focused element instead. Without one, commit the
+      // fixed datum (null in resolver-only mode) rather than leaving whatever
+      // an earlier right-click stored on the shared panel.
+      const resolver = this.keyboardResolve();
+      if (resolver) {
+        const resolved = resolver(event);
+        return resolved === null ? { open: false } : { open: true, context: resolved };
+      }
+      return { open: true, context: this.data() ?? null };
+    },
   });
 
   /** Panel-forwarded seams, stable identities so registration is idempotent. */
