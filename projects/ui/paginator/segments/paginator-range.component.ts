@@ -37,17 +37,15 @@ export class CngxPaginatorRange {
 
   /** 1-based index of the first item on the current page (0 when empty). */
   protected readonly start = computed<number>(() =>
-    this.host.total() === 0 ? 0 : this.host.range()[0] + 1,
+    this.host.total() === 0 ? 0 : this.host.clampedRange()[0] + 1,
   );
 
   /**
-   * 1-based index of the last item on the current page. The brain's `range()`
-   * upper bound is uncapped (`start + pageSize`), so a partial final page is
-   * clamped to `total` here for an honest readout.
+   * 1-based index of the last item on the current page. The brain's
+   * `clampedRange()` already caps the partial final page at `total`, so the
+   * readout stays honest without a local clamp.
    */
-  protected readonly end = computed<number>(() =>
-    Math.min(this.host.range()[1], this.host.total()),
-  );
+  protected readonly end = computed<number>(() => this.host.clampedRange()[1]);
 
   /** Formatted readout from the config range formatter (EN default `start-end of total`). */
   protected readonly text = computed<string>(() =>

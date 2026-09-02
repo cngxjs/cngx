@@ -126,6 +126,50 @@ describe('CngxPaginatorDots', () => {
     expect(current?.getAttribute('data-size')).toBe('full');
   });
 
+  test('the dot track is one tab stop whose anchor follows the active page', async () => {
+    const { fixture, paginate } = await setup();
+    const all = dots(fixture);
+    expect(all.filter((d) => d.getAttribute('tabindex') === '0')).toHaveLength(1);
+    expect(all[0].getAttribute('tabindex')).toBe('0');
+
+    paginate.setPage(3);
+    await settle(fixture);
+    const after = dots(fixture);
+    expect(after.filter((d) => d.getAttribute('tabindex') === '0')).toHaveLength(1);
+    expect(after[3].getAttribute('tabindex')).toBe('0');
+    expect(after[3].getAttribute('aria-current')).toBe('page');
+  });
+
+  test('arrow keys move the roving cursor without committing a page change', async () => {
+    const { fixture, paginate } = await setup();
+    const track = (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>(
+      '.cngx-paginator__dots-track',
+    );
+    track?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+    await settle(fixture);
+    const all = dots(fixture);
+    expect(all[1].getAttribute('tabindex')).toBe('0');
+    expect(document.activeElement).toBe(all[1]);
+    // Focus is not selection - Enter/Space (native click) commits.
+    expect(paginate.pageIndex()).toBe(0);
+  });
+
+  test('clipped off-window dots are skipped by the roving cursor', async () => {
+    const { fixture, host } = await setup();
+    host.total.set(300); // 30 pages -> windowed, dots 7..29 clipped off-screen
+    await settle(fixture);
+    const track = (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>(
+      '.cngx-paginator__dots-track',
+    );
+    track?.dispatchEvent(new KeyboardEvent('keydown', { key: 'End', bubbles: true }));
+    await settle(fixture);
+    const all = dots(fixture);
+    // End lands on the last dot inside the visible window (index 6), never on
+    // a clipped dot whose focus ring would be invisible.
+    expect(document.activeElement).toBe(all[6]);
+    expect(all[29].getAttribute('tabindex')).toBe('-1');
+  });
+
   test('marks dots aria-disabled and drops clicks while busy', async () => {
     const { fixture, host, paginate } = await setup();
     const busy = createManualState<unknown>();

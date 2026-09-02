@@ -131,6 +131,54 @@ describe('CngxPaginatorPages', () => {
     await settle(fixture);
     expect(paginate.pageIndex()).toBeGreaterThan(0);
   });
+
+  test('selecting a hidden page focuses the now-current page button after the re-render', async () => {
+    const { fixture, paginate } = await setup();
+    const root = fixture.nativeElement as HTMLElement;
+
+    // Select a hidden page from the gap panel. The selection re-renders the
+    // window (the selected page becomes current) and closes the popover where
+    // focus lived - without the explicit restore, focus drops to the body.
+    const item = root.querySelector<HTMLElement>('.cngx-paginator__option');
+    expect(item).not.toBeNull();
+    item?.click();
+    await settle(fixture);
+
+    const current = root.querySelector<HTMLElement>(
+      '.cngx-paginator__page[aria-current="page"]',
+    );
+    expect(current).not.toBeNull();
+    expect(current?.textContent?.trim()).toBe(String(paginate.pageIndex() + 1));
+    expect(document.activeElement).toBe(current);
+  });
+
+  test('a late popover close toggle after a selection does not bounce focus to the trigger', async () => {
+    const { fixture } = await setup();
+    const root = fixture.nativeElement as HTMLElement;
+
+    root.querySelector<HTMLElement>('.cngx-paginator__option')?.click();
+    await settle(fixture);
+    const current = root.querySelector<HTMLElement>('.cngx-paginator__page[aria-current="page"]');
+    expect(document.activeElement).toBe(current);
+
+    // The native close toggle is a queued task that can trail the re-render.
+    // The selection flag must be consumed by the toggle handler itself, so a
+    // reused (still-connected) trigger is not re-focused after the restore.
+    const popoverDiv = root.querySelector<HTMLElement>('[cngxpopover], [cngxPopover]');
+    const lateClose = new Event('toggle');
+    (lateClose as unknown as { newState: string }).newState = 'closed';
+    popoverDiv?.dispatchEvent(lateClose);
+    await settle(fixture);
+    expect(document.activeElement).toBe(current);
+
+    // A subsequent close WITHOUT a selection restores the trigger normally
+    // (the flag was consumed, not left dangling).
+    const secondClose = new Event('toggle');
+    (secondClose as unknown as { newState: string }).newState = 'closed';
+    popoverDiv?.dispatchEvent(secondClose);
+    await settle(fixture);
+    expect(document.activeElement).toBe(root.querySelector('.cngx-paginator__more'));
+  });
 });
 
 describe('CngxPaginatorPages - configurable truncation', () => {

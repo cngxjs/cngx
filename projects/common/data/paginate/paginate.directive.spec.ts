@@ -69,6 +69,52 @@ describe('CngxPaginate', () => {
     expect(dir.cumulativeRange()).toEqual([0, 25]);
   });
 
+  it('clampedRange equals range while the page is fully populated', () => {
+    const dir = getDir(100);
+    dir.next();
+    expect(dir.clampedRange()).toEqual([10, 20]);
+    expect(dir.clampedRange()).toEqual(dir.range());
+  });
+
+  it('clampedRange caps a partial final page at total', () => {
+    const dir = getDir(25);
+    dir.last();
+    expect(dir.range()).toEqual([20, 30]);
+    expect(dir.clampedRange()).toEqual([20, 25]);
+  });
+
+  it('clampedRange is [0, 0] for an empty list', () => {
+    const dir = getDir(0);
+    expect(dir.clampedRange()).toEqual([0, 0]);
+  });
+
+  it('clampedRange upper bound doubles as the cumulative reveal count', () => {
+    const dir = getDir(25);
+    dir.next();
+    expect(dir.clampedRange()[1]).toBe(Math.min(dir.cumulativeRange()[1], dir.total()));
+    dir.next();
+    expect(dir.clampedRange()[1]).toBe(25);
+  });
+
+  it('clampedRange keeps a stable reference across recomputes that yield an equal tuple', () => {
+    @Component({
+      template: '<div cngxPaginate [total]="total()"></div>',
+      imports: [CngxPaginate],
+    })
+    class SignalTotalHost {
+      readonly total = signal(100);
+    }
+    const fixture = TestBed.createComponent(SignalTotalHost);
+    fixture.detectChanges();
+    const dir = fixture.debugElement.query(By.directive(CngxPaginate)).injector.get(CngxPaginate);
+    const before = dir.clampedRange();
+    // total changes but the page-0 window [0, 10] stays in-bounds either way -
+    // the recompute yields an equal tuple, so the reference must hold.
+    fixture.componentInstance.total.set(95);
+    fixture.detectChanges();
+    expect(dir.clampedRange()).toBe(before);
+  });
+
   it('totalPages rounds up correctly', () => {
     const dir = getDir(25);
     expect(dir.totalPages()).toBe(3); // ceil(25/10)

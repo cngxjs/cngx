@@ -5,9 +5,13 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
 
 /**
  * Go-to-page segment: a native `<input type="number">`. \
- * Typing (or the spinner) navigates live via `input`; Enter / blur additionally clamp and re-sync the
- * field. The brain clamps out-of-range values, so the field reflects the clamped
- * page back. Accessible name from config (EN default, Pillar 2).
+ * Navigation happens on commit only (Enter / blur) - never per keystroke, so a
+ * multi-digit entry survives async paging: navigating on the first digit would
+ * flip the brain busy and swallow the rest of the entry. The brain clamps
+ * out-of-range values; the commit re-syncs the field to the effective page
+ * unless the brain is busy (a busy commit is a no-op and the typed value must
+ * survive until the user can retry). Accessible name from config (EN default,
+ * Pillar 2).
  *
  * @category ui/paginator
  * @wcag AA
@@ -30,7 +34,6 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
       [value]="host.pageIndex() + 1"
       [attr.aria-label]="config.ariaLabels.goToPage"
       [attr.aria-disabled]="host.isBusy() ? 'true' : null"
-      (input)="navigate($event)"
       (keydown.enter)="commit($event)"
       (blur)="commit($event)"
     />
@@ -41,15 +44,11 @@ export class CngxPaginatorGoto {
   protected readonly host = inject(CNGX_PAGINATOR_HOST);
   protected readonly config = injectPaginatorConfig();
 
-  /** Live navigation on every keystroke / spinner step - no field re-sync, so
-   * typing is never interrupted; the clamp re-sync happens on commit. */
-  protected navigate(event: Event): void {
-    const value = Number((event.target as HTMLInputElement).value);
-    if (Number.isFinite(value) && value >= 1) {
-      this.host.setPage(value - 1);
-    }
-  }
-
+  /**
+   * Commit the typed page (Enter / blur). Navigation is commit-only: a
+   * per-keystroke setPage would flip the brain busy on async data after the
+   * first digit and swallow the rest of a multi-digit entry.
+   */
   protected commit(event: Event): void {
     const input = event.target as HTMLInputElement;
     const value = Number(input.value);
@@ -58,7 +57,11 @@ export class CngxPaginatorGoto {
     }
     // Re-sync the field to the effective page: the brain may have clamped to a
     // bound (no signal change, so the [value] binding would not refresh), or
-    // rejected an empty / sub-1 entry. Either way the field shows the truth.
-    input.value = String(this.host.pageIndex() + 1);
+    // rejected an empty / sub-1 entry. Skipped while busy - the commit above
+    // was a no-op on the busy gate, and stomping the field would destroy the
+    // entry the user still means to submit.
+    if (!this.host.isBusy()) {
+      input.value = String(this.host.pageIndex() + 1);
+    }
   }
 }

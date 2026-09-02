@@ -27,6 +27,13 @@ export interface CngxPaginatorHost {
   /** `[start, end]` slice indices for the current page - always in-bounds. */
   readonly range: Signal<readonly [number, number]>;
   /**
+   * `range()` with both bounds capped at `total` - the honest window for
+   * readouts. The capped end doubles as the cumulative reveal count for
+   * load-more consumers (`range()[1]` and `cumulativeRange()[1]` are the same
+   * number).
+   */
+  readonly clampedRange: Signal<readonly [number, number]>;
+  /**
    * `[0, end]` cumulative slice indices for append-don't-replace (load-more)
    * consumers - every page revealed so far, sliced from the top.
    */

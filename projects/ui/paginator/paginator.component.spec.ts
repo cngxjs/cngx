@@ -203,6 +203,33 @@ describe('CngxPaginator', () => {
     expect(host.indexEmits).toEqual([5, 1]);
   });
 
+  test('a transient total drop during a refetch does not pin the controlled page to 0', async () => {
+    const { fixture, host, paginate } = await setup();
+
+    paginate.setPage(5);
+    await settle(fixture);
+    expect(host.indexEmits).toEqual([5]);
+
+    // Refetch: state goes busy and [total]="items().length" transiently clears.
+    // The read-time clamp moves the effective page, but pageIndexChange must
+    // not echo - the consumer's two-way write would otherwise pin page 0 after
+    // the data returns.
+    const state = createManualState<unknown>();
+    state.set('loading');
+    host.state.set(state);
+    host.total.set(0);
+    await settle(fixture);
+    expect(host.indexEmits).toEqual([5]);
+    expect(host.index()).toBe(5);
+
+    // Data returns: the seeded page survives, no stray emit.
+    state.set('success');
+    host.total.set(100);
+    await settle(fixture);
+    expect(paginate.pageIndex()).toBe(5);
+    expect(host.indexEmits).toEqual([5]);
+  });
+
   test('changing page size emits pageSizeChange and resets the page', async () => {
     const { fixture, host, paginate } = await setup();
 

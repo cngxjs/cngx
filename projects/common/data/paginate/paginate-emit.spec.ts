@@ -1,5 +1,6 @@
 import { Component, inject, provideZonelessChangeDetection, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import type { CngxAsyncState } from '@cngx/core/utils';
 import { describe, expect, test } from 'vitest';
 
 import { CngxPaginate } from './paginate.directive';
@@ -11,7 +12,7 @@ import { connectPaginateEmit } from './paginate-emit';
   hostDirectives: [
     {
       directive: CngxPaginate,
-      inputs: ['total', 'cngxPageIndex: pageIndex', 'cngxPageSize: pageSize'],
+      inputs: ['total', 'state', 'cngxPageIndex: pageIndex', 'cngxPageSize: pageSize'],
     },
   ],
 })
@@ -71,6 +72,67 @@ describe('connectPaginateEmit', () => {
     // total shrinks so page 5 no longer exists -> effective pageIndex clamps to
     // page 1 with no setPage() nav; only the clamp effect reports it, once.
     fixture.componentRef.setInput('total', 20);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(cmp.indexEmits).toEqual([5, 1]);
+  });
+
+  test('a transient total drop to 0 never emits the page-0 clamp', () => {
+    const { fixture, cmp } = setup();
+    cmp.paginate.setPage(5);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(cmp.indexEmits).toEqual([5]);
+
+    // Refetch clears [total] -> effective pageIndex clamps to 0 at read time.
+    // Emitting that would pin a controlled consumer to page 0; it must stay
+    // internal.
+    fixture.componentRef.setInput('total', 0);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(cmp.indexEmits).toEqual([5]);
+
+    // Data returns - the read-time clamp releases, nothing was persisted, and
+    // the unchanged index emits nothing.
+    fixture.componentRef.setInput('total', 100);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(cmp.indexEmits).toEqual([5]);
+  });
+
+  test('a clamp during busy is suppressed and emits once the state settles', () => {
+    const { fixture, cmp } = setup();
+    const isBusy = signal(false);
+    const state: CngxAsyncState<unknown> = {
+      status: signal(isBusy() ? 'loading' : 'idle'),
+      data: signal(undefined),
+      error: signal(undefined),
+      progress: signal(undefined),
+      isLoading: isBusy,
+      isPending: signal(false),
+      isRefreshing: signal(false),
+      isBusy,
+      isFirstLoad: signal(false),
+      isEmpty: signal(false),
+      hasData: signal(false),
+      isSettled: signal(true),
+      lastUpdated: signal(undefined),
+    };
+    fixture.componentRef.setInput('state', state);
+    cmp.paginate.setPage(5);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(cmp.indexEmits).toEqual([5]);
+
+    // A REAL total shrink arrives while busy: the clamp is held back...
+    isBusy.set(true);
+    fixture.componentRef.setInput('total', 20);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(cmp.indexEmits).toEqual([5]);
+
+    // ...and emits exactly once when busy flips off and the clamp survives.
+    isBusy.set(false);
     fixture.detectChanges();
     TestBed.flushEffects();
     expect(cmp.indexEmits).toEqual([5, 1]);

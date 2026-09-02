@@ -107,6 +107,26 @@ export class CngxPaginate {
     { equal: (a, b) => a[0] === b[0] && a[1] === b[1] },
   );
 
+  /**
+   * `range()` with both bounds capped at `total` - the honest in-bounds window
+   * for readouts and announcements. `range()`'s upper bound is
+   * `start + pageSize`, so a partial final page overshoots `total`; this caps
+   * it (and yields `[0, 0]` while the list is empty). The capped end doubles as
+   * the cumulative reveal count for load-more consumers: `range()[1]` and
+   * `cumulativeRange()[1]` are the same number (`(pageIndex + 1) * pageSize`),
+   * so `clampedRange()[1]` is "items shown so far" in both replace and append
+   * modes. The explicit tuple `equal` stops a fresh-array identity from
+   * cascading downstream.
+   */
+  readonly clampedRange = computed<[number, number]>(
+    () => {
+      const total = this.total();
+      const [start, end] = this.range();
+      return [Math.min(start, total), Math.min(end, total)];
+    },
+    { equal: (a, b) => a[0] === b[0] && a[1] === b[1] },
+  );
+
   /** Emitted when the page index changes. */
   readonly pageChange = output<number>();
   /** Emitted when the page size changes. */

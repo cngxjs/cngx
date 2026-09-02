@@ -93,6 +93,9 @@ describe('CngxPaginatorLoadMore', () => {
 
   test('clicking advances one page through host.next()', async () => {
     const { fixture, paginate } = await setup();
+    // Family parity (pages/dots/nav): an enabled button carries NO
+    // aria-disabled attribute, not aria-disabled="false".
+    expect(button(fixture).getAttribute('aria-disabled')).toBeNull();
     button(fixture).click();
     await settle(fixture);
     expect(paginate.pageIndex()).toBe(1);

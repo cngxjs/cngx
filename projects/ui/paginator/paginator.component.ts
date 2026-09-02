@@ -38,7 +38,7 @@ export type CngxPaginatorDensity = 'compact' | 'default' | 'comfortable';
  * Declarative, skinnable pagination organism. \
  * A thin shell over the `CngxPaginate` brain (applied as a `hostDirective`), assembled by the
  * consumer from projected segment parts in DOM order - no `show*` config inputs.
- * `skin` / `density` are single paint attributes reflected onto `[data-skin]` / `[data-density]`.  \
+ * `skin` / `density` are single paint attributes reflected onto `[data-skin]` / `[data-paginator-size]`.  \
  *
  * Page bindings are longhand pairs -
  * `[pageIndex]="pageIndex()" (pageIndexChange)="pageIndex.set($event)"` and
@@ -146,7 +146,12 @@ export class CngxPaginator {
    */
   readonly resetOn = input<unknown>(undefined);
 
-  /** Emits the effective page index on every change - navigation or `total`-shrink clamp. */
+  /**
+   * Emits the effective page index on every change - navigation or
+   * `total`-shrink clamp. Clamp emits are held back while the brain is busy or
+   * `total` is 0, so a transient total drop during a refetch never writes a
+   * page-0 clamp into the consumer's two-way state.
+   */
   readonly pageIndexChange = output<number>();
   /** Emits the effective page size on every change. */
   readonly pageSizeChange = output<number>();

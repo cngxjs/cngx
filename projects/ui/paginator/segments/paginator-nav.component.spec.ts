@@ -109,8 +109,8 @@ describe('paginator nav segments', () => {
     const { fixture } = await setup();
     expect(button(fixture, 'cngx-pgn-first').getAttribute('aria-disabled')).toBe('true');
     expect(button(fixture, 'cngx-pgn-prev').getAttribute('aria-disabled')).toBe('true');
-    expect(button(fixture, 'cngx-pgn-next').getAttribute('aria-disabled')).toBe('false');
-    expect(button(fixture, 'cngx-pgn-last').getAttribute('aria-disabled')).toBe('false');
+    expect(button(fixture, 'cngx-pgn-next').getAttribute('aria-disabled')).toBeNull();
+    expect(button(fixture, 'cngx-pgn-last').getAttribute('aria-disabled')).toBeNull();
   });
 
   test('next/last are disabled on the last page, first/prev are not', async () => {
@@ -119,8 +119,8 @@ describe('paginator nav segments', () => {
     await settle(fixture);
     expect(button(fixture, 'cngx-pgn-next').getAttribute('aria-disabled')).toBe('true');
     expect(button(fixture, 'cngx-pgn-last').getAttribute('aria-disabled')).toBe('true');
-    expect(button(fixture, 'cngx-pgn-first').getAttribute('aria-disabled')).toBe('false');
-    expect(button(fixture, 'cngx-pgn-prev').getAttribute('aria-disabled')).toBe('false');
+    expect(button(fixture, 'cngx-pgn-first').getAttribute('aria-disabled')).toBeNull();
+    expect(button(fixture, 'cngx-pgn-prev').getAttribute('aria-disabled')).toBeNull();
   });
 
   test('clicking next/last/prev/first navigates through the brain', async () => {

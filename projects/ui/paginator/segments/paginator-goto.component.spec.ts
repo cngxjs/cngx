@@ -102,13 +102,35 @@ describe('CngxPaginatorGoto', () => {
     expect(input.value).toBe('3');
   });
 
-  test('live keystroke (input) navigates to the typed page through the brain', async () => {
+  test('typing alone never navigates - navigation is commit-only', async () => {
     const { fixture, paginate } = await setup();
     const input = gotoInput(fixture);
-    input.value = '4';
+    // First digit of a multi-digit entry: navigating here would flip an async
+    // brain busy and swallow the rest of the entry.
+    input.value = '2';
     input.dispatchEvent(new InputEvent('input'));
     await settle(fixture);
-    expect(paginate.pageIndex()).toBe(3);
+    expect(paginate.pageIndex()).toBe(0);
+
+    input.value = '25';
+    input.dispatchEvent(new InputEvent('input'));
+    await settle(fixture);
+    expect(paginate.pageIndex()).toBe(0);
+  });
+
+  test('a multi-digit entry commits as one navigation', async () => {
+    const { fixture, host, paginate } = await setup();
+    host.total.set(300); // 30 pages
+    await settle(fixture);
+
+    const input = gotoInput(fixture);
+    input.value = '2';
+    input.dispatchEvent(new InputEvent('input'));
+    input.value = '25';
+    input.dispatchEvent(new InputEvent('input'));
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+    await settle(fixture);
+    expect(paginate.pageIndex()).toBe(24);
   });
 
   test('does not navigate while the bound state is busy', async () => {
@@ -128,7 +150,7 @@ describe('CngxPaginatorGoto', () => {
     expect(paginate.pageIndex()).toBe(2);
   });
 
-  test('live keystroke navigation is also a no-op while the bound state is busy', async () => {
+  test('a busy commit keeps the typed value instead of stomping the field', async () => {
     const { fixture, host, paginate } = await setup();
     paginate.setPage(2);
     await settle(fixture);
@@ -138,12 +160,20 @@ describe('CngxPaginatorGoto', () => {
     host.state.set(busy);
     await settle(fixture);
 
-    // The (input) live-nav path delegates to the brain, which no-ops while busy
-    // (the same guarantee the blur path relies on).
+    // The commit no-ops on the busy gate; re-syncing the field now would
+    // destroy the entry the user still means to submit after the settle.
     const input = gotoInput(fixture);
     input.value = '7';
-    input.dispatchEvent(new InputEvent('input'));
+    input.dispatchEvent(new Event('blur'));
     await settle(fixture);
-    expect(paginate.pageIndex()).toBe(2);
+    expect(input.value).toBe('7');
+
+    // Settle: the retry commits and the field re-syncs to the landed page.
+    busy.set('success');
+    await settle(fixture);
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+    await settle(fixture);
+    expect(paginate.pageIndex()).toBe(6);
+    expect(input.value).toBe('7');
   });
 });

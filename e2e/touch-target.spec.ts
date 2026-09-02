@@ -115,6 +115,21 @@ const ATOMS: {
     // (container query), so a phone-width run would measure a hidden button.
     coarse: { width: 834, height: 1112 },
   },
+  // The dot is a small SQUARE target lifted by padding on both axes, so it is
+  // asserted on both (every other entry is a row control whose inline size is
+  // uncontested).
+  {
+    name: 'paginator-dot',
+    route: '/#/ui/paginator/paginator-skins/dots',
+    selector: '.cngx-paginator__dot',
+    axis: 'block',
+  },
+  {
+    name: 'paginator-dot-inline',
+    route: '/#/ui/paginator/paginator-skins/dots',
+    selector: '.cngx-paginator__dot',
+    axis: 'inline',
+  },
   {
     name: 'stepper-step',
     route: '/#/ui/stepper/stepper-footer/complete-finish-button',
