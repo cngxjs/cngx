@@ -397,6 +397,37 @@ describe('CngxAlert', () => {
     expect(alert.hasAttribute('hidden')).toBe(true);
   });
 
+  it('keeps auto-dismiss paused when the pointer leaves while focus is still inside', () => {
+    const state = createManualState<string>();
+    const { fixture, alert, host } = setup();
+    host.autoDismissDelay.set(1000);
+    host.state.set(state);
+    flushAll(fixture);
+
+    state.setSuccess('done');
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    vi.advanceTimersByTime(1); // enter fallback
+    fixture.detectChanges();
+
+    alert.dispatchEvent(new PointerEvent('pointerenter'));
+    alert.dispatchEvent(new Event('focusin'));
+    alert.dispatchEvent(new PointerEvent('pointerleave')); // focus still inside
+    fixture.detectChanges();
+
+    vi.advanceTimersByTime(60000);
+    fixture.detectChanges();
+    expect(alert.hasAttribute('hidden')).toBe(false);
+
+    alert.dispatchEvent(new Event('focusout')); // last hold released
+    fixture.detectChanges();
+    vi.advanceTimersByTime(1000);
+    fixture.detectChanges();
+    vi.advanceTimersByTime(1); // exit fallback
+    fixture.detectChanges();
+    expect(alert.hasAttribute('hidden')).toBe(true);
+  });
+
   // ── Auto-collapse ───────────────────────────────────────────
 
   it('collapses after collapseDelay when collapsible', () => {
@@ -452,17 +483,17 @@ describe('CngxAlert', () => {
     expect(alert.classList.contains('cngx-alert--collapsed')).toBe(true);
   });
 
-  it('sets aria-expanded when collapsible', () => {
+  it('carries no aria-expanded - collapse is visual-only, not a disclosure widget', () => {
     const { fixture, alert, host } = setup();
     host.collapsible.set(true);
     host.collapseDelay.set(1000);
     flushAll(fixture);
 
-    expect(alert.getAttribute('aria-expanded')).toBe('true');
+    expect(alert.hasAttribute('aria-expanded')).toBe(false);
 
     vi.advanceTimersByTime(1000);
     fixture.detectChanges();
-    expect(alert.getAttribute('aria-expanded')).toBe('false');
+    expect(alert.hasAttribute('aria-expanded')).toBe(false);
   });
 
   // ── aria-atomic with actions ────────────────────────────────

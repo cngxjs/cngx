@@ -136,8 +136,9 @@ export class CngxAlertAction {}
     // WAI-ARIA - role/aria-* present only while visible to avoid stale announcements.
     '[attr.role]': 'isVisible() ? ariaRole() : null',
     '[attr.aria-atomic]': 'isVisible() ? ariaAtomic() : null',
+    // No aria-expanded: collapse is visual-only (SR reads full content) and
+    // expanded-state ARIA belongs on a controlling widget, not on alert/status.
     '[attr.aria-label]': 'isVisible() ? (title() || null) : null',
-    '[attr.aria-expanded]': 'collapsible() ? !collapsed() : null',
     '[attr.aria-busy]': 'isStateBusy() || null',
     '[attr.hidden]': '!isVisible() || null',
     '(animationend)': 'handleAnimationEnd($event)',
@@ -237,6 +238,11 @@ export class CngxAlert {
   private readonly autoDismissTimer = createPausableTimer();
   private readonly collapseTimer = createPausableTimer();
   private animationFallbackId: ReturnType<typeof setTimeout> | undefined;
+
+  /** Active pause holds - pointer hover and focus-within count independently. */
+  private interactionHolds = 0;
+  /** Set when interaction expanded an already-collapsed alert; release re-arms. */
+  private reCollapseOnRelease = false;
 
   /** @internal - global icon component for the current severity (from provideFeedback config). */
   protected readonly globalIcon = computed(
@@ -371,6 +377,10 @@ export class CngxAlert {
     this.autoDismissTimer.clear();
     this.collapseTimer.clear();
     this.collapsedState.set(false);
+    // Exit may skip pointerleave/focusout (element hides mid-interaction) -
+    // stale holds must not pin the next visibility cycle's timers.
+    this.interactionHolds = 0;
+    this.reCollapseOnRelease = false;
   }
 
   private scheduleAnimationFallback(): void {
@@ -426,35 +436,60 @@ export class CngxAlert {
 
   /** @internal - WCAG 2.2.1: pause auto-dismiss on hover. */
   protected handlePointerEnter(): void {
-    this.autoDismissTimer.pause();
-    this.collapseTimer.pause();
-    if (this.collapsedState()) {
-      this.collapsedState.set(false);
-    }
+    this.handleInteractionStart();
   }
 
   /** @internal - resume timers on pointer leave. */
   protected handlePointerLeave(): void {
-    this.autoDismissTimer.resume();
-    if (this.collapsible() && this.isVisible()) {
-      this.collapseTimer.start(this.effectiveCollapseDelay(), () => this.collapsedState.set(true));
-    }
+    this.handleInteractionEnd();
   }
 
   /** @internal - WCAG 2.2.1: pause auto-dismiss on focus. */
   protected handleFocusIn(): void {
-    this.autoDismissTimer.pause();
-    this.collapseTimer.pause();
-    if (this.collapsedState()) {
-      this.collapsedState.set(false);
-    }
+    this.handleInteractionStart();
   }
 
   /** @internal - resume timers on focus out. */
   protected handleFocusOut(): void {
+    this.handleInteractionEnd();
+  }
+
+  /**
+   * Hold-counted pause: hover and focus-within are independent holds on the
+   * same timers - leaving with the mouse must not resume auto-dismiss while
+   * keyboard focus is still inside, and vice versa.
+   */
+  private handleInteractionStart(): void {
+    this.interactionHolds++;
+    if (this.interactionHolds > 1) {
+      return;
+    }
+    this.autoDismissTimer.pause();
+    this.collapseTimer.pause();
+    if (this.collapsedState()) {
+      // Interaction expands an already-collapsed alert; its collapse timer
+      // has fired, so the final release re-arms a full delay (resume would
+      // be a no-op and the alert would stay expanded forever).
+      this.reCollapseOnRelease = true;
+      this.collapsedState.set(false);
+    }
+  }
+
+  private handleInteractionEnd(): void {
+    this.interactionHolds = Math.max(0, this.interactionHolds - 1);
+    if (this.interactionHolds > 0) {
+      return;
+    }
     this.autoDismissTimer.resume();
-    if (this.collapsible() && this.isVisible()) {
-      this.collapseTimer.start(this.effectiveCollapseDelay(), () => this.collapsedState.set(true));
+    if (this.reCollapseOnRelease) {
+      this.reCollapseOnRelease = false;
+      if (this.collapsible() && this.isVisible()) {
+        this.collapseTimer.start(this.effectiveCollapseDelay(), () =>
+          this.collapsedState.set(true),
+        );
+      }
+    } else {
+      this.collapseTimer.resume();
     }
   }
 }
