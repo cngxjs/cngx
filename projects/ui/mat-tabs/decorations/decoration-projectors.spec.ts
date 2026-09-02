@@ -2,6 +2,7 @@ import {
   Component,
   DestroyRef,
   Injector,
+  afterNextRender,
   Renderer2,
   TemplateRef,
   ViewChild,
@@ -202,6 +203,81 @@ describe('createMatTabRejectionDecoration - aria-describedby contract (5.2)', ()
       buttons[0].querySelector('span.cngx-sr-only'),
     ).toBeNull();
     expect(buttons[0].getAttribute('aria-describedby')).toBeNull();
+  });
+
+  it('does not latch a failed apply - the decoration lands once the button renders (bounded retry)', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(HostCmp);
+    fixture.detectChanges();
+    const host = fixture.componentInstance;
+    // Initial-render race: no `.mat-mdc-tab` buttons exist yet.
+    const hostEl = document.createElement('div');
+    const failedHandleId = signal<string | null>(null);
+    const failedIndex = signal<number | undefined>(undefined);
+
+    createMatTabRejectionDecoration({
+      hostEl,
+      failedHandleId,
+      failedIndex,
+      descriptorText: signal('Reverted.'),
+      renderer: host.renderer,
+      injector: host.injector,
+      destroyRef: host.destroyRef,
+    });
+
+    failedHandleId.set('cngx-mat-tab-9');
+    failedIndex.set(0);
+    // The button arrives on the NEXT render, after the first apply has
+    // already failed - the render hook below is registered before the
+    // projector schedules its retry, so it appends the button just
+    // ahead of the retry callback in the same render pass. Pre-fix,
+    // the failed apply latched the id and every later attempt for the
+    // same failure was suppressed.
+    const btn = document.createElement('button');
+    btn.classList.add('mat-mdc-tab');
+    afterNextRender(() => hostEl.appendChild(btn), { injector: host.injector });
+    TestBed.flushEffects();
+
+    expect(btn.classList.contains('cngx-mat-tab--error')).toBe(true);
+    expect(
+      btn.querySelector('span.cngx-sr-only#cngx-mat-tab-9-rejected'),
+    ).not.toBeNull();
+  });
+
+  it('invokes onMaxRetriesReached when the button never renders', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(HostCmp);
+    fixture.detectChanges();
+    const host = fixture.componentInstance;
+    const hostEl = document.createElement('div');
+    const failedHandleId = signal<string | null>(null);
+    const failedIndex = signal<number | undefined>(undefined);
+    const onMaxRetriesReached = vi.fn();
+
+    createMatTabRejectionDecoration({
+      hostEl,
+      failedHandleId,
+      failedIndex,
+      descriptorText: signal('Reverted.'),
+      renderer: host.renderer,
+      injector: host.injector,
+      destroyRef: host.destroyRef,
+      maxRetryAttempts: 1,
+      onMaxRetriesReached,
+    });
+
+    failedHandleId.set('cngx-mat-tab-9');
+    failedIndex.set(0);
+    // The zoneless sync loop drives every scheduled retry render
+    // inside this flush - the ladder exhausts synchronously.
+    TestBed.flushEffects();
+
+    expect(onMaxRetriesReached).toHaveBeenCalledTimes(1);
+    expect(hostEl.querySelector('.cngx-mat-tab--error')).toBeNull();
   });
 
   it('preserves consumer-supplied aria-describedby tokens across decorate / clear cycles', () => {
