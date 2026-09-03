@@ -726,7 +726,13 @@ export class CngxTreetable<T = unknown> {
         }
         return next;
       });
-      this.selectionAnnouncementState.set('Selection cleared');
+      // Mirror the select branch's counted shape: the clear is bounded to
+      // the visible rows, so "Selection cleared" would misreport whenever
+      // hidden-selected rows survive.
+      const cleared = visible.size;
+      this.selectionAnnouncementState.set(
+        cleared === 1 ? '1 row deselected' : `${cleared} rows deselected`,
+      );
       return;
     }
     const visibleIds = this.visibleNodes().map((n) => n.id);

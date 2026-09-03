@@ -266,6 +266,11 @@ describe('CngxTreetable', () => {
       t.toggleAll();
       fixture.detectChanges();
       expect(t.selectedIds()).toEqual(new Set(['0-0-0']));
+      // The announcement carries the bounded count - a blanket "cleared"
+      // would misreport the surviving hidden selection.
+      const region = fixture.debugElement.query(By.css('.cngx-treetable__sr'))
+        .nativeElement as HTMLElement;
+      expect(region.textContent?.trim()).toBe('3 rows deselected');
     });
 
     it('clear branch on a fully visible selection empties the set', () => {
@@ -591,7 +596,7 @@ describe('CngxTreetable', () => {
 
       t.handleKeyDown(key('a', { ctrlKey: true }));
       fixture.detectChanges();
-      expect(region()).toBe('Selection cleared');
+      expect(region()).toBe('3 rows deselected');
     });
 
     it('stays silent in the live region on per-row selection toggles', () => {
