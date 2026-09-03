@@ -73,4 +73,13 @@ describe('CngxEmptyState geometry', () => {
     const host = mount();
     expect(computedValue(query(host, '.cngx-empty-state__actions'), 'display')).toBe('flex');
   });
+
+  it('removes the host from layout when the [state] auto-hide sets hidden', () => {
+    // The author-layer `display: flex` on `:scope` beats the UA's
+    // non-important `[hidden] { display: none }` - the stylesheet re-asserts
+    // `:scope[hidden]`, otherwise the auto-hide is visually dead.
+    const host = mount();
+    host.setAttribute('hidden', '');
+    expect(computedValue(host, 'display')).toBe('none');
+  });
 });
