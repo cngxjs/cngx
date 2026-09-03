@@ -33,6 +33,10 @@ export interface CngxTimelineView {
  * - **Busy with an empty screen.** The lookup table resolves a non-first-load
  *   `loading` or `pending` to `content`; with no rows that renders nothing at
  *   all, so it is treated as a load instead. `refreshing` keeps its tail.
+ * - **First-load busy over seed rows.** The lookup table resolves a first
+ *   load to `skeleton` unconditionally, but `[items]` documents seed rows as
+ *   a legitimate companion to a bound state - rows that exist are painted,
+ *   never hidden behind placeholders. `aria-busy` still marks the list.
  *
  * Swap the whole mapping through {@link CNGX_TIMELINE_VIEW_FACTORY} rather
  * than forking the organism - treating `pending` as content, or holding the
@@ -54,6 +58,12 @@ export function createTimelineView(
       return empty ? 'empty' : 'content';
     }
     const view = resolveAsyncView(bound.status(), bound.isFirstLoad(), empty);
+    // A first load with seed rows on screen paints the rows: `[items]`
+    // documents seed-plus-state, and a skeleton over existing content would
+    // hide it. The busy window still reaches AT through `aria-busy`.
+    if (view === 'skeleton' && !empty) {
+      return 'content';
+    }
     // `loading` and `pending` that are not a first load resolve to `content`,
     // and with nothing to render that is a blank, silent region: no rows, no
     // tail, nothing announced. Work in flight with an empty screen is a load.

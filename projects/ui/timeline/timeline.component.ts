@@ -381,7 +381,19 @@ export class CngxTimeline<T = unknown> implements CngxTimelineMarkerHost {
   protected readonly showsContent = this.view.showsContent;
   protected readonly refreshing = this.view.refreshing;
   protected readonly ariaBusy = this.view.ariaBusy;
-  protected readonly announcement = this.view.announcement;
+
+  /**
+   * @internal The live-region text. The view's announcement is filtered on
+   * one case: while the BUILT-IN error surface renders, its `role="alert"`
+   * already announces the failure, and repeating it through the polite region
+   * would double-fire. A consumer-bound `*cngxTimelineError` replaces that
+   * markup wholesale (no alert), so the region speaks for it instead.
+   */
+  protected readonly announcement = computed(() => {
+    const view = this.activeView();
+    const builtinAlertShown = (view === 'error' || view === 'content+error') && !this.errorTpl();
+    return builtinAlertShown ? '' : this.view.announcement();
+  });
 
   /** @internal Passed into the error and retry-button slot contexts. */
   protected readonly emitRetry = (): void => this.retry.emit();
