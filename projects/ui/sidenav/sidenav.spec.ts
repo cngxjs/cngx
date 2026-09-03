@@ -790,10 +790,14 @@ describe('CngxSidenav resize math and shortcut', () => {
     press('End');
     expect(left.width()).toBe('600px');
 
-    // Modified arrows pass through untouched (browser/AT shortcuts).
+    // Modified arrows pass through untouched (browser/AT shortcuts) - shift
+    // included.
     const before = left.width();
     handle.dispatchEvent(
       new KeyboardEvent('keydown', { key: 'ArrowRight', ctrlKey: true, bubbles: true }),
+    );
+    handle.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowRight', shiftKey: true, bubbles: true }),
     );
     expect(left.width()).toBe(before);
   });
@@ -810,6 +814,23 @@ describe('CngxSidenav resize math and shortcut', () => {
     expect(handle.getAttribute('aria-valuenow')).toBeNull();
     expect(handle.getAttribute('aria-valuemin')).toBe('120');
     expect(handle.getAttribute('aria-valuemax')).toBe('600');
+  });
+
+  it('derives aria-valuenow from the rendered width once the separator gains focus', () => {
+    const fixture = TestBed.createComponent(DualHost);
+    fixture.componentInstance.resizable.set(true);
+    fixture.componentInstance.width.set('17.5rem');
+    fixture.detectChanges();
+    const leftEl = fixture.debugElement.queryAll(By.directive(CngxSidenav))[0]
+      .nativeElement as HTMLElement;
+    const handle = leftEl.querySelector<HTMLElement>('.cngx-sidenav__resize-handle')!;
+    vi.spyOn(leftEl, 'getBoundingClientRect').mockReturnValue({ width: 280 } as DOMRect);
+
+    // The window-splitter pattern wants a valuenow on the focused separator
+    // even for rem-sized rails - resolved by measurement at focus time.
+    handle.dispatchEvent(new Event('focus'));
+    fixture.detectChanges();
+    expect(handle.getAttribute('aria-valuenow')).toBe('280');
   });
 
   it('renders no resize handle in mini mode (fixed-width rail)', () => {

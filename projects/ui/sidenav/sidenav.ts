@@ -144,11 +144,12 @@ export type SidenavMode = 'over' | 'push' | 'side' | 'mini';
         class="cngx-sidenav__resize-handle"
         (pointerdown)="handleResizeStart($event)"
         (keydown)="handleResizeKeydown($event)"
+        (focus)="handleResizeFocus()"
         role="separator"
         tabindex="0"
         [attr.aria-label]="resizeLabel()"
         [attr.aria-orientation]="'vertical'"
-        [attr.aria-valuenow]="widthPx()"
+        [attr.aria-valuenow]="widthValueNow()"
         [attr.aria-valuemin]="minWidthPx()"
         [attr.aria-valuemax]="maxWidthPx()"
       ></div>
@@ -199,10 +200,18 @@ export class CngxSidenav {
    */
   readonly resizeLabel = input<string>('Resize navigation');
 
-  /** Minimum width constraint during resize. */
+  /**
+   * Minimum width constraint during resize. Use a px value: drag and keyboard
+   * clamping (and `aria-valuemin`) resolve px only; a rem/ch constraint falls
+   * back to the 120px default for clamping and omits the ARIA value.
+   */
   readonly minWidth = input<string>(this.cfg.dimensions?.minWidth ?? '120px');
 
-  /** Maximum width constraint during resize. */
+  /**
+   * Maximum width constraint during resize. Use a px value: drag and keyboard
+   * clamping (and `aria-valuemax`) resolve px only; a rem/ch constraint falls
+   * back to the 600px default for clamping and omits the ARIA value.
+   */
   readonly maxWidth = input<string>(this.cfg.dimensions?.maxWidth ?? '600px');
 
   /**
@@ -478,13 +487,37 @@ export class CngxSidenav {
   protected readonly minWidthPx = computed(() => parsePx(this.minWidth()));
   protected readonly maxWidthPx = computed(() => parsePx(this.maxWidth()));
 
+  /** Rect-measured width, taken when the separator gains focus (non-px widths). */
+  private readonly measuredWidthPx = signal<number | null>(null);
+
+  /**
+   * @internal `aria-valuenow` of the separator: the px width when parseable,
+   * else the rect measurement taken at focus - the window-splitter pattern
+   * wants a valuenow on the focused separator even for rem-sized rails.
+   */
+  protected readonly widthValueNow = computed(() => this.widthPx() ?? this.measuredWidthPx());
+
+  /** @internal Resolve a non-px width to a real number the moment AT needs it. */
+  protected handleResizeFocus(): void {
+    const el = this.elementRef.nativeElement as HTMLElement;
+    this.measuredWidthPx.set(Math.round(el.getBoundingClientRect().width) || null);
+  }
+
   /**
    * @internal Arrow-key resize on the separator, so the handle is operable
    * without a pointer (WCAG 2.1.1): arrows step by 16px (direction-aware for
-   * `position="end"`), Home/End jump to the min/max constraint.
+   * `position="end"`), Home/End jump to the min/max constraint. Any modified
+   * key (shift included) passes through untouched - browser and AT shortcuts
+   * stay theirs.
    */
   protected handleResizeKeydown(event: KeyboardEvent): void {
-    if (!this.resizable() || event.ctrlKey || event.altKey || event.metaKey) {
+    if (
+      !this.resizable() ||
+      event.ctrlKey ||
+      event.altKey ||
+      event.metaKey ||
+      event.shiftKey
+    ) {
       return;
     }
     const el = this.elementRef.nativeElement as HTMLElement;
