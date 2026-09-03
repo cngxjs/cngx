@@ -88,9 +88,10 @@ export function createTimelineView(
       if (view === 'skeleton') {
         return labels.loading;
       }
-      // The built-in error surface carries its own role="alert", but a bound
-      // *cngxTimelineError replaces that markup wholesale. Announcing here
-      // means the failure reaches AT whether or not the slot is bound.
+      // The single announcer for the failure: the built-in error surface
+      // carries no role="alert" (that would double-fire on top of this
+      // region), so the fallback reaches AT here whether the built-in markup
+      // or a bound *cngxTimelineError renders.
       if (view === 'error' || view === 'content+error') {
         return labels.errorFallback;
       }

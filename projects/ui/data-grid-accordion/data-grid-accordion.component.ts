@@ -295,29 +295,25 @@ export class CngxDataGridAccordion implements CngxDataGridAccordionContext {
     () => this.columns() ?? this.derivedColumns() ?? '1fr',
   );
 
-  private cellCountWarned = false;
-
   constructor() {
     // A row projecting more cells than the shared template has tracks pushes
     // the extras into implicit grid tracks - the subgrid misaligns silently.
+    // One warning per group; the effect destroys itself after firing.
     if (typeof ngDevMode !== 'undefined' && ngDevMode) {
-      effect(() => {
-        if (this.cellCountWarned) {
-          return;
-        }
+      const ref = effect(() => {
         const tracks = this.sourceCells().length;
         if (tracks === 0) {
           return;
         }
         const over = this.rows().find((row) => row.cells().length > tracks);
         if (over) {
-          this.cellCountWarned = true;
           console.warn(
             `CngxDataGridAccordion: a row projects ${over.cells().length} cells but the ` +
               `shared column template has ${tracks} tracks - the extra cells land in ` +
               'implicit tracks and misalign silently. Match every row to the header ' +
               '(or first-row) cell count.',
           );
+          ref.destroy();
         }
       });
     }

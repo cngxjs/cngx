@@ -313,20 +313,24 @@ describe('CngxTimeline async body', () => {
   });
 
   describe('error announcement', () => {
-    it('announces a failure through the built-in alert only, keeping the polite region silent', () => {
+    it('announces a failure once, through the polite region, with no competing alert', () => {
       const { el, host, detect } = mount();
       host.state.setError(new Error('boom'));
       settleGate(detect);
 
-      // role=alert already announces the fallback; repeating it through the
-      // polite region would double-fire on every failure.
-      expect(el.querySelector('.cngx-timeline__error-message')?.getAttribute('role')).toBe(
-        'alert',
+      // Single announcer: the built-in surface renders the fallback visibly
+      // but carries no role=alert - an alert on top of the always-on polite
+      // region would double-fire the same text.
+      expect(el.querySelector('[role="alert"]')).toBeNull();
+      expect(el.querySelector('.cngx-timeline__error-message')?.textContent?.trim()).toBe(
+        'Could not load the timeline.',
       );
-      expect(el.querySelector('.cngx-timeline__sr-only')?.textContent?.trim()).toBe('');
+      expect(el.querySelector('.cngx-timeline__sr-only')?.textContent?.trim()).toBe(
+        'Could not load the timeline.',
+      );
     });
 
-    it('announces through the polite region when a bound error slot replaces the alert', () => {
+    it('keeps announcing through the polite region when a bound error slot replaces the markup', () => {
       const { el, host, detect } = mount();
       host.withSlots.set(true);
       detect();

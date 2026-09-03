@@ -97,8 +97,10 @@ export class CngxEmptyState {
   /**
    * Bind an async state - auto-hides when data is not empty, while an
    * operation is running, or on error status. Error communication belongs
-   * to error surfaces (alert, async container); the empty state only ever
-   * says "successfully loaded, nothing there".
+   * to error surfaces (alert, async container). The component shows in two
+   * cases: a settled empty result ("loaded, nothing there") and an idle
+   * state with no data - the first-use onboarding surface, where nothing
+   * has been asked for yet.
    */
   readonly state = input<CngxAsyncState<unknown> | undefined>(undefined);
 

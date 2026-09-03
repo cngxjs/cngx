@@ -33,7 +33,7 @@
          settle announcement is suppressed. -->
     @if (virtualize()) {
       <cngx-incremental-virtualized-body
-        [attr.aria-busy]="paginate.isBusy()"
+        [attr.aria-busy]="paginate.isBusy() ? 'true' : null"
         [items]="items()"
         [estimateSize]="estimateSize()"
         [itemTemplate]="itemTemplate()"
@@ -41,7 +41,7 @@
         (focusEscaped)="handleFocusEscaped()"
       />
     } @else {
-      <ul class="cngx-incremental-list__items" role="list" [attr.aria-busy]="paginate.isBusy()">
+      <ul class="cngx-incremental-list__items" role="list" [attr.aria-busy]="paginate.isBusy() ? 'true' : null">
         @for (item of items(); track trackItem($index, item)) {
           <li class="cngx-incremental-list__item">
             @if (itemTemplate(); as tpl) {

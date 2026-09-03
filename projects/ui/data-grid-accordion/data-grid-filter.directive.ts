@@ -82,9 +82,13 @@ export class CngxDgaFilter {
   }
 
   protected handleBlur(): void {
-    // A pending debounced keystroke wins over the stale external term - the timer
-    // is about to make the box and the grid consistent anyway.
+    // Flush a pending keystroke instead of letting the timer fire after blur:
+    // an external write landing in that window would lose to the stale timer
+    // and get overwritten. Typing then leaving commits what was typed.
     if (this.timer !== undefined) {
+      clearTimeout(this.timer);
+      this.timer = undefined;
+      this.grid.filterTerm.set(this.element.value);
       return;
     }
     const term = this.grid.filterTerm();

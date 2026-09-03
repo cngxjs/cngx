@@ -240,8 +240,8 @@ describe('CngxIncrementalList', () => {
     expect(listEl.querySelector('cngx-progress')).toBeNull();
     expect(listEl.querySelectorAll('.cngx-incremental-list__item')).toHaveLength(3);
     expect(
-      listEl.querySelector('.cngx-incremental-list__items')?.getAttribute('aria-busy'),
-    ).toBe('false');
+      listEl.querySelector('.cngx-incremental-list__items')?.hasAttribute('aria-busy'),
+    ).toBe(false);
 
     // success with an empty result -> empty branch.
     manual.setSuccess([]);

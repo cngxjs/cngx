@@ -316,6 +316,13 @@ export class CngxStatCard {
     if (!s) {
       return 'content' as const;
     }
-    return resolveAsyncView(s.status(), s.isFirstLoad(), s.isEmpty());
+    const view = resolveAsyncView(s.status(), s.isFirstLoad(), s.isEmpty());
+    // A non-first-load busy phase over an empty tile resolves to content in
+    // the lookup table - blank metric slots posing as a figure. A load with
+    // nothing on screen is a load (same correction the timeline applies).
+    if (view === 'content' && s.isEmpty() && s.isBusy()) {
+      return 'skeleton' as const;
+    }
+    return view;
   });
 }

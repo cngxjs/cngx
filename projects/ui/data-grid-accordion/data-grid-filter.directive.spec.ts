@@ -91,7 +91,7 @@ describe('CngxDgaFilter', () => {
     expect(input.value).toBe('');
   });
 
-  it('lets a pending debounced keystroke win over a stale external term on blur', () => {
+  it('flushes a pending debounced keystroke on blur instead of leaving the timer live', () => {
     const { fixture, group, input } = setup();
     group.filterTerm.set('old');
     fixture.detectChanges();
@@ -101,12 +101,14 @@ describe('CngxDgaFilter', () => {
     input.value = 'new';
     input.dispatchEvent(new Event('input'));
 
-    // Blur before the debounce elapses: the box must keep the user's text -
-    // the in-flight write is about to make box and grid consistent.
+    // Blur before the debounce elapses: the typed value commits immediately -
+    // a live timer would race any external write landing after the blur.
     input.blur();
     input.dispatchEvent(new Event('blur'));
     expect(input.value).toBe('new');
+    expect(group.filterTerm()).toBe('new');
 
+    // Nothing left to fire.
     vi.advanceTimersByTime(200);
     expect(group.filterTerm()).toBe('new');
   });

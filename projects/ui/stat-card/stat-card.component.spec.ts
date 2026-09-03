@@ -117,6 +117,22 @@ describe('CngxStatCard', () => {
     expect(card.querySelector('cngx-card')!.getAttribute('aria-labelledby')).toBeNull();
   });
 
+  it('shows the skeleton, not blank slots, while busy over an empty tile', () => {
+    const { fixture, card } = setup();
+    state.set({ status: 'success', firstLoad: false, empty: true });
+    fixture.detectChanges();
+    expect(card.querySelector('.cngx-stat-card__empty')).not.toBeNull();
+
+    // The lookup table resolves this to content; blank projected slots would
+    // pose as a real figure. A refetch with nothing on screen is a load.
+    for (const status of ['loading', 'pending', 'refreshing'] as const) {
+      state.set({ status, empty: true });
+      fixture.detectChanges();
+      expect(card.querySelector('.cngx-stat-card__stat--skeleton'), status).not.toBeNull();
+      expect(card.querySelector('.cngx-stat-card__stat:not(.cngx-stat-card__stat--skeleton)'), status).toBeNull();
+    }
+  });
+
   it('shows the empty treatment when a load settles with no data', () => {
     const { fixture, card } = setup();
     state.set({ status: 'success', firstLoad: false, empty: true });
