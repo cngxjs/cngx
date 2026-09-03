@@ -228,6 +228,10 @@ export function createTimelineGrouping<T>(
 ): TimelineGrouping<T> {
   const { items, dateAccessor, groupBy, direction } = options;
 
+  // Dev-only diagnostic; once per grouping instance so a recompute over the
+  // same bad data does not spam the console.
+  let warnedInvalidDate = false;
+
   // `linkedSignal` rather than `computed`: append-stability needs the
   // previous bands to hand their references back, and this is the sanctioned
   // way to read them. A closure cache mutated inside a `computed` would make
@@ -240,6 +244,24 @@ export function createTimelineGrouping<T>(
       const sign = (direction?.() ?? 'desc') === 'asc' ? 1 : -1;
 
       const dated = source.map((item) => ({ item, date: toDate(dateAccessor(item)) }));
+
+      // An unparsable value does not throw - NaN dates all bucket under one
+      // band whose header renders "Invalid Date". Surface the mistake in dev
+      // instead of leaving that header as the only clue.
+      if (
+        typeof ngDevMode !== 'undefined' &&
+        ngDevMode &&
+        !warnedInvalidDate &&
+        dated.some((entry) => Number.isNaN(entry.date.getTime()))
+      ) {
+        warnedInvalidDate = true;
+        console.warn(
+          'createTimelineGrouping: dateAccessor produced an invalid date for at least one ' +
+            'item. Those items cluster into a single band whose header renders ' +
+            '"Invalid Date" - check the accessor and the raw values it reads.',
+        );
+      }
+
       dated.sort((a, b) => sign * (a.date.getTime() - b.date.getTime()));
 
       // Map preserves insertion order, so buckets come out already sorted.

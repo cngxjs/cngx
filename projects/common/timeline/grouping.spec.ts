@@ -1,6 +1,6 @@
 import { computed, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import {
   CNGX_TIMELINE_GROUPING_FACTORY,
@@ -144,6 +144,36 @@ describe('createTimelineGrouping', () => {
 
       expect(groups().map((g) => g.key)).toEqual(['2026-08', '2026-07']);
       expect(groups()[1].start.getTime()).toBe(new Date(2026, 6, 1).getTime());
+    });
+  });
+
+  describe('invalid dates', () => {
+    it('dev-warns once when the accessor produces an invalid date', () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      const items = signal([entry(1, new Date('not a date')), entry(2, new Date(2026, 6, 20))]);
+      const { groups } = createTimelineGrouping({ items, dateAccessor: (e) => e.at });
+
+      // NaN dates do not throw; they cluster into an "Invalid Date" band -
+      // the warning is the only surface for the mistake.
+      groups();
+      expect(warn).toHaveBeenCalledTimes(1);
+      expect(warn.mock.calls[0][0]).toContain('invalid date');
+
+      // Once per grouping instance: a recompute over the same data is silent.
+      items.set([...items()]);
+      groups();
+      expect(warn).toHaveBeenCalledTimes(1);
+      warn.mockRestore();
+    });
+
+    it('stays silent when every date parses', () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      const items = signal([entry(1, new Date(2026, 6, 20))]);
+      const { groups } = createTimelineGrouping({ items, dateAccessor: (e) => e.at });
+
+      groups();
+      expect(warn).not.toHaveBeenCalled();
+      warn.mockRestore();
     });
   });
 
