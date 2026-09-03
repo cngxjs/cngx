@@ -4,6 +4,7 @@ import { By } from '@angular/platform-browser';
 import { createManualState } from '@cngx/common/data';
 import { provideDirection } from '@cngx/core';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { CngxErrorTpl } from './column-template.directive';
 import type { FlatNode, Node } from './models';
 import { CngxTreetable } from './treetable.component';
 
@@ -809,6 +810,33 @@ describe('CngxTreetable', () => {
       expect(stateRegionText(fixture)).toBe('');
       const host = fixture.nativeElement as HTMLElement;
       expect(host.getAttribute('aria-busy')).toBeNull();
+    });
+
+    it('renders a projected cngxError slot with the raw error as context', () => {
+      @Component({
+        template: `
+          <cngx-treetable [tree]="[]" [state]="state">
+            <ng-template cngxError let-error>
+              <span class="slot-error">ERR: {{ error.message }}</span>
+            </ng-template>
+          </cngx-treetable>
+        `,
+        imports: [CngxTreetable, CngxErrorTpl],
+      })
+      class ErrorHost {
+        readonly state = createManualState<readonly Item[]>();
+      }
+      TestBed.configureTestingModule({ imports: [ErrorHost] });
+      const fixture = TestBed.createComponent(ErrorHost);
+      fixture.detectChanges();
+      fixture.componentInstance.state.set('loading');
+      fixture.detectChanges();
+      fixture.componentInstance.state.setError(new Error('boom'));
+      fixture.detectChanges();
+      const slot = fixture.debugElement.query(By.css('.slot-error'));
+      expect(slot).not.toBeNull();
+      expect((slot.nativeElement as HTMLElement).textContent?.trim()).toBe('ERR: boom');
+      expect(fixture.debugElement.query(By.css('.cngx-treetable__error-message'))).toBeNull();
     });
 
     it('keeps both live regions in the DOM across every view', () => {

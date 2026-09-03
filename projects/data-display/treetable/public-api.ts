@@ -6,8 +6,19 @@ export {
   withHighlightOnHover,
   withCapitaliseHeaders,
 } from './treetable.token';
-export { CngxCellTpl, CngxHeaderTpl, CngxEmptyTpl } from './column-template.directive';
+export {
+  CngxCellTpl,
+  CngxHeaderTpl,
+  CngxEmptyTpl,
+  CngxErrorTpl,
+} from './column-template.directive';
 export { resolveCellTpl, resolveHeaderTpl } from './column-template.utils';
 export type { TreetableConfig, TreetableFeature } from './treetable.token';
-export type { FlatNode, Node, TreetableOptions, CngxCellTplContext } from './models';
+export type {
+  FlatNode,
+  Node,
+  TreetableOptions,
+  CngxCellTplContext,
+  CngxErrorTplContext,
+} from './models';
 export { flattenTree, filterTree, sortTree, nodeMatchesSearch } from './tree.utils';

@@ -146,6 +146,10 @@
      for every view transition, failure included. -->
 <ng-template #errorSurface>
   <div class="cngx-treetable__error">
-    <p class="cngx-treetable__error-message">Data failed to load</p>
+    @if (errorTpl(); as tpl) {
+      <ng-container *ngTemplateOutlet="tpl.template; context: { $implicit: error() }"></ng-container>
+    } @else {
+      <p class="cngx-treetable__error-message">Data failed to load</p>
+    }
   </div>
 </ng-template>

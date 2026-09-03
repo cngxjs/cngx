@@ -1,5 +1,5 @@
 import { Directive, inject, input, TemplateRef } from '@angular/core';
-import type { CngxCellTplContext } from './models';
+import type { CngxCellTplContext, CngxErrorTplContext } from './models';
 
 /**
  * Marks an `<ng-template>` as a custom cell template for a named column.
@@ -91,4 +91,41 @@ export class CngxEmptyTpl {
    * @internal
    */
   readonly template = inject(TemplateRef<void>);
+}
+
+/**
+ * Marks an `<ng-template>` as the error slot shown when a bound async
+ * state fails - both on a first-load failure (grid gone) and on a
+ * failed refresh over loaded rows (`content+error`). Gets the raw
+ * error as `$implicit`, so the consumer can render the actual failure
+ * instead of the default "Data failed to load" message.
+ *
+ * Do not add `role="alert"` inside the template: the treetable's
+ * state live region already announces the failure, and an alert would
+ * double-fire.
+ *
+ * ```html
+ * <cngx-treetable [tree]="tree" [state]="loadState">
+ *   <ng-template cngxError let-error>
+ *     <p>Load failed: {{ describeError(error) }}</p>
+ *     <button type="button" (click)="reload()">Retry</button>
+ *   </ng-template>
+ * </cngx-treetable>
+ * ```
+ *
+ * @category data-display/treetable
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/data-display/treetable/column-template.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxTreetable, CngxCellTpl, CngxHeaderTpl, CngxEmptyTpl
+ */
+@Directive({ selector: 'ng-template[cngxError]', standalone: true })
+export class CngxErrorTpl {
+  /**
+   * The projected `<ng-template>` reference, typed against
+   * {@link CngxErrorTplContext}. Read by `CngxTreetable` via
+   * `contentChild(CngxErrorTpl)` and rendered in place of the default
+   * error message on the `error` and `content+error` views.
+   * @internal
+   */
+  readonly template = inject(TemplateRef<CngxErrorTplContext>);
 }

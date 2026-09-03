@@ -34,7 +34,12 @@ import { resolveAsyncView, type AsyncView } from '@cngx/common/data';
 import { injectDirection, resolveInlineArrowKey } from '@cngx/core';
 import { arrayEqual } from '@cngx/utils';
 import { CngxTreetableRow } from './treetable-row.directive';
-import { CngxCellTpl, CngxEmptyTpl, CngxHeaderTpl } from './column-template.directive';
+import {
+  CngxCellTpl,
+  CngxEmptyTpl,
+  CngxErrorTpl,
+  CngxHeaderTpl,
+} from './column-template.directive';
 import { resolveCellTpl, resolveHeaderTpl } from './column-template.utils';
 import type { FlatNode, Node, TreetableOptions } from './models';
 import {
@@ -120,6 +125,7 @@ import { CNGX_TREETABLE_CONFIG } from './treetable.token';
  * @slot cngxHeader Replaces a column's header cell; gets the column definition.
  * @slot cngxCell Replaces a body cell; gets the row and the column definition.
  * @slot cngxEmpty Rendered when the tree resolves to no rows.
+ * @slot cngxError Rendered when a bound async state fails; gets the raw error.
  */
 @Component({
   selector: 'cngx-treetable',
@@ -293,6 +299,8 @@ export class CngxTreetable<T = unknown> {
   protected readonly headerTpls = contentChildren(CngxHeaderTpl);
   /** @internal */
   protected readonly emptyTpl = contentChild(CngxEmptyTpl);
+  /** @internal */
+  protected readonly errorTpl = contentChild(CngxErrorTpl);
 
   /**
    * Every node in the `tree` input flattened to a single depth-first

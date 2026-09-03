@@ -83,3 +83,19 @@ export interface CngxCellTplContext<T> {
   /** The raw cell value for the column (`node.value[column]`) - available as `let-value="value"`. */
   value: unknown;
 }
+
+/**
+ * Template context type for {@link CngxErrorTpl}.
+ *
+ * ```html
+ * <ng-template cngxError let-error>
+ *   <p>Load failed: {{ describeError(error) }}</p>
+ * </ng-template>
+ * ```
+ *
+ * @category data-display/treetable
+ */
+export interface CngxErrorTplContext {
+  /** The raw error from the bound async state - available as `let-error`. */
+  $implicit: unknown;
+}
