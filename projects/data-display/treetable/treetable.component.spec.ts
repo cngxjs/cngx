@@ -753,6 +753,20 @@ describe('CngxTreetable', () => {
       expect(fixture.debugElement.query(By.css('[role="alert"]'))).toBeNull();
     });
 
+    it('replaces seed rows with the error surface when the first load fails', () => {
+      // Pins the sibling-symmetric behavior (timeline does the same): only
+      // the skeleton branch is rescued for seed rows; a first-load failure
+      // is a failure, and the error surface takes the grid's place.
+      const { fixture, state } = mount(tree);
+      state.set('loading');
+      fixture.detectChanges();
+      expect(table(fixture)).not.toBeNull();
+      state.setError(new Error('boom'));
+      fixture.detectChanges();
+      expect(errorSurface(fixture)).not.toBeNull();
+      expect(table(fixture)).toBeNull();
+    });
+
     it('shows the empty surface when a load succeeds with nothing to render', () => {
       const { fixture, state } = mount([]);
       state.setSuccess([]);
