@@ -158,6 +158,50 @@ describe('CngxBreadcrumbSiblingsRouterSync', () => {
     expect(munich?.querySelector('a')?.getAttribute('href')).toBe('/eu/munich');
   });
 
+  it('keeps the current marker when the active config collapses into a same-href row', async () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideRouter([
+          {
+            path: 'eu',
+            component: Shell,
+            data: { breadcrumb: 'Region EU' },
+            children: [
+              // canMatch variant pair: both configs serialize to /eu/munich, the
+              // router activates the second - the merged row must stay current
+              // (boolean false on the first row must not eat the match via ??).
+              {
+                path: 'munich',
+                canMatch: [() => false],
+                component: Blank,
+                data: { breadcrumb: 'Munich (legacy)' },
+              },
+              { path: 'munich', component: Blank, data: { breadcrumb: 'Munich' } },
+              { path: 'berlin', component: Blank, data: { breadcrumb: 'Berlin' } },
+            ],
+          },
+        ]),
+      ],
+    });
+    const router = TestBed.inject(Router);
+    const fixture = TestBed.createComponent(SibRouterHost);
+    fixture.detectChanges();
+    await flushMicrotasks();
+    const root = fixture.debugElement.query(By.css('cngx-breadcrumb-siblings'))
+      .nativeElement as HTMLElement;
+
+    await router.navigateByUrl('/eu/munich');
+    fixture.detectChanges();
+    await flushMicrotasks();
+    fixture.detectChanges();
+
+    // Collapsed to one munich row (deepest label wins) that carries the marker.
+    expect(rowLabels(root)).toEqual(['Munich', 'Berlin']);
+    const current = rows(root).find((li) => li.getAttribute('aria-current') === 'page');
+    expect(current?.textContent?.trim()).toBe('Munich');
+  });
+
   it('moves the current marker on navigation to a sibling', async () => {
     const { fixture, router, root } = await mountRouted();
 
