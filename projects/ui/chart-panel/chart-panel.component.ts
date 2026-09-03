@@ -6,6 +6,7 @@ import {
   signal,
   ViewEncapsulation,
 } from '@angular/core';
+import { CngxLiveRegion } from '@cngx/common/a11y';
 import type { CngxAsyncState } from '@cngx/core/utils';
 
 import { injectChartPanelConfig } from './config/inject-chart-panel-config';
@@ -40,6 +41,8 @@ export type CngxChartPanelLegendPosition = 'top' | 'bottom' | 'none';
  * region would hold back the projected chart's own live announcements and tell
  * AT that a perfectly stable chart is updating - the same boundary violation in
  * the a11y layer that duplicating its view switch would be in the state layer.
+ * A hidden status region (outside the busy header) announces the configured
+ * `ariaLabels.busy` string while the panel-level operation runs.
  *
  * ```html
  * <cngx-chart-panel>
@@ -71,6 +74,7 @@ export type CngxChartPanelLegendPosition = 'top' | 'bottom' | 'none';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
+  imports: [CngxLiveRegion],
   providers: [{ provide: CNGX_CHART_PANEL, useExisting: CngxChartPanel }],
   host: {
     class: 'cngx-chart-panel',
@@ -94,6 +98,8 @@ export type CngxChartPanelLegendPosition = 'top' | 'bottom' | 'none';
       <div
         class="cngx-chart-panel__action-slot"
         [attr.aria-disabled]="panelBusy() || null"
+        (keydown)="handleActionSlotKey($event)"
+        (keyup)="handleActionSlotKey($event)"
       >
         <ng-content select="[cngxChartPanelActions]" />
       </div>
@@ -114,6 +120,11 @@ export type CngxChartPanelLegendPosition = 'top' | 'bottom' | 'none';
     </div>
 
     <ng-content select="[cngxChartPanelFooter]" />
+
+    <!-- Hidden status region for the panel-level busy phase. Outside the
+         aria-busy header on purpose: a live region inside a busy container
+         has its announcements suppressed. -->
+    <span cngxLiveRegion class="cngx-chart-panel__sr">{{ panelBusy() ? busyLabel() : '' }}</span>
   `,
   styleUrls: ['./chart-panel.component.css'],
 })
@@ -142,6 +153,26 @@ export class CngxChartPanel implements CngxChartPanelRegistry {
 
   /** @internal Panel-level busy, never the chart's data-loading state. */
   protected readonly panelBusy = computed(() => this.state()?.isBusy() ?? false);
+
+  /** @internal Announced through the hidden status region while panel-busy runs. */
+  protected readonly busyLabel = computed(() => this.config.ariaLabels?.busy ?? 'Updating');
+
+  /**
+   * @internal Keyboard guard for the aria-disabled action cluster.
+   * `pointer-events: none` stops clicks while busy, but a focused action still
+   * activates on Enter/Space - the disabled state must hold for both input
+   * modalities. preventDefault on keydown stops the synthesized Enter click;
+   * keyup covers browsers that activate buttons on Space release.
+   */
+  protected handleActionSlotKey(event: KeyboardEvent): void {
+    if (!this.panelBusy()) {
+      return;
+    }
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  }
 
   /** {@inheritDoc CngxChartPanelRegistry.registerTitle} */
   registerTitle(id: string): void {
