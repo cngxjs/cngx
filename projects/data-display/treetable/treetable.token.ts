@@ -32,7 +32,56 @@ export interface TreetableConfig {
    * @defaultValue `true`
    */
   capitaliseHeader?: boolean;
+  /**
+   * App-wide copy overrides for every built-in string the treetable
+   * renders or announces. Unset keys fall back to the English library
+   * defaults. Register via {@link withTreetableLabels}.
+   */
+  labels?: Partial<TreetableLabels>;
 }
+
+/**
+ * Every built-in string `CngxTreetable` renders or announces. English
+ * by default; localise app-wide via {@link withTreetableLabels}. The
+ * counted bulk-selection announcements ("N rows selected") are not in
+ * this bag - they are parameterised and stay library-owned for now.
+ *
+ * @category data-display/treetable
+ */
+export interface TreetableLabels {
+  /** Live-region announcement while the first load runs. */
+  loading: string;
+  /** Live-region announcement and indicator text during a refresh over content. */
+  refreshing: string;
+  /** Visible error text and its live-region announcement when a load fails. */
+  errorFallback: string;
+  /** Visible text of the default empty surface. */
+  emptyFallback: string;
+  /** `aria-label` of a collapsed row's expand toggle. */
+  expand: string;
+  /** `aria-label` of an expanded row's collapse toggle. */
+  collapse: string;
+  /** `aria-label` of the header "select all" checkbox. */
+  selectAll: string;
+  /** `aria-label` of a body row's selection checkbox. */
+  selectRow: string;
+}
+
+/**
+ * English library defaults for {@link TreetableLabels}. Internal - the
+ * component overlays `CNGX_TREETABLE_CONFIG.labels` on top of this.
+ * @internal
+ */
+export const TREETABLE_DEFAULT_LABELS: TreetableLabels = {
+  loading: 'Loading',
+  refreshing: 'Refreshing',
+  errorFallback: 'Data failed to load',
+  emptyFallback: 'No data',
+  expand: 'Expand',
+  collapse: 'Collapse',
+  selectAll: 'Select all rows',
+  selectRow: 'Select row',
+};
 
 /**
  * Marker shape returned by every `withXxx()` helper. Each feature is a
@@ -131,6 +180,29 @@ export function provideTreetable(...features: TreetableFeature[]): EnvironmentPr
  */
 export function withHighlightOnHover(enabled = true): TreetableFeature {
   return { _apply: (c) => ({ ...c, highlightRowOnHover: enabled }) };
+}
+
+/**
+ * Feature: app-wide copy overrides for the treetable's built-in
+ * strings ({@link TreetableLabels}). Partial - unset keys keep the
+ * English library defaults. Later calls merge over earlier ones
+ * key-by-key.
+ *
+ * ```ts
+ * provideTreetable(
+ *   withTreetableLabels({
+ *     loading: 'Wird geladen',
+ *     errorFallback: 'Daten konnten nicht geladen werden',
+ *   }),
+ * );
+ * ```
+ *
+ * @param labels - The keys to override.
+ *
+ * @category data-display/treetable
+ */
+export function withTreetableLabels(labels: Partial<TreetableLabels>): TreetableFeature {
+  return { _apply: (c) => ({ ...c, labels: { ...c.labels, ...labels } }) };
 }
 
 /**

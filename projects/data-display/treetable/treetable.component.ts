@@ -51,7 +51,11 @@ import {
   getInitialExpandedIds,
   isNodeVisible,
 } from './tree.utils';
-import { CNGX_TREETABLE_CONFIG } from './treetable.token';
+import {
+  CNGX_TREETABLE_CONFIG,
+  TREETABLE_DEFAULT_LABELS,
+  type TreetableLabels,
+} from './treetable.token';
 
 /**
  * Headless tree table built on Angular CDK Table.
@@ -294,6 +298,16 @@ export class CngxTreetable<T = unknown> {
 
   private readonly config = inject(CNGX_TREETABLE_CONFIG);
 
+  /**
+   * @internal Resolved copy for every built-in string: app-wide
+   * `CNGX_TREETABLE_CONFIG.labels` overlaid on the English library
+   * defaults. Plain field - the config token is injected once.
+   */
+  protected readonly labels: TreetableLabels = {
+    ...TREETABLE_DEFAULT_LABELS,
+    ...this.config.labels,
+  };
+
   /** Document writing direction - swaps the physical expand/collapse arrows under `rtl` (APG treegrid). */
   private readonly direction = injectDirection();
 
@@ -414,12 +428,12 @@ export class CngxTreetable<T = unknown> {
   protected readonly stateAnnouncement = computed(() => {
     const view = this.activeView();
     if (view === 'skeleton') {
-      return 'Loading';
+      return this.labels.loading;
     }
     if (view === 'error' || view === 'content+error') {
-      return 'Data failed to load';
+      return this.labels.errorFallback;
     }
-    return this.showsRefreshIndicator() ? 'Refreshing' : '';
+    return this.showsRefreshIndicator() ? this.labels.refreshing : '';
   });
 
   /**

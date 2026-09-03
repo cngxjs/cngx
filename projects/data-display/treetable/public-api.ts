@@ -5,6 +5,7 @@ export {
   CNGX_TREETABLE_CONFIG,
   withHighlightOnHover,
   withCapitaliseHeaders,
+  withTreetableLabels,
 } from './treetable.token';
 export {
   CngxCellTpl,
@@ -15,7 +16,7 @@ export {
   CngxRefreshTpl,
 } from './column-template.directive';
 export { resolveCellTpl, resolveHeaderTpl } from './column-template.utils';
-export type { TreetableConfig, TreetableFeature } from './treetable.token';
+export type { TreetableConfig, TreetableFeature, TreetableLabels } from './treetable.token';
 export type {
   FlatNode,
   Node,

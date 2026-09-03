@@ -22,7 +22,7 @@
     @if (emptyTpl(); as tpl) {
       <ng-container *ngTemplateOutlet="tpl.template"></ng-container>
     } @else {
-      <div class="cngx-treetable__empty">No data</div>
+      <div class="cngx-treetable__empty">{{ labels.emptyFallback }}</div>
     }
   }
   @case ('error') {
@@ -49,7 +49,7 @@
             tabindex="-1"
             (click)="toggle(node); $event.stopPropagation()"
             [attr.aria-expanded]="expandedIds().has(node.id)"
-            [attr.aria-label]="expandedIds().has(node.id) ? 'Collapse' : 'Expand'"
+            [attr.aria-label]="expandedIds().has(node.id) ? labels.collapse : labels.expand"
           >
             {{ expandedIds().has(node.id) ? '▾' : '▸' }}
           </button>
@@ -67,7 +67,7 @@
             tabindex="-1"
             [checked]="isAllSelected()"
             [indeterminate]="isIndeterminate()"
-            [attr.aria-label]="'Select all rows'"
+            [attr.aria-label]="labels.selectAll"
             (change)="toggleAll()"
           />
         }
@@ -78,7 +78,7 @@
           class="cngx-treetable__checkbox"
           tabindex="-1"
           [checked]="isSelected(node.id)"
-          [attr.aria-label]="'Select row'"
+          [attr.aria-label]="labels.selectRow"
           (click)="$event.stopPropagation()"
           (change)="toggleSelection(node)"
         />
@@ -137,7 +137,7 @@
       @if (refreshTpl(); as tpl) {
         <ng-container *ngTemplateOutlet="tpl.template"></ng-container>
       } @else {
-        Refreshing
+        {{ labels.refreshing }}
       }
     </div>
   }
@@ -161,7 +161,7 @@
     @if (errorTpl(); as tpl) {
       <ng-container *ngTemplateOutlet="tpl.template; context: { $implicit: error() }"></ng-container>
     } @else {
-      <p class="cngx-treetable__error-message">Data failed to load</p>
+      <p class="cngx-treetable__error-message">{{ labels.errorFallback }}</p>
     }
   </div>
 </ng-template>

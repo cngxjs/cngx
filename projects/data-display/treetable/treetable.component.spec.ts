@@ -7,6 +7,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { CngxErrorTpl, CngxRefreshTpl, CngxSkeletonRowTpl } from './column-template.directive';
 import type { FlatNode, Node } from './models';
 import { CngxTreetable } from './treetable.component';
+import { provideTreetable, withTreetableLabels } from './treetable.token';
 
 interface Item {
   name: string;
@@ -905,6 +906,54 @@ describe('CngxTreetable', () => {
       expect(slot).not.toBeNull();
       expect((slot.nativeElement as HTMLElement).textContent?.trim()).toBe('ERR: boom');
       expect(fixture.debugElement.query(By.css('.cngx-treetable__error-message'))).toBeNull();
+    });
+
+    it('routes announcements and surface copy through withTreetableLabels overrides', () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideTreetable(
+            withTreetableLabels({
+              loading: 'Wird geladen',
+              errorFallback: 'Laden fehlgeschlagen',
+              emptyFallback: 'Keine Daten',
+              expand: 'Aufklappen',
+            }),
+          ),
+        ],
+      });
+      const { fixture, state } = mount([]);
+      state.set('loading');
+      fixture.detectChanges();
+      expect(stateRegionText(fixture)).toBe('Wird geladen');
+
+      state.setError(new Error('boom'));
+      fixture.detectChanges();
+      expect(stateRegionText(fixture)).toBe('Laden fehlgeschlagen');
+      const message = fixture.debugElement.query(By.css('.cngx-treetable__error-message'))
+        .nativeElement as HTMLElement;
+      expect(message.textContent?.trim()).toBe('Laden fehlgeschlagen');
+
+      state.setSuccess([]);
+      fixture.detectChanges();
+      const empty = fixture.debugElement.query(By.css('.cngx-treetable__empty'))
+        .nativeElement as HTMLElement;
+      expect(empty.textContent?.trim()).toBe('Keine Daten');
+    });
+
+    it('unset label keys keep the English defaults and toggles read the label bag', () => {
+      TestBed.configureTestingModule({
+        providers: [provideTreetable(withTreetableLabels({ expand: 'Aufklappen' }))],
+      });
+      const fixture = TestBed.createComponent(CngxTreetable<Item>);
+      fixture.componentRef.setInput('tree', tree);
+      fixture.detectChanges();
+      const t = fixture.componentInstance;
+      const toggleFor = () =>
+        fixture.debugElement.query(By.css('.cngx-treetable__toggle')).nativeElement as HTMLElement;
+      expect(toggleFor().getAttribute('aria-label')).toBe('Collapse');
+      t.toggle(t.flatNodes()[0]);
+      fixture.detectChanges();
+      expect(toggleFor().getAttribute('aria-label')).toBe('Aufklappen');
     });
 
     it('keeps both live regions in the DOM across every view', () => {
