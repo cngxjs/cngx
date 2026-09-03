@@ -812,6 +812,17 @@
   }
 
   .cngx-sidenav__resize-handle {
+    /* SET the two adaptive color tokens from --cngx-color-primary here: both
+       are @property-registered with a pixel-fast initial-value, which would
+       otherwise defeat the use-site var() fallback chain (the registered
+       initial always resolves first), and inherits:false means an ancestor
+       cannot cascade them down. Declared on the element that reads them, this
+       SET is what makes the documented primary link real for tint and ring. */
+    --cngx-sidenav-resize-handle-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+    --cngx-sidenav-resize-handle-focus-outline-color: var(
+      --cngx-color-primary,
+      oklch(0.66 0.19 50)
+    );
     position: absolute;
     top: 0;
     bottom: 0;
