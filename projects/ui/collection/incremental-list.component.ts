@@ -69,8 +69,10 @@ export type CngxIncrementalListSkin = 'plain' | 'divided' | 'card';
  * the two halves resolve to different directive instances - same limitation,
  * same reason, as `CngxPaginator`.
  *
- * All ARIA is signal-driven: `aria-busy` reflects the brain busy signal and a
- * polite live region communicates every settle (empty / error / end-reached).
+ * All ARIA is signal-driven: `aria-busy` reflects the brain busy signal on the
+ * items container (scoped there so the polite live region never sits inside a
+ * busy container) and the live region communicates every settle
+ * (empty / error / end-reached).
  *
  * @category ui/collection
  * @docsKind primary
@@ -129,7 +131,6 @@ export type CngxIncrementalListSkin = 'plain' | 'divided' | 'card';
   ],
   host: {
     class: 'cngx-incremental-list',
-    '[attr.aria-busy]': 'paginate.isBusy()',
     '[attr.data-skin]': 'skin()',
     '[attr.data-virtualize]': "virtualize() ? '' : null",
   },
@@ -222,8 +223,13 @@ export class CngxIncrementalList<T = unknown> {
     return resolveAsyncView(state.status(), state.isFirstLoad(), state.isEmpty());
   });
 
-  /** `true` on the last page - every accumulated item has been revealed. */
-  protected readonly exhausted = computed(() => this.paginate.isLast());
+  /**
+   * `true` on the last page of a KNOWN total - every accumulated item has been
+   * revealed. With `total` unset or not yet arrived (0), the end state never
+   * renders ("All 0 loaded" would be a lie); the load-more trigger stays until
+   * the consumer supplies the count.
+   */
+  protected readonly exhausted = computed(() => this.paginate.total() > 0 && this.paginate.isLast());
 
   /**
    * The accumulated slice: every page revealed so far, sliced from the top of

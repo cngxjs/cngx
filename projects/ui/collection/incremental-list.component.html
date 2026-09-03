@@ -28,8 +28,12 @@
     }
   }
   @default {
+    <!-- aria-busy scoped to the items container, not the host: the polite
+         live region below must never sit inside a busy container, or every
+         settle announcement is suppressed. -->
     @if (virtualize()) {
       <cngx-incremental-virtualized-body
+        [attr.aria-busy]="paginate.isBusy()"
         [items]="items()"
         [estimateSize]="estimateSize()"
         [itemTemplate]="itemTemplate()"
@@ -37,7 +41,7 @@
         (focusEscaped)="handleFocusEscaped()"
       />
     } @else {
-      <ul class="cngx-incremental-list__items" role="list">
+      <ul class="cngx-incremental-list__items" role="list" [attr.aria-busy]="paginate.isBusy()">
         @for (item of items(); track trackItem($index, item)) {
           <li class="cngx-incremental-list__item">
             @if (itemTemplate(); as tpl) {

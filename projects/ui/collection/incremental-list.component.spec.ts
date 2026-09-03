@@ -227,10 +227,11 @@ describe('CngxIncrementalList', () => {
     host.state.set(manual);
 
     // loading (first load) -> skeleton branch renders the built-in progress.
+    // aria-busy is scoped to the items container, never the host.
     manual.set('loading');
     await settle(fixture);
     expect(listEl.querySelector('cngx-progress')).not.toBeNull();
-    expect(listEl.getAttribute('aria-busy')).toBe('true');
+    expect(listEl.hasAttribute('aria-busy')).toBe(false);
 
     // success with data -> content branch renders the accumulated slice.
     host.size.set(10);
@@ -238,7 +239,9 @@ describe('CngxIncrementalList', () => {
     await settle(fixture);
     expect(listEl.querySelector('cngx-progress')).toBeNull();
     expect(listEl.querySelectorAll('.cngx-incremental-list__item')).toHaveLength(3);
-    expect(listEl.getAttribute('aria-busy')).toBe('false');
+    expect(
+      listEl.querySelector('.cngx-incremental-list__items')?.getAttribute('aria-busy'),
+    ).toBe('false');
 
     // success with an empty result -> empty branch.
     manual.setSuccess([]);
@@ -273,6 +276,47 @@ describe('CngxIncrementalList', () => {
     const end = listEl.querySelector('.cngx-incremental-list__end');
     expect(end).not.toBeNull();
     expect(end?.textContent).toContain('All 4 loaded');
+  });
+
+  test('end state is gated on a known total (no "All 0 loaded" while total is unknown)', async () => {
+    const { fixture, host, listEl } = await setup();
+    const manual = createManualState<number[]>();
+    manual.setSuccess([1, 2, 3]);
+    host.state.set(manual);
+    host.size.set(10);
+
+    // total unset (0): isLast() is true on the single default page, but the
+    // end view and its announcement must not render a made-up count.
+    await settle(fixture);
+    expect(listEl.querySelector('.cngx-incremental-list__end')).toBeNull();
+    expect(listEl.querySelector('.cngx-incremental-list__sr')?.textContent?.trim()).toBe('');
+
+    // the total arriving late resolves the end state reactively.
+    host.total.set(3);
+    await settle(fixture);
+    const end = listEl.querySelector('.cngx-incremental-list__end');
+    expect(end?.textContent).toContain('All 3 loaded');
+    expect(listEl.querySelector('.cngx-incremental-list__sr')?.textContent?.trim()).toBe(
+      'All 3 loaded',
+    );
+  });
+
+  test('the polite live region never sits inside a busy container', async () => {
+    const { fixture, host, listEl } = await setup();
+    const manual = createManualState<number[]>();
+    host.state.set(manual);
+    host.size.set(10);
+    manual.setSuccess([1, 2, 3]);
+    await settle(fixture);
+
+    // refresh: the items container reports busy, the live region stays outside
+    // of it so the next settle announcement is not suppressed.
+    manual.set('refreshing');
+    await settle(fixture);
+    const items = listEl.querySelector('.cngx-incremental-list__items');
+    expect(items?.getAttribute('aria-busy')).toBe('true');
+    const sr = listEl.querySelector('.cngx-incremental-list__sr');
+    expect(sr?.closest('[aria-busy="true"]')).toBeNull();
   });
 
   test('rendered slice equals data.slice(...cumulativeRange())', async () => {
