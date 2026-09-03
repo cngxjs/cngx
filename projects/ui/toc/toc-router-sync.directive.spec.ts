@@ -98,13 +98,32 @@ describe('CngxTocRouterSync', () => {
     return { fixture, toc };
   }
 
-  it('writes the fragment on activation with replaceUrl', () => {
+  it('writes the fragment on activation with replaceUrl, keeping the query params', () => {
     configureWithRouter();
     const { toc } = setup();
 
     toc.activated.emit({ id: 'features', label: 'Features' });
 
-    expect(navigate).toHaveBeenCalledWith([], { fragment: 'features', replaceUrl: true });
+    // queryParamsHandling 'merge': a bare fragment navigate would otherwise
+    // wipe every query param on the URL (filters, tab state, pagination).
+    expect(navigate).toHaveBeenCalledWith([], {
+      fragment: 'features',
+      replaceUrl: true,
+      queryParamsHandling: 'merge',
+    });
+  });
+
+  it('swallows a rejected fragment navigation instead of surfacing an unhandled rejection', async () => {
+    navigate.mockRejectedValueOnce(new Error('guard blocked'));
+    configureWithRouter();
+    const { toc } = setup();
+
+    toc.activated.emit({ id: 'features', label: 'Features' });
+    // Flush the rejection through the microtask queue; an unhandled rejection
+    // would fail the test run.
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(navigate).toHaveBeenCalledTimes(1);
   });
 
   it('scrolls to the initial deep-link fragment on load', () => {
