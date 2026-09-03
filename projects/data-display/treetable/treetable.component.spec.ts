@@ -237,6 +237,52 @@ describe('CngxTreetable', () => {
     });
   });
 
+  describe('toggleAll visibility bounds', () => {
+    it('clear branch deselects only visible rows; hidden-selected stay untouched', () => {
+      const fixture = TestBed.createComponent(CngxTreetable<Item>);
+      fixture.componentRef.setInput('tree', {
+        value: { name: 'Alice', age: 30 },
+        children: [
+          { value: { name: 'Bob', age: 10 }, children: [{ value: { name: 'Dave', age: 3 } }] },
+          { value: { name: 'Carol', age: 12 } },
+        ],
+      });
+      fixture.componentRef.setInput('selectionMode', 'multi');
+      fixture.detectChanges();
+      const t = fixture.componentInstance;
+
+      // Select Dave, then collapse his parent so he is hidden but selected.
+      t.toggleSelection(t.flatNodes()[2]);
+      t.toggle(t.flatNodes()[1]);
+      fixture.detectChanges();
+      expect(t.visibleNodes().map((n) => n.id)).toEqual(['0', '0-0', '0-1']);
+
+      // Select-all over the visible rows, then toggle again to clear them.
+      t.toggleAll();
+      fixture.detectChanges();
+      expect(t.isAllSelected()).toBe(true);
+      expect(t.selectedIds()).toEqual(new Set(['0', '0-0', '0-1', '0-0-0']));
+
+      t.toggleAll();
+      fixture.detectChanges();
+      expect(t.selectedIds()).toEqual(new Set(['0-0-0']));
+    });
+
+    it('clear branch on a fully visible selection empties the set', () => {
+      const fixture = TestBed.createComponent(CngxTreetable<Item>);
+      fixture.componentRef.setInput('tree', tree);
+      fixture.componentRef.setInput('selectionMode', 'multi');
+      fixture.detectChanges();
+      const t = fixture.componentInstance;
+      t.toggleAll();
+      fixture.detectChanges();
+      expect(t.selectedIds().size).toBe(3);
+      t.toggleAll();
+      fixture.detectChanges();
+      expect(t.selectedIds().size).toBe(0);
+    });
+  });
+
   describe('expansion seed guard + id pruning', () => {
     const bigTree: Node<Item> = {
       value: { name: 'Alice', age: 30 },

@@ -704,18 +704,28 @@ export class CngxTreetable<T = unknown> {
   }
 
   /**
-   * Visibility-bounded select-all toggle. If every currently *visible*
-   * row is selected, clears the selection. Otherwise selects every
-   * currently visible row - rows hidden inside a collapsed parent stay
-   * untouched. Only acts in `'multi'` mode; no-op in `'single'` or
-   * `'none'`. Drives the header checkbox's click handler.
+   * Visibility-bounded select-all toggle, in both directions. If every
+   * currently *visible* row is selected, deselects exactly those visible
+   * rows. Otherwise selects every currently visible row. Either way,
+   * rows hidden inside a collapsed parent stay untouched. Only acts in
+   * `'multi'` mode; no-op in `'single'` or `'none'`. Drives the header
+   * checkbox's click handler.
    */
   toggleAll(): void {
     if (this.selectionMode() !== 'multi') {
       return;
     }
     if (this.isAllSelected()) {
-      this.selectedIds.set(new Set());
+      const visible = new Set(this.visibleNodes().map((n) => n.id));
+      this.selectedIds.update((current) => {
+        const next = new Set<string>();
+        for (const id of current) {
+          if (!visible.has(id)) {
+            next.add(id);
+          }
+        }
+        return next;
+      });
       this.selectionAnnouncementState.set('Selection cleared');
       return;
     }
