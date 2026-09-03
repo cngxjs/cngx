@@ -1,13 +1,18 @@
-import { Component } from '@angular/core';
+import { Component, signal, viewChild, type TemplateRef } from '@angular/core';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { createManualState } from '@cngx/common/data';
 import { provideDirection } from '@cngx/core';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { CngxErrorTpl, CngxRefreshTpl, CngxSkeletonRowTpl } from './column-template.directive';
-import type { FlatNode, Node } from './models';
+import type { CngxErrorTplContext, FlatNode, Node } from './models';
 import { CngxTreetable } from './treetable.component';
-import { provideTreetable, withTreetableLabels } from './treetable.token';
+import {
+  CNGX_TREETABLE_CONFIG,
+  provideTreetable,
+  withTreetableLabels,
+  type TreetableTemplates,
+} from './treetable.token';
 
 interface Item {
   name: string;
@@ -954,6 +959,82 @@ describe('CngxTreetable', () => {
       t.toggle(t.flatNodes()[0]);
       fixture.detectChanges();
       expect(toggleFor().getAttribute('aria-label')).toBe('Aufklappen');
+    });
+
+    it('emits the retry output when a projected error template invokes its retry callback', () => {
+      @Component({
+        template: `
+          <cngx-treetable [tree]="[]" [state]="state" (retry)="retries = retries + 1">
+            <ng-template cngxError let-retry="retry">
+              <button class="slot-retry" type="button" (click)="retry()">Again</button>
+            </ng-template>
+          </cngx-treetable>
+        `,
+        imports: [CngxTreetable, CngxErrorTpl],
+      })
+      class RetryHost {
+        readonly state = createManualState<readonly Item[]>();
+        retries = 0;
+      }
+      TestBed.configureTestingModule({ imports: [RetryHost] });
+      const fixture = TestBed.createComponent(RetryHost);
+      fixture.detectChanges();
+      fixture.componentInstance.state.set('loading');
+      fixture.detectChanges();
+      fixture.componentInstance.state.setError(new Error('boom'));
+      fixture.detectChanges();
+      const button = fixture.debugElement.query(By.css('.slot-retry')).nativeElement as HTMLElement;
+      button.click();
+      button.click();
+      expect(fixture.componentInstance.retries).toBe(2);
+    });
+
+    it('config-tier templates fill in when no slot is projected; a projected slot wins', () => {
+      const cfg: { templates?: TreetableTemplates } = {};
+      @Component({
+        template: `
+          <ng-template #cfgError let-error>
+            <span class="cfg-error">CFG {{ error.message }}</span>
+          </ng-template>
+          <ng-template #slotError let-error>
+            <span class="slot-error">SLOT</span>
+          </ng-template>
+          @if (ready()) {
+            <cngx-treetable [tree]="[]" [state]="state">
+              @if (withSlot()) {
+                <ng-template cngxError let-error>
+                  <span class="slot-error">SLOT</span>
+                </ng-template>
+              }
+            </cngx-treetable>
+          }
+        `,
+        imports: [CngxTreetable, CngxErrorTpl],
+        providers: [{ provide: CNGX_TREETABLE_CONFIG, useValue: cfg }],
+      })
+      class ConfigHost {
+        readonly cfgError = viewChild.required<TemplateRef<CngxErrorTplContext>>('cfgError');
+        readonly ready = signal(false);
+        readonly withSlot = signal(false);
+        readonly state = createManualState<readonly Item[]>();
+      }
+      TestBed.configureTestingModule({ imports: [ConfigHost] });
+      const fixture = TestBed.createComponent(ConfigHost);
+      fixture.detectChanges();
+      const host = fixture.componentInstance;
+      cfg.templates = { error: host.cfgError() };
+      host.state.set('loading');
+      host.state.setError(new Error('boom'));
+      host.ready.set(true);
+      fixture.detectChanges();
+      const cfgTpl = fixture.debugElement.query(By.css('.cfg-error'));
+      expect(cfgTpl).not.toBeNull();
+      expect((cfgTpl.nativeElement as HTMLElement).textContent?.trim()).toBe('CFG boom');
+
+      host.withSlot.set(true);
+      fixture.detectChanges();
+      expect(fixture.debugElement.query(By.css('.slot-error'))).not.toBeNull();
+      expect(fixture.debugElement.query(By.css('.cfg-error'))).toBeNull();
     });
 
     it('keeps both live regions in the DOM across every view', () => {

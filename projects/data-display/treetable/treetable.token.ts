@@ -1,4 +1,10 @@
-import { InjectionToken, makeEnvironmentProviders, type EnvironmentProviders } from '@angular/core';
+import {
+  InjectionToken,
+  makeEnvironmentProviders,
+  type EnvironmentProviders,
+  type TemplateRef,
+} from '@angular/core';
+import type { CngxErrorTplContext, CngxSkeletonRowTplContext } from './models';
 
 /**
  * Application-wide default configuration for every `CngxTreetable`
@@ -38,6 +44,31 @@ export interface TreetableConfig {
    * defaults. Register via {@link withTreetableLabels}.
    */
   labels?: Partial<TreetableLabels>;
+  /**
+   * App-wide default templates for the async-state surfaces. Middle
+   * tier of the slot cascade: a projected `ng-template` slot on the
+   * instance wins, this config tier fills in next, the built-in
+   * markup is the fallback. Register via {@link withTreetableTemplates}.
+   */
+  templates?: TreetableTemplates;
+}
+
+/**
+ * App-wide default templates for the treetable's async-state surfaces
+ * ({@link withTreetableTemplates}). Each key mirrors the projected
+ * slot of the same region and receives the same template context.
+ *
+ * @category data-display/treetable
+ */
+export interface TreetableTemplates {
+  /** Default for the empty surface (`*cngxEmpty`). */
+  empty?: TemplateRef<void>;
+  /** Default for the error surface (`*cngxError`); gets {@link CngxErrorTplContext}. */
+  error?: TemplateRef<CngxErrorTplContext>;
+  /** Default for one skeleton placeholder row (`*cngxSkeletonRow`); gets {@link CngxSkeletonRowTplContext}. */
+  skeletonRow?: TemplateRef<CngxSkeletonRowTplContext>;
+  /** Default for the refresh-indicator content (`*cngxRefresh`). */
+  refresh?: TemplateRef<void>;
 }
 
 /**
@@ -203,6 +234,23 @@ export function withHighlightOnHover(enabled = true): TreetableFeature {
  */
 export function withTreetableLabels(labels: Partial<TreetableLabels>): TreetableFeature {
   return { _apply: (c) => ({ ...c, labels: { ...c.labels, ...labels } }) };
+}
+
+/**
+ * Feature: app-wide default templates for the async-state surfaces
+ * ({@link TreetableTemplates}). Partial - unset keys keep the built-in
+ * markup. A projected slot on the instance always wins over this tier.
+ *
+ * Because the values are `TemplateRef`s, this feature is typically
+ * registered at a component or route scope where a template reference
+ * is in reach, not in `bootstrapApplication`.
+ *
+ * @param templates - The surface templates to register.
+ *
+ * @category data-display/treetable
+ */
+export function withTreetableTemplates(templates: TreetableTemplates): TreetableFeature {
+  return { _apply: (c) => ({ ...c, templates: { ...c.templates, ...templates } }) };
 }
 
 /**

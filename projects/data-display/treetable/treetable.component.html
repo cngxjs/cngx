@@ -4,9 +4,9 @@
          host's aria-busy and the live region below. -->
     <div class="cngx-treetable__skeleton" aria-hidden="true">
       @for (i of skeletonRows(); track i) {
-        @if (skeletonRowTpl(); as tpl) {
+        @if (resolvedSkeletonRowTpl(); as tpl) {
           <ng-container
-            *ngTemplateOutlet="tpl.template; context: { $implicit: i, rowCount: skeletonRowCount() }"
+            *ngTemplateOutlet="tpl; context: { $implicit: i, rowCount: skeletonRowCount() }"
           ></ng-container>
         } @else {
           <div class="cngx-treetable__skeleton-row">
@@ -19,8 +19,8 @@
     </div>
   }
   @case ('empty') {
-    @if (emptyTpl(); as tpl) {
-      <ng-container *ngTemplateOutlet="tpl.template"></ng-container>
+    @if (resolvedEmptyTpl(); as tpl) {
+      <ng-container *ngTemplateOutlet="tpl"></ng-container>
     } @else {
       <div class="cngx-treetable__empty">{{ labels.emptyFallback }}</div>
     }
@@ -134,8 +134,8 @@
     <!-- Decorative: the announcement is the live region below, aria-busy
          marks the host. -->
     <div class="cngx-treetable__refresh" aria-hidden="true">
-      @if (refreshTpl(); as tpl) {
-        <ng-container *ngTemplateOutlet="tpl.template"></ng-container>
+      @if (resolvedRefreshTpl(); as tpl) {
+        <ng-container *ngTemplateOutlet="tpl"></ng-container>
       } @else {
         {{ labels.refreshing }}
       }
@@ -158,8 +158,8 @@
      for every view transition, failure included. -->
 <ng-template #errorSurface>
   <div class="cngx-treetable__error">
-    @if (errorTpl(); as tpl) {
-      <ng-container *ngTemplateOutlet="tpl.template; context: { $implicit: error() }"></ng-container>
+    @if (resolvedErrorTpl(); as tpl) {
+      <ng-container *ngTemplateOutlet="tpl; context: errorContext()"></ng-container>
     } @else {
       <p class="cngx-treetable__error-message">{{ labels.errorFallback }}</p>
     }

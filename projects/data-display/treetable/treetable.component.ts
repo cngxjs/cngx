@@ -43,7 +43,7 @@ import {
   CngxSkeletonRowTpl,
 } from './column-template.directive';
 import { resolveCellTpl, resolveHeaderTpl } from './column-template.utils';
-import type { FlatNode, Node, TreetableOptions } from './models';
+import type { CngxErrorTplContext, FlatNode, Node, TreetableOptions } from './models';
 import {
   capitalise,
   extractColumns,
@@ -296,6 +296,15 @@ export class CngxTreetable<T = unknown> {
    */
   readonly nodeCollapsed = output<FlatNode<T>>();
 
+  /**
+   * Fires when a projected error template invokes its `retry` context
+   * callback. The treetable does not re-run anything itself - the
+   * consumer owns the data flow and restarts the load on this signal.
+   * The built-in error surface has no retry control; this output only
+   * fires through a `*cngxError` (or config-tier error) template.
+   */
+  readonly retry = output<void>();
+
   private readonly config = inject(CNGX_TREETABLE_CONFIG);
 
   /**
@@ -323,6 +332,39 @@ export class CngxTreetable<T = unknown> {
   protected readonly skeletonRowTpl = contentChild(CngxSkeletonRowTpl);
   /** @internal */
   protected readonly refreshTpl = contentChild(CngxRefreshTpl);
+
+  /**
+   * @internal Slot cascade per async surface: projected slot ->
+   * `CNGX_TREETABLE_CONFIG.templates.<key>` -> built-in markup
+   * (`null` here; the template branches to it).
+   */
+  protected readonly resolvedEmptyTpl = computed(
+    () => this.emptyTpl()?.template ?? this.config.templates?.empty ?? null,
+  );
+  /** @internal See `resolvedEmptyTpl`. */
+  protected readonly resolvedErrorTpl = computed(
+    () => this.errorTpl()?.template ?? this.config.templates?.error ?? null,
+  );
+  /** @internal See `resolvedEmptyTpl`. */
+  protected readonly resolvedSkeletonRowTpl = computed(
+    () => this.skeletonRowTpl()?.template ?? this.config.templates?.skeletonRow ?? null,
+  );
+  /** @internal See `resolvedEmptyTpl`. */
+  protected readonly resolvedRefreshTpl = computed(
+    () => this.refreshTpl()?.template ?? this.config.templates?.refresh ?? null,
+  );
+
+  /** @internal Stable retry callback handed to the error-template context. */
+  protected readonly retryFn = (): void => this.retry.emit();
+
+  /**
+   * @internal Context for the error template. `equal`-guarded so an
+   * unrelated recompute does not hand the outlet a fresh object.
+   */
+  protected readonly errorContext = computed<CngxErrorTplContext>(
+    () => ({ $implicit: this.error(), retry: this.retryFn }),
+    { equal: (a, b) => a.$implicit === b.$implicit && a.retry === b.retry },
+  );
 
   /**
    * Every node in the `tree` input flattened to a single depth-first

@@ -116,4 +116,11 @@ export interface CngxSkeletonRowTplContext {
 export interface CngxErrorTplContext {
   /** The raw error from the bound async state - available as `let-error`. */
   $implicit: unknown;
+  /**
+   * Emits the treetable's `retry` output - available as
+   * `let-retry="retry"`. Wire it to a button so the consumer can
+   * re-run the failed load; the built-in error surface has no retry
+   * control of its own.
+   */
+  retry: () => void;
 }
