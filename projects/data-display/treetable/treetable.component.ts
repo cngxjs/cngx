@@ -11,6 +11,7 @@ import {
   model,
   output,
   signal,
+  type ModelSignal,
   type TrackByFunction,
   untracked,
   viewChildren,
@@ -58,9 +59,14 @@ import { CNGX_TREETABLE_CONFIG } from './treetable.token';
  *   the `tree` input plus the live `expandedIds` set.
  * - Expand/collapse state via the `expandedIds` model. Bound consumers
  *   own the value; unbound consumers see a default fully-expanded set
- *   on first render via an init effect that seeds from `flatNodes`.
+ *   seeded from the first non-empty `flatNodes`. The seed fires once
+ *   per component - later tree swaps never re-expand a collapsed grid.
  * - Selection state via the `selectedIds` model, reconciled against
  *   `selectionMode` changes (`'none'` clears; `'single'` truncates).
+ * - Id hygiene across tree swaps: expansion and selection ids absent
+ *   from the new `flatNodes` are pruned (the positional default ids
+ *   would otherwise silently re-attach to different nodes). An empty
+ *   forest is transitional and never pruned against.
  * - The roving focus model: `focusedNodeId` tracks the last-focused row,
  *   `effectiveFocusedId` reconciles it against the visible rows to keep
  *   exactly one row tab stop, and keyboard navigation moves real DOM
@@ -172,8 +178,9 @@ export class CngxTreetable<T = unknown> {
    * Expanded-id set. Two-way bindable via `[(expandedIds)]` or read-only via
    * `[expandedIds]`; the model's implicit `expandedIdsChange` output fires
    * after every toggle. When left unbound the component seeds itself with
-   * the default fully-expanded set on first render and continues to manage
-   * its own state.
+   * the default fully-expanded set once - on the first non-empty tree - and
+   * continues to manage its own state. Later tree swaps never re-seed, and
+   * ids that vanish from the tree are pruned (with a change emit).
    *
    * ```html
    * <cngx-treetable [(expandedIds)]="myIds" />
@@ -203,7 +210,8 @@ export class CngxTreetable<T = unknown> {
    * Selected-id set. Two-way bindable via `[(selectedIds)]` or read-only via
    * `[selectedIds]`; the model's implicit `selectedIdsChange` output fires
    * after every selection toggle. Switching `selectionMode` to `'none'` or
-   * `'single'` reconciles the set down to a legal shape.
+   * `'single'` reconciles the set down to a legal shape, and ids that
+   * vanish from the tree after a swap are pruned (with a change emit).
    *
    * ```html
    * <cngx-treetable [(selectedIds)]="myIds" />
@@ -552,20 +560,39 @@ export class CngxTreetable<T = unknown> {
   }
 
   constructor() {
-    // Seed expandedIds with the default fully-expanded set on first non-empty
-    // flatNodes, but only when the consumer has not pre-bound a non-empty value.
-    // Re-seed when the underlying tree structure changes.
-    let seededFor: readonly FlatNode<T>[] | null = null;
+    // Reconcile expansion/selection against the current tree. Two concerns,
+    // ordered inside one effect so a seed never immediately prunes itself:
+    //
+    // 1. Seed ONCE per component: the first non-empty flatNodes seeds the
+    //    default fully-expanded set, but only when the consumer has not
+    //    pre-bound a non-empty value. Later tree swaps never re-seed, so a
+    //    consumer-cleared (or user-collapsed) empty set survives data
+    //    refreshes instead of springing back to fully expanded.
+    // 2. Prune ids absent from the new tree: positional default ids would
+    //    otherwise silently re-attach to different nodes after a swap.
+    //    An empty forest is skipped as a transitional state (first load,
+    //    cleared data) - pruning against it would wipe expansion and
+    //    selection on every empty flash between refreshes.
+    let seeded = false;
     effect(() => {
       const nodes = this.flatNodes();
-      if (nodes === seededFor) {
+      if (nodes.length === 0) {
         return;
       }
-      seededFor = nodes;
       untracked(() => {
-        if (this.expandedIds().size === 0 && nodes.length > 0) {
-          this.expandedIds.set(getInitialExpandedIds(nodes));
+        const valid = new Set(nodes.map((n) => n.id));
+        if (!seeded) {
+          seeded = true;
+          if (this.expandedIds().size === 0) {
+            this.expandedIds.set(getInitialExpandedIds(nodes));
+            // Freshly seeded from these nodes - the expansion set cannot
+            // hold stale ids, but a pre-bound selection still can.
+            this.pruneAbsentIds(this.selectedIds, valid);
+            return;
+          }
         }
+        this.pruneAbsentIds(this.expandedIds, valid);
+        this.pruneAbsentIds(this.selectedIds, valid);
       });
     });
 
@@ -583,6 +610,31 @@ export class CngxTreetable<T = unknown> {
         }
       });
     });
+  }
+
+  /**
+   * Drops every id from `target` that is not in `valid`. Writes (and
+   * thereby emits the model's change output) only when something was
+   * actually removed, so an untouched set keeps its reference and a
+   * plain data refresh stays silent.
+   */
+  private pruneAbsentIds(
+    target: ModelSignal<ReadonlySet<string>>,
+    valid: ReadonlySet<string>,
+  ): void {
+    const current = target();
+    if (current.size === 0) {
+      return;
+    }
+    const next = new Set<string>();
+    for (const id of current) {
+      if (valid.has(id)) {
+        next.add(id);
+      }
+    }
+    if (next.size !== current.size) {
+      target.set(next);
+    }
   }
 
   /**

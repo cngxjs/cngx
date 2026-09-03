@@ -95,7 +95,7 @@ describe('CngxTreetable', () => {
     expect(treetable.columns()).toEqual(['name', 'age']);
   });
 
-  it('re-initialises expanded state when tree input changes', () => {
+  it('keeps expansion for ids still present when the tree input changes', () => {
     const fixture = TestBed.createComponent(CngxTreetable<Item>);
     fixture.componentRef.setInput('tree', tree);
     fixture.detectChanges();
@@ -226,14 +226,138 @@ describe('CngxTreetable', () => {
     });
 
     it('pre-bound non-empty expandedIds is preserved across the init effect', () => {
-      const preset = new Set<string>();
       const fixture = TestBed.createComponent(CngxTreetable<Item>);
       fixture.componentRef.setInput('tree', tree);
-      fixture.componentRef.setInput('expandedIds', new Set(['__sentinel__']));
+      // A real id that the default seed would NOT produce ('0-1' is a leaf;
+      // the seed only collects parents), so surviving verbatim proves the
+      // init effect neither overwrote nor re-derived the bound value.
+      fixture.componentRef.setInput('expandedIds', new Set(['0-1']));
       fixture.detectChanges();
-      expect(fixture.componentInstance.expandedIds().has('__sentinel__')).toBe(true);
-      // Sanity: sentinel doesn't blow up the visible-nodes pipeline.
-      expect(preset.size).toBe(0);
+      expect([...fixture.componentInstance.expandedIds()]).toEqual(['0-1']);
+    });
+  });
+
+  describe('expansion seed guard + id pruning', () => {
+    const bigTree: Node<Item> = {
+      value: { name: 'Alice', age: 30 },
+      children: [
+        {
+          value: { name: 'Bob', age: 10 },
+          children: [{ value: { name: 'Dave', age: 3 } }],
+        },
+        { value: { name: 'Carol', age: 12 } },
+      ],
+    };
+
+    it('seeds fully expanded on the first non-empty tree, even when it arrives late', () => {
+      const fixture = TestBed.createComponent(CngxTreetable<Item>);
+      fixture.componentRef.setInput('tree', []);
+      fixture.detectChanges();
+      expect(fixture.componentInstance.expandedIds().size).toBe(0);
+
+      fixture.componentRef.setInput('tree', bigTree);
+      fixture.detectChanges();
+      // Root '0' and parent '0-0' both carry children.
+      expect(fixture.componentInstance.expandedIds()).toEqual(new Set(['0', '0-0']));
+      expect(fixture.debugElement.queryAll(By.css('cdk-row')).length).toBe(4);
+    });
+
+    it('a fully collapsed grid survives a data refresh instead of re-expanding', () => {
+      const fixture = TestBed.createComponent(CngxTreetable<Item>);
+      fixture.componentRef.setInput('tree', bigTree);
+      fixture.detectChanges();
+      const t = fixture.componentInstance;
+      // Collapse everything the seed expanded.
+      t.toggle(t.visibleNodes()[1]);
+      t.toggle(t.visibleNodes()[0]);
+      fixture.detectChanges();
+      expect(t.expandedIds().size).toBe(0);
+
+      // Data refresh: structurally different tree, same root ids.
+      fixture.componentRef.setInput('tree', { ...bigTree, value: { name: 'Alice2', age: 31 } });
+      fixture.detectChanges();
+      expect(t.expandedIds().size).toBe(0);
+      expect(fixture.debugElement.queryAll(By.css('cdk-row')).length).toBe(1);
+    });
+
+    it('prunes expansion ids that vanish from the tree after a swap', () => {
+      const fixture = TestBed.createComponent(CngxTreetable<Item>);
+      fixture.componentRef.setInput('tree', bigTree);
+      fixture.detectChanges();
+      const t = fixture.componentInstance;
+      expect(t.expandedIds()).toEqual(new Set(['0', '0-0']));
+
+      // The swapped tree is a single childless root: '0-0' no longer exists
+      // at all. ('0' survives as an id even though it lost its children -
+      // pruning is by id presence, not by hasChildren.)
+      fixture.componentRef.setInput('tree', { value: { name: 'X', age: 1 } });
+      fixture.detectChanges();
+      expect(t.expandedIds()).toEqual(new Set(['0']));
+    });
+
+    it('prunes selection ids that vanish from the tree after a swap', () => {
+      const fixture = TestBed.createComponent(CngxTreetable<Item>);
+      fixture.componentRef.setInput('tree', bigTree);
+      fixture.componentRef.setInput('selectionMode', 'multi');
+      fixture.detectChanges();
+      const t = fixture.componentInstance;
+      t.toggleSelection(t.flatNodes()[2]); // Dave '0-0-0'
+      t.toggleSelection(t.flatNodes()[3]); // Carol '0-1'
+      fixture.detectChanges();
+      expect(t.selectedIds()).toEqual(new Set(['0-0-0', '0-1']));
+
+      // Dave's subtree is gone in the swapped tree; Carol's id survives.
+      fixture.componentRef.setInput('tree', {
+        value: { name: 'Alice', age: 30 },
+        children: [{ value: { name: 'Bob', age: 10 } }, { value: { name: 'Carol', age: 12 } }],
+      });
+      fixture.detectChanges();
+      expect(t.selectedIds()).toEqual(new Set(['0-1']));
+    });
+
+    it('keeps set references (and stays silent) when a swap removes nothing', () => {
+      const fixture = TestBed.createComponent(CngxTreetable<Item>);
+      fixture.componentRef.setInput('tree', bigTree);
+      fixture.componentRef.setInput('selectionMode', 'multi');
+      fixture.detectChanges();
+      const t = fixture.componentInstance;
+      t.toggleSelection(t.flatNodes()[3]);
+      fixture.detectChanges();
+      const expandedBefore = t.expandedIds();
+      const selectedBefore = t.selectedIds();
+
+      fixture.componentRef.setInput('tree', { ...bigTree, value: { name: 'Alice2', age: 31 } });
+      fixture.detectChanges();
+      expect(t.expandedIds()).toBe(expandedBefore);
+      expect(t.selectedIds()).toBe(selectedBefore);
+    });
+
+    it('does not prune against a transient empty forest', () => {
+      const fixture = TestBed.createComponent(CngxTreetable<Item>);
+      fixture.componentRef.setInput('tree', bigTree);
+      fixture.componentRef.setInput('selectionMode', 'multi');
+      fixture.detectChanges();
+      const t = fixture.componentInstance;
+      t.toggleSelection(t.flatNodes()[3]);
+      fixture.detectChanges();
+
+      fixture.componentRef.setInput('tree', []);
+      fixture.detectChanges();
+      expect(t.expandedIds()).toEqual(new Set(['0', '0-0']));
+      expect(t.selectedIds()).toEqual(new Set(['0-1']));
+
+      fixture.componentRef.setInput('tree', bigTree);
+      fixture.detectChanges();
+      expect(t.selectedIds()).toEqual(new Set(['0-1']));
+    });
+
+    it('prunes a pre-bound selection against the first non-empty tree', () => {
+      const fixture = TestBed.createComponent(CngxTreetable<Item>);
+      fixture.componentRef.setInput('tree', bigTree);
+      fixture.componentRef.setInput('selectionMode', 'multi');
+      fixture.componentRef.setInput('selectedIds', new Set(['0-1', '__stale__']));
+      fixture.detectChanges();
+      expect(fixture.componentInstance.selectedIds()).toEqual(new Set(['0-1']));
     });
   });
 
