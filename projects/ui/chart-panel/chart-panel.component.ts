@@ -2,11 +2,15 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
+  type ElementRef,
   input,
   signal,
+  viewChild,
   ViewEncapsulation,
 } from '@angular/core';
-import type { CngxAsyncState } from '@cngx/core/utils';
+import { CngxLiveRegion } from '@cngx/common/a11y';
+import { type CngxAsyncState, nextUid } from '@cngx/core/utils';
 
 import { injectChartPanelConfig } from './config/inject-chart-panel-config';
 import { CNGX_CHART_PANEL, type CngxChartPanelRegistry } from './chart-panel.token';
@@ -40,6 +44,8 @@ export type CngxChartPanelLegendPosition = 'top' | 'bottom' | 'none';
  * region would hold back the projected chart's own live announcements and tell
  * AT that a perfectly stable chart is updating - the same boundary violation in
  * the a11y layer that duplicating its view switch would be in the state layer.
+ * A hidden status region (outside the busy header) announces the configured
+ * `ariaLabels.busy` string while the panel-level operation runs.
  *
  * ```html
  * <cngx-chart-panel>
@@ -71,6 +77,7 @@ export type CngxChartPanelLegendPosition = 'top' | 'bottom' | 'none';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
+  imports: [CngxLiveRegion],
   providers: [{ provide: CNGX_CHART_PANEL, useExisting: CngxChartPanel }],
   host: {
     class: 'cngx-chart-panel',
@@ -92,12 +99,22 @@ export type CngxChartPanelLegendPosition = 'top' | 'bottom' | 'none';
            2). Deliberately not inert: that would hide the actions from AT
            entirely and the aria-disabled would never be announced. -->
       <div
+        #actionSlot
         class="cngx-chart-panel__action-slot"
         [attr.aria-disabled]="panelBusy() || null"
+        [attr.aria-describedby]="panelBusy() ? busyDescriptionId : null"
       >
         <ng-content select="[cngxChartPanelActions]" />
       </div>
     </header>
+
+    <!-- Why the actions are disabled. Always in the DOM; only the
+         aria-describedby reference above is gated on the busy state. -->
+    <span
+      [id]="busyDescriptionId"
+      class="cngx-chart-panel__sr cngx-chart-panel__busy-description"
+      >{{ busyLabel() }}</span
+    >
 
     <!-- One legend outlet, placed by the CSS order property. A duplicated
          ng-content selector would leave the second outlet permanently empty,
@@ -114,6 +131,13 @@ export type CngxChartPanelLegendPosition = 'top' | 'bottom' | 'none';
     </div>
 
     <ng-content select="[cngxChartPanelFooter]" />
+
+    <!-- Hidden status region for the panel-level busy phase. Outside the
+         aria-busy header on purpose: a live region inside a busy container
+         has its announcements suppressed. -->
+    <span cngxLiveRegion class="cngx-chart-panel__sr cngx-chart-panel__status">{{
+      panelBusy() ? busyLabel() : ''
+    }}</span>
   `,
   styleUrls: ['./chart-panel.component.css'],
 })
@@ -142,6 +166,42 @@ export class CngxChartPanel implements CngxChartPanelRegistry {
 
   /** @internal Panel-level busy, never the chart's data-loading state. */
   protected readonly panelBusy = computed(() => this.state()?.isBusy() ?? false);
+
+  /** @internal Announced through the hidden status region while panel-busy runs. */
+  protected readonly busyLabel = computed(() => this.config.ariaLabels?.busy ?? 'Updating');
+
+  /** @internal Names why the action cluster is disabled while busy. */
+  protected readonly busyDescriptionId = `${nextUid('cngx-chart-panel')}-busy`;
+
+  private readonly actionSlot = viewChild.required<ElementRef<HTMLElement>>('actionSlot');
+
+  constructor() {
+    // Keyboard guard for the aria-disabled action cluster. `pointer-events:
+    // none` stops clicks while busy, but a focused action still activates on
+    // Enter/Space. Capture phase, so the guard runs before any consumer key
+    // handler on the projected actions - a bubble listener would fire after
+    // them and hold back only the native activation. preventDefault on
+    // keydown stops the synthesized Enter click; keyup covers browsers that
+    // activate buttons on Space release.
+    effect((onCleanup) => {
+      const slot = this.actionSlot().nativeElement;
+      const guard = (event: KeyboardEvent): void => {
+        if (!this.panelBusy()) {
+          return;
+        }
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+      };
+      slot.addEventListener('keydown', guard, true);
+      slot.addEventListener('keyup', guard, true);
+      onCleanup(() => {
+        slot.removeEventListener('keydown', guard, true);
+        slot.removeEventListener('keyup', guard, true);
+      });
+    });
+  }
 
   /** {@inheritDoc CngxChartPanelRegistry.registerTitle} */
   registerTitle(id: string): void {

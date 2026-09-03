@@ -81,6 +81,24 @@ class Host {
   readonly at = (event: Event): Date => event.at;
 }
 
+@Component({
+  selector: 'cngx-timeline-seed-host',
+  standalone: true,
+  imports: [CngxTimeline, CngxTimelineItemTpl],
+  template: `
+    <cngx-timeline [items]="seed()" [state]="state" [dateAccessor]="at">
+      <ng-template cngxTimelineItem>
+        <span class="row">row</span>
+      </ng-template>
+    </cngx-timeline>
+  `,
+})
+class SeedHost {
+  readonly seed = signal<readonly Event[]>(EVENTS);
+  readonly state = createManualState<readonly Event[]>();
+  readonly at = (event: Event): Date => event.at;
+}
+
 function mount(): { host: Host; el: HTMLElement; detect: () => void } {
   const fixture = TestBed.createComponent(Host);
   fixture.detectChanges();
@@ -248,6 +266,81 @@ describe('CngxTimeline async body', () => {
 
       expect(surfaces(el)).toEqual(['error', 'content']);
       expect(el.querySelectorAll('.row')).toHaveLength(2);
+    });
+  });
+
+  describe('seed rows', () => {
+    function mountSeed(): { host: SeedHost; el: HTMLElement; detect: () => void } {
+      const fixture = TestBed.createComponent(SeedHost);
+      fixture.detectChanges();
+      const el = (fixture.nativeElement as HTMLElement).querySelector('cngx-timeline');
+      if (!el) {
+        throw new Error('cngx-timeline did not render');
+      }
+      return {
+        host: fixture.componentInstance,
+        el: el as HTMLElement,
+        detect: () => fixture.detectChanges(),
+      };
+    }
+
+    it('paints non-empty seed rows through the first load instead of a skeleton', () => {
+      const { el, host, detect } = mountSeed();
+
+      // [items] documents seed-plus-state: rows that exist are painted, the
+      // busy window reaches AT through aria-busy on the list.
+      host.state.set('loading');
+      settleGate(detect);
+      settleGate(detect);
+
+      expect(surfaces(el)).toEqual(['content']);
+      expect(el.querySelectorAll('.row')).toHaveLength(2);
+      expect(el.querySelector('.cngx-timeline__list')?.getAttribute('aria-busy')).toBe('true');
+    });
+
+    it('swaps the seed for the loaded data once the first load settles', () => {
+      const { el, host, detect } = mountSeed();
+      host.state.set('loading');
+      settleGate(detect);
+
+      host.state.setSuccess([...EVENTS, { id: 3, at: new Date(2026, 6, 22, 9) }]);
+      settleGate(detect);
+
+      expect(surfaces(el)).toEqual(['content']);
+      expect(el.querySelectorAll('.row')).toHaveLength(3);
+      expect(el.querySelector('.cngx-timeline__list')?.getAttribute('aria-busy')).toBeNull();
+    });
+  });
+
+  describe('error announcement', () => {
+    it('announces a failure once, through the polite region, with no competing alert', () => {
+      const { el, host, detect } = mount();
+      host.state.setError(new Error('boom'));
+      settleGate(detect);
+
+      // Single announcer: the built-in surface renders the fallback visibly
+      // but carries no role=alert - an alert on top of the always-on polite
+      // region would double-fire the same text.
+      expect(el.querySelector('[role="alert"]')).toBeNull();
+      expect(el.querySelector('.cngx-timeline__error-message')?.textContent?.trim()).toBe(
+        'Could not load the timeline.',
+      );
+      expect(el.querySelector('.cngx-timeline__sr-only')?.textContent?.trim()).toBe(
+        'Could not load the timeline.',
+      );
+    });
+
+    it('keeps announcing through the polite region when a bound error slot replaces the markup', () => {
+      const { el, host, detect } = mount();
+      host.withSlots.set(true);
+      detect();
+      host.state.setError(new Error('boom'));
+      settleGate(detect);
+
+      expect(el.querySelector('[role="alert"]')).toBeNull();
+      expect(el.querySelector('.cngx-timeline__sr-only')?.textContent?.trim()).toBe(
+        'Could not load the timeline.',
+      );
     });
   });
 

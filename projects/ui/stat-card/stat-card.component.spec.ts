@@ -82,7 +82,9 @@ describe('CngxStatCard', () => {
   }
 
   it('names the whole tile from the projected stat slots', () => {
-    const { card } = setup();
+    const { fixture, card } = setup();
+    state.set({ status: 'success', firstLoad: false });
+    fixture.detectChanges();
     const region = card.querySelector('cngx-card')!;
     const expected = [
       card.querySelector('[cngxStatLabel]')!.id,
@@ -98,9 +100,55 @@ describe('CngxStatCard', () => {
   });
 
   it('projects the viz and footer slots', () => {
-    const { card } = setup();
+    const { fixture, card } = setup();
+    state.set({ status: 'success', firstLoad: false });
+    fixture.detectChanges();
     expect(card.querySelector('.cngx-stat-card__viz')!.textContent).toContain('sparkline');
     expect(card.querySelector('.cngx-stat-card__footer')!.textContent).toContain('updated now');
+  });
+
+  it('renders nothing over absent data while the state is idle', () => {
+    const { card } = setup();
+
+    // resolveAsyncView reports the idle first load as 'none': projected slots
+    // over data that was never asked for would read as a real (blank) figure.
+    expect(card.querySelector('.cngx-stat-card__stat')).toBeNull();
+    expect(card.querySelector('cngx-empty-state')).toBeNull();
+    expect(card.querySelector('cngx-card')!.getAttribute('aria-labelledby')).toBeNull();
+  });
+
+  it('shows the skeleton, not blank slots, while busy over an empty tile', () => {
+    const { fixture, card } = setup();
+    state.set({ status: 'success', firstLoad: false, empty: true });
+    fixture.detectChanges();
+    expect(card.querySelector('.cngx-stat-card__empty')).not.toBeNull();
+
+    // The lookup table resolves this to content; blank projected slots would
+    // pose as a real figure. A refetch with nothing on screen is a load.
+    for (const status of ['loading', 'pending', 'refreshing'] as const) {
+      state.set({ status, empty: true });
+      fixture.detectChanges();
+      expect(card.querySelector('.cngx-stat-card__stat--skeleton'), status).not.toBeNull();
+      expect(card.querySelector('.cngx-stat-card__stat:not(.cngx-stat-card__stat--skeleton)'), status).toBeNull();
+    }
+  });
+
+  it('shows the empty treatment when a load settles with no data', () => {
+    const { fixture, card } = setup();
+    state.set({ status: 'success', firstLoad: false, empty: true });
+    fixture.detectChanges();
+
+    const empty = card.querySelector('cngx-empty-state.cngx-stat-card__empty')!;
+    expect(empty).not.toBeNull();
+    expect(empty.textContent).toContain('No data');
+    expect(card.querySelector('.cngx-stat-card__stat')).toBeNull();
+    expect(card.querySelector('cngx-card')!.getAttribute('aria-labelledby')).toBeNull();
+
+    // Data arriving on the next refresh swaps back to the stat slots.
+    state.set({ status: 'success', empty: false });
+    fixture.detectChanges();
+    expect(card.querySelector('.cngx-stat-card__stat')).not.toBeNull();
+    expect(card.querySelector('.cngx-stat-card__empty')).toBeNull();
   });
 
   it('renders content when no state is bound', () => {
@@ -331,6 +379,8 @@ describe('CngxStatCard live region', () => {
 
   it('drops the accessible name while the stat is not rendered', () => {
     const { fixture, region } = setup();
+    state.set({ status: 'success', firstLoad: false });
+    fixture.detectChanges();
     expect(region.getAttribute('aria-labelledby')).toBeTruthy();
 
     // The slot ids live inside the content branch; keeping the reference during

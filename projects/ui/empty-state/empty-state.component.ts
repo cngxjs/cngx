@@ -94,17 +94,27 @@ export class CngxEmptyState {
   /** Supporting detail - clarifies context and suggests next steps. */
   readonly description = input<string | undefined>(undefined);
 
-  /** Bind an async state - auto-hides when data is not empty. */
+  /**
+   * Bind an async state - auto-hides when data is not empty, while an
+   * operation is running, or on error status. Error communication belongs
+   * to error surfaces (alert, async container). The component shows in two
+   * cases: a settled empty result ("loaded, nothing there") and an idle
+   * state with no data - the first-use onboarding surface, where nothing
+   * has been asked for yet.
+   */
   readonly state = input<CngxAsyncState<unknown> | undefined>(undefined);
 
-  /** @internal - hidden when state is bound and data is not empty or still loading. */
+  /** @internal - hidden when state is bound and the view is not a settled empty result. */
   protected readonly shouldHide = computed(() => {
     const s = this.state();
     if (!s) {
       return false;
     }
-    // Skeleton owns the loading phase; defer until data resolves.
-    return s.isLoading() || !s.isEmpty();
+    // Skeleton owns the loading phase; error surfaces own the error phase.
+    if (s.isLoading() || s.status() === 'error') {
+      return true;
+    }
+    return !s.isEmpty();
   });
 
   /** @internal */

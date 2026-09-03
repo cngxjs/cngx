@@ -30,6 +30,8 @@ export interface CngxStatCardConfig {
     readonly errorDescription?: string;
     /** Note shown below stale numbers when a refresh failed. */
     readonly staleFallback?: string;
+    /** Headline of the empty state shown when a load settled with no data. */
+    readonly emptyFallback?: string;
   };
 
   /**

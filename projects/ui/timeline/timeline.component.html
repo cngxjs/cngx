@@ -158,9 +158,10 @@
         *ngTemplateOutlet="tpl; context: { $implicit: state()?.error(), retry: emitRetry }"
       />
     } @else {
-      <!-- The alert is the message alone. Wrapping the retry control in it
-           too would re-announce the button on every mutation of the region. -->
-      <p class="cngx-timeline__error-message" role="alert">{{ labels.errorFallback }}</p>
+      <!-- No role="alert" here: the polite region below is the single
+           announcer for every view transition, error included - an alert on
+           top of it would double-fire the same fallback. -->
+      <p class="cngx-timeline__error-message">{{ labels.errorFallback }}</p>
       @if (retryButtonTpl(); as tpl) {
         <ng-container *ngTemplateOutlet="tpl; context: { $implicit: emitRetry }" />
       } @else {

@@ -183,6 +183,103 @@ describe('CngxChartPanel chrome', () => {
     expect(panel.querySelector('.fake-chart')!.textContent).toContain('chart body');
   });
 
+  it('announces the configured busy label through a hidden status region', () => {
+    const { fixture, panel } = setup();
+    const sr = panel.querySelector('.cngx-chart-panel__status')!;
+    expect(sr.getAttribute('role')).toBe('status');
+    expect(sr.textContent?.trim()).toBe('');
+
+    state.set({ status: 'refreshing', firstLoad: false });
+    fixture.detectChanges();
+    expect(sr.textContent?.trim()).toBe('Updating');
+
+    // Outside the busy header - a live region inside an aria-busy container
+    // has its announcements suppressed.
+    expect(sr.closest('[aria-busy="true"]')).toBeNull();
+
+    state.set({ status: 'success', firstLoad: false });
+    fixture.detectChanges();
+    expect(sr.textContent?.trim()).toBe('');
+  });
+
+  it('blocks Enter/Space activation in the action cluster while busy', () => {
+    const { fixture, panel } = setup();
+    const button = panel.querySelector<HTMLButtonElement>('[cngxChartPanelActions]')!;
+
+    // Not busy: keys pass through untouched.
+    let event = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true });
+    button.dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(false);
+
+    state.set({ status: 'pending', firstLoad: false });
+    fixture.detectChanges();
+
+    // Busy: pointer-events already blocks clicks; the guard must stop the
+    // keyboard modality too (Enter keydown, Space keydown + keyup).
+    event = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true });
+    button.dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(true);
+
+    event = new KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true });
+    button.dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(true);
+
+    event = new KeyboardEvent('keyup', { key: ' ', bubbles: true, cancelable: true });
+    button.dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(true);
+
+    // Unrelated keys (e.g. Tab to leave the cluster) stay untouched.
+    event = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true });
+    button.dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(false);
+  });
+
+  it('holds against consumer key handlers on the projected actions (capture phase)', () => {
+    const { fixture, panel } = setup();
+    const button = panel.querySelector<HTMLButtonElement>('[cngxChartPanelActions]')!;
+    let consumerCalls = 0;
+    button.addEventListener('keydown', () => {
+      consumerCalls += 1;
+    });
+
+    button.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }),
+    );
+    expect(consumerCalls).toBe(1);
+
+    state.set({ status: 'pending', firstLoad: false });
+    fixture.detectChanges();
+
+    // The guard runs on the wrapper in the capture phase, before the
+    // button's own handler - a bubble guard would fire after it and only
+    // cancel the native activation.
+    button.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }),
+    );
+    expect(consumerCalls).toBe(1);
+  });
+
+  it('names why the actions are disabled while busy via aria-describedby', () => {
+    const { fixture, panel } = setup();
+    const slot = panel.querySelector('.cngx-chart-panel__action-slot')!;
+    expect(slot.getAttribute('aria-describedby')).toBeNull();
+
+    state.set({ status: 'refreshing', firstLoad: false });
+    fixture.detectChanges();
+
+    // The description target is always in the DOM; only the reference is
+    // gated on the state it describes.
+    const describedBy = slot.getAttribute('aria-describedby')!;
+    expect(describedBy).toBeTruthy();
+    const description = panel.querySelector(`#${describedBy}`)!;
+    expect(description.textContent?.trim()).toBe('Updating');
+
+    state.set({ status: 'success', firstLoad: false });
+    fixture.detectChanges();
+    expect(slot.getAttribute('aria-describedby')).toBeNull();
+    expect(panel.querySelector(`#${describedBy}`)).not.toBeNull();
+  });
+
   it('owns no async view switch of its own', () => {
     const { fixture, panel } = setup();
     state.set({ status: 'error', firstLoad: true });

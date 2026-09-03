@@ -1,3 +1,4 @@
+import { DOCUMENT } from '@angular/common';
 import { DestroyRef, Directive, effect, ElementRef, inject, input } from '@angular/core';
 
 import { CNGX_DATA_GRID_ACCORDION } from './data-grid-accordion.token';
@@ -8,7 +9,8 @@ import { CNGX_DATA_GRID_ACCORDION } from './data-grid-accordion.token';
  * keystroke it writes the value into `grid.filterTerm` after a debounce (owned here -
  * {@link CngxFilter} has none), so the consumer's `computed()` re-derives the visible
  * rows only once typing settles. An external term change (a programmatic clear) reflects
- * back into the box, but never while it is focused - that would fight the caret.
+ * back into the box, but never while it is focused - that would fight the caret; the
+ * deferred reconciliation lands when the box loses focus.
  *
  * The debounce lives in this slot, not in the group, because it is an input-UX concern;
  * a consumer driving the term programmatically writes `grid.filterTerm` directly with no
@@ -42,6 +44,7 @@ import { CNGX_DATA_GRID_ACCORDION } from './data-grid-accordion.token';
     class: 'cngx-dga-filter',
     '[attr.aria-label]': 'ariaLabel()',
     '(input)': 'handleInput($event)',
+    '(blur)': 'handleBlur()',
   },
 })
 export class CngxDgaFilter {
@@ -51,6 +54,7 @@ export class CngxDgaFilter {
   readonly debounce = input(200, { alias: 'cngxDgaFilterDebounce' });
 
   private readonly grid = inject(CNGX_DATA_GRID_ACCORDION);
+  private readonly document = inject(DOCUMENT);
   private readonly element = inject<ElementRef<HTMLInputElement>>(ElementRef).nativeElement;
   private timer: ReturnType<typeof setTimeout> | undefined;
 
@@ -58,9 +62,11 @@ export class CngxDgaFilter {
     inject(DestroyRef).onDestroy(() => clearTimeout(this.timer));
     // Reflect an external term change (e.g. a programmatic clear) back into the box, but
     // never while the user is typing into it - overwriting `value` there resets the caret.
+    // The deferred write catches up in handleBlur (focus is not a signal, so the effect
+    // cannot re-run on its own when the box loses focus).
     effect(() => {
       const term = this.grid.filterTerm();
-      if (document.activeElement !== this.element && this.element.value !== term) {
+      if (this.document.activeElement !== this.element && this.element.value !== term) {
         this.element.value = term;
       }
     });
@@ -69,6 +75,25 @@ export class CngxDgaFilter {
   protected handleInput(event: Event): void {
     const value = (event.target as HTMLInputElement).value;
     clearTimeout(this.timer);
-    this.timer = setTimeout(() => this.grid.filterTerm.set(value), this.debounce());
+    this.timer = setTimeout(() => {
+      this.timer = undefined;
+      this.grid.filterTerm.set(value);
+    }, this.debounce());
+  }
+
+  protected handleBlur(): void {
+    // Flush a pending keystroke instead of letting the timer fire after blur:
+    // an external write landing in that window would lose to the stale timer
+    // and get overwritten. Typing then leaving commits what was typed.
+    if (this.timer !== undefined) {
+      clearTimeout(this.timer);
+      this.timer = undefined;
+      this.grid.filterTerm.set(this.element.value);
+      return;
+    }
+    const term = this.grid.filterTerm();
+    if (this.element.value !== term) {
+      this.element.value = term;
+    }
   }
 }

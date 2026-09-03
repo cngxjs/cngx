@@ -416,6 +416,9 @@ describe('CngxTimeline layout', () => {
     } {
       const mounted = mount();
       mounted.host.placement.set(placement);
+      // No seed rows: a first load over non-empty [items] paints the rows
+      // instead of the placeholder, and this block is about the placeholder.
+      mounted.host.items.set([]);
       const state = createManualState<readonly Event[]>();
       mounted.host.state.set(state);
       state.set('loading');
@@ -464,6 +467,7 @@ describe('CngxTimeline layout', () => {
       const mounted = mount();
       mounted.host.mode.set('activity');
       mounted.host.placement.set('alternate');
+      mounted.host.items.set([]);
       const state = createManualState<readonly Event[]>();
       mounted.host.state.set(state);
       state.set('loading');

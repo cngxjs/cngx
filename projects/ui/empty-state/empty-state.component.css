@@ -153,6 +153,14 @@
       color: var(--cngx-empty-color, var(--cngx-color-text, oklch(0.34 0.005 290)));
     }
 
+    /* The [state] auto-hide sets the hidden attribute, but the author-layer
+       display: flex above beats the UA's non-important [hidden] rule -
+       re-assert it so the bound state actually removes the empty state from
+       layout (same pattern as the declarative option host). */
+    :scope[hidden] {
+      display: none;
+    }
+
     /* Default icon: hidden when consumer projects a custom icon */
     .cngx-empty-state__icon-slot:not(:empty) + .cngx-empty-state__default-icon {
       display: none;
