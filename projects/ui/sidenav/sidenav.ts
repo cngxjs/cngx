@@ -1,6 +1,7 @@
 import { type FocusTrap, FocusTrapFactory } from '@angular/cdk/a11y';
 import { DOCUMENT } from '@angular/common';
 import {
+  afterNextRender,
   ChangeDetectionStrategy,
   Component,
   computed,
@@ -340,6 +341,14 @@ export class CngxSidenav {
   constructor() {
     this.focusTrap = inject(FocusTrapFactory).create(this.elementRef.nativeElement as HTMLElement);
 
+    // Seed the separator's aria-valuenow for non-px rails: the attribute must
+    // exist before the first focus, and only layout can resolve a rem width.
+    afterNextRender(() => {
+      if (this.widthPx() === null) {
+        this.measureWidth();
+      }
+    });
+
     // Modal-overlay focus contract: on the open edge move focus into the rail
     // and trap it; on the close edge restore focus to whatever opened it, after
     // the DOM settles. overlayActive is the single tracked trigger; restoreTarget
@@ -487,20 +496,29 @@ export class CngxSidenav {
   protected readonly minWidthPx = computed(() => parsePx(this.minWidth()));
   protected readonly maxWidthPx = computed(() => parsePx(this.maxWidth()));
 
-  /** Rect-measured width, taken when the separator gains focus (non-px widths). */
+  /**
+   * Rect-measured width for non-px rails: seeded after first render (a
+   * focusable separator must expose `aria-valuenow` before it is ever
+   * focused) and refreshed each time the separator gains focus, so the value
+   * AT reads at interaction time is current.
+   */
   private readonly measuredWidthPx = signal<number | null>(null);
 
   /**
    * @internal `aria-valuenow` of the separator: the px width when parseable,
-   * else the rect measurement taken at focus - the window-splitter pattern
-   * wants a valuenow on the focused separator even for rem-sized rails.
+   * else the rect measurement - the window-splitter pattern wants a valuenow
+   * on a focusable separator even for rem-sized rails.
    */
   protected readonly widthValueNow = computed(() => this.widthPx() ?? this.measuredWidthPx());
 
-  /** @internal Resolve a non-px width to a real number the moment AT needs it. */
-  protected handleResizeFocus(): void {
+  private measureWidth(): void {
     const el = this.elementRef.nativeElement as HTMLElement;
     this.measuredWidthPx.set(Math.round(el.getBoundingClientRect().width) || null);
+  }
+
+  /** @internal Refresh the measurement the moment AT is about to read it. */
+  protected handleResizeFocus(): void {
+    this.measureWidth();
   }
 
   /**
