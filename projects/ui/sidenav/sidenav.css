@@ -81,6 +81,7 @@
  * - `--cngx-sidenav-footer-border-color` -> `--cngx-sidenav-border-
  *   color` -> `--cngx-color-border`
  * - `--cngx-sidenav-resize-handle-color` -> `--cngx-color-primary`
+ * - `--cngx-sidenav-resize-handle-focus-outline-color` -> `--cngx-color-primary`
  * - `--cngx-nav-link-focus-outline-color` -> `--cngx-color-primary`
  *
  * **Dark mode**
@@ -283,6 +284,38 @@
     syntax: '<color>';
     inherits: false;
     initial-value: oklch(0.66 0.19 50);
+  }
+
+  /**
+   * Width of the focus ring on the keyboard-focused resize separator.
+   * @group State / Resize
+   */
+  @property --cngx-sidenav-resize-handle-focus-outline-width {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 2px;
+  }
+
+  /**
+   * Color of the focus ring on the keyboard-focused resize separator. Falls
+   * back to `--cngx-color-primary`, like the hover tint.
+   * @group State / Resize
+   * @see [[--cngx-color-primary]]
+   */
+  @property --cngx-sidenav-resize-handle-focus-outline-color {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.66 0.19 50);
+  }
+
+  /**
+   * Outward offset of the resize separator's focus ring.
+   * @group State / Resize
+   */
+  @property --cngx-sidenav-resize-handle-focus-outline-offset {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 2px;
   }
 
   /**
@@ -779,6 +812,17 @@
   }
 
   .cngx-sidenav__resize-handle {
+    /* SET the two adaptive color tokens from --cngx-color-primary here: both
+       are @property-registered with a pixel-fast initial-value, which would
+       otherwise defeat the use-site var() fallback chain (the registered
+       initial always resolves first), and inherits:false means an ancestor
+       cannot cascade them down. Declared on the element that reads them, this
+       SET is what makes the documented primary link real for tint and ring. */
+    --cngx-sidenav-resize-handle-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+    --cngx-sidenav-resize-handle-focus-outline-color: var(
+      --cngx-color-primary,
+      oklch(0.66 0.19 50)
+    );
     position: absolute;
     top: 0;
     bottom: 0;
@@ -788,6 +832,21 @@
     background: transparent;
     transition: background 0.15s;
     touch-action: none; /* prevent scroll on drag */
+  }
+
+  /* Pointer hit zone floored to the pointer-derived target size (inert 0px on
+     a fine pointer): the visual bar stays 4px, but a coarse pointer gets a
+     grabbable strip. A pseudo-element participates in hit testing for its
+     host, so no extra DOM. Physical left+translate centering is symmetric,
+     hence RTL-safe. */
+  .cngx-sidenav__resize-handle::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: max(var(--cngx-sidenav-resize-handle-width, 4px), var(--cngx-target-min, 0px));
   }
 
   /* Position: on the border edge */
@@ -817,6 +876,24 @@
       --cngx-sidenav-resize-handle-color,
       var(--cngx-color-primary, oklch(0.66 0.19 50))
     );
+  }
+
+  /* The separator is keyboard-operable: tint like hover plus a visible ring,
+     or the focused 4px bar is invisible. Offset outward so the ring is not
+     swallowed by the rail edge the handle straddles. Same primary-link
+     fallback chain as the hover tint, so one --cngx-color-primary override
+     recolors bar and ring together. */
+  .cngx-sidenav__resize-handle:focus-visible {
+    background: var(
+      --cngx-sidenav-resize-handle-color,
+      var(--cngx-color-primary, oklch(0.66 0.19 50))
+    );
+    outline: var(--cngx-sidenav-resize-handle-focus-outline-width, 2px) solid
+      var(
+        --cngx-sidenav-resize-handle-focus-outline-color,
+        var(--cngx-color-primary, oklch(0.66 0.19 50))
+      );
+    outline-offset: var(--cngx-sidenav-resize-handle-focus-outline-offset, 2px);
   }
 
   /* During resize: no transitions, no text selection */

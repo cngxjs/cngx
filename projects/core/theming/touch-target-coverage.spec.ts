@@ -124,6 +124,9 @@ const SIZE_FLOOR_HOSTS: ReadonlyArray<{ file: string; note: string }> = [
   },
   // @cngx/ui - context-menu
   { file: 'projects/ui/context-menu/context-menu-item.component.css', note: 'context-menu item row' },
+  // @cngx/ui - sidenav (col-resize separator; the cursor is outside the scan's
+  // pointer/grab heuristic, enrolled manually)
+  { file: 'projects/ui/sidenav/sidenav.css', note: 'resize separator hit zone' },
 ];
 
 // Interactive-role stylesheets that legitimately do NOT floor a discrete tap
@@ -213,7 +216,7 @@ describe('touch-target size-floor coverage manifest', () => {
     // The registry itself (system-tokens.css) declares the token and is not a
     // consumer, so it is excluded by construction. This count is the coarse net
     // alongside the per-file assertions and the source scan below.
-    expect(SIZE_FLOOR_HOSTS.length).toBe(50);
+    expect(SIZE_FLOOR_HOSTS.length).toBe(51);
   });
 });
 

@@ -175,6 +175,39 @@ describe('CngxBreadcrumbRouterSync', () => {
     expect(second.map((c) => c.label)).toEqual(['Settings']);
   });
 
+  it('serializes crumb hrefs with percent-encoding and matrix params intact', async () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideRouter([
+          {
+            path: 'catalog/:name',
+            component: Shell,
+            data: { breadcrumb: 'Item' },
+            children: [{ path: 'specs', component: Blank, data: { breadcrumb: 'Specs' } }],
+          },
+        ]),
+      ],
+    });
+    const router = TestBed.inject(Router);
+    const fixture = TestBed.createComponent(RouterHost);
+    fixture.detectChanges();
+    await flushMicrotasks();
+    const barEl = fixture.debugElement.query(By.css('cngx-breadcrumb'))
+      .nativeElement as HTMLElement;
+
+    // A reserved char in the param and a matrix param: the raw decoded .path
+    // would emit an href the router cannot round-trip. The leaf makes the
+    // encoded segment an intermediate crumb, so it renders as a link.
+    await router.navigateByUrl('/catalog/a%2Fb;variant=x/specs');
+    fixture.detectChanges();
+    await flushMicrotasks();
+    fixture.detectChanges();
+
+    const link = barEl.querySelector<HTMLAnchorElement>('.cngx-breadcrumb__link');
+    expect(link?.getAttribute('href')).toBe('/catalog/a%2Fb;variant=x');
+  });
+
   it('collapses a segment-less child route so the trail never emits a duplicate href (NG0955 guard)', async () => {
     TestBed.configureTestingModule({
       providers: [

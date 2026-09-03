@@ -75,12 +75,13 @@ class EndResizableHost {
 }
 
 @Component({
-  template: `<cngx-sidenav [shortcut]="shortcut()" [(opened)]="open">Nav</cngx-sidenav>`,
+  template: `<cngx-sidenav [shortcut]="shortcut()" [mode]="mode()" [(opened)]="open">Nav</cngx-sidenav>`,
   imports: [CngxSidenav],
 })
 class ShortcutHost {
   open = signal(false);
   shortcut = signal<string | undefined>('mod+b');
+  mode = signal<SidenavMode>('over');
 }
 
 @Component({
@@ -591,17 +592,19 @@ describe('CngxSidenav resizable', () => {
   });
 
   it('aborts resize listeners when the component is destroyed mid-drag', () => {
-    const { fixture, left, host } = setupDual();
+    const { fixture, leftEl, host } = setupDual();
     host.resizable.set(true);
     fixture.detectChanges();
 
     const addSpy = vi.spyOn(document, 'addEventListener');
-    left.handleResizeStart({
-      preventDefault: vi.fn(),
-      clientX: 100,
-      pointerId: 1,
-      target: { setPointerCapture: vi.fn() },
-    } as unknown as PointerEvent);
+    const handle = leftEl.querySelector<HTMLElement>('.cngx-sidenav__resize-handle')!;
+    (handle as unknown as Record<string, unknown>)['setPointerCapture'] = vi.fn();
+    handle.dispatchEvent(
+      Object.assign(new Event('pointerdown', { bubbles: true, cancelable: true }), {
+        clientX: 100,
+        pointerId: 1,
+      }),
+    );
 
     const moveCall = addSpy.mock.calls.find((c) => c[0] === 'pointermove');
     const options = moveCall?.[2] as AddEventListenerOptions | undefined;
@@ -696,13 +699,17 @@ describe('CngxSidenav resize math and shortcut', () => {
     vi.unstubAllGlobals();
   });
 
-  function startDrag(nav: CngxSidenav, clientX: number): void {
-    nav.handleResizeStart({
-      preventDefault: vi.fn(),
-      clientX,
-      pointerId: 1,
-      target: { setPointerCapture: vi.fn() },
-    } as unknown as PointerEvent);
+  // Through the DOM, not the (now protected) handler: dispatch a pointerdown
+  // on the rendered separator, exactly like a real drag starts.
+  function startDrag(navEl: HTMLElement, clientX: number): void {
+    const handle = navEl.querySelector<HTMLElement>('.cngx-sidenav__resize-handle')!;
+    (handle as unknown as Record<string, unknown>)['setPointerCapture'] = vi.fn();
+    handle.dispatchEvent(
+      Object.assign(new Event('pointerdown', { bubbles: true, cancelable: true }), {
+        clientX,
+        pointerId: 1,
+      }),
+    );
   }
 
   const move = (clientX: number): void => {
@@ -716,18 +723,18 @@ describe('CngxSidenav resize math and shortcut', () => {
     const fixture = TestBed.createComponent(DualHost);
     fixture.componentInstance.resizable.set(true);
     fixture.detectChanges();
-    const left = fixture.debugElement
-      .queryAll(By.directive(CngxSidenav))[0]
-      .injector.get(CngxSidenav);
+    const leftDe = fixture.debugElement.queryAll(By.directive(CngxSidenav))[0];
+    const left = leftDe.injector.get(CngxSidenav);
+    const leftEl = leftDe.nativeElement as HTMLElement;
 
     // Dragging far right on a start-positioned rail widens; clamps to max (600).
-    startDrag(left, 100);
+    startDrag(leftEl, 100);
     move(100_000);
     up();
     expect(left.width()).toBe('600px');
 
     // Dragging far left clamps to min (120).
-    startDrag(left, 100);
+    startDrag(leftEl, 100);
     move(-100_000);
     up();
     expect(left.width()).toBe('120px');
@@ -736,19 +743,104 @@ describe('CngxSidenav resize math and shortcut', () => {
   it('flips the delta sign for an end-positioned rail', () => {
     const fixture = TestBed.createComponent(EndResizableHost);
     fixture.detectChanges();
-    const end = fixture.debugElement.query(By.directive(CngxSidenav)).injector.get(CngxSidenav);
+    const endDe = fixture.debugElement.query(By.directive(CngxSidenav));
+    const end = endDe.injector.get(CngxSidenav);
+    const endEl = endDe.nativeElement as HTMLElement;
 
     // On an end rail the delta is inverted: dragging right narrows it (clamps to
     // min), dragging left widens it (clamps to max) - the mirror of the start rail.
-    startDrag(end, 100);
+    startDrag(endEl, 100);
     move(100_000);
     up();
     expect(end.width()).toBe('120px');
 
-    startDrag(end, 100);
+    startDrag(endEl, 100);
     move(-100_000);
     up();
     expect(end.width()).toBe('600px');
+  });
+
+  it('resizes with arrow keys on the focusable separator, direction-aware and clamped', () => {
+    const fixture = TestBed.createComponent(DualHost);
+    fixture.componentInstance.resizable.set(true);
+    fixture.componentInstance.width.set('240px');
+    fixture.detectChanges();
+    const leftDe = fixture.debugElement.queryAll(By.directive(CngxSidenav))[0];
+    const left = leftDe.injector.get(CngxSidenav);
+    const handle = (leftDe.nativeElement as HTMLElement).querySelector<HTMLElement>(
+      '.cngx-sidenav__resize-handle',
+    )!;
+    expect(handle.getAttribute('tabindex')).toBe('0');
+    expect(handle.getAttribute('aria-label')).toBe('Resize navigation');
+
+    // jsdom has no layout; the handler reads the rendered width via rect.
+    const el = leftDe.nativeElement as HTMLElement;
+    vi.spyOn(el, 'getBoundingClientRect').mockReturnValue({ width: 240 } as DOMRect);
+
+    const press = (key: string): void => {
+      handle.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+    };
+
+    press('ArrowRight');
+    expect(left.width()).toBe('256px');
+    press('ArrowLeft');
+    expect(left.width()).toBe('224px');
+    press('Home');
+    expect(left.width()).toBe('120px');
+    press('End');
+    expect(left.width()).toBe('600px');
+
+    // Modified arrows pass through untouched (browser/AT shortcuts) - shift
+    // included.
+    const before = left.width();
+    handle.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowRight', ctrlKey: true, bubbles: true }),
+    );
+    handle.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowRight', shiftKey: true, bubbles: true }),
+    );
+    expect(left.width()).toBe(before);
+  });
+
+  it('omits the aria-value trio for a non-px width instead of lying', () => {
+    const fixture = TestBed.createComponent(DualHost);
+    fixture.componentInstance.resizable.set(true);
+    fixture.componentInstance.width.set('17.5rem');
+    fixture.detectChanges();
+    const handle = (fixture.debugElement.queryAll(By.directive(CngxSidenav))[0]
+      .nativeElement as HTMLElement).querySelector<HTMLElement>('.cngx-sidenav__resize-handle')!;
+
+    // parseInt('17.5rem') would report 17, below the 120 minimum.
+    expect(handle.getAttribute('aria-valuenow')).toBeNull();
+    expect(handle.getAttribute('aria-valuemin')).toBe('120');
+    expect(handle.getAttribute('aria-valuemax')).toBe('600');
+  });
+
+  it('derives aria-valuenow from the rendered width once the separator gains focus', () => {
+    const fixture = TestBed.createComponent(DualHost);
+    fixture.componentInstance.resizable.set(true);
+    fixture.componentInstance.width.set('17.5rem');
+    fixture.detectChanges();
+    const leftEl = fixture.debugElement.queryAll(By.directive(CngxSidenav))[0]
+      .nativeElement as HTMLElement;
+    const handle = leftEl.querySelector<HTMLElement>('.cngx-sidenav__resize-handle')!;
+    vi.spyOn(leftEl, 'getBoundingClientRect').mockReturnValue({ width: 280 } as DOMRect);
+
+    // The window-splitter pattern wants a valuenow on the focused separator
+    // even for rem-sized rails - resolved by measurement at focus time.
+    handle.dispatchEvent(new Event('focus'));
+    fixture.detectChanges();
+    expect(handle.getAttribute('aria-valuenow')).toBe('280');
+  });
+
+  it('renders no resize handle in mini mode (fixed-width rail)', () => {
+    const fixture = TestBed.createComponent(DualHost);
+    fixture.componentInstance.resizable.set(true);
+    fixture.componentInstance.mode.set('mini');
+    fixture.detectChanges();
+    const leftEl = fixture.debugElement.queryAll(By.directive(CngxSidenav))[0]
+      .nativeElement as HTMLElement;
+    expect(leftEl.querySelector('.cngx-sidenav__resize-handle')).toBeNull();
   });
 
   it('toggles opened via the configured mod+b keyboard shortcut', () => {
@@ -773,6 +865,24 @@ describe('CngxSidenav resize math and shortcut', () => {
     press();
     fixture.detectChanges();
     expect(host.open()).toBe(false);
+  });
+
+  it('routes the shortcut through toggle() so side/mini mode cannot desync the model', () => {
+    const fixture = TestBed.createComponent(ShortcutHost);
+    fixture.componentInstance.mode.set('side');
+    fixture.componentInstance.open.set(true);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const host = fixture.componentInstance;
+
+    // close() no-ops in the always-visible modes; a raw opened flip would set
+    // the model false while the rail stays visually open (and a router sync
+    // would write ?nav=closed).
+    document.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'b', ctrlKey: true, metaKey: true }),
+    );
+    fixture.detectChanges();
+    expect(host.open()).toBe(true);
   });
 });
 

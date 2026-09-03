@@ -66,8 +66,9 @@ import { CngxSidenav } from './sidenav';
   `,
 })
 export class CngxSidenavLayout {
-  /** @internal */
-  readonly ready = signal(false);
+  private readonly readyState = signal(false);
+  /** @internal First render done - gates transitions against an open-on-load flash. */
+  protected readonly ready = this.readyState.asReadonly();
 
   private readonly sidenavs = contentChildren(CngxSidenav);
 
@@ -86,33 +87,35 @@ export class CngxSidenavLayout {
     const doc = inject(DOCUMENT);
 
     // Gate transitions until after first render - prevents open-on-load flash.
-    afterNextRender(() => this.ready.set(true));
+    afterNextRender(() => this.readyState.set(true));
 
     // Dataset ref-counting matches CngxScrollLock so concurrent lock sources
-    // do not clobber each other's restore values.
+    // do not clobber each other's restore values. `locked` is a plain
+    // variable, not a signal: the effect only needs to TRACK hasOverlay(),
+    // and a signal read+written in the same effect is the loop-risk shape.
     const html = doc.documentElement;
-    const locked = signal(false);
+    let locked = false;
 
     effect(() => {
-      if (this.hasOverlay() && !locked()) {
+      if (this.hasOverlay() && !locked) {
         if (!html.dataset['cngxPrevOverflow']) {
           html.dataset['cngxPrevOverflow'] = html.style.overflow;
           html.dataset['cngxPrevScrollbarGutter'] = html.style.scrollbarGutter;
         }
         html.style.overflow = 'hidden';
         html.style.scrollbarGutter = 'stable';
-        locked.set(true);
-      } else if (!this.hasOverlay() && locked()) {
+        locked = true;
+      } else if (!this.hasOverlay() && locked) {
         html.style.overflow = html.dataset['cngxPrevOverflow'] ?? '';
         html.style.scrollbarGutter = html.dataset['cngxPrevScrollbarGutter'] ?? '';
         delete html.dataset['cngxPrevOverflow'];
         delete html.dataset['cngxPrevScrollbarGutter'];
-        locked.set(false);
+        locked = false;
       }
     });
 
     inject(DestroyRef).onDestroy(() => {
-      if (locked()) {
+      if (locked) {
         html.style.overflow = html.dataset['cngxPrevOverflow'] ?? '';
         html.style.scrollbarGutter = html.dataset['cngxPrevScrollbarGutter'] ?? '';
         delete html.dataset['cngxPrevOverflow'];

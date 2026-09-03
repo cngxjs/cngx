@@ -58,11 +58,14 @@ export class CngxTocRouterSync {
     const router = this.router;
 
     // Write the fragment on every activation. replaceUrl keeps a scroll-driven
-    // rail from pushing a history entry per section.
+    // rail from pushing a history entry per section; 'merge' keeps the query
+    // params a bare fragment navigate would otherwise wipe.
     outputToObservable(this.toc.activated)
       .pipe(takeUntilDestroyed())
       .subscribe((item) => {
-        void router.navigate([], { fragment: item.id, replaceUrl: true });
+        router
+          .navigate([], { fragment: item.id, replaceUrl: true, queryParamsHandling: 'merge' })
+          .catch(() => undefined);
       });
 
     // One-shot deep-link scroll: read the fragment present at load and bring

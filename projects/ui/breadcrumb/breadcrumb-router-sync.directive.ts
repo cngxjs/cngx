@@ -158,7 +158,10 @@ function buildCrumbs(
   let route: ActivatedRouteSnapshot | null = router.routerState.snapshot.root;
   let url = '';
   while (route) {
-    const segment = route.url.map((s) => s.path).join('/');
+    // toString(), not .path: the serialized segment keeps percent-encoding
+    // (reserved chars in a param value) and matrix params; the raw decoded
+    // path would emit hrefs the router cannot round-trip.
+    const segment = route.url.map((s) => s.toString()).join('/');
     if (segment) {
       url += `/${segment}`;
     }

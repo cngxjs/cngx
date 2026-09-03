@@ -63,6 +63,12 @@ function siblingsEqual(
  * navigation does not cascade. `Router` is optional - without it the directive
  * logs a dev warning and stays an empty source.
  *
+ * Sibling hrefs are built from the static route-config `path` patterns, so a
+ * parameterized sibling (`:id`) emits its pattern verbatim - such routes have
+ * no single static URL. Supply `[siblings]` directly (or a custom
+ * {@link CNGX_BREADCRUMB_SIBLINGS_SOURCE}) when sibling links need resolved
+ * route params.
+ *
  * ```html
  * <cngx-breadcrumb-siblings cngxRouterSync [depth]="1" />
  * ```
@@ -180,7 +186,9 @@ function buildSiblings(
     const parent = chain[depth - 1];
     siblingConfigs = parent?.routeConfig?.children ?? [];
     for (let i = 0; i < depth && i < chain.length; i++) {
-      const seg = chain[i].url.map((s) => s.path).join('/');
+      // toString(), not .path: keeps percent-encoding and matrix params in
+      // the accumulated prefix (same rule as the crumb sync).
+      const seg = chain[i].url.map((s) => s.toString()).join('/');
       if (seg) {
         prefix += `/${seg}`;
       }
@@ -201,7 +209,9 @@ function buildSiblings(
       // A path-less sibling reuses the parent URL; collapse it - deepest label
       // wins, current stays set if either matched - so the set never emits a
       // duplicate href (the dropdown's @for track would otherwise collide).
-      out[out.length - 1] = { label: raw, href, current: prev.current ?? current };
+      // Boolean either-matched, deliberately not ?? - a false on the earlier
+      // row must not eat the active config's match.
+      out[out.length - 1] = { label: raw, href, current: !!prev.current || current };
     } else {
       out.push({ label: raw, href, current });
     }

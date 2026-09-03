@@ -5,6 +5,7 @@ import {
   Component,
   computed,
   contentChild,
+  DestroyRef,
   effect,
   inject,
   input,
@@ -158,14 +159,24 @@ export class CngxToc implements CngxTocContract {
     // Re-scan whenever the discovery inputs change. The DOM read + discovered
     // write are deferred to a microtask so no signal is written during effect
     // execution (Pillar 1) and the just-rendered content has settled - the same
-    // queueMicrotask discipline the panel-lifecycle focus restore uses.
+    // queueMicrotask discipline the panel-lifecycle focus restore uses. The
+    // destroyed guard keeps a microtask queued right before teardown from
+    // scanning a detached DOM.
+    let destroyed = false;
+    inject(DestroyRef).onDestroy(() => {
+      destroyed = true;
+    });
     effect(() => {
       if (!this.autoDiscover()) {
         return;
       }
       this.contentRoot();
       this.headingSelector();
-      queueMicrotask(() => this.refresh());
+      queueMicrotask(() => {
+        if (!destroyed) {
+          this.refresh();
+        }
+      });
     });
   }
 

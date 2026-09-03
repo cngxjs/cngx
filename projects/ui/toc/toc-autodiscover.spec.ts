@@ -144,6 +144,20 @@ describe('CngxToc autoDiscover', () => {
     expect(linkTexts(fixture.nativeElement)).toEqual(['Alpha']);
   });
 
+  it('drops a queued discovery re-scan when the component is destroyed first', async () => {
+    // No await between creation and destroy: the effect's deferred scan is
+    // still sitting in the microtask queue when the component goes away, and
+    // it must not scan a detached DOM.
+    const fixture = TestBed.createComponent(DiscoverHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const refresh = vi.spyOn(getToc(fixture), 'refresh');
+    fixture.destroy();
+    await Promise.resolve();
+
+    expect(refresh).not.toHaveBeenCalled();
+  });
+
   it('re-scans on refresh() after the DOM changes', () => {
     const { fixture, toc } = setup(DiscoverHost);
     toc.refresh();

@@ -1,6 +1,7 @@
 import { type FocusTrap, FocusTrapFactory } from '@angular/cdk/a11y';
 import { DOCUMENT } from '@angular/common';
 import {
+  afterNextRender,
   ChangeDetectionStrategy,
   Component,
   computed,
@@ -137,13 +138,19 @@ export type SidenavMode = 'over' | 'push' | 'side' | 'mini';
       <ng-content />
     </div>
     <ng-content select="cngx-sidenav-footer, [cngxSidenavFooter]" />
-    @if (resizable()) {
+    <!-- No handle in mini mode: the collapsed rail has a fixed width, and a
+         drag there would leave a stale inline width var on the rail. -->
+    @if (resizable() && effectiveMode() !== 'mini') {
       <div
         class="cngx-sidenav__resize-handle"
         (pointerdown)="handleResizeStart($event)"
+        (keydown)="handleResizeKeydown($event)"
+        (focus)="handleResizeFocus()"
         role="separator"
+        tabindex="0"
+        [attr.aria-label]="resizeLabel()"
         [attr.aria-orientation]="'vertical'"
-        [attr.aria-valuenow]="widthPx()"
+        [attr.aria-valuenow]="widthValueNow()"
         [attr.aria-valuemin]="minWidthPx()"
         [attr.aria-valuemax]="maxWidthPx()"
       ></div>
@@ -188,10 +195,24 @@ export class CngxSidenav {
   /** Whether the sidebar is user-resizable via a drag handle. */
   readonly resizable = input<boolean>(false);
 
-  /** Minimum width constraint during resize. */
+  /**
+   * Accessible name of the resize separator. English default; per-instance
+   * like `ariaLabel`, since it names this rail's handle.
+   */
+  readonly resizeLabel = input<string>('Resize navigation');
+
+  /**
+   * Minimum width constraint during resize. Use a px value: drag and keyboard
+   * clamping (and `aria-valuemin`) resolve px only; a rem/ch constraint falls
+   * back to the 120px default for clamping and omits the ARIA value.
+   */
   readonly minWidth = input<string>(this.cfg.dimensions?.minWidth ?? '120px');
 
-  /** Maximum width constraint during resize. */
+  /**
+   * Maximum width constraint during resize. Use a px value: drag and keyboard
+   * clamping (and `aria-valuemax`) resolve px only; a rem/ch constraint falls
+   * back to the 600px default for clamping and omits the ARIA value.
+   */
   readonly maxWidth = input<string>(this.cfg.dimensions?.maxWidth ?? '600px');
 
   /**
@@ -320,6 +341,14 @@ export class CngxSidenav {
   constructor() {
     this.focusTrap = inject(FocusTrapFactory).create(this.elementRef.nativeElement as HTMLElement);
 
+    // Seed the separator's aria-valuenow for non-px rails: the attribute must
+    // exist before the first focus, and only layout can resolve a rem width.
+    afterNextRender(() => {
+      if (this.widthPx() === null) {
+        this.measureWidth();
+      }
+    });
+
     // Modal-overlay focus contract: on the open edge move focus into the rail
     // and trap it; on the close edge restore focus to whatever opened it, after
     // the DOM settles. overlayActive is the single tracked trigger; restoreTarget
@@ -378,7 +407,11 @@ export class CngxSidenav {
       const handler = (e: KeyboardEvent): void => {
         if (matchesKeyCombo(e, combo, isMac)) {
           e.preventDefault();
-          this.opened.set(!this.opened());
+          // Through toggle(), not a raw opened flip: close() no-ops in the
+          // always-visible modes, so the hotkey cannot desync the model (and
+          // a router sync would not write ?nav=closed on a rail that stays
+          // visually open).
+          this.toggle();
         }
       };
       this.doc.addEventListener('keydown', handler);
@@ -456,14 +489,84 @@ export class CngxSidenav {
     this.expandedState.set(false);
   }
 
-  /** @internal Parse a CSS px value to a number. */
-  protected readonly widthPx = computed(() => Number.parseInt(this.width(), 10) || 280);
-  protected readonly minWidthPx = computed(() => Number.parseInt(this.minWidth(), 10) || 120);
-  protected readonly maxWidthPx = computed(() => Number.parseInt(this.maxWidth(), 10) || 600);
+  // px-strict: a rem/ch width must not leak a lying aria-valuenow (parseInt
+  // on '17.5rem' is 17, below the min). Null omits the attribute instead.
+  /** @internal Numeric px of the current width, or null for non-px units. */
+  protected readonly widthPx = computed(() => parsePx(this.width()));
+  protected readonly minWidthPx = computed(() => parsePx(this.minWidth()));
+  protected readonly maxWidthPx = computed(() => parsePx(this.maxWidth()));
+
+  /**
+   * Rect-measured width for non-px rails: seeded after first render (a
+   * focusable separator must expose `aria-valuenow` before it is ever
+   * focused) and refreshed each time the separator gains focus, so the value
+   * AT reads at interaction time is current.
+   */
+  private readonly measuredWidthPx = signal<number | null>(null);
+
+  /**
+   * @internal `aria-valuenow` of the separator: the px width when parseable,
+   * else the rect measurement - the window-splitter pattern wants a valuenow
+   * on a focusable separator even for rem-sized rails.
+   */
+  protected readonly widthValueNow = computed(() => this.widthPx() ?? this.measuredWidthPx());
+
+  private measureWidth(): void {
+    const el = this.elementRef.nativeElement as HTMLElement;
+    this.measuredWidthPx.set(Math.round(el.getBoundingClientRect().width) || null);
+  }
+
+  /** @internal Refresh the measurement the moment AT is about to read it. */
+  protected handleResizeFocus(): void {
+    this.measureWidth();
+  }
+
+  /**
+   * @internal Arrow-key resize on the separator, so the handle is operable
+   * without a pointer (WCAG 2.1.1): arrows step by 16px (direction-aware for
+   * `position="end"`), Home/End jump to the min/max constraint. Any modified
+   * key (shift included) passes through untouched - browser and AT shortcuts
+   * stay theirs.
+   */
+  protected handleResizeKeydown(event: KeyboardEvent): void {
+    if (
+      !this.resizable() ||
+      event.ctrlKey ||
+      event.altKey ||
+      event.metaKey ||
+      event.shiftKey
+    ) {
+      return;
+    }
+    const el = this.elementRef.nativeElement as HTMLElement;
+    const current = el.getBoundingClientRect().width;
+    const min = this.minWidthPx() ?? 120;
+    const max = this.maxWidthPx() ?? 600;
+    const isEnd = this.position() === 'end';
+    let target: number;
+    switch (event.key) {
+      case 'ArrowRight':
+        target = current + (isEnd ? -RESIZE_KEY_STEP : RESIZE_KEY_STEP);
+        break;
+      case 'ArrowLeft':
+        target = current + (isEnd ? RESIZE_KEY_STEP : -RESIZE_KEY_STEP);
+        break;
+      case 'Home':
+        target = min;
+        break;
+      case 'End':
+        target = max;
+        break;
+      default:
+        return;
+    }
+    event.preventDefault();
+    this.width.set(`${Math.round(Math.max(min, Math.min(max, target)))}px`);
+  }
 
   /** @internal */
-  handleResizeStart(e: PointerEvent): void {
-    if (!this.resizable()) {
+  protected handleResizeStart(e: PointerEvent): void {
+    if (!this.resizable() || this.effectiveMode() === 'mini') {
       return;
     }
     e.preventDefault();
@@ -474,8 +577,8 @@ export class CngxSidenav {
     const el = this.elementRef.nativeElement as HTMLElement;
     const startWidth = el.getBoundingClientRect().width;
     const isEnd = this.position() === 'end';
-    const min = this.minWidthPx();
-    const max = this.maxWidthPx();
+    const min = this.minWidthPx() ?? 120;
+    const max = this.maxWidthPx() ?? 600;
     let currentWidth = startWidth;
     let rafId = 0;
 
@@ -509,4 +612,17 @@ export class CngxSidenav {
     this.doc.addEventListener('pointermove', onMove, { signal: controller.signal });
     this.doc.addEventListener('pointerup', onUp, { signal: controller.signal });
   }
+}
+
+/** Per-keypress width change of the arrow-key resize, in px. */
+const RESIZE_KEY_STEP = 16;
+
+/**
+ * Numeric value of a px-unit (or unitless) CSS length, `null` for any other
+ * unit. rem/ch widths cannot be resolved without layout, and a guessed number
+ * would surface as a lying `aria-valuenow`.
+ */
+function parsePx(value: string): number | null {
+  const match = /^\s*(\d+(?:\.\d+)?)(?:px)?\s*$/.exec(value);
+  return match ? Number.parseFloat(match[1]) : null;
 }
