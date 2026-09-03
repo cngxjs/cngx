@@ -819,6 +819,19 @@
     );
   }
 
+  /* The separator is keyboard-operable: tint like hover plus a visible ring,
+     or the focused 4px bar is invisible. Offset outward so the ring is not
+     swallowed by the rail edge the handle straddles. */
+  .cngx-sidenav__resize-handle:focus-visible {
+    background: var(
+      --cngx-sidenav-resize-handle-color,
+      var(--cngx-color-primary, oklch(0.66 0.19 50))
+    );
+    outline: var(--cngx-sidenav-resize-handle-focus-outline-width, 2px) solid
+      var(--cngx-sidenav-resize-handle-focus-outline-color, oklch(0.66 0.19 50));
+    outline-offset: 2px;
+  }
+
   /* During resize: no transitions, no text selection */
   cngx-sidenav.cngx-sidenav--resizing {
     transition: none !important;
