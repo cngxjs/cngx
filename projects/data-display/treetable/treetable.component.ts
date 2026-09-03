@@ -29,6 +29,7 @@ import {
 } from '@angular/cdk/table';
 import { NgTemplateOutlet } from '@angular/common';
 import type { CngxAsyncState } from '@cngx/core/utils';
+import { resolveAsyncView, type AsyncView } from '@cngx/common/data';
 import { injectDirection, resolveInlineArrowKey } from '@cngx/core';
 import { arrayEqual } from '@cngx/utils';
 import { CngxTreetableRow } from './treetable-row.directive';
@@ -72,6 +73,20 @@ import { CNGX_TREETABLE_CONFIG } from './treetable.token';
  * / `isEmpty` / `error` computeds delegate to it. When unbound, those
  * computeds fall back to local-only defaults (`isEmpty` becomes
  * "no visible rows", everything else is `false`/`null`).
+ *
+ * The body switches through the shared `resolveAsyncView` lookup table:
+ * skeleton on first load, error surface with the grid gone, empty
+ * surface after a load that produced nothing, a refresh indicator over
+ * content that stays on screen, and `content+error` when a refresh
+ * fails over loaded rows. Two corrections, mirrored from the timeline:
+ * a first load over seed rows paints the rows (a skeleton would hide
+ * them; `aria-busy` still marks the grid), and a non-first-load
+ * `loading`/`pending` over an empty grid is treated as a load instead
+ * of a blank region. A bound state that is still `idle` renders
+ * nothing - start the load, or bind `[state]` only once it has started.
+ * `aria-busy` on the host mirrors `isBusy`; view transitions reach AT
+ * through a dedicated polite live region (loading / refreshing /
+ * failure), separate from the bulk-selection announcer.
  *
  * **Basic usage**
  * ```html
@@ -121,7 +136,10 @@ import { CNGX_TREETABLE_CONFIG } from './treetable.token';
   templateUrl: './treetable.component.html',
   styleUrls: ['./treetable.component.css'],
   encapsulation: ViewEncapsulation.None,
-  host: { class: 'cngx-treetable' },
+  host: {
+    class: 'cngx-treetable',
+    '[attr.aria-busy]': 'isBusy() || null',
+  },
 })
 export class CngxTreetable<T = unknown> {
   /**
@@ -226,6 +244,15 @@ export class CngxTreetable<T = unknown> {
   readonly state = input<CngxAsyncState<unknown> | undefined>(undefined);
 
   /**
+   * How many placeholder rows the first-load skeleton renders. Tune it
+   * to roughly the row count the loaded grid will show so the swap to
+   * content does not jump.
+   *
+   * @defaultValue `3`
+   */
+  readonly skeletonRowCount = input<number>(3);
+
+  /**
    * Fires once per row activation, whether by mouse click or by keyboard
    * (`Enter`/`Space` while the row holds logical focus). Carries the full
    * {@link FlatNode} so listeners can read depth, parent chain, raw value,
@@ -283,7 +310,9 @@ export class CngxTreetable<T = unknown> {
   /**
    * `true` when the table has nothing to render. Mirrors `state.isEmpty()`
    * when an async state is bound; otherwise falls back to "no visible
-   * rows". Drives the projected `*cngxEmpty` slot.
+   * rows". The projected `*cngxEmpty` slot itself renders off the body
+   * view switch, which resolves emptiness from the visible rows - this
+   * computed is the consumer-facing signal, not the template driver.
    */
   readonly isEmpty = computed(() => this.state()?.isEmpty() ?? this.visibleNodes().length === 0);
 
@@ -298,6 +327,76 @@ export class CngxTreetable<T = unknown> {
 
   /** The current error from a bound async state, or `null` (also `null` when no state is bound). */
   readonly error = computed(() => this.state()?.error() ?? null);
+
+  /**
+   * @internal Which body the template renders. Delegates to the shared
+   * `resolveAsyncView` lookup table so the grid cannot drift from every
+   * other async surface. Without a bound `[state]` the grid is a plain
+   * synchronous table: rows when there are rows, the empty surface
+   * otherwise. Emptiness is resolved from the visible rows (the
+   * renderable truth), not from `state.isEmpty()` - seed rows in
+   * `[tree]` count as content even while the state is still loading.
+   */
+  protected readonly activeView = computed<AsyncView>(() => {
+    const rowsEmpty = this.visibleNodes().length === 0;
+    const bound = this.state();
+    if (!bound) {
+      return rowsEmpty ? 'empty' : 'content';
+    }
+    const view = resolveAsyncView(bound.status(), bound.isFirstLoad(), rowsEmpty);
+    // A first load over seed rows paints the rows - `[tree]` can carry data
+    // before the state settles, and a skeleton would hide it. The busy
+    // window still reaches AT through the host's `aria-busy`.
+    if (view === 'skeleton' && !rowsEmpty) {
+      return 'content';
+    }
+    // `loading` and `pending` that are not a first load resolve to `content`
+    // in the lookup table; with no rows that renders a blank region. Work in
+    // flight with nothing on screen is a load. `refreshing` is excluded - it
+    // renders its own indicator and announcement (same correction the
+    // timeline and stat-card apply).
+    const silentlyBusy = rowsEmpty && bound.isBusy() && !bound.isRefreshing();
+    return view === 'content' && silentlyBusy ? 'skeleton' : view;
+  });
+
+  /** @internal `true` while the body renders the grid (`content` or `content+error`). */
+  protected readonly showsContent = computed(() => {
+    const view = this.activeView();
+    return view === 'content' || view === 'content+error';
+  });
+
+  /**
+   * @internal A refresh over rows the user can still read. The skeleton
+   * branch already communicates its own busy phase, so the indicator only
+   * renders while the grid is on screen.
+   */
+  protected readonly showsRefreshIndicator = computed(
+    () => this.showsContent() && this.isRefreshing(),
+  );
+
+  /** @internal Index list for the skeleton branch's `@for`. */
+  protected readonly skeletonRows = computed(
+    () => Array.from({ length: this.skeletonRowCount() }, (_, i) => i),
+    { equal: arrayEqual },
+  );
+
+  /**
+   * @internal Live-region text for view transitions. Only busy phases and
+   * failures have anything to say; the string is empty otherwise so the
+   * region stays in the DOM while staying silent. Single announcer for
+   * the failure - the error surface itself carries no `role="alert"`
+   * (that would double-fire on top of this region).
+   */
+  protected readonly stateAnnouncement = computed(() => {
+    const view = this.activeView();
+    if (view === 'skeleton') {
+      return 'Loading';
+    }
+    if (view === 'error' || view === 'content+error') {
+      return 'Data failed to load';
+    }
+    return this.showsRefreshIndicator() ? 'Refreshing' : '';
+  });
 
   /**
    * Data-column keys for the current tree. Resolves to

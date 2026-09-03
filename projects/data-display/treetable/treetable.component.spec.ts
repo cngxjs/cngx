@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
-import { TestBed } from '@angular/core/testing';
+import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { createManualState } from '@cngx/common/data';
 import { provideDirection } from '@cngx/core';
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { FlatNode, Node } from './models';
@@ -28,7 +29,8 @@ class TestHost {
 function getTreetable<T>(
   fixture: ReturnType<typeof TestBed.createComponent<TestHost>>,
 ): CngxTreetable<T> {
-  return fixture.debugElement.query(By.directive(CngxTreetable)).componentInstance as CngxTreetable<T>;
+  return fixture.debugElement.query(By.directive(CngxTreetable))
+    .componentInstance as CngxTreetable<T>;
 }
 
 describe('CngxTreetable', () => {
@@ -314,7 +316,9 @@ describe('CngxTreetable', () => {
   });
 
   describe('roving focus model', () => {
-    function mount(opts: { selectionMode?: 'none' | 'single' | 'multi'; showCheckboxes?: boolean } = {}) {
+    function mount(
+      opts: { selectionMode?: 'none' | 'single' | 'multi'; showCheckboxes?: boolean } = {},
+    ) {
       const fixture = TestBed.createComponent(CngxTreetable<Item>);
       fixture.componentRef.setInput('tree', tree);
       fixture.componentRef.setInput('selectionMode', opts.selectionMode ?? 'none');
@@ -407,8 +411,9 @@ describe('CngxTreetable', () => {
       const fixture = mount({ selectionMode: 'multi' });
       const t = fixture.componentInstance;
       const region = () =>
-        (fixture.debugElement.query(By.css('.cngx-treetable__sr')).nativeElement as HTMLElement)
-          .textContent?.trim();
+        (
+          fixture.debugElement.query(By.css('.cngx-treetable__sr')).nativeElement as HTMLElement
+        ).textContent?.trim();
 
       t.handleKeyDown(key('a', { ctrlKey: true }));
       fixture.detectChanges();
@@ -476,6 +481,171 @@ describe('CngxTreetable', () => {
         fixture.detectChanges();
         expect(t.focusedNodeId()).toBe(root.id);
         expect(event.defaultPrevented).toBe(false);
+      }
+    });
+  });
+
+  describe('[state] async view cascade', () => {
+    function mount(input: Node<Item> | Node<Item>[]) {
+      const fixture = TestBed.createComponent(CngxTreetable<Item>);
+      fixture.componentRef.setInput('tree', input);
+      const state = createManualState<readonly Item[]>();
+      fixture.componentRef.setInput('state', state);
+      fixture.detectChanges();
+      return { fixture, state };
+    }
+
+    type Fixture = ComponentFixture<CngxTreetable<Item>>;
+
+    const table = (f: Fixture) => f.debugElement.query(By.css('cdk-table'));
+    const skeleton = (f: Fixture) => f.debugElement.query(By.css('.cngx-treetable__skeleton'));
+    const errorSurface = (f: Fixture) => f.debugElement.query(By.css('.cngx-treetable__error'));
+    const emptySurface = (f: Fixture) => f.debugElement.query(By.css('.cngx-treetable__empty'));
+
+    function stateRegionText(fixture: Fixture): string {
+      const regions = fixture.debugElement.queryAll(By.css('.cngx-treetable__sr'));
+      // The bulk-selection announcer comes first; the state announcer second.
+      return (regions[1].nativeElement as HTMLElement).textContent?.trim() ?? '';
+    }
+
+    it('renders the grid and no aria-busy when no state is bound', () => {
+      const fixture = TestBed.createComponent(CngxTreetable<Item>);
+      fixture.componentRef.setInput('tree', tree);
+      fixture.detectChanges();
+      expect(fixture.debugElement.query(By.css('cdk-table'))).not.toBeNull();
+      const host = fixture.nativeElement as HTMLElement;
+      expect(host.getAttribute('aria-busy')).toBeNull();
+    });
+
+    it('renders the empty surface synchronously when no state is bound and the tree is empty', () => {
+      const fixture = TestBed.createComponent(CngxTreetable<Item>);
+      fixture.componentRef.setInput('tree', []);
+      fixture.detectChanges();
+      expect(fixture.debugElement.query(By.css('.cngx-treetable__empty'))).not.toBeNull();
+      expect(fixture.debugElement.query(By.css('cdk-table'))).toBeNull();
+    });
+
+    it('renders nothing while a bound state is idle before the first load', () => {
+      const { fixture } = mount([]);
+      expect(table(fixture)).toBeNull();
+      expect(skeleton(fixture)).toBeNull();
+      expect(emptySurface(fixture)).toBeNull();
+      expect(errorSurface(fixture)).toBeNull();
+    });
+
+    it('shows the skeleton with aria-busy during the first load of an empty grid', () => {
+      const { fixture, state } = mount([]);
+      state.set('loading');
+      fixture.detectChanges();
+      const sk = skeleton(fixture) as { nativeElement: HTMLElement } | null;
+      expect(sk).not.toBeNull();
+      expect(sk?.nativeElement.getAttribute('aria-hidden')).toBe('true');
+      expect(table(fixture)).toBeNull();
+      const host = fixture.nativeElement as HTMLElement;
+      expect(host.getAttribute('aria-busy')).toBe('true');
+      expect(stateRegionText(fixture)).toBe('Loading');
+    });
+
+    it('honors skeletonRowCount in the skeleton branch', () => {
+      const { fixture, state } = mount([]);
+      fixture.componentRef.setInput('skeletonRowCount', 5);
+      state.set('loading');
+      fixture.detectChanges();
+      expect(fixture.debugElement.queryAll(By.css('.cngx-treetable__skeleton-row')).length).toBe(5);
+    });
+
+    it('paints seed rows instead of the skeleton during a first load', () => {
+      const { fixture, state } = mount(tree);
+      state.set('loading');
+      fixture.detectChanges();
+      expect(skeleton(fixture)).toBeNull();
+      expect(table(fixture)).not.toBeNull();
+      expect(fixture.debugElement.queryAll(By.css('cdk-row')).length).toBe(3);
+      const host = fixture.nativeElement as HTMLElement;
+      expect(host.getAttribute('aria-busy')).toBe('true');
+    });
+
+    it('shows the error surface when the first load fails, announced politely without an alert', () => {
+      const { fixture, state } = mount([]);
+      state.set('loading');
+      fixture.detectChanges();
+      state.setError(new Error('boom'));
+      fixture.detectChanges();
+      expect(errorSurface(fixture)).not.toBeNull();
+      expect(table(fixture)).toBeNull();
+      expect(stateRegionText(fixture)).toBe('Data failed to load');
+      expect(fixture.debugElement.query(By.css('[role="alert"]'))).toBeNull();
+    });
+
+    it('shows the empty surface when a load succeeds with nothing to render', () => {
+      const { fixture, state } = mount([]);
+      state.setSuccess([]);
+      fixture.detectChanges();
+      expect(emptySurface(fixture)).not.toBeNull();
+      expect(table(fixture)).toBeNull();
+      const host = fixture.nativeElement as HTMLElement;
+      expect(host.getAttribute('aria-busy')).toBeNull();
+      expect(stateRegionText(fixture)).toBe('');
+    });
+
+    it('keeps rows on screen and shows the refresh indicator during a refresh', () => {
+      const { fixture, state } = mount(tree);
+      state.setSuccess([]);
+      fixture.detectChanges();
+      state.set('refreshing');
+      fixture.detectChanges();
+      expect(table(fixture)).not.toBeNull();
+      const refresh = fixture.debugElement.query(By.css('.cngx-treetable__refresh'));
+      expect(refresh).not.toBeNull();
+      expect((refresh.nativeElement as HTMLElement).getAttribute('aria-hidden')).toBe('true');
+      const host = fixture.nativeElement as HTMLElement;
+      expect(host.getAttribute('aria-busy')).toBe('true');
+      expect(stateRegionText(fixture)).toBe('Refreshing');
+    });
+
+    it('keeps content and adds the error surface when a refresh fails', () => {
+      const { fixture, state } = mount(tree);
+      state.setSuccess([]);
+      fixture.detectChanges();
+      state.setError(new Error('boom'));
+      fixture.detectChanges();
+      expect(table(fixture)).not.toBeNull();
+      expect(errorSurface(fixture)).not.toBeNull();
+      expect(stateRegionText(fixture)).toBe('Data failed to load');
+    });
+
+    it('treats a non-first-load load over an empty grid as a load, not a blank region', () => {
+      const { fixture, state } = mount([]);
+      state.setSuccess([]);
+      fixture.detectChanges();
+      state.set('loading');
+      fixture.detectChanges();
+      expect(skeleton(fixture)).not.toBeNull();
+      expect(emptySurface(fixture)).toBeNull();
+    });
+
+    it('drops the announcement and aria-busy once content settles', () => {
+      const { fixture, state } = mount(tree);
+      state.set('loading');
+      fixture.detectChanges();
+      state.setSuccess([]);
+      fixture.detectChanges();
+      expect(table(fixture)).not.toBeNull();
+      expect(stateRegionText(fixture)).toBe('');
+      const host = fixture.nativeElement as HTMLElement;
+      expect(host.getAttribute('aria-busy')).toBeNull();
+    });
+
+    it('keeps both live regions in the DOM across every view', () => {
+      const { fixture, state } = mount([]);
+      for (const move of [
+        () => state.set('loading'),
+        () => state.setError(new Error('x')),
+        () => state.setSuccess([]),
+      ]) {
+        move();
+        fixture.detectChanges();
+        expect(fixture.debugElement.queryAll(By.css('.cngx-treetable__sr')).length).toBe(2);
       }
     });
   });

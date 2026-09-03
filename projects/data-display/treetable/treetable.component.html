@@ -1,110 +1,151 @@
-<cdk-table
-  [dataSource]="visibleNodes()"
-  [trackBy]="trackByFn"
-  role="treegrid"
-  [attr.aria-multiselectable]="selectionMode() === 'multi' ? 'true' : null"
-  (keydown)="handleKeyDown($event)"
->
-  <!-- expand/collapse toggle column -->
-  <ng-container cdkColumnDef="_expand">
-    <cdk-header-cell *cdkHeaderCellDef class="cngx-treetable__expand-cell"></cdk-header-cell>
-    <cdk-cell *cdkCellDef="let node" class="cngx-treetable__expand-cell">
-      @if (node.hasChildren) {
-        <button
-          type="button"
-          class="cngx-treetable__toggle"
-          tabindex="-1"
-          (click)="toggle(node); $event.stopPropagation()"
-          [attr.aria-expanded]="expandedIds().has(node.id)"
-          [attr.aria-label]="expandedIds().has(node.id) ? 'Collapse' : 'Expand'"
-        >
-          {{ expandedIds().has(node.id) ? '▾' : '▸' }}
-        </button>
+@switch (activeView()) {
+  @case ('skeleton') {
+    <!-- Decorative placeholder - the busy phase reaches AT through the
+         host's aria-busy and the live region below. -->
+    <div class="cngx-treetable__skeleton" aria-hidden="true">
+      @for (i of skeletonRows(); track i) {
+        <div class="cngx-treetable__skeleton-row">
+          <span class="cngx-treetable__skeleton-toggle"></span>
+          <span class="cngx-treetable__skeleton-line"></span>
+          <span class="cngx-treetable__skeleton-line cngx-treetable__skeleton-line--short"></span>
+        </div>
       }
-    </cdk-cell>
-  </ng-container>
+    </div>
+  }
+  @case ('empty') {
+    @if (emptyTpl(); as tpl) {
+      <ng-container *ngTemplateOutlet="tpl.template"></ng-container>
+    } @else {
+      <div class="cngx-treetable__empty">No data</div>
+    }
+  }
+  @case ('error') {
+    <ng-container *ngTemplateOutlet="errorSurface" />
+  }
+}
 
-  <!-- checkbox selection column -->
-  <ng-container cdkColumnDef="_select">
-    <cdk-header-cell *cdkHeaderCellDef class="cngx-treetable__select-cell">
-      @if (selectionMode() === 'multi') {
+@if (showsContent()) {
+  <cdk-table
+    [dataSource]="visibleNodes()"
+    [trackBy]="trackByFn"
+    role="treegrid"
+    [attr.aria-multiselectable]="selectionMode() === 'multi' ? 'true' : null"
+    (keydown)="handleKeyDown($event)"
+  >
+    <!-- expand/collapse toggle column -->
+    <ng-container cdkColumnDef="_expand">
+      <cdk-header-cell *cdkHeaderCellDef class="cngx-treetable__expand-cell"></cdk-header-cell>
+      <cdk-cell *cdkCellDef="let node" class="cngx-treetable__expand-cell">
+        @if (node.hasChildren) {
+          <button
+            type="button"
+            class="cngx-treetable__toggle"
+            tabindex="-1"
+            (click)="toggle(node); $event.stopPropagation()"
+            [attr.aria-expanded]="expandedIds().has(node.id)"
+            [attr.aria-label]="expandedIds().has(node.id) ? 'Collapse' : 'Expand'"
+          >
+            {{ expandedIds().has(node.id) ? '▾' : '▸' }}
+          </button>
+        }
+      </cdk-cell>
+    </ng-container>
+
+    <!-- checkbox selection column -->
+    <ng-container cdkColumnDef="_select">
+      <cdk-header-cell *cdkHeaderCellDef class="cngx-treetable__select-cell">
+        @if (selectionMode() === 'multi') {
+          <input
+            type="checkbox"
+            class="cngx-treetable__checkbox"
+            tabindex="-1"
+            [checked]="isAllSelected()"
+            [indeterminate]="isIndeterminate()"
+            [attr.aria-label]="'Select all rows'"
+            (change)="toggleAll()"
+          />
+        }
+      </cdk-header-cell>
+      <cdk-cell *cdkCellDef="let node" class="cngx-treetable__select-cell">
         <input
           type="checkbox"
           class="cngx-treetable__checkbox"
           tabindex="-1"
-          [checked]="isAllSelected()"
-          [indeterminate]="isIndeterminate()"
-          [attr.aria-label]="'Select all rows'"
-          (change)="toggleAll()"
+          [checked]="isSelected(node.id)"
+          [attr.aria-label]="'Select row'"
+          (click)="$event.stopPropagation()"
+          (change)="toggleSelection(node)"
         />
-      }
-    </cdk-header-cell>
-    <cdk-cell *cdkCellDef="let node" class="cngx-treetable__select-cell">
-      <input
-        type="checkbox"
-        class="cngx-treetable__checkbox"
-        tabindex="-1"
-        [checked]="isSelected(node.id)"
-        [attr.aria-label]="'Select row'"
-        (click)="$event.stopPropagation()"
-        (change)="toggleSelection(node)"
-      />
-    </cdk-cell>
-  </ng-container>
-
-  <!-- dynamic data columns -->
-  @for (col of columns(); track col) {
-    <ng-container [cdkColumnDef]="col">
-      <cdk-header-cell *cdkHeaderCellDef>
-        @if (headerTplFor(col); as tpl) {
-          <ng-container *ngTemplateOutlet="tpl"></ng-container>
-        } @else {
-          {{ resolvedOptions().capitaliseHeader !== false ? capitalise(col) : col }}
-        }
-      </cdk-header-cell>
-      <cdk-cell
-        *cdkCellDef="let node"
-        [class.cngx-treetable__first-data-cell]="col === columns()[0]"
-      >
-        @if (cellTplFor(col); as tpl) {
-          <ng-container
-            *ngTemplateOutlet="
-              tpl;
-              context: { $implicit: node, value: asRecord(node.value)[col] }
-            "
-          ></ng-container>
-        } @else {
-          {{ asRecord(node.value)[col] }}
-        }
       </cdk-cell>
     </ng-container>
-  }
 
-  <cdk-header-row *cdkHeaderRowDef="allColumns()"></cdk-header-row>
-  <cdk-row
-    *cdkRowDef="let node; columns: allColumns()"
-    cngxTreetableRow
-    [node]="node"
-    [highlight]="resolvedOptions().highlightRowOnHover ?? false"
-    [selected]="isSelected(node.id)"
-    [expanded]="node.hasChildren ? expandedIds().has(node.id) : null"
-    [selectionEnabled]="selectionMode() !== 'none'"
-    [tabindex]="effectiveFocusedId() === node.id ? 0 : -1"
-    [class.cngx-treetable__row--focused]="effectiveFocusedId() === node.id"
-    (focused)="handleRowFocusIn(node)"
-    (click)="handleRowClick(node)"
-  >
-  </cdk-row>
-</cdk-table>
+    <!-- dynamic data columns -->
+    @for (col of columns(); track col) {
+      <ng-container [cdkColumnDef]="col">
+        <cdk-header-cell *cdkHeaderCellDef>
+          @if (headerTplFor(col); as tpl) {
+            <ng-container *ngTemplateOutlet="tpl"></ng-container>
+          } @else {
+            {{ resolvedOptions().capitaliseHeader !== false ? capitalise(col) : col }}
+          }
+        </cdk-header-cell>
+        <cdk-cell
+          *cdkCellDef="let node"
+          [class.cngx-treetable__first-data-cell]="col === columns()[0]"
+        >
+          @if (cellTplFor(col); as tpl) {
+            <ng-container
+              *ngTemplateOutlet="
+                tpl;
+                context: { $implicit: node, value: asRecord(node.value)[col] }
+              "
+            ></ng-container>
+          } @else {
+            {{ asRecord(node.value)[col] }}
+          }
+        </cdk-cell>
+      </ng-container>
+    }
+
+    <cdk-header-row *cdkHeaderRowDef="allColumns()"></cdk-header-row>
+    <cdk-row
+      *cdkRowDef="let node; columns: allColumns()"
+      cngxTreetableRow
+      [node]="node"
+      [highlight]="resolvedOptions().highlightRowOnHover ?? false"
+      [selected]="isSelected(node.id)"
+      [expanded]="node.hasChildren ? expandedIds().has(node.id) : null"
+      [selectionEnabled]="selectionMode() !== 'none'"
+      [tabindex]="effectiveFocusedId() === node.id ? 0 : -1"
+      [class.cngx-treetable__row--focused]="effectiveFocusedId() === node.id"
+      (focused)="handleRowFocusIn(node)"
+      (click)="handleRowClick(node)"
+    >
+    </cdk-row>
+  </cdk-table>
+
+  @if (showsRefreshIndicator()) {
+    <!-- Decorative: the announcement is the live region below, aria-busy
+         marks the host. -->
+    <div class="cngx-treetable__refresh" aria-hidden="true">Refreshing</div>
+  }
+  @if (activeView() === 'content+error') {
+    <ng-container *ngTemplateOutlet="errorSurface" />
+  }
+}
 
 <span aria-live="polite" aria-atomic="true" class="cngx-treetable__sr">{{
   selectionAnnouncement()
 }}</span>
 
-@if (isEmpty()) {
-  @if (emptyTpl(); as tpl) {
-    <ng-container *ngTemplateOutlet="tpl.template"></ng-container>
-  } @else {
-    <div class="cngx-treetable__empty">No data</div>
-  }
-}
+<span aria-live="polite" aria-atomic="true" class="cngx-treetable__sr">{{
+  stateAnnouncement()
+}}</span>
+
+<!-- No role="alert": the state live region above is the single announcer
+     for every view transition, failure included. -->
+<ng-template #errorSurface>
+  <div class="cngx-treetable__error">
+    <p class="cngx-treetable__error-message">Data failed to load</p>
+  </div>
+</ng-template>

@@ -11,6 +11,7 @@
       "@cngx/core": ["dist/core/types/cngx-core.d.ts"],
       "@cngx/core/utils": ["dist/core/types/cngx-core-utils.d.ts"],
       "@cngx/common": ["dist/common/types/cngx-common.d.ts"],
+      "@cngx/common/data": ["dist/common/types/cngx-common-data.d.ts"],
       "@cngx/utils": ["dist/utils/types/cngx-utils.d.ts"],
       "@cngx/data-display/treetable": ["projects/data-display/treetable/public-api.ts"]
     }
