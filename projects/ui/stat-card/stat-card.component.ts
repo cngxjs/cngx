@@ -165,6 +165,16 @@ const DEFAULT_SKELETON_SLOTS: readonly CngxStatSlotKind[] = ['label', 'value', '
             </svg>
           </cngx-empty-state>
         }
+        @case ('empty') {
+          <!-- A settle with no data is its own message, not blank metric
+               slots pretending to be a figure. -->
+          <cngx-empty-state class="cngx-stat-card__empty" [title]="emptyText()" />
+        }
+        @case ('none') {
+          <!-- Idle first load: nothing was asked for yet, so the tile shows
+               nothing - projected slots over absent data would read as a
+               real (blank) figure. -->
+        }
         @default {
           <div class="cngx-stat-card__stat">
             <ng-content select="[cngxStatLabel]" />
@@ -228,6 +238,9 @@ export class CngxStatCard {
     this.config.ariaLabels?.staleFallback ?? 'Showing last known value',
   );
 
+  /** Headline of the empty state shown when a load settled with no data. */
+  readonly emptyText = input<string>(this.config.ariaLabels?.emptyFallback ?? 'No data');
+
   /**
    * Politeness of the tile's live region. `off` (default) for a static KPI;
    * `polite` for a tile that refreshes on a timer, so the new figure is
@@ -239,11 +252,6 @@ export class CngxStatCard {
   protected readonly busy = computed(() => this.state()?.isBusy() ?? false);
 
   /**
-   * @internal A refresh over content the user can still read. The skeleton and
-   * spinner branches already carry their own busy signal, so the bar would be
-   * redundant there.
-   */
-  /**
    * @internal Which bars the placeholder draws. Mirrors the slots the consumer
    * actually projected, so a tile without a delta gets no delta bar. Falls back
    * to the common label / value / caption shape when nothing has registered -
@@ -254,6 +262,11 @@ export class CngxStatCard {
     return present.length > 0 ? present : DEFAULT_SKELETON_SLOTS;
   });
 
+  /**
+   * @internal A refresh over content the user can still read. The skeleton and
+   * spinner branches already carry their own busy signal, so the bar would be
+   * redundant there.
+   */
   protected readonly showRefreshIndicator = computed(
     () => this.busy() && this.activeView() !== 'skeleton',
   );
@@ -282,11 +295,6 @@ export class CngxStatCard {
   );
 
   /**
-   * Which body the card renders. Delegates to the shared `resolveAsyncView`
-   * lookup table so the tile cannot drift from every other async surface.
-   * Without a bound `[state]` the card always shows its content.
-   */
-  /**
    * @internal The card element carries the accessible name, so the tile is one
    * named region instead of an unnamed `article` wrapped around a named group.
    * Null while the stat is not rendered: the slot ids live inside the content
@@ -294,9 +302,15 @@ export class CngxStatCard {
    */
   protected readonly cardLabelledBy = computed(() => {
     const view = this.activeView();
-    return view === 'skeleton' || view === 'error' ? null : this.coordinator.labelledBy();
+    const showsStat = view === 'content' || view === 'content+error';
+    return showsStat ? this.coordinator.labelledBy() : null;
   });
 
+  /**
+   * @internal Which body the card renders. Delegates to the shared
+   * `resolveAsyncView` lookup table so the tile cannot drift from every other
+   * async surface. Without a bound `[state]` the card always shows its content.
+   */
   protected readonly activeView = computed(() => {
     const s = this.state();
     if (!s) {

@@ -21,6 +21,7 @@ export const CNGX_STAT_CARD_DEFAULTS: CngxStatCardConfig = {
     busy: 'Loading',
     errorFallback: 'Could not load',
     staleFallback: 'Showing last known value',
+    emptyFallback: 'No data',
   },
   loadingTreatment: 'auto',
 };

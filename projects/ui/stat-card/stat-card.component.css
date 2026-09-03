@@ -37,7 +37,8 @@
   @scope (.cngx-stat-card) {
     .cngx-stat-card__stat,
     .cngx-stat-card__spinner,
-    .cngx-stat-card__error {
+    .cngx-stat-card__error,
+    .cngx-stat-card__empty {
       min-block-size: var(--cngx-stat-card-body-min-height);
     }
 
@@ -82,7 +83,8 @@
     /* Doubled up with .cngx-empty-state: the component sets these same tokens
        on its own host at equal specificity, so a single class would lose the
        cascade on source order alone. */
-    .cngx-stat-card__error.cngx-empty-state {
+    .cngx-stat-card__error.cngx-empty-state,
+    .cngx-stat-card__empty.cngx-empty-state {
       /* Stock empty-state is built for a full page region: 48px block padding,
          16px gap, 48px icon. Inside a KPI tile that dwarfs every other view.
          These are the component's own registered tokens, declared on the
@@ -94,6 +96,10 @@
       flex-direction: column;
       justify-content: center;
       text-align: center;
+    }
+
+    /* Only the error branch signals danger; the empty settle stays neutral. */
+    .cngx-stat-card__error.cngx-empty-state {
       color: var(--cngx-stat-card-error-color, var(--cngx-color-danger, oklch(0.6 0.18 25)));
     }
 
