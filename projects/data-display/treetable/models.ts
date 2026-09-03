@@ -85,6 +85,24 @@ export interface CngxCellTplContext<T> {
 }
 
 /**
+ * Template context type for {@link CngxSkeletonRowTpl}.
+ *
+ * ```html
+ * <ng-template cngxSkeletonRow let-index let-rowCount="rowCount">
+ *   <div class="my-shimmer-row">{{ index + 1 }} / {{ rowCount }}</div>
+ * </ng-template>
+ * ```
+ *
+ * @category data-display/treetable
+ */
+export interface CngxSkeletonRowTplContext {
+  /** Zero-based index of the placeholder row - available as the implicit `let` variable. */
+  $implicit: number;
+  /** Total number of placeholder rows (`skeletonRowCount`) - available as `let-rowCount="rowCount"`. */
+  rowCount: number;
+}
+
+/**
  * Template context type for {@link CngxErrorTpl}.
  *
  * ```html

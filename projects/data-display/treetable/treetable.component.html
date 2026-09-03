@@ -4,11 +4,17 @@
          host's aria-busy and the live region below. -->
     <div class="cngx-treetable__skeleton" aria-hidden="true">
       @for (i of skeletonRows(); track i) {
-        <div class="cngx-treetable__skeleton-row">
-          <span class="cngx-treetable__skeleton-toggle"></span>
-          <span class="cngx-treetable__skeleton-line"></span>
-          <span class="cngx-treetable__skeleton-line cngx-treetable__skeleton-line--short"></span>
-        </div>
+        @if (skeletonRowTpl(); as tpl) {
+          <ng-container
+            *ngTemplateOutlet="tpl.template; context: { $implicit: i, rowCount: skeletonRowCount() }"
+          ></ng-container>
+        } @else {
+          <div class="cngx-treetable__skeleton-row">
+            <span class="cngx-treetable__skeleton-toggle"></span>
+            <span class="cngx-treetable__skeleton-line"></span>
+            <span class="cngx-treetable__skeleton-line cngx-treetable__skeleton-line--short"></span>
+          </div>
+        }
       }
     </div>
   }
@@ -127,7 +133,13 @@
   @if (showsRefreshIndicator()) {
     <!-- Decorative: the announcement is the live region below, aria-busy
          marks the host. -->
-    <div class="cngx-treetable__refresh" aria-hidden="true">Refreshing</div>
+    <div class="cngx-treetable__refresh" aria-hidden="true">
+      @if (refreshTpl(); as tpl) {
+        <ng-container *ngTemplateOutlet="tpl.template"></ng-container>
+      } @else {
+        Refreshing
+      }
+    </div>
   }
   @if (activeView() === 'content+error') {
     <ng-container *ngTemplateOutlet="errorSurface" />

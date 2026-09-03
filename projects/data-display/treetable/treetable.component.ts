@@ -39,6 +39,8 @@ import {
   CngxEmptyTpl,
   CngxErrorTpl,
   CngxHeaderTpl,
+  CngxRefreshTpl,
+  CngxSkeletonRowTpl,
 } from './column-template.directive';
 import { resolveCellTpl, resolveHeaderTpl } from './column-template.utils';
 import type { FlatNode, Node, TreetableOptions } from './models';
@@ -126,6 +128,8 @@ import { CNGX_TREETABLE_CONFIG } from './treetable.token';
  * @slot cngxCell Replaces a body cell; gets the row and the column definition.
  * @slot cngxEmpty Rendered when the tree resolves to no rows.
  * @slot cngxError Rendered when a bound async state fails; gets the raw error.
+ * @slot cngxSkeletonRow Replaces one placeholder row of the first-load skeleton; gets the row index and total count.
+ * @slot cngxRefresh Replaces the refresh-indicator content shown below the grid during a refresh.
  */
 @Component({
   selector: 'cngx-treetable',
@@ -301,6 +305,10 @@ export class CngxTreetable<T = unknown> {
   protected readonly emptyTpl = contentChild(CngxEmptyTpl);
   /** @internal */
   protected readonly errorTpl = contentChild(CngxErrorTpl);
+  /** @internal */
+  protected readonly skeletonRowTpl = contentChild(CngxSkeletonRowTpl);
+  /** @internal */
+  protected readonly refreshTpl = contentChild(CngxRefreshTpl);
 
   /**
    * Every node in the `tree` input flattened to a single depth-first

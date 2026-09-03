@@ -4,7 +4,7 @@ import { By } from '@angular/platform-browser';
 import { createManualState } from '@cngx/common/data';
 import { provideDirection } from '@cngx/core';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { CngxErrorTpl } from './column-template.directive';
+import { CngxErrorTpl, CngxRefreshTpl, CngxSkeletonRowTpl } from './column-template.directive';
 import type { FlatNode, Node } from './models';
 import { CngxTreetable } from './treetable.component';
 
@@ -824,6 +824,60 @@ describe('CngxTreetable', () => {
       expect(stateRegionText(fixture)).toBe('');
       const host = fixture.nativeElement as HTMLElement;
       expect(host.getAttribute('aria-busy')).toBeNull();
+    });
+
+    it('renders a projected cngxSkeletonRow slot once per placeholder row with index context', () => {
+      @Component({
+        template: `
+          <cngx-treetable [tree]="[]" [state]="state" [skeletonRowCount]="4">
+            <ng-template cngxSkeletonRow let-index let-rowCount="rowCount">
+              <span class="slot-skeleton">{{ index }}/{{ rowCount }}</span>
+            </ng-template>
+          </cngx-treetable>
+        `,
+        imports: [CngxTreetable, CngxSkeletonRowTpl],
+      })
+      class SkeletonHost {
+        readonly state = createManualState<readonly Item[]>();
+      }
+      TestBed.configureTestingModule({ imports: [SkeletonHost] });
+      const fixture = TestBed.createComponent(SkeletonHost);
+      fixture.detectChanges();
+      fixture.componentInstance.state.set('loading');
+      fixture.detectChanges();
+      const slots = fixture.debugElement.queryAll(By.css('.slot-skeleton'));
+      expect(slots.length).toBe(4);
+      expect((slots[2].nativeElement as HTMLElement).textContent).toBe('2/4');
+      expect(fixture.debugElement.query(By.css('.cngx-treetable__skeleton-row'))).toBeNull();
+    });
+
+    it('renders a projected cngxRefresh slot inside the refresh indicator', () => {
+      @Component({
+        template: `
+          <cngx-treetable [tree]="tree" [state]="state">
+            <ng-template cngxRefresh>
+              <span class="slot-refresh">SPIN</span>
+            </ng-template>
+          </cngx-treetable>
+        `,
+        imports: [CngxTreetable, CngxRefreshTpl],
+      })
+      class RefreshHost {
+        readonly tree = tree;
+        readonly state = createManualState<readonly Item[]>();
+      }
+      TestBed.configureTestingModule({ imports: [RefreshHost] });
+      const fixture = TestBed.createComponent(RefreshHost);
+      fixture.detectChanges();
+      fixture.componentInstance.state.setSuccess([]);
+      fixture.detectChanges();
+      fixture.componentInstance.state.set('refreshing');
+      fixture.detectChanges();
+      const slot = fixture.debugElement.query(By.css('.cngx-treetable__refresh .slot-refresh'));
+      expect(slot).not.toBeNull();
+      const indicator = fixture.debugElement.query(By.css('.cngx-treetable__refresh'))
+        .nativeElement as HTMLElement;
+      expect(indicator.textContent).not.toContain('Refreshing');
     });
 
     it('renders a projected cngxError slot with the raw error as context', () => {

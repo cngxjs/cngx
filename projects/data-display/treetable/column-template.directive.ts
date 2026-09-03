@@ -1,5 +1,5 @@
 import { Directive, inject, input, TemplateRef } from '@angular/core';
-import type { CngxCellTplContext, CngxErrorTplContext } from './models';
+import type { CngxCellTplContext, CngxErrorTplContext, CngxSkeletonRowTplContext } from './models';
 
 /**
  * Marks an `<ng-template>` as a custom cell template for a named column.
@@ -88,6 +88,74 @@ export class CngxEmptyTpl {
    * The projected `<ng-template>` reference. Read by `CngxTreetable`
    * via `contentChild(CngxEmptyTpl)` and rendered in place of the
    * default "No data" message when `isEmpty()` is true.
+   * @internal
+   */
+  readonly template = inject(TemplateRef<void>);
+}
+
+/**
+ * Marks an `<ng-template>` as the per-row skeleton slot rendered during
+ * the first load of a bound async state. The template repeats
+ * `skeletonRowCount` times and replaces the default placeholder row
+ * (toggle square plus two shimmer lines); the surrounding region stays
+ * decorative (`aria-hidden`), so keep the template visual-only.
+ *
+ * The selector is `cngxSkeletonRow` (not `cngxSkeleton`) on purpose:
+ * `[cngxSkeleton]` is the `@cngx/common/layout` loading atom, and a
+ * shared attribute would instantiate both directives on the same
+ * `<ng-template>`.
+ *
+ * ```html
+ * <cngx-treetable [tree]="tree" [state]="loadState" [skeletonRowCount]="5">
+ *   <ng-template cngxSkeletonRow let-index>
+ *     <div class="my-shimmer-row"></div>
+ *   </ng-template>
+ * </cngx-treetable>
+ * ```
+ *
+ * @category data-display/treetable
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/data-display/treetable/column-template.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxTreetable, CngxRefreshTpl, CngxEmptyTpl, CngxErrorTpl
+ */
+@Directive({ selector: 'ng-template[cngxSkeletonRow]', standalone: true })
+export class CngxSkeletonRowTpl {
+  /**
+   * The projected `<ng-template>` reference, typed against
+   * {@link CngxSkeletonRowTplContext}. Read by `CngxTreetable` via
+   * `contentChild(CngxSkeletonRowTpl)` and rendered once per
+   * placeholder row in place of the default skeleton row.
+   * @internal
+   */
+  readonly template = inject(TemplateRef<CngxSkeletonRowTplContext>);
+}
+
+/**
+ * Marks an `<ng-template>` as the refresh-indicator slot shown below
+ * the grid while a bound async state refreshes over rows that stay on
+ * screen. Replaces the default "Refreshing" text. The region is
+ * decorative (`aria-hidden`) - the treetable's state live region
+ * announces the refresh, so keep the template visual-only.
+ *
+ * ```html
+ * <cngx-treetable [tree]="tree" [state]="loadState">
+ *   <ng-template cngxRefresh>
+ *     <my-spinner size="small" />
+ *   </ng-template>
+ * </cngx-treetable>
+ * ```
+ *
+ * @category data-display/treetable
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/data-display/treetable/column-template.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxTreetable, CngxSkeletonRowTpl, CngxEmptyTpl, CngxErrorTpl
+ */
+@Directive({ selector: 'ng-template[cngxRefresh]', standalone: true })
+export class CngxRefreshTpl {
+  /**
+   * The projected `<ng-template>` reference. Read by `CngxTreetable`
+   * via `contentChild(CngxRefreshTpl)` and rendered inside the
+   * refresh indicator in place of the default text.
    * @internal
    */
   readonly template = inject(TemplateRef<void>);
