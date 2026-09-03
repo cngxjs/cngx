@@ -83,3 +83,44 @@ export interface CngxCellTplContext<T> {
   /** The raw cell value for the column (`node.value[column]`) - available as `let-value="value"`. */
   value: unknown;
 }
+
+/**
+ * Template context type for {@link CngxSkeletonRowTpl}.
+ *
+ * ```html
+ * <ng-template cngxSkeletonRow let-index let-rowCount="rowCount">
+ *   <div class="my-shimmer-row">{{ index + 1 }} / {{ rowCount }}</div>
+ * </ng-template>
+ * ```
+ *
+ * @category data-display/treetable
+ */
+export interface CngxSkeletonRowTplContext {
+  /** Zero-based index of the placeholder row - available as the implicit `let` variable. */
+  $implicit: number;
+  /** Total number of placeholder rows (`skeletonRowCount`) - available as `let-rowCount="rowCount"`. */
+  rowCount: number;
+}
+
+/**
+ * Template context type for {@link CngxErrorTpl}.
+ *
+ * ```html
+ * <ng-template cngxError let-error>
+ *   <p>Load failed: {{ describeError(error) }}</p>
+ * </ng-template>
+ * ```
+ *
+ * @category data-display/treetable
+ */
+export interface CngxErrorTplContext {
+  /** The raw error from the bound async state - available as `let-error`. */
+  $implicit: unknown;
+  /**
+   * Emits the treetable's `retry` output - available as
+   * `let-retry="retry"`. Wire it to a button so the consumer can
+   * re-run the failed load; the built-in error surface has no retry
+   * control of its own.
+   */
+  retry: () => void;
+}

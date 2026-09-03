@@ -11,6 +11,7 @@ import {
   model,
   output,
   signal,
+  type ModelSignal,
   type TrackByFunction,
   untracked,
   viewChildren,
@@ -29,12 +30,20 @@ import {
 } from '@angular/cdk/table';
 import { NgTemplateOutlet } from '@angular/common';
 import type { CngxAsyncState } from '@cngx/core/utils';
+import { resolveAsyncView, type AsyncView } from '@cngx/common/data';
 import { injectDirection, resolveInlineArrowKey } from '@cngx/core';
 import { arrayEqual } from '@cngx/utils';
 import { CngxTreetableRow } from './treetable-row.directive';
-import { CngxCellTpl, CngxEmptyTpl, CngxHeaderTpl } from './column-template.directive';
+import {
+  CngxCellTpl,
+  CngxEmptyTpl,
+  CngxErrorTpl,
+  CngxHeaderTpl,
+  CngxRefreshTpl,
+  CngxSkeletonRowTpl,
+} from './column-template.directive';
 import { resolveCellTpl, resolveHeaderTpl } from './column-template.utils';
-import type { FlatNode, Node, TreetableOptions } from './models';
+import type { CngxErrorTplContext, FlatNode, Node, TreetableOptions } from './models';
 import {
   capitalise,
   extractColumns,
@@ -42,7 +51,11 @@ import {
   getInitialExpandedIds,
   isNodeVisible,
 } from './tree.utils';
-import { CNGX_TREETABLE_CONFIG } from './treetable.token';
+import {
+  CNGX_TREETABLE_CONFIG,
+  TREETABLE_DEFAULT_LABELS,
+  type TreetableLabels,
+} from './treetable.token';
 
 /**
  * Headless tree table built on Angular CDK Table.
@@ -57,9 +70,14 @@ import { CNGX_TREETABLE_CONFIG } from './treetable.token';
  *   the `tree` input plus the live `expandedIds` set.
  * - Expand/collapse state via the `expandedIds` model. Bound consumers
  *   own the value; unbound consumers see a default fully-expanded set
- *   on first render via an init effect that seeds from `flatNodes`.
+ *   seeded from the first non-empty `flatNodes`. The seed fires once
+ *   per component - later tree swaps never re-expand a collapsed grid.
  * - Selection state via the `selectedIds` model, reconciled against
  *   `selectionMode` changes (`'none'` clears; `'single'` truncates).
+ * - Id hygiene across tree swaps: expansion and selection ids absent
+ *   from the new `flatNodes` are pruned (the positional default ids
+ *   would otherwise silently re-attach to different nodes). An empty
+ *   forest is transitional and never pruned against.
  * - The roving focus model: `focusedNodeId` tracks the last-focused row,
  *   `effectiveFocusedId` reconciles it against the visible rows to keep
  *   exactly one row tab stop, and keyboard navigation moves real DOM
@@ -72,6 +90,20 @@ import { CNGX_TREETABLE_CONFIG } from './treetable.token';
  * / `isEmpty` / `error` computeds delegate to it. When unbound, those
  * computeds fall back to local-only defaults (`isEmpty` becomes
  * "no visible rows", everything else is `false`/`null`).
+ *
+ * The body switches through the shared `resolveAsyncView` lookup table:
+ * skeleton on first load, error surface with the grid gone, empty
+ * surface after a load that produced nothing, a refresh indicator over
+ * content that stays on screen, and `content+error` when a refresh
+ * fails over loaded rows. Two corrections, mirrored from the timeline:
+ * a first load over seed rows paints the rows (a skeleton would hide
+ * them; `aria-busy` still marks the grid), and a non-first-load
+ * `loading`/`pending` over an empty grid is treated as a load instead
+ * of a blank region. A bound state that is still `idle` renders
+ * nothing - start the load, or bind `[state]` only once it has started.
+ * `aria-busy` on the host mirrors `isBusy`; view transitions reach AT
+ * through a dedicated polite live region (loading / refreshing /
+ * failure), separate from the bulk-selection announcer.
  *
  * **Basic usage**
  * ```html
@@ -99,6 +131,9 @@ import { CNGX_TREETABLE_CONFIG } from './treetable.token';
  * @slot cngxHeader Replaces a column's header cell; gets the column definition.
  * @slot cngxCell Replaces a body cell; gets the row and the column definition.
  * @slot cngxEmpty Rendered when the tree resolves to no rows.
+ * @slot cngxError Rendered when a bound async state fails; gets the raw error.
+ * @slot cngxSkeletonRow Replaces one placeholder row of the first-load skeleton; gets the row index and total count.
+ * @slot cngxRefresh Replaces the refresh-indicator content shown below the grid during a refresh.
  */
 @Component({
   selector: 'cngx-treetable',
@@ -121,7 +156,10 @@ import { CNGX_TREETABLE_CONFIG } from './treetable.token';
   templateUrl: './treetable.component.html',
   styleUrls: ['./treetable.component.css'],
   encapsulation: ViewEncapsulation.None,
-  host: { class: 'cngx-treetable' },
+  host: {
+    class: 'cngx-treetable',
+    '[attr.aria-busy]': 'isBusy() || null',
+  },
 })
 export class CngxTreetable<T = unknown> {
   /**
@@ -154,8 +192,9 @@ export class CngxTreetable<T = unknown> {
    * Expanded-id set. Two-way bindable via `[(expandedIds)]` or read-only via
    * `[expandedIds]`; the model's implicit `expandedIdsChange` output fires
    * after every toggle. When left unbound the component seeds itself with
-   * the default fully-expanded set on first render and continues to manage
-   * its own state.
+   * the default fully-expanded set once - on the first non-empty tree - and
+   * continues to manage its own state. Later tree swaps never re-seed, and
+   * ids that vanish from the tree are pruned (with a change emit).
    *
    * ```html
    * <cngx-treetable [(expandedIds)]="myIds" />
@@ -185,7 +224,8 @@ export class CngxTreetable<T = unknown> {
    * Selected-id set. Two-way bindable via `[(selectedIds)]` or read-only via
    * `[selectedIds]`; the model's implicit `selectedIdsChange` output fires
    * after every selection toggle. Switching `selectionMode` to `'none'` or
-   * `'single'` reconciles the set down to a legal shape.
+   * `'single'` reconciles the set down to a legal shape, and ids that
+   * vanish from the tree after a swap are pruned (with a change emit).
    *
    * ```html
    * <cngx-treetable [(selectedIds)]="myIds" />
@@ -226,6 +266,15 @@ export class CngxTreetable<T = unknown> {
   readonly state = input<CngxAsyncState<unknown> | undefined>(undefined);
 
   /**
+   * How many placeholder rows the first-load skeleton renders. Tune it
+   * to roughly the row count the loaded grid will show so the swap to
+   * content does not jump.
+   *
+   * @defaultValue `3`
+   */
+  readonly skeletonRowCount = input<number>(3);
+
+  /**
    * Fires once per row activation, whether by mouse click or by keyboard
    * (`Enter`/`Space` while the row holds logical focus). Carries the full
    * {@link FlatNode} so listeners can read depth, parent chain, raw value,
@@ -247,7 +296,26 @@ export class CngxTreetable<T = unknown> {
    */
   readonly nodeCollapsed = output<FlatNode<T>>();
 
+  /**
+   * Fires when a projected error template invokes its `retry` context
+   * callback. The treetable does not re-run anything itself - the
+   * consumer owns the data flow and restarts the load on this signal.
+   * The built-in error surface has no retry control; this output only
+   * fires through a `*cngxError` (or config-tier error) template.
+   */
+  readonly retry = output<void>();
+
   private readonly config = inject(CNGX_TREETABLE_CONFIG);
+
+  /**
+   * @internal Resolved copy for every built-in string: app-wide
+   * `CNGX_TREETABLE_CONFIG.labels` overlaid on the English library
+   * defaults. Plain field - the config token is injected once.
+   */
+  protected readonly labels: TreetableLabels = {
+    ...TREETABLE_DEFAULT_LABELS,
+    ...this.config.labels,
+  };
 
   /** Document writing direction - swaps the physical expand/collapse arrows under `rtl` (APG treegrid). */
   private readonly direction = injectDirection();
@@ -258,6 +326,45 @@ export class CngxTreetable<T = unknown> {
   protected readonly headerTpls = contentChildren(CngxHeaderTpl);
   /** @internal */
   protected readonly emptyTpl = contentChild(CngxEmptyTpl);
+  /** @internal */
+  protected readonly errorTpl = contentChild(CngxErrorTpl);
+  /** @internal */
+  protected readonly skeletonRowTpl = contentChild(CngxSkeletonRowTpl);
+  /** @internal */
+  protected readonly refreshTpl = contentChild(CngxRefreshTpl);
+
+  /**
+   * @internal Slot cascade per async surface: projected slot ->
+   * `CNGX_TREETABLE_CONFIG.templates.<key>` -> built-in markup
+   * (`null` here; the template branches to it).
+   */
+  protected readonly resolvedEmptyTpl = computed(
+    () => this.emptyTpl()?.template ?? this.config.templates?.empty ?? null,
+  );
+  /** @internal See `resolvedEmptyTpl`. */
+  protected readonly resolvedErrorTpl = computed(
+    () => this.errorTpl()?.template ?? this.config.templates?.error ?? null,
+  );
+  /** @internal See `resolvedEmptyTpl`. */
+  protected readonly resolvedSkeletonRowTpl = computed(
+    () => this.skeletonRowTpl()?.template ?? this.config.templates?.skeletonRow ?? null,
+  );
+  /** @internal See `resolvedEmptyTpl`. */
+  protected readonly resolvedRefreshTpl = computed(
+    () => this.refreshTpl()?.template ?? this.config.templates?.refresh ?? null,
+  );
+
+  /** @internal Stable retry callback handed to the error-template context. */
+  protected readonly retryFn = (): void => this.retry.emit();
+
+  /**
+   * @internal Context for the error template. `equal`-guarded so an
+   * unrelated recompute does not hand the outlet a fresh object.
+   */
+  protected readonly errorContext = computed<CngxErrorTplContext>(
+    () => ({ $implicit: this.error(), retry: this.retryFn }),
+    { equal: (a, b) => a.$implicit === b.$implicit && a.retry === b.retry },
+  );
 
   /**
    * Every node in the `tree` input flattened to a single depth-first
@@ -283,7 +390,9 @@ export class CngxTreetable<T = unknown> {
   /**
    * `true` when the table has nothing to render. Mirrors `state.isEmpty()`
    * when an async state is bound; otherwise falls back to "no visible
-   * rows". Drives the projected `*cngxEmpty` slot.
+   * rows". The projected `*cngxEmpty` slot itself renders off the body
+   * view switch, which resolves emptiness from the visible rows - this
+   * computed is the consumer-facing signal, not the template driver.
    */
   readonly isEmpty = computed(() => this.state()?.isEmpty() ?? this.visibleNodes().length === 0);
 
@@ -298,6 +407,76 @@ export class CngxTreetable<T = unknown> {
 
   /** The current error from a bound async state, or `null` (also `null` when no state is bound). */
   readonly error = computed(() => this.state()?.error() ?? null);
+
+  /**
+   * @internal Which body the template renders. Delegates to the shared
+   * `resolveAsyncView` lookup table so the grid cannot drift from every
+   * other async surface. Without a bound `[state]` the grid is a plain
+   * synchronous table: rows when there are rows, the empty surface
+   * otherwise. Emptiness is resolved from the visible rows (the
+   * renderable truth), not from `state.isEmpty()` - seed rows in
+   * `[tree]` count as content even while the state is still loading.
+   */
+  protected readonly activeView = computed<AsyncView>(() => {
+    const rowsEmpty = this.visibleNodes().length === 0;
+    const bound = this.state();
+    if (!bound) {
+      return rowsEmpty ? 'empty' : 'content';
+    }
+    const view = resolveAsyncView(bound.status(), bound.isFirstLoad(), rowsEmpty);
+    // A first load over seed rows paints the rows - `[tree]` can carry data
+    // before the state settles, and a skeleton would hide it. The busy
+    // window still reaches AT through the host's `aria-busy`.
+    if (view === 'skeleton' && !rowsEmpty) {
+      return 'content';
+    }
+    // `loading` and `pending` that are not a first load resolve to `content`
+    // in the lookup table; with no rows that renders a blank region. Work in
+    // flight with nothing on screen is a load. `refreshing` is excluded - it
+    // renders its own indicator and announcement (same correction the
+    // timeline and stat-card apply).
+    const silentlyBusy = rowsEmpty && bound.isBusy() && !bound.isRefreshing();
+    return view === 'content' && silentlyBusy ? 'skeleton' : view;
+  });
+
+  /** @internal `true` while the body renders the grid (`content` or `content+error`). */
+  protected readonly showsContent = computed(() => {
+    const view = this.activeView();
+    return view === 'content' || view === 'content+error';
+  });
+
+  /**
+   * @internal A refresh over rows the user can still read. The skeleton
+   * branch already communicates its own busy phase, so the indicator only
+   * renders while the grid is on screen.
+   */
+  protected readonly showsRefreshIndicator = computed(
+    () => this.showsContent() && this.isRefreshing(),
+  );
+
+  /** @internal Index list for the skeleton branch's `@for`. */
+  protected readonly skeletonRows = computed(
+    () => Array.from({ length: this.skeletonRowCount() }, (_, i) => i),
+    { equal: arrayEqual },
+  );
+
+  /**
+   * @internal Live-region text for view transitions. Only busy phases and
+   * failures have anything to say; the string is empty otherwise so the
+   * region stays in the DOM while staying silent. Single announcer for
+   * the failure - the error surface itself carries no `role="alert"`
+   * (that would double-fire on top of this region).
+   */
+  protected readonly stateAnnouncement = computed(() => {
+    const view = this.activeView();
+    if (view === 'skeleton') {
+      return this.labels.loading;
+    }
+    if (view === 'error' || view === 'content+error') {
+      return this.labels.errorFallback;
+    }
+    return this.showsRefreshIndicator() ? this.labels.refreshing : '';
+  });
 
   /**
    * Data-column keys for the current tree. Resolves to
@@ -453,20 +632,39 @@ export class CngxTreetable<T = unknown> {
   }
 
   constructor() {
-    // Seed expandedIds with the default fully-expanded set on first non-empty
-    // flatNodes, but only when the consumer has not pre-bound a non-empty value.
-    // Re-seed when the underlying tree structure changes.
-    let seededFor: readonly FlatNode<T>[] | null = null;
+    // Reconcile expansion/selection against the current tree. Two concerns,
+    // ordered inside one effect so a seed never immediately prunes itself:
+    //
+    // 1. Seed ONCE per component: the first non-empty flatNodes seeds the
+    //    default fully-expanded set, but only when the consumer has not
+    //    pre-bound a non-empty value. Later tree swaps never re-seed, so a
+    //    consumer-cleared (or user-collapsed) empty set survives data
+    //    refreshes instead of springing back to fully expanded.
+    // 2. Prune ids absent from the new tree: positional default ids would
+    //    otherwise silently re-attach to different nodes after a swap.
+    //    An empty forest is skipped as a transitional state (first load,
+    //    cleared data) - pruning against it would wipe expansion and
+    //    selection on every empty flash between refreshes.
+    let seeded = false;
     effect(() => {
       const nodes = this.flatNodes();
-      if (nodes === seededFor) {
+      if (nodes.length === 0) {
         return;
       }
-      seededFor = nodes;
       untracked(() => {
-        if (this.expandedIds().size === 0 && nodes.length > 0) {
-          this.expandedIds.set(getInitialExpandedIds(nodes));
+        const valid = new Set(nodes.map((n) => n.id));
+        if (!seeded) {
+          seeded = true;
+          if (this.expandedIds().size === 0) {
+            this.expandedIds.set(getInitialExpandedIds(nodes));
+            // Freshly seeded from these nodes - the expansion set cannot
+            // hold stale ids, but a pre-bound selection still can.
+            this.pruneAbsentIds(this.selectedIds, valid);
+            return;
+          }
         }
+        this.pruneAbsentIds(this.expandedIds, valid);
+        this.pruneAbsentIds(this.selectedIds, valid);
       });
     });
 
@@ -484,6 +682,31 @@ export class CngxTreetable<T = unknown> {
         }
       });
     });
+  }
+
+  /**
+   * Drops every id from `target` that is not in `valid`. Writes (and
+   * thereby emits the model's change output) only when something was
+   * actually removed, so an untouched set keeps its reference and a
+   * plain data refresh stays silent.
+   */
+  private pruneAbsentIds(
+    target: ModelSignal<ReadonlySet<string>>,
+    valid: ReadonlySet<string>,
+  ): void {
+    const current = target();
+    if (current.size === 0) {
+      return;
+    }
+    const next = new Set<string>();
+    for (const id of current) {
+      if (valid.has(id)) {
+        next.add(id);
+      }
+    }
+    if (next.size !== current.size) {
+      target.set(next);
+    }
   }
 
   /**
@@ -553,19 +776,35 @@ export class CngxTreetable<T = unknown> {
   }
 
   /**
-   * Visibility-bounded select-all toggle. If every currently *visible*
-   * row is selected, clears the selection. Otherwise selects every
-   * currently visible row - rows hidden inside a collapsed parent stay
-   * untouched. Only acts in `'multi'` mode; no-op in `'single'` or
-   * `'none'`. Drives the header checkbox's click handler.
+   * Visibility-bounded select-all toggle, in both directions. If every
+   * currently *visible* row is selected, deselects exactly those visible
+   * rows. Otherwise selects every currently visible row. Either way,
+   * rows hidden inside a collapsed parent stay untouched. Only acts in
+   * `'multi'` mode; no-op in `'single'` or `'none'`. Drives the header
+   * checkbox's click handler.
    */
   toggleAll(): void {
     if (this.selectionMode() !== 'multi') {
       return;
     }
     if (this.isAllSelected()) {
-      this.selectedIds.set(new Set());
-      this.selectionAnnouncementState.set('Selection cleared');
+      const visible = new Set(this.visibleNodes().map((n) => n.id));
+      this.selectedIds.update((current) => {
+        const next = new Set<string>();
+        for (const id of current) {
+          if (!visible.has(id)) {
+            next.add(id);
+          }
+        }
+        return next;
+      });
+      // Mirror the select branch's counted shape: the clear is bounded to
+      // the visible rows, so "Selection cleared" would misreport whenever
+      // hidden-selected rows survive.
+      const cleared = visible.size;
+      this.selectionAnnouncementState.set(
+        cleared === 1 ? '1 row deselected' : `${cleared} rows deselected`,
+      );
       return;
     }
     const visibleIds = this.visibleNodes().map((n) => n.id);

@@ -1,10 +1,18 @@
-import { Component } from '@angular/core';
-import { TestBed } from '@angular/core/testing';
+import { Component, signal, viewChild, type TemplateRef } from '@angular/core';
+import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { createManualState } from '@cngx/common/data';
 import { provideDirection } from '@cngx/core';
 import { beforeEach, describe, expect, it } from 'vitest';
-import type { FlatNode, Node } from './models';
+import { CngxErrorTpl, CngxRefreshTpl, CngxSkeletonRowTpl } from './column-template.directive';
+import type { CngxErrorTplContext, FlatNode, Node } from './models';
 import { CngxTreetable } from './treetable.component';
+import {
+  CNGX_TREETABLE_CONFIG,
+  provideTreetable,
+  withTreetableLabels,
+  type TreetableTemplates,
+} from './treetable.token';
 
 interface Item {
   name: string;
@@ -28,7 +36,8 @@ class TestHost {
 function getTreetable<T>(
   fixture: ReturnType<typeof TestBed.createComponent<TestHost>>,
 ): CngxTreetable<T> {
-  return fixture.debugElement.query(By.directive(CngxTreetable)).componentInstance as CngxTreetable<T>;
+  return fixture.debugElement.query(By.directive(CngxTreetable))
+    .componentInstance as CngxTreetable<T>;
 }
 
 describe('CngxTreetable', () => {
@@ -93,7 +102,7 @@ describe('CngxTreetable', () => {
     expect(treetable.columns()).toEqual(['name', 'age']);
   });
 
-  it('re-initialises expanded state when tree input changes', () => {
+  it('keeps expansion for ids still present when the tree input changes', () => {
     const fixture = TestBed.createComponent(CngxTreetable<Item>);
     fixture.componentRef.setInput('tree', tree);
     fixture.detectChanges();
@@ -224,14 +233,189 @@ describe('CngxTreetable', () => {
     });
 
     it('pre-bound non-empty expandedIds is preserved across the init effect', () => {
-      const preset = new Set<string>();
       const fixture = TestBed.createComponent(CngxTreetable<Item>);
       fixture.componentRef.setInput('tree', tree);
-      fixture.componentRef.setInput('expandedIds', new Set(['__sentinel__']));
+      // A real id that the default seed would NOT produce ('0-1' is a leaf;
+      // the seed only collects parents), so surviving verbatim proves the
+      // init effect neither overwrote nor re-derived the bound value.
+      fixture.componentRef.setInput('expandedIds', new Set(['0-1']));
       fixture.detectChanges();
-      expect(fixture.componentInstance.expandedIds().has('__sentinel__')).toBe(true);
-      // Sanity: sentinel doesn't blow up the visible-nodes pipeline.
-      expect(preset.size).toBe(0);
+      expect([...fixture.componentInstance.expandedIds()]).toEqual(['0-1']);
+    });
+  });
+
+  describe('toggleAll visibility bounds', () => {
+    it('clear branch deselects only visible rows; hidden-selected stay untouched', () => {
+      const fixture = TestBed.createComponent(CngxTreetable<Item>);
+      fixture.componentRef.setInput('tree', {
+        value: { name: 'Alice', age: 30 },
+        children: [
+          { value: { name: 'Bob', age: 10 }, children: [{ value: { name: 'Dave', age: 3 } }] },
+          { value: { name: 'Carol', age: 12 } },
+        ],
+      });
+      fixture.componentRef.setInput('selectionMode', 'multi');
+      fixture.detectChanges();
+      const t = fixture.componentInstance;
+
+      // Select Dave, then collapse his parent so he is hidden but selected.
+      t.toggleSelection(t.flatNodes()[2]);
+      t.toggle(t.flatNodes()[1]);
+      fixture.detectChanges();
+      expect(t.visibleNodes().map((n) => n.id)).toEqual(['0', '0-0', '0-1']);
+
+      // Select-all over the visible rows, then toggle again to clear them.
+      t.toggleAll();
+      fixture.detectChanges();
+      expect(t.isAllSelected()).toBe(true);
+      expect(t.selectedIds()).toEqual(new Set(['0', '0-0', '0-1', '0-0-0']));
+
+      t.toggleAll();
+      fixture.detectChanges();
+      expect(t.selectedIds()).toEqual(new Set(['0-0-0']));
+      // The announcement carries the bounded count - a blanket "cleared"
+      // would misreport the surviving hidden selection.
+      const region = fixture.debugElement.query(By.css('.cngx-treetable__sr'))
+        .nativeElement as HTMLElement;
+      expect(region.textContent?.trim()).toBe('3 rows deselected');
+    });
+
+    it('clear branch on a fully visible selection empties the set', () => {
+      const fixture = TestBed.createComponent(CngxTreetable<Item>);
+      fixture.componentRef.setInput('tree', tree);
+      fixture.componentRef.setInput('selectionMode', 'multi');
+      fixture.detectChanges();
+      const t = fixture.componentInstance;
+      t.toggleAll();
+      fixture.detectChanges();
+      expect(t.selectedIds().size).toBe(3);
+      t.toggleAll();
+      fixture.detectChanges();
+      expect(t.selectedIds().size).toBe(0);
+    });
+  });
+
+  describe('expansion seed guard + id pruning', () => {
+    const bigTree: Node<Item> = {
+      value: { name: 'Alice', age: 30 },
+      children: [
+        {
+          value: { name: 'Bob', age: 10 },
+          children: [{ value: { name: 'Dave', age: 3 } }],
+        },
+        { value: { name: 'Carol', age: 12 } },
+      ],
+    };
+
+    it('seeds fully expanded on the first non-empty tree, even when it arrives late', () => {
+      const fixture = TestBed.createComponent(CngxTreetable<Item>);
+      fixture.componentRef.setInput('tree', []);
+      fixture.detectChanges();
+      expect(fixture.componentInstance.expandedIds().size).toBe(0);
+
+      fixture.componentRef.setInput('tree', bigTree);
+      fixture.detectChanges();
+      // Root '0' and parent '0-0' both carry children.
+      expect(fixture.componentInstance.expandedIds()).toEqual(new Set(['0', '0-0']));
+      expect(fixture.debugElement.queryAll(By.css('cdk-row')).length).toBe(4);
+    });
+
+    it('a fully collapsed grid survives a data refresh instead of re-expanding', () => {
+      const fixture = TestBed.createComponent(CngxTreetable<Item>);
+      fixture.componentRef.setInput('tree', bigTree);
+      fixture.detectChanges();
+      const t = fixture.componentInstance;
+      // Collapse everything the seed expanded.
+      t.toggle(t.visibleNodes()[1]);
+      t.toggle(t.visibleNodes()[0]);
+      fixture.detectChanges();
+      expect(t.expandedIds().size).toBe(0);
+
+      // Data refresh: structurally different tree, same root ids.
+      fixture.componentRef.setInput('tree', { ...bigTree, value: { name: 'Alice2', age: 31 } });
+      fixture.detectChanges();
+      expect(t.expandedIds().size).toBe(0);
+      expect(fixture.debugElement.queryAll(By.css('cdk-row')).length).toBe(1);
+    });
+
+    it('prunes expansion ids that vanish from the tree after a swap', () => {
+      const fixture = TestBed.createComponent(CngxTreetable<Item>);
+      fixture.componentRef.setInput('tree', bigTree);
+      fixture.detectChanges();
+      const t = fixture.componentInstance;
+      expect(t.expandedIds()).toEqual(new Set(['0', '0-0']));
+
+      // The swapped tree is a single childless root: '0-0' no longer exists
+      // at all. ('0' survives as an id even though it lost its children -
+      // pruning is by id presence, not by hasChildren.)
+      fixture.componentRef.setInput('tree', { value: { name: 'X', age: 1 } });
+      fixture.detectChanges();
+      expect(t.expandedIds()).toEqual(new Set(['0']));
+    });
+
+    it('prunes selection ids that vanish from the tree after a swap', () => {
+      const fixture = TestBed.createComponent(CngxTreetable<Item>);
+      fixture.componentRef.setInput('tree', bigTree);
+      fixture.componentRef.setInput('selectionMode', 'multi');
+      fixture.detectChanges();
+      const t = fixture.componentInstance;
+      t.toggleSelection(t.flatNodes()[2]); // Dave '0-0-0'
+      t.toggleSelection(t.flatNodes()[3]); // Carol '0-1'
+      fixture.detectChanges();
+      expect(t.selectedIds()).toEqual(new Set(['0-0-0', '0-1']));
+
+      // Dave's subtree is gone in the swapped tree; Carol's id survives.
+      fixture.componentRef.setInput('tree', {
+        value: { name: 'Alice', age: 30 },
+        children: [{ value: { name: 'Bob', age: 10 } }, { value: { name: 'Carol', age: 12 } }],
+      });
+      fixture.detectChanges();
+      expect(t.selectedIds()).toEqual(new Set(['0-1']));
+    });
+
+    it('keeps set references (and stays silent) when a swap removes nothing', () => {
+      const fixture = TestBed.createComponent(CngxTreetable<Item>);
+      fixture.componentRef.setInput('tree', bigTree);
+      fixture.componentRef.setInput('selectionMode', 'multi');
+      fixture.detectChanges();
+      const t = fixture.componentInstance;
+      t.toggleSelection(t.flatNodes()[3]);
+      fixture.detectChanges();
+      const expandedBefore = t.expandedIds();
+      const selectedBefore = t.selectedIds();
+
+      fixture.componentRef.setInput('tree', { ...bigTree, value: { name: 'Alice2', age: 31 } });
+      fixture.detectChanges();
+      expect(t.expandedIds()).toBe(expandedBefore);
+      expect(t.selectedIds()).toBe(selectedBefore);
+    });
+
+    it('does not prune against a transient empty forest', () => {
+      const fixture = TestBed.createComponent(CngxTreetable<Item>);
+      fixture.componentRef.setInput('tree', bigTree);
+      fixture.componentRef.setInput('selectionMode', 'multi');
+      fixture.detectChanges();
+      const t = fixture.componentInstance;
+      t.toggleSelection(t.flatNodes()[3]);
+      fixture.detectChanges();
+
+      fixture.componentRef.setInput('tree', []);
+      fixture.detectChanges();
+      expect(t.expandedIds()).toEqual(new Set(['0', '0-0']));
+      expect(t.selectedIds()).toEqual(new Set(['0-1']));
+
+      fixture.componentRef.setInput('tree', bigTree);
+      fixture.detectChanges();
+      expect(t.selectedIds()).toEqual(new Set(['0-1']));
+    });
+
+    it('prunes a pre-bound selection against the first non-empty tree', () => {
+      const fixture = TestBed.createComponent(CngxTreetable<Item>);
+      fixture.componentRef.setInput('tree', bigTree);
+      fixture.componentRef.setInput('selectionMode', 'multi');
+      fixture.componentRef.setInput('selectedIds', new Set(['0-1', '__stale__']));
+      fixture.detectChanges();
+      expect(fixture.componentInstance.selectedIds()).toEqual(new Set(['0-1']));
     });
   });
 
@@ -314,7 +498,9 @@ describe('CngxTreetable', () => {
   });
 
   describe('roving focus model', () => {
-    function mount(opts: { selectionMode?: 'none' | 'single' | 'multi'; showCheckboxes?: boolean } = {}) {
+    function mount(
+      opts: { selectionMode?: 'none' | 'single' | 'multi'; showCheckboxes?: boolean } = {},
+    ) {
       const fixture = TestBed.createComponent(CngxTreetable<Item>);
       fixture.componentRef.setInput('tree', tree);
       fixture.componentRef.setInput('selectionMode', opts.selectionMode ?? 'none');
@@ -407,8 +593,9 @@ describe('CngxTreetable', () => {
       const fixture = mount({ selectionMode: 'multi' });
       const t = fixture.componentInstance;
       const region = () =>
-        (fixture.debugElement.query(By.css('.cngx-treetable__sr')).nativeElement as HTMLElement)
-          .textContent?.trim();
+        (
+          fixture.debugElement.query(By.css('.cngx-treetable__sr')).nativeElement as HTMLElement
+        ).textContent?.trim();
 
       t.handleKeyDown(key('a', { ctrlKey: true }));
       fixture.detectChanges();
@@ -416,7 +603,7 @@ describe('CngxTreetable', () => {
 
       t.handleKeyDown(key('a', { ctrlKey: true }));
       fixture.detectChanges();
-      expect(region()).toBe('Selection cleared');
+      expect(region()).toBe('3 rows deselected');
     });
 
     it('stays silent in the live region on per-row selection toggles', () => {
@@ -476,6 +663,390 @@ describe('CngxTreetable', () => {
         fixture.detectChanges();
         expect(t.focusedNodeId()).toBe(root.id);
         expect(event.defaultPrevented).toBe(false);
+      }
+    });
+  });
+
+  describe('[state] async view cascade', () => {
+    function mount(input: Node<Item> | Node<Item>[]) {
+      const fixture = TestBed.createComponent(CngxTreetable<Item>);
+      fixture.componentRef.setInput('tree', input);
+      const state = createManualState<readonly Item[]>();
+      fixture.componentRef.setInput('state', state);
+      fixture.detectChanges();
+      return { fixture, state };
+    }
+
+    type Fixture = ComponentFixture<CngxTreetable<Item>>;
+
+    const table = (f: Fixture) => f.debugElement.query(By.css('cdk-table'));
+    const skeleton = (f: Fixture) => f.debugElement.query(By.css('.cngx-treetable__skeleton'));
+    const errorSurface = (f: Fixture) => f.debugElement.query(By.css('.cngx-treetable__error'));
+    const emptySurface = (f: Fixture) => f.debugElement.query(By.css('.cngx-treetable__empty'));
+
+    function stateRegionText(fixture: Fixture): string {
+      const regions = fixture.debugElement.queryAll(By.css('.cngx-treetable__sr'));
+      // The bulk-selection announcer comes first; the state announcer second.
+      return (regions[1].nativeElement as HTMLElement).textContent?.trim() ?? '';
+    }
+
+    it('renders the grid and no aria-busy when no state is bound', () => {
+      const fixture = TestBed.createComponent(CngxTreetable<Item>);
+      fixture.componentRef.setInput('tree', tree);
+      fixture.detectChanges();
+      expect(fixture.debugElement.query(By.css('cdk-table'))).not.toBeNull();
+      const host = fixture.nativeElement as HTMLElement;
+      expect(host.getAttribute('aria-busy')).toBeNull();
+    });
+
+    it('renders the empty surface synchronously when no state is bound and the tree is empty', () => {
+      const fixture = TestBed.createComponent(CngxTreetable<Item>);
+      fixture.componentRef.setInput('tree', []);
+      fixture.detectChanges();
+      expect(fixture.debugElement.query(By.css('.cngx-treetable__empty'))).not.toBeNull();
+      expect(fixture.debugElement.query(By.css('cdk-table'))).toBeNull();
+    });
+
+    it('renders nothing while a bound state is idle before the first load', () => {
+      const { fixture } = mount([]);
+      expect(table(fixture)).toBeNull();
+      expect(skeleton(fixture)).toBeNull();
+      expect(emptySurface(fixture)).toBeNull();
+      expect(errorSurface(fixture)).toBeNull();
+    });
+
+    it('shows the skeleton with aria-busy during the first load of an empty grid', () => {
+      const { fixture, state } = mount([]);
+      state.set('loading');
+      fixture.detectChanges();
+      const sk = skeleton(fixture) as { nativeElement: HTMLElement } | null;
+      expect(sk).not.toBeNull();
+      expect(sk?.nativeElement.getAttribute('aria-hidden')).toBe('true');
+      expect(table(fixture)).toBeNull();
+      const host = fixture.nativeElement as HTMLElement;
+      expect(host.getAttribute('aria-busy')).toBe('true');
+      expect(stateRegionText(fixture)).toBe('Loading');
+    });
+
+    it('honors skeletonRowCount in the skeleton branch', () => {
+      const { fixture, state } = mount([]);
+      fixture.componentRef.setInput('skeletonRowCount', 5);
+      state.set('loading');
+      fixture.detectChanges();
+      expect(fixture.debugElement.queryAll(By.css('.cngx-treetable__skeleton-row')).length).toBe(5);
+    });
+
+    it('paints seed rows instead of the skeleton during a first load', () => {
+      const { fixture, state } = mount(tree);
+      state.set('loading');
+      fixture.detectChanges();
+      expect(skeleton(fixture)).toBeNull();
+      expect(table(fixture)).not.toBeNull();
+      expect(fixture.debugElement.queryAll(By.css('cdk-row')).length).toBe(3);
+      const host = fixture.nativeElement as HTMLElement;
+      expect(host.getAttribute('aria-busy')).toBe('true');
+    });
+
+    it('shows the error surface when the first load fails, announced politely without an alert', () => {
+      const { fixture, state } = mount([]);
+      state.set('loading');
+      fixture.detectChanges();
+      state.setError(new Error('boom'));
+      fixture.detectChanges();
+      expect(errorSurface(fixture)).not.toBeNull();
+      expect(table(fixture)).toBeNull();
+      expect(stateRegionText(fixture)).toBe('Data failed to load');
+      expect(fixture.debugElement.query(By.css('[role="alert"]'))).toBeNull();
+    });
+
+    it('replaces seed rows with the error surface when the first load fails', () => {
+      // Pins the sibling-symmetric behavior (timeline does the same): only
+      // the skeleton branch is rescued for seed rows; a first-load failure
+      // is a failure, and the error surface takes the grid's place.
+      const { fixture, state } = mount(tree);
+      state.set('loading');
+      fixture.detectChanges();
+      expect(table(fixture)).not.toBeNull();
+      state.setError(new Error('boom'));
+      fixture.detectChanges();
+      expect(errorSurface(fixture)).not.toBeNull();
+      expect(table(fixture)).toBeNull();
+    });
+
+    it('shows the empty surface when a load succeeds with nothing to render', () => {
+      const { fixture, state } = mount([]);
+      state.setSuccess([]);
+      fixture.detectChanges();
+      expect(emptySurface(fixture)).not.toBeNull();
+      expect(table(fixture)).toBeNull();
+      const host = fixture.nativeElement as HTMLElement;
+      expect(host.getAttribute('aria-busy')).toBeNull();
+      expect(stateRegionText(fixture)).toBe('');
+    });
+
+    it('keeps rows on screen and shows the refresh indicator during a refresh', () => {
+      const { fixture, state } = mount(tree);
+      state.setSuccess([]);
+      fixture.detectChanges();
+      state.set('refreshing');
+      fixture.detectChanges();
+      expect(table(fixture)).not.toBeNull();
+      const refresh = fixture.debugElement.query(By.css('.cngx-treetable__refresh'));
+      expect(refresh).not.toBeNull();
+      expect((refresh.nativeElement as HTMLElement).getAttribute('aria-hidden')).toBe('true');
+      const host = fixture.nativeElement as HTMLElement;
+      expect(host.getAttribute('aria-busy')).toBe('true');
+      expect(stateRegionText(fixture)).toBe('Refreshing');
+    });
+
+    it('keeps content and adds the error surface when a refresh fails', () => {
+      const { fixture, state } = mount(tree);
+      state.setSuccess([]);
+      fixture.detectChanges();
+      state.setError(new Error('boom'));
+      fixture.detectChanges();
+      expect(table(fixture)).not.toBeNull();
+      expect(errorSurface(fixture)).not.toBeNull();
+      expect(stateRegionText(fixture)).toBe('Data failed to load');
+    });
+
+    it('treats a non-first-load load over an empty grid as a load, not a blank region', () => {
+      const { fixture, state } = mount([]);
+      state.setSuccess([]);
+      fixture.detectChanges();
+      state.set('loading');
+      fixture.detectChanges();
+      expect(skeleton(fixture)).not.toBeNull();
+      expect(emptySurface(fixture)).toBeNull();
+    });
+
+    it('drops the announcement and aria-busy once content settles', () => {
+      const { fixture, state } = mount(tree);
+      state.set('loading');
+      fixture.detectChanges();
+      state.setSuccess([]);
+      fixture.detectChanges();
+      expect(table(fixture)).not.toBeNull();
+      expect(stateRegionText(fixture)).toBe('');
+      const host = fixture.nativeElement as HTMLElement;
+      expect(host.getAttribute('aria-busy')).toBeNull();
+    });
+
+    it('renders a projected cngxSkeletonRow slot once per placeholder row with index context', () => {
+      @Component({
+        template: `
+          <cngx-treetable [tree]="[]" [state]="state" [skeletonRowCount]="4">
+            <ng-template cngxSkeletonRow let-index let-rowCount="rowCount">
+              <span class="slot-skeleton">{{ index }}/{{ rowCount }}</span>
+            </ng-template>
+          </cngx-treetable>
+        `,
+        imports: [CngxTreetable, CngxSkeletonRowTpl],
+      })
+      class SkeletonHost {
+        readonly state = createManualState<readonly Item[]>();
+      }
+      TestBed.configureTestingModule({ imports: [SkeletonHost] });
+      const fixture = TestBed.createComponent(SkeletonHost);
+      fixture.detectChanges();
+      fixture.componentInstance.state.set('loading');
+      fixture.detectChanges();
+      const slots = fixture.debugElement.queryAll(By.css('.slot-skeleton'));
+      expect(slots.length).toBe(4);
+      expect((slots[2].nativeElement as HTMLElement).textContent).toBe('2/4');
+      expect(fixture.debugElement.query(By.css('.cngx-treetable__skeleton-row'))).toBeNull();
+    });
+
+    it('renders a projected cngxRefresh slot inside the refresh indicator', () => {
+      @Component({
+        template: `
+          <cngx-treetable [tree]="tree" [state]="state">
+            <ng-template cngxRefresh>
+              <span class="slot-refresh">SPIN</span>
+            </ng-template>
+          </cngx-treetable>
+        `,
+        imports: [CngxTreetable, CngxRefreshTpl],
+      })
+      class RefreshHost {
+        readonly tree = tree;
+        readonly state = createManualState<readonly Item[]>();
+      }
+      TestBed.configureTestingModule({ imports: [RefreshHost] });
+      const fixture = TestBed.createComponent(RefreshHost);
+      fixture.detectChanges();
+      fixture.componentInstance.state.setSuccess([]);
+      fixture.detectChanges();
+      fixture.componentInstance.state.set('refreshing');
+      fixture.detectChanges();
+      const slot = fixture.debugElement.query(By.css('.cngx-treetable__refresh .slot-refresh'));
+      expect(slot).not.toBeNull();
+      const indicator = fixture.debugElement.query(By.css('.cngx-treetable__refresh'))
+        .nativeElement as HTMLElement;
+      expect(indicator.textContent).not.toContain('Refreshing');
+    });
+
+    it('renders a projected cngxError slot with the raw error as context', () => {
+      @Component({
+        template: `
+          <cngx-treetable [tree]="[]" [state]="state">
+            <ng-template cngxError let-error>
+              <span class="slot-error">ERR: {{ error.message }}</span>
+            </ng-template>
+          </cngx-treetable>
+        `,
+        imports: [CngxTreetable, CngxErrorTpl],
+      })
+      class ErrorHost {
+        readonly state = createManualState<readonly Item[]>();
+      }
+      TestBed.configureTestingModule({ imports: [ErrorHost] });
+      const fixture = TestBed.createComponent(ErrorHost);
+      fixture.detectChanges();
+      fixture.componentInstance.state.set('loading');
+      fixture.detectChanges();
+      fixture.componentInstance.state.setError(new Error('boom'));
+      fixture.detectChanges();
+      const slot = fixture.debugElement.query(By.css('.slot-error'));
+      expect(slot).not.toBeNull();
+      expect((slot.nativeElement as HTMLElement).textContent?.trim()).toBe('ERR: boom');
+      expect(fixture.debugElement.query(By.css('.cngx-treetable__error-message'))).toBeNull();
+    });
+
+    it('routes announcements and surface copy through withTreetableLabels overrides', () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideTreetable(
+            withTreetableLabels({
+              loading: 'Wird geladen',
+              errorFallback: 'Laden fehlgeschlagen',
+              emptyFallback: 'Keine Daten',
+              expand: 'Aufklappen',
+            }),
+          ),
+        ],
+      });
+      const { fixture, state } = mount([]);
+      state.set('loading');
+      fixture.detectChanges();
+      expect(stateRegionText(fixture)).toBe('Wird geladen');
+
+      state.setError(new Error('boom'));
+      fixture.detectChanges();
+      expect(stateRegionText(fixture)).toBe('Laden fehlgeschlagen');
+      const message = fixture.debugElement.query(By.css('.cngx-treetable__error-message'))
+        .nativeElement as HTMLElement;
+      expect(message.textContent?.trim()).toBe('Laden fehlgeschlagen');
+
+      state.setSuccess([]);
+      fixture.detectChanges();
+      const empty = fixture.debugElement.query(By.css('.cngx-treetable__empty'))
+        .nativeElement as HTMLElement;
+      expect(empty.textContent?.trim()).toBe('Keine Daten');
+    });
+
+    it('unset label keys keep the English defaults and toggles read the label bag', () => {
+      TestBed.configureTestingModule({
+        providers: [provideTreetable(withTreetableLabels({ expand: 'Aufklappen' }))],
+      });
+      const fixture = TestBed.createComponent(CngxTreetable<Item>);
+      fixture.componentRef.setInput('tree', tree);
+      fixture.detectChanges();
+      const t = fixture.componentInstance;
+      const toggleFor = () =>
+        fixture.debugElement.query(By.css('.cngx-treetable__toggle')).nativeElement as HTMLElement;
+      expect(toggleFor().getAttribute('aria-label')).toBe('Collapse');
+      t.toggle(t.flatNodes()[0]);
+      fixture.detectChanges();
+      expect(toggleFor().getAttribute('aria-label')).toBe('Aufklappen');
+    });
+
+    it('emits the retry output when a projected error template invokes its retry callback', () => {
+      @Component({
+        template: `
+          <cngx-treetable [tree]="[]" [state]="state" (retry)="retries = retries + 1">
+            <ng-template cngxError let-retry="retry">
+              <button class="slot-retry" type="button" (click)="retry()">Again</button>
+            </ng-template>
+          </cngx-treetable>
+        `,
+        imports: [CngxTreetable, CngxErrorTpl],
+      })
+      class RetryHost {
+        readonly state = createManualState<readonly Item[]>();
+        retries = 0;
+      }
+      TestBed.configureTestingModule({ imports: [RetryHost] });
+      const fixture = TestBed.createComponent(RetryHost);
+      fixture.detectChanges();
+      fixture.componentInstance.state.set('loading');
+      fixture.detectChanges();
+      fixture.componentInstance.state.setError(new Error('boom'));
+      fixture.detectChanges();
+      const button = fixture.debugElement.query(By.css('.slot-retry')).nativeElement as HTMLElement;
+      button.click();
+      button.click();
+      expect(fixture.componentInstance.retries).toBe(2);
+    });
+
+    it('config-tier templates fill in when no slot is projected; a projected slot wins', () => {
+      const cfg: { templates?: TreetableTemplates } = {};
+      @Component({
+        template: `
+          <ng-template #cfgError let-error>
+            <span class="cfg-error">CFG {{ error.message }}</span>
+          </ng-template>
+          <ng-template #slotError let-error>
+            <span class="slot-error">SLOT</span>
+          </ng-template>
+          @if (ready()) {
+            <cngx-treetable [tree]="[]" [state]="state">
+              @if (withSlot()) {
+                <ng-template cngxError let-error>
+                  <span class="slot-error">SLOT</span>
+                </ng-template>
+              }
+            </cngx-treetable>
+          }
+        `,
+        imports: [CngxTreetable, CngxErrorTpl],
+        providers: [{ provide: CNGX_TREETABLE_CONFIG, useValue: cfg }],
+      })
+      class ConfigHost {
+        readonly cfgError = viewChild.required<TemplateRef<CngxErrorTplContext>>('cfgError');
+        readonly ready = signal(false);
+        readonly withSlot = signal(false);
+        readonly state = createManualState<readonly Item[]>();
+      }
+      TestBed.configureTestingModule({ imports: [ConfigHost] });
+      const fixture = TestBed.createComponent(ConfigHost);
+      fixture.detectChanges();
+      const host = fixture.componentInstance;
+      cfg.templates = { error: host.cfgError() };
+      host.state.set('loading');
+      host.state.setError(new Error('boom'));
+      host.ready.set(true);
+      fixture.detectChanges();
+      const cfgTpl = fixture.debugElement.query(By.css('.cfg-error'));
+      expect(cfgTpl).not.toBeNull();
+      expect((cfgTpl.nativeElement as HTMLElement).textContent?.trim()).toBe('CFG boom');
+
+      host.withSlot.set(true);
+      fixture.detectChanges();
+      expect(fixture.debugElement.query(By.css('.slot-error'))).not.toBeNull();
+      expect(fixture.debugElement.query(By.css('.cfg-error'))).toBeNull();
+    });
+
+    it('keeps both live regions in the DOM across every view', () => {
+      const { fixture, state } = mount([]);
+      for (const move of [
+        () => state.set('loading'),
+        () => state.setError(new Error('x')),
+        () => state.setSuccess([]),
+      ]) {
+        move();
+        fixture.detectChanges();
+        expect(fixture.debugElement.queryAll(By.css('.cngx-treetable__sr')).length).toBe(2);
       }
     });
   });

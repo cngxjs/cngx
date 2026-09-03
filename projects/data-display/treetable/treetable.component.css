@@ -29,8 +29,15 @@
  *   padding so the tree hierarchy is visible without an explicit
  *   toggle column
  * - `__empty` - empty-state slot, centred and muted
- * - `__sr` - visually-hidden live region for bulk-selection
- *   announcements; always in the DOM, content reactive
+ * - `__skeleton` / `__skeleton-row` / `__skeleton-toggle` /
+ *   `__skeleton-line` - first-load placeholder restating the row
+ *   raster; static (no shimmer), line color mixed from currentColor
+ * - `__refresh` - muted refresh indicator below the grid while
+ *   loaded rows stay on screen
+ * - `__error` / `__error-message` - error surface, centred, message
+ *   in the foundation danger color
+ * - `__sr` - visually-hidden live regions (bulk-selection and
+ *   async-state announcements); always in the DOM, content reactive
  * - `__toggle` - the expand/collapse button itself; hover swaps to
  *   the header border + header text colours
  *
@@ -312,6 +319,16 @@
     syntax: '*';
     inherits: false;
     initial-value: 0.875rem;
+  }
+
+  /**
+   * Height of one skeleton placeholder line during a first load.
+   * @group State / Loading
+   */
+  @property --cngx-treetable-skeleton-line-size {
+    syntax: '*';
+    inherits: true;
+    initial-value: 12px;
   }
 
   /**
@@ -601,6 +618,65 @@
         var(--cngx-treetable-empty-padding-inline, 1rem);
       text-align: center;
       color: var(--cngx-treetable-muted-color, oklch(0.5 0.015 250));
+      font-size: var(--cngx-treetable-empty-font-size, 0.875rem);
+    }
+
+    /* First-load skeleton - restates the row raster (toggle square + two
+       lines) instead of borrowing the cdk cells: the real grid is out of
+       the DOM on this branch. Static placeholders, no shimmer, so there
+       is no motion to gate on prefers-reduced-motion. Line color mixes
+       from currentColor so it tracks the scheme without its own token. */
+    .cngx-treetable__skeleton {
+      padding: var(--cngx-treetable-cell-padding-block, 0.6rem)
+        var(--cngx-treetable-cell-padding-inline, 1rem);
+    }
+
+    .cngx-treetable__skeleton-row {
+      display: flex;
+      align-items: center;
+      gap: var(--cngx-treetable-cell-padding-inline, 1rem);
+      padding-block: var(--cngx-treetable-cell-padding-block, 0.6rem);
+    }
+
+    .cngx-treetable__skeleton-toggle,
+    .cngx-treetable__skeleton-line {
+      border-radius: var(--cngx-treetable-toggle-radius, 4px);
+      background: color-mix(in oklch, currentColor 14%, transparent);
+    }
+
+    .cngx-treetable__skeleton-toggle {
+      flex: none;
+      inline-size: var(--cngx-treetable-skeleton-line-size, 12px);
+      block-size: var(--cngx-treetable-skeleton-line-size, 12px);
+    }
+
+    .cngx-treetable__skeleton-line {
+      flex: 2 1 auto;
+      block-size: var(--cngx-treetable-skeleton-line-size, 12px);
+    }
+
+    .cngx-treetable__skeleton-line--short {
+      flex: 1 1 auto;
+    }
+
+    /* Refresh indicator - rendered below the grid while loaded rows stay
+       readable. Decorative for AT (the live region announces). */
+    .cngx-treetable__refresh {
+      padding: var(--cngx-treetable-cell-padding-block, 0.6rem)
+        var(--cngx-treetable-cell-padding-inline, 1rem);
+      color: var(--cngx-treetable-muted-color, oklch(0.5 0.015 250));
+      font-size: var(--cngx-treetable-empty-font-size, 0.875rem);
+    }
+
+    .cngx-treetable__error {
+      padding: var(--cngx-treetable-empty-padding-block, 2rem)
+        var(--cngx-treetable-empty-padding-inline, 1rem);
+      text-align: center;
+    }
+
+    .cngx-treetable__error-message {
+      margin: 0;
+      color: var(--cngx-color-danger, oklch(0.6 0.18 25));
       font-size: var(--cngx-treetable-empty-font-size, 0.875rem);
     }
 
