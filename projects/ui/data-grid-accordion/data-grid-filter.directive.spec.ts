@@ -72,4 +72,42 @@ describe('CngxDgaFilter', () => {
     TestBed.flushEffects();
     expect(input.value).toBe('reset');
   });
+
+  it('defers an external term change while focused and reconciles on blur', () => {
+    const { fixture, group, input } = setup();
+    input.value = 'typed';
+    input.focus();
+
+    // Focused: the effect skips the write so the caret is not reset.
+    group.filterTerm.set('');
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(input.value).toBe('typed');
+
+    // Blur re-runs the reconciliation - without it the deferred write is
+    // dropped forever (rows unfilter, the box keeps stale text).
+    input.blur();
+    input.dispatchEvent(new Event('blur'));
+    expect(input.value).toBe('');
+  });
+
+  it('lets a pending debounced keystroke win over a stale external term on blur', () => {
+    const { fixture, group, input } = setup();
+    group.filterTerm.set('old');
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    input.focus();
+    input.value = 'new';
+    input.dispatchEvent(new Event('input'));
+
+    // Blur before the debounce elapses: the box must keep the user's text -
+    // the in-flight write is about to make box and grid consistent.
+    input.blur();
+    input.dispatchEvent(new Event('blur'));
+    expect(input.value).toBe('new');
+
+    vi.advanceTimersByTime(200);
+    expect(group.filterTerm()).toBe('new');
+  });
 });

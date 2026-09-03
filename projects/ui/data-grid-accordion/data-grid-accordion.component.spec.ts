@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxAccordion } from '@cngx/common/interactive';
 import { CngxFilter, CngxSort, type SortEntry } from '@cngx/common/data';
@@ -404,7 +404,51 @@ describe('CngxDataGridAccordion column derivation', () => {
       .nativeElement as HTMLElement;
     expect(template(el)).toBe('auto minmax(0, 1fr) auto');
   });
+
+  it('dev-warns once when a row projects more cells than the shared template has tracks', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    TestBed.configureTestingModule({ imports: [OverflowHost] });
+    const fixture = TestBed.createComponent(OverflowHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    // The extra cells land in implicit grid tracks and misalign silently -
+    // the only surface for the mistake is this warning.
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn.mock.calls[0][0]).toContain('4 cells');
+    expect(warn.mock.calls[0][0]).toContain('3 tracks');
+    warn.mockRestore();
+  });
+
+  it('does not warn when every row matches the header tracks', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    TestBed.configureTestingModule({ imports: [ContentHost] });
+    const fixture = TestBed.createComponent(ContentHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
+  });
 });
+
+@Component({
+  template: `<cngx-data-grid-accordion>
+    <cngx-dga-header>
+      <span cngxDgaCell>ID</span>
+      <span cngxDgaCell>Name</span>
+      <span cngxDgaCell>Amount</span>
+    </cngx-dga-header>
+    <cngx-dga-row panelId="a">
+      <span cngxDgaCell>1</span>
+      <span cngxDgaCell primary>Alpha</span>
+      <span cngxDgaCell>120</span>
+      <span cngxDgaCell>extra</span>
+      Detail
+    </cngx-dga-row>
+  </cngx-data-grid-accordion>`,
+  imports: [CngxDataGridAccordion, CngxDataGridHeader, CngxDataGridRow, CngxDgCell],
+})
+class OverflowHost {}
 
 @Component({
   template: `<cngx-data-grid-accordion [multi]="true" [(openIds)]="open">

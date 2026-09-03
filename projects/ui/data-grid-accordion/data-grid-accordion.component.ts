@@ -3,6 +3,8 @@ import {
   Component,
   computed,
   contentChild,
+  contentChildren,
+  effect,
   inject,
   input,
   model,
@@ -255,7 +257,8 @@ export class CngxDataGridAccordion implements CngxDataGridAccordionContext {
   // The header is the single column source; the first row provides the primary
   // index (for the grow default) and doubles as the source when no header exists.
   private readonly header = contentChild(CngxDataGridHeader);
-  private readonly firstRow = contentChild(CngxDataGridRow);
+  private readonly rows = contentChildren(CngxDataGridRow);
+  private readonly firstRow = computed(() => this.rows().at(0));
 
   /** Index of the primary column, read from the first row's `primary` cell (-1 = none). */
   private readonly primaryIndex = computed(
@@ -291,6 +294,34 @@ export class CngxDataGridAccordion implements CngxDataGridAccordionContext {
   protected readonly resolvedColumns = computed(
     () => this.columns() ?? this.derivedColumns() ?? '1fr',
   );
+
+  private cellCountWarned = false;
+
+  constructor() {
+    // A row projecting more cells than the shared template has tracks pushes
+    // the extras into implicit grid tracks - the subgrid misaligns silently.
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+      effect(() => {
+        if (this.cellCountWarned) {
+          return;
+        }
+        const tracks = this.sourceCells().length;
+        if (tracks === 0) {
+          return;
+        }
+        const over = this.rows().find((row) => row.cells().length > tracks);
+        if (over) {
+          this.cellCountWarned = true;
+          console.warn(
+            `CngxDataGridAccordion: a row projects ${over.cells().length} cells but the ` +
+              `shared column template has ${tracks} tracks - the extra cells land in ` +
+              'implicit tracks and misalign silently. Match every row to the header ' +
+              '(or first-row) cell count.',
+          );
+        }
+      });
+    }
+  }
 }
 
 /**
