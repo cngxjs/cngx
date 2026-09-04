@@ -107,7 +107,9 @@ export class CngxAsyncClick {
 
   /**
    * Auto-render the polite live region announcing success/failure.
-   * Opt out (`false`) to wire {@link announcement} to your own region.
+   * Opt out (`false`) to wire {@link announcement} to your own region -
+   * also when a toast/alert bridge (`cngxToastOn`, `cngxAlertOn`) on the
+   * same element already announces the settle, or the user hears it twice.
    */
   readonly autoAnnounce = input<boolean>(true);
 

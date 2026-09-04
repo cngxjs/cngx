@@ -68,6 +68,11 @@ export class CngxFocusVisible {
 
   /** @internal Arms the pointer flag for the imminent focusin. */
   protected handlePointerDown(): void {
+    // A pending clear from the previous release must not fire mid-press.
+    if (this.pointerClearTimer !== null) {
+      clearTimeout(this.pointerClearTimer);
+      this.pointerClearTimer = null;
+    }
     this.pointerActive = true;
     // The flag must not outlive the click: a pointerdown that never focuses
     // (disabled child, text selection, drag released off-host) would
