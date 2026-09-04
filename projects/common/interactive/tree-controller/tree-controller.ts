@@ -1,4 +1,12 @@
-import { computed, inject, InjectionToken, signal, type Signal, untracked } from '@angular/core';
+import {
+  computed,
+  inject,
+  InjectionToken,
+  isDevMode,
+  signal,
+  type Signal,
+  untracked,
+} from '@angular/core';
 import {
   type CngxTreeNode,
   type FlatTreeNode,
@@ -283,6 +291,24 @@ export function createTreeController<T>(opts: CngxTreeControllerOptions<T>): Cng
     const byValue = new Map<unknown, FlatTreeNode<T>>();
     const firstChildById = new Map<string, FlatTreeNode<T>>();
     for (const n of flatNodes()) {
+      if (isDevMode()) {
+        // A colliding id/key silently shadows the earlier node in every
+        // O(1) lookup (expansion, selection, focus) - surface the
+        // authoring error instead of dropping nodes.
+        if (byId.has(n.id)) {
+          console.error(
+            `createTreeController: duplicate node id "${n.id}" from nodeIdFn - ` +
+              'the earlier node is shadowed in id lookups. Ids must be unique.',
+          );
+        }
+        const key = keyFn(n.value);
+        if (byValue.has(key)) {
+          console.error(
+            `createTreeController: duplicate selection key "${String(key)}" from keyFn - ` +
+              'the earlier node is shadowed in selection lookups. Keys must be unique.',
+          );
+        }
+      }
       byId.set(n.id, n);
       byValue.set(keyFn(n.value), n);
       const pids = n.parentIds;

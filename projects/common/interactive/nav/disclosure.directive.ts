@@ -80,8 +80,11 @@ export class CngxDisclosure {
   /** Emitted when the opened state changes. */
   readonly openedChange = output<boolean>();
 
-  /** Opens the disclosure. */
+  /** Opens the disclosure. No-op when already open (parity with `close()`). */
   open(): void {
+    if (this.opened()) {
+      return;
+    }
     this.openedState.set(true);
     this.openedChange.emit(true);
   }
