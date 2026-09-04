@@ -2,7 +2,7 @@ import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { createManualState } from '@cngx/common/data';
 import type { CngxAsyncState } from '@cngx/core/utils';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CngxMiniBar } from './mini-bar.component';
 
 @Component({
@@ -139,5 +139,42 @@ describe('CngxMiniBar label + meter name', () => {
     fixture.detectChanges();
     expect(host.querySelector('.cngx-mini-bar__label')).toBeNull();
     expect(host.querySelector('.cngx-preset-skeleton')).not.toBeNull();
+  });
+});
+
+describe('CngxMiniBar - unnamed-meter dev warning', () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  @Component({
+    standalone: true,
+    imports: [CngxMiniBar],
+    template: `<cngx-mini-bar [value]="50" />`,
+  })
+  class WarnHost {}
+
+  it('warns in dev mode when neither [label] nor [aria-label] names the meter', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    TestBed.configureTestingModule({ imports: [WarnHost] });
+    const fixture = TestBed.createComponent(WarnHost);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(
+      warn.mock.calls.some((c) => String(c[0]).includes('cngx-mini-bar') && String(c[0]).includes('accessible name')),
+    ).toBe(true);
+  });
+
+  it('does not warn when the visible label supplies the accessible name', async () => {
+    @Component({
+      standalone: true,
+      imports: [CngxMiniBar],
+      template: `<cngx-mini-bar [value]="50" [label]="'CPU'" />`,
+    })
+    class NamedHost {}
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    TestBed.configureTestingModule({ imports: [NamedHost] });
+    const fixture = TestBed.createComponent(NamedHost);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(warn).not.toHaveBeenCalled();
   });
 });

@@ -6,7 +6,8 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import type { CngxAsyncState } from '@cngx/core/utils';
-import { injectPresetState } from './preset-state';
+import { clampedRatio } from './preset-math';
+import { injectPresetState, warnIfUnnamedPreset } from './preset-state';
 
 /** @internal */
 const TWO_PI = Math.PI * 2;
@@ -15,7 +16,10 @@ const TWO_PI = Math.PI * 2;
  * Circular donut gauge - a single-value bounded indicator. Renders a
  * background ring + a foreground arc whose length is proportional to
  * `value / max`. Host carries `role="meter"`; the optional `[label]`
- * input renders an SR-only label inside the ring's centre.
+ * input renders a visible label inside the ring's centre and doubles
+ * as the host's accessible name when `[aria-label]` is unbound - the
+ * same fallback `CngxMiniBar` uses. A bound `[aria-label]` always
+ * wins.
  *
  * @category common/chart/presets
  * @docsKind primary
@@ -38,7 +42,7 @@ const TWO_PI = Math.PI * 2;
     '[attr.aria-valuenow]': 'value()',
     '[attr.aria-valuemin]': '0',
     '[attr.aria-valuemax]': 'max()',
-    '[attr.aria-label]': 'ariaLabel()',
+    '[attr.aria-label]': 'ariaLabel() ?? label()',
     class: 'cngx-donut',
   },
   template: `
@@ -148,6 +152,11 @@ export class CngxDonut {
   protected readonly i18n = this.preset.i18n;
   protected readonly activeView = this.preset.activeView;
 
+  constructor() {
+    warnIfUnnamedPreset('cngx-donut', 'Bind [label] or [aria-label].', () => (this.ariaLabel() ?? this.label()) !== null);
+  }
+
+
   protected readonly center = computed(() => this.size() / 2);
   protected readonly radius = computed(() => (this.size() - this.thickness()) / 2);
   protected readonly circumference = computed(() => TWO_PI * this.radius());
@@ -159,11 +168,6 @@ export class CngxDonut {
 
   protected readonly dashoffset = computed(() => {
     const c = this.circumference();
-    const m = this.max();
-    if (m <= 0) {
-      return c;
-    }
-    const ratio = Math.min(Math.max(this.value() / m, 0), 1);
-    return c * (1 - ratio);
+    return c * (1 - clampedRatio(this.value(), 0, this.max()));
   });
 }

@@ -67,11 +67,24 @@ describe('CngxDeviationBar', () => {
     expect(fill.style.width).toBe('50%');
   });
 
-  it('exposes role="meter" with min=-magnitude and max=+magnitude', () => {
+  it('exposes role="meter" with a range of baseline ± magnitude', () => {
     const { host } = setup();
     expect(host.getAttribute('role')).toBe('meter');
     expect(host.getAttribute('aria-valuenow')).toBe('20');
     expect(host.getAttribute('aria-valuemin')).toBe('-100');
     expect(host.getAttribute('aria-valuemax')).toBe('100');
+  });
+
+  it('centres the meter range on a non-zero baseline so the reading stays in range', () => {
+    const { fixture, host } = setup();
+    fixture.componentInstance.baseline.set(100);
+    fixture.componentInstance.magnitude.set(50);
+    fixture.componentInstance.value.set(130);
+    fixture.detectChanges();
+    // ±magnitude alone would declare [-50, 50] and leave valuenow=130
+    // outside its own range - invalid meter semantics.
+    expect(host.getAttribute('aria-valuemin')).toBe('50');
+    expect(host.getAttribute('aria-valuemax')).toBe('150');
+    expect(host.getAttribute('aria-valuenow')).toBe('130');
   });
 });

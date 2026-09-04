@@ -1,4 +1,5 @@
 import type { CngxChartSummary } from '../i18n/chart-i18n';
+import { scanMinMax } from '../presets/preset-math';
 
 /**
  * Pure helper that derives a `CngxChartSummary` from already-projected
@@ -23,20 +24,11 @@ export function computeChartSummary(
   values: readonly number[],
   thresholds: readonly number[],
 ): CngxChartSummary {
-  if (values.length === 0) {
+  const scan = scanMinMax(values);
+  if (scan === null) {
     return { trend: 'flat', min: 0, max: 0, current: 0, thresholds: [] };
   }
-  let min = values[0];
-  let max = values[0];
-  for (let i = 1; i < values.length; i++) {
-    const v = values[i];
-    if (v < min) {
-      min = v;
-    }
-    if (v > max) {
-      max = v;
-    }
-  }
+  const { min, max } = scan;
   const first = values[0];
   const current = values[values.length - 1];
   const range = max - min;

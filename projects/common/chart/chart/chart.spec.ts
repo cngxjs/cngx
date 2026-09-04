@@ -707,6 +707,76 @@ describe('CngxChart - [connectionState] envelope (Phase 4)', () => {
     expect(chart.querySelector('svg')).not.toBeNull();
     expect(chart.querySelector('.cngx-chart__connection-overlay--error')).not.toBeNull();
   });
+
+  it('announces connectionRestored in the polite live region on the error -> success edge', async () => {
+    const { createManualState } = await import('@cngx/common/data');
+    @Component({
+      standalone: true,
+      imports: [CngxChart],
+      template: `<cngx-chart
+        [data]="[1, 2, 3]"
+        [connectionState]="cs"
+        [width]="200"
+        [height]="100"
+        data-testid="chart"
+      />`,
+    })
+    class Host {
+      readonly cs = createManualState<unknown>();
+    }
+    TestBed.configureTestingModule({ imports: [Host] });
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+    const chart = fixture.nativeElement.querySelector('[data-testid="chart"]') as HTMLElement;
+    const region = chart.querySelector('.cngx-chart__sr-status') as HTMLElement;
+    // Always-in-DOM live region, silent while the connection is healthy.
+    expect(region).not.toBeNull();
+    expect(region.getAttribute('role')).toBe('status');
+    expect(region.getAttribute('aria-live')).toBe('polite');
+    expect(region.textContent?.trim()).toBe('');
+
+    fixture.componentInstance.cs.setError(new Error('socket closed'));
+    fixture.detectChanges();
+    expect(region.textContent?.trim()).toBe('');
+
+    fixture.componentInstance.cs.set('success');
+    fixture.detectChanges();
+    expect(region.textContent?.trim()).toBe('Connection restored');
+  });
+
+  it('announces connectionRestored after a reconnecting -> success edge but not on plain success', async () => {
+    const { createManualState } = await import('@cngx/common/data');
+    @Component({
+      standalone: true,
+      imports: [CngxChart],
+      template: `<cngx-chart
+        [data]="[1, 2, 3]"
+        [connectionState]="cs"
+        [width]="200"
+        [height]="100"
+        data-testid="chart"
+      />`,
+    })
+    class Host {
+      readonly cs = createManualState<unknown>();
+    }
+    TestBed.configureTestingModule({ imports: [Host] });
+    const fixture = TestBed.createComponent(Host);
+    // idle -> success is a first connect, not a recovery: stays silent.
+    fixture.componentInstance.cs.set('success');
+    fixture.detectChanges();
+    const chart = fixture.nativeElement.querySelector('[data-testid="chart"]') as HTMLElement;
+    const region = chart.querySelector('.cngx-chart__sr-status') as HTMLElement;
+    expect(region.textContent?.trim()).toBe('');
+
+    fixture.componentInstance.cs.set('refreshing');
+    fixture.detectChanges();
+    expect(region.textContent?.trim()).toBe('');
+
+    fixture.componentInstance.cs.set('success');
+    fixture.detectChanges();
+    expect(region.textContent?.trim()).toBe('Connection restored');
+  });
 });
 
 describe('CngxChart - canvas overlay gated on the content view (Phase 3 blocker fix)', () => {

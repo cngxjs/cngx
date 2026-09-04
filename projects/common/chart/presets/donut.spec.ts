@@ -80,4 +80,20 @@ describe('CngxDonut', () => {
     fixture.detectChanges();
     expect(host.querySelector('.cngx-donut__label')?.textContent?.trim()).toBe('99%');
   });
+
+  it('names the meter from [label] when [aria-label] is unbound (mini-bar parity)', () => {
+    const { fixture, host } = setup();
+    fixture.componentInstance.ariaLabel.set(null);
+    fixture.componentInstance.centreLabel.set('CPU');
+    fixture.detectChanges();
+    expect(host.getAttribute('aria-label')).toBe('CPU');
+  });
+
+  it('lets [aria-label] win over the visible [label] when both are bound', () => {
+    const { fixture, host } = setup();
+    fixture.componentInstance.ariaLabel.set('CPU load');
+    fixture.componentInstance.centreLabel.set('42%');
+    fixture.detectChanges();
+    expect(host.getAttribute('aria-label')).toBe('CPU load');
+  });
 });

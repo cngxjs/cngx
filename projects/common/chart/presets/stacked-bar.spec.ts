@@ -1,6 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
+import { provideChartI18n, type CngxChartI18n } from '../i18n/chart-i18n';
 import { CngxStackedBar, type CngxStackedSegment } from './stacked-bar.component';
 
 @Component({
@@ -58,5 +59,53 @@ describe('CngxStackedBar', () => {
     expect(label).toContain('A: 25');
     expect(label).toContain('B: 50');
     expect(label).toContain('C: 25');
+  });
+
+  const OVERRIDE_BASE: CngxChartI18n = {
+    summary: () => 'summary',
+    dataTable: () => 'table',
+    valueColumnLabel: () => 'value',
+    trendChanged: () => 'trend',
+    thresholdAlert: () => 'threshold',
+    connectionLost: () => 'lost',
+    connectionReconnecting: () => 'reconnecting',
+    connectionRestored: () => 'restored',
+    empty: () => 'empty',
+    loading: () => 'loading',
+    error: () => 'error',
+  };
+
+  it('routes the auto-generated aria-label through CNGX_CHART_I18N overrides', () => {
+    TestBed.configureTestingModule({
+      imports: [TestHost],
+      providers: [
+        provideChartI18n({
+          ...OVERRIDE_BASE,
+          stackedBarEmpty: () => 'Leer',
+          stackedBarSummary: (total, segments) => `Gesamt ${total} (${segments.length} Segmente)`,
+        }),
+      ],
+    });
+    const fixture = TestBed.createComponent(TestHost);
+    fixture.detectChanges();
+    const host = fixture.nativeElement.querySelector('[data-testid="bar"]') as HTMLElement;
+    expect(host.getAttribute('aria-label')).toBe('Gesamt 100 (3 Segmente)');
+    fixture.componentInstance.segments.set([]);
+    fixture.detectChanges();
+    expect(host.getAttribute('aria-label')).toBe('Leer');
+  });
+
+  it('falls back to the built-in phrasing when an override omits the optional stacked-bar keys', () => {
+    TestBed.configureTestingModule({
+      imports: [TestHost],
+      providers: [provideChartI18n(OVERRIDE_BASE)],
+    });
+    const fixture = TestBed.createComponent(TestHost);
+    fixture.detectChanges();
+    const host = fixture.nativeElement.querySelector('[data-testid="bar"]') as HTMLElement;
+    expect(host.getAttribute('aria-label')).toBe('Total 100. A: 25, B: 50, C: 25.');
+    fixture.componentInstance.segments.set([]);
+    fixture.detectChanges();
+    expect(host.getAttribute('aria-label')).toBe('Empty stacked bar');
   });
 });

@@ -10,6 +10,7 @@ import { CngxChart } from '../chart/chart.component';
 import { CngxAxisDomain } from '../axis/axis-domain';
 import { CngxLine } from '../layers/line.component';
 import { CngxArea } from '../layers/area.component';
+import { presetIndexDomain, presetValueDomain } from './preset-math';
 import { injectPresetState } from './preset-state';
 
 /**
@@ -151,30 +152,7 @@ export class CngxSparkline {
   protected readonly i18n = this.preset.i18n;
   protected readonly activeView = this.preset.activeView;
 
-  protected readonly xDomain = computed<readonly number[]>(() => {
-    const n = this.data().length;
-    return n < 2 ? [0, 1] : [0, n - 1];
-  });
+  protected readonly xDomain = computed<readonly number[]>(() => presetIndexDomain(this.data().length));
 
-  protected readonly yDomain = computed<readonly number[]>(() => {
-    const d = this.data();
-    if (d.length === 0) {
-      return [0, 1];
-    }
-    let min = d[0];
-    let max = d[0];
-    for (let i = 1; i < d.length; i++) {
-      const v = d[i];
-      if (v < min) {
-        min = v;
-      }
-      if (v > max) {
-        max = v;
-      }
-    }
-    if (min === max) {
-      return [min - 1, max + 1];
-    }
-    return [min, max];
-  });
+  protected readonly yDomain = computed<readonly number[]>(() => presetValueDomain(this.data()));
 }

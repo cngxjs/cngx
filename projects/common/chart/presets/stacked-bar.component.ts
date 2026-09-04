@@ -176,10 +176,15 @@ export class CngxStackedBar {
     }
     const segments = this.segments();
     if (segments.length === 0) {
-      return 'Empty stacked bar';
+      // The ?? fallbacks repeat the token factory's English because the
+      // stacked-bar keys are optional on CngxChartI18n - a custom
+      // override predating them legitimately omits both.
+      return this.i18n.stackedBarEmpty?.() ?? 'Empty stacked bar';
     }
     const total = this.resolvedTotal();
-    const parts = segments.map((s) => `${s.label}: ${s.value}`);
-    return `Total ${total}. ${parts.join(', ')}.`;
+    return (
+      this.i18n.stackedBarSummary?.(total, segments) ??
+      `Total ${total}. ${segments.map((s) => `${s.label}: ${s.value}`).join(', ')}.`
+    );
   });
 }

@@ -6,7 +6,8 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import type { CngxAsyncState } from '@cngx/core/utils';
-import { injectPresetState } from './preset-state';
+import { clampedRatio } from './preset-math';
+import { injectPresetState, warnIfUnnamedPreset } from './preset-state';
 
 /**
  * Bullet chart range entry - a colour band stretching from one value
@@ -170,6 +171,11 @@ export class CngxBullet {
   protected readonly i18n = this.preset.i18n;
   protected readonly activeView = this.preset.activeView;
 
+  constructor() {
+    warnIfUnnamedPreset('cngx-bullet', 'Bind [aria-label].', () => this.ariaLabel() !== null);
+  }
+
+
   protected readonly maxValue = computed(() => {
     const explicit = this.max();
     if (explicit !== null && explicit > 0) {
@@ -185,14 +191,16 @@ export class CngxBullet {
     return m > 0 ? m : 1;
   });
 
-  protected readonly actualPercent = computed(() => pct(this.actual(), this.maxValue()));
+  protected readonly actualPercent = computed(
+    () => clampedRatio(this.actual(), 0, this.maxValue()) * 100,
+  );
 
   protected readonly targetPercent = computed(() => {
     const t = this.target();
     if (t === null) {
       return 0;
     }
-    return pct(t, this.maxValue());
+    return clampedRatio(t, 0, this.maxValue()) * 100;
   });
 
   protected readonly rangeRenderings = computed<readonly RangeRendering[]>(() => {
@@ -202,25 +210,11 @@ export class CngxBullet {
       const hi = Math.max(r.from, r.to);
       return {
         key: `${i}-${r.label ?? ''}`,
-        left: pct(lo, m),
-        width: pct(hi - lo, m),
+        left: clampedRatio(lo, 0, m) * 100,
+        width: clampedRatio(hi - lo, 0, m) * 100,
         color: r.color ?? null,
       };
     });
   });
 }
 
-/** @internal */
-function pct(v: number, max: number): number {
-  if (max <= 0) {
-    return 0;
-  }
-  const ratio = (v / max) * 100;
-  if (ratio < 0) {
-    return 0;
-  }
-  if (ratio > 100) {
-    return 100;
-  }
-  return ratio;
-}

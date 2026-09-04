@@ -6,7 +6,8 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import type { CngxAsyncState } from '@cngx/core/utils';
-import { injectPresetState } from './preset-state';
+import { clampedRatio } from './preset-math';
+import { injectPresetState, warnIfUnnamedPreset } from './preset-state';
 
 /**
  * Mini horizontal bar - a single-value bounded indicator. Renders
@@ -127,20 +128,12 @@ export class CngxMiniBar {
   protected readonly i18n = this.preset.i18n;
   protected readonly activeView = this.preset.activeView;
 
-  protected readonly percent = computed(() => {
-    const v = this.value();
-    const lo = this.min();
-    const hi = this.max();
-    if (hi === lo) {
-      return 0;
-    }
-    const ratio = ((v - lo) / (hi - lo)) * 100;
-    if (ratio < 0) {
-      return 0;
-    }
-    if (ratio > 100) {
-      return 100;
-    }
-    return ratio;
-  });
+  constructor() {
+    warnIfUnnamedPreset('cngx-mini-bar', 'Bind [label] or [aria-label].', () => (this.ariaLabel() ?? this.label()) !== null);
+  }
+
+
+  protected readonly percent = computed(
+    () => clampedRatio(this.value(), this.min(), this.max()) * 100,
+  );
 }

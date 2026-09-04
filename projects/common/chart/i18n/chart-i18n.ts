@@ -34,6 +34,22 @@ export interface CngxChartI18n {
   readonly empty: () => string;
   readonly loading: () => string;
   readonly error: () => string;
+  /**
+   * Accname for a `<cngx-stacked-bar>` with no segments. Optional so
+   * pre-existing full overrides keep compiling; the token factory
+   * supplies English and the component falls back to its built-in
+   * phrasing when a custom override omits the key.
+   */
+  readonly stackedBarEmpty?: () => string;
+  /**
+   * Auto-generated accname for a `<cngx-stacked-bar>`: the total plus
+   * one label/value pair per segment. Optional for the same
+   * compatibility reason as {@link CngxChartI18n.stackedBarEmpty}.
+   */
+  readonly stackedBarSummary?: (
+    total: number,
+    segments: readonly { readonly label: string; readonly value: number }[],
+  ) => string;
 }
 
 /**
@@ -74,6 +90,9 @@ export const CNGX_CHART_I18N = new InjectionToken<CngxChartI18n>('CngxChartI18n'
     empty: () => 'No data',
     loading: () => 'Loading',
     error: () => 'Error loading chart',
+    stackedBarEmpty: () => 'Empty stacked bar',
+    stackedBarSummary: (total, segments) =>
+      `Total ${total}. ${segments.map((s) => `${s.label}: ${s.value}`).join(', ')}.`,
   }),
 });
 

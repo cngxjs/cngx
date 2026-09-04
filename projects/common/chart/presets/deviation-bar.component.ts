@@ -6,7 +6,8 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import type { CngxAsyncState } from '@cngx/core/utils';
-import { injectPresetState } from './preset-state';
+import { clampedRatio } from './preset-math';
+import { injectPresetState, warnIfUnnamedPreset } from './preset-state';
 
 /**
  * Mini deviation bar - a single-value indicator that diverges from a
@@ -36,8 +37,8 @@ import { injectPresetState } from './preset-state';
   host: {
     role: 'meter',
     '[attr.aria-valuenow]': 'value()',
-    '[attr.aria-valuemin]': '-magnitude()',
-    '[attr.aria-valuemax]': 'magnitude()',
+    '[attr.aria-valuemin]': 'minValue()',
+    '[attr.aria-valuemax]': 'maxValue()',
     '[attr.aria-label]': 'ariaLabel()',
     class: 'cngx-deviation-bar',
   },
@@ -146,6 +147,21 @@ export class CngxDeviationBar {
   protected readonly i18n = this.preset.i18n;
   protected readonly activeView = this.preset.activeView;
 
+  constructor() {
+    warnIfUnnamedPreset('cngx-deviation-bar', 'Bind [aria-label].', () => this.ariaLabel() !== null);
+  }
+
+
+  /**
+   * The meter's valid range is centred on the baseline, not on zero:
+   * a deviation bar with `[baseline]="100" [magnitude]="50"` reads
+   * values in `[50, 150]`. Anchoring min/max at `±magnitude` alone
+   * puts any non-zero-baseline reading outside its own declared range,
+   * which is invalid meter semantics.
+   */
+  protected readonly minValue = computed(() => this.baseline() - this.magnitude());
+  protected readonly maxValue = computed(() => this.baseline() + this.magnitude());
+
   protected readonly geometry = computed<{
     positive: boolean;
     left: number;
@@ -162,7 +178,7 @@ export class CngxDeviationBar {
       return null;
     }
     const positive = delta > 0;
-    const ratio = Math.min(Math.abs(delta) / m, 1) * 50;
+    const ratio = clampedRatio(Math.abs(delta), 0, m) * 50;
     if (positive) {
       return { positive, left: 50, width: ratio };
     }
