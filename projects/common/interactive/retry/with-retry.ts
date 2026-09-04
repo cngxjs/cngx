@@ -99,6 +99,10 @@ export function withRetry(action: AsyncAction, config?: RetryConfig): [AsyncActi
     error: lastErrorState.asReadonly(),
   });
 
+  // Generation counter cancels any in-flight retry loop on re-invocation
+  // (and on reset - a stale loop must not overwrite freshly reset state).
+  let generation = 0;
+
   const retryState: RetryState = {
     attempt: attemptState.asReadonly(),
     maxAttempts: computed(() => maxAttempts),
@@ -107,6 +111,7 @@ export function withRetry(action: AsyncAction, config?: RetryConfig): [AsyncActi
     lastError: lastErrorState.asReadonly(),
     state: asyncState,
     reset() {
+      generation++;
       attemptState.set(0);
       retryingState.set(false);
       exhaustedState.set(false);
@@ -114,9 +119,6 @@ export function withRetry(action: AsyncAction, config?: RetryConfig): [AsyncActi
       lastErrorState.set(undefined);
     },
   };
-
-  // Generation counter cancels any in-flight retry loop on re-invocation.
-  let generation = 0;
 
   const retryableAction: AsyncAction = async () => {
     const thisGeneration = ++generation;
