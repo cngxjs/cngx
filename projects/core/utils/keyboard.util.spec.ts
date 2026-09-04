@@ -3,7 +3,7 @@ import { matchesKeyCombo, parseKeyCombo } from './keyboard.util';
 
 function press(
   key: string,
-  mods: Partial<{ ctrl: boolean; meta: boolean; shift: boolean; alt: boolean }> = {},
+  mods: Partial<{ ctrl: boolean; meta: boolean; shift: boolean; alt: boolean; composing: boolean }> = {},
 ): KeyboardEvent {
   return new KeyboardEvent('keydown', {
     key,
@@ -11,8 +11,37 @@ function press(
     metaKey: mods.meta ?? false,
     shiftKey: mods.shift ?? false,
     altKey: mods.alt ?? false,
+    isComposing: mods.composing ?? false,
   });
 }
+
+describe('parseKeyCombo', () => {
+  it('parses modifiers and key case-insensitively', () => {
+    expect(parseKeyCombo('Ctrl+Shift+K')).toEqual({
+      key: 'k',
+      ctrl: true,
+      meta: false,
+      mod: false,
+      shift: true,
+      alt: false,
+    });
+  });
+
+  it("treats a trailing '+' as the literal plus key", () => {
+    expect(parseKeyCombo('mod++')).toEqual({
+      key: '+',
+      ctrl: false,
+      meta: false,
+      mod: true,
+      shift: false,
+      alt: false,
+    });
+  });
+
+  it("parses a bare '+' as the plus key with no modifiers", () => {
+    expect(parseKeyCombo('+').key).toBe('+');
+  });
+});
 
 describe('matchesKeyCombo modifier exactness', () => {
   it("bare 'b' matches an unmodified press and rejects every modifier chord", () => {
@@ -52,5 +81,30 @@ describe('matchesKeyCombo modifier exactness', () => {
     const combo = parseKeyCombo('shift+?');
     expect(matchesKeyCombo(press('?', { shift: true }), combo, false)).toBe(true);
     expect(matchesKeyCombo(press('?'), combo, false)).toBe(false);
+  });
+});
+
+describe('matchesKeyCombo IME composition', () => {
+  it('never matches a keydown fired during composition', () => {
+    const combo = parseKeyCombo('mod+b');
+    expect(matchesKeyCombo(press('b', { meta: true, composing: true }), combo, true)).toBe(false);
+    // The identical press outside composition matches.
+    expect(matchesKeyCombo(press('b', { meta: true }), combo, true)).toBe(true);
+  });
+
+  it("rejects a composing bare-key press even when the key text matches", () => {
+    const combo = parseKeyCombo('k');
+    expect(matchesKeyCombo(press('k', { composing: true }), combo, false)).toBe(false);
+  });
+});
+
+describe("matchesKeyCombo literal '+' key", () => {
+  it("'mod++' matches the platform primary with the plus key", () => {
+    const combo = parseKeyCombo('mod++');
+    // '+' is Shift+'=' on many layouts - the glyph encodes Shift, so the
+    // punctuation shift-agnostic rule applies.
+    expect(matchesKeyCombo(press('+', { meta: true, shift: true }), combo, true)).toBe(true);
+    expect(matchesKeyCombo(press('+', { ctrl: true }), combo, false)).toBe(true);
+    expect(matchesKeyCombo(press('+'), combo, true)).toBe(false);
   });
 });

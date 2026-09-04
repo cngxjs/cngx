@@ -20,6 +20,10 @@ export interface KeyCombo {
  * The `mod` modifier resolves to `meta` on macOS and `ctrl` elsewhere.
  * Modifier names are case-insensitive.
  *
+ * A trailing `+` names the literal plus key: `'mod++'` parses as
+ * `mod` + `'+'` (the split's trailing empty segment is the key, not a
+ * dangling separator).
+ *
  * ```typescript
  * const combo = parseKeyCombo('mod+b');
  * // { key: 'b', ctrl: false, meta: false, mod: true, shift: false, alt: false }
@@ -33,7 +37,10 @@ export function parseKeyCombo(combo: string): KeyCombo {
     .toLowerCase()
     .split('+')
     .map((s) => s.trim());
-  const key = parts.pop() ?? '';
+  // 'mod++' splits into ['mod', '', ''] - a trailing empty segment means the
+  // combo ends in '+', so the key IS the literal plus character.
+  const last = parts.pop() ?? '';
+  const key = last === '' && combo.trimEnd().endsWith('+') ? '+' : last;
   return {
     key,
     ctrl: parts.includes('ctrl'),
@@ -58,6 +65,9 @@ export function parseKeyCombo(combo: string): KeyCombo {
  * that yields `event.key === '?'`, while `'shift+?'` still requires it and
  * ctrl/meta/alt stay strict for every key.
  *
+ * Events fired during IME composition (`event.isComposing`) never match -
+ * keystrokes that build a composed character are text input, not shortcuts.
+ *
  * @param event The keyboard event to test.
  * @param combo The parsed combo to match against.
  * @param isMac Whether the current platform is macOS (affects `mod` resolution).
@@ -66,6 +76,12 @@ export function parseKeyCombo(combo: string): KeyCombo {
  * @since 0.1.0
  */
 export function matchesKeyCombo(event: KeyboardEvent, combo: KeyCombo, isMac: boolean): boolean {
+  // Never match during IME composition: the event's key is an artifact of the
+  // composition session (often 'Process'), not a shortcut press. One guard
+  // here covers every shortcut consumer.
+  if (event.isComposing) {
+    return false;
+  }
   if (event.key.toLowerCase() !== combo.key) {
     return false;
   }

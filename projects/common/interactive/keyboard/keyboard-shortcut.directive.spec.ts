@@ -59,6 +59,12 @@ describe('CngxKeyboardShortcut', () => {
     expect(fixture.componentInstance.triggerCount).toBe(0);
   });
 
+  it('does not fire during IME composition', () => {
+    const { fixture } = setup();
+    dispatchKeydown(document, 's', { ctrlKey: true, isComposing: true });
+    expect(fixture.componentInstance.triggerCount).toBe(0);
+  });
+
   it('does not fire when disabled', () => {
     const { fixture } = setup();
     fixture.componentInstance.enabled.set(false);
