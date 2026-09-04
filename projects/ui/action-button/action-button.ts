@@ -108,6 +108,7 @@ export type ActionButtonVariant = 'primary' | 'secondary' | 'ghost';
       #btn="cngxAsyncClick"
       [feedbackDuration]="feedbackDuration()"
       [enabled]="enabled()"
+      [autoAnnounce]="false"
       [succeededAnnouncement]="succeededAnnouncement() ?? succeededLabel() ?? 'Action succeeded'"
       [failedAnnouncement]="failedAnnouncement() ?? failedLabel() ?? 'Action failed'"
       [class]="'cngx-action-button cngx-action-button--' + variant()"

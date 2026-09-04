@@ -192,7 +192,10 @@ describe('CngxActionButton', () => {
       btn.click();
       flush(fixture);
       expect(btn.textContent?.trim()).toBe('Saving...');
-      expect(btn.disabled).toBe(true);
+      // Busy communicates via aria; the hard disabled attr would drop focus.
+      expect(btn.disabled).toBe(false);
+      expect(btn.getAttribute('aria-busy')).toBe('true');
+      expect(btn.getAttribute('aria-disabled')).toBe('true');
       d.resolve();
       await d.promise;
     });

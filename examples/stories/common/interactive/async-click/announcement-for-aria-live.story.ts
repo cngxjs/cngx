@@ -2,8 +2,8 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'CngxAsyncClick: Announcement for aria-live',
-  subtitle: 'Bind <code>btn.announcement()</code> into an <code>aria-live</code> region so screen-reader users hear "Action succeeded" / "Action failed" without the visual feedback class change reaching them.',
-  description: 'The host already mirrors <code>aria-busy</code> while pending, but a class swap between <code>.cngx-async--success</code> and <code>.cngx-async--error</code> is purely visual. <code>announcement()</code> computes the configured succeeded / failed label only while the corresponding settle window is open; bind it into an <code>aria-live="polite"</code> region so the change is also surfaced acoustically. Override the labels per action via <code>[succeededAnnouncement]</code> and <code>[failedAnnouncement]</code> when "Action succeeded" is too generic. The polite region waits for the assistive tech to be idle, so a user keystroking through the page is not interrupted mid-sentence.',
+  subtitle: 'Opt out of the built-in polite region with <code>[autoAnnounce]="false"</code> and bind <code>btn.announcement()</code> into your own <code>aria-live</code> region.',
+  description: 'By default the directive auto-renders a polite live region next to the host, so success and failure are announced with zero wiring. Opt out with <code>[autoAnnounce]="false"</code> when the announcement belongs somewhere else - a shared page-level announcer, a region with different politeness, or (as here) a region you want to inspect. <code>announcement()</code> computes the configured succeeded / failed label only while the corresponding settle window is open. Override the labels per action via <code>[succeededAnnouncement]</code> and <code>[failedAnnouncement]</code> when "Action succeeded" is too generic. Without the opt-out, a manually wired region would double-announce every settle.',
   level: 'atom',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
@@ -31,6 +31,7 @@ export const STORY: DemoSpec = {
   template: `
   <button type="button"
     [cngxAsyncClick]="saveAction"
+    [autoAnnounce]="false"
     succeededAnnouncement="Note saved to server"
     failedAnnouncement="Could not save the note"
     #btn="cngxAsyncClick"

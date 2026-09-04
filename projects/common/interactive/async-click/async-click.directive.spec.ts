@@ -19,11 +19,16 @@ function deferred<T = void>() {
 // ── Test hosts ──────────────────────────────────────────────────────────
 
 @Component({
-  template: `<button [cngxAsyncClick]="action" [enabled]="enabled()">Go</button>`,
+  template: `<button
+    [cngxAsyncClick]="action"
+    [enabled]="enabled()"
+    [autoAnnounce]="autoAnnounce()"
+  >Go</button>`,
   imports: [CngxAsyncClick],
 })
 class ButtonHost {
   readonly enabled = signal(true);
+  readonly autoAnnounce = signal(true);
   readonly directive = viewChild.required(CngxAsyncClick);
   callCount = 0;
   actionImpl: () => Promise<unknown> | Observable<unknown> = () => Promise.resolve();
@@ -142,17 +147,24 @@ describe('CngxAsyncClick', () => {
     expect(directive.error()).toBe('oops');
   });
 
-  it('should set disabled attr on button while pending', async () => {
+  it('communicates pending via aria, never the hard disabled attr (focus survives)', async () => {
     const d = deferred();
     const { btn, host, fixture } = setupButton();
     host.actionImpl = () => d.promise;
+    btn.focus();
     btn.click();
     flush(fixture);
-    expect(btn.hasAttribute('disabled')).toBe(true);
+    // aria-busy + aria-disabled communicate the busy state; the hard
+    // disabled attribute would drop keyboard focus to <body> mid-action.
+    expect(btn.hasAttribute('disabled')).toBe(false);
+    expect(btn.getAttribute('aria-busy')).toBe('true');
+    expect(btn.getAttribute('aria-disabled')).toBe('true');
+    expect(document.activeElement).toBe(btn);
     d.resolve();
     await d.promise;
     flush(fixture);
-    expect(btn.hasAttribute('disabled')).toBe(false);
+    expect(btn.hasAttribute('aria-busy')).toBe(false);
+    expect(btn.hasAttribute('aria-disabled')).toBe(false);
   });
 
   it('should NOT set disabled on div, but set aria-disabled', async () => {
@@ -205,5 +217,32 @@ describe('CngxAsyncClick', () => {
       flush(fixture);
       expect(directive.succeeded()).toBe(true);
     });
+  });
+
+  it('auto-renders a polite region as a SIBLING of the host (not in the accname)', async () => {
+    const { btn, host, fixture } = setupButton();
+    const region = btn.nextElementSibling as HTMLElement | null;
+    expect(region).not.toBeNull();
+    expect(region?.getAttribute('aria-live')).toBe('polite');
+    expect(region?.getAttribute('role')).toBe('status');
+    // Inside the button it would rename the control.
+    expect(btn.contains(region)).toBe(false);
+    expect(region?.textContent?.trim()).toBe('');
+
+    host.actionImpl = () => Promise.resolve();
+    btn.click();
+    await vi.waitFor(() => {
+      flush(fixture);
+      expect(region?.textContent?.trim()).toBe('Action succeeded');
+    });
+  });
+
+  it('removes the auto region when autoAnnounce is opted out', () => {
+    const fixture = TestBed.createComponent(ButtonHost);
+    fixture.componentInstance.autoAnnounce.set(false);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+    expect(btn.nextElementSibling).toBeNull();
   });
 });
