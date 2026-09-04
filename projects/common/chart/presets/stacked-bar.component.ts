@@ -6,6 +6,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import type { CngxAsyncState } from '@cngx/core/utils';
+import { CHART_I18N_EN } from '../i18n/chart-i18n';
 import { injectPresetState } from './preset-state';
 
 /**
@@ -191,16 +192,16 @@ export class CngxStackedBar {
       return explicit;
     }
     const segments = this.segments();
+    // The ?? falls back to the shared English defaults for a direct
+    // useValue token override that predates the optional stacked-bar
+    // keys - provideChartI18n merges them in itself.
     if (segments.length === 0) {
-      // The ?? fallbacks repeat the token factory's English because the
-      // stacked-bar keys are optional on CngxChartI18n - a custom
-      // override predating them legitimately omits both.
-      return this.i18n.stackedBarEmpty?.() ?? 'Empty stacked bar';
+      return this.i18n.stackedBarEmpty?.() ?? CHART_I18N_EN.stackedBarEmpty();
     }
     const total = this.resolvedTotal();
     return (
       this.i18n.stackedBarSummary?.(total, segments) ??
-      `Total ${total}. ${segments.map((s) => `${s.label}: ${s.value}`).join(', ')}.`
+      CHART_I18N_EN.stackedBarSummary(total, segments)
     );
   });
 }

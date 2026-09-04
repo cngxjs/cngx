@@ -54,6 +54,48 @@ export interface CngxChartI18n {
 }
 
 /**
+ * The English default strings - the single source every fallback path
+ * resolves against. Module-internal (not on `public-api.ts`):
+ * `CngxStackedBar` reads the two stacked-bar keys from here when a
+ * direct `useValue` token override omits them, so the English never
+ * exists twice.
+ *
+ * @internal
+ */
+export const CHART_I18N_EN: Required<CngxChartI18n> = {
+  summary: ({ trend, min, max, current, thresholds }) => {
+    const trendText = trend === 'up' ? 'Trending up' : trend === 'down' ? 'Trending down' : 'Flat';
+    const thresholdText =
+      thresholds.length === 0
+        ? 'No thresholds.'
+        : thresholds.length === 1
+          ? 'One threshold crossing.'
+          : `${thresholds.length} threshold crossings.`;
+    return `${trendText}. Min ${formatChartNumber(min)}, max ${formatChartNumber(max)}, current ${formatChartNumber(current)}. ${thresholdText}`;
+  },
+  dataTable: () => 'Data table',
+  valueColumnLabel: () => 'Value',
+  trendChanged: (trend) =>
+    trend === 'up'
+      ? 'Trend changed to up'
+      : trend === 'down'
+        ? 'Trend changed to down'
+        : 'Trend flattened',
+  thresholdAlert: (threshold) => `Threshold ${formatChartNumber(threshold)} crossed`,
+  connectionLost: () => 'Connection lost',
+  connectionReconnecting: () => 'Reconnecting',
+  connectionRestored: () => 'Connection restored',
+  empty: () => 'No data',
+  loading: () => 'Loading',
+  error: () => 'Error loading chart',
+  stackedBarEmpty: () => 'Empty stacked bar',
+  stackedBarSummary: (total, segments) =>
+    `Total ${formatChartNumber(total)}. ${segments
+      .map((s) => `${s.label}: ${formatChartNumber(s.value)}`)
+      .join(', ')}.`,
+};
+
+/**
  * Injection token for chart i18n strings. Defaults to English via
  * `factory:`. Override at app root with {@link provideChartI18n}.
  *
@@ -64,56 +106,29 @@ export interface CngxChartI18n {
  */
 export const CNGX_CHART_I18N = new InjectionToken<CngxChartI18n>('CngxChartI18n', {
   providedIn: 'root',
-  factory: (): CngxChartI18n => ({
-    summary: ({ trend, min, max, current, thresholds }) => {
-      const trendText =
-        trend === 'up' ? 'Trending up' : trend === 'down' ? 'Trending down' : 'Flat';
-      const thresholdText =
-        thresholds.length === 0
-          ? 'No thresholds.'
-          : thresholds.length === 1
-            ? 'One threshold crossing.'
-            : `${thresholds.length} threshold crossings.`;
-      return `${trendText}. Min ${formatChartNumber(min)}, max ${formatChartNumber(max)}, current ${formatChartNumber(current)}. ${thresholdText}`;
-    },
-    dataTable: () => 'Data table',
-    valueColumnLabel: () => 'Value',
-    trendChanged: (trend) =>
-      trend === 'up'
-        ? 'Trend changed to up'
-        : trend === 'down'
-          ? 'Trend changed to down'
-          : 'Trend flattened',
-    thresholdAlert: (threshold) => `Threshold ${formatChartNumber(threshold)} crossed`,
-    connectionLost: () => 'Connection lost',
-    connectionReconnecting: () => 'Reconnecting',
-    connectionRestored: () => 'Connection restored',
-    empty: () => 'No data',
-    loading: () => 'Loading',
-    error: () => 'Error loading chart',
-    stackedBarEmpty: () => 'Empty stacked bar',
-    stackedBarSummary: (total, segments) =>
-      `Total ${total}. ${segments.map((s) => `${s.label}: ${s.value}`).join(', ')}.`,
-  }),
+  factory: (): CngxChartI18n => CHART_I18N_EN,
 });
 
 /**
- * Provider helper for custom chart i18n strings.
+ * Provider helper for custom chart i18n strings. Overrides merge over
+ * the English defaults, so a consumer localises only the keys they
+ * care about and every key added to {@link CngxChartI18n} later keeps
+ * its default instead of forcing an update. Passing a full object
+ * still works - it simply overrides every key.
  *
  * ```typescript
  * providers: [provideChartI18n({
- *   summary: ({ trend, min, max, current, thresholds }) =>
+ *   summary: ({ trend, min, max, current }) =>
  *     `${trend === 'up' ? 'Aufwärtstrend' : 'Abwärtstrend'}. Min ${min}, Max ${max}, aktuell ${current}.`,
  *   dataTable: () => 'Datentabelle',
- *   // ...remaining keys
  * })]
  * ```
  *
  * @category common/chart/i18n
  */
-export function provideChartI18n(i18n: CngxChartI18n): {
+export function provideChartI18n(i18n: Partial<CngxChartI18n>): {
   provide: typeof CNGX_CHART_I18N;
   useValue: CngxChartI18n;
 } {
-  return { provide: CNGX_CHART_I18N, useValue: i18n };
+  return { provide: CNGX_CHART_I18N, useValue: { ...CHART_I18N_EN, ...i18n } };
 }

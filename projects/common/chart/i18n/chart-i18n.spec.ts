@@ -79,6 +79,26 @@ describe('CNGX_CHART_I18N', () => {
     );
   });
 
+  it('merges a partial override over the English defaults', () => {
+    TestBed.configureTestingModule({
+      providers: [provideChartI18n({ empty: () => 'Nix da' })],
+    });
+    const i18n = TestBed.inject(CNGX_CHART_I18N);
+    expect(i18n.empty()).toBe('Nix da');
+    expect(i18n.loading()).toBe('Loading');
+    expect(i18n.stackedBarEmpty?.()).toBe('Empty stacked bar');
+  });
+
+  it('strips float noise from the stacked-bar summary default', () => {
+    TestBed.configureTestingModule({});
+    const i18n = TestBed.inject(CNGX_CHART_I18N);
+    const text = i18n.stackedBarSummary?.(6.6000000000000005, [
+      { label: 'A', value: 2.2 },
+      { label: 'B', value: 4.4000000000000004 },
+    ]);
+    expect(text).toBe('Total 6.6. A: 2.2, B: 4.4.');
+  });
+
   it('returns English defaults for the connection-lifecycle keys', () => {
     TestBed.configureTestingModule({});
     const i18n = TestBed.inject(CNGX_CHART_I18N);
