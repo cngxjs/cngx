@@ -1,8 +1,9 @@
 /**
  * Shared numeric helpers for the chart presets and the auto-summary.
- * Pure TS, no Angular dep. Internal - the presets are the API surface;
- * these exist so the domain scan and the ratio clamp live once instead
- * of once per preset.
+ * Pure TS, no Angular dep, imports nothing - which is why it lives in
+ * the core `chart/` folder: presets compose `chart/`, so a helper both
+ * sides consume must not sit in `presets/`. Internal - the presets and
+ * the summary are the API surface.
  */
 
 /**

@@ -6,7 +6,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import type { CngxAsyncState } from '@cngx/core/utils';
-import { clampedRatio } from './preset-math';
+import { clampedRatio } from '../chart/preset-math';
 import { injectPresetState, warnIfUnnamedPreset } from './preset-state';
 
 /** @internal */

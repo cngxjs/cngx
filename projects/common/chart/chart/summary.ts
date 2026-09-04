@@ -1,5 +1,5 @@
 import type { CngxChartSummary } from '../i18n/chart-i18n';
-import { scanMinMax } from '../presets/preset-math';
+import { scanMinMax } from './preset-math';
 
 /**
  * Pure helper that derives a `CngxChartSummary` from already-projected

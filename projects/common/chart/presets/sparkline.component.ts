@@ -11,7 +11,7 @@ import { CngxAxisDomain } from '../axis/axis-domain';
 import { CngxLine } from '../layers/line.component';
 import { CngxArea } from '../layers/area.component';
 import { sameNumberArr } from '../chart/equal-helpers';
-import { presetIndexDomain, presetValueDomain } from './preset-math';
+import { presetIndexDomain, presetValueDomain } from '../chart/preset-math';
 import { injectPresetState } from './preset-state';
 
 /**
