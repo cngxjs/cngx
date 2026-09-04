@@ -61,4 +61,49 @@ describe('withCngxAsyncState', () => {
     expect(store.usersState.status()).toBe('success');
     expect(store.usersState.data()).toEqual([9]);
   });
+
+  it('walks success -> refreshing -> success on a re-subscribe with data present', () => {
+    store.usersSink.setSuccess([1]);
+    expect(store.usersState.status()).toBe('success');
+
+    // tapAsyncState reads the sink's isFirstLoad: data already landed, so a
+    // re-subscribe reports refreshing, not loading - content stays visible.
+    const source = new Subject<number[]>();
+    source.pipe(tapAsyncState(store.usersSink)).subscribe();
+
+    expect(store.usersState.status()).toBe('refreshing');
+    expect(store.usersState.data()).toEqual([1]);
+
+    source.next([1, 2]);
+    expect(store.usersState.status()).toBe('success');
+    expect(store.usersState.data()).toEqual([1, 2]);
+  });
+
+  it('reset() returns the pair to idle and clears data and the first-load latch', () => {
+    store.usersSink.setSuccess([7]);
+    expect(store.usersState.isFirstLoad()).toBe(false);
+
+    store.usersSink.reset();
+
+    expect(store.usersState.status()).toBe('idle');
+    expect(store.usersState.data()).toBeUndefined();
+    expect(store.usersState.isEmpty()).toBe(true);
+    expect(store.usersState.isFirstLoad()).toBe(true);
+  });
+
+  it('a duplicate key keeps state and sink paired (NgRx last-wins)', () => {
+    // Two features under the same key: NgRx dev-mode warns and the LAST
+    // feature's props win wholesale. The invariant that must survive is the
+    // pairing - state and sink always come from the same manual instance.
+    const DupStore = signalStore(
+      { providedIn: 'root' },
+      withCngxAsyncState<number[]>()('items'),
+      withCngxAsyncState<number[]>()('items'),
+    );
+    const dup = TestBed.inject(DupStore);
+
+    dup.itemsSink.setSuccess([5]);
+    expect(dup.itemsState.status()).toBe('success');
+    expect(dup.itemsState.data()).toEqual([5]);
+  });
 });

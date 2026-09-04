@@ -22,6 +22,14 @@ function makeQuery<T>(): QueryStub<T> {
   };
 }
 
+interface TimedQueryStub<T> extends QueryStub<T> {
+  readonly dataUpdatedAt: WritableSignal<number>;
+}
+
+function makeTimedQuery<T>(): TimedQueryStub<T> {
+  return { ...makeQuery<T>(), dataUpdatedAt: signal(0) };
+}
+
 describe('fromQuery', () => {
   it('maps pending + fetching to loading on first load', () => {
     const query = makeQuery<string[]>();
@@ -116,6 +124,102 @@ describe('fromQuery', () => {
     expect(state.status()).toBe('success');
     expect(state.data()).toEqual(['done']);
     expect(state.isFirstLoad()).toBe(false);
+  });
+
+  it('maps error + fetching to loading when no data was retained (retry busy)', () => {
+    const query = makeQuery<string[]>();
+    query.status.set('error');
+    query.error.set(new Error('boom'));
+    query.fetchStatus.set('fetching');
+
+    const state = fromQuery(query);
+
+    expect(state.status()).toBe('loading');
+    expect(state.isLoading()).toBe(true);
+  });
+
+  it('maps error + fetching to refreshing when data was retained', () => {
+    const query = makeQuery<string[]>();
+    const failure = new Error('boom');
+    query.status.set('error');
+    query.error.set(failure);
+    query.data.set(['stale']);
+    query.fetchStatus.set('fetching');
+
+    const state = fromQuery(query);
+
+    expect(state.status()).toBe('refreshing');
+    expect(state.data()).toEqual(['stale']);
+    // The refreshing frame hides nothing: the error stays readable while
+    // the retry is in flight.
+    expect(state.error()).toBe(failure);
+  });
+
+  it('keeps isFirstLoad true after a failed first load and through its retry', () => {
+    const query = makeQuery<string[]>();
+    query.status.set('pending');
+    query.fetchStatus.set('fetching');
+
+    const state = fromQuery(query);
+    expect(state.isFirstLoad()).toBe(true);
+
+    // First load fails - no data ever arrived, the skeleton phase is not over.
+    query.status.set('error');
+    query.fetchStatus.set('idle');
+    query.error.set(new Error('boom'));
+    expect(state.isFirstLoad()).toBe(true);
+
+    // Retry in flight - still the first load.
+    query.fetchStatus.set('fetching');
+    expect(state.isFirstLoad()).toBe(true);
+
+    // Success ends the first load.
+    query.status.set('success');
+    query.fetchStatus.set('idle');
+    query.data.set(['a']);
+    expect(state.isFirstLoad()).toBe(false);
+  });
+
+  it('maps success + paused to success (not busy)', () => {
+    const query = makeQuery<string[]>();
+    query.status.set('success');
+    query.fetchStatus.set('paused');
+    query.data.set(['a']);
+
+    const state = fromQuery(query);
+
+    expect(state.status()).toBe('success');
+    expect(state.isLoading()).toBe(false);
+  });
+
+  it('maps a bound dataUpdatedAt to lastUpdated and to the first-load latch', () => {
+    const query = makeTimedQuery<string[]>();
+    query.status.set('success');
+    query.fetchStatus.set('fetching');
+    query.data.set(['placeholder']);
+
+    const state = fromQuery(query);
+
+    // Placeholder round: success + fetching but dataUpdatedAt still 0 -
+    // no real load completed, so lastUpdated is absent and it IS first load.
+    expect(state.status()).toBe('refreshing');
+    expect(state.lastUpdated()).toBeUndefined();
+    expect(state.isFirstLoad()).toBe(true);
+
+    const ts = 1_762_000_000_000;
+    query.dataUpdatedAt.set(ts);
+    query.fetchStatus.set('idle');
+    expect(state.lastUpdated()?.getTime()).toBe(ts);
+    expect(state.isFirstLoad()).toBe(false);
+  });
+
+  it('leaves lastUpdated undefined when dataUpdatedAt is not bound', () => {
+    const query = makeQuery<string[]>();
+    query.status.set('success');
+    query.data.set(['a']);
+
+    const state = fromQuery(query);
+    expect(state.lastUpdated()).toBeUndefined();
   });
 
   it('accepts a real TanStack CreateQueryResult structurally', () => {

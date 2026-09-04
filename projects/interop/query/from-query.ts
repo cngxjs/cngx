@@ -21,6 +21,13 @@ export interface CngxQueryLike<T> {
   readonly data: Signal<T | undefined>;
   /** The most recent error, or `null`/`undefined`. */
   readonly error: Signal<unknown>;
+  /**
+   * Optional TanStack `dataUpdatedAt` (epoch ms; `0` = no successful load
+   * yet). When bound, it feeds `lastUpdated` and makes the first-load latch
+   * exact - placeholder data does not bump it, so a placeholder-backed query
+   * still counts as first load.
+   */
+  readonly dataUpdatedAt?: Signal<number>;
 }
 
 /**
@@ -33,11 +40,26 @@ export interface CngxQueryLike<T> {
  * boolean view is re-derived here.
  *
  * Status mapping:
- * - `error` -> `error`
+ * - `error` + `fetching` -> `loading` (no retained data) / `refreshing`
+ *   (data retained) - a retry out of error reports busy again
+ * - `error` + idle/paused -> `error`
  * - `success` + `fetching` -> `refreshing` (background refetch, data visible)
  * - `success` + idle/paused -> `success`
  * - `pending` + `fetching` -> `loading` (first load, no data yet)
  * - `pending` + idle/paused -> `idle` (disabled or paused query)
+ *
+ * With `placeholderData`, TanStack reports `success` + `fetching` while the
+ * first real load runs - that maps to `refreshing` over the placeholder,
+ * deliberately suppressing the skeleton (the intended TanStack UX).
+ *
+ * `isFirstLoad` is `!hadSuccess`, the kernel-recommended query semantics: a
+ * failed or retrying first load stays `isFirstLoad === true` until data
+ * actually arrived once. Bind `dataUpdatedAt` for the exact latch; without it
+ * the bridge falls back to `status === 'success'` or retained data. Two
+ * deliberate divergences from `fromResource`: a settled first-load error
+ * stays first-load here (fromResource flips false on error), and the latch
+ * is derived, so a query reset / key swap (`dataUpdatedAt` back to `0`)
+ * returns to first-load instead of staying latched forever.
  *
  * ```typescript
  * private readonly query = injectQuery(() => ({
@@ -55,10 +77,15 @@ export interface CngxQueryLike<T> {
 export function fromQuery<T>(query: CngxQueryLike<T>): CngxAsyncState<T> {
   const status = computed((): AsyncStatus => {
     const s = query.status();
+    const fetching = query.fetchStatus() === 'fetching';
     if (s === 'error') {
+      // A retry out of error is busy, not stuck on the stale error frame:
+      // loading without retained data, refreshing over retained data.
+      if (fetching) {
+        return query.data() === undefined ? 'loading' : 'refreshing';
+      }
       return 'error';
     }
-    const fetching = query.fetchStatus() === 'fetching';
     if (s === 'success') {
       // Data is already present; a concurrent fetch is a background refresh.
       return fetching ? 'refreshing' : 'success';
@@ -67,7 +94,30 @@ export function fromQuery<T>(query: CngxQueryLike<T>): CngxAsyncState<T> {
     return fetching ? 'loading' : 'idle';
   });
 
-  const isFirstLoad = computed(() => query.status() === 'pending');
+  // Success latch without an effect (fromQuery needs no injection context):
+  // dataUpdatedAt is authoritative when bound (0 = never succeeded, and
+  // placeholder data does not bump it); otherwise a success status or data
+  // retained through an error round-trip proves a completed load.
+  const hadSuccess = computed(() => {
+    const updatedAt = query.dataUpdatedAt?.();
+    if (updatedAt !== undefined) {
+      return updatedAt > 0;
+    }
+    return query.status() === 'success' || query.data() !== undefined;
+  });
+
+  const isFirstLoad = computed(() => !hadSuccess());
+
+  const updatedAtSource = query.dataUpdatedAt;
+  const lastUpdated = updatedAtSource
+    ? computed(
+        () => {
+          const ts = updatedAtSource();
+          return ts > 0 ? new Date(ts) : undefined;
+        },
+        { equal: (a, b) => a?.getTime() === b?.getTime() },
+      )
+    : undefined;
 
   // data and error are already the query's own signals - pass them through
   // directly rather than re-wrapping in a needless computed.
@@ -76,5 +126,6 @@ export function fromQuery<T>(query: CngxQueryLike<T>): CngxAsyncState<T> {
     data: query.data,
     error: query.error,
     isFirstLoad,
+    lastUpdated,
   });
 }
