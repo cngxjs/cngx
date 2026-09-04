@@ -10,6 +10,7 @@ import { CngxChart } from '../chart/chart.component';
 import { CngxAxisDomain } from '../axis/axis-domain';
 import { CngxLine } from '../layers/line.component';
 import { CngxArea } from '../layers/area.component';
+import { sameNumberArr } from '../chart/equal-helpers';
 import { presetIndexDomain, presetValueDomain } from './preset-math';
 import { injectPresetState } from './preset-state';
 
@@ -73,18 +74,8 @@ import { injectPresetState } from './preset-state';
           [height]="height()"
           [aria-label]="ariaLabel()"
         >
-          <svg:g
-            cngxAxisDomain
-            position="bottom"
-            type="linear"
-            [domain]="xDomain()"
-          ></svg:g>
-          <svg:g
-            cngxAxisDomain
-            position="left"
-            type="linear"
-            [domain]="yDomain()"
-          ></svg:g>
+          <svg:g cngxAxisDomain position="bottom" type="linear" [domain]="xDomain()"></svg:g>
+          <svg:g cngxAxisDomain position="left" type="linear" [domain]="yDomain()"></svg:g>
           @if (showArea()) {
             <svg:g cngxArea [baseline]="yDomain()[0]"></svg:g>
           }
@@ -157,7 +148,12 @@ export class CngxSparkline {
   /** True while the skeleton branch renders - the host announces busy, the span stays decorative. */
   protected readonly busy = computed(() => this.activeView() === 'skeleton');
 
-  protected readonly xDomain = computed<readonly number[]>(() => presetIndexDomain(this.data().length));
+  protected readonly xDomain = computed<readonly number[]>(
+    () => presetIndexDomain(this.data().length),
+    { equal: sameNumberArr },
+  );
 
-  protected readonly yDomain = computed<readonly number[]>(() => presetValueDomain(this.data()));
+  protected readonly yDomain = computed<readonly number[]>(() => presetValueDomain(this.data()), {
+    equal: sameNumberArr,
+  });
 }

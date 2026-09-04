@@ -159,13 +159,7 @@ describe('CngxAxis', () => {
       imports: [CngxChart, CngxAxis],
       template: `
         <cngx-chart [data]="[1, 2, 3]" [width]="400" [height]="100">
-          <svg:g
-            cngxAxis
-            position="bottom"
-            type="time"
-            [domain]="domain"
-            [ticks]="ticks"
-          ></svg:g>
+          <svg:g cngxAxis position="bottom" type="time" [domain]="domain" [ticks]="ticks"></svg:g>
         </cngx-chart>
       `,
     })
@@ -182,10 +176,7 @@ describe('CngxAxis', () => {
   }
 
   it('formats Date ticks compactly instead of the String(Date) wall of text', () => {
-    const labels = timeAxisLabels(
-      [new Date(2026, 8, 4, 9, 0), new Date(2026, 8, 4, 13, 0)],
-      5,
-    );
+    const labels = timeAxisLabels([new Date(2026, 8, 4, 9, 0), new Date(2026, 8, 4, 13, 0)], 5);
     expect(labels.length).toBe(5);
     for (const label of labels) {
       // String(Date) is ~60 characters and carries the timezone name -

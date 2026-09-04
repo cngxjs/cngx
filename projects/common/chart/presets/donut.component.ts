@@ -163,9 +163,12 @@ export class CngxDonut {
   protected readonly showsMeterValue = computed(() => this.activeView() === 'content');
 
   constructor() {
-    warnIfUnnamedPreset('cngx-donut', 'Bind [label] or [aria-label].', () => (this.ariaLabel() ?? this.label()) !== null);
+    warnIfUnnamedPreset(
+      'cngx-donut',
+      'Bind [label] or [aria-label].',
+      () => (this.ariaLabel() ?? this.label()) !== null,
+    );
   }
-
 
   protected readonly center = computed(() => this.size() / 2);
   protected readonly radius = computed(() => (this.size() - this.thickness()) / 2);

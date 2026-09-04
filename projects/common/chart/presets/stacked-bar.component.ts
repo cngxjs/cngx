@@ -61,10 +61,7 @@ interface SegmentRendering {
   template: `
     @switch (activeView()) {
       @case ('skeleton') {
-        <span
-          class="cngx-preset-skeleton"
-          aria-hidden="true"
-        ></span>
+        <span class="cngx-preset-skeleton" aria-hidden="true"></span>
       }
       @case ('empty') {
         <span class="cngx-preset-fallback">{{ i18n.empty() }}</span>
@@ -154,23 +151,26 @@ export class CngxStackedBar {
     return sum > 0 ? sum : 1;
   });
 
-  protected readonly segmentRenderings = computed<readonly SegmentRendering[]>(() => {
-    const total = this.resolvedTotal();
-    let runningLeft = 0;
-    return this.segments().map((s, i) => {
-      const width = (s.value / total) * 100;
-      const left = runningLeft;
-      runningLeft += width;
-      return {
-        key: `${i}-${s.label}`,
-        left,
-        width,
-        color: s.color ?? null,
-        label: s.label,
-        value: s.value,
-      };
-    });
-  });
+  protected readonly segmentRenderings = computed<readonly SegmentRendering[]>(
+    () => {
+      const total = this.resolvedTotal();
+      let runningLeft = 0;
+      return this.segments().map((s, i) => {
+        const width = (s.value / total) * 100;
+        const left = runningLeft;
+        runningLeft += width;
+        return {
+          key: `${i}-${s.label}`,
+          left,
+          width,
+          color: s.color ?? null,
+          label: s.label,
+          value: s.value,
+        };
+      });
+    },
+    { equal: segmentRenderingsEqual },
+  );
 
   protected readonly effectiveAriaLabel = computed(() => {
     const explicit = this.ariaLabel();
@@ -190,4 +190,32 @@ export class CngxStackedBar {
       `Total ${total}. ${segments.map((s) => `${s.label}: ${s.value}`).join(', ')}.`
     );
   });
+}
+
+/** @internal */
+function segmentRenderingsEqual(
+  a: readonly SegmentRendering[],
+  b: readonly SegmentRendering[],
+): boolean {
+  if (a === b) {
+    return true;
+  }
+  if (a.length !== b.length) {
+    return false;
+  }
+  for (let i = 0; i < a.length; i++) {
+    const x = a[i];
+    const y = b[i];
+    if (
+      x.key !== y.key ||
+      x.left !== y.left ||
+      x.width !== y.width ||
+      x.color !== y.color ||
+      x.label !== y.label ||
+      x.value !== y.value
+    ) {
+      return false;
+    }
+  }
+  return true;
 }

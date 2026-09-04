@@ -98,9 +98,12 @@ describe('CngxScatter [color] parity', () => {
       `,
     })
     class ColorHost {
-      protected readonly data = [{ x: 0, y: 1 }, { x: 5, y: 2 }];
-    protected readonly xAcc = (d: { x: number; y: number }): number => d.x;
-    protected readonly yAcc = (d: { x: number; y: number }): number => d.y;
+      protected readonly data = [
+        { x: 0, y: 1 },
+        { x: 5, y: 2 },
+      ];
+      protected readonly xAcc = (d: { x: number; y: number }): number => d.x;
+      protected readonly yAcc = (d: { x: number; y: number }): number => d.y;
     }
     TestBed.configureTestingModule({ imports: [ColorHost] });
     const fixture = TestBed.createComponent(ColorHost);

@@ -1292,7 +1292,13 @@ describe('CngxChart - axis decoration is authored inside the viewBox', () => {
     imports: [CngxChart, CngxAxis],
     template: `
       <cngx-chart [data]="[1, 2, 3]" [width]="200" [height]="100" data-testid="chart">
-        <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 1200]" label="Samples"></svg:g>
+        <svg:g
+          cngxAxis
+          position="bottom"
+          type="linear"
+          [domain]="[0, 1200]"
+          label="Samples"
+        ></svg:g>
         <svg:g cngxAxis position="left" type="linear" [domain]="[0, 1200]" label="Volts"></svg:g>
       </cngx-chart>
     `,
@@ -1429,7 +1435,8 @@ describe('CngxChart - a consumer axis participates through the contract token', 
     const ctx = (
       fixture.debugElement.query(By.directive(ContextProbe)).componentInstance as ContextProbe
     ).ctx;
-    const axis = fixture.debugElement.query(By.directive(TestLogAxis))
+    const axis = fixture.debugElement
+      .query(By.directive(TestLogAxis))
       .injector.get(TestLogAxis) as TestLogAxis;
 
     axis.reservation.set(60);

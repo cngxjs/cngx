@@ -46,10 +46,7 @@ import { injectPresetState, warnIfUnnamedPreset } from './preset-state';
   template: `
     @switch (activeView()) {
       @case ('skeleton') {
-        <span
-          class="cngx-preset-skeleton"
-          aria-hidden="true"
-        ></span>
+        <span class="cngx-preset-skeleton" aria-hidden="true"></span>
       }
       @case ('empty') {
         <span class="cngx-preset-fallback">{{ i18n.empty() }}</span>
@@ -158,9 +155,12 @@ export class CngxDeviationBar {
   protected readonly showsMeterValue = computed(() => this.activeView() === 'content');
 
   constructor() {
-    warnIfUnnamedPreset('cngx-deviation-bar', 'Bind [aria-label].', () => this.ariaLabel() !== null);
+    warnIfUnnamedPreset(
+      'cngx-deviation-bar',
+      'Bind [aria-label].',
+      () => this.ariaLabel() !== null,
+    );
   }
-
 
   /**
    * The meter's valid range is centred on the baseline, not on zero:
@@ -176,22 +176,33 @@ export class CngxDeviationBar {
     positive: boolean;
     left: number;
     width: number;
-  } | null>(() => {
-    const v = this.value();
-    const b = this.baseline();
-    const m = this.magnitude();
-    if (m <= 0) {
-      return null;
-    }
-    const delta = v - b;
-    if (delta === 0) {
-      return null;
-    }
-    const positive = delta > 0;
-    const ratio = clampedRatio(Math.abs(delta), 0, m) * 50;
-    if (positive) {
-      return { positive, left: 50, width: ratio };
-    }
-    return { positive, left: 50 - ratio, width: ratio };
-  });
+  } | null>(
+    () => {
+      const v = this.value();
+      const b = this.baseline();
+      const m = this.magnitude();
+      if (m <= 0) {
+        return null;
+      }
+      const delta = v - b;
+      if (delta === 0) {
+        return null;
+      }
+      const positive = delta > 0;
+      const ratio = clampedRatio(Math.abs(delta), 0, m) * 50;
+      if (positive) {
+        return { positive, left: 50, width: ratio };
+      }
+      return { positive, left: 50 - ratio, width: ratio };
+    },
+    {
+      equal: (a, b) =>
+        a === b ||
+        (a !== null &&
+          b !== null &&
+          a.positive === b.positive &&
+          a.left === b.left &&
+          a.width === b.width),
+    },
+  );
 }

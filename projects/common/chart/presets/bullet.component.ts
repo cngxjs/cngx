@@ -65,10 +65,7 @@ interface RangeRendering {
   template: `
     @switch (activeView()) {
       @case ('skeleton') {
-        <span
-          class="cngx-preset-skeleton"
-          aria-hidden="true"
-        ></span>
+        <span class="cngx-preset-skeleton" aria-hidden="true"></span>
       }
       @case ('empty') {
         <span class="cngx-preset-fallback">{{ i18n.empty() }}</span>
@@ -185,7 +182,6 @@ export class CngxBullet {
     warnIfUnnamedPreset('cngx-bullet', 'Bind [aria-label].', () => this.ariaLabel() !== null);
   }
 
-
   protected readonly maxValue = computed(() => {
     const explicit = this.max();
     if (explicit !== null && explicit > 0) {
@@ -213,18 +209,38 @@ export class CngxBullet {
     return clampedRatio(t, 0, this.maxValue()) * 100;
   });
 
-  protected readonly rangeRenderings = computed<readonly RangeRendering[]>(() => {
-    const m = this.maxValue();
-    return this.ranges().map((r, i) => {
-      const lo = Math.min(r.from, r.to);
-      const hi = Math.max(r.from, r.to);
-      return {
-        key: `${i}-${r.label ?? ''}`,
-        left: clampedRatio(lo, 0, m) * 100,
-        width: clampedRatio(hi - lo, 0, m) * 100,
-        color: r.color ?? null,
-      };
-    });
-  });
+  protected readonly rangeRenderings = computed<readonly RangeRendering[]>(
+    () => {
+      const m = this.maxValue();
+      return this.ranges().map((r, i) => {
+        const lo = Math.min(r.from, r.to);
+        const hi = Math.max(r.from, r.to);
+        return {
+          key: `${i}-${r.label ?? ''}`,
+          left: clampedRatio(lo, 0, m) * 100,
+          width: clampedRatio(hi - lo, 0, m) * 100,
+          color: r.color ?? null,
+        };
+      });
+    },
+    { equal: rangeRenderingsEqual },
+  );
 }
 
+/** @internal */
+function rangeRenderingsEqual(a: readonly RangeRendering[], b: readonly RangeRendering[]): boolean {
+  if (a === b) {
+    return true;
+  }
+  if (a.length !== b.length) {
+    return false;
+  }
+  for (let i = 0; i < a.length; i++) {
+    const x = a[i];
+    const y = b[i];
+    if (x.key !== y.key || x.left !== y.left || x.width !== y.width || x.color !== y.color) {
+      return false;
+    }
+  }
+  return true;
+}

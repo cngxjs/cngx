@@ -50,10 +50,7 @@ import { injectPresetState, warnIfUnnamedPreset } from './preset-state';
   template: `
     @switch (activeView()) {
       @case ('skeleton') {
-        <span
-          class="cngx-preset-skeleton"
-          aria-hidden="true"
-        ></span>
+        <span class="cngx-preset-skeleton" aria-hidden="true"></span>
       }
       @case ('empty') {
         <span class="cngx-preset-fallback">{{ i18n.empty() }}</span>
@@ -139,9 +136,12 @@ export class CngxMiniBar {
   protected readonly showsMeterValue = computed(() => this.activeView() === 'content');
 
   constructor() {
-    warnIfUnnamedPreset('cngx-mini-bar', 'Bind [label] or [aria-label].', () => (this.ariaLabel() ?? this.label()) !== null);
+    warnIfUnnamedPreset(
+      'cngx-mini-bar',
+      'Bind [label] or [aria-label].',
+      () => (this.ariaLabel() ?? this.label()) !== null,
+    );
   }
-
 
   protected readonly percent = computed(
     () => clampedRatio(this.value(), this.min(), this.max()) * 100,
