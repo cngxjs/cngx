@@ -40,17 +40,30 @@ export class CngxFocusVisible {
   /** `true` when focus was initiated via keyboard (not pointer). */
   readonly focusVisible = this.focusVisibleState.asReadonly();
 
-  /** @internal Cleared on `focusin`, `pointerup` (document-level), or `pointercancel`. */
-  pointerActive = false;
+  private pointerActive = false;
+  private pointerClearTimer: ReturnType<typeof setTimeout> | null = null;
 
-  private readonly clearPointerActive = (): void => {
-    this.pointerActive = false;
+  private readonly schedulePointerClear = (): void => {
+    // One macrotask of grace: on touch, the compat mousedown and the focusin
+    // fire AFTER pointerup, so a synchronous clear here would misread a tap
+    // as keyboard focus. The deferred clear runs after the whole tap
+    // sequence settled.
+    if (this.pointerClearTimer !== null) {
+      clearTimeout(this.pointerClearTimer);
+    }
+    this.pointerClearTimer = setTimeout(() => {
+      this.pointerActive = false;
+      this.pointerClearTimer = null;
+    }, 0);
   };
 
   constructor() {
-    inject(DestroyRef).onDestroy(() =>
-      this.doc.removeEventListener('pointerup', this.clearPointerActive, true),
-    );
+    inject(DestroyRef).onDestroy(() => {
+      this.doc.removeEventListener('pointerup', this.schedulePointerClear, true);
+      if (this.pointerClearTimer !== null) {
+        clearTimeout(this.pointerClearTimer);
+      }
+    });
   }
 
   /** @internal Arms the pointer flag for the imminent focusin. */
@@ -59,9 +72,8 @@ export class CngxFocusVisible {
     // The flag must not outlive the click: a pointerdown that never focuses
     // (disabled child, text selection, drag released off-host) would
     // otherwise suppress the ring on the NEXT keyboard Tab-in. Document-level
-    // capture catches the release wherever it lands; focusin (which fires
-    // before pointerup) has already consumed the flag in the focusing case.
-    this.doc.addEventListener('pointerup', this.clearPointerActive, {
+    // capture catches the release wherever it lands.
+    this.doc.addEventListener('pointerup', this.schedulePointerClear, {
       once: true,
       capture: true,
     });

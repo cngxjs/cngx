@@ -108,7 +108,7 @@ export class CngxStepperNext {
     if (isDevMode() && this.coPlacedAsyncClick) {
       console.warn(
         'CngxStepperNext: [cngxStepperNext] and [cngxAsyncClick] on the same element ' +
-          'both gate aria-disabled (and cngxAsyncClick adds native [disabled]). Use one or the other.',
+          'both gate aria-disabled. Use one or the other.',
       );
     }
   }

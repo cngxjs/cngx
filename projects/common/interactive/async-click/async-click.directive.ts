@@ -31,7 +31,10 @@ export type AsyncAction = () => Promise<unknown> | Observable<unknown>;
  * guards against double-clicks. While pending it communicates busy via
  * `aria-busy` + `aria-disabled` and swallows clicks WITHOUT the hard
  * `disabled` attribute, so keyboard focus stays on the control instead of
- * dropping to `<body>` mid-action. Success and failure are announced through
+ * dropping to `<body>` mid-action. Note: the guard prevents the ACTION from
+ * re-running and calls `preventDefault()`, but a consumer `(click)` handler
+ * on the same element still fires while pending - gate it on `pending()`
+ * when it must not. Success and failure are announced through
  * an auto-rendered polite live region (sibling of the host - inside a
  * `<button>` the text would pollute the accessible name); opt out with
  * `[autoAnnounce]="false"` and bind `announcement` to your own region.

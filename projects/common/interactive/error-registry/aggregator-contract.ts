@@ -39,7 +39,10 @@ export interface ErrorAggregatorContractDeps {
  * Single source of truth for the aggregator surface: `CngxErrorAggregator`
  * (directive form, ARIA host bindings) and `injectErrorAggregator`
  * (programmatic form, no DOM host) both delegate to this helper so the
- * two surfaces stay field-for-field equivalent without manual sync.
+ * two CONTRACT surfaces stay field-for-field equivalent without manual
+ * sync. Registry registration sits outside this equivalence: the directive
+ * re-registers reactively when its name input changes, the factory's
+ * static name registers once.
  *
  * Returns a fresh `CngxErrorAggregatorContract` each call - every
  * `computed` is freshly bound to the supplied `sourcesState`/`scope`

@@ -286,6 +286,11 @@ export function createTreeController<T>(opts: CngxTreeControllerOptions<T>): Cng
   // id → FlatTreeNode, value-key → source CngxTreeNode, parentId →
   // first-child FlatTreeNode. All lookups are O(1); the old linear
   // scan in firstChildOf is gone.
+  // Error once per offending id/key, not once per recompute - indexes()
+  // rebuilds on every expand/collapse and a persistent duplicate would
+  // otherwise flood the console.
+  const reportedDuplicates = new Set<string>();
+
   const indexes = computed<TreeIndexes<T>>(() => {
     const byId = new Map<string, FlatTreeNode<T>>();
     const byValue = new Map<unknown, FlatTreeNode<T>>();
@@ -295,14 +300,16 @@ export function createTreeController<T>(opts: CngxTreeControllerOptions<T>): Cng
         // A colliding id/key silently shadows the earlier node in every
         // O(1) lookup (expansion, selection, focus) - surface the
         // authoring error instead of dropping nodes.
-        if (byId.has(n.id)) {
+        if (byId.has(n.id) && !reportedDuplicates.has(`id:${n.id}`)) {
+          reportedDuplicates.add(`id:${n.id}`);
           console.error(
             `createTreeController: duplicate node id "${n.id}" from nodeIdFn - ` +
               'the earlier node is shadowed in id lookups. Ids must be unique.',
           );
         }
         const key = keyFn(n.value);
-        if (byValue.has(key)) {
+        if (byValue.has(key) && !reportedDuplicates.has(`key:${String(key)}`)) {
+          reportedDuplicates.add(`key:${String(key)}`);
           console.error(
             `createTreeController: duplicate selection key "${String(key)}" from keyFn - ` +
               'the earlier node is shadowed in selection lookups. Keys must be unique.',

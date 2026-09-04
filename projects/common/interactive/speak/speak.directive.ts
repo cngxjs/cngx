@@ -128,7 +128,12 @@ export class CngxSpeak {
     }
   }
 
-  /** Cancel this directive's ongoing speech. Speech from other sources survives. */
+  /**
+   * Cancel this directive's ongoing speech. A no-op while no own utterance
+   * is live, so an idle instance never clears the shared synthesis queue.
+   * (Starting a new utterance still interrupts whatever is playing -
+   * `SpeechSynthesis` is a single audio channel.)
+   */
   cancel(): void {
     this.cancelOwn();
   }

@@ -10,7 +10,7 @@ import { mapKeySetEqual, shallowReadonlyArrayEqual } from './equal-fns';
  * test harnesses) can inspect or drive form-error state without traversing
  * the DOM. Directives with `cngxErrorScopeName` / `cngxErrorAggregatorName`
  * inputs auto-register here when the registry is provided in the host
- * environment (via {@link provideErrorRegistry}, ships in commit 3).
+ * environment via {@link provideErrorRegistry}.
  *
  * Not `providedIn: 'root'` - consumers opt in by including
  * `provideErrorRegistry()` in their `bootstrapApplication` providers. When

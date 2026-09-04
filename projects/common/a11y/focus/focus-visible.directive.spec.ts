@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CngxFocusVisible } from './focus-visible.directive';
 
 @Component({
@@ -60,16 +60,32 @@ describe('CngxFocusVisible', () => {
     ).toBe(true);
   });
 
-  it('clears a stale pointer flag on pointerup so the next Tab-in shows the ring', () => {
+  it('clears a stale pointer flag after pointerup so the next Tab-in shows the ring', () => {
+    vi.useFakeTimers();
     const { buttons, dirA } = setup();
     // A pointerdown that never focuses (text selection, disabled child).
     buttons[0].triggerEventHandler('pointerdown');
-    // The release lands wherever the pointer is - document catches it.
+    // The release lands wherever the pointer is - document catches it; the
+    // clear defers one macrotask to survive the touch compat-event order.
     document.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }));
+    vi.runAllTimers();
 
     // Later keyboard Tab-in must show the ring again.
     buttons[0].triggerEventHandler('focusin');
     expect(dirA.focusVisible()).toBe(true);
+  });
+
+  it('keeps a touch tap classified as pointer focus (focusin after pointerup)', () => {
+    vi.useFakeTimers();
+    const { buttons, dirA } = setup();
+    // Touch ordering: pointerdown -> pointerup -> compat mousedown -> focusin.
+    buttons[0].triggerEventHandler('pointerdown');
+    document.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }));
+    buttons[0].triggerEventHandler('focusin');
+
+    // The deferred clear must not have run before the focusin - no ring.
+    expect(dirA.focusVisible()).toBe(false);
+    vi.runAllTimers();
   });
 
   it('pointer click on A does not affect keyboard focus on B', () => {

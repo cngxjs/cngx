@@ -108,6 +108,7 @@ export type PopoverActionVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
         [cngxAsyncClick]="action()!"
         #btn="cngxAsyncClick"
         [feedbackDuration]="feedbackDuration()"
+        [autoAnnounce]="false"
         [class]="'cngx-popover-action cngx-popover-action--' + variant()"
       >
         @switch (btn.status()) {
