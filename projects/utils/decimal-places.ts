@@ -14,10 +14,10 @@ export function decimalPlaces(n: number): number {
     return 0;
   }
   const text = String(n);
-  // Very small/large magnitudes stringify in exponent notation ('1e-7'):
-  // derive the places from mantissa places minus the exponent instead of
-  // reporting 0 off the missing dot.
-  const eIndex = text.search(/[eE]/);
+  // Very small/large magnitudes stringify in exponent notation ('1e-7',
+  // always lowercase from String()): derive the places from mantissa places
+  // minus the exponent instead of reporting 0 off the missing dot.
+  const eIndex = text.indexOf('e');
   if (eIndex !== -1) {
     const mantissa = text.slice(0, eIndex);
     const exponent = Number(text.slice(eIndex + 1));

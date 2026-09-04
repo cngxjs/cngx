@@ -4,7 +4,8 @@
  * The fields are display-only string segments (badge rendering, log lines,
  * about panels) - they are not comparable numerically or lexically across
  * versions. Use a real semver library when you need ordering or range
- * checks.
+ * checks. Producer-owned: obtain instances via {@link makeVersion} rather
+ * than constructing literals - new display segments may be added.
  *
  * @category utils/version
  */
