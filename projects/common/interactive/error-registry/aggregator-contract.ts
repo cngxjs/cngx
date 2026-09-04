@@ -1,4 +1,4 @@
-import { computed, type Signal, type WritableSignal } from '@angular/core';
+import { computed, isDevMode, type Signal, type WritableSignal } from '@angular/core';
 import type {
   CngxErrorAggregatorContract,
   CngxErrorAggregatorSourceEntry,
@@ -120,7 +120,14 @@ export function createErrorAggregatorContract(
     shouldShow,
     announcement,
     addSource(entry) {
-      const next = new Map(sourcesState());
+      const current = sourcesState();
+      if (isDevMode() && current.has(entry.key) && current.get(entry.key) !== entry) {
+        console.warn(
+          `CngxErrorAggregator: an error source with key "${entry.key}" is already ` +
+            'registered; the new entry replaces it (last-wins). Use unique keys per source.',
+        );
+      }
+      const next = new Map(current);
       next.set(entry.key, entry);
       sourcesState.set(next);
     },

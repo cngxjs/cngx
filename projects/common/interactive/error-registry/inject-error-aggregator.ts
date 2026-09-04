@@ -60,7 +60,7 @@ export function injectErrorAggregator(
     if (registry) {
       const destroyRef = inject(DestroyRef);
       registry.registerAggregator(name, contract);
-      destroyRef.onDestroy(() => registry.unregisterAggregator(name));
+      destroyRef.onDestroy(() => registry.unregisterAggregator(name, contract));
     }
   }
 

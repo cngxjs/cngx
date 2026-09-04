@@ -7,6 +7,7 @@ import {
   ElementRef,
   effect,
   inject,
+  Injector,
   input,
   PLATFORM_ID,
   Renderer2,
@@ -209,13 +210,33 @@ export class CngxErrorAggregator implements CngxErrorAggregatorContract {
     if (!registry) {
       return;
     }
+    const injector = inject(Injector);
+    // Registration reacts to name changes: a renamed aggregator unregisters
+    // its old key and registers the new one. Deferred behind afterNextRender
+    // so registration stays browser-only.
     afterNextRender(() => {
-      const name = this.aggregatorName();
-      if (!name) {
-        return;
-      }
-      registry.registerAggregator(name, this);
-      destroyRef.onDestroy(() => registry.unregisterAggregator(name));
+      let registered: string | null = null;
+      effect(
+        () => {
+          const name = this.aggregatorName();
+          untracked(() => {
+            if (registered && registered !== name) {
+              registry.unregisterAggregator(registered, this);
+              registered = null;
+            }
+            if (name && registered !== name) {
+              registry.registerAggregator(name, this);
+              registered = name;
+            }
+          });
+        },
+        { injector },
+      );
+      destroyRef.onDestroy(() => {
+        if (registered) {
+          registry.unregisterAggregator(registered, this);
+        }
+      });
     });
   }
 }

@@ -1,4 +1,4 @@
-import { computed, Injectable, signal, type Signal } from '@angular/core';
+import { computed, Injectable, isDevMode, signal, type Signal } from '@angular/core';
 import type { CngxErrorAggregatorContract } from '../error-aggregator/error-aggregator.token';
 import type { CngxErrorScopeContract } from '../error-scope/error-scope.token';
 import { mapKeySetEqual, shallowReadonlyArrayEqual } from './equal-fns';
@@ -84,15 +84,25 @@ export class CngxErrorRegistry {
     if (current.get(name) === scope) {
       return;
     }
+    if (isDevMode() && current.has(name)) {
+      console.warn(
+        `CngxErrorRegistry: a scope named "${name}" is already registered. ` +
+          'The existing instance stays live (swap-is-noop); unregister it first for a true swap.',
+      );
+    }
     const next = new Map(current);
     next.set(name, scope);
     this.scopesState.set(next);
   }
 
-  /** Removes the named scope. No-op if absent. */
-  unregisterScope(name: string): void {
+  /**
+   * Removes the named scope, but only when `scope` is the stored instance.
+   * No-op if absent or if a different instance holds the name - a late
+   * destroy of a swap-absorbed duplicate must not evict the live winner.
+   */
+  unregisterScope(name: string, scope: CngxErrorScopeContract): void {
     const current = this.scopesState();
-    if (!current.has(name)) {
+    if (current.get(name) !== scope) {
       return;
     }
     const next = new Map(current);
@@ -121,15 +131,25 @@ export class CngxErrorRegistry {
     if (current.get(name) === aggregator) {
       return;
     }
+    if (isDevMode() && current.has(name)) {
+      console.warn(
+        `CngxErrorRegistry: an aggregator named "${name}" is already registered. ` +
+          'The existing instance stays live (swap-is-noop); unregister it first for a true swap.',
+      );
+    }
     const next = new Map(current);
     next.set(name, aggregator);
     this.aggregatorsState.set(next);
   }
 
-  /** Removes the named aggregator. No-op if absent. */
-  unregisterAggregator(name: string): void {
+  /**
+   * Removes the named aggregator, but only when `aggregator` is the stored
+   * instance. No-op if absent or if a different instance holds the name - a
+   * late destroy of a swap-absorbed duplicate must not evict the live winner.
+   */
+  unregisterAggregator(name: string, aggregator: CngxErrorAggregatorContract): void {
     const current = this.aggregatorsState();
-    if (!current.has(name)) {
+    if (current.get(name) !== aggregator) {
       return;
     }
     const next = new Map(current);
