@@ -169,4 +169,22 @@ describe('sortTree', () => {
   it('leaves empty forest unchanged', () => {
     expect(sortTree<Row>([], (v) => v.name)).toEqual([]);
   });
+
+  it('does not mutate the input forest', () => {
+    const input: CngxTreeNode<Row>[] = [
+      {
+        value: { id: 'z', name: 'Zeta' },
+        children: [
+          { value: { id: 'z2', name: 'Zeta-2' } },
+          { value: { id: 'z1', name: 'Zeta-1' } },
+        ],
+      },
+      { value: { id: 'a', name: 'Alpha' } },
+    ];
+    sortTree(input, (v) => v.name, 'asc');
+
+    // Original order survives at every level - sortTree returns copies.
+    expect(input.map((n) => n.value.id)).toEqual(['z', 'a']);
+    expect(input[0]!.children!.map((n) => n.value.id)).toEqual(['z2', 'z1']);
+  });
 });
