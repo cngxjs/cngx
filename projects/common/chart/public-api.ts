@@ -29,6 +29,7 @@ export {
 export { CngxChartAnnouncer } from './chart/chart-announcer.component';
 export {
   CNGX_CHART_CONTEXT,
+  injectChartContext,
   type CngxChartContext,
   type CngxChartPlotArea,
   type ScaleFn,
@@ -108,6 +109,7 @@ export {
   createPathBuilder,
   type PathBuilder,
   type PathBuilderOptions,
+  type PathSegment,
   type LineYAccessor,
   type LineXAccessor,
   buildCurvePath,

@@ -6,7 +6,8 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import type { CngxAsyncState } from '@cngx/core/utils';
-import { injectPresetState } from './preset-state';
+import { clampedRatio } from '../chart/preset-math';
+import { injectPresetState, warnIfUnnamedPreset } from './preset-state';
 
 /**
  * Mini horizontal bar - a single-value bounded indicator. Renders
@@ -39,20 +40,17 @@ import { injectPresetState } from './preset-state';
   encapsulation: ViewEncapsulation.None,
   host: {
     role: 'meter',
-    '[attr.aria-valuenow]': 'value()',
-    '[attr.aria-valuemin]': 'min()',
-    '[attr.aria-valuemax]': 'max()',
+    '[attr.aria-valuenow]': 'showsMeterValue() ? value() : null',
+    '[attr.aria-valuemin]': 'showsMeterValue() ? min() : null',
+    '[attr.aria-valuemax]': 'showsMeterValue() ? max() : null',
     '[attr.aria-label]': 'ariaLabel() ?? label()',
+    '[attr.aria-busy]': 'busy() ? "true" : null',
     class: 'cngx-mini-bar',
   },
   template: `
     @switch (activeView()) {
       @case ('skeleton') {
-        <span
-          class="cngx-preset-skeleton"
-          [attr.aria-busy]="true"
-          [attr.aria-label]="i18n.loading()"
-        ></span>
+        <span class="cngx-preset-skeleton" aria-hidden="true"></span>
       }
       @case ('empty') {
         <span class="cngx-preset-fallback">{{ i18n.empty() }}</span>
@@ -127,20 +125,25 @@ export class CngxMiniBar {
   protected readonly i18n = this.preset.i18n;
   protected readonly activeView = this.preset.activeView;
 
-  protected readonly percent = computed(() => {
-    const v = this.value();
-    const lo = this.min();
-    const hi = this.max();
-    if (hi === lo) {
-      return 0;
-    }
-    const ratio = ((v - lo) / (hi - lo)) * 100;
-    if (ratio < 0) {
-      return 0;
-    }
-    if (ratio > 100) {
-      return 100;
-    }
-    return ratio;
-  });
+  /** True while the skeleton branch renders - the host announces busy, the span stays decorative. */
+  protected readonly busy = computed(() => this.activeView() === 'skeleton');
+
+  /**
+   * Meter value attributes render only in the content view: keeping
+   * `aria-valuenow` while the skeleton or error fallback shows would
+   * announce a stale reading for a value that is not on screen.
+   */
+  protected readonly showsMeterValue = computed(() => this.activeView() === 'content');
+
+  constructor() {
+    warnIfUnnamedPreset(
+      'cngx-mini-bar',
+      'Bind [label] or [aria-label].',
+      () => (this.ariaLabel() ?? this.label()) !== null,
+    );
+  }
+
+  protected readonly percent = computed(
+    () => clampedRatio(this.value(), this.min(), this.max()) * 100,
+  );
 }

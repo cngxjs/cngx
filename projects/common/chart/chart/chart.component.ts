@@ -16,7 +16,7 @@ import {
 import { NgTemplateOutlet } from '@angular/common';
 import { CngxResizeObserver } from '@cngx/common/layout';
 import { resolveAsyncView, type AsyncView } from '@cngx/common/data';
-import { nextUid, type CngxAsyncState } from '@cngx/core/utils';
+import { createTransitionTracker, nextUid, type CngxAsyncState } from '@cngx/core/utils';
 import { type CngxAxisPosition, type CngxAxisType } from '../axis/axis-position';
 import { CNGX_CHART_AXIS } from '../axis/chart-axis';
 import { CngxThreshold } from '../layers/threshold.component';
@@ -264,6 +264,9 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
         </div>
       }
     }
+    <span role="status" aria-live="polite" aria-atomic="true" class="cngx-chart__sr-status">{{
+      connectionRestoredAnnouncement()
+    }}</span>
     <cngx-chart-data-table
       [id]="dataTableId"
       [values]="summaryValues()"
@@ -293,7 +296,7 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
       }
       /* Responsive mode: when neither width nor height is bound, the
          host fills its parent and derives height from the
-         --cngx-chart-aspect-ratio CSS variable (default 16/9). The
+         --cngx-chart-aspect-ratio CSS variable (default 5 / 2). The
          resize observer measures the rendered size; dimensions() then
          drives the SVG width/height + viewBox + scale math, so axes
          and layer atoms re-flow as the parent resizes. */
@@ -423,6 +426,21 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
       cngx-chart > .cngx-chart__connection-overlay--reconnecting {
         background: var(--cngx-chart-connection-reconnecting-bg, rgb(0 0 0 / 0.72));
         color: var(--cngx-chart-connection-reconnecting-color, #fff);
+      }
+      /* Visually-hidden live region for the connection-restored
+         announcement. Shipped locally (like the announcer's) so it
+         never falls back to visible text without the global
+         utilities.css. */
+      cngx-chart > .cngx-chart__sr-status {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
       }
       @keyframes cngx-chart-spin {
         to {
@@ -618,6 +636,30 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
     return { ...this.slotContext(), $implicit: err, error: err };
   });
 
+  /**
+   * Current/previous pair for the connection channel's status,
+   * unbound-safe via the `'idle'` fallback.
+   */
+  private readonly connectionTransition = createTransitionTracker(
+    () => this.connectionState()?.status() ?? 'idle',
+  );
+
+  /**
+   * Text for the always-in-DOM polite live region that voices the
+   * recovery transition. The lost/reconnecting overlays announce
+   * themselves through their `role="alert"` / `role="status"` - but
+   * on recovery they simply vanish, which is a silent state change
+   * (Pillar 2). This computed says {@link CngxChartI18n.connectionRestored}
+   * exactly on the error/refreshing -> success edge and clears again
+   * on the next connection transition. Pure derivation, no `effect()`.
+   */
+  protected readonly connectionRestoredAnnouncement = computed(() => {
+    const current = this.connectionTransition.current();
+    const previous = this.connectionTransition.previous();
+    const restored = current === 'success' && (previous === 'error' || previous === 'refreshing');
+    return restored ? this.i18n.connectionRestored() : '';
+  });
+
   constructor() {
     // The controller owns the mount / destroy / paint reactive lifecycle;
     // its effects and teardown are held by this injection context's
@@ -655,6 +697,18 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
           console.warn(
             'CngxChart: more than one *cngxChartOverlay projected; only the first renders. ' +
               'Compose multiple overlays inside a single overlay template.',
+          );
+        }
+      });
+      afterNextRender(() => {
+        const axes = this.axes();
+        const horizontal = axes.filter((a) => isHorizontalPosition(a.position()));
+        const vertical = axes.filter((a) => isVerticalPosition(a.position()));
+        if (horizontal.length > 1 || vertical.length > 1) {
+          console.warn(
+            'CngxChart: multiple axes share one orientation; only the first drives ' +
+              'the scale, the rest render their line and ticks but their [domain] ' +
+              'is silently ignored. Mount one X and one Y axis per chart.',
           );
         }
       });
@@ -904,14 +958,8 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
    */
   readonly summary = computed(
     () => {
-      const acc = this.summaryAccessor();
-      const data = this.dataInput();
-      const values = new Array<number>(data.length);
-      for (let i = 0; i < data.length; i++) {
-        values[i] = acc(data[i], i);
-      }
       const thresholds = this.thresholds().map((t) => t.value());
-      return computeChartSummary(values, thresholds);
+      return computeChartSummary(this.summaryValues(), thresholds);
     },
     {
       equal: (a, b) =>
@@ -966,7 +1014,7 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
    * Responsive mode is active when neither `[width]` nor `[height]` is
    * bound. The host then fills its parent's width and derives height
    * from the `--cngx-chart-aspect-ratio` CSS custom property (default
-   * `16 / 9`). The resize observer feeds `dimensions()` which drives
+   * `5 / 2`). The resize observer feeds `dimensions()` which drives
    * the SVG sizing + scale math, so axes and layer atoms re-flow
    * reactively as the parent resizes.
    */
@@ -1017,7 +1065,12 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
     return this.i18n.summary(this.summary());
   });
 
-  /** Numeric projection of `data` reused by the data-table view. */
+  /**
+   * The single numeric projection of `data` through `summaryAccessor`.
+   * Both {@link summary} and the data-table view derive from it, so the
+   * projection runs once per data change and its `sameNumberArr` equal
+   * stops the cascade when a refresh produces identical values.
+   */
   protected readonly summaryValues = computed<readonly number[]>(
     () => {
       const acc = this.summaryAccessor();

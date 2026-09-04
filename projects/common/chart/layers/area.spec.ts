@@ -64,6 +64,27 @@ describe('CngxArea', () => {
     expect(d.split(' L ').length).toBeGreaterThanOrEqual(3);
   });
 
+  it('closes every finite run to the baseline individually around a NaN gap', () => {
+    const fixture = TestBed.createComponent(TestHost);
+    fixture.componentInstance.data.set([1, 2, Number.NaN, 4, 5]);
+    fixture.detectChanges();
+    const path = fixture.nativeElement.querySelector('.cngx-area') as SVGPathElement;
+    const d = path.getAttribute('d') ?? '';
+    expect(d).not.toContain('NaN');
+    // Two subpaths, each with its own baseline closure - one whole-path
+    // closure would fill straight across the gap.
+    expect(d.match(/M /g)?.length).toBe(2);
+    expect(d.match(/Z/g)?.length).toBe(2);
+  });
+
+  it('renders no fill at all when every value is non-finite', () => {
+    const fixture = TestBed.createComponent(TestHost);
+    fixture.componentInstance.data.set([Number.NaN, Number.NaN]);
+    fixture.detectChanges();
+    const path = fixture.nativeElement.querySelector('.cngx-area') as SVGPathElement;
+    expect(path?.getAttribute('d') ?? '').toBe('');
+  });
+
   function marks(
     fixture: ReturnType<typeof TestBed.createComponent<TestHost>>,
   ): NodeListOf<Element> {
@@ -126,5 +147,38 @@ describe('CngxArea', () => {
     TestBed.tick();
 
     expect(runs).toBe(baselineRuns);
+  });
+});
+
+describe('CngxArea [color] parity', () => {
+  beforeEach(() => vi.stubGlobal('ResizeObserver', ResizeObserverMock));
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('binds [color] onto the SVG mark like CngxLine does', () => {
+    @Component({
+      standalone: true,
+      imports: [CngxChart, CngxAxis, CngxArea],
+      template: `
+        <cngx-chart [data]="data" [width]="200" [height]="100">
+          <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 4]"></svg:g>
+          <svg:g cngxAxis position="left" type="linear" [domain]="[0, 10]"></svg:g>
+          <svg:g cngxArea [color]="'rebeccapurple'"></svg:g>
+        </cngx-chart>
+      `,
+    })
+    class ColorHost {
+      protected readonly data = [1, 2, 3];
+    }
+    TestBed.configureTestingModule({ imports: [ColorHost] });
+    const fixture = TestBed.createComponent(ColorHost);
+    fixture.detectChanges();
+    const mark = fixture.nativeElement.querySelector('.cngx-area') as SVGElement;
+    expect(mark).not.toBeNull();
+    // An inline style, not a presentation attribute - the class rule
+    // (stroke/fill via --cngx-* vars) would beat an attribute in the
+    // CSS cascade and render the bound color inert.
+    expect((mark as unknown as SVGElement & { style: CSSStyleDeclaration }).style.fill).toBe(
+      'rebeccapurple',
+    );
   });
 });

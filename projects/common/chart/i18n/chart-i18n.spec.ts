@@ -26,6 +26,21 @@ describe('CNGX_CHART_I18N', () => {
     expect(text).toBe('Trending up. Min 5, max 50, current 38. One threshold crossing.');
   });
 
+  it('strips float-arithmetic noise from summary and threshold numbers', () => {
+    TestBed.configureTestingModule({});
+    const i18n = TestBed.inject(CNGX_CHART_I18N);
+    const text = i18n.summary({
+      trend: 'flat',
+      min: 0.30000000000000004,
+      max: 6.6000000000000005,
+      current: 2.2,
+      thresholds: [],
+    });
+    expect(text).toContain('Min 0.3, max 6.6, current 2.2');
+    expect(text).not.toMatch(/\d{6,}/);
+    expect(i18n.thresholdAlert(6.6000000000000005)).toBe('Threshold 6.6 crossed');
+  });
+
   it('uses the singular threshold form for zero / one and plural for many', () => {
     TestBed.configureTestingModule({});
     const i18n = TestBed.inject(CNGX_CHART_I18N);
@@ -62,6 +77,26 @@ describe('CNGX_CHART_I18N', () => {
     expect(i18n.summary({ trend: 'up', min: 0, max: 0, current: 0, thresholds: [] })).toBe(
       'OVERRIDDEN',
     );
+  });
+
+  it('merges a partial override over the English defaults', () => {
+    TestBed.configureTestingModule({
+      providers: [provideChartI18n({ empty: () => 'Nix da' })],
+    });
+    const i18n = TestBed.inject(CNGX_CHART_I18N);
+    expect(i18n.empty()).toBe('Nix da');
+    expect(i18n.loading()).toBe('Loading');
+    expect(i18n.stackedBarEmpty?.()).toBe('Empty stacked bar');
+  });
+
+  it('strips float noise from the stacked-bar summary default', () => {
+    TestBed.configureTestingModule({});
+    const i18n = TestBed.inject(CNGX_CHART_I18N);
+    const text = i18n.stackedBarSummary?.(6.6000000000000005, [
+      { label: 'A', value: 2.2 },
+      { label: 'B', value: 4.4000000000000004 },
+    ]);
+    expect(text).toBe('Total 6.6. A: 2.2, B: 4.4.');
   });
 
   it('returns English defaults for the connection-lifecycle keys', () => {

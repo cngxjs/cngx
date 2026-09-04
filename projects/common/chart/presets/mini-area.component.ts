@@ -9,6 +9,8 @@ import type { CngxAsyncState } from '@cngx/core/utils';
 import { CngxChart } from '../chart/chart.component';
 import { CngxAxisDomain } from '../axis/axis-domain';
 import { CngxArea } from '../layers/area.component';
+import { sameNumberArr } from '../chart/equal-helpers';
+import { presetIndexDomain, presetValueDomain } from '../chart/preset-math';
 import { injectPresetState } from './preset-state';
 
 /**
@@ -34,7 +36,10 @@ import { injectPresetState } from './preset-state';
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   imports: [CngxChart, CngxAxisDomain, CngxArea],
-  host: { class: 'cngx-mini-area' },
+  host: {
+    class: 'cngx-mini-area',
+    '[attr.aria-busy]': 'busy() ? "true" : null',
+  },
   template: `
     @switch (activeView()) {
       @case ('skeleton') {
@@ -42,8 +47,7 @@ import { injectPresetState } from './preset-state';
           class="cngx-preset-skeleton"
           [style.width.px]="width()"
           [style.height.px]="height()"
-          [attr.aria-busy]="true"
-          [attr.aria-label]="i18n.loading()"
+          aria-hidden="true"
         ></span>
       }
       @case ('empty') {
@@ -60,18 +64,8 @@ import { injectPresetState } from './preset-state';
           [height]="height()"
           [aria-label]="ariaLabel()"
         >
-          <svg:g
-            cngxAxisDomain
-            position="bottom"
-            type="linear"
-            [domain]="xDomain()"
-          ></svg:g>
-          <svg:g
-            cngxAxisDomain
-            position="left"
-            type="linear"
-            [domain]="yDomain()"
-          ></svg:g>
+          <svg:g cngxAxisDomain position="bottom" type="linear" [domain]="xDomain()"></svg:g>
+          <svg:g cngxAxisDomain position="left" type="linear" [domain]="yDomain()"></svg:g>
           <svg:g cngxArea [opacity]="opacity()" [baseline]="yDomain()[0]"></svg:g>
         </cngx-chart>
       }
@@ -114,30 +108,15 @@ export class CngxMiniArea {
   protected readonly i18n = this.preset.i18n;
   protected readonly activeView = this.preset.activeView;
 
-  protected readonly xDomain = computed<readonly number[]>(() => {
-    const n = this.data().length;
-    return n < 2 ? [0, 1] : [0, n - 1];
-  });
+  /** True while the skeleton branch renders - the host announces busy, the span stays decorative. */
+  protected readonly busy = computed(() => this.activeView() === 'skeleton');
 
-  protected readonly yDomain = computed<readonly number[]>(() => {
-    const d = this.data();
-    if (d.length === 0) {
-      return [0, 1];
-    }
-    let min = d[0];
-    let max = d[0];
-    for (let i = 1; i < d.length; i++) {
-      const v = d[i];
-      if (v < min) {
-        min = v;
-      }
-      if (v > max) {
-        max = v;
-      }
-    }
-    if (min === max) {
-      return [min - 1, max + 1];
-    }
-    return [min, max];
+  protected readonly xDomain = computed<readonly number[]>(
+    () => presetIndexDomain(this.data().length),
+    { equal: sameNumberArr },
+  );
+
+  protected readonly yDomain = computed<readonly number[]>(() => presetValueDomain(this.data()), {
+    equal: sameNumberArr,
   });
 }

@@ -69,6 +69,7 @@ const FALLBACK_BASELINE = 0;
           [attr.y]="rect.y"
           [attr.width]="rect.width"
           [attr.height]="rect.height"
+          [style.fill]="color()"
         />
       }
     }
@@ -105,6 +106,7 @@ export class CngxBar<T = unknown> implements CngxChartLayer {
   readonly gap = input<number>(0.1);
   readonly baseline = input<number>(FALLBACK_BASELINE);
   readonly data = input<readonly T[] | undefined>(undefined);
+  readonly color = input<string | null>(null);
 
   protected readonly ctx = injectChartContext('CngxBar');
 
@@ -161,7 +163,13 @@ export class CngxBar<T = unknown> implements CngxChartLayer {
   readonly geometry = computed<LayerGeometry>(
     () => ({
       kind: 'bar',
-      rects: this.rects().map((r) => ({ x: r.x, y: r.y, w: r.width, h: r.height, color: null })),
+      rects: this.rects().map((r) => ({
+        x: r.x,
+        y: r.y,
+        w: r.width,
+        h: r.height,
+        color: this.color(),
+      })),
     }),
     { equal: barGeomEqual },
   );

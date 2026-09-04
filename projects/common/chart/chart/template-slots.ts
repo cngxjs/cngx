@@ -18,11 +18,9 @@ import type { CngxChartPlotArea } from './chart-context';
  * ```
  *
  * The `small` flag is true when the chart's rendered width is below
- * the threshold defined by the `--cngx-chart-small-width-px` CSS
- * custom property (read from the chart at first render via the
- * `CHART_SMALL_BREAKPOINT_PX` constant; default 400). Container-size
- * based, not viewport-based, so it works correctly inside dashboard
- * cells of any size.
+ * the exported `CHART_SMALL_BREAKPOINT_PX` constant (400).
+ * Container-size based, not viewport-based, so it works correctly
+ * inside dashboard cells of any size.
  *
  * @category common/chart
  */

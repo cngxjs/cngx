@@ -264,4 +264,42 @@ describe('createCanvasRenderer', () => {
     expect(d.ctx.renderSvg()).toBe(true);
     expect((renderer as unknown as Record<string, unknown>)['renderSvg']).toBeUndefined();
   });
+  it('re-sizes the bitmap and repaints the cached geometries on a DPR-only change', () => {
+    const listeners: Array<() => void> = [];
+    const matchMediaMock = vi.fn(() => ({
+      addEventListener: (_: string, cb: () => void) => listeners.push(cb),
+      removeEventListener: vi.fn(),
+    }));
+    vi.stubGlobal('matchMedia', matchMediaMock);
+    vi.stubGlobal('devicePixelRatio', 1);
+    const renderer = createCanvasRenderer(deps());
+    const host = document.createElement('div');
+    renderer.mount(host, {} as CngxChartContext);
+    renderer.paint([LINE_GEOM]);
+    const canvas = host.querySelector('canvas') as HTMLCanvasElement;
+    expect(canvas.width).toBe(100);
+    expect(ctx2d.stroke).toHaveBeenCalledTimes(1);
+
+    // Monitor swap / zoom: DPR changes, data does not.
+    vi.stubGlobal('devicePixelRatio', 2);
+    listeners[listeners.length - 1]();
+    expect(canvas.width).toBe(200);
+    expect(ctx2d.stroke).toHaveBeenCalledTimes(2);
+    // The resolution query only matches the ratio it was created with -
+    // the watcher re-arms itself against the new ratio after each change.
+    expect(matchMediaMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('stops watching DPR changes on destroy', () => {
+    const removeEventListener = vi.fn();
+    vi.stubGlobal(
+      'matchMedia',
+      vi.fn(() => ({ addEventListener: vi.fn(), removeEventListener })),
+    );
+    const renderer = createCanvasRenderer(deps());
+    const host = document.createElement('div');
+    renderer.mount(host, {} as CngxChartContext);
+    renderer.destroy();
+    expect(removeEventListener).toHaveBeenCalledTimes(1);
+  });
 });

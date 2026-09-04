@@ -114,3 +114,36 @@ describe('CngxBar', () => {
     expect(heightAfter).not.toBe(heightBefore);
   });
 });
+
+describe('CngxBar [color] parity', () => {
+  beforeEach(() => vi.stubGlobal('ResizeObserver', ResizeObserverMock));
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('binds [color] onto the SVG mark like CngxLine does', () => {
+    @Component({
+      standalone: true,
+      imports: [CngxChart, CngxAxis, CngxBar],
+      template: `
+        <cngx-chart [data]="data" [width]="200" [height]="100">
+          <svg:g cngxAxis position="bottom" type="band" [domain]="['a', 'b', 'c']"></svg:g>
+          <svg:g cngxAxis position="left" type="linear" [domain]="[0, 10]"></svg:g>
+          <svg:g cngxBar [color]="'rebeccapurple'"></svg:g>
+        </cngx-chart>
+      `,
+    })
+    class ColorHost {
+      protected readonly data = [1, 2, 3];
+    }
+    TestBed.configureTestingModule({ imports: [ColorHost] });
+    const fixture = TestBed.createComponent(ColorHost);
+    fixture.detectChanges();
+    const mark = fixture.nativeElement.querySelector('.cngx-bar') as SVGElement;
+    expect(mark).not.toBeNull();
+    // An inline style, not a presentation attribute - the class rule
+    // (stroke/fill via --cngx-* vars) would beat an attribute in the
+    // CSS cascade and render the bound color inert.
+    expect((mark as unknown as SVGElement & { style: CSSStyleDeclaration }).style.fill).toBe(
+      'rebeccapurple',
+    );
+  });
+});

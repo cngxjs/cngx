@@ -122,12 +122,16 @@
   }
 
   /**
-   * Default aspect ratio of the chart frame.
+   * Default aspect ratio of the chart frame. Registered with
+   * `inherits: true` deliberately: with `inherits: false` a value set
+   * on `:root` or any container resets to the initial value at every
+   * element boundary and never reaches the chart host, silently
+   * no-opping the documented consumer override.
    * @group Layout
    */
   @property --cngx-chart-aspect-ratio {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 5 / 2;
   }
 }

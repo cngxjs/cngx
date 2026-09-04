@@ -64,7 +64,7 @@ import {
         class="cngx-line"
         [attr.d]="d()"
         [attr.fill]="'none'"
-        [attr.stroke]="color()"
+        [style.stroke]="color()"
         [attr.stroke-width]="strokeWidth()"
         [attr.stroke-linejoin]="'round'"
         [attr.stroke-linecap]="'round'"

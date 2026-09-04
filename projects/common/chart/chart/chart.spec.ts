@@ -707,6 +707,76 @@ describe('CngxChart - [connectionState] envelope (Phase 4)', () => {
     expect(chart.querySelector('svg')).not.toBeNull();
     expect(chart.querySelector('.cngx-chart__connection-overlay--error')).not.toBeNull();
   });
+
+  it('announces connectionRestored in the polite live region on the error -> success edge', async () => {
+    const { createManualState } = await import('@cngx/common/data');
+    @Component({
+      standalone: true,
+      imports: [CngxChart],
+      template: `<cngx-chart
+        [data]="[1, 2, 3]"
+        [connectionState]="cs"
+        [width]="200"
+        [height]="100"
+        data-testid="chart"
+      />`,
+    })
+    class Host {
+      readonly cs = createManualState<unknown>();
+    }
+    TestBed.configureTestingModule({ imports: [Host] });
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+    const chart = fixture.nativeElement.querySelector('[data-testid="chart"]') as HTMLElement;
+    const region = chart.querySelector('.cngx-chart__sr-status') as HTMLElement;
+    // Always-in-DOM live region, silent while the connection is healthy.
+    expect(region).not.toBeNull();
+    expect(region.getAttribute('role')).toBe('status');
+    expect(region.getAttribute('aria-live')).toBe('polite');
+    expect(region.textContent?.trim()).toBe('');
+
+    fixture.componentInstance.cs.setError(new Error('socket closed'));
+    fixture.detectChanges();
+    expect(region.textContent?.trim()).toBe('');
+
+    fixture.componentInstance.cs.set('success');
+    fixture.detectChanges();
+    expect(region.textContent?.trim()).toBe('Connection restored');
+  });
+
+  it('announces connectionRestored after a reconnecting -> success edge but not on plain success', async () => {
+    const { createManualState } = await import('@cngx/common/data');
+    @Component({
+      standalone: true,
+      imports: [CngxChart],
+      template: `<cngx-chart
+        [data]="[1, 2, 3]"
+        [connectionState]="cs"
+        [width]="200"
+        [height]="100"
+        data-testid="chart"
+      />`,
+    })
+    class Host {
+      readonly cs = createManualState<unknown>();
+    }
+    TestBed.configureTestingModule({ imports: [Host] });
+    const fixture = TestBed.createComponent(Host);
+    // idle -> success is a first connect, not a recovery: stays silent.
+    fixture.componentInstance.cs.set('success');
+    fixture.detectChanges();
+    const chart = fixture.nativeElement.querySelector('[data-testid="chart"]') as HTMLElement;
+    const region = chart.querySelector('.cngx-chart__sr-status') as HTMLElement;
+    expect(region.textContent?.trim()).toBe('');
+
+    fixture.componentInstance.cs.set('refreshing');
+    fixture.detectChanges();
+    expect(region.textContent?.trim()).toBe('');
+
+    fixture.componentInstance.cs.set('success');
+    fixture.detectChanges();
+    expect(region.textContent?.trim()).toBe('Connection restored');
+  });
 });
 
 describe('CngxChart - canvas overlay gated on the content view (Phase 3 blocker fix)', () => {
@@ -1222,7 +1292,13 @@ describe('CngxChart - axis decoration is authored inside the viewBox', () => {
     imports: [CngxChart, CngxAxis],
     template: `
       <cngx-chart [data]="[1, 2, 3]" [width]="200" [height]="100" data-testid="chart">
-        <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 1200]" label="Samples"></svg:g>
+        <svg:g
+          cngxAxis
+          position="bottom"
+          type="linear"
+          [domain]="[0, 1200]"
+          label="Samples"
+        ></svg:g>
         <svg:g cngxAxis position="left" type="linear" [domain]="[0, 1200]" label="Volts"></svg:g>
       </cngx-chart>
     `,
@@ -1359,7 +1435,8 @@ describe('CngxChart - a consumer axis participates through the contract token', 
     const ctx = (
       fixture.debugElement.query(By.directive(ContextProbe)).componentInstance as ContextProbe
     ).ctx;
-    const axis = fixture.debugElement.query(By.directive(TestLogAxis))
+    const axis = fixture.debugElement
+      .query(By.directive(TestLogAxis))
       .injector.get(TestLogAxis) as TestLogAxis;
 
     axis.reservation.set(60);
@@ -1613,5 +1690,53 @@ describe('CngxChart - overlay survives the renderer crossover', () => {
     // Same box, same axis, so the same plot: the backend swap changes who
     // paints the marks, never whether the overlay renders or where.
     expect(canvasSide.plotText).toBe(svgSide.plotText);
+  });
+});
+
+describe('CngxChart - duplicate same-orientation axis dev warning', () => {
+  beforeEach(() => vi.stubGlobal('ResizeObserver', ResizeObserverMock));
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  it('warns when two axes share one orientation (second [domain] silently ignored)', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    @Component({
+      standalone: true,
+      imports: [CngxChart, CngxAxis],
+      template: `
+        <cngx-chart [data]="[1, 2, 3]" [width]="200" [height]="100">
+          <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 10]"></svg:g>
+          <svg:g cngxAxis position="top" type="linear" [domain]="[0, 99]"></svg:g>
+        </cngx-chart>
+      `,
+    })
+    class DoubleXHost {}
+    TestBed.configureTestingModule({ imports: [DoubleXHost] });
+    const fixture = TestBed.createComponent(DoubleXHost);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(warn.mock.calls.some((c) => String(c[0]).includes('share one orientation'))).toBe(true);
+  });
+
+  it('does not warn for the regular one-X-one-Y setup', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    @Component({
+      standalone: true,
+      imports: [CngxChart, CngxAxis],
+      template: `
+        <cngx-chart [data]="[1, 2, 3]" [width]="200" [height]="100">
+          <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 10]"></svg:g>
+          <svg:g cngxAxis position="left" type="linear" [domain]="[0, 10]"></svg:g>
+        </cngx-chart>
+      `,
+    })
+    class RegularHost {}
+    TestBed.configureTestingModule({ imports: [RegularHost] });
+    const fixture = TestBed.createComponent(RegularHost);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(warn.mock.calls.some((c) => String(c[0]).includes('share one orientation'))).toBe(false);
   });
 });

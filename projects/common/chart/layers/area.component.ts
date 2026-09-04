@@ -54,7 +54,12 @@ import {
   providers: [{ provide: CNGX_CHART_LAYER, useExisting: CngxArea }],
   template: `
     @if (ctx.renderSvg()) {
-      <svg:path class="cngx-area" [attr.d]="d()" [attr.fill-opacity]="opacity()" />
+      <svg:path
+        class="cngx-area"
+        [attr.d]="d()"
+        [style.fill]="color()"
+        [attr.fill-opacity]="opacity()"
+      />
       @for (p of pointMarks(); track $index) {
         <svg:circle class="cngx-area__point" [attr.cx]="p.cx" [attr.cy]="p.cy" />
       }
@@ -96,6 +101,7 @@ export class CngxArea<T = unknown> implements CngxChartLayer {
   readonly accessor = input<LineYAccessor<T>>((d: T) => Number(d));
   readonly xAccessor = input<LineXAccessor<T> | undefined>(undefined);
   readonly opacity = input<number | string | null>(null);
+  readonly color = input<string | null>(null);
   readonly curve = input<CngxCurve>('linear');
   readonly baseline = input<number>(0);
   readonly data = input<readonly T[] | undefined>(undefined);
@@ -134,12 +140,14 @@ export class CngxArea<T = unknown> implements CngxChartLayer {
       }
       const xScale = this.ctx.xScale();
       const yScale = this.ctx.yScale();
-      const upper = this.builder().build(data, xScale, yScale);
       const baselineY = yScale(this.baseline());
-      const xAcc = this.xAccessor() ?? ((_: T, i: number) => i);
-      const lastX = xScale(xAcc(data[data.length - 1], data.length - 1));
-      const firstX = xScale(xAcc(data[0], 0));
-      return `${upper} L ${lastX} ${baselineY} L ${firstX} ${baselineY} Z`;
+      // Close every finite run to the baseline individually - a gap
+      // (non-finite row) must stay unfilled, not be bridged by one
+      // whole-path closure.
+      return this.builder()
+        .buildSegments(data, xScale, yScale)
+        .map((seg) => `${seg.d} L ${seg.lastX} ${baselineY} L ${seg.firstX} ${baselineY} Z`)
+        .join(' ');
     },
     { equal: (a, b) => a === b },
   );
@@ -150,7 +158,7 @@ export class CngxArea<T = unknown> implements CngxChartLayer {
       return {
         kind: 'area',
         d: this.d(),
-        color: null,
+        color: this.color(),
         strokeWidth: null,
         fill: null,
         opacity: op == null ? null : Number(op),

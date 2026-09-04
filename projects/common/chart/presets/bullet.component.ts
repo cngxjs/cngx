@@ -6,7 +6,8 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import type { CngxAsyncState } from '@cngx/core/utils';
-import { injectPresetState } from './preset-state';
+import { clampedRatio } from '../chart/preset-math';
+import { injectPresetState, warnIfUnnamedPreset } from './preset-state';
 
 /**
  * Bullet chart range entry - a colour band stretching from one value
@@ -54,20 +55,17 @@ interface RangeRendering {
   encapsulation: ViewEncapsulation.None,
   host: {
     role: 'meter',
-    '[attr.aria-valuenow]': 'actual()',
-    '[attr.aria-valuemin]': '0',
-    '[attr.aria-valuemax]': 'maxValue()',
+    '[attr.aria-valuenow]': 'showsMeterValue() ? actual() : null',
+    '[attr.aria-valuemin]': 'showsMeterValue() ? 0 : null',
+    '[attr.aria-valuemax]': 'showsMeterValue() ? maxValue() : null',
     '[attr.aria-label]': 'ariaLabel()',
+    '[attr.aria-busy]': 'busy() ? "true" : null',
     class: 'cngx-bullet',
   },
   template: `
     @switch (activeView()) {
       @case ('skeleton') {
-        <span
-          class="cngx-preset-skeleton"
-          [attr.aria-busy]="true"
-          [attr.aria-label]="i18n.loading()"
-        ></span>
+        <span class="cngx-preset-skeleton" aria-hidden="true"></span>
       }
       @case ('empty') {
         <span class="cngx-preset-fallback">{{ i18n.empty() }}</span>
@@ -170,6 +168,20 @@ export class CngxBullet {
   protected readonly i18n = this.preset.i18n;
   protected readonly activeView = this.preset.activeView;
 
+  /** True while the skeleton branch renders - the host announces busy, the span stays decorative. */
+  protected readonly busy = computed(() => this.activeView() === 'skeleton');
+
+  /**
+   * Meter value attributes render only in the content view: keeping
+   * `aria-valuenow` while the skeleton or error fallback shows would
+   * announce a stale reading for a value that is not on screen.
+   */
+  protected readonly showsMeterValue = computed(() => this.activeView() === 'content');
+
+  constructor() {
+    warnIfUnnamedPreset('cngx-bullet', 'Bind [aria-label].', () => this.ariaLabel() !== null);
+  }
+
   protected readonly maxValue = computed(() => {
     const explicit = this.max();
     if (explicit !== null && explicit > 0) {
@@ -185,42 +197,50 @@ export class CngxBullet {
     return m > 0 ? m : 1;
   });
 
-  protected readonly actualPercent = computed(() => pct(this.actual(), this.maxValue()));
+  protected readonly actualPercent = computed(
+    () => clampedRatio(this.actual(), 0, this.maxValue()) * 100,
+  );
 
   protected readonly targetPercent = computed(() => {
     const t = this.target();
     if (t === null) {
       return 0;
     }
-    return pct(t, this.maxValue());
+    return clampedRatio(t, 0, this.maxValue()) * 100;
   });
 
-  protected readonly rangeRenderings = computed<readonly RangeRendering[]>(() => {
-    const m = this.maxValue();
-    return this.ranges().map((r, i) => {
-      const lo = Math.min(r.from, r.to);
-      const hi = Math.max(r.from, r.to);
-      return {
-        key: `${i}-${r.label ?? ''}`,
-        left: pct(lo, m),
-        width: pct(hi - lo, m),
-        color: r.color ?? null,
-      };
-    });
-  });
+  protected readonly rangeRenderings = computed<readonly RangeRendering[]>(
+    () => {
+      const m = this.maxValue();
+      return this.ranges().map((r, i) => {
+        const lo = Math.min(r.from, r.to);
+        const hi = Math.max(r.from, r.to);
+        return {
+          key: `${i}-${r.label ?? ''}`,
+          left: clampedRatio(lo, 0, m) * 100,
+          width: clampedRatio(hi - lo, 0, m) * 100,
+          color: r.color ?? null,
+        };
+      });
+    },
+    { equal: rangeRenderingsEqual },
+  );
 }
 
 /** @internal */
-function pct(v: number, max: number): number {
-  if (max <= 0) {
-    return 0;
+function rangeRenderingsEqual(a: readonly RangeRendering[], b: readonly RangeRendering[]): boolean {
+  if (a === b) {
+    return true;
   }
-  const ratio = (v / max) * 100;
-  if (ratio < 0) {
-    return 0;
+  if (a.length !== b.length) {
+    return false;
   }
-  if (ratio > 100) {
-    return 100;
+  for (let i = 0; i < a.length; i++) {
+    const x = a[i];
+    const y = b[i];
+    if (x.key !== y.key || x.left !== y.left || x.width !== y.width || x.color !== y.color) {
+      return false;
+    }
   }
-  return ratio;
+  return true;
 }

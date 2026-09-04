@@ -48,6 +48,7 @@ import { CNGX_CHART_LAYER, type CngxChartLayer, type LayerGeometry } from './cha
           [attr.y]="r.y"
           [attr.width]="r.width"
           [attr.height]="r.height"
+          [style.fill]="color()"
           [attr.fill-opacity]="opacity()"
         />
       }
@@ -107,6 +108,7 @@ export class CngxBand implements CngxChartLayer {
   readonly to = input.required<number>();
   readonly label = input<string | null>(null);
   readonly opacity = input<number | string | null>(null);
+  readonly color = input<string | null>(null);
 
   protected readonly ctx = injectChartContext('CngxBand');
 
@@ -153,7 +155,7 @@ export class CngxBand implements CngxChartLayer {
         y: r?.y ?? 0,
         w: r?.width ?? 0,
         h: r?.height ?? 0,
-        color: null,
+        color: this.color(),
         opacity: op == null ? null : Number(op),
       };
     },

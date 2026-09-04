@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import { nextUid } from '@cngx/core/utils';
 import { CNGX_CHART_I18N } from '../i18n/chart-i18n';
+import { formatChartNumber } from './format-number';
 
 /**
  * Internal SR-only data-table view. The parent `<cngx-chart>` mounts
@@ -55,7 +56,7 @@ import { CNGX_CHART_I18N } from '../i18n/chart-i18n';
         @for (row of rows(); track row.index) {
           <tr>
             <th scope="row">{{ row.index + 1 }}</th>
-            <td>{{ row.value }}</td>
+            <td>{{ fmt(row.value) }}</td>
           </tr>
         }
       </tbody>
@@ -102,6 +103,9 @@ export class CngxChartDataTable {
 
   protected readonly caption = computed(() => this.i18n.dataTable());
   protected readonly valueColumnLabel = computed(() => this.i18n.valueColumnLabel());
+
+  /** Noise-stripped display text - see {@link formatChartNumber}. */
+  protected readonly fmt = formatChartNumber;
 
   protected readonly rows = computed<readonly { index: number; value: number }[]>(
     () => {

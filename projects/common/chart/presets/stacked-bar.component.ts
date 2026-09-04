@@ -6,6 +6,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import type { CngxAsyncState } from '@cngx/core/utils';
+import { CHART_I18N_EN } from '../i18n/chart-i18n';
 import { injectPresetState } from './preset-state';
 
 /**
@@ -55,16 +56,13 @@ interface SegmentRendering {
   host: {
     role: 'img',
     '[attr.aria-label]': 'effectiveAriaLabel()',
+    '[attr.aria-busy]': 'busy() ? "true" : null',
     class: 'cngx-stacked-bar',
   },
   template: `
     @switch (activeView()) {
       @case ('skeleton') {
-        <span
-          class="cngx-preset-skeleton"
-          [attr.aria-busy]="true"
-          [attr.aria-label]="i18n.loading()"
-        ></span>
+        <span class="cngx-preset-skeleton" aria-hidden="true"></span>
       }
       @case ('empty') {
         <span class="cngx-preset-fallback">{{ i18n.empty() }}</span>
@@ -139,6 +137,9 @@ export class CngxStackedBar {
   protected readonly i18n = this.preset.i18n;
   protected readonly activeView = this.preset.activeView;
 
+  /** True while the skeleton branch renders - the host announces busy, the span stays decorative. */
+  protected readonly busy = computed(() => this.activeView() === 'skeleton');
+
   protected readonly resolvedTotal = computed(() => {
     const explicit = this.total();
     if (explicit !== null && explicit > 0) {
@@ -151,35 +152,84 @@ export class CngxStackedBar {
     return sum > 0 ? sum : 1;
   });
 
-  protected readonly segmentRenderings = computed<readonly SegmentRendering[]>(() => {
-    const total = this.resolvedTotal();
-    let runningLeft = 0;
-    return this.segments().map((s, i) => {
-      const width = (s.value / total) * 100;
-      const left = runningLeft;
-      runningLeft += width;
-      return {
-        key: `${i}-${s.label}`,
-        left,
-        width,
-        color: s.color ?? null,
-        label: s.label,
-        value: s.value,
-      };
-    });
-  });
+  protected readonly segmentRenderings = computed<readonly SegmentRendering[]>(
+    () => {
+      const total = this.resolvedTotal();
+      let runningLeft = 0;
+      return this.segments().map((s, i) => {
+        const width = (s.value / total) * 100;
+        const left = runningLeft;
+        runningLeft += width;
+        return {
+          key: `${i}-${s.label}`,
+          left,
+          width,
+          color: s.color ?? null,
+          label: s.label,
+          value: s.value,
+        };
+      });
+    },
+    { equal: segmentRenderingsEqual },
+  );
 
   protected readonly effectiveAriaLabel = computed(() => {
+    // Mirror the meter presets' state gating: outside the content view
+    // the segment summary would name data that is not on screen -
+    // "Empty stacked bar" while aria-busy announces a load in flight.
+    const view = this.activeView();
+    if (view === 'skeleton') {
+      return this.i18n.loading();
+    }
+    if (view === 'empty') {
+      return this.i18n.empty();
+    }
+    if (view === 'error') {
+      return this.i18n.error();
+    }
     const explicit = this.ariaLabel();
     if (explicit !== null && explicit !== '') {
       return explicit;
     }
     const segments = this.segments();
+    // The ?? falls back to the shared English defaults for a direct
+    // useValue token override that predates the optional stacked-bar
+    // keys - provideChartI18n merges them in itself.
     if (segments.length === 0) {
-      return 'Empty stacked bar';
+      return this.i18n.stackedBarEmpty?.() ?? CHART_I18N_EN.stackedBarEmpty();
     }
     const total = this.resolvedTotal();
-    const parts = segments.map((s) => `${s.label}: ${s.value}`);
-    return `Total ${total}. ${parts.join(', ')}.`;
+    return (
+      this.i18n.stackedBarSummary?.(total, segments) ??
+      CHART_I18N_EN.stackedBarSummary(total, segments)
+    );
   });
+}
+
+/** @internal */
+function segmentRenderingsEqual(
+  a: readonly SegmentRendering[],
+  b: readonly SegmentRendering[],
+): boolean {
+  if (a === b) {
+    return true;
+  }
+  if (a.length !== b.length) {
+    return false;
+  }
+  for (let i = 0; i < a.length; i++) {
+    const x = a[i];
+    const y = b[i];
+    if (
+      x.key !== y.key ||
+      x.left !== y.left ||
+      x.width !== y.width ||
+      x.color !== y.color ||
+      x.label !== y.label ||
+      x.value !== y.value
+    ) {
+      return false;
+    }
+  }
+  return true;
 }

@@ -6,7 +6,8 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import type { CngxAsyncState } from '@cngx/core/utils';
-import { injectPresetState } from './preset-state';
+import { clampedRatio } from '../chart/preset-math';
+import { injectPresetState, warnIfUnnamedPreset } from './preset-state';
 
 /**
  * Mini deviation bar - a single-value indicator that diverges from a
@@ -35,20 +36,17 @@ import { injectPresetState } from './preset-state';
   encapsulation: ViewEncapsulation.None,
   host: {
     role: 'meter',
-    '[attr.aria-valuenow]': 'value()',
-    '[attr.aria-valuemin]': '-magnitude()',
-    '[attr.aria-valuemax]': 'magnitude()',
+    '[attr.aria-valuenow]': 'showsMeterValue() ? value() : null',
+    '[attr.aria-valuemin]': 'showsMeterValue() ? minValue() : null',
+    '[attr.aria-valuemax]': 'showsMeterValue() ? maxValue() : null',
     '[attr.aria-label]': 'ariaLabel()',
+    '[attr.aria-busy]': 'busy() ? "true" : null',
     class: 'cngx-deviation-bar',
   },
   template: `
     @switch (activeView()) {
       @case ('skeleton') {
-        <span
-          class="cngx-preset-skeleton"
-          [attr.aria-busy]="true"
-          [attr.aria-label]="i18n.loading()"
-        ></span>
+        <span class="cngx-preset-skeleton" aria-hidden="true"></span>
       }
       @case ('empty') {
         <span class="cngx-preset-fallback">{{ i18n.empty() }}</span>
@@ -146,26 +144,65 @@ export class CngxDeviationBar {
   protected readonly i18n = this.preset.i18n;
   protected readonly activeView = this.preset.activeView;
 
+  /** True while the skeleton branch renders - the host announces busy, the span stays decorative. */
+  protected readonly busy = computed(() => this.activeView() === 'skeleton');
+
+  /**
+   * Meter value attributes render only in the content view: keeping
+   * `aria-valuenow` while the skeleton or error fallback shows would
+   * announce a stale reading for a value that is not on screen.
+   */
+  protected readonly showsMeterValue = computed(() => this.activeView() === 'content');
+
+  constructor() {
+    warnIfUnnamedPreset(
+      'cngx-deviation-bar',
+      'Bind [aria-label].',
+      () => this.ariaLabel() !== null,
+    );
+  }
+
+  /**
+   * The meter's valid range is centred on the baseline, not on zero:
+   * a deviation bar with `[baseline]="100" [magnitude]="50"` reads
+   * values in `[50, 150]`. Anchoring min/max at `±magnitude` alone
+   * puts any non-zero-baseline reading outside its own declared range,
+   * which is invalid meter semantics.
+   */
+  protected readonly minValue = computed(() => this.baseline() - this.magnitude());
+  protected readonly maxValue = computed(() => this.baseline() + this.magnitude());
+
   protected readonly geometry = computed<{
     positive: boolean;
     left: number;
     width: number;
-  } | null>(() => {
-    const v = this.value();
-    const b = this.baseline();
-    const m = this.magnitude();
-    if (m <= 0) {
-      return null;
-    }
-    const delta = v - b;
-    if (delta === 0) {
-      return null;
-    }
-    const positive = delta > 0;
-    const ratio = Math.min(Math.abs(delta) / m, 1) * 50;
-    if (positive) {
-      return { positive, left: 50, width: ratio };
-    }
-    return { positive, left: 50 - ratio, width: ratio };
-  });
+  } | null>(
+    () => {
+      const v = this.value();
+      const b = this.baseline();
+      const m = this.magnitude();
+      if (m <= 0) {
+        return null;
+      }
+      const delta = v - b;
+      if (delta === 0) {
+        return null;
+      }
+      const positive = delta > 0;
+      const ratio = clampedRatio(Math.abs(delta), 0, m) * 50;
+      if (positive) {
+        return { positive, left: 50, width: ratio };
+      }
+      return { positive, left: 50 - ratio, width: ratio };
+    },
+    {
+      equal: (a, b) =>
+        a === b ||
+        (a !== null &&
+          b !== null &&
+          a.positive === b.positive &&
+          a.left === b.left &&
+          a.width === b.width),
+    },
+  );
 }

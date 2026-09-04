@@ -38,7 +38,10 @@ export function createBandScale<T>(
   const n = domain.length;
   const span = r1 - r0;
   const slot = n === 0 ? 0 : span / n;
-  const inner = slot * (1 - padding);
+  // Clamp to the documented [0, 1) contract: padding >= 1 would flip
+  // the bandwidth negative and a negative padding would overlap bands.
+  const p = Math.min(Math.max(padding, 0), 1);
+  const inner = slot * (1 - p);
   const offset = (slot - inner) / 2;
 
   const lookup = new Map<T, number>();

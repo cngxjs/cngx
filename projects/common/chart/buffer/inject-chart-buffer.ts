@@ -117,6 +117,12 @@ export function injectChartBuffer<T>(opts: ChartBufferOptions<T>): CngxChartBuff
     if (rafHandle !== null) {
       return;
     }
+    if (typeof requestAnimationFrame !== 'function') {
+      // SSR / non-browser: there is no frame to coalesce onto, so flush
+      // synchronously instead of dropping the push on the floor.
+      flush();
+      return;
+    }
     pending.set(true);
     rafHandle = requestAnimationFrame(flush);
   }
