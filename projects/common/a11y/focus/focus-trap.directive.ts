@@ -1,5 +1,14 @@
 import { type FocusTrap, FocusTrapFactory } from '@angular/cdk/a11y';
-import { computed, DestroyRef, Directive, effect, ElementRef, inject, input } from '@angular/core';
+import {
+  computed,
+  DestroyRef,
+  Directive,
+  effect,
+  ElementRef,
+  inject,
+  input,
+  untracked,
+} from '@angular/core';
 
 /**
  * Traps keyboard focus within the host element using the CDK `FocusTrap`.
@@ -11,6 +20,11 @@ import { computed, DestroyRef, Directive, effect, ElementRef, inject, input } fr
  * Wraps CDK's `FocusTrapFactory` with a declarative, Signal-driven API.
  * The CDK's imperative `create()` / `destroy()` / `enabled` setter lifecycle
  * is handled internally via `effect()` and `DestroyRef`.
+ *
+ * **Nesting:** traps do not coordinate with each other. When traps nest
+ * (dialog over drawer), enable only the innermost one and drive each
+ * `enabled` from your layering state - two simultaneously enabled traps
+ * fight over Tab. `CngxDialogStack` already does this for stacked dialogs.
  *
  * ### Modal dialog
  * ```html
@@ -50,7 +64,10 @@ export class CngxFocusTrap {
   /** Whether to auto-focus the first tabbable element when the trap activates. */
   readonly autoFocus = input<boolean>(true);
 
-  /** Computed signal reflecting the current trap state. */
+  /**
+   * Readable alias of `enabled` for `exportAs` consumers
+   * (`trap.isActive()` reads better than re-binding the input).
+   */
   readonly isActive = computed(() => this.enabled());
 
   private readonly trap: FocusTrap;
@@ -59,12 +76,18 @@ export class CngxFocusTrap {
     const el = inject(ElementRef<HTMLElement>);
     this.trap = inject(FocusTrapFactory).create(el.nativeElement as HTMLElement);
 
+    // Track ONLY enabled: with autoFocus inside the tracked zone, flipping
+    // [autoFocus] while the trap is active would re-run the effect and yank
+    // focus back to the first tabbable element. The CDK calls are service
+    // work, not dependencies.
     effect(() => {
       const enabled = this.enabled();
-      this.trap.enabled = enabled;
-      if (enabled && this.autoFocus()) {
-        void this.trap.focusFirstTabbableElementWhenReady();
-      }
+      untracked(() => {
+        this.trap.enabled = enabled;
+        if (enabled && this.autoFocus()) {
+          void this.trap.focusFirstTabbableElementWhenReady();
+        }
+      });
     });
 
     inject(DestroyRef).onDestroy(() => this.trap.destroy());

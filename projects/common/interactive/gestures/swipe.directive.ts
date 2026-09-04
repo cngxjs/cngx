@@ -1,9 +1,8 @@
 import { DOCUMENT } from '@angular/common';
 import { computed, Directive, ElementRef, inject, input, output, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { fromEvent, merge, switchMap, takeUntil, tap, filter, map } from 'rxjs';
 
 import type { SwipeAxis, SwipeDirection } from './swipe-direction';
+import { createSwipeEngine } from './swipe-engine';
 
 interface SwipeReading {
   readonly direction: SwipeDirection;
@@ -109,82 +108,28 @@ export class CngxSwipe {
     const nativeEl = inject(ElementRef<HTMLElement>).nativeElement as HTMLElement;
     const doc = inject(DOCUMENT);
 
-    const pointerDown$ = fromEvent<PointerEvent>(nativeEl, 'pointerdown');
-    const pointerMove$ = fromEvent<PointerEvent>(doc, 'pointermove');
-    const pointerUp$ = fromEvent<PointerEvent>(doc, 'pointerup');
-    // pointercancel fires when the browser takes the pointer back
-    // (system gesture, popup, JS-triggered focus loss). Without an
-    // explicit arm the in-flight state would stay stuck at
-    // `swiping = true` because pointerup never arrives.
-    const pointerCancel$ = fromEvent<PointerEvent>(doc, 'pointercancel');
-
-    const resetState = (pointerId: number | undefined): void => {
-      if (pointerId !== undefined) {
-        try {
-          nativeEl.releasePointerCapture(pointerId);
-        } catch {
-          // releasePointerCapture throws when the pointer is no
-          // longer captured (e.g. the browser already released it
-          // before firing pointercancel) - safe to ignore.
+    createSwipeEngine(nativeEl, doc, {
+      enabled: () => this.enabled(),
+      onMove: (dx, dy) => {
+        const reading = this.read(dx, dy);
+        if (reading) {
+          this.swipingState.set(true);
+          this.swipeDirectionState.set(reading.direction);
+          this.swipeProgressState.set(Math.min(1, reading.distance / this.threshold()));
         }
-      }
-      this.swipingState.set(false);
-      this.swipeProgressState.set(0);
-      this.swipeDirectionState.set(null);
-    };
-
-    pointerDown$
-      .pipe(
-        filter(() => this.enabled()),
-        switchMap((start) => {
-          const startX = start.clientX;
-          const startY = start.clientY;
-          const pointerId = start.pointerId;
-          // Capture the pointer on the swipe host so subsequent
-          // move / up events route here even when the cursor leaves
-          // the original element (real mouse drags drift off the
-          // panel into the strip / page chrome and would otherwise
-          // skip the directive).
-          try {
-            nativeEl.setPointerCapture(pointerId);
-          } catch {
-            // setPointerCapture throws if pointerId is invalid (e.g.
-            // synthetic event in some test envs) - safe to ignore.
+      },
+      onSettle: (settle) => {
+        if (settle) {
+          const reading = this.read(settle.dx, settle.dy);
+          if (reading && reading.distance >= this.threshold()) {
+            this.swiped.emit(reading.direction);
           }
-
-          const settle$ = merge(
-            pointerUp$.pipe(
-              map((end) => ({
-                reading: this.read(startX, startY, end.clientX, end.clientY),
-              })),
-            ),
-            pointerCancel$.pipe(map(() => ({ reading: null }))),
-          );
-
-          return pointerMove$.pipe(
-            tap((move) => {
-              const reading = this.read(startX, startY, move.clientX, move.clientY);
-              if (reading) {
-                this.swipingState.set(true);
-                this.swipeDirectionState.set(reading.direction);
-                this.swipeProgressState.set(Math.min(1, reading.distance / this.threshold()));
-              }
-            }),
-            takeUntil(
-              settle$.pipe(
-                tap(({ reading }) => {
-                  if (reading && reading.distance >= this.threshold()) {
-                    this.swiped.emit(reading.direction);
-                  }
-                  resetState(pointerId);
-                }),
-              ),
-            ),
-          );
-        }),
-        takeUntilDestroyed(),
-      )
-      .subscribe();
+        }
+        this.swipingState.set(false);
+        this.swipeProgressState.set(0);
+        this.swipeDirectionState.set(null);
+      },
+    });
   }
 
   /**
@@ -201,9 +146,7 @@ export class CngxSwipe {
    * pointer before pointerup, so a clean cycle reaching here is already
    * the intended direction. `both` keeps the dominant-axis heuristic.
    */
-  private read(startX: number, startY: number, endX: number, endY: number): SwipeReading | null {
-    const dx = endX - startX;
-    const dy = endY - startY;
+  private read(dx: number, dy: number): SwipeReading | null {
     const axis = this.axis();
 
     if (axis === 'x') {

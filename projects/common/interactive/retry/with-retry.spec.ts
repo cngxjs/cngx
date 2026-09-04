@@ -60,6 +60,32 @@ describe('withRetry', () => {
     expect(state.lastError()).toBeUndefined();
   });
 
+  it('reset() cancels an in-flight retry loop (generation bump)', async () => {
+    vi.useFakeTimers();
+    let calls = 0;
+    const action = () => {
+      calls++;
+      return Promise.reject(new Error('fail ' + calls));
+    };
+    const [retryable, state] = withRetry(action, { maxAttempts: 3, delay: 100, backoff: 'linear' });
+
+    const promise = (retryable() as Promise<unknown>).catch(() => undefined);
+    // First attempt failed; the loop waits out the delay before attempt 2.
+    expect(state.attempt()).toBe(1);
+    state.reset();
+
+    await vi.advanceTimersByTimeAsync(500);
+    await promise;
+
+    // The cancelled loop neither ran further attempts nor overwrote the
+    // freshly reset state.
+    expect(calls).toBe(1);
+    expect(state.attempt()).toBe(0);
+    expect(state.retrying()).toBe(false);
+    expect(state.lastError()).toBeUndefined();
+    vi.useRealTimers();
+  });
+
   it('uses exponential backoff by default', async () => {
     vi.useFakeTimers();
     let calls = 0;

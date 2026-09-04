@@ -1,4 +1,4 @@
-import { DestroyRef, Directive, effect, inject, input } from '@angular/core';
+import { DestroyRef, Directive, effect, inject, input, untracked } from '@angular/core';
 import { CngxDisclosure } from './disclosure.directive';
 import { CNGX_NAV_CONFIG, CNGX_NAV_DEFAULTS } from './nav-config';
 import { CngxNavGroupRegistry } from './nav-group-registry';
@@ -87,7 +87,10 @@ export class CngxNavGroup {
     if (singleAccordion && registry) {
       effect(() => {
         if (this.disclosure.opened()) {
-          registry.closeOthers(this);
+          // untracked: closeOthers reads and writes every sibling's
+          // disclosure state - a service-like call, not a dependency. Only
+          // this group's own opened() may re-trigger the accordion.
+          untracked(() => registry.closeOthers(this));
         }
       });
     }

@@ -35,7 +35,7 @@ export function injectErrorScope(name?: string): CngxErrorScopeContract {
     if (registry) {
       const destroyRef = inject(DestroyRef);
       registry.registerScope(name, contract);
-      destroyRef.onDestroy(() => registry.unregisterScope(name));
+      destroyRef.onDestroy(() => registry.unregisterScope(name, contract));
     }
   }
 

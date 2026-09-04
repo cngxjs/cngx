@@ -75,4 +75,49 @@ describe('CngxSwipeDismiss', () => {
     expect(dir.swiping()).toBe(false);
     expect(dir.swipeProgress()).toBe(0);
   });
+
+  it('resets in-flight state on pointercancel without emitting', () => {
+    const { el, dir, host } = setup();
+    el.dispatchEvent(
+      new PointerEvent('pointerdown', { clientX: 200, clientY: 100, bubbles: true }),
+    );
+    document.dispatchEvent(
+      new PointerEvent('pointermove', { clientX: 100, clientY: 100, bubbles: true }),
+    );
+    expect(dir.swiping()).toBe(true);
+
+    // The browser reclaims the pointer (system gesture): state must unstick.
+    document.dispatchEvent(new PointerEvent('pointercancel', { bubbles: true }));
+    expect(dir.swiping()).toBe(false);
+    expect(dir.swipeProgress()).toBe(0);
+    expect(host.swiped).not.toHaveBeenCalled();
+  });
+
+  it('ignores document events of a different pointerId', () => {
+    const { el, dir } = setup();
+    el.dispatchEvent(
+      new PointerEvent('pointerdown', { pointerId: 1, clientX: 200, clientY: 100, bubbles: true }),
+    );
+    // A second finger moves - must not steer this gesture.
+    document.dispatchEvent(
+      new PointerEvent('pointermove', { pointerId: 2, clientX: 0, clientY: 100, bubbles: true }),
+    );
+    expect(dir.swiping()).toBe(false);
+
+    document.dispatchEvent(
+      new PointerEvent('pointermove', { pointerId: 1, clientX: 100, clientY: 100, bubbles: true }),
+    );
+    expect(dir.swiping()).toBe(true);
+
+    document.dispatchEvent(
+      new PointerEvent('pointerup', { pointerId: 1, clientX: 100, clientY: 100, bubbles: true }),
+    );
+    expect(dir.swiping()).toBe(false);
+  });
+
+  it('advertises touch-action derived from the dismiss direction', () => {
+    const { el } = setup();
+    // Horizontal dismiss hands vertical panning back to the browser.
+    expect(el.style.touchAction).toBe('pan-y');
+  });
 });

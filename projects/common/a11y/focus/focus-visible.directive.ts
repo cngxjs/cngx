@@ -1,4 +1,5 @@
-import { Directive, signal } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import { DestroyRef, Directive, inject, signal } from '@angular/core';
 
 /**
  * Tracks keyboard-initiated focus on the host element.
@@ -27,19 +28,61 @@ import { Directive, signal } from '@angular/core';
   exportAs: 'cngxFocusVisible',
   standalone: true,
   host: {
-    '(pointerdown)': 'pointerActive = true',
+    '(pointerdown)': 'handlePointerDown()',
     '(focusin)': 'handleFocus()',
     '(focusout)': 'handleBlur()',
     '[class.cngx-focus-visible]': 'focusVisible()',
   },
 })
 export class CngxFocusVisible {
+  private readonly doc = inject(DOCUMENT);
   private readonly focusVisibleState = signal(false);
   /** `true` when focus was initiated via keyboard (not pointer). */
   readonly focusVisible = this.focusVisibleState.asReadonly();
 
-  /** @internal Cleared on `focusin` after being set by `pointerdown`. */
-  pointerActive = false;
+  private pointerActive = false;
+  private pointerClearTimer: ReturnType<typeof setTimeout> | null = null;
+
+  private readonly schedulePointerClear = (): void => {
+    // One macrotask of grace: on touch, the compat mousedown and the focusin
+    // fire AFTER pointerup, so a synchronous clear here would misread a tap
+    // as keyboard focus. The deferred clear runs after the whole tap
+    // sequence settled.
+    if (this.pointerClearTimer !== null) {
+      clearTimeout(this.pointerClearTimer);
+    }
+    this.pointerClearTimer = setTimeout(() => {
+      this.pointerActive = false;
+      this.pointerClearTimer = null;
+    }, 0);
+  };
+
+  constructor() {
+    inject(DestroyRef).onDestroy(() => {
+      this.doc.removeEventListener('pointerup', this.schedulePointerClear, true);
+      if (this.pointerClearTimer !== null) {
+        clearTimeout(this.pointerClearTimer);
+      }
+    });
+  }
+
+  /** @internal Arms the pointer flag for the imminent focusin. */
+  protected handlePointerDown(): void {
+    // A pending clear from the previous release must not fire mid-press.
+    if (this.pointerClearTimer !== null) {
+      clearTimeout(this.pointerClearTimer);
+      this.pointerClearTimer = null;
+    }
+    this.pointerActive = true;
+    // The flag must not outlive the click: a pointerdown that never focuses
+    // (disabled child, text selection, drag released off-host) would
+    // otherwise suppress the ring on the NEXT keyboard Tab-in. Document-level
+    // capture catches the release wherever it lands.
+    this.doc.addEventListener('pointerup', this.schedulePointerClear, {
+      once: true,
+      capture: true,
+    });
+  }
 
   /** @internal Sets focus-visible state; clears pointer flag. */
   protected handleFocus(): void {

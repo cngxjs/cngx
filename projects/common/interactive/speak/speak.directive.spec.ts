@@ -31,6 +31,15 @@ class TestHost {
   message = signal('');
 }
 
+@Component({
+  template: '<div [cngxSpeak]="message()" [rate]="rate()"></div>',
+  imports: [CngxSpeak],
+})
+class RateHost {
+  message = signal('');
+  rate = signal(1);
+}
+
 describe('CngxSpeak', () => {
   beforeEach(() => {
     // performSpeak gates cancel() on `synth.speaking || synth.pending` to
@@ -95,6 +104,57 @@ describe('CngxSpeak', () => {
 
   it('exposes speaking signal', () => {
     const { dir } = setup();
+    expect(dir.speaking()).toBe(false);
+  });
+
+  it('does not re-speak when only a parameter (rate) changes', () => {
+    const fixture = TestBed.createComponent(RateHost);
+    fixture.detectChanges();
+    fixture.componentInstance.message.set('Hello');
+    TestBed.flushEffects();
+    expect(speechSynthesis.speak).toHaveBeenCalledTimes(1);
+
+    // rate is a per-utterance parameter, not a re-speak trigger.
+    fixture.componentInstance.rate.set(2);
+    TestBed.flushEffects();
+    expect(speechSynthesis.speak).toHaveBeenCalledTimes(1);
+  });
+
+  it('destroy cancels only while an own utterance is live', () => {
+    const { fixture } = setup();
+    // No own utterance in flight: destroy must not clear the global queue
+    // (a sibling's speech would die).
+    fixture.destroy();
+    expect(speechSynthesis.cancel).not.toHaveBeenCalled();
+  });
+
+  it('destroy cancels an in-flight own utterance', () => {
+    const { fixture } = setup();
+    fixture.componentInstance.message.set('Hello');
+    TestBed.flushEffects();
+    fixture.destroy();
+    expect(speechSynthesis.cancel).toHaveBeenCalledTimes(1);
+  });
+
+  it('ignores the stale onend of a replaced utterance', () => {
+    const { fixture, dir } = setup();
+    const speak = speechSynthesis.speak as ReturnType<typeof vi.fn>;
+    fixture.componentInstance.message.set('First');
+    TestBed.flushEffects();
+    const first = speak.mock.calls[0][0] as MockUtterance;
+    first.onstart?.();
+    expect(dir.speaking()).toBe(true);
+
+    fixture.componentInstance.message.set('Second');
+    TestBed.flushEffects();
+    const second = speak.mock.calls[1][0] as MockUtterance;
+    second.onstart?.();
+
+    // The replaced utterance's late onend must not flip speaking off.
+    first.onend?.();
+    expect(dir.speaking()).toBe(true);
+
+    second.onend?.();
     expect(dir.speaking()).toBe(false);
   });
 

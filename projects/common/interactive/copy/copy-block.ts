@@ -54,10 +54,12 @@ import { CngxCopyText } from './copy-text.directive';
       [class.cngx-copy-block__button--copied]="cp.copied()"
     >
       {{ cp.copied() ? copiedLabel() : buttonLabel() }}
-      <span aria-live="polite" class="cngx-sr-only">
-        {{ cp.copied() ? srAnnouncement() : '' }}
-      </span>
     </button>
+    <!-- Outside the button: a child of a button lands in its accessible
+         name, so the announcement text would rename the control. -->
+    <span aria-live="polite" class="cngx-sr-only">
+      {{ cp.copied() ? srAnnouncement() : '' }}
+    </span>
   `,
   styleUrls: ['./copy-block.css'],
 })

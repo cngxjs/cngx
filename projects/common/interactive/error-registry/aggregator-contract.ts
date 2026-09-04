@@ -1,4 +1,4 @@
-import { computed, type Signal, type WritableSignal } from '@angular/core';
+import { computed, isDevMode, type Signal, type WritableSignal } from '@angular/core';
 import type {
   CngxErrorAggregatorContract,
   CngxErrorAggregatorSourceEntry,
@@ -39,7 +39,10 @@ export interface ErrorAggregatorContractDeps {
  * Single source of truth for the aggregator surface: `CngxErrorAggregator`
  * (directive form, ARIA host bindings) and `injectErrorAggregator`
  * (programmatic form, no DOM host) both delegate to this helper so the
- * two surfaces stay field-for-field equivalent without manual sync.
+ * two CONTRACT surfaces stay field-for-field equivalent without manual
+ * sync. Registry registration sits outside this equivalence: the directive
+ * re-registers reactively when its name input changes, the factory's
+ * static name registers once.
  *
  * Returns a fresh `CngxErrorAggregatorContract` each call - every
  * `computed` is freshly bound to the supplied `sourcesState`/`scope`
@@ -120,7 +123,14 @@ export function createErrorAggregatorContract(
     shouldShow,
     announcement,
     addSource(entry) {
-      const next = new Map(sourcesState());
+      const current = sourcesState();
+      if (isDevMode() && current.has(entry.key) && current.get(entry.key) !== entry) {
+        console.warn(
+          `CngxErrorAggregator: an error source with key "${entry.key}" is already ` +
+            'registered; the new entry replaces it (last-wins). Use unique keys per source.',
+        );
+      }
+      const next = new Map(current);
       next.set(entry.key, entry);
       sourcesState.set(next);
     },

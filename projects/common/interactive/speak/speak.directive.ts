@@ -7,6 +7,7 @@ import {
   inject,
   input,
   signal,
+  untracked,
 } from '@angular/core';
 
 /**
@@ -86,6 +87,13 @@ export class CngxSpeak {
   private readonly synth: SpeechSynthesis | null;
   private readonly initialized = signal(false);
 
+  // Retains the in-flight utterance: Chrome garbage-collects unreferenced
+  // utterances mid-speech and then never fires their onend/onerror, which
+  // would leave `speaking` stuck at true. Also the ownership marker for
+  // cancel - synth.cancel() clears the GLOBAL queue, so it may only fire
+  // while an utterance of THIS directive is live.
+  private activeUtterance: SpeechSynthesisUtterance | null = null;
+
   /** Whether the browser supports the SpeechSynthesis API. */
   readonly supported: boolean;
 
@@ -105,10 +113,12 @@ export class CngxSpeak {
       if (!this.initialized() || !value || !this.enabled() || !this.synth) {
         return;
       }
-      this.performSpeak(value);
+      // untracked: rate/pitch/volume/lang are per-utterance parameters read
+      // inside performSpeak - a parameter change must not re-speak the text.
+      untracked(() => this.performSpeak(value));
     });
 
-    inject(DestroyRef).onDestroy(() => this.synth?.cancel());
+    inject(DestroyRef).onDestroy(() => this.cancelOwn());
   }
 
   /** Speak arbitrary text. Always works regardless of `enabled`. */
@@ -118,10 +128,14 @@ export class CngxSpeak {
     }
   }
 
-  /** Cancel any ongoing speech. */
+  /**
+   * Cancel this directive's ongoing speech. A no-op while no own utterance
+   * is live, so an idle instance never clears the shared synthesis queue.
+   * (Starting a new utterance still interrupts whatever is playing -
+   * `SpeechSynthesis` is a single audio channel.)
+   */
   cancel(): void {
-    this.synth?.cancel();
-    this.speakingState.set(false);
+    this.cancelOwn();
   }
 
   /** Toggle speech: speak text if idle, cancel if speaking. */
@@ -154,10 +168,32 @@ export class CngxSpeak {
       utterance.lang = lang;
     }
 
-    utterance.onstart = () => this.speakingState.set(true);
-    utterance.onend = () => this.speakingState.set(false);
-    utterance.onerror = () => this.speakingState.set(false);
+    utterance.onstart = () => {
+      if (this.activeUtterance === utterance) {
+        this.speakingState.set(true);
+      }
+    };
+    utterance.onend = () => this.finishUtterance(utterance);
+    utterance.onerror = () => this.finishUtterance(utterance);
 
+    this.activeUtterance = utterance;
     synth.speak(utterance);
+  }
+
+  private cancelOwn(): void {
+    if (this.activeUtterance) {
+      this.activeUtterance = null;
+      this.synth?.cancel();
+    }
+    this.speakingState.set(false);
+  }
+
+  /** Ignores stale callbacks of a replaced utterance so a new one keeps `speaking` intact. */
+  private finishUtterance(utterance: SpeechSynthesisUtterance): void {
+    if (this.activeUtterance !== utterance) {
+      return;
+    }
+    this.activeUtterance = null;
+    this.speakingState.set(false);
   }
 }

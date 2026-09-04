@@ -67,7 +67,7 @@ describe('CngxErrorRegistry', () => {
       registry.registerScope('checkout', scope);
       expect(registry.getScope('checkout')).toBe(scope);
 
-      registry.unregisterScope('checkout');
+      registry.unregisterScope('checkout', scope);
       expect(registry.getScope('checkout')).toBeUndefined();
     });
 
@@ -87,7 +87,32 @@ describe('CngxErrorRegistry', () => {
 
     it('unregisterScope is idempotent on missing name', () => {
       const registry = createRegistry();
-      expect(() => registry.unregisterScope('missing')).not.toThrow();
+      expect(() => registry.unregisterScope('missing', makeScope('x'))).not.toThrow();
+    });
+
+    it('unregisterScope with a non-stored instance leaves the winner live', () => {
+      const registry = createRegistry();
+      const winner = makeScope('a');
+      const duplicate = makeScope('a');
+      registry.registerScope('a', winner);
+      // Swap-is-noop absorbs the duplicate; its late destroy must not evict
+      // the winner.
+      registry.registerScope('a', duplicate);
+      registry.unregisterScope('a', duplicate);
+      expect(registry.getScope('a')).toBe(winner);
+
+      registry.unregisterScope('a', winner);
+      expect(registry.getScope('a')).toBeUndefined();
+    });
+
+    it('warns in dev mode when a duplicate scope name registers', () => {
+      const registry = createRegistry();
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      registry.registerScope('a', makeScope('a'));
+      registry.registerScope('a', makeScope('a'));
+      expect(warn).toHaveBeenCalledTimes(1);
+      expect(warn.mock.calls[0][0]).toContain('scope named "a"');
+      warn.mockRestore();
     });
   });
 
@@ -101,7 +126,7 @@ describe('CngxErrorRegistry', () => {
       registry.registerAggregator('field-a', agg);
       expect(registry.getAggregator('field-a')).toBe(agg);
 
-      registry.unregisterAggregator('field-a');
+      registry.unregisterAggregator('field-a', agg);
       expect(registry.getAggregator('field-a')).toBeUndefined();
     });
 
@@ -268,11 +293,11 @@ describe('CngxErrorRegistry', () => {
     TestBed.flushEffects();
     expect(witness.mock.calls.length).toBe(baseline + 2);
 
-    registry.unregisterAggregator('c');
+    registry.unregisterAggregator('c', aggC);
     TestBed.flushEffects();
     expect(witness.mock.calls.length).toBe(baseline + 3);
 
-    registry.unregisterAggregator('nonexistent');
+    registry.unregisterAggregator('nonexistent', aggC);
     TestBed.flushEffects();
     expect(witness.mock.calls.length).toBe(baseline + 3);
   });
