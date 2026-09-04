@@ -279,15 +279,20 @@ function installAxisPersistence<T extends string>(
   }
 
   // `first` is a plain closure boolean (never a signal): a signal write
-  // inside the effect would be a signal-write-in-effect violation. It
-  // skips the initial flush so an untouched default is never persisted;
-  // only a subsequent change writes.
+  // inside the effect would be a signal-write-in-effect violation. The first
+  // flush compares against the rehydrate-time value instead of skipping
+  // blindly - an untouched default is still never persisted, but a user
+  // `set()` in the window between init and the effect's first run is not
+  // swallowed.
+  const rehydrated = sig();
   let first = true;
   effect(() => {
     const value = sig();
     if (first) {
       first = false;
-      return;
+      if (value === rehydrated) {
+        return;
+      }
     }
     untracked(() => {
       try {
