@@ -125,8 +125,13 @@ export const CNGX_CHART_CONTEXT = new InjectionToken<CngxChartContext>('CngxChar
  * error message so the consumer-class name surfaces at the call site
  * rather than a generic guard string.
  *
- * Replaces six verbatim copies of the same six-line helper that
- * previously lived inline in every layer atom.
+ * Use it from custom layer directives mounted on `<svg:g>` hosts to
+ * read `plot`, the scales and `renderSvg` the same way the built-in
+ * layer atoms do.
+ *
+ * @category common/chart
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/chart/chart-context.ts
+ * @since 0.1.0
  */
 export function injectChartContext(consumerName: string): CngxChartContext {
   const ctx = inject(CNGX_CHART_CONTEXT, { optional: true });
