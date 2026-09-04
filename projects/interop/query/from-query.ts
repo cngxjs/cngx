@@ -52,10 +52,14 @@ export interface CngxQueryLike<T> {
  * first real load runs - that maps to `refreshing` over the placeholder,
  * deliberately suppressing the skeleton (the intended TanStack UX).
  *
- * `isFirstLoad` latches on success (`!hadSuccess`), mirroring `fromResource`:
- * a failed or retrying first load stays `isFirstLoad === true` until data
+ * `isFirstLoad` is `!hadSuccess`, the kernel-recommended query semantics: a
+ * failed or retrying first load stays `isFirstLoad === true` until data
  * actually arrived once. Bind `dataUpdatedAt` for the exact latch; without it
- * the bridge falls back to `status === 'success'` or retained data.
+ * the bridge falls back to `status === 'success'` or retained data. Two
+ * deliberate divergences from `fromResource`: a settled first-load error
+ * stays first-load here (fromResource flips false on error), and the latch
+ * is derived, so a query reset / key swap (`dataUpdatedAt` back to `0`)
+ * returns to first-load instead of staying latched forever.
  *
  * ```typescript
  * private readonly query = injectQuery(() => ({
@@ -104,10 +108,11 @@ export function fromQuery<T>(query: CngxQueryLike<T>): CngxAsyncState<T> {
 
   const isFirstLoad = computed(() => !hadSuccess());
 
-  const lastUpdated = query.dataUpdatedAt
+  const updatedAtSource = query.dataUpdatedAt;
+  const lastUpdated = updatedAtSource
     ? computed(
         () => {
-          const ts = query.dataUpdatedAt!();
+          const ts = updatedAtSource();
           return ts > 0 ? new Date(ts) : undefined;
         },
         { equal: (a, b) => a?.getTime() === b?.getTime() },

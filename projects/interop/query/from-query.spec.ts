@@ -140,8 +140,9 @@ describe('fromQuery', () => {
 
   it('maps error + fetching to refreshing when data was retained', () => {
     const query = makeQuery<string[]>();
+    const failure = new Error('boom');
     query.status.set('error');
-    query.error.set(new Error('boom'));
+    query.error.set(failure);
     query.data.set(['stale']);
     query.fetchStatus.set('fetching');
 
@@ -149,6 +150,9 @@ describe('fromQuery', () => {
 
     expect(state.status()).toBe('refreshing');
     expect(state.data()).toEqual(['stale']);
+    // The refreshing frame hides nothing: the error stays readable while
+    // the retry is in flight.
+    expect(state.error()).toBe(failure);
   });
 
   it('keeps isFirstLoad true after a failed first load and through its retry', () => {
