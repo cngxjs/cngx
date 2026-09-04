@@ -3,6 +3,7 @@ export {
   createPathBuilder,
   type PathBuilder,
   type PathBuilderOptions,
+  type PathSegment,
   type LineYAccessor,
   type LineXAccessor,
 } from './path-builder';

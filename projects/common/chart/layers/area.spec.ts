@@ -64,6 +64,27 @@ describe('CngxArea', () => {
     expect(d.split(' L ').length).toBeGreaterThanOrEqual(3);
   });
 
+  it('closes every finite run to the baseline individually around a NaN gap', () => {
+    const fixture = TestBed.createComponent(TestHost);
+    fixture.componentInstance.data.set([1, 2, Number.NaN, 4, 5]);
+    fixture.detectChanges();
+    const path = fixture.nativeElement.querySelector('.cngx-area') as SVGPathElement;
+    const d = path.getAttribute('d') ?? '';
+    expect(d).not.toContain('NaN');
+    // Two subpaths, each with its own baseline closure - one whole-path
+    // closure would fill straight across the gap.
+    expect(d.match(/M /g)?.length).toBe(2);
+    expect(d.match(/Z/g)?.length).toBe(2);
+  });
+
+  it('renders no fill at all when every value is non-finite', () => {
+    const fixture = TestBed.createComponent(TestHost);
+    fixture.componentInstance.data.set([Number.NaN, Number.NaN]);
+    fixture.detectChanges();
+    const path = fixture.nativeElement.querySelector('.cngx-area') as SVGPathElement;
+    expect(path?.getAttribute('d') ?? '').toBe('');
+  });
+
   function marks(
     fixture: ReturnType<typeof TestBed.createComponent<TestHost>>,
   ): NodeListOf<Element> {

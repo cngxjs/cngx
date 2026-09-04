@@ -676,8 +676,9 @@ function buildTickRendering(
  * Default tick label formatter. Strips floating-point arithmetic
  * noise from non-integer numbers - `6.6000000000000005` becomes
  * `'6.6'`, `2.2` stays `'2.2'`, `25` stays `'25'` - without rounding
- * away meaningful precision. Dates and other types fall through to
- * `String(v)`; consumers needing a richer format bind `[format]`.
+ * away meaningful precision. Dates go through cached `Intl` formatters
+ * ({@link formatDateTick}); other types fall through to `String(v)`.
+ * Consumers needing a richer format bind `[format]`.
  *
  * @internal
  */
@@ -694,7 +695,56 @@ function defaultTickFormat(v: unknown): string {
     // produced by accumulated float math.
     return Number(v.toPrecision(12)).toString();
   }
+  if (v instanceof Date) {
+    return formatDateTick(v);
+  }
   return String(v);
+}
+
+/**
+ * Lazily constructed, module-cached `Intl.DateTimeFormat` instances
+ * for {@link formatDateTick}. Constructing a formatter is expensive
+ * (locale data lookup); formatting with a cached one is cheap, and the
+ * label strings feed the gutter arithmetic on every tick recompute.
+ *
+ * @internal
+ */
+let dateTickFormat: Intl.DateTimeFormat | undefined;
+/** @internal */
+let timeTickFormat: Intl.DateTimeFormat | undefined;
+/** @internal */
+let timeSecondsTickFormat: Intl.DateTimeFormat | undefined;
+
+/**
+ * Compact Date tick label. `String(Date)` produces a ~60-character
+ * string whose length flows into {@link CngxAxis.reservation} and
+ * collapses the plot to a sliver of gutter. Instead: a date at local
+ * midnight labels as a short date (`Sep 4`), any other instant as a
+ * time (`09:14`, with seconds only when the instant carries them) -
+ * the resolution a generated time-axis tick actually has.
+ *
+ * @internal
+ */
+function formatDateTick(v: Date): string {
+  if (Number.isNaN(v.getTime())) {
+    return '';
+  }
+  const midnight =
+    v.getHours() === 0 && v.getMinutes() === 0 && v.getSeconds() === 0 && v.getMilliseconds() === 0;
+  if (midnight) {
+    dateTickFormat ??= new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' });
+    return dateTickFormat.format(v);
+  }
+  if (v.getSeconds() === 0 && v.getMilliseconds() === 0) {
+    timeTickFormat ??= new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' });
+    return timeTickFormat.format(v);
+  }
+  timeSecondsTickFormat ??= new Intl.DateTimeFormat(undefined, {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  });
+  return timeSecondsTickFormat.format(v);
 }
 
 /** @internal */

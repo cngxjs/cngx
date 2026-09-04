@@ -153,6 +153,59 @@ describe('CngxAxis', () => {
     }
   });
 
+  function timeAxisLabels(domain: readonly Date[], ticks: number): string[] {
+    @Component({
+      standalone: true,
+      imports: [CngxChart, CngxAxis],
+      template: `
+        <cngx-chart [data]="[1, 2, 3]" [width]="400" [height]="100">
+          <svg:g
+            cngxAxis
+            position="bottom"
+            type="time"
+            [domain]="domain"
+            [ticks]="ticks"
+          ></svg:g>
+        </cngx-chart>
+      `,
+    })
+    class TimeHost {
+      readonly domain = domain;
+      readonly ticks = ticks;
+    }
+    TestBed.configureTestingModule({ imports: [TimeHost] });
+    const f = TestBed.createComponent(TimeHost);
+    f.detectChanges();
+    return Array.from(
+      (f.nativeElement as HTMLElement).querySelectorAll<SVGTextElement>('.cngx-axis__tick-label'),
+    ).map((el) => el.textContent?.trim() ?? '');
+  }
+
+  it('formats Date ticks compactly instead of the String(Date) wall of text', () => {
+    const labels = timeAxisLabels(
+      [new Date(2026, 8, 4, 9, 0), new Date(2026, 8, 4, 13, 0)],
+      5,
+    );
+    expect(labels.length).toBe(5);
+    for (const label of labels) {
+      // String(Date) is ~60 characters and carries the timezone name -
+      // exactly the string whose length used to flow into the gutter
+      // reservation and collapse the plot.
+      expect(label).not.toMatch(/GMT/);
+      expect(label.length).toBeLessThanOrEqual(12);
+      expect(label).toMatch(/:/);
+    }
+  });
+
+  it('formats Date ticks at local midnight as short dates without a time part', () => {
+    const labels = timeAxisLabels([new Date(2026, 8, 1), new Date(2026, 8, 5)], 5);
+    expect(labels.length).toBe(5);
+    for (const label of labels) {
+      expect(label).not.toMatch(/:/);
+      expect(label.length).toBeLessThanOrEqual(12);
+    }
+  });
+
   it('does NOT render an axis-label text element by default', () => {
     const { fixture } = setup();
     const label = fixture.nativeElement.querySelector('.cngx-axis__axis-label');

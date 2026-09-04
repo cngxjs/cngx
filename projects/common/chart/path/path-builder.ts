@@ -27,6 +27,20 @@ export interface PathBuilderOptions<T> {
 }
 
 /**
+ * One run of consecutive finite points, as produced by
+ * {@link PathBuilder.buildSegments}. `firstX` / `lastX` are the run's
+ * projected end coordinates, exposed so an area layer can close the
+ * run to its baseline without re-projecting the data.
+ *
+ * @category common/chart/path
+ */
+export interface PathSegment {
+  readonly d: string;
+  readonly firstX: number;
+  readonly lastX: number;
+}
+
+/**
  * Single-slot LRU cache around an SVG `d`-attribute builder. Returned
  * by {@link createPathBuilder}; consumed by the `<cngx-line>` /
  * `<cngx-area>` family.
@@ -38,8 +52,28 @@ export interface PathBuilder<T> {
    * Build the SVG `d` attribute for the given data + scales. Same
    * `(data, xScale, yScale)` triple by reference returns the cached
    * string without re-running the O(n) point projection.
+   *
+   * A row whose projected `x` or `y` is non-finite (a `NaN` value, an
+   * invalid Date, a log scale fed zero) is not emitted as a path
+   * command - it breaks the path into subpaths, d3's `defined()`
+   * semantics. One `NaN` therefore renders as a gap in the line rather
+   * than invalidating the whole `d` string.
    */
   build(data: readonly T[], xScale: ScaleFn<XScaleInput>, yScale: ScaleFn<number>): string;
+
+  /**
+   * The same projection split at non-finite rows: one entry per run of
+   * consecutive finite points, carrying the run's path data and its
+   * first/last projected `x`. `<cngx-area>` consumes this to close
+   * every run to the baseline individually - closing the joined string
+   * once would fill straight across the gaps. Shares the single-slot
+   * cache with {@link build}.
+   */
+  buildSegments(
+    data: readonly T[],
+    xScale: ScaleFn<XScaleInput>,
+    yScale: ScaleFn<number>,
+  ): readonly PathSegment[];
 
   /**
    * Number of times the internal point-projection + path-string
@@ -80,22 +114,39 @@ export function createPathBuilder<T>(opts: PathBuilderOptions<T>): PathBuilder<T
   let lastData: readonly T[] | null = null;
   let lastX: ScaleFn<XScaleInput> | null = null;
   let lastY: ScaleFn<number> | null = null;
+  let lastSegments: readonly PathSegment[] = [];
   let lastResult = '';
   let rebuilds = 0;
 
+  const rebuild = (
+    data: readonly T[],
+    xScale: ScaleFn<XScaleInput>,
+    yScale: ScaleFn<number>,
+  ): void => {
+    if (data === lastData && xScale === lastX && yScale === lastY) {
+      return;
+    }
+    const runs = projectFiniteRuns(data, xAcc, yAcc, xScale, yScale);
+    lastSegments = runs.map((run) => ({
+      d: buildCurvePath(run, curve),
+      firstX: run[0].x,
+      lastX: run[run.length - 1].x,
+    }));
+    lastResult = lastSegments.map((s) => s.d).join(' ');
+    lastData = data;
+    lastX = xScale;
+    lastY = yScale;
+    rebuilds++;
+  };
+
   return {
     build(data, xScale, yScale) {
-      if (data === lastData && xScale === lastX && yScale === lastY) {
-        return lastResult;
-      }
-      const points = projectPoints(data, xAcc, yAcc, xScale, yScale);
-      const d = buildCurvePath(points, curve);
-      lastData = data;
-      lastX = xScale;
-      lastY = yScale;
-      lastResult = d;
-      rebuilds++;
-      return d;
+      rebuild(data, xScale, yScale);
+      return lastResult;
+    },
+    buildSegments(data, xScale, yScale) {
+      rebuild(data, xScale, yScale);
+      return lastSegments;
     },
     rebuildCount() {
       return rebuilds;
@@ -103,17 +154,34 @@ export function createPathBuilder<T>(opts: PathBuilderOptions<T>): PathBuilder<T
   };
 }
 
-/** @internal */
-function projectPoints<T>(
+/**
+ * Project every row and split the result at non-finite coordinates:
+ * returns the runs of consecutive points whose `x` and `y` are both
+ * finite. Non-finite rows appear in no run - they are the breaks.
+ *
+ * @internal
+ */
+function projectFiniteRuns<T>(
   data: readonly T[],
   xAcc: LineXAccessor<T>,
   yAcc: (d: T, i: number) => number,
   xScale: ScaleFn<XScaleInput>,
   yScale: ScaleFn<number>,
-): PathPoint[] {
-  const out = new Array<PathPoint>(data.length);
+): PathPoint[][] {
+  const runs: PathPoint[][] = [];
+  let current: PathPoint[] | null = null;
   for (let i = 0; i < data.length; i++) {
-    out[i] = { x: xScale(xAcc(data[i], i)), y: yScale(yAcc(data[i], i)) };
+    const x = xScale(xAcc(data[i], i));
+    const y = yScale(yAcc(data[i], i));
+    if (Number.isFinite(x) && Number.isFinite(y)) {
+      if (current === null) {
+        current = [];
+        runs.push(current);
+      }
+      current.push({ x, y });
+    } else {
+      current = null;
+    }
   }
-  return out;
+  return runs;
 }
