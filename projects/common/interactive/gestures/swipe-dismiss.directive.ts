@@ -1,9 +1,8 @@
 import { DOCUMENT } from '@angular/common';
-import { Directive, ElementRef, inject, input, output, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { fromEvent, switchMap, takeUntil, tap, filter, map } from 'rxjs';
+import { computed, Directive, ElementRef, inject, input, output, signal } from '@angular/core';
 
 import type { SwipeDirection } from './swipe-direction';
+import { createSwipeEngine } from './swipe-engine';
 
 /**
  * Detects directional swipe gestures via Pointer Events.
@@ -41,6 +40,15 @@ import type { SwipeDirection } from './swipe-direction';
   selector: '[cngxSwipeDismiss]',
   exportAs: 'cngxSwipeDismiss',
   standalone: true,
+  host: {
+    // Advertise the gesture's axis so the browser never claims the swipe
+    // as a scroll; the orthogonal axis stays native (mirrors CngxSwipe).
+    '[style.touch-action]': 'touchAction()',
+    // Suppress text selection only while a gesture is in flight - a bare
+    // user-select:none would kill selection even when the user is reading.
+    '[style.user-select]': "swiping() ? 'none' : null",
+    '[style.-webkit-user-select]': "swiping() ? 'none' : null",
+  },
 })
 export class CngxSwipeDismiss {
   /** Direction of the swipe that triggers dismissal. */
@@ -60,59 +68,56 @@ export class CngxSwipeDismiss {
   /** Progress of the current swipe from 0 to 1 (clamped). */
   readonly swipeProgress = this.swipeProgressState.asReadonly();
 
+  /**
+   * The `touch-action` the host should advertise, derived from the dismiss
+   * direction: a horizontal dismiss hands vertical panning back to native
+   * scrolling and vice versa. No value is written while disabled.
+   */
+  protected readonly touchAction = computed<string | null>(() => {
+    if (!this.enabled()) {
+      return null;
+    }
+    const dir = this.direction();
+    return dir === 'left' || dir === 'right' ? 'pan-y' : 'pan-x';
+  });
+
   constructor() {
     const nativeEl = inject(ElementRef<HTMLElement>).nativeElement as HTMLElement;
     const doc = inject(DOCUMENT);
 
-    const pointerDown$ = fromEvent<PointerEvent>(nativeEl, 'pointerdown');
-    const pointerMove$ = fromEvent<PointerEvent>(doc, 'pointermove');
-    const pointerUp$ = fromEvent<PointerEvent>(doc, 'pointerup');
-
-    pointerDown$
-      .pipe(
-        filter(() => this.enabled()),
-        switchMap((start) => {
-          const startX = start.clientX;
-          const startY = start.clientY;
-
-          return pointerMove$.pipe(
-            tap((move) => {
-              const delta = this.getDelta(startX, startY, move.clientX, move.clientY);
-              if (delta > 0) {
-                this.swipingState.set(true);
-                this.swipeProgressState.set(Math.min(1, delta / this.threshold()));
-              }
-            }),
-            takeUntil(
-              pointerUp$.pipe(
-                map((end) => this.getDelta(startX, startY, end.clientX, end.clientY)),
-                tap((delta) => {
-                  if (delta >= this.threshold()) {
-                    this.swiped.emit();
-                  }
-                  this.swipingState.set(false);
-                  this.swipeProgressState.set(0);
-                }),
-              ),
-            ),
-          );
-        }),
-        takeUntilDestroyed(),
-      )
-      .subscribe();
+    createSwipeEngine(nativeEl, doc, {
+      enabled: () => this.enabled(),
+      onMove: (dx, dy) => {
+        const delta = this.getDelta(dx, dy);
+        if (delta > 0) {
+          this.swipingState.set(true);
+          this.swipeProgressState.set(Math.min(1, delta / this.threshold()));
+        }
+      },
+      onSettle: (settle) => {
+        if (settle) {
+          const delta = this.getDelta(settle.dx, settle.dy);
+          if (delta >= this.threshold()) {
+            this.swiped.emit();
+          }
+        }
+        this.swipingState.set(false);
+        this.swipeProgressState.set(0);
+      },
+    });
   }
 
-  private getDelta(startX: number, startY: number, endX: number, endY: number): number {
-    const dir = this.direction();
-    switch (dir) {
+  /** Signed delta along the dismiss direction; movement away from it is negative. */
+  private getDelta(dx: number, dy: number): number {
+    switch (this.direction()) {
       case 'left':
-        return startX - endX;
+        return -dx;
       case 'right':
-        return endX - startX;
+        return dx;
       case 'up':
-        return startY - endY;
+        return -dy;
       case 'down':
-        return endY - startY;
+        return dy;
     }
   }
 }
