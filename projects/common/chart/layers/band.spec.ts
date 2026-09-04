@@ -91,6 +91,11 @@ describe('CngxBand [color] parity', () => {
     fixture.detectChanges();
     const mark = fixture.nativeElement.querySelector('.cngx-band__rect') as SVGElement;
     expect(mark).not.toBeNull();
-    expect(mark.getAttribute('fill')).toBe('rebeccapurple');
+    // An inline style, not a presentation attribute - the class rule
+    // (stroke/fill via --cngx-* vars) would beat an attribute in the
+    // CSS cascade and render the bound color inert.
+    expect((mark as unknown as SVGElement & { style: CSSStyleDeclaration }).style.fill).toBe(
+      'rebeccapurple',
+    );
   });
 });

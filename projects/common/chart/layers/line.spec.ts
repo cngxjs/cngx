@@ -184,3 +184,33 @@ describe('CngxLine', () => {
     expect(runs).toBe(baselineRuns);
   });
 });
+
+describe('CngxLine [color]', () => {
+  beforeEach(() => vi.stubGlobal('ResizeObserver', ResizeObserverMock));
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('binds [color] as an inline style that beats the stylesheet cascade', () => {
+    @Component({
+      standalone: true,
+      imports: [CngxChart, CngxAxis, CngxLine],
+      template: `
+        <cngx-chart [data]="[1, 2, 3]" [width]="200" [height]="100">
+          <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 2]"></svg:g>
+          <svg:g cngxAxis position="left" type="linear" [domain]="[0, 10]"></svg:g>
+          <svg:g cngxLine [color]="'rebeccapurple'"></svg:g>
+        </cngx-chart>
+      `,
+    })
+    class ColorHost {}
+    TestBed.configureTestingModule({ imports: [ColorHost] });
+    const fixture = TestBed.createComponent(ColorHost);
+    fixture.detectChanges();
+    const mark = fixture.nativeElement.querySelector('.cngx-line') as SVGElement;
+    // An attribute binding would be inert here: the .cngx-line class
+    // rule sets stroke via --cngx-line-color and a class rule beats a
+    // presentation attribute in the CSS cascade.
+    expect((mark as SVGElement & { style: CSSStyleDeclaration }).style.stroke).toBe(
+      'rebeccapurple',
+    );
+  });
+});

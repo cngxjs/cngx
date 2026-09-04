@@ -69,7 +69,7 @@ const FALLBACK_BASELINE = 0;
           [attr.y]="rect.y"
           [attr.width]="rect.width"
           [attr.height]="rect.height"
-          [attr.fill]="color()"
+          [style.fill]="color()"
         />
       }
     }

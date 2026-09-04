@@ -49,7 +49,7 @@ import { CNGX_CHART_LAYER, type CngxChartLayer, type LayerGeometry } from './cha
           [attr.y1]="g.y"
           [attr.x2]="g.x2"
           [attr.y2]="g.y"
-          [attr.stroke]="color()"
+          [style.stroke]="color()"
           [attr.stroke-dasharray]="dashed() ? '4 3' : null"
         />
       }

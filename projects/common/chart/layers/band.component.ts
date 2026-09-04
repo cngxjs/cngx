@@ -48,7 +48,7 @@ import { CNGX_CHART_LAYER, type CngxChartLayer, type LayerGeometry } from './cha
           [attr.y]="r.y"
           [attr.width]="r.width"
           [attr.height]="r.height"
-          [attr.fill]="color()"
+          [style.fill]="color()"
           [attr.fill-opacity]="opacity()"
         />
       }

@@ -143,6 +143,11 @@ describe('CngxThreshold [color] parity', () => {
     fixture.detectChanges();
     const mark = fixture.nativeElement.querySelector('.cngx-threshold__line') as SVGElement;
     expect(mark).not.toBeNull();
-    expect(mark.getAttribute('stroke')).toBe('rebeccapurple');
+    // An inline style, not a presentation attribute - the class rule
+    // (stroke/fill via --cngx-* vars) would beat an attribute in the
+    // CSS cascade and render the bound color inert.
+    expect((mark as unknown as SVGElement & { style: CSSStyleDeclaration }).style.stroke).toBe(
+      'rebeccapurple',
+    );
   });
 });

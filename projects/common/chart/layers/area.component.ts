@@ -57,7 +57,7 @@ import {
       <svg:path
         class="cngx-area"
         [attr.d]="d()"
-        [attr.fill]="color()"
+        [style.fill]="color()"
         [attr.fill-opacity]="opacity()"
       />
       @for (p of pointMarks(); track $index) {

@@ -64,7 +64,7 @@ interface ScatterCircle {
           [attr.cx]="c.cx"
           [attr.cy]="c.cy"
           [attr.r]="radius()"
-          [attr.fill]="color()"
+          [style.fill]="color()"
         />
       }
     }
