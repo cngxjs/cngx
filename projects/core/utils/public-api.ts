@@ -12,7 +12,11 @@ export {
   type AsyncStateViewSources,
 } from './build-async-state-view';
 export { createAggregateAsyncState } from './aggregate-async-state';
-export { createTransitionTracker, type StatusTransition } from './transition-tracker';
+export {
+  createTransitionTracker,
+  type StatusTransition,
+  type TransitionTrackerOptions,
+} from './transition-tracker';
 export { createVisibilityGate } from './visibility-gate';
 export { createLatencyProbe, type CngxLatencyProbe } from './latency-probe';
 export {
