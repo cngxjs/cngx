@@ -66,6 +66,8 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
   let ctx2d: CanvasRenderingContext2D | null = null;
   let lastW = -1;
   let lastH = -1;
+  let lastGeometries: readonly LayerGeometry[] = [];
+  let dprCleanup: (() => void) | null = null;
   const colorCache = new Map<string, string>();
   const numberCache = new Map<string, number>();
 
@@ -174,6 +176,30 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
     ctx2d.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 
+  /**
+   * Repaint when the device-pixel ratio changes without any data change
+   * (window dragged to another monitor, browser zoom). The paint path
+   * re-reads the DPR via `sizeCanvas()`, but nothing triggers it on a
+   * DPR-only change, so the bitmap stays at the old density and renders
+   * blurry until the next data tick. A `resolution` media query fires
+   * exactly on that edge; it matches only the current ratio, so it is
+   * re-armed with the new ratio after every change.
+   */
+  function watchDpr(): void {
+    if (typeof matchMedia !== 'function') {
+      return;
+    }
+    const mql = matchMedia(`(resolution: ${globalThis.devicePixelRatio ?? 1}dppx)`);
+    const onChange = (): void => {
+      dprCleanup?.();
+      dprCleanup = null;
+      paint(lastGeometries);
+      watchDpr();
+    };
+    mql.addEventListener('change', onChange, { once: true });
+    dprCleanup = () => mql.removeEventListener('change', onChange);
+  }
+
   function mount(host: HTMLElement): void {
     hostEl = host;
     const el = host.ownerDocument.createElement('canvas');
@@ -186,12 +212,14 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
     canvas = el;
     ctx2d = el.getContext('2d');
     sizeCanvas();
+    watchDpr();
     // Teardown is owned by the renderer controller (it destroys on mode
     // flip and on the chart's DestroyRef). Self-registering here would
     // pile up one never-unregistered closure per svg<->canvas flip.
   }
 
   function paint(geometries: readonly LayerGeometry[]): void {
+    lastGeometries = geometries;
     const c = ctx2d;
     if (!canvas || !c) {
       return;
@@ -266,6 +294,9 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
   }
 
   function destroy(): void {
+    dprCleanup?.();
+    dprCleanup = null;
+    lastGeometries = [];
     canvas?.remove();
     canvas = null;
     ctx2d = null;

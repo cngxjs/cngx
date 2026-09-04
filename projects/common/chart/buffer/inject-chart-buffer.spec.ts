@@ -141,4 +141,13 @@ describe('injectChartBuffer', () => {
     flushFrame();
     expect(emissions()).toBe(afterFirst); // downsample guard short-circuits too
   });
+  it('flushes synchronously when requestAnimationFrame is unavailable (SSR guard)', () => {
+    vi.stubGlobal('requestAnimationFrame', undefined);
+    const buf = make();
+    buf.push(1);
+    TestBed.flushEffects();
+    expect(buf.points()).toEqual([1]);
+    expect(buf.pendingFlush()).toBe(false);
+    vi.unstubAllGlobals();
+  });
 });

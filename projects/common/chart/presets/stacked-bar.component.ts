@@ -55,6 +55,7 @@ interface SegmentRendering {
   host: {
     role: 'img',
     '[attr.aria-label]': 'effectiveAriaLabel()',
+    '[attr.aria-busy]': 'busy() ? "true" : null',
     class: 'cngx-stacked-bar',
   },
   template: `
@@ -62,8 +63,7 @@ interface SegmentRendering {
       @case ('skeleton') {
         <span
           class="cngx-preset-skeleton"
-          [attr.aria-busy]="true"
-          [attr.aria-label]="i18n.loading()"
+          aria-hidden="true"
         ></span>
       }
       @case ('empty') {
@@ -138,6 +138,9 @@ export class CngxStackedBar {
   private readonly preset = injectPresetState(() => this.state());
   protected readonly i18n = this.preset.i18n;
   protected readonly activeView = this.preset.activeView;
+
+  /** True while the skeleton branch renders - the host announces busy, the span stays decorative. */
+  protected readonly busy = computed(() => this.activeView() === 'skeleton');
 
   protected readonly resolvedTotal = computed(() => {
     const explicit = this.total();

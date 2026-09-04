@@ -39,10 +39,11 @@ const TWO_PI = Math.PI * 2;
   encapsulation: ViewEncapsulation.None,
   host: {
     role: 'meter',
-    '[attr.aria-valuenow]': 'value()',
-    '[attr.aria-valuemin]': '0',
-    '[attr.aria-valuemax]': 'max()',
+    '[attr.aria-valuenow]': 'showsMeterValue() ? value() : null',
+    '[attr.aria-valuemin]': 'showsMeterValue() ? 0 : null',
+    '[attr.aria-valuemax]': 'showsMeterValue() ? max() : null',
     '[attr.aria-label]': 'ariaLabel() ?? label()',
+    '[attr.aria-busy]': 'busy() ? "true" : null',
     class: 'cngx-donut',
   },
   template: `
@@ -52,8 +53,7 @@ const TWO_PI = Math.PI * 2;
           class="cngx-preset-skeleton cngx-donut__skeleton"
           [style.width.px]="size()"
           [style.height.px]="size()"
-          [attr.aria-busy]="true"
-          [attr.aria-label]="i18n.loading()"
+          aria-hidden="true"
         ></span>
       }
       @case ('empty') {
@@ -151,6 +151,16 @@ export class CngxDonut {
   private readonly preset = injectPresetState(() => this.state());
   protected readonly i18n = this.preset.i18n;
   protected readonly activeView = this.preset.activeView;
+
+  /** True while the skeleton branch renders - the host announces busy, the span stays decorative. */
+  protected readonly busy = computed(() => this.activeView() === 'skeleton');
+
+  /**
+   * Meter value attributes render only in the content view: keeping
+   * `aria-valuenow` while the skeleton or error fallback shows would
+   * announce a stale reading for a value that is not on screen.
+   */
+  protected readonly showsMeterValue = computed(() => this.activeView() === 'content');
 
   constructor() {
     warnIfUnnamedPreset('cngx-donut', 'Bind [label] or [aria-label].', () => (this.ariaLabel() ?? this.label()) !== null);

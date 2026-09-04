@@ -54,7 +54,12 @@ import {
   providers: [{ provide: CNGX_CHART_LAYER, useExisting: CngxArea }],
   template: `
     @if (ctx.renderSvg()) {
-      <svg:path class="cngx-area" [attr.d]="d()" [attr.fill-opacity]="opacity()" />
+      <svg:path
+        class="cngx-area"
+        [attr.d]="d()"
+        [attr.fill]="color()"
+        [attr.fill-opacity]="opacity()"
+      />
       @for (p of pointMarks(); track $index) {
         <svg:circle class="cngx-area__point" [attr.cx]="p.cx" [attr.cy]="p.cy" />
       }
@@ -96,6 +101,7 @@ export class CngxArea<T = unknown> implements CngxChartLayer {
   readonly accessor = input<LineYAccessor<T>>((d: T) => Number(d));
   readonly xAccessor = input<LineXAccessor<T> | undefined>(undefined);
   readonly opacity = input<number | string | null>(null);
+  readonly color = input<string | null>(null);
   readonly curve = input<CngxCurve>('linear');
   readonly baseline = input<number>(0);
   readonly data = input<readonly T[] | undefined>(undefined);
@@ -152,7 +158,7 @@ export class CngxArea<T = unknown> implements CngxChartLayer {
       return {
         kind: 'area',
         d: this.d(),
-        color: null,
+        color: this.color(),
         strokeWidth: null,
         fill: null,
         opacity: op == null ? null : Number(op),

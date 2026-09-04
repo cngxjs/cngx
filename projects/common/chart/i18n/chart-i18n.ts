@@ -1,4 +1,5 @@
 import { InjectionToken } from '@angular/core';
+import { formatChartNumber } from '../chart/format-number';
 
 /**
  * Summary input describing the chart's current data shape. Consumed by
@@ -73,7 +74,7 @@ export const CNGX_CHART_I18N = new InjectionToken<CngxChartI18n>('CngxChartI18n'
           : thresholds.length === 1
             ? 'One threshold crossing.'
             : `${thresholds.length} threshold crossings.`;
-      return `${trendText}. Min ${min}, max ${max}, current ${current}. ${thresholdText}`;
+      return `${trendText}. Min ${formatChartNumber(min)}, max ${formatChartNumber(max)}, current ${formatChartNumber(current)}. ${thresholdText}`;
     },
     dataTable: () => 'Data table',
     valueColumnLabel: () => 'Value',
@@ -83,7 +84,7 @@ export const CNGX_CHART_I18N = new InjectionToken<CngxChartI18n>('CngxChartI18n'
         : trend === 'down'
           ? 'Trend changed to down'
           : 'Trend flattened',
-    thresholdAlert: (threshold) => `Threshold ${threshold} crossed`,
+    thresholdAlert: (threshold) => `Threshold ${formatChartNumber(threshold)} crossed`,
     connectionLost: () => 'Connection lost',
     connectionReconnecting: () => 'Reconnecting',
     connectionRestored: () => 'Connection restored',

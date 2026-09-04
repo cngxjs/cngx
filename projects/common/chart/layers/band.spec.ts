@@ -66,3 +66,31 @@ describe('CngxBand', () => {
     expect(label?.textContent?.trim()).toBe('Watch zone');
   });
 });
+
+describe('CngxBand [color] parity', () => {
+  beforeEach(() => vi.stubGlobal('ResizeObserver', ResizeObserverMock));
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('binds [color] onto the SVG mark like CngxLine does', () => {
+    @Component({
+      standalone: true,
+      imports: [CngxChart, CngxAxis, CngxBand],
+      template: `
+        <cngx-chart [data]="data" [width]="200" [height]="100">
+          <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 2]"></svg:g>
+          <svg:g cngxAxis position="left" type="linear" [domain]="[0, 10]"></svg:g>
+          <svg:g cngxBand [from]="2" [to]="8" [color]="'rebeccapurple'"></svg:g>
+        </cngx-chart>
+      `,
+    })
+    class ColorHost {
+      protected readonly data = [1, 2, 3];
+    }
+    TestBed.configureTestingModule({ imports: [ColorHost] });
+    const fixture = TestBed.createComponent(ColorHost);
+    fixture.detectChanges();
+    const mark = fixture.nativeElement.querySelector('.cngx-band__rect') as SVGElement;
+    expect(mark).not.toBeNull();
+    expect(mark.getAttribute('fill')).toBe('rebeccapurple');
+  });
+});

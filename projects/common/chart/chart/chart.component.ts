@@ -296,7 +296,7 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
       }
       /* Responsive mode: when neither width nor height is bound, the
          host fills its parent and derives height from the
-         --cngx-chart-aspect-ratio CSS variable (default 16/9). The
+         --cngx-chart-aspect-ratio CSS variable (default 5 / 2). The
          resize observer measures the rendered size; dimensions() then
          drives the SVG width/height + viewBox + scale math, so axes
          and layer atoms re-flow as the parent resizes. */
@@ -700,6 +700,18 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
           );
         }
       });
+      afterNextRender(() => {
+        const axes = this.axes();
+        const horizontal = axes.filter((a) => isHorizontalPosition(a.position()));
+        const vertical = axes.filter((a) => isVerticalPosition(a.position()));
+        if (horizontal.length > 1 || vertical.length > 1) {
+          console.warn(
+            'CngxChart: multiple axes share one orientation; only the first drives ' +
+              'the scale, the rest render their line and ticks but their [domain] ' +
+              'is silently ignored. Mount one X and one Y axis per chart.',
+          );
+        }
+      });
     }
   }
 
@@ -1002,7 +1014,7 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
    * Responsive mode is active when neither `[width]` nor `[height]` is
    * bound. The host then fills its parent's width and derives height
    * from the `--cngx-chart-aspect-ratio` CSS custom property (default
-   * `16 / 9`). The resize observer feeds `dimensions()` which drives
+   * `5 / 2`). The resize observer feeds `dimensions()` which drives
    * the SVG sizing + scale math, so axes and layer atoms re-flow
    * reactively as the parent resizes.
    */

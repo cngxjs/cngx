@@ -49,6 +49,7 @@ import { CNGX_CHART_LAYER, type CngxChartLayer, type LayerGeometry } from './cha
           [attr.y1]="g.y"
           [attr.x2]="g.x2"
           [attr.y2]="g.y"
+          [attr.stroke]="color()"
           [attr.stroke-dasharray]="dashed() ? '4 3' : null"
         />
       }
@@ -108,6 +109,7 @@ export class CngxThreshold implements CngxChartLayer {
   readonly value = input.required<number>();
   readonly label = input<string | null>(null);
   readonly dashed = input<boolean>(false);
+  readonly color = input<string | null>(null);
 
   protected readonly ctx = injectChartContext('CngxThreshold');
 
@@ -139,7 +141,7 @@ export class CngxThreshold implements CngxChartLayer {
         y1: y,
         x2: b?.x2 ?? 0,
         y2: y,
-        color: null,
+        color: this.color(),
         dashed: this.dashed(),
       };
     },

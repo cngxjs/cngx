@@ -45,7 +45,10 @@ import { injectPresetState } from './preset-state';
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   imports: [CngxChart, CngxAxisDomain, CngxLine, CngxArea],
-  host: { class: 'cngx-sparkline' },
+  host: {
+    class: 'cngx-sparkline',
+    '[attr.aria-busy]': 'busy() ? "true" : null',
+  },
   template: `
     @switch (activeView()) {
       @case ('skeleton') {
@@ -53,8 +56,7 @@ import { injectPresetState } from './preset-state';
           class="cngx-preset-skeleton"
           [style.width.px]="width()"
           [style.height.px]="height()"
-          [attr.aria-busy]="true"
-          [attr.aria-label]="i18n.loading()"
+          aria-hidden="true"
         ></span>
       }
       @case ('empty') {
@@ -151,6 +153,9 @@ export class CngxSparkline {
   private readonly preset = injectPresetState(() => this.state());
   protected readonly i18n = this.preset.i18n;
   protected readonly activeView = this.preset.activeView;
+
+  /** True while the skeleton branch renders - the host announces busy, the span stays decorative. */
+  protected readonly busy = computed(() => this.activeView() === 'skeleton');
 
   protected readonly xDomain = computed<readonly number[]>(() => presetIndexDomain(this.data().length));
 

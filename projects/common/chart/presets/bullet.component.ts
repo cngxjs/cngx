@@ -55,10 +55,11 @@ interface RangeRendering {
   encapsulation: ViewEncapsulation.None,
   host: {
     role: 'meter',
-    '[attr.aria-valuenow]': 'actual()',
-    '[attr.aria-valuemin]': '0',
-    '[attr.aria-valuemax]': 'maxValue()',
+    '[attr.aria-valuenow]': 'showsMeterValue() ? actual() : null',
+    '[attr.aria-valuemin]': 'showsMeterValue() ? 0 : null',
+    '[attr.aria-valuemax]': 'showsMeterValue() ? maxValue() : null',
     '[attr.aria-label]': 'ariaLabel()',
+    '[attr.aria-busy]': 'busy() ? "true" : null',
     class: 'cngx-bullet',
   },
   template: `
@@ -66,8 +67,7 @@ interface RangeRendering {
       @case ('skeleton') {
         <span
           class="cngx-preset-skeleton"
-          [attr.aria-busy]="true"
-          [attr.aria-label]="i18n.loading()"
+          aria-hidden="true"
         ></span>
       }
       @case ('empty') {
@@ -170,6 +170,16 @@ export class CngxBullet {
   private readonly preset = injectPresetState(() => this.state());
   protected readonly i18n = this.preset.i18n;
   protected readonly activeView = this.preset.activeView;
+
+  /** True while the skeleton branch renders - the host announces busy, the span stays decorative. */
+  protected readonly busy = computed(() => this.activeView() === 'skeleton');
+
+  /**
+   * Meter value attributes render only in the content view: keeping
+   * `aria-valuenow` while the skeleton or error fallback shows would
+   * announce a stale reading for a value that is not on screen.
+   */
+  protected readonly showsMeterValue = computed(() => this.activeView() === 'content');
 
   constructor() {
     warnIfUnnamedPreset('cngx-bullet', 'Bind [aria-label].', () => this.ariaLabel() !== null);

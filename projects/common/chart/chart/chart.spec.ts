@@ -1685,3 +1685,51 @@ describe('CngxChart - overlay survives the renderer crossover', () => {
     expect(canvasSide.plotText).toBe(svgSide.plotText);
   });
 });
+
+describe('CngxChart - duplicate same-orientation axis dev warning', () => {
+  beforeEach(() => vi.stubGlobal('ResizeObserver', ResizeObserverMock));
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  it('warns when two axes share one orientation (second [domain] silently ignored)', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    @Component({
+      standalone: true,
+      imports: [CngxChart, CngxAxis],
+      template: `
+        <cngx-chart [data]="[1, 2, 3]" [width]="200" [height]="100">
+          <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 10]"></svg:g>
+          <svg:g cngxAxis position="top" type="linear" [domain]="[0, 99]"></svg:g>
+        </cngx-chart>
+      `,
+    })
+    class DoubleXHost {}
+    TestBed.configureTestingModule({ imports: [DoubleXHost] });
+    const fixture = TestBed.createComponent(DoubleXHost);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(warn.mock.calls.some((c) => String(c[0]).includes('share one orientation'))).toBe(true);
+  });
+
+  it('does not warn for the regular one-X-one-Y setup', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    @Component({
+      standalone: true,
+      imports: [CngxChart, CngxAxis],
+      template: `
+        <cngx-chart [data]="[1, 2, 3]" [width]="200" [height]="100">
+          <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 10]"></svg:g>
+          <svg:g cngxAxis position="left" type="linear" [domain]="[0, 10]"></svg:g>
+        </cngx-chart>
+      `,
+    })
+    class RegularHost {}
+    TestBed.configureTestingModule({ imports: [RegularHost] });
+    const fixture = TestBed.createComponent(RegularHost);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(warn.mock.calls.some((c) => String(c[0]).includes('share one orientation'))).toBe(false);
+  });
+});

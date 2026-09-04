@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import { CNGX_CHART_CONTEXT, type CngxChartPlotArea } from '../chart/chart-context';
 import { CNGX_CHART_AXIS, type CngxChartAxis } from './chart-axis';
+import { formatChartNumber } from '../chart/format-number';
 import { type CngxAxisPosition, type CngxAxisType } from './axis-position';
 
 /** @internal */
@@ -684,16 +685,7 @@ function buildTickRendering(
  */
 function defaultTickFormat(v: unknown): string {
   if (typeof v === 'number') {
-    if (Number.isInteger(v)) {
-      return String(v);
-    }
-    if (!Number.isFinite(v)) {
-      return String(v);
-    }
-    // 12 significant digits is more than enough for any sensible
-    // chart domain while collapsing the trailing 1e-15 noise
-    // produced by accumulated float math.
-    return Number(v.toPrecision(12)).toString();
+    return formatChartNumber(v);
   }
   if (v instanceof Date) {
     return formatDateTick(v);

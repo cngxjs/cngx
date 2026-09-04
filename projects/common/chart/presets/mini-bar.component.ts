@@ -40,10 +40,11 @@ import { injectPresetState, warnIfUnnamedPreset } from './preset-state';
   encapsulation: ViewEncapsulation.None,
   host: {
     role: 'meter',
-    '[attr.aria-valuenow]': 'value()',
-    '[attr.aria-valuemin]': 'min()',
-    '[attr.aria-valuemax]': 'max()',
+    '[attr.aria-valuenow]': 'showsMeterValue() ? value() : null',
+    '[attr.aria-valuemin]': 'showsMeterValue() ? min() : null',
+    '[attr.aria-valuemax]': 'showsMeterValue() ? max() : null',
     '[attr.aria-label]': 'ariaLabel() ?? label()',
+    '[attr.aria-busy]': 'busy() ? "true" : null',
     class: 'cngx-mini-bar',
   },
   template: `
@@ -51,8 +52,7 @@ import { injectPresetState, warnIfUnnamedPreset } from './preset-state';
       @case ('skeleton') {
         <span
           class="cngx-preset-skeleton"
-          [attr.aria-busy]="true"
-          [attr.aria-label]="i18n.loading()"
+          aria-hidden="true"
         ></span>
       }
       @case ('empty') {
@@ -127,6 +127,16 @@ export class CngxMiniBar {
   private readonly preset = injectPresetState(() => this.state());
   protected readonly i18n = this.preset.i18n;
   protected readonly activeView = this.preset.activeView;
+
+  /** True while the skeleton branch renders - the host announces busy, the span stays decorative. */
+  protected readonly busy = computed(() => this.activeView() === 'skeleton');
+
+  /**
+   * Meter value attributes render only in the content view: keeping
+   * `aria-valuenow` while the skeleton or error fallback shows would
+   * announce a stale reading for a value that is not on screen.
+   */
+  protected readonly showsMeterValue = computed(() => this.activeView() === 'content');
 
   constructor() {
     warnIfUnnamedPreset('cngx-mini-bar', 'Bind [label] or [aria-label].', () => (this.ariaLabel() ?? this.label()) !== null);

@@ -80,3 +80,33 @@ describe('CngxScatter', () => {
     expect(circles.length).toBe(1);
   });
 });
+
+describe('CngxScatter [color] parity', () => {
+  beforeEach(() => vi.stubGlobal('ResizeObserver', ResizeObserverMock));
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('binds [color] onto the SVG mark like CngxLine does', () => {
+    @Component({
+      standalone: true,
+      imports: [CngxChart, CngxAxis, CngxScatter],
+      template: `
+        <cngx-chart [data]="data" [width]="200" [height]="100">
+          <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 10]"></svg:g>
+          <svg:g cngxAxis position="left" type="linear" [domain]="[0, 10]"></svg:g>
+          <svg:g cngxScatter [x]="xAcc" [y]="yAcc" [color]="'rebeccapurple'"></svg:g>
+        </cngx-chart>
+      `,
+    })
+    class ColorHost {
+      protected readonly data = [{ x: 0, y: 1 }, { x: 5, y: 2 }];
+    protected readonly xAcc = (d: { x: number; y: number }): number => d.x;
+    protected readonly yAcc = (d: { x: number; y: number }): number => d.y;
+    }
+    TestBed.configureTestingModule({ imports: [ColorHost] });
+    const fixture = TestBed.createComponent(ColorHost);
+    fixture.detectChanges();
+    const mark = fixture.nativeElement.querySelector('.cngx-scatter') as SVGElement;
+    expect(mark).not.toBeNull();
+    expect(mark.getAttribute('fill')).toBe('rebeccapurple');
+  });
+});

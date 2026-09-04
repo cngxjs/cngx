@@ -130,6 +130,29 @@ describe('CngxMiniBar label + meter name', () => {
     expect(host.querySelector('.cngx-mini-bar__label')?.textContent?.trim()).toBe('CPU');
   });
 
+  it('hoists aria-busy to the host and drops meter values outside the content view', () => {
+    const { fixture, host } = setup();
+    const state = createManualState<number>();
+    state.set('loading');
+    fixture.componentInstance.state.set(state);
+    fixture.detectChanges();
+    expect(host.getAttribute('aria-busy')).toBe('true');
+    expect(host.getAttribute('aria-valuenow')).toBeNull();
+    expect(host.getAttribute('aria-valuemin')).toBeNull();
+    expect(host.getAttribute('aria-valuemax')).toBeNull();
+    expect(host.querySelector('.cngx-preset-skeleton')?.getAttribute('aria-hidden')).toBe('true');
+
+    state.setError(new Error('feed down'));
+    fixture.detectChanges();
+    expect(host.getAttribute('aria-busy')).toBeNull();
+    expect(host.getAttribute('aria-valuenow')).toBeNull();
+
+    state.setSuccess(42);
+    fixture.detectChanges();
+    expect(host.getAttribute('aria-busy')).toBeNull();
+    expect(host.getAttribute('aria-valuenow')).toBe('50');
+  });
+
   it('renders no caption while a loading state shows its fallback', () => {
     const { fixture, host } = setup();
     const state = createManualState<number>();

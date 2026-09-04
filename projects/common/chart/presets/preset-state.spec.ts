@@ -59,7 +59,10 @@ describe('preset state - activeView wiring', () => {
       fixture.detectChanges();
       const skeleton = fixture.nativeElement.querySelector('.cngx-preset-skeleton');
       expect(skeleton).not.toBeNull();
-      expect(skeleton.getAttribute('aria-busy')).toBe('true');
+      // The host announces busy; the skeleton span itself is decorative.
+      expect(skeleton.getAttribute('aria-hidden')).toBe('true');
+      const host = fixture.nativeElement.querySelector('cngx-sparkline') as HTMLElement;
+      expect(host.getAttribute('aria-busy')).toBe('true');
     });
 
     it('renders empty fallback on success with empty data', () => {

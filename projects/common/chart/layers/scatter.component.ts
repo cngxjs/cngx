@@ -59,7 +59,13 @@ interface ScatterCircle {
   template: `
     @if (ctx.renderSvg()) {
       @for (c of circles(); track c.key) {
-        <svg:circle class="cngx-scatter" [attr.cx]="c.cx" [attr.cy]="c.cy" [attr.r]="radius()" />
+        <svg:circle
+          class="cngx-scatter"
+          [attr.cx]="c.cx"
+          [attr.cy]="c.cy"
+          [attr.r]="radius()"
+          [attr.fill]="color()"
+        />
       }
     }
   `,
@@ -95,6 +101,7 @@ export class CngxScatter<T = unknown> implements CngxChartLayer {
   readonly y = input.required<ScatterYAccessor<T>>();
   readonly radius = input<number>(3);
   readonly data = input<readonly T[] | undefined>(undefined);
+  readonly color = input<string | null>(null);
 
   protected readonly ctx = injectChartContext('CngxScatter');
 
@@ -131,7 +138,7 @@ export class CngxScatter<T = unknown> implements CngxChartLayer {
       const r = this.radius();
       return {
         kind: 'scatter',
-        marks: this.circles().map((c) => ({ cx: c.cx, cy: c.cy, r, color: null })),
+        marks: this.circles().map((c) => ({ cx: c.cx, cy: c.cy, r, color: this.color() })),
       };
     },
     { equal: scatterGeomEqual },

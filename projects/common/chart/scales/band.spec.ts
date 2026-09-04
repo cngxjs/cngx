@@ -29,6 +29,16 @@ describe('createBandScale', () => {
     expect(scale('any')).toBeNaN();
   });
 
+  it('clamps out-of-contract padding into [0, 1]', () => {
+    // padding >= 1 would flip the bandwidth negative; negative padding
+    // would overlap bands. Both clamp to the documented [0, 1) edges.
+    const over = createBandScale(['a', 'b'], [0, 100], 1.5);
+    expect(over.bandwidth()).toBe(0);
+    const under = createBandScale(['a', 'b'], [0, 100], -0.5);
+    expect(under.bandwidth()).toBe(50);
+    expect(under('a')).toBe(0);
+  });
+
   it('supports any value type, not just strings', () => {
     const a = { id: 1 };
     const b = { id: 2 };
