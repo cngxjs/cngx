@@ -384,6 +384,35 @@ describe('CngxPopover', () => {
       expect(host.popover().state()).toBe('opening');
       expect(popoverEl.showPopover).toHaveBeenCalledTimes(2);
     });
+
+    it('disarms a pending close wait when light dismiss lands mid-transition', () => {
+      vi.useFakeTimers();
+      const { fixture, popoverEl } = setup(AutoModeHost);
+      const host = fixture.componentInstance as AutoModeHost;
+      // Report a real transition so hide() arms the transition wait.
+      vi.spyOn(globalThis, 'getComputedStyle').mockReturnValue({
+        transitionDuration: '0.2s',
+        transitionProperty: 'opacity',
+        transitionDelay: '0s',
+      } as unknown as CSSStyleDeclaration);
+
+      host.popover().show();
+      host.popover().hide();
+      expect(host.popover().state()).toBe('closing');
+
+      // The browser's own dismissal finalizes directly, bypassing the
+      // transition wait - finalize must disarm the armed handle.
+      dispatchLightDismiss(popoverEl);
+      fixture.detectChanges();
+      expect(host.popover().state()).toBe('closed');
+
+      // Reopen, then let the old fallback window elapse: the stale timer
+      // must not force-close the fresh open.
+      host.popover().show();
+      expect(host.popover().state()).toBe('opening');
+      vi.advanceTimersByTime(1000);
+      expect(host.popover().state()).not.toBe('closed');
+    });
   });
 
   describe('host classes', () => {

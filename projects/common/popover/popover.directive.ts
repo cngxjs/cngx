@@ -518,7 +518,8 @@ export class CngxPopover {
     });
 
     this.destroyRef.onDestroy(() => {
-      this.pendingClose?.cancel();
+      // finalize() disarms pendingClose; a 'closed' state means it already
+      // ran and the handle is gone.
       if (this.stateSignal() !== 'closed') {
         this.finalize();
       }
@@ -711,6 +712,12 @@ export class CngxPopover {
   }
 
   private finalize(): void {
+    // Disarm any pending close wait no matter which path got here - the
+    // browser's own light dismiss routes through handleToggle straight to
+    // finalize(), and a stale armed handle would force-close a reopened
+    // panel when its fallback timer fires.
+    this.pendingClose?.cancel();
+    this.pendingClose = null;
     this.floatingPositioner?.stop();
     openPopovers.delete(this);
     this._arrowOffset.set(null);

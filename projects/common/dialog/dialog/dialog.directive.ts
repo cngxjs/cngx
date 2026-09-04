@@ -401,7 +401,8 @@ export class CngxDialog<T = unknown> implements DialogRef<T>, CngxDialogAriaRegi
     });
 
     this.destroyRef.onDestroy(() => {
-      this.pendingClose?.cancel();
+      // finalize() disarms pendingClose; a 'closed' lifecycle means it
+      // already ran and the handle is gone.
       if (this.lifecycleSignal() !== 'closed') {
         this.finalize();
       }
@@ -634,6 +635,11 @@ export class CngxDialog<T = unknown> implements DialogRef<T>, CngxDialogAriaRegi
   }
 
   private finalize(): void {
+    // Disarm any pending close wait no matter which path got here, so the
+    // settled handle never lingers as a stale armed field.
+    this.pendingClose?.cancel();
+    this.pendingClose = null;
+
     const dialog = this.dialogElement;
 
     if (dialog.open) {
