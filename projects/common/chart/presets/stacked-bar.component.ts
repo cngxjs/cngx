@@ -173,6 +173,19 @@ export class CngxStackedBar {
   );
 
   protected readonly effectiveAriaLabel = computed(() => {
+    // Mirror the meter presets' state gating: outside the content view
+    // the segment summary would name data that is not on screen -
+    // "Empty stacked bar" while aria-busy announces a load in flight.
+    const view = this.activeView();
+    if (view === 'skeleton') {
+      return this.i18n.loading();
+    }
+    if (view === 'empty') {
+      return this.i18n.empty();
+    }
+    if (view === 'error') {
+      return this.i18n.error();
+    }
     const explicit = this.ariaLabel();
     if (explicit !== null && explicit !== '') {
       return explicit;

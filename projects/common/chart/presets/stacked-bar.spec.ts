@@ -108,4 +108,28 @@ describe('CngxStackedBar', () => {
     fixture.detectChanges();
     expect(host.getAttribute('aria-label')).toBe('Empty stacked bar');
   });
+  it('names the host from the state view while a fallback shows, not from the segments', async () => {
+    const { createManualState } = await import('@cngx/common/data');
+    @Component({
+      standalone: true,
+      imports: [CngxStackedBar],
+      template: `<cngx-stacked-bar [segments]="[]" [state]="state" data-testid="bar" />`,
+    })
+    class StateHost {
+      readonly state = createManualState<readonly CngxStackedSegment[]>();
+    }
+    TestBed.configureTestingModule({ imports: [StateHost] });
+    const fixture = TestBed.createComponent(StateHost);
+    fixture.componentInstance.state.set('loading');
+    fixture.detectChanges();
+    const host = fixture.nativeElement.querySelector('[data-testid="bar"]') as HTMLElement;
+    // Without the view gate this would read "Empty stacked bar" while
+    // aria-busy announces a load in flight.
+    expect(host.getAttribute('aria-label')).toBe('Loading');
+    expect(host.getAttribute('aria-busy')).toBe('true');
+
+    fixture.componentInstance.state.setError(new Error('feed down'));
+    fixture.detectChanges();
+    expect(host.getAttribute('aria-label')).toBe('Error loading chart');
+  });
 });
