@@ -18,6 +18,11 @@ import { computed, type Signal } from '@angular/core';
  * expression covers the accessor-absent seam (`source?.crumbs`) and the
  * value-undefined seam (`itemTemplateInput()`).
  *
+ * `null` falls through too: the `??` treats a deliberate `null` on the
+ * priority source exactly like absence and reads the next source. A priority
+ * source that needs to express "deliberately empty" must yield a real value
+ * (`[]`, `''`) instead of `null` - there is no way to make `null` win here.
+ *
  * @param priority Optional higher-precedence source. `undefined` when no source
  *   is present; a signal yielding `undefined` when the source is bound but empty.
  * @param fallback Lower-precedence source, read when `priority` is absent or

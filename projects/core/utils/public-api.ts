@@ -4,7 +4,7 @@
 export { coerceBooleanProperty, coerceNumberProperty } from './coerce.util';
 export { memoize } from './memo.util';
 export { parseKeyCombo, matchesKeyCombo, type KeyCombo } from './keyboard.util';
-export { hasTransition, onTransitionDone } from './transition.util';
+export { hasTransition, onTransitionDone, type TransitionDoneHandle } from './transition.util';
 export { nextUid } from './uid.util';
 export { type AsyncStatus, type CngxAsyncState } from './async-state';
 export {
@@ -12,7 +12,11 @@ export {
   type AsyncStateViewSources,
 } from './build-async-state-view';
 export { createAggregateAsyncState } from './aggregate-async-state';
-export { createTransitionTracker, type StatusTransition } from './transition-tracker';
+export {
+  createTransitionTracker,
+  type StatusTransition,
+  type TransitionTrackerOptions,
+} from './transition-tracker';
 export { createVisibilityGate } from './visibility-gate';
 export { createLatencyProbe, type CngxLatencyProbe } from './latency-probe';
 export {

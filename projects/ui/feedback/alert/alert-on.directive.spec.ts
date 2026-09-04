@@ -68,6 +68,28 @@ describe('CngxAlertOn', () => {
     expect(alerter.alerts()[0].config.message).toBe('Failed');
   });
 
+  it('does not fire for a state that mounts mid-flight (seeded tracker)', () => {
+    TestBed.configureTestingModule({
+      imports: [ExplicitHost],
+      providers: [CngxAlerter],
+    });
+    const alerter = TestBed.inject(CngxAlerter);
+    const fixture = TestBed.createComponent(ExplicitHost);
+    // Settle the state BEFORE the directive observes it: the bridge tracker
+    // seeds previous to the mount value, so no phantom idle -> success alert.
+    fixture.componentInstance.state()!.setSuccess('pre-mount');
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    expect(alerter.alerts().length).toBe(0);
+
+    // The next real edge still alerts.
+    fixture.componentInstance.state()!.setError(new Error('boom'));
+    TestBed.flushEffects();
+    expect(alerter.alerts().length).toBe(1);
+    expect(alerter.alerts()[0].config.message).toBe('Failed');
+  });
+
   it('falls back to CNGX_STATEFUL when no state input is bound', () => {
     const tokenState = createManualState<string>();
 

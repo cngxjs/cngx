@@ -16,7 +16,12 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { fromEvent } from 'rxjs';
 
 import { injectDirection } from '@cngx/core';
-import { hasTransition, nextUid, onTransitionDone } from '@cngx/core/utils';
+import {
+  hasTransition,
+  nextUid,
+  onTransitionDone,
+  type TransitionDoneHandle,
+} from '@cngx/core/utils';
 
 import {
   ANCHOR_AREA_PROPERTY,
@@ -263,6 +268,10 @@ export class CngxPopover {
   private readonly floatingFallback = inject(CNGX_FLOATING_FALLBACK, { optional: true });
   private readonly _injector = inject(Injector);
   private readonly direction = injectDirection();
+
+  // Armed while a close transition runs; cancelled on destroy so the
+  // transitionend listener and fallback timer never outlive the directive.
+  private pendingClose: TransitionDoneHandle | null = null;
   /**
    * Arrow-bounds contract resolved lazily on first use.
    * Eager inject() would loop: CngxPopover (host directive on the panel)
@@ -509,6 +518,8 @@ export class CngxPopover {
     });
 
     this.destroyRef.onDestroy(() => {
+      // finalize() disarms pendingClose; a 'closed' state means it already
+      // ran and the handle is gone.
       if (this.stateSignal() !== 'closed') {
         this.finalize();
       }
@@ -694,13 +705,19 @@ export class CngxPopover {
     }
     if (hasTransition(this.popoverElement)) {
       this.stateSignal.set('closing');
-      onTransitionDone(this.popoverElement, () => this.finalize());
+      this.pendingClose = onTransitionDone(this.popoverElement, () => this.finalize());
     } else {
       this.finalize();
     }
   }
 
   private finalize(): void {
+    // Disarm any pending close wait no matter which path got here - the
+    // browser's own light dismiss routes through handleToggle straight to
+    // finalize(), and a stale armed handle would force-close a reopened
+    // panel when its fallback timer fires.
+    this.pendingClose?.cancel();
+    this.pendingClose = null;
     this.floatingPositioner?.stop();
     openPopovers.delete(this);
     this._arrowOffset.set(null);

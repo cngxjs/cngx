@@ -33,4 +33,16 @@ describe('coerceNumberProperty', () => {
   it('passes through numbers', () => {
     expect(coerceNumberProperty(7)).toBe(7);
   });
+
+  it('parses a leading numeric prefix leniently (parseFloat contract)', () => {
+    expect(coerceNumberProperty('12px')).toBe(12);
+    expect(coerceNumberProperty('1.5rem')).toBe(1.5);
+    expect(coerceNumberProperty('px12', -1)).toBe(-1);
+  });
+
+  it('returns fallback for booleans and objects', () => {
+    expect(coerceNumberProperty(true, -1)).toBe(-1);
+    expect(coerceNumberProperty(false, -1)).toBe(-1);
+    expect(coerceNumberProperty({}, -1)).toBe(-1);
+  });
 });

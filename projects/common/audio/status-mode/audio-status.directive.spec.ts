@@ -104,6 +104,20 @@ describe('CngxAudioStatus directive', () => {
     expect(handle.play).not.toHaveBeenCalled();
   });
 
+  it('does not fire a mount earcon when the state mounts mid-flight', () => {
+    // The tracker seeds previous to the mount value: a directive attached to
+    // an already-running state must not voice a phantom idle -> pending edge.
+    const status = signal<AsyncStatus>('pending');
+    const { handle } = setup({ state: makeState(status) });
+    TestBed.flushEffects();
+    expect(handle.play).not.toHaveBeenCalled();
+
+    // The next real edge still fires.
+    status.set('success');
+    TestBed.flushEffects();
+    expect(handle.play).toHaveBeenCalledTimes(1);
+  });
+
   it('does not double-fire when the status is set to the same value', () => {
     const status = signal<AsyncStatus>('idle');
     const { handle } = setup({ state: makeState(status) });

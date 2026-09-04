@@ -146,6 +146,21 @@ describe('provideA11yPreferences + withPersistence', () => {
     expect(localStorage.getItem(KEY)).toBeNull();
   });
 
+  it('persists a set() made in the init window (no blind first-run skip)', () => {
+    TestBed.configureTestingModule({
+      providers: [provideA11yPreferences(withPersistence())],
+    });
+    // The inject creates the environment injector (running the persistence
+    // initializer), and the set() lands BEFORE the effect's first flush.
+    // The first flush compares against the rehydrate-time value, so this
+    // write must reach storage instead of being swallowed.
+    TestBed.inject(CNGX_DENSITY).set('spacious');
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+
+    expect(JSON.parse(localStorage.getItem(KEY) ?? '{}')).toEqual({ density: 'spacious' });
+  });
+
   it('leaves an invalid stored value at the axis default without re-persisting it', () => {
     localStorage.setItem(KEY, JSON.stringify({ density: 'bogus' }));
     TestBed.configureTestingModule({
