@@ -96,7 +96,14 @@ export class CngxAutofocus {
   }
 
   private applyFocus(): void {
-    (this.el.nativeElement as HTMLElement).focus(this.options());
+    const el = this.el.nativeElement as HTMLElement;
+    // A delayed schedule can outlive its trigger: the condition may have
+    // flipped off or the element may have left the DOM. Re-check both so a
+    // stale timer cannot steal focus from wherever it moved meanwhile.
+    if (!this.when() || !el.isConnected) {
+      return;
+    }
+    el.focus(this.options());
   }
 
   private clearPending(): void {

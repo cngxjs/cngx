@@ -71,3 +71,44 @@ describe('CngxAutofocus', () => {
     expect(document.activeElement).not.toBe(input.nativeElement);
   });
 });
+
+@Component({
+  template: `<input [cngxAutofocus]="shouldFocus()" [autofocusDelay]="150" class="target" />`,
+  imports: [CngxAutofocus],
+})
+class DelayedHost {
+  readonly shouldFocus = signal(false);
+}
+
+describe('CngxAutofocus stale schedules', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    TestBed.configureTestingModule({ imports: [DelayedHost] });
+  });
+
+  it('a delayed timer re-checks when() and does not steal focus after it flips off', () => {
+    const fixture = TestBed.createComponent(DelayedHost);
+    fixture.detectChanges();
+    vi.runAllTimers();
+
+    const outside = document.createElement('button');
+    document.body.appendChild(outside);
+    try {
+      fixture.componentInstance.shouldFocus.set(true);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      // Condition flips off while the 150ms schedule is pending; the user
+      // has moved on - the stale timer must not steal focus.
+      fixture.componentInstance.shouldFocus.set(false);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      outside.focus();
+
+      vi.runAllTimers();
+      expect(document.activeElement).toBe(outside);
+    } finally {
+      outside.remove();
+    }
+  });
+});

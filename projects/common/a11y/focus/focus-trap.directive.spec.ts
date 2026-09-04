@@ -99,4 +99,22 @@ describe('CngxFocusTrap', () => {
     fixture.destroy();
     expect(mockTrap.destroy).toHaveBeenCalled();
   });
+
+  it('does not refocus when autoFocus flips while the trap is active', () => {
+    const { fixture, host } = setup();
+    host.enabled.set(true);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(mockTrap.focusFirstTabbableElementWhenReady).toHaveBeenCalledTimes(1);
+
+    // autoFocus is a parameter, not a trigger - flipping it must not yank
+    // focus back to the first tabbable element.
+    host.autoFocus.set(false);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    host.autoFocus.set(true);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(mockTrap.focusFirstTabbableElementWhenReady).toHaveBeenCalledTimes(1);
+  });
 });

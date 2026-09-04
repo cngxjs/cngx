@@ -1,4 +1,5 @@
-import { Directive, signal } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import { DestroyRef, Directive, inject, signal } from '@angular/core';
 
 /**
  * Tracks keyboard-initiated focus on the host element.
@@ -27,19 +28,44 @@ import { Directive, signal } from '@angular/core';
   exportAs: 'cngxFocusVisible',
   standalone: true,
   host: {
-    '(pointerdown)': 'pointerActive = true',
+    '(pointerdown)': 'handlePointerDown()',
     '(focusin)': 'handleFocus()',
     '(focusout)': 'handleBlur()',
     '[class.cngx-focus-visible]': 'focusVisible()',
   },
 })
 export class CngxFocusVisible {
+  private readonly doc = inject(DOCUMENT);
   private readonly focusVisibleState = signal(false);
   /** `true` when focus was initiated via keyboard (not pointer). */
   readonly focusVisible = this.focusVisibleState.asReadonly();
 
-  /** @internal Cleared on `focusin` after being set by `pointerdown`. */
+  /** @internal Cleared on `focusin`, `pointerup` (document-level), or `pointercancel`. */
   pointerActive = false;
+
+  private readonly clearPointerActive = (): void => {
+    this.pointerActive = false;
+  };
+
+  constructor() {
+    inject(DestroyRef).onDestroy(() =>
+      this.doc.removeEventListener('pointerup', this.clearPointerActive, true),
+    );
+  }
+
+  /** @internal Arms the pointer flag for the imminent focusin. */
+  protected handlePointerDown(): void {
+    this.pointerActive = true;
+    // The flag must not outlive the click: a pointerdown that never focuses
+    // (disabled child, text selection, drag released off-host) would
+    // otherwise suppress the ring on the NEXT keyboard Tab-in. Document-level
+    // capture catches the release wherever it lands; focusin (which fires
+    // before pointerup) has already consumed the flag in the focusing case.
+    this.doc.addEventListener('pointerup', this.clearPointerActive, {
+      once: true,
+      capture: true,
+    });
+  }
 
   /** @internal Sets focus-visible state; clears pointer flag. */
   protected handleFocus(): void {
