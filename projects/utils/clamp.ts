@@ -2,7 +2,9 @@
  * Clamp a number into the inclusive range `[min, max]`. `null` or
  * `undefined` bounds read as `-Infinity` / `+Infinity` respectively, so
  * either side can be left open. `NaN` value propagates and is returned
- * unchanged. When the bounds invert (`min > max` after coercion), `min`
+ * unchanged. A `NaN` bound behaves like an open bound (every comparison
+ * against `NaN` is false, so that side never clamps) - pass-through, not
+ * an error. When the bounds invert (`min > max` after coercion), `min`
  * wins and the returned value is `min`.
  *
  * @category utils

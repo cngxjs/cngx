@@ -47,6 +47,13 @@ describe('clamp', () => {
     expect(Number.isNaN(clamp(NaN, null, null))).toBe(true);
   });
 
+  it('treats a NaN bound as an open bound (pass-through)', () => {
+    // Comparisons against NaN are false, so that side never clamps.
+    expect(clamp(5, Number.NaN, 3)).toBe(3);
+    expect(clamp(5, 3, Number.NaN)).toBe(5);
+    expect(clamp(-5, Number.NaN, Number.NaN)).toBe(-5);
+  });
+
   it('returns min when bounds invert (min > max)', () => {
     expect(clamp(5, 10, 0)).toBe(10);
     expect(clamp(-100, 10, 0)).toBe(10);

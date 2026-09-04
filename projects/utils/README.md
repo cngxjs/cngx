@@ -8,7 +8,7 @@ You almost never import from `@cngx/utils` directly in application code. This en
 
 - You have a value that might be a single item or an array and want the array form.
 - You hold a hierarchical data model (categories, file tree, org chart) and want the standard flat-projection primitives used by the cngx tree controllers and tree select.
-- You need a parsed `Version` object for displaying or comparing semver strings.
+- You need a parsed `Version` object for displaying a semver string (badge, about panel). The fields are display-only segments - for ordering or range checks, use a real semver library.
 
 If you reach for "I want to do tree X without rendering it" - that is `@cngx/utils`. If you reach for "I want to render the tree with keyboard nav and selection" - that is `@cngx/common/interactive` (which itself reads `@cngx/utils`).
 
