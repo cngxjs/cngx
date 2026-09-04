@@ -16,7 +16,12 @@ import {
 } from '@angular/core';
 
 import { buildAsyncStateView, type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
-import { hasTransition, nextUid, onTransitionDone } from '@cngx/core/utils';
+import {
+  hasTransition,
+  nextUid,
+  onTransitionDone,
+  type TransitionDoneHandle,
+} from '@cngx/core/utils';
 import { createScrollLock } from '@cngx/common/layout';
 import { firstValueFrom, isObservable, type Observable } from 'rxjs';
 
@@ -135,6 +140,10 @@ export class CngxDialog<T = unknown> implements DialogRef<T>, CngxDialogAriaRegi
   private readonly renderer = inject(Renderer2);
   private readonly destroyRef = inject(DestroyRef);
   private readonly dialogStack = inject(CngxDialogStack);
+
+  // Armed while a close transition runs; cancelled on destroy so the
+  // transitionend listener and fallback timer never outlive the directive.
+  private pendingClose: TransitionDoneHandle | null = null;
 
   private readonly titleDirective = contentChild(CngxDialogTitle);
   private readonly descriptionDirective = contentChild(CngxDialogDescription);
@@ -392,6 +401,7 @@ export class CngxDialog<T = unknown> implements DialogRef<T>, CngxDialogAriaRegi
     });
 
     this.destroyRef.onDestroy(() => {
+      this.pendingClose?.cancel();
       if (this.lifecycleSignal() !== 'closed') {
         this.finalize();
       }
@@ -617,7 +627,7 @@ export class CngxDialog<T = unknown> implements DialogRef<T>, CngxDialogAriaRegi
   private startClosing(): void {
     if (hasTransition(this.dialogElement)) {
       this.lifecycleSignal.set('closing');
-      onTransitionDone(this.dialogElement, () => this.finalize());
+      this.pendingClose = onTransitionDone(this.dialogElement, () => this.finalize());
     } else {
       this.finalize();
     }

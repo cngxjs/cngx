@@ -404,6 +404,37 @@ describe('CngxPopover', () => {
       fixture.destroy();
       expect(popoverEl.hidePopover).toHaveBeenCalled();
     });
+
+    it('cancels a pending close transition on destroy (listener and timer gone)', () => {
+      vi.useFakeTimers();
+      const { fixture, popoverEl } = setup(BasicHost);
+      const host = fixture.componentInstance as BasicHost;
+      // Report a real transition so hide() enters the closing state.
+      vi.spyOn(globalThis, 'getComputedStyle').mockReturnValue({
+        transitionDuration: '0.2s',
+        transitionProperty: 'opacity',
+        transitionDelay: '0s',
+      } as unknown as CSSStyleDeclaration);
+
+      host.popover().show();
+      host.popover().hide();
+      expect(host.popover().state()).toBe('closing');
+
+      const removeSpy = vi.spyOn(popoverEl, 'removeEventListener');
+      const timersBefore = vi.getTimerCount();
+      fixture.destroy();
+
+      // Destroy finalized immediately and disarmed the pending wait: the
+      // transitionend listener is off and the fallback timer is cleared.
+      expect(host.popover().state()).toBe('closed');
+      expect(removeSpy).toHaveBeenCalledWith('transitionend', expect.any(Function));
+      expect(vi.getTimerCount()).toBe(timersBefore - 1);
+
+      // A late fallback fire must not re-run finalize after destroy.
+      const hideCalls = vi.mocked(popoverEl.hidePopover).mock.calls.length;
+      vi.advanceTimersByTime(1000);
+      expect(vi.mocked(popoverEl.hidePopover).mock.calls.length).toBe(hideCalls);
+    });
   });
 
   describe('positionTryFallbacks', () => {

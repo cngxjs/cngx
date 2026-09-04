@@ -546,6 +546,37 @@ describe('CngxDialog', () => {
       fixture.destroy();
       expect(dialogEl.close).toHaveBeenCalled();
     });
+
+    it('cancels a pending close transition on destroy (listener and timer gone)', () => {
+      const { fixture, dialogEl } = setup(FullDialogHost);
+      const dialog = fixture.componentInstance.dialog();
+      // Report a real transition so close() enters the closing state.
+      vi.spyOn(globalThis, 'getComputedStyle').mockReturnValue({
+        transitionDuration: '0.2s',
+        transitionProperty: 'opacity',
+        transitionDelay: '0s',
+      } as unknown as CSSStyleDeclaration);
+
+      dialog.open();
+      vi.advanceTimersByTime(16);
+      dialog.close(1 as unknown as never);
+      expect(dialog.lifecycle()).toBe('closing');
+
+      const removeSpy = vi.spyOn(dialogEl, 'removeEventListener');
+      const timersBefore = vi.getTimerCount();
+      fixture.destroy();
+
+      // Destroy finalized immediately and disarmed the pending wait: the
+      // transitionend listener is off and the fallback timer is cleared.
+      expect(dialog.lifecycle()).toBe('closed');
+      expect(removeSpy).toHaveBeenCalledWith('transitionend', expect.any(Function));
+      expect(vi.getTimerCount()).toBe(timersBefore - 1);
+
+      // A late fallback fire must not re-run finalize after destroy.
+      const closeCalls = vi.mocked(dialogEl.close).mock.calls.length;
+      vi.advanceTimersByTime(1000);
+      expect(vi.mocked(dialogEl.close).mock.calls.length).toBe(closeCalls);
+    });
   });
 });
 
