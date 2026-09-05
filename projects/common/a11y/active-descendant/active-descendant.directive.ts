@@ -108,6 +108,15 @@ export class CngxActiveDescendant {
   readonly activated = output<unknown>();
   /** Emitted whenever the highlighted item changes. */
   readonly highlighted = output<ActiveDescendantItem | null>();
+  /**
+   * Emitted when a typeahead query finds no match in the rendered window.
+   * Carries the resolved query term (lowercased; a repeated single letter
+   * collapses to that letter per the APG cycle rule). The rendered window
+   * is AD's whole search space - hosts whose real item space is larger
+   * (collapsed tree branches, virtualized rows outside the window) listen
+   * here to resolve the miss themselves.
+   */
+  readonly typeaheadMissed = output<string>();
 
   private readonly hostEl = inject(ElementRef<HTMLElement>);
   private readonly registered = contentChildren(CNGX_AD_ITEM, { descendants: true });
@@ -436,17 +445,18 @@ export class CngxActiveDescendant {
     const items = this.resolvedItems();
     const skip = this.skipDisabled();
     const count = items.length;
-    if (count === 0) {
-      return;
-    }
-    const windowOffset = this.windowOffset();
-    const activeRel = this.activeIndexState() < 0 ? -1 : this.activeIndexState() - windowOffset;
     // APG cycle: a single-character query (including a repeated letter, whose
     // buffer collapses back to that letter) searches AFTER the active item so
     // each press advances through the matches. A genuine multi-character query
     // keeps matching the current item first.
     const sameChar = next.length > 1 && [...next].every((c) => c === next[0]);
     const term = sameChar ? next[0] : next;
+    if (count === 0) {
+      this.typeaheadMissed.emit(term);
+      return;
+    }
+    const windowOffset = this.windowOffset();
+    const activeRel = this.activeIndexState() < 0 ? -1 : this.activeIndexState() - windowOffset;
     const cycles = term.length === 1;
     const startRel = cycles ? activeRel + 1 : Math.max(0, activeRel);
     for (let step = 0; step < count; step++) {
@@ -460,6 +470,7 @@ export class CngxActiveDescendant {
         return;
       }
     }
+    this.typeaheadMissed.emit(term);
   }
 
   private findFrom(current: number, direction: 1 | -1): number | null {
