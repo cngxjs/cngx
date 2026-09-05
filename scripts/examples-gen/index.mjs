@@ -348,9 +348,15 @@ function buildImports(story, importMap, featureDepth) {
     '\n' +
     (story.templateChromeBefore ?? '');
 
+  // viewProviders expressions live in the class decorator, so @angular/core
+  // symbols referenced only there (inject, forwardRef, DI tokens' deps)
+  // must count as used too - moduleImports lines from @angular/core are
+  // dropped wholesale below, leaving this detection as the only source.
+  const setupAndProviders = setup + '\n' + (story.viewProviders ?? []).join('\n');
+
   const usesSignal = /\bsignal\s*[<(]/.test(setup);
   const usesComputed = /\bcomputed\s*[<(]/.test(setup);
-  const usesInject = /\binject\s*\(/.test(setup);
+  const usesInject = /\binject\s*\(/.test(setupAndProviders);
   const usesAfterRender = /\bafterNextRender\s*\(/.test(setup);
   const usesEffect = /\beffect\s*\(/.test(setup);
   const usesViewChild = /\bviewChild\b/.test(setup);
@@ -358,6 +364,8 @@ function buildImports(story, importMap, featureDepth) {
   const usesDestroyRef = /\bDestroyRef\b/.test(setup);
   const usesUntracked = /\buntracked\s*\(/.test(setup);
   const usesLinkedSignal = /\blinkedSignal\s*[<(]/.test(setup);
+  const usesForwardRef = /\bforwardRef\s*\(/.test(setupAndProviders);
+  const usesTemplateRef = /\bTemplateRef\b/.test(setupAndProviders);
 
   const coreSymbols = [
     'ChangeDetectionStrategy',
@@ -367,9 +375,11 @@ function buildImports(story, importMap, featureDepth) {
     ...(usesDestroyRef ? ['DestroyRef'] : []),
     ...(usesEffect ? ['effect'] : []),
     ...(usesElementRef ? ['ElementRef'] : []),
+    ...(usesForwardRef ? ['forwardRef'] : []),
     ...(usesInject ? ['inject'] : []),
     ...(usesLinkedSignal ? ['linkedSignal'] : []),
     ...(usesSignal ? ['signal'] : []),
+    ...(usesTemplateRef ? ['TemplateRef'] : []),
     ...(usesUntracked ? ['untracked'] : []),
     ...(usesViewChild ? ['viewChild'] : []),
   ];
