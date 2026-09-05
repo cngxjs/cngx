@@ -12,6 +12,7 @@ import {
   type ElementRef,
 } from '@angular/core';
 import { CngxActiveDescendant } from '@cngx/common/a11y';
+import { matchesTypeahead } from '@cngx/core/utils';
 import { CngxHierarchicalNav, createTreeAdItems } from '@cngx/common/interactive';
 import { CngxCheckboxIndicator } from '@cngx/common/display';
 import type { FlatTreeNode } from '@cngx/utils';
@@ -234,9 +235,10 @@ export class CngxTreeSelectPanel<T = unknown> {
    * Expand-to-reveal type-to-find (opt-in via `expandToReveal`). AD's
    * typeahead search space is the rendered window - for the tree panel
    * that is `visibleNodes`. On a miss, search the FULL flat tree with
-   * AD-parity semantics (case-insensitive `startsWith`, wrap-around
-   * from the active node, disabled-skip per `ad.skipDisabled()`),
-   * reveal the match's ancestors, and re-highlight.
+   * AD-parity semantics (the shared `matchesTypeahead` matcher,
+   * wrap-around from the active node, disabled-skip per
+   * `ad.skipDisabled()`), reveal the match's ancestors, and
+   * re-highlight.
    *
    * The highlight is deferred with `afterNextRender`: AD's `items` is
    * an InputSignal fed by the `[items]="adItems()"` template binding,
@@ -260,7 +262,7 @@ export class CngxTreeSelectPanel<T = unknown> {
       if (skip && node.disabled) {
         continue;
       }
-      if (node.label.toLowerCase().startsWith(term)) {
+      if (matchesTypeahead(node.label, term)) {
         this.host.treeController.reveal(node.id);
         afterNextRender(() => ad.highlightByValue(node.value), { injector: this.injector });
         return;

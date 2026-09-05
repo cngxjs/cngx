@@ -13,6 +13,7 @@ import {
   untracked,
 } from '@angular/core';
 import { injectDirection, resolveInlineStep } from '@cngx/core';
+import { matchesTypeahead } from '@cngx/core/utils';
 
 import { CNGX_AD_ITEM, type ActiveDescendantItem, type CngxAdItemHandle } from './ad-item.token';
 
@@ -465,7 +466,7 @@ export class CngxActiveDescendant {
       if (skip && candidate.disabled) {
         continue;
       }
-      if (candidate.label.toLowerCase().startsWith(term)) {
+      if (matchesTypeahead(candidate.label, term)) {
         this.activeIndexState.set(rel + windowOffset);
         return;
       }
