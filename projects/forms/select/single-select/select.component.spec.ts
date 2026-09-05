@@ -195,6 +195,33 @@ describe('CngxSelect - standalone', () => {
     };
   }
 
+  it('modified keys pass through the closed trigger untouched (Cmd+R, Ctrl+PageDown)', () => {
+    const { fixture, select, triggerBtn, popover } = setup();
+    // Without the guard, Cmd+R would typeahead-select 'Rot' while closed.
+    const typeEv = new KeyboardEvent('keydown', {
+      key: 'r',
+      metaKey: true,
+      bubbles: true,
+      cancelable: true,
+    });
+    triggerBtn.dispatchEvent(typeEv);
+    flush(fixture);
+    expect(select.value()).toBeUndefined();
+    expect(typeEv.defaultPrevented).toBe(false);
+
+    // Ctrl+PageDown stays a browser tab switch - no open, no preventDefault.
+    const pageEv = new KeyboardEvent('keydown', {
+      key: 'PageDown',
+      ctrlKey: true,
+      bubbles: true,
+      cancelable: true,
+    });
+    triggerBtn.dispatchEvent(pageEv);
+    flush(fixture);
+    expect(popover.isVisible()).toBe(false);
+    expect(pageEv.defaultPrevented).toBe(false);
+  });
+
   it('renders the trigger with placeholder when no value is selected', () => {
     const { triggerBtn } = setup();
     expect(triggerBtn.textContent?.trim()).toContain('Bitte wählen');

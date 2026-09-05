@@ -22,6 +22,12 @@ export function handlePageJumpKey(
   if (event.key !== 'PageDown' && event.key !== 'PageUp') {
     return false;
   }
+  // Never hijack browser/app shortcuts: Ctrl/Cmd/Alt combos pass through
+  // untouched - the same guard the nav strategies and CngxListboxTrigger
+  // apply (Ctrl+PageDown stays a browser tab switch). Shift stays allowed.
+  if (event.ctrlKey || event.metaKey || event.altKey) {
+    return false;
+  }
   const { listbox, popover } = opts;
   if (!listbox || !popover) {
     return false;

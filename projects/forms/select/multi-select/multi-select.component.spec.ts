@@ -294,6 +294,32 @@ describe('CngxMultiSelect - skeleton', () => {
     expect(active).toBeDefined();
     expect(active!.disabled()).toBe(false);
   });
+
+  it('modified keys pass through the closed trigger untouched (Cmd+R, Ctrl+PageDown)', () => {
+    const fixture = TestBed.createComponent(Host);
+    flush(fixture);
+    const trigger: HTMLElement = fixture.nativeElement.querySelector(
+      '.cngx-multi-select__trigger',
+    );
+    // Without the guard, Cmd+R would typeahead-toggle 'red' while closed.
+    trigger.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'r', metaKey: true, bubbles: true }),
+    );
+    flush(fixture);
+    expect(fixture.componentInstance.values()).toEqual([]);
+
+    // Ctrl+PageDown stays a browser tab switch - the panel must not open.
+    const pageEv = new KeyboardEvent('keydown', {
+      key: 'PageDown',
+      ctrlKey: true,
+      bubbles: true,
+      cancelable: true,
+    });
+    trigger.dispatchEvent(pageEv);
+    flush(fixture);
+    expect(trigger.getAttribute('aria-expanded')).toBe('false');
+    expect(pageEv.defaultPrevented).toBe(false);
+  });
 });
 
 // ── [commitAction] per-toggle + supersede ─────────────────────────────

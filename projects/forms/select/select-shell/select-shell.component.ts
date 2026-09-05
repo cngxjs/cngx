@@ -858,6 +858,12 @@ export class CngxSelectShell<T = unknown>
    * @internal
    */
   protected handleTriggerKeydown(event: KeyboardEvent): void {
+    // Never hijack browser/app shortcuts: Ctrl/Cmd/Alt combos pass through
+    // untouched - the same guard the nav strategies and CngxListboxTrigger
+    // apply. Shift stays allowed.
+    if (event.ctrlKey || event.metaKey || event.altKey) {
+      return;
+    }
     const lb = this.listboxRef();
     const pop = this.popoverRef();
 
