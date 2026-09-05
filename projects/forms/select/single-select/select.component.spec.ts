@@ -20,6 +20,7 @@ import {
   CNGX_SELECT_CONFIG,
   provideSelectConfig,
   provideSelectConfigAt,
+  withOpenOn,
   withPanelWidth,
   withLoadingVariant,
 } from '../shared/config';
@@ -220,6 +221,35 @@ describe('CngxSelect - standalone', () => {
     flush(fixture);
     expect(popover.isVisible()).toBe(false);
     expect(pageEv.defaultPrevented).toBe(false);
+  });
+
+  it('post-close focus restore does not reopen the panel under withOpenOn("focus")', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideSelectConfig(withOpenOn('focus'))],
+    });
+    const { fixture, select, triggerBtn, popover } = setup();
+    triggerBtn.focus();
+    flush(fixture);
+    expect(popover.isVisible()).toBe(true);
+
+    // Focus leaves the trigger (outside click / mouse pick), panel closes.
+    triggerBtn.blur();
+    select.close();
+    flush(fixture);
+    // Run the lifecycle emitter's queueMicrotask focus restore.
+    await Promise.resolve();
+    flush(fixture);
+
+    // Restore happened, but the programmatic focus must not reopen.
+    expect(document.activeElement).toBe(triggerBtn);
+    expect(popover.isVisible()).toBe(false);
+
+    // A real user focus afterwards still opens.
+    triggerBtn.blur();
+    flush(fixture);
+    triggerBtn.focus();
+    flush(fixture);
+    expect(popover.isVisible()).toBe(true);
   });
 
   it('renders the trigger with placeholder when no value is selected', () => {

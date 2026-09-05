@@ -982,6 +982,34 @@ describe('CngxCombobox - openOn config integration', () => {
     expect(combobox.panelOpen()).toBe(true);
   });
 
+  it('post-close focus restore does not reopen the panel under withOpenOn("focus")', async () => {
+    const { fixture, combobox, input } = setupOpenOn([
+      provideSelectConfig(withOpenOn('focus')),
+    ]);
+    input.focus();
+    flush(fixture);
+    expect(combobox.panelOpen()).toBe(true);
+
+    // Focus leaves the input (mouse pick / outside click), panel closes.
+    input.blur();
+    combobox.close();
+    flush(fixture);
+    // Run the lifecycle emitter's queueMicrotask focus restore.
+    await Promise.resolve();
+    flush(fixture);
+
+    // Restore happened, but the programmatic focus must not reopen.
+    expect(document.activeElement).toBe(input);
+    expect(combobox.panelOpen()).toBe(false);
+
+    // A real user focus afterwards still opens.
+    input.blur();
+    flush(fixture);
+    input.focus();
+    flush(fixture);
+    expect(combobox.panelOpen()).toBe(true);
+  });
+
   it('Ctrl+PageDown on the input passes through untouched (shared page-jump guard)', () => {
     const { fixture, combobox, input } = setupOpenOn([]);
     // Unmodified PageDown opens the panel via handlePageJumpKey; the
