@@ -79,7 +79,7 @@ export const STORY: DemoSpec = {
     </div>
     <div class="event-row">
       <span class="event-label">values</span>
-      <span class="event-value">{{ values().join(', ') || '—' }}</span>
+      <span class="event-value">{{ values().join(', ') || '-' }}</span>
     </div>
   </div>`,
 };
