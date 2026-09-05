@@ -1,4 +1,4 @@
-import { Injector, runInInjectionContext } from '@angular/core';
+import { Injector, runInInjectionContext, type TemplateRef } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
@@ -7,6 +7,7 @@ import {
   provideSelectConfigAt,
   withAriaLabels,
   withPanelWidth,
+  withTemplates,
 } from './config';
 import { resolveSelectConfig } from './internal/resolve-config';
 import type { CngxMultiSelectChipContext } from './template-slots';
@@ -111,6 +112,63 @@ describe('withAriaLabels', () => {
     const injector = TestBed.inject(Injector);
     const config = runInInjectionContext(injector, () => resolveSelectConfig());
     expect(config.ariaLabels.clearButton).toBe('Leeren');
+  });
+});
+
+describe('withTemplates', () => {
+  const checkTpl = { name: 'check' } as unknown as TemplateRef<never>;
+  const emptyTpl = { name: 'empty' } as unknown as TemplateRef<never>;
+  const otherEmptyTpl = { name: 'empty-2' } as unknown as TemplateRef<never>;
+
+  it('populates templates from the withTemplates feature', () => {
+    const config = resolveIn([
+      provideSelectConfig(withTemplates({ check: checkTpl, empty: emptyTpl })),
+    ]);
+    expect(config.templates.check).toBe(checkTpl);
+    expect(config.templates.empty).toBe(emptyTpl);
+  });
+
+  it('keeps library defaults (null) for slots a partial does not set', () => {
+    const config = resolveIn([provideSelectConfig(withTemplates({ check: checkTpl }))]);
+    expect(config.templates.check).toBe(checkTpl);
+    expect(config.templates.empty).toBeNull();
+    expect(config.templates.caret).toBeNull();
+    expect(config.templates.clearButton).toBeNull();
+  });
+
+  it('merges multiple withTemplates calls per slot in feature-list order', () => {
+    const config = resolveIn([
+      provideSelectConfig(
+        withTemplates({ check: checkTpl, empty: emptyTpl }),
+        withTemplates({ empty: otherEmptyTpl }),
+      ),
+    ]);
+    expect(config.templates.check).toBe(checkTpl);
+    expect(config.templates.empty).toBe(otherEmptyTpl);
+  });
+
+  it('coexists with other features without bleed', () => {
+    const config = resolveIn([
+      provideSelectConfig(withPanelWidth(240), withTemplates({ empty: emptyTpl })),
+    ]);
+    expect(config.panelWidth).toBe(240);
+    expect(config.templates.empty).toBe(emptyTpl);
+  });
+
+  it('lets provideSelectConfigAt override root-provided slots per slot', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideSelectConfig(withTemplates({ check: checkTpl, empty: emptyTpl })),
+        ...provideSelectConfigAt(withTemplates({ empty: otherEmptyTpl })),
+      ],
+    });
+    const injector = TestBed.inject(Injector);
+    const config = runInInjectionContext(injector, () => resolveSelectConfig());
+    // At scope wins for the slot it sets ...
+    expect(config.templates.empty).toBe(otherEmptyTpl);
+    // ... but does NOT inherit root slots: the At token shadows the root
+    // token entirely, so unset slots fall back to the library default.
+    expect(config.templates.check).toBeNull();
   });
 });
 

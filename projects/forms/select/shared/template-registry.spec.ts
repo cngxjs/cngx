@@ -24,7 +24,7 @@ import {
   type CngxSelectTemplateRegistry,
   type CngxTemplateRegistryFactory,
 } from './template-registry';
-import { provideSelectConfig } from './config';
+import { provideSelectConfig, withTemplates } from './config';
 
 // Probe that performs all 14 contentChild queries AT class-field level
 // (Angular's AOT-enforced constraint - see NG8110) and hands them into
@@ -242,5 +242,39 @@ describe('createTemplateRegistry', () => {
     expect(registry.empty()).toBe(emptyTpl);
     // Slots not configured remain null.
     expect(registry.caret()).toBeNull();
+  });
+
+  it('prefers the projected slot over a withTemplates config default', () => {
+    @Component({
+      standalone: true,
+      template: `
+        <ng-template #check>config-check</ng-template>
+        <ng-template #empty>config-empty</ng-template>
+      `,
+    })
+    class Factory {
+      readonly check = viewChild.required<TemplateRef<unknown>>('check');
+      readonly empty = viewChild.required<TemplateRef<unknown>>('empty');
+    }
+    const factory = TestBed.createComponent(Factory);
+    factory.detectChanges();
+    const checkTpl = factory.componentInstance.check() as unknown as TemplateRef<never>;
+    const emptyTpl = factory.componentInstance.empty() as unknown as TemplateRef<never>;
+
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        provideSelectConfig(withTemplates({ check: checkTpl, empty: emptyTpl })),
+      ],
+    });
+    const fixture = TestBed.createComponent(AllSlotsHost);
+    flush(fixture);
+    const registry = fixture.componentInstance.probe().registry;
+
+    // Projected slots (top of the cascade) win over withTemplates.
+    expect(registry.check()).not.toBe(checkTpl);
+    expect(registry.check()).not.toBeNull();
+    expect(registry.empty()).not.toBe(emptyTpl);
+    expect(registry.empty()).not.toBeNull();
   });
 });

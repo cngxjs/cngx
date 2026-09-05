@@ -683,6 +683,38 @@ export function withAriaLabels(labels: CngxSelectAriaLabels): CngxSelectConfigFe
 }
 
 /**
+ * Sets default slot templates applied when no per-instance slot is
+ * projected. Partial - unset slots keep the library default. Multiple
+ * `withTemplates` calls merge per slot in feature-list order, and
+ * `provideSelectConfigAt` overrides root-provided slots individually.
+ *
+ * Resolution per slot: projected `*cngxSelect...` template ->
+ * `withTemplates` value (At scope before root) -> built-in default.
+ *
+ * `TemplateRef`s need a live view, so app-wide defaults come from a
+ * template-holder component rendered at the root, not from
+ * `bootstrapApplication`:
+ *
+ * ```ts
+ * @Component({
+ *   selector: 'app-select-defaults',
+ *   template: `<ng-template #empty let-term>No hits for "{{ term }}"</ng-template>`,
+ * })
+ * export class SelectDefaults {
+ *   readonly empty = viewChild.required<TemplateRef<CngxSelectEmptyContext>>('empty');
+ * }
+ *
+ * // Any injector level below the holder:
+ * provideSelectConfig(withTemplates({ empty: holder.empty() }))
+ * ```
+ */
+export function withTemplates(
+  templates: NonNullable<CngxSelectConfig['templates']>,
+): CngxSelectConfigFeature {
+  return feature({ templates });
+}
+
+/**
  * App-wide defaults for the Select family. `provideSelectConfigAt` and
  * per-instance inputs win.
  */

@@ -148,6 +148,7 @@ export {
   withOpenOn,
   withAnnouncer,
   withAriaLabels,
+  withTemplates,
   withLoadingVariant,
   withSkeletonRowCount,
   withRefreshingVariant,
