@@ -40,7 +40,9 @@
     }
     @if (clearable() && !empty() && !disabled()) {
       @if (tpl.clearButton(); as clearTpl) {
-        <ng-container *ngTemplateOutlet="clearTpl; context: clearButtonContext()" />
+        <span class="cngx-select-shell__clear-slot" (click)="$event.stopPropagation()">
+          <ng-container *ngTemplateOutlet="clearTpl; context: clearButtonContext()" />
+        </span>
       } @else {
         <button
           type="button"

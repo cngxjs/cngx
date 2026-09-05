@@ -511,6 +511,42 @@ describe('CngxReorderableMultiSelect - panel Escape handling', () => {
     flush(fixture);
     expect(cmp.panelOpen()).toBe(false);
   });
+
+  it('Escape bubbling from a focused chip closes the open panel (real keydown path)', () => {
+    const fixture = TestBed.createComponent(Host);
+    flush(fixture);
+    const trigger = fixture.debugElement.query(By.css('[role="combobox"]'))
+      .nativeElement as HTMLElement;
+    trigger.click();
+    flush(fixture);
+    const cmp = fixture.debugElement.query(By.directive(CngxReorderableMultiSelect))
+      .componentInstance as CngxReorderableMultiSelect<string>;
+    expect(cmp.panelOpen()).toBe(true);
+
+    // Escape must NOT be swallowed by the chip-strip guard: it bubbles
+    // past the trigger to the document-level popover dismiss listener.
+    const chip = chipAt(fixture.nativeElement, 0);
+    chip.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    flush(fixture);
+    expect(cmp.panelOpen()).toBe(false);
+  });
+
+  it('Enter and Space on a focused chip stay scoped to the chip (panel does not open)', () => {
+    const fixture = TestBed.createComponent(Host);
+    flush(fixture);
+    const cmp = fixture.debugElement.query(By.directive(CngxReorderableMultiSelect))
+      .componentInstance as CngxReorderableMultiSelect<string>;
+    expect(cmp.panelOpen()).toBe(false);
+
+    const chip = chipAt(fixture.nativeElement, 0);
+    chip.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    flush(fixture);
+    expect(cmp.panelOpen()).toBe(false);
+
+    chip.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
+    flush(fixture);
+    expect(cmp.panelOpen()).toBe(false);
+  });
 });
 
 describeCommitControllerCascade('CngxReorderableMultiSelect');
