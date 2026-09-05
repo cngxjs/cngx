@@ -44,7 +44,9 @@ export function createAutoPanelRenderer<T>(opts: {
   const recycler = injectRecycler({
     scrollElement,
     totalCount: (): number => opts.flatOptions().length,
-    estimateSize: vConfig.estimateSize ?? 32,
+    // Floor at 1px - a 0/negative estimate would divide the scroll range
+    // by zero downstream and explode the computed window.
+    estimateSize: Math.max(1, vConfig.estimateSize ?? 32),
     overscan: vConfig.overscan ?? 5,
     scrollDebounce: vConfig.scrollDebounce,
     skeletonDelay: vConfig.skeletonDelay,
