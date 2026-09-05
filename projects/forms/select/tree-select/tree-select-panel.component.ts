@@ -94,6 +94,18 @@ export class CngxTreeSelectPanel<T = unknown> {
         queueMicrotask(() => this.treeContainer()?.nativeElement.focus());
       });
     });
+
+    // Cache hygiene: without this, entries for removed ids survive a
+    // [nodes] swap mid-open until the popover closes. `flatNodes`
+    // carries a structural equal (flatEq), so expand/collapse never
+    // fires this - only real source changes do. Correctness never
+    // depends on the clear (the `cached.node === node` guard already
+    // rejects stale entries); the effect only bounds retention.
+    effect(() => {
+      this.host.treeController.flatNodes();
+      this.contextCache.clear();
+      this.toggleById.clear();
+    });
   }
 
   /**
@@ -114,7 +126,9 @@ export class CngxTreeSelectPanel<T = unknown> {
    *     changed. `ngTemplateOutlet` compares by reference and rebinds
    *     on change - caching prevents outlet thrash every CD cycle.
    *
-   * Entries live for the panel's lifetime (one popover open).
+   * Entries live until the tree source changes (the constructor
+   * effect clears both Maps when `flatNodes` re-derives) or the panel
+   * is destroyed. `selectByValue` stays a WeakMap - self-collecting.
    */
   private readonly contextCache = new Map<
     string,

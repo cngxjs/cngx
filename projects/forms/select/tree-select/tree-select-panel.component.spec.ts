@@ -316,6 +316,63 @@ describe('CngxTreeSelectPanel', () => {
   });
 });
 
+describe('CngxTreeSelectPanel - context-cache hygiene', () => {
+  interface PanelCaches {
+    contextCache: Map<string, { readonly context: unknown }>;
+    toggleById: Map<string, () => void>;
+  }
+
+  function setupSlotted() {
+    const fixture = TestBed.createComponent(TreeHost);
+    fixture.componentInstance.useSlot.set(true);
+    fixture.detectChanges();
+    const host = fixture.componentInstance;
+    const panel = fixture.debugElement.children[0].componentInstance as CngxTreeSelectPanel<Row>;
+    const caches = panel as unknown as PanelCaches;
+    return { fixture, host, caches };
+  }
+
+  it('evicts stale entries when the nodes identity changes mid-open', () => {
+    const { fixture, host, caches } = setupSlotted();
+    host.treeController.expand('a');
+    fixture.detectChanges();
+    expect(caches.contextCache.has('a')).toBe(true);
+    expect(caches.toggleById.has('a')).toBe(true);
+    const staleContext = caches.contextCache.get('a')?.context;
+
+    // Swap to a disjoint tree: without the invalidation effect the 'a'
+    // entries would survive until the panel is destroyed.
+    host.nodes.set([{ value: { id: 'x', name: 'Xray' } }]);
+    fixture.detectChanges();
+    fixture.detectChanges();
+    expect(caches.contextCache.has('a')).toBe(false);
+    expect(caches.toggleById.has('a')).toBe(false);
+    expect(caches.contextCache.has('x')).toBe(true);
+
+    // Swapping back re-derives a fresh context, never the stale object.
+    host.nodes.set(makeTree());
+    fixture.detectChanges();
+    fixture.detectChanges();
+    expect(caches.contextCache.get('a')?.context).not.toBe(staleContext);
+  });
+
+  it('keeps cache entries across a structurally-equal swap (flatNodes identity held by flatEq)', () => {
+    const { fixture, host, caches } = setupSlotted();
+    host.treeController.expand('a');
+    fixture.detectChanges();
+    const sizeBefore = caches.contextCache.size;
+    const contextBefore = caches.contextCache.get('a')?.context;
+    expect(sizeBefore).toBeGreaterThan(0);
+
+    // Same node objects in a new top-level array: flattenTree re-runs but
+    // flatEq holds the flatNodes reference, so the effect must not fire.
+    host.nodes.set([...host.nodes()]);
+    fixture.detectChanges();
+    expect(caches.contextCache.size).toBe(sizeBefore);
+    expect(caches.contextCache.get('a')?.context).toBe(contextBefore);
+  });
+});
+
 describe('CngxTreeSelectPanel - expand-to-reveal type-to-find', () => {
   function makeDeepTree(): CngxTreeNode<Row>[] {
     return [
