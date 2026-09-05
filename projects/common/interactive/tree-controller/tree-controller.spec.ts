@@ -154,6 +154,43 @@ describe('createTreeController - derivation contract', () => {
     expect(ctrl.expandedIds()).toBe(emptySnapshot);
   });
 
+  it('reveal(id) expands every ancestor of a deep node, leaving the node itself untouched', () => {
+    const ctrl = makeController();
+    expect(ctrl.visibleNodes().map((n) => n.id)).toEqual(['a', 'b']);
+    ctrl.reveal('a2a');
+    expect([...ctrl.expandedIds()].sort()).toEqual(['a', 'a2']);
+    expect(ctrl.visibleNodes().map((n) => n.id)).toEqual(['a', 'a1', 'a2', 'a2a', 'b']);
+    // The revealed node's own expansion state is untouched.
+    expect(ctrl.expandedIds().has('a2a')).toBe(false);
+  });
+
+  it('reveal(id) is idempotent and keeps the set reference when nothing is missing', () => {
+    const ctrl = makeController();
+    ctrl.reveal('a2a');
+    const snapshot = ctrl.expandedIds();
+    ctrl.reveal('a2a');
+    expect(ctrl.expandedIds()).toBe(snapshot);
+  });
+
+  it('reveal(id) no-ops for unknown ids and for root-level nodes', () => {
+    const ctrl = makeController();
+    const snapshot = ctrl.expandedIds();
+    ctrl.reveal('missing');
+    expect(ctrl.expandedIds()).toBe(snapshot);
+    ctrl.reveal('b');
+    expect(ctrl.expandedIds()).toBe(snapshot);
+  });
+
+  it('reveal(id) after destroy() mutates expandedIds without repopulating the signal cache', () => {
+    const ctrl = makeController();
+    ctrl.destroy();
+    ctrl.reveal('a2a');
+    expect([...ctrl.expandedIds()].sort()).toEqual(['a', 'a2']);
+    // The isExpanded cache stays frozen: new queries get the shared constant.
+    const post = ctrl.isExpanded('a');
+    expect(post()).toBe(false);
+  });
+
   it('findByValue resolves via the same keyFn that backs selection membership', () => {
     const ctrl = makeController();
     expect(ctrl.findByValue({ id: 'a2a', name: 'Alpha-2-a' })?.id).toBe('a2a');

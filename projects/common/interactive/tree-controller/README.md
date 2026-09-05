@@ -82,6 +82,16 @@ export class NavComponent {
 
 Resolution order for every optional field: per-options > `provideTreeConfig` > library default.
 
+## Mutators
+
+| Method | Effect |
+|-|-|
+| `expand(id)` / `collapse(id)` / `toggle(id)` | Single-node expansion writes. No-op when already at the target state. |
+| `reveal(id)` | Expands every ancestor of `id` so the node becomes visible (type-to-find, deep-linking). The node's own expansion state stays untouched; unknown ids and root-level nodes are no-ops. |
+| `expandAll()` / `collapseAll()` | Whole-set writes. Keep the set reference when already at the target. |
+
+All mutators peek at the expansion set via `untracked()`, so calling them from inside an `effect()` never latches that effect onto the expansion set.
+
 ## `CngxTreeConfig` defaults
 
 App-wide fallbacks injected via `CNGX_TREE_CONFIG`. Every field is optional.
