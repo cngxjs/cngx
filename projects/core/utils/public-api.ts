@@ -4,6 +4,7 @@
 export { coerceBooleanProperty, coerceNumberProperty } from './coerce.util';
 export { memoize } from './memo.util';
 export { parseKeyCombo, matchesKeyCombo, type KeyCombo } from './keyboard.util';
+export { matchesTypeahead } from './typeahead.util';
 export { hasTransition, onTransitionDone, type TransitionDoneHandle } from './transition.util';
 export { nextUid } from './uid.util';
 export { type AsyncStatus, type CngxAsyncState } from './async-state';

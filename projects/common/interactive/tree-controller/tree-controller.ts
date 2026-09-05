@@ -100,8 +100,9 @@ export interface CngxTreeControllerOptions<T> {
  *   the call in `untracked(() => ctrl.parentOf(id))`.
  *
  * ## Mutations
- * All mutators (`expand`, `collapse`, `toggle`, `expandAll`, `collapseAll`)
- * peek at the expansion set via `untracked()` so invoking them from
+ * All mutators (`expand`, `collapse`, `toggle`, `reveal`, `expandAll`,
+ * `collapseAll`) peek at the expansion set via `untracked()` so invoking
+ * them from
  * inside an `effect()` never latches that effect onto the expansion set.
  *
  * @category common/interactive/tree
@@ -138,6 +139,13 @@ export interface CngxTreeController<T> {
   expand(id: string): void;
   collapse(id: string): void;
   toggle(id: string): void;
+  /**
+   * Expand every ancestor of `id` so the node becomes visible. The node's
+   * own expansion state stays untouched. No-op for unknown ids, for
+   * root-level nodes, and when every ancestor is already expanded (the
+   * expansion set keeps its reference in that case).
+   */
+  reveal(id: string): void;
   /** Expand every node that has children. No-op when already fully expanded. */
   expandAll(): void;
   collapseAll(): void;
@@ -158,9 +166,9 @@ export interface CngxTreeController<T> {
    * - Existing signal bindings created before destroy keep working - the
    *   underlying `expandedIds` signal is still live, so downstream updates
    *   continue to propagate.
-   * - Mutators (`expand` / `collapse` / `toggle` / `expandAll` /
-   *   `collapseAll`) continue to function; post-destroy writes do NOT
-   *   repopulate the cache.
+   * - Mutators (`expand` / `collapse` / `toggle` / `reveal` /
+   *   `expandAll` / `collapseAll`) continue to function; post-destroy
+   *   writes do NOT repopulate the cache.
    *
    * Idempotent. Prefer this over a hard teardown so long-lived consumer
    * bindings that outlive the controller's active phase degrade
@@ -457,6 +465,28 @@ export function createTreeController<T>(opts: CngxTreeControllerOptions<T>): Cng
     }
   };
 
+  const reveal = (id: string): void => {
+    // parentIds already carries the full ancestor chain root -> parent;
+    // no walk needed. untracked keeps the index read out of caller graphs
+    // (mutator contract, same as peekExpanded).
+    const node = untracked(() => indexes().byId.get(id));
+    if (!node || node.parentIds.length === 0) {
+      return;
+    }
+    const current = peekExpanded();
+    const missing = node.parentIds.filter((pid) => !current.has(pid));
+    if (missing.length === 0) {
+      return;
+    }
+    expandedIdsWritable.update((s) => {
+      const next = new Set(s);
+      for (const pid of missing) {
+        next.add(pid);
+      }
+      return next;
+    });
+  };
+
   const setsEqual = (a: ReadonlySet<string>, b: ReadonlySet<string>): boolean => {
     if (a === b) {
       return true;
@@ -505,6 +535,7 @@ export function createTreeController<T>(opts: CngxTreeControllerOptions<T>): Cng
     expand,
     collapse,
     toggle,
+    reveal,
     expandAll,
     collapseAll,
     findById,

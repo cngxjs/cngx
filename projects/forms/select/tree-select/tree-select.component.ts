@@ -220,6 +220,23 @@ export class CngxTreeSelect<T = unknown>
    * atomically; single `selectionChange` with `action: 'cascade-toggle'`.
    */
   readonly cascadeChildren = input<boolean>(false);
+  /**
+   * Opt-in expand-to-reveal type-to-find. When `true`, a typeahead
+   * query with no match among the VISIBLE nodes searches the full
+   * flat tree; the first match gets its ancestors expanded
+   * (`treeController.reveal`) and the highlight moves onto it. The
+   * default `false` keeps the APG baseline: typeahead only walks the
+   * rendered (visible) nodes and a hidden match stays hidden.
+   *
+   * Matching mirrors the typeahead of `CngxActiveDescendant`:
+   * case-insensitive `startsWith`, disabled nodes skipped. The
+   * highlight lands on the first node whose value matches
+   * (`Object.is` semantics) - on a tree with duplicated values the
+   * highlighted node can differ from the revealed one, so unique
+   * values are recommended (matching the `nodeIdFn` uniqueness
+   * contract).
+   */
+  readonly expandToReveal = input<boolean>(false);
 
   readonly label = input<string>('');
   readonly placeholder = input<string>('');
@@ -400,8 +417,8 @@ export class CngxTreeSelect<T = unknown>
 
   /**
    * Selection engine seeded with `childrenFn` so
-   * `isIndeterminate(value)` is free. Drives cascade-toggle and panel
-   * `aria-selected` / `aria-indeterminate`.
+   * `isIndeterminate(value)` is free. Drives cascade-toggle and the
+   * panel's `aria-checked` (true / false / `mixed`).
    */
   private readonly selection: SelectionController<T> = inject(CNGX_SELECTION_CONTROLLER_FACTORY)<T>(
     this.values,

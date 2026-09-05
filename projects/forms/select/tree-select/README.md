@@ -92,7 +92,7 @@ Chip-remove always stays single-deselect even with `cascadeChildren=true`
 ```
 
 Context: `{ node, depth, expanded, hasChildren, selected, indeterminate, disabled, toggleExpand, handleSelect }`.
-Panel keeps the `role="treeitem"` ARIA wiring (aria-level / posinset / setsize / expanded / selected) regardless of the projected markup.
+The projected markup owns the whole treeitem: carry `role="treeitem"`, `[attr.id]`, aria-level / posinset / setsize, and mirror `aria-checked` from the context's `selected` / `indeterminate` flags (`'mixed'` when indeterminate - APG checkbox-tree).
 
 ### Custom chip / trigger summary
 

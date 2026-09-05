@@ -484,7 +484,7 @@ All are reactive computeds - they always reflect the current state, never go sta
 
 - Home/End + typeahead) composed with `CngxHierarchicalNav`
   (ArrowLeft/Right collapse-and-traverse) on the same element - no double-fire because the two directives own disjoint key sets.
-  Per-node `role="treeitem"` carries `aria-level`, `aria-posinset`, `aria-setsize`, `aria-expanded` (only on parents), `aria-selected`, `aria-disabled`, all reactive.
+  Per-node `role="treeitem"` carries `aria-level`, `aria-posinset`, `aria-setsize`, `aria-expanded` (only on parents), `aria-checked` (true / false / `mixed` for partial cascade selection - APG checkbox-tree pattern), `aria-disabled`, all reactive.
 
 **Live region announcer.** `CngxSelectAnnouncer` is `providedIn: 'root'` and announces every selection change through a global polite live region.
 `CngxSelectAnnouncerConfig.format()` builds the sentence; override for custom locales or sentence shapes.

@@ -52,6 +52,14 @@ Counterpart to `CngxRovingTabindex` - use AD when options should not be individu
 
 Disabled items are skipped when `skipDisabled()` is `true` (default). `loop()` controls wrap-around.
 
+## Outputs
+
+| Output | Payload | Fires |
+|-|-|-|
+| `activated` | item value | `activateCurrent()` was called with an active item (Enter / Space). |
+| `highlighted` | `ActiveDescendantItem \| null` | Whenever the highlighted item changes. |
+| `typeaheadMissed` | resolved query term (`string`, lowercased) | A typeahead query found no match in the rendered window. Hosts whose real item space is larger (collapsed tree branches, virtualized rows outside the window) listen here and resolve the miss themselves. |
+
 ## Composition with third-party peers
 
 - **`@angular/cdk/overlay` / `CngxPopoverTrigger`** - The trigger implements its own keymap and calls `highlightFirst/Last/Next/Prev` + `activateCurrent` on the AD hostDirective. AD does not implement open/close.

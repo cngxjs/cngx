@@ -393,6 +393,54 @@ describe('CngxActiveDescendant - typeahead', () => {
     expect(dir.activeItem()?.value).toBe('ap');
   });
 
+  it('emits typeaheadMissed with the resolved term when no rendered label matches', () => {
+    const { dir, key } = setup();
+    const missed: string[] = [];
+    dir.typeaheadMissed.subscribe((t) => missed.push(t));
+    key('z');
+    expect(missed).toEqual(['z']);
+    expect(dir.activeItem()).toBeNull();
+  });
+
+  it('does not emit typeaheadMissed on a hit', () => {
+    const { dir, key } = setup();
+    const missed: string[] = [];
+    dir.typeaheadMissed.subscribe((t) => missed.push(t));
+    key('b');
+    expect(dir.activeItem()?.value).toBe('b');
+    expect(missed).toEqual([]);
+  });
+
+  it('emits typeaheadMissed when the only matching candidates are disabled', () => {
+    const fixture = TestBed.createComponent(TestHost);
+    fixture.componentInstance.options.set([
+      { value: 'a', label: 'Apple' },
+      { value: 'b', label: 'Banana', disabled: true },
+    ]);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const container = fixture.debugElement.query(By.directive(CngxActiveDescendant));
+    const dir = container.injector.get(CngxActiveDescendant);
+    const missed: string[] = [];
+    dir.typeaheadMissed.subscribe((t) => missed.push(t));
+    container.triggerEventHandler('keydown', new KeyboardEvent('keydown', { key: 'b' }));
+    TestBed.flushEffects();
+    expect(missed).toEqual(['b']);
+    expect(dir.activeItem()).toBeNull();
+  });
+
+  it('emits the buffered multi-character term on a miss', () => {
+    const { dir, key } = setup();
+    const missed: string[] = [];
+    dir.typeaheadMissed.subscribe((t) => missed.push(t));
+    key('b');
+    key('x');
+    expect(missed).toEqual(['bx']);
+    // The hit for 'b' stays in place - the miss does not move the highlight.
+    expect(dir.activeItem()?.value).toBe('b');
+  });
+
   it('single character searches after the active item, wrapping past it', () => {
     const { dir, key } = setup();
     dir.highlightByValue('b');

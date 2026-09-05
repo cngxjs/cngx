@@ -5,7 +5,6 @@
   <div
     #treeContainer
     role="tree"
-    aria-multiselectable="true"
     cngxActiveDescendant
     #ad="cngxActiveDescendant"
     [items]="adItems()"
@@ -14,6 +13,7 @@
     (keydown.enter)="handleActivate($event, ad)"
     (keydown.space)="handleActivate($event, ad)"
     (keydown.escape)="handleEscape($event)"
+    (typeaheadMissed)="handleTypeaheadMiss($event, ad)"
     tabindex="0"
     class="cngx-tree-select__tree"
   >
@@ -30,7 +30,7 @@
           [attr.aria-expanded]="
             node.hasChildren ? host.treeController.isExpanded(node.id)() : null
           "
-          [attr.aria-selected]="host.isSelected(node.value)"
+          [attr.aria-checked]="host.isIndeterminate(node.value) ? 'mixed' : host.isSelected(node.value)"
           [attr.aria-disabled]="node.disabled ? 'true' : null"
           [style.--cngx-tree-depth]="node.depth"
           class="cngx-tree-select__node"

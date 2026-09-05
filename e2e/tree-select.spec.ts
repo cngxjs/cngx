@@ -4,6 +4,7 @@ const R = {
   basic: '/#/forms/select/tree-select/basic-single-level-toggle',
   cascade: '/#/forms/select/tree-select/cascade-children-parent-toggle-selects-the-whole-subtree',
   custom: '/#/forms/select/tree-select/custom-cngxtreeselectnode-template',
+  typeToFind: '/#/forms/select/tree-select/type-to-find-expand-to-reveal',
 };
 
 // One example per leaf route → scope to <main> so trigger, chips, panel tree
@@ -37,12 +38,14 @@ test.describe('CngxTreeSelect demo', () => {
     await expect(trigger).toHaveAttribute('role', 'combobox');
   });
 
-  test('click opens the panel with role="tree" + aria-multiselectable', async ({ page }) => {
+  test('click opens the panel with a role="tree" container', async ({ page }) => {
     await page.goto(R.basic);
     await openBasicTrigger(page);
     const tree = panelTree(page).first();
     await expect(tree).toBeVisible();
-    await expect(tree).toHaveAttribute('aria-multiselectable', 'true');
+    // aria-multiselectable belongs to the aria-selected model; the tree
+    // communicates multi-ness via per-row aria-checked instead.
+    await expect(tree).not.toHaveAttribute('aria-multiselectable', /.+/);
   });
 
   test('leaf click adds a chip and emits selectionChange(toggle)', async ({ page }) => {
@@ -163,21 +166,71 @@ test.describe('CngxTreeSelect demo', () => {
     await expect(section.locator('cngx-checkbox-indicator').first()).toBeVisible();
   });
 
-  test('ARIA treeitem fields are reactive: expanded/selected/level/posinset/setsize', async ({ page }) => {
+  test('ARIA treeitem fields are reactive: expanded/checked/level/posinset/setsize', async ({ page }) => {
     await page.goto(R.basic);
     await openBasicTrigger(page);
     const tree = panelTree(page).first();
     const root = tree.locator('[role="treeitem"]').filter({ hasText: 'Frontend' });
 
-    // initiallyExpanded='all' → root is expanded, aria-selected=false.
+    // initiallyExpanded='all' → root is expanded, aria-checked=false.
     await expect(root).toHaveAttribute('aria-expanded', 'true');
-    await expect(root).toHaveAttribute('aria-selected', 'false');
+    await expect(root).toHaveAttribute('aria-checked', 'false');
     await expect(root).toHaveAttribute('aria-level', '1');
     await expect(root).toHaveAttribute('aria-posinset', '1');
+    await expect(root).not.toHaveAttribute('aria-selected', /.+/);
 
-    // Click root → aria-selected flips to true (cascade is off in this section,
+    // Click root → aria-checked flips to true (cascade is off in this section,
     // so only the root itself toggles).
     await root.click();
-    await expect(root).toHaveAttribute('aria-selected', 'true');
+    await expect(root).toHaveAttribute('aria-checked', 'true');
+  });
+
+  test('expandToReveal: typing a hidden-only match expands its ancestor and highlights it', async ({ page }) => {
+    await page.goto(R.typeToFind);
+    const section = ex(page);
+    const trigger = triggerOf(section);
+    await trigger.click();
+    const tree = panelTree(page).first();
+    await expect(tree).toBeVisible();
+
+    // All branches start collapsed; 'p' only matches Postgres under Backend.
+    const backend = tree.locator('[role="treeitem"]').filter({ hasText: 'Backend' });
+    await expect(backend).toHaveAttribute('aria-expanded', 'false');
+    await tree.press('p');
+    await expect(backend).toHaveAttribute('aria-expanded', 'true');
+    await expect(tree).toHaveAttribute('aria-activedescendant', 'postgres');
+  });
+
+  test('expandToReveal off: a hidden-only match is a no-op', async ({ page }) => {
+    await page.goto(R.typeToFind);
+    const section = ex(page);
+    // Chrome toggle switches [expandToReveal] off before opening.
+    await section.getByRole('checkbox').uncheck();
+    const trigger = triggerOf(section);
+    await trigger.click();
+    const tree = panelTree(page).first();
+    await expect(tree).toBeVisible();
+
+    const backend = tree.locator('[role="treeitem"]').filter({ hasText: 'Backend' });
+    await tree.press('p');
+    // The highlight stays where autoHighlightFirst put it and nothing expands.
+    await expect(backend).toHaveAttribute('aria-expanded', 'false');
+    await expect(tree).toHaveAttribute('aria-activedescendant', 'frontend');
+  });
+
+  test('partial cascade selection surfaces aria-checked="mixed" on the parent', async ({ page }) => {
+    await page.goto(R.cascade);
+    const section = ex(page);
+    const trigger = triggerOf(section);
+    await trigger.click();
+
+    // Select ONE leaf under "Frontend" → the parent is partially selected:
+    // indeterminate indicator + aria-checked="mixed" from the same computed
+    // selection source.
+    const leaf = section.locator('[role="treeitem"]').filter({ hasText: 'Angular' });
+    await leaf.click();
+    const frontend = section.locator('[role="treeitem"]').filter({ hasText: 'Frontend' });
+    await expect(frontend).toHaveAttribute('aria-checked', 'mixed');
+    await expect(leaf).toHaveAttribute('aria-checked', 'true');
   });
 });

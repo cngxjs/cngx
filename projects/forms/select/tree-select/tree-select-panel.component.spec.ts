@@ -12,7 +12,7 @@ import {
   type CngxTreeController,
 } from '@cngx/common/interactive';
 import type { CngxTreeNode, FlatTreeNode } from '@cngx/utils';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   CNGX_SELECT_PANEL_HOST,
   CNGX_SELECT_PANEL_VIEW_HOST,
@@ -146,8 +146,10 @@ function makeShellHost(): CngxSelectPanelHost {
 class TreeHost implements CngxTreeSelectPanelHost<Row> {
   readonly nodes = signal(makeTree());
   readonly selected = signal<Set<string>>(new Set());
+  readonly indeterminateIds = signal<Set<string>>(new Set());
   readonly useSlot = signal(false);
   readonly panelOpen = signal(true).asReadonly();
+  readonly expandToReveal = signal(false);
   // Glyph overrides + i18n labels - null / default literals keep the
   // harness on the built-in node-row visuals.
   readonly twistyGlyph = signal<TemplateRef<void> | null>(null).asReadonly();
@@ -187,8 +189,8 @@ class TreeHost implements CngxTreeSelectPanelHost<Row> {
     return this.selected().has(v.id);
   }
 
-  isIndeterminate(_v: Row): boolean {
-    return false;
+  isIndeterminate(v: Row): boolean {
+    return this.indeterminateIds().has(v.id);
   }
 
   handleSelect(node: FlatTreeNode<Row>): void {
@@ -214,11 +216,13 @@ function setup() {
 }
 
 describe('CngxTreeSelectPanel', () => {
-  it('renders a role="tree" container with aria-multiselectable', () => {
+  it('renders a role="tree" container without the aria-selected-model attributes', () => {
     const { root } = setup();
     const tree = root.querySelector('[role="tree"]');
     expect(tree).toBeTruthy();
-    expect(tree?.getAttribute('aria-multiselectable')).toBe('true');
+    // APG checkbox-tree: per-row aria-checked communicates multi-ness;
+    // aria-multiselectable belongs to the aria-selected model.
+    expect(tree?.hasAttribute('aria-multiselectable')).toBe(false);
   });
 
   it('renders one treeitem per visible node with W3C APG ARIA attrs', () => {
@@ -232,7 +236,8 @@ describe('CngxTreeSelectPanel', () => {
     expect(a.getAttribute('aria-posinset')).toBe('1');
     expect(a.getAttribute('aria-setsize')).toBe('2');
     expect(a.getAttribute('aria-expanded')).toBe('false');
-    expect(a.getAttribute('aria-selected')).toBe('false');
+    expect(a.getAttribute('aria-checked')).toBe('false');
+    expect(a.hasAttribute('aria-selected')).toBe(false);
 
     const b = items[1];
     expect(b.getAttribute('aria-level')).toBe('1');
@@ -252,6 +257,31 @@ describe('CngxTreeSelectPanel', () => {
 
     const a2 = items[2];
     expect(a2.getAttribute('aria-disabled')).toBe('true');
+  });
+
+  it('aria-checked reflects the tri-state selection: false / true / mixed', () => {
+    const { fixture, host, root } = setup();
+    host.treeController.expand('a');
+    fixture.detectChanges();
+
+    const itemById = (id: string): HTMLElement =>
+      root.querySelector<HTMLElement>(`[role="treeitem"][id="${id}"]`)!;
+    expect(itemById('a').getAttribute('aria-checked')).toBe('false');
+
+    // Full selection -> true.
+    host.selected.set(new Set(['a1']));
+    fixture.detectChanges();
+    expect(itemById('a1').getAttribute('aria-checked')).toBe('true');
+
+    // Partial cascade -> mixed on the parent, same computed source as the
+    // indeterminate indicator.
+    host.indeterminateIds.set(new Set(['a']));
+    fixture.detectChanges();
+    expect(itemById('a').getAttribute('aria-checked')).toBe('mixed');
+    const indicator = itemById('a').querySelector('cngx-checkbox-indicator');
+    expect(indicator).toBeTruthy();
+    expect(root.querySelector('[aria-selected]')).toBeNull();
+    expect(root.querySelector('[aria-multiselectable]')).toBeNull();
   });
 
   it('twisty click toggles the controller expansion state', () => {
@@ -283,5 +313,194 @@ describe('CngxTreeSelectPanel', () => {
     expect(root.querySelector<HTMLElement>('[data-id="a"]')?.textContent?.trim()).toBe(
       'custom: Alpha',
     );
+  });
+});
+
+describe('CngxTreeSelectPanel - context-cache hygiene', () => {
+  interface PanelCaches {
+    contextCache: Map<string, { readonly context: unknown }>;
+    toggleById: Map<string, () => void>;
+  }
+
+  function setupSlotted() {
+    const fixture = TestBed.createComponent(TreeHost);
+    fixture.componentInstance.useSlot.set(true);
+    fixture.detectChanges();
+    const host = fixture.componentInstance;
+    const panel = fixture.debugElement.children[0].componentInstance as CngxTreeSelectPanel<Row>;
+    const caches = panel as unknown as PanelCaches;
+    return { fixture, host, caches };
+  }
+
+  it('evicts stale entries when the nodes identity changes mid-open', () => {
+    const { fixture, host, caches } = setupSlotted();
+    host.treeController.expand('a');
+    fixture.detectChanges();
+    expect(caches.contextCache.has('a')).toBe(true);
+    expect(caches.toggleById.has('a')).toBe(true);
+    const staleContext = caches.contextCache.get('a')?.context;
+
+    // Swap to a disjoint tree: without the invalidation effect the 'a'
+    // entries would survive until the panel is destroyed.
+    host.nodes.set([{ value: { id: 'x', name: 'Xray' } }]);
+    fixture.detectChanges();
+    fixture.detectChanges();
+    expect(caches.contextCache.has('a')).toBe(false);
+    expect(caches.toggleById.has('a')).toBe(false);
+    expect(caches.contextCache.has('x')).toBe(true);
+
+    // Swapping back re-derives a fresh context, never the stale object.
+    host.nodes.set(makeTree());
+    fixture.detectChanges();
+    fixture.detectChanges();
+    expect(caches.contextCache.get('a')?.context).not.toBe(staleContext);
+  });
+
+  it('keeps cache entries across a structurally-equal swap (flatNodes identity held by flatEq)', () => {
+    const { fixture, host, caches } = setupSlotted();
+    host.treeController.expand('a');
+    fixture.detectChanges();
+    const sizeBefore = caches.contextCache.size;
+    const contextBefore = caches.contextCache.get('a')?.context;
+    expect(sizeBefore).toBeGreaterThan(0);
+
+    // Same node objects in a new top-level array: flattenTree re-runs but
+    // flatEq holds the flatNodes reference, so the effect must not fire.
+    host.nodes.set([...host.nodes()]);
+    fixture.detectChanges();
+    expect(caches.contextCache.size).toBe(sizeBefore);
+    expect(caches.contextCache.get('a')?.context).toBe(contextBefore);
+  });
+});
+
+describe('CngxTreeSelectPanel - expand-to-reveal type-to-find', () => {
+  function makeDeepTree(): CngxTreeNode<Row>[] {
+    return [
+      { value: { id: 'ap', name: 'Apple' } },
+      {
+        value: { id: 'f', name: 'Fruits' },
+        children: [
+          { value: { id: 'c', name: 'Cherry' } },
+          { value: { id: 'g', name: 'Grape' } },
+        ],
+      },
+      { value: { id: 'z', name: 'Zebra' } },
+    ];
+  }
+
+  function setupDeep() {
+    const fixture = TestBed.createComponent(TreeHost);
+    fixture.componentInstance.nodes.set(makeDeepTree());
+    fixture.detectChanges();
+    const host = fixture.componentInstance;
+    const root = fixture.nativeElement as HTMLElement;
+    const tree = root.querySelector<HTMLElement>('[role="tree"]')!;
+    const type = (ch: string): void => {
+      tree.dispatchEvent(new KeyboardEvent('keydown', { key: ch, bubbles: true }));
+      TestBed.flushEffects();
+      fixture.detectChanges();
+      fixture.detectChanges();
+    };
+    return { fixture, host, root, tree, type };
+  }
+
+  it('default off: a typeahead miss leaves expansion and active item untouched', () => {
+    const { host, tree, type } = setupDeep();
+    // autoHighlightFirst puts the highlight on Apple before any typing.
+    expect(tree.getAttribute('aria-activedescendant')).toBe('ap');
+    type('c');
+    expect(host.treeController.expandedIds().size).toBe(0);
+    expect(tree.getAttribute('aria-activedescendant')).toBe('ap');
+  });
+
+  it('on: a hidden match expands its ancestors and moves the highlight onto it', () => {
+    const { host, tree, type } = setupDeep();
+    host.expandToReveal.set(true);
+    type('c');
+    expect(host.treeController.isExpanded('f')()).toBe(true);
+    expect(tree.getAttribute('aria-activedescendant')).toBe('c');
+    // The match itself stays unexpanded (it is a leaf anyway) and unselected.
+    expect(host.treeController.expandedIds().has('c')).toBe(false);
+  });
+
+  it('matches mixed-case labels against the lowercased term', () => {
+    const { fixture, host, tree, type } = setupDeep();
+    host.nodes.set([
+      {
+        value: { id: 'f', name: 'Fruits' },
+        children: [{ value: { id: 'c', name: 'CHERRY' } }],
+      },
+    ]);
+    host.expandToReveal.set(true);
+    fixture.detectChanges();
+    type('c');
+    expect(host.treeController.isExpanded('f')()).toBe(true);
+    expect(tree.getAttribute('aria-activedescendant')).toBe('c');
+  });
+
+  it('skips a disabled hidden match while skipDisabled=true (AD default)', () => {
+    const { fixture, host, tree, type } = setupDeep();
+    host.nodes.set([
+      {
+        value: { id: 'f', name: 'Fruits' },
+        children: [{ value: { id: 'c', name: 'Cherry', disabled: true }, disabled: true }],
+      },
+    ]);
+    host.expandToReveal.set(true);
+    fixture.detectChanges();
+    type('c');
+    expect(host.treeController.expandedIds().size).toBe(0);
+    // Highlight stays on the auto-highlighted root.
+    expect(tree.getAttribute('aria-activedescendant')).toBe('f');
+  });
+
+  it('matches a disabled hidden node when the AD host runs skipDisabled=false', () => {
+    const { fixture, host } = setupDeep();
+    host.nodes.set([
+      {
+        value: { id: 'f', name: 'Fruits' },
+        children: [{ value: { id: 'c', name: 'Cherry', disabled: true }, disabled: true }],
+      },
+    ]);
+    host.expandToReveal.set(true);
+    fixture.detectChanges();
+    const panel = fixture.debugElement.children[0].componentInstance as CngxTreeSelectPanel<Row>;
+    const highlighted: unknown[] = [];
+    // Collaborator stub: only the AD reads the handler consults.
+    const adStub = {
+      skipDisabled: () => false,
+      activeItem: () => null,
+      highlightByValue: (v: unknown) => highlighted.push(v),
+    };
+    (panel as unknown as { handleTypeaheadMiss(term: string, ad: unknown): void }).handleTypeaheadMiss(
+      'c',
+      adStub,
+    );
+    expect(host.treeController.isExpanded('f')()).toBe(true);
+    fixture.detectChanges();
+    expect(highlighted).toEqual([{ id: 'c', name: 'Cherry', disabled: true }]);
+  });
+
+  it('wraps around from a late active node to an earlier hidden match', () => {
+    const { host, root, tree, type } = setupDeep();
+    host.expandToReveal.set(true);
+    // Let the typeahead buffer expire between the two queries -
+    // otherwise 'z' + 'c' chain into one 'zc' term.
+    vi.useFakeTimers();
+    type('z');
+    expect(tree.getAttribute('aria-activedescendant')).toBe('z');
+    vi.advanceTimersByTime(400);
+    type('c');
+    expect(host.treeController.isExpanded('f')()).toBe(true);
+    expect(tree.getAttribute('aria-activedescendant')).toBe('c');
+    expect(root.querySelector('[id="c"]')).toBeTruthy();
+  });
+
+  it('no full-tree match: expansion and active item stay untouched', () => {
+    const { host, tree, type } = setupDeep();
+    host.expandToReveal.set(true);
+    type('x');
+    expect(host.treeController.expandedIds().size).toBe(0);
+    expect(tree.getAttribute('aria-activedescendant')).toBe('ap');
   });
 });

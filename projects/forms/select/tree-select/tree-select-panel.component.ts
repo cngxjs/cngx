@@ -2,7 +2,9 @@ import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  Injector,
   ViewEncapsulation,
+  afterNextRender,
   effect,
   inject,
   untracked,
@@ -10,6 +12,7 @@ import {
   type ElementRef,
 } from '@angular/core';
 import { CngxActiveDescendant } from '@cngx/common/a11y';
+import { matchesTypeahead } from '@cngx/core/utils';
 import { CngxHierarchicalNav, createTreeAdItems } from '@cngx/common/interactive';
 import { CngxCheckboxIndicator } from '@cngx/common/display';
 import type { FlatTreeNode } from '@cngx/utils';
@@ -35,9 +38,10 @@ import type { CngxTreeSelectNodeContext } from './tree-select.model';
  * in cascade / commit / announce.
  *
  * W3C Treeview APG attributes are reactive: `aria-expanded` from
- * `treeController.isExpanded(id)()`, `aria-selected` from
- * `host.isSelected(value)`, `aria-level` / `-posinset` / `-setsize`
- * from `FlatTreeNode`.
+ * `treeController.isExpanded(id)()`, `aria-checked`
+ * (true / false / `mixed` per the APG checkbox-tree pattern) from
+ * `host.isSelected(value)` / `host.isIndeterminate(value)`,
+ * `aria-level` / `-posinset` / `-setsize` from `FlatTreeNode`.
  *
  * @internal
  */
@@ -74,6 +78,9 @@ export class CngxTreeSelectPanel<T = unknown> {
 
   private readonly treeContainer = viewChild<ElementRef<HTMLElement>>('treeContainer');
 
+  /** For the one-shot afterNextRender in the typeahead-miss handler. */
+  private readonly injector = inject(Injector);
+
   constructor() {
     // Move DOM focus to the tree container on open. AD only reacts to
     // keyboard events while its host element has focus; without this
@@ -87,6 +94,18 @@ export class CngxTreeSelectPanel<T = unknown> {
       untracked(() => {
         queueMicrotask(() => this.treeContainer()?.nativeElement.focus());
       });
+    });
+
+    // Cache hygiene: without this, entries for removed ids survive a
+    // [nodes] swap mid-open until the popover closes. `flatNodes`
+    // carries a structural equal (flatEq), so expand/collapse never
+    // fires this - only real source changes do. Correctness never
+    // depends on the clear (the `cached.node === node` guard already
+    // rejects stale entries); the effect only bounds retention.
+    effect(() => {
+      this.host.treeController.flatNodes();
+      this.contextCache.clear();
+      this.toggleById.clear();
     });
   }
 
@@ -108,7 +127,9 @@ export class CngxTreeSelectPanel<T = unknown> {
    *     changed. `ngTemplateOutlet` compares by reference and rebinds
    *     on change - caching prevents outlet thrash every CD cycle.
    *
-   * Entries live for the panel's lifetime (one popover open).
+   * Entries live until the tree source changes (the constructor
+   * effect clears both Maps when `flatNodes` re-derives) or the panel
+   * is destroyed. `selectByValue` stays a WeakMap - self-collecting.
    */
   private readonly contextCache = new Map<
     string,
@@ -208,5 +229,44 @@ export class CngxTreeSelectPanel<T = unknown> {
   protected handleEscape(event: Event): void {
     event.preventDefault();
     this.host.close();
+  }
+
+  /**
+   * Expand-to-reveal type-to-find (opt-in via `expandToReveal`). AD's
+   * typeahead search space is the rendered window - for the tree panel
+   * that is `visibleNodes`. On a miss, search the FULL flat tree with
+   * AD-parity semantics (the shared `matchesTypeahead` matcher,
+   * wrap-around from the active node, disabled-skip per
+   * `ad.skipDisabled()`), reveal the match's ancestors, and
+   * re-highlight.
+   *
+   * The highlight is deferred with `afterNextRender`: AD's `items` is
+   * an InputSignal fed by the `[items]="adItems()"` template binding,
+   * so a synchronous `highlightByValue` right after `reveal` would
+   * still search the pre-reveal array and no-op.
+   */
+  protected handleTypeaheadMiss(term: string, ad: CngxActiveDescendant): void {
+    if (!this.host.expandToReveal()) {
+      return;
+    }
+    const flat = untracked(() => this.host.treeController.flatNodes());
+    const count = flat.length;
+    if (count === 0) {
+      return;
+    }
+    const activeId = ad.activeItem()?.id ?? null;
+    const activeIdx = activeId === null ? -1 : flat.findIndex((n) => n.id === activeId);
+    const skip = ad.skipDisabled();
+    for (let step = 1; step <= count; step++) {
+      const node = flat[(activeIdx + step + count) % count];
+      if (skip && node.disabled) {
+        continue;
+      }
+      if (matchesTypeahead(node.label, term)) {
+        this.host.treeController.reveal(node.id);
+        afterNextRender(() => ad.highlightByValue(node.value), { injector: this.injector });
+        return;
+      }
+    }
   }
 }

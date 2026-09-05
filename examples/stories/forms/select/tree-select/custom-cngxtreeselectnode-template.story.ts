@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxTreeSelect: custom cngxtreeselectnode template',
   subtitle:
-    'A projected <code>*cngxTreeSelectNode</code> replaces the built-in row while the panel keeps its <code>role="treeitem"</code> wrapper and ARIA wiring. The context exposes every reactive flag plus the <code>toggleExpand</code> and <code>handleSelect</code> callbacks so custom markup still routes through cascade, commit, and announce.',
+    'A projected <code>*cngxTreeSelectNode</code> replaces the ENTIRE built-in row - the custom markup owns the treeitem. Carry <code>role="treeitem"</code>, an <code>id</code>, the level/posinset/setsize attributes, and mirror <code>aria-checked</code> (<code>mixed</code> when indeterminate) from the context flags, per the APG checkbox-tree guidance. The context exposes every reactive flag plus the <code>toggleExpand</code> and <code>handleSelect</code> callbacks so custom markup still routes through cascade, commit, and announce.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
@@ -56,8 +56,17 @@ export const STORY: DemoSpec = {
       let-toggleExpand="toggleExpand"
       let-handleSelect="handleSelect"
     >
+      <!-- The slot owns the whole treeitem: role, id, level/posinset/setsize,
+           and aria-checked all live on the custom row root. -->
       <span
         class="tree-node-row"
+        role="treeitem"
+        [attr.id]="node.id"
+        [attr.aria-level]="node.depth + 1"
+        [attr.aria-posinset]="node.posinset"
+        [attr.aria-setsize]="node.setsize"
+        [attr.aria-expanded]="hasChildren ? expanded : null"
+        [attr.aria-checked]="indeterminate ? 'mixed' : selected"
         [style.padding-left]="node.depth + 'rem'"
         (click)="handleSelect()"
       >
