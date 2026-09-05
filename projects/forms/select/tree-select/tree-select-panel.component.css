@@ -11,7 +11,10 @@
  * **State modifiers**
  *
  * - `:hover` on `.cngx-tree-select__node` - hover-tinted background
- * - `[aria-selected='true']` on a node - selected-tint background
+ * - `[aria-checked='true']` on a node - selected-tint background
+ *   (`mixed` gets NO tint - the indeterminate indicator communicates the
+ *   partial state; a background tint would visually equate it with fully
+ *   selected)
  * - `[aria-disabled='true']` on a node - opacity dim + `cursor:
  *   not-allowed`
  * - `.cngx-tree-select__twisty--open` - 90deg rotation marking expanded
@@ -272,7 +275,7 @@
     }
 
     /* Selected is the persistent dark fill (the resting "chosen" state). */
-    .cngx-tree-select__node[aria-selected='true'] {
+    .cngx-tree-select__node[aria-checked='true'] {
       background: var(--cngx-tree-select-node-selected-bg, oklch(0.66 0.19 50 / 0.22));
     }
 
@@ -280,7 +283,7 @@
      * this row" states and intentionally win over the persistent selected fill,
      * so moving onto a selected node shows the lighter cursor tone rather than
      * staying dark. Both sit after the selected rule; --active is doubled
-     * (.node.node--active) to clear the [aria-selected] attribute selector's
+     * (.node.node--active) to clear the [aria-checked] attribute selector's
      * specificity. The active state reuses the flat option-list highlight token
      * so the tree highlights identically to the rest of the family and themes
      * through the same Material bridge mapping. */

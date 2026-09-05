@@ -37,9 +37,10 @@ import type { CngxTreeSelectNodeContext } from './tree-select.model';
  * in cascade / commit / announce.
  *
  * W3C Treeview APG attributes are reactive: `aria-expanded` from
- * `treeController.isExpanded(id)()`, `aria-selected` from
- * `host.isSelected(value)`, `aria-level` / `-posinset` / `-setsize`
- * from `FlatTreeNode`.
+ * `treeController.isExpanded(id)()`, `aria-checked`
+ * (true / false / `mixed` per the APG checkbox-tree pattern) from
+ * `host.isSelected(value)` / `host.isIndeterminate(value)`,
+ * `aria-level` / `-posinset` / `-setsize` from `FlatTreeNode`.
  *
  * @internal
  */

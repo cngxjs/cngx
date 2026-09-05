@@ -146,6 +146,7 @@ function makeShellHost(): CngxSelectPanelHost {
 class TreeHost implements CngxTreeSelectPanelHost<Row> {
   readonly nodes = signal(makeTree());
   readonly selected = signal<Set<string>>(new Set());
+  readonly indeterminateIds = signal<Set<string>>(new Set());
   readonly useSlot = signal(false);
   readonly panelOpen = signal(true).asReadonly();
   readonly expandToReveal = signal(false);
@@ -188,8 +189,8 @@ class TreeHost implements CngxTreeSelectPanelHost<Row> {
     return this.selected().has(v.id);
   }
 
-  isIndeterminate(_v: Row): boolean {
-    return false;
+  isIndeterminate(v: Row): boolean {
+    return this.indeterminateIds().has(v.id);
   }
 
   handleSelect(node: FlatTreeNode<Row>): void {
@@ -215,11 +216,13 @@ function setup() {
 }
 
 describe('CngxTreeSelectPanel', () => {
-  it('renders a role="tree" container with aria-multiselectable', () => {
+  it('renders a role="tree" container without the aria-selected-model attributes', () => {
     const { root } = setup();
     const tree = root.querySelector('[role="tree"]');
     expect(tree).toBeTruthy();
-    expect(tree?.getAttribute('aria-multiselectable')).toBe('true');
+    // APG checkbox-tree: per-row aria-checked communicates multi-ness;
+    // aria-multiselectable belongs to the aria-selected model.
+    expect(tree?.hasAttribute('aria-multiselectable')).toBe(false);
   });
 
   it('renders one treeitem per visible node with W3C APG ARIA attrs', () => {
@@ -233,7 +236,8 @@ describe('CngxTreeSelectPanel', () => {
     expect(a.getAttribute('aria-posinset')).toBe('1');
     expect(a.getAttribute('aria-setsize')).toBe('2');
     expect(a.getAttribute('aria-expanded')).toBe('false');
-    expect(a.getAttribute('aria-selected')).toBe('false');
+    expect(a.getAttribute('aria-checked')).toBe('false');
+    expect(a.hasAttribute('aria-selected')).toBe(false);
 
     const b = items[1];
     expect(b.getAttribute('aria-level')).toBe('1');
@@ -253,6 +257,31 @@ describe('CngxTreeSelectPanel', () => {
 
     const a2 = items[2];
     expect(a2.getAttribute('aria-disabled')).toBe('true');
+  });
+
+  it('aria-checked reflects the tri-state selection: false / true / mixed', () => {
+    const { fixture, host, root } = setup();
+    host.treeController.expand('a');
+    fixture.detectChanges();
+
+    const itemById = (id: string): HTMLElement =>
+      root.querySelector<HTMLElement>(`[role="treeitem"][id="${id}"]`)!;
+    expect(itemById('a').getAttribute('aria-checked')).toBe('false');
+
+    // Full selection -> true.
+    host.selected.set(new Set(['a1']));
+    fixture.detectChanges();
+    expect(itemById('a1').getAttribute('aria-checked')).toBe('true');
+
+    // Partial cascade -> mixed on the parent, same computed source as the
+    // indeterminate indicator.
+    host.indeterminateIds.set(new Set(['a']));
+    fixture.detectChanges();
+    expect(itemById('a').getAttribute('aria-checked')).toBe('mixed');
+    const indicator = itemById('a').querySelector('cngx-checkbox-indicator');
+    expect(indicator).toBeTruthy();
+    expect(root.querySelector('[aria-selected]')).toBeNull();
+    expect(root.querySelector('[aria-multiselectable]')).toBeNull();
   });
 
   it('twisty click toggles the controller expansion state', () => {

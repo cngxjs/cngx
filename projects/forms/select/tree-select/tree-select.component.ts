@@ -417,8 +417,8 @@ export class CngxTreeSelect<T = unknown>
 
   /**
    * Selection engine seeded with `childrenFn` so
-   * `isIndeterminate(value)` is free. Drives cascade-toggle and panel
-   * `aria-selected` / `aria-indeterminate`.
+   * `isIndeterminate(value)` is free. Drives cascade-toggle and the
+   * panel's `aria-checked` (true / false / `mixed`).
    */
   private readonly selection: SelectionController<T> = inject(CNGX_SELECTION_CONTROLLER_FACTORY)<T>(
     this.values,

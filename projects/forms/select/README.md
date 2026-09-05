@@ -38,7 +38,7 @@ Every variant ships full WAI-ARIA 1.2:
 - `role="combobox"` on the focusable trigger.
 - `aria-expanded`, `aria-controls`, `aria-haspopup`, `aria-busy`, `aria-invalid`, `aria-required` all reactive - derived in the `computed` graph.
 - Focus stays on the trigger; the active option is announced via `aria-activedescendant`.
-- Tree variant: `role="tree"`, `aria-multiselectable`, per-node `aria-level` / `aria-posinset` / `aria-setsize` / `aria-expanded` / `aria-selected`.
+- Tree variant: `role="tree"`, per-node `aria-level` / `aria-posinset` / `aria-setsize` / `aria-expanded` / `aria-checked` (true / false / `mixed` for partial cascade selection - APG checkbox-tree).
 - Reorderable variant: chip-strip `role="group"` with manual roving tabindex; reorder moves announced through the live region.
 
 ## Localisation
