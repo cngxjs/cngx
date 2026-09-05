@@ -34,9 +34,11 @@ import { errorSourceMapEqual } from './equal-fns';
  * ({@link `@cngx/common/interactive`#CngxErrorAggregator}) and the
  * function form share a single source of truth.
  *
- * @internal Staged API - single-consumer.
- * See form-primitives-accepted-debt.md §A for the re-evaluation trigger
- * and collapse plan.
+ * @category common/interactive/error
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/error-registry/inject-error-aggregator.ts
+ * @since 0.1.0
+ * @relatedTo CngxErrorAggregator
+ * <example-url>http://localhost:4200/#/common/interactive/error/registry/inject-error-aggregator-programmatic</example-url>
  */
 export function injectErrorAggregator(
   name?: string,
