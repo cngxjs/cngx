@@ -320,6 +320,41 @@ describe('CngxMultiSelect - skeleton', () => {
     expect(trigger.getAttribute('aria-expanded')).toBe('false');
     expect(pageEv.defaultPrevented).toBe(false);
   });
+
+  it('Enter/Space on the clear-all button stay scoped to the button (no panel open, activation preserved)', () => {
+    const fixture = TestBed.createComponent(Host);
+    fixture.componentInstance.clearable = true;
+    fixture.componentInstance.values.set(['red']);
+    flush(fixture);
+    const trigger: HTMLElement = fixture.nativeElement.querySelector(
+      '.cngx-multi-select__trigger',
+    );
+    const clear: HTMLElement = fixture.nativeElement.querySelector(
+      '.cngx-multi-select__clear-all',
+    );
+
+    const enterEv = new KeyboardEvent('keydown', {
+      key: 'Enter',
+      bubbles: true,
+      cancelable: true,
+    });
+    clear.dispatchEvent(enterEv);
+    flush(fixture);
+    // Without the guard, CngxListboxTrigger would preventDefault (killing
+    // the button's native activation) and open the panel.
+    expect(trigger.getAttribute('aria-expanded')).toBe('false');
+    expect(enterEv.defaultPrevented).toBe(false);
+
+    const spaceEv = new KeyboardEvent('keydown', {
+      key: ' ',
+      bubbles: true,
+      cancelable: true,
+    });
+    clear.dispatchEvent(spaceEv);
+    flush(fixture);
+    expect(trigger.getAttribute('aria-expanded')).toBe('false');
+    expect(spaceEv.defaultPrevented).toBe(false);
+  });
 });
 
 // ── [commitAction] per-toggle + supersede ─────────────────────────────

@@ -125,6 +125,8 @@
         <span
           class="cngx-reorderable-multi-select__clear-slot"
           (click)="$event.stopPropagation()"
+          (keydown.enter)="$event.stopPropagation()"
+          (keydown.space)="$event.stopPropagation()"
         >
           <ng-container
             *ngTemplateOutlet="
@@ -143,6 +145,8 @@
           class="cngx-reorderable-multi-select__clear-all"
           [attr.aria-label]="clearButtonAriaLabel()"
           (click)="handleClearAllClick($event)"
+          (keydown.enter)="$event.stopPropagation()"
+          (keydown.space)="$event.stopPropagation()"
         >
           @if (clearGlyph(); as glyph) {
             <ng-container *ngTemplateOutlet="glyph" />
