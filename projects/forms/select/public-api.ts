@@ -133,6 +133,7 @@ export {
   type CngxSelectRefreshingVariant,
   type CngxSelectSelectionIndicatorPosition,
   type CngxSelectSelectionIndicatorVariant,
+  makeSelectConfig,
   provideSelectConfig,
   provideSelectConfigAt,
   withPanelWidth,

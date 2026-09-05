@@ -3,6 +3,8 @@ import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
 import {
+  CNGX_SELECT_CONFIG,
+  makeSelectConfig,
   provideSelectConfig,
   provideSelectConfigAt,
   withAriaLabels,
@@ -155,7 +157,7 @@ describe('withTemplates', () => {
     expect(config.templates.empty).toBe(emptyTpl);
   });
 
-  it('lets provideSelectConfigAt override root-provided slots per slot', () => {
+  it('At-scope config shadows a root config wholesale (nearest-wins, no cross-level merge)', () => {
     TestBed.configureTestingModule({
       providers: [
         provideSelectConfig(withTemplates({ check: checkTpl, empty: emptyTpl })),
@@ -169,6 +171,34 @@ describe('withTemplates', () => {
     // ... but does NOT inherit root slots: the At token shadows the root
     // token entirely, so unset slots fall back to the library default.
     expect(config.templates.check).toBeNull();
+  });
+});
+
+describe('makeSelectConfig', () => {
+  const emptyTpl = { name: 'empty' } as unknown as TemplateRef<never>;
+
+  it('merges features into a plain config value without DI', () => {
+    const config = makeSelectConfig(
+      withPanelWidth(240),
+      withTemplates({ empty: emptyTpl }),
+      withAriaLabels({ chipRemove: 'Delete' }),
+    );
+    expect(config.panelWidth).toBe(240);
+    expect(config.templates?.empty).toBe(emptyTpl);
+    expect(config.ariaLabels?.chipRemove).toBe('Delete');
+  });
+
+  it('produces the same resolved config as provideSelectConfig when provided via useFactory', () => {
+    const config = resolveIn([
+      {
+        provide: CNGX_SELECT_CONFIG,
+        useFactory: () => makeSelectConfig(withTemplates({ empty: emptyTpl })),
+      },
+    ]);
+    expect(config.templates.empty).toBe(emptyTpl);
+    // Unset keys still fall back to library defaults through resolution.
+    expect(config.templates.check).toBeNull();
+    expect(config.panelWidth).toBe('trigger');
   });
 });
 

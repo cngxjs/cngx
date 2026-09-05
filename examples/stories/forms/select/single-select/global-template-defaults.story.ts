@@ -12,11 +12,11 @@ export const STORY: DemoSpec = {
   apiComponents: ['CngxSelect', 'CngxSelectPlaceholder'],
   moduleImports: [
     "import { forwardRef, TemplateRef } from '@angular/core';",
-    "import { CNGX_SELECT_CONFIG, CngxSelect, CngxSelectPlaceholder, withTemplates, type CngxSelectOptionDef, type CngxSelectEmptyContext, type CngxSelectPlaceholderContext } from '@cngx/forms/select';",
+    "import { CNGX_SELECT_CONFIG, CngxSelect, CngxSelectPlaceholder, makeSelectConfig, withTemplates, type CngxSelectOptionDef, type CngxSelectEmptyContext, type CngxSelectPlaceholderContext } from '@cngx/forms/select';",
   ],
   imports: ['CngxSelect', 'CngxSelectPlaceholder'],
   viewProviders: [
-    '{ provide: CNGX_SELECT_CONFIG, useFactory: (host: SingleSelectGlobalTemplateDefaults) => withTemplates({ placeholder: host.configPlaceholder(), empty: host.configEmpty() }).config, deps: [forwardRef(() => SingleSelectGlobalTemplateDefaults)] }',
+    '{ provide: CNGX_SELECT_CONFIG, useFactory: (host: SingleSelectGlobalTemplateDefaults) => makeSelectConfig(withTemplates({ placeholder: host.configPlaceholder(), empty: host.configEmpty() })), deps: [forwardRef(() => SingleSelectGlobalTemplateDefaults)] }',
   ],
   setup: `readonly configPlaceholder = viewChild.required<TemplateRef<CngxSelectPlaceholderContext>>('configPlaceholder');
   readonly configEmpty = viewChild.required<TemplateRef<CngxSelectEmptyContext>>('configEmpty');
@@ -54,6 +54,6 @@ export const STORY: DemoSpec = {
   }`,
   templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">First select</span><span class="event-value">config placeholder template; open it for the config empty template</span></div>
-    <div class="event-row"><span class="event-label">Second select</span><span class="event-value">projected placeholder beats the config default - value: {{ projectedValue() || '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Second select</span><span class="event-value">projected placeholder beats the config default - value: {{ projectedValue() || '-' }}</span></div>
   </div>`,
 };
