@@ -645,6 +645,9 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
       openedChange: this.openedChange,
       opened: this.opened,
       closed: this.closed,
+      restoringFocus: (active) => {
+        this.suppressOpenOnFocus = active;
+      },
     });
 
     createFieldSync<T | undefined>({
@@ -715,9 +718,15 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   };
 
   /** @internal */
+  // True only inside the lifecycle emitter's post-close focus restore -
+  // the programmatic refocus must not re-open under openOn: 'focus'.
+  private suppressOpenOnFocus = false;
+
   protected handleFocus(): void {
     this.focusState.markFocused();
-    if (this.config.openOn === 'focus' || this.config.openOn === 'click+focus') {
+    const openOnFocus =
+      this.config.openOn === 'focus' || this.config.openOn === 'click+focus';
+    if (openOnFocus && !this.suppressOpenOnFocus) {
       this.open();
     }
   }
@@ -730,6 +739,12 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
 
   /** @internal */
   protected handleTriggerKeydown(event: KeyboardEvent): void {
+    // Never hijack browser/app shortcuts: Ctrl/Cmd/Alt combos pass through
+    // untouched - the same guard the nav strategies and CngxListboxTrigger
+    // apply. Shift stays allowed.
+    if (event.ctrlKey || event.metaKey || event.altKey) {
+      return;
+    }
     const lb = this.listboxRef();
     const pop = this.popoverRef();
 

@@ -294,6 +294,67 @@ describe('CngxMultiSelect - skeleton', () => {
     expect(active).toBeDefined();
     expect(active!.disabled()).toBe(false);
   });
+
+  it('modified keys pass through the closed trigger untouched (Cmd+R, Ctrl+PageDown)', () => {
+    const fixture = TestBed.createComponent(Host);
+    flush(fixture);
+    const trigger: HTMLElement = fixture.nativeElement.querySelector(
+      '.cngx-multi-select__trigger',
+    );
+    // Without the guard, Cmd+R would typeahead-toggle 'red' while closed.
+    trigger.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'r', metaKey: true, bubbles: true }),
+    );
+    flush(fixture);
+    expect(fixture.componentInstance.values()).toEqual([]);
+
+    // Ctrl+PageDown stays a browser tab switch - the panel must not open.
+    const pageEv = new KeyboardEvent('keydown', {
+      key: 'PageDown',
+      ctrlKey: true,
+      bubbles: true,
+      cancelable: true,
+    });
+    trigger.dispatchEvent(pageEv);
+    flush(fixture);
+    expect(trigger.getAttribute('aria-expanded')).toBe('false');
+    expect(pageEv.defaultPrevented).toBe(false);
+  });
+
+  it('Enter/Space on the clear-all button stay scoped to the button (no panel open, activation preserved)', () => {
+    const fixture = TestBed.createComponent(Host);
+    fixture.componentInstance.clearable = true;
+    fixture.componentInstance.values.set(['red']);
+    flush(fixture);
+    const trigger: HTMLElement = fixture.nativeElement.querySelector(
+      '.cngx-multi-select__trigger',
+    );
+    const clear: HTMLElement = fixture.nativeElement.querySelector(
+      '.cngx-multi-select__clear-all',
+    );
+
+    const enterEv = new KeyboardEvent('keydown', {
+      key: 'Enter',
+      bubbles: true,
+      cancelable: true,
+    });
+    clear.dispatchEvent(enterEv);
+    flush(fixture);
+    // Without the guard, CngxListboxTrigger would preventDefault (killing
+    // the button's native activation) and open the panel.
+    expect(trigger.getAttribute('aria-expanded')).toBe('false');
+    expect(enterEv.defaultPrevented).toBe(false);
+
+    const spaceEv = new KeyboardEvent('keydown', {
+      key: ' ',
+      bubbles: true,
+      cancelable: true,
+    });
+    clear.dispatchEvent(spaceEv);
+    flush(fixture);
+    expect(trigger.getAttribute('aria-expanded')).toBe('false');
+    expect(spaceEv.defaultPrevented).toBe(false);
+  });
 });
 
 // ── [commitAction] per-toggle + supersede ─────────────────────────────

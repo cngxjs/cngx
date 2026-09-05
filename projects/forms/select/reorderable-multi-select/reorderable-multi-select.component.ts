@@ -801,6 +801,9 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
       openedChange: this.openedChange,
       opened: this.opened,
       closed: this.closed,
+      restoringFocus: (active) => {
+        this.suppressOpenOnFocus = active;
+      },
     });
 
     createFieldSync<T[]>({
@@ -896,9 +899,15 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   };
 
   /** @internal */
+  // True only inside the lifecycle emitter's post-close focus restore -
+  // the programmatic refocus must not re-open under openOn: 'focus'.
+  private suppressOpenOnFocus = false;
+
   protected handleFocus(): void {
     this.focusState.markFocused();
-    if (this.config.openOn === 'focus' || this.config.openOn === 'click+focus') {
+    const openOnFocus =
+      this.config.openOn === 'focus' || this.config.openOn === 'click+focus';
+    if (openOnFocus && !this.suppressOpenOnFocus) {
       this.open();
     }
   }
@@ -911,6 +920,12 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
 
   /** @internal */
   protected handleTriggerKeydown(event: KeyboardEvent): void {
+    // Never hijack browser/app shortcuts: Ctrl/Cmd/Alt combos pass through
+    // untouched - the same guard the nav strategies and CngxListboxTrigger
+    // apply. Shift stays allowed.
+    if (event.ctrlKey || event.metaKey || event.altKey) {
+      return;
+    }
     const lb = this.listboxRef();
     const pop = this.popoverRef();
 
@@ -982,12 +997,14 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   /**
    * Chip-strip keydown delegate. Two jobs:
    *
-   *   1. `stopPropagation()` for keydowns inside a chip wrap. Without
+   *   1. `stopPropagation()` for Enter/Space inside a chip wrap. Without
    *      it, Enter/Space on the focused ✕ bubbles to
    *      `CngxListboxTrigger.handleKeyDown`, which opens the popover
    *      AND swallows the native Enter→click - chip stays, popover
-   *      opens. The trigger keyboard is for the trigger element, not
-   *      chip children.
+   *      opens. Scoped to the two activation keys so everything else
+   *      keeps bubbling - notably Escape, which must reach the
+   *      document-level popover dismiss listener to close an open panel
+   *      from a focused chip.
    *   2. Forward plain arrow / Home / End to the roving controller.
    *      Modifier-pressed events are ignored so the paired
    *      `CngxReorder` owns that gesture.
@@ -996,7 +1013,8 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
    */
   protected handleStripKeydown(event: KeyboardEvent): void {
     const target = event.target as Element | null;
-    if (target?.closest('[data-reorder-index]')) {
+    const isActivationKey = event.key === 'Enter' || event.key === ' ';
+    if (isActivationKey && target?.closest('[data-reorder-index]')) {
       event.stopPropagation();
     }
     this.chipStripRoving.handleKeydown(event);

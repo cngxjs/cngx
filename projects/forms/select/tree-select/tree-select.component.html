@@ -84,7 +84,12 @@
     </span>
     @if (clearable() && !isEmpty() && !disabled()) {
       @if (clearButtonTpl(); as tpl) {
-        <span class="cngx-tree-select__clear-slot" (click)="$event.stopPropagation()">
+        <span
+          class="cngx-tree-select__clear-slot"
+          (click)="$event.stopPropagation()"
+          (keydown.enter)="$event.stopPropagation()"
+          (keydown.space)="$event.stopPropagation()"
+        >
           <ng-container
             *ngTemplateOutlet="
               tpl;
@@ -102,6 +107,8 @@
           class="cngx-tree-select__clear-all"
           [attr.aria-label]="clearButtonAriaLabel()"
           (click)="handleClearAllClick($event)"
+          (keydown.enter)="$event.stopPropagation()"
+          (keydown.space)="$event.stopPropagation()"
         >
           @if (clearGlyph(); as glyph) {
             <ng-container *ngTemplateOutlet="glyph" />

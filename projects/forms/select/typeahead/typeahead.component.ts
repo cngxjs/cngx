@@ -641,6 +641,9 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
       openedChange: this.openedChange,
       opened: this.opened,
       closed: this.closed,
+      restoringFocus: (active) => {
+        this.suppressOpenOnFocus = active;
+      },
     });
 
     createFieldSync<T | undefined>({
@@ -724,8 +727,17 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
     this.core.announce(null, 'removed', 0, false);
   };
 
+  // True only inside the lifecycle emitter's post-close focus restore -
+  // the programmatic refocus must not re-open under openOn: 'focus'.
+  private suppressOpenOnFocus = false;
+
   protected handleFocus(): void {
     this.focusState.markFocused();
+    const openOnFocus =
+      this.config.openOn === 'focus' || this.config.openOn === 'click+focus';
+    if (openOnFocus && !this.suppressOpenOnFocus) {
+      this.open();
+    }
   }
 
   protected handleBlur(): void {

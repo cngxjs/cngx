@@ -21,6 +21,15 @@ export interface PanelLifecycleEmitterOptions {
   readonly openedChange: OutputEmitterRef<boolean>;
   readonly opened: OutputEmitterRef<void>;
   readonly closed: OutputEmitterRef<void>;
+  /**
+   * Called synchronously around the post-close focus restore with
+   * `true` before and `false` after the programmatic `.focus()`. Hosts
+   * honoring `openOn: 'focus'` use the window to suppress their
+   * focus-opens-panel strategy - otherwise the restore would reopen
+   * the panel that just closed. Optional; custom factories may ignore
+   * it when they implement their own restore strategy.
+   */
+  readonly restoringFocus?: (active: boolean) => void;
 }
 
 /**
@@ -48,7 +57,20 @@ export function createPanelLifecycleEmitter(
       }
       // Microtask defers focus past the popover-close DOM mutation;
       // otherwise focus lands on a detaching element and falls to body.
-      queueMicrotask(() => opts.restoreFocusTarget()?.nativeElement.focus());
+      queueMicrotask(() => {
+        const target = opts.restoreFocusTarget()?.nativeElement;
+        if (!target) {
+          return;
+        }
+        // Focus handlers run synchronously inside .focus(), so the
+        // suppression window closes right after the call returns.
+        opts.restoringFocus?.(true);
+        try {
+          target.focus();
+        } finally {
+          opts.restoringFocus?.(false);
+        }
+      });
     });
   });
 }

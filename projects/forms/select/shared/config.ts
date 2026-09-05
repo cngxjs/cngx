@@ -418,10 +418,13 @@ export const CNGX_SELECT_DEFAULTS: Required<
  * fallback labels. Composed from the `with*` features (`withPanelWidth`,
  * `withVirtualization`, `withSelectionIndicator`, `withAriaLabels`, ...).
  *
- * Provide it through one of two entry points, never the token directly:
+ * Provide it through one of these entry points, never a hand-built literal:
  *
  * - `provideSelectConfig(...)` returns `EnvironmentProviders` - app bootstrap or a route.
  * - `provideSelectConfigAt(...)` returns `Provider[]` - a component's `providers` / `viewProviders`.
+ * - `{ provide: CNGX_SELECT_CONFIG, useFactory: () => makeSelectConfig(...) }` -
+ *   when the payload only exists at injection time (`TemplateRef`s from a
+ *   live view, values read from another service).
  *
  * Resolution is nearest-wins: a nested provider replaces an ancestor config for
  * its subtree, it does not deep-merge. The action-select and reorderable
@@ -683,10 +686,56 @@ export function withAriaLabels(labels: CngxSelectAriaLabels): CngxSelectConfigFe
 }
 
 /**
- * App-wide defaults for the Select family. `provideSelectConfigAt` and
- * per-instance inputs win.
+ * Sets default slot templates applied when no per-instance slot is
+ * projected. Partial - unset slots keep the library default. Multiple
+ * `withTemplates` calls in the same provider merge per slot in
+ * feature-list order.
+ *
+ * Resolution per slot: projected `*cngxSelect...` template -> the
+ * nearest provided config's `templates.<slot>` -> built-in default.
+ * Like every `CNGX_SELECT_CONFIG` key, the token is nearest-wins
+ * across injector levels: an `At`-scope config replaces a root config
+ * wholesale for its subtree, it does not inherit root slots.
+ *
+ * `TemplateRef`s need a live view, so they cannot sit in a static
+ * provider array evaluated at bootstrap. Declare the templates in a
+ * holder component rendered before the selects (an app shell above
+ * routed content) and build the config lazily via `makeSelectConfig`
+ * in a `useFactory`:
+ *
+ * ```ts
+ * @Component({
+ *   selector: 'app-select-defaults',
+ *   template: `<ng-template #empty let-term>No hits for "{{ term }}"</ng-template>`,
+ * })
+ * export class SelectDefaults {
+ *   readonly empty = viewChild.required<TemplateRef<CngxSelectEmptyContext>>('empty');
+ * }
+ *
+ * // Route- or component-level provider below the rendered holder:
+ * {
+ *   provide: CNGX_SELECT_CONFIG,
+ *   useFactory: (holder: SelectDefaults) =>
+ *     makeSelectConfig(withTemplates({ empty: holder.empty() })),
+ *   deps: [SelectDefaults],
+ * }
+ * ```
  */
-export function provideSelectConfig(...features: CngxSelectConfigFeature[]): EnvironmentProviders {
+export function withTemplates(
+  templates: NonNullable<CngxSelectConfig['templates']>,
+): CngxSelectConfigFeature {
+  return feature({ templates });
+}
+
+/**
+ * Pure merge of `with*` features into a `CngxSelectConfig` value - the
+ * exact merge `provideSelectConfig` / `provideSelectConfigAt` apply.
+ * Reach for it when the config must be built lazily in a `useFactory`,
+ * e.g. to carry `TemplateRef` payloads that only exist once a holder
+ * view is live (see `withTemplates`). For static values, prefer the
+ * two provide functions.
+ */
+export function makeSelectConfig(...features: CngxSelectConfigFeature[]): CngxSelectConfig {
   const merged: {
     -readonly [K in keyof CngxSelectConfig]?: CngxSelectConfig[K];
   } = {};
@@ -705,7 +754,17 @@ export function provideSelectConfig(...features: CngxSelectConfigFeature[]): Env
       merged.ariaLabels = { ...merged.ariaLabels, ...ariaLabels };
     }
   }
-  return makeEnvironmentProviders([{ provide: CNGX_SELECT_CONFIG, useValue: merged }]);
+  return merged;
+}
+
+/**
+ * App-wide defaults for the Select family. `provideSelectConfigAt` and
+ * per-instance inputs win.
+ */
+export function provideSelectConfig(...features: CngxSelectConfigFeature[]): EnvironmentProviders {
+  return makeEnvironmentProviders([
+    { provide: CNGX_SELECT_CONFIG, useValue: makeSelectConfig(...features) },
+  ]);
 }
 
 /**
@@ -719,23 +778,5 @@ export function provideSelectConfig(...features: CngxSelectConfigFeature[]): Env
  * ```
  */
 export function provideSelectConfigAt(...features: CngxSelectConfigFeature[]): Provider[] {
-  const merged: {
-    -readonly [K in keyof CngxSelectConfig]?: CngxSelectConfig[K];
-  } = {};
-  for (const f of features) {
-    // Pull deep-merged keys aside before the flat assign so partial
-    // overrides across features don't wipe earlier keys.
-    const { announcer, templates, ariaLabels, ...flat } = f.config;
-    Object.assign(merged, flat);
-    if (announcer) {
-      merged.announcer = { ...merged.announcer, ...announcer };
-    }
-    if (templates) {
-      merged.templates = { ...merged.templates, ...templates };
-    }
-    if (ariaLabels) {
-      merged.ariaLabels = { ...merged.ariaLabels, ...ariaLabels };
-    }
-  }
-  return [{ provide: CNGX_SELECT_CONFIG, useValue: merged }];
+  return [{ provide: CNGX_SELECT_CONFIG, useValue: makeSelectConfig(...features) }];
 }

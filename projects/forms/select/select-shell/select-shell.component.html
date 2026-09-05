@@ -40,13 +40,22 @@
     }
     @if (clearable() && !empty() && !disabled()) {
       @if (tpl.clearButton(); as clearTpl) {
-        <ng-container *ngTemplateOutlet="clearTpl; context: clearButtonContext()" />
+        <span
+          class="cngx-select-shell__clear-slot"
+          (click)="$event.stopPropagation()"
+          (keydown.enter)="$event.stopPropagation()"
+          (keydown.space)="$event.stopPropagation()"
+        >
+          <ng-container *ngTemplateOutlet="clearTpl; context: clearButtonContext()" />
+        </span>
       } @else {
         <button
           type="button"
           class="cngx-select-shell__clear"
           [attr.aria-label]="clearButtonAriaLabel()"
           (click)="handleClearClick($event)"
+          (keydown.enter)="$event.stopPropagation()"
+          (keydown.space)="$event.stopPropagation()"
         >
           @if (clearGlyph(); as glyph) {
             <ng-container *ngTemplateOutlet="glyph" />

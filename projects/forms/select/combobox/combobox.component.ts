@@ -253,6 +253,17 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   /**
    * Whether activating an option closes the panel. Default `false`
    * (tag-input UX).
+   *
+   * Deliberately a Combobox-only input. The chip-strip combobox is the
+   * one variant whose UX genuinely toggles between two modes:
+   * pick-many-while-open (tag input, the default) and close-per-pick
+   * (quick single-tag capture). Every sibling hardcodes its close
+   * behavior by design - single-valued variants (`CngxSelect`,
+   * `CngxTypeahead`) always close on pick, multi-valued panels
+   * (`CngxMultiSelect`, `CngxTreeSelect`, `CngxReorderableMultiSelect`)
+   * always stay open, and the action variants close via their commit
+   * flow. Exposing the flag there would be configuration without a use
+   * case; see the composition pillar.
    */
   readonly closeOnSelect = input<boolean>(false);
 
@@ -871,6 +882,9 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
       openedChange: this.openedChange,
       opened: this.opened,
       closed: this.closed,
+      restoringFocus: (active) => {
+        this.suppressOpenOnFocus = active;
+      },
     });
 
     createFieldSync<T[]>({
@@ -992,8 +1006,17 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   };
 
   /** @internal */
+  // True only inside the lifecycle emitter's post-close focus restore -
+  // the programmatic refocus must not re-open under openOn: 'focus'.
+  private suppressOpenOnFocus = false;
+
   protected handleFocus(): void {
     this.focusState.markFocused();
+    const openOnFocus =
+      this.config.openOn === 'focus' || this.config.openOn === 'click+focus';
+    if (openOnFocus && !this.suppressOpenOnFocus) {
+      this.open();
+    }
   }
 
   /** @internal */

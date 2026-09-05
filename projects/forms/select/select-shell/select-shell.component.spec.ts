@@ -1064,6 +1064,79 @@ describe('CngxSelectShell - trigger slot-cascade tier-1', () => {
     expect(fixture.componentInstance.value()).toBeUndefined();
   });
 
+  it('projected clear-button click does not bubble to the trigger (panel stays closed)', () => {
+    @Component({
+      template: `
+        <cngx-select-shell [label]="'CB'" [clearable]="true" [(value)]="value">
+          <cngx-option [value]="'a'">A</cngx-option>
+          <ng-template cngxSelectClearButton let-clear let-disabled="disabled">
+            <button type="button" class="custom-clear" [disabled]="disabled" (click)="clear()">
+              X
+            </button>
+          </ng-template>
+        </cngx-select-shell>
+      `,
+      imports: [CngxSelectShell, CngxSelectOption, CngxSelectClearButton],
+    })
+    class ClearBubbleHost {
+      readonly value = signal<string | undefined>('a');
+    }
+
+    const fixture = TestBed.createComponent(ClearBubbleHost);
+    fixture.detectChanges();
+    flush(fixture);
+
+    const shellDe = fixture.debugElement.query(By.directive(CngxSelectShell));
+    const shell = shellDe.componentInstance as CngxSelectShell<string>;
+    const custom = shellDe.nativeElement.querySelector('.custom-clear') as HTMLButtonElement;
+
+    custom.click();
+    flush(fixture);
+    // Same guard as the sibling variants: the clear click is scoped to
+    // the slot and must not reach handleTriggerClick's panel toggle.
+    expect(shell.panelOpen()).toBe(false);
+    expect(fixture.componentInstance.value()).toBeUndefined();
+  });
+
+  it('Enter on a projected clear button stays scoped to the slot (no panel open, activation preserved)', () => {
+    @Component({
+      template: `
+        <cngx-select-shell [label]="'CB'" [clearable]="true" [(value)]="value">
+          <cngx-option [value]="'a'">A</cngx-option>
+          <ng-template cngxSelectClearButton let-clear let-disabled="disabled">
+            <button type="button" class="custom-clear" [disabled]="disabled" (click)="clear()">
+              X
+            </button>
+          </ng-template>
+        </cngx-select-shell>
+      `,
+      imports: [CngxSelectShell, CngxSelectOption, CngxSelectClearButton],
+    })
+    class ClearKeydownHost {
+      readonly value = signal<string | undefined>('a');
+    }
+
+    const fixture = TestBed.createComponent(ClearKeydownHost);
+    fixture.detectChanges();
+    flush(fixture);
+
+    const shellDe = fixture.debugElement.query(By.directive(CngxSelectShell));
+    const shell = shellDe.componentInstance as CngxSelectShell<string>;
+    const custom = shellDe.nativeElement.querySelector('.custom-clear') as HTMLButtonElement;
+
+    const enterEv = new KeyboardEvent('keydown', {
+      key: 'Enter',
+      bubbles: true,
+      cancelable: true,
+    });
+    custom.dispatchEvent(enterEv);
+    flush(fixture);
+    // Without the guard, CngxListboxTrigger would preventDefault (killing
+    // the button's native activation) and open the panel.
+    expect(shell.panelOpen()).toBe(false);
+    expect(enterEv.defaultPrevented).toBe(false);
+  });
+
   it('renders projected *cngxSelectCaret instead of the default ▾ glyph', () => {
     @Component({
       template: `
