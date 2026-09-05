@@ -15,9 +15,11 @@ import { CngxErrorRegistry } from './error-registry';
  * Must be called in an injection context (constructor, factory provider,
  * `runInInjectionContext`).
  *
- * @internal Staged API - single-consumer.
- * See form-primitives-accepted-debt.md §A for the re-evaluation trigger
- * and collapse plan.
+ * @category common/interactive/error
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/error-registry/inject-error-scope.ts
+ * @since 0.1.0
+ * @relatedTo CngxErrorScope
+ * <example-url>http://localhost:4200/#/common/interactive/error/registry/inject-error-scope-programmatic</example-url>
  */
 export function injectErrorScope(name?: string): CngxErrorScopeContract {
   const showErrorsState = signal(false);
