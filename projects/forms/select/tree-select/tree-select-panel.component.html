@@ -14,6 +14,7 @@
     (keydown.enter)="handleActivate($event, ad)"
     (keydown.space)="handleActivate($event, ad)"
     (keydown.escape)="handleEscape($event)"
+    (typeaheadMissed)="handleTypeaheadMiss($event, ad)"
     tabindex="0"
     class="cngx-tree-select__tree"
   >

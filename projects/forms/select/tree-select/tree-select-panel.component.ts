@@ -2,7 +2,9 @@ import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  Injector,
   ViewEncapsulation,
+  afterNextRender,
   effect,
   inject,
   untracked,
@@ -73,6 +75,9 @@ export class CngxTreeSelectPanel<T = unknown> {
   protected readonly viewHost = inject(CNGX_SELECT_PANEL_VIEW_HOST) as CngxSelectPanelViewHost<T>;
 
   private readonly treeContainer = viewChild<ElementRef<HTMLElement>>('treeContainer');
+
+  /** For the one-shot afterNextRender in the typeahead-miss handler. */
+  private readonly injector = inject(Injector);
 
   constructor() {
     // Move DOM focus to the tree container on open. AD only reacts to
@@ -208,5 +213,43 @@ export class CngxTreeSelectPanel<T = unknown> {
   protected handleEscape(event: Event): void {
     event.preventDefault();
     this.host.close();
+  }
+
+  /**
+   * Expand-to-reveal type-to-find (opt-in via `expandToReveal`). AD's
+   * typeahead search space is the rendered window - for the tree panel
+   * that is `visibleNodes`. On a miss, search the FULL flat tree with
+   * AD-parity semantics (case-insensitive `startsWith`, wrap-around
+   * from the active node, disabled-skip per `ad.skipDisabled()`),
+   * reveal the match's ancestors, and re-highlight.
+   *
+   * The highlight is deferred with `afterNextRender`: AD's `items` is
+   * an InputSignal fed by the `[items]="adItems()"` template binding,
+   * so a synchronous `highlightByValue` right after `reveal` would
+   * still search the pre-reveal array and no-op.
+   */
+  protected handleTypeaheadMiss(term: string, ad: CngxActiveDescendant): void {
+    if (!this.host.expandToReveal()) {
+      return;
+    }
+    const flat = untracked(() => this.host.treeController.flatNodes());
+    const count = flat.length;
+    if (count === 0) {
+      return;
+    }
+    const activeId = ad.activeItem()?.id ?? null;
+    const activeIdx = activeId === null ? -1 : flat.findIndex((n) => n.id === activeId);
+    const skip = ad.skipDisabled();
+    for (let step = 1; step <= count; step++) {
+      const node = flat[(activeIdx + step + count) % count];
+      if (skip && node.disabled) {
+        continue;
+      }
+      if (node.label.toLowerCase().startsWith(term)) {
+        this.host.treeController.reveal(node.id);
+        afterNextRender(() => ad.highlightByValue(node.value), { injector: this.injector });
+        return;
+      }
+    }
   }
 }

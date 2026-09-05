@@ -12,7 +12,7 @@ import {
   type CngxTreeController,
 } from '@cngx/common/interactive';
 import type { CngxTreeNode, FlatTreeNode } from '@cngx/utils';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   CNGX_SELECT_PANEL_HOST,
   CNGX_SELECT_PANEL_VIEW_HOST,
@@ -148,6 +148,7 @@ class TreeHost implements CngxTreeSelectPanelHost<Row> {
   readonly selected = signal<Set<string>>(new Set());
   readonly useSlot = signal(false);
   readonly panelOpen = signal(true).asReadonly();
+  readonly expandToReveal = signal(false);
   // Glyph overrides + i18n labels - null / default literals keep the
   // harness on the built-in node-row visuals.
   readonly twistyGlyph = signal<TemplateRef<void> | null>(null).asReadonly();
@@ -283,5 +284,137 @@ describe('CngxTreeSelectPanel', () => {
     expect(root.querySelector<HTMLElement>('[data-id="a"]')?.textContent?.trim()).toBe(
       'custom: Alpha',
     );
+  });
+});
+
+describe('CngxTreeSelectPanel - expand-to-reveal type-to-find', () => {
+  function makeDeepTree(): CngxTreeNode<Row>[] {
+    return [
+      { value: { id: 'ap', name: 'Apple' } },
+      {
+        value: { id: 'f', name: 'Fruits' },
+        children: [
+          { value: { id: 'c', name: 'Cherry' } },
+          { value: { id: 'g', name: 'Grape' } },
+        ],
+      },
+      { value: { id: 'z', name: 'Zebra' } },
+    ];
+  }
+
+  function setupDeep() {
+    const fixture = TestBed.createComponent(TreeHost);
+    fixture.componentInstance.nodes.set(makeDeepTree());
+    fixture.detectChanges();
+    const host = fixture.componentInstance;
+    const root = fixture.nativeElement as HTMLElement;
+    const tree = root.querySelector<HTMLElement>('[role="tree"]')!;
+    const type = (ch: string): void => {
+      tree.dispatchEvent(new KeyboardEvent('keydown', { key: ch, bubbles: true }));
+      TestBed.flushEffects();
+      fixture.detectChanges();
+      fixture.detectChanges();
+    };
+    return { fixture, host, root, tree, type };
+  }
+
+  it('default off: a typeahead miss leaves expansion and active item untouched', () => {
+    const { host, tree, type } = setupDeep();
+    // autoHighlightFirst puts the highlight on Apple before any typing.
+    expect(tree.getAttribute('aria-activedescendant')).toBe('ap');
+    type('c');
+    expect(host.treeController.expandedIds().size).toBe(0);
+    expect(tree.getAttribute('aria-activedescendant')).toBe('ap');
+  });
+
+  it('on: a hidden match expands its ancestors and moves the highlight onto it', () => {
+    const { host, tree, type } = setupDeep();
+    host.expandToReveal.set(true);
+    type('c');
+    expect(host.treeController.isExpanded('f')()).toBe(true);
+    expect(tree.getAttribute('aria-activedescendant')).toBe('c');
+    // The match itself stays unexpanded (it is a leaf anyway) and unselected.
+    expect(host.treeController.expandedIds().has('c')).toBe(false);
+  });
+
+  it('matches mixed-case labels against the lowercased term', () => {
+    const { fixture, host, tree, type } = setupDeep();
+    host.nodes.set([
+      {
+        value: { id: 'f', name: 'Fruits' },
+        children: [{ value: { id: 'c', name: 'CHERRY' } }],
+      },
+    ]);
+    host.expandToReveal.set(true);
+    fixture.detectChanges();
+    type('c');
+    expect(host.treeController.isExpanded('f')()).toBe(true);
+    expect(tree.getAttribute('aria-activedescendant')).toBe('c');
+  });
+
+  it('skips a disabled hidden match while skipDisabled=true (AD default)', () => {
+    const { fixture, host, tree, type } = setupDeep();
+    host.nodes.set([
+      {
+        value: { id: 'f', name: 'Fruits' },
+        children: [{ value: { id: 'c', name: 'Cherry', disabled: true }, disabled: true }],
+      },
+    ]);
+    host.expandToReveal.set(true);
+    fixture.detectChanges();
+    type('c');
+    expect(host.treeController.expandedIds().size).toBe(0);
+    // Highlight stays on the auto-highlighted root.
+    expect(tree.getAttribute('aria-activedescendant')).toBe('f');
+  });
+
+  it('matches a disabled hidden node when the AD host runs skipDisabled=false', () => {
+    const { fixture, host } = setupDeep();
+    host.nodes.set([
+      {
+        value: { id: 'f', name: 'Fruits' },
+        children: [{ value: { id: 'c', name: 'Cherry', disabled: true }, disabled: true }],
+      },
+    ]);
+    host.expandToReveal.set(true);
+    fixture.detectChanges();
+    const panel = fixture.debugElement.children[0].componentInstance as CngxTreeSelectPanel<Row>;
+    const highlighted: unknown[] = [];
+    // Collaborator stub: only the AD reads the handler consults.
+    const adStub = {
+      skipDisabled: () => false,
+      activeItem: () => null,
+      highlightByValue: (v: unknown) => highlighted.push(v),
+    };
+    (panel as unknown as { handleTypeaheadMiss(term: string, ad: unknown): void }).handleTypeaheadMiss(
+      'c',
+      adStub,
+    );
+    expect(host.treeController.isExpanded('f')()).toBe(true);
+    fixture.detectChanges();
+    expect(highlighted).toEqual([{ id: 'c', name: 'Cherry', disabled: true }]);
+  });
+
+  it('wraps around from a late active node to an earlier hidden match', () => {
+    const { host, root, tree, type } = setupDeep();
+    host.expandToReveal.set(true);
+    // Let the typeahead buffer expire between the two queries -
+    // otherwise 'z' + 'c' chain into one 'zc' term.
+    vi.useFakeTimers();
+    type('z');
+    expect(tree.getAttribute('aria-activedescendant')).toBe('z');
+    vi.advanceTimersByTime(400);
+    type('c');
+    expect(host.treeController.isExpanded('f')()).toBe(true);
+    expect(tree.getAttribute('aria-activedescendant')).toBe('c');
+    expect(root.querySelector('[id="c"]')).toBeTruthy();
+  });
+
+  it('no full-tree match: expansion and active item stay untouched', () => {
+    const { host, tree, type } = setupDeep();
+    host.expandToReveal.set(true);
+    type('x');
+    expect(host.treeController.expandedIds().size).toBe(0);
+    expect(tree.getAttribute('aria-activedescendant')).toBe('ap');
   });
 });

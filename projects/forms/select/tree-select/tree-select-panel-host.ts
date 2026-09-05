@@ -25,6 +25,12 @@ export interface CngxTreeSelectPanelHost<T = unknown> {
    * closed.
    */
   readonly panelOpen: Signal<boolean>;
+  /**
+   * Opt-in expand-to-reveal type-to-find. When `true` the panel
+   * resolves typeahead misses against the full flat tree (reveal +
+   * re-highlight); when `false` a miss is a no-op.
+   */
+  readonly expandToReveal: Signal<boolean>;
   /** Resolved `*cngxTreeSelectNode` template (or `null`). */
   readonly nodeTpl: Signal<TemplateRef<CngxTreeSelectNodeContext<T>> | null>;
   /**
