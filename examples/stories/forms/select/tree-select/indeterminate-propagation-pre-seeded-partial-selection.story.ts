@@ -4,6 +4,14 @@ export const STORY: DemoSpec = {
   title: 'CngxTreeSelect: indeterminate propagation pre seeded partial selection',
   subtitle:
     'Seeded with a single child of Frontend, the parent renders an indeterminate dash rather than a check - some, but not all, descendants are selected. Toggling the parent (cascade on) resolves the dash to fully selected, then fully cleared.',
+  description:
+    'The partial state is perceivable, not just visual: the parent row carries <code>aria-checked="mixed"</code>, derived from the same computed selection source as the dash indicator (APG checkbox-tree pattern).',
+  references: [
+    {
+      label: 'WAI-ARIA 1.2: aria-checked (mixed)',
+      href: 'https://www.w3.org/TR/wai-aria-1.2/#aria-checked',
+    },
+  ],
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
