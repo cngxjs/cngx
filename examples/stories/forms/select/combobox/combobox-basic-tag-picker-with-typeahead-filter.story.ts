@@ -2,7 +2,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'CngxCombobox: combobox basic tag picker with typeahead filter',
-  subtitle: '<code>&lt;cngx-combobox&gt;</code> - inline <code>&lt;input role="combobox"&gt;</code> next to the chip strip. Typing filters the panel live; Backspace on an empty input removes the trailing chip; panel stays open on each pick (<code>closeOnSelect</code> default <code>false</code>).',
+  subtitle: '<code>&lt;cngx-combobox&gt;</code> - inline <code>&lt;input role="combobox"&gt;</code> next to the chip strip. Typing filters the panel live; Backspace on an empty input removes the trailing chip; panel stays open on each pick (<code>closeOnSelect</code> default <code>false</code>). Set <code>[closeOnSelect]="true"</code> for quick single-tag capture - the combobox is the only variant that exposes this switch, because only its tag-input UX genuinely toggles between pick-many-while-open and close-per-pick; every sibling hardcodes its close behavior by design.',
   level: 'organism',
   audience: ['dev', 'design'],
   artifact: 'standalone',

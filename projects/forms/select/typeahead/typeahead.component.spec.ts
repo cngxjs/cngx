@@ -10,7 +10,7 @@ import { describeCommitControllerCascade } from '../shared/__test-helpers/commit
 import { CngxTypeahead } from './typeahead.component';
 import type { CngxSelectOptionsInput } from '../shared/option.model';
 import type { CngxSelectCommitAction } from '../shared/commit-action.types';
-import { provideSelectConfig, withTypeaheadDebounce } from '../shared/config';
+import { provideSelectConfig, withOpenOn, withTypeaheadDebounce } from '../shared/config';
 import { CngxSelectInputPrefix, CngxSelectInputSuffix } from '../shared/template-slots';
 
 type User = { readonly id: number; readonly name: string };
@@ -352,6 +352,59 @@ describe('CngxTypeahead - searchDebounceMs config integration', () => {
     const typeahead = fixture.debugElement.query(By.directive(CngxTypeahead))
       .componentInstance as CngxTypeahead<string>;
     expect(typeahead.searchDebounceMs()).toBe(500);
+  });
+});
+
+describe('CngxTypeahead - openOn config integration', () => {
+  @Component({
+    template: `<cngx-typeahead [options]="options" />`,
+    imports: [CngxTypeahead],
+  })
+  class OpenOnHost {
+    readonly options: CngxSelectOptionsInput<string> = [{ value: 'a', label: 'A' }];
+  }
+
+  beforeEach(() => polyfillPopover());
+
+  function setupOpenOn(providers: unknown[]): {
+    fixture: ReturnType<typeof TestBed.createComponent<OpenOnHost>>;
+    typeahead: CngxTypeahead<string>;
+    input: HTMLInputElement;
+  } {
+    TestBed.configureTestingModule({ imports: [OpenOnHost], providers: providers as never[] });
+    const fixture = TestBed.createComponent(OpenOnHost);
+    flush(fixture);
+    const typeahead = fixture.debugElement.query(By.directive(CngxTypeahead))
+      .componentInstance as CngxTypeahead<string>;
+    const input = fixture.nativeElement.querySelector(
+      'input.cngx-typeahead__input',
+    ) as HTMLInputElement;
+    return { fixture, typeahead, input };
+  }
+
+  it('keeps the panel closed on input focus under the default click strategy', () => {
+    const { fixture, typeahead, input } = setupOpenOn([]);
+    input.dispatchEvent(new Event('focus'));
+    flush(fixture);
+    expect(typeahead.panelOpen()).toBe(false);
+  });
+
+  it('opens the panel on input focus with withOpenOn("focus")', () => {
+    const { fixture, typeahead, input } = setupOpenOn([
+      provideSelectConfig(withOpenOn('focus')),
+    ]);
+    input.dispatchEvent(new Event('focus'));
+    flush(fixture);
+    expect(typeahead.panelOpen()).toBe(true);
+  });
+
+  it('opens the panel on input focus with withOpenOn("click+focus")', () => {
+    const { fixture, typeahead, input } = setupOpenOn([
+      provideSelectConfig(withOpenOn('click+focus')),
+    ]);
+    input.dispatchEvent(new Event('focus'));
+    flush(fixture);
+    expect(typeahead.panelOpen()).toBe(true);
   });
 });
 

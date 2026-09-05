@@ -13,6 +13,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
 import { describeCommitControllerCascade } from '../shared/__test-helpers/commit-controller-cascade';
 import { CngxCombobox, type CngxComboboxChange } from './combobox.component';
 import { CngxComboboxChip } from '../shared/template-slots';
+import { provideSelectConfig, withOpenOn } from '../shared/config';
 import {
   filterSelectOptions,
   type CngxSelectOptionDef,
@@ -936,6 +937,65 @@ describe('CngxCombobox - *cngxComboboxChip slot', () => {
     };
     const opt: CngxSelectOptionDef<string> = OPTIONS[0];
     expect(combo.chipRemoveFor(opt)).toBe(combo.chipRemoveFor(opt));
+  });
+});
+
+describe('CngxCombobox - openOn config integration', () => {
+  function setupOpenOn(providers: unknown[]): {
+    fixture: ReturnType<typeof TestBed.createComponent<Host>>;
+    combobox: CngxCombobox<string>;
+    input: HTMLInputElement;
+  } {
+    TestBed.configureTestingModule({ providers: providers as never[] });
+    const fixture = TestBed.createComponent(Host);
+    flush(fixture);
+    const combobox = fixture.debugElement.query(By.directive(CngxCombobox))
+      .componentInstance as CngxCombobox<string>;
+    const input = fixture.nativeElement.querySelector(
+      '.cngx-combobox__input',
+    ) as HTMLInputElement;
+    return { fixture, combobox, input };
+  }
+
+  it('keeps the panel closed on input focus under the default click strategy', () => {
+    const { fixture, combobox, input } = setupOpenOn([]);
+    input.dispatchEvent(new Event('focus'));
+    flush(fixture);
+    expect(combobox.panelOpen()).toBe(false);
+  });
+
+  it('opens the panel on input focus with withOpenOn("focus")', () => {
+    const { fixture, combobox, input } = setupOpenOn([
+      provideSelectConfig(withOpenOn('focus')),
+    ]);
+    input.dispatchEvent(new Event('focus'));
+    flush(fixture);
+    expect(combobox.panelOpen()).toBe(true);
+  });
+
+  it('opens the panel on input focus with withOpenOn("click+focus")', () => {
+    const { fixture, combobox, input } = setupOpenOn([
+      provideSelectConfig(withOpenOn('click+focus')),
+    ]);
+    input.dispatchEvent(new Event('focus'));
+    flush(fixture);
+    expect(combobox.panelOpen()).toBe(true);
+  });
+
+  it('Ctrl+PageDown on the input passes through untouched (shared page-jump guard)', () => {
+    const { fixture, combobox, input } = setupOpenOn([]);
+    // Unmodified PageDown opens the panel via handlePageJumpKey; the
+    // modified combo must stay a browser tab switch.
+    const ev = new KeyboardEvent('keydown', {
+      key: 'PageDown',
+      ctrlKey: true,
+      bubbles: true,
+      cancelable: true,
+    });
+    input.dispatchEvent(ev);
+    flush(fixture);
+    expect(combobox.panelOpen()).toBe(false);
+    expect(ev.defaultPrevented).toBe(false);
   });
 });
 

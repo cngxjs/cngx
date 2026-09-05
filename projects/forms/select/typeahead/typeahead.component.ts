@@ -726,6 +726,9 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
 
   protected handleFocus(): void {
     this.focusState.markFocused();
+    if (this.config.openOn === 'focus' || this.config.openOn === 'click+focus') {
+      this.open();
+    }
   }
 
   protected handleBlur(): void {
