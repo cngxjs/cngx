@@ -4,6 +4,7 @@ const R = {
   basic: '/#/forms/select/tree-select/basic-single-level-toggle',
   cascade: '/#/forms/select/tree-select/cascade-children-parent-toggle-selects-the-whole-subtree',
   custom: '/#/forms/select/tree-select/custom-cngxtreeselectnode-template',
+  typeToFind: '/#/forms/select/tree-select/type-to-find-expand-to-reveal',
 };
 
 // One example per leaf route → scope to <main> so trigger, chips, panel tree
@@ -182,6 +183,39 @@ test.describe('CngxTreeSelect demo', () => {
     // so only the root itself toggles).
     await root.click();
     await expect(root).toHaveAttribute('aria-checked', 'true');
+  });
+
+  test('expandToReveal: typing a hidden-only match expands its ancestor and highlights it', async ({ page }) => {
+    await page.goto(R.typeToFind);
+    const section = ex(page);
+    const trigger = triggerOf(section);
+    await trigger.click();
+    const tree = panelTree(page).first();
+    await expect(tree).toBeVisible();
+
+    // All branches start collapsed; 'p' only matches Postgres under Backend.
+    const backend = tree.locator('[role="treeitem"]').filter({ hasText: 'Backend' });
+    await expect(backend).toHaveAttribute('aria-expanded', 'false');
+    await tree.press('p');
+    await expect(backend).toHaveAttribute('aria-expanded', 'true');
+    await expect(tree).toHaveAttribute('aria-activedescendant', 'postgres');
+  });
+
+  test('expandToReveal off: a hidden-only match is a no-op', async ({ page }) => {
+    await page.goto(R.typeToFind);
+    const section = ex(page);
+    // Chrome toggle switches [expandToReveal] off before opening.
+    await section.getByRole('checkbox').uncheck();
+    const trigger = triggerOf(section);
+    await trigger.click();
+    const tree = panelTree(page).first();
+    await expect(tree).toBeVisible();
+
+    const backend = tree.locator('[role="treeitem"]').filter({ hasText: 'Backend' });
+    await tree.press('p');
+    // The highlight stays where autoHighlightFirst put it and nothing expands.
+    await expect(backend).toHaveAttribute('aria-expanded', 'false');
+    await expect(tree).toHaveAttribute('aria-activedescendant', 'frontend');
   });
 
   test('partial cascade selection surfaces aria-checked="mixed" on the parent', async ({ page }) => {
