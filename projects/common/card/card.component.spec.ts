@@ -135,6 +135,65 @@ describe('CngxCard', () => {
     expect(liveRegion!.textContent!.trim()).toContain('Loading');
   });
 
+  it('does not announce selection state for a never-touched card when loading clears', () => {
+    const { fixture, card, host } = setup();
+    host.selectable.set(true);
+    host.loading.set(true);
+    fixture.detectChanges();
+    const liveRegion = card.querySelector('[aria-live="polite"]')!;
+    expect(liveRegion.textContent!.trim()).toBe('Loading');
+
+    host.loading.set(false);
+    fixture.detectChanges();
+    expect(liveRegion.textContent!.trim()).toBe('');
+  });
+
+  it('announces selection only on real toggles', () => {
+    const { fixture, card, host } = setup();
+    host.cardType.set('button');
+    host.selectable.set(true);
+    fixture.detectChanges();
+    const liveRegion = card.querySelector('[aria-live="polite"]')!;
+    expect(liveRegion.textContent!.trim()).toBe('');
+
+    card.click();
+    fixture.detectChanges();
+    expect(liveRegion.textContent!.trim()).toBe('Selected');
+
+    card.click();
+    fixture.detectChanges();
+    expect(liveRegion.textContent!.trim()).toBe('Deselected');
+  });
+
+  it('does not activate a link card on Space (Enter-only per APG)', () => {
+    const { fixture, card, host } = setup();
+    const router = TestBed.inject(Router);
+    const navigate = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
+    host.cardType.set('link');
+    host.href.set('/patients/5');
+    fixture.detectChanges();
+
+    const space = new KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true });
+    card.dispatchEvent(space);
+    expect(navigate).not.toHaveBeenCalled();
+    expect(space.defaultPrevented).toBe(false);
+
+    card.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    expect(navigate).toHaveBeenCalledWith('/patients/5');
+  });
+
+  it('activates a button card on Space', () => {
+    const { fixture, card, host } = setup();
+    host.cardType.set('button');
+    host.selectable.set(true);
+    fixture.detectChanges();
+    const space = new KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true });
+    card.dispatchEvent(space);
+    fixture.detectChanges();
+    expect(space.defaultPrevented).toBe(true);
+    expect(fixture.componentInstance.selected()).toBe(true);
+  });
+
   // --- Disabled ---
   it('sets aria-disabled when disabled', () => {
     const { fixture, card, host } = setup();

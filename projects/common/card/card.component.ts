@@ -2,10 +2,13 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
   input,
   model,
   output,
+  signal,
+  untracked,
   ViewEncapsulation,
 } from '@angular/core';
 import { Router } from '@angular/router';
@@ -204,22 +207,41 @@ export class CngxCard {
     this.disabled() && this.disabledReason() ? this.disabledReasonId : null,
   );
 
-  /** @internal SR live announcement for state changes. */
-  protected readonly liveAnnouncement = computed(() => {
-    if (this.loading()) {
-      return 'Loading';
-    }
-    if (this.selectable() && this.selected()) {
-      return 'Selected';
-    }
-    if (this.selectable() && !this.selected()) {
-      return 'Deselected';
-    }
-    return '';
-  });
+  private readonly liveAnnouncementState = signal('');
+
+  /**
+   * @internal SR live announcement, driven by transitions rather than
+   * persistent state (Pillar 2: voice the change, not the standing
+   * state). Announcing state would re-emit "Deselected" for a
+   * never-touched card whenever the loading phrase clears - the region
+   * is `aria-atomic`, so every content change re-announces.
+   */
+  protected readonly liveAnnouncement = this.liveAnnouncementState.asReadonly();
 
   /** Emits when an interactive card is clicked or activated via keyboard. */
   readonly clicked = output<void>();
+
+  constructor() {
+    // Transition detection over loading + selected. First run only seeds
+    // the previous values - initial state is visible, not announced.
+    let prevLoading: boolean | undefined;
+    let prevSelected: boolean | undefined;
+    effect(() => {
+      const loading = this.loading();
+      const selected = this.selected();
+      const selectable = this.selectable();
+      untracked(() => {
+        if (prevLoading !== undefined && loading !== prevLoading) {
+          this.liveAnnouncementState.set(loading ? 'Loading' : '');
+        }
+        if (!loading && selectable && prevSelected !== undefined && selected !== prevSelected) {
+          this.liveAnnouncementState.set(selected ? 'Selected' : 'Deselected');
+        }
+        prevLoading = loading;
+        prevSelected = selected;
+      });
+    });
+  }
 
   /** @internal */
   protected handleHostClick(e: MouseEvent): void {
@@ -242,11 +264,16 @@ export class CngxCard {
     if (!this.interactive()) {
       return;
     }
+    const isSpace = (e as KeyboardEvent).key === ' ';
+    if (isSpace && this.cardType() !== 'button') {
+      // APG: links activate on Enter only - Space keeps its scroll default.
+      return;
+    }
     if (this.disabled()) {
       e.preventDefault();
       return;
     }
-    if ((e as KeyboardEvent).key === ' ') {
+    if (isSpace) {
       e.preventDefault();
     }
     if (this.selectable()) {
