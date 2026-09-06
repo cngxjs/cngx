@@ -102,7 +102,8 @@ export class CngxIntersectionObserver {
 
       const observer = new IntersectionObserver(
         (entries) => {
-          const entry = entries[0];
+          // batched records arrive oldest-first; only the newest reflects reality
+          const entry = entries[entries.length - 1];
           const wasIntersecting = this.entryState()?.isIntersecting ?? false;
           this.entryState.set(entry);
           this.intersectionChange.emit(entry);

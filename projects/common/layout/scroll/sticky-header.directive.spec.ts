@@ -83,6 +83,18 @@ describe('CngxStickyHeader', () => {
     expect(fixture.componentInstance.sticky).toBe(false);
   });
 
+  it('reflects the newest record of a batched callback', () => {
+    const { dir } = setup();
+    observerCallback(
+      [
+        { isIntersecting: false } as IntersectionObserverEntry,
+        { isIntersecting: true } as IntersectionObserverEntry,
+      ],
+      {} as IntersectionObserver,
+    );
+    expect(dir.isSticky()).toBe(false);
+  });
+
   it('recreates the observer when threshold changes', () => {
     const { fixture, dir } = setup();
     expect(observerOptions?.threshold).toBe(0);

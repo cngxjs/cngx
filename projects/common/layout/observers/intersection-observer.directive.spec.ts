@@ -123,6 +123,15 @@ describe('CngxIntersectionObserver', () => {
     fixture.destroy();
     expect(mockObserver.disconnect.mock.calls.length).toBeGreaterThan(before);
   });
+  it('reflects the newest record of a batched callback', () => {
+    const { dir } = setup();
+    capturedCallback!([
+      { isIntersecting: true, intersectionRatio: 1 } as IntersectionObserverEntry,
+      { isIntersecting: false, intersectionRatio: 0 } as IntersectionObserverEntry,
+    ]);
+    expect(dir.isIntersecting()).toBe(false);
+  });
+
   it('warns in dev mode when the root selector matches no element', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const { fixture } = setup();

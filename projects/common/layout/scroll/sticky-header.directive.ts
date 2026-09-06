@@ -134,7 +134,8 @@ export class CngxStickyHeader {
 
       const observer = new IntersectionObserver(
         (entries) => {
-          const isSticky = !entries[0].isIntersecting;
+          // batched records arrive oldest-first; only the newest reflects reality
+          const isSticky = !entries[entries.length - 1].isIntersecting;
           if (isSticky !== this.isStickyState()) {
             this.isStickyState.set(isSticky);
             this.stickyChange.emit(isSticky);

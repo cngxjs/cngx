@@ -147,6 +147,21 @@ describe('CngxInfiniteScroll', () => {
     expect(el.getAttribute('aria-busy')).toBe('true');
   });
 
+  it('should honour only the newest record of a batched callback', () => {
+    const { host } = setup({ debounceMs: 0 });
+    mockCallback?.([
+      { isIntersecting: true, intersectionRatio: 1 } as Partial<IntersectionObserverEntry>,
+      { isIntersecting: false, intersectionRatio: 0 } as Partial<IntersectionObserverEntry>,
+    ]);
+    expect(host.loadMoreCount).toBe(0);
+
+    mockCallback?.([
+      { isIntersecting: false, intersectionRatio: 0 } as Partial<IntersectionObserverEntry>,
+      { isIntersecting: true, intersectionRatio: 1 } as Partial<IntersectionObserverEntry>,
+    ]);
+    expect(host.loadMoreCount).toBe(1);
+  });
+
   it('should re-observe the sentinel when loading settles back to false', () => {
     const { fixture, host, el } = setup();
     triggerIntersection(true);

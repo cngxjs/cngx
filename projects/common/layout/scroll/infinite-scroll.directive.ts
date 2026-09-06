@@ -134,7 +134,8 @@ export class CngxInfiniteScroll {
 
       const observer = new IntersectionObserver(
         (entries) => {
-          const entry = entries[0];
+          // batched records arrive oldest-first; only the newest reflects reality
+          const entry = entries[entries.length - 1];
           if (!entry.isIntersecting) {
             return;
           }
