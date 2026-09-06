@@ -1,7 +1,8 @@
 import { DOCUMENT } from '@angular/common';
-import { computed, Directive, inject, input } from '@angular/core';
+import { computed, Directive, effect, ElementRef, inject, input, untracked } from '@angular/core';
 import { outputToObservable, takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { fromEvent, switchMap } from 'rxjs';
+import { createTransitionTracker } from '@cngx/core/utils';
 import { CngxFocusTrap } from '@cngx/common/a11y';
 import type { CngxDrawer, DrawerPosition } from './drawer.directive';
 
@@ -23,7 +24,10 @@ export type DrawerMode = 'over' | 'push' | 'side';
  * (`closeOnClickOutside`, default `true`). The click that opened the
  * drawer never counts as an outside click. While closed (except in
  * `side` mode) the panel is `aria-hidden` AND `inert`, so its focusable
- * children are unreachable for keyboard and AT alike.
+ * children are unreachable for keyboard and AT alike. On close, focus
+ * returns to the element that was focused when the drawer opened -
+ * unless the user moved focus to another focusable element themselves
+ * (a click on a focusable outside target keeps its focus).
  *
  * ```html
  * <nav [cngxDrawerPanel]="drawer" position="left" mode="over"
@@ -59,7 +63,7 @@ export type DrawerMode = 'over' | 'push' | 'side';
     '[class.cngx-drawer-panel--over]': "mode() === 'over'",
     '[class.cngx-drawer-panel--push]': "mode() === 'push'",
     '[class.cngx-drawer-panel--side]': "mode() === 'side'",
-    '[attr.aria-hidden]': "mode() === 'side' ? null : !isOpen()",
+    '[attr.aria-hidden]': "mode() !== 'side' && !isOpen() ? true : null",
     '[attr.inert]': "mode() !== 'side' && !isOpen() ? '' : null",
     '[attr.role]': 'role()',
   },
@@ -93,9 +97,42 @@ export class CngxDrawerPanel {
   readonly isOpen = computed(() => this.mode() === 'side' || this.drawerRef().opened());
 
   private suppressOutsideClick = false;
+  private restoreTarget: HTMLElement | null = null;
 
   constructor() {
     const doc = inject(DOCUMENT);
+    const el = inject(ElementRef<HTMLElement>);
+
+    // Focus restoration: closing puts `inert` on the panel, which would
+    // silently drop focus to <body>. Capture the focused element at the
+    // open transition and hand focus back at the close transition when
+    // focus is still inside the panel (Escape) or already fell to <body>
+    // (outside click on a non-focusable area). A focusable outside target
+    // the user clicked keeps its focus.
+    const openTransition = createTransitionTracker(() => this.isOpen());
+    effect(() => {
+      const open = openTransition.current();
+      const wasOpen = openTransition.previous();
+      if (open === wasOpen) {
+        return;
+      }
+      untracked(() => {
+        if (open) {
+          const active = doc.activeElement;
+          this.restoreTarget = active instanceof HTMLElement ? active : null;
+          return;
+        }
+        const active = doc.activeElement;
+        const focusLost =
+          active === null ||
+          active === doc.body ||
+          (el.nativeElement as HTMLElement).contains(active);
+        if (focusLost && this.restoreTarget?.isConnected) {
+          this.restoreTarget.focus();
+        }
+        this.restoreTarget = null;
+      });
+    });
 
     // A click on a toggle OUTSIDE the container opens the drawer and then
     // bubbles on to the document listener below within the same dispatch -

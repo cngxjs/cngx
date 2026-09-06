@@ -80,12 +80,12 @@ describe('CngxDrawerPanel', () => {
     expect(panel.isOpen()).toBe(true);
   });
 
-  it('sets aria-hidden based on open state', () => {
+  it('is aria-hidden while closed and drops the attribute while open', () => {
     const { fixture, drawer, panelEl } = setup();
     expect(panelEl.getAttribute('aria-hidden')).toBe('true');
     drawer.open();
     fixture.detectChanges();
-    expect(panelEl.getAttribute('aria-hidden')).toBe('false');
+    expect(panelEl.hasAttribute('aria-hidden')).toBe(false);
   });
 
   it('has role="complementary" by default', () => {
@@ -167,6 +167,61 @@ describe('CngxDrawerPanel', () => {
 
     panelEl.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     expect(drawer.opened()).toBe(true);
+  });
+
+  it('restores focus to the opener after Escape closes the drawer', () => {
+    const { fixture, drawer, panelEl } = setup();
+    const toggle = fixture.debugElement.query(By.css('.outside-toggle'))
+      .nativeElement as HTMLButtonElement;
+    toggle.focus();
+    drawer.open();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    (panelEl.querySelector('a') as HTMLAnchorElement).focus();
+    drawer.close();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(document.activeElement).toBe(toggle);
+  });
+
+  it('restores focus to the opener after an outside click on a non-focusable area', async () => {
+    const { fixture, drawer } = setup();
+    const toggle = fixture.debugElement.query(By.css('.outside-toggle'))
+      .nativeElement as HTMLButtonElement;
+    toggle.focus();
+    drawer.open();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    await new Promise((resolve) => setTimeout(resolve));
+    (document.activeElement as HTMLElement | null)?.blur();
+
+    document.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(drawer.opened()).toBe(false);
+    expect(document.activeElement).toBe(toggle);
+  });
+
+  it('keeps focus on a focusable element the user clicked outside', async () => {
+    const { fixture, drawer } = setup();
+    const toggle = fixture.debugElement.query(By.css('.outside-toggle'))
+      .nativeElement as HTMLButtonElement;
+    toggle.focus();
+    drawer.open();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    await new Promise((resolve) => setTimeout(resolve));
+
+    const outside = document.createElement('button');
+    document.body.appendChild(outside);
+    outside.focus();
+    outside.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(drawer.opened()).toBe(false);
+    expect(document.activeElement).toBe(outside);
+    outside.remove();
   });
 
   it('ignores the bubbling click that opened the drawer', async () => {
