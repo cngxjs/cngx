@@ -1,21 +1,23 @@
 import type { CngxTagGroupAlign, CngxTagGroupGap } from '../tag-group.component';
 
-// Header and accessory contexts are structurally identical today.
-// Kept separate so per-slot fields (e.g. `position` on accessory) can
-// land without breaking sibling consumers. Mirrors `tag-slot.context.ts`.
-
 /**
- * Context exposed by the `*cngxTagGroupHeader` slot - the full
- * reactive group state plus the live `count` of projected
- * `CngxTag` children. Lets consumer headers render
- * `"Filters ({{ count }})"` without injecting the group.
+ * Shared context exposed by the two `CngxTagGroup` slots
+ * (`*cngxTagGroupHeader`, `*cngxTagGroupAccessory`) - the full reactive
+ * group state plus the live `count` of projected `CngxTag` children.
+ * Lets consumer headers render `"Filters ({{ count }})"` without
+ * injecting the group.
  *
- * `$implicit` is `void` because the slot has no positional payload -
+ * `$implicit` is `void` because the slots have no positional payload -
  * consumers reach for the named fields below.
  *
+ * The per-slot names below alias this interface. A slot that grows its
+ * own field (e.g. `position` on accessory) forks its alias back into an
+ * interface extending this one - sibling consumers stay
+ * source-compatible either way.
+ *
  * @category common/display
  */
-export interface CngxTagGroupHeaderContext {
+export interface CngxTagGroupSlotContext {
   readonly $implicit: void;
   readonly gap: CngxTagGroupGap;
   readonly align: CngxTagGroupAlign;
@@ -25,18 +27,17 @@ export interface CngxTagGroupHeaderContext {
 }
 
 /**
- * Context exposed by the `*cngxTagGroupAccessory` slot. Structurally
- * identical to {@link CngxTagGroupHeaderContext}; kept separate so
- * future per-slot fields can land without breaking header-slot
- * consumers.
+ * Context of the `*cngxTagGroupHeader` slot. Alias of
+ * {@link CngxTagGroupSlotContext}.
  *
  * @category common/display
  */
-export interface CngxTagGroupAccessoryContext {
-  readonly $implicit: void;
-  readonly gap: CngxTagGroupGap;
-  readonly align: CngxTagGroupAlign;
-  readonly semanticList: boolean;
-  readonly label: string | undefined;
-  readonly count: number;
-}
+export type CngxTagGroupHeaderContext = CngxTagGroupSlotContext;
+
+/**
+ * Context of the `*cngxTagGroupAccessory` slot. Alias of
+ * {@link CngxTagGroupSlotContext}.
+ *
+ * @category common/display
+ */
+export type CngxTagGroupAccessoryContext = CngxTagGroupSlotContext;

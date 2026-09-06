@@ -15,7 +15,7 @@ import { injectResolvedTagTemplate } from './shared/inject-resolved-template';
 import { CngxTagLabel } from './slots/tag-label.directive';
 import { CngxTagPrefix } from './slots/tag-prefix.directive';
 import { CngxTagSuffix } from './slots/tag-suffix.directive';
-import type { CngxTagLabelContext } from './slots/tag-slot.context';
+import type { CngxTagSlotContext } from './slots/tag-slot.context';
 
 /**
  * Visual variant. `filled` is the default solid pill; `outline` swaps fill for border; `subtle` softens both.
@@ -282,10 +282,9 @@ export class CngxTag {
 
   /**
    * Reactive bundle exposed to every slot's `*ngTemplateOutletContext`.
-   * The three slot context interfaces are structurally identical in
-   * Phase 1; the same computed source serves all three. Consumer
-   * templates `let-variant="variant"` etc. read the live state without
-   * injecting the directive.
+   * All three slots share `CngxTagSlotContext`, so the same computed
+   * source serves them. Consumer templates `let-variant="variant"` etc.
+   * read the live state without injecting the directive.
    *
    * Explicit structural `equal` fn - without it, a fresh literal each
    * CD cycle would force `ngTemplateOutlet` to rebind embedded views
@@ -293,7 +292,7 @@ export class CngxTag {
    * Equality Rule: every `computed` returning an object MUST pass an
    * `equal` fn.
    */
-  protected readonly slotContext = computed<CngxTagLabelContext>(
+  protected readonly slotContext = computed<CngxTagSlotContext>(
     () => ({
       $implicit: undefined as void,
       variant: this.variant(),

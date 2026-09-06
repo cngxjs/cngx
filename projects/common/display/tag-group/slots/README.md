@@ -22,7 +22,7 @@ import {
 
 ## Context
 
-Both context interfaces are structurally identical today. They are kept as separate exported names so future per-slot fields (header-only dropdown density, accessory-only position) can land without breaking sibling consumers.
+Both slots share one `CngxTagGroupSlotContext` interface; the per-slot names (`CngxTagGroupHeaderContext` / `CngxTagGroupAccessoryContext`) are type aliases of it. A slot that grows its own field (header-only dropdown density, accessory-only position) forks its alias back into an interface extending the shared one - sibling consumers stay source-compatible either way.
 
 ```ts
 interface CngxTagGroupHeaderContext {

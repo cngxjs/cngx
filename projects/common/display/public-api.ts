@@ -51,6 +51,7 @@ export { CngxTagLabel } from './tag/slots/tag-label.directive';
 export { CngxTagPrefix } from './tag/slots/tag-prefix.directive';
 export { CngxTagSuffix } from './tag/slots/tag-suffix.directive';
 export {
+  type CngxTagSlotContext,
   type CngxTagLabelContext,
   type CngxTagPrefixContext,
   type CngxTagSuffixContext,
@@ -67,6 +68,7 @@ export {
 export { CngxTagGroupHeader } from './tag-group/slots/tag-group-header.directive';
 export { CngxTagGroupAccessory } from './tag-group/slots/tag-group-accessory.directive';
 export {
+  type CngxTagGroupSlotContext,
   type CngxTagGroupHeaderContext,
   type CngxTagGroupAccessoryContext,
 } from './tag-group/slots/tag-group-slot.context';
