@@ -1,7 +1,7 @@
 import { DOCUMENT } from '@angular/common';
 import { computed, Directive, inject, input } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { fromEvent } from 'rxjs';
+import { outputToObservable, takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { fromEvent, switchMap } from 'rxjs';
 import { CngxFocusTrap } from '@cngx/common/a11y';
 import type { CngxDrawer, DrawerPosition } from './drawer.directive';
 
@@ -20,7 +20,10 @@ export type DrawerMode = 'over' | 'push' | 'side';
  * the `[enabled]` and `[autoFocus]` inputs from the template.
  *
  * Optionally closes the drawer when the user clicks outside the panel
- * (`closeOnClickOutside`, default `true`).
+ * (`closeOnClickOutside`, default `true`). The click that opened the
+ * drawer never counts as an outside click. While closed (except in
+ * `side` mode) the panel is `aria-hidden` AND `inert`, so its focusable
+ * children are unreachable for keyboard and AT alike.
  *
  * ```html
  * <nav [cngxDrawerPanel]="drawer" position="left" mode="over"
@@ -57,7 +60,8 @@ export type DrawerMode = 'over' | 'push' | 'side';
     '[class.cngx-drawer-panel--push]': "mode() === 'push'",
     '[class.cngx-drawer-panel--side]': "mode() === 'side'",
     '[attr.aria-hidden]': "mode() === 'side' ? null : !isOpen()",
-    role: 'complementary',
+    '[attr.inert]': "mode() !== 'side' && !isOpen() ? '' : null",
+    '[attr.role]': 'role()',
   },
 })
 export class CngxDrawerPanel {
@@ -78,11 +82,38 @@ export class CngxDrawerPanel {
   /** Whether clicking outside the panel closes the drawer. */
   readonly closeOnClickOutside = input<boolean>(true);
 
+  /**
+   * Landmark role rendered on the panel. Defaults to `complementary`;
+   * pass `navigation` for nav drawers or `null` to keep the element's
+   * implicit role (e.g. on a `<nav>` host).
+   */
+  readonly role = input<string | null>('complementary');
+
   /** Whether the drawer is currently open (derived from the drawer ref). In `side` mode, always `true`. */
   readonly isOpen = computed(() => this.mode() === 'side' || this.drawerRef().opened());
 
+  private suppressOutsideClick = false;
+
   constructor() {
     const doc = inject(DOCUMENT);
+
+    // A click on a toggle OUTSIDE the container opens the drawer and then
+    // bubbles on to the document listener below within the same dispatch -
+    // without suppression it would close its own drawer instantly. The
+    // openedChange emit is synchronous inside that dispatch; the flag is
+    // lifted on the next macrotask, after the bubble phase has finished
+    // (a microtask checkpoint can run between listeners of a native event).
+    toObservable(this.drawerRef)
+      .pipe(
+        switchMap((drawer) => outputToObservable(drawer.openedChange)),
+        takeUntilDestroyed(),
+      )
+      .subscribe((opened) => {
+        if (opened) {
+          this.suppressOutsideClick = true;
+          setTimeout(() => (this.suppressOutsideClick = false));
+        }
+      });
 
     // Hit-test against the container, not the panel - toggle buttons and backdrops
     // sit inside the container and must not count as outside clicks.
@@ -90,6 +121,7 @@ export class CngxDrawerPanel {
       .pipe(takeUntilDestroyed())
       .subscribe((e) => {
         if (
+          !this.suppressOutsideClick &&
           this.mode() !== 'side' &&
           this.isOpen() &&
           this.closeOnClickOutside() &&

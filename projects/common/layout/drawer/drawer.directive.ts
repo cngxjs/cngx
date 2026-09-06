@@ -73,8 +73,11 @@ export class CngxDrawer {
   /** Emitted when the drawer closes. Convenience shorthand for close-only listeners. */
   readonly closed = output<void>();
 
-  /** Opens the drawer. */
+  /** Opens the drawer. No-op when already open. */
   open(): void {
+    if (this.opened()) {
+      return;
+    }
     this.openedState.set(true);
     this.openedChange.emit(true);
   }
