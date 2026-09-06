@@ -29,8 +29,11 @@ export type DrawerMode = 'over' | 'push' | 'side';
  * unless the user moved focus to another focusable element themselves
  * (a click on a focusable outside target keeps its focus).
  *
+ * The `role` input defaults to `complementary`. On a `<nav>` host pass
+ * `[role]="null"` so the implicit navigation landmark survives:
+ *
  * ```html
- * <nav [cngxDrawerPanel]="drawer" position="left" mode="over"
+ * <nav [cngxDrawerPanel]="drawer" position="left" mode="over" [role]="null"
  *      [enabled]="drawer.opened()" [autoFocus]="true">
  *   <a href="/home">Home</a>
  * </nav>
