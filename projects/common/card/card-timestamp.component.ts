@@ -2,8 +2,10 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
   input,
+  isDevMode,
   LOCALE_ID,
   ViewEncapsulation,
 } from '@angular/core';
@@ -62,11 +64,23 @@ export class CngxCardTimestamp {
     return typeof d === 'string' ? new Date(d) : d;
   });
 
-  /** @internal */
-  protected readonly isoDate = computed(() => this.dateObj().toISOString());
+  /**
+   * @internal Invalid Date guard. `toISOString()` throws and
+   * `Intl.format` renders garbage on an invalid instant - a bad ISO
+   * string must degrade to an empty render, not crash change detection.
+   */
+  protected readonly isValidDate = computed(() => !Number.isNaN(this.dateObj().getTime()));
 
-  /** @internal */
+  /** @internal `null` (attribute removed) when the instant is invalid. */
+  protected readonly isoDate = computed(() =>
+    this.isValidDate() ? this.dateObj().toISOString() : null,
+  );
+
+  /** @internal Empty string when the instant is invalid. */
   protected readonly formattedDate = computed(() => {
+    if (!this.isValidDate()) {
+      return '';
+    }
     const fmt = this.format() ?? {
       year: 'numeric',
       month: '2-digit',
@@ -74,4 +88,17 @@ export class CngxCardTimestamp {
     };
     return new Intl.DateTimeFormat(this.locale, fmt).format(this.dateObj());
   });
+
+  constructor() {
+    if (isDevMode()) {
+      effect(() => {
+        if (!this.isValidDate()) {
+          console.warn(
+            '[CngxCardTimestamp] [date] resolved to an Invalid Date - rendering empty. ' +
+              'Check the bound value (bad ISO string?).',
+          );
+        }
+      });
+    }
+  }
 }

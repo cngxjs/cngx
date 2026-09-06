@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { LOCALE_ID } from '@angular/core';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CngxCardTimestamp } from './card-timestamp.component';
 
 @Component({
@@ -52,6 +52,18 @@ describe('CngxCardTimestamp', () => {
   it('hides prefix when not provided', () => {
     const { el } = setup();
     expect(el.querySelector('.cngx-card-timestamp__prefix')).toBeFalsy();
+  });
+
+  it('renders empty, drops datetime, and dev-warns on an Invalid Date', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const { fixture, el, host } = setup();
+    host.date.set('not-a-date');
+    fixture.detectChanges();
+    const time = el.querySelector('time')!;
+    expect(time.textContent!.trim()).toBe('');
+    expect(time.hasAttribute('datetime')).toBe(false);
+    expect(warn).toHaveBeenCalled();
+    warn.mockRestore();
   });
 
   it('accepts ISO string date', () => {

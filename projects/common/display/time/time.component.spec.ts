@@ -1,6 +1,6 @@
 import { LOCALE_ID } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxTime } from './time.component';
 
@@ -74,6 +74,43 @@ describe('CngxTime', () => {
   it('formats a distant past instant in relative mode (years bucket)', () => {
     const { timeEl } = make(new Date(Date.now() - 3 * 365 * 24 * 60 * 60 * 1000), { mode: 'relative' });
     expect(timeEl.textContent?.trim()).toBe('3 years ago');
+  });
+
+  it('renders empty and drops the datetime attribute on an Invalid Date', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const { timeEl } = make('not-a-date');
+    expect(timeEl.textContent?.trim()).toBe('');
+    expect(timeEl.hasAttribute('datetime')).toBe(false);
+    expect(warn).toHaveBeenCalledOnce();
+    warn.mockRestore();
+  });
+
+  it('treats two Invalid Dates as equal (no cascade on rebind)', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const fixture = TestBed.createComponent(CngxTime);
+    fixture.componentRef.setInput('date', 'not-a-date');
+    fixture.detectChanges();
+    fixture.componentRef.setInput('date', 'also-not-a-date');
+    fixture.detectChanges();
+    // The NaN-aware equal fn dedupes the second invalid instant - the
+    // dev warn effect refires only when the instant actually changes.
+    expect(warn).toHaveBeenCalledOnce();
+    warn.mockRestore();
+  });
+
+  it('recovers from an Invalid Date when a valid one arrives', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const fixture = TestBed.createComponent(CngxTime);
+    fixture.componentRef.setInput('date', 'not-a-date');
+    fixture.detectChanges();
+    const timeEl = (fixture.nativeElement as HTMLElement).querySelector('time') as HTMLTimeElement;
+    expect(timeEl.textContent?.trim()).toBe('');
+
+    fixture.componentRef.setInput('date', '2026-03-15T12:00:00.000Z');
+    fixture.detectChanges();
+    expect(timeEl.getAttribute('datetime')).toBe('2026-03-15T12:00:00.000Z');
+    expect(timeEl.textContent?.trim()).not.toBe('');
+    warn.mockRestore();
   });
 
   it('renders a stable instant when [date] switches between equal representations', () => {

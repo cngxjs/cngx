@@ -2,8 +2,10 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
   input,
+  isDevMode,
   LOCALE_ID,
   ViewEncapsulation,
 } from '@angular/core';
@@ -95,18 +97,33 @@ export class CngxTime {
    * Coerced instant. A `Date`; downstream reads its time value. The `equal` fn
    * dedupes by time value so re-binding `[date]` to a fresh `Date` of the same
    * instant (or the equivalent ISO string) does not cascade `iso`/`formatted` -
-   * the object-computed equality rule.
+   * the object-computed equality rule. NaN pairs compare equal - without the
+   * arm, two Invalid Dates would defeat the dedupe (NaN !== NaN) and cascade
+   * on every rebind.
    */
   protected readonly instant = computed<Date>(
     () => {
       const value = this.date();
       return value instanceof Date ? value : new Date(value);
     },
-    { equal: (a, b) => a.getTime() === b.getTime() },
+    {
+      equal: (a, b) => {
+        const ta = a.getTime();
+        const tb = b.getTime();
+        return ta === tb || (Number.isNaN(ta) && Number.isNaN(tb));
+      },
+    },
   );
 
-  /** Machine-readable ISO 8601 for the `datetime` attribute. */
-  protected readonly iso = computed(() => this.instant().toISOString());
+  /**
+   * Invalid Date guard. `toISOString()` throws and `Intl.format` renders
+   * garbage on an invalid instant - a bad ISO string must degrade to an
+   * empty render, not crash change detection.
+   */
+  protected readonly isValidDate = computed(() => !Number.isNaN(this.instant().getTime()));
+
+  /** Machine-readable ISO 8601 for the `datetime` attribute. `null` (attribute removed) when the instant is invalid. */
+  protected readonly iso = computed(() => (this.isValidDate() ? this.instant().toISOString() : null));
 
   /**
    * Human string. Reads `Date.now()` in `relative` mode as a render-time
@@ -114,6 +131,9 @@ export class CngxTime {
    * (or `mode`/`format`) changes, never on a timer.
    */
   protected readonly formatted = computed(() => {
+    if (!this.isValidDate()) {
+      return '';
+    }
     const instant = this.instant();
     if (this.mode() === 'relative') {
       return this.formatRelative(instant.getTime(), Date.now());
@@ -121,6 +141,19 @@ export class CngxTime {
     const format = this.format() ?? { year: 'numeric', month: 'short', day: 'numeric' };
     return dateTimeFormatterFor(JSON.stringify([this.locale, format])).format(instant);
   });
+
+  constructor() {
+    if (isDevMode()) {
+      effect(() => {
+        if (!this.isValidDate()) {
+          console.warn(
+            '[CngxTime] [date] resolved to an Invalid Date - rendering empty. ' +
+              'Check the bound value (bad ISO string?).',
+          );
+        }
+      });
+    }
+  }
 
   private formatRelative(target: number, now: number): string {
     const rtf = relativeFormatterFor(this.locale);
