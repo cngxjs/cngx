@@ -83,6 +83,16 @@ describe('CngxAvatarGroup', () => {
     expect(groupEl.getAttribute('aria-label')).toBe('5 avatars, 5 not shown');
   });
 
+  it('clamps a negative max to 0 (no overcounting aria-label)', () => {
+    const { fixture, host, groupEl } = setup();
+    host.max.set(-1);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    expect(pill(groupEl)?.textContent).toBe('+5');
+    expect(groupEl.getAttribute('aria-label')).toBe('5 avatars, 5 not shown');
+  });
+
   it('routes the aria-label through labelFormat when set', () => {
     const { fixture, host, groupEl } = setup();
     host.labelFormat.set((total, hidden) => `Team mit ${total} Leuten, ${hidden} verborgen`);

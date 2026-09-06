@@ -85,11 +85,15 @@ export class CngxAvatarGroup {
   /** Total number of projected avatars. */
   protected readonly total = computed(() => this.avatars().length);
 
-  /** How many avatars are actually shown (capped by `max`). `max=0` collapses all. */
+  /** How many avatars are actually shown (capped by `max`). `max=0` collapses all; negatives clamp to `0`. */
   protected readonly visibleCount = computed(() => {
     const cap = this.max();
     const count = this.total();
-    return cap != null && cap < count ? cap : count;
+    if (cap == null) {
+      return count;
+    }
+    const clamped = Math.max(0, cap);
+    return clamped < count ? clamped : count;
   });
 
   /** How many avatars are collapsed into the `+N` pill. */
