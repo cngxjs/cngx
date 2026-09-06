@@ -67,7 +67,7 @@ import {
         [class.cngx-avatar__status--busy]="status() === 'busy'"
         [class.cngx-avatar__status--away]="status() === 'away'"
         role="img"
-        [attr.aria-label]="status()"
+        [attr.aria-label]="statusAriaLabel()"
       ></span>
     }
   `,
@@ -85,6 +85,26 @@ export class CngxAvatar {
   readonly shape = input<'circle' | 'square'>('circle');
   /** Optional user-presence status indicator. */
   readonly status = input<'online' | 'offline' | 'busy' | 'away' | undefined>(undefined);
+
+  /**
+   * Format closure for the status dot's accessible label. When set, it
+   * replaces the raw EN status key entirely - the i18n hook for
+   * consumers whose locale needs localized status announcements.
+   * Mirrors the `labelFormat` closure on `CngxAvatarGroup`.
+   */
+  readonly statusLabel = input<
+    ((status: 'online' | 'offline' | 'busy' | 'away') => string) | undefined
+  >(undefined);
+
+  /** Accessible label of the status dot - the closure's output when set, else the raw status key. */
+  protected readonly statusAriaLabel = computed(() => {
+    const status = this.status();
+    if (!status) {
+      return null;
+    }
+    const format = this.statusLabel();
+    return format ? format(status) : status;
+  });
 
   // Keyed on src(): a new URL resets both flags, so a failed image recovers
   // when the consumer rebinds [src].

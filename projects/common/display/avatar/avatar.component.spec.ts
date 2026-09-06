@@ -14,6 +14,7 @@ import { CngxAvatar } from './avatar.component';
       [size]="size()"
       [shape]="shape()"
       [status]="status()"
+      [statusLabel]="statusLabel()"
     ></cngx-avatar>
   `,
   imports: [CngxAvatar],
@@ -25,6 +26,7 @@ class AvatarHost {
   readonly size = signal<'xs' | 'sm' | 'md' | 'lg' | 'xl'>('md');
   readonly shape = signal<'circle' | 'square'>('circle');
   readonly status = signal<'online' | 'offline' | 'busy' | 'away' | undefined>(undefined);
+  readonly statusLabel = signal<((status: string) => string) | undefined>(undefined);
 }
 
 describe('CngxAvatar', () => {
@@ -137,6 +139,16 @@ describe('CngxAvatar', () => {
     expect(dot?.getAttribute('role')).toBe('img');
     expect(dot?.getAttribute('aria-label')).toBe('online');
     expect(dot?.classList.contains('cngx-avatar__status--online')).toBe(true);
+  });
+
+  it('routes the status dot label through statusLabel when set', () => {
+    const { fixture, hostEl } = setup();
+    fixture.componentInstance.status.set('busy');
+    fixture.componentInstance.statusLabel.set((status) => `Status: beschaeftigt (${status})`);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const dot = hostEl.querySelector('.cngx-avatar__status');
+    expect(dot?.getAttribute('aria-label')).toBe('Status: beschaeftigt (busy)');
   });
 
   it('does not render a status dot when status is undefined', () => {
