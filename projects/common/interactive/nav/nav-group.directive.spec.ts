@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { describe, expect, it } from 'vitest';
 import { CngxNavGroup } from './nav-group.directive';
+import { provideNavConfig, withNavAnimation, withNavIndent } from './nav-config';
 
 @Component({
   template: `
@@ -37,6 +38,23 @@ describe('CngxNavGroup', () => {
     const el = btn.nativeElement as HTMLElement;
     return { fixture, dir, el, host: fixture.componentInstance };
   }
+
+  it('emits nav config tokens when configured; nothing without a config', () => {
+    const { el } = setup();
+    expect(el.style.getPropertyValue('--cngx-nav-indent')).toBe('');
+    expect(el.style.getPropertyValue('--cngx-nav-transition')).toBe('');
+
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [provideNavConfig(withNavIndent(16), withNavAnimation(200))],
+    });
+    const fixture = TestBed.createComponent(TestHost);
+    fixture.detectChanges();
+    const configured = fixture.debugElement.query(By.directive(CngxNavGroup))
+      .nativeElement as HTMLElement;
+    expect(configured.style.getPropertyValue('--cngx-nav-indent')).toBe('16px');
+    expect(configured.style.getPropertyValue('--cngx-nav-transition')).toBe('200ms');
+  });
 
   it('has cngx-nav-group class', () => {
     const { el } = setup();

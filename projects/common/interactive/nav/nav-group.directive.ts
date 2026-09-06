@@ -66,6 +66,8 @@ import { CngxNavGroupRegistry } from './nav-group-registry';
     '[class.cngx-nav-group]': 'true',
     '[class.cngx-nav-group--open]': 'disclosure.opened()',
     '[style.--cngx-nav-depth]': 'depth()',
+    '[style.--cngx-nav-indent]': 'navIndent',
+    '[style.--cngx-nav-transition]': 'navTransition',
   },
 })
 export class CngxNavGroup {
@@ -77,6 +79,13 @@ export class CngxNavGroup {
 
   private readonly registry = inject(CngxNavGroupRegistry, { optional: true });
   private readonly config = inject(CNGX_NAV_CONFIG, { optional: true });
+
+  // Emitted only when explicitly configured - a default here would sit on
+  // the host element and shadow ancestor-cascade values, breaking the
+  // documented var(--token, fallback) consumer path.
+  protected readonly navIndent = this.config?.indent !== undefined ? `${this.config.indent}px` : null;
+  protected readonly navTransition =
+    this.config?.animationDuration !== undefined ? `${this.config.animationDuration}ms` : null;
 
   constructor() {
     this.registry?.register(this);

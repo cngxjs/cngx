@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { describe, expect, it } from 'vitest';
 import { CngxNavLink } from './nav-link.directive';
+import { provideNavConfig, withNavAnimation, withNavIndent } from './nav-config';
 
 @Component({
   template: `<a cngxNavLink [active]="active()" [depth]="depth()">Link</a>`,
@@ -18,6 +19,20 @@ class TestHost {
   imports: [CngxNavLink],
 })
 class WithHrefHost {}
+
+@Component({
+  template: `<a cngxNavLink href="/page">Configured</a>`,
+  imports: [CngxNavLink],
+  providers: [provideNavConfig(withNavIndent(16), withNavAnimation(200))],
+})
+class ConfiguredHost {}
+
+@Component({
+  template: `<a cngxNavLink href="/page">Indent only</a>`,
+  imports: [CngxNavLink],
+  providers: [provideNavConfig(withNavIndent(16))],
+})
+class IndentOnlyHost {}
 
 @Component({
   template: `<button cngxNavLink>Button link</button>`,
@@ -52,6 +67,28 @@ describe('CngxNavLink', () => {
     host.depth.set(2);
     fixture.detectChanges();
     expect(el.style.getPropertyValue('--cngx-nav-depth')).toBe('2');
+  });
+
+  it('emits --cngx-nav-indent and --cngx-nav-transition from the provided nav config', () => {
+    const fixture = TestBed.createComponent(ConfiguredHost);
+    fixture.detectChanges();
+    const el = fixture.debugElement.query(By.directive(CngxNavLink)).nativeElement as HTMLElement;
+    expect(el.style.getPropertyValue('--cngx-nav-indent')).toBe('16px');
+    expect(el.style.getPropertyValue('--cngx-nav-transition')).toBe('200ms');
+  });
+
+  it('emits only the configured token - unset fields leave the cascade alone', () => {
+    const fixture = TestBed.createComponent(IndentOnlyHost);
+    fixture.detectChanges();
+    const el = fixture.debugElement.query(By.directive(CngxNavLink)).nativeElement as HTMLElement;
+    expect(el.style.getPropertyValue('--cngx-nav-indent')).toBe('16px');
+    expect(el.style.getPropertyValue('--cngx-nav-transition')).toBe('');
+  });
+
+  it('emits neither token without a nav config (CSS fallback path stays intact)', () => {
+    const { el } = setup();
+    expect(el.style.getPropertyValue('--cngx-nav-indent')).toBe('');
+    expect(el.style.getPropertyValue('--cngx-nav-transition')).toBe('');
   });
 
   it('sets aria-current="page" when active', () => {

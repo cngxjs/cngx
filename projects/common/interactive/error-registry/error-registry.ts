@@ -17,9 +17,11 @@ import { mapKeySetEqual, shallowReadonlyArrayEqual } from './equal-fns';
  * the registry is absent, the directives skip registration and keep their
  * pure DOM behaviour.
  *
- * @internal Staged API - single-consumer.
- * See form-primitives-accepted-debt.md §A for the re-evaluation trigger
- * and collapse plan.
+ * @category common/interactive/error
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/error-registry/error-registry.ts
+ * @since 0.1.0
+ * @relatedTo CngxErrorScope, CngxErrorAggregator, CngxErrorSource
+ * <example-url>http://localhost:4200/#/common/interactive/error/registry/provider-and-reveal-features</example-url>
  */
 @Injectable()
 export class CngxErrorRegistry {

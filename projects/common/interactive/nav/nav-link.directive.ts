@@ -7,6 +7,7 @@ import {
   input,
   signal,
 } from '@angular/core';
+import { CNGX_NAV_CONFIG } from './nav-config';
 
 /**
  * Navigation link atom. Applied to `<a>` or `<button>` elements in a
@@ -60,9 +61,20 @@ import {
     '[attr.tabindex]': 'needsFocusFix() ? 0 : null',
     '[attr.role]': "needsFocusFix() ? 'link' : null",
     '[style.--cngx-nav-depth]': 'depth()',
+    '[style.--cngx-nav-indent]': 'navIndent',
+    '[style.--cngx-nav-transition]': 'navTransition',
   },
 })
 export class CngxNavLink {
+  private readonly config = inject(CNGX_NAV_CONFIG, { optional: true });
+
+  // Emitted only when explicitly configured - a default here would sit on
+  // the host element and shadow ancestor-cascade values, breaking the
+  // documented var(--token, fallback) consumer path.
+  protected readonly navIndent = this.config?.indent !== undefined ? `${this.config.indent}px` : null;
+  protected readonly navTransition =
+    this.config?.animationDuration !== undefined ? `${this.config.animationDuration}ms` : null;
+
   /**
    * `true` when the host `<a>` lacks an `href` attribute and needs `tabindex="0"`
    * + `role="link"` for keyboard focusability.

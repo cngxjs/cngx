@@ -176,8 +176,8 @@ Nav directives are orthogonal atoms that compose to build sidebars:
 All nav elements use CSS custom properties for indentation, animation, and spacing:
 
 - `--cngx-nav-depth` (set by directive, integer) - Current nesting depth
-- `--cngx-nav-indent` (CSS custom property, default 12px) - Indent per level
-- `--cngx-nav-transition` (CSS custom property, default 150ms) - Animation duration
+- `--cngx-nav-indent` (CSS custom property, default 12px) - Indent per level. Set app- or component-wide via `provideNavConfig(withNavIndent(16))`: nav hosts in the provider scope then emit the property. Without the feature the hosts emit nothing and your stylesheet's `var(..., 12px)` fallback or cascade value applies.
+- `--cngx-nav-transition` (CSS custom property, default 150ms) - Animation duration. Same contract via `withNavAnimation(200)`. Content panels are consumer-rendered siblings of the trigger, so panel transitions read the token from your own container - set it there when the panel should follow the config.
 
 ### Basic Stylesheet
 

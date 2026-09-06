@@ -9,8 +9,13 @@ import { CngxNavGroupRegistry } from './nav-group-registry';
 export interface CngxNavConfig {
   /**
    * Indentation in px per depth level.
-   * Applied via `--cngx-nav-indent` CSS custom property.
-   * @default 12
+   *
+   * When set, `CngxNavGroup` / `CngxNavLink` hosts in the provider scope
+   * emit it as the `--cngx-nav-indent` CSS custom property. When absent,
+   * the hosts emit nothing - consumer stylesheets keep full control via
+   * the cascade and the documented `var(--cngx-nav-indent, 12px)`
+   * fallback.
+   * @default 12 (CSS fallback; not written to the DOM)
    */
   indent?: number;
 
@@ -23,8 +28,15 @@ export interface CngxNavConfig {
 
   /**
    * Default animation duration in ms for disclosure transitions.
-   * Applied via `--cngx-nav-transition` CSS custom property.
-   * @default 150
+   *
+   * When set, `CngxNavGroup` / `CngxNavLink` hosts in the provider scope
+   * emit it as the `--cngx-nav-transition` CSS custom property. When
+   * absent, the hosts emit nothing - the cascade and the documented
+   * `var(--cngx-nav-transition, 150ms)` fallback apply. Content panels
+   * are consumer-rendered siblings, so panel transitions read the token
+   * from the consumer's own container (set it there or scope the
+   * provider around a styled wrapper).
+   * @default 150 (CSS fallback; not written to the DOM)
    */
   animationDuration?: number;
 }
