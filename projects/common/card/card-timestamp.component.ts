@@ -10,6 +10,36 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 
+const DATE_TIME_FORMATTER_CACHE_LIMIT = 32;
+const dateTimeFormatterCache = new Map<string, Intl.DateTimeFormat>();
+
+/**
+ * Bounded `Intl.DateTimeFormat` cache keyed on locale + serialized options.
+ * Constructing the formatter is the expensive half of formatting; consumers
+ * bind static option literals, so the key space stays tiny. The FIFO cap
+ * guards a consumer generating per-row options (e.g. varying `timeZone`)
+ * from growing the map for the app's lifetime.
+ */
+function dateTimeFormatterFor(
+  locale: string,
+  options: Intl.DateTimeFormatOptions,
+): Intl.DateTimeFormat {
+  const key = `${locale}|${JSON.stringify(options)}`;
+  const cached = dateTimeFormatterCache.get(key);
+  if (cached) {
+    return cached;
+  }
+  if (dateTimeFormatterCache.size >= DATE_TIME_FORMATTER_CACHE_LIMIT) {
+    const oldest = dateTimeFormatterCache.keys().next().value;
+    if (oldest !== undefined) {
+      dateTimeFormatterCache.delete(oldest);
+    }
+  }
+  const formatter = new Intl.DateTimeFormat(locale, options);
+  dateTimeFormatterCache.set(key, formatter);
+  return formatter;
+}
+
 /**
  * Displays a formatted date/timestamp, typically in a card footer.
  *
@@ -58,11 +88,25 @@ export class CngxCardTimestamp {
   /** `Intl.DateTimeFormatOptions` for the date. */
   readonly format = input<Intl.DateTimeFormatOptions | undefined>(undefined);
 
-  /** @internal */
-  protected readonly dateObj = computed(() => {
-    const d = this.date();
-    return typeof d === 'string' ? new Date(d) : d;
-  });
+  /**
+   * @internal Coerced instant, deduped by time value so a fresh-ref
+   * `[date]` rebind of the same instant does not cascade the render
+   * graph. NaN pairs compare equal - two Invalid Dates must dedupe too
+   * (NaN !== NaN would defeat the arm). Mirrors `CngxTime.instant`.
+   */
+  protected readonly dateObj = computed(
+    () => {
+      const d = this.date();
+      return typeof d === 'string' ? new Date(d) : d;
+    },
+    {
+      equal: (a, b) => {
+        const ta = a.getTime();
+        const tb = b.getTime();
+        return ta === tb || (Number.isNaN(ta) && Number.isNaN(tb));
+      },
+    },
+  );
 
   /**
    * @internal Invalid Date guard. `toISOString()` throws and
@@ -86,7 +130,7 @@ export class CngxCardTimestamp {
       month: '2-digit',
       day: '2-digit',
     };
-    return new Intl.DateTimeFormat(this.locale, fmt).format(this.dateObj());
+    return dateTimeFormatterFor(this.locale, fmt).format(this.dateObj());
   });
 
   constructor() {

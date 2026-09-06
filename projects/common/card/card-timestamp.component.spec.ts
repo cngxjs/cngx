@@ -66,6 +66,19 @@ describe('CngxCardTimestamp', () => {
     warn.mockRestore();
   });
 
+  it('dedupes Invalid Date pairs (single dev-warn across rebinds)', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const { fixture, host } = setup();
+    host.date.set('not-a-date');
+    fixture.detectChanges();
+    host.date.set('also-not-a-date');
+    fixture.detectChanges();
+    // The NaN-aware equal dedupes the second invalid instant - the
+    // dev-warn effect refires only when the instant actually changes.
+    expect(warn).toHaveBeenCalledOnce();
+    warn.mockRestore();
+  });
+
   it('accepts ISO string date', () => {
     const { fixture, el, host } = setup();
     host.date.set('2025-12-25');
