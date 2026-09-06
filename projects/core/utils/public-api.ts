@@ -2,7 +2,8 @@
  * @module @cngx/core/utils
  */
 export { coerceBooleanProperty, coerceNumberProperty } from './coerce.util';
-export { memoize } from './memo.util';
+export { memoize, type MemoizeOptions } from './memo.util';
+export { dateTimeFormatterFor } from './intl-format.util';
 export { parseKeyCombo, matchesKeyCombo, type KeyCombo } from './keyboard.util';
 export { matchesTypeahead } from './typeahead.util';
 export { hasTransition, onTransitionDone, type TransitionDoneHandle } from './transition.util';

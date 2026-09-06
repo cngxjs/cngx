@@ -9,36 +9,7 @@ import {
   LOCALE_ID,
   ViewEncapsulation,
 } from '@angular/core';
-
-const DATE_TIME_FORMATTER_CACHE_LIMIT = 32;
-const dateTimeFormatterCache = new Map<string, Intl.DateTimeFormat>();
-
-/**
- * Bounded `Intl.DateTimeFormat` cache keyed on locale + serialized options.
- * Constructing the formatter is the expensive half of formatting; consumers
- * bind static option literals, so the key space stays tiny. The FIFO cap
- * guards a consumer generating per-row options (e.g. varying `timeZone`)
- * from growing the map for the app's lifetime.
- */
-function dateTimeFormatterFor(
-  locale: string,
-  options: Intl.DateTimeFormatOptions,
-): Intl.DateTimeFormat {
-  const key = `${locale}|${JSON.stringify(options)}`;
-  const cached = dateTimeFormatterCache.get(key);
-  if (cached) {
-    return cached;
-  }
-  if (dateTimeFormatterCache.size >= DATE_TIME_FORMATTER_CACHE_LIMIT) {
-    const oldest = dateTimeFormatterCache.keys().next().value;
-    if (oldest !== undefined) {
-      dateTimeFormatterCache.delete(oldest);
-    }
-  }
-  const formatter = new Intl.DateTimeFormat(locale, options);
-  dateTimeFormatterCache.set(key, formatter);
-  return formatter;
-}
+import { dateTimeFormatterFor } from '@cngx/core/utils';
 
 /**
  * Displays a formatted date/timestamp, typically in a card footer.

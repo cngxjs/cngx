@@ -38,4 +38,33 @@ describe('memoize', () => {
     expect(memoA('x')).toBe('a:x');
     expect(memoB('x')).toBe('b:x');
   });
+
+  it('evicts the oldest entry when cacheLimit is reached', () => {
+    let calls = 0;
+    const fn = memoize(
+      (key: string) => {
+        calls++;
+        return key.toUpperCase();
+      },
+      { cacheLimit: 2 },
+    );
+
+    expect(fn('a')).toBe('A');
+    expect(fn('b')).toBe('B');
+    expect(calls).toBe(2);
+
+    fn('a');
+    expect(calls).toBe(2);
+
+    // Third distinct key evicts 'a' (oldest inserted, FIFO).
+    expect(fn('c')).toBe('C');
+    expect(calls).toBe(3);
+
+    expect(fn('a')).toBe('A');
+    expect(calls).toBe(4);
+
+    // 'c' survived the re-insert of 'a' (which evicted 'b').
+    fn('c');
+    expect(calls).toBe(4);
+  });
 });
