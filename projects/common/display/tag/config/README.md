@@ -48,10 +48,10 @@ bootstrapApplication(AppComponent, {
 |-|-|-|
 | `defaults` | `{ variant?, color?, size?, truncate?, maxWidth? }` | `CngxTag` input fallbacks |
 | `groupDefaults` | `{ gap?, align?, semanticList? }` | `CngxTagGroup` input fallbacks |
-| `colors` | `Record<string, { bg; color; border }>` | Consumer palette entries, resolved through `[data-color="<key>"]` |
+| `colors` | `Record<string, { bg; color; border }>` | Consumer palette entries, emitted as element-level `--cngx-tag-bg/-color/-border` when `color` matches a registered key |
 | `templates` | `{ label?, prefix?, suffix?, header?, accessory? }` | App-wide slot overrides (tier 2 of the slot cascade) |
 
-The five predefined color keys (`neutral` / `success` / `warning` / `error` / `info`) ship in `tag.css` and are not part of the `colors` map. Registering one of those keys via `withTagColors` is a no-op against the predefined cascade.
+The five predefined color keys (`neutral` / `success` / `warning` / `error` / `info`) ship in `tag.css` and are not part of the `colors` map. Registering one of those keys via `withTagColors` is a no-op against the predefined cascade. Unregistered consumer keys emit nothing - authoring plain `[data-color="my-brand"]` CSS stays a first-class alternative.
 
 ## Provider helpers
 

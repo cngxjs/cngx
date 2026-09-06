@@ -32,9 +32,9 @@ export type CngxTagVariant = 'filled' | 'outline' | 'subtle';
  * Open-ended `(string & {})` accepts any consumer-defined palette
  * key (e.g. `'my-brand'`); the directive emits it as a `data-color`
  * attribute so consumers can author `[data-color="my-brand"]`
- * styles against their own design tokens. Re-evaluation trigger
- * toward a `withTagColors()` cascade is tracked in
- * `display-accepted-debt.md §1`.
+ * styles against their own design tokens, or register the key via
+ * `withTagColors()` and let the directive emit the entry's
+ * `--cngx-tag-bg/-color/-border` values directly.
  *
  * @category common/display
  */
@@ -50,6 +50,19 @@ export type CngxTagColor = 'neutral' | 'success' | 'warning' | 'error' | 'info' 
  * @category common/display
  */
 export type CngxTagSize = 'sm' | 'md' | 'lg' | 'xl';
+
+/**
+ * Colour keys whose `[data-color]` cascade ships in `tag.css`. A
+ * `withTagColors()` entry under one of these keys stays a no-op - the
+ * stylesheet cascade owns them.
+ */
+const PREDEFINED_TAG_COLORS: ReadonlySet<string> = new Set([
+  'neutral',
+  'success',
+  'warning',
+  'error',
+  'info',
+]);
 
 /**
  * Decorative tag / label / badge atom.
@@ -146,6 +159,9 @@ export type CngxTagSize = 'sm' | 'md' | 'lg' | 'xl';
     '[class.cngx-tag--xl]': "size() === 'xl'",
     '[class.cngx-tag--truncate]': 'truncate()',
     '[attr.data-color]': 'color()',
+    '[style.--cngx-tag-bg]': 'configColor()?.bg ?? null',
+    '[style.--cngx-tag-color]': 'configColor()?.color ?? null',
+    '[style.--cngx-tag-border]': 'configBorder()',
     '[style.max-width]': 'maxWidth()',
     '[attr.role]': 'roleAttr()',
   },
@@ -180,6 +196,30 @@ export class CngxTag {
 
   /** Density. `md` (default) | `sm` | `lg` | `xl`. */
   readonly size = input<CngxTagSize>(this.cfg.defaults?.size ?? 'md');
+
+  /**
+   * Registered `withTagColors` entry for the current colour key.
+   * Consumer keys only - the five predefined keys resolve in
+   * `tag.css`, so a config entry under a predefined key stays a
+   * no-op per the `withTagColors` contract. The entry is emitted as
+   * element-level `--cngx-tag-bg/-color/-border` values ONLY when
+   * the config carries the key; an unregistered key emits nothing,
+   * so the plain consumer CSS authoring path (`[data-color="..."]`
+   * rules) is never shadowed by an element style.
+   */
+  protected readonly configColor = computed(() => {
+    const key = this.color();
+    if (PREDEFINED_TAG_COLORS.has(key)) {
+      return undefined;
+    }
+    return this.cfg.colors?.[key];
+  });
+
+  /** Border shorthand for the registered entry (mirrors the `1px solid <color>` shape of the predefined cascade). */
+  protected readonly configBorder = computed(() => {
+    const entry = this.configColor();
+    return entry ? `1px solid ${entry.border}` : null;
+  });
 
   /**
    * When `true`, applies `text-overflow: ellipsis` + `white-space: nowrap`
