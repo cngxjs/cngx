@@ -1,3 +1,4 @@
+import { DOCUMENT } from '@angular/common';
 import {
   afterNextRender,
   DestroyRef,
@@ -77,6 +78,12 @@ export class CngxTruncate {
 
   constructor() {
     const destroyRef = inject(DestroyRef);
+
+    // SSR guard: no window, no measuring - the style bindings above still render.
+    const win = inject(DOCUMENT).defaultView;
+    if (!win) {
+      return;
+    }
 
     afterNextRender(() => {
       this.checkClamped();

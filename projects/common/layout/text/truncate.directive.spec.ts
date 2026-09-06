@@ -1,3 +1,4 @@
+import { DOCUMENT } from '@angular/common';
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
@@ -85,5 +86,31 @@ describe('CngxTruncate', () => {
     fixture.detectChanges();
     const el = p.nativeElement as HTMLElement;
     expect(el.style.webkitLineClamp).toBe('5');
+  });
+  it('does not schedule measurements without a window (SSR guard)', () => {
+    const ssrDoc = new Proxy(document, {
+      get(target, prop) {
+        if (prop === 'defaultView') {
+          return null;
+        }
+        const value = Reflect.get(target, prop);
+        return typeof value === 'function' ? value.bind(target) : value;
+      },
+    });
+    TestBed.configureTestingModule({ providers: [{ provide: DOCUMENT, useValue: ssrDoc }] });
+    // the zoneless scheduler uses rAF itself, so count observer construction instead
+    const observerCreated = vi.fn();
+    class CountingResizeObserver extends ResizeObserverMock {
+      constructor(callback: ResizeObserverCallback) {
+        super(callback);
+        observerCreated();
+      }
+    }
+    vi.stubGlobal('ResizeObserver', CountingResizeObserver);
+
+    const fixture = TestBed.createComponent(TestHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(observerCreated).not.toHaveBeenCalled();
   });
 });
