@@ -1,6 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { Router } from '@angular/router';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CngxCard } from './card.component';
 import { CngxCardHeader } from './card-header.directive';
 import { CngxCardBody } from './card-body.directive';
@@ -173,6 +174,55 @@ describe('CngxCard', () => {
     host.href.set('/patients/1');
     fixture.detectChanges();
     expect(card.getAttribute('href')).toBe('/patients/1');
+  });
+
+  it('navigates through the Router on click for as="link" with an internal href', () => {
+    const { fixture, card, host } = setup();
+    const router = TestBed.inject(Router);
+    const navigate = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
+    host.cardType.set('link');
+    host.href.set('/patients/1');
+    fixture.detectChanges();
+    card.click();
+    expect(navigate).toHaveBeenCalledWith('/patients/1');
+  });
+
+  it('navigates through the Router on Enter for as="link"', () => {
+    const { fixture, card, host } = setup();
+    const router = TestBed.inject(Router);
+    const navigate = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
+    host.cardType.set('link');
+    host.href.set('/patients/2');
+    fixture.detectChanges();
+    card.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    expect(navigate).toHaveBeenCalledWith('/patients/2');
+  });
+
+  it('does not navigate without an href or when disabled', () => {
+    const { fixture, card, host } = setup();
+    const router = TestBed.inject(Router);
+    const navigate = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
+    host.cardType.set('link');
+    fixture.detectChanges();
+    card.click();
+    expect(navigate).not.toHaveBeenCalled();
+
+    host.href.set('/patients/3');
+    host.disabled.set(true);
+    fixture.detectChanges();
+    card.click();
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it('does not navigate for the button archetype', () => {
+    const { fixture, card, host } = setup();
+    const router = TestBed.inject(Router);
+    const navigate = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
+    host.cardType.set('button');
+    host.href.set('/patients/4');
+    fixture.detectChanges();
+    card.click();
+    expect(navigate).not.toHaveBeenCalled();
   });
 
   // --- Slots ---

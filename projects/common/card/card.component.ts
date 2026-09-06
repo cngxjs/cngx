@@ -8,6 +8,7 @@ import {
   output,
   ViewEncapsulation,
 } from '@angular/core';
+import { Router } from '@angular/router';
 import { nextUid } from '@cngx/core/utils';
 import { CngxRovingItem, CngxRovingTabindex } from '@cngx/common/a11y';
 
@@ -102,13 +103,22 @@ export class CngxCard {
     optional: true,
     skipSelf: true,
   });
+  private readonly router = inject(Router, { optional: true });
 
   /** Semantic archetype: `'article'` (display), `'button'` (action), or `'link'` (navigation). */
   readonly cardType = input<'article' | 'link' | 'button'>('article', {
     alias: 'as',
   });
 
-  /** Navigation URL when `as="link"`. Applied as `href` on the host. */
+  /**
+   * Navigation target when `as="link"`. Activation (click / Enter)
+   * navigates: internal URLs go through the app `Router` when one is
+   * provided, everything else (schemes, protocol-relative, router-less
+   * apps) through `window.location.assign`. The value is also mirrored
+   * as an `href` attribute on the host as a styling/testing hook - the
+   * host is not a native anchor, so browser-native link affordances
+   * (modifier-click new tab, context-menu link actions) do not apply.
+   */
   readonly href = input<string | undefined>(undefined);
 
   /** Accessible label for the card. Overrides the default screen reader announcement. */
@@ -209,6 +219,7 @@ export class CngxCard {
       this.selected.update((v) => !v);
     }
     this.clicked.emit();
+    this.navigateToHref();
   }
 
   /** @internal */
@@ -227,5 +238,27 @@ export class CngxCard {
       this.selected.update((v) => !v);
     }
     this.clicked.emit();
+    this.navigateToHref();
+  }
+
+  /**
+   * Navigation for the link archetype. Internal URLs prefer the app
+   * `Router` (SPA navigation, no full reload); external URLs and
+   * router-less apps fall back to `window.location.assign`.
+   */
+  private navigateToHref(): void {
+    if (this.cardType() !== 'link') {
+      return;
+    }
+    const href = this.href();
+    if (!href) {
+      return;
+    }
+    const external = /^[a-z][a-z0-9+.-]*:|^\/\//i.test(href);
+    if (this.router && !external) {
+      void this.router.navigateByUrl(href);
+      return;
+    }
+    window.location.assign(href);
   }
 }
