@@ -8,6 +8,7 @@ import {
   inject,
   input,
   signal,
+  untracked,
 } from '@angular/core';
 
 /**
@@ -18,7 +19,9 @@ import {
  * construction. The `<mark>` element has correct native SR semantics (announced
  * as "highlighted" in most screen readers).
  *
- * Original DOM structure is restored when the term changes or the directive is destroyed.
+ * The original text nodes are kept by reference and re-inserted when the
+ * term changes or the directive is destroyed - Angular bindings targeting
+ * them (interpolations, structural directives) stay live.
  *
  * ### Search result highlighting
  * ```html
@@ -60,23 +63,29 @@ export class CngxHighlight {
 
   private readonly el = inject(ElementRef<HTMLElement>);
   private readonly doc = inject(DOCUMENT);
-  /** Snapshot of original child nodes - restored before each re-highlight. */
-  private originalNodes: Node[] | null = null;
+  /**
+   * The text nodes replaced by the current highlight pass, by reference,
+   * with the nodes standing in for them. Undone before every re-highlight
+   * and on destroy - re-inserting the original references keeps LView
+   * bindings (interpolations) attached to live DOM.
+   */
+  private replacements: { original: Text; inserted: Node[] }[] = [];
   private readonly initialized = signal(false);
 
   constructor() {
-    inject(DestroyRef).onDestroy(() => this.restore());
+    inject(DestroyRef).onDestroy(() => this.restoreNodes());
 
     afterNextRender(() => {
       this.initialized.set(true);
     });
 
-    // matchCountState is written via untracked path - re-entering the effect would loop.
+    // The highlight pass writes matchCountState - untracked, so the write
+    // cannot re-trigger this effect.
     effect(() => {
       const term = this.term();
       const caseSensitive = this.caseSensitive();
       if (this.initialized()) {
-        this.applyHighlight(term, caseSensitive);
+        untracked(() => this.applyHighlight(term, caseSensitive));
       }
     });
   }
@@ -88,11 +97,7 @@ export class CngxHighlight {
   private applyHighlight(term: string, caseSensitive: boolean): void {
     const host = this.el.nativeElement as HTMLElement;
 
-    if (this.originalNodes === null) {
-      this.originalNodes = Array.from(host.childNodes).map((n) => n.cloneNode(true));
-    } else {
-      this.restoreNodes(host);
-    }
+    this.restoreNodes();
 
     if (!term) {
       this.matchCountState.set(0);
@@ -142,29 +147,30 @@ export class CngxHighlight {
         fragment.appendChild(this.doc.createTextNode(text.slice(lastIndex)));
       }
 
+      // Capture before replaceChild - inserting a fragment empties it.
+      const inserted = Array.from(fragment.childNodes);
       textNode.parentNode!.replaceChild(fragment, textNode);
+      this.replacements.push({ original: textNode, inserted });
     }
 
     this.matchCountState.set(count);
   }
 
-  /** Restores the original DOM structure. */
-  private restore(): void {
-    if (this.originalNodes !== null) {
-      this.restoreNodes(this.el.nativeElement as HTMLElement);
+  /** Puts the original text nodes back and removes the highlight nodes. */
+  private restoreNodes(): void {
+    for (const { original, inserted } of this.replacements) {
+      const parent = inserted[0]?.parentNode;
+      if (!parent) {
+        continue;
+      }
+      parent.insertBefore(original, inserted[0]);
+      for (const node of inserted) {
+        if (node.parentNode === parent) {
+          parent.removeChild(node);
+        }
+      }
     }
-  }
-
-  private restoreNodes(host: HTMLElement): void {
-    if (!this.originalNodes) {
-      return;
-    }
-    while (host.firstChild) {
-      host.removeChild(host.firstChild);
-    }
-    for (const node of this.originalNodes) {
-      host.appendChild(node.cloneNode(true));
-    }
+    this.replacements = [];
   }
 
   /** Escapes special regex characters in the search term. */
