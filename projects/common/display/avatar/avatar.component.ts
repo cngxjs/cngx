@@ -3,7 +3,7 @@ import {
   Component,
   computed,
   input,
-  signal,
+  linkedSignal,
   ViewEncapsulation,
 } from '@angular/core';
 
@@ -66,6 +66,7 @@ import {
         [class.cngx-avatar__status--offline]="status() === 'offline'"
         [class.cngx-avatar__status--busy]="status() === 'busy'"
         [class.cngx-avatar__status--away]="status() === 'away'"
+        role="img"
         [attr.aria-label]="status()"
       ></span>
     }
@@ -85,8 +86,16 @@ export class CngxAvatar {
   /** Optional user-presence status indicator. */
   readonly status = input<'online' | 'offline' | 'busy' | 'away' | undefined>(undefined);
 
-  private readonly imageLoadedState = signal(false);
-  private readonly imageErroredState = signal(false);
+  // Keyed on src(): a new URL resets both flags, so a failed image recovers
+  // when the consumer rebinds [src].
+  private readonly imageLoadedState = linkedSignal<string | undefined, boolean>({
+    source: this.src,
+    computation: () => false,
+  });
+  private readonly imageErroredState = linkedSignal<string | undefined, boolean>({
+    source: this.src,
+    computation: () => false,
+  });
 
   /** Whether the image loaded successfully. */
   readonly imageLoaded = this.imageLoadedState.asReadonly();

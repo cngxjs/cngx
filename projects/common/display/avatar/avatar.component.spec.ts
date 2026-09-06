@@ -82,6 +82,42 @@ describe('CngxAvatar', () => {
     expect(hostEl.textContent).toContain('JD');
   });
 
+  it('recovers from a failed image when src changes', () => {
+    const { fixture, hostEl, dir } = setup();
+    fixture.componentInstance.src.set('https://example.com/broken.jpg');
+    fixture.componentInstance.initials.set('JD');
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    hostEl.querySelector('img')?.dispatchEvent(new Event('error'));
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    expect(dir.showFallback()).toBe(true);
+
+    fixture.componentInstance.src.set('https://example.com/fixed.jpg');
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    expect(dir.showImage()).toBe(true);
+    expect(hostEl.querySelector('img')?.getAttribute('src')).toBe('https://example.com/fixed.jpg');
+  });
+
+  it('resets imageLoaded when src changes', () => {
+    const { fixture, dir, hostEl } = setup();
+    fixture.componentInstance.src.set('https://example.com/a.jpg');
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    hostEl.querySelector('img')?.dispatchEvent(new Event('load'));
+    TestBed.flushEffects();
+    expect(dir.imageLoaded()).toBe(true);
+
+    fixture.componentInstance.src.set('https://example.com/b.jpg');
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(dir.imageLoaded()).toBe(false);
+  });
+
   it('applies size and shape modifier classes', () => {
     const { fixture, hostEl } = setup();
     fixture.componentInstance.size.set('lg');
@@ -98,6 +134,7 @@ describe('CngxAvatar', () => {
     TestBed.flushEffects();
     const dot = hostEl.querySelector('.cngx-avatar__status');
     expect(dot).not.toBeNull();
+    expect(dot?.getAttribute('role')).toBe('img');
     expect(dot?.getAttribute('aria-label')).toBe('online');
     expect(dot?.classList.contains('cngx-avatar__status--online')).toBe(true);
   });
