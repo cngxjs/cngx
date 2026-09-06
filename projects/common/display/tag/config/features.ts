@@ -39,16 +39,19 @@ export function withTagGroupDefaults(
 }
 
 /**
- * Register consumer-defined colour entries. Each key adds a
- * `[data-color="<key>"]` cascade entry resolved through
- * `--cngx-tag-bg/-color/-border` custom properties at the consumer's
- * own CSS layer.
+ * Register consumer-defined colour entries. When a tag's `color`
+ * resolves to a registered key, the directive emits the entry as
+ * element-level `--cngx-tag-bg` / `--cngx-tag-color` /
+ * `--cngx-tag-border` values (border wrapped as `1px solid <color>`
+ * to mirror the predefined cascade). The entry applies uniformly
+ * across variants - config colours carry no per-variant surfaces.
  *
  * The five predefined keys (`neutral`/`success`/`warning`/`error`/
  * `info`) ship in `tag.css` and are NOT part of this map; passing
- * them here is a no-op against the predefined cascade. Consumer
- * keys composed via `data-color="my-brand"` resolve through the
- * registered entry.
+ * them here is a no-op against the predefined cascade. Unregistered
+ * consumer keys emit nothing, so authoring plain
+ * `[data-color="my-brand"]` CSS remains a first-class alternative -
+ * the emitter never shadows it with an element style.
  *
  * ```ts
  * provideTagConfig(

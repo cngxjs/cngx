@@ -29,6 +29,14 @@ class ParentScopedHost {}
 })
 class InstanceOverrideHost {}
 
+@Component({
+  imports: [CngxTag],
+  template: `<span cngxTag [color]="color()" data-testid="tag-colored">x</span>`,
+})
+class ColoredTagHost {
+  readonly color = signal<string>('my-brand');
+}
+
 function flush(fixture: { detectChanges: () => void }): void {
   TestBed.flushEffects();
   fixture.detectChanges();
@@ -131,6 +139,74 @@ describe('CngxTagConfig - resolution priority (Phase 4)', () => {
       color: '#ffffff',
       border: 'transparent',
     });
+  });
+
+  it('(f2) emits a registered consumer entry as element-level custom properties', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideTagConfig(
+          withTagColors({
+            'my-brand': { bg: '#4f46e5', color: '#ffffff', border: '#312e81' },
+          }),
+        ),
+      ],
+    });
+    const fixture = TestBed.createComponent(ColoredTagHost);
+    flush(fixture);
+    const host: HTMLElement = fixture.nativeElement.querySelector('[data-testid="tag-colored"]');
+    expect(host.style.getPropertyValue('--cngx-tag-bg')).toBe('#4f46e5');
+    expect(host.style.getPropertyValue('--cngx-tag-color')).toBe('#ffffff');
+    expect(host.style.getPropertyValue('--cngx-tag-border')).toBe('1px solid #312e81');
+  });
+
+  it('(f3) emits nothing for an unregistered consumer key', () => {
+    const fixture = TestBed.createComponent(ColoredTagHost);
+    flush(fixture);
+    const host: HTMLElement = fixture.nativeElement.querySelector('[data-testid="tag-colored"]');
+    expect(host.getAttribute('data-color')).toBe('my-brand');
+    expect(host.style.getPropertyValue('--cngx-tag-bg')).toBe('');
+    expect(host.style.getPropertyValue('--cngx-tag-color')).toBe('');
+    expect(host.style.getPropertyValue('--cngx-tag-border')).toBe('');
+  });
+
+  it('(f4) keeps predefined keys a no-op even when registered', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideTagConfig(
+          withTagColors({
+            success: { bg: '#000000', color: '#ffffff', border: '#000000' },
+          }),
+        ),
+      ],
+    });
+    const fixture = TestBed.createComponent(ColoredTagHost);
+    fixture.componentInstance.color.set('success');
+    flush(fixture);
+    const host: HTMLElement = fixture.nativeElement.querySelector('[data-testid="tag-colored"]');
+    expect(host.style.getPropertyValue('--cngx-tag-bg')).toBe('');
+    expect(host.style.getPropertyValue('--cngx-tag-color')).toBe('');
+    expect(host.style.getPropertyValue('--cngx-tag-border')).toBe('');
+  });
+
+  it('(f5) clears the emit when color switches away from the registered key', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideTagConfig(
+          withTagColors({
+            'my-brand': { bg: '#4f46e5', color: '#ffffff', border: '#312e81' },
+          }),
+        ),
+      ],
+    });
+    const fixture = TestBed.createComponent(ColoredTagHost);
+    flush(fixture);
+    const host: HTMLElement = fixture.nativeElement.querySelector('[data-testid="tag-colored"]');
+    expect(host.style.getPropertyValue('--cngx-tag-bg')).toBe('#4f46e5');
+    fixture.componentInstance.color.set('neutral');
+    flush(fixture);
+    expect(host.style.getPropertyValue('--cngx-tag-bg')).toBe('');
+    expect(host.style.getPropertyValue('--cngx-tag-color')).toBe('');
+    expect(host.style.getPropertyValue('--cngx-tag-border')).toBe('');
   });
 
   it('(g) provideTagConfig() with zero features preserves CNGX_TAG_DEFAULTS reference identity', () => {

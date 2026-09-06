@@ -27,7 +27,7 @@ import { Directive, input } from '@angular/core';
     class: 'cngx-card__media',
     '[style.aspect-ratio]': 'aspectRatio() !== "auto" ? aspectRatio() : null',
     '[attr.aria-hidden]': 'decorative() || null',
-    '[attr.loading]': '"lazy"',
+    '[attr.loading]': 'loading()',
   },
 })
 export class CngxCardMedia {
@@ -36,4 +36,12 @@ export class CngxCardMedia {
 
   /** Aspect ratio applied via CSS `aspect-ratio` property. */
   readonly aspectRatio = input<'16/9' | '4/3' | '1/1' | 'auto'>('auto');
+
+  /**
+   * Native `loading` attribute for `<img>`/`<iframe>` hosts. Defaults to
+   * `lazy` - right for below-the-fold card lists; set `eager` on
+   * above-the-fold cards where lazy decoding costs LCP. `null` removes
+   * the attribute (non-loadable hosts like `<div>` backgrounds).
+   */
+  readonly loading = input<'lazy' | 'eager' | null>('lazy');
 }

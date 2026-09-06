@@ -86,6 +86,15 @@ describe('CngxBadge', () => {
     expect(dir.isEmpty()).toBe(true);
   });
 
+  it('hides the badge when value is negative', () => {
+    const { fixture, dir, hostEl } = setup();
+    fixture.componentInstance.value.set(-3);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(dir.isEmpty()).toBe(true);
+    expect(hostEl.querySelector('.cngx-badge-indicator')).toBeNull();
+  });
+
   it('hides the badge when hidden() is true', () => {
     const { fixture, hostEl } = setup();
     fixture.componentInstance.hidden.set(true);

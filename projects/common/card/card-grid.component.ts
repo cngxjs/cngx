@@ -96,7 +96,11 @@ export class CngxCardGrid {
   /** Grid density level - controls gap and card padding via CSS custom properties. */
   readonly density = input<'compact' | 'default' | 'comfortable'>('default');
 
-  /** Whether the grid should have `role="list"`. Requires `role="listitem"` on each card. */
+  /**
+   * Whether the grid should have `role="list"`. Requires
+   * `role="listitem"` on each child - on `<cngx-card>` set it via the
+   * card's `role` input, which overrides the archetype-derived role.
+   */
   readonly semanticList = input<boolean>(false);
 
   /**

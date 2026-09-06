@@ -12,7 +12,7 @@ import { CngxCardBadge } from './card-badge.directive';
   template: `
     <header cngxCardHeader>Header</header>
     <div cngxCardBody>Body</div>
-    <img cngxCardMedia [decorative]="false" [aspectRatio]="'16/9'" />
+    <img cngxCardMedia [decorative]="false" [aspectRatio]="'16/9'" [loading]="mediaLoading" />
     <footer cngxCardFooter>Footer</footer>
     <div cngxCardActions [align]="'end'">Actions</div>
     <span cngxCardBadge data-testid="badge-default">P</span>
@@ -27,7 +27,9 @@ import { CngxCardBadge } from './card-badge.directive';
     CngxCardBadge,
   ],
 })
-class TestHost {}
+class TestHost {
+  mediaLoading: 'lazy' | 'eager' | null = 'lazy';
+}
 
 describe('Card slot directives', () => {
   beforeEach(() => TestBed.configureTestingModule({ imports: [TestHost] }));
@@ -53,6 +55,22 @@ describe('Card slot directives', () => {
     const media = el.querySelector('.cngx-card__media') as HTMLElement;
     expect(media).toBeTruthy();
     expect(media.hasAttribute('aria-hidden')).toBe(false);
+  });
+
+  it('CngxCardMedia defaults loading to lazy and honours the input override', () => {
+    const { fixture, el } = setup();
+    const media = el.querySelector('[cngxCardMedia]')!;
+    expect(media.getAttribute('loading')).toBe('lazy');
+
+    fixture.componentInstance.mediaLoading = 'eager';
+    fixture.changeDetectorRef.markForCheck();
+    fixture.detectChanges();
+    expect(media.getAttribute('loading')).toBe('eager');
+
+    fixture.componentInstance.mediaLoading = null;
+    fixture.changeDetectorRef.markForCheck();
+    fixture.detectChanges();
+    expect(media.hasAttribute('loading')).toBe(false);
   });
 
   it('CngxCardMedia sets aspect-ratio', () => {

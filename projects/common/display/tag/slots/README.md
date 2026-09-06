@@ -22,7 +22,7 @@ import {
 
 ## Context shape
 
-The three context interfaces are structurally identical in this release. They stay separate so future per-slot fields (e.g. spacing tokens on prefix, sort-direction on suffix) can land without breaking sibling consumers.
+All three slots share one `CngxTagSlotContext` interface; the per-slot names (`CngxTagLabelContext` / `CngxTagPrefixContext` / `CngxTagSuffixContext`) are type aliases of it. A slot that grows its own field (e.g. spacing tokens on prefix, sort-direction on suffix) forks its alias back into an interface extending the shared one - sibling consumers stay source-compatible either way.
 
 | Field | Type | Notes |
 |-|-|-|

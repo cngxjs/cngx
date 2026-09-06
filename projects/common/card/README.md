@@ -45,6 +45,7 @@ export class ExampleComponent {
 ## Accessibility
 
 - **ARIA roles:** `role="article"` (default), `role="button"`, or `role="link"` based on `as` input
+- **Link navigation:** `as="link"` + `[href]` navigates on activation - internal URLs through the app `Router` when provided, otherwise `window.location.assign`. The host is not a native anchor, so modifier-click/new-tab affordances do not apply
 - **Keyboard interaction:**
   - `Enter` / `Space`: Activate interactive cards (button/link)
   - `Arrow Left/Right`: Navigate cards in grid (CngxRovingTabindex)

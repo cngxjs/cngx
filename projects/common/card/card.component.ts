@@ -8,7 +8,8 @@ import {
   output,
   ViewEncapsulation,
 } from '@angular/core';
-import { nextUid } from '@cngx/core/utils';
+import { Router } from '@angular/router';
+import { createAnnouncementPhrase, nextUid } from '@cngx/core/utils';
 import { CngxRovingItem, CngxRovingTabindex } from '@cngx/common/a11y';
 
 /**
@@ -102,14 +103,34 @@ export class CngxCard {
     optional: true,
     skipSelf: true,
   });
+  private readonly router = inject(Router, { optional: true });
 
   /** Semantic archetype: `'article'` (display), `'button'` (action), or `'link'` (navigation). */
   readonly cardType = input<'article' | 'link' | 'button'>('article', {
     alias: 'as',
   });
 
-  /** Navigation URL when `as="link"`. Applied as `href` on the host. */
+  /**
+   * Navigation target when `as="link"`. Activation (click / Enter)
+   * navigates: internal URLs go through the app `Router` when one is
+   * provided, everything else (schemes, protocol-relative, router-less
+   * apps) through `window.location.assign`. The value is also mirrored
+   * as an `href` attribute on the host as a styling/testing hook - the
+   * host is not a native anchor, so browser-native link affordances
+   * (modifier-click new tab, context-menu link actions) do not apply.
+   */
   readonly href = input<string | undefined>(undefined);
+
+  /**
+   * Explicit ARIA role override for the host. Wins over the
+   * archetype-derived role. The primary use is `role="listitem"` on
+   * cards inside `<cngx-card-grid [semanticList]="true">` - the grid's
+   * `role="list"` requires listitem children, which the archetype
+   * binding would otherwise overwrite. Overriding the role on an
+   * interactive card replaces its button/link semantics; pair with an
+   * inner interactive element when both are needed.
+   */
+  readonly role = input<string | undefined>(undefined);
 
   /** Accessible label for the card. Overrides the default screen reader announcement. */
   readonly ariaLabel = input<string | undefined>(undefined);
@@ -137,8 +158,12 @@ export class CngxCard {
     this.cardType() === 'link' ? (this.href() ?? null) : null,
   );
 
-  /** @internal Host element ARIA role. */
+  /** @internal Host element ARIA role. Explicit `role` input wins over the archetype. */
   protected readonly hostRole = computed(() => {
+    const override = this.role();
+    if (override) {
+      return override;
+    }
     switch (this.cardType()) {
       case 'button':
         return 'button';
@@ -179,18 +204,43 @@ export class CngxCard {
     this.disabled() && this.disabledReason() ? this.disabledReasonId : null,
   );
 
-  /** @internal SR live announcement for state changes. */
+  /**
+   * @internal Selection phrase with loading-start expiry: a real
+   * `selected` change (re)arms the phrase; a loading START spends an
+   * already-voiced phrase so the loading-clear content change cannot
+   * re-announce it (the region is `aria-atomic`). A toggle DURING
+   * loading keeps its phrase across the clear, so the change is voiced
+   * exactly once when the loading phrase yields.
+   */
+  private readonly selectionPhrase = createAnnouncementPhrase({
+    source: () => ({
+      selected: this.selected(),
+      selectable: this.selectable(),
+      loading: this.loading(),
+    }),
+    arm: (curr, prev) => {
+      if (curr.selectable && curr.selected !== prev.selected) {
+        return curr.selected ? 'Selected' : 'Deselected';
+      }
+      return null;
+    },
+    spend: (curr, prev) => curr.loading && !prev.loading,
+  });
+
+  /**
+   * @internal SR live announcement, driven by transitions rather than
+   * persistent state (Pillar 2: voice the change, not the standing
+   * state). Loading owns the region while active; otherwise the armed
+   * selection phrase renders (empty between transitions, so AT stays
+   * silent on no-op ticks).
+   */
   protected readonly liveAnnouncement = computed(() => {
-    if (this.loading()) {
-      return 'Loading';
-    }
-    if (this.selectable() && this.selected()) {
-      return 'Selected';
-    }
-    if (this.selectable() && !this.selected()) {
-      return 'Deselected';
-    }
-    return '';
+    // Read the phrase EAGERLY: linkedSignal only observes source
+    // snapshots it is actually read under - a lazy read behind the
+    // loading arm would skip the loading-start snapshot and never
+    // spend the phrase (same trap as tabs' closedPhrase).
+    const phrase = this.selectionPhrase();
+    return this.loading() ? 'Loading' : phrase;
   });
 
   /** Emits when an interactive card is clicked or activated via keyboard. */
@@ -209,23 +259,57 @@ export class CngxCard {
       this.selected.update((v) => !v);
     }
     this.clicked.emit();
+    if (e.button !== 0 || e.ctrlKey || e.shiftKey || e.altKey || e.metaKey) {
+      // Modified / non-primary click carries new-tab intent. There is no
+      // native anchor to honour it, so never convert it into same-tab
+      // navigation (RouterLink skips modified clicks the same way).
+      return;
+    }
+    this.navigateToHref();
   }
 
   /** @internal */
   protected handleHostKeydown(e: Event): void {
-    if (!this.interactive()) {
+    if (!this.interactive() || (e as KeyboardEvent).repeat) {
+      return;
+    }
+    const isSpace = (e as KeyboardEvent).key === ' ';
+    if (isSpace && this.cardType() !== 'button') {
+      // APG: links activate on Enter only - Space keeps its scroll default.
       return;
     }
     if (this.disabled()) {
       e.preventDefault();
       return;
     }
-    if ((e as KeyboardEvent).key === ' ') {
+    if (isSpace) {
       e.preventDefault();
     }
     if (this.selectable()) {
       this.selected.update((v) => !v);
     }
     this.clicked.emit();
+    this.navigateToHref();
+  }
+
+  /**
+   * Navigation for the link archetype. Internal URLs prefer the app
+   * `Router` (SPA navigation, no full reload); external URLs and
+   * router-less apps fall back to `window.location.assign`.
+   */
+  private navigateToHref(): void {
+    if (this.cardType() !== 'link') {
+      return;
+    }
+    const href = this.href();
+    if (!href) {
+      return;
+    }
+    const external = /^[a-z][a-z0-9+.-]*:|^\/\//i.test(href);
+    if (this.router && !external) {
+      void this.router.navigateByUrl(href);
+      return;
+    }
+    window.location.assign(href);
   }
 }

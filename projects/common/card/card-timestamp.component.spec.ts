@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { LOCALE_ID } from '@angular/core';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CngxCardTimestamp } from './card-timestamp.component';
 
 @Component({
@@ -52,6 +52,31 @@ describe('CngxCardTimestamp', () => {
   it('hides prefix when not provided', () => {
     const { el } = setup();
     expect(el.querySelector('.cngx-card-timestamp__prefix')).toBeFalsy();
+  });
+
+  it('renders empty, drops datetime, and dev-warns on an Invalid Date', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const { fixture, el, host } = setup();
+    host.date.set('not-a-date');
+    fixture.detectChanges();
+    const time = el.querySelector('time')!;
+    expect(time.textContent!.trim()).toBe('');
+    expect(time.hasAttribute('datetime')).toBe(false);
+    expect(warn).toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
+  it('dedupes Invalid Date pairs (single dev-warn across rebinds)', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const { fixture, host } = setup();
+    host.date.set('not-a-date');
+    fixture.detectChanges();
+    host.date.set('also-not-a-date');
+    fixture.detectChanges();
+    // The NaN-aware equal dedupes the second invalid instant - the
+    // dev-warn effect refires only when the instant actually changes.
+    expect(warn).toHaveBeenCalledOnce();
+    warn.mockRestore();
   });
 
   it('accepts ISO string date', () => {

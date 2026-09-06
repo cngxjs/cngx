@@ -2,6 +2,7 @@
 // (`createTabGroupTemplateBindings` and `CngxMatTabAggregatorContent`).
 // Re-eval on second consumer or sibling debt closure.
 import { computed, linkedSignal, type Signal } from '@angular/core';
+import { createAnnouncementPhrase } from '@cngx/core/utils';
 
 import type { CngxTabsConfig } from '../tabs-config';
 import type { CngxTabsI18n } from '../i18n/tabs-i18n';
@@ -157,31 +158,18 @@ export function createTabGroupAnnouncements(
     equal: Object.is,
   });
 
-  // Close phrase with commit-activity expiry. `prev.source` carries the
-  // last-seen (phrase, status) pair: a NEW phrase (re)arms; a commit
-  // status change while armed spends the phrase, so a later return to
-  // idle re-renders '' instead of re-announcing the stale close.
-  const closedPhrase = linkedSignal<
-    { readonly phrase: string; readonly status: string },
-    string
-  >({
+  // Close phrase with commit-activity expiry: a NEW phrase (re)arms; a
+  // commit status change while armed spends the phrase, so a later
+  // return to idle re-renders '' instead of re-announcing the stale
+  // close. Mount seeds with the current phrase (never empty-coerced).
+  const closedPhrase = createAnnouncementPhrase({
     source: () => ({
       phrase: closedAnnouncement(),
       status: presenter.commitTransition.current(),
     }),
-    computation: (src, prev) => {
-      if (prev === undefined) {
-        return src.phrase;
-      }
-      if (src.phrase !== prev.source.phrase) {
-        return src.phrase;
-      }
-      if (src.status !== prev.source.status) {
-        return '';
-      }
-      return prev.value;
-    },
-    equal: Object.is,
+    arm: (curr, prev) => (curr.phrase !== prev.phrase ? curr.phrase : null),
+    spend: (curr, prev) => curr.status !== prev.status,
+    seed: (src) => src.phrase,
   });
 
   const liveAnnouncement = computed<string>(() => {

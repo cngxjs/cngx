@@ -2,11 +2,14 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
   input,
+  isDevMode,
   LOCALE_ID,
   ViewEncapsulation,
 } from '@angular/core';
+import { dateTimeFormatterFor } from '@cngx/core/utils';
 
 /**
  * Displays a formatted date/timestamp, typically in a card footer.
@@ -56,22 +59,61 @@ export class CngxCardTimestamp {
   /** `Intl.DateTimeFormatOptions` for the date. */
   readonly format = input<Intl.DateTimeFormatOptions | undefined>(undefined);
 
-  /** @internal */
-  protected readonly dateObj = computed(() => {
-    const d = this.date();
-    return typeof d === 'string' ? new Date(d) : d;
-  });
+  /**
+   * @internal Coerced instant, deduped by time value so a fresh-ref
+   * `[date]` rebind of the same instant does not cascade the render
+   * graph. NaN pairs compare equal - two Invalid Dates must dedupe too
+   * (NaN !== NaN would defeat the arm). Mirrors `CngxTime.instant`.
+   */
+  protected readonly dateObj = computed(
+    () => {
+      const d = this.date();
+      return typeof d === 'string' ? new Date(d) : d;
+    },
+    {
+      equal: (a, b) => {
+        const ta = a.getTime();
+        const tb = b.getTime();
+        return ta === tb || (Number.isNaN(ta) && Number.isNaN(tb));
+      },
+    },
+  );
 
-  /** @internal */
-  protected readonly isoDate = computed(() => this.dateObj().toISOString());
+  /**
+   * @internal Invalid Date guard. `toISOString()` throws and
+   * `Intl.format` renders garbage on an invalid instant - a bad ISO
+   * string must degrade to an empty render, not crash change detection.
+   */
+  protected readonly isValidDate = computed(() => !Number.isNaN(this.dateObj().getTime()));
 
-  /** @internal */
+  /** @internal `null` (attribute removed) when the instant is invalid. */
+  protected readonly isoDate = computed(() =>
+    this.isValidDate() ? this.dateObj().toISOString() : null,
+  );
+
+  /** @internal Empty string when the instant is invalid. */
   protected readonly formattedDate = computed(() => {
+    if (!this.isValidDate()) {
+      return '';
+    }
     const fmt = this.format() ?? {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
     };
-    return new Intl.DateTimeFormat(this.locale, fmt).format(this.dateObj());
+    return dateTimeFormatterFor(this.locale, fmt).format(this.dateObj());
   });
+
+  constructor() {
+    if (isDevMode()) {
+      effect(() => {
+        if (!this.isValidDate()) {
+          console.warn(
+            '[CngxCardTimestamp] [date] resolved to an Invalid Date - rendering empty. ' +
+              'Check the bound value (bad ISO string?).',
+          );
+        }
+      });
+    }
+  }
 }

@@ -18,7 +18,7 @@ import { injectResolvedTagTemplate } from '../tag/shared/inject-resolved-templat
 import { CngxTag } from '../tag/tag.directive';
 import { CngxTagGroupAccessory } from './slots/tag-group-accessory.directive';
 import { CngxTagGroupHeader } from './slots/tag-group-header.directive';
-import type { CngxTagGroupHeaderContext } from './slots/tag-group-slot.context';
+import type { CngxTagGroupSlotContext } from './slots/tag-group-slot.context';
 import { CNGX_TAG_GROUP, type CngxTagGroupHost } from './tag-group.token';
 
 /**
@@ -241,10 +241,10 @@ export class CngxTagGroup implements CngxTagGroupHost {
 
   /**
    * Reactive bundle exposed to header / accessory slots'
-   * `*ngTemplateOutletContext`. The two slot context interfaces are
-   * structurally identical in Phase 2; the same computed source
-   * serves both. Consumer templates `let-count="count"` etc. read
-   * the live state without injecting the directive.
+   * `*ngTemplateOutletContext`. Both slots share
+   * `CngxTagGroupSlotContext`, so the same computed source serves
+   * them. Consumer templates `let-count="count"` etc. read the live
+   * state without injecting the directive.
    *
    * Explicit structural `equal` fn - without it, a fresh literal
    * each CD cycle would force `ngTemplateOutlet` to rebind embedded
@@ -252,7 +252,7 @@ export class CngxTagGroup implements CngxTagGroupHost {
    * `reference_signal_architecture` §1 Equality Rule: every
    * `computed` returning an object MUST pass an `equal` fn.
    */
-  protected readonly slotContext = computed<CngxTagGroupHeaderContext>(
+  protected readonly slotContext = computed<CngxTagGroupSlotContext>(
     () => ({
       $implicit: undefined as void,
       gap: this.gap(),

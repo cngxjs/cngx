@@ -45,11 +45,11 @@ export interface CngxTagConfig {
   };
 
   /**
-   * Consumer-defined colour map. Each entry adds a `[data-color="<key>"]`
-   * cascade entry that resolves through `--cngx-tag-bg/-color/-border`
-   * custom properties. Predefined keys (`neutral`/`success`/`warning`/
-   * `error`/`info`) ship in `tag.css` and are not part of this map -
-   * extending the predefined palette overrides the consumer key only.
+   * Consumer-defined colour map. A registered key is emitted by the
+   * directive as element-level `--cngx-tag-bg/-color/-border` values
+   * whenever `color` resolves to it. Predefined keys (`neutral`/
+   * `success`/`warning`/`error`/`info`) ship in `tag.css` and are not
+   * part of this map - entries under a predefined key are a no-op.
    */
   readonly colors?: Readonly<
     Record<
