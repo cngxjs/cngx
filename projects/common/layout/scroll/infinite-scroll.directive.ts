@@ -19,7 +19,9 @@ import {
  *
  * The observer is automatically recreated when `root`, `rootMargin`, or
  * `threshold` inputs change, and disconnected on destroy or when `enabled`
- * is set to `false`.
+ * is set to `false`. When `loading` settles back to `false` the sentinel is
+ * re-observed, so a fetched page that did not push the sentinel out of view
+ * still re-fires `loadMore` instead of stalling the list.
  *
  * ### Basic infinite list
  * ```html
@@ -99,6 +101,8 @@ export class CngxInfiniteScroll {
   private readonly el = inject(ElementRef<HTMLElement>);
   private readonly doc = inject(DOCUMENT);
   private lastEmitTime = 0;
+  private observer: IntersectionObserver | null = null;
+  private wasLoading = false;
 
   constructor() {
     const win = this.doc.defaultView;
@@ -142,8 +146,29 @@ export class CngxInfiniteScroll {
       );
 
       observer.observe(this.el.nativeElement as HTMLElement);
+      this.observer = observer;
 
-      onCleanup(() => observer.disconnect());
+      onCleanup(() => {
+        observer.disconnect();
+        this.observer = null;
+      });
+    });
+
+    effect(() => {
+      const loading = this.loading();
+      const wasLoading = this.wasLoading;
+      this.wasLoading = loading;
+      if (!wasLoading || loading) {
+        return;
+      }
+      // IO reports intersection CHANGES only: when a fetched page does not
+      // push the sentinel out of view there is no new entry after loading
+      // settles, and the list stalls. Re-observing forces a fresh entry;
+      // the debounce window is reset so that entry may emit immediately.
+      const sentinel = this.el.nativeElement as HTMLElement;
+      this.lastEmitTime = 0;
+      this.observer?.unobserve(sentinel);
+      this.observer?.observe(sentinel);
     });
   }
 }
