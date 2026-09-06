@@ -58,7 +58,11 @@ export type CngxBadgePosition =
   },
 })
 export class CngxBadge {
-  /** Raw value. Numbers show as text (respecting `max`); booleans flip dot mode; strings render verbatim. */
+  /**
+   * Raw value. Numbers show as text (respecting `max`); booleans flip dot
+   * mode; strings render verbatim. Numbers at or below `0` count as empty -
+   * a negative count never renders, mirroring the `0` behaviour.
+   */
   readonly cngxBadge = input.required<number | string | boolean>();
   /** Color variant. */
   readonly color = input<CngxBadgeColor>('primary');
@@ -80,7 +84,7 @@ export class CngxBadge {
   readonly isEmpty = computed<boolean>(() => {
     const v = this.cngxBadge();
     if (typeof v === 'number') {
-      return v === 0;
+      return v <= 0;
     }
     if (typeof v === 'boolean') {
       return v === false;

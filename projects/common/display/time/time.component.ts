@@ -7,12 +7,31 @@ import {
   LOCALE_ID,
   ViewEncapsulation,
 } from '@angular/core';
+import { memoize } from '@cngx/core/utils';
 
 /**
  * Unit ladder for the relative formatter, smallest first. Each `amount` is the
  * count of that unit in the next-larger one; anything past `months` falls
  * through to the `years` return.
  */
+/**
+ * Per-locale `Intl.RelativeTimeFormat` cache - the options are fixed, so the
+ * locale alone keys the instance. Constructing Intl formatters is the
+ * expensive half of formatting; the cache makes recomputes allocation-free.
+ */
+const relativeFormatterFor = memoize(
+  (locale: string) => new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }),
+);
+
+/**
+ * `Intl.DateTimeFormat` cache keyed on locale + serialized options.
+ * Consumers bind static option literals, so the key space stays small.
+ */
+const dateTimeFormatterFor = memoize((key: string): Intl.DateTimeFormat => {
+  const [locale, options] = JSON.parse(key) as [string, Intl.DateTimeFormatOptions];
+  return new Intl.DateTimeFormat(locale, options);
+});
+
 const RELATIVE_DIVISIONS: readonly { readonly amount: number; readonly unit: Intl.RelativeTimeFormatUnit }[] = [
   { amount: 60, unit: 'seconds' },
   { amount: 60, unit: 'minutes' },
@@ -100,11 +119,11 @@ export class CngxTime {
       return this.formatRelative(instant.getTime(), Date.now());
     }
     const format = this.format() ?? { year: 'numeric', month: 'short', day: 'numeric' };
-    return new Intl.DateTimeFormat(this.locale, format).format(instant);
+    return dateTimeFormatterFor(JSON.stringify([this.locale, format])).format(instant);
   });
 
   private formatRelative(target: number, now: number): string {
-    const rtf = new Intl.RelativeTimeFormat(this.locale, { numeric: 'auto' });
+    const rtf = relativeFormatterFor(this.locale);
     let delta = (target - now) / 1000;
     for (const division of RELATIVE_DIVISIONS) {
       if (Math.abs(delta) < division.amount) {

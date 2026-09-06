@@ -7,7 +7,7 @@ import { CngxAvatar } from '../avatar/avatar.component';
 import { CngxAvatarGroup } from './avatar-group.component';
 
 @Component({
-  template: `<cngx-avatar-group [max]="max()" [label]="label()">
+  template: `<cngx-avatar-group [max]="max()" [label]="label()" [labelFormat]="labelFormat()">
     @for (person of people(); track person) {
       <cngx-avatar [initials]="person" />
     }
@@ -18,6 +18,7 @@ class Host {
   readonly people = signal(['AK', 'JD', 'MR', 'PL', 'ST']);
   readonly max = signal<number | undefined>(3);
   readonly label = signal('avatars');
+  readonly labelFormat = signal<((total: number, hidden: number) => string) | undefined>(undefined);
 }
 
 describe('CngxAvatarGroup', () => {
@@ -68,6 +69,26 @@ describe('CngxAvatarGroup', () => {
     expect(pill(groupEl)).toBeNull();
     expect(avatarEls(groupEl).every((el) => !el.hasAttribute('hidden'))).toBe(true);
     expect(groupEl.getAttribute('aria-label')).toBe('5 avatars');
+  });
+
+  it('collapses every avatar when max is 0', () => {
+    const { fixture, host, groupEl } = setup();
+    host.max.set(0);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const els = avatarEls(groupEl);
+    expect(els.filter((el) => !el.hasAttribute('hidden')).length).toBe(0);
+    expect(pill(groupEl)?.textContent).toBe('+5');
+    expect(groupEl.getAttribute('aria-label')).toBe('5 avatars, 5 not shown');
+  });
+
+  it('routes the aria-label through labelFormat when set', () => {
+    const { fixture, host, groupEl } = setup();
+    host.labelFormat.set((total, hidden) => `Team mit ${total} Leuten, ${hidden} verborgen`);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(groupEl.getAttribute('aria-label')).toBe('Team mit 5 Leuten, 2 verborgen');
   });
 
   it('shows every avatar when max is unset', () => {

@@ -71,17 +71,25 @@ export class CngxAvatarGroup {
   /** Entity noun used in the `aria-label` summary. EN default. */
   readonly label = input<string>('avatars');
 
+  /**
+   * Format closure for the accessible summary. When set, it replaces the
+   * built-in EN phrase (`"{total} {label}, {hidden} not shown"`) entirely -
+   * the i18n hook for consumers whose locale needs a different sentence
+   * shape. `hidden` is `0` when nothing is collapsed.
+   */
+  readonly labelFormat = input<((total: number, hidden: number) => string) | undefined>(undefined);
+
   private readonly el = inject(ElementRef<HTMLElement>).nativeElement as HTMLElement;
   private readonly avatars = contentChildren(CngxAvatar);
 
   /** Total number of projected avatars. */
   protected readonly total = computed(() => this.avatars().length);
 
-  /** How many avatars are actually shown (capped by `max`). */
+  /** How many avatars are actually shown (capped by `max`). `max=0` collapses all. */
   protected readonly visibleCount = computed(() => {
     const cap = this.max();
     const count = this.total();
-    return cap && cap < count ? cap : count;
+    return cap != null && cap < count ? cap : count;
   });
 
   /** How many avatars are collapsed into the `+N` pill. */
@@ -91,6 +99,10 @@ export class CngxAvatarGroup {
   protected readonly ariaLabel = computed(() => {
     const total = this.total();
     const hidden = this.hiddenCount();
+    const format = this.labelFormat();
+    if (format) {
+      return format(total, hidden);
+    }
     const noun = this.label();
     return hidden > 0 ? `${total} ${noun}, ${hidden} not shown` : `${total} ${noun}`;
   });
