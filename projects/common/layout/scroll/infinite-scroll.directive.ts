@@ -8,8 +8,10 @@ import {
   input,
   isDevMode,
   output,
+  untracked,
   type Signal,
 } from '@angular/core';
+import { createTransitionTracker } from '@cngx/core/utils';
 
 /**
  * Infinite scroll trigger using `IntersectionObserver`.
@@ -103,7 +105,6 @@ export class CngxInfiniteScroll {
   private readonly doc = inject(DOCUMENT);
   private lastEmitTime = 0;
   private observer: IntersectionObserver | null = null;
-  private wasLoading = false;
 
   constructor() {
     const win = this.doc.defaultView;
@@ -161,10 +162,10 @@ export class CngxInfiniteScroll {
       });
     });
 
+    const loadingTransition = createTransitionTracker(() => this.loading());
     effect(() => {
-      const loading = this.loading();
-      const wasLoading = this.wasLoading;
-      this.wasLoading = loading;
+      const loading = loadingTransition.current();
+      const wasLoading = loadingTransition.previous();
       if (!wasLoading || loading) {
         return;
       }
@@ -172,10 +173,12 @@ export class CngxInfiniteScroll {
       // push the sentinel out of view there is no new entry after loading
       // settles, and the list stalls. Re-observing forces a fresh entry;
       // the debounce window is reset so that entry may emit immediately.
-      const sentinel = this.el.nativeElement as HTMLElement;
-      this.lastEmitTime = 0;
-      this.observer?.unobserve(sentinel);
-      this.observer?.observe(sentinel);
+      untracked(() => {
+        const sentinel = this.el.nativeElement as HTMLElement;
+        this.lastEmitTime = 0;
+        this.observer?.unobserve(sentinel);
+        this.observer?.observe(sentinel);
+      });
     });
   }
 }

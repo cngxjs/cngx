@@ -168,6 +168,14 @@ describe('CngxInfiniteScroll', () => {
     expect(host.loadMoreCount).toBe(2);
   });
 
+  it('should re-observe when mounted loading and settling afterwards', () => {
+    const { fixture, host, el } = setup({ loading: true });
+    host.loading.set(false);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(mockInstance!.unobserve).toHaveBeenCalledWith(el);
+  });
+
   it('should not re-observe when loading flips false to true', () => {
     const { fixture, host } = setup();
     host.loading.set(true);
