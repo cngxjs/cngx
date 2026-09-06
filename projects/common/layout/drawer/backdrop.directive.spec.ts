@@ -142,6 +142,22 @@ describe('CngxBackdrop', () => {
     expect(late.hasAttribute('inert')).toBe(true);
   });
 
+  it('leaves a consumer-set inert untouched across the show/hide cycle', () => {
+    const { fixture, host, sibA, sibB } = setup();
+    sibB.setAttribute('inert', '');
+
+    host.visible.set(true);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(sibA.hasAttribute('inert')).toBe(true);
+
+    host.visible.set(false);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(sibA.hasAttribute('inert')).toBe(false);
+    expect(sibB.hasAttribute('inert')).toBe(true);
+  });
+
   it('removes inert from siblings on destroy while visible', () => {
     const { fixture, host, sibA } = setup();
     host.visible.set(true);
