@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -21,12 +21,18 @@ class MockIntersectionObserver {
 vi.stubGlobal('IntersectionObserver', MockIntersectionObserver);
 
 @Component({
-  template: `<header cngxStickyHeader #sh="cngxStickyHeader" (stickyChange)="sticky = $event">
+  template: `<header
+    cngxStickyHeader
+    [threshold]="threshold()"
+    #sh="cngxStickyHeader"
+    (stickyChange)="sticky = $event"
+  >
     Header
   </header>`,
   imports: [CngxStickyHeader],
 })
 class TestHost {
+  readonly threshold = signal(0);
   sticky = false;
 }
 
@@ -75,6 +81,23 @@ describe('CngxStickyHeader', () => {
     );
     expect(dir.isSticky()).toBe(false);
     expect(fixture.componentInstance.sticky).toBe(false);
+  });
+
+  it('recreates the observer when threshold changes', () => {
+    const { fixture, dir } = setup();
+    expect(observerOptions?.threshold).toBe(0);
+
+    fixture.componentInstance.threshold.set(0.5);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(observerOptions?.threshold).toBe(0.5);
+
+    // the recreated observer still drives the sticky state
+    observerCallback(
+      [{ isIntersecting: false } as IntersectionObserverEntry],
+      {} as IntersectionObserver,
+    );
+    expect(dir.isSticky()).toBe(true);
   });
 
   it('adds cngx-sticky--active class when sticky', () => {

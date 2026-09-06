@@ -3,6 +3,7 @@ import {
   afterNextRender,
   DestroyRef,
   Directive,
+  effect,
   ElementRef,
   inject,
   input,
@@ -26,7 +27,8 @@ import {
  * `isSticky()` reports the state the host actually has. A scrollport whose
  * height is content-driven never scrolls in the block axis, so a header inside
  * it never pins; in dev mode the directive warns once when it resolves against
- * such a scrollport.
+ * such a scrollport. The observer is recreated when `threshold` changes,
+ * matching the sibling observer directives.
  *
  * ### Sticky header with shadow
  * ```html
@@ -70,6 +72,11 @@ export class CngxStickyHeader {
 
   private readonly el = inject(ElementRef<HTMLElement>);
   private readonly doc = inject(DOCUMENT);
+  /** Sentinel + scrollport resolved once after render; the observer effect keys on it. */
+  private readonly observeSetup = signal<{
+    sentinel: HTMLElement;
+    scrollport: HTMLElement | null;
+  } | null>(null);
 
   constructor() {
     const destroyRef = inject(DestroyRef);
@@ -112,6 +119,19 @@ export class CngxStickyHeader {
       sentinel.setAttribute('aria-hidden', 'true');
       host.parentElement?.insertBefore(sentinel, host);
 
+      this.observeSetup.set({ sentinel, scrollport });
+      destroyRef.onDestroy(() => sentinel.remove());
+    });
+
+    // Observer creation lives in an effect so a later threshold change
+    // recreates it - the one-shot afterNextRender above only resolves DOM.
+    effect((onCleanup) => {
+      const setup = this.observeSetup();
+      const threshold = this.threshold();
+      if (!setup) {
+        return;
+      }
+
       const observer = new IntersectionObserver(
         (entries) => {
           const isSticky = !entries[0].isIntersecting;
@@ -120,15 +140,12 @@ export class CngxStickyHeader {
             this.stickyChange.emit(isSticky);
           }
         },
-        { threshold: this.threshold(), root: scrollport },
+        { threshold, root: setup.scrollport },
       );
 
-      observer.observe(sentinel);
+      observer.observe(setup.sentinel);
 
-      destroyRef.onDestroy(() => {
-        observer.disconnect();
-        sentinel.remove();
-      });
+      onCleanup(() => observer.disconnect());
     });
   }
 
