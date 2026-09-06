@@ -165,6 +165,43 @@ describe('CngxCard', () => {
     expect(liveRegion.textContent!.trim()).toBe('Deselected');
   });
 
+  it('voices a selection change that happened during loading once loading clears', () => {
+    const { fixture, card, host } = setup();
+    host.cardType.set('button');
+    host.selectable.set(true);
+    host.loading.set(true);
+    fixture.detectChanges();
+    const liveRegion = card.querySelector('[aria-live="polite"]')!;
+    expect(liveRegion.textContent!.trim()).toBe('Loading');
+
+    host.selected.set(true);
+    fixture.detectChanges();
+    expect(liveRegion.textContent!.trim()).toBe('Loading');
+
+    host.loading.set(false);
+    fixture.detectChanges();
+    expect(liveRegion.textContent!.trim()).toBe('Selected');
+  });
+
+  it('does not re-announce a pre-loading selection phrase after a loading cycle', () => {
+    const { fixture, card, host } = setup();
+    host.cardType.set('button');
+    host.selectable.set(true);
+    fixture.detectChanges();
+    card.click();
+    fixture.detectChanges();
+    const liveRegion = card.querySelector('[aria-live="polite"]')!;
+    expect(liveRegion.textContent!.trim()).toBe('Selected');
+
+    host.loading.set(true);
+    fixture.detectChanges();
+    host.loading.set(false);
+    fixture.detectChanges();
+    // The loading START spent the already-voiced phrase - the clear
+    // renders empty instead of re-announcing the stale 'Selected'.
+    expect(liveRegion.textContent!.trim()).toBe('');
+  });
+
   it('does not activate a link card on Space (Enter-only per APG)', () => {
     const { fixture, card, host } = setup();
     const router = TestBed.inject(Router);

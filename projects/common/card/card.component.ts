@@ -2,13 +2,11 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  effect,
   inject,
   input,
+  linkedSignal,
   model,
   output,
-  signal,
-  untracked,
   ViewEncapsulation,
 } from '@angular/core';
 import { Router } from '@angular/router';
@@ -207,41 +205,59 @@ export class CngxCard {
     this.disabled() && this.disabledReason() ? this.disabledReasonId : null,
   );
 
-  private readonly liveAnnouncementState = signal('');
+  /**
+   * @internal Selection phrase with loading-start expiry. `prev.source`
+   * carries the last-seen (selected, loading) pair: a real `selected`
+   * change (re)arms the phrase; a loading START spends an already-voiced
+   * phrase so the loading-clear content change cannot re-announce it
+   * (the region is `aria-atomic` - every content change re-announces).
+   * A toggle DURING loading keeps its phrase across the clear, so the
+   * change is voiced exactly once when the loading phrase yields.
+   * Mount seeds empty - initial state is visible, never announced.
+   * Pattern mirrors `closedPhrase` in tabs/announcements.
+   */
+  private readonly selectionPhrase = linkedSignal<
+    { readonly selected: boolean; readonly selectable: boolean; readonly loading: boolean },
+    string
+  >({
+    source: () => ({
+      selected: this.selected(),
+      selectable: this.selectable(),
+      loading: this.loading(),
+    }),
+    computation: (src, prev) => {
+      if (prev === undefined) {
+        return '';
+      }
+      if (src.selectable && src.selected !== prev.source.selected) {
+        return src.selected ? 'Selected' : 'Deselected';
+      }
+      if (src.loading && !prev.source.loading) {
+        return '';
+      }
+      return prev.value;
+    },
+    equal: Object.is,
+  });
 
   /**
    * @internal SR live announcement, driven by transitions rather than
    * persistent state (Pillar 2: voice the change, not the standing
-   * state). Announcing state would re-emit "Deselected" for a
-   * never-touched card whenever the loading phrase clears - the region
-   * is `aria-atomic`, so every content change re-announces.
+   * state). Loading owns the region while active; otherwise the armed
+   * selection phrase renders (empty between transitions, so AT stays
+   * silent on no-op ticks).
    */
-  protected readonly liveAnnouncement = this.liveAnnouncementState.asReadonly();
+  protected readonly liveAnnouncement = computed(() => {
+    // Read the phrase EAGERLY: linkedSignal only observes source
+    // snapshots it is actually read under - a lazy read behind the
+    // loading arm would skip the loading-start snapshot and never
+    // spend the phrase (same trap as tabs' closedPhrase).
+    const phrase = this.selectionPhrase();
+    return this.loading() ? 'Loading' : phrase;
+  });
 
   /** Emits when an interactive card is clicked or activated via keyboard. */
   readonly clicked = output<void>();
-
-  constructor() {
-    // Transition detection over loading + selected. First run only seeds
-    // the previous values - initial state is visible, not announced.
-    let prevLoading: boolean | undefined;
-    let prevSelected: boolean | undefined;
-    effect(() => {
-      const loading = this.loading();
-      const selected = this.selected();
-      const selectable = this.selectable();
-      untracked(() => {
-        if (prevLoading !== undefined && loading !== prevLoading) {
-          this.liveAnnouncementState.set(loading ? 'Loading' : '');
-        }
-        if (!loading && selectable && prevSelected !== undefined && selected !== prevSelected) {
-          this.liveAnnouncementState.set(selected ? 'Selected' : 'Deselected');
-        }
-        prevLoading = loading;
-        prevSelected = selected;
-      });
-    });
-  }
 
   /** @internal */
   protected handleHostClick(e: MouseEvent): void {
