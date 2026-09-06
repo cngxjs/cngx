@@ -272,12 +272,18 @@ export class CngxCard {
       this.selected.update((v) => !v);
     }
     this.clicked.emit();
+    if (e.button !== 0 || e.ctrlKey || e.shiftKey || e.altKey || e.metaKey) {
+      // Modified / non-primary click carries new-tab intent. There is no
+      // native anchor to honour it, so never convert it into same-tab
+      // navigation (RouterLink skips modified clicks the same way).
+      return;
+    }
     this.navigateToHref();
   }
 
   /** @internal */
   protected handleHostKeydown(e: Event): void {
-    if (!this.interactive()) {
+    if (!this.interactive() || (e as KeyboardEvent).repeat) {
       return;
     }
     const isSpace = (e as KeyboardEvent).key === ' ';

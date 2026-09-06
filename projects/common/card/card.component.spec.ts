@@ -327,6 +327,38 @@ describe('CngxCard', () => {
     expect(navigate).not.toHaveBeenCalled();
   });
 
+  it('skips navigation on modified clicks (new-tab intent)', () => {
+    const { fixture, card, host } = setup();
+    const router = TestBed.inject(Router);
+    const navigate = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
+    host.cardType.set('link');
+    host.href.set('/patients/6');
+    fixture.detectChanges();
+
+    card.dispatchEvent(new MouseEvent('click', { metaKey: true, bubbles: true }));
+    card.dispatchEvent(new MouseEvent('click', { ctrlKey: true, bubbles: true }));
+    card.dispatchEvent(new MouseEvent('click', { shiftKey: true, bubbles: true }));
+    card.dispatchEvent(new MouseEvent('click', { button: 1, bubbles: true }));
+    expect(navigate).not.toHaveBeenCalled();
+
+    card.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(navigate).toHaveBeenCalledOnce();
+  });
+
+  it('ignores key repeats (held Enter navigates once)', () => {
+    const { fixture, card, host } = setup();
+    const router = TestBed.inject(Router);
+    const navigate = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
+    host.cardType.set('link');
+    host.href.set('/patients/7');
+    fixture.detectChanges();
+
+    card.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    card.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', repeat: true, bubbles: true }));
+    card.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', repeat: true, bubbles: true }));
+    expect(navigate).toHaveBeenCalledOnce();
+  });
+
   it('does not navigate for the button archetype', () => {
     const { fixture, card, host } = setup();
     const router = TestBed.inject(Router);
