@@ -11,6 +11,9 @@ import {
 } from '@angular/core';
 import { memoize } from '@cngx/core/utils';
 
+const DATE_TIME_FORMATTER_CACHE_LIMIT = 32;
+const dateTimeFormatterCache = new Map<string, Intl.DateTimeFormat>();
+
 /**
  * Unit ladder for the relative formatter, smallest first. Each `amount` is the
  * count of that unit in the next-larger one; anything past `months` falls
@@ -26,13 +29,30 @@ const relativeFormatterFor = memoize(
 );
 
 /**
- * `Intl.DateTimeFormat` cache keyed on locale + serialized options.
- * Consumers bind static option literals, so the key space stays small.
+ * Bounded `Intl.DateTimeFormat` cache keyed on locale + serialized options.
+ * Consumers bind static option literals, so the key space stays tiny. The
+ * FIFO cap guards a consumer generating per-row options (e.g. varying
+ * `timeZone`) from growing the map for the app's lifetime.
  */
-const dateTimeFormatterFor = memoize((key: string): Intl.DateTimeFormat => {
-  const [locale, options] = JSON.parse(key) as [string, Intl.DateTimeFormatOptions];
-  return new Intl.DateTimeFormat(locale, options);
-});
+function dateTimeFormatterFor(
+  locale: string,
+  options: Intl.DateTimeFormatOptions,
+): Intl.DateTimeFormat {
+  const key = `${locale}|${JSON.stringify(options)}`;
+  const cached = dateTimeFormatterCache.get(key);
+  if (cached) {
+    return cached;
+  }
+  if (dateTimeFormatterCache.size >= DATE_TIME_FORMATTER_CACHE_LIMIT) {
+    const oldest = dateTimeFormatterCache.keys().next().value;
+    if (oldest !== undefined) {
+      dateTimeFormatterCache.delete(oldest);
+    }
+  }
+  const formatter = new Intl.DateTimeFormat(locale, options);
+  dateTimeFormatterCache.set(key, formatter);
+  return formatter;
+}
 
 const RELATIVE_DIVISIONS: readonly { readonly amount: number; readonly unit: Intl.RelativeTimeFormatUnit }[] = [
   { amount: 60, unit: 'seconds' },
@@ -139,7 +159,7 @@ export class CngxTime {
       return this.formatRelative(instant.getTime(), Date.now());
     }
     const format = this.format() ?? { year: 'numeric', month: 'short', day: 'numeric' };
-    return dateTimeFormatterFor(JSON.stringify([this.locale, format])).format(instant);
+    return dateTimeFormatterFor(this.locale, format).format(instant);
   });
 
   constructor() {

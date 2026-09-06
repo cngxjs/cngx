@@ -113,6 +113,35 @@ describe('CngxTime', () => {
     warn.mockRestore();
   });
 
+  it('formats correctly across more option variants than the formatter cache holds', () => {
+    const date = new Date('2026-03-15T12:00:00Z');
+    const fixture = TestBed.createComponent(CngxTime);
+    fixture.componentRef.setInput('date', date);
+    const months = ['numeric', '2-digit', 'long', 'short'] as const;
+    const days = ['numeric', '2-digit'] as const;
+    const years = ['numeric', '2-digit'] as const;
+    const eras = [undefined, 'short', 'long'] as const;
+    const combo = (i: number): Intl.DateTimeFormatOptions => ({
+      month: months[i % 4],
+      day: days[Math.floor(i / 4) % 2],
+      year: years[Math.floor(i / 8) % 2],
+      era: eras[Math.floor(i / 16) % 3],
+    });
+    // 40 distinct option combos overflow the bounded cache; eviction must
+    // never change the formatted output, including for evicted entries.
+    for (let i = 0; i < 40; i++) {
+      fixture.componentRef.setInput('format', combo(i));
+      fixture.detectChanges();
+      const expected = new Intl.DateTimeFormat('en-US', combo(i)).format(date);
+      expect((fixture.nativeElement as HTMLElement).querySelector('time')!.textContent?.trim()).toBe(expected);
+    }
+    fixture.componentRef.setInput('format', combo(0));
+    fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).querySelector('time')!.textContent?.trim()).toBe(
+      new Intl.DateTimeFormat('en-US', combo(0)).format(date),
+    );
+  });
+
   it('renders a stable instant when [date] switches between equal representations', () => {
     const fixture = TestBed.createComponent(CngxTime);
     fixture.componentRef.setInput('date', new Date('2026-03-15T12:00:00Z'));
