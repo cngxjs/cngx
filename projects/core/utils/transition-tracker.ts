@@ -2,20 +2,30 @@ import { computed, linkedSignal, type Signal } from '@angular/core';
 import type { AsyncStatus } from './async-state';
 
 /**
- * Reactive current/previous pair for `AsyncStatus` transitions.
+ * Reactive current/previous pair for arbitrary value transitions.
  *
- * Replaces the imperative `let previousStatus` pattern inside `effect()` calls
+ * Replaces the imperative `let previous` pattern inside `effect()` calls
  * with a fully reactive, `linkedSignal`-based approach.
  *
  * @category core/utils/async-state
  * @since 0.1.0
+ * @relatedTo StatusTransition, createTransitionTracker
  */
-export interface StatusTransition {
-  /** The current status value. */
-  readonly current: Signal<AsyncStatus>;
-  /** The status value before the most recent change. */
-  readonly previous: Signal<AsyncStatus>;
+export interface ValueTransition<T> {
+  /** The current value. */
+  readonly current: Signal<T>;
+  /** The value before the most recent change. */
+  readonly previous: Signal<T>;
 }
+
+/**
+ * Reactive current/previous pair for `AsyncStatus` transitions - the
+ * {@link ValueTransition} specialisation every async-state bridge consumes.
+ *
+ * @category core/utils/async-state
+ * @since 0.1.0
+ */
+export type StatusTransition = ValueTransition<AsyncStatus>;
 
 /**
  * Options for {@link createTransitionTracker}.
@@ -23,19 +33,29 @@ export interface StatusTransition {
  * @category core/utils/async-state
  * @since 0.1.0
  */
-export interface TransitionTrackerOptions {
+export interface TransitionTrackerOptions<T = AsyncStatus> {
   /**
    * Explicit initial `previous` value. Without it, `previous` seeds to the
    * source's mount value, so mounting never fabricates a transition
    * (`previous === current` until the first real change). Pass a seed to
    * deliberately treat the mount as a transition from a known state -
    * `{ seed: 'idle' }` restores the old phantom `idle -> X` edge.
+   * Nullish seeds are treated as absent - a source whose values include
+   * `null`/`undefined` cannot use this option.
    */
-  readonly seed?: AsyncStatus;
+  readonly seed?: T;
+  /**
+   * Value equality for `T`. Defaults to `Object.is` - pass a structural
+   * fn when the source produces object snapshots, per the equality rule
+   * on object-valued reactives.
+   */
+  readonly equal?: (a: T, b: T) => boolean;
 }
 
 /**
- * Creates a reactive transition tracker for an `AsyncStatus` source.
+ * Creates a reactive transition tracker for any value source. Defaults to
+ * `AsyncStatus` - the original specialisation - but tracks booleans, enums,
+ * or object snapshots (pass `options.equal`) just the same.
  *
  * Uses `linkedSignal` internally - when `source()` changes, `previous` holds
  * the prior value and `current` holds the new one. Both are memoized signals.
@@ -63,17 +83,18 @@ export interface TransitionTrackerOptions {
  * @category core/utils/async-state
  * @since 0.1.0
  */
-export function createTransitionTracker(
-  source: () => AsyncStatus,
-  options?: TransitionTrackerOptions,
-): StatusTransition {
-  const state = linkedSignal<AsyncStatus, { current: AsyncStatus; previous: AsyncStatus }>({
+export function createTransitionTracker<T = AsyncStatus>(
+  source: () => T,
+  options?: TransitionTrackerOptions<T>,
+): ValueTransition<T> {
+  const eq = options?.equal ?? Object.is;
+  const state = linkedSignal<T, { current: T; previous: T }>({
     source,
     computation: (current, prev) => ({
       current,
       previous: prev?.value.current ?? options?.seed ?? current,
     }),
-    equal: (a, b) => a.current === b.current && a.previous === b.previous,
+    equal: (a, b) => eq(a.current, b.current) && eq(a.previous, b.previous),
   });
 
   return {

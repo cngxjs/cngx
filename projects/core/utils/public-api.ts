@@ -17,6 +17,7 @@ export {
   createTransitionTracker,
   type StatusTransition,
   type TransitionTrackerOptions,
+  type ValueTransition,
 } from './transition-tracker';
 export { createVisibilityGate } from './visibility-gate';
 export { createLatencyProbe, type CngxLatencyProbe } from './latency-probe';

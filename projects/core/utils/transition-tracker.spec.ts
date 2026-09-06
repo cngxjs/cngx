@@ -90,4 +90,33 @@ describe('createTransitionTracker', () => {
     status.set('success');
     expect(tracker.previous()).toBe('loading');
   });
+
+  it('tracks generic boolean sources', () => {
+    const flag = signal(false);
+    const tracker = TestBed.runInInjectionContext(() => createTransitionTracker(() => flag()));
+
+    expect(tracker.current()).toBe(false);
+    expect(tracker.previous()).toBe(false);
+
+    flag.set(true);
+    expect(tracker.current()).toBe(true);
+    expect(tracker.previous()).toBe(false);
+  });
+
+  it('dedupes object snapshots through the equal option', () => {
+    const source = signal({ a: 1 });
+    const tracker = TestBed.runInInjectionContext(() =>
+      createTransitionTracker(() => source(), { equal: (x, y) => x.a === y.a }),
+    );
+
+    const first = tracker.current();
+    source.set({ a: 1 });
+    // Structurally equal snapshot: the tracker state dedupes - no new edge.
+    expect(tracker.current()).toBe(first);
+    expect(tracker.previous()).toBe(first);
+
+    source.set({ a: 2 });
+    expect(tracker.current().a).toBe(2);
+    expect(tracker.previous().a).toBe(1);
+  });
 });
