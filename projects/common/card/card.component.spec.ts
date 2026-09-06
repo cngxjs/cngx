@@ -10,6 +10,7 @@ import { CngxCardBody } from './card-body.directive';
   template: `
     <cngx-card
       [as]="cardType()"
+      [role]="role()"
       [href]="href()"
       [ariaLabel]="ariaLabel()"
       [selectable]="selectable()"
@@ -26,6 +27,7 @@ import { CngxCardBody } from './card-body.directive';
 })
 class TestHost {
   cardType = signal<'article' | 'link' | 'button'>('article');
+  role = signal<string | undefined>(undefined);
   href = signal<string | undefined>(undefined);
   ariaLabel = signal<string | undefined>(undefined);
   selectable = signal(false);
@@ -66,6 +68,21 @@ describe('CngxCard', () => {
   });
 
   // --- Interactive class ---
+  it('lets an explicit role input override the archetype role', () => {
+    const { fixture, card, host } = setup();
+    host.role.set('listitem');
+    fixture.detectChanges();
+    expect(card.getAttribute('role')).toBe('listitem');
+
+    host.cardType.set('button');
+    fixture.detectChanges();
+    expect(card.getAttribute('role')).toBe('listitem');
+
+    host.role.set(undefined);
+    fixture.detectChanges();
+    expect(card.getAttribute('role')).toBe('button');
+  });
+
   it('does not add interactive class for article', () => {
     const { card } = setup();
     expect(card.classList.contains('cngx-card--interactive')).toBe(false);

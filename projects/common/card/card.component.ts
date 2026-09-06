@@ -121,6 +121,17 @@ export class CngxCard {
    */
   readonly href = input<string | undefined>(undefined);
 
+  /**
+   * Explicit ARIA role override for the host. Wins over the
+   * archetype-derived role. The primary use is `role="listitem"` on
+   * cards inside `<cngx-card-grid [semanticList]="true">` - the grid's
+   * `role="list"` requires listitem children, which the archetype
+   * binding would otherwise overwrite. Overriding the role on an
+   * interactive card replaces its button/link semantics; pair with an
+   * inner interactive element when both are needed.
+   */
+  readonly role = input<string | undefined>(undefined);
+
   /** Accessible label for the card. Overrides the default screen reader announcement. */
   readonly ariaLabel = input<string | undefined>(undefined);
 
@@ -147,8 +158,12 @@ export class CngxCard {
     this.cardType() === 'link' ? (this.href() ?? null) : null,
   );
 
-  /** @internal Host element ARIA role. */
+  /** @internal Host element ARIA role. Explicit `role` input wins over the archetype. */
   protected readonly hostRole = computed(() => {
+    const override = this.role();
+    if (override) {
+      return override;
+    }
     switch (this.cardType()) {
       case 'button':
         return 'button';
