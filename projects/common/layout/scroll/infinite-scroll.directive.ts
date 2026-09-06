@@ -6,6 +6,7 @@ import {
   ElementRef,
   inject,
   input,
+  isDevMode,
   output,
   type Signal,
 } from '@angular/core';
@@ -123,6 +124,12 @@ export class CngxInfiniteScroll {
 
       const isLoading = () => this.loading();
       const resolvedRoot = root ? this.doc.querySelector(root) : null;
+      if (isDevMode() && root && !resolvedRoot) {
+        console.warn(
+          `[cngxInfiniteScroll] root selector "${root}" matched no element - ` +
+            'falling back to the viewport. A late-rendered root needs a re-bind of [root].',
+        );
+      }
 
       const observer = new IntersectionObserver(
         (entries) => {

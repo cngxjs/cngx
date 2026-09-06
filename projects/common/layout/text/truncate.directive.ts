@@ -1,6 +1,7 @@
 import { DOCUMENT } from '@angular/common';
 import {
   afterNextRender,
+  computed,
   DestroyRef,
   Directive,
   effect,
@@ -68,13 +69,13 @@ export class CngxTruncate {
 
   // null strips the host binding - preferred over an empty string for -webkit-line-clamp.
   /** @internal */
-  protected clampValue = () => (this.expanded() ? null : String(this.lines()));
+  protected readonly clampValue = computed(() => (this.expanded() ? null : String(this.lines())));
   /** @internal */
-  protected displayValue = () => (this.expanded() ? null : '-webkit-box');
+  protected readonly displayValue = computed(() => (this.expanded() ? null : '-webkit-box'));
   /** @internal */
-  protected orientValue = () => (this.expanded() ? null : 'vertical');
+  protected readonly orientValue = computed(() => (this.expanded() ? null : 'vertical'));
   /** @internal */
-  protected overflowValue = () => (this.expanded() ? null : 'hidden');
+  protected readonly overflowValue = computed(() => (this.expanded() ? null : 'hidden'));
 
   constructor() {
     const destroyRef = inject(DestroyRef);

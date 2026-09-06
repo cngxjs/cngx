@@ -123,6 +123,12 @@ export class CngxScrollSpy {
     }
 
     const resolvedRoot = rootSelector ? this.doc.querySelector(rootSelector) : null;
+    if (isDevMode() && rootSelector && !resolvedRoot) {
+      console.warn(
+        `[cngxScrollSpy] root selector "${rootSelector}" matched no element - ` +
+          'falling back to the viewport. A late-rendered root needs a re-bind of [root].',
+      );
+    }
 
     const observer = new IntersectionObserver(
       (entries) => {
