@@ -14,6 +14,10 @@ export {
 } from './build-async-state-view';
 export { createAggregateAsyncState } from './aggregate-async-state';
 export {
+  createAnnouncementPhrase,
+  type AnnouncementPhraseOptions,
+} from './announcement-phrase';
+export {
   createTransitionTracker,
   type StatusTransition,
   type TransitionTrackerOptions,

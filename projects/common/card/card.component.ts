@@ -4,13 +4,12 @@ import {
   computed,
   inject,
   input,
-  linkedSignal,
   model,
   output,
   ViewEncapsulation,
 } from '@angular/core';
 import { Router } from '@angular/router';
-import { nextUid } from '@cngx/core/utils';
+import { createAnnouncementPhrase, nextUid } from '@cngx/core/utils';
 import { CngxRovingItem, CngxRovingTabindex } from '@cngx/common/a11y';
 
 /**
@@ -206,38 +205,26 @@ export class CngxCard {
   );
 
   /**
-   * @internal Selection phrase with loading-start expiry. `prev.source`
-   * carries the last-seen (selected, loading) pair: a real `selected`
-   * change (re)arms the phrase; a loading START spends an already-voiced
-   * phrase so the loading-clear content change cannot re-announce it
-   * (the region is `aria-atomic` - every content change re-announces).
-   * A toggle DURING loading keeps its phrase across the clear, so the
-   * change is voiced exactly once when the loading phrase yields.
-   * Mount seeds empty - initial state is visible, never announced.
-   * Pattern mirrors `closedPhrase` in tabs/announcements.
+   * @internal Selection phrase with loading-start expiry: a real
+   * `selected` change (re)arms the phrase; a loading START spends an
+   * already-voiced phrase so the loading-clear content change cannot
+   * re-announce it (the region is `aria-atomic`). A toggle DURING
+   * loading keeps its phrase across the clear, so the change is voiced
+   * exactly once when the loading phrase yields.
    */
-  private readonly selectionPhrase = linkedSignal<
-    { readonly selected: boolean; readonly selectable: boolean; readonly loading: boolean },
-    string
-  >({
+  private readonly selectionPhrase = createAnnouncementPhrase({
     source: () => ({
       selected: this.selected(),
       selectable: this.selectable(),
       loading: this.loading(),
     }),
-    computation: (src, prev) => {
-      if (prev === undefined) {
-        return '';
+    arm: (curr, prev) => {
+      if (curr.selectable && curr.selected !== prev.selected) {
+        return curr.selected ? 'Selected' : 'Deselected';
       }
-      if (src.selectable && src.selected !== prev.source.selected) {
-        return src.selected ? 'Selected' : 'Deselected';
-      }
-      if (src.loading && !prev.source.loading) {
-        return '';
-      }
-      return prev.value;
+      return null;
     },
-    equal: Object.is,
+    spend: (curr, prev) => curr.loading && !prev.loading,
   });
 
   /**
