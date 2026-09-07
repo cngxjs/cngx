@@ -365,16 +365,6 @@
   }
 
   /**
-   * Minimum hit-target size of the action button (≥ 44 px).
-   * @group State / Action
-   */
-  @property --cngx-banner-action-min-size {
-    syntax: '<length>';
-    inherits: false;
-    initial-value: 44px;
-  }
-
-  /**
    * Font-size of the action button label.
    * @group State / Action
    */
