@@ -7,40 +7,7 @@
   <cngx-stepper-count class="cngx-stepper__mobile-text" [live]="false" />
   <span cngxStepperErrorLine block="cngx-stepper__mobile-error" [text]="mobileErrorSummary()"></span>
 
-  <div
-    class="cngx-stepper__panels"
-    cngxSwipe
-    axis="x"
-    [enabled]="swipeNav.swipeEnabled()"
-    (swiped)="swipeNav.handleSwipe($event)"
-  >
-    <!--
-      No per-step header exists in the text branch, so the panel names
-      itself via aria-label and hosts its own descriptor span - the
-      classic strip's header/descriptor ids are not in the DOM here,
-      and a dangling IDREF names the region as empty. The describedby
-      target stays mounted; only the reference is gated.
-    -->
-    @for (node of stepsOnly(); track node.id) {
-      <div
-        class="cngx-stepper__panel"
-        role="region"
-        [id]="stepPanelId(node)"
-        [attr.aria-labelledby]="panelLabelledBy(node)"
-        [attr.aria-label]="panelAriaLabel(node)"
-        [attr.aria-describedby]="panelDescribedBy(node)"
-        [hidden]="!slotContext.isActive(node)"
-      >
-        <span class="cngx-sr-only" [id]="announcement.descriptorId(node)">{{ announcement.statusPhrase(node) }}</span>
-        @let contentTpl = contentTemplateFor(node.id);
-        @if (contentTpl) {
-          <ng-container
-            *ngTemplateOutlet="contentTpl; context: slotContext.stepContentContextFor(node)"
-          ></ng-container>
-        }
-      </div>
-    }
-  </div>
+  <ng-container *ngTemplateOutlet="stepPanels"></ng-container>
 } @else if (displayMode() === 'dots') {
   <!--
     In 'none' mode the dots are inert list-item indicators (footer-only
@@ -88,38 +55,7 @@
     <cngx-stepper-count class="cngx-stepper__mobile-text cngx-stepper__mobile-text--caption" [live]="false" />
   }
 
-  <div
-    class="cngx-stepper__panels"
-    cngxSwipe
-    axis="x"
-    [enabled]="swipeNav.swipeEnabled()"
-    (swiped)="swipeNav.handleSwipe($event)"
-  >
-    <!--
-      The dots carry the header ids, so aria-labelledby resolves; the
-      classic descriptor spans live inside the strip headers and are not
-      in the DOM here, so each panel hosts its own (ref stays gated).
-    -->
-    @for (node of stepsOnly(); track node.id) {
-      <div
-        class="cngx-stepper__panel"
-        role="region"
-        [id]="stepPanelId(node)"
-        [attr.aria-labelledby]="panelLabelledBy(node)"
-        [attr.aria-label]="panelAriaLabel(node)"
-        [attr.aria-describedby]="panelDescribedBy(node)"
-        [hidden]="!slotContext.isActive(node)"
-      >
-        <span class="cngx-sr-only" [id]="announcement.descriptorId(node)">{{ announcement.statusPhrase(node) }}</span>
-        @let contentTpl = contentTemplateFor(node.id);
-        @if (contentTpl) {
-          <ng-container
-            *ngTemplateOutlet="contentTpl; context: slotContext.stepContentContextFor(node)"
-          ></ng-container>
-        }
-      </div>
-    }
-  </div>
+  <ng-container *ngTemplateOutlet="stepPanels"></ng-container>
 } @else {
   <!--
     In 'none' mode the inert headers are list items, so the strip is a
@@ -235,26 +171,7 @@
     </div>
   }
 
-  <div class="cngx-stepper__panels">
-    @for (node of stepsOnly(); track node.id) {
-      <div
-        class="cngx-stepper__panel"
-        role="region"
-        [id]="stepPanelId(node)"
-        [attr.aria-labelledby]="panelLabelledBy(node)"
-        [attr.aria-label]="panelAriaLabel(node)"
-        [attr.aria-describedby]="panelDescribedBy(node)"
-        [hidden]="!slotContext.isActive(node)"
-      >
-        @let contentTpl = contentTemplateFor(node.id);
-        @if (contentTpl) {
-          <ng-container
-            *ngTemplateOutlet="contentTpl; context: slotContext.stepContentContextFor(node)"
-          ></ng-container>
-        }
-      </div>
-    }
-  </div>
+  <ng-container *ngTemplateOutlet="stepPanels"></ng-container>
 }
 
 <!--
@@ -268,6 +185,50 @@
 <span class="cngx-stepper__live-region cngx-sr-only" cngxLiveRegion>{{
   announcement.liveAnnouncement()
 }}</span>
+
+<!--
+  Shared panel block for all three display modes (Pillar 3 - one
+  source instead of three drifting copies). Mode differences are
+  derived, not duplicated: panelLabelledBy/panelAriaLabel/
+  panelDescribedBy resolve the naming per mode (text has no header
+  element, classic only renders headers the group-collapse policy
+  exposes, dots always renders one per step); the collapsed branches
+  additionally mount the descriptor span inside the panel because the
+  classic descriptor spans live inside the strip headers. Swipe is
+  composed once and disabled in classic - the directive is inert
+  with [enabled]=false.
+-->
+<ng-template #stepPanels>
+  <div
+    class="cngx-stepper__panels"
+    cngxSwipe
+    axis="x"
+    [enabled]="displayMode() !== 'classic' && swipeNav.swipeEnabled()"
+    (swiped)="swipeNav.handleSwipe($event)"
+  >
+    @for (node of stepsOnly(); track node.id) {
+      <div
+        class="cngx-stepper__panel"
+        role="region"
+        [id]="stepPanelId(node)"
+        [attr.aria-labelledby]="panelLabelledBy(node)"
+        [attr.aria-label]="panelAriaLabel(node)"
+        [attr.aria-describedby]="panelDescribedBy(node)"
+        [hidden]="!slotContext.isActive(node)"
+      >
+        @if (displayMode() !== 'classic') {
+          <span class="cngx-sr-only" [id]="announcement.descriptorId(node)">{{ announcement.statusPhrase(node) }}</span>
+        }
+        @let contentTpl = contentTemplateFor(node.id);
+        @if (contentTpl) {
+          <ng-container
+            *ngTemplateOutlet="contentTpl; context: slotContext.stepContentContextFor(node)"
+          ></ng-container>
+        }
+      </div>
+    }
+  </div>
+</ng-template>
 
 <!--
   Shared strip-header body. Rendered identically by the focusable
