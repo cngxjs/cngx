@@ -6,6 +6,7 @@ import {
   ElementRef,
   inject,
   input,
+  isDevMode,
   output,
   signal,
 } from '@angular/core';
@@ -92,10 +93,17 @@ export class CngxIntersectionObserver {
       const rootMargin = this.rootMargin();
       const threshold = this.threshold();
       const resolvedRoot = root ? this.doc.querySelector(root) : null;
+      if (isDevMode() && root && !resolvedRoot) {
+        console.warn(
+          `[cngxIntersectionObserver] root selector "${root}" matched no element - ` +
+            'falling back to the viewport. A late-rendered root needs a re-bind of [root].',
+        );
+      }
 
       const observer = new IntersectionObserver(
         (entries) => {
-          const entry = entries[0];
+          // batched records arrive oldest-first; only the newest reflects reality
+          const entry = entries[entries.length - 1];
           const wasIntersecting = this.entryState()?.isIntersecting ?? false;
           this.entryState.set(entry);
           this.intersectionChange.emit(entry);

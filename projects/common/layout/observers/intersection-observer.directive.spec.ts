@@ -13,6 +13,7 @@ let mockObserver: { observe: ReturnType<typeof vi.fn>; disconnect: ReturnType<ty
   template: `
     <div
       cngxIntersectionObserver
+      [root]="root()"
       [rootMargin]="rootMargin()"
       [threshold]="threshold()"
       (intersectionChange)="onChange($event)"
@@ -23,6 +24,7 @@ let mockObserver: { observe: ReturnType<typeof vi.fn>; disconnect: ReturnType<ty
   imports: [CngxIntersectionObserver],
 })
 class TestHost {
+  root = signal<string | null>(null);
   rootMargin = signal('0px');
   threshold = signal<number | number[]>(0);
   onChange = vi.fn();
@@ -120,5 +122,27 @@ describe('CngxIntersectionObserver', () => {
     const before = mockObserver.disconnect.mock.calls.length;
     fixture.destroy();
     expect(mockObserver.disconnect.mock.calls.length).toBeGreaterThan(before);
+  });
+  it('reflects the newest record of a batched callback', () => {
+    const { dir } = setup();
+    capturedCallback!([
+      { isIntersecting: true, intersectionRatio: 1 } as IntersectionObserverEntry,
+      { isIntersecting: false, intersectionRatio: 0 } as IntersectionObserverEntry,
+    ]);
+    expect(dir.isIntersecting()).toBe(false);
+  });
+
+  it('warns in dev mode when the root selector matches no element', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const { fixture } = setup();
+    expect(warn).not.toHaveBeenCalled();
+
+    fixture.componentInstance.root.set('.does-not-exist');
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    expect(warn).toHaveBeenCalledOnce();
+    expect(warn.mock.calls[0][0]).toContain('.does-not-exist');
+    warn.mockRestore();
   });
 });

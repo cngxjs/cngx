@@ -14,6 +14,15 @@ class TestHost {
   readonly term = signal('');
 }
 
+@Component({
+  template: `<p [cngxHighlight]="term()">{{ text() }}</p>`,
+  imports: [CngxHighlight],
+})
+class InterpolatedHost {
+  readonly term = signal('');
+  readonly text = signal('alpha beta alpha');
+}
+
 describe('CngxHighlight', () => {
   beforeEach(() => TestBed.configureTestingModule({ imports: [TestHost] }));
 
@@ -80,6 +89,47 @@ describe('CngxHighlight', () => {
     fixture.detectChanges();
     expect(host.querySelectorAll('mark').length).toBe(1);
     expect(host.querySelector('mark')!.textContent).toBe('powerful');
+  });
+
+  it('keeps an interpolation binding live across highlight and clear', () => {
+    const fixture = TestBed.createComponent(InterpolatedHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const host = fixture.debugElement.query(By.directive(CngxHighlight)).nativeElement as HTMLElement;
+
+    fixture.componentInstance.term.set('alpha');
+    TestBed.flushEffects();
+    expect(host.querySelectorAll('mark').length).toBe(2);
+
+    // binding update while highlighted writes to the original text node
+    fixture.componentInstance.text.set('gamma delta');
+    fixture.detectChanges();
+
+    fixture.componentInstance.term.set('');
+    TestBed.flushEffects();
+    expect(host.querySelectorAll('mark').length).toBe(0);
+    expect(host.textContent).toBe('gamma delta');
+  });
+
+  it('re-highlights the current interpolation content on the next term change', () => {
+    const fixture = TestBed.createComponent(InterpolatedHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const p = fixture.debugElement.query(By.directive(CngxHighlight));
+    const dir = p.injector.get(CngxHighlight);
+
+    fixture.componentInstance.term.set('alpha');
+    TestBed.flushEffects();
+    expect(dir.matchCount()).toBe(2);
+
+    fixture.componentInstance.text.set('alpha alpha alpha');
+    fixture.detectChanges();
+
+    fixture.componentInstance.term.set('');
+    TestBed.flushEffects();
+    fixture.componentInstance.term.set('alpha');
+    TestBed.flushEffects();
+    expect(dir.matchCount()).toBe(3);
   });
 
   it('handles special regex characters in term', () => {

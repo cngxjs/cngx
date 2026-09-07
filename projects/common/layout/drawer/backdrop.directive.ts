@@ -15,7 +15,12 @@ import {
  *
  * When visible, all sibling elements of the host receive the `inert`
  * attribute, preventing focus and interaction behind the backdrop.
- * This is critical for a11y in modal/drawer overlays.
+ * This is critical for a11y in modal/drawer overlays. A sibling drawer
+ * panel (`.cngx-drawer-panel`) is excluded - it is the surface the
+ * backdrop guards, not content behind it. Siblings that already carry
+ * `inert` are left alone, so a consumer-set `inert` survives the
+ * show/hide cycle. The sibling set is re-queried on every show, so
+ * siblings rendered after init are covered too.
  *
  * The directive is purely behavioral - it toggles the
  * `.cngx-backdrop--visible` class and `aria-hidden` attribute. Visual
@@ -75,7 +80,7 @@ import {
   standalone: true,
   host: {
     '[class.cngx-backdrop--visible]': 'visible()',
-    '[attr.aria-hidden]': '!visible()',
+    'aria-hidden': 'true',
     '(click)': 'handleHostClick()',
   },
 })
@@ -88,26 +93,33 @@ export class CngxBackdrop {
   readonly backdropClick = output<void>();
 
   private readonly el = inject(ElementRef<HTMLElement>);
-  private readonly siblings = signal<HTMLElement[]>([]);
+  private readonly domReady = signal(false);
 
   constructor() {
-    afterNextRender(() => {
+    afterNextRender(() => this.domReady.set(true));
+
+    effect((onCleanup) => {
+      if (!this.domReady() || !this.visible()) {
+        return;
+      }
+      // Re-queried on every show: siblings rendered after init (@if/@defer)
+      // must be inerted too. The drawer panel keeps working - it is the
+      // surface the backdrop guards, not content behind it.
       const el = this.el.nativeElement as HTMLElement;
       const parent = el.parentElement;
-      this.siblings.set(
-        parent
-          ? Array.from(parent.children).filter(
-              (child): child is HTMLElement => child !== el && child instanceof HTMLElement,
-            )
-          : [],
-      );
-    });
-
-    effect(() => {
-      const visible = this.visible();
-      this.siblings().forEach((el) =>
-        visible ? el.setAttribute('inert', '') : el.removeAttribute('inert'),
-      );
+      // skip siblings that are already inert - removing it on cleanup
+      // would clobber a consumer-set attribute that predated the show
+      const targets = parent
+        ? Array.from(parent.children).filter(
+            (child): child is HTMLElement =>
+              child !== el &&
+              child instanceof HTMLElement &&
+              !child.classList.contains('cngx-drawer-panel') &&
+              !child.hasAttribute('inert'),
+          )
+        : [];
+      targets.forEach((target) => target.setAttribute('inert', ''));
+      onCleanup(() => targets.forEach((target) => target.removeAttribute('inert')));
     });
   }
 

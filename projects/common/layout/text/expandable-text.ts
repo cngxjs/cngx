@@ -1,10 +1,11 @@
 import { NgTemplateOutlet } from '@angular/common';
-// eslint-disable-next-line @typescript-eslint/consistent-type-imports -- TemplateRef is needed as DI token at runtime
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   contentChild,
   Directive,
+  inject,
   input,
   model,
   TemplateRef,
@@ -51,7 +52,7 @@ export interface CngxExpandableToggleContext {
   standalone: true,
 })
 export class CngxExpandableToggle {
-  constructor(public readonly templateRef: TemplateRef<CngxExpandableToggleContext>) {}
+  readonly templateRef = inject<TemplateRef<CngxExpandableToggleContext>>(TemplateRef);
 }
 
 /**
@@ -145,12 +146,20 @@ export class CngxExpandableText {
   /** Optional custom toggle template projected by the consumer. */
   protected readonly customToggle = contentChild(CngxExpandableToggle);
 
-  /** Template context for the custom toggle. */
-  protected toggleContext(): CngxExpandableToggleContext {
-    return {
+  /** Stable toggle closure - a fresh closure per context would defeat the equal fn below. */
+  private readonly toggleFn = (): void => this.expanded.set(!this.expanded());
+
+  /**
+   * Template context for the custom toggle. Structural `equal` fn so
+   * `ngTemplateOutletContext` does not rebind the embedded view on every
+   * CD cycle (same rule as the CngxTag slot contexts).
+   */
+  protected readonly toggleContext = computed<CngxExpandableToggleContext>(
+    () => ({
       $implicit: this.expanded(),
       expanded: this.expanded(),
-      toggle: () => this.expanded.set(!this.expanded()),
-    };
-  }
+      toggle: this.toggleFn,
+    }),
+    { equal: (a, b) => a.expanded === b.expanded },
+  );
 }

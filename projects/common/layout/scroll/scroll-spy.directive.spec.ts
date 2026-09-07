@@ -109,4 +109,17 @@ describe('CngxScrollSpy', () => {
     setup();
     expect(observerInstance.observe).toHaveBeenCalledTimes(3);
   });
+  it('warns in dev mode about section ids it cannot find', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const { fixture } = setup();
+    expect(warn).not.toHaveBeenCalled();
+
+    fixture.componentInstance.sections.set(['intro', 'missing-a', 'missing-b']);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    expect(warn).toHaveBeenCalledOnce();
+    expect(warn.mock.calls[0][0]).toContain('missing-a, missing-b');
+    warn.mockRestore();
+  });
 });

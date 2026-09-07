@@ -59,6 +59,16 @@ describe('CngxDrawer', () => {
     expect(dir.opened()).toBe(false);
   });
 
+  it('open() is a no-op when already open', () => {
+    const { dir } = setupUncontrolled();
+    dir.open();
+    const spy = vi.fn();
+    dir.openedChange.subscribe(spy);
+    dir.open();
+    expect(spy).not.toHaveBeenCalled();
+    expect(dir.opened()).toBe(true);
+  });
+
   it('close() is a no-op when already closed', () => {
     const { dir } = setupUncontrolled();
     const spy = vi.fn();

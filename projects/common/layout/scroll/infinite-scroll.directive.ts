@@ -6,9 +6,12 @@ import {
   ElementRef,
   inject,
   input,
+  isDevMode,
   output,
+  untracked,
   type Signal,
 } from '@angular/core';
+import { createTransitionTracker } from '@cngx/core/utils';
 
 /**
  * Infinite scroll trigger using `IntersectionObserver`.
@@ -19,7 +22,9 @@ import {
  *
  * The observer is automatically recreated when `root`, `rootMargin`, or
  * `threshold` inputs change, and disconnected on destroy or when `enabled`
- * is set to `false`.
+ * is set to `false`. When `loading` settles back to `false` the sentinel is
+ * re-observed, so a fetched page that did not push the sentinel out of view
+ * still re-fires `loadMore` instead of stalling the list.
  *
  * ### Basic infinite list
  * ```html
@@ -99,6 +104,7 @@ export class CngxInfiniteScroll {
   private readonly el = inject(ElementRef<HTMLElement>);
   private readonly doc = inject(DOCUMENT);
   private lastEmitTime = 0;
+  private observer: IntersectionObserver | null = null;
 
   constructor() {
     const win = this.doc.defaultView;
@@ -119,10 +125,17 @@ export class CngxInfiniteScroll {
 
       const isLoading = () => this.loading();
       const resolvedRoot = root ? this.doc.querySelector(root) : null;
+      if (isDevMode() && root && !resolvedRoot) {
+        console.warn(
+          `[cngxInfiniteScroll] root selector "${root}" matched no element - ` +
+            'falling back to the viewport. A late-rendered root needs a re-bind of [root].',
+        );
+      }
 
       const observer = new IntersectionObserver(
         (entries) => {
-          const entry = entries[0];
+          // batched records arrive oldest-first; only the newest reflects reality
+          const entry = entries[entries.length - 1];
           if (!entry.isIntersecting) {
             return;
           }
@@ -142,8 +155,31 @@ export class CngxInfiniteScroll {
       );
 
       observer.observe(this.el.nativeElement as HTMLElement);
+      this.observer = observer;
 
-      onCleanup(() => observer.disconnect());
+      onCleanup(() => {
+        observer.disconnect();
+        this.observer = null;
+      });
+    });
+
+    const loadingTransition = createTransitionTracker(() => this.loading());
+    effect(() => {
+      const loading = loadingTransition.current();
+      const wasLoading = loadingTransition.previous();
+      if (!wasLoading || loading) {
+        return;
+      }
+      // IO reports intersection CHANGES only: when a fetched page does not
+      // push the sentinel out of view there is no new entry after loading
+      // settles, and the list stalls. Re-observing forces a fresh entry;
+      // the debounce window is reset so that entry may emit immediately.
+      untracked(() => {
+        const sentinel = this.el.nativeElement as HTMLElement;
+        this.lastEmitTime = 0;
+        this.observer?.unobserve(sentinel);
+        this.observer?.observe(sentinel);
+      });
     });
   }
 }

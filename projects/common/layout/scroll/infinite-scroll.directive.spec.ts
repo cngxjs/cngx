@@ -8,10 +8,12 @@ import { CngxInfiniteScroll } from './infinite-scroll.directive';
 type IntersectionCallback = (entries: Partial<IntersectionObserverEntry>[]) => void;
 let mockCallback: IntersectionCallback | null = null;
 let mockDisconnect: ReturnType<typeof vi.fn>;
+let mockInstance: MockIntersectionObserver | null = null;
 
 class MockIntersectionObserver {
   constructor(callback: IntersectionCallback, _options?: IntersectionObserverInit) {
     mockCallback = callback;
+    mockInstance = this;
   }
   observe = vi.fn();
   unobserve = vi.fn();
@@ -77,6 +79,7 @@ function setup(overrides: { enabled?: boolean; loading?: boolean; debounceMs?: n
 afterEach(() => {
   vi.unstubAllGlobals();
   mockCallback = null;
+  mockInstance = null;
 });
 
 // ── Tests ───────────────────────────────────────────────────────────────
@@ -142,6 +145,59 @@ describe('CngxInfiniteScroll', () => {
   it('should set aria-busy when loading', () => {
     const { el } = setup({ loading: true });
     expect(el.getAttribute('aria-busy')).toBe('true');
+  });
+
+  it('should honour only the newest record of a batched callback', () => {
+    const { host } = setup({ debounceMs: 0 });
+    mockCallback?.([
+      { isIntersecting: true, intersectionRatio: 1 } as Partial<IntersectionObserverEntry>,
+      { isIntersecting: false, intersectionRatio: 0 } as Partial<IntersectionObserverEntry>,
+    ]);
+    expect(host.loadMoreCount).toBe(0);
+
+    mockCallback?.([
+      { isIntersecting: false, intersectionRatio: 0 } as Partial<IntersectionObserverEntry>,
+      { isIntersecting: true, intersectionRatio: 1 } as Partial<IntersectionObserverEntry>,
+    ]);
+    expect(host.loadMoreCount).toBe(1);
+  });
+
+  it('should re-observe the sentinel when loading settles back to false', () => {
+    const { fixture, host, el } = setup();
+    triggerIntersection(true);
+    expect(host.loadMoreCount).toBe(1);
+
+    host.loading.set(true);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(mockInstance!.unobserve).not.toHaveBeenCalled();
+
+    host.loading.set(false);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(mockInstance!.unobserve).toHaveBeenCalledWith(el);
+    expect(mockInstance!.observe).toHaveBeenCalledTimes(2);
+
+    // the forced re-check entry may emit immediately - the debounce window is reset
+    triggerIntersection(true);
+    expect(host.loadMoreCount).toBe(2);
+  });
+
+  it('should re-observe when mounted loading and settling afterwards', () => {
+    const { fixture, host, el } = setup({ loading: true });
+    host.loading.set(false);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(mockInstance!.unobserve).toHaveBeenCalledWith(el);
+  });
+
+  it('should not re-observe when loading flips false to true', () => {
+    const { fixture, host } = setup();
+    host.loading.set(true);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(mockInstance!.unobserve).not.toHaveBeenCalled();
+    expect(mockInstance!.observe).toHaveBeenCalledTimes(1);
   });
 
   it('should disconnect observer on destroy', () => {

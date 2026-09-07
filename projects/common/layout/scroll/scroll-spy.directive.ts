@@ -1,5 +1,14 @@
 import { DOCUMENT } from '@angular/common';
-import { afterNextRender, Directive, effect, inject, input, output, signal } from '@angular/core';
+import {
+  afterNextRender,
+  Directive,
+  effect,
+  inject,
+  input,
+  isDevMode,
+  output,
+  signal,
+} from '@angular/core';
 
 /**
  * Tracks which section is currently most visible in the viewport.
@@ -7,6 +16,10 @@ import { afterNextRender, Directive, effect, inject, input, output, signal } fro
  * Observes a list of elements by their IDs using `IntersectionObserver`
  * and reports the one with the highest intersection ratio as the active section.
  * Ideal for scroll-based navigation highlighting and reading progress.
+ *
+ * Section IDs are resolved when the inputs change - sections rendered later
+ * (`@if`/`@defer`) are not picked up automatically; re-bind `[cngxScrollSpy]`
+ * once they exist. In dev mode the directive warns about IDs it cannot find.
  *
  * ### Navigation highlighting
  * ```html
@@ -97,11 +110,25 @@ export class CngxScrollSpy {
       .map((id) => this.doc.getElementById(id))
       .filter((el): el is HTMLElement => el !== null);
 
+    if (isDevMode() && elements.length < ids.length) {
+      const missing = ids.filter((id) => !this.doc.getElementById(id));
+      console.warn(
+        `[cngxScrollSpy] section id(s) not found: ${missing.join(', ')}. ` +
+          'Late-rendered sections are not observed - re-bind [cngxScrollSpy] once they exist.',
+      );
+    }
+
     if (elements.length === 0) {
       return undefined;
     }
 
     const resolvedRoot = rootSelector ? this.doc.querySelector(rootSelector) : null;
+    if (isDevMode() && rootSelector && !resolvedRoot) {
+      console.warn(
+        `[cngxScrollSpy] root selector "${rootSelector}" matched no element - ` +
+          'falling back to the viewport. A late-rendered root needs a re-bind of [root].',
+      );
+    }
 
     const observer = new IntersectionObserver(
       (entries) => {
