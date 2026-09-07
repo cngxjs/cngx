@@ -49,6 +49,7 @@ import {
   CNGX_STEPPER_GLYPHS,
   CNGX_STEPPER_HOST,
   CngxStepperCount,
+  createStepperAccname,
   createStepperAnnouncementBuilders,
   createStepperHostAttrs,
   createStepperSlotContextBuilders,
@@ -400,14 +401,12 @@ export class CngxStepper implements CngxStepPanelHost {
     navigationEnabled: () => this.resolvedHeaderNavigation() !== 'none',
   });
 
-  /**
-   * `aria-label` cascade: input → `ariaLabels.stepperRegion` → `i18n.stepperLabel`.
-   */
-  protected readonly resolvedAriaLabel = computed<string | null>(() => {
-    if (this.ariaLabelledBy()) {
-      return null; // labelledby trumps label
-    }
-    return this.ariaLabel() ?? this.config.ariaLabels?.stepperRegion ?? this.i18n.stepperLabel;
+  /** Shared accname cascade (input → `ariaLabels.stepperRegion` → `i18n.stepperLabel`). */
+  protected readonly resolvedAriaLabel = createStepperAccname({
+    ariaLabel: this.ariaLabel,
+    ariaLabelledBy: this.ariaLabelledBy,
+    config: this.config,
+    i18n: this.i18n,
   });
 
   // O(1) labelTemplateFor/contentTemplateFor lookup. Structural equal on
