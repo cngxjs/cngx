@@ -91,6 +91,7 @@ jobs:
             ui/command-palette
             ui/context-menu
             ui/toc
+            themes
             themes/material
             examples
             examples-gen

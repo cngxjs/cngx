@@ -26,6 +26,7 @@
     "@cngx/common": "0.0.0-PLACEHOLDER",
     "@cngx/forms": "0.0.0-PLACEHOLDER",
     "@cngx/ui": "0.0.0-PLACEHOLDER",
+    "@cngx/data-display": "0.0.0-PLACEHOLDER",
     "@angular/material": "^21.2.0",
     "@angular/cdk": "^21.2.0"
   },
