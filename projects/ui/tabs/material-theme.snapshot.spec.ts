@@ -103,6 +103,14 @@ describe('Material tabs-theme bridge baseline', () => {
     expect(compileAndExtract({ themeVersion: 'v1', variant: 'light' })).toMatchSnapshot();
   });
 
+  it('badge font tokens use the registered names, not the dead error-badge pair', () => {
+    const declarations = compileAndExtract({ themeVersion: 'v1', variant: 'light' });
+    expect(declarations['--cngx-tab-badge-font-size']).toBeDefined();
+    expect(declarations['--cngx-tab-badge-font-weight']).toBeDefined();
+    expect(declarations['--cngx-tab-error-badge-font-size']).toBeUndefined();
+    expect(declarations['--cngx-tab-error-badge-font-weight']).toBeUndefined();
+  });
+
   it('v1 dark: resolved --cngx-* declarations match the baseline', () => {
     expect(compileAndExtract({ themeVersion: 'v1', variant: 'dark' })).toMatchSnapshot();
   });

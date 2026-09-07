@@ -35,7 +35,9 @@
 }
 
 @mixin theme($theme) {
-  cngx-filter-builder {
-    @include color($theme);
+  @layer cngx.components {
+    :where(cngx-filter-builder) {
+      @include color($theme);
+    }
   }
 }
