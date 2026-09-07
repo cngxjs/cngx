@@ -20,7 +20,6 @@
       #{$_on-secondary-container}
     );
     --cngx-nav-link-active-bg: var(--mat-sys-secondary-container, #{$_secondary-container});
-    --cngx-nav-link-active-indicator: var(--mat-sys-primary, #{$_primary});
   } @else {
     $_primary: mat.get-theme-color($theme, primary);
 
@@ -28,7 +27,6 @@
     --cngx-nav-link-hover-color: rgba(0, 0, 0, 0.87);
     --cngx-nav-link-active-color: #{$_primary};
     --cngx-nav-link-active-bg: #{rgba($_primary, 0.08)};
-    --cngx-nav-link-active-indicator: #{$_primary};
   }
 }
 

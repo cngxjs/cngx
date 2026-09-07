@@ -3,47 +3,74 @@
 // Material bridge for the form-control atoms: CngxCheckbox, CngxRadio,
 // CngxToggle, CngxCheckboxIndicator, CngxRadioIndicator. All share the
 // pattern "neutral border in idle state, primary fill when checked".
+// CngxCheckboxIndicator reads the same `--cngx-checkbox-*` family as
+// CngxCheckbox; the radio indicator owns `--cngx-radio-indicator-*`.
 //
 //   @use '@cngx/themes/material/interactive-controls-theme' as controls;
 //   html { @include controls.theme($theme); }
 
 @mixin color($theme) {
   @if mat.get-theme-version($theme) == 1 {
-    // Checkbox + indicator
-    --cngx-checkbox-border-color: var(--mat-sys-outline);
+    // Checkbox + indicator (shared family). The border token is a full
+    // shorthand - mirror the component's 1.5px default width.
+    --cngx-checkbox-border: 1.5px solid var(--mat-sys-outline);
     --cngx-checkbox-checked-bg: var(--mat-sys-primary);
     --cngx-checkbox-checked-color: var(--mat-sys-on-primary);
-    --cngx-checkbox-indicator-border-color: var(--mat-sys-outline);
-    --cngx-checkbox-indicator-checked-bg: var(--mat-sys-primary);
-    --cngx-checkbox-indicator-checked-color: var(--mat-sys-on-primary);
 
-    // Radio + indicator
-    --cngx-radio-border-color: var(--mat-sys-outline);
-    --cngx-radio-checked-color: var(--mat-sys-primary);
-    --cngx-radio-indicator-border-color: var(--mat-sys-outline);
+    // Radio indicator - the idle circle border rides the -color
+    // currentColor chain; checked circle + dot read -checked-color.
+    --cngx-radio-indicator-color: var(--mat-sys-outline);
     --cngx-radio-indicator-checked-color: var(--mat-sys-primary);
 
-    // Toggle (switch)
-    --cngx-toggle-track-bg: var(--mat-sys-surface-variant);
-    --cngx-toggle-track-border: var(--mat-sys-outline);
+    // Toggle (switch). Resting thumb stays outline for contrast on the
+    // surface-variant track; the checked state flips it below.
+    --cngx-toggle-track-bg-off: var(--mat-sys-surface-variant);
+    --cngx-toggle-track-bg-on: var(--mat-sys-primary);
     --cngx-toggle-thumb-bg: var(--mat-sys-outline);
-    --cngx-toggle-checked-track-bg: var(--mat-sys-primary);
-    --cngx-toggle-checked-thumb-bg: var(--mat-sys-on-primary);
   } @else {
-    --cngx-checkbox-border-color: #{mat.get-theme-color($theme, foreground, divider)};
+    --cngx-checkbox-border: 1.5px solid #{mat.get-theme-color($theme, foreground, divider)};
     --cngx-checkbox-checked-bg: #{mat.get-theme-color($theme, primary)};
-    --cngx-radio-checked-color: #{mat.get-theme-color($theme, primary)};
-    --cngx-toggle-checked-track-bg: #{mat.get-theme-color($theme, primary)};
+    --cngx-radio-indicator-checked-color: #{mat.get-theme-color($theme, primary)};
+    --cngx-toggle-track-bg-on: #{mat.get-theme-color($theme, primary)};
+  }
+}
+
+@mixin _checked-thumb($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-toggle-thumb-bg: var(--mat-sys-on-primary);
   }
 }
 
 @mixin theme($theme) {
   @layer cngx.components {
-    :where(cngx-checkbox, cngx-checkbox-group, cngx-radio, cngx-radio-group, cngx-toggle) {
+    // Host + descendants broadcast (select-theme precedent): the toggle
+    // track/thumb tokens are registered inherits:false and are read on
+    // inner elements - a host-only set resolves to the initial-value
+    // there. The bare indicator classes cover standalone usage outside
+    // a cngx-checkbox / cngx-radio host.
+    :where(
+        cngx-checkbox,
+        cngx-checkbox *,
+        cngx-checkbox-group,
+        cngx-checkbox-group *,
+        cngx-radio,
+        cngx-radio *,
+        cngx-radio-group,
+        cngx-radio-group *,
+        cngx-toggle,
+        cngx-toggle *,
+        .cngx-checkbox-indicator,
+        .cngx-checkbox-indicator *,
+        .cngx-radio-indicator,
+        .cngx-radio-indicator *
+      ) {
       @include color($theme);
     }
-    :where(.cngx-checkbox-indicator, .cngx-radio-indicator) {
-      @include color($theme);
+    // One thumb token cannot satisfy contrast on both tracks - the
+    // checked state re-scopes it to on-primary (broadcast again: the
+    // token is inherits:false and read on the __thumb descendant).
+    :where(.cngx-toggle--checked, .cngx-toggle--checked *) {
+      @include _checked-thumb($theme);
     }
   }
 }

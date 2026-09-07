@@ -1,36 +1,39 @@
 @use '@angular/material' as mat;
 
-// Material bridge for CngxCopyBlock.
+// Material bridge for CngxCopyBlock. The host projects consumer content
+// and owns no surface tokens - the themed surface is the copy button
+// (`--cngx-copy-block-btn-*`) with its copied confirmation state.
 //
 //   @use '@cngx/themes/material/copy-block-theme' as copy-block;
 //   html { @include copy-block.theme($theme); }
 
 @mixin color($theme) {
   @if mat.get-theme-version($theme) == 1 {
-    --cngx-copy-block-bg: var(--mat-sys-surface-container-high);
-    --cngx-copy-block-color: var(--mat-sys-on-surface);
-    --cngx-copy-block-border: var(--mat-sys-outline-variant);
-    --cngx-copy-block-button-bg: color-mix(
-      in srgb,
-      var(--mat-sys-on-surface) 6%,
-      transparent
-    );
-    --cngx-copy-block-button-hover-bg: color-mix(
-      in srgb,
-      var(--mat-sys-on-surface) 12%,
-      transparent
-    );
-    --cngx-copy-block-copied-color: var(--mat-sys-tertiary);
+    --cngx-copy-block-btn-bg: color-mix(in srgb, var(--mat-sys-on-surface) 6%, transparent);
+    --cngx-copy-block-btn-color: var(--mat-sys-on-surface);
+    --cngx-copy-block-btn-border: var(--mat-sys-outline-variant);
+    --cngx-copy-block-btn-copied-bg: color-mix(in srgb, var(--mat-sys-tertiary) 12%, transparent);
+    --cngx-copy-block-btn-copied-border: var(--mat-sys-tertiary);
+    --cngx-copy-block-btn-copied-color: var(--mat-sys-tertiary);
   } @else {
-    --cngx-copy-block-bg: #{mat.get-theme-color($theme, background, app-bar)};
-    --cngx-copy-block-color: #{mat.get-theme-color($theme, foreground, text)};
-    --cngx-copy-block-border: #{mat.get-theme-color($theme, foreground, divider)};
+    --cngx-copy-block-btn-color: #{mat.get-theme-color($theme, foreground, text)};
+    --cngx-copy-block-btn-border: #{mat.get-theme-color($theme, foreground, divider)};
+    // the copied state pair is theme-owned as a whole - leaving the bg
+    // on the component's scheme-driven success tint would mix an accent
+    // fg with a green bg of foreign ownership
+    --cngx-copy-block-btn-copied-bg: #{rgba(mat.get-theme-color($theme, accent), 0.12)};
+    --cngx-copy-block-btn-copied-border: #{mat.get-theme-color($theme, accent)};
+    --cngx-copy-block-btn-copied-color: #{mat.get-theme-color($theme, accent)};
   }
 }
 
 @mixin theme($theme) {
   @layer cngx.components {
-    :where(.cngx-copy-block) {
+    // Host + descendants broadcast (select-theme precedent): the idle
+    // btn tokens (-bg/-color/-border) are registered inherits:false and
+    // are read on the __button descendant - a host-only set resolves to
+    // the initial-value there.
+    :where(.cngx-copy-block, .cngx-copy-block *) {
       @include color($theme);
     }
   }

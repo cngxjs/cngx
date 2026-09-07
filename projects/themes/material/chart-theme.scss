@@ -1,7 +1,9 @@
 @use '@angular/material' as mat;
 
-// Material bridge for CngxChart. Maps the chart's accent / axis / grid
+// Material bridge for CngxChart. Maps the chart's series / axis / grid
 // tokens onto Material's primary / outline-variant / on-surface surfaces.
+// The secondary/success series colors and the tooltip stay component-owned
+// (no Material equivalent worth forcing).
 //
 //   @use '@cngx/themes/material/chart-theme' as chart;
 //   html { @include chart.theme($theme); }
@@ -11,15 +13,13 @@
     --cngx-chart-text-color: var(--mat-sys-on-surface);
     --cngx-chart-axis-color: var(--mat-sys-on-surface-variant);
     --cngx-chart-grid-color: var(--mat-sys-outline-variant);
-    --cngx-chart-accent: var(--mat-sys-primary);
+    --cngx-chart-primary: var(--mat-sys-primary);
     --cngx-chart-danger: var(--mat-sys-error);
-    --cngx-chart-tooltip-bg: var(--mat-sys-inverse-surface);
-    --cngx-chart-tooltip-color: var(--mat-sys-inverse-on-surface);
   } @else {
     --cngx-chart-text-color: #{mat.get-theme-color($theme, foreground, text)};
     --cngx-chart-axis-color: #{mat.get-theme-color($theme, foreground, secondary-text)};
     --cngx-chart-grid-color: #{mat.get-theme-color($theme, foreground, divider)};
-    --cngx-chart-accent: #{mat.get-theme-color($theme, primary)};
+    --cngx-chart-primary: #{mat.get-theme-color($theme, primary)};
     --cngx-chart-danger: #{mat.get-theme-color($theme, warn)};
   }
 }

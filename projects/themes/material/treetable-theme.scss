@@ -8,10 +8,9 @@
 
 @mixin color($theme) {
   @if mat.get-theme-version($theme) == 1 {
-    --cngx-treetable-bg: var(--mat-sys-surface);
     --cngx-treetable-header-bg: var(--mat-sys-surface-container);
     --cngx-treetable-header-color: var(--mat-sys-on-surface);
-    --cngx-treetable-row-color: var(--mat-sys-on-surface);
+    --cngx-treetable-cell-color: var(--mat-sys-on-surface);
     --cngx-treetable-row-hover-bg: color-mix(
       in srgb,
       var(--mat-sys-on-surface) 4%,
@@ -25,7 +24,7 @@
     --cngx-treetable-row-border: var(--mat-sys-outline-variant);
   } @else {
     --cngx-treetable-header-color: #{mat.get-theme-color($theme, foreground, text)};
-    --cngx-treetable-row-color: #{mat.get-theme-color($theme, foreground, text)};
+    --cngx-treetable-cell-color: #{mat.get-theme-color($theme, foreground, text)};
     --cngx-treetable-row-hover-bg: #{rgba(
         mat.get-theme-color($theme, foreground, text),
         0.04

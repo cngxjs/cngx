@@ -167,7 +167,6 @@ CngxTreetable is entirely unstyled. All visual appearance is controlled via CSS 
 |-|-|-|
 | `--cngx-treetable-row-height` | `44px` | Height of each row |
 | `--cngx-treetable-border-color` | `#e0e0e0` | Border color between rows/columns |
-| `--cngx-treetable-bg` | `#ffffff` | Background color |
 | `--cngx-treetable-hover-bg` | `#f5f5f5` | Background when hovering (with `highlightRowOnHover=true`) |
 | `--cngx-treetable-selected-bg` | `#e8f5e9` | Background when selected |
 | `--cngx-treetable-focus-outline` | `2px solid var(--cngx-focus-color, #1976d2)` | Focus ring style |

@@ -75,9 +75,16 @@
 
 @mixin typography($theme) {
   @if mat.get-theme-version($theme) == 1 {
-    --cngx-tab-error-badge-font-size: var(--mat-sys-label-small-size);
-    --cngx-tab-error-badge-font-weight: var(--mat-sys-label-small-weight);
     --cngx-tab-rejection-icon-font-size: var(--mat-sys-label-small-size);
+  }
+}
+
+@mixin _badge-typography($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    // Registered inherits:false and read on the badge element itself -
+    // set here, not on the group host, or the initial-value wins.
+    --cngx-tab-badge-font-size: var(--mat-sys-label-small-size);
+    --cngx-tab-badge-font-weight: var(--mat-sys-label-small-weight);
   }
 }
 
@@ -183,6 +190,9 @@
     }
     :where(.cngx-tab-overflow__panel) {
       @include _overflow-panel($theme);
+    }
+    :where(.cngx-tab-badge) {
+      @include _badge-typography($theme);
     }
     :where(.cngx-tab-overflow__item) {
       @include _overflow-item($theme);
