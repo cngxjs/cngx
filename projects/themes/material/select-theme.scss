@@ -39,14 +39,10 @@
     --cngx-combobox-border: 1px solid var(--mat-sys-outline);
 
     --cngx-typeahead-bg: transparent;
-    --cngx-typeahead-color: var(--mat-sys-on-surface);
     --cngx-typeahead-border: 1px solid var(--mat-sys-outline);
-    --cngx-typeahead-action-color: var(--mat-sys-on-surface);
 
     --cngx-action-select-bg: transparent;
-    --cngx-action-select-color: var(--mat-sys-on-surface);
     --cngx-action-select-border: 1px solid var(--mat-sys-outline);
-    --cngx-action-select-action-color: var(--mat-sys-on-surface);
 
     --cngx-action-multi-select-bg: transparent;
     --cngx-action-multi-select-color: var(--mat-sys-on-surface);
@@ -119,8 +115,6 @@
     --cngx-select-color: #{mat.get-theme-color($theme, foreground, text)};
     --cngx-multi-select-color: #{mat.get-theme-color($theme, foreground, text)};
     --cngx-combobox-color: #{mat.get-theme-color($theme, foreground, text)};
-    --cngx-typeahead-color: #{mat.get-theme-color($theme, foreground, text)};
-    --cngx-action-select-color: #{mat.get-theme-color($theme, foreground, text)};
     --cngx-action-multi-select-color: #{mat.get-theme-color($theme, foreground, text)};
     --cngx-reorderable-multi-select-color: #{mat.get-theme-color($theme, foreground, text)};
 
