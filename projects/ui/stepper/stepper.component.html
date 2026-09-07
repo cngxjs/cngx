@@ -19,15 +19,23 @@
     [enabled]="swipeNav.swipeEnabled()"
     (swiped)="swipeNav.handleSwipe($event)"
   >
+    <!--
+      No per-step header exists in the text branch, so the panel names
+      itself via aria-label and hosts its own descriptor span - the
+      classic strip's header/descriptor ids are not in the DOM here,
+      and a dangling IDREF names the region as empty. The describedby
+      target stays mounted; only the reference is gated.
+    -->
     @for (node of stepsOnly(); track node.id) {
       <div
         class="cngx-stepper__panel"
         role="region"
         [id]="stepPanelId(node)"
-        [attr.aria-labelledby]="stepHeaderId(node)"
+        [attr.aria-label]="node.label()"
         [attr.aria-describedby]="announcement.describedBy(node)"
         [hidden]="!slotContext.isActive(node)"
       >
+        <span class="cngx-sr-only" [id]="announcement.descriptorId(node)">{{ announcement.statusPhrase(node) }}</span>
         @let contentTpl = contentTemplateFor(node.id);
         @if (contentTpl) {
           <ng-container
@@ -54,6 +62,7 @@
           [class.cngx-stepper__mobile-dot--active]="slotContext.isActive(node)"
           [class.cngx-stepper__mobile-dot--completed]="i < activeStepIndex()"
           [class.cngx-stepper__mobile-dot--error]="stateView.hasError(node)"
+          [id]="stepHeaderId(node)"
           [attr.aria-current]="slotContext.isActive(node) ? 'step' : null"
           [attr.aria-label]="mobileDotAriaLabel(node, i)"
           [attr.data-state]="mobileDotState(node)"
@@ -66,7 +75,9 @@
           [class.cngx-stepper__mobile-dot--active]="slotContext.isActive(node)"
           [class.cngx-stepper__mobile-dot--completed]="i < activeStepIndex()"
           [class.cngx-stepper__mobile-dot--error]="stateView.hasError(node)"
+          [id]="stepHeaderId(node)"
           [attr.aria-current]="slotContext.isActive(node) ? 'step' : null"
+          [attr.aria-controls]="stepPanelId(node)"
           [attr.aria-label]="mobileDotAriaLabel(node, i)"
           [attr.data-state]="mobileDotState(node)"
           [attr.aria-disabled]="headerAriaDisabled(node)"
@@ -93,6 +104,11 @@
     [enabled]="swipeNav.swipeEnabled()"
     (swiped)="swipeNav.handleSwipe($event)"
   >
+    <!--
+      The dots carry the header ids, so aria-labelledby resolves; the
+      classic descriptor spans live inside the strip headers and are not
+      in the DOM here, so each panel hosts its own (ref stays gated).
+    -->
     @for (node of stepsOnly(); track node.id) {
       <div
         class="cngx-stepper__panel"
@@ -102,6 +118,7 @@
         [attr.aria-describedby]="announcement.describedBy(node)"
         [hidden]="!slotContext.isActive(node)"
       >
+        <span class="cngx-sr-only" [id]="announcement.descriptorId(node)">{{ announcement.statusPhrase(node) }}</span>
         @let contentTpl = contentTemplateFor(node.id);
         @if (contentTpl) {
           <ng-container

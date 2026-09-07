@@ -18,6 +18,7 @@ import {
   withStepperGroupCollapseSummary,
   withStepperHeaderNavigation,
   withStepperI18nLabels,
+  withStepperMobileCollapse,
   withStepperMobileSwipe,
   withStepperSkin,
 } from '@cngx/common/stepper';
@@ -1655,6 +1656,117 @@ describe('CngxStepper organism', () => {
       buttons[2].click();
       fixture.detectChanges();
       expect(stepper.presenter.activeStepIndex()).toBe(0);
+    });
+  });
+
+  describe('mobile-collapse a11y ids', () => {
+    // Forces displayMode into the collapse branch: createMobileViewportSignal
+    // reads globalThis.matchMedia, absent in jsdom, so the stub is the seam.
+    beforeEach(() => {
+      vi.stubGlobal(
+        'matchMedia',
+        (query: string) =>
+          ({
+            matches: true,
+            media: query,
+            addEventListener: () => undefined,
+            removeEventListener: () => undefined,
+          }) as unknown as MediaQueryList,
+      );
+    });
+
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    function panelsOf(fixture: { nativeElement: HTMLElement }): HTMLElement[] {
+      return Array.from(fixture.nativeElement.querySelectorAll('.cngx-stepper__panel'));
+    }
+
+    function byId(fixture: { nativeElement: HTMLElement }, id: string | null): HTMLElement | null {
+      return id ? fixture.nativeElement.querySelector(`[id="${id}"]`) : null;
+    }
+
+    it('text mode: panels name themselves via aria-label and carry no dangling aria-labelledby', () => {
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection(), provideStepperConfig(withStepperMobileCollapse('text'))],
+      });
+      const fixture = TestBed.createComponent(HostCmp);
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.cngx-stepper__mobile-text')).not.toBeNull();
+      const panels = panelsOf(fixture);
+      expect(panels.length).toBe(3);
+      expect(panels[0].getAttribute('aria-label')).toBe('A');
+      panels.forEach((panel) => {
+        expect(panel.hasAttribute('aria-labelledby')).toBe(false);
+      });
+    });
+
+    it('text mode: every aria-describedby reference resolves to an in-DOM descriptor span', () => {
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection(), provideStepperConfig(withStepperMobileCollapse('text'))],
+      });
+      const fixture = TestBed.createComponent(HostCmp);
+      fixture.detectChanges();
+      for (const panel of panelsOf(fixture)) {
+        const ref = panel.getAttribute('aria-describedby');
+        expect(ref).not.toBeNull();
+        const descriptor = byId(fixture, ref);
+        expect(descriptor).not.toBeNull();
+        expect(descriptor!.textContent).toContain('Step');
+      }
+    });
+
+    it('dots mode: dot buttons carry id + aria-controls and the panel labelledby reverses the link', () => {
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection(), provideStepperConfig(withStepperMobileCollapse('dots'))],
+      });
+      const fixture = TestBed.createComponent(HostCmp);
+      fixture.detectChanges();
+      const dots = Array.from(
+        fixture.nativeElement.querySelectorAll('button.cngx-stepper__mobile-dot'),
+      ) as HTMLButtonElement[];
+      const panels = panelsOf(fixture);
+      expect(dots.length).toBe(3);
+      dots.forEach((dot, i) => {
+        expect(dot.id).not.toBe('');
+        expect(dot.getAttribute('aria-controls')).toBe(panels[i].id);
+        expect(panels[i].getAttribute('aria-labelledby')).toBe(dot.id);
+      });
+    });
+
+    it('dots mode: every aria-describedby reference resolves to an in-DOM descriptor span', () => {
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection(), provideStepperConfig(withStepperMobileCollapse('dots'))],
+      });
+      const fixture = TestBed.createComponent(HostCmp);
+      fixture.detectChanges();
+      for (const panel of panelsOf(fixture)) {
+        const descriptor = byId(fixture, panel.getAttribute('aria-describedby'));
+        expect(descriptor).not.toBeNull();
+        expect(descriptor!.textContent).not.toBe('');
+      }
+    });
+
+    it('dots mode + headerNavigation "none": static listitem dots carry the header id, no aria-controls', () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideStepperConfig(withStepperMobileCollapse('dots'), withStepperHeaderNavigation('none')),
+        ],
+      });
+      const fixture = TestBed.createComponent(HostCmp);
+      fixture.detectChanges();
+      const dots = Array.from(
+        fixture.nativeElement.querySelectorAll('span.cngx-stepper__mobile-dot--static'),
+      ) as HTMLElement[];
+      const panels = panelsOf(fixture);
+      expect(dots.length).toBe(3);
+      dots.forEach((dot, i) => {
+        expect(dot.id).not.toBe('');
+        expect(panels[i].getAttribute('aria-labelledby')).toBe(dot.id);
+        expect(dot.hasAttribute('aria-controls')).toBe(false);
+      });
     });
   });
 });
