@@ -303,6 +303,57 @@ describe('CngxStepper organism', () => {
       expect(project.getAttribute('aria-expanded')).toBeNull();
     });
 
+    it('panels of collapsed-group steps self-name instead of referencing missing headers', () => {
+      const fixture = collapseFixture();
+      const panels = Array.from(
+        fixture.nativeElement.querySelectorAll('.cngx-stepper__panel'),
+      ) as HTMLElement[];
+      expect(panels.length).toBe(5);
+      // Every emitted IDREF must resolve in-DOM; header-less panels self-name.
+      for (const panel of panels) {
+        const labelledBy = panel.getAttribute('aria-labelledby');
+        if (labelledBy) {
+          expect(fixture.nativeElement.querySelector(`[id="${labelledBy}"]`)).not.toBeNull();
+          expect(panel.hasAttribute('aria-label')).toBe(false);
+        } else {
+          expect(panel.getAttribute('aria-label')).not.toBe('');
+        }
+        const describedBy = panel.getAttribute('aria-describedby');
+        if (describedBy) {
+          expect(fixture.nativeElement.querySelector(`[id="${describedBy}"]`)).not.toBeNull();
+        }
+      }
+      // Project is collapsed -> C and D have no strip header, no dangling refs.
+      const selfNamed = panels
+        .filter((p) => p.hasAttribute('aria-label'))
+        .map((p) => p.getAttribute('aria-label'));
+      expect(selfNamed).toEqual(['C', 'D']);
+    });
+
+    it('entering the collapsed group restores the header references on its panels', () => {
+      const fixture = collapseFixture();
+      const project = (
+        Array.from(
+          fixture.nativeElement.querySelectorAll('.cngx-stepper__group-header'),
+        ) as HTMLElement[]
+      )[1];
+      project.click();
+      fixture.detectChanges();
+      const panels = Array.from(
+        fixture.nativeElement.querySelectorAll('.cngx-stepper__panel'),
+      ) as HTMLElement[];
+      const cPanel = panels.find(
+        (p) => p.getAttribute('aria-labelledby') && !p.hidden,
+      ) as HTMLElement;
+      expect(cPanel).toBeTruthy();
+      const header = fixture.nativeElement.querySelector(
+        `[id="${cPanel.getAttribute('aria-labelledby')}"]`,
+      ) as HTMLElement;
+      expect(header).not.toBeNull();
+      expect(header.textContent).toContain('C');
+      expect(cPanel.hasAttribute('aria-label')).toBe(false);
+    });
+
     it('drops collapsed child step buttons from the strip but keeps every panel in the DOM', () => {
       const fixture = collapseFixture();
       const labels = (

@@ -26,8 +26,9 @@
         class="cngx-stepper__panel"
         role="region"
         [id]="stepPanelId(node)"
-        [attr.aria-label]="node.label()"
-        [attr.aria-describedby]="announcement.describedBy(node)"
+        [attr.aria-labelledby]="panelLabelledBy(node)"
+        [attr.aria-label]="panelAriaLabel(node)"
+        [attr.aria-describedby]="panelDescribedBy(node)"
         [hidden]="!slotContext.isActive(node)"
       >
         <span class="cngx-sr-only" [id]="announcement.descriptorId(node)">{{ announcement.statusPhrase(node) }}</span>
@@ -104,8 +105,9 @@
         class="cngx-stepper__panel"
         role="region"
         [id]="stepPanelId(node)"
-        [attr.aria-labelledby]="stepHeaderId(node)"
-        [attr.aria-describedby]="announcement.describedBy(node)"
+        [attr.aria-labelledby]="panelLabelledBy(node)"
+        [attr.aria-label]="panelAriaLabel(node)"
+        [attr.aria-describedby]="panelDescribedBy(node)"
         [hidden]="!slotContext.isActive(node)"
       >
         <span class="cngx-sr-only" [id]="announcement.descriptorId(node)">{{ announcement.statusPhrase(node) }}</span>
@@ -239,8 +241,9 @@
         class="cngx-stepper__panel"
         role="region"
         [id]="stepPanelId(node)"
-        [attr.aria-labelledby]="stepHeaderId(node)"
-        [attr.aria-describedby]="announcement.describedBy(node)"
+        [attr.aria-labelledby]="panelLabelledBy(node)"
+        [attr.aria-label]="panelAriaLabel(node)"
+        [attr.aria-describedby]="panelDescribedBy(node)"
         [hidden]="!slotContext.isActive(node)"
       >
         @let contentTpl = contentTemplateFor(node.id);

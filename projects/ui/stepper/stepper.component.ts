@@ -489,6 +489,54 @@ export class CngxStepper implements CngxStepPanelHost {
   }
 
   /**
+   * Ids of nodes whose strip header is currently rendered. Under
+   * `groupCollapse: 'expand-active'` collapsed groups contribute only
+   * their header node, so their steps have no header element - a panel
+   * must not reference one then (dangling IDREF names the region as
+   * empty).
+   */
+  private readonly renderedHeaderIds = computed<ReadonlySet<string>>(
+    () => new Set(this.visibleStripNodes().map((node) => node.id)),
+    { equal: (a, b) => a.size === b.size && [...a].every((id) => b.has(id)) },
+  );
+
+  /**
+   * Per-mode panel naming. The dots branch always renders one dot per
+   * step; the classic strip only renders headers the group-collapse
+   * policy exposes; the text branch has no header element at all.
+   * Whenever no header id is emitted, {@link panelAriaLabel} names the
+   * region directly instead.
+   */
+  protected panelLabelledBy(node: CngxStepNode): string | null {
+    const mode = this.displayMode();
+    if (mode === 'text') {
+      return null;
+    }
+    if (mode === 'dots') {
+      return this.stepHeaderId(node);
+    }
+    return this.renderedHeaderIds().has(node.id) ? this.stepHeaderId(node) : null;
+  }
+
+  /** Self-naming fallback for panels without a rendered header. */
+  protected panelAriaLabel(node: CngxStepNode): string | null {
+    return this.panelLabelledBy(node) ? null : node.label();
+  }
+
+  /**
+   * Gated describedby: the classic descriptor spans live inside the
+   * strip headers, so a header-less step must not emit the reference;
+   * the collapsed branches mount the descriptor inside the panel and
+   * keep the announcement-level gate only.
+   */
+  protected panelDescribedBy(node: CngxStepNode): string | null {
+    if (this.displayMode() === 'classic' && !this.renderedHeaderIds().has(node.id)) {
+      return null;
+    }
+    return this.announcement.describedBy(node);
+  }
+
+  /**
    * Live-region + per-step + group SR phrase builders (Level-2 factory);
    * also owns the descriptor-span id scheme and the gated
    * `aria-describedby` reference the template binds directly.
