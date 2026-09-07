@@ -97,6 +97,16 @@
   }
 }
 
+// Deprecated: theme() now places the rejection-icon font-size on the
+// consuming elements (see _rejection-icon-typography) - the token is
+// inherits:false, so including this under a group host never lands.
+// Kept as a forwarding surface so the published color/typography/
+// density mixin trio survives for consumers who include the mixins
+// individually under their own (element-level) selector.
+@mixin typography($theme) {
+  @include _rejection-icon-typography($theme);
+}
+
 @mixin _badge-typography($theme) {
   @if mat.get-theme-version($theme) == 1 {
     // Registered inherits:false and read on the badge element itself -
