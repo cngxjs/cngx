@@ -635,7 +635,6 @@ Shows banner on `error` transition, auto-dismisses on `success`/`idle`.
 | `--cngx-banner-gap` | `12px` | Gap between elements |
 | `--cngx-banner-padding` | `10px 16px` | Banner padding |
 | `--cngx-banner-font-size` | `0.9375rem` | Message font size |
-| `--cngx-banner-action-min-size` | `44px` | Min touch target for action button |
 | `--cngx-banner-pending-opacity` | `0.85` | Opacity during async action |
 | `--cngx-banner-{severity}-bg` | per severity | Background |
 | `--cngx-banner-{severity}-border` | per severity | Border |

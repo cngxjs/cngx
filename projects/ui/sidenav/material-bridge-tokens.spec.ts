@@ -8,9 +8,11 @@ import { describe, expect, it } from 'vitest';
  * (`projects/themes/material/nav-link-theme.scss`), consumed by the
  * sidenav nav links. Pins the emitted token-name set against the names
  * the sidenav/nav-link CSS actually reads - the bridge's historic dead
- * token was `--cngx-nav-link-active-indicator`. Placement correctness
- * (inherits:false registrations vs the sidenav-theme nesting) is the
- * rendered-value harness's job; this file guards the name surface only.
+ * token was `--cngx-nav-link-active-indicator`. The placement block
+ * below additionally locks the sidenav-theme selector structure at the
+ * CSS-text level (broadcast for the inherits:false header/footer/
+ * backdrop tokens, nav-link un-nested onto its host class); rendered
+ * values stay the rendered-value harness's job.
  */
 
 const REPO_ROOT = resolve(__dirname, '../../..');
@@ -63,6 +65,48 @@ describe('nav-link Material bridge', () => {
     expect(names.length).toBeGreaterThan(0);
     for (const name of names) {
       expect(CONSUMED).toContain(name);
+    }
+  });
+});
+
+describe('sidenav Material bridge placement', () => {
+  function compiledTheme(): string {
+    const entry = `
+@use '@angular/material' as mat;
+@use 'material/sidenav-theme' as sidenav;
+
+$theme: mat.define-theme((
+  color: (theme-type: light, primary: mat.$azure-palette, tertiary: mat.$blue-palette),
+));
+
+@include sidenav.theme($theme);
+`;
+    return compileString(entry, { loadPaths: LOAD_PATHS, style: 'expanded' }).css;
+  }
+
+  it('broadcasts the layout tokens to host + descendants (inherits:false header/footer/backdrop)', () => {
+    const css = compiledTheme();
+    const broadcast = css.match(
+      /:where\(cngx-sidenav-layout, cngx-sidenav-layout \*\)\s*\{[^}]*\}/,
+    );
+    expect(broadcast).not.toBeNull();
+    expect(broadcast![0]).toContain('--cngx-sidenav-header-bg:');
+    expect(broadcast![0]).toContain('--cngx-sidenav-footer-bg:');
+    expect(broadcast![0]).toContain('--cngx-sidenav-backdrop-bg:');
+  });
+
+  it('emits the nav-link tokens on the .cngx-nav-link host class, not nested under the layout', () => {
+    const css = compiledTheme();
+    const navLink = css.match(/:where\(\.cngx-nav-link\)\s*\{[^}]*\}/);
+    expect(navLink).not.toBeNull();
+    // the inherits:false trio that the former layout nesting killed
+    expect(navLink![0]).toContain('--cngx-nav-link-radius:');
+    expect(navLink![0]).toContain('--cngx-nav-link-font-size:');
+    expect(navLink![0]).toContain('--cngx-nav-link-active-font-weight:');
+    // no nav-link token may remain in a layout-scoped block
+    const layoutBlocks = css.match(/:where\(cngx-sidenav-layout[^)]*\)\s*\{[^}]*\}/g) ?? [];
+    for (const block of layoutBlocks) {
+      expect(block).not.toContain('--cngx-nav-link-');
     }
   });
 });

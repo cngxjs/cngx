@@ -75,11 +75,6 @@
   --cngx-alert-title-weight: 600;
   --cngx-alert-title-gap: 4px;
   --cngx-alert-actions-gap: 8px;
-  --cngx-alert-dismiss-padding: 4px;
-  --cngx-alert-dismiss-opacity: 0.5;
-  --cngx-alert-dismiss-hover-opacity: 1;
-  --cngx-alert-dismiss-radius: 4px;
-  --cngx-alert-dismiss-icon-size: 16px;
 
   // Severity defaults (standalone, non-Material)
   --cngx-alert-bg: #f8fafc;
@@ -143,15 +138,9 @@
   --cngx-toast-font-size: 0.875rem;
   --cngx-toast-line-height: 1.5;
   --cngx-toast-count-opacity: 0.6;
-  --cngx-toast-count-gap: 4px;
   --cngx-toast-action-padding: 4px 0;
   --cngx-toast-action-weight: 600;
   --cngx-toast-action-size: 0.8125rem;
-  --cngx-toast-dismiss-padding: 4px;
-  --cngx-toast-dismiss-opacity: 0.5;
-  --cngx-toast-dismiss-hover-opacity: 1;
-  --cngx-toast-dismiss-radius: 4px;
-  --cngx-toast-dismiss-icon-size: 16px;
 
   // Severity accent defaults
   --cngx-toast-info-accent: #3b82f6;
@@ -216,7 +205,6 @@
   --cngx-banner-action-padding: 6px 12px;
   --cngx-banner-action-font-size: 0.875rem;
   --cngx-banner-action-font-weight: 600;
-  --cngx-banner-action-min-size: 44px;
   --cngx-banner-pending-opacity: 0.85;
 
   // Severity defaults (standalone, non-Material)
@@ -272,8 +260,9 @@
   }
 }
 
-// Shared density presets for all dismiss/close buttons across
-// alert, toast, and popover. Three levels:
+// Shared density presets for the CngxCloseButton atom that alert,
+// toast, and popover compose for their dismiss affordance. Three
+// levels:
 //
 //   default (0)  - 32px touch target, 16px icon
 //   compact (-1) - 28px touch target, 14px icon
@@ -303,20 +292,11 @@
 
   $preset: map-get($sizes, $level);
 
-  // Alert dismiss
-  :where(.cngx-alert) {
-    --cngx-alert-dismiss-padding: #{map-get($preset, padding)};
-    --cngx-alert-dismiss-icon-size: #{map-get($preset, icon)};
-  }
-
-  // Toast dismiss
-  :where(.cngx-toast-outlet) {
-    --cngx-toast-dismiss-padding: #{map-get($preset, padding)};
-    --cngx-toast-dismiss-icon-size: #{map-get($preset, icon)};
-  }
-
-  // Close button atom (once CngxCloseButton exists)
-  :where(.cngx-close-button) {
+  // Host + descendants broadcast: size and icon-size are registered
+  // inherits:false in close-button.css and are read on the __btn /
+  // __icon descendants - a host-only set resolves to the initial-value
+  // there.
+  :where(.cngx-close-button, .cngx-close-button *) {
     --cngx-close-button-size: #{map-get($preset, target)};
     --cngx-close-button-icon-size: #{map-get($preset, icon)};
     --cngx-close-button-padding: #{map-get($preset, padding)};
@@ -325,37 +305,44 @@
 
 @mixin theme($theme) {
   @layer cngx.components {
-    :where(.cngx-loading-indicator) {
+    // Every family block broadcasts to host + descendants (select-theme
+    // precedent): each surface carries tokens registered inherits:false
+    // that are read on inner elements (spinner/bar track, overlay
+    // backdrop, progress track/label/circle, alert icon/title, toast
+    // rows and their icon/message/action children, stack rows, banner
+    // rows/actions) - a host-only set resolves to the initial-value at
+    // those read sites.
+    :where(.cngx-loading-indicator, .cngx-loading-indicator *) {
       @include loading-indicator-base();
       @include loading-indicator-color($theme);
     }
 
-    :where(.cngx-loading-overlay) {
+    :where(.cngx-loading-overlay, .cngx-loading-overlay *) {
       @include loading-overlay-base();
       @include loading-overlay-color($theme);
     }
 
-    :where(.cngx-progress) {
+    :where(.cngx-progress, .cngx-progress *) {
       @include progress-base();
       @include progress-color($theme);
     }
 
-    :where(.cngx-alert) {
+    :where(.cngx-alert, .cngx-alert *) {
       @include alert-base();
       @include alert-color($theme);
     }
 
-    :where(.cngx-toast-outlet) {
+    :where(.cngx-toast-outlet, .cngx-toast-outlet *) {
       @include toast-base();
       @include toast-color($theme);
     }
 
-    :where(.cngx-alert-stack) {
+    :where(.cngx-alert-stack, .cngx-alert-stack *) {
       @include alert-stack-base();
       @include alert-stack-color($theme);
     }
 
-    :where(.cngx-banner-outlet) {
+    :where(.cngx-banner-outlet, .cngx-banner-outlet *) {
       @include banner-base();
       @include banner-color($theme);
     }

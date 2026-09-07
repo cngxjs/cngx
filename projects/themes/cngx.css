@@ -70,8 +70,9 @@
  *
  * - `@cngx/themes/example-brand.css` - reference consumer theme
  *   showing every override slot
- * - `@cngx/themes/material/theme.css` - opt-in Material bridge for
- *   the `mat-*` entries
+ * - `@cngx/themes/material/theme` - opt-in Material bridge for the
+ *   `mat-*` entries (Sass only: `@use '@cngx/themes/material/theme'`
+ *   plus `@include theme($theme)`; no compiled .css is shipped)
  */
 
 @import '../core/theming/layers.css';
@@ -80,6 +81,13 @@
 @import '../core/theming/text-scale-tokens.css';
 @import '../core/theming/motion-tokens.css';
 @import '../core/theming/contrast-tokens.css';
+/* Per-lib domain system tokens. Empty placeholders today, imported
+   eagerly so a future @property added there cannot go dead-until-
+   imported silently. */
+@import '../common/theming/system-tokens.css';
+@import '../forms/theming/system-tokens.css';
+@import '../ui/theming/system-tokens.css';
+@import '../data-display/theming/system-tokens.css';
 @import '../core/theming/forced-colors.css';
 @import '../core/theming/reset.css';
 @import '../core/theming/base.css';

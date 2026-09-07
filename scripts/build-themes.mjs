@@ -12,7 +12,8 @@
  *
  * Relative @imports inside cngx.css (../core/theming/X.css, etc.) resolve
  * via npm's flat node_modules layout once @cngx/themes is installed
- * alongside @cngx/core, @cngx/common, @cngx/forms, @cngx/ui peers.
+ * alongside @cngx/core, @cngx/common, @cngx/forms, @cngx/ui,
+ * @cngx/data-display peers.
  *
  * package.json keeps the 0.0.0-PLACEHOLDER token; publish.mjs swaps in
  * the real version before `npm publish`.

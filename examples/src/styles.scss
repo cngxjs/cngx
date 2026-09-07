@@ -1442,15 +1442,16 @@ button.chip:disabled {
 // CSS-var overrides on `.demo-sidenav__container` opt the cngx atom out
 // of its default active styling so the demo's inline `[style.border-
 // left-color]` / `[style.background]` interpolations drive the look.
+// Only the two inheriting tokens work from an ancestor - radius and
+// active-font-weight are registered inherits:false and would need an
+// element-level set on `.cngx-nav-link` to land.
 .demo-sidenav__container {
   height: 420px;
   margin-top: 0.75rem;
   border: 1px solid var(--cngx-color-border);
   border-radius: 6px;
-  --cngx-nav-link-radius: 0;
   --cngx-nav-link-active-bg: transparent;
   --cngx-nav-link-active-color: inherit;
-  --cngx-nav-link-active-font-weight: inherit;
 }
 .demo-sidenav__container--short {
   height: 320px;

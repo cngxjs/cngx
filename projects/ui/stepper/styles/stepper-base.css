@@ -138,7 +138,11 @@
    */
   @property --cngx-step-indicator-size {
     syntax: '*';
-    inherits: false;
+    /* inherits so the disc width/height AND the connector geometry that
+       skins derive on .cngx-stepper__step pseudo-elements read the same
+       host-configured diameter; inherits:false left the pseudos on the
+       initial-value (same class as --cngx-sidenav-width). */
+    inherits: true;
     initial-value: 1.75rem;
   }
 

@@ -118,3 +118,39 @@ describe('copy-block Material bridge', () => {
     }
   });
 });
+
+describe('ripple Material bridge', () => {
+  // every name is consumed by cngx-ripple.css on the __wave child
+  const CONSUMED = ['--cngx-ripple-color', '--cngx-ripple-duration', '--cngx-ripple-opacity'];
+
+  it('emits only consumed token names (M3)', () => {
+    expect(emittedTokenNames('ripple-theme', 'v1')).toEqual(CONSUMED);
+  });
+
+  it('emits a consumed-name subset (M2)', () => {
+    const names = emittedTokenNames('ripple-theme', 'v0');
+    expect(names.length).toBeGreaterThan(0);
+    for (const name of names) {
+      expect(CONSUMED).toContain(name);
+    }
+  });
+
+  it('layers the bridge and broadcasts to host + descendants', () => {
+    const entry = `
+@use '@angular/material' as mat;
+@use 'material/ripple-theme' as bridge;
+
+$theme: mat.define-theme((
+  color: (theme-type: light, primary: mat.$azure-palette, tertiary: mat.$blue-palette),
+));
+
+@include bridge.theme($theme);
+`;
+    const css = compileString(entry, { loadPaths: LOAD_PATHS }).css;
+    // formerly the only unlayered bridge besides filter-builder - an
+    // unlayered rule would beat any layered consumer override
+    expect(css).toMatch(/@layer cngx\.components\s*\{/);
+    // opacity/duration are inherits:false, read on the __wave child
+    expect(css).toMatch(/:where\(\[cngxRipple\], \[cngxRipple\] \*\)\s*\{/);
+  });
+});
