@@ -14,6 +14,7 @@ import {
 import {
   CngxDotStepperDot,
   type CngxDotStepperDotContext,
+  CngxStepperEmpty,
   CngxStepperPresenter,
   CngxStepperSwipeNav,
   CNGX_STEPPER_HOST,
@@ -84,7 +85,9 @@ import { CngxStepperErrorLine } from './stepper-error-line.component';
   host: {
     class: 'cngx-dot-stepper',
     role: 'group',
-    tabindex: '0',
+    // Not tab-reachable while step-less: an empty focus stop that only
+    // announces the accname over no content is noise, not navigation.
+    '[attr.tabindex]': "stepNodes().length === 0 ? null : '0'",
     '[attr.aria-roledescription]': 'i18n.stepIndicatorRoleDescription',
     '[attr.aria-label]': 'resolvedAriaLabel()',
     '[attr.aria-labelledby]': 'ariaLabelledBy()',
@@ -138,6 +141,17 @@ export class CngxDotStepper {
   );
 
   private readonly dotSlot = contentChild(CngxDotStepperDot);
+  private readonly emptySlot = contentChild(CngxStepperEmpty);
+
+  /**
+   * Empty-state cascade mirroring `<cngx-stepper>`: per-instance
+   * `*cngxStepperEmpty` > `CNGX_STEPPER_CONFIG.templates.empty` > `null`.
+   * Gates the dot row so a step-less flow shows the placeholder
+   * instead of an empty group.
+   */
+  protected readonly resolvedEmptyTemplate = computed<TemplateRef<void> | null>(
+    () => this.emptySlot()?.templateRef ?? this.config.templates?.empty ?? null,
+  );
 
   /**
    * Resolved dot-body template cascade: per-instance `*cngxDotStepperDot`

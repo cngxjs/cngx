@@ -8,6 +8,7 @@ import {
   CngxDotStepperDot,
   type CngxDotStepperDotContext,
   CngxStep,
+  CngxStepperEmpty,
   provideStepperConfig,
   withDotStepperDotTemplate,
   withStepperAriaLabels,
@@ -342,6 +343,49 @@ describe('CngxDotStepper', () => {
       fixture.detectChanges();
       expect(region.getAttribute('data-state')).toBe('error');
       expect(region.textContent).toContain('Card declined');
+    });
+  });
+
+  describe('zero-step guard', () => {
+    it('renders no dot row and removes the host from the tab order without steps', () => {
+      @Component({
+        standalone: true,
+        imports: [CngxDotStepper],
+        template: `<cngx-dot-stepper></cngx-dot-stepper>`,
+      })
+      class EmptyHost {}
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(EmptyHost);
+      fixture.detectChanges();
+      const host = fixture.nativeElement.querySelector('cngx-dot-stepper') as HTMLElement;
+      expect(fixture.nativeElement.querySelector('.cngx-dot-stepper__row')).toBeNull();
+      expect(host.hasAttribute('tabindex')).toBe(false);
+    });
+
+    it('renders the projected *cngxStepperEmpty template when there are no steps', () => {
+      @Component({
+        standalone: true,
+        imports: [CngxDotStepper, CngxStepperEmpty],
+        template: `
+          <cngx-dot-stepper>
+            <ng-template cngxStepperEmpty><p class="empty-note">No steps yet</p></ng-template>
+          </cngx-dot-stepper>
+        `,
+      })
+      class EmptySlotHost {}
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(EmptySlotHost);
+      fixture.detectChanges();
+      const note = fixture.nativeElement.querySelector('.empty-note') as HTMLElement;
+      expect(note.textContent).toBe('No steps yet');
+    });
+
+    it('keeps the host tab-reachable once steps exist', () => {
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(Host);
+      fixture.detectChanges();
+      const host = fixture.nativeElement.querySelector('cngx-dot-stepper') as HTMLElement;
+      expect(host.getAttribute('tabindex')).toBe('0');
     });
   });
 
