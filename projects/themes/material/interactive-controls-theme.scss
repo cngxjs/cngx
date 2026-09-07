@@ -22,16 +22,22 @@
     --cngx-radio-indicator-color: var(--mat-sys-outline);
     --cngx-radio-indicator-checked-color: var(--mat-sys-primary);
 
-    // Toggle (switch). One thumb token serves both states - on-primary
-    // keeps contrast on the checked primary track.
+    // Toggle (switch). Resting thumb stays outline for contrast on the
+    // surface-variant track; the checked state flips it below.
     --cngx-toggle-track-bg-off: var(--mat-sys-surface-variant);
     --cngx-toggle-track-bg-on: var(--mat-sys-primary);
-    --cngx-toggle-thumb-bg: var(--mat-sys-on-primary);
+    --cngx-toggle-thumb-bg: var(--mat-sys-outline);
   } @else {
     --cngx-checkbox-border: 1.5px solid #{mat.get-theme-color($theme, foreground, divider)};
     --cngx-checkbox-checked-bg: #{mat.get-theme-color($theme, primary)};
     --cngx-radio-indicator-checked-color: #{mat.get-theme-color($theme, primary)};
     --cngx-toggle-track-bg-on: #{mat.get-theme-color($theme, primary)};
+  }
+}
+
+@mixin _checked-thumb($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-toggle-thumb-bg: var(--mat-sys-on-primary);
   }
 }
 
@@ -59,6 +65,12 @@
         .cngx-radio-indicator *
       ) {
       @include color($theme);
+    }
+    // One thumb token cannot satisfy contrast on both tracks - the
+    // checked state re-scopes it to on-primary (broadcast again: the
+    // token is inherits:false and read on the __thumb descendant).
+    :where(.cngx-toggle--checked, .cngx-toggle--checked *) {
+      @include _checked-thumb($theme);
     }
   }
 }

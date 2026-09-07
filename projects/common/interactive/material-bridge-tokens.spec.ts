@@ -66,6 +66,26 @@ describe('interactive-controls Material bridge', () => {
     expect(emittedTokenNames('interactive-controls-theme', 'v1')).toEqual(CONSUMED);
   });
 
+  it('state-scopes the checked thumb to on-primary (M3)', () => {
+    const entry = `
+@use '@angular/material' as mat;
+@use 'material/interactive-controls-theme' as bridge;
+
+$theme: mat.define-theme((
+  color: (theme-type: light, primary: mat.$azure-palette, tertiary: mat.$blue-palette),
+));
+
+@include bridge.theme($theme);
+`;
+    const css = compileString(entry, { loadPaths: LOAD_PATHS }).css;
+    const checkedBlock = css.match(
+      /:where\(\.cngx-toggle--checked[^{]*\{[^}]*\}/,
+    )?.[0];
+    expect(checkedBlock).toContain('--cngx-toggle-thumb-bg: var(--mat-sys-on-primary)');
+    // the resting broadcast keeps the outline thumb
+    expect(css).toContain('--cngx-toggle-thumb-bg: var(--mat-sys-outline)');
+  });
+
   it('emits a consumed-name subset (M2)', () => {
     const names = emittedTokenNames('interactive-controls-theme', 'v0');
     expect(names.length).toBeGreaterThan(0);
