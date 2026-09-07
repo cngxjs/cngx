@@ -9,10 +9,10 @@ import { CNGX_STEPPER_GLYPHS } from '@cngx/common/stepper';
 
 /**
  * Shared aggregate error line for the stepper variants and the parent
- * organism's mobile-collapse branches. One source for the
- * `role="status"` glyph + text markup that was previously duplicated
- * per variant; each call site keeps its own BEM block via `[block]`
- * because the shipped CSS keys off the per-variant class names.
+ * organism's mobile-collapse branches - the single source of the
+ * `role="status"` glyph + text markup. Each call site keeps its own
+ * BEM block via `[block]` because the shipped CSS keys off the
+ * per-variant class names.
  *
  * Always mounted: a live region inserted together with its content is
  * not reliably announced, so call sites bind `[text]` (empty when no

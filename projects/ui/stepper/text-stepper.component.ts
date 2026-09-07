@@ -25,13 +25,15 @@ import {
 import { CngxStepperErrorLine } from './stepper-error-line.component';
 
 /**
- * Text stepper variant. Smallest possible stepper: a single
- * `<span aria-live="polite">` driven by the presenter. Renders
- * `Step N of M` by default (sourced from
+ * Text stepper variant. Smallest possible stepper: an always-mounted
+ * `<span aria-live="polite">` driven by the presenter (empty while no
+ * step is projected, so a live load never announces `Step 0 of 0`).
+ * Renders `Step N of M` by default (sourced from
  * `CngxStepperI18n.textStepperFormat`); optional `[showCurrentLabel]`
- * appends the active step's label next to the count. Material consumers
- * inherit surrounding text styling via CSS inheritance, no theme bridge
- * required.
+ * appends the active step's label next to the count. A step-less flow
+ * renders the `CNGX_STEPPER_CONFIG` empty-template cascade instead.
+ * Material consumers inherit surrounding text styling via CSS
+ * inheritance, no theme bridge required.
  *
  * @category ui/stepper
  * @docsKind primary
@@ -39,6 +41,7 @@ import { CngxStepperErrorLine } from './stepper-error-line.component';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/stepper/text-stepper.component.ts
  * @since 0.1.0
  * @relatedTo CngxStepperPresenter, CngxProgressBarStepper, CngxDotStepper
+ * @slot cngxStepperEmpty Renders when no step is projected at all.
  * <example-url>http://localhost:4200/#/ui/stepper/text-stepper/inline-progress</example-url>
  */
 @Component({
@@ -75,8 +78,8 @@ export class CngxTextStepper {
   /**
    * Empty-state cascade mirroring `<cngx-stepper>`: per-instance
    * `*cngxStepperEmpty` > `CNGX_STEPPER_CONFIG.templates.empty` > `null`.
-   * Gates the count line - without it a step-less flow announced
-   * `Step 0 of 0` via the polite live region.
+   * Rendered next to the (empty) live span so a step-less flow shows
+   * the placeholder instead of a bare `Step 0 of 0` count.
    */
   protected readonly resolvedEmptyTemplate = computed<TemplateRef<void> | null>(
     () => this.emptySlot()?.templateRef ?? this.config.templates?.empty ?? null,

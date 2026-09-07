@@ -36,7 +36,10 @@ import { CngxStepperErrorLine } from './stepper-error-line.component';
  * `completedPercent()` is `computed` from `presenter.activeStepIndex()`
  * and the count of step nodes in `presenter.flatSteps()`. Optional
  * `[showStepCount]` adds a `Step N of M` caption sourced from
- * `CngxStepperI18n.textStepperFormat`.
+ * `CngxStepperI18n.textStepperFormat`. Accname and
+ * `aria-roledescription` resolve through the same config + i18n
+ * cascades as `<cngx-stepper>`; a step-less flow renders the
+ * `CNGX_STEPPER_CONFIG` empty-template cascade instead of the bar.
  *
  * @category ui/stepper
  * @docsKind primary
@@ -44,6 +47,7 @@ import { CngxStepperErrorLine } from './stepper-error-line.component';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/stepper/progress-bar-stepper.component.ts
  * @since 0.1.0
  * @relatedTo CngxStepperPresenter, CngxProgress, CngxDotStepper, CngxTextStepper
+ * @slot cngxStepperEmpty Renders when no step is projected at all.
  * @playground Material theme coverage across variants ./examples/material-theme-coverage/variants-coverage.component.ts
  * <example-url>http://localhost:4200/#/ui/stepper/progress-bar/onboarding-flow</example-url>
  */
@@ -92,7 +96,7 @@ export class CngxProgressBarStepper {
     i18n: this.i18n,
   });
 
-  /** Landmark role-description with config + i18n cascade (was a hardcoded literal). */
+  /** Landmark role-description with config + i18n cascade, mirroring `<cngx-stepper>`. */
   protected readonly stepperRoleDescription = computed<string>(
     () => this.config.fallbackLabels?.stepRoleDescription ?? this.i18n.stepperLabel,
   );
@@ -102,8 +106,8 @@ export class CngxProgressBarStepper {
   /**
    * Empty-state cascade mirroring `<cngx-stepper>`: per-instance
    * `*cngxStepperEmpty` > `CNGX_STEPPER_CONFIG.templates.empty` > `null`.
-   * Gates the whole bar - without it a step-less flow rendered a full
-   * bar captioned `Step 0 of 0`.
+   * Gates the whole bar so a step-less flow shows the placeholder
+   * instead of a full bar captioned `Step 0 of 0`.
    */
   protected readonly resolvedEmptyTemplate = computed<TemplateRef<void> | null>(
     () => this.emptySlot()?.templateRef ?? this.config.templates?.empty ?? null,
