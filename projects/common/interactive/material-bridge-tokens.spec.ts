@@ -74,3 +74,27 @@ describe('interactive-controls Material bridge', () => {
     }
   });
 });
+
+describe('copy-block Material bridge', () => {
+  // every name is consumed by copy-block.css on the __button element
+  const CONSUMED = [
+    '--cngx-copy-block-btn-bg',
+    '--cngx-copy-block-btn-border',
+    '--cngx-copy-block-btn-color',
+    '--cngx-copy-block-btn-copied-bg',
+    '--cngx-copy-block-btn-copied-border',
+    '--cngx-copy-block-btn-copied-color',
+  ];
+
+  it('emits only consumed token names (M3)', () => {
+    expect(emittedTokenNames('copy-block-theme', 'v1')).toEqual(CONSUMED);
+  });
+
+  it('emits a consumed-name subset (M2)', () => {
+    const names = emittedTokenNames('copy-block-theme', 'v0');
+    expect(names.length).toBeGreaterThan(0);
+    for (const name of names) {
+      expect(CONSUMED).toContain(name);
+    }
+  });
+});
