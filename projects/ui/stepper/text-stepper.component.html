@@ -1,11 +1,19 @@
+<!--
+  Count span and error line stay mounted in every state: a live region
+  inserted together with its content is not reliably announced, so
+  zero-step / no-error states empty the text instead of removing the
+  element. Both are clipped out of flow while empty.
+-->
+<span
+  class="cngx-text-stepper__text"
+  aria-live="polite"
+  [attr.data-empty]="stepText() ? null : ''"
+  >{{ stepText() }}</span
+>
 @if (totalSteps() === 0) {
   @let emptyTpl = resolvedEmptyTemplate();
   @if (emptyTpl) {
     <ng-container *ngTemplateOutlet="emptyTpl"></ng-container>
   }
-} @else {
-  <span class="cngx-text-stepper__text" aria-live="polite">{{ stepText() }}</span>
-  @if (stateView.hasAnyError()) {
-    <span cngxStepperErrorLine block="cngx-text-stepper__error" [text]="errorText()"></span>
-  }
 }
+<span cngxStepperErrorLine block="cngx-text-stepper__error" [text]="errorText()"></span>

@@ -327,12 +327,21 @@ describe('CngxDotStepper', () => {
       expect(line.textContent?.trim()).toBe('Card declined');
     });
 
-    it('hides the error line when no step errors', () => {
+    it('keeps the status region mounted but empty when no step errors (live-region contract)', () => {
       TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
       const fixture = TestBed.createComponent(ErrHost);
       fixture.componentInstance.err.set(false);
       fixture.detectChanges();
-      expect(fixture.nativeElement.querySelector('.cngx-dot-stepper__error')).toBeNull();
+      const region = fixture.nativeElement.querySelector('.cngx-dot-stepper__error') as HTMLElement;
+      expect(region).not.toBeNull();
+      expect(region.getAttribute('role')).toBe('status');
+      expect(region.hasAttribute('data-state')).toBe(false);
+      expect(region.textContent?.trim()).toBe('');
+      // Content flows into the pre-existing region - never mounted together with it.
+      fixture.componentInstance.err.set('Card declined');
+      fixture.detectChanges();
+      expect(region.getAttribute('data-state')).toBe('error');
+      expect(region.textContent).toContain('Card declined');
     });
   });
 

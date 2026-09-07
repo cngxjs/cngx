@@ -5,9 +5,7 @@
   }
 } @else if (displayMode() === 'text') {
   <cngx-stepper-count class="cngx-stepper__mobile-text" [live]="false" />
-  @if (stateView.hasAnyError()) {
-    <span cngxStepperErrorLine block="cngx-stepper__mobile-error" [text]="mobileErrorSummary()"></span>
-  }
+  <span cngxStepperErrorLine block="cngx-stepper__mobile-error" [text]="mobileErrorSummary()"></span>
 
   <div
     class="cngx-stepper__panels"
@@ -84,9 +82,7 @@
       }
     }
   </div>
-  @if (stateView.hasAnyError()) {
-    <span cngxStepperErrorLine block="cngx-stepper__mobile-error" [text]="mobileErrorSummary()"></span>
-  }
+  <span cngxStepperErrorLine block="cngx-stepper__mobile-error" [text]="mobileErrorSummary()"></span>
   @if (showStepCount()) {
     <cngx-stepper-count class="cngx-stepper__mobile-text cngx-stepper__mobile-text--caption" [live]="false" />
   }

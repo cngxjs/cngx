@@ -101,7 +101,13 @@ export class CngxTextStepper {
   });
 
   protected readonly stepText = computed<string>(() => {
-    const base = this.i18n.textStepperFormat(this.currentStep(), this.totalSteps());
+    const total = this.totalSteps();
+    // Empty at zero steps: the always-mounted live span must not
+    // announce a nonsensical 'Step 0 of 0'.
+    if (total === 0) {
+      return '';
+    }
+    const base = this.i18n.textStepperFormat(this.currentStep(), total);
     if (!this.showCurrentLabel()) {
       return base;
     }

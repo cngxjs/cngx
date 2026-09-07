@@ -94,7 +94,7 @@ describe('CngxTextStepper', () => {
     expect(text.textContent?.trim()).toBe('Schritt 1/3');
   });
 
-  it('renders no count line at all when there are no projected steps (no "Step 0 of 0")', () => {
+  it('keeps the live span mounted but empty when there are no projected steps (no "Step 0 of 0")', () => {
     @Component({
       standalone: true,
       imports: [CngxTextStepper],
@@ -104,7 +104,11 @@ describe('CngxTextStepper', () => {
     TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
     const fixture = TestBed.createComponent(EmptyHost);
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('.cngx-text-stepper__text')).toBeNull();
+    const text = fixture.nativeElement.querySelector('.cngx-text-stepper__text') as HTMLElement;
+    expect(text).not.toBeNull();
+    expect(text.textContent?.trim()).toBe('');
+    expect(text.hasAttribute('data-empty')).toBe(true);
+    expect(text.getAttribute('aria-live')).toBe('polite');
   });
 
   it('renders the projected *cngxStepperEmpty template when there are no steps', () => {
@@ -123,7 +127,34 @@ describe('CngxTextStepper', () => {
     fixture.detectChanges();
     const note = fixture.nativeElement.querySelector('.empty-note') as HTMLElement;
     expect(note.textContent).toBe('No steps yet');
-    expect(fixture.nativeElement.querySelector('.cngx-text-stepper__text')).toBeNull();
+    const text = fixture.nativeElement.querySelector('.cngx-text-stepper__text') as HTMLElement;
+    expect(text.textContent?.trim()).toBe('');
+  });
+
+  it('error status region pre-exists its content and clears data-empty semantics on populate', () => {
+    @Component({
+      standalone: true,
+      imports: [CngxTextStepper, CngxStep],
+      template: `
+        <cngx-text-stepper>
+          <div cngxStep label="Payment" [error]="err()"></div>
+        </cngx-text-stepper>
+      `,
+    })
+    class ToggleErrHost {
+      err = signal<string | boolean>(false);
+    }
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const fixture = TestBed.createComponent(ToggleErrHost);
+    fixture.detectChanges();
+    const region = fixture.nativeElement.querySelector('.cngx-text-stepper__error') as HTMLElement;
+    expect(region).not.toBeNull();
+    expect(region.getAttribute('role')).toBe('status');
+    expect(region.textContent?.trim()).toBe('');
+    fixture.componentInstance.err.set('Card declined');
+    fixture.detectChanges();
+    expect(region.textContent).toContain('Card declined');
+    expect(region.getAttribute('data-state')).toBe('error');
   });
 
   it('folds a direct [error] string into the aggregate error line', () => {
