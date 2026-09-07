@@ -27,8 +27,14 @@
 }
 
 @mixin theme($theme) {
-  :where([cngxRipple]) {
-    @include base();
-    @include color($theme);
+  @layer cngx.components {
+    // Host + descendants broadcast (select-theme precedent): opacity and
+    // duration are registered inherits:false and are read on the
+    // .cngx-ripple__wave child - a host-only set resolves to the
+    // initial-value there.
+    :where([cngxRipple], [cngxRipple] *) {
+      @include base();
+      @include color($theme);
+    }
   }
 }
