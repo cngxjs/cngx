@@ -52,6 +52,7 @@ import {
   createStepperAccname,
   createStepperAnnouncementBuilders,
   createStepperHostAttrs,
+  createStepperPanelRefs,
   createStepperSlotContextBuilders,
   createStepperStateView,
   createStepperStripKeyboardNav,
@@ -480,61 +481,9 @@ export class CngxStepper implements CngxStepPanelHost {
     () => this.presenter.commitState.status() === 'pending',
   );
 
-  protected stepHeaderId(node: CngxStepNode): string {
-    return `${node.id}-header`;
-  }
+  protected stepHeaderId = (node: CngxStepNode): string => `${node.id}-header`;
+  protected stepPanelId = (node: CngxStepNode): string => `${node.id}-panel`;
 
-  protected stepPanelId(node: CngxStepNode): string {
-    return `${node.id}-panel`;
-  }
-
-  /**
-   * Ids of nodes whose strip header is currently rendered. Under
-   * `groupCollapse: 'expand-active'` collapsed groups contribute only
-   * their header node, so their steps have no header element - a panel
-   * must not reference one then (dangling IDREF names the region as
-   * empty).
-   */
-  private readonly renderedHeaderIds = computed<ReadonlySet<string>>(
-    () => new Set(this.visibleStripNodes().map((node) => node.id)),
-    { equal: (a, b) => a.size === b.size && [...a].every((id) => b.has(id)) },
-  );
-
-  /**
-   * Per-mode panel naming. The dots branch always renders one dot per
-   * step; the classic strip only renders headers the group-collapse
-   * policy exposes; the text branch has no header element at all.
-   * Whenever no header id is emitted, {@link panelAriaLabel} names the
-   * region directly instead.
-   */
-  protected panelLabelledBy(node: CngxStepNode): string | null {
-    const mode = this.displayMode();
-    if (mode === 'text') {
-      return null;
-    }
-    if (mode === 'dots') {
-      return this.stepHeaderId(node);
-    }
-    return this.renderedHeaderIds().has(node.id) ? this.stepHeaderId(node) : null;
-  }
-
-  /** Self-naming fallback for panels without a rendered header. */
-  protected panelAriaLabel(node: CngxStepNode): string | null {
-    return this.panelLabelledBy(node) ? null : node.label();
-  }
-
-  /**
-   * Gated describedby: the classic descriptor spans live inside the
-   * strip headers, so a header-less step must not emit the reference;
-   * the collapsed branches mount the descriptor inside the panel and
-   * keep the announcement-level gate only.
-   */
-  protected panelDescribedBy(node: CngxStepNode): string | null {
-    if (this.displayMode() === 'classic' && !this.renderedHeaderIds().has(node.id)) {
-      return null;
-    }
-    return this.announcement.describedBy(node);
-  }
 
   /**
    * Live-region + per-step + group SR phrase builders (Level-2 factory);
@@ -545,6 +494,17 @@ export class CngxStepper implements CngxStepPanelHost {
     presenter: this.presenter,
     stepsOnly: this.stepsOnly,
     i18n: this.i18n,
+  });
+
+  /**
+   * Mode-aware panel naming (Level-2 factory): header-less panels
+   * self-name and drop the describedby ref instead of dangling.
+   */
+  protected readonly panelRefs = createStepperPanelRefs({
+    displayMode: this.displayMode,
+    visibleStripNodes: this.visibleStripNodes,
+    headerIdFor: (node) => this.stepHeaderId(node),
+    describedByFor: (node) => this.announcement.describedBy(node),
   });
 
   protected handleHeaderClick(node: CngxStepNode): void {

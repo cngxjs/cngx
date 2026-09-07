@@ -202,8 +202,11 @@ export {
 
 export {
   createStepperAnnouncementBuilders,
+  createStepperPanelRefs,
   type CngxStepperAnnouncementBuilders,
   type CngxStepperAnnouncementBuildersInputs,
+  type CngxStepperPanelRefs,
+  type CngxStepperPanelRefsInputs,
 } from './announcement-builders';
 
 export { CngxStepperSwipeNav } from './swipe-nav.directive';

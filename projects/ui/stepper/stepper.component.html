@@ -211,9 +211,9 @@
         class="cngx-stepper__panel"
         role="region"
         [id]="stepPanelId(node)"
-        [attr.aria-labelledby]="panelLabelledBy(node)"
-        [attr.aria-label]="panelAriaLabel(node)"
-        [attr.aria-describedby]="panelDescribedBy(node)"
+        [attr.aria-labelledby]="panelRefs.labelledBy(node)"
+        [attr.aria-label]="panelRefs.ariaLabel(node)"
+        [attr.aria-describedby]="panelRefs.describedBy(node)"
         [hidden]="!slotContext.isActive(node)"
       >
         @if (displayMode() !== 'classic') {
