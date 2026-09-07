@@ -247,7 +247,14 @@
 
 @mixin theme($theme) {
   @layer cngx.components {
-    :where(cngx-stepper) {
+    // Host + descendants broadcast (select-theme precedent): the
+    // typography tokens (indicator / badge / rejection-icon fonts), the
+    // badge and rejection color tokens, and the density indicator size
+    // are registered inherits:false and are read on inner elements
+    // (.cngx-stepper__indicator / __badge / __rejection-icon /
+    // __step--rejected) - a host-only set resolves to the initial-value
+    // there.
+    :where(cngx-stepper, cngx-stepper *) {
       @include color($theme);
       @include typography($theme);
       @include density($theme);

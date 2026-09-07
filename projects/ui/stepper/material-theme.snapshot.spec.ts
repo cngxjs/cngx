@@ -217,4 +217,35 @@ describe('Material stepper-theme mixin baseline', () => {
       });
     }
   });
+
+  describe('placement', () => {
+    // The typography / badge / rejection tokens are registered
+    // inherits:false and read on inner elements; theme() must broadcast
+    // to host + descendants (select-theme precedent) or the bridge
+    // values resolve to the initial-value at the read sites.
+    it('theme() broadcasts the stepper block to host + descendants', () => {
+      const css = compileString(
+        `
+@use '@angular/material' as mat;
+@use 'material/stepper-theme' as stepper;
+
+$theme: mat.define-theme((
+  color: (
+    theme-type: light,
+    primary: mat.$violet-palette,
+    tertiary: mat.$cyan-palette,
+  ),
+));
+
+@include stepper.theme($theme);
+`,
+        { loadPaths: LOAD_PATHS, style: 'expanded', quietDeps: true },
+      ).css;
+      const broadcast = css.match(/:where\(cngx-stepper, cngx-stepper \*\)\s*\{[^}]*\}/);
+      expect(broadcast).not.toBeNull();
+      expect(broadcast![0]).toContain('--cngx-step-indicator-font-size:');
+      expect(broadcast![0]).toContain('--cngx-step-error-badge-color:');
+      expect(broadcast![0]).toContain('--cngx-step-rejection-icon-bg:');
+    });
+  });
 });

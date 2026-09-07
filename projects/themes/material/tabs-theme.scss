@@ -49,14 +49,15 @@
     --cngx-tab-busy-spinner-color: var(--mat-sys-primary);
 
     // Error badge + rejection disc paint the error role; the glyph paints
-    // on-error. The two background knobs are `inherits: true` (tabs-base)
-    // so a host-set value reaches the descendant badge / disc.
+    // on-error. These four knobs are `inherits: true` (tabs-base /
+    // tab-group) so a host-set value reaches the descendant badge / disc.
+    // `--cngx-tab-rejected-bg` is NOT among them - it is registered
+    // inherits:false and read on the rejected tab element, so it lives in
+    // `_rejected()` below.
     --cngx-tab-error-badge-color: var(--mat-sys-error);
     --cngx-tab-error-badge-text-color: var(--mat-sys-on-error);
     --cngx-tab-rejection-icon-color: var(--mat-sys-error);
     --cngx-tab-rejection-icon-text: var(--mat-sys-on-error);
-    // Soft error-tinted wash behind the rejected tab, on the error role.
-    --cngx-tab-rejected-bg: color-mix(in oklab, var(--mat-sys-error) 12%, transparent);
   } @else {
     --cngx-color-primary: #{mat.get-theme-color($theme, primary)};
     --cngx-color-surface: #{mat.get-theme-color($theme, background, card)};
@@ -69,11 +70,28 @@
     --cngx-tab-error-badge-text-color: oklch(1 0 0);
     --cngx-tab-rejection-icon-color: #{mat.get-theme-color($theme, warn)};
     --cngx-tab-rejection-icon-text: oklch(1 0 0);
+  }
+}
+
+// Soft error-tinted wash behind the rejected tab, on the error role.
+// Registered inherits:false (tabs-base) and read on the rejected tab
+// element itself (plus its pulse keyframes, which resolve against the
+// same element) - set here, not on the group host, or the initial-value
+// wins.
+@mixin _rejected($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-tab-rejected-bg: color-mix(in oklab, var(--mat-sys-error) 12%, transparent);
+  } @else {
     --cngx-tab-rejected-bg: #{rgba(mat.get-theme-color($theme, warn), 0.12)};
   }
 }
 
-@mixin typography($theme) {
+// Registered inherits:false and read on the rejection disc and on the
+// tab-nav error glyph pseudo-element - a group-host set never reaches
+// either. The ::before needs its own declaration: pseudo-elements do
+// not inherit non-inheriting custom properties from their originating
+// element.
+@mixin _rejection-icon-typography($theme) {
   @if mat.get-theme-version($theme) == 1 {
     --cngx-tab-rejection-icon-font-size: var(--mat-sys-label-small-size);
   }
@@ -185,7 +203,6 @@
     :where(cngx-tab-group),
     :where(cngx-tab-nav) {
       @include color($theme);
-      @include typography($theme);
       @include density($theme);
     }
     :where(.cngx-tab-overflow__panel) {
@@ -193,6 +210,13 @@
     }
     :where(.cngx-tab-badge) {
       @include _badge-typography($theme);
+    }
+    :where(.cngx-tab--rejected) {
+      @include _rejected($theme);
+    }
+    :where(.cngx-tabs__rejection-icon),
+    :where(.cngx-tab-nav__link--error)::before {
+      @include _rejection-icon-typography($theme);
     }
     :where(.cngx-tab-overflow__item) {
       @include _overflow-item($theme);
