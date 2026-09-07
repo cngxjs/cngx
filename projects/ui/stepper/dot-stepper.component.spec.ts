@@ -10,6 +10,7 @@ import {
   CngxStep,
   provideStepperConfig,
   withDotStepperDotTemplate,
+  withStepperAriaLabels,
 } from '@cngx/common/stepper';
 
 import { CngxDotStepper } from './dot-stepper.component';
@@ -332,6 +333,61 @@ describe('CngxDotStepper', () => {
       fixture.componentInstance.err.set(false);
       fixture.detectChanges();
       expect(fixture.nativeElement.querySelector('.cngx-dot-stepper__error')).toBeNull();
+    });
+  });
+
+  describe('accname cascade (parity with <cngx-stepper>)', () => {
+    @Component({
+      standalone: true,
+      imports: [CngxDotStepper, CngxStep],
+      template: `
+        <cngx-dot-stepper>
+          <div cngxStep label="One"></div>
+          <div cngxStep label="Two"></div>
+        </cngx-dot-stepper>
+      `,
+    })
+    class UnlabelledHost {}
+
+    it('falls back to the config/i18n accname when no aria-label is bound', () => {
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(UnlabelledHost);
+      fixture.detectChanges();
+      const host = fixture.nativeElement.querySelector('cngx-dot-stepper') as HTMLElement;
+      expect(host.getAttribute('aria-label')).toBe('Stepper');
+    });
+
+    it('withStepperAriaLabels({ stepperRegion }) moves the accname fallback', () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideStepperConfig(withStepperAriaLabels({ stepperRegion: 'Fortschritt' })),
+        ],
+      });
+      const fixture = TestBed.createComponent(UnlabelledHost);
+      fixture.detectChanges();
+      const host = fixture.nativeElement.querySelector('cngx-dot-stepper') as HTMLElement;
+      expect(host.getAttribute('aria-label')).toBe('Fortschritt');
+    });
+
+    it('a bound aria-labelledby suppresses the fallback aria-label', () => {
+      @Component({
+        standalone: true,
+        imports: [CngxDotStepper, CngxStep],
+        template: `
+          <span id="dot-title">Setup</span>
+          <cngx-dot-stepper aria-labelledby="dot-title">
+            <div cngxStep label="One"></div>
+          </cngx-dot-stepper>
+        `,
+      })
+      class LabelledByHost {}
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(LabelledByHost);
+      fixture.detectChanges();
+      const host = fixture.nativeElement.querySelector('cngx-dot-stepper') as HTMLElement;
+      expect(host.getAttribute('aria-labelledby')).toBe('dot-title');
+      expect(host.hasAttribute('aria-label')).toBe(false);
     });
   });
 });

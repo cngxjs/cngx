@@ -84,7 +84,7 @@ import { injectDirection, resolveInlineStep } from '@cngx/core';
     role: 'group',
     tabindex: '0',
     '[attr.aria-roledescription]': 'i18n.stepIndicatorRoleDescription',
-    '[attr.aria-label]': 'ariaLabel()',
+    '[attr.aria-label]': 'resolvedAriaLabel()',
     '[attr.aria-labelledby]': 'ariaLabelledBy()',
     '[attr.aria-invalid]': 'stateView.hasAnyError() ? "true" : null',
     '(keydown)': 'handleKeyDown($event)',
@@ -97,6 +97,18 @@ export class CngxDotStepper {
   protected readonly presenter = inject(CNGX_STEPPER_HOST);
   protected readonly i18n = injectStepperI18n();
   protected readonly config = injectStepperConfig();
+
+  /**
+   * `aria-label` cascade mirroring `<cngx-stepper>`: input →
+   * `ariaLabels.stepperRegion` → `i18n.stepperLabel`. An unbound
+   * variant previously rendered no accname at all.
+   */
+  protected readonly resolvedAriaLabel = computed<string | null>(() => {
+    if (this.ariaLabelledBy()) {
+      return null; // labelledby trumps label
+    }
+    return this.ariaLabel() ?? this.config.ariaLabels?.stepperRegion ?? this.i18n.stepperLabel;
+  });
   /** Mobile-swipe routing surface composed via hostDirectives. */
   protected readonly swipeNav = inject(CngxStepperSwipeNav, { host: true });
 

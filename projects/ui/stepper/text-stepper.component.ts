@@ -1,18 +1,23 @@
+import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
   computed,
+  contentChild,
   inject,
   input,
   type Signal,
+  type TemplateRef,
 } from '@angular/core';
 
 import {
+  CngxStepperEmpty,
   CngxStepperPresenter,
   CNGX_STEPPER_GLYPHS,
   CNGX_STEPPER_HOST,
   createStepperStateView,
+  injectStepperConfig,
   injectStepperI18n,
   resolveStepperErrorSummary,
   type CngxStepNode,
@@ -41,6 +46,7 @@ import {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
+  imports: [NgTemplateOutlet],
   hostDirectives: [
     {
       directive: CngxStepperPresenter,
@@ -61,6 +67,19 @@ export class CngxTextStepper {
 
   protected readonly presenter = inject(CNGX_STEPPER_HOST);
   protected readonly i18n = injectStepperI18n();
+  protected readonly config = injectStepperConfig();
+
+  private readonly emptySlot = contentChild(CngxStepperEmpty);
+
+  /**
+   * Empty-state cascade mirroring `<cngx-stepper>`: per-instance
+   * `*cngxStepperEmpty` > `CNGX_STEPPER_CONFIG.templates.empty` > `null`.
+   * Gates the count line - without it a step-less flow announced
+   * `Step 0 of 0` via the polite live region.
+   */
+  protected readonly resolvedEmptyTemplate = computed<TemplateRef<void> | null>(
+    () => this.emptySlot()?.templateRef ?? this.config.templates?.empty ?? null,
+  );
 
   protected readonly stepNodes: Signal<readonly CngxStepNode[]> = this.presenter.stepsOnly;
 

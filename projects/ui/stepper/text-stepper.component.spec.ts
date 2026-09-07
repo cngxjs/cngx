@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   CngxStep,
+  CngxStepperEmpty,
   provideStepperI18n,
   withStepperI18nLabels,
 } from '@cngx/common/stepper';
@@ -93,7 +94,7 @@ describe('CngxTextStepper', () => {
     expect(text.textContent?.trim()).toBe('Schritt 1/3');
   });
 
-  it('renders "Step 0 of 0" when there are no projected steps', () => {
+  it('renders no count line at all when there are no projected steps (no "Step 0 of 0")', () => {
     @Component({
       standalone: true,
       imports: [CngxTextStepper],
@@ -103,8 +104,26 @@ describe('CngxTextStepper', () => {
     TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
     const fixture = TestBed.createComponent(EmptyHost);
     fixture.detectChanges();
-    const text = fixture.nativeElement.querySelector('.cngx-text-stepper__text') as HTMLElement;
-    expect(text.textContent?.trim()).toBe('Step 0 of 0');
+    expect(fixture.nativeElement.querySelector('.cngx-text-stepper__text')).toBeNull();
+  });
+
+  it('renders the projected *cngxStepperEmpty template when there are no steps', () => {
+    @Component({
+      standalone: true,
+      imports: [CngxTextStepper, CngxStepperEmpty],
+      template: `
+        <cngx-text-stepper>
+          <ng-template cngxStepperEmpty><p class="empty-note">No steps yet</p></ng-template>
+        </cngx-text-stepper>
+      `,
+    })
+    class EmptySlotHost {}
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const fixture = TestBed.createComponent(EmptySlotHost);
+    fixture.detectChanges();
+    const note = fixture.nativeElement.querySelector('.empty-note') as HTMLElement;
+    expect(note.textContent).toBe('No steps yet');
+    expect(fixture.nativeElement.querySelector('.cngx-text-stepper__text')).toBeNull();
   });
 
   it('folds a direct [error] string into the aggregate error line', () => {

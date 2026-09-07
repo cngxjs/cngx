@@ -5,7 +5,11 @@ import { describe, expect, it } from 'vitest';
 
 import {
   CngxStep,
+  CngxStepperEmpty,
+  provideStepperConfig,
   provideStepperI18n,
+  withStepperAriaLabels,
+  withStepperFallbackLabels,
   withStepperI18nLabels,
 } from '@cngx/common/stepper';
 
@@ -127,5 +131,111 @@ describe('CngxProgressBarStepper', () => {
     expect(
       fixture.nativeElement.querySelector('.cngx-progress-bar-stepper__caption'),
     ).toBeNull();
+  });
+
+  describe('accname + roledescription cascade (parity with <cngx-stepper>)', () => {
+    @Component({
+      standalone: true,
+      imports: [CngxProgressBarStepper, CngxStep],
+      template: `
+        <cngx-progress-bar-stepper>
+          <div cngxStep label="A"></div>
+          <div cngxStep label="B"></div>
+        </cngx-progress-bar-stepper>
+      `,
+    })
+    class UnlabelledHost {}
+
+    function hostEl(fixture: { nativeElement: HTMLElement }): HTMLElement {
+      return fixture.nativeElement.querySelector('cngx-progress-bar-stepper') as HTMLElement;
+    }
+
+    it('falls back to the config/i18n accname when no aria-label is bound', () => {
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(UnlabelledHost);
+      fixture.detectChanges();
+      expect(hostEl(fixture).getAttribute('aria-label')).toBe('Stepper');
+    });
+
+    it('withStepperAriaLabels({ stepperRegion }) moves the accname fallback', () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideStepperConfig(withStepperAriaLabels({ stepperRegion: 'Onboarding-Assistent' })),
+        ],
+      });
+      const fixture = TestBed.createComponent(UnlabelledHost);
+      fixture.detectChanges();
+      expect(hostEl(fixture).getAttribute('aria-label')).toBe('Onboarding-Assistent');
+    });
+
+    it('a bound aria-labelledby suppresses the fallback aria-label', () => {
+      @Component({
+        standalone: true,
+        imports: [CngxProgressBarStepper, CngxStep],
+        template: `
+          <span id="pb-title">Setup</span>
+          <cngx-progress-bar-stepper aria-labelledby="pb-title">
+            <div cngxStep label="A"></div>
+          </cngx-progress-bar-stepper>
+        `,
+      })
+      class LabelledByHost {}
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(LabelledByHost);
+      fixture.detectChanges();
+      const host = hostEl(fixture);
+      expect(host.getAttribute('aria-labelledby')).toBe('pb-title');
+      expect(host.hasAttribute('aria-label')).toBe(false);
+    });
+
+    it('withStepperFallbackLabels({ stepRoleDescription }) replaces the hardcoded roledescription', () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideStepperConfig(withStepperFallbackLabels({ stepRoleDescription: 'wizard' })),
+        ],
+      });
+      const fixture = TestBed.createComponent(UnlabelledHost);
+      fixture.detectChanges();
+      expect(hostEl(fixture).getAttribute('aria-roledescription')).toBe('wizard');
+    });
+  });
+
+  describe('zero-step guard', () => {
+    it('renders neither the bar nor a "Step 0 of 0" caption without steps', () => {
+      @Component({
+        standalone: true,
+        imports: [CngxProgressBarStepper],
+        template: `<cngx-progress-bar-stepper [showStepCount]="true"></cngx-progress-bar-stepper>`,
+      })
+      class EmptyHost {}
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(EmptyHost);
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('cngx-progress')).toBeNull();
+      expect(
+        fixture.nativeElement.querySelector('.cngx-progress-bar-stepper__caption'),
+      ).toBeNull();
+    });
+
+    it('renders the projected *cngxStepperEmpty template when there are no steps', () => {
+      @Component({
+        standalone: true,
+        imports: [CngxProgressBarStepper, CngxStepperEmpty],
+        template: `
+          <cngx-progress-bar-stepper>
+            <ng-template cngxStepperEmpty><p class="empty-note">No steps yet</p></ng-template>
+          </cngx-progress-bar-stepper>
+        `,
+      })
+      class EmptySlotHost {}
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(EmptySlotHost);
+      fixture.detectChanges();
+      const note = fixture.nativeElement.querySelector('.empty-note') as HTMLElement;
+      expect(note.textContent).toBe('No steps yet');
+      expect(fixture.nativeElement.querySelector('cngx-progress')).toBeNull();
+    });
   });
 });

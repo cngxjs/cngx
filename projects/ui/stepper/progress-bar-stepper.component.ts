@@ -1,18 +1,23 @@
+import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
   computed,
+  contentChild,
   inject,
   input,
+  type TemplateRef,
 } from '@angular/core';
 
 import {
   CngxStepperCount,
+  CngxStepperEmpty,
   CngxStepperPresenter,
   CNGX_STEPPER_GLYPHS,
   CNGX_STEPPER_HOST,
   createStepperStateView,
+  injectStepperConfig,
   injectStepperI18n,
   resolveStepperErrorSummary,
   type CngxStepNode,
@@ -46,7 +51,7 @@ import { CngxProgress } from '@cngx/ui/feedback';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [CngxProgress, CngxStepperCount],
+  imports: [CngxProgress, CngxStepperCount, NgTemplateOutlet],
   hostDirectives: [
     {
       directive: CngxStepperPresenter,
@@ -59,8 +64,8 @@ import { CngxProgress } from '@cngx/ui/feedback';
   host: {
     class: 'cngx-progress-bar-stepper',
     role: 'group',
-    '[attr.aria-roledescription]': '"stepper"',
-    '[attr.aria-label]': 'ariaLabel()',
+    '[attr.aria-roledescription]': 'stepperRoleDescription()',
+    '[attr.aria-label]': 'resolvedAriaLabel()',
     '[attr.aria-labelledby]': 'ariaLabelledBy()',
     '[attr.data-state]': 'stateView.hasAnyError() ? "error" : null',
     '[attr.aria-invalid]': 'stateView.hasAnyError() ? "true" : null',
@@ -75,6 +80,36 @@ export class CngxProgressBarStepper {
 
   protected readonly presenter = inject(CNGX_STEPPER_HOST);
   protected readonly i18n = injectStepperI18n();
+  protected readonly config = injectStepperConfig();
+
+  /**
+   * `aria-label` cascade mirroring `<cngx-stepper>`: input →
+   * `ariaLabels.stepperRegion` → `i18n.stepperLabel`. An unbound
+   * variant previously rendered no accname at all.
+   */
+  protected readonly resolvedAriaLabel = computed<string | null>(() => {
+    if (this.ariaLabelledBy()) {
+      return null; // labelledby trumps label
+    }
+    return this.ariaLabel() ?? this.config.ariaLabels?.stepperRegion ?? this.i18n.stepperLabel;
+  });
+
+  /** Landmark role-description with config + i18n cascade (was a hardcoded literal). */
+  protected readonly stepperRoleDescription = computed<string>(
+    () => this.config.fallbackLabels?.stepRoleDescription ?? this.i18n.stepperLabel,
+  );
+
+  private readonly emptySlot = contentChild(CngxStepperEmpty);
+
+  /**
+   * Empty-state cascade mirroring `<cngx-stepper>`: per-instance
+   * `*cngxStepperEmpty` > `CNGX_STEPPER_CONFIG.templates.empty` > `null`.
+   * Gates the whole bar - without it a step-less flow rendered a full
+   * bar captioned `Step 0 of 0`.
+   */
+  protected readonly resolvedEmptyTemplate = computed<TemplateRef<void> | null>(
+    () => this.emptySlot()?.templateRef ?? this.config.templates?.empty ?? null,
+  );
 
   /** Shared per-step/aggregate state derivations - the single error source. */
   protected readonly stateView = createStepperStateView({
