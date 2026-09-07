@@ -69,6 +69,8 @@ import {
 } from '@cngx/common/tabs';
 import { coerceBooleanProperty } from '@cngx/core/utils';
 
+import { CngxStepperErrorLine } from './stepper-error-line.component';
+
 /**
  * Stepper organism. Composes `CngxStepperPresenter` with
  * `CngxRovingTabindex` and `CngxFocusRestore` via `hostDirectives`;
@@ -116,7 +118,14 @@ import { coerceBooleanProperty } from '@cngx/core/utils';
   exportAs: 'cngxStepper',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgTemplateOutlet, CngxLiveRegion, CngxRovingItem, CngxStepperCount, CngxSwipe],
+  imports: [
+    NgTemplateOutlet,
+    CngxLiveRegion,
+    CngxRovingItem,
+    CngxStepperCount,
+    CngxStepperErrorLine,
+    CngxSwipe,
+  ],
   styleUrls: ['./styles/stepper-base.css', './stepper.component.css'],
   encapsulation: ViewEncapsulation.None,
   hostDirectives: [

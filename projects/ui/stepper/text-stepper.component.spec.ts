@@ -147,4 +147,27 @@ describe('CngxTextStepper', () => {
     ) as HTMLElement;
     expect(text.textContent?.trim()).toBe('Card declined');
   });
+
+  it('error line keeps the shipped markup contract (block class, role="status", hidden glyph)', () => {
+    @Component({
+      standalone: true,
+      imports: [CngxTextStepper, CngxStep],
+      template: `
+        <cngx-text-stepper>
+          <div cngxStep label="Payment" [error]="'Card declined'"></div>
+        </cngx-text-stepper>
+      `,
+    })
+    class ErrHost {}
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const fixture = TestBed.createComponent(ErrHost);
+    fixture.detectChanges();
+    const line = fixture.nativeElement.querySelector('.cngx-text-stepper__error') as HTMLElement;
+    expect(line).not.toBeNull();
+    expect(line.getAttribute('role')).toBe('status');
+    expect(line.getAttribute('data-state')).toBe('error');
+    const glyph = line.querySelector('.cngx-text-stepper__error-glyph') as HTMLElement;
+    expect(glyph.getAttribute('aria-hidden')).toBe('true');
+    expect(glyph.textContent?.trim()).not.toBe('');
+  });
 });

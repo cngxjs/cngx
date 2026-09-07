@@ -14,7 +14,6 @@ import {
   CngxStepperCount,
   CngxStepperEmpty,
   CngxStepperPresenter,
-  CNGX_STEPPER_GLYPHS,
   CNGX_STEPPER_HOST,
   createStepperStateView,
   injectStepperConfig,
@@ -23,6 +22,8 @@ import {
   type CngxStepNode,
 } from '@cngx/common/stepper';
 import { CngxProgress } from '@cngx/ui/feedback';
+
+import { CngxStepperErrorLine } from './stepper-error-line.component';
 
 /**
  * Progress-Bar stepper variant. Thin Level-4 organism composing
@@ -51,7 +52,7 @@ import { CngxProgress } from '@cngx/ui/feedback';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [CngxProgress, CngxStepperCount, NgTemplateOutlet],
+  imports: [CngxProgress, CngxStepperCount, CngxStepperErrorLine, NgTemplateOutlet],
   hostDirectives: [
     {
       directive: CngxStepperPresenter,
@@ -116,9 +117,6 @@ export class CngxProgressBarStepper {
     presenter: this.presenter,
     stepsOnly: this.presenter.stepsOnly,
   });
-
-  /** Default error glyph for the error caption. */
-  protected readonly errorGlyph = CNGX_STEPPER_GLYPHS.errorBadge;
 
   /** Total step count (group nodes excluded). */
   protected readonly totalSteps = computed<number>(() => this.presenter.stepsOnly().length);

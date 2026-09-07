@@ -14,7 +14,6 @@ import {
 import {
   CngxStepperEmpty,
   CngxStepperPresenter,
-  CNGX_STEPPER_GLYPHS,
   CNGX_STEPPER_HOST,
   createStepperStateView,
   injectStepperConfig,
@@ -22,6 +21,8 @@ import {
   resolveStepperErrorSummary,
   type CngxStepNode,
 } from '@cngx/common/stepper';
+
+import { CngxStepperErrorLine } from './stepper-error-line.component';
 
 /**
  * Text stepper variant. Smallest possible stepper: a single
@@ -46,7 +47,7 @@ import {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [NgTemplateOutlet],
+  imports: [NgTemplateOutlet, CngxStepperErrorLine],
   hostDirectives: [
     {
       directive: CngxStepperPresenter,
@@ -88,9 +89,6 @@ export class CngxTextStepper {
     presenter: this.presenter,
     stepsOnly: this.stepNodes,
   });
-
-  /** Default error glyph for the error sub-line. */
-  protected readonly errorGlyph = CNGX_STEPPER_GLYPHS.errorBadge;
 
   protected readonly totalSteps = computed<number>(() => this.stepNodes().length);
 

@@ -16,7 +16,6 @@ import {
   type CngxDotStepperDotContext,
   CngxStepperPresenter,
   CngxStepperSwipeNav,
-  CNGX_STEPPER_GLYPHS,
   CNGX_STEPPER_HOST,
   createStepperStateView,
   injectStepperConfig,
@@ -26,6 +25,8 @@ import {
 } from '@cngx/common/stepper';
 import { CngxSwipe } from '@cngx/common/interactive';
 import { injectDirection, resolveInlineStep } from '@cngx/core';
+
+import { CngxStepperErrorLine } from './stepper-error-line.component';
 
 /**
  * Dot stepper variant. Mobile-first sequential-flow indicator. Renders
@@ -65,7 +66,7 @@ import { injectDirection, resolveInlineStep } from '@cngx/core';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [NgTemplateOutlet, CngxSwipe],
+  imports: [NgTemplateOutlet, CngxStepperErrorLine, CngxSwipe],
   hostDirectives: [
     {
       directive: CngxStepperPresenter,
@@ -123,9 +124,6 @@ export class CngxDotStepper {
     presenter: this.presenter,
     stepsOnly: this.stepNodes,
   });
-
-  /** Default error glyph for the aggregate error line. */
-  protected readonly errorGlyph = CNGX_STEPPER_GLYPHS.errorBadge;
 
   /**
    * Aggregate error line. The dot row only colours the errored dot, so
