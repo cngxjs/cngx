@@ -9,6 +9,7 @@ import {
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createMatchMediaMock } from '@cngx/testing';
 
 import { CNGX_TOC_CONFIG, CNGX_TOC_DEFAULTS } from './config/toc.config.defaults';
 import { CngxToc } from './toc.component';
@@ -40,11 +41,9 @@ class MockIntersectionObserver {
 // never bleeds into a run that expects the built-in label.
 const cfgItemTpl = signal<TemplateRef<CngxTocItemContext> | undefined>(undefined);
 
-// prefers-reduced-motion state. jsdom ships no matchMedia, so the suite
-// assigns one on globalThis (the inject-media-query.spec.ts convention) and
-// deletes it in afterEach. injectMediaQuery seeds its signal at construction,
-// so a test sets this BEFORE creating the component.
-let reducedMotionState = false;
+// jsdom ships no matchMedia, so the suite installs the shared mock.
+// injectMediaQuery seeds its signal at construction, so a test needing
+// prefers-reduced-motion re-installs with initialMatches BEFORE setup().
 
 const TOC: readonly CngxTocItem[] = [
   { id: 'intro', label: 'Intro' },
@@ -133,20 +132,8 @@ function getToc(fixture: { debugElement: import('@angular/core').DebugElement })
 describe('CngxToc', () => {
   beforeEach(() => {
     cfgItemTpl.set(undefined);
-    reducedMotionState = false;
     vi.stubGlobal('IntersectionObserver', MockIntersectionObserver);
-    (globalThis as Record<string, unknown>)['matchMedia'] = vi.fn().mockImplementation((query: string) => ({
-      get matches() {
-        return reducedMotionState;
-      },
-      media: query,
-      addEventListener: vi.fn(),
-      removeEventListener: vi.fn(),
-      onchange: null,
-      addListener: vi.fn(),
-      removeListener: vi.fn(),
-      dispatchEvent: vi.fn(),
-    }));
+    createMatchMediaMock().install(window);
     TestBed.configureTestingModule({
       providers: [
         {
@@ -162,7 +149,6 @@ describe('CngxToc', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
-    delete (globalThis as Record<string, unknown>)['matchMedia'];
   });
 
   function setup() {
@@ -267,7 +253,7 @@ describe('CngxToc', () => {
   });
 
   it('scrolls with behavior "auto" under prefers-reduced-motion', () => {
-    reducedMotionState = true;
+    createMatchMediaMock(true).install(window);
     const { toc } = setup();
     const target = document.getElementById('intro')!;
     const scrollFn = (target.scrollIntoView = vi.fn());
@@ -279,7 +265,6 @@ describe('CngxToc', () => {
   });
 
   it('scrolls with the configured behavior when motion is allowed', () => {
-    reducedMotionState = false;
     const { toc } = setup();
     const target = document.getElementById('intro')!;
     const scrollFn = (target.scrollIntoView = vi.fn());

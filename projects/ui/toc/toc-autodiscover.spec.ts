@@ -2,6 +2,7 @@ import { Component, PLATFORM_ID } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createMatchMediaMock } from '@cngx/testing';
 
 import { CngxToc } from './toc.component';
 import type { CngxTocItem } from './toc.types';
@@ -71,23 +72,13 @@ function linkTexts(host: HTMLElement): string[] {
 describe('CngxToc autoDiscover', () => {
   beforeEach(() => {
     vi.stubGlobal('IntersectionObserver', MockIntersectionObserver);
-    (globalThis as Record<string, unknown>)['matchMedia'] = vi.fn().mockImplementation((query: string) => ({
-      matches: false,
-      media: query,
-      addEventListener: vi.fn(),
-      removeEventListener: vi.fn(),
-      onchange: null,
-      addListener: vi.fn(),
-      removeListener: vi.fn(),
-      dispatchEvent: vi.fn(),
-    }));
+    createMatchMediaMock().install(window);
     TestBed.configureTestingModule({});
   });
 
   afterEach(() => {
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
-    delete (globalThis as Record<string, unknown>)['matchMedia'];
   });
 
   function setup(host: unknown) {

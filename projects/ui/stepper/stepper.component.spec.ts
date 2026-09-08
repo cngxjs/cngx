@@ -2,7 +2,7 @@ import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createResizeObserverMock } from '@cngx/testing';
+import { createMatchMediaMock, createResizeObserverMock } from '@cngx/testing';
 
 import {
   CngxStep,
@@ -1707,16 +1707,7 @@ describe('CngxStepper organism', () => {
     // Forces displayMode into the collapse branch: createMobileViewportSignal
     // reads globalThis.matchMedia, absent in jsdom, so the stub is the seam.
     beforeEach(() => {
-      vi.stubGlobal(
-        'matchMedia',
-        (query: string) =>
-          ({
-            matches: true,
-            media: query,
-            addEventListener: () => undefined,
-            removeEventListener: () => undefined,
-          }) as unknown as MediaQueryList,
-      );
+      createMatchMediaMock(true).install(window);
     });
 
     afterEach(() => {
