@@ -1,10 +1,12 @@
 /**
  * Shared numeric helpers for the chart presets and the auto-summary.
- * Pure TS, no Angular dep, imports nothing - which is why it lives in
- * the core `chart/` folder: presets compose `chart/`, so a helper both
- * sides consume must not sit in `presets/`. Internal - the presets and
- * the summary are the API surface.
+ * Pure TS, no Angular dep, only the Level-0 `clamp` kernel imported -
+ * which is why it lives in the core `chart/` folder: presets compose
+ * `chart/`, so a helper both sides consume must not sit in `presets/`.
+ * Internal - the presets and the summary are the API surface.
  */
+
+import { clamp } from '@cngx/utils';
 
 /**
  * Single-pass min/max scan. Returns `null` for an empty input so the
@@ -70,12 +72,5 @@ export function clampedRatio(value: number, min: number, max: number): number {
   if (max <= min) {
     return 0;
   }
-  const ratio = (value - min) / (max - min);
-  if (ratio < 0) {
-    return 0;
-  }
-  if (ratio > 1) {
-    return 1;
-  }
-  return ratio;
+  return clamp((value - min) / (max - min), 0, 1);
 }

@@ -12,6 +12,7 @@ import {
   signal,
   type Signal,
 } from '@angular/core';
+import { clamp } from '@cngx/utils';
 import { injectDirection, resolveInlineStep } from '@cngx/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter, fromEvent, map, merge, switchMap, takeUntil, tap } from 'rxjs';
@@ -449,7 +450,7 @@ export class CngxReorder<T = unknown> {
     if (from < 0 || from >= current.length) {
       return;
     }
-    const clampedTo = Math.min(Math.max(to, 0), current.length - 1);
+    const clampedTo = clamp(to, 0, current.length - 1);
     if (clampedTo === from) {
       return;
     }
