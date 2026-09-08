@@ -68,7 +68,6 @@ export class CngxRipple {
     this.doc.defaultView,
   );
 
-
   /** @internal */
   protected handlePointerDown(event: PointerEvent): void {
     if (this.disabled() || this.prefersReducedMotion()) {
