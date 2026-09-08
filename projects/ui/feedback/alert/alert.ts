@@ -1,4 +1,4 @@
-import { NgComponentOutlet } from '@angular/common';
+import { DOCUMENT, NgComponentOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -15,7 +15,7 @@ import {
   untracked,
   ViewEncapsulation,
 } from '@angular/core';
-import type { CngxAsyncState } from '@cngx/core/utils';
+import { createMediaQuerySignal, type CngxAsyncState } from '@cngx/core/utils';
 
 import { CngxCloseButton } from '@cngx/common/interactive';
 
@@ -239,6 +239,18 @@ export class CngxAlert {
   private readonly collapseTimer = createPausableTimer();
   private animationFallbackId: ReturnType<typeof setTimeout> | undefined;
 
+  /**
+   * Reduced-motion via the shared kernel; environments without matchMedia
+   * (SSR, bare jsdom) count as reduced so the fallback settles immediately.
+   */
+  private readonly motionWindow = inject(DOCUMENT).defaultView;
+  private readonly canQueryMotion = !!this.motionWindow?.matchMedia;
+  private readonly prefersReducedMotion = createMediaQuerySignal(
+    '(prefers-reduced-motion: reduce)',
+    this.destroyRef,
+    this.motionWindow,
+  );
+
   /** Active pause holds - pointer hover and focus-within count independently. */
   private interactionHolds = 0;
   /** Set when interaction expanded an already-collapsed alert; release re-arms. */
@@ -386,9 +398,7 @@ export class CngxAlert {
   private scheduleAnimationFallback(): void {
     this.clearAnimationFallback();
     // Safety net if animationend never fires (reduced-motion, SSR, no window).
-    const reducedMotion =
-      globalThis.window === undefined ||
-      !globalThis.matchMedia?.('(prefers-reduced-motion: no-preference)').matches;
+    const reducedMotion = !this.canQueryMotion || this.prefersReducedMotion();
     this.animationFallbackId = setTimeout(
       () => {
         this.animationFallbackId = undefined;
