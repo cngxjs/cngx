@@ -51,6 +51,7 @@ import {
   CNGX_CHIP_REMOVAL_HANDLER_FACTORY,
   type CngxChipRemovalHandler,
 } from '../shared/chip-removal-handler';
+import { createArrayToggleDispatch } from '../shared/internal/array-toggle';
 import { sameArrayContents } from '../shared/internal/compare';
 import { CNGX_ACTION_HOST_BRIDGE_FACTORY } from '../shared/action-host-bridge';
 import { createFieldSync } from '../shared/field-sync';
@@ -617,6 +618,29 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   /** Rollback target for a commit in flight. */
   private lastCommittedValues: T[] = [];
 
+  /**
+   * Toggle/clear finalize + AD-activation dispatch. Shared with
+   * `CngxMultiSelect` / `CngxCombobox`; this variant adds
+   * `source: this` to the change payloads. Reorder commits stay on
+   * their own handler below.
+   */
+  private readonly toggleDispatch = createArrayToggleDispatch<T>({
+    values: this.values,
+    compareWith: this.compareWith,
+    commitMode: this.commitMode,
+    commitAction: this.commitAction,
+    core: this.core,
+    setLastCommitted: (previous) => {
+      this.lastCommittedValues = previous;
+    },
+    beginToggle: (next, previous, option, action) =>
+      this.commitHandler.beginToggle(next, previous, option, action),
+    beginClear: (previous, action) => this.commitHandler.beginClear(previous, action),
+    emitOptionToggled: (option, added) => this.optionToggled.emit({ option, added }),
+    emitSelectionChange: (change) => this.selectionChange.emit({ source: this, ...change }),
+    emitCleared: () => this.cleared.emit(),
+  });
+
   private readonly commitErrorAnnouncer = inject(CngxSelectAnnouncer);
   private readonly announceCommitError = inject(CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY)({
     deps: {
@@ -643,19 +667,8 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     commitAction: this.commitAction,
     getLastCommitted: () => this.lastCommittedValues,
     onToggleFinalize: (option, isNowSelected) =>
-      this.finalizeToggle(option, isNowSelected, this.lastCommittedValues),
-    onClearFinalize: (previous, finalValues) => {
-      this.cleared.emit();
-      this.selectionChange.emit({
-        source: this,
-        values: finalValues,
-        previousValues: previous,
-        added: [],
-        removed: previous,
-        option: null,
-        action: 'clear',
-      });
-    },
+      this.toggleDispatch.finalizeToggle(option, isNowSelected, this.lastCommittedValues),
+    onClearFinalize: (previous, finalValues) => this.toggleDispatch.clearFinalize(previous, finalValues),
     onStateChange: (status) => this.stateChange.emit(status),
     onError: (err) => this.commitError.emit(err),
     announceError: (err) => this.announceCommitError(err),
@@ -680,7 +693,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
       this.lastCommittedValues = previous;
       this.togglingOption.set(item);
     },
-    onSyncFinalize: (item, previous) => this.finalizeToggle(item, false, previous),
+    onSyncFinalize: (item, previous) => this.toggleDispatch.finalizeToggle(item, false, previous),
   });
 
   /**
@@ -767,31 +780,8 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
       core: this.core,
       closeOnSelect: false,
       commitAction: this.commitAction,
-      onCommit: (toggledValue, opt) => {
-        const previous = [...this.values()];
-        const wasSelected = previous.some((v) => this.compareWith()(v, toggledValue));
-        const next = wasSelected
-          ? previous.filter((v) => !this.compareWith()(v, toggledValue))
-          : [...previous, toggledValue];
-        this.lastCommittedValues = previous;
-        this.togglingOption.set(opt);
-        if (this.commitMode() === 'optimistic') {
-          this.values.set(next);
-        }
-        const action = this.commitAction();
-        if (action) {
-          this.commitHandler.beginToggle(next, previous, opt, action);
-        }
-      },
-      onActivate: (_value, opt) => {
-        const currentSelected = this.isSelected(opt);
-        const current = this.values();
-        const eq = this.compareWith();
-        const previousValues = currentSelected
-          ? current.filter((v) => !eq(v, opt.value))
-          : [...current, opt.value];
-        this.finalizeToggle(opt, currentSelected, previousValues);
-      },
+      onCommit: this.toggleDispatch.handleADCommit,
+      onActivate: this.toggleDispatch.handleADActivate,
     });
 
     inject(CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY)({
@@ -869,34 +859,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   }
 
   /** @internal - imperative clear-all used by slot + default button. */
-  protected readonly clearAllCallback: () => void = () => {
-    const previous = [...this.values()];
-    if (previous.length === 0) {
-      return;
-    }
-    const action = this.commitAction();
-    if (action) {
-      this.lastCommittedValues = previous;
-      this.togglingOption.set(null);
-      if (this.commitMode() === 'optimistic') {
-        this.values.set([]);
-      }
-      this.commitHandler.beginClear(previous, action);
-      return;
-    }
-    this.values.set([]);
-    this.cleared.emit();
-    this.selectionChange.emit({
-      source: this,
-      values: [],
-      previousValues: previous,
-      added: [],
-      removed: previous,
-      option: null,
-      action: 'clear',
-    });
-    this.core.announce(null, 'removed', 0, true);
-  };
+  protected readonly clearAllCallback: () => void = this.toggleDispatch.clearAll;
 
   /** @internal */
   // True only inside the lifecycle emitter's post-close focus restore -
@@ -1059,25 +1022,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
       return;
     }
     this.values.set(next);
-    this.finalizeToggle(opt, !wasSelected, previous);
-  }
-
-  private finalizeToggle(
-    opt: CngxSelectOptionDef<T>,
-    isNowSelected: boolean,
-    previousValues: readonly T[] = [],
-  ): void {
-    this.optionToggled.emit({ option: opt, added: isNowSelected });
-    this.selectionChange.emit({
-      source: this,
-      values: this.values(),
-      previousValues,
-      added: isNowSelected ? [opt.value] : [],
-      removed: isNowSelected ? [] : [opt.value],
-      option: opt,
-      action: 'toggle',
-    });
-    this.core.announce(opt, isNowSelected ? 'added' : 'removed', this.values().length, true);
+    this.toggleDispatch.finalizeToggle(opt, !wasSelected, previous);
   }
 
   /**
