@@ -7,11 +7,14 @@ import {
   DestroyRef,
   inject,
   input,
-  signal,
-  type Signal,
   ViewEncapsulation,
 } from '@angular/core';
-import { createVisibilityGate, injectLoadingConfig, type CngxAsyncState } from '@cngx/core/utils';
+import {
+  createMediaQuerySignal,
+  createVisibilityGate,
+  injectLoadingConfig,
+  type CngxAsyncState,
+} from '@cngx/core/utils';
 
 import {
   CngxSkeletonPlaceholder,
@@ -129,20 +132,11 @@ export class CngxSkeletonContainer {
   /** Array of indices for internal `@for` rendering. */
   readonly indices = computed(() => Array.from({ length: this.count() }, (_, i) => i));
 
-  private readonly prefersReducedMotion: Signal<boolean>;
-
-  constructor() {
-    const win = inject(DOCUMENT).defaultView;
-    const pref = signal(false);
-    if (win?.matchMedia) {
-      const mq = win.matchMedia('(prefers-reduced-motion: reduce)');
-      pref.set(mq.matches);
-      const listener = (e: MediaQueryListEvent) => pref.set(e.matches);
-      mq.addEventListener('change', listener);
-      inject(DestroyRef).onDestroy(() => mq.removeEventListener('change', listener));
-    }
-    this.prefersReducedMotion = pref.asReadonly();
-  }
+  private readonly prefersReducedMotion = createMediaQuerySignal(
+    '(prefers-reduced-motion: reduce)',
+    inject(DestroyRef),
+    inject(DOCUMENT).defaultView,
+  );
 
   /** @internal */
   protected readonly showShimmer = computed(
