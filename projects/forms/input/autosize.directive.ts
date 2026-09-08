@@ -10,6 +10,8 @@ import {
   type Signal,
 } from '@angular/core';
 
+import { clamp } from '@cngx/utils';
+
 /**
  * Auto-resize textarea based on content.
  *
@@ -91,7 +93,7 @@ export class CngxAutosize {
     const scrollH = el.scrollHeight;
     el.style.height = prevHeight;
 
-    const targetH = Math.min(Math.max(scrollH, minH), maxH);
+    const targetH = clamp(scrollH, minH, maxH);
     el.style.height = `${targetH}px`;
     this.heightState.set(targetH);
   }

@@ -12,6 +12,7 @@ import {
   type Signal,
   untracked,
 } from '@angular/core';
+import { clamp } from '@cngx/utils';
 import { CNGX_FORM_FIELD_HOST } from '@cngx/core/tokens';
 import { CNGX_VALUE_TRANSFORMER, type CngxValueTransformer } from '@cngx/forms/field';
 import { CNGX_INPUT_CONFIG, type InputConfig } from './input-config';
@@ -551,7 +552,7 @@ export class CngxInputMask {
     const patterns = this.resolvedPatterns();
     const forced = this.forceAlternate();
     if (forced != null) {
-      const index = Math.min(Math.max(forced, 0), patterns.length - 1);
+      const index = clamp(forced, 0, patterns.length - 1);
       return patterns[index];
     }
     return selectPattern(patterns, this.value().length, this.resolvedCustomTokens());
