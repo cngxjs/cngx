@@ -10,6 +10,11 @@ export { CngxAffixRow } from './affix-row.directive';
 export { CngxRequired, type CngxRequiredContext } from './required.component';
 export { focusFirstError } from './focus-first-error';
 export { adaptFormControl } from './form-control-adapter';
+export {
+  createFieldControlAria,
+  type FieldControlAria,
+  type FieldControlAriaOptions,
+} from './field-control-aria';
 export { createFieldSync, type FieldSyncOptions } from './field-sync';
 export { CngxListboxFieldBridge } from './listbox-field-bridge.directive';
 export { CngxSliderFieldBridge } from './slider-field-bridge.directive';

@@ -1,8 +1,9 @@
-import { computed, Directive, effect, inject, signal, untracked } from '@angular/core';
+import { computed, Directive, effect, inject, untracked } from '@angular/core';
 
 import { CngxListbox } from '@cngx/common/interactive';
 
 import { writeFieldValue } from './field-sync';
+import { createFieldControlAria } from './field-control-aria';
 import { CngxFormFieldPresenter } from './form-field-presenter';
 import { CNGX_FORM_FIELD_CONTROL } from './form-field.token';
 import type { CngxFieldRef, CngxFormFieldControl } from './models';
@@ -72,33 +73,32 @@ export class CngxListboxFieldBridge implements CngxFormFieldControl {
   });
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
 
-  readonly id = computed<string>(() => this.presenter?.inputId() ?? '');
+  private readonly aria = createFieldControlAria(this.presenter);
 
-  private readonly focusedState = signal(false);
-  readonly focused = this.focusedState.asReadonly();
+  readonly id = this.aria.id;
+
+  readonly focused = this.aria.focused;
 
   readonly empty = computed<boolean>(() => this.listbox.selected().length === 0);
 
-  readonly disabled = computed<boolean>(() => this.presenter?.disabled() ?? false);
+  readonly disabled = this.aria.disabled;
 
-  readonly errorState = computed<boolean>(() => this.presenter?.showError() ?? false);
+  readonly errorState = this.aria.errorState;
 
   /** @internal */
-  protected readonly describedBy = computed(() => this.presenter?.describedBy() ?? null);
+  protected readonly describedBy = this.aria.describedBy;
   /** @internal */
-  protected readonly labelledBy = computed(() => this.presenter?.labelId() ?? null);
+  protected readonly labelledBy = this.aria.labelledBy;
   /** @internal */
-  protected readonly ariaInvalid = computed(() => (this.errorState() ? true : null));
+  protected readonly ariaInvalid = this.aria.ariaInvalid;
   /** @internal */
-  protected readonly ariaRequired = computed(() => (this.presenter?.required() ? true : null));
+  protected readonly ariaRequired = this.aria.ariaRequired;
   /** @internal */
-  protected readonly ariaBusy = computed(() => (this.presenter?.pending() ? true : null));
+  protected readonly ariaBusy = this.aria.ariaBusy;
   /** @internal */
-  protected readonly ariaErrorMessage = computed(() =>
-    this.errorState() ? (this.presenter?.errorId() ?? null) : null,
-  );
+  protected readonly ariaErrorMessage = this.aria.ariaErrorMessage;
   /** @internal */
-  protected readonly ariaReadonly = computed(() => (this.presenter?.readonly() ? true : null));
+  protected readonly ariaReadonly = this.aria.ariaReadonly;
 
   constructor() {
     // Kept as hand-rolled effects rather than createFieldSync: this bridge drives
@@ -157,15 +157,10 @@ export class CngxListboxFieldBridge implements CngxFormFieldControl {
   }
 
   /** @internal */
-  protected handleFocus(): void {
-    this.focusedState.set(true);
-  }
+  protected readonly handleFocus = this.aria.handleFocusIn;
 
   /** @internal */
-  protected handleBlur(): void {
-    this.focusedState.set(false);
-    this.presenter?.fieldState().markAsTouched();
-  }
+  protected readonly handleBlur = this.aria.handleFocusOut;
 }
 
 /** @internal */

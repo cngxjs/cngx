@@ -80,8 +80,8 @@ import { CNGX_SELECT_PANEL_HOST, CNGX_SELECT_PANEL_VIEW_HOST } from '../shared/p
 import { resolveActionSelectConfig } from '../shared/action-select-config';
 import { mergeCommitState } from '../shared/internal/merged-commit-state';
 import { CNGX_DISMISS_HANDLER_FACTORY } from '../shared/dismiss-handler';
+import { createActionTriggerInput } from '../shared/internal/action-trigger-input';
 import { resolveSelectConfig } from '../shared/internal/resolve-config';
-import { handlePageJumpKey } from '../shared/internal/page-jump-handler';
 import { setupVirtualization } from '../shared/internal/setup-virtualization';
 import { CNGX_SEARCH_EFFECTS_FACTORY } from '../shared/search-effects';
 import {
@@ -907,60 +907,25 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   }
 
   /**
-   * Enter on the trigger input fires quick-create when no AD item is
-   * active, `quickCreateAction` is bound, and the term is non-empty.
-   * Tag-input keyboard UX: type, Enter, chip appears.
-   *
-   * @internal
+   * Trigger-input keyboard + live-term dispatch. Shared with
+   * `CngxActionSelect`; this variant snapshots the values array.
    */
-  protected handleTriggerEnter(event: Event): void {
-    const ad = this.listboxRef()?.ad;
-    if (ad?.activeItem()) {
-      return;
-    }
-    if (!this.quickCreateAction()) {
-      return;
-    }
-    const term = this.resolveLiveTerm();
-    if (term === '') {
-      return;
-    }
-    event.preventDefault();
-    this.handleActionCommit();
-  }
+  private readonly triggerInput = createActionTriggerInput<readonly T[]>({
+    listbox: this.listboxRef,
+    popover: this.popoverRef,
+    input: this.inputEl,
+    searchTerm: this.searchTerm,
+    liveInputFallback: this.liveInputFallback,
+    hasQuickCreateAction: () => this.quickCreateAction() !== null,
+    snapshotPrevious: () => [...this.values()],
+    dispatch: (draft, term, previous) => this.createHandler.dispatch(draft, term, previous),
+  });
 
+  /** @internal - Enter-to-quick-create, tag-input UX: type, Enter, chip appears. */
+  protected readonly handleTriggerEnter = this.triggerInput.handleTriggerEnter;
   /** @internal - PageUp/PageDown shared behaviour (±10 option jump). */
-  protected handleInputKeydown(event: KeyboardEvent): void {
-    handlePageJumpKey(event, {
-      listbox: this.listboxRef(),
-      popover: this.popoverRef(),
-    });
-  }
-
-  private handleActionCommit(draft?: { label: string }): void {
-    const term = this.resolveLiveTerm();
-    const effective = draft ?? { label: term };
-    if (effective.label === '') {
-      return;
-    }
-    const previousValues = [...this.values()];
-    this.createHandler.dispatch(effective, term, previousValues);
-  }
-
-  /**
-   * Live search-term accessor. Same contract as
-   * {@link CngxActionSelect}; both organisms honour the
-   * `liveInputFallback` switch identically.
-   *
-   * @internal
-   */
-  private resolveLiveTerm(): string {
-    const term = this.searchTerm();
-    if (term !== '' || !this.liveInputFallback()) {
-      return term;
-    }
-    return this.inputEl()?.nativeElement.value ?? '';
-  }
+  protected readonly handleInputKeydown = this.triggerInput.handleInputKeydown;
+  private readonly handleActionCommit = this.triggerInput.handleActionCommit;
 
   protected handleWrapperClick(event: MouseEvent): void {
     if (this.disabled()) {

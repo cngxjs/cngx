@@ -21,6 +21,7 @@ import { CNGX_STATEFUL, type CngxAsyncState, type AsyncStatus } from '@cngx/core
 import { CngxClickOutside, CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger, type PopoverPlacement } from '@cngx/common/popover';
 
+import { handleFlatNavPageJumpKey } from '../shared/internal/page-jump-handler';
 import { CngxSelectPanel } from '../shared/internal/panel/panel.component';
 
 import {
@@ -724,8 +725,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
 
   protected handleFocus(): void {
     this.focusState.markFocused();
-    const openOnFocus =
-      this.config.openOn === 'focus' || this.config.openOn === 'click+focus';
+    const openOnFocus = this.config.openOn === 'focus' || this.config.openOn === 'click+focus';
     if (openOnFocus && !this.suppressOpenOnFocus) {
       this.open();
     }
@@ -787,34 +787,14 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
       }
     }
 
-    if (event.key === 'PageDown' || event.key === 'PageUp') {
-      event.preventDefault();
-      if (!pop || !lb) {
-        return;
-      }
-      if (!pop.isVisible()) {
-        pop.show();
-      }
-      const items = lb.options();
-      const ad = lb.ad;
-      const currentId = ad.activeId();
-      const currentListboxIndex = items.findIndex((o) => o.id === currentId);
-      const direction: 1 | -1 = event.key === 'PageDown' ? 1 : -1;
-      const action = this.flatNavStrategy.onPageJump(
-        {
-          options: this.flatOptions(),
-          listboxItems: items,
-          currentFlatIndex: -1,
-          currentListboxIndex,
-          compareWith: this.compareWith(),
-          disabled: this.disabled(),
-          typeaheadController: this.typeaheadController,
-        },
-        direction,
-      );
-      if (action.kind === 'highlight') {
-        ad.highlightByIndex(action.index);
-      }
-    }
+    handleFlatNavPageJumpKey(event, {
+      listbox: lb,
+      popover: pop,
+      strategy: this.flatNavStrategy,
+      flatOptions: this.flatOptions,
+      compareWith: this.compareWith,
+      disabled: this.disabled,
+      typeaheadController: this.typeaheadController,
+    });
   }
 }

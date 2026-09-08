@@ -49,6 +49,8 @@ import {
   CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY,
   type CngxCommitErrorAnnouncePolicy,
 } from '../shared/commit-error-announcer';
+import { createArrayToggleDispatch } from '../shared/internal/array-toggle';
+import { createChipOverflow } from '../shared/internal/chip-overflow';
 import { sameArrayContents } from '../shared/internal/compare';
 import { CNGX_ACTION_HOST_BRIDGE_FACTORY } from '../shared/action-host-bridge';
 import { createFieldSync } from '../shared/field-sync';
@@ -679,25 +681,6 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     () => this.compareWith() as unknown as (a: unknown, b: unknown) => boolean,
   );
 
-  /** @internal - chip subset + overflow badge count (see CngxMultiSelect). */
-  protected readonly visibleSelected = computed<CngxSelectOptionDef<T>[]>(() => {
-    const all = this.selectedOptions();
-    if (this.chipOverflow() !== 'truncate') {
-      return all;
-    }
-    const cap = Math.max(1, this.maxVisibleChips());
-    return all.length <= cap ? all : all.slice(0, cap);
-  });
-  /** @internal */
-  protected readonly overflowBadgeCount = computed<number>(() => {
-    if (this.chipOverflow() !== 'truncate') {
-      return 0;
-    }
-    const total = this.selectedOptions().length;
-    const cap = Math.max(1, this.maxVisibleChips());
-    return total > cap ? total - cap : 0;
-  });
-
   protected readonly selectedOptions = computed<CngxSelectOptionDef<T>[]>(
     () => {
       const vals = this.values();
@@ -736,10 +719,42 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     },
   );
 
+  private readonly chipStrip = createChipOverflow<T>({
+    selectedOptions: this.selectedOptions,
+    chipOverflow: this.chipOverflow,
+    maxVisibleChips: this.maxVisibleChips,
+  });
+  /** @internal - chip subset + overflow badge count (see createChipOverflow). */
+  protected readonly visibleSelected = this.chipStrip.visibleSelected;
+  /** @internal */
+  protected readonly overflowBadgeCount = this.chipStrip.overflowBadgeCount;
+
   private readonly togglingOption = this.core.togglingOption;
 
   /** Rollback target for a commit in flight. */
   private lastCommittedValues: T[] = [];
+
+  /**
+   * Toggle/clear finalize + AD-activation dispatch. Shared with
+   * `CngxMultiSelect` / `CngxReorderableMultiSelect`; this variant adds
+   * `source: this` to the change payloads.
+   */
+  private readonly toggleDispatch = createArrayToggleDispatch<T>({
+    values: this.values,
+    compareWith: this.compareWith,
+    commitMode: this.commitMode,
+    commitAction: this.commitAction,
+    core: this.core,
+    setLastCommitted: (previous) => {
+      this.lastCommittedValues = previous;
+    },
+    beginToggle: (next, previous, option, action) =>
+      this.commitHandler.beginToggle(next, previous, option, action),
+    beginClear: (previous, action) => this.commitHandler.beginClear(previous, action),
+    emitOptionToggled: (option, added) => this.optionToggled.emit({ option, added }),
+    emitSelectionChange: (change) => this.selectionChange.emit({ source: this, ...change }),
+    emitCleared: () => this.cleared.emit(),
+  });
 
   /** Tracks whether the first `searchTermChange` emission has been processed. */
   private readonly hasEmittedInitial = signal(false);
@@ -775,19 +790,9 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     commitAction: this.commitAction,
     getLastCommitted: () => this.lastCommittedValues,
     onToggleFinalize: (option, isNowSelected) =>
-      this.finalizeToggle(option, isNowSelected, this.lastCommittedValues),
-    onClearFinalize: (previous, finalValues) => {
-      this.cleared.emit();
-      this.selectionChange.emit({
-        source: this,
-        values: finalValues,
-        previousValues: previous,
-        added: [],
-        removed: previous,
-        option: null,
-        action: 'clear',
-      });
-    },
+      this.toggleDispatch.finalizeToggle(option, isNowSelected, this.lastCommittedValues),
+    onClearFinalize: (previous, finalValues) =>
+      this.toggleDispatch.clearFinalize(previous, finalValues),
     onStateChange: (status) => this.stateChange.emit(status),
     onError: (err) => this.commitError.emit(err),
     announceError: (err) => this.announceCommitError(err),
@@ -812,7 +817,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
       this.lastCommittedValues = previous;
       this.togglingOption.set(item);
     },
-    onSyncFinalize: (item, previous) => this.finalizeToggle(item, false, previous),
+    onSyncFinalize: (item, previous) => this.toggleDispatch.finalizeToggle(item, false, previous),
   });
 
   /** @internal */ protected readonly isGroup = this.core.panelHostAdapter.isGroup;
@@ -840,39 +845,14 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     });
 
     // Lifecycle + routing in createADActivationDispatcher; the array-shape
-    // toggle stays inline because it needs the local compareWith snapshot.
+    // toggle/finalize closures live in createArrayToggleDispatch.
     createADActivationDispatcher<T, T[]>({
       listboxRef: this.listboxRef,
       core: this.core,
       closeOnSelect: false,
       commitAction: this.commitAction,
-      onCommit: (toggledValue, opt) => {
-        const previous = [...this.values()];
-        const wasSelected = previous.some((v) => this.compareWith()(v, toggledValue));
-        const next = wasSelected
-          ? previous.filter((v) => !this.compareWith()(v, toggledValue))
-          : [...previous, toggledValue];
-        this.lastCommittedValues = previous;
-        this.togglingOption.set(opt);
-        if (this.commitMode() === 'optimistic') {
-          this.values.set(next);
-        }
-        const action = this.commitAction();
-        if (action) {
-          this.commitHandler.beginToggle(next, previous, opt, action);
-        }
-      },
-      onActivate: (_value, opt) => {
-        // Listbox already wrote through [(values)]; invert the toggle to
-        // recover the pre-mutation snapshot.
-        const currentSelected = this.isSelected(opt);
-        const current = this.values();
-        const eq = this.compareWith();
-        const previousValues = currentSelected
-          ? current.filter((v) => !eq(v, opt.value))
-          : [...current, opt.value];
-        this.finalizeToggle(opt, currentSelected, previousValues);
-      },
+      onCommit: this.toggleDispatch.handleADCommit,
+      onActivate: this.toggleDispatch.handleADActivate,
     });
 
     inject(CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY)({
@@ -976,34 +956,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   }
 
   /** @internal - imperative clear-all used by slot + default button. */
-  protected readonly clearAllCallback: () => void = () => {
-    const previous = [...this.values()];
-    if (previous.length === 0) {
-      return;
-    }
-    const action = this.commitAction();
-    if (action) {
-      this.lastCommittedValues = previous;
-      this.togglingOption.set(null);
-      if (this.commitMode() === 'optimistic') {
-        this.values.set([]);
-      }
-      this.commitHandler.beginClear(previous, action);
-      return;
-    }
-    this.values.set([]);
-    this.cleared.emit();
-    this.selectionChange.emit({
-      source: this,
-      values: [],
-      previousValues: previous,
-      added: [],
-      removed: previous,
-      option: null,
-      action: 'clear',
-    });
-    this.core.announce(null, 'removed', 0, true);
-  };
+  protected readonly clearAllCallback: () => void = this.toggleDispatch.clearAll;
 
   /** @internal */
   // True only inside the lifecycle emitter's post-close focus restore -
@@ -1012,8 +965,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
 
   protected handleFocus(): void {
     this.focusState.markFocused();
-    const openOnFocus =
-      this.config.openOn === 'focus' || this.config.openOn === 'click+focus';
+    const openOnFocus = this.config.openOn === 'focus' || this.config.openOn === 'click+focus';
     if (openOnFocus && !this.suppressOpenOnFocus) {
       this.open();
     }
@@ -1031,23 +983,5 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
       listbox: this.listboxRef(),
       popover: this.popoverRef(),
     });
-  }
-
-  private finalizeToggle(
-    opt: CngxSelectOptionDef<T>,
-    isNowSelected: boolean,
-    previousValues: readonly T[] = [],
-  ): void {
-    this.optionToggled.emit({ option: opt, added: isNowSelected });
-    this.selectionChange.emit({
-      source: this,
-      values: this.values(),
-      previousValues,
-      added: isNowSelected ? [opt.value] : [],
-      removed: isNowSelected ? [] : [opt.value],
-      option: opt,
-      action: 'toggle',
-    });
-    this.core.announce(opt, isNowSelected ? 'added' : 'removed', this.values().length, true);
   }
 }
