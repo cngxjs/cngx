@@ -1,16 +1,11 @@
 import { provideZonelessChangeDetection, type Signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createResizeObserverMock } from '@cngx/testing';
 
 import type { CngxRecycler } from '@cngx/common/data';
 
 import { CngxIncrementalVirtualizedBody } from './incremental-list-virtualized-body.component';
-
-class MockResizeObserver {
-  observe(): void {}
-  unobserve(): void {}
-  disconnect(): void {}
-}
 
 /** Typed view of the component's protected read surface. */
 interface BodyInternals {
@@ -20,7 +15,7 @@ interface BodyInternals {
 
 describe('CngxIncrementalVirtualizedBody', () => {
   beforeEach(() => {
-    vi.stubGlobal('ResizeObserver', MockResizeObserver);
+    createResizeObserverMock().install(window);
     // Run the scroll observer's rAF callback synchronously so a `scroll` event
     // updates the range in the same tick, no frame wait.
     vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => {

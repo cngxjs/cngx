@@ -1,15 +1,10 @@
 import { provideZonelessChangeDetection, signal, type WritableSignal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
+import { createResizeObserverMock } from '@cngx/testing';
 import type { CngxAsyncState, AsyncStatus } from '@cngx/core/utils';
 
 import { injectRecycler, type CngxRecycler } from './recycler';
-
-class MockResizeObserver {
-  observe(): void {}
-  unobserve(): void {}
-  disconnect(): void {}
-}
 
 function createMockState(
   overrides?: Partial<{
@@ -40,7 +35,7 @@ describe('injectRecycler', () => {
   let mockContainer: HTMLDivElement;
 
   beforeEach(() => {
-    vi.stubGlobal('ResizeObserver', MockResizeObserver);
+    createResizeObserverMock().install(window);
 
     mockContainer = document.createElement('div');
     mockContainer.id = 'recycler-test';

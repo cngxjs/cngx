@@ -1,6 +1,7 @@
 import { Component, DestroyRef, inject, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
+import { createResizeObserverMock } from '@cngx/testing';
 
 import { createScrollObserver, type ScrollState } from './scroll-observer';
 
@@ -20,17 +21,11 @@ function sizedDiv(className: string, clientHeight: number): HTMLDivElement {
 // assertion runs; a macrotask hop drains the microtask queue first.
 const flushMutations = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
 
-class MockResizeObserver {
-  observe(): void {}
-  unobserve(): void {}
-  disconnect(): void {}
-}
-
 describe('createScrollObserver', () => {
   let mockContainer: HTMLDivElement;
 
   beforeEach(() => {
-    vi.stubGlobal('ResizeObserver', MockResizeObserver);
+    createResizeObserverMock().install(window);
 
     mockContainer = document.createElement('div');
     mockContainer.classList.add('test-scroll');
