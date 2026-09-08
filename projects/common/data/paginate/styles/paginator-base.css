@@ -183,7 +183,7 @@
     line-height: 1;
     cursor: pointer;
     user-select: none;
-    transition: background var(--cngx-paginator-transition, 150ms ease);
+    transition: background var(--cngx-paginator-transition, var(--cngx-duration-fast, 150ms) ease);
   }
 
   .cngx-paginator__button:hover {
@@ -535,8 +535,8 @@
     border-radius: 50%;
     background: var(--cngx-paginator-dot-color, color-mix(in oklch, currentColor 35%, transparent));
     transition:
-      transform var(--cngx-paginator-transition, 150ms ease),
-      background var(--cngx-paginator-transition, 150ms ease);
+      transform var(--cngx-paginator-transition, var(--cngx-duration-fast, 150ms) ease),
+      background var(--cngx-paginator-transition, var(--cngx-duration-fast, 150ms) ease);
   }
 
   /* Edge-shrink tiers (the transform is the resting size, not an animation). */

@@ -75,7 +75,7 @@
       font: inherit;
       font-size: var(--cngx-font-size-sm, 0.8125rem);
       cursor: pointer;
-      transition: background-color 0.12s, border-color 0.12s, color 0.12s;
+      transition: background-color var(--cngx-duration-fast, 150ms), border-color var(--cngx-duration-fast, 150ms), color var(--cngx-duration-fast, 150ms);
     }
 
     /* Segmented-control geometry: collapse adjacent borders inside the

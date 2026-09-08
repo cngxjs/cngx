@@ -887,7 +887,7 @@
   .cngx-dga-header,
   .cngx-dga-row__summary,
   .cngx-dga-row__cells {
-    transition: padding var(--cngx-dga-transition, 300ms cubic-bezier(0.22, 1, 0.36, 1));
+    transition: padding var(--cngx-dga-transition, var(--cngx-duration-slow, 320ms) cubic-bezier(0.22, 1, 0.36, 1));
   }
 
   /* Column head: strong surface, mono uppercase dim. */

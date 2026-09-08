@@ -30,7 +30,7 @@
   line-height: 1;
   color: var(--cngx-breadcrumb-overflow-trigger-color, var(--cngx-color-text-muted, oklch(0.5 0.01 250)));
   cursor: pointer;
-  transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+  transition: background var(--cngx-duration-base, 200ms) ease, color var(--cngx-duration-base, 200ms) ease, border-color var(--cngx-duration-base, 200ms) ease;
 }
 
 .cngx-breadcrumb__overflow-trigger:hover {

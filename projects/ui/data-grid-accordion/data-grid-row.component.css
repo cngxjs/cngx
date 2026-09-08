@@ -159,7 +159,7 @@
   border-inline-end: var(--cngx-dga-chevron-stroke, 2px solid currentcolor);
   border-block-end: var(--cngx-dga-chevron-stroke, 2px solid currentcolor);
   transform: rotate(45deg);
-  transition: transform var(--cngx-dga-chevron-transition, 150ms ease);
+  transition: transform var(--cngx-dga-chevron-transition, var(--cngx-duration-fast, 150ms) ease);
 }
 
 .cngx-dga-row[data-expanded] .cngx-dga-row__chevron {

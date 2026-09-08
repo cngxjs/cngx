@@ -147,7 +147,7 @@
     border-inline-end: 2px solid currentcolor;
     border-block-end: 2px solid currentcolor;
     rotate: 45deg;
-    transition: rotate 0.15s ease;
+    transition: rotate var(--cngx-duration-fast, 150ms) ease;
   }
 
   [cngxAccordionPanel][aria-expanded='true']::after {

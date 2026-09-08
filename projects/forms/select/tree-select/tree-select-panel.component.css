@@ -316,7 +316,7 @@
       color: var(--cngx-tree-select-twisty-color, inherit);
       font-size: var(--cngx-tree-select-twisty-font-size, 0.75rem);
       cursor: pointer;
-      transition: transform 150ms ease;
+      transition: transform var(--cngx-duration-fast, 150ms) ease;
     }
 
     .cngx-tree-select__twisty--open {

@@ -1258,9 +1258,9 @@
     block-size: var(--cngx-select-chip-remove-size, 1.25rem);
     border-radius: 50%;
     transition:
-      background 120ms ease,
-      color 120ms ease,
-      transform 120ms ease;
+      background var(--cngx-duration-fast, 150ms) ease,
+      color var(--cngx-duration-fast, 150ms) ease,
+      transform var(--cngx-duration-fast, 150ms) ease;
   }
   .cngx-select__chip-wrap .cngx-chip__remove:hover {
     background: var(--cngx-select-chip-remove-hover-bg, oklch(0 0 0 / 0.12));
@@ -1301,7 +1301,7 @@
       rotate(var(--cngx-select-chip-drag-tilt, -1.5deg));
     z-index: 5;
     position: relative;
-    transition: box-shadow 80ms ease;
+    transition: box-shadow var(--cngx-duration-fast, 150ms) ease;
   }
 
   .cngx-select__chip--dragging .cngx-chip,

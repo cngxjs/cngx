@@ -216,8 +216,8 @@
       padding: var(--cngx-copy-block-btn-padding, 4px 8px);
       font-size: var(--cngx-copy-block-btn-font-size, var(--cngx-font-size-sm, 0.75rem));
       transition:
-        background 0.15s,
-        border-color 0.15s;
+        background var(--cngx-duration-fast, 150ms),
+        border-color var(--cngx-duration-fast, 150ms);
     }
 
     .cngx-copy-block__button--copied {
