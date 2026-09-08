@@ -16,6 +16,7 @@ import {
   viewChild,
   type Signal,
 } from '@angular/core';
+import { arrayEqual } from '@cngx/utils';
 import { CngxScrollSpy, injectMediaQuery } from '@cngx/common/layout';
 
 import { injectTocConfig } from './config/inject-toc-config';
@@ -36,10 +37,6 @@ interface MutableItem {
   children: MutableItem[];
 }
 
-/** Element-wise string-array compare - the shared comparator for both the flat-id list and the active trail. */
-function idsEqual(a: readonly string[], b: readonly string[]): boolean {
-  return a.length === b.length && a.every((value, index) => value === b[index]);
-}
 
 /**
  * Structural compare of two discovered outlines (id + label + nesting). Guards
@@ -147,12 +144,12 @@ export class CngxToc implements CngxTocContract {
   protected readonly navLabel = computed(() => this.cfg.ariaLabels?.nav ?? 'On this page');
 
   /**
-   * Depth-first flat id list feeding `[cngxScrollSpy]`. `equal: idsEqual`
+   * Depth-first flat id list feeding `[cngxScrollSpy]`. `equal: arrayEqual`
    * keeps the reference stable across same-shape re-sets so a re-render does
    * not re-create the observer.
    */
   protected readonly flatIds = computed(() => this.collectIds(this.resolvedItems()), {
-    equal: idsEqual,
+    equal: arrayEqual,
   });
 
   constructor() {
@@ -193,7 +190,7 @@ export class CngxToc implements CngxTocContract {
    * feeding an attribute binding must not allocate a fresh array every spy
    * tick (reference_signal_architecture Equality Rule).
    */
-  protected readonly activeTrail = computed(() => this.computeTrail(), { equal: idsEqual });
+  protected readonly activeTrail = computed(() => this.computeTrail(), { equal: arrayEqual });
 
   /** Resolved item template: instance slot -> config default -> built-in label. */
   protected readonly resolvedItemTpl = computed(
