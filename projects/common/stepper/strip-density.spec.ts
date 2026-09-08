@@ -1,23 +1,15 @@
 import type { DestroyRef } from '@angular/core';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { createResizeObserverMock } from '@cngx/testing';
+
 import { createStripDensity } from './strip-density';
 
-// Controllable ResizeObserver: captures the callback so the spec can
-// push container widths and assert the density rung. The chart
-// ResizeObserverMock is a no-op stub (cannot emit), so a local one is
-// needed here to drive threshold crossings.
-let lastCallback: ResizeObserverCallback | null = null;
-class ControllableResizeObserver {
-  constructor(cb: ResizeObserverCallback) {
-    lastCallback = cb;
-  }
-  observe(): void {}
-  unobserve(): void {}
-  disconnect(): void {}
-}
+// The shared mock captures the observer callback so the spec can push
+// container widths and assert the density rung.
+let roMock = createResizeObserverMock();
 function emitWidth(width: number): void {
-  lastCallback?.([{ contentRect: { width } } as ResizeObserverEntry], {} as ResizeObserver);
+  roMock.triggerResize({ contentRect: { width } as DOMRectReadOnly });
 }
 
 const noopDestroyRef = { onDestroy: () => undefined } as unknown as DestroyRef;
@@ -39,8 +31,8 @@ function make(opts: {
 
 describe('createStripDensity', () => {
   beforeEach(() => {
-    lastCallback = null;
-    vi.stubGlobal('ResizeObserver', ControllableResizeObserver);
+    roMock = createResizeObserverMock();
+    roMock.install(window);
   });
 
   afterEach(() => {
