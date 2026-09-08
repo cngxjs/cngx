@@ -11,6 +11,7 @@ import {
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createResizeObserverMock } from '@cngx/testing';
 import { CngxChart } from './chart.component';
 import { CNGX_CHART_CONTEXT, type CngxChartContext } from './chart-context';
 import {
@@ -34,8 +35,6 @@ import {
   withChartRendererFactory,
   withChartRendererThreshold,
 } from '../renderer/renderer-factory';
-
-import { ResizeObserverMock } from '../testing/resize-observer-mock';
 
 @Component({
   selector: 'test-context-probe',
@@ -72,7 +71,7 @@ class TestHost {
 
 describe('CngxChart', () => {
   beforeEach(() => {
-    vi.stubGlobal('ResizeObserver', ResizeObserverMock);
+    createResizeObserverMock().install(window);
     TestBed.configureTestingModule({ imports: [TestHost] });
   });
 
@@ -489,7 +488,7 @@ class SwitchHost {
 }
 
 describe('CngxChart - auto-switch backend (Phase 3)', () => {
-  beforeEach(() => vi.stubGlobal('ResizeObserver', ResizeObserverMock));
+  beforeEach(() => createResizeObserverMock().install(window));
   afterEach(() => vi.unstubAllGlobals());
 
   function mount(
@@ -571,7 +570,7 @@ describe('CngxChart - auto-switch backend (Phase 3)', () => {
 });
 
 describe('CngxChart - [connectionState] envelope (Phase 4)', () => {
-  beforeEach(() => vi.stubGlobal('ResizeObserver', ResizeObserverMock));
+  beforeEach(() => createResizeObserverMock().install(window));
   afterEach(() => vi.unstubAllGlobals());
 
   it('shows no connection overlay when [connectionState] is unbound', () => {
@@ -780,7 +779,7 @@ describe('CngxChart - [connectionState] envelope (Phase 4)', () => {
 });
 
 describe('CngxChart - canvas overlay gated on the content view (Phase 3 blocker fix)', () => {
-  beforeEach(() => vi.stubGlobal('ResizeObserver', ResizeObserverMock));
+  beforeEach(() => createResizeObserverMock().install(window));
   afterEach(() => vi.unstubAllGlobals());
 
   it('suppresses the canvas overlay while a fallback view is active', async () => {
@@ -839,7 +838,7 @@ describe('CngxChart - plot inset', () => {
   }
 
   beforeEach(() => {
-    vi.stubGlobal('ResizeObserver', ResizeObserverMock);
+    createResizeObserverMock().install(window);
     TestBed.configureTestingModule({ imports: [AxedHost] });
   });
 
@@ -944,7 +943,7 @@ describe('CngxChart - inset derived per axis combination', () => {
   }
 
   beforeEach(() => {
-    vi.stubGlobal('ResizeObserver', ResizeObserverMock);
+    createResizeObserverMock().install(window);
     TestBed.configureTestingModule({ imports: [ComboHost] });
   });
 
@@ -1195,7 +1194,7 @@ describe('CngxChart - canvas marks land in the same plot the axes sit on', () =>
     readonly data = signal<readonly number[]>([1, 2, 3, 4, 5]);
   }
 
-  beforeEach(() => vi.stubGlobal('ResizeObserver', ResizeObserverMock));
+  beforeEach(() => createResizeObserverMock().install(window));
   afterEach(() => vi.unstubAllGlobals());
 
   function mount(pointCount: number): {
@@ -1306,7 +1305,7 @@ describe('CngxChart - axis decoration is authored inside the viewBox', () => {
   class TitledAxesHost {}
 
   beforeEach(() => {
-    vi.stubGlobal('ResizeObserver', ResizeObserverMock);
+    createResizeObserverMock().install(window);
     TestBed.configureTestingModule({ imports: [TitledAxesHost] });
   });
 
@@ -1402,7 +1401,7 @@ describe('CngxChart - a consumer axis participates through the contract token', 
   class ConsumerAxisHost {}
 
   beforeEach(() => {
-    vi.stubGlobal('ResizeObserver', ResizeObserverMock);
+    createResizeObserverMock().install(window);
     TestBed.configureTestingModule({ imports: [ConsumerAxisHost] });
   });
 
@@ -1446,7 +1445,7 @@ describe('CngxChart - a consumer axis participates through the contract token', 
 });
 
 describe('CngxChart - slot templates see the plot they sit inside', () => {
-  beforeEach(() => vi.stubGlobal('ResizeObserver', ResizeObserverMock));
+  beforeEach(() => createResizeObserverMock().install(window));
   afterEach(() => vi.unstubAllGlobals());
 
   it('hands the plot rectangle to the slot context', async () => {
@@ -1479,7 +1478,7 @@ describe('CngxChart - slot templates see the plot they sit inside', () => {
 });
 
 describe('CngxChart - overlay slot', () => {
-  beforeEach(() => vi.stubGlobal('ResizeObserver', ResizeObserverMock));
+  beforeEach(() => createResizeObserverMock().install(window));
   afterEach(() => vi.unstubAllGlobals());
 
   it('renders no overlay frame when no template is projected', () => {
@@ -1646,7 +1645,7 @@ describe('CngxChart - overlay survives the renderer crossover', () => {
     readonly data = signal<readonly number[]>([1, 2, 3]);
   }
 
-  beforeEach(() => vi.stubGlobal('ResizeObserver', ResizeObserverMock));
+  beforeEach(() => createResizeObserverMock().install(window));
   afterEach(() => vi.unstubAllGlobals());
 
   function mount(pointCount: number): { isCanvas: boolean; frameCount: number; plotText: string } {
@@ -1694,7 +1693,7 @@ describe('CngxChart - overlay survives the renderer crossover', () => {
 });
 
 describe('CngxChart - duplicate same-orientation axis dev warning', () => {
-  beforeEach(() => vi.stubGlobal('ResizeObserver', ResizeObserverMock));
+  beforeEach(() => createResizeObserverMock().install(window));
   afterEach(() => {
     vi.unstubAllGlobals();
     vi.restoreAllMocks();

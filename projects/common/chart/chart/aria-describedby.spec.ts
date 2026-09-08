@@ -1,9 +1,8 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createResizeObserverMock } from '@cngx/testing';
 import { CngxChart } from './chart.component';
-
-import { ResizeObserverMock } from '../testing/resize-observer-mock';
 
 @Component({
   standalone: true,
@@ -25,7 +24,7 @@ class TestHost {
 
 describe('CngxChart - aria-describedby always-in-DOM invariant', () => {
   beforeEach(() => {
-    vi.stubGlobal('ResizeObserver', ResizeObserverMock);
+    createResizeObserverMock().install(window);
     TestBed.configureTestingModule({ imports: [TestHost] });
   });
 

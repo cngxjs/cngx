@@ -1,11 +1,10 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createResizeObserverMock } from '@cngx/testing';
 import { CngxBar } from './bar.component';
 import { CngxAxis } from '../axis/axis.component';
 import { CngxChart } from '../chart/chart.component';
-
-import { ResizeObserverMock } from '../testing/resize-observer-mock';
 
 @Component({
   standalone: true,
@@ -26,7 +25,7 @@ class TestHost {
 
 describe('CngxBar', () => {
   beforeEach(() => {
-    vi.stubGlobal('ResizeObserver', ResizeObserverMock);
+    createResizeObserverMock().install(window);
     TestBed.configureTestingModule({ imports: [TestHost] });
   });
 
@@ -116,7 +115,7 @@ describe('CngxBar', () => {
 });
 
 describe('CngxBar [color] parity', () => {
-  beforeEach(() => vi.stubGlobal('ResizeObserver', ResizeObserverMock));
+  beforeEach(() => createResizeObserverMock().install(window));
   afterEach(() => vi.unstubAllGlobals());
 
   it('binds [color] onto the SVG mark like CngxLine does', () => {

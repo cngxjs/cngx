@@ -4,6 +4,7 @@ import { By } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createMatchMediaMock } from '@cngx/testing';
 
 import { CngxToc } from './toc.component';
 import { CngxTocRouterSync } from './toc-router-sync.directive';
@@ -17,7 +18,6 @@ class MockIntersectionObserver {
   disconnect = vi.fn();
 }
 
-let reducedMotionState = false;
 let navigate: ReturnType<typeof vi.fn>;
 let fragmentSubject: BehaviorSubject<string | null>;
 
@@ -43,28 +43,15 @@ class SyncHost {
 
 describe('CngxTocRouterSync', () => {
   beforeEach(() => {
-    reducedMotionState = false;
     navigate = vi.fn().mockResolvedValue(true);
     fragmentSubject = new BehaviorSubject<string | null>(null);
     vi.stubGlobal('IntersectionObserver', MockIntersectionObserver);
-    (globalThis as Record<string, unknown>)['matchMedia'] = vi.fn().mockImplementation((query: string) => ({
-      get matches() {
-        return reducedMotionState;
-      },
-      media: query,
-      addEventListener: vi.fn(),
-      removeEventListener: vi.fn(),
-      onchange: null,
-      addListener: vi.fn(),
-      removeListener: vi.fn(),
-      dispatchEvent: vi.fn(),
-    }));
+    createMatchMediaMock().install(window);
   });
 
   afterEach(() => {
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
-    delete (globalThis as Record<string, unknown>)['matchMedia'];
   });
 
   function configureWithRouter(): void {

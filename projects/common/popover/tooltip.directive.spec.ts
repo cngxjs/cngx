@@ -1,6 +1,7 @@
 import { Component, ElementRef, Renderer2, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createMatchMediaMock } from '@cngx/testing';
 
 import { provideDirection } from '@cngx/core';
 
@@ -16,16 +17,7 @@ import type { PopoverPlacement, PopoverPositionTryFallback } from './popover.typ
 
 /** Stubs matchMedia for CngxReducedMotion hostDirective. */
 function installMatchMediaStub(): void {
-  if (!window.matchMedia) {
-    Object.defineProperty(window, 'matchMedia', {
-      writable: true,
-      value: vi.fn().mockReturnValue({
-        matches: false,
-        addEventListener: vi.fn(),
-        removeEventListener: vi.fn(),
-      }),
-    });
-  }
+  createMatchMediaMock().install(window);
 }
 
 /** Stubs the Popover API on dynamically created elements. */

@@ -2,6 +2,7 @@ import { Component, provideZonelessChangeDetection, signal } from '@angular/core
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+import { createResizeObserverMock } from '@cngx/testing';
 
 import { CngxPaginate, createManualState } from '@cngx/common/data';
 import type { CngxAsyncState } from '@cngx/core/utils';
@@ -159,12 +160,6 @@ class TrackHostCmp {
   };
 }
 
-class MockResizeObserver {
-  observe(): void {}
-  unobserve(): void {}
-  disconnect(): void {}
-}
-
 /** Structural view of the organism's derived read surface (protected members). */
 interface ListInternals {
   items(): readonly number[];
@@ -209,7 +204,7 @@ describe('CngxIncrementalList', () => {
   // tests unaffected (they never touch it). rAF stays real - the zoneless
   // scheduler needs it, and a sync stub would run CD during a notification.
   beforeEach(() => {
-    vi.stubGlobal('ResizeObserver', MockResizeObserver);
+    createResizeObserverMock().install(window);
   });
 
   afterEach(() => {

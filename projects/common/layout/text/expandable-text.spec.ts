@@ -1,20 +1,14 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import { createResizeObserverMock } from '@cngx/testing';
 import { CngxExpandableText, CngxExpandableToggle } from './expandable-text';
 
-// Mock ResizeObserver (must be constructible with `new`)
-class ResizeObserverMock {
-  constructor(_callback: ResizeObserverCallback) {}
-  observe(_target?: Element): void {}
-  unobserve(_target?: Element): void {}
-  disconnect(): void {}
-}
-// Stubbed once at module level on purpose: every test here needs the mock, so it
+// Installed once at module level on purpose: every test here needs the mock, so it
 // must not be unstubbed per test. The shared setup unstubs at file end, which is
 // what keeps it out of the next spec file.
-vi.stubGlobal('ResizeObserver', ResizeObserverMock);
+createResizeObserverMock().install(window);
 
 @Component({
   template: `

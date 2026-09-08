@@ -3,19 +3,13 @@ import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { createResizeObserverMock } from '@cngx/testing';
 import { CngxTruncate } from './truncate.directive';
 
-// Mock ResizeObserver (must be constructible with `new`)
-class ResizeObserverMock {
-  constructor(_callback: ResizeObserverCallback) {}
-  observe(_target?: Element): void {}
-  unobserve(_target?: Element): void {}
-  disconnect(): void {}
-}
-// Stubbed once at module level on purpose: every test here needs the mock, so it
+// Installed once at module level on purpose: every test here needs the mock, so it
 // must not be unstubbed per test. The shared setup unstubs at file end, which is
 // what keeps it out of the next spec file.
-vi.stubGlobal('ResizeObserver', ResizeObserverMock);
+createResizeObserverMock().install(window);
 
 @Component({
   template: `
@@ -100,11 +94,14 @@ describe('CngxTruncate', () => {
     TestBed.configureTestingModule({ providers: [{ provide: DOCUMENT, useValue: ssrDoc }] });
     // the zoneless scheduler uses rAF itself, so count observer construction instead
     const observerCreated = vi.fn();
-    class CountingResizeObserver extends ResizeObserverMock {
-      constructor(callback: ResizeObserverCallback) {
-        super(callback);
+    // Construction count has no shared-mock equivalent; a local class is the seam.
+    class CountingResizeObserver {
+      constructor(_callback: ResizeObserverCallback) {
         observerCreated();
       }
+      observe(): void {}
+      unobserve(): void {}
+      disconnect(): void {}
     }
     vi.stubGlobal('ResizeObserver', CountingResizeObserver);
 

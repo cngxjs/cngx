@@ -2,6 +2,7 @@ import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createMatchMediaMock, createResizeObserverMock } from '@cngx/testing';
 
 import {
   CngxStep,
@@ -475,22 +476,14 @@ describe('CngxStepper organism', () => {
   });
 
   describe('space-driven density (density: auto)', () => {
-    let lastResizeCb: ResizeObserverCallback | null = null;
-    class TestResizeObserver {
-      constructor(cb: ResizeObserverCallback) {
-        lastResizeCb = cb;
-      }
-      observe(): void {}
-      unobserve(): void {}
-      disconnect(): void {}
-    }
+    let roMock = createResizeObserverMock();
     function emitWidth(width: number): void {
-      lastResizeCb?.([{ contentRect: { width } } as ResizeObserverEntry], {} as ResizeObserver);
+      roMock.triggerResize({ contentRect: { width } as DOMRectReadOnly });
     }
 
     beforeEach(() => {
-      lastResizeCb = null;
-      vi.stubGlobal('ResizeObserver', TestResizeObserver);
+      roMock = createResizeObserverMock();
+      roMock.install(window);
     });
 
     afterEach(() => {
@@ -1714,16 +1707,7 @@ describe('CngxStepper organism', () => {
     // Forces displayMode into the collapse branch: createMobileViewportSignal
     // reads globalThis.matchMedia, absent in jsdom, so the stub is the seam.
     beforeEach(() => {
-      vi.stubGlobal(
-        'matchMedia',
-        (query: string) =>
-          ({
-            matches: true,
-            media: query,
-            addEventListener: () => undefined,
-            removeEventListener: () => undefined,
-          }) as unknown as MediaQueryList,
-      );
+      createMatchMediaMock(true).install(window);
     });
 
     afterEach(() => {

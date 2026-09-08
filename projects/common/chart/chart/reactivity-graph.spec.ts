@@ -9,12 +9,11 @@ import {
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createResizeObserverMock } from '@cngx/testing';
 import { CngxChart } from './chart.component';
 import { CngxAxis } from '../axis/axis.component';
 import { CngxLine } from '../layers/line.component';
 import { CngxThreshold } from '../layers/threshold.component';
-
-import { ResizeObserverMock } from '../testing/resize-observer-mock';
 
 @Component({
   standalone: true,
@@ -36,7 +35,7 @@ class TestHost {
 
 describe('Chart graph cascade - reference-stability invariant', () => {
   beforeEach(() => {
-    vi.stubGlobal('ResizeObserver', ResizeObserverMock);
+    createResizeObserverMock().install(window);
     TestBed.configureTestingModule({ imports: [TestHost] });
   });
 

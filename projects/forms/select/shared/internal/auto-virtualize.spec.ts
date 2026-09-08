@@ -1,6 +1,7 @@
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createResizeObserverMock } from '@cngx/testing';
 
 import type { CngxPopover } from '@cngx/common/popover';
 
@@ -8,19 +9,13 @@ import type { CngxSelectOptionDef } from '../option.model';
 import type { PanelRenderer } from '../panel-renderer';
 import { createAutoPanelRenderer } from './auto-virtualize';
 
-class MockResizeObserver {
-  observe(): void {}
-  unobserve(): void {}
-  disconnect(): void {}
-}
-
 const TOTAL = 1000;
 
 describe('createAutoPanelRenderer - estimateSize clamp', () => {
   let container: HTMLDivElement;
 
   beforeEach(() => {
-    vi.stubGlobal('ResizeObserver', MockResizeObserver);
+    createResizeObserverMock().install(window);
     container = document.createElement('div');
     Object.defineProperty(container, 'scrollTop', {
       value: 0,

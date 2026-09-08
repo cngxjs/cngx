@@ -2,6 +2,7 @@ import { Component, signal, type Type } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createMatchMediaMock, type MatchMediaMock } from '@cngx/testing';
 import type { SidenavMode } from './sidenav';
 import { CngxSidenav } from './sidenav';
 import { CngxSidenavLayout } from './sidenav-layout';
@@ -618,29 +619,15 @@ describe('CngxSidenav resizable', () => {
 });
 
 describe('CngxSidenav responsive', () => {
-  let changeHandler: ((e: { matches: boolean }) => void) | undefined;
+  let mmMock: MatchMediaMock;
 
   beforeEach(() => {
-    changeHandler = undefined;
-    (globalThis as Record<string, unknown>)['matchMedia'] = vi
-      .fn()
-      .mockImplementation((query: string) => ({
-        matches: true,
-        media: query,
-        addEventListener: vi.fn((_: string, h: (e: { matches: boolean }) => void) => {
-          changeHandler = h;
-        }),
-        removeEventListener: vi.fn(),
-        onchange: null,
-        addListener: vi.fn(),
-        removeListener: vi.fn(),
-        dispatchEvent: vi.fn(),
-      }));
+    mmMock = createMatchMediaMock(true);
+    mmMock.install(window);
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
-    delete (globalThis as Record<string, unknown>)['matchMedia'];
+    mmMock.restore(window);
   });
 
   it('switches to side mode when media query matches', () => {
@@ -658,7 +645,7 @@ describe('CngxSidenav responsive', () => {
     fixture.detectChanges();
     TestBed.flushEffects();
     const nav = fixture.debugElement.query(By.directive(CngxSidenav)).injector.get(CngxSidenav);
-    changeHandler!({ matches: false });
+    mmMock.trigger(false);
     expect(nav.effectiveMode()).toBe('over'); // default mode is 'over'
   });
 
@@ -669,7 +656,7 @@ describe('CngxSidenav responsive', () => {
     fixture.detectChanges();
     TestBed.flushEffects();
     const nav = fixture.debugElement.query(By.directive(CngxSidenav)).injector.get(CngxSidenav);
-    changeHandler!({ matches: false });
+    mmMock.trigger(false);
     expect(nav.effectiveMode()).toBe('push');
   });
 });
@@ -888,23 +875,16 @@ describe('CngxSidenav resize math and shortcut', () => {
 
 describe('CngxSidenav config cascade', () => {
   // The config-driven responsive query fires the matchMedia effect during
-  // detectChanges; jsdom has no matchMedia, so stub it like the responsive suite.
+  // detectChanges; jsdom has no matchMedia, so install it like the responsive suite.
+  let mmMock: MatchMediaMock;
+
   beforeEach(() => {
-    (globalThis as Record<string, unknown>)['matchMedia'] = vi.fn().mockImplementation((query: string) => ({
-      matches: false,
-      media: query,
-      addEventListener: vi.fn(),
-      removeEventListener: vi.fn(),
-      onchange: null,
-      addListener: vi.fn(),
-      removeListener: vi.fn(),
-      dispatchEvent: vi.fn(),
-    }));
+    mmMock = createMatchMediaMock();
+    mmMock.install(window);
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
-    delete (globalThis as Record<string, unknown>)['matchMedia'];
+    mmMock.restore(window);
   });
 
   function getNav<T>(host: Type<T>): { fixture: ReturnType<typeof TestBed.createComponent<T>>; nav: CngxSidenav } {

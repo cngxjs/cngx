@@ -1,21 +1,17 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createMatchMediaMock } from '@cngx/testing';
 import { CNGX_AUDIO_CONFIG, withMuted, withVolume } from './config/audio-config';
 import { type CngxAudioHandle, injectCngxAudio, provideCngxAudioAt } from './inject-audio';
 
 beforeEach(() => {
   // Engine construction reads injectMediaQuery; jsdom has no matchMedia.
-  (window as unknown as Record<string, unknown>)['matchMedia'] = vi.fn(() => ({
-    matches: false,
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-  }));
+  createMatchMediaMock().install(window);
 });
 
 afterEach(() => {
   vi.restoreAllMocks();
-  delete (window as unknown as Record<string, unknown>)['matchMedia'];
 });
 
 function inject(config?: Record<string, unknown>): CngxAudioHandle {
