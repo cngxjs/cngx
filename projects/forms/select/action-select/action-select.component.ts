@@ -73,8 +73,8 @@ import { resolveActionSelectConfig } from '../shared/action-select-config';
 import { CNGX_SELECT_COMMIT_CONTROLLER_FACTORY } from '../shared/commit-controller.token';
 import { mergeCommitState } from '../shared/internal/merged-commit-state';
 import { CNGX_DISMISS_HANDLER_FACTORY } from '../shared/dismiss-handler';
+import { createActionTriggerInput } from '../shared/internal/action-trigger-input';
 import { resolveSelectConfig } from '../shared/internal/resolve-config';
-import { handlePageJumpKey } from '../shared/internal/page-jump-handler';
 import { setupVirtualization } from '../shared/internal/setup-virtualization';
 import { CNGX_SEARCH_EFFECTS_FACTORY } from '../shared/search-effects';
 import {
@@ -759,63 +759,25 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   }
 
   /**
-   * Enter on the trigger input. With no active AD item, a bound
-   * `quickCreateAction`, and a non-empty term, fires the create flow
-   * (type-and-Enter UX). If an AD item is active, `CngxListboxTrigger`
-   * already activated it; this is a no-op.
-   *
-   * @internal
+   * Trigger-input keyboard + live-term dispatch. Shared with
+   * `CngxActionMultiSelect`; this variant snapshots the scalar `value`.
    */
-  protected handleTriggerEnter(event: Event): void {
-    const ad = this.listboxRef()?.ad;
-    if (ad?.activeItem()) {
-      return;
-    }
-    if (!this.quickCreateAction()) {
-      return;
-    }
-    const term = this.resolveLiveTerm();
-    if (term === '') {
-      return;
-    }
-    event.preventDefault();
-    this.handleActionCommit();
-  }
+  private readonly triggerInput = createActionTriggerInput<T | undefined>({
+    listbox: this.listboxRef,
+    popover: this.popoverRef,
+    input: this.inputEl,
+    searchTerm: this.searchTerm,
+    liveInputFallback: this.liveInputFallback,
+    hasQuickCreateAction: () => this.quickCreateAction() !== null,
+    snapshotPrevious: () => this.value(),
+    dispatch: (draft, term, previous) => this.createHandler.dispatch(draft, term, previous),
+  });
 
+  /** @internal - Enter-to-quick-create (see createActionTriggerInput). */
+  protected readonly handleTriggerEnter = this.triggerInput.handleTriggerEnter;
   /** @internal - PageUp/PageDown shared behaviour (±10 option jump). */
-  protected handleInputKeydown(event: KeyboardEvent): void {
-    handlePageJumpKey(event, {
-      listbox: this.listboxRef(),
-      popover: this.popoverRef(),
-    });
-  }
-
-  private handleActionCommit(draft?: { label: string }): void {
-    const term = this.resolveLiveTerm();
-    const effective = draft ?? { label: term };
-    if (effective.label === '') {
-      return;
-    }
-    const previous = this.value();
-    this.createHandler.dispatch(effective, term, previous);
-  }
-
-  /**
-   * Live search-term accessor for the create flow. With
-   * `liveInputFallback` (default), reads the raw `<input>.value` when
-   * the debounced `searchTerm` hasn't caught up - prevents fast-typist
-   * Create-button taps from no-op'ing in the debounce window. Disable
-   * for predictable consumer-debounced payloads.
-   *
-   * @internal
-   */
-  private resolveLiveTerm(): string {
-    const term = this.searchTerm();
-    if (term !== '' || !this.liveInputFallback()) {
-      return term;
-    }
-    return this.inputEl()?.nativeElement.value ?? '';
-  }
+  protected readonly handleInputKeydown = this.triggerInput.handleInputKeydown;
+  private readonly handleActionCommit = this.triggerInput.handleActionCommit;
 
   protected handleWrapperClick(): void {
     if (this.disabled()) {
