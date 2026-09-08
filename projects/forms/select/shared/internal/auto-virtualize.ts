@@ -3,6 +3,7 @@ import { type ElementRef, type Signal, computed } from '@angular/core';
 import { injectRecycler } from '@cngx/common/data';
 import type { CngxPopover } from '@cngx/common/popover';
 
+import { sameArrayContents } from './compare';
 import type { CngxSelectOptionDef } from '../option.model';
 import {
   createIdentityPanelRenderer,
@@ -71,20 +72,7 @@ export function createAutoPanelRenderer<T>(opts: {
       {
         // Structural equal - length + per-entry identity. Matches the
         // recycler renderer's equal so the wrapper doesn't cascade.
-        equal: (a, b) => {
-          if (a === b) {
-            return true;
-          }
-          if (a.length !== b.length) {
-            return false;
-          }
-          for (let i = 0; i < a.length; i++) {
-            if (!Object.is(a[i], b[i])) {
-              return false;
-            }
-          }
-          return true;
-        },
+        equal: (a, b) => sameArrayContents(a, b, Object.is),
       },
     ),
     totalCount: recyclerRenderer.totalCount,

@@ -18,6 +18,7 @@ import { resolveAsyncView, type AsyncView } from '@cngx/common/data';
 import { CngxFormFieldPresenter, type CngxFormFieldControl } from '@cngx/forms/field';
 
 import { CngxSelectAnnouncer } from '../announcer';
+import { sameArrayContents } from './compare';
 import {
   CNGX_SELECT_COMMIT_CONTROLLER_FACTORY,
   type CngxCommitController,
@@ -290,20 +291,8 @@ export function createSelectCore<T, TCommit>(
     return f ? f(merged) : merged;
   });
 
-  const flatOptionsEqual = (a: CngxSelectOptionDef<T>[], b: CngxSelectOptionDef<T>[]): boolean => {
-    if (a === b) {
-      return true;
-    }
-    if (a.length !== b.length) {
-      return false;
-    }
-    for (let i = 0; i < a.length; i++) {
-      if (!Object.is(a[i], b[i])) {
-        return false;
-      }
-    }
-    return true;
-  };
+  const flatOptionsEqual = (a: CngxSelectOptionDef<T>[], b: CngxSelectOptionDef<T>[]): boolean =>
+    sameArrayContents(a, b, Object.is);
 
   const flatOptions = computed<CngxSelectOptionDef<T>[]>(
     () => flattenSelectOptions(effectiveOptions()),

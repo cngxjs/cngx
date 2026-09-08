@@ -2,6 +2,7 @@ import { computed } from '@angular/core';
 
 import type { CngxRecycler } from '@cngx/common/data';
 
+import { sameArrayContents } from './internal/compare';
 import type { CngxSelectOptionDef } from './option.model';
 import type {
   CngxPanelRendererFactory,
@@ -64,20 +65,7 @@ export function createRecyclerPanelRendererFactory(
       {
         // Structural equal - length + per-entry identity. Prevents @for
         // track-by thrash when the window doesn't move.
-        equal: (a, b) => {
-          if (a === b) {
-            return true;
-          }
-          if (a.length !== b.length) {
-            return false;
-          }
-          for (let i = 0; i < a.length; i++) {
-            if (!Object.is(a[i], b[i])) {
-              return false;
-            }
-          }
-          return true;
-        },
+        equal: (a, b) => sameArrayContents(a, b, Object.is),
       },
     );
 
