@@ -702,20 +702,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
       return out;
     },
     {
-      equal: (a, b) => {
-        if (a === b) {
-          return true;
-        }
-        if (a.length !== b.length) {
-          return false;
-        }
-        for (let i = 0; i < a.length; i++) {
-          if (!Object.is(a[i], b[i])) {
-            return false;
-          }
-        }
-        return true;
-      },
+      equal: (a, b) => sameArrayContents(a, b, Object.is),
     },
   );
 
