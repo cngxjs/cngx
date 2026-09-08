@@ -33,12 +33,22 @@
  * itself; `projects/common/dialog/dialog/dialog.directive.spec.ts` is the
  * reference.
  *
+ * Besides teardown, this file registers the shared DOM matchers
+ * (`cngxMatchers`) on every suite - see the note above `expect.extend` below.
+ *
  * A spec needing more teardown than this does it itself. File-local hooks run
  * first - vitest's default `sequence.hooks: 'stack'` runs "after" hooks in
  * reverse registration order - so a teardown that still needs the fake clock or
  * the stub in place keeps it.
  */
-import { afterAll, afterEach, vi } from 'vitest';
+import { afterAll, afterEach, expect, vi } from 'vitest';
+
+import { cngxMatchers } from '../matchers/dom-matchers';
+
+// The matchers' `declare module 'vitest'` augmentation is program-wide, so
+// registration lives here as well: every target that type-checks
+// toHaveClass/toHaveAttribute/toHaveCSSVariable also gets their runtime.
+expect.extend(cngxMatchers);
 
 afterEach(() => {
   vi.useRealTimers();
