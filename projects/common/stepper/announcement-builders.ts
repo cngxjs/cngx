@@ -147,3 +147,75 @@ export function createStepperAnnouncementBuilders(
 
   return { liveAnnouncement, statusPhrase, groupStatusPhrase, descriptorId, describedBy };
 }
+
+/**
+ * Input bundle for {@link createStepperPanelRefs}: the resolved display
+ * mode, the strip projection that decides which headers exist, and the
+ * organism's id/describedby schemes.
+ *
+ * @internal
+ */
+export interface CngxStepperPanelRefsInputs {
+  readonly displayMode: Signal<'classic' | 'text' | 'dots'>;
+  readonly visibleStripNodes: Signal<readonly CngxStepNode[]>;
+  readonly headerIdFor: (node: CngxStepNode) => string;
+  readonly describedByFor: (node: CngxStepNode) => string | null;
+}
+
+/**
+ * Per-mode panel naming surface for `<cngx-stepper>`'s region panels.
+ *
+ * @internal
+ */
+export interface CngxStepperPanelRefs {
+  /** Header id when a header element is rendered for the node, else `null`. */
+  readonly labelledBy: (node: CngxStepNode) => string | null;
+  /** Self-naming fallback whenever {@link labelledBy} emits no id. */
+  readonly ariaLabel: (node: CngxStepNode) => string | null;
+  /** Gated describedby - suppressed when the descriptor span is header-hosted and the header is not rendered. */
+  readonly describedBy: (node: CngxStepNode) => string | null;
+}
+
+/**
+ * Build the mode-aware panel ref surface. The dots branch always
+ * renders one dot per step; the classic strip only renders headers the
+ * group-collapse policy exposes; the text branch has no header element
+ * at all. A panel must never reference an id that is not in the DOM -
+ * a dangling IDREF names the region as empty - so header-less panels
+ * self-name via `aria-label` and drop the describedby reference (the
+ * classic descriptor spans live inside the strip headers; the
+ * collapsed branches mount theirs inside the panel).
+ *
+ * @internal
+ */
+export function createStepperPanelRefs(inputs: CngxStepperPanelRefsInputs): CngxStepperPanelRefs {
+  const { displayMode, visibleStripNodes, headerIdFor, describedByFor } = inputs;
+
+  const renderedHeaderIds = computed<ReadonlySet<string>>(
+    () => new Set(visibleStripNodes().map((node) => node.id)),
+    { equal: (a, b) => a.size === b.size && [...a].every((id) => b.has(id)) },
+  );
+
+  const labelledBy = (node: CngxStepNode): string | null => {
+    const mode = displayMode();
+    if (mode === 'text') {
+      return null;
+    }
+    if (mode === 'dots') {
+      return headerIdFor(node);
+    }
+    return renderedHeaderIds().has(node.id) ? headerIdFor(node) : null;
+  };
+
+  const ariaLabel = (node: CngxStepNode): string | null =>
+    labelledBy(node) ? null : node.label();
+
+  const describedBy = (node: CngxStepNode): string | null => {
+    if (displayMode() === 'classic' && !renderedHeaderIds().has(node.id)) {
+      return null;
+    }
+    return describedByFor(node);
+  };
+
+  return { labelledBy, ariaLabel, describedBy };
+}

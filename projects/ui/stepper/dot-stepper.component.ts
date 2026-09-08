@@ -14,10 +14,11 @@ import {
 import {
   CngxDotStepperDot,
   type CngxDotStepperDotContext,
+  CngxStepperEmpty,
   CngxStepperPresenter,
   CngxStepperSwipeNav,
-  CNGX_STEPPER_GLYPHS,
   CNGX_STEPPER_HOST,
+  createStepperAccname,
   createStepperStateView,
   injectStepperConfig,
   injectStepperI18n,
@@ -26,6 +27,8 @@ import {
 } from '@cngx/common/stepper';
 import { CngxSwipe } from '@cngx/common/interactive';
 import { injectDirection, resolveInlineStep } from '@cngx/core';
+
+import { CngxStepperErrorLine } from './stepper-error-line.component';
 
 /**
  * Dot stepper variant. Mobile-first sequential-flow indicator. Renders
@@ -57,6 +60,7 @@ import { injectDirection, resolveInlineStep } from '@cngx/core';
  * @since 0.1.0
  * @relatedTo CngxStepperPresenter, CngxProgressBarStepper, CngxTextStepper
  * @slot cngxDotStepperDot Replaces one dot; gets its index and active state.
+ * @slot cngxStepperEmpty Renders when no step is projected at all.
  * <example-url>http://localhost:4200/#/ui/stepper/dot-stepper/mobile-carousel</example-url>
  */
 @Component({
@@ -65,7 +69,7 @@ import { injectDirection, resolveInlineStep } from '@cngx/core';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [NgTemplateOutlet, CngxSwipe],
+  imports: [NgTemplateOutlet, CngxStepperErrorLine, CngxSwipe],
   hostDirectives: [
     {
       directive: CngxStepperPresenter,
@@ -82,9 +86,11 @@ import { injectDirection, resolveInlineStep } from '@cngx/core';
   host: {
     class: 'cngx-dot-stepper',
     role: 'group',
-    tabindex: '0',
+    // Not tab-reachable while step-less: an empty focus stop that only
+    // announces the accname over no content is noise, not navigation.
+    '[attr.tabindex]': "stepNodes().length === 0 ? null : '0'",
     '[attr.aria-roledescription]': 'i18n.stepIndicatorRoleDescription',
-    '[attr.aria-label]': 'ariaLabel()',
+    '[attr.aria-label]': 'resolvedAriaLabel()',
     '[attr.aria-labelledby]': 'ariaLabelledBy()',
     '[attr.aria-invalid]': 'stateView.hasAnyError() ? "true" : null',
     '(keydown)': 'handleKeyDown($event)',
@@ -97,6 +103,14 @@ export class CngxDotStepper {
   protected readonly presenter = inject(CNGX_STEPPER_HOST);
   protected readonly i18n = injectStepperI18n();
   protected readonly config = injectStepperConfig();
+
+  /** Shared accname cascade (input → `ariaLabels.stepperRegion` → `i18n.stepperLabel`). */
+  protected readonly resolvedAriaLabel = createStepperAccname({
+    ariaLabel: this.ariaLabel,
+    ariaLabelledBy: this.ariaLabelledBy,
+    config: this.config,
+    i18n: this.i18n,
+  });
   /** Mobile-swipe routing surface composed via hostDirectives. */
   protected readonly swipeNav = inject(CngxStepperSwipeNav, { host: true });
 
@@ -111,9 +125,6 @@ export class CngxDotStepper {
     presenter: this.presenter,
     stepsOnly: this.stepNodes,
   });
-
-  /** Default error glyph for the aggregate error line. */
-  protected readonly errorGlyph = CNGX_STEPPER_GLYPHS.errorBadge;
 
   /**
    * Aggregate error line. The dot row only colours the errored dot, so
@@ -131,6 +142,17 @@ export class CngxDotStepper {
   );
 
   private readonly dotSlot = contentChild(CngxDotStepperDot);
+  private readonly emptySlot = contentChild(CngxStepperEmpty);
+
+  /**
+   * Empty-state cascade mirroring `<cngx-stepper>`: per-instance
+   * `*cngxStepperEmpty` > `CNGX_STEPPER_CONFIG.templates.empty` > `null`.
+   * Gates the dot row so a step-less flow shows the placeholder
+   * instead of an empty group.
+   */
+  protected readonly resolvedEmptyTemplate = computed<TemplateRef<void> | null>(
+    () => this.emptySlot()?.templateRef ?? this.config.templates?.empty ?? null,
+  );
 
   /**
    * Resolved dot-body template cascade: per-instance `*cngxDotStepperDot`

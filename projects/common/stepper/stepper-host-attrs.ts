@@ -1,4 +1,5 @@
 import { computed, type Signal } from '@angular/core';
+import type { CngxStepperI18n } from './i18n/stepper-i18n';
 import type {
   CngxStepperConfig,
   CngxStepperMobileIndicatorPosition,
@@ -57,4 +58,38 @@ export function createStepperHostAttrs(
       () => inputs.mobileIndicatorPosition() ?? inputs.config.mobileIndicatorPosition ?? 'top',
     ),
   };
+}
+
+/**
+ * Input bundle for {@link createStepperAccname}: the two per-instance
+ * accname inputs plus the resolved config and i18n bundle.
+ *
+ * @internal
+ */
+export interface CngxStepperAccnameInputs {
+  readonly ariaLabel: Signal<string | undefined>;
+  readonly ariaLabelledBy: Signal<string | undefined>;
+  readonly config: CngxStepperConfig;
+  readonly i18n: CngxStepperI18n;
+}
+
+/**
+ * Shared `aria-label` cascade for every stepper organism host
+ * (`<cngx-stepper>` and the compact variants): a bound
+ * `aria-labelledby` trumps and nulls the label out; otherwise the
+ * per-instance input wins over `ariaLabels.stepperRegion` wins over
+ * `i18n.stepperLabel`. One source so the variants cannot drift from
+ * the parent's naming behaviour.
+ *
+ * @internal
+ */
+export function createStepperAccname(inputs: CngxStepperAccnameInputs): Signal<string | null> {
+  return computed<string | null>(() => {
+    if (inputs.ariaLabelledBy()) {
+      return null; // labelledby trumps label
+    }
+    return (
+      inputs.ariaLabel() ?? inputs.config.ariaLabels?.stepperRegion ?? inputs.i18n.stepperLabel
+    );
+  });
 }

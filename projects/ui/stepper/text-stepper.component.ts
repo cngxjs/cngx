@@ -1,31 +1,39 @@
+import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
   computed,
+  contentChild,
   inject,
   input,
   type Signal,
+  type TemplateRef,
 } from '@angular/core';
 
 import {
+  CngxStepperEmpty,
   CngxStepperPresenter,
-  CNGX_STEPPER_GLYPHS,
   CNGX_STEPPER_HOST,
   createStepperStateView,
+  injectStepperConfig,
   injectStepperI18n,
   resolveStepperErrorSummary,
   type CngxStepNode,
 } from '@cngx/common/stepper';
 
+import { CngxStepperErrorLine } from './stepper-error-line.component';
+
 /**
- * Text stepper variant. Smallest possible stepper: a single
- * `<span aria-live="polite">` driven by the presenter. Renders
- * `Step N of M` by default (sourced from
+ * Text stepper variant. Smallest possible stepper: an always-mounted
+ * `<span aria-live="polite">` driven by the presenter (empty while no
+ * step is projected, so a live load never announces `Step 0 of 0`).
+ * Renders `Step N of M` by default (sourced from
  * `CngxStepperI18n.textStepperFormat`); optional `[showCurrentLabel]`
- * appends the active step's label next to the count. Material consumers
- * inherit surrounding text styling via CSS inheritance, no theme bridge
- * required.
+ * appends the active step's label next to the count. A step-less flow
+ * renders the `CNGX_STEPPER_CONFIG` empty-template cascade instead.
+ * Material consumers inherit surrounding text styling via CSS
+ * inheritance, no theme bridge required.
  *
  * @category ui/stepper
  * @docsKind primary
@@ -33,6 +41,7 @@ import {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/stepper/text-stepper.component.ts
  * @since 0.1.0
  * @relatedTo CngxStepperPresenter, CngxProgressBarStepper, CngxDotStepper
+ * @slot cngxStepperEmpty Renders when no step is projected at all.
  * <example-url>http://localhost:4200/#/ui/stepper/text-stepper/inline-progress</example-url>
  */
 @Component({
@@ -41,6 +50,7 @@ import {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
+  imports: [NgTemplateOutlet, CngxStepperErrorLine],
   hostDirectives: [
     {
       directive: CngxStepperPresenter,
@@ -61,6 +71,19 @@ export class CngxTextStepper {
 
   protected readonly presenter = inject(CNGX_STEPPER_HOST);
   protected readonly i18n = injectStepperI18n();
+  protected readonly config = injectStepperConfig();
+
+  private readonly emptySlot = contentChild(CngxStepperEmpty);
+
+  /**
+   * Empty-state cascade mirroring `<cngx-stepper>`: per-instance
+   * `*cngxStepperEmpty` > `CNGX_STEPPER_CONFIG.templates.empty` > `null`.
+   * Rendered next to the (empty) live span so a step-less flow shows
+   * the placeholder instead of a bare `Step 0 of 0` count.
+   */
+  protected readonly resolvedEmptyTemplate = computed<TemplateRef<void> | null>(
+    () => this.emptySlot()?.templateRef ?? this.config.templates?.empty ?? null,
+  );
 
   protected readonly stepNodes: Signal<readonly CngxStepNode[]> = this.presenter.stepsOnly;
 
@@ -69,9 +92,6 @@ export class CngxTextStepper {
     presenter: this.presenter,
     stepsOnly: this.stepNodes,
   });
-
-  /** Default error glyph for the error sub-line. */
-  protected readonly errorGlyph = CNGX_STEPPER_GLYPHS.errorBadge;
 
   protected readonly totalSteps = computed<number>(() => this.stepNodes().length);
 
@@ -84,7 +104,13 @@ export class CngxTextStepper {
   });
 
   protected readonly stepText = computed<string>(() => {
-    const base = this.i18n.textStepperFormat(this.currentStep(), this.totalSteps());
+    const total = this.totalSteps();
+    // Empty at zero steps: the always-mounted live span must not
+    // announce a nonsensical 'Step 0 of 0'.
+    if (total === 0) {
+      return '';
+    }
+    const base = this.i18n.textStepperFormat(this.currentStep(), total);
     if (!this.showCurrentLabel()) {
       return base;
     }

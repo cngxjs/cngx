@@ -5,38 +5,9 @@
   }
 } @else if (displayMode() === 'text') {
   <cngx-stepper-count class="cngx-stepper__mobile-text" [live]="false" />
-  @if (stateView.hasAnyError()) {
-    <span class="cngx-stepper__mobile-error" role="status" data-state="error">
-      <span class="cngx-stepper__mobile-error-glyph" aria-hidden="true">{{ glyphs.errorBadge }}</span>
-      <span class="cngx-stepper__mobile-error-text">{{ mobileErrorSummary() }}</span>
-    </span>
-  }
+  <span cngxStepperErrorLine block="cngx-stepper__mobile-error" [text]="mobileErrorSummary()"></span>
 
-  <div
-    class="cngx-stepper__panels"
-    cngxSwipe
-    axis="x"
-    [enabled]="swipeNav.swipeEnabled()"
-    (swiped)="swipeNav.handleSwipe($event)"
-  >
-    @for (node of stepsOnly(); track node.id) {
-      <div
-        class="cngx-stepper__panel"
-        role="region"
-        [id]="stepPanelId(node)"
-        [attr.aria-labelledby]="stepHeaderId(node)"
-        [attr.aria-describedby]="announcement.describedBy(node)"
-        [hidden]="!slotContext.isActive(node)"
-      >
-        @let contentTpl = contentTemplateFor(node.id);
-        @if (contentTpl) {
-          <ng-container
-            *ngTemplateOutlet="contentTpl; context: slotContext.stepContentContextFor(node)"
-          ></ng-container>
-        }
-      </div>
-    }
-  </div>
+  <ng-container *ngTemplateOutlet="stepPanels"></ng-container>
 } @else if (displayMode() === 'dots') {
   <!--
     In 'none' mode the dots are inert list-item indicators (footer-only
@@ -54,6 +25,7 @@
           [class.cngx-stepper__mobile-dot--active]="slotContext.isActive(node)"
           [class.cngx-stepper__mobile-dot--completed]="i < activeStepIndex()"
           [class.cngx-stepper__mobile-dot--error]="stateView.hasError(node)"
+          [id]="stepHeaderId(node)"
           [attr.aria-current]="slotContext.isActive(node) ? 'step' : null"
           [attr.aria-label]="mobileDotAriaLabel(node, i)"
           [attr.data-state]="mobileDotState(node)"
@@ -66,7 +38,9 @@
           [class.cngx-stepper__mobile-dot--active]="slotContext.isActive(node)"
           [class.cngx-stepper__mobile-dot--completed]="i < activeStepIndex()"
           [class.cngx-stepper__mobile-dot--error]="stateView.hasError(node)"
+          [id]="stepHeaderId(node)"
           [attr.aria-current]="slotContext.isActive(node) ? 'step' : null"
+          [attr.aria-controls]="stepPanelId(node)"
           [attr.aria-label]="mobileDotAriaLabel(node, i)"
           [attr.data-state]="mobileDotState(node)"
           [attr.aria-disabled]="headerAriaDisabled(node)"
@@ -76,41 +50,12 @@
       }
     }
   </div>
-  @if (stateView.hasAnyError()) {
-    <span class="cngx-stepper__mobile-error" role="status" data-state="error">
-      <span class="cngx-stepper__mobile-error-glyph" aria-hidden="true">{{ glyphs.errorBadge }}</span>
-      <span class="cngx-stepper__mobile-error-text">{{ mobileErrorSummary() }}</span>
-    </span>
-  }
+  <span cngxStepperErrorLine block="cngx-stepper__mobile-error" [text]="mobileErrorSummary()"></span>
   @if (showStepCount()) {
     <cngx-stepper-count class="cngx-stepper__mobile-text cngx-stepper__mobile-text--caption" [live]="false" />
   }
 
-  <div
-    class="cngx-stepper__panels"
-    cngxSwipe
-    axis="x"
-    [enabled]="swipeNav.swipeEnabled()"
-    (swiped)="swipeNav.handleSwipe($event)"
-  >
-    @for (node of stepsOnly(); track node.id) {
-      <div
-        class="cngx-stepper__panel"
-        role="region"
-        [id]="stepPanelId(node)"
-        [attr.aria-labelledby]="stepHeaderId(node)"
-        [attr.aria-describedby]="announcement.describedBy(node)"
-        [hidden]="!slotContext.isActive(node)"
-      >
-        @let contentTpl = contentTemplateFor(node.id);
-        @if (contentTpl) {
-          <ng-container
-            *ngTemplateOutlet="contentTpl; context: slotContext.stepContentContextFor(node)"
-          ></ng-container>
-        }
-      </div>
-    }
-  </div>
+  <ng-container *ngTemplateOutlet="stepPanels"></ng-container>
 } @else {
   <!--
     In 'none' mode the inert headers are list items, so the strip is a
@@ -226,25 +171,7 @@
     </div>
   }
 
-  <div class="cngx-stepper__panels">
-    @for (node of stepsOnly(); track node.id) {
-      <div
-        class="cngx-stepper__panel"
-        role="region"
-        [id]="stepPanelId(node)"
-        [attr.aria-labelledby]="stepHeaderId(node)"
-        [attr.aria-describedby]="announcement.describedBy(node)"
-        [hidden]="!slotContext.isActive(node)"
-      >
-        @let contentTpl = contentTemplateFor(node.id);
-        @if (contentTpl) {
-          <ng-container
-            *ngTemplateOutlet="contentTpl; context: slotContext.stepContentContextFor(node)"
-          ></ng-container>
-        }
-      </div>
-    }
-  </div>
+  <ng-container *ngTemplateOutlet="stepPanels"></ng-container>
 }
 
 <!--
@@ -258,6 +185,50 @@
 <span class="cngx-stepper__live-region cngx-sr-only" cngxLiveRegion>{{
   announcement.liveAnnouncement()
 }}</span>
+
+<!--
+  Shared panel block for all three display modes (Pillar 3 - one
+  source instead of three drifting copies). Mode differences are
+  derived, not duplicated: panelLabelledBy/panelAriaLabel/
+  panelDescribedBy resolve the naming per mode (text has no header
+  element, classic only renders headers the group-collapse policy
+  exposes, dots always renders one per step); the collapsed branches
+  additionally mount the descriptor span inside the panel because the
+  classic descriptor spans live inside the strip headers. Swipe is
+  composed once and disabled in classic - the directive is inert
+  with [enabled]=false.
+-->
+<ng-template #stepPanels>
+  <div
+    class="cngx-stepper__panels"
+    cngxSwipe
+    axis="x"
+    [enabled]="displayMode() !== 'classic' && swipeNav.swipeEnabled()"
+    (swiped)="swipeNav.handleSwipe($event)"
+  >
+    @for (node of stepsOnly(); track node.id) {
+      <div
+        class="cngx-stepper__panel"
+        role="region"
+        [id]="stepPanelId(node)"
+        [attr.aria-labelledby]="panelRefs.labelledBy(node)"
+        [attr.aria-label]="panelRefs.ariaLabel(node)"
+        [attr.aria-describedby]="panelRefs.describedBy(node)"
+        [hidden]="!slotContext.isActive(node)"
+      >
+        @if (displayMode() !== 'classic') {
+          <span class="cngx-sr-only" [id]="announcement.descriptorId(node)">{{ announcement.statusPhrase(node) }}</span>
+        }
+        @let contentTpl = contentTemplateFor(node.id);
+        @if (contentTpl) {
+          <ng-container
+            *ngTemplateOutlet="contentTpl; context: slotContext.stepContentContextFor(node)"
+          ></ng-container>
+        }
+      </div>
+    }
+  </div>
+</ng-template>
 
 <!--
   Shared strip-header body. Rendered identically by the focusable

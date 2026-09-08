@@ -1,23 +1,30 @@
+import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
   computed,
+  contentChild,
   inject,
   input,
+  type TemplateRef,
 } from '@angular/core';
 
 import {
   CngxStepperCount,
+  CngxStepperEmpty,
   CngxStepperPresenter,
-  CNGX_STEPPER_GLYPHS,
   CNGX_STEPPER_HOST,
+  createStepperAccname,
   createStepperStateView,
+  injectStepperConfig,
   injectStepperI18n,
   resolveStepperErrorSummary,
   type CngxStepNode,
 } from '@cngx/common/stepper';
 import { CngxProgress } from '@cngx/ui/feedback';
+
+import { CngxStepperErrorLine } from './stepper-error-line.component';
 
 /**
  * Progress-Bar stepper variant. Thin Level-4 organism composing
@@ -29,7 +36,10 @@ import { CngxProgress } from '@cngx/ui/feedback';
  * `completedPercent()` is `computed` from `presenter.activeStepIndex()`
  * and the count of step nodes in `presenter.flatSteps()`. Optional
  * `[showStepCount]` adds a `Step N of M` caption sourced from
- * `CngxStepperI18n.textStepperFormat`.
+ * `CngxStepperI18n.textStepperFormat`. Accname and
+ * `aria-roledescription` resolve through the same config + i18n
+ * cascades as `<cngx-stepper>`; a step-less flow renders the
+ * `CNGX_STEPPER_CONFIG` empty-template cascade instead of the bar.
  *
  * @category ui/stepper
  * @docsKind primary
@@ -37,6 +47,7 @@ import { CngxProgress } from '@cngx/ui/feedback';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/stepper/progress-bar-stepper.component.ts
  * @since 0.1.0
  * @relatedTo CngxStepperPresenter, CngxProgress, CngxDotStepper, CngxTextStepper
+ * @slot cngxStepperEmpty Renders when no step is projected at all.
  * @playground Material theme coverage across variants ./examples/material-theme-coverage/variants-coverage.component.ts
  * <example-url>http://localhost:4200/#/ui/stepper/progress-bar/onboarding-flow</example-url>
  */
@@ -46,7 +57,7 @@ import { CngxProgress } from '@cngx/ui/feedback';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [CngxProgress, CngxStepperCount],
+  imports: [CngxProgress, CngxStepperCount, CngxStepperErrorLine, NgTemplateOutlet],
   hostDirectives: [
     {
       directive: CngxStepperPresenter,
@@ -59,8 +70,8 @@ import { CngxProgress } from '@cngx/ui/feedback';
   host: {
     class: 'cngx-progress-bar-stepper',
     role: 'group',
-    '[attr.aria-roledescription]': '"stepper"',
-    '[attr.aria-label]': 'ariaLabel()',
+    '[attr.aria-roledescription]': 'stepperRoleDescription()',
+    '[attr.aria-label]': 'resolvedAriaLabel()',
     '[attr.aria-labelledby]': 'ariaLabelledBy()',
     '[attr.data-state]': 'stateView.hasAnyError() ? "error" : null',
     '[attr.aria-invalid]': 'stateView.hasAnyError() ? "true" : null',
@@ -75,15 +86,38 @@ export class CngxProgressBarStepper {
 
   protected readonly presenter = inject(CNGX_STEPPER_HOST);
   protected readonly i18n = injectStepperI18n();
+  protected readonly config = injectStepperConfig();
+
+  /** Shared accname cascade (input → `ariaLabels.stepperRegion` → `i18n.stepperLabel`). */
+  protected readonly resolvedAriaLabel = createStepperAccname({
+    ariaLabel: this.ariaLabel,
+    ariaLabelledBy: this.ariaLabelledBy,
+    config: this.config,
+    i18n: this.i18n,
+  });
+
+  /** Landmark role-description with config + i18n cascade, mirroring `<cngx-stepper>`. */
+  protected readonly stepperRoleDescription = computed<string>(
+    () => this.config.fallbackLabels?.stepRoleDescription ?? this.i18n.stepperLabel,
+  );
+
+  private readonly emptySlot = contentChild(CngxStepperEmpty);
+
+  /**
+   * Empty-state cascade mirroring `<cngx-stepper>`: per-instance
+   * `*cngxStepperEmpty` > `CNGX_STEPPER_CONFIG.templates.empty` > `null`.
+   * Gates the whole bar so a step-less flow shows the placeholder
+   * instead of a full bar captioned `Step 0 of 0`.
+   */
+  protected readonly resolvedEmptyTemplate = computed<TemplateRef<void> | null>(
+    () => this.emptySlot()?.templateRef ?? this.config.templates?.empty ?? null,
+  );
 
   /** Shared per-step/aggregate state derivations - the single error source. */
   protected readonly stateView = createStepperStateView({
     presenter: this.presenter,
     stepsOnly: this.presenter.stepsOnly,
   });
-
-  /** Default error glyph for the error caption. */
-  protected readonly errorGlyph = CNGX_STEPPER_GLYPHS.errorBadge;
 
   /** Total step count (group nodes excluded). */
   protected readonly totalSteps = computed<number>(() => this.presenter.stepsOnly().length);

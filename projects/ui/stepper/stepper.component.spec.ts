@@ -18,6 +18,7 @@ import {
   withStepperGroupCollapseSummary,
   withStepperHeaderNavigation,
   withStepperI18nLabels,
+  withStepperMobileCollapse,
   withStepperMobileSwipe,
   withStepperSkin,
 } from '@cngx/common/stepper';
@@ -300,6 +301,57 @@ describe('CngxStepper organism', () => {
       // user-operable disclosure - no aria-expanded on either header.
       expect(account.getAttribute('aria-expanded')).toBeNull();
       expect(project.getAttribute('aria-expanded')).toBeNull();
+    });
+
+    it('panels of collapsed-group steps self-name instead of referencing missing headers', () => {
+      const fixture = collapseFixture();
+      const panels = Array.from(
+        fixture.nativeElement.querySelectorAll('.cngx-stepper__panel'),
+      ) as HTMLElement[];
+      expect(panels.length).toBe(5);
+      // Every emitted IDREF must resolve in-DOM; header-less panels self-name.
+      for (const panel of panels) {
+        const labelledBy = panel.getAttribute('aria-labelledby');
+        if (labelledBy) {
+          expect(fixture.nativeElement.querySelector(`[id="${labelledBy}"]`)).not.toBeNull();
+          expect(panel.hasAttribute('aria-label')).toBe(false);
+        } else {
+          expect(panel.getAttribute('aria-label')).not.toBe('');
+        }
+        const describedBy = panel.getAttribute('aria-describedby');
+        if (describedBy) {
+          expect(fixture.nativeElement.querySelector(`[id="${describedBy}"]`)).not.toBeNull();
+        }
+      }
+      // Project is collapsed -> C and D have no strip header, no dangling refs.
+      const selfNamed = panels
+        .filter((p) => p.hasAttribute('aria-label'))
+        .map((p) => p.getAttribute('aria-label'));
+      expect(selfNamed).toEqual(['C', 'D']);
+    });
+
+    it('entering the collapsed group restores the header references on its panels', () => {
+      const fixture = collapseFixture();
+      const project = (
+        Array.from(
+          fixture.nativeElement.querySelectorAll('.cngx-stepper__group-header'),
+        ) as HTMLElement[]
+      )[1];
+      project.click();
+      fixture.detectChanges();
+      const panels = Array.from(
+        fixture.nativeElement.querySelectorAll('.cngx-stepper__panel'),
+      ) as HTMLElement[];
+      const cPanel = panels.find(
+        (p) => p.getAttribute('aria-labelledby') && !p.hidden,
+      ) as HTMLElement;
+      expect(cPanel).toBeTruthy();
+      const header = fixture.nativeElement.querySelector(
+        `[id="${cPanel.getAttribute('aria-labelledby')}"]`,
+      ) as HTMLElement;
+      expect(header).not.toBeNull();
+      expect(header.textContent).toContain('C');
+      expect(cPanel.hasAttribute('aria-label')).toBe(false);
     });
 
     it('drops collapsed child step buttons from the strip but keeps every panel in the DOM', () => {
@@ -1655,6 +1707,117 @@ describe('CngxStepper organism', () => {
       buttons[2].click();
       fixture.detectChanges();
       expect(stepper.presenter.activeStepIndex()).toBe(0);
+    });
+  });
+
+  describe('mobile-collapse a11y ids', () => {
+    // Forces displayMode into the collapse branch: createMobileViewportSignal
+    // reads globalThis.matchMedia, absent in jsdom, so the stub is the seam.
+    beforeEach(() => {
+      vi.stubGlobal(
+        'matchMedia',
+        (query: string) =>
+          ({
+            matches: true,
+            media: query,
+            addEventListener: () => undefined,
+            removeEventListener: () => undefined,
+          }) as unknown as MediaQueryList,
+      );
+    });
+
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    function panelsOf(fixture: { nativeElement: HTMLElement }): HTMLElement[] {
+      return Array.from(fixture.nativeElement.querySelectorAll('.cngx-stepper__panel'));
+    }
+
+    function byId(fixture: { nativeElement: HTMLElement }, id: string | null): HTMLElement | null {
+      return id ? fixture.nativeElement.querySelector(`[id="${id}"]`) : null;
+    }
+
+    it('text mode: panels name themselves via aria-label and carry no dangling aria-labelledby', () => {
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection(), provideStepperConfig(withStepperMobileCollapse('text'))],
+      });
+      const fixture = TestBed.createComponent(HostCmp);
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.cngx-stepper__mobile-text')).not.toBeNull();
+      const panels = panelsOf(fixture);
+      expect(panels.length).toBe(3);
+      expect(panels[0].getAttribute('aria-label')).toBe('A');
+      panels.forEach((panel) => {
+        expect(panel.hasAttribute('aria-labelledby')).toBe(false);
+      });
+    });
+
+    it('text mode: every aria-describedby reference resolves to an in-DOM descriptor span', () => {
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection(), provideStepperConfig(withStepperMobileCollapse('text'))],
+      });
+      const fixture = TestBed.createComponent(HostCmp);
+      fixture.detectChanges();
+      for (const panel of panelsOf(fixture)) {
+        const ref = panel.getAttribute('aria-describedby');
+        expect(ref).not.toBeNull();
+        const descriptor = byId(fixture, ref);
+        expect(descriptor).not.toBeNull();
+        expect(descriptor!.textContent).toContain('Step');
+      }
+    });
+
+    it('dots mode: dot buttons carry id + aria-controls and the panel labelledby reverses the link', () => {
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection(), provideStepperConfig(withStepperMobileCollapse('dots'))],
+      });
+      const fixture = TestBed.createComponent(HostCmp);
+      fixture.detectChanges();
+      const dots = Array.from(
+        fixture.nativeElement.querySelectorAll('button.cngx-stepper__mobile-dot'),
+      ) as HTMLButtonElement[];
+      const panels = panelsOf(fixture);
+      expect(dots.length).toBe(3);
+      dots.forEach((dot, i) => {
+        expect(dot.id).not.toBe('');
+        expect(dot.getAttribute('aria-controls')).toBe(panels[i].id);
+        expect(panels[i].getAttribute('aria-labelledby')).toBe(dot.id);
+      });
+    });
+
+    it('dots mode: every aria-describedby reference resolves to an in-DOM descriptor span', () => {
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection(), provideStepperConfig(withStepperMobileCollapse('dots'))],
+      });
+      const fixture = TestBed.createComponent(HostCmp);
+      fixture.detectChanges();
+      for (const panel of panelsOf(fixture)) {
+        const descriptor = byId(fixture, panel.getAttribute('aria-describedby'));
+        expect(descriptor).not.toBeNull();
+        expect(descriptor!.textContent).not.toBe('');
+      }
+    });
+
+    it('dots mode + headerNavigation "none": static listitem dots carry the header id, no aria-controls', () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideStepperConfig(withStepperMobileCollapse('dots'), withStepperHeaderNavigation('none')),
+        ],
+      });
+      const fixture = TestBed.createComponent(HostCmp);
+      fixture.detectChanges();
+      const dots = Array.from(
+        fixture.nativeElement.querySelectorAll('span.cngx-stepper__mobile-dot--static'),
+      ) as HTMLElement[];
+      const panels = panelsOf(fixture);
+      expect(dots.length).toBe(3);
+      dots.forEach((dot, i) => {
+        expect(dot.id).not.toBe('');
+        expect(panels[i].getAttribute('aria-labelledby')).toBe(dot.id);
+        expect(dot.hasAttribute('aria-controls')).toBe(false);
+      });
     });
   });
 });

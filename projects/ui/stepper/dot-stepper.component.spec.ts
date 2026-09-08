@@ -8,8 +8,10 @@ import {
   CngxDotStepperDot,
   type CngxDotStepperDotContext,
   CngxStep,
+  CngxStepperEmpty,
   provideStepperConfig,
   withDotStepperDotTemplate,
+  withStepperAriaLabels,
 } from '@cngx/common/stepper';
 
 import { CngxDotStepper } from './dot-stepper.component';
@@ -326,12 +328,119 @@ describe('CngxDotStepper', () => {
       expect(line.textContent?.trim()).toBe('Card declined');
     });
 
-    it('hides the error line when no step errors', () => {
+    it('keeps the status region mounted but empty when no step errors (live-region contract)', () => {
       TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
       const fixture = TestBed.createComponent(ErrHost);
       fixture.componentInstance.err.set(false);
       fixture.detectChanges();
-      expect(fixture.nativeElement.querySelector('.cngx-dot-stepper__error')).toBeNull();
+      const region = fixture.nativeElement.querySelector('.cngx-dot-stepper__error') as HTMLElement;
+      expect(region).not.toBeNull();
+      expect(region.getAttribute('role')).toBe('status');
+      expect(region.hasAttribute('data-state')).toBe(false);
+      expect(region.textContent?.trim()).toBe('');
+      // Content flows into the pre-existing region - never mounted together with it.
+      fixture.componentInstance.err.set('Card declined');
+      fixture.detectChanges();
+      expect(region.getAttribute('data-state')).toBe('error');
+      expect(region.textContent).toContain('Card declined');
+    });
+  });
+
+  describe('zero-step guard', () => {
+    it('renders no dot row and removes the host from the tab order without steps', () => {
+      @Component({
+        standalone: true,
+        imports: [CngxDotStepper],
+        template: `<cngx-dot-stepper></cngx-dot-stepper>`,
+      })
+      class EmptyHost {}
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(EmptyHost);
+      fixture.detectChanges();
+      const host = fixture.nativeElement.querySelector('cngx-dot-stepper') as HTMLElement;
+      expect(fixture.nativeElement.querySelector('.cngx-dot-stepper__row')).toBeNull();
+      expect(host.hasAttribute('tabindex')).toBe(false);
+    });
+
+    it('renders the projected *cngxStepperEmpty template when there are no steps', () => {
+      @Component({
+        standalone: true,
+        imports: [CngxDotStepper, CngxStepperEmpty],
+        template: `
+          <cngx-dot-stepper>
+            <ng-template cngxStepperEmpty><p class="empty-note">No steps yet</p></ng-template>
+          </cngx-dot-stepper>
+        `,
+      })
+      class EmptySlotHost {}
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(EmptySlotHost);
+      fixture.detectChanges();
+      const note = fixture.nativeElement.querySelector('.empty-note') as HTMLElement;
+      expect(note.textContent).toBe('No steps yet');
+    });
+
+    it('keeps the host tab-reachable once steps exist', () => {
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(Host);
+      fixture.detectChanges();
+      const host = fixture.nativeElement.querySelector('cngx-dot-stepper') as HTMLElement;
+      expect(host.getAttribute('tabindex')).toBe('0');
+    });
+  });
+
+  describe('accname cascade (parity with <cngx-stepper>)', () => {
+    @Component({
+      standalone: true,
+      imports: [CngxDotStepper, CngxStep],
+      template: `
+        <cngx-dot-stepper>
+          <div cngxStep label="One"></div>
+          <div cngxStep label="Two"></div>
+        </cngx-dot-stepper>
+      `,
+    })
+    class UnlabelledHost {}
+
+    it('falls back to the config/i18n accname when no aria-label is bound', () => {
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(UnlabelledHost);
+      fixture.detectChanges();
+      const host = fixture.nativeElement.querySelector('cngx-dot-stepper') as HTMLElement;
+      expect(host.getAttribute('aria-label')).toBe('Stepper');
+    });
+
+    it('withStepperAriaLabels({ stepperRegion }) moves the accname fallback', () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideStepperConfig(withStepperAriaLabels({ stepperRegion: 'Fortschritt' })),
+        ],
+      });
+      const fixture = TestBed.createComponent(UnlabelledHost);
+      fixture.detectChanges();
+      const host = fixture.nativeElement.querySelector('cngx-dot-stepper') as HTMLElement;
+      expect(host.getAttribute('aria-label')).toBe('Fortschritt');
+    });
+
+    it('a bound aria-labelledby suppresses the fallback aria-label', () => {
+      @Component({
+        standalone: true,
+        imports: [CngxDotStepper, CngxStep],
+        template: `
+          <span id="dot-title">Setup</span>
+          <cngx-dot-stepper aria-labelledby="dot-title">
+            <div cngxStep label="One"></div>
+          </cngx-dot-stepper>
+        `,
+      })
+      class LabelledByHost {}
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(LabelledByHost);
+      fixture.detectChanges();
+      const host = fixture.nativeElement.querySelector('cngx-dot-stepper') as HTMLElement;
+      expect(host.getAttribute('aria-labelledby')).toBe('dot-title');
+      expect(host.hasAttribute('aria-label')).toBe(false);
     });
   });
 });

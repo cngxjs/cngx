@@ -25,6 +25,21 @@
   unicode-bidi: var(--cngx-text-stepper-bidi, isolate);
 }
 
+/* Zero-step state: the polite live span stays mounted (a live region
+   inserted together with its content is not reliably announced) but
+   leaves the flex flow so it claims no column-gap slot. */
+.cngx-text-stepper__text[data-empty] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .cngx-text-stepper__error {
   flex-basis: 100%;
   display: inline-flex;

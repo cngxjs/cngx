@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   CngxStep,
+  CngxStepperEmpty,
   provideStepperI18n,
   withStepperI18nLabels,
 } from '@cngx/common/stepper';
@@ -93,7 +94,7 @@ describe('CngxTextStepper', () => {
     expect(text.textContent?.trim()).toBe('Schritt 1/3');
   });
 
-  it('renders "Step 0 of 0" when there are no projected steps', () => {
+  it('keeps the live span mounted but empty when there are no projected steps (no "Step 0 of 0")', () => {
     @Component({
       standalone: true,
       imports: [CngxTextStepper],
@@ -104,7 +105,56 @@ describe('CngxTextStepper', () => {
     const fixture = TestBed.createComponent(EmptyHost);
     fixture.detectChanges();
     const text = fixture.nativeElement.querySelector('.cngx-text-stepper__text') as HTMLElement;
-    expect(text.textContent?.trim()).toBe('Step 0 of 0');
+    expect(text).not.toBeNull();
+    expect(text.textContent?.trim()).toBe('');
+    expect(text.hasAttribute('data-empty')).toBe(true);
+    expect(text.getAttribute('aria-live')).toBe('polite');
+  });
+
+  it('renders the projected *cngxStepperEmpty template when there are no steps', () => {
+    @Component({
+      standalone: true,
+      imports: [CngxTextStepper, CngxStepperEmpty],
+      template: `
+        <cngx-text-stepper>
+          <ng-template cngxStepperEmpty><p class="empty-note">No steps yet</p></ng-template>
+        </cngx-text-stepper>
+      `,
+    })
+    class EmptySlotHost {}
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const fixture = TestBed.createComponent(EmptySlotHost);
+    fixture.detectChanges();
+    const note = fixture.nativeElement.querySelector('.empty-note') as HTMLElement;
+    expect(note.textContent).toBe('No steps yet');
+    const text = fixture.nativeElement.querySelector('.cngx-text-stepper__text') as HTMLElement;
+    expect(text.textContent?.trim()).toBe('');
+  });
+
+  it('error status region pre-exists its content and clears data-empty semantics on populate', () => {
+    @Component({
+      standalone: true,
+      imports: [CngxTextStepper, CngxStep],
+      template: `
+        <cngx-text-stepper>
+          <div cngxStep label="Payment" [error]="err()"></div>
+        </cngx-text-stepper>
+      `,
+    })
+    class ToggleErrHost {
+      err = signal<string | boolean>(false);
+    }
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const fixture = TestBed.createComponent(ToggleErrHost);
+    fixture.detectChanges();
+    const region = fixture.nativeElement.querySelector('.cngx-text-stepper__error') as HTMLElement;
+    expect(region).not.toBeNull();
+    expect(region.getAttribute('role')).toBe('status');
+    expect(region.textContent?.trim()).toBe('');
+    fixture.componentInstance.err.set('Card declined');
+    fixture.detectChanges();
+    expect(region.textContent).toContain('Card declined');
+    expect(region.getAttribute('data-state')).toBe('error');
   });
 
   it('folds a direct [error] string into the aggregate error line', () => {
@@ -127,5 +177,28 @@ describe('CngxTextStepper', () => {
       '.cngx-text-stepper__error-text',
     ) as HTMLElement;
     expect(text.textContent?.trim()).toBe('Card declined');
+  });
+
+  it('error line keeps the shipped markup contract (block class, role="status", hidden glyph)', () => {
+    @Component({
+      standalone: true,
+      imports: [CngxTextStepper, CngxStep],
+      template: `
+        <cngx-text-stepper>
+          <div cngxStep label="Payment" [error]="'Card declined'"></div>
+        </cngx-text-stepper>
+      `,
+    })
+    class ErrHost {}
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const fixture = TestBed.createComponent(ErrHost);
+    fixture.detectChanges();
+    const line = fixture.nativeElement.querySelector('.cngx-text-stepper__error') as HTMLElement;
+    expect(line).not.toBeNull();
+    expect(line.getAttribute('role')).toBe('status');
+    expect(line.getAttribute('data-state')).toBe('error');
+    const glyph = line.querySelector('.cngx-text-stepper__error-glyph') as HTMLElement;
+    expect(glyph.getAttribute('aria-hidden')).toBe('true');
+    expect(glyph.textContent?.trim()).not.toBe('');
   });
 });

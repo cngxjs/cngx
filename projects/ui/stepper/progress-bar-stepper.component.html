@@ -1,14 +1,17 @@
-<cngx-progress
-  class="cngx-progress-bar-stepper__bar"
-  [progress]="completedPercent()"
-  [label]="captionText()"
-></cngx-progress>
-@if (showStepCount()) {
-  <cngx-stepper-count class="cngx-progress-bar-stepper__caption" [live]="false" />
+@if (totalSteps() === 0) {
+  @let emptyTpl = resolvedEmptyTemplate();
+  @if (emptyTpl) {
+    <ng-container *ngTemplateOutlet="emptyTpl"></ng-container>
+  }
+} @else {
+  <cngx-progress
+    class="cngx-progress-bar-stepper__bar"
+    [progress]="completedPercent()"
+    [label]="captionText()"
+  ></cngx-progress>
+  @if (showStepCount()) {
+    <cngx-stepper-count class="cngx-progress-bar-stepper__caption" [live]="false" />
+  }
 }
-@if (stateView.hasAnyError()) {
-  <span class="cngx-progress-bar-stepper__error" role="status" data-state="error">
-    <span class="cngx-progress-bar-stepper__error-glyph" aria-hidden="true">{{ errorGlyph }}</span>
-    <span class="cngx-progress-bar-stepper__error-text">{{ errorText() }}</span>
-  </span>
-}
+<!-- Outside the zero-step gate: the status region must pre-exist its content to announce. -->
+<span cngxStepperErrorLine block="cngx-progress-bar-stepper__error" [text]="errorText()"></span>

@@ -49,8 +49,10 @@ import {
   CNGX_STEPPER_GLYPHS,
   CNGX_STEPPER_HOST,
   CngxStepperCount,
+  createStepperAccname,
   createStepperAnnouncementBuilders,
   createStepperHostAttrs,
+  createStepperPanelRefs,
   createStepperSlotContextBuilders,
   createStepperStateView,
   createStepperStripKeyboardNav,
@@ -68,6 +70,8 @@ import {
   CNGX_ORGANISM_SCROLL_SYNC_FACTORY,
 } from '@cngx/common/tabs';
 import { coerceBooleanProperty } from '@cngx/core/utils';
+
+import { CngxStepperErrorLine } from './stepper-error-line.component';
 
 /**
  * Stepper organism. Composes `CngxStepperPresenter` with
@@ -116,7 +120,14 @@ import { coerceBooleanProperty } from '@cngx/core/utils';
   exportAs: 'cngxStepper',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgTemplateOutlet, CngxLiveRegion, CngxRovingItem, CngxStepperCount, CngxSwipe],
+  imports: [
+    NgTemplateOutlet,
+    CngxLiveRegion,
+    CngxRovingItem,
+    CngxStepperCount,
+    CngxStepperErrorLine,
+    CngxSwipe,
+  ],
   styleUrls: ['./styles/stepper-base.css', './stepper.component.css'],
   encapsulation: ViewEncapsulation.None,
   hostDirectives: [
@@ -391,14 +402,12 @@ export class CngxStepper implements CngxStepPanelHost {
     navigationEnabled: () => this.resolvedHeaderNavigation() !== 'none',
   });
 
-  /**
-   * `aria-label` cascade: input → `ariaLabels.stepperRegion` → `i18n.stepperLabel`.
-   */
-  protected readonly resolvedAriaLabel = computed<string | null>(() => {
-    if (this.ariaLabelledBy()) {
-      return null; // labelledby trumps label
-    }
-    return this.ariaLabel() ?? this.config.ariaLabels?.stepperRegion ?? this.i18n.stepperLabel;
+  /** Shared accname cascade (input → `ariaLabels.stepperRegion` → `i18n.stepperLabel`). */
+  protected readonly resolvedAriaLabel = createStepperAccname({
+    ariaLabel: this.ariaLabel,
+    ariaLabelledBy: this.ariaLabelledBy,
+    config: this.config,
+    i18n: this.i18n,
   });
 
   // O(1) labelTemplateFor/contentTemplateFor lookup. Structural equal on
@@ -472,13 +481,9 @@ export class CngxStepper implements CngxStepPanelHost {
     () => this.presenter.commitState.status() === 'pending',
   );
 
-  protected stepHeaderId(node: CngxStepNode): string {
-    return `${node.id}-header`;
-  }
+  protected stepHeaderId = (node: CngxStepNode): string => `${node.id}-header`;
+  protected stepPanelId = (node: CngxStepNode): string => `${node.id}-panel`;
 
-  protected stepPanelId(node: CngxStepNode): string {
-    return `${node.id}-panel`;
-  }
 
   /**
    * Live-region + per-step + group SR phrase builders (Level-2 factory);
@@ -489,6 +494,17 @@ export class CngxStepper implements CngxStepPanelHost {
     presenter: this.presenter,
     stepsOnly: this.stepsOnly,
     i18n: this.i18n,
+  });
+
+  /**
+   * Mode-aware panel naming (Level-2 factory): header-less panels
+   * self-name and drop the describedby ref instead of dangling.
+   */
+  protected readonly panelRefs = createStepperPanelRefs({
+    displayMode: this.displayMode,
+    visibleStripNodes: this.visibleStripNodes,
+    headerIdFor: (node) => this.stepHeaderId(node),
+    describedByFor: (node) => this.announcement.describedBy(node),
   });
 
   protected handleHeaderClick(node: CngxStepNode): void {

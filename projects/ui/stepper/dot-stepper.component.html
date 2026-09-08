@@ -1,32 +1,34 @@
-<div
-  class="cngx-dot-stepper__row"
-  cngxSwipe
-  axis="x"
-  [enabled]="swipeNav.swipeEnabled()"
-  (swiped)="swipeNav.handleSwipe($event)"
->
-  @for (node of stepNodes(); track node.id; let i = $index) {
-    @let dotTpl = resolvedDotTemplate();
-    <span
-      class="cngx-dot-stepper__dot"
-      role="img"
-      [class.cngx-dot-stepper__dot--active]="isActive(node, i)"
-      [class.cngx-dot-stepper__dot--completed]="i < activeIndex()"
-      [class.cngx-dot-stepper__dot--error]="stateView.hasError(node)"
-      [attr.aria-current]="isActive(node, i) ? 'step' : null"
-      [attr.aria-label]="ariaLabelFor(node, i)"
-      [attr.data-state]="dotState(node)"
-    >
-      @if (dotTpl) {
-        <ng-container *ngTemplateOutlet="dotTpl; context: dotContextFor(node, i)" />
-      }
-    </span>
+@if (stepNodes().length === 0) {
+  @let emptyTpl = resolvedEmptyTemplate();
+  @if (emptyTpl) {
+    <ng-container *ngTemplateOutlet="emptyTpl"></ng-container>
   }
-</div>
-
-@if (stateView.hasAnyError()) {
-  <span class="cngx-dot-stepper__error" role="status" data-state="error">
-    <span class="cngx-dot-stepper__error-glyph" aria-hidden="true">{{ errorGlyph }}</span>
-    <span class="cngx-dot-stepper__error-text">{{ errorText() }}</span>
-  </span>
+} @else {
+  <div
+    class="cngx-dot-stepper__row"
+    cngxSwipe
+    axis="x"
+    [enabled]="swipeNav.swipeEnabled()"
+    (swiped)="swipeNav.handleSwipe($event)"
+  >
+    @for (node of stepNodes(); track node.id; let i = $index) {
+      @let dotTpl = resolvedDotTemplate();
+      <span
+        class="cngx-dot-stepper__dot"
+        role="img"
+        [class.cngx-dot-stepper__dot--active]="isActive(node, i)"
+        [class.cngx-dot-stepper__dot--completed]="i < activeIndex()"
+        [class.cngx-dot-stepper__dot--error]="stateView.hasError(node)"
+        [attr.aria-current]="isActive(node, i) ? 'step' : null"
+        [attr.aria-label]="ariaLabelFor(node, i)"
+        [attr.data-state]="dotState(node)"
+      >
+        @if (dotTpl) {
+          <ng-container *ngTemplateOutlet="dotTpl; context: dotContextFor(node, i)" />
+        }
+      </span>
+    }
+  </div>
 }
+
+<span cngxStepperErrorLine block="cngx-dot-stepper__error" [text]="errorText()"></span>

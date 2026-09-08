@@ -176,7 +176,9 @@ export {
 // in `.compodocrc.json` hides them from generated docs; the LLM-md export
 // honours the same tag. Precedent: `CNGX_STEPPER_GLYPHS`, `flatStepsEqual`.
 export {
+  createStepperAccname,
   createStepperHostAttrs,
+  type CngxStepperAccnameInputs,
   type CngxStepperHostAttrs,
   type CngxStepperHostAttrsInputs,
 } from './stepper-host-attrs';
@@ -200,8 +202,11 @@ export {
 
 export {
   createStepperAnnouncementBuilders,
+  createStepperPanelRefs,
   type CngxStepperAnnouncementBuilders,
   type CngxStepperAnnouncementBuildersInputs,
+  type CngxStepperPanelRefs,
+  type CngxStepperPanelRefsInputs,
 } from './announcement-builders';
 
 export { CngxStepperSwipeNav } from './swipe-nav.directive';
