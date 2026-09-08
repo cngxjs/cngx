@@ -453,7 +453,7 @@
     background-repeat: no-repeat;
     background-position: 0 100%;
     background-size: 0% 2px;
-    transition: background-size 0.18s ease, color 0.18s ease;
+    transition: background-size var(--cngx-duration-base, 200ms) ease, color var(--cngx-duration-base, 200ms) ease;
   }
 
   .cngx-breadcrumb__link:hover {
@@ -665,7 +665,7 @@
     border-radius: 50%;
     border: 2.5px solid var(--cngx-breadcrumb-metro-accent);
     background: var(--cngx-breadcrumb-metro-surface);
-    transition: background 0.18s ease, transform 0.18s ease;
+    transition: background var(--cngx-duration-base, 200ms) ease, transform var(--cngx-duration-base, 200ms) ease;
   }
 
   .cngx-breadcrumb__link:hover {
@@ -1292,7 +1292,7 @@
     white-space: nowrap;
     pointer-events: none;
     opacity: 0;
-    transition: opacity 0.18s ease;
+    transition: opacity var(--cngx-duration-base, 200ms) ease;
     box-shadow: var(--cngx-shadow-md, 0 4px 12px oklch(0 0 0 / 0.15));
     z-index: 30;
   }

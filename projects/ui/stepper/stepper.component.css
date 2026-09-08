@@ -303,7 +303,7 @@
       color: var(--cngx-step-indicator-color, currentColor);
       font-size: var(--cngx-step-indicator-font-size, 0.85em);
       font-weight: var(--cngx-step-indicator-font-weight, 600);
-      transition: background-color 120ms ease;
+      transition: background-color var(--cngx-duration-fast, 150ms) ease;
     }
 
     /* Error badge sits in the disc corner so the cue is visible
@@ -890,8 +890,8 @@
       background: transparent;
       border: 1px solid color-mix(in srgb, currentColor 35%, transparent);
       transition:
-        background-color 120ms ease,
-        border-color 120ms ease;
+        background-color var(--cngx-duration-fast, 150ms) ease,
+        border-color var(--cngx-duration-fast, 150ms) ease;
     }
 
     .cngx-stepper__indicator .cngx-stepper__indicator-glyph {
@@ -1262,8 +1262,8 @@
       color: color-mix(in srgb, currentColor 80%, transparent);
       border: 0;
       transition:
-        background-color 120ms ease,
-        color 120ms ease;
+        background-color var(--cngx-duration-fast, 150ms) ease,
+        color var(--cngx-duration-fast, 150ms) ease;
     }
 
     /* The horizontal chevron points along the reading flow, so mirror the
@@ -1479,9 +1479,9 @@
       border-radius: 9999px;
       color: color-mix(in srgb, currentColor 60%, transparent);
       transition:
-        background-color 120ms ease,
-        color 120ms ease,
-        box-shadow 120ms ease;
+        background-color var(--cngx-duration-fast, 150ms) ease,
+        color var(--cngx-duration-fast, 150ms) ease,
+        box-shadow var(--cngx-duration-fast, 150ms) ease;
     }
 
     .cngx-stepper__step .cngx-stepper__label {
@@ -1612,8 +1612,8 @@
       color: var(--cngx-step-chips-color, color-mix(in srgb, currentColor 65%, transparent));
       border: 0;
       transition:
-        background-color 120ms ease,
-        color 120ms ease;
+        background-color var(--cngx-duration-fast, 150ms) ease,
+        color var(--cngx-duration-fast, 150ms) ease;
     }
 
     /* The current step is the single filled pill - the only "you are
@@ -1727,7 +1727,7 @@
       background: transparent;
       border: 0;
       color: var(--cngx-step-breadcrumb-color, color-mix(in srgb, currentColor 48%, transparent));
-      transition: color 120ms ease;
+      transition: color var(--cngx-duration-fast, 150ms) ease;
     }
 
     /* Chevron separator after every item except the last. Sits in the
@@ -1929,8 +1929,8 @@
   background: var(--cngx-dot-step-upcoming-bg, color-mix(in srgb, currentColor 18%, transparent));
   cursor: pointer;
   transition:
-    background 150ms ease-out,
-    transform 150ms ease-out;
+    background var(--cngx-duration-fast, 150ms) ease-out,
+    transform var(--cngx-duration-fast, 150ms) ease-out;
 }
 
 .cngx-stepper__mobile-dot[aria-disabled='true'] {
@@ -2046,12 +2046,12 @@
 @media (prefers-reduced-motion: no-preference) {
   .cngx-stepper__group-header {
     transition:
-      opacity var(--cngx-stepper-collapse-duration, 160ms) var(--cngx-stepper-collapse-easing, ease),
-      background-color var(--cngx-stepper-collapse-duration, 160ms)
+      opacity var(--cngx-stepper-collapse-duration, var(--cngx-duration-fast, 150ms)) var(--cngx-stepper-collapse-easing, ease),
+      background-color var(--cngx-stepper-collapse-duration, var(--cngx-duration-fast, 150ms))
         var(--cngx-stepper-collapse-easing, ease),
-      border-color var(--cngx-stepper-collapse-duration, 160ms)
+      border-color var(--cngx-stepper-collapse-duration, var(--cngx-duration-fast, 150ms))
         var(--cngx-stepper-collapse-easing, ease),
-      color var(--cngx-stepper-collapse-duration, 160ms) var(--cngx-stepper-collapse-easing, ease);
+      color var(--cngx-stepper-collapse-duration, var(--cngx-duration-fast, 150ms)) var(--cngx-stepper-collapse-easing, ease);
   }
 }
 
@@ -2242,11 +2242,11 @@
 @media (prefers-reduced-motion: no-preference) {
   .cngx-stepper[data-density-auto] .cngx-stepper__step {
     transition:
-      --cngx-step-distance var(--cngx-stepper-density-transition, 240ms) ease,
-      flex-shrink var(--cngx-stepper-density-transition, 240ms) ease,
-      background-color 120ms ease,
-      color 120ms ease,
-      box-shadow 120ms ease;
+      --cngx-step-distance var(--cngx-stepper-density-transition, var(--cngx-duration-base, 200ms)) ease,
+      flex-shrink var(--cngx-stepper-density-transition, var(--cngx-duration-base, 200ms)) ease,
+      background-color var(--cngx-duration-fast, 150ms) ease,
+      color var(--cngx-duration-fast, 150ms) ease,
+      box-shadow var(--cngx-duration-fast, 150ms) ease;
   }
 }
 

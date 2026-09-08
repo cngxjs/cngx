@@ -25,7 +25,7 @@
   line-height: 1;
   color: var(--cngx-breadcrumb-siblings-trigger-color, var(--cngx-color-text-muted, oklch(0.5 0.01 250)));
   cursor: pointer;
-  transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease;
+  transition: background var(--cngx-duration-base, 200ms) ease, color var(--cngx-duration-base, 200ms) ease, transform var(--cngx-duration-base, 200ms) ease;
 }
 
 .cngx-breadcrumb__siblings-trigger:hover {

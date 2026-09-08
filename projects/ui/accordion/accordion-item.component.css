@@ -106,7 +106,7 @@
   border-inline-end: var(--cngx-accordion-chevron-stroke, 2px solid currentColor);
   border-block-end: var(--cngx-accordion-chevron-stroke, 2px solid currentColor);
   transform: rotate(45deg);
-  transition: transform var(--cngx-accordion-chevron-transition, 150ms ease);
+  transition: transform var(--cngx-accordion-chevron-transition, var(--cngx-duration-fast, 150ms) ease);
 }
 
 .cngx-accordion-item[data-expanded] .cngx-accordion-item__chevron {
@@ -161,7 +161,7 @@
 
   .cngx-accordion-item__chevron::after {
     transform: translate(-50%, -50%) rotate(90deg);
-    transition: opacity var(--cngx-accordion-chevron-transition, 150ms ease);
+    transition: opacity var(--cngx-accordion-chevron-transition, var(--cngx-duration-fast, 150ms) ease);
   }
 
   /* The vertical bar collapses on open: plus morphs to minus. */

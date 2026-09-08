@@ -89,7 +89,7 @@
       :scope {
         animation: none;
         opacity: var(--cngx-ripple-opacity, 0.12);
-        transition: opacity 0.15s ease;
+        transition: opacity var(--cngx-duration-fast, 150ms) ease;
       }
     }
   }

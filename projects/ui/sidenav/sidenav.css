@@ -736,8 +736,8 @@
     color: var(--cngx-nav-link-color, currentColor);
     border-radius: var(--cngx-nav-link-radius, 4px);
     transition:
-      background 0.15s,
-      color 0.15s;
+      background var(--cngx-duration-fast, 150ms),
+      color var(--cngx-duration-fast, 150ms);
   }
 
   cngx-sidenav .cngx-nav-link:hover {
@@ -830,7 +830,7 @@
     cursor: col-resize;
     z-index: 4;
     background: transparent;
-    transition: background 0.15s;
+    transition: background var(--cngx-duration-fast, 150ms);
     touch-action: none; /* prevent scroll on drag */
   }
 

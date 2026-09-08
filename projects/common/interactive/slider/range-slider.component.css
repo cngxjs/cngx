@@ -141,7 +141,7 @@ cngx-range-slider .cngx-slider__value--range.cngx-slider__bubble {
   background: var(--cngx-slider-bubble-bg, var(--cngx-color-primary, oklch(0.66 0.19 50)));
   color: var(--cngx-slider-bubble-color, var(--cngx-color-on-primary, oklch(0.99 0.01 250)));
   opacity: 0;
-  transition: opacity 0.12s ease;
+  transition: opacity var(--cngx-duration-fast, 150ms) ease;
 }
 
 cngx-range-slider:focus-within .cngx-slider__bubble,

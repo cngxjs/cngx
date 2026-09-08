@@ -18,7 +18,7 @@
   block-size: var(--cngx-segmented-progress-thickness, 0.375rem);
   border-radius: var(--cngx-segmented-progress-radius, 999px);
   background: var(--cngx-segmented-progress-todo-color, var(--mat-sys-surface-variant, #e0e0e0));
-  transition: background var(--cngx-segmented-progress-transition, 150ms ease);
+  transition: background var(--cngx-segmented-progress-transition, var(--cngx-duration-fast, 150ms) ease);
 }
 
 .cngx-segmented-progress__segment[data-state='done'] {
