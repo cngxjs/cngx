@@ -8,11 +8,11 @@ import {
 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createResizeObserverMock } from '@cngx/testing';
 import { CngxChart } from '../chart/chart.component';
 import { CngxAxis } from '../axis/axis.component';
 import { CngxLine } from './line.component';
 
-import { ResizeObserverMock } from '../testing/resize-observer-mock';
 
 @Component({
   standalone: true,
@@ -44,7 +44,7 @@ class OrphanLineHost {
 
 describe('CngxLine', () => {
   beforeEach(() => {
-    vi.stubGlobal('ResizeObserver', ResizeObserverMock);
+    createResizeObserverMock().install(window);
   });
 
   afterEach(() => vi.unstubAllGlobals());
@@ -186,7 +186,7 @@ describe('CngxLine', () => {
 });
 
 describe('CngxLine [color]', () => {
-  beforeEach(() => vi.stubGlobal('ResizeObserver', ResizeObserverMock));
+  beforeEach(() => createResizeObserverMock().install(window));
   afterEach(() => vi.unstubAllGlobals());
 
   it('binds [color] as an inline style that beats the stylesheet cascade', () => {

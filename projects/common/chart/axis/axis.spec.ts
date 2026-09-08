@@ -1,6 +1,7 @@
 import { computed, Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createResizeObserverMock } from '@cngx/testing';
 import { CngxAxis } from './axis.component';
 import { type CngxAxisPosition, type CngxAxisType } from './axis-position';
 import { CngxChart } from '../chart/chart.component';
@@ -12,7 +13,6 @@ import {
   type XScaleInput,
 } from '../chart/chart-context';
 
-import { ResizeObserverMock } from '../testing/resize-observer-mock';
 
 @Component({
   standalone: true,
@@ -43,7 +43,7 @@ class TestHost {
 
 describe('CngxAxis', () => {
   beforeEach(() => {
-    vi.stubGlobal('ResizeObserver', ResizeObserverMock);
+    createResizeObserverMock().install(window);
     TestBed.configureTestingModule({ imports: [TestHost] });
   });
 
@@ -539,7 +539,7 @@ describe('CngxAxis - the room an axis reserves', () => {
   }
 
   beforeEach(() => {
-    vi.stubGlobal('ResizeObserver', ResizeObserverMock);
+    createResizeObserverMock().install(window);
     TestBed.configureTestingModule({ imports: [ReservationHost] });
   });
 
