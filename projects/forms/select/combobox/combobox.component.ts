@@ -791,7 +791,8 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     getLastCommitted: () => this.lastCommittedValues,
     onToggleFinalize: (option, isNowSelected) =>
       this.toggleDispatch.finalizeToggle(option, isNowSelected, this.lastCommittedValues),
-    onClearFinalize: (previous, finalValues) => this.toggleDispatch.clearFinalize(previous, finalValues),
+    onClearFinalize: (previous, finalValues) =>
+      this.toggleDispatch.clearFinalize(previous, finalValues),
     onStateChange: (status) => this.stateChange.emit(status),
     onError: (err) => this.commitError.emit(err),
     announceError: (err) => this.announceCommitError(err),
@@ -964,8 +965,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
 
   protected handleFocus(): void {
     this.focusState.markFocused();
-    const openOnFocus =
-      this.config.openOn === 'focus' || this.config.openOn === 'click+focus';
+    const openOnFocus = this.config.openOn === 'focus' || this.config.openOn === 'click+focus';
     if (openOnFocus && !this.suppressOpenOnFocus) {
       this.open();
     }
@@ -984,5 +984,4 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
       popover: this.popoverRef(),
     });
   }
-
 }

@@ -725,8 +725,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
 
   protected handleFocus(): void {
     this.focusState.markFocused();
-    const openOnFocus =
-      this.config.openOn === 'focus' || this.config.openOn === 'click+focus';
+    const openOnFocus = this.config.openOn === 'focus' || this.config.openOn === 'click+focus';
     if (openOnFocus && !this.suppressOpenOnFocus) {
       this.open();
     }
@@ -792,9 +791,9 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
       listbox: lb,
       popover: pop,
       strategy: this.flatNavStrategy,
-      flatOptions: this.flatOptions(),
-      compareWith: this.compareWith(),
-      disabled: this.disabled(),
+      flatOptions: this.flatOptions,
+      compareWith: this.compareWith,
+      disabled: this.disabled,
       typeaheadController: this.typeaheadController,
     });
   }

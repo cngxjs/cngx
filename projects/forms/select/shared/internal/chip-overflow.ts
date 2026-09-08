@@ -1,6 +1,7 @@
 import { computed, type Signal } from '@angular/core';
 
 import type { CngxSelectOptionDef } from '../option.model';
+import { sameArrayContents } from './compare';
 
 /**
  * Inputs for {@link createChipOverflow}.
@@ -45,14 +46,18 @@ export interface ChipOverflow<T> {
  * @internal
  */
 export function createChipOverflow<T>(opts: ChipOverflowOptions<T>): ChipOverflow<T> {
-  const visibleSelected = computed<CngxSelectOptionDef<T>[]>(() => {
-    const all = opts.selectedOptions();
-    if (opts.chipOverflow() !== 'truncate') {
-      return all;
-    }
-    const cap = Math.max(1, opts.maxVisibleChips());
-    return all.length <= cap ? all : all.slice(0, cap);
-  });
+  const visibleSelected = computed<CngxSelectOptionDef<T>[]>(
+    () => {
+      const all = opts.selectedOptions();
+      if (opts.chipOverflow() !== 'truncate') {
+        return all;
+      }
+      const cap = Math.max(1, opts.maxVisibleChips());
+      return all.length <= cap ? all : all.slice(0, cap);
+    },
+    // Structural equal - the truncate slice mints a new array per read.
+    { equal: (a, b) => sameArrayContents(a, b, Object.is) },
+  );
 
   const overflowBadgeCount = computed<number>(() => {
     if (opts.chipOverflow() !== 'truncate') {

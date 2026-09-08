@@ -43,9 +43,7 @@ export function handlePageJumpKey(
   const currentId = ad.activeId();
   const currentIdx = options.findIndex((o) => o.id === currentId);
   const direction: 1 | -1 = event.key === 'PageDown' ? 1 : -1;
-  const target = resolvePageJumpTarget(options, currentIdx, direction, (o) =>
-    isOptionDisabled(o),
-  );
+  const target = resolvePageJumpTarget(options, currentIdx, direction, (o) => isOptionDisabled(o));
   if (target !== null) {
     ad.highlightByIndex(target);
   }
@@ -62,9 +60,10 @@ export interface FlatNavPageJumpDeps<T> {
   readonly popover: CngxPopover | undefined;
   /** Injected `CNGX_FLAT_NAV_STRATEGY` - the consumer-overridable seam. */
   readonly strategy: CngxFlatNavStrategy;
-  readonly flatOptions: readonly CngxSelectOptionDef<T>[];
-  readonly compareWith: CngxSelectCompareFn<T>;
-  readonly disabled: boolean;
+  /** Accessors (signals qualify) - read only after the key check, so the keydown hot path stays free. */
+  readonly flatOptions: () => readonly CngxSelectOptionDef<T>[];
+  readonly compareWith: () => CngxSelectCompareFn<T>;
+  readonly disabled: () => boolean;
   readonly typeaheadController: TypeaheadController<T>;
 }
 
@@ -74,8 +73,8 @@ export interface FlatNavPageJumpDeps<T> {
  * (combobox/typeahead) the jump target resolves through the injected
  * {@link CngxFlatNavStrategy}, so a consumer `CNGX_FLAT_NAV_STRATEGY`
  * override keeps steering page jumps. Opens the popover when closed,
- * returns `true` when the key was a page-jump key. The caller owns the
- * modifier-combo guard.
+ * returns `true` when the key was a handled page-jump key. Guards
+ * modifier combos itself, mirroring {@link handlePageJumpKey}.
  *
  * @internal
  */
@@ -84,6 +83,9 @@ export function handleFlatNavPageJumpKey<T>(
   deps: FlatNavPageJumpDeps<T>,
 ): boolean {
   if (event.key !== 'PageDown' && event.key !== 'PageUp') {
+    return false;
+  }
+  if (event.ctrlKey || event.metaKey || event.altKey) {
     return false;
   }
   event.preventDefault();
@@ -102,12 +104,12 @@ export function handleFlatNavPageJumpKey<T>(
   const direction: 1 | -1 = event.key === 'PageDown' ? 1 : -1;
   const action = deps.strategy.onPageJump(
     {
-      options: deps.flatOptions,
+      options: deps.flatOptions(),
       listboxItems: items,
       currentFlatIndex: -1,
       currentListboxIndex,
-      compareWith: deps.compareWith,
-      disabled: deps.disabled,
+      compareWith: deps.compareWith(),
+      disabled: deps.disabled(),
       typeaheadController: deps.typeaheadController,
     },
     direction,
