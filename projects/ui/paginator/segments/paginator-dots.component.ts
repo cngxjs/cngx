@@ -7,6 +7,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 
+import { clamp } from '@cngx/utils';
 import { CngxRovingItem, CngxRovingTabindex } from '@cngx/common/a11y';
 
 import { injectPaginatorConfig } from '../paginator-config';
@@ -48,8 +49,8 @@ function buildDots(current: number, total: number): DotModel {
     return { dots: [], firstVisible: 0, windowed: false };
   }
   const windowed = count > VISIBLE;
-  const clamped = Math.min(Math.max(current, 0), count - 1);
-  const firstVisible = windowed ? Math.min(Math.max(clamped - HALF, 0), count - VISIBLE) : 0;
+  const clamped = clamp(current, 0, count - 1);
+  const firstVisible = windowed ? clamp(clamped - HALF, 0, count - VISIBLE) : 0;
   const lastVisible = windowed ? firstVisible + VISIBLE - 1 : count - 1;
   const moreBefore = firstVisible > 0;
   const moreAfter = lastVisible < count - 1;
