@@ -45,6 +45,7 @@ import {
 import { createArrayToggleDispatch } from '../shared/internal/array-toggle';
 import { createChipOverflow } from '../shared/internal/chip-overflow';
 import { sameArrayContents } from '../shared/internal/compare';
+import { handleFlatNavPageJumpKey } from '../shared/internal/page-jump-handler';
 import { CNGX_ACTION_HOST_BRIDGE_FACTORY } from '../shared/action-host-bridge';
 import { createFieldSync } from '../shared/field-sync';
 import { CNGX_LOCAL_ITEMS_BUFFER_FACTORY } from '../shared/local-items-buffer';
@@ -809,35 +810,15 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
       }
     }
 
-    if (event.key === 'PageDown' || event.key === 'PageUp') {
-      event.preventDefault();
-      if (!pop || !lb) {
-        return;
-      }
-      if (!pop.isVisible()) {
-        pop.show();
-      }
-      const items = lb.options();
-      const ad = lb.ad;
-      const currentId = ad.activeId();
-      const currentListboxIndex = items.findIndex((o) => o.id === currentId);
-      const direction: 1 | -1 = event.key === 'PageDown' ? 1 : -1;
-      const action = this.flatNavStrategy.onPageJump(
-        {
-          options: this.flatOptions(),
-          listboxItems: items,
-          currentFlatIndex: -1,
-          currentListboxIndex,
-          compareWith: this.compareWith(),
-          disabled: this.disabled(),
-          typeaheadController: this.typeaheadController,
-        },
-        direction,
-      );
-      if (action.kind === 'highlight') {
-        ad.highlightByIndex(action.index);
-      }
-    }
+    handleFlatNavPageJumpKey(event, {
+      listbox: lb,
+      popover: pop,
+      strategy: this.flatNavStrategy,
+      flatOptions: this.flatOptions(),
+      compareWith: this.compareWith(),
+      disabled: this.disabled(),
+      typeaheadController: this.typeaheadController,
+    });
   }
 
   private toggleOptionByUser(opt: CngxSelectOptionDef<T>): void {

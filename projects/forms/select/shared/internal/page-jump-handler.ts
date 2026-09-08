@@ -1,8 +1,10 @@
 import type { CngxListbox } from '@cngx/common/interactive';
 import type { CngxPopover } from '@cngx/common/popover';
 
-import { isOptionDisabled } from '../option.model';
-import { resolvePageJumpTarget } from '../typeahead-controller';
+import type { CngxFlatNavStrategy } from '../flat-nav-strategy';
+import { isOptionDisabled, type CngxSelectOptionDef } from '../option.model';
+import { resolvePageJumpTarget, type TypeaheadController } from '../typeahead-controller';
+import type { CngxSelectCompareFn } from './select-core';
 
 /**
  * PageUp/PageDown handler for flat-panel select variants. Opens the
@@ -46,6 +48,72 @@ export function handlePageJumpKey(
   );
   if (target !== null) {
     ad.highlightByIndex(target);
+  }
+  return true;
+}
+
+/**
+ * Dependencies for {@link handleFlatNavPageJumpKey}.
+ *
+ * @internal
+ */
+export interface FlatNavPageJumpDeps<T> {
+  readonly listbox: CngxListbox | undefined;
+  readonly popover: CngxPopover | undefined;
+  /** Injected `CNGX_FLAT_NAV_STRATEGY` - the consumer-overridable seam. */
+  readonly strategy: CngxFlatNavStrategy;
+  readonly flatOptions: readonly CngxSelectOptionDef<T>[];
+  readonly compareWith: CngxSelectCompareFn<T>;
+  readonly disabled: boolean;
+  readonly typeaheadController: TypeaheadController<T>;
+}
+
+/**
+ * Strategy-routed PageUp/PageDown handler for the flat-nav variants
+ * (`CngxSelect`, `CngxMultiSelect`). Unlike {@link handlePageJumpKey}
+ * (combobox/typeahead) the jump target resolves through the injected
+ * {@link CngxFlatNavStrategy}, so a consumer `CNGX_FLAT_NAV_STRATEGY`
+ * override keeps steering page jumps. Opens the popover when closed,
+ * returns `true` when the key was a page-jump key. The caller owns the
+ * modifier-combo guard.
+ *
+ * @internal
+ */
+export function handleFlatNavPageJumpKey<T>(
+  event: KeyboardEvent,
+  deps: FlatNavPageJumpDeps<T>,
+): boolean {
+  if (event.key !== 'PageDown' && event.key !== 'PageUp') {
+    return false;
+  }
+  event.preventDefault();
+  const pop = deps.popover;
+  const lb = deps.listbox;
+  if (!pop || !lb) {
+    return true;
+  }
+  if (!pop.isVisible()) {
+    pop.show();
+  }
+  const items = lb.options();
+  const ad = lb.ad;
+  const currentId = ad.activeId();
+  const currentListboxIndex = items.findIndex((o) => o.id === currentId);
+  const direction: 1 | -1 = event.key === 'PageDown' ? 1 : -1;
+  const action = deps.strategy.onPageJump(
+    {
+      options: deps.flatOptions,
+      listboxItems: items,
+      currentFlatIndex: -1,
+      currentListboxIndex,
+      compareWith: deps.compareWith,
+      disabled: deps.disabled,
+      typeaheadController: deps.typeaheadController,
+    },
+    direction,
+  );
+  if (action.kind === 'highlight') {
+    ad.highlightByIndex(action.index);
   }
   return true;
 }
