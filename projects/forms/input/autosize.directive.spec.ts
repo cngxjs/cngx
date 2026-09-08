@@ -12,6 +12,20 @@ class Host {
   readonly directive = viewChild.required(CngxAutosize);
 }
 
+
+@Component({
+  template: `<textarea
+    cngxAutosize
+    [minRows]="10"
+    [maxRows]="5"
+    style="line-height: 10px; font-size: 10px; padding: 0; border: 0"
+  ></textarea>`,
+  imports: [CngxAutosize],
+})
+class InvertedBoundsHost {
+  readonly directive = viewChild.required(CngxAutosize);
+}
+
 function setup(overrides: Partial<Host> = {}) {
   const fixture = TestBed.createComponent(Host);
   Object.assign(fixture.componentInstance, overrides);
@@ -55,5 +69,15 @@ describe('CngxAutosize', () => {
   it('should set overflow-y to hidden when no maxRows', () => {
     const { textarea } = setup();
     expect(textarea.style.overflowY).toBe('hidden');
+  });
+
+  it('lets minRows win when maxRows is configured below it (CSS min/max-height resolution)', () => {
+    const fixture = TestBed.createComponent(InvertedBoundsHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const directive = fixture.componentInstance.directive();
+    directive.resize();
+    // minH = 10 rows x 10px, maxH = 5 rows x 10px; the minimum wins.
+    expect(directive.height()).toBe(100);
   });
 });

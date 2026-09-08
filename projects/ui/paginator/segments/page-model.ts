@@ -2,6 +2,8 @@
 // API - the segment is the only consumer. 0-based throughout (matching the
 // brain's `pageIndex`); the rendered display number is `index + 1`.
 
+import { clamp } from '@cngx/utils';
+
 /**
  * One slot in the rendered page row: a page button or a truncation gap.
  *
@@ -49,7 +51,7 @@ export function pageWindow(
   boundaryCount = 1,
 ): PageWindow {
   const count = Math.max(1, total);
-  const page = Math.min(Math.max(current, 0), count - 1) + 1; // 1-based, clamped
+  const page = clamp(current, 0, count - 1) + 1; // 1-based, clamped
 
   const startPages = range(1, Math.min(boundaryCount, count));
   const endPages = range(Math.max(count - boundaryCount + 1, boundaryCount + 1), count);

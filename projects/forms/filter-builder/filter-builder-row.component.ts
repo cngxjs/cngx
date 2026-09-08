@@ -9,6 +9,7 @@ import {
   untracked,
   ViewEncapsulation,
 } from '@angular/core';
+import { arrayEqual } from '@cngx/utils';
 import { CngxToggle } from '@cngx/common/interactive';
 import { CngxInput } from '@cngx/forms/input';
 import { CngxSelect } from '@cngx/forms/select';
@@ -43,22 +44,6 @@ function equalOptionList<T>(
     const aa = a[i];
     const bb = b[i];
     if (aa.value !== bb.value || aa.label !== bb.label) {
-      return false;
-    }
-  }
-  return true;
-}
-
-/** @internal */
-function equalStringList(a: readonly string[], b: readonly string[]): boolean {
-  if (a === b) {
-    return true;
-  }
-  if (a.length !== b.length) {
-    return false;
-  }
-  for (let i = 0; i < a.length; i++) {
-    if (a[i] !== b[i]) {
       return false;
     }
   }
@@ -234,7 +219,7 @@ export class CngxFilterRow {
       const expression = this.node();
       return expression ? this.operatorsForField(expression.field) : EMPTY_OPERATORS;
     },
-    { equal: equalStringList },
+    { equal: arrayEqual },
   );
 
   private operatorsForField(fieldKey: string): readonly string[] {

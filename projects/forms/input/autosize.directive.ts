@@ -10,6 +10,8 @@ import {
   type Signal,
 } from '@angular/core';
 
+import { clamp } from '@cngx/utils';
+
 /**
  * Auto-resize textarea based on content.
  *
@@ -48,7 +50,11 @@ export class CngxAutosize {
   /** Minimum number of rows. */
   readonly minRows = input<number>(1);
 
-  /** Maximum number of rows. `undefined` = unlimited. */
+  /**
+   * Maximum number of rows. `undefined` = unlimited. When configured below
+   * `minRows`, the minimum wins - same resolution CSS applies between
+   * `min-height` and `max-height`.
+   */
   readonly maxRows = input<number | undefined>(undefined);
 
   private readonly heightState = signal(0);
@@ -91,7 +97,7 @@ export class CngxAutosize {
     const scrollH = el.scrollHeight;
     el.style.height = prevHeight;
 
-    const targetH = Math.min(Math.max(scrollH, minH), maxH);
+    const targetH = clamp(scrollH, minH, maxH);
     el.style.height = `${targetH}px`;
     this.heightState.set(targetH);
   }

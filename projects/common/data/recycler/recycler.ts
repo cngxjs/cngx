@@ -11,6 +11,7 @@ import {
   signal,
   untracked,
 } from '@angular/core';
+import { clamp } from '@cngx/utils';
 import type { CngxAsyncState } from '@cngx/core/utils';
 import { createTransitionTracker, createVisibilityGate } from '@cngx/core/utils';
 
@@ -375,7 +376,7 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
     if (total === 0) {
       return 0;
     }
-    return Math.min(Math.max(0, end() - effectiveOverscan() - 1), total - 1);
+    return clamp(end() - effectiveOverscan() - 1, 0, total - 1);
   });
 
   const visibleCount = computed(() => {
