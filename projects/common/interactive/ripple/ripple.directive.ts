@@ -1,6 +1,8 @@
 import { DOCUMENT } from '@angular/common';
 import { DestroyRef, Directive, ElementRef, inject, input, signal } from '@angular/core';
 
+import { createMediaQuerySignal } from '@cngx/core/utils';
+
 /**
  * Touch/click ripple feedback without Material dependency.
  *
@@ -60,25 +62,16 @@ export class CngxRipple {
 
   private readonly el = inject(ElementRef<HTMLElement>);
   private readonly doc = inject(DOCUMENT);
-  private prefersReducedMotion = false;
+  private readonly prefersReducedMotion = createMediaQuerySignal(
+    '(prefers-reduced-motion: reduce)',
+    inject(DestroyRef),
+    this.doc.defaultView,
+  );
 
-  constructor() {
-    const destroyRef = inject(DestroyRef);
-    const win = this.doc.defaultView;
-
-    // Detect reduced motion preference (matchMedia may not exist in test/SSR)
-    if (win?.matchMedia) {
-      const mql = win.matchMedia('(prefers-reduced-motion: reduce)');
-      this.prefersReducedMotion = mql.matches;
-      const handler = (e: MediaQueryListEvent) => (this.prefersReducedMotion = e.matches);
-      mql.addEventListener('change', handler);
-      destroyRef.onDestroy(() => mql.removeEventListener('change', handler));
-    }
-  }
 
   /** @internal */
   protected handlePointerDown(event: PointerEvent): void {
-    if (this.disabled() || this.prefersReducedMotion) {
+    if (this.disabled() || this.prefersReducedMotion()) {
       return;
     }
 
