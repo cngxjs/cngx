@@ -1,16 +1,25 @@
 import { signal } from '@angular/core';
-import type { AsyncStatus, CngxAsyncState } from '@cngx/core/utils';
+import { type AsyncStatus, buildAsyncStateView, type CngxAsyncState } from '@cngx/core/utils';
 
 /** Fields a spec can drive on {@link AsyncStateMock}. */
 export interface AsyncStateMockPatch {
-  /** New status. Also recomputes `isLoading` / `isBusy` from it. */
+  /**
+   * New status. Every status-derived flag (`isLoading` / `isPending` /
+   * `isRefreshing` / `isBusy` / `isSettled`) recomputes from it.
+   */
   status?: AsyncStatus;
   /** Whether no successful load has completed yet. */
   firstLoad?: boolean;
-  /** Whether the data slot counts as empty. */
+  /** Whether the data slot counts as empty. `hasData` recomputes as its negation. */
   empty?: boolean;
-  /** Latest data value. */
+  /** Latest data value. Pass `undefined` explicitly to clear the slot. */
   data?: unknown;
+  /** Latest error value. Pass `undefined` explicitly to clear the slot. */
+  error?: unknown;
+  /** Progress 0-100. Pass `undefined` explicitly for indeterminate. */
+  progress?: number | undefined;
+  /** Timestamp of the last successful load. Pass `undefined` explicitly to clear the slot. */
+  lastUpdated?: Date | undefined;
 }
 
 /** A `CngxAsyncState` whose signals a spec drives directly. */
@@ -18,9 +27,6 @@ export interface AsyncStateMock extends CngxAsyncState<unknown> {
   /** Apply a partial state change. Omitted fields keep their current value. */
   set(patch: AsyncStateMockPatch): void;
 }
-
-/** Statuses that count as busy, mirroring `CngxAsyncState.isBusy`. */
-const BUSY_STATUSES: readonly AsyncStatus[] = ['loading', 'pending', 'refreshing'];
 
 /**
  * A hand-driven `CngxAsyncState` for specs on components that accept `[state]`.
@@ -40,34 +46,40 @@ const BUSY_STATUSES: readonly AsyncStatus[] = ['loading', 'pending', 'refreshing
  * expect(card.querySelector('.skeleton')).not.toBeNull();
  * ```
  *
- * `isLoading` and `isBusy` share one signal and are derived from `status`, so a
- * spec never has to keep them consistent by hand.
+ * All derived members come from `buildAsyncStateView` - the same kernel every
+ * real producer uses - over writable source signals, so the mock cannot drift
+ * from the envelope's derivation rules: `set({ status: 'pending' })` yields
+ * `isPending` and `isBusy` both `true`, exactly like the kernel.
+ *
+ * The one deliberate divergence from a data-carrying producer: emptiness is the
+ * spec-driven `empty` signal (default `false`), not derived from the data
+ * shape. That uses the kernel's `isEmpty` source override and keeps `isEmpty` /
+ * `hasData` drivable without staging data.
  */
 export function createAsyncStateMock(): AsyncStateMock {
   const status = signal<AsyncStatus>('idle');
   const firstLoad = signal(true);
   const empty = signal(false);
-  const busy = signal(false);
   const data = signal<unknown>(undefined);
+  const error = signal<unknown>(undefined);
+  const progress = signal<number | undefined>(undefined);
+  const lastUpdated = signal<Date | undefined>(undefined);
 
-  return {
+  const view = buildAsyncStateView<unknown>({
     status,
     data,
-    error: signal<unknown>(undefined),
-    progress: signal<number | undefined>(undefined),
-    isLoading: busy,
-    isPending: signal(false),
-    isRefreshing: signal(false),
-    isBusy: busy,
+    error,
+    progress,
     isFirstLoad: firstLoad,
     isEmpty: empty,
-    hasData: signal(false),
-    isSettled: signal(false),
-    lastUpdated: signal<Date | undefined>(undefined),
+    lastUpdated,
+  });
+
+  return {
+    ...view,
     set(patch: AsyncStateMockPatch): void {
       if (patch.status !== undefined) {
         status.set(patch.status);
-        busy.set(BUSY_STATUSES.includes(patch.status));
       }
       if (patch.firstLoad !== undefined) {
         firstLoad.set(patch.firstLoad);
@@ -75,8 +87,17 @@ export function createAsyncStateMock(): AsyncStateMock {
       if (patch.empty !== undefined) {
         empty.set(patch.empty);
       }
-      if (patch.data !== undefined) {
+      if ('data' in patch) {
         data.set(patch.data);
+      }
+      if ('error' in patch) {
+        error.set(patch.error);
+      }
+      if ('progress' in patch) {
+        progress.set(patch.progress);
+      }
+      if ('lastUpdated' in patch) {
+        lastUpdated.set(patch.lastUpdated);
       }
     },
   };

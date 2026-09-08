@@ -1,11 +1,13 @@
 /**
  * Custom vitest matchers for DOM element assertions.
  *
- * Register in your test setup file:
+ * Registered for every library `test` target by
+ * `projects/testing/setup/vitest-setup.ts`, so specs use them directly:
  * ```typescript
- * import { cngxMatchers } from '@cngx/testing';
- * expect.extend(cngxMatchers);
+ * expect(element).toHaveClass('active');
  * ```
+ * The `declare module 'vitest'` augmentation below is program-wide; keeping
+ * registration in the shared setup keeps types and runtime from drifting.
  */
 export const cngxMatchers = {
   /** Asserts the element has the given CSS class. */
@@ -43,7 +45,7 @@ export const cngxMatchers = {
     };
   },
 
-  /** Asserts the element has a CSS custom property with the given value. */
+  /** Asserts the element's inline style declares a CSS custom property with the given value. */
   toHaveCSSVariable(received: HTMLElement, name: string, value: string) {
     const actual = received.style.getPropertyValue(name).trim();
     const pass = actual === value;

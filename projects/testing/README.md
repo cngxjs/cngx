@@ -164,18 +164,14 @@ const cngxMatchers = {
 
 #### Setup
 
-Register matchers in your test setup file:
-
-```typescript
-import { cngxMatchers } from '@cngx/testing';
-expect.extend(cngxMatchers);
-```
+Registered automatically for every library `test` target by
+`projects/testing/setup/vitest-setup.ts` - no per-spec setup needed.
 
 #### Matchers
 
 - **`toHaveClass(className: string)`** - Asserts the element has the given CSS class.
 - **`toHaveAttribute(name: string, value?: string)`** - Asserts the element has the given attribute, optionally with a specific value.
-- **`toHaveCSSVariable(name: string, value: string)`** - Asserts the element has a CSS custom property with the given value.
+- **`toHaveCSSVariable(name: string, value: string)`** - Asserts the element's inline style declares a CSS custom property with the given value.
 
 #### Example
 
