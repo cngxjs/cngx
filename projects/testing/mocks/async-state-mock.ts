@@ -17,9 +17,9 @@ export interface AsyncStateMockPatch {
   /** Latest error value. Pass `undefined` explicitly to clear the slot. */
   error?: unknown;
   /** Progress 0-100. Pass `undefined` explicitly for indeterminate. */
-  progress?: number;
+  progress?: number | undefined;
   /** Timestamp of the last successful load. Pass `undefined` explicitly to clear the slot. */
-  lastUpdated?: Date;
+  lastUpdated?: Date | undefined;
 }
 
 /** A `CngxAsyncState` whose signals a spec drives directly. */
