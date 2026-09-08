@@ -6,7 +6,6 @@ import { CngxScatter } from './scatter.component';
 import { CngxAxis } from '../axis/axis.component';
 import { CngxChart } from '../chart/chart.component';
 
-
 interface Point {
   x: number;
   y: number;

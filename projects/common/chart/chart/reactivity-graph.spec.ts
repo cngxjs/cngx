@@ -15,7 +15,6 @@ import { CngxAxis } from '../axis/axis.component';
 import { CngxLine } from '../layers/line.component';
 import { CngxThreshold } from '../layers/threshold.component';
 
-
 @Component({
   standalone: true,
   imports: [CngxChart, CngxAxis, CngxLine, CngxThreshold],

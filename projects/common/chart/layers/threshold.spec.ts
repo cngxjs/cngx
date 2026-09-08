@@ -7,7 +7,6 @@ import { CngxAxis } from '../axis/axis.component';
 import { CngxChart } from '../chart/chart.component';
 import { provideChartRenderer, withChartRendererThreshold } from '../renderer/renderer-factory';
 
-
 @Component({
   standalone: true,
   imports: [CngxChart, CngxAxis, CngxThreshold],

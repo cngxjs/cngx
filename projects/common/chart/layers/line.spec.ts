@@ -13,7 +13,6 @@ import { CngxChart } from '../chart/chart.component';
 import { CngxAxis } from '../axis/axis.component';
 import { CngxLine } from './line.component';
 
-
 @Component({
   standalone: true,
   imports: [CngxChart, CngxAxis, CngxLine],

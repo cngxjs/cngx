@@ -12,7 +12,6 @@ import { CngxArea } from './area.component';
 import { CngxAxis } from '../axis/axis.component';
 import { CngxChart } from '../chart/chart.component';
 
-
 @Component({
   standalone: true,
   imports: [CngxChart, CngxAxis, CngxArea],

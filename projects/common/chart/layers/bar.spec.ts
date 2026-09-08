@@ -6,7 +6,6 @@ import { CngxBar } from './bar.component';
 import { CngxAxis } from '../axis/axis.component';
 import { CngxChart } from '../chart/chart.component';
 
-
 @Component({
   standalone: true,
   imports: [CngxChart, CngxAxis, CngxBar],

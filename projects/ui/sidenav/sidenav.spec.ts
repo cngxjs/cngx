@@ -626,6 +626,10 @@ describe('CngxSidenav responsive', () => {
     mmMock.install(window);
   });
 
+  afterEach(() => {
+    mmMock.restore(window);
+  });
+
   it('switches to side mode when media query matches', () => {
     const fixture = TestBed.createComponent(ResponsiveHost);
     fixture.componentInstance.responsive.set('(min-width: 1024px)');
@@ -872,8 +876,15 @@ describe('CngxSidenav resize math and shortcut', () => {
 describe('CngxSidenav config cascade', () => {
   // The config-driven responsive query fires the matchMedia effect during
   // detectChanges; jsdom has no matchMedia, so install it like the responsive suite.
+  let mmMock: MatchMediaMock;
+
   beforeEach(() => {
-    createMatchMediaMock().install(window);
+    mmMock = createMatchMediaMock();
+    mmMock.install(window);
+  });
+
+  afterEach(() => {
+    mmMock.restore(window);
   });
 
   function getNav<T>(host: Type<T>): { fixture: ReturnType<typeof TestBed.createComponent<T>>; nav: CngxSidenav } {

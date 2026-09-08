@@ -265,6 +265,8 @@ describe('createCanvasRenderer', () => {
     expect((renderer as unknown as Record<string, unknown>)['renderSvg']).toBeUndefined();
   });
   it('re-sizes the bitmap and repaints the cached geometries on a DPR-only change', () => {
+    // Hand-rolled on purpose: this test instruments matchMedia call-count and
+    // listener re-arm across DPR changes, which the shared mock abstracts away.
     const listeners: Array<() => void> = [];
     const matchMediaMock = vi.fn(() => ({
       addEventListener: (_: string, cb: () => void) => listeners.push(cb),

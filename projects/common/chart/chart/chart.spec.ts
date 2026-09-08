@@ -36,7 +36,6 @@ import {
   withChartRendererThreshold,
 } from '../renderer/renderer-factory';
 
-
 @Component({
   selector: 'test-context-probe',
   standalone: true,

@@ -13,7 +13,6 @@ import {
   type XScaleInput,
 } from '../chart/chart-context';
 
-
 @Component({
   standalone: true,
   imports: [CngxChart, CngxAxis],

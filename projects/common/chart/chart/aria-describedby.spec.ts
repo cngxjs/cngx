@@ -4,7 +4,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createResizeObserverMock } from '@cngx/testing';
 import { CngxChart } from './chart.component';
 
-
 @Component({
   standalone: true,
   imports: [CngxChart],
