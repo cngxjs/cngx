@@ -37,7 +37,6 @@ interface MutableItem {
   children: MutableItem[];
 }
 
-
 /**
  * Structural compare of two discovered outlines (id + label + nesting). Guards
  * the `discovered` signal so a re-scan of unchanged headings keeps the same

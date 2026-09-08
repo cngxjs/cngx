@@ -50,7 +50,11 @@ export class CngxAutosize {
   /** Minimum number of rows. */
   readonly minRows = input<number>(1);
 
-  /** Maximum number of rows. `undefined` = unlimited. */
+  /**
+   * Maximum number of rows. `undefined` = unlimited. When configured below
+   * `minRows`, the minimum wins - same resolution CSS applies between
+   * `min-height` and `max-height`.
+   */
   readonly maxRows = input<number | undefined>(undefined);
 
   private readonly heightState = signal(0);
