@@ -8,7 +8,6 @@ import {
   inject,
   input,
   model,
-  signal,
   TemplateRef,
   viewChild,
 } from '@angular/core';
@@ -17,6 +16,7 @@ import { nextUid } from '@cngx/core/utils';
 import {
   CngxFormFieldPresenter,
   CNGX_FORM_FIELD_CONTROL,
+  createFieldControlAria,
   createFieldSync,
   type CngxFormFieldControl,
 } from '@cngx/forms/field';
@@ -163,12 +163,17 @@ export class CngxRating implements CngxFormFieldControl {
   /** @internal Consumer glyph override, resolved once via content projection. */
   protected readonly itemTemplate = contentChild(CngxRatingItem, { read: TemplateRef });
 
-  private readonly focusedState = signal(false);
-  readonly focused = this.focusedState.asReadonly();
+  private readonly aria = createFieldControlAria(this.presenter, {
+    fallbackId: this.fallbackId,
+    localDisabled: () => this.disabledInput(),
+    disabledReason: { id: this.reasonId, reason: () => this.disabledReason() },
+  });
 
-  readonly id = computed(() => this.presenter?.inputId() ?? this.fallbackId);
+  readonly focused = this.aria.focused;
+
+  readonly id = this.aria.id;
   readonly empty = computed(() => this.value() === 0);
-  readonly errorState = computed(() => this.presenter?.showError() ?? false);
+  readonly errorState = this.aria.errorState;
 
   /**
    * Effective disabled: the consumer knob OR the surrounding field's disabled
@@ -176,7 +181,7 @@ export class CngxRating implements CngxFormFieldControl {
    * its arrow-skip / `aria-disabled` without a manual binding (mirrors
    * `CngxInput`).
    */
-  readonly disabled = computed(() => this.disabledInput() || (this.presenter?.disabled() ?? false));
+  readonly disabled = this.aria.disabled;
 
   /**
    * The selectable steps. A pure function of `max`/`allowHalf` carrying an
@@ -196,30 +201,19 @@ export class CngxRating implements CngxFormFieldControl {
   );
 
   /** @internal */
-  protected readonly labelledBy = computed(() => this.presenter?.labelId() ?? null);
+  protected readonly labelledBy = this.aria.labelledBy;
   /** @internal */
   protected readonly ariaLabelAttr = computed(() =>
     this.presenter ? null : this.ariaLabel() || null,
   );
   /** @internal */
-  protected readonly ariaRequired = computed(() => (this.presenter?.required() ? true : null));
+  protected readonly ariaRequired = this.aria.ariaRequired;
   /** @internal */
-  protected readonly ariaInvalid = computed(() => (this.presenter?.showError() ? true : null));
+  protected readonly ariaInvalid = this.aria.ariaInvalid;
   /** @internal */
-  protected readonly ariaDisabled = computed(() => (this.disabled() ? true : null));
-  /**
-   * @internal `aria-describedby` ids. Field-supplied ids are unconditional;
-   * the reason id is appended only while the control is disabled *with* a
-   * reason. accname 1.2 §2A traverses a directly-referenced hidden node, so
-   * emitting the id whenever a reason is merely set would announce the reason
-   * on an enabled control (a `disabledReason` bound statically while `disabled`
-   * is false), the same gating CngxCard uses.
-   */
-  protected readonly describedBy = computed(() => {
-    const fieldIds = this.presenter?.describedBy() ?? null;
-    const reasonId = this.disabled() && this.disabledReason() ? this.reasonId : null;
-    return [fieldIds, reasonId].filter(Boolean).join(' ') || null;
-  });
+  protected readonly ariaDisabled = this.aria.ariaDisabled;
+  /** @internal - disabled-reason gating lives in createFieldControlAria. */
+  protected readonly describedBy = this.aria.describedBy;
 
   /**
    * Per-star slot contexts, memoised so `ngTemplateOutletContext` only re-binds
@@ -297,16 +291,11 @@ export class CngxRating implements CngxFormFieldControl {
   }
 
   /** @internal */
-  protected handleFocusIn(): void {
-    this.focusedState.set(true);
-  }
+  protected readonly handleFocusIn = this.aria.handleFocusIn;
 
-  /** @internal */
+  /** @internal - unfocus only when focus leaves the strip subtree. */
   protected handleFocusOut(event: FocusEvent): void {
-    const next = event.relatedTarget as Node | null;
-    if (!this.host.nativeElement.contains(next)) {
-      this.focusedState.set(false);
-    }
+    this.aria.handleFocusOutWithin(event, this.host.nativeElement);
   }
 
   focus(options?: FocusOptions): void {

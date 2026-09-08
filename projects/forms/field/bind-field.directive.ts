@@ -1,5 +1,6 @@
-import { afterRenderEffect, computed, Directive, ElementRef, inject, signal } from '@angular/core';
+import { afterRenderEffect, computed, Directive, ElementRef, inject } from '@angular/core';
 
+import { createFieldControlAria } from './field-control-aria';
 import { CngxFormFieldPresenter } from './form-field-presenter';
 import { CNGX_FORM_FIELD_CONTROL } from './form-field.token';
 import type { CngxFormFieldControl } from './models';
@@ -86,14 +87,15 @@ export class CngxBindField implements CngxFormFieldControl {
     });
   }
 
-  readonly id = computed<string>(() => this.presenter?.inputId() ?? '');
+  private readonly aria = createFieldControlAria(this.presenter);
 
-  readonly disabled = computed<boolean>(() => this.presenter?.disabled() ?? false);
+  readonly id = this.aria.id;
 
-  readonly errorState = computed<boolean>(() => this.presenter?.showError() ?? false);
+  readonly disabled = this.aria.disabled;
 
-  private readonly focusedState = signal(false);
-  readonly focused = this.focusedState.asReadonly();
+  readonly errorState = this.aria.errorState;
+
+  readonly focused = this.aria.focused;
 
   /**
    * Heuristic empty detection derived from the field's value signal:
@@ -124,30 +126,23 @@ export class CngxBindField implements CngxFormFieldControl {
   });
 
   /** @internal */
-  protected readonly describedBy = computed(() => this.presenter?.describedBy() ?? null);
+  protected readonly describedBy = this.aria.describedBy;
   /** @internal */
-  protected readonly labelledBy = computed(() => this.presenter?.labelId() ?? null);
+  protected readonly labelledBy = this.aria.labelledBy;
   /** @internal */
-  protected readonly ariaInvalid = computed(() => (this.errorState() ? true : null));
+  protected readonly ariaInvalid = this.aria.ariaInvalid;
   /** @internal */
-  protected readonly ariaRequired = computed(() => (this.presenter?.required() ? true : null));
+  protected readonly ariaRequired = this.aria.ariaRequired;
   /** @internal */
-  protected readonly ariaBusy = computed(() => (this.presenter?.pending() ? true : null));
+  protected readonly ariaBusy = this.aria.ariaBusy;
   /** @internal */
-  protected readonly ariaErrorMessage = computed(() =>
-    this.errorState() ? (this.presenter?.errorId() ?? null) : null,
-  );
+  protected readonly ariaErrorMessage = this.aria.ariaErrorMessage;
   /** @internal */
-  protected readonly ariaReadonly = computed(() => (this.presenter?.readonly() ? true : null));
+  protected readonly ariaReadonly = this.aria.ariaReadonly;
 
   /** @internal */
-  protected handleFocusIn(): void {
-    this.focusedState.set(true);
-  }
+  protected readonly handleFocusIn = this.aria.handleFocusIn;
 
   /** @internal */
-  protected handleFocusOut(): void {
-    this.focusedState.set(false);
-    this.presenter?.fieldState().markAsTouched();
-  }
+  protected readonly handleFocusOut = this.aria.handleFocusOut;
 }

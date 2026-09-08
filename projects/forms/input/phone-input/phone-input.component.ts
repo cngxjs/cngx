@@ -8,13 +8,13 @@ import {
   inject,
   input,
   model,
-  signal,
   untracked,
 } from '@angular/core';
 import { nextUid } from '@cngx/core/utils';
 import {
   CngxFormFieldPresenter,
   CNGX_FORM_FIELD_CONTROL,
+  createFieldControlAria,
   createFieldSync,
   type CngxFormFieldControl,
 } from '@cngx/forms/field';
@@ -85,7 +85,7 @@ class CngxPhoneInputDetach {}
     '[attr.aria-disabled]': 'ariaDisabled()',
     '[class.cngx-phone-input--disabled]': 'disabled()',
     '[class.cngx-phone-input--focused]': 'focused()',
-    '(focusin)': 'focusedState.set(true)',
+    '(focusin)': 'handleFocusIn()',
     '(focusout)': 'handleFocusOut($event)',
   },
   template: `
@@ -159,9 +159,13 @@ export class CngxPhoneInput implements CngxFormFieldControl {
   private readonly fallbackId = nextUid('cngx-phone-input-');
   /** @internal Stable id for the always-present disabled-reason span. */
   protected readonly reasonId = nextUid('cngx-phone-input-reason-');
-  /** @internal Host-binding-accessed; written from `(focusin)`/`(focusout)`. */
-  protected readonly focusedState = signal(false);
-  readonly focused = this.focusedState.asReadonly();
+  private readonly aria = createFieldControlAria(this.presenter, {
+    fallbackId: this.fallbackId,
+    localDisabled: () => this.disabledInput(),
+    disabledReason: { id: this.reasonId, reason: () => this.disabledReason() },
+  });
+
+  readonly focused = this.aria.focused;
 
   /** The mask region from the selected country, fed to `phone:<region>`. */
   protected readonly region = computed(
@@ -221,36 +225,25 @@ export class CngxPhoneInput implements CngxFormFieldControl {
     },
   );
 
-  readonly id = computed(() => this.presenter?.inputId() ?? this.fallbackId);
+  readonly id = this.aria.id;
   readonly empty = computed(() => this.value() === '');
-  readonly disabled = computed(() => this.disabledInput() || (this.presenter?.disabled() ?? false));
-  readonly errorState = computed(() => this.presenter?.showError() ?? false);
+  readonly disabled = this.aria.disabled;
+  readonly errorState = this.aria.errorState;
 
   /** @internal */
-  protected readonly labelledBy = computed(() => this.presenter?.labelId() ?? null);
+  protected readonly labelledBy = this.aria.labelledBy;
   /** @internal */
   protected readonly ariaLabelAttr = computed(() =>
     this.presenter ? null : this.ariaLabel() || null,
   );
   /** @internal */
-  protected readonly ariaInvalid = computed(() => (this.presenter?.showError() ? true : null));
+  protected readonly ariaInvalid = this.aria.ariaInvalid;
   /** @internal */
-  protected readonly ariaRequired = computed(() => (this.presenter?.required() ? true : null));
+  protected readonly ariaRequired = this.aria.ariaRequired;
   /** @internal */
-  protected readonly ariaDisabled = computed(() => (this.disabled() ? true : null));
-  /**
-   * @internal `aria-describedby` ids. Field-supplied ids are unconditional;
-   * the reason id is appended only while the control is disabled *with* a
-   * reason. accname 1.2 §2A traverses a directly-referenced hidden node, so
-   * emitting the id whenever a reason is merely set would announce the reason
-   * on an enabled control (a `disabledReason` bound statically while `disabled`
-   * is false), the same gating CngxCard uses.
-   */
-  protected readonly describedBy = computed(() => {
-    const fieldIds = this.presenter?.describedBy() ?? null;
-    const reasonId = this.disabled() && this.disabledReason() ? this.reasonId : null;
-    return [fieldIds, reasonId].filter(Boolean).join(' ') || null;
-  });
+  protected readonly ariaDisabled = this.aria.ariaDisabled;
+  /** @internal - disabled-reason gating lives in createFieldControlAria. */
+  protected readonly describedBy = this.aria.describedBy;
   /** @internal Per-instance label, else the config cascade, else the EN default. */
   protected readonly resolvedCountryLabel = computed(() => {
     const explicit = this.countryAriaLabel();
@@ -294,11 +287,11 @@ export class CngxPhoneInput implements CngxFormFieldControl {
   }
 
   /** @internal */
+  protected readonly handleFocusIn = this.aria.handleFocusIn;
+
+  /** @internal - unfocus only when focus leaves the composite subtree. */
   protected handleFocusOut(event: FocusEvent): void {
-    const next = event.relatedTarget as Node | null;
-    if (!this.host.nativeElement.contains(next)) {
-      this.focusedState.set(false);
-    }
+    this.aria.handleFocusOutWithin(event, this.host.nativeElement);
   }
 
   focus(options?: FocusOptions): void {

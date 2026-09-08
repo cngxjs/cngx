@@ -1,8 +1,9 @@
-import { computed, Directive, effect, inject, signal, untracked } from '@angular/core';
+import { computed, Directive, effect, inject, untracked } from '@angular/core';
 
 import { CngxSliderTrack } from '@cngx/common/interactive';
 
 import { createFieldSync } from './field-sync';
+import { createFieldControlAria } from './field-control-aria';
 import { CngxFormFieldPresenter } from './form-field-presenter';
 import { CNGX_FORM_FIELD_CONTROL } from './form-field.token';
 import type { CngxFormFieldControl } from './models';
@@ -62,34 +63,33 @@ export class CngxSliderFieldBridge implements CngxFormFieldControl {
   private readonly slider = inject(CngxSliderTrack, { self: true, host: true });
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
 
-  readonly id = computed<string>(() => this.presenter?.inputId() ?? '');
+  private readonly aria = createFieldControlAria(this.presenter);
 
-  private readonly focusedState = signal(false);
-  readonly focused = this.focusedState.asReadonly();
+  readonly id = this.aria.id;
+
+  readonly focused = this.aria.focused;
 
   // A numeric slider always carries a value, so it is never "empty".
   readonly empty = computed<boolean>(() => false);
 
-  readonly disabled = computed<boolean>(() => this.presenter?.disabled() ?? false);
+  readonly disabled = this.aria.disabled;
 
-  readonly errorState = computed<boolean>(() => this.presenter?.showError() ?? false);
+  readonly errorState = this.aria.errorState;
 
   /** @internal */
-  protected readonly describedBy = computed(() => this.presenter?.describedBy() ?? null);
+  protected readonly describedBy = this.aria.describedBy;
   /** @internal */
-  protected readonly labelledBy = computed(() => this.presenter?.labelId() ?? null);
+  protected readonly labelledBy = this.aria.labelledBy;
   /** @internal */
-  protected readonly ariaInvalid = computed(() => (this.errorState() ? true : null));
+  protected readonly ariaInvalid = this.aria.ariaInvalid;
   /** @internal */
-  protected readonly ariaRequired = computed(() => (this.presenter?.required() ? true : null));
+  protected readonly ariaRequired = this.aria.ariaRequired;
   /** @internal */
-  protected readonly ariaBusy = computed(() => (this.presenter?.pending() ? true : null));
+  protected readonly ariaBusy = this.aria.ariaBusy;
   /** @internal */
-  protected readonly ariaErrorMessage = computed(() =>
-    this.errorState() ? (this.presenter?.errorId() ?? null) : null,
-  );
+  protected readonly ariaErrorMessage = this.aria.ariaErrorMessage;
   /** @internal */
-  protected readonly ariaReadonly = computed(() => (this.presenter?.readonly() ? true : null));
+  protected readonly ariaReadonly = this.aria.ariaReadonly;
 
   constructor() {
     const presenter = this.presenter;
@@ -115,13 +115,8 @@ export class CngxSliderFieldBridge implements CngxFormFieldControl {
   }
 
   /** @internal */
-  protected handleFocus(): void {
-    this.focusedState.set(true);
-  }
+  protected readonly handleFocus = this.aria.handleFocusIn;
 
   /** @internal */
-  protected handleBlur(): void {
-    this.focusedState.set(false);
-    this.presenter?.fieldState().markAsTouched();
-  }
+  protected readonly handleBlur = this.aria.handleFocusOut;
 }
