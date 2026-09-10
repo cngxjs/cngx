@@ -1873,6 +1873,21 @@
  * the dots mode).
  */
 
+/* The --cngx-dot-step-* fill tokens are registered (dot-stepper.component.css)
+   with literal initial-values, and a registered token always resolves - the
+   var() fallback chains on the mobile-dot rules below can never fire. The
+   family derivation for THIS read scope therefore lives here as a host SET
+   in the weakest layer (same pattern as the dot-stepper host SET): bridge
+   and consumer overrides win, and inherits:true carries it into the dots.
+   Upcoming needs no SET - its registered initial-value IS the old fallback
+   (currentColor resolves at the dot). */
+@layer cngx.tokens {
+  :where(.cngx-stepper) {
+    --cngx-dot-step-completed-fill: var(--cngx-step-completed-color, currentColor);
+    --cngx-dot-step-active-fill: var(--cngx-step-active-fill, currentColor);
+  }
+}
+
 .cngx-stepper__mobile-text {
   display: inline-block;
   font: inherit;
@@ -2046,12 +2061,14 @@
 @media (prefers-reduced-motion: no-preference) {
   .cngx-stepper__group-header {
     transition:
-      opacity var(--cngx-stepper-collapse-duration, var(--cngx-duration-fast, 150ms)) var(--cngx-stepper-collapse-easing, ease),
+      opacity var(--cngx-stepper-collapse-duration, var(--cngx-duration-fast, 150ms))
+        var(--cngx-stepper-collapse-easing, ease),
       background-color var(--cngx-stepper-collapse-duration, var(--cngx-duration-fast, 150ms))
         var(--cngx-stepper-collapse-easing, ease),
       border-color var(--cngx-stepper-collapse-duration, var(--cngx-duration-fast, 150ms))
         var(--cngx-stepper-collapse-easing, ease),
-      color var(--cngx-stepper-collapse-duration, var(--cngx-duration-fast, 150ms)) var(--cngx-stepper-collapse-easing, ease);
+      color var(--cngx-stepper-collapse-duration, var(--cngx-duration-fast, 150ms))
+        var(--cngx-stepper-collapse-easing, ease);
   }
 }
 
@@ -2242,7 +2259,8 @@
 @media (prefers-reduced-motion: no-preference) {
   .cngx-stepper[data-density-auto] .cngx-stepper__step {
     transition:
-      --cngx-step-distance var(--cngx-stepper-density-transition, var(--cngx-duration-base, 200ms)) ease,
+      --cngx-step-distance var(--cngx-stepper-density-transition, var(--cngx-duration-base, 200ms))
+        ease,
       flex-shrink var(--cngx-stepper-density-transition, var(--cngx-duration-base, 200ms)) ease,
       background-color var(--cngx-duration-fast, 150ms) ease,
       color var(--cngx-duration-fast, 150ms) ease,
