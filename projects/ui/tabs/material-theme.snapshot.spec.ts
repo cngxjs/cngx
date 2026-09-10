@@ -84,7 +84,13 @@ function parseCustomPropertyDeclarations(css: string): Record<string, string> {
   const re = /(--cngx-[a-z0-9-]+)\s*:\s*([^;}]+)[;}]/g;
   let match: RegExpExecArray | null;
   while ((match = re.exec(css)) !== null) {
-    out[match[1]] = match[2].trim().replace(/\s+/g, ' ');
+    // Collapse runs AND paren-adjacent whitespace: a source-side line
+    // break inside color-mix(...) is formatting, not a value change.
+    out[match[1]] = match[2]
+      .trim()
+      .replace(/\s+/g, ' ')
+      .replace(/\( /g, '(')
+      .replace(/ \)/g, ')');
   }
   return Object.fromEntries(Object.entries(out).sort(([a], [b]) => a.localeCompare(b)));
 }
