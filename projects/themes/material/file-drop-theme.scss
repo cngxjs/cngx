@@ -1,6 +1,7 @@
 @use 'sass:map';
 @use 'sass:math';
 @use '@angular/material' as mat;
+@use './bridge' as bridge;
 
 // Material bridge for CngxFileDrop. Default visuals ship with the
 // directive (projects/forms/theming/components/cngx-file-drop.css);
@@ -30,16 +31,20 @@
   // The dropzone padding (32px == space-xl) now derives from the scale in
   // cngx-file-drop.css, so it is dropped here. The radius is a shape axis
   // (out of the spacing-density scope), so it stays bridged.
-  $radii: (0: 8px, -1: 7px, -2: 6px, -3: 5px, -4: 4px);
+  $radii: (
+    0: 8px,
+    -1: 7px,
+    -2: 6px,
+    -3: 5px,
+    -4: 4px,
+  );
 
   --cngx-file-drop-radius: #{map.get($radii, $scale)};
 }
 
 @mixin theme($theme) {
-  @layer cngx.components {
-    :where(.cngx-file-drop) {
-      @include color($theme);
-      @include density($theme);
-    }
+  @include bridge.on('.cngx-file-drop') {
+    @include color($theme);
+    @include density($theme);
   }
 }

@@ -1,5 +1,6 @@
 @use '@angular/material' as mat;
 @use 'sass:math';
+@use './bridge' as bridge;
 
 // Material bridge for CngxSlider / CngxRangeSlider (and the headless
 // [cngxSliderTrack] / [cngxRangeSliderTrack] directives). Maps the slider's
@@ -49,10 +50,13 @@
 }
 
 @mixin theme($theme) {
-  @layer cngx.components {
-    :where(cngx-slider, cngx-range-slider, [cngxSliderTrack], [cngxRangeSliderTrack]) {
-      @include color($theme);
-      @include density($theme);
-    }
+  @include bridge.on(
+    cngx-slider,
+    cngx-range-slider,
+    '[cngxSliderTrack]',
+    '[cngxRangeSliderTrack]'
+  ) {
+    @include color($theme);
+    @include density($theme);
   }
 }

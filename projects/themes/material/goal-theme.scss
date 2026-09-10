@@ -1,4 +1,5 @@
 @use '@angular/material' as mat;
+@use './bridge' as bridge;
 
 // Material bridge for CngxGoal. The determinate fill routes onto primary -
 // Material's own linear-progress colour - and the groove onto the
@@ -14,18 +15,12 @@
     --cngx-goal-track-color: var(--mat-sys-surface-variant);
   } @else {
     --cngx-goal-fill-color: #{mat.get-theme-color($theme, primary)};
-    --cngx-goal-track-color: #{mat.get-theme-color(
-        $theme,
-        foreground,
-        divider
-      )};
+    --cngx-goal-track-color: #{mat.get-theme-color($theme, foreground, divider)};
   }
 }
 
 @mixin theme($theme) {
-  @layer cngx.components {
-    :where(cngx-goal, .cngx-goal) {
-      @include color($theme);
-    }
+  @include bridge.on(cngx-goal, '.cngx-goal') {
+    @include color($theme);
   }
 }

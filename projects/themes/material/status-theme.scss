@@ -1,4 +1,5 @@
 @use '@angular/material' as mat;
+@use './bridge' as bridge;
 
 // Material bridge for CngxStatus. The five tone dots fold onto Material roles
 // the same way the tag bridge does, so success-flavoured cngx atoms stay
@@ -21,11 +22,7 @@
     --cngx-status-warning-color: #{mat.get-theme-color($theme, accent)};
     --cngx-status-danger-color: #{mat.get-theme-color($theme, warn)};
     --cngx-status-info-color: #{mat.get-theme-color($theme, primary)};
-    --cngx-status-neutral-color: #{mat.get-theme-color(
-        $theme,
-        foreground,
-        secondary-text
-      )};
+    --cngx-status-neutral-color: #{mat.get-theme-color($theme, foreground, secondary-text)};
   }
 }
 
@@ -38,10 +35,8 @@
 }
 
 @mixin theme($theme) {
-  @layer cngx.components {
-    :where(cngx-status, .cngx-status) {
-      @include color($theme);
-      @include typography($theme);
-    }
+  @include bridge.on(cngx-status, '.cngx-status') {
+    @include color($theme);
+    @include typography($theme);
   }
 }

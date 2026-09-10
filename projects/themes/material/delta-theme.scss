@@ -1,4 +1,5 @@
 @use '@angular/material' as mat;
+@use './bridge' as bridge;
 
 // Material bridge for CngxDelta. Sentiment routes the same way as the trend
 // bridge so success-flavoured cngx atoms stay aligned: positive folds onto
@@ -15,11 +16,7 @@
     --cngx-delta-positive-color: var(--mat-sys-tertiary);
     --cngx-delta-negative-color: var(--mat-sys-error);
   } @else {
-    --cngx-delta-neutral-color: #{mat.get-theme-color(
-        $theme,
-        foreground,
-        secondary-text
-      )};
+    --cngx-delta-neutral-color: #{mat.get-theme-color($theme, foreground, secondary-text)};
     --cngx-delta-positive-color: #{mat.get-theme-color($theme, accent)};
     --cngx-delta-negative-color: #{mat.get-theme-color($theme, warn)};
   }
@@ -35,10 +32,8 @@
 }
 
 @mixin theme($theme) {
-  @layer cngx.components {
-    :where(cngx-delta, .cngx-delta) {
-      @include color($theme);
-      @include typography($theme);
-    }
+  @include bridge.on(cngx-delta, '.cngx-delta') {
+    @include color($theme);
+    @include typography($theme);
   }
 }

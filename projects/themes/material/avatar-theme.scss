@@ -1,4 +1,5 @@
 @use '@angular/material' as mat;
+@use './bridge' as bridge;
 
 // Material bridge for CngxAvatar. Maps the avatar plate, the four-value
 // presence palette (`online` / `busy` / `away` / `offline`), the status
@@ -79,11 +80,9 @@
 }
 
 @mixin theme($theme) {
-  @layer cngx.components {
-    :where(cngx-avatar) {
-      @include color($theme);
-      @include typography($theme);
-      @include base($theme);
-    }
+  @include bridge.on(cngx-avatar) {
+    @include color($theme);
+    @include typography($theme);
+    @include base($theme);
   }
 }

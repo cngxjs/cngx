@@ -2,6 +2,7 @@
 @use 'sass:math';
 @use '@angular/material' as mat;
 @use './nav-link-theme' as nav-link;
+@use './bridge' as bridge;
 
 // Material bridge for CngxSidenavLayout (+ nav-link via the sibling
 // bridge). Default visuals ship with the component (sidenav-layout.css);
@@ -45,25 +46,23 @@
 }
 
 @mixin theme($theme) {
-  @layer cngx.components {
-    // Host + descendants broadcast (select-theme precedent): the
-    // header/footer/backdrop tokens are registered inherits:false in
-    // sidenav.css and are read on the .cngx-sidenav-header / -footer /
-    // -backdrop descendants - a layout-host-only set resolves to the
-    // initial-value there.
-    :where(cngx-sidenav-layout, cngx-sidenav-layout *) {
-      @include color($theme);
-      @include typography($theme);
-    }
+  // Host + descendants broadcast (select-theme precedent): the
+  // header/footer/backdrop tokens are registered inherits:false in
+  // sidenav.css and are read on the .cngx-sidenav-header / -footer /
+  // -backdrop descendants - a layout-host-only set resolves to the
+  // initial-value there.
+  @include bridge.on(bridge.broadcast(cngx-sidenav-layout)) {
+    @include color($theme);
+    @include typography($theme);
+  }
 
-    // Set + consumed on the same element ([cngxNavLink] hosts the
-    // .cngx-nav-link class itself): the radius / font-size /
-    // active-font-weight trio is registered inherits:false, so the
-    // former nesting under the layout host never reached the link.
-    // Rails used without a cngx-sidenav-layout wrapper pick the
-    // bridge up too.
-    :where(.cngx-nav-link) {
-      @include nav-link.theme($theme);
-    }
+  // Set + consumed on the same element ([cngxNavLink] hosts the
+  // .cngx-nav-link class itself): the radius / font-size /
+  // active-font-weight trio is registered inherits:false, so the
+  // former nesting under the layout host never reached the link.
+  // Rails used without a cngx-sidenav-layout wrapper pick the
+  // bridge up too.
+  @include bridge.on('.cngx-nav-link') {
+    @include nav-link.theme($theme);
   }
 }

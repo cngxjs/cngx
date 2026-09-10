@@ -1,4 +1,5 @@
 @use '@angular/material' as mat;
+@use './bridge' as bridge;
 
 // Material bridge for the form-control atoms: CngxCheckbox, CngxRadio,
 // CngxToggle, CngxCheckboxIndicator, CngxRadioIndicator. All share the
@@ -42,35 +43,28 @@
 }
 
 @mixin theme($theme) {
-  @layer cngx.components {
-    // Host + descendants broadcast (select-theme precedent): the toggle
-    // track/thumb tokens are registered inherits:false and are read on
-    // inner elements - a host-only set resolves to the initial-value
-    // there. The bare indicator classes cover standalone usage outside
-    // a cngx-checkbox / cngx-radio host.
-    :where(
-        cngx-checkbox,
-        cngx-checkbox *,
-        cngx-checkbox-group,
-        cngx-checkbox-group *,
-        cngx-radio,
-        cngx-radio *,
-        cngx-radio-group,
-        cngx-radio-group *,
-        cngx-toggle,
-        cngx-toggle *,
-        .cngx-checkbox-indicator,
-        .cngx-checkbox-indicator *,
-        .cngx-radio-indicator,
-        .cngx-radio-indicator *
-      ) {
-      @include color($theme);
-    }
-    // One thumb token cannot satisfy contrast on both tracks - the
-    // checked state re-scopes it to on-primary (broadcast again: the
-    // token is inherits:false and read on the __thumb descendant).
-    :where(.cngx-toggle--checked, .cngx-toggle--checked *) {
-      @include _checked-thumb($theme);
-    }
+  // Host + descendants broadcast (select-theme precedent): the toggle
+  // track/thumb tokens are registered inherits:false and are read on
+  // inner elements - a host-only set resolves to the initial-value
+  // there. The bare indicator classes cover standalone usage outside
+  // a cngx-checkbox / cngx-radio host.
+  @include bridge.on(
+    bridge.broadcast(
+      cngx-checkbox,
+      cngx-checkbox-group,
+      cngx-radio,
+      cngx-radio-group,
+      cngx-toggle,
+      '.cngx-checkbox-indicator',
+      '.cngx-radio-indicator'
+    )
+  ) {
+    @include color($theme);
+  }
+  // One thumb token cannot satisfy contrast on both tracks - the
+  // checked state re-scopes it to on-primary (broadcast again: the
+  // token is inherits:false and read on the __thumb descendant).
+  @include bridge.on(bridge.broadcast('.cngx-toggle--checked')) {
+    @include _checked-thumb($theme);
   }
 }

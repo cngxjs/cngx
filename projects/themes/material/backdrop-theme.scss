@@ -1,4 +1,5 @@
 @use '@angular/material' as mat;
+@use './bridge' as bridge;
 
 // Material bridge for CngxBackdrop. Re-points the scrim colour to
 // Material 3's --mat-sys-scrim so a cngx drawer / dialog backdrop
@@ -16,9 +17,7 @@
 }
 
 @mixin theme($theme) {
-  @layer cngx.components {
-    :where([cngxBackdrop], .cngx-backdrop) {
-      @include color($theme);
-    }
+  @include bridge.on('[cngxBackdrop]', '.cngx-backdrop') {
+    @include color($theme);
   }
 }

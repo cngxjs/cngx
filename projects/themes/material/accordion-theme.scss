@@ -1,4 +1,5 @@
 @use '@angular/material' as mat;
+@use './bridge' as bridge;
 
 // Material bridge for CngxAccordionGroup + CngxAccordionItem. Default visuals
 // ship with the components (projects/ui/accordion/accordion-group.component.css
@@ -39,7 +40,10 @@
   } @else {
     --cngx-accordion-border-color: #{rgba(mat.get-theme-color($theme, foreground, divider), 0.12)};
     --cngx-accordion-header-color: #{mat.get-theme-color($theme, foreground, text)};
-    --cngx-accordion-header-disabled-color: #{rgba(mat.get-theme-color($theme, foreground, text), 0.38)};
+    --cngx-accordion-header-disabled-color: #{rgba(
+        mat.get-theme-color($theme, foreground, text),
+        0.38
+      )};
     --cngx-accordion-focus-color: #{mat.get-theme-color($theme, primary)};
   }
 }
@@ -111,11 +115,9 @@
 // accordion regardless of skin; kept lean so base consumers (e.g. the examples
 // material-lab, which includes theme() only) stay under their style budget.
 @mixin theme($theme) {
-  @layer cngx.components {
-    :where(cngx-accordion-group) {
-      @include color($theme);
-      @include _skin-text($theme);
-    }
+  @include bridge.on(cngx-accordion-group) {
+    @include color($theme);
+    @include _skin-text($theme);
   }
 }
 
@@ -123,27 +125,25 @@
 // theme() so an app that never renders a skin omits this include and its per-
 // skin blocks. The full theme.scss aggregation always includes it.
 @mixin skins($theme) {
-  @layer cngx.components {
-    // Card-surface skins only - flat skins keep their surfaceless look.
-    :where(
-        cngx-accordion-group[data-skin='categorized'],
-        cngx-accordion-group[data-skin='bento'],
-        cngx-accordion-group[data-skin='section-bands'],
-        cngx-accordion-group[data-skin='severity-spine'],
-        cngx-accordion-group[data-skin='primary-frame'],
-        cngx-accordion-group[data-skin='plus-minus']
-      ) {
-      @include _skin-cards($theme);
-    }
+  // Card-surface skins only - flat skins keep their surfaceless look.
+  @include bridge.on(
+    "cngx-accordion-group[data-skin='categorized']",
+    "cngx-accordion-group[data-skin='bento']",
+    "cngx-accordion-group[data-skin='section-bands']",
+    "cngx-accordion-group[data-skin='severity-spine']",
+    "cngx-accordion-group[data-skin='primary-frame']",
+    "cngx-accordion-group[data-skin='plus-minus']"
+  ) {
+    @include _skin-cards($theme);
+  }
 
-    :where(cngx-accordion-group[data-skin='bento']) {
-      @include _skin-bento($theme);
-    }
-    :where(cngx-accordion-group[data-skin='plus-minus']) {
-      @include _skin-plus-minus($theme);
-    }
-    :where(cngx-accordion-group[data-skin='severity-spine']) {
-      @include _skin-spine($theme);
-    }
+  @include bridge.on("cngx-accordion-group[data-skin='bento']") {
+    @include _skin-bento($theme);
+  }
+  @include bridge.on("cngx-accordion-group[data-skin='plus-minus']") {
+    @include _skin-plus-minus($theme);
+  }
+  @include bridge.on("cngx-accordion-group[data-skin='severity-spine']") {
+    @include _skin-spine($theme);
   }
 }

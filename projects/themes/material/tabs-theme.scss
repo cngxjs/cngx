@@ -1,6 +1,7 @@
 @use 'sass:map';
 @use 'sass:math';
 @use '@angular/material' as mat;
+@use './bridge' as bridge;
 
 // Material bridge for CngxTabGroup + CngxTabOverflow + the [cngxMatTabs]
 // skin. Default visuals ship with the components (projects/common/tabs/
@@ -124,7 +125,13 @@
   // (8px), so --cngx-tab-padding stays bridged. The strip padding
   // (0.5rem 0 == space-sm 0) and the gap (0.5rem == space-sm) now derive
   // from the scale in tabs-base.css, so they are dropped here.
-  $paddings: (0: 0.5rem 0.75rem, -1: 0.4rem 0.6rem, -2: 0.3rem 0.5rem, -3: 0.25rem 0.4rem, -4: 0.2rem 0.35rem);
+  $paddings: (
+    0: 0.5rem 0.75rem,
+    -1: 0.4rem 0.6rem,
+    -2: 0.3rem 0.5rem,
+    -3: 0.25rem 0.4rem,
+    -4: 0.2rem 0.35rem,
+  );
 
   --cngx-tab-padding: #{map.get($paddings, $scale)};
 }
@@ -171,8 +178,16 @@
 @mixin _overflow-item($theme) {
   --cngx-tab-overflow-item-padding: 0.5rem 1rem;
   @if mat.get-theme-version($theme) == 1 {
-    --cngx-tab-overflow-item-hover-bg: color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent);
-    --cngx-tab-overflow-item-active-bg: color-mix(in srgb, var(--mat-sys-on-surface) 12%, transparent);
+    --cngx-tab-overflow-item-hover-bg: color-mix(
+      in srgb,
+      var(--mat-sys-on-surface) 8%,
+      transparent
+    );
+    --cngx-tab-overflow-item-active-bg: color-mix(
+      in srgb,
+      var(--mat-sys-on-surface) 12%,
+      transparent
+    );
     --cngx-tab-overflow-item-active-outline: 2px solid var(--mat-sys-primary);
   } @else {
     --cngx-tab-overflow-item-hover-bg: color-mix(in srgb, currentColor 8%, transparent);
@@ -204,36 +219,37 @@
 }
 
 @mixin theme($theme) {
+  // `cngx-tab-nav` reads the same `--cngx-tab-*` / foundation knobs as
+  // `cngx-tab-group` (color, active-color, hover, strip border via
+  // `--cngx-color-border`, indicator via `--cngx-color-primary`,
+  // padding, gap) - emit the same block on both hosts so the routed
+  // tab nav themes identically to the panelled group.
+  @include bridge.on(cngx-tab-group, cngx-tab-nav) {
+    @include color($theme);
+    @include density($theme);
+  }
+  @include bridge.on('.cngx-tab-overflow__panel') {
+    @include _overflow-panel($theme);
+  }
+  @include bridge.on('.cngx-tab-badge') {
+    @include _badge-typography($theme);
+  }
+  @include bridge.on('.cngx-tab--rejected') {
+    @include _rejected($theme);
+  }
+  // Raw layer block: `::before` must sit OUTSIDE `:where()` - its forgiving
+  // selector list silently drops a pseudo-element argument, so the ::before
+  // branch would stop matching. Cannot ride `bridge.on()`.
   @layer cngx.components {
-    // `cngx-tab-nav` reads the same `--cngx-tab-*` / foundation knobs as
-    // `cngx-tab-group` (color, active-color, hover, strip border via
-    // `--cngx-color-border`, indicator via `--cngx-color-primary`,
-    // padding, gap) - emit the same block on both hosts so the routed
-    // tab nav themes identically to the panelled group.
-    :where(cngx-tab-group),
-    :where(cngx-tab-nav) {
-      @include color($theme);
-      @include density($theme);
-    }
-    :where(.cngx-tab-overflow__panel) {
-      @include _overflow-panel($theme);
-    }
-    :where(.cngx-tab-badge) {
-      @include _badge-typography($theme);
-    }
-    :where(.cngx-tab--rejected) {
-      @include _rejected($theme);
-    }
     :where(.cngx-tabs__rejection-icon),
     :where(.cngx-tab-nav__link--error)::before {
       @include _rejection-icon-typography($theme);
     }
-    :where(.cngx-tab-overflow__item) {
-      @include _overflow-item($theme);
-    }
-    :where(.mat-mdc-tab-group),
-    :where(.mat-mdc-tab-nav-bar) {
-      @include _mat-color($theme);
-    }
+  }
+  @include bridge.on('.cngx-tab-overflow__item') {
+    @include _overflow-item($theme);
+  }
+  @include bridge.on('.mat-mdc-tab-group', '.mat-mdc-tab-nav-bar') {
+    @include _mat-color($theme);
   }
 }

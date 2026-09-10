@@ -1,4 +1,5 @@
 @use '@angular/material' as mat;
+@use './bridge' as bridge;
 
 // Ripple theme mixin for `[cngxRipple]`.
 //
@@ -27,14 +28,12 @@
 }
 
 @mixin theme($theme) {
-  @layer cngx.components {
-    // Host + descendants broadcast (select-theme precedent): opacity and
-    // duration are registered inherits:false and are read on the
-    // .cngx-ripple__wave child - a host-only set resolves to the
-    // initial-value there.
-    :where([cngxRipple], [cngxRipple] *) {
-      @include base();
-      @include color($theme);
-    }
+  // Host + descendants broadcast (select-theme precedent): opacity and
+  // duration are registered inherits:false and are read on the
+  // .cngx-ripple__wave child - a host-only set resolves to the
+  // initial-value there.
+  @include bridge.on(bridge.broadcast('[cngxRipple]')) {
+    @include base();
+    @include color($theme);
   }
 }

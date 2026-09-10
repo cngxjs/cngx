@@ -1,4 +1,5 @@
 @use '@angular/material' as mat;
+@use './bridge' as bridge;
 
 // Material theme integration for <cngx-filter-builder>. The component has
 // no direct Material refs - every visual value goes through a
@@ -35,9 +36,7 @@
 }
 
 @mixin theme($theme) {
-  @layer cngx.components {
-    :where(cngx-filter-builder) {
-      @include color($theme);
-    }
+  @include bridge.on(cngx-filter-builder) {
+    @include color($theme);
   }
 }

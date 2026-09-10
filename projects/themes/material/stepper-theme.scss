@@ -1,6 +1,7 @@
 @use 'sass:map';
 @use 'sass:math';
 @use '@angular/material' as mat;
+@use './bridge' as bridge;
 
 // Material bridge for CngxStepper. Default visuals ship with the
 // component (projects/ui/stepper/stepper.component.css + the shared
@@ -42,7 +43,11 @@
     --cngx-stepper-group-chip-bg: color-mix(in srgb, var(--mat-sys-on-surface) 6%, transparent);
     --cngx-stepper-group-chip-color: var(--mat-sys-on-surface-variant);
     --cngx-stepper-group-chip-active-border: var(--mat-sys-primary);
-    --cngx-stepper-group-chip-active-bg: color-mix(in srgb, var(--mat-sys-primary) 14%, transparent);
+    --cngx-stepper-group-chip-active-bg: color-mix(
+      in srgb,
+      var(--mat-sys-primary) 14%,
+      transparent
+    );
     --cngx-stepper-group-chip-active-color: var(--mat-sys-primary);
 
     --cngx-step-error-badge-color: var(--mat-sys-error);
@@ -246,27 +251,25 @@
 }
 
 @mixin theme($theme) {
-  @layer cngx.components {
-    // Host + descendants broadcast (select-theme precedent): the
-    // typography tokens (indicator / badge / rejection-icon fonts), the
-    // badge and rejection color tokens, and the density indicator size
-    // are registered inherits:false and are read on inner elements
-    // (.cngx-stepper__indicator / __badge / __rejection-icon /
-    // __step--rejected) - a host-only set resolves to the initial-value
-    // there.
-    :where(cngx-stepper, cngx-stepper *) {
-      @include color($theme);
-      @include typography($theme);
-      @include density($theme);
-    }
-    :where(cngx-dot-stepper) {
-      @include dot-color($theme);
-    }
-    :where(cngx-progress-bar-stepper) {
-      @include progress-color($theme);
-    }
-    :where(cngx-stepper-footer) {
-      @include footer-color($theme);
-    }
+  // Host + descendants broadcast (select-theme precedent): the
+  // typography tokens (indicator / badge / rejection-icon fonts), the
+  // badge and rejection color tokens, and the density indicator size
+  // are registered inherits:false and are read on inner elements
+  // (.cngx-stepper__indicator / __badge / __rejection-icon /
+  // __step--rejected) - a host-only set resolves to the initial-value
+  // there.
+  @include bridge.on(bridge.broadcast(cngx-stepper)) {
+    @include color($theme);
+    @include typography($theme);
+    @include density($theme);
+  }
+  @include bridge.on(cngx-dot-stepper) {
+    @include dot-color($theme);
+  }
+  @include bridge.on(cngx-progress-bar-stepper) {
+    @include progress-color($theme);
+  }
+  @include bridge.on(cngx-stepper-footer) {
+    @include footer-color($theme);
   }
 }

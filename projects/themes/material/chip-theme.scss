@@ -1,6 +1,7 @@
 @use 'sass:map';
 @use 'sass:math';
 @use '@angular/material' as mat;
+@use './bridge' as bridge;
 
 // Material bridge for CngxChip + CngxChipGroup + CngxMultiChipGroup +
 // CngxButtonToggleGroup. Maps the chip token surface onto Material 3
@@ -112,20 +113,18 @@
 }
 
 @mixin theme($theme) {
-  @layer cngx.components {
-    // Color tokens that are `inherits: true` (bg, color) cascade from
-    // the group into projected chips, so writing them on the parent is
-    // fine - and lets a consumer set `aria-busy` / `aria-disabled` on
-    // the group surface without re-aliasing.
-    :where(cngx-chip, cngx-chip-group, cngx-multi-chip-group) {
-      @include color($theme);
-    }
-    // Typography + density + radius are `inherits: false` per the chip
-    // component spec, so they must land on the chip element itself.
-    :where(cngx-chip) {
-      @include typography($theme);
-      @include density($theme);
-      @include base($theme);
-    }
+  // Color tokens that are `inherits: true` (bg, color) cascade from
+  // the group into projected chips, so writing them on the parent is
+  // fine - and lets a consumer set `aria-busy` / `aria-disabled` on
+  // the group surface without re-aliasing.
+  @include bridge.on(cngx-chip, cngx-chip-group, cngx-multi-chip-group) {
+    @include color($theme);
+  }
+  // Typography + density + radius are `inherits: false` per the chip
+  // component spec, so they must land on the chip element itself.
+  @include bridge.on(cngx-chip) {
+    @include typography($theme);
+    @include density($theme);
+    @include base($theme);
   }
 }

@@ -1,6 +1,7 @@
 @use 'sass:map';
 @use 'sass:math';
 @use '@angular/material' as mat;
+@use './bridge' as bridge;
 
 // Material bridge for CngxTag + CngxTagGroup. Maps the tag token surface
 // (base, five semantic colour keys, density-scaled padding, label
@@ -144,12 +145,10 @@
 }
 
 @mixin theme($theme) {
-  @layer cngx.components {
-    :where(.cngx-tag, .cngx-tag-group) {
-      @include base();
-      @include color($theme);
-      @include typography($theme);
-      @include density($theme);
-    }
+  @include bridge.on('.cngx-tag', '.cngx-tag-group') {
+    @include base();
+    @include color($theme);
+    @include typography($theme);
+    @include density($theme);
   }
 }

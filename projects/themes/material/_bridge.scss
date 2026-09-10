@@ -1,0 +1,59 @@
+@use 'sass:list';
+
+// Private conventions module for the Material bridges. Every bridge routes
+// its token emission through `on()` so the two placement conventions the
+// bridges depend on cannot be forgotten per file:
+//
+//   1. `@layer cngx.components` - bridge assignments must sit in the same
+//      layer as the component token defaults so a consumer's unlayered
+//      override always wins, and so the `@property` `initial-value` of
+//      registered tokens loses to the layered assignment.
+//   2. `:where(...)` - zero specificity, so any consumer selector beats
+//      the bridge regardless of layer order within cngx.components.
+//
+// `broadcast()` names the third convention at the call-site: tokens
+// registered `inherits: false` are read on inner elements, where a
+// host-only assignment resolves to the `initial-value`. Expanding every
+// host into `host, host *` lands the assignment on the read site itself
+// (select-theme precedent).
+//
+// Not part of the published mixin surface - bridges `@use './bridge'`
+// relatively; consumers never import this file. The version branch
+// (`mat.get-theme-version`) stays inside the per-axis mixins (`color()`,
+// `typography()`, ...) because those are published entry points whose
+// bodies must branch regardless of how `theme()` wraps them.
+//
+// Deliberate non-adopters (each documents why in place): system-bridge
+// and density-bridge emit bare declarations on the theme host, unlayered
+// by design; nav-link-theme emits bare declarations consumed inside
+// sidenav's `on()` block; feedback-theme's `density($level)` emits its
+// own unlayered `:where` block because it is a consumer-level opt-in
+// included at an arbitrary call-site, not part of `theme($theme)` -
+// layering it would weaken it below unlayered consumer overrides;
+// tabs-theme keeps one raw layer block whose `::before` must sit
+// outside `:where()`.
+
+/// Emits the content block for `$selectors` inside `@layer cngx.components`
+/// wrapped in a single zero-specificity `:where(...)`. Pass plain element
+/// selectors bare (`cngx-chip`) and anything else quoted (`'.cngx-alert'`,
+/// `'[cngxRipple]'`). Lists compose: `on(broadcast(cngx-stepper))`.
+@mixin on($selectors...) {
+  @layer cngx.components {
+    :where(#{$selectors}) {
+      @content;
+    }
+  }
+}
+
+/// Expands every host into the `host, host *` pair form used for token
+/// families registered `inherits: false` and read on descendants. Returns
+/// a selector list for `on()` - composable with plain selectors for mixed
+/// surfaces: `on('.cngx-select__panel', broadcast(cngx-select, ...))`.
+@function broadcast($hosts...) {
+  $out: ();
+  @each $host in $hosts {
+    $out: list.append($out, $host, $separator: comma);
+    $out: list.append($out, '#{$host} *', $separator: comma);
+  }
+  @return $out;
+}
