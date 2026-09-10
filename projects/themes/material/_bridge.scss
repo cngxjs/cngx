@@ -26,7 +26,12 @@
 // Deliberate non-adopters (each documents why in place): system-bridge
 // and density-bridge emit bare declarations on the theme host, unlayered
 // by design; nav-link-theme emits bare declarations consumed inside
-// sidenav's `on()` block.
+// sidenav's `on()` block; feedback-theme's `density($level)` emits its
+// own unlayered `:where` block because it is a consumer-level opt-in
+// included at an arbitrary call-site, not part of `theme($theme)` -
+// layering it would weaken it below unlayered consumer overrides;
+// tabs-theme keeps one raw layer block whose `::before` must sit
+// outside `:where()`.
 
 /// Emits the content block for `$selectors` inside `@layer cngx.components`
 /// wrapped in a single zero-specificity `:where(...)`. Pass plain element

@@ -237,9 +237,9 @@
   @include bridge.on('.cngx-tab--rejected') {
     @include _rejected($theme);
   }
-  // Raw layer block: `::before` must sit OUTSIDE `:where()` (a pseudo-element
-  // inside `:where()` invalidates the whole selector), so this one cannot
-  // ride `bridge.on()`.
+  // Raw layer block: `::before` must sit OUTSIDE `:where()` - its forgiving
+  // selector list silently drops a pseudo-element argument, so the ::before
+  // branch would stop matching. Cannot ride `bridge.on()`.
   @layer cngx.components {
     :where(.cngx-tabs__rejection-icon),
     :where(.cngx-tab-nav__link--error)::before {
