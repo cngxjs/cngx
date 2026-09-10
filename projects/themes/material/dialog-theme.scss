@@ -35,12 +35,8 @@
   } @else {
     --cngx-dialog-bg: #{mat.get-theme-color($theme, background, dialog)};
     --cngx-dialog-color: #{mat.get-theme-color($theme, foreground, text)};
-    --cngx-dialog-backdrop-bg: #{rgba(
-        mat.get-theme-color($theme, foreground, base),
-        0.32
-      )};
-    --cngx-dialog-focus-outline: 2px solid
-      #{mat.get-theme-color($theme, primary)};
+    --cngx-dialog-backdrop-bg: #{rgba(mat.get-theme-color($theme, foreground, base), 0.32)};
+    --cngx-dialog-focus-outline: 2px solid #{mat.get-theme-color($theme, primary)};
   }
 }
 
@@ -57,9 +53,7 @@
     // that grows onto the page; medium2 matches M3's canonical
     // dialog-open duration.
     --cngx-dialog-transition-duration: var(--mat-sys-motion-duration-medium2);
-    --cngx-dialog-transition-easing: var(
-      --mat-sys-motion-easing-emphasized-decelerate
-    );
+    --cngx-dialog-transition-easing: var(--mat-sys-motion-easing-emphasized-decelerate);
   }
   // M2: corner / elevation / motion stay on the component's initial
   // values - Material 2 has no first-class sys tokens worth bridging.

@@ -42,7 +42,11 @@
     --cngx-stepper-group-chip-bg: color-mix(in srgb, var(--mat-sys-on-surface) 6%, transparent);
     --cngx-stepper-group-chip-color: var(--mat-sys-on-surface-variant);
     --cngx-stepper-group-chip-active-border: var(--mat-sys-primary);
-    --cngx-stepper-group-chip-active-bg: color-mix(in srgb, var(--mat-sys-primary) 14%, transparent);
+    --cngx-stepper-group-chip-active-bg: color-mix(
+      in srgb,
+      var(--mat-sys-primary) 14%,
+      transparent
+    );
     --cngx-stepper-group-chip-active-color: var(--mat-sys-primary);
 
     --cngx-step-error-badge-color: var(--mat-sys-error);

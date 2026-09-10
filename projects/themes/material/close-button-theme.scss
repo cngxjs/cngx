@@ -9,11 +9,7 @@
 
 @mixin color($theme) {
   @if mat.get-theme-version($theme) == 1 {
-    --cngx-close-button-hover-bg: color-mix(
-      in srgb,
-      var(--mat-sys-on-surface) 8%,
-      transparent
-    );
+    --cngx-close-button-hover-bg: color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent);
     --cngx-close-button-color: var(--mat-sys-on-surface-variant);
   } @else {
     --cngx-close-button-color: #{mat.get-theme-color($theme, foreground, secondary-text)};

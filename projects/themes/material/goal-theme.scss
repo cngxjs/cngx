@@ -14,11 +14,7 @@
     --cngx-goal-track-color: var(--mat-sys-surface-variant);
   } @else {
     --cngx-goal-fill-color: #{mat.get-theme-color($theme, primary)};
-    --cngx-goal-track-color: #{mat.get-theme-color(
-        $theme,
-        foreground,
-        divider
-      )};
+    --cngx-goal-track-color: #{mat.get-theme-color($theme, foreground, divider)};
   }
 }
 

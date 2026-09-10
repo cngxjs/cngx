@@ -124,7 +124,13 @@
   // (8px), so --cngx-tab-padding stays bridged. The strip padding
   // (0.5rem 0 == space-sm 0) and the gap (0.5rem == space-sm) now derive
   // from the scale in tabs-base.css, so they are dropped here.
-  $paddings: (0: 0.5rem 0.75rem, -1: 0.4rem 0.6rem, -2: 0.3rem 0.5rem, -3: 0.25rem 0.4rem, -4: 0.2rem 0.35rem);
+  $paddings: (
+    0: 0.5rem 0.75rem,
+    -1: 0.4rem 0.6rem,
+    -2: 0.3rem 0.5rem,
+    -3: 0.25rem 0.4rem,
+    -4: 0.2rem 0.35rem,
+  );
 
   --cngx-tab-padding: #{map.get($paddings, $scale)};
 }
@@ -171,8 +177,16 @@
 @mixin _overflow-item($theme) {
   --cngx-tab-overflow-item-padding: 0.5rem 1rem;
   @if mat.get-theme-version($theme) == 1 {
-    --cngx-tab-overflow-item-hover-bg: color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent);
-    --cngx-tab-overflow-item-active-bg: color-mix(in srgb, var(--mat-sys-on-surface) 12%, transparent);
+    --cngx-tab-overflow-item-hover-bg: color-mix(
+      in srgb,
+      var(--mat-sys-on-surface) 8%,
+      transparent
+    );
+    --cngx-tab-overflow-item-active-bg: color-mix(
+      in srgb,
+      var(--mat-sys-on-surface) 12%,
+      transparent
+    );
     --cngx-tab-overflow-item-active-outline: 2px solid var(--mat-sys-primary);
   } @else {
     --cngx-tab-overflow-item-hover-bg: color-mix(in srgb, currentColor 8%, transparent);

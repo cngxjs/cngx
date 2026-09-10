@@ -14,11 +14,7 @@
     --cngx-metric-unit-color: var(--mat-sys-on-surface-variant);
   } @else {
     --cngx-metric-value-color: #{mat.get-theme-color($theme, foreground, text)};
-    --cngx-metric-unit-color: #{mat.get-theme-color(
-        $theme,
-        foreground,
-        secondary-text
-      )};
+    --cngx-metric-unit-color: #{mat.get-theme-color($theme, foreground, secondary-text)};
   }
 }
 

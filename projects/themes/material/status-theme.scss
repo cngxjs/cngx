@@ -21,11 +21,7 @@
     --cngx-status-warning-color: #{mat.get-theme-color($theme, accent)};
     --cngx-status-danger-color: #{mat.get-theme-color($theme, warn)};
     --cngx-status-info-color: #{mat.get-theme-color($theme, primary)};
-    --cngx-status-neutral-color: #{mat.get-theme-color(
-        $theme,
-        foreground,
-        secondary-text
-      )};
+    --cngx-status-neutral-color: #{mat.get-theme-color($theme, foreground, secondary-text)};
   }
 }
 

@@ -11,24 +11,13 @@
     --cngx-treetable-header-bg: var(--mat-sys-surface-container);
     --cngx-treetable-header-color: var(--mat-sys-on-surface);
     --cngx-treetable-cell-color: var(--mat-sys-on-surface);
-    --cngx-treetable-row-hover-bg: color-mix(
-      in srgb,
-      var(--mat-sys-on-surface) 4%,
-      transparent
-    );
-    --cngx-treetable-row-selected-bg: color-mix(
-      in srgb,
-      var(--mat-sys-primary) 12%,
-      transparent
-    );
+    --cngx-treetable-row-hover-bg: color-mix(in srgb, var(--mat-sys-on-surface) 4%, transparent);
+    --cngx-treetable-row-selected-bg: color-mix(in srgb, var(--mat-sys-primary) 12%, transparent);
     --cngx-treetable-row-border: var(--mat-sys-outline-variant);
   } @else {
     --cngx-treetable-header-color: #{mat.get-theme-color($theme, foreground, text)};
     --cngx-treetable-cell-color: #{mat.get-theme-color($theme, foreground, text)};
-    --cngx-treetable-row-hover-bg: #{rgba(
-        mat.get-theme-color($theme, foreground, text),
-        0.04
-      )};
+    --cngx-treetable-row-hover-bg: #{rgba(mat.get-theme-color($theme, foreground, text), 0.04)};
     --cngx-treetable-row-border: #{mat.get-theme-color($theme, foreground, divider)};
   }
 }

@@ -37,7 +37,13 @@
   // The hero empty-state padding (48px) diverges from the scale xl (32px),
   // so --cngx-empty-padding stays bridged. The gap (16px == space-md) now
   // derives from the scale in empty-state.component.css, so it is dropped.
-  $paddings: (0: 48px, -1: 40px, -2: 32px, -3: 24px, -4: 20px);
+  $paddings: (
+    0: 48px,
+    -1: 40px,
+    -2: 32px,
+    -3: 24px,
+    -4: 20px,
+  );
 
   --cngx-empty-padding: #{map.get($paddings, $scale)};
 }

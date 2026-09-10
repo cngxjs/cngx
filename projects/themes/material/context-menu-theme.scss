@@ -16,7 +16,10 @@
     --cngx-context-menu-surface: var(--mat-sys-surface-container);
     --cngx-context-menu-color: var(--mat-sys-on-surface);
     --cngx-context-menu-border: 1px solid var(--mat-sys-outline-variant);
-    --cngx-context-menu-shadow: 0 4px 16px color-mix(in srgb, var(--mat-sys-shadow) 18%, transparent);
+    --cngx-context-menu-shadow: 0
+      4px
+      16px
+      color-mix(in srgb, var(--mat-sys-shadow) 18%, transparent);
     --cngx-context-menu-separator-color: var(--mat-sys-outline-variant);
     --cngx-context-menu-item-caret-color: var(--mat-sys-on-surface-variant);
     --cngx-context-menu-item-check-color: var(--mat-sys-primary);
@@ -24,7 +27,11 @@
     --cngx-context-menu-surface: #{mat.get-theme-color($theme, background, card)};
     --cngx-context-menu-color: #{mat.get-theme-color($theme, foreground, text)};
     --cngx-context-menu-separator-color: #{mat.get-theme-color($theme, foreground, divider)};
-    --cngx-context-menu-item-caret-color: #{mat.get-theme-color($theme, foreground, secondary-text)};
+    --cngx-context-menu-item-caret-color: #{mat.get-theme-color(
+        $theme,
+        foreground,
+        secondary-text
+      )};
     --cngx-context-menu-item-check-color: #{mat.get-theme-color($theme, primary, default)};
   }
 }

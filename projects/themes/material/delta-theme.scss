@@ -15,11 +15,7 @@
     --cngx-delta-positive-color: var(--mat-sys-tertiary);
     --cngx-delta-negative-color: var(--mat-sys-error);
   } @else {
-    --cngx-delta-neutral-color: #{mat.get-theme-color(
-        $theme,
-        foreground,
-        secondary-text
-      )};
+    --cngx-delta-neutral-color: #{mat.get-theme-color($theme, foreground, secondary-text)};
     --cngx-delta-positive-color: #{mat.get-theme-color($theme, accent)};
     --cngx-delta-negative-color: #{mat.get-theme-color($theme, warn)};
   }

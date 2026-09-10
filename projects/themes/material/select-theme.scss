@@ -62,7 +62,11 @@
     // Keyboard-active / hover row uses Material's neutral state layer
     // (on-surface 8%), matching mat-select's grey active row - the selected
     // fill stays cngx-distinct.
-    --cngx-select-option-highlight-bg: color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent);
+    --cngx-select-option-highlight-bg: color-mix(
+      in srgb,
+      var(--mat-sys-on-surface) 8%,
+      transparent
+    );
     --cngx-select-check-color: var(--mat-sys-primary);
     --cngx-select-placeholder-color: var(--mat-sys-on-surface-variant);
     --cngx-select-error-color: var(--mat-sys-error);

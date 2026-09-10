@@ -14,11 +14,10 @@
   @if mat.get-theme-version($theme) == 1 {
     --cngx-popover-panel-bg: var(--mat-sys-surface-container);
     --cngx-popover-panel-color: var(--mat-sys-on-surface);
-    --cngx-popover-panel-shadow: 0 8px 24px color-mix(
-      in srgb,
-      var(--mat-sys-shadow) 18%,
-      transparent
-    );
+    --cngx-popover-panel-shadow: 0
+      8px
+      24px
+      color-mix(in srgb, var(--mat-sys-shadow) 18%, transparent);
     --cngx-popover-panel-border: 1px solid var(--mat-sys-outline-variant);
     --cngx-popover-panel-footer-border-top: 1px solid var(--mat-sys-outline-variant);
   } @else {
@@ -66,7 +65,13 @@
   // chunkier - this diverges from the scale md (16px), so it stays.
   // The header / footer gaps (8px == space-sm) now derive from the scale
   // in popover-panel.component.css, so they are dropped here.
-  $paddings: (0: 12px, -1: 10px, -2: 8px, -3: 6px, -4: 4px);
+  $paddings: (
+    0: 12px,
+    -1: 10px,
+    -2: 8px,
+    -3: 6px,
+    -4: 4px,
+  );
 
   --cngx-popover-panel-padding: #{map.get($paddings, $scale)};
 }

@@ -20,11 +20,7 @@
     --cngx-action-btn-failed-color: var(--mat-sys-error);
     --cngx-action-btn-failed-border: var(--mat-sys-error);
     --cngx-action-btn-border: var(--mat-sys-outline-variant);
-    --cngx-action-btn-ghost-hover-bg: color-mix(
-      in srgb,
-      var(--mat-sys-on-surface) 8%,
-      transparent
-    );
+    --cngx-action-btn-ghost-hover-bg: color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent);
   } @else {
     --cngx-action-btn-succeeded-bg: #{rgba(mat.get-theme-color($theme, primary), 0.08)};
     --cngx-action-btn-succeeded-color: #{mat.get-theme-color($theme, primary)};

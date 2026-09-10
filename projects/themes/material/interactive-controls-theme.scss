@@ -49,21 +49,21 @@
     // there. The bare indicator classes cover standalone usage outside
     // a cngx-checkbox / cngx-radio host.
     :where(
-        cngx-checkbox,
-        cngx-checkbox *,
-        cngx-checkbox-group,
-        cngx-checkbox-group *,
-        cngx-radio,
-        cngx-radio *,
-        cngx-radio-group,
-        cngx-radio-group *,
-        cngx-toggle,
-        cngx-toggle *,
-        .cngx-checkbox-indicator,
-        .cngx-checkbox-indicator *,
-        .cngx-radio-indicator,
-        .cngx-radio-indicator *
-      ) {
+      cngx-checkbox,
+      cngx-checkbox *,
+      cngx-checkbox-group,
+      cngx-checkbox-group *,
+      cngx-radio,
+      cngx-radio *,
+      cngx-radio-group,
+      cngx-radio-group *,
+      cngx-toggle,
+      cngx-toggle *,
+      .cngx-checkbox-indicator,
+      .cngx-checkbox-indicator *,
+      .cngx-radio-indicator,
+      .cngx-radio-indicator *
+    ) {
       @include color($theme);
     }
     // One thumb token cannot satisfy contrast on both tracks - the
