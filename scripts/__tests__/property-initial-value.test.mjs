@@ -44,9 +44,14 @@ function collectStylesheets(dir, out = []) {
 describe('@property registrations', () => {
   it('carry no var() in any initial-value (registration would be dropped)', () => {
     const offenders = [];
-    for (const file of collectStylesheets(join(ROOT, 'projects'))) {
+    const roots = [join(ROOT, 'projects'), join(ROOT, 'examples')];
+    for (const file of roots.flatMap((r) => collectStylesheets(r))) {
       const src = readFileSync(file, 'utf8');
-      for (const block of src.matchAll(/@property\s+(--[a-zA-Z0-9-]+)\s*\{([^}]*)\}/g)) {
+      // Lax name pattern (anything up to whitespace/brace) so a future
+      // SCSS-interpolated name still enters the scan instead of slipping
+      // past it; the body match stops at the first closing brace, which
+      // every valid descriptor-only @property body satisfies.
+      for (const block of src.matchAll(/@property\s+(--[^\s{]+)\s*\{([^}]*)\}/g)) {
         const initial = /initial-value\s*:\s*([^;]+);/s.exec(block[2]);
         if (initial && initial[1].includes('var(')) {
           offenders.push(`${file.slice(ROOT.length + 1)}: ${block[1]}`);
