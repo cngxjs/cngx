@@ -27,19 +27,39 @@
   @property --cngx-dot-step-active-fill {
     syntax: '*';
     inherits: true;
-    initial-value: var(--cngx-step-active-fill, oklch(0.66 0.19 50));
+    initial-value: oklch(0.66 0.19 50);
   }
 
   @property --cngx-dot-step-completed-fill {
     syntax: '*';
     inherits: true;
-    initial-value: var(--cngx-step-completed-color, var(--cngx-color-success, oklch(0.5 0.15 145)));
+    initial-value: oklch(0.5 0.15 145);
   }
 
   @property --cngx-dot-step-upcoming-bg {
     syntax: '*';
     inherits: true;
-    initial-value: var(--cngx-step-indicator-bg, color-mix(in srgb, currentColor 18%, transparent));
+    initial-value: color-mix(in srgb, currentColor 18%, transparent);
+  }
+
+  /* The fill defaults derive from the stepper family. That derivation must
+     NOT live in the initial-value: a var() there is not computationally
+     independent, so the whole registration is silently dropped (the three
+     registrations above carried exactly that and never took effect). The
+     registration keeps the literal end of each chain; the derivation is a
+     host SET in this weakest layer, so the Material bridge (components
+     layer) and any consumer override still win, and inherits:true carries
+     it into every dot. */
+  :where(.cngx-dot-stepper) {
+    --cngx-dot-step-active-fill: var(--cngx-step-active-fill, oklch(0.66 0.19 50));
+    --cngx-dot-step-completed-fill: var(
+      --cngx-step-completed-color,
+      var(--cngx-color-success, oklch(0.5 0.15 145))
+    );
+    --cngx-dot-step-upcoming-bg: var(
+      --cngx-step-indicator-bg,
+      color-mix(in srgb, currentColor 18%, transparent)
+    );
   }
 }
 

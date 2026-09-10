@@ -492,11 +492,7 @@
   @property --cngx-paginator-option-selected-bg {
     syntax: '*';
     inherits: true;
-    initial-value: color-mix(
-      in oklch,
-      var(--cngx-color-primary, oklch(0.66 0.19 50)) 14%,
-      transparent
-    );
+    initial-value: color-mix(in oklch, oklch(0.66 0.19 50) 14%, transparent);
   }
 
   /**
@@ -506,7 +502,25 @@
   @property --cngx-paginator-option-selected-color {
     syntax: '*';
     inherits: true;
-    initial-value: var(--cngx-color-primary, oklch(0.66 0.19 50));
+    initial-value: oklch(0.66 0.19 50);
+  }
+
+  /* The selected-row defaults derive from --cngx-color-primary. That
+     derivation must NOT live in the initial-value: a var() there is not
+     computationally independent, so the whole registration is silently
+     dropped (the two registrations above carried exactly that and only
+     the read-site fallback chains in paginator-base.css kept the visuals
+     alive). The registration keeps the literal end of each chain; the
+     derivation is a host SET in this weakest layer, so the Material
+     bridge (components layer) and any consumer override still win, and
+     inherits:true carries it into the popover rows. */
+  :where(.cngx-paginator) {
+    --cngx-paginator-option-selected-bg: color-mix(
+      in oklch,
+      var(--cngx-color-primary, oklch(0.66 0.19 50)) 14%,
+      transparent
+    );
+    --cngx-paginator-option-selected-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
   }
 
   /**
