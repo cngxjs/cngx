@@ -1,4 +1,5 @@
 @use '@angular/material' as mat;
+@use './bridge' as bridge;
 
 // Material bridge for CngxCopyBlock. The host projects consumer content
 // and owns no surface tokens - the themed surface is the copy button
@@ -28,13 +29,11 @@
 }
 
 @mixin theme($theme) {
-  @layer cngx.components {
-    // Host + descendants broadcast (select-theme precedent): the idle
-    // btn tokens (-bg/-color/-border) are registered inherits:false and
-    // are read on the __button descendant - a host-only set resolves to
-    // the initial-value there.
-    :where(.cngx-copy-block, .cngx-copy-block *) {
-      @include color($theme);
-    }
+  // Host + descendants broadcast (select-theme precedent): the idle
+  // btn tokens (-bg/-color/-border) are registered inherits:false and
+  // are read on the __button descendant - a host-only set resolves to
+  // the initial-value there.
+  @include bridge.on(bridge.broadcast('.cngx-copy-block')) {
+    @include color($theme);
   }
 }

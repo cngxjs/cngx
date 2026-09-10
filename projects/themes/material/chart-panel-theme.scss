@@ -1,4 +1,5 @@
 @use '@angular/material' as mat;
+@use './bridge' as bridge;
 
 // Material bridge for CngxChartPanel. Default visuals ship with the component
 // (projects/ui/chart-panel/chart-panel.component.css) and read the cngx
@@ -37,9 +38,7 @@
 }
 
 @mixin theme($theme) {
-  @layer cngx.components {
-    :where(cngx-chart-panel) {
-      @include color($theme);
-    }
+  @include bridge.on(cngx-chart-panel) {
+    @include color($theme);
   }
 }

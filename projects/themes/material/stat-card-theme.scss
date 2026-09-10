@@ -1,4 +1,5 @@
 @use '@angular/material' as mat;
+@use './bridge' as bridge;
 
 // Material bridge for CngxStatCard. Default visuals ship with the component
 // (projects/ui/stat-card/stat-card.component.css) and read the cngx foundation
@@ -37,9 +38,7 @@
 }
 
 @mixin theme($theme) {
-  @layer cngx.components {
-    :where(cngx-stat-card) {
-      @include color($theme);
-    }
+  @include bridge.on(cngx-stat-card) {
+    @include color($theme);
   }
 }

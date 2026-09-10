@@ -1,4 +1,5 @@
 @use '@angular/material' as mat;
+@use './bridge' as bridge;
 
 // Material bridge for CngxTreetable. Resolves the treetable surface
 // variables onto Material's --mat-sys-* tokens.
@@ -23,9 +24,7 @@
 }
 
 @mixin theme($theme) {
-  @layer cngx.components {
-    :where(cngx-treetable) {
-      @include color($theme);
-    }
+  @include bridge.on(cngx-treetable) {
+    @include color($theme);
   }
 }

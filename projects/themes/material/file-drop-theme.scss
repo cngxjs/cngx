@@ -1,6 +1,7 @@
 @use 'sass:map';
 @use 'sass:math';
 @use '@angular/material' as mat;
+@use './bridge' as bridge;
 
 // Material bridge for CngxFileDrop. Default visuals ship with the
 // directive (projects/forms/theming/components/cngx-file-drop.css);
@@ -42,10 +43,8 @@
 }
 
 @mixin theme($theme) {
-  @layer cngx.components {
-    :where(.cngx-file-drop) {
-      @include color($theme);
-      @include density($theme);
-    }
+  @include bridge.on('.cngx-file-drop') {
+    @include color($theme);
+    @include density($theme);
   }
 }

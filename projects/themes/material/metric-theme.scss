@@ -1,4 +1,5 @@
 @use '@angular/material' as mat;
+@use './bridge' as bridge;
 
 // Material bridge for CngxMetric. Routes the value + unit text colors
 // onto Material 3 surface roles, and the value + unit typography onto
@@ -30,10 +31,8 @@
 }
 
 @mixin theme($theme) {
-  @layer cngx.components {
-    :where(cngx-metric, .cngx-metric) {
-      @include color($theme);
-      @include typography($theme);
-    }
+  @include bridge.on(cngx-metric, '.cngx-metric') {
+    @include color($theme);
+    @include typography($theme);
   }
 }

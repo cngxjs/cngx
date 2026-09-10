@@ -1,6 +1,7 @@
 @use 'sass:map';
 @use 'sass:math';
 @use '@angular/material' as mat;
+@use './bridge' as bridge;
 
 // Material bridge for CngxActionButton + cngxAsyncClick. Default visuals
 // (host rules, state classes, variant styles) ship with the components
@@ -32,10 +33,7 @@
 }
 
 @mixin theme($theme) {
-  @layer cngx.components {
-    :where(cngx-action-button),
-    :where([cngxAsyncClick]) {
-      @include color($theme);
-    }
+  @include bridge.on(cngx-action-button, '[cngxAsyncClick]') {
+    @include color($theme);
   }
 }

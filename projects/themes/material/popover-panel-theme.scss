@@ -1,6 +1,7 @@
 @use 'sass:map';
 @use 'sass:math';
 @use '@angular/material' as mat;
+@use './bridge' as bridge;
 
 // Material bridge for CngxPopoverPanel (+ CngxPopoverAction variants).
 // Default visuals ship with the component (popover-panel.component.css);
@@ -28,19 +29,19 @@
 
 @mixin _variant-colors($theme) {
   @if mat.get-theme-version($theme) == 1 {
-    :where(.cngx-popover-panel--info) {
+    @include bridge.on('.cngx-popover-panel--info') {
       --cngx-popover-panel-accent: var(--mat-sys-primary-container);
       --cngx-popover-panel-accent-text: var(--mat-sys-on-primary-container);
     }
-    :where(.cngx-popover-panel--success) {
+    @include bridge.on('.cngx-popover-panel--success') {
       --cngx-popover-panel-accent: var(--mat-sys-secondary-container);
       --cngx-popover-panel-accent-text: var(--mat-sys-on-secondary-container);
     }
-    :where(.cngx-popover-panel--warning) {
+    @include bridge.on('.cngx-popover-panel--warning') {
       --cngx-popover-panel-accent: var(--mat-sys-tertiary-container);
       --cngx-popover-panel-accent-text: var(--mat-sys-on-tertiary-container);
     }
-    :where(.cngx-popover-panel--danger) {
+    @include bridge.on('.cngx-popover-panel--danger') {
       --cngx-popover-panel-accent: var(--mat-sys-error-container);
       --cngx-popover-panel-accent-text: var(--mat-sys-on-error-container);
     }
@@ -77,12 +78,10 @@
 }
 
 @mixin theme($theme) {
-  @layer cngx.components {
-    :where(cngx-popover-panel) {
-      @include color($theme);
-      @include typography($theme);
-      @include density($theme);
-    }
-    @include _variant-colors($theme);
+  @include bridge.on(cngx-popover-panel) {
+    @include color($theme);
+    @include typography($theme);
+    @include density($theme);
   }
+  @include _variant-colors($theme);
 }

@@ -1,4 +1,5 @@
 @use '@angular/material' as mat;
+@use './bridge' as bridge;
 
 // Material bridge for the @cngx/ui/data-grid-accordion organism
 // (CngxDataGridAccordion + CngxDataGridRow + CngxDgCell + header / footer).
@@ -68,11 +69,9 @@
 // the global scale yet.
 
 @mixin theme($theme) {
-  @layer cngx.components {
-    :where(cngx-data-grid-accordion) {
-      @include color($theme);
-      @include typography($theme);
-    }
+  @include bridge.on(cngx-data-grid-accordion) {
+    @include color($theme);
+    @include typography($theme);
   }
 }
 
@@ -97,23 +96,23 @@
 // `density` / `log-stream` status colours already track Material through the foundation
 // tokens (danger -> error, info -> primary) and the tag bridge, so neither needs a block.
 @mixin skins($theme) {
-  @layer cngx.components {
-    :where(cngx-data-grid-accordion[data-skin='ledger']),
-    :where(cngx-data-grid-accordion[data-skin='log-stream']),
-    :where(cngx-data-grid-accordion[data-skin='master-detail']),
-    :where(cngx-data-grid-accordion[data-skin='density']) {
-      @include _skin-surfaces($theme);
-    }
+  @include bridge.on(
+    "cngx-data-grid-accordion[data-skin='ledger']",
+    "cngx-data-grid-accordion[data-skin='log-stream']",
+    "cngx-data-grid-accordion[data-skin='master-detail']",
+    "cngx-data-grid-accordion[data-skin='density']"
+  ) {
+    @include _skin-surfaces($theme);
+  }
 
-    :where(cngx-data-grid-accordion[data-skin='spreadsheet']) {
-      @include _skin-surfaces($theme);
-      // The row-number gutter fills primary on open; its digit reads --cngx-color-on-primary,
-      // which the system bridge does not map. Align it so the contrast holds under any theme.
-      @if mat.get-theme-version($theme) == 1 {
-        --cngx-color-on-primary: var(--mat-sys-on-primary);
-      } @else {
-        --cngx-color-on-primary: white;
-      }
+  @include bridge.on("cngx-data-grid-accordion[data-skin='spreadsheet']") {
+    @include _skin-surfaces($theme);
+    // The row-number gutter fills primary on open; its digit reads --cngx-color-on-primary,
+    // which the system bridge does not map. Align it so the contrast holds under any theme.
+    @if mat.get-theme-version($theme) == 1 {
+      --cngx-color-on-primary: var(--mat-sys-on-primary);
+    } @else {
+      --cngx-color-on-primary: white;
     }
   }
 }

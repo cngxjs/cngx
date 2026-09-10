@@ -1,4 +1,5 @@
 @use '@angular/material' as mat;
+@use './bridge' as bridge;
 
 // Include in your global theme stylesheet:
 //
@@ -304,47 +305,45 @@
 }
 
 @mixin theme($theme) {
-  @layer cngx.components {
-    // Every family block broadcasts to host + descendants (select-theme
-    // precedent): each surface carries tokens registered inherits:false
-    // that are read on inner elements (spinner/bar track, overlay
-    // backdrop, progress track/label/circle, alert icon/title, toast
-    // rows and their icon/message/action children, stack rows, banner
-    // rows/actions) - a host-only set resolves to the initial-value at
-    // those read sites.
-    :where(.cngx-loading-indicator, .cngx-loading-indicator *) {
-      @include loading-indicator-base();
-      @include loading-indicator-color($theme);
-    }
+  // Every family block broadcasts to host + descendants (select-theme
+  // precedent): each surface carries tokens registered inherits:false
+  // that are read on inner elements (spinner/bar track, overlay
+  // backdrop, progress track/label/circle, alert icon/title, toast
+  // rows and their icon/message/action children, stack rows, banner
+  // rows/actions) - a host-only set resolves to the initial-value at
+  // those read sites.
+  @include bridge.on(bridge.broadcast('.cngx-loading-indicator')) {
+    @include loading-indicator-base();
+    @include loading-indicator-color($theme);
+  }
 
-    :where(.cngx-loading-overlay, .cngx-loading-overlay *) {
-      @include loading-overlay-base();
-      @include loading-overlay-color($theme);
-    }
+  @include bridge.on(bridge.broadcast('.cngx-loading-overlay')) {
+    @include loading-overlay-base();
+    @include loading-overlay-color($theme);
+  }
 
-    :where(.cngx-progress, .cngx-progress *) {
-      @include progress-base();
-      @include progress-color($theme);
-    }
+  @include bridge.on(bridge.broadcast('.cngx-progress')) {
+    @include progress-base();
+    @include progress-color($theme);
+  }
 
-    :where(.cngx-alert, .cngx-alert *) {
-      @include alert-base();
-      @include alert-color($theme);
-    }
+  @include bridge.on(bridge.broadcast('.cngx-alert')) {
+    @include alert-base();
+    @include alert-color($theme);
+  }
 
-    :where(.cngx-toast-outlet, .cngx-toast-outlet *) {
-      @include toast-base();
-      @include toast-color($theme);
-    }
+  @include bridge.on(bridge.broadcast('.cngx-toast-outlet')) {
+    @include toast-base();
+    @include toast-color($theme);
+  }
 
-    :where(.cngx-alert-stack, .cngx-alert-stack *) {
-      @include alert-stack-base();
-      @include alert-stack-color($theme);
-    }
+  @include bridge.on(bridge.broadcast('.cngx-alert-stack')) {
+    @include alert-stack-base();
+    @include alert-stack-color($theme);
+  }
 
-    :where(.cngx-banner-outlet, .cngx-banner-outlet *) {
-      @include banner-base();
-      @include banner-color($theme);
-    }
+  @include bridge.on(bridge.broadcast('.cngx-banner-outlet')) {
+    @include banner-base();
+    @include banner-color($theme);
   }
 }

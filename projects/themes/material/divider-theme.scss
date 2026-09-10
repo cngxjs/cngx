@@ -1,4 +1,5 @@
 @use '@angular/material' as mat;
+@use './bridge' as bridge;
 
 // Material bridge for CngxDivider. Color follows the outline-variant
 // tone so a cngx divider next to <mat-divider> reads the same; sizes
@@ -16,9 +17,7 @@
 }
 
 @mixin theme($theme) {
-  @layer cngx.components {
-    :where([cngxDivider], .cngx-divider) {
-      @include color($theme);
-    }
+  @include bridge.on('[cngxDivider]', '.cngx-divider') {
+    @include color($theme);
   }
 }

@@ -1,4 +1,5 @@
 @use '@angular/material' as mat;
+@use './bridge' as bridge;
 
 // Material bridge for CngxCloseButton. Default visuals ship with the
 // directive; this file only re-points the hover surface so it tints
@@ -17,9 +18,7 @@
 }
 
 @mixin theme($theme) {
-  @layer cngx.components {
-    :where(.cngx-close-button) {
-      @include color($theme);
-    }
+  @include bridge.on('.cngx-close-button') {
+    @include color($theme);
   }
 }

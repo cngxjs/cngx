@@ -1,4 +1,5 @@
 @use '@angular/material' as mat;
+@use './bridge' as bridge;
 
 // Material bridge for CngxBadge. Maps the badge's four-colour palette
 // (primary / error / warning / neutral), the indicator's corner radius,
@@ -56,18 +57,16 @@
 }
 
 @mixin theme($theme) {
-  @layer cngx.components {
-    // Color tokens inherit, so setting them on the host cascades into
-    // the indicator span. Typography and radius tokens are declared
-    // `inherits: false` (see projects/common/theming/components/
-    // cngx-badge.css), so they must land on the indicator element
-    // itself to take effect.
-    :where([cngxBadge], .cngx-badge-host) {
-      @include color($theme);
-    }
-    :where(.cngx-badge-indicator) {
-      @include typography($theme);
-      @include base($theme);
-    }
+  // Color tokens inherit, so setting them on the host cascades into
+  // the indicator span. Typography and radius tokens are declared
+  // `inherits: false` (see projects/common/theming/components/
+  // cngx-badge.css), so they must land on the indicator element
+  // itself to take effect.
+  @include bridge.on('[cngxBadge]', '.cngx-badge-host') {
+    @include color($theme);
+  }
+  @include bridge.on('.cngx-badge-indicator') {
+    @include typography($theme);
+    @include base($theme);
   }
 }

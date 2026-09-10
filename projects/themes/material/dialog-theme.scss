@@ -1,4 +1,5 @@
 @use '@angular/material' as mat;
+@use './bridge' as bridge;
 
 // Material bridge for CngxDialog (+ CngxDialogDraggable). Default visuals
 // ship with the directive (projects/common/theming/components/cngx-dialog.css);
@@ -60,10 +61,8 @@
 }
 
 @mixin theme($theme) {
-  @layer cngx.components {
-    :where(dialog[cngxDialog]) {
-      @include base($theme);
-      @include color($theme);
-    }
+  @include bridge.on('dialog[cngxDialog]') {
+    @include base($theme);
+    @include color($theme);
   }
 }

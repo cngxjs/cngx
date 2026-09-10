@@ -1,4 +1,5 @@
 @use '@angular/material' as mat;
+@use './bridge' as bridge;
 
 // Material bridge for CngxContextMenu (+ item / divider shells). Default
 // visuals ship with the component (context-menu.component.css +
@@ -37,11 +38,9 @@
 }
 
 @mixin theme($theme) {
-  @layer cngx.components {
-    // The item colour tokens are inherits:true, so setting the whole family on
-    // the container cascades to every projected item / divider row.
-    :where(cngx-context-menu) {
-      @include color($theme);
-    }
+  // The item colour tokens are inherits:true, so setting the whole family on
+  // the container cascades to every projected item / divider row.
+  @include bridge.on(cngx-context-menu) {
+    @include color($theme);
   }
 }

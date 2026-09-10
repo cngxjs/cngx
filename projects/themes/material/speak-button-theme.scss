@@ -1,6 +1,7 @@
 @use 'sass:map';
 @use 'sass:math';
 @use '@angular/material' as mat;
+@use './bridge' as bridge;
 
 // Include in your global theme stylesheet alongside the Material theme:
 //
@@ -68,11 +69,9 @@
 }
 
 @mixin theme($theme) {
-  @layer cngx.components {
-    :where(cngx-speak-button) {
-      @include base();
-      @include color($theme);
-      @include density($theme);
-    }
+  @include bridge.on(cngx-speak-button) {
+    @include base();
+    @include color($theme);
+    @include density($theme);
   }
 }

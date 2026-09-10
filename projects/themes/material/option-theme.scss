@@ -1,6 +1,7 @@
 @use 'sass:map';
 @use 'sass:math';
 @use '@angular/material' as mat;
+@use './bridge' as bridge;
 
 // Material bridge for CngxOption (the [cngxOption] directive used by
 // listbox, menu, and select panels). Maps the cngx option token surface
@@ -80,17 +81,15 @@
 }
 
 @mixin theme($theme) {
-  @layer cngx.components {
-    // The bg tokens are `inherits: true` in cngx-listbox.css, so writing
-    // them on the listbox container cascades into projected options. The
-    // base + density tokens are `inherits: false` and must land on the
-    // option element directly.
-    :where([cngxListbox], [cngxOption]) {
-      @include color($theme);
-    }
-    :where([cngxOption]) {
-      @include density($theme);
-      @include base($theme);
-    }
+  // The bg tokens are `inherits: true` in cngx-listbox.css, so writing
+  // them on the listbox container cascades into projected options. The
+  // base + density tokens are `inherits: false` and must land on the
+  // option element directly.
+  @include bridge.on('[cngxListbox]', '[cngxOption]') {
+    @include color($theme);
+  }
+  @include bridge.on('[cngxOption]') {
+    @include density($theme);
+    @include base($theme);
   }
 }

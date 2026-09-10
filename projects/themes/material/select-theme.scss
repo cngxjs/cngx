@@ -1,6 +1,7 @@
 @use 'sass:map';
 @use 'sass:math';
 @use '@angular/material' as mat;
+@use './bridge' as bridge;
 
 // Material bridge for the entire Select family - single, multi, combobox,
 // typeahead, tree-select, reorderable-multi, action-select, action-multi,
@@ -239,40 +240,31 @@
 }
 
 @mixin theme($theme) {
-  @layer cngx.components {
-    // Token map covers two surfaces simultaneously:
-    //   - the popover panel (.cngx-select__panel) plus the tree-select host
-    //   - the per-variant triggers (cngx-select, cngx-multi-select, …) and
-    //     every descendant via ` *` so tokens registered as inherits:false
-    //     (which most --cngx-<variant>-bg / -color / -border are) actually
-    //     land on the inner trigger / __root / __trigger element where the
-    //     CSS rule reads them. Setting only on the host tag had no effect
-    //     because non-inheriting custom properties resolve to initial-value
-    //     when read on a child.
-    :where(
-      .cngx-select__panel,
-      cngx-tree-select-panel,
+  // Token map covers two surfaces simultaneously:
+  //   - the popover panel (.cngx-select__panel) plus the tree-select host
+  //   - the per-variant triggers (cngx-select, cngx-multi-select, …) and
+  //     every descendant via ` *` so tokens registered as inherits:false
+  //     (which most --cngx-<variant>-bg / -color / -border are) actually
+  //     land on the inner trigger / __root / __trigger element where the
+  //     CSS rule reads them. Setting only on the host tag had no effect
+  //     because non-inheriting custom properties resolve to initial-value
+  //     when read on a child.
+  @include bridge.on(
+    '.cngx-select__panel',
+    cngx-tree-select-panel,
+    bridge.broadcast(
       cngx-select,
-      cngx-select *,
       cngx-multi-select,
-      cngx-multi-select *,
       cngx-combobox,
-      cngx-combobox *,
       cngx-typeahead,
-      cngx-typeahead *,
       cngx-tree-select,
-      cngx-tree-select *,
       cngx-reorderable-multi-select,
-      cngx-reorderable-multi-select *,
       cngx-action-select,
-      cngx-action-select *,
       cngx-action-multi-select,
-      cngx-action-multi-select *,
-      cngx-select-shell,
-      cngx-select-shell *
-    ) {
-      @include color($theme);
-      @include density($theme);
-    }
+      cngx-select-shell
+    )
+  ) {
+    @include color($theme);
+    @include density($theme);
   }
 }

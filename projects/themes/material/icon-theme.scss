@@ -1,4 +1,5 @@
 @use '@angular/material' as mat;
+@use './bridge' as bridge;
 
 // Material bridge for CngxIcon. Icon colour follows currentColor by
 // default (so it inherits whatever the surrounding text reads) - this
@@ -22,9 +23,7 @@
 }
 
 @mixin theme($theme) {
-  @layer cngx.components {
-    :where(cngx-icon) {
-      @include sizes();
-    }
+  @include bridge.on(cngx-icon) {
+    @include sizes();
   }
 }
