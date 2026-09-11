@@ -25,6 +25,17 @@ export { CngxFilterExpression } from './filter-builder-expression.directive';
 export { CngxFilterExpressionRow } from './filter-builder-expression-row.component';
 export { CngxFilterRow } from './filter-builder-row.component';
 export {
+  CNGX_FILTER_ROW_CONTROLLER_FACTORY,
+  createFilterRowController,
+  type CngxFilterRowController,
+  type CngxFilterRowControllerDeps,
+  type CngxFilterRowControllerFactory,
+  type CngxFilterRowFieldChangePlan,
+  type CngxFilterRowOption,
+  type CngxFilterRowRemoveButtonContext,
+  type CngxFilterRowWriteSink,
+} from './filter-builder-row-controller';
+export {
   CNGX_FILTER_BUILDER_CONFIG,
   injectFilterBuilderConfig,
   isNativeEditor,
