@@ -14,6 +14,17 @@
 // buttons), and the direct button assignment keeps a group-less
 // button[cngxButtonToggle] themed.
 //
+// Knob-routing consequences, named on purpose: (1) in the theme.scss
+// aggregate this block overlaps system-bridge, which already maps the
+// same four knobs at the theme host - only --cngx-color-on-primary is
+// net-new there; the duplicate exists for selective per-bridge use,
+// where system-bridge may be absent (tabs-theme precedent). (2) A
+// directly-set property beats an INHERITED value regardless of layer
+// or specificity, so a consumer's :root-level --cngx-color-* override
+// does not reach the toggles - re-skinning them means overriding on
+// the group/toggle hosts themselves, where any consumer selector wins
+// against this block's zero-specificity :where().
+//
 // Spacing is deliberately absent. Both registered padding tokens
 // (--cngx-button-toggle-padding-block/-inline, inherits: false) are SET
 // from --cngx-space-* at the toggle host, which density-bridge.scss
