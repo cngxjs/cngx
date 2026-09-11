@@ -3,10 +3,9 @@
 @use '@angular/material' as mat;
 @use './bridge' as bridge;
 
-// Material bridge for CngxChip + CngxChipGroup + CngxMultiChipGroup +
-// CngxButtonToggleGroup. Maps the chip token surface onto Material 3
-// system tokens so an interactive chip reads like an M3 assist /
-// filter chip:
+// Material bridge for CngxChip + CngxChipGroup + CngxMultiChipGroup.
+// Maps the chip token surface onto Material 3 system tokens so an
+// interactive chip reads like an M3 assist / filter chip:
 //   - color: idle / hover / focus / selected / disabled / variants
 //   - typography: label-large (matches M3 chip text scale)
 //   - density: padding scales with Material's density token

@@ -1,0 +1,64 @@
+@use '@angular/material' as mat;
+@use './bridge' as bridge;
+
+// Material bridge for the button-toggle family (CngxButtonToggleGroup,
+// CngxButtonMultiToggleGroup, button[cngxButtonToggle]). The leaf chrome
+// (projects/common/theming/components/cngx-button-toggle.css) reads no
+// component-level color tokens - every tone derives from the cngx
+// foundation knobs (--cngx-color-primary / -on-primary / -surface /
+// -border / -text), so a leaf-token bridge would have nothing to assign.
+// Route the Material palette through the knobs instead (tabs-theme
+// precedent): assigned on the group hosts AND on the toggle button itself.
+// The knobs inherit, so the group assignment cascades into every segment
+// (including attribute-form [cngxButtonToggleGroup] hosts, via their
+// buttons), and the direct button assignment keeps a group-less
+// button[cngxButtonToggle] themed.
+//
+// Knob-routing consequences, named on purpose: (1) in the theme.scss
+// aggregate this block overlaps system-bridge, which already maps the
+// same four knobs at the theme host - only --cngx-color-on-primary is
+// net-new there; the duplicate exists for selective per-bridge use,
+// where system-bridge may be absent (tabs-theme precedent). (2) A
+// directly-set property beats an INHERITED value regardless of layer
+// or specificity, so a consumer's :root-level --cngx-color-* override
+// does not reach the toggles - re-skinning them means overriding on
+// the group/toggle hosts themselves, where any consumer selector wins
+// against this block's zero-specificity :where().
+//
+// Spacing is deliberately absent. Both registered padding tokens
+// (--cngx-button-toggle-padding-block/-inline, inherits: false) are SET
+// from --cngx-space-* at the toggle host, which density-bridge.scss
+// already maps onto the Material density scale - and a :where() density
+// fork here would lose to that :scope SET rule anyway (same layer, higher
+// specificity). Group gap (0) and radius (--cngx-radius-md) are neither
+// tone- nor density-specific.
+//
+//   @use '@angular/material' as mat;
+//   @use '@cngx/themes/material/button-toggle-theme' as button-toggle;
+//   html { @include button-toggle.theme($theme); }
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-color-primary: var(--mat-sys-primary);
+    --cngx-color-on-primary: var(--mat-sys-on-primary);
+    --cngx-color-surface: var(--mat-sys-surface);
+    --cngx-color-border: var(--mat-sys-outline-variant);
+    --cngx-color-text: var(--mat-sys-on-surface);
+  } @else {
+    // M2 has no on-primary role; the cngx default (near-white) stays.
+    --cngx-color-primary: #{mat.get-theme-color($theme, primary)};
+    --cngx-color-surface: #{mat.get-theme-color($theme, background, card)};
+    --cngx-color-border: #{rgba(mat.get-theme-color($theme, foreground, divider), 0.12)};
+    --cngx-color-text: #{mat.get-theme-color($theme, foreground, text)};
+  }
+}
+
+@mixin theme($theme) {
+  @include bridge.on(
+    cngx-button-toggle-group,
+    cngx-button-multi-toggle-group,
+    'button[cngxButtonToggle]'
+  ) {
+    @include color($theme);
+  }
+}

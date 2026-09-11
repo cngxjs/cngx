@@ -1,0 +1,112 @@
+@use '@angular/material' as mat;
+@use './bridge' as bridge;
+
+// Material bridge for the command-palette family (CngxCommandPalette +
+// the standalone CngxCommandPanel). The palette paints as an M3
+// dialog/menu hybrid: a surface-container-high modal surface with a
+// scrim backdrop, menu-convention rows (secondary-container active
+// pair), container-tone sub-surfaces (scope chip, kbd legend, match
+// mark), error roles for the failure chrome, and label-scale typography
+// for the header/footer meta text.
+//
+// Placement: one block on both hosts. Every --cngx-command-* token is
+// unregistered, so it inherits from the host down the whole subtree -
+// including the <dialog class="cngx-command-palette"> (a DOM descendant
+// of the host; top-layer promotion does not change ancestry) and its
+// ::backdrop, which inherits from the dialog element. Verified in the
+// rendered-value block (e2e/material-bridge-rendered.spec.ts), per the
+// lesson that document-global effects are not guessable from the
+// touched file alone. The panel host is listed so a standalone
+// <cngx-command-panel> outside the palette themes identically.
+//
+// Deliberately unbridged: every spacing token (SET from --cngx-space-*
+// at the palette/panel hosts - density-bridge territory), the geometry
+// tokens (width / max-h / listbox-max-h / border-width / focus-offset),
+// row and chip radius (cngx default 4px == M3 corner-extra-small
+// already), and --cngx-command-retry-bg (the retry stays a transparent
+// text button in M3, currentColor carries the error tone).
+//
+//   @use '@angular/material' as mat;
+//   @use '@cngx/themes/material/command-palette-theme' as command-palette;
+//   html { @include command-palette.theme($theme); }
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    // Modal surface: M3 dialogs sit on surface-container-high with the
+    // scrim role behind them (32% is the M3 scrim opacity).
+    --cngx-command-bg: var(--mat-sys-surface-container-high);
+    --cngx-command-color: var(--mat-sys-on-surface);
+    --cngx-command-border: var(--mat-sys-outline-variant);
+    --cngx-command-backdrop: color-mix(in srgb, var(--mat-sys-scrim) 32%, transparent);
+    --cngx-command-shadow: var(--mat-sys-level3, 0 10px 40px rgb(0 0 0 / 0.2));
+
+    // Input + meta text roles.
+    --cngx-command-input-color: var(--mat-sys-on-surface);
+    --cngx-command-placeholder-color: var(--mat-sys-on-surface-variant);
+    --cngx-command-header-color: var(--mat-sys-on-surface-variant);
+    --cngx-command-footer-color: var(--mat-sys-on-surface-variant);
+    --cngx-command-state-color: var(--mat-sys-on-surface-variant);
+
+    // Rows follow the M3 menu convention: on-surface resting, the
+    // secondary-container pair when keyboard-active.
+    --cngx-command-row-color: var(--mat-sys-on-surface);
+    --cngx-command-row-active-bg: var(--mat-sys-secondary-container);
+    --cngx-command-row-active-color: var(--mat-sys-on-secondary-container);
+    --cngx-command-row-disabled-opacity: 0.38;
+
+    // Sub-surfaces on container tones.
+    --cngx-command-chip-bg: var(--mat-sys-secondary-container);
+    --cngx-command-chip-color: var(--mat-sys-on-secondary-container);
+    --cngx-command-kbd-bg: var(--mat-sys-surface-container-highest);
+    --cngx-command-kbd-color: var(--mat-sys-on-surface-variant);
+    --cngx-command-mark-bg: var(--mat-sys-tertiary-container);
+
+    // Failure chrome + focus.
+    --cngx-command-error-color: var(--mat-sys-error);
+    --cngx-command-focus-outline: 2px solid var(--mat-sys-primary);
+  } @else {
+    // M2 subset: the readable core (surface / text / primary / danger).
+    $text: mat.get-theme-color($theme, foreground, text);
+    $secondary: mat.get-theme-color($theme, foreground, secondary-text);
+
+    --cngx-command-bg: #{mat.get-theme-color($theme, background, card)};
+    --cngx-command-color: #{$text};
+    --cngx-command-border: #{rgba(mat.get-theme-color($theme, foreground, divider), 0.12)};
+    --cngx-command-input-color: #{$text};
+    --cngx-command-placeholder-color: #{$secondary};
+    --cngx-command-header-color: #{$secondary};
+    --cngx-command-footer-color: #{$secondary};
+    --cngx-command-state-color: #{$secondary};
+    --cngx-command-row-color: #{$text};
+    --cngx-command-row-active-bg: #{mat.get-theme-color($theme, background, hover)};
+    --cngx-command-row-active-color: #{$text};
+    --cngx-command-error-color: #{mat.get-theme-color($theme, warn)};
+    --cngx-command-focus-outline: 2px solid #{mat.get-theme-color($theme, primary)};
+  }
+}
+
+@mixin typography($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    // Uppercase group headers and the keyboard legend sit on the label
+    // scale, like every M3 meta surface.
+    --cngx-command-header-size: var(--mat-sys-label-small-size);
+    --cngx-command-header-weight: var(--mat-sys-label-small-weight);
+    --cngx-command-footer-size: var(--mat-sys-label-medium-size);
+  }
+}
+
+@mixin base($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    // Between the M3 dialog (extra-large) and menu (extra-small) corners;
+    // corner-large matches the palette's floating-panel character.
+    --cngx-command-radius: var(--mat-sys-corner-large, 0.75rem);
+  }
+}
+
+@mixin theme($theme) {
+  @include bridge.on(cngx-command-palette, cngx-command-panel) {
+    @include color($theme);
+    @include typography($theme);
+    @include base($theme);
+  }
+}
