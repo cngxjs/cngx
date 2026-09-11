@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  input,
   model,
   signal,
   viewChild,
@@ -122,6 +123,18 @@ class TagPickerEditor implements CngxFilterEditorComponent<string> {
 }
 
 @Component({
+  selector: 'cngx-test-projected-tag-editor',
+  standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `<span data-test="projected-tag">{{ value() }}</span>`,
+})
+class ProjectedTagEditor implements CngxFilterEditorComponent<string> {
+  readonly value = model<string | null>(null);
+  readonly fieldDef = input<FilterFieldDef | undefined>(undefined);
+  readonly expression = input<FilterExpression | undefined>(undefined);
+}
+
+@Component({
   template: `<cngx-filter-expression-row [path]="path()"></cngx-filter-expression-row>`,
   imports: [CngxFilterExpressionRow],
 })
@@ -139,6 +152,7 @@ function setup(
     FIELD_ACTIVE,
     FIELD_CUSTOM,
   ],
+  editorOverrides: Readonly<Record<string, CngxFilterEditor>> = {},
 ): {
   fixture: ReturnType<typeof TestBed.createComponent<HostShell>>;
   host: MockHost;
@@ -157,6 +171,7 @@ function setup(
     ['date', 'native:date'],
     ['boolean', 'native:boolean'],
     ['tag-picker', TagPickerEditor as Type<CngxFilterEditorComponent<unknown>>],
+    ...Object.entries(editorOverrides),
   ]);
   TestBed.configureTestingModule({
     providers: [
@@ -268,5 +283,66 @@ describe('CngxFilterExpressionRow - editor wiring matrix', () => {
     fixture.detectChanges();
     TestBed.flushEffects();
     expect(editor.value()).toBe('written-by-custom-editor');
+  });
+
+  it('custom-component editor: value.set writes through to the host tree via the editor host', () => {
+    const expression: FilterExpression = {
+      type: 'expression',
+      id: 'e-custom-write',
+      field: 'tag',
+      operator: 'eq',
+      value: null,
+    };
+    const { fixture, host } = setup(expression);
+    const editor = fixture.debugElement.query(By.directive(TagPickerEditor))
+      .componentInstance as TagPickerEditor;
+
+    editor.value.set('written-by-custom-editor');
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    expect(host.setValueSpy).toHaveBeenCalledExactlyOnceWith([0], 'written-by-custom-editor');
+    const node = host.getNodeAtPath([0]);
+    expect(node?.type).toBe('expression');
+    expect((node as FilterExpression).value).toBe('written-by-custom-editor');
+  });
+
+  it('custom-component editor: receives the current expression value and projected inputs', () => {
+    const expression: FilterExpression = {
+      type: 'expression',
+      id: 'e-custom-seeded',
+      field: 'tag',
+      operator: 'eq',
+      value: 'seeded',
+    };
+    const { fixture } = setup(expression);
+    const editor = fixture.debugElement.query(By.directive(ProjectedTagEditor))
+      ?.componentInstance as ProjectedTagEditor | undefined;
+    const minimal = fixture.debugElement.query(By.directive(TagPickerEditor))
+      .componentInstance as TagPickerEditor;
+
+    // The registered editor for 'tag-picker' is the minimal TagPickerEditor:
+    // the seeded value lands even without optional inputs declared.
+    expect(editor).toBeUndefined();
+    expect(minimal.value()).toBe('seeded');
+  });
+
+  it('custom-component editor with full contract: fieldDef and expression are projected', () => {
+    const expression: FilterExpression = {
+      type: 'expression',
+      id: 'e-custom-full',
+      field: 'tag',
+      operator: 'eq',
+      value: 'seeded',
+    };
+    const { fixture } = setup(expression, undefined, {
+      'tag-picker': ProjectedTagEditor as Type<CngxFilterEditorComponent<unknown>>,
+    });
+    const editor = fixture.debugElement.query(By.directive(ProjectedTagEditor))
+      .componentInstance as ProjectedTagEditor;
+
+    expect(editor.value()).toBe('seeded');
+    expect(editor.fieldDef()).toEqual(FIELD_CUSTOM);
+    expect(editor.expression()?.id).toBe('e-custom-full');
   });
 });

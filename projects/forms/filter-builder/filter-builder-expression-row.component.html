@@ -52,8 +52,14 @@
         [value]="expression.value === true"
         (valueChange)="handleBooleanValueChange($event)"
       ></cngx-toggle>
-    } @else if (resolvedEditor && !isNativeEditor(resolvedEditor)) {
-      <ng-container *ngComponentOutlet="resolvedEditor"></ng-container>
+    } @else if (resolvedEditor && !isNativeEditor(resolvedEditor) && valueEditorContext(); as ctx) {
+      <ng-container
+        [cngxFilterValueEditorHost]="resolvedEditor"
+        [value]="ctx.value"
+        [fieldDef]="ctx.fieldDef"
+        [expression]="ctx.expression"
+        [setValue]="ctx.setValue"
+      ></ng-container>
     }
 
     @if (removeButtonTemplate(); as removeTpl) {

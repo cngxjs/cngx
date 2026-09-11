@@ -1,4 +1,4 @@
-import { NgComponentOutlet, NgTemplateOutlet } from '@angular/common';
+import { NgTemplateOutlet } from '@angular/common';
 import {
   afterNextRender,
   ChangeDetectionStrategy,
@@ -15,6 +15,7 @@ import { CngxInput } from '@cngx/forms/input';
 import { CngxSelect } from '@cngx/forms/select';
 
 import { CNGX_FILTER_BUILDER_GLYPHS } from './filter-builder.glyphs';
+import { CngxFilterValueEditorHost } from './filter-builder-value-editor-host.directive';
 import { injectFilterBuilderConfig, isNativeEditor } from './filter-builder.config';
 import {
   CNGX_FILTER_ROW_CONTROLLER_FACTORY,
@@ -62,7 +63,7 @@ import type { FilterExpression, FilterFieldDef } from './filter-builder.types';
   selector: 'cngx-filter-row',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgComponentOutlet, NgTemplateOutlet, CngxInput, CngxSelect, CngxToggle],
+  imports: [NgTemplateOutlet, CngxFilterValueEditorHost, CngxInput, CngxSelect, CngxToggle],
   templateUrl: './filter-builder-row.component.html',
   styleUrls: ['./filter-builder-row.component.css'],
   encapsulation: ViewEncapsulation.None,

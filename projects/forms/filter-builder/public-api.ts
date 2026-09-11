@@ -67,6 +67,7 @@ export {
   type CngxFilterOperatorDef,
 } from './filter-builder-operators';
 export type { CngxFilterEditorComponent } from './filter-builder-editor.contract';
+export { CngxFilterValueEditorHost } from './filter-builder-value-editor-host.directive';
 export {
   CngxFilterBuilderValueEditor,
   type CngxFilterBuilderValueEditorContext,
