@@ -9,7 +9,9 @@ import type { FilterExpression, FilterFieldDef } from './filter-builder.types';
  * current expression value, `fieldDef` carries the field metadata,
  * `setValue` is the row's write-through callback, and `expression`
  * exposes the full node for consumers that need the operator alongside
- * the value (e.g. range editors that toggle UI on `'between'`).
+ * the value - e.g. a range editor that toggles UI on the builtin
+ * `'between'` operator (opt-in: expose it per field via
+ * `FilterFieldDef.operators`, it evaluates against a `[min, max]` value).
  *
  * @category forms/filter-builder/slots
  */
@@ -24,7 +26,8 @@ export interface CngxFilterBuilderValueEditorContext<TValue> {
  * Per-row value-editor slot - overrides just the value cell of an expression
  * row; the field and operator pickers stay. Context: `value`, `fieldDef`,
  * `setValue()`, `expression` (the full node, for editors that switch on the
- * operator, e.g. a range editor on `'between'`).
+ * operator, e.g. a range editor writing `[min, max]` for the builtin
+ * opt-in `'between'` operator).
  *
  * ```html
  * <ng-template cngxFilterBuilderValueEditor let-value="value" let-setValue="setValue">

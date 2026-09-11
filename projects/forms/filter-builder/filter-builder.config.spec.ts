@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
 import type { CngxFilterEditorComponent } from './filter-builder-editor.contract';
+import { CNGX_FILTER_BUILTIN_OPERATOR_DEFS } from './filter-builder-operators';
 
 import {
   CNGX_FILTER_BUILDER_CONFIG,
@@ -11,11 +12,13 @@ import {
   isNativeEditor,
   provideFilterBuilderConfig,
   provideFilterBuilderConfigAt,
+  withCaseInsensitiveStrings,
   withDefaultOperators,
   withFilterBuilderI18n,
   withLogicOptions,
   withMaxNestingDepth,
   withNegation,
+  withOperators,
   withSkeletonCount,
   withTemplates,
   type CngxFilterBuilderConfig,
@@ -134,6 +137,33 @@ describe('filter-builder.config', () => {
         provideFilterBuilderConfig(withTemplates({ removeButton: null })),
       );
       expect(probe.config.templates).toHaveProperty('removeButton', null);
+    });
+  });
+
+  describe('withOperators / withCaseInsensitiveStrings', () => {
+    it('defaults to the builtin operator map and case-sensitive strings', () => {
+      const probe = setupRoot();
+      expect(probe.config.operators).toBe(CNGX_FILTER_BUILTIN_OPERATOR_DEFS);
+      expect(probe.config.caseInsensitive).toBe(false);
+    });
+
+    it('withOperators merges consumer definitions over the builtins', () => {
+      const lengthGt = { evaluate: () => false };
+      const probe = setupRoot(provideFilterBuilderConfig(withOperators({ lengthGt })));
+      expect(probe.config.operators.get('lengthGt')).toBe(lengthGt);
+      expect(probe.config.operators.get('eq')).toBe(CNGX_FILTER_BUILTIN_OPERATOR_DEFS.get('eq'));
+      expect(probe.config.operators.size).toBe(CNGX_FILTER_BUILTIN_OPERATOR_DEFS.size + 1);
+    });
+
+    it('withOperators can override an individual builtin key', () => {
+      const looseEq = { evaluate: () => true };
+      const probe = setupRoot(provideFilterBuilderConfig(withOperators({ eq: looseEq })));
+      expect(probe.config.operators.get('eq')).toBe(looseEq);
+    });
+
+    it('withCaseInsensitiveStrings flips the case knob', () => {
+      const probe = setupRoot(provideFilterBuilderConfig(withCaseInsensitiveStrings(true)));
+      expect(probe.config.caseInsensitive).toBe(true);
     });
   });
 

@@ -9,7 +9,12 @@ import { CngxFilterBuilder } from './filter-builder.component';
 import { CNGX_FILTER_BUILDER_HOST } from './filter-builder-host.token';
 import { CngxFilterBuilderFormFieldControl } from './filter-builder-form-field-control.directive';
 import { CngxFilterBuilderPresenter } from './filter-builder-presenter.directive';
-import { provideFilterBuilderConfig, withMaxNestingDepth } from './filter-builder.config';
+import {
+  provideFilterBuilderConfig,
+  withCaseInsensitiveStrings,
+  withMaxNestingDepth,
+  withOperators,
+} from './filter-builder.config';
 
 interface FormFieldStub {
   disabled: ReturnType<typeof signal<boolean>>;
@@ -474,5 +479,42 @@ describe('CngxFilterBuilderPresenter - errorState incomplete definition', () => 
       filters: [{ type: 'expression', id: 'e1', field: 'name', operator: '', value: 'x' }],
     });
     expect(directive.errorState()).toBe(true);
+  });
+});
+
+describe('CngxFilterBuilderPresenter - config-routed evaluation', () => {
+  it('predicate() evaluates withOperators-registered keys and the case knob', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideFilterBuilderConfig(
+          withOperators({
+            lengthGt: {
+              evaluate: (itemValue, exprValue) =>
+                typeof itemValue === 'string' && typeof exprValue === 'number'
+                  ? itemValue.length > exprValue
+                  : false,
+            },
+          }),
+          withCaseInsensitiveStrings(true),
+        ),
+      ],
+    });
+    const { directive } = setup();
+    directive.value.set({
+      type: 'group',
+      id: 'r',
+      logic: 'and',
+      negated: false,
+      filters: [
+        { type: 'expression', id: 'e1', field: 'name', operator: 'lengthGt', value: 3 },
+        { type: 'expression', id: 'e2', field: 'name', operator: 'contains', value: 'LOVE' },
+      ],
+    });
+    TestBed.flushEffects();
+
+    const predicate = directive.predicate();
+    expect(predicate).not.toBeNull();
+    expect(predicate!({ name: 'Ada Lovelace' })).toBe(true);
+    expect(predicate!({ name: 'Ada' })).toBe(false);
   });
 });

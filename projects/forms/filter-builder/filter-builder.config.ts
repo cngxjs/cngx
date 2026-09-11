@@ -117,6 +117,7 @@ export interface CngxFilterBuilderConfig {
   readonly maxNestingDepth: number;
   readonly defaultOperators: Readonly<Record<FilterEditorType, readonly string[]>>;
   readonly operators: ReadonlyMap<string, CngxFilterOperatorDef>;
+  readonly caseInsensitive: boolean;
   readonly logicOptions: readonly FilterLogic[];
   readonly negationEnabled: boolean;
   readonly skeletonCount: number;
@@ -145,6 +146,9 @@ const DEFAULT_I18N: CngxFilterBuilderI18n = Object.freeze({
     gte: 'Greater than or equal',
     lt: 'Less than',
     lte: 'Less than or equal',
+    between: 'Between',
+    in: 'In',
+    notIn: 'Not in',
   }),
   groupLabel: ({ logic, negated, isRoot }: CngxFilterBuilderGroupLabelContext): string => {
     const upper = logic.toUpperCase();
@@ -188,6 +192,7 @@ export const CNGX_FILTER_BUILDER_DEFAULTS: CngxFilterBuilderConfig = Object.free
   maxNestingDepth: 8,
   defaultOperators: DEFAULT_OPERATORS,
   operators: CNGX_FILTER_BUILTIN_OPERATOR_DEFS,
+  caseInsensitive: false,
   logicOptions: Object.freeze(['and', 'or']) as readonly FilterLogic[],
   negationEnabled: false,
   skeletonCount: 3,
@@ -201,7 +206,8 @@ export const CNGX_FILTER_BUILDER_DEFAULTS: CngxFilterBuilderConfig = Object.free
  * - i18n bundle - `withFilterBuilderI18n`
  * - max nesting depth - `withMaxNestingDepth` (default 8)
  * - operator lists per editor type - `withDefaultOperators`
- * - operator definitions (evaluate + label + valueless) - `withOperators` (default: the 11 builtins)
+ * - operator definitions (evaluate + label + valueless) - `withOperators` (default: the 14 builtins)
+ * - case-insensitive substring matching - `withCaseInsensitiveStrings` (default off)
  * - logic options (the and/or/xor picker) - `withLogicOptions` (default `['and', 'or']`)
  * - negation toggle - `withNegation` (default off)
  * - skeleton row count - `withSkeletonCount` (default 3)
@@ -221,7 +227,7 @@ export const CNGX_FILTER_BUILDER_DEFAULTS: CngxFilterBuilderConfig = Object.free
  * @category forms/filter-builder/config
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder.config.ts
  * @since 0.1.0
- * @relatedTo provideFilterBuilderConfig, provideFilterBuilderConfigAt, withTemplates, withFilterBuilderI18n, withMaxNestingDepth, withDefaultOperators, withOperators, withLogicOptions, withNegation, withSkeletonCount, CNGX_FILTER_EDITORS
+ * @relatedTo provideFilterBuilderConfig, provideFilterBuilderConfigAt, withTemplates, withFilterBuilderI18n, withMaxNestingDepth, withDefaultOperators, withOperators, withCaseInsensitiveStrings, withLogicOptions, withNegation, withSkeletonCount, CNGX_FILTER_EDITORS
  */
 export const CNGX_FILTER_BUILDER_CONFIG = new InjectionToken<CngxFilterBuilderConfig>(
   'CngxFilterBuilderConfig',
@@ -310,6 +316,20 @@ export function withOperators(
     ...config,
     operators: new Map([...config.operators, ...Object.entries(defs)]),
   }));
+}
+
+/**
+ * Fold both sides of the builtin substring trio (`contains` /
+ * `startsWith` / `endsWith`) via `toLowerCase()` at evaluation time.
+ * Off by default - the trio is case-SENSITIVE unless enabled. `eq` /
+ * `neq` keep `Object.is` identity semantics regardless; custom operator
+ * definitions receive the flag through their evaluation context and
+ * decide themselves.
+ *
+ * @category forms/filter-builder/config
+ */
+export function withCaseInsensitiveStrings(enabled: boolean): CngxFilterBuilderConfigFeature {
+  return feature((config) => ({ ...config, caseInsensitive: enabled }));
 }
 
 /**

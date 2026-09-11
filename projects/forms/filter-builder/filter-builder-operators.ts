@@ -86,11 +86,19 @@ function substringDef(
 }
 
 /**
- * The 11 builtin operators re-expressed as data. Default value of the
- * `CNGX_FILTER_BUILDER_CONFIG.operators` slice and the fallback registry
- * `evaluateExpression` resolves against when no options are passed -
- * keeping the no-options evaluation path bit-identical to the historical
- * closed switch.
+ * The 14 builtin operator definitions: the 11 historical switch arms
+ * re-expressed as data, plus the opt-in `between` / `in` / `notIn`
+ * family. Default value of the `CNGX_FILTER_BUILDER_CONFIG.operators`
+ * slice and the fallback registry `evaluateExpression` resolves against
+ * when no options are passed - keeping the no-options evaluation path
+ * bit-identical to the historical closed switch.
+ *
+ * The opt-in trio is deliberately absent from `DEFAULT_OPERATORS`: no
+ * field grows a picker entry its native editor cannot serve. Expose the
+ * keys per field via `FilterFieldDef.operators` (or per editor type via
+ * `withDefaultOperators`) together with a value editor that produces the
+ * matching array shape - `[min, max]` for `between`, a value list for
+ * `in` / `notIn`.
  *
  * @category forms/filter-builder/config
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-operators.ts
@@ -116,6 +124,39 @@ export const CNGX_FILTER_BUILTIN_OPERATOR_DEFS: ReadonlyMap<string, CngxFilterOp
     ['gte', { evaluate: (a, b) => compare(a, b) >= 0 }],
     ['lt', { evaluate: (a, b) => compare(a, b) < 0 }],
     ['lte', { evaluate: (a, b) => compare(a, b) <= 0 }],
+    [
+      'between',
+      {
+        // Value shape [min, max]. A non-array (or wrong-arity) value is a
+        // wiring bug -> conservative false; a nullish bound means the range
+        // editor is half-filled -> no-op true, mirroring the empty-value
+        // guard that cannot see inside arrays.
+        evaluate: (itemValue, exprValue) => {
+          if (!Array.isArray(exprValue) || exprValue.length !== 2) {
+            return false;
+          }
+          const [min, max] = exprValue as [unknown, unknown];
+          if (min == null || max == null) {
+            return true;
+          }
+          return compare(itemValue, min) >= 0 && compare(itemValue, max) <= 0;
+        },
+      },
+    ],
+    [
+      'in',
+      {
+        evaluate: (itemValue, exprValue) =>
+          Array.isArray(exprValue) && exprValue.some((v) => Object.is(v, itemValue)),
+      },
+    ],
+    [
+      'notIn',
+      {
+        evaluate: (itemValue, exprValue) =>
+          Array.isArray(exprValue) && !exprValue.some((v) => Object.is(v, itemValue)),
+      },
+    ],
   ]);
 
 /**

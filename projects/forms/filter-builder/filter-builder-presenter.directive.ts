@@ -171,7 +171,12 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
     } catch {
       return null;
     }
-    return toFilterPredicate<TValue>(this.tree(), fields);
+    // Route the config's operator registry and case knob into evaluation -
+    // a withOperators-registered key must evaluate on this primary path.
+    return toFilterPredicate<TValue>(this.tree(), fields, {
+      operators: this.config.operators,
+      caseInsensitive: this.config.caseInsensitive,
+    });
   });
 
   constructor() {

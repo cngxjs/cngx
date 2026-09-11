@@ -4,6 +4,7 @@ import {
   CNGX_FILTER_BUILTIN_OPERATOR_DEFS,
   type CngxFilterOperatorDef,
 } from './filter-builder-operators';
+import { DEFAULT_OPERATORS } from './filter-builder.types';
 import type { FilterExpression, FilterFieldDef, FilterGroup } from './filter-builder.types';
 import {
   createEmptyFilterRoot,
@@ -444,5 +445,95 @@ describe('evaluateExpression - operator registry routing', () => {
 
     expect(toFilterPredicate(tree, FIELDS, { operators })!(item)).toBe(true);
     expect(toFilterPredicate(tree, FIELDS, { operators })!({ name: 'Ada' })).toBe(false);
+  });
+});
+
+describe('evaluateExpression - between / in / notIn definitions', () => {
+  const item = { name: 'Ada', age: 36, joined: new Date(2024, 3, 10) };
+  const FIELD_JOINED: FilterFieldDef = { key: 'joined', label: 'Joined', editorType: 'date' };
+
+  it('between matches values inside the inclusive [min, max] range', () => {
+    const expr = (value: unknown) => createFilterExpression('age', 'between', value);
+    expect(evaluateExpression(expr([30, 40]), item, FIELD_AGE)).toBe(true);
+    expect(evaluateExpression(expr([36, 36]), item, FIELD_AGE)).toBe(true);
+    expect(evaluateExpression(expr([37, 40]), item, FIELD_AGE)).toBe(false);
+    expect(evaluateExpression(expr([10, 35]), item, FIELD_AGE)).toBe(false);
+  });
+
+  it('between orders dates and rejects mixed/uncomparable pairs', () => {
+    const inRange = createFilterExpression('joined', 'between', [
+      new Date(2024, 0, 1),
+      new Date(2024, 11, 31),
+    ]);
+    const mixed = createFilterExpression('age', 'between', ['10', 40]);
+    expect(evaluateExpression(inRange, item, FIELD_JOINED)).toBe(true);
+    expect(evaluateExpression(mixed, item, FIELD_AGE)).toBe(false);
+  });
+
+  it('between treats a nullish bound as a half-filled no-op and a non-array value as false', () => {
+    expect(
+      evaluateExpression(createFilterExpression('age', 'between', [null, 40]), item, FIELD_AGE),
+    ).toBe(true);
+    expect(
+      evaluateExpression(createFilterExpression('age', 'between', [30, undefined]), item, FIELD_AGE),
+    ).toBe(true);
+    expect(evaluateExpression(createFilterExpression('age', 'between', 30), item, FIELD_AGE)).toBe(
+      false,
+    );
+    expect(
+      evaluateExpression(createFilterExpression('age', 'between', [30]), item, FIELD_AGE),
+    ).toBe(false);
+  });
+
+  it('in matches by Object.is membership and notIn is its complement', () => {
+    const inExpr = (value: unknown) => createFilterExpression('age', 'in', value);
+    const notInExpr = (value: unknown) => createFilterExpression('age', 'notIn', value);
+    expect(evaluateExpression(inExpr([35, 36, 37]), item, FIELD_AGE)).toBe(true);
+    expect(evaluateExpression(inExpr([1, 2]), item, FIELD_AGE)).toBe(false);
+    expect(evaluateExpression(inExpr(['36']), item, FIELD_AGE)).toBe(false);
+    expect(evaluateExpression(notInExpr([1, 2]), item, FIELD_AGE)).toBe(true);
+    expect(evaluateExpression(notInExpr([35, 36]), item, FIELD_AGE)).toBe(false);
+  });
+
+  it('in / notIn evaluate false for a non-array value', () => {
+    expect(evaluateExpression(createFilterExpression('age', 'in', 36), item, FIELD_AGE)).toBe(
+      false,
+    );
+    expect(evaluateExpression(createFilterExpression('age', 'notIn', 36), item, FIELD_AGE)).toBe(
+      false,
+    );
+  });
+
+  it('ships none of the three keys in the DEFAULT_OPERATORS picker lists', () => {
+    const listed = Object.values(DEFAULT_OPERATORS).flat();
+    expect(listed).not.toContain('between');
+    expect(listed).not.toContain('in');
+    expect(listed).not.toContain('notIn');
+  });
+});
+
+describe('evaluateExpression - case-comparison knob', () => {
+  const item = { name: 'Ada Lovelace' };
+
+  it.each([
+    ['contains', 'lovelace'],
+    ['startsWith', 'ada'],
+    ['endsWith', 'LACE'],
+  ])('%s is case-sensitive by default and folds under caseInsensitive', (operator, value) => {
+    const expr = createFilterExpression('name', operator, value);
+    expect(evaluateExpression(expr, item, FIELD_NAME)).toBe(false);
+    expect(evaluateExpression(expr, item, FIELD_NAME, { caseInsensitive: true })).toBe(true);
+  });
+
+  it('leaves eq / neq on Object.is identity semantics regardless of the knob', () => {
+    const eqExpr = createFilterExpression('name', 'eq', 'ada lovelace');
+    expect(evaluateExpression(eqExpr, item, FIELD_NAME, { caseInsensitive: true })).toBe(false);
+    const neqExpr = createFilterExpression('name', 'neq', 'ada lovelace');
+    expect(evaluateExpression(neqExpr, item, FIELD_NAME, { caseInsensitive: true })).toBe(true);
+  });
+
+  it('keeps matching results unchanged when the knob is on', () => {
+    const expr = createFilterExpression('name', 'contains', 'Love');
+    expect(evaluateExpression(expr, item, FIELD_NAME, { caseInsensitive: true })).toBe(true);
   });
 });

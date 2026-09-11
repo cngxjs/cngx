@@ -41,6 +41,7 @@ export {
   isNativeEditor,
   provideFilterBuilderConfig,
   provideFilterBuilderConfigAt,
+  withCaseInsensitiveStrings,
   withDefaultOperators,
   withFilterBuilderI18n,
   withLogicOptions,
