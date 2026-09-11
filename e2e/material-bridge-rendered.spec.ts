@@ -5,6 +5,7 @@ import {
   compileEntry,
   computedValue,
   matSys,
+  matSysExtra,
   renderFixture,
 } from './support/material-bridge-page';
 
@@ -267,5 +268,127 @@ test.describe('material-bridge rendered values: phone-input', () => {
     expect(await computedValue(page, '#phone', '--cngx-phone-input-disabled-opacity')).toBe(
       '0.38',
     );
+  });
+});
+
+test.describe('material-bridge rendered values: command-palette', () => {
+  const PALETTE_CSS = [
+    'projects/ui/command-palette/palette/command-palette.component.css',
+    'projects/ui/command-palette/panel/command-panel.component.css',
+  ] as const;
+  const BRIDGE_CSS = compileBridge('command-palette-theme');
+
+  // The dialog carries .cngx-command-palette and is a DOM descendant of the
+  // cngx-command-palette host - top-layer promotion (showModal) does not
+  // change ancestry, so the host-level :where() assignment must reach the
+  // whole dialog subtree AND its ::backdrop (which inherits from the dialog
+  // element). That placement is exactly what this block exists to prove.
+  const PALETTE_HTML = `
+<cngx-command-palette>
+  <dialog id="palette" class="cngx-command-palette" aria-label="Command palette">
+    <cngx-command-panel class="cngx-command-panel">
+      <div class="cngx-command-panel-input-row">
+        <span id="chip" class="cngx-command-scope-chip">Files</span>
+        <input id="palette-input" class="cngx-command-panel-input" placeholder="Type a command" aria-label="Command search" />
+      </div>
+      <div class="cngx-command-panel-listbox" role="listbox" aria-label="Commands">
+        <div id="group-header" class="cngx-command-group-header">Recent</div>
+        <div id="row-active" class="cngx-command-row cngx-option--highlighted" role="option" aria-selected="true">
+          <span class="cngx-command-row-label">Open <mark id="mark">set</mark>tings</span>
+        </div>
+        <div id="row-idle" class="cngx-command-row" role="option" aria-selected="false">
+          <span class="cngx-command-row-label">Reload window</span>
+        </div>
+      </div>
+      <footer id="palette-footer" class="cngx-command-footer">
+        <span class="cngx-command-legend"><kbd id="kbd">Enter</kbd> to select</span>
+      </footer>
+    </cngx-command-panel>
+  </dialog>
+</cngx-command-palette>`;
+
+  test.beforeEach(async ({ page }) => {
+    await renderFixture(page, {
+      componentCss: PALETTE_CSS,
+      bridgeCss: BRIDGE_CSS,
+      html: PALETTE_HTML,
+    });
+    await page.evaluate(() => {
+      (document.getElementById('palette') as HTMLDialogElement).showModal();
+    });
+  });
+
+  test('the modal surface paints the M3 dialog roles inside the open dialog', async ({ page }) => {
+    expect(await computedValue(page, '#palette', 'background-color')).toBe(
+      matSys('surface-container-high'),
+    );
+    expect(await computedValue(page, '#palette', 'border-top-color')).toBe(
+      matSys('outline-variant'),
+    );
+    expect(await computedValue(page, '#palette', 'border-top-left-radius')).toBe(
+      matSysExtra('corner-large'),
+    );
+    expect(await computedValue(page, '#palette-input', 'color')).toBe(matSys('on-surface'));
+  });
+
+  test('the active row paints the secondary-container pair inside the open dialog', async ({
+    page,
+  }) => {
+    expect(await computedValue(page, '#row-active', 'background-color')).toBe(
+      matSys('secondary-container'),
+    );
+    expect(await computedValue(page, '#row-active', 'color')).toBe(
+      matSys('on-secondary-container'),
+    );
+    expect(await computedValue(page, '#row-idle', 'color')).toBe(matSys('on-surface'));
+  });
+
+  test('the sub-surfaces paint container tones', async ({ page }) => {
+    expect(await computedValue(page, '#chip', 'background-color')).toBe(
+      matSys('secondary-container'),
+    );
+    expect(await computedValue(page, '#kbd', 'background-color')).toBe(
+      matSys('surface-container-highest'),
+    );
+    expect(await computedValue(page, '#mark', 'background-color')).toBe(
+      matSys('tertiary-container'),
+    );
+  });
+
+  test('the meta typography lands on the label scale', async ({ page }) => {
+    expect(await computedValue(page, '#group-header', 'font-size')).toBe(
+      matSysExtra('label-small-size'),
+    );
+    expect(await computedValue(page, '#group-header', 'font-weight')).toBe(
+      matSysExtra('label-small-weight'),
+    );
+    expect(await computedValue(page, '#palette-footer', 'font-size')).toBe(
+      matSysExtra('label-medium-size'),
+    );
+  });
+
+  test('the backdrop token lands on the ::backdrop pseudo of the top-layer dialog', async ({
+    page,
+  }) => {
+    // ::backdrop inherits from the originating dialog element, which in turn
+    // inherits the unregistered token from the cngx-command-palette host -
+    // the placement this bridge's MEDIUM risk rested on. The expected value
+    // is computed in-page from the same color-mix() the bridge emits, so the
+    // assertion is independent of each engine's color serialization.
+    const { backdrop, expected } = await page.evaluate((scrim) => {
+      const dialog = document.getElementById('palette') as HTMLDialogElement;
+      const probe = document.createElement('div');
+      probe.style.backgroundColor = `color-mix(in srgb, ${scrim} 32%, transparent)`;
+      document.body.append(probe);
+      const expectedColor = getComputedStyle(probe).backgroundColor;
+      probe.remove();
+      return {
+        backdrop: getComputedStyle(dialog, '::backdrop').backgroundColor,
+        expected: expectedColor,
+      };
+    }, matSys('scrim'));
+    expect(backdrop).toBe(expected);
+    // and not the un-themed fallback
+    expect(backdrop).not.toBe('rgba(0, 0, 0, 0.4)');
   });
 });

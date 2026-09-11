@@ -112,12 +112,34 @@ export function matSys(token: MatSysColorToken): string {
 }
 
 /**
+ * Non-color system tokens the bridges reference (typography scale, shape,
+ * elevation). Values are deliberately off the Material defaults so an
+ * assertion can only pass through the bridge, never through a coincidental
+ * component default.
+ */
+export const MAT_SYS_EXTRAS = {
+  'label-small-size': '11px',
+  'label-small-weight': '570',
+  'label-medium-size': '13px',
+  'corner-large': '17px',
+  level3: '0 7px 9px rgb(7, 8, 9)',
+} as const;
+
+export type MatSysExtraToken = keyof typeof MAT_SYS_EXTRAS;
+
+/** The stand-in value for a non-color `--mat-sys-<token>`. */
+export function matSysExtra(token: MatSysExtraToken): string {
+  return MAT_SYS_EXTRAS[token];
+}
+
+/**
  * Unlayered `:root` block assigning every stand-in. Unlayered on purpose: it
  * models a consumer theme, which must beat every layered cngx rule.
  */
-export const MAT_SYS_STANDINS = `:root {\n${MAT_SYS_COLOR_TOKENS.map(
-  (token) => `  --mat-sys-${token}: ${matSys(token)};`,
-).join('\n')}\n}`;
+export const MAT_SYS_STANDINS = `:root {\n${[
+  ...MAT_SYS_COLOR_TOKENS.map((token) => `  --mat-sys-${token}: ${matSys(token)};`),
+  ...Object.entries(MAT_SYS_EXTRAS).map(([token, value]) => `  --mat-sys-${token}: ${value};`),
+].join('\n')}\n}`;
 
 export interface BridgeFixture {
   /** Repo-relative stylesheet paths, injected in order after layers.css. */
