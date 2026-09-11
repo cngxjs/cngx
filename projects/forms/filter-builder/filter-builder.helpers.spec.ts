@@ -495,6 +495,13 @@ describe('evaluateExpression - between / in / notIn definitions', () => {
     expect(evaluateExpression(notInExpr([35, 36]), item, FIELD_AGE)).toBe(false);
   });
 
+  it('in / notIn treat an empty list as an unfilled no-op', () => {
+    expect(evaluateExpression(createFilterExpression('age', 'in', []), item, FIELD_AGE)).toBe(true);
+    expect(
+      evaluateExpression(createFilterExpression('age', 'notIn', []), item, FIELD_AGE),
+    ).toBe(true);
+  });
+
   it('in / notIn evaluate false for a non-array value', () => {
     expect(evaluateExpression(createFilterExpression('age', 'in', 36), item, FIELD_AGE)).toBe(
       false,

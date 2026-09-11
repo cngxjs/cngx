@@ -146,15 +146,32 @@ export const CNGX_FILTER_BUILTIN_OPERATOR_DEFS: ReadonlyMap<string, CngxFilterOp
     [
       'in',
       {
-        evaluate: (itemValue, exprValue) =>
-          Array.isArray(exprValue) && exprValue.some((v) => Object.is(v, itemValue)),
+        // An empty list is an unfilled editor, not "match nothing" - the
+        // no-op guard cannot see inside arrays, so the def honours the
+        // unfilled-row contract itself (mirrors the between bound guard).
+        evaluate: (itemValue, exprValue) => {
+          if (!Array.isArray(exprValue)) {
+            return false;
+          }
+          if (exprValue.length === 0) {
+            return true;
+          }
+          return exprValue.some((v) => Object.is(v, itemValue));
+        },
       },
     ],
     [
       'notIn',
       {
-        evaluate: (itemValue, exprValue) =>
-          Array.isArray(exprValue) && !exprValue.some((v) => Object.is(v, itemValue)),
+        evaluate: (itemValue, exprValue) => {
+          if (!Array.isArray(exprValue)) {
+            return false;
+          }
+          if (exprValue.length === 0) {
+            return true;
+          }
+          return !exprValue.some((v) => Object.is(v, itemValue));
+        },
       },
     ],
   ]);
