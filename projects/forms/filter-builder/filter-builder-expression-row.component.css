@@ -8,9 +8,6 @@
  *
  * **State modifiers**
  *
- * - `.cngx-filter-builder__expression--empty` - opacity fade for an
- *   empty row, sourced from `--cngx-filter-builder-empty-row-opacity`
- *   (owned by `filter-builder-row.component.css`)
  * - `.cngx-filter-expression-incomplete` - dashed warning outline for
  *   an unfinished expression, draws attention without committing to an
  *   error tone
@@ -38,10 +35,8 @@
  * - `--cngx-filter-builder-incomplete-outline-offset` - structural,
  *   no foundation delegate
  *
- * `--cngx-filter-builder-gap` and
- * `--cngx-filter-builder-empty-row-opacity` are owned by the parent
- * filter-builder files and consumed here through the `var()` fallback
- * chain only. A `:root` delegating rule pins the incomplete-outline
+ * `--cngx-filter-builder-gap` is owned by the parent filter-builder
+ * files and consumed here through the `var()` fallback chain only. A `:root` delegating rule pins the incomplete-outline
  * structural part and inherits the warning hue via the foundation
  * chain so a dark-mode swap on `--cngx-color-warning` cascades.
  */
@@ -133,10 +128,6 @@
       flex-wrap: wrap;
       gap: var(--cngx-filter-builder-gap, 0.5rem);
       align-items: center;
-    }
-
-    .cngx-filter-builder__expression--empty {
-      opacity: var(--cngx-filter-builder-empty-row-opacity, 0.85);
     }
 
     /* Column raster: fixed-basis pickers align across sibling rows; the
