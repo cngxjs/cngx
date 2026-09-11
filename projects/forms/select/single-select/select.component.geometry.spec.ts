@@ -102,3 +102,14 @@ describe('CngxSelect geometry - ancestor-set sizing tokens reach their read site
     expect(computedValue(trigger, 'min-height')).toBe('56px');
   });
 });
+
+describe('CngxSelect geometry - self-contained trigger sizing', () => {
+  it('declares border-box on the trigger instead of relying on a global reset', () => {
+    const host = mount();
+    const trigger = query(host, '.cngx-select__trigger');
+    // The geometry target loads no cngx.base layer, so this read proves
+    // the component carries its own box-sizing - the min-height contract
+    // must not depend on a consumer-side global reset.
+    expect(computedValue(trigger, 'box-sizing')).toBe('border-box');
+  });
+});

@@ -184,6 +184,9 @@
          -> sm; padding 0.5/0.75 -> sm/sm (inline 12 tie sm/md -> sm). */
       --cngx-select-gap: var(--cngx-space-sm);
       --cngx-select-padding: var(--cngx-space-sm) var(--cngx-space-sm);
+      /* Self-contained sizing: without this the min-height contract depends
+         on a global border-box reset the consumer may not load. */
+      box-sizing: border-box;
       display: inline-flex;
       align-items: center;
       gap: var(--cngx-select-gap, 0.5rem);
