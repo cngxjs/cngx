@@ -64,33 +64,71 @@
     /* Column raster - basis tokens owned (registered) by
        filter-builder-expression-row.component.css; consumed here through
        the var() fallback chain only so the standalone row aligns with
-       tree rows when both render side by side. */
+       tree rows when both render side by side. The standalone row also
+       restates the dense control context the builder host provides in
+       the tree case (type sm, caret at label size, 2rem floor). */
+    :scope {
+      --cngx-select-caret-size: 1em;
+      --cngx-select-min-height: 2rem;
+    }
+
+    .cngx-filter-builder__expression {
+      font-size: var(--cngx-filter-builder-control-font-size, var(--cngx-font-size-sm, 0.8125rem));
+    }
+
     .cngx-filter-builder__field-select {
-      flex: 0 1 var(--cngx-filter-builder-field-basis, 14ch);
-      min-inline-size: 0;
+      /* Hard raster column: fixed inline-size (the label ellipsis-truncates,
+         the panel and aria-label carry the full text), min-width token kept
+         in sync so the select's own 10rem floor cannot re-widen it. */
+      --cngx-select-min-width: var(--cngx-filter-builder-field-basis, 8rem);
+      inline-size: var(--cngx-filter-builder-field-basis, 8rem);
+      flex: 0 0 auto;
     }
 
     .cngx-filter-builder__operator-select {
-      flex: 0 1 var(--cngx-filter-builder-operator-basis, 12ch);
-      min-inline-size: 0;
+      --cngx-select-min-width: var(--cngx-filter-builder-operator-basis, 7.5rem);
+      inline-size: var(--cngx-filter-builder-operator-basis, 7.5rem);
+      flex: 0 0 auto;
     }
 
     .cngx-filter-builder__expression > input[cngxInput] {
-      flex: 1 1 var(--cngx-filter-builder-value-basis, 16ch);
+      flex: 1 1 var(--cngx-filter-builder-value-basis, 8rem);
       min-inline-size: 0;
+      max-inline-size: var(--cngx-filter-builder-value-max, 20rem);
+      /* Self-contained control box: same inherited type + line box, block
+         padding and border as the select trigger, so every row control
+         lands on the same height by construction (no forced heights) -
+         and without depending on the optional cngx.base element layer. */
+      font: inherit;
+      padding: var(--cngx-space-sm, 0.5rem);
+      border: 1px solid var(--cngx-filter-builder-border-color, var(--cngx-color-border, oklch(0.87 0 0)));
+      border-radius: var(--cngx-radius-sm, 0.25rem);
+      background: transparent;
+      color: inherit;
     }
 
     .cngx-filter-builder__action-button--remove {
-      /* Icon-only default: square compact padding, centred glyph. The
-         visible text moved to aria-label; slot consumers are unaffected.
-         compact-padding 0.25 -> xs (SET-from-scale). */
-      --cngx-filter-builder-action-padding-compact: var(--cngx-space-xs);
+      /* Icon-only ghost default - see the expression-row stylesheet for
+         the rationale; kept in sync so the standalone row matches. */
+      --cngx-filter-builder-action-padding-compact: var(--cngx-space-sm);
       justify-content: center;
-      padding: var(--cngx-filter-builder-action-padding-compact, 0.25rem);
-      /* Both-axes floor: a small square target keeps the 44px hit area on
-         a coarse pointer (inert 0px on a fine pointer). */
-      min-inline-size: var(--cngx-target-min, 0px);
-      min-block-size: var(--cngx-target-min, 0px);
+      padding: var(--cngx-filter-builder-action-padding-compact, 0.5rem);
+      aspect-ratio: 1;
+      margin-inline-start: auto;
+      flex: 0 0 auto;
+      border-color: transparent;
+      color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
+      min-inline-size: max(2rem, var(--cngx-target-min, 0px));
+      min-block-size: max(2rem, var(--cngx-target-min, 0px));
+    }
+
+    .cngx-filter-builder__action-button--remove:hover,
+    .cngx-filter-builder__action-button--remove:focus-visible {
+      border-color: var(--cngx-filter-builder-border-color, var(--cngx-color-border, oklch(0.87 0 0)));
+      color: var(
+        --cngx-filter-builder-action-remove-fg,
+        var(--cngx-filter-builder-error-fg, var(--cngx-color-danger, oklch(0.55 0.18 25)))
+      );
     }
   }
 }

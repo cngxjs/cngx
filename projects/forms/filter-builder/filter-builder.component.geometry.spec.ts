@@ -97,7 +97,7 @@ describe('CngxFilterBuilder geometry', () => {
     expect(computedValue(group, 'flex-direction')).toBe('column');
   });
 
-  it('aligns sibling rows into an equal column raster', () => {
+  it('aligns sibling rows into an equal column raster at the token widths', () => {
     const host = mountRaster();
     const fieldSelects = Array.from(host.querySelectorAll('.cngx-filter-builder__field-select'));
     const operatorSelects = Array.from(
@@ -108,9 +108,42 @@ describe('CngxFilterBuilder geometry', () => {
 
     const fieldWidths = fieldSelects.map((el) => computedValue(el, 'inline-size'));
     const operatorWidths = operatorSelects.map((el) => computedValue(el, 'inline-size'));
-    expect(fieldWidths[0]).not.toBe('');
-    expect(fieldWidths[1]).toBe(fieldWidths[0]);
-    expect(operatorWidths[1]).toBe(operatorWidths[0]);
+    // 8rem / 6.5rem at the 16px root - the select's own 10rem min-width
+    // default must NOT win over the raster tokens.
+    expect(fieldWidths).toEqual(['128px', '128px']);
+    expect(operatorWidths).toEqual(['120px', '120px']);
+  });
+
+  it('lands every row control on one shared height', () => {
+    const host = mountRaster();
+    const trigger = query(host, '.cngx-filter-builder__field-select .cngx-select__trigger');
+    const input = query(host, '.cngx-filter-builder__expression input');
+    const remove = query(host, '.cngx-filter-builder__action-button--remove');
+
+    const triggerHeight = trigger.getBoundingClientRect().height;
+    const inputHeight = input.getBoundingClientRect().height;
+    // Same font, line-height, block padding and border by construction.
+    expect(Math.abs(triggerHeight - inputHeight)).toBeLessThanOrEqual(1);
+    // The ghost remove button floors to 2rem and stays inside the raster.
+    expect(remove.getBoundingClientRect().height).toBeGreaterThanOrEqual(32);
+    expect(remove.getBoundingClientRect().height).toBeLessThanOrEqual(triggerHeight);
+  });
+
+  it('pins the remove buttons of sibling rows to one trailing edge', () => {
+    const host = mountRaster();
+    const removes = Array.from(
+      host.querySelectorAll('.cngx-filter-builder__action-button--remove'),
+    );
+    expect(removes.length).toBe(2);
+    const xs = removes.map((el) => Math.round(el.getBoundingClientRect().x));
+    expect(xs[1]).toBe(xs[0]);
+  });
+
+  it('keeps the caret glyph at label size inside the builder', () => {
+    const host = mountRaster();
+    const trigger = query(host, '.cngx-filter-builder__field-select .cngx-select__trigger');
+    const caret = query(host, '.cngx-select__caret');
+    expect(computedValue(caret, 'font-size')).toBe(computedValue(trigger, 'font-size'));
   });
 
   it('floors the compact remove button on both axes via the target-min token', () => {

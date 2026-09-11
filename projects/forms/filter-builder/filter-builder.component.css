@@ -136,13 +136,15 @@
   /**
    * Border shorthand of each group container.
    * `inherits: true` so the :root delegating value reaches nested
-   * group containers.
+   * group containers. Default `none` - the builder renders on the page
+   * surface like the modern filter-bar reference class; set the token
+   * for a boxed look.
    * @group Surface
    */
   @property --cngx-filter-builder-group-border {
     syntax: '*';
     inherits: true;
-    initial-value: 1px solid oklch(0.87 0 0);
+    initial-value: none;
   }
 
   /**
@@ -244,12 +246,14 @@
   }
 
   /**
-   * Font-size of an action button's label.
+   * Font-size of an action button's label. Read at the button element,
+   * SET from the type scale at the builder host - `inherits: true` is
+   * load-bearing for that host-level SET to arrive.
    * @group Typography
    */
   @property --cngx-filter-builder-action-font-size {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.875rem;
   }
 
@@ -427,8 +431,18 @@
          below track the same value. */
       --cngx-filter-builder-padding: var(--cngx-space-sm);
       --cngx-filter-builder-gap: var(--cngx-space-sm);
+      /* One control scale for the whole builder: type from the sm rung
+         (SET-from-scale), and the composed cngx-select context compacted
+         via its inheritable tokens - caret at label size (the 1.25em
+         default caret line-box is what inflates a default trigger), tap
+         floor to 2rem. */
+      --cngx-filter-builder-control-font-size: var(--cngx-font-size-sm);
+      --cngx-filter-builder-action-font-size: var(--cngx-font-size-sm);
+      --cngx-select-caret-size: 1em;
+      --cngx-select-min-height: 2rem;
       display: block;
       padding: var(--cngx-filter-builder-padding, 0.5rem);
+      font-size: var(--cngx-filter-builder-control-font-size, 0.8125rem);
       background: var(--cngx-filter-builder-bg, transparent);
       color: var(--cngx-filter-builder-fg, inherit);
     }
@@ -446,30 +460,34 @@
     }
 
     .cngx-filter-builder__group {
-      /* group-padding 0.5 -> sm (read here + on the :not(root) padding-left). */
+      /* group-padding 0.5 -> sm (consumed by the negated box below). */
       --cngx-filter-builder-group-padding: var(--cngx-space-sm);
       display: flex;
       flex-direction: column;
       gap: var(--cngx-filter-builder-gap, 0.5rem);
-      padding: var(--cngx-filter-builder-group-padding, 0.5rem);
-      border: var(
-        --cngx-filter-builder-group-border,
-        1px solid var(--cngx-filter-builder-border-color, var(--cngx-color-border, oklch(0.87 0 0)))
-      );
+      /* Quiet default: no box - grouping reads from the nesting rail and
+         whitespace. Re-box via --cngx-filter-builder-group-border. */
+      border: var(--cngx-filter-builder-group-border, none);
       border-radius: var(--cngx-filter-builder-radius, 0.375rem);
     }
 
     .cngx-filter-builder__group:not(.cngx-filter-group-root) {
+      /* One nesting cue: the rail plus an inline inset. */
       margin-inline-start: var(--cngx-filter-builder-indent, 1.25rem);
       border-inline-start: var(
         --cngx-filter-builder-rail,
         2px solid var(--cngx-filter-builder-border-color, var(--cngx-color-border, oklch(0.87 0 0)))
       );
-      padding-inline-start: var(--cngx-filter-builder-group-padding, 0.5rem);
+      padding-inline-start: var(--cngx-space-md, 1rem);
     }
 
     .cngx-filter-builder__group.cngx-filter-group-negated {
-      border-style: var(--cngx-filter-builder-negated-border-style, dashed);
+      /* Negation is a state worth a box: dashed outline reads as
+         "exclusion" (Pillar 2 - the state change is visible). */
+      border: 1px var(--cngx-filter-builder-negated-border-style, dashed)
+        var(--cngx-filter-builder-border-color, var(--cngx-color-border, oklch(0.87 0 0)));
+      border-radius: var(--cngx-filter-builder-radius, 0.375rem);
+      padding: var(--cngx-filter-builder-group-padding, 0.5rem);
     }
 
     .cngx-filter-builder__expression {
@@ -550,6 +568,22 @@
       display: flex;
       align-items: center;
       gap: var(--cngx-filter-builder-gap, 0.5rem);
+    }
+
+    .cngx-filter-builder__logic-select {
+      /* Ghost weight for the 3-letter mode picker: content-sized, quiet
+         border until pointer/keyboard intent. The full-width 10rem
+         default select is the loudest element in the frame otherwise. */
+      --cngx-select-min-width: 5rem;
+      --cngx-select-border: 1px solid transparent;
+      color: var(--cngx-filter-builder-logic-fg, var(--cngx-color-text-muted, oklch(0.5 0.01 250)));
+      font-weight: 500;
+    }
+
+    .cngx-filter-builder__logic-select:hover,
+    .cngx-filter-builder__logic-select:focus-within {
+      --cngx-select-border: 1px solid
+        var(--cngx-filter-builder-border-color, var(--cngx-color-border, oklch(0.87 0 0)));
     }
   }
 }
