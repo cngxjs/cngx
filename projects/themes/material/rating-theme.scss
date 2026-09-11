@@ -1,0 +1,43 @@
+@use '@angular/material' as mat;
+@use './bridge' as bridge;
+
+// Material bridge for CngxRating (projects/forms/input/rating). Default
+// visuals read the --cngx-rating-* tokens with literal fallbacks; this file
+// re-points the tone tokens at Material so a rating reads native next to
+// Material form controls: muted on-surface-variant idle stars, primary
+// active stars, a primary focus ring (>= 3:1 against surface in both M3
+// schemes), and Material's 38% disabled opacity (option-theme precedent).
+//
+// Minimal-mapping discipline (3.6 lesson): a bridge line exists only where
+// the Material default genuinely differs. --cngx-rating-size and the
+// focus-ring geometry (width / offset / radius) keep their cngx defaults,
+// and the spacing trio (--cngx-rating-gap / -item-gap / -item-padding)
+// already derives from --cngx-space-* at the host, which
+// density-bridge.scss re-scales - no density map here.
+//
+// Tokens are unregistered, so a host assignment inherits into the
+// .cngx-rating__item read sites.
+//
+//   @use '@angular/material' as mat;
+//   @use '@cngx/themes/material/rating-theme' as rating;
+//   html { @include rating.theme($theme); }
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-rating-color: var(--mat-sys-on-surface-variant);
+    --cngx-rating-color-active: var(--mat-sys-primary);
+    --cngx-rating-focus-ring: var(--mat-sys-primary);
+    --cngx-rating-disabled-opacity: 0.38;
+  } @else {
+    --cngx-rating-color: #{mat.get-theme-color($theme, foreground, secondary-text)};
+    --cngx-rating-color-active: #{mat.get-theme-color($theme, primary)};
+    --cngx-rating-focus-ring: #{mat.get-theme-color($theme, primary)};
+    --cngx-rating-disabled-opacity: 0.38;
+  }
+}
+
+@mixin theme($theme) {
+  @include bridge.on(cngx-rating) {
+    @include color($theme);
+  }
+}

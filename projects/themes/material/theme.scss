@@ -60,6 +60,7 @@
 @use './paginator-theme' as paginator;
 @use './password-strength-meter-theme' as password-strength-meter;
 @use './popover-panel-theme' as popover-panel;
+@use './rating-theme' as rating;
 @use './ripple-theme' as ripple;
 @use './select-theme' as select;
 @use './sidenav-theme' as sidenav;
@@ -124,6 +125,7 @@
   @include paginator.theme($theme);
   @include password-strength-meter.theme($theme);
   @include popover-panel.theme($theme);
+  @include rating.theme($theme);
   @include ripple.theme($theme);
   @include select.theme($theme);
   @include sidenav.theme($theme);
