@@ -90,17 +90,10 @@ export class CngxFilterExpressionRow {
   );
 
   private readonly sink: CngxFilterRowWriteSink = {
-    applyFieldChange: (plan) => {
-      this.host.setField(this.path(), plan.field);
-      if (plan.resetValue) {
-        // Carry-over operator is invalid for the new field's editor type
-        // (e.g. switching `Birthday` → `Role` leaves `lt` orphaned in a string
-        // operator list). Reset to the new field's default and clear the
-        // value so the editor branch swaps to the matching native input.
-        this.host.setOperator(this.path(), plan.operator);
-        this.host.setValue(this.path(), undefined);
-      }
-    },
+    // Atomic on the host: one tree write, one mutation event, one
+    // announcement per field-change gesture - matching the standalone
+    // row's single model write.
+    applyFieldChange: (plan) => this.host.applyFieldChange(this.path(), plan),
     setOperator: (operator) => this.host.setOperator(this.path(), operator),
     setValue: (value) => this.host.setValue(this.path(), value),
     remove: () => this.host.removeNode(this.path()),

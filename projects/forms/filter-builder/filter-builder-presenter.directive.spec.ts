@@ -1,4 +1,4 @@
-import { ApplicationRef, Component, signal, viewChild, type Signal } from '@angular/core';
+import { ApplicationRef, Component, effect, signal, viewChild, type Signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { CNGX_STATEFUL } from '@cngx/core/utils';
 import { CngxFormFieldPresenter, CNGX_FORM_FIELD_CONTROL } from '@cngx/forms/field';
@@ -516,5 +516,37 @@ describe('CngxFilterBuilderPresenter - config-routed evaluation', () => {
     expect(predicate).not.toBeNull();
     expect(predicate!({ name: 'Ada Lovelace' })).toBe(true);
     expect(predicate!({ name: 'Ada' })).toBe(false);
+  });
+});
+
+describe('CngxFilterBuilderPresenter - atomic field change', () => {
+  it('applyFieldChange produces one set-field mutation and one announcement per gesture', () => {
+    const { directive } = setup();
+    directive.value.set({
+      type: 'group',
+      id: 'r',
+      logic: 'and',
+      negated: false,
+      filters: [{ type: 'expression', id: 'e1', field: 'name', operator: 'contains', value: 'x' }],
+    });
+    TestBed.flushEffects();
+
+    const events: string[] = [];
+    TestBed.runInInjectionContext(() => {
+      effect(() => {
+        const mutation = directive.lastMutation();
+        if (mutation) {
+          events.push(mutation.kind);
+        }
+      });
+    });
+
+    directive.applyFieldChange([0], { field: 'age', operator: 'gte', resetValue: true });
+    TestBed.flushEffects();
+
+    expect(events).toEqual(['set-field']);
+    const node = directive.tree().filters[0];
+    expect(node).toMatchObject({ field: 'age', operator: 'gte' });
+    expect(directive.announcement()).toBe('Field changed to Age');
   });
 });

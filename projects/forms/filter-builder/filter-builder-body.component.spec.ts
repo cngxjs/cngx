@@ -45,6 +45,7 @@ function buildMockHost(initial: FilterGroup): CngxFilterBuilderHost {
     setField: () => undefined,
     setOperator: () => undefined,
     setValue: () => undefined,
+    applyFieldChange: () => undefined,
     getNodeAtPath: (path) => walk(tree(), path),
     getFieldDef: (key) => (key === FIELD.key ? FIELD : undefined),
   };

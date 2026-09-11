@@ -98,6 +98,7 @@ function buildHost(initial: FilterGroup, fieldList: readonly FilterFieldDef[]): 
     setField: () => undefined,
     setOperator: () => undefined,
     setValue: setValueSpy,
+    applyFieldChange: () => undefined,
     getNodeAtPath: walk,
     getFieldDef: (key) => fieldList.find((d) => d.key === key),
     setValueSpy,

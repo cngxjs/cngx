@@ -8,6 +8,7 @@ import type {
   FilterNode,
 } from './filter-builder.types';
 import type { FilterMutationEvent } from './filter-builder-state';
+import type { CngxFilterRowFieldChangePlan } from './filter-builder-row-controller';
 
 /**
  * Narrow contract the recursive context atoms ({@link import('./filter-builder-group.directive').CngxFilterGroup} and
@@ -35,6 +36,12 @@ export interface CngxFilterBuilderHost<TValue = unknown> {
   setField(path: readonly number[], fieldKey: string): void;
   setOperator(path: readonly number[], operator: string): void;
   setValue(path: readonly number[], value: unknown): void;
+  /**
+   * Atomic field change: one tree write, one `set-field` mutation event,
+   * one announcement per gesture. See
+   * {@link import('./filter-builder-state').CngxFilterBuilderState.applyFieldChange}.
+   */
+  applyFieldChange(path: readonly number[], plan: CngxFilterRowFieldChangePlan): void;
 
   /**
    * Resolve a node at `path` against the current `tree()`. Reads `tree()`
