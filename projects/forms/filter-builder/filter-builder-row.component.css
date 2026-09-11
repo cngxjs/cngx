@@ -22,8 +22,13 @@
  *
  * `--cngx-filter-builder-empty-row-opacity` is structural (no
  * foundation delegate). `--cngx-filter-builder-gap` is owned by the
- * parent `filter-builder.component.css` and consumed here through the
- * `var()` fallback chain only.
+ * parent `filter-builder.component.css`; the raster basis tokens
+ * (`--cngx-filter-builder-field-basis` / `-operator-basis` /
+ * `-value-basis`) are owned by
+ * `filter-builder-expression-row.component.css` - all consumed here
+ * through the `var()` fallback chain only. The compact remove button
+ * floors both axes to `--cngx-target-min` (accessible name via
+ * `aria-label`).
  */
 
 @layer cngx.tokens {
@@ -54,6 +59,38 @@
 
     .cngx-filter-builder__expression--empty {
       opacity: var(--cngx-filter-builder-empty-row-opacity, 0.85);
+    }
+
+    /* Column raster - basis tokens owned (registered) by
+       filter-builder-expression-row.component.css; consumed here through
+       the var() fallback chain only so the standalone row aligns with
+       tree rows when both render side by side. */
+    .cngx-filter-builder__field-select {
+      flex: 0 1 var(--cngx-filter-builder-field-basis, 14ch);
+      min-inline-size: 0;
+    }
+
+    .cngx-filter-builder__operator-select {
+      flex: 0 1 var(--cngx-filter-builder-operator-basis, 12ch);
+      min-inline-size: 0;
+    }
+
+    .cngx-filter-builder__expression > input[cngxInput] {
+      flex: 1 1 var(--cngx-filter-builder-value-basis, 16ch);
+      min-inline-size: 0;
+    }
+
+    .cngx-filter-builder__action-button--remove {
+      /* Icon-only default: square compact padding, centred glyph. The
+         visible text moved to aria-label; slot consumers are unaffected.
+         compact-padding 0.25 -> xs (SET-from-scale). */
+      --cngx-filter-builder-action-padding-compact: var(--cngx-space-xs);
+      justify-content: center;
+      padding: var(--cngx-filter-builder-action-padding-compact, 0.25rem);
+      /* Both-axes floor: a small square target keeps the 44px hit area on
+         a coarse pointer (inert 0px on a fine pointer). */
+      min-inline-size: var(--cngx-target-min, 0px);
+      min-block-size: var(--cngx-target-min, 0px);
     }
   }
 }

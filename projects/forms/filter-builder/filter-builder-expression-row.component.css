@@ -20,6 +20,14 @@
  * - `cngx-filter-expression-row` - host, `display: contents`
  * - `.cngx-filter-builder__expression` - inner flex row, gap +
  *   wrap, aligned center
+ * - `.cngx-filter-builder__field-select` / `__operator-select` -
+ *   fixed-basis raster columns (`--cngx-filter-builder-field-basis` /
+ *   `-operator-basis`, owned here) so sibling rows align
+ * - `input[cngxInput]` value cell - grows from
+ *   `--cngx-filter-builder-value-basis`
+ * - `.cngx-filter-builder__action-button--remove` - icon-only compact
+ *   default (accessible name via `aria-label`), floored on both axes
+ *   to `--cngx-target-min`
  *
  * **Inheritance**
  *
@@ -63,6 +71,49 @@
     initial-value: 2px;
   }
 
+  /**
+   * Inline flex-basis of the field-picker column. Geometry token
+   * (content-width raster in `ch`, deliberately not density-derived -
+   * a density swap must compact spacing, not the column raster), so no
+   * SET-from-scale rule. `inherits: true` so one assignment at the
+   * builder root aligns every row in the tree.
+   * @group Layout / Raster
+   */
+  @property --cngx-filter-builder-field-basis {
+    /* syntax '*' not '<length>': ch is font-relative and therefore not a
+       computationally independent initial-value for a typed registration. */
+    syntax: '*';
+    inherits: true;
+    initial-value: 14ch;
+  }
+
+  /**
+   * Inline flex-basis of the operator-picker column. Same geometry
+   * rationale as the field basis - deliberate density opt-out.
+   * @group Layout / Raster
+   */
+  @property --cngx-filter-builder-operator-basis {
+    /* syntax '*' not '<length>': ch is font-relative and therefore not a
+       computationally independent initial-value for a typed registration. */
+    syntax: '*';
+    inherits: true;
+    initial-value: 12ch;
+  }
+
+  /**
+   * Inline flex-basis of the value-editor column. The value cell grows
+   * (`flex: 1 1`) from this basis so it absorbs the leftover row width.
+   * Same geometry rationale - deliberate density opt-out.
+   * @group Layout / Raster
+   */
+  @property --cngx-filter-builder-value-basis {
+    /* syntax '*' not '<length>': ch is font-relative and therefore not a
+       computationally independent initial-value for a typed registration. */
+    syntax: '*';
+    inherits: true;
+    initial-value: 16ch;
+  }
+
   /* Delegating token - incomplete-outline pins its structural part
    * (1px dashed) and inherits the warning hue via the foundation
    * chain so a dark-mode swap on `--cngx-color-warning` cascades. */
@@ -86,6 +137,37 @@
 
     .cngx-filter-builder__expression--empty {
       opacity: var(--cngx-filter-builder-empty-row-opacity, 0.85);
+    }
+
+    /* Column raster: fixed-basis pickers align across sibling rows; the
+       value cell grows from its basis. `flex-wrap` on the row still
+       degrades gracefully in narrow containers via flex shrink. */
+    .cngx-filter-builder__field-select {
+      flex: 0 1 var(--cngx-filter-builder-field-basis, 14ch);
+      min-inline-size: 0;
+    }
+
+    .cngx-filter-builder__operator-select {
+      flex: 0 1 var(--cngx-filter-builder-operator-basis, 12ch);
+      min-inline-size: 0;
+    }
+
+    .cngx-filter-builder__expression > input[cngxInput] {
+      flex: 1 1 var(--cngx-filter-builder-value-basis, 16ch);
+      min-inline-size: 0;
+    }
+
+    .cngx-filter-builder__action-button--remove {
+      /* Icon-only default: square compact padding, centred glyph. The
+         visible text moved to aria-label; slot consumers are unaffected.
+         compact-padding 0.25 -> xs (SET-from-scale). */
+      --cngx-filter-builder-action-padding-compact: var(--cngx-space-xs);
+      justify-content: center;
+      padding: var(--cngx-filter-builder-action-padding-compact, 0.25rem);
+      /* Both-axes floor: a small square target keeps the 44px hit area on
+         a coarse pointer (inert 0px on a fine pointer). */
+      min-inline-size: var(--cngx-target-min, 0px);
+      min-block-size: var(--cngx-target-min, 0px);
     }
 
     .cngx-filter-expression-incomplete {

@@ -410,3 +410,25 @@ describe('CngxFilterExpressionRow - embedded mode', () => {
     expect(fixture.debugElement.query(By.css('.cngx-filter-builder__expression'))).toBeNull();
   });
 });
+
+describe('CngxFilterExpressionRow - compact remove affordance', () => {
+  it('renders the default remove button icon-only with the i18n accessible name', () => {
+    const expression: FilterExpression = {
+      type: 'expression',
+      id: 'e-compact',
+      field: 'name',
+      operator: 'eq',
+      value: 'foo',
+    };
+    const { fixture } = setup(expression);
+    const button = fixture.debugElement.query(
+      By.css('.cngx-filter-builder__action-button--remove'),
+    ).nativeElement as HTMLButtonElement;
+
+    expect(button.getAttribute('aria-label')).toBe('Remove filter');
+    // Icon-only: the only rendered text is the aria-hidden glyph.
+    const glyph = button.querySelector('.cngx-filter-builder__action-glyph');
+    expect(glyph?.getAttribute('aria-hidden')).toBe('true');
+    expect(button.textContent?.trim()).toBe(glyph?.textContent?.trim());
+  });
+});
