@@ -12,6 +12,7 @@ import { CngxInput } from '@cngx/forms/input';
 import { CngxSelect } from '@cngx/forms/select';
 
 import { CNGX_FILTER_BUILDER_GLYPHS } from './filter-builder.glyphs';
+import { referenceEqual } from './filter-builder-internal';
 import { CngxFilterValueEditorHost } from './filter-builder-value-editor-host.directive';
 import { injectFilterBuilderConfig, isNativeEditor } from './filter-builder.config';
 import { CNGX_FILTER_BUILDER_HOST } from './filter-builder-host.token';
@@ -75,16 +76,16 @@ export class CngxFilterExpressionRow {
       const resolved: FilterNode | null = this.host.getNodeAtPath(this.path());
       return resolved?.type === 'expression' ? resolved : null;
     },
-    { equal: (a, b) => a === b },
+    { equal: referenceEqual },
   );
 
   protected readonly fields = computed<readonly FilterFieldDef[]>(() => this.host.fields(), {
-    equal: (a, b) => a === b,
+    equal: referenceEqual,
   });
 
   private readonly fieldMap = computed<ReadonlyMap<string, FilterFieldDef>>(
     () => this.host.fieldMap(),
-    { equal: (a, b) => a === b },
+    { equal: referenceEqual },
   );
 
   private readonly sink: CngxFilterRowWriteSink = {

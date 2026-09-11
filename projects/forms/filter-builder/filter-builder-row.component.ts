@@ -15,6 +15,7 @@ import { CngxInput } from '@cngx/forms/input';
 import { CngxSelect } from '@cngx/forms/select';
 
 import { CNGX_FILTER_BUILDER_GLYPHS } from './filter-builder.glyphs';
+import { referenceEqual } from './filter-builder-internal';
 import { CngxFilterValueEditorHost } from './filter-builder-value-editor-host.directive';
 import { injectFilterBuilderConfig, isNativeEditor } from './filter-builder.config';
 import {
@@ -90,7 +91,7 @@ export class CngxFilterRow {
   readonly templates = input<CngxFilterBuilderTemplateRegistry | null>(null);
 
   protected readonly node = computed<FilterExpression | null>(() => this.value(), {
-    equal: (a, b) => a === b,
+    equal: referenceEqual,
   });
 
   private readonly sink: CngxFilterRowWriteSink = {
