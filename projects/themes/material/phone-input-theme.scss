@@ -1,0 +1,31 @@
+@use '@angular/material' as mat;
+@use './bridge' as bridge;
+
+// Material bridge for CngxPhoneInput (projects/forms/input/phone-input).
+// The component's token surface is three names, and only one is
+// tone-specific: --cngx-phone-input-disabled-opacity maps to Material's
+// 38% disabled convention (option-theme / rating-theme precedent; the cngx
+// default is 0.5). The other two are intentional no-ops, documented here
+// so the absence reads as a decision, not an omission
+// (async-container-theme precedent):
+//
+// - --cngx-phone-input-gap derives from --cngx-space-sm at the host, which
+//   density-bridge.scss already maps onto the Material density scale.
+// - --cngx-phone-input-number-min-width (12ch) is content geometry with no
+//   Material counterpart.
+//
+//   @use '@angular/material' as mat;
+//   @use '@cngx/themes/material/phone-input-theme' as phone-input;
+//   html { @include phone-input.theme($theme); }
+
+@mixin color($theme) {
+  // Same value on both theme versions - Material's disabled opacity is a
+  // system convention, not a palette read.
+  --cngx-phone-input-disabled-opacity: 0.38;
+}
+
+@mixin theme($theme) {
+  @include bridge.on(cngx-phone-input) {
+    @include color($theme);
+  }
+}
