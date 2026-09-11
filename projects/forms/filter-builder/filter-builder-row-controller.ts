@@ -13,6 +13,9 @@ import type { FilterExpression, FilterFieldDef } from './filter-builder.types';
 const EMPTY_OPERATORS: readonly string[] = Object.freeze([]) as readonly string[];
 
 /** @internal */
+const EMPTY_PATH: readonly number[] = Object.freeze([]) as readonly number[];
+
+/** @internal */
 function equalOptionList<T>(
   a: readonly { value: T; label: string }[],
   b: readonly { value: T; label: string }[],
@@ -114,6 +117,8 @@ export interface CngxFilterRowControllerDeps {
   readonly node: Signal<FilterExpression | null>;
   readonly fields: Signal<readonly FilterFieldDef[]>;
   readonly fieldMap?: Signal<ReadonlyMap<string, FilterFieldDef>>;
+  /** Tree path of the row; omitted for the standalone row (empty path). */
+  readonly path?: Signal<readonly number[]>;
   readonly templates: Signal<CngxFilterBuilderTemplateRegistry | null>;
   readonly config: CngxFilterBuilderConfig;
   readonly editors: ReadonlyMap<string, CngxFilterEditor>;
@@ -152,8 +157,15 @@ export interface CngxFilterRowController {
   readonly valueEditorTemplate: Signal<TemplateRef<
     CngxFilterBuilderValueEditorContext<unknown>
   > | null>;
-  valueEditorContext(): CngxFilterBuilderValueEditorContext<unknown> | null;
-  removeButtonContext(path: readonly number[]): CngxFilterRowRemoveButtonContext;
+  /**
+   * Slot context for the value editor. A `computed()` with a structural
+   * `equal` and a stable `setValue` closure, so template reads and the
+   * editor host's inputs keep their references across change detection -
+   * a fresh-per-call context would re-push `setValue` every CD.
+   */
+  readonly valueEditorContext: Signal<CngxFilterBuilderValueEditorContext<unknown> | null>;
+  /** Slot context for the remove button - same reference-stability contract. */
+  readonly removeButtonContext: Signal<CngxFilterRowRemoveButtonContext>;
   operatorLabel(operator: string): string;
   defaultOperatorFor(fieldKey: string): string;
   handleFieldChange(next: string | undefined): void;
@@ -229,6 +241,12 @@ export function createFilterRowController(
     deps.sink.setValue(next);
   }
 
+  function remove(): void {
+    deps.sink.remove();
+  }
+
+  const path: Signal<readonly number[]> = deps.path ?? computed(() => EMPTY_PATH);
+
   const operators = computed<readonly string[]>(
     () => {
       const expression = deps.node();
@@ -292,29 +310,41 @@ export function createFilterRowController(
       () => deps.templates()?.valueEditor() ?? deps.config.templates.valueEditor ?? null,
       { equal: (a, b) => a === b },
     ),
-    valueEditorContext(): CngxFilterBuilderValueEditorContext<unknown> | null {
-      const expression = deps.node();
-      if (!expression) {
-        return null;
-      }
-      const fieldDef = fieldMap().get(expression.field);
-      if (!fieldDef) {
-        return null;
-      }
-      return {
-        value: expression.value,
-        fieldDef,
-        setValue: (v: unknown) => writeValue(v),
-        expression,
-      };
-    },
-    removeButtonContext(path: readonly number[]): CngxFilterRowRemoveButtonContext {
-      return {
-        path,
+    valueEditorContext: computed<CngxFilterBuilderValueEditorContext<unknown> | null>(
+      () => {
+        const expression = deps.node();
+        if (!expression) {
+          return null;
+        }
+        const fieldDef = fieldMap().get(expression.field);
+        if (!fieldDef) {
+          return null;
+        }
+        return {
+          value: expression.value,
+          fieldDef,
+          setValue: writeValue,
+          expression,
+        };
+      },
+      {
+        equal: (a, b) =>
+          a === b ||
+          (a !== null &&
+            b !== null &&
+            Object.is(a.value, b.value) &&
+            a.fieldDef === b.fieldDef &&
+            a.expression === b.expression),
+      },
+    ),
+    removeButtonContext: computed<CngxFilterRowRemoveButtonContext>(
+      () => ({
+        path: path(),
         label: deps.config.i18n.removeFilter,
-        remove: () => deps.sink.remove(),
-      };
-    },
+        remove,
+      }),
+      { equal: (a, b) => a.label === b.label && arrayEqual(a.path, b.path) },
+    ),
     operatorLabel,
     defaultOperatorFor,
     handleFieldChange(next: string | undefined): void {
@@ -360,7 +390,7 @@ export function createFilterRowController(
       writeValue(next);
     },
     handleRemove(): void {
-      deps.sink.remove();
+      remove();
     },
   };
 }

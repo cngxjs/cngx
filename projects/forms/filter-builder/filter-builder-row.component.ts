@@ -19,11 +19,9 @@ import { CngxFilterValueEditorHost } from './filter-builder-value-editor-host.di
 import { injectFilterBuilderConfig, isNativeEditor } from './filter-builder.config';
 import {
   CNGX_FILTER_ROW_CONTROLLER_FACTORY,
-  type CngxFilterRowRemoveButtonContext,
   type CngxFilterRowWriteSink,
 } from './filter-builder-row-controller';
 import type { CngxFilterBuilderTemplateRegistry } from './filter-builder-template-registry';
-import type { CngxFilterBuilderValueEditorContext } from './filter-builder-value-editor.slot';
 import { createFilterExpression } from './filter-builder.helpers';
 import { injectFilterEditors } from './filter-builder.tokens';
 import type { FilterExpression, FilterFieldDef } from './filter-builder.types';
@@ -168,13 +166,8 @@ export class CngxFilterRow {
   protected readonly removeButtonTemplate = this.row.removeButtonTemplate;
   protected readonly valueEditorTemplate = this.row.valueEditorTemplate;
 
-  protected valueEditorContext(): CngxFilterBuilderValueEditorContext<unknown> | null {
-    return this.row.valueEditorContext();
-  }
-
-  protected removeButtonContext(): CngxFilterRowRemoveButtonContext {
-    return this.row.removeButtonContext([]);
-  }
+  protected readonly valueEditorContext = this.row.valueEditorContext;
+  protected readonly removeButtonContext = this.row.removeButtonContext;
 
   protected handleFieldChange(next: string | undefined): void {
     this.row.handleFieldChange(next);

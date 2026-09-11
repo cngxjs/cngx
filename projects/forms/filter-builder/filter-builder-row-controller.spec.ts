@@ -40,16 +40,18 @@ function createSink() {
 function createHarness(initialNode: FilterExpression | null = null) {
   const node = signal<FilterExpression | null>(initialNode);
   const fields = signal<readonly FilterFieldDef[]>(FIELDS);
+  const path = signal<readonly number[]>([0, 1]);
   const sink = createSink();
   const deps: CngxFilterRowControllerDeps = {
     node,
     fields,
+    path,
     templates: signal(null),
     config: CNGX_FILTER_BUILDER_DEFAULTS,
     editors: EDITORS,
     sink,
   };
-  return { node, fields, sink, controller: createFilterRowController(deps) };
+  return { node, fields, path, sink, controller: createFilterRowController(deps) };
 }
 
 describe('createFilterRowController - field-change carry-over', () => {
@@ -131,6 +133,40 @@ describe('createFilterRowController - reference stability', () => {
     expect(controller.operatorOptions()).toBe(firstOptions);
   });
 
+  it('keeps the valueEditorContext reference across reads and a same-defs fields rewrite', () => {
+    const { controller, fields } = createHarness(createFilterExpression('name', 'eq', 'foo'));
+    const first = controller.valueEditorContext();
+
+    expect(controller.valueEditorContext()).toBe(first);
+
+    fields.set([...FIELDS]);
+    expect(controller.valueEditorContext()).toBe(first);
+  });
+
+  it('keeps a stable setValue closure across context recomputations', () => {
+    const { controller, node, sink } = createHarness(createFilterExpression('name', 'eq', 'foo'));
+    const firstSetValue = controller.valueEditorContext()?.setValue;
+
+    node.set(createFilterExpression('name', 'eq', 'bar'));
+    const ctx = controller.valueEditorContext();
+    expect(ctx?.setValue).toBe(firstSetValue);
+
+    ctx?.setValue('baz');
+    expect(sink.setValue).toHaveBeenCalledExactlyOnceWith('baz');
+  });
+
+  it('keeps the removeButtonContext reference when the path is rewritten with equal content', () => {
+    const { controller, path } = createHarness(createFilterExpression('name', 'eq', 'foo'));
+    const first = controller.removeButtonContext();
+
+    path.set([0, 1]);
+    expect(controller.removeButtonContext()).toBe(first);
+
+    path.set([2]);
+    expect(controller.removeButtonContext()).not.toBe(first);
+    expect(controller.removeButtonContext().remove).toBe(first.remove);
+  });
+
   it('recomputes operators when the field actually changes', () => {
     const { controller, node } = createHarness(createFilterExpression('name', 'eq', 'foo'));
     const stringOperators = controller.operators();
@@ -195,8 +231,13 @@ describe('createFilterRowController - sink call discipline', () => {
     controller.handleRemove();
     expect(sink.remove).toHaveBeenCalledTimes(1);
 
-    controller.removeButtonContext([0, 1]).remove();
+    controller.removeButtonContext().remove();
     expect(sink.remove).toHaveBeenCalledTimes(2);
+  });
+
+  it('exposes the controller path on the remove-button context', () => {
+    const { controller } = createHarness(createFilterExpression('name', 'eq', 'foo'));
+    expect(controller.removeButtonContext().path).toEqual([0, 1]);
   });
 });
 
