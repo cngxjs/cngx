@@ -60,6 +60,29 @@ function mount(): HTMLElement {
   return host as HTMLElement;
 }
 
+@Component({
+  selector: 'cngx-filter-builder-incomplete-host',
+  standalone: true,
+  imports: [CngxFilterBuilder],
+  template: `<cngx-filter-builder [fields]="fields" [(value)]="value" />`,
+})
+class IncompleteHost {
+  readonly fields = FIELDS;
+  value: FilterGroup = createFilterGroup('and', [createFilterExpression('name', 'contains')]);
+}
+
+function mountIncomplete(): HTMLElement {
+  const fixture = TestBed.createComponent(IncompleteHost);
+  mountedRoot = fixture.nativeElement as HTMLElement;
+  document.body.appendChild(mountedRoot);
+  fixture.detectChanges();
+  const host = mountedRoot.querySelector('cngx-filter-builder');
+  if (!host) {
+    throw new Error('cngx-filter-builder did not render');
+  }
+  return host as HTMLElement;
+}
+
 function mountRaster(): HTMLElement {
   const fixture = TestBed.createComponent(RasterHost);
   mountedRoot = fixture.nativeElement as HTMLElement;
@@ -137,6 +160,20 @@ describe('CngxFilterBuilder geometry', () => {
     expect(removes.length).toBe(2);
     const xs = removes.map((el) => Math.round(el.getBoundingClientRect().x));
     expect(xs[1]).toBe(xs[0]);
+  });
+
+  it('renders the root group without a box by default', () => {
+    const host = mountRaster();
+    const root = query(host, '.cngx-filter-builder__group');
+    expect(computedValue(root, 'border-top-width')).toBe('0px');
+  });
+
+  it('marks an unfinished value with a dashed editor border, not a row outline', () => {
+    const host = mountIncomplete();
+    const row = query(host, '.cngx-filter-expression-incomplete');
+    const input = query(host, '.cngx-filter-expression-incomplete > input');
+    expect(computedValue(input, 'border-top-style')).toBe('dashed');
+    expect(computedValue(row, 'outline-style')).toBe('none');
   });
 
   it('keeps the caret glyph at label size inside the builder', () => {

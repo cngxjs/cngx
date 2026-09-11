@@ -107,6 +107,14 @@
       color: inherit;
     }
 
+    .cngx-filter-expression-incomplete > input[cngxInput] {
+      border-style: var(--cngx-filter-builder-incomplete-border-style, dashed);
+      border-color: var(
+        --cngx-filter-builder-incomplete-border-color,
+        var(--cngx-color-border, oklch(0.87 0 0))
+      );
+    }
+
     .cngx-filter-builder__action-button--remove {
       /* Icon-only ghost default - see the expression-row stylesheet for
          the rationale; kept in sync so the standalone row matches. */

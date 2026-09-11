@@ -8,9 +8,8 @@
  *
  * **State modifiers**
  *
- * - `.cngx-filter-expression-incomplete` - dashed warning outline for
- *   an unfinished expression, draws attention without committing to an
- *   error tone
+ * - `.cngx-filter-expression-incomplete` - quiet unfinished-state cue:
+ *   the value editor's border goes dashed; no row-level warning box
  *
  * **Slots**
  *
@@ -28,44 +27,16 @@
  *
  * **Inheritance**
  *
- * Local-token chains:
- *
- * - `--cngx-filter-builder-incomplete-outline` -> `1px dashed
- *   var(--cngx-color-warning)`
- * - `--cngx-filter-builder-incomplete-outline-offset` - structural,
- *   no foundation delegate
+ * - `--cngx-filter-builder-incomplete-border-style` /
+ *   `-incomplete-border-color` - unregistered knobs for the quiet
+ *   unfinished-value cue; the color falls back through
+ *   `--cngx-color-border`
  *
  * `--cngx-filter-builder-gap` is owned by the parent filter-builder
- * files and consumed here through the `var()` fallback chain only. A `:root` delegating rule pins the incomplete-outline
- * structural part and inherits the warning hue via the foundation
- * chain so a dark-mode swap on `--cngx-color-warning` cascades.
+ * files and consumed here through the `var()` fallback chain only.
  */
 
 @layer cngx.tokens {
-  /**
-   * Outline shorthand for the incomplete-expression state - dashed
-   * warning hue draws attention without committing to an error tone.
-   * Falls back through `--cngx-color-warning`. `inherits: true` so
-   * the :root delegating value reaches the expression-row host.
-   * @group State / Incomplete
-   * @see [[--cngx-color-warning]]
-   */
-  @property --cngx-filter-builder-incomplete-outline {
-    syntax: '*';
-    inherits: true;
-    initial-value: 1px dashed oklch(0.55 0.15 65);
-  }
-
-  /**
-   * Outline offset of the incomplete-expression outline.
-   * @group State / Incomplete
-   */
-  @property --cngx-filter-builder-incomplete-outline-offset {
-    syntax: '<length>';
-    inherits: false;
-    initial-value: 2px;
-  }
-
   /**
    * Column width of the field picker (feeds the composed select's
    * `--cngx-select-min-width`). Geometry token, deliberately not
@@ -115,12 +86,6 @@
     initial-value: 20rem;
   }
 
-  /* Delegating token - incomplete-outline pins its structural part
-   * (1px dashed) and inherits the warning hue via the foundation
-   * chain so a dark-mode swap on `--cngx-color-warning` cascades. */
-  :root {
-    --cngx-filter-builder-incomplete-outline: 1px dashed var(--cngx-color-warning);
-  }
 }
 
 @layer cngx.components {
@@ -203,12 +168,17 @@
       );
     }
 
-    .cngx-filter-expression-incomplete {
-      outline: var(
-        --cngx-filter-builder-incomplete-outline,
-        1px dashed var(--cngx-color-warning, oklch(0.55 0.15 65))
+    /* Incomplete = quiet, local: the unfinished VALUE editor gets a
+       dashed border instead of the row growing a warning box - a fresh
+       row is work in progress, not an error (validate on blur, never on
+       arrival). AT hears the state through the presenter's errorState /
+       aria wiring, not through this paint. */
+    .cngx-filter-expression-incomplete > input[cngxInput] {
+      border-style: var(--cngx-filter-builder-incomplete-border-style, dashed);
+      border-color: var(
+        --cngx-filter-builder-incomplete-border-color,
+        var(--cngx-color-border, oklch(0.87 0 0))
       );
-      outline-offset: var(--cngx-filter-builder-incomplete-outline-offset, 2px);
     }
   }
 }

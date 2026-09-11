@@ -389,10 +389,11 @@
    * `--cngx-color-danger` cascades through. Group/rail shorthands
    * pin their structural part (1px solid / 2px solid) and inherit
    * the color via the delegating border-color token. */
+  /* --cngx-filter-builder-group-border deliberately has NO delegate: the
+     quiet default is border none; a delegate would resurrect the box. */
   :root {
     --cngx-filter-builder-border-color: var(--cngx-color-border);
     --cngx-filter-builder-action-border: var(--cngx-color-border);
-    --cngx-filter-builder-group-border: 1px solid var(--cngx-color-border);
     --cngx-filter-builder-rail: 2px solid var(--cngx-color-border);
     --cngx-filter-builder-action-remove-fg: var(--cngx-color-danger);
     --cngx-filter-builder-error-fg: var(--cngx-color-danger);
