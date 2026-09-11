@@ -154,3 +154,52 @@ $theme: mat.define-theme((
     expect(css).toMatch(/:where\(\[cngxRipple\], \[cngxRipple\] \*\)\s*\{/);
   });
 });
+
+describe('button-toggle Material bridge', () => {
+  // The leaf chrome (theming/components/cngx-button-toggle.css) reads no
+  // component-level color token - every tone derives from the foundation
+  // knobs, so the bridge routes those (tabs-theme precedent). The spacing
+  // tokens are deliberately absent: SET from --cngx-space-* at the toggle
+  // host, density-bridge territory.
+  const CONSUMED = [
+    '--cngx-color-border',
+    '--cngx-color-on-primary',
+    '--cngx-color-primary',
+    '--cngx-color-surface',
+    '--cngx-color-text',
+  ];
+
+  it('emits only consumed token names (M3)', () => {
+    expect(emittedTokenNames('button-toggle-theme', 'v1')).toEqual(CONSUMED);
+  });
+
+  it('emits a consumed-name subset (M2)', () => {
+    const names = emittedTokenNames('button-toggle-theme', 'v0');
+    expect(names.length).toBeGreaterThan(0);
+    for (const name of names) {
+      expect(CONSUMED).toContain(name);
+    }
+  });
+
+  it('assigns on the group hosts and the toggle button, layered and zero-specificity', () => {
+    const entry = `
+@use '@angular/material' as mat;
+@use 'material/button-toggle-theme' as bridge;
+
+$theme: mat.define-theme((
+  color: (theme-type: light, primary: mat.$azure-palette, tertiary: mat.$blue-palette),
+));
+
+@include bridge.theme($theme);
+`;
+    const css = compileString(entry, { loadPaths: LOAD_PATHS }).css;
+    expect(css).toMatch(/@layer cngx\.components\s*\{/);
+    const block = css.match(
+      /:where\(cngx-button-toggle-group, cngx-button-multi-toggle-group, button\[cngxButtonToggle\]\)\s*\{[^}]*\}/,
+    );
+    expect(block).not.toBeNull();
+    expect(block![0]).toContain('--cngx-color-primary: var(--mat-sys-primary)');
+    // no spacing fork - the padding tokens ride the SET-from-scale rule
+    expect(css).not.toContain('--cngx-button-toggle-');
+  });
+});

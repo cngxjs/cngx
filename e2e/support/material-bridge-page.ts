@@ -28,6 +28,16 @@ const LAYERS_CSS = resolve(REPO_ROOT, 'projects/core/theming/layers.css');
 export type ThemeVersion = 'v1' | 'v0';
 
 /**
+ * Compiles an arbitrary scss entry against the themes lib + node_modules
+ * load paths. For fixture pieces `compileBridge` cannot express - e.g. the
+ * density-bridge, whose `density($theme)` emits bare declarations that need
+ * a caller-supplied host selector.
+ */
+export function compileEntry(scss: string): string {
+  return compileString(scss, { loadPaths: LOAD_PATHS }).css;
+}
+
+/**
  * Compiles `projects/themes/material/<bridge>.scss` against a real Material
  * theme. Entry shape mirrors the name-contract specs
  * (projects/common/interactive/material-bridge-tokens.spec.ts).
@@ -41,15 +51,14 @@ export function compileBridge(bridge: string, themeVersion: ThemeVersion = 'v1')
       : `$primary: mat.m2-define-palette(mat.$m2-indigo-palette);
 $accent: mat.m2-define-palette(mat.$m2-pink-palette);
 $theme: mat.m2-define-light-theme((color: (primary: $primary, accent: $accent)));`;
-  const entry = `
+  return compileEntry(`
 @use '@angular/material' as mat;
 @use 'material/${bridge}' as bridge;
 
 ${theme}
 
 @include bridge.theme($theme);
-`;
-  return compileString(entry, { loadPaths: LOAD_PATHS }).css;
+`);
 }
 
 /**
@@ -129,6 +138,13 @@ export async function renderFixture(page: Page, fixture: BridgeFixture): Promise
   }
   await page.addStyleTag({ content: fixture.bridgeCss });
   await page.addStyleTag({ content: MAT_SYS_STANDINS });
+  // Injection order re-styles already-painted elements, so a component
+  // `transition:` would put every computed read mid-interpolation for its
+  // duration (the button-toggle chrome transitions background/border/color
+  // over 150ms). The tier asserts token landing, not motion - freeze it.
+  await page.addStyleTag({
+    content: '*, *::before, *::after { transition: none !important; animation: none !important; }',
+  });
 }
 
 /**
