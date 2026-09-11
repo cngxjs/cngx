@@ -450,3 +450,19 @@ describe('CngxFilterExpressionRow - compact remove affordance', () => {
     expect(button.textContent?.trim()).toBe(glyph?.textContent?.trim());
   });
 });
+
+describe('CngxFilterExpressionRow - named value editors', () => {
+  it('names the native value input after the field label', () => {
+    const expression: FilterExpression = {
+      type: 'expression',
+      id: 'e-named',
+      field: 'name',
+      operator: 'eq',
+      value: 'foo',
+    };
+    const { fixture } = setup(expression);
+    const input = fixture.debugElement.query(By.css('input[type="text"]'))
+      .nativeElement as HTMLInputElement;
+    expect(input.getAttribute('aria-label')).toBe('Name');
+  });
+});

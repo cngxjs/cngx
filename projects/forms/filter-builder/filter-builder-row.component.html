@@ -35,12 +35,14 @@
 
     @let resolvedEditor = editor();
     @let valueEditorTpl = valueEditorTemplate();
+    @let editorLabel = valueEditorContext()?.fieldDef?.label ?? expression.field;
     @if (valueEditorTpl && valueEditorContext(); as ctx) {
       <ng-container *ngTemplateOutlet="valueEditorTpl; context: ctx"></ng-container>
     } @else if (resolvedEditor === 'native:string') {
       <input
         cngxInput
         type="text"
+        [attr.aria-label]="editorLabel"
         [value]="expression.value ?? ''"
         (input)="handleStringValueInput($event)"
       />
@@ -48,6 +50,7 @@
       <input
         cngxInput
         type="number"
+        [attr.aria-label]="editorLabel"
         [value]="expression.value ?? ''"
         (input)="handleNumberValueInput($event)"
       />
@@ -55,12 +58,14 @@
       <input
         cngxInput
         type="date"
+        [attr.aria-label]="editorLabel"
         [value]="expression.value ?? ''"
         (input)="handleDateValueInput($event)"
         (change)="handleDateValueInput($event)"
       />
     } @else if (resolvedEditor === 'native:boolean') {
       <cngx-toggle
+        [attr.aria-label]="editorLabel"
         [value]="expression.value === true"
         (valueChange)="handleBooleanValueChange($event)"
       ></cngx-toggle>

@@ -275,3 +275,14 @@ describe('CngxFilterRow - compact remove affordance', () => {
     expect(button.textContent?.trim()).toBe(glyph?.textContent?.trim());
   });
 });
+
+describe('CngxFilterRow - named value editors', () => {
+  it('names the native value input after the field label', () => {
+    const fixture = TestBed.createComponent(StandaloneHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const input = fixture.debugElement.query(By.css('input[type="text"]'))
+      .nativeElement as HTMLInputElement;
+    expect(input.getAttribute('aria-label')).toBe('Name');
+  });
+});
