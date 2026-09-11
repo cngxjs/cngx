@@ -1,6 +1,8 @@
 import { computed, InjectionToken, type Signal, type TemplateRef } from '@angular/core';
 import { arrayEqual } from '@cngx/utils';
 
+import { isExpressionValueEmpty } from './filter-builder-internal';
+import { resolveOperatorDef } from './filter-builder-operators';
 import type { CngxFilterBuilderRemoveButtonContext } from './filter-builder-slots';
 import type { CngxFilterBuilderTemplateRegistry } from './filter-builder-template-registry';
 import type { CngxFilterBuilderValueEditorContext } from './filter-builder-value-editor.slot';
@@ -216,7 +218,11 @@ export function createFilterRowController(
   }
 
   function operatorLabel(operator: string): string {
-    return deps.config.i18n.operators[operator] ?? operator;
+    return (
+      deps.config.i18n.operators[operator] ??
+      resolveOperatorDef(operator, deps.config.operators)?.label ??
+      operator
+    );
   }
 
   function writeValue(next: unknown): void {
@@ -260,7 +266,11 @@ export function createFilterRowController(
       if (!expression) {
         return true;
       }
-      return !expression.field || !expression.operator;
+      return (
+        !expression.field ||
+        !expression.operator ||
+        isExpressionValueEmpty(expression, deps.config.operators)
+      );
     }),
     ariaLabel: computed<string>(() => {
       const expression = deps.node();

@@ -255,3 +255,58 @@ describe('createFilterRowController - derivations', () => {
     expect(controller.ariaLabel()).toBe('Filter: Name eq');
   });
 });
+
+describe('createFilterRowController - operator registry integration', () => {
+  it('resolves labels through the def tier between i18n and the raw key', () => {
+    const node = signal<FilterExpression | null>(null);
+    const sink = createSink();
+    const controller = createFilterRowController({
+      node,
+      fields: signal<readonly FilterFieldDef[]>(FIELDS),
+      templates: signal(null),
+      config: {
+        ...CNGX_FILTER_BUILDER_DEFAULTS,
+        operators: new Map([
+          ...CNGX_FILTER_BUILDER_DEFAULTS.operators,
+          ['lengthGt', { label: 'Longer than', evaluate: () => false }],
+        ]),
+      },
+      editors: EDITORS,
+      sink,
+    });
+
+    expect(controller.operatorLabel('eq')).toBe('Equals');
+    expect(controller.operatorLabel('lengthGt')).toBe('Longer than');
+    expect(controller.operatorLabel('ghostOp')).toBe('ghostOp');
+  });
+
+  it('marks an empty-value expression incomplete unless its operator is valueless', () => {
+    const { controller, node } = createHarness(createFilterExpression('name', 'eq'));
+
+    expect(controller.isIncomplete()).toBe(true);
+
+    node.set(createFilterExpression('name', 'isEmpty'));
+    expect(controller.isIncomplete()).toBe(false);
+  });
+
+  it('honours a registered valueless operator in the incomplete derivation', () => {
+    const node = signal<FilterExpression | null>(createFilterExpression('name', 'isBlankish'));
+    const sink = createSink();
+    const controller = createFilterRowController({
+      node,
+      fields: signal<readonly FilterFieldDef[]>(FIELDS),
+      templates: signal(null),
+      config: {
+        ...CNGX_FILTER_BUILDER_DEFAULTS,
+        operators: new Map([
+          ...CNGX_FILTER_BUILDER_DEFAULTS.operators,
+          ['isBlankish', { valueless: true, evaluate: () => false }],
+        ]),
+      },
+      editors: EDITORS,
+      sink,
+    });
+
+    expect(controller.isIncomplete()).toBe(false);
+  });
+});

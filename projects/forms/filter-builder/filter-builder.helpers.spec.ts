@@ -1,5 +1,9 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
+import {
+  CNGX_FILTER_BUILTIN_OPERATOR_DEFS,
+  type CngxFilterOperatorDef,
+} from './filter-builder-operators';
 import type { FilterExpression, FilterFieldDef, FilterGroup } from './filter-builder.types';
 import {
   createEmptyFilterRoot,
@@ -369,5 +373,76 @@ describe('evaluateExpression - widened no-op guard (null / undefined / empty str
   it('keeps isEmpty active for an empty-string expression value', () => {
     expect(evaluateExpression(createFilterExpression('name', 'isEmpty', ''), item, FIELD_NAME)).toBe(false);
     expect(evaluateExpression(createFilterExpression('name', 'isNotEmpty', ''), item, FIELD_NAME)).toBe(true);
+  });
+});
+
+describe('evaluateExpression - operator registry routing', () => {
+  const item = { name: 'Ada Lovelace', age: 36 };
+
+  const registryWith = (
+    key: string,
+    def: CngxFilterOperatorDef,
+  ): ReadonlyMap<string, CngxFilterOperatorDef> =>
+    new Map([...CNGX_FILTER_BUILTIN_OPERATOR_DEFS, [key, def]]);
+
+  it('evaluates a consumer-registered operator through options.operators', () => {
+    const operators = registryWith('lengthGt', {
+      evaluate: (itemValue, exprValue) =>
+        typeof itemValue === 'string' && typeof exprValue === 'number'
+          ? itemValue.length > exprValue
+          : false,
+    });
+
+    const expr = createFilterExpression('name', 'lengthGt', 5);
+    expect(evaluateExpression(expr, item, FIELD_NAME, { operators })).toBe(true);
+    expect(evaluateExpression(expr, { name: 'Ada' }, FIELD_NAME, { operators })).toBe(false);
+  });
+
+  it('exempts a consumer-registered valueless operator from the empty-value no-op guard', () => {
+    const operators = registryWith('isBlankish', {
+      valueless: true,
+      evaluate: (itemValue) => typeof itemValue === 'string' && itemValue.trim() === '',
+    });
+
+    const expr = createFilterExpression('name', 'isBlankish');
+    expect(evaluateExpression(expr, { name: '   ' }, FIELD_NAME, { operators })).toBe(true);
+    expect(evaluateExpression(expr, item, FIELD_NAME, { operators })).toBe(false);
+  });
+
+  it('warns exactly once per unknown operator key and evaluates false', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    try {
+      const expr = createFilterExpression('name', 'unknownOpRegistryRoutingSpec', 'x');
+      expect(evaluateExpression(expr, item, FIELD_NAME)).toBe(false);
+      expect(evaluateExpression(expr, item, FIELD_NAME)).toBe(false);
+      const matching = warn.mock.calls.filter((c) =>
+        String(c[0]).includes('unknownOpRegistryRoutingSpec'),
+      );
+      expect(matching).toHaveLength(1);
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('keeps the no-options default path identical to the builtin registry', () => {
+    const expr = createFilterExpression('name', 'contains', 'Love');
+    expect(evaluateExpression(expr, item, FIELD_NAME)).toBe(
+      evaluateExpression(expr, item, FIELD_NAME, {
+        operators: CNGX_FILTER_BUILTIN_OPERATOR_DEFS,
+      }),
+    );
+  });
+
+  it('routes toFilterPredicate through the same registry options', () => {
+    const operators = registryWith('lengthGt', {
+      evaluate: (itemValue, exprValue) =>
+        typeof itemValue === 'string' && typeof exprValue === 'number'
+          ? itemValue.length > exprValue
+          : false,
+    });
+    const tree = createFilterGroup('and', [createFilterExpression('name', 'lengthGt', 5)]);
+
+    expect(toFilterPredicate(tree, FIELDS, { operators })!(item)).toBe(true);
+    expect(toFilterPredicate(tree, FIELDS, { operators })!({ name: 'Ada' })).toBe(false);
   });
 });

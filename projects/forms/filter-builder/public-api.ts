@@ -46,6 +46,7 @@ export {
   withLogicOptions,
   withMaxNestingDepth,
   withNegation,
+  withOperators,
   withSkeletonCount,
   withTemplates,
   type CngxFilterBuilderAnnouncementFormatters,
@@ -59,6 +60,11 @@ export {
   type CngxFilterNativeEditor,
 } from './filter-builder.config';
 export { CNGX_FILTER_EDITORS, injectFilterEditors } from './filter-builder.tokens';
+export {
+  CNGX_FILTER_BUILTIN_OPERATOR_DEFS,
+  type CngxFilterOperatorContext,
+  type CngxFilterOperatorDef,
+} from './filter-builder-operators';
 export type { CngxFilterEditorComponent } from './filter-builder-editor.contract';
 export {
   CngxFilterBuilderValueEditor,
@@ -108,6 +114,7 @@ export {
   ensureFilterTreeIds,
   evaluateExpression,
   toFilterPredicate,
+  type CngxFilterEvaluationOptions,
   type CreateFilterGroupOptions,
 } from './filter-builder.helpers';
 // CngxFilterBuilderHost interface and CNGX_FILTER_BUILDER_HOST token are both
