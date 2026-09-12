@@ -572,13 +572,15 @@
     }
 
     .cngx-filter-builder__logic-select {
-      /* Ghost weight for the 3-letter mode picker: content-sized, quiet
-         border until pointer/keyboard intent. The full-width 10rem
-         default select is the loudest element in the frame otherwise. */
-      --cngx-select-min-width: 5rem;
-      --cngx-select-border: 1px solid transparent;
+      /* Quiet mode picker, reference-class shape: the label and chevron
+         hug as ONE compact pill (fit-content kills the trigger's
+         space-between spread), border transparent until intent. A
+         min-width here strands the caret at the far edge of dead space. */
+      --cngx-select-min-width: 0px;
+      inline-size: fit-content;
       color: var(--cngx-filter-builder-logic-fg, var(--cngx-color-text-muted, oklch(0.5 0.01 250)));
       font-weight: 500;
+      --cngx-select-border: 1px solid transparent;
     }
 
     .cngx-filter-builder__logic-select:hover,

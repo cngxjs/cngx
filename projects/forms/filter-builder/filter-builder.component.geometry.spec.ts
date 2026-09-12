@@ -176,6 +176,18 @@ describe('CngxFilterBuilder geometry', () => {
     expect(computedValue(row, 'outline-style')).toBe('none');
   });
 
+  it('sizes the logic picker to its content so the chevron hugs the label', () => {
+    const host = mountRaster();
+    const logic = query(host, '.cngx-filter-builder__logic-select');
+    const label = query(logic, '.cngx-select__label');
+    const caret = query(logic, '.cngx-select__caret');
+    // fit-content pill: no dead space between label and chevron beyond the
+    // trigger's own gap (8px) - a min-width would strand the caret.
+    const gap = caret.getBoundingClientRect().x - label.getBoundingClientRect().right;
+    expect(gap).toBeLessThanOrEqual(12);
+    expect(logic.getBoundingClientRect().width).toBeLessThan(96);
+  });
+
   it('keeps the caret glyph at label size inside the builder', () => {
     const host = mountRaster();
     const trigger = query(host, '.cngx-filter-builder__field-select .cngx-select__trigger');
