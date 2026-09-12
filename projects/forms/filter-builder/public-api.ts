@@ -25,16 +25,29 @@ export { CngxFilterExpression } from './filter-builder-expression.directive';
 export { CngxFilterExpressionRow } from './filter-builder-expression-row.component';
 export { CngxFilterRow } from './filter-builder-row.component';
 export {
+  CNGX_FILTER_ROW_CONTROLLER_FACTORY,
+  createFilterRowController,
+  type CngxFilterRowController,
+  type CngxFilterRowControllerDeps,
+  type CngxFilterRowControllerFactory,
+  type CngxFilterRowFieldChangePlan,
+  type CngxFilterRowOption,
+  type CngxFilterRowRemoveButtonContext,
+  type CngxFilterRowWriteSink,
+} from './filter-builder-row-controller';
+export {
   CNGX_FILTER_BUILDER_CONFIG,
   injectFilterBuilderConfig,
   isNativeEditor,
   provideFilterBuilderConfig,
   provideFilterBuilderConfigAt,
+  withCaseInsensitiveStrings,
   withDefaultOperators,
   withFilterBuilderI18n,
   withLogicOptions,
   withMaxNestingDepth,
   withNegation,
+  withOperators,
   withSkeletonCount,
   withTemplates,
   type CngxFilterBuilderAnnouncementFormatters,
@@ -48,7 +61,13 @@ export {
   type CngxFilterNativeEditor,
 } from './filter-builder.config';
 export { CNGX_FILTER_EDITORS, injectFilterEditors } from './filter-builder.tokens';
+export {
+  CNGX_FILTER_BUILTIN_OPERATOR_DEFS,
+  type CngxFilterOperatorContext,
+  type CngxFilterOperatorDef,
+} from './filter-builder-operators';
 export type { CngxFilterEditorComponent } from './filter-builder-editor.contract';
+export { CngxFilterValueEditorHost } from './filter-builder-value-editor-host.directive';
 export {
   CngxFilterBuilderValueEditor,
   type CngxFilterBuilderValueEditorContext,
@@ -97,6 +116,7 @@ export {
   ensureFilterTreeIds,
   evaluateExpression,
   toFilterPredicate,
+  type CngxFilterEvaluationOptions,
   type CreateFilterGroupOptions,
 } from './filter-builder.helpers';
 // CngxFilterBuilderHost interface and CNGX_FILTER_BUILDER_HOST token are both

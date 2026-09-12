@@ -8,6 +8,10 @@ import {
 } from '@angular/core';
 
 import type { CngxFilterEditorComponent } from './filter-builder-editor.contract';
+import {
+  CNGX_FILTER_BUILTIN_OPERATOR_DEFS,
+  type CngxFilterOperatorDef,
+} from './filter-builder-operators';
 import type { CngxFilterBuilderTemplates } from './filter-builder-slots';
 import { DEFAULT_OPERATORS } from './filter-builder.types';
 import type { FilterEditorType, FilterLogic } from './filter-builder.types';
@@ -93,6 +97,8 @@ export interface CngxFilterBuilderI18n {
   readonly and: string;
   readonly or: string;
   readonly xor: string;
+  /** Accessible name of the per-group logic radiogroup (segmented AND/OR/XOR control). */
+  readonly logicLabel: string;
   readonly negate: string;
   readonly emptyState: string;
   readonly operators: Readonly<Record<string, string>>;
@@ -112,6 +118,8 @@ export interface CngxFilterBuilderConfig {
   readonly i18n: CngxFilterBuilderI18n;
   readonly maxNestingDepth: number;
   readonly defaultOperators: Readonly<Record<FilterEditorType, readonly string[]>>;
+  readonly operators: ReadonlyMap<string, CngxFilterOperatorDef>;
+  readonly caseInsensitive: boolean;
   readonly logicOptions: readonly FilterLogic[];
   readonly negationEnabled: boolean;
   readonly skeletonCount: number;
@@ -126,6 +134,7 @@ const DEFAULT_I18N: CngxFilterBuilderI18n = Object.freeze({
   and: 'AND',
   or: 'OR',
   xor: 'XOR',
+  logicLabel: 'Combine filters with',
   negate: 'Negate',
   emptyState: 'No filters defined',
   operators: Object.freeze({
@@ -140,6 +149,9 @@ const DEFAULT_I18N: CngxFilterBuilderI18n = Object.freeze({
     gte: 'Greater than or equal',
     lt: 'Less than',
     lte: 'Less than or equal',
+    between: 'Between',
+    in: 'In',
+    notIn: 'Not in',
   }),
   groupLabel: ({ logic, negated, isRoot }: CngxFilterBuilderGroupLabelContext): string => {
     const upper = logic.toUpperCase();
@@ -182,6 +194,8 @@ export const CNGX_FILTER_BUILDER_DEFAULTS: CngxFilterBuilderConfig = Object.free
   i18n: DEFAULT_I18N,
   maxNestingDepth: 8,
   defaultOperators: DEFAULT_OPERATORS,
+  operators: CNGX_FILTER_BUILTIN_OPERATOR_DEFS,
+  caseInsensitive: false,
   logicOptions: Object.freeze(['and', 'or']) as readonly FilterLogic[],
   negationEnabled: false,
   skeletonCount: 3,
@@ -195,6 +209,8 @@ export const CNGX_FILTER_BUILDER_DEFAULTS: CngxFilterBuilderConfig = Object.free
  * - i18n bundle - `withFilterBuilderI18n`
  * - max nesting depth - `withMaxNestingDepth` (default 8)
  * - operator lists per editor type - `withDefaultOperators`
+ * - operator definitions (evaluate + label + valueless) - `withOperators` (default: the 14 builtins)
+ * - case-insensitive substring matching - `withCaseInsensitiveStrings` (default off)
  * - logic options (the and/or/xor picker) - `withLogicOptions` (default `['and', 'or']`)
  * - negation toggle - `withNegation` (default off)
  * - skeleton row count - `withSkeletonCount` (default 3)
@@ -214,7 +230,7 @@ export const CNGX_FILTER_BUILDER_DEFAULTS: CngxFilterBuilderConfig = Object.free
  * @category forms/filter-builder/config
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder.config.ts
  * @since 0.1.0
- * @relatedTo provideFilterBuilderConfig, provideFilterBuilderConfigAt, withTemplates, withFilterBuilderI18n, withMaxNestingDepth, withDefaultOperators, withLogicOptions, withNegation, withSkeletonCount, CNGX_FILTER_EDITORS
+ * @relatedTo provideFilterBuilderConfig, provideFilterBuilderConfigAt, withTemplates, withFilterBuilderI18n, withMaxNestingDepth, withDefaultOperators, withOperators, withCaseInsensitiveStrings, withLogicOptions, withNegation, withSkeletonCount, CNGX_FILTER_EDITORS
  */
 export const CNGX_FILTER_BUILDER_CONFIG = new InjectionToken<CngxFilterBuilderConfig>(
   'CngxFilterBuilderConfig',
@@ -280,6 +296,43 @@ export function withDefaultOperators(
     ...config,
     defaultOperators: { ...config.defaultOperators, ...operators },
   }));
+}
+
+/**
+ * Register operator definitions - the one surface where an operator's
+ * evaluation, its default picker label, and its `valueless` flag land
+ * together. Merges over the builtin map (and over earlier `withOperators`
+ * calls), so builtins stay evaluable and individual keys can be
+ * overridden. Label resolution per row is
+ * `i18n.operators[key] ?? def.label ?? key`.
+ *
+ * Registration alone adds no picker entry: expose the key per field via
+ * `FilterFieldDef.operators` or per editor type via
+ * `withDefaultOperators` once an editor can serve it.
+ *
+ * @category forms/filter-builder/config
+ */
+export function withOperators(
+  defs: Readonly<Record<string, CngxFilterOperatorDef>>,
+): CngxFilterBuilderConfigFeature {
+  return feature((config) => ({
+    ...config,
+    operators: new Map([...config.operators, ...Object.entries(defs)]),
+  }));
+}
+
+/**
+ * Fold both sides of the builtin substring trio (`contains` /
+ * `startsWith` / `endsWith`) via `toLowerCase()` at evaluation time.
+ * Off by default - the trio is case-SENSITIVE unless enabled. `eq` /
+ * `neq` keep `Object.is` identity semantics regardless; custom operator
+ * definitions receive the flag through their evaluation context and
+ * decide themselves.
+ *
+ * @category forms/filter-builder/config
+ */
+export function withCaseInsensitiveStrings(enabled: boolean): CngxFilterBuilderConfigFeature {
+  return feature((config) => ({ ...config, caseInsensitive: enabled }));
 }
 
 /**

@@ -68,20 +68,21 @@
   @if (templates().logicToggle(); as tpl) {
     <ng-container *ngTemplateOutlet="tpl; context: logicToggleContext(group, path)"></ng-container>
   } @else {
-    <cngx-select
-      class="cngx-filter-builder__logic-select"
-      [options]="logicSelectOptions()"
-      [value]="group.logic"
-      (valueChange)="setLogic(path, $event)"
-    ></cngx-select>
+    <button
+      type="button"
+      class="cngx-filter-builder__logic-joiner"
+      [attr.aria-label]="config.i18n.logicLabel"
+      (click)="cycleLogic(path, group.logic)"
+    >
+      {{ logicJoinerLabel(group.logic) }}
+    </button>
   }
 </ng-template>
 
 <ng-template #groupTpl let-group let-path="path">
   <div class="cngx-filter-builder__group" [cngxFilterGroup]="path">
-    <div class="cngx-filter-builder__logic-toggle">
-      <ng-container *ngTemplateOutlet="logicToggleTpl; context: { group, path }"></ng-container>
-      @if (negationEnabled) {
+    @if (negationEnabled) {
+      <div class="cngx-filter-builder__logic-toggle">
         @if (templates().negationToggle(); as negTpl) {
           <ng-container
             *ngTemplateOutlet="negTpl; context: negationToggleContext(group, path)"
@@ -96,11 +97,14 @@
             <span aria-hidden="true">{{ glyphs.negate }}</span> {{ config.i18n.negate }}
           </label>
         }
-      }
-    </div>
+      </div>
+    }
 
     @for (child of group.filters; track child.id; let i = $index) {
       @let cp = childPath(path, child, i);
+      @if (i > 0) {
+        <ng-container *ngTemplateOutlet="logicToggleTpl; context: { group, path }"></ng-container>
+      }
       @switch (child.type) {
         @case ('group') {
           @if (templates().groupTemplate(); as customGroupTpl) {

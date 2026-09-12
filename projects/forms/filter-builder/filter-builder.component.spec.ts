@@ -437,7 +437,10 @@ describe('CngxFilterBuilder - remove button slot', () => {
 })
 class LogicToggleSlotHost {
   readonly fields = signal<readonly FilterFieldDef[]>(FIELDS);
-  value: FilterGroup = createFilterGroup('or', [createFilterExpression('name', 'eq', 'x')]);
+  value: FilterGroup = createFilterGroup('or', [
+    createFilterExpression('name', 'eq', 'x'),
+    createFilterExpression('name', 'eq', 'y'),
+  ]);
 }
 
 @Component({
@@ -468,6 +471,43 @@ describe('CngxFilterBuilder - negation toggle slot', () => {
     expect(custom).toBeTruthy();
     expect(custom?.getAttribute('data-negated')).toBe('true');
     expect(custom?.textContent).toContain('Negate');
+  });
+});
+
+describe('CngxFilterBuilder - default logic joiner chips', () => {
+  it('renders one labelled joiner between siblings and cycles logic on click', () => {
+    const initial = createFilterGroup('and', [
+      createFilterExpression('name', 'eq', 'x'),
+      createFilterExpression('name', 'eq', 'y'),
+    ]);
+    const { fixture, hostEl, presenter } = basicSetup(initial);
+
+    const joiners = Array.from(
+      hostEl.querySelectorAll('.cngx-filter-builder__logic-joiner'),
+    ) as HTMLButtonElement[];
+    expect(joiners).toHaveLength(1);
+    expect(joiners[0].getAttribute('aria-label')).toBe('Combine filters with');
+    expect(joiners[0].textContent?.trim()).toBe('AND');
+
+    joiners[0].click();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    expect(presenter.tree().logic).toBe('or');
+    expect(presenter.announcement()).toBe('Logic changed to OR');
+    expect(joiners[0].textContent?.trim()).toBe('OR');
+
+    // Cycle wraps back to the first configured option.
+    joiners[0].click();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(presenter.tree().logic).toBe('and');
+  });
+
+  it('renders no joiner for a single-child group', () => {
+    const initial = createFilterGroup('and', [createFilterExpression('name', 'eq', 'x')]);
+    const { hostEl } = basicSetup(initial);
+    expect(hostEl.querySelectorAll('.cngx-filter-builder__logic-joiner')).toHaveLength(0);
   });
 });
 

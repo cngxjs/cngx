@@ -23,12 +23,14 @@
 
     @let resolvedEditor = editor();
     @let valueEditorTpl = valueEditorTemplate();
+    @let editorLabel = valueEditorContext()?.fieldDef?.label ?? expression.field;
     @if (valueEditorTpl && valueEditorContext(); as ctx) {
       <ng-container *ngTemplateOutlet="valueEditorTpl; context: ctx"></ng-container>
     } @else if (resolvedEditor === 'native:string') {
       <input
         cngxInput
         type="text"
+        [attr.aria-label]="editorLabel"
         [value]="expression.value ?? ''"
         (input)="handleStringValueInput($event)"
       />
@@ -36,6 +38,7 @@
       <input
         cngxInput
         type="number"
+        [attr.aria-label]="editorLabel"
         [value]="expression.value ?? ''"
         (input)="handleNumberValueInput($event)"
       />
@@ -43,17 +46,25 @@
       <input
         cngxInput
         type="date"
+        [attr.aria-label]="editorLabel"
         [value]="expression.value ?? ''"
         (input)="handleDateValueInput($event)"
         (change)="handleDateValueInput($event)"
       />
     } @else if (resolvedEditor === 'native:boolean') {
       <cngx-toggle
+        [attr.aria-label]="editorLabel"
         [value]="expression.value === true"
         (valueChange)="handleBooleanValueChange($event)"
       ></cngx-toggle>
-    } @else if (resolvedEditor && !isNativeEditor(resolvedEditor)) {
-      <ng-container *ngComponentOutlet="resolvedEditor"></ng-container>
+    } @else if (resolvedEditor && !isNativeEditor(resolvedEditor) && valueEditorContext(); as ctx) {
+      <ng-container
+        [cngxFilterValueEditorHost]="resolvedEditor"
+        [value]="ctx.value"
+        [fieldDef]="ctx.fieldDef"
+        [expression]="ctx.expression"
+        [setValue]="ctx.setValue"
+      ></ng-container>
     }
 
     @if (removeButtonTemplate(); as removeTpl) {
@@ -62,10 +73,10 @@
       <button
         type="button"
         class="cngx-filter-builder__action-button cngx-filter-builder__action-button--remove"
+        [attr.aria-label]="config.i18n.removeFilter"
         (click)="handleRemove()"
       >
         <span aria-hidden="true" class="cngx-filter-builder__action-glyph">{{ glyphs.remove }}</span>
-        {{ config.i18n.removeFilter }}
       </button>
     }
   </div>

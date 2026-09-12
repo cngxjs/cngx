@@ -259,3 +259,30 @@ describe('CngxFilterRow', () => {
     expect(fixture.componentInstance.expression()).toBeNull();
   });
 });
+
+describe('CngxFilterRow - compact remove affordance', () => {
+  it('renders the default remove button icon-only with the i18n accessible name', () => {
+    const fixture = TestBed.createComponent(StandaloneHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const button = fixture.debugElement.query(
+      By.css('.cngx-filter-builder__action-button--remove'),
+    ).nativeElement as HTMLButtonElement;
+
+    expect(button.getAttribute('aria-label')).toBe('Remove filter');
+    const glyph = button.querySelector('.cngx-filter-builder__action-glyph');
+    expect(glyph?.getAttribute('aria-hidden')).toBe('true');
+    expect(button.textContent?.trim()).toBe(glyph?.textContent?.trim());
+  });
+});
+
+describe('CngxFilterRow - named value editors', () => {
+  it('names the native value input after the field label', () => {
+    const fixture = TestBed.createComponent(StandaloneHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const input = fixture.debugElement.query(By.css('input[type="text"]'))
+      .nativeElement as HTMLInputElement;
+    expect(input.getAttribute('aria-label')).toBe('Name');
+  });
+});

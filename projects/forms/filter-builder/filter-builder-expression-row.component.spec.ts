@@ -24,6 +24,7 @@ interface MockHost extends CngxFilterBuilderHost {
   setFieldSpy: ReturnType<typeof vi.fn>;
   setOperatorSpy: ReturnType<typeof vi.fn>;
   setValueSpy: ReturnType<typeof vi.fn>;
+  applyFieldChangeSpy: ReturnType<typeof vi.fn>;
   removeNodeSpy: ReturnType<typeof vi.fn>;
 }
 
@@ -54,6 +55,7 @@ function buildHost(initial: FilterGroup, fieldList: readonly FilterFieldDef[]): 
   const setFieldSpy = vi.fn();
   const setOperatorSpy = vi.fn();
   const setValueSpy = vi.fn();
+  const applyFieldChangeSpy = vi.fn();
   const removeNodeSpy = vi.fn();
 
   return {
@@ -70,11 +72,13 @@ function buildHost(initial: FilterGroup, fieldList: readonly FilterFieldDef[]): 
     setField: setFieldSpy,
     setOperator: setOperatorSpy,
     setValue: setValueSpy,
+    applyFieldChange: applyFieldChangeSpy,
     getNodeAtPath: walk,
     getFieldDef: (key) => fieldList.find((d) => d.key === key),
     setFieldSpy,
     setOperatorSpy,
     setValueSpy,
+    applyFieldChangeSpy,
     removeNodeSpy,
   };
 }
@@ -130,7 +134,7 @@ describe('CngxFilterExpressionRow - embedded mode', () => {
     expect(operatorSelect.options().length).toBeGreaterThan(0);
   });
 
-  it('emits setField via host when CngxSelect valueChange fires', () => {
+  it('emits one atomic applyFieldChange via host when CngxSelect valueChange fires', () => {
     const expression: FilterExpression = {
       type: 'expression',
       id: 'e1',
@@ -142,7 +146,12 @@ describe('CngxFilterExpressionRow - embedded mode', () => {
     const fieldSelect = fixture.debugElement.queryAll(By.directive(CngxSelect))[0]
       .componentInstance as CngxSelect<string>;
     fieldSelect.value.set('age');
-    expect(host.setFieldSpy).toHaveBeenCalledWith([0], 'age');
+    expect(host.applyFieldChangeSpy).toHaveBeenCalledExactlyOnceWith([0], {
+      field: 'age',
+      operator: 'eq',
+      resetValue: false,
+    });
+    expect(host.setFieldSpy).not.toHaveBeenCalled();
   });
 
   it('keeps the carry-over operator when the new field still supports it', () => {
@@ -157,8 +166,12 @@ describe('CngxFilterExpressionRow - embedded mode', () => {
     const fieldSelect = fixture.debugElement.queryAll(By.directive(CngxSelect))[0]
       .componentInstance as CngxSelect<string>;
     fieldSelect.value.set('age');
-    // 'eq' is in number's operator set, so the operator/value stay.
-    expect(host.setFieldSpy).toHaveBeenCalledWith([0], 'age');
+    // 'eq' is in number's operator set, so the plan keeps operator + value.
+    expect(host.applyFieldChangeSpy).toHaveBeenCalledExactlyOnceWith([0], {
+      field: 'age',
+      operator: 'eq',
+      resetValue: false,
+    });
     expect(host.setOperatorSpy).not.toHaveBeenCalled();
     expect(host.setValueSpy).not.toHaveBeenCalled();
   });
@@ -175,10 +188,15 @@ describe('CngxFilterExpressionRow - embedded mode', () => {
     const fieldSelect = fixture.debugElement.queryAll(By.directive(CngxSelect))[0]
       .componentInstance as CngxSelect<string>;
     fieldSelect.value.set('name');
-    // 'lt' is not in string's operator set → reset to string default + clear value.
-    expect(host.setFieldSpy).toHaveBeenCalledWith([0], 'name');
-    expect(host.setOperatorSpy).toHaveBeenCalledWith([0], 'contains');
-    expect(host.setValueSpy).toHaveBeenCalledWith([0], undefined);
+    // 'lt' is not in string's operator set: the plan resets to the string
+    // default and clears the value - still exactly ONE host mutation.
+    expect(host.applyFieldChangeSpy).toHaveBeenCalledExactlyOnceWith([0], {
+      field: 'name',
+      operator: 'contains',
+      resetValue: true,
+    });
+    expect(host.setOperatorSpy).not.toHaveBeenCalled();
+    expect(host.setValueSpy).not.toHaveBeenCalled();
   });
 
   it('emits setOperator via host when CngxSelect valueChange fires', () => {
@@ -408,5 +426,43 @@ describe('CngxFilterExpressionRow - embedded mode', () => {
     fixture.detectChanges();
     TestBed.flushEffects();
     expect(fixture.debugElement.query(By.css('.cngx-filter-builder__expression'))).toBeNull();
+  });
+});
+
+describe('CngxFilterExpressionRow - compact remove affordance', () => {
+  it('renders the default remove button icon-only with the i18n accessible name', () => {
+    const expression: FilterExpression = {
+      type: 'expression',
+      id: 'e-compact',
+      field: 'name',
+      operator: 'eq',
+      value: 'foo',
+    };
+    const { fixture } = setup(expression);
+    const button = fixture.debugElement.query(
+      By.css('.cngx-filter-builder__action-button--remove'),
+    ).nativeElement as HTMLButtonElement;
+
+    expect(button.getAttribute('aria-label')).toBe('Remove filter');
+    // Icon-only: the only rendered text is the aria-hidden glyph.
+    const glyph = button.querySelector('.cngx-filter-builder__action-glyph');
+    expect(glyph?.getAttribute('aria-hidden')).toBe('true');
+    expect(button.textContent?.trim()).toBe(glyph?.textContent?.trim());
+  });
+});
+
+describe('CngxFilterExpressionRow - named value editors', () => {
+  it('names the native value input after the field label', () => {
+    const expression: FilterExpression = {
+      type: 'expression',
+      id: 'e-named',
+      field: 'name',
+      operator: 'eq',
+      value: 'foo',
+    };
+    const { fixture } = setup(expression);
+    const input = fixture.debugElement.query(By.css('input[type="text"]'))
+      .nativeElement as HTMLInputElement;
+    expect(input.getAttribute('aria-label')).toBe('Name');
   });
 });
