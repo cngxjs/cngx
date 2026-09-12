@@ -9,7 +9,7 @@ import {
   input,
   untracked,
 } from '@angular/core';
-import { CngxSelect } from '@cngx/forms/select';
+import { CngxButtonToggle, CngxButtonToggleGroup } from '@cngx/common/interactive';
 
 import { injectFilterBuilderConfig } from './filter-builder.config';
 import { CNGX_FILTER_BUILDER_HOST } from './filter-builder-host.token';
@@ -61,7 +61,7 @@ const EMPTY_OPERATORS: readonly string[] = Object.freeze([]) as readonly string[
   selector: 'cngx-filter-builder-body',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgTemplateOutlet, CngxFilterGroup, CngxFilterExpressionRow, CngxSelect],
+  imports: [NgTemplateOutlet, CngxFilterGroup, CngxFilterExpressionRow, CngxButtonToggleGroup, CngxButtonToggle],
   templateUrl: './filter-builder-body.component.html',
 })
 export class CngxFilterBuilderBody {

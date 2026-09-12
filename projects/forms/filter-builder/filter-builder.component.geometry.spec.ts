@@ -176,16 +176,16 @@ describe('CngxFilterBuilder geometry', () => {
     expect(computedValue(row, 'outline-style')).toBe('none');
   });
 
-  it('sizes the logic picker to its content so the chevron hugs the label', () => {
+  it('lays the segmented logic toggle out as one compact adjacent run', () => {
     const host = mountRaster();
-    const logic = query(host, '.cngx-filter-builder__logic-select');
-    const label = query(logic, '.cngx-select__label');
-    const caret = query(logic, '.cngx-select__caret');
-    // fit-content pill: no dead space between label and chevron beyond the
-    // trigger's own gap (8px) - a min-width would strand the caret.
-    const gap = caret.getBoundingClientRect().x - label.getBoundingClientRect().right;
-    expect(gap).toBeLessThanOrEqual(12);
-    expect(logic.getBoundingClientRect().width).toBeLessThan(96);
+    const group = query(host, '.cngx-filter-builder__logic-group');
+    const buttons = Array.from(group.querySelectorAll('button'));
+    expect(buttons.length).toBeGreaterThanOrEqual(2);
+    // Directly clickable segments sit flush in one row, same height.
+    const rects = buttons.map((b) => b.getBoundingClientRect());
+    expect(Math.round(rects[1].x)).toBeGreaterThanOrEqual(Math.round(rects[0].right) - 1);
+    expect(Math.round(rects[1].height)).toBe(Math.round(rects[0].height));
+    expect(group.getBoundingClientRect().width).toBeLessThan(160);
   });
 
   it('keeps the caret glyph at label size inside the builder', () => {

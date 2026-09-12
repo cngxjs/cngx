@@ -68,12 +68,16 @@
   @if (templates().logicToggle(); as tpl) {
     <ng-container *ngTemplateOutlet="tpl; context: logicToggleContext(group, path)"></ng-container>
   } @else {
-    <cngx-select
-      class="cngx-filter-builder__logic-select"
-      [options]="logicSelectOptions()"
+    <cngx-button-toggle-group
+      class="cngx-filter-builder__logic-group"
+      [label]="config.i18n.logicLabel"
       [value]="group.logic"
       (valueChange)="setLogic(path, $event)"
-    ></cngx-select>
+    >
+      @for (option of logicSelectOptions(); track option.value) {
+        <button type="button" cngxButtonToggle [value]="option.value">{{ option.label }}</button>
+      }
+    </cngx-button-toggle-group>
   }
 </ng-template>
 

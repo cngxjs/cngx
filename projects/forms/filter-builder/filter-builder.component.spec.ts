@@ -471,6 +471,27 @@ describe('CngxFilterBuilder - negation toggle slot', () => {
   });
 });
 
+describe('CngxFilterBuilder - default segmented logic toggle', () => {
+  it('renders a labelled radiogroup and switches logic on a direct click', () => {
+    const initial = createFilterGroup('and', [createFilterExpression('name', 'eq', 'x')]);
+    const { fixture, hostEl, presenter } = basicSetup(initial);
+
+    const group = hostEl.querySelector('.cngx-filter-builder__logic-group') as HTMLElement;
+    expect(group).not.toBeNull();
+    expect(group.getAttribute('aria-label')).toBe('Combine filters with');
+
+    const buttons = Array.from(group.querySelectorAll('button'));
+    expect(buttons.map((b) => b.textContent?.trim())).toEqual(['AND', 'OR']);
+
+    buttons[1].click();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    expect(presenter.tree().logic).toBe('or');
+    expect(presenter.announcement()).toBe('Logic changed to OR');
+  });
+});
+
 describe('CngxFilterBuilder - logic toggle slot', () => {
   it('renders the consumer-supplied logicToggle template with the current logic in context', () => {
     const fixture = TestBed.createComponent(LogicToggleSlotHost);

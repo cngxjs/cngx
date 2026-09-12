@@ -571,22 +571,12 @@
       gap: var(--cngx-filter-builder-gap, 0.5rem);
     }
 
-    .cngx-filter-builder__logic-select {
-      /* Quiet mode picker, reference-class shape: the label and chevron
-         hug as ONE compact pill (fit-content kills the trigger's
-         space-between spread), border transparent until intent. A
-         min-width here strands the caret at the far edge of dead space. */
-      --cngx-select-min-width: 0px;
-      inline-size: fit-content;
+    .cngx-filter-builder__logic-group {
+      /* Segmented AND/OR/XOR - directly clickable, no dropdown for a
+         2-3 option mode. Muted until active so it reads as a mode
+         label, not another form field. */
       color: var(--cngx-filter-builder-logic-fg, var(--cngx-color-text-muted, oklch(0.5 0.01 250)));
       font-weight: 500;
-      --cngx-select-border: 1px solid transparent;
-    }
-
-    .cngx-filter-builder__logic-select:hover,
-    .cngx-filter-builder__logic-select:focus-within {
-      --cngx-select-border: 1px solid
-        var(--cngx-filter-builder-border-color, var(--cngx-color-border, oklch(0.87 0 0)));
     }
   }
 }

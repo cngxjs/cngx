@@ -97,6 +97,8 @@ export interface CngxFilterBuilderI18n {
   readonly and: string;
   readonly or: string;
   readonly xor: string;
+  /** Accessible name of the per-group logic radiogroup (segmented AND/OR/XOR control). */
+  readonly logicLabel: string;
   readonly negate: string;
   readonly emptyState: string;
   readonly operators: Readonly<Record<string, string>>;
@@ -132,6 +134,7 @@ const DEFAULT_I18N: CngxFilterBuilderI18n = Object.freeze({
   and: 'AND',
   or: 'OR',
   xor: 'XOR',
+  logicLabel: 'Combine filters with',
   negate: 'Negate',
   emptyState: 'No filters defined',
   operators: Object.freeze({
