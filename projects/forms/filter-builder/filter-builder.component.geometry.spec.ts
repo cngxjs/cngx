@@ -120,21 +120,30 @@ describe('CngxFilterBuilder geometry', () => {
     expect(computedValue(group, 'flex-direction')).toBe('column');
   });
 
-  it('aligns sibling rows into an equal column raster at the token widths', () => {
+  it('renders each expression as one content-hugging capsule with borderless segments', () => {
     const host = mountRaster();
-    const fieldSelects = Array.from(host.querySelectorAll('.cngx-filter-builder__field-select'));
-    const operatorSelects = Array.from(
-      host.querySelectorAll('.cngx-filter-builder__operator-select'),
-    );
-    expect(fieldSelects.length).toBe(2);
-    expect(operatorSelects.length).toBe(2);
+    const rows = Array.from(host.querySelectorAll('.cngx-filter-builder__expression'));
+    expect(rows.length).toBe(2);
 
-    const fieldWidths = fieldSelects.map((el) => computedValue(el, 'inline-size'));
-    const operatorWidths = operatorSelects.map((el) => computedValue(el, 'inline-size'));
-    // 8rem / 6.5rem at the 16px root - the select's own 10rem min-width
-    // default must NOT win over the raster tokens.
-    expect(fieldWidths).toEqual(['128px', '128px']);
-    expect(operatorWidths).toEqual(['120px', '120px']);
+    for (const row of rows) {
+      // The capsule carries the ONE border...
+      expect(computedValue(row, 'border-top-style')).toBe('solid');
+      expect(computedValue(row, 'border-top-width')).toBe('1px');
+      // ...and hugs its content instead of spanning the group.
+      const group = query(host, '.cngx-filter-builder__group');
+      expect(row.getBoundingClientRect().width).toBeLessThan(
+        group.getBoundingClientRect().width - 40,
+      );
+      // Segments inside are borderless: the select trigger's border is
+      // transparent, the pill's own 10rem min-width default is neutralised.
+      const trigger = query(row as HTMLElement, '.cngx-select__trigger');
+      expect(computedValue(trigger, 'border-top-color')).toBe('rgba(0, 0, 0, 0)');
+    }
+
+    const fieldSelects = Array.from(host.querySelectorAll('.cngx-filter-builder__field-select'));
+    for (const sel of fieldSelects) {
+      expect(sel.getBoundingClientRect().width).toBeLessThan(120);
+    }
   });
 
   it('lands every row control on one shared height', () => {
@@ -152,14 +161,17 @@ describe('CngxFilterBuilder geometry', () => {
     expect(remove.getBoundingClientRect().height).toBeLessThanOrEqual(triggerHeight);
   });
 
-  it('pins the remove buttons of sibling rows to one trailing edge', () => {
+  it('seats the remove button flush as the trailing segment of its capsule', () => {
     const host = mountRaster();
-    const removes = Array.from(
-      host.querySelectorAll('.cngx-filter-builder__action-button--remove'),
-    );
-    expect(removes.length).toBe(2);
-    const xs = removes.map((el) => Math.round(el.getBoundingClientRect().x));
-    expect(xs[1]).toBe(xs[0]);
+    const rows = Array.from(host.querySelectorAll('.cngx-filter-builder__expression'));
+    for (const row of rows) {
+      const remove = query(row as HTMLElement, '.cngx-filter-builder__action-button--remove');
+      const rowRect = row.getBoundingClientRect();
+      const removeRect = remove.getBoundingClientRect();
+      expect(Math.abs(rowRect.right - 1 - removeRect.right)).toBeLessThanOrEqual(1);
+      // Stretched to the capsule's full inner height (full-height divider).
+      expect(Math.abs(removeRect.height - (rowRect.height - 2))).toBeLessThanOrEqual(1);
+    }
   });
 
   it('renders the root group without a box by default', () => {
@@ -168,24 +180,25 @@ describe('CngxFilterBuilder geometry', () => {
     expect(computedValue(root, 'border-top-width')).toBe('0px');
   });
 
-  it('marks an unfinished value with a dashed editor border, not a row outline', () => {
+  it('marks an unfinished value with a dashed bottom edge, not a row outline', () => {
     const host = mountIncomplete();
     const row = query(host, '.cngx-filter-expression-incomplete');
     const input = query(host, '.cngx-filter-expression-incomplete > input');
-    expect(computedValue(input, 'border-top-style')).toBe('dashed');
+    expect(computedValue(input, 'border-bottom-style')).toBe('dashed');
+    expect(computedValue(input, 'border-top-style')).toBe('none');
     expect(computedValue(row, 'outline-style')).toBe('none');
   });
 
-  it('lays the segmented logic toggle out as one compact adjacent run', () => {
+  it('renders a compact joiner chip between sibling rows', () => {
     const host = mountRaster();
-    const group = query(host, '.cngx-filter-builder__logic-group');
-    const buttons = Array.from(group.querySelectorAll('button'));
-    expect(buttons.length).toBeGreaterThanOrEqual(2);
-    // Directly clickable segments sit flush in one row, same height.
-    const rects = buttons.map((b) => b.getBoundingClientRect());
-    expect(Math.round(rects[1].x)).toBeGreaterThanOrEqual(Math.round(rects[0].right) - 1);
-    expect(Math.round(rects[1].height)).toBe(Math.round(rects[0].height));
-    expect(group.getBoundingClientRect().width).toBeLessThan(160);
+    const joiners = Array.from(host.querySelectorAll('.cngx-filter-builder__logic-joiner'));
+    expect(joiners.length).toBe(1);
+    const joiner = joiners[0] as HTMLElement;
+    expect(joiner.getBoundingClientRect().width).toBeLessThan(96);
+    // Sits between the two capsules in document flow.
+    const rows = Array.from(host.querySelectorAll('.cngx-filter-builder__expression'));
+    expect(joiner.getBoundingClientRect().y).toBeGreaterThan(rows[0].getBoundingClientRect().bottom - 1);
+    expect(joiner.getBoundingClientRect().bottom).toBeLessThan(rows[1].getBoundingClientRect().y + 1);
   });
 
   it('keeps the caret glyph at label size inside the builder', () => {

@@ -473,13 +473,26 @@
     }
 
     .cngx-filter-builder__group:not(.cngx-filter-group-root) {
-      /* One nesting cue: the rail plus an inline inset. */
+      /* One nesting cue: a rounded bracket drawn from the rail token
+         (border-inline-end dropped), plus an inline inset. */
+      position: relative;
       margin-inline-start: var(--cngx-filter-builder-indent, 1.25rem);
-      border-inline-start: var(
+      padding-inline-start: var(--cngx-space-md, 1rem);
+    }
+
+    .cngx-filter-builder__group:not(.cngx-filter-group-root)::before {
+      content: "";
+      position: absolute;
+      inset-block: var(--cngx-space-xs, 0.25rem);
+      inset-inline-start: 0;
+      inline-size: var(--cngx-space-sm, 0.5rem);
+      border: var(
         --cngx-filter-builder-rail,
         2px solid var(--cngx-filter-builder-border-color, var(--cngx-color-border, oklch(0.87 0 0)))
       );
-      padding-inline-start: var(--cngx-space-md, 1rem);
+      border-inline-end: none;
+      border-start-start-radius: var(--cngx-radius-md, 0.5rem);
+      border-end-start-radius: var(--cngx-radius-md, 0.5rem);
     }
 
     .cngx-filter-builder__group.cngx-filter-group-negated {
@@ -571,12 +584,36 @@
       gap: var(--cngx-filter-builder-gap, 0.5rem);
     }
 
-    .cngx-filter-builder__logic-group {
-      /* Segmented AND/OR/XOR - directly clickable, no dropdown for a
-         2-3 option mode. Muted until active so it reads as a mode
-         label, not another form field. */
-      color: var(--cngx-filter-builder-logic-fg, var(--cngx-color-text-muted, oklch(0.5 0.01 250)));
-      font-weight: 500;
+    .cngx-filter-builder__logic-joiner {
+      /* Joiner chip between sibling rows: shows the group logic where it
+         acts, click advances to the next configured option. Accent-soft
+         so it reads as connective tissue, not another control box. */
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      align-self: start;
+      padding: var(--cngx-space-2xs, 0.125rem) var(--cngx-space-sm, 0.5rem);
+      border: none;
+      border-radius: var(--cngx-radius-sm, 0.25rem);
+      font: inherit;
+      font-size: var(--cngx-filter-builder-joiner-font-size, 0.6875rem);
+      font-weight: 650;
+      letter-spacing: 0.06em;
+      color: var(--cngx-filter-builder-joiner-fg, var(--cngx-color-primary, oklch(0.55 0.17 50)));
+      background: var(--cngx-filter-builder-joiner-bg, oklch(0.66 0.19 50 / 0.12));
+      cursor: pointer;
+      /* Small square-ish target: floor both axes on a coarse pointer. */
+      min-inline-size: max(2rem, var(--cngx-target-min, 0px));
+      min-block-size: var(--cngx-target-min, 0px);
+    }
+
+    .cngx-filter-builder__logic-joiner:hover {
+      background: var(--cngx-filter-builder-joiner-hover-bg, oklch(0.66 0.19 50 / 0.2));
+    }
+
+    .cngx-filter-builder__logic-joiner:focus-visible {
+      outline: var(--cngx-filter-builder-focus-outline, 2px solid currentColor);
+      outline-offset: var(--cngx-filter-builder-focus-outline-offset, 2px);
     }
   }
 }

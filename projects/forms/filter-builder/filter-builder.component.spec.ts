@@ -437,7 +437,10 @@ describe('CngxFilterBuilder - remove button slot', () => {
 })
 class LogicToggleSlotHost {
   readonly fields = signal<readonly FilterFieldDef[]>(FIELDS);
-  value: FilterGroup = createFilterGroup('or', [createFilterExpression('name', 'eq', 'x')]);
+  value: FilterGroup = createFilterGroup('or', [
+    createFilterExpression('name', 'eq', 'x'),
+    createFilterExpression('name', 'eq', 'y'),
+  ]);
 }
 
 @Component({
@@ -471,24 +474,40 @@ describe('CngxFilterBuilder - negation toggle slot', () => {
   });
 });
 
-describe('CngxFilterBuilder - default segmented logic toggle', () => {
-  it('renders a labelled radiogroup and switches logic on a direct click', () => {
-    const initial = createFilterGroup('and', [createFilterExpression('name', 'eq', 'x')]);
+describe('CngxFilterBuilder - default logic joiner chips', () => {
+  it('renders one labelled joiner between siblings and cycles logic on click', () => {
+    const initial = createFilterGroup('and', [
+      createFilterExpression('name', 'eq', 'x'),
+      createFilterExpression('name', 'eq', 'y'),
+    ]);
     const { fixture, hostEl, presenter } = basicSetup(initial);
 
-    const group = hostEl.querySelector('.cngx-filter-builder__logic-group') as HTMLElement;
-    expect(group).not.toBeNull();
-    expect(group.getAttribute('aria-label')).toBe('Combine filters with');
+    const joiners = Array.from(
+      hostEl.querySelectorAll('.cngx-filter-builder__logic-joiner'),
+    ) as HTMLButtonElement[];
+    expect(joiners).toHaveLength(1);
+    expect(joiners[0].getAttribute('aria-label')).toBe('Combine filters with');
+    expect(joiners[0].textContent?.trim()).toBe('AND');
 
-    const buttons = Array.from(group.querySelectorAll('button'));
-    expect(buttons.map((b) => b.textContent?.trim())).toEqual(['AND', 'OR']);
-
-    buttons[1].click();
+    joiners[0].click();
     fixture.detectChanges();
     TestBed.flushEffects();
 
     expect(presenter.tree().logic).toBe('or');
     expect(presenter.announcement()).toBe('Logic changed to OR');
+    expect(joiners[0].textContent?.trim()).toBe('OR');
+
+    // Cycle wraps back to the first configured option.
+    joiners[0].click();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(presenter.tree().logic).toBe('and');
+  });
+
+  it('renders no joiner for a single-child group', () => {
+    const initial = createFilterGroup('and', [createFilterExpression('name', 'eq', 'x')]);
+    const { hostEl } = basicSetup(initial);
+    expect(hostEl.querySelectorAll('.cngx-filter-builder__logic-joiner')).toHaveLength(0);
   });
 });
 

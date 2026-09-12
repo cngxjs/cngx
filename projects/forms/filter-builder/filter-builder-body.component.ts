@@ -2,14 +2,12 @@ import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
-  computed,
   DestroyRef,
   effect,
   inject,
   input,
   untracked,
 } from '@angular/core';
-import { CngxButtonToggle, CngxButtonToggleGroup } from '@cngx/common/interactive';
 
 import { injectFilterBuilderConfig } from './filter-builder.config';
 import { CNGX_FILTER_BUILDER_HOST } from './filter-builder-host.token';
@@ -61,7 +59,7 @@ const EMPTY_OPERATORS: readonly string[] = Object.freeze([]) as readonly string[
   selector: 'cngx-filter-builder-body',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgTemplateOutlet, CngxFilterGroup, CngxFilterExpressionRow, CngxButtonToggleGroup, CngxButtonToggle],
+  imports: [NgTemplateOutlet, CngxFilterGroup, CngxFilterExpressionRow],
   templateUrl: './filter-builder-body.component.html',
 })
 export class CngxFilterBuilderBody {
@@ -235,33 +233,26 @@ export class CngxFilterBuilderBody {
     this.host.addGroup(path, createFilterGroup());
   }
 
-  protected setLogic(path: readonly number[], next: FilterLogic | undefined): void {
-    if (next === undefined) {
-      return;
-    }
-    this.host.setLogic(path, next);
-  }
-
   protected readonly negationEnabled = this.config.negationEnabled;
 
-  protected readonly logicOptions = this.config.logicOptions;
+  /**
+   * Joiner-chip handler: advance the group's logic to the next configured
+   * option (and -> or -> xor -> and). Every joiner in a group mirrors the
+   * same value - logic is a per-group property, the chips are its N
+   * visible instances between siblings.
+   */
+  protected cycleLogic(path: readonly number[], current: FilterLogic): void {
+    const options = this.config.logicOptions;
+    if (options.length < 2) {
+      return;
+    }
+    const next = options[(options.indexOf(current) + 1) % options.length];
+    if (next !== undefined && next !== current) {
+      this.host.setLogic(path, next);
+    }
+  }
 
-  protected readonly logicSelectOptions = computed<
-    readonly { readonly value: FilterLogic; readonly label: string }[]
-  >(() => this.logicOptions.map((option) => ({ value: option, label: option.toUpperCase() })), {
-    equal: (a, b) => {
-      if (a === b) {
-        return true;
-      }
-      if (a.length !== b.length) {
-        return false;
-      }
-      for (let i = 0; i < a.length; i++) {
-        if (a[i].value !== b[i].value || a[i].label !== b[i].label) {
-          return false;
-        }
-      }
-      return true;
-    },
-  });
+  protected logicJoinerLabel(logic: FilterLogic): string {
+    return this.config.i18n[logic];
+  }
 }

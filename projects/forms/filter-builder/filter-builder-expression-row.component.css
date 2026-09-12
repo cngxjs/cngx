@@ -1,29 +1,27 @@
 /**
  * @overview
  * Expression-row variant of `CngxFilterBuilderRow`. The host element
- * `cngx-filter-expression-row` stays `display: contents` and delegates
- * its layout to the parent's `.cngx-filter-builder__expression` flex
- * row, redeclared here so the file is self-contained when consumed
- * standalone.
+ * `cngx-filter-expression-row` stays `display: contents`; the row div
+ * renders as ONE inline pill - borderless picker/editor segments inside
+ * a single bordered capsule with hairline dividers.
  *
  * **State modifiers**
  *
  * - `.cngx-filter-expression-incomplete` - quiet unfinished-state cue:
- *   the value editor's border goes dashed; no row-level warning box
+ *   the value segment's bottom edge goes dashed; no row-level warning box
  *
  * **Slots**
  *
  * - `cngx-filter-expression-row` - host, `display: contents`
- * - `.cngx-filter-builder__expression` - inner flex row, gap +
- *   wrap, aligned center
+ * - `.cngx-filter-builder__expression` - the capsule (border, radius,
+ *   fit-content)
  * - `.cngx-filter-builder__field-select` / `__operator-select` -
- *   fixed-basis raster columns (`--cngx-filter-builder-field-basis` /
- *   `-operator-basis`, owned here) so sibling rows align
- * - `input[cngxInput]` value cell - grows from
- *   `--cngx-filter-builder-value-basis`
- * - `.cngx-filter-builder__action-button--remove` - icon-only compact
- *   default (accessible name via `aria-label`), floored on both axes
- *   to `--cngx-target-min`
+ *   content-hugging borderless segments
+ * - `input[cngxInput]` value segment - sized by
+ *   `--cngx-filter-builder-value-basis`, capped by `-value-max`
+ * - `.cngx-filter-builder__action-button--remove` - trailing ghost
+ *   segment (accessible name via `aria-label`), floored to
+ *   `--cngx-target-min`
  *
  * **Inheritance**
  *
@@ -38,35 +36,10 @@
 
 @layer cngx.tokens {
   /**
-   * Column width of the field picker (feeds the composed select's
-   * `--cngx-select-min-width`). Geometry token, deliberately not
-   * density-derived - a density swap must compact spacing, not the
-   * column raster. `inherits: true` so one assignment at the builder
-   * root aligns every row in the tree.
-   * @group Layout / Raster
-   */
-  @property --cngx-filter-builder-field-basis {
-    syntax: '<length>';
-    inherits: true;
-    initial-value: 8rem;
-  }
-
-  /**
-   * Column width of the operator picker. Same geometry rationale as the
-   * field basis - deliberate density opt-out.
-   * @group Layout / Raster
-   */
-  @property --cngx-filter-builder-operator-basis {
-    syntax: '<length>';
-    inherits: true;
-    initial-value: 7.5rem;
-  }
-
-  /**
-   * Inline flex-basis of the value-editor column. The value cell grows
-   * (`flex: 1 1`) from this basis up to the `-value-max` cap. Same
-   * geometry rationale - deliberate density opt-out.
-   * @group Layout / Raster
+   * Inline size of the value-editor segment inside the pill. Geometry
+   * token, deliberately not density-derived. `inherits: true` so one
+   * assignment at the builder root sizes every row in the tree.
+   * @group Layout / Pill
    */
   @property --cngx-filter-builder-value-basis {
     syntax: '<length>';
@@ -75,17 +48,15 @@
   }
 
   /**
-   * Growth cap of the value-editor column. Uncapped growth strands the
-   * remove button at a different inline position per row; the cap plus
-   * the button's auto margin give every row the same trailing edge.
-   * @group Layout / Raster
+   * Growth cap of the value-editor segment - keeps a long text value
+   * from ballooning the capsule.
+   * @group Layout / Pill
    */
   @property --cngx-filter-builder-value-max {
     syntax: '<length>';
     inherits: true;
     initial-value: 20rem;
   }
-
 }
 
 @layer cngx.components {
@@ -94,91 +65,99 @@
       display: contents;
     }
 
+    /* Inline-pill skin: the row IS one capsule - borderless segments
+       inside a single bordered container, hairline dividers via
+       box-shadow (no border-shorthand fights), the remove button as the
+       trailing segment. No overflow:hidden so segment focus rings stay
+       visible; the end segments round themselves instead. */
     .cngx-filter-builder__expression {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--cngx-filter-builder-gap, 0.5rem);
-      align-items: center;
+      display: inline-flex;
+      align-items: stretch;
+      gap: 0;
+      width: fit-content;
+      max-inline-size: 100%;
+      border: 1px solid var(--cngx-filter-builder-border-color, var(--cngx-color-border, oklch(0.87 0 0)));
+      border-radius: var(--cngx-radius-md, 0.5rem);
+      background: var(--cngx-filter-builder-pill-bg, transparent);
     }
 
-    /* Column raster: the pickers' widths route through the select's own
-       min-width token (its @scope wins over any ancestor-scope width
-       rule), so both columns align across sibling rows; the value cell
-       grows from its basis up to the cap. `flex-wrap` on the row still
-       degrades gracefully in narrow containers. */
-    .cngx-filter-builder__field-select {
-      /* Hard raster column: fixed inline-size (the label ellipsis-truncates,
-         the panel and aria-label carry the full text), min-width token kept
-         in sync so the select's own 10rem floor cannot re-widen it. */
-      --cngx-select-min-width: var(--cngx-filter-builder-field-basis, 8rem);
-      inline-size: var(--cngx-filter-builder-field-basis, 8rem);
-      flex: 0 0 auto;
+    .cngx-filter-builder__expression > * + * {
+      box-shadow: -1px 0 0 0 var(--cngx-filter-builder-border-color, var(--cngx-color-border, oklch(0.87 0 0)));
     }
 
+    .cngx-filter-builder__expression > :first-child {
+      border-start-start-radius: calc(var(--cngx-radius-md, 0.5rem) - 1px);
+      border-end-start-radius: calc(var(--cngx-radius-md, 0.5rem) - 1px);
+    }
+
+    .cngx-filter-builder__expression > :last-child {
+      border-start-end-radius: calc(var(--cngx-radius-md, 0.5rem) - 1px);
+      border-end-end-radius: calc(var(--cngx-radius-md, 0.5rem) - 1px);
+    }
+
+    .cngx-filter-builder__field-select,
     .cngx-filter-builder__operator-select {
-      --cngx-select-min-width: var(--cngx-filter-builder-operator-basis, 7.5rem);
-      inline-size: var(--cngx-filter-builder-operator-basis, 7.5rem);
+      --cngx-select-min-width: 0px;
+      --cngx-select-border: 1px solid transparent;
+      inline-size: fit-content;
       flex: 0 0 auto;
+    }
+
+    .cngx-filter-builder__field-select:hover,
+    .cngx-filter-builder__operator-select:hover {
+      background: var(--cngx-filter-builder-action-hover-bg, oklch(0 0 0 / 0.04));
     }
 
     .cngx-filter-builder__expression > input[cngxInput] {
-      flex: 1 1 var(--cngx-filter-builder-value-basis, 8rem);
+      flex: 0 1 auto;
+      inline-size: var(--cngx-filter-builder-value-basis, 8rem);
       min-inline-size: 0;
       max-inline-size: var(--cngx-filter-builder-value-max, 20rem);
-      /* Self-contained control box: same inherited type + line box, block
-         padding and border as the select trigger, so every row control
-         lands on the same height by construction (no forced heights) -
-         and without depending on the optional cngx.base element layer. */
+      /* Borderless segment; the transparent bottom edge keeps the height
+         stable when the unfinished-value cue flips it to dashed. */
       font: inherit;
       padding: var(--cngx-space-sm, 0.5rem);
-      border: 1px solid var(--cngx-filter-builder-border-color, var(--cngx-color-border, oklch(0.87 0 0)));
-      border-radius: var(--cngx-radius-sm, 0.25rem);
+      border: none;
+      border-block-end: 1px solid transparent;
+      border-radius: 0;
       background: transparent;
       color: inherit;
     }
 
+    .cngx-filter-builder__expression > cngx-toggle {
+      align-self: center;
+      margin-inline: var(--cngx-space-sm, 0.5rem);
+      /* The switch draws its own shape - a hairline glued to it reads as
+         a glitch, so this segment opts out of the divider. */
+      box-shadow: none;
+    }
+
+    .cngx-filter-expression-incomplete > input[cngxInput] {
+      border-block-end: 1px var(--cngx-filter-builder-incomplete-border-style, dashed)
+        var(--cngx-filter-builder-incomplete-border-color, var(--cngx-color-border, oklch(0.87 0 0)));
+    }
+
     .cngx-filter-builder__action-button--remove {
-      /* Icon-only ghost default: quiet until pointer/keyboard intent -
-         a permanently red-bordered stamp per row multiplies alarm by
-         row count. Square via aspect-ratio; padding sm keeps the height
-         in the shared control raster (SET-from-scale). */
+      /* Trailing ghost segment of the capsule. */
       --cngx-filter-builder-action-padding-compact: var(--cngx-space-sm);
       justify-content: center;
       padding: var(--cngx-filter-builder-action-padding-compact, 0.5rem);
-      aspect-ratio: 1;
-      /* Stable trailing rail: the auto margin pins the button to the
-         row's end regardless of the value editor's width. */
-      margin-inline-start: auto;
       flex: 0 0 auto;
-      border-color: transparent;
+      border: none;
+      border-radius: 0;
+      background: transparent;
       color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
-      /* Both-axes floor: 2rem keeps the button inside the shared control
-         raster on a fine pointer; the pointer-derived token lifts it to
-         the 44px hit area on a coarse pointer. */
       min-inline-size: max(2rem, var(--cngx-target-min, 0px));
       min-block-size: max(2rem, var(--cngx-target-min, 0px));
     }
 
     .cngx-filter-builder__action-button--remove:hover,
     .cngx-filter-builder__action-button--remove:focus-visible {
-      border-color: var(--cngx-filter-builder-border-color, var(--cngx-color-border, oklch(0.87 0 0)));
       color: var(
         --cngx-filter-builder-action-remove-fg,
         var(--cngx-filter-builder-error-fg, var(--cngx-color-danger, oklch(0.55 0.18 25)))
       );
-    }
-
-    /* Incomplete = quiet, local: the unfinished VALUE editor gets a
-       dashed border instead of the row growing a warning box - a fresh
-       row is work in progress, not an error (validate on blur, never on
-       arrival). AT hears the state through the presenter's errorState /
-       aria wiring, not through this paint. */
-    .cngx-filter-expression-incomplete > input[cngxInput] {
-      border-style: var(--cngx-filter-builder-incomplete-border-style, dashed);
-      border-color: var(
-        --cngx-filter-builder-incomplete-border-color,
-        var(--cngx-color-border, oklch(0.87 0 0))
-      );
+      background: var(--cngx-filter-builder-action-hover-bg, oklch(0 0 0 / 0.04));
     }
   }
 }
