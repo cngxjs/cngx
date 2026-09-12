@@ -161,3 +161,20 @@
     }
   }
 }
+
+/* box-shadow dividers are stripped under forced colors - redraw the
+   segment boundaries as real borders so the capsule keeps its anatomy
+   in Windows High Contrast. Unlayered on purpose: an @media block
+   nested inside @scope does not re-scope reliably, and unlayered wins
+   over the layered base rules it needs to override. */
+@media (forced-colors: active) {
+  .cngx-filter-builder__expression > * + *,
+  .cngx-filter-builder__expression > * + input[cngxInput] {
+    box-shadow: none;
+    border-inline-start: 1px solid ButtonBorder;
+  }
+
+  .cngx-filter-builder__expression > cngx-toggle {
+    border-inline-start: none;
+  }
+}
