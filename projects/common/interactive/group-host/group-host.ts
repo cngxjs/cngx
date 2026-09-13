@@ -66,7 +66,8 @@ export interface CngxInteractiveGroupHost {
 
 /**
  * Shared scaffolding for the interactive form-control hosts (toggle,
- * checkbox, and the value groups): stable uid, focus tracking, the
+ * checkbox, the standalone interactive chip, and the value groups):
+ * stable uid, focus tracking, the
  * field-host/aggregator error cascade, the `aria-invalid` gate, and
  * `[state]`-wins-over-`CNGX_STATEFUL` async-state resolution for
  * `aria-busy`.
