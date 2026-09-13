@@ -45,6 +45,11 @@ export {
   type CngxSliderCore,
   type CngxSliderCoreOptions,
 } from './slider/slider-core';
+export {
+  injectInteractiveGroupHost,
+  type CngxInteractiveGroupHost,
+  type CngxInteractiveGroupHostOptions,
+} from './group-host/group-host';
 export { CngxSlider } from './slider/slider.component';
 export { CngxRangeSlider } from './slider/range-slider.component';
 export { CngxSliderTrack } from './slider/slider.directive';
