@@ -5,6 +5,7 @@ import { CngxChip } from '@cngx/common/display';
 import { createManualState, type ManualAsyncState } from '@cngx/common/data';
 import { describe, expect, it } from 'vitest';
 import { CNGX_FORM_FIELD_HOST } from '@cngx/core/tokens';
+import { CNGX_STATEFUL } from '@cngx/core/utils';
 
 import { CngxChipInGroup } from '../chip-in-group/chip-in-group.directive';
 import { CNGX_CONTROL_VALUE } from '../control-value/control-value.token';
@@ -195,5 +196,67 @@ describe('CngxChipGroup', () => {
       fixture.detectChanges();
       expect(groupEl.getAttribute('aria-errormessage')).toBe('cg-err');
     });
+  });
+});
+
+const discoveredState = createManualState<string>();
+
+@Component({
+  template: ` <cngx-chip-group label="Discovered" /> `,
+  imports: [CngxChipGroup],
+  providers: [{ provide: CNGX_STATEFUL, useValue: { state: discoveredState } }],
+})
+class DiscoveryHost {}
+
+@Component({
+  template: ` <cngx-chip-group label="Override" [state]="inputState" /> `,
+  imports: [CngxChipGroup],
+  providers: [{ provide: CNGX_STATEFUL, useValue: { state: discoveredState } }],
+})
+class DiscoveryOverrideHost {
+  readonly inputState: ManualAsyncState<string> = createManualState<string>();
+}
+
+@Component({
+  template: ` <cngx-chip-group label="Bare" state /> `,
+  imports: [CngxChipGroup],
+  providers: [{ provide: CNGX_STATEFUL, useValue: { state: discoveredState } }],
+})
+class DiscoveryBareAttrHost {}
+
+describe('CngxChipGroup stateful discovery', () => {
+  it('discovers an ancestor CNGX_STATEFUL while [state] is not bound', () => {
+    discoveredState.reset();
+    const fixture = TestBed.createComponent(DiscoveryHost);
+    fixture.detectChanges();
+    const el = fixture.debugElement.query(By.directive(CngxChipGroup)).nativeElement as HTMLElement;
+    expect(el.getAttribute('aria-busy')).toBeNull();
+
+    discoveredState.set('loading');
+    fixture.detectChanges();
+    expect(el.getAttribute('aria-busy')).toBe('true');
+    discoveredState.reset();
+  });
+
+  it('an explicit [state] binding wins over the discovered provider', () => {
+    discoveredState.set('loading');
+    const fixture = TestBed.createComponent(DiscoveryOverrideHost);
+    fixture.detectChanges();
+    const el = fixture.debugElement.query(By.directive(CngxChipGroup)).nativeElement as HTMLElement;
+    expect(el.getAttribute('aria-busy')).toBeNull();
+
+    fixture.componentInstance.inputState.set('loading');
+    fixture.detectChanges();
+    expect(el.getAttribute('aria-busy')).toBe('true');
+    discoveredState.reset();
+  });
+
+  it('a bare state attribute is treated as unset and keeps the discovered fallback', () => {
+    discoveredState.set('loading');
+    const fixture = TestBed.createComponent(DiscoveryBareAttrHost);
+    fixture.detectChanges();
+    const el = fixture.debugElement.query(By.directive(CngxChipGroup)).nativeElement as HTMLElement;
+    expect(el.getAttribute('aria-busy')).toBe('true');
+    discoveredState.reset();
   });
 });
