@@ -6,22 +6,17 @@ import {
   ViewEncapsulation,
   afterNextRender,
   computed,
-  inject,
   input,
   model,
   signal,
   viewChild,
   type TemplateRef,
 } from '@angular/core';
-import {
-  CNGX_FORM_FIELD_CONTROL,
-  CNGX_FORM_FIELD_HOST,
-  type CngxFormFieldControl,
-} from '@cngx/core/tokens';
+import { CNGX_FORM_FIELD_CONTROL, type CngxFormFieldControl } from '@cngx/core/tokens';
 import { nextUid } from '@cngx/core/utils';
 
 import { CNGX_CONTROL_VALUE, type CngxControlValue } from '../control-value/control-value.token';
-import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.token';
+import { injectInteractiveGroupHost } from '../group-host/group-host';
 
 /**
  * Single-value boolean switch with W3C `role="switch"` semantics. Click,
@@ -194,21 +189,19 @@ export class CngxToggle implements CngxControlValue<boolean>, CngxFormFieldContr
     });
   }
 
-  /** Stable per-instance id used for `<label for>` wiring. */
-  readonly id = signal(nextUid('cngx-toggle-')).asReadonly();
+  private readonly groupHost = injectInteractiveGroupHost({
+    uidPrefix: 'cngx-toggle-',
+    invalid: this.invalid,
+  });
 
-  private readonly focusedState = signal(false);
+  /** Stable per-instance id used for `<label for>` wiring. */
+  readonly id = this.groupHost.id;
+
   /** Whether the host element currently has DOM focus. */
-  readonly focused = this.focusedState.asReadonly();
+  readonly focused = this.groupHost.focused;
 
   /** True when the toggle is `false` (off) - boolean atom semantics. */
   readonly empty = computed(() => this.value() === false);
-
-  private readonly fieldHost = inject(CNGX_FORM_FIELD_HOST, { optional: true });
-  private readonly aggregator = inject(CNGX_ERROR_AGGREGATOR, {
-    optional: true,
-    skipSelf: true,
-  });
 
   /**
    * Field-host→aggregator cascade. Inside `<cngx-form-field>` the
@@ -217,9 +210,7 @@ export class CngxToggle implements CngxControlValue<boolean>, CngxFormFieldContr
    * `shouldShow` (reveal-aware) wins. Outside both contexts the atom
    * paints no error skin.
    */
-  readonly errorState = computed<boolean>(
-    () => this.fieldHost?.showError() ?? this.aggregator?.shouldShow() ?? false,
-  );
+  readonly errorState = this.groupHost.errorState;
 
   protected handleClick(): void {
     if (this.disabled()) {
@@ -237,11 +228,10 @@ export class CngxToggle implements CngxControlValue<boolean>, CngxFormFieldContr
   }
 
   protected handleFocusIn(): void {
-    this.focusedState.set(true);
+    this.groupHost.handleFocusIn();
   }
 
   protected handleFocusOut(): void {
-    this.focusedState.set(false);
-    this.fieldHost?.markAsTouched();
+    this.groupHost.handleFocusOut();
   }
 }
