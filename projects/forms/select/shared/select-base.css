@@ -303,11 +303,15 @@
 
   /**
    * Font-size of the dropdown caret glyph shared across every variant.
+   * Read at the caret span (a trigger descendant), so `inherits: true`
+   * is load-bearing: with `inherits: false` the registered initial
+   * would always win at the caret and no consumer or composing
+   * organism could ever set the token (the inherits:false trap).
    * @group Layout
    */
   @property --cngx-select-caret-size {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 1.25em;
   }
 

@@ -190,6 +190,47 @@ describe('createFilterBuilderState', () => {
     });
   });
 
+  describe('applyFieldChange - atomic field change', () => {
+    it('writes field + operator + cleared value in one rewrite and emits one set-field event', () => {
+      const state = build(group([expr('name', 'contains', 'foo')]));
+      state.applyFieldChange([0], { field: 'age', operator: 'gte', resetValue: true });
+      const node = state.tree().filters[0] as FilterExpression;
+      expect(node.field).toBe('age');
+      expect(node.operator).toBe('gte');
+      expect(node.value).toBeUndefined();
+      expect(state.lastMutation()).toEqual({
+        kind: 'set-field',
+        path: [0],
+        context: { fieldKey: 'age' },
+      });
+    });
+
+    it('keeps operator and value when resetValue is false', () => {
+      const state = build(group([expr('name', 'eq', 'foo')]));
+      state.applyFieldChange([0], { field: 'age', operator: 'eq', resetValue: false });
+      const node = state.tree().filters[0] as FilterExpression;
+      expect(node.field).toBe('age');
+      expect(node.operator).toBe('eq');
+      expect(node.value).toBe('foo');
+    });
+
+    it('is a no-op (no event, same reference) when nothing changes', () => {
+      const state = build(group([expr('name', 'eq', 'foo')]));
+      const before = state.tree();
+      state.applyFieldChange([0], { field: 'name', operator: 'eq', resetValue: false });
+      expect(state.tree()).toBe(before);
+      expect(state.lastMutation()).toBeNull();
+    });
+
+    it('ignores a group node at the path', () => {
+      const state = build(group([group([expr('name')])]));
+      const before = state.tree();
+      state.applyFieldChange([0], { field: 'age', operator: 'eq', resetValue: true });
+      expect(state.tree()).toBe(before);
+      expect(state.lastMutation()).toBeNull();
+    });
+  });
+
   describe('clear', () => {
     it('resets to an empty root and emits clear', () => {
       const state = build(group([expr('name'), expr('age')]));

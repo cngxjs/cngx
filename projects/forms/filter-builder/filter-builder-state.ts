@@ -15,6 +15,7 @@ import {
   updateAtPath,
 } from './filter-builder.utils';
 import { EMPTY_ROOT } from './filter-builder.helpers';
+import type { CngxFilterRowFieldChangePlan } from './filter-builder-row-controller';
 
 /**
  * Plain-TS state factory for `<cngx-filter-builder>`. Wraps a single
@@ -107,6 +108,15 @@ export interface CngxFilterBuilderState<TValue = unknown> {
   readonly setField: (path: readonly number[], fieldKey: string) => void;
   readonly setOperator: (path: readonly number[], operator: string) => void;
   readonly setValue: (path: readonly number[], value: unknown) => void;
+  /**
+   * Apply a row controller's field-change plan as ONE tree write and ONE
+   * `set-field` mutation event: the field always updates; when
+   * `plan.resetValue` is set the operator and cleared value land in the
+   * same node rewrite. One user gesture, one announcement - the
+   * sequential setField/setOperator/setValue triple would announce three
+   * times for the same click.
+   */
+  readonly applyFieldChange: (path: readonly number[], plan: CngxFilterRowFieldChangePlan) => void;
   readonly clear: () => void;
 
   readonly getNodeAtPath: (path: readonly number[]) => FilterNode | null;
@@ -309,6 +319,23 @@ export function createFilterBuilderState<TValue = unknown>(
     }
   }
 
+  function applyFieldChange(path: readonly number[], plan: CngxFilterRowFieldChangePlan): void {
+    const updated = updateAtPath(source(), path, (node) => {
+      if (node.type !== 'expression') {
+        return node;
+      }
+      const operator = plan.resetValue ? plan.operator : node.operator;
+      const value = plan.resetValue ? undefined : node.value;
+      if (node.field === plan.field && node.operator === operator && Object.is(node.value, value)) {
+        return node;
+      }
+      return { ...node, field: plan.field, operator, value };
+    });
+    if (writeIfChanged(updated)) {
+      emit({ kind: 'set-field', path, context: { fieldKey: plan.field } });
+    }
+  }
+
   function clear(): void {
     if (writeIfChanged(EMPTY_ROOT)) {
       emit({ kind: 'clear', path: [] });
@@ -336,6 +363,7 @@ export function createFilterBuilderState<TValue = unknown>(
     setField,
     setOperator,
     setValue,
+    applyFieldChange,
     clear,
     getNodeAtPath: getNodeAtPathFromTree,
     getFieldDef,

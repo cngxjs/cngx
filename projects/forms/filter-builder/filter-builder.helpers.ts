@@ -8,6 +8,11 @@ import type {
   FilterNode,
 } from './filter-builder.types';
 import { isExpressionValueEmpty } from './filter-builder-internal';
+import {
+  resolveOperatorDef,
+  warnUnknownFilterOperatorOnce,
+  type CngxFilterOperatorDef,
+} from './filter-builder-operators';
 
 /**
  * Pure helpers - zero Angular dependency, zero `inject()`. Importing this
@@ -133,16 +138,48 @@ export function createEmptyFilterRoot(): FilterGroup {
 }
 
 /**
+ * Optional evaluation knobs for `evaluateExpression` / `toFilterPredicate`.
+ * Omitting the whole object (or any field) resolves to the pure builtin
+ * defaults - the no-options path is bit-identical to the historical
+ * closed-switch evaluation.
+ *
+ * @category forms/filter-builder
+ */
+export interface CngxFilterEvaluationOptions {
+  /**
+   * Operator registry to resolve keys against - typically
+   * `CNGX_FILTER_BUILDER_CONFIG.operators` after `withOperators(...)`
+   * merged consumer definitions over the builtins. Default:
+   * `CNGX_FILTER_BUILTIN_OPERATOR_DEFS`.
+   */
+  readonly operators?: ReadonlyMap<string, CngxFilterOperatorDef>;
+  /**
+   * Fold both sides of the builtin substring trio (`contains` /
+   * `startsWith` / `endsWith`) via `toLowerCase()` before comparing.
+   * Default `false` (case-sensitive). `eq` / `neq` keep `Object.is`
+   * identity semantics regardless.
+   */
+  readonly caseInsensitive?: boolean;
+}
+
+/**
  * Build an item-level predicate from a `FilterGroup`. Returns `null` when
  * the tree itself is `null` - the consumer typically interprets `null` as
  * "no filtering, accept every item". For an empty root group, the returned
  * predicate evaluates `true` for every item (vacuous truth on `and`).
+ *
+ * Evaluation contract per expression - see {@link evaluateExpression}:
+ * unknown field keys evaluate `false`, unfilled values short-circuit
+ * `true`, unknown operators warn once in dev mode and evaluate `false`.
+ * Pass `options` to evaluate against a consumer-extended operator
+ * registry or with case-insensitive substring matching.
  *
  * @category forms/filter-builder
  */
 export function toFilterPredicate<TItem>(
   tree: FilterGroup | null,
   fields: readonly FilterFieldDef[],
+  options?: CngxFilterEvaluationOptions,
 ): ((item: TItem) => boolean) | null {
   if (!tree) {
     return null;
@@ -151,11 +188,40 @@ export function toFilterPredicate<TItem>(
   for (const def of fields) {
     fieldMap.set(def.key, def);
   }
-  return (item: TItem) => evaluateGroup(tree, item, fieldMap);
+  return (item: TItem) => evaluateGroup(tree, item, fieldMap, options);
 }
 
 /**
- * Evaluate a single `FilterExpression` against `item`. Unfilled expressions short-circuit to `true` (except `isEmpty`/`isNotEmpty`).
+ * Evaluate a single `FilterExpression` against `item`.
+ *
+ * The contract, in resolution order:
+ *
+ * 1. **Unknown field** (`fieldDef` is `undefined`) - `false`. The
+ *    expression references a field the consumer never declared.
+ * 2. **Unfilled value** - `true`. The user picked a field and an operator
+ *    but supplied no value (`null` / `undefined` / `''`), so the row is a
+ *    no-op that must not exclude every item. Operators whose definition is
+ *    `valueless` (builtin `isEmpty` / `isNotEmpty`) are exempt and
+ *    evaluate normally; the registry passed via `options.operators`
+ *    extends this exemption to consumer-registered valueless operators.
+ * 3. **Unknown operator** - one `console.warn` per key in dev mode, then
+ *    `false` for every item. An operator that reaches evaluation without
+ *    a registered definition is a wiring bug, and a loud conservative
+ *    `false` beats a silent one.
+ * 4. Otherwise the resolved {@link CngxFilterOperatorDef.evaluate} runs
+ *    with the item value, the expression value, and the evaluation
+ *    context.
+ *
+ * Semantics of the builtin definitions:
+ *
+ * - `eq` / `neq` compare with `Object.is` identity - no coercion, no
+ *   case folding.
+ * - `contains` / `startsWith` / `endsWith` require both sides to be
+ *   strings (anything else is `false`) and are case-SENSITIVE unless
+ *   `options.caseInsensitive` is `true`, which lowercases both sides.
+ * - `gt` / `gte` / `lt` / `lte` order numbers, `Date` instances, and
+ *   strings (lexicographic). Nullish operands and mixed/unsupported type
+ *   pairs compare as `NaN`, so every ordering test on them is `false`.
  *
  * @category forms/filter-builder
  */
@@ -163,6 +229,7 @@ export function evaluateExpression<TItem>(
   expr: FilterExpression,
   item: TItem,
   fieldDef: FilterFieldDef | undefined,
+  options?: CngxFilterEvaluationOptions,
 ): boolean {
   if (!fieldDef) {
     return false;
@@ -170,53 +237,21 @@ export function evaluateExpression<TItem>(
   // Expressions that have not been filled in yet are treated as no-ops: the
   // user picked a field and an operator but did not type a value, so the row
   // must not exclude every item. The shared definition covers null /
-  // undefined / '' and exempts the valueless isEmpty / isNotEmpty family -
-  // same test that drives errorState and the row's incomplete CSS state.
-  if (isExpressionValueEmpty(expr)) {
+  // undefined / '' and exempts the valueless operator family - same test
+  // that drives errorState and the row's incomplete CSS state.
+  if (isExpressionValueEmpty(expr, options?.operators)) {
     return true;
+  }
+  const def = resolveOperatorDef(expr.operator, options?.operators);
+  if (!def) {
+    warnUnknownFilterOperatorOnce(expr.operator);
+    return false;
   }
   const record = item as Record<string, unknown>;
   const itemValue: unknown = record[fieldDef.key];
-  const targetValue: unknown = expr.value;
-
-  switch (expr.operator) {
-    case 'eq':
-      return Object.is(itemValue, targetValue);
-    case 'neq':
-      return !Object.is(itemValue, targetValue);
-    case 'isEmpty':
-      return itemValue == null || itemValue === '';
-    case 'isNotEmpty':
-      return itemValue != null && itemValue !== '';
-    case 'contains':
-      return (
-        typeof itemValue === 'string' &&
-        typeof targetValue === 'string' &&
-        itemValue.includes(targetValue)
-      );
-    case 'startsWith':
-      return (
-        typeof itemValue === 'string' &&
-        typeof targetValue === 'string' &&
-        itemValue.startsWith(targetValue)
-      );
-    case 'endsWith':
-      return (
-        typeof itemValue === 'string' &&
-        typeof targetValue === 'string' &&
-        itemValue.endsWith(targetValue)
-      );
-    case 'gt':
-      return compare(itemValue, targetValue) > 0;
-    case 'gte':
-      return compare(itemValue, targetValue) >= 0;
-    case 'lt':
-      return compare(itemValue, targetValue) < 0;
-    case 'lte':
-      return compare(itemValue, targetValue) <= 0;
-    default:
-      return false;
-  }
+  return def.evaluate(itemValue, expr.value, {
+    caseInsensitive: options?.caseInsensitive ?? false,
+  });
 }
 
 /** @internal */
@@ -224,6 +259,7 @@ function evaluateGroup<TItem>(
   group: FilterGroup,
   item: TItem,
   fieldMap: ReadonlyMap<string, FilterFieldDef>,
+  options?: CngxFilterEvaluationOptions,
 ): boolean {
   // Empty group = no constraint. Pure boolean logic would return
   // `OR(∅) = false`, `XOR(∅) = false`, `AND(∅) = true` - but in a
@@ -240,9 +276,9 @@ function evaluateGroup<TItem>(
   const results: boolean[] = [];
   for (const child of group.filters) {
     if (child.type === 'group') {
-      results.push(evaluateGroup(child, item, fieldMap));
+      results.push(evaluateGroup(child, item, fieldMap, options));
     } else {
-      results.push(evaluateExpression(child, item, fieldMap.get(child.field)));
+      results.push(evaluateExpression(child, item, fieldMap.get(child.field), options));
     }
   }
 
@@ -264,21 +300,4 @@ function evaluateGroup<TItem>(
   }
 
   return group.negated ? !combined : combined;
-}
-
-/** @internal */
-function compare(a: unknown, b: unknown): number {
-  if (a == null || b == null) {
-    return Number.NaN;
-  }
-  if (typeof a === 'number' && typeof b === 'number') {
-    return a - b;
-  }
-  if (a instanceof Date && b instanceof Date) {
-    return a.getTime() - b.getTime();
-  }
-  if (typeof a === 'string' && typeof b === 'string') {
-    return a < b ? -1 : a > b ? 1 : 0;
-  }
-  return Number.NaN;
 }

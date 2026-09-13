@@ -81,3 +81,35 @@ describe('CngxSelect geometry', () => {
     expect(computedValue(trigger, 'min-height')).toBe('64px');
   });
 });
+
+describe('CngxSelect geometry - ancestor-set sizing tokens reach their read sites', () => {
+  // Regression locks for the inherits flip on --cngx-select-caret-size and
+  // --cngx-select-min-height: both are read at trigger DESCENDANTS, so an
+  // inherits:false registration silently discarded every ancestor (and even
+  // host-level) assignment - the registered initial always won.
+  it('caret-size set on an ancestor resolves at the caret span', () => {
+    const host = mount();
+    mountedRoot?.style.setProperty('--cngx-select-caret-size', '1em');
+    const trigger = query(host, '.cngx-select__trigger');
+    const caret = query(host, '.cngx-select__caret');
+    expect(computedValue(caret, 'font-size')).toBe(computedValue(trigger, 'font-size'));
+  });
+
+  it('min-height set on an ancestor resolves at the trigger', () => {
+    const host = mount();
+    mountedRoot?.style.setProperty('--cngx-select-min-height', '3.5rem');
+    const trigger = query(host, '.cngx-select__trigger');
+    expect(computedValue(trigger, 'min-height')).toBe('56px');
+  });
+});
+
+describe('CngxSelect geometry - self-contained trigger sizing', () => {
+  it('declares border-box on the trigger instead of relying on a global reset', () => {
+    const host = mount();
+    const trigger = query(host, '.cngx-select__trigger');
+    // The geometry target loads no cngx.base layer, so this read proves
+    // the component carries its own box-sizing - the min-height contract
+    // must not depend on a consumer-side global reset.
+    expect(computedValue(trigger, 'box-sizing')).toBe('border-box');
+  });
+});

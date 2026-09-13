@@ -60,12 +60,16 @@
   }
 
   /**
-   * Minimum block size of the trigger.
+   * Minimum block size of the trigger. Read at the trigger element (a
+   * host descendant), so `inherits: true` is load-bearing: with
+   * `inherits: false` the registered initial would always win at the
+   * trigger and setting the token on the host or an ancestor would be
+   * a silent no-op (the inherits:false trap).
    * @group Layout
    */
   @property --cngx-select-min-height {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 2.25rem;
   }
 
@@ -180,6 +184,9 @@
          -> sm; padding 0.5/0.75 -> sm/sm (inline 12 tie sm/md -> sm). */
       --cngx-select-gap: var(--cngx-space-sm);
       --cngx-select-padding: var(--cngx-space-sm) var(--cngx-space-sm);
+      /* Self-contained sizing: without this the min-height contract depends
+         on a global border-box reset the consumer may not load. */
+      box-sizing: border-box;
       display: inline-flex;
       align-items: center;
       gap: var(--cngx-select-gap, 0.5rem);

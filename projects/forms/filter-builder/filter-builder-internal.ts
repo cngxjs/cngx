@@ -5,6 +5,7 @@
  */
 
 import type { FilterExpression } from './filter-builder.types';
+import { resolveOperatorDef, type CngxFilterOperatorDef } from './filter-builder-operators';
 
 /**
  * Reference-identity equality predicate. Used as the `equal` fn on object
@@ -19,20 +20,19 @@ import type { FilterExpression } from './filter-builder.types';
 export const referenceEqual = <T>(a: T, b: T): boolean => a === b;
 
 /**
- * Operators that query the item value itself - an expression using them is
- * complete without an expression value (`isEmpty` / `isNotEmpty`).
- */
-const VALUELESS_OPERATORS: ReadonlySet<string> = new Set(['isEmpty', 'isNotEmpty']);
-
-/**
  * The one canonical emptiness test for an expression's value:
- * `null` / `undefined` / `''` count as unfilled, except for the valueless
- * operator family. Shared by `evaluateExpression`'s no-op guard, the
- * presenter's `errorState` count, and the row's dashed-outline CSS state so
- * the three surfaces can never drift apart again.
+ * `null` / `undefined` / `''` count as unfilled, except for operators
+ * whose resolved definition is `valueless` (builtin `isEmpty` /
+ * `isNotEmpty`; consumer-registered valueless operators when the config's
+ * registry is passed). Shared by `evaluateExpression`'s no-op guard, the
+ * presenter's `errorState` count, and the row's dashed-outline CSS state
+ * so the three surfaces can never drift apart again.
  */
-export function isExpressionValueEmpty(expression: FilterExpression): boolean {
-  if (VALUELESS_OPERATORS.has(expression.operator)) {
+export function isExpressionValueEmpty(
+  expression: FilterExpression,
+  operators?: ReadonlyMap<string, CngxFilterOperatorDef>,
+): boolean {
+  if (resolveOperatorDef(expression.operator, operators)?.valueless) {
     return false;
   }
   const value = expression.value;
@@ -44,6 +44,11 @@ export function isExpressionValueEmpty(expression: FilterExpression): boolean {
  * field, missing operator, or an unfilled value (see
  * {@link isExpressionValueEmpty}).
  */
-export function isExpressionIncomplete(expression: FilterExpression): boolean {
-  return !expression.field || !expression.operator || isExpressionValueEmpty(expression);
+export function isExpressionIncomplete(
+  expression: FilterExpression,
+  operators?: ReadonlyMap<string, CngxFilterOperatorDef>,
+): boolean {
+  return (
+    !expression.field || !expression.operator || isExpressionValueEmpty(expression, operators)
+  );
 }

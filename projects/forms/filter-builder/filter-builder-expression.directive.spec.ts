@@ -53,6 +53,7 @@ function buildMockHost(initial: FilterGroup, fieldList: readonly FilterFieldDef[
     setField: () => undefined,
     setOperator: () => undefined,
     setValue: () => undefined,
+    applyFieldChange: () => undefined,
     getNodeAtPath: (path) => walk(tree(), path),
     getFieldDef: (key) => fieldList.find((def) => def.key === key),
   };

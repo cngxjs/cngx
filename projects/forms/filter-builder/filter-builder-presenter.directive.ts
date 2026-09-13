@@ -25,6 +25,7 @@ import type {
 } from './filter-builder.types';
 import { injectFilterBuilderConfig } from './filter-builder.config';
 import { isExpressionIncomplete } from './filter-builder-internal';
+import type { CngxFilterRowFieldChangePlan } from './filter-builder-row-controller';
 import { CNGX_FILTER_BUILDER_HOST, type CngxFilterBuilderHost } from './filter-builder-host.token';
 import { EMPTY_ROOT, ensureFilterTreeIds, toFilterPredicate } from './filter-builder.helpers';
 import {
@@ -171,7 +172,12 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
     } catch {
       return null;
     }
-    return toFilterPredicate<TValue>(this.tree(), fields);
+    // Route the config's operator registry and case knob into evaluation -
+    // a withOperators-registered key must evaluate on this primary path.
+    return toFilterPredicate<TValue>(this.tree(), fields, {
+      operators: this.config.operators,
+      caseInsensitive: this.config.caseInsensitive,
+    });
   });
 
   constructor() {
@@ -257,6 +263,10 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
 
   setOperator(path: readonly number[], operator: string): void {
     this.core.setOperator(path, operator);
+  }
+
+  applyFieldChange(path: readonly number[], plan: CngxFilterRowFieldChangePlan): void {
+    this.core.applyFieldChange(path, plan);
   }
 
   setValue(path: readonly number[], value: unknown): void {

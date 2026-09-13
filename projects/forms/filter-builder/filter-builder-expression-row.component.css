@@ -1,73 +1,61 @@
 /**
  * @overview
  * Expression-row variant of `CngxFilterBuilderRow`. The host element
- * `cngx-filter-expression-row` stays `display: contents` and delegates
- * its layout to the parent's `.cngx-filter-builder__expression` flex
- * row, redeclared here so the file is self-contained when consumed
- * standalone.
+ * `cngx-filter-expression-row` stays `display: contents`; the row div
+ * renders as ONE inline pill - borderless picker/editor segments inside
+ * a single bordered capsule with hairline dividers.
  *
  * **State modifiers**
  *
- * - `.cngx-filter-builder__expression--empty` - opacity fade for an
- *   empty row, sourced from `--cngx-filter-builder-empty-row-opacity`
- *   (owned by `filter-builder-row.component.css`)
- * - `.cngx-filter-expression-incomplete` - dashed warning outline for
- *   an unfinished expression, draws attention without committing to an
- *   error tone
+ * - `.cngx-filter-expression-incomplete` - quiet unfinished-state cue:
+ *   the value segment's bottom edge goes dashed; no row-level warning box
  *
  * **Slots**
  *
  * - `cngx-filter-expression-row` - host, `display: contents`
- * - `.cngx-filter-builder__expression` - inner flex row, gap +
- *   wrap, aligned center
+ * - `.cngx-filter-builder__expression` - the capsule (border, radius,
+ *   fit-content)
+ * - `.cngx-filter-builder__field-select` / `__operator-select` -
+ *   content-hugging borderless segments
+ * - `input[cngxInput]` value segment - sized by
+ *   `--cngx-filter-builder-value-basis`, capped by `-value-max`
+ * - `.cngx-filter-builder__action-button--remove` - trailing ghost
+ *   segment (accessible name via `aria-label`), floored to
+ *   `--cngx-target-min`
  *
  * **Inheritance**
  *
- * Local-token chains:
+ * - `--cngx-filter-builder-incomplete-border-style` /
+ *   `-incomplete-border-color` - unregistered knobs for the quiet
+ *   unfinished-value cue; the color falls back through
+ *   `--cngx-color-border`
  *
- * - `--cngx-filter-builder-incomplete-outline` -> `1px dashed
- *   var(--cngx-color-warning)`
- * - `--cngx-filter-builder-incomplete-outline-offset` - structural,
- *   no foundation delegate
- *
- * `--cngx-filter-builder-gap` and
- * `--cngx-filter-builder-empty-row-opacity` are owned by the parent
- * filter-builder files and consumed here through the `var()` fallback
- * chain only. A `:root` delegating rule pins the incomplete-outline
- * structural part and inherits the warning hue via the foundation
- * chain so a dark-mode swap on `--cngx-color-warning` cascades.
+ * `--cngx-filter-builder-gap` is owned by the parent filter-builder
+ * files and consumed here through the `var()` fallback chain only.
  */
 
 @layer cngx.tokens {
   /**
-   * Outline shorthand for the incomplete-expression state - dashed
-   * warning hue draws attention without committing to an error tone.
-   * Falls back through `--cngx-color-warning`. `inherits: true` so
-   * the :root delegating value reaches the expression-row host.
-   * @group State / Incomplete
-   * @see [[--cngx-color-warning]]
+   * Inline size of the value-editor segment inside the pill. Geometry
+   * token, deliberately not density-derived. `inherits: true` so one
+   * assignment at the builder root sizes every row in the tree.
+   * @group Layout / Pill
    */
-  @property --cngx-filter-builder-incomplete-outline {
-    syntax: '*';
+  @property --cngx-filter-builder-value-basis {
+    syntax: '<length>';
     inherits: true;
-    initial-value: 1px dashed oklch(0.55 0.15 65);
+    initial-value: 8rem;
   }
 
   /**
-   * Outline offset of the incomplete-expression outline.
-   * @group State / Incomplete
+   * Growth cap of the value-editor segment - keeps a long text value
+   * from ballooning the capsule.
+   * @group Layout / Pill
    */
-  @property --cngx-filter-builder-incomplete-outline-offset {
+  @property --cngx-filter-builder-value-max {
     syntax: '<length>';
-    inherits: false;
-    initial-value: 2px;
-  }
-
-  /* Delegating token - incomplete-outline pins its structural part
-   * (1px dashed) and inherits the warning hue via the foundation
-   * chain so a dark-mode swap on `--cngx-color-warning` cascades. */
-  :root {
-    --cngx-filter-builder-incomplete-outline: 1px dashed var(--cngx-color-warning);
+    inherits: true;
+    initial-value: 20rem;
   }
 }
 
@@ -77,23 +65,116 @@
       display: contents;
     }
 
+    /* Inline-pill skin: the row IS one capsule - borderless segments
+       inside a single bordered container, hairline dividers via
+       box-shadow (no border-shorthand fights), the remove button as the
+       trailing segment. No overflow:hidden so segment focus rings stay
+       visible; the end segments round themselves instead. */
     .cngx-filter-builder__expression {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--cngx-filter-builder-gap, 0.5rem);
-      align-items: center;
+      display: inline-flex;
+      align-items: stretch;
+      gap: 0;
+      width: fit-content;
+      max-inline-size: 100%;
+      border: 1px solid var(--cngx-filter-builder-border-color, var(--cngx-color-border, oklch(0.87 0 0)));
+      border-radius: var(--cngx-radius-md, 0.5rem);
+      background: var(--cngx-filter-builder-pill-bg, transparent);
     }
 
-    .cngx-filter-builder__expression--empty {
-      opacity: var(--cngx-filter-builder-empty-row-opacity, 0.85);
+    .cngx-filter-builder__expression > * + * {
+      box-shadow: -1px 0 0 0 var(--cngx-filter-builder-border-color, var(--cngx-color-border, oklch(0.87 0 0)));
     }
 
-    .cngx-filter-expression-incomplete {
-      outline: var(
-        --cngx-filter-builder-incomplete-outline,
-        1px dashed var(--cngx-color-warning, oklch(0.55 0.15 65))
+    .cngx-filter-builder__expression > :first-child {
+      border-start-start-radius: calc(var(--cngx-radius-md, 0.5rem) - 1px);
+      border-end-start-radius: calc(var(--cngx-radius-md, 0.5rem) - 1px);
+    }
+
+    .cngx-filter-builder__expression > :last-child {
+      border-start-end-radius: calc(var(--cngx-radius-md, 0.5rem) - 1px);
+      border-end-end-radius: calc(var(--cngx-radius-md, 0.5rem) - 1px);
+    }
+
+    .cngx-filter-builder__field-select,
+    .cngx-filter-builder__operator-select {
+      --cngx-select-min-width: 0px;
+      --cngx-select-border: 1px solid transparent;
+      inline-size: fit-content;
+      flex: 0 0 auto;
+    }
+
+    .cngx-filter-builder__field-select:hover,
+    .cngx-filter-builder__operator-select:hover {
+      background: var(--cngx-filter-builder-action-hover-bg, oklch(0 0 0 / 0.04));
+    }
+
+    .cngx-filter-builder__expression > input[cngxInput] {
+      flex: 0 1 auto;
+      inline-size: var(--cngx-filter-builder-value-basis, 8rem);
+      min-inline-size: 0;
+      max-inline-size: var(--cngx-filter-builder-value-max, 20rem);
+      /* Borderless segment; the transparent bottom edge keeps the height
+         stable when the unfinished-value cue flips it to dashed. */
+      font: inherit;
+      padding: var(--cngx-space-sm, 0.5rem);
+      border: none;
+      border-block-end: 1px solid transparent;
+      border-radius: 0;
+      background: transparent;
+      color: inherit;
+    }
+
+    .cngx-filter-builder__expression > cngx-toggle {
+      align-self: center;
+      margin-inline: var(--cngx-space-sm, 0.5rem);
+      /* The switch draws its own shape - a hairline glued to it reads as
+         a glitch, so this segment opts out of the divider. */
+      box-shadow: none;
+    }
+
+    .cngx-filter-expression-incomplete > input[cngxInput] {
+      border-block-end: 1px var(--cngx-filter-builder-incomplete-border-style, dashed)
+        var(--cngx-filter-builder-incomplete-border-color, var(--cngx-color-border, oklch(0.87 0 0)));
+    }
+
+    .cngx-filter-builder__action-button--remove {
+      /* Trailing ghost segment of the capsule. */
+      --cngx-filter-builder-action-padding-compact: var(--cngx-space-sm);
+      justify-content: center;
+      padding: var(--cngx-filter-builder-action-padding-compact, 0.5rem);
+      flex: 0 0 auto;
+      border: none;
+      border-radius: 0;
+      background: transparent;
+      color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
+      min-inline-size: max(2rem, var(--cngx-target-min, 0px));
+      min-block-size: max(2rem, var(--cngx-target-min, 0px));
+    }
+
+    .cngx-filter-builder__action-button--remove:hover,
+    .cngx-filter-builder__action-button--remove:focus-visible {
+      color: var(
+        --cngx-filter-builder-action-remove-fg,
+        var(--cngx-filter-builder-error-fg, var(--cngx-color-danger, oklch(0.55 0.18 25)))
       );
-      outline-offset: var(--cngx-filter-builder-incomplete-outline-offset, 2px);
+      background: var(--cngx-filter-builder-action-hover-bg, oklch(0 0 0 / 0.04));
     }
+  }
+}
+
+/* box-shadow dividers are stripped under forced colors - redraw the
+   segment boundaries as real borders so the capsule keeps its anatomy
+   in Windows High Contrast. Unlayered on purpose: an @media block
+   nested inside @scope does not re-scope reliably, and unlayered wins
+   over the layered base rules it needs to override. */
+@media (forced-colors: active) {
+  .cngx-filter-builder__expression > * + *,
+  .cngx-filter-builder__expression > * + input[cngxInput] {
+    box-shadow: none;
+    border-inline-start: 1px solid ButtonBorder;
+  }
+
+  .cngx-filter-builder__expression > cngx-toggle {
+    border-inline-start: none;
   }
 }
