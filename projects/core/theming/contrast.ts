@@ -1,15 +1,5 @@
-import { DOCUMENT } from '@angular/common';
-import {
-  effect,
-  inject,
-  InjectionToken,
-  makeEnvironmentProviders,
-  provideEnvironmentInitializer,
-  signal,
-  untracked,
-  type EnvironmentProviders,
-  type WritableSignal,
-} from '@angular/core';
+import type { EnvironmentProviders, InjectionToken, WritableSignal } from '@angular/core';
+import { createPreferenceAxis } from './preference-axis';
 
 /**
  * The three contrast preferences the `[data-contrast]` axis ships
@@ -23,6 +13,13 @@ import {
  */
 export type CngxContrastPreference = 'normal' | 'more' | 'auto';
 
+const contrastAxis = createPreferenceAxis<CngxContrastPreference>({
+  tokenName: 'CNGX_CONTRAST',
+  attribute: 'data-contrast',
+  initial: 'auto',
+  removeValue: 'auto',
+});
+
 /**
  * Holds the app-wide contrast preference as a `WritableSignal`. Read it
  * (and write it at runtime) through {@link injectContrast}; install the
@@ -34,13 +31,8 @@ export type CngxContrastPreference = 'normal' | 'more' | 'auto';
  * @relatedTo injectContrast
  * @since 0.1.0
  */
-export const CNGX_CONTRAST = new InjectionToken<WritableSignal<CngxContrastPreference>>(
-  'CNGX_CONTRAST',
-  {
-    providedIn: 'root',
-    factory: () => signal<CngxContrastPreference>('auto'),
-  },
-);
+export const CNGX_CONTRAST: InjectionToken<WritableSignal<CngxContrastPreference>> =
+  contrastAxis.token;
 
 /**
  * Install the contrast preference at app root and reflect it onto
@@ -63,26 +55,8 @@ export const CNGX_CONTRAST = new InjectionToken<WritableSignal<CngxContrastPrefe
  * @relatedTo injectContrast
  * @since 0.1.0
  */
-export function provideContrast(
-  initial: CngxContrastPreference = 'auto',
-): EnvironmentProviders {
-  return makeEnvironmentProviders([
-    { provide: CNGX_CONTRAST, useFactory: () => signal<CngxContrastPreference>(initial) },
-    provideEnvironmentInitializer(() => {
-      const contrast = inject(CNGX_CONTRAST);
-      const root = inject(DOCUMENT).documentElement;
-      effect(() => {
-        const value = contrast();
-        untracked(() => {
-          if (value === 'auto') {
-            root.removeAttribute('data-contrast');
-          } else {
-            root.setAttribute('data-contrast', value);
-          }
-        });
-      });
-    }),
-  ]);
+export function provideContrast(initial: CngxContrastPreference = 'auto'): EnvironmentProviders {
+  return contrastAxis.provide(initial);
 }
 
 /**
@@ -96,5 +70,5 @@ export function provideContrast(
  * @since 0.1.0
  */
 export function injectContrast(): WritableSignal<CngxContrastPreference> {
-  return inject(CNGX_CONTRAST);
+  return contrastAxis.injectValue();
 }
