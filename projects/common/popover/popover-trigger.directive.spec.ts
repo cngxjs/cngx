@@ -1,4 +1,4 @@
-import { Component, viewChild } from '@angular/core';
+import { Component, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -68,6 +68,20 @@ class RestoreFocusHost {
   readonly trigger = viewChild.required(CngxPopoverTrigger);
 }
 
+@Component({
+  template: `
+    @if (showTrigger()) {
+      <button [cngxPopoverTrigger]="pop" id="trigger">Open</button>
+    }
+    <div cngxPopover #pop="cngxPopover">Content</div>
+  `,
+  imports: [CngxPopover, CngxPopoverTrigger],
+})
+class ConditionalTriggerHost {
+  readonly popover = viewChild.required(CngxPopover);
+  readonly showTrigger = signal(true);
+}
+
 function setup<T>(hostType: new () => T) {
   const fixture = TestBed.createComponent(hostType);
   fixture.detectChanges();
@@ -118,7 +132,7 @@ describe('CngxPopoverTrigger', () => {
     it('should pick up the popover haspopup signal as default', () => {
       const { fixture, triggerEl } = setup(BasicTriggerHost);
       const host = fixture.componentInstance as BasicTriggerHost;
-      host.popover().haspopup.set('dialog');
+      host.popover().setHaspopup('dialog');
       fixture.detectChanges();
       expect(triggerEl.getAttribute('aria-haspopup')).toBe('dialog');
     });
@@ -126,7 +140,7 @@ describe('CngxPopoverTrigger', () => {
     it('should let consumer haspopup override the popover hint', () => {
       const { fixture, triggerEl } = setup(MenuTriggerHost);
       const host = fixture.componentInstance as MenuTriggerHost;
-      host.popover().haspopup.set('dialog');
+      host.popover().setHaspopup('dialog');
       fixture.detectChanges();
       expect(triggerEl.getAttribute('aria-haspopup')).toBe('menu');
     });
@@ -139,7 +153,7 @@ describe('CngxPopoverTrigger', () => {
     it('should let none cancel the popover haspopup hint', () => {
       const { fixture, triggerEl } = setup(NoneHaspopupHost);
       const host = fixture.componentInstance as NoneHaspopupHost;
-      host.popover().haspopup.set('dialog');
+      host.popover().setHaspopup('dialog');
       fixture.detectChanges();
       expect(triggerEl.hasAttribute('aria-haspopup')).toBe(false);
     });
@@ -199,6 +213,31 @@ describe('CngxPopoverTrigger', () => {
       expect(document.activeElement).toBe(triggerEl);
       fixture.destroy();
     });
+
+    it('should restore to the pre-show focus target even when panel content grabs focus before the capture effect runs', () => {
+      const fixture = TestBed.createComponent(RestoreFocusHost);
+      testRoot.appendChild(fixture.nativeElement);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const triggerEl = fixture.nativeElement.querySelector('#trigger') as HTMLElement;
+      const popoverEl = fixture.nativeElement.querySelector('[cngxpopover]') as HTMLElement;
+      stubPopoverElement(popoverEl);
+
+      triggerEl.focus();
+      const host = fixture.componentInstance as RestoreFocusHost;
+      host.popover().show();
+      // Simulate content autofocus landing between show() and the
+      // trigger's post-CD capture effect - the effect must adopt the
+      // popover's pre-show snapshot, not document.activeElement.
+      const autofocused = document.createElement('button');
+      testRoot.appendChild(autofocused);
+      autofocused.focus();
+      fixture.detectChanges();
+      host.popover().hide();
+      fixture.detectChanges();
+      expect(document.activeElement).toBe(triggerEl);
+      fixture.destroy();
+    });
   });
 
   describe('anchor registration', () => {
@@ -207,6 +246,29 @@ describe('CngxPopoverTrigger', () => {
       const host = fixture.componentInstance as BasicTriggerHost;
       TestBed.flushEffects();
       expect(host.popover().anchorElement()).toBe(triggerEl);
+    });
+
+    it('should clear the anchor on trigger destroy', () => {
+      const { fixture, triggerEl } = setup(ConditionalTriggerHost);
+      const host = fixture.componentInstance as ConditionalTriggerHost;
+      TestBed.flushEffects();
+      expect(host.popover().anchorElement()).toBe(triggerEl);
+
+      host.showTrigger.set(false);
+      fixture.detectChanges();
+      expect(host.popover().anchorElement()).toBeNull();
+    });
+
+    it('should not clear an anchor a later registration replaced', () => {
+      const { fixture } = setup(ConditionalTriggerHost);
+      const host = fixture.componentInstance as ConditionalTriggerHost;
+      TestBed.flushEffects();
+
+      const replacement = document.createElement('button');
+      host.popover().setAnchorElement(replacement);
+      host.showTrigger.set(false);
+      fixture.detectChanges();
+      expect(host.popover().anchorElement()).toBe(replacement);
     });
   });
 

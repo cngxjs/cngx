@@ -36,8 +36,9 @@ import type { PopoverPanelRole } from './popover.types';
  * styling, arrow, close button, and content state templates.
  *
  * Composes `CngxPopover` via `hostDirectives` - all popover inputs
- * (`placement`, `offset`, `closeOnEscape`, `mode`, `exclusive`,
- * `cngxPopoverOpen`) are forwarded.
+ * (`placement`, `positionTryFallbacks`, `offset`, `closeOnEscape`,
+ * `closeOnOutsideClick`, `mode`, `exclusive`, `cngxPopoverOpen`) are
+ * forwarded.
  *
  * The `variant` input is a free-form string mapped to a CSS class
  * (`cngx-popover-panel--{variant}`). Five variants are pre-themed
@@ -99,6 +100,7 @@ import type { PopoverPanelRole } from './popover.types';
         'positionTryFallbacks',
         'offset',
         'closeOnEscape',
+        'closeOnOutsideClick',
         'mode',
         'exclusive',
         'cngxPopoverOpen',
@@ -329,7 +331,7 @@ export class CngxPopoverPanel implements CngxPopoverArrowBounds {
   constructor() {
     // Hint any CngxPopoverTrigger pointing at this popover to default
     // `aria-haspopup="dialog"`. Consumer override on the trigger wins.
-    this.popover.haspopup.set('dialog');
+    this.popover.setHaspopup('dialog');
 
     effect(() => {
       const isVisible = this.popover.isVisible();
@@ -342,9 +344,6 @@ export class CngxPopoverPanel implements CngxPopoverArrowBounds {
       }
       if (isVisible && timing?.[v]) {
         this.autoDismissTimer = setTimeout(() => this.popover.hide(), timing[v]);
-      } else if (!isVisible && this.autoDismissTimer) {
-        clearTimeout(this.autoDismissTimer);
-        this.autoDismissTimer = null;
       }
     });
 

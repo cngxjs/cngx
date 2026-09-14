@@ -13,7 +13,7 @@ function mockPopover() {
     isVisible: () => false,
     show: () => {},
     hide: () => {},
-    anchorElement: { set: () => {} },
+    setAnchorElement: () => {},
     id: () => 'vb',
     elementRef: { nativeElement: document.createElement('div') },
   };

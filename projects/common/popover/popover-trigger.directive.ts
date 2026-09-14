@@ -1,5 +1,13 @@
-import { DOCUMENT } from '@angular/common';
-import { computed, Directive, effect, ElementRef, inject, input, untracked } from '@angular/core';
+import {
+  computed,
+  DestroyRef,
+  Directive,
+  effect,
+  ElementRef,
+  inject,
+  input,
+  untracked,
+} from '@angular/core';
 
 import { SUPPORTS_ANCHOR } from './anchor-positioning';
 import { type CngxPopover } from './popover.directive';
@@ -21,9 +29,11 @@ import type { PopoverHaspopup } from './popover.types';
  * ```
  *
  * ### Focus restoration
- * Opt in with `[restoreFocus]="true"` to capture the active element when
- * the popover opens and restore focus to it on close. Useful for menus,
- * confirm panels, and dialogs that steal focus from the trigger.
+ * Opt in with `[restoreFocus]="true"` to restore focus on close to the
+ * element that was focused before the popover opened (the popover
+ * snapshots it synchronously in `show()`, so content autofocus cannot
+ * displace the restore target). Useful for menus, confirm panels, and
+ * dialogs that steal focus from the trigger.
  *
  * @category common/popover
  * @docsKind primary
@@ -49,7 +59,7 @@ import type { PopoverHaspopup } from './popover.types';
 })
 export class CngxPopoverTrigger {
   private readonly elRef = inject<ElementRef<HTMLElement>>(ElementRef);
-  private readonly doc = inject(DOCUMENT);
+  private readonly destroyRef = inject(DestroyRef);
 
   /** Explicit reference to the popover this trigger controls. */
   readonly popoverRef = input.required<CngxPopover>({
@@ -74,11 +84,12 @@ export class CngxPopoverTrigger {
   });
 
   /**
-   * When `true`, captures `document.activeElement` the moment the
-   * popover transitions to a visible state and restores focus to that
-   * element when the popover closes. Defaults to `false` so the trigger
-   * stays a passive ARIA atom; opt in for menus, confirm panels, and
-   * dialogs that move focus away from the trigger.
+   * When `true`, remembers the popover's pre-open focus target (the
+   * popover snapshots `document.activeElement` synchronously inside
+   * `show()`, before content autofocus can land in the panel) and
+   * restores focus to it when the popover closes. Defaults to `false`
+   * so the trigger stays a passive ARIA atom; opt in for menus,
+   * confirm panels, and dialogs that move focus away from the trigger.
    */
   readonly restoreFocus = input(false);
 
@@ -104,11 +115,20 @@ export class CngxPopoverTrigger {
     // Register this element as the anchor for fallback positioning.
     effect(() => {
       const pop = this.popoverRef();
-      untracked(() => pop.anchorElement.set(this.elRef.nativeElement));
+      untracked(() => pop.setAnchorElement(this.elRef.nativeElement));
     });
 
-    // Focus restoration: capture on open, restore on close. Inert until
-    // `restoreFocus` is opted into.
+    // Clear the anchor registration on destroy - identity-guarded so a
+    // trigger that registered later on the same popover is not clobbered.
+    this.destroyRef.onDestroy(() => {
+      const pop = this.popoverRef();
+      if (pop.anchorElement() === this.elRef.nativeElement) {
+        pop.setAnchorElement(null);
+      }
+    });
+
+    // Focus restoration: adopt the popover's pre-show focus snapshot on
+    // open, restore on close. Inert until `restoreFocus` is opted into.
     effect(() => {
       if (!this.restoreFocus()) {
         return;
@@ -116,8 +136,7 @@ export class CngxPopoverTrigger {
       const visible = this.popoverRef().isVisible();
       if (visible) {
         untracked(() => {
-          const active = this.doc.activeElement as HTMLElement | null;
-          this.savedFocus = active ?? this.elRef.nativeElement;
+          this.savedFocus = this.popoverRef().focusOrigin() ?? this.elRef.nativeElement;
         });
       } else if (this.savedFocus) {
         const target = this.savedFocus;

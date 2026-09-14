@@ -11,7 +11,7 @@ function mockTarget() {
     isVisible: () => visible(),
     hide: vi.fn(() => visible.set(false)),
     show: vi.fn(() => visible.set(true)),
-    anchorElement: { set: vi.fn() },
+    setAnchorElement: vi.fn(),
     id: () => 'pop-1',
     elementRef: { nativeElement },
   };
@@ -24,7 +24,7 @@ function mockTarget() {
 }
 
 describe('createContextMenuItemSubmenuFacade', () => {
-  it('delegates isVisible / hide / anchorElement / id / elementRef to the target popover', () => {
+  it('delegates isVisible / hide / setAnchorElement / id / elementRef to the target popover', () => {
     const { target, popover, nativeElement, visible } = mockTarget();
     const facade = createContextMenuItemSubmenuFacade(
       () => target,
@@ -39,8 +39,8 @@ describe('createContextMenuItemSubmenuFacade', () => {
     expect(popover.hide).toHaveBeenCalledOnce();
 
     const anchor = document.createElement('div');
-    facade.anchorElement.set(anchor);
-    expect(popover.anchorElement.set).toHaveBeenCalledWith(anchor);
+    facade.setAnchorElement(anchor);
+    expect(popover.setAnchorElement).toHaveBeenCalledWith(anchor);
 
     expect(facade.id()).toBe('pop-1');
     expect(facade.elementRef.nativeElement).toBe(nativeElement);
@@ -64,6 +64,6 @@ describe('createContextMenuItemSubmenuFacade', () => {
     expect(facade.isVisible()).toBe(false);
     expect(facade.id()).toBe('');
     expect(() => facade.hide()).not.toThrow();
-    expect(() => facade.anchorElement.set(document.createElement('div'))).not.toThrow();
+    expect(() => facade.setAnchorElement(document.createElement('div'))).not.toThrow();
   });
 });

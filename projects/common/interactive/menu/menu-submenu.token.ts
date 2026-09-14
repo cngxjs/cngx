@@ -68,7 +68,8 @@ export interface CngxMenuSubmenuPopoverRef {
   readonly isVisible: () => boolean;
   show(): void;
   hide(): void;
-  readonly anchorElement: { set(el: HTMLElement | null): void };
+  /** Register the submenu parent item as the popover's anchor, or clear it. */
+  setAnchorElement(el: HTMLElement | null): void;
   /** Popover unique id signal - composes the `anchor-name` CSS value. */
   readonly id: () => string;
   /** Popover host element - submenu hover listeners attach here. */

@@ -29,7 +29,7 @@ const wiring: CngxMenuSubmenuWiring = {
     isVisible: () => visible(),
     show: () => visible.set(true),
     hide: () => visible.set(false),
-    anchorElement: { set: () => {} },
+    setAnchorElement: () => {},
     id: () => 'wired',
     elementRef: { nativeElement: document.createElement('div') },
   }),

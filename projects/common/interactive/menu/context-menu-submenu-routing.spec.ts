@@ -67,7 +67,7 @@ describe('context-menu trigger core - submenu keyboard routing', () => {
       hide: () => visible.set(false),
       elementRef: { nativeElement: document.createElement('div') },
       show: () => visible.set(true),
-      anchorElement: { set: vi.fn() },
+      setAnchorElement: vi.fn(),
       id: () => 'test',
     };
     core = createContextMenuTriggerCore({

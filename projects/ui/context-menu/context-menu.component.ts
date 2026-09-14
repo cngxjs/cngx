@@ -133,9 +133,9 @@ export class CngxContextMenu<T = unknown> implements CngxContextMenuPanel<T> {
     // openAsSubmenu installed on this panel. Clearing here - in the open
     // gesture, before show() - keeps the reset out of any effect;
     // openAsSubmenu re-installs the overrides right before its own show().
-    this.popover.exclusiveOverride.set(null);
-    this.popover.placementOverride.set(null);
-    this.popover.positionTryFallbacksOverride.set(null);
+    this.popover.setExclusiveOverride(null);
+    this.popover.setPlacementOverride(null);
+    this.popover.setPositionTryFallbacksOverride(null);
   }
 
   /** @internal Release the open claim if `owner` still holds it. */
@@ -150,13 +150,13 @@ export class CngxContextMenu<T = unknown> implements CngxContextMenuPanel<T> {
    * inline-end placement + flip chain, opens non-exclusively (the parent panel
    * survives), mirrors the parent's per-open datum, then shows. Owns the submenu
    * placement policy so `CngxContextMenuItem` drives one seam rather than
-   * reaching into the popover's `@internal` override signals - the ejected item
+   * reaching into the popover's `@internal` override setters - the ejected item
    * skin stays off `CngxPopover` internals (decompose).
    */
   openAsSubmenu(context: T | null): void {
-    this.popover.exclusiveOverride.set(false);
-    this.popover.placementOverride.set('right-start');
-    this.popover.positionTryFallbacksOverride.set(CNGX_SUBMENU_TRY_FALLBACKS);
+    this.popover.setExclusiveOverride(false);
+    this.popover.setPlacementOverride('right-start');
+    this.popover.setPositionTryFallbacksOverride(CNGX_SUBMENU_TRY_FALLBACKS);
     this.setContext(context);
     this.popover.show();
   }
