@@ -5,14 +5,14 @@ Utility function that creates optimistic update behavior for signals.
 ## Import
 
 ```typescript
-import { optimistic, type OptimisticState } from '@cngx/common/interactive';
+import { createOptimistic, type OptimisticState } from '@cngx/common/interactive';
 ```
 
 ## Quick Start
 
 ```typescript
 import { Component, signal } from '@angular/core';
-import { optimistic } from '@cngx/common/interactive';
+import { createOptimistic } from '@cngx/common/interactive';
 
 @Component({
   selector: 'app-profile',
@@ -26,7 +26,7 @@ import { optimistic } from '@cngx/common/interactive';
 export class ProfileComponent {
   readonly name = signal('Alice');
 
-  private readonly [updateName, optimisticState] = optimistic(
+  private readonly [updateName, optimisticState] = createOptimistic(
     this.name,
     (name) => this.http.put('/api/name', { name })
   );
@@ -37,7 +37,7 @@ export class ProfileComponent {
 
 ## Accessibility
 
-optimistic provides state signals but has no built-in ARIA:
+createOptimistic provides state signals but has no built-in ARIA:
 
 - **ARIA roles:** None (state is application-specific)
 - **Keyboard interaction:** None (the input or control handles interaction)
@@ -48,7 +48,7 @@ optimistic provides state signals but has no built-in ARIA:
 
 ## Composition
 
-optimistic composes with any signal and can integrate with the feedback system:
+createOptimistic composes with any signal and can integrate with the feedback system:
 
 - **Host directives:** None (utility function, not a directive)
 - **Combines with:** Form controls, feedback system (toasts, alerts)
@@ -58,7 +58,7 @@ optimistic composes with any signal and can integrate with the feedback system:
 
 ```typescript
 readonly count = signal(0);
-private readonly [incrementCount, countState] = optimistic(
+private readonly [incrementCount, countState] = createOptimistic(
   this.count,
   (newValue) => this.http.put('/api/count', { count: newValue })
 );
@@ -75,7 +75,7 @@ private readonly [incrementCount, countState] = optimistic(
 
 ## Styling
 
-optimistic provides no styling - it exposes state signals for consumers:
+createOptimistic provides no styling - it exposes state signals for consumers:
 
 - `rolledBack()` - Show a rollback indicator
 - `error()` - Display the error message
@@ -88,7 +88,7 @@ optimistic provides no styling - it exposes state signals for consumers:
 ```typescript
 readonly firstName = signal('Alice');
 
-private readonly [updateFirstName, nameState] = optimistic(
+private readonly [updateFirstName, nameState] = createOptimistic(
   this.firstName,
   (name) => this.http.put('/api/profile/first-name', { firstName: name })
 );
@@ -111,7 +111,7 @@ private readonly [updateFirstName, nameState] = optimistic(
 ```typescript
 readonly isSubscribed = signal(false);
 
-private readonly [toggleSubscribed, subscribeState] = optimistic(
+private readonly [toggleSubscribed, subscribeState] = createOptimistic(
   this.isSubscribed,
   (value) => this.http.post('/api/subscribe', { enabled: value })
 );
@@ -142,7 +142,7 @@ markAsComplete(id: string) {
   const item = this.todoItems().find(i => i.id === id);
   if (!item) return;
 
-  const [updateItem, updateState] = optimistic(
+  const [updateItem, updateState] = createOptimistic(
     signal(item),
     (updated) => this.http.put(`/api/todos/${id}`, updated)
   );
@@ -167,7 +167,7 @@ readonly profile = signal<Profile>({
   bio: 'Engineer'
 });
 
-private readonly [updateProfile, profileState] = optimistic(
+private readonly [updateProfile, profileState] = createOptimistic(
   this.profile,
   (updated) => this.http.put('/api/profile', updated)
 );
@@ -212,7 +212,7 @@ updateField(field: keyof Profile, value: any) {
 ```typescript
 readonly count = signal(0);
 
-private readonly [updateCount, countState] = optimistic(
+private readonly [updateCount, countState] = createOptimistic(
   this.count,
   (value) => this.http.post('/api/counter', { count: value })
 );
@@ -243,7 +243,7 @@ decrement() {
 ```typescript
 readonly rating = signal(0);
 
-private readonly [setRating, ratingState] = optimistic(
+private readonly [setRating, ratingState] = createOptimistic(
   this.rating,
   (value) => this.http.put(`/api/items/${itemId}/rating`, { stars: value })
 );
@@ -269,6 +269,6 @@ private readonly [setRating, ratingState] = optimistic(
 
 - [API on compodocx](https://cngxjs.github.io/cngx/)
 - [CngxAsyncState](../../../core/utils/) - The shared state interface
-- [withRetry](../retry/) - Combines well with optimistic for resilient updates
+- [createRetry](../retry/) - Combines well with createOptimistic for resilient updates
 - Demo: `examples/stories/common/optimistic-demo/`
 - Tests: `projects/common/interactive/optimistic/optimistic.spec.ts`

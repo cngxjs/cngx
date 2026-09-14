@@ -5,14 +5,14 @@ Utility function that wraps an async action with automatic retry logic.
 ## Import
 
 ```typescript
-import { withRetry, type RetryState } from '@cngx/common/interactive';
+import { createRetry, type RetryState } from '@cngx/common/interactive';
 ```
 
 ## Quick Start
 
 ```typescript
 import { Component } from '@angular/core';
-import { withRetry } from '@cngx/common/interactive';
+import { createRetry } from '@cngx/common/interactive';
 import { CngxAsyncClick } from '@cngx/common/interactive';
 
 @Component({
@@ -35,7 +35,7 @@ import { CngxAsyncClick } from '@cngx/common/interactive';
   imports: [CngxAsyncClick],
 })
 export class SaveComponent {
-  private readonly [saveWithRetry, retryState] = withRetry(
+  private readonly [saveWithRetry, retryState] = createRetry(
     () => this.http.post('/api/save', data),
     { maxAttempts: 3, delay: 1000, backoff: 'exponential' }
   );
@@ -46,7 +46,7 @@ export class SaveComponent {
 
 ## Accessibility
 
-withRetry exposes state via RetryState, but has no built-in ARIA:
+createRetry exposes state via RetryState, but has no built-in ARIA:
 
 - **ARIA roles:** None (state is application-specific)
 - **Keyboard interaction:** None (the wrapped action handles interaction)
@@ -57,7 +57,7 @@ withRetry exposes state via RetryState, but has no built-in ARIA:
 
 ## Composition
 
-withRetry composes naturally with CngxAsyncClick and the feedback system:
+createRetry composes naturally with CngxAsyncClick and the feedback system:
 
 - **Host directives:** None (utility function, not a directive)
 - **Combines with:** CngxAsyncClick, CngxActionButton, feedback system (toasts, alerts)
@@ -67,7 +67,7 @@ withRetry composes naturally with CngxAsyncClick and the feedback system:
 
 ```typescript
 // Wrap an HTTP action with retry
-const [saveWithRetry, retryState] = withRetry(
+const [saveWithRetry, retryState] = createRetry(
   () => this.http.post('/api/save', data),
   { maxAttempts: 3, delay: 1000, backoff: 'exponential' }
 );
@@ -89,7 +89,7 @@ const [saveWithRetry, retryState] = withRetry(
 
 ## Styling
 
-withRetry provides no styling - it exposes state signals for consumers to style based on:
+createRetry provides no styling - it exposes state signals for consumers to style based on:
 
 - `attempt()` - Show which attempt is in progress
 - `retrying()` - Show a "retrying..." indicator
@@ -101,7 +101,7 @@ withRetry provides no styling - it exposes state signals for consumers to style 
 ### Basic Retry with Backoff
 
 ```typescript
-const [action, state] = withRetry(
+const [action, state] = createRetry(
   () => this.http.post('/api/operation', {}),
   { maxAttempts: 3, delay: 1000, backoff: 'exponential' }
 );
@@ -115,7 +115,7 @@ const [action, state] = withRetry(
 ### Linear Backoff
 
 ```typescript
-const [action, state] = withRetry(
+const [action, state] = createRetry(
   () => this.http.get('/api/data'),
   { maxAttempts: 4, delay: 500, backoff: 'linear' }
 );
@@ -130,7 +130,7 @@ const [action, state] = withRetry(
 ### With CngxAsyncClick
 
 ```typescript
-const [deleteWithRetry, retryState] = withRetry(
+const [deleteWithRetry, retryState] = createRetry(
   () => this.http.delete(`/api/items/${id}`),
   { maxAttempts: 2, delay: 500 }
 );
@@ -154,7 +154,7 @@ const [deleteWithRetry, retryState] = withRetry(
 ### With Toast Notifications
 
 ```typescript
-const [saveWithRetry, retryState] = withRetry(
+const [saveWithRetry, retryState] = createRetry(
   () => this.http.post('/api/save', formData),
   { maxAttempts: 3, delay: 1000 }
 );
@@ -190,7 +190,7 @@ const [saveWithRetry, retryState] = withRetry(
 ### Complex Retry UI
 
 ```typescript
-const [uploadWithRetry, retryState] = withRetry(
+const [uploadWithRetry, retryState] = createRetry(
   (file: File) => this.upload(file),
   { maxAttempts: 3, delay: 500, backoff: 'exponential' }
 );
@@ -217,7 +217,7 @@ const [uploadWithRetry, retryState] = withRetry(
 ### Using Observable Actions
 
 ```typescript
-const [retryAction, state] = withRetry(
+const [retryAction, state] = createRetry(
   () => this.http.get('/api/data').pipe(
     map(response => response.data),
     switchMap(data => this.processData(data))
