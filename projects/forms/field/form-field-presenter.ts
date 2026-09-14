@@ -1,5 +1,17 @@
-import { computed, Directive, inject, input, type Signal, untracked } from '@angular/core';
-import { CNGX_FORM_FIELD_HOST, type CngxFormFieldHostContract } from '@cngx/core/tokens';
+import {
+  computed,
+  contentChild,
+  Directive,
+  inject,
+  input,
+  type Signal,
+  untracked,
+} from '@angular/core';
+import {
+  CNGX_FORM_FIELD_CONTROL,
+  CNGX_FORM_FIELD_HOST,
+  type CngxFormFieldHostContract,
+} from '@cngx/core/tokens';
 import type { CngxFieldAccessor, CngxFieldRef } from './models';
 import {
   CNGX_FORM_FIELD_CONFIG,
@@ -49,15 +61,17 @@ function buildHint(
   standalone: true,
   providers: [{ provide: CNGX_FORM_FIELD_HOST, useExisting: CngxFormFieldPresenter }],
   host: {
-    '[class.cngx-field--error]': 'showError()',
+    '[class.cngx-field--error]': 'showError() || controlErrorState()',
     '[class.cngx-field--touched]': 'touched()',
     '[class.cngx-field--dirty]': 'dirty()',
-    '[class.cngx-field--disabled]': 'disabled()',
+    '[class.cngx-field--disabled]': 'disabled() || controlDisabled()',
     '[class.cngx-field--required]': 'required()',
     '[class.cngx-field--pending]': 'pending()',
     '[class.cngx-field--readonly]': 'readonly()',
     '[class.cngx-field--hidden]': 'hidden()',
     '[class.cngx-field--valid]': 'valid()',
+    '[class.cngx-field--focused]': 'controlFocused()',
+    '[class.cngx-field--empty]': 'controlEmpty()',
   },
 })
 export class CngxFormFieldPresenter implements CngxFormFieldHostContract {
@@ -95,6 +109,47 @@ export class CngxFormFieldPresenter implements CngxFormFieldHostContract {
   readonly describedBy = computed(() =>
     this.showError() ? `${this.hintId()} ${this.errorId()}` : this.hintId(),
   );
+
+  /**
+   * The active control discovered through the `CNGX_FORM_FIELD_CONTROL`
+   * content query (`descendants: true`).
+   *
+   * First provider in content order wins. Nested composites legitimately
+   * multi-provide the token (a filter-builder wrapping selects); document
+   * order guarantees the outer composite resolves before its inner
+   * controls, so no duplicate guard exists by design. `undefined` while
+   * no control sits inside the field.
+   */
+  readonly control = contentChild(CNGX_FORM_FIELD_CONTROL, { descendants: true });
+
+  /**
+   * Resolved `for`-target for the label: the control-reported id when
+   * non-empty, else the deterministic {@link inputId}. Single fallback
+   * site - `CngxLabel` binds this directly.
+   */
+  readonly controlId = computed(() => {
+    const reported = this.control()?.id();
+    if (reported === undefined || reported === '') {
+      return this.inputId();
+    }
+    return reported;
+  });
+
+  /** Whether the discovered control reports DOM focus. `false` without a control. */
+  readonly controlFocused = computed(() => this.control()?.focused() ?? false);
+  /** Whether the discovered control reports an empty value. `false` without a control. */
+  readonly controlEmpty = computed(() => this.control()?.empty() ?? false);
+  /** Whether the discovered control reports itself disabled. `false` without a control. */
+  readonly controlDisabled = computed(() => this.control()?.disabled() ?? false);
+  /**
+   * Whether the discovered control reports an error state. `false` without
+   * a control. Feeds only the widened class aggregates
+   * (`showError() || controlErrorState()`) - {@link showError} never reads
+   * the control, so controls that resolve their `errorState` to the field's
+   * `showError` (via `createFieldControlAria` or `CNGX_FORM_FIELD_HOST`)
+   * cannot form a cycle.
+   */
+  readonly controlErrorState = computed(() => this.control()?.errorState() ?? false);
 
   /** Whether the field has a `required` validator. */
   readonly required = computed(() => this.fieldState().required());
