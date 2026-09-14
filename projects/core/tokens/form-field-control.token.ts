@@ -36,8 +36,19 @@ export interface CngxFormFieldControl {
 
 /**
  * Injection token provided by controls inside a `cngx-form-field` (or any
- * other host that consumes the same contract). The form-field reads this
- * to discover the active control and project ARIA back onto it.
+ * other host that consumes the same contract). The form-field presenter
+ * discovers the active control through a signal content query on this
+ * token and projects field-level state from the five contract surfaces:
+ * `focused` / `empty` drive the `.cngx-field--focused` / `.cngx-field--empty`
+ * host classes, `disabled` / `errorState` widen `.cngx-field--disabled` /
+ * `.cngx-field--error` to field-OR-control, and `id` becomes the label's
+ * `for`-target. Per-control ARIA attributes remain the control's own read
+ * via `createFieldControlAria` (forms side) or `CNGX_FORM_FIELD_HOST`
+ * (common side) - the discovery query never writes onto the control.
+ *
+ * When several descendants provide the token (a nested composite wrapping
+ * inner controls), the first provider in content order wins - the outer
+ * composite resolves before its inner controls.
  *
  * `@cngx/forms/field` re-exports this constant so the existing
  * `import { CNGX_FORM_FIELD_CONTROL } from '@cngx/forms/field'` import
