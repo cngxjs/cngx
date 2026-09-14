@@ -344,9 +344,6 @@ export class CngxPopoverPanel implements CngxPopoverArrowBounds {
       }
       if (isVisible && timing?.[v]) {
         this.autoDismissTimer = setTimeout(() => this.popover.hide(), timing[v]);
-      } else if (!isVisible && this.autoDismissTimer) {
-        clearTimeout(this.autoDismissTimer);
-        this.autoDismissTimer = null;
       }
     });
 
