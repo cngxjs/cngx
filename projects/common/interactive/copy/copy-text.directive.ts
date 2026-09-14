@@ -42,7 +42,7 @@ import { DestroyRef, Directive, inject, input, output, signal, type Signal } fro
   standalone: true,
   exportAs: 'cngxCopyText',
   host: {
-    '(click)': 'copy()',
+    '(click)': 'handleClick()',
   },
 })
 export class CngxCopyText {
@@ -80,6 +80,14 @@ export class CngxCopyText {
         clearTimeout(this.resetTimer);
       }
     });
+  }
+
+  /**
+   * Host click handler - fire-and-forget wrapper so the event binding
+   * does not leak the promise the public {@link copy} API returns.
+   */
+  protected handleClick(): void {
+    void this.copy();
   }
 
   /** Copies the text to the clipboard. */
