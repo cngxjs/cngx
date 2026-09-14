@@ -1,4 +1,9 @@
-import type { EnvironmentProviders, InjectionToken, WritableSignal } from '@angular/core';
+import {
+  InjectionToken,
+  signal,
+  type EnvironmentProviders,
+  type WritableSignal,
+} from '@angular/core';
 import { createPreferenceAxis } from './preference-axis';
 
 /**
@@ -12,12 +17,6 @@ import { createPreferenceAxis } from './preference-axis';
  */
 export type CngxTextScaleValue = 'sm' | 'md' | 'lg';
 
-const textScaleAxis = createPreferenceAxis<CngxTextScaleValue>({
-  tokenName: 'CNGX_TEXT_SCALE',
-  attribute: 'data-text-size',
-  initial: 'md',
-});
-
 /**
  * Holds the app-wide text-scale preference as a `WritableSignal`. Read
  * it (and write it at runtime) through {@link injectTextScale}; install
@@ -30,8 +29,18 @@ const textScaleAxis = createPreferenceAxis<CngxTextScaleValue>({
  * @relatedTo injectTextScale
  * @since 0.1.0
  */
-export const CNGX_TEXT_SCALE: InjectionToken<WritableSignal<CngxTextScaleValue>> =
-  textScaleAxis.token;
+export const CNGX_TEXT_SCALE = new InjectionToken<WritableSignal<CngxTextScaleValue>>(
+  'CNGX_TEXT_SCALE',
+  {
+    providedIn: 'root',
+    factory: () => signal<CngxTextScaleValue>('md'),
+  },
+);
+
+const textScaleAxis = createPreferenceAxis({
+  token: CNGX_TEXT_SCALE,
+  attribute: 'data-text-size',
+});
 
 /**
  * Install the text-scale preference at app root and reflect it onto

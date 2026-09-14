@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, InjectionToken, signal, type WritableSignal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, describe, expect, it } from 'vitest';
 import { createPreferenceAxis } from './preference-axis';
@@ -10,17 +10,25 @@ class Host {}
 
 type ProbeValue = 'auto' | 'one' | 'two';
 
-const probeAxis = createPreferenceAxis<ProbeValue>({
-  tokenName: 'CNGX_PROBE_AXIS',
+const CNGX_PROBE_AXIS = new InjectionToken<WritableSignal<ProbeValue>>('CNGX_PROBE_AXIS', {
+  providedIn: 'root',
+  factory: () => signal<ProbeValue>('auto'),
+});
+
+const probeAxis = createPreferenceAxis({
+  token: CNGX_PROBE_AXIS,
   attribute: 'data-probe',
-  initial: 'auto',
   removeValue: 'auto',
 });
 
-const setAxis = createPreferenceAxis<'a' | 'b'>({
-  tokenName: 'CNGX_PROBE_SET_AXIS',
+const CNGX_PROBE_SET_AXIS = new InjectionToken<WritableSignal<'a' | 'b'>>('CNGX_PROBE_SET_AXIS', {
+  providedIn: 'root',
+  factory: () => signal<'a' | 'b'>('a'),
+});
+
+const setAxis = createPreferenceAxis({
+  token: CNGX_PROBE_SET_AXIS,
   attribute: 'data-probe-set',
-  initial: 'a',
 });
 
 const probeAttr = () => document.documentElement.getAttribute('data-probe');
@@ -29,11 +37,6 @@ describe('createPreferenceAxis', () => {
   afterEach(() => {
     document.documentElement.removeAttribute('data-probe');
     document.documentElement.removeAttribute('data-probe-set');
-  });
-
-  it('root token factory defaults to the configured initial without provide()', () => {
-    const value = TestBed.inject(probeAxis.token);
-    expect(value()).toBe('auto');
   });
 
   it('reflects a provided initial onto the configured attribute after render', () => {
@@ -49,7 +52,7 @@ describe('createPreferenceAxis', () => {
     fixture.detectChanges();
     expect(probeAttr()).toBe('one');
 
-    const value = TestBed.inject(probeAxis.token);
+    const value = TestBed.inject(CNGX_PROBE_AXIS);
     value.set('auto');
     fixture.detectChanges();
     expect(probeAttr()).toBeNull();
@@ -65,7 +68,7 @@ describe('createPreferenceAxis', () => {
     fixture.detectChanges();
     expect(document.documentElement.getAttribute('data-probe-set')).toBe('a');
 
-    TestBed.inject(setAxis.token).set('b');
+    TestBed.inject(CNGX_PROBE_SET_AXIS).set('b');
     fixture.detectChanges();
     expect(document.documentElement.getAttribute('data-probe-set')).toBe('b');
   });
@@ -73,6 +76,6 @@ describe('createPreferenceAxis', () => {
   it('injectValue() returns the same writable signal the token resolves', () => {
     TestBed.configureTestingModule({ providers: [probeAxis.provide('one')] });
     const viaInject = TestBed.runInInjectionContext(() => probeAxis.injectValue());
-    expect(viaInject).toBe(TestBed.inject(probeAxis.token));
+    expect(viaInject).toBe(TestBed.inject(CNGX_PROBE_AXIS));
   });
 });

@@ -1,4 +1,9 @@
-import type { EnvironmentProviders, InjectionToken, WritableSignal } from '@angular/core';
+import {
+  InjectionToken,
+  signal,
+  type EnvironmentProviders,
+  type WritableSignal,
+} from '@angular/core';
 import { createPreferenceAxis } from './preference-axis';
 
 /**
@@ -13,13 +18,6 @@ import { createPreferenceAxis } from './preference-axis';
  */
 export type CngxMotionPreference = 'full' | 'reduced' | 'auto';
 
-const motionAxis = createPreferenceAxis<CngxMotionPreference>({
-  tokenName: 'CNGX_MOTION',
-  attribute: 'data-motion',
-  initial: 'auto',
-  removeValue: 'auto',
-});
-
 /**
  * Holds the app-wide motion preference as a `WritableSignal`. Read it
  * (and write it at runtime) through {@link injectMotion}; install the
@@ -31,7 +29,16 @@ const motionAxis = createPreferenceAxis<CngxMotionPreference>({
  * @relatedTo injectMotion
  * @since 0.1.0
  */
-export const CNGX_MOTION: InjectionToken<WritableSignal<CngxMotionPreference>> = motionAxis.token;
+export const CNGX_MOTION = new InjectionToken<WritableSignal<CngxMotionPreference>>('CNGX_MOTION', {
+  providedIn: 'root',
+  factory: () => signal<CngxMotionPreference>('auto'),
+});
+
+const motionAxis = createPreferenceAxis({
+  token: CNGX_MOTION,
+  attribute: 'data-motion',
+  removeValue: 'auto',
+});
 
 /**
  * Install the motion preference at app root and reflect it onto

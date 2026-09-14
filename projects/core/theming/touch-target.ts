@@ -1,4 +1,9 @@
-import type { EnvironmentProviders, InjectionToken, WritableSignal } from '@angular/core';
+import {
+  InjectionToken,
+  signal,
+  type EnvironmentProviders,
+  type WritableSignal,
+} from '@angular/core';
 import { createPreferenceAxis } from './preference-axis';
 
 /**
@@ -13,13 +18,6 @@ import { createPreferenceAxis } from './preference-axis';
  */
 export type CngxTouchTargetValue = 'auto' | 'on' | 'off';
 
-const touchTargetAxis = createPreferenceAxis<CngxTouchTargetValue>({
-  tokenName: 'CNGX_TOUCH_TARGET',
-  attribute: 'data-touch',
-  initial: 'auto',
-  removeValue: 'auto',
-});
-
 /**
  * Holds the app-wide touch-target mode as a `WritableSignal`. Read it
  * (and write it at runtime) through {@link injectTouchTargets}; install
@@ -32,8 +30,19 @@ const touchTargetAxis = createPreferenceAxis<CngxTouchTargetValue>({
  * @relatedTo injectTouchTargets
  * @since 0.1.0
  */
-export const CNGX_TOUCH_TARGET: InjectionToken<WritableSignal<CngxTouchTargetValue>> =
-  touchTargetAxis.token;
+export const CNGX_TOUCH_TARGET = new InjectionToken<WritableSignal<CngxTouchTargetValue>>(
+  'CNGX_TOUCH_TARGET',
+  {
+    providedIn: 'root',
+    factory: () => signal<CngxTouchTargetValue>('auto'),
+  },
+);
+
+const touchTargetAxis = createPreferenceAxis({
+  token: CNGX_TOUCH_TARGET,
+  attribute: 'data-touch',
+  removeValue: 'auto',
+});
 
 /**
  * Install the touch-target mode at app root and reflect it onto

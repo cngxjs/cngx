@@ -1,4 +1,9 @@
-import type { EnvironmentProviders, InjectionToken, WritableSignal } from '@angular/core';
+import {
+  InjectionToken,
+  signal,
+  type EnvironmentProviders,
+  type WritableSignal,
+} from '@angular/core';
 import { createPreferenceAxis } from './preference-axis';
 
 /**
@@ -13,13 +18,6 @@ import { createPreferenceAxis } from './preference-axis';
  */
 export type CngxContrastPreference = 'normal' | 'more' | 'auto';
 
-const contrastAxis = createPreferenceAxis<CngxContrastPreference>({
-  tokenName: 'CNGX_CONTRAST',
-  attribute: 'data-contrast',
-  initial: 'auto',
-  removeValue: 'auto',
-});
-
 /**
  * Holds the app-wide contrast preference as a `WritableSignal`. Read it
  * (and write it at runtime) through {@link injectContrast}; install the
@@ -31,8 +29,19 @@ const contrastAxis = createPreferenceAxis<CngxContrastPreference>({
  * @relatedTo injectContrast
  * @since 0.1.0
  */
-export const CNGX_CONTRAST: InjectionToken<WritableSignal<CngxContrastPreference>> =
-  contrastAxis.token;
+export const CNGX_CONTRAST = new InjectionToken<WritableSignal<CngxContrastPreference>>(
+  'CNGX_CONTRAST',
+  {
+    providedIn: 'root',
+    factory: () => signal<CngxContrastPreference>('auto'),
+  },
+);
+
+const contrastAxis = createPreferenceAxis({
+  token: CNGX_CONTRAST,
+  attribute: 'data-contrast',
+  removeValue: 'auto',
+});
 
 /**
  * Install the contrast preference at app root and reflect it onto

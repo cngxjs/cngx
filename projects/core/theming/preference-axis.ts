@@ -2,12 +2,12 @@ import { DOCUMENT } from '@angular/common';
 import {
   effect,
   inject,
-  InjectionToken,
   makeEnvironmentProviders,
   provideEnvironmentInitializer,
   signal,
   untracked,
   type EnvironmentProviders,
+  type InjectionToken,
   type WritableSignal,
 } from '@angular/core';
 
@@ -16,12 +16,14 @@ import {
  * @internal
  */
 interface CngxPreferenceAxisOptions<V extends string> {
-  /** Dev-mode token name, e.g. `'CNGX_DENSITY'`. */
-  readonly tokenName: string;
+  /**
+   * The axis's public writable-signal token, declared in the axis
+   * module (`new InjectionToken(...)` stays module-level so the token
+   * keeps its own doc page and its root default factory).
+   */
+  readonly token: InjectionToken<WritableSignal<V>>;
   /** Root attribute the reflector writes, e.g. `'data-density'`. */
   readonly attribute: string;
-  /** Library default installed by the root token factory. */
-  readonly initial: V;
   /**
    * Value that REMOVES the attribute instead of setting it (the "defer
    * to the OS media query" rung, `'auto'` on the axes that have one).
@@ -31,12 +33,11 @@ interface CngxPreferenceAxisOptions<V extends string> {
 }
 
 /**
- * The bundle a preference axis ships: the writable-signal token, the
- * `provide*` installer with its root reflector, and the `inject*` reader.
+ * The machinery a preference axis shares: the `provide*` installer with
+ * its root reflector, and the `inject*` reader.
  * @internal
  */
 interface CngxPreferenceAxis<V extends string> {
-  readonly token: InjectionToken<WritableSignal<V>>;
   provide(initial: V): EnvironmentProviders;
   injectValue(): WritableSignal<V>;
 }
@@ -50,23 +51,20 @@ interface CngxPreferenceAxis<V extends string> {
  * `removeValue` rung remove the attribute for that value so the
  * corresponding OS media query stays in charge.
  *
- * Not part of the public API - the per-axis `provide*` / `inject*`
- * functions and token constants are the public surface.
+ * The token itself stays declared in the axis module - it is the public
+ * contract (and compodocx classifies token pages off the module-level
+ * `new InjectionToken` initializer). This factory owns only the shared
+ * machinery behind `provide*` / `inject*`.
  * @internal
  */
 export function createPreferenceAxis<V extends string>(
   options: CngxPreferenceAxisOptions<V>,
 ): CngxPreferenceAxis<V> {
-  const token = new InjectionToken<WritableSignal<V>>(options.tokenName, {
-    providedIn: 'root',
-    factory: () => signal<V>(options.initial),
-  });
-
   const provide = (initial: V): EnvironmentProviders =>
     makeEnvironmentProviders([
-      { provide: token, useFactory: () => signal<V>(initial) },
+      { provide: options.token, useFactory: () => signal<V>(initial) },
       provideEnvironmentInitializer(() => {
-        const preference = inject(token);
+        const preference = inject(options.token);
         const root = inject(DOCUMENT).documentElement;
         effect(() => {
           const value = preference();
@@ -81,5 +79,5 @@ export function createPreferenceAxis<V extends string>(
       }),
     ]);
 
-  return { token, provide, injectValue: () => inject(token) };
+  return { provide, injectValue: () => inject(options.token) };
 }

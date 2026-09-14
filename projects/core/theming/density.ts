@@ -1,4 +1,9 @@
-import type { EnvironmentProviders, InjectionToken, WritableSignal } from '@angular/core';
+import {
+  InjectionToken,
+  signal,
+  type EnvironmentProviders,
+  type WritableSignal,
+} from '@angular/core';
 import { createPreferenceAxis } from './preference-axis';
 
 /**
@@ -10,12 +15,6 @@ import { createPreferenceAxis } from './preference-axis';
  * @since 0.1.0
  */
 export type CngxDensityValue = 'comfortable' | 'compact' | 'spacious';
-
-const densityAxis = createPreferenceAxis<CngxDensityValue>({
-  tokenName: 'CNGX_DENSITY',
-  attribute: 'data-density',
-  initial: 'comfortable',
-});
 
 /**
  * Holds the app-wide density preference as a `WritableSignal`. Read it
@@ -29,7 +28,15 @@ const densityAxis = createPreferenceAxis<CngxDensityValue>({
  * @relatedTo injectDensity
  * @since 0.1.0
  */
-export const CNGX_DENSITY: InjectionToken<WritableSignal<CngxDensityValue>> = densityAxis.token;
+export const CNGX_DENSITY = new InjectionToken<WritableSignal<CngxDensityValue>>('CNGX_DENSITY', {
+  providedIn: 'root',
+  factory: () => signal<CngxDensityValue>('comfortable'),
+});
+
+const densityAxis = createPreferenceAxis({
+  token: CNGX_DENSITY,
+  attribute: 'data-density',
+});
 
 /**
  * Install the density preference at app root and reflect it onto
