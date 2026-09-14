@@ -46,6 +46,11 @@ export {
   provideDirectionAt,
 } from './bidi/direction';
 export { resolveInlineStep, resolveInlineArrowKey } from './bidi/inline-nav';
+export {
+  resolveStepFrom,
+  resolveBoundaryStep,
+  type CngxStepScan,
+} from './nav/step-resolver';
 export { CngxDir } from './bidi/cngx-dir.directive';
 export {
   type CngxA11yPrefFeature,
