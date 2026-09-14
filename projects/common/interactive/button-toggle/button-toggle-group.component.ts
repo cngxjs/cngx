@@ -6,18 +6,13 @@ import {
   inject,
   input,
   model,
-  signal,
 } from '@angular/core';
 import { CngxRovingTabindex } from '@cngx/common/a11y';
-import {
-  CNGX_FORM_FIELD_CONTROL,
-  CNGX_FORM_FIELD_HOST,
-  type CngxFormFieldControl,
-} from '@cngx/core/tokens';
-import { nextUid, type CngxAsyncState } from '@cngx/core/utils';
+import { CNGX_FORM_FIELD_CONTROL, type CngxFormFieldControl } from '@cngx/core/tokens';
+import { type CngxAsyncState } from '@cngx/core/utils';
 
 import { CNGX_CONTROL_VALUE, type CngxControlValue } from '../control-value/control-value.token';
-import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.token';
+import { injectInteractiveGroupHost } from '../group-host/group-host';
 import {
   CNGX_BUTTON_TOGGLE_GROUP,
   type CngxButtonToggleGroupContract,
@@ -127,9 +122,17 @@ export class CngxButtonToggleGroup<T = unknown>
   readonly errorMessageId = input<string | null>(null);
   readonly orientation = input<'horizontal' | 'vertical'>('horizontal');
   readonly label = input<string | undefined>(undefined);
-  readonly state = input<CngxAsyncState<unknown> | undefined>(undefined);
-
-  protected readonly ariaBusy = computed(() => this.state()?.status() === 'loading');
+  /**
+   * Optional async state driving `aria-busy`. An explicit binding wins;
+   * when it is absent or `undefined`, an ancestor `CNGX_STATEFUL`
+   * provider is discovered as fallback. A bare `state` attribute (empty
+   * string) is treated as unset. `aria-busy` reflects
+   * `status() === 'loading'`.
+   */
+  readonly state = input<
+    CngxAsyncState<unknown> | undefined,
+    CngxAsyncState<unknown> | '' | undefined
+  >(undefined, { transform: (v) => (typeof v === 'string' ? undefined : v) });
 
   private readonly roving = inject(CngxRovingTabindex, { host: true });
 
@@ -144,30 +147,28 @@ export class CngxButtonToggleGroup<T = unknown>
     return true;
   }
 
-  readonly id = signal(nextUid('cngx-button-toggle-group-')).asReadonly();
+  private readonly groupHost = injectInteractiveGroupHost({
+    uidPrefix: 'cngx-button-toggle-group-',
+    invalid: this.invalid,
+    state: this.state,
+  });
 
-  private readonly focusedState = signal(false);
-  readonly focused = this.focusedState.asReadonly();
+  protected readonly ariaBusy = this.groupHost.ariaBusy;
+
+  readonly id = this.groupHost.id;
+
+  readonly focused = this.groupHost.focused;
 
   /** Empty when no toggle is selected. */
   readonly empty = computed(() => this.value() === undefined);
 
-  private readonly fieldHost = inject(CNGX_FORM_FIELD_HOST, { optional: true });
-  private readonly aggregator = inject(CNGX_ERROR_AGGREGATOR, {
-    optional: true,
-    skipSelf: true,
-  });
-
-  readonly errorState = computed<boolean>(
-    () => this.fieldHost?.showError() ?? this.aggregator?.shouldShow() ?? false,
-  );
+  readonly errorState = this.groupHost.errorState;
 
   protected handleFocusIn(): void {
-    this.focusedState.set(true);
+    this.groupHost.handleFocusIn();
   }
 
   protected handleFocusOut(): void {
-    this.focusedState.set(false);
-    this.fieldHost?.markAsTouched();
+    this.groupHost.handleFocusOut();
   }
 }

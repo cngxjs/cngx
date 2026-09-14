@@ -7,23 +7,17 @@ import {
   inject,
   input,
   model,
-  signal,
 } from '@angular/core';
 import { CngxRovingTabindex } from '@cngx/common/a11y';
-import {
-  CNGX_FORM_FIELD_CONTROL,
-  CNGX_FORM_FIELD_HOST,
-  type CngxFormFieldControl,
-} from '@cngx/core/tokens';
+import { CNGX_FORM_FIELD_CONTROL, type CngxFormFieldControl } from '@cngx/core/tokens';
 import {
   CNGX_SELECTION_CONTROLLER_FACTORY,
-  nextUid,
   type CngxAsyncState,
   type SelectionController,
 } from '@cngx/core/utils';
 
 import { CNGX_CONTROL_VALUE, type CngxControlValue } from '../control-value/control-value.token';
-import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.token';
+import { injectInteractiveGroupHost } from '../group-host/group-host';
 
 /**
  * Multi-value checkbox-group molecule. Owns a `selectedValues` model
@@ -66,7 +60,9 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  * `[state]` is an optional `CngxAsyncState<unknown>` input; when bound,
  * `aria-busy` reflects `state.status() === 'loading'` reactively so AT
  * announces the busy moment without the consumer wiring the attribute
- * by hand.
+ * by hand. Without an explicit binding the group discovers an ancestor
+ * `CNGX_STATEFUL` provider as fallback - the input always wins when
+ * both are present.
  *
  * ```html
  * <cngx-checkbox-group
@@ -150,7 +146,17 @@ export class CngxCheckboxGroup<T = unknown> implements CngxControlValue<T[]>, Cn
   readonly orientation = input<'horizontal' | 'vertical'>('vertical');
   readonly label = input<string | undefined>(undefined);
   readonly allValues = input<readonly T[] | undefined>(undefined);
-  readonly state = input<CngxAsyncState<unknown> | undefined>(undefined);
+  /**
+   * Optional async state driving `aria-busy`. An explicit binding wins;
+   * when it is absent or `undefined`, an ancestor `CNGX_STATEFUL`
+   * provider is discovered as fallback. A bare `state` attribute (empty
+   * string) is treated as unset. `aria-busy` reflects
+   * `status() === 'loading'`.
+   */
+  readonly state = input<
+    CngxAsyncState<unknown> | undefined,
+    CngxAsyncState<unknown> | '' | undefined
+  >(undefined, { transform: (v) => (typeof v === 'string' ? undefined : v) });
   readonly keyFn = input<(value: T) => unknown>((v) => v);
 
   private readonly controller: SelectionController<T> = inject(
@@ -185,7 +191,13 @@ export class CngxCheckboxGroup<T = unknown> implements CngxControlValue<T[]>, Cn
 
   readonly someSelected = computed(() => this.selectedCount() > 0 && !this.allSelected());
 
-  protected readonly ariaBusy = computed(() => this.state()?.status() === 'loading');
+  private readonly groupHost = injectInteractiveGroupHost({
+    uidPrefix: 'cngx-checkbox-group-',
+    invalid: this.invalid,
+    state: this.state,
+  });
+
+  protected readonly ariaBusy = this.groupHost.ariaBusy;
 
   toggleAll(): void {
     if (this.disabled()) {
@@ -215,32 +227,22 @@ export class CngxCheckboxGroup<T = unknown> implements CngxControlValue<T[]>, Cn
     this.controller.deselect(value);
   }
 
-  readonly id = signal(nextUid('cngx-checkbox-group-')).asReadonly();
+  readonly id = this.groupHost.id;
 
-  private readonly focusedState = signal(false);
-  readonly focused = this.focusedState.asReadonly();
+  readonly focused = this.groupHost.focused;
 
   /** Empty when no values selected. */
   readonly empty = computed(() => this.selectedValues().length === 0);
 
-  private readonly fieldHost = inject(CNGX_FORM_FIELD_HOST, { optional: true });
-  private readonly aggregator = inject(CNGX_ERROR_AGGREGATOR, {
-    optional: true,
-    skipSelf: true,
-  });
+  readonly errorState = this.groupHost.errorState;
 
-  readonly errorState = computed<boolean>(
-    () => this.fieldHost?.showError() ?? this.aggregator?.shouldShow() ?? false,
-  );
-
-  protected readonly ariaInvalid = computed(() => this.invalid() || this.errorState());
+  protected readonly ariaInvalid = this.groupHost.ariaInvalid;
 
   protected handleFocusIn(): void {
-    this.focusedState.set(true);
+    this.groupHost.handleFocusIn();
   }
 
   protected handleFocusOut(): void {
-    this.focusedState.set(false);
-    this.fieldHost?.markAsTouched();
+    this.groupHost.handleFocusOut();
   }
 }

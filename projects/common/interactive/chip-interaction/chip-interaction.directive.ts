@@ -11,19 +11,14 @@ import {
   isDevMode,
   model,
   output,
-  signal,
   untracked,
 } from '@angular/core';
-import {
-  CNGX_FORM_FIELD_CONTROL,
-  CNGX_FORM_FIELD_HOST,
-  type CngxFormFieldControl,
-} from '@cngx/core/tokens';
+import { CNGX_FORM_FIELD_CONTROL, type CngxFormFieldControl } from '@cngx/core/tokens';
 import { nextUid } from '@cngx/core/utils';
 
 import { CNGX_CHIP_GROUP_HOST } from '../chip-group/chip-group-host.token';
 import { CNGX_CONTROL_VALUE, type CngxControlValue } from '../control-value/control-value.token';
-import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.token';
+import { injectInteractiveGroupHost } from '../group-host/group-host';
 
 /**
  * Standalone interactive chip - applies onto `<cngx-chip>` from
@@ -208,23 +203,19 @@ export class CngxChipInteraction<T = unknown>
     return this.describedBy();
   });
 
-  readonly id = signal(nextUid('cngx-chip-')).asReadonly();
+  private readonly groupHost = injectInteractiveGroupHost({
+    uidPrefix: 'cngx-chip-',
+    invalid: this.invalid,
+  });
 
-  private readonly focusedState = signal(false);
-  readonly focused = this.focusedState.asReadonly();
+  readonly id = this.groupHost.id;
+
+  readonly focused = this.groupHost.focused;
 
   /** Empty when the chip is unselected - boolean atom semantics. */
   readonly empty = computed(() => this.value() === false);
 
-  private readonly fieldHost = inject(CNGX_FORM_FIELD_HOST, { optional: true });
-  private readonly errorAggregator = inject(CNGX_ERROR_AGGREGATOR, {
-    optional: true,
-    skipSelf: true,
-  });
-
-  readonly errorState = computed<boolean>(
-    () => this.fieldHost?.showError() ?? this.errorAggregator?.shouldShow() ?? false,
-  );
+  readonly errorState = this.groupHost.errorState;
 
   constructor() {
     const hostEl = (inject(ElementRef) as ElementRef<HTMLElement>).nativeElement;
@@ -307,12 +298,11 @@ export class CngxChipInteraction<T = unknown>
   }
 
   protected handleFocusIn(): void {
-    this.focusedState.set(true);
+    this.groupHost.handleFocusIn();
   }
 
   protected handleFocusOut(): void {
-    this.focusedState.set(false);
-    this.fieldHost?.markAsTouched();
+    this.groupHost.handleFocusOut();
   }
 }
 

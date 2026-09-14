@@ -6,20 +6,15 @@ import {
   inject,
   input,
   model,
-  signal,
   type TemplateRef,
 } from '@angular/core';
 import { CngxRovingItem, CngxRovingTabindex } from '@cngx/common/a11y';
 import { CngxCheckboxIndicator } from '@cngx/common/display';
-import {
-  CNGX_FORM_FIELD_CONTROL,
-  CNGX_FORM_FIELD_HOST,
-  type CngxFormFieldControl,
-} from '@cngx/core/tokens';
+import { CNGX_FORM_FIELD_CONTROL, type CngxFormFieldControl } from '@cngx/core/tokens';
 import { nextUid } from '@cngx/core/utils';
 
 import { CNGX_CONTROL_VALUE, type CngxControlValue } from '../control-value/control-value.token';
-import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.token';
+import { injectInteractiveGroupHost } from '../group-host/group-host';
 
 /**
  * Single-value boolean checkbox with indeterminate support and W3C
@@ -192,10 +187,14 @@ export class CngxCheckbox implements CngxControlValue<boolean>, CngxFormFieldCon
     this.indeterminate() ? 'mixed' : this.value() ? 'true' : 'false',
   );
 
-  readonly id = signal(nextUid('cngx-checkbox-')).asReadonly();
+  private readonly groupHost = injectInteractiveGroupHost({
+    uidPrefix: 'cngx-checkbox-',
+    invalid: this.invalid,
+  });
 
-  private readonly focusedState = signal(false);
-  readonly focused = this.focusedState.asReadonly();
+  readonly id = this.groupHost.id;
+
+  readonly focused = this.groupHost.focused;
 
   /**
    * Empty when value is `false` AND not in tri-state intermediate. An
@@ -204,17 +203,9 @@ export class CngxCheckbox implements CngxControlValue<boolean>, CngxFormFieldCon
    */
   readonly empty = computed(() => this.value() === false && !this.indeterminate());
 
-  private readonly fieldHost = inject(CNGX_FORM_FIELD_HOST, { optional: true });
-  private readonly aggregator = inject(CNGX_ERROR_AGGREGATOR, {
-    optional: true,
-    skipSelf: true,
-  });
+  readonly errorState = this.groupHost.errorState;
 
-  readonly errorState = computed<boolean>(
-    () => this.fieldHost?.showError() ?? this.aggregator?.shouldShow() ?? false,
-  );
-
-  protected readonly ariaInvalid = computed(() => this.invalid() || this.errorState());
+  protected readonly ariaInvalid = this.groupHost.ariaInvalid;
 
   protected handleClick(): void {
     this.advance();
@@ -229,12 +220,11 @@ export class CngxCheckbox implements CngxControlValue<boolean>, CngxFormFieldCon
   }
 
   protected handleFocusIn(): void {
-    this.focusedState.set(true);
+    this.groupHost.handleFocusIn();
   }
 
   protected handleFocusOut(): void {
-    this.focusedState.set(false);
-    this.fieldHost?.markAsTouched();
+    this.groupHost.handleFocusOut();
   }
 
   private advance(): void {

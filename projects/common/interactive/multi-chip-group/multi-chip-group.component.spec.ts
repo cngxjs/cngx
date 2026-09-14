@@ -1,9 +1,11 @@
 import { Component, computed, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { createManualState, type ManualAsyncState } from '@cngx/common/data';
 import { CngxChip } from '@cngx/common/display';
 import { describe, expect, it, vi } from 'vitest';
 import { CNGX_FORM_FIELD_HOST } from '@cngx/core/tokens';
+import { CNGX_STATEFUL } from '@cngx/core/utils';
 
 import { CngxChipInGroup } from '../chip-in-group/chip-in-group.directive';
 import { CNGX_CONTROL_VALUE } from '../control-value/control-value.token';
@@ -216,5 +218,67 @@ describe('CngxMultiChipGroup', () => {
       fixture.detectChanges();
       expect(groupEl.getAttribute('aria-errormessage')).toBe('mcg-err');
     });
+  });
+});
+
+const discoveredState = createManualState<string>();
+
+@Component({
+  template: ` <cngx-multi-chip-group label="Discovered" /> `,
+  imports: [CngxMultiChipGroup],
+  providers: [{ provide: CNGX_STATEFUL, useValue: { state: discoveredState } }],
+})
+class DiscoveryHost {}
+
+@Component({
+  template: ` <cngx-multi-chip-group label="Override" [state]="inputState" /> `,
+  imports: [CngxMultiChipGroup],
+  providers: [{ provide: CNGX_STATEFUL, useValue: { state: discoveredState } }],
+})
+class DiscoveryOverrideHost {
+  readonly inputState: ManualAsyncState<string> = createManualState<string>();
+}
+
+@Component({
+  template: ` <cngx-multi-chip-group label="Bare" state /> `,
+  imports: [CngxMultiChipGroup],
+  providers: [{ provide: CNGX_STATEFUL, useValue: { state: discoveredState } }],
+})
+class DiscoveryBareAttrHost {}
+
+describe('CngxMultiChipGroup stateful discovery', () => {
+  it('discovers an ancestor CNGX_STATEFUL while [state] is not bound', () => {
+    discoveredState.reset();
+    const fixture = TestBed.createComponent(DiscoveryHost);
+    fixture.detectChanges();
+    const el = fixture.debugElement.query(By.directive(CngxMultiChipGroup)).nativeElement as HTMLElement;
+    expect(el.getAttribute('aria-busy')).toBeNull();
+
+    discoveredState.set('loading');
+    fixture.detectChanges();
+    expect(el.getAttribute('aria-busy')).toBe('true');
+    discoveredState.reset();
+  });
+
+  it('an explicit [state] binding wins over the discovered provider', () => {
+    discoveredState.set('loading');
+    const fixture = TestBed.createComponent(DiscoveryOverrideHost);
+    fixture.detectChanges();
+    const el = fixture.debugElement.query(By.directive(CngxMultiChipGroup)).nativeElement as HTMLElement;
+    expect(el.getAttribute('aria-busy')).toBeNull();
+
+    fixture.componentInstance.inputState.set('loading');
+    fixture.detectChanges();
+    expect(el.getAttribute('aria-busy')).toBe('true');
+    discoveredState.reset();
+  });
+
+  it('a bare state attribute is treated as unset and keeps the discovered fallback', () => {
+    discoveredState.set('loading');
+    const fixture = TestBed.createComponent(DiscoveryBareAttrHost);
+    fixture.detectChanges();
+    const el = fixture.debugElement.query(By.directive(CngxMultiChipGroup)).nativeElement as HTMLElement;
+    expect(el.getAttribute('aria-busy')).toBe('true');
+    discoveredState.reset();
   });
 });

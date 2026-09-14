@@ -4,6 +4,7 @@ import { By } from '@angular/platform-browser';
 import { createManualState, type ManualAsyncState } from '@cngx/common/data';
 import { describe, expect, it } from 'vitest';
 import { CNGX_FORM_FIELD_HOST } from '@cngx/core/tokens';
+import { CNGX_STATEFUL } from '@cngx/core/utils';
 
 import { CngxCheckbox } from '../checkbox/checkbox.component';
 import { CNGX_CONTROL_VALUE } from '../control-value/control-value.token';
@@ -437,5 +438,67 @@ describe('CngxCheckboxGroup', () => {
       TestBed.flushEffects();
       expect(checkboxes[0].getAttribute('tabindex')).toBe('0');
     });
+  });
+});
+
+const discoveredState = createManualState<string>();
+
+@Component({
+  template: ` <cngx-checkbox-group label="Discovered" /> `,
+  imports: [CngxCheckboxGroup],
+  providers: [{ provide: CNGX_STATEFUL, useValue: { state: discoveredState } }],
+})
+class DiscoveryHost {}
+
+@Component({
+  template: ` <cngx-checkbox-group label="Override" [state]="inputState" /> `,
+  imports: [CngxCheckboxGroup],
+  providers: [{ provide: CNGX_STATEFUL, useValue: { state: discoveredState } }],
+})
+class DiscoveryOverrideHost {
+  readonly inputState: ManualAsyncState<string> = createManualState<string>();
+}
+
+@Component({
+  template: ` <cngx-checkbox-group label="Bare" state /> `,
+  imports: [CngxCheckboxGroup],
+  providers: [{ provide: CNGX_STATEFUL, useValue: { state: discoveredState } }],
+})
+class DiscoveryBareAttrHost {}
+
+describe('CngxCheckboxGroup stateful discovery', () => {
+  it('discovers an ancestor CNGX_STATEFUL while [state] is not bound', () => {
+    discoveredState.reset();
+    const fixture = TestBed.createComponent(DiscoveryHost);
+    fixture.detectChanges();
+    const el = fixture.debugElement.query(By.directive(CngxCheckboxGroup)).nativeElement as HTMLElement;
+    expect(el.getAttribute('aria-busy')).toBeNull();
+
+    discoveredState.set('loading');
+    fixture.detectChanges();
+    expect(el.getAttribute('aria-busy')).toBe('true');
+    discoveredState.reset();
+  });
+
+  it('an explicit [state] binding wins over the discovered provider', () => {
+    discoveredState.set('loading');
+    const fixture = TestBed.createComponent(DiscoveryOverrideHost);
+    fixture.detectChanges();
+    const el = fixture.debugElement.query(By.directive(CngxCheckboxGroup)).nativeElement as HTMLElement;
+    expect(el.getAttribute('aria-busy')).toBeNull();
+
+    fixture.componentInstance.inputState.set('loading');
+    fixture.detectChanges();
+    expect(el.getAttribute('aria-busy')).toBe('true');
+    discoveredState.reset();
+  });
+
+  it('a bare state attribute is treated as unset and keeps the discovered fallback', () => {
+    discoveredState.set('loading');
+    const fixture = TestBed.createComponent(DiscoveryBareAttrHost);
+    fixture.detectChanges();
+    const el = fixture.debugElement.query(By.directive(CngxCheckboxGroup)).nativeElement as HTMLElement;
+    expect(el.getAttribute('aria-busy')).toBe('true');
+    discoveredState.reset();
   });
 });
