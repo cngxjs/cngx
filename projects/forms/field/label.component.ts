@@ -68,8 +68,8 @@ import { CNGX_FORM_FIELD_CONFIG } from './form-field.token';
     '[attr.for]': 'presenter.controlId()',
     '[id]': 'presenter.labelId()',
     '[class.cngx-label--required]': 'presenter.required()',
-    '[class.cngx-label--error]': 'presenter.showError() || presenter.controlErrorState()',
-    '[class.cngx-label--disabled]': 'presenter.disabled() || presenter.controlDisabled()',
+    '[class.cngx-label--error]': 'presenter.fieldOrControlError()',
+    '[class.cngx-label--disabled]': 'presenter.fieldOrControlDisabled()',
   },
 })
 export class CngxLabel {

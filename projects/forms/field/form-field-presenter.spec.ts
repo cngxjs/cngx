@@ -735,6 +735,7 @@ describe('CngxFormFieldPresenter', () => {
       stub.disabled.set(true);
       flush();
       expect(fieldEl.classList.contains('cngx-field--disabled')).toBe(true);
+      expect(presenter.fieldOrControlDisabled()).toBe(true);
       expect(presenter.disabled()).toBe(false);
 
       stub.disabled.set(false);
@@ -750,6 +751,7 @@ describe('CngxFormFieldPresenter', () => {
       stub.errorState.set(true);
       flush();
       expect(fieldEl.classList.contains('cngx-field--error')).toBe(true);
+      expect(presenter.fieldOrControlError()).toBe(true);
       expect(presenter.showError()).toBe(false);
 
       stub.errorState.set(false);

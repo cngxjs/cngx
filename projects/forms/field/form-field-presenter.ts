@@ -61,10 +61,10 @@ function buildHint(
   standalone: true,
   providers: [{ provide: CNGX_FORM_FIELD_HOST, useExisting: CngxFormFieldPresenter }],
   host: {
-    '[class.cngx-field--error]': 'showError() || controlErrorState()',
+    '[class.cngx-field--error]': 'fieldOrControlError()',
     '[class.cngx-field--touched]': 'touched()',
     '[class.cngx-field--dirty]': 'dirty()',
-    '[class.cngx-field--disabled]': 'disabled() || controlDisabled()',
+    '[class.cngx-field--disabled]': 'fieldOrControlDisabled()',
     '[class.cngx-field--required]': 'required()',
     '[class.cngx-field--pending]': 'pending()',
     '[class.cngx-field--readonly]': 'readonly()',
@@ -150,6 +150,20 @@ export class CngxFormFieldPresenter implements CngxFormFieldHostContract {
    * cannot form a cycle.
    */
   readonly controlErrorState = computed(() => this.control()?.errorState() ?? false);
+
+  /**
+   * Widened error visibility: field-level {@link showError} OR the
+   * discovered control's error state. Single derivation for the
+   * `--error` classes on the field host and `CngxLabel`.
+   */
+  readonly fieldOrControlError = computed(() => this.showError() || this.controlErrorState());
+
+  /**
+   * Widened disabled state: field-level {@link disabled} OR the
+   * discovered control's own disabled report. Single derivation for the
+   * `--disabled` classes on the field host and `CngxLabel`.
+   */
+  readonly fieldOrControlDisabled = computed(() => this.disabled() || this.controlDisabled());
 
   /** Whether the field has a `required` validator. */
   readonly required = computed(() => this.fieldState().required());
