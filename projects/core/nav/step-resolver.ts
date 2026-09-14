@@ -76,7 +76,7 @@ export function resolveStepFrom(
       }
       idx = ((idx % count) + count) % count;
     }
-    if (!isDisabledAt || !isDisabledAt(idx)) {
+    if (!isDisabledAt?.(idx)) {
       return idx;
     }
   }
@@ -105,13 +105,13 @@ export function resolveBoundaryStep(direction: 1 | -1, scan: CngxStepScan): numb
   const isDisabledAt = scan.isDisabledAt;
   if (direction === 1) {
     for (let i = 0; i < count; i++) {
-      if (!isDisabledAt || !isDisabledAt(i)) {
+      if (!isDisabledAt?.(i)) {
         return i;
       }
     }
   } else {
     for (let i = count - 1; i >= 0; i--) {
-      if (!isDisabledAt || !isDisabledAt(i)) {
+      if (!isDisabledAt?.(i)) {
         return i;
       }
     }
