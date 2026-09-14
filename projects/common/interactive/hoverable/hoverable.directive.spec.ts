@@ -33,4 +33,9 @@ describe('CngxHoverable', () => {
     el.triggerEventHandler('mouseleave');
     expect(ctx.directive.hovered()).toBe(false);
   });
+
+  it('exposes hovered as a read-only view (no .set on the public surface)', () => {
+    expect('set' in ctx.directive.hovered).toBe(false);
+    expect('update' in ctx.directive.hovered).toBe(false);
+  });
 });

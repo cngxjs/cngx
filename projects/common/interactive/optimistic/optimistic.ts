@@ -33,7 +33,7 @@ export interface OptimisticState {
  *
  * ```typescript
  * readonly name = signal('Alice');
- * readonly [updateName, nameState] = optimistic(
+ * readonly [updateName, nameState] = createOptimistic(
  *   this.name,
  *   (value) => this.http.put('/api/name', { name: value })
  * );
@@ -55,7 +55,7 @@ export interface OptimisticState {
  *
  * @category common/interactive/optimistic
  */
-export function optimistic<T>(
+export function createOptimistic<T>(
   current: WritableSignal<T>,
   action: (value: T) => Observable<T>,
 ): [(newValue: T) => void, OptimisticState] {
@@ -111,3 +111,12 @@ export function optimistic<T>(
 
   return [apply, state];
 }
+
+/**
+ * Alias of {@link createOptimistic} under the pre-convention name.
+ *
+ * @deprecated Use `createOptimistic` - this name is removed at the
+ * v1.0 cut (exported factories carry the `create` prefix).
+ * @category common/interactive/optimistic
+ */
+export const optimistic = createOptimistic;

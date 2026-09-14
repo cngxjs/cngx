@@ -864,6 +864,18 @@ html.dark .cngx-ex-tag[data-dim='stability'][data-value='deprecated'] {
   max-height: 260px;
   overflow: auto;
 }
+.demo-synced-listboxes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+  max-width: 560px;
+}
+.demo-synced-listboxes__cap {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
 .demo-listbox-trigger {
   display: inline-flex;
   align-items: center;

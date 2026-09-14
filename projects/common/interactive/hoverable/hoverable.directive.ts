@@ -7,8 +7,9 @@ import { Directive, signal } from '@angular/core';
  *
  * Designed as a `hostDirective` composition primitive - attach it to
  * components that need hover state without implementing their own
- * mouseenter/mouseleave logic. The `hovered` signal is writable so
- * host components can read it via `inject(CngxHoverable, { host: true })`.
+ * mouseenter/mouseleave logic. Host components read the read-only
+ * `hovered` signal via `inject(CngxHoverable, { host: true })`; the
+ * pointer events are the only writers.
  *
  * Used internally by `CngxTreetableRow` for row highlight-on-hover.
  *
@@ -40,11 +41,22 @@ import { Directive, signal } from '@angular/core';
   standalone: true,
   exportAs: 'cngxHoverable',
   host: {
-    '(mouseenter)': 'hovered.set(true)',
-    '(mouseleave)': 'hovered.set(false)',
+    '(mouseenter)': 'handleMouseEnter()',
+    '(mouseleave)': 'handleMouseLeave()',
   },
 })
 export class CngxHoverable {
+  /** Backing state for {@link hovered}. */
+  private readonly hoveredState = signal(false);
+
   /** `true` while the pointer is over the host element. */
-  readonly hovered = signal(false);
+  readonly hovered = this.hoveredState.asReadonly();
+
+  protected handleMouseEnter(): void {
+    this.hoveredState.set(true);
+  }
+
+  protected handleMouseLeave(): void {
+    this.hoveredState.set(false);
+  }
 }

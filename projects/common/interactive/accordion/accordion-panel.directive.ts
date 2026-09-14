@@ -42,7 +42,7 @@ import type { CngxAccordionHeaderHandle } from './accordion-keyboard-nav';
     '[attr.aria-controls]': 'controls() ?? null',
     '[attr.aria-disabled]': 'disabled() || null',
     '[attr.tabindex]': 'tabindex()',
-    '(click)': 'toggle()',
+    '(click)': 'handleClick()',
     '(keydown)': 'handleKeydown($event)',
   },
 })
@@ -97,7 +97,7 @@ export class CngxAccordionPanel implements OnInit {
     this.accordion.nav.handleKeydown(event);
   }
 
-  protected toggle(): void {
+  protected handleClick(): void {
     if (this.disabled()) {
       return;
     }

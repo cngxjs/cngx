@@ -1,9 +1,13 @@
 import { signal } from '@angular/core';
 import { of, delay, timer, switchMap, throwError } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
-import { optimistic } from './optimistic';
+import { createOptimistic, optimistic } from './optimistic';
 
 describe('optimistic', () => {
+  it('exports createOptimistic with the old name as a deprecated alias', () => {
+    expect(optimistic).toBe(createOptimistic);
+  });
+
   it('sets value immediately (optimistic)', () => {
     const name = signal('Alice');
     const [update] = optimistic(name, (v) => of(v).pipe(delay(100)));

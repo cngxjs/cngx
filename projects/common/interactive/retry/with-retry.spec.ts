@@ -1,7 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
-import { withRetry } from './with-retry';
+import { createRetry, withRetry } from './with-retry';
 
 describe('withRetry', () => {
+  it('exports createRetry with the old name as a deprecated alias', () => {
+    expect(withRetry).toBe(createRetry);
+  });
+
   it('succeeds on first attempt without retrying', async () => {
     const action = vi.fn().mockResolvedValue('ok');
     const [retryable, state] = withRetry(action, { maxAttempts: 3 });

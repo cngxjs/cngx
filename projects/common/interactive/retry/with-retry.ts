@@ -5,7 +5,7 @@ import { firstValueFrom, isObservable, timer } from 'rxjs';
 import type { AsyncAction } from '../async-click/async-click.directive';
 
 /**
- * Configuration for `withRetry()`.
+ * Configuration for `createRetry()`.
  *
  * @category common/interactive/retry
  */
@@ -56,7 +56,7 @@ export interface RetryState {
  * Composes naturally with `CngxAsyncClick` and `CngxActionButton`:
  *
  * ```typescript
- * const [saveWithRetry, retryState] = withRetry(
+ * const [saveWithRetry, retryState] = createRetry(
  *   () => this.http.post('/api/save', data),
  *   { maxAttempts: 3, delay: 1000, backoff: 'exponential' }
  * );
@@ -69,7 +69,7 @@ export interface RetryState {
  *
  * @category common/interactive/retry
  */
-export function withRetry(action: AsyncAction, config?: RetryConfig): [AsyncAction, RetryState] {
+export function createRetry(action: AsyncAction, config?: RetryConfig): [AsyncAction, RetryState] {
   const maxAttempts = config?.maxAttempts ?? 3;
   const baseDelay = config?.delay ?? 1000;
   const backoff = config?.backoff ?? 'exponential';
@@ -172,3 +172,12 @@ export function withRetry(action: AsyncAction, config?: RetryConfig): [AsyncActi
 
   return [retryableAction, retryState];
 }
+
+/**
+ * Alias of {@link createRetry} under the pre-convention name.
+ *
+ * @deprecated Use `createRetry` - this name is removed at the v1.0 cut
+ * (`with*` is reserved for provider feature functions).
+ * @category common/interactive/retry
+ */
+export const withRetry = createRetry;

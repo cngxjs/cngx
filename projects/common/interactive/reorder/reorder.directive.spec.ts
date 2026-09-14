@@ -1,7 +1,7 @@
 import { Component, signal, type Signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { provideDirection } from '@cngx/core';
 
@@ -181,6 +181,27 @@ describe('CngxReorder', () => {
     expect(host.reorders[0].next.map((i) => i.id)).toEqual(['b', 'c', 'a', 'd']);
     expect(host.dragStarts).toEqual([0]);
     expect(host.dragEnds).toBe(1);
+  });
+
+  it('routes suppressor cleanup through one destroy hook - watchdog timers die with the fixture', () => {
+    vi.useFakeTimers();
+    const { fixture, listEl } = setup();
+    // Two completed drags = two open click-suppressor windows.
+    pointerDown(handleOf(itemAt(listEl, 0)));
+    pointerMoveOver(itemAt(listEl, 2));
+    pointerUp();
+    fixture.detectChanges();
+    pointerDown(handleOf(itemAt(listEl, 0)));
+    pointerMoveOver(itemAt(listEl, 2));
+    pointerUp(1);
+    const before = vi.getTimerCount();
+
+    fixture.destroy();
+    // Both 50ms watchdogs cleared; a later click is no longer swallowed.
+    expect(vi.getTimerCount()).toBe(before - 2);
+    const probe = new MouseEvent('click', { bubbles: true, cancelable: true });
+    document.dispatchEvent(probe);
+    expect(probe.defaultPrevented).toBe(false);
   });
 
   it('pointer drag-left: moves an item back in the list', () => {

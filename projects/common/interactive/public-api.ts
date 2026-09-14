@@ -149,8 +149,8 @@ export {
   type CngxHierarchicalNavContext,
   type CngxHierarchicalNavStrategy,
 } from './hierarchical-nav/hierarchical-nav-strategy';
-export { withRetry, type RetryConfig, type RetryState } from './retry/with-retry';
-export { optimistic, type OptimisticState } from './optimistic/optimistic';
+export { createRetry, withRetry, type RetryConfig, type RetryState } from './retry/with-retry';
+export { createOptimistic, optimistic, type OptimisticState } from './optimistic/optimistic';
 export { CngxLongPress } from './gestures/long-press.directive';
 export { CngxSwipe } from './gestures/swipe.directive';
 export { CngxSwipeDismiss } from './gestures/swipe-dismiss.directive';
