@@ -11,7 +11,7 @@
         <span class="cngx-a11y-panel__axis-label" [id]="axis.labelId">{{ axis.label }}</span>
         <cngx-button-toggle-group
           class="cngx-a11y-panel__group"
-          [attr.aria-labelledby]="axis.labelId"
+          [labelledBy]="axis.labelId"
           [value]="axis.value()"
           (valueChange)="axis.commit($event)"
         >

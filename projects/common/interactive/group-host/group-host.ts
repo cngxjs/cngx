@@ -35,6 +35,12 @@ export interface CngxInteractiveGroupHostOptions {
    * `aria-label` in accname precedence.
    */
   readonly label?: Signal<string | undefined>;
+  /**
+   * Optional explicit `aria-labelledby` input of the host. When set, it
+   * wins over the automatic field-label reference - the consumer decides
+   * which element names the group.
+   */
+  readonly labelledBy?: Signal<string | undefined>;
 }
 
 /**
@@ -60,10 +66,11 @@ export interface CngxInteractiveGroupHost {
   /** `invalid() || errorState()` - the shared `aria-invalid` gate. */
   readonly ariaInvalid: Signal<boolean>;
   /**
-   * `aria-labelledby` reference to the surrounding field's label. Set
-   * only inside a `cngx-form-field` whose host exposes `labelId` and
-   * while the explicit `label` option is empty. Group roles take no name
-   * from content - this channel names them inside a field.
+   * Resolved `aria-labelledby` reference. An explicit `labelledBy` option
+   * always wins; otherwise the surrounding field's `labelId` applies -
+   * only inside a `cngx-form-field` whose host exposes it and while the
+   * explicit `label` option is empty. Group roles take no name from
+   * content - this channel names them inside a field.
    */
   readonly ariaLabelledBy: Signal<string | null>;
   /**
@@ -133,9 +140,13 @@ export function injectInteractiveGroupHost(
   const errorState = computed<boolean>(
     () => fieldHost?.showError() ?? aggregator?.shouldShow() ?? false,
   );
-  const ariaLabelledBy = computed<string | null>(() =>
-    options.label?.() ? null : (fieldHost?.labelId?.() ?? null),
-  );
+  const ariaLabelledBy = computed<string | null>(() => {
+    const explicit = options.labelledBy?.();
+    if (explicit) {
+      return explicit;
+    }
+    return options.label?.() ? null : (fieldHost?.labelId?.() ?? null);
+  });
   const resolvedState = computed(() => options.state?.() ?? statefulFallback?.state);
 
   return {

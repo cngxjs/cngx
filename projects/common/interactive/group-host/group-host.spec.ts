@@ -32,6 +32,7 @@ function setupHost(opts?: {
   invalid?: Signal<boolean>;
   state?: Signal<CngxAsyncState<unknown> | undefined>;
   label?: Signal<string | undefined>;
+  labelledBy?: Signal<string | undefined>;
 }) {
   TestBed.configureTestingModule({ providers: opts?.providers ?? [] });
   return TestBed.runInInjectionContext(() =>
@@ -40,6 +41,7 @@ function setupHost(opts?: {
       invalid: opts?.invalid ?? signal(false),
       state: opts?.state,
       label: opts?.label,
+      labelledBy: opts?.labelledBy,
     }),
   );
 }
@@ -219,6 +221,22 @@ describe('injectInteractiveGroupHost', () => {
       providers: [{ provide: CNGX_FORM_FIELD_HOST, useValue: makeFieldHost(signal(false)) }],
     });
     expect(host.ariaLabelledBy()).toBeNull();
+  });
+
+  it('an explicit labelledBy option wins over the field-label reference', () => {
+    const labelledBy = signal<string | undefined>('consumer-label-id');
+    const host = setupHost({
+      labelledBy,
+      providers: [
+        {
+          provide: CNGX_FORM_FIELD_HOST,
+          useValue: makeFieldHost(signal(false), signal('field-label-1')),
+        },
+      ],
+    });
+    expect(host.ariaLabelledBy()).toBe('consumer-label-id');
+    labelledBy.set(undefined);
+    expect(host.ariaLabelledBy()).toBe('field-label-1');
   });
 
   it('an explicit label suppresses ariaLabelledBy until cleared', () => {

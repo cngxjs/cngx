@@ -146,6 +146,12 @@ export class CngxCheckboxGroup<T = unknown> implements CngxControlValue<T[]>, Cn
   readonly errorMessageId = input<string | null>(null);
   readonly orientation = input<'horizontal' | 'vertical'>('vertical');
   readonly label = input<string | undefined>(undefined);
+
+  /**
+   * Explicit `aria-labelledby` target id. Wins over the automatic
+   * field-label reference applied inside a `cngx-form-field`.
+   */
+  readonly labelledBy = input<string | undefined>(undefined);
   readonly allValues = input<readonly T[] | undefined>(undefined);
   /**
    * Optional async state driving `aria-busy`. An explicit binding wins;
@@ -197,6 +203,7 @@ export class CngxCheckboxGroup<T = unknown> implements CngxControlValue<T[]>, Cn
     invalid: this.invalid,
     state: this.state,
     label: this.label,
+    labelledBy: this.labelledBy,
   });
 
   protected readonly ariaLabelledBy = this.groupHost.ariaLabelledBy;

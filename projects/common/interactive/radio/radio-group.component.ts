@@ -127,6 +127,12 @@ export class CngxRadioGroup<T = unknown>
   readonly errorMessageId = input<string | null>(null);
   readonly orientation = input<'horizontal' | 'vertical'>('vertical');
   readonly label = input<string | undefined>(undefined);
+
+  /**
+   * Explicit `aria-labelledby` target id. Wins over the automatic
+   * field-label reference applied inside a `cngx-form-field`.
+   */
+  readonly labelledBy = input<string | undefined>(undefined);
   /**
    * Optional async state driving `aria-busy`. An explicit binding wins;
    * when it is absent or `undefined`, an ancestor `CNGX_STATEFUL`
@@ -152,6 +158,7 @@ export class CngxRadioGroup<T = unknown>
     invalid: this.invalid,
     state: this.state,
     label: this.label,
+    labelledBy: this.labelledBy,
   });
 
   protected readonly ariaLabelledBy = this.groupHost.ariaLabelledBy;
