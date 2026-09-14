@@ -36,8 +36,9 @@ import type { PopoverPanelRole } from './popover.types';
  * styling, arrow, close button, and content state templates.
  *
  * Composes `CngxPopover` via `hostDirectives` - all popover inputs
- * (`placement`, `offset`, `closeOnEscape`, `mode`, `exclusive`,
- * `cngxPopoverOpen`) are forwarded.
+ * (`placement`, `positionTryFallbacks`, `offset`, `closeOnEscape`,
+ * `closeOnOutsideClick`, `mode`, `exclusive`, `cngxPopoverOpen`) are
+ * forwarded.
  *
  * The `variant` input is a free-form string mapped to a CSS class
  * (`cngx-popover-panel--{variant}`). Five variants are pre-themed
@@ -99,6 +100,7 @@ import type { PopoverPanelRole } from './popover.types';
         'positionTryFallbacks',
         'offset',
         'closeOnEscape',
+        'closeOnOutsideClick',
         'mode',
         'exclusive',
         'cngxPopoverOpen',

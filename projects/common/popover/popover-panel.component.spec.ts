@@ -181,6 +181,18 @@ class ArrowDefaultHost {
 
 @Component({
   template: `
+    <cngx-popover-panel #panel="cngxPopoverPanel" [closeOnOutsideClick]="true">
+      <p cngxPopoverBody>Light dismiss</p>
+    </cngx-popover-panel>
+  `,
+  imports: [CngxPopoverPanel, CngxPopoverBody],
+})
+class OutsideClickHost {
+  readonly panel = viewChild.required(CngxPopoverPanel);
+}
+
+@Component({
+  template: `
     <ng-template #t let-edge="edge">
       <i data-testid="config-arrow" [attr.data-edge]="edge"></i>
     </ng-template>
@@ -294,6 +306,12 @@ describe('CngxPopoverPanel', () => {
   it('should set role="dialog" on the host by default', () => {
     const { panelEl } = setup(BasicHost);
     expect(panelEl.getAttribute('role')).toBe('dialog');
+  });
+
+  it('should forward closeOnOutsideClick to the composed popover', () => {
+    const { fixture } = setup(OutsideClickHost);
+    const panel = fixture.componentInstance.panel();
+    expect(panel.popover.closeOnOutsideClick()).toBe(true);
   });
 
   it('should hint the composed popover haspopup signal to "dialog"', () => {
