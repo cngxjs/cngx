@@ -1,17 +1,8 @@
-import {
-  computed,
-  Directive,
-  ElementRef,
-  inject,
-  input,
-  model,
-} from '@angular/core';
+import { Directive, input, model } from '@angular/core';
 
-import { CNGX_AD_ITEM, CngxActiveDescendant, type CngxAdItemHandle } from '@cngx/common/a11y';
-import { nextUid } from '@cngx/core/utils';
+import { CNGX_AD_ITEM, type CngxAdItemHandle } from '@cngx/common/a11y';
 
-import { CNGX_MENU_ANNOUNCER_FACTORY } from './menu-announcer';
-import { injectMenuConfig } from './menu-config';
+import { injectMenuItemCore } from './menu-item-core';
 
 /**
  * Checkable menu item (`role="menuitemcheckbox"`). Activation toggles
@@ -50,42 +41,24 @@ export class CngxMenuItemCheckbox<T = unknown> implements CngxAdItemHandle {
   readonly labelInput = input<string | undefined>(undefined, { alias: 'label' });
   readonly checked = model<boolean>(false);
 
-  readonly id = nextUid('cngx-menu-item');
+  private readonly core = injectMenuItemCore<T>({
+    value: this.value,
+    disabled: this.disabled,
+    labelInput: this.labelInput,
+    onActivate: () => this.checked.update((c) => !c),
+  });
 
-  private readonly elementRef = inject(ElementRef<HTMLElement>);
-  private readonly ad = inject(CngxActiveDescendant, { optional: true });
-  private readonly announcer = inject(CNGX_MENU_ANNOUNCER_FACTORY)();
-  private readonly menuConfig = injectMenuConfig();
+  readonly id = this.core.id;
 
-  readonly isHighlighted = computed<boolean>(() => this.ad?.activeId() === this.id);
+  readonly isHighlighted = this.core.isHighlighted;
 
-  readonly label = (): string => {
-    const explicit = this.labelInput();
-    if (explicit) {
-      return explicit;
-    }
-    const el = this.elementRef.nativeElement as HTMLElement;
-    return (el.textContent ?? '').trim();
-  };
+  readonly label = (): string => this.core.label();
 
   protected handleClick(): void {
-    if (this.disabled()) {
-      this.announcer.announce(this.menuConfig.ariaLabels.itemDisabled);
-      return;
-    }
-    const ad = this.ad;
-    if (!ad) {
-      return;
-    }
-    ad.highlightByValue(this.value());
-    this.checked.update((c) => !c);
-    ad.activateCurrent();
+    this.core.handleClick();
   }
 
   protected handlePointerEnter(): void {
-    if (this.disabled()) {
-      return;
-    }
-    this.ad?.highlightByValue(this.value());
+    this.core.handlePointerEnter();
   }
 }

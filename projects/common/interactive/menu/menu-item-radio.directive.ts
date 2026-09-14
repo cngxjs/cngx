@@ -1,10 +1,8 @@
-import { computed, Directive, ElementRef, inject, input } from '@angular/core';
+import { computed, Directive, inject, input } from '@angular/core';
 
-import { CNGX_AD_ITEM, CngxActiveDescendant, type CngxAdItemHandle } from '@cngx/common/a11y';
-import { nextUid } from '@cngx/core/utils';
+import { CNGX_AD_ITEM, type CngxAdItemHandle } from '@cngx/common/a11y';
 
-import { CNGX_MENU_ANNOUNCER_FACTORY } from './menu-announcer';
-import { injectMenuConfig } from './menu-config';
+import { injectMenuItemCore } from './menu-item-core';
 import { CNGX_MENU_RADIO_GROUP } from './menu-radio-controller';
 
 /**
@@ -43,15 +41,18 @@ export class CngxMenuItemRadio<T = unknown> implements CngxAdItemHandle {
   readonly disabled = input<boolean>(false);
   readonly labelInput = input<string | undefined>(undefined, { alias: 'label' });
 
-  readonly id = nextUid('cngx-menu-item');
-
-  private readonly elementRef = inject(ElementRef<HTMLElement>);
-  private readonly ad = inject(CngxActiveDescendant, { optional: true });
   private readonly group = inject(CNGX_MENU_RADIO_GROUP, { optional: true });
-  private readonly announcer = inject(CNGX_MENU_ANNOUNCER_FACTORY)();
-  private readonly menuConfig = injectMenuConfig();
 
-  readonly isHighlighted = computed<boolean>(() => this.ad?.activeId() === this.id);
+  private readonly core = injectMenuItemCore<T>({
+    value: this.value,
+    disabled: this.disabled,
+    labelInput: this.labelInput,
+    onActivate: () => this.group?.select(this.value()),
+  });
+
+  readonly id = this.core.id;
+
+  readonly isHighlighted = this.core.isHighlighted;
 
   /** Whether this radio is the currently selected value in its group. */
   readonly checked = computed<boolean>(() => {
@@ -62,33 +63,13 @@ export class CngxMenuItemRadio<T = unknown> implements CngxAdItemHandle {
     return Object.is(group.selectedValue(), this.value());
   });
 
-  readonly label = (): string => {
-    const explicit = this.labelInput();
-    if (explicit) {
-      return explicit;
-    }
-    const el = this.elementRef.nativeElement as HTMLElement;
-    return (el.textContent ?? '').trim();
-  };
+  readonly label = (): string => this.core.label();
 
   protected handleClick(): void {
-    if (this.disabled()) {
-      this.announcer.announce(this.menuConfig.ariaLabels.itemDisabled);
-      return;
-    }
-    const ad = this.ad;
-    if (!ad) {
-      return;
-    }
-    ad.highlightByValue(this.value());
-    this.group?.select(this.value());
-    ad.activateCurrent();
+    this.core.handleClick();
   }
 
   protected handlePointerEnter(): void {
-    if (this.disabled()) {
-      return;
-    }
-    this.ad?.highlightByValue(this.value());
+    this.core.handlePointerEnter();
   }
 }
