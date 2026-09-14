@@ -104,7 +104,7 @@ export class CngxPopoverTrigger {
     // Register this element as the anchor for fallback positioning.
     effect(() => {
       const pop = this.popoverRef();
-      untracked(() => pop.anchorElement.set(this.elRef.nativeElement));
+      untracked(() => pop.setAnchorElement(this.elRef.nativeElement));
     });
 
     // Focus restoration: capture on open, restore on close. Inert until

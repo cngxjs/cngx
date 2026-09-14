@@ -329,7 +329,7 @@ export class CngxPopoverPanel implements CngxPopoverArrowBounds {
   constructor() {
     // Hint any CngxPopoverTrigger pointing at this popover to default
     // `aria-haspopup="dialog"`. Consumer override on the trigger wins.
-    this.popover.haspopup.set('dialog');
+    this.popover.setHaspopup('dialog');
 
     effect(() => {
       const isVisible = this.popover.isVisible();

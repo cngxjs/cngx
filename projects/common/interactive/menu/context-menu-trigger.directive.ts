@@ -44,7 +44,7 @@ import { CNGX_MENU_NAV_STRATEGY } from './menu-nav-strategy';
  * the always-open, always-`preventDefault` behaviour.
  *
  * Anchoring uses a transient zero-size DOM element positioned at the
- * pointer coords, set on the popover's `anchorElement` signal - virtual
+ * pointer coords, installed via the popover's `setAnchorElement` - virtual
  * `getBoundingClientRect` objects are not yet supported as anchors, so
  * the transient div is the workaround.
  *

@@ -376,7 +376,7 @@ describe('CngxPopoverPanel', () => {
       };
 
       const first = reader.arrowContext();
-      panel.popover.anchorElement.set(null);
+      panel.popover.setAnchorElement(null);
       TestBed.flushEffects();
       const second = reader.arrowContext();
 

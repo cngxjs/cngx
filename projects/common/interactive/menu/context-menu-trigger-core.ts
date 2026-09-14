@@ -22,7 +22,8 @@ import type { CngxMenuNavStrategy } from './menu-nav-strategy';
  */
 export interface CngxContextMenuTriggerPopoverRef extends CngxMenuDismissPopoverRef {
   show(): void;
-  readonly anchorElement: { set(el: HTMLElement | null): void };
+  /** Register the virtual pointer-coordinate anchor, or clear it. */
+  setAnchorElement(el: HTMLElement | null): void;
   /**
    * Popover unique id signal - used to compose the `anchor-name` CSS value
    * the browser's CSS Anchor Positioning expects on the anchor element.
@@ -224,7 +225,7 @@ export function createContextMenuTriggerCore(
     anchor.style.left = `${x}px`;
     anchor.style.top = `${y}px`;
     anchor.style.setProperty('anchor-name', `--cngx-pop-${deps.popover().id()}`);
-    deps.popover().anchorElement.set(anchor);
+    deps.popover().setAnchorElement(anchor);
     if (!deps.popover().isVisible()) {
       deps.popover().show();
     }

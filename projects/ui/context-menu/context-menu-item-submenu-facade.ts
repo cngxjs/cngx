@@ -27,7 +27,7 @@ export function createContextMenuItemSubmenuFacade(
     isVisible: () => target()?.popover.isVisible() ?? false,
     show: () => open(),
     hide: () => target()?.popover.hide(),
-    anchorElement: { set: (el) => target()?.popover.anchorElement.set(el) },
+    setAnchorElement: (el) => target()?.popover.setAnchorElement(el),
     id: () => target()?.popover.id() ?? '',
     elementRef: {
       get nativeElement(): HTMLElement {

@@ -25,7 +25,7 @@ function mockPopover(): CngxContextMenuTriggerPopoverRef & {
     isVisible: () => visible(),
     hide: () => visible.set(false),
     elementRef: { nativeElement: document.createElement('div') },
-    anchorElement: { set: vi.fn() },
+    setAnchorElement: vi.fn(),
     id: () => 'test',
   };
 }

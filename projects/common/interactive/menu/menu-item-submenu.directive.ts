@@ -165,7 +165,7 @@ export class CngxMenuItemSubmenu implements CngxMenuSubmenuLike {
     if (!popover) {
       return;
     }
-    popover.anchorElement.set(this.elementRef.nativeElement as HTMLElement);
+    popover.setAnchorElement(this.elementRef.nativeElement as HTMLElement);
     if (!popover.isVisible()) {
       popover.show();
     }

@@ -336,7 +336,6 @@ export class CngxPopover {
   readonly exclusive = input(true);
 
   /**
-   * @internal
    * Programmatic override of {@link exclusive}. `null` (default) defers to the
    * `[exclusive]` input; a boolean wins over it. Lets a composing organism
    * (e.g. a submenu wiring in `@cngx/ui/context-menu`) open a nested panel
@@ -344,7 +343,13 @@ export class CngxPopover {
    * Controlled+uncontrolled derivation: {@link effectiveExclusive} resolves
    * the override first, then the input.
    */
-  readonly exclusiveOverride = signal<boolean | null>(null);
+  private readonly exclusiveOverrideState = signal<boolean | null>(null);
+
+  /**
+   * @internal Read-only view of the programmatic {@link exclusive} override.
+   * Written via {@link setExclusiveOverride}.
+   */
+  readonly exclusiveOverride = this.exclusiveOverrideState.asReadonly();
 
   /** Effective exclusivity - override wins, else the `[exclusive]` input. */
   private readonly effectiveExclusive = computed<boolean>(
@@ -352,7 +357,6 @@ export class CngxPopover {
   );
 
   /**
-   * @internal
    * Programmatic override of {@link placement}. `null` (default) defers to the
    * `[placement]` input; a value wins over it. Lets a composing organism (the
    * submenu wiring in `@cngx/ui/context-menu`) flank a nested panel to the
@@ -360,7 +364,13 @@ export class CngxPopover {
    * {@link exclusiveOverride}; {@link effectivePlacement} resolves the override
    * first, then the input.
    */
-  readonly placementOverride = signal<PopoverPlacement | null>(null);
+  private readonly placementOverrideState = signal<PopoverPlacement | null>(null);
+
+  /**
+   * @internal Read-only view of the programmatic {@link placement} override.
+   * Written via {@link setPlacementOverride}.
+   */
+  readonly placementOverride = this.placementOverrideState.asReadonly();
 
   /**
    * Effective placement for the CSS-anchor path - override wins, else the
@@ -388,14 +398,19 @@ export class CngxPopover {
   );
 
   /**
-   * @internal
    * Programmatic override of {@link positionTryFallbacks}, paired with
    * {@link placementOverride} so a submenu wiring installs the flip chain too.
    * `null` (default) defers to the `[positionTryFallbacks]` input.
    */
-  readonly positionTryFallbacksOverride = signal<readonly PopoverPositionTryFallback[] | null>(
-    null,
-  );
+  private readonly positionTryFallbacksOverrideState = signal<
+    readonly PopoverPositionTryFallback[] | null
+  >(null);
+
+  /**
+   * @internal Read-only view of the programmatic {@link positionTryFallbacks}
+   * override. Written via {@link setPositionTryFallbacksOverride}.
+   */
+  readonly positionTryFallbacksOverride = this.positionTryFallbacksOverrideState.asReadonly();
 
   /** Effective try-fallbacks - override wins, else the `[positionTryFallbacks]` input. */
   private readonly effectivePositionTryFallbacks = computed<readonly PopoverPositionTryFallback[]>(
@@ -411,11 +426,15 @@ export class CngxPopover {
   /** Unique auto-generated ID for this popover instance. */
   readonly id = this.idSignal.asReadonly();
 
+  /** Backing state for {@link anchorElement}. */
+  private readonly anchorElementState = signal<HTMLElement | null>(null);
+
   /**
-   * The anchor element for Floating UI fallback positioning.
-   * Set by `CngxPopoverTrigger` or `CngxTooltip`.
+   * The anchor element for Floating UI fallback positioning and the
+   * arrow-offset geometry. Registered by `CngxPopoverTrigger` (or a
+   * composing organism) via {@link setAnchorElement}.
    */
-  readonly anchorElement = signal<HTMLElement | null>(null);
+  readonly anchorElement = this.anchorElementState.asReadonly();
 
   /**
    * Inline-axis position the arrow ornament should sit at, expressed as
@@ -441,14 +460,17 @@ export class CngxPopover {
    */
   readonly arrowOffset = this._arrowOffset.asReadonly();
 
+  /** Backing state for {@link haspopup}. */
+  private readonly haspopupState = signal<PopoverHaspopup | undefined>(undefined);
+
   /**
    * Hint for the `CngxPopoverTrigger`'s `aria-haspopup` value. Composers
-   * such as `CngxPopoverPanel` write this signal so any trigger pointing
-   * at the popover defaults to the right role without the consumer
-   * having to set `haspopup` on every trigger element. Consumer-supplied
-   * `haspopup` on the trigger still wins.
+   * such as `CngxPopoverPanel` install it via {@link setHaspopup} so any
+   * trigger pointing at the popover defaults to the right role without
+   * the consumer having to set `haspopup` on every trigger element.
+   * Consumer-supplied `haspopup` on the trigger still wins.
    */
-  readonly haspopup = signal<PopoverHaspopup | undefined>(undefined);
+  readonly haspopup = this.haspopupState.asReadonly();
 
   protected readonly isOpening = computed(() => this.stateSignal() === 'opening');
   protected readonly isOpen = computed(() => this.stateSignal() === 'open');
@@ -590,6 +612,49 @@ export class CngxPopover {
     } else {
       this.hide();
     }
+  }
+
+  /**
+   * Register the anchor element for fallback positioning and arrow
+   * geometry, or clear it with `null`. Called by `CngxPopoverTrigger`
+   * on registration/destroy and by composing organisms that anchor a
+   * panel to a virtual element (context-menu pointer coords).
+   */
+  setAnchorElement(element: HTMLElement | null): void {
+    this.anchorElementState.set(element);
+  }
+
+  /**
+   * Install the `aria-haspopup` hint triggers fall back to when the
+   * consumer sets none. Composers (`CngxPopoverPanel`, menu wirings)
+   * call this once at construction; `undefined` clears the hint.
+   */
+  setHaspopup(value: PopoverHaspopup | undefined): void {
+    this.haspopupState.set(value);
+  }
+
+  /**
+   * @internal Install or clear the programmatic {@link exclusive} override.
+   * `null` defers back to the `[exclusive]` input.
+   */
+  setExclusiveOverride(value: boolean | null): void {
+    this.exclusiveOverrideState.set(value);
+  }
+
+  /**
+   * @internal Install or clear the programmatic {@link placement} override.
+   * `null` defers back to the `[placement]` input.
+   */
+  setPlacementOverride(value: PopoverPlacement | null): void {
+    this.placementOverrideState.set(value);
+  }
+
+  /**
+   * @internal Install or clear the programmatic {@link positionTryFallbacks}
+   * override. `null` defers back to the `[positionTryFallbacks]` input.
+   */
+  setPositionTryFallbacksOverride(value: readonly PopoverPositionTryFallback[] | null): void {
+    this.positionTryFallbacksOverrideState.set(value);
   }
 
   protected handleToggle(e: ToggleEvent): void {

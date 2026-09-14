@@ -252,7 +252,7 @@ describe('CngxPopover', () => {
       const trigger = fixture.nativeElement.querySelector('button') as HTMLElement;
       // The trigger directive wires this in real use; set it directly here so
       // the anchor-exclusion path is exercised without a CngxPopoverTrigger.
-      host.popover().anchorElement.set(trigger);
+      host.popover().setAnchorElement(trigger);
       return { fixture, host, popoverEl, trigger };
     }
 
@@ -523,7 +523,7 @@ describe('CngxPopover', () => {
         });
         const { fixture, popoverEl } = setup(BasicHost);
         const host = fixture.componentInstance as BasicHost;
-        host.popover().anchorElement.set(popoverEl);
+        host.popover().setAnchorElement(popoverEl);
         host.popover().show();
         const middlewareWarn = warnSpy.mock.calls.find((call) =>
           String(call[0]).includes('provideFloatingFallback'),
@@ -549,7 +549,7 @@ describe('CngxPopover', () => {
         });
         const { fixture, popoverEl } = setup(BasicHost);
         const host = fixture.componentInstance as BasicHost;
-        host.popover().anchorElement.set(popoverEl);
+        host.popover().setAnchorElement(popoverEl);
         host.popover().show();
         const middlewareWarn = warnSpy.mock.calls.find((call) =>
           String(call[0]).includes('provideFloatingFallback'),
@@ -570,7 +570,7 @@ describe('CngxPopover', () => {
           providers: [provideFloatingFallback(computePosition)],
         });
         const first = setup(BasicHost);
-        (first.fixture.componentInstance as BasicHost).popover().anchorElement.set(first.popoverEl);
+        (first.fixture.componentInstance as BasicHost).popover().setAnchorElement(first.popoverEl);
         (first.fixture.componentInstance as BasicHost).popover().show();
 
         TestBed.resetTestingModule();
@@ -581,7 +581,7 @@ describe('CngxPopover', () => {
         const second = setup(BasicHost);
         (second.fixture.componentInstance as BasicHost)
           .popover()
-          .anchorElement.set(second.popoverEl);
+          .setAnchorElement(second.popoverEl);
         (second.fixture.componentInstance as BasicHost).popover().show();
 
         const middlewareWarns = warnSpy.mock.calls.filter((call) =>
@@ -608,11 +608,11 @@ describe('CngxPopover', () => {
       });
       const { fixture, popoverEl } = setup(BasicHost);
       const popover = (fixture.componentInstance as BasicHost).popover();
-      popover.anchorElement.set(popoverEl);
+      popover.setAnchorElement(popoverEl);
       // The override must reach the Floating-UI path, not just the CSS-Anchor
       // path: a submenu using the fallback would otherwise open at the default
       // placement="bottom" instead of the flanking right-start.
-      popover.placementOverride.set('right-start');
+      popover.setPlacementOverride('right-start');
       popover.show();
 
       expect(computePosition).toHaveBeenCalled();
@@ -654,7 +654,7 @@ describe('CngxPopover', () => {
       });
       const { fixture, popoverEl } = setup(BasicHost);
       const popover = (fixture.componentInstance as BasicHost).popover();
-      popover.anchorElement.set(popoverEl);
+      popover.setAnchorElement(popoverEl);
       return { fixture, popoverEl, popover };
     }
 
@@ -817,7 +817,7 @@ describe('CngxPopover', () => {
 
     it('exclusiveOverride(false) opens non-exclusively even when [exclusive] is true', () => {
       const { host } = nestedSetup(OverrideHost);
-      host.b().exclusiveOverride.set(false);
+      host.b().setExclusiveOverride(false);
       host.a().show();
       host.b().show();
       expect(host.a().state()).not.toBe('closed');
@@ -828,7 +828,7 @@ describe('CngxPopover', () => {
       const { fixture, host } = nestedSetup(OverrideHost);
       host.bExclusive.set(false);
       fixture.detectChanges();
-      host.b().exclusiveOverride.set(true);
+      host.b().setExclusiveOverride(true);
       host.a().show();
       host.b().show();
       expect(host.a().state()).toBe('closed');
@@ -869,11 +869,11 @@ describe('CngxPopover', () => {
       const popover = host.popover();
       expect(popover.resolvedEdge()).toBe('bottom');
 
-      popover.placementOverride.set('right-start');
+      popover.setPlacementOverride('right-start');
       fixture.detectChanges();
       expect(popover.resolvedEdge()).toBe('right');
 
-      popover.placementOverride.set(null);
+      popover.setPlacementOverride(null);
       fixture.detectChanges();
       expect(popover.resolvedEdge()).toBe('bottom');
     });
@@ -888,7 +888,7 @@ describe('CngxPopover', () => {
       const { fixture } = setup(BasicHost);
       const popover = (fixture.componentInstance as BasicHost).popover();
 
-      popover.placementOverride.set('right-start');
+      popover.setPlacementOverride('right-start');
       fixture.detectChanges();
       // Under rtl `right-start` resolves to `left-start`; the arrow edge (the
       // token-split consumer) follows the mirrored source and points left.
@@ -903,7 +903,7 @@ describe('CngxPopover', () => {
       const { fixture } = setup(BasicHost);
       const popover = (fixture.componentInstance as BasicHost).popover();
 
-      popover.placementOverride.set('top-start');
+      popover.setPlacementOverride('top-start');
       fixture.detectChanges();
       expect(popover.resolvedEdge()).toBe('top');
     });
@@ -920,9 +920,9 @@ describe('CngxPopover', () => {
       });
       const { fixture, popoverEl } = setup(BasicHost);
       const popover = (fixture.componentInstance as BasicHost).popover();
-      popover.anchorElement.set(popoverEl);
+      popover.setAnchorElement(popoverEl);
 
-      popover.placementOverride.set('right-start');
+      popover.setPlacementOverride('right-start');
       popover.show();
 
       expect(computePosition).toHaveBeenCalled();
@@ -948,9 +948,9 @@ describe('CngxPopover', () => {
       });
       const { fixture, popoverEl } = setup(BasicHost);
       const popover = (fixture.componentInstance as BasicHost).popover();
-      popover.anchorElement.set(popoverEl);
+      popover.setAnchorElement(popoverEl);
 
-      popover.placementOverride.set('top-start');
+      popover.setPlacementOverride('top-start');
       popover.show();
 
       const opts = computePosition.mock.calls[0][2] as { placement: string };
@@ -969,9 +969,9 @@ describe('CngxPopover', () => {
       });
       const { fixture, popoverEl } = setup(BasicHost);
       const popover = (fixture.componentInstance as BasicHost).popover();
-      popover.anchorElement.set(popoverEl);
+      popover.setAnchorElement(popoverEl);
 
-      popover.placementOverride.set('right-start');
+      popover.setPlacementOverride('right-start');
       popover.show();
 
       const opts = computePosition.mock.calls[0][2] as { placement: string };

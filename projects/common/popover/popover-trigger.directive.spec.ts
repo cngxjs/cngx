@@ -118,7 +118,7 @@ describe('CngxPopoverTrigger', () => {
     it('should pick up the popover haspopup signal as default', () => {
       const { fixture, triggerEl } = setup(BasicTriggerHost);
       const host = fixture.componentInstance as BasicTriggerHost;
-      host.popover().haspopup.set('dialog');
+      host.popover().setHaspopup('dialog');
       fixture.detectChanges();
       expect(triggerEl.getAttribute('aria-haspopup')).toBe('dialog');
     });
@@ -126,7 +126,7 @@ describe('CngxPopoverTrigger', () => {
     it('should let consumer haspopup override the popover hint', () => {
       const { fixture, triggerEl } = setup(MenuTriggerHost);
       const host = fixture.componentInstance as MenuTriggerHost;
-      host.popover().haspopup.set('dialog');
+      host.popover().setHaspopup('dialog');
       fixture.detectChanges();
       expect(triggerEl.getAttribute('aria-haspopup')).toBe('menu');
     });
@@ -139,7 +139,7 @@ describe('CngxPopoverTrigger', () => {
     it('should let none cancel the popover haspopup hint', () => {
       const { fixture, triggerEl } = setup(NoneHaspopupHost);
       const host = fixture.componentInstance as NoneHaspopupHost;
-      host.popover().haspopup.set('dialog');
+      host.popover().setHaspopup('dialog');
       fixture.detectChanges();
       expect(triggerEl.hasAttribute('aria-haspopup')).toBe(false);
     });
