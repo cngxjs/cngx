@@ -222,6 +222,20 @@ describe('CngxPopover', () => {
       host.popover().toggle();
       expect(host.popover().state()).toBe('closed');
     });
+
+    it('should snapshot the focus origin in show() and clear it on close', () => {
+      const { fixture } = setup(BasicHost);
+      const host = fixture.componentInstance as BasicHost;
+      const outside = document.createElement('button');
+      document.body.appendChild(outside);
+      outside.focus();
+
+      host.popover().show();
+      expect(host.popover().focusOrigin()).toBe(outside);
+      host.popover().hide();
+      expect(host.popover().focusOrigin()).toBeNull();
+      outside.remove();
+    });
   });
 
   describe('Escape key', () => {

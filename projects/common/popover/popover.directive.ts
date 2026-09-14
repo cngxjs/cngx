@@ -426,6 +426,18 @@ export class CngxPopover {
   /** Unique auto-generated ID for this popover instance. */
   readonly id = this.idSignal.asReadonly();
 
+  /** Backing state for {@link focusOrigin}. */
+  private readonly focusOriginState = signal<HTMLElement | null>(null);
+
+  /**
+   * The element that held focus when {@link show} was entered, captured
+   * synchronously BEFORE the native `showPopover()` call - content
+   * autofocus inside the panel therefore cannot displace it.
+   * `CngxPopoverTrigger`'s `restoreFocus` reads it as the restore
+   * target; cleared on finalize.
+   */
+  readonly focusOrigin = this.focusOriginState.asReadonly();
+
   /** Backing state for {@link anchorElement}. */
   private readonly anchorElementState = signal<HTMLElement | null>(null);
 
@@ -568,6 +580,11 @@ export class CngxPopover {
     if (this.stateSignal() !== 'closed') {
       return;
     }
+    // Snapshot the pre-open focus target before showPopover() runs -
+    // autofocus content inside the panel lands right after that call,
+    // and a post-CD capture (the trigger's effect) would store the
+    // panel content instead of the element to restore to.
+    this.focusOriginState.set(this.doc.activeElement as HTMLElement | null);
     if (this.effectiveExclusive()) {
       // Snapshot the set: hide() mutates `openPopovers` mid-loop. An ancestor
       // is this popover's container, not a rival - hiding it would take this
@@ -787,6 +804,7 @@ export class CngxPopover {
     openPopovers.delete(this);
     this._arrowOffset.set(null);
     this.resolvedEdgeSignal.set(null);
+    this.focusOriginState.set(null);
     const el = this.popoverElement;
     try {
       el.hidePopover();
