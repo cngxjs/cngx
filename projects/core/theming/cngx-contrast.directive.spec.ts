@@ -26,7 +26,8 @@ describe('CngxContrast', () => {
     // Attribute reflection only. Whether a subtree value re-resolves the
     // boosted tokens is CSS's job: the boost is unanchored (guarded in
     // contrast-coverage.spec.ts) and the subtree un-boost limit for
-    // normal/auto is documented on CngxContrast. jsdom resolves neither
+    // normal is documented on CngxContrast ('auto' is type-excluded,
+    // root-only). jsdom resolves neither
     // custom-property inheritance nor color-mix, so a computed-value
     // assertion belongs in an e2e, not here.
     @Component({

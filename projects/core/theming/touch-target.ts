@@ -1,15 +1,10 @@
-import { DOCUMENT } from '@angular/common';
 import {
-  effect,
-  inject,
   InjectionToken,
-  makeEnvironmentProviders,
-  provideEnvironmentInitializer,
   signal,
-  untracked,
   type EnvironmentProviders,
   type WritableSignal,
 } from '@angular/core';
+import { createPreferenceAxis } from './preference-axis';
 
 /**
  * The three touch-target modes the `[data-touch]` floor accepts.
@@ -43,6 +38,12 @@ export const CNGX_TOUCH_TARGET = new InjectionToken<WritableSignal<CngxTouchTarg
   },
 );
 
+const touchTargetAxis = createPreferenceAxis({
+  token: CNGX_TOUCH_TARGET,
+  attribute: 'data-touch',
+  removeValue: 'auto',
+});
+
 /**
  * Install the touch-target mode at app root and reflect it onto
  * `<html data-touch>`. `auto` removes the attribute so the
@@ -62,26 +63,8 @@ export const CNGX_TOUCH_TARGET = new InjectionToken<WritableSignal<CngxTouchTarg
  * @relatedTo injectTouchTargets
  * @since 0.1.0
  */
-export function provideTouchTargets(
-  initial: CngxTouchTargetValue = 'auto',
-): EnvironmentProviders {
-  return makeEnvironmentProviders([
-    { provide: CNGX_TOUCH_TARGET, useFactory: () => signal<CngxTouchTargetValue>(initial) },
-    provideEnvironmentInitializer(() => {
-      const touch = inject(CNGX_TOUCH_TARGET);
-      const root = inject(DOCUMENT).documentElement;
-      effect(() => {
-        const value = touch();
-        untracked(() => {
-          if (value === 'auto') {
-            root.removeAttribute('data-touch');
-          } else {
-            root.setAttribute('data-touch', value);
-          }
-        });
-      });
-    }),
-  ]);
+export function provideTouchTargets(initial: CngxTouchTargetValue = 'auto'): EnvironmentProviders {
+  return touchTargetAxis.provide(initial);
 }
 
 /**
@@ -94,5 +77,5 @@ export function provideTouchTargets(
  * @since 0.1.0
  */
 export function injectTouchTargets(): WritableSignal<CngxTouchTargetValue> {
-  return inject(CNGX_TOUCH_TARGET);
+  return touchTargetAxis.injectValue();
 }

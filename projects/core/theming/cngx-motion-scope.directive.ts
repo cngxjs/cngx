@@ -18,6 +18,12 @@ import type { CngxMotionPreference } from './motion';
  * accessibility-critical direction); root `data-motion='full'` is what
  * escapes the OS reset app-wide.
  *
+ * The input accepts only `'full'` / `'reduced'` (mirroring
+ * `CngxTouchTarget`): `'auto'` is a root-only concept - it means "defer
+ * to the OS `prefers-reduced-motion` media query", which a stamped
+ * subtree attribute cannot express (no CSS matches `[data-motion='auto']`)
+ * - and lives on {@link provideMotion} instead.
+ *
  * The input is optional (a bare `cngxMotionScope` attribute binds the
  * empty string, coerced to `undefined`), so it never asserts a required
  * binding; an unset value leaves `[data-motion]` off the host. Named
@@ -36,11 +42,11 @@ import type { CngxMotionPreference } from './motion';
   },
 })
 export class CngxMotionScope {
-  readonly motion = input<CngxMotionPreference | undefined, CngxMotionPreference | '' | undefined>(
-    undefined,
-    {
-      alias: 'cngxMotionScope',
-      transform: (value) => (value === '' ? undefined : value),
-    },
-  );
+  readonly motion = input<
+    Exclude<CngxMotionPreference, 'auto'> | undefined,
+    Exclude<CngxMotionPreference, 'auto'> | '' | undefined
+  >(undefined, {
+    alias: 'cngxMotionScope',
+    transform: (value) => (value === '' ? undefined : value),
+  });
 }

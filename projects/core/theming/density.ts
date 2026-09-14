@@ -1,15 +1,10 @@
-import { DOCUMENT } from '@angular/common';
 import {
-  effect,
-  inject,
   InjectionToken,
-  makeEnvironmentProviders,
-  provideEnvironmentInitializer,
   signal,
-  untracked,
   type EnvironmentProviders,
   type WritableSignal,
 } from '@angular/core';
+import { createPreferenceAxis } from './preference-axis';
 
 /**
  * The three density rungs the `[data-density]` scale swap ships
@@ -38,6 +33,11 @@ export const CNGX_DENSITY = new InjectionToken<WritableSignal<CngxDensityValue>>
   factory: () => signal<CngxDensityValue>('comfortable'),
 });
 
+const densityAxis = createPreferenceAxis({
+  token: CNGX_DENSITY,
+  attribute: 'data-density',
+});
+
 /**
  * Install the density preference at app root and reflect it onto
  * `<html data-density>`, mirroring how the colour ramp is applied by
@@ -57,17 +57,7 @@ export const CNGX_DENSITY = new InjectionToken<WritableSignal<CngxDensityValue>>
  * @since 0.1.0
  */
 export function provideDensity(initial: CngxDensityValue = 'comfortable'): EnvironmentProviders {
-  return makeEnvironmentProviders([
-    { provide: CNGX_DENSITY, useFactory: () => signal<CngxDensityValue>(initial) },
-    provideEnvironmentInitializer(() => {
-      const density = inject(CNGX_DENSITY);
-      const root = inject(DOCUMENT).documentElement;
-      effect(() => {
-        const value = density();
-        untracked(() => root.setAttribute('data-density', value));
-      });
-    }),
-  ]);
+  return densityAxis.provide(initial);
 }
 
 /**
@@ -80,5 +70,5 @@ export function provideDensity(initial: CngxDensityValue = 'comfortable'): Envir
  * @since 0.1.0
  */
 export function injectDensity(): WritableSignal<CngxDensityValue> {
-  return inject(CNGX_DENSITY);
+  return densityAxis.injectValue();
 }

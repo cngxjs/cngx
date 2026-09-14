@@ -1,15 +1,10 @@
-import { DOCUMENT } from '@angular/common';
 import {
-  effect,
-  inject,
   InjectionToken,
-  makeEnvironmentProviders,
-  provideEnvironmentInitializer,
   signal,
-  untracked,
   type EnvironmentProviders,
   type WritableSignal,
 } from '@angular/core';
+import { createPreferenceAxis } from './preference-axis';
 
 /**
  * The three motion preferences the `[data-motion]` axis ships
@@ -39,6 +34,12 @@ export const CNGX_MOTION = new InjectionToken<WritableSignal<CngxMotionPreferenc
   factory: () => signal<CngxMotionPreference>('auto'),
 });
 
+const motionAxis = createPreferenceAxis({
+  token: CNGX_MOTION,
+  attribute: 'data-motion',
+  removeValue: 'auto',
+});
+
 /**
  * Install the motion preference at app root and reflect it onto
  * `<html data-motion>`, driving the reduced-motion safety net in
@@ -61,23 +62,7 @@ export const CNGX_MOTION = new InjectionToken<WritableSignal<CngxMotionPreferenc
  * @since 0.1.0
  */
 export function provideMotion(initial: CngxMotionPreference = 'auto'): EnvironmentProviders {
-  return makeEnvironmentProviders([
-    { provide: CNGX_MOTION, useFactory: () => signal<CngxMotionPreference>(initial) },
-    provideEnvironmentInitializer(() => {
-      const motion = inject(CNGX_MOTION);
-      const root = inject(DOCUMENT).documentElement;
-      effect(() => {
-        const value = motion();
-        untracked(() => {
-          if (value === 'auto') {
-            root.removeAttribute('data-motion');
-          } else {
-            root.setAttribute('data-motion', value);
-          }
-        });
-      });
-    }),
-  ]);
+  return motionAxis.provide(initial);
 }
 
 /**
@@ -91,5 +76,5 @@ export function provideMotion(initial: CngxMotionPreference = 'auto'): Environme
  * @since 0.1.0
  */
 export function injectMotion(): WritableSignal<CngxMotionPreference> {
-  return inject(CNGX_MOTION);
+  return motionAxis.injectValue();
 }

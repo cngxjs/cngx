@@ -1,15 +1,10 @@
-import { DOCUMENT } from '@angular/common';
 import {
-  effect,
-  inject,
   InjectionToken,
-  makeEnvironmentProviders,
-  provideEnvironmentInitializer,
   signal,
-  untracked,
   type EnvironmentProviders,
   type WritableSignal,
 } from '@angular/core';
+import { createPreferenceAxis } from './preference-axis';
 
 /**
  * The three text-scale rungs the `[data-text-size]` swap ships
@@ -42,6 +37,11 @@ export const CNGX_TEXT_SCALE = new InjectionToken<WritableSignal<CngxTextScaleVa
   },
 );
 
+const textScaleAxis = createPreferenceAxis({
+  token: CNGX_TEXT_SCALE,
+  attribute: 'data-text-size',
+});
+
 /**
  * Install the text-scale preference at app root and reflect it onto
  * `<html data-text-size>`, mirroring how density is applied by
@@ -65,17 +65,7 @@ export const CNGX_TEXT_SCALE = new InjectionToken<WritableSignal<CngxTextScaleVa
  * @since 0.1.0
  */
 export function provideTextScale(initial: CngxTextScaleValue = 'md'): EnvironmentProviders {
-  return makeEnvironmentProviders([
-    { provide: CNGX_TEXT_SCALE, useFactory: () => signal<CngxTextScaleValue>(initial) },
-    provideEnvironmentInitializer(() => {
-      const textScale = inject(CNGX_TEXT_SCALE);
-      const root = inject(DOCUMENT).documentElement;
-      effect(() => {
-        const value = textScale();
-        untracked(() => root.setAttribute('data-text-size', value));
-      });
-    }),
-  ]);
+  return textScaleAxis.provide(initial);
 }
 
 /**
@@ -88,5 +78,5 @@ export function provideTextScale(initial: CngxTextScaleValue = 'md'): Environmen
  * @since 0.1.0
  */
 export function injectTextScale(): WritableSignal<CngxTextScaleValue> {
-  return inject(CNGX_TEXT_SCALE);
+  return textScaleAxis.injectValue();
 }

@@ -12,13 +12,19 @@ import type { CngxContrastPreference } from './contrast';
  *
  * The override block (`contrast-tokens.css`) is unanchored, so a subtree
  * `more` strengthens borders and muted text for just that section. A
- * subtree `normal` or `auto` does **not** un-boost against a root
+ * subtree `normal` does **not** un-boost against a root
  * `data-contrast='more'` or an OS `prefers-contrast: more` context (a
  * documented limit - a pure-CSS ancestor selector cannot restore the
  * scheme-correct default token on a descendant without re-hardcoding a
  * colour, and subtree scoping is for the accessibility-critical *raising*
  * direction). Root `data-contrast='normal'` is what opts the document out,
  * via the `:root:not([data-contrast='normal'])` escape on the OS rule.
+ *
+ * The input accepts only `'normal'` / `'more'` (mirroring
+ * `CngxTouchTarget`): `'auto'` is a root-only concept - it means "defer
+ * to the OS `prefers-contrast` media query", which a stamped subtree
+ * attribute cannot express (no CSS matches `[data-contrast='auto']`) -
+ * and lives on {@link provideContrast} instead.
  *
  * The input is optional (a bare `cngxContrast` attribute binds the empty
  * string, coerced to `undefined`), so it never asserts a required binding;
@@ -37,8 +43,8 @@ import type { CngxContrastPreference } from './contrast';
 })
 export class CngxContrast {
   readonly contrast = input<
-    CngxContrastPreference | undefined,
-    CngxContrastPreference | '' | undefined
+    Exclude<CngxContrastPreference, 'auto'> | undefined,
+    Exclude<CngxContrastPreference, 'auto'> | '' | undefined
   >(undefined, {
     alias: 'cngxContrast',
     transform: (value) => (value === '' ? undefined : value),
