@@ -1,5 +1,10 @@
 import { effect, InjectionToken, signal, untracked, type Signal } from '@angular/core';
-import { injectDirection, resolveInlineStep, type CngxDirection } from '@cngx/core';
+import {
+  injectDirection,
+  resolveInlineStep,
+  resolveStepFrom,
+  type CngxDirection,
+} from '@cngx/core';
 
 /**
  * Configuration for {@link createChipStripRoving}.
@@ -173,10 +178,13 @@ export function createChipStripRoving(
     let nextIdx: number;
     switch (event.key) {
       case 'ArrowUp':
-        nextIdx = Math.max(0, current - 1);
+        // Clamp semantics: a boundary step keeps the current index. The
+        // shrink-clamp effect maintains `current` inside [0, count), so
+        // `?? current` is exactly the previous Math.max/Math.min clamp.
+        nextIdx = resolveStepFrom(current, -1, { count }) ?? current;
         break;
       case 'ArrowDown':
-        nextIdx = Math.min(count - 1, current + 1);
+        nextIdx = resolveStepFrom(current, 1, { count }) ?? current;
         break;
       case 'ArrowLeft':
       case 'ArrowRight': {
@@ -185,7 +193,7 @@ export function createChipStripRoving(
         if (step === null) {
           return;
         }
-        nextIdx = Math.min(count - 1, Math.max(0, current + step));
+        nextIdx = resolveStepFrom(current, step, { count }) ?? current;
         break;
       }
       case 'Home':

@@ -1,5 +1,5 @@
 import { afterNextRender, type Injector, type Signal } from '@angular/core';
-import { resolveInlineStep, type CngxDirection } from '@cngx/core';
+import { resolveBoundaryStep, resolveInlineStep, type CngxDirection } from '@cngx/core';
 
 import type { CngxStepperHost } from './stepper-host.token';
 
@@ -135,19 +135,23 @@ export function createStepperStripKeyboardNav(
       focusActive();
     } else if (event.key === 'Home') {
       event.preventDefault();
-      const first = options.presenter.stepsOnly().findIndex((n) => !n.disabled());
-      if (first >= 0) {
+      const stepsOnly = options.presenter.stepsOnly();
+      const first = resolveBoundaryStep(1, {
+        count: stepsOnly.length,
+        isDisabledAt: (i) => stepsOnly[i].disabled(),
+      });
+      if (first !== null) {
         options.presenter.select(first);
         focusActive();
       }
     } else if (event.key === 'End') {
       event.preventDefault();
       const stepsOnly = options.presenter.stepsOnly();
-      let last = stepsOnly.length - 1;
-      while (last >= 0 && stepsOnly[last].disabled()) {
-        last--;
-      }
-      if (last >= 0) {
+      const last = resolveBoundaryStep(-1, {
+        count: stepsOnly.length,
+        isDisabledAt: (i) => stepsOnly[i].disabled(),
+      });
+      if (last !== null) {
         options.presenter.select(last);
         focusActive();
       }

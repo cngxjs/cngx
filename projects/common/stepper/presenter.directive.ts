@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 
 import { CNGX_COMMIT_CONTROLLER_FACTORY, type CngxCommitController } from '@cngx/common/data';
+import { resolveStepFrom } from '@cngx/core';
 import {
   CNGX_STATEFUL,
   createTransitionTracker,
@@ -265,25 +266,29 @@ export class CngxStepperPresenter implements CngxStepperHost {
    */
   private readonly nextEnabledIndex = computed(() => {
     const stepsOnly = this.stepsOnly();
-    let next = this.activeStepIndex() + 1;
-    while (next < stepsOnly.length && stepsOnly[next].disabled()) {
-      next++;
-    }
-    return next;
+    return (
+      resolveStepFrom(this.activeStepIndex(), 1, {
+        count: stepsOnly.length,
+        isDisabledAt: (i) => stepsOnly[i]?.disabled() ?? false,
+      }) ?? stepsOnly.length
+    );
   });
 
   /**
    * Previous enabled step-only index before the active one, skipping
-   * disabled steps. Returns `-1` when no enabled step precedes. Single
+   * disabled steps. Returns `-1` when no enabled step precedes - also for
+   * a stale out-of-range active index (consumer-writable model), which
+   * must resolve to "none" instead of wrapping or throwing. Single
    * source for `selectPrevious()` and the `canGoPrevious` bound.
    */
   private readonly previousEnabledIndex = computed(() => {
     const stepsOnly = this.stepsOnly();
-    let prev = this.activeStepIndex() - 1;
-    while (prev >= 0 && stepsOnly[prev].disabled()) {
-      prev--;
-    }
-    return prev;
+    return (
+      resolveStepFrom(Math.max(this.activeStepIndex(), 0), -1, {
+        count: stepsOnly.length,
+        isDisabledAt: (i) => stepsOnly[i]?.disabled() ?? false,
+      }) ?? -1
+    );
   });
 
   /** {@inheritDoc CngxStepperHost.stepCount} */

@@ -873,3 +873,19 @@ describe('CngxStepperPresenter - back-nav supersede and rollback origin', () => 
     expect(presenter.lastFailedIndex()).toBe(2);
   });
 });
+
+describe('CngxStepperPresenter stale active index', () => {
+  beforeEach(() => {
+    TestBed.resetTestingModule();
+  });
+
+  it('resolves both affordances to false for an out-of-range active index instead of throwing', () => {
+    const { presenter } = setup();
+    presenter.register(reg('a'));
+    presenter.register(reg('b'));
+    presenter.activeStepIndex.set(9);
+    expect(presenter.canGoNext()).toBe(false);
+    expect(presenter.canGoPrevious()).toBe(false);
+    expect(presenter.nextStepLabel()).toBeUndefined();
+  });
+});
