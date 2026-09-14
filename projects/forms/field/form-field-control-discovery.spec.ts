@@ -2,7 +2,7 @@ import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { CngxCheckbox } from '@cngx/common/interactive';
+import { CngxCheckbox, CngxCheckboxGroup } from '@cngx/common/interactive';
 import { CngxInput } from '@cngx/forms/input';
 import { CngxFormField } from './form-field.component';
 import { CngxFormFieldPresenter } from './form-field-presenter';
@@ -34,6 +34,23 @@ class InputHost {
 })
 class CheckboxHost {
   field = signal<CngxFieldAccessor>(createMockField({ name: 'terms' }).accessor);
+}
+
+@Component({
+  template: `
+    <cngx-form-field [field]="field()">
+      <label cngxLabel>Channels</label>
+      <cngx-checkbox-group [label]="groupLabel()">
+        <cngx-checkbox>E-Mail</cngx-checkbox>
+        <cngx-checkbox>SMS</cngx-checkbox>
+      </cngx-checkbox-group>
+    </cngx-form-field>
+  `,
+  imports: [CngxFormField, CngxLabel, CngxCheckboxGroup, CngxCheckbox],
+})
+class CheckboxGroupHost {
+  field = signal<CngxFieldAccessor>(createMockField({ name: 'channels' }).accessor);
+  groupLabel = signal<string | undefined>(undefined);
 }
 
 // Cross-lib integration witnesses for the CNGX_FORM_FIELD_CONTROL discovery
@@ -185,6 +202,57 @@ describe('CNGX_FORM_FIELD_CONTROL discovery integration', () => {
       checkbox.value.set(true);
       flush();
       expect(fieldEl.classList.contains('cngx-field--empty')).toBe(false);
+    });
+
+    it('keeps name-from-content on the leaf atom', () => {
+      // role="checkbox" names itself from the projected content; wiring the
+      // field label in via aria-labelledby would REPLACE that name and
+      // double-announce. The field-label channel is for group roles only.
+      expect(checkboxEl.hasAttribute('aria-labelledby')).toBe(false);
+    });
+  });
+
+  describe('CngxCheckboxGroup (group role, field-label accname)', () => {
+    let fixture: ReturnType<typeof TestBed.createComponent<CheckboxGroupHost>>;
+    let presenter: CngxFormFieldPresenter;
+    let labelEl: HTMLLabelElement;
+    let group: CngxCheckboxGroup;
+    let groupEl: HTMLElement;
+
+    beforeEach(() => {
+      const mock = createMockField({ name: 'channels' });
+      TestBed.configureTestingModule({ imports: [CheckboxGroupHost] });
+      fixture = TestBed.createComponent(CheckboxGroupHost);
+      fixture.componentInstance.field.set(mock.accessor);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      const fieldDebug = fixture.debugElement.query(By.directive(CngxFormField));
+      presenter = fieldDebug.injector.get(CngxFormFieldPresenter);
+      labelEl = fixture.debugElement.query(By.directive(CngxLabel)).nativeElement;
+      const groupDebug = fixture.debugElement.query(By.directive(CngxCheckboxGroup));
+      group = groupDebug.componentInstance;
+      groupEl = groupDebug.nativeElement;
+    });
+
+    it('discovers the outer group, not the inner checkboxes (content-order precedence)', () => {
+      expect(presenter.control()).toBe(group);
+      expect(labelEl.getAttribute('for')).toBe(groupEl.getAttribute('id'));
+    });
+
+    it('names the group from the field label via aria-labelledby', () => {
+      // role="group" takes no name from content - without this reference the
+      // group has no accessible name inside a cngx-form-field.
+      expect(groupEl.getAttribute('aria-labelledby')).toBe('cngx-channels-label');
+      expect(labelEl.id).toBe('cngx-channels-label');
+    });
+
+    it('an explicit [label] input wins over the field-label reference', () => {
+      fixture.componentInstance.groupLabel.set('Notification channels');
+      TestBed.flushEffects();
+      fixture.detectChanges();
+      expect(groupEl.getAttribute('aria-label')).toBe('Notification channels');
+      expect(groupEl.hasAttribute('aria-labelledby')).toBe(false);
     });
   });
 });

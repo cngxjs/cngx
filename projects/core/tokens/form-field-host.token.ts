@@ -4,7 +4,7 @@ import { InjectionToken, type Signal } from '@angular/core';
  * Narrow back-channel a form-field-aware host (typically
  * `CngxFormFieldPresenter`) exposes to the bound control.
  *
- * Two pieces:
+ * Two required pieces plus one optional naming channel:
  * - `showError: Signal<boolean>` - the resolved "should errors be visible
  *   right now" flag. Combines `invalid()` with the configured visibility
  *   gate (`touched`, `dirty`, `submitted`, custom strategy, ambient
@@ -13,8 +13,13 @@ import { InjectionToken, type Signal } from '@angular/core';
  * - `markAsTouched(): void` - invoked by the control on focus-out so the
  *   surrounding field's "touched" state advances without the control
  *   importing the concrete presenter or field-state shape.
+ * - `labelId?: Signal<string>` - stable id of the field's label element.
+ *   Group-role atoms (`radiogroup` / `group` / `listbox` / `toolbar`)
+ *   reference it via `aria-labelledby` when no explicit `label` input is
+ *   set; group roles take no name from content, so this channel is what
+ *   names them inside a `cngx-form-field`.
  *
- * Deliberately scoped to these two members. The full presenter exposes
+ * Deliberately scoped to these members. The full presenter exposes
  * many more signals (constraints, ARIA IDs, dirty / pending / readonly /
  * submitting); pulling all of them through a token would over-couple the
  * control surface to the presenter's evolution. Anything richer lives
@@ -37,6 +42,13 @@ export interface CngxFormFieldHostContract {
    * control's `focusout` host listener.
    */
   markAsTouched(): void;
+  /**
+   * Stable id of the field's label element (`CngxLabel`), when the host
+   * renders one. Optional so hosts without a label surface keep
+   * satisfying the contract; consumers read it as
+   * `host.labelId?.() ?? null`.
+   */
+  readonly labelId?: Signal<string>;
 }
 
 /**

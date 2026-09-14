@@ -106,6 +106,7 @@ import { injectInteractiveGroupHost } from '../group-host/group-host';
     role: 'group',
     '[attr.id]': 'id()',
     '[attr.aria-label]': 'label()',
+    '[attr.aria-labelledby]': 'ariaLabelledBy()',
     '[attr.aria-disabled]': 'disabled() ? "true" : null',
     '[attr.aria-required]': 'required() ? "true" : null',
     '[attr.aria-invalid]': 'ariaInvalid() ? "true" : null',
@@ -195,7 +196,10 @@ export class CngxCheckboxGroup<T = unknown> implements CngxControlValue<T[]>, Cn
     uidPrefix: 'cngx-checkbox-group-',
     invalid: this.invalid,
     state: this.state,
+    label: this.label,
   });
+
+  protected readonly ariaLabelledBy = this.groupHost.ariaLabelledBy;
 
   protected readonly ariaBusy = this.groupHost.ariaBusy;
 

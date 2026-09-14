@@ -83,6 +83,7 @@ import {
     role: 'radiogroup',
     '[attr.id]': 'id()',
     '[attr.aria-label]': 'label()',
+    '[attr.aria-labelledby]': 'ariaLabelledBy()',
     '[attr.aria-disabled]': 'disabled() ? "true" : null',
     '[attr.aria-required]': 'required() ? "true" : null',
     '[attr.aria-invalid]': '(invalid() || errorState()) ? "true" : null',
@@ -150,7 +151,10 @@ export class CngxRadioGroup<T = unknown>
     uidPrefix: 'cngx-radio-group-',
     invalid: this.invalid,
     state: this.state,
+    label: this.label,
   });
+
+  protected readonly ariaLabelledBy = this.groupHost.ariaLabelledBy;
 
   protected readonly ariaBusy = this.groupHost.ariaBusy;
 
