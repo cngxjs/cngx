@@ -27,6 +27,20 @@ export interface CngxInteractiveGroupHostOptions {
    * `undefined`, the discovered fallback applies.
    */
   readonly state?: Signal<CngxAsyncState<unknown> | undefined>;
+  /**
+   * Optional explicit accessible-name input of the host (emitted as
+   * `aria-label`). While it holds a non-empty value,
+   * {@link CngxInteractiveGroupHost.ariaLabelledBy} yields `null` so the
+   * explicit name is not overridden - `aria-labelledby` beats
+   * `aria-label` in accname precedence.
+   */
+  readonly label?: Signal<string | undefined>;
+  /**
+   * Optional explicit `aria-labelledby` input of the host. When set, it
+   * wins over the automatic field-label reference - the consumer decides
+   * which element names the group.
+   */
+  readonly labelledBy?: Signal<string | undefined>;
 }
 
 /**
@@ -51,6 +65,14 @@ export interface CngxInteractiveGroupHost {
   readonly errorState: Signal<boolean>;
   /** `invalid() || errorState()` - the shared `aria-invalid` gate. */
   readonly ariaInvalid: Signal<boolean>;
+  /**
+   * Resolved `aria-labelledby` reference. An explicit `labelledBy` option
+   * always wins; otherwise the surrounding field's `labelId` applies -
+   * only inside a `cngx-form-field` whose host exposes it and while the
+   * explicit `label` option is empty. Group roles take no name from
+   * content - this channel names them inside a field.
+   */
+  readonly ariaLabelledBy: Signal<string | null>;
   /**
    * Effective async state: the explicit `state` option wins over a
    * discovered ancestor `CNGX_STATEFUL`.
@@ -118,6 +140,13 @@ export function injectInteractiveGroupHost(
   const errorState = computed<boolean>(
     () => fieldHost?.showError() ?? aggregator?.shouldShow() ?? false,
   );
+  const ariaLabelledBy = computed<string | null>(() => {
+    const explicit = options.labelledBy?.();
+    if (explicit) {
+      return explicit;
+    }
+    return options.label?.() ? null : (fieldHost?.labelId?.() ?? null);
+  });
   const resolvedState = computed(() => options.state?.() ?? statefulFallback?.state);
 
   return {
@@ -125,6 +154,7 @@ export function injectInteractiveGroupHost(
     focused: focusedState.asReadonly(),
     errorState,
     ariaInvalid: computed(() => options.invalid() || errorState()),
+    ariaLabelledBy,
     resolvedState,
     ariaBusy: computed(() => resolvedState()?.status() === 'loading'),
     handleFocusIn(): void {

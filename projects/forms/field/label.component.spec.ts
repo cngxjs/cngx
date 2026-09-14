@@ -2,6 +2,7 @@ import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { CNGX_FORM_FIELD_CONTROL, type CngxFormFieldControl } from '@cngx/core/tokens';
 import { CngxFormField } from './form-field.component';
 import { CngxLabel } from './label.component';
 import { CNGX_FORM_FIELD_CONFIG } from './form-field.token';
@@ -30,6 +31,32 @@ class TestHost {
 })
 class OptOutHost {
   field = signal<CngxFieldAccessor>(createMockField({ name: 'email', required: true }).accessor);
+}
+
+@Component({
+  selector: 'stub-id-control',
+  template: '',
+  providers: [{ provide: CNGX_FORM_FIELD_CONTROL, useExisting: StubIdControl }],
+})
+class StubIdControl implements CngxFormFieldControl {
+  readonly id = signal('real-control-id');
+  readonly focused = signal(false);
+  readonly empty = signal(true);
+  readonly disabled = signal(false);
+  readonly errorState = signal(false);
+}
+
+@Component({
+  template: `
+    <cngx-form-field [field]="field()">
+      <label cngxLabel>Control Label</label>
+      <stub-id-control />
+    </cngx-form-field>
+  `,
+  imports: [CngxFormField, CngxLabel, StubIdControl],
+})
+class ControlHost {
+  field = signal<CngxFieldAccessor>(createMockField({ name: 'email' }).accessor);
 }
 
 describe('CngxLabel', () => {
@@ -204,6 +231,53 @@ describe('CngxLabel', () => {
       const labelEl = fixture.debugElement.query(By.directive(CngxLabel))
         .nativeElement as HTMLElement;
       expect(labelEl.querySelector('.cngx-label__required')).toBeNull();
+    });
+  });
+
+  // ── Control-aware for target ───────────────────────────────────
+
+  describe('control-aware for target', () => {
+    let fixture: ReturnType<typeof TestBed.createComponent<ControlHost>>;
+    let labelEl: HTMLLabelElement;
+    let stub: StubIdControl;
+
+    beforeEach(() => {
+      const mock = createMockField({ name: 'email' });
+      TestBed.configureTestingModule({ imports: [ControlHost] });
+      fixture = TestBed.createComponent(ControlHost);
+      fixture.componentInstance.field.set(mock.accessor);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      labelEl = fixture.debugElement.query(By.directive(CngxLabel)).nativeElement;
+      stub = fixture.debugElement.query(By.directive(StubIdControl)).componentInstance;
+    });
+
+    it('prefers the control-reported id as the for target', () => {
+      expect(labelEl.getAttribute('for')).toBe('real-control-id');
+    });
+
+    it('falls back to inputId when the control reports an empty id', () => {
+      stub.id.set('');
+      TestBed.flushEffects();
+      fixture.detectChanges();
+      expect(labelEl.getAttribute('for')).toBe('cngx-email-input');
+    });
+
+    it('mirrors the control error state on cngx-label--error', () => {
+      expect(labelEl.classList.contains('cngx-label--error')).toBe(false);
+      stub.errorState.set(true);
+      TestBed.flushEffects();
+      fixture.detectChanges();
+      expect(labelEl.classList.contains('cngx-label--error')).toBe(true);
+    });
+
+    it('mirrors the control disabled state on cngx-label--disabled', () => {
+      expect(labelEl.classList.contains('cngx-label--disabled')).toBe(false);
+      stub.disabled.set(true);
+      TestBed.flushEffects();
+      fixture.detectChanges();
+      expect(labelEl.classList.contains('cngx-label--disabled')).toBe(true);
     });
   });
 });

@@ -106,6 +106,7 @@ import { injectInteractiveGroupHost } from '../group-host/group-host';
     role: 'group',
     '[attr.id]': 'id()',
     '[attr.aria-label]': 'label()',
+    '[attr.aria-labelledby]': 'ariaLabelledBy()',
     '[attr.aria-disabled]': 'disabled() ? "true" : null',
     '[attr.aria-required]': 'required() ? "true" : null',
     '[attr.aria-invalid]': 'ariaInvalid() ? "true" : null',
@@ -145,6 +146,12 @@ export class CngxCheckboxGroup<T = unknown> implements CngxControlValue<T[]>, Cn
   readonly errorMessageId = input<string | null>(null);
   readonly orientation = input<'horizontal' | 'vertical'>('vertical');
   readonly label = input<string | undefined>(undefined);
+
+  /**
+   * Explicit `aria-labelledby` target id. Wins over the automatic
+   * field-label reference applied inside a `cngx-form-field`.
+   */
+  readonly labelledBy = input<string | undefined>(undefined);
   readonly allValues = input<readonly T[] | undefined>(undefined);
   /**
    * Optional async state driving `aria-busy`. An explicit binding wins;
@@ -195,7 +202,11 @@ export class CngxCheckboxGroup<T = unknown> implements CngxControlValue<T[]>, Cn
     uidPrefix: 'cngx-checkbox-group-',
     invalid: this.invalid,
     state: this.state,
+    label: this.label,
+    labelledBy: this.labelledBy,
   });
+
+  protected readonly ariaLabelledBy = this.groupHost.ariaLabelledBy;
 
   protected readonly ariaBusy = this.groupHost.ariaBusy;
 

@@ -18,8 +18,8 @@ import { CNGX_FORM_FIELD_CONFIG } from './form-field.token';
  *
  * CSS classes:
  * - `cngx-label--required` - when the field has a `required` validator
- * - `cngx-label--error` - when errors are visible (touched AND invalid)
- * - `cngx-label--disabled` - when the field is disabled
+ * - `cngx-label--error` - when field errors are visible or the discovered control reports an error state
+ * - `cngx-label--disabled` - when the field or the discovered control is disabled
  *
  * Global required marker (no per-label code needed)
  * ```ts
@@ -65,11 +65,11 @@ import { CNGX_FORM_FIELD_CONFIG } from './form-field.token';
   exportAs: 'cngxLabel',
   host: {
     class: 'cngx-label',
-    '[attr.for]': 'presenter.inputId()',
+    '[attr.for]': 'presenter.controlId()',
     '[id]': 'presenter.labelId()',
     '[class.cngx-label--required]': 'presenter.required()',
-    '[class.cngx-label--error]': 'presenter.showError()',
-    '[class.cngx-label--disabled]': 'presenter.disabled()',
+    '[class.cngx-label--error]': 'presenter.fieldOrControlError()',
+    '[class.cngx-label--disabled]': 'presenter.fieldOrControlDisabled()',
   },
 })
 export class CngxLabel {

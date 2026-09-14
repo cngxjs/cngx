@@ -6,7 +6,7 @@ DI seams that decouple atoms from organisms and feature libs from the UI layer. 
 
 You are wiring something into the cngx DI graph and need the contract without the implementation:
 
-- You are writing a custom form control and want it to plug into `<cngx-form-field>` - you provide `CNGX_FORM_FIELD_CONTROL` from your class and the field surface picks it up automatically.
+- You are writing a custom form control and want it to plug into `<cngx-form-field>` - you provide `CNGX_FORM_FIELD_CONTROL` from your class and the field discovers it through a content query: your `focused` / `empty` / `disabled` / `errorState` signals drive the field's state classes and your `id` becomes the label's `for`-target.
 - You are writing a sub-component that sits inside a cngx organism and needs to communicate with the host - you read `CNGX_FORM_FIELD_HOST` instead of injecting the concrete parent class (which would cyclically couple the two).
 - You need a testable, SSR-safe handle on `window` or environment flags - `WINDOW` / `ENVIRONMENT` are the DI versions of those globals.
 

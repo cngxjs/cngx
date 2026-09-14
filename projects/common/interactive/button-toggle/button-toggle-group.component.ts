@@ -79,6 +79,7 @@ import {
     role: 'radiogroup',
     '[attr.id]': 'id()',
     '[attr.aria-label]': 'label()',
+    '[attr.aria-labelledby]': 'ariaLabelledBy()',
     '[attr.aria-disabled]': 'disabled() ? "true" : null',
     '[attr.aria-required]': 'required() ? "true" : null',
     '[attr.aria-invalid]': '(invalid() || errorState()) ? "true" : null',
@@ -122,6 +123,12 @@ export class CngxButtonToggleGroup<T = unknown>
   readonly errorMessageId = input<string | null>(null);
   readonly orientation = input<'horizontal' | 'vertical'>('horizontal');
   readonly label = input<string | undefined>(undefined);
+
+  /**
+   * Explicit `aria-labelledby` target id. Wins over the automatic
+   * field-label reference applied inside a `cngx-form-field`.
+   */
+  readonly labelledBy = input<string | undefined>(undefined);
   /**
    * Optional async state driving `aria-busy`. An explicit binding wins;
    * when it is absent or `undefined`, an ancestor `CNGX_STATEFUL`
@@ -151,7 +158,11 @@ export class CngxButtonToggleGroup<T = unknown>
     uidPrefix: 'cngx-button-toggle-group-',
     invalid: this.invalid,
     state: this.state,
+    label: this.label,
+    labelledBy: this.labelledBy,
   });
+
+  protected readonly ariaLabelledBy = this.groupHost.ariaLabelledBy;
 
   protected readonly ariaBusy = this.groupHost.ariaBusy;
 

@@ -23,14 +23,16 @@ const aggregatorStub = {
   removeSource: () => {},
 } satisfies CngxErrorAggregatorContract;
 
-function makeFieldHost(showError: Signal<boolean>) {
-  return { showError, markAsTouched: vi.fn() };
+function makeFieldHost(showError: Signal<boolean>, labelId?: Signal<string>) {
+  return { showError, markAsTouched: vi.fn(), labelId };
 }
 
 function setupHost(opts?: {
   providers?: Provider[];
   invalid?: Signal<boolean>;
   state?: Signal<CngxAsyncState<unknown> | undefined>;
+  label?: Signal<string | undefined>;
+  labelledBy?: Signal<string | undefined>;
 }) {
   TestBed.configureTestingModule({ providers: opts?.providers ?? [] });
   return TestBed.runInInjectionContext(() =>
@@ -38,6 +40,8 @@ function setupHost(opts?: {
       uidPrefix: 'cngx-probe-',
       invalid: opts?.invalid ?? signal(false),
       state: opts?.state,
+      label: opts?.label,
+      labelledBy: opts?.labelledBy,
     }),
   );
 }
@@ -193,5 +197,61 @@ describe('injectInteractiveGroupHost', () => {
     expect(host.ariaBusy()).toBe(false);
     state.setSuccess('ok');
     expect(host.ariaBusy()).toBe(false);
+  });
+
+  it('ariaLabelledBy resolves the field-host labelId', () => {
+    const host = setupHost({
+      providers: [
+        {
+          provide: CNGX_FORM_FIELD_HOST,
+          useValue: makeFieldHost(signal(false), signal('field-label-1')),
+        },
+      ],
+    });
+    expect(host.ariaLabelledBy()).toBe('field-label-1');
+  });
+
+  it('ariaLabelledBy stays null without a field host', () => {
+    const host = setupHost();
+    expect(host.ariaLabelledBy()).toBeNull();
+  });
+
+  it('ariaLabelledBy stays null for field hosts without a labelId channel', () => {
+    const host = setupHost({
+      providers: [{ provide: CNGX_FORM_FIELD_HOST, useValue: makeFieldHost(signal(false)) }],
+    });
+    expect(host.ariaLabelledBy()).toBeNull();
+  });
+
+  it('an explicit labelledBy option wins over the field-label reference', () => {
+    const labelledBy = signal<string | undefined>('consumer-label-id');
+    const host = setupHost({
+      labelledBy,
+      providers: [
+        {
+          provide: CNGX_FORM_FIELD_HOST,
+          useValue: makeFieldHost(signal(false), signal('field-label-1')),
+        },
+      ],
+    });
+    expect(host.ariaLabelledBy()).toBe('consumer-label-id');
+    labelledBy.set(undefined);
+    expect(host.ariaLabelledBy()).toBe('field-label-1');
+  });
+
+  it('an explicit label suppresses ariaLabelledBy until cleared', () => {
+    const label = signal<string | undefined>('Explicit name');
+    const host = setupHost({
+      label,
+      providers: [
+        {
+          provide: CNGX_FORM_FIELD_HOST,
+          useValue: makeFieldHost(signal(false), signal('field-label-1')),
+        },
+      ],
+    });
+    expect(host.ariaLabelledBy()).toBeNull();
+    label.set(undefined);
+    expect(host.ariaLabelledBy()).toBe('field-label-1');
   });
 });

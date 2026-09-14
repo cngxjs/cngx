@@ -1,8 +1,9 @@
-import { Component, effect, signal, type Signal } from '@angular/core';
+import { Component, computed, effect, inject, signal, type Signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CNGX_ERROR_SCOPE, type CngxErrorScopeContract } from '@cngx/common/interactive';
+import { CNGX_FORM_FIELD_CONTROL, type CngxFormFieldControl } from '@cngx/core/tokens';
 import { CngxFormField } from './form-field.component';
 import { CngxFormFieldPresenter } from './form-field-presenter';
 import {
@@ -31,6 +32,76 @@ function makeScopeStub(showErrors: Signal<boolean>): CngxErrorScopeContract {
   imports: [CngxFormField],
 })
 class TestHost {
+  field = signal<CngxFieldAccessor>(createMockField({ name: 'email' }).accessor);
+}
+
+@Component({
+  selector: 'stub-control',
+  template: '',
+  providers: [{ provide: CNGX_FORM_FIELD_CONTROL, useExisting: StubControl }],
+})
+class StubControl implements CngxFormFieldControl {
+  readonly id = signal('stub-control-id');
+  readonly focused = signal(false);
+  readonly empty = signal(true);
+  readonly disabled = signal(false);
+  readonly errorState = signal(false);
+}
+
+@Component({
+  selector: 'outer-composite',
+  template: '<ng-content />',
+  providers: [{ provide: CNGX_FORM_FIELD_CONTROL, useExisting: OuterComposite }],
+})
+class OuterComposite implements CngxFormFieldControl {
+  readonly id = signal('outer-composite-id');
+  readonly focused = signal(false);
+  readonly empty = signal(false);
+  readonly disabled = signal(false);
+  readonly errorState = signal(false);
+}
+
+// Mirrors the createFieldControlAria / CNGX_FORM_FIELD_HOST identity every
+// in-repo control uses: errorState resolves to the field's own showError.
+@Component({
+  selector: 'mirror-control',
+  template: '',
+  providers: [{ provide: CNGX_FORM_FIELD_CONTROL, useExisting: MirrorControl }],
+})
+class MirrorControl implements CngxFormFieldControl {
+  private readonly presenter = inject(CngxFormFieldPresenter);
+  readonly id = computed(() => this.presenter.inputId());
+  readonly focused = signal(false).asReadonly();
+  readonly empty = signal(true).asReadonly();
+  readonly disabled = computed(() => this.presenter.disabled());
+  readonly errorState = computed(() => this.presenter.showError());
+}
+
+@Component({
+  template: `<cngx-form-field [field]="field()"><stub-control /></cngx-form-field>`,
+  imports: [CngxFormField, StubControl],
+})
+class DiscoveryHost {
+  field = signal<CngxFieldAccessor>(createMockField({ name: 'email' }).accessor);
+}
+
+@Component({
+  template: `
+    <cngx-form-field [field]="field()">
+      <outer-composite><stub-control /></outer-composite>
+    </cngx-form-field>
+  `,
+  imports: [CngxFormField, OuterComposite, StubControl],
+})
+class NestedProviderHost {
+  field = signal<CngxFieldAccessor>(createMockField({ name: 'email' }).accessor);
+}
+
+@Component({
+  template: `<cngx-form-field [field]="field()"><mirror-control /></cngx-form-field>`,
+  imports: [CngxFormField, MirrorControl],
+})
+class MirrorHost {
   field = signal<CngxFieldAccessor>(createMockField({ name: 'email' }).accessor);
 }
 
@@ -589,6 +660,162 @@ describe('CngxFormFieldPresenter', () => {
       expect(presenter.name()).toBe('username');
       expect(presenter.inputId()).toBe('cngx-username-input');
       expect(presenter.required()).toBe(true);
+    });
+  });
+
+  // ── Control discovery (CNGX_FORM_FIELD_CONTROL) ──────────────────
+
+  describe('control discovery', () => {
+    let stub: StubControl;
+    let fieldEl: HTMLElement;
+    let discoveryFixture: ReturnType<typeof TestBed.createComponent<DiscoveryHost>>;
+
+    function setupDiscovery(opts: Parameters<typeof createMockField>[0] = {}) {
+      const mock = createMockField({ name: 'email', ...opts });
+      TestBed.configureTestingModule({ imports: [DiscoveryHost] });
+      discoveryFixture = TestBed.createComponent(DiscoveryHost);
+      discoveryFixture.componentInstance.field.set(mock.accessor);
+      discoveryFixture.detectChanges();
+      TestBed.flushEffects();
+      const fieldDebug = discoveryFixture.debugElement.query(By.directive(CngxFormField));
+      fieldEl = fieldDebug.nativeElement;
+      presenter = fieldDebug.injector.get(CngxFormFieldPresenter);
+      stub = discoveryFixture.debugElement.query(By.directive(StubControl)).componentInstance;
+      ref = mock.ref;
+    }
+
+    function flush() {
+      TestBed.flushEffects();
+      discoveryFixture.detectChanges();
+    }
+
+    it('resolves the projected control through the token', () => {
+      setupDiscovery();
+      expect(presenter.control()).toBe(stub);
+    });
+
+    it('resolves controlId to the control-reported id', () => {
+      setupDiscovery();
+      expect(presenter.controlId()).toBe('stub-control-id');
+    });
+
+    it('falls back to inputId when the control reports an empty id', () => {
+      setupDiscovery();
+      stub.id.set('');
+      flush();
+      expect(presenter.controlId()).toBe('cngx-email-input');
+    });
+
+    it('toggles cngx-field--focused with the control focused signal', () => {
+      setupDiscovery();
+      expect(fieldEl.classList.contains('cngx-field--focused')).toBe(false);
+
+      stub.focused.set(true);
+      flush();
+      expect(fieldEl.classList.contains('cngx-field--focused')).toBe(true);
+
+      stub.focused.set(false);
+      flush();
+      expect(fieldEl.classList.contains('cngx-field--focused')).toBe(false);
+    });
+
+    it('toggles cngx-field--empty with the control empty signal', () => {
+      setupDiscovery();
+      expect(fieldEl.classList.contains('cngx-field--empty')).toBe(true);
+
+      stub.empty.set(false);
+      flush();
+      expect(fieldEl.classList.contains('cngx-field--empty')).toBe(false);
+    });
+
+    it('widens cngx-field--disabled to field OR control', () => {
+      setupDiscovery();
+      expect(fieldEl.classList.contains('cngx-field--disabled')).toBe(false);
+
+      stub.disabled.set(true);
+      flush();
+      expect(fieldEl.classList.contains('cngx-field--disabled')).toBe(true);
+      expect(presenter.fieldOrControlDisabled()).toBe(true);
+      expect(presenter.disabled()).toBe(false);
+
+      stub.disabled.set(false);
+      ref.disabled.set(true);
+      flush();
+      expect(fieldEl.classList.contains('cngx-field--disabled')).toBe(true);
+    });
+
+    it('widens cngx-field--error on control error state while showError stays field-driven', () => {
+      setupDiscovery();
+      expect(fieldEl.classList.contains('cngx-field--error')).toBe(false);
+
+      stub.errorState.set(true);
+      flush();
+      expect(fieldEl.classList.contains('cngx-field--error')).toBe(true);
+      expect(presenter.fieldOrControlError()).toBe(true);
+      expect(presenter.showError()).toBe(false);
+
+      stub.errorState.set(false);
+      flush();
+      expect(fieldEl.classList.contains('cngx-field--error')).toBe(false);
+    });
+
+    it('reports no control and falls back for a field without providers', () => {
+      const mock = createMockField({ name: 'email' });
+      TestBed.configureTestingModule({ imports: [TestHost] });
+      const bare = TestBed.createComponent(TestHost);
+      bare.componentInstance.field.set(mock.accessor);
+      bare.detectChanges();
+      TestBed.flushEffects();
+      const fieldDebug = bare.debugElement.query(By.directive(CngxFormField));
+      const barePresenter = fieldDebug.injector.get(CngxFormFieldPresenter);
+      const bareEl: HTMLElement = fieldDebug.nativeElement;
+
+      expect(barePresenter.control()).toBeUndefined();
+      expect(barePresenter.controlId()).toBe('cngx-email-input');
+      expect(bareEl.classList.contains('cngx-field--focused')).toBe(false);
+      expect(bareEl.classList.contains('cngx-field--empty')).toBe(false);
+    });
+
+    it('prefers the first provider in content order (outer composite wins)', () => {
+      const mock = createMockField({ name: 'email' });
+      TestBed.configureTestingModule({ imports: [NestedProviderHost] });
+      const nested = TestBed.createComponent(NestedProviderHost);
+      nested.componentInstance.field.set(mock.accessor);
+      nested.detectChanges();
+      TestBed.flushEffects();
+      const fieldDebug = nested.debugElement.query(By.directive(CngxFormField));
+      const nestedPresenter = fieldDebug.injector.get(CngxFormFieldPresenter);
+      const outer = nested.debugElement.query(By.directive(OuterComposite)).componentInstance;
+
+      expect(nestedPresenter.control()).toBe(outer);
+      expect(nestedPresenter.controlId()).toBe('outer-composite-id');
+    });
+
+    it('stays cycle-free when the control mirrors showError as its errorState', () => {
+      const mock = createMockField({ name: 'email' });
+      TestBed.configureTestingModule({ imports: [MirrorHost] });
+      const mirror = TestBed.createComponent(MirrorHost);
+      mirror.componentInstance.field.set(mock.accessor);
+      mirror.detectChanges();
+      TestBed.flushEffects();
+      const fieldDebug = mirror.debugElement.query(By.directive(CngxFormField));
+      const mirrorPresenter = fieldDebug.injector.get(CngxFormFieldPresenter);
+      const mirrorEl: HTMLElement = fieldDebug.nativeElement;
+
+      mock.ref.invalid.set(true);
+      mock.ref.touched.set(true);
+      TestBed.flushEffects();
+      mirror.detectChanges();
+      expect(mirrorPresenter.showError()).toBe(true);
+      expect(mirrorPresenter.controlErrorState()).toBe(true);
+      expect(mirrorEl.classList.contains('cngx-field--error')).toBe(true);
+
+      mock.ref.invalid.set(false);
+      TestBed.flushEffects();
+      mirror.detectChanges();
+      expect(mirrorPresenter.showError()).toBe(false);
+      expect(mirrorPresenter.controlErrorState()).toBe(false);
+      expect(mirrorEl.classList.contains('cngx-field--error')).toBe(false);
     });
   });
 });
