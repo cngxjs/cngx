@@ -12,7 +12,12 @@ import {
   signal,
   untracked,
 } from '@angular/core';
-import { injectDirection, resolveInlineStep } from '@cngx/core';
+import {
+  injectDirection,
+  resolveBoundaryStep,
+  resolveInlineStep,
+  resolveStepFrom,
+} from '@cngx/core';
 import { matchesTypeahead } from '@cngx/core/utils';
 
 import { CNGX_AD_ITEM, type ActiveDescendantItem, type CngxAdItemHandle } from './ad-item.token';
@@ -475,55 +480,24 @@ export class CngxActiveDescendant {
   }
 
   private findFrom(current: number, direction: 1 | -1): number | null {
-    const total = this.totalCount();
-    if (total === 0) {
-      return null;
-    }
-    const skip = this.skipDisabled();
-    const loop = this.loop();
-
-    let idx = current < 0 ? (direction === 1 ? -1 : total) : current;
-    for (let step = 0; step < total; step++) {
-      idx += direction;
-      if (idx < 0 || idx >= total) {
-        if (!loop) {
-          return null;
-        }
-        idx = ((idx % total) + total) % total;
-      }
-      if (!skip || !this.isDisabledAt(idx)) {
-        return idx;
-      }
-    }
-    return null;
+    return resolveStepFrom(current, direction, {
+      count: this.totalCount(),
+      loop: this.loop(),
+      isDisabledAt: this.skipDisabled() ? (i) => this.isDisabledAt(i) : undefined,
+    });
   }
 
   /**
    * First/last navigable absolute index. Spans the full virtual range - End
    * targets `totalCount - 1` even when that item is not rendered (it surfaces
    * as `pendingHighlight`); unrendered items count as enabled because their
-   * disabled state is unknowable.
+   * disabled state is unknowable (`isDisabledAt` resolves them to `false`).
    */
   private findBoundary(direction: 1 | -1): number | null {
-    const total = this.totalCount();
-    if (total === 0) {
-      return null;
-    }
-    const skip = this.skipDisabled();
-    if (direction === 1) {
-      for (let i = 0; i < total; i++) {
-        if (!skip || !this.isDisabledAt(i)) {
-          return i;
-        }
-      }
-    } else {
-      for (let i = total - 1; i >= 0; i--) {
-        if (!skip || !this.isDisabledAt(i)) {
-          return i;
-        }
-      }
-    }
-    return null;
+    return resolveBoundaryStep(direction, {
+      count: this.totalCount(),
+      isDisabledAt: this.skipDisabled() ? (i) => this.isDisabledAt(i) : undefined,
+    });
   }
 
   private totalCount(): number {

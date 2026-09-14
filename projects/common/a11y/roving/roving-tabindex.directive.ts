@@ -10,7 +10,12 @@ import {
   signal,
   untracked,
 } from '@angular/core';
-import { injectDirection, resolveInlineStep } from '@cngx/core';
+import {
+  injectDirection,
+  resolveBoundaryStep,
+  resolveInlineStep,
+  resolveStepFrom,
+} from '@cngx/core';
 
 /**
  * Marker directive for items managed by `CngxRovingTabindex`.
@@ -362,20 +367,11 @@ export class CngxRovingTabindex {
 
   /**
    * Finds the next index in virtual mode. No disabled-item skipping - can't check
-   * disabled state of items not in the DOM.
+   * disabled state of items not in the DOM (the resolver treats every index as
+   * enabled when no `isDisabledAt` is supplied).
    */
   private findNextVirtual(current: number, total: number, direction: 1 | -1): number | null {
-    if (total === 0) {
-      return null;
-    }
-    const idx = current + direction;
-    if (this.loop()) {
-      return ((idx % total) + total) % total;
-    }
-    if (idx < 0 || idx >= total) {
-      return null;
-    }
-    return idx;
+    return resolveStepFrom(current, direction, { count: total, loop: this.loop() });
   }
 
   private enabledItems(): readonly CngxRovingItem[] {
@@ -402,41 +398,24 @@ export class CngxRovingTabindex {
     items: readonly CngxRovingItem[],
     direction: 1 | -1,
   ): number | null {
-    const len = items.length;
-    if (len === 0) {
-      return null;
-    }
-
-    let idx = current + direction;
-    const loop = this.loop();
-
-    for (let i = 0; i < len; i++) {
-      if (loop) {
-        idx = ((idx % len) + len) % len;
-      } else if (idx < 0 || idx >= len) {
-        return null;
-      }
-
-      if (!items[idx].disabled()) {
-        return idx;
-      }
-      idx += direction;
-    }
-
-    return null;
+    return resolveStepFrom(current, direction, {
+      count: items.length,
+      loop: this.loop(),
+      isDisabledAt: (i) => items[i].disabled(),
+    });
   }
 
   private findFirst(items: readonly CngxRovingItem[]): number | null {
-    const idx = items.findIndex((item) => !item.disabled());
-    return idx >= 0 ? idx : null;
+    return resolveBoundaryStep(1, {
+      count: items.length,
+      isDisabledAt: (i) => items[i].disabled(),
+    });
   }
 
   private findLast(items: readonly CngxRovingItem[]): number | null {
-    for (let i = items.length - 1; i >= 0; i--) {
-      if (!items[i].disabled()) {
-        return i;
-      }
-    }
-    return null;
+    return resolveBoundaryStep(-1, {
+      count: items.length,
+      isDisabledAt: (i) => items[i].disabled(),
+    });
   }
 }
