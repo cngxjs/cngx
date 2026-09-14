@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CngxRipple } from './ripple.directive';
 
 @Component({
@@ -59,5 +59,27 @@ describe('CngxRipple', () => {
     const { host, dir } = setup();
     host.dispatchEvent(new PointerEvent('pointerdown', { clientX: 50, clientY: 25 }));
     expect(dir.active()).toBe(true);
+  });
+
+  it('marks the wave aria-hidden', () => {
+    const { host } = setup();
+    host.dispatchEvent(new PointerEvent('pointerdown', { clientX: 50, clientY: 25 }));
+    const wave = host.querySelector('.cngx-ripple__wave') as HTMLElement;
+    expect(wave.getAttribute('aria-hidden')).toBe('true');
+  });
+
+  it('flushes pending waves and their fallback timers on destroy', () => {
+    vi.useFakeTimers();
+    const { fixture, host, dir } = setup();
+    host.dispatchEvent(new PointerEvent('pointerdown', { clientX: 50, clientY: 25 }));
+    host.dispatchEvent(new PointerEvent('pointerdown', { clientX: 10, clientY: 10 }));
+    expect(host.querySelectorAll('.cngx-ripple__wave').length).toBe(2);
+    const timersBeforeDestroy = vi.getTimerCount();
+
+    fixture.destroy();
+    expect(host.querySelectorAll('.cngx-ripple__wave').length).toBe(0);
+    expect(dir.active()).toBe(false);
+    // Both 1s fallback timers are cleared; ambient scheduler timers stay.
+    expect(vi.getTimerCount()).toBe(timersBeforeDestroy - 2);
   });
 });

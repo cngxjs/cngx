@@ -62,11 +62,27 @@ export class CngxRipple {
 
   private readonly el = inject(ElementRef<HTMLElement>);
   private readonly doc = inject(DOCUMENT);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly prefersReducedMotion = createMediaQuerySignal(
     '(prefers-reduced-motion: reduce)',
-    inject(DestroyRef),
+    this.destroyRef,
     this.doc.defaultView,
   );
+
+  /**
+   * Cleanups of waves whose animation has not finished yet. Flushed on
+   * destroy so the 1s fallback timer never outlives the directive and
+   * detached hosts do not keep orphaned wave elements alive.
+   */
+  private readonly pendingCleanups = new Set<() => void>();
+
+  constructor() {
+    this.destroyRef.onDestroy(() => {
+      for (const cleanup of [...this.pendingCleanups]) {
+        cleanup();
+      }
+    });
+  }
 
   /** @internal */
   protected handlePointerDown(event: PointerEvent): void {
@@ -98,6 +114,9 @@ export class CngxRipple {
 
     const wave = this.doc.createElement('span');
     wave.className = 'cngx-ripple__wave';
+    // Decorative feedback only - keep the transient span out of the
+    // accessibility tree so AT never announces an empty inline element.
+    wave.setAttribute('aria-hidden', 'true');
     wave.style.setProperty('--cngx-ripple-x', `${x}px`);
     wave.style.setProperty('--cngx-ripple-y', `${y}px`);
     wave.style.setProperty('--cngx-ripple-size', `${size}px`);
@@ -113,10 +132,12 @@ export class CngxRipple {
         return;
       }
       cleaned = true;
+      this.pendingCleanups.delete(cleanup);
       clearTimeout(fallbackTimer);
       wave.remove();
       this.activeState.set(false);
     };
+    this.pendingCleanups.add(cleanup);
 
     wave.addEventListener('animationend', cleanup, { once: true });
     // Fallback timeout in case animationend doesn't fire (e.g. display:none)
