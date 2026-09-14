@@ -82,7 +82,7 @@ interface ActiveDrag {
  * <span class="chip-strip" [cngxReorder]="values" (reordered)="apply($event)">
  *   @for (v of values(); track v; let i = $index) {
  *     <span class="chip" [attr.data-reorder-index]="i">
- *       <button cngxReorderHandle aria-label="Verschieben">⋮⋮</button>
+ *       <button cngxReorderHandle aria-label="Move item">⋮⋮</button>
  *       {{ v.label }}
  *     </span>
  *   }
@@ -193,10 +193,24 @@ export class CngxReorder<T = unknown> {
   private readonly direction = injectDirection();
   private readonly destroyRef = inject(DestroyRef);
 
+  /**
+   * Cleanups of click suppressors whose window is still open. Routed
+   * through ONE destroy hook (below) instead of a fresh
+   * `DestroyRef.onDestroy` registration per completed drag - those
+   * registrations were never released and accumulated over the
+   * directive's lifetime.
+   */
+  private readonly pendingSuppressorCleanups = new Set<() => void>();
+
   constructor() {
     this.wirePointer();
     this.wireKeyboard();
     this.wireDevModeCheck();
+    this.destroyRef.onDestroy(() => {
+      for (const cleanup of [...this.pendingSuppressorCleanups]) {
+        cleanup();
+      }
+    });
   }
 
   private wirePointer(): void {
@@ -472,8 +486,8 @@ export class CngxReorder<T = unknown> {
    * itself after the first event, after a short watchdog timeout if
    * no click ever fires (browsers skip the click when mouse travel
    * exceeds the platform drag threshold), and on directive destroy
-   * so test fixtures never leak a document-level handler across
-   * iterations.
+   * (via the routed `pendingSuppressorCleanups` set) so test fixtures
+   * never leak a document-level handler across iterations.
    */
   private installClickSuppressor(): void {
     let cleaned = false;
@@ -488,6 +502,7 @@ export class CngxReorder<T = unknown> {
         return;
       }
       cleaned = true;
+      this.pendingSuppressorCleanups.delete(cleanup);
       this.doc.removeEventListener('click', handler, true);
       clearTimeout(watchdog);
     };
@@ -496,6 +511,6 @@ export class CngxReorder<T = unknown> {
     // 50ms covers queuing quirks without lingering past the user's
     // next real click.
     const watchdog = setTimeout(cleanup, 50);
-    this.destroyRef.onDestroy(cleanup);
+    this.pendingSuppressorCleanups.add(cleanup);
   }
 }
