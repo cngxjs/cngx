@@ -104,7 +104,7 @@ export interface CngxInteractiveGroupHost {
  * @category common/interactive
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/group-host/group-host.ts
  * @since 0.1.0
- * @relatedTo CngxCheckboxGroup, CngxRadioGroup, CngxButtonToggleGroup, CngxChipGroup
+ * @relatedTo CngxToggle, CngxCheckbox, CngxChipInteraction, CngxCheckboxGroup, CngxRadioGroup, CngxButtonToggleGroup, CngxButtonMultiToggleGroup, CngxChipGroup, CngxMultiChipGroup
  */
 export function injectInteractiveGroupHost(
   options: CngxInteractiveGroupHostOptions,
