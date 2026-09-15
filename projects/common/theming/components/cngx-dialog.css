@@ -199,7 +199,11 @@
 
   /**
    * Duration of the open / close transition.
+   *
+   * Derives from the `--cngx-duration-base` rung of the motion scale; a
+   * `--cngx-duration-*` brand override re-times it library-wide.
    * @group Motion
+   * @relatedTo provideMotion, CngxMotionScope, injectMotion
    */
   @property --cngx-dialog-transition-duration {
     syntax: '<time>';

@@ -119,7 +119,11 @@
 
   /**
    * Transition shorthand for the circle border and dot fade.
+   *
+   * Derives from the `--cngx-duration-fast` rung of the motion scale; a
+   * `--cngx-duration-*` brand override re-times it library-wide.
    * @group Motion
+   * @relatedTo provideMotion, CngxMotionScope, injectMotion
    */
   @property --cngx-radio-indicator-transition {
     syntax: '*';
