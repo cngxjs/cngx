@@ -77,6 +77,71 @@ const DURATION_DERIVED_FAMILIES: readonly DurationFamily[] = [
     token: '--cngx-treetable-toggle-transition-duration',
     kind: 'real',
   },
+  // @cngx/ui - feedback
+  {
+    file: 'projects/ui/feedback/alert/alert.css',
+    token: '--cngx-alert-collapse-duration',
+    kind: 'real',
+  },
+  {
+    file: 'projects/ui/feedback/alert/alert.css',
+    token: '--cngx-alert-enter-duration',
+    kind: 'real',
+  },
+  {
+    file: 'projects/ui/feedback/alert/alert.css',
+    token: '--cngx-alert-exit-duration',
+    kind: 'real',
+  },
+  {
+    file: 'projects/ui/feedback/toast/toast-outlet.css',
+    token: '--cngx-toast-enter-duration',
+    kind: 'real',
+  },
+  {
+    file: 'projects/ui/feedback/banner/banner-outlet.css',
+    token: '--cngx-banner-enter-duration',
+    kind: 'real',
+  },
+  {
+    file: 'projects/ui/feedback/loading/loading-overlay.css',
+    token: '--cngx-overlay-transition-duration',
+    kind: 'real',
+  },
+  {
+    file: 'projects/ui/feedback/loading/progress.css',
+    token: '--cngx-progress-transition-duration',
+    kind: 'real',
+  },
+  // @cngx/ui - action-button + paginator
+  {
+    file: 'projects/ui/action-button/action-button.css',
+    token: '--cngx-action-btn-transition',
+    kind: 'real',
+  },
+  {
+    // Read on .cngx-paginator__page::after; reach via the already-registered
+    // inherits:true (no flip was needed).
+    file: 'projects/ui/paginator/paginator.component.css',
+    token: '--cngx-paginator-motion-duration',
+    kind: 'pseudo',
+  },
+  {
+    file: 'projects/ui/paginator/paginator.component.css',
+    token: '--cngx-paginator-fade-duration',
+    kind: 'real',
+  },
+  // @cngx/ui - tabs (pseudo: ink-bar ::after + accent ::before) + sidenav
+  {
+    file: 'projects/ui/tabs/tab-group.component.css',
+    token: '--cngx-tab-transition-duration',
+    kind: 'pseudo',
+  },
+  {
+    file: 'projects/ui/sidenav/sidenav.css',
+    token: '--cngx-sidenav-transition-duration',
+    kind: 'real',
+  },
 ];
 
 // Extract the body of a token's `@property` block (up to its first closing brace).
@@ -102,7 +167,7 @@ describe('duration-derivation coverage manifest', () => {
   );
 
   it('fixes the manifest size so a bulk edit dropping a family is caught', () => {
-    expect(DURATION_DERIVED_FAMILIES.length).toBe(7);
+    expect(DURATION_DERIVED_FAMILIES.length).toBe(19);
   });
 });
 
