@@ -66,7 +66,8 @@ import {
  *
  * **What the component owns.**
  * - Tree flattening via {@link flattenTree} and visible-node filtering
- *   via {@link isNodeVisible}. Both run as memoised computeds against
+ *   via `isNodeVisible` (from `@cngx/utils`). Both run as
+ *   memoised computeds against
  *   the `tree` input plus the live `expandedIds` set.
  * - Expand/collapse state via the `expandedIds` model. Bound consumers
  *   own the value; unbound consumers see a default fully-expanded set
@@ -128,10 +129,10 @@ import {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/data-display/treetable/treetable.component.ts
  * @since 0.1.0
  * @relatedTo CngxTreetableRow, CngxCellTpl, CngxHeaderTpl, CngxEmptyTpl
- * @slot cngxHeader Replaces a column's header cell; gets the column definition.
- * @slot cngxCell Replaces a body cell; gets the row and the column definition.
+ * @slot cngxHeader Replaces a column's header cell; no template context (read the column off your own definition).
+ * @slot cngxCell Replaces a body cell; gets the flat node as `$implicit` plus the resolved `value`.
  * @slot cngxEmpty Rendered when the tree resolves to no rows.
- * @slot cngxError Rendered when a bound async state fails; gets the raw error.
+ * @slot cngxError Rendered when a bound async state fails; gets the error as `$implicit` plus a `retry` callback.
  * @slot cngxSkeletonRow Replaces one placeholder row of the first-load skeleton; gets the row index and total count.
  * @slot cngxRefresh Replaces the refresh-indicator content shown below the grid during a refresh.
  */
@@ -481,8 +482,8 @@ export class CngxTreetable<T = unknown> {
   /**
    * Data-column keys for the current tree. Resolves to
    * `options.customColumnOrder` when set, otherwise extracts the
-   * primitive-valued keys of the first node's value via
-   * {@link extractColumns}. Object-valued or function-valued keys are
+   * primitive-valued keys of the first node's value via the internal
+   * `extractColumns` helper. Object-valued or function-valued keys are
    * dropped so the table never tries to render `[object Object]`.
    */
   readonly columns = computed(() => extractColumns(this.tree(), this.options()));
