@@ -77,8 +77,22 @@
    */
   @property --cngx-tab-transition-duration {
     syntax: '<time>';
-    inherits: false;
+    /* inherits:true so the host SET below reaches the pseudo reads on
+     * .cngx-tabs__tab::after (ink-bar) and ::before (accent). A non-inherited
+     * custom property SET on the originating element never reaches its
+     * pseudo-elements, and `.host *` never matches a pseudo, so a broadcast
+     * could not re-time them; inheritance can. Precedent: the
+     * --cngx-step-indicator-size flip in stepper-base.css. */
+    inherits: true;
     initial-value: 0.15s;
+  }
+
+  /* Derive from the motion scale. Host SET on the @scope root; inheritance
+   * (see the inherits:true flip above) carries it to the real tab button
+   * crossfade and to the ink-bar/accent pseudo transitions. Layer cngx.tokens
+   * keeps a Material bridge winning. 0.15s -> fast. */
+  :where(.cngx-tab-group) {
+    --cngx-tab-transition-duration: var(--cngx-duration-fast);
   }
 
   /**
