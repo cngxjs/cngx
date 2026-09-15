@@ -17,7 +17,7 @@ import type { CngxReorderModifier } from '@cngx/common/interactive';
  * @category forms/select/reorderable-multi-select
  */
 export interface CngxReorderableSelectConfig {
-  /** Forwarded to inner `CngxReorder`. Default `'ctrl'`. */
+  /** Forwarded to inner `CngxReorder`. Default `'alt'`. */
   readonly keyboardModifier?: CngxReorderModifier;
   /** ARIA label on the chip-strip `role="group"`. Localisation hook. */
   readonly ariaLabel?: string;
