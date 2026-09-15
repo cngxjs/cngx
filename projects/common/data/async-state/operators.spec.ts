@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { EMPTY, Subject, of, throwError } from 'rxjs';
 
 import { createManualState } from './create-manual-state';
-import { tapAsyncState, tapHttpAsyncState } from './operators';
+import { tapAsyncProgress, tapAsyncState, tapHttpAsyncState } from './operators';
 
 describe('tapAsyncState', () => {
   it('sets loading on first subscribe and success on next', () => {
@@ -82,5 +82,53 @@ describe('tapHttpAsyncState', () => {
     source.next({ type: 1, loaded: 10, total: 100 });
     sub.unsubscribe();
     expect(state.status()).toBe('idle');
+  });
+});
+
+describe('tapAsyncProgress', () => {
+  // HttpEventType.UploadProgress = 1, DownloadProgress = 3, Response = 4.
+  function sink() {
+    const calls: number[] = [];
+    return { calls, setProgress: (p: number) => calls.push(p) };
+  }
+
+  it('reports rounded percent on upload-progress events', () => {
+    const s = sink();
+    of({ type: 1, loaded: 50, total: 200 }).pipe(tapAsyncProgress(s)).subscribe();
+    expect(s.calls).toEqual([25]);
+  });
+
+  it('reports percent on download-progress events', () => {
+    const s = sink();
+    of({ type: 3, loaded: 1, total: 3 }).pipe(tapAsyncProgress(s)).subscribe();
+    expect(s.calls).toEqual([33]);
+  });
+
+  it('ignores non-progress events', () => {
+    const s = sink();
+    of({ type: 4, body: {} }).pipe(tapAsyncProgress(s)).subscribe();
+    expect(s.calls).toEqual([]);
+  });
+
+  it('ignores progress events without a positive total', () => {
+    const s = sink();
+    of(
+      { type: 1, loaded: 10, total: 0 },
+      { type: 1, loaded: 10, total: null },
+    )
+      .pipe(tapAsyncProgress(s))
+      .subscribe();
+    expect(s.calls).toEqual([]);
+  });
+
+  it('passes every event through unchanged', () => {
+    const s = sink();
+    const seen: unknown[] = [];
+    const events = [
+      { type: 1, loaded: 5, total: 10 },
+      { type: 4, body: { ok: true } },
+    ];
+    of(...events).pipe(tapAsyncProgress(s)).subscribe((e) => seen.push(e));
+    expect(seen).toEqual(events);
   });
 });
