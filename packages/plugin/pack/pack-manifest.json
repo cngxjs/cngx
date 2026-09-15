@@ -190,6 +190,11 @@
       "artifact": "pack/recipes/ui-timeline-integration.md",
       "source": "examples/stories/ui/timeline/integration/data-source.story.ts",
       "contentHash": "sha256:0313b4b8b72fe08731d67f3c7c4af65ad8e8bbb3bb11863fa7166cf8e2b3322e"
+    },
+    {
+      "artifact": "pack/recipes/data-display-treetable-async.md",
+      "source": "examples/stories/data-display/treetable/async/async-state-lifecycle.story.ts",
+      "contentHash": "sha256:bf19fa213bc47a76a898be889e4a8fc540d5c1a64b69f8843a754a893d203a53"
     }
   ],
   "theming": {
