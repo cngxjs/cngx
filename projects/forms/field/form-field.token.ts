@@ -344,8 +344,27 @@ export function withErrorStrategy(strategy: ErrorStrategyName | ErrorStrategyFn)
  * }))
  * ```
  *
+ * rendering - the presenter computes the formatted strings; interpolate them from
+ * any child of `<cngx-form-field>` that injects `CngxFormFieldPresenter`
+ * ```ts
+ * @Component({
+ *   selector: 'app-constraint-hints',
+ *   imports: [CngxHint],
+ *   template: `
+ *     @if (presenter.constraintHints().length) {
+ *       <span cngxHint>{{ presenter.constraintHints().join(', ') }}</span>
+ *     }
+ *   `,
+ * })
+ * export class AppConstraintHints {
+ *   protected readonly presenter = inject(CngxFormFieldPresenter);
+ * }
+ * ```
+ * Drop `<app-constraint-hints />` inside the `<cngx-form-field>` so the DI lookup
+ * resolves; `cngxHint` wires the joined string into `aria-describedby`.
+ *
  * @category forms/field
- * @relatedTo provideFormField, CngxFormFieldPresenter
+ * @relatedTo provideFormField, CngxFormFieldPresenter, CngxHint
  */
 export function withConstraintHints(
   formatters?: Partial<ConstraintHintFormatters>,
