@@ -939,7 +939,7 @@
        <cngx-optgroup> header (optgroup.component.css). */
     --cngx-select-optgroup-padding: var(--cngx-space-xs) var(--cngx-space-sm);
     padding: var(--cngx-select-optgroup-padding, 0.25rem 0.5rem);
-    font-size: 0.75rem;
+    font-size: var(--cngx-select-optgroup-font-size, 0.75rem);
     font-weight: 600;
     opacity: 0.7;
     text-transform: uppercase;
@@ -1124,7 +1124,7 @@
     margin-inline-start: auto;
     width: var(--cngx-select-option-spinner-size, 0.875rem);
     height: var(--cngx-select-option-spinner-size, 0.875rem);
-    border: 2px solid oklch(0 0 0 / 0.15);
+    border: 2px solid var(--cngx-select-option-spinner-track, oklch(0 0 0 / 0.15));
     border-top-color: var(
       --cngx-select-option-spinner-color,
       var(--cngx-color-primary, oklch(0.66 0.19 50))
@@ -1184,8 +1184,8 @@
 
   .cngx-select__chip-overflow-badge {
     flex: 0 0 auto;
-    padding: 0.125rem 0.5rem;
-    font-size: 0.75rem;
+    padding: var(--cngx-select-chip-overflow-badge-padding, 0.125rem 0.5rem);
+    font-size: var(--cngx-select-chip-overflow-badge-font-size, 0.75rem);
     line-height: 1;
     border-radius: var(--cngx-select-chip-wrap-radius, 999px);
     background: var(--cngx-select-chip-overflow-badge-bg, oklch(0 0 0 / 0.08));
