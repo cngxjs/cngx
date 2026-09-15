@@ -88,7 +88,11 @@
   /**
    * Transition shorthand (`<time> <easing>`) applied to border and
    * background changes between states.
+   *
+   * Derives from the `--cngx-duration-base` rung of the motion scale; a
+   * `--cngx-duration-*` brand override re-times it library-wide.
    * @group Motion
+   * @relatedTo provideMotion, CngxMotionScope, injectMotion
    */
   @property --cngx-file-drop-transition {
     syntax: '*';
