@@ -152,4 +152,5 @@ injectQueryParamSync(this.tab, {
 ## Other Exports
 
 `CngxIntersectionObserver`, `CngxResizeObserver`, `CngxScrollLock`, `CngxBackdrop`,
-`CngxMediaQuery`, `injectMediaQuery`, `CngxDrawer`, `CngxDrawerPanel`, `CngxDrawerContent`, `CngxInfiniteScroll`
+`CngxMediaQuery`, `injectMediaQuery`, `CngxDrawer`, `CngxDrawerPanel`, `CngxDrawerContent`,
+`CngxInfiniteScroll`, `CngxHighlight`, `CngxExpandableText`, `CngxExpandableToggle`

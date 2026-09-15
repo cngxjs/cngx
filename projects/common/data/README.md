@@ -593,6 +593,13 @@ export class ResidentApi {
 ### Component
 
 ```typescript
+import { CngxAsyncContainer, CngxAsyncSkeletonTpl, CngxAsyncContentTpl,
+  CngxAsyncEmptyTpl, CngxAsyncErrorTpl, CngxAlert, CngxToast } from '@cngx/ui/feedback';
+import { CngxCardGrid, CngxCard, CngxCardHeader, CngxCardBody,
+  CngxCardFooter, CngxCardSkeleton } from '@cngx/common/card';
+import { CngxActionButton } from '@cngx/ui/action-button';
+import { CngxEmptyState } from '@cngx/ui/empty-state';
+
 @Component({
   selector: 'app-resident-list',
   template: `
@@ -834,7 +841,9 @@ The paginator accepts `[state]` and blocks navigation while busy:
 
 ## CngxFileDrop - Upload State
 
-The file drop accepts `[state]` for upload lifecycle feedback:
+The file drop accepts `[state]` for upload lifecycle feedback
+(`CngxFileDrop` ships in `@cngx/forms/input`; `cngx-progress` and
+`cngx-alert` in `@cngx/ui/feedback`):
 
 ```html
 <div cngxFileDrop #drop="cngxFileDrop"
