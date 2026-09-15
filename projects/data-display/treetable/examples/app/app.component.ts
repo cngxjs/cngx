@@ -110,7 +110,9 @@ export class AppComponent {
     const visit = (nodes: Node<ProjectNode>[]): void => {
       for (const node of nodes) {
         ids.add(node.value.code);
-        if (node.children) visit(node.children);
+        if (node.children) {
+          visit(node.children);
+        }
       }
     };
     visit(PROJECT_TREE);
