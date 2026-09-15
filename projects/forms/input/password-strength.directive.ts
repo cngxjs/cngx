@@ -56,7 +56,7 @@ const ANNOUNCE_DEBOUNCE_MS = 400;
   standalone: true,
   exportAs: 'cngxPasswordStrength',
   host: {
-    '(input)': 'sync()',
+    '(input)': 'handleInput()',
   },
 })
 export class CngxPasswordStrength {
@@ -122,7 +122,7 @@ export class CngxPasswordStrength {
   }
 
   /** @internal - mirror the DOM value into the strength source signal. */
-  protected sync(): void {
+  protected handleInput(): void {
     this.valueState.set(this.el.nativeElement.value);
   }
 }
