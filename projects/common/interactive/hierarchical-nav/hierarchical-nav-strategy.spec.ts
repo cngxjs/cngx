@@ -4,8 +4,10 @@ import { type CngxTreeNode } from '@cngx/utils';
 import { describe, expect, it, vi } from 'vitest';
 import { createTreeController } from '../tree-controller/tree-controller';
 import {
+  CNGX_HIERARCHICAL_NAV_STRATEGY,
   createW3CTreeStrategy,
   type CngxHierarchicalNavContext,
+  type CngxHierarchicalNavStrategy,
 } from './hierarchical-nav-strategy';
 
 interface Row {
@@ -98,5 +100,34 @@ describe('createW3CTreeStrategy', () => {
     const { ctx } = setup();
     const strategy = createW3CTreeStrategy();
     expect(strategy.onArrowLeft(ctx('b'))).toEqual({ kind: 'noop' });
+  });
+});
+
+describe('CNGX_HIERARCHICAL_NAV_STRATEGY token', () => {
+  it('defaults to the W3C tree strategy', () => {
+    const strategy = TestBed.inject(CNGX_HIERARCHICAL_NAV_STRATEGY);
+    // Behavioural fingerprint of createW3CTreeStrategy: a root leaf with no
+    // parent yields a noop on ArrowLeft.
+    const ctrl = TestBed.runInInjectionContext(() =>
+      createTreeController<Row>({ nodes: signal(tree), nodeIdFn: (v) => v.id }),
+    );
+    const ctx: CngxHierarchicalNavContext<Row> = {
+      activeId: 'b',
+      controller: ctrl,
+      highlightByValue: () => undefined,
+    } as unknown as CngxHierarchicalNavContext<Row>;
+    expect(strategy.onArrowLeft(ctx)).toEqual({ kind: 'noop' });
+  });
+
+  it('honours a provided override strategy', () => {
+    const sentinel = { kind: 'noop' } as const;
+    const override: CngxHierarchicalNavStrategy = {
+      onArrowRight: () => sentinel,
+      onArrowLeft: () => sentinel,
+    };
+    TestBed.configureTestingModule({
+      providers: [{ provide: CNGX_HIERARCHICAL_NAV_STRATEGY, useValue: override }],
+    });
+    expect(TestBed.inject(CNGX_HIERARCHICAL_NAV_STRATEGY)).toBe(override);
   });
 });

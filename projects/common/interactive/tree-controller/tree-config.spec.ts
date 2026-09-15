@@ -4,7 +4,10 @@ import { type CngxTreeNode } from '@cngx/utils';
 import { describe, expect, it } from 'vitest';
 import { createTreeController } from './tree-controller';
 import {
+  CNGX_TREE_CONFIG,
+  injectTreeConfig,
   provideTreeConfig,
+  provideTreeConfigAt,
   withDefaultInitiallyExpanded,
   withDefaultKeyFn,
   withDefaultLabelFn,
@@ -111,5 +114,35 @@ describe('provideTreeConfig - app-wide defaults', () => {
     const s1 = ctrl.isExpanded('a');
     ctrl.isExpanded('a1'); // evicts 'a'
     expect(ctrl.isExpanded('a')).not.toBe(s1);
+  });
+});
+
+describe('CNGX_TREE_CONFIG token + injectTreeConfig', () => {
+  it('defaults to an empty config so unconfigured trees keep library behaviour', () => {
+    expect(TestBed.inject(CNGX_TREE_CONFIG)).toEqual({});
+    const resolved = TestBed.runInInjectionContext(() => injectTreeConfig());
+    expect(resolved).toEqual({});
+  });
+
+  it('injectTreeConfig returns the merged config registered via provideTreeConfig', () => {
+    const labelFn = (v: Row): string => v.name;
+    TestBed.configureTestingModule({
+      providers: [provideTreeConfig(withDefaultLabelFn<Row>(labelFn), withTreeCacheLimit(42))],
+    });
+    const resolved = TestBed.runInInjectionContext(() => injectTreeConfig());
+    expect(resolved.defaultLabelFn).toBe(labelFn);
+    expect(resolved.cacheLimit).toBe(42);
+  });
+});
+
+describe('provideTreeConfigAt - sub-tree scope', () => {
+  it('registers the same merged CNGX_TREE_CONFIG as provideTreeConfig', () => {
+    TestBed.configureTestingModule({
+      providers: [provideTreeConfigAt(withDefaultNodeIdFn<Row>((v) => v.id))],
+    });
+    const ctrl = TestBed.runInInjectionContext(() =>
+      createTreeController<Row>({ nodes: signal(tree) }),
+    );
+    expect(ctrl.flatNodes().map((n) => n.id)).toEqual(['a', 'a1', 'a2']);
   });
 });
