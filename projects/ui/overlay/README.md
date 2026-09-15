@@ -49,15 +49,20 @@ Key features:
 ```typescript
 type CngxOverlayConfig = Partial<OverlayConfig>;
 
-// Example:
-const ref = overlay.open(MyComponent, {
+// Example. Position and scroll strategies come from CDK's own Overlay
+// service - CngxOverlay wraps attachment and lifecycle, not strategy
+// construction:
+private readonly overlay = inject(CngxOverlay);
+private readonly cdkOverlay = inject(Overlay); // @angular/cdk/overlay
+
+const ref = this.overlay.open(MyComponent, {
   hasBackdrop: true,
   backdropClass: 'my-backdrop',
   panelClass: 'my-panel',
   maxHeight: '80vh',
   width: '600px',
-  positionStrategy: overlay.position().global().centerHorizontally(),
-  scrollStrategy: overlay.scrollStrategies.block(),
+  positionStrategy: this.cdkOverlay.position().global().centerHorizontally(),
+  scrollStrategy: this.cdkOverlay.scrollStrategies.block(),
 });
 ```
 
