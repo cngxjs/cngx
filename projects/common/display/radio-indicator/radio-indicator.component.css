@@ -129,6 +129,16 @@
       background-color 120ms ease;
   }
 
+  /* Derive the duration segments from the motion scale; easing stays literal.
+   * Multi-property shorthand, so the SET restates it with var() durations.
+   * Broadcast :where(host, host *) because the token is read on the
+   * .cngx-radio-indicator__dot descendant and is inherits:false. Layer
+   * cngx.tokens keeps a Material bridge winning. 120ms -> fast. */
+  :where(.cngx-radio-indicator, .cngx-radio-indicator *) {
+    --cngx-radio-indicator-transition: border-color var(--cngx-duration-fast) ease,
+      background-color var(--cngx-duration-fast) ease;
+  }
+
   /* `--cngx-radio-indicator-dot-size` is intentionally NOT registered
    * via `@property`. The dot's width / height rule provides a calc
    * fallback that derives from `--cngx-radio-indicator-size`, so the

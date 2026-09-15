@@ -132,6 +132,15 @@
     initial-value: 150ms ease;
   }
 
+  /* Derive the duration segment from the motion scale; easing stays literal
+   * (easing is not scale-timed). Broadcast :where(host, host *) because the
+   * token is read on the inner .cngx-toggle__track / __thumb elements and is
+   * inherits:false - a host-only SET would not reach them. Layer cngx.tokens
+   * keeps the Material bridge winning for the Material path. */
+  :where(.cngx-toggle, .cngx-toggle *) {
+    --cngx-toggle-transition: var(--cngx-duration-fast) ease;
+  }
+
   /**
    * Width of the track pill.
    * @group Layout

@@ -96,6 +96,13 @@
     initial-value: 200ms ease;
   }
 
+  /* Derive the duration segment from the motion scale; easing stays literal.
+   * Host SET (read on the .cngx-file-drop host). Layer cngx.tokens keeps a
+   * Material bridge winning. 200ms -> base. */
+  :where(.cngx-file-drop) {
+    --cngx-file-drop-transition: var(--cngx-duration-base) ease;
+  }
+
   /**
    * Border color applied while a drag is hovering. Defaults to
    * `currentColor` so the dropzone picks up the inherited text color.

@@ -172,6 +172,16 @@
     initial-value: 200ms;
   }
 
+  /* Derive from the motion scale. The registered initial-value wins over the
+   * read-site var() fallback, so the token must be SET from the scale for a
+   * --cngx-duration-* brand override to reach the enter animation. Broadcast
+   * :where(host, host *) - the token is inherits:false and read on the toast
+   * item (a descendant of the outlet). Layer cngx.tokens keeps a Material
+   * bridge winning. */
+  :where(.cngx-toast-outlet, .cngx-toast-outlet *) {
+    --cngx-toast-enter-duration: var(--cngx-duration-base);
+  }
+
   /**
    * Easing curve of the enter animation.
    * @group Motion

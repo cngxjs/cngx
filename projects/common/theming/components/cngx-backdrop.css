@@ -44,6 +44,14 @@
     inherits: false;
     initial-value: 200ms;
   }
+
+  /* Derive from the motion scale. The registered initial-value wins over the
+   * read-site var() fallback, so the token must be SET from the scale for a
+   * --cngx-duration-* brand override to reach the fade. Host SET (read is on
+   * :scope); layer cngx.tokens keeps the Material bridge winning. */
+  :where(.cngx-backdrop) {
+    --cngx-backdrop-transition-duration: var(--cngx-duration-base);
+  }
 }
 
 @layer cngx.components {

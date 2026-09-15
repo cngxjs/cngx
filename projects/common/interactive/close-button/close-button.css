@@ -126,6 +126,15 @@
     initial-value: 150ms;
   }
 
+  /* Derive from the motion scale (motion-accepted-debt.md section 2). The
+   * registered initial-value wins over the read-site var() fallback, so the
+   * token must be SET from the scale for a --cngx-duration-* brand override to
+   * reach the opacity transition. Host SET (read on the .cngx-close-button
+   * host). Layer cngx.tokens keeps a Material bridge winning. 150ms -> fast. */
+  :where(.cngx-close-button) {
+    --cngx-close-button-transition: var(--cngx-duration-fast);
+  }
+
   /**
    * Opacity multiplier applied on hover.
    * @group State / Hover

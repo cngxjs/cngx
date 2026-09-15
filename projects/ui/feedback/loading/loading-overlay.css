@@ -69,6 +69,15 @@
     initial-value: 150ms;
   }
 
+  /* Derive from the motion scale. The registered initial-value wins over the
+   * read-site var() fallback, so the token must be SET from the scale for a
+   * --cngx-duration-* brand override to reach the show/hide fade. Broadcast
+   * :where(host, host *) - inherits:false. Layer cngx.tokens keeps a Material
+   * bridge winning. */
+  :where(.cngx-loading-overlay, .cngx-loading-overlay *) {
+    --cngx-overlay-transition-duration: var(--cngx-duration-fast);
+  }
+
   /**
    * Easing curve of the overlay show/hide transition.
    * @group Motion

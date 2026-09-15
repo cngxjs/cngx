@@ -109,6 +109,13 @@
     initial-value: 0.15s;
   }
 
+  /* Derive from the motion scale (motion-accepted-debt.md section 2). Host SET
+   * (read on the .cngx-speak-button host). Layer cngx.tokens keeps a Material
+   * bridge winning. 0.15s -> fast. */
+  :where(.cngx-speak-button) {
+    --cngx-speak-btn-transition: var(--cngx-duration-fast);
+  }
+
   /**
    * Accent color of the speaking / hover state. Warm orange by
    * design - independent of `--cngx-color-primary`.

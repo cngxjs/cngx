@@ -207,6 +207,15 @@
     initial-value: 200ms;
   }
 
+  /* Derive from the motion scale. The registered initial-value above wins
+   * over the read-site var() fallback, so a --cngx-duration-* brand override
+   * only reaches the transition once the token is SET from the scale here.
+   * Host SET (read is on :scope); layer cngx.tokens keeps the Material bridge
+   * (layer cngx.components) winning for the Material path. */
+  :where(dialog[cngxDialog]) {
+    --cngx-dialog-transition-duration: var(--cngx-duration-base);
+  }
+
   /**
    * Easing curve of the open / close transition.
    * @group Motion

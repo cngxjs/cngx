@@ -322,6 +322,17 @@
     initial-value: 250ms;
   }
 
+  /* Derive from the motion scale. Both tokens are already inherits:true, so a
+   * host SET is carried by inheritance to every read - including the
+   * .cngx-paginator__page::after pseudo (motion), which a broadcast could not
+   * reach. No inherits-flip needed (the plan assumed a flip; the tokens were
+   * already inherits:true). Layer cngx.tokens keeps a Material bridge winning.
+   * motion 200 -> base; fade 250 -> base (<= 260ms midpoint). */
+  :where(.cngx-paginator) {
+    --cngx-paginator-motion-duration: var(--cngx-duration-base);
+    --cngx-paginator-fade-duration: var(--cngx-duration-base);
+  }
+
   /**
    * Opacity the page row fades to while the host reports busy.
    * @group State / Busy

@@ -125,6 +125,13 @@
     initial-value: 150ms;
   }
 
+  /* Derive from the motion scale (motion-accepted-debt.md section 2). Host SET
+   * (read on the .cngx-popover-action host). Layer cngx.tokens keeps a Material
+   * bridge winning. 150ms -> fast. */
+  :where(.cngx-popover-action) {
+    --cngx-popover-action-transition: var(--cngx-duration-fast);
+  }
+
   /**
    * Hover-state surface - neutral default + ghost variant share this
    * token so a single dark-mode swap covers both. Light: 4% black
