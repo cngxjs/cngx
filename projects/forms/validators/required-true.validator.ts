@@ -6,6 +6,9 @@ import { type AbstractControl, type ValidationErrors, type ValidatorFn } from '@
  * Returns `{ requiredTrue: { actual } }` for any value other than `true`.
  * Intended for checkbox agreement fields.
  *
+ * Near-duplicate of Angular's `Validators.requiredTrue` by design: the `requiredTrue`
+ * error kind and `{ actual }` payload line up with the `withErrorMessages` registry keys.
+ *
  * @category forms/validators
  */
 export function requiredTrue(): ValidatorFn {
