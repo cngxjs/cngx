@@ -47,6 +47,7 @@ export {
   provideToasts,
   type ToastConfig,
   type ToastRef,
+  type ToastState,
 } from './toast/toast.service';
 export { CngxToastOutlet, type ToastPosition } from './toast/toast-outlet';
 export { CngxToastOn } from './toast/toast-on.directive';

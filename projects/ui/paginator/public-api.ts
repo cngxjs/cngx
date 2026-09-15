@@ -1,3 +1,13 @@
+/**
+ * Public API surface of `@cngx/ui/paginator`.
+ *
+ * The pure-cngx paginator organism: declarative projected segment parts
+ * around a `CngxPaginate`-shaped host, page-size selection via
+ * `CngxListbox`, loading and infinite-scroll bridges. The Material twin
+ * lives in `@cngx/ui/mat-paginator`.
+ *
+ * @module @cngx/ui/paginator
+ */
 export {
   CngxPaginator,
   type CngxPaginatorSkin,
