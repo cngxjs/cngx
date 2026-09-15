@@ -7,6 +7,8 @@
  * as `<cngx-stepper>` (in `@cngx/ui/stepper`) via `hostDirectives`, so
  * commit-action lifecycle, router sync, and error aggregation all work
  * against Material's own markup. Mirrors `[cngxMatTabs]`.
+ *
+ * @module @cngx/ui/mat-stepper
  */
 export { CngxMatStepper } from './mat-stepper.directive';
 export {
