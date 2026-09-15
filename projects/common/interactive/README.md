@@ -102,13 +102,14 @@ Supports `mod` as a platform-aware modifier (`Meta` on macOS, `Ctrl` elsewhere).
 - `preventDefault()` is called on matching events.
 - Combo string is memoised - re-parsed only when the input changes.
 
-## withRetry
+## createRetry
 
 Wraps an `AsyncAction` with automatic retry logic. Returns `[action, retryState]`.
 The wrapped action retries on failure with configurable delay and backoff.
+The former `withRetry` name is a deprecated alias and is removed at the v1.0 cut.
 
 ```typescript
-const [saveWithRetry, retryState] = withRetry(
+const [saveWithRetry, retryState] = createRetry(
   () => this.http.post('/api/save', data),
   { maxAttempts: 3, delay: 1000, backoff: 'exponential' }
 );
@@ -159,14 +160,15 @@ const [saveWithRetry, retryState] = withRetry(
 
 `reset()` clears all state back to `'idle'`.
 
-## optimistic
+## createOptimistic
 
 Creates an optimistic update function for a signal. Sets the value immediately,
 then confirms via an async action. On failure, rolls back to the last confirmed value.
+The former `optimistic` name is a deprecated alias and is removed at the v1.0 cut.
 
 ```typescript
 readonly name = signal('Alice');
-readonly [updateName, nameState] = optimistic(
+readonly [updateName, nameState] = createOptimistic(
   this.name,
   (value) => this.http.put('/api/name', { name: value })
 );
@@ -304,6 +306,15 @@ forking. The strategy is a pure `(total, maxVisible) => ReadonlySet<number>`.
   }],
 })
 ```
+
+## Async-state discovery in groups
+
+The six group components (`CngxCheckboxGroup`, `CngxRadioGroup`, `CngxChipGroup`,
+`CngxMultiChipGroup`, `CngxButtonToggleGroup`, `CngxButtonMultiToggleGroup`) resolve
+their async state from the `[state]` input first and fall back to the nearest
+`CNGX_STATEFUL` producer in the injector tree. A group nested inside any producer
+inherits its busy signalling silently - no wiring needed. Bind `[state]` explicitly
+to override the discovered producer.
 
 ## Other Exports
 

@@ -71,7 +71,7 @@ export type AsyncAction = () => Promise<unknown> | Observable<unknown>;
  * @since 0.1.0
  * @relatedTo CngxPending, CngxSucceeded, CngxFailed, CngxActionButton
  * <example-url>http://localhost:4200/#/common/interactive/retry/optimistic-instant-like-toggle</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/retry/withretry-cngxasyncclick</example-url>
+ * <example-url>http://localhost:4200/#/common/interactive/retry/createretry-cngxasyncclick</example-url>
  */
 @Directive({
   selector: '[cngxAsyncClick]',
