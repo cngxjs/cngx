@@ -95,7 +95,12 @@ export function createMockField<T = string>(
     focusBoundControl: () => {
       /* noop */
     },
-    reset: () => {
+    reset: (value?: T) => {
+      // Mirror the real CngxFieldRef contract: a passed value resets the
+      // field to it; omitting the argument clears interaction state only.
+      if (value !== undefined) {
+        ref.value.set(value);
+      }
       ref.touched.set(false);
       ref.dirty.set(false);
     },
