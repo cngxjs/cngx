@@ -156,6 +156,20 @@ class ToastHost {
   readonly action = () => this.actionImpl();
 }
 
+@Component({
+  template: `
+    <cngx-action-button [action]="action" [toastSuccess]="toastMsg()" #ab="cngxActionButton">
+      Save
+    </cngx-action-button>
+  `,
+  imports: [CngxActionButton],
+})
+class ToastRebindHost {
+  actionImpl = () => Promise.resolve();
+  readonly action = () => this.actionImpl();
+  readonly toastMsg = signal('Saved!');
+}
+
 // ── State exposition host ───────────────────────────────────────────────
 
 @Component({
@@ -484,6 +498,31 @@ describe('CngxActionButton', () => {
           }),
         );
       });
+    });
+
+    it('does not re-fire the toast when a toast input rebinds inside the settled window', async () => {
+      const showSpy = vi.fn();
+      TestBed.overrideProvider(CngxToaster, { useValue: { show: showSpy } });
+      const fixture = TestBed.createComponent(ToastRebindHost);
+      fixture.detectChanges();
+
+      const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+      btn.click();
+      await vi.waitFor(() => {
+        flush(fixture);
+        expect(showSpy).toHaveBeenCalledTimes(1);
+      });
+      const ab = fixture.debugElement.children[0].references['ab'] as CngxActionButton;
+      const stamp = ab.state.lastUpdated();
+
+      // previous() stays stale for the whole settled window; before the
+      // untracked() wrap, any tracked toast-input read re-ran the body here.
+      fixture.componentInstance.toastMsg.set('Saved again!');
+      flush(fixture);
+      flush(fixture);
+
+      expect(showSpy).toHaveBeenCalledTimes(1);
+      expect(ab.state.lastUpdated()).toBe(stamp);
     });
 
     it('should not toast when toaster is not provided', async () => {
