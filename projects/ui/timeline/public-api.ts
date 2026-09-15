@@ -6,6 +6,9 @@ export {
   CngxTimeline,
   type CngxTimelineMode,
   type CngxTimelineSkin,
+  type CngxTimelinePlacement,
+  type CngxTimelineRail,
+  type CngxTimelineOrientation,
 } from './timeline.component';
 // The organism composes these rather than inlining them, and they are public
 // for the same reason: an ejected skin has to resolve the same slot cascade,

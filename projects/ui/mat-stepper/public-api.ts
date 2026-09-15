@@ -13,4 +13,5 @@ export {
   CNGX_MAT_STEP_HANDLE_FACTORY,
   createMatStepHandle,
   type CngxMatStepHandleFactory,
+  type CngxMatStepHandleSetup,
 } from './material-bridge/handle';

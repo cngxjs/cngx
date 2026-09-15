@@ -38,6 +38,7 @@ export {
   CNGX_MAT_TAB_HANDLE_FACTORY,
   createMatTabHandle,
   type CngxMatTabHandleFactory,
+  type CngxMatTabHandleSetup,
 } from './material-bridge/handle';
 export { MaterialPrivateSurfaces } from './material-bridge/private-surfaces';
 // Cross-entry internal surface: consumed by @cngx/ui/mat-stepper, same
