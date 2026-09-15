@@ -41,6 +41,14 @@
  * `transition-duration` directly with `!important`, so it needs none of
  * its own.
  *
+ * Registered component duration tokens derive from that scale via layered
+ * host SET rules (one per family, guarded by
+ * `duration-derivation-coverage.spec.ts`), so a `--cngx-duration-*` brand
+ * override re-times component transitions app-wide. This reduced-motion net
+ * is orthogonal to that derivation: it overrides the resolved
+ * `transition-duration` / `animation-duration` directly, so it still
+ * collapses both derived and literal durations under reduced motion.
+ *
  * **Layer**
  *
  * Both rules are deliberately UNLAYERED. They set real animation /

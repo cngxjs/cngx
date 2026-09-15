@@ -214,7 +214,14 @@
   /**
    * Motion duration - fast (150ms). Hover state-layers, focus
    * crossfades, micro-interactions.
+   *
+   * Registered component duration tokens (e.g.
+   * `--cngx-tooltip-transition-duration`, `--cngx-tab-transition-duration`)
+   * derive from this rung via a layered host SET, so overriding it re-times
+   * those transitions library-wide - the same way `--cngx-space-*` re-scales
+   * spacing under `[data-density]`.
    * @group Motion
+   * @relatedTo provideMotion, CngxMotionScope, injectMotion
    */
   @property --cngx-duration-fast {
     syntax: '<time>';
@@ -225,7 +232,11 @@
   /**
    * Motion duration - base (200ms). Default for most component
    * transitions (overlays, dropdowns, dialogs).
+   *
+   * The default rung for component transition durations, which derive from it
+   * via a layered host SET; override it to re-time them library-wide.
    * @group Motion
+   * @relatedTo provideMotion, CngxMotionScope, injectMotion
    */
   @property --cngx-duration-base {
     syntax: '<time>';
@@ -236,7 +247,12 @@
   /**
    * Motion duration - slow (320ms). Major surface transitions
    * (dialog open / close, page-level fades).
+   *
+   * Component duration tokens on this rung (e.g.
+   * `--cngx-progress-transition-duration`) derive from it via a layered host
+   * SET; override it to re-time them library-wide.
    * @group Motion
+   * @relatedTo provideMotion, CngxMotionScope, injectMotion
    */
   @property --cngx-duration-slow {
     syntax: '<time>';
