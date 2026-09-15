@@ -160,6 +160,16 @@
       border-color 150ms ease;
   }
 
+  /* Derive the duration segments from the motion scale; easing stays literal.
+   * The token is a multi-property transition shorthand, so the SET restates the
+   * full shorthand with var() durations (the initial-value above cannot carry
+   * var()). Host SET (read on the .cngx-chip host). Layer cngx.tokens keeps a
+   * Material bridge winning. 150ms -> fast. */
+  :where(.cngx-chip) {
+    --cngx-chip-transition: background-color var(--cngx-duration-fast) ease,
+      color var(--cngx-duration-fast) ease, border-color var(--cngx-duration-fast) ease;
+  }
+
   /**
    * Background of the hover state for interactive chips
    * (`[role=button]`, `[tabindex]`, or a chip with a remove button).
