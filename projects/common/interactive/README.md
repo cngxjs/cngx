@@ -307,6 +307,15 @@ forking. The strategy is a pure `(total, maxVisible) => ReadonlySet<number>`.
 })
 ```
 
+## Async-state discovery in groups
+
+The six group components (`CngxCheckboxGroup`, `CngxRadioGroup`, `CngxChipGroup`,
+`CngxMultiChipGroup`, `CngxButtonToggleGroup`, `CngxButtonMultiToggleGroup`) resolve
+their async state from the `[state]` input first and fall back to the nearest
+`CNGX_STATEFUL` producer in the injector tree. A group nested inside any producer
+inherits its busy signalling silently - no wiring needed. Bind `[state]` explicitly
+to override the discovered producer.
+
 ## Other Exports
 
 `CngxClickOutside`, `CngxDisclosure`, `CngxNavLink`, `CngxNavLabel`, `CngxNavBadge`,
