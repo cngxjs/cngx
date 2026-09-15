@@ -1,16 +1,16 @@
 import { expect, test } from '@playwright/test';
 import { gotoDemo } from '../../_helpers';
 
-// Story: withRetry wraps an AsyncAction with retries; CngxAsyncClick exposes
+// Story: createRetry wraps an AsyncAction with retries; CngxAsyncClick exposes
 // pending/succeeded/failed signals. The demo intentionally uses a flaky
 // (40% success) action — so the test asserts only that the retry state
 // machine moves: attempt climbs, retrying flips, eventually settles.
 
 test.describe('common/interactive/retry', () => {
-  test('withRetry: attempt counter climbs and pending settles within max attempts', async ({
+  test('createRetry: attempt counter climbs and pending settles within max attempts', async ({
     page,
   }) => {
-    await gotoDemo(page, 'common/interactive/retry/withretry-cngxasyncclick');
+    await gotoDemo(page, 'common/interactive/retry/createretry-cngxasyncclick');
 
     const btn = page.getByRole('button', { name: /Flaky Save|Attempt|Success|retries failed/ });
     await expect(btn).toBeVisible();

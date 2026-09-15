@@ -1,25 +1,25 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'optimistic(): Instant like toggle',
+  title: 'createOptimistic(): Instant like toggle',
   subtitle: 'Click to toggle. The <code>liked</code> signal flips immediately (optimistic write); when the server rejects (30% chance), the value rolls back after the delay and <code>rolledBack()</code> turns true.',
-  description: 'Pair <code>optimistic()</code> with a plain toggle button to give a UI an immediate-response feel even on a flaky network. The signal updates synchronously on click, so the button label changes before the request settles. The returned state surface exposes <code>rolledBack()</code> and <code>error()</code> so the chrome can show the recovery path when the server rejects. <code>aria-pressed</code> mirrors the optimistic value, keeping the button semantically a toggle for assistive tech.',
+  description: 'Pair <code>createOptimistic()</code> with a plain toggle button to give a UI an immediate-response feel even on a flaky network. The signal updates synchronously on click, so the button label changes before the request settles. The returned state surface exposes <code>rolledBack()</code> and <code>error()</code> so the chrome can show the recovery path when the server rejects. <code>aria-pressed</code> mirrors the optimistic value, keeping the button semantically a toggle for assistive tech.',
   level: 'atom',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
   focus: ['async-state', 'error-handling', 'behavior'],
   apiComponents: [
-    'optimistic',
+    'createOptimistic',
   ],
   moduleImports: [
-    'import { optimistic } from \'@cngx/common/interactive\';',
+    'import { createOptimistic } from \'@cngx/common/interactive\';',
     'import { of, switchMap, throwError, timer } from \'rxjs\';',
   ],
   imports: [],
   setup: `
   protected readonly liked = signal<boolean>(false);
 
-  private readonly likeTuple = optimistic<boolean>(this.liked, (value) =>
+  private readonly likeTuple = createOptimistic<boolean>(this.liked, (value) =>
     timer(1000).pipe(
       switchMap(() => (Math.random() > 0.3
         ? of(value)

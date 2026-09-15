@@ -1,18 +1,18 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'optimistic(): Basic happy path',
-  subtitle: 'Wrap a writable signal with <code>optimistic(signal, action)</code>; the returned <code>apply()</code> sets the value immediately and confirms via the async action.',
+  title: 'createOptimistic(): Basic happy path',
+  subtitle: 'Wrap a writable signal with <code>createOptimistic(signal, action)</code>; the returned <code>apply()</code> sets the value immediately and confirms via the async action.',
   description: 'Pure factory function, not a directive. Takes a <code>WritableSignal&lt;T&gt;</code> and an async <code>action(value)</code>, returns <code>[apply, state]</code>. <code>apply(newValue)</code> writes the new value into the signal immediately (UI updates optimistically), then runs the action; on success the confirmed value is written back, on failure the signal rolls back to the last confirmed value. State surface includes <code>status</code> (idle/pending/success/error) so consumers can wire feedback through any cngx <code>[state]</code>-shaped consumer.',
   level: 'atom',
   audience: ['dev'],
   artifact: 'building-block',
   focus: ['async-state', 'behavior'],
   apiComponents: [
-    'optimistic',
+    'createOptimistic',
   ],
   moduleImports: [
-    'import { optimistic } from \'@cngx/common/interactive\';',
+    'import { createOptimistic } from \'@cngx/common/interactive\';',
     'import { of } from \'rxjs\';',
     'import { delay } from \'rxjs/operators\';',
   ],
@@ -20,7 +20,7 @@ export const STORY: DemoSpec = {
   setup: `
   protected readonly name = signal<string>('Alice');
 
-  private readonly nameTuple = optimistic<string>(
+  private readonly nameTuple = createOptimistic<string>(
     this.name,
     (value) => of(value).pipe(delay(700)),
   );
