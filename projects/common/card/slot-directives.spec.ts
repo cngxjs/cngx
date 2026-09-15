@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { CngxCardHeader } from './card-header.directive';
@@ -7,6 +7,9 @@ import { CngxCardMedia } from './card-media.directive';
 import { CngxCardFooter } from './card-footer.directive';
 import { CngxCardActions } from './card-actions.directive';
 import { CngxCardBadge } from './card-badge.directive';
+import { CngxCardTitle } from './card-title.directive';
+import { CngxCardSubtitle } from './card-subtitle.directive';
+import { CngxCardAccent } from './card-accent.directive';
 
 @Component({
   template: `
@@ -127,5 +130,54 @@ describe('Card slot directives', () => {
     expect(defaultBadge.classList.contains('cngx-card__badge--top-start')).toBe(false);
     expect(defaultBadge.classList.contains('cngx-card__badge--bottom-start')).toBe(false);
     expect(defaultBadge.classList.contains('cngx-card__badge--bottom-end')).toBe(false);
+  });
+});
+
+@Component({
+  template: `
+    <h3 cngxCardTitle>Title</h3>
+    <span cngxCardSubtitle>Subtitle</span>
+    <div [cngxCardAccent]="severity()">Accent</div>
+  `,
+  imports: [CngxCardTitle, CngxCardSubtitle, CngxCardAccent],
+})
+class TitleAccentHost {
+  readonly severity = signal<'info' | 'success' | 'warning' | 'danger' | 'neutral'>('neutral');
+}
+
+describe('Card title / subtitle / accent directives', () => {
+  beforeEach(() => TestBed.configureTestingModule({ imports: [TitleAccentHost] }));
+
+  function setup() {
+    const fixture = TestBed.createComponent(TitleAccentHost);
+    fixture.detectChanges();
+    return { fixture, el: fixture.nativeElement as HTMLElement };
+  }
+
+  it('CngxCardTitle adds the title host class', () => {
+    const { el } = setup();
+    expect(el.querySelector('.cngx-card__title')).toBeTruthy();
+  });
+
+  it('CngxCardSubtitle adds the subtitle host class', () => {
+    const { el } = setup();
+    expect(el.querySelector('.cngx-card__subtitle')).toBeTruthy();
+  });
+
+  it('CngxCardAccent defaults to the neutral severity class', () => {
+    const { el } = setup();
+    const accent = el.querySelector('.cngx-card--accent') as HTMLElement;
+    expect(accent).toBeTruthy();
+    expect(accent.classList.contains('cngx-card--accent-neutral')).toBe(true);
+  });
+
+  it('CngxCardAccent swaps to the matching severity class and drops the others', () => {
+    const { fixture, el } = setup();
+    fixture.componentInstance.severity.set('warning');
+    fixture.detectChanges();
+    const accent = el.querySelector('.cngx-card--accent') as HTMLElement;
+    expect(accent.classList.contains('cngx-card--accent-warning')).toBe(true);
+    expect(accent.classList.contains('cngx-card--accent-neutral')).toBe(false);
+    expect(accent.classList.contains('cngx-card--accent-danger')).toBe(false);
   });
 });
