@@ -8,6 +8,7 @@ import {
   inject,
   input,
   signal,
+  untracked,
   viewChild,
   ViewEncapsulation,
 } from '@angular/core';
@@ -292,40 +293,47 @@ export class CngxActionButton {
         return;
       }
 
-      if (status === 'success') {
-        // Producer write for the buildAsyncStateView `lastUpdated` slot (no other
-        // source feeds it) - state production, not derived-state sync. This is the
-        // sanctioned signal-write-in-effect class, same as the async-state-view pattern.
-        this.lastUpdatedState.set(new Date());
-        const msg = this.toastSuccess();
-        if (msg && this.toaster) {
-          this.toaster.show({
-            message: msg,
-            severity: 'success',
-            duration: this.toastSuccessDuration(),
-          });
+      // Only the transition edge may re-run this body. The toast inputs and
+      // effectiveError are read untracked: previous() stays stale for the whole
+      // settled window, so a tracked read would re-fire the toast on any input
+      // rebind while status sits in success/error. Doctrine: bridge effects
+      // untrack service calls.
+      untracked(() => {
+        if (status === 'success') {
+          // Producer write for the buildAsyncStateView `lastUpdated` slot (no other
+          // source feeds it) - state production, not derived-state sync. This is the
+          // sanctioned signal-write-in-effect class, same as the async-state-view pattern.
+          this.lastUpdatedState.set(new Date());
+          const msg = this.toastSuccess();
+          if (msg && this.toaster) {
+            this.toaster.show({
+              message: msg,
+              severity: 'success',
+              duration: this.toastSuccessDuration(),
+            });
+          }
         }
-      }
 
-      if (status === 'error') {
-        const msg = this.toastError();
-        if (msg && this.toaster) {
-          const err = this.effectiveError();
-          const detail =
-            this.toastErrorDetail() && err != null
-              ? err instanceof Error
-                ? err.message
-                : typeof err === 'string'
-                  ? err
-                  : undefined
-              : undefined;
-          this.toaster.show({
-            message: detail ? `${msg}: ${detail}` : msg,
-            severity: 'error',
-            duration: this.toastErrorDuration(),
-          });
+        if (status === 'error') {
+          const msg = this.toastError();
+          if (msg && this.toaster) {
+            const err = this.effectiveError();
+            const detail =
+              this.toastErrorDetail() && err != null
+                ? err instanceof Error
+                  ? err.message
+                  : typeof err === 'string'
+                    ? err
+                    : undefined
+                : undefined;
+            this.toaster.show({
+              message: detail ? `${msg}: ${detail}` : msg,
+              severity: 'error',
+              duration: this.toastErrorDuration(),
+            });
+          }
         }
-      }
+      });
     });
   }
 }
