@@ -396,6 +396,18 @@
     initial-value: 150ms;
   }
 
+  /* Derive from the motion scale. The registered initial-values win over the
+   * read-site var() fallbacks, so the tokens must be SET from the scale for a
+   * --cngx-duration-* brand override to reach the collapse/enter/exit motion.
+   * Broadcast :where(host, host *) because the tokens are inherits:false and
+   * read on host-modifier and descendant selectors. Layer cngx.tokens keeps a
+   * Material bridge winning. icon-pulse stays literal (attention loop). */
+  :where(.cngx-alert, .cngx-alert *) {
+    --cngx-alert-collapse-duration: var(--cngx-duration-base);
+    --cngx-alert-enter-duration: var(--cngx-duration-base);
+    --cngx-alert-exit-duration: var(--cngx-duration-fast);
+  }
+
   /**
    * Duration of the icon-pulse animation that fires on enter.
    * @group Motion
