@@ -363,7 +363,7 @@
 
   /* Derive from the motion scale. Broadcast :where(host, host *) because both
    * tokens are read on inner elements (cdk-row, .cngx-treetable__toggle) and
-   * are inherits:false — a host-only SET would not reach them. Layer
+   * are inherits:false - a host-only SET would not reach them. Layer
    * cngx.tokens keeps any Material bridge winning for the Material path.
    * 120ms snaps to fast (< 175ms midpoint). */
   :where(.cngx-treetable, .cngx-treetable *) {
