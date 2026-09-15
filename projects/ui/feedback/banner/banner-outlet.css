@@ -130,6 +130,15 @@
     initial-value: 200ms;
   }
 
+  /* Derive from the motion scale. The registered initial-value wins over the
+   * read-site var() fallback, so the token must be SET from the scale for a
+   * --cngx-duration-* brand override to reach the slide-down enter animation.
+   * Broadcast :where(host, host *) — inherits:false, read on the banner item
+   * (a descendant). Layer cngx.tokens keeps a Material bridge winning. */
+  :where(.cngx-banner-outlet, .cngx-banner-outlet *) {
+    --cngx-banner-enter-duration: var(--cngx-duration-base);
+  }
+
   /**
    * Vertical offset the banner translates from while entering.
    * @group Motion
