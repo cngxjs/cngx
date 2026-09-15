@@ -77,6 +77,6 @@ export type CngxTriggerFocusFactory = () => CngxTriggerFocusState;
  * @since 0.1.0
  */
 export const CNGX_TRIGGER_FOCUS_FACTORY = new InjectionToken<CngxTriggerFocusFactory>(
-  'CNGX_TRIGGER_FOCUS_FACTORY',
+  'CngxTriggerFocusFactory',
   { providedIn: 'root', factory: () => createTriggerFocusState },
 );

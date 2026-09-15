@@ -37,10 +37,10 @@ import { CNGX_INPUT_CONFIG, DEFAULT_INPUT_ARIA_LABELS } from './input-config';
   standalone: true,
   exportAs: 'cngxCapsLock',
   host: {
-    '(keydown)': 'sync($event)',
-    '(keyup)': 'sync($event)',
-    '(focus)': 'sync($event)',
-    '(blur)': 'reset()',
+    '(keydown)': 'handleModifierEvent($event)',
+    '(keyup)': 'handleModifierEvent($event)',
+    '(focus)': 'handleModifierEvent($event)',
+    '(blur)': 'handleBlur()',
   },
 })
 export class CngxCapsLock {
@@ -53,7 +53,7 @@ export class CngxCapsLock {
   readonly capsOn: Signal<boolean> = this.capsOnState.asReadonly();
 
   /** @internal - reads the live CapsLock modifier; announces only on the off->on edge. */
-  protected sync(event: KeyboardEvent | FocusEvent): void {
+  protected handleModifierEvent(event: KeyboardEvent | FocusEvent): void {
     if (typeof (event as KeyboardEvent).getModifierState !== 'function') {
       // FocusEvent and other non-keyboard events carry no modifier state;
       // wait for the first key event to read CapsLock.
@@ -71,7 +71,7 @@ export class CngxCapsLock {
   }
 
   /** @internal - clears the warning on blur; CapsLock state is unobservable while unfocused. */
-  protected reset(): void {
+  protected handleBlur(): void {
     this.capsOnState.set(false);
   }
 }

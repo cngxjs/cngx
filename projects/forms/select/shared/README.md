@@ -67,7 +67,7 @@ Public type aliases for `[commitAction]` consumers:
 Internal runtime that subscribes/awaits the value returned from a `CngxSelectCommitAction<T>` and dispatches `onSuccess` / `onError` callbacks.
 Callable as `runCommitAction<T>(action, intended, handlers)`; returns a `CngxCommitHandle` with a `cancel()` method. Used internally by `createCommitController`. Not exported.
 
-### `commit-controller.ts`
+### `commit-controller.token.ts`
 
 Low-level state machine for the async-commit lifecycle. Owns the `ManualAsyncState<T | undefined>` slot, the monotonic `commitId` for supersede semantics, the `intendedValue` signal driving the option-row spinner, and the `begin(action, intended, previous, handlers)`
 

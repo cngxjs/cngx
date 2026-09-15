@@ -13,7 +13,7 @@ import { createFieldSync as createFieldSyncField, type FieldSyncOptions } from '
  * @category forms/select/state
  */
 export const CNGX_SELECT_DISABLE_FIELD_SYNC = new InjectionToken<boolean>(
-  'CNGX_SELECT_DISABLE_FIELD_SYNC',
+  'CngxSelectDisableFieldSync',
 );
 
 export type { FieldSyncOptions };

@@ -7,6 +7,7 @@ import {
   TouchedChangeEvent,
   type ValidationErrors,
 } from '@angular/forms';
+import type { FieldTree, ValidationError } from '@angular/forms/signals';
 import type { CngxFieldAccessor, CngxFieldRef } from './models';
 
 /**
@@ -15,6 +16,12 @@ import type { CngxFieldAccessor, CngxFieldRef } from './models';
  *
  * This enables using `cngx-form-field` without Signal Forms - for teams that haven't
  * migrated yet or for forms that use Reactive Forms by design.
+ *
+ * The adapter binds to the control instance passed at call time and never re-binds.
+ * Replacing that instance later (`FormGroup.setControl()`, rebuilding the form) goes
+ * unnoticed - the subscriptions stay on the old control and the accessor freezes on
+ * its last mirrored state. Call `adaptFormControl` again with the new instance and
+ * swap the `[field]` binding instead.
  *
  * @param control The Reactive Forms control to adapt.
  * @param name A unique field name for deterministic ID generation.
@@ -45,9 +52,7 @@ export function adaptFormControl(
   const requiredSignal = signal(hasRequiredValidator(control));
   const disabledSignal = signal(control.disabled);
   const pendingSignal = signal(control.pending);
-  const errorsSignal = signal<{ kind: string; message?: string; fieldTree: unknown }[]>(
-    adaptErrors(control.errors),
-  );
+  const errorsSignal = signal<ValidationError.WithFieldTree[]>(adaptErrors(control.errors));
   const readonlySignal = signal(false);
   const hiddenSignal = signal(false);
   const submittingSignal = signal(false);
@@ -96,7 +101,7 @@ export function adaptFormControl(
   const ref: CngxFieldRef = {
     name: nameSignal.asReadonly(),
     value: writableValue as unknown as Signal<unknown>,
-    errors: errorsSignal.asReadonly() as Signal<never[]>,
+    errors: errorsSignal.asReadonly(),
     touched: touchedSignal.asReadonly(),
     dirty: dirtySignal.asReadonly(),
     invalid: invalidSignal.asReadonly(),
@@ -112,7 +117,7 @@ export function adaptFormControl(
     min: undefined,
     max: undefined,
     pattern: patternSignal.asReadonly(),
-    errorSummary: errorsSignal.asReadonly() as Signal<never[]>,
+    errorSummary: errorsSignal.asReadonly(),
     submitting: submittingSignal.asReadonly(),
     markAsTouched: () => {
       control.markAsTouched();
@@ -134,25 +139,29 @@ export function adaptFormControl(
   return () => ref;
 }
 
+/** Inert stand-in - Reactive Forms errors carry no Signal Forms field tree. @internal */
+const EMPTY_FIELD_TREE = (() => ({})) as unknown as FieldTree<unknown>;
+
 /**
- * Convert Reactive Forms ValidationErrors to our error format.
+ * Convert Reactive Forms `ValidationErrors` to Signal Forms'
+ * `ValidationError.WithFieldTree` shape.
  * @internal
  */
-function adaptErrors(
-  errors: ValidationErrors | null,
-): { kind: string; message?: string; fieldTree: unknown }[] {
+function adaptErrors(errors: ValidationErrors | null): ValidationError.WithFieldTree[] {
   if (!errors) {
     return [];
   }
   return Object.entries(errors).map(([key, value]: [string, unknown]) => {
     const extra =
       typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : {};
+    // Spread stays last so validator-provided fields (message, params) win; the
+    // single cast covers that openness - kind and fieldTree are always set above.
     return {
       kind: key,
       message: typeof value === 'string' ? value : undefined,
-      fieldTree: (() => ({})) as unknown,
+      fieldTree: EMPTY_FIELD_TREE,
       ...extra,
-    };
+    } as ValidationError.WithFieldTree;
   });
 }
 
