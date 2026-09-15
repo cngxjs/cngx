@@ -135,6 +135,14 @@ import {
  * @slot cngxError Rendered when a bound async state fails; gets the error as `$implicit` plus a `retry` callback.
  * @slot cngxSkeletonRow Replaces one placeholder row of the first-load skeleton; gets the row index and total count.
  * @slot cngxRefresh Replaces the refresh-indicator content shown below the grid during a refresh.
+ * <example-url>http://localhost:4200/#/data-display/treetable/base/single-select</example-url>
+ * <example-url>http://localhost:4200/#/data-display/treetable/base/multi-select-checkboxes</example-url>
+ * <example-url>http://localhost:4200/#/data-display/treetable/base/controlled-expansion</example-url>
+ * <example-url>http://localhost:4200/#/data-display/treetable/async/async-state-lifecycle</example-url>
+ * <example-url>http://localhost:4200/#/data-display/treetable/slots/custom-cell-and-empty</example-url>
+ * <example-url>http://localhost:4200/#/data-display/treetable/data/sort-and-search</example-url>
+ * <example-url>http://localhost:4200/#/data-display/treetable/data/header-click-sort</example-url>
+ * <example-url>http://localhost:4200/#/data-display/treetable/data/multi-column-sort</example-url>
  */
 @Component({
   selector: 'cngx-treetable',
