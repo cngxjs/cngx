@@ -1,7 +1,13 @@
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { inject, Injectable, type OnDestroy, PLATFORM_ID } from '@angular/core';
 
-type Politeness = 'polite' | 'assertive';
+/**
+ * Politeness channel for {@link CngxLiveAnnouncer.announce}: `'polite'` queues
+ * after the current utterance, `'assertive'` interrupts it immediately.
+ *
+ * @category common/a11y
+ */
+export type AriaLivePoliteness = 'polite' | 'assertive';
 
 // One frame. Clear the region this long before writing so an intentionally
 // repeated identical string still registers as a content change for the SR.
@@ -34,7 +40,6 @@ const CLEAR_DELAY_MS = 16;
  * ```
  *
  * @category common/a11y
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/aria/live-announcer.ts
  * @since 0.1.0
@@ -47,7 +52,7 @@ export class CngxLiveAnnouncer implements OnDestroy {
 
   private politeRegion: HTMLElement | null = null;
   private assertiveRegion: HTMLElement | null = null;
-  private readonly pending: Record<Politeness, ReturnType<typeof setTimeout> | null> = {
+  private readonly pending: Record<AriaLivePoliteness, ReturnType<typeof setTimeout> | null> = {
     polite: null,
     assertive: null,
   };
@@ -60,7 +65,7 @@ export class CngxLiveAnnouncer implements OnDestroy {
    *   utterance; `'assertive'` interrupts immediately. Each politeness owns its
    *   own region, so the two never overwrite each other.
    */
-  announce(message: string, politeness: Politeness = 'polite'): void {
+  announce(message: string, politeness: AriaLivePoliteness = 'polite'): void {
     if (!this.isBrowser) {
       return;
     }
@@ -93,7 +98,7 @@ export class CngxLiveAnnouncer implements OnDestroy {
     this.assertiveRegion = null;
   }
 
-  private ensureRegion(politeness: Politeness): HTMLElement {
+  private ensureRegion(politeness: AriaLivePoliteness): HTMLElement {
     const existing = politeness === 'polite' ? this.politeRegion : this.assertiveRegion;
     if (existing) {
       return existing;
