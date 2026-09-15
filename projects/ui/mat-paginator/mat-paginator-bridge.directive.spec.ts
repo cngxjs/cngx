@@ -383,4 +383,233 @@ describe('CngxMatPaginator (bridge)', () => {
     const live = fixture.nativeElement.querySelector('.cngx-mat-paginator-live');
     expect(live).toBeTruthy();
   });
+
+  test('(p) clicking the rendered next button drives the brain and the range label', async () => {
+    TestBed.configureTestingModule({ providers });
+    const { fixture, paginate, host } = await setup();
+
+    const nextButton = fixture.nativeElement.querySelector(
+      '.mat-mdc-paginator-navigation-next',
+    ) as HTMLButtonElement;
+    nextButton.click();
+    await settle(fixture);
+
+    expect(paginate.pageIndex()).toBe(1);
+    expect(host.indexEmits).toEqual([1]);
+    const text =
+      fixture.nativeElement.querySelector('.mat-mdc-paginator-range-label')?.textContent ?? '';
+    expect(text).toContain('11');
+    expect(text).toContain('20');
+  });
+
+  test('(q) exportAs exposes the brain so a sibling list reads range() from the ref', async () => {
+    TestBed.configureTestingModule({ providers });
+
+    @Component({
+      standalone: true,
+      imports: [MatPaginatorModule, CngxMatPaginator],
+      template: `
+        <mat-paginator cngxMatPaginator #pg="cngxMatPaginator" [total]="100" />
+        <span class="probe">{{ pg.paginate.range()[0] }}:{{ pg.paginate.range()[1] }}</span>
+      `,
+    })
+    class RefHost {}
+
+    const fixture = TestBed.createComponent(RefHost);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const probe = () => fixture.nativeElement.querySelector('.probe')?.textContent;
+    expect(probe()).toBe('0:10');
+
+    const matEl = fixture.debugElement.query((el) => el.componentInstance instanceof MatPaginator);
+    matEl.injector.get(CngxPaginate).setPage(2);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(probe()).toBe('20:30');
+  });
+
+  test('(r) brain setPageSize writes through to MatPaginator and emits pageSizeChange once', async () => {
+    TestBed.configureTestingModule({ providers });
+    const { fixture, matPaginator, paginate, host } = await setup();
+
+    paginate.setPageSize(25);
+    await settle(fixture);
+
+    expect(matPaginator.pageSize).toBe(25);
+    expect(host.sizeEmits).toEqual([25]);
+    const text =
+      fixture.nativeElement.querySelector('.mat-mdc-paginator-range-label')?.textContent ?? '';
+    expect(text).toContain('25');
+  });
+
+  test('(s) a total-shrink clamp during busy holds back pageChange until the state settles', async () => {
+    TestBed.configureTestingModule({ providers });
+    const { fixture, paginate, host } = await setup();
+
+    paginate.setPage(5);
+    await settle(fixture);
+    expect(host.indexEmits).toEqual([5]);
+
+    const state = createManualState<unknown>();
+    state.set('loading');
+    host.state.set(state);
+    await settle(fixture);
+
+    // The effective index clamps immediately, but a clamp emitted mid-refetch
+    // would persist page 1 into a controlled consumer before the data settles.
+    host.total.set(20);
+    await settle(fixture);
+    expect(paginate.pageIndex()).toBe(1);
+    expect(host.indexEmits).toEqual([5]);
+
+    state.set('success');
+    await settle(fixture);
+    expect(host.indexEmits).toEqual([5, 1]);
+  });
+
+  test('(t) a transient total drop to 0 never emits a page-0 clamp and recovers the page', async () => {
+    TestBed.configureTestingModule({ providers });
+    const { fixture, matPaginator, paginate, host } = await setup();
+
+    paginate.setPage(5);
+    await settle(fixture);
+    expect(host.indexEmits).toEqual([5]);
+
+    host.total.set(0);
+    await settle(fixture);
+    expect(paginate.pageIndex()).toBe(0);
+    expect(matPaginator.length).toBe(0);
+    expect(host.indexEmits).toEqual([5]);
+
+    // The internal page survives the drop, so the refill restores page 5
+    // with no emission at all - the effective index never really changed.
+    host.total.set(100);
+    await settle(fixture);
+    expect(paginate.pageIndex()).toBe(5);
+    expect(host.indexEmits).toEqual([5]);
+  });
+
+  test('(u) a [resetOn] reset reports page 0 through the bridge pageChange output', async () => {
+    TestBed.configureTestingModule({ providers });
+    const { fixture, paginate, host } = await setup();
+
+    paginate.setPage(3);
+    await settle(fixture);
+    expect(host.indexEmits).toEqual([3]);
+
+    host.resetKey.set('filtered');
+    await settle(fixture);
+    expect(host.indexEmits).toEqual([3, 0]);
+  });
+
+  test('(v) the live region carries the polite status contract inside the paginator host', async () => {
+    TestBed.configureTestingModule({ providers });
+    const { fixture, host } = await setup();
+
+    host.announce.set(true);
+    await settle(fixture);
+
+    const live = fixture.nativeElement.querySelector('.cngx-mat-paginator-live') as HTMLElement;
+    expect(live.getAttribute('aria-live')).toBe('polite');
+    expect(live.getAttribute('aria-atomic')).toBe('true');
+    expect(live.getAttribute('role')).toBe('status');
+
+    const hostEl = fixture.nativeElement.querySelector('mat-paginator') as HTMLElement;
+    expect(hostEl.contains(live)).toBe(true);
+  });
+
+  test('(w) no live region is mounted before the first announce opt-in', async () => {
+    TestBed.configureTestingModule({ providers });
+    const { fixture, paginate } = await setup();
+
+    paginate.setPage(2);
+    await settle(fixture);
+
+    expect(fixture.nativeElement.querySelector('.cngx-mat-paginator-live')).toBeNull();
+  });
+
+  test('(x) re-enabling [announce] restores the current page message', async () => {
+    TestBed.configureTestingModule({ providers });
+    const { fixture, paginate, host } = await setup();
+
+    host.announce.set(true);
+    await settle(fixture);
+    paginate.setPage(2);
+    await settle(fixture);
+    const live = fixture.nativeElement.querySelector('.cngx-mat-paginator-live') as HTMLElement;
+    expect(live.textContent).toBe('Page 3 of 10');
+
+    host.announce.set(false);
+    await settle(fixture);
+    expect(live.textContent).toBe('');
+
+    host.announce.set(true);
+    await settle(fixture);
+    expect(live.textContent).toBe('Page 3 of 10');
+  });
+
+  test('(y) the announcement tracks a page-size change through totalPages', async () => {
+    TestBed.configureTestingModule({ providers });
+    const { fixture, paginate, host } = await setup();
+
+    host.announce.set(true);
+    await settle(fixture);
+    const live = fixture.nativeElement.querySelector('.cngx-mat-paginator-live') as HTMLElement;
+    expect(live.textContent).toBe('Page 1 of 10');
+
+    paginate.setPageSize(25);
+    await settle(fixture);
+    expect(live.textContent).toBe('Page 1 of 4');
+  });
+
+  test('(z) [announceLabel] receives a zeroed range context while the list is empty', async () => {
+    TestBed.configureTestingModule({ providers });
+
+    @Component({
+      standalone: true,
+      imports: [MatPaginatorModule, CngxMatPaginator],
+      template: `
+        <mat-paginator cngxMatPaginator announce [total]="0" [announceLabel]="label" />
+      `,
+    })
+    class EmptyHost {
+      readonly label = (c: CngxMatPaginatorAnnounceContext): string =>
+        `p${c.page}/${c.totalPages} items ${c.start}-${c.end} of ${c.total}`;
+    }
+
+    const fixture = TestBed.createComponent(EmptyHost);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const live = fixture.nativeElement.querySelector('.cngx-mat-paginator-live') as HTMLElement;
+    expect(live.textContent).toBe('p1/1 items 0-0 of 0');
+  });
+
+  test('(aa) settling busy back to success re-enables the paginator and clears aria-busy', async () => {
+    TestBed.configureTestingModule({ providers });
+    const { fixture, matPaginator, host } = await setup();
+
+    const state = createManualState<unknown>();
+    state.set('loading');
+    host.state.set(state);
+    await settle(fixture);
+
+    const hostEl = fixture.nativeElement.querySelector('mat-paginator') as HTMLElement;
+    const nextButton = () => fixture.nativeElement.querySelector('.mat-mdc-paginator-navigation-next');
+    expect(hostEl.getAttribute('aria-busy')).toBe('true');
+    expect(isDisabled(nextButton())).toBe(true);
+
+    state.set('success');
+    await settle(fixture);
+    expect(hostEl.getAttribute('aria-busy')).toBe('false');
+    expect(matPaginator.disabled).toBe(false);
+    expect(isDisabled(nextButton())).toBe(false);
+  });
 });
