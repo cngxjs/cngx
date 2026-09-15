@@ -26,6 +26,7 @@ import {
   CngxTreetable,
   CngxCellTpl,
   CngxEmptyTpl,
+  type FlatNode,
   type Node,
 } from '@cngx/data-display/treetable';
 
@@ -110,7 +111,7 @@ interface TreetableOptions<T> {
 
 ## Accessibility
 
-- **ARIA roles:** `role="treegrid"` (implicit from CDK table), rows have `role="row"`, expand buttons have `role="button"` with `aria-expanded`
+- **ARIA roles:** `role="treegrid"` is set explicitly on the CDK table host (CDK's own default would be `table`); rows have `role="row"`, expand buttons have `role="button"` with `aria-expanded`
 - **Keyboard interaction:**
   - `Arrow Down / Up`: Navigate rows
   - `Arrow Right`: Expand selected row
@@ -128,19 +129,18 @@ All inputs, outputs, computeds, and methods live directly on `CngxTreetable`; th
 ### Example: With Async Data Loading
 
 ```typescript
-readonly dataState = injectAsyncState(() =>
-  this.dataService.loadOrgTree().pipe(
-    tapAsyncState(this.dataState),
-  )
-);
-
-readonly tree = computed(() => this.dataState().data() ?? []);
+readonly dataState = injectAsyncState(() => this.dataService.loadOrgTree());
+readonly tree = computed(() => this.dataState.data() ?? []);
 ```
+
+`injectAsyncState` returns a `ReactiveAsyncState<T>` object (signals as
+members, not a signal of an object) and drives the whole
+loading/refreshing/error lifecycle itself - no extra `tap` wiring.
 
 ```html
 <cngx-treetable
   [tree]="tree()"
-  [state]="dataState()"
+  [state]="dataState"
   selectionMode="multi"
   [showCheckboxes]="true"
   [(expandedIds)]="expandedIds"
@@ -163,16 +163,44 @@ CngxTreetable is entirely unstyled. All visual appearance is controlled via CSS 
 
 ### CSS Custom Properties
 
+Defaults are the literal fallbacks from the component stylesheet; color
+tokens delegate to the global `--cngx-color-*` palette first.
+
 | Property | Default | Description |
 |-|-|-|
-| `--cngx-treetable-row-height` | `44px` | Height of each row |
-| `--cngx-treetable-border-color` | `#e0e0e0` | Border color between rows/columns |
-| `--cngx-treetable-hover-bg` | `#f5f5f5` | Background when hovering (with `highlightRowOnHover=true`) |
-| `--cngx-treetable-selected-bg` | `#e8f5e9` | Background when selected |
-| `--cngx-treetable-focus-outline` | `2px solid var(--cngx-focus-color, #1976d2)` | Focus ring style |
-| `--cngx-treetable-padding-inline` | `12px` | Left/right padding in cells |
-| `--cngx-treetable-padding-block` | `8px` | Top/bottom padding in cells |
-| `--cngx-treetable-indent-size` | `24px` | Indentation per nesting level |
+| `--cngx-treetable-font-size` | `0.875rem` | Base font size of the grid |
+| `--cngx-treetable-indent-size` | `1.5rem` | Indentation per nesting level |
+| `--cngx-treetable-header-bg` | `oklch(0.98 0.005 250)` | Header row background |
+| `--cngx-treetable-header-color` | `var(--cngx-color-text, oklch(0.34 0.015 250))` | Header text color |
+| `--cngx-treetable-header-font-weight` | `600` | Header font weight |
+| `--cngx-treetable-header-border` | `var(--cngx-color-border, oklch(0.92 0.005 250))` | Header bottom border color |
+| `--cngx-treetable-header-border-width` | `2px` | Header bottom border width |
+| `--cngx-treetable-row-border` | `var(--cngx-color-border, oklch(0.96 0.005 250))` | Row separator color |
+| `--cngx-treetable-row-border-width` | `1px` | Row separator width |
+| `--cngx-treetable-row-hover-bg` | `oklch(0.97 0.015 250)` | Row background on hover (`withHighlightOnHover()`) |
+| `--cngx-treetable-row-selected-bg` | `oklch(0.95 0.025 250)` | Selected row background |
+| `--cngx-treetable-row-transition-duration` | `120ms` | Row background transition |
+| `--cngx-treetable-cell-color` | `var(--cngx-color-text, oklch(0.34 0.015 250))` | Cell text color |
+| `--cngx-treetable-cell-padding-block` | `0.6rem` | Cell top/bottom padding |
+| `--cngx-treetable-cell-padding-inline` | `1rem` | Cell left/right padding |
+| `--cngx-treetable-cell-direction` | `revert` | Per-cell writing-direction override |
+| `--cngx-treetable-cell-bidi` | `isolate` | Per-cell unicode-bidi isolation |
+| `--cngx-treetable-focus-ring` | `var(--cngx-color-primary, oklch(0.66 0.19 50))` | Focus ring color |
+| `--cngx-treetable-focus-ring-width` | `2px` | Focus ring width |
+| `--cngx-treetable-muted-color` | `oklch(0.5 0.015 250)` | Muted/secondary text color |
+| `--cngx-treetable-toggle-font-size` | `0.875rem` | Expand toggle glyph size |
+| `--cngx-treetable-toggle-padding` | `0.25rem` | Expand toggle hit-area padding |
+| `--cngx-treetable-toggle-radius` | `4px` | Expand toggle corner radius |
+| `--cngx-treetable-toggle-transition-duration` | `120ms` | Expand toggle transition |
+| `--cngx-treetable-empty-font-size` | `0.875rem` | Empty-state text size |
+| `--cngx-treetable-empty-padding-block` | `2rem` | Empty-state top/bottom padding |
+| `--cngx-treetable-empty-padding-inline` | `1rem` | Empty-state left/right padding |
+| `--cngx-treetable-skeleton-line-size` | `12px` | Skeleton line height |
+
+Below the width recorded by the informational
+`--cngx-treetable-narrow-breakpoint` token the grid compacts through the
+`--cngx-treetable-narrow-*` family (font-size, indent-size, cell/header
+paddings, toggle sizing) - same names as above with the `narrow-` prefix.
 
 ## Configuration
 
@@ -183,14 +211,14 @@ Configure application-wide defaults:
 ```typescript
 bootstrapApplication(AppComponent, {
   providers: [
-    provideTreetable({
-      highlightRowOnHover: true,
-      capitaliseHeader: true,
-    }),
+    provideTreetable(withHighlightOnHover(), withCapitaliseHeaders()),
   ],
 });
 ```
 
+`provideTreetable(...features)` takes composable features, not an options
+object: `withHighlightOnHover()`, `withCapitaliseHeaders()`,
+`withTreetableLabels({ ... })` and `withTreetableTemplates({ ... })`.
 Per-instance `options` input overrides these defaults.
 
 ## Controlled vs. Uncontrolled
@@ -212,8 +240,10 @@ Treetable manages its own expand and selection state:
 External state drives expand/selection:
 
 ```typescript
-expandedIds = signal<Set<string>>(new Set(['0', '0-0']));
-selectedIds = signal<Set<string>>(new Set());
+// ReadonlySet matches the model<ReadonlySet<string>> inputs - a
+// signal<Set<string>> two-way binding fails under strictTemplates.
+expandedIds = signal<ReadonlySet<string>>(new Set(['0', '0-0']));
+selectedIds = signal<ReadonlySet<string>>(new Set());
 ```
 
 ```html
