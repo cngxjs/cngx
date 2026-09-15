@@ -50,7 +50,6 @@ export const CNGX_FOCUSABLE_SELECTOR =
  * ```
  *
  * @category common/a11y
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/focus/focus-restore.directive.ts
  * @since 0.1.0
