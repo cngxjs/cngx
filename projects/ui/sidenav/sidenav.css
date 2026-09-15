@@ -147,6 +147,16 @@
     initial-value: 0.25s;
   }
 
+  /* Derive from the motion scale. Broadcast :where(host, host *) because the
+   * token is inherits:false and read on the host and on descendants
+   * (.cngx-sidenav__body grid-template-rows). The mini-rail visibility trick
+   * (`visibility 0s <token>`) keeps its literal 0s switch; only the token
+   * value derives, so the reveal delay tracks the width duration. Layer
+   * cngx.tokens keeps a Material bridge winning. 0.25s -> base. */
+  :where(cngx-sidenav, cngx-sidenav *) {
+    --cngx-sidenav-transition-duration: var(--cngx-duration-base);
+  }
+
   /**
    * Easing curve of the open / close / mini transitions.
    * @group Motion
