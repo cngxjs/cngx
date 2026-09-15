@@ -121,7 +121,8 @@ export function sortTree<T>(nodes: Node<T>[], field: string, direction: 'asc' | 
 
 /**
  * Simple full-text search across all primitive fields of a node value.
- * Used as the default search implementation in CngxSmartDataSource.
+ * Consumer-side predicate: pair it with `filterTree` (or your own walk) to
+ * build a searchable tree source. Nothing in the library calls it for you.
  *
  * @category data-display/treetable
  */
