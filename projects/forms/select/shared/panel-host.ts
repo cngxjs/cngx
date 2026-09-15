@@ -130,7 +130,7 @@ export interface CngxSelectPanelViewHost<T = unknown> {
  * @internal
  */
 export const CNGX_SELECT_PANEL_VIEW_HOST = new InjectionToken<CngxSelectPanelViewHost>(
-  'CNGX_SELECT_PANEL_VIEW_HOST',
+  'CngxSelectPanelViewHost',
 );
 
 /**
@@ -186,5 +186,5 @@ export interface CngxSelectPanelHost<T = unknown> extends CngxSelectPanelViewHos
  * @internal
  */
 export const CNGX_SELECT_PANEL_HOST = new InjectionToken<CngxSelectPanelHost>(
-  'CNGX_SELECT_PANEL_HOST',
+  'CngxSelectPanelHost',
 );

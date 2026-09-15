@@ -175,7 +175,7 @@ export type CngxTemplateRegistryFactory = <T = unknown>(
  * @relatedTo CNGX_SELECT_CONFIG, provideSelectConfig
  */
 export const CNGX_TEMPLATE_REGISTRY_FACTORY = new InjectionToken<CngxTemplateRegistryFactory>(
-  'CNGX_TEMPLATE_REGISTRY_FACTORY',
+  'CngxTemplateRegistryFactory',
   {
     providedIn: 'root',
     factory: () => createTemplateRegistry,

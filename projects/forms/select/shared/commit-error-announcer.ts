@@ -106,7 +106,7 @@ export type CngxCommitErrorAnnouncerFactory = (
  * @relatedTo CngxSelect, CNGX_SCALAR_COMMIT_HANDLER_FACTORY
  */
 export const CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY =
-  new InjectionToken<CngxCommitErrorAnnouncerFactory>('CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY', {
+  new InjectionToken<CngxCommitErrorAnnouncerFactory>('CngxCommitErrorAnnouncerFactory', {
     providedIn: 'root',
     factory: () => createCommitErrorAnnouncer,
   });
