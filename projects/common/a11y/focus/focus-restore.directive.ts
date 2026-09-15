@@ -27,7 +27,9 @@ export const CNGX_FOCUSABLE_SELECTOR =
  * `document.activeElement` at initialization time and restores it when the
  * host element is destroyed.
  *
- * Fallback chain: stored element → provided fallback → nearest focusable ancestor → body.
+ * Fallback chain: stored element → provided fallback → nearest focusable ancestor.
+ * When none resolves, focus is left where the browser put it - `<body>` is
+ * deliberately never a restore target.
  *
  * ### Panel that restores focus on close
  * ```html
