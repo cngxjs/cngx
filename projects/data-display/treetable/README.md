@@ -315,5 +315,5 @@ selectedIds = signal<ReadonlySet<string>>(new Set());
 ## See Also
 
 - [API on compodocx](https://cngxjs.github.io/cngx/)
-- Demo: `examples/stories/data-display/treetable-demo/`
+- Demos: `examples/stories/data-display/treetable/` - rendered at `/data-display/treetable/...` in the examples app (base, async, slots, data)
 - Tests: `projects/data-display/treetable/` (spec files)
