@@ -73,7 +73,11 @@
   /**
    * Transition duration for color + border-color crossfade on hover
    * / active changes.
+   *
+   * Derives from the `--cngx-duration-fast` rung of the motion scale; a
+   * `--cngx-duration-*` brand override re-times it library-wide.
    * @group Motion
+   * @relatedTo provideMotion, CngxMotionScope, injectMotion
    */
   @property --cngx-tab-transition-duration {
     syntax: '<time>';
