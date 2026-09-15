@@ -1,21 +1,13 @@
 /**
  * Public API Surface of @cngx/ui
  *
- * Re-exports all secondary entry points for backwards compatibility.
- * Prefer importing from specific entry points:
- *   @cngx/ui/action-button
- *   @cngx/ui/empty-state
- *   @cngx/ui/feedback
- *   @cngx/ui/layout
- *   @cngx/ui/mat-paginator
- *   @cngx/ui/mat-stepper
- *   @cngx/ui/mat-tabs
- *   @cngx/ui/overlay
- *   @cngx/ui/sidenav
- *   @cngx/ui/skeleton
- *   @cngx/ui/speak
- *   @cngx/ui/stepper
- *   @cngx/ui/tabs
+ * The root entry is a small backwards-compat set only: it re-exports
+ * `action-button`, `sidenav`, `skeleton` and `speak` plus the three
+ * async-state directives that moved to `@cngx/common/interactive`.
+ * Everything else ships exclusively through its secondary entry point
+ * (`@cngx/ui/<entry>`, 26 entries) - deliberately not re-exported here so
+ * a root import can never pull Material or CDK into a bundle that does
+ * not use them.
  *
  * @module @cngx/ui
  */
