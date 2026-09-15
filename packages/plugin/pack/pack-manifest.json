@@ -73,8 +73,8 @@
     },
     {
       "artifact": "pack/recipes/common-interactive-retry.md",
-      "source": "examples/stories/common/interactive/retry/withretry-cngxasyncclick.story.ts",
-      "contentHash": "sha256:0d0243a82567ec35af5f35bf20e0939a6aa1543cbc91a4d41d5a7d0066daa299"
+      "source": "examples/stories/common/interactive/retry/createretry-cngxasyncclick.story.ts",
+      "contentHash": "sha256:34510330014852cf544201ab0fc9b73858566168ef9dddcc093df2831123ac0b"
     },
     {
       "artifact": "pack/recipes/forms-filter-builder-filter-builder-async-state.md",
