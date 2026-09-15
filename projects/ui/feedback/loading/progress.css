@@ -103,7 +103,7 @@
   /* Derive from the motion scale. The registered initial-value wins over the
    * read-site var() fallback, so the token must be SET from the scale for a
    * --cngx-duration-* brand override to reach the determinate fill transition.
-   * Broadcast :where(host, host *) — inherits:false, read on the __bar / SVG
+   * Broadcast :where(host, host *) - inherits:false, read on the __bar / SVG
    * descendants. 300ms snaps to slow (> 260ms midpoint). Layer cngx.tokens
    * keeps a Material bridge winning. The indeterminate sweep (1.5s loop) stays
    * literal. */
