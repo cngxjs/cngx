@@ -304,7 +304,11 @@
 
   /**
    * Duration of the hover / press / focus transitions.
+   *
+   * Derives from the `--cngx-duration-base` rung of the motion scale; a
+   * `--cngx-duration-*` brand override re-times it library-wide.
    * @group Motion
+   * @relatedTo provideMotion, CngxMotionScope, injectMotion
    */
   @property --cngx-paginator-motion-duration {
     syntax: '<time>';
@@ -314,7 +318,11 @@
 
   /**
    * Duration of the page-row crossfade while the host reports busy.
+   *
+   * Derives from the `--cngx-duration-base` rung of the motion scale; a
+   * `--cngx-duration-*` brand override re-times it library-wide.
    * @group Motion
+   * @relatedTo provideMotion, CngxMotionScope, injectMotion
    */
   @property --cngx-paginator-fade-duration {
     syntax: '<time>';

@@ -37,7 +37,11 @@
   /**
    * Duration of the opacity fade between hidden and visible states.
    * Falls back to `--cngx-duration-base`.
+   *
+   * Derives from the `--cngx-duration-base` rung of the motion scale; a
+   * `--cngx-duration-*` brand override re-times it library-wide.
    * @group Motion
+   * @relatedTo provideMotion, CngxMotionScope, injectMotion
    */
   @property --cngx-backdrop-transition-duration {
     syntax: '<time>';

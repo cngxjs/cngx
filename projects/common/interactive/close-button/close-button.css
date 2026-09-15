@@ -118,7 +118,11 @@
 
   /**
    * Transition duration for opacity / background changes.
+   *
+   * Derives from the `--cngx-duration-fast` rung of the motion scale; a
+   * `--cngx-duration-*` brand override re-times it library-wide.
    * @group Motion
+   * @relatedTo provideMotion, CngxMotionScope, injectMotion
    */
   @property --cngx-close-button-transition {
     syntax: '<time>';

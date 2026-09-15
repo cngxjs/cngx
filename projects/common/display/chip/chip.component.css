@@ -149,7 +149,11 @@
   /**
    * Transition shorthand for background / color / border-color
    * changes on hover, selected, and disabled states.
+   *
+   * Derives from the `--cngx-duration-fast` rung of the motion scale; a
+   * `--cngx-duration-*` brand override re-times it library-wide.
    * @group Motion
+   * @relatedTo provideMotion, CngxMotionScope, injectMotion
    */
   @property --cngx-chip-transition {
     syntax: '*';

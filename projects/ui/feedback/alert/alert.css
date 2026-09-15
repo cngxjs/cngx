@@ -284,7 +284,11 @@
 
   /**
    * Duration of the collapsed-state grid-row transition.
+   *
+   * Derives from the `--cngx-duration-base` rung of the motion scale; a
+   * `--cngx-duration-*` brand override re-times it library-wide.
    * @group Motion
+   * @relatedTo provideMotion, CngxMotionScope, injectMotion
    */
   @property --cngx-alert-collapse-duration {
     syntax: '<time>';
@@ -378,7 +382,11 @@
 
   /**
    * Duration of the enter animation.
+   *
+   * Derives from the `--cngx-duration-base` rung of the motion scale; a
+   * `--cngx-duration-*` brand override re-times it library-wide.
    * @group Motion
+   * @relatedTo provideMotion, CngxMotionScope, injectMotion
    */
   @property --cngx-alert-enter-duration {
     syntax: '<time>';
@@ -388,7 +396,11 @@
 
   /**
    * Duration of the exit animation.
+   *
+   * Derives from the `--cngx-duration-fast` rung of the motion scale; a
+   * `--cngx-duration-*` brand override re-times it library-wide.
    * @group Motion
+   * @relatedTo provideMotion, CngxMotionScope, injectMotion
    */
   @property --cngx-alert-exit-duration {
     syntax: '<time>';

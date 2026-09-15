@@ -101,7 +101,11 @@
 
   /**
    * Transition duration for the state-color crossfade.
+   *
+   * Derives from the `--cngx-duration-fast` rung of the motion scale; a
+   * `--cngx-duration-*` brand override re-times it library-wide.
    * @group Motion
+   * @relatedTo provideMotion, CngxMotionScope, injectMotion
    */
   @property --cngx-speak-btn-transition {
     syntax: '<time>';

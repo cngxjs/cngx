@@ -61,7 +61,11 @@
 
   /**
    * Opacity-fade transition duration for the overlay show/hide.
+   *
+   * Derives from the `--cngx-duration-fast` rung of the motion scale; a
+   * `--cngx-duration-*` brand override re-times it library-wide.
    * @group Motion
+   * @relatedTo provideMotion, CngxMotionScope, injectMotion
    */
   @property --cngx-overlay-transition-duration {
     syntax: '<time>';
