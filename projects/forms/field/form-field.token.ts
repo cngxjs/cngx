@@ -196,9 +196,11 @@ export interface FormFieldFeature {
  * config, so without a provider every feature stays off and the presenter uses
  * its built-in behaviour (error gate `touched OR reveal`, no hints, no marker).
  *
- * Inject this only to read the resolved config - configure through
- * `provideFormField` and the `with*` features, never by providing the token
- * directly.
+ * Inject this only to read the resolved config. App-wide configuration goes
+ * through `provideFormField` and the `with*` features - those return
+ * `EnvironmentProviders` and cannot scope to a component. A component-scoped
+ * override may provide the token directly, but must then supply a fully
+ * resolved `FormFieldConfig` (no feature merging happens on that path).
  *
  * @category forms/field
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/form-field.token.ts
