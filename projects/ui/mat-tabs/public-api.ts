@@ -27,6 +27,7 @@ export {
   type CngxMatTabsConfig,
   type CngxMatTabsConfigFeature,
   type CngxMatTabsTemplates,
+  CNGX_MAT_TABS_CONFIG_DEFAULTS,
   injectMatTabsConfig,
   provideMatTabsConfig,
   provideMatTabsConfigAt,

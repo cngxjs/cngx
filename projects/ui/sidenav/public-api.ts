@@ -11,7 +11,7 @@ export { CngxSidenavHeader } from './sidenav-header';
 export { CngxSidenavFooter } from './sidenav-footer';
 
 export type { CngxSidenavConfig } from './config/sidenav.config';
-export { CNGX_SIDENAV_CONFIG } from './config/sidenav.config.defaults';
+export { CNGX_SIDENAV_CONFIG, CNGX_SIDENAV_DEFAULTS } from './config/sidenav.config.defaults';
 export {
   provideSidenavConfig,
   provideSidenavConfigAt,
