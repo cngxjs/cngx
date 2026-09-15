@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'optimistic(): Rollback on failure',
+  title: 'createOptimistic(): Rollback on failure',
   subtitle: 'When the async action throws, the signal rolls back to the last confirmed value and <code>rolledBack()</code> flips true.',
   description: 'Same factory as the happy-path demo, but the async action fails when the "Server fails" flag is set. Watch the UI: the signal still flips immediately on click (optimistic write), then after the delay the value snaps back to whichever value the server last confirmed. <code>nameState.error()</code> exposes the rejection reason, <code>nameState.state.status()</code> goes to <code>"error"</code>, and <code>nameState.rolledBack()</code> stays true until the next successful confirm. Concurrent calls cancel the previous in-flight subscription so a rapid click sequence never rolls back to a stale optimistic value.',
   level: 'atom',
@@ -9,10 +9,10 @@ export const STORY: DemoSpec = {
   artifact: 'building-block',
   focus: ['async-state', 'error-handling'],
   apiComponents: [
-    'optimistic',
+    'createOptimistic',
   ],
   moduleImports: [
-    'import { optimistic } from \'@cngx/common/interactive\';',
+    'import { createOptimistic } from \'@cngx/common/interactive\';',
     'import { of, throwError } from \'rxjs\';',
     'import { delay } from \'rxjs/operators\';',
   ],
@@ -20,7 +20,7 @@ export const STORY: DemoSpec = {
   setup: `
   protected readonly name = signal<string>('Alice');
 
-  private readonly nameTuple = optimistic<string>(
+  private readonly nameTuple = createOptimistic<string>(
     this.name,
     (value) => this.shouldFail()
       ? throwError(() => new Error('Server rejected the update')).pipe(delay(700))

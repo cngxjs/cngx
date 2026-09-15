@@ -1,19 +1,19 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxAsyncClick: With retry helper',
-  subtitle: 'Wrap a flaky action (40% success) with <code>withRetry</code>, then bind it through <code>[cngxAsyncClick]</code>. The directive surfaces <code>pending</code> / <code>succeeded</code> / <code>failed</code>; the retry state exposes <code>attempt</code> and <code>retrying</code> so the label can count attempts mid-flight.',
-  description: '<code>withRetry()</code> wraps any <code>AsyncAction</code> with bounded retries (defaults: 3 attempts, exponential backoff). The returned tuple is <code>[retryableAction, retryState]</code>; bind the action to <code>[cngxAsyncClick]</code> for the directive\'s pending / succeeded / failed signals, and the retry state for the live attempt counter and the <code>retrying</code> flag that flips true during back-off delays. <code>retryState.state</code> is a full <code>CngxAsyncState</code> view so the same setup also feeds <code>cngxToastOn</code> / <code>cngxAlertOn</code> consumers without a translator. A successful attempt clears state; an exhausted run leaves <code>exhausted()</code> true until the next click.',
+  title: 'CngxAsyncClick: createRetry helper',
+  subtitle: 'Wrap a flaky action (40% success) with <code>createRetry</code>, then bind it through <code>[cngxAsyncClick]</code>. The directive surfaces <code>pending</code> / <code>succeeded</code> / <code>failed</code>; the retry state exposes <code>attempt</code> and <code>retrying</code> so the label can count attempts mid-flight.',
+  description: '<code>createRetry()</code> wraps any <code>AsyncAction</code> with bounded retries (defaults: 3 attempts, exponential backoff). The returned tuple is <code>[retryableAction, retryState]</code>; bind the action to <code>[cngxAsyncClick]</code> for the directive\'s pending / succeeded / failed signals, and the retry state for the live attempt counter and the <code>retrying</code> flag that flips true during back-off delays. <code>retryState.state</code> is a full <code>CngxAsyncState</code> view so the same setup also feeds <code>cngxToastOn</code> / <code>cngxAlertOn</code> consumers without a translator. A successful attempt clears state; an exhausted run leaves <code>exhausted()</code> true until the next click.',
   level: 'molecule',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
   focus: ['async-state', 'error-handling', 'behavior'],
   apiComponents: [
     'CngxAsyncClick',
-    'withRetry',
+    'createRetry',
   ],
   moduleImports: [
-    'import { CngxAsyncClick, withRetry } from \'@cngx/common/interactive\';',
+    'import { CngxAsyncClick, createRetry } from \'@cngx/common/interactive\';',
   ],
   imports: ['CngxAsyncClick'],
   setup: `
@@ -23,7 +23,7 @@ export const STORY: DemoSpec = {
       : reject(new Error('Network error'))), 500),
   );
 
-  private readonly retryTuple = withRetry(this.flakyAction, {
+  private readonly retryTuple = createRetry(this.flakyAction, {
     maxAttempts: 3,
     delay: 800,
     backoff: 'exponential',
