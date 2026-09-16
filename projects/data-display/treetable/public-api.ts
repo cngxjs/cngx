@@ -2,6 +2,7 @@ export { CngxTreetableRow } from './treetable-row.directive';
 export { CngxTreetable } from './treetable.component';
 export {
   provideTreetable,
+  provideTreetableAt,
   CNGX_TREETABLE_CONFIG,
   withHighlightOnHover,
   withCapitaliseHeaders,

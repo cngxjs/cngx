@@ -2,6 +2,7 @@ import {
   InjectionToken,
   makeEnvironmentProviders,
   type EnvironmentProviders,
+  type Provider,
   type TemplateRef,
 } from '@angular/core';
 import type { CngxErrorTplContext, CngxSkeletonRowTplContext } from './models';
@@ -189,11 +190,36 @@ export const CNGX_TREETABLE_CONFIG = new InjectionToken<TreetableConfig>('CNGX_T
  * @category data-display/treetable
  */
 export function provideTreetable(...features: TreetableFeature[]): EnvironmentProviders {
+  return makeEnvironmentProviders([
+    { provide: CNGX_TREETABLE_CONFIG, useValue: resolveTreetableConfig(features) },
+  ]);
+}
+
+/**
+ * Component-scope twin of {@link provideTreetable} for `viewProviders`, so a
+ * subtree can carry its own treetable defaults:
+ *
+ * ```ts
+ * @Component({ viewProviders: [...provideTreetableAt(withHighlightOnHover())] })
+ * ```
+ *
+ * Features resolve against the empty default config, not against an ancestor
+ * scope: a nested `provideTreetableAt(...)` replaces the whole config, so
+ * restate any app-wide features the subtree should keep. Per-instance
+ * `[options]` input still wins over the scoped config.
+ *
+ * @category data-display/treetable
+ */
+export function provideTreetableAt(...features: TreetableFeature[]): Provider[] {
+  return [{ provide: CNGX_TREETABLE_CONFIG, useValue: resolveTreetableConfig(features) }];
+}
+
+function resolveTreetableConfig(features: TreetableFeature[]): TreetableConfig {
   let config: TreetableConfig = {};
   for (const f of features) {
     config = f._apply(config);
   }
-  return makeEnvironmentProviders([{ provide: CNGX_TREETABLE_CONFIG, useValue: config }]);
+  return config;
 }
 
 /**
