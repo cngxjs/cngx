@@ -27,6 +27,12 @@ import { buildAsyncStateView } from './build-async-state-view';
  * source and every source is itself empty - which the data shape cannot infer
  * (an N-element array is never length 0), so it is supplied explicitly.
  *
+ * Two view fields are constant by construction: rule 2 collapses `pending`
+ * into `loading`, so the combined status is never `'pending'` and `isPending`
+ * is always `false`; and `progress` is always `undefined` because per-source
+ * progress values have no comparable scale to aggregate over (a determinate
+ * upload percentage and an indeterminate fetch cannot be averaged honestly).
+ *
  * @category core/utils/async-state
  * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/aggregate-async-state.ts
  * @since 0.1.0

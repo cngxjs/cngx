@@ -47,6 +47,8 @@ export const CNGX_LOADING_DEFAULTS = {
  * Injection token carrying the resolved {@link CngxLoadingConfig}. Provided in
  * `'root'` with {@link CNGX_LOADING_DEFAULTS}; override app-wide via
  * `provideLoadingConfig(...)` or per component tree via `provideLoadingConfigAt(...)`.
+ * Either override resolves its features against the library defaults, not the
+ * ancestor scope - a subtree override replaces the whole config.
  *
  * @category core/utils
  * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/loading-config.ts
@@ -158,6 +160,12 @@ function resolveLoadingConfig(features: CngxLoadingConfigFeature[]): CngxLoading
  * });
  * ```
  *
+ * Features resolve against {@link CNGX_LOADING_DEFAULTS}, not against an
+ * ancestor config: every field a `with*` feature does not touch carries the
+ * library default. The same rule applies to {@link provideLoadingConfigAt},
+ * so a nested scope does not inherit app-wide overrides - restate them if
+ * the subtree should keep them.
+ *
  * @category core/utils
  */
 export function provideLoadingConfig(
@@ -174,6 +182,12 @@ export function provideLoadingConfig(
  * ```ts
  * @Component({ viewProviders: [...provideLoadingConfigAt(withShowDelay(0))] })
  * ```
+ *
+ * Resolves against {@link CNGX_LOADING_DEFAULTS}, not against the ancestor
+ * config: `provideLoadingConfigAt(withShowDelay(0))` under an app-wide
+ * `provideLoadingConfig(withMinDwell(600))` yields the default `minDwell`
+ * of 400, not 600. A scope override is a full restatement - repeat the
+ * ancestor features the subtree should keep.
  *
  * @category core/utils
  */
