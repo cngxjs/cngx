@@ -61,4 +61,37 @@ describe('CngxOverlay', () => {
     expect(config.panelClass).toBe('my-panel');
     ref.close();
   });
+
+  it('keeps the cngx-only disableClose out of the CDK OverlayConfig', () => {
+    const create = vi.spyOn(overlay, 'create');
+    const ref = service.open(OverlayContent, { disableClose: true, panelClass: 'p' });
+    const config = create.mock.calls[0][0] as OverlayConfig;
+    expect('disableClose' in config).toBe(false);
+    expect(config.panelClass).toBe('p');
+    ref.close();
+  });
+
+  it('restores focus to the opener when the overlay closes', () => {
+    const opener = document.createElement('button');
+    document.body.appendChild(opener);
+    opener.focus();
+    const ref = service.open(OverlayContent);
+    opener.blur();
+    ref.close();
+    expect(document.activeElement).toBe(opener);
+    opener.remove();
+  });
+
+  it('closes still-open overlays when the providing scope is destroyed', () => {
+    @Component({ standalone: true, template: '', providers: [CngxOverlay] })
+    class ScopedHost {
+      readonly svc = inject(CngxOverlay);
+    }
+    const fixture = TestBed.createComponent(ScopedHost);
+    const scoped = fixture.componentInstance.svc;
+    const ref = scoped.open(OverlayContent);
+    expect(ref.isOpen()).toBe(true);
+    fixture.destroy();
+    expect(ref.isOpen()).toBe(false);
+  });
 });

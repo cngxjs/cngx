@@ -1,4 +1,6 @@
+import { DOCUMENT } from '@angular/common';
 import {
+  DestroyRef,
   Injectable,
   Injector,
   inject,
@@ -11,13 +13,20 @@ import { ComponentPortal } from '@angular/cdk/portal';
 import { CngxOverlayRef } from './overlay-ref';
 
 /**
- * Config accepted by {@link CngxOverlay.open}. Partial alias of CDK's
- * {@link OverlayConfig} - every field is optional and falls back to
- * the CDK overlay default.
+ * Config accepted by {@link CngxOverlay.open}. A partial of CDK's
+ * {@link OverlayConfig} - every field is optional and falls back to the CDK
+ * overlay default - plus `disableClose`, a cngx addition that turns off the
+ * Escape / backdrop dismiss affordances.
  *
  * @category ui/overlay
  */
-export type CngxOverlayConfig = Partial<OverlayConfig>;
+export type CngxOverlayConfig = Partial<OverlayConfig> & {
+  /**
+   * When `true`, Escape and backdrop clicks do not close the overlay; only a
+   * programmatic `close()` does. Default `false`.
+   */
+  readonly disableClose?: boolean;
+};
 
 /**
  * Thin service over CDK Overlay that returns a typed CngxOverlayRef.
@@ -43,25 +52,49 @@ export type CngxOverlayConfig = Partial<OverlayConfig>;
 export class CngxOverlay {
   private readonly overlay = inject(Overlay);
   private readonly injector = inject(Injector);
+  private readonly document = inject(DOCUMENT);
+  // Held by the only capability the registry needs; the generic CngxOverlayRef
+  // is invariant in R (its Subject leaks into the type), so a structural close
+  // handle sidesteps that without an unknown-cast.
+  private readonly openRefs = new Set<{ close(): void }>();
+
+  constructor() {
+    // The service is destroyed with its providing scope (component or
+    // environment injector). Anything still open would otherwise leak a
+    // detached overlay panel and its subscriptions - close them.
+    inject(DestroyRef).onDestroy(() => {
+      for (const ref of [...this.openRefs]) {
+        ref.close();
+      }
+    });
+  }
 
   /**
    * Opens `component` in a CDK overlay panel and returns a typed ref.
    *
-   * Defaults to a centered, backdropped panel. Merge `config` to override
-   * position strategy, scroll strategy, or any other CDK `OverlayConfig` option.
+   * Defaults to a centered, backdropped panel that closes on Escape or a
+   * backdrop click; pass `disableClose` to opt out. Focus returns to the
+   * element that was focused at open time. Merge `config` to override position
+   * strategy, scroll strategy, or any other CDK `OverlayConfig` option.
    *
    * @param component Component class to attach as a portal.
-   * @param config CDK overlay configuration overrides.
+   * @param config Overlay configuration overrides (CDK options + `disableClose`).
    */
   open<C, R = unknown>(component: Type<C>, config: CngxOverlayConfig = {}): CngxOverlayRef<R> {
+    const { disableClose, ...cdkConfig } = config;
     const overlayConfig = new OverlayConfig({
       hasBackdrop: true,
       positionStrategy: this.overlay.position().global().centerHorizontally().centerVertically(),
-      ...config,
+      ...cdkConfig,
     });
 
     const cdkRef: CdkOverlayRef = this.overlay.create(overlayConfig);
-    const ngxRef = new CngxOverlayRef<R>(cdkRef);
+    // Capture the opener BEFORE attaching, so focus can return to it on close.
+    const restoreFocusTo = this.document.activeElement as HTMLElement | null;
+    const ngxRef = new CngxOverlayRef<R>(cdkRef, { disableClose, restoreFocusTo });
+
+    this.openRefs.add(ngxRef);
+    ngxRef.afterClosed$.subscribe({ complete: () => this.openRefs.delete(ngxRef) });
 
     const injector = Injector.create({
       parent: this.injector,
