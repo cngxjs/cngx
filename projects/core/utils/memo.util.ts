@@ -22,6 +22,13 @@ export interface MemoizeOptions {
  * expensive('a'); // computes
  * expensive('a'); // cached
  *
+ * **The default cache is unbounded and holds strong references** to every
+ * key and value for the lifetime of the memoized closure. That is only safe
+ * when the key space is provably finite (locales, enum keys, a fixed config
+ * set). Any call site that derives keys from unbounded input - user text,
+ * entity ids, dates - must set {@link MemoizeOptions.cacheLimit}, otherwise
+ * the cache is a leak by design.
+ *
  * @category core/utils
  * @since 0.1.0
  */

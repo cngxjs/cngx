@@ -16,6 +16,12 @@ Tokens are the **contracts** of the cngx architecture. Every controller, every h
 
 The split between `@cngx/core/tokens` (contracts) and `@cngx/core/utils` (primitives + factories) is intentional: pull in the token where you implement, pull in the factory where you compose.
 
+## ENVIRONMENT
+
+`ENVIRONMENT` is a consumer-app utility, not something cngx reads itself: a typed DI handle on your `environment.ts` object, so app code depends on the injector instead of a hardcoded module import and tests can swap the value per `TestBed`.
+
+It has no default factory. An `inject(ENVIRONMENT)` without `provideEnvironment(environment)` in the bootstrap providers throws a `NullInjectorError` - missing wiring fails loudly instead of handing you an empty object. Code that must tolerate an absent environment reads `inject(ENVIRONMENT, { optional: true })` and handles the `null`.
+
 ## See also
 
 - The exact token names, their interfaces, and the `provide*` helpers are in the **API** tab.

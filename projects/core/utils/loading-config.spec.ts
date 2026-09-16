@@ -1,7 +1,9 @@
+import { Injector } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, it, expect } from 'vitest';
 
 import {
+  CNGX_LOADING_CONFIG,
   CNGX_LOADING_DEFAULTS,
   injectLoadingConfig,
   provideLoadingConfig,
@@ -57,6 +59,25 @@ describe('CNGX_LOADING_CONFIG cascade', () => {
       providers: [provideLoadingConfigAt(withShowDelay(50))],
     });
     expect(inject()).toEqual({ showDelay: 50, minDwell: 400, spinnerVsSkeletonCutoff: 800 });
+  });
+
+  it('a nested At-scope resolves against the defaults, not the ancestor override', () => {
+    TestBed.configureTestingModule({ providers: [provideLoadingConfig(withMinDwell(600))] });
+    const parent = TestBed.inject(Injector);
+    const child = Injector.create({
+      providers: provideLoadingConfigAt(withShowDelay(0)),
+      parent,
+    });
+
+    // The scope override is a full restatement: minDwell falls back to the
+    // library default 400, it does not inherit the ancestor's 600.
+    expect(child.get(CNGX_LOADING_CONFIG)).toEqual({
+      showDelay: 0,
+      minDwell: 400,
+      spinnerVsSkeletonCutoff: 800,
+    });
+    // The ancestor scope keeps its own resolution.
+    expect(inject()).toEqual({ showDelay: 120, minDwell: 600, spinnerVsSkeletonCutoff: 800 });
   });
 
   it('never exposes the frozen CNGX_LOADING_DEFAULTS const for mutation', () => {
