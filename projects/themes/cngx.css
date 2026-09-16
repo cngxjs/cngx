@@ -19,10 +19,10 @@
  *   `.cngx-sr-only` utility - utilities.css appends into this layer
  * - `cngx.components` - externalised directive CSS (`CngxAccordion`,
  *   `CngxAsync`, `CngxBackdrop`, `CngxBadge`, `CngxBottomSheet`,
- *   `CngxBreadcrumb`, `CngxButtonToggle`, `CngxDialog`, `CngxDivider`,
- *   `CngxListbox`,
+ *   `CngxBreadcrumb`, `CngxButtonToggle`, the data-grid family,
+ *   `CngxDialog`, `CngxDivider`, `CngxListbox`,
  *   `CngxMenu`, `CngxRipple`, `CngxSlider`, `CngxTooltip`,
- *   `CngxFileDrop`)
+ *   `CngxFileDrop`, the field-affix atoms)
  * - `cngx.theme` - reserved for consumer overrides
  * - `app` - reserved for consumer selectors
  *
