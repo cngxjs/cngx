@@ -100,6 +100,32 @@ function clampVolume(v: number): number {
 }
 
 /**
+ * Map a raw `AudioContext.state` onto {@link AudioStatus}. Safari reports a
+ * non-standard `'interrupted'` (phone call, Siri, audio-route change) that the
+ * spec union does not carry; it resumes on the next gesture exactly like a
+ * suspended context, so it folds to `'suspended'` rather than being cast into
+ * the union. Any unknown value degrades to `'suspended'`, the safe resting
+ * state a subsequent `resume()` can lift.
+ */
+function mapAudioStatus(state: string): AudioStatus {
+  switch (state) {
+    case 'running':
+      return 'running';
+    case 'closed':
+      return 'closed';
+    case 'suspended':
+    case 'interrupted':
+    default:
+      return 'suspended';
+  }
+}
+
+/** A context that a `resume()` can lift - suspended, or Safari's interrupted. */
+function isSuspendedLike(state: string): boolean {
+  return state === 'suspended' || state === 'interrupted';
+}
+
+/**
  * Apply a per-call `[0, 1]` scale to a tone's peak gain. Centralised here so
  * every play path (`play` / `tone` / `sequence`) scales identically and an
  * engine override sees per-element volume uniformly, rather than each caller
@@ -151,6 +177,9 @@ export const createAudioEngine: CngxAudioEngineFactory = (options) => {
   const earcons = new Map<string, EarconConfig>(
     Object.entries({ ...CNGX_AUDIO_DEFAULT_EARCONS, ...config.earcons }),
   );
+  // Dev-only: an unknown earcon name is a fixed authoring mistake, so warn once
+  // per name rather than on every (debounced) play attempt.
+  const warnedUnknownEarcons = new Set<string>();
 
   let context: BaseAudioContext | null = null;
   let masterGain: GainNode | null = null;
@@ -173,12 +202,20 @@ export const createAudioEngine: CngxAudioEngineFactory = (options) => {
     destination: () => masterGain!,
   });
 
+  // Single source of truth for `status`: the context's own statechange event.
+  // Browser-initiated transitions the page never requested (Safari interrupt,
+  // OS suspend) flow through here too, and because resume()/suspend() land
+  // their result via this listener there is no manual status write left to
+  // race - a stale resume resolution cannot clobber a later suspend.
+  const onStateChange = (): void => {
+    if (context) {
+      status.set(mapAudioStatus(context.state));
+    }
+  };
+
   function resumeIfArmed(): void {
-    if (context && gate.armed() && context.state === 'suspended') {
-      void (context as AudioContext).resume().then(
-        () => status.set('running'),
-        () => undefined,
-      );
+    if (context && gate.armed() && isSuspendedLike(context.state)) {
+      void (context as AudioContext).resume().catch(() => undefined);
     }
   }
 
@@ -195,7 +232,10 @@ export const createAudioEngine: CngxAudioEngineFactory = (options) => {
     masterGain = created.createGain();
     masterGain.gain.value = volume();
     masterGain.connect(created.destination);
-    status.set(created.state as AudioStatus);
+    // Born in its current state - no statechange fires for the initial value,
+    // so seed it directly; every later transition arrives via onStateChange.
+    status.set(mapAudioStatus(created.state));
+    created.addEventListener('statechange', onStateChange);
     resumeIfArmed();
     return context;
   }
@@ -221,10 +261,7 @@ export const createAudioEngine: CngxAudioEngineFactory = (options) => {
     }
     if (doc.hidden) {
       if (context.state === 'running') {
-        void (context as AudioContext).suspend().then(
-          () => status.set('suspended'),
-          () => undefined,
-        );
+        void (context as AudioContext).suspend().catch(() => undefined);
       }
     } else {
       resumeIfArmed();
@@ -233,6 +270,7 @@ export const createAudioEngine: CngxAudioEngineFactory = (options) => {
   doc.addEventListener('visibilitychange', onVisibility);
   destroyRef.onDestroy(() => {
     doc.removeEventListener('visibilitychange', onVisibility);
+    context?.removeEventListener('statechange', onStateChange);
     // close() rejects on an already-closed context; swallow it so a double
     // destroy does not surface an unhandled rejection.
     const closing = (context as AudioContext | null)?.close?.();
@@ -256,7 +294,8 @@ export const createAudioEngine: CngxAudioEngineFactory = (options) => {
       }
       const earcon = earcons.get(name);
       if (!earcon) {
-        if (isDevMode()) {
+        if (isDevMode() && !warnedUnknownEarcons.has(name)) {
+          warnedUnknownEarcons.add(name);
           console.warn(
             `[cngxAudio] Unknown earcon "${name}". Register it via withEarcons({...}) or engine.register(name, config).`,
           );

@@ -50,6 +50,17 @@ export interface AudioContextMock {
   resume(): Promise<void>;
   suspend(): Promise<void>;
   close(): Promise<void>;
+  /** Register a `statechange` listener (other event types are ignored). */
+  addEventListener(type: string, listener: () => void): void;
+  /** Remove a previously registered `statechange` listener. */
+  removeEventListener(type: string, listener: () => void): void;
+  /**
+   * Drive a browser-initiated state transition (Safari `'interrupted'`, an
+   * OS-level suspend) and fire `statechange` - the real API's only signal for a
+   * state the page never requested. Accepts any string so specs can push
+   * non-standard states like `'interrupted'`.
+   */
+  setState(state: string): void;
   /** Every oscillator handed out by `createOscillator`, in creation order. */
   readonly oscillators: OscillatorNodeMock[];
   /** Every gain node handed out by `createGain`, in creation order. */
@@ -124,6 +135,10 @@ export function createAudioContextMock(initialState: AudioContextState = 'suspen
   const oscillators: OscillatorNodeMock[] = [];
   const gains: GainNodeMock[] = [];
   const destination = { connect: vi.fn(), disconnect: vi.fn() };
+  const stateListeners = new Set<() => void>();
+  const emitStateChange = (): void => {
+    stateListeners.forEach((listener) => listener());
+  };
 
   const mock: AudioContextMock = {
     currentTime: 0,
@@ -144,6 +159,7 @@ export function createAudioContextMock(initialState: AudioContextState = 'suspen
         return rejectClosed();
       }
       mock.state = 'running';
+      emitStateChange();
       return Promise.resolve();
     },
     suspend() {
@@ -151,6 +167,7 @@ export function createAudioContextMock(initialState: AudioContextState = 'suspen
         return rejectClosed();
       }
       mock.state = 'suspended';
+      emitStateChange();
       return Promise.resolve();
     },
     close() {
@@ -158,7 +175,22 @@ export function createAudioContextMock(initialState: AudioContextState = 'suspen
         return rejectClosed();
       }
       mock.state = 'closed';
+      emitStateChange();
       return Promise.resolve();
+    },
+    addEventListener(type, listener) {
+      if (type === 'statechange') {
+        stateListeners.add(listener);
+      }
+    },
+    removeEventListener(type, listener) {
+      if (type === 'statechange') {
+        stateListeners.delete(listener);
+      }
+    },
+    setState(state) {
+      mock.state = state as AudioContextState;
+      emitStateChange();
     },
     oscillators,
     gains,

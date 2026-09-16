@@ -70,4 +70,43 @@ describe('createAudioContextMock', () => {
     ctx.advanceTime(0.5);
     expect(ctx.currentTime).toBe(2.5);
   });
+
+  it('fires statechange listeners on resume, suspend, and close', async () => {
+    const ctx = createAudioContextMock('suspended');
+    let fires = 0;
+    ctx.addEventListener('statechange', () => fires++);
+    await ctx.resume();
+    await ctx.suspend();
+    await ctx.close();
+    expect(fires).toBe(3);
+  });
+
+  it('setState drives a browser-initiated transition and fires statechange', () => {
+    const ctx = createAudioContextMock('running');
+    const seen: string[] = [];
+    ctx.addEventListener('statechange', () => seen.push(ctx.state));
+    ctx.setState('interrupted');
+    expect(ctx.state).toBe('interrupted');
+    expect(seen).toEqual(['interrupted']);
+  });
+
+  it('removeEventListener detaches a statechange listener', () => {
+    const ctx = createAudioContextMock('running');
+    let fires = 0;
+    const listener = (): void => {
+      fires++;
+    };
+    ctx.addEventListener('statechange', listener);
+    ctx.removeEventListener('statechange', listener);
+    ctx.setState('suspended');
+    expect(fires).toBe(0);
+  });
+
+  it('ignores non-statechange event types', () => {
+    const ctx = createAudioContextMock('running');
+    let fires = 0;
+    ctx.addEventListener('boom', () => fires++);
+    ctx.setState('suspended');
+    expect(fires).toBe(0);
+  });
 });
