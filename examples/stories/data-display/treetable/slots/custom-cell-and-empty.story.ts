@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxTreetable: Custom cell and empty',
   subtitle:
-    'An <code>&lt;ng-template [cngxCell]="\'role\'"&gt;</code> replaces the body cell of one column, matched by key. The context carries the full <code>FlatNode</code> as <code>$implicit</code> (<code>let-node</code>) plus the resolved cell <code>value</code> - there is no column key in the context. <code>&lt;ng-template cngxEmpty&gt;</code> replaces the built-in empty surface when the tree resolves to no rows.',
+    'An <code>&lt;ng-template [cngxCell]="\'role\'"&gt;</code> replaces the body cell of one column, matched by key. The context carries the full <code>CngxTreetableFlatNode</code> as <code>$implicit</code> (<code>let-node</code>) plus the resolved cell <code>value</code> - there is no column key in the context. <code>&lt;ng-template cngxEmpty&gt;</code> replaces the built-in empty surface when the tree resolves to no rows.',
   description:
     'Columns derive from the primitive keys of the first node value; cells without a template render the raw value. The role cell renders a <code>&lt;cngx-tag&gt;</code> whose color is derived from the node data instead of hand-written pill CSS.',
   level: 'organism',
@@ -12,14 +12,14 @@ export const STORY: DemoSpec = {
   focus: ['composition'],
   apiComponents: ['CngxTreetable', 'CngxCellTpl', 'CngxEmptyTpl'],
   moduleImports: [
-    "import { CngxTreetable, CngxCellTpl, CngxEmptyTpl, type FlatNode, type Node } from '@cngx/data-display/treetable';",
+    "import { CngxTreetable, CngxCellTpl, CngxEmptyTpl, type CngxTreetableFlatNode, type CngxTreetableNode } from '@cngx/data-display/treetable';",
     "import { CngxTag, type CngxTagColor } from '@cngx/common/display';",
     "import { ORG_TREE, type Employee } from '../../../../fixtures';",
   ],
   imports: ['CngxTreetable', 'CngxCellTpl', 'CngxEmptyTpl', 'CngxTag'],
-  setup: `protected readonly tree = signal<Node<Employee>[]>([ORG_TREE]);
+  setup: `protected readonly tree = signal<CngxTreetableNode<Employee>[]>([ORG_TREE]);
 
-  protected tagColor(node: FlatNode<Employee>): CngxTagColor {
+  protected tagColor(node: CngxTreetableFlatNode<Employee>): CngxTagColor {
     if (node.depth === 0) {
       return 'info';
     }
