@@ -482,6 +482,45 @@ describe('CngxTabGroupPresenter', () => {
       expect(presenter.activeIndex()).toBe(1);
       expect(presenter.originIndexDuringCommit()).toBeUndefined();
     });
+
+    // Rejection markers are flat indices; the dismissable affordance can
+    // remove a tab ahead of a marker and drift the decoration onto its
+    // neighbour unless requestClose shifts the markers with the registry.
+    it('close before the failed tab shifts lastFailedIndex down', () => {
+      const { presenter } = commitFixture('optimistic', () => false);
+      presenter.select(2);
+      expect(presenter.lastFailedIndex()).toBe(2);
+      presenter.requestClose('a');
+      expect(presenter.lastFailedIndex()).toBe(1);
+    });
+
+    it('closing the failed tab itself drops lastFailedIndex', () => {
+      const { presenter } = commitFixture('optimistic', () => false);
+      presenter.select(2);
+      expect(presenter.lastFailedIndex()).toBe(2);
+      presenter.requestClose('c');
+      expect(presenter.lastFailedIndex()).toBeUndefined();
+    });
+
+    it('close after the failed tab leaves lastFailedIndex put', () => {
+      const { presenter } = commitFixture('optimistic', () => false);
+      presenter.select(1);
+      expect(presenter.lastFailedIndex()).toBe(1);
+      presenter.requestClose('c');
+      expect(presenter.lastFailedIndex()).toBe(1);
+    });
+
+    it('close before both markers shifts lastFailedIndex and originIndexDuringCommit down together', () => {
+      const { presenter } = commitFixture('optimistic', () => false);
+      presenter.register(handle('d'));
+      presenter.activeIndex.set(1);
+      presenter.select(3);
+      expect(presenter.lastFailedIndex()).toBe(3);
+      expect(presenter.originIndexDuringCommit()).toBe(1);
+      presenter.requestClose('a');
+      expect(presenter.lastFailedIndex()).toBe(2);
+      expect(presenter.originIndexDuringCommit()).toBe(0);
+    });
   });
 
   it('activeId rejoins the live tab after unregister + re-register', () => {

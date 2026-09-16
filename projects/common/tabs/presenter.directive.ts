@@ -397,12 +397,40 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
       // the real position.
       this.activeIndex.set(index - 1);
     }
+    // The rejection markers are flat indices into the same registry, so a
+    // close before them drifts the decoration onto the wrong tab (reachable
+    // only via the dismissable affordance the organism layers on top). Shift
+    // them the same way `activeIndex` shifts, and drop the marker outright
+    // when its own tab is the one closed.
+    this.lastFailedIndexState.update((failed) => shiftIndexOnClose(failed, index));
+    this.originIndexDuringCommitState.update((origin) =>
+      shiftIndexOnClose(origin, index),
+    );
     this.tabClose.emit({ id, index });
   }
 
   requestAdd(): void {
     this.tabAdd.emit();
   }
+}
+
+/**
+ * Follow a stored flat rejection index across the removal of the tab at
+ * `removed`. The referenced tab going away drops the marker (`undefined`);
+ * a removal ahead of it shifts it down one slot; a removal after it leaves
+ * it put. Keeps `lastFailedIndex` / `originIndexDuringCommit` pointing at the
+ * same handle once the consumer removes a dismissed tab from its data.
+ *
+ * @internal
+ */
+export function shiftIndexOnClose(
+  stored: number | undefined,
+  removed: number,
+): number | undefined {
+  if (stored === undefined || removed === stored) {
+    return undefined;
+  }
+  return removed < stored ? stored - 1 : stored;
 }
 
 /**
