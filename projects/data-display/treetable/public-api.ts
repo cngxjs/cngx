@@ -24,6 +24,10 @@ export type {
   TreetableTemplates,
 } from './treetable.token';
 export type {
+  CngxTreetableNode,
+  CngxTreetableFlatNode,
+  CngxTreetableOptions,
+  // Deprecated unprefixed aliases - removal at v1.0.
   FlatNode,
   Node,
   TreetableOptions,
