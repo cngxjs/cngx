@@ -29,7 +29,11 @@ private readonly UsersStore = signalStore(
             }),
             tapAsyncState(store.usersSink),
           )
-          .subscribe(),
+          .subscribe({
+            // The sink already captured the failure as state; an empty error
+            // callback keeps the global ErrorHandler out of the demo console.
+            error: () => {},
+          }),
     })),
   );
 

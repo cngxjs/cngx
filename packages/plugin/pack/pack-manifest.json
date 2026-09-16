@@ -204,7 +204,7 @@
     {
       "artifact": "pack/recipes/interop-signals-with-cngx-async-state.md",
       "source": "examples/stories/interop/signals/with-cngx-async-state/signalstore-async-feature.story.ts",
-      "contentHash": "sha256:aa1154ba375ca6f3f02c2aa0315b38a9b8d1c9af1a84511fad4260b60a72b5bb"
+      "contentHash": "sha256:00974363a2cccb1bbbf2b1ddae0102932bfb86567066a76fdd91b817ef8cffa5"
     }
   ],
   "theming": {
