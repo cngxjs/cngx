@@ -144,7 +144,7 @@ Plain-CSS theme bundle. No JS, no SCSS at runtime in the default bundle.
 
 - `@cngx/themes/cngx.css` - single-import default. Cascade layers, OKLCH system tokens, `@property` declarations, `light-dark()` dark mode out of the box.
 - `@cngx/themes/example-brand.css` - brand template.
-- `@cngx/themes/material/*` - 36 component bridges plus `system-bridge.scss` and a `theme.scss` aggregator. One `@include` wires every cngx component into a Material theme (M2 or M3).
+- `@cngx/themes/material/*` - 55 component bridges plus `system-bridge.scss`, `density-bridge.scss`, and a `theme.scss` aggregator. One `@include` wires every cngx component into a Material theme (M2 or M3).
 
 ---
 
@@ -215,7 +215,7 @@ Teams that have not migrated to Signal Forms light up the CNGX field + validator
 - **Material tables consume CNGX data sources.** `injectSmartDataSource<T>(items, { sort, filter, paginate, search })` returns a `CngxSmartDataSource` that **extends `@angular/cdk/collections` `DataSource`**. 
 It plugs into `MatTable` (or any CDK-table-backed surface) directly, combining CNGX's orthogonal `CngxSort` / `CngxFilter` / `CngxSearch` / `CngxPaginate` behaviours behind the contract Material already speaks. 
 No fork, no shim, no "drop Material first".
-- **Your Material theme themes CNGX too.** `@cngx/themes/material/` ships **36** component bridges plus a `system-bridge.scss` that maps CNGX's foundation tokens (`--cngx-color-*`, `--cngx-space-*`, `--cngx-radius-*`, `--cngx-shadow-*`, ...) onto Material's `--mat-sys-*` design tokens. 
+- **Your Material theme themes CNGX too.** `@cngx/themes/material/` ships **55** component bridges plus a `system-bridge.scss` that maps CNGX's foundation tokens (`--cngx-color-*`, `--cngx-space-*`, `--cngx-radius-*`, `--cngx-shadow-*`, ...) onto Material's `--mat-sys-*` design tokens. 
 One include - `@include cngx-material.theme($theme)` next to your existing `mat.all-component-themes($theme)` - and every CNGX component picks up your Material palette, corners, outlines and typography automatically. 
 M3 reads `--mat-sys-*` at runtime; M2 resolves palette colours at compile time via `mat.get-theme-color`. Selective wiring stays available: pull the system bridge plus only the component bridges you actually ship.
 
