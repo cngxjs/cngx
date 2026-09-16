@@ -38,6 +38,12 @@ export function flattenTree<T>(
  * Extracts the list of column keys to display from a tree's first node.
  * Only keys with primitive (non-object, or `null`) values are included by default.
  *
+ * First-root-wins is the contract, not an accident: keys the first root lacks
+ * are dropped for **every** row, even when later roots carry them. A
+ * heterogeneous forest that needs the union of keys must pass
+ * `customColumnOrder` - deriving a union here would make the column set
+ * depend on row order, which is worse than an explicit list.
+ *
  * @param input - The tree or forest to inspect.
  * @param options - If `customColumnOrder` is set it is returned as-is.
  * @returns An ordered array of column key strings.

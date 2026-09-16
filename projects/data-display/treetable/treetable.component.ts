@@ -505,7 +505,10 @@ export class CngxTreetable<T = unknown> {
    * - `_select` only appears when `selectionMode !== 'none'` AND
    *   `showCheckboxes` is `true`.
    * - `_expand` always appears as the first non-utility column - it
-   *   carries the indent guide and the expand toggle.
+   *   carries the indent guide and the expand toggle. Unconditional on
+   *   purpose: the table itself only renders while there are visible
+   *   rows (`showsContent()`), so an empty forest never paints a lone
+   *   `_expand` header - the empty surface replaces the grid entirely.
    */
   readonly allColumns = computed(
     () => [
