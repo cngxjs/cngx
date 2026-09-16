@@ -12,7 +12,12 @@ import {
   cngxMatchers,
   createMatchMediaMock,
   createResizeObserverMock,
+  createAsyncStateMock,
+  createAudioContextMock,
 } from '@cngx/testing';
+
+// Browser-only geometry asserts live on their own subpath (see below):
+import { computedValue, containerState, gridTracks } from '@cngx/testing/geometry';
 ```
 
 ## Overview
@@ -249,6 +254,55 @@ expect(mock.observe.mock.calls.length).toBe(1);
 mock.restore(window);
 ```
 
+### createAsyncStateMock
+
+A hand-driven `CngxAsyncState` for specs on components that accept `[state]`. The spec sets `status` / `firstLoad` / `empty` / `data` / `error` / `progress` / `lastUpdated` directly instead of standing up a real producer.
+
+```typescript
+function createAsyncStateMock(): AsyncStateMock
+
+interface AsyncStateMock extends CngxAsyncState<unknown> {
+  set(patch: AsyncStateMockPatch): void; // omitted fields keep their value
+}
+```
+
+All derived members come from `buildAsyncStateView` - the same kernel every real producer uses - so the mock cannot drift from the envelope's derivation rules. One deliberate divergence: emptiness is the spec-driven `empty` flag (default `false`), not derived from the data shape, so `isEmpty` / `hasData` stay drivable without staging data. The nullable slots (`data`, `error`, `progress`, `lastUpdated`) clear via an explicit `undefined` in the patch.
+
+#### Example
+
+```typescript
+const state = createAsyncStateMock();
+fixture.componentInstance.state.set(state);
+
+state.set({ status: 'loading', firstLoad: true });
+fixture.detectChanges();
+expect(card.querySelector('.skeleton')).not.toBeNull();
+```
+
+### createAudioContextMock
+
+A minimal Web Audio mock that lets the tone-generator engine run under vitest/jsdom. Tracks every oscillator and gain node it hands out and carries a fake scheduling clock.
+
+```typescript
+function createAudioContextMock(initialState?: AudioContextState): AudioContextMock
+```
+
+Cast at the call site: `mock as unknown as AudioContext`. Assert against `mock.oscillators` / `mock.gains` (creation order) and advance the clock with `mock.advanceTime(seconds)`.
+
+## Geometry Subpath
+
+`@cngx/testing/geometry` is deliberately **not** re-exported from the root barrel: its helpers read the CSSOM (`getComputedStyle`, grid track resolution), which jsdom answers with empty strings. They are only meaningful in the `*.geometry.spec.ts` suites that run in a real Chromium.
+
+```typescript
+import { computedValue, containerState, gridTracks } from '@cngx/testing/geometry';
+
+computedValue(el, 'padding-inline-start'); // resolved CSSOM value
+gridTracks(el, 'columns');                 // ['200px', '1fr', ...]
+containerState(el);                        // { type, name } - resolved container-type/-name
+```
+
+If a root-barrel import of these helpers ever passes in jsdom, it is asserting `'' === ''` - keep them on the subpath.
+
 ## Testing Patterns
 
 ### Testing Signals and Effects
@@ -407,4 +461,4 @@ teardown that still needs the fake clock or the stub in place keeps it.
 - [vitest Documentation](https://vitest.dev/)
 - [Angular Testing Guide](https://angular.io/guide/testing)
 - [TestBed API Reference](https://angular.io/api/core/testing/TestBed)
-- cngx library tests: `projects/*/src/**/*.spec.ts`
+- cngx library tests: `projects/*/**/*.spec.ts` (source files sit at each project root - there is no `src/` tier)

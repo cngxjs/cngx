@@ -348,7 +348,11 @@
           "defaultConfiguration": "development"
         },
         "test": {
-          "builder": "@angular/build:unit-test"
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "examples/tsconfig.spec.json",
+            "setupFiles": ["projects/testing/setup/vitest-setup.ts"]
+          }
         }
       }
     }
