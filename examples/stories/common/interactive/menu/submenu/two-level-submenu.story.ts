@@ -51,7 +51,7 @@ export const STORY: DemoSpec = {
       return;
     }
     // Defer one microtask so the browser settles position-try-fallbacks
-    // resolution before the read — afterRender would fire too early on
+    // resolution before the read; afterRender would fire too early on
     // layout-thrash frames.
     queueMicrotask(() => {
       const resolved = getComputedStyle(pop).getPropertyValue('position-area').trim();

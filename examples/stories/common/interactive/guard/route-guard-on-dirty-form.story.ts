@@ -24,7 +24,7 @@ export const STORY: DemoSpec = {
   protected readonly draft = signal<string>('');
 
   /**
-   * Returned guard fn — Angular Router would invoke this in its own
+   * Returned guard fn; Angular Router would invoke this in its own
    * injection context on a navigation attempt. The factory is called
    * here at component-construction time so the demo shows the wiring
    * shape; the returned fn is intentionally not called from a click
