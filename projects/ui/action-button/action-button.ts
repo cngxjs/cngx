@@ -23,6 +23,7 @@ import {
 import {
   buildAsyncStateView,
   createTransitionTracker,
+  nextUid,
   type CngxAsyncState,
 } from '@cngx/core/utils';
 import { CngxToastOn, CngxToaster } from '@cngx/ui/feedback';
@@ -106,12 +107,13 @@ export type ActionButtonVariant = 'primary' | 'secondary' | 'ghost';
     <button
       [type]="type()"
       [cngxAsyncClick]="action()"
-      #btn="cngxAsyncClick"
       [feedbackDuration]="feedbackDuration()"
-      [enabled]="enabled()"
+      [enabled]="clickEnabled()"
+      [busy]="effectiveBusy()"
       [autoAnnounce]="false"
       [succeededAnnouncement]="succeededAnnouncement() ?? succeededLabel() ?? 'Action succeeded'"
       [failedAnnouncement]="failedAnnouncement() ?? failedLabel() ?? 'Action failed'"
+      [attr.aria-describedby]="describedBy()"
       [class]="'cngx-action-button cngx-action-button--' + variant()"
     >
       @switch (effectiveStatus()) {
@@ -149,8 +151,11 @@ export type ActionButtonVariant = 'primary' | 'secondary' | 'ghost';
         }
       }
     </button>
+    @if (disabledReason(); as reason) {
+      <span [id]="reasonId" class="cngx-action-button__sr-only">{{ reason }}</span>
+    }
     <span aria-live="polite" aria-atomic="true" class="cngx-action-button__sr-only">{{
-      btn.announcement()
+      effectiveAnnouncement()
     }}</span>
   `,
   styleUrls: ['./action-button.css'],
@@ -194,6 +199,14 @@ export class CngxActionButton {
    * When set, the button's status display follows `externalState.status()`.
    */
   readonly externalState = input<CngxAsyncState<unknown> | undefined>(undefined);
+
+  /**
+   * Reason the button is disabled, announced to screen readers while
+   * `[enabled]` is `false`. Rendered into a hidden region and referenced by
+   * `aria-describedby` only while disabled - an enabled button never carries
+   * the reference. No effect when `[enabled]` is `true`.
+   */
+  readonly disabledReason = input<string | undefined>(undefined);
 
   /**
    * Toast message on success. Requires `CngxToaster` (via `provideFeedback(withToasts())`
@@ -244,6 +257,48 @@ export class CngxActionButton {
     const click = this.asyncClick();
     return click ? click.error() : undefined;
   });
+
+  /** @internal - busy while the effective status (inner or external) is pending. */
+  protected readonly effectiveBusy = computed(() => this.effectiveStatus() === 'pending');
+
+  /**
+   * @internal - what the inner `CngxAsyncClick` may act on: only when the
+   * consumer enabled it AND no effective operation is in flight. Feeding this
+   * as `[enabled]` routes external-pending through the atom's own click guard,
+   * so a click cannot start a second run while an external state is pending.
+   */
+  protected readonly clickEnabled = computed(
+    () => this.enabled() && this.effectiveStatus() !== 'pending',
+  );
+
+  /**
+   * @internal - SR announcement derived from the effective status, so an
+   * external success/error settles audibly too (the inner directive only
+   * knows its own runs). Mirrors the label fallback chain the template uses.
+   */
+  protected readonly effectiveAnnouncement = computed(() => {
+    switch (this.effectiveStatus()) {
+      case 'success':
+        return this.succeededAnnouncement() ?? this.succeededLabel() ?? 'Action succeeded';
+      case 'error':
+        return this.failedAnnouncement() ?? this.failedLabel() ?? 'Action failed';
+      default:
+        return '';
+    }
+  });
+
+  /** @internal - stable id for the disabled-reason region. */
+  protected readonly reasonId = nextUid('cngx-action-button-reason');
+
+  /**
+   * @internal - reference the reason region only while actually disabled by
+   * intent and a reason exists. accname traverses a directly referenced hidden
+   * node, so the id must be gated on the state it describes rather than left
+   * permanently pointing at a hidden region.
+   */
+  protected readonly describedBy = computed(() =>
+    !this.enabled() && this.disabledReason() ? this.reasonId : null,
+  );
 
   private readonly lastUpdatedState = signal<Date | undefined>(undefined);
 

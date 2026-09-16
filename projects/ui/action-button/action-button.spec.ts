@@ -116,6 +116,26 @@ class EnabledHost {
 class ExternalStateHost {
   readonly mock = buildMockState();
   readonly mockState = this.mock.state;
+  callCount = 0;
+  readonly action = () => {
+    this.callCount++;
+    return Promise.resolve();
+  };
+}
+
+// ── Disabled-reason host ────────────────────────────────────────────────
+
+@Component({
+  template: `
+    <cngx-action-button [action]="action" [enabled]="enabled" [disabledReason]="reason">
+      Save
+    </cngx-action-button>
+  `,
+  imports: [CngxActionButton],
+})
+class DisabledReasonHost {
+  enabled = false;
+  reason: string | undefined = 'Complete the form first';
   readonly action = () => Promise.resolve();
 }
 
@@ -424,6 +444,72 @@ describe('CngxActionButton', () => {
       flush(fixture);
       const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
       expect(btn.textContent).toContain('Err: ext-boom');
+    });
+
+    it('marks the button busy and disabled while the external state is pending', () => {
+      const fixture = TestBed.createComponent(ExternalStateHost);
+      fixture.componentInstance.mock.status.set('pending');
+      flush(fixture);
+      const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+      expect(btn.getAttribute('aria-busy')).toBe('true');
+      expect(btn.getAttribute('aria-disabled')).toBe('true');
+    });
+
+    it('blocks clicks while the external state is pending', () => {
+      const fixture = TestBed.createComponent(ExternalStateHost);
+      fixture.componentInstance.mock.status.set('pending');
+      flush(fixture);
+      const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+      btn.click();
+      flush(fixture);
+      expect(fixture.componentInstance.callCount).toBe(0);
+    });
+
+    it('announces an external success in the live region', () => {
+      const fixture = TestBed.createComponent(ExternalStateHost);
+      fixture.componentInstance.mock.status.set('success');
+      flush(fixture);
+      const live = fixture.nativeElement.querySelector('[aria-live="polite"]') as HTMLElement;
+      expect(live.textContent?.trim()).toBe('Ext done');
+    });
+
+    it('announces an external failure in the live region', () => {
+      const fixture = TestBed.createComponent(ExternalStateHost);
+      fixture.componentInstance.mock.status.set('error');
+      flush(fixture);
+      const live = fixture.nativeElement.querySelector('[aria-live="polite"]') as HTMLElement;
+      expect(live.textContent?.trim()).toBe('Ext error');
+    });
+  });
+
+  describe('disabled reason', () => {
+    it('marks the button disabled and points aria-describedby at the reason', () => {
+      const fixture = TestBed.createComponent(DisabledReasonHost);
+      flush(fixture);
+      const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+      expect(btn.getAttribute('aria-disabled')).toBe('true');
+      const reason = fixture.nativeElement.querySelector(
+        '.cngx-action-button__sr-only:not([aria-live])',
+      ) as HTMLElement;
+      expect(reason.textContent?.trim()).toBe('Complete the form first');
+      expect(btn.getAttribute('aria-describedby')).toBe(reason.id);
+    });
+
+    it('drops the aria-describedby reference once enabled, keeping the region gated', () => {
+      const fixture = TestBed.createComponent(DisabledReasonHost);
+      fixture.componentInstance.enabled = true;
+      flush(fixture);
+      const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+      expect(btn.getAttribute('aria-disabled')).toBeNull();
+      expect(btn.getAttribute('aria-describedby')).toBeNull();
+    });
+
+    it('emits no reference when no reason is supplied', () => {
+      const fixture = TestBed.createComponent(DisabledReasonHost);
+      fixture.componentInstance.reason = undefined;
+      flush(fixture);
+      const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+      expect(btn.getAttribute('aria-describedby')).toBeNull();
     });
   });
 

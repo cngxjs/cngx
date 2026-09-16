@@ -82,8 +82,8 @@ export type AsyncAction = () => Promise<unknown> | Observable<unknown>;
     '[class.cngx-async--pending]': 'pending()',
     '[class.cngx-async--success]': 'succeeded()',
     '[class.cngx-async--error]': 'failed()',
-    '[attr.aria-busy]': 'pending() || null',
-    '[attr.aria-disabled]': 'pending() || null',
+    '[attr.aria-busy]': 'pending() || busy() || null',
+    '[attr.aria-disabled]': 'pending() || !enabled() || null',
   },
 })
 export class CngxAsyncClick {
@@ -96,8 +96,20 @@ export class CngxAsyncClick {
   /** Duration in ms to show success/error state before reset. */
   readonly feedbackDuration = input<number>(2000);
 
-  /** When `false`, clicks are ignored (does not set `disabled` attribute). */
+  /**
+   * When `false`, clicks are ignored and the element is marked `aria-disabled`
+   * (never the hard `disabled` attribute, so focus survives). Communicates the
+   * "why" to assistive tech instead of silently swallowing the click.
+   */
   readonly enabled = input<boolean>(true);
+
+  /**
+   * External busy override. When `true`, the element is `aria-busy` even though
+   * this directive is not running its own action - for a wrapper that tracks an
+   * operation outside the click (e.g. an `[externalState]`). Purely an ARIA
+   * hint: it does not block clicks (gate those with `[enabled]`).
+   */
+  readonly busy = input<boolean>(false);
 
   /** Label announced to screen readers on success. */
   readonly succeededAnnouncement = input<string>('Action succeeded');
