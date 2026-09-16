@@ -195,6 +195,16 @@
       "artifact": "pack/recipes/data-display-treetable-async.md",
       "source": "examples/stories/data-display/treetable/async/async-state-lifecycle.story.ts",
       "contentHash": "sha256:bf19fa213bc47a76a898be889e4a8fc540d5c1a64b69f8843a754a893d203a53"
+    },
+    {
+      "artifact": "pack/recipes/interop-query-from-query.md",
+      "source": "examples/stories/interop/query/from-query/tanstack-query-bridge.story.ts",
+      "contentHash": "sha256:51442da0bca3c56955206b621083119f563d59e41dd8a30894f4e2926c306d87"
+    },
+    {
+      "artifact": "pack/recipes/interop-signals-with-cngx-async-state.md",
+      "source": "examples/stories/interop/signals/with-cngx-async-state/signalstore-async-feature.story.ts",
+      "contentHash": "sha256:00974363a2cccb1bbbf2b1ddae0102932bfb86567066a76fdd91b817ef8cffa5"
     }
   ],
   "theming": {
