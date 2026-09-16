@@ -36,6 +36,11 @@ export type CngxAsyncStateProps<Key extends string, T> = {
  * form collapses the key to a `string` index signature. Currying keeps the
  * key literal - and therefore the store members concretely named.
  *
+ * Key collisions are not guarded by cngx: the feature contributes
+ * `${key}State` / `${key}Sink` via `withProps` and relies on NgRx
+ * SignalStore's own dev-mode duplicate-prop warnings to surface a clash.
+ * Pick keys that do not shadow existing state or props on the store.
+ *
  * ```typescript
  * export const UsersStore = signalStore(
  *   withCngxAsyncState<User[]>()('users'),
@@ -46,7 +51,7 @@ export type CngxAsyncStateProps<Key extends string, T> = {
  *         http.get<User[]>('/api/users').pipe(
  *           tapAsyncState(store.usersSink),
  *           takeUntilDestroyed(),
- *         ).subscribe(),
+ *         ).subscribe({ error: () => {} }), // sink owns the failure; keep the global handler quiet
  *     };
  *   }),
  * );
