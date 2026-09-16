@@ -20,7 +20,7 @@ export interface Environment {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/core/tokens/environment.token.ts
  * @since 0.1.0
  */
-export const ENVIRONMENT = new InjectionToken<Environment>('NGX_CAE_ENVIRONMENT');
+export const ENVIRONMENT = new InjectionToken<Environment>('CNGX_ENVIRONMENT');
 
 /**
  * Provides an `Environment` value for the `ENVIRONMENT` token.

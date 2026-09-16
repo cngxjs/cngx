@@ -15,7 +15,7 @@ import { isPlatformBrowser } from '@angular/common';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/core/tokens/window.token.ts
  * @since 0.1.0
  */
-export const WINDOW = new InjectionToken<Window | null>('NGX_CAE_WINDOW', {
+export const WINDOW = new InjectionToken<Window | null>('CNGX_WINDOW', {
   providedIn: 'root',
   factory: () => {
     const platformId = inject(PLATFORM_ID);
