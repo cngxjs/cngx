@@ -2,6 +2,36 @@
 
 Angular-only tokens and utilities. No CDK, no Material dependencies.
 
+## Primary Entry (`@cngx/core`)
+
+The bare specifier ships the theming preference axes and the bidi surface.
+
+### Preference axes
+
+Each axis is the same triple: a token, a `provide*`/`inject*` pair, and (where
+a subtree override makes sense) a host directive stamping a `data-*` attribute
+the CSS foundation reacts to.
+
+- `CNGX_DENSITY` / `provideDensity()` / `injectDensity()` + `CngxDensity`
+- `CNGX_TEXT_SCALE` / `provideTextScale()` / `injectTextScale()`
+- `CNGX_TOUCH_TARGET` / `provideTouchTargets()` / `injectTouchTargets()` + `CngxTouchTarget`
+- `CNGX_MOTION` / `provideMotion()` / `injectMotion()` + `CngxMotionScope`
+- `CNGX_CONTRAST` / `provideContrast()` / `injectContrast()` + `CngxContrast`
+
+### provideA11yPreferences
+
+The writable-preference feature set: `provideA11yPreferences(withDensity(),
+withTextScale(), withMotion(), withContrast(), withPersistence())` wires the
+axes as user-settable signals, `injectA11yPreferences()` reads them, and
+`CNGX_A11Y_STORAGE` swaps the persistence backend.
+
+### Bidi and inline navigation
+
+- `CNGX_DIRECTION` / `provideDirection()` / `provideDirectionAt()` / `injectDirection()` -- the document/subtree direction as a signal
+- `CngxDir` -- subtree direction override directive
+- `resolveInlineStep()` / `resolveInlineArrowKey()` -- map arrow keys to logical inline steps under RTL
+- `resolveStepFrom()` / `resolveBoundaryStep()` -- shared keyboard step resolution (`CngxStepScan`)
+
 ## Secondary Entry Points
 
 ### @cngx/core/tokens
@@ -10,6 +40,8 @@ DI tokens and providers for application-wide concerns.
 
 - `ENVIRONMENT` / `provideEnvironment()` -- typed environment token
 - `WINDOW` / `provideWindow()` / `injectWindow()` -- SSR-safe window access
+- `CNGX_FORM_FIELD_CONTROL` -- contract a custom control provides so `<cngx-form-field>` can discover it
+- `CNGX_FORM_FIELD_HOST` -- host surface a sub-component reads instead of injecting the concrete field class
 
 ### @cngx/core/utils
 
@@ -55,11 +87,16 @@ const state = buildAsyncStateView<MyData>({
   progress: myProgressSignal,       // optional, defaults to undefined
   isFirstLoad: myFirstLoadSignal,   // optional, defaults to false
   lastUpdated: myLastUpdatedSignal, // optional, defaults to undefined
+  isEmpty: myIsEmptySignal,         // optional, overrides the data-shape derivation
 });
 ```
 
 No injection context required -- uses only `computed()`. All 13 fields of
-`CngxAsyncState<T>` are derived from the provided source signals.
+`CngxAsyncState<T>` are derived from the provided source signals. `isEmpty`
+is shape-derived by default (`null`/`undefined` or an empty array counts as
+empty); pass the optional source when emptiness is a domain rule the shape
+cannot express (an aggregate whose `data` array is never length 0, a paged
+result with `total: 0`).
 
 `isFirstLoad` is an explicit optional parameter (not derived from other fields).
 Callers that track `hadSuccess` pass their own computed; mutation producers omit
