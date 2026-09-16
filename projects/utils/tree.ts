@@ -52,6 +52,8 @@ type IdFn<T> = (value: T, path: readonly number[]) => string;
 /** @internal */
 type LabelFn<T> = (value: T) => string;
 
+declare const ngDevMode: boolean | undefined;
+
 /** @internal */
 const defaultIdFn: IdFn<unknown> = (_value, path) => path.join('.');
 /** @internal */
@@ -65,7 +67,10 @@ const defaultLabelFn: LabelFn<unknown> = (value) => String(value);
  * @param nodes Root-level tree nodes.
  * @param idFn Derives a stable id from `(value, path)`. Defaults to
  *   `path.join('.')` - adequate for static trees; supply a key-based `idFn`
- *   for data that may be re-ordered without changing identity.
+ *   for data that may be re-ordered without changing identity. Ids must be
+ *   unique across the whole forest: a non-injective `idFn` silently corrupts
+ *   the `parentIds` chains (and with them visibility resolution), so dev
+ *   mode warns on the first duplicate it sees.
  * @param labelFn Derives visible label. Defaults to `String(value)`.
  *
  * @category utils/tree
@@ -76,6 +81,8 @@ export function flattenTree<T>(
   labelFn: LabelFn<T> = defaultLabelFn as LabelFn<T>,
 ): FlatTreeNode<T>[] {
   const out: FlatTreeNode<T>[] = [];
+  const devMode = typeof ngDevMode !== 'undefined' && ngDevMode;
+  const seenIds = devMode ? new Set<string>() : undefined;
   const visit = (
     siblings: readonly CngxTreeNode<T>[],
     depth: number,
@@ -87,6 +94,15 @@ export function flattenTree<T>(
       const node = siblings[i];
       const path = [...basePath, i];
       const id = idFn(node.value, path);
+      if (seenIds) {
+        if (seenIds.has(id)) {
+          console.warn(
+            `[cngx] flattenTree: duplicate node id "${id}". Ids must be unique across ` +
+              `the forest - a non-injective idFn corrupts parentIds chains and visibility.`,
+          );
+        }
+        seenIds.add(id);
+      }
       const label = node.label ?? labelFn(node.value);
       const children = node.children ?? [];
       const hasChildren = children.length > 0;
@@ -132,19 +148,29 @@ export function isNodeVisible<T>(
 /**
  * DFS visitor. `visit` is called once per node with the current depth.
  *
+ * Returning the literal `false` from the visitor stops the walk immediately -
+ * no further node is visited at any depth. Any other return value continues
+ * the traversal, so existing visitors (void or value-returning arrows alike)
+ * keep their behavior. The return type is `unknown` rather than
+ * `boolean | void` on purpose: a concise arrow like `(n) => seen.push(n)`
+ * must stay assignable.
+ *
  * @category utils/tree
  */
 export function walkTree<T>(
   nodes: readonly CngxTreeNode<T>[],
-  visit: (node: CngxTreeNode<T>, depth: number) => void,
+  visit: (node: CngxTreeNode<T>, depth: number) => unknown,
 ): void {
-  const go = (siblings: readonly CngxTreeNode<T>[], depth: number): void => {
+  const go = (siblings: readonly CngxTreeNode<T>[], depth: number): boolean => {
     for (const node of siblings) {
-      visit(node, depth);
-      if (node.children && node.children.length > 0) {
-        go(node.children, depth + 1);
+      if (visit(node, depth) === false) {
+        return false;
+      }
+      if (node.children && node.children.length > 0 && !go(node.children, depth + 1)) {
+        return false;
       }
     }
+    return true;
   };
   go(nodes, 0);
 }
