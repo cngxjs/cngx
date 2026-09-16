@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   type CngxTreeNode,
   collectDescendantValues,
@@ -77,6 +77,23 @@ describe('flattenTree', () => {
   });
 });
 
+describe('flattenTree duplicate-id warning', () => {
+  it('warns in dev mode when idFn emits the same id twice', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    flattenTree(tree, () => 'same-id', labelFn);
+    expect(warn).toHaveBeenCalled();
+    expect(String(warn.mock.calls[0]?.[0])).toContain('duplicate node id "same-id"');
+    warn.mockRestore();
+  });
+
+  it('does not warn for unique ids', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    flattenTree(tree, idFn, labelFn);
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
+  });
+});
+
 describe('isNodeVisible', () => {
   it('root nodes are always visible', () => {
     const [a] = flattenTree(tree, idFn, labelFn);
@@ -103,6 +120,30 @@ describe('walkTree', () => {
       ['a2a', 2],
       ['b', 0],
     ]);
+  });
+
+  it('stops the whole walk when the visitor returns false, at any depth', () => {
+    const seen: string[] = [];
+    walkTree(tree, (n) => {
+      seen.push(n.value.id);
+      return n.value.id !== 'a2';
+    });
+    // a2 sits at depth 1: neither its subtree (a2a) nor the later root
+    // sibling (b) may be visited after the stop.
+    expect(seen).toEqual(['a', 'a1', 'a2']);
+  });
+
+  it('treats every non-false return as continue - truthy and undefined alike', () => {
+    const seen: string[] = [];
+    walkTree(tree, (n) => seen.push(n.value.id));
+    expect(seen).toEqual(['a', 'a1', 'a2', 'a2a', 'b']);
+
+    const seenTruthy: string[] = [];
+    walkTree(tree, (n) => {
+      seenTruthy.push(n.value.id);
+      return 0; // falsy but not the literal false - must not stop
+    });
+    expect(seenTruthy).toEqual(['a', 'a1', 'a2', 'a2a', 'b']);
   });
 });
 
