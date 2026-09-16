@@ -22,12 +22,14 @@ function deferred<T = void>() {
   template: `<button
     [cngxAsyncClick]="action"
     [enabled]="enabled()"
+    [busy]="busy()"
     [autoAnnounce]="autoAnnounce()"
   >Go</button>`,
   imports: [CngxAsyncClick],
 })
 class ButtonHost {
   readonly enabled = signal(true);
+  readonly busy = signal(false);
   readonly autoAnnounce = signal(true);
   readonly directive = viewChild.required(CngxAsyncClick);
   callCount = 0;
@@ -194,6 +196,24 @@ describe('CngxAsyncClick', () => {
     const { btn, host } = setupButton({ enabled: false });
     btn.click();
     expect(host.callCount).toBe(0);
+  });
+
+  it('marks a disabled-by-intent control aria-disabled without the hard disabled attr', () => {
+    const { btn } = setupButton({ enabled: false });
+    expect(btn.getAttribute('aria-disabled')).toBe('true');
+    expect(btn.hasAttribute('disabled')).toBe(false);
+    expect(btn.getAttribute('aria-busy')).toBeNull();
+  });
+
+  it('reflects the external busy override in aria-busy without blocking clicks', () => {
+    const { fixture, btn, host } = setupButton();
+    host.busy.set(true);
+    fixture.detectChanges();
+    expect(btn.getAttribute('aria-busy')).toBe('true');
+    // busy is an ARIA hint, not a click guard - the action still runs.
+    expect(btn.getAttribute('aria-disabled')).toBeNull();
+    btn.click();
+    expect(host.callCount).toBe(1);
   });
 
   it('should apply CSS classes', async () => {
