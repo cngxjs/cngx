@@ -126,6 +126,20 @@ describe('createAudioEngine', () => {
       expect(engine.lastPlayed()).toBeNull();
       expect(warn).toHaveBeenCalled();
     });
+
+    it('warns once per unknown earcon name, not on every play', () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      // debounceMs 0 lets every play reach the earcon lookup, so the once-only
+      // guard is what keeps the repeats quiet rather than the debouncer.
+      const { engine } = setupEngine({ config: { debounceMs: 0 } });
+      engine.armAutoplay();
+      engine.play('ghost');
+      engine.play('ghost');
+      engine.play('ghost');
+      expect(warn).toHaveBeenCalledTimes(1);
+      engine.play('phantom');
+      expect(warn).toHaveBeenCalledTimes(2);
+    });
   });
 
   describe('status', () => {
@@ -154,6 +168,53 @@ describe('createAudioEngine', () => {
       engine.play('tap');
       expect(engine.status()).toBe('unsupported');
       expect(engine.lastPlayed()).toBeNull();
+    });
+  });
+
+  describe('context state changes', () => {
+    it('reflects a browser-initiated state change through the statechange listener', async () => {
+      const { engine, ctx } = setupEngine();
+      engine.armAutoplay();
+      engine.play('tap');
+      await Promise.resolve();
+      expect(engine.status()).toBe('running');
+      // The browser suspends the context on its own (OS policy) - no page call.
+      ctx.setState('suspended');
+      expect(engine.status()).toBe('suspended');
+    });
+
+    it("folds Safari's non-standard 'interrupted' state to suspended", async () => {
+      const { engine, ctx } = setupEngine();
+      engine.armAutoplay();
+      engine.play('tap');
+      await Promise.resolve();
+      ctx.setState('interrupted');
+      expect(engine.status()).toBe('suspended');
+    });
+
+    it('resumes an interrupted context on the next armed play', async () => {
+      const { engine, ctx } = setupEngine();
+      engine.armAutoplay();
+      engine.play('tap');
+      await Promise.resolve();
+      ctx.setState('interrupted');
+      expect(engine.status()).toBe('suspended');
+      // A resume-lift must treat interrupted like suspended, not skip it.
+      engine.play('tap');
+      await Promise.resolve();
+      expect(ctx.state).toBe('running');
+      expect(engine.status()).toBe('running');
+    });
+
+    it('stops writing status once the injector is destroyed', () => {
+      const { engine, ctx } = setupEngine();
+      engine.armAutoplay();
+      engine.play('tap');
+      const before = engine.status();
+      TestBed.resetTestingModule();
+      // Listener detached on destroy - a late browser transition is ignored.
+      ctx.setState('interrupted');
+      expect(engine.status()).toBe(before);
     });
   });
 
