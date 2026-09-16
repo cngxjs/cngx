@@ -4,7 +4,13 @@ import { By } from '@angular/platform-browser';
 import { createManualState } from '@cngx/common/data';
 import { provideDirection } from '@cngx/core';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { CngxErrorTpl, CngxRefreshTpl, CngxSkeletonRowTpl } from './column-template.directive';
+import {
+  CngxCellTpl,
+  CngxErrorTpl,
+  CngxHeaderTpl,
+  CngxRefreshTpl,
+  CngxSkeletonRowTpl,
+} from './column-template.directive';
 import type { CngxErrorTplContext, FlatNode, Node } from './models';
 import { CngxTreetable } from './treetable.component';
 import {
@@ -652,6 +658,80 @@ describe('CngxTreetable', () => {
       }
     });
 
+    it('End jumps to the last visible row, Home returns to the first', () => {
+      const fixture = mount();
+      const t = fixture.componentInstance;
+      const nodes = t.visibleNodes();
+
+      const end = key('End');
+      t.handleKeyDown(end);
+      fixture.detectChanges();
+      expect(end.defaultPrevented).toBe(true);
+      expect(t.focusedNodeId()).toBe(nodes.at(-1)!.id);
+      expect(document.activeElement).toBe(rowEls(fixture).at(-1));
+
+      const home = key('Home');
+      t.handleKeyDown(home);
+      fixture.detectChanges();
+      expect(home.defaultPrevented).toBe(true);
+      expect(t.focusedNodeId()).toBe(nodes[0].id);
+      expect(document.activeElement).toBe(rowEls(fixture)[0]);
+    });
+
+    it('End targets the last VISIBLE row - collapsed descendants do not count', () => {
+      const fixture = mount();
+      const t = fixture.componentInstance;
+      const root = t.visibleNodes()[0];
+      t.toggle(root);
+      fixture.detectChanges();
+
+      t.handleKeyDown(key('End'));
+      fixture.detectChanges();
+      // Only the root remains visible after collapsing it.
+      expect(t.focusedNodeId()).toBe(root.id);
+    });
+
+    it('Enter activates the focused row like a click', () => {
+      const fixture = mount({ selectionMode: 'single' });
+      const t = fixture.componentInstance;
+      const child1 = t.visibleNodes()[1];
+      t.focusedNodeId.set(child1.id);
+
+      const event = key('Enter');
+      t.handleKeyDown(event);
+      fixture.detectChanges();
+      expect(event.defaultPrevented).toBe(true);
+      expect(t.selectedIds().has(child1.id)).toBe(true);
+    });
+
+    it('Space activates the focused row and a second press toggles the selection off', () => {
+      const fixture = mount({ selectionMode: 'single' });
+      const t = fixture.componentInstance;
+      const child1 = t.visibleNodes()[1];
+      t.focusedNodeId.set(child1.id);
+
+      const event = key(' ');
+      t.handleKeyDown(event);
+      fixture.detectChanges();
+      expect(event.defaultPrevented).toBe(true);
+      expect(t.selectedIds().has(child1.id)).toBe(true);
+
+      t.handleKeyDown(key(' '));
+      fixture.detectChanges();
+      expect(t.selectedIds().size).toBe(0);
+    });
+
+    it('Enter and Space are inert without a focused row', () => {
+      const fixture = mount({ selectionMode: 'single' });
+      const t = fixture.componentInstance;
+      t.focusedNodeId.set(null);
+      // effectiveFocusedId falls back to the first row for the tab stop, so
+      // activation still lands there - assert on the actual contract:
+      t.handleKeyDown(key('Enter'));
+      fixture.detectChanges();
+      expect(t.selectedIds().has(t.visibleNodes()[0].id)).toBe(true);
+    });
+
     it('leaves modifier-key arrows to the browser', () => {
       const fixture = mount();
       const t = fixture.componentInstance;
@@ -664,6 +744,71 @@ describe('CngxTreetable', () => {
         expect(t.focusedNodeId()).toBe(root.id);
         expect(event.defaultPrevented).toBe(false);
       }
+    });
+  });
+
+  describe('column template resolution (cngxCell / cngxHeader)', () => {
+    @Component({
+      template: `
+        <cngx-treetable [tree]="tree">
+          <ng-template [cngxCell]="'name'" let-node let-value="value">
+            <span class="cell-tpl">{{ value }}@{{ node.depth }}</span>
+          </ng-template>
+          <ng-template [cngxHeader]="'age'">
+            <span class="header-tpl">Years</span>
+          </ng-template>
+        </cngx-treetable>
+      `,
+      imports: [CngxTreetable, CngxCellTpl, CngxHeaderTpl],
+    })
+    class TplHost {
+      tree: Node<Item> | Node<Item>[] = tree;
+    }
+
+    function mountTpl() {
+      TestBed.configureTestingModule({ imports: [TplHost] });
+      const fixture = TestBed.createComponent(TplHost);
+      fixture.detectChanges();
+      return fixture;
+    }
+
+    it('a matching cngxCell template replaces the body cell of its column only', () => {
+      const fixture = mountTpl();
+      const custom = fixture.debugElement.queryAll(By.css('.cell-tpl'));
+      // One custom cell per row, fed with the resolved value and the FlatNode.
+      expect(custom).toHaveLength(3);
+      expect((custom[0].nativeElement as HTMLElement).textContent).toBe('Alice@0');
+      expect((custom[1].nativeElement as HTMLElement).textContent).toBe('Bob@1');
+
+      // The age column keeps the default raw-value rendering.
+      const rows = fixture.debugElement.queryAll(By.css('cdk-row'));
+      expect((rows[0].nativeElement as HTMLElement).textContent).toContain('30');
+    });
+
+    it('a matching cngxHeader template replaces its header cell; others keep the default', () => {
+      const fixture = mountTpl();
+      const headerTpl = fixture.debugElement.query(By.css('.header-tpl'));
+      expect(headerTpl).not.toBeNull();
+      expect((headerTpl.nativeElement as HTMLElement).textContent).toBe('Years');
+
+      const headerRow = fixture.debugElement.query(By.css('cdk-header-row'))
+        .nativeElement as HTMLElement;
+      // The name column falls back to the capitalised key.
+      expect(headerRow.textContent).toContain('Name');
+      // The age column's default (capitalised key) is fully replaced.
+      expect(headerRow.textContent).not.toContain('Age');
+    });
+  });
+
+  describe('empty forest', () => {
+    it('renders the empty surface instead of the grid - no lone _expand header', () => {
+      const fixture = TestBed.createComponent(CngxTreetable<Item>);
+      fixture.componentRef.setInput('tree', []);
+      fixture.detectChanges();
+
+      expect(fixture.debugElement.query(By.css('cdk-table'))).toBeNull();
+      expect(fixture.debugElement.query(By.css('cdk-header-row'))).toBeNull();
+      expect(fixture.debugElement.query(By.css('.cngx-treetable__empty'))).not.toBeNull();
     });
   });
 

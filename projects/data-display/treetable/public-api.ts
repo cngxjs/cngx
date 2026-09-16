@@ -2,6 +2,7 @@ export { CngxTreetableRow } from './treetable-row.directive';
 export { CngxTreetable } from './treetable.component';
 export {
   provideTreetable,
+  provideTreetableAt,
   CNGX_TREETABLE_CONFIG,
   withHighlightOnHover,
   withCapitaliseHeaders,
@@ -24,6 +25,10 @@ export type {
   TreetableTemplates,
 } from './treetable.token';
 export type {
+  CngxTreetableNode,
+  CngxTreetableFlatNode,
+  CngxTreetableOptions,
+  // Deprecated unprefixed aliases - removal at v1.0.
   FlatNode,
   Node,
   TreetableOptions,

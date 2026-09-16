@@ -7,12 +7,20 @@ import type { FlatTreeNode } from '@cngx/utils';
  *
  * @category data-display/treetable
  */
-export interface Node<T> {
+export interface CngxTreetableNode<T> {
   /** The data value associated with this node. */
   value: T;
   /** Optional child nodes. Absence or an empty array means a leaf node. */
-  children?: Node<T>[];
+  children?: CngxTreetableNode<T>[];
 }
+
+/**
+ * @deprecated Use {@link CngxTreetableNode}. The unprefixed name shadows the
+ * DOM global `Node` on import; the alias is removed at v1.0.
+ *
+ * @category data-display/treetable
+ */
+export type Node<T> = CngxTreetableNode<T>;
 
 /**
  * A flattened representation of a single tree node, produced by {@link flattenTree}.
@@ -35,7 +43,15 @@ export interface Node<T> {
  *
  * @category data-display/treetable
  */
-export type FlatNode<T> = FlatTreeNode<T>;
+export type CngxTreetableFlatNode<T> = FlatTreeNode<T>;
+
+/**
+ * @deprecated Use {@link CngxTreetableFlatNode}. The unprefixed alias is
+ * removed at v1.0.
+ *
+ * @category data-display/treetable
+ */
+export type FlatNode<T> = CngxTreetableFlatNode<T>;
 
 /**
  * Per-instance display options for `CngxTreetable`.
@@ -45,7 +61,7 @@ export type FlatNode<T> = FlatTreeNode<T>;
  *
  * @category data-display/treetable
  */
-export interface TreetableOptions<T> {
+export interface CngxTreetableOptions<T> {
   /**
    * When `true`, rows are visually highlighted on mouse-hover.
    * @defaultValue `false`
@@ -65,6 +81,14 @@ export interface TreetableOptions<T> {
 }
 
 /**
+ * @deprecated Use {@link CngxTreetableOptions}. The unprefixed alias is
+ * removed at v1.0.
+ *
+ * @category data-display/treetable
+ */
+export type TreetableOptions<T> = CngxTreetableOptions<T>;
+
+/**
  * Template context type for {@link CngxCellTpl}.
  *
  * ```html
@@ -78,8 +102,8 @@ export interface TreetableOptions<T> {
  * @category data-display/treetable
  */
 export interface CngxCellTplContext<T> {
-  /** The full {@link FlatNode} for the current row - available as `let-node`. */
-  $implicit: FlatNode<T>;
+  /** The full {@link CngxTreetableFlatNode} for the current row - available as `let-node`. */
+  $implicit: CngxTreetableFlatNode<T>;
   /** The raw cell value for the column (`node.value[column]`) - available as `let-value="value"`. */
   value: unknown;
 }

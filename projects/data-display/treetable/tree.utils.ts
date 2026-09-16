@@ -2,12 +2,12 @@ import {
   filterTree as filterTreeKernel,
   flattenTree as flattenTreeKernel,
 } from '@cngx/utils';
-import type { FlatNode, Node, TreetableOptions } from './models';
+import type { CngxTreetableFlatNode, CngxTreetableNode, CngxTreetableOptions } from './models';
 
 export { isNodeVisible } from '@cngx/utils';
 
 /**
- * Flattens a tree (or forest) into a depth-first ordered array of {@link FlatNode}s.
+ * Flattens a tree (or forest) into a depth-first ordered array of {@link CngxTreetableFlatNode}s.
  *
  * Thin wrapper over the `@cngx/utils` tree kernel: normalizes the
  * single-root-or-forest input, preserves the treetable's public `-` id
@@ -26,9 +26,9 @@ export { isNodeVisible } from '@cngx/utils';
  * @category data-display/treetable
  */
 export function flattenTree<T>(
-  input: Node<T> | Node<T>[],
+  input: CngxTreetableNode<T> | CngxTreetableNode<T>[],
   nodeId?: (node: T, path: readonly number[]) => string,
-): FlatNode<T>[] {
+): CngxTreetableFlatNode<T>[] {
   const roots = Array.isArray(input) ? input : [input];
   const resolveId = nodeId ?? ((_node: T, path: readonly number[]) => path.join('-'));
   return flattenTreeKernel(roots, resolveId, () => '');
@@ -38,6 +38,12 @@ export function flattenTree<T>(
  * Extracts the list of column keys to display from a tree's first node.
  * Only keys with primitive (non-object, or `null`) values are included by default.
  *
+ * First-root-wins is the contract, not an accident: keys the first root lacks
+ * are dropped for **every** row, even when later roots carry them. A
+ * heterogeneous forest that needs the union of keys must pass
+ * `customColumnOrder` - deriving a union here would make the column set
+ * depend on row order, which is worse than an explicit list.
+ *
  * @param input - The tree or forest to inspect.
  * @param options - If `customColumnOrder` is set it is returned as-is.
  * @returns An ordered array of column key strings.
@@ -45,8 +51,8 @@ export function flattenTree<T>(
  * @internal
  */
 export function extractColumns<T>(
-  input: Node<T> | Node<T>[],
-  options?: Pick<TreetableOptions<T>, 'customColumnOrder'>,
+  input: CngxTreetableNode<T> | CngxTreetableNode<T>[],
+  options?: Pick<CngxTreetableOptions<T>, 'customColumnOrder'>,
 ): readonly string[] {
   if (options?.customColumnOrder) {
     return [...options.customColumnOrder] as string[];
@@ -66,7 +72,7 @@ export function extractColumns<T>(
  *
  * @internal
  */
-export function getInitialExpandedIds<T>(nodes: FlatNode<T>[]): ReadonlySet<string> {
+export function getInitialExpandedIds<T>(nodes: CngxTreetableFlatNode<T>[]): ReadonlySet<string> {
   return new Set(nodes.filter((n) => n.hasChildren).map((n) => n.id));
 }
 
@@ -90,8 +96,8 @@ export function capitalise(str: string): string {
  *
  * @category data-display/treetable
  */
-export function filterTree<T>(nodes: Node<T>[], predicate: (value: T) => boolean): Node<T>[] {
-  return filterTreeKernel(nodes, predicate) as Node<T>[];
+export function filterTree<T>(nodes: CngxTreetableNode<T>[], predicate: (value: T) => boolean): CngxTreetableNode<T>[] {
+  return filterTreeKernel(nodes, predicate) as CngxTreetableNode<T>[];
 }
 
 /**
@@ -100,7 +106,7 @@ export function filterTree<T>(nodes: Node<T>[], predicate: (value: T) => boolean
  *
  * @category data-display/treetable
  */
-export function sortTree<T>(nodes: Node<T>[], field: string, direction: 'asc' | 'desc'): Node<T>[] {
+export function sortTree<T>(nodes: CngxTreetableNode<T>[], field: string, direction: 'asc' | 'desc'): CngxTreetableNode<T>[] {
   const toPrimitive = (v: unknown): string => {
     if (v === null || v === undefined || typeof v === 'object') {
       return '';

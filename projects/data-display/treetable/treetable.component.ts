@@ -43,7 +43,7 @@ import {
   CngxSkeletonRowTpl,
 } from './column-template.directive';
 import { resolveCellTpl, resolveHeaderTpl } from './column-template.utils';
-import type { CngxErrorTplContext, FlatNode, Node, TreetableOptions } from './models';
+import type { CngxErrorTplContext, CngxTreetableFlatNode, CngxTreetableNode, CngxTreetableOptions } from './models';
 import {
   capitalise,
   extractColumns,
@@ -172,16 +172,16 @@ import {
 })
 export class CngxTreetable<T = unknown> {
   /**
-   * The tree data to display. Accepts either a single root {@link Node} or an
+   * The tree data to display. Accepts either a single root {@link CngxTreetableNode} or an
    * array of root nodes for a forest.
    */
-  readonly tree = input.required<Node<T> | Node<T>[]>();
+  readonly tree = input.required<CngxTreetableNode<T> | CngxTreetableNode<T>[]>();
 
   /**
    * Per-instance display options that override the application-wide
    * {@link TreetableConfig} provided via {@link provideTreetable}.
    */
-  readonly options = input<TreetableOptions<T>>();
+  readonly options = input<CngxTreetableOptions<T>>();
 
   /**
    * Optional function to derive a stable, domain-meaningful ID from a node's
@@ -249,7 +249,7 @@ export class CngxTreetable<T = unknown> {
    *
    * @defaultValue `node => node.id`
    */
-  readonly trackBy = input<(node: FlatNode<T>) => unknown>((node) => node.id);
+  readonly trackBy = input<(node: CngxTreetableFlatNode<T>) => unknown>((node) => node.id);
 
   /**
    * Bind an async state so the treetable's loading / refreshing / empty /
@@ -286,10 +286,10 @@ export class CngxTreetable<T = unknown> {
   /**
    * Fires once per row activation, whether by mouse click or by keyboard
    * (`Enter`/`Space` while the row holds logical focus). Carries the full
-   * {@link FlatNode} so listeners can read depth, parent chain, raw value,
+   * {@link CngxTreetableFlatNode} so listeners can read depth, parent chain, raw value,
    * or hasChildren without re-resolving the id against the tree.
    */
-  readonly nodeClicked = output<FlatNode<T>>();
+  readonly nodeClicked = output<CngxTreetableFlatNode<T>>();
 
   /**
    * Fires when a node transitions from collapsed to expanded. Pairs with
@@ -297,13 +297,13 @@ export class CngxTreetable<T = unknown> {
    * `nodeExpanded` carries the specific node that flipped, useful when
    * the consumer wants to react to that one row rather than diff the set.
    */
-  readonly nodeExpanded = output<FlatNode<T>>();
+  readonly nodeExpanded = output<CngxTreetableFlatNode<T>>();
 
   /**
    * Fires when a node transitions from expanded to collapsed. Sibling
    * of `nodeExpanded`; same fire-once-per-transition contract.
    */
-  readonly nodeCollapsed = output<FlatNode<T>>();
+  readonly nodeCollapsed = output<CngxTreetableFlatNode<T>>();
 
   /**
    * Fires when a projected error template invokes its `retry` context
@@ -505,7 +505,10 @@ export class CngxTreetable<T = unknown> {
    * - `_select` only appears when `selectionMode !== 'none'` AND
    *   `showCheckboxes` is `true`.
    * - `_expand` always appears as the first non-utility column - it
-   *   carries the indent guide and the expand toggle.
+   *   carries the indent guide and the expand toggle. Unconditional on
+   *   purpose: the table itself only renders while there are visible
+   *   rows (`showsContent()`), so an empty forest never paints a lone
+   *   `_expand` header - the empty surface replaces the grid entirely.
    */
   readonly allColumns = computed(
     () => [
@@ -523,7 +526,7 @@ export class CngxTreetable<T = unknown> {
    * (instance wins over app default) instead of re-implementing the
    * cascade.
    */
-  readonly resolvedOptions = computed<TreetableOptions<T>>(
+  readonly resolvedOptions = computed<CngxTreetableOptions<T>>(
     () => ({
       ...this.config,
       ...this.options(),
@@ -586,7 +589,7 @@ export class CngxTreetable<T = unknown> {
    * `TrackByFunction` wired to the `trackBy` input.
    * Pass directly to the CDK/Material table's `[trackBy]` binding.
    */
-  readonly trackByFn: TrackByFunction<FlatNode<T>> = (_, node) => this.trackBy()(node);
+  readonly trackByFn: TrackByFunction<CngxTreetableFlatNode<T>> = (_, node) => this.trackBy()(node);
 
   /**
    * Logical focus tracker - the id of the row the user last focused.
@@ -741,7 +744,7 @@ export class CngxTreetable<T = unknown> {
    * `expandedIds` (the model's implicit `expandedIdsChange` output fires
    * automatically) and emits exactly one of `nodeExpanded` / `nodeCollapsed`.
    */
-  toggle(node: FlatNode<T>): void {
+  toggle(node: CngxTreetableFlatNode<T>): void {
     let opened = false;
     this.expandedIds.update((current) => {
       const next = new Set(current);
@@ -765,7 +768,7 @@ export class CngxTreetable<T = unknown> {
    * In `'single'` mode the prior selection clears before the new id is added;
    * in `'multi'` mode the toggle is per-id. No-op in `'none'` mode.
    */
-  toggleSelection(node: FlatNode<T>): void {
+  toggleSelection(node: CngxTreetableFlatNode<T>): void {
     const mode = this.selectionMode();
     if (mode === 'none') {
       return;
@@ -835,7 +838,7 @@ export class CngxTreetable<T = unknown> {
    * 2. Emit `nodeClicked` for consumer-level activation handlers.
    * 3. Delegate to `toggleSelection`, which is a no-op in `'none'` mode.
    */
-  handleRowClick(node: FlatNode<T>): void {
+  handleRowClick(node: CngxTreetableFlatNode<T>): void {
     this.focusedNodeId.set(node.id);
     this.nodeClicked.emit(node);
     this.toggleSelection(node);
@@ -847,7 +850,7 @@ export class CngxTreetable<T = unknown> {
    * `focused` output.
    * @internal
    */
-  protected handleRowFocusIn(node: FlatNode<T>): void {
+  protected handleRowFocusIn(node: CngxTreetableFlatNode<T>): void {
     this.focusedNodeId.set(node.id);
   }
 

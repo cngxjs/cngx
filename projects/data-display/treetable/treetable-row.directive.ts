@@ -1,6 +1,6 @@
 import { computed, Directive, ElementRef, inject, input, output } from '@angular/core';
 import { CngxHoverable } from '@cngx/common';
-import type { FlatNode } from './models';
+import type { CngxTreetableFlatNode } from './models';
 
 /**
  * Row directive applied to every rendered table row in `CngxTreetable`.
@@ -40,7 +40,7 @@ import type { FlatNode } from './models';
 })
 export class CngxTreetableRow<T = unknown> {
   /** The flat node this row represents. Required. */
-  readonly node = input.required<FlatNode<T>>();
+  readonly node = input.required<CngxTreetableFlatNode<T>>();
   /**
    * When `true`, the row is highlighted while hovered.
    * Typically driven by `resolvedOptions().highlightRowOnHover`.

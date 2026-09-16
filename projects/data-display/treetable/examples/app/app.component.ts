@@ -9,8 +9,8 @@ import {
   filterTree,
   nodeMatchesSearch,
   sortTree,
-  type Node,
-  type TreetableOptions,
+  type CngxTreetableNode,
+  type CngxTreetableOptions,
 } from '@cngx/data-display/treetable';
 
 // Re-export forces compodocx to ship app.config.ts in the StackBlitz manifest.
@@ -28,7 +28,7 @@ type SortField = 'name' | 'hours' | 'code';
 type SortDirection = 'asc' | 'desc';
 type SelectionMode = 'none' | 'single' | 'multi';
 
-const PROJECT_TREE: Node<ProjectNode>[] = [
+const PROJECT_TREE: CngxTreetableNode<ProjectNode>[] = [
   {
     value: { code: 'PROJ-100', name: 'Mobile rewrite', status: 'active', priority: 'high', hours: 240 },
     children: [
@@ -84,7 +84,7 @@ export class AppComponent {
 
   protected readonly nodeId = (value: ProjectNode): string => value.code;
 
-  protected readonly options: TreetableOptions<ProjectNode> = {
+  protected readonly options: CngxTreetableOptions<ProjectNode> = {
     customColumnOrder: ['name', 'status', 'priority', 'hours'],
     highlightRowOnHover: true,
   };
@@ -93,7 +93,7 @@ export class AppComponent {
   // the consumer shapes. Each transform is its own computed; the [tree]
   // binding consumes the final stage of the cascade.
 
-  protected readonly filteredTree = computed<Node<ProjectNode>[]>(() => {
+  protected readonly filteredTree = computed<CngxTreetableNode<ProjectNode>[]>(() => {
     const term = this.search().trim();
     if (!term) {
       return PROJECT_TREE;
@@ -101,13 +101,13 @@ export class AppComponent {
     return filterTree(PROJECT_TREE, (value) => nodeMatchesSearch(value, term));
   });
 
-  protected readonly sortedTree = computed<Node<ProjectNode>[]>(() =>
+  protected readonly sortedTree = computed<CngxTreetableNode<ProjectNode>[]>(() =>
     sortTree(this.filteredTree(), this.sortField(), this.sortDir()),
   );
 
   protected readonly allIds = computed<ReadonlySet<string>>(() => {
     const ids = new Set<string>();
-    const visit = (nodes: Node<ProjectNode>[]): void => {
+    const visit = (nodes: CngxTreetableNode<ProjectNode>[]): void => {
       for (const node of nodes) {
         ids.add(node.value.code);
         if (node.children) {
