@@ -37,13 +37,18 @@ import { type CngxSpeak } from '@cngx/common';
   host: {
     class: 'cngx-speak-button',
     '[class.cngx-speak-button--speaking]': 'speakRef().speaking()',
+    // Speech synthesis is a hard capability - with no engine the button can
+    // only ever be a dead control, so it leaves the layout and the a11y tree
+    // entirely rather than sit disabled. `supported` is set once at
+    // construction, so this gate never flips at runtime.
+    '[hidden]': '!speakRef().supported',
   },
   styleUrls: ['./speak-button.css'],
   template: `
     <button
       type="button"
       class="cngx-speak-button__btn"
-      [attr.aria-label]="speakRef().speaking() ? 'Stop speaking' : 'Read aloud'"
+      [attr.aria-label]="speakRef().speaking() ? stopLabel() : readAloudLabel()"
       (click)="speakRef().toggle()"
     >
       @if (speakRef().speaking()) {
@@ -77,4 +82,17 @@ import { type CngxSpeak } from '@cngx/common';
 export class CngxSpeakButton {
   /** The `CngxSpeak` directive instance to connect to. */
   readonly speakRef = input.required<CngxSpeak>();
+
+  /**
+   * Accessible label while idle - the action the button offers. English by
+   * default; supply the consumer locale to override.
+   */
+  readonly readAloudLabel = input('Read aloud');
+
+  /**
+   * Accessible label while speaking - the action the button offers to
+   * interrupt playback. English by default; supply the consumer locale to
+   * override.
+   */
+  readonly stopLabel = input('Stop speaking');
 }
