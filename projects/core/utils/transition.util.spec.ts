@@ -146,6 +146,24 @@ describe('onTransitionDone', () => {
     expect(onDone).toHaveBeenCalledTimes(1);
   });
 
+  it('ignores transitioncancel - the fallback timer still settles the wait', () => {
+    vi.useFakeTimers();
+    stubComputedStyle('0.2s', 'opacity');
+    const el = document.createElement('div');
+    const onDone = vi.fn();
+
+    onTransitionDone(el, onDone);
+
+    // An interrupted transition fires transitioncancel instead of
+    // transitionend. The util does not listen for it, so the event neither
+    // completes the wait early nor leaks it - the fallback timer settles.
+    el.dispatchEvent(new Event('transitioncancel'));
+    expect(onDone).not.toHaveBeenCalled();
+
+    vi.advanceTimersByTime(250);
+    expect(onDone).toHaveBeenCalledTimes(1);
+  });
+
   it('cycles shorter duration/delay lists against the property list like CSS', () => {
     vi.useFakeTimers();
     // Single duration/delay value applies to both properties per CSS
