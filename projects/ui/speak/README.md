@@ -35,7 +35,7 @@ export class ExampleComponent {
 `CngxSpeakButton` is a ready-made speaker button that connects to a `CngxSpeak` directive via an explicit `[speakRef]` input. It provides:
 
 - **Speaker and stop icons** - Built-in SVGs that toggle based on speaking state
-- **Accessible labels** - ARIA labels that reflect the current state ("Read aloud" / "Stop speaking")
+- **Accessible labels** - ARIA labels that reflect the current state, English by default (`"Read aloud"` / `"Stop speaking"`) and overridable per locale via `[readAloudLabel]` / `[stopLabel]`
 - **Cognitive accessibility** - Part of CngxSpeak, targeting dyslexia and reading ease
 - **Full theming control** - CSS custom properties for styling, Material theme SCSS integration
 - **No ancestor injection** - Explicit `[speakRef]` wiring prevents hidden dependencies
@@ -44,7 +44,8 @@ export class ExampleComponent {
 
 `CngxSpeakButton` is designed for cognitive accessibility:
 
-- **ARIA labels:** Button label dynamically changes between "Read aloud" (idle) and "Stop speaking" (active).
+- **ARIA labels:** Button label dynamically changes between "Read aloud" (idle) and "Stop speaking" (active); both are overridable via `[readAloudLabel]` / `[stopLabel]`.
+- **Capability gating:** When `CngxSpeak` reports no speech-synthesis engine (`supported === false`), the button hides itself (`hidden`) rather than render a dead control, keeping it out of the layout and the accessibility tree.
 - **Icon semantics:** SVG icons are marked `aria-hidden="true"` - the text label carries the meaning.
 - **CngxSpeak integration:** The underlying `CngxSpeak` directive handles the speech synthesis API, managing pause/resume, focus restoration, and `prefers-reduced-motion` respect.
 - **Cognitive focus:** Targets users with dyslexia, ADHD, and reading difficulties by providing auditory reinforcement alongside visual text.
