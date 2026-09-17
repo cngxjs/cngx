@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxFormBridge: signal forms drop the atom into cngx form field',
+  title: 'CngxFormField: drop a cngx atom into Signal Forms',
   subtitle: 'You write <code>&lt;cngx-form-field [field]="f.payment"&gt;&lt;cngx-radio-group ...&gt;</code> and that is it. The form-field finds the atom on its own, projects ARIA onto the host, and shows validator messages through <code>&lt;cngx-field-errors&gt;</code>. Three fields are required (terms, payment, channels). Either tab into and out of a field to surface its error, or click <strong>Validate</strong> below to mark every required field touched at once. Pick a value (or check the box / select a chip) to see the error clear instantly.',
   level: 'organism',
   audience: ['dev'],

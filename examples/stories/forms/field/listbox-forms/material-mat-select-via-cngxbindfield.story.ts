@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxListboxFieldBridge: material mat select via cngxbindfield',
+  title: 'CngxBindField: bridge a Material mat-select',
   subtitle: 'Universal bridge pattern: <code>[cngxBindField]</code> on any Material / native / custom control. All form-field state (ID, empty, focused, disabled, errorState) derives from the bound field via the presenter - no control-specific bridge needed.',
   description: 'CngxListbox integrated into <cngx-form-field> via CngxListboxFieldBridge, plus the universal CngxBindField bridge for any other control (mat-select, native inputs, custom controls).',
   level: 'molecule',

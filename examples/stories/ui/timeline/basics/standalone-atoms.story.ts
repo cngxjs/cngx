@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Timeline atoms without the organism',
+  title: 'CngxTimelineItem: atoms without the organism',
   subtitle:
     'A row is <code>&lt;cngx-timeline-item&gt;</code> and nothing else. Drop it into your own layout, or go one level down and place the marker and the rail yourself.',
   description:

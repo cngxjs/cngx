@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxInputClear: copy to clipboard',
+  title: 'CngxCopyValue: copy to clipboard',
   subtitle: '<code>[cngxCopyValue]</code> copies text on click. The <code>copied()</code> signal stays <code>true</code> for 2 seconds.',
   description: 'Small headless behaviors: clear button, clipboard copy, and display formatting.',
   level: 'atom',
