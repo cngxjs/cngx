@@ -12,6 +12,7 @@ Signal-driven popover, tooltip, and popover panel components built on the native
 - WCAG 1.4.13 compliant tooltips (dismissable, hoverable, persistent)
 - Material theme SCSS with M3 tokens
 - Exclusive mode (one popover at a time by default)
+- Dismissal defaults: `mode` is `'manual'` (you control open/close; `'auto'` enables native light-dismiss), `[closeOnEscape]` is `true`, and `[closeOnOutsideClick]` (outside-pointer dismiss) is `false` - opt in when you want click-away to close
 
 ## Quick Start
 
