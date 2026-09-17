@@ -197,6 +197,7 @@
       cursor: pointer;
       padding: 0 0.25rem;
       font-size: var(--cngx-select-caret-size, 1em);
+      line-height: 0;
     }
     .cngx-typeahead__clear {
       color: var(--cngx-select-clear-color, currentColor);

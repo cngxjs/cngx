@@ -242,6 +242,7 @@
       align-items: center;
       color: var(--cngx-select-caret-color, inherit);
       font-size: var(--cngx-select-caret-size, 1em);
+      line-height: 0;
       margin-inline-start: auto;
     }
   }
