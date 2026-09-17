@@ -22,7 +22,7 @@ export const STORY: DemoSpec = {
     'CngxPopoverArrow',
   ],
   template: `
-  <div class="demo-popover-stage" style="display:flex;gap:48px;flex-wrap:wrap">
+  <div class="demo-popover-stage" style="display:flex;gap:48px;flex-wrap:wrap;padding-left:400px">
     @for (p of ['bottom', 'top', 'left', 'right']; track p) {
       <div>
         <button type="button" [cngxPopoverTrigger]="pop.popover" (click)="pop.popover.toggle()" class="chip">{{ p }}</button>
