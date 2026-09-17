@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Accordion skin: Timeline',
+  title: 'CngxAccordionGroup: Timeline',
   subtitle:
     'The <code>[skin]="\'timeline\'"</code> skin draws a vertical rail with a node per header. Set <code>[multi]="false"</code> so the accordion reads as a single walkthrough - one step open at a time.',
   description:

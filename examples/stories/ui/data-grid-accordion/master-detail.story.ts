@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Data-grid accordion: Master-detail',
+  title: 'CngxDataGridAccordion: Master-detail',
   subtitle:
     'The <code>[skin]="\'master-detail\'"</code> skin reads an order summary per row and expands into its line-item detail. The open row stays primary-tinted as the context for the sub-table below it.',
   description:

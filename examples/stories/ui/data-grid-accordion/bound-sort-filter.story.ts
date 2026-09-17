@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Data-grid accordion: Bound sort + filter',
+  title: 'CngxDataGridAccordion: Bound sort + filter',
   subtitle:
     'The <strong>binding</strong> path, for a consumer that already owns its sort and filter state. No header directives: the grid takes controlled <code>[sortActive]</code> / <code>[sortDirection]</code> and a typed <code>[filterPredicate]</code>, and the consumer drives order and visibility from its own signals. The group still only publishes state; the same <code>computed()</code> derives the rows.',
   description:

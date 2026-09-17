@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Data-grid accordion: Sortable ledger',
+  title: 'CngxDataGridAccordion: Sortable ledger',
   subtitle:
     'The <strong>declarative</strong> path. Each head is sortable with one <code>cngxDgaSortHeader="field"</code> attribute and no <code>[cngxSortRef]</code> wiring, a <code>&lt;cngx-dga-filter&gt;</code> shell (a labelled search box) two-way-binds the filter term, and a <code>[cngxDgaCount]</code> live region announces the visible count. The group only publishes state - the consumer derives the ordered, filtered rows in one <code>computed()</code> and owns the <code>@for</code>.',
   description:

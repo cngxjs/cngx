@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Accordion skin: Plus / minus',
+  title: 'CngxAccordionGroup: Plus / minus',
   subtitle:
     'The <code>[skin]="\'plus-minus\'"</code> skin swaps the chevron for a boxed +/- marker that flips on open. Pure CSS - no icon slot, no template.',
   description:

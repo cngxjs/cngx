@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Accordion skin: Lux',
+  title: 'CngxAccordionGroup: Lux',
   subtitle:
     'The <code>[skin]="\'lux\'"</code> skin: generous padding, a muted header colour, and a wide title-to-chevron gap for an unhurried, premium feel. Subtitle only.',
   description:

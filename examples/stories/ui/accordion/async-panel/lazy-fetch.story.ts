@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Accordion panel: Lazy fetch per panel',
+  title: 'CngxAccordionGroup: Lazy fetch per panel',
   subtitle:
     'Each panel is its own async boundary. Opening a section starts a fetch, the panel shows a skeleton via <code>*cngxAccordionItemBusy</code>, then resolves to content or an error with a retry button via <code>*cngxAccordionItemError</code>.',
   description:

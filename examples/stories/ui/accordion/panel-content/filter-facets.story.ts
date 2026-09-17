@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Accordion panel: Filter facets',
+  title: 'CngxAccordionGroup: Filter facets',
   subtitle:
     'Each panel body is an ordinary form fieldset with a <code>&lt;legend&gt;</code> and labelled native controls. The accordion projects it verbatim and never inspects the form.',
   description:

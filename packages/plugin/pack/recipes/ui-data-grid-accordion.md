@@ -1,10 +1,10 @@
 ---
-title: "Data-grid accordion: Lazy-loading rows"
+title: "CngxDataGridAccordion: Lazy-loading rows"
 whenToUse: "Each row&apos;s [state] is driven by a per-row manual async state. There is no open output on the row, so the fetch is kicked from the group&apos;s (openIdsChange): when a row id first enters the open set and its state is still idle, the fetch runs. The region binds aria-busy while loading and un-hides itself in the error state so the role=\"alert\" is announced even from a collapsed row. The third row always fails so the error + retry path is visible."
 symbols: [CngxDataGridAccordion, CngxDataGridRow, CngxDgaRowBusy, CngxDgaRowError]
 ---
 
-# Data-grid accordion: Lazy-loading rows
+# CngxDataGridAccordion: Lazy-loading rows
 
 Each row&apos;s [state] is driven by a per-row manual async state. There is no open output on the row, so the fetch is kicked from the group&apos;s (openIdsChange): when a row id first enters the open set and its state is still idle, the fetch runs. The region binds aria-busy while loading and un-hides itself in the error state so the role="alert" is announced even from a collapsed row. The third row always fails so the error + retry path is visible.
 

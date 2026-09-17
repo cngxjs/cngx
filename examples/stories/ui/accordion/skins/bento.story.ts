@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Accordion skin: Bento',
+  title: 'CngxAccordionGroup: Bento',
   subtitle:
     'The <code>[skin]="\'bento\'"</code> skin lays items out as full-width tile cards - a glyph in the leading slot, a status pill in the meta slot, the chevron on the outer edge. No per-item markup.',
   description:

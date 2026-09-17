@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Accordion skin: Severity spine',
+  title: 'CngxAccordionGroup: Severity spine',
   subtitle:
     'The <code>[skin]="\'severity-spine\'"</code> skin runs a full-height colour spine down the reserved leading edge, revealed when the row opens. Set the severity per item with the <code>[severity]</code> input (<code>error</code> / <code>warning</code> / <code>info</code>); the leading slot holds the priority label and the meta slot the ticket + SLA.',
   description:

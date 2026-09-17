@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Accordion panel: Spec list',
+  title: 'CngxAccordionGroup: Spec list',
   subtitle:
     'A panel body as a description list (<code>&lt;dl&gt;</code>) of term/value pairs - the natural markup for a product spec sheet folded behind a disclosure.',
   description:

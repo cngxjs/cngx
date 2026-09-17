@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Data-grid accordion: Lazy-loading rows',
+  title: 'CngxDataGridAccordion: Lazy-loading rows',
   subtitle:
     'Each row is its own async boundary. Expanding a row starts a fetch, the detail region shows a skeleton via <code>*cngxDgaRowBusy</code>, then resolves to content or a <code>role="alert"</code> error with a retry button via <code>*cngxDgaRowError</code> - the same busy/error surface the accordion item ships.',
   description:

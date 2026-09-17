@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Data-grid accordion: Sticky head',
+  title: 'CngxDataGridAccordion: Sticky head',
   subtitle:
     'Bind <code>[maxBlockSize]</code> to cap the grid: it becomes its own vertical scrollport, the column head pins to the top and the footer to the bottom, and only the rows scroll between them. No <code>[cngxStickyHeader]</code> - the group is the scrollport, so it pins natively.',
   description:
