@@ -19,9 +19,9 @@ export const STORY: DemoSpec = {
   template: `
   <div class="demo-form">
     <div class="demo-field">
-      <label class="demo-label">API Token</label>
+      <label class="demo-label" for="cp-token">API Token</label>
       <div style="display:flex;gap:8px;align-items:center">
-        <input #tokenInput readonly [value]="token()" class="demo-input demo-mono" style="flex:1" />
+        <input id="cp-token" #tokenInput readonly [value]="token()" class="demo-input demo-mono" style="flex:1" />
         <button type="button" [cngxCopyValue] [source]="tokenInput" #cp="cngxCopyValue" class="chip">
           {{ cp.copied() ? 'Copied!' : 'Copy' }}
         </button>
