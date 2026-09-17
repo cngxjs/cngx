@@ -106,6 +106,12 @@ describe('CngxPaginatorPageSize', () => {
     expect(paginate.pageIndex()).toBe(0);
   });
 
+  test('selecting a size returns focus to the trigger so the closing panel never holds focus', async () => {
+    const { fixture } = await setup();
+    await pick(fixture, '20');
+    expect(document.activeElement).toBe(trigger(fixture));
+  });
+
   test('disables the trigger and does not change the size while busy', async () => {
     const { fixture, host, paginate } = await setup();
     const busy = createManualState<unknown>();

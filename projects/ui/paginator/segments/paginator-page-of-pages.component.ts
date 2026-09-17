@@ -36,6 +36,7 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
   imports: [CngxListbox, CngxListboxTrigger, CngxOption, CngxPopover, CngxPopoverTrigger],
   template: `
     <button
+      #trigger
       type="button"
       class="cngx-paginator__button cngx-paginator__select"
       [cngxListboxTrigger]="lb"
@@ -58,7 +59,7 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
         tabindex="0"
         [label]="config.ariaLabels.pageOfPages"
         [value]="host.pageIndex() + 1"
-        (valueChange)="onSelect($event)"
+        (valueChange)="onSelect($event, pop, trigger)"
         #lb="cngxListbox"
       >
         @for (page of pages(); track page) {
@@ -84,9 +85,21 @@ export class CngxPaginatorPageOfPages {
     { equal: (a, b) => a.length === b.length },
   );
 
-  protected onSelect(value: number | undefined): void {
+  /**
+   * Jump to the picked page and close the dropdown. Focus returns to the
+   * trigger *before* `hide()` so the panel is never `aria-hidden` while it
+   * still owns focus (the trigger survives the selection, unlike the overflow
+   * gap in {@link CngxPaginatorPages}).
+   */
+  protected onSelect(
+    value: number | undefined,
+    popover: { hide(): void },
+    trigger: HTMLElement,
+  ): void {
     if (typeof value === 'number') {
       this.host.setPage(value - 1);
+      trigger.focus();
+      popover.hide();
     }
   }
 }
