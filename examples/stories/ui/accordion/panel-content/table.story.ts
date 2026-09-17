@@ -27,8 +27,8 @@ export const STORY: DemoSpec = {
         </caption>
         <thead>
           <tr>
-            <th scope="col" style="text-align:left; border-bottom:1px solid #e5e7eb; padding:.4rem">Region</th>
-            <th scope="col" style="text-align:right; border-bottom:1px solid #e5e7eb; padding:.4rem">Revenue</th>
+            <th scope="col" style="text-align:left; border-bottom:1px solid var(--cngx-color-border, #e5e7eb); padding:.4rem">Region</th>
+            <th scope="col" style="text-align:right; border-bottom:1px solid var(--cngx-color-border, #e5e7eb); padding:.4rem">Revenue</th>
           </tr>
         </thead>
         <tbody>
@@ -46,8 +46,8 @@ export const STORY: DemoSpec = {
         </caption>
         <thead>
           <tr>
-            <th scope="col" style="text-align:left; border-bottom:1px solid #e5e7eb; padding:.4rem">Team</th>
-            <th scope="col" style="text-align:right; border-bottom:1px solid #e5e7eb; padding:.4rem">People</th>
+            <th scope="col" style="text-align:left; border-bottom:1px solid var(--cngx-color-border, #e5e7eb); padding:.4rem">Team</th>
+            <th scope="col" style="text-align:right; border-bottom:1px solid var(--cngx-color-border, #e5e7eb); padding:.4rem">People</th>
           </tr>
         </thead>
         <tbody>
