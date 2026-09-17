@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxTreeController: Basic expand collapse',
+  title: 'createTreeController: Basic expand collapse',
   subtitle: 'Call <code>createTreeController({ nodes, nodeIdFn })</code> in an injection context. Bind <code>ctrl.visibleNodes()</code> to <code>@for</code> and call <code>ctrl.toggle(id)</code> from a twisty button.',
   description: 'Signal-native tree controller. Reads a <code>Signal&lt;CngxTreeNode&lt;T&gt;[]&gt;</code> source and produces flat / visible projections plus an expansion-set; every accessor is a <code>computed()</code> or pure fn, no <code>effect()</code>, no subscriptions. <code>nodeIdFn</code> is required on purpose: the controller hands its ids out to <code>isExpanded(id)</code>, selection memoization, and the AD-items adapter, so a non-stable id silently breaks every downstream cache the moment the tree is sorted or filtered. The library forces consumers to think about identity at construction so that whole class of heisenbugs disappears.',
   level: 'molecule',

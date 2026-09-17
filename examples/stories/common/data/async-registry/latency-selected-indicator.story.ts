@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Latency-selected indicator: spinner vs skeleton from observed duration',
+  title: 'injectLatencyProbe: Spinner vs skeleton from observed duration',
   subtitle:
     'An app-shell indicator reads <code>injectLatencyProbe()</code> over <code>CngxAsyncRegistry</code> and picks a spinner (last aggregate load was fast) or a skeleton (last aggregate load was slow) by comparing <code>lastDuration()</code> against <code>CNGX_LOADING_CONFIG.spinnerVsSkeletonCutoff</code>. <code>createVisibilityGate</code> suppresses the flash on sub-threshold waits.',
   description:
@@ -10,6 +10,7 @@ export const STORY: DemoSpec = {
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
   focus: ['async-state', 'composition', 'a11y-pattern'],
+  apiComponents: ['injectLatencyProbe', 'CngxAsyncRegistry'],
   moduleImports: [
     "import { computed, inject, linkedSignal, signal, untracked } from '@angular/core';",
     "import { createVisibilityGate, injectLoadingConfig } from '@cngx/core/utils';",

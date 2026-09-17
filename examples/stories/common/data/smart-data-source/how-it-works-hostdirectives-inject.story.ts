@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'How it works: hostDirectives + inject()',
+  title: 'CngxSmartDataSource: hostDirectives + inject()',
   subtitle: 'The key is calling <code>injectSmartDataSource()</code> inside a component whose host element has <code>[cngxSort]</code> / <code>[cngxFilter]</code> as <code>hostDirectives</code>. The factory uses optional <code>inject()</code> to auto-discover them.',
   level: 'molecule',
   audience: ['dev'],

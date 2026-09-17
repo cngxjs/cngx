@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxRecycler: Content-visibility CSS-only',
+  title: 'cngx-content-visibility: CSS-only off-screen skipping',
   subtitle: 'Zero-JS optimization via <code>content-visibility: auto</code>. The browser skips rendering of off-screen items. Complementary to the recycler; can be used standalone or together. Import the SCSS mixin from <code>@cngx/common/data</code>.',
   description: 'Zero-JS virtualization via the cngx-content-visibility SCSS mixin. Off-screen rows <em>stay in</em> the DOM but skip layout and paint, so the recycler is optional. Use alone or alongside injectRecycler().',
   level: 'atom',
