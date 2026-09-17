@@ -1165,6 +1165,21 @@
     min-width: 0;
   }
 
+  /* In-trigger chips collapse to a single control line so a one-line chip
+     row measures the same as a bare input / text select at every density:
+     the chip sheds its own block padding and floors to the control line
+     box (--cngx-line-height-base). Chips shrink to fit rather than push
+     the trigger taller; a wrapped strip still grows by whole lines. The
+     :has() selector re-states the interactive-chip touch floor CngxChip
+     applies to removable chips so it keeps winning under a coarse pointer
+     via max(line-box, --cngx-target-min). Scoped to the trigger strip - a
+     standalone <cngx-chip> keeps its intrinsic size. */
+  .cngx-select__chip-list cngx-chip,
+  .cngx-select__chip-list cngx-chip:has(.cngx-chip__remove) {
+    padding-block: 0;
+    min-block-size: max(calc(var(--cngx-line-height-base, 1.5) * 1rem), var(--cngx-target-min, 0px));
+  }
+
   .cngx-select__chip-list[data-overflow='scroll-x'] {
     flex-wrap: nowrap;
     overflow-x: auto;
