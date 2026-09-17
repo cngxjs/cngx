@@ -2710,22 +2710,22 @@ pre.code-block code {
 .demo-arrow-glyph[data-edge='bottom'] {
   top: -10px;
   left: var(--offset, 50%);
-  transform: translateX(-50%) rotate(180deg);
+  transform: translateX(-50%);
 }
 .demo-arrow-glyph[data-edge='top'] {
   bottom: -10px;
   left: var(--offset, 50%);
-  transform: translateX(-50%);
+  transform: translateX(-50%) rotate(180deg);
 }
 .demo-arrow-glyph[data-edge='right'] {
   left: -10px;
   top: var(--offset, 50%);
-  transform: translateY(-50%) rotate(90deg);
+  transform: translateY(-50%) rotate(-90deg);
 }
 .demo-arrow-glyph[data-edge='left'] {
   right: -10px;
   top: var(--offset, 50%);
-  transform: translateY(-50%) rotate(-90deg);
+  transform: translateY(-50%) rotate(90deg);
 }
 
 // Demo-only surface for bare `[cngxPopover]` content. The directive ships
