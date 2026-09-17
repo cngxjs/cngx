@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxBreadcrumb: Custom separator',
+  title: 'CngxBreadcrumbSeparator: Custom separator',
   subtitle:
     'The separator is a slot - any glyph works. Here a chevron replaces the slash; it stays <code>aria-hidden</code>.',
   description:

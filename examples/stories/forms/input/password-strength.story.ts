@@ -8,7 +8,7 @@ export const STORY: DemoSpec = {
   audience: ['dev', 'a11y'],
   artifact: 'standalone',
   focus: ['behavior', 'composition'],
-  apiComponents: ['CngxInput', 'CngxPasswordStrength', 'CngxPasswordStrengthMeter'],
+  apiComponents: ['CngxPasswordStrength', 'CngxInput', 'CngxPasswordStrengthMeter'],
   moduleImports: [
     "import { CngxInput, CngxPasswordStrength } from '@cngx/forms/input';",
     "import { CngxPasswordStrengthMeter } from '@cngx/common/display';",

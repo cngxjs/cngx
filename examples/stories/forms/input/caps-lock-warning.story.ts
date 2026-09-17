@@ -8,7 +8,7 @@ export const STORY: DemoSpec = {
   audience: ['dev', 'a11y'],
   artifact: 'standalone',
   focus: ['behavior', 'a11y-pattern'],
-  apiComponents: ['CngxInput', 'CngxCapsLock'],
+  apiComponents: ['CngxCapsLock', 'CngxInput'],
   moduleImports: ["import { CngxInput, CngxCapsLock } from '@cngx/forms/input';"],
   imports: ['CngxInput', 'CngxCapsLock'],
   template: `  <div class="demo-field" style="max-inline-size:24rem">

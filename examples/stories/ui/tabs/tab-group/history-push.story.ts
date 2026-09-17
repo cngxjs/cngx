@@ -10,7 +10,7 @@ export const STORY: DemoSpec = {
   audience: ['dev'],
   artifact: 'standalone',
   focus: ['integration', 'behavior'],
-  apiComponents: ['CngxTabGroup', 'CngxTab', 'CngxTabContent', 'CngxTabsFragmentSync'],
+  apiComponents: ['CngxTabsFragmentSync', 'CngxTabGroup', 'CngxTab', 'CngxTabContent'],
   moduleImports: [
     "import { CngxTab, CngxTabContent, CngxTabsFragmentSync } from '@cngx/common/tabs';",
     "import { CngxTabGroup } from '@cngx/ui/tabs';",

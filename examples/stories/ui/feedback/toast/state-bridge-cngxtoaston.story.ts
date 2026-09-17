@@ -11,12 +11,7 @@ export const STORY: DemoSpec = {
   references: [
     { label: 'WAI-ARIA APG - Alert', href: 'https://www.w3.org/WAI/ARIA/apg/patterns/alert/' },
   ],
-  apiComponents: [
-    'CngxToastOutlet',
-    'CngxToastOn',
-    'CngxToaster',
-    'CngxToast',
-  ],
+  apiComponents: ['CngxToastOn', 'CngxToastOutlet', 'CngxToaster', 'CngxToast'],
   moduleImports: [
     'import { CngxToastOn } from \'@cngx/ui/feedback\';',
     'import { createManualState } from \'@cngx/common/data\';',

@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxBreadcrumb: app-wide labels via provideBreadcrumbConfig',
+  title: 'CngxBreadcrumbBar: app-wide labels via provideBreadcrumbConfig',
   subtitle:
     'Set the breadcrumb landmark name and the router <code>dataKey</code> once for a whole sub-tree with <code>provideBreadcrumbConfigAt(...)</code> (or <code>provideBreadcrumbConfig(...)</code> at <code>bootstrapApplication</code>). A per-instance <code>[label]</code> still wins.',
   description:

@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxSelect: assemble it yourself atoms element components',
+  title: 'CngxSelectOption: assemble it yourself atoms element components',
   subtitle: 'Composing <code>&lt;cngx-option&gt;</code> / <code>&lt;cngx-optgroup&gt;</code> / <code>&lt;cngx-select-divider&gt;</code> directly inside <code>&lt;cngx-select&gt;</code> <strong>does not work</strong> - content-projection scoping puts the projected children in <code>cngx-select</code>\'s injector tree, not the inner listbox\'s, so <code>CngxActiveDescendant</code> registration fails and the panel opens empty. They <strong>do work</strong> when you compose the listbox yourself using the Level-2 atoms (<code>CngxPopover</code> + <code>CngxListboxTrigger</code> + <code>CngxListbox</code>), because the options sit inside the listbox\'s own content-children scope.',
   description: 'CngxSelect - native-feeling single-select dropdown with template overrides, optgroups, clearable, loading, commit-action, and signal-/reactive-forms bridges.',
   level: 'organism',

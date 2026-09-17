@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxBreadcrumb: router dataKey via provideBreadcrumbConfig',
+  title: 'CngxBreadcrumbBar: router dataKey via provideBreadcrumbConfig',
   subtitle:
     'Set the route-data key the router-sync directives read once for a whole sub-tree with <code>provideBreadcrumbConfigAt(withBreadcrumbDataKey(...))</code> (or <code>provideBreadcrumbConfig(...)</code> at <code>bootstrapApplication</code>). No per-instance <code>[dataKey]</code>: the bar below reads the cascade value.',
   description:

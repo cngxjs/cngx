@@ -8,10 +8,7 @@ export const STORY: DemoSpec = {
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
   focus: ['composition', 'visual-variants'],
-  apiComponents: [
-    'CngxRadioGroup',
-    'CngxRadio',
-  ],
+  apiComponents: ['CngxRadio', 'CngxRadioGroup'],
   references: [
     { label: 'WAI-ARIA APG: Radio Group', href: 'https://www.w3.org/WAI/ARIA/apg/patterns/radio/' },
     { label: 'WCAG 1.1.1 Non-text Content', href: 'https://www.w3.org/WAI/WCAG21/Understanding/non-text-content.html' },

@@ -139,12 +139,12 @@
     {
       "artifact": "pack/recipes/ui-feedback-async-container.md",
       "source": "examples/stories/ui/feedback/async-container/cngxasync-one-line.story.ts",
-      "contentHash": "sha256:8b069979b13353b89a8a404e1ab21dff5a0ac30739d8944775b5d9cc079307ec"
+      "contentHash": "sha256:b57b2205f7da152baf1004cd0d04bd6be87e8de33986b943429bb5116c1e0d75"
     },
     {
       "artifact": "pack/recipes/ui-feedback-toast.md",
       "source": "examples/stories/ui/feedback/toast/state-bridge-cngxtoaston.story.ts",
-      "contentHash": "sha256:8c0af1360f00cda038c663af7949be50a0be423cd3f574a5c26cc3d547e55531"
+      "contentHash": "sha256:89464bd0bdc0044d83088fab67cee9a1f6fafc79d0eb3cce7dfd75c10f5f79eb"
     },
     {
       "artifact": "pack/recipes/ui-mat-tabs-instrumentation.md",

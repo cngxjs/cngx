@@ -1,7 +1,7 @@
 ---
 title: "CngxAsync: one line"
 whenToUse: "Bare-minimum binding: *cngxAsync=\"state; let data\" on a single element. No skeleton, no error template, just content rendered when the state succeeds."
-symbols: [CngxAsyncContainer, CngxAsync]
+symbols: [CngxAsync, CngxAsyncContainer]
 ---
 
 # CngxAsync: one line
@@ -10,8 +10,8 @@ Bare-minimum binding: *cngxAsync="state; let data" on a single element. No skele
 
 ## Symbols
 
-- `CngxAsyncContainer`
 - `CngxAsync`
+- `CngxAsyncContainer`
 
 ## Setup
 

@@ -10,7 +10,7 @@ export const STORY: DemoSpec = {
   audience: ['dev', 'design'],
   artifact: 'standalone',
   focus: ['composition'],
-  apiComponents: ['CngxTimelineOpposite', 'CngxTimeline'],
+  apiComponents: ['CngxTimeline', 'CngxTimelineOpposite'],
   moduleImports: [
     "import { CngxTimeline } from '@cngx/ui/timeline';",
     "import { CngxTimelineItem, CngxTimelineItemTpl, CngxTimelineOpposite } from '@cngx/common/timeline';",

@@ -10,7 +10,7 @@ export const STORY: DemoSpec = {
   audience: ['dev', 'a11y'],
   artifact: 'standalone',
   focus: ['async-state', 'a11y-pattern'],
-  apiComponents: ['CngxStepperNext', 'CngxAsyncStatus'],
+  apiComponents: ['CngxStepperFooter', 'CngxStepperNext', 'CngxAsyncStatus'],
   moduleImports: [
     "import { CngxStep, CngxStepContent, CngxStepperPrevious, CngxStepperNext } from '@cngx/common/stepper';",
     "import { CngxAsyncStatus } from '@cngx/common/interactive';",

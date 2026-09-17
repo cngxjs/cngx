@@ -11,10 +11,7 @@ export const STORY: DemoSpec = {
   references: [
     { label: 'WAI-ARIA APG - Alert', href: 'https://www.w3.org/WAI/ARIA/apg/patterns/alert/' },
   ],
-  apiComponents: [
-    'CngxBannerOutlet',
-    'CngxBanner',
-  ],
+  apiComponents: ['CngxBanner', 'CngxBannerOutlet'],
   moduleImports: [
     'import { CngxBanner } from \'@cngx/ui/feedback\';',
   ],
