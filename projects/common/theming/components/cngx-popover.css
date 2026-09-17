@@ -1,0 +1,24 @@
+/**
+ * @overview
+ * Native `[popover]` UA-chrome reset for bare `[cngxPopover]` hosts.
+ *
+ * A `CngxPopover` host is a native popover element (`[attr.popover]`), so the
+ * browser paints its UA chrome - a `3px solid` border, a `Canvas` background
+ * and `0.25em` padding. `CngxPopoverPanel` and the select panels paint their
+ * own surface, but a *bare* popover (a menu placed directly in `[cngxPopover]`,
+ * e.g. a headless context menu) inherits that UA chrome and reads as an
+ * unstyled black-bordered box.
+ *
+ * Neutralise the chrome on hosts that carry no surface of their own; the
+ * styled surfaces are excluded by class so they keep their own paint. Only the
+ * chrome is reset - positioning (`inset`, `position-anchor`, the host's inline
+ * `margin`) is owned by `CngxPopover` and left untouched.
+ */
+@layer cngx.components {
+  [cngxPopover]:not(.cngx-popover-panel):not(.cngx-select__panel) {
+    border: 0;
+    padding: 0;
+    background: transparent;
+    color: inherit;
+  }
+}

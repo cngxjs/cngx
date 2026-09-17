@@ -276,6 +276,24 @@
     margin: 0;
     padding: var(--cngx-menu-padding, 4px);
     outline: none;
+    /* Default floating surface so a bare menu (e.g. a headless context menu in
+       a raw [cngxPopover]) ships readable, not as the native popover UA box.
+       Delegates to the foundation so dark-mode swaps cascade; the panel and
+       the ui organisms paint their own surface and suppress this below. */
+    background: var(--cngx-menu-bg, var(--cngx-color-surface, oklch(1 0 0)));
+    color: var(--cngx-menu-color, var(--cngx-color-text, inherit));
+    border: var(--cngx-menu-border, 1px solid var(--cngx-color-border, oklch(0.85 0.01 250)));
+    border-radius: var(--cngx-menu-radius, var(--cngx-radius-md, 0.375rem));
+    box-shadow: var(--cngx-menu-shadow, var(--cngx-shadow-md, 0 4px 12px oklch(0 0 0 / 0.12)));
+  }
+
+  /* A menu placed inside a CngxPopoverPanel would double the surface; the panel
+     already paints one, so strip the menu's here. */
+  .cngx-popover-panel [cngxMenu] {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
   }
 
   [cngxMenu]:focus-visible {
