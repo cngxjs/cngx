@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Motion: a global Full / Reduced / Auto switch',
+  title: 'injectMotion: a global Full / Reduced / Auto switch',
   subtitle:
     '<code>injectMotion()</code> returns the writable app-wide motion signal. Binding a Full / Reduced / Auto toggle to it reflects <code>data-motion</code> onto <code>&lt;html&gt;</code>, and the shipped safety net collapses motion app-wide - while keeping essential loading affordances legible.',
   description:
@@ -10,6 +10,7 @@ export const STORY: DemoSpec = {
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
   focus: ['a11y-pattern', 'async-state', 'behavior'],
+  apiComponents: ['injectMotion'],
   moduleImports: [
     "import { injectMotion } from '@cngx/core';",
     "import { CngxButtonToggleGroup, CngxButtonToggle } from '@cngx/common/interactive';",

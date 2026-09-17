@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Text scale: a global S / M / L switch',
+  title: 'injectTextScale: a global S / M / L switch',
   subtitle:
     '<code>injectTextScale()</code> returns the writable app-wide scale signal. Binding an S / M / L toggle to it reflects <code>data-text-size</code> onto <code>&lt;html&gt;</code> and re-scales the whole page live.',
   description:
@@ -10,6 +10,7 @@ export const STORY: DemoSpec = {
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
   focus: ['a11y-pattern', 'behavior'],
+  apiComponents: ['injectTextScale'],
   moduleImports: [
     "import { injectTextScale } from '@cngx/core';",
     "import { CngxButtonToggleGroup, CngxButtonToggle } from '@cngx/common/interactive';",

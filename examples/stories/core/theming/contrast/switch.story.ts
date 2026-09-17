@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Contrast: a global Normal / More / Auto switch',
+  title: 'injectContrast: a global Normal / More / Auto switch',
   subtitle:
     '<code>injectContrast()</code> returns the writable app-wide contrast signal. Binding a Normal / More / Auto toggle to it reflects <code>data-contrast</code> onto <code>&lt;html&gt;</code>, and the shipped overrides strengthen borders and muted text app-wide - correct in both colour schemes.',
   description:
@@ -10,6 +10,7 @@ export const STORY: DemoSpec = {
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
   focus: ['a11y-pattern', 'visual-variants', 'behavior'],
+  apiComponents: ['injectContrast'],
   moduleImports: [
     "import { injectContrast } from '@cngx/core';",
     "import { CngxButtonToggleGroup, CngxButtonToggle } from '@cngx/common/interactive';",
