@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Data-grid accordion: Density',
+  title: 'CngxDataGridAccordion: Density',
   subtitle:
     'The <code>[skin]="\'density\'"</code> skin frames a task list and transitions its row padding, so density is a token concern rather than a structural mode. The consumer drives <code>--cngx-dga-row-py</code> and <code>--cngx-dga-fs</code>; compact, standard, and spacious are just three sets of those two values.',
   description:

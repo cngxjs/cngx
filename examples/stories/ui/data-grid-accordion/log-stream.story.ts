@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Data-grid accordion: Log stream',
+  title: 'CngxDataGridAccordion: Log stream',
   subtitle:
     'The <code>[skin]="\'log-stream\'"</code> skin renders a mono log console - timestamp, level, and message columns with the row severity doubled as a 3px left edge. Expand a row to read its stacktrace.',
   description:

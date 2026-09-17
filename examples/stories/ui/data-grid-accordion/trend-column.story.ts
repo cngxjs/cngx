@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Data-grid accordion: Trend column',
+  title: 'CngxDataGridAccordion: Trend column',
   subtitle:
     'A <code>&lt;cngx-mini-area&gt;</code> lives inside a summary cell - the pairing the two organisms advertise. The chart emits an inline data table for assistive tech, which is flow content a <code>&lt;button&gt;</code> could never hold, so the cells are laid over the trigger rather than inside it. Clicking the chart (passive content) still toggles the row.',
   description:

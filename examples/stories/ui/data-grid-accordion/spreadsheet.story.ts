@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Data-grid accordion: Spreadsheet',
+  title: 'CngxDataGridAccordion: Spreadsheet',
   subtitle:
     'The <code>[skin]="\'spreadsheet\'"</code> skin reads like a worksheet - visible cell hairlines, a row-number gutter, and a column-letter strip above the labels. Opening a row fills its gutter cell with the accent colour and turns the detail zone into a note cell.',
   description:

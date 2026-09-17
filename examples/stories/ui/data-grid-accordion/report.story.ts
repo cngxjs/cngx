@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Data-grid accordion: Report',
+  title: 'CngxDataGridAccordion: Report',
   subtitle:
     'The <code>[skin]="\'report\'"</code> skin drops the frame entirely and reads like a printed cost report: a <code>3px double</code> rule under the column head and over the sum foot, hairline dividers between rows, mono right-aligned budget and actual figures, and over-budget actuals called out in the danger colour.',
   description:

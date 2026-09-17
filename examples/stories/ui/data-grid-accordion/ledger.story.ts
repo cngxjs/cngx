@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Data-grid accordion: Ledger',
+  title: 'CngxDataGridAccordion: Ledger',
   subtitle:
     'The <code>[skin]="\'ledger\'"</code> skin frames the grid like an account ledger - a mono uppercase column head, zebra rows, right-aligned amounts, an inset primary-accent detail zone, and a sum footer. Every row is still a disclosure: click to expand its detail.',
   description:
