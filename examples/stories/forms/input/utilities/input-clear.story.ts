@@ -17,9 +17,9 @@ export const STORY: DemoSpec = {
   template: `
   <div class="demo-form">
     <div class="demo-field">
-      <label class="demo-label">Name</label>
+      <label class="demo-label" for="ic-name">Name</label>
       <div style="display:flex;gap:8px;align-items:center">
-        <input #nameInput placeholder="Type something..." class="demo-input" style="flex:1" />
+        <input id="ic-name" #nameInput placeholder="Type something..." class="demo-input" style="flex:1" />
         <button type="button" [cngxInputClear]="nameInput" #clr="cngxInputClear"
           class="chip" [style.opacity]="clr.hasValue() ? 1 : 0.3">
           Clear
