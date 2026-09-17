@@ -8,7 +8,7 @@ export const STORY: DemoSpec = {
   audience: ['dev'],
   artifact: 'standalone',
   focus: ['behavior'],
-  apiComponents: ['CngxInput', 'CngxTrim'],
+  apiComponents: ['CngxTrim', 'CngxInput'],
   moduleImports: ["import { CngxInput, CngxTrim } from '@cngx/forms/input';"],
   imports: ['CngxInput', 'CngxTrim'],
   setup: `protected readonly stored = signal('');

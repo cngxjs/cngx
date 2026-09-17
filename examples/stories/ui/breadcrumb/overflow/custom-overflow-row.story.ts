@@ -10,7 +10,7 @@ export const STORY: DemoSpec = {
   audience: ['dev', 'a11y'],
   artifact: 'standalone',
   focus: ['composition', 'a11y-pattern'],
-  apiComponents: ['CngxBreadcrumbBar', 'CngxBreadcrumbOverflow', 'CngxBreadcrumbOverflowItem'],
+  apiComponents: ['CngxBreadcrumbOverflowItem', 'CngxBreadcrumbBar', 'CngxBreadcrumbOverflow'],
   moduleImports: [
     "import { CngxBreadcrumbBar, CngxBreadcrumbOverflowItem } from '@cngx/ui/breadcrumb';",
     "import type { CngxBreadcrumbCrumb } from '@cngx/ui/breadcrumb';",

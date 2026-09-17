@@ -8,7 +8,7 @@ export const STORY: DemoSpec = {
   audience: ['dev'],
   artifact: 'standalone',
   focus: ['composition', 'async-state'],
-  apiComponents: ['CngxStepperComplete', 'CngxStepperFooter'],
+  apiComponents: ['CngxStepperFooter', 'CngxStepperComplete'],
   moduleImports: [
     "import { CngxStep, CngxStepContent, CngxStepperPrevious, CngxStepperNext, CngxStepperComplete } from '@cngx/common/stepper';",
     "import { CngxStepper, CngxStepperFooter, CngxStepperFooterStart, CngxStepperFooterEnd } from '@cngx/ui/stepper';",

@@ -13,7 +13,7 @@ export const STORY: DemoSpec = {
   references: [
     { label: 'WAI-ARIA APG - Tabs', href: 'https://www.w3.org/WAI/ARIA/apg/patterns/tabs/' },
   ],
-  apiComponents: ['CngxTabGroup', 'CngxTabOverflow', 'CngxTab', 'CngxTabContent'],
+  apiComponents: ['CngxTabOverflow', 'CngxTabGroup', 'CngxTab', 'CngxTabContent'],
   moduleImports: [
     "import { CngxTab, CngxTabContent } from '@cngx/common/tabs';",
     "import { CngxTabGroup, CngxTabOverflow } from '@cngx/ui/tabs';",
