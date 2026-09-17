@@ -96,13 +96,17 @@
   /* Bare <input> / <textarea> / <select>: transparent + hairline, same
    * footprint cngx inputs use. Focus ring comes from cngx.reset
    * :focus-visible - using outline (not border) so the layout doesn't
-   * shift between resting and focused state. */
+   * shift between resting and focused state. The touch floor mirrors the
+   * cngx select trigger: inert at 0px on a fine pointer, lifted to
+   * --cngx-target-min (44px) under a coarse pointer so a bare input is a
+   * real tap target. Reads border-box from cngx.reset. */
   input,
   textarea,
   select {
     padding: var(--cngx-space-sm, 8px) var(--cngx-space-md, 16px);
     border: 1px solid var(--cngx-color-border, oklch(0.88 0.005 250));
     border-radius: var(--cngx-radius-md, 8px);
+    min-height: var(--cngx-target-min, 0px);
     background: transparent;
     color: var(--cngx-color-text, oklch(0.2 0.01 250));
     font: inherit;

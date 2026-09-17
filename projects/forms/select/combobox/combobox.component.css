@@ -131,7 +131,7 @@
   @property --cngx-combobox-min-height {
     syntax: '*';
     inherits: false;
-    initial-value: 2.25rem;
+    initial-value: 2.125rem;
   }
 
   /**
@@ -232,7 +232,7 @@
       cursor: text;
       /* Touch-target floor - lift the trigger tap target to the pointer-
          derived minimum; inert at 0px on a fine pointer. */
-      min-height: max(var(--cngx-combobox-min-height, 2.25rem), var(--cngx-target-min, 0px));
+      min-height: max(var(--cngx-combobox-min-height, 2.125rem), var(--cngx-target-min, 0px));
       flex-wrap: nowrap;
     }
 

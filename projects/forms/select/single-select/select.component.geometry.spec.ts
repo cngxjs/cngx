@@ -76,7 +76,7 @@ describe('CngxSelect geometry', () => {
     const host = mount();
     const trigger = query(host, '.cngx-select__trigger');
     // min-height is max(base, --cngx-target-min): inert at 0, lifts when the
-    // pointer floor exceeds the intrinsic 2.25rem base.
+    // pointer floor exceeds the intrinsic 2.125rem base.
     host.style.setProperty('--cngx-target-min', '64px');
     expect(computedValue(trigger, 'min-height')).toBe('64px');
   });
