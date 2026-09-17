@@ -1,10 +1,10 @@
 ---
-title: "Accordion panel: Lazy fetch per panel"
+title: "CngxAccordionGroup: Lazy fetch per panel"
 whenToUse: "Drive each item&apos;s [state] from a per-panel manual async state. There is no open output on the item, so the fetch is kicked from the group&apos;s (openIdsChange): when a panel id first enters the open set and its state is still idle, the fetch runs. The busy, error, and content slots are chosen by the state machine, not by the accordion. Each slot receives a CngxAccordionItemStateContext: the busy template reads the status via let-status, the error template the resolved message via let-message=\"message\". The third panel always fails so the error + retry path is visible."
 symbols: [CngxAccordionGroup, CngxAccordionItem]
 ---
 
-# Accordion panel: Lazy fetch per panel
+# CngxAccordionGroup: Lazy fetch per panel
 
 Drive each item&apos;s [state] from a per-panel manual async state. There is no open output on the item, so the fetch is kicked from the group&apos;s (openIdsChange): when a panel id first enters the open set and its state is still idle, the fetch runs. The busy, error, and content slots are chosen by the state machine, not by the accordion. Each slot receives a CngxAccordionItemStateContext: the busy template reads the status via let-status, the error template the resolved message via let-message="message". The third panel always fails so the error + retry path is visible.
 

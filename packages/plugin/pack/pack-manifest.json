@@ -104,7 +104,7 @@
     {
       "artifact": "pack/recipes/ui-accordion-async-panel.md",
       "source": "examples/stories/ui/accordion/async-panel/lazy-fetch.story.ts",
-      "contentHash": "sha256:0f50b2771c8aaec018b486b1343194ed73952d8004de4fd1c28734842504393f"
+      "contentHash": "sha256:d8fa12fdbe1af1cab64b1fe555fb57a51096e2aebee75807a2a1acc69512848e"
     },
     {
       "artifact": "pack/recipes/ui-chart-panel-async.md",
@@ -129,7 +129,7 @@
     {
       "artifact": "pack/recipes/ui-data-grid-accordion.md",
       "source": "examples/stories/ui/data-grid-accordion/lazy-row.story.ts",
-      "contentHash": "sha256:f065de5b44cbd23e0c1caab43df2c1e2bc6e12684ef72270a27dc7285e578f92"
+      "contentHash": "sha256:318cc18e612ecfb86e3e3a5ca829b070ad9b697327f3e47d8103c8d1bd05816d"
     },
     {
       "artifact": "pack/recipes/ui-feedback-alert.md",
