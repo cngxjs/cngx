@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxInputClear: input format',
+  title: 'CngxInputFormat: live value formatting',
   subtitle: '<code>[cngxInputFormat]</code> formats on blur (display) and parses on focus (edit). Reactive forms receive the raw value.',
   level: 'atom',
   audience: ['dev'],
