@@ -10,6 +10,7 @@ export const STORY: DemoSpec = {
   audience: ['dev'],
   artifact: 'building-block',
   focus: ['integration'],
+  apiComponents: ['injectQueryParamSync'],
   moduleImports: [
     "import { signal } from '@angular/core';",
     "import { injectQueryParamSync } from '@cngx/common/layout';",

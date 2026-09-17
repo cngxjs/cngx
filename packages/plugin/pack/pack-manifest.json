@@ -59,7 +59,7 @@
     {
       "artifact": "pack/recipes/common-data-async-registry.md",
       "source": "examples/stories/common/data/async-registry/latency-selected-indicator.story.ts",
-      "contentHash": "sha256:a03b1f3ab1d80f71e4802a5c366447e299bec962585a524c5c59f77b41f4e67d"
+      "contentHash": "sha256:ba470e33a6acc19157541d1abe4ced8fd401982d3536ed82eed7ecc91157d948"
     },
     {
       "artifact": "pack/recipes/common-data-recycler.md",

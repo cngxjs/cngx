@@ -10,6 +10,7 @@ export const STORY: DemoSpec = {
   audience: ['dev'],
   artifact: 'building-block',
   focus: ['behavior'],
+  apiComponents: ['injectMediaQuery'],
   moduleImports: [
     "import { computed } from '@angular/core';",
     "import { injectMediaQuery } from '@cngx/common/layout';",

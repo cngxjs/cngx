@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'SmartDataSource + CngxPaginate (hostDirective)',
+  title: 'CngxSmartDataSource: with CngxPaginate (hostDirective)',
   subtitle: 'Adding <code>CngxPaginate</code> as a third <code>hostDirective</code> enables automatic pagination in <code>CngxSmartDataSource</code>. The data source applies the page slice <em>after</em> sort. <code>ds.filteredCount()</code> gives the pre-pagination count to bind as <code>[total]</code> on the paginator. The consumer re-exports the <code>total</code> input from the hostDirective so the parent can set it.',
   level: 'molecule',
   audience: ['dev'],

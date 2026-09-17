@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxCanDeactivateWhenClean: Route guard on dirty form',
+  title: 'canDeactivateWhenClean: Route guard on dirty form',
   subtitle: 'Wire <code>canDeactivateWhenClean(() => isDirty())</code> into a route\'s <code>canDeactivate</code> array. The guard shows a <code>confirm()</code> when navigating away from a dirty form, allows the route to leave when clean, and stays SSR-safe.',
   description: 'Functional route guard factory. Returns a <code>CanDeactivateFn</code>-compatible callback that reads the consumer\'s <code>isDirty</code> signal, opens the browser <code>confirm()</code> dialog with the configured message, and gates navigation on the user\'s reply. <code>inject(DOCUMENT)</code> at runtime keeps the guard SSR-safe (returns <code>true</code> when no window is available). Production wiring lives in the route config: <code>&#123; path: \'edit\', component: EditComponent, canDeactivate: [canDeactivateWhenClean(() =&gt; editForm.dirty())] &#125;</code>. The live form lets you see the dirty signal flip; Angular Router invokes the returned guard fn in its own injection context on a real navigation. Pair with <code>CngxBeforeUnload</code> to also cover full-page close and tab refresh.',
   level: 'atom',

@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxTreeController: Provide tree config defaults',
+  title: 'provideTreeConfig: Config defaults',
   subtitle: '<code>provideTreeConfig(withDefaultNodeIdFn(...), withDefaultLabelFn(...))</code> in app or component providers; per-options always wins over the ambient default.',
   description: 'App-wide defaults for the tree controller factory. The resolution order is fixed: per-call options on <code>createTreeController({...})</code> beat <code>provideTreeConfigAt</code> in component <code>viewProviders</code>, which beats <code>provideTreeConfig</code> in root providers, which beats library hard-coded fallback. Feature flags (<code>withDefaultNodeIdFn</code>, <code>withDefaultLabelFn</code>, <code>withDefaultKeyFn</code>, <code>withTreeCacheLimit</code>, <code>withDefaultInitiallyExpanded</code>) compose by passing as varargs to either provider call. The provider returns a <code>Provider[]</code>, not <code>EnvironmentProviders</code>, so it works in route configs and component decorators without restriction. This demo is isolated from a real bootstrap, so it calls <code>createTreeController</code> with explicit options that the global config would otherwise supply; the description below the artifact shows the equivalent <code>bootstrapApplication</code> wiring.',
   level: 'molecule',

@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Cascade selection with indeterminate propagation',
+  title: 'CngxHierarchicalNav: Cascade selection with indeterminate propagation',
   subtitle:
     'A checkbox <code>role="tree"</code> where each node\'s tri-state is <em>derived</em>, never stored: a parent is full (<code>●</code>) when every leaf under it is picked, indeterminate (<code>◐</code>) when only some are, empty (<code>○</code>) otherwise. One <code>selected</code> set is the single source; the per-node states are a <code>computed()</code> map and <code>aria-checked</code> reads the same derivation. Clicking a node - or pressing Space / Enter on the keyboard cursor - cascades the toggle to its whole subtree. Keyboard nav (ArrowUp / ArrowDown / Home / End move the cursor, ArrowRight / ArrowLeft expand / collapse and traverse) composes <code>CngxActiveDescendant</code> + <code>[cngxHierarchicalNav]</code>, so the tree carries correct per-level <code>aria-posinset</code> / <code>aria-setsize</code> / <code>aria-expanded</code>.',
   level: 'molecule',
