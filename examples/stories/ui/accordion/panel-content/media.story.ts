@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Accordion panel: Media',
+  title: 'CngxAccordionGroup: Media',
   subtitle:
     'A panel body can hold an <code>&lt;img&gt;</code> with a caption via <code>&lt;figure&gt;</code>/<code>&lt;figcaption&gt;</code>. The accordion folds the media away until the reader asks for it.',
   description:

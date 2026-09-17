@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Accordion skin: Primary frame',
+  title: 'CngxAccordionGroup: Primary frame',
   subtitle:
     'The <code>[skin]="\'primary-frame\'"</code> skin draws a bordered frame with a soft glow around the currently open item. Border and pulse are pure CSS off <code>data-expanded</code>. Subtitle only.',
   description:

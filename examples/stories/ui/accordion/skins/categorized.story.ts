@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Accordion skin: Categorized',
+  title: 'CngxAccordionGroup: Categorized',
   subtitle:
     'The <code>[skin]="\'categorized\'"</code> skin renders each item as a lifted card and styles the leading slot as a category tag - pass the rubric colour per item via <code>--cngx-accordion-category-color</code>.',
   description:

@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Accordion panel: Activity feed',
+  title: 'CngxAccordionGroup: Activity feed',
   subtitle:
     'A panel body built from <code>&lt;cngx-avatar&gt;</code> rows with a relative <code>&lt;cngx-time&gt;</code> per entry. The accordion folds a feed away behind one header.',
   description:

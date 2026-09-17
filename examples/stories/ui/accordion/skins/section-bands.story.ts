@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Accordion skin: Section bands',
+  title: 'CngxAccordionGroup: Section bands',
   subtitle:
     'The <code>[skin]="\'section-bands\'"</code> skin gives each header an inverted colour band with a status chip in the meta slot - useful for grouping a long form into labelled sections.',
   description:

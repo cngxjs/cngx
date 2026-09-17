@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Accordion panel: Data table',
+  title: 'CngxAccordionGroup: Data table',
   subtitle:
     'A panel body can be a full <code>&lt;table&gt;</code> with a caption, header row, and data rows. The accordion is just the disclosure chrome around it.',
   description:

@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Accordion skin: Editorial',
+  title: 'CngxAccordionGroup: Editorial',
   subtitle:
     'The <code>[skin]="\'editorial\'"</code> skin: a mono running index in the leading slot, a left-aligned heading with a secondary subtitle line. Same organism, purely a themed shell.',
   description:

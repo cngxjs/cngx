@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Accordion panel: Checklist with progress',
+  title: 'CngxAccordionGroup: Checklist with progress',
   subtitle:
     'A panel body composed from <code>&lt;cngx-progress&gt;</code> plus a labelled checklist. The accordion hosts the composition; each part keeps its own semantics.',
   description:
