@@ -1,10 +1,10 @@
 ---
-title: "Latency-selected indicator: spinner vs skeleton from observed duration"
+title: "injectLatencyProbe: Spinner vs skeleton from observed duration"
 whenToUse: "The probe measures the registry busy-envelope (first start to last end). The next load's treatment is chosen from the previously observed duration: waits above the cutoff render a skeleton, shorter ones a spinner. Busy state and the chosen kind are announced to assistive technology via aria-busy and a polite live region."
 symbols: [CngxAsyncRegistry]
 ---
 
-# Latency-selected indicator: spinner vs skeleton from observed duration
+# injectLatencyProbe: Spinner vs skeleton from observed duration
 
 The probe measures the registry busy-envelope (first start to last end). The next load's treatment is chosen from the previously observed duration: waits above the cutoff render a skeleton, shorter ones a spinner. Busy state and the chosen kind are announced to assistive technology via aria-busy and a polite live region.
 
