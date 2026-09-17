@@ -21,16 +21,23 @@ export const STORY: DemoSpec = {
     'CngxCardBody',
     'CngxCardActions',
   ],
+  setup: `protected readonly lastAction = signal<string | undefined>(undefined);
+  protected handleAction(verb: string): void {
+    this.lastAction.set(verb);
+  }`,
   template: `  <div style="max-width:400px">
     <cngx-card>
       <header cngxCardHeader><h3 cngxCardTitle>Release plan</h3></header>
       <div cngxCardBody>
-        <p style="margin:0">Next review: 18.07.2025</p>
+        <p style="margin:0">Next review: 2025-07-18</p>
       </div>
       <div cngxCardActions align="end">
-        <button type="button" class="chip">Edit</button>
-        <button type="button" class="chip">Delete</button>
+        <button type="button" class="chip" (click)="handleAction('Edit')">Edit</button>
+        <button type="button" class="chip" (click)="handleAction('Delete')">Delete</button>
       </div>
     </cngx-card>
+  </div>`,
+  templateChrome: `<div class="status-row" style="margin-top:12px">
+    <span class="status-badge">last action: {{ lastAction() ?? '—' }}</span>
   </div>`,
 };
