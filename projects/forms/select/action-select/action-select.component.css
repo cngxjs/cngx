@@ -178,13 +178,15 @@
       border: 0;
       cursor: pointer;
       padding: 0 0.25rem;
-      font-size: var(--cngx-select-caret-size, 1em);
     }
     .cngx-action-select__clear {
       color: var(--cngx-select-clear-color, currentColor);
+      font: inherit;
     }
     .cngx-action-select__caret {
       color: var(--cngx-select-caret-color, currentColor);
+      font-size: var(--cngx-select-caret-size, 1em);
+      line-height: 0;
     }
 
     .cngx-action-select__clear:focus-visible {

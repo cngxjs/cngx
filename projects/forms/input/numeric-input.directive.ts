@@ -146,6 +146,11 @@ function isAllowedChar(
     // `--cngx-numeric-input-numeric-variant: normal` when the body font's
     // proportional digits are wanted.
     '[style.font-variant-numeric]': '"var(--cngx-numeric-input-numeric-variant, tabular-nums)"',
+    // Monospace by default so entered digits read column-aligned and are easy
+    // to scan and position; override on a parent via
+    // `--cngx-numeric-input-font-family: inherit` to keep the body font.
+    '[style.font-family]':
+      '"var(--cngx-numeric-input-font-family, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace)"',
     // Bucket A: the field value is a single Intl.NumberFormat run (sign,
     // grouping and decimal all from Intl), so isolate fences its bidi boundary
     // against surrounding RTL text without forcing a direction - RTL-locale
