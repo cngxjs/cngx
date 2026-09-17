@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'RTL: Direction-sensitive surfaces',
+  title: 'injectDirection: Direction-sensitive surfaces',
   subtitle:
     'Four behaviours that mirror when the writing direction flips: popover placement, submenu side, a bidi number island, and a directional glyph. Use the floating <code>dir</code> toggle to switch the whole page to <code>rtl</code> and watch every panel adapt at once.',
   description:
@@ -20,7 +20,7 @@ export const STORY: DemoSpec = {
       href: 'https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_logical_properties_and_values',
     },
   ],
-  apiComponents: ['CngxPopover', 'CngxMenuItemSubmenu', 'CngxMetric'],
+  apiComponents: ['injectDirection', 'CngxPopover', 'CngxMenuItemSubmenu', 'CngxMetric'],
   moduleImports: [
     "import { injectDirection } from '@cngx/core';",
     "import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';",
