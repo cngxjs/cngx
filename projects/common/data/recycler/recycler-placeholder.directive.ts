@@ -64,6 +64,10 @@ import type { CngxRecycler } from './recycler';
   standalone: true,
   host: {
     class: 'cngx-recycler-placeholder',
+    // The layer is a decorative background on an offset spacer. Hide it from the
+    // a11y tree at the host so it stays out regardless of the call site, not only
+    // when a consumer remembers to add aria-hidden.
+    'aria-hidden': 'true',
     '[class.cngx-recycler-placeholder--shimmer]': 'showShimmer()',
     '[style.--cngx-recycler-placeholder-row-height]': 'rowHeightVar()',
   },
