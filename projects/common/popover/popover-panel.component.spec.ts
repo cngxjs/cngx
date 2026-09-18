@@ -414,7 +414,13 @@ describe('CngxPopoverPanel', () => {
         .join('\n');
 
       expect(styleText).toMatch(
-        /\.cngx-popover-panel__close\s*\{[\s\S]*?--cngx-close-button-radius:\s*50%/,
+        /\.cngx-popover-panel__close\s*\{[\s\S]*?--cngx-close-button-radius:\s*999px/,
+      );
+      // The radius token reads on the atom's inner __btn (inherits:false), so
+      // the host override alone cannot reach it - the circular hover wash is fed
+      // at the read site.
+      expect(styleText).toMatch(
+        /\.cngx-popover-panel__close\s+\.cngx-close-button__btn\s*\{[\s\S]*?--cngx-close-button-radius:\s*999px/,
       );
       expect(styleText).toMatch(
         /\.cngx-popover-panel__close\s*\{[\s\S]*?--cngx-close-button-size:\s*var\(--cngx-popover-panel-close-size/,
@@ -426,7 +432,7 @@ describe('CngxPopoverPanel', () => {
       expect(styleText).not.toMatch(/\.cngx-popover-panel__close:focus-visible\s*\{/);
     });
 
-    it('keeps flex-shrink: 0 on the popover close-button host so it survives narrow header rows', () => {
+    it('pins the popover close-button host to the panel corner via absolute positioning', () => {
       TestBed.configureTestingModule({ imports: [CloseButtonHost] });
       TestBed.createComponent(CloseButtonHost).detectChanges();
 
@@ -434,7 +440,10 @@ describe('CngxPopoverPanel', () => {
         .map((node) => node.textContent ?? '')
         .join('\n');
 
-      expect(styleText).toMatch(/\.cngx-popover-panel__close\s*\{[\s\S]*?flex-shrink:\s*0/);
+      expect(styleText).toMatch(/\.cngx-popover-panel__close\s*\{[\s\S]*?position:\s*absolute/);
+      expect(styleText).toMatch(
+        /\.cngx-popover-panel__close\s*\{[\s\S]*?inset-inline-end:\s*var\(--cngx-popover-panel-close-offset/,
+      );
     });
   });
 });

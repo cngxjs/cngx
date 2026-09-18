@@ -176,6 +176,19 @@
   }
 
   /**
+   * Inset of the corner-pinned close button from the panel's top /
+   * inline-end edges. The close is absolutely positioned in the
+   * top-right (top-left under RTL) corner, so this offset tucks it
+   * into the panel padding rather than leaving it in the header flow.
+   * @group Layout
+   */
+  @property --cngx-popover-panel-close-offset {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 4px;
+  }
+
+  /**
    * Duration of the opacity + transform transition between the open
    * states.
    *
@@ -437,13 +450,39 @@
       margin-bottom: 0;
     }
 
+    /* Keep the title clear of the corner-pinned close - reserve only when a
+       close actually renders, so a close-less header keeps its full width. */
+    .cngx-popover-panel__header-row:has(.cngx-popover-panel__close)
+      > .cngx-popover-panel__header {
+      padding-inline-end: calc(var(--cngx-popover-panel-close-size, 28px) + 8px);
+    }
+
+    /* Pin the close to the panel's top inline-end corner (the panel host is
+       position:fixed, so it is the containing block). Absolute takes it out of
+       the header-row flow, so the button no longer floats in a tall row nor
+       depends on a header being present. */
     .cngx-popover-panel__close {
-      flex-shrink: 0;
+      position: absolute;
+      top: var(--cngx-popover-panel-close-offset, 4px);
+      inset-inline-end: var(--cngx-popover-panel-close-offset, 4px);
+      z-index: 1;
       --cngx-close-button-size: var(--cngx-popover-panel-close-size, 28px);
-      --cngx-close-button-radius: 50%;
+      /* Pill radius -> full circle on the square button. The close-button
+         radius token is typed <length>, so 50% would be rejected; a large
+         length renders the same circle and stays valid. */
+      --cngx-close-button-radius: 999px;
       --cngx-close-button-padding: 0;
       --cngx-close-button-hover-bg: var(--cngx-popover-panel-close-hover-bg, oklch(0 0 0 / 0.06));
       --cngx-close-button-focus-outline: 2px solid var(--cngx-popover-panel-accent-text, currentColor);
+    }
+
+    /* Circular hover wash. The host-level --cngx-close-button-radius:50% above
+       is inert because the atom reads that token on its inner __btn with
+       inherits:false; feed it at the read site so the hover / focus surface is
+       a full circle rather than a rounded square. Panel-local by design - the
+       shared close-button atom stays untouched. */
+    .cngx-popover-panel__close .cngx-close-button__btn {
+      --cngx-close-button-radius: 999px;
     }
 
     .cngx-popover-panel__arrow {
