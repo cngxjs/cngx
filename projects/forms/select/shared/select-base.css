@@ -951,8 +951,8 @@
        identically. Scoped to the virtualized marker, so non-virtualized panels
        never register the layer. */
     --cngx-recycler-placeholder-row-height: var(--cngx-select-skeleton-row-height, 1.75rem);
-    --cngx-recycler-placeholder-bar-height: calc(
-      var(--cngx-select-skeleton-row-height, 1.75rem) - var(--cngx-select-skeleton-gap, 0.25rem)
+    --cngx-recycler-placeholder-band-height: calc(
+      var(--cngx-select-skeleton-row-height, 1.75rem) - 2 * var(--cngx-select-skeleton-gap, 0.25rem)
     );
   }
 
