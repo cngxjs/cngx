@@ -270,6 +270,35 @@ describe('CngxSidenav', () => {
     expect(leftEl.getAttribute('aria-hidden')).toBe('false');
   });
 
+  it('blurs focus held inside an overlay rail on close, before it flips to aria-hidden', () => {
+    const { fixture, host } = setupDual();
+    document.body.appendChild(fixture.nativeElement);
+    try {
+      const leftEl = fixture.debugElement.queryAll(By.directive(CngxSidenav))[0]
+        .nativeElement as HTMLElement;
+      host.leftOpen.set(true);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      // Simulate a keyboard user's focus landing on a control inside the rail.
+      const link = document.createElement('a');
+      link.href = '#';
+      link.textContent = 'Reports';
+      leftEl.appendChild(link);
+      link.focus();
+      expect(leftEl.contains(document.activeElement)).toBe(true);
+
+      host.leftOpen.set(false);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      expect(leftEl.getAttribute('aria-hidden')).toBe('true');
+      expect(leftEl.contains(document.activeElement)).toBe(false);
+    } finally {
+      fixture.nativeElement.remove();
+    }
+  });
+
   it('does not set aria-hidden in side mode', () => {
     const { fixture, host } = setupDual();
     host.mode.set('side');

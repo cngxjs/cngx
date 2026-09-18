@@ -372,6 +372,16 @@ export class CngxSidenav {
       } else if (!active && wasOverlayActive) {
         const target = this.restoreTarget;
         this.restoreTarget = null;
+        // Move focus out of the rail synchronously, before aria-hidden flips
+        // true in this same flush (host binding: !opened()). The queued restore
+        // alone would leave the trapped focus under aria-hidden for a microtask,
+        // which the browser blocks and warns about; the deferred restore still
+        // returns focus to the opener afterwards.
+        const activeEl = this.doc.activeElement;
+        const host = this.elementRef.nativeElement as HTMLElement;
+        if (activeEl instanceof HTMLElement && host.contains(activeEl)) {
+          activeEl.blur();
+        }
         queueMicrotask(() => target?.focus());
       }
       wasOverlayActive = active;
