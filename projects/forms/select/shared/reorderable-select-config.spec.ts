@@ -2,6 +2,7 @@ import { Injector, runInInjectionContext } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
+import { injectReorderableSelectConfig } from './inject-helpers';
 import {
   CNGX_REORDERABLE_SELECT_DEFAULTS,
   provideReorderableSelectConfig,
@@ -80,5 +81,17 @@ describe('resolveReorderableSelectConfig', () => {
       resolveReorderableSelectConfig(),
     );
     expect(cfg.freezeStripOnCommit).toBe(false);
+  });
+});
+
+describe('injectReorderableSelectConfig', () => {
+  it('returns the resolved config merged with defaults', () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [provideReorderableSelectConfig(withReorderAriaLabel('Reorder entries'))],
+    });
+    const cfg = TestBed.runInInjectionContext(() => injectReorderableSelectConfig());
+    expect(cfg.ariaLabel).toBe('Reorder entries');
+    expect(cfg.keyboardModifier).toBe(CNGX_REORDERABLE_SELECT_DEFAULTS.keyboardModifier);
   });
 });

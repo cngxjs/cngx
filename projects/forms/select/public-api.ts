@@ -173,7 +173,12 @@ export {
 
 export { CngxSelectAnnouncer } from './shared/announcer';
 
-export { injectSelectConfig, injectSelectAnnouncer } from './shared/inject-helpers';
+export {
+  injectSelectConfig,
+  injectSelectAnnouncer,
+  injectActionSelectConfig,
+  injectReorderableSelectConfig,
+} from './shared/inject-helpers';
 
 export {
   CngxSelectCheck,

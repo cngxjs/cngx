@@ -6,6 +6,7 @@ import {
   CNGX_NAV_DEFAULTS,
   injectNavConfig,
   provideNavConfig,
+  provideNavConfigAt,
   withNavAnimation,
   withNavIndent,
   withSingleAccordion,
@@ -20,6 +21,15 @@ function resolveConfig(): ReturnType<typeof injectNavConfig> {
 describe('nav-config', () => {
   it('injectNavConfig returns the defaults when nothing is provided', () => {
     expect(resolveConfig()).toEqual(CNGX_NAV_DEFAULTS);
+  });
+
+  it('provideNavConfigAt applies the same feature merge for a scoped injector', () => {
+    TestBed.configureTestingModule({
+      providers: [provideNavConfigAt(withNavIndent(24))],
+    });
+    const config = resolveConfig();
+    expect(config.indent).toBe(24);
+    expect(config.singleAccordion).toBe(false);
   });
 
   it('merges provided indent and animation over the defaults', () => {
