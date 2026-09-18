@@ -121,13 +121,15 @@ export class CngxRecyclerRow<T> {
   private defaultEl: HTMLElement | null = null;
 
   constructor() {
-    // Sole tracked trigger: the item value. Everything else (index, recycler
-    // reads, placeholder template) is bookkeeping, read inside untracked() so the
-    // graph stays flat and the branch never re-fires on a secondary change.
     effect(() => {
       const item = this.cngxRecyclerRow();
       if (item === undefined) {
-        this.showPlaceholder();
+        // Placeholder branch tracks index + ariaSetSize (via buildPlaceholderContext)
+        // so the announced position/size stay live while the slot remains unloaded
+        // across a window shift or an infinite-scroll setSize growth - Pillar 2
+        // keeps a11y in the reactive graph, never a one-time write. The row branch
+        // tracks only the item value; the placeholder template ref is read untracked.
+        this.showPlaceholder(this.buildPlaceholderContext());
       } else {
         this.showRow(item);
       }
@@ -164,12 +166,13 @@ export class CngxRecyclerRow<T> {
     this.currentBranch = 'row';
   }
 
-  private showPlaceholder(): void {
+  private showPlaceholder(ctx: CngxRecyclerRowContext): void {
     if (this.currentBranch === 'placeholder') {
+      this.refreshPlaceholder(ctx);
       return;
     }
     this.detachRow();
-    this.renderPlaceholder();
+    this.renderPlaceholder(ctx);
     this.currentBranch = 'placeholder';
   }
 
@@ -200,13 +203,28 @@ export class CngxRecyclerRow<T> {
     this.removeDefault();
   }
 
-  private renderPlaceholder(): void {
-    const ctx = this.buildPlaceholderContext();
+  private renderPlaceholder(ctx: CngxRecyclerRowContext): void {
     const tpl = untracked(() => this.cngxRecyclerRowPlaceholder()) ?? this.configTpl ?? null;
     if (tpl) {
       this.placeholderViewRef = this.vcr.createEmbeddedView(tpl, ctx);
     } else {
       this.stampDefault(ctx);
+    }
+  }
+
+  // Slot stayed unloaded but its index/setSize moved: refresh the live a11y
+  // position/size in place - custom template context or default element attrs -
+  // without remounting the placeholder.
+  private refreshPlaceholder(ctx: CngxRecyclerRowContext): void {
+    if (this.placeholderViewRef) {
+      const context = this.placeholderViewRef.context;
+      context.$implicit = ctx.$implicit;
+      context.index = ctx.index;
+      context.top = ctx.top;
+      context.setSize = ctx.setSize;
+      this.placeholderViewRef.markForCheck();
+    } else if (this.defaultEl) {
+      this.applyDefaultAttrs(this.defaultEl, ctx);
     }
   }
 
@@ -220,17 +238,21 @@ export class CngxRecyclerRow<T> {
     if (!parent) {
       return;
     }
-    const height = untracked(() => this.cngxRecyclerRowRecycler().rowSizeHint());
     const li = this.renderer.createElement('li') as HTMLElement;
     this.renderer.addClass(li, 'cngx-recycler-placeholder');
     this.renderer.setAttribute(li, 'role', 'listitem');
     this.renderer.setAttribute(li, 'aria-busy', 'true');
+    this.applyDefaultAttrs(li, ctx);
+    this.renderer.insertBefore(parent, li, anchor);
+    this.defaultEl = li;
+  }
+
+  private applyDefaultAttrs(li: HTMLElement, ctx: CngxRecyclerRowContext): void {
+    const height = untracked(() => this.cngxRecyclerRowRecycler().rowSizeHint());
     this.renderer.setAttribute(li, 'aria-posinset', String(ctx.index + 1));
     this.renderer.setAttribute(li, 'aria-setsize', String(ctx.setSize));
     this.renderer.setStyle(li, 'height', `${height}px`);
     this.renderer.setStyle(li, '--cngx-recycler-placeholder-row-height', `${height}px`);
-    this.renderer.insertBefore(parent, li, anchor);
-    this.defaultEl = li;
   }
 
   private removeDefault(): void {
@@ -244,11 +266,14 @@ export class CngxRecyclerRow<T> {
     this.defaultEl = null;
   }
 
+  // Called only from the placeholder branch of the render effect: reading index
+  // + ariaSetSize here (tracked) is what keeps the announced position/size
+  // reactive. rowSizeHint is a stable layout hint, read untracked for `top`.
   private buildPlaceholderContext(): CngxRecyclerRowContext {
-    const index = untracked(() => this.cngxRecyclerRowIndex());
-    const recycler = untracked(() => this.cngxRecyclerRowRecycler());
+    const index = this.cngxRecyclerRowIndex();
+    const recycler = this.cngxRecyclerRowRecycler();
+    const setSize = recycler.ariaSetSize();
     const top = untracked(() => recycler.rowSizeHint()) * index;
-    const setSize = untracked(() => recycler.ariaSetSize());
     return { $implicit: index, index, top, setSize };
   }
 

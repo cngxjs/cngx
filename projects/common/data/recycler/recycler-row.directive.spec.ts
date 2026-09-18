@@ -1,9 +1,13 @@
 import {
   Component,
+  DestroyRef,
+  Directive,
+  inject,
   provideZonelessChangeDetection,
   signal,
   type TemplateRef,
   viewChild,
+  type WritableSignal,
 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
@@ -89,6 +93,28 @@ class HostNoPlaceholder {
 })
 class TokenTplHost {
   readonly tpl = viewChild.required<TemplateRef<CngxRecyclerRowContext>>('t');
+}
+
+@Directive({ selector: '[destroyProbe]', standalone: true })
+class DestroyProbe {
+  static destroyed = 0;
+  constructor() {
+    inject(DestroyRef).onDestroy(() => {
+      DestroyProbe.destroyed += 1;
+    });
+  }
+}
+
+@Component({
+  standalone: true,
+  imports: [CngxRecyclerRow, DestroyProbe],
+  template: `<ul>
+    <li *cngxRecyclerRow="item(); index: 0; recycler: recycler" destroyProbe class="real-row"></li>
+  </ul>`,
+})
+class ProbeHost {
+  readonly recycler = mockRecycler(56, 100);
+  readonly item = signal<Row | undefined>({ id: 0, name: 'Row 1' });
 }
 
 function setup(): { host: Host; el: HTMLElement; flush: () => void } {
@@ -238,6 +264,63 @@ describe('CngxRecyclerRow', () => {
 
     expect(el.querySelector('.ph-row')).not.toBeNull();
     expect(el.querySelector('.token-row')).toBeNull();
+  });
+
+  it('keeps the custom placeholder a11y position/size reactive across an index/setSize shift', () => {
+    const { host, el, flush } = setup();
+    host.item.set(undefined);
+    flush();
+    let ph = el.querySelector('.ph-row') as HTMLElement;
+    expect(ph.getAttribute('aria-posinset')).toBe('4');
+    expect(ph.getAttribute('aria-setsize')).toBe('100');
+
+    // The window shifts this still-unloaded slot down and the server total grows.
+    host.index.set(7);
+    (host.recycler.ariaSetSize as WritableSignal<number>).set(250);
+    flush();
+
+    ph = el.querySelector('.ph-row') as HTMLElement;
+    expect(ph.getAttribute('aria-posinset')).toBe('8');
+    expect(ph.getAttribute('aria-setsize')).toBe('250');
+    expect(ph.getAttribute('data-top')).toBe('392'); // rowSizeHint(56) * index(7)
+  });
+
+  it('refreshes the imperative default a11y attrs across an index/setSize shift', () => {
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const fixture = TestBed.createComponent(HostNoPlaceholder);
+    fixture.detectChanges();
+    const el = fixture.nativeElement as HTMLElement;
+    let def = el.querySelector('li.cngx-recycler-placeholder') as HTMLElement;
+    expect(def.getAttribute('aria-posinset')).toBe('4');
+    expect(def.getAttribute('aria-setsize')).toBe('100');
+
+    fixture.componentInstance.index.set(9);
+    (fixture.componentInstance.recycler.ariaSetSize as WritableSignal<number>).set(500);
+    TestBed.flushEffects();
+    fixture.detectChanges();
+
+    def = el.querySelector('li.cngx-recycler-placeholder') as HTMLElement;
+    expect(def.getAttribute('aria-posinset')).toBe('10');
+    expect(def.getAttribute('aria-setsize')).toBe('500');
+  });
+
+  it('destroys the cached detached row view on teardown (no leak)', () => {
+    DestroyProbe.destroyed = 0;
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const fixture = TestBed.createComponent(ProbeHost);
+    fixture.detectChanges();
+    expect(DestroyProbe.destroyed).toBe(0);
+
+    // Flip to placeholder: the row view is detached and cached (not destroyed),
+    // so it is no longer owned by the VCR - only the directive's own teardown
+    // can free it.
+    fixture.componentInstance.item.set(undefined);
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    expect(DestroyProbe.destroyed).toBe(0);
+
+    fixture.destroy();
+    expect(DestroyProbe.destroyed).toBe(1);
   });
 
   it('provideRecyclerPlaceholderRow returns the token useValue provider', () => {
