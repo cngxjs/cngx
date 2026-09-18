@@ -27,15 +27,20 @@ export const STORY: DemoSpec = {
   protected readonly visibleItems = this.recycler.sliced(this.allItems);`,
   template: `  <div class="fling-scroll demo-scroll-frame" role="list" aria-label="Demo rows"
        style="height:400px">
-    <ul [cngxRecyclerPlaceholder]="recycler"
-        [style.paddingBlockStart.px]="recycler.offsetBefore()"
-        [style.paddingBlockEnd.px]="recycler.offsetAfter()"
-        style="margin:0;padding-inline:0;list-style:none">
+    <ul style="margin:0;padding-inline:0;list-style:none">
+      @if (recycler.offsetBefore(); as before) {
+        <li role="presentation" aria-hidden="true"
+            [cngxRecyclerPlaceholder]="recycler" [style.height.px]="before"></li>
+      }
       @for (item of visibleItems(); track item.id; let i = $index) {
         <li role="listitem"
-            style="height:56px;display:flex;align-items:center;padding-inline:16px;box-sizing:border-box;background:var(--cngx-color-surface, #ffffff)">
+            style="height:56px;display:flex;align-items:center;padding-inline:16px;box-sizing:border-box">
           {{ item.name }}
         </li>
+      }
+      @if (recycler.offsetAfter(); as after) {
+        <li role="presentation" aria-hidden="true"
+            [cngxRecyclerPlaceholder]="recycler" [style.height.px]="after"></li>
       }
     </ul>
   </div>`,
