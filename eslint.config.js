@@ -175,6 +175,29 @@ module.exports = tseslint.config(
         },
     },
 
+    // Dead-config guard. Every field of an exported Cngx*Config /
+    // Cngx*I18n / Cngx*Labels / Cngx*Templates interface needs at least
+    // one reader outside its declaration file - a field nobody reads is
+    // dead API surface (declared, documented, defaulted, never wired).
+    // Cross-file by design: the rule scans projects/**/*.ts (cached per
+    // lint run), so do not run eslint with --cache on this repo.
+    {
+        files: ['projects/**/*.ts'],
+        plugins: { local: localRules },
+        rules: {
+            'local/config-field-reader-guard': ['error', {
+                ignore: [
+                    // Read dynamically via `this.config.i18n[logic]`
+                    // (filter-builder-body.component.ts) - invisible to the
+                    // static member-access scan.
+                    'CngxFilterBuilderI18n.and',
+                    'CngxFilterBuilderI18n.or',
+                    'CngxFilterBuilderI18n.xor',
+                ],
+            }],
+        },
+    },
+
     // Level-4 organism class-body LOC guard. Pillar 3 contract:
     // organism shells stay thin (under 150 source lines of class
     // body) so brain logic decomposes into Level-2 helper factories
