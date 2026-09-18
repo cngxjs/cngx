@@ -3,9 +3,9 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxRecyclerPlaceholder: Fast-fling skeleton placeholders',
   subtitle:
-    '<code>[cngxRecyclerPlaceholder]</code> paints a row-aligned skeleton background on the scrolling content element. Fling the list hard or drag the scrollbar to a far offset: the frame where rendered rows lag <code>scrollTop</code> reveals skeleton bars instead of the bare surface.',
+    '<code>[cngxRecyclerPlaceholder]</code> rides the two offset spacers and paints soft, row-aligned ghost rows into the gap. Fling the list hard or drag the scrollbar to a far offset: the frame where rendered rows lag <code>scrollTop</code> shows the ghost rows instead of the bare surface, never behind a populated row.',
   description:
-    'A 100,000-row fixed-height list windowed by injectRecycler, offset with padding-block on the scrolling <ul>. CngxRecyclerPlaceholder rides that <ul> and keys its repeat rhythm off the recycler rowSizeHint, so any uncovered offset region paints skeleton bars during a fast fling or teleport jump. Pure CSS background layer: no extra DOM nodes, nothing in the a11y tree.',
+    'A 100,000-row fixed-height list windowed by injectRecycler. The offsets are two presentation spacer <li>s; CngxRecyclerPlaceholder rides each one and keys its rhythm off the recycler rowSizeHint. Because the layer lives on the spacers, it only ever paints in the uncovered gap during a fast fling or teleport jump - never behind a rendered row. Pure CSS background: no extra DOM nodes, nothing in the a11y tree.',
   level: 'molecule',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
