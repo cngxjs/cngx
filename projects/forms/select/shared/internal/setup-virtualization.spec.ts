@@ -42,6 +42,7 @@ describe('setupVirtualization - virtualWindowStart', () => {
         offsetBefore: signal(0),
         offsetAfter: signal(0),
         setsize: computed(() => all().length),
+        rowSizeHint: signal(32),
         scrollToIndex: () => undefined,
       },
     };
@@ -66,6 +67,7 @@ describe('setupVirtualization - virtualWindowStart', () => {
         offsetBefore: signal(0),
         offsetAfter: signal(0),
         setsize: computed(() => all().length),
+        rowSizeHint: signal(32),
         scrollToIndex: () => undefined,
       },
     };

@@ -565,10 +565,17 @@ describe('CngxIncrementalList', () => {
       expect(rows[0].getAttribute('aria-setsize')).toBe('1000');
       expect(rows[0].getAttribute('aria-posinset')).toBe('1');
 
-      // The off-window rows below are a padding spacer, not real DOM nodes.
-      const ul = lists[0] as HTMLElement;
-      expect(ul.style.paddingBlockStart).toBe('0px');
-      expect(parseFloat(ul.style.paddingBlockEnd)).toBeGreaterThan(0);
+      // The off-window region is a spacer <li>, not real DOM rows. It reserves
+      // the remaining scroll height and carries the fast-fling placeholder layer
+      // (aria-hidden, decorative), so the skeleton only ever paints in the gap -
+      // never behind a rendered row. At the top there is no before-offset, so
+      // only the after-spacer is present.
+      const spacers = listEl.querySelectorAll('.cngx-incremental-list__spacer');
+      expect(spacers).toHaveLength(1);
+      const after = spacers[0] as HTMLElement;
+      expect(parseFloat(after.style.height)).toBeGreaterThan(0);
+      expect(after.getAttribute('aria-hidden')).toBe('true');
+      expect(after.classList.contains('cngx-recycler-placeholder')).toBe(true);
     });
 
     test('[virtualize] unset renders every accumulated row; no recycler announcer (regression guard)', async () => {

@@ -152,6 +152,16 @@ export interface CngxRecycler {
   /** Total scrollable height of all items (px). */
   readonly totalSize: Signal<number>;
 
+  /**
+   * Representative row height (px) for a placeholder layer's repeat rhythm.
+   * A numeric or `Signal<number>` `estimateSize` is already uniform, so it is
+   * used verbatim; a per-index variable estimate has no single height, so the
+   * average (`totalSize / totalCount`) stands in. Consumed by
+   * {@link CngxRecyclerPlaceholder} to key its repeating skeleton interval off
+   * the same rhythm the range uses. `0` on an empty list.
+   */
+  readonly rowSizeHint: Signal<number>;
+
   /** Placeholder count before rendered items. Only non-zero in grid mode. */
   readonly placeholdersBefore: Signal<number>;
   /** Placeholder count after rendered items. Only non-zero in grid mode. */
@@ -372,6 +382,24 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
   const offsetBefore = computed(() => (isGrid ? 0 : range().offsetBefore));
   const offsetAfter = computed(() => (isGrid ? 0 : range().offsetAfter));
   const totalSize = computed(() => range().totalSize);
+
+  // Representative row height for a placeholder layer's repeat interval. Derived,
+  // never stored: a uniform estimate (number or signal) is the rhythm directly;
+  // a per-index estimate has no single height, so the running average stands in.
+  const rowSizeHint = computed(() => {
+    const estimate = config.estimateSize;
+    if (typeof estimate === 'number') {
+      return estimate;
+    }
+    if (isSignal(estimate)) {
+      return estimate();
+    }
+    const total = config.totalCount();
+    if (total <= 0) {
+      return 0;
+    }
+    return totalSize() / total;
+  });
 
   const placeholdersBefore = computed(() => (isGrid ? start() : 0));
   const placeholdersAfter = computed(() => (isGrid ? Math.max(0, config.totalCount() - end()) : 0));
@@ -603,6 +631,7 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
     offsetBefore,
     offsetAfter,
     totalSize,
+    rowSizeHint,
 
     placeholdersBefore,
     placeholdersAfter,

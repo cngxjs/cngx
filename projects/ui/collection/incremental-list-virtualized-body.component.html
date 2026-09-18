@@ -1,9 +1,13 @@
-<ul
-  class="cngx-incremental-list__items"
-  role="list"
-  [style.padding-block-start.px]="recycler.offsetBefore()"
-  [style.padding-block-end.px]="recycler.offsetAfter()"
->
+<ul class="cngx-incremental-list__items" role="list">
+  @if (recycler.offsetBefore(); as before) {
+    <li
+      class="cngx-incremental-list__spacer"
+      role="presentation"
+      aria-hidden="true"
+      [cngxRecyclerPlaceholder]="recycler"
+      [style.height.px]="before"
+    ></li>
+  }
   @for (item of windowItems(); track trackItem()(recycler.start() + $index, item)) {
     <li
       class="cngx-incremental-list__item"
@@ -21,6 +25,15 @@
         {{ item }}
       }
     </li>
+  }
+  @if (recycler.offsetAfter(); as after) {
+    <li
+      class="cngx-incremental-list__spacer"
+      role="presentation"
+      aria-hidden="true"
+      [cngxRecyclerPlaceholder]="recycler"
+      [style.height.px]="after"
+    ></li>
   }
 </ul>
 

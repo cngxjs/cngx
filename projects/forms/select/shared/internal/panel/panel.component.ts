@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 
 import { CngxCheckboxIndicator, CngxRadioIndicator } from '@cngx/common/display';
+import { CngxRecyclerPlaceholder } from '@cngx/common/data';
 import { CngxOption } from '@cngx/common/interactive';
 
 import { CngxSelectPanelShell } from '../panel-shell/panel-shell.component';
@@ -46,7 +47,14 @@ import { isCngxSelectOptionGroupDef } from '../../option.model';
   exportAs: 'cngxSelectPanel',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CngxOption, CngxCheckboxIndicator, CngxRadioIndicator, CngxSelectPanelShell, NgTemplateOutlet],
+  imports: [
+    CngxOption,
+    CngxCheckboxIndicator,
+    CngxRadioIndicator,
+    CngxRecyclerPlaceholder,
+    CngxSelectPanelShell,
+    NgTemplateOutlet,
+  ],
   host: {
     class: 'cngx-select-panel-host',
   },
