@@ -91,15 +91,16 @@ export class CngxStickyHeader {
       // it visibly scrolls away with its content.
       const scrollport = this.resolveScrollParent(host);
 
-      // A scrollport whose content fits (client height equals scroll height) never
-      // scrolls in the block axis, so a header inside it can never pin - `isSticky()`
-      // stays false while the whole scrollport moves. Flag the misconfiguration once,
-      // in dev only; a one-shot read here is exactly what `afterNextRender` is for
-      // (no reactive-graph node, unlike a dep-less effect).
+      // A scrollport whose content fits never scrolls in the block axis, so a header
+      // inside it can never pin - `isSticky()` stays false while the whole scrollport
+      // moves. Flag the misconfiguration once, in dev only; a one-shot read here is
+      // exactly what `afterNextRender` is for (no reactive-graph node, unlike a
+      // dep-less effect). The 1px tolerance absorbs sub-pixel layout and browser-zoom
+      // rounding: "cannot meaningfully scroll" instead of exact equality.
       if (
         isDevMode() &&
         scrollport &&
-        scrollport.clientHeight === scrollport.scrollHeight
+        scrollport.scrollHeight - scrollport.clientHeight <= 1
       ) {
         console.warn(
           '[cngxStickyHeader] resolves against a scroll container that cannot scroll ' +
