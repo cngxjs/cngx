@@ -19,7 +19,6 @@ import {
   withMaxNestingDepth,
   withNegation,
   withOperators,
-  withSkeletonCount,
   withTemplates,
   type CngxFilterBuilderConfig,
 } from './filter-builder.config';
@@ -63,10 +62,6 @@ describe('filter-builder.config', () => {
 
     it('negation defaults to disabled', () => {
       expect(CNGX_FILTER_BUILDER_DEFAULTS.negationEnabled).toBe(false);
-    });
-
-    it('skeletonCount defaults to 3', () => {
-      expect(CNGX_FILTER_BUILDER_DEFAULTS.skeletonCount).toBe(3);
     });
   });
 
@@ -125,11 +120,6 @@ describe('filter-builder.config', () => {
     it('withNegation toggles the surface flag', () => {
       const probe = setupRoot(provideFilterBuilderConfig(withNegation(true)));
       expect(probe.config.negationEnabled).toBe(true);
-    });
-
-    it('withSkeletonCount overrides the loading-skeleton row count', () => {
-      const probe = setupRoot(provideFilterBuilderConfig(withSkeletonCount(7)));
-      expect(probe.config.skeletonCount).toBe(7);
     });
 
     it('withTemplates merges template refs into the slot map', () => {
