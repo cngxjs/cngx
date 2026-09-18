@@ -806,6 +806,17 @@ export class CngxPopover {
     this.resolvedEdgeSignal.set(null);
     this.focusOriginState.set(null);
     const el = this.popoverElement;
+    // Move focus out of the panel BEFORE it flips to aria-hidden (state ->
+    // 'closed'). Closing while a descendant (e.g. the close button, or a
+    // control reached by keyboard) still holds focus would trap that focus
+    // under aria-hidden - the browser blocks it and warns. Blurring here
+    // relocates to the document synchronously, matching the eventual
+    // display:none end state; opt-in `restoreFocus` still returns focus to
+    // the trigger afterwards.
+    const active = this.doc.activeElement as HTMLElement | null;
+    if (active && el.contains(active) && typeof active.blur === 'function') {
+      active.blur();
+    }
     try {
       el.hidePopover();
     } catch {

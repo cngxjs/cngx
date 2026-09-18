@@ -236,6 +236,24 @@ describe('CngxPopover', () => {
       expect(host.popover().focusOrigin()).toBeNull();
       outside.remove();
     });
+
+    it('moves focus out of the panel on close so it never sits under aria-hidden', () => {
+      const { fixture, popoverEl } = setup(BasicHost);
+      const host = fixture.componentInstance as BasicHost;
+      const inner = document.createElement('button');
+      popoverEl.appendChild(inner);
+
+      host.popover().show();
+      inner.focus();
+      expect(document.activeElement).toBe(inner);
+
+      // No CSS transition in jsdom, so hide() finalizes synchronously and the
+      // panel flips to aria-hidden. Focus must have left the panel first.
+      host.popover().hide();
+      expect(popoverEl.contains(document.activeElement)).toBe(false);
+
+      inner.remove();
+    });
   });
 
   describe('Escape key', () => {
