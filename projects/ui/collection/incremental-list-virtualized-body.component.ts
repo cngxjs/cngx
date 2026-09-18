@@ -12,7 +12,13 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 
-import { CngxMeasure, CngxRecyclerAnnouncer, CngxVirtualItem, injectRecycler } from '@cngx/common/data';
+import {
+  CngxMeasure,
+  CngxRecyclerAnnouncer,
+  CngxRecyclerPlaceholder,
+  CngxVirtualItem,
+  injectRecycler,
+} from '@cngx/common/data';
 
 import type { CngxIncrementalItemContext } from './incremental-list-slots';
 
@@ -36,7 +42,13 @@ import type { CngxIncrementalItemContext } from './incremental-list-slots';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [NgTemplateOutlet, CngxVirtualItem, CngxMeasure, CngxRecyclerAnnouncer],
+  imports: [
+    NgTemplateOutlet,
+    CngxVirtualItem,
+    CngxMeasure,
+    CngxRecyclerPlaceholder,
+    CngxRecyclerAnnouncer,
+  ],
   templateUrl: './incremental-list-virtualized-body.component.html',
   host: { class: 'cngx-incremental-list__viewport' },
 })
