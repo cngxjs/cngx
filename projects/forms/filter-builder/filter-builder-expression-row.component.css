@@ -44,7 +44,7 @@
   @property --cngx-filter-builder-value-basis {
     syntax: '<length>';
     inherits: true;
-    initial-value: 8rem;
+    initial-value: 128px;
   }
 
   /**
@@ -55,7 +55,7 @@
   @property --cngx-filter-builder-value-max {
     syntax: '<length>';
     inherits: true;
-    initial-value: 20rem;
+    initial-value: 320px;
   }
 }
 
