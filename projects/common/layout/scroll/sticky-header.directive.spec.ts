@@ -204,4 +204,22 @@ describe('CngxStickyHeader scrollport resolution', () => {
     expect(warn.mock.calls[0][0]).toMatch(/never pin/);
     warn.mockRestore();
   });
+
+  it('treats a sub-pixel scroll range as "cannot scroll" (still warns)', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    stubLayout(100, 101); // 1px range: zoom / sub-pixel rounding, not real scrolling
+    setup();
+
+    expect(warn).toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
+  it('does not warn once the scroll range exceeds the rounding tolerance', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    stubLayout(100, 102); // 2px range: barely but genuinely scrollable
+    setup();
+
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
+  });
 });
