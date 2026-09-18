@@ -46,6 +46,13 @@ export {
   observeMediaQuery,
   type MediaQueryHost,
 } from './media-query-signal';
+export {
+  createKeyedRegistry,
+  createSlotRegistry,
+  type KeyedRegistry,
+  type RegistryOptions,
+  type SlotRegistry,
+} from './registry';
 export { CNGX_STATEFUL, type CngxStateful } from './stateful';
 export {
   CNGX_SELECTION_CONTROLLER_FACTORY,
