@@ -37,9 +37,13 @@ const EMPTY_RANGE: RangeResult = {
  * @param clientHeight Viewport height in px.
  * @param totalCount Total number of items.
  * @param estimateSize Fixed item height in px, or a function returning height per index.
- * @param overscan Number of extra items to render above/below the viewport.
+ * @param overscanBefore Extra items to render above the viewport (leading edge
+ *   when scrolling up).
  * @param columns Column count for grid mode (default 1). When > 1, range is row-aligned.
  *   Variable `estimateSize` ignores columns (grid + variable heights not supported).
+ * @param overscanAfter Extra items to render below the viewport (leading edge when
+ *   scrolling down). Defaults to `overscanBefore` for a symmetric range. Callers pass
+ *   an asymmetric pair to pre-render into the scroll direction.
  * @returns The computed range with spacer offsets.
  * @internal
  */
@@ -48,19 +52,35 @@ export function computeRange(
   clientHeight: number,
   totalCount: number,
   estimateSize: number | ((index: number) => number),
-  overscan: number,
+  overscanBefore: number,
   columns = 1,
+  overscanAfter = overscanBefore,
 ): RangeResult {
   if (totalCount <= 0 || clientHeight <= 0) {
     return EMPTY_RANGE;
   }
 
   if (typeof estimateSize === 'number') {
-    return computeFixedRange(scrollTop, clientHeight, totalCount, estimateSize, overscan, columns);
+    return computeFixedRange(
+      scrollTop,
+      clientHeight,
+      totalCount,
+      estimateSize,
+      overscanBefore,
+      overscanAfter,
+      columns,
+    );
   }
 
   // variable heights: grid mode unsupported, columns ignored
-  return computeVariableRange(scrollTop, clientHeight, totalCount, estimateSize, overscan);
+  return computeVariableRange(
+    scrollTop,
+    clientHeight,
+    totalCount,
+    estimateSize,
+    overscanBefore,
+    overscanAfter,
+  );
 }
 
 function computeFixedRange(
@@ -68,11 +88,20 @@ function computeFixedRange(
   clientHeight: number,
   totalCount: number,
   itemSize: number,
-  overscan: number,
+  overscanBefore: number,
+  overscanAfter: number,
   columns: number,
 ): RangeResult {
   if (columns > 1) {
-    return computeGridRange(scrollTop, clientHeight, totalCount, itemSize, overscan, columns);
+    return computeGridRange(
+      scrollTop,
+      clientHeight,
+      totalCount,
+      itemSize,
+      overscanBefore,
+      overscanAfter,
+      columns,
+    );
   }
 
   const totalSize = totalCount * itemSize;
@@ -80,8 +109,8 @@ function computeFixedRange(
   const rawStart = Math.floor(scrollTop / itemSize);
   const rawEnd = Math.ceil((scrollTop + clientHeight) / itemSize);
 
-  const start = Math.max(0, rawStart - overscan);
-  const end = Math.min(totalCount, rawEnd + overscan);
+  const start = Math.max(0, rawStart - overscanBefore);
+  const end = Math.min(totalCount, rawEnd + overscanAfter);
 
   return {
     start,
@@ -105,7 +134,8 @@ function computeGridRange(
   clientHeight: number,
   totalCount: number,
   rowHeight: number,
-  overscan: number,
+  overscanBefore: number,
+  overscanAfter: number,
   columns: number,
 ): RangeResult {
   const totalRows = Math.ceil(totalCount / columns);
@@ -116,9 +146,10 @@ function computeGridRange(
   const rawEndRow = Math.ceil((scrollTop + clientHeight) / rowHeight);
 
   // overscan applied in rows so full rows always render
-  const overscanRows = Math.ceil(overscan / columns);
-  const startRow = Math.max(0, rawStartRow - overscanRows);
-  const endRow = Math.min(totalRows, rawEndRow + overscanRows);
+  const overscanRowsBefore = Math.ceil(overscanBefore / columns);
+  const overscanRowsAfter = Math.ceil(overscanAfter / columns);
+  const startRow = Math.max(0, rawStartRow - overscanRowsBefore);
+  const endRow = Math.min(totalRows, rawEndRow + overscanRowsAfter);
 
   const start = startRow * columns;
   const end = Math.min(endRow * columns, totalCount);
@@ -137,7 +168,8 @@ function computeVariableRange(
   clientHeight: number,
   totalCount: number,
   estimateSize: (index: number) => number,
-  overscan: number,
+  overscanBefore: number,
+  overscanAfter: number,
 ): RangeResult {
   let totalSize = 0;
   const offsets = new Array<number>(totalCount + 1);
@@ -152,8 +184,8 @@ function computeVariableRange(
   const rawStart = binarySearch(offsets, scrollTop, totalCount);
   const rawEnd = binarySearch(offsets, scrollTop + clientHeight, totalCount);
 
-  const start = Math.max(0, rawStart - overscan);
-  const end = Math.min(totalCount, rawEnd + 1 + overscan);
+  const start = Math.max(0, rawStart - overscanBefore);
+  const end = Math.min(totalCount, rawEnd + 1 + overscanAfter);
 
   return {
     start,
