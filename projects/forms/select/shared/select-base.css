@@ -933,6 +933,26 @@
       flip-block flip-inline;
   }
 
+  /* A virtualized panel only ever renders a window of options, so the default
+     shrink-to-fit width jitters as the window recycles through options of
+     differing widths (proportional digits, variable labels). Lock the width to
+     the resolved min-width (the anchor / trigger width by default) so it stays
+     stable; options wider than that scroll horizontally, since overflow-y: auto
+     already promotes overflow-x to auto. The .cngx-select__virtual-spacer marker
+     is rendered by the panel body only while virtualization is active, so
+     non-virtualized panels keep shrink-to-fit. */
+  .cngx-select__panel:has(.cngx-select__virtual-spacer) {
+    width: var(--cngx-select-panel-min-width, anchor-size(width));
+  }
+
+  /* With the width locked, an option that would exceed it must stay on one line
+     and scroll horizontally rather than wrap to two rows - wrapping would also
+     break the recycler's uniform-height assumption. Scoped to virtualized
+     panels so non-virtualized option wrapping is unchanged. */
+  .cngx-select__panel:has(.cngx-select__virtual-spacer) .cngx-select__option {
+    white-space: nowrap;
+  }
+
   .cngx-select__group-header {
     /* group-header padding 0.25/0.5 -> xs/sm. SET from scale so a global
        [data-density] compacts it; kept locked to the declarative
