@@ -3,7 +3,7 @@
   [actionPosition]="host.actionPosition?.() ?? 'bottom'"
 >
   @if (virtualizer(); as v) {
-    <div aria-hidden="true" [style.height.px]="v.offsetBefore()"></div>
+    <div class="cngx-select__virtual-spacer" aria-hidden="true" [style.height.px]="v.offsetBefore()"></div>
   }
   @for (item of renderItems(); track $index) {
     @if (host.isGroup(item)) {
@@ -28,7 +28,7 @@
     }
   }
   @if (virtualizer(); as v) {
-    <div aria-hidden="true" [style.height.px]="v.offsetAfter()"></div>
+    <div class="cngx-select__virtual-spacer" aria-hidden="true" [style.height.px]="v.offsetAfter()"></div>
   }
 </cngx-select-panel-shell>
 
