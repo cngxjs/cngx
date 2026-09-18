@@ -17,6 +17,7 @@ export { CngxPressRipple } from './ripple/press-ripple.directive';
 export {
   CNGX_NAV_CONFIG,
   provideNavConfig,
+  provideNavConfigAt,
   injectNavConfig,
   withSingleAccordion,
   withNavIndent,

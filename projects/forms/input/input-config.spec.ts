@@ -4,8 +4,10 @@ import { describe, expect, it } from 'vitest';
 import {
   CNGX_INPUT_CONFIG,
   DEFAULT_INPUT_ARIA_LABELS,
+  injectInputConfig,
   type InputConfig,
   provideInputConfig,
+  provideInputConfigAt,
   withInputAriaLabels,
 } from './input-config';
 
@@ -50,5 +52,18 @@ describe('withInputAriaLabels', () => {
     expect(DEFAULT_INPUT_ARIA_LABELS.copyError).toBe('Copy failed');
     expect(DEFAULT_INPUT_ARIA_LABELS.otpSlot(0, 6)).toBe('Digit 1 of 6');
     expect(DEFAULT_INPUT_ARIA_LABELS.otpSlot(5, 6)).toBe('Digit 6 of 6');
+  });
+});
+
+describe('provideInputConfigAt / injectInputConfig', () => {
+  it('provideInputConfigAt resolves the same merged config as provideInputConfig', () => {
+    const config = resolveIn([provideInputConfigAt(withInputAriaLabels({ clear: 'Leeren' }))]);
+    expect(config.ariaLabels?.clear).toBe('Leeren');
+  });
+
+  it('injectInputConfig resolves without a provider via the root default factory', () => {
+    TestBed.configureTestingModule({ providers: [] });
+    const config = TestBed.runInInjectionContext(() => injectInputConfig());
+    expect(config).toEqual({});
   });
 });

@@ -101,6 +101,17 @@ export function provideNavConfig(...features: NavConfigFeature[]): Provider[] {
 }
 
 /**
+ * Component-scoped variant - use in `viewProviders` so the nav config
+ * only applies to descendants of this component. Same feature merge as
+ * {@link provideNavConfig}.
+ *
+ * @category common/interactive
+ */
+export function provideNavConfigAt(...features: NavConfigFeature[]): Provider[] {
+  return provideNavConfig(...features);
+}
+
+/**
  * Enables single-accordion mode - only one nav group can be open at a time.
  *
  * @category common/interactive

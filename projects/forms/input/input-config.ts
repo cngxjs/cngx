@@ -1,4 +1,4 @@
-import { InjectionToken, type Provider } from '@angular/core';
+import { inject, InjectionToken, type Provider } from '@angular/core';
 import type { MaskTokenMap } from './input-mask.directive';
 
 /**
@@ -145,7 +145,7 @@ const DEFAULT_INPUT_CONFIG: InputConfig = {};
  * @category forms/input
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/input-config.ts
  * @since 0.1.0
- * @relatedTo provideInputConfig, withInputAriaLabels, withNumericDefaults, withMaskPlaceholder, withMaskGuide, withCustomTokens, withPhonePatterns, withIbanPatterns, withZipPatterns, withDateFormats, withCopyResetDelay, withFileMaxSize, withFileMaxFiles, withCurrency, withPhoneDefaultRegion
+ * @relatedTo provideInputConfig, provideInputConfigAt, injectInputConfig, withInputAriaLabels, withNumericDefaults, withMaskPlaceholder, withMaskGuide, withCustomTokens, withPhonePatterns, withIbanPatterns, withZipPatterns, withDateFormats, withCopyResetDelay, withFileMaxSize, withFileMaxFiles, withCurrency, withPhoneDefaultRegion
  */
 export const CNGX_INPUT_CONFIG = new InjectionToken<InputConfig>('CNGX_INPUT_CONFIG', {
   providedIn: 'root',
@@ -204,6 +204,28 @@ export function provideInputConfig(...features: InputConfigFeature[]): Provider 
     config = feature(config);
   }
   return { provide: CNGX_INPUT_CONFIG, useValue: config };
+}
+
+/**
+ * Component-scoped variant - use in `viewProviders` so the input config
+ * only applies to descendants of this component. Same feature merge and
+ * nearest-wins resolution as {@link provideInputConfig}.
+ *
+ * @category forms/input
+ */
+export function provideInputConfigAt(...features: InputConfigFeature[]): Provider[] {
+  return [provideInputConfig(...features)];
+}
+
+/**
+ * Inject the resolved input config in an injection context. Resolves
+ * without a provider (the token carries a root default factory), so every
+ * key left unset keeps its per-directive built-in default.
+ *
+ * @category forms/input
+ */
+export function injectInputConfig(): InputConfig {
+  return inject(CNGX_INPUT_CONFIG);
 }
 
 /**

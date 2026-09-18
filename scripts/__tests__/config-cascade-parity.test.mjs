@@ -48,12 +48,7 @@ const NAMING_EXCEPTIONS = new Map([
 /** Token -> triad symbols known to be missing on main. Ratchet list: close
  * the gap (or promote the token to NAMING_EXCEPTIONS with a rationale) and
  * remove the entry - a resolved entry left behind fails the guard. */
-const KNOWN_GAPS = new Map([
-  ['CNGX_NAV_CONFIG', ['provideNavConfigAt']],
-  ['CNGX_INPUT_CONFIG', ['provideInputConfigAt', 'injectInputConfig']],
-  ['CNGX_REORDERABLE_SELECT_CONFIG', ['injectReorderableSelectConfig']],
-  ['CNGX_ACTION_SELECT_CONFIG', ['injectActionSelectConfig']],
-]);
+const KNOWN_GAPS = new Map([]);
 
 function collectPublicApis() {
   const apis = [];

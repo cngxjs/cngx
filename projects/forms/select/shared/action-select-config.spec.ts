@@ -2,6 +2,7 @@ import { Injector, runInInjectionContext } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
+import { injectActionSelectConfig } from './inject-helpers';
 import {
   provideActionSelectConfig,
   provideActionSelectConfigAt,
@@ -52,5 +53,17 @@ describe('provideActionSelectConfig', () => {
     expect(resolved.focusTrapBehavior).toBe('never');
     // Unspecified keys still fall back to library defaults.
     expect(resolved.ariaLabel).toBe('Inline action');
+  });
+});
+
+describe('injectActionSelectConfig', () => {
+  it('returns the resolved config merged with defaults', () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [provideActionSelectConfig(withActionAriaLabel('Quick action'))],
+    });
+    const resolved = TestBed.runInInjectionContext(() => injectActionSelectConfig());
+    expect(resolved.ariaLabel).toBe('Quick action');
+    expect(resolved.focusTrapBehavior).toBe('dirty');
   });
 });

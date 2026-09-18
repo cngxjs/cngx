@@ -1,7 +1,9 @@
 import { inject } from '@angular/core';
 
+import { resolveActionSelectConfig } from './action-select-config';
 import { CngxSelectAnnouncer } from './announcer';
 import { resolveSelectConfig } from './internal/resolve-config';
+import { resolveReorderableSelectConfig } from './reorderable-select-config';
 
 /**
  * Effective select config for the current injector, merged with library
@@ -35,4 +37,30 @@ export function injectSelectConfig(): ReturnType<typeof resolveSelectConfig> {
  */
 export function injectSelectAnnouncer(): CngxSelectAnnouncer {
   return inject(CngxSelectAnnouncer);
+}
+
+/**
+ * Effective action-select config for the current injector, merged with
+ * library defaults. Always fully populated - never `null`. Injection
+ * context required. Sibling of {@link injectSelectConfig} for the
+ * `CngxActionSelect` / `CngxActionMultiSelect` composites.
+ *
+ * @category forms/select
+ */
+export function injectActionSelectConfig(): ReturnType<typeof resolveActionSelectConfig> {
+  return resolveActionSelectConfig();
+}
+
+/**
+ * Effective reorderable-select config for the current injector, merged
+ * with library defaults. Always fully populated - never `null`. Injection
+ * context required. Sibling of {@link injectSelectConfig} for the
+ * `CngxReorderableMultiSelect` composite.
+ *
+ * @category forms/select
+ */
+export function injectReorderableSelectConfig(): ReturnType<
+  typeof resolveReorderableSelectConfig
+> {
+  return resolveReorderableSelectConfig();
 }

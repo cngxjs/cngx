@@ -45,6 +45,8 @@ export {
   type InputConfigFeature,
   type InputAriaLabels,
   provideInputConfig,
+  provideInputConfigAt,
+  injectInputConfig,
   withInputAriaLabels,
   withPhonePatterns,
   withPhoneDefaultRegion,
