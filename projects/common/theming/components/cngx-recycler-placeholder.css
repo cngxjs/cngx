@@ -1,0 +1,172 @@
+/**
+ * @overview
+ * Theming bridge for the `CngxRecyclerPlaceholder` directive. The directive
+ * sets the `cngx-recycler-placeholder` class on a virtualized surface's
+ * scrolling content element (a spacer div, or a `padding-block`ed list) and
+ * writes `--cngx-recycler-placeholder-row-height` from the recycler's
+ * `rowSizeHint`. Importing this file paints a row-aligned skeleton background
+ * into any exposed offset region during a fast fling or teleport jump; opaque
+ * item rows cover their own rows, so only the uncovered gap reveals the layer.
+ *
+ * **Rhythm**
+ *
+ * The bars are a vertical `repeating-linear-gradient` whose period is
+ * `--cngx-recycler-placeholder-row-height`. Because the recycler's
+ * `offsetBefore` is a whole multiple of the row height, the gradient stays
+ * aligned with the real rows above and below the window.
+ *
+ * **Shimmer**
+ *
+ * `.cngx-recycler-placeholder--shimmer` layers a sweeping highlight over the
+ * bars and animates its `background-position`. The directive toggles the class
+ * from a `(prefers-reduced-motion: reduce)` signal, so reduced motion simply
+ * drops the class - no `@media` rule the layer depends on. Animating the
+ * background (not element opacity) keeps the opaque child rows untouched.
+ *
+ * **Dark mode**
+ *
+ * Three hooks repaint `--cngx-recycler-placeholder-color` /
+ * `--cngx-recycler-placeholder-shimmer-color` for the dark surface. They sit
+ * unlayered with direct selectors so they beat the layered defaults without the
+ * `@scope`/`@layer` cascade ambiguity.
+ */
+
+@layer cngx.tokens {
+  /**
+   * Repeat period of the skeleton bars (px). Set inline by the directive from
+   * the recycler's `rowSizeHint`; the initial applies when no row height
+   * resolves. `inherits: true` so a select-panel ancestor mapping the token
+   * reaches the spacer descendant that hosts the layer.
+   * @group Layout
+   */
+  @property --cngx-recycler-placeholder-row-height {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 48px;
+  }
+
+  /**
+   * Height of the painted bar within each row period; the remainder is the gap
+   * between bars.
+   * @group Layout
+   */
+  @property --cngx-recycler-placeholder-bar-height {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 32px;
+  }
+
+  /**
+   * Fill color of the skeleton bars. Falls back to the neutral surface wash.
+   * @group Surface
+   */
+  @property --cngx-recycler-placeholder-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.92 0.004 250);
+  }
+
+  /**
+   * Corner radius applied to each bar via the gradient is not expressible, so
+   * this token instead rounds the layer's own clipping when a consumer wraps
+   * bars in a mask; kept for token symmetry with the first-load skeleton.
+   * @group Surface
+   */
+  @property --cngx-recycler-placeholder-radius {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 4px;
+  }
+
+  /**
+   * Highlight color swept across the bars in shimmer mode.
+   * @group Motion
+   */
+  @property --cngx-recycler-placeholder-shimmer-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.97 0.003 250);
+  }
+
+  /**
+   * Duration of one shimmer sweep.
+   * @group Motion
+   */
+  @property --cngx-recycler-placeholder-shimmer-duration {
+    syntax: '*';
+    inherits: true;
+    initial-value: 1.4s;
+  }
+}
+
+@layer cngx.components {
+  .cngx-recycler-placeholder {
+    background-image: repeating-linear-gradient(
+      to bottom,
+      var(--cngx-recycler-placeholder-color, oklch(0.92 0.004 250)) 0,
+      var(--cngx-recycler-placeholder-color, oklch(0.92 0.004 250))
+        var(--cngx-recycler-placeholder-bar-height, 32px),
+      transparent var(--cngx-recycler-placeholder-bar-height, 32px),
+      transparent var(--cngx-recycler-placeholder-row-height, 48px)
+    );
+    background-repeat: repeat;
+    background-position: 0 0;
+  }
+
+  /* Shimmer: a horizontal highlight band (first layer) swept over the static
+   * bars (second layer). Only the background moves, so the opaque child rows
+   * that cover their own region are never animated. */
+  .cngx-recycler-placeholder--shimmer {
+    background-image:
+      linear-gradient(
+        90deg,
+        transparent 0,
+        var(--cngx-recycler-placeholder-shimmer-color, oklch(0.97 0.003 250)) 50%,
+        transparent 100%
+      ),
+      repeating-linear-gradient(
+        to bottom,
+        var(--cngx-recycler-placeholder-color, oklch(0.92 0.004 250)) 0,
+        var(--cngx-recycler-placeholder-color, oklch(0.92 0.004 250))
+          var(--cngx-recycler-placeholder-bar-height, 32px),
+        transparent var(--cngx-recycler-placeholder-bar-height, 32px),
+        transparent var(--cngx-recycler-placeholder-row-height, 48px)
+      );
+    background-repeat: no-repeat, repeat;
+    background-size:
+      200% 100%,
+      auto;
+    background-position:
+      -100% 0,
+      0 0;
+    animation: cngx-recycler-placeholder-shimmer
+      var(--cngx-recycler-placeholder-shimmer-duration, 1.4s) linear infinite;
+  }
+}
+
+@keyframes cngx-recycler-placeholder-shimmer {
+  from {
+    background-position:
+      -100% 0,
+      0 0;
+  }
+  to {
+    background-position:
+      200% 0,
+      0 0;
+  }
+}
+
+/* Dark mode: unlayered, direct selectors so they beat the layered defaults.
+ * Repaint the bar wash and shimmer highlight for the dark surface. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-color-scheme='light']):not(.light) .cngx-recycler-placeholder {
+    --cngx-recycler-placeholder-color: oklch(0.32 0.01 250);
+    --cngx-recycler-placeholder-shimmer-color: oklch(0.4 0.012 250);
+  }
+}
+[data-color-scheme='dark'] .cngx-recycler-placeholder,
+.dark .cngx-recycler-placeholder {
+  --cngx-recycler-placeholder-color: oklch(0.32 0.01 250);
+  --cngx-recycler-placeholder-shimmer-color: oklch(0.4 0.012 250);
+}
