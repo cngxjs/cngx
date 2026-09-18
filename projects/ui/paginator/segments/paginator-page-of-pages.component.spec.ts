@@ -103,6 +103,21 @@ describe('CngxPaginatorPageOfPages', () => {
     expect(document.activeElement).toBe(trigger(fixture));
   });
 
+  test('re-picking the current page still runs the close path (focus back on the trigger)', async () => {
+    const { fixture, paginate } = await setup();
+    paginate.setPage(3);
+    await settle(fixture);
+    // Activation of the already-selected page: value does not change, so
+    // valueChange stays silent - the activated wiring must close regardless.
+    options(fixture)
+      .find((o) => o.textContent?.trim() === '4')
+      ?.click();
+    await settle(fixture);
+
+    expect(paginate.pageIndex()).toBe(3);
+    expect(document.activeElement).toBe(trigger(fixture));
+  });
+
   test('the option for the active page is aria-selected', async () => {
     const { fixture, paginate } = await setup();
     paginate.setPage(2);

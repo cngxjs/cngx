@@ -112,6 +112,17 @@ describe('CngxPaginatorPageSize', () => {
     expect(document.activeElement).toBe(trigger(fixture));
   });
 
+  test('re-picking the current size still runs the close path (focus back on the trigger)', async () => {
+    const { fixture, paginate } = await setup();
+    const sizeBefore = paginate.pageSize();
+    // Activation of the already-selected size: value does not change, so
+    // valueChange stays silent - the activated wiring must close regardless.
+    await pick(fixture, String(sizeBefore));
+
+    expect(paginate.pageSize()).toBe(sizeBefore);
+    expect(document.activeElement).toBe(trigger(fixture));
+  });
+
   test('disables the trigger and does not change the size while busy', async () => {
     const { fixture, host, paginate } = await setup();
     const busy = createManualState<unknown>();

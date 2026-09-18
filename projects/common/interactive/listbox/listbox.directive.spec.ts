@@ -22,6 +22,7 @@ interface Fruit {
       [selectedValues]="selectedIn()"
       (valueChange)="lastValue.set($any($event))"
       (selectedValuesChange)="lastSelected.set($any($event))"
+      (activated)="activations.set(activations() + 1)"
       tabindex="0"
       #lb="cngxListbox"
     >
@@ -47,6 +48,7 @@ class ListboxHost {
   ]);
   readonly lastValue = signal<string | null>(null);
   readonly lastSelected = signal<string[] | null>(null);
+  readonly activations = signal(0);
 }
 
 describe('CngxListbox', () => {
@@ -94,6 +96,20 @@ describe('CngxListbox', () => {
   it('collects options via contentChildren', () => {
     const { listbox } = setup();
     expect(listbox.options()).toHaveLength(4);
+  });
+
+  it('re-exposes activated on the host and fires it even when the value does not change', () => {
+    const { fixture } = setup();
+    const options = fixture.nativeElement.querySelectorAll('[cngxOption]');
+    options[1].click();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.activations()).toBe(1);
+    expect(fixture.componentInstance.lastValue()).toBe('b');
+
+    // Re-picking the selected option: valueChange stays silent, activated fires.
+    options[1].click();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.activations()).toBe(2);
   });
 
   it('select() in single mode emits valueChange and flags the option', () => {
