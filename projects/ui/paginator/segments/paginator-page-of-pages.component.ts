@@ -59,7 +59,7 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
         tabindex="0"
         [label]="config.ariaLabels.pageOfPages"
         [value]="host.pageIndex() + 1"
-        (valueChange)="onSelect($event, pop, trigger)"
+        (activated)="onSelect($event, pop, trigger)"
         #lb="cngxListbox"
       >
         @for (page of pages(); track page) {
@@ -86,20 +86,19 @@ export class CngxPaginatorPageOfPages {
   );
 
   /**
-   * Jump to the picked page and close the dropdown. Focus returns to the
-   * trigger *before* `hide()` so the panel is never `aria-hidden` while it
-   * still owns focus (the trigger survives the selection, unlike the overflow
-   * gap in {@link CngxPaginatorPages}).
+   * Jump to the picked page and close the dropdown. Bound to the listbox's
+   * `activated` output, not `valueChange`: activation fires on every pick,
+   * so re-picking the CURRENT page still closes the panel (with `valueChange`
+   * the unchanged model stays silent and the popover hangs open). Focus
+   * returns to the trigger *before* `hide()` so the panel is never
+   * `aria-hidden` while it still owns focus (the trigger survives the
+   * selection, unlike the overflow gap in {@link CngxPaginatorPages}).
    */
-  protected onSelect(
-    value: number | undefined,
-    popover: { hide(): void },
-    trigger: HTMLElement,
-  ): void {
+  protected onSelect(value: unknown, popover: { hide(): void }, trigger: HTMLElement): void {
     if (typeof value === 'number') {
       this.host.setPage(value - 1);
-      trigger.focus();
-      popover.hide();
     }
+    trigger.focus();
+    popover.hide();
   }
 }

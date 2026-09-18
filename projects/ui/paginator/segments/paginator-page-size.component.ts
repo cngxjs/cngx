@@ -58,7 +58,7 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
         tabindex="0"
         [label]="config.ariaLabels.itemsPerPage"
         [value]="host.pageSize()"
-        (valueChange)="onSelect($event, pop, trigger)"
+        (activated)="onSelect($event, pop, trigger)"
         #lb="cngxListbox"
       >
         @for (option of resolvedOptions(); track option) {
@@ -93,19 +93,18 @@ export class CngxPaginatorPageSize {
   });
 
   /**
-   * Apply the picked page size and close the dropdown. Focus returns to the
-   * trigger *before* `hide()` so the panel is never `aria-hidden` while it
-   * still owns focus.
+   * Apply the picked page size and close the dropdown. Bound to the listbox's
+   * `activated` output, not `valueChange`: activation fires on every pick, so
+   * re-picking the CURRENT size still closes the panel (with `valueChange`
+   * the unchanged model stays silent and the popover hangs open). Focus
+   * returns to the trigger *before* `hide()` so the panel is never
+   * `aria-hidden` while it still owns focus.
    */
-  protected onSelect(
-    value: number | undefined,
-    popover: { hide(): void },
-    trigger: HTMLElement,
-  ): void {
+  protected onSelect(value: unknown, popover: { hide(): void }, trigger: HTMLElement): void {
     if (typeof value === 'number') {
       this.host.setPageSize(value);
-      trigger.focus();
-      popover.hide();
     }
+    trigger.focus();
+    popover.hide();
   }
 }

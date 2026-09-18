@@ -74,6 +74,11 @@ import { CngxOption } from './option.directive';
         'virtualCount',
         'windowStart',
       ],
+      // `activated` fires on EVERY pick (click / Enter / Space), including a
+      // re-pick of the already-selected value - unlike `valueChange`, which
+      // stays silent when the model value does not change. Close-on-select
+      // compositions (paginator dropdowns) bind this instead of `valueChange`.
+      outputs: ['activated'],
     },
   ],
   host: {
