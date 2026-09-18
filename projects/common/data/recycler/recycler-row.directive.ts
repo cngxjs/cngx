@@ -86,7 +86,45 @@ export function provideRecyclerPlaceholderRow(
  * a non-`<li>` container (`<div role="list">`) supplies a `placeholder:`
  * template or the config token instead.
  *
+ * The two placeholder layers are orthogonal and non-overlapping by
+ * construction: {@link CngxRecyclerPlaceholder} paints a decorative background
+ * on the offset spacers (indices outside the rendered window), while this
+ * directive fills holes inside the window whose item is still `undefined`.
+ *
+ * ### Windowed list with the built-in placeholder row
+ * ```html
+ * <ul>
+ *   @for (item of visibleItems(); track item?.id ?? ('ph:' + (recycler.start() + $index)); let i = $index) {
+ *     <li *cngxRecyclerRow="item; index: recycler.start() + i; recycler: recycler; let row">
+ *       {{ row?.name }}
+ *     </li>
+ *   }
+ * </ul>
+ * ```
+ *
+ * ### Custom placeholder template
+ * ```html
+ * <ul>
+ *   @for (item of visibleItems(); track item?.id ?? ('ph:' + (recycler.start() + $index)); let i = $index) {
+ *     <li *cngxRecyclerRow="item; index: recycler.start() + i; recycler: recycler; placeholder: ph; let row">
+ *       {{ row?.name }}
+ *     </li>
+ *   }
+ *   <ng-template #ph let-index let-setSize="setSize">
+ *     <li role="listitem" aria-busy="true" [attr.aria-posinset]="index + 1" [attr.aria-setsize]="setSize">
+ *       Loading row {{ index + 1 }}
+ *     </li>
+ *   </ng-template>
+ * </ul>
+ * ```
+ *
  * @category common/data/recycler
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/recycler/recycler-row.directive.ts
+ * @since 0.1.0
+ * @relatedTo injectRecycler, CngxRecyclerPlaceholder, CngxVirtualItem, CngxMeasure
+ * <example-url>http://localhost:4200/#/common/data/recycler/windowed-data-availability</example-url>
  */
 @Directive({
   selector: '[cngxRecyclerRow]',
