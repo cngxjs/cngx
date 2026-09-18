@@ -527,4 +527,41 @@ describe('injectRecycler', () => {
       expect(mockContainer.scrollTop).toBe(0);
     });
   });
+
+  describe('rowSizeHint', () => {
+    it('returns the fixed numeric estimateSize verbatim', () => {
+      const recycler = createRecycler({ estimateSize: 48 });
+      expect(recycler.rowSizeHint()).toBe(48);
+    });
+
+    it('tracks a Signal<number> estimateSize reactively', () => {
+      const estimate = signal(40);
+      const recycler = createRecycler({ estimateSize: estimate });
+      expect(recycler.rowSizeHint()).toBe(40);
+
+      estimate.set(72);
+      TestBed.flushEffects();
+      expect(recycler.rowSizeHint()).toBe(72);
+    });
+
+    it('averages totalSize/totalCount for a variable-function estimate', () => {
+      const recycler = createRecycler({ estimateSize: () => 40 });
+      // 1000 rows of 40px => 40000 / 1000 = 40 representative average.
+      expect(recycler.rowSizeHint()).toBe(40);
+    });
+
+    it('is 0 on an empty list', () => {
+      const empty = signal<{ id: number }[]>([]);
+      let recycler!: CngxRecycler;
+      TestBed.runInInjectionContext(() => {
+        recycler = injectRecycler({
+          scrollElement: mockContainer,
+          totalCount: () => empty().length,
+          estimateSize: (i: number) => 40 + i,
+        });
+      });
+      TestBed.flushEffects();
+      expect(recycler.rowSizeHint()).toBe(0);
+    });
+  });
 });
