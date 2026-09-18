@@ -1,4 +1,14 @@
-import { Directive, input, type TemplateRef } from '@angular/core';
+import {
+  DestroyRef,
+  Directive,
+  effect,
+  type EmbeddedViewRef,
+  inject,
+  input,
+  TemplateRef,
+  untracked,
+  ViewContainerRef,
+} from '@angular/core';
 
 import type { CngxRecycler } from './recycler';
 
@@ -39,7 +49,9 @@ interface CngxRecyclerRowRealContext<T> {
  * Mirrors the `*cngxAsync` structural-directive shape (own `TemplateRef` +
  * microsyntax alternate template + `ngTemplateContextGuard`). The switch axis is
  * data availability, not async status, so the two are siblings, not the same
- * class.
+ * class. Unlike `*cngxAsync` (which clears on every switch) the real-row view is
+ * cached and re-attached across a placeholder detour, so a
+ * defined -> undefined -> defined flip never remounts the expensive real row.
  *
  * @category common/data/recycler
  */
@@ -48,6 +60,9 @@ interface CngxRecyclerRowRealContext<T> {
   standalone: true,
 })
 export class CngxRecyclerRow<T> {
+  private readonly vcr = inject(ViewContainerRef);
+  private readonly rowTpl = inject<TemplateRef<CngxRecyclerRowRealContext<T>>>(TemplateRef);
+
   /** The sliced item at this window position. `undefined` selects the placeholder branch. */
   readonly cngxRecyclerRow = input<T | undefined>(undefined);
 
@@ -61,6 +76,109 @@ export class CngxRecyclerRow<T> {
   readonly cngxRecyclerRowPlaceholder = input<TemplateRef<CngxRecyclerRowContext> | undefined>(
     undefined,
   );
+
+  // Plain fields, not signals: read and written only inside the render effect.
+  // As signals they would feed the effect's own dependency graph and double-fire
+  // per branch switch (the trap documented in async.directive.ts).
+  private currentBranch: 'row' | 'placeholder' | 'none' = 'none';
+  private rowViewRef: EmbeddedViewRef<CngxRecyclerRowRealContext<T>> | null = null;
+  private placeholderViewRef: EmbeddedViewRef<CngxRecyclerRowContext> | null = null;
+
+  constructor() {
+    // Sole tracked trigger: the item value. Everything else (index, recycler
+    // reads, placeholder template) is bookkeeping, read inside untracked() so the
+    // graph stays flat and the branch never re-fires on a secondary change.
+    effect(() => {
+      const item = this.cngxRecyclerRow();
+      if (item === undefined) {
+        this.showPlaceholder();
+      } else {
+        this.showRow(item);
+      }
+    });
+
+    inject(DestroyRef).onDestroy(() => {
+      // The cached row view may be detached (not owned by the VCR), so the VCR
+      // will not tear it down; destroy both views explicitly, guarding the
+      // already-destroyed case when the VCR got there first.
+      if (this.rowViewRef && !this.rowViewRef.destroyed) {
+        this.rowViewRef.destroy();
+      }
+      if (this.placeholderViewRef && !this.placeholderViewRef.destroyed) {
+        this.placeholderViewRef.destroy();
+      }
+    });
+  }
+
+  private showRow(item: T): void {
+    if (this.currentBranch === 'row') {
+      this.setRowContext(item);
+      this.rowViewRef?.markForCheck();
+      return;
+    }
+    this.teardownPlaceholder();
+    if (this.rowViewRef) {
+      this.setRowContext(item);
+      this.vcr.insert(this.rowViewRef);
+      this.rowViewRef.markForCheck();
+    } else {
+      this.rowViewRef = this.vcr.createEmbeddedView(this.rowTpl, {
+        $implicit: item,
+        cngxRecyclerRow: item,
+      });
+    }
+    this.currentBranch = 'row';
+  }
+
+  private showPlaceholder(): void {
+    if (this.currentBranch === 'placeholder') {
+      return;
+    }
+    this.detachRow();
+    this.renderPlaceholder();
+    this.currentBranch = 'placeholder';
+  }
+
+  private setRowContext(item: T): void {
+    if (this.rowViewRef) {
+      this.rowViewRef.context.$implicit = item;
+      this.rowViewRef.context.cngxRecyclerRow = item;
+    }
+  }
+
+  // Remove the cached row view from the container WITHOUT destroying it, so the
+  // next 'row' branch re-attaches the same EmbeddedViewRef (no remount).
+  private detachRow(): void {
+    if (!this.rowViewRef) {
+      return;
+    }
+    const at = this.vcr.indexOf(this.rowViewRef);
+    if (at !== -1) {
+      this.vcr.detach(at);
+    }
+  }
+
+  private teardownPlaceholder(): void {
+    if (this.placeholderViewRef) {
+      this.placeholderViewRef.destroy();
+      this.placeholderViewRef = null;
+    }
+  }
+
+  private renderPlaceholder(): void {
+    const tpl = untracked(() => this.cngxRecyclerRowPlaceholder()) ?? null;
+    if (tpl) {
+      this.placeholderViewRef = this.vcr.createEmbeddedView(tpl, this.buildPlaceholderContext());
+    }
+  }
+
+  private buildPlaceholderContext(): CngxRecyclerRowContext {
+    const index = untracked(() => this.cngxRecyclerRowIndex());
+    const recycler = untracked(() => this.cngxRecyclerRowRecycler());
+    const top = untracked(() => recycler.rowSizeHint()) * index;
+    const setSize = untracked(() => recycler.ariaSetSize());
+    return { $implicit: index, index, top, setSize };
+  }
 
   /** Narrows the directive's own template context to the loaded item type. */
   static ngTemplateContextGuard<T>(
