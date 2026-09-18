@@ -101,6 +101,8 @@ jobs:
           name: build-output
       - name: Run tests
         run: npm run test
+      - name: Run script and eslint-rule tests
+        run: npm run test:scripts
 
   geometry:
     needs: build
