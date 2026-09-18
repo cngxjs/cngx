@@ -75,6 +75,12 @@ export {
 export { CngxMeasure } from './recycler/measure.directive';
 export { CngxVirtualItem } from './recycler/virtual-item.directive';
 export { CngxRecyclerPlaceholder } from './recycler/recycler-placeholder.directive';
+export {
+  CngxRecyclerRow,
+  CNGX_RECYCLER_PLACEHOLDER_ROW,
+  provideRecyclerPlaceholderRow,
+  type CngxRecyclerRowContext,
+} from './recycler/recycler-row.directive';
 export { CngxRecyclerAnnouncer } from './recycler/recycler-announcer.component';
 export { connectRecyclerToRoving } from './recycler/connect-recycler-roving';
 export { connectRecyclerToActiveDescendant } from './recycler/connect-recycler-active-descendant';
