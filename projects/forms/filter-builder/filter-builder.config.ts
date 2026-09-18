@@ -122,7 +122,6 @@ export interface CngxFilterBuilderConfig {
   readonly caseInsensitive: boolean;
   readonly logicOptions: readonly FilterLogic[];
   readonly negationEnabled: boolean;
-  readonly skeletonCount: number;
 }
 
 /** @internal */
@@ -198,7 +197,6 @@ export const CNGX_FILTER_BUILDER_DEFAULTS: CngxFilterBuilderConfig = Object.free
   caseInsensitive: false,
   logicOptions: Object.freeze(['and', 'or']) as readonly FilterLogic[],
   negationEnabled: false,
-  skeletonCount: 3,
 }) as CngxFilterBuilderConfig;
 
 /**
@@ -213,7 +211,6 @@ export const CNGX_FILTER_BUILDER_DEFAULTS: CngxFilterBuilderConfig = Object.free
  * - case-insensitive substring matching - `withCaseInsensitiveStrings` (default off)
  * - logic options (the and/or/xor picker) - `withLogicOptions` (default `['and', 'or']`)
  * - negation toggle - `withNegation` (default off)
- * - skeleton row count - `withSkeletonCount` (default 3)
  *
  * Provide it through one of two entry points, never the token directly:
  *
@@ -230,7 +227,7 @@ export const CNGX_FILTER_BUILDER_DEFAULTS: CngxFilterBuilderConfig = Object.free
  * @category forms/filter-builder/config
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder.config.ts
  * @since 0.1.0
- * @relatedTo provideFilterBuilderConfig, provideFilterBuilderConfigAt, withTemplates, withFilterBuilderI18n, withMaxNestingDepth, withDefaultOperators, withOperators, withCaseInsensitiveStrings, withLogicOptions, withNegation, withSkeletonCount, CNGX_FILTER_EDITORS
+ * @relatedTo provideFilterBuilderConfig, provideFilterBuilderConfigAt, withTemplates, withFilterBuilderI18n, withMaxNestingDepth, withDefaultOperators, withOperators, withCaseInsensitiveStrings, withLogicOptions, withNegation, CNGX_FILTER_EDITORS
  */
 export const CNGX_FILTER_BUILDER_CONFIG = new InjectionToken<CngxFilterBuilderConfig>(
   'CngxFilterBuilderConfig',
@@ -353,14 +350,6 @@ export function withNegation(enabled: boolean): CngxFilterBuilderConfigFeature {
   return feature((config) => ({ ...config, negationEnabled: enabled }));
 }
 
-/**
- * Number of skeleton rows the builder renders while async fields are loading.
- *
- * @category forms/filter-builder/config
- */
-export function withSkeletonCount(count: number): CngxFilterBuilderConfigFeature {
-  return feature((config) => ({ ...config, skeletonCount: count }));
-}
 
 /**
  * Register global template overrides - keyed fallback below per-instance content-child slots.

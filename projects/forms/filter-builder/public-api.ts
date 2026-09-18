@@ -48,7 +48,6 @@ export {
   withMaxNestingDepth,
   withNegation,
   withOperators,
-  withSkeletonCount,
   withTemplates,
   type CngxFilterBuilderAnnouncementFormatters,
   type CngxFilterBuilderConfig,
