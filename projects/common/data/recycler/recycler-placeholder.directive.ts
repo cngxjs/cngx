@@ -12,14 +12,16 @@ import type { CngxRecycler } from './recycler';
  * The mechanism is a static CSS layer, not a reactive template: by the time a
  * `@for` over "uncovered indices" could render, change detection has already
  * produced the real rows, so the lag frame is never painted reactively. A
- * `background` on the scrolling content element always paints and also covers
- * teleport jumps no reactive window can. Opaque item rows render on top; only
- * the exposed offset region reveals the skeleton, so no z-index is needed.
+ * `background` on the offset element always paints and also covers teleport
+ * jumps no reactive window can, at zero per-frame cost.
  *
- * Host it on the **scrolling content element** that carries the offset space -
- * the spacer div or the `padding-block`ed list - never the scroll container,
- * whose background is pinned to the padding box and would not scroll with the
- * rows.
+ * Host it on the **offset spacer element(s)** - the empty divs (or presentation
+ * `<li>`s) whose height reserves `offsetBefore` / `offsetAfter` - one directive
+ * instance per spacer. Do NOT host it on a `padding-block`ed content element
+ * that also contains the rows: a background paints across the whole padding box,
+ * so it would show through *behind* every rendered row, not just in the gap.
+ * The spacers carry no rows, so the layer is only ever visible where the window
+ * has not caught up.
  *
  * The repeat interval keys off a single representative row height: bind the
  * recycler to read its `rowSizeHint`, or pass an explicit `[rowHeight]`
@@ -28,18 +30,24 @@ import type { CngxRecycler } from './recycler';
  * `@cngx/common/theming/components/cngx-recycler-placeholder.css`); the shimmer
  * drops under `prefers-reduced-motion` via a spec-observable host class.
  *
- * ### Standalone with an explicit row height
+ * ### One instance per offset spacer, keyed off the recycler's rhythm
  * ```html
- * <ul cngxRecyclerPlaceholder [rowHeight]="48"
- *     [style.paddingBlockStart.px]="recycler.offsetBefore()"
- *     [style.paddingBlockEnd.px]="recycler.offsetAfter()">
+ * <ul>
+ *   @if (recycler.offsetBefore(); as before) {
+ *     <li role="presentation" aria-hidden="true"
+ *         [cngxRecyclerPlaceholder]="recycler" [style.height.px]="before"></li>
+ *   }
  *   @for (item of visibleItems(); track item.id) { <li>...</li> }
+ *   @if (recycler.offsetAfter(); as after) {
+ *     <li role="presentation" aria-hidden="true"
+ *         [cngxRecyclerPlaceholder]="recycler" [style.height.px]="after"></li>
+ *   }
  * </ul>
  * ```
  *
- * ### Keyed off the recycler's rhythm
+ * ### Standalone with an explicit row height
  * ```html
- * <div [cngxRecyclerPlaceholder]="recycler"
+ * <div cngxRecyclerPlaceholder [rowHeight]="48"
  *      [style.height.px]="recycler.offsetBefore()"></div>
  * ```
  *

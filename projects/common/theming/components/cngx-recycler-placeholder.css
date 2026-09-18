@@ -1,42 +1,46 @@
 /**
  * @overview
  * Theming bridge for the `CngxRecyclerPlaceholder` directive. The directive
- * sets the `cngx-recycler-placeholder` class on a virtualized surface's
- * scrolling content element (a spacer div, or a `padding-block`ed list) and
- * writes `--cngx-recycler-placeholder-row-height` from the recycler's
- * `rowSizeHint`. Importing this file paints a row-aligned skeleton background
- * into any exposed offset region during a fast fling or teleport jump; opaque
- * item rows cover their own rows, so only the uncovered gap reveals the layer.
+ * sets the `cngx-recycler-placeholder` class on the offset spacer(s) of a
+ * virtualized surface and writes `--cngx-recycler-placeholder-row-height` from
+ * the recycler's `rowSizeHint`. Importing this file fills the exposed offset
+ * region with soft, row-aligned ghost rows during a fast fling or teleport
+ * jump. The layer lives on the spacers only - never behind rendered rows - so a
+ * populated list never shows it.
+ *
+ * **Look**
+ *
+ * Not a hard skeleton bar. Each row period paints one low-alpha band with
+ * feathered top/bottom edges (a gradient fade into the gap), inset horizontally
+ * so it reads as a content line rather than a full-width block. The alpha fill
+ * sits on any surface without a solid color of its own, so it stays subtle in
+ * both themes.
  *
  * **Rhythm**
  *
- * The bars are a vertical `repeating-linear-gradient` whose period is
- * `--cngx-recycler-placeholder-row-height`. Because the recycler's
- * `offsetBefore` is a whole multiple of the row height, the gradient stays
- * aligned with the real rows above and below the window.
+ * The period is `--cngx-recycler-placeholder-row-height`; because the offset is
+ * a whole multiple of the row height, the bands line up with the real rows just
+ * beyond the gap. `--cngx-recycler-placeholder-band-height` is the solid core
+ * within each period; the remainder feathers into the gap.
  *
  * **Shimmer**
  *
- * `.cngx-recycler-placeholder--shimmer` layers a sweeping highlight over the
- * bars and animates its `background-position`. The directive toggles the class
+ * `.cngx-recycler-placeholder--shimmer` sweeps a faint highlight across the
+ * bands and animates its `background-position`. The directive toggles the class
  * from a `(prefers-reduced-motion: reduce)` signal, so reduced motion simply
- * drops the class - no `@media` rule the layer depends on. Animating the
- * background (not element opacity) keeps the opaque child rows untouched.
+ * drops the class. Only the background moves.
  *
  * **Dark mode**
  *
- * Three hooks repaint `--cngx-recycler-placeholder-color` /
- * `--cngx-recycler-placeholder-shimmer-color` for the dark surface. They sit
- * unlayered with direct selectors so they beat the layered defaults without the
- * `@scope`/`@layer` cascade ambiguity.
+ * The fill and shimmer are white-alpha in dark mode so they read on a dark
+ * surface. Unlayered, direct selectors so they beat the layered defaults.
  */
 
 @layer cngx.tokens {
   /**
-   * Repeat period of the skeleton bars (px). Set inline by the directive from
-   * the recycler's `rowSizeHint`; the initial applies when no row height
-   * resolves. `inherits: true` so a select-panel ancestor mapping the token
-   * reaches the spacer descendant that hosts the layer.
+   * Repeat period of the ghost rows (px). Set inline by the directive from the
+   * recycler's `rowSizeHint`; the initial applies when no row height resolves.
+   * `inherits: true` so an ancestor mapping reaches the spacer that hosts it.
    * @group Layout
    */
   @property --cngx-recycler-placeholder-row-height {
@@ -46,46 +50,57 @@
   }
 
   /**
-   * Height of the painted bar within each row period; the remainder is the gap
-   * between bars.
+   * Solid core height of the band within each row period; the remainder
+   * feathers into the gap between bands.
    * @group Layout
    */
-  @property --cngx-recycler-placeholder-bar-height {
+  @property --cngx-recycler-placeholder-band-height {
     syntax: '<length>';
     inherits: true;
-    initial-value: 32px;
+    initial-value: 20px;
   }
 
   /**
-   * Fill color of the skeleton bars. Falls back to the neutral surface wash.
-   * @group Surface
+   * Horizontal inset of each band from the layer edges, so bands read as
+   * content lines rather than full-width blocks.
+   * @group Layout
    */
-  @property --cngx-recycler-placeholder-color {
-    syntax: '<color>';
+  @property --cngx-recycler-placeholder-inset {
+    syntax: '<length>';
     inherits: true;
-    initial-value: oklch(0.92 0.004 250);
+    initial-value: 12px;
   }
 
   /**
-   * Corner radius applied to each bar via the gradient is not expressible, so
-   * this token instead rounds the layer's own clipping when a consumer wraps
-   * bars in a mask; kept for token symmetry with the first-load skeleton.
+   * Corner softness of each band. Applied as the feather radius of the gradient
+   * edges via the band/gap split; kept as a token for tunability.
    * @group Surface
    */
   @property --cngx-recycler-placeholder-radius {
     syntax: '<length>';
     inherits: true;
-    initial-value: 4px;
+    initial-value: 6px;
   }
 
   /**
-   * Highlight color swept across the bars in shimmer mode.
+   * Fill of the ghost bands. A low-alpha ink so the layer sits softly on any
+   * surface without a solid color of its own.
+   * @group Surface
+   */
+  @property --cngx-recycler-placeholder-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.55 0.02 260 / 0.1);
+  }
+
+  /**
+   * Highlight swept across the bands in shimmer mode.
    * @group Motion
    */
   @property --cngx-recycler-placeholder-shimmer-color {
     syntax: '<color>';
     inherits: true;
-    initial-value: oklch(0.97 0.003 250);
+    initial-value: oklch(1 0 0 / 0.35);
   }
 
   /**
@@ -95,52 +110,61 @@
   @property --cngx-recycler-placeholder-shimmer-duration {
     syntax: '*';
     inherits: true;
-    initial-value: 1.4s;
+    initial-value: 1.6s;
   }
 }
 
 @layer cngx.components {
+  /* One feathered band per row period. The band core is centered in the period
+   * and fades to transparent across the surrounding gap, so edges read soft.
+   * repeat-y + a sub-100% background width insets the bands horizontally. */
   .cngx-recycler-placeholder {
+    --_cngx-rp-feather: calc(
+      (
+          var(--cngx-recycler-placeholder-row-height, 48px) -
+            var(--cngx-recycler-placeholder-band-height, 20px)
+        ) / 2
+    );
     background-image: repeating-linear-gradient(
       to bottom,
-      var(--cngx-recycler-placeholder-color, oklch(0.92 0.004 250)) 0,
-      var(--cngx-recycler-placeholder-color, oklch(0.92 0.004 250))
-        var(--cngx-recycler-placeholder-bar-height, 32px),
-      transparent var(--cngx-recycler-placeholder-bar-height, 32px),
+      transparent 0,
+      var(--cngx-recycler-placeholder-color, oklch(0.55 0.02 260 / 0.1)) var(--_cngx-rp-feather),
+      var(--cngx-recycler-placeholder-color, oklch(0.55 0.02 260 / 0.1))
+        calc(var(--_cngx-rp-feather) + var(--cngx-recycler-placeholder-band-height, 20px)),
       transparent var(--cngx-recycler-placeholder-row-height, 48px)
     );
-    background-repeat: repeat;
-    background-position: 0 0;
+    background-repeat: repeat-y;
+    background-size: calc(100% - 2 * var(--cngx-recycler-placeholder-inset, 12px)) 100%;
+    background-position: center top;
   }
 
-  /* Shimmer: a horizontal highlight band (first layer) swept over the static
-   * bars (second layer). Only the background moves, so the opaque child rows
-   * that cover their own region are never animated. */
+  /* Shimmer: a faint highlight band (first layer) swept over the static ghost
+   * rows (second layer). Only the background moves. */
   .cngx-recycler-placeholder--shimmer {
     background-image:
       linear-gradient(
         90deg,
         transparent 0,
-        var(--cngx-recycler-placeholder-shimmer-color, oklch(0.97 0.003 250)) 50%,
+        var(--cngx-recycler-placeholder-shimmer-color, oklch(1 0 0 / 0.35)) 50%,
         transparent 100%
       ),
       repeating-linear-gradient(
         to bottom,
-        var(--cngx-recycler-placeholder-color, oklch(0.92 0.004 250)) 0,
-        var(--cngx-recycler-placeholder-color, oklch(0.92 0.004 250))
-          var(--cngx-recycler-placeholder-bar-height, 32px),
-        transparent var(--cngx-recycler-placeholder-bar-height, 32px),
+        transparent 0,
+        var(--cngx-recycler-placeholder-color, oklch(0.55 0.02 260 / 0.1)) var(--_cngx-rp-feather),
+        var(--cngx-recycler-placeholder-color, oklch(0.55 0.02 260 / 0.1))
+          calc(var(--_cngx-rp-feather) + var(--cngx-recycler-placeholder-band-height, 20px)),
         transparent var(--cngx-recycler-placeholder-row-height, 48px)
       );
-    background-repeat: no-repeat, repeat;
+    background-repeat: no-repeat, repeat-y;
     background-size:
       200% 100%,
-      auto;
+      calc(100% - 2 * var(--cngx-recycler-placeholder-inset, 12px)) 100%;
     background-position:
       -100% 0,
-      0 0;
+      center top;
     animation: cngx-recycler-placeholder-shimmer
-      var(--cngx-recycler-placeholder-shimmer-duration, 1.4s) linear infinite;
+      var(--cngx-recycler-placeholder-shimmer-duration, 1.6s) ease-in-out infinite;
   }
 }
 
@@ -148,25 +172,25 @@
   from {
     background-position:
       -100% 0,
-      0 0;
+      center top;
   }
   to {
     background-position:
       200% 0,
-      0 0;
+      center top;
   }
 }
 
-/* Dark mode: unlayered, direct selectors so they beat the layered defaults.
- * Repaint the bar wash and shimmer highlight for the dark surface. */
+/* Dark mode: white-alpha fill + shimmer so the layer reads on a dark surface.
+ * Unlayered, direct selectors so they beat the layered defaults. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-color-scheme='light']):not(.light) .cngx-recycler-placeholder {
-    --cngx-recycler-placeholder-color: oklch(0.32 0.01 250);
-    --cngx-recycler-placeholder-shimmer-color: oklch(0.4 0.012 250);
+    --cngx-recycler-placeholder-color: oklch(1 0 0 / 0.09);
+    --cngx-recycler-placeholder-shimmer-color: oklch(1 0 0 / 0.16);
   }
 }
 [data-color-scheme='dark'] .cngx-recycler-placeholder,
 .dark .cngx-recycler-placeholder {
-  --cngx-recycler-placeholder-color: oklch(0.32 0.01 250);
-  --cngx-recycler-placeholder-shimmer-color: oklch(0.4 0.012 250);
+  --cngx-recycler-placeholder-color: oklch(1 0 0 / 0.09);
+  --cngx-recycler-placeholder-shimmer-color: oklch(1 0 0 / 0.16);
 }
