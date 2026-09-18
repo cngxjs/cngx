@@ -93,6 +93,16 @@ describe('CngxPaginatorPageOfPages', () => {
     expect(label(fixture)).toBe('4 / 10');
   });
 
+  test('selecting a page returns focus to the trigger so the closing panel never holds focus', async () => {
+    const { fixture } = await setup();
+    options(fixture)
+      .find((o) => o.textContent?.trim() === '4')
+      ?.click();
+    await settle(fixture);
+
+    expect(document.activeElement).toBe(trigger(fixture));
+  });
+
   test('the option for the active page is aria-selected', async () => {
     const { fixture, paginate } = await setup();
     paginate.setPage(2);
