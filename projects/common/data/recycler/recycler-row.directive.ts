@@ -4,7 +4,10 @@ import {
   effect,
   type EmbeddedViewRef,
   inject,
+  InjectionToken,
   input,
+  type Provider,
+  Renderer2,
   TemplateRef,
   untracked,
   ViewContainerRef,
@@ -41,6 +44,30 @@ interface CngxRecyclerRowRealContext<T> {
 }
 
 /**
+ * App-wide default placeholder template for `*cngxRecyclerRow`. Middle rung of
+ * the cascade: microsyntax `placeholder:` template wins over this, and this wins
+ * over the built-in imperative `<li>` default. Defaults to `null` (imperative
+ * default applies).
+ *
+ * @category common/data/recycler
+ */
+export const CNGX_RECYCLER_PLACEHOLDER_ROW = new InjectionToken<
+  TemplateRef<CngxRecyclerRowContext> | null
+>('CNGX_RECYCLER_PLACEHOLDER_ROW', { providedIn: 'root', factory: () => null });
+
+/**
+ * Provides an app-wide default placeholder template for every `*cngxRecyclerRow`
+ * that supplies no `placeholder:` template of its own.
+ *
+ * @category common/data/recycler
+ */
+export function provideRecyclerPlaceholderRow(
+  template: TemplateRef<CngxRecyclerRowContext>,
+): Provider {
+  return { provide: CNGX_RECYCLER_PLACEHOLDER_ROW, useValue: template };
+}
+
+/**
  * Per-window-position render switch for a sparse/windowed recycler: renders the
  * consumer's real-row template when the sliced item is defined, and a
  * placeholder branch when the item is still `undefined` (loaded window, data
@@ -53,6 +80,12 @@ interface CngxRecyclerRowRealContext<T> {
  * cached and re-attached across a placeholder detour, so a
  * defined -> undefined -> defined flip never remounts the expensive real row.
  *
+ * The placeholder branch resolves through a 3-stage cascade: the microsyntax
+ * `placeholder:` template, then {@link CNGX_RECYCLER_PLACEHOLDER_ROW}, then a
+ * built-in imperative `<li>` default. The default assumes a `<ul>`/`<li>` list;
+ * a non-`<li>` container (`<div role="list">`) supplies a `placeholder:`
+ * template or the config token instead.
+ *
  * @category common/data/recycler
  */
 @Directive({
@@ -62,6 +95,8 @@ interface CngxRecyclerRowRealContext<T> {
 export class CngxRecyclerRow<T> {
   private readonly vcr = inject(ViewContainerRef);
   private readonly rowTpl = inject<TemplateRef<CngxRecyclerRowRealContext<T>>>(TemplateRef);
+  private readonly renderer = inject(Renderer2);
+  private readonly configTpl = inject(CNGX_RECYCLER_PLACEHOLDER_ROW);
 
   /** The sliced item at this window position. `undefined` selects the placeholder branch. */
   readonly cngxRecyclerRow = input<T | undefined>(undefined);
@@ -83,6 +118,7 @@ export class CngxRecyclerRow<T> {
   private currentBranch: 'row' | 'placeholder' | 'none' = 'none';
   private rowViewRef: EmbeddedViewRef<CngxRecyclerRowRealContext<T>> | null = null;
   private placeholderViewRef: EmbeddedViewRef<CngxRecyclerRowContext> | null = null;
+  private defaultEl: HTMLElement | null = null;
 
   constructor() {
     // Sole tracked trigger: the item value. Everything else (index, recycler
@@ -104,9 +140,7 @@ export class CngxRecyclerRow<T> {
       if (this.rowViewRef && !this.rowViewRef.destroyed) {
         this.rowViewRef.destroy();
       }
-      if (this.placeholderViewRef && !this.placeholderViewRef.destroyed) {
-        this.placeholderViewRef.destroy();
-      }
+      this.teardownPlaceholder();
     });
   }
 
@@ -163,13 +197,51 @@ export class CngxRecyclerRow<T> {
       this.placeholderViewRef.destroy();
       this.placeholderViewRef = null;
     }
+    this.removeDefault();
   }
 
   private renderPlaceholder(): void {
-    const tpl = untracked(() => this.cngxRecyclerRowPlaceholder()) ?? null;
+    const ctx = this.buildPlaceholderContext();
+    const tpl = untracked(() => this.cngxRecyclerRowPlaceholder()) ?? this.configTpl ?? null;
     if (tpl) {
-      this.placeholderViewRef = this.vcr.createEmbeddedView(tpl, this.buildPlaceholderContext());
+      this.placeholderViewRef = this.vcr.createEmbeddedView(tpl, ctx);
+    } else {
+      this.stampDefault(ctx);
     }
+  }
+
+  // Terminal fallback: a module-level TemplateRef cannot exist, so the built-in
+  // default is one imperative <li> reusing the shipped `cngx-recycler-placeholder`
+  // ghost-row CSS. It holds a real dataset position, so it stays in the a11y tree
+  // (aria-busy / role=listitem / posinset / setsize) - never aria-hidden.
+  private stampDefault(ctx: CngxRecyclerRowContext): void {
+    const anchor = this.vcr.element.nativeElement as Node;
+    const parent = this.renderer.parentNode(anchor) as Node | null;
+    if (!parent) {
+      return;
+    }
+    const height = untracked(() => this.cngxRecyclerRowRecycler().rowSizeHint());
+    const li = this.renderer.createElement('li') as HTMLElement;
+    this.renderer.addClass(li, 'cngx-recycler-placeholder');
+    this.renderer.setAttribute(li, 'role', 'listitem');
+    this.renderer.setAttribute(li, 'aria-busy', 'true');
+    this.renderer.setAttribute(li, 'aria-posinset', String(ctx.index + 1));
+    this.renderer.setAttribute(li, 'aria-setsize', String(ctx.setSize));
+    this.renderer.setStyle(li, 'height', `${height}px`);
+    this.renderer.setStyle(li, '--cngx-recycler-placeholder-row-height', `${height}px`);
+    this.renderer.insertBefore(parent, li, anchor);
+    this.defaultEl = li;
+  }
+
+  private removeDefault(): void {
+    if (!this.defaultEl) {
+      return;
+    }
+    const parent = this.renderer.parentNode(this.defaultEl) as Node | null;
+    if (parent) {
+      this.renderer.removeChild(parent, this.defaultEl);
+    }
+    this.defaultEl = null;
   }
 
   private buildPlaceholderContext(): CngxRecyclerRowContext {
