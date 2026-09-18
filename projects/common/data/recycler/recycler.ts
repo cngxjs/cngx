@@ -326,19 +326,43 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
     return sizeCache.resolve(index, config.estimateSize);
   };
 
+  // Signed scroll delta between consecutive scrollTop updates. A fast flick
+  // produces large per-event deltas, so this doubles as a velocity proxy
+  // regardless of whether scrollTop is sampled per-frame or per-event.
+  const scrollVelocity = signal(0);
+  let lastScrollTop = 0;
+  effect(() => {
+    const st = scrollState.scrollTop();
+    untracked(() => {
+      scrollVelocity.set(st - lastScrollTop);
+      lastScrollTop = st;
+    });
+  });
+
   // Grid mode uses raw estimateSize (uniform row height, no SizeCache).
   // List mode uses resolveSize (SizeCache-backed).
   const range = computed(() => {
     const cols = columns();
     const size = isGrid ? config.estimateSize : resolveSize;
-    return computeRange(
-      scrollState.scrollTop(),
-      scrollState.clientHeight(),
-      config.totalCount(),
-      size,
-      overscan,
-      cols,
-    );
+    const scrollTop = scrollState.scrollTop();
+    const clientHeight = scrollState.clientHeight();
+    const total = config.totalCount();
+
+    // Directional overscan: the rendered range trails scroll by up to a frame,
+    // so pre-render extra items into the scroll direction to keep the leading
+    // edge populated (otherwise a fast scroll flashes a blank strip). Scale the
+    // lead with velocity, capped at one viewport of items so a teleport jump
+    // never expands the window unbounded. Trailing edge keeps the base overscan.
+    const estimate = config.estimateSize;
+    const refPx = typeof estimate === 'number' && estimate > 0 ? estimate : Math.max(1, clientHeight / 8);
+    const itemsPerViewport = Math.max(1, Math.ceil(clientHeight / refPx));
+    const velocity = scrollVelocity();
+    const leadItems = Math.min(Math.ceil(Math.abs(velocity) / refPx), itemsPerViewport);
+    const scrollingDown = velocity >= 0;
+    const overscanBefore = overscan + (scrollingDown ? 0 : leadItems);
+    const overscanAfter = overscan + (scrollingDown ? leadItems : 0);
+
+    return computeRange(scrollTop, clientHeight, total, size, overscanBefore, cols, overscanAfter);
   });
 
   const start = computed(() => range().start);

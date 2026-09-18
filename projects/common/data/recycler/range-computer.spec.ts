@@ -90,6 +90,33 @@ describe('computeRange', () => {
     });
   });
 
+  describe('directional overscan', () => {
+    // scrollTop 4800, itemSize 48, viewport 500 -> rawStart 100, rawEnd 111.
+    const totalCount = 1000;
+    const itemSize = 48;
+
+    it('extends only the trailing edge when scrolling down', () => {
+      const sym = computeRange(4800, 500, totalCount, itemSize, 5);
+      const down = computeRange(4800, 500, totalCount, itemSize, 5, 1, 20);
+      expect(down.start).toBe(sym.start); // leading (top) unchanged
+      expect(down.end).toBe(sym.end + 15); // trailing (bottom) +15 (= 20 - 5)
+    });
+
+    it('extends only the leading edge when scrolling up', () => {
+      const sym = computeRange(4800, 500, totalCount, itemSize, 5);
+      const up = computeRange(4800, 500, totalCount, itemSize, 20, 1, 5);
+      expect(up.start).toBe(sym.start - 15); // leading (top) -15
+      expect(up.end).toBe(sym.end); // trailing (bottom) unchanged
+    });
+
+    it('defaults overscanAfter to overscanBefore for a symmetric range', () => {
+      const implicit = computeRange(4800, 500, totalCount, itemSize, 7);
+      const explicit = computeRange(4800, 500, totalCount, itemSize, 7, 1, 7);
+      expect(implicit.start).toBe(explicit.start);
+      expect(implicit.end).toBe(explicit.end);
+    });
+  });
+
   describe('function estimateSize', () => {
     it('should handle variable item heights', () => {
       // First item is 100px, rest are 48px

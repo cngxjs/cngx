@@ -13,9 +13,10 @@ import {
 
 /**
  * Reactive scroll state of a container element.
- * Both signals are updated synchronously inside the same rAF callback -
- * Angular's Signal scheduling coalesces the two writes so consumers
- * evaluate once per frame, not twice.
+ * `scrollTop` is read synchronously on each scroll event so the rendered
+ * range tracks scroll without an extra frame of latency; Angular's signal
+ * scheduler coalesces a burst of events into one recompute per frame.
+ * `clientHeight` updates from a ResizeObserver, not on scroll.
  */
 export interface ScrollState {
   readonly scrollTop: Signal<number>;
@@ -71,17 +72,13 @@ export function createScrollObserver(
     scrollTopState.set(el.scrollTop);
     clientHeightState.set(el.clientHeight);
 
-    let rafId: number | null = null;
-
+    // Read scrollTop synchronously on the scroll event rather than deferring to
+    // a requestAnimationFrame. The rAF hop delayed the range by a frame, so a
+    // fast scroll outran the rendered window and flashed a blank strip. Scroll
+    // events already fire at most once per frame, and the signal scheduler
+    // coalesces bursts, so the synchronous read carries no extra recompute cost.
     const handleScroll = () => {
-      if (rafId != null) {
-        return;
-      }
-      rafId = requestAnimationFrame(() => {
-        rafId = null;
-        scrollTopState.set(el.scrollTop);
-        clientHeightState.set(el.clientHeight);
-      });
+      scrollTopState.set(el.scrollTop);
     };
 
     el.addEventListener('scroll', handleScroll, { passive: true });
@@ -93,9 +90,6 @@ export function createScrollObserver(
 
     onCleanup(() => {
       el.removeEventListener('scroll', handleScroll);
-      if (rafId != null) {
-        cancelAnimationFrame(rafId);
-      }
       resizeObserver.disconnect();
       elementState.set(null);
     });

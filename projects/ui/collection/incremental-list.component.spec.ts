@@ -203,8 +203,10 @@ describe('CngxIncrementalList', () => {
   // construct one once a list virtualizes. A no-op stub keeps the render-all
   // tests unaffected (they never touch it). rAF stays real - the zoneless
   // scheduler needs it, and a sync stub would run CD during a notification.
+  let roMock: ReturnType<typeof createResizeObserverMock>;
   beforeEach(() => {
-    createResizeObserverMock().install(window);
+    roMock = createResizeObserverMock();
+    roMock.install(window);
   });
 
   afterEach(() => {
@@ -530,8 +532,9 @@ describe('CngxIncrementalList', () => {
 
       const viewport = listEl.querySelector('.cngx-incremental-list__viewport') as HTMLElement;
       expect(viewport).not.toBeNull();
-      // jsdom reports clientHeight 0 -> empty range. Seed a real viewport and
-      // nudge the scroll observer so the window computes.
+      // jsdom reports clientHeight 0 -> empty range. Seed a real viewport, then
+      // feed the size through the ResizeObserver (the scroll observer's own
+      // channel for clientHeight) and nudge scrollTop so the window computes.
       Object.defineProperty(viewport, 'clientHeight', {
         value: 500,
         writable: true,
@@ -542,6 +545,7 @@ describe('CngxIncrementalList', () => {
         writable: true,
         configurable: true,
       });
+      roMock.triggerResize({ contentRect: { height: 500 } as DOMRectReadOnly });
       viewport.dispatchEvent(new Event('scroll'));
       await flushFrame();
       await settle(fixture);
