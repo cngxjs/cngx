@@ -79,6 +79,7 @@ export function createRecyclerPanelRendererFactory(
         offsetBefore: recycler.offsetBefore,
         offsetAfter: recycler.offsetAfter,
         setsize: recycler.ariaSetSize,
+        rowSizeHint: recycler.rowSizeHint,
         scrollToIndex: (i) => recycler.scrollToIndex(i),
       },
     };

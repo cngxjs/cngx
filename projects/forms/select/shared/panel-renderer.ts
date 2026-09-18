@@ -28,6 +28,8 @@ export interface PanelRenderer<T> {
    *   `data-cngx-recycle-index = startIndex + i` per row.
    * - `offsetBefore` / `offsetAfter` - spacer-div pixel heights.
    * - `setsize` - total item count for `aria-setsize`.
+   * - `rowSizeHint` - representative row height (px); keys the fast-fling
+   *   placeholder rhythm to the real option height so its ghost rows line up.
    * - `scrollToIndex` - invoked by the variant when AD nav exceeds
    *   the rendered window.
    */
@@ -36,6 +38,7 @@ export interface PanelRenderer<T> {
     readonly offsetBefore: Signal<number>;
     readonly offsetAfter: Signal<number>;
     readonly setsize: Signal<number>;
+    readonly rowSizeHint: Signal<number>;
     readonly scrollToIndex: (index: number) => void;
   };
 }

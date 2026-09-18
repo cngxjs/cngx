@@ -943,17 +943,6 @@
      non-virtualized panels keep shrink-to-fit. */
   .cngx-select__panel:has(.cngx-select__virtual-spacer) {
     width: var(--cngx-select-panel-min-width, anchor-size(width));
-
-    /* Fast-fling placeholders: CngxRecyclerPlaceholder rides the virtual
-       spacers and reads these from the panel (the tokens inherit, so the
-       spacer descendants pick them up). Map the rhythm onto the first-load
-       skeleton token language so a fling and the initial skeleton read
-       identically. Scoped to the virtualized marker, so non-virtualized panels
-       never register the layer. */
-    --cngx-recycler-placeholder-row-height: var(--cngx-select-skeleton-row-height, 1.75rem);
-    --cngx-recycler-placeholder-band-height: calc(
-      var(--cngx-select-skeleton-row-height, 1.75rem) - 2 * var(--cngx-select-skeleton-gap, 0.25rem)
-    );
   }
 
   /* With the width locked, an option that would exceed it must stay on one line
