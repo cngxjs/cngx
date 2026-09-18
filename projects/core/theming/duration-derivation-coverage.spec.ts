@@ -198,6 +198,7 @@ const DURATION_EXCLUDED: ReadonlyArray<{ token: string; reason: string }> = [
   { token: '--cngx-spin-duration', reason: 'spinner rotation loop (0.8s)' },
   { token: '--cngx-progress-indeterminate-duration', reason: 'indeterminate sweep loop (1.5s)' },
   { token: '--cngx-skeleton-shimmer-duration', reason: 'skeleton shimmer loop (1.5s)' },
+  { token: '--cngx-recycler-placeholder-shimmer-duration', reason: 'fast-fling placeholder shimmer loop (1.4s)' },
   { token: '--cngx-dialog-backdrop-transition', reason: 'opt-in hook, initial-value: none (no default transition to derive)' },
 ];
 
