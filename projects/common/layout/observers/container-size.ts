@@ -96,6 +96,12 @@ export function createContainerSize(
     if (cached) {
       return cached;
     }
+    // A DOM read inside a computed() is deliberate here, not an oversight: the
+    // only tracked dependency is the resize entry, and a ResizeObserver
+    // callback runs after layout, when every container query has already been
+    // re-evaluated. The read is therefore idempotent for a given entry and
+    // never forces a recalc of its own. An effect writing into a signal would
+    // add a scheduling hop for nothing.
     const value = computed(() => {
       if (entry() === null || !win?.getComputedStyle) {
         return '';
