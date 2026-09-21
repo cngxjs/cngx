@@ -118,6 +118,13 @@ A new boolean input whose only purpose is enabling the component's own default b
 </cngx-sidenav-layout>
 ```
 
+Binding `mode` opts out: `mode="over"` keeps the overlay at every width. A rail
+mounted without the layout has no container to measure, renders as `over`, and
+warns in dev mode.
+
+Live: `/ui/sidenav/auto-mode`. The same shape, one layer down, is
+`/common/layout/container/css-decides-js-reads`.
+
 ---
 
 ## Proving it
