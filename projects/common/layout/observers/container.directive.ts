@@ -49,8 +49,10 @@ import { CNGX_CONTAINER_SIZE, type CngxContainerSize, createContainerSize } from
   exportAs: 'cngxContainer',
   standalone: true,
   providers: [{ provide: CNGX_CONTAINER_SIZE, useExisting: CngxContainer }],
+  // Static host style, not a binding: the value never changes, so there is
+  // nothing for change detection to re-evaluate.
   host: {
-    '[style.container-type]': "'inline-size'",
+    style: 'container-type: inline-size',
   },
 })
 export class CngxContainer implements CngxContainerSize {
