@@ -23,7 +23,11 @@ import { Directive, inject, TemplateRef } from '@angular/core';
  * @since 0.1.0
  * @relatedTo CngxPaginator, CngxProgress
  */
-@Directive({ selector: '[cngxPaginatorLoading]', standalone: true, exportAs: 'cngxPaginatorLoading' })
+@Directive({
+  selector: '[cngxPaginatorLoading]',
+  standalone: true,
+  exportAs: 'cngxPaginatorLoading',
+})
 export class CngxPaginatorLoading {
   readonly templateRef = inject(TemplateRef);
 }

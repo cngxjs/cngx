@@ -3,15 +3,13 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxPaginatorStatus: Page-status readout',
   subtitle:
-    'The <code>cngx-pgn-status</code> part in isolation - a pure <code>Page n of m</code> readout derived from the shared <code>pageIndex</code> and <code>total</code>. It is the responsive collapse target the number row swaps to when space runs out.',
+    'The <code>cngx-pgn-status</code> part in isolation - a pure <code>Page n of m</code> readout derived from the shared <code>pageIndex</code> and <code>total</code>. It is the collapse target the number row swaps to when the container runs out of space.',
   level: 'atom',
   audience: ['dev'],
   artifact: 'building-block',
   focus: ['behavior'],
   apiComponents: ['CngxPaginatorStatus', 'CngxPaginator'],
-  moduleImports: [
-    "import { CngxPaginator, CngxPaginatorStatus } from '@cngx/ui/paginator';",
-  ],
+  moduleImports: ["import { CngxPaginator, CngxPaginatorStatus } from '@cngx/ui/paginator';"],
   imports: ['CngxPaginator', 'CngxPaginatorStatus'],
   setup: `protected readonly pageIndex = signal(2);`,
   template: `  <cngx-paginator

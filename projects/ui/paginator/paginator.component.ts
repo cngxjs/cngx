@@ -1,6 +1,5 @@
 import { NgTemplateOutlet } from '@angular/common';
 import {
-  booleanAttribute,
   ChangeDetectionStrategy,
   Component,
   computed,
@@ -68,6 +67,13 @@ export type CngxPaginatorDensity = 'compact' | 'default' | 'comfortable';
  *
  * All ARIA attributes are signal-driven. `aria-busy` has a single owner here.
  *
+ * Responsive out of the box: once the paginator's own container narrows past
+ * `24rem` a `@container` rule swaps the projected `cngx-pgn-pages` number row
+ * for the `cngx-pgn-status` "Page n of m" readout (compose both segments for
+ * the swap to have something to show). The threshold lives in
+ * `paginator.component.css` and nowhere else. Opt out with
+ * `--cngx-paginator-collapse: none` on the paginator or any ancestor.
+ *
  * @category ui/paginator
  * @docsKind primary
  * @wcag AA
@@ -112,7 +118,6 @@ export type CngxPaginatorDensity = 'compact' | 'default' | 'comfortable';
     '[attr.aria-busy]': 'paginate.isBusy()',
     '[attr.data-skin]': 'skin()',
     '[attr.data-paginator-size]': 'density()',
-    '[attr.data-responsive]': "responsive() ? '' : null",
   },
 })
 export class CngxPaginator {
@@ -128,14 +133,6 @@ export class CngxPaginator {
    * only the touch-target sizing the global scale does not yet cover.
    */
   readonly density = input<CngxPaginatorDensity>('default');
-  /**
-   * Opt into the responsive collapse; reflected onto `[data-responsive]`. When
-   * set, a `@container` rule swaps the projected `cngx-pgn-pages` number row for
-   * a `cngx-pgn-status` "Page n of m" readout once the paginator's own container
-   * narrows past the collapse breakpoint. Compose both segments for it to apply.
-   */
-  readonly responsive = input(false, { transform: booleanAttribute });
-
   /**
    * Reset key. When its value changes (after the initial render) the paginator
    * jumps to the first page - bind the sort / filter / search value a result set

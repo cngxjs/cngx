@@ -28,8 +28,9 @@ import {
 // segment class - `.cngx-paginator__segment:is(cngx-pgn-goto)` and
 // `.cngx-paginator__segment:is(cngx-pgn-first, cngx-pgn-last)` - which reach
 // (0,1,1) and win. The two guards below now assert the collapse for real. The
-// `[data-responsive]` swap (its selectors carry `.cngx-paginator[data-responsive]`,
-// specificity 0,2,1) is the positive control proving the query itself fires.
+// The page-row swap (now unconditional, gated only on the negated
+// `--cngx-paginator-collapse` style query) is the positive control proving the
+// query itself fires.
 
 @Component({
   selector: 'cngx-paginator-geometry-host',
@@ -45,7 +46,7 @@ import {
     CngxPaginatorGoto,
   ],
   template: `
-    <cngx-paginator aria-label="Pager" [responsive]="true" [total]="100" [pageIndex]="3" [pageSize]="10">
+    <cngx-paginator aria-label="Pager" [total]="100" [pageIndex]="3" [pageSize]="10">
       <cngx-pgn-first />
       <cngx-pgn-prev />
       <cngx-pgn-pages />
@@ -96,9 +97,9 @@ describe('CngxPaginator geometry', () => {
   });
 
   it('swaps the page row for the status readout below the 24rem breakpoint', () => {
-    // Positive control: proves the @container query fires. The responsive-swap
-    // selectors carry enough specificity to win, which the two collapse guards
-    // below now assert for the goto/first/last rules as well.
+    // Positive control: proves the @container query fires. The swap selectors
+    // carry enough specificity to win, which the two collapse guards below now
+    // assert for the goto/first/last rules as well.
     const host = mount(800);
     expect(segmentDisplay(host, 'cngx-pgn-pages')).not.toBe('none');
     expect(segmentDisplay(host, 'cngx-pgn-status')).toBe('none');

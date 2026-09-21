@@ -33,6 +33,17 @@
   }
 
   /**
+   * Set to `none` on the paginator or any ancestor to keep the full number row
+   * at every container width (opt out of the responsive collapse).
+   * @group Layout
+   */
+  @property --cngx-paginator-collapse {
+    syntax: '*';
+    inherits: true;
+    initial-value: auto;
+  }
+
+  /**
    * Gap between adjacent segment rows on the host. Split from
    * `--cngx-paginator-gap` (the inter-page gap) so the projected segments breathe
    * while the page numerals stay tight.
@@ -973,24 +984,31 @@
   }
 
   /*
-   * Responsive collapse: a [data-responsive] paginator swaps its number row for
+   * Responsive collapse, on by default: the paginator swaps its number row for
    * the "Page n of m" status readout once its own container narrows past the
    * breakpoint - the same control, density-shifting to the device. The status
-   * segment is hidden by default (so composing it without [responsive] still
-   * renders it) and revealed at the breakpoint; the number row does the reverse.
-   * Scoped to [data-responsive] so a non-responsive paginator is untouched. The
-   * breakpoint stays a literal - @container conditions cannot resolve var().
+   * segment is hidden at every width and revealed only at the breakpoint; the
+   * number row does the reverse. The breakpoint stays a literal - @container
+   * conditions cannot resolve var().
+   *
+   * Opt-out is `--cngx-paginator-collapse: none` on the paginator or any
+   * ancestor (the accordion's marker variants use the same style-query shape).
+   * The swap is GATED on the negated style query rather than undone by a later
+   * rule: restoring a `display` the author never set would mean guessing the
+   * segment's base value.
    */
-  .cngx-paginator[data-responsive] cngx-pgn-status {
+  .cngx-paginator cngx-pgn-status {
     display: none;
   }
 
   @container cngx-paginator (max-width: 24rem) {
-    .cngx-paginator[data-responsive] cngx-pgn-pages {
-      display: none;
-    }
-    .cngx-paginator[data-responsive] cngx-pgn-status {
-      display: inline-flex;
+    @container not style(--cngx-paginator-collapse: none) {
+      .cngx-paginator cngx-pgn-pages {
+        display: none;
+      }
+      .cngx-paginator cngx-pgn-status {
+        display: inline-flex;
+      }
     }
   }
 

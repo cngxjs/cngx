@@ -28,8 +28,16 @@ interface Row {
 
 const TEAMS = ['Platform', 'Payments', 'Growth', 'Data', 'Mobile'] as const;
 const NAMES = [
-  'Ada Lovelace', 'Alan Turing', 'Grace Hopper', 'Edsger Dijkstra', 'Donald Knuth',
-  'Barbara Liskov', 'Ken Thompson', 'Margaret Hamilton', 'Linus Torvalds', 'Radia Perlman',
+  'Ada Lovelace',
+  'Alan Turing',
+  'Grace Hopper',
+  'Edsger Dijkstra',
+  'Donald Knuth',
+  'Barbara Liskov',
+  'Ken Thompson',
+  'Margaret Hamilton',
+  'Linus Torvalds',
+  'Radia Perlman',
 ];
 
 /**

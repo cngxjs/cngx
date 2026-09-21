@@ -6,10 +6,7 @@ import { describe, expect, test } from 'vitest';
 import { CngxPaginate } from '@cngx/common/data';
 
 import { CngxPaginator } from '../paginator.component';
-import {
-  provideCngxPaginatorConfig,
-  withPaginatorPageStatusFormat,
-} from '../paginator-config';
+import { provideCngxPaginatorConfig, withPaginatorPageStatusFormat } from '../paginator-config';
 import { CngxPaginatorStatus } from './paginator-status.component';
 
 @Component({

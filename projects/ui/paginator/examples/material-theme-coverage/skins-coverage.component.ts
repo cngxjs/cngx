@@ -223,7 +223,9 @@ export class SkinsCoverageExample {
   protected readonly pageIndex = signal(2);
   protected readonly pageSize = signal(10);
 
-  protected readonly pageCount = computed(() => Math.max(1, Math.ceil(this.total / this.pageSize())));
+  protected readonly pageCount = computed(() =>
+    Math.max(1, Math.ceil(this.total / this.pageSize())),
+  );
 
   private readonly document = inject(DOCUMENT);
 

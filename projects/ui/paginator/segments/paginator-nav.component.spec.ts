@@ -69,7 +69,8 @@ async function setup(): Promise<Plumbing> {
 }
 
 function button(fixture: Plumbing['fixture'], selector: string): HTMLButtonElement {
-  return fixture.debugElement.query(By.css(`${selector} button`)).nativeElement as HTMLButtonElement;
+  return fixture.debugElement.query(By.css(`${selector} button`))
+    .nativeElement as HTMLButtonElement;
 }
 
 function navLabel(fixture: Plumbing['fixture'], selector: string): string | undefined {

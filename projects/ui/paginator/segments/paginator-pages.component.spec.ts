@@ -144,9 +144,7 @@ describe('CngxPaginatorPages', () => {
     item?.click();
     await settle(fixture);
 
-    const current = root.querySelector<HTMLElement>(
-      '.cngx-paginator__page[aria-current="page"]',
-    );
+    const current = root.querySelector<HTMLElement>('.cngx-paginator__page[aria-current="page"]');
     expect(current).not.toBeNull();
     expect(current?.textContent?.trim()).toBe(String(paginate.pageIndex() + 1));
     expect(document.activeElement).toBe(current);

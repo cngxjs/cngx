@@ -57,7 +57,9 @@ const PEOPLE: readonly Person[] = [
           <div class="demo-page-divider">Page {{ group.page }}</div>
           <ul class="demo-list-flush">
             @for (p of group.items; track p.name) {
-              <li class="demo-list-row"><strong>{{ p.name }}</strong> - {{ p.role }}, {{ p.location }}</li>
+              <li class="demo-list-row">
+                <strong>{{ p.name }}</strong> - {{ p.role }}, {{ p.location }}
+              </li>
             }
           </ul>
         }

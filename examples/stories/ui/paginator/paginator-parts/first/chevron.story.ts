@@ -9,9 +9,7 @@ export const STORY: DemoSpec = {
   artifact: 'building-block',
   focus: ['behavior'],
   apiComponents: ['CngxPaginatorFirst', 'CngxPaginator'],
-  moduleImports: [
-    "import { CngxPaginator, CngxPaginatorFirst } from '@cngx/ui/paginator';",
-  ],
+  moduleImports: ["import { CngxPaginator, CngxPaginatorFirst } from '@cngx/ui/paginator';"],
   imports: ['CngxPaginator', 'CngxPaginatorFirst'],
   setup: `protected readonly pageIndex = signal(2);`,
   template: `  <cngx-paginator

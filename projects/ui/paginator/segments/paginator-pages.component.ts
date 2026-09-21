@@ -227,10 +227,7 @@ export class CngxPaginatorPages {
    * (where focus lives) does not survive the selection, and without an
    * explicit restore focus drops to the page body.
    */
-  protected onSelectOverflow(
-    value: number | null | undefined,
-    popover: { hide(): void },
-  ): void {
+  protected onSelectOverflow(value: number | null | undefined, popover: { hide(): void }): void {
     if (typeof value !== 'number') {
       return;
     }

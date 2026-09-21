@@ -8,12 +8,7 @@ export const STORY: DemoSpec = {
   audience: ['dev', 'design'],
   artifact: 'standalone',
   focus: ['visual-variants', 'behavior'],
-  apiComponents: [
-    'CngxPaginator',
-    'CngxPaginatorPrev',
-    'CngxPaginatorPages',
-    'CngxPaginatorNext',
-  ],
+  apiComponents: ['CngxPaginator', 'CngxPaginatorPrev', 'CngxPaginatorPages', 'CngxPaginatorNext'],
   moduleImports: [
     "import { CngxPaginator, CngxPaginatorPrev, CngxPaginatorPages, CngxPaginatorNext } from '@cngx/ui/paginator';",
   ],

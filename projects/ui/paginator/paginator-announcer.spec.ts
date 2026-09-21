@@ -1,10 +1,4 @@
-import {
-  Component,
-  computed,
-  inject,
-  provideZonelessChangeDetection,
-  signal,
-} from '@angular/core';
+import { Component, computed, inject, provideZonelessChangeDetection, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, test } from 'vitest';
 
@@ -44,7 +38,9 @@ function announceWithMarker(): CngxPaginatorAnnouncer {
   return { message: computed(() => `custom:${host.pageIndex() + 1}`) };
 }
 
-async function settle(fixture: ReturnType<typeof TestBed.createComponent<SegmentsHost>>): Promise<void> {
+async function settle(
+  fixture: ReturnType<typeof TestBed.createComponent<SegmentsHost>>,
+): Promise<void> {
   fixture.detectChanges();
   await fixture.whenStable();
   fixture.detectChanges();
@@ -52,7 +48,9 @@ async function settle(fixture: ReturnType<typeof TestBed.createComponent<Segment
 }
 
 async function render(providers: unknown[] = []): Promise<HTMLElement> {
-  TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection(), ...(providers as [])] });
+  TestBed.configureTestingModule({
+    providers: [provideZonelessChangeDetection(), ...(providers as [])],
+  });
   const fixture = TestBed.createComponent(SegmentsHost);
   await settle(fixture);
   return fixture.nativeElement.querySelector('cngx-paginator') as HTMLElement;
