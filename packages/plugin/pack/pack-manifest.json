@@ -164,7 +164,7 @@
     {
       "artifact": "pack/recipes/ui-paginator-paginator-segments.md",
       "source": "examples/stories/ui/paginator/paginator-segments/async-loading.story.ts",
-      "contentHash": "sha256:7103590b1d361e45e5c81a3d6dc17c872a8ef555a60ae5344e66ba7f698617a1"
+      "contentHash": "sha256:78a80a5d3776ec9b9a6b298158dda1c690541b4b2a6b32877323256bbb3e59bd"
     },
     {
       "artifact": "pack/recipes/ui-stat-card-async.md",
