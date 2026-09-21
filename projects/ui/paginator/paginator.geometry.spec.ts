@@ -108,6 +108,18 @@ describe('CngxPaginator geometry', () => {
     expect(segmentDisplay(host, 'cngx-pgn-status')).not.toBe('none');
   });
 
+  it('keeps the full number row when --cngx-paginator-collapse is none', () => {
+    // The opt-out is a style query, not a display restore: with the property
+    // set, the swap block never applies, so the page row keeps whatever
+    // display it had and the status segment stays hidden.
+    const host = mount(300);
+    expect(segmentDisplay(host, 'cngx-pgn-pages')).toBe('none');
+
+    host.style.setProperty('--cngx-paginator-collapse', 'none');
+    expect(segmentDisplay(host, 'cngx-pgn-pages')).not.toBe('none');
+    expect(segmentDisplay(host, 'cngx-pgn-status')).toBe('none');
+  });
+
   it('collapses the go-to input below the 30rem breakpoint', () => {
     const host = mount(430);
     expect(segmentDisplay(host, 'cngx-pgn-goto')).toBe('none');

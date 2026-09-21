@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { computedValue } from '@cngx/testing/geometry';
+import { computedValue, containerState } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { CngxSidenav } from './sidenav';
@@ -120,5 +120,94 @@ describe('CngxSidenav RTL geometry (:dir scoping)', () => {
     // right edge. If the override had NOT matched, the base translateX(-100%) would
     // leave the drawer on-screen at the right and this would fail.
     expect(h.left).toBeGreaterThanOrEqual(l.right - 1);
+  });
+});
+
+// ── Auto mode: the container-driven docking decision (sidenav-layout.css) ────
+//
+// This is the suite that proves the plan's central claim, and it can only live
+// here: jsdom evaluates no container query, so every jsdom test of auto mode
+// has to stub the property read. Here the real cascade runs - the layout's
+// @container rule resolves `--cngx-sidenav-layout-wide` on the rail, the
+// component reads that value back through CngxContainer.property(), and the
+// resolved mode lands on the host as a class.
+
+@Component({
+  selector: 'cngx-sidenav-auto-host',
+  standalone: true,
+  imports: [CngxSidenavLayout, CngxSidenav, CngxSidenavContent],
+  template: `
+    <div class="auto-wrapper">
+      <cngx-sidenav-layout>
+        <cngx-sidenav position="start" ariaLabel="Nav">Nav</cngx-sidenav>
+        <cngx-sidenav-content>Main</cngx-sidenav-content>
+      </cngx-sidenav-layout>
+    </div>
+  `,
+  styles: ['.auto-wrapper { inline-size: 40rem; }'],
+})
+class SidenavAutoHost {}
+
+function mountAuto(): {
+  wrapper: HTMLElement;
+  layout: HTMLElement;
+  rail: HTMLElement;
+  setWidth: (value: string) => void;
+} {
+  const fixture = TestBed.createComponent(SidenavAutoHost);
+  mountedRoot = fixture.nativeElement as HTMLElement;
+  document.body.appendChild(mountedRoot);
+  fixture.detectChanges();
+  const wrapper = mountedRoot.querySelector('.auto-wrapper');
+  const layout = mountedRoot.querySelector('cngx-sidenav-layout');
+  const rail = mountedRoot.querySelector('cngx-sidenav');
+  if (!wrapper || !layout || !rail) {
+    throw new Error('auto-mode sidenav did not render');
+  }
+  return {
+    wrapper: wrapper as HTMLElement,
+    layout: layout as HTMLElement,
+    rail: rail as HTMLElement,
+    setWidth: (value) => {
+      (wrapper as HTMLElement).style.inlineSize = value;
+      // The ResizeObserver callback that feeds property() is async; the CSS
+      // side is not, so the custom property is already correct here and the
+      // class assertions below run after an explicit flush in each test.
+      fixture.detectChanges();
+    },
+  };
+}
+
+const nextFrame = (): Promise<void> =>
+  new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+
+describe('CngxSidenav auto mode geometry', () => {
+  it('names the layout as an inline-size query container', () => {
+    const { layout } = mountAuto();
+    const state = containerState(layout);
+    expect(state.type).toBe('inline-size');
+    expect(state.name).toBe('cngx-sidenav-layout');
+  });
+
+  it('resolves the docking property on the rail, not on the layout', () => {
+    const { rail, setWidth } = mountAuto();
+    setWidth('40rem');
+    expect(computedValue(rail, '--cngx-sidenav-layout-wide')).toBe('0');
+    setWidth('80rem');
+    expect(computedValue(rail, '--cngx-sidenav-layout-wide')).toBe('1');
+  });
+
+  it('overlays below the threshold and docks at or above it', async () => {
+    const { rail, setWidth } = mountAuto();
+
+    setWidth('40rem');
+    await nextFrame();
+    expect(rail.classList.contains('cngx-sidenav--over')).toBe(true);
+    expect(rail.classList.contains('cngx-sidenav--side')).toBe(false);
+
+    setWidth('80rem');
+    await nextFrame();
+    expect(rail.classList.contains('cngx-sidenav--side')).toBe(true);
+    expect(rail.classList.contains('cngx-sidenav--over')).toBe(false);
   });
 });
