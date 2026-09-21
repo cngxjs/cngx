@@ -3972,3 +3972,16 @@ mat-icon.demo-breadcrumb-icon {
     grid-template-columns: repeat(3, 1fr);
   }
 }
+
+/* Consumer-side override of the stepper collapse threshold, exactly as the
+   responsive contract promises it: the library writes --cngx-stepper-collapse
+   from a @container rule on .cngx-stepper::after, a consumer writes the same
+   property on the same pseudo-element. Two demos pin the collapsed branch with
+   it so the mobile indicator and the panel swipe are visible without resizing.
+
+   It wins without !important and without out-specifying anything: the library
+   rule sits inside @layer cngx.components, and an unlayered author rule beats
+   every layered one regardless of specificity or source order. */
+.demo-force-collapse .cngx-stepper::after {
+  --cngx-stepper-collapse: 1;
+}

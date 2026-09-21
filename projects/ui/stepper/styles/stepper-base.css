@@ -89,7 +89,7 @@
   /**
    * Tightened panel padding for container-query collapse. Applied
    * when `<cngx-stepper>` is rendered inside a container narrower
-   * than 600px (sidebar / card / dialog) regardless of viewport.
+   * than `48rem` (sidebar / card / dialog) regardless of viewport.
    * @group Layout
    */
   @property --cngx-step-padding-compact {
@@ -479,6 +479,27 @@
     container-name: cngx-stepper;
   }
 
+  /* The collapse threshold. It exists exactly once, here: the component reads
+     the resolved value of this property and never evaluates a width in
+     TypeScript, so ejecting this stylesheet moves the breakpoint with it.
+
+     The rule styles `::after`, not `.cngx-stepper`: a @container rule cannot
+     style its own container, but the query container for a PSEUDO-element is
+     selected from its originating element's inclusive ancestors - so
+     `.cngx-stepper::after` resolves against `.cngx-stepper` while a rule on
+     `.cngx-stepper` itself would match nothing. No sentinel node in the
+     template. A consumer overrides the collapse by writing this property on
+     the same pseudo-element from an unlayered rule. */
+  .cngx-stepper::after {
+    --cngx-stepper-collapse: 0;
+  }
+
+  @container cngx-stepper (max-inline-size: 30rem) {
+    .cngx-stepper::after {
+      --cngx-stepper-collapse: 1;
+    }
+  }
+
   .cngx-stepper__strip {
     display: flex;
     flex-direction: row;
@@ -599,12 +620,10 @@
     padding: var(--cngx-step-padding, 0.5rem 0.75rem);
   }
 
-  /* Container-query: when the stepper host is narrower than 600px
-     (sidebar / card / dialog layouts), tighten the panel padding so
-     forms inside the panel still breathe. Container width drives the
-     break, not viewport width, so the stepper behaves consistently
-     regardless of where it's nested. */
-  @container cngx-stepper (max-width: 600px) {
+  /* Second rung: below the `md` tier (48rem) the stepper is in a sidebar,
+     card or dialog, so the panel padding tightens while the strip still
+     renders. The strip itself collapses one rung lower, at `sm` (30rem). */
+  @container cngx-stepper (max-inline-size: 48rem) {
     .cngx-stepper__panel {
       padding: var(--cngx-step-padding-compact, 0.375rem 0.5rem);
     }

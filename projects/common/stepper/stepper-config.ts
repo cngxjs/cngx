@@ -77,10 +77,14 @@ export type CngxStepperSkin =
   | 'breadcrumb';
 
 /**
- * Mobile auto-collapse target. Under a narrow viewport
- * (`max-width: 480px`), `<cngx-stepper>` falls back to one of the
- * compact variants instead of rendering the full strip. Set to
- * `'off'` to retain the classic strip on every viewport.
+ * Mobile auto-collapse target. Below `30rem` of the stepper's own
+ * container width, `<cngx-stepper>` falls back to one of the compact
+ * variants instead of rendering the full strip. Set to `'off'` to retain
+ * the classic strip at every width.
+ *
+ * The width itself is not configurable - it is a `@container` rule in
+ * `stepper-base.css`, overridable in consumer CSS. This setting picks
+ * *what* the strip collapses into, not *where*.
  *
  * @category common/stepper
  */
@@ -161,16 +165,6 @@ export interface CngxStepperDensityBreakpoints {
 export type CngxStepperMobileIndicatorPosition = 'top' | 'bottom';
 
 /**
- * Default media query the mobile auto-collapse policy reacts to. The
- * literal lives on a single exported const so the runtime, the config
- * default, and any JSDoc cross-references stay in lockstep. Consumers
- * override the query via {@link withStepperMobileBreakpoint}.
- *
- * @category common/stepper
- */
-export const STEPPER_DEFAULT_MOBILE_BREAKPOINT = '(max-width: 480px)';
-
-/**
  * Default per-step px thresholds for the `density: 'auto'` ladder. The
  * literal lives on a single exported const so the runtime resolver, the
  * config default, and any JSDoc cross-references stay in lockstep.
@@ -242,12 +236,6 @@ export interface CngxStepperConfig {
   readonly connectors?: boolean;
   readonly mobileCollapse?: CngxStepperMobileCollapse;
   /**
-   * Media query the mobile auto-collapse policy reacts to. Default
-   * {@link STEPPER_DEFAULT_MOBILE_BREAKPOINT}. Tablet consumers can
-   * re-aim the trigger via {@link withStepperMobileBreakpoint}.
-   */
-  readonly mobileBreakpoint?: string;
-  /**
    * Where the mobile auto-collapse indicator sits relative to the
    * panel content. Default `'top'`. Override per-instance via the
    * `[mobileIndicatorPosition]` input or app-wide via
@@ -288,7 +276,6 @@ const STEPPER_CONFIG_DEFAULTS: Required<
   densityBreakpoints: STEPPER_DEFAULT_DENSITY_BREAKPOINTS,
   connectors: false,
   mobileCollapse: 'text',
-  mobileBreakpoint: STEPPER_DEFAULT_MOBILE_BREAKPOINT,
   mobileIndicatorPosition: 'top',
   mobileSwipe: true,
   ariaLabels: {
@@ -428,11 +415,12 @@ export function withStepperConnectors(on: boolean): CngxStepperConfigFeature {
 }
 
 /**
- * Configure the mobile auto-collapse target for `<cngx-stepper>`. Under
- * a narrow viewport (`max-width: 480px`), the classic strip swaps to
- * the chosen variant - `'text'` (default) renders `<cngx-text-stepper>`,
- * `'dots'` renders `<cngx-dot-stepper>`, `'off'` keeps the classic
- * strip. The Material twin `<cngx-mat-stepper>` ignores this setting.
+ * Configure the mobile auto-collapse target for `<cngx-stepper>`. Below
+ * `30rem` of the stepper's own container width, the classic strip swaps
+ * to the chosen variant - `'text'` (default) renders
+ * `<cngx-text-stepper>`, `'dots'` renders `<cngx-dot-stepper>`, `'off'`
+ * keeps the classic strip. The Material twin `<cngx-mat-stepper>` ignores
+ * this setting.
  *
  * @category common/stepper
  */
@@ -440,18 +428,6 @@ export function withStepperMobileCollapse(
   mode: CngxStepperMobileCollapse,
 ): CngxStepperConfigFeature {
   return defineStepperConfigFeature((cfg) => ({ ...cfg, mobileCollapse: mode }));
-}
-
-/**
- * Override the media query the mobile auto-collapse policy reacts to.
- * Default `'(max-width: 480px)'`. Useful for tablet-tier consumers
- * who want the collapse to engage at 768px or for design systems
- * aligned with `--mat-sys-breakpoint-*` tokens.
- *
- * @category common/stepper
- */
-export function withStepperMobileBreakpoint(query: string): CngxStepperConfigFeature {
-  return defineStepperConfigFeature((cfg) => ({ ...cfg, mobileBreakpoint: query }));
 }
 
 /**
@@ -507,9 +483,7 @@ export function withStepperHeaderNavigation(
  *
  * @category common/stepper
  */
-export function withStepperGroupCollapse(
-  mode: CngxStepperGroupCollapse,
-): CngxStepperConfigFeature {
+export function withStepperGroupCollapse(mode: CngxStepperGroupCollapse): CngxStepperConfigFeature {
   return defineStepperConfigFeature((cfg) => ({ ...cfg, groupCollapse: mode }));
 }
 

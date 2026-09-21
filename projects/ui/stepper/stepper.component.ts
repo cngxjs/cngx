@@ -25,13 +25,13 @@ import {
 import { CngxSwipe } from '@cngx/common/interactive';
 import {
   CNGX_STEP_PANEL_HOST,
+  createStepperCollapseSignal,
   createStepperDisplayMode,
   createStepperGroupSummary,
   createStepperGroupNavigation,
   createStripDensity,
   CngxStep,
   STEPPER_DEFAULT_DENSITY_BREAKPOINTS,
-  STEPPER_DEFAULT_MOBILE_BREAKPOINT,
   CngxStepBadge,
   CngxStepBusySpinner,
   type CngxStepContentContext,
@@ -238,9 +238,8 @@ export class CngxStepper implements CngxStepPanelHost {
   });
 
   protected readonly displayMode = createStepperDisplayMode(
-    this.config.mobileBreakpoint ?? STEPPER_DEFAULT_MOBILE_BREAKPOINT,
+    createStepperCollapseSignal(this.hostElement),
     () => this.config.mobileCollapse,
-    inject(DestroyRef),
   );
 
   /**
@@ -483,7 +482,6 @@ export class CngxStepper implements CngxStepPanelHost {
 
   protected stepHeaderId = (node: CngxStepNode): string => `${node.id}-header`;
   protected stepPanelId = (node: CngxStepNode): string => `${node.id}-panel`;
-
 
   /**
    * Live-region + per-step + group SR phrase builders (Level-2 factory);

@@ -17,7 +17,6 @@ import {
   withStepperGroupCollapse,
   withStepperGroupCollapseSummary,
   withStepperLinear,
-  withStepperMobileBreakpoint,
   withStepperMobileCollapse,
   withStepperMobileSwipe,
   withStepperRouterSync,
@@ -77,12 +76,8 @@ describe('CngxStepperConfig', () => {
     expect(withStepperLinear(true)._target).toBe('config');
     expect(withStepperCommitMode('optimistic')._target).toBe('config');
     expect(withStepperRouterSync('queryParam', 'phase')._target).toBe('config');
-    expect(withStepperAriaLabels({ stepperRegion: 'Schritte' })._target).toBe(
-      'config',
-    );
-    expect(
-      withStepperFallbackLabels({ stepRoleDescription: 'Schritt' })._target,
-    ).toBe('config');
+    expect(withStepperAriaLabels({ stepperRegion: 'Schritte' })._target).toBe('config');
+    expect(withStepperFallbackLabels({ stepRoleDescription: 'Schritt' })._target).toBe('config');
     expect(withStepperSkin('linear-minimal')._target).toBe('config');
   });
 
@@ -91,9 +86,7 @@ describe('CngxStepperConfig', () => {
       standalone: true,
       selector: 'scope-cmp',
       template: '',
-      viewProviders: [
-        ...provideStepperConfigAt(withStepperDefaultOrientation('vertical')),
-      ],
+      viewProviders: [...provideStepperConfigAt(withStepperDefaultOrientation('vertical'))],
     })
     class ScopeCmp {}
 
@@ -207,31 +200,6 @@ describe('CngxStepperConfig', () => {
 
     it('carries the _target=config discriminator', () => {
       expect(withStepperMobileCollapse('text')._target).toBe('config');
-    });
-  });
-
-  describe('withStepperMobileBreakpoint', () => {
-    it('library default resolves to "(max-width: 480px)"', () => {
-      TestBed.configureTestingModule({
-        providers: [provideZonelessChangeDetection()],
-      });
-      const cfg = TestBed.inject(CNGX_STEPPER_CONFIG);
-      expect(cfg.mobileBreakpoint).toBe('(max-width: 480px)');
-    });
-
-    it('provideStepperConfig(withStepperMobileBreakpoint) overrides the default', () => {
-      TestBed.configureTestingModule({
-        providers: [
-          provideZonelessChangeDetection(),
-          provideStepperConfig(withStepperMobileBreakpoint('(max-width: 768px)')),
-        ],
-      });
-      const cfg = TestBed.inject(CNGX_STEPPER_CONFIG);
-      expect(cfg.mobileBreakpoint).toBe('(max-width: 768px)');
-    });
-
-    it('carries the _target=config discriminator', () => {
-      expect(withStepperMobileBreakpoint('(max-width: 768px)')._target).toBe('config');
     });
   });
 
