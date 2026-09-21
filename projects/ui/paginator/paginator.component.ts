@@ -83,7 +83,7 @@ export type CngxPaginatorDensity = 'compact' | 'default' | 'comfortable';
  * @playground Material theme coverage across all skins ./examples/material-theme-coverage/skins-coverage.component.ts
  * @playground Data-table footer (Material) ./examples/data-table/data-table.component.ts
  * @playground Live filter with reset-to-first-page ./examples/filter-reset/filter-reset.component.ts
- * @playground Card grid with go-to and responsive collapse ./examples/card-grid/card-grid.component.ts
+ * @playground Card grid with go-to and a range readout ./examples/card-grid/card-grid.component.ts
  * @playground Alphabetical bucket paging ./examples/alpha-mode/alpha-mode.component.ts
  * @playground Load-more (append) paging ./examples/load-more-mode/load-more-mode.component.ts
  * @playground Infinite scroll paging ./examples/infinite-mode/infinite-mode.component.ts
