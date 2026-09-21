@@ -927,6 +927,13 @@
     min-width: var(--cngx-select-panel-min-width, anchor-size(width));
     max-height: var(--cngx-select-panel-max-height, 16rem);
     overflow-y: auto;
+    /* Windowed scrollports opt out of scroll anchoring: a virtualized panel
+       resizes its spacers on every window move, and the browser's anchor
+       correction would feed the next move (runaway scroll; see the
+       incremental-list viewport). Uniform option heights keep this panel
+       stable today - the opt-out guards the day a measured row height
+       diverges from the estimate. */
+    overflow-anchor: none;
     position-try-fallbacks:
       flip-block,
       flip-inline,
