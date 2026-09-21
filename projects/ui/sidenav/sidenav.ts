@@ -15,7 +15,7 @@ import {
   signal,
   ViewEncapsulation,
 } from '@angular/core';
-import { matchesKeyCombo, parseKeyCombo } from '@cngx/core/utils';
+import { createTransitionTracker, matchesKeyCombo, parseKeyCombo } from '@cngx/core/utils';
 import { CNGX_HOVER_INTENT_DEFAULTS, CngxHoverIntent } from '@cngx/common/interactive';
 
 import { injectSidenavConfig } from './config/inject-sidenav-config';
@@ -307,20 +307,15 @@ export class CngxSidenav {
   private readonly win = this.doc.defaultView;
 
   /**
-   * Current/previous effective-mode pair for transition detection. Mirrors the
-   * `createTransitionTracker` shape from `@cngx/core/utils`, inlined because that
-   * helper is typed to `AsyncStatus`; `SidenavMode` needs the same `linkedSignal`
-   * pattern. Replaces the hand-rolled `prevMode` signal that was `.set()` inside
-   * the mode effect.
+   * Current/previous effective-mode pair for transition detection. The shared
+   * `createTransitionTracker` is generic since it stopped being `AsyncStatus`-
+   * typed, so the hand-rolled `linkedSignal` twin this class used to carry is
+   * gone. `previous` seeds to `current` on the first run, which the consumer
+   * effect's equality guard already treats as "no transition".
    */
-  private readonly modeTransition = linkedSignal<
-    SidenavMode,
-    { current: SidenavMode; previous: SidenavMode | undefined }
-  >({
-    source: () => this.effectiveMode(),
-    computation: (current, prev) => ({ current, previous: prev?.value.current }),
-    equal: (a, b) => a.current === b.current && a.previous === b.previous,
-  });
+  private readonly modeTransition = createTransitionTracker<SidenavMode>(() =>
+    this.effectiveMode(),
+  );
 
   /** CDK focus trap over the host; enabled only while a modal overlay is open. */
   private readonly focusTrap: FocusTrap;
@@ -433,8 +428,9 @@ export class CngxSidenav {
     // overlay mode auto-opens the rail once. Guarded by the current/previous
     // compare so it fires only on the transition edge.
     effect(() => {
-      const { current, previous } = this.modeTransition();
-      if (previous === undefined || current === previous) {
+      const current = this.modeTransition.current();
+      const previous = this.modeTransition.previous();
+      if (current === previous) {
         return;
       }
       const alwaysVisible = (m: SidenavMode) => m === 'side' || m === 'mini';
