@@ -15,6 +15,13 @@ export {
   observeResize,
   type ResizeObserverHost,
 } from './observers/resize-signal';
+export { CngxContainer } from './observers/container.directive';
+export {
+  CNGX_CONTAINER_SIZE,
+  type CngxContainerSize,
+  createContainerSize,
+  injectContainerSize,
+} from './observers/container-size';
 export { CngxScrollLock } from './scroll/scroll-lock.directive';
 export { createScrollLock } from './scroll/scroll-lock-core';
 export { CngxSkeleton } from './text/skeleton.directive';

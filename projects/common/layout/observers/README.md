@@ -2,14 +2,25 @@
 
 Low-level observer directives wrapping native browser APIs. Use for reactive size tracking, viewport visibility, and media query changes. All observers expose state as Angular signals. For media queries there is also an inject-form factory - `injectMediaQuery` - for use where no host element exists.
 
+Three of them answer "how wide is it", and the difference matters:
+
+| Directive | Axis | Reach for it when |
+|-|-|-|
+| `CngxContainer` / `injectContainerSize` | The container's own inline size | A component adapts to the space it was given. This is the default for in-flow layout. |
+| `CngxResizeObserver` | The host element's box | You need the raw `ResizeObserverEntry` (canvas sizing, measurement). |
+| `CngxMediaQuery` / `injectMediaQuery` | The viewport | Overlay modality only: a popover becoming a bottom sheet, a dialog going full-screen. |
+
 ## Import
 
 ```typescript
 import {
+  CngxContainer,
   CngxIntersectionObserver,
   CngxResizeObserver,
   CngxMediaQuery,
+  injectContainerSize,
   injectMediaQuery,
+  observeResize,
 } from '@cngx/common/layout';
 ```
 
@@ -301,6 +312,75 @@ export const desktopOnlyGuard: CanActivateFn = () => {
   return compact() ? inject(Router).parseUrl('/m/dashboard') : true;
 };
 ```
+
+## CngxContainer
+
+Declares the host as an inline-size query container and publishes its size to descendants through `CNGX_CONTAINER_SIZE`. Read it with `injectContainerSize()`.
+
+### CSS decides, JS reads the property
+
+The point of the directive is *not* to move breakpoints into TypeScript. The breakpoint stays in the stylesheet, once; the `@container` rule writes a custom property, and the component reads the resolved value. TypeScript never parses a CSS length and never re-evaluates the condition, so a consumer who ejects the skin changes the threshold in one place.
+
+```css
+cngx-thing-layout {
+  container-name: cngx-thing-layout;
+}
+
+cngx-thing-layout > cngx-thing {
+  --cngx-thing-wide: 0;
+}
+
+@container cngx-thing-layout (min-inline-size: 64rem) {
+  cngx-thing-layout > cngx-thing {
+    --cngx-thing-wide: 1;
+  }
+}
+```
+
+```typescript
+private readonly container = inject(CNGX_CONTAINER_SIZE, { optional: true });
+private readonly host = inject(ElementRef<Element>).nativeElement;
+
+private readonly wide =
+  this.container?.property('--cngx-thing-wide', this.host) ?? signal('').asReadonly();
+
+readonly mode = computed(() => (this.wide() === '1' ? 'side' : 'over'));
+```
+
+**The rule must style a descendant, never the container itself.** A container query resolves against an *ancestor* query container of the element it styles, so a rule whose subject is the container element matches nothing and the property never changes. Pass that descendant as the second argument to `property()`.
+
+### Surface
+
+| Member | Type | Notes |
+|-|-|-|
+| `inlineSize` | `Signal<number>` | Border-box inline size, `0` before the first observation. |
+| `blockSize` | `Signal<number>` | Border-box block size, `0` before the first observation. |
+| `isReady` | `Signal<boolean>` | `true` once the first observation arrived. |
+| `property(name, on?)` | `Signal<string>` | Resolved custom property, re-read on every resize. Memoized per `(target, name)`. |
+
+The directive sets `container-type` only. The container **name belongs in the stylesheet** next to the rules that query it: an unnamed `@container` matches the nearest container of any name, so a consumer wrapping the component in their own container would silently re-target the query.
+
+`container-type: inline-size` applies size containment. An element that must shrink-wrap its content (an inline chip, a `width: max-content` bar) must not be a container.
+
+Before the first observation `property()` returns the empty string, so a component takes its narrow branch for that first frame. The observer's initial callback runs after layout and before paint, so nothing flashes; seeding the value synchronously in a constructor would read before the first layout and return the wrong answer.
+
+See `core-concepts/responsive-by-default.md` for the full contract, including the rem tier table.
+
+## observeResize / createResizeSignal
+
+The kernel behind `CngxResizeObserver` and `CngxContainer`, mirroring `observeMediaQuery` / `createMediaQuerySignal` in `@cngx/core/utils`. Reach for it when a component needs resize observation without a host directive.
+
+```typescript
+// Low-level: re-wire per effect run when the target or box is reactive.
+effect((onCleanup) => {
+  onCleanup(observeResize(win, el, this.box(), (entry) => this.entry.set(entry)));
+});
+
+// Signal form: teardown owned by DestroyRef.
+const entry = createResizeSignal(el, 'border-box', inject(DestroyRef), win);
+```
+
+Both no-op on a host without `ResizeObserver` (SSR, jsdom) rather than throwing.
 
 ## Accessibility
 
