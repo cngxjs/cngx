@@ -126,7 +126,7 @@ export {
 
 export { resolveStepperStatusLabel } from './status-label';
 
-export { createStepperCollapseSignal, createStepperDisplayMode } from './display-mode';
+export { createStepperDisplayMode, injectStepperCollapse } from './display-mode';
 
 export {
   createStripDensity,

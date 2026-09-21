@@ -13,14 +13,15 @@ import type { CngxStepperMobileCollapse } from './stepper-config';
  * originating element's inclusive ancestors. Nothing here parses a width, so
  * a consumer re-aims the collapse with a plain CSS rule.
  *
- * Call it from an injection context; the observer is scoped to the caller's
- * `DestroyRef`.
+ * Requires an injection context - it observes through `injectContainerSize`,
+ * so the observer is scoped to the caller's `DestroyRef`. A field initialiser
+ * on the stepper component is one; a bare call from a lifecycle hook is not.
  *
  * @param host The `<cngx-stepper>` host element, which is its own container.
  * @category common/stepper
- * @relatedTo createStepperDisplayMode
+ * @relatedTo createStepperDisplayMode, injectContainerSize
  */
-export function createStepperCollapseSignal(host: Element): Signal<boolean> {
+export function injectStepperCollapse(host: Element): Signal<boolean> {
   const raw = injectContainerSize(host).property('--cngx-stepper-collapse', host, '::after');
   return computed(() => raw() === '1');
 }

@@ -93,8 +93,15 @@
 /**
  * Crumb cap the bar reads back from its own container. Registered `<integer>`
  * so a malformed consumer override falls back to the initial value rather than
- * reaching TypeScript as a `NaN`. `inherits: false`: only the `::after` rules
- * above write it and only the bar reads it, so it must not leak to crumbs.
+ * reaching TypeScript as a `NaN`.
+ *
+ * `inherits: false` because the property is written on `.cngx-breadcrumb::after`
+ * and read back from the same pseudo-element - it is a channel between the
+ * container query and the component, never a theme token, so it must not reach
+ * the crumbs. The consequence a consumer has to know: **an override must target
+ * `::after` too.** Setting `--cngx-breadcrumb-max-visible` on the host (or any
+ * ancestor) has no effect, because a non-inheriting property does not reach the
+ * pseudo-element that the read actually resolves against.
  * @group Layout
  */
 @property --cngx-breadcrumb-max-visible {

@@ -37,7 +37,10 @@ export {
   CNGX_HOVER_INTENT_DEFAULTS,
   type CngxHoverIntentDefaults,
 } from './hover-intent/hover-intent.directive';
-export { CNGX_CONTROL_VALUE, type CngxControlValue } from './control-value/control-value.token';
+export {
+  CNGX_CONTROL_VALUE,
+  type CngxControlValue,
+} from './control-value/control-value.token';
 export {
   createSliderCore,
   type CngxSliderCore,
@@ -104,7 +107,10 @@ export {
 } from './radio/radio-group.token';
 export { CngxRadioGroup } from './radio/radio-group.component';
 export { CngxRadio } from './radio/radio.component';
-export { CNGX_CHIP_GROUP_HOST, type CngxChipGroupHost } from './chip-group/chip-group-host.token';
+export {
+  CNGX_CHIP_GROUP_HOST,
+  type CngxChipGroupHost,
+} from './chip-group/chip-group-host.token';
 export { CngxChipInteraction } from './chip-interaction/chip-interaction.directive';
 export { CngxChipInGroup } from './chip-in-group/chip-in-group.directive';
 export { CngxChipGroup } from './chip-group/chip-group.component';
@@ -178,13 +184,19 @@ export {
   type CngxOptionStatus,
   type CngxOptionStatusHost,
 } from './listbox/option-status-host';
-export { CNGX_OPTION_FILTER_HOST, type CngxOptionFilterHost } from './listbox/option-filter-host';
+export {
+  CNGX_OPTION_FILTER_HOST,
+  type CngxOptionFilterHost,
+} from './listbox/option-filter-host';
 export {
   CNGX_OPTION_INTERACTION_HOST,
   type CngxOptionInteractionHost,
 } from './listbox/option-interaction-host';
 export { CngxListbox } from './listbox/listbox.directive';
-export { CngxListboxSearch, type ListboxMatchFn } from './listbox/listbox-search.directive';
+export {
+  CngxListboxSearch,
+  type ListboxMatchFn,
+} from './listbox/listbox-search.directive';
 export { CngxListboxTrigger } from './listbox/listbox-trigger.directive';
 export { CngxMenu } from './menu/menu.directive';
 export { CNGX_MENU_HOST, type CngxMenuHost } from './menu/menu-host.token';
@@ -282,7 +294,10 @@ export {
 } from './menu/menu-radio-controller';
 export { CngxMenuTrigger } from './menu/menu-trigger.directive';
 export { CngxErrorState } from './error-state/error-state.directive';
-export { CNGX_ERROR_SCOPE, type CngxErrorScopeContract } from './error-scope/error-scope.token';
+export {
+  CNGX_ERROR_SCOPE,
+  type CngxErrorScopeContract,
+} from './error-scope/error-scope.token';
 export { CngxErrorScope } from './error-scope/error-scope.directive';
 export {
   CNGX_ERROR_AGGREGATOR,

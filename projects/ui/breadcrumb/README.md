@@ -85,9 +85,18 @@ Re-aim the rungs with your own rule on the same pseudo-element:
 }
 ```
 
-An unlayered author rule beats the library rule in `@layer cngx.components`, so
-no `!important` is needed. The property is registered `<integer>`: a non-integer
-value falls back to the registered initial and is never read as a cap.
+Two details decide whether that rule works:
+
+- **It has to target `::after`.** The property is registered `inherits: false`,
+  so setting it on the bar itself or on an ancestor never reaches the
+  pseudo-element the component reads. That is deliberate - the property is a
+  channel between the `@container` rule and the component, not a theme token
+  the crumbs should inherit.
+- **No `!important` needed.** An unlayered author rule beats the library rule in
+  `@layer cngx.components`, whatever the specificity.
+
+The property is registered `<integer>`: a non-integer value falls back to the
+registered initial and is never read as a cap.
 
 To pin the count instead - the opt-out - bind `[maxVisible]`; an explicit value
 always wins over the derived one:

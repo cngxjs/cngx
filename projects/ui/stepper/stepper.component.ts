@@ -25,11 +25,11 @@ import {
 import { CngxSwipe } from '@cngx/common/interactive';
 import {
   CNGX_STEP_PANEL_HOST,
-  createStepperCollapseSignal,
   createStepperDisplayMode,
   createStepperGroupSummary,
   createStepperGroupNavigation,
   createStripDensity,
+  injectStepperCollapse,
   CngxStep,
   STEPPER_DEFAULT_DENSITY_BREAKPOINTS,
   CngxStepBadge,
@@ -238,7 +238,7 @@ export class CngxStepper implements CngxStepPanelHost {
   });
 
   protected readonly displayMode = createStepperDisplayMode(
-    createStepperCollapseSignal(this.hostElement),
+    injectStepperCollapse(this.hostElement),
     () => this.config.mobileCollapse,
   );
 
