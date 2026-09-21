@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { type ComponentFixture, TestBed } from '@angular/core/testing';
-import { computedValue } from '@cngx/testing/geometry';
+import { computedValue, containerState } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { CngxTreetable } from './treetable.component';
@@ -123,6 +123,33 @@ describe('CngxTreetable geometry', () => {
     expect(computedValue(cell, 'padding-inline-start')).toBe('8px');
     host.style.setProperty('--cngx-space-md', '24px');
     expect(computedValue(cell, 'padding-inline-start')).toBe('24px');
+  });
+
+  describe('container-driven narrowing', () => {
+    // The narrow raster used to hang off a viewport @media query, so a
+    // treetable in a drawer on a desktop kept the wide one. It now queries its
+    // own width - only a real engine resolves that, hence this suite.
+    it('declares an inline-size container named cngx-treetable', () => {
+      const state = containerState(mount());
+      expect(state.type).toBe('inline-size');
+      expect(state.name).toBe('cngx-treetable');
+    });
+
+    it('switches the indent and cell padding across the 48rem rung', () => {
+      const host = mount();
+      const cell = host.querySelector('.cngx-treetable__first-data-cell');
+      if (!cell) {
+        throw new Error('first data cell did not render');
+      }
+
+      host.style.inlineSize = '60rem';
+      const wideIndent = computedValue(cell, '--cngx-treetable-indent-size');
+      const widePadBlock = computedValue(cell, 'padding-block-start');
+
+      host.style.inlineSize = '40rem';
+      expect(computedValue(cell, '--cngx-treetable-indent-size')).not.toBe(wideIndent);
+      expect(computedValue(cell, 'padding-block-start')).not.toBe(widePadBlock);
+    });
   });
 
   it('isolates data cells under dir=rtl (isolate-only by default; direction untouched)', () => {
