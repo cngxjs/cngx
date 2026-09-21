@@ -7,6 +7,37 @@
   --cngx-breadcrumb-gap: var(--cngx-space-sm, 0.5rem);
   display: block;
   font: inherit;
+  /* The crumb cap below queries this container. The name is API - an unnamed
+     @container would match the nearest container of any name, so a consumer
+     wrapping the bar in their own container would silently re-target it. */
+  container-type: inline-size;
+  container-name: cngx-breadcrumb;
+}
+
+/* The crumb cap. It exists exactly once, here: the bar reads the resolved
+   value and never evaluates a width in TypeScript, so ejecting this stylesheet
+   moves the thresholds with it.
+
+   The rules style `::after`, not `.cngx-breadcrumb`: a @container rule cannot
+   style its own container, but the query container for a PSEUDO-element is
+   selected from its originating element's inclusive ancestors, so
+   `.cngx-breadcrumb::after` resolves against `.cngx-breadcrumb`. No sentinel
+   node in the template. A consumer overrides the cap by writing the same
+   property on the same pseudo-element from an unlayered rule. */
+.cngx-breadcrumb::after {
+  --cngx-breadcrumb-max-visible: 2;
+}
+
+@container cngx-breadcrumb (min-inline-size: 30rem) {
+  .cngx-breadcrumb::after {
+    --cngx-breadcrumb-max-visible: 4;
+  }
+}
+
+@container cngx-breadcrumb (min-inline-size: 48rem) {
+  .cngx-breadcrumb::after {
+    --cngx-breadcrumb-max-visible: 6;
+  }
 }
 
 /* The `›` separator is directional. Custom properties inherit into every
@@ -58,6 +89,19 @@
    registered `@property`'s fixed initial-value never defeats a
    dark theme (a registered custom property is never "unset", so the initial
    would otherwise win over any `var(..., fallback)`). */
+
+/**
+ * Crumb cap the bar reads back from its own container. Registered `<integer>`
+ * so a malformed consumer override falls back to the initial value rather than
+ * reaching TypeScript as a `NaN`. `inherits: false`: only the `::after` rules
+ * above write it and only the bar reads it, so it must not leak to crumbs.
+ * @group Layout
+ */
+@property --cngx-breadcrumb-max-visible {
+  syntax: '<integer>';
+  inherits: false;
+  initial-value: 2;
+}
 
 /** Link text-decoration under the `plain` skin (retints the shared link-decoration leaf token). @group Skin */
 @property --cngx-breadcrumb-plain-link-decoration {
@@ -448,12 +492,18 @@
     background-image: linear-gradient(
       90deg,
       var(--cngx-breadcrumb-editorial-accent),
-      color-mix(in oklch, var(--cngx-breadcrumb-editorial-accent) 40%, var(--cngx-breadcrumb-editorial-text))
+      color-mix(
+        in oklch,
+        var(--cngx-breadcrumb-editorial-accent) 40%,
+        var(--cngx-breadcrumb-editorial-text)
+      )
     );
     background-repeat: no-repeat;
     background-position: 0 100%;
     background-size: 0% 2px;
-    transition: background-size var(--cngx-duration-base, 200ms) ease, color var(--cngx-duration-base, 200ms) ease;
+    transition:
+      background-size var(--cngx-duration-base, 200ms) ease,
+      color var(--cngx-duration-base, 200ms) ease;
   }
 
   .cngx-breadcrumb__link:hover {
@@ -466,7 +516,11 @@
     background-image: linear-gradient(
       90deg,
       var(--cngx-breadcrumb-editorial-accent),
-      color-mix(in oklch, var(--cngx-breadcrumb-editorial-accent) 50%, var(--cngx-breadcrumb-editorial-text))
+      color-mix(
+        in oklch,
+        var(--cngx-breadcrumb-editorial-accent) 50%,
+        var(--cngx-breadcrumb-editorial-text)
+      )
     );
     background-position: 0 0;
     background-size: 100% 100%;
@@ -580,7 +634,9 @@
   }
 
   /* no dangling delimiter before the leaf once it wraps onto the title row */
-  .cngx-breadcrumb__separator:has(+ .cngx-breadcrumb__crumb .cngx-breadcrumb__link[aria-current='page']) {
+  .cngx-breadcrumb__separator:has(
+    + .cngx-breadcrumb__crumb .cngx-breadcrumb__link[aria-current='page']
+  ) {
     display: none;
   }
 }
@@ -665,7 +721,9 @@
     border-radius: 50%;
     border: 2.5px solid var(--cngx-breadcrumb-metro-accent);
     background: var(--cngx-breadcrumb-metro-surface);
-    transition: background var(--cngx-duration-base, 200ms) ease, transform var(--cngx-duration-base, 200ms) ease;
+    transition:
+      background var(--cngx-duration-base, 200ms) ease,
+      transform var(--cngx-duration-base, 200ms) ease;
   }
 
   .cngx-breadcrumb__link:hover {

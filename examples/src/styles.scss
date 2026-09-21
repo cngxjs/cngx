@@ -3881,7 +3881,10 @@ cngx-radio-group .cngx-radio + .cngx-radio {
   resize: horizontal;
   overflow: auto;
   min-width: 220px;
-  max-width: 100%;
+  /* Deliberately NOT max-width: 100% - the demo card is 640px wide and the
+     bar's top rung sits at 48rem (768px), so a clamped box could never reach
+     the 6-crumb cap. Dragging past the card is the point. */
+  max-width: none;
   padding: 0.75rem;
   border: 1px dashed var(--cngx-color-border, var(--cngx-ex-border, #cbd5e1));
   border-radius: var(--cngx-radius-sm, 4px);
