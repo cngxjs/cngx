@@ -378,7 +378,12 @@ export class CngxSidenav {
       if (this.widthPx() === null) {
         this.measureWidth();
       }
-      if (ngDevMode && this.mode() === 'auto' && !this.container) {
+      if (
+        typeof ngDevMode !== 'undefined' &&
+        ngDevMode &&
+        this.mode() === 'auto' &&
+        !this.container
+      ) {
         console.warn(
           '[cngx-sidenav] auto mode needs a <cngx-sidenav-layout> (or [cngxContainer]) ancestor; rendering as over.',
         );
