@@ -960,10 +960,11 @@
   /*
    * Container collapse: two graduated tiers shed the convenience segments as the
    * paginator's own inline size narrows, never the segments that reach every
-   * page. The go-to-page input drops first (prev / next / the page row still
-   * navigate), then the first / last double-chevrons. Tiered so a moderately
-   * narrow toolbar keeps first/last while a phone-width one collapses to the
-   * essentials. The `bar` skin is excluded - its `width: max-content` enclosure
+   * page. At the `sm` rung (30rem) the go-to-page input drops and the number
+   * row swaps for the status readout; at `xs` (20rem) the first / last
+   * double-chevrons go too, leaving prev / next / status. Tiered so a
+   * moderately narrow toolbar keeps first/last while a phone-width one
+   * collapses to the essentials. The `bar` skin is excluded - its `width: max-content` enclosure
    * conflicts with inline-size containment, which would zero its content width.
    */
   .cngx-paginator:not([data-skin='bar']) {
@@ -971,13 +972,7 @@
     container-name: cngx-paginator;
   }
 
-  @container cngx-paginator (max-width: 30rem) {
-    .cngx-paginator__segment:is(cngx-pgn-goto) {
-      display: none;
-    }
-  }
-
-  @container cngx-paginator (max-width: 24rem) {
+  @container cngx-paginator (max-inline-size: 20rem) {
     .cngx-paginator__segment:is(cngx-pgn-first, cngx-pgn-last) {
       display: none;
     }
@@ -986,10 +981,13 @@
   /*
    * Responsive collapse, on by default: the paginator swaps its number row for
    * the "Page n of m" status readout once its own container narrows past the
-   * breakpoint - the same control, density-shifting to the device. The status
-   * segment is hidden at every width and revealed only at the breakpoint; the
-   * number row does the reverse. The breakpoint stays a literal - @container
-   * conditions cannot resolve var().
+   * `sm` rung - the same control, density-shifting to the device. The status
+   * segment is hidden at every width and revealed only at the rung; the number
+   * row does the reverse. The rung stays a literal - @container conditions
+   * cannot resolve var().
+   *
+   * The swap shares the `sm` rung with the go-to-page hide above: below 30rem
+   * a number row is cramped anyway, so one "compact" edge beats two.
    *
    * Opt-out is `--cngx-paginator-collapse: none` on the paginator or any
    * ancestor (the accordion's marker variants use the same style-query shape).
@@ -1001,7 +999,11 @@
     display: none;
   }
 
-  @container cngx-paginator (max-width: 24rem) {
+  @container cngx-paginator (max-inline-size: 30rem) {
+    .cngx-paginator__segment:is(cngx-pgn-goto) {
+      display: none;
+    }
+
     @container not style(--cngx-paginator-collapse: none) {
       .cngx-paginator cngx-pgn-pages {
         display: none;

@@ -68,7 +68,7 @@ export type CngxPaginatorDensity = 'compact' | 'default' | 'comfortable';
  * All ARIA attributes are signal-driven. `aria-busy` has a single owner here.
  *
  * Responsive out of the box: once the paginator's own container narrows past
- * `24rem` a `@container` rule swaps the projected `cngx-pgn-pages` number row
+ * `30rem` a `@container` rule swaps the projected `cngx-pgn-pages` number row
  * for the `cngx-pgn-status` "Page n of m" readout (compose both segments for
  * the swap to have something to show). The threshold lives in
  * `paginator.component.css` and nowhere else. Opt out with

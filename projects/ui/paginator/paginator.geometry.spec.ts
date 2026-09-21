@@ -96,14 +96,14 @@ describe('CngxPaginator geometry', () => {
     expect(state.name).toBe('cngx-paginator');
   });
 
-  it('swaps the page row for the status readout below the 24rem breakpoint', () => {
+  it('swaps the page row for the status readout below the 30rem rung', () => {
     // Positive control: proves the @container query fires. The swap selectors
     // carry enough specificity to win, which the two collapse guards below now
     // assert for the goto/first/last rules as well.
     const host = mount(800);
     expect(segmentDisplay(host, 'cngx-pgn-pages')).not.toBe('none');
     expect(segmentDisplay(host, 'cngx-pgn-status')).toBe('none');
-    host.style.inlineSize = '300px';
+    host.style.inlineSize = '430px';
     expect(segmentDisplay(host, 'cngx-pgn-pages')).toBe('none');
     expect(segmentDisplay(host, 'cngx-pgn-status')).not.toBe('none');
   });
@@ -112,7 +112,7 @@ describe('CngxPaginator geometry', () => {
     // The opt-out is a style query, not a display restore: with the property
     // set, the swap block never applies, so the page row keeps whatever
     // display it had and the status segment stays hidden.
-    const host = mount(300);
+    const host = mount(430);
     expect(segmentDisplay(host, 'cngx-pgn-pages')).toBe('none');
 
     host.style.setProperty('--cngx-paginator-collapse', 'none');
@@ -120,12 +120,12 @@ describe('CngxPaginator geometry', () => {
     expect(segmentDisplay(host, 'cngx-pgn-status')).toBe('none');
   });
 
-  it('collapses the go-to input below the 30rem breakpoint', () => {
+  it('collapses the go-to input below the 30rem rung', () => {
     const host = mount(430);
     expect(segmentDisplay(host, 'cngx-pgn-goto')).toBe('none');
   });
 
-  it('collapses first/last below the 24rem breakpoint', () => {
+  it('collapses first/last below the 20rem rung', () => {
     const host = mount(300);
     expect(segmentDisplay(host, 'cngx-pgn-first')).toBe('none');
     expect(segmentDisplay(host, 'cngx-pgn-last')).toBe('none');
