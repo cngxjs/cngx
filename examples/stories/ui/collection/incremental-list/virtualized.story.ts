@@ -5,17 +5,17 @@ export const STORY: DemoSpec = {
   subtitle:
     'Opt into DOM recycling with <code>[virtualize]</code>: a 10,000-row accumulated list renders only the rows inside the bounded viewport (plus a small overscan), so the DOM node count stays flat while the scrollbar still reflects the full set. <code>[estimateSize]</code> seeds the per-row height before measurement.',
   description:
-    'Without <code>[virtualize]</code> the content branch renders every accumulated row - fine for a few hundred, the bottleneck at thousands. Setting <code>[virtualize]</code> swaps the render-all loop for a recycled window inside a bounded scroll viewport (height tuned via the <code>--cngx-incremental-list-viewport-height</code> custom property); every off-window row collapses into a pixel spacer, and each rendered row still carries <code>aria-setsize</code> / <code>aria-posinset</code> for the full set. The projected trigger still drives <code>next()</code> - only rendering is virtualized. Scroll the frame and watch the rendered-row readout stay flat near the window size instead of climbing toward 10,000.',
+    'Without <code>[virtualize]</code> the content branch renders every accumulated row - fine for a few hundred, the bottleneck at thousands. Setting <code>[virtualize]</code> swaps the render-all loop for a recycled window inside a bounded scroll viewport (height tuned via the <code>--cngx-incremental-list-viewport-height</code> custom property); every off-window row collapses into a pixel spacer, and each rendered row still carries <code>aria-setsize</code> / <code>aria-posinset</code> for the full set. The projected trigger drives <code>next()</code> exactly as in the non-virtualized demos - each step reveals 2,000 more rows, and only rendering is virtualized. Scroll the frame and watch the rendered-row readout stay flat near the window size instead of climbing toward 10,000.',
   level: 'organism',
   audience: ['dev'],
   artifact: 'standalone',
   focus: ['behavior', 'composition'],
   apiComponents: ['CngxIncrementalList'],
   moduleImports: [
-    "import { CngxIncrementalList, CngxIncrementalItem } from '@cngx/ui/collection';",
+    "import { CngxIncrementalList, CngxIncrementalItem, CngxPaginatorLoadMore } from '@cngx/ui/collection';",
     "import { createManualState } from '@cngx/common/data';",
   ],
-  imports: ['CngxIncrementalList', 'CngxIncrementalItem'],
+  imports: ['CngxIncrementalList', 'CngxIncrementalItem', 'CngxPaginatorLoadMore'],
   setup: `protected readonly rows: string[] = Array.from({ length: 10_000 }, (_, i) => 'Row ' + (i + 1));
   protected readonly listState = createManualState<string[]>();
   constructor() {
@@ -39,7 +39,7 @@ export const STORY: DemoSpec = {
   template: `  <cngx-incremental-list
     [state]="listState"
     [total]="rows.length"
-    [pageSize]="rows.length"
+    [pageSize]="2000"
     [virtualize]="true"
     [estimateSize]="36"
     [style.--cngx-incremental-list-viewport-height]="'360px'"
@@ -47,6 +47,7 @@ export const STORY: DemoSpec = {
     <ng-template cngxIncrementalItem let-row>
       {{ row }}
     </ng-template>
+    <cngx-pgn-load-more cngxIncrementalTrigger />
   </cngx-incremental-list>`,
   templateChrome: `<div class="status-row" style="margin-top:8px">
     <span class="cngx-ex-status-readout"
