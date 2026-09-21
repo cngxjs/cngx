@@ -1,4 +1,5 @@
-import { computed, signal, type DestroyRef, type Signal } from '@angular/core';
+import { computed, type DestroyRef, type Signal } from '@angular/core';
+import { createResizeSignal } from '@cngx/common/layout';
 
 /**
  * Resolved density rung for the classic `<cngx-stepper>` strip.
@@ -36,32 +37,24 @@ export interface CngxStripDensityOptions {
 }
 
 /**
- * Tracks an element's content-box width as a reactive signal via the
- * `ResizeObserver` API. Mirrors `createMobileViewportSignal`'s
- * `matchMedia` wrapper: the API is wrapped directly (not via the
- * `CngxResizeObserver` directive, which can only attach through
- * `hostDirectives`). In SSR / non-DOM environments the signal stays
- * `0` and no observer is wired.
+ * Tracks an element's content-box width as a reactive signal, over the shared
+ * resize kernel (`createResizeSignal`) rather than a hand-rolled
+ * `ResizeObserver`. Not the `CngxResizeObserver` directive - that can only
+ * attach through `hostDirectives`, and this factory is called from a field
+ * initialiser. In SSR / non-DOM environments the signal stays `0` and no
+ * observer is wired.
  */
 function createElementWidthSignal(element: HTMLElement, destroyRef: DestroyRef): Signal<number> {
-  const width = signal(0);
-  if (typeof ResizeObserver !== 'function') {
-    return width.asReadonly();
-  }
-  const observer = new ResizeObserver((entries) => {
-    width.set(entries[0]?.contentRect.width ?? 0);
-  });
-  observer.observe(element);
-  destroyRef.onDestroy(() => observer.disconnect());
-  return width.asReadonly();
+  const entry = createResizeSignal(element, 'content-box', destroyRef, globalThis);
+  return computed(() => entry()?.contentRect.width ?? 0);
 }
 
 /**
  * Resolves the classic strip's density rung from its own container
  * width against the step count and two per-step px thresholds. Pure
- * `create*` factory, sibling to `createStepperDisplayMode` - it owns a
- * `ResizeObserver` the way the display-mode factory owns a
- * `matchMedia` listener, and returns a single derived `Signal`.
+ * `create*` factory, sibling to `createStepperDisplayMode` - both derive
+ * a rung from the space the stepper was given and return a single
+ * `Signal`; this one measures, the other reads what CSS resolved.
  *
  * `'comfortable'` density short-circuits to `'full'` (no measurement
  * dependency). Before the first measurement (`width === 0`) and for an
