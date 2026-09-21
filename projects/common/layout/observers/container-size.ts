@@ -36,10 +36,24 @@ export interface CngxContainerSize {
    * `on`; it defaults to the container host, which is only correct for
    * properties no container query writes.
    *
+   * A component that is container and reader at once has no descendant to
+   * carry the value. Pass `pseudo` instead: the query container for a
+   * pseudo-element is selected from its originating element's *inclusive*
+   * ancestors, so `.host::after` resolves against `.host` while a rule on
+   * `.host` itself still matches nothing. No sentinel node enters the
+   * template.
+   *
+   * ```css
+   * .cngx-thing::after { --cngx-thing-narrow: 0; }
+   * &#64;container cngx-thing (max-inline-size: 30rem) {
+   *   .cngx-thing::after { --cngx-thing-narrow: 1; }
+   * }
+   * ```
+   *
    * Returns the empty string before the first observation and in environments
    * without layout (SSR, jsdom).
    */
-  property(name: string, on?: Element): Signal<string>;
+  property(name: string, on?: Element, pseudo?: '::before' | '::after'): Signal<string>;
 }
 
 /**
@@ -85,14 +99,19 @@ export function createContainerSize(
   // destroyed, so a strong Map would pin every dead node it ever read.
   const cache = new WeakMap<Element, Map<string, Signal<string>>>();
 
-  const property = (name: string, on?: Element): Signal<string> => {
+  const property = (
+    name: string,
+    on?: Element,
+    pseudo?: '::before' | '::after',
+  ): Signal<string> => {
     const target = on ?? element;
     let byName = cache.get(target);
     if (!byName) {
       byName = new Map();
       cache.set(target, byName);
     }
-    const cached = byName.get(name);
+    const key = `${pseudo ?? ''}|${name}`;
+    const cached = byName.get(key);
     if (cached) {
       return cached;
     }
@@ -106,9 +125,12 @@ export function createContainerSize(
       if (entry() === null || !win?.getComputedStyle) {
         return '';
       }
-      return win.getComputedStyle(target).getPropertyValue(name).trim();
+      return win
+        .getComputedStyle(target, pseudo ?? null)
+        .getPropertyValue(name)
+        .trim();
     });
-    byName.set(name, value);
+    byName.set(key, value);
     return value;
   };
 
@@ -127,6 +149,16 @@ export function createContainerSize(
  * private readonly container = inject(CNGX_CONTAINER_SIZE, { optional: true });
  * private readonly wide = this.container?.property('--cngx-thing-wide', this.host) ?? signal('').asReadonly();
  * readonly mode = computed(() => (this.wide() === '1' ? 'side' : 'over'));
+ * ```
+ *
+ * A component that declares the container in its own stylesheet and reads it
+ * itself passes its host explicitly and reads the property off `::after` -
+ * there is no descendant to carry the value:
+ *
+ * ```typescript
+ * private readonly host = inject(ElementRef).nativeElement as Element;
+ * private readonly container = injectContainerSize(this.host);
+ * private readonly narrow = this.container.property('--cngx-thing-narrow', this.host, '::after');
  * ```
  *
  * @param target Element to observe when no ancestor container exists.

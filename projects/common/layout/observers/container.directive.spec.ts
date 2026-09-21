@@ -37,14 +37,9 @@ describe('CngxContainer', () => {
     };
   }
 
-  it('declares the host as an inline-size container', () => {
+  it('sets no style; both container properties belong to the stylesheet', () => {
     const { element } = setup();
-    expect(element.style.containerType).toBe('inline-size');
-  });
-
-  it('sets no container-name - the name belongs in the stylesheet', () => {
-    const { element } = setup();
-    expect(element.style.containerName).toBe('');
+    expect(element.getAttribute('style')).toBeNull();
   });
 
   it('provides itself as CNGX_CONTAINER_SIZE', () => {

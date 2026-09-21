@@ -41,14 +41,16 @@
     min-height: inherit;
     overflow: hidden;
 
-    /* `container-type: inline-size` comes from the composed CngxContainer
-       host directive; the NAME belongs here, next to the rule that queries
-       it, because the name is API - an unnamed @container would match the
-       nearest container of any name, so a consumer wrapping the layout in
-       their own container would silently re-target this query. The layout
-       is already `position: relative`, so the layout containment that
-       `container-type` implies does not move the absolutely positioned
+    /* Both container properties live here, next to the rule that queries
+       them: the NAME is API - an unnamed @container would match the nearest
+       container of any name, so a consumer wrapping the layout in their own
+       container would silently re-target this query - and the TYPE is a
+       layout decision a skin must be able to drop with a plain rule rather
+       than an !important against a host style. CngxContainer only observes.
+       The layout is already `position: relative`, so the layout containment
+       that `container-type` implies does not move the absolutely positioned
        rails (sidenav.css:586, 840, 858). */
+    container-type: inline-size;
     container-name: cngx-sidenav-layout;
   }
 
