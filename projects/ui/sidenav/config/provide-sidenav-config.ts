@@ -6,19 +6,15 @@ import {
 } from '@angular/core';
 
 import type { CngxSidenavConfig } from './sidenav.config';
-import {
-  CNGX_SIDENAV_CONFIG,
-  CNGX_SIDENAV_DEFAULTS,
-} from './sidenav.config.defaults';
+import { CNGX_SIDENAV_CONFIG, CNGX_SIDENAV_DEFAULTS } from './sidenav.config.defaults';
 
 /**
  * Discriminated-union shape returned by the sidenav config features -
- * `withSidenavDimensions`, `withSidenavResponsive`, `withSidenavShortcut`,
- * `withSidenavHoverDwell`, and `withSidenavRouterSync`. The reducer in
- * `provideSidenavConfig` / `provideSidenavConfigAt` matches on `kind` and merges
- * `payload` into the corresponding config sub-tree: `dimensions`, `hover`, and
- * `routerSync` are one-level nested sub-trees, `responsive` and `shortcut` are
- * flat top-level scalars. Mirrors `CngxBreadcrumbConfigFeature` from
+ * `withSidenavDimensions`, `withSidenavShortcut`, `withSidenavHoverDwell`, and
+ * `withSidenavRouterSync`. The reducer in `provideSidenavConfig` /
+ * `provideSidenavConfigAt` matches on `kind` and merges `payload` into the
+ * corresponding config sub-tree: `dimensions`, `hover`, and `routerSync` are
+ * one-level nested sub-trees, `shortcut` is a flat top-level scalar. Mirrors `CngxBreadcrumbConfigFeature` from
  * `@cngx/ui/breadcrumb` (nested-sub-tree style; the stepper family uses flat
  * scalar keys instead).
  *
@@ -39,10 +35,6 @@ export type CngxSidenavConfigFeature =
       readonly payload: NonNullable<CngxSidenavConfig['routerSync']>;
     }
   | {
-      readonly kind: 'responsive';
-      readonly payload: { readonly responsive: string };
-    }
-  | {
       readonly kind: 'shortcut';
       readonly payload: { readonly shortcut: string };
     };
@@ -54,14 +46,11 @@ export type CngxSidenavConfigFeature =
  *
  * @internal
  */
-function reduceFeatures(
-  features: readonly CngxSidenavConfigFeature[],
-): Partial<CngxSidenavConfig> {
+function reduceFeatures(features: readonly CngxSidenavConfigFeature[]): Partial<CngxSidenavConfig> {
   const out: {
     dimensions?: NonNullable<CngxSidenavConfig['dimensions']>;
     hover?: NonNullable<CngxSidenavConfig['hover']>;
     routerSync?: NonNullable<CngxSidenavConfig['routerSync']>;
-    responsive?: string;
     shortcut?: string;
   } = {};
   for (const f of features) {
@@ -75,9 +64,6 @@ function reduceFeatures(
       case 'routerSync':
         out.routerSync = { ...out.routerSync, ...f.payload };
         break;
-      case 'responsive':
-        out.responsive = f.payload.responsive;
-        break;
       case 'shortcut':
         out.shortcut = f.payload.shortcut;
         break;
@@ -89,8 +75,8 @@ function reduceFeatures(
 /**
  * Two-level deep merge: the nested sub-tree keys (`dimensions` / `hover`) are
  * spread-merged so the partial fills in missing keys without nuking unrelated
- * config sub-trees; the flat top-level scalars (`responsive` / `shortcut`) take
- * the partial when present, else the base. Inner objects are flat (one level),
+ * config sub-trees; the flat top-level scalar (`shortcut`) takes the partial
+ * when present, else the base. Inner objects are flat (one level),
  * so a single spread per key suffices. Invariant: a config key nested more than
  * one level deep would shallow-merge silently here - if the config ever grows a
  * deeper sub-tree, add a dedicated spread for it rather than relying on this
@@ -106,14 +92,13 @@ function mergeConfig(
     dimensions: { ...base.dimensions, ...partial.dimensions },
     hover: { ...base.hover, ...partial.hover },
     routerSync: { ...base.routerSync, ...partial.routerSync },
-    responsive: partial.responsive ?? base.responsive,
     shortcut: partial.shortcut ?? base.shortcut,
   };
 }
 
 /**
  * Application-root configuration cascade for the sidenav family. Pass any
- * combination of `withSidenavDimensions`, `withSidenavResponsive`,
+ * combination of `withSidenavDimensions`,
  * `withSidenavShortcut`, `withSidenavHoverDwell`, and `withSidenavRouterSync`
  * features in `bootstrapApplication`'s providers array.
  *
@@ -184,9 +169,7 @@ export function provideSidenavConfig(
  * @category ui/sidenav
  * @since 0.1.0
  */
-export function provideSidenavConfigAt(
-  ...features: CngxSidenavConfigFeature[]
-): Provider[] {
+export function provideSidenavConfigAt(...features: CngxSidenavConfigFeature[]): Provider[] {
   // Empty-features call: parent value flows through untouched. Skipping the
   // factory preserves reference identity through the sub-tree.
   if (features.length === 0) {

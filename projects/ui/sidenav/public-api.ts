@@ -19,7 +19,6 @@ export {
 } from './config/provide-sidenav-config';
 export {
   withSidenavDimensions,
-  withSidenavResponsive,
   withSidenavShortcut,
   withSidenavHoverDwell,
   withSidenavRouterSync,

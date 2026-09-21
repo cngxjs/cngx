@@ -17,6 +17,7 @@ import {
 } from '@angular/core';
 import { createTransitionTracker, matchesKeyCombo, parseKeyCombo } from '@cngx/core/utils';
 import { CNGX_HOVER_INTENT_DEFAULTS, CngxHoverIntent } from '@cngx/common/interactive';
+import { CNGX_CONTAINER_SIZE } from '@cngx/common/layout';
 
 import { injectSidenavConfig } from './config/inject-sidenav-config';
 import { CNGX_SIDENAV } from './sidenav-token';
@@ -37,19 +38,33 @@ export type SidenavPosition = 'start' | 'end';
  *
  * @category ui/sidenav
  */
-export type SidenavMode = 'over' | 'push' | 'side' | 'mini';
+export type SidenavMode = 'auto' | 'over' | 'push' | 'side' | 'mini';
+
+/**
+ * A resolved mode - what `'auto'` settles on plus every pinnable value.
+ *
+ * @category ui/sidenav
+ */
+export type ResolvedSidenavMode = Exclude<SidenavMode, 'auto'>;
 
 /**
  * Declarative sidebar component for the four drawer modes (`over`,
- * `push`, `side`, `mini`), with responsive mode switching, two-way
+ * `push`, `side`, `mini`) plus an `auto` default, two-way
  * `[(opened)]` binding, and content projection via header/footer
  * slots.
+ *
+ * Responsive out of the box: `mode` defaults to `'auto'`, which docks the
+ * rail beside the content once the surrounding `CngxSidenavLayout` is
+ * `64rem` or wider and overlays it below that. Nothing needs to be bound.
+ * The threshold lives in `sidenav-layout.css` and nowhere else - a
+ * `@container` rule writes `--cngx-sidenav-layout-wide` on the rail and
+ * this component reads the resolved value, so ejecting the skin moves the
+ * breakpoint with it. Any explicit `mode` pins that mode at every width.
  *
  * In overlay (`over`) mode it drives a CDK focus trap directly via
  * `FocusTrapFactory` (the same primitive `CngxFocusTrap` wraps): focus
  * moves into the rail on open and is restored to the opener on close.
- * Responsive switching runs off an inline `matchMedia` listener; the
- * shared backdrop and document scroll lock are coordinated by
+ * The shared backdrop and document scroll lock are coordinated by
  * `CngxSidenavLayout`. It does not compose `CngxDrawer` and has no
  * swipe-to-dismiss.
  *
@@ -58,8 +73,7 @@ export type SidenavMode = 'over' | 'push' | 'side' | 'mini';
  *
  * ```html
  * <cngx-sidenav-layout>
- *   <cngx-sidenav position="start" [(opened)]="navOpen"
- *                 [responsive]="'(min-width: 1024px)'">
+ *   <cngx-sidenav position="start" [(opened)]="navOpen">
  *     <cngx-sidenav-header>Logo</cngx-sidenav-header>
  *     <a cngxNavLink [active]="true">Dashboard</a>
  *     <cngx-sidenav-footer>v1.0</cngx-sidenav-footer>
@@ -76,6 +90,7 @@ export type SidenavMode = 'over' | 'push' | 'side' | 'mini';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/sidenav/sidenav.ts
  * @since 0.1.0
  * @relatedTo CngxSidenavLayout, CngxSidenavContent, CngxSidenavHeader, CngxSidenavFooter
+ * <example-url>http://localhost:4200/#/ui/sidenav/auto-mode</example-url>
  * <example-url>http://localhost:4200/#/ui/sidenav/dual-sidebar-master-detail</example-url>
  * <example-url>http://localhost:4200/#/ui/sidenav/full-navigation-sidebar</example-url>
  * <example-url>http://localhost:4200/#/ui/sidenav/material-theming-light-vs-dark</example-url>
@@ -159,8 +174,8 @@ export type SidenavMode = 'over' | 'push' | 'side' | 'mini';
 })
 export class CngxSidenav {
   /**
-   * Resolved sidenav configuration cascade. Seeds the dimension, `responsive`,
-   * and `shortcut` input defaults below so a per-instance binding still wins
+   * Resolved sidenav configuration cascade. Seeds the dimension and
+   * `shortcut` input defaults below so a per-instance binding still wins
    * (Controlled+Uncontrolled), an app-wide `provideSidenavConfig(...)` moves the
    * default, and an un-configured consumer keeps the byte-identical literals.
    * Declared first so the input field initialisers can read it.
@@ -173,15 +188,12 @@ export class CngxSidenav {
   /** Accessible label for the complementary landmark. */
   readonly ariaLabel = input<string | undefined>(undefined);
 
-  /** Drawer mode. Overridden by `responsive` when set. */
-  readonly mode = input<SidenavMode>('over');
-
   /**
-   * CSS media query string for responsive mode switching.
-   * When the query matches, mode becomes `'side'` (permanent).
-   * When it doesn't match, mode becomes `'over'` (overlay).
+   * Drawer mode. `'auto'` (the default) resolves to `'side'` once the
+   * surrounding layout is `64rem` or wider and to `'over'` below that; any
+   * other value pins that mode at every width.
    */
-  readonly responsive = input<string | undefined>(this.cfg.responsive);
+  readonly mode = input<SidenavMode>('auto');
 
   /** Width of the sidenav panel. Supports two-way `[(width)]` for resize. */
   readonly width = model<string>(this.cfg.dimensions?.width ?? '280px');
@@ -238,7 +250,11 @@ export class CngxSidenav {
    * the object literal never churns identity and re-runs the computation when
    * none of the three fields actually changed.
    */
-  private readonly hoverSource = computed(
+  private readonly hoverSource = computed<{
+    mode: ResolvedSidenavMode;
+    hover: boolean;
+    enabled: boolean;
+  }>(
     () => ({
       mode: this.effectiveMode(),
       hover: this.hoverIntent.active(),
@@ -262,7 +278,7 @@ export class CngxSidenav {
    * the next source change re-derives from the debounced hover.
    */
   private readonly expandedState = linkedSignal<
-    { mode: SidenavMode; hover: boolean; enabled: boolean },
+    { mode: ResolvedSidenavMode; hover: boolean; enabled: boolean },
     boolean
   >({
     source: this.hoverSource,
@@ -278,15 +294,35 @@ export class CngxSidenav {
   /** @internal Reference to host element for layout positioning. */
   readonly elementRef = inject(ElementRef<HTMLElement>);
 
-  // Inlined matchMedia - host directive would force a wrapper element.
-  private readonly mediaMatches = signal(false);
+  /** The layout's query container, absent when the rail is mounted standalone. */
+  private readonly container = inject(CNGX_CONTAINER_SIZE, { optional: true });
 
-  /** Resolved mode - responsive overrides to `'side'` when matching, falls back to `mode()`. */
-  readonly effectiveMode = computed<SidenavMode>(() => {
-    if (!this.responsive()) {
-      return this.mode();
+  /**
+   * `'1'` while the layout is at or above the docking threshold, set by the
+   * `@container` rule in `sidenav-layout.css` on this rail. The rule styles
+   * the rail rather than the layout because a container query resolves
+   * against an *ancestor* container - a rule whose subject is the container
+   * itself would never match.
+   *
+   * Empty until the layout's first `ResizeObserver` entry arrives, so `auto`
+   * resolves to `over` for that first frame. The observer's initial callback
+   * runs after layout and before paint, so nothing flashes; do NOT seed this
+   * with a constructor-time `getComputedStyle`, which would read before the
+   * first layout and report `'0'` regardless of the real width.
+   */
+  private readonly layoutWide =
+    this.container?.property(
+      '--cngx-sidenav-layout-wide',
+      this.elementRef.nativeElement as Element,
+    ) ?? signal('').asReadonly();
+
+  /** Resolved mode - `'auto'` derives from the layout width, anything else pins. */
+  readonly effectiveMode = computed<ResolvedSidenavMode>(() => {
+    const mode = this.mode();
+    if (mode !== 'auto') {
+      return mode;
     }
-    return this.mediaMatches() ? 'side' : this.mode();
+    return this.layoutWide() === '1' ? 'side' : 'over';
   });
 
   /** Whether this sidenav is in overlay mode (over). */
@@ -313,7 +349,7 @@ export class CngxSidenav {
    * gone. `previous` seeds to `current` on the first run, which the consumer
    * effect's equality guard already treats as "no transition".
    */
-  private readonly modeTransition = createTransitionTracker<SidenavMode>(() =>
+  private readonly modeTransition = createTransitionTracker<ResolvedSidenavMode>(() =>
     this.effectiveMode(),
   );
 
@@ -342,6 +378,11 @@ export class CngxSidenav {
       if (this.widthPx() === null) {
         this.measureWidth();
       }
+      if (ngDevMode && this.mode() === 'auto' && !this.container) {
+        console.warn(
+          '[cngx-sidenav] auto mode needs a <cngx-sidenav-layout> (or [cngxContainer]) ancestor; rendering as over.',
+        );
+      }
     });
 
     // Modal-overlay focus contract: on the open edge move focus into the rail
@@ -355,7 +396,7 @@ export class CngxSidenav {
       this.focusTrap.enabled = active;
       if (active && !wasOverlayActive) {
         // Only pull focus into the rail when the open was user-initiated. An
-        // auto-open driven by a responsive mode switch (viewport resize) engages
+        // auto-open driven by an auto-mode switch (container resize) engages
         // the trap - the rail is now modal - but must not steal focus.
         const viaAutoOpen = this.autoOpenInFlight;
         this.autoOpenInFlight = false;
@@ -385,19 +426,6 @@ export class CngxSidenav {
     inject(DestroyRef).onDestroy(() => {
       this.focusTrap.destroy();
       this.resizeAbort?.abort();
-    });
-
-    effect((onCleanup) => {
-      const query = this.responsive();
-      const win = this.win;
-      if (!query || !win) {
-        return;
-      }
-      const mql = win.matchMedia(query);
-      this.mediaMatches.set(mql.matches);
-      const handler = (e: MediaQueryListEvent): void => this.mediaMatches.set(e.matches);
-      mql.addEventListener('change', handler);
-      onCleanup(() => mql.removeEventListener('change', handler));
     });
 
     // Global hotkey: document listener inside effect(onCleanup) so the combo
@@ -433,7 +461,7 @@ export class CngxSidenav {
       if (current === previous) {
         return;
       }
-      const alwaysVisible = (m: SidenavMode) => m === 'side' || m === 'mini';
+      const alwaysVisible = (m: ResolvedSidenavMode) => m === 'side' || m === 'mini';
       if (alwaysVisible(previous) && !alwaysVisible(current)) {
         // Flag only overlay auto-opens so the focus effect skips the focus-move.
         // `over` is the only overlay mode; a `push` auto-open never raises
@@ -535,13 +563,7 @@ export class CngxSidenav {
    * stay theirs.
    */
   protected handleResizeKeydown(event: KeyboardEvent): void {
-    if (
-      !this.resizable() ||
-      event.ctrlKey ||
-      event.altKey ||
-      event.metaKey ||
-      event.shiftKey
-    ) {
+    if (!this.resizable() || event.ctrlKey || event.altKey || event.metaKey || event.shiftKey) {
       return;
     }
     const el = this.elementRef.nativeElement as HTMLElement;

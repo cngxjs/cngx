@@ -2,20 +2,10 @@ import { Component, Directive, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
-import {
-  CNGX_SIDENAV_CONFIG,
-  CNGX_SIDENAV_DEFAULTS,
-} from './config/sidenav.config.defaults';
-import {
-  withSidenavDimensions,
-  withSidenavResponsive,
-  withSidenavShortcut,
-} from './config/features';
+import { CNGX_SIDENAV_CONFIG, CNGX_SIDENAV_DEFAULTS } from './config/sidenav.config.defaults';
+import { withSidenavDimensions, withSidenavShortcut } from './config/features';
 import { injectSidenavConfig } from './config/inject-sidenav-config';
-import {
-  provideSidenavConfig,
-  provideSidenavConfigAt,
-} from './config/provide-sidenav-config';
+import { provideSidenavConfig, provideSidenavConfigAt } from './config/provide-sidenav-config';
 
 // A view-child probe: reads the resolved config from within the host's view,
 // where component `viewProviders` are visible (the host instance itself is
@@ -44,7 +34,6 @@ describe('CNGX_SIDENAV_CONFIG', () => {
     expect(cfg.dimensions?.maxWidth).toBe('600px');
     expect(cfg.hover?.enterDelay).toBe(120);
     expect(cfg.hover?.leaveDelay).toBe(0);
-    expect(cfg.responsive).toBeUndefined();
     expect(cfg.shortcut).toBeUndefined();
   });
 
@@ -62,18 +51,12 @@ describe('CNGX_SIDENAV_CONFIG', () => {
     expect(cfg.hover?.enterDelay).toBe(120);
   });
 
-  it('withSidenavResponsive and withSidenavShortcut override the flat scalars', () => {
+  it('withSidenavShortcut overrides the flat scalar', () => {
     TestBed.configureTestingModule({
-      providers: [
-        provideSidenavConfig(
-          withSidenavResponsive('(min-width: 1024px)'),
-          withSidenavShortcut('mod+b'),
-        ),
-      ],
+      providers: [provideSidenavConfig(withSidenavShortcut('mod+b'))],
     });
     const cfg = TestBed.inject(CNGX_SIDENAV_CONFIG);
 
-    expect(cfg.responsive).toBe('(min-width: 1024px)');
     expect(cfg.shortcut).toBe('mod+b');
     // dimension defaults untouched
     expect(cfg.dimensions?.width).toBe('280px');

@@ -12,6 +12,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { CngxContainer } from '@cngx/common/layout';
 import { fromEvent } from 'rxjs';
 import { CngxSidenav } from './sidenav';
 
@@ -21,11 +22,16 @@ import { CngxSidenav } from './sidenav';
  * Manages shared backdrop, scroll lock, and click-outside coordination.
  * Supports up to two sidenavs: one `position="start"` and one `position="end"`.
  *
+ * It is also the query container the rails resolve their `'auto'` mode
+ * against: the composed `CngxContainer` declares `container-type`, the
+ * stylesheet names it `cngx-sidenav-layout` and carries the single docking
+ * threshold. A rail mounted without this layout has no container and falls
+ * back to `over`.
+ *
  * ### Dual sidebar
  * ```html
  * <cngx-sidenav-layout>
- *   <cngx-sidenav position="start" [(opened)]="navOpen"
- *                 [responsive]="'(min-width: 1024px)'">
+ *   <cngx-sidenav position="start" [(opened)]="navOpen">
  *     Left nav
  *   </cngx-sidenav>
  *   <cngx-sidenav-content>
@@ -51,6 +57,7 @@ import { CngxSidenav } from './sidenav';
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   styleUrls: ['./sidenav-layout.css'],
+  hostDirectives: [CngxContainer],
   host: {
     '[class.cngx-sidenav-layout]': 'true',
     '[class.cngx-sidenav-layout--ready]': 'ready()',

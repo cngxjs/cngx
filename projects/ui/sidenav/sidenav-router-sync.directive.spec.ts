@@ -113,7 +113,10 @@ describe('CngxSidenavRouterSync', () => {
 
   it('resolves the param default from withSidenavRouterSync, per-instance [param] still wins', async () => {
     TestBed.configureTestingModule({
-      providers: [provideRouter([]), provideSidenavConfig(withSidenavRouterSync({ param: 'menu' }))],
+      providers: [
+        provideRouter([]),
+        provideSidenavConfig(withSidenavRouterSync({ param: 'menu' })),
+      ],
     });
 
     const fixture = TestBed.createComponent(Host);

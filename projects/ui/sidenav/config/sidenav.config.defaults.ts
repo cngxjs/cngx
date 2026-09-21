@@ -6,9 +6,8 @@ import type { CngxSidenavConfig } from './sidenav.config';
  * Library defaults for the sidenav configuration cascade. The values are
  * byte-identical to the per-instance input defaults `CngxSidenav` shipped
  * before the cascade (`width '280px'`, `miniWidth '56px'`, `minWidth '120px'`,
- * `maxWidth '600px'`, `enterDelay 120`, `leaveDelay 0`; `responsive` and
- * `shortcut` omitted = `undefined`), so an un-configured consumer sees no
- * change.
+ * `maxWidth '600px'`, `enterDelay 120`, `leaveDelay 0`; `shortcut` omitted =
+ * `undefined`), so an un-configured consumer sees no change.
  *
  * The `leaveDelay 0` default is kept deliberately (instant collapse, asymmetric
  * with the 120ms enter): the dwell becomes tunable via `[leaveDelay]` /
@@ -57,10 +56,7 @@ export const CNGX_SIDENAV_DEFAULTS: CngxSidenavConfig = {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/sidenav/config/sidenav.config.defaults.ts
  * @since 0.1.0
  */
-export const CNGX_SIDENAV_CONFIG = new InjectionToken<CngxSidenavConfig>(
-  'CNGX_SIDENAV_CONFIG',
-  {
-    providedIn: 'root',
-    factory: () => CNGX_SIDENAV_DEFAULTS,
-  },
-);
+export const CNGX_SIDENAV_CONFIG = new InjectionToken<CngxSidenavConfig>('CNGX_SIDENAV_CONFIG', {
+  providedIn: 'root',
+  factory: () => CNGX_SIDENAV_DEFAULTS,
+});
