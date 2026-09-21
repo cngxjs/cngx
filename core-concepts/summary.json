@@ -50,5 +50,9 @@
     {
         "title": "RTL Support",
         "file": "rtl-support.md"
+    },
+    {
+        "title": "Responsive by Default",
+        "file": "responsive-by-default.md"
     }
 ]
