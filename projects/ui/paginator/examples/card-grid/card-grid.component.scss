@@ -54,7 +54,9 @@
 }
 
 .bar {
-  /* Narrow the paginator container so the responsive collapse is reachable by
-     resizing the preview - the @container query swaps pages -> status. */
+  /* The `bar` skin is deliberately not a query container (inline-size
+     containment would zero its `width: max-content` enclosure), so the
+     page-row collapse does not apply here - this only keeps the bar inside
+     the preview. */
   max-width: 100%;
 }

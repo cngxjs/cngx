@@ -22,11 +22,13 @@ const NOUN = ['Keyboard', 'Mouse', 'Monitor', 'Webcam', 'Dock', 'Stand', 'Hub', 
 
 /**
  * A paged card grid with a composed paginator: items-per-page, a "go to page"
- * number input, a range readout, and a responsive collapse. `[responsive]`
- * makes a `@container` query swap the projected page-number row for a compact
- * "Page n of m" status once the paginator's own container narrows - compose both
- * `cngx-pgn-pages` and `cngx-pgn-status` and the right one shows per width. The
- * visible slice is a pure `computed()` of the shared page signals.
+ * number input and a range readout. The visible slice is a pure `computed()`
+ * of the shared page signals.
+ *
+ * Note this grid uses the `bar` skin, which is deliberately NOT a query
+ * container (its `width: max-content` enclosure would be zeroed by inline-size
+ * containment), so the container-driven page-row collapse does not apply here.
+ * See the `numbered` skin for that.
  */
 @Component({
   selector: 'app-root',
@@ -58,7 +60,6 @@ const NOUN = ['Keyboard', 'Mouse', 'Monitor', 'Webcam', 'Dock', 'Stand', 'Hub', 
       <cngx-paginator
         class="bar"
         skin="bar"
-        [responsive]="true"
         [total]="products.length"
         [pageIndex]="pageIndex()"
         (pageIndexChange)="pageIndex.set($event)"

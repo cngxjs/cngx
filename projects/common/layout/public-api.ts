@@ -8,11 +8,20 @@ export { CngxDrawerContent } from './drawer/drawer-content.directive';
 export { CngxIntersectionObserver } from './observers/intersection-observer.directive';
 export { CngxMediaQuery } from './observers/media-query.directive';
 export { injectMediaQuery } from './observers/inject-media-query';
-export {
-  injectQueryParamSync,
-  type QueryParamSyncOptions,
-} from './router/inject-query-param-sync';
+export { injectQueryParamSync, type QueryParamSyncOptions } from './router/inject-query-param-sync';
 export { CngxResizeObserver } from './observers/resize-observer.directive';
+export {
+  createResizeSignal,
+  observeResize,
+  type ResizeObserverHost,
+} from './observers/resize-signal';
+export { CngxContainer } from './observers/container.directive';
+export {
+  CNGX_CONTAINER_SIZE,
+  type CngxContainerSize,
+  createContainerSize,
+  injectContainerSize,
+} from './observers/container-size';
 export { CngxScrollLock } from './scroll/scroll-lock.directive';
 export { createScrollLock } from './scroll/scroll-lock-core';
 export { CngxSkeleton } from './text/skeleton.directive';

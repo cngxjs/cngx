@@ -155,10 +155,11 @@ never lets a second click queue behind the first.
 The skin (`numbered`, `minimal`, `pill`, `segmented`, `rail`, `dots`, `bar`) changes only the
 CSS layer via a host attribute; structure, ARIA, and keyboard behaviour are identical across
 every skin, so the choice is purely cosmetic and never an accessibility decision. Density and
-the responsive collapse are likewise device- and context-driven, not separate behaviours.
+the container-driven collapse are likewise device- and context-driven, not separate behaviours.
 
 ## Mobile and responsive
 
+- The collapse is on by default: below `24rem` of container width the number row gives way to a "Page n of m" readout, provided both `cngx-pgn-pages` and `cngx-pgn-status` are composed. Opt out with `--cngx-paginator-collapse: none`.
 - Keep the control stable across breakpoints; the active page must never get hidden by a layout rearrangement.
 - Let a long page row truncate into the ellipsis menu rather than wrapping into an unreadable grid of numbers.
 - On coarse pointers, prefer the compact skins and let the hit-targets grow; do not ship a desktop-dense row to a phone.

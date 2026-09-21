@@ -22,23 +22,6 @@ export function withSidenavDimensions(
 }
 
 /**
- * Set the app-wide default CSS media-query string for responsive mode
- * switching. When the query matches, the sidenav resolves to `'side'`;
- * otherwise it falls back to its `mode`. Per-instance `[responsive]` still
- * wins.
- *
- * ```ts
- * provideSidenavConfig(withSidenavResponsive('(min-width: 1024px)'));
- * ```
- *
- * @category ui/sidenav
- * @since 0.1.0
- */
-export function withSidenavResponsive(query: string): CngxSidenavConfigFeature {
-  return { kind: 'responsive', payload: { responsive: query } };
-}
-
-/**
  * Set the app-wide default keyboard shortcut to toggle the sidenav (e.g.
  * `'mod+b'`, which resolves to `ctrl` on Windows/Linux and `meta` on macOS).
  * Per-instance `[shortcut]` still wins.

@@ -24,7 +24,9 @@ describe('CNGX_SIDENAV token', () => {
   it('exposes a writable opened on the contract', () => {
     const fixture = TestBed.createComponent(Host);
     fixture.detectChanges();
-    const contract = fixture.debugElement.query(By.directive(CngxSidenav)).injector.get(CNGX_SIDENAV);
+    const contract = fixture.debugElement
+      .query(By.directive(CngxSidenav))
+      .injector.get(CNGX_SIDENAV);
 
     expect(contract.opened()).toBe(false);
     contract.opened.set(true);

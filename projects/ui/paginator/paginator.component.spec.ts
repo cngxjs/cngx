@@ -46,7 +46,6 @@ class ProbeHost {
       [aria-label]="ariaLabel()"
       [skin]="skin()"
       [density]="density()"
-      [responsive]="responsive()"
     >
       <span probeHost></span>
     </cngx-paginator>
@@ -60,7 +59,6 @@ class HostCmp {
   readonly ariaLabel = signal<string | undefined>(undefined);
   readonly skin = signal<CngxPaginatorSkin>('numbered');
   readonly density = signal<CngxPaginatorDensity>('default');
-  readonly responsive = signal(false);
 
   readonly indexEmits: number[] = [];
   readonly sizeEmits: number[] = [];
@@ -137,17 +135,12 @@ describe('CngxPaginator', () => {
     }
   });
 
-  test('[responsive] reflects onto [data-responsive]', async () => {
-    const { fixture, host, paginatorEl } = await setup();
-    expect(paginatorEl.getAttribute('data-responsive')).toBeNull();
-
-    host.responsive.set(true);
-    await settle(fixture);
-    expect(paginatorEl.getAttribute('data-responsive')).toBe('');
-
-    host.responsive.set(false);
-    await settle(fixture);
-    expect(paginatorEl.getAttribute('data-responsive')).toBeNull();
+  test('no longer reflects a responsive opt-in attribute', async () => {
+    // The collapse is on by default and gated purely in CSS, so there is no
+    // host flag left to reflect. The swap itself needs a real container query
+    // and is asserted in paginator.geometry.spec.ts under Chromium.
+    const { paginatorEl } = await setup();
+    expect(paginatorEl.hasAttribute('data-responsive')).toBe(false);
   });
 
   test('aria-label input overrides the config default', async () => {
@@ -396,9 +389,7 @@ describe('CngxPaginator - host typography', () => {
     expect(css).toMatch(
       /\.cngx-paginator\s*\{[^}]*--cngx-paginator-row-gap:\s*var\(--cngx-space-sm\)/,
     );
-    expect(css).toMatch(
-      /\.cngx-paginator\s*\{[^}]*--cngx-paginator-gap:\s*var\(--cngx-space-xs\)/,
-    );
+    expect(css).toMatch(/\.cngx-paginator\s*\{[^}]*--cngx-paginator-gap:\s*var\(--cngx-space-xs\)/);
   });
 
   test('compact size preset shifts the font to 0.8125rem and shrinks the hit target to 1.75rem', async () => {

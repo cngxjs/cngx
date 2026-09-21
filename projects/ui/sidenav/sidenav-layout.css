@@ -40,6 +40,33 @@
     width: 100%;
     min-height: inherit;
     overflow: hidden;
+
+    /* `container-type: inline-size` comes from the composed CngxContainer
+       host directive; the NAME belongs here, next to the rule that queries
+       it, because the name is API - an unnamed @container would match the
+       nearest container of any name, so a consumer wrapping the layout in
+       their own container would silently re-target this query. The layout
+       is already `position: relative`, so the layout containment that
+       `container-type` implies does not move the absolutely positioned
+       rails (sidenav.css:586, 840, 858). */
+    container-name: cngx-sidenav-layout;
+  }
+
+  /* The docking threshold. It exists exactly once, here: `<cngx-sidenav>`
+     reads the resolved value of this property and never re-evaluates the
+     condition, so ejecting this stylesheet moves the breakpoint with it.
+
+     The rule styles the RAIL, not the layout: a @container rule resolves
+     against an *ancestor* query container of the element it styles, so a
+     rule whose subject is the container itself matches nothing. */
+  cngx-sidenav-layout > cngx-sidenav {
+    --cngx-sidenav-layout-wide: 0;
+  }
+
+  @container cngx-sidenav-layout (min-inline-size: 64rem) {
+    cngx-sidenav-layout > cngx-sidenav {
+      --cngx-sidenav-layout-wide: 1;
+    }
   }
 
   /* Suppress transitions on initial render to prevent flash/jank.

@@ -1,6 +1,6 @@
 # CngxSidenav
 
-Declarative sidebar component supporting responsive mode switching, two-way opened binding, and content projection.
+Declarative sidebar component. Responsive out of the box: the rail docks beside the content on a wide layout and overlays it on a narrow one, with nothing bound.
 
 ## Import
 
@@ -31,7 +31,7 @@ import {
   selector: 'app-example',
   template: `
     <cngx-sidenav-layout>
-      <cngx-sidenav position="start" [(opened)]="navOpen" [responsive]="'(min-width: 1024px)'">
+      <cngx-sidenav position="start" [(opened)]="navOpen">
         <cngx-sidenav-header>Logo</cngx-sidenav-header>
         <a cngxNavLink [active]="true">Dashboard</a>
         <cngx-sidenav-footer>v1.0</cngx-sidenav-footer>
@@ -57,22 +57,47 @@ export class ExampleComponent {
 
 ## Overview
 
-`CngxSidenav` is a composable sidebar component that handles drawer behavior, keyboard shortcuts, responsive mode switching, and optional resize functionality. It coordinates with `CngxSidenavLayout` for backdrop and scroll-lock management.
+`CngxSidenav` is a composable sidebar component that handles drawer behavior, keyboard shortcuts, width-driven mode switching, and optional resize functionality. It coordinates with `CngxSidenavLayout` for backdrop and scroll-lock management.
 
 Key features:
 
-- **Mode switching:** `over` (overlay), `push` (nudges content), `side` (permanent), `mini` (collapsed icon rail; hover expands after a tunable dwell via `[expandDelay]` / `[collapseDelay]`)
-- **Responsive:** Media query-driven mode override via `[responsive]` input
+- **Responsive by default:** `mode` is `auto` unless you say otherwise - `side` once the surrounding layout is `64rem` or wider, `over` below that
+- **Mode switching:** bind `mode` to pin one of `over` (overlay), `push` (nudges content), `side` (permanent), `mini` (collapsed icon rail; hover expands after a tunable dwell via `[expandDelay]` / `[collapseDelay]`)
 - **Two-way binding:** `[(opened)]` synchronizes with external state
 - **Resize:** Optional drag handle with min/max constraints
 - **Keyboard:** Escape closes overlay, configurable global shortcut via `[shortcut]`
 - **RTL-aware:** `position="start"` / `"end"` flip logically in RTL
 - **Deep-linking:** persist open state to a URL query param via `[cngxSidenavRouterSync]` (see [Deep-linking](#deep-linking-router-sync))
-- **App-wide defaults:** `CNGX_SIDENAV_CONFIG` cascade for dimensions, responsive query, shortcut, hover dwell, and router-sync param (see [Configuration](#configuration))
+- **App-wide defaults:** `CNGX_SIDENAV_CONFIG` cascade for dimensions, shortcut, hover dwell, and router-sync param (see [Configuration](#configuration))
+
+## Container, not viewport
+
+The docking decision reads the width of the surrounding `CngxSidenavLayout`, not the width of the window. A rail inside a dashboard pane collapses when that pane is narrow, whatever the browser window is doing.
+
+The threshold lives in exactly one place - a `@container` rule in `sidenav-layout.css` that writes `--cngx-sidenav-layout-wide` on the rail:
+
+```css
+@container cngx-sidenav-layout (min-inline-size: 64rem) {
+  cngx-sidenav-layout > cngx-sidenav {
+    --cngx-sidenav-layout-wide: 1;
+  }
+}
+```
+
+`CngxSidenav` reads the resolved value; it never evaluates the condition itself. Override that rule to move the breakpoint. To opt out of auto entirely, bind `mode`:
+
+```html
+<!-- always an overlay, whatever the layout width -->
+<cngx-sidenav mode="over" [(opened)]="navOpen">…</cngx-sidenav>
+```
+
+A rail mounted without `<cngx-sidenav-layout>` has no container to measure; it renders as `over` and warns in dev mode.
+
+See `core-concepts/responsive-by-default.md` for the library-wide contract.
 
 ## Configuration
 
-Every dimension default, the responsive query, the toggle shortcut, and the mini hover dwell resolve through a standard cascade. Per-instance bindings always win; unset keys fall back to the library defaults, so an unconfigured `<cngx-sidenav>` behaves exactly as before.
+Every dimension default, the toggle shortcut, and the mini hover dwell resolve through a standard cascade. The docking threshold is deliberately not in the cascade - it is a CSS rule (see above), so it travels with the skin. Per-instance bindings always win; unset keys fall back to the library defaults, so an unconfigured `<cngx-sidenav>` behaves exactly as before.
 
 Resolution priority (high to low):
 
@@ -85,7 +110,6 @@ Resolution priority (high to low):
 import {
   provideSidenavConfig,
   withSidenavDimensions,
-  withSidenavResponsive,
   withSidenavShortcut,
   withSidenavHoverDwell,
 } from '@cngx/ui';
@@ -94,7 +118,6 @@ bootstrapApplication(AppComponent, {
   providers: [
     provideSidenavConfig(
       withSidenavDimensions({ width: '320px', miniWidth: '64px' }),
-      withSidenavResponsive('(min-width: 1024px)'),
       withSidenavShortcut('mod+b'),
       withSidenavHoverDwell({ enterDelay: 200, leaveDelay: 150 }),
     ),
@@ -105,7 +128,6 @@ bootstrapApplication(AppComponent, {
 | Feature | Overrides |
 |-|-|
 | `withSidenavDimensions({ width?, miniWidth?, minWidth?, maxWidth? })` | Panel dimensions |
-| `withSidenavResponsive(query)` | Default responsive media query |
 | `withSidenavShortcut(combo)` | Default toggle shortcut |
 | `withSidenavHoverDwell({ enterDelay?, leaveDelay? })` | Mini expand/collapse dwell (ms) |
 | `withSidenavRouterSync({ param })` | Default deep-link query-param key |

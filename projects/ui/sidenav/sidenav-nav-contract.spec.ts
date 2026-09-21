@@ -1,11 +1,6 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import {
-  CngxNavBadge,
-  CngxNavGroup,
-  CngxNavLabel,
-  CngxNavLink,
-} from '@cngx/common/interactive';
+import { CngxNavBadge, CngxNavGroup, CngxNavLabel, CngxNavLink } from '@cngx/common/interactive';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CngxSidenav } from './sidenav';
 

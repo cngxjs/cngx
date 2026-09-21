@@ -61,20 +61,29 @@ The default overflow row lists the label and does not navigate. Project
 </cngx-breadcrumb>
 ```
 
-## Responsive collapse
+## Width-driven collapse
 
-`responsive` derives `maxVisible` from the bar's own width - a
-`CngxResizeObserver` hostDirective feeds the pure `resolveBreadcrumbTier`:
+On by default, nothing to bind: the bar derives `maxVisible` from its own width
+through a `CngxResizeObserver` hostDirective feeding the pure
+`resolveBreadcrumbTier`.
 
 ```html
-<cngx-breadcrumb [items]="crumbs" responsive />
+<cngx-breadcrumb [items]="crumbs" />
 ```
 
 Default tiers: >= 640px shows 6, >= 440px shows 4, below that 2. Override with
-`[responsiveTiers]` (`CngxBreadcrumbWidthTier[]`, any order); an explicit
-`[maxVisible]` always wins over the width-derived value. Until the observer's
-first measurement the cap stays `undefined` - a narrow mount never
-mis-collapses on a zero-width first read.
+`[responsiveTiers]` (`CngxBreadcrumbWidthTier[]`, any order).
+
+To pin the count instead - the opt-out - bind `[maxVisible]`; an explicit value
+always wins over the width-derived one:
+
+```html
+<!-- always six crumbs, whatever the width -->
+<cngx-breadcrumb [items]="crumbs" [maxVisible]="6" />
+```
+
+Until the observer's first measurement the cap stays `undefined`, so the bar
+renders the full trail rather than mis-collapsing on a zero-width first read.
 
 ## Router-driven trail
 

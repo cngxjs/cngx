@@ -2,17 +2,18 @@ import { Component, signal, type Type } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createMatchMediaMock, type MatchMediaMock } from '@cngx/testing';
+import {
+  createMatchMediaMock,
+  createResizeObserverMock,
+  type MatchMediaMock,
+  type ResizeObserverMock,
+} from '@cngx/testing';
 import type { SidenavMode } from './sidenav';
 import { CngxSidenav } from './sidenav';
 import { CngxSidenavLayout } from './sidenav-layout';
 import { CngxSidenavContent } from './sidenav-content';
 import { provideSidenavConfig } from './config/provide-sidenav-config';
-import {
-  withSidenavDimensions,
-  withSidenavResponsive,
-  withSidenavHoverDwell,
-} from './config/features';
+import { withSidenavDimensions, withSidenavHoverDwell } from './config/features';
 
 @Component({
   template: `
@@ -49,18 +50,23 @@ class DualHost {
 @Component({
   template: `
     <cngx-sidenav-layout>
-      <cngx-sidenav position="start" [(opened)]="open" [mode]="mode()" [responsive]="responsive()">
-        Nav
-      </cngx-sidenav>
+      <cngx-sidenav position="start" [(opened)]="open" [mode]="mode()">Nav</cngx-sidenav>
       <cngx-sidenav-content>Content</cngx-sidenav-content>
     </cngx-sidenav-layout>
   `,
   imports: [CngxSidenavLayout, CngxSidenav, CngxSidenavContent],
 })
-class ResponsiveHost {
+class AutoModeHost {
   open = signal(false);
-  mode = signal<'over' | 'push' | 'side'>('over');
-  responsive = signal<string | undefined>(undefined);
+  mode = signal<SidenavMode>('auto');
+}
+
+@Component({
+  template: `<cngx-sidenav position="start" [(opened)]="open">Nav</cngx-sidenav>`,
+  imports: [CngxSidenav],
+})
+class StandaloneRailHost {
+  open = signal(false);
 }
 
 @Component({
@@ -76,7 +82,9 @@ class EndResizableHost {
 }
 
 @Component({
-  template: `<cngx-sidenav [shortcut]="shortcut()" [mode]="mode()" [(opened)]="open">Nav</cngx-sidenav>`,
+  template: `<cngx-sidenav [shortcut]="shortcut()" [mode]="mode()" [(opened)]="open"
+    >Nav</cngx-sidenav
+  >`,
   imports: [CngxSidenav],
 })
 class ShortcutHost {
@@ -647,46 +655,120 @@ describe('CngxSidenav resizable', () => {
   });
 });
 
-describe('CngxSidenav responsive', () => {
-  let mmMock: MatchMediaMock;
+describe('CngxSidenav auto mode', () => {
+  let roMock: ResizeObserverMock;
+
+  // The docking decision reads --cngx-sidenav-layout-wide, which the layout's
+  // @container rule resolves. jsdom evaluates no container query, so the
+  // property read is stubbed here and the real CSS path is covered by
+  // sidenav.geometry.spec.ts in Chromium.
+  function stubWide(value: string): void {
+    vi.spyOn(window, 'getComputedStyle').mockImplementation(
+      () => ({ getPropertyValue: () => value }) as unknown as CSSStyleDeclaration,
+    );
+  }
+
+  function flushResize(): void {
+    roMock.triggerResize({
+      borderBoxSize: [{ inlineSize: 1200, blockSize: 800 }],
+    } as unknown as ResizeObserverEntry);
+  }
+
+  function mount<T = AutoModeHost>(host: Type<T> = AutoModeHost as Type<T>) {
+    const fixture = TestBed.createComponent(host);
+    fixture.detectChanges();
+    const nav = fixture.debugElement.query(By.directive(CngxSidenav)).injector.get(CngxSidenav);
+    return { fixture, nav };
+  }
 
   beforeEach(() => {
-    mmMock = createMatchMediaMock(true);
-    mmMock.install(window);
+    roMock = createResizeObserverMock();
+    roMock.install(window);
   });
 
   afterEach(() => {
-    mmMock.restore(window);
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
   });
 
-  it('switches to side mode when media query matches', () => {
-    const fixture = TestBed.createComponent(ResponsiveHost);
-    fixture.componentInstance.responsive.set('(min-width: 1024px)');
+  it('renders as over before the first resize entry arrives', () => {
+    stubWide('1');
+    const { nav } = mount();
+    expect(nav.effectiveMode()).toBe('over');
+  });
+
+  it('docks beside the content when the layout reports wide', () => {
+    stubWide('1');
+    const { fixture, nav } = mount();
+    flushResize();
     fixture.detectChanges();
-    TestBed.flushEffects();
-    const nav = fixture.debugElement.query(By.directive(CngxSidenav)).injector.get(CngxSidenav);
     expect(nav.effectiveMode()).toBe('side');
   });
 
-  it('falls back to mode() input when media query does not match', () => {
-    const fixture = TestBed.createComponent(ResponsiveHost);
-    fixture.componentInstance.responsive.set('(min-width: 1024px)');
+  it('overlays when the layout reports narrow', () => {
+    stubWide('0');
+    const { fixture, nav } = mount();
+    flushResize();
     fixture.detectChanges();
-    TestBed.flushEffects();
-    const nav = fixture.debugElement.query(By.directive(CngxSidenav)).injector.get(CngxSidenav);
-    mmMock.trigger(false);
-    expect(nav.effectiveMode()).toBe('over'); // default mode is 'over'
+    expect(nav.effectiveMode()).toBe('over');
   });
 
-  it('falls back to push mode when responsive does not match and mode is push', () => {
-    const fixture = TestBed.createComponent(ResponsiveHost);
+  it('pins over when mode is bound explicitly, even on a wide layout', () => {
+    stubWide('1');
+    const { fixture, nav } = mount();
+    fixture.componentInstance.mode.set('over');
+    flushResize();
+    fixture.detectChanges();
+    expect(nav.effectiveMode()).toBe('over');
+  });
+
+  it('pins side when mode is bound explicitly, even on a narrow layout', () => {
+    stubWide('0');
+    const { fixture, nav } = mount();
+    fixture.componentInstance.mode.set('side');
+    flushResize();
+    fixture.detectChanges();
+    expect(nav.effectiveMode()).toBe('side');
+  });
+
+  it('pins push when mode is bound explicitly', () => {
+    stubWide('1');
+    const { fixture, nav } = mount();
     fixture.componentInstance.mode.set('push');
-    fixture.componentInstance.responsive.set('(min-width: 1024px)');
+    flushResize();
+    fixture.detectChanges();
+    expect(nav.effectiveMode()).toBe('push');
+  });
+
+  it('falls back to over and warns when no layout provides a container', () => {
+    stubWide('1');
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const { nav } = mount(StandaloneRailHost);
+    expect(nav.effectiveMode()).toBe('over');
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('auto mode needs'));
+  });
+
+  it('keeps the rail open and unhidden when a wide layout narrows under focus', () => {
+    stubWide('1');
+    const { fixture, nav } = mount();
+    flushResize();
     fixture.detectChanges();
     TestBed.flushEffects();
-    const nav = fixture.debugElement.query(By.directive(CngxSidenav)).injector.get(CngxSidenav);
-    mmMock.trigger(false);
-    expect(nav.effectiveMode()).toBe('push');
+    expect(nav.effectiveMode()).toBe('side');
+
+    stubWide('0');
+    flushResize();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    // side -> over auto-opens the rail, so the focus the user had inside it
+    // is never orphaned behind aria-hidden.
+    expect(nav.effectiveMode()).toBe('over');
+    expect(nav.opened()).toBe(true);
+    // over + opened renders aria-hidden="false", never "true": the rail the
+    // user had focus in is still exposed after the flip.
+    const host = fixture.debugElement.query(By.directive(CngxSidenav)).nativeElement as HTMLElement;
+    expect(host.getAttribute('aria-hidden')).not.toBe('true');
   });
 });
 
@@ -823,8 +905,9 @@ describe('CngxSidenav resize math and shortcut', () => {
     fixture.componentInstance.resizable.set(true);
     fixture.componentInstance.width.set('17.5rem');
     fixture.detectChanges();
-    const handle = (fixture.debugElement.queryAll(By.directive(CngxSidenav))[0]
-      .nativeElement as HTMLElement).querySelector<HTMLElement>('.cngx-sidenav__resize-handle')!;
+    const handle = (
+      fixture.debugElement.queryAll(By.directive(CngxSidenav))[0].nativeElement as HTMLElement
+    ).querySelector<HTMLElement>('.cngx-sidenav__resize-handle')!;
 
     // parseInt('17.5rem') would report 17, below the 120 minimum.
     expect(handle.getAttribute('aria-valuenow')).toBeNull();
@@ -903,8 +986,8 @@ describe('CngxSidenav resize math and shortcut', () => {
 });
 
 describe('CngxSidenav config cascade', () => {
-  // The config-driven responsive query fires the matchMedia effect during
-  // detectChanges; jsdom has no matchMedia, so install it like the responsive suite.
+  // The shortcut effect reads navigator/matchMedia during detectChanges;
+  // jsdom ships no matchMedia, so install it for the whole suite.
   let mmMock: MatchMediaMock;
 
   beforeEach(() => {
@@ -916,27 +999,26 @@ describe('CngxSidenav config cascade', () => {
     mmMock.restore(window);
   });
 
-  function getNav<T>(host: Type<T>): { fixture: ReturnType<typeof TestBed.createComponent<T>>; nav: CngxSidenav } {
+  function getNav<T>(host: Type<T>): {
+    fixture: ReturnType<typeof TestBed.createComponent<T>>;
+    nav: CngxSidenav;
+  } {
     const fixture = TestBed.createComponent(host);
     fixture.detectChanges();
     const nav = fixture.debugElement.query(By.directive(CngxSidenav)).injector.get(CngxSidenav);
     return { fixture, nav };
   }
 
-  it('resolves un-bound width/miniWidth/responsive from provideSidenavConfig', () => {
+  it('resolves un-bound width/miniWidth from provideSidenavConfig', () => {
     TestBed.configureTestingModule({
       providers: [
-        provideSidenavConfig(
-          withSidenavDimensions({ width: '320px', miniWidth: '72px' }),
-          withSidenavResponsive('(min-width: 900px)'),
-        ),
+        provideSidenavConfig(withSidenavDimensions({ width: '320px', miniWidth: '72px' })),
       ],
     });
     const { nav } = getNav(UnboundHost);
 
     expect(nav.width()).toBe('320px');
     expect(nav.miniWidth()).toBe('72px');
-    expect(nav.responsive()).toBe('(min-width: 900px)');
   });
 
   it('per-instance [width] binding still wins over the config default', () => {
@@ -955,7 +1037,6 @@ describe('CngxSidenav config cascade', () => {
     expect(nav.miniWidth()).toBe('56px');
     expect(nav.minWidth()).toBe('120px');
     expect(nav.maxWidth()).toBe('600px');
-    expect(nav.responsive()).toBeUndefined();
   });
 });
 
@@ -985,7 +1066,9 @@ describe('CngxSidenav tunable dwell', () => {
 
   it('withSidenavHoverDwell drives the app-wide mini dwell (enter and leave)', () => {
     TestBed.configureTestingModule({
-      providers: [provideSidenavConfig(withSidenavHoverDwell({ enterDelay: 250, leaveDelay: 150 }))],
+      providers: [
+        provideSidenavConfig(withSidenavHoverDwell({ enterDelay: 250, leaveDelay: 150 })),
+      ],
     });
     const { nav, el } = miniNav(MiniUnboundHost);
 

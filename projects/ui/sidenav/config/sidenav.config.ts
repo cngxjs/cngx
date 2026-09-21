@@ -1,6 +1,6 @@
 /**
  * App-wide cascade for the sidenav family's dimension defaults, the mini
- * expand-on-hover dwell, and the `responsive` / `shortcut` behaviour knobs.
+ * expand-on-hover dwell, and the `shortcut` behaviour knob.
  *
  * Resolution priority (high -> low):
  *   1. Per-instance Input binding (e.g. `[width]="'320px'"`, `[shortcut]="'mod+b'"`).
@@ -12,13 +12,14 @@
  * Every key is optional - partial overrides deep-merge with the library
  * defaults, so consumers declare only the keys they want to override. The
  * `dimensions`, `hover`, and `routerSync` sub-trees are one level deep
- * (spread-merged per key); `responsive` and `shortcut` are flat top-level
- * scalars.
+ * (spread-merged per key); `shortcut` is a flat top-level scalar.
  *
  * The cascaded keys are the dimension inputs, the mini hover dwell, the
- * `responsive` and `shortcut` defaults, and the router-sync `param`.
- * `ariaLabel`, `position`, and `mode` stay per-instance only, since they
- * describe an individual rail rather than an app-wide default.
+ * `shortcut` default, and the router-sync `param`. `ariaLabel`, `position`,
+ * and `mode` stay per-instance only, since they describe an individual rail
+ * rather than an app-wide default. The docking threshold behind `mode="auto"`
+ * is deliberately not here: it lives in `sidenav-layout.css` as a
+ * `@container` rule, so a consumer moves it by overriding that rule.
  *
  * @category ui/sidenav
  * @since 0.1.0
@@ -63,12 +64,6 @@ export interface CngxSidenavConfig {
     /** Query-param key the sidenav's `opened` state syncs to. Defaults to `'nav'`. */
     readonly param?: string;
   };
-
-  /**
-   * Default CSS media-query string for responsive mode switching. Per-instance
-   * `[responsive]` still wins. A flat top-level scalar, not a nested sub-tree.
-   */
-  readonly responsive?: string;
 
   /**
    * Default keyboard shortcut to toggle the sidenav (e.g. `'mod+b'`).

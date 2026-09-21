@@ -1,7 +1,6 @@
 import { DOCUMENT } from '@angular/common';
 import {
   computed,
-  DestroyRef,
   Directive,
   effect,
   ElementRef,
@@ -10,6 +9,8 @@ import {
   output,
   signal,
 } from '@angular/core';
+
+import { observeResize } from './resize-signal';
 
 /**
  * Observes size changes of the host element via the `ResizeObserver` API.
@@ -69,20 +70,18 @@ export class CngxResizeObserver {
 
   constructor() {
     const win = inject(DOCUMENT).defaultView;
-    if (!win) {
-      return;
-    }
 
-    const observer = new win.ResizeObserver((entries: ResizeObserverEntry[]) => {
-      this.entryState.set(entries[0]);
-      this.resize.emit(entries[0]);
+    // One subscription per `box` value: `onCleanup` disconnects the previous
+    // observer before `observeResize` wires the next, which is also the
+    // teardown on destroy. The kernel no-ops when the host ships no
+    // `ResizeObserver` (SSR, jsdom), so no host guard is needed here.
+    effect((onCleanup) => {
+      onCleanup(
+        observeResize(win, this.el.nativeElement as HTMLElement, this.box(), (entry) => {
+          this.entryState.set(entry);
+          this.resize.emit(entry);
+        }),
+      );
     });
-
-    effect(() => {
-      observer.disconnect();
-      observer.observe(this.el.nativeElement as HTMLElement, { box: this.box() });
-    });
-
-    inject(DestroyRef).onDestroy(() => observer.disconnect());
   }
 }
