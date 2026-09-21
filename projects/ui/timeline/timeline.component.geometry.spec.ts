@@ -12,7 +12,7 @@ import { CngxTimeline } from './timeline.component';
 // block that also declares the `cngx-timeline` inline-size query container. That
 // container NAME is a cross-library contract - `@cngx/common`'s
 // `timeline-item.component.css` queries that exact string to collapse
-// `placement="alternate"` below 32rem - so a drift here silently disables the
+// `placement="alternate"` below 30rem - so a drift here silently disables the
 // degrade. The list and its bands are vertical flex stacks. jsdom reports `''`
 // for every one of these reads.
 
@@ -84,7 +84,7 @@ describe('CngxTimeline geometry', () => {
     const container = containerState(host);
     expect(container.type).toBe('inline-size');
     // The name is API: the row stylesheet in @cngx/common queries it by string to
-    // collapse the alternate placement below 32rem. A rename here breaks the
+    // collapse the alternate placement below 30rem. A rename here breaks the
     // degrade silently, so pin it.
     expect(container.name).toBe('cngx-timeline');
   });

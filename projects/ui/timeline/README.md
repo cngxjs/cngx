@@ -159,7 +159,7 @@ the swap from skeleton to content does not reflow.
 **`alternate` is not supported with `mode="activity"`.** Alternating a
 scan-feed defeats the scan; those rows render `start` and dev mode warns once.
 
-**`alternate` collapses to a single side below `32rem`** of the timeline's own
+**`alternate` collapses to a single side below `30rem`** of the timeline's own
 width. It is a container query, not a viewport one, so the same timeline
 behaves correctly inside a narrow panel on a wide screen. The threshold is a
 literal because a container-query condition cannot read a custom property.
