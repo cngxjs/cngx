@@ -56,8 +56,19 @@ export function computeRange(
   columns = 1,
   overscanAfter = overscanBefore,
 ): RangeResult {
-  if (totalCount <= 0 || clientHeight <= 0) {
+  if (totalCount <= 0) {
     return EMPTY_RANGE;
+  }
+
+  if (clientHeight <= 0) {
+    // Degenerate viewport (0px). A content-driven scrollport gets its height
+    // FROM the spacers this result sizes, so reporting `totalSize: 0` here
+    // deadlocks: no spacer, no height, no spacer. Report the full totalSize
+    // with an empty window instead - the after-spacer gives the viewport its
+    // height, the ResizeObserver-fed `clientHeight` turns non-zero, and the
+    // next computation renders the real range.
+    const totalSize = estimateTotalSize(totalCount, estimateSize, columns);
+    return { start: 0, end: 0, offsetBefore: 0, offsetAfter: totalSize, totalSize };
   }
 
   if (typeof estimateSize === 'number') {
@@ -81,6 +92,24 @@ export function computeRange(
     overscanBefore,
     overscanAfter,
   );
+}
+
+function estimateTotalSize(
+  totalCount: number,
+  estimateSize: number | ((index: number) => number),
+  columns: number,
+): number {
+  if (typeof estimateSize === 'number') {
+    const rows = columns > 1 ? Math.ceil(totalCount / columns) : totalCount;
+    return rows * estimateSize;
+  }
+  // variable heights: grid mode unsupported, columns ignored (same contract
+  // as computeVariableRange)
+  let totalSize = 0;
+  for (let i = 0; i < totalCount; i++) {
+    totalSize += estimateSize(i);
+  }
+  return totalSize;
 }
 
 function computeFixedRange(
