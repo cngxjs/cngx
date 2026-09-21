@@ -97,10 +97,8 @@ export type CngxPaginatorAnnouncerFactory = () => CngxPaginatorAnnouncer;
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/paginator-announcer.ts
  * @since 0.1.0
  */
-export const CNGX_PAGINATOR_ANNOUNCER_FACTORY = new InjectionToken<CngxPaginatorAnnouncerFactory>(
-  'CngxPaginatorAnnouncerFactory',
-  {
+export const CNGX_PAGINATOR_ANNOUNCER_FACTORY =
+  new InjectionToken<CngxPaginatorAnnouncerFactory>('CngxPaginatorAnnouncerFactory', {
     providedIn: 'root',
     factory: () => createPaginatorAnnouncer,
-  },
-);
+  });

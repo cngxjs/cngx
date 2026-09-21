@@ -47,8 +47,9 @@ export { appConfig } from './app.config';
   styleUrls: ['./router-driven.component.css'],
   template: `
     <p style="opacity: 0.8; font-size: 0.875rem; margin-top: 0">
-      Switch city (real <code>routerLink</code> navigation), then open the chevron: the sibling set
-      is derived from the route and the active city is marked <code>aria-current</code>.
+      Switch city (real <code>routerLink</code> navigation), then open the
+      chevron: the sibling set is derived from the route and the active city
+      is marked <code>aria-current</code>.
     </p>
 
     <nav class="switcher" aria-label="Jump to city">

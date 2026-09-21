@@ -54,7 +54,9 @@ async function setup(): Promise<Plumbing> {
 }
 
 function rangeText(fixture: Plumbing['fixture']): string {
-  return fixture.nativeElement.querySelector('.cngx-paginator__range')?.textContent?.trim() ?? '';
+  return (
+    fixture.nativeElement.querySelector('.cngx-paginator__range')?.textContent?.trim() ?? ''
+  );
 }
 
 describe('CngxPaginatorRange', () => {

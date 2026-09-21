@@ -15,10 +15,7 @@ export const STORY: DemoSpec = {
       label: 'WAI-ARIA APG: Live Region Practices',
       href: 'https://www.w3.org/WAI/ARIA/apg/practices/live-regions/',
     },
-    {
-      label: 'WAI-ARIA 1.2: aria-busy (state)',
-      href: 'https://www.w3.org/TR/wai-aria-1.2/#aria-busy',
-    },
+    { label: 'WAI-ARIA 1.2: aria-busy (state)', href: 'https://www.w3.org/TR/wai-aria-1.2/#aria-busy' },
   ],
   apiComponents: ['CngxPaginator', 'CngxPaginatorPrev', 'CngxPaginatorPages', 'CngxPaginatorNext'],
   moduleImports: [

@@ -66,8 +66,7 @@ async function setup(): Promise<Plumbing> {
   await settle(fixture);
   const paginatorDe = fixture.debugElement.query(By.directive(CngxPaginator));
   const paginate = paginatorDe.injector.get(CngxPaginate);
-  const scroll = fixture.debugElement
-    .query(By.directive(CngxInfiniteScroll))
+  const scroll = fixture.debugElement.query(By.directive(CngxInfiniteScroll))
     .injector.get(CngxInfiniteScroll);
   return { fixture, host: fixture.componentInstance, paginate, scroll };
 }
@@ -173,8 +172,7 @@ describe('CngxPaginatorInfinite', () => {
     await settle(fixture);
 
     expect(
-      fixture.debugElement
-        .query(By.css('cngx-pgn-infinite .cngx-paginator__infinite-end'))
+      fixture.debugElement.query(By.css('cngx-pgn-infinite .cngx-paginator__infinite-end'))
         ?.nativeElement.textContent.trim(),
     ).toBe('All 25 loaded');
   });

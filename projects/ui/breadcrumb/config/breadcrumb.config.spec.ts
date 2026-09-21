@@ -2,10 +2,16 @@ import { Component, Directive, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
-import { CNGX_BREADCRUMB_CONFIG, CNGX_BREADCRUMB_DEFAULTS } from './breadcrumb.config.defaults';
+import {
+  CNGX_BREADCRUMB_CONFIG,
+  CNGX_BREADCRUMB_DEFAULTS,
+} from './breadcrumb.config.defaults';
 import { withBreadcrumbAriaLabels, withBreadcrumbDataKey } from './features';
 import { injectBreadcrumbConfig } from './inject-breadcrumb-config';
-import { provideBreadcrumbConfig, provideBreadcrumbConfigAt } from './provide-breadcrumb-config';
+import {
+  provideBreadcrumbConfig,
+  provideBreadcrumbConfigAt,
+} from './provide-breadcrumb-config';
 
 // A view-child probe: reads the resolved config from within the host's view,
 // where component `viewProviders` are visible (the host instance itself is

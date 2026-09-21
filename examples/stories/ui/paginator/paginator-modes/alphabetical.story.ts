@@ -11,14 +11,8 @@ export const STORY: DemoSpec = {
   artifact: 'standalone',
   focus: ['composition', 'a11y-pattern'],
   references: [
-    {
-      label: 'WAI-ARIA APG: Toolbar Pattern',
-      href: 'https://www.w3.org/WAI/ARIA/apg/patterns/toolbar/',
-    },
-    {
-      label: 'WAI-ARIA APG: Button Pattern (toggle)',
-      href: 'https://www.w3.org/WAI/ARIA/apg/patterns/button/',
-    },
+    { label: 'WAI-ARIA APG: Toolbar Pattern', href: 'https://www.w3.org/WAI/ARIA/apg/patterns/toolbar/' },
+    { label: 'WAI-ARIA APG: Button Pattern (toggle)', href: 'https://www.w3.org/WAI/ARIA/apg/patterns/button/' },
   ],
   apiComponents: ['CngxBucketPaginate', 'CngxPaginatorAlpha'],
   moduleImports: [

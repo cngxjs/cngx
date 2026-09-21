@@ -196,13 +196,10 @@ export const CNGX_PAGINATOR_DEFAULTS: CngxPaginatorConfig = {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/paginator-config.ts
  * @since 0.1.0
  */
-export const CNGX_PAGINATOR_CONFIG = new InjectionToken<CngxPaginatorConfig>(
-  'CngxPaginatorConfig',
-  {
-    providedIn: 'root',
-    factory: () => CNGX_PAGINATOR_DEFAULTS,
-  },
-);
+export const CNGX_PAGINATOR_CONFIG = new InjectionToken<CngxPaginatorConfig>('CngxPaginatorConfig', {
+  providedIn: 'root',
+  factory: () => CNGX_PAGINATOR_DEFAULTS,
+});
 
 /**
  * A single configuration override produced by a `with*` feature factory.

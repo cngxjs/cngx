@@ -141,12 +141,9 @@ describe('CngxBreadcrumbBar ribbon clip-path direction', () => {
   // for any wrong-but-different reflection. These are the computed (browser-
   // serialized) forms of the authored mid/cap polygons and their x -> 100% - x
   // mirrors.
-  const MID_LTR =
-    'polygon(0px 0px, calc(100% - 12px) 0px, 100% 50%, calc(100% - 12px) 100%, 0px 100%, 12px 50%)';
-  const MID_RTL =
-    'polygon(100% 0px, 12px 0px, 0px 50%, 12px 100%, 100% 100%, calc(100% - 12px) 50%)';
-  const CAP_LTR =
-    'polygon(0px 0px, calc(100% - 12px) 0px, 100% 50%, calc(100% - 12px) 100%, 0px 100%)';
+  const MID_LTR = 'polygon(0px 0px, calc(100% - 12px) 0px, 100% 50%, calc(100% - 12px) 100%, 0px 100%, 12px 50%)';
+  const MID_RTL = 'polygon(100% 0px, 12px 0px, 0px 50%, 12px 100%, 100% 100%, calc(100% - 12px) 50%)';
+  const CAP_LTR = 'polygon(0px 0px, calc(100% - 12px) 0px, 100% 50%, calc(100% - 12px) 100%, 0px 100%)';
   const CAP_RTL = 'polygon(100% 0px, 12px 0px, 0px 50%, 12px 100%, 100% 100%)';
 
   it('reflects the mid-crumb silhouette under dir=rtl and keeps LTR byte-stable', () => {

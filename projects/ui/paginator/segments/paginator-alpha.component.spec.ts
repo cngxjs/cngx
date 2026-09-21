@@ -36,11 +36,7 @@ const BUCKETS: readonly CngxBucket<Person>[] = [
 })
 class HostCmp {
   readonly buckets = signal(BUCKETS);
-  readonly people = signal<readonly Person[]>([
-    { name: 'Anna' },
-    { name: 'Bob' },
-    { name: 'Hugo' },
-  ]);
+  readonly people = signal<readonly Person[]>([{ name: 'Anna' }, { name: 'Bob' }, { name: 'Hugo' }]);
   readonly active = signal<string | null>(null);
 }
 
@@ -116,9 +112,7 @@ describe('CngxPaginatorAlpha', () => {
 
     fixture.debugElement
       .query(By.css('cngx-pgn-alpha [role="group"]'))
-      .nativeElement.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }),
-      );
+      .nativeElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
     await settle(fixture);
 
     // Lands on G-I, skipping the disabled D-F bucket.

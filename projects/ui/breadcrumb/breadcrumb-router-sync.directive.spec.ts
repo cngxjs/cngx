@@ -118,8 +118,7 @@ describe('CngxBreadcrumbRouterSync', () => {
     const fixture = TestBed.createComponent(RouterHost);
     fixture.detectChanges();
     await flushMicrotasks();
-    const barEl = fixture.debugElement.query(By.css('cngx-breadcrumb'))
-      .nativeElement as HTMLElement;
+    const barEl = fixture.debugElement.query(By.css('cngx-breadcrumb')).nativeElement as HTMLElement;
     const directive = fixture.debugElement
       .query(By.directive(CngxBreadcrumbRouterSync))
       .injector.get(CngxBreadcrumbRouterSync);
@@ -299,8 +298,7 @@ describe('CngxBreadcrumbRouterSync', () => {
     await flushMicrotasks();
     fixture.detectChanges();
 
-    const barEl = fixture.debugElement.query(By.css('cngx-breadcrumb'))
-      .nativeElement as HTMLElement;
+    const barEl = fixture.debugElement.query(By.css('cngx-breadcrumb')).nativeElement as HTMLElement;
     expect(labels(barEl)).toEqual(['Custom']);
   });
 
@@ -326,8 +324,7 @@ describe('CngxBreadcrumbRouterSync', () => {
     await flushMicrotasks();
     fixture.detectChanges();
 
-    const barEl = fixture.debugElement.query(By.css('cngx-breadcrumb'))
-      .nativeElement as HTMLElement;
+    const barEl = fixture.debugElement.query(By.css('cngx-breadcrumb')).nativeElement as HTMLElement;
     expect(labels(barEl)).toEqual(['Default']);
   });
 

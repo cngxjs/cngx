@@ -86,7 +86,9 @@ function crumbsEqual(
   selector: 'cngx-breadcrumb[cngxRouterSync]',
   exportAs: 'cngxBreadcrumbRouterSync',
   standalone: true,
-  providers: [{ provide: CNGX_BREADCRUMB_ITEMS_SOURCE, useExisting: CngxBreadcrumbRouterSync }],
+  providers: [
+    { provide: CNGX_BREADCRUMB_ITEMS_SOURCE, useExisting: CngxBreadcrumbRouterSync },
+  ],
 })
 export class CngxBreadcrumbRouterSync implements CngxBreadcrumbItemsSource {
   private readonly router = inject(Router, { optional: true });
@@ -133,13 +135,10 @@ export class CngxBreadcrumbRouterSync implements CngxBreadcrumbItemsSource {
     // Derive the trail from the navigation trigger and dataKey - both reactive,
     // so a runtime dataKey change re-reads the tree too. The route snapshot is
     // read imperatively per recompute; navEnd is the tracked trigger (Pillar 1).
-    this.crumbs = computed(
-      () => {
-        navEnd();
-        return buildCrumbs(router, this.dataKey(), this.iconKey());
-      },
-      { equal: crumbsEqual },
-    );
+    this.crumbs = computed(() => {
+      navEnd();
+      return buildCrumbs(router, this.dataKey(), this.iconKey());
+    }, { equal: crumbsEqual });
   }
 }
 
@@ -171,8 +170,7 @@ function buildCrumbs(
       const href = url || '/';
       const rawIcon: unknown = route.data[iconKey];
       const icon = typeof rawIcon === 'string' && rawIcon.length > 0 ? rawIcon : undefined;
-      const next: CngxBreadcrumbCrumb =
-        icon !== undefined ? { label: raw, href, icon } : { label: raw, href };
+      const next: CngxBreadcrumbCrumb = icon !== undefined ? { label: raw, href, icon } : { label: raw, href };
       const prev = crumbs[crumbs.length - 1];
       if (prev?.href === href) {
         // A segment-less (componentless) route carrying a breadcrumb reuses the

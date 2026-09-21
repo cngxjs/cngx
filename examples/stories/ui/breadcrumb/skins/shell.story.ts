@@ -11,7 +11,9 @@ export const STORY: DemoSpec = {
   artifact: 'standalone',
   focus: ['visual-variants', 'composition'],
   apiComponents: ['CngxBreadcrumbBar', 'CngxBreadcrumbIcon'],
-  moduleImports: ["import { CngxBreadcrumbBar, CngxBreadcrumbIcon } from '@cngx/ui/breadcrumb';"],
+  moduleImports: [
+    "import { CngxBreadcrumbBar, CngxBreadcrumbIcon } from '@cngx/ui/breadcrumb';",
+  ],
   imports: ['CngxBreadcrumbBar', 'CngxBreadcrumbIcon'],
   setup: `protected readonly crumbs = [
     { label: 'Acme', href: '#/', icon: 'A' },

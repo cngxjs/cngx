@@ -107,15 +107,7 @@ describe('CngxPaginatorDots', () => {
     expect(dots(fixture)).toHaveLength(20);
     expect(trackShift(fixture)).toBe(0);
     // page 0: only the trailing edge of the visible window is truncated.
-    expect(windowSizes(fixture)).toEqual([
-      'full',
-      'full',
-      'full',
-      'full',
-      'full',
-      'medium',
-      'small',
-    ]);
+    expect(windowSizes(fixture)).toEqual(['full', 'full', 'full', 'full', 'full', 'medium', 'small']);
     // pages scrolled out of the window sit small behind the clip.
     expect(sizes(fixture).slice(7)).toEqual(Array(13).fill('small'));
   });
@@ -128,15 +120,7 @@ describe('CngxPaginatorDots', () => {
     await settle(fixture);
     // current centred -> window is pages 7..13, both edges truncated.
     expect(trackShift(fixture)).toBe(7);
-    expect(windowSizes(fixture)).toEqual([
-      'small',
-      'medium',
-      'full',
-      'full',
-      'full',
-      'medium',
-      'small',
-    ]);
+    expect(windowSizes(fixture)).toEqual(['small', 'medium', 'full', 'full', 'full', 'medium', 'small']);
     const current = dots(fixture).find((d) => d.getAttribute('aria-current') === 'page');
     expect(current?.getAttribute('aria-label')).toBe('Page 11');
     expect(current?.getAttribute('data-size')).toBe('full');

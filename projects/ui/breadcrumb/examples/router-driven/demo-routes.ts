@@ -14,8 +14,8 @@ import { type Routes } from '@angular/router';
   template: `
     <h2 style="margin-top: 0">{{ breadcrumb() }}</h2>
     <p style="opacity: 0.75; margin-bottom: 0">
-      You are on the {{ breadcrumb() }} page. Open the sibling dropdown in the trail to see the
-      other cities at this level, with {{ breadcrumb() }}
+      You are on the {{ breadcrumb() }} page. Open the sibling dropdown in the
+      trail to see the other cities at this level, with {{ breadcrumb() }}
       marked as the current page.
     </p>
   `,

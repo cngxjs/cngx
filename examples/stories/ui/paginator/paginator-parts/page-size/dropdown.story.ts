@@ -9,7 +9,9 @@ export const STORY: DemoSpec = {
   artifact: 'building-block',
   focus: ['behavior'],
   apiComponents: ['CngxPaginatorPageSize', 'CngxPaginator'],
-  moduleImports: ["import { CngxPaginator, CngxPaginatorPageSize } from '@cngx/ui/paginator';"],
+  moduleImports: [
+    "import { CngxPaginator, CngxPaginatorPageSize } from '@cngx/ui/paginator';",
+  ],
   imports: ['CngxPaginator', 'CngxPaginatorPageSize'],
   setup: `protected readonly pageSize = signal(10);
   protected readonly sizes = [10, 25, 50] as const;`,

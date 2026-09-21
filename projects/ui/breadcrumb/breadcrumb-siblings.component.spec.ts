@@ -246,10 +246,7 @@ describe('CngxBreadcrumbSiblings config cascade', () => {
       providers: [
         provideZonelessChangeDetection(),
         provideBreadcrumbConfig(
-          withBreadcrumbAriaLabels({
-            siblingsTrigger: 'Jump sideways',
-            siblingsMenu: 'Nearby pages',
-          }),
+          withBreadcrumbAriaLabels({ siblingsTrigger: 'Jump sideways', siblingsMenu: 'Nearby pages' }),
         ),
       ],
     });

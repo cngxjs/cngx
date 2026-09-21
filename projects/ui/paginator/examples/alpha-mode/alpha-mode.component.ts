@@ -60,9 +60,7 @@ const PEOPLE: readonly Person[] = [
       <cngx-pgn-alpha />
       <ul class="demo-list-flush">
         @for (p of visible(); track p.name) {
-          <li class="demo-list-row">
-            <strong>{{ p.name }}</strong> - {{ p.role }}, {{ p.location }}
-          </li>
+          <li class="demo-list-row"><strong>{{ p.name }}</strong> - {{ p.role }}, {{ p.location }}</li>
         }
       </ul>
     </div>
