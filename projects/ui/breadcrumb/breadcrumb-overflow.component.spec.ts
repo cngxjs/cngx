@@ -1,9 +1,19 @@
-import { Component, computed, provideZonelessChangeDetection, signal, type WritableSignal } from '@angular/core';
+import {
+  Component,
+  computed,
+  provideZonelessChangeDetection,
+  signal,
+  type WritableSignal,
+} from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { CNGX_BREADCRUMB, type CngxBreadcrumbHost, type CngxBreadcrumbItem } from '@cngx/common/interactive';
+import {
+  CNGX_BREADCRUMB,
+  type CngxBreadcrumbHost,
+  type CngxBreadcrumbItem,
+} from '@cngx/common/interactive';
 
 import { CngxBreadcrumbOverflow } from './breadcrumb-overflow.component';
 import { CngxBreadcrumbOverflowItem } from './breadcrumb-overflow-item.directive';
@@ -80,7 +90,9 @@ class OvSlotHost {}
   selector: 'ov-input-host',
   imports: [CngxBreadcrumbOverflow],
   template: `
-    <ng-template #tpl let-crumb><span class="input-row">I: {{ crumb.resolvedLabel() }}</span></ng-template>
+    <ng-template #tpl let-crumb
+      ><span class="input-row">I: {{ crumb.resolvedLabel() }}</span></ng-template
+    >
     <cngx-breadcrumb-overflow [itemTemplate]="tpl" />
   `,
 })
@@ -91,7 +103,9 @@ class OvInputHost {}
   selector: 'ov-both-host',
   imports: [CngxBreadcrumbOverflow, CngxBreadcrumbOverflowItem],
   template: `
-    <ng-template #tpl let-crumb><span class="input-row">I: {{ crumb.resolvedLabel() }}</span></ng-template>
+    <ng-template #tpl let-crumb
+      ><span class="input-row">I: {{ crumb.resolvedLabel() }}</span></ng-template
+    >
     <cngx-breadcrumb-overflow [itemTemplate]="tpl">
       <ng-template cngxBreadcrumbOverflowItem let-crumb>
         <span class="custom-row">R: {{ crumb.resolvedLabel() }}</span>
@@ -108,8 +122,8 @@ describe('CngxBreadcrumbOverflow', () => {
   });
 
   function labels(root: HTMLElement): string[] {
-    return Array.from(root.querySelectorAll<HTMLElement>('[role="menuitem"]')).map((li) =>
-      li.textContent?.trim() ?? '',
+    return Array.from(root.querySelectorAll<HTMLElement>('[role="menuitem"]')).map(
+      (li) => li.textContent?.trim() ?? '',
     );
   }
 
@@ -123,7 +137,9 @@ describe('CngxBreadcrumbOverflow', () => {
 
     const root = fixture.debugElement.query(By.css('cngx-breadcrumb-overflow'))
       .nativeElement as HTMLElement;
-    const trigger = root.querySelector('button.cngx-breadcrumb__overflow-trigger') as HTMLButtonElement;
+    const trigger = root.querySelector(
+      'button.cngx-breadcrumb__overflow-trigger',
+    ) as HTMLButtonElement;
 
     expect(trigger).toBeTruthy();
     expect(trigger.getAttribute('aria-label')).toBe('Show collapsed breadcrumbs');
@@ -145,7 +161,9 @@ describe('CngxBreadcrumbOverflow', () => {
     fixture.detectChanges();
 
     const rootEl = fixture.nativeElement as HTMLElement;
-    const trigger = rootEl.querySelector('button.cngx-breadcrumb__overflow-trigger') as HTMLButtonElement;
+    const trigger = rootEl.querySelector(
+      'button.cngx-breadcrumb__overflow-trigger',
+    ) as HTMLButtonElement;
     const sibling = rootEl.querySelector('#sibling') as HTMLButtonElement;
 
     // Focus the trigger first so it is the element the menu-button pattern
@@ -196,7 +214,9 @@ describe('CngxBreadcrumbOverflow', () => {
     expect(labels(root)).toEqual(['R: Catalog', 'R: Books']);
     // The projected row template must not be swept into the trigger's
     // ng-content: the default ellipsis glyph survives the slot override.
-    const trigger = root.querySelector('button.cngx-breadcrumb__overflow-trigger') as HTMLButtonElement;
+    const trigger = root.querySelector(
+      'button.cngx-breadcrumb__overflow-trigger',
+    ) as HTMLButtonElement;
     expect(trigger.textContent?.trim()).toBe('…');
   });
 
@@ -258,7 +278,10 @@ describe('CngxBreadcrumbOverflow config cascade', () => {
         provideZonelessChangeDetection(),
         { provide: CNGX_BREADCRUMB, useValue: host },
         provideBreadcrumbConfig(
-          withBreadcrumbAriaLabels({ overflowTrigger: 'More crumbs', overflowMenu: 'Older crumbs' }),
+          withBreadcrumbAriaLabels({
+            overflowTrigger: 'More crumbs',
+            overflowMenu: 'Older crumbs',
+          }),
         ),
       ],
     });
@@ -267,7 +290,9 @@ describe('CngxBreadcrumbOverflow config cascade', () => {
 
     const root = fixture.debugElement.query(By.css('cngx-breadcrumb-overflow'))
       .nativeElement as HTMLElement;
-    const trigger = root.querySelector('button.cngx-breadcrumb__overflow-trigger') as HTMLButtonElement;
+    const trigger = root.querySelector(
+      'button.cngx-breadcrumb__overflow-trigger',
+    ) as HTMLButtonElement;
     expect(trigger.getAttribute('aria-label')).toBe('More crumbs');
     const menu = root.querySelector('.cngx-breadcrumb__overflow-menu') as HTMLElement;
     expect(menu.getAttribute('aria-label')).toBe('Older crumbs');
@@ -287,7 +312,9 @@ describe('CngxBreadcrumbOverflow config cascade', () => {
 
     const root = fixture.debugElement.query(By.css('cngx-breadcrumb-overflow'))
       .nativeElement as HTMLElement;
-    const trigger = root.querySelector('button.cngx-breadcrumb__overflow-trigger') as HTMLButtonElement;
+    const trigger = root.querySelector(
+      'button.cngx-breadcrumb__overflow-trigger',
+    ) as HTMLButtonElement;
     expect(trigger.getAttribute('aria-label')).toBe('Explicit trigger');
   });
 });

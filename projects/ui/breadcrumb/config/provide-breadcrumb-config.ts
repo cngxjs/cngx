@@ -6,10 +6,7 @@ import {
 } from '@angular/core';
 
 import type { CngxBreadcrumbConfig } from './breadcrumb.config';
-import {
-  CNGX_BREADCRUMB_CONFIG,
-  CNGX_BREADCRUMB_DEFAULTS,
-} from './breadcrumb.config.defaults';
+import { CNGX_BREADCRUMB_CONFIG, CNGX_BREADCRUMB_DEFAULTS } from './breadcrumb.config.defaults';
 
 /**
  * Discriminated-union shape returned by the breadcrumb config features -
@@ -164,9 +161,7 @@ export function provideBreadcrumbConfig(
  * @category ui/breadcrumb
  * @since 0.1.0
  */
-export function provideBreadcrumbConfigAt(
-  ...features: CngxBreadcrumbConfigFeature[]
-): Provider[] {
+export function provideBreadcrumbConfigAt(...features: CngxBreadcrumbConfigFeature[]): Provider[] {
   // Empty-features call: parent value flows through untouched. Skipping the
   // factory preserves reference identity through the sub-tree.
   if (features.length === 0) {

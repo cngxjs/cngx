@@ -136,7 +136,8 @@ describe('CngxBreadcrumbBar', () => {
   } {
     const fixture = TestBed.createComponent(BarHost);
     fixture.detectChanges();
-    const barEl = fixture.debugElement.query(By.css('cngx-breadcrumb')).nativeElement as HTMLElement;
+    const barEl = fixture.debugElement.query(By.css('cngx-breadcrumb'))
+      .nativeElement as HTMLElement;
     const navEl = barEl.querySelector('nav') as HTMLElement;
     return {
       fixture,
@@ -259,7 +260,9 @@ describe('CngxBreadcrumbBar', () => {
     host.items.set([TRAIL[0], { ...TRAIL[1], siblings: CITY_SIBLINGS }, TRAIL[2], TRAIL[3]]);
     fixture.detectChanges();
 
-    const trigger = barEl.querySelector<HTMLButtonElement>('button.cngx-breadcrumb__siblings-trigger');
+    const trigger = barEl.querySelector<HTMLButtonElement>(
+      'button.cngx-breadcrumb__siblings-trigger',
+    );
     expect(trigger).toBeTruthy();
     // The dropdown lives inside the owning crumb's <li>, next to its link.
     const owningLi = trigger?.closest('li.cngx-breadcrumb__crumb');
@@ -292,14 +295,16 @@ describe('CngxBreadcrumbBar', () => {
     expect(current[0].textContent?.trim()).toBe('Berlin');
   });
 
-  it('hides a collapsed crumb\'s siblings with the crumb (display:none on the <li>, not removal)', () => {
+  it("hides a collapsed crumb's siblings with the crumb (display:none on the <li>, not removal)", () => {
     const { fixture, host, barEl } = setup();
     // Siblings on a middle crumb (Catalog) that collapses at maxVisible=2.
     host.items.set([TRAIL[0], { ...TRAIL[1], siblings: CITY_SIBLINGS }, TRAIL[2], TRAIL[3]]);
     host.maxVisible.set(2);
     fixture.detectChanges();
 
-    const trigger = barEl.querySelector<HTMLButtonElement>('button.cngx-breadcrumb__siblings-trigger');
+    const trigger = barEl.querySelector<HTMLButtonElement>(
+      'button.cngx-breadcrumb__siblings-trigger',
+    );
     // Collapse is display:none on the ancestor <li>, never DOM removal.
     expect(trigger).toBeTruthy();
     const owningLi = trigger?.closest<HTMLElement>('li.cngx-breadcrumb__crumb');
@@ -309,7 +314,8 @@ describe('CngxBreadcrumbBar', () => {
   it('a provided CNGX_BREADCRUMB_ITEMS_SOURCE wins over the [items] input', () => {
     const fixture = TestBed.createComponent(SeamHost);
     fixture.detectChanges();
-    const barEl = fixture.debugElement.query(By.css('cngx-breadcrumb')).nativeElement as HTMLElement;
+    const barEl = fixture.debugElement.query(By.css('cngx-breadcrumb'))
+      .nativeElement as HTMLElement;
     const labels = Array.from(
       barEl.querySelectorAll<HTMLAnchorElement>('a.cngx-breadcrumb__link'),
     ).map((a) => a.textContent?.trim());
@@ -319,7 +325,8 @@ describe('CngxBreadcrumbBar', () => {
   it('projects the accessory slot once per crumb with the { crumb, index } context', () => {
     const fixture = TestBed.createComponent(AccessoryHost);
     fixture.detectChanges();
-    const barEl = fixture.debugElement.query(By.css('cngx-breadcrumb')).nativeElement as HTMLElement;
+    const barEl = fixture.debugElement.query(By.css('cngx-breadcrumb'))
+      .nativeElement as HTMLElement;
 
     const markers = Array.from(barEl.querySelectorAll<HTMLElement>('.acc-marker'));
     expect(markers.length).toBe(TRAIL.length);
@@ -332,7 +339,7 @@ describe('CngxBreadcrumbBar', () => {
     expect(markers.map((m) => m.dataset['index'])).toEqual(['0', '1', '2', '3']);
   });
 
-  it('lets the accessory slot win over a crumb\'s declarative siblings', () => {
+  it("lets the accessory slot win over a crumb's declarative siblings", () => {
     const fixture = TestBed.createComponent(AccessoryHost);
     fixture.componentInstance.items.set([
       TRAIL[0],
@@ -341,7 +348,8 @@ describe('CngxBreadcrumbBar', () => {
       TRAIL[3],
     ]);
     fixture.detectChanges();
-    const barEl = fixture.debugElement.query(By.css('cngx-breadcrumb')).nativeElement as HTMLElement;
+    const barEl = fixture.debugElement.query(By.css('cngx-breadcrumb'))
+      .nativeElement as HTMLElement;
 
     // Slot present: the declarative auto-render is suppressed for every crumb.
     expect(barEl.querySelector('button.cngx-breadcrumb__siblings-trigger')).toBeNull();
@@ -351,7 +359,8 @@ describe('CngxBreadcrumbBar', () => {
   it('forwards a projected *cngxBreadcrumbOverflowItem into the composed overflow', () => {
     const fixture = TestBed.createComponent(OverflowRowHost);
     fixture.detectChanges();
-    const barEl = fixture.debugElement.query(By.css('cngx-breadcrumb')).nativeElement as HTMLElement;
+    const barEl = fixture.debugElement.query(By.css('cngx-breadcrumb'))
+      .nativeElement as HTMLElement;
 
     // TRAIL = Home / Catalog / Books / The Hobbit; maxVisible=2 collapses the middle two.
     const rows = Array.from(barEl.querySelectorAll<HTMLElement>('.ov-custom')).map((el) =>
@@ -363,7 +372,8 @@ describe('CngxBreadcrumbBar', () => {
   it('renders the *cngxBreadcrumbIcon slot once per crumb inside the link, leading the label span', () => {
     const fixture = TestBed.createComponent(IconHost);
     fixture.detectChanges();
-    const barEl = fixture.debugElement.query(By.css('cngx-breadcrumb')).nativeElement as HTMLElement;
+    const barEl = fixture.debugElement.query(By.css('cngx-breadcrumb'))
+      .nativeElement as HTMLElement;
 
     const markers = Array.from(barEl.querySelectorAll<HTMLElement>('.icon-marker'));
     expect(markers.length).toBe(ICON_TRAIL.length);
@@ -382,7 +392,8 @@ describe('CngxBreadcrumbBar', () => {
   it('passes the { crumb, index } context (crumb.icon from [items]) to the icon slot', () => {
     const fixture = TestBed.createComponent(IconHost);
     fixture.detectChanges();
-    const barEl = fixture.debugElement.query(By.css('cngx-breadcrumb')).nativeElement as HTMLElement;
+    const barEl = fixture.debugElement.query(By.css('cngx-breadcrumb'))
+      .nativeElement as HTMLElement;
 
     const markers = Array.from(barEl.querySelectorAll<HTMLElement>('.icon-marker'));
     expect(markers.map((m) => m.dataset['index'])).toEqual(['0', '1', '2', '3']);
@@ -560,7 +571,8 @@ describe('CngxBreadcrumbBar accessory slot - router-driven source', () => {
     await flushMicrotasks();
     fixture.detectChanges();
 
-    const barEl = fixture.debugElement.query(By.css('cngx-breadcrumb')).nativeElement as HTMLElement;
+    const barEl = fixture.debugElement.query(By.css('cngx-breadcrumb'))
+      .nativeElement as HTMLElement;
     // The router source populated the level siblings, so the dropdown self-shows.
     expect(barEl.querySelector('button.cngx-breadcrumb__siblings-trigger')).toBeTruthy();
     const current = Array.from(
@@ -632,17 +644,10 @@ class BarSkinCascadeHost {
   standalone: true,
   selector: 'bar-responsive-host',
   imports: [CngxBreadcrumbBar],
-  template: `
-    <cngx-breadcrumb
-      [items]="items()"
-      [responsive]="responsive()"
-      [maxVisible]="maxVisible()"
-    />
-  `,
+  template: ` <cngx-breadcrumb [items]="items()" [maxVisible]="maxVisible()" /> `,
 })
 class BarResponsiveHost {
   readonly items = signal<readonly CngxBreadcrumbCrumb[]>(TRAIL);
-  readonly responsive = signal(false);
   readonly maxVisible = signal<number | undefined>(undefined);
 }
 
@@ -652,7 +657,7 @@ class BarResponsiveHost {
  * That exercises the live `resolveBreadcrumbTier` -> `autoMaxVisible` wiring
  * without a browser (the real observer path is the Phase 2 e2e).
  */
-describe('CngxBreadcrumbBar responsive (width-derived maxVisible)', () => {
+describe('CngxBreadcrumbBar width-derived maxVisible (on by default)', () => {
   beforeEach(() => {
     TestBed.resetTestingModule();
     stubPopoverApi();
@@ -669,7 +674,8 @@ describe('CngxBreadcrumbBar responsive (width-derived maxVisible)', () => {
   } {
     const fixture = TestBed.createComponent(BarResponsiveHost);
     fixture.detectChanges();
-    const barEl = fixture.debugElement.query(By.css('cngx-breadcrumb')).nativeElement as HTMLElement;
+    const barEl = fixture.debugElement.query(By.css('cngx-breadcrumb'))
+      .nativeElement as HTMLElement;
     return {
       fixture,
       host: fixture.componentInstance,
@@ -685,8 +691,7 @@ describe('CngxBreadcrumbBar responsive (width-derived maxVisible)', () => {
   }
 
   it('derives maxVisible from the observed width via resolveBreadcrumbTier', () => {
-    const { host, emit, collapsed } = mount();
-    host.responsive.set(true);
+    const { emit, collapsed } = mount();
 
     // Wide: TRAIL (4 crumbs) fits the 6-cap tier, no collapse.
     emit(700);
@@ -699,7 +704,6 @@ describe('CngxBreadcrumbBar responsive (width-derived maxVisible)', () => {
 
   it('lets an explicit [maxVisible] win over the width-derived value', () => {
     const { host, emit, collapsed } = mount();
-    host.responsive.set(true);
     host.maxVisible.set(6);
 
     // Narrow width would resolve to 2 (collapse), but the explicit 6 wins -> no collapse.
@@ -707,10 +711,11 @@ describe('CngxBreadcrumbBar responsive (width-derived maxVisible)', () => {
     expect(collapsed()).toBe(false);
   });
 
-  it('never collapses from width when responsive is unset (current default behaviour)', () => {
-    const { emit, collapsed } = mount();
-    // responsive stays false; even a narrow width leaves the width path gated off.
-    emit(300);
+  it('renders the full trail until the first observation arrives', () => {
+    // No emit: isReady() is false, so autoMaxVisible is undefined and the bar
+    // shows every crumb rather than guessing a width. This is what keeps the
+    // default-on collapse from flashing a collapsed trail on mount.
+    const { collapsed } = mount();
     expect(collapsed()).toBe(false);
   });
 });
@@ -727,8 +732,12 @@ describe('CngxBreadcrumbBar skin cascade', () => {
     });
   });
 
-  function skinOf(fixture: ReturnType<typeof TestBed.createComponent<BarSkinCascadeHost>>): string | null {
-    const bar = (fixture.nativeElement as HTMLElement).querySelector('cngx-breadcrumb') as HTMLElement;
+  function skinOf(
+    fixture: ReturnType<typeof TestBed.createComponent<BarSkinCascadeHost>>,
+  ): string | null {
+    const bar = (fixture.nativeElement as HTMLElement).querySelector(
+      'cngx-breadcrumb',
+    ) as HTMLElement;
     return bar.getAttribute('data-skin');
   }
 

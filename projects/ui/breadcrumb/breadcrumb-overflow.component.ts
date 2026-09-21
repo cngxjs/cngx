@@ -71,7 +71,9 @@ export class CngxBreadcrumbOverflow {
   private readonly cfg = injectBreadcrumbConfig();
 
   /** Accessible name of the ellipsis trigger. Falls back through the config cascade to the EN default. */
-  readonly triggerLabel = input(this.cfg.ariaLabels?.overflowTrigger ?? 'Show collapsed breadcrumbs');
+  readonly triggerLabel = input(
+    this.cfg.ariaLabels?.overflowTrigger ?? 'Show collapsed breadcrumbs',
+  );
   /** Accessible name of the collapsed-crumb menu. Falls back through the config cascade to the EN default. */
   readonly menuLabel = input(this.cfg.ariaLabels?.overflowMenu ?? 'Collapsed breadcrumbs');
 
@@ -81,9 +83,10 @@ export class CngxBreadcrumbOverflow {
    * which it cannot reach as `contentChild`. Wins over the directly-projected
    * slot (controlled/uncontrolled: input first, query fallback).
    */
-  readonly itemTemplateInput = input<
-    TemplateRef<CngxBreadcrumbOverflowItemContext> | undefined
-  >(undefined, { alias: 'itemTemplate' });
+  readonly itemTemplateInput = input<TemplateRef<CngxBreadcrumbOverflowItemContext> | undefined>(
+    undefined,
+    { alias: 'itemTemplate' },
+  );
 
   /** Per-row template projected directly into this component (headless drop-in use). */
   private readonly itemTemplateQuery = contentChild(CngxBreadcrumbOverflowItem, {

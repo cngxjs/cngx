@@ -1,6 +1,5 @@
 import { NgTemplateOutlet } from '@angular/common';
 import {
-  booleanAttribute,
   ChangeDetectionStrategy,
   Component,
   computed,
@@ -74,10 +73,10 @@ import type { CngxBreadcrumbCrumb } from './breadcrumb.types';
     CngxBreadcrumbOverflow,
     CngxBreadcrumbSiblings,
   ],
-  // Always-on width source. `box`/`resize` are deliberately not re-surfaced as
-  // bar inputs/outputs - the bar reads `width()`/`isReady()` internally and only
-  // inside the `responsive()` branch. One ResizeObserver per bar, disconnected on
-  // destroy.
+  // Always-on width source: the collapse is the bar's default behaviour, so
+  // the observer is never conditional. `box`/`resize` are deliberately not
+  // re-surfaced as bar inputs/outputs - the bar reads `width()`/`isReady()`
+  // internally. One ResizeObserver per bar, disconnected on destroy.
   hostDirectives: [CngxResizeObserver],
   templateUrl: './breadcrumb-bar.component.html',
   styleUrl: './breadcrumb-bar.component.css',
@@ -90,21 +89,18 @@ export class CngxBreadcrumbBar {
   /** Uncontrolled trail. Ignored when a {@link CNGX_BREADCRUMB_ITEMS_SOURCE} is provided. */
   readonly itemsInput = input<readonly CngxBreadcrumbCrumb[]>([], { alias: 'items' });
   /**
-   * Maximum crumbs to show before the middle collapses. Unset = never collapse,
-   * unless {@link responsive} is on. An explicit value always wins over the
-   * width-derived one (controlled/uncontrolled), resolved by {@link effectiveMaxVisible}.
+   * Maximum crumbs to show before the middle collapses. Pins the count: an
+   * explicit value always wins over the width-derived one
+   * (controlled/uncontrolled), resolved by {@link effectiveMaxVisible}. Unset,
+   * the bar derives the count from its own width - that is the default, there
+   * is nothing to switch on.
    */
   readonly maxVisible = input<number | undefined>(undefined);
 
-  /**
-   * Opt in to width-responsive collapse: the bar derives `maxVisible` from its own
-   * width via the {@link CngxResizeObserver} hostDirective and the pure
-   * `resolveBreadcrumbTier`. No hand-wired observer or `computed` needed - one
-   * attribute makes every skin responsive. Ignored when {@link maxVisible} is set.
-   */
-  readonly responsive = input(false, { transform: booleanAttribute });
-  /** Width tiers driving the responsive collapse. Defaults to {@link DEFAULT_BREADCRUMB_WIDTH_TIERS}. */
-  readonly responsiveTiers = input<readonly CngxBreadcrumbWidthTier[]>(DEFAULT_BREADCRUMB_WIDTH_TIERS);
+  /** Width tiers driving the collapse. Defaults to {@link DEFAULT_BREADCRUMB_WIDTH_TIERS}. */
+  readonly responsiveTiers = input<readonly CngxBreadcrumbWidthTier[]>(
+    DEFAULT_BREADCRUMB_WIDTH_TIERS,
+  );
 
   private readonly resize = inject(CngxResizeObserver, { host: true });
 
@@ -160,15 +156,18 @@ export class CngxBreadcrumbBar {
    * the ResizeObserver fires.
    */
   protected readonly autoMaxVisible = computed(() =>
-    this.resize.isReady() ? resolveBreadcrumbTier(this.resize.width(), this.responsiveTiers()) : undefined,
+    this.resize.isReady()
+      ? resolveBreadcrumbTier(this.resize.width(), this.responsiveTiers())
+      : undefined,
   );
 
   /**
-   * The `maxVisible` forwarded to the inner collapse: explicit `[maxVisible]` wins,
-   * else the width-derived value when {@link responsive} is on, else `undefined`
-   * (no collapse - the current default behaviour).
+   * The `maxVisible` forwarded to the inner collapse: an explicit
+   * `[maxVisible]` pins the count, otherwise the width-derived value applies.
+   * Before the first `ResizeObserver` entry `autoMaxVisible` is `undefined`,
+   * which renders the full trail rather than guessing at a width.
    */
-  protected readonly effectiveMaxVisible = computed(() =>
-    this.maxVisible() ?? (this.responsive() ? this.autoMaxVisible() : undefined),
+  protected readonly effectiveMaxVisible = computed(
+    () => this.maxVisible() ?? this.autoMaxVisible(),
   );
 }
