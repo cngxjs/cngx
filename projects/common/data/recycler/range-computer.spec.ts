@@ -15,15 +15,31 @@ describe('computeRange', () => {
       });
     });
 
-    it('should return empty range for zero clientHeight', () => {
+    it('reports the full totalSize with an empty window at zero clientHeight', () => {
+      // A content-driven scrollport gets its height FROM the spacers, so a
+      // totalSize of 0 here would deadlock (no spacer, no height, no spacer).
       const result = computeRange(0, 0, 100, 48, 5);
       expect(result).toEqual({
         start: 0,
         end: 0,
         offsetBefore: 0,
-        offsetAfter: 0,
-        totalSize: 0,
+        offsetAfter: 4800,
+        totalSize: 4800,
       });
+    });
+
+    it('sums variable estimates for the zero-clientHeight totalSize', () => {
+      const result = computeRange(0, 0, 3, (i) => (i + 1) * 10, 5);
+      expect(result.totalSize).toBe(60);
+      expect(result.offsetAfter).toBe(60);
+      expect(result.end).toBe(0);
+    });
+
+    it('row-aligns the zero-clientHeight totalSize in grid mode', () => {
+      const result = computeRange(0, 0, 10, 48, 5, 3);
+      // 10 items across 3 columns: 4 rows x 48px
+      expect(result.totalSize).toBe(192);
+      expect(result.offsetAfter).toBe(192);
     });
 
     it('should handle a single item', () => {

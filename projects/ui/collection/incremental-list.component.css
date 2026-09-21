@@ -33,8 +33,24 @@
        a plain use-site var (a viewport height is not a density spacing rung), so
        no SET-from-scale rule - a deliberate, tracked opt-out. */
     .cngx-incremental-list__viewport {
+      /* The host is a custom element - UA default `display: inline`. An inline
+         box ignores max-block-size and never becomes a scroll container, so the
+         bounded viewport (and with it the whole recycler window) needs the
+         explicit block box. */
+      display: block;
       overflow-y: auto;
       max-block-size: var(--cngx-incremental-list-viewport-height, 60vh);
+      /* The recycler resizes its spacers on every window move; Chrome's scroll
+         anchoring then re-adjusts scrollTop to keep the anchor node in place,
+         which feeds the next window move - a runaway scroll that only stops at
+         the end of the list. Windowed scrollports must opt out. */
+      overflow-anchor: none;
+      /* Containing block for the announcer's absolutely-positioned sr-only
+         span. Without it the span's containing block sits OUTSIDE this
+         scrollport, so its static position (below the full spacer height)
+         escapes the clip and stretches the PAGE scrollbar to the list's
+         virtual height. */
+      position: relative;
     }
 
     .cngx-incremental-list__items {
