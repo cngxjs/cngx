@@ -1,4 +1,6 @@
+import { DOCUMENT } from '@angular/common';
 import { Directive, ElementRef, effect, inject, input } from '@angular/core';
+import { observeResize } from '@cngx/common/layout';
 
 import type { CngxRecycler } from './recycler';
 
@@ -47,6 +49,7 @@ export class CngxMeasure {
   readonly cngxMeasureIndex = input.required<number>();
 
   private readonly el = inject(ElementRef<HTMLElement>);
+  private readonly win = inject(DOCUMENT).defaultView;
 
   constructor() {
     effect((onCleanup) => {
@@ -56,14 +59,14 @@ export class CngxMeasure {
 
       recycler.measure(index, element);
 
-      const observer = new ResizeObserver(() => {
-        recycler.measure(index, element);
-      });
-      observer.observe(element);
-
-      onCleanup(() => {
-        observer.disconnect();
-      });
+      // The observed element follows the inputs, so the subscription is
+      // re-wired per effect run - the low-level kernel form, not the
+      // DestroyRef-scoped one.
+      onCleanup(
+        observeResize(this.win, element, 'content-box', () => {
+          recycler.measure(index, element);
+        }),
+      );
     });
   }
 }
