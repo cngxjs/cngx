@@ -105,6 +105,7 @@ jobs:
             testing
             scripts
             e2e
+            examples/e2e
             eslint-plugin
             mcp
             plugin
