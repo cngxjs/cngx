@@ -28,13 +28,9 @@ export interface StringManifestEntry {
  * matches a real hit, so a fixed string cannot linger here.
  */
 export const RATCHET: readonly StringManifestEntry[] = [
-  // @cngx/ui/feedback - the named precedent (library-completion Schnitt 2.7).
-  // Target: `provideFeedback(withFeedbackI18nLabels(...))`.
-  {
-    file: 'projects/ui/feedback/alert/alert-stack.ts',
-    value: 'Alerts',
-    note: 'alertsRegionLabel - host aria-label on the alert region, no token behind it',
-  },
+  // @cngx/ui/feedback - the two region labels are closed (CNGX_FEEDBACK_I18N).
+  // What is left announces state rather than naming a landmark, so it wants an
+  // announcement bundle rather than two more region keys.
   {
     file: 'projects/ui/feedback/alert/alert-stack.ts',
     value: 'Show ',
@@ -44,11 +40,6 @@ export const RATCHET: readonly StringManifestEntry[] = [
     file: 'projects/ui/feedback/alert/alert.ts',
     value: 'Alert dismissed',
     note: 'alertDismissed - SR announcement on dismiss',
-  },
-  {
-    file: 'projects/ui/feedback/toast/toast-outlet.ts',
-    value: 'Notifications',
-    note: 'toastsRegionLabel - host aria-label on the toast region, no token behind it',
   },
   {
     file: 'projects/ui/feedback/async-container/async-container.ts',
