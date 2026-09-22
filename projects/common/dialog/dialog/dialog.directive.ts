@@ -25,6 +25,7 @@ import {
 import { createScrollLock } from '@cngx/common/layout';
 import { firstValueFrom, isObservable, type Observable } from 'rxjs';
 
+import { injectDialogConfig } from '../config/dialog-config';
 import { DIALOG_REF, type DialogRef, type DialogState } from './dialog-ref';
 import {
   CNGX_DIALOG_ARIA_REGISTRY,
@@ -140,6 +141,7 @@ export class CngxDialog<T = unknown> implements DialogRef<T>, CngxDialogAriaRegi
   private readonly renderer = inject(Renderer2);
   private readonly destroyRef = inject(DestroyRef);
   private readonly dialogStack = inject(CngxDialogStack);
+  private readonly labels = injectDialogConfig().labels;
 
   // Armed while a close transition runs; cancelled on destroy so the
   // transitionend listener and fallback timer never outlive the directive.
@@ -389,7 +391,8 @@ export class CngxDialog<T = unknown> implements DialogRef<T>, CngxDialogAriaRegi
       // so a retried identical failure would never re-fire this effect.
       if (this.effectiveError() && this.liveRegion) {
         const errMsg = this.state()?.error() ?? this.submitErrorState();
-        this.liveRegion.textContent = typeof errMsg === 'string' ? errMsg : 'An error occurred';
+        this.liveRegion.textContent =
+          typeof errMsg === 'string' ? errMsg : this.labels.errorFallback;
         // Clear after one frame (same pattern as the title announce) so a
         // repeated identical error is a fresh mutation the SR re-announces.
         requestAnimationFrame(() => {

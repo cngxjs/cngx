@@ -12,6 +12,7 @@ import {
 } from '@angular/core';
 import { nextUid } from '@cngx/core/utils';
 
+import { injectDialogConfig } from '../config/dialog-config';
 import { CNGX_DIALOG_ARIA_REGISTRY } from '../dialog/dialog-aria-registry';
 import { applySrOnly } from '../dialog/sr-only';
 
@@ -75,6 +76,7 @@ import { applySrOnly } from '../dialog/sr-only';
 export class CngxDialogDraggable {
   private readonly elRef = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly doc = inject(DOCUMENT);
+  private readonly labels = injectDialogConfig().labels;
   private readonly destroyRef = inject(DestroyRef);
   private readonly ariaRegistry = inject(CNGX_DIALOG_ARIA_REGISTRY, { optional: true });
 
@@ -164,8 +166,8 @@ export class CngxDialogDraggable {
     // on the dialog element itself would clobber its accessible name (the
     // title) and its role text.
     if (!el.hasAttribute('aria-roledescription') && el !== this.elRef.nativeElement) {
-      el.setAttribute('aria-roledescription', 'draggable');
-      el.setAttribute('aria-label', 'Move dialog');
+      el.setAttribute('aria-roledescription', this.labels.dragHandleRoleDescription);
+      el.setAttribute('aria-label', this.labels.dragHandle);
       this.handleAddedAria = true;
     }
     // The keyboard path is live on every handle, so the instruction is too.
@@ -336,7 +338,7 @@ export class CngxDialogDraggable {
   private createInstructionNode(): HTMLElement {
     const node = this.doc.createElement('span');
     node.id = nextUid('cngx-dialog-drag-hint');
-    node.textContent = 'Use arrow keys to move the dialog; Shift for larger steps';
+    node.textContent = this.labels.dragInstructions;
     applySrOnly(node);
     this.elRef.nativeElement.appendChild(node);
     this.instructionNode = node;

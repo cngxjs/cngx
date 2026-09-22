@@ -1,5 +1,6 @@
 import { computed, Directive, ElementRef, inject, input } from '@angular/core';
 
+import { injectDialogConfig } from '../config/dialog-config';
 import { DIALOG_REF } from './dialog-ref';
 
 /**
@@ -49,6 +50,7 @@ import { DIALOG_REF } from './dialog-ref';
 export class CngxDialogClose {
   private readonly dialogRef = inject(DIALOG_REF);
   private readonly elRef = inject(ElementRef<HTMLElement>);
+  private readonly labels = injectDialogConfig().labels;
 
   /** Value to pass to `close()`. When `undefined`, calls `dismiss()` instead. */
   readonly value = input<unknown>(undefined, { alias: 'cngxDialogClose' });
@@ -90,7 +92,7 @@ export class CngxDialogClose {
       return null;
     }
 
-    return 'Close dialog';
+    return this.labels.close;
   });
 
   protected handleClick(): void {
