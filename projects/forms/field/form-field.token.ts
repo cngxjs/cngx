@@ -5,6 +5,7 @@ import {
   type EnvironmentProviders,
   type Signal,
 } from '@angular/core';
+import type { CngxFieldSkin } from '@cngx/core/tokens';
 import type { ErrorMessageMap } from './models';
 
 /**
@@ -16,6 +17,7 @@ import type { ErrorMessageMap } from './models';
 export {
   CNGX_FORM_FIELD_CONTROL,
   CNGX_FORM_FIELD_HOST,
+  type CngxFieldSkin,
   type CngxFormFieldControl,
   type CngxFormFieldHostContract,
 } from '@cngx/core/tokens';
@@ -125,6 +127,15 @@ export interface FormFieldConfig {
    * signal reads cannot widen `showError`'s dependency graph.
    */
   errorStrategy?: ErrorStrategyFn;
+  /**
+   * App-wide default appearance for every field and every control that
+   * composes `CngxFieldSkinHost`. Set it with {@link withFieldSkin}.
+   *
+   * Loses to a per-instance binding: a control resolves its own
+   * `[cngxFieldSkin]` first, then the surrounding field's `[skin]`, then
+   * this value, then `'outline'`.
+   */
+  skin?: CngxFieldSkin;
 }
 
 /**
@@ -456,6 +467,31 @@ export const DEFAULT_HINT_FORMATTERS: ConstraintHintFormatters = {
  */
 export function withRequiredMarker(marker = '*'): FormFieldFeature {
   return { _apply: (c) => ({ ...c, requiredMarker: marker }) };
+}
+
+/**
+ * Set the app-wide default appearance for form fields and the controls
+ * inside them.
+ *
+ * Reaches every host that composes `CngxFieldSkinHost` - `cngx-form-field`,
+ * `input cngxInput`, the affix row, and the select-family triggers - so one
+ * call re-skins the whole field family. A `[skin]` on a field or a
+ * `[cngxFieldSkin]` on a single control still wins locally.
+ *
+ * `'outline'` is already the default and emits no attribute; pass it only
+ * to be explicit, or to opt back out of a `fill` default in a sub-tree.
+ *
+ * ```ts
+ * provideFormField(withFieldSkin('fill'))
+ * ```
+ *
+ * @param skin The default appearance.
+ *
+ * @category forms/field
+ * @relatedTo provideFormField, CngxFieldSkinHost, CngxFormField
+ */
+export function withFieldSkin(skin: CngxFieldSkin): FormFieldFeature {
+  return { _apply: (c) => ({ ...c, skin }) };
 }
 
 /**

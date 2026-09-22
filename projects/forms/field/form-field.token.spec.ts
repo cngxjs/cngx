@@ -7,6 +7,7 @@ import {
   provideFormField,
   withConstraintHints,
   withErrorMessages,
+  withFieldSkin,
 } from './form-field.token';
 import type { ErrorMessageMap } from './models';
 
@@ -95,6 +96,22 @@ describe('form-field tokens', () => {
       });
       const config = TestBed.inject(CNGX_FORM_FIELD_CONFIG);
       expect(Object.keys(config.errorMessages!)).toEqual(['required', 'email']);
+    });
+
+    it('applies withFieldSkin', () => {
+      TestBed.configureTestingModule({
+        providers: [provideFormField(withFieldSkin('fill'))],
+      });
+      const config = TestBed.inject(CNGX_FORM_FIELD_CONFIG);
+      expect(config.skin).toBe('fill');
+    });
+
+    it('leaves skin undefined without withFieldSkin', () => {
+      TestBed.configureTestingModule({
+        providers: [provideFormField(withConstraintHints())],
+      });
+      const config = TestBed.inject(CNGX_FORM_FIELD_CONFIG);
+      expect(config.skin).toBeUndefined();
     });
   });
 
