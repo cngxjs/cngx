@@ -8,6 +8,18 @@ test.describe('CngxIcon demo', () => {
     await expect(icons.nth(0)).toHaveClass(/cngx-icon--xs/);
     await expect(icons.nth(2)).toHaveClass(/cngx-icon--md/);
     await expect(icons.nth(4)).toHaveClass(/cngx-icon--xl/);
+
+    // The size input reflects as a host attribute too, not only as the
+    // modifier class the assertions above cover.
+    for (const size of ['xs', 'sm', 'md', 'lg', 'xl']) {
+      await expect(page.locator(`cngx-icon[size="${size}"]`)).toHaveCount(1);
+    }
+
+    // Every size projects its content; a broken projection would still
+    // pass the class and attribute checks.
+    for (let i = 0; i < 5; i++) {
+      await expect(icons.nth(i)).toContainText('★');
+    }
   });
 
   test('decorative icon has aria-hidden, no role', async ({ page }) => {

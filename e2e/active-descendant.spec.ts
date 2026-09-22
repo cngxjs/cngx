@@ -31,6 +31,9 @@ test.describe('CngxActiveDescendant demo', () => {
     await page.keyboard.press('ArrowDown');
     await page.keyboard.press('ArrowDown');
     await expect(listbox).toHaveAttribute('aria-activedescendant', 'fruit-elder');
+    // The referenced option carries the selected state, not just the id
+    // reference on the host.
+    await expect(page.locator('#fruit-elder')).toHaveAttribute('aria-selected', 'true');
   });
 
   test('End jumps to last, Home to first', async ({ page }) => {
