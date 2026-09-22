@@ -29,7 +29,7 @@ export const STORY: DemoSpec = {
   ],
   setup: `protected readonly pageIndex = signal(0);`,
   setupChrome: `protected readonly collapse = signal(true);`,
-  template: `  <div style="resize:horizontal;overflow:auto;inline-size:30rem;min-inline-size:13rem;max-inline-size:100%;padding:12px;border:1px solid var(--cngx-color-border, #ccc);border-radius:8px"
+  template: `  <div style="resize:horizontal;overflow:auto;inline-size:40rem;min-inline-size:13rem;max-inline-size:100%;padding:12px;border:1px solid var(--cngx-color-border, #ccc);border-radius:8px"
        [style.--cngx-paginator-collapse]="collapse() ? null : 'none'">
     <cngx-paginator
       skin="numbered"
