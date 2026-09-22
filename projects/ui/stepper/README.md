@@ -68,7 +68,19 @@ Per-instance override:
 <cngx-stepper skin="linear-minimal" aria-label="Wizard">...</cngx-stepper>
 ```
 
-Under 480px viewports the classic strip auto-collapses to `<cngx-text-stepper>` (default) or `<cngx-dot-stepper>`. Configure via `withStepperMobileCollapse('text' | 'dots' | 'off')`.
+### Container, not viewport
+
+Below `30rem` of **its own container width** the classic strip auto-collapses to `<cngx-text-stepper>` (default) or `<cngx-dot-stepper>`. A stepper in a 400px dialog collapses on a 4K desktop; one in a wide page stays classic on a phone in landscape.
+
+`withStepperMobileCollapse('text' | 'dots' | 'off')` picks *what* it collapses into. *Where* is a `@container` rule in the stepper stylesheet and is not a TypeScript knob - override it in your own CSS:
+
+```css
+.my-wizard .cngx-stepper::after {
+  --cngx-stepper-collapse: 1; /* or 0 to suppress the collapse */
+}
+```
+
+An unlayered author rule beats the library rule in `@layer cngx.components`, so no `!important` is needed. See `core-concepts/responsive-by-default.md`.
 
 ## Density
 

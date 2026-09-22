@@ -3,9 +3,9 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxBreadcrumbBar: width-responsive collapse',
   subtitle:
-    'Nothing to bind: the bar derives <code>[maxVisible]</code> from its own width out of the box. No hand-wired <code>CngxResizeObserver</code>, no <code>computed</code>. Drag the right edge or narrow the window: wider shows more crumbs, narrower folds the middle into the overflow menu.',
+    'Nothing to bind: the bar derives <code>[maxVisible]</code> from its own width out of the box. No hand-wired <code>CngxResizeObserver</code>, no <code>computed</code>. Drag the right edge: wider shows more crumbs, narrower folds the middle into the overflow menu.',
   description:
-    'The headless recipe wires a <code>CngxResizeObserver</code> on the <code>nav</code> and a <code>computed()</code> <code>maxVisible</code> by hand. The organism packages that: an always-on observer hostDirective feeds the pure <code>resolveBreadcrumbTier</code>, so every skin adapts through the one bar mechanism, with no opt-in flag (Pillar 1, Pillar 3). <code>[responsiveTiers]</code> maps width breakpoints to a crumb cap - here tuned to the demo card so the full range from 6 crumbs down to 2 is visible as you resize. An explicit <code>[maxVisible]</code> still wins and is therefore the opt-out (controlled/uncontrolled); collapsed crumbs stay reachable through the overflow menu (Pillar 2).',
+    'The crumb cap lives in CSS, not in TypeScript. <code>breadcrumb-bar.component.css</code> declares the bar as its own query container and writes <code>--cngx-breadcrumb-max-visible</code> on <code>.cngx-breadcrumb::after</code> - 2 crumbs below <code>30rem</code>, 4 below <code>48rem</code>, 6 above. The bar reads that resolved value back and never evaluates a width itself, so the threshold exists exactly once and moves with the stylesheet when a consumer ejects the skin (Pillar 1). Re-aim it with your own rule on the same pseudo-element: <code>.my-nav .cngx-breadcrumb::after { --cngx-breadcrumb-max-visible: 8 }</code>. An explicit <code>[maxVisible]</code> still wins and is therefore the opt-out (controlled/uncontrolled); collapsed crumbs stay reachable through the overflow menu (Pillar 2). Note the box resizes, not the window - the bar reacts to its container, so it behaves the same in a drawer on a desktop as on a phone.',
   level: 'organism',
   audience: ['dev', 'design'],
   artifact: 'standalone',
@@ -26,15 +26,9 @@ export const STORY: DemoSpec = {
     { label: 'Fantasy', href: '#/catalog/books/fantasy' },
     { label: 'Tolkien', href: '#/catalog/books/fantasy/tolkien' },
     { label: 'The Hobbit' },
-  ];
-  protected readonly tiers = [
-    { minWidth: 500, maxVisible: 6 },
-    { minWidth: 380, maxVisible: 4 },
-    { minWidth: 0, maxVisible: 2 },
   ];`,
   template: `  <cngx-breadcrumb
     [items]="crumbs"
-    [responsiveTiers]="tiers"
     label="Library breadcrumb"
     class="demo-breadcrumb-resizable"
   />`,

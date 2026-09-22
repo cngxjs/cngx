@@ -63,26 +63,50 @@ The default overflow row lists the label and does not navigate. Project
 
 ## Width-driven collapse
 
-On by default, nothing to bind: the bar derives `maxVisible` from its own width
-through a `CngxResizeObserver` hostDirective feeding the pure
-`resolveBreadcrumbTier`.
+On by default, nothing to bind: the bar derives `maxVisible` from **its own
+container width**, not the viewport, so it behaves identically in a drawer on a
+desktop and on a phone.
 
 ```html
 <cngx-breadcrumb [items]="crumbs" />
 ```
 
-Default tiers: >= 640px shows 6, >= 440px shows 4, below that 2. Override with
-`[responsiveTiers]` (`CngxBreadcrumbWidthTier[]`, any order).
+The cap lives in CSS, once. `breadcrumb-bar.component.css` declares the bar as
+the query container `cngx-breadcrumb` and writes
+`--cngx-breadcrumb-max-visible` on `.cngx-breadcrumb::after`: `2` below `30rem`,
+`4` below `48rem`, `6` above. The component reads the resolved value and never
+evaluates a width itself.
+
+Re-aim the rungs with your own rule on the same pseudo-element:
+
+```css
+.my-nav .cngx-breadcrumb::after {
+  --cngx-breadcrumb-max-visible: 8;
+}
+```
+
+Two details decide whether that rule works:
+
+- **It has to target `::after`.** The property is registered `inherits: false`,
+  so setting it on the bar itself or on an ancestor never reaches the
+  pseudo-element the component reads. That is deliberate - the property is a
+  channel between the `@container` rule and the component, not a theme token
+  the crumbs should inherit.
+- **No `!important` needed.** An unlayered author rule beats the library rule in
+  `@layer cngx.components`, whatever the specificity.
+
+The property is registered `<integer>`: a non-integer value falls back to the
+registered initial and is never read as a cap.
 
 To pin the count instead - the opt-out - bind `[maxVisible]`; an explicit value
-always wins over the width-derived one:
+always wins over the derived one:
 
 ```html
 <!-- always six crumbs, whatever the width -->
 <cngx-breadcrumb [items]="crumbs" [maxVisible]="6" />
 ```
 
-Until the observer's first measurement the cap stays `undefined`, so the bar
+Until the container's first observation the cap stays `undefined`, so the bar
 renders the full trail rather than mis-collapsing on a zero-width first read.
 
 ## Router-driven trail

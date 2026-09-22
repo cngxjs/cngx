@@ -10,6 +10,7 @@ import {
   signal,
   untracked,
 } from '@angular/core';
+import { observeResize } from '@cngx/common/layout';
 
 /**
  * Reactive scroll state of a container element.
@@ -83,14 +84,13 @@ export function createScrollObserver(
 
     el.addEventListener('scroll', handleScroll, { passive: true });
 
-    const resizeObserver = new ResizeObserver(() => {
+    const stopResize = observeResize(doc.defaultView, el, 'content-box', () => {
       clientHeightState.set(el.clientHeight);
     });
-    resizeObserver.observe(el);
 
     onCleanup(() => {
       el.removeEventListener('scroll', handleScroll);
-      resizeObserver.disconnect();
+      stopResize();
       elementState.set(null);
     });
   }

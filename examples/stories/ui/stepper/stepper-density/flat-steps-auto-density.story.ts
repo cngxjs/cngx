@@ -3,9 +3,9 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxStepper: continuous flat density',
   subtitle:
-    'A flat stepper with <code>density: \'auto\'</code> degrades continuously on its own container width: labels stay full while there is room and only give way when the strip would overflow, the furthest from the active step first. Drag the frame\'s right edge - the strip adapts instead of growing a horizontal scrollbar.',
+    "A flat stepper with <code>density: 'auto'</code> degrades continuously on its own container width: labels stay full while there is room and only give way when the strip would overflow, the furthest from the active step first. Drag the frame's right edge - the strip adapts instead of growing a horizontal scrollbar.",
   description:
-    'When a flat strip runs out of room the wrong answer is a horizontal scrollbar. <code>density: \'auto\'</code> lets the labels keep their full width as long as the strip has room; they only truncate when it would otherwise overflow, and each step\'s shrink priority grows with its distance from the active one, so the furthest labels give way first and the nearest stay readable longest. The active step shrinks last and keeps a readable label as the on-screen anchor. Space freed by a collapsed label is reused rather than left empty, so you never see a truncated label sitting next to dead space. Collapsed labels stay in the accessibility tree (clipped, never removed), so every step button keeps its accessible name, and the orientation never changes; the strip clips instead of overflowing. The falloff is a tunable custom property (<code>--cngx-step-shrink-weight</code>); <code>withStepperDensity(\'auto\')</code> arms the model.',
+    "When a flat strip runs out of room the wrong answer is a horizontal scrollbar. <code>density: 'auto'</code> lets the labels keep their full width as long as the strip has room; they only truncate when it would otherwise overflow, and each step's shrink priority grows with its distance from the active one, so the furthest labels give way first and the nearest stay readable longest. The active step shrinks last and keeps a readable label as the on-screen anchor. Space freed by a collapsed label is reused rather than left empty, so you never see a truncated label sitting next to dead space. Collapsed labels stay in the accessibility tree (clipped, never removed), so every step button keeps its accessible name, and the orientation never changes; the strip clips instead of overflowing. The falloff is a tunable custom property (<code>--cngx-step-shrink-weight</code>); <code>withStepperDensity('auto')</code> arms the model. The per-step thresholds here put all three rungs above <code>30rem</code>, where the stepper stops rendering a strip at all and collapses to the compact step count - the density ladder tunes the strip, the collapse replaces it.",
   level: 'organism',
   audience: ['dev', 'design'],
   artifact: 'standalone',
@@ -17,7 +17,7 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxStepper', 'CngxStep', 'CngxStepContent'],
   viewProviders: [
-    "provideStepperConfigAt(withStepperDensity('auto', { compact: 145, minimal: 120 }))",
+    "provideStepperConfigAt(withStepperDensity('auto', { compact: 155, minimal: 135 }))",
   ],
   setup: `protected readonly active = signal(0);
   protected readonly steps = ['Connect repository', 'Validate manifest', 'Package artifacts', 'Deploy to production'];`,

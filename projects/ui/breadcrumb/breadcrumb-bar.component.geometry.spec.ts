@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { computedValue } from '@cngx/testing/geometry';
+import { computedValue, containerState } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { CngxBreadcrumbBar } from './breadcrumb-bar.component';
@@ -47,6 +47,24 @@ class RibbonBreadcrumbHost {
 })
 class HeaderBreadcrumbHost {
   readonly items = TRAIL;
+}
+
+const LONG_TRAIL: readonly CngxBreadcrumbCrumb[] = [
+  { label: 'Home', href: '/' },
+  { label: 'Catalog', href: '/catalog' },
+  { label: 'Fiction', href: '/catalog/fiction' },
+  { label: 'Fantasy', href: '/catalog/fiction/fantasy' },
+  { label: 'The Hobbit' },
+];
+
+@Component({
+  selector: 'cngx-breadcrumb-cap-geometry-host',
+  standalone: true,
+  imports: [CngxBreadcrumbBar],
+  template: `<cngx-breadcrumb [items]="items" [label]="'Breadcrumb'" />`,
+})
+class CapBreadcrumbHost {
+  readonly items = LONG_TRAIL;
 }
 
 let mountedRoot: HTMLElement | null = null;
@@ -103,6 +121,60 @@ afterEach(() => {
   document.documentElement.removeAttribute('dir');
 });
 
+describe('CngxBreadcrumbBar container-driven cap', () => {
+  // The crumb cap is a @container rule writing --cngx-breadcrumb-max-visible on
+  // ::after; the bar reads it back and collapses the middle. Only a real engine
+  // resolves that cascade, so the rungs are asserted here and nowhere else.
+  const nextFrame = (): Promise<void> =>
+    new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+
+  function mountCap(width: string): HTMLElement {
+    const fixture = TestBed.createComponent(CapBreadcrumbHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    mountedRoot.style.inlineSize = width;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    const host = mountedRoot.querySelector('.cngx-breadcrumb');
+    if (!host) {
+      throw new Error('cngx-breadcrumb did not render');
+    }
+    return host as HTMLElement;
+  }
+
+  const capOf = (host: HTMLElement): string =>
+    getComputedStyle(host, '::after').getPropertyValue('--cngx-breadcrumb-max-visible').trim();
+
+  const collapsed = (host: HTMLElement): boolean =>
+    host.querySelector('cngx-breadcrumb-overflow') !== null;
+
+  it('declares an inline-size container named cngx-breadcrumb', () => {
+    const state = containerState(mountCap('70rem'));
+    expect(state.type).toBe('inline-size');
+    expect(state.name).toBe('cngx-breadcrumb');
+  });
+
+  it('caps at 6 above the 48rem rung, so a five-crumb trail stays whole', async () => {
+    const host = mountCap('70rem');
+    await nextFrame();
+    expect(capOf(host)).toBe('6');
+    expect(collapsed(host)).toBe(false);
+  });
+
+  it('caps at 4 between the rungs, collapsing the five-crumb trail', async () => {
+    const host = mountCap('35rem');
+    await nextFrame();
+    expect(capOf(host)).toBe('4');
+    expect(collapsed(host)).toBe(true);
+  });
+
+  it('caps at 2 below the 30rem rung', async () => {
+    const host = mountCap('25rem');
+    await nextFrame();
+    expect(capOf(host)).toBe('2');
+    expect(collapsed(host)).toBe(true);
+  });
+});
+
 describe('CngxBreadcrumbBar geometry', () => {
   it('renders the host as a block and the list as a wrapping flex row', () => {
     const host = mount();
@@ -141,9 +213,12 @@ describe('CngxBreadcrumbBar ribbon clip-path direction', () => {
   // for any wrong-but-different reflection. These are the computed (browser-
   // serialized) forms of the authored mid/cap polygons and their x -> 100% - x
   // mirrors.
-  const MID_LTR = 'polygon(0px 0px, calc(100% - 12px) 0px, 100% 50%, calc(100% - 12px) 100%, 0px 100%, 12px 50%)';
-  const MID_RTL = 'polygon(100% 0px, 12px 0px, 0px 50%, 12px 100%, 100% 100%, calc(100% - 12px) 50%)';
-  const CAP_LTR = 'polygon(0px 0px, calc(100% - 12px) 0px, 100% 50%, calc(100% - 12px) 100%, 0px 100%)';
+  const MID_LTR =
+    'polygon(0px 0px, calc(100% - 12px) 0px, 100% 50%, calc(100% - 12px) 100%, 0px 100%, 12px 50%)';
+  const MID_RTL =
+    'polygon(100% 0px, 12px 0px, 0px 50%, 12px 100%, 100% 100%, calc(100% - 12px) 50%)';
+  const CAP_LTR =
+    'polygon(0px 0px, calc(100% - 12px) 0px, 100% 50%, calc(100% - 12px) 100%, 0px 100%)';
   const CAP_RTL = 'polygon(100% 0px, 12px 0px, 0px 50%, 12px 100%, 100% 100%)';
 
   it('reflects the mid-crumb silhouette under dir=rtl and keeps LTR byte-stable', () => {

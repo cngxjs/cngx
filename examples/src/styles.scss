@@ -745,11 +745,7 @@ html.dark .cngx-ex-tag[data-dim='stability'][data-value='deprecated'] {
 .demo-error-surface.cngx-error,
 .demo-error-surface[aria-invalid='true'] {
   border-color: var(--cngx-color-danger, #b00020);
-  background: color-mix(
-    in srgb,
-    var(--cngx-color-danger, #b00020) 4%,
-    transparent
-  );
+  background: color-mix(in srgb, var(--cngx-color-danger, #b00020) 4%, transparent);
 }
 .demo-error-count-badge {
   display: inline-flex;
@@ -766,8 +762,12 @@ html.dark .cngx-ex-tag[data-dim='stability'][data-value='deprecated'] {
   line-height: 1;
 }
 @keyframes demo-skeleton-shimmer {
-  0% { background-position: 100% 0; }
-  100% { background-position: -100% 0; }
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
 }
 .demo-list-row {
   padding: 8px 0;
@@ -1290,7 +1290,6 @@ button.chip[aria-pressed='true'],
   font-variant-numeric: tabular-nums;
 }
 
-
 // Demo-only chart frame used by the chart-primitives stories. Wraps the
 // composed <cngx-chart> in a bordered, padded surface so the SVG sits on a
 // visible canvas without each story re-stating the same inline border /
@@ -1325,7 +1324,6 @@ button.chip[aria-pressed='true'],
   min-width: 0;
   width: 100%;
 }
-
 
 // Demo-only KPI strip layout used by the deviation-bar variance-readings
 // story. Three rows of [label | chart | readout] share spacing, so the
@@ -1722,7 +1720,10 @@ button.chip:disabled {
   color: var(--cngx-color-on-surface, var(--cngx-ex-text, currentColor));
   font: inherit;
   cursor: pointer;
-  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease,
+    color 120ms ease;
 }
 .demo-button-toggle-group .cngx-button-toggle + .cngx-button-toggle {
   margin-left: -1px;
@@ -1748,7 +1749,8 @@ button.chip:disabled {
 // Unchecked + hover: tint the surface toward the text color so the hint is
 // visible in both light and dark mode. The checked branch below overrides
 // this so the orange-on-white selection state stays orange on hover.
-.demo-button-toggle-group .cngx-button-toggle:not(.cngx-button-toggle--checked):hover:not([disabled]) {
+.demo-button-toggle-group
+  .cngx-button-toggle:not(.cngx-button-toggle--checked):hover:not([disabled]) {
   background: color-mix(
     in oklch,
     var(--cngx-color-surface, #ffffff),
@@ -1812,10 +1814,16 @@ button.chip:disabled {
   border-radius: var(--cngx-radius-md, 6px);
   background: var(--cngx-color-surface, var(--cngx-ex-surface, oklch(1 0 0)));
   color: var(--cngx-color-text, var(--cngx-ex-text, oklch(0.2 0.01 250)));
-  transition: transform 120ms ease, background 120ms ease;
+  transition:
+    transform 120ms ease,
+    background 120ms ease;
 }
 .demo-hoverable-target--active {
-  background: color-mix(in oklch, var(--cngx-color-surface, oklch(1 0 0)), var(--cngx-color-primary, oklch(0.66 0.19 50)) 8%);
+  background: color-mix(
+    in oklch,
+    var(--cngx-color-surface, oklch(1 0 0)),
+    var(--cngx-color-primary, oklch(0.66 0.19 50)) 8%
+  );
 }
 
 // Hoverable composition-demo card. Used by
@@ -1831,10 +1839,16 @@ button.chip:disabled {
   border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, oklch(0.88 0.005 250)));
   background: var(--cngx-color-surface, var(--cngx-ex-surface, oklch(1 0 0)));
   color: var(--cngx-color-text, var(--cngx-ex-text, oklch(0.2 0.01 250)));
-  transition: transform 120ms ease, background 120ms ease;
+  transition:
+    transform 120ms ease,
+    background 120ms ease;
 }
 .demo-hover-card--active {
-  background: color-mix(in oklch, var(--cngx-color-surface, oklch(1 0 0)), var(--cngx-color-primary, oklch(0.66 0.19 50)) 8%);
+  background: color-mix(
+    in oklch,
+    var(--cngx-color-surface, oklch(1 0 0)),
+    var(--cngx-color-primary, oklch(0.66 0.19 50)) 8%
+  );
   transform: scale(1.02);
 }
 .demo-hover-card__state {
@@ -1861,11 +1875,19 @@ button.chip:disabled {
 }
 .demo-gesture-target--accent {
   border-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
-  background: color-mix(in oklch, var(--cngx-color-surface, oklch(1 0 0)), var(--cngx-color-primary, oklch(0.66 0.19 50)) 6%);
+  background: color-mix(
+    in oklch,
+    var(--cngx-color-surface, oklch(1 0 0)),
+    var(--cngx-color-primary, oklch(0.66 0.19 50)) 6%
+  );
 }
 .demo-gesture-target--danger {
   border-color: var(--cngx-color-error, oklch(0.6 0.2 25));
-  background: color-mix(in oklch, var(--cngx-color-surface, oklch(1 0 0)), var(--cngx-color-error, oklch(0.6 0.2 25)) 8%);
+  background: color-mix(
+    in oklch,
+    var(--cngx-color-surface, oklch(1 0 0)),
+    var(--cngx-color-error, oklch(0.6 0.2 25)) 8%
+  );
 }
 .demo-gesture-card {
   padding: 20px;
@@ -1875,7 +1897,9 @@ button.chip:disabled {
   background: var(--cngx-color-surface, oklch(1 0 0));
   text-align: left;
   user-select: none;
-  transition: transform 100ms ease, box-shadow 100ms ease;
+  transition:
+    transform 100ms ease,
+    box-shadow 100ms ease;
 }
 .demo-gesture-card[aria-pressed='true'],
 .demo-gesture-card.is-pressed {
@@ -1883,7 +1907,11 @@ button.chip:disabled {
 }
 .demo-gesture-flash,
 button.chip.demo-gesture-flash {
-  background: color-mix(in oklch, var(--cngx-color-surface, oklch(1 0 0)), var(--cngx-color-primary, oklch(0.66 0.19 50)) 18%);
+  background: color-mix(
+    in oklch,
+    var(--cngx-color-surface, oklch(1 0 0)),
+    var(--cngx-color-primary, oklch(0.66 0.19 50)) 18%
+  );
   border-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
 }
 .demo-gesture-hint {
@@ -1900,7 +1928,9 @@ button.chip.demo-gesture-flash {
   cursor: grab;
   touch-action: none;
   user-select: none;
-  transition: transform 0.1s ease, border-color 0.1s ease;
+  transition:
+    transform 0.1s ease,
+    border-color 0.1s ease;
 }
 .demo-swipe-target--active {
   border-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
@@ -2351,7 +2381,9 @@ button.chip.demo-chip--copied {
   transform: none;
   flex: 0 0 auto;
   overflow: hidden;
-  transition: width 0.25s ease, border-right-width 0.25s ease;
+  transition:
+    width 0.25s ease,
+    border-right-width 0.25s ease;
 }
 .demo-drawer-panel--static:not(.cngx-drawer-panel--open) {
   width: 0;
@@ -2368,7 +2400,9 @@ button.chip.demo-chip--copied {
   flex: 1 1 auto;
   padding: 0.75rem 1rem;
   background: var(--cngx-color-surface-alt, var(--cngx-ex-surface-alt, #f9fafb));
-  transition: margin-left 0.25s ease, margin-right 0.25s ease;
+  transition:
+    margin-left 0.25s ease,
+    margin-right 0.25s ease;
   font-size: 0.875rem;
 }
 .demo-drawer-main--tall {
@@ -3847,7 +3881,10 @@ cngx-radio-group .cngx-radio + .cngx-radio {
   resize: horizontal;
   overflow: auto;
   min-width: 220px;
-  max-width: 100%;
+  /* Deliberately NOT max-width: 100% - the demo card is 640px wide and the
+     bar's top rung sits at 48rem (768px), so a clamped box could never reach
+     the 6-crumb cap. Dragging past the card is the point. */
+  max-width: none;
   padding: 0.75rem;
   border: 1px dashed var(--cngx-color-border, var(--cngx-ex-border, #cbd5e1));
   border-radius: var(--cngx-radius-sm, 4px);
@@ -3901,6 +3938,7 @@ mat-icon.demo-breadcrumb-icon {
    a rule whose subject is the container would never match. The demo component
    reads the resolved value back through container.property(). */
 .demo-cq {
+  container-type: inline-size;
   container-name: demo-cq;
   border: 1px solid var(--cngx-color-border, #e4e4e7);
   border-radius: 8px;
@@ -3936,4 +3974,17 @@ mat-icon.demo-breadcrumb-icon {
     --demo-columns: 3;
     grid-template-columns: repeat(3, 1fr);
   }
+}
+
+/* Consumer-side override of the stepper collapse threshold, exactly as the
+   responsive contract promises it: the library writes --cngx-stepper-collapse
+   from a @container rule on .cngx-stepper::after, a consumer writes the same
+   property on the same pseudo-element. Two demos pin the collapsed branch with
+   it so the mobile indicator and the panel swipe are visible without resizing.
+
+   It wins without !important and without out-specifying anything: the library
+   rule sits inside @layer cngx.components, and an unlayered author rule beats
+   every layered one regardless of specificity or source order. */
+.demo-force-collapse .cngx-stepper::after {
+  --cngx-stepper-collapse: 1;
 }

@@ -4,17 +4,20 @@ import { DestroyRef, Directive, ElementRef, inject, type Signal } from '@angular
 import { CNGX_CONTAINER_SIZE, type CngxContainerSize, createContainerSize } from './container-size';
 
 /**
- * Declares the host as an inline-size query container and publishes its size
- * to descendants through {@link CNGX_CONTAINER_SIZE}.
+ * Observes a query container and publishes its size to descendants through
+ * {@link CNGX_CONTAINER_SIZE}.
  *
- * The directive sets `container-type` only. **The container name belongs in
- * the stylesheet**, next to the `@container` rules that use it, because the
- * name is API: an unnamed query matches the nearest container of any name, so
- * a consumer wrapping the component in their own container would silently
- * re-target it.
+ * The directive declares nothing visual. **Both `container-type` and
+ * `container-name` belong in the stylesheet**, next to the `@container` rules
+ * that use them: the name is API (an unnamed query matches the nearest
+ * container of any name, so a consumer wrapping the component in their own
+ * container would silently re-target it), and containment is a layout
+ * decision a skin must be able to opt out of with a plain CSS rule rather
+ * than `!important` against a host style.
  *
  * ```css
  * cngx-thing-layout {
+ *   container-type: inline-size;
  *   container-name: cngx-thing-layout;
  * }
  *
@@ -49,11 +52,6 @@ import { CNGX_CONTAINER_SIZE, type CngxContainerSize, createContainerSize } from
   exportAs: 'cngxContainer',
   standalone: true,
   providers: [{ provide: CNGX_CONTAINER_SIZE, useExisting: CngxContainer }],
-  // Static host style, not a binding: the value never changes, so there is
-  // nothing for change detection to re-evaluate.
-  host: {
-    style: 'container-type: inline-size',
-  },
 })
 export class CngxContainer implements CngxContainerSize {
   private readonly size = createContainerSize(
@@ -71,10 +69,11 @@ export class CngxContainer implements CngxContainerSize {
 
   /**
    * The resolved value of a custom property on `on` (default: this host),
-   * re-read on every resize. The `@container` rule must style a descendant -
-   * see {@link CngxContainerSize.property}.
+   * re-read on every resize. The `@container` rule must style a descendant,
+   * or a pseudo-element of the container itself - see
+   * {@link CngxContainerSize.property}.
    */
-  property(name: string, on?: Element): Signal<string> {
-    return this.size.property(name, on);
+  property(name: string, on?: Element, pseudo?: '::before' | '::after'): Signal<string> {
+    return this.size.property(name, on, pseudo);
   }
 }

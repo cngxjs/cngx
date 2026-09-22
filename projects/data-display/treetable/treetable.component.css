@@ -43,12 +43,13 @@
  *
  * **Variants**
  *
- * - Narrow breakpoint (`max-width: 960px`) - shrinks indent step,
- *   bumps tap-target padding on the toggle (>= 44px combined),
- *   and rebalances header / cell / utility padding. Threshold is
- *   pinned by `--cngx-treetable-narrow-breakpoint` (token only -
- *   the actual `@media` query uses a literal `960px` since media
- *   queries cannot resolve `var()`).
+ * - Narrow rung (`@container cngx-treetable (max-inline-size: 48rem)`)
+ *   - shrinks indent step, bumps tap-target padding on the toggle
+ *   (>= 44px combined), and rebalances header / cell / utility
+ *   padding. It queries the treetable's OWN width, not the viewport,
+ *   so a table in a drawer compacts on a desktop. The threshold is
+ *   the literal in that rule and nowhere else - a container query
+ *   cannot resolve `var()`.
  *
  * **Inheritance**
  *
@@ -380,13 +381,21 @@
   }
 
   /**
-   * Width threshold at which the narrow / mobile overrides apply.
+   * Documentation mirror of the narrow rung, for tooling that reads the
+   * token table. The live threshold is the literal inside the
+   * `@container cngx-treetable (max-inline-size: 48rem)` rule - a container
+   * condition cannot resolve `var()`, so setting this token changes nothing.
+   *
+   * Held as `768px`, the absolute equivalent of `48rem` at the default 16px
+   * root, because a registered `<length>` must carry a
+   * computationally-independent initial value: a relative unit makes the
+   * browser drop the whole `@property` rule, `inherits` flag included.
    * @group Variant / Narrow
    */
   @property --cngx-treetable-narrow-breakpoint {
     syntax: '<length>';
     inherits: false;
-    initial-value: 960px;
+    initial-value: 768px;
   }
 
   /**
@@ -573,6 +582,12 @@
       --cngx-treetable-narrow-toggle-padding: var(--cngx-space-sm);
       display: block;
       width: 100%;
+      /* The narrow block below queries this container, not the viewport: a
+         treetable in a 600px drawer on a desktop gets the narrow raster, one
+         in a wide page keeps the default on a tablet. The name is API - an
+         unnamed @container would match the nearest container of any name. */
+      container-type: inline-size;
+      container-name: cngx-treetable;
     }
 
     cdk-table {
@@ -792,12 +807,13 @@
       transform: scaleX(-1);
     }
 
-    @media (max-width: 960px) {
-      :scope {
-        --cngx-treetable-indent-size: var(--cngx-treetable-narrow-indent-size, 1.25rem);
-      }
-
+    @container cngx-treetable (max-inline-size: 48rem) {
+      /* The indent override lands on `cdk-table`, not `:scope`: a container
+         query cannot style its own container, and `:scope` IS the container.
+         `--cngx-treetable-indent-size` is registered `inherits: true`
+         (see the @property block above), so every cell below still reads it. */
       cdk-table {
+        --cngx-treetable-indent-size: var(--cngx-treetable-narrow-indent-size, 1.25rem);
         font-size: var(--cngx-treetable-narrow-font-size, 0.8125rem);
       }
 

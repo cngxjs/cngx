@@ -56,6 +56,8 @@ cngx-thing {
 }
 ```
 
+Both properties live in the stylesheet, next to each other. `[cngxContainer]` observes a container; it never declares one, so a skin can drop containment with a plain CSS rule instead of an `!important` against a host style.
+
 The name is API. An unnamed `@container` matches the nearest container of any name, so a consumer who wraps the component in their own container would silently re-target the query.
 
 Two exceptions:
@@ -87,9 +89,31 @@ private readonly wide = this.container?.property('--cngx-thing-wide', this.host)
 readonly effectiveMode = computed(() => (this.wide() === '1' ? 'side' : 'over'));
 ```
 
-`CNGX_CONTAINER_SIZE` comes from `[cngxContainer]` (`@cngx/common/layout`), which declares the container and exposes `inlineSize`, `blockSize`, `isReady` and `property(name, on?)` as signals. `property()` recomputes on the container's resize; the browser has already re-evaluated the query by then, so the read returns the current value.
+`CNGX_CONTAINER_SIZE` comes from `[cngxContainer]` (`@cngx/common/layout`), which observes the container and exposes `inlineSize`, `blockSize`, `isReady` and `property(name, on?, pseudo?)` as signals. `property()` recomputes on the container's resize; the browser has already re-evaluated the query by then, so the read returns the current value.
 
 **The rule writes on a descendant, never on the container itself.** A `@container` rule resolves against an *ancestor* query container of the element it styles, so a rule whose subject is the container element matches nothing and the property never changes. The value therefore lands on the child that consumes it, and that child is what `property()` reads.
+
+### Reading your own width
+
+Most organisms are the container *and* the reader - a stepper, a breadcrumb bar, a treetable - and have no descendant that wants the value. Write the rule on a pseudo-element: the query container for a pseudo-element is selected from its originating element's *inclusive* ancestors, so `.cngx-thing::after` resolves against `.cngx-thing`.
+
+```css
+.cngx-thing::after { --cngx-thing-narrow: 0; }
+
+@container cngx-thing (max-inline-size: 30rem) {
+  .cngx-thing::after { --cngx-thing-narrow: 1; }
+}
+```
+
+```ts
+private readonly host = inject(ElementRef).nativeElement as Element;
+private readonly container = injectContainerSize(this.host);
+readonly narrow = computed(
+  () => this.container.property('--cngx-thing-narrow', this.host, '::after')() === '1',
+);
+```
+
+The rule in one line: **a descendant reads -> `[cngxContainer]` + the token; a host reads itself -> `injectContainerSize(host)` + `::after`.** The self-reading form composes no host directive and provides nothing to children that never ask.
 
 Until the first resize entry arrives the property reads as the empty string and the component takes its narrow branch. The observer's initial callback runs after layout and before paint, so nothing flashes; seeding the value synchronously in a constructor would read before the first layout and return the wrong answer.
 

@@ -3,9 +3,9 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxStepper: mobile auto-collapse (dots mode)',
   subtitle:
-    'Resize below 480px - the classic strip collapses to an inline row of dot buttons instead of the default text. Opt in via <code>provideStepperConfigAt(withStepperMobileCollapse(\'dots\'))</code> in <code>viewProviders</code>; per-instance, no global config required.',
+    "Narrow the preview below 30rem of the stepper's own container width - the classic strip collapses to an inline row of dot buttons instead of the default text. Opt in via <code>provideStepperConfigAt(withStepperMobileCollapse('dots'))</code> in <code>viewProviders</code>; per-instance, no global config required.",
   description:
-    'The mobile auto-collapse policy ships three modes: <code>\'text\'</code> (default, renders the count inline), <code>\'dots\'</code> (renders a clickable dot row), and <code>\'off\'</code> (keeps the classic strip on every viewport). This demo scopes the dots mode to the demo via <code>provideStepperConfigAt</code> so the choice is local; same component, same step atoms, same ARIA contract.',
+    "The mobile auto-collapse policy ships three modes: <code>'text'</code> (default, renders the count inline), <code>'dots'</code> (renders a clickable dot row), and <code>'off'</code> (keeps the classic strip on every viewport). This demo scopes the dots mode to the demo via <code>provideStepperConfigAt</code> so the choice is local; same component, same step atoms, same ARIA contract.",
   level: 'organism',
   audience: ['dev', 'design'],
   artifact: 'standalone',
@@ -16,7 +16,7 @@ export const STORY: DemoSpec = {
     "import { CngxStepper } from '@cngx/ui/stepper';",
   ],
   imports: ['CngxStepper', 'CngxStep', 'CngxStepContent'],
-  viewProviders: ['provideStepperConfigAt(withStepperMobileCollapse(\'dots\'))'],
+  viewProviders: ["provideStepperConfigAt(withStepperMobileCollapse('dots'))"],
   setup: `protected readonly active = signal(0);`,
   setupChrome: `  protected handleNext(): void {
     this.active.update(i => Math.min(i + 1, 2));

@@ -2,7 +2,7 @@ import { Component, provideZonelessChangeDetection, signal } from '@angular/core
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { provideRouter, Router, RouterOutlet } from '@angular/router';
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxBreadcrumbBar } from './breadcrumb-bar.component';
 import { CngxBreadcrumbIcon } from './breadcrumb-icon.directive';
@@ -88,12 +88,11 @@ function stubPopoverApi(): void {
 }
 
 /**
- * The bar mounts a {@link CngxResizeObserver} hostDirective, but jsdom ships no
- * `ResizeObserver`. This file-scoped fake keeps every bar test from throwing on
+ * The bar observes its own container, but jsdom ships no `ResizeObserver`.
+ * This file-scoped fake keeps every bar test from throwing on
  * `new win.ResizeObserver`; it registers each observer so the responsive suite
- * below can drive a synthetic width. Observers that are never emitted stay at
- * `width()==0` / `isReady()==false`, so non-responsive tests behave exactly as
- * before.
+ * below can drive an observation. Observers that are never emitted keep the
+ * container unready, so non-responsive tests behave exactly as before.
  */
 const resizeInstances: { emit: (width: number) => void }[] = [];
 let originalResizeObserver: typeof globalThis.ResizeObserver | undefined;
@@ -652,18 +651,26 @@ class BarResponsiveHost {
 }
 
 /**
- * jsdom fires no real ResizeObserver, so the bar's width source is the file-scoped
- * fake whose captured callback the test drives with a synthetic content-box width.
- * That exercises the live `resolveBreadcrumbTier` -> `autoMaxVisible` wiring
- * without a browser (the real observer path is the Phase 2 e2e).
+ * Two seams, because the cap is now a container read. jsdom fires no real
+ * ResizeObserver, so the file-scoped fake supplies the observation that makes
+ * the container ready; and jsdom resolves no custom properties, so
+ * `getComputedStyle` is stubbed with the value the `@container` rules in
+ * `breadcrumb-bar.component.css` would have written on `::after` at that width.
+ * That exercises the live property -> `autoMaxVisible` -> collapse wiring
+ * without a browser; the real cascade is the geometry suite and the e2e.
  */
-describe('CngxBreadcrumbBar width-derived maxVisible (on by default)', () => {
+describe('CngxBreadcrumbBar container-derived maxVisible (on by default)', () => {
+  /** What the stylesheet's rungs resolve to at a given container width. */
+  const capAt = (width: number): string => (width >= 768 ? '6' : width >= 480 ? '4' : '2');
+
   beforeEach(() => {
     TestBed.resetTestingModule();
     stubPopoverApi();
     resizeInstances.length = 0;
     TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
   });
+
+  afterEach(() => vi.restoreAllMocks());
 
   function mount(): {
     fixture: ReturnType<typeof TestBed.createComponent<BarResponsiveHost>>;
@@ -680,8 +687,17 @@ describe('CngxBreadcrumbBar width-derived maxVisible (on by default)', () => {
       fixture,
       host: fixture.componentInstance,
       barEl,
-      // The bar mounts exactly one ResizeObserver hostDirective.
+      // The bar observes exactly one element: its own host.
       emit: (width) => {
+        vi.spyOn(window, 'getComputedStyle').mockImplementation(
+          (_el: Element, pseudo?: string | null) =>
+            ({
+              getPropertyValue: (name: string) =>
+                pseudo === '::after' && name === '--cngx-breadcrumb-max-visible'
+                  ? capAt(width)
+                  : '',
+            }) as unknown as CSSStyleDeclaration,
+        );
         resizeInstances.at(-1)?.emit(width);
         fixture.detectChanges();
       },
@@ -690,14 +706,14 @@ describe('CngxBreadcrumbBar width-derived maxVisible (on by default)', () => {
     };
   }
 
-  it('derives maxVisible from the observed width via resolveBreadcrumbTier', () => {
+  it('derives maxVisible from the property the container rule resolved', () => {
     const { emit, collapsed } = mount();
 
-    // Wide: TRAIL (4 crumbs) fits the 6-cap tier, no collapse.
-    emit(700);
+    // Wide: TRAIL (4 crumbs) fits the 6-cap rung, no collapse.
+    emit(800);
     expect(collapsed()).toBe(false);
 
-    // Narrow: the 2-cap tier collapses the middle into the overflow.
+    // Narrow: the 2-cap rung collapses the middle into the overflow.
     emit(300);
     expect(collapsed()).toBe(true);
   });
@@ -712,9 +728,10 @@ describe('CngxBreadcrumbBar width-derived maxVisible (on by default)', () => {
   });
 
   it('renders the full trail until the first observation arrives', () => {
-    // No emit: isReady() is false, so autoMaxVisible is undefined and the bar
-    // shows every crumb rather than guessing a width. This is what keeps the
-    // default-on collapse from flashing a collapsed trail on mount.
+    // No emit: the container is unready, so the property reads as the empty
+    // string, autoMaxVisible is undefined and the bar shows every crumb rather
+    // than guessing a width. This is what keeps the default-on collapse from
+    // flashing a collapsed trail on mount.
     const { collapsed } = mount();
     expect(collapsed()).toBe(false);
   });

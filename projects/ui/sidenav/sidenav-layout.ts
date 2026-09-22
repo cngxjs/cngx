@@ -23,10 +23,11 @@ import { CngxSidenav } from './sidenav';
  * Supports up to two sidenavs: one `position="start"` and one `position="end"`.
  *
  * It is also the query container the rails resolve their `'auto'` mode
- * against: the composed `CngxContainer` declares `container-type`, the
- * stylesheet names it `cngx-sidenav-layout` and carries the single docking
- * threshold. A rail mounted without this layout has no container and falls
- * back to `over`.
+ * against: the stylesheet declares and names the container
+ * (`cngx-sidenav-layout`) and carries the single docking threshold, the
+ * composed `CngxContainer` observes it and publishes the resolved value. A
+ * rail mounted without this layout has no container and falls back to
+ * `over`.
  *
  * ### Dual sidebar
  * ```html

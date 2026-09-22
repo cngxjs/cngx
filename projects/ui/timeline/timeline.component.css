@@ -45,7 +45,8 @@
  * `:scope` below declares `container-type: inline-size` and
  * `container-name: cngx-timeline`. `@cngx/common`'s
  * `timeline-item.component.css` queries that exact name to collapse
- * `placement="alternate"` back to a single side below `32rem`. CSS offers
+ * `placement="alternate"` back to a single side below `30rem` - the `sm`
+ * rung of the responsive tier table. CSS offers
  * nothing tighter: `container-name` cannot be a custom property, and an
  * unnamed `@container` would match the nearest container of any name, which
  * is worse. So the name is API, not an implementation detail - renaming it
@@ -321,10 +322,10 @@
       justify-self: stretch;
     }
 
-    /* Same 32rem degrade the row raster takes, for the same reason and
+    /* Same 30rem degrade the row raster takes, for the same reason and
        against the same container. The organism names the container, so this
        block queries its own :scope. */
-    @container cngx-timeline (max-inline-size: 32rem) {
+    @container cngx-timeline (max-inline-size: 30rem) {
       :scope[data-placement='alternate']:not([data-mode='activity']) .cngx-timeline__skeleton-row,
       :scope[data-placement='alternate']:not([data-mode='activity'])
         .cngx-timeline__skeleton-row[data-row-side='end'] {

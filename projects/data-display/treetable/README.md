@@ -197,10 +197,12 @@ tokens delegate to the global `--cngx-color-*` palette first.
 | `--cngx-treetable-empty-padding-inline` | `1rem` | Empty-state left/right padding |
 | `--cngx-treetable-skeleton-line-size` | `12px` | Skeleton line height |
 
-Below the width recorded by the informational
-`--cngx-treetable-narrow-breakpoint` token the grid compacts through the
+Below `48rem` of the treetable's **own container width** - not the viewport, so
+a table in a drawer compacts on a desktop - the grid switches to the
 `--cngx-treetable-narrow-*` family (font-size, indent-size, cell/header
-paddings, toggle sizing) - same names as above with the `narrow-` prefix.
+paddings, toggle sizing), same names as above with the `narrow-` prefix. The
+threshold is the literal in the `@container cngx-treetable` rule; the
+`--cngx-treetable-narrow-breakpoint` token only mirrors it for tooling.
 
 ## Configuration
 

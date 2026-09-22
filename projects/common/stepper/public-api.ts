@@ -8,10 +8,7 @@
  * `@cngx/ui/mat-stepper` (Material twin).
  */
 
-export {
-  CngxStepperPresenter,
-  type CngxStepperCommitAction,
-} from './presenter.directive';
+export { CngxStepperPresenter, type CngxStepperCommitAction } from './presenter.directive';
 
 export {
   CNGX_STEPPER_HOST,
@@ -21,10 +18,7 @@ export {
   type CngxStepStatus,
 } from './stepper-host.token';
 
-export {
-  CNGX_STEP_GROUP_HOST,
-  type CngxStepGroupHost,
-} from './step-group-host.token';
+export { CNGX_STEP_GROUP_HOST, type CngxStepGroupHost } from './step-group-host.token';
 
 export {
   CNGX_STEP_PANEL_HOST,
@@ -40,30 +34,18 @@ export { CngxStepGroup } from './step-group.directive';
 export { CngxStepLabel } from './step-label.directive';
 export { CngxStepContent } from './step-content.directive';
 
-export {
-  CngxStepIndicator,
-  type CngxStepIndicatorContext,
-} from './slots/step-indicator.directive';
+export { CngxStepIndicator, type CngxStepIndicatorContext } from './slots/step-indicator.directive';
 
-export {
-  CngxStepBadge,
-  type CngxStepBadgeContext,
-} from './slots/step-badge.directive';
+export { CngxStepBadge, type CngxStepBadgeContext } from './slots/step-badge.directive';
 
 export {
   CngxStepBusySpinner,
   type CngxStepBusySpinnerContext,
 } from './slots/step-busy-spinner.directive';
 
-export {
-  CngxStepRejection,
-  type CngxStepRejectionContext,
-} from './slots/step-rejection.directive';
+export { CngxStepRejection, type CngxStepRejectionContext } from './slots/step-rejection.directive';
 
-export {
-  CngxStepError,
-  type CngxStepErrorContext,
-} from './slots/step-error.directive';
+export { CngxStepError, type CngxStepErrorContext } from './slots/step-error.directive';
 
 export {
   CngxStepGroupHeader,
@@ -106,7 +88,6 @@ export {
   provideStepperConfig,
   provideStepperConfigAt,
   STEPPER_DEFAULT_DENSITY_BREAKPOINTS,
-  STEPPER_DEFAULT_MOBILE_BREAKPOINT,
   withStepperDefaultOrientation,
   withStepperDensity,
   withStepperAriaLabels,
@@ -117,7 +98,6 @@ export {
   withStepperGroupCollapseSummary,
   withStepperHeaderNavigation,
   withStepperLinear,
-  withStepperMobileBreakpoint,
   withStepperMobileCollapse,
   withStepperMobileIndicatorPosition,
   withStepperMobileSwipe,
@@ -146,10 +126,7 @@ export {
 
 export { resolveStepperStatusLabel } from './status-label';
 
-export {
-  createMobileViewportSignal,
-  createStepperDisplayMode,
-} from './mobile-viewport';
+export { createStepperDisplayMode, injectStepperCollapse } from './display-mode';
 
 export {
   createStripDensity,
@@ -217,7 +194,6 @@ export { CngxStepperPrevious } from './controls/stepper-previous.directive';
 export { CngxStepperNext } from './controls/stepper-next.directive';
 export { CngxStepperComplete } from './controls/stepper-complete.directive';
 export { createStepperHostProxy } from './create-stepper-host-proxy';
-
 
 export {
   CNGX_STEPPER_COMMIT_HANDLER_FACTORY,

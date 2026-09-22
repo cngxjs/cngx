@@ -1,3 +1,4 @@
+import { DOCUMENT } from '@angular/common';
 import {
   afterNextRender,
   computed,
@@ -10,6 +11,7 @@ import {
   type Signal,
 } from '@angular/core';
 
+import { observeResize } from '@cngx/common/layout';
 import { clamp } from '@cngx/utils';
 
 /**
@@ -46,6 +48,9 @@ import { clamp } from '@cngx/utils';
 export class CngxAutosize {
   private readonly el = inject<ElementRef<HTMLTextAreaElement>>(ElementRef);
   private readonly destroyRef = inject(DestroyRef);
+  // Resolved here, not inside the afterNextRender callback: that callback is
+  // not an injection context (NG0203).
+  private readonly win = inject(DOCUMENT).defaultView;
 
   /** Minimum number of rows. */
   readonly minRows = input<number>(1);
@@ -81,7 +86,7 @@ export class CngxAutosize {
     afterNextRender(() => {
       this.measureMetrics();
       this.resize();
-      this.observeResize();
+      this.watchResize();
     });
   }
 
@@ -132,17 +137,14 @@ export class CngxAutosize {
     );
   }
 
-  private observeResize(): void {
-    if (typeof ResizeObserver === 'undefined') {
-      return;
-    }
-
-    const observer = new ResizeObserver(() => {
-      this.measureMetrics();
-      this.resize();
-    });
-    observer.observe(this.el.nativeElement);
-
-    this.destroyRef.onDestroy(() => observer.disconnect());
+  private watchResize(): void {
+    // The kernel owns the missing-ResizeObserver case (SSR, jsdom): it wires
+    // nothing and hands back a no-op teardown.
+    this.destroyRef.onDestroy(
+      observeResize(this.win, this.el.nativeElement, 'content-box', () => {
+        this.measureMetrics();
+        this.resize();
+      }),
+    );
   }
 }

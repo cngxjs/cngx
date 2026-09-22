@@ -4,6 +4,7 @@ import {
   Component,
   computed,
   contentChild,
+  ElementRef,
   inject,
   input,
   TemplateRef,
@@ -14,11 +15,8 @@ import {
   CngxBreadcrumb,
   CngxBreadcrumbItem,
   CngxBreadcrumbSeparator,
-  DEFAULT_BREADCRUMB_WIDTH_TIERS,
-  resolveBreadcrumbTier,
-  type CngxBreadcrumbWidthTier,
 } from '@cngx/common/interactive';
-import { CngxResizeObserver } from '@cngx/common/layout';
+import { injectContainerSize } from '@cngx/common/layout';
 import { createControlledSource } from '@cngx/core/utils';
 
 import { CngxBreadcrumbIcon } from './breadcrumb-icon.directive';
@@ -48,6 +46,12 @@ import type { CngxBreadcrumbCrumb } from './breadcrumb.types';
  * <cngx-breadcrumb [items]="crumbs" [maxVisible]="4" skin="pill" />
  * ```
  *
+ * Left alone, the crumb cap comes from the bar's own width: 2 crumbs below
+ * `30rem`, 4 below `48rem`, 6 above. The thresholds live once, in
+ * `breadcrumb-bar.component.css`, as `--cngx-breadcrumb-max-visible` written
+ * by `@container` rules on `.cngx-breadcrumb::after`; consumer CSS re-aims
+ * them. `[maxVisible]` pins the count and overrides the derivation entirely.
+ *
  * @category ui/breadcrumb
  * @docsKind primary
  * @wcag AA
@@ -73,11 +77,6 @@ import type { CngxBreadcrumbCrumb } from './breadcrumb.types';
     CngxBreadcrumbOverflow,
     CngxBreadcrumbSiblings,
   ],
-  // Always-on width source: the collapse is the bar's default behaviour, so
-  // the observer is never conditional. `box`/`resize` are deliberately not
-  // re-surfaced as bar inputs/outputs - the bar reads `width()`/`isReady()`
-  // internally. One ResizeObserver per bar, disconnected on destroy.
-  hostDirectives: [CngxResizeObserver],
   templateUrl: './breadcrumb-bar.component.html',
   styleUrl: './breadcrumb-bar.component.css',
   host: {
@@ -97,12 +96,12 @@ export class CngxBreadcrumbBar {
    */
   readonly maxVisible = input<number | undefined>(undefined);
 
-  /** Width tiers driving the collapse. Defaults to {@link DEFAULT_BREADCRUMB_WIDTH_TIERS}. */
-  readonly responsiveTiers = input<readonly CngxBreadcrumbWidthTier[]>(
-    DEFAULT_BREADCRUMB_WIDTH_TIERS,
-  );
-
-  private readonly resize = inject(CngxResizeObserver, { host: true });
+  // The bar is its own query container (breadcrumb-bar.component.css declares
+  // both container properties) and the only reader of the cap, so it observes
+  // itself and provides nothing to descendants. The flag lands on ::after
+  // because a @container rule cannot style its own container.
+  private readonly host = inject(ElementRef).nativeElement as Element;
+  private readonly container = injectContainerSize(this.host);
 
   private readonly cfg = injectBreadcrumbConfig();
 
@@ -149,22 +148,30 @@ export class CngxBreadcrumbBar {
     () => this.skin() ?? this.cfg.skin ?? 'classic',
   );
 
-  /**
-   * Width-derived crumb cap. `undefined` until the observer's first measurement
-   * ({@link CngxResizeObserver.isReady}), so a narrow mount never mis-collapses on
-   * a `width() == 0` first read - the sub-frame full-trail transient settles once
-   * the ResizeObserver fires.
-   */
-  protected readonly autoMaxVisible = computed(() =>
-    this.resize.isReady()
-      ? resolveBreadcrumbTier(this.resize.width(), this.responsiveTiers())
-      : undefined,
+  /** Raw `--cngx-breadcrumb-max-visible`, resolved on the bar's own `::after`. */
+  private readonly capProperty = this.container.property(
+    '--cngx-breadcrumb-max-visible',
+    this.host,
+    '::after',
   );
 
   /**
+   * Container-derived crumb cap. `undefined` until the first observation (the
+   * property reads as the empty string then), so a narrow mount never
+   * mis-collapses on a zero-width first read - the sub-frame full-trail
+   * transient settles once the `ResizeObserver` fires. The finite check means a
+   * malformed consumer override can never reach the collapse as a `NaN`.
+   */
+  protected readonly autoMaxVisible = computed(() => {
+    const raw = this.capProperty();
+    const parsed = Number(raw);
+    return raw === '' || !Number.isFinite(parsed) ? undefined : parsed;
+  });
+
+  /**
    * The `maxVisible` forwarded to the inner collapse: an explicit
-   * `[maxVisible]` pins the count, otherwise the width-derived value applies.
-   * Before the first `ResizeObserver` entry `autoMaxVisible` is `undefined`,
+   * `[maxVisible]` pins the count, otherwise the container-derived value
+   * applies. Before the first observation `autoMaxVisible` is `undefined`,
    * which renders the full trail rather than guessing at a width.
    */
   protected readonly effectiveMaxVisible = computed(

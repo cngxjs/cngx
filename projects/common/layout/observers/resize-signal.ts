@@ -33,7 +33,7 @@ export interface ResizeObserverHost {
  * @returns Teardown that disconnects the observer.
  * @category common/layout/observers
  * @relatedTo createResizeSignal, observeMediaQuery
- * @since 0.3.0
+ * @since 0.1.0
  */
 export function observeResize(
   host: ResizeObserverHost | null | undefined,
@@ -78,7 +78,7 @@ export function observeResize(
  * @returns A readonly signal carrying the latest entry.
  * @category common/layout/observers
  * @relatedTo observeResize, createMediaQuerySignal
- * @since 0.3.0
+ * @since 0.1.0
  */
 export function createResizeSignal(
   element: Element,

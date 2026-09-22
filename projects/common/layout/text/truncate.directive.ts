@@ -12,6 +12,8 @@ import {
   signal,
 } from '@angular/core';
 
+import { observeResize } from '../observers/resize-signal';
+
 /**
  * Manages text truncation with expand/collapse state detection.
  *
@@ -64,7 +66,7 @@ export class CngxTruncate {
   readonly isClamped = this.isClampedState.asReadonly();
 
   private readonly el = inject(ElementRef<HTMLElement>);
-  private observer: ResizeObserver | null = null;
+  private stopResize: (() => void) | null = null;
   private rafHandle: number | null = null;
 
   // null strips the host binding - preferred over an empty string for -webkit-line-clamp.
@@ -88,8 +90,12 @@ export class CngxTruncate {
 
     afterNextRender(() => {
       this.checkClamped();
-      this.observer = new ResizeObserver(() => this.checkClamped());
-      this.observer.observe(this.el.nativeElement as HTMLElement);
+      this.stopResize = observeResize(
+        win,
+        this.el.nativeElement as HTMLElement,
+        'content-box',
+        () => this.checkClamped(),
+      );
     });
 
     // Re-check after expanded/lines change; RAF ensures styles are applied first.
@@ -101,7 +107,7 @@ export class CngxTruncate {
     });
 
     destroyRef.onDestroy(() => {
-      this.observer?.disconnect();
+      this.stopResize?.();
       this.cancelRaf();
     });
   }

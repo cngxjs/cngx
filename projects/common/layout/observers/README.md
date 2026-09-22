@@ -315,7 +315,7 @@ export const desktopOnlyGuard: CanActivateFn = () => {
 
 ## CngxContainer
 
-Declares the host as an inline-size query container and publishes its size to descendants through `CNGX_CONTAINER_SIZE`. Read it with `injectContainerSize()`.
+Observes a query container and publishes its size to descendants through `CNGX_CONTAINER_SIZE`. Read it with `injectContainerSize()`. The directive declares nothing visual - `container-type` and `container-name` both live in the stylesheet.
 
 ### CSS decides, JS reads the property
 
@@ -323,6 +323,7 @@ The point of the directive is *not* to move breakpoints into TypeScript. The bre
 
 ```css
 cngx-thing-layout {
+  container-type: inline-size;
   container-name: cngx-thing-layout;
 }
 
@@ -349,6 +350,38 @@ readonly mode = computed(() => (this.wide() === '1' ? 'side' : 'over'));
 
 **The rule must style a descendant, never the container itself.** A container query resolves against an *ancestor* query container of the element it styles, so a rule whose subject is the container element matches nothing and the property never changes. Pass that descendant as the second argument to `property()`.
 
+### When the container reads itself
+
+A component that declares the container in its own stylesheet and branches on it has no descendant to carry the value. Write the rule on a pseudo-element and pass the pseudo as the third argument: the query container for a pseudo-element is selected from its originating element's *inclusive* ancestors, so `.cngx-thing::after` resolves against `.cngx-thing` while a rule on `.cngx-thing` itself still matches nothing. No sentinel node enters the template.
+
+```css
+.cngx-thing {
+  container-type: inline-size;
+  container-name: cngx-thing;
+}
+
+.cngx-thing::after {
+  --cngx-thing-narrow: 0;
+}
+
+@container cngx-thing (max-inline-size: 30rem) {
+  .cngx-thing::after {
+    --cngx-thing-narrow: 1;
+  }
+}
+```
+
+```typescript
+private readonly host = inject(ElementRef).nativeElement as Element;
+private readonly container = injectContainerSize(this.host);
+
+readonly narrow = computed(
+  () => this.container.property('--cngx-thing-narrow', this.host, '::after')() === '1',
+);
+```
+
+The descendant case still takes the directive plus the token; the self-reading case takes `injectContainerSize(host)` plus `::after` and provides nothing to children that never ask.
+
 ### Surface
 
 | Member | Type | Notes |
@@ -356,9 +389,9 @@ readonly mode = computed(() => (this.wide() === '1' ? 'side' : 'over'));
 | `inlineSize` | `Signal<number>` | Border-box inline size, `0` before the first observation. |
 | `blockSize` | `Signal<number>` | Border-box block size, `0` before the first observation. |
 | `isReady` | `Signal<boolean>` | `true` once the first observation arrived. |
-| `property(name, on?)` | `Signal<string>` | Resolved custom property, re-read on every resize. Memoized per `(target, name)`. |
+| `property(name, on?, pseudo?)` | `Signal<string>` | Resolved custom property, re-read on every resize. Memoized per `(target, pseudo, name)`. |
 
-The directive sets `container-type` only. The container **name belongs in the stylesheet** next to the rules that query it: an unnamed `@container` matches the nearest container of any name, so a consumer wrapping the component in their own container would silently re-target the query.
+The directive sets **no** host style. Both container properties belong in the stylesheet next to the rules that query them: the name is API - an unnamed `@container` matches the nearest container of any name, so a consumer wrapping the component in their own container would silently re-target the query - and the type is a layout decision a skin must be able to drop with a plain rule instead of an `!important`.
 
 `container-type: inline-size` applies size containment. An element that must shrink-wrap its content (an inline chip, a `width: max-content` bar) must not be a container.
 

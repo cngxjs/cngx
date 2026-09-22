@@ -2,7 +2,7 @@ import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createMatchMediaMock, createResizeObserverMock } from '@cngx/testing';
+import { createResizeObserverMock } from '@cngx/testing';
 
 import {
   CngxStep,
@@ -187,9 +187,7 @@ describe('CngxStepper organism', () => {
     ) as HTMLButtonElement;
     const panelId = button.getAttribute('aria-controls');
     expect(panelId).toBeTruthy();
-    const panel = fixture.nativeElement.querySelector(
-      `#${panelId}`,
-    ) as HTMLElement;
+    const panel = fixture.nativeElement.querySelector(`#${panelId}`) as HTMLElement;
     expect(panel?.getAttribute('role')).toBe('region');
     expect(panel?.getAttribute('aria-labelledby')).toBe(button.id);
   });
@@ -224,18 +222,14 @@ describe('CngxStepper organism', () => {
     });
     const fixture = TestBed.createComponent(HostCmp);
     fixture.detectChanges();
-    const panel = fixture.nativeElement.querySelector(
-      '.cngx-stepper__panel',
-    ) as HTMLElement;
+    const panel = fixture.nativeElement.querySelector('.cngx-stepper__panel') as HTMLElement;
     const descId = panel.getAttribute('aria-describedby');
     // The reference is emitted because a step's status phrase is never
     // empty (positional fallback); the gate suppresses it only where the
     // phrase is empty (group headers without a status). Pillar 2 + the
     // corrected gated-reference rule.
     expect(descId).toBeTruthy();
-    const desc = fixture.nativeElement.querySelector(
-      `#${descId}`,
-    ) as HTMLElement;
+    const desc = fixture.nativeElement.querySelector(`#${descId}`) as HTMLElement;
     expect(desc).not.toBeNull();
     expect(desc.classList.contains('cngx-sr-only')).toBe(true);
     expect(desc.textContent?.trim()).toBeTruthy();
@@ -247,9 +241,7 @@ describe('CngxStepper organism', () => {
     });
     const fixture = TestBed.createComponent(HierarchicalHost);
     fixture.detectChanges();
-    const group = fixture.nativeElement.querySelector(
-      '.cngx-stepper__group-header',
-    ) as HTMLElement;
+    const group = fixture.nativeElement.querySelector('.cngx-stepper__group-header') as HTMLElement;
     expect(group?.getAttribute('role')).toBe('group');
     expect(group?.getAttribute('aria-roledescription')).toBe('step group');
     // 3 step buttons: A, B (children of group), Trailing.
@@ -265,9 +257,7 @@ describe('CngxStepper organism', () => {
     });
     const fixture = TestBed.createComponent(HierarchicalHost);
     fixture.detectChanges();
-    const group = fixture.nativeElement.querySelector(
-      '.cngx-stepper__group-header',
-    ) as HTMLElement;
+    const group = fixture.nativeElement.querySelector('.cngx-stepper__group-header') as HTMLElement;
     // A pristine group has neither error nor success status - the phrase is
     // empty, so the descriptor reference is gated off while the sr-only
     // descriptor span itself stays rendered.
@@ -358,7 +348,9 @@ describe('CngxStepper organism', () => {
     it('drops collapsed child step buttons from the strip but keeps every panel in the DOM', () => {
       const fixture = collapseFixture();
       const labels = (
-        Array.from(fixture.nativeElement.querySelectorAll('button.cngx-stepper__step')) as HTMLElement[]
+        Array.from(
+          fixture.nativeElement.querySelectorAll('button.cngx-stepper__step'),
+        ) as HTMLElement[]
       ).map((b) => b.querySelector('.cngx-stepper__label')?.textContent?.trim());
       // Account (active) keeps A, B; Project (collapsed) drops C, D; Finish kept.
       expect(labels).toEqual(['A', 'B', 'Finish']);
@@ -446,7 +438,7 @@ describe('CngxStepper organism', () => {
       expect(project.classList.contains('cngx-stepper__group-header--navigable')).toBe(true);
     });
 
-    it("clicking a collapsed group header enters the group at its first step, not the trailing root step", () => {
+    it('clicking a collapsed group header enters the group at its first step, not the trailing root step', () => {
       const fixture = collapseFixture();
       const project = Array.from(
         fixture.nativeElement.querySelectorAll('.cngx-stepper__group-header'),
@@ -455,7 +447,9 @@ describe('CngxStepper organism', () => {
       fixture.detectChanges();
       // First step of Project is 'C' (flat index 2), not Finish (index 4).
       const labels = (
-        Array.from(fixture.nativeElement.querySelectorAll('button.cngx-stepper__step')) as HTMLElement[]
+        Array.from(
+          fixture.nativeElement.querySelectorAll('button.cngx-stepper__step'),
+        ) as HTMLElement[]
       ).map((b) => b.querySelector('.cngx-stepper__label')?.textContent?.trim());
       // Project now active+expanded (C active, D shown); Account folds.
       expect(labels).toEqual(['C', 'D', 'Finish']);
@@ -536,7 +530,9 @@ describe('CngxStepper organism', () => {
       const selectPrevious = vi.spyOn(stepper.presenter, 'selectPrevious');
       emitWidth(3 * 40);
       fixture.detectChanges();
-      const button = fixture.nativeElement.querySelector('button.cngx-stepper__step') as HTMLElement;
+      const button = fixture.nativeElement.querySelector(
+        'button.cngx-stepper__step',
+      ) as HTMLElement;
       button.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
       expect(selectNext).toHaveBeenCalledTimes(1);
       button.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
@@ -617,14 +613,19 @@ describe('CngxStepper organism', () => {
         readonly active = signal(0);
       }
       TestBed.configureTestingModule({
-        providers: [provideZonelessChangeDetection(), provideStepperConfig(withStepperDensity('auto'))],
+        providers: [
+          provideZonelessChangeDetection(),
+          provideStepperConfig(withStepperDensity('auto')),
+        ],
       });
       const fixture = TestBed.createComponent(NavHost);
       fixture.detectChanges();
       const distances = (): string[] =>
-        (Array.from(
-          fixture.nativeElement.querySelectorAll('button.cngx-stepper__step'),
-        ) as HTMLElement[]).map((s) => s.style.getPropertyValue('--cngx-step-distance'));
+        (
+          Array.from(
+            fixture.nativeElement.querySelectorAll('button.cngx-stepper__step'),
+          ) as HTMLElement[]
+        ).map((s) => s.style.getPropertyValue('--cngx-step-distance'));
       expect(distances()).toEqual(['0', '1', '2']);
       fixture.componentInstance.active.set(1);
       fixture.detectChanges();
@@ -652,9 +653,7 @@ describe('CngxStepper organism', () => {
     });
     const fixture = TestBed.createComponent(HierarchicalHost);
     fixture.detectChanges();
-    const group = fixture.nativeElement.querySelector(
-      '.cngx-stepper__group-header',
-    ) as HTMLElement;
+    const group = fixture.nativeElement.querySelector('.cngx-stepper__group-header') as HTMLElement;
     expect(group.getAttribute('data-step-depth')).toBe('0');
     const buttons = fixture.nativeElement.querySelectorAll(
       'button.cngx-stepper__step',
@@ -695,9 +694,7 @@ describe('CngxStepper organism', () => {
     });
     const fixture = TestBed.createComponent(ErrHost);
     fixture.detectChanges();
-    expect(
-      fixture.nativeElement.querySelectorAll('.cngx-stepper__badge').length,
-    ).toBe(0);
+    expect(fixture.nativeElement.querySelectorAll('.cngx-stepper__badge').length).toBe(0);
     fixture.componentInstance.aggShow.set(true);
     fixture.detectChanges();
     const badges = fixture.nativeElement.querySelectorAll(
@@ -747,13 +744,9 @@ describe('CngxStepper organism', () => {
     ) as NodeListOf<HTMLButtonElement>;
     expect(buttons[0].getAttribute('aria-current')).toBeNull();
     expect(buttons[2].getAttribute('aria-current')).toBe('step');
-    const indicator = buttons[0].querySelector(
-      '.cngx-stepper__indicator',
-    ) as HTMLElement;
+    const indicator = buttons[0].querySelector('.cngx-stepper__indicator') as HTMLElement;
     expect(indicator.getAttribute('data-state')).toBe('error');
-    const badge = buttons[0].querySelector(
-      '.cngx-stepper__badge',
-    ) as HTMLElement | null;
+    const badge = buttons[0].querySelector('.cngx-stepper__badge') as HTMLElement | null;
     expect(badge).not.toBeNull();
     expect(badge?.getAttribute('aria-hidden')).toBe('true');
     // The default badge template renders CNGX_STEPPER_GLYPHS.errorBadge.
@@ -765,10 +758,7 @@ describe('CngxStepper organism', () => {
     // mode reads as clickable. happy-dom does not resolve @layer
     // scoping reliably; assert against the source CSS instead -
     // mirrors the classic-skin.snapshot.spec.ts approach.
-    const cssPath = (await import('node:path')).resolve(
-      __dirname,
-      'stepper.component.css',
-    );
+    const cssPath = (await import('node:path')).resolve(__dirname, 'stepper.component.css');
     const css = (await import('node:fs')).readFileSync(cssPath, 'utf-8');
     const hoverRule = css.match(/\.cngx-stepper__step:hover[^{]+{[^}]+}/);
     expect(hoverRule).not.toBeNull();
@@ -790,9 +780,7 @@ describe('CngxStepper organism', () => {
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
-        provideStepperConfig(
-          withStepperAriaLabels({ stepperRegion: 'Order Wizard' }),
-        ),
+        provideStepperConfig(withStepperAriaLabels({ stepperRegion: 'Order Wizard' })),
       ],
     });
     const fixture = TestBed.createComponent(NoLabelHost);
@@ -818,9 +806,7 @@ describe('CngxStepper organism', () => {
         // Override clears stepperRegion so the cascade falls through
         // to the i18n bundle. Without this override the library
         // default 'Stepper' for ariaLabels.stepperRegion wins.
-        provideStepperConfig(
-          withStepperAriaLabels({ stepperRegion: undefined }),
-        ),
+        provideStepperConfig(withStepperAriaLabels({ stepperRegion: undefined })),
         provideStepperI18n(withStepperI18nLabels({ stepperLabel: 'Schrittfolge' })),
       ],
     });
@@ -846,16 +832,12 @@ describe('CngxStepper organism', () => {
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
-        provideStepperConfig(
-          withStepperFallbackLabels({ groupRoleDescription: 'Schritt-Gruppe' }),
-        ),
+        provideStepperConfig(withStepperFallbackLabels({ groupRoleDescription: 'Schritt-Gruppe' })),
       ],
     });
     const fixture = TestBed.createComponent(GroupRoleHost);
     fixture.detectChanges();
-    const group = fixture.nativeElement.querySelector(
-      '.cngx-stepper__group-header',
-    ) as HTMLElement;
+    const group = fixture.nativeElement.querySelector('.cngx-stepper__group-header') as HTMLElement;
     expect(group.getAttribute('aria-roledescription')).toBe('Schritt-Gruppe');
   });
 
@@ -930,9 +912,7 @@ describe('CngxStepper organism', () => {
     });
     const fixture = TestBed.createComponent(HostCmp);
     fixture.detectChanges();
-    expect(
-      fixture.nativeElement.querySelectorAll('.cngx-stepper__busy-spinner'),
-    ).toHaveLength(0);
+    expect(fixture.nativeElement.querySelectorAll('.cngx-stepper__busy-spinner')).toHaveLength(0);
     const button = fixture.nativeElement.querySelector(
       'button.cngx-stepper__step',
     ) as HTMLButtonElement;
@@ -950,9 +930,7 @@ describe('CngxStepper organism', () => {
       'button.cngx-stepper__step',
     ) as HTMLButtonElement;
     const descId = button.getAttribute('aria-describedby')!;
-    const desc = fixture.nativeElement.querySelector(
-      `#${descId}`,
-    ) as HTMLElement;
+    const desc = fixture.nativeElement.querySelector(`#${descId}`) as HTMLElement;
     expect(desc.textContent?.trim()).toBe('Step 1 of 3: A');
   });
 
@@ -961,11 +939,7 @@ describe('CngxStepper organism', () => {
       standalone: true,
       imports: [CngxStepper, CngxStep],
       template: `
-        <cngx-stepper
-          aria-label="Wizard"
-          [commitAction]="action"
-          [commitMode]="mode"
-        >
+        <cngx-stepper aria-label="Wizard" [commitAction]="action" [commitMode]="mode">
           <div cngxStep label="A"></div>
           <div cngxStep label="B"></div>
           <div cngxStep label="C"></div>
@@ -998,8 +972,7 @@ describe('CngxStepper organism', () => {
         providers: [provideZonelessChangeDetection()],
       });
       const fixture = TestBed.createComponent(CommitHost);
-      fixture.componentInstance.action = () =>
-        new Promise<boolean>(() => undefined);
+      fixture.componentInstance.action = () => new Promise<boolean>(() => undefined);
       fixture.detectChanges();
       const buttons = fixture.nativeElement.querySelectorAll(
         'button.cngx-stepper__step',
@@ -1135,9 +1108,7 @@ describe('CngxStepper organism', () => {
           resolve = r;
         });
       fixture.detectChanges();
-      const host = fixture.nativeElement.querySelector(
-        'cngx-stepper',
-      ) as HTMLElement;
+      const host = fixture.nativeElement.querySelector('cngx-stepper') as HTMLElement;
       expect(host.getAttribute('aria-busy')).toBeNull();
       const buttons = fixture.nativeElement.querySelectorAll(
         'button.cngx-stepper__step',
@@ -1167,18 +1138,12 @@ describe('CngxStepper organism', () => {
       buttons[1].click();
       fixture.detectChanges();
       const descId = buttons[1].getAttribute('aria-describedby')!;
-      const desc = fixture.nativeElement.querySelector(
-        `#${descId}`,
-      ) as HTMLElement;
+      const desc = fixture.nativeElement.querySelector(`#${descId}`) as HTMLElement;
       // Persistent suffix appended to the per-step descriptor.
-      expect(desc.textContent?.trim()).toBe(
-        'Step 2 of 3: B This step was rolled back.',
-      );
+      expect(desc.textContent?.trim()).toBe('Step 2 of 3: B This step was rolled back.');
       // Sibling steps keep the unmodified phrase.
       const aDescId = buttons[0].getAttribute('aria-describedby')!;
-      const aDesc = fixture.nativeElement.querySelector(
-        `#${aDescId}`,
-      ) as HTMLElement;
+      const aDesc = fixture.nativeElement.querySelector(`#${aDescId}`) as HTMLElement;
       expect(aDesc.textContent?.trim()).toBe('Step 1 of 3: A');
     });
 
@@ -1196,9 +1161,7 @@ describe('CngxStepper organism', () => {
       ) as NodeListOf<HTMLButtonElement>;
       buttons[1].click();
       fixture.detectChanges();
-      const icon = buttons[1].querySelector(
-        '.cngx-stepper__rejection-icon',
-      ) as HTMLElement | null;
+      const icon = buttons[1].querySelector('.cngx-stepper__rejection-icon') as HTMLElement | null;
       expect(icon).not.toBeNull();
       expect(icon!.textContent?.trim()).toBe(CNGX_STEPPER_GLYPHS.rejectionIcon);
     });
@@ -1218,24 +1181,16 @@ describe('CngxStepper organism', () => {
       buttons[1].click();
       fixture.detectChanges();
       // Rejected row carries the modifier; siblings do not.
-      expect(buttons[1].classList.contains('cngx-stepper__step--rejected')).toBe(
-        true,
-      );
-      expect(buttons[0].classList.contains('cngx-stepper__step--rejected')).toBe(
-        false,
-      );
-      expect(buttons[2].classList.contains('cngx-stepper__step--rejected')).toBe(
-        false,
-      );
+      expect(buttons[1].classList.contains('cngx-stepper__step--rejected')).toBe(true);
+      expect(buttons[0].classList.contains('cngx-stepper__step--rejected')).toBe(false);
+      expect(buttons[2].classList.contains('cngx-stepper__step--rejected')).toBe(false);
       // Modifier clears once the rejection state is dismissed.
       const stepper = fixture.debugElement.children[0].componentInstance as {
         clearLastFailed(): void;
       };
       stepper.clearLastFailed();
       fixture.detectChanges();
-      expect(buttons[1].classList.contains('cngx-stepper__step--rejected')).toBe(
-        false,
-      );
+      expect(buttons[1].classList.contains('cngx-stepper__step--rejected')).toBe(false);
     });
 
     it('clearLastFailed delegator forwards to the presenter and zeroes lastFailedIndex', () => {
@@ -1524,9 +1479,7 @@ describe('CngxStepper organism', () => {
       TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
       const fixture = TestBed.createComponent(NavHost);
       fixture.detectChanges();
-      expect(
-        fixture.nativeElement.querySelectorAll('button.cngx-stepper__step').length,
-      ).toBe(3);
+      expect(fixture.nativeElement.querySelectorAll('button.cngx-stepper__step').length).toBe(3);
     });
 
     it("config withStepperHeaderNavigation('none') applies when no input is bound", () => {
@@ -1539,9 +1492,9 @@ describe('CngxStepper organism', () => {
       const fixture = TestBed.createComponent(NavHost);
       fixture.detectChanges();
       expect(fixture.nativeElement.querySelectorAll('button.cngx-stepper__step').length).toBe(0);
-      expect(
-        fixture.nativeElement.querySelectorAll('span.cngx-stepper__step--static').length,
-      ).toBe(3);
+      expect(fixture.nativeElement.querySelectorAll('span.cngx-stepper__step--static').length).toBe(
+        3,
+      );
     });
 
     it("per-instance [headerNavigation] wins over the config (Input -> config -> 'visited')", () => {
@@ -1704,13 +1657,44 @@ describe('CngxStepper organism', () => {
   });
 
   describe('mobile-collapse a11y ids', () => {
-    // Forces displayMode into the collapse branch: createMobileViewportSignal
-    // reads globalThis.matchMedia, absent in jsdom, so the stub is the seam.
+    // Forces displayMode into the collapse branch. Two seams, because the
+    // collapse is now a container read: an observer that reports a size (jsdom
+    // ships none, and the property stays '' until the first entry), and
+    // getComputedStyle, which resolves no custom properties in jsdom. The
+    // observer fires on observe() so every consumer in the component - the
+    // container and the strip-density probe - gets its first entry.
     beforeEach(() => {
-      createMatchMediaMock(true).install(window);
+      vi.stubGlobal(
+        'ResizeObserver',
+        class {
+          constructor(private readonly cb: ResizeObserverCallback) {}
+          observe(target: Element) {
+            this.cb(
+              [
+                {
+                  target,
+                  contentRect: { width: 320 } as DOMRectReadOnly,
+                  borderBoxSize: [{ inlineSize: 320, blockSize: 40 }],
+                } as unknown as ResizeObserverEntry,
+              ],
+              null!,
+            );
+          }
+          unobserve() {}
+          disconnect() {}
+        } as unknown as typeof ResizeObserver,
+      );
+      vi.spyOn(window, 'getComputedStyle').mockImplementation(
+        (_el: Element, pseudo?: string | null) =>
+          ({
+            getPropertyValue: (name: string) =>
+              pseudo === '::after' && name === '--cngx-stepper-collapse' ? '1' : '',
+          }) as unknown as CSSStyleDeclaration,
+      );
     });
 
     afterEach(() => {
+      vi.restoreAllMocks();
       vi.unstubAllGlobals();
     });
 
@@ -1724,7 +1708,10 @@ describe('CngxStepper organism', () => {
 
     it('text mode: panels name themselves via aria-label and carry no dangling aria-labelledby', () => {
       TestBed.configureTestingModule({
-        providers: [provideZonelessChangeDetection(), provideStepperConfig(withStepperMobileCollapse('text'))],
+        providers: [
+          provideZonelessChangeDetection(),
+          provideStepperConfig(withStepperMobileCollapse('text')),
+        ],
       });
       const fixture = TestBed.createComponent(HostCmp);
       fixture.detectChanges();
@@ -1739,7 +1726,10 @@ describe('CngxStepper organism', () => {
 
     it('text mode: every aria-describedby reference resolves to an in-DOM descriptor span', () => {
       TestBed.configureTestingModule({
-        providers: [provideZonelessChangeDetection(), provideStepperConfig(withStepperMobileCollapse('text'))],
+        providers: [
+          provideZonelessChangeDetection(),
+          provideStepperConfig(withStepperMobileCollapse('text')),
+        ],
       });
       const fixture = TestBed.createComponent(HostCmp);
       fixture.detectChanges();
@@ -1754,7 +1744,10 @@ describe('CngxStepper organism', () => {
 
     it('dots mode: dot buttons carry id + aria-controls and the panel labelledby reverses the link', () => {
       TestBed.configureTestingModule({
-        providers: [provideZonelessChangeDetection(), provideStepperConfig(withStepperMobileCollapse('dots'))],
+        providers: [
+          provideZonelessChangeDetection(),
+          provideStepperConfig(withStepperMobileCollapse('dots')),
+        ],
       });
       const fixture = TestBed.createComponent(HostCmp);
       fixture.detectChanges();
@@ -1772,7 +1765,10 @@ describe('CngxStepper organism', () => {
 
     it('dots mode: every aria-describedby reference resolves to an in-DOM descriptor span', () => {
       TestBed.configureTestingModule({
-        providers: [provideZonelessChangeDetection(), provideStepperConfig(withStepperMobileCollapse('dots'))],
+        providers: [
+          provideZonelessChangeDetection(),
+          provideStepperConfig(withStepperMobileCollapse('dots')),
+        ],
       });
       const fixture = TestBed.createComponent(HostCmp);
       fixture.detectChanges();
@@ -1787,7 +1783,10 @@ describe('CngxStepper organism', () => {
       TestBed.configureTestingModule({
         providers: [
           provideZonelessChangeDetection(),
-          provideStepperConfig(withStepperMobileCollapse('dots'), withStepperHeaderNavigation('none')),
+          provideStepperConfig(
+            withStepperMobileCollapse('dots'),
+            withStepperHeaderNavigation('none'),
+          ),
         ],
       });
       const fixture = TestBed.createComponent(HostCmp);

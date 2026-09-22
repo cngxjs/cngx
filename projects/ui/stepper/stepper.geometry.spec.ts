@@ -69,7 +69,9 @@ function mount(width: number): { host: HTMLElement; panel: HTMLElement } {
   return { host: host as HTMLElement, panel: panel as HTMLElement };
 }
 
-function mountSteps(component: typeof ChevronStepperHost | typeof VerticalChevronStepperHost): HTMLElement[] {
+function mountSteps(
+  component: typeof ChevronStepperHost | typeof VerticalChevronStepperHost,
+): HTMLElement[] {
   const fixture = TestBed.createComponent(component);
   mountedRoot = fixture.nativeElement as HTMLElement;
   document.body.appendChild(mountedRoot);
@@ -97,7 +99,7 @@ describe('CngxStepper geometry', () => {
     expect(state.name).toBe('cngx-stepper');
   });
 
-  it('compacts the panel padding below the 600px container breakpoint', () => {
+  it('compacts the panel padding below the 48rem container rung', () => {
     const { host, panel } = mount(800);
     const wide = computedValue(panel, 'padding-top');
     host.style.inlineSize = '400px';
@@ -107,14 +109,45 @@ describe('CngxStepper geometry', () => {
   });
 });
 
+describe('CngxStepper container collapse', () => {
+  // The collapse threshold is a @container rule writing --cngx-stepper-collapse
+  // on ::after; the component reads it back and switches template. Only a real
+  // engine resolves that, so the switch is asserted here and nowhere else.
+  const nextFrame = (): Promise<void> =>
+    new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+
+  it('keeps the classic strip above the 30rem rung', async () => {
+    const { host } = mount(40 * 16);
+    await nextFrame();
+    expect(
+      getComputedStyle(host, '::after').getPropertyValue('--cngx-stepper-collapse').trim(),
+    ).toBe('0');
+    expect(host.querySelector('.cngx-stepper__strip')).not.toBeNull();
+    expect(host.querySelector('.cngx-stepper__mobile-text')).toBeNull();
+  });
+
+  it('swaps to the compact count below the 30rem rung', async () => {
+    const { host } = mount(25 * 16);
+    await nextFrame();
+    expect(
+      getComputedStyle(host, '::after').getPropertyValue('--cngx-stepper-collapse').trim(),
+    ).toBe('1');
+    expect(host.querySelector('cngx-stepper-count.cngx-stepper__mobile-text')).not.toBeNull();
+    expect(host.querySelector('.cngx-stepper__strip')).toBeNull();
+  });
+});
+
 describe('CngxStepper path-chevron direction', () => {
   // Pin root font-size so the authored 0.75rem resolves to a deterministic 12px
   // in the computed clip-path, independent of the browser default. Reset below.
   // Expected forms are the browser-serialized authored polygons and their exact
   // x -> 100% - x mirrors.
-  const MID_LTR = 'polygon(0px 0px, calc(100% - 12px) 0px, 100% 50%, calc(100% - 12px) 100%, 0px 100%, 12px 50%)';
-  const MID_RTL = 'polygon(100% 0px, 12px 0px, 0px 50%, 12px 100%, 100% 100%, calc(100% - 12px) 50%)';
-  const FIRST_LTR = 'polygon(0px 0px, calc(100% - 12px) 0px, 100% 50%, calc(100% - 12px) 100%, 0px 100%)';
+  const MID_LTR =
+    'polygon(0px 0px, calc(100% - 12px) 0px, 100% 50%, calc(100% - 12px) 100%, 0px 100%, 12px 50%)';
+  const MID_RTL =
+    'polygon(100% 0px, 12px 0px, 0px 50%, 12px 100%, 100% 100%, calc(100% - 12px) 50%)';
+  const FIRST_LTR =
+    'polygon(0px 0px, calc(100% - 12px) 0px, 100% 50%, calc(100% - 12px) 100%, 0px 100%)';
   const FIRST_RTL = 'polygon(100% 0px, 12px 0px, 0px 50%, 12px 100%, 100% 100%)';
   const LAST_LTR = 'polygon(0px 0px, 100% 0px, 100% 100%, 0px 100%, 12px 50%)';
   const LAST_RTL = 'polygon(100% 0px, 0px 0px, 0px 100%, 100% 100%, calc(100% - 12px) 50%)';

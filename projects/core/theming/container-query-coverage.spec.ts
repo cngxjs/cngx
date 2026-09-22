@@ -16,10 +16,10 @@ import { resolve } from 'node:path';
 //      a width condition is either enrolled below with a reason (overlay
 //      modality, or a pending migration) or it fails.
 //
-// The manifest halves are ratchets, not permanent carve-outs: A1 slice 2
-// empties both. Adding a file to either list requires a one-clause reason, so
-// the exception stays a reviewable touchpoint - same shape as the touch-target
-// and density guards in this directory.
+// Both manifest halves are empty: A1 slice 2 moved the last legacy detections
+// onto the contract. They stay in the file as the documented seam - re-adding
+// an entry is a conscious edit with a one-clause reason, and the suite below
+// asserts the lists are empty so nobody grows one quietly.
 //
 // Preference queries (`prefers-*`, `forced-colors`, `hover`, `pointer`) are not
 // responsive rules and never enter the scan. Style queries
@@ -31,32 +31,10 @@ const REPO_ROOT = resolve(__dirname, '..', '..', '..');
 const TIERS: readonly string[] = ['20rem', '30rem', '48rem', '64rem'];
 
 /** `@container` size queries whose length is not yet on a tier. */
-const TIER_EXCEPTIONS: ReadonlyArray<{ file: string; note: string }> = [
-  {
-    file: 'projects/ui/stepper/styles/stepper-base.css',
-    note: '600px panel-padding break, predates the tier table; A1 slice 2 moves it to 48rem',
-  },
-  {
-    file: 'projects/ui/timeline/timeline.component.css',
-    note: '32rem raster collapse, predates the tier table; A1 slice 2 moves it to 30rem',
-  },
-  {
-    file: 'projects/common/timeline/timeline-item.component.css',
-    note: 'queries the same 32rem as its ui/timeline host; migrates with it in A1 slice 2',
-  },
-  {
-    file: 'projects/ui/paginator/paginator.component.css',
-    note: '24rem number-row swap sits between xs and sm; A1 slice 2 decides which rung',
-  },
-];
+const TIER_EXCEPTIONS: ReadonlyArray<{ file: string; note: string }> = [];
 
 /** `@media` rules carrying a width condition on in-flow layout. */
-const VIEWPORT_MEDIA_ALLOWED: ReadonlyArray<{ file: string; note: string }> = [
-  {
-    file: 'projects/data-display/treetable/treetable.component.css',
-    note: '960px indent narrowing, in-flow and viewport-driven; A1 slice 2 converts it to @container cngx-treetable',
-  },
-];
+const VIEWPORT_MEDIA_ALLOWED: ReadonlyArray<{ file: string; note: string }> = [];
 
 const tierExceptionFiles = new Set(TIER_EXCEPTIONS.map((entry) => entry.file));
 const viewportAllowedFiles = new Set(VIEWPORT_MEDIA_ALLOWED.map((entry) => entry.file));
@@ -176,22 +154,9 @@ describe('container-query contract', () => {
 });
 
 describe('container-query exception ratchet', () => {
-  it.each(TIER_EXCEPTIONS)('$file still carries the off-tier query ($note)', ({ file }) => {
-    const entry = scanned.find((candidate) => candidate.file === file);
-    expect(entry, `${file} is enrolled but not scanned`).toBeDefined();
-    expect(
-      entry?.result.containerQueries.some((query) => query.offTierLengths.length > 0),
-      `${file} no longer has an off-tier @container length - drop it from TIER_EXCEPTIONS`,
-    ).toBe(true);
-  });
-
-  it.each(VIEWPORT_MEDIA_ALLOWED)('$file still carries the width media ($note)', ({ file }) => {
-    const entry = scanned.find((candidate) => candidate.file === file);
-    expect(entry, `${file} is enrolled but not scanned`).toBeDefined();
-    expect(
-      entry?.result.viewportMedia.length,
-      `${file} no longer has a width @media - drop it from VIEWPORT_MEDIA_ALLOWED`,
-    ).toBeGreaterThan(0);
+  it('carries no exceptions - adding one is a conscious edit', () => {
+    expect(TIER_EXCEPTIONS).toEqual([]);
+    expect(VIEWPORT_MEDIA_ALLOWED).toEqual([]);
   });
 });
 

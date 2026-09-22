@@ -115,6 +115,31 @@ describe('createContainerSize', () => {
     expect(size.property('--wide')).not.toBe(size.property('--wide', child));
   });
 
+  it('reads a pseudo-element of the container when asked', () => {
+    const container = document.createElement('div');
+    const spy = vi
+      .spyOn(window, 'getComputedStyle')
+      .mockReturnValue({ getPropertyValue: () => '1' } as unknown as CSSStyleDeclaration);
+
+    const size = makeContainerSize(container);
+    roMock.triggerResize(makeEntry(900));
+    size.property('--narrow', container, '::after')();
+
+    expect(spy).toHaveBeenCalledWith(container, '::after');
+  });
+
+  it('keeps separate signals for a pseudo-element and the element itself', () => {
+    const size = makeContainerSize();
+    expect(size.property('--narrow')).not.toBe(size.property('--narrow', undefined, '::after'));
+  });
+
+  it('returns the same signal for the same target, pseudo and name', () => {
+    const size = makeContainerSize();
+    expect(size.property('--narrow', undefined, '::after')).toBe(
+      size.property('--narrow', undefined, '::after'),
+    );
+  });
+
   it('reads the property on the passed descendant, not on the container', () => {
     const container = document.createElement('div');
     const child = document.createElement('span');
@@ -126,7 +151,7 @@ describe('createContainerSize', () => {
     roMock.triggerResize(makeEntry(900));
     size.property('--wide', child)();
 
-    expect(spy).toHaveBeenCalledWith(child);
+    expect(spy).toHaveBeenCalledWith(child, null);
   });
 });
 
