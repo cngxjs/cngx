@@ -35,6 +35,15 @@ describe('withAriaLabels', () => {
     expect(config.ariaLabels.statusRefreshing).toBe('Refreshing options');
     expect(config.ariaLabels.fieldLabelFallback).toBe('Selection');
     expect(config.ariaLabels.commitFailedMessage).toBe('Save failed');
+    expect(config.ariaLabels.listboxFallback).toBe('Options');
+  });
+
+  it('carries a listboxFallback override into the resolved config', () => {
+    const config = resolveIn([
+      provideSelectConfig(withAriaLabels({ listboxFallback: 'Auswahlmöglichkeiten' })),
+    ]);
+    expect(config.ariaLabels.listboxFallback).toBe('Auswahlmöglichkeiten');
+    expect(config.ariaLabels.searchInput).toBe('Search options');
   });
 
   it('populates ariaLabels from withAriaLabels feature', () => {

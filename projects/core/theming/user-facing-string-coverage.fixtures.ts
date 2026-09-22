@@ -90,79 +90,6 @@ export const RATCHET: readonly StringManifestEntry[] = [
     note: 'loading - live-region text while the card loads',
   },
 
-  // @cngx/forms - the select last-resort listbox name plus the phone-input
-  // country table. Target: the existing CNGX_SELECT_CONFIG ariaLabels bundle
-  // and a country-label hook on the phone-input config.
-  {
-    file: 'projects/forms/select/shared/internal/select-core.ts',
-    value: 'Options',
-    note: 'listboxFallback - last-resort panel name when no label or placeholder is set',
-  },
-  {
-    file: 'projects/forms/input/phone-input/countries.ts',
-    value: 'United States',
-    note: 'phone-input country label - the dial-code table ships EN names with no hook',
-  },
-  {
-    file: 'projects/forms/input/phone-input/countries.ts',
-    value: 'United Kingdom',
-    note: 'phone-input country label - the dial-code table ships EN names with no hook',
-  },
-  {
-    file: 'projects/forms/input/phone-input/countries.ts',
-    value: 'Germany',
-    note: 'phone-input country label - the dial-code table ships EN names with no hook',
-  },
-  {
-    file: 'projects/forms/input/phone-input/countries.ts',
-    value: 'Austria',
-    note: 'phone-input country label - the dial-code table ships EN names with no hook',
-  },
-  {
-    file: 'projects/forms/input/phone-input/countries.ts',
-    value: 'Switzerland',
-    note: 'phone-input country label - the dial-code table ships EN names with no hook',
-  },
-  {
-    file: 'projects/forms/input/phone-input/countries.ts',
-    value: 'France',
-    note: 'phone-input country label - the dial-code table ships EN names with no hook',
-  },
-  {
-    file: 'projects/forms/input/phone-input/countries.ts',
-    value: 'Italy',
-    note: 'phone-input country label - the dial-code table ships EN names with no hook',
-  },
-  {
-    file: 'projects/forms/input/phone-input/countries.ts',
-    value: 'Spain',
-    note: 'phone-input country label - the dial-code table ships EN names with no hook',
-  },
-  {
-    file: 'projects/forms/input/phone-input/countries.ts',
-    value: 'Slovenia',
-    note: 'phone-input country label - the dial-code table ships EN names with no hook',
-  },
-  {
-    file: 'projects/forms/input/phone-input/countries.ts',
-    value: 'Croatia',
-    note: 'phone-input country label - the dial-code table ships EN names with no hook',
-  },
-  {
-    file: 'projects/forms/input/phone-input/countries.ts',
-    value: 'Poland',
-    note: 'phone-input country label - the dial-code table ships EN names with no hook',
-  },
-  {
-    file: 'projects/forms/input/phone-input/countries.ts',
-    value: 'Japan',
-    note: 'phone-input country label - the dial-code table ships EN names with no hook',
-  },
-  {
-    file: 'projects/forms/input/phone-input/countries.ts',
-    value: 'Brazil',
-    note: 'phone-input country label - the dial-code table ships EN names with no hook',
-  },
 ];
 
 /**
@@ -172,6 +99,71 @@ export const RATCHET: readonly StringManifestEntry[] = [
  * Not a parking lot: every row names the token that overrides it.
  */
 export const ALREADY_COVERED: readonly StringManifestEntry[] = [
+  {
+    file: 'projects/forms/input/phone-input/countries.ts',
+    value: 'United States',
+    note: 'default row of CNGX_PHONE_COUNTRIES, replaced wholesale via CngxPhoneInput [countries]',
+  },
+  {
+    file: 'projects/forms/input/phone-input/countries.ts',
+    value: 'United Kingdom',
+    note: 'default row of CNGX_PHONE_COUNTRIES, replaced wholesale via CngxPhoneInput [countries]',
+  },
+  {
+    file: 'projects/forms/input/phone-input/countries.ts',
+    value: 'Germany',
+    note: 'default row of CNGX_PHONE_COUNTRIES, replaced wholesale via CngxPhoneInput [countries]',
+  },
+  {
+    file: 'projects/forms/input/phone-input/countries.ts',
+    value: 'Austria',
+    note: 'default row of CNGX_PHONE_COUNTRIES, replaced wholesale via CngxPhoneInput [countries]',
+  },
+  {
+    file: 'projects/forms/input/phone-input/countries.ts',
+    value: 'Switzerland',
+    note: 'default row of CNGX_PHONE_COUNTRIES, replaced wholesale via CngxPhoneInput [countries]',
+  },
+  {
+    file: 'projects/forms/input/phone-input/countries.ts',
+    value: 'France',
+    note: 'default row of CNGX_PHONE_COUNTRIES, replaced wholesale via CngxPhoneInput [countries]',
+  },
+  {
+    file: 'projects/forms/input/phone-input/countries.ts',
+    value: 'Italy',
+    note: 'default row of CNGX_PHONE_COUNTRIES, replaced wholesale via CngxPhoneInput [countries]',
+  },
+  {
+    file: 'projects/forms/input/phone-input/countries.ts',
+    value: 'Spain',
+    note: 'default row of CNGX_PHONE_COUNTRIES, replaced wholesale via CngxPhoneInput [countries]',
+  },
+  {
+    file: 'projects/forms/input/phone-input/countries.ts',
+    value: 'Slovenia',
+    note: 'default row of CNGX_PHONE_COUNTRIES, replaced wholesale via CngxPhoneInput [countries]',
+  },
+  {
+    file: 'projects/forms/input/phone-input/countries.ts',
+    value: 'Croatia',
+    note: 'default row of CNGX_PHONE_COUNTRIES, replaced wholesale via CngxPhoneInput [countries]',
+  },
+  {
+    file: 'projects/forms/input/phone-input/countries.ts',
+    value: 'Poland',
+    note: 'default row of CNGX_PHONE_COUNTRIES, replaced wholesale via CngxPhoneInput [countries]',
+  },
+  {
+    file: 'projects/forms/input/phone-input/countries.ts',
+    value: 'Japan',
+    note: 'default row of CNGX_PHONE_COUNTRIES, replaced wholesale via CngxPhoneInput [countries]',
+  },
+  {
+    file: 'projects/forms/input/phone-input/countries.ts',
+    value: 'Brazil',
+    note: 'default row of CNGX_PHONE_COUNTRIES, replaced wholesale via CngxPhoneInput [countries]',
+  },
   {
     file: 'projects/ui/action-button/action-button.ts',
     value: 'Action succeeded',
