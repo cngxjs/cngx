@@ -6,7 +6,7 @@ import { gotoDemo } from '../../_helpers';
 
 test.describe('common/interactive/menu-submenu', () => {
   test('two-level: opening File reveals Open Recent submenu', async ({ page }) => {
-    await gotoDemo(page, 'common/interactive/menu-submenu/two-level-submenu');
+    await gotoDemo(page, 'common/interactive/menu/submenu/two-level-submenu');
 
     const fileBtn = page.getByRole('button', { name: 'File' });
     await fileBtn.click();

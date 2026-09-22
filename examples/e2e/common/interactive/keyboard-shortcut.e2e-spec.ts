@@ -9,7 +9,7 @@ test.describe('common/interactive/keyboard-shortcut', () => {
   test('global: Ctrl+K bumps the counter, but only when focus is outside input', async ({
     page,
   }) => {
-    await gotoDemo(page, 'common/interactive/keyboard-shortcut/global-shortcut');
+    await gotoDemo(page, 'common/interactive/gestures/keyboard-shortcut/global-shortcut');
 
     const counter = page
       .locator('.event-row')
@@ -30,7 +30,7 @@ test.describe('common/interactive/keyboard-shortcut', () => {
   });
 
   test('self-scoped: Escape fires only after focusing the dashed box', async ({ page }) => {
-    await gotoDemo(page, 'common/interactive/keyboard-shortcut/self-scoped-shortcut');
+    await gotoDemo(page, 'common/interactive/gestures/keyboard-shortcut/self-scoped-shortcut');
 
     const counter = page
       .locator('.event-row')

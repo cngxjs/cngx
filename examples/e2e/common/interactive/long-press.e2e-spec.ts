@@ -7,7 +7,7 @@ import { gotoDemo } from '../../_helpers';
 
 test.describe('common/interactive/long-press', () => {
   test('visual-feedback: holding past the threshold fires longPressed', async ({ page }) => {
-    await gotoDemo(page, 'common/interactive/long-press/long-press-with-visual-feedback');
+    await gotoDemo(page, 'common/interactive/gestures/long-press/long-press-with-visual-feedback');
 
     const target = page.locator('div[cngxlongpress]').first().or(
       page.locator('div').filter({ hasText: 'Long press me' }),
@@ -34,7 +34,7 @@ test.describe('common/interactive/long-press', () => {
   });
 
   test('custom-threshold: 1-second hold flips button text mid-press', async ({ page }) => {
-    await gotoDemo(page, 'common/interactive/long-press/custom-threshold');
+    await gotoDemo(page, 'common/interactive/gestures/long-press/custom-threshold');
 
     const button = page.getByRole('button', { name: /Long press to delete/ });
     await expect(button).toBeVisible();

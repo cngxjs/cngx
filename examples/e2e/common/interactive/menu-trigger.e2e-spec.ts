@@ -6,7 +6,7 @@ import { gotoDemo } from '../../_helpers';
 
 test.describe('common/interactive/menu-trigger', () => {
   test('dropdown-menu: click opens, ArrowDown navigates, Enter activates', async ({ page }) => {
-    await gotoDemo(page, 'common/interactive/menu-trigger/dropdown-menu');
+    await gotoDemo(page, 'common/interactive/menu/trigger/dropdown-menu');
 
     const trigger = page.getByRole('button', { name: 'Actions' });
     await expect(trigger).toHaveAttribute('aria-haspopup', 'menu');

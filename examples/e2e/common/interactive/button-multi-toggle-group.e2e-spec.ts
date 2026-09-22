@@ -8,7 +8,7 @@ import { gotoDemo } from '../../_helpers';
 
 test.describe('common/interactive/button-multi-toggle-group', () => {
   test('basic: click toggles selection, aria-selected mirrors each leaf', async ({ page }) => {
-    await gotoDemo(page, 'common/interactive/button-multi-toggle-group/basic-multi-filter-toolbar');
+    await gotoDemo(page, 'common/interactive/button-toggle/multi-group/basic-multi-filter-toolbar');
 
     const open = page.getByRole('button', { name: 'Open', exact: true });
     const closed = page.getByRole('button', { name: 'Closed', exact: true });
@@ -37,7 +37,7 @@ test.describe('common/interactive/button-multi-toggle-group', () => {
   test('disabled: group cascade vs per-toggle disabled', async ({ page }) => {
     await gotoDemo(
       page,
-      'common/interactive/button-multi-toggle-group/disabled-group-cascade-vs-per-toggle',
+      'common/interactive/button-toggle/multi-group/disabled-group-cascade-vs-per-toggle',
     );
 
     const archived = page.getByRole('button', { name: 'Archived (locked)' });

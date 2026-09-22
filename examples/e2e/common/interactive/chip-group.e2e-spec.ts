@@ -9,7 +9,7 @@ test.describe('common/interactive/chip-group', () => {
   test('basic: click selects, re-click deselects, only one aria-selected at a time', async ({
     page,
   }) => {
-    await gotoDemo(page, 'common/interactive/chip-group/basic-pick-exactly-one-size');
+    await gotoDemo(page, 'common/interactive/chip/group/basic-pick-exactly-one-size');
 
     const sm = page.locator('cngx-chip[cngxchipingroup]').filter({ hasText: 'SM' });
     const md = page.locator('cngx-chip[cngxchipingroup]').filter({ hasText: 'MD' });

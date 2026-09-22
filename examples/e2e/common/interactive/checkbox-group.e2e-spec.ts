@@ -11,7 +11,7 @@ test.describe('common/interactive/checkbox-group', () => {
   }) => {
     await gotoDemo(
       page,
-      'common/interactive/checkbox-group/basic-select-all-master-projected-leaves',
+      'common/interactive/checkbox/group/basic-select-all-master-projected-leaves',
     );
 
     const master = page.locator('cngx-checkbox').filter({ hasText: 'Select all' });
@@ -47,7 +47,7 @@ test.describe('common/interactive/checkbox-group', () => {
   });
 
   test('disabled cascade: group [disabled] reflects on every leaf', async ({ page }) => {
-    await gotoDemo(page, 'common/interactive/checkbox-group/disabled-cascade');
+    await gotoDemo(page, 'common/interactive/checkbox/group/disabled-cascade');
 
     const leaves = page.locator('cngx-checkbox-group cngx-checkbox');
     const firstLeaf = leaves.first();

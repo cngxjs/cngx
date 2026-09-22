@@ -7,7 +7,7 @@ import { gotoDemo } from '../../_helpers';
 
 test.describe('common/interactive/chip-input', () => {
   test('synchronous-tokenization: Enter creates token, Backspace pops last', async ({ page }) => {
-    await gotoDemo(page, 'common/interactive/chip-input/synchronous-tokenization');
+    await gotoDemo(page, 'common/interactive/chip/input/synchronous-tokenization');
 
     const input = page.getByPlaceholder('Type a tag and press Enter');
     const caption = page.locator('p.caption').filter({ hasText: 'tokens:' });

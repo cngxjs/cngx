@@ -8,7 +8,7 @@ test.describe('common/interactive/click-outside', () => {
   test('dropdown: clicking outside closes; clicking the inner button does not', async ({
     page,
   }) => {
-    await gotoDemo(page, 'common/interactive/click-outside/dropdown');
+    await gotoDemo(page, 'common/interactive/gestures/click-outside/dropdown');
 
     const toggle = page.getByRole('button', { name: /Toggle dropdown/ });
     const status = page.locator('.output-badge');
@@ -34,7 +34,7 @@ test.describe('common/interactive/click-outside', () => {
   test('enabled-toggle: outside clicks bump the counter; disabled stops emissions', async ({
     page,
   }) => {
-    await gotoDemo(page, 'common/interactive/click-outside/enabled-toggle');
+    await gotoDemo(page, 'common/interactive/gestures/click-outside/enabled-toggle');
 
     const badge = page.locator('.output-badge').filter({ hasText: 'Outside clicks' });
     const counter = badge.locator('strong');

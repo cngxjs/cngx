@@ -6,7 +6,7 @@ import { gotoDemo } from '../../_helpers';
 
 test.describe('common/interactive/swipe-dismiss', () => {
   test('directional-swipe: drag past 60px threshold increments swipe counter', async ({ page }) => {
-    await gotoDemo(page, 'common/interactive/swipe-dismiss/directional-swipe');
+    await gotoDemo(page, 'common/interactive/gestures/swipe-dismiss/directional-swipe');
 
     // Angular strips the directive attribute. The host div is the one whose
     // inner <p> contains "Swipe left".

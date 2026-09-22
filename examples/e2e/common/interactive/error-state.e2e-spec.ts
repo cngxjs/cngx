@@ -9,7 +9,7 @@ test.describe('common/interactive/error-state', () => {
   test('basic: toggle flips aria-invalid and surfaces aria-errormessage', async ({ page }) => {
     await gotoDemo(
       page,
-      'common/interactive/error-state/basic-boolean-flag-flips-aria-invalid-aria-errormessage',
+      'common/interactive/error/state/basic-boolean-flag-flips-aria-invalid-aria-errormessage',
     );
 
     const input = page.getByPlaceholder('user@example.com');
@@ -37,7 +37,7 @@ test.describe('common/interactive/error-state', () => {
   test('without-message-id: class hook and aria-invalid alone', async ({ page }) => {
     await gotoDemo(
       page,
-      'common/interactive/error-state/without-message-id-class-hook-aria-invalid-only',
+      'common/interactive/error/state/without-message-id-class-hook-aria-invalid-only',
     );
 
     // Angular strips the structural-directive attribute; locate by type.

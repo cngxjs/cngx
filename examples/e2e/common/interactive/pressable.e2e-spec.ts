@@ -6,7 +6,7 @@ import { gotoDemo } from '../../_helpers';
 
 test.describe('common/interactive/pressable', () => {
   test('press-feedback: pressed() flips for the active button only', async ({ page }) => {
-    await gotoDemo(page, 'common/interactive/pressable/press-feedback-on-buttons');
+    await gotoDemo(page, 'common/interactive/gestures/pressable/press-feedback-on-buttons');
 
     const btn1 = page.getByRole('button', { name: 'Scale Down' });
     const row1 = page
@@ -31,7 +31,7 @@ test.describe('common/interactive/pressable', () => {
   });
 
   test('tappable-card: card-shaped host responds to press', async ({ page }) => {
-    await gotoDemo(page, 'common/interactive/pressable/tappable-card');
+    await gotoDemo(page, 'common/interactive/gestures/pressable/tappable-card');
 
     const card = page.locator('[cngxpressable]').first().or(page.locator('.cngx-pressable').first());
     await expect(card).toBeVisible();

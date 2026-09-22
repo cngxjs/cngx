@@ -6,7 +6,7 @@ import { gotoDemo } from '../../_helpers';
 
 test.describe('common/interactive/button-toggle-group', () => {
   test('basic view-switcher: only one toggle is aria-checked at a time', async ({ page }) => {
-    await gotoDemo(page, 'common/interactive/button-toggle-group/basic-view-switcher');
+    await gotoDemo(page, 'common/interactive/button-toggle/group/basic-view-switcher');
 
     const grid = page.getByRole('button', { name: 'Grid' });
     const list = page.getByRole('button', { name: 'List' });
@@ -31,7 +31,7 @@ test.describe('common/interactive/button-toggle-group', () => {
   }) => {
     await gotoDemo(
       page,
-      'common/interactive/button-toggle-group/disabled-group-cascade-vs-per-toggle',
+      'common/interactive/button-toggle/group/disabled-group-cascade-vs-per-toggle',
     );
     const toggles = page.locator('cngx-button-toggle-group button');
     const disableBtn = page.getByRole('button', { name: /Disable group|Enable group/ });
@@ -40,7 +40,7 @@ test.describe('common/interactive/button-toggle-group', () => {
   });
 
   test('vertical: orientation reflects on the host', async ({ page }) => {
-    await gotoDemo(page, 'common/interactive/button-toggle-group/vertical-orientation');
+    await gotoDemo(page, 'common/interactive/button-toggle/group/vertical-orientation');
     const toggles = page.locator('cngx-button-toggle-group button');
     expect(await toggles.count()).toBeGreaterThanOrEqual(2);
   });

@@ -9,7 +9,7 @@ test.describe('common/interactive/error-aggregator', () => {
   test('native form: errorCount reflects toggled sources', async ({ page }) => {
     await gotoDemo(
       page,
-      'common/interactive/error-aggregator/native-form-scope-reveal-on-submit',
+      'common/interactive/error/aggregator/native-form-scope-reveal-on-submit',
     );
 
     const stats = page.locator('pre').first();
@@ -27,17 +27,17 @@ test.describe('common/interactive/error-aggregator', () => {
   test('card host: aggregator no-scope variant shows errors immediately', async ({ page }) => {
     await gotoDemo(
       page,
-      'common/interactive/error-aggregator/cngx-card-host-no-scope-errors-visible-immediately',
+      'common/interactive/error/aggregator/cngx-card-host-no-scope-errors-visible-immediately',
     );
     // Smoke: page renders without errors.
     expect(await page.locator('cngx-card').count()).toBeGreaterThanOrEqual(0);
   });
 
   test('popover-panel-host: aggregator embedded in a popover renders', async ({ page }) => {
-    await gotoDemo(page, 'common/interactive/error-aggregator/cngx-popover-panel-host');
+    await gotoDemo(page, 'common/interactive/error/aggregator/cngx-popover-panel-host');
   });
 
   test('material-mat-tab: tab label shows error count badge', async ({ page }) => {
-    await gotoDemo(page, 'common/interactive/error-aggregator/material-mat-tab-label-with-error-count-badge');
+    await gotoDemo(page, 'common/interactive/error/aggregator/material-mat-tab-label-with-error-count-badge');
   });
 });
