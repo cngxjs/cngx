@@ -122,14 +122,26 @@ export function withFeedbackI18nLabels(overrides: CngxFeedbackI18nOverrides): Fe
  * value, so routing a translation through it would reset unrelated feedback
  * defaults the app set elsewhere.
  *
+ * @example
  * ```ts
- * export const DE_LOCALE: Provider[] = [
- *   provideFeedbackI18n({ alertsRegionLabel: 'Hinweise', notificationsRegionLabel: 'Meldungen' }),
+ * // src/i18n/de.ts - the app's language file: every per-lib provider it uses,
+ * // composed in one const. See the "Localisation" core-concepts page for the
+ * // full recipe and the per-area entry points.
+ * export const DE: Provider[] = [
+ *   provideFeedbackI18n({
+ *     alertsRegionLabel: 'Hinweise',
+ *     notificationsRegionLabel: 'Meldungen',
+ *     announcements: { alertDismissed: 'Hinweis verworfen' },
+ *   }),
  *   provideTabsI18n(withTabsI18nLabels({ tabsLabel: 'Reiter' })),
+ *   provideCardI18n(withCardI18nLabels({ selected: 'Ausgewählt' })),
  * ];
+ *
+ * bootstrapApplication(App, { providers: [...DE] });
  * ```
  *
  * @category ui/feedback/i18n
+ * @since 0.1.0
  */
 export function provideFeedbackI18n(overrides: CngxFeedbackI18nOverrides): Provider {
   return {
