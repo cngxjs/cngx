@@ -3,14 +3,40 @@ import { inject, InjectionToken, type Provider } from '@angular/core';
 import type { FeedbackFeature } from './feedback-config';
 
 /**
+ * Live-region copy the feedback family announces on its own behalf. Separate
+ * from the region names: these describe a transition rather than naming a
+ * landmark, so they change on a different cadence and a consumer usually
+ * translates them as one block.
+ *
+ * @category ui/feedback/i18n
+ */
+export interface CngxFeedbackAnnouncements {
+  /** Announced when a user dismisses an alert. */
+  readonly alertDismissed: string;
+  /** Accessible name of the alert-stack overflow trigger. Receives the hidden count. */
+  readonly alertOverflow: (count: number) => string;
+  /** `idle -> loading` on `CngxAsyncContainer`. */
+  readonly asyncLoading: string;
+  /** `loading -> success`. */
+  readonly asyncLoaded: string;
+  /** `loading -> error`. */
+  readonly asyncError: string;
+  /** Entering `refreshing`. */
+  readonly asyncRefreshing: string;
+  /** `refreshing -> success`. */
+  readonly asyncRefreshed: string;
+  /** `refreshing -> error`. */
+  readonly asyncRefreshFailed: string;
+}
+
+/**
  * Feedback i18n surface. Library defaults are English; consumers override via
  * {@link withFeedbackI18nLabels} inside `provideFeedback()`, or with
  * {@link provideFeedbackI18n} when they compose their own language file.
  * Sibling to `CNGX_STEPPER_I18N`, `CNGX_TABS_I18N` and `CNGX_CHART_I18N`.
  *
- * Two keys, both region names: the alert stack and the toast outlet are the
- * only feedback surfaces that name a landmark. The banner outlet carries no
- * region `aria-label`, so it gets no key - a key with no Wirkungsort is
+ * Two region names and one announcement sub-bundle. The banner outlet carries
+ * no region `aria-label`, so it gets no key - a key with no Wirkungsort is
  * configuration for its own sake.
  *
  * @category ui/feedback/i18n
@@ -20,11 +46,33 @@ export interface CngxFeedbackI18n {
   readonly alertsRegionLabel: string;
   /** Accessible name of the `role="region"` host on `CngxToastOutlet`. */
   readonly notificationsRegionLabel: string;
+  /** Live-region copy - see {@link CngxFeedbackAnnouncements}. */
+  readonly announcements: CngxFeedbackAnnouncements;
 }
+
+/**
+ * Override shape: every top-level key optional, and `announcements` overridable
+ * key by key rather than all-or-nothing.
+ *
+ * @category ui/feedback/i18n
+ */
+export type CngxFeedbackI18nOverrides = Partial<Omit<CngxFeedbackI18n, 'announcements'>> & {
+  readonly announcements?: Partial<CngxFeedbackAnnouncements>;
+};
 
 const FEEDBACK_I18N_DEFAULTS: CngxFeedbackI18n = {
   alertsRegionLabel: 'Alerts',
   notificationsRegionLabel: 'Notifications',
+  announcements: {
+    alertDismissed: 'Alert dismissed',
+    alertOverflow: (count) => `Show ${count} more alerts`,
+    asyncLoading: 'Loading content',
+    asyncLoaded: 'Content loaded',
+    asyncError: 'Error loading content',
+    asyncRefreshing: 'Refreshing content',
+    asyncRefreshed: 'Content refreshed',
+    asyncRefreshFailed: 'Refresh failed',
+  },
 };
 
 /**
@@ -60,7 +108,7 @@ export const CNGX_FEEDBACK_I18N = new InjectionToken<CngxFeedbackI18n>('CngxFeed
  *
  * @category ui/feedback/i18n
  */
-export function withFeedbackI18nLabels(overrides: Partial<CngxFeedbackI18n>): FeedbackFeature {
+export function withFeedbackI18nLabels(overrides: CngxFeedbackI18nOverrides): FeedbackFeature {
   return {
     _apply: (config) => config,
     _providers: [provideFeedbackI18n(overrides)],
@@ -83,10 +131,17 @@ export function withFeedbackI18nLabels(overrides: Partial<CngxFeedbackI18n>): Fe
  *
  * @category ui/feedback/i18n
  */
-export function provideFeedbackI18n(overrides: Partial<CngxFeedbackI18n>): Provider {
+export function provideFeedbackI18n(overrides: CngxFeedbackI18nOverrides): Provider {
   return {
     provide: CNGX_FEEDBACK_I18N,
-    useValue: { ...FEEDBACK_I18N_DEFAULTS, ...overrides },
+    useValue: {
+      ...FEEDBACK_I18N_DEFAULTS,
+      ...overrides,
+      announcements: {
+        ...FEEDBACK_I18N_DEFAULTS.announcements,
+        ...overrides.announcements,
+      },
+    },
   };
 }
 

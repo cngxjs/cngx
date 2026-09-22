@@ -68,16 +68,37 @@ describe('CNGX_FEEDBACK_I18N', () => {
       providers: [provideFeedbackI18n({ alertsRegionLabel: 'Hinweise' })],
     });
     const bundle = TestBed.runInInjectionContext(() => injectFeedbackI18n());
-    expect(bundle).toEqual({
-      alertsRegionLabel: 'Hinweise',
-      notificationsRegionLabel: 'Notifications',
-    });
+    expect(bundle.alertsRegionLabel).toBe('Hinweise');
+    expect(bundle.notificationsRegionLabel).toBe('Notifications');
   });
 
   it('resolves the token without a provider', () => {
-    expect(TestBed.inject(CNGX_FEEDBACK_I18N)).toEqual({
-      alertsRegionLabel: 'Alerts',
-      notificationsRegionLabel: 'Notifications',
+    const bundle = TestBed.inject(CNGX_FEEDBACK_I18N);
+    expect(bundle.alertsRegionLabel).toBe('Alerts');
+    expect(bundle.notificationsRegionLabel).toBe('Notifications');
+    expect(bundle.announcements.asyncLoading).toBe('Loading content');
+  });
+
+  it('merges an announcements override key by key', () => {
+    TestBed.configureTestingModule({
+      providers: [provideFeedbackI18n({ announcements: { asyncLoaded: 'Inhalt geladen' } })],
     });
+    const { announcements } = TestBed.inject(CNGX_FEEDBACK_I18N);
+    expect(announcements.asyncLoaded).toBe('Inhalt geladen');
+    expect(announcements.asyncLoading).toBe('Loading content');
+    expect(announcements.alertOverflow(3)).toBe('Show 3 more alerts');
+  });
+
+  it('announces the overridden async phrases and alert dismissal', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideFeedbackI18n({
+          announcements: { alertDismissed: 'Hinweis verworfen', alertOverflow: (n) => `${n} weitere` },
+        }),
+      ],
+    });
+    const { announcements } = TestBed.inject(CNGX_FEEDBACK_I18N);
+    expect(announcements.alertDismissed).toBe('Hinweis verworfen');
+    expect(announcements.alertOverflow(2)).toBe('2 weitere');
   });
 });

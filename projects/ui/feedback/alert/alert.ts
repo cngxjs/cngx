@@ -20,6 +20,7 @@ import { createMediaQuerySignal, type CngxAsyncState } from '@cngx/core/utils';
 import { CngxCloseButton } from '@cngx/common/interactive';
 
 import { CNGX_FEEDBACK_CONFIG } from '../config/feedback-config';
+import { injectFeedbackI18n } from '../config/feedback-i18n';
 import { CngxSeverityIcon } from '../config/severity-icon';
 import { createPausableTimer } from '../internal/pausable-timer';
 import { createStateBridge } from '../internal/state-bridge';
@@ -180,6 +181,7 @@ export class CngxAlertAction {}
 })
 export class CngxAlert {
   private readonly config = inject(CNGX_FEEDBACK_CONFIG, { optional: true });
+  private readonly announcements = injectFeedbackI18n().announcements;
   private readonly destroyRef = inject(DestroyRef);
 
   /** Alert severity - determines visual style, default icon, and ARIA role. */
@@ -440,7 +442,7 @@ export class CngxAlert {
     this.manualDismissed.set(true);
     this.autoDismissTimer.clear();
     this.collapseTimer.clear();
-    this.announcementState.set('Alert dismissed');
+    this.announcementState.set(this.announcements.alertDismissed);
     this.dismissed.emit();
   }
 

@@ -81,6 +81,7 @@ describe('CngxAlertStack', () => {
     const overflow = stackEl.querySelector('.cngx-alert-stack__overflow');
     expect(overflow).toBeTruthy();
     expect(overflow?.textContent).toContain('2 more');
+    expect(overflow?.getAttribute('aria-label')).toBe('Show 2 more alerts');
   });
 
   it('expands all alerts when overflow button is clicked', () => {
