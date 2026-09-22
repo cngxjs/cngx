@@ -105,6 +105,18 @@ const FORCED_COLORS_HARDENED_HOSTS: readonly string[] = [
   // with Highlight. Triggers/panels self-heal via their solid borders.
   'projects/forms/select/shared/select-base.css',
   'projects/forms/select/tree-select/tree-select-panel.component.css',
+  // @cngx/forms/select field skins - the fill/bare trigger trades the focus
+  // outline for an inset box-shadow underline, which WHCM strips; each block
+  // restores the outline and redraws the edge in a system colour.
+  'projects/forms/select/single-select/select.component.css',
+  'projects/forms/select/multi-select/multi-select.component.css',
+  'projects/forms/select/combobox/combobox.component.css',
+  'projects/forms/select/typeahead/typeahead.component.css',
+  'projects/forms/select/tree-select/tree-select.component.css',
+  'projects/forms/select/action-select/action-select.component.css',
+  'projects/forms/select/action-multi-select/action-multi-select.component.css',
+  'projects/forms/select/reorderable-multi-select/reorderable-multi-select.component.css',
+  'projects/forms/select/select-shell/select-shell.component.css',
   // @cngx/forms/field - the fill and bare skins replace the focus outline with
   // an inset box-shadow underline, which WHCM strips entirely; the block
   // restores the reset outline and redraws the edge in FieldText.
@@ -162,30 +174,6 @@ const EXCLUDED_HOSTS: ReadonlyArray<{ file: string; note: string }> = [
   // halo on the invalid trigger with `box-shadow`, forced to `none` under WHCM.
   // The trigger keeps a self-healing 1px danger border plus its outline focus
   // ring, so the glow loss leaves a visible boundary - no re-draw needed.
-  {
-    file: 'projects/forms/select/single-select/select.component.css',
-    note: 'the box-shadow is a decorative invalid-trigger glow halo; the invalid trigger keeps a self-healing 1px danger border and outline focus ring',
-  },
-  {
-    file: 'projects/forms/select/combobox/combobox.component.css',
-    note: 'the box-shadow is a decorative invalid-trigger glow halo; the invalid trigger keeps a self-healing 1px danger border and outline focus ring',
-  },
-  {
-    file: 'projects/forms/select/multi-select/multi-select.component.css',
-    note: 'the box-shadow is a decorative invalid-trigger glow halo; the invalid trigger keeps a self-healing 1px danger border and outline focus ring',
-  },
-  {
-    file: 'projects/forms/select/typeahead/typeahead.component.css',
-    note: 'the box-shadow is a decorative invalid-trigger glow halo; the invalid trigger keeps a self-healing 1px danger border and outline focus ring',
-  },
-  {
-    file: 'projects/forms/select/reorderable-multi-select/reorderable-multi-select.component.css',
-    note: 'the box-shadow is a decorative invalid-trigger glow halo; the invalid trigger keeps a self-healing 1px danger border and outline focus ring',
-  },
-  {
-    file: 'projects/forms/select/tree-select/tree-select.component.css',
-    note: 'the box-shadow is a decorative invalid-trigger glow halo; the invalid trigger keeps a self-healing 1px danger border and outline focus ring',
-  },
   // @cngx/ui (Phase D) - box-shadow hosts whose boundary survives WHCM another
   // way, so a re-draw would be redundant (Success-Kriterium: 0 redundant blocks).
   {
@@ -270,7 +258,7 @@ describe('forced-colors hardened-hosts manifest', () => {
   });
 
   it('fixes the manifest size so a bulk edit dropping several hosts is caught', () => {
-    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(29);
+    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(38);
   });
 });
 
