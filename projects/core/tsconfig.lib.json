@@ -14,5 +14,5 @@
     }
   },
   "include": ["*.ts", "tokens/**/*.ts", "utils/**/*.ts", "theming/**/*.ts", "bidi/**/*.ts", "nav/**/*.ts"],
-  "exclude": ["**/*.spec.ts"]
+  "exclude": ["**/*.spec.ts", "**/*.fixtures.ts"]
 }

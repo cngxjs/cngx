@@ -13,6 +13,7 @@
     "utils/**/*.spec.ts",
     "tokens/**/*.spec.ts",
     "theming/**/*.spec.ts",
+    "theming/**/*.fixtures.ts",
     "bidi/**/*.spec.ts",
     "nav/**/*.spec.ts"
   ]
