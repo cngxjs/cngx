@@ -38,6 +38,7 @@ import { CngxPopover, CngxPopoverTrigger, type PopoverPlacement } from '@cngx/co
 
 import {
   CNGX_FORM_FIELD_CONTROL,
+  CngxFieldSkinHost,
   CngxFormFieldPresenter,
   type CngxFormFieldControl,
 } from '@cngx/forms/field';
@@ -180,6 +181,7 @@ export interface CngxSelectShellChange<T = unknown> {
     { provide: CNGX_OPTION_INTERACTION_HOST, useExisting: CngxSelectShell },
     { provide: CNGX_SELECT_SHELL_SEARCH_HOST, useExisting: CngxSelectShell },
   ],
+  hostDirectives: [{ directive: CngxFieldSkinHost, inputs: ['cngxFieldSkin: skin'] }],
   host: {
     class: 'cngx-select-shell',
     '[id]': 'resolvedId()',

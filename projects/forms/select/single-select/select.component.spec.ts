@@ -13,6 +13,7 @@ import { createMockField, type MockFieldRef } from '@cngx/forms/field/testing';
 import { createManualState, type ManualAsyncState } from '@cngx/common/data';
 
 import { describeCommitControllerCascade } from '../shared/__test-helpers/commit-controller-cascade';
+import { describeFieldSkinHost } from '../shared/__test-helpers/field-skin-host';
 import { CngxSelect, type CngxSelectChange } from './select.component';
 import { injectSelectConfig, injectSelectAnnouncer } from '../shared/inject-helpers';
 import { CngxSelectAnnouncer } from '../shared/announcer';
@@ -1333,3 +1334,7 @@ describe('CngxSelect listbox fallback label', () => {
 });
 
 describeCommitControllerCascade('CngxSelect');
+
+describeFieldSkinHost('CngxSelect', CngxSelect, 'cngx-select', () =>
+  createMockField({ name: 'pick' }).accessor,
+);

@@ -7,6 +7,7 @@ import { CngxFormField } from '@cngx/forms/field';
 import { createMockField, type MockFieldRef } from '@cngx/forms/field/testing';
 
 import { describeCommitControllerCascade } from '../shared/__test-helpers/commit-controller-cascade';
+import { describeFieldSkinHost } from '../shared/__test-helpers/field-skin-host';
 import { CngxTypeahead } from './typeahead.component';
 import type { CngxSelectOptionsInput } from '../shared/option.model';
 import type { CngxSelectCommitAction } from '../shared/commit-action.types';
@@ -518,3 +519,7 @@ describe('CngxTypeahead - glyph inputs + input prefix/suffix', () => {
 });
 
 describeCommitControllerCascade('CngxTypeahead');
+
+describeFieldSkinHost('CngxTypeahead', CngxTypeahead, 'cngx-typeahead', () =>
+  createMockField({ name: 'pick' }).accessor,
+);

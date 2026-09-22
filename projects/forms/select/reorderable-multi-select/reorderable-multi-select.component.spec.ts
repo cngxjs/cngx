@@ -4,6 +4,8 @@ import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { describeCommitControllerCascade } from '../shared/__test-helpers/commit-controller-cascade';
+import { createMockField } from '@cngx/forms/field/testing';
+import { describeFieldSkinHost } from '../shared/__test-helpers/field-skin-host';
 import {
   CngxReorderableMultiSelect,
   type CngxReorderableMultiSelectChange,
@@ -550,3 +552,7 @@ describe('CngxReorderableMultiSelect - panel Escape handling', () => {
 });
 
 describeCommitControllerCascade('CngxReorderableMultiSelect');
+
+describeFieldSkinHost('CngxReorderableMultiSelect', CngxReorderableMultiSelect, 'cngx-reorderable-multi-select', () =>
+  createMockField({ name: 'pick' }).accessor,
+);

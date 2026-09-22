@@ -26,6 +26,20 @@
  *
  * **Variants**
  *
+ * Appearance via `data-skin` on the component host, written by the
+ * composed `CngxFieldSkinHost`:
+ *
+ * - default (absent) - outline; the trigger keeps its own border
+ * - `data-skin='fill'` - tinted surface + bottom underline on the
+ *   trigger, thickening in the focus colour
+ * - `data-skin='bare'` - no border, no surface, underline only on focus
+ *
+ * The per-variant trigger rules live in each variant stylesheet and read
+ * the same four `--cngx-field-*` tokens as the input skins, so one
+ * `withFieldSkin(...)` covers the whole field family. A trigger that sits
+ * as a direct child of a skinned affix row keeps its outline chrome - the
+ * row is the box there.
+ *
  * Chip-list overflow modes via `data-overflow`:
  *
  * - default - flex-wrap chips across multiple rows

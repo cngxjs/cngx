@@ -32,6 +32,7 @@ import { CngxSelectPanel } from '../shared/internal/panel/panel.component';
 
 import {
   CNGX_FORM_FIELD_CONTROL,
+  CngxFieldSkinHost,
   CngxFormFieldPresenter,
   type CngxFormFieldControl,
 } from '@cngx/forms/field';
@@ -179,6 +180,7 @@ export interface CngxActionSelectChange<T = unknown> {
     { provide: CNGX_SELECT_PANEL_HOST, useExisting: CngxActionSelect },
     { provide: CNGX_SELECT_PANEL_VIEW_HOST, useExisting: CngxActionSelect },
   ],
+  hostDirectives: [{ directive: CngxFieldSkinHost, inputs: ['cngxFieldSkin: skin'] }],
   host: {
     class: 'cngx-action-select',
     '[id]': 'resolvedId()',

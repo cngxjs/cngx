@@ -6,6 +6,8 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { CngxSelectAction } from '../shared/template-slots';
 import { describeCommitControllerCascade } from '../shared/__test-helpers/commit-controller-cascade';
+import { createMockField } from '@cngx/forms/field/testing';
+import { describeFieldSkinHost } from '../shared/__test-helpers/field-skin-host';
 import {
   CngxActionMultiSelect,
   type CngxActionMultiSelectChange,
@@ -376,3 +378,7 @@ describe('CngxActionMultiSelect - dismiss guard', () => {
 });
 
 describeCommitControllerCascade('CngxActionMultiSelect');
+
+describeFieldSkinHost('CngxActionMultiSelect', CngxActionMultiSelect, 'cngx-action-multi-select', () =>
+  createMockField({ name: 'pick' }).accessor,
+);

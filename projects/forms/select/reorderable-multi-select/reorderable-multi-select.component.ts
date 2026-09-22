@@ -36,6 +36,7 @@ import { CngxSelectPanel } from '../shared/internal/panel/panel.component';
 
 import {
   CNGX_FORM_FIELD_CONTROL,
+  CngxFieldSkinHost,
   CngxFormFieldPresenter,
   type CngxFormFieldControl,
 } from '@cngx/forms/field';
@@ -176,6 +177,7 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
     { provide: CNGX_SELECT_PANEL_HOST, useExisting: CngxReorderableMultiSelect },
     { provide: CNGX_SELECT_PANEL_VIEW_HOST, useExisting: CngxReorderableMultiSelect },
   ],
+  hostDirectives: [{ directive: CngxFieldSkinHost, inputs: ['cngxFieldSkin: skin'] }],
   host: {
     class: 'cngx-reorderable-multi-select',
     '[id]': 'resolvedId()',
