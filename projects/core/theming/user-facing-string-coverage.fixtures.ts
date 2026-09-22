@@ -72,29 +72,8 @@ export const RATCHET: readonly StringManifestEntry[] = [
     note: 'asyncRefreshFailed - status announcement off the state bridge',
   },
 
-  // @cngx/common - dialog interaction strings (dialog-accepted-debt 2) and the
-  // card announcement phrases. Target: the CNGX_DIALOG_CONFIG labels bundle and
-  // a card i18n surface.
-  {
-    file: 'projects/common/dialog/dialog/dialog-close.directive.ts',
-    value: 'Close dialog',
-    note: 'closeLabel - implicit aria-label when the trigger carries no text',
-  },
-  {
-    file: 'projects/common/dialog/dialog/dialog.directive.ts',
-    value: 'An error occurred',
-    note: 'errorFallback - live-region text when the error carries no message',
-  },
-  {
-    file: 'projects/common/dialog/draggable/dialog-draggable.directive.ts',
-    value: 'Move dialog',
-    note: 'dragHandleLabel - aria-label set on the drag handle',
-  },
-  {
-    file: 'projects/common/dialog/draggable/dialog-draggable.directive.ts',
-    value: 'Use arrow keys to move the dialog; Shift for larger steps',
-    note: 'dragInstructions - the keyboard hint the handle is described by',
-  },
+  // @cngx/common - the dialog strings are closed (CNGX_DIALOG_CONFIG.labels).
+  // The card announcement phrases have no phase of their own yet.
   {
     file: 'projects/common/card/card.component.ts',
     value: 'Selected',
