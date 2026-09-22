@@ -5,6 +5,14 @@
 export type { EmptyReason } from './card.types';
 
 export { CngxCard } from './card.component';
+export {
+  CNGX_CARD_I18N,
+  type CngxCardI18n,
+  type CngxCardI18nFeature,
+  withCardI18nLabels,
+  provideCardI18n,
+  injectCardI18n,
+} from './i18n/card-i18n';
 export { CngxCardHeader } from './card-header.directive';
 export { CngxCardTitle } from './card-title.directive';
 export { CngxCardSubtitle } from './card-subtitle.directive';

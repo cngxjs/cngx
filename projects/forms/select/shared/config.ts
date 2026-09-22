@@ -140,6 +140,12 @@ export interface CngxSelectAriaLabels {
   readonly commitFailedMessage?: string;
   /** `<cngx-select-search>` input. Default `'Search options'`. */
   readonly searchInput?: string;
+  /**
+   * Last-resort accessible name for the panel listbox, used when the control
+   * has no label, no `aria-label` and no placeholder to borrow. Default
+   * `'Options'`.
+   */
+  readonly listboxFallback?: string;
 }
 
 /**
@@ -398,6 +404,7 @@ export const CNGX_SELECT_DEFAULTS: Required<
     fieldLabelFallback: 'Selection',
     commitFailedMessage: 'Save failed',
     searchInput: 'Search options',
+    listboxFallback: 'Options',
   },
   fallbackLabels: {
     loading: 'Loading…',

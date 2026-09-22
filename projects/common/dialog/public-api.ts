@@ -8,6 +8,16 @@ export { CngxDialogDescription } from './dialog/dialog-description.directive';
 export { CngxDialogClose } from './dialog/dialog-close.directive';
 export { CngxDialogStack, provideDialogStack } from './dialog/dialog-stack';
 export { CNGX_DIALOG_DATA, type CngxDialogConfig } from './dialog/dialog-config';
+export {
+  CNGX_DIALOG_DEFAULTS,
+  type CngxDialogDefaults,
+  type CngxDialogLabels,
+  type CngxDialogConfigFeature,
+  withDialogLabels,
+  provideDialogConfig,
+  provideDialogConfigAt,
+  injectDialogConfig,
+} from './config/dialog-config';
 export { CngxDialogOpener, CngxDialogRef, provideDialog } from './dialog/dialog.service';
 export { CngxBottomSheet } from './bottom-sheet/bottom-sheet.directive';
 export { CngxDialogDraggable } from './draggable/dialog-draggable.directive';

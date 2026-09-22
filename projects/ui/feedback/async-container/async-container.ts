@@ -19,6 +19,7 @@ import {
   type CngxAsyncState,
 } from '@cngx/core/utils';
 
+import { injectFeedbackI18n } from '../config/feedback-i18n';
 import { createStateBridge } from '../internal/state-bridge';
 import { CngxLoadingIndicator } from '../loading/loading-indicator';
 import { CngxToaster } from '../toast/toast.service';
@@ -190,6 +191,7 @@ export class CngxAsyncErrorTpl {
 })
 export class CngxAsyncContainer<T> {
   private readonly toaster = inject(CngxToaster, { optional: true });
+  private readonly announcements = injectFeedbackI18n().announcements;
   private readonly loadingConfig = injectLoadingConfig();
 
   /** The async state to render. */
@@ -286,17 +288,17 @@ export class CngxAsyncContainer<T> {
         }
 
         if (prev === 'idle' && status === 'loading') {
-          this.announcement.set('Loading content');
+          this.announcement.set(this.announcements.asyncLoading);
         } else if (prev === 'loading' && status === 'success') {
-          this.announcement.set('Content loaded');
+          this.announcement.set(this.announcements.asyncLoaded);
         } else if (prev === 'loading' && status === 'error') {
-          this.announcement.set('Error loading content');
+          this.announcement.set(this.announcements.asyncError);
         } else if (status === 'refreshing') {
-          this.announcement.set('Refreshing content');
+          this.announcement.set(this.announcements.asyncRefreshing);
         } else if (prev === 'refreshing' && status === 'success') {
-          this.announcement.set('Content refreshed');
+          this.announcement.set(this.announcements.asyncRefreshed);
         } else if (prev === 'refreshing' && status === 'error') {
-          this.announcement.set('Refresh failed');
+          this.announcement.set(this.announcements.asyncRefreshFailed);
         }
 
         this.fireToast(status);

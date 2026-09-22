@@ -17,6 +17,7 @@ import {
 import { CngxCloseButton } from '@cngx/common/interactive';
 
 import { CNGX_FEEDBACK_CONFIG } from '../config/feedback-config';
+import { injectFeedbackI18n } from '../config/feedback-i18n';
 import { CngxSeverityIcon } from '../config/severity-icon';
 import { CngxAlerter, type AlertState } from './alerter.service';
 
@@ -96,7 +97,7 @@ function entriesEqual(a: readonly StackEntry[], b: readonly StackEntry[]): boole
   host: {
     class: 'cngx-alert-stack',
     role: 'region',
-    'aria-label': 'Alerts',
+    '[attr.aria-label]': 'regionLabel',
     '[class.cngx-alert-stack--reserve-space]': 'reserveSpace()',
   },
   template: `
@@ -147,7 +148,7 @@ function entriesEqual(a: readonly StackEntry[], b: readonly StackEntry[]): boole
       <button
         type="button"
         class="cngx-alert-stack__overflow"
-        [attr.aria-label]="'Show ' + overflowCount() + ' more alerts'"
+        [attr.aria-label]="overflowLabel()"
         (click)="handleExpandOverflow()"
       >
         + {{ overflowCount() }} more
@@ -168,6 +169,13 @@ export class CngxAlertStack {
   private readonly parentAlerter = inject(CngxAlerter, { skipSelf: true, optional: true });
 
   private readonly config = inject(CNGX_FEEDBACK_CONFIG, { optional: true });
+
+  /**
+   * Region name, resolved once from the i18n bundle. Constant for the host's
+   * lifetime - the bundle is a DI value, not reactive state.
+   */
+  private readonly i18n = injectFeedbackI18n();
+  protected readonly regionLabel = this.i18n.alertsRegionLabel;
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly injector = inject(Injector);
 
@@ -237,6 +245,11 @@ export class CngxAlertStack {
     }
     return Math.max(0, this.entries().length - this.effectiveMaxVisible());
   });
+
+  /** @internal - accessible name of the overflow trigger. */
+  protected readonly overflowLabel = computed(() =>
+    this.i18n.announcements.alertOverflow(this.overflowCount()),
+  );
 
   /**
    * @internal - arrival detection derived via linkedSignal (not managed in

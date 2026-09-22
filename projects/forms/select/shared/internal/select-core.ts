@@ -468,7 +468,7 @@ export function createSelectCore<T, TCommit>(
     if (placeholder.length > 0) {
       return placeholder;
     }
-    return 'Options';
+    return config.ariaLabels?.listboxFallback ?? 'Options';
   });
 
   const resolvedShowSelectionIndicator = computed<boolean>(() => !deps.hideSelectionIndicator());

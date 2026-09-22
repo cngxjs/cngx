@@ -26,6 +26,15 @@ export {
   withBanners,
 } from './config/feedback-config';
 export {
+  CNGX_FEEDBACK_I18N,
+  type CngxFeedbackI18n,
+  type CngxFeedbackI18nOverrides,
+  type CngxFeedbackAnnouncements,
+  withFeedbackI18nLabels,
+  provideFeedbackI18n,
+  injectFeedbackI18n,
+} from './config/feedback-i18n';
+export {
   CngxAlerter,
   type AlertConfig,
   type AlertRef,

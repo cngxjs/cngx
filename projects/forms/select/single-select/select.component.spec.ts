@@ -23,6 +23,7 @@ import {
   withOpenOn,
   withPanelWidth,
   withLoadingVariant,
+  withAriaLabels,
 } from '../shared/config';
 import type { CngxSelectOptionDef, CngxSelectOptionsInput } from '../shared/option.model';
 import type {
@@ -1287,6 +1288,47 @@ describe('CngxSelect - config cascade (input > component-scope > app-scope > def
     });
     const raw = TestBed.inject(CNGX_SELECT_CONFIG);
     expect(raw.panelWidth).toBe(500);
+  });
+});
+
+@Component({
+  // No label, no aria-label, no placeholder - the three names the panel
+  // normally borrows before the fallback fires.
+  template: `<cngx-select [options]="options" />`,
+  imports: [CngxSelect],
+})
+class UnnamedHost {
+  readonly options = OPTIONS;
+}
+
+describe('CngxSelect listbox fallback label', () => {
+  beforeEach(() => {
+    polyfillPopover();
+    TestBed.resetTestingModule();
+  });
+
+  function openedListboxLabel(): string | null {
+    const fixture = TestBed.createComponent(UnnamedHost);
+    fixture.detectChanges();
+    flush(fixture);
+    const trigger = fixture.debugElement
+      .query(By.directive(CngxSelect))
+      .nativeElement.querySelector('.cngx-select__trigger') as HTMLElement;
+    trigger.click();
+    flush(fixture);
+    const listbox = fixture.nativeElement.querySelector('[role="listbox"]') as Element | null;
+    return listbox?.getAttribute('aria-label') ?? null;
+  }
+
+  it('names an otherwise unlabeled panel in English', () => {
+    expect(openedListboxLabel()).toBe('Options');
+  });
+
+  it('takes the name from withAriaLabels({ listboxFallback })', () => {
+    TestBed.configureTestingModule({
+      providers: [provideSelectConfig(withAriaLabels({ listboxFallback: 'Optionen' }))],
+    });
+    expect(openedListboxLabel()).toBe('Optionen');
   });
 });
 
