@@ -24,73 +24,11 @@ export interface StringManifestEntry {
 /**
  * The gap list: user-facing strings that ship with no override path.
  *
- * Shrinks to empty across the program; the suite asserts every row still
- * matches a real hit, so a fixed string cannot linger here.
+ * Empty since 2026-09-22 - the A2 i18n audit drove it to zero. The suite
+ * asserts the emptiness actively, so re-adding a row is a conscious edit with
+ * a one-clause reason, not a quiet regression.
  */
-export const RATCHET: readonly StringManifestEntry[] = [
-  // @cngx/ui/feedback - the two region labels are closed (CNGX_FEEDBACK_I18N).
-  // What is left announces state rather than naming a landmark, so it wants an
-  // announcement bundle rather than two more region keys.
-  {
-    file: 'projects/ui/feedback/alert/alert-stack.ts',
-    value: 'Show ',
-    note: 'overflowTrigger - "Show N more alerts" is assembled in the template',
-  },
-  {
-    file: 'projects/ui/feedback/alert/alert.ts',
-    value: 'Alert dismissed',
-    note: 'alertDismissed - SR announcement on dismiss',
-  },
-  {
-    file: 'projects/ui/feedback/async-container/async-container.ts',
-    value: 'Loading content',
-    note: 'asyncLoading - status announcement off the state bridge',
-  },
-  {
-    file: 'projects/ui/feedback/async-container/async-container.ts',
-    value: 'Content loaded',
-    note: 'asyncLoaded - status announcement off the state bridge',
-  },
-  {
-    file: 'projects/ui/feedback/async-container/async-container.ts',
-    value: 'Error loading content',
-    note: 'asyncError - status announcement off the state bridge',
-  },
-  {
-    file: 'projects/ui/feedback/async-container/async-container.ts',
-    value: 'Refreshing content',
-    note: 'asyncRefreshing - status announcement off the state bridge',
-  },
-  {
-    file: 'projects/ui/feedback/async-container/async-container.ts',
-    value: 'Content refreshed',
-    note: 'asyncRefreshed - status announcement off the state bridge',
-  },
-  {
-    file: 'projects/ui/feedback/async-container/async-container.ts',
-    value: 'Refresh failed',
-    note: 'asyncRefreshFailed - status announcement off the state bridge',
-  },
-
-  // @cngx/common - the dialog strings are closed (CNGX_DIALOG_CONFIG.labels).
-  // The card announcement phrases have no phase of their own yet.
-  {
-    file: 'projects/common/card/card.component.ts',
-    value: 'Selected',
-    note: 'selected - armed selection phrase on the card live region',
-  },
-  {
-    file: 'projects/common/card/card.component.ts',
-    value: 'Deselected',
-    note: 'deselected - armed selection phrase on the card live region',
-  },
-  {
-    file: 'projects/common/card/card.component.ts',
-    value: 'Loading',
-    note: 'loading - live-region text while the card loads',
-  },
-
-];
+export const RATCHET: readonly StringManifestEntry[] = [];
 
 /**
  * Strings the scanner cannot prove are covered, but which are - the override

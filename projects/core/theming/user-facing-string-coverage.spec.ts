@@ -277,6 +277,10 @@ describe('user-facing string coverage', () => {
 });
 
 describe('user-facing string ratchet', () => {
+  it('carries no gap at all - adding one is a conscious edit', () => {
+    expect(RATCHET).toEqual([]);
+  });
+
   it('carries no ratchet row that is already fixed', () => {
     expect(stale(RATCHET)).toEqual([]);
   });
