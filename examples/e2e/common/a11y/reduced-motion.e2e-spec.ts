@@ -25,7 +25,7 @@ test.describe('common/a11y/reduced-motion', () => {
 
     const cssClass = page
       .locator('.event-row')
-      .filter({ has: page.getByText('CSS class', { exact: true }) })
+      .filter({ has: page.getByText('Host class', { exact: true }) })
       .locator('.event-value');
     await expect(cssClass).toHaveText('cngx-reduced-motion');
 
