@@ -1,16 +1,11 @@
 import { expect, test } from '@playwright/test';
 import { gotoDemo } from '../../_helpers';
-
-const routes: ReadonlyArray<readonly [string, string]> = [
-  ['async-action', 'ui/feedback/banner/async-action'],
-  ['dedup-update', 'ui/feedback/banner/dedup-update'],
-  ['system-banners', 'ui/feedback/banner/system-banners'],
-];
+import { routesIn } from '../../_routes';
 
 test.describe('ui/feedback/banner', () => {
-  for (const [name, route] of routes) {
+  for (const { name, path } of routesIn('ui', 'feedback', 'banner')) {
     test(`${name}: page renders`, async ({ page }) => {
-      await gotoDemo(page, route);
+      await gotoDemo(page, path);
       await expect(page.locator('header.cngx-ex-intro')).toBeVisible();
     });
   }

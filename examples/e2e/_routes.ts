@@ -17,7 +17,12 @@ import { ROUTES_META, type RouteMeta } from '../src/app/_routes-meta';
 
 /** One row of a smoke matrix: the story slug, its route, its generated title. */
 export interface DemoRoute {
-  /** Last path segment — the story slug, used as the test name. */
+  /**
+   * The route below the queried segments, e.g. `clearable` or
+   * `action-select/async-error-rollback-observation`. Used as the test name,
+   * so it has to be unique within a matrix: the trailing segment alone is not
+   * (several select families ship an `async-error-rollback-observation`).
+   */
   readonly name: string;
   /** Full route path, as passed to `gotoDemo`. */
   readonly path: string;
@@ -25,13 +30,20 @@ export interface DemoRoute {
   readonly title: string;
 }
 
-function toDemoRoute(meta: RouteMeta): DemoRoute {
-  const segments = meta.path.split('/');
-  return { name: segments[segments.length - 1], path: meta.path, title: meta.title };
+function toDemoRoute(meta: RouteMeta, queried: readonly string[]): DemoRoute {
+  return {
+    name: meta.path.split('/').slice(queried.length).join('/'),
+    path: meta.path,
+    title: meta.title,
+  };
 }
 
-function select(label: string, match: (meta: RouteMeta) => boolean): readonly DemoRoute[] {
-  const routes = ROUTES_META.filter(match).map(toDemoRoute);
+function select(
+  label: string,
+  queried: readonly string[],
+  match: (meta: RouteMeta) => boolean,
+): readonly DemoRoute[] {
+  const routes = ROUTES_META.filter(match).map((meta) => toDemoRoute(meta, queried));
   if (routes.length === 0) {
     // An empty matrix is the failure this helper exists to prevent: it walks
     // nothing and reports green. Fail at collection time instead.
@@ -53,6 +65,7 @@ function select(label: string, match: (meta: RouteMeta) => boolean): readonly De
 export function routesIn(...segments: string[]): readonly DemoRoute[] {
   return select(
     `routesIn(${segments.join(', ')})`,
+    segments,
     (meta) =>
       meta.pathSegments.length === segments.length &&
       segments.every((segment, i) => meta.pathSegments[i] === segment),
@@ -65,7 +78,7 @@ export function routesIn(...segments: string[]): readonly DemoRoute[] {
  * `forms/input/mask`, `forms/input/otp` and the rest.
  */
 export function routesUnder(...segments: string[]): readonly DemoRoute[] {
-  return select(`routesUnder(${segments.join(', ')})`, (meta) =>
+  return select(`routesUnder(${segments.join(', ')})`, segments, (meta) =>
     segments.every((segment, i) => meta.pathSegments[i] === segment),
   );
 }
