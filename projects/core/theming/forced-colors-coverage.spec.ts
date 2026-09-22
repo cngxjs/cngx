@@ -105,6 +105,10 @@ const FORCED_COLORS_HARDENED_HOSTS: readonly string[] = [
   // with Highlight. Triggers/panels self-heal via their solid borders.
   'projects/forms/select/shared/select-base.css',
   'projects/forms/select/tree-select/tree-select-panel.component.css',
+  // @cngx/forms/field - the fill and bare skins replace the focus outline with
+  // an inset box-shadow underline, which WHCM strips entirely; the block
+  // restores the reset outline and redraws the edge in FieldText.
+  'projects/forms/theming/components/cngx-field-skin.css',
   // @cngx/forms/filter-builder - the pill rows draw their segment dividers
   // with box-shadow, which WHCM strips; redrawn as ButtonBorder borders.
   'projects/forms/filter-builder/filter-builder-expression-row.component.css',
@@ -266,7 +270,7 @@ describe('forced-colors hardened-hosts manifest', () => {
   });
 
   it('fixes the manifest size so a bulk edit dropping several hosts is caught', () => {
-    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(28);
+    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(29);
   });
 });
 
