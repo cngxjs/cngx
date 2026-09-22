@@ -10,6 +10,7 @@ import {
 import {
   CNGX_FORM_FIELD_CONTROL,
   CNGX_FORM_FIELD_HOST,
+  type CngxFieldSkin,
   type CngxFormFieldHostContract,
 } from '@cngx/core/tokens';
 import type { CngxFieldAccessor, CngxFieldRef } from './models';
@@ -83,6 +84,15 @@ export class CngxFormFieldPresenter implements CngxFormFieldHostContract {
    * Accepts `Field<T>` from `@angular/forms/signals` directly.
    */
   readonly field = input.required<CngxFieldAccessor>({ alias: 'field' });
+
+  /**
+   * Appearance bound on the field, published unresolved as the host
+   * contract's `skin` slot. The presenter deliberately does not fold in
+   * the config default: `CngxFieldSkinHost` owns the single cascade, so
+   * a control can tell "the field said nothing" apart from "the field
+   * said outline".
+   */
+  readonly skin = input<CngxFieldSkin | undefined>(undefined);
 
   /** Resolved field state from the accessor. */
   readonly fieldState: Signal<CngxFieldRef> = computed(() => this.field()());

@@ -6,6 +6,12 @@ import { CngxFormField, CNGX_FORM_FIELD_CONTROL, type CngxFieldAccessor } from '
 import { createMockField, type MockFieldRef } from '@cngx/forms/field/testing';
 import { CngxInput } from './input.directive';
 
+@Component({
+  template: `<input cngxInput skin="bare" />`,
+  imports: [CngxInput],
+})
+class SkinHost {}
+
 // ── With form field parent ──────────────────────────────────────────
 
 @Component({
@@ -276,6 +282,15 @@ describe('CngxInput', () => {
       inputEl.value = 'text';
       inputEl.dispatchEvent(new Event('input'));
       expect(directive.empty()).toBe(false);
+    });
+  });
+
+  describe('skin alias', () => {
+    it('reaches the composed CngxFieldSkinHost', () => {
+      const fixture = TestBed.createComponent(SkinHost);
+      fixture.detectChanges();
+      const el = fixture.nativeElement.querySelector('input') as HTMLElement;
+      expect(el.getAttribute('data-skin')).toBe('bare');
     });
   });
 });
