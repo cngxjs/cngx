@@ -29,7 +29,28 @@ Toast, banner, and alerter services are **not** `providedIn: 'root'`. Provide th
 
 Loading timing (the flash-suppression `showDelay` / `minDwell` shared by every loading surface) lives in the `CNGX_LOADING_CONFIG` cascade in `@cngx/core/utils`. `provideFeedback(withLoadingDefaults({ delay, minDuration }))` still writes that token as a back-compat wrapper (`delay` maps to `showDelay`, `minDuration` to `minDwell`), but it replaces the whole config and resets `spinnerVsSkeletonCutoff`. For new apps prefer `provideLoadingConfig(withShowDelay(...), withMinDwell(...), withSpinnerVsSkeletonCutoff(...))` from `@cngx/core/utils` as the canonical loading-timing knob.
 
+The alert stack and the toast outlet name their `role="region"` host, and both
+outlets announce state changes - all English by default and all overridable
+through `CNGX_FEEDBACK_I18N`:
+
+```ts
+provideFeedback(
+  withToasts(),
+  withAlerts(),
+  withFeedbackI18nLabels({
+    alertsRegionLabel: 'Hinweise',
+    announcements: { alertDismissed: 'Hinweis verworfen' },
+  }),
+)
+```
+
+`provideFeedbackI18n({ ... })` sets the same bundle on its own, which is what a
+consumer-composed language file uses: `provideFeedback(...)` replaces the whole
+`CNGX_FEEDBACK_CONFIG` value, so routing a translation through it would reset
+unrelated feedback defaults.
+
 ## See also
 
 - Outlet components, services, bridge directives, slot directives, and `with*` config features in the **API** tab.
+- Localising every cngx string: the "Localisation" chapter in the docs sidebar.
 - Conceptual deep dive: the "Async State Machine" chapter in the docs sidebar.

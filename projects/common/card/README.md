@@ -50,7 +50,7 @@ export class ExampleComponent {
   - `Enter` / `Space`: Activate interactive cards (button/link)
   - `Arrow Left/Right`: Navigate cards in grid (CngxRovingTabindex)
   - `Home` / `End`: Jump to first/last card in grid
-- **Screen reader:** `aria-busy` when loading; live region announces "Loading", "Selected", "Deselected" state changes; `aria-describedby` points to disabled reason explanation
+- **Screen reader:** `aria-busy` when loading; live region announces "Loading", "Selected", "Deselected" state changes (English defaults, overridable via `provideCardI18n(withCardI18nLabels({ ... }))`); `aria-describedby` points to disabled reason explanation
 - **Focus management:** Interactive cards get `tabindex="0"` when standalone; CngxCardGrid's roving tabindex manages focus among cards
 
 ## Composition
