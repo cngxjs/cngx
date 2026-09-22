@@ -10,7 +10,10 @@ test.describe('common/interactive/chip-input', () => {
     await gotoDemo(page, 'common/interactive/chip/input/synchronous-tokenization');
 
     const input = page.getByPlaceholder('Type a tag and press Enter');
-    const caption = page.locator('p.caption').filter({ hasText: 'tokens:' });
+    const caption = page
+      .locator('.event-row')
+      .filter({ has: page.getByText('tokens', { exact: true }) })
+      .locator('.event-value');
 
     // Initial seed: ['typescript', 'angular'].
     await expect(caption).toContainText('typescript, angular');

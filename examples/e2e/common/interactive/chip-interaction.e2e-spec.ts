@@ -57,8 +57,10 @@ test.describe('common/interactive/chip-interaction', () => {
     const chip = page.locator('cngx-chip[cngxchipinteraction]').first();
     await chip.focus();
 
-    // Demo shows "remove fired: N" — counter is a <code> inside p.caption.
-    const counter = page.locator('p.caption code').first();
+    const counter = page
+      .locator('.event-row')
+      .filter({ has: page.getByText('remove fired', { exact: true }) })
+      .locator('.event-value');
     await expect(counter).toHaveText('0');
 
     await page.keyboard.press('Backspace');

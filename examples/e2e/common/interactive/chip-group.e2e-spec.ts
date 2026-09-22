@@ -19,7 +19,10 @@ test.describe('common/interactive/chip-group', () => {
     await expect(md).toHaveAttribute('aria-selected', 'true');
     await expect(sm).toHaveAttribute('aria-selected', 'false');
 
-    const caption = page.locator('p.caption').filter({ hasText: 'picked' });
+    const caption = page
+      .locator('.event-row')
+      .filter({ has: page.getByText('picked', { exact: true }) })
+      .locator('.event-value');
     await expect(caption).toContainText('md');
 
     // Click lg → lg selected, md deselected.
