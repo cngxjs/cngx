@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 
 import { CNGX_FEEDBACK_CONFIG } from '../config/feedback-config';
+import { injectFeedbackI18n } from '../config/feedback-i18n';
 import { CngxSeverityIcon } from '../config/severity-icon';
 import { CngxToaster, type ToastState } from './toast.service';
 
@@ -65,7 +66,7 @@ export type ToastPosition =
     class: 'cngx-toast-outlet',
     '[class]': 'positionClass()',
     role: 'region',
-    'aria-label': 'Notifications',
+    '[attr.aria-label]': 'regionLabel',
   },
   template: `
     @for (toast of visibleToasts(); track toast.id) {
@@ -138,6 +139,12 @@ export type ToastPosition =
 export class CngxToastOutlet {
   protected readonly service = inject(CngxToaster);
   private readonly config = inject(CNGX_FEEDBACK_CONFIG, { optional: true });
+
+  /**
+   * Region name, resolved once from the i18n bundle. Constant for the host's
+   * lifetime - the bundle is a DI value, not reactive state.
+   */
+  protected readonly regionLabel = injectFeedbackI18n().notificationsRegionLabel;
 
   /** Stack position. */
   readonly position = input<ToastPosition>('bottom-end');

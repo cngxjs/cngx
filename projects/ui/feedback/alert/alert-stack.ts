@@ -17,6 +17,7 @@ import {
 import { CngxCloseButton } from '@cngx/common/interactive';
 
 import { CNGX_FEEDBACK_CONFIG } from '../config/feedback-config';
+import { injectFeedbackI18n } from '../config/feedback-i18n';
 import { CngxSeverityIcon } from '../config/severity-icon';
 import { CngxAlerter, type AlertState } from './alerter.service';
 
@@ -96,7 +97,7 @@ function entriesEqual(a: readonly StackEntry[], b: readonly StackEntry[]): boole
   host: {
     class: 'cngx-alert-stack',
     role: 'region',
-    'aria-label': 'Alerts',
+    '[attr.aria-label]': 'regionLabel',
     '[class.cngx-alert-stack--reserve-space]': 'reserveSpace()',
   },
   template: `
@@ -168,6 +169,12 @@ export class CngxAlertStack {
   private readonly parentAlerter = inject(CngxAlerter, { skipSelf: true, optional: true });
 
   private readonly config = inject(CNGX_FEEDBACK_CONFIG, { optional: true });
+
+  /**
+   * Region name, resolved once from the i18n bundle. Constant for the host's
+   * lifetime - the bundle is a DI value, not reactive state.
+   */
+  protected readonly regionLabel = injectFeedbackI18n().alertsRegionLabel;
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly injector = inject(Injector);
 
