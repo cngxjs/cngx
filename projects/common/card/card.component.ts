@@ -11,6 +11,7 @@ import {
 import { Router } from '@angular/router';
 import { createAnnouncementPhrase, nextUid } from '@cngx/core/utils';
 import { CngxRovingItem, CngxRovingTabindex } from '@cngx/common/a11y';
+import { injectCardI18n } from './i18n/card-i18n';
 
 /**
  * Semantic card component that adapts its host element role based on the `as` input.
@@ -104,6 +105,7 @@ export class CngxCard {
     skipSelf: true,
   });
   private readonly router = inject(Router, { optional: true });
+  private readonly i18n = injectCardI18n();
 
   /** Semantic archetype: `'article'` (display), `'button'` (action), or `'link'` (navigation). */
   readonly cardType = input<'article' | 'link' | 'button'>('article', {
@@ -220,7 +222,7 @@ export class CngxCard {
     }),
     arm: (curr, prev) => {
       if (curr.selectable && curr.selected !== prev.selected) {
-        return curr.selected ? 'Selected' : 'Deselected';
+        return curr.selected ? this.i18n.selected : this.i18n.deselected;
       }
       return null;
     },
@@ -240,7 +242,7 @@ export class CngxCard {
     // loading arm would skip the loading-start snapshot and never
     // spend the phrase (same trap as tabs' closedPhrase).
     const phrase = this.selectionPhrase();
-    return this.loading() ? 'Loading' : phrase;
+    return this.loading() ? this.i18n.loading : phrase;
   });
 
   /** Emits when an interactive card is clicked or activated via keyboard. */
