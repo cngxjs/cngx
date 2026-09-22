@@ -9,7 +9,7 @@ export { CngxDialogClose } from './dialog/dialog-close.directive';
 export { CngxDialogStack, provideDialogStack } from './dialog/dialog-stack';
 export { CNGX_DIALOG_DATA, type CngxDialogConfig } from './dialog/dialog-config';
 export {
-  CNGX_DIALOG_CONFIG,
+  CNGX_DIALOG_DEFAULTS,
   type CngxDialogDefaults,
   type CngxDialogLabels,
   type CngxDialogConfigFeature,

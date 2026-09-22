@@ -7,7 +7,7 @@ import { CngxDialogClose } from '../dialog/dialog-close.directive';
 import { CngxDialogTitle } from '../dialog/dialog-title.directive';
 import { CngxDialogDraggable } from '../draggable/dialog-draggable.directive';
 import {
-  CNGX_DIALOG_CONFIG,
+  CNGX_DIALOG_DEFAULTS,
   injectDialogConfig,
   provideDialogConfig,
   withDialogLabels,
@@ -36,13 +36,13 @@ const host = () => {
   return fixture;
 };
 
-describe('CNGX_DIALOG_CONFIG', () => {
+describe('CNGX_DIALOG_DEFAULTS', () => {
   beforeEach(() => {
     TestBed.resetTestingModule();
   });
 
   it('ships the five English labels without any provider', () => {
-    expect(TestBed.inject(CNGX_DIALOG_CONFIG).labels).toEqual({
+    expect(TestBed.inject(CNGX_DIALOG_DEFAULTS).labels).toEqual({
       close: 'Close dialog',
       errorFallback: 'An error occurred',
       dragHandle: 'Move dialog',

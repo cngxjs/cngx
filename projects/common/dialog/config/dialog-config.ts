@@ -63,7 +63,7 @@ const DIALOG_LABEL_DEFAULTS: CngxDialogLabels = {
  * @since 0.1.0
  * @relatedTo CngxDialog, CngxDialogClose, CngxDialogDraggable
  */
-export const CNGX_DIALOG_CONFIG = new InjectionToken<CngxDialogDefaults>('CngxDialogConfig', {
+export const CNGX_DIALOG_DEFAULTS = new InjectionToken<CngxDialogDefaults>('CngxDialogDefaults', {
   providedIn: 'root',
   factory: (): CngxDialogDefaults => ({ labels: DIALOG_LABEL_DEFAULTS }),
 });
@@ -113,7 +113,7 @@ export function provideDialogConfig(...features: CngxDialogConfigFeature[]): Pro
     (acc, feature) => ({ ...acc, ...feature.labels }),
     DIALOG_LABEL_DEFAULTS,
   );
-  return [{ provide: CNGX_DIALOG_CONFIG, useValue: { labels } }];
+  return [{ provide: CNGX_DIALOG_DEFAULTS, useValue: { labels } }];
 }
 
 /**
@@ -137,5 +137,5 @@ export function provideDialogConfigAt(...features: CngxDialogConfigFeature[]): P
  * @since 0.1.0
  */
 export function injectDialogConfig(): CngxDialogDefaults {
-  return inject(CNGX_DIALOG_CONFIG);
+  return inject(CNGX_DIALOG_DEFAULTS);
 }
