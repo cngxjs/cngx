@@ -31,7 +31,7 @@ test.describe('common/interactive/checkbox-group', () => {
     await expect(sms).toHaveAttribute('aria-checked', 'true');
     await expect(push).toHaveAttribute('aria-checked', 'true');
 
-    const caption = page.locator('p.caption').filter({ hasText: 'Picked' });
+    const caption = page.locator('p.demo-checkbox-caption').filter({ hasText: 'Picked' });
     await expect(caption).toContainText('email, sms, push');
 
     // Click master again → toggleAll clears all.

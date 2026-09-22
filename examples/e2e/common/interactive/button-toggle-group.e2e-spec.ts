@@ -8,9 +8,9 @@ test.describe('common/interactive/button-toggle-group', () => {
   test('basic view-switcher: only one toggle is aria-checked at a time', async ({ page }) => {
     await gotoDemo(page, 'common/interactive/button-toggle/group/basic-view-switcher');
 
-    const grid = page.getByRole('button', { name: 'Grid' });
-    const list = page.getByRole('button', { name: 'List' });
-    const table = page.getByRole('button', { name: 'Table' });
+    const grid = page.getByRole('radio', { name: 'Grid' });
+    const list = page.getByRole('radio', { name: 'List' });
+    const table = page.getByRole('radio', { name: 'Table' });
 
     await expect(grid).toHaveAttribute('aria-checked', 'true');
     await list.click();
@@ -21,7 +21,7 @@ test.describe('common/interactive/button-toggle-group', () => {
     await expect(table).toHaveAttribute('aria-checked', 'true');
     await expect(list).toHaveAttribute('aria-checked', 'false');
 
-    const caption = page.locator('p.caption');
+    const caption = page.locator('p.demo-button-toggle-caption');
     await expect(caption).toContainText('table');
 
   });

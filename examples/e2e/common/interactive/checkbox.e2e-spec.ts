@@ -11,7 +11,7 @@ test.describe('common/interactive/checkbox', () => {
     await expect(checkbox).toHaveAttribute('aria-checked', 'false');
     await checkbox.click();
     await expect(checkbox).toHaveAttribute('aria-checked', 'true');
-    await expect(page.locator('p.caption')).toContainText('true');
+    await expect(page.locator('p.demo-checkbox-caption')).toContainText('true');
 
   });
 
