@@ -22,7 +22,7 @@ test.describe('common/interactive/keyboard-shortcut', () => {
     await expect(counter).toHaveText('1');
 
     // Focus the input — same shortcut must be filtered out.
-    const input = page.getByPlaceholder("Type here — Ctrl+K won't fire");
+    const input = page.getByRole('textbox');
     await input.focus();
     await page.keyboard.press('Control+k');
     await expect(counter).toHaveText('1');
@@ -43,7 +43,7 @@ test.describe('common/interactive/keyboard-shortcut', () => {
     await expect(counter).toHaveText('0');
 
     // The host is the tabindex=0 dashed box. Click focuses it.
-    const scopedHost = page.locator('div[tabindex="0"]').filter({ hasText: /Click me/ });
+    const scopedHost = page.getByRole('group', { name: 'Press Escape to dismiss' });
     await scopedHost.click();
     await page.keyboard.press('Escape');
     await expect(counter).toHaveText('1');

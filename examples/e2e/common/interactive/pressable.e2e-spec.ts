@@ -11,11 +11,11 @@ test.describe('common/interactive/pressable', () => {
     const btn1 = page.getByRole('button', { name: 'Scale Down' });
     const row1 = page
       .locator('.event-row')
-      .filter({ has: page.getByText('Button 1', { exact: true }) })
+      .filter({ has: page.getByText('Button 1 (scale)', { exact: true }) })
       .locator('.event-value');
     const row2 = page
       .locator('.event-row')
-      .filter({ has: page.getByText('Button 2', { exact: true }) })
+      .filter({ has: page.getByText('Button 2 (flash)', { exact: true }) })
       .locator('.event-value');
 
     await expect(row1).toHaveText('idle');
