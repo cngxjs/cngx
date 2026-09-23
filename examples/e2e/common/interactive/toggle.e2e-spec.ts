@@ -9,7 +9,7 @@ test.describe('common/interactive/toggle', () => {
     const toggle = page.getByRole('switch').first();
     const initial = await toggle.getAttribute('aria-checked');
     await toggle.click();
-    await expect(toggle).not.toHaveAttribute('aria-checked', initial as string);
+    await expect(toggle).not.toHaveAttribute('aria-checked', initial!);
   });
 
   test('basic two-way: switch derives its accessible name from the projected label', async ({
@@ -51,9 +51,9 @@ test.describe('common/interactive/toggle', () => {
 
     const readGaps = () =>
       page.evaluate(() => {
-        const host = document.querySelector('.cngx-toggle') as HTMLElement;
-        const track = host.querySelector('.cngx-toggle__track') as HTMLElement;
-        const thumb = host.querySelector('.cngx-toggle__thumb') as HTMLElement;
+        const host = document.querySelector('.cngx-toggle')!;
+        const track = host.querySelector('.cngx-toggle__track')!;
+        const thumb = host.querySelector('.cngx-toggle__thumb')!;
         const t = track.getBoundingClientRect();
         const h = thumb.getBoundingClientRect();
         return {

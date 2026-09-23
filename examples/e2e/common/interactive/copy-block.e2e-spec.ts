@@ -10,7 +10,6 @@ test.describe('common/interactive/copy-block', () => {
     await context.grantPermissions(['clipboard-read', 'clipboard-write']);
     await gotoDemo(page, 'common/interactive/copy/block/api-key');
 
-    const block = page.locator('cngx-copy-block').first();
     const copyBtn = page.getByRole('button', { name: 'Copy Key' });
     await expect(copyBtn).toBeVisible();
 

@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Locator } from '@playwright/test';
 import { gotoDemo } from '../../_helpers';
 
 // The classic strip's `density: 'auto'` ladder is driven by the strip's
@@ -11,7 +11,7 @@ import { gotoDemo } from '../../_helpers';
 
 const ROUTE = 'ui/stepper/stepper-density/flat-steps-auto-density';
 
-async function horizontalOverflow(stepper: import('@playwright/test').Locator): Promise<number> {
+async function horizontalOverflow(stepper: Locator): Promise<number> {
   return stepper.locator('.cngx-stepper__strip').evaluate((el) => el.scrollWidth - el.clientWidth);
 }
 

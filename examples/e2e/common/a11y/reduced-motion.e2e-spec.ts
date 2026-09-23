@@ -8,7 +8,7 @@ import { gotoDemo } from '../../_helpers';
 test.describe('common/a11y/reduced-motion', () => {
   test('animation toggle: reflects prefers-reduced-motion media query', async ({
     page,
-    context,
+    context: _context,
   }) => {
     await page.emulateMedia({ reducedMotion: 'no-preference' });
     await gotoDemo(page, 'common/a11y/reduced-motion/animation-toggle');

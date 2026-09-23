@@ -24,7 +24,7 @@ test.describe('common/layout/scroll-spy', () => {
     // Scroll well into the third section.
     const spy = page.locator('.spy-container');
     await spy.evaluate((el) => {
-      const target = el.querySelector('#spy-pricing') as HTMLElement;
+      const target = el.querySelector('#spy-pricing')!;
       target.scrollIntoView({ behavior: 'auto', block: 'start' });
     });
     await expect(activeRow).toHaveText('spy-pricing', { timeout: 2000 });

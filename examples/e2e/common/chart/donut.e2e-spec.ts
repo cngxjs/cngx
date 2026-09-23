@@ -24,7 +24,7 @@ test.describe('common/chart/donut', () => {
     await expect(donuts.first()).toBeVisible();
     const sizes = await donuts.evaluateAll((els) =>
       els.map((el) => {
-        const svg = el.querySelector('svg') as SVGSVGElement | null;
+        const svg = el.querySelector('svg');
         return svg ? { w: svg.getAttribute('width'), h: svg.getAttribute('height') } : null;
       }),
     );

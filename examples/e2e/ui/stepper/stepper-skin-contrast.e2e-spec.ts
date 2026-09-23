@@ -43,7 +43,7 @@ const CLASSIC_LOWER_BOUNDS: Record<HotState, number> = {
 };
 
 function parseRgb(value: string): [number, number, number] {
-  const match = value.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
+  const match = /rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/.exec(value);
   if (!match) {
     throw new Error(`unparseable colour: ${value}`);
   }
@@ -82,7 +82,7 @@ test.describe('ui/stepper/stepper-skin-contrast', () => {
       if (!stepper) {
         throw new Error('no <cngx-stepper> on the page');
       }
-      const step = stepper.querySelector('button.cngx-stepper__step') as HTMLElement | null;
+      const step = stepper.querySelector('button.cngx-stepper__step');
       const indicator = step?.querySelector('.cngx-stepper__indicator') as HTMLElement | null;
       if (!step || !indicator) {
         throw new Error('stepper present but step / indicator missing');
@@ -124,21 +124,15 @@ test.describe('ui/stepper/stepper-skin-contrast', () => {
       };
 
       const parseToSrgb = (cssColor: string): [number, number, number] | null => {
-        const rgbMatch = cssColor.match(
-          /rgba?\(\s*([\d.]+)[\s,]+([\d.]+)[\s,]+([\d.]+)/,
-        );
+        const rgbMatch = /rgba?\(\s*([\d.]+)[\s,]+([\d.]+)[\s,]+([\d.]+)/.exec(cssColor);
         if (rgbMatch) {
           return [Math.round(+rgbMatch[1]), Math.round(+rgbMatch[2]), Math.round(+rgbMatch[3])];
         }
-        const oklabMatch = cssColor.match(
-          /oklab\(\s*(-?[\d.]+)\s+(-?[\d.]+)\s+(-?[\d.]+)/,
-        );
+        const oklabMatch = /oklab\(\s*(-?[\d.]+)\s+(-?[\d.]+)\s+(-?[\d.]+)/.exec(cssColor);
         if (oklabMatch) {
           return oklabToSrgb(+oklabMatch[1], +oklabMatch[2], +oklabMatch[3]);
         }
-        const oklchMatch = cssColor.match(
-          /oklch\(\s*(-?[\d.]+)\s+(-?[\d.]+)\s+(-?[\d.]+)/,
-        );
+        const oklchMatch = /oklch\(\s*(-?[\d.]+)\s+(-?[\d.]+)\s+(-?[\d.]+)/.exec(cssColor);
         if (oklchMatch) {
           const lL = +oklchMatch[1];
           const c = +oklchMatch[2];
@@ -231,7 +225,7 @@ test.describe('ui/stepper/stepper-skin-contrast', () => {
       // The disc glyph's own foreground colour is a downstream concern
       // captured at the unit-test level via the classic-skin snapshot.
       measured[state] = wcagContrast(sample.bg, sample.surface);
-      console.log(
+      console.info(
         `[contrast:classic] ${state}: disc=${sample.bg} surface=${sample.surface} glyph=${sample.fg} contrast=${measured[state].toFixed(2)}`,
       );
     }

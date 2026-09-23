@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import { gotoDemo } from '../../_helpers';
 
 // Focus-driven group collapse (groupCollapse: 'expand-active'). The demo
@@ -8,7 +8,7 @@ import { gotoDemo } from '../../_helpers';
 // the newly-active step button after the strip re-renders its node set.
 
 const ROUTE = 'ui/stepper/stepper-hierarchical/expand-active-group-collapse';
-function activeLocator(page: import('@playwright/test').Page) {
+function activeLocator(page: Page) {
   return page.locator('cngx-stepper button.cngx-stepper__step[aria-current="step"]').first();
 }
 

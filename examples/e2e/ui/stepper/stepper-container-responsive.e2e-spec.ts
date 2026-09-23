@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import { gotoDemo } from '../../_helpers';
 
 // The `.cngx-stepper` host carries `container-type: inline-size` +
@@ -16,7 +16,7 @@ const DEMO = 'ui/stepper/stepper-horizontal/three-step-wizard';
 
 /** Panel padding at a forced host width. */
 async function paddingAt(
-  page: import('@playwright/test').Page,
+  page: Page,
   width: string,
 ): Promise<{ top: number; left: number }> {
   await page.addStyleTag({

@@ -164,7 +164,11 @@ module.exports = tseslint.config(
 
     // Ignored paths
     {
-        ignores: ['dist/', 'packages/**/dist/', 'packages/**/testing/**', 'node_modules/', '.angular/', 'out-tsc/', 'docs/', '.internal/', '**/*.spec.ts', 'playwright.config.ts', 'e2e/', 'sheriff.config.ts', 'projects/**/examples/**', 'examples/**'],
+        ignores: ['dist/', 'packages/**/dist/', 'packages/**/testing/**', 'node_modules/', '.angular/', 'out-tsc/', 'docs/', '.internal/', '**/*.spec.ts', 'playwright.config.ts', 'e2e/', 'sheriff.config.ts', 'projects/**/examples/**',
+            // examples/** stays out (generated features, stories, app source),
+            // but examples/e2e is gated in CI now, so it is linted.
+            'examples/src/**', 'examples/stories/**', 'examples/fixtures/**',
+            'examples/dev-tools/**', 'examples/*.ts'],
     },
 
     // Re-enable rules that Prettier disables but we want to enforce.

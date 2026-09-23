@@ -24,7 +24,7 @@ test.describe('ui/feedback/loading-overlay', () => {
     const isInert = await nameInput.evaluate((el) => {
       let parent: HTMLElement | null = el as HTMLElement;
       while (parent) {
-        if (parent.hasAttribute('inert')) return true;
+        if (parent.hasAttribute('inert')) {return true;}
         parent = parent.parentElement;
       }
       return false;

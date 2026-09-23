@@ -25,9 +25,11 @@ test.describe('common/layout/sticky-header', () => {
     // sticky header's offsetParent — find it via JS for robustness against
     // Angular's whitespace-normalised style attribute.
     await page.evaluate(() => {
-      const header = document.querySelector('header[cngxstickyheader]') as HTMLElement | null;
-      const scrollBox = header?.parentElement as HTMLElement;
-      scrollBox.scrollTop = 200;
+      const header = document.querySelector('header[cngxstickyheader]');
+      const scrollBox = header?.parentElement;
+      if (scrollBox) {
+        scrollBox.scrollTop = 200;
+      }
     });
     await expect(isStickyVal).toHaveText('true', { timeout: 2000 });
     await expect(headerLabel).toHaveText('Stuck!');
