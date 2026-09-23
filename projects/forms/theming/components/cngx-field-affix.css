@@ -28,6 +28,16 @@
          compacts it (SET-from-scale rule; the registered pixel initial defeats
          the use-site fallback). gap 0.5 -> sm. */
       --cngx-field-affix-gap: var(--cngx-space-sm);
+      /* SET-from-scale so the interactive affix padding tracks density. The
+         icon size stays font-relative on purpose - it is a glyph gauge that
+         follows text scale, not the spacing rungs. */
+      --cngx-field-affix-pad: var(--cngx-space-xs);
+      /* Deliberately unregistered: a `<length>` @property needs a
+         computationally-independent initial-value, and `1.25em` is not one -
+         the registration would be dropped whole. As a plain custom property
+         the em gauge resolves against the row font and still inherits, which
+         is what the glyph wants. */
+      --cngx-field-affix-icon-size: 1.25em;
       display: inline-flex;
       align-items: center;
       gap: var(--cngx-field-affix-gap, 0.5rem);
@@ -46,6 +56,55 @@
       flex: 0 0 auto;
       display: inline-flex;
       align-items: center;
+    }
+
+    /* Decorative glyph affix. The directive already marks it aria-hidden;
+       here it only gets a size and a muted tint. Driven through CngxIcon's
+       own knobs rather than by overriding its geometry - both stylesheets
+       sit in cngx.components, so setting the token is the contract, not a
+       specificity contest. Both knobs are registered inherits:false and read
+       on the icon host, which is the element this rule targets. */
+    .cngx-field-prefix > cngx-icon,
+    .cngx-field-suffix > cngx-icon {
+      --cngx-icon-size: var(--cngx-field-affix-icon-size, 1.25em);
+      --cngx-icon-color: var(
+        --cngx-field-affix-color,
+        var(--cngx-color-text-muted, oklch(0.55 0.02 250))
+      );
+    }
+
+    /* Interactive affix - clear, password reveal, copy, open-picker, or a
+       text button like "Apply". A real control, so it floors its hit area
+       to the pointer-derived target on both axes and centres its glyph.
+       The cngx.reset :focus-visible ring is deliberately left alone: the
+       fill and bare skins suppress the outline on their own :scope only,
+       so a button inside the box keeps its own ring. */
+    .cngx-field-affix--interactive {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-inline-size: max(var(--cngx-field-affix-target, 2rem), var(--cngx-target-min, 0px));
+      min-block-size: max(var(--cngx-field-affix-target, 2rem), var(--cngx-target-min, 0px));
+      padding-inline: var(--cngx-field-affix-pad, 0.25rem);
+      border: 0;
+      border-radius: var(--cngx-radius-sm, 4px);
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .cngx-field-affix--interactive:hover {
+      background: color-mix(in oklch, var(--cngx-color-text, oklch(0.2 0.01 250)) 8%, transparent);
+    }
+
+    .cngx-field-affix--interactive:disabled {
+      cursor: default;
+      opacity: var(--cngx-field-disabled-opacity, 0.6);
+    }
+
+    .cngx-field-affix--interactive:disabled:hover {
+      background: transparent;
     }
   }
 }

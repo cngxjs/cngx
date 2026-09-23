@@ -34,6 +34,7 @@ import { CngxSelectPanel } from '../shared/internal/panel/panel.component';
 
 import {
   CNGX_FORM_FIELD_CONTROL,
+  CngxFieldSkinHost,
   CngxFormFieldPresenter,
   type CngxFormFieldControl,
 } from '@cngx/forms/field';
@@ -178,6 +179,7 @@ export interface CngxComboboxChange<T = unknown> {
     { provide: CNGX_SELECT_PANEL_HOST, useExisting: CngxCombobox },
     { provide: CNGX_SELECT_PANEL_VIEW_HOST, useExisting: CngxCombobox },
   ],
+  hostDirectives: [{ directive: CngxFieldSkinHost, inputs: ['cngxFieldSkin: skin'] }],
   host: {
     class: 'cngx-combobox',
     '[id]': 'resolvedId()',

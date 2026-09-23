@@ -7,6 +7,7 @@ export { CngxError } from './error.directive';
 export { CngxPrefix } from './prefix.directive';
 export { CngxSuffix } from './suffix.directive';
 export { CngxAffixRow } from './affix-row.directive';
+export { CngxFieldSkinHost } from './field-skin.directive';
 export { CngxRequired, type CngxRequiredContext } from './required.component';
 export { focusFirstError } from './focus-first-error';
 export { adaptFormControl } from './form-control-adapter';
@@ -32,16 +33,20 @@ export {
   CNGX_FORM_FIELD_CONFIG,
   CNGX_FORM_FIELD_REVEAL,
   provideFormField,
+  provideFormFieldAt,
+  injectFormFieldConfig,
   provideErrorMessages,
   withErrorMessages,
   withConstraintHints,
   withRequiredMarker,
+  withFieldSkin,
   withAutocompleteMappings,
   withNoSpellcheck,
   withErrorStrategy,
   DEFAULT_AUTOCOMPLETE_MAPPINGS,
   DEFAULT_NO_SPELLCHECK_FIELDS,
   DEFAULT_HINT_FORMATTERS,
+  type CngxFieldSkin,
   type CngxFormFieldHostContract,
 } from './form-field.token';
 export { CngxErrorScopeFieldBridge } from './error-scope-field-bridge.directive';

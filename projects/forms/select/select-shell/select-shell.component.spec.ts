@@ -39,6 +39,7 @@ import type {
   CngxSelectCommitAction,
   CngxSelectCommitMode,
 } from '../shared/commit-action.types';
+import { describeFieldSkinHost } from '../shared/__test-helpers/field-skin-host';
 
 // jsdom does not implement the Popover API - polyfill so CngxPopover can toggle.
 function polyfillPopover(): void {
@@ -1162,3 +1163,7 @@ describe('CngxSelectShell - trigger slot-cascade tier-1', () => {
     expect(custom!.textContent).toBe('caret');
   });
 });
+
+describeFieldSkinHost('CngxSelectShell', CngxSelectShell, 'cngx-select-shell', () =>
+  createMockField({ name: 'pick' }).accessor,
+);

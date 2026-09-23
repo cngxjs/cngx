@@ -16,7 +16,7 @@ import { describe, expect, it } from 'vitest';
 const REPO_ROOT = resolve(__dirname, '../../..');
 const LOAD_PATHS = [resolve(REPO_ROOT, 'node_modules'), resolve(REPO_ROOT, 'projects/themes')];
 
-function emittedTokenNames(themeVersion: 'v1' | 'v0'): string[] {
+function compiledCss(themeVersion: 'v1' | 'v0'): string {
   const entry =
     themeVersion === 'v1'
       ? `
@@ -39,23 +39,55 @@ $theme: mat.m2-define-light-theme((color: (primary: $primary, accent: $accent)))
 
 @include bridge.theme($theme);
 `;
-  const css = compileString(entry, { loadPaths: LOAD_PATHS }).css;
+  return compileString(entry, { loadPaths: LOAD_PATHS }).css;
+}
+
+function emittedTokenNames(themeVersion: 'v1' | 'v0'): string[] {
+  const css = compiledCss(themeVersion);
   return [...new Set([...css.matchAll(/--cngx-[a-z0-9-]+(?=:)/g)].map((m) => m[0]))].sort();
 }
 
 describe('field Material bridge', () => {
   // every name is consumed by the forms field/input/form-errors CSS
   const CONSUMED = [
+    '--cngx-field-affix-color',
     '--cngx-field-char-count-font-size',
     '--cngx-field-error-color',
+    '--cngx-field-fill-bg',
+    '--cngx-field-fill-bg-hover',
     '--cngx-field-hint-color',
     '--cngx-field-required-color',
+    '--cngx-field-underline-color',
+    '--cngx-field-underline-focus-color',
     '--cngx-form-errors-color',
     '--cngx-form-errors-font-size',
   ];
 
   it('emits only consumed token names (M3)', () => {
     expect(emittedTokenNames('v1')).toEqual(CONSUMED);
+  });
+
+  it('reaches a skinned control that sits outside any cngx-form-field (M3)', () => {
+    const css = compiledCss('v1');
+    expect(css).toContain(':where(input[data-skin]');
+    expect(css).toContain('--cngx-field-underline-focus-color');
+  });
+
+  it('reaches every select-family trigger, which carries the attribute on its host (M3)', () => {
+    const css = compiledCss('v1');
+    for (const host of [
+      'cngx-select',
+      'cngx-multi-select',
+      'cngx-combobox',
+      'cngx-typeahead',
+      'cngx-tree-select',
+      'cngx-action-select',
+      'cngx-action-multi-select',
+      'cngx-reorderable-multi-select',
+      'cngx-select-shell',
+    ]) {
+      expect(css).toContain(`${host}[data-skin]`);
+    }
   });
 
   it('emits a consumed-name subset (M2)', () => {

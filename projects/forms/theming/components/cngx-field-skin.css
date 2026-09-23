@@ -1,0 +1,232 @@
+/**
+ * @overview
+ * Track B CSS for the `fill` and `bare` form-field skins. The box is
+ * whatever element carries `data-skin` - a native control, or the
+ * `.cngx-field-affix-row` when affixes are present - never the
+ * `display: contents` field shell. `CngxFieldSkinHost` writes the
+ * attribute; `outline` writes nothing, because `cngx.base` already paints
+ * the outline look.
+ *
+ * `fill` is the filled-with-underline treatment: tinted surface, hairline
+ * bottom border, and a `--cngx-field-underline-size` underline in the focus
+ * colour drawn as an inset `box-shadow`, so focus costs no layout shift.
+ * `bare` strips surface and border entirely for a control embedded in
+ * something that already owns the box - a table filter row, an inline cell
+ * editor - and keeps only the focus underline.
+ *
+ * Both key their error / disabled / readonly variants on native and ARIA
+ * truth first (`[aria-invalid='true']`, `:disabled`, `[readonly]`,
+ * `[aria-readonly='true']`) and on the presenter's `.cngx-field--*` classes
+ * second, so they render correctly on a bare input with no surrounding
+ * field and under `cngxBindField`, Reactive Forms or any CVA.
+ *
+ * Four colour tokens are left unregistered on purpose so a theme can unset
+ * them and the `var()` fallback chain takes over:
+ * `--cngx-field-fill-bg`, `--cngx-field-fill-bg-hover`,
+ * `--cngx-field-underline-color`, `--cngx-field-underline-focus-color`.
+ * The Material bridge SETs all four.
+ *
+ * `--cngx-field-underline-focus-color` deliberately does NOT fall back to
+ * `--cngx-color-primary`. The default Ember primary measures 2.94:1 at rest
+ * and 2.70:1 on hover against the fill surface - below the WCAG 1.4.11 floor,
+ * because the surface tint darkens the backdrop under an already-borderline
+ * orange. The darker `oklch(0.58 0.19 50)` keeps the same hue and chroma and
+ * measures 4.05:1 / 3.72:1 (4.58:1 for `bare` on white). Asserted in
+ * `cngx-field-skin.geometry.spec.ts`.
+ *
+ * A11y note: the focus underline is a bottom edge, not a full perimeter, so
+ * `fill` and `bare` satisfy WCAG 2.4.7 and 2.4.11 but consciously not 2.4.13
+ * (Focus Appearance, AAA) - the same trade-off a filled Material field makes.
+ * `outline` is the AAA path. Under `forced-colors` an underline does not
+ * survive at all, so the reset outline is restored there.
+ */
+
+@layer cngx.tokens {
+  /**
+   * Thickness of the focus underline on the `fill` and `bare` skins.
+   * `inherits: true` so a single `:root` override retunes every field.
+   * @group Sizing
+   */
+  @property --cngx-field-underline-size {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 2px;
+  }
+}
+
+@layer cngx.components {
+  @scope (:is(input, textarea, select)[data-skin='fill'], .cngx-field-affix-row[data-skin='fill']) {
+    :scope {
+      /* SET-from-scale so a root [data-density] recompacts the fill box.
+         Matches the outline padding in cngx.base: sm block, md inline. */
+      --cngx-field-fill-padding-block: var(--cngx-space-sm);
+      --cngx-field-fill-padding-inline: var(--cngx-space-md);
+      padding-block: var(--cngx-field-fill-padding-block, 0.5rem);
+      padding-inline: var(--cngx-field-fill-padding-inline, 1rem);
+      border: 0;
+      border-block-end: 1px solid
+        var(--cngx-field-underline-color, var(--cngx-color-border, oklch(0.88 0.005 250)));
+      border-radius: var(--cngx-radius-md, 8px) var(--cngx-radius-md, 8px) 0 0;
+      background: var(
+        --cngx-field-fill-bg,
+        color-mix(in oklch, var(--cngx-color-text, oklch(0.2 0.01 250)) 6%, transparent)
+      );
+      transition:
+        box-shadow 150ms ease,
+        background-color 150ms ease;
+    }
+
+    :scope:hover {
+      background: var(
+        --cngx-field-fill-bg-hover,
+        color-mix(in oklch, var(--cngx-color-text, oklch(0.2 0.01 250)) 10%, transparent)
+      );
+    }
+
+    /* The UA autofill tint would replace the surface outright. Painting it
+       back as a full-height inset shadow keeps the cngx fill visible. */
+    :scope:autofill {
+      box-shadow: inset 0 0 0 100vh
+        var(
+          --cngx-field-fill-bg,
+          color-mix(in oklch, var(--cngx-color-text, oklch(0.2 0.01 250)) 6%, transparent)
+        );
+      -webkit-text-fill-color: var(--cngx-color-text, oklch(0.2 0.01 250));
+    }
+
+    /* Suppressed on :scope only - an interactive CngxSuffix inside the box
+       keeps the cngx.reset ring. The underline replaces it here. */
+    :scope:is(:focus-visible, :focus-within) {
+      outline: none;
+      box-shadow: inset 0 calc(-1 * var(--cngx-field-underline-size, 2px)) 0
+        var(--cngx-field-underline-focus-color, oklch(0.58 0.19 50));
+    }
+
+    /* Autofilled AND focused: underline first so it paints above the fill. */
+    :scope:autofill:is(:focus-visible, :focus-within) {
+      box-shadow:
+        inset 0 calc(-1 * var(--cngx-field-underline-size, 2px)) 0
+          var(--cngx-field-underline-focus-color, oklch(0.58 0.19 50)),
+        inset 0 0 0 100vh
+          var(
+            --cngx-field-fill-bg,
+            color-mix(in oklch, var(--cngx-color-text, oklch(0.2 0.01 250)) 6%, transparent)
+          );
+    }
+
+    :scope:is([aria-invalid='true'], .cngx-field--error *),
+    :scope:has([aria-invalid='true']) {
+      border-block-end-color: var(
+        --cngx-field-error-color,
+        var(--cngx-color-danger, oklch(0.58 0.22 27))
+      );
+    }
+
+    :scope:is(:disabled, .cngx-field--disabled *),
+    :scope:has(:disabled) {
+      border-block-end-style: dashed;
+      opacity: var(--cngx-field-disabled-opacity, 0.6);
+    }
+
+    /* Readonly is editable-looking but inert: keep the resting surface on
+       hover so the control does not invite a click it will not honour. */
+    :scope:is([readonly], [aria-readonly='true'], .cngx-field--readonly *):hover,
+    :scope:has([readonly], [aria-readonly='true']):hover {
+      background: var(
+        --cngx-field-fill-bg,
+        color-mix(in oklch, var(--cngx-color-text, oklch(0.2 0.01 250)) 6%, transparent)
+      );
+    }
+
+    /* The tinted surface eats contrast; the more-contrast axis pushes the
+       resting underline to full text colour to hold 3:1. */
+    [data-contrast='more'] :scope {
+      --cngx-field-underline-color: var(--cngx-color-text, oklch(0.2 0.01 250));
+    }
+  }
+
+  @scope (:is(input, textarea, select)[data-skin='bare'], .cngx-field-affix-row[data-skin='bare']) {
+    :scope {
+      /* SET-from-scale; bare is the compact rung by definition. */
+      --cngx-field-bare-padding: var(--cngx-space-xs);
+      padding: var(--cngx-field-bare-padding, 0.25rem);
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      /* Bare exists inside something that owns the area - a cell, a toolbar
+         slot - so the container decides the width. Block size stays
+         content-driven; the --cngx-target-min floor from cngx.base survives. */
+      inline-size: 100%;
+      transition: box-shadow 150ms ease;
+    }
+
+    :scope:is(:focus-visible, :focus-within) {
+      outline: none;
+      box-shadow: inset 0 calc(-1 * var(--cngx-field-underline-size, 2px)) 0
+        var(--cngx-field-underline-focus-color, oklch(0.58 0.19 50));
+    }
+
+    :scope:is([aria-invalid='true'], .cngx-field--error *),
+    :scope:has([aria-invalid='true']) {
+      box-shadow: inset 0 -1px 0
+        var(--cngx-field-error-color, var(--cngx-color-danger, oklch(0.58 0.22 27)));
+    }
+
+    :scope:is([aria-invalid='true'], .cngx-field--error *):is(:focus-visible, :focus-within),
+    :scope:has([aria-invalid='true']):is(:focus-visible, :focus-within) {
+      box-shadow: inset 0 calc(-1 * var(--cngx-field-underline-size, 2px)) 0
+        var(--cngx-field-error-color, var(--cngx-color-danger, oklch(0.58 0.22 27)));
+    }
+
+    :scope:is(:disabled, .cngx-field--disabled *),
+    :scope:has(:disabled) {
+      opacity: var(--cngx-field-disabled-opacity, 0.6);
+    }
+
+    /* Bare draws no resting underline, so boosting the resting colour would
+       be a no-op here - the focus underline is the only thing it paints. */
+    [data-contrast='more'] :scope {
+      --cngx-field-underline-focus-color: var(--cngx-color-text, oklch(0.2 0.01 250));
+    }
+  }
+
+  /* Nested boxes: when an affix row is the box, the control inside must not
+     draw a second surface or a second underline. Authored outside both
+     scopes at (0,3,1) so it beats the control's own (0,2,0) :scope rules,
+     including its focus and autofill shadows. */
+  .cngx-field-affix-row[data-skin='fill'] > :is(input, textarea, select)[data-skin='fill'],
+  .cngx-field-affix-row[data-skin='fill']
+    > :is(input, textarea, select)[data-skin='fill']:is(:focus-visible, :focus-within, :autofill),
+  .cngx-field-affix-row[data-skin='bare'] > :is(input, textarea, select)[data-skin='bare'],
+  .cngx-field-affix-row[data-skin='bare']
+    > :is(input, textarea, select)[data-skin='bare']:is(:focus-visible, :focus-within, :autofill) {
+    padding-inline: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+}
+
+/* Unlayered, outside @scope, full selectors repeated: a layered or
+   :scope-bound override does not reliably win this cascade. An underline is
+   not a forced-colors indicator, so the reset outline comes back and the
+   border is redrawn in a system colour. */
+@media (forced-colors: active) {
+  :is(input, textarea, select)[data-skin='fill'],
+  :is(input, textarea, select)[data-skin='bare'],
+  .cngx-field-affix-row[data-skin='fill'],
+  .cngx-field-affix-row[data-skin='bare'] {
+    border-block-end: 1px solid FieldText;
+    box-shadow: none;
+  }
+
+  :is(input, textarea, select)[data-skin='fill']:is(:focus-visible, :focus-within),
+  :is(input, textarea, select)[data-skin='bare']:is(:focus-visible, :focus-within),
+  .cngx-field-affix-row[data-skin='fill']:is(:focus-visible, :focus-within),
+  .cngx-field-affix-row[data-skin='bare']:is(:focus-visible, :focus-within) {
+    outline: 2px solid Highlight;
+    outline-offset: 3px;
+    box-shadow: none;
+  }
+}

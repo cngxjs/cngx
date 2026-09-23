@@ -1,6 +1,28 @@
 import { InjectionToken, type Signal } from '@angular/core';
 
 /**
+ * Visual appearance of a form control and of the field that surrounds it.
+ *
+ * - `outline` - hairline border on a transparent surface. The library
+ *   default; it is what `cngx.base` already paints, so it emits no
+ *   `data-skin` attribute at all.
+ * - `fill` - tinted surface with a bottom underline that thickens on
+ *   focus. The filled look without the ten nested wrappers Material needs
+ *   for it; cngx ships no floating label, the label stays above the
+ *   control.
+ * - `bare` - no border, no surface, compact padding, underline only on
+ *   focus. For controls embedded in something that already owns the box:
+ *   a table filter row, an inline cell editor, a toolbar slot.
+ *
+ * Lives in `@cngx/core/tokens` (Level 1) next to the host contract that
+ * carries it, so `@cngx/common` atoms can read the type without importing
+ * the Level-3 `@cngx/forms/field` library.
+ *
+ * @category core/tokens
+ */
+export type CngxFieldSkin = 'outline' | 'fill' | 'bare';
+
+/**
  * Narrow back-channel a form-field-aware host (typically
  * `CngxFormFieldPresenter`) exposes to the bound control.
  *
@@ -18,6 +40,9 @@ import { InjectionToken, type Signal } from '@angular/core';
  *   reference it via `aria-labelledby` when no explicit `label` input is
  *   set; group roles take no name from content, so this channel is what
  *   names them inside a `cngx-form-field`.
+ * - `skin?: Signal<CngxFieldSkin | undefined>` - the field's own,
+ *   unresolved appearance value. The host publishes what was bound to it
+ *   and nothing else; resolving the cascade is the reader's job.
  *
  * Deliberately scoped to these members. The full presenter exposes
  * many more signals (constraints, ARIA IDs, dirty / pending / readonly /
@@ -49,6 +74,15 @@ export interface CngxFormFieldHostContract {
    * `host.labelId?.() ?? null`.
    */
   readonly labelId?: Signal<string>;
+  /**
+   * The appearance bound on the host itself, unresolved. `undefined`
+   * means the host was given no skin, not that it wants `'outline'` -
+   * the config default still has to win in that case. Optional so hosts
+   * without an appearance surface keep satisfying the contract;
+   * consumers read it as `host.skin?.() ?? config.skin ?? 'outline'` and
+   * own the fallback.
+   */
+  readonly skin?: Signal<CngxFieldSkin | undefined>;
 }
 
 /**

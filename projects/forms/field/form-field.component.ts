@@ -51,7 +51,7 @@ import { CngxFormFieldPresenter } from './form-field-presenter';
     CngxErrorScopeFieldBridge,
     {
       directive: CngxFormFieldPresenter,
-      inputs: ['field'],
+      inputs: ['field', 'skin'],
     },
   ],
 })

@@ -42,6 +42,7 @@ import type {
 import { CNGX_TRIGGER_FOCUS_FACTORY } from '../shared/trigger-focus';
 import {
   CNGX_FORM_FIELD_CONTROL,
+  CngxFieldSkinHost,
   CngxFormFieldPresenter,
   type CngxFormFieldControl,
 } from '@cngx/forms/field';
@@ -179,6 +180,7 @@ export interface CngxTreeSelectChange<T = unknown> {
     { provide: CNGX_SELECT_PANEL_VIEW_HOST, useExisting: CngxTreeSelect },
     { provide: CNGX_TREE_SELECT_PANEL_HOST, useExisting: CngxTreeSelect },
   ],
+  hostDirectives: [{ directive: CngxFieldSkinHost, inputs: ['cngxFieldSkin: skin'] }],
   host: {
     class: 'cngx-tree-select',
     '[id]': 'resolvedId()',

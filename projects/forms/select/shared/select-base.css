@@ -26,6 +26,20 @@
  *
  * **Variants**
  *
+ * Appearance via `data-skin` on the component host, written by the
+ * composed `CngxFieldSkinHost`:
+ *
+ * - default (absent) - outline; the trigger keeps its own border
+ * - `data-skin='fill'` - tinted surface + bottom underline on the
+ *   trigger, thickening in the focus colour
+ * - `data-skin='bare'` - no border, no surface, underline only on focus
+ *
+ * The per-variant trigger rules live in each variant stylesheet and read
+ * the same four `--cngx-field-*` tokens as the input skins, so one
+ * `withFieldSkin(...)` covers the whole field family. A trigger that sits
+ * as a direct child of a skinned affix row keeps its outline chrome - the
+ * row is the box there.
+ *
  * Chip-list overflow modes via `data-overflow`:
  *
  * - default - flex-wrap chips across multiple rows
@@ -1204,7 +1218,10 @@
   .cngx-select__chip-list cngx-chip,
   .cngx-select__chip-list cngx-chip:has(.cngx-chip__remove) {
     padding-block: 0;
-    min-block-size: max(calc(var(--cngx-line-height-base, 1.5) * 1rem), var(--cngx-target-min, 0px));
+    min-block-size: max(
+      calc(var(--cngx-line-height-base, 1.5) * 1rem),
+      var(--cngx-target-min, 0px)
+    );
   }
 
   .cngx-select__chip-list[data-overflow='scroll-x'] {
@@ -1475,6 +1492,247 @@
       var(--cngx-color-primary, oklch(0.72 0.18 50))
     );
   }
+
+  /* ── Field skins ──────────────────────────────────────────────────────
+     One rule set for all nine triggers. The host carries `data-skin` from
+     the composed `CngxFieldSkinHost`; the trigger is the box and reads the
+     same four `--cngx-field-*` tokens an input does, so a single
+     `withFieldSkin(...)` covers the whole field family.
+
+     A trigger whose host sits as a direct child of a skinned affix row is
+     exempt: the row is the box there and draws the only underline.
+
+     Outline suppression stays on the trigger - option rows, chips,
+     chip-remove buttons and the caret keep their own focus rings. */
+
+  :is(
+      .cngx-select,
+      .cngx-multi-select,
+      .cngx-combobox,
+      .cngx-typeahead,
+      .cngx-tree-select,
+      .cngx-action-select,
+      .cngx-action-multi-select,
+      .cngx-reorderable-multi-select,
+      .cngx-select-shell
+    )[data-skin='fill']:not(.cngx-field-affix-row[data-skin] > *)
+    :is(
+      .cngx-select__trigger,
+      .cngx-multi-select__trigger,
+      .cngx-combobox__trigger,
+      .cngx-typeahead__trigger,
+      .cngx-tree-select__trigger,
+      .cngx-action-select__trigger,
+      .cngx-action-multi-select__trigger,
+      .cngx-reorderable-multi-select__trigger,
+      .cngx-select-shell__trigger
+    ) {
+    --cngx-select-skin-padding-block: var(--cngx-space-sm);
+    --cngx-select-skin-padding-inline: var(--cngx-space-md);
+    padding: var(--cngx-select-skin-padding-block, 0.5rem)
+      var(--cngx-select-skin-padding-inline, 1rem);
+    border: 0;
+    border-block-end: 1px solid
+      var(--cngx-field-underline-color, var(--cngx-color-border, oklch(0.88 0.005 250)));
+    border-radius: var(--cngx-radius-md, 8px) var(--cngx-radius-md, 8px) 0 0;
+    background: var(
+      --cngx-field-fill-bg,
+      color-mix(in oklch, var(--cngx-color-text, oklch(0.2 0.01 250)) 6%, transparent)
+    );
+  }
+
+  :is(
+      .cngx-select,
+      .cngx-multi-select,
+      .cngx-combobox,
+      .cngx-typeahead,
+      .cngx-tree-select,
+      .cngx-action-select,
+      .cngx-action-multi-select,
+      .cngx-reorderable-multi-select,
+      .cngx-select-shell
+    )[data-skin='bare']:not(.cngx-field-affix-row[data-skin] > *)
+    :is(
+      .cngx-select__trigger,
+      .cngx-multi-select__trigger,
+      .cngx-combobox__trigger,
+      .cngx-typeahead__trigger,
+      .cngx-tree-select__trigger,
+      .cngx-action-select__trigger,
+      .cngx-action-multi-select__trigger,
+      .cngx-reorderable-multi-select__trigger,
+      .cngx-select-shell__trigger
+    ) {
+    --cngx-select-skin-padding-bare: var(--cngx-space-xs);
+    padding: var(--cngx-select-skin-padding-bare, 0.25rem);
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+  }
+
+  :is(
+      .cngx-select,
+      .cngx-multi-select,
+      .cngx-combobox,
+      .cngx-typeahead,
+      .cngx-tree-select,
+      .cngx-action-select,
+      .cngx-action-multi-select,
+      .cngx-reorderable-multi-select,
+      .cngx-select-shell
+    )[data-skin='fill']:not(.cngx-field-affix-row[data-skin] > *)
+    :is(
+      .cngx-select__trigger,
+      .cngx-multi-select__trigger,
+      .cngx-combobox__trigger,
+      .cngx-typeahead__trigger,
+      .cngx-tree-select__trigger,
+      .cngx-action-select__trigger,
+      .cngx-action-multi-select__trigger,
+      .cngx-reorderable-multi-select__trigger,
+      .cngx-select-shell__trigger
+    ):is(:focus-visible, :focus-within),
+  :is(
+      .cngx-select,
+      .cngx-multi-select,
+      .cngx-combobox,
+      .cngx-typeahead,
+      .cngx-tree-select,
+      .cngx-action-select,
+      .cngx-action-multi-select,
+      .cngx-reorderable-multi-select,
+      .cngx-select-shell
+    )[data-skin='bare']:not(.cngx-field-affix-row[data-skin] > *)
+    :is(
+      .cngx-select__trigger,
+      .cngx-multi-select__trigger,
+      .cngx-combobox__trigger,
+      .cngx-typeahead__trigger,
+      .cngx-tree-select__trigger,
+      .cngx-action-select__trigger,
+      .cngx-action-multi-select__trigger,
+      .cngx-reorderable-multi-select__trigger,
+      .cngx-select-shell__trigger
+    ):is(:focus-visible, :focus-within) {
+    outline: none;
+    box-shadow: inset 0 calc(-1 * var(--cngx-field-underline-size, 2px)) 0
+      var(--cngx-field-underline-focus-color, oklch(0.58 0.19 50));
+  }
+
+  :is(
+      .cngx-select,
+      .cngx-multi-select,
+      .cngx-combobox,
+      .cngx-typeahead,
+      .cngx-tree-select,
+      .cngx-action-select,
+      .cngx-action-multi-select,
+      .cngx-reorderable-multi-select,
+      .cngx-select-shell
+    )[data-skin='fill']:not(.cngx-field-affix-row[data-skin] > *)
+    :is(
+      .cngx-select__trigger,
+      .cngx-multi-select__trigger,
+      .cngx-combobox__trigger,
+      .cngx-typeahead__trigger,
+      .cngx-tree-select__trigger,
+      .cngx-action-select__trigger,
+      .cngx-action-multi-select__trigger,
+      .cngx-reorderable-multi-select__trigger,
+      .cngx-select-shell__trigger
+    )[aria-invalid='true'],
+  :is(
+      .cngx-select,
+      .cngx-multi-select,
+      .cngx-combobox,
+      .cngx-typeahead,
+      .cngx-tree-select,
+      .cngx-action-select,
+      .cngx-action-multi-select,
+      .cngx-reorderable-multi-select,
+      .cngx-select-shell
+    )[data-skin='bare']:not(.cngx-field-affix-row[data-skin] > *)
+    :is(
+      .cngx-select__trigger,
+      .cngx-multi-select__trigger,
+      .cngx-combobox__trigger,
+      .cngx-typeahead__trigger,
+      .cngx-tree-select__trigger,
+      .cngx-action-select__trigger,
+      .cngx-action-multi-select__trigger,
+      .cngx-reorderable-multi-select__trigger,
+      .cngx-select-shell__trigger
+    )[aria-invalid='true'] {
+    border-block-end: 1px solid
+      var(--cngx-field-error-color, var(--cngx-color-danger, oklch(0.58 0.22 27)));
+  }
+
+  :is(
+      .cngx-select,
+      .cngx-multi-select,
+      .cngx-combobox,
+      .cngx-typeahead,
+      .cngx-tree-select,
+      .cngx-action-select,
+      .cngx-action-multi-select,
+      .cngx-reorderable-multi-select,
+      .cngx-select-shell
+    )[data-skin='fill']:not(.cngx-field-affix-row[data-skin] > *)
+    :is(
+      .cngx-select__trigger,
+      .cngx-multi-select__trigger,
+      .cngx-combobox__trigger,
+      .cngx-typeahead__trigger,
+      .cngx-tree-select__trigger,
+      .cngx-action-select__trigger,
+      .cngx-action-multi-select__trigger,
+      .cngx-reorderable-multi-select__trigger,
+      .cngx-select-shell__trigger
+    )[aria-disabled='true'],
+  :is(
+      .cngx-select,
+      .cngx-multi-select,
+      .cngx-combobox,
+      .cngx-typeahead,
+      .cngx-tree-select,
+      .cngx-action-select,
+      .cngx-action-multi-select,
+      .cngx-reorderable-multi-select,
+      .cngx-select-shell
+    )[data-skin='bare']:not(.cngx-field-affix-row[data-skin] > *)
+    :is(
+      .cngx-select__trigger,
+      .cngx-multi-select__trigger,
+      .cngx-combobox__trigger,
+      .cngx-typeahead__trigger,
+      .cngx-tree-select__trigger,
+      .cngx-action-select__trigger,
+      .cngx-action-multi-select__trigger,
+      .cngx-reorderable-multi-select__trigger,
+      .cngx-select-shell__trigger
+    )[aria-disabled='true'] {
+    border-block-end-style: dashed;
+  }
+
+  /* Chip strips wrap onto several rows; keep the last row off the underline.
+     Only the four chip-strip variants need it - the single-row triggers do
+     not wrap. */
+  :is(
+      .cngx-multi-select,
+      .cngx-combobox,
+      .cngx-action-multi-select,
+      .cngx-reorderable-multi-select
+    ):is([data-skin='fill'], [data-skin='bare']):not(.cngx-field-affix-row[data-skin] > *)
+    :is(
+      .cngx-multi-select__trigger,
+      .cngx-combobox__trigger,
+      .cngx-action-multi-select__trigger,
+      .cngx-reorderable-multi-select__trigger
+    ) {
+    padding-block-end: calc(
+      var(--cngx-select-skin-padding-block, 0.5rem) + var(--cngx-field-underline-size, 2px)
+    );
+  }
 }
 
 /* Keyframes are global by design - namespaced with `cngx-select-` so they
@@ -1558,5 +1816,64 @@
   }
   .cngx-select__option.cngx-option--highlighted .cngx-select__check {
     color: HighlightText;
+  }
+}
+
+/* Unlayered, outside any @layer, full selectors repeated: a layered override
+   does not reliably win this cascade. The fill and bare skins trade the focus
+   outline for an inset box-shadow underline, and WHCM strips box-shadow
+   outright - without this a skinned trigger would have no focus indicator. */
+@media (forced-colors: active) {
+  :is(
+      .cngx-select,
+      .cngx-multi-select,
+      .cngx-combobox,
+      .cngx-typeahead,
+      .cngx-tree-select,
+      .cngx-action-select,
+      .cngx-action-multi-select,
+      .cngx-reorderable-multi-select,
+      .cngx-select-shell
+    ):is([data-skin='fill'], [data-skin='bare'])
+    :is(
+      .cngx-select__trigger,
+      .cngx-multi-select__trigger,
+      .cngx-combobox__trigger,
+      .cngx-typeahead__trigger,
+      .cngx-tree-select__trigger,
+      .cngx-action-select__trigger,
+      .cngx-action-multi-select__trigger,
+      .cngx-reorderable-multi-select__trigger,
+      .cngx-select-shell__trigger
+    ) {
+    border-block-end: 1px solid FieldText;
+    box-shadow: none;
+  }
+
+  :is(
+      .cngx-select,
+      .cngx-multi-select,
+      .cngx-combobox,
+      .cngx-typeahead,
+      .cngx-tree-select,
+      .cngx-action-select,
+      .cngx-action-multi-select,
+      .cngx-reorderable-multi-select,
+      .cngx-select-shell
+    ):is([data-skin='fill'], [data-skin='bare'])
+    :is(
+      .cngx-select__trigger,
+      .cngx-multi-select__trigger,
+      .cngx-combobox__trigger,
+      .cngx-typeahead__trigger,
+      .cngx-tree-select__trigger,
+      .cngx-action-select__trigger,
+      .cngx-action-multi-select__trigger,
+      .cngx-reorderable-multi-select__trigger,
+      .cngx-select-shell__trigger
+    ):is(:focus-visible, :focus-within) {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+    box-shadow: none;
   }
 }

@@ -3,7 +3,12 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CNGX_ERROR_SCOPE, type CngxErrorScopeContract } from '@cngx/common/interactive';
-import { CNGX_FORM_FIELD_CONTROL, type CngxFormFieldControl } from '@cngx/core/tokens';
+import {
+  CNGX_FORM_FIELD_CONTROL,
+  CNGX_FORM_FIELD_HOST,
+  type CngxFieldSkin,
+  type CngxFormFieldControl,
+} from '@cngx/core/tokens';
 import { CngxFormField } from './form-field.component';
 import { CngxFormFieldPresenter } from './form-field-presenter';
 import {
@@ -33,6 +38,15 @@ function makeScopeStub(showErrors: Signal<boolean>): CngxErrorScopeContract {
 })
 class TestHost {
   field = signal<CngxFieldAccessor>(createMockField({ name: 'email' }).accessor);
+}
+
+@Component({
+  template: `<cngx-form-field [field]="field()" [skin]="skin()"></cngx-form-field>`,
+  imports: [CngxFormField],
+})
+class SkinHost {
+  field = signal<CngxFieldAccessor>(createMockField({ name: 'email' }).accessor);
+  skin = signal<CngxFieldSkin | undefined>(undefined);
 }
 
 @Component({
@@ -816,6 +830,27 @@ describe('CngxFormFieldPresenter', () => {
       expect(mirrorPresenter.showError()).toBe(false);
       expect(mirrorPresenter.controlErrorState()).toBe(false);
       expect(mirrorEl.classList.contains('cngx-field--error')).toBe(false);
+    });
+  });
+
+  describe('skin slot on the host contract', () => {
+    it('publishes the bound skin unresolved', () => {
+      const fixture = TestBed.createComponent(SkinHost);
+      fixture.componentInstance.skin.set('fill');
+      fixture.detectChanges();
+      const host = fixture.debugElement
+        .query(By.directive(CngxFormField))
+        .injector.get(CNGX_FORM_FIELD_HOST);
+      expect(host.skin?.()).toBe('fill');
+    });
+
+    it('reads undefined when no skin is bound', () => {
+      const fixture = TestBed.createComponent(TestHost);
+      fixture.detectChanges();
+      const host = fixture.debugElement
+        .query(By.directive(CngxFormField))
+        .injector.get(CNGX_FORM_FIELD_HOST);
+      expect(host.skin?.()).toBeUndefined();
     });
   });
 });

@@ -4,6 +4,8 @@ import { By } from '@angular/platform-browser';
 import type { CngxTreeNode } from '@cngx/utils';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { describeCommitControllerCascade } from '../shared/__test-helpers/commit-controller-cascade';
+import { createMockField } from '@cngx/forms/field/testing';
+import { describeFieldSkinHost } from '../shared/__test-helpers/field-skin-host';
 import { CngxTreeSelect } from './tree-select.component';
 import { CngxTreeSelectChip } from './tree-select-chip.directive';
 import { CngxTreeSelectTriggerLabel } from './tree-select-trigger-label.directive';
@@ -387,3 +389,7 @@ describe('CngxTreeSelect', () => {
 });
 
 describeCommitControllerCascade('CngxTreeSelect');
+
+describeFieldSkinHost('CngxTreeSelect', CngxTreeSelect, 'cngx-tree-select', () =>
+  createMockField({ name: 'pick' }).accessor,
+);

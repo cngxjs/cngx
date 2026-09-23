@@ -8,6 +8,8 @@ import { CngxSelectAction } from '../shared/template-slots';
 import { CngxActionSelect, type CngxActionSelectChange } from './action-select.component';
 import type { CngxSelectCreateAction } from '../shared/create-action.types';
 import type { CngxSelectOptionDef, CngxSelectOptionsInput } from '../shared/option.model';
+import { createMockField } from '@cngx/forms/field/testing';
+import { describeFieldSkinHost } from '../shared/__test-helpers/field-skin-host';
 
 type Tag = { readonly id: string; readonly name: string };
 
@@ -430,3 +432,7 @@ describe('CngxActionSelect - dismiss guard', () => {
     expect(select.actionDirty()).toBe(false);
   });
 });
+
+describeFieldSkinHost('CngxActionSelect', CngxActionSelect, 'cngx-action-select', () =>
+  createMockField({ name: 'pick' }).accessor,
+);

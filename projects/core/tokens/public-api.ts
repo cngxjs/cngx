@@ -9,5 +9,6 @@ export {
 } from './form-field-control.token';
 export {
   CNGX_FORM_FIELD_HOST,
+  type CngxFieldSkin,
   type CngxFormFieldHostContract,
 } from './form-field-host.token';

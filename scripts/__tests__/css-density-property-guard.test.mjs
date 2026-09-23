@@ -89,6 +89,10 @@ const DENSITY_ALLOWLIST = new Map([
     'split stylesheet - the --cngx-filter-builder-gap SET lives in filter-builder.component.css.',
   ],
   [
+    '/projects/forms/theming/components/cngx-field-skin.css',
+    'skin overlay - every --cngx-field-*-padding SET derives from --cngx-space-*, but all of them are necessarily [data-skin]-gated because the tokens only exist while a skin is active; the non-skinned default padding comes from the input rule in core/theming/base.css (same rationale the *-skins.css exemption encodes).',
+  ],
+  [
     '/projects/common/interactive/button-toggle/button-toggle-group.component.css',
     'deliberate 0-keep - --cngx-button-toggle-group-gap defaults to 0 so segmented toggles render flush; deriving it would introduce an unwanted gap.',
   ],

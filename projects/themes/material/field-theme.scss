@@ -17,10 +17,32 @@
     --cngx-field-hint-color: var(--mat-sys-on-surface-variant);
     --cngx-field-error-color: var(--mat-sys-error);
     --cngx-field-required-color: var(--mat-sys-error);
+    @include skin-color($theme);
   } @else {
     --cngx-field-hint-color: #{rgba(mat.get-theme-color($theme, foreground, text), 0.54)};
     --cngx-field-error-color: #{mat.get-theme-color($theme, warn)};
     --cngx-field-required-color: #{mat.get-theme-color($theme, warn)};
+    @include skin-color($theme);
+  }
+}
+
+// The fill surface, the underline in both its resting and focus colour, and
+// the affix glyph tint. Shared by the field scope and the bare-control scope
+// below, because a `bare` or `fill` control can sit outside any
+// `cngx-form-field` - a table filter cell has no label, hint or error block.
+@mixin skin-color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-field-fill-bg: var(--mat-sys-surface-container-highest);
+    --cngx-field-fill-bg-hover: var(--mat-sys-surface-container-high);
+    --cngx-field-underline-color: var(--mat-sys-on-surface-variant);
+    --cngx-field-underline-focus-color: var(--mat-sys-primary);
+    --cngx-field-affix-color: var(--mat-sys-on-surface-variant);
+  } @else {
+    --cngx-field-fill-bg: #{mat.get-theme-color($theme, background, card)};
+    --cngx-field-fill-bg-hover: #{mat.get-theme-color($theme, background, hover)};
+    --cngx-field-underline-color: #{rgba(mat.get-theme-color($theme, foreground, text), 0.54)};
+    --cngx-field-underline-focus-color: #{mat.get-theme-color($theme, primary)};
+    --cngx-field-affix-color: #{rgba(mat.get-theme-color($theme, foreground, text), 0.54)};
   }
 }
 
@@ -59,5 +81,31 @@
   @include bridge.on(cngx-form-errors) {
     @include form-errors-color($theme);
     @include form-errors-typography($theme);
+  }
+
+  // A skinned control is not always inside a cngx-form-field: the bare skin
+  // exists for exactly the case where there is no field (table filter row,
+  // inline cell editor). The attribute is the reliable hook, so the skin
+  // colours get a second scope keyed on it.
+  // The select-family triggers carry the attribute on their component host,
+  // so they need naming too - a skinned `cngx-select` in a toolbar or a table
+  // filter cell sits outside any field and would otherwise fall back to the
+  // cngx palette while everything around it follows Material.
+  @include bridge.on(
+    'input[data-skin]',
+    'textarea[data-skin]',
+    'select[data-skin]',
+    '.cngx-field-affix-row[data-skin]',
+    'cngx-select[data-skin]',
+    'cngx-multi-select[data-skin]',
+    'cngx-combobox[data-skin]',
+    'cngx-typeahead[data-skin]',
+    'cngx-tree-select[data-skin]',
+    'cngx-action-select[data-skin]',
+    'cngx-action-multi-select[data-skin]',
+    'cngx-reorderable-multi-select[data-skin]',
+    'cngx-select-shell[data-skin]'
+  ) {
+    @include skin-color($theme);
   }
 }

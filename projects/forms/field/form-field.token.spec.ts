@@ -5,8 +5,12 @@ import {
   CNGX_FORM_FIELD_CONFIG,
   provideErrorMessages,
   provideFormField,
+  injectFormFieldConfig,
+  provideFormFieldAt,
   withConstraintHints,
   withErrorMessages,
+  withFieldSkin,
+  withRequiredMarker,
 } from './form-field.token';
 import type { ErrorMessageMap } from './models';
 
@@ -96,6 +100,22 @@ describe('form-field tokens', () => {
       const config = TestBed.inject(CNGX_FORM_FIELD_CONFIG);
       expect(Object.keys(config.errorMessages!)).toEqual(['required', 'email']);
     });
+
+    it('applies withFieldSkin', () => {
+      TestBed.configureTestingModule({
+        providers: [provideFormField(withFieldSkin('fill'))],
+      });
+      const config = TestBed.inject(CNGX_FORM_FIELD_CONFIG);
+      expect(config.skin).toBe('fill');
+    });
+
+    it('leaves skin undefined without withFieldSkin', () => {
+      TestBed.configureTestingModule({
+        providers: [provideFormField(withConstraintHints())],
+      });
+      const config = TestBed.inject(CNGX_FORM_FIELD_CONFIG);
+      expect(config.skin).toBeUndefined();
+    });
   });
 
   // ── provideErrorMessages (convenience) ─────────────────────────
@@ -108,6 +128,55 @@ describe('form-field tokens', () => {
       });
       const errorMsgs = TestBed.inject(CNGX_ERROR_MESSAGES);
       expect(errorMsgs).toEqual(msgs);
+    });
+  });
+
+  // ── provideFormFieldAt / injectFormFieldConfig ─────────────────
+
+  describe('provideFormFieldAt', () => {
+    it('merges features the same way as the environment tier', () => {
+      TestBed.configureTestingModule({
+        providers: [provideFormFieldAt(withFieldSkin('bare'), withRequiredMarker('*'))],
+      });
+      const config = TestBed.inject(CNGX_FORM_FIELD_CONFIG);
+      expect(config.skin).toBe('bare');
+      expect(config.requiredMarker).toBe('*');
+    });
+
+    it('provides CNGX_ERROR_MESSAGES when the feature set carries messages', () => {
+      const msgs: ErrorMessageMap = { required: () => 'Required' };
+      TestBed.configureTestingModule({
+        providers: [provideFormFieldAt(withErrorMessages(msgs))],
+      });
+      expect(TestBed.inject(CNGX_ERROR_MESSAGES)).toEqual(msgs);
+    });
+
+    it('shadows an app-wide provideFormField rather than merging into it', () => {
+      // The case the tier exists for: a fill app with a bare sub-tree.
+      TestBed.configureTestingModule({
+        providers: [
+          provideFormField(withFieldSkin('fill'), withRequiredMarker('*')),
+          provideFormFieldAt(withFieldSkin('bare')),
+        ],
+      });
+      const config = TestBed.inject(CNGX_FORM_FIELD_CONFIG);
+      expect(config.skin).toBe('bare');
+      // Replace, not merge - the sub-tree drops what it does not re-state.
+      expect(config.requiredMarker).toBeUndefined();
+    });
+  });
+
+  describe('injectFormFieldConfig', () => {
+    it('reads the resolved config', () => {
+      TestBed.configureTestingModule({
+        providers: [provideFormField(withFieldSkin('fill'))],
+      });
+      expect(TestBed.runInInjectionContext(() => injectFormFieldConfig()).skin).toBe('fill');
+    });
+
+    it('returns the empty library default with no provider', () => {
+      TestBed.configureTestingModule({});
+      expect(TestBed.runInInjectionContext(() => injectFormFieldConfig())).toEqual({});
     });
   });
 });

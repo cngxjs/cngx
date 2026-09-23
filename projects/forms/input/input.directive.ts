@@ -1,5 +1,6 @@
 import { computed, Directive, ElementRef, inject, input, signal } from '@angular/core';
 import {
+  CngxFieldSkinHost,
   CngxFormFieldPresenter,
   CNGX_FORM_FIELD_CONFIG,
   CNGX_FORM_FIELD_CONTROL,
@@ -19,6 +20,11 @@ import {
  * <input cngxInput />
  * ```
  *
+ * Hosts {@link CngxFieldSkinHost} and re-aliases it to `skin`, so
+ * `<input cngxInput skin="bare">` renders chrome-less without a wrapper.
+ * The cost is one directive instance and one `computed()` per input; no
+ * extra DOM, no effect, and the default resolves to no attribute at all.
+ *
  * @category forms/input
  * @docsKind primary
  * @wcag AA
@@ -35,6 +41,7 @@ import {
   standalone: true,
   exportAs: 'cngxInput',
   providers: [{ provide: CNGX_FORM_FIELD_CONTROL, useExisting: CngxInput }],
+  hostDirectives: [{ directive: CngxFieldSkinHost, inputs: ['cngxFieldSkin: skin'] }],
   host: {
     '[id]': 'inputId()',
     '[attr.aria-describedby]': 'describedBy()',

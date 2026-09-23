@@ -27,6 +27,7 @@ import { CngxSelectPanel } from '../shared/internal/panel/panel.component';
 
 import {
   CNGX_FORM_FIELD_CONTROL,
+  CngxFieldSkinHost,
   CngxFormFieldPresenter,
   type CngxFormFieldControl,
 } from '@cngx/forms/field';
@@ -161,6 +162,7 @@ export interface CngxMultiSelectChange<T = unknown> {
     { provide: CNGX_SELECT_PANEL_HOST, useExisting: CngxMultiSelect },
     { provide: CNGX_SELECT_PANEL_VIEW_HOST, useExisting: CngxMultiSelect },
   ],
+  hostDirectives: [{ directive: CngxFieldSkinHost, inputs: ['cngxFieldSkin: skin'] }],
   host: {
     class: 'cngx-multi-select',
     '[id]': 'resolvedId()',
