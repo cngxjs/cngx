@@ -6,12 +6,7 @@ import { gotoDemo } from '../../_helpers';
 // a single mark on the baseline.
 
 test.describe('common/chart/deviation-bar', () => {
-  // TODO(examples-e2e-quarantine-2): the story binds [attr.aria-label], which the
-  // host binding on cngx-deviation-bar (deviation-bar.component.ts:42) overwrites with null, so the
-  // preset ships unnamed under role="meter". The assertion is correct; the story
-  // is wrong. Story fix is out of scope for an e2e PR (see the de-rot plan's
-  // Out-of-Scope rule); filed separately.
-  test.fixme('variance-readings: positive, negative and zero fills appear distinctly', async ({
+  test('variance-readings: positive, negative and zero fills appear distinctly', async ({
     page,
   }) => {
     await gotoDemo(page, 'common/chart/deviation-bar/variance-readings');
@@ -31,8 +26,8 @@ test.describe('common/chart/deviation-bar', () => {
       await expect(bars.nth(i).locator('.cngx-deviation-bar__baseline')).toHaveCount(1);
     }
 
-    await expect(bars.nth(0)).toHaveAttribute('aria-label', /Q1 budget \+45/);
-    await expect(bars.nth(1)).toHaveAttribute('aria-label', /Q2 budget -30/);
+    await expect(bars.nth(0)).toHaveAttribute('aria-label', /^Q1 budget \+\$45k$/);
+    await expect(bars.nth(1)).toHaveAttribute('aria-label', /^Q2 budget -\$30k$/);
 
   });
 

@@ -6,12 +6,7 @@ import { gotoDemo } from '../../_helpers';
 // the four CngxAsyncState branches (loading/empty/error/success).
 
 test.describe('common/chart/bullet', () => {
-  // TODO(examples-e2e-quarantine-1): the story binds [attr.aria-label], which the
-  // host binding on cngx-bullet (bullet.component.ts:61) overwrites with null, so the
-  // preset ships unnamed under role="meter". The assertion is correct; the story
-  // is wrong. Story fix is out of scope for an e2e PR (see the de-rot plan's
-  // Out-of-Scope rule); filed separately.
-  test.fixme('performance-vs-target: each row paints track + ranges + fill + target', async ({
+  test('performance-vs-target: each row paints track + ranges + fill + target', async ({
     page,
   }) => {
     await gotoDemo(page, 'common/chart/bullet/performance-vs-target');
@@ -30,8 +25,8 @@ test.describe('common/chart/bullet', () => {
     }
 
     // Each bullet keeps the aria-label its consumer supplied.
-    await expect(bullets.first()).toHaveAttribute('aria-label', /Q1 Revenue/);
-    await expect(bullets.nth(2)).toHaveAttribute('aria-label', /Q3 Revenue/);
+    await expect(bullets.first()).toHaveAttribute('aria-label', /^Q1 revenue: 78 of 100, target 80$/);
+    await expect(bullets.nth(2)).toHaveAttribute('aria-label', /^Q3 revenue: 35 of 100, target 80, below target$/);
 
   });
 
