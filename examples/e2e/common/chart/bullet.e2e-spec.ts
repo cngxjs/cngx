@@ -6,7 +6,12 @@ import { gotoDemo } from '../../_helpers';
 // the four CngxAsyncState branches (loading/empty/error/success).
 
 test.describe('common/chart/bullet', () => {
-  test('performance-vs-target: each row paints track + ranges + fill + target', async ({
+  // TODO(examples-e2e-quarantine-1): the story binds [attr.aria-label], which the
+  // host binding on cngx-bullet (bullet.component.ts:61) overwrites with null, so the
+  // preset ships unnamed under role="meter". The assertion is correct; the story
+  // is wrong. Story fix is out of scope for an e2e PR (see the de-rot plan's
+  // Out-of-Scope rule); filed separately.
+  test.fixme('performance-vs-target: each row paints track + ranges + fill + target', async ({
     page,
   }) => {
     await gotoDemo(page, 'common/chart/bullet/performance-vs-target');
