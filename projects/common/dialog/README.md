@@ -68,10 +68,30 @@ The dialog system is built around the native `<dialog>` element, which is the on
 
 - **`aria-labelledby` and `aria-describedby` are wired automatically** from `[cngxDialogTitle]` and `[cngxDialogDescription]` content children. Place them in the template; the linkage is reactive.
 - **Title announcement.** When a modal dialog transitions to `'open'`, the title text is announced through a polite live region. Screen-reader users hear the dialog purpose without an explicit `aria-live` element.
-- **Icon-only close buttons** need an explicit `aria-label`. The library does not invent labels.
+- **Icon-only close buttons** fall back to a library-supplied name. `CngxDialogClose` sets `aria-label` only when the trigger carries no text of its own and no `aria-label` from the consumer - an explicit label always wins.
 - **Multi-step content** - wizards, tabbed dialogs, paginated forms - is the consumer's responsibility. The dialog moves focus once on open. After that, calling `.focus()` on the first element of the new step is on you.
 - **Error state.** Bind `[error]` to apply `aria-invalid="true"` and the `cngx-dialog--error` class. Pair with a `cngx-form-errors` block (or any `role="alert"` region) inside the dialog for WCAG-compliant form-error announcements.
 - **Reduced motion.** The theme honors `prefers-reduced-motion: reduce` - open and close transitions disable themselves automatically.
+
+### Localising the built-in strings
+
+Five strings the dialog family renders on its own behalf are English by
+default and overridable as one bundle:
+
+```ts
+provideDialogConfig(
+  withDialogLabels({
+    close: 'Dialog schließen',
+    errorFallback: 'Ein Fehler ist aufgetreten',
+    dragHandle: 'Dialog verschieben',
+    dragHandleRoleDescription: 'verschiebbar',
+    dragInstructions: 'Pfeiltasten bewegen den Dialog, Shift für größere Schritte',
+  }),
+)
+```
+
+Unset keys keep their English default. `provideDialogConfigAt(...)` in a
+component's `viewProviders` scopes the override to that subtree.
 
 ## See also
 
