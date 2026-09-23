@@ -26,6 +26,14 @@
  * `--cngx-field-underline-color`, `--cngx-field-underline-focus-color`.
  * The Material bridge SETs all four.
  *
+ * `--cngx-field-underline-focus-color` deliberately does NOT fall back to
+ * `--cngx-color-primary`. The default Ember primary measures 2.94:1 at rest
+ * and 2.70:1 on hover against the fill surface - below the WCAG 1.4.11 floor,
+ * because the surface tint darkens the backdrop under an already-borderline
+ * orange. The darker `oklch(0.58 0.19 50)` keeps the same hue and chroma and
+ * measures 4.05:1 / 3.72:1 (4.58:1 for `bare` on white). Asserted in
+ * `cngx-field-skin.geometry.spec.ts`.
+ *
  * A11y note: the focus underline is a bottom edge, not a full perimeter, so
  * `fill` and `bare` satisfy WCAG 2.4.7 and 2.4.11 but consciously not 2.4.13
  * (Focus Appearance, AAA) - the same trade-off a filled Material field makes.
@@ -91,14 +99,14 @@
     :scope:is(:focus-visible, :focus-within) {
       outline: none;
       box-shadow: inset 0 calc(-1 * var(--cngx-field-underline-size, 2px)) 0
-        var(--cngx-field-underline-focus-color, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+        var(--cngx-field-underline-focus-color, oklch(0.58 0.19 50));
     }
 
     /* Autofilled AND focused: underline first so it paints above the fill. */
     :scope:autofill:is(:focus-visible, :focus-within) {
       box-shadow:
         inset 0 calc(-1 * var(--cngx-field-underline-size, 2px)) 0
-          var(--cngx-field-underline-focus-color, var(--cngx-color-primary, oklch(0.66 0.19 50))),
+          var(--cngx-field-underline-focus-color, oklch(0.58 0.19 50)),
         inset 0 0 0 100vh
           var(
             --cngx-field-fill-bg,
@@ -108,7 +116,10 @@
 
     :scope:is([aria-invalid='true'], .cngx-field--error *),
     :scope:has([aria-invalid='true']) {
-      border-block-end-color: var(--cngx-field-error-color, var(--cngx-color-danger, oklch(0.58 0.22 27)));
+      border-block-end-color: var(
+        --cngx-field-error-color,
+        var(--cngx-color-danger, oklch(0.58 0.22 27))
+      );
     }
 
     :scope:is(:disabled, .cngx-field--disabled *),
@@ -152,7 +163,7 @@
     :scope:is(:focus-visible, :focus-within) {
       outline: none;
       box-shadow: inset 0 calc(-1 * var(--cngx-field-underline-size, 2px)) 0
-        var(--cngx-field-underline-focus-color, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+        var(--cngx-field-underline-focus-color, oklch(0.58 0.19 50));
     }
 
     :scope:is([aria-invalid='true'], .cngx-field--error *),
@@ -172,8 +183,10 @@
       opacity: var(--cngx-field-disabled-opacity, 0.6);
     }
 
+    /* Bare draws no resting underline, so boosting the resting colour would
+       be a no-op here - the focus underline is the only thing it paints. */
     [data-contrast='more'] :scope {
-      --cngx-field-underline-color: var(--cngx-color-text, oklch(0.2 0.01 250));
+      --cngx-field-underline-focus-color: var(--cngx-color-text, oklch(0.2 0.01 250));
     }
   }
 

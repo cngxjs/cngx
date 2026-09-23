@@ -19,18 +19,6 @@
     inherits: false;
     initial-value: 8px;
   }
-
-  /**
-   * Edge length of a decorative affix glyph. Font-relative so a root
-   * `[data-text-scale]` swap carries it; `inherits: true` so a single
-   * `:root` override reaches every affix icon.
-   * @group Sizing
-   */
-  @property --cngx-field-affix-icon-size {
-    syntax: '<length>';
-    inherits: true;
-    initial-value: 1.25em;
-  }
 }
 
 @layer cngx.components {
@@ -44,6 +32,11 @@
          icon size stays font-relative on purpose - it is a glyph gauge that
          follows text scale, not the spacing rungs. */
       --cngx-field-affix-pad: var(--cngx-space-xs);
+      /* Deliberately unregistered: a `<length>` @property needs a
+         computationally-independent initial-value, and `1.25em` is not one -
+         the registration would be dropped whole. As a plain custom property
+         the em gauge resolves against the row font and still inherits, which
+         is what the glyph wants. */
       --cngx-field-affix-icon-size: 1.25em;
       display: inline-flex;
       align-items: center;
