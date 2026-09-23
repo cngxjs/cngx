@@ -26,11 +26,20 @@ test.describe('common/interactive/nav', () => {
     const header = headers.first();
     // The group trigger must expose the disclosure contract it host-composes.
     await expect(header).toHaveAttribute('aria-controls', /.+/);
-    await expect(header).toHaveAttribute('aria-expanded', /.+/);
-    const before = await header.getAttribute('aria-expanded');
+
+    // Assert the transition with retrying assertions on both sides. Comparing
+    // two getAttribute reads across a click races the state update: the read
+    // after the click can land before Angular has re-rendered the host.
+    await expect(header).toHaveAttribute('aria-expanded', 'false');
     await header.click();
-    const after = await header.getAttribute('aria-expanded');
-    expect(after).not.toBe(before);
+    await expect(header).toHaveAttribute('aria-expanded', 'true');
+
+    const panel = page.locator(`#${await header.getAttribute('aria-controls')}`);
+    await expect(panel).toBeVisible();
+
+    await header.click();
+    await expect(header).toHaveAttribute('aria-expanded', 'false');
+    await expect(panel).toBeHidden();
   });
 
   test('links-active-state-depth: exactly one link is marked current', async ({ page }) => {
