@@ -26,7 +26,7 @@ export const STORY: DemoSpec = {
       <div style="display:flex;flex-direction:column;gap:6px">
         <span style="font-weight:600;text-transform:capitalize">{{ skin }}</span>
         <div class="demo-narrow-frame">
-          <cngx-tab-group [skin]="skin" [(activeIndex)]="active" [attr.aria-label]="skin + ' skin, overflow'">
+          <cngx-tab-group [skin]="skin" [(activeIndex)]="active" [aria-label]="skin + ' skin, overflow'">
             <div cngxTab [label]="'Profile'">
               <ng-template cngxTabContent><p>Profile</p></ng-template>
             </div>

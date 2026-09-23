@@ -43,7 +43,7 @@ import { CngxTabGroup, CngxTabOverflow } from '@cngx/ui/tabs';
       @for (skin of skins; track skin.id) {
         <section>
           <h3>{{ skin.id }}</h3>
-          <cngx-tab-group [skin]="skin.id" [(activeIndex)]="active" [attr.aria-label]="skin.label">
+          <cngx-tab-group [skin]="skin.id" [(activeIndex)]="active" [aria-label]="skin.label">
             <div cngxTab [label]="'Overview'">
               <ng-template cngxTabContent><p>Overview content.</p></ng-template>
             </div>

@@ -30,7 +30,7 @@ export const STORY: DemoSpec = {
             [skin]="skin"
             orientation="vertical"
             [(activeIndex)]="active"
-            [attr.aria-label]="skin + ' skin, vertical overflow'"
+            [aria-label]="skin + ' skin, vertical overflow'"
           >
             <div cngxTab [label]="'Profile'">
               <ng-template cngxTabContent><p>Profile</p></ng-template>

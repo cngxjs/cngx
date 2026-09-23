@@ -95,7 +95,7 @@ class CngxPhoneInputDetach {}
       [(value)]="country"
       [options]="selectOptions()"
       [disabled]="disabled()"
-      [attr.aria-label]="resolvedCountryLabel()"
+      [aria-label]="resolvedCountryLabel()"
     />
     <input
       class="cngx-phone-input__number"

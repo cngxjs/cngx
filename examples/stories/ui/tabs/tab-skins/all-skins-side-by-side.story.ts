@@ -22,7 +22,7 @@ export const STORY: DemoSpec = {
     @for (skin of skins; track skin) {
       <div style="display:flex;flex-direction:column;gap:6px">
         <span style="font-weight:600;text-transform:capitalize">{{ skin }}</span>
-        <cngx-tab-group [skin]="skin" [(activeIndex)]="active" [attr.aria-label]="skin + ' skin demo'">
+        <cngx-tab-group [skin]="skin" [(activeIndex)]="active" [aria-label]="skin + ' skin demo'">
           <div cngxTab [label]="'Overview'">
             <ng-template cngxTabContent><p>Overview content.</p></ng-template>
           </div>

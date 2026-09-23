@@ -43,7 +43,7 @@ export const STORY: DemoSpec = {
           [max]="100"
           [ranges]="ranges"
           [style.--cngx-bullet-actual-color]="q.tone ?? null"
-          [attr.aria-label]="q.aria"
+          [aria-label]="q.aria"
         />
       </div>
     }
