@@ -11,10 +11,12 @@ export const STORY: DemoSpec = {
   framework: 'signal-forms',
   apiComponents: ['CngxTreeSelect'],
   moduleImports: [
+    'import { CngxRadioGroup, CngxRadio } from \'@cngx/common/interactive\';',
+    'import type { CngxFieldSkin } from \'@cngx/forms/field\';',
     "import { CngxTreeSelect } from '@cngx/forms/select';",
     "import type { CngxTreeNode } from '@cngx/utils';",
   ],
-  imports: ['CngxTreeSelect'],
+  imports: ['CngxTreeSelect', 'CngxRadioGroup', 'CngxRadio'],
   setup: `protected readonly nodes: CngxTreeNode<string>[] = [
     {
       value: 'frontend',
@@ -38,6 +40,7 @@ export const STORY: DemoSpec = {
   protected readonly values = signal<string[]>([]);
   protected readonly nodeId = (value: string) => value;`,
   template: `  <cngx-tree-select
+    [skin]="skin()"
     [label]="'Tech stack'"
     [nodes]="nodes"
     [(values)]="values"
@@ -46,10 +49,18 @@ export const STORY: DemoSpec = {
     [clearable]="true"
     placeholder="Pick technologies…"
   />`,
+  setupChrome: `protected readonly skin = signal<CngxFieldSkin>('outline');`,
   templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">values</span>
       <span class="event-value">{{ values().join(', ') || '—' }}</span>
+    </div>
+    <div class="event-row" style="margin-top:8px">
+      <cngx-radio-group [(value)]="skin" name="field-skin" label="Field skin">
+        <cngx-radio value="outline">Outline</cngx-radio>
+        <cngx-radio value="fill">Fill</cngx-radio>
+        <cngx-radio value="bare">Bare</cngx-radio>
+      </cngx-radio-group>
     </div>
   </div>`,
 };
