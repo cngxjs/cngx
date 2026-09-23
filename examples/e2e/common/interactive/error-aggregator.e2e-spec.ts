@@ -12,15 +12,20 @@ test.describe('common/interactive/error-aggregator', () => {
       'common/interactive/error/aggregator/native-form-scope-reveal-on-submit',
     );
 
-    const stats = page.locator('pre').first();
-    // Initial: emailFormatBad=true, passwordWeak=true → errorCount=2.
-    await expect(stats).toContainText(/errorCount\s*:\s*2/);
+    // Scope to the readout, not `pre` — every demo's code panel also contains
+    // the literal `errorCount`, so a `pre` match proves nothing.
+    const errorCount = page
+      .locator('.event-row')
+      .filter({ has: page.getByText('errorCount()', { exact: true }) })
+      .locator('.event-value');
 
-    // Toggling email-format off should drop the count.
+    // Initial: emailFormatBad=true, passwordWeak=true -> errorCount=2.
+    await expect(errorCount).toHaveText('2');
+
     await page.getByRole('button', { name: 'Toggle email-format' }).click();
-    await expect(stats).toContainText(/errorCount\s*:\s*1/);
+    await expect(errorCount).toHaveText('1');
     await page.getByRole('button', { name: 'Toggle email-taken' }).click();
-    await expect(stats).toContainText(/errorCount\s*:\s*2/);
+    await expect(errorCount).toHaveText('2');
 
   });
 

@@ -7,19 +7,20 @@ import { gotoDemo } from '../../_helpers';
 // but the state-machine flips are.
 
 test.describe('common/interactive/speak', () => {
-  test('headless-read-aloud: toggle flips Listen ↔ Stop labels', async ({ page }) => {
+  test('headless-read-aloud: the icon button toggles its speaking label', async ({ page }) => {
     await gotoDemo(page, 'common/interactive/speak/headless-read-aloud');
 
-    const listenBtn = page.getByRole('button', { name: 'Listen' }).first();
-    await expect(listenBtn).toBeVisible();
+    // Icon-only control: the accessible name is the aria-label, and it is the
+    // only thing that communicates state to AT.
+    const readBtn = page.getByRole('button', { name: 'Read passage' }).first();
+    await expect(readBtn).toBeVisible();
+    await expect(readBtn).toHaveAttribute('aria-pressed', 'false');
 
-    await listenBtn.click();
-    // After toggle, button rebrands to Stop (if speech-synthesis is
-    // available in the test environment) or remains Listen if not. Either
-    // is acceptable as a smoke; assert at least one of the two labels
-    // remains present (no crash).
+    await readBtn.click();
+    // Headless Chromium may have no speech-synthesis voice, so the directive
+    // can settle back to idle. Either label is a pass; a missing button is not.
     await expect(
-      page.getByRole('button', { name: /Listen|Stop/ }).first(),
+      page.getByRole('button', { name: /Read passage|Stop reading/ }).first(),
     ).toBeVisible();
 
   });
@@ -30,10 +31,17 @@ test.describe('common/interactive/speak', () => {
     await gotoDemo(page, 'common/interactive/speak/form-error-read-aloud-on-demand');
 
     const input = page.getByPlaceholder('user@example.com');
-    await expect(page.getByRole('button', { name: 'hear error' })).toHaveCount(0);
+    const hearBtn = page.getByRole('button', { name: 'hear error' });
+
+    // The story seeds an invalid value, so the error row and its button render
+    // on load; clearing the field is what collapses them.
+    await expect(hearBtn).toBeVisible();
+
+    await input.fill('');
+    await expect(hearBtn).toHaveCount(0);
 
     await input.fill('invalid');
-    await expect(page.getByRole('button', { name: 'hear error' })).toBeVisible();
+    await expect(hearBtn).toBeVisible();
 
   });
 });

@@ -17,7 +17,7 @@ test.describe('common/interactive/click-outside', () => {
 
     await toggle.click();
     await expect(status).toContainText('open');
-    const inner = page.getByRole('button', { name: "Inner button (won't close)" });
+    const inner = page.getByRole('button', { name: "Inner button (does not close)" });
     await expect(inner).toBeVisible();
 
     // Click the inner button — propagation is stopped so the dropdown
