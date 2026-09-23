@@ -70,8 +70,10 @@ test.describe('ui/paginator', () => {
     await expect(nav).toHaveAttribute('aria-busy', 'false');
     await expect(nav.getByRole('progressbar')).toHaveCount(0);
 
-    // Navigation works again.
-    await expect(next).toHaveAttribute('aria-disabled', 'false');
+    // Navigation works again. An idle nav button carries NO aria-disabled:
+    // the segments emit `'true' : null` by design (paginator-nav.component.ts:67),
+    // so an enabled button is the absence of the attribute, not 'false'.
+    await expect(next).not.toHaveAttribute('aria-disabled', /.*/);
     await next.click();
     await expect(currentReadout).toHaveText('4');
   });
