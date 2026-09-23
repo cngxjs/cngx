@@ -20,7 +20,7 @@ test.describe('ui/feedback/loading-overlay', () => {
     await expect(overlay).toBeVisible();
 
     // Form input becomes inert (focus blocked).
-    const nameInput = page.getByPlaceholder('Name');
+    const nameInput = page.getByLabel('Name');
     const isInert = await nameInput.evaluate((el) => {
       let parent: HTMLElement | null = el as HTMLElement;
       while (parent) {
