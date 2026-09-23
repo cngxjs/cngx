@@ -29,10 +29,9 @@ export const STORY: DemoSpec = {
   private readonly singleSchema = schema<{ color: string }>((root) => {
     required(root.color);
   });
-  protected readonly singleForm = form(this.singleModel, this.singleSchema);`,
-  setupChrome: `protected readonly skin = signal<CngxFieldSkin>('outline');
-
-  protected handleSingleSubmit(): void {
+  protected readonly singleForm = form(this.singleModel, this.singleSchema);
+  protected readonly skin = signal<CngxFieldSkin>('outline');`,
+  setupChrome: `  protected handleSingleSubmit(): void {
     submit(this.singleForm, async () => []);
   }`,
   template: `  <cngx-form-field [field]="singleForm.color" [skin]="skin()">

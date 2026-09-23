@@ -25,7 +25,8 @@ export const STORY: DemoSpec = {
     { value: 'ts', label: 'TypeScript' },
     { value: 'old', label: 'Unmaintained', disabled: true },
   ];
-  protected readonly comboValues = signal<string[]>(['angular']);`,
+  protected readonly comboValues = signal<string[]>(['angular']);
+  protected readonly skin = signal<CngxFieldSkin>('outline');`,
   template: `  <cngx-combobox
     [skin]="skin()"
     [label]="'Topics'"
@@ -33,7 +34,6 @@ export const STORY: DemoSpec = {
     [(values)]="comboValues"
     placeholder="Search topics…"
   />`,
-  setupChrome: `protected readonly skin = signal<CngxFieldSkin>('outline');`,
   templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ comboValues().join(', ') || '—' }}</span></div>
     <div class="event-row"><span class="event-label">Count</span><span class="event-value">{{ comboValues().length }}</span></div>

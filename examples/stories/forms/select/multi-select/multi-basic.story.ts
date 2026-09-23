@@ -25,7 +25,8 @@ export const STORY: DemoSpec = {
     { value: 'ts', label: 'TypeScript' },
     { value: 'old', label: 'Unmaintained', disabled: true },
   ];
-  protected readonly multiValues = signal<string[]>(['angular', 'signals']);`,
+  protected readonly multiValues = signal<string[]>(['angular', 'signals']);
+  protected readonly skin = signal<CngxFieldSkin>('outline');`,
   template: `  <cngx-multi-select
     [skin]="skin()"
     [label]="'Topics'"
@@ -33,7 +34,6 @@ export const STORY: DemoSpec = {
     [(values)]="multiValues"
     placeholder="Choose topics…"
   />`,
-  setupChrome: `protected readonly skin = signal<CngxFieldSkin>('outline');`,
   templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ multiValues().join(', ') || '—' }}</span></div>
     <div class="event-row"><span class="event-label">Count</span><span class="event-value">{{ multiValues().length }}</span></div>

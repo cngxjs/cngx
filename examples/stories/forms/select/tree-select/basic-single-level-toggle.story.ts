@@ -38,7 +38,8 @@ export const STORY: DemoSpec = {
     },
   ];
   protected readonly values = signal<string[]>([]);
-  protected readonly nodeId = (value: string) => value;`,
+  protected readonly nodeId = (value: string) => value;
+  protected readonly skin = signal<CngxFieldSkin>('outline');`,
   template: `  <cngx-tree-select
     [skin]="skin()"
     [label]="'Tech stack'"
@@ -49,7 +50,6 @@ export const STORY: DemoSpec = {
     [clearable]="true"
     placeholder="Pick technologies…"
   />`,
-  setupChrome: `protected readonly skin = signal<CngxFieldSkin>('outline');`,
   templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">values</span>
