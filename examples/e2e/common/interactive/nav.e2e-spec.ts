@@ -26,6 +26,7 @@ test.describe('common/interactive/nav', () => {
     const header = headers.first();
     // The group trigger must expose the disclosure contract it host-composes.
     await expect(header).toHaveAttribute('aria-controls', /.+/);
+    await expect(header).toHaveAttribute('aria-expanded', /.+/);
     const before = await header.getAttribute('aria-expanded');
     await header.click();
     const after = await header.getAttribute('aria-expanded');

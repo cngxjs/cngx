@@ -22,8 +22,10 @@ test.describe('common/popover/tooltip', () => {
 
     // Per the APG tooltip pattern the reference is stable: the trigger always
     // describes its bubble, and visibility is what changes on hover.
+    // getAttribute does not retry: wait for the directive to wire the
+    // reference before reading it.
+    await expect(save).toHaveAttribute('aria-describedby', /.+/);
     const tipId = await save.getAttribute('aria-describedby');
-    expect(tipId).toBeTruthy();
 
     const tip = page.locator(`#${tipId}`);
     await expect(tip).toBeHidden();
@@ -43,6 +45,7 @@ test.describe('common/popover/tooltip', () => {
     await gotoDemo(page, 'common/popover/tooltip/keyboard-navigation');
 
     const bold = page.getByRole('button', { name: 'B', exact: true });
+    await expect(bold).toHaveAttribute('aria-describedby', /.+/);
     const boldTip = page.locator(`#${await bold.getAttribute('aria-describedby')}`);
 
     await bold.focus();
@@ -53,6 +56,7 @@ test.describe('common/popover/tooltip', () => {
     // italic bubble by id — a global getByRole('tooltip') races the bold one's
     // retraction and can match two nodes mid-transition.
     const italic = page.getByRole('button', { name: 'I', exact: true });
+    await expect(italic).toHaveAttribute('aria-describedby', /.+/);
     const italicTip = page.locator(`#${await italic.getAttribute('aria-describedby')}`);
 
     await page.keyboard.press('Tab');
@@ -100,6 +104,7 @@ test.describe('common/popover/tooltip', () => {
       const trigger = triggers.nth(i);
       // Track this trigger's own bubble by id. A global getByRole('tooltip')
       // races the previous bubble's retraction and made this test flaky.
+      await expect(trigger).toHaveAttribute('aria-describedby', /.+/);
       const tip = page.locator(`#${await trigger.getAttribute('aria-describedby')}`);
       await trigger.hover();
       await expect(tip).toBeVisible();

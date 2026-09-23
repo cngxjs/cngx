@@ -37,6 +37,7 @@ test.describe('common/interactive/chip-interaction', () => {
     const chip = page.locator('cngx-chip[cngxchipinteraction]').first();
     // Demo starts NOT disabled (locked=false); pressing the toggle locks it.
     await expect(chip).not.toHaveAttribute('aria-disabled', 'true');
+    await expect(chip).toHaveAttribute('aria-selected', /.+/);
     const initialSelected = await chip.getAttribute('aria-selected');
 
     await page.getByRole('button', { name: 'toggle disabled' }).click();

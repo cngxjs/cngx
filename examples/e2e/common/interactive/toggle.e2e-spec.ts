@@ -7,6 +7,7 @@ test.describe('common/interactive/toggle', () => {
   test('basic two-way: click flips aria-checked', async ({ page }) => {
     await gotoDemo(page, 'common/interactive/toggle/basic-two-way-binding');
     const toggle = page.getByRole('switch').first();
+    await expect(toggle).toHaveAttribute('aria-checked', /.+/);
     const initial = await toggle.getAttribute('aria-checked');
     await toggle.click();
     await expect(toggle).not.toHaveAttribute('aria-checked', initial!);
