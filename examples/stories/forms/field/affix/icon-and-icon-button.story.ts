@@ -44,9 +44,8 @@ export const STORY: DemoSpec = {
       <span cngxAffixRow>
         <span cngxPrefix>
           <cngx-icon>
-            <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="11" cy="11" r="7" />
-              <path d="m20 20-3.5-3.5" />
+            <svg viewBox="0 0 24 24" width="1em" height="1em">
+              <path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
             </svg>
           </cngx-icon>
         </span>
@@ -54,8 +53,8 @@ export const STORY: DemoSpec = {
         <button type="button" cngxSuffix cngxSuffixInteractive [cngxInputClear]="query" #clr="cngxInputClear"
           [disabled]="!clr.hasValue()">
           <cngx-icon>
-            <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M6 6l12 12M18 6 6 18" />
+            <svg viewBox="0 0 24 24" width="1em" height="1em">
+              <path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
             </svg>
           </cngx-icon>
         </button>
