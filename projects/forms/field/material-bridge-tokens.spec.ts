@@ -73,6 +73,23 @@ describe('field Material bridge', () => {
     expect(css).toContain('--cngx-field-underline-focus-color');
   });
 
+  it('reaches every select-family trigger, which carries the attribute on its host (M3)', () => {
+    const css = compiledCss('v1');
+    for (const host of [
+      'cngx-select',
+      'cngx-multi-select',
+      'cngx-combobox',
+      'cngx-typeahead',
+      'cngx-tree-select',
+      'cngx-action-select',
+      'cngx-action-multi-select',
+      'cngx-reorderable-multi-select',
+      'cngx-select-shell',
+    ]) {
+      expect(css).toContain(`${host}[data-skin]`);
+    }
+  });
+
   it('emits a consumed-name subset (M2)', () => {
     const names = emittedTokenNames('v0');
     expect(names.length).toBeGreaterThan(0);

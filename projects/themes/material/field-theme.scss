@@ -87,11 +87,24 @@
   // exists for exactly the case where there is no field (table filter row,
   // inline cell editor). The attribute is the reliable hook, so the skin
   // colours get a second scope keyed on it.
+  // The select-family triggers carry the attribute on their component host,
+  // so they need naming too - a skinned `cngx-select` in a toolbar or a table
+  // filter cell sits outside any field and would otherwise fall back to the
+  // cngx palette while everything around it follows Material.
   @include bridge.on(
     'input[data-skin]',
     'textarea[data-skin]',
     'select[data-skin]',
-    '.cngx-field-affix-row[data-skin]'
+    '.cngx-field-affix-row[data-skin]',
+    'cngx-select[data-skin]',
+    'cngx-multi-select[data-skin]',
+    'cngx-combobox[data-skin]',
+    'cngx-typeahead[data-skin]',
+    'cngx-tree-select[data-skin]',
+    'cngx-action-select[data-skin]',
+    'cngx-action-multi-select[data-skin]',
+    'cngx-reorderable-multi-select[data-skin]',
+    'cngx-select-shell[data-skin]'
   ) {
     @include skin-color($theme);
   }
