@@ -8,6 +8,13 @@ import { gotoDemo } from '../../_helpers';
 // visibility rather than on the reference appearing and disappearing.
 
 test.describe('common/popover/tooltip', () => {
+  // The suite runs serially and the pointer keeps its position between tests,
+  // so a trigger left hovered by the previous test opens a bubble before this
+  // one has asserted anything. Park the pointer first.
+  test.beforeEach(async ({ page }) => {
+    await page.mouse.move(0, 0);
+  });
+
   test('basic: hover reveals the tooltip and wires aria-describedby', async ({ page }) => {
     await gotoDemo(page, 'common/popover/tooltip/basic-tooltip');
 
