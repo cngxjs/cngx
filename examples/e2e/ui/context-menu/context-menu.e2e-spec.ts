@@ -1,24 +1,16 @@
 import { expect, test } from '@playwright/test';
 import { gotoDemo } from '../../_helpers';
+import { routesUnder } from '../../_routes';
 
 // Story: CngxContextMenu — declarative context-menu organism docked onto
-// targets via [cngxContextMenuFor]. Six routes: static items, delegated
+// targets via [cngxContextMenuFor]. Static items, delegated
 // resolver over a grid, nested submenu, checkbox/radio items, native-button
 // attribute form, and the per-row data table from Phase 2.
 
-const routes: ReadonlyArray<readonly [string, string]> = [
-  ['static-items', 'ui/context-menu/basic/static-items'],
-  ['delegated-resolver', 'ui/context-menu/grid/delegated-resolver'],
-  ['nested-submenu', 'ui/context-menu/submenu/nested-export-menu'],
-  ['checkbox-radio', 'ui/context-menu/selection/checkbox-radio-items'],
-  ['native-buttons', 'ui/context-menu/attribute-form/native-buttons'],
-  ['row-context-data', 'ui/context-menu/table/row-context-data'],
-];
-
 test.describe('ui/context-menu', () => {
-  for (const [name, route] of routes) {
+  for (const { name, path } of routesUnder('ui', 'context-menu')) {
     test(`${name}: renders without errors`, async ({ page }) => {
-      await gotoDemo(page, route);
+      await gotoDemo(page, path);
       await expect(page.locator('header.cngx-ex-intro')).toBeVisible();
     });
   }

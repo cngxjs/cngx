@@ -6,7 +6,7 @@ import { gotoDemo } from '../../_helpers';
 
 test.describe('common/interactive/menu-submenu', () => {
   test('two-level: opening File reveals Open Recent submenu', async ({ page }) => {
-    await gotoDemo(page, 'common/interactive/menu-submenu/two-level-submenu');
+    await gotoDemo(page, 'common/interactive/menu/submenu/two-level-submenu');
 
     const fileBtn = page.getByRole('button', { name: 'File' });
     await fileBtn.click();
@@ -25,9 +25,10 @@ test.describe('common/interactive/menu-submenu', () => {
       .locator('.event-row')
       .filter({ has: page.getByText('Last action', { exact: true }) })
       .locator('.event-value');
-    // Some demos use a different label name — soft-match the result.
-    const actionText = (await lastAction.count()) ? await lastAction.textContent() : '';
-    expect(actionText).toBe('new');
+    // Web-first: retries until the readout settles. The previous soft-match
+    // read the count first and silently asserted '' when the row had not
+    // rendered yet, which made this spec flaky rather than strict.
+    await expect(lastAction).toHaveText('new');
 
   });
 });

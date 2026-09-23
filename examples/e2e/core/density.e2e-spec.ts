@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
 // Behavioural proof for the density foundation. The examples app imports
 // projects/themes/cngx.css from source, so the `--cngx-space-*`
@@ -13,7 +13,7 @@ import { expect, test } from '@playwright/test';
  * reads the ancestor's value; with `inherits: false` it stays at the
  * registered `initial-value`.
  */
-async function descendantSpaceMd(page: import('@playwright/test').Page, ancestorValue?: string) {
+async function descendantSpaceMd(page: Page, ancestorValue?: string) {
   return page.evaluate((value) => {
     const anc = document.createElement('div');
     if (value) {
@@ -52,7 +52,7 @@ test.describe('core/theming — spacing scale inheritance', () => {
  * presets drive.
  */
 async function descendantSpaceMdUnderDensity(
-  page: import('@playwright/test').Page,
+  page: Page,
   density: string,
 ) {
   return page.evaluate((value) => {
@@ -73,7 +73,7 @@ test.describe('core/theming — [data-density] swap', () => {
     await expect(page.locator('app-root')).toBeVisible();
   });
 
-  const cases: ReadonlyArray<readonly [string, string]> = [
+  const cases: readonly (readonly [string, string])[] = [
     ['comfortable', '16px'],
     ['compact', '8px'],
     ['spacious', '20px'],

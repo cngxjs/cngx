@@ -25,17 +25,17 @@ test.describe('common/card/card-grid', () => {
     const grid = page.locator('cngx-card-grid');
     await expectComputedDisplay(grid, 'grid');
 
-    const compactBtn = page.getByRole('button', { name: 'Compact' });
-    const comfortableBtn = page.getByRole('button', { name: 'Comfortable' });
+    const compactBtn = page.getByRole('button', { name: 'Compact', exact: true });
+    const comfortableBtn = page.getByRole('button', { name: 'Comfortable', exact: true });
 
-    await expect(page.getByRole('button', { name: 'Default' })).toHaveClass(/chip--active/);
+    await expect(page.getByRole('button', { name: 'Default', exact: true })).toHaveAttribute('aria-pressed', 'true');
 
     await compactBtn.click();
-    await expect(compactBtn).toHaveClass(/chip--active/);
+    await expect(compactBtn).toHaveAttribute('aria-pressed', 'true');
     await expect(grid).toHaveClass(/cngx-card-grid--compact/);
 
     await comfortableBtn.click();
-    await expect(comfortableBtn).toHaveClass(/chip--active/);
+    await expect(comfortableBtn).toHaveAttribute('aria-pressed', 'true');
     await expect(grid).toHaveClass(/cngx-card-grid--comfortable/);
 
   });

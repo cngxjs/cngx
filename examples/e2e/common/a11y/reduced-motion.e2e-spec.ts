@@ -8,7 +8,7 @@ import { gotoDemo } from '../../_helpers';
 test.describe('common/a11y/reduced-motion', () => {
   test('animation toggle: reflects prefers-reduced-motion media query', async ({
     page,
-    context,
+    context: _context,
   }) => {
     await page.emulateMedia({ reducedMotion: 'no-preference' });
     await gotoDemo(page, 'common/a11y/reduced-motion/animation-toggle');
@@ -25,7 +25,7 @@ test.describe('common/a11y/reduced-motion', () => {
 
     const cssClass = page
       .locator('.event-row')
-      .filter({ has: page.getByText('CSS class', { exact: true }) })
+      .filter({ has: page.getByText('Host class', { exact: true }) })
       .locator('.event-value');
     await expect(cssClass).toHaveText('cngx-reduced-motion');
 

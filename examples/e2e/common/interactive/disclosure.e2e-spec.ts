@@ -40,8 +40,10 @@ test.describe('common/interactive/disclosure', () => {
     await gotoDemo(page, 'common/interactive/disclosure/faq-accordion');
 
     const triggers = page.locator('button[cngxdisclosure]');
+    // Wait for the render before reading a count: locator.count() does not
+    // retry, so reading it first races Angular's first paint.
+    await expect(triggers.nth(1)).toBeVisible();
     const count = await triggers.count();
-    expect(count).toBeGreaterThan(1);
 
     // All start collapsed.
     for (let i = 0; i < count; i++) {

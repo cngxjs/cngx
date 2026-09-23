@@ -6,12 +6,15 @@ import { gotoDemo } from '../../_helpers';
 
 test.describe('common/interactive/multi-chip-group', () => {
   test('selection-count: independent toggles drive selectedCount + caption', async ({ page }) => {
-    await gotoDemo(page, 'common/interactive/multi-chip-group/multi-select-chips-with-selection-count');
+    await gotoDemo(page, 'common/interactive/chip/multi-group/multi-select-chips-with-selection-count');
 
     const urgent = page.getByRole('option', { name: 'urgent' });
     const review = page.getByRole('option', { name: 'review' });
     const blocker = page.getByRole('option', { name: 'blocker' });
-    const caption = page.locator('p.caption');
+    const caption = page
+      .locator('.event-row')
+      .filter({ has: page.getByText('selected values', { exact: true }) })
+      .locator('.event-value');
 
     // Initial selection: urgent + review.
     await expect(urgent).toHaveAttribute('aria-selected', 'true');

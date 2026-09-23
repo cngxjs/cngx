@@ -25,19 +25,40 @@ test.describe('common/layout/resize-observer', () => {
     // First measurement lands very fast after mount.
     await expect(isReady).toHaveText('true', { timeout: 2000 });
 
-    // Demo box starts at width: 300px, height: 120px (per inline style).
-    await expect(width).toContainText('300');
-    await expect(height).toContainText('120');
-
-    // Programmatically set the host width to 480 — the observer should pick
-    // it up and the signals must update.
+    // The readout mirrors ResizeObserver's contentRect, which excludes border
+    // and padding — so it does not equal the CSS width. Measure the same box
+    // the observer reports instead of hardcoding the style value.
     const host = page.locator('[cngxresizeobserver]').first();
+    const contentBox = () =>
+      host.evaluate((el) => {
+        const cs = getComputedStyle(el);
+        const rect = el.getBoundingClientRect();
+        const horizontal =
+          parseFloat(cs.borderLeftWidth) +
+          parseFloat(cs.borderRightWidth) +
+          parseFloat(cs.paddingLeft) +
+          parseFloat(cs.paddingRight);
+        const vertical =
+          parseFloat(cs.borderTopWidth) +
+          parseFloat(cs.borderBottomWidth) +
+          parseFloat(cs.paddingTop) +
+          parseFloat(cs.paddingBottom);
+        return { w: rect.width - horizontal, h: rect.height - vertical };
+      });
+
+    const initial = await contentBox();
+    await expect(width).toContainText(initial.w.toFixed(2));
+    await expect(height).toContainText(initial.h.toFixed(2));
+
+    // Resize the host — the observer must pick it up and the signals update.
     await host.evaluate((el) => {
       (el as HTMLElement).style.width = '480px';
       (el as HTMLElement).style.height = '160px';
     });
-    await expect(width).toContainText('480', { timeout: 2000 });
-    await expect(height).toContainText('160');
+    const resized = await contentBox();
+    expect(resized.w).toBeGreaterThan(initial.w);
+    await expect(width).toContainText(resized.w.toFixed(2), { timeout: 2000 });
+    await expect(height).toContainText(resized.h.toFixed(2));
 
   });
 });

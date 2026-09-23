@@ -56,7 +56,7 @@ test.describe('common/chart/sparkline', () => {
     // asserting it equals the host proves containment directly.
     const charts = await page.evaluate(() =>
       Array.from(document.querySelectorAll('cngx-chart')).map((chart) => {
-        const table = chart.querySelector('cngx-chart-data-table') as HTMLElement | null;
+        const table = chart.querySelector('cngx-chart-data-table');
         return {
           hasTable: !!table,
           chartPosition: getComputedStyle(chart as HTMLElement).position,

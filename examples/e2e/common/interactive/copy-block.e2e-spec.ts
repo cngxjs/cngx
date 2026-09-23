@@ -8,9 +8,8 @@ import { gotoDemo } from '../../_helpers';
 test.describe('common/interactive/copy-block', () => {
   test('api-key: custom button label flips to copied label', async ({ page, context }) => {
     await context.grantPermissions(['clipboard-read', 'clipboard-write']);
-    await gotoDemo(page, 'common/interactive/copy-block/api-key');
+    await gotoDemo(page, 'common/interactive/copy/block/api-key');
 
-    const block = page.locator('cngx-copy-block').first();
     const copyBtn = page.getByRole('button', { name: 'Copy Key' });
     await expect(copyBtn).toBeVisible();
 
@@ -29,7 +28,7 @@ test.describe('common/interactive/copy-block', () => {
 
   test('code-snippet: default labels and successful copy', async ({ page, context }) => {
     await context.grantPermissions(['clipboard-read', 'clipboard-write']);
-    await gotoDemo(page, 'common/interactive/copy-block/code-snippet');
+    await gotoDemo(page, 'common/interactive/copy/block/code-snippet');
 
     const copyBtn = page.locator('cngx-copy-block button').first();
     await expect(copyBtn).toBeVisible();

@@ -29,7 +29,7 @@ test.describe('ui/stepper/stepper-custom-labels', () => {
       const txt = (await steps.nth(1).textContent()) ?? '';
       // The strip label looks like "2🔔 Notifications <N> Step 2 of 4: ...".
       // The first digit between "Notifications" and "Step" is the chip value.
-      const m = txt.match(/Notifications\s*(\d+)/);
+      const m = /Notifications\s*(\d+)/.exec(txt);
       return parseInt(m?.[1] ?? '0', 10);
     };
     const before = await countOnStrip();

@@ -9,7 +9,7 @@ test.describe('common/interactive/keyboard-shortcut', () => {
   test('global: Ctrl+K bumps the counter, but only when focus is outside input', async ({
     page,
   }) => {
-    await gotoDemo(page, 'common/interactive/keyboard-shortcut/global-shortcut');
+    await gotoDemo(page, 'common/interactive/gestures/keyboard-shortcut/global-shortcut');
 
     const counter = page
       .locator('.event-row')
@@ -22,7 +22,7 @@ test.describe('common/interactive/keyboard-shortcut', () => {
     await expect(counter).toHaveText('1');
 
     // Focus the input — same shortcut must be filtered out.
-    const input = page.getByPlaceholder("Type here — Ctrl+K won't fire");
+    const input = page.getByRole('textbox');
     await input.focus();
     await page.keyboard.press('Control+k');
     await expect(counter).toHaveText('1');
@@ -30,7 +30,7 @@ test.describe('common/interactive/keyboard-shortcut', () => {
   });
 
   test('self-scoped: Escape fires only after focusing the dashed box', async ({ page }) => {
-    await gotoDemo(page, 'common/interactive/keyboard-shortcut/self-scoped-shortcut');
+    await gotoDemo(page, 'common/interactive/gestures/keyboard-shortcut/self-scoped-shortcut');
 
     const counter = page
       .locator('.event-row')
@@ -43,7 +43,7 @@ test.describe('common/interactive/keyboard-shortcut', () => {
     await expect(counter).toHaveText('0');
 
     // The host is the tabindex=0 dashed box. Click focuses it.
-    const scopedHost = page.locator('div[tabindex="0"]').filter({ hasText: /Click me/ });
+    const scopedHost = page.getByRole('group', { name: 'Press Escape to dismiss' });
     await scopedHost.click();
     await page.keyboard.press('Escape');
     await expect(counter).toHaveText('1');

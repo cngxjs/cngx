@@ -11,7 +11,7 @@ test.describe('ui/tabs/tab-group-vertical', () => {
     await expect(tablist).toHaveAttribute('aria-orientation', 'vertical');
 
     const tabs = page.getByRole('tab');
-    expect(await tabs.count()).toBeGreaterThanOrEqual(2);
+    await expect(tabs.nth(1)).toBeVisible();
     await tabs.nth(1).click();
     await expect(tabs.nth(1)).toHaveAttribute('aria-selected', 'true');
 

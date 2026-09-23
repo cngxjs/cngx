@@ -13,7 +13,7 @@ test.describe('common/layout/highlight', () => {
     await gotoDemo(page, 'common/layout/highlight/live-search-highlighting');
 
     // The directive host is the only div with inline `line-height: 1.8`.
-    const host = page.locator('div[style*="line-height"]').first();
+    const host = page.locator('.demo-highlight-passage').first();
     await expect(host).toContainText('Angular Signals represent');
 
     const input = page.getByPlaceholder('Type to highlight...');
@@ -30,6 +30,7 @@ test.describe('common/layout/highlight', () => {
     // The substring "signal" lives in "Signals" and "signals" — case-insensitive
     // gives 2 matches. The matchCount signal and the DOM <mark> count under
     // the host must agree.
+    await expect(host).toBeVisible();
     const renderedMarks = await host.locator('mark').count();
     expect(renderedMarks).toBeGreaterThan(0);
     await expect(reportedCount).toHaveText(String(renderedMarks));

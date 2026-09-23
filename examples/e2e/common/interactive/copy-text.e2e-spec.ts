@@ -10,7 +10,7 @@ test.describe('common/interactive/copy-text', () => {
     context,
   }) => {
     await context.grantPermissions(['clipboard-read', 'clipboard-write']);
-    await gotoDemo(page, 'common/interactive/copy-text/copy-token');
+    await gotoDemo(page, 'common/interactive/copy/text/copy-token');
 
     const button = page.getByRole('button', { name: 'Copy' });
     const copiedRow = page
@@ -30,7 +30,7 @@ test.describe('common/interactive/copy-text', () => {
 
   test('copy-url-with-sr-announcement: clipboard receives a URL', async ({ page, context }) => {
     await context.grantPermissions(['clipboard-read', 'clipboard-write']);
-    await gotoDemo(page, 'common/interactive/copy-text/copy-url-with-sr-announcement');
+    await gotoDemo(page, 'common/interactive/copy/text/copy-url-with-sr-announcement');
 
     const buttons = page.locator('button[cngxcopytext], button[cngxCopyText]');
     const fallback = page.locator('button').filter({ hasText: /Copy/ });

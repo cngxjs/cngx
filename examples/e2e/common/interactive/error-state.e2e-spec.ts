@@ -9,22 +9,22 @@ test.describe('common/interactive/error-state', () => {
   test('basic: toggle flips aria-invalid and surfaces aria-errormessage', async ({ page }) => {
     await gotoDemo(
       page,
-      'common/interactive/error-state/basic-boolean-flag-flips-aria-invalid-aria-errormessage',
+      'common/interactive/error/state/basic-boolean-flag-flips-aria-invalid-aria-errormessage',
     );
 
-    const input = page.getByPlaceholder('user@example.com');
+    const input = page.getByLabel('Email');
     const toggle = page.getByRole('button', { name: 'Toggle invalid state' });
 
     await expect(input).toHaveAttribute('aria-invalid', 'false');
     // aria-errormessage is always wired per cngx convention.
-    await expect(input).toHaveAttribute('aria-errormessage', 'email-error');
+    await expect(input).toHaveAttribute('aria-errormessage', 'cngx-error-state-basic-email');
 
     await toggle.click();
     await expect(input).toHaveAttribute('aria-invalid', 'true');
     await expect(input).toHaveClass(/cngx-error/);
 
     // The linked error message reveals via display:block when invalid.
-    const msg = page.locator('#email-error');
+    const msg = page.locator('#cngx-error-state-basic-email');
     await expect(msg).toBeVisible();
 
     // Toggle back — aria-invalid flips, class lifts.
@@ -37,7 +37,7 @@ test.describe('common/interactive/error-state', () => {
   test('without-message-id: class hook and aria-invalid alone', async ({ page }) => {
     await gotoDemo(
       page,
-      'common/interactive/error-state/without-message-id-class-hook-aria-invalid-only',
+      'common/interactive/error/state/without-message-id-class-hook-aria-invalid-only',
     );
 
     // Angular strips the structural-directive attribute; locate by type.

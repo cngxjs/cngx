@@ -16,7 +16,7 @@ test.describe('common/a11y/focus-trap', () => {
     await expect(dialog).toBeVisible();
 
     // autoFocus is on by default → first tabbable (the input) is focused.
-    const confirmInput = page.getByPlaceholder('Type CONFIRM to proceed');
+    const confirmInput = page.getByLabel('Type CONFIRM to proceed');
     await expect(confirmInput).toBeFocused();
 
 
@@ -27,15 +27,23 @@ test.describe('common/a11y/focus-trap', () => {
   test('slide-out-drawer: left + right variants render and dismiss', async ({ page }) => {
     await gotoDemo(page, 'common/a11y/focus-trap/slide-out-drawer');
 
+    // Both sides render the same drawer host, labelled 'Filter options'; the
+    // side is reported by the Drawer readout, not by the accessible name.
+    const drawer = page.getByRole('dialog', { name: 'Filter options' });
+    const state = page
+      .locator('.event-row')
+      .filter({ has: page.getByText('Drawer', { exact: true }) })
+      .locator('.event-value');
+
     await page.getByRole('button', { name: 'Open right drawer' }).click();
-    const rightDrawer = page.getByRole('dialog', { name: 'right drawer' });
-    await expect(rightDrawer).toBeVisible();
+    await expect(drawer).toBeVisible();
+    await expect(state).toHaveText('right, focus trapped');
     await page.keyboard.press('Escape');
-    await expect(rightDrawer).toHaveCount(0);
+    await expect(drawer).toHaveCount(0);
 
     await page.getByRole('button', { name: 'Open left drawer' }).click();
-    const leftDrawer = page.getByRole('dialog', { name: 'left drawer' });
-    await expect(leftDrawer).toBeVisible();
+    await expect(drawer).toBeVisible();
+    await expect(state).toHaveText('left, focus trapped');
 
   });
 });

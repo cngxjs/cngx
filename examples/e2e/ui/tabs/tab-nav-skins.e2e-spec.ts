@@ -39,10 +39,10 @@ test.describe('ui/tabs/tab-nav-skins', () => {
         if (!host) {
           return { found: false } as const;
         }
-        const active = host.querySelector('.cngx-tab-nav__link--active') as HTMLElement | null;
+        const active = host.querySelector('.cngx-tab-nav__link--active');
         const inactive = host.querySelector(
           '.cngx-tab-nav__link:not(.cngx-tab-nav__link--active)',
-        ) as HTMLElement | null;
+        );
         const hostCS = getComputedStyle(host);
         const activeCS = active ? getComputedStyle(active) : null;
         const afterCS = active ? getComputedStyle(active, '::after') : null;
@@ -230,8 +230,8 @@ test.describe('ui/tabs/tab-nav-skins', () => {
       page.evaluate(() => {
         const host = document.querySelector(
           'cngx-tab-nav[aria-label="line skin"]',
-        ) as HTMLElement;
-        const link = host.querySelector('.cngx-tab-nav__link') as HTMLElement;
+        )!;
+        const link = host.querySelector('.cngx-tab-nav__link')!;
         const hostCS = getComputedStyle(host);
         const linkCS = getComputedStyle(link);
         return {
@@ -275,7 +275,7 @@ test.describe('ui/tabs/tab-nav-skins', () => {
     const offset = await page.evaluate(() => {
       const link = document
         .querySelector('cngx-tab-nav[aria-label="line skin"]')!
-        .querySelector('.cngx-tab-nav__link') as HTMLElement;
+        .querySelector('.cngx-tab-nav__link')!;
       return getComputedStyle(link).getPropertyValue('--cngx-tab-focus-offset').trim();
     });
 

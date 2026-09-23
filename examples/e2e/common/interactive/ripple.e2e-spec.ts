@@ -6,7 +6,7 @@ import { gotoDemo } from '../../_helpers';
 
 test.describe('common/interactive/ripple', () => {
   test('button-ripples: each variant injects a wave span on click', async ({ page }) => {
-    await gotoDemo(page, 'common/interactive/ripple/button-ripples');
+    await gotoDemo(page, 'common/interactive/ripple/base/button-ripples');
 
     const target = page.getByRole('button', { name: 'Default Ripple' });
     await expect(target.locator('.cngx-ripple__wave')).toHaveCount(0);
@@ -21,7 +21,7 @@ test.describe('common/interactive/ripple', () => {
   });
 
   test('card-with-ripple: ripple paints on a card-shaped host', async ({ page }) => {
-    await gotoDemo(page, 'common/interactive/ripple/card-with-ripple');
+    await gotoDemo(page, 'common/interactive/ripple/base/card-with-ripple');
 
     // First clickable card-shaped element with the ripple directive in its
     // ancestry. The directive's attribute stays on the rendered host.

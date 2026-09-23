@@ -18,6 +18,8 @@ test.describe('ui/stepper/stepper-hierarchical', () => {
     await expect(steps).toContainText(['Profile', 'Preferences', 'Repository', 'Pipeline', 'Finish']);
 
     // Group headers carry data-step-depth=0 with depth-1 nested children.
+    // evaluateAll does not retry; wait for the render first.
+    await expect(steps.first()).toBeVisible();
     const depthAttrs = await steps.evaluateAll((els) =>
       els.map((el) => (el as HTMLElement).dataset['stepDepth']),
     );

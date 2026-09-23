@@ -8,7 +8,8 @@ test.describe('common/data/filter-chips', () => {
   test('multi-role: toggling chips filters the list', async ({ page }) => {
     await gotoDemo(page, 'common/data/filter-chips/multi-role-filter-wired-to-a-list');
 
-    const list = page.locator('ul').first();
+    // The chip strip is itself a <ul>, so `.first()` grabbed the wrong list.
+    const list = page.locator('ul[aria-label="Tagged items"]');
     // Initially no filter — all 5 items visible.
     const items = list.locator('li');
     await expect(items).toHaveCount(5);
@@ -31,7 +32,7 @@ test.describe('common/data/filter-chips', () => {
     await gotoDemo(page, 'common/data/filter-chips/custom-chip-decoration-via-cngxfilterchip');
 
     const chips = page.getByRole('option');
-    expect(await chips.count()).toBeGreaterThan(0);
+    await expect(chips).not.toHaveCount(0);
 
   });
 });

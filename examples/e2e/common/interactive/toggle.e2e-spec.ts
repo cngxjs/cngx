@@ -7,9 +7,10 @@ test.describe('common/interactive/toggle', () => {
   test('basic two-way: click flips aria-checked', async ({ page }) => {
     await gotoDemo(page, 'common/interactive/toggle/basic-two-way-binding');
     const toggle = page.getByRole('switch').first();
+    await expect(toggle).toHaveAttribute('aria-checked', /.+/);
     const initial = await toggle.getAttribute('aria-checked');
     await toggle.click();
-    await expect(toggle).not.toHaveAttribute('aria-checked', initial as string);
+    await expect(toggle).not.toHaveAttribute('aria-checked', initial!);
   });
 
   test('basic two-way: switch derives its accessible name from the projected label', async ({
@@ -26,17 +27,17 @@ test.describe('common/interactive/toggle', () => {
 
   test('disabled with reason: page renders with at least one switch', async ({ page }) => {
     await gotoDemo(page, 'common/interactive/toggle/disabled-with-reason');
-    expect(await page.getByRole('switch').count()).toBeGreaterThan(0);
+    await expect(page.getByRole('switch')).not.toHaveCount(0);
   });
 
   test('custom thumb-glyph: glyph slot renders', async ({ page }) => {
     await gotoDemo(page, 'common/interactive/toggle/custom-thumb-glyph');
-    expect(await page.getByRole('switch').count()).toBeGreaterThan(0);
+    await expect(page.getByRole('switch')).not.toHaveCount(0);
   });
 
   test('label-position: variants render', async ({ page }) => {
     await gotoDemo(page, 'common/interactive/toggle/label-position');
-    expect(await page.getByRole('switch').count()).toBeGreaterThan(0);
+    await expect(page.getByRole('switch')).not.toHaveCount(0);
   });
 
   // Regression: the thumb inset is the geometric centring inset
@@ -51,9 +52,9 @@ test.describe('common/interactive/toggle', () => {
 
     const readGaps = () =>
       page.evaluate(() => {
-        const host = document.querySelector('.cngx-toggle') as HTMLElement;
-        const track = host.querySelector('.cngx-toggle__track') as HTMLElement;
-        const thumb = host.querySelector('.cngx-toggle__thumb') as HTMLElement;
+        const host = document.querySelector('.cngx-toggle')!;
+        const track = host.querySelector('.cngx-toggle__track')!;
+        const thumb = host.querySelector('.cngx-toggle__thumb')!;
         const t = track.getBoundingClientRect();
         const h = thumb.getBoundingClientRect();
         return {

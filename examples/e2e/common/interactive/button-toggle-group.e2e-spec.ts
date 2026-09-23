@@ -6,11 +6,11 @@ import { gotoDemo } from '../../_helpers';
 
 test.describe('common/interactive/button-toggle-group', () => {
   test('basic view-switcher: only one toggle is aria-checked at a time', async ({ page }) => {
-    await gotoDemo(page, 'common/interactive/button-toggle-group/basic-view-switcher');
+    await gotoDemo(page, 'common/interactive/button-toggle/group/basic-view-switcher');
 
-    const grid = page.getByRole('button', { name: 'Grid' });
-    const list = page.getByRole('button', { name: 'List' });
-    const table = page.getByRole('button', { name: 'Table' });
+    const grid = page.getByRole('radio', { name: 'Grid' });
+    const list = page.getByRole('radio', { name: 'List' });
+    const table = page.getByRole('radio', { name: 'Table' });
 
     await expect(grid).toHaveAttribute('aria-checked', 'true');
     await list.click();
@@ -21,7 +21,7 @@ test.describe('common/interactive/button-toggle-group', () => {
     await expect(table).toHaveAttribute('aria-checked', 'true');
     await expect(list).toHaveAttribute('aria-checked', 'false');
 
-    const caption = page.locator('p.caption');
+    const caption = page.locator('p.demo-button-toggle-caption');
     await expect(caption).toContainText('table');
 
   });
@@ -31,7 +31,7 @@ test.describe('common/interactive/button-toggle-group', () => {
   }) => {
     await gotoDemo(
       page,
-      'common/interactive/button-toggle-group/disabled-group-cascade-vs-per-toggle',
+      'common/interactive/button-toggle/group/disabled-group-cascade-vs-per-toggle',
     );
     const toggles = page.locator('cngx-button-toggle-group button');
     const disableBtn = page.getByRole('button', { name: /Disable group|Enable group/ });
@@ -40,8 +40,8 @@ test.describe('common/interactive/button-toggle-group', () => {
   });
 
   test('vertical: orientation reflects on the host', async ({ page }) => {
-    await gotoDemo(page, 'common/interactive/button-toggle-group/vertical-orientation');
+    await gotoDemo(page, 'common/interactive/button-toggle/group/vertical-orientation');
     const toggles = page.locator('cngx-button-toggle-group button');
-    expect(await toggles.count()).toBeGreaterThanOrEqual(2);
+    await expect(toggles.nth(1)).toBeVisible();
   });
 });

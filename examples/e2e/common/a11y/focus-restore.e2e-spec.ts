@@ -41,7 +41,7 @@ test.describe('common/a11y/focus-restore', () => {
     await toggle.focus();
     await toggle.click();
 
-    const nameInput = page.getByPlaceholder('Name');
+    const nameInput = page.getByLabel('Name', { exact: true });
     await expect(nameInput).toBeVisible();
     await nameInput.focus();
     await expect(nameInput).toBeFocused();

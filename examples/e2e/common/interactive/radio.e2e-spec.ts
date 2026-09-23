@@ -9,7 +9,7 @@ test.describe('common/interactive/radio', () => {
     await gotoDemo(page, 'common/interactive/radio/basic-vertical-group');
 
     const radios = page.getByRole('radio');
-    expect(await radios.count()).toBeGreaterThanOrEqual(2);
+    await expect(radios.nth(1)).toBeVisible();
 
     await radios.nth(1).click();
     await expect(radios.nth(1)).toHaveAttribute('aria-checked', 'true');
@@ -29,16 +29,13 @@ test.describe('common/interactive/radio', () => {
     page,
   }) => {
     await gotoDemo(page, 'common/interactive/radio/disabled-group-cascades-per-radio-overrides');
-    // At least one radio has aria-disabled=true (per-radio variant).
-    const radios = page.getByRole('radio');
-    const states = await radios.evaluateAll((els) =>
-      els.map((el) => (el as HTMLElement).getAttribute('aria-disabled')),
-    );
-    expect(states.some((s) => s === 'true')).toBe(true);
+    // At least one radio has aria-disabled=true (per-radio variant). Expressed
+    // as a locator so the assertion retries until the group has rendered.
+    await expect(page.locator('[role="radio"][aria-disabled="true"]')).not.toHaveCount(0);
   });
 
   test('custom dot-glyph: consumer dot glyph renders', async ({ page }) => {
     await gotoDemo(page, 'common/interactive/radio/custom-dot-glyph');
-    expect(await page.getByRole('radio').count()).toBeGreaterThan(0);
+    await expect(page.getByRole('radio')).not.toHaveCount(0);
   });
 });

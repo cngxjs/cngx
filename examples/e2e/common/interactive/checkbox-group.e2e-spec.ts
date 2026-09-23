@@ -11,7 +11,7 @@ test.describe('common/interactive/checkbox-group', () => {
   }) => {
     await gotoDemo(
       page,
-      'common/interactive/checkbox-group/basic-select-all-master-projected-leaves',
+      'common/interactive/checkbox/group/basic-select-all-master-projected-leaves',
     );
 
     const master = page.locator('cngx-checkbox').filter({ hasText: 'Select all' });
@@ -31,7 +31,7 @@ test.describe('common/interactive/checkbox-group', () => {
     await expect(sms).toHaveAttribute('aria-checked', 'true');
     await expect(push).toHaveAttribute('aria-checked', 'true');
 
-    const caption = page.locator('p.caption').filter({ hasText: 'Picked' });
+    const caption = page.locator('p.demo-checkbox-caption').filter({ hasText: 'Picked' });
     await expect(caption).toContainText('email, sms, push');
 
     // Click master again → toggleAll clears all.
@@ -47,7 +47,7 @@ test.describe('common/interactive/checkbox-group', () => {
   });
 
   test('disabled cascade: group [disabled] reflects on every leaf', async ({ page }) => {
-    await gotoDemo(page, 'common/interactive/checkbox-group/disabled-cascade');
+    await gotoDemo(page, 'common/interactive/checkbox/group/disabled-cascade');
 
     const leaves = page.locator('cngx-checkbox-group cngx-checkbox');
     const firstLeaf = leaves.first();
@@ -55,6 +55,7 @@ test.describe('common/interactive/checkbox-group', () => {
     // Toggle disabled on, all leaves become aria-disabled.
     await page.getByRole('button', { name: /Disable/ }).click();
     await expect(firstLeaf).toHaveAttribute('aria-disabled', 'true');
+    await expect(leaves.first()).toBeVisible();
     const total = await leaves.count();
     for (let i = 0; i < total; i++) {
       await expect(leaves.nth(i)).toHaveAttribute('aria-disabled', 'true');

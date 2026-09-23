@@ -36,7 +36,7 @@ test.describe('common/display/avatar', () => {
     const onlineDot = page
       .locator('cngx-avatar[status="online"]')
       .locator('[aria-label]');
-    expect(await onlineDot.count()).toBeGreaterThan(0);
+    await expect(onlineDot).not.toHaveCount(0);
 
     // Last avatar is the square one.
     await expect(page.locator('cngx-avatar[shape="square"]')).toHaveCount(1);

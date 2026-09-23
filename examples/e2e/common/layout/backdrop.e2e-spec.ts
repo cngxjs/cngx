@@ -12,7 +12,7 @@ test.describe('common/layout/backdrop', () => {
     await gotoDemo(page, 'common/layout/backdrop/overlay-with-inert');
 
     const status = page.locator('.status-badge').first();
-    const backdrop = page.locator('.drawer-backdrop');
+    const backdrop = page.locator('.cngx-backdrop').first();
     const sibling = page.getByRole('button', { name: /Try clicking me/ });
 
     await expect(status).toHaveText('hidden');

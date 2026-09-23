@@ -5,35 +5,37 @@ import { gotoDemo } from '../../_helpers';
 
 test.describe('common/interactive/checkbox', () => {
   test('basic two-way: click toggles aria-checked and the bound signal', async ({ page }) => {
-    await gotoDemo(page, 'common/interactive/checkbox/basic-two-way-binding');
+    await gotoDemo(page, 'common/interactive/checkbox/base/basic-two-way-binding');
 
     const checkbox = page.locator('cngx-checkbox').first();
     await expect(checkbox).toHaveAttribute('aria-checked', 'false');
     await checkbox.click();
     await expect(checkbox).toHaveAttribute('aria-checked', 'true');
-    await expect(page.locator('p.caption')).toContainText('true');
+    await expect(page.locator('p.demo-checkbox-caption')).toContainText('true');
 
   });
 
   test('disabled: aria-disabled blocks clicks', async ({ page }) => {
-    await gotoDemo(page, 'common/interactive/checkbox/disabled');
+    await gotoDemo(page, 'common/interactive/checkbox/base/disabled');
     const checkbox = page.locator('cngx-checkbox').first();
     await expect(checkbox).toHaveAttribute('aria-disabled', 'true');
   });
 
   test('custom-check-dash-glyphs: glyph overrides render in the indicator', async ({ page }) => {
-    await gotoDemo(page, 'common/interactive/checkbox/custom-check-dash-glyphs');
-    expect(await page.locator('cngx-checkbox').count()).toBeGreaterThan(0);
+    await gotoDemo(page, 'common/interactive/checkbox/base/custom-check-dash-glyphs');
+    await expect(page.locator('cngx-checkbox')).not.toHaveCount(0);
   });
 
   test('tri-state select-all: master + leaves render with valid aria-checked values', async ({
     page,
   }) => {
-    await gotoDemo(page, 'common/interactive/checkbox/tri-state-select-all-pattern');
+    await gotoDemo(page, 'common/interactive/checkbox/base/tri-state-select-all-pattern');
     const checkboxes = page.locator('cngx-checkbox');
-    expect(await checkboxes.count()).toBeGreaterThanOrEqual(2);
+    await expect(checkboxes.nth(1)).toBeVisible();
 
     // Each checkbox carries one of the valid aria-checked values.
+    // evaluateAll does not retry; wait for the render first.
+    await expect(checkboxes.first()).toBeVisible();
     const states = await checkboxes.evaluateAll((els) =>
       els.map((el) => (el as HTMLElement).getAttribute('aria-checked')),
     );

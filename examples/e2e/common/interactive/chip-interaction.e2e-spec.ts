@@ -6,7 +6,7 @@ import { gotoDemo } from '../../_helpers';
 
 test.describe('common/interactive/chip-interaction', () => {
   test('basic: click + Space + Enter all flip aria-selected', async ({ page }) => {
-    await gotoDemo(page, 'common/interactive/chip-interaction/basic-toggle-on-click-space-or-enter');
+    await gotoDemo(page, 'common/interactive/chip/interaction/basic-toggle-on-click-space-or-enter');
 
     const favourite = page.locator('cngx-chip[cngxchipinteraction]').filter({ hasText: 'Favourite' });
     const featured = page.locator('cngx-chip[cngxchipinteraction]').filter({ hasText: 'Featured' });
@@ -32,11 +32,12 @@ test.describe('common/interactive/chip-interaction', () => {
   test('disabled state: toggle locks the chip; clicks no longer flip selection', async ({
     page,
   }) => {
-    await gotoDemo(page, 'common/interactive/chip-interaction/disabled-state');
+    await gotoDemo(page, 'common/interactive/chip/interaction/disabled-state');
 
     const chip = page.locator('cngx-chip[cngxchipinteraction]').first();
     // Demo starts NOT disabled (locked=false); pressing the toggle locks it.
     await expect(chip).not.toHaveAttribute('aria-disabled', 'true');
+    await expect(chip).toHaveAttribute('aria-selected', /.+/);
     const initialSelected = await chip.getAttribute('aria-selected');
 
     await page.getByRole('button', { name: 'toggle disabled' }).click();
@@ -51,14 +52,16 @@ test.describe('common/interactive/chip-interaction', () => {
   test('removable: Backspace fires removeRequest and increments the counter', async ({ page }) => {
     await gotoDemo(
       page,
-      'common/interactive/chip-interaction/removable-with-removerequest-on-backspace-delete',
+      'common/interactive/chip/interaction/removable-with-removerequest-on-backspace-delete',
     );
 
     const chip = page.locator('cngx-chip[cngxchipinteraction]').first();
     await chip.focus();
 
-    // Demo shows "remove fired: N" — counter is a <code> inside p.caption.
-    const counter = page.locator('p.caption code').first();
+    const counter = page
+      .locator('.event-row')
+      .filter({ has: page.getByText('remove fired', { exact: true }) })
+      .locator('.event-value');
     await expect(counter).toHaveText('0');
 
     await page.keyboard.press('Backspace');

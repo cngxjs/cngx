@@ -6,16 +6,16 @@ import { gotoDemo } from '../../_helpers';
 
 test.describe('common/interactive/pressable', () => {
   test('press-feedback: pressed() flips for the active button only', async ({ page }) => {
-    await gotoDemo(page, 'common/interactive/pressable/press-feedback-on-buttons');
+    await gotoDemo(page, 'common/interactive/gestures/pressable/press-feedback-on-buttons');
 
     const btn1 = page.getByRole('button', { name: 'Scale Down' });
     const row1 = page
       .locator('.event-row')
-      .filter({ has: page.getByText('Button 1', { exact: true }) })
+      .filter({ has: page.getByText('Button 1 (scale)', { exact: true }) })
       .locator('.event-value');
     const row2 = page
       .locator('.event-row')
-      .filter({ has: page.getByText('Button 2', { exact: true }) })
+      .filter({ has: page.getByText('Button 2 (flash)', { exact: true }) })
       .locator('.event-value');
 
     await expect(row1).toHaveText('idle');
@@ -31,7 +31,7 @@ test.describe('common/interactive/pressable', () => {
   });
 
   test('tappable-card: card-shaped host responds to press', async ({ page }) => {
-    await gotoDemo(page, 'common/interactive/pressable/tappable-card');
+    await gotoDemo(page, 'common/interactive/gestures/pressable/tappable-card');
 
     const card = page.locator('[cngxpressable]').first().or(page.locator('.cngx-pressable').first());
     await expect(card).toBeVisible();

@@ -10,7 +10,7 @@ test.describe('common/interactive/listbox-trigger', () => {
   test('select-dropdown: click opens listbox, choosing closes and updates label', async ({
     page,
   }) => {
-    await gotoDemo(page, 'common/interactive/listbox-trigger/select-dropdown');
+    await gotoDemo(page, 'common/interactive/listbox/trigger/select-dropdown');
 
     const trigger = page.getByRole('button', { name: 'Choose a color' });
     await expect(trigger).toBeVisible();

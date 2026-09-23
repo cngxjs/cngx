@@ -8,7 +8,7 @@ test.describe('common/interactive/click-outside', () => {
   test('dropdown: clicking outside closes; clicking the inner button does not', async ({
     page,
   }) => {
-    await gotoDemo(page, 'common/interactive/click-outside/dropdown');
+    await gotoDemo(page, 'common/interactive/gestures/click-outside/dropdown');
 
     const toggle = page.getByRole('button', { name: /Toggle dropdown/ });
     const status = page.locator('.output-badge');
@@ -17,7 +17,7 @@ test.describe('common/interactive/click-outside', () => {
 
     await toggle.click();
     await expect(status).toContainText('open');
-    const inner = page.getByRole('button', { name: "Inner button (won't close)" });
+    const inner = page.getByRole('button', { name: "Inner button (does not close)" });
     await expect(inner).toBeVisible();
 
     // Click the inner button — propagation is stopped so the dropdown
@@ -34,31 +34,31 @@ test.describe('common/interactive/click-outside', () => {
   test('enabled-toggle: outside clicks bump the counter; disabled stops emissions', async ({
     page,
   }) => {
-    await gotoDemo(page, 'common/interactive/click-outside/enabled-toggle');
+    await gotoDemo(page, 'common/interactive/gestures/click-outside/enabled-toggle');
 
     const badge = page.locator('.output-badge').filter({ hasText: 'Outside clicks' });
     const counter = badge.locator('strong');
     const toggleBtn = page.getByRole('button', { name: /(Disable|Enable) outside detection/ });
 
-    const startCount = parseInt((await counter.textContent()) || '0', 10);
+    const startCount = parseInt((await counter.textContent()) ?? '0', 10);
 
     // While enabled, an outside click must bump the counter.
     await page.mouse.click(10, 10);
     await expect
-      .poll(async () => parseInt((await counter.textContent()) || '0', 10))
+      .poll(async () => parseInt((await counter.textContent()) ?? '0', 10))
       .toBeGreaterThan(startCount);
 
     // Disable the directive (the click on the toggle itself is also outside
     // the host, so it counts before disable takes effect — sample AFTER).
     await toggleBtn.click();
     await expect(toggleBtn).toContainText('Enable outside detection');
-    const afterDisableCount = parseInt((await counter.textContent()) || '0', 10);
+    const afterDisableCount = parseInt((await counter.textContent()) ?? '0', 10);
 
     // Further outside clicks must NOT bump the counter while disabled.
     await page.mouse.click(10, 10);
     await page.mouse.click(20, 20);
     await page.waitForTimeout(150);
-    const afterClicksCount = parseInt((await counter.textContent()) || '0', 10);
+    const afterClicksCount = parseInt((await counter.textContent()) ?? '0', 10);
     expect(afterClicksCount).toBe(afterDisableCount);
 
   });

@@ -90,6 +90,7 @@ export const NON_LIBRARY_SCOPES = [
   'testing',
   'scripts',
   'e2e',
+  'examples/e2e',
   'eslint-plugin',
   'mcp',
   'plugin',

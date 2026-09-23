@@ -30,7 +30,7 @@ test.describe('common/a11y/live-region', () => {
     await page.getByRole('button', { name: 'Trigger announcement' }).click();
     // Region content updates with the latest announcement.
     const region = page.locator('[cngxliveregion]');
-    await expect(region).toContainText(/Action completed — count: 1/);
+    await expect(region).toContainText(/Action completed, count: 1/);
 
   });
 
@@ -40,7 +40,7 @@ test.describe('common/a11y/live-region', () => {
     await gotoDemo(page, 'common/a11y/live-region/form-validation-assertive-error-announcements');
 
     const input = page.getByPlaceholder('user@example.com');
-    const errorRegion = page.locator('#email-error');
+    const errorRegion = page.locator('#cngx-live-region-email-error');
 
     await input.fill('invalid');
     // The code-block at the bottom of every demo also contains the literal

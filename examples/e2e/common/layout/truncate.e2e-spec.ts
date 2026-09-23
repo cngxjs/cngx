@@ -24,7 +24,7 @@ test.describe('common/layout/truncate', () => {
     await expect(isClamped).toHaveText('true');
     await expect(expandedState).toHaveText('false');
 
-    const para = page.locator('p[cngxtruncate]').first().or(page.locator('p[style*="line-height"]').first());
+    const para = page.locator('p.demo-truncate-text').first();
     const clampedHeight = (await para.boundingBox())!.height;
 
     const showMore = page.getByRole('button', { name: 'Show more' });

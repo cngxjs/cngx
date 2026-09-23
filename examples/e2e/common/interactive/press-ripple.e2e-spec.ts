@@ -7,7 +7,7 @@ import { gotoDemo } from '../../_helpers';
 
 test.describe('common/interactive/press-ripple', () => {
   test('buttons: three variants render with the host directive wired', async ({ page }) => {
-    await gotoDemo(page, 'common/interactive/press-ripple/buttons-with-press-ripple');
+    await gotoDemo(page, 'common/interactive/ripple/press/buttons-with-press-ripple');
 
     const buttons = page.getByRole('button').filter({ hasText: /Default|Amber|C/ });
     await expect(buttons).toHaveCount(3);

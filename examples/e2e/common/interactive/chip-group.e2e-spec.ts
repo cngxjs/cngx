@@ -9,7 +9,7 @@ test.describe('common/interactive/chip-group', () => {
   test('basic: click selects, re-click deselects, only one aria-selected at a time', async ({
     page,
   }) => {
-    await gotoDemo(page, 'common/interactive/chip-group/basic-pick-exactly-one-size');
+    await gotoDemo(page, 'common/interactive/chip/group/basic-pick-exactly-one-size');
 
     const sm = page.locator('cngx-chip[cngxchipingroup]').filter({ hasText: 'SM' });
     const md = page.locator('cngx-chip[cngxchipingroup]').filter({ hasText: 'MD' });
@@ -19,7 +19,10 @@ test.describe('common/interactive/chip-group', () => {
     await expect(md).toHaveAttribute('aria-selected', 'true');
     await expect(sm).toHaveAttribute('aria-selected', 'false');
 
-    const caption = page.locator('p.caption').filter({ hasText: 'picked' });
+    const caption = page
+      .locator('.event-row')
+      .filter({ has: page.getByText('picked', { exact: true }) })
+      .locator('.event-value');
     await expect(caption).toContainText('md');
 
     // Click lg → lg selected, md deselected.
