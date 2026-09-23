@@ -84,13 +84,19 @@ test.describe('common/popover/tooltip', () => {
     expect(count).toBeGreaterThan(1);
 
     for (let i = 0; i < count; i++) {
-      await triggers.nth(i).hover();
-      const tip = page.getByRole('tooltip');
+      const trigger = triggers.nth(i);
+      // Track this trigger's own bubble by id. A global getByRole('tooltip')
+      // races the previous bubble's retraction and made this test flaky.
+      const tip = page.locator(`#${await trigger.getAttribute('aria-describedby')}`);
+      await trigger.hover();
       await expect(tip).toBeVisible();
       // A bubble that never got positioned sits at the origin.
       const box = await tip.boundingBox();
       expect(box!.width).toBeGreaterThan(0);
       expect(box!.height).toBeGreaterThan(0);
+      // Retract before the next iteration so bubbles never overlap.
+      await page.mouse.move(0, 0);
+      await expect(tip).toBeHidden();
     }
   });
 
