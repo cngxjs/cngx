@@ -343,8 +343,10 @@ describe('CngxPhoneInput', () => {
       providers: [provideInputConfig(withInputAriaLabels({ phoneCountry: 'Land' }))],
     });
     const { fixture } = setup();
-    const select = fixture.nativeElement.querySelector('cngx-select') as HTMLElement;
-    expect(select.getAttribute('aria-label')).toBe('Land');
+    const trigger = fixture.nativeElement.querySelector(
+      'cngx-select [role="combobox"]',
+    ) as HTMLElement;
+    expect(trigger.getAttribute('aria-label')).toBe('Land');
   });
 
   it('applies the configured default region when no country is bound', () => {
