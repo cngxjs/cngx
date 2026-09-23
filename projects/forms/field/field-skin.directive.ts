@@ -47,8 +47,11 @@ import { CNGX_FORM_FIELD_CONFIG } from './form-field.token';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/field-skin.directive.ts
  * @since 0.1.0
  * @relatedTo CngxFormField, CngxInput, CngxAffixRow, withFieldSkin
+ * <example-url>http://localhost:4200/#/forms/field/skin/fill</example-url>
+ * <example-url>http://localhost:4200/#/forms/field/skin/bare-table-filter</example-url>
+ * <example-url>http://localhost:4200/#/forms/field/skin/bare-cell-edit</example-url>
+ * <example-url>http://localhost:4200/#/forms/input/numeric/basic-numeric-input</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/signal-forms-required</example-url>
- * <example-url>http://localhost:4200/#/forms/select/multi-select/multi-basic</example-url>
  */
 @Directive({
   selector: '[cngxFieldSkin]',

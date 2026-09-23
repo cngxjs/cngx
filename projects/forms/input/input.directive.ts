@@ -31,10 +31,12 @@ import {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/input.directive.ts
  * @selector [cngxInput]
  * @since 0.1.0
- * @relatedTo CngxFormField, CngxCharCount, CngxPasswordToggle, CngxInputClear
+ * @relatedTo CngxFormField, CngxCharCount, CngxPasswordToggle, CngxInputClear, CngxFieldSkinHost
  * <example-url>http://localhost:4200/#/forms/input/character-counter</example-url>
  * <example-url>http://localhost:4200/#/forms/input/password-visibility-toggle</example-url>
  * <example-url>http://localhost:4200/#/forms/input/smart-autocomplete-and-spellcheck</example-url>
+ * <example-url>http://localhost:4200/#/forms/field/skin/fill</example-url>
+ * <example-url>http://localhost:4200/#/forms/field/skin/bare-cell-edit</example-url>
  */
 @Directive({
   selector: 'input[cngxInput], textarea[cngxInput], select[cngxInput]',

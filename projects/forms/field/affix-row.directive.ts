@@ -35,6 +35,7 @@ import { CngxFieldSkinHost } from './field-skin.directive';
  * @since 0.2.0
  * @relatedTo CngxPrefix, CngxSuffix, CngxFormField, CngxInput, CngxFieldSkinHost
  * <example-url>http://localhost:4200/#/forms/field/affix/currency-and-unit</example-url>
+ * <example-url>http://localhost:4200/#/forms/field/skin/fill</example-url>
  */
 @Directive({
   selector: '[cngxAffixRow]',
