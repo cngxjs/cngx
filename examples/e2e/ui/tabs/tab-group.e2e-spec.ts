@@ -84,7 +84,10 @@ test.describe('ui/tabs/tab-group', () => {
         page.evaluate((labels) => {
           const out: Record<string, [string, string]> = {};
           for (const label of labels) {
-            const host = document.querySelector(`cngx-tab-group[aria-label="${label}"]`);
+            // Every group is now labelled "Tabs"; the variant lives on
+            // [data-skin], so the case label is only a human-readable key.
+            const skin = label.replace(/ skin.*$/, '');
+            const host = document.querySelector(`cngx-tab-group[data-skin="${skin}"]`);
             const tab = host?.querySelector('.cngx-tabs__tab') as HTMLElement | null;
             const cs = tab ? getComputedStyle(tab) : null;
             out[label] = cs ? [cs.paddingTop, cs.paddingLeft] : ['', ''];
