@@ -473,10 +473,15 @@ export function withRequiredMarker(marker = '*'): FormFieldFeature {
  * Set the app-wide default appearance for form fields and the controls
  * inside them.
  *
- * Reaches every host that composes `CngxFieldSkinHost` - `cngx-form-field`,
- * `input cngxInput`, the affix row, and the select-family triggers - so one
- * call re-skins the whole field family. A `[skin]` on a field or a
- * `[cngxFieldSkin]` on a single control still wins locally.
+ * Reaches every host that composes `CngxFieldSkinHost`: `input cngxInput`,
+ * `CngxAffixRow`, and the nine select-family triggers. A `[skin]` on a
+ * surrounding `cngx-form-field` or a `[cngxFieldSkin]` on a single control
+ * still wins locally.
+ *
+ * It does NOT reach a control that only opts in by attribute
+ * (`CngxNumericInput`, `CngxInputMask`, `CngxInputFormat`, `CngxOtpSlot`,
+ * `input[cngxListboxSearch]`, `input[cngxSearch]`, `input[cngxDgaFilter]`) -
+ * those read the config only once `cngxFieldSkin` is present on them.
  *
  * `'outline'` is already the default and emits no attribute; pass it only
  * to be explicit, or to opt back out of a `fill` default in a sub-tree.

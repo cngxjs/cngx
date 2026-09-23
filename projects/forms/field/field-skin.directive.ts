@@ -21,32 +21,34 @@ import { CNGX_FORM_FIELD_CONFIG } from './form-field.token';
  * control - still resolves its own input and the app-wide default, which is
  * exactly what the `bare` skin is for.
  *
- * **Where it is already composed.** `CngxFormField`, `CngxInput`,
- * `CngxAffixRow` and the select-family triggers host this directive and
- * re-alias its input to the short `skin`, so `<input cngxInput skin="bare">`
- * works out of the box. Directives that do not host `cngxInput` opt in with
- * the explicit attribute instead: `CngxNumericInput`, `CngxInputMask`,
- * `CngxInputFormat`, `CngxOtpSlot`, `input[cngxListboxSearch]`,
- * `input[cngxSearch]`, `input[cngxDgaFilter]`.
+ * **Where it is already composed.** `CngxInput`, `CngxAffixRow` and the nine
+ * select-family triggers host this directive and re-alias its input to the
+ * short `skin`, so `<input cngxInput skin="bare">` works out of the box.
+ *
+ * `CngxFormField` does NOT host it - the field is `display: contents` and has
+ * no box to paint. It forwards its own `[skin]` into `CngxFormFieldPresenter`,
+ * which publishes the raw value on `CNGX_FORM_FIELD_HOST`; every control
+ * inside then resolves it through the cascade above. Binding
+ * `[cngxFieldSkin]` on `cngx-form-field` itself does nothing.
+ *
+ * Controls that do not host `cngxInput` opt in with the explicit attribute:
+ * `CngxNumericInput`, `CngxInputMask`, `CngxInputFormat`, `CngxOtpSlot`,
+ * `input[cngxListboxSearch]`, `input[cngxSearch]`, `input[cngxDgaFilter]`.
+ * They are not reached by `withFieldSkin(...)` either - the config tier is
+ * read by this directive, so a control that does not compose it stays on the
+ * base outline look until the attribute is set.
  *
  * ```html
  * <input cngxNumericInput cngxFieldSkin="bare" />
  * ```
- *
- * Never put it on `cngx-form-field`'s own element expecting a box: the field
- * is `display: contents` and has no border. The attribute belongs on whatever
- * element actually draws - the control, or the affix row when affixes turn
- * that row into the box.
  *
  * @category forms/field
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/field-skin.directive.ts
  * @since 0.1.0
  * @relatedTo CngxFormField, CngxInput, CngxAffixRow, withFieldSkin
- * <example-url>http://localhost:4200/#/forms/field/skin/fill</example-url>
- * <example-url>http://localhost:4200/#/forms/field/skin/bare-table-filter</example-url>
- * <example-url>http://localhost:4200/#/forms/field/skin/bare-cell-edit</example-url>
- * <example-url>http://localhost:4200/#/forms/input/numeric/basic-numeric-input</example-url>
+ * <example-url>http://localhost:4200/#/forms/select/single-select/signal-forms-required</example-url>
+ * <example-url>http://localhost:4200/#/forms/select/multi-select/multi-basic</example-url>
  */
 @Directive({
   selector: '[cngxFieldSkin]',
