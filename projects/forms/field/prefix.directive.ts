@@ -29,6 +29,8 @@ import { booleanAttribute, Directive, input } from '@angular/core';
  * @since 0.2.0
  * @relatedTo CngxSuffix, CngxAffixRow, CngxFormField, CngxInput, withCurrency
  * <example-url>http://localhost:4200/#/forms/field/affix/currency-and-unit</example-url>
+ * <example-url>http://localhost:4200/#/forms/field/affix/icon-and-icon-button</example-url>
+ * <example-url>http://localhost:4200/#/forms/field/affix/select-in-field</example-url>
  */
 @Directive({
   selector: '[cngxPrefix]',

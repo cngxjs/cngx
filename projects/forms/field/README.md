@@ -210,6 +210,32 @@ tokens from `--mat-sys-*`.
 
 cngx does not ship a floating label. The label stays static above the control.
 
+### Affix patterns
+
+`CngxPrefix` and `CngxSuffix` inside a `cngxAffixRow` cover the four shapes
+enterprise forms need. No extra directive is involved; the a11y rule is what
+differs.
+
+| Pattern | Markup | A11y rule |
+|-|-|-|
+| Decorative icon | `<span cngxPrefix><cngx-icon>...</cngx-icon></span>` | Decorative affixes are `aria-hidden` by default; the icon adds nothing to the accessible name |
+| Icon button | `<button type="button" cngxSuffix cngxSuffixInteractive [cngxInputClear]="input">` | A real button with an accessible name, in the tab order, with its own focus ring and touch-target floor |
+| Text button | `<button type="button" cngxSuffix cngxSuffixInteractive>Apply</button>` | When disabled, point `aria-describedby` at an always-present reason, and only while it applies |
+| Select in field | `<cngx-select cngxPrefix cngxPrefixInteractive [label]="'Currency'">` | Detach the inner control from the field by providing `CngxFormFieldPresenter` as `null` on its element, so the field keeps exactly one control |
+
+The select-in-field shield is a one-line directive in the consumer:
+
+```ts
+@Directive({
+  selector: '[appAffixDetach]',
+  providers: [{ provide: CngxFormFieldPresenter, useValue: null }],
+})
+export class AppAffixDetach {}
+```
+
+Without it the nested select registers a second `CNGX_FORM_FIELD_CONTROL`,
+mirrors the field's error state and writes its value into the field.
+
 ## Presenter Signals
 
 All derived from Signal Forms `FieldState` via `computed()`:
