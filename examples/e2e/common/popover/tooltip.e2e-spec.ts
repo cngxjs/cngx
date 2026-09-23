@@ -49,10 +49,16 @@ test.describe('common/popover/tooltip', () => {
     await expect(boldTip).toBeVisible();
     await expect(boldTip).toHaveText('Bold text');
 
-    // Tab to the next trigger: the previous bubble must not linger.
+    // Tab to the next trigger: the previous bubble must not linger. Track the
+    // italic bubble by id — a global getByRole('tooltip') races the bold one's
+    // retraction and can match two nodes mid-transition.
+    const italic = page.getByRole('button', { name: 'I', exact: true });
+    const italicTip = page.locator(`#${await italic.getAttribute('aria-describedby')}`);
+
     await page.keyboard.press('Tab');
     await expect(boldTip).toBeHidden();
-    await expect(page.getByRole('tooltip')).toHaveText('Italic text');
+    await expect(italicTip).toBeVisible();
+    await expect(italicTip).toHaveText('Italic text');
   });
 
   test('disabled-state: [enabled]="false" suppresses the tooltip entirely', async ({ page }) => {
@@ -87,8 +93,8 @@ test.describe('common/popover/tooltip', () => {
     await gotoDemo(page, 'common/popover/tooltip/placement');
 
     const triggers = page.locator('button[cngxtooltip]');
+    await expect(triggers.nth(1)).toBeVisible();
     const count = await triggers.count();
-    expect(count).toBeGreaterThan(1);
 
     for (let i = 0; i < count; i++) {
       const trigger = triggers.nth(i);

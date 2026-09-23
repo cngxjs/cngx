@@ -7,15 +7,30 @@ test.describe('common/popover/popover-panel', () => {
   test('content-states: panel mounts under its trigger', async ({ page }) => {
     await gotoDemo(page, 'common/popover/popover-panel/content-states');
     const triggers = page.getByRole('button');
-    expect(await triggers.count()).toBeGreaterThan(0);
+    await expect(triggers).not.toHaveCount(0);
   });
 
-  test('variants: panel variants render', async ({ page }) => {
+  test('variants: each variant opens its own panel', async ({ page }) => {
     await gotoDemo(page, 'common/popover/popover-panel/variants');
+
+    for (const variant of ['default', 'info', 'success', 'warning', 'danger']) {
+      await page.getByRole('button', { name: variant, exact: true }).click();
+      const panel = page.locator('cngx-popover-panel', { hasText: `${variant} panel` });
+      await expect(panel).toBeVisible();
+      await expect(panel).toContainText(`This is a ${variant} popover panel`);
+      await page.keyboard.press('Escape');
+      await expect(panel).toBeHidden();
+    }
   });
 
   test('with-footer-actions: panel includes a footer actions row', async ({ page }) => {
     await gotoDemo(page, 'common/popover/popover-panel/with-footer-actions');
+
+    await page.getByRole('button', { name: /Save/ }).first().click();
+    const panel = page.locator('cngx-popover-panel', { hasText: 'Save Changes?' });
+    await expect(panel).toBeVisible();
+    // The footer is the point of this demo: it must carry actionable controls.
+    await expect(panel.locator('[cngxpopoverfooter] button')).not.toHaveCount(0);
   });
 
   // Regression: the arrow ornament must track the trigger horizontally even

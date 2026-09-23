@@ -55,6 +55,7 @@ test.describe('common/interactive/checkbox-group', () => {
     // Toggle disabled on, all leaves become aria-disabled.
     await page.getByRole('button', { name: /Disable/ }).click();
     await expect(firstLeaf).toHaveAttribute('aria-disabled', 'true');
+    await expect(leaves.first()).toBeVisible();
     const total = await leaves.count();
     for (let i = 0; i < total; i++) {
       await expect(leaves.nth(i)).toHaveAttribute('aria-disabled', 'true');

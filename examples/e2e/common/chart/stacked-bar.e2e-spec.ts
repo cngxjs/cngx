@@ -19,6 +19,8 @@ test.describe('common/chart/stacked-bar', () => {
     await expect(segments2).toHaveCount(4);
 
     // Widths reflect the relative shares — Chrome (65) > Safari (18).
+    // evaluateAll does not retry; wait for the render first.
+    await expect(segments2.first()).toBeVisible();
     const widths = await segments2.evaluateAll((els) =>
       els.map((el) => parseFloat((el as HTMLElement).style.width || '0')),
     );

@@ -5,26 +5,38 @@ import { gotoDemo } from '../../_helpers';
 // sections, and active-state by depth.
 
 test.describe('common/interactive/nav', () => {
-  test('badge-counts-and-dots: nav renders with links', async ({ page }) => {
+  test('badge-counts-and-dots: badges render per variant and name themselves', async ({ page }) => {
     await gotoDemo(page, 'common/interactive/nav/nav-badge-counts-and-dots');
-    // Smoke: the nav itself renders with at least one link.
-    expect(await page.getByRole('link').count()).toBeGreaterThan(0);
+
+    // Scope to the nav's own links: the intro panel ships reference links too,
+    // so a bare getByRole('link') counts the wrong thing.
+    await expect(page.locator('a[cngxnavlink]')).toHaveCount(3);
+
+    // A count badge carrying information must name itself; a decorative one
+    // must stay hidden from AT. That contrast is the point of the demo.
+    await expect(page.getByLabel('12 unread')).toBeVisible();
+    await expect(page.locator('[cngxnavbadge][aria-hidden="true"]')).not.toHaveCount(0);
   });
 
   test('accordion-sections: clicking a section header expands its panel', async ({ page }) => {
     await gotoDemo(page, 'common/interactive/nav/nav-group-accordion-sections');
     // Find a button that toggles a panel — the first header with aria-expanded.
-    const headers = page.locator('[aria-expanded]');
-    expect(await headers.count()).toBeGreaterThan(0);
+    const headers = page.locator('button[cngxnavgroup]');
+    await expect(headers).not.toHaveCount(0);
     const header = headers.first();
+    // The group trigger must expose the disclosure contract it host-composes.
+    await expect(header).toHaveAttribute('aria-controls', /.+/);
     const before = await header.getAttribute('aria-expanded');
     await header.click();
     const after = await header.getAttribute('aria-expanded');
     expect(after).not.toBe(before);
   });
 
-  test('links-active-state-depth: at least one link is rendered', async ({ page }) => {
+  test('links-active-state-depth: exactly one link is marked current', async ({ page }) => {
     await gotoDemo(page, 'common/interactive/nav/nav-links-active-state-depth');
-    expect(await page.getByRole('link').count()).toBeGreaterThan(0);
+
+    await expect(page.locator('a[cngxnavlink]')).toHaveCount(6);
+    // Active-state-by-depth means one winner, not "some link is highlighted".
+    await expect(page.locator('a[aria-current]')).toHaveCount(1);
   });
 });

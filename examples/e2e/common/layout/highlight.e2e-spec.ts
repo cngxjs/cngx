@@ -30,6 +30,7 @@ test.describe('common/layout/highlight', () => {
     // The substring "signal" lives in "Signals" and "signals" — case-insensitive
     // gives 2 matches. The matchCount signal and the DOM <mark> count under
     // the host must agree.
+    await expect(host).toBeVisible();
     const renderedMarks = await host.locator('mark').count();
     expect(renderedMarks).toBeGreaterThan(0);
     await expect(reportedCount).toHaveText(String(renderedMarks));

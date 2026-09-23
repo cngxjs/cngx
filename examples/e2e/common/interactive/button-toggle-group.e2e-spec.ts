@@ -42,6 +42,6 @@ test.describe('common/interactive/button-toggle-group', () => {
   test('vertical: orientation reflects on the host', async ({ page }) => {
     await gotoDemo(page, 'common/interactive/button-toggle/group/vertical-orientation');
     const toggles = page.locator('cngx-button-toggle-group button');
-    expect(await toggles.count()).toBeGreaterThanOrEqual(2);
+    await expect(toggles.nth(1)).toBeVisible();
   });
 });

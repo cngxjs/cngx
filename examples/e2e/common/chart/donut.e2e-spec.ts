@@ -20,6 +20,8 @@ test.describe('common/chart/donut', () => {
     }
 
     // Sizes: 48, 64, 80, 64 — must apply to the SVG viewport.
+    // evaluateAll does not retry; wait for the render first.
+    await expect(donuts.first()).toBeVisible();
     const sizes = await donuts.evaluateAll((els) =>
       els.map((el) => {
         const svg = el.querySelector('svg') as SVGSVGElement | null;

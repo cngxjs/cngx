@@ -20,7 +20,7 @@ test.describe('common/layout/skeleton', () => {
     // The placeholders are projected via the cngxSkeletonPlaceholder
     // ng-template — count their inner skeleton-bar divs as proxy.
     const placeholderBars = container.locator('.demo-skeleton-line');
-    expect(await placeholderBars.count()).toBeGreaterThanOrEqual(3);
+    await expect(placeholderBars.nth(2)).toBeVisible();
 
     await page.getByRole('button', { name: /Loading\.\.\./ }).click();
     await expect(page.getByRole('button', { name: 'Loaded' })).toBeVisible();

@@ -32,7 +32,7 @@ test.describe('common/data/filter-chips', () => {
     await gotoDemo(page, 'common/data/filter-chips/custom-chip-decoration-via-cngxfilterchip');
 
     const chips = page.getByRole('option');
-    expect(await chips.count()).toBeGreaterThan(0);
+    await expect(chips).not.toHaveCount(0);
 
   });
 });

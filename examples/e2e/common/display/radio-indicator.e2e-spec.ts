@@ -17,23 +17,23 @@ test.describe('common/display/radio-indicator', () => {
 
   test('sizes: multiple size presets render', async ({ page }) => {
     await gotoDemo(page, 'common/display/radio-indicator/sizes');
-    expect(await page.locator('cngx-radio-indicator').count()).toBeGreaterThanOrEqual(2);
+    await expect(page.locator('cngx-radio-indicator').nth(1)).toBeVisible();
   });
 
   test('disabled: indicator renders even in disabled state', async ({ page }) => {
     await gotoDemo(page, 'common/display/radio-indicator/disabled');
-    expect(await page.locator('cngx-radio-indicator').count()).toBeGreaterThan(0);
+    await expect(page.locator('cngx-radio-indicator')).not.toHaveCount(0);
   });
 
   test('custom-dotglyph: consumer dot glyph overrides the default', async ({ page }) => {
     await gotoDemo(page, 'common/display/radio-indicator/custom-dotglyph');
-    expect(await page.locator('cngx-radio-indicator').count()).toBeGreaterThan(0);
+    await expect(page.locator('cngx-radio-indicator')).not.toHaveCount(0);
   });
 
   test('theming-via-css-custom-properties: indicator renders with custom theming', async ({
     page,
   }) => {
     await gotoDemo(page, 'common/display/radio-indicator/theming-via-css-custom-properties');
-    expect(await page.locator('cngx-radio-indicator').count()).toBeGreaterThan(0);
+    await expect(page.locator('cngx-radio-indicator')).not.toHaveCount(0);
   });
 });
