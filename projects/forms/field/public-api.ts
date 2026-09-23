@@ -33,6 +33,8 @@ export {
   CNGX_FORM_FIELD_CONFIG,
   CNGX_FORM_FIELD_REVEAL,
   provideFormField,
+  provideFormFieldAt,
+  injectFormFieldConfig,
   provideErrorMessages,
   withErrorMessages,
   withConstraintHints,

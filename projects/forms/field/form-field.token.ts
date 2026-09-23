@@ -1,4 +1,5 @@
 import {
+  inject,
   type Provider,
   InjectionToken,
   makeEnvironmentProviders,
@@ -207,11 +208,10 @@ export interface FormFieldFeature {
  * config, so without a provider every feature stays off and the presenter uses
  * its built-in behaviour (error gate `touched OR reveal`, no hints, no marker).
  *
- * Inject this only to read the resolved config. App-wide configuration goes
- * through `provideFormField` and the `with*` features - those return
- * `EnvironmentProviders` and cannot scope to a component. A component-scoped
- * override may provide the token directly, but must then supply a fully
- * resolved `FormFieldConfig` (no feature merging happens on that path).
+ * Read it through `injectFormFieldConfig()`. App-wide configuration goes
+ * through `provideFormField`; a sub-tree override goes through
+ * `provideFormFieldAt` on a component's `providers` / `viewProviders`. Both
+ * merge `with*` features the same way.
  *
  * @category forms/field
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/form-field.token.ts
@@ -229,10 +229,10 @@ export const CNGX_FORM_FIELD_CONFIG = new InjectionToken<FormFieldConfig>('CngxF
  * same key.
  *
  * Returns `EnvironmentProviders`, so it sits at an environment injector -
- * `bootstrapApplication`'s `providers`, or a lazy route's `providers`. It
- * cannot be placed on a component. Resolution is nearest-wins and replace,
- * not merge: a route-level `provideFormField` shadows the root one for that
- * subtree rather than deep-merging into it.
+ * `bootstrapApplication`'s `providers`, or a lazy route's `providers`. For a
+ * component sub-tree use `provideFormFieldAt`. Resolution is nearest-wins and
+ * replace, not merge: a route-level `provideFormField` shadows the root one
+ * for that subtree rather than deep-merging into it.
  *
  * ```ts
  * bootstrapApplication(AppComponent, {
@@ -246,23 +246,75 @@ export const CNGX_FORM_FIELD_CONFIG = new InjectionToken<FormFieldConfig>('CngxF
  * ```
  *
  * @category forms/field
- * @relatedTo withErrorMessages, withErrorStrategy, withConstraintHints, withRequiredMarker, withAutocompleteMappings, withNoSpellcheck, provideErrorMessages, CNGX_FORM_FIELD_CONFIG
+ * @relatedTo provideFormFieldAt, injectFormFieldConfig, withErrorMessages, withErrorStrategy, withConstraintHints, withRequiredMarker, withAutocompleteMappings, withNoSpellcheck, provideErrorMessages, CNGX_FORM_FIELD_CONFIG
  */
 export function provideFormField(...features: FormFieldFeature[]): EnvironmentProviders {
+  return makeEnvironmentProviders(resolveFormFieldProviders(features));
+}
+
+/**
+ * Merges the features into one `FormFieldConfig` and returns the plain
+ * providers for it. Shared by `provideFormField` (wrapped in
+ * `makeEnvironmentProviders`) and `provideFormFieldAt` (returned as-is), so
+ * both tiers resolve features identically.
+ *
+ * @internal
+ */
+function resolveFormFieldProviders(features: readonly FormFieldFeature[]): Provider[] {
   let config: FormFieldConfig = {};
   for (const f of features) {
     config = f._apply(config);
   }
 
-  const providers: (Provider | EnvironmentProviders)[] = [
-    { provide: CNGX_FORM_FIELD_CONFIG, useValue: config },
-  ];
+  const providers: Provider[] = [{ provide: CNGX_FORM_FIELD_CONFIG, useValue: config }];
 
   if (config.errorMessages) {
     providers.push({ provide: CNGX_ERROR_MESSAGES, useValue: config.errorMessages });
   }
 
-  return makeEnvironmentProviders(providers);
+  return providers;
+}
+
+/**
+ * Component-scope twin of {@link provideFormField}. Returns plain `Provider[]`
+ * for a component's `providers` / `viewProviders`, so a sub-tree can carry its
+ * own form-field defaults without an environment injector.
+ *
+ * The case this exists for is `withFieldSkin`: a table region that wants every
+ * filter control `bare`, or a dialog that wants `fill`, while the rest of the
+ * app keeps the root default.
+ *
+ * Nearest-wins and replace, not merge - same semantics as the environment
+ * tier. A component-level call shadows the app-wide config for that sub-tree
+ * rather than deep-merging into it, so re-state any feature the sub-tree still
+ * needs.
+ *
+ * ```ts
+ * @Component({
+ *   selector: 'app-filter-row',
+ *   viewProviders: [provideFormFieldAt(withFieldSkin('bare'))],
+ * })
+ * ```
+ *
+ * @category forms/field
+ * @relatedTo provideFormField, injectFormFieldConfig, withFieldSkin, CNGX_FORM_FIELD_CONFIG
+ */
+export function provideFormFieldAt(...features: FormFieldFeature[]): Provider[] {
+  return resolveFormFieldProviders(features);
+}
+
+/**
+ * Reads the resolved form-field config in an injection context.
+ *
+ * Resolves nearest-first: a `provideFormFieldAt` on an ancestor component
+ * wins over the app-wide `provideFormField`, which wins over the library
+ * default (an empty config).
+ *
+ * @category forms/field
+ * @relatedTo provideFormField, provideFormFieldAt, CNGX_FORM_FIELD_CONFIG
+ */
+export function injectFormFieldConfig(): FormFieldConfig {
+  return inject(CNGX_FORM_FIELD_CONFIG);
 }
 
 /**
