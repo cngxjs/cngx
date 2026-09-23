@@ -22,20 +22,20 @@ test.describe('common/layout/intersection-observer', () => {
     await expect(scrollRoot).toBeVisible();
 
     // The sentinel sits between two 400px spacers — initially off-screen.
-    await expect(enterCount).toHaveText('0×');
-    await expect(leaveCount).toHaveText('0×');
+    await expect(enterCount).toHaveText('0x');
+    await expect(leaveCount).toHaveText('0x');
 
     // Scroll the sentinel into view.
     await scrollRoot.evaluate((el) => {
       el.scrollTop = 350;
     });
-    await expect(enterCount).toHaveText('1×', { timeout: 2000 });
+    await expect(enterCount).toHaveText('1x', { timeout: 2000 });
 
     // Scroll back to the top — sentinel leaves.
     await scrollRoot.evaluate((el) => {
       el.scrollTop = 0;
     });
-    await expect(leaveCount).toHaveText('1×', { timeout: 2000 });
+    await expect(leaveCount).toHaveText('1x', { timeout: 2000 });
 
     // Sentinel reads "Hidden" with ratio 0.00 when off-screen.
     const sentinel = scrollRoot.locator('div[cngxintersectionobserver], div').filter({
