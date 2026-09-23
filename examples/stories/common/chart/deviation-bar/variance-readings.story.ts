@@ -32,7 +32,7 @@ export const STORY: DemoSpec = {
     @for (row of variance; track row.label) {
       <li>
         <span>{{ row.label }}</span>
-        <cngx-deviation-bar [value]="row.value" [magnitude]="100" [attr.aria-label]="row.label + ' ' + row.display" />
+        <cngx-deviation-bar [value]="row.value" [magnitude]="100" [aria-label]="row.label + ' ' + row.display" />
         <span>{{ row.display }}</span>
       </li>
     }

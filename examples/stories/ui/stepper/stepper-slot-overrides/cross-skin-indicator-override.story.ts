@@ -27,7 +27,7 @@ export const STORY: DemoSpec = {
     @for (skin of ['classic', 'linear-minimal', 'stripe-status-rich', 'path-chevron', 'pill-segment']; track skin) {
       <section style="display:grid;gap:6px">
         <h4 style="margin:0;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.04em;opacity:0.7">{{ skin }}</h4>
-        <cngx-stepper [(activeStepIndex)]="active" [skin]="skin" [attr.aria-label]="'Indicator override - ' + skin">
+        <cngx-stepper [(activeStepIndex)]="active" [skin]="skin" [aria-label]="'Indicator override - ' + skin">
           <ng-template cngxStepIndicator let-position let-status="status">
             @if (status === 'success') {
               <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true">

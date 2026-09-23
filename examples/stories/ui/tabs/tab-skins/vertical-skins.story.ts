@@ -26,7 +26,7 @@ export const STORY: DemoSpec = {
           [skin]="skin"
           orientation="vertical"
           [(activeIndex)]="active"
-          [attr.aria-label]="skin + ' skin, vertical'"
+          [aria-label]="skin + ' skin, vertical'"
         >
           <div cngxTab [label]="'Overview'">
             <ng-template cngxTabContent><p>Overview content.</p></ng-template>
