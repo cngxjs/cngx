@@ -100,7 +100,7 @@ export class CngxInput implements CngxFormFieldControl {
   });
   /** @internal */
   protected readonly labelledBy = computed(
-    () => this.ariaLabelledBy() || this.presenter?.labelId() || null,
+    () => this.ariaLabelledBy() ?? this.presenter?.labelId() ?? null,
   );
   /** @internal */
   protected readonly ariaInvalid = computed(() => (this.presenter?.showError() ? true : null));
