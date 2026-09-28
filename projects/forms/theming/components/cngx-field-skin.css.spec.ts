@@ -159,6 +159,19 @@ describe('cngx-field-skin.css', () => {
     expect(affix).toContain(`:focus-within${optOut}`);
   });
 
+  // getComputedStyle does not report the UA search pseudo-elements reliably,
+  // so the rule is guarded as source: box children only, a standalone search
+  // input keeps the browser-native cancel glyph.
+  it('hides the UA search cancel glyph for box children only', () => {
+    const flat = SOURCE.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\s+/g, ' ');
+    expect(flat).toContain(
+      ".cngx-field-box[data-skin] > input[type='search']::-webkit-search-cancel-button { display: none; }",
+    );
+    const cancelRules = [...flat.matchAll(/([^{}]*)::-webkit-search-cancel-button/g)];
+    expect(cancelRules.length).toBe(1);
+    expect(cancelRules[0][1].trim().startsWith('.cngx-field-box[data-skin] >')).toBe(true);
+  });
+
   it('repaints the surface under UA autofill', () => {
     expect(SOURCE).toContain(':scope:autofill');
   });

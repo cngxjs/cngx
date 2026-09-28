@@ -276,6 +276,19 @@
     outline: none;
     color: inherit;
   }
+
+  /* The box owns the clear affordance: a clear control inside a box is a
+     CngxInputClear suffix, themed and floored like the box. The UA search
+     cancel glyph ignores the cngx tokens, has no touch floor and sits next to
+     that suffix as a second clear button, so it goes - inside a box only; a
+     standalone search input keeps the browser-native one. */
+  .cngx-field-box[data-skin] > input[type='search']::-webkit-search-cancel-button {
+    display: none;
+  }
+
+  .cngx-field-box[data-skin] > input[type='search']::-webkit-search-decoration {
+    appearance: none;
+  }
 }
 
 /* Unlayered, outside @scope, full selectors repeated: a layered or
