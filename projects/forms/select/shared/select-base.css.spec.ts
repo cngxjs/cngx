@@ -166,9 +166,7 @@ describe('select-family field-skin rule set', () => {
   it('lifts the host minimum width for a bare select, keyed on the host', () => {
     const flat = SHARED.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\s+/g, ' ');
     expect(flat).toContain("[data-skin='bare']:has(> * > .cngx-field-trigger) { min-width: 0; }");
-    expect(flat).toContain(
-      "[data-skin='bare']:not(.cngx-field-box > *):has(> * > .cngx-field-trigger) { inline-size: 100%; }",
-    );
+    expect(flat).not.toMatch(/\[data-skin='bare'\][^{]*\.cngx-field-trigger\) \{ inline-size/);
   });
 
   it('drops the chip-strip underline reserve', () => {

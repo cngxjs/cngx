@@ -391,15 +391,16 @@ describe('field box border token', () => {
   });
 });
 
-// A bare select paints no box, so its width comes from where it sits: the
-// container for a standalone bare select, its own content inside a field box.
+// A bare select paints no box, so it sizes to its content, standalone and
+// inside a field box alike.
 describe('bare select width', () => {
-  it('drops the minimum width and fills the container when standalone', () => {
+  it('drops the minimum width and sizes to its content when standalone', () => {
     const root = mountMatrix('bare', 'comfortable', false);
     const host = query(root, '.c-single');
     expect(computedValue(host, 'min-width')).toBe('0px');
     const container = host.parentElement!.getBoundingClientRect().width;
-    expect(host.getBoundingClientRect().width).toBeCloseTo(container, 0);
+    expect(host.getBoundingClientRect().width).toBeLessThan(160);
+    expect(host.getBoundingClientRect().width).toBeLessThan(container);
   });
 
   it.each(['outline', 'fill', 'bare'] as const)(
