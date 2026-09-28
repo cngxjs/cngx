@@ -22,10 +22,13 @@ import { afterEach, describe, expect, it } from 'vitest';
     '../../../core/theming/reset.css',
     './cngx-field-skin.css',
     './cngx-field-affix.css',
+    '../../select/shared/select-base.css',
   ],
   encapsulation: ViewEncapsulation.None,
   template: `
     <input class="solo-fill" type="text" data-skin="fill" />
+    <input class="fill-invalid" type="text" data-skin="fill" aria-invalid="true" />
+    <input class="fill-disabled" type="text" data-skin="fill" disabled />
     <span
       class="probe-underline"
       style="background: var(
@@ -37,10 +40,11 @@ import { afterEach, describe, expect, it } from 'vitest';
       class="probe-hover"
       style="background: var(
         --cngx-field-fill-bg-hover,
-        color-mix(in oklch, var(--cngx-color-text, oklch(0.2 0.01 250)) 10%, transparent)
+        color-mix(in oklab, var(--cngx-color-text) 5%, var(--cngx-field-fill-bg))
       )"
     ></span>
     <input class="solo-bare" type="text" data-skin="bare" />
+    <input class="bare-disabled" type="text" data-skin="bare" disabled />
     <input class="bare-invalid" type="text" data-skin="bare" aria-invalid="true" />
     <div data-color-scheme="dark">
       <input class="bare-invalid-dark" type="text" data-skin="bare" aria-invalid="true" />
@@ -50,20 +54,48 @@ import { afterEach, describe, expect, it } from 'vitest';
       <input class="bare-row-input" type="text" data-skin="bare" aria-invalid="true" />
     </span>
     <div data-color-scheme="light">
-      <input class="fill-light" type="text" data-skin="fill" />
+      <input class="fill-light" type="text" data-skin="fill" placeholder="Search" />
+      <input class="fill-invalid-light" type="text" data-skin="fill" aria-invalid="true" />
+      <input class="bare-light" type="text" data-skin="bare" placeholder="Search" />
+      <input class="bare-invalid-light" type="text" data-skin="bare" aria-invalid="true" />
+      <span class="probe-page-light" style="background: var(--cngx-color-surface)"></span>
+      <span
+        class="probe-select-placeholder-light"
+        style="background: var(--cngx-select-placeholder-color)"
+      ></span>
       <span
         class="probe-underline-light"
         style="background: var(--cngx-field-underline-focus-color)"
       ></span>
-      <span class="probe-hover-light" style="background: var(--cngx-field-fill-bg-hover)"></span>
+      <span
+        class="probe-hover-light"
+        style="background: var(
+          --cngx-field-fill-bg-hover,
+          color-mix(in oklab, var(--cngx-color-text) 5%, var(--cngx-field-fill-bg))
+        )"
+      ></span>
     </div>
     <div data-color-scheme="dark">
-      <input class="fill-dark" type="text" data-skin="fill" />
+      <input class="fill-dark" type="text" data-skin="fill" placeholder="Search" />
+      <input class="fill-invalid-dark" type="text" data-skin="fill" aria-invalid="true" />
+      <input class="bare-dark" type="text" data-skin="bare" placeholder="Search" />
+      <input class="bare-invalid-dark" type="text" data-skin="bare" aria-invalid="true" />
+      <span class="probe-page-dark" style="background: var(--cngx-color-surface)"></span>
+      <span
+        class="probe-select-placeholder-dark"
+        style="background: var(--cngx-select-placeholder-color)"
+      ></span>
       <span
         class="probe-underline-dark"
         style="background: var(--cngx-field-underline-focus-color)"
       ></span>
-      <span class="probe-hover-dark" style="background: var(--cngx-field-fill-bg-hover)"></span>
+      <span
+        class="probe-hover-dark"
+        style="background: var(
+          --cngx-field-fill-bg-hover,
+          color-mix(in oklab, var(--cngx-color-text) 5%, var(--cngx-field-fill-bg))
+        )"
+      ></span>
     </div>
     <span class="cngx-field-box cngx-field-affix-row row" data-skin="fill">
       <span class="cngx-field-prefix">$</span>
@@ -168,8 +200,34 @@ describe('field skin geometry', () => {
     const input = query(mount(), '.solo-fill') as HTMLInputElement;
     input.focus();
     await settle();
-    expect(computedValue(input, 'box-shadow')).toContain('-2px');
+    // 1px border plus a 1px shadow: the 2px underline is one line in one
+    // colour, the resting border never shows under the focus colour.
+    const shadow = computedValue(input, 'box-shadow');
+    expect(shadow).toContain('-1px');
+    expect(shadow).toContain(computedValue(input, 'border-bottom-color'));
     expect(computedValue(input, 'outline-style')).toBe('none');
+  });
+
+  it('keeps the 2px danger underline on an invalid fill field while focused', async () => {
+    const root = mount();
+    const invalid = query(root, '.fill-invalid') as HTMLInputElement;
+    const danger = computedValue(invalid, 'border-bottom-color');
+    invalid.focus();
+    await settle();
+    const shadow = computedValue(invalid, 'box-shadow');
+    expect(shadow).toContain('-1px');
+    expect(shadow).toContain(danger);
+    expect(computedValue(invalid, 'border-bottom-color')).toBe(danger);
+  });
+
+  it('fades a disabled fill field by colour, not opacity', () => {
+    const root = mount();
+    const disabled = query(root, '.fill-disabled');
+    expect(computedValue(disabled, 'opacity')).toBe('1');
+    expect(computedValue(disabled, 'border-bottom-style')).toBe('dashed');
+    expect(computedValue(disabled, 'color')).not.toBe(
+      computedValue(query(root, '.solo-fill'), 'color'),
+    );
   });
 
   it('strips surface and border on the bare skin', () => {
@@ -238,6 +296,70 @@ describe('field skin geometry', () => {
     expect(contrast(hover, underline)).toBeGreaterThanOrEqual(3);
   });
 
+  // The contrast ratchet: every colour recipe of the fill and bare skins,
+  // measured in both schemes against the surface it sits on. Non-text
+  // indicators need 3:1 (WCAG 1.4.11), text needs 4.5:1 (1.4.3). Disabled is
+  // left out on purpose: 1.4.3 exempts inactive components.
+  describe.each(['light', 'dark'])('contrast ratchet, %s scheme', (scheme) => {
+    function colours(root: HTMLElement): { surface: string; hover: string; page: string } {
+      return {
+        surface: getComputedStyle(query(root, `.fill-${scheme}`)).backgroundColor,
+        hover: getComputedStyle(query(root, `.probe-hover-${scheme}`)).backgroundColor,
+        page: getComputedStyle(query(root, `.probe-page-${scheme}`)).backgroundColor,
+      };
+    }
+
+    it('holds 3:1 for the resting underline on the resting and the hover surface', () => {
+      const root = mount();
+      const { surface, hover } = colours(root);
+      const underline = computedValue(query(root, `.fill-${scheme}`), 'border-bottom-color');
+      expect(contrast(surface, underline)).toBeGreaterThanOrEqual(3);
+      expect(contrast(hover, underline)).toBeGreaterThanOrEqual(3);
+    });
+
+    it('holds 3:1 for the error underline on the fill surface', () => {
+      const root = mount();
+      const { surface } = colours(root);
+      const error = computedValue(query(root, `.fill-invalid-${scheme}`), 'border-bottom-color');
+      expect(contrast(surface, error)).toBeGreaterThanOrEqual(3);
+    });
+
+    it('holds 4.5:1 for the placeholder on the fill surface and on the page', () => {
+      const root = mount();
+      const { surface, page } = colours(root);
+      const fill = getComputedStyle(query(root, `.fill-${scheme}`), '::placeholder').color;
+      const bare = getComputedStyle(query(root, `.bare-${scheme}`), '::placeholder').color;
+      expect(contrast(surface, fill)).toBeGreaterThanOrEqual(4.5);
+      expect(contrast(page, bare)).toBeGreaterThanOrEqual(4.5);
+    });
+
+    it('holds 4.5:1 for the select placeholder on the fill surface and on the page', () => {
+      const root = mount();
+      const { surface, page } = colours(root);
+      const placeholder = getComputedStyle(
+        query(root, `.probe-select-placeholder-${scheme}`),
+      ).backgroundColor;
+      expect(contrast(surface, placeholder)).toBeGreaterThanOrEqual(4.5);
+      expect(contrast(page, placeholder)).toBeGreaterThanOrEqual(4.5);
+    });
+
+    it('holds 4.5:1 for the bare error text on the page', () => {
+      const root = mount();
+      const { page } = colours(root);
+      const text = computedValue(query(root, `.bare-invalid-${scheme}`), 'color');
+      expect(contrast(page, text)).toBeGreaterThanOrEqual(4.5);
+    });
+  });
+
+  // The hover surface is a text mix of the resting one; too strong a mix
+  // pushes the muted placeholder under the 4.5:1 text floor while hovered.
+  it.each(['light', 'dark'])('keeps the placeholder at 4.5:1 on the %s hover surface', (scheme) => {
+    const root = mount();
+    const hover = getComputedStyle(query(root, `.probe-hover-${scheme}`)).backgroundColor;
+    const placeholder = getComputedStyle(query(root, `.fill-${scheme}`), '::placeholder').color;
+    expect(contrast(hover, placeholder)).toBeGreaterThanOrEqual(4.5);
+  });
+
   it('shows a bare error as tinted text, never as a line', () => {
     const root = mount();
     const invalid = query(root, '.bare-invalid');
@@ -259,6 +381,31 @@ describe('field skin geometry', () => {
       expect(b - g).toBeLessThan(20);
     },
   );
+
+  it('draws the bare rings inside the box and the focused error ring in danger', async () => {
+    const root = mount();
+    const invalid = query(root, '.bare-invalid') as HTMLInputElement;
+    const danger = computedValue(invalid, 'outline-color');
+    expect(computedValue(invalid, 'outline-offset')).toBe('-1px');
+    invalid.focus();
+    await settle();
+    expect(computedValue(invalid, 'outline-width')).toBe('2px');
+    expect(computedValue(invalid, 'outline-offset')).toBe('-2px');
+    expect(computedValue(invalid, 'outline-color')).toBe(danger);
+    const valid = query(root, '.solo-bare') as HTMLInputElement;
+    valid.focus();
+    await settle();
+    expect(computedValue(valid, 'outline-offset')).toBe('-2px');
+    expect(computedValue(valid, 'outline-color')).not.toBe(danger);
+  });
+
+  it('marks a disabled bare field with muted text and a dotted baseline, not opacity', () => {
+    const root = mount();
+    const disabled = query(root, '.bare-disabled');
+    expect(computedValue(disabled, 'opacity')).toBe('1');
+    expect(computedValue(disabled, 'border-bottom-style')).toBe('dotted');
+    expect(computedValue(disabled, 'cursor')).toBe('not-allowed');
+  });
 
   it('draws one bare error ring per affix row, on the row', () => {
     const root = mount();

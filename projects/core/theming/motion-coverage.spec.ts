@@ -13,7 +13,7 @@ import { resolve } from 'node:path';
 //    projects/themes/cngx.css - an un-imported core theming CSS is inert,
 //    so the net could otherwise regress to dead without any test failing.
 //
-// 2. Refinement integrity - the 34 stylesheets that carry their own
+// 2. Refinement integrity - the 35 stylesheets that carry their own
 //    `@media (prefers-reduced-motion: reduce)` block are a nicer graceful
 //    short-circuit than the hard 0.01ms cut. They are no longer the
 //    correctness mechanism (the safety net is), but a bulk edit dropping
@@ -33,7 +33,7 @@ const readRepoCss = (relPath: string): string =>
 const MOTION_TOKENS_CSS = 'projects/core/theming/motion-tokens.css';
 const THEMES_ENTRY_CSS = 'projects/themes/cngx.css';
 
-// The 34 stylesheets that ship a `prefers-reduced-motion` refinement block.
+// The 35 stylesheets that ship a `prefers-reduced-motion` refinement block.
 // Kept from `grep -rl "prefers-reduced-motion" projects --include="*.css"`
 // (examples excluded). Adding a component with its own block: add it here.
 const MOTION_AWARE_HOSTS: readonly string[] = [
@@ -53,6 +53,7 @@ const MOTION_AWARE_HOSTS: readonly string[] = [
   // @cngx/forms
   'projects/forms/select/shared/select-base.css',
   'projects/forms/select/tree-select/tree-select-panel.component.css',
+  'projects/forms/theming/components/cngx-field-skin.css',
   'projects/forms/theming/components/cngx-file-drop.css',
   // @cngx/ui
   'projects/ui/accordion/accordion-item.component.css',
@@ -122,6 +123,6 @@ describe('reduced-motion refinement-integrity manifest', () => {
   });
 
   it('fixes the manifest size so a bulk edit dropping several hosts is caught', () => {
-    expect(MOTION_AWARE_HOSTS.length).toBe(34);
+    expect(MOTION_AWARE_HOSTS.length).toBe(35);
   });
 });

@@ -391,6 +391,33 @@ describe('field box border token', () => {
   });
 });
 
+// The divider padding is a clamp trick (width * 1000, capped at space-sm);
+// only a render proves 0px stays 0 and any width lands on space-sm, on a
+// text affix and on an interactive one whose own padding it must not erase.
+describe('field box affix divider', () => {
+  it('draws no divider and adds no padding at the 0px default', () => {
+    const row = mountPatterns();
+    const prefix = query(row, '.cngx-field-prefix');
+    const suffix = query(row, '.cngx-field-suffix');
+    expect(px(prefix, 'border-right-width')).toBe(0);
+    expect(px(prefix, 'padding-right')).toBe(0);
+    expect(px(suffix, 'border-left-width')).toBe(0);
+    expect(px(suffix, 'padding-left')).toBe(4);
+  });
+
+  it('draws the divider and pads both affix kinds by space-sm at 1px', () => {
+    const row = mountPatterns();
+    row.style.setProperty('--cngx-field-affix-divider', '1px');
+    const prefix = query(row, '.cngx-field-prefix');
+    const suffix = query(row, '.cngx-field-suffix');
+    expect(px(prefix, 'border-right-width')).toBe(1);
+    expect(px(prefix, 'padding-right')).toBe(8);
+    expect(px(suffix, 'border-left-width')).toBe(1);
+    expect(px(suffix, 'padding-left')).toBe(8);
+    expect(px(suffix, 'padding-right')).toBe(4);
+  });
+});
+
 // A bare select paints no box, so it sizes to its content, standalone and
 // inside a field box alike.
 describe('bare select width', () => {

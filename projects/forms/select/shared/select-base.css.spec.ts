@@ -149,6 +149,51 @@ describe('select-family field-skin rule set', () => {
     }
   });
 
+  it('applies the fill recipes to the trigger: hover, 2px error underline, colour-only disabled', () => {
+    const fill = scopeBlock(
+      "@scope ([data-skin='fill']:not(.cngx-field-box > *) > * > .cngx-field-trigger)",
+    ).replace(/\s+/g, ' ');
+    expect(fill).toContain(':scope.cngx-field-trigger:hover {');
+    expect(fill).toContain('--cngx-field-fill-bg-hover, color-mix( in oklab,');
+    const error = fill.slice(fill.indexOf(":scope.cngx-field-trigger:is( [aria-invalid='true']"));
+    expect(error.slice(0, error.indexOf('}'))).toContain(
+      'box-shadow: inset 0 calc(var(--cngx-field-border-width, 1px) - var(--cngx-field-underline-size, 2px)) 0',
+    );
+    const disabled = fill.slice(
+      fill.indexOf(":scope.cngx-field-trigger:is([aria-disabled='true']"),
+    );
+    const body = disabled.slice(0, disabled.indexOf('}'));
+    expect(body).toContain('38%');
+    expect(body).toContain('opacity: 1');
+    expect(fill).toContain('--cngx-color-primary-strong');
+  });
+
+  // The resting line is the bottom border; an inset shadow alone would paint
+  // the focus colour above it and leave the border showing underneath.
+  it('paints the trigger border and the shadow in the focus colour as one line', () => {
+    const fill = scopeBlock(
+      "@scope ([data-skin='fill']:not(.cngx-field-box > *) > * > .cngx-field-trigger)",
+    )
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/\s+/g, ' ');
+    const focus = fill.slice(
+      fill.indexOf(':scope.cngx-field-trigger:is(:focus-visible, :focus-within) {'),
+    );
+    const body = focus.slice(0, focus.indexOf('}'));
+    expect(body).toContain('border-block-end-color: var( --cngx-field-underline-focus-color,');
+    expect(body).toContain(
+      'calc(var(--cngx-field-border-width, 1px) - var(--cngx-field-underline-size, 2px))',
+    );
+  });
+
+  it('defaults the placeholder to the muted text colour in every scheme', () => {
+    const assignments = [...SHARED.matchAll(/--cngx-select-placeholder-color: ([^;]+);/g)].map(
+      (m) => m[1],
+    );
+    // :root delegation plus the OS-dark, explicit-dark and explicit-light blocks
+    expect(assignments).toEqual(Array(4).fill('var(--cngx-color-text-muted)'));
+  });
+
   it('derives the shared box padding from the density scale', () => {
     expect(SHARED).toContain('--cngx-field-padding-block: var(--cngx-space-sm)');
     expect(SHARED).toContain('--cngx-field-padding-inline: var(--cngx-space-md)');
@@ -161,6 +206,35 @@ describe('select-family field-skin rule set', () => {
     );
     expect(bare).toContain('in oklab');
     expect(bare).not.toMatch(/in oklch,\s*var\(--cngx-color-danger/);
+  });
+
+  it('applies the bare recipes to the trigger: danger text, inset rings, colour-only disabled', () => {
+    const bare = scopeBlock(
+      "@scope ([data-skin='bare']:not(.cngx-field-box > *) > * > .cngx-field-trigger)",
+    ).replace(/\s+/g, ' ');
+    expect(bare).toContain('--cngx-field-bare-error-text-color, var( --cngx-color-danger-text,');
+    expect(bare).toContain('outline-offset: -1px');
+    expect(bare).toContain('outline-offset: calc(-1 * var(--cngx-field-ring-width, 2px))');
+    const disabled = bare.slice(
+      bare.indexOf(":scope.cngx-field-trigger:is([aria-disabled='true']"),
+    );
+    const body = disabled.slice(0, disabled.indexOf('}'));
+    expect(body).toContain('border-block-end-style: dotted');
+    expect(body).toContain('opacity: 1');
+  });
+
+  it('uses the registered danger default as the only skin danger fallback literal', () => {
+    const skins = SHARED.slice(SHARED.indexOf('/* ── Field skins'));
+    const literals = [...skins.matchAll(/--cngx-color-danger, (oklch\([^)]*\))/g)].map((m) => m[1]);
+    expect(literals.length).toBeGreaterThan(0);
+    expect(new Set(literals)).toEqual(new Set(['oklch(0.6 0.18 25)']));
+  });
+
+  it('draws a system-colour edge on a resting bare trigger under forced colours', () => {
+    const media = SHARED.slice(SHARED.lastIndexOf('@media (forced-colors: active)'));
+    expect(media.replace(/\s+/g, ' ')).toContain(
+      "[data-skin='bare']:not(.cngx-field-box > *) > * > .cngx-field-trigger { border: var(--cngx-field-border-width, 1px) solid FieldText; }",
+    );
   });
 
   it('lifts the host minimum width for a bare select, keyed on the host', () => {

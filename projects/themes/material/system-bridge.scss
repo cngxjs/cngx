@@ -40,7 +40,9 @@
   // bridge stays a strict mapping rather than an opinionated
   // re-interpretation of Material's palette.
   --cngx-color-primary: var(--mat-sys-primary);
+  --cngx-color-primary-strong: var(--mat-sys-primary);
   --cngx-color-danger: var(--mat-sys-error);
+  --cngx-color-danger-text: var(--mat-sys-error);
   --cngx-color-info: var(--mat-sys-primary);
 
   // Shape - Material's corner scale aligns reasonably with cngx t-shirt sizes.
@@ -80,7 +82,9 @@
   --cngx-color-text: #{rgba($on-surface, 0.87)};
   --cngx-color-border: #{rgba($divider, 0.12)};
   --cngx-color-primary: #{$primary};
+  --cngx-color-primary-strong: #{$primary};
   --cngx-color-danger: #{$warn};
+  --cngx-color-danger-text: #{$warn};
   --cngx-color-info: #{$primary};
 }
 

@@ -58,6 +58,19 @@
     inherits: false;
     initial-value: 8px;
   }
+
+  /**
+   * Width of an optional divider between an affix and the control: the
+   * inline-end edge of a prefix, the inline-start edge of a suffix. `0px`
+   * draws none. Any width also pads the affix by `--cngx-space-sm` so the
+   * divider does not touch the affix content. Set it on the box.
+   * @group Layout
+   */
+  @property --cngx-field-affix-divider {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 0px;
+  }
 }
 
 @layer cngx.components {
@@ -103,7 +116,7 @@
         [data-invalid],
         :has(> :is(input, textarea, select)[aria-invalid='true'])
       ) {
-      border-color: var(--cngx-field-error-color, var(--cngx-color-danger, oklch(0.58 0.22 27)));
+      border-color: var(--cngx-field-error-color, var(--cngx-color-danger, oklch(0.6 0.18 25)));
     }
 
     /* The control inside is reset and draws no ring, so the box draws the
@@ -126,11 +139,39 @@
       min-inline-size: 0;
     }
 
+    /* Placeholder colour of the field family, over the base-layer muted
+       default. Unregistered, so a theme can unset it. */
+    :scope > :is(input, textarea)::placeholder {
+      color: var(--cngx-field-placeholder-color, var(--cngx-color-text-muted, oklch(0.5 0.01 250)));
+    }
+
     .cngx-field-prefix,
     .cngx-field-suffix {
+      /* Units, symbols and glyphs are supporting text: muted, which still
+         clears 4.5:1 on the fill surface. An interactive affix keeps the box
+         text colour (color: inherit below). */
+      color: var(--cngx-field-affix-color, var(--cngx-color-text-muted, oklch(0.5 0.01 250)));
       flex: 0 0 auto;
       display: inline-flex;
       align-items: center;
+    }
+
+    /* Divider padding is space-sm for any non-zero divider and 0 without
+       one. CSS cannot divide a length by a length portably yet, so the width
+       is scaled far past space-sm and clamped: 0px stays 0, 1px lands on
+       space-sm. */
+    .cngx-field-prefix {
+      padding-inline-end: max(
+        0px,
+        min(var(--cngx-space-sm, 0.5rem), var(--cngx-field-affix-divider, 0px) * 1000)
+      );
+    }
+
+    .cngx-field-suffix {
+      padding-inline-start: max(
+        0px,
+        min(var(--cngx-space-sm, 0.5rem), var(--cngx-field-affix-divider, 0px) * 1000)
+      );
     }
 
     /* Decorative glyph affix. The directive already marks it aria-hidden;
@@ -199,6 +240,32 @@
 
     .cngx-field-affix--interactive:disabled:hover {
       background: transparent;
+    }
+
+    /* After the interactive rules, whose border: 0 and padding-inline would
+       otherwise erase the divider and its padding on a button affix. */
+    .cngx-field-prefix {
+      border-inline-end: var(--cngx-field-affix-divider, 0px) solid
+        var(--cngx-field-underline-color, var(--cngx-color-text-muted, oklch(0.5 0.01 250)));
+    }
+
+    .cngx-field-suffix {
+      border-inline-start: var(--cngx-field-affix-divider, 0px) solid
+        var(--cngx-field-underline-color, var(--cngx-color-text-muted, oklch(0.5 0.01 250)));
+    }
+
+    .cngx-field-prefix.cngx-field-affix--interactive {
+      padding-inline-end: max(
+        var(--cngx-field-affix-pad, 0.25rem),
+        min(var(--cngx-space-sm, 0.5rem), var(--cngx-field-affix-divider, 0px) * 1000)
+      );
+    }
+
+    .cngx-field-suffix.cngx-field-affix--interactive {
+      padding-inline-start: max(
+        var(--cngx-field-affix-pad, 0.25rem),
+        min(var(--cngx-space-sm, 0.5rem), var(--cngx-field-affix-divider, 0px) * 1000)
+      );
     }
   }
 }
