@@ -1554,7 +1554,7 @@
         --cngx-field-fill-bg-hover,
         color-mix(
           in oklab,
-          var(--cngx-color-text, oklch(0.2 0.01 250)) 8%,
+          var(--cngx-color-text, oklch(0.2 0.01 250)) 5%,
           var(
             --cngx-field-fill-bg,
             color-mix(in oklch, var(--cngx-color-text, oklch(0.2 0.01 250)) 6%, transparent)

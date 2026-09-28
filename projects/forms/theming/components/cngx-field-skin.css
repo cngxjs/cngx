@@ -38,7 +38,7 @@
  * `--cngx-field-underline-color`, `--cngx-field-underline-focus-color`.
  * The surface, the resting underline and the focus colour get light / dark
  * defaults in `cngx.tokens`; the hover surface has none and derives from the
- * surface at the use site (8% text mixed in oklab), so it follows a surface
+ * surface at the use site (5% text mixed in oklab), so it follows a surface
  * override on any subtree. The Material bridge SETs all four in
  * `cngx.components`, which wins over those defaults.
  *
@@ -132,14 +132,15 @@
 
     /* Hover darkens the surface a step and lifts the underline to the text
        colour. The surface derives from the resting one, so a surface
-       override on any subtree carries its own hover. */
+       override on any subtree carries its own hover. 5% is the ceiling: at
+       8% the muted placeholder drops under 4.5:1 on the hover surface. */
     :scope:hover {
       border-block-end-color: var(--cngx-color-text, oklch(0.2 0.01 250));
       background: var(
         --cngx-field-fill-bg-hover,
         color-mix(
           in oklab,
-          var(--cngx-color-text, oklch(0.2 0.01 250)) 8%,
+          var(--cngx-color-text, oklch(0.2 0.01 250)) 5%,
           var(
             --cngx-field-fill-bg,
             color-mix(in oklch, var(--cngx-color-text, oklch(0.2 0.01 250)) 6%, transparent)

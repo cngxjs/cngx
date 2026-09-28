@@ -39,7 +39,7 @@ import { afterEach, describe, expect, it } from 'vitest';
       class="probe-hover"
       style="background: var(
         --cngx-field-fill-bg-hover,
-        color-mix(in oklab, var(--cngx-color-text) 8%, var(--cngx-field-fill-bg))
+        color-mix(in oklab, var(--cngx-color-text) 5%, var(--cngx-field-fill-bg))
       )"
     ></span>
     <input class="solo-bare" type="text" data-skin="bare" />
@@ -53,7 +53,7 @@ import { afterEach, describe, expect, it } from 'vitest';
       <input class="bare-row-input" type="text" data-skin="bare" aria-invalid="true" />
     </span>
     <div data-color-scheme="light">
-      <input class="fill-light" type="text" data-skin="fill" />
+      <input class="fill-light" type="text" data-skin="fill" placeholder="Search" />
       <span
         class="probe-underline-light"
         style="background: var(--cngx-field-underline-focus-color)"
@@ -62,12 +62,12 @@ import { afterEach, describe, expect, it } from 'vitest';
         class="probe-hover-light"
         style="background: var(
           --cngx-field-fill-bg-hover,
-          color-mix(in oklab, var(--cngx-color-text) 8%, var(--cngx-field-fill-bg))
+          color-mix(in oklab, var(--cngx-color-text) 5%, var(--cngx-field-fill-bg))
         )"
       ></span>
     </div>
     <div data-color-scheme="dark">
-      <input class="fill-dark" type="text" data-skin="fill" />
+      <input class="fill-dark" type="text" data-skin="fill" placeholder="Search" />
       <span
         class="probe-underline-dark"
         style="background: var(--cngx-field-underline-focus-color)"
@@ -76,7 +76,7 @@ import { afterEach, describe, expect, it } from 'vitest';
         class="probe-hover-dark"
         style="background: var(
           --cngx-field-fill-bg-hover,
-          color-mix(in oklab, var(--cngx-color-text) 8%, var(--cngx-field-fill-bg))
+          color-mix(in oklab, var(--cngx-color-text) 5%, var(--cngx-field-fill-bg))
         )"
       ></span>
     </div>
@@ -272,6 +272,15 @@ describe('field skin geometry', () => {
     const underline = getComputedStyle(query(root, `.probe-underline-${scheme}`)).backgroundColor;
     expect(contrast(surface, underline)).toBeGreaterThanOrEqual(3);
     expect(contrast(hover, underline)).toBeGreaterThanOrEqual(3);
+  });
+
+  // The hover surface is a text mix of the resting one; too strong a mix
+  // pushes the muted placeholder under the 4.5:1 text floor while hovered.
+  it.each(['light', 'dark'])('keeps the placeholder at 4.5:1 on the %s hover surface', (scheme) => {
+    const root = mount();
+    const hover = getComputedStyle(query(root, `.probe-hover-${scheme}`)).backgroundColor;
+    const placeholder = getComputedStyle(query(root, `.fill-${scheme}`), '::placeholder').color;
+    expect(contrast(hover, placeholder)).toBeGreaterThanOrEqual(4.5);
   });
 
   it('shows a bare error as tinted text, never as a line', () => {
