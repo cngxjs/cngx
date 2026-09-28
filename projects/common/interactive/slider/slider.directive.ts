@@ -1,7 +1,8 @@
 import { computed, Directive, ElementRef, inject, input, model } from '@angular/core';
 import { injectDirection } from '@cngx/core';
+import { injectLocale } from '@cngx/core/utils';
 
-import { createSliderCore } from './slider-core';
+import { createSliderCore, formatSliderValue } from './slider-core';
 import { createSliderDisabledReason } from './slider-disabled-reason';
 import { createSliderInteraction, pointerFraction } from './slider-interaction';
 
@@ -103,6 +104,7 @@ export class CngxSliderTrack {
   readonly valueText = input<((value: number) => string) | undefined>(undefined);
 
   private readonly el = inject(ElementRef<HTMLElement>).nativeElement as HTMLElement;
+  private readonly locale = injectLocale();
 
   /** Disabled-"why" span + gated `aria-describedby` resolution. */
   protected readonly reason = createSliderDisabledReason({
@@ -118,9 +120,10 @@ export class CngxSliderTrack {
     min: this.min,
     max: this.max,
     step: this.step,
+    locale: this.locale,
     valueText: (v) => {
       const format = this.valueText();
-      return format ? format(v) : String(v);
+      return format ? format(v) : formatSliderValue(v, this.locale());
     },
   });
 

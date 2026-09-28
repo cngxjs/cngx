@@ -1,5 +1,25 @@
 import { computed, type Signal, type WritableSignal } from '@angular/core';
+import { numberFormatterFor } from '@cngx/core/utils';
 import { decimalPlaces } from '@cngx/utils';
+
+const SLIDER_VALUE_OPTIONS: Intl.NumberFormatOptions = {
+  useGrouping: false,
+  maximumFractionDigits: 20,
+};
+
+/**
+ * @internal - the default `aria-valuetext` of a slider value: the number in
+ * `locale` without grouping (en-US output equals `String(value)` for every
+ * non-exponential value; de-DE gets the decimal comma). Without a locale it
+ * is `String(value)`.
+ */
+export function formatSliderValue(value: number, locale: string | undefined): string {
+  if (locale === undefined || !Number.isFinite(value)) {
+    return String(value);
+  }
+  // Intl prints -0 as "-0"; String(-0) is "0".
+  return numberFormatterFor(locale, SLIDER_VALUE_OPTIONS).format(value === 0 ? 0 : value);
+}
 
 /**
  * Inputs for {@link createSliderCore}. Every field is a `Signal`, so the
@@ -28,9 +48,16 @@ export interface CngxSliderCoreOptions {
   readonly boundedMax?: Signal<number>;
   /**
    * Maps the current value to an `aria-valuetext` string (currency, dates,
-   * t-shirt sizes). When omitted, `aria-valuetext` mirrors the numeric value.
+   * t-shirt sizes). When omitted, `aria-valuetext` mirrors the numeric value,
+   * formatted in {@link CngxSliderCoreOptions.locale} when one is given.
    */
   readonly valueText?: (value: number) => string;
+  /**
+   * Locale of the default `aria-valuetext` (no grouping, locale decimal
+   * separator). The slider directives pass `injectLocale()`. When omitted,
+   * the default is `String(value)`.
+   */
+  readonly locale?: Signal<string>;
 }
 
 /**
@@ -127,7 +154,7 @@ export function createSliderCore(options: CngxSliderCoreOptions): CngxSliderCore
   const ariaValueText = computed(() => {
     const current = clampedValue();
     const format = options.valueText;
-    return format ? format(current) : String(current);
+    return format ? format(current) : formatSliderValue(current, options.locale?.());
   });
 
   const atMin = computed(() => clampedValue() <= boundedMin());

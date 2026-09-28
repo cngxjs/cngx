@@ -1,11 +1,17 @@
 import { Component, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { provideLocale } from '@cngx/core/utils';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { CngxAsyncClick } from '../async-click/async-click.directive';
+import { CngxBreadcrumb } from '../breadcrumb/breadcrumb.directive';
+import { CngxCopyBlock } from '../copy/copy-block';
+import { CngxRangeSlider } from '../slider/range-slider.component';
+import { CngxSlider } from '../slider/slider.component';
 import {
   CNGX_INTERACTIVE_I18N,
   injectInteractiveI18n,
+  injectResolvedInteractiveI18n,
   provideInteractiveI18n,
   withInteractiveI18nLabels,
   type CngxInteractiveI18n,
@@ -29,6 +35,12 @@ describe('CNGX_INTERACTIVE_I18N', () => {
     expect(TestBed.inject(CNGX_INTERACTIVE_I18N)()).toEqual({
       asyncClickSucceeded: 'Action succeeded',
       asyncClickFailed: 'Action failed',
+      copy: 'Copy',
+      copied: 'Copied!',
+      copiedAnnouncement: 'Copied to clipboard',
+      rangeMinimum: 'Minimum',
+      rangeMaximum: 'Maximum',
+      breadcrumb: 'Breadcrumb',
     });
   });
 
@@ -81,4 +93,75 @@ describe('CNGX_INTERACTIVE_I18N', () => {
     expect(directive.succeededAnnouncement()).toBe('Erledigt');
     expect(directive.failedAnnouncement()).toBe('Fehler');
   });
+
+  it('fills the optional keys for a directly provided bundle that predates them', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        {
+          provide: CNGX_INTERACTIVE_I18N,
+          useValue: signal({ asyncClickSucceeded: 'Ok', asyncClickFailed: 'Nope' }).asReadonly(),
+        },
+      ],
+    });
+    const bundle = TestBed.runInInjectionContext(() => injectResolvedInteractiveI18n());
+    expect(bundle().asyncClickFailed).toBe('Nope');
+    expect(bundle().copy).toBe('Copy');
+    expect(bundle().breadcrumb).toBe('Breadcrumb');
+  });
+
+  it('defaults the copy-block, range-slider and breadcrumb inputs from the bundle', () => {
+    TestBed.configureTestingModule({
+      imports: [StringInputsHost],
+      providers: [
+        provideInteractiveI18n(
+          withInteractiveI18nLabels({
+            copy: 'Kopieren',
+            copiedAnnouncement: 'In die Zwischenablage kopiert',
+            rangeMinimum: 'Minimum (de)',
+            rangeMaximum: 'Maximum (de)',
+            breadcrumb: 'Brotkrumen',
+          }),
+        ),
+      ],
+    });
+    const fixture = TestBed.createComponent(StringInputsHost);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    expect(root.querySelector('cngx-copy-block button')?.textContent?.trim()).toBe('Kopieren');
+    const thumbs = Array.from(root.querySelectorAll('[role="slider"]'));
+    expect(thumbs.map((t) => t.getAttribute('aria-label'))).toEqual([
+      'Minimum (de)',
+      'Maximum (de)',
+    ]);
+    expect(root.querySelector('nav')?.getAttribute('aria-label')).toBe('Brotkrumen');
+  });
+
+  it('formats the default slider aria-valuetext in the app locale, live on a flip', () => {
+    const locale = signal('en-US');
+    TestBed.configureTestingModule({ imports: [SliderHost], providers: [provideLocale(locale)] });
+    const fixture = TestBed.createComponent(SliderHost);
+    fixture.detectChanges();
+    const thumb = (fixture.nativeElement as HTMLElement).querySelector('[role="slider"]')!;
+    expect(thumb.getAttribute('aria-valuetext')).toBe('2.5');
+
+    locale.set('de-DE');
+    fixture.detectChanges();
+    expect(thumb.getAttribute('aria-valuetext')).toBe('2,5');
+  });
 });
+
+@Component({
+  template: `
+    <cngx-copy-block value="x" />
+    <cngx-range-slider [min]="0" [max]="10" />
+    <nav cngxBreadcrumb></nav>
+  `,
+  imports: [CngxCopyBlock, CngxRangeSlider, CngxBreadcrumb],
+})
+class StringInputsHost {}
+
+@Component({
+  template: `<cngx-slider [value]="2.5" [min]="0" [max]="10" [step]="0.5" />`,
+  imports: [CngxSlider],
+})
+class SliderHost {}

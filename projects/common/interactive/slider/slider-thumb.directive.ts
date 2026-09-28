@@ -8,8 +8,9 @@ import {
   type WritableSignal,
 } from '@angular/core';
 import { injectDirection } from '@cngx/core';
+import { injectLocale } from '@cngx/core/utils';
 
-import { createSliderCore } from './slider-core';
+import { createSliderCore, formatSliderValue } from './slider-core';
 import { createSliderInteraction } from './slider-interaction';
 import {
   CNGX_SLIDER_RANGE,
@@ -85,6 +86,7 @@ export class CngxSliderThumb {
 
   protected readonly range = inject(CNGX_SLIDER_RANGE);
   private readonly el = inject(ElementRef<HTMLElement>).nativeElement as HTMLElement;
+  private readonly locale = injectLocale();
 
   /** Sibling-clamped bounds for this thumb, selected reactively by position. */
   protected readonly bounds = computed(() => this.range.boundsFor(this.position()));
@@ -99,9 +101,10 @@ export class CngxSliderThumb {
     step: this.range.step,
     boundedMin: computed(() => this.bounds().min()),
     boundedMax: computed(() => this.bounds().max()),
+    locale: this.locale,
     valueText: (v) => {
       const format = this.range.valueText();
-      return format ? format(v) : String(v);
+      return format ? format(v) : formatSliderValue(v, this.locale());
     },
   });
 

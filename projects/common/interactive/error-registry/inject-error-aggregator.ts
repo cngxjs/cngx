@@ -1,4 +1,5 @@
 import { DestroyRef, inject, signal, type Signal } from '@angular/core';
+import { injectLocale } from '@cngx/core/utils';
 import type {
   CngxErrorAggregatorContract,
   CngxErrorAggregatorSourceEntry,
@@ -55,6 +56,7 @@ export function injectErrorAggregator(
   const contract = createErrorAggregatorContract({
     sourcesState,
     scope: scopeSignal.asReadonly(),
+    locale: injectLocale(),
   });
 
   if (name) {

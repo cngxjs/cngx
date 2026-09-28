@@ -7,9 +7,13 @@ import { coerceSignal, createOverrideMerge } from '@cngx/core/utils';
  * `Signal`, and {@link withInteractiveI18nLabels} accepts a `Signal` of a
  * partial bundle, so a runtime language switch re-derives every read.
  *
- * Both keys are live-region copy. `CngxAsyncClick` (and `CngxActionButton`,
- * which wraps it) announces the settle it just made, spent once per
- * transition.
+ * `asyncClickSucceeded` / `asyncClickFailed` are live-region copy:
+ * `CngxAsyncClick` (and `CngxActionButton`, which wraps it) announces the
+ * settle it just made, spent once per transition. The other keys seed
+ * string inputs at construction (`CngxCopyBlock`, `CngxRangeSlider`,
+ * `CngxBreadcrumb`), so a bound input still wins and an unbound one is
+ * static per instance. They are optional so a bundle built before they
+ * existed keeps compiling; the English defaults fill them.
  *
  * @category common/interactive/i18n
  */
@@ -18,11 +22,29 @@ export interface CngxInteractiveI18n {
   readonly asyncClickSucceeded: string;
   /** Announced when an async click action rejects. */
   readonly asyncClickFailed: string;
+  /** Default of the `CngxCopyBlock` `buttonLabel` input. */
+  readonly copy?: string;
+  /** Default of the `CngxCopyBlock` `copiedLabel` input. */
+  readonly copied?: string;
+  /** Default of the `CngxCopyBlock` `srAnnouncement` input (live region). */
+  readonly copiedAnnouncement?: string;
+  /** Default of the `CngxRangeSlider` `startLabel` input. */
+  readonly rangeMinimum?: string;
+  /** Default of the `CngxRangeSlider` `endLabel` input. */
+  readonly rangeMaximum?: string;
+  /** Default of the `CngxBreadcrumb` `label` input (landmark name). */
+  readonly breadcrumb?: string;
 }
 
-const INTERACTIVE_I18N_DEFAULTS: CngxInteractiveI18n = {
+const INTERACTIVE_I18N_DEFAULTS: Required<CngxInteractiveI18n> = {
   asyncClickSucceeded: 'Action succeeded',
   asyncClickFailed: 'Action failed',
+  copy: 'Copy',
+  copied: 'Copied!',
+  copiedAnnouncement: 'Copied to clipboard',
+  rangeMinimum: 'Minimum',
+  rangeMaximum: 'Maximum',
+  breadcrumb: 'Breadcrumb',
 };
 
 /**
@@ -116,4 +138,17 @@ export function provideInteractiveI18n(
  */
 export function injectInteractiveI18n(): Signal<CngxInteractiveI18n> {
   return inject(CNGX_INTERACTIVE_I18N);
+}
+
+/**
+ * @internal - the interactive bundle as a shared signal with every optional
+ * key filled from the English defaults, so a directly provided token value
+ * that predates a key still resolves it. One `computed()` per injected
+ * bundle.
+ */
+export function injectResolvedInteractiveI18n(): Signal<Required<CngxInteractiveI18n>> {
+  return createOverrideMerge<Required<CngxInteractiveI18n>>(
+    INTERACTIVE_I18N_DEFAULTS,
+    injectInteractiveI18n(),
+  );
 }
