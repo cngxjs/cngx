@@ -90,6 +90,21 @@ describe('CngxDgaCount', () => {
       expect(el.textContent).toBe('0 Treffer');
     });
 
+    it('composes the count from noun-only label overrides', () => {
+      labelsOverride.set({ countSingular: 'Treffer', countPlural: 'Treffer' });
+      const { fixture, host, el } = setup();
+      host.count.set(3);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(el.textContent).toBe('3 Treffer');
+    });
+
+    it('lets a count formatter win over noun labels', () => {
+      labelsOverride.set({ countPlural: 'Zeilen', count: (n) => `${n} Treffer` });
+      const { el } = setup();
+      expect(el.textContent).toBe('0 Treffer');
+    });
+
     it('keeps the legacy <count> <noun> composition for bound nouns', () => {
       labelsOverride.set({ count: (n) => `${n} Treffer` });
       const fixture = TestBed.createComponent(NounHost);

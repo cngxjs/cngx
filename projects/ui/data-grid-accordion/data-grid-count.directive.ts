@@ -1,6 +1,9 @@
 import { Directive, effect, ElementRef, inject, input, Renderer2, untracked } from '@angular/core';
 
-import { injectDataGridAccordionLabels } from './config/data-grid-accordion.config.defaults';
+import {
+  CNGX_DATA_GRID_ACCORDION_LABELS_DEFAULTS,
+  injectDataGridAccordionLabels,
+} from './config/data-grid-accordion.config.defaults';
 
 /**
  * A polite `aria-live` region for the visible-row count of a
@@ -24,9 +27,10 @@ import { injectDataGridAccordionLabels } from './config/data-grid-accordion.conf
  * that column - but it is the consistent form the rest of the grid's cells use.
  *
  * The text is English by default (`3 results`). Localise it app-wide through
- * `withDataGridAccordionLabels({ count })`, where the translator owns word order and
- * plural rules; binding `cngxDgaCountSingular` / `cngxDgaCountPlural` per instance
- * keeps the legacy `<count> <noun>` composition.
+ * `withDataGridAccordionLabels`: a `count` formatter owns word order and plural rules,
+ * the `countSingular` / `countPlural` nouns alone keep the `<count> <noun>` shape.
+ * Binding `cngxDgaCountSingular` / `cngxDgaCountPlural` per instance always composes
+ * `<count> <noun>`.
  *
  * @category ui/data-grid-accordion
  * @wcag AA
@@ -82,10 +86,16 @@ export class CngxDgaCount {
       const text = untracked(() => {
         const unbound =
           singular === this.nounSnapshot.singular && plural === this.nounSnapshot.plural;
-        if (unbound) {
-          return this.labels().count(count);
+        if (!unbound) {
+          return `${count} ${count === 1 ? singular : plural}`;
         }
-        return `${count} ${count === 1 ? singular : plural}`;
+        const labels = this.labels();
+        // A consumer `count` formatter owns word order and plurals; otherwise the
+        // resolved noun labels compose, so a nouns-only override still reaches AT.
+        if (labels.count !== CNGX_DATA_GRID_ACCORDION_LABELS_DEFAULTS.count) {
+          return labels.count(count);
+        }
+        return `${count} ${count === 1 ? labels.countSingular : labels.countPlural}`;
       });
       this.renderer.setProperty(this.element, 'textContent', text);
     });
