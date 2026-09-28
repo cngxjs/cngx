@@ -9,19 +9,19 @@ export const STORY: DemoSpec = {
   artifact: 'standalone',
   focus: ['composition', 'a11y-pattern'],
   framework: 'signal-forms',
-  apiComponents: ['CngxPrefix', 'CngxSuffix', 'CngxAffixRow', 'CngxInputClear'],
+  apiComponents: ['CngxPrefix', 'CngxSuffix', 'CngxFieldBox', 'CngxInputClear'],
   moduleImports: [
     'import { form, FormField } from \'@angular/forms/signals\';',
     'import { CngxRadioGroup, CngxRadio } from \'@cngx/common/interactive\';',
     'import { CngxIcon } from \'@cngx/common/display\';',
     'import type { CngxFieldSkin } from \'@cngx/forms/field\';',
-    'import { CngxFormField, CngxLabel, CngxAffixRow, CngxPrefix, CngxSuffix } from \'@cngx/forms/field\';',
+    'import { CngxFormField, CngxLabel, CngxFieldBox, CngxPrefix, CngxSuffix } from \'@cngx/forms/field\';',
     'import { CngxInput, CngxInputClear } from \'@cngx/forms/input\';',
   ],
   imports: [
     'CngxFormField',
     'CngxLabel',
-    'CngxAffixRow',
+    'CngxFieldBox',
     'CngxPrefix',
     'CngxSuffix',
     'CngxInput',
@@ -41,7 +41,7 @@ export const STORY: DemoSpec = {
   template: `  <div style="max-inline-size:24rem">
     <cngx-form-field [field]="searchForm.query" [skin]="skin()">
       <label cngxLabel>Search people</label>
-      <span cngxAffixRow>
+      <span cngxFieldBox>
         <span cngxPrefix>
           <cngx-icon>
             <svg viewBox="0 0 24 24" width="1em" height="1em">

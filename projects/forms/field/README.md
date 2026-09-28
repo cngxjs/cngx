@@ -27,7 +27,8 @@ controls all layout and styling.
 | `CngxLabel` | `[cngxLabel]` | Label with `for`/`id` linkage, auto-required marker, CSS state classes |
 | `CngxHint` | `[cngxHint]` | Hint element with `aria-describedby` linkage |
 | `CngxError` | `[cngxError]` | Manual error container with `aria-hidden`/`role="alert"` management |
-| `CngxFieldSkinHost` | `[cngxFieldSkin]` | Resolves the field skin and writes it to its host as `data-skin`. Composed by `CngxInput`, `CngxAffixRow` and the select-family triggers |
+| `CngxFieldSkinHost` | `[cngxFieldSkin]` | Resolves the field skin and writes it to its host as `data-skin`. Composed by `CngxInput`, `CngxFieldBox` and the select-family triggers |
+| `CngxFieldBox` | `[cngxFieldBox]` | The painted box around a control and its `CngxPrefix` / `CngxSuffix` affixes, in every skin. Resets its direct-child controls, paints the main control's state, forwards a click on its padding to the main control. `CngxAffixRow` / `[cngxAffixRow]` is the deprecated alias |
 
 ### Utilities
 
@@ -139,9 +140,12 @@ box, never on the `display: contents` field shell.
 own [cngxFieldSkin] / [skin]  ->  surrounding cngx-form-field [skin]  ->  withFieldSkin(...)  ->  'outline'
 ```
 
-`CngxInput` and `CngxAffixRow` compose the directive and alias its input to
-`skin`. With affixes, the `cngxAffixRow` is the box: prefix, value and suffix
-share one surface and one underline, and the nested input drops its own. The
+`CngxInput` and `CngxFieldBox` compose the directive and alias its input to
+`skin`. With affixes, the `cngxFieldBox` is the box in every skin: prefix,
+value and suffix share one surface, one border and one underline, and a
+control that is a direct child of the box resolves to `bare` and drops its
+own. The box owns its direct children only; a composite such as
+`CngxPhoneInput` is its own box and sits directly in `cngx-form-field`. The
 select-family triggers (`CngxSelect`, `CngxMultiSelect`, `CngxCombobox`,
 `CngxTypeahead`, `CngxTreeSelect`, `CngxActionSelect`,
 `CngxActionMultiSelect`, `CngxReorderableMultiSelect`, `CngxSelectShell`)
@@ -224,7 +228,7 @@ cngx does not ship a floating label. The label stays static above the control.
 
 ### Affix patterns
 
-`CngxPrefix` and `CngxSuffix` inside a `cngxAffixRow` cover the four shapes
+`CngxPrefix` and `CngxSuffix` inside a `cngxFieldBox` cover the four shapes
 enterprise forms need. No extra directive is involved; the a11y rule is what
 differs.
 

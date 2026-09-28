@@ -9,10 +9,10 @@ export const STORY: DemoSpec = {
   artifact: 'building-block',
   focus: ['composition', 'integration'],
   framework: 'signal-forms',
-  apiComponents: ['CngxPrefix', 'CngxAffixRow', 'CngxSelect', 'CngxFormField'],
+  apiComponents: ['CngxPrefix', 'CngxFieldBox', 'CngxSelect', 'CngxFormField'],
   moduleImports: [
     'import { form, schema, required, pattern, FormField } from \'@angular/forms/signals\';',
-    'import { CngxFormField, CngxLabel, CngxFieldErrors, CngxAffixRow, CngxPrefix } from \'@cngx/forms/field\';',
+    'import { CngxFormField, CngxLabel, CngxFieldErrors, CngxFieldBox, CngxPrefix } from \'@cngx/forms/field\';',
     'import { CngxInput } from \'@cngx/forms/input\';',
     'import { CngxSelect, type CngxSelectOptionDef } from \'@cngx/forms/select\';',
     'import { DemoAffixDetach } from \'./_affix-detach.directive\';',
@@ -21,7 +21,7 @@ export const STORY: DemoSpec = {
     'CngxFormField',
     'CngxLabel',
     'CngxFieldErrors',
-    'CngxAffixRow',
+    'CngxFieldBox',
     'CngxPrefix',
     'CngxInput',
     'CngxSelect',
@@ -42,7 +42,7 @@ export const STORY: DemoSpec = {
   template: `  <div style="max-inline-size:24rem">
     <cngx-form-field [field]="paymentForm.amount" skin="fill">
       <label cngxLabel>Transfer amount</label>
-      <span cngxAffixRow>
+      <span cngxFieldBox>
         <cngx-select cngxPrefix cngxPrefixInteractive demoAffixDetach
           [label]="'Currency'" [options]="currencies" [(value)]="currency" />
         <input cngxInput [formField]="paymentForm.amount" inputmode="decimal" />

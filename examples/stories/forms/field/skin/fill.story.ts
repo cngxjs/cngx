@@ -3,18 +3,18 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxFieldSkinHost: fill skin',
   subtitle: 'Set <code>skin="fill"</code> on <code>&lt;cngx-form-field&gt;</code> and every control inside renders a tinted surface with a bottom underline that grows on focus. No wrapper element is added; the input itself is the box.',
-  description: 'The field publishes its <code>[skin]</code> through <code>CNGX_FORM_FIELD_HOST</code> and <code>CngxInput</code> writes it to its own host as <code>data-skin</code>. With affixes, <code>CngxAffixRow</code> reads the same value and becomes the box, so the underline spans prefix, value and suffix while the nested input drops its own surface. Error, disabled and readonly states key on <code>aria-invalid</code>, <code>:disabled</code> and <code>aria-readonly</code>, so the underline turns red at the same moment the error is announced. Blur the empty amount field to see it. The toggle switches the skin at runtime; <code>outline</code> writes no attribute at all.',
+  description: 'The field publishes its <code>[skin]</code> through <code>CNGX_FORM_FIELD_HOST</code> and <code>CngxInput</code> writes it to its own host as <code>data-skin</code>. With affixes, <code>CngxFieldBox</code> reads the same value and becomes the box, so the underline spans prefix, value and suffix while the nested input drops its own surface. Error, disabled and readonly states key on <code>aria-invalid</code>, <code>:disabled</code> and <code>aria-readonly</code>, so the underline turns red at the same moment the error is announced. Blur the empty amount field to see it. The toggle switches the skin at runtime; <code>outline</code> writes no attribute at all.',
   level: 'molecule',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
   focus: ['visual-variants', 'composition'],
   framework: 'signal-forms',
-  apiComponents: ['CngxFieldSkinHost', 'CngxFormField', 'CngxAffixRow', 'CngxInput'],
+  apiComponents: ['CngxFieldSkinHost', 'CngxFormField', 'CngxFieldBox', 'CngxInput'],
   moduleImports: [
     'import { form, schema, required, pattern, FormField } from \'@angular/forms/signals\';',
     'import { CngxRadioGroup, CngxRadio } from \'@cngx/common/interactive\';',
     'import type { CngxFieldSkin } from \'@cngx/forms/field\';',
-    'import { CngxFormField, CngxLabel, CngxHint, CngxFieldErrors, CngxAffixRow, CngxPrefix, CngxSuffix } from \'@cngx/forms/field\';',
+    'import { CngxFormField, CngxLabel, CngxHint, CngxFieldErrors, CngxFieldBox, CngxPrefix, CngxSuffix } from \'@cngx/forms/field\';',
     'import { CngxInput } from \'@cngx/forms/input\';',
   ],
   imports: [
@@ -22,7 +22,7 @@ export const STORY: DemoSpec = {
     'CngxLabel',
     'CngxHint',
     'CngxFieldErrors',
-    'CngxAffixRow',
+    'CngxFieldBox',
     'CngxPrefix',
     'CngxSuffix',
     'CngxInput',
@@ -51,7 +51,7 @@ export const STORY: DemoSpec = {
 
     <cngx-form-field [field]="orderForm.amount" [skin]="skin()">
       <label cngxLabel>Amount</label>
-      <span cngxAffixRow>
+      <span cngxFieldBox>
         <span cngxPrefix>EUR</span>
         <input cngxInput [formField]="orderForm.amount" inputmode="decimal" />
         <span cngxSuffix>/ month</span>
