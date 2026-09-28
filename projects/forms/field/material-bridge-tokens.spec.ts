@@ -106,3 +106,39 @@ describe('field Material bridge', () => {
     expect(css).not.toContain('.cngx-field-affix-row');
   });
 });
+
+// The field skins read the two derived core rungs (focus underline, bare
+// error text); without a bridge mapping they would keep the Ember / cngx red
+// under a Material theme.
+describe('system Material bridge', () => {
+  function systemCss(themeVersion: 'v1' | 'v0'): string {
+    const theme =
+      themeVersion === 'v1'
+        ? `$theme: mat.define-theme((color: (theme-type: light, primary: mat.$azure-palette)));`
+        : `$theme: mat.m2-define-light-theme((color: (
+            primary: mat.m2-define-palette(mat.$m2-indigo-palette),
+            accent: mat.m2-define-palette(mat.$m2-pink-palette),
+          )));`;
+    return compileString(
+      `
+@use '@angular/material' as mat;
+@use 'material/system-bridge' as bridge;
+${theme}
+html { @include bridge.theme($theme); }
+`,
+      { loadPaths: LOAD_PATHS },
+    ).css;
+  }
+
+  it('maps the strong primary and danger text rungs (M3)', () => {
+    const css = systemCss('v1');
+    expect(css).toContain('--cngx-color-primary-strong: var(--mat-sys-primary)');
+    expect(css).toContain('--cngx-color-danger-text: var(--mat-sys-error)');
+  });
+
+  it('maps the strong primary and danger text rungs (M2)', () => {
+    const css = systemCss('v0');
+    expect(css).toMatch(/--cngx-color-primary-strong: #[0-9a-f]{3,6}/);
+    expect(css).toMatch(/--cngx-color-danger-text: #[0-9a-f]{3,6}/);
+  });
+});

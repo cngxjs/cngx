@@ -36,7 +36,9 @@
  * - **Surface** - `--cngx-color-{surface|text|text-muted|border|
  *   primary|danger|success|warning|info}`. Primary is Ember
  *   `oklch(0.66 0.19 50)`; semantic colours stay in the same hue
- *   family across modes.
+ *   family across modes. Two derived rungs sit next to them:
+ *   `--cngx-color-primary-strong` (an accent on a tinted surface) and
+ *   `--cngx-color-danger-text` (danger as readable text, unregistered).
  * - **Typography** - `--cngx-font-size-{sm|md|lg}` plus `--cngx-
  *   line-height-base`. Font sizes use `syntax: '*'` because
  *   `@property` `<length>` forbids `rem`.
@@ -351,6 +353,19 @@
   }
 
   /**
+   * Strong primary - the same Ember hue one rung darker on light, for an
+   * accent that sits on a tinted surface (a fill field's focus underline)
+   * where the regular primary drops under 3:1. On dark it equals the dark
+   * primary, which already clears 3:1 on a dark tint.
+   * @group Surface
+   */
+  @property --cngx-color-primary-strong {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.58 0.19 50);
+  }
+
+  /**
    * Semantic danger color - red. Drives error states, destructive
    * actions, validation errors.
    * @group Surface
@@ -360,6 +375,13 @@
     inherits: true;
     initial-value: oklch(0.6 0.18 25);
   }
+
+  /* --cngx-color-danger-text - danger as TEXT: 75% danger mixed in oklab
+   * toward the text colour, so it clears 4.5:1 on the page in both schemes
+   * and stays red (an oklch mix walks the hue through magenta). Deliberately
+   * not registered: an initial-value cannot hold var(), and a registered
+   * literal would never let the derivation fall through. Assigned in the
+   * scheme blocks below so it follows a consumer's --cngx-color-danger. */
 
   /**
    * Semantic success color - green. Drives confirmations,
@@ -493,7 +515,9 @@
     --cngx-color-text-muted: oklch(0.5 0.01 250);
     --cngx-color-border: oklch(0.88 0.005 250);
     --cngx-color-primary: oklch(0.66 0.19 50);
+    --cngx-color-primary-strong: oklch(0.58 0.19 50);
     --cngx-color-danger: oklch(0.6 0.18 25);
+    --cngx-color-danger-text: color-mix(in oklab, var(--cngx-color-danger) 75%, var(--cngx-color-text));
     --cngx-color-success: oklch(0.6 0.15 145);
     --cngx-color-warning: oklch(0.72 0.15 75);
     --cngx-color-info: oklch(0.65 0.12 240);
@@ -513,7 +537,9 @@
       --cngx-color-text-muted: oklch(0.7 0.01 250);
       --cngx-color-border: oklch(0.32 0.005 250);
       --cngx-color-primary: oklch(0.72 0.18 50);
+      --cngx-color-primary-strong: oklch(0.72 0.18 50);
       --cngx-color-danger: oklch(0.68 0.17 25);
+      --cngx-color-danger-text: color-mix(in oklab, var(--cngx-color-danger) 75%, var(--cngx-color-text));
       --cngx-color-success: oklch(0.68 0.14 145);
       --cngx-color-warning: oklch(0.78 0.14 75);
       --cngx-color-info: oklch(0.72 0.11 240);
@@ -535,7 +561,9 @@
     --cngx-color-text-muted: oklch(0.7 0.01 250);
     --cngx-color-border: oklch(0.32 0.005 250);
     --cngx-color-primary: oklch(0.72 0.18 50);
+    --cngx-color-primary-strong: oklch(0.72 0.18 50);
     --cngx-color-danger: oklch(0.68 0.17 25);
+    --cngx-color-danger-text: color-mix(in oklab, var(--cngx-color-danger) 75%, var(--cngx-color-text));
     --cngx-color-success: oklch(0.68 0.14 145);
     --cngx-color-warning: oklch(0.78 0.14 75);
     --cngx-color-info: oklch(0.72 0.11 240);
@@ -554,7 +582,9 @@
     --cngx-color-text-muted: oklch(0.5 0.01 250);
     --cngx-color-border: oklch(0.88 0.005 250);
     --cngx-color-primary: oklch(0.66 0.19 50);
+    --cngx-color-primary-strong: oklch(0.58 0.19 50);
     --cngx-color-danger: oklch(0.6 0.18 25);
+    --cngx-color-danger-text: color-mix(in oklab, var(--cngx-color-danger) 75%, var(--cngx-color-text));
     --cngx-color-success: oklch(0.6 0.15 145);
     --cngx-color-warning: oklch(0.72 0.15 75);
     --cngx-color-info: oklch(0.65 0.12 240);
