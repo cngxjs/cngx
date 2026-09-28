@@ -6,6 +6,7 @@ import { describe, expect, test } from 'vitest';
 import { CngxPaginate, createManualState } from '@cngx/common/data';
 import type { CngxAsyncState } from '@cngx/core/utils';
 
+import { provideCngxPaginatorConfig, withPaginatorLoadMoreFormat } from '../paginator-config';
 import { CngxPaginator } from '../paginator.component';
 import { CngxPaginatorLoadMore } from './paginator-load-more.component';
 
@@ -126,5 +127,20 @@ describe('CngxPaginatorLoadMore', () => {
     button(fixture).click();
     await settle(fixture);
     expect(paginate.pageIndex()).toBe(2);
+  });
+
+  test('the progress readout follows a translated formatter', async () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideCngxPaginatorConfig(
+          withPaginatorLoadMoreFormat((shown, total) => `${shown} von ${total}`),
+        ),
+      ],
+    });
+    const { fixture } = await setup();
+    const count = fixture.debugElement.query(
+      By.css('cngx-pgn-load-more .cngx-paginator__load-more-count'),
+    ).nativeElement as HTMLElement;
+    expect(count.textContent?.trim()).toBe('10 von 100');
   });
 });

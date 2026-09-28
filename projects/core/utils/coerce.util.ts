@@ -1,3 +1,5 @@
+import { isSignal, signal, type Signal } from '@angular/core';
+
 /**
  * Coerces a value to a boolean.
  *
@@ -44,4 +46,43 @@ export function coerceNumberProperty(value: unknown, fallback = 0): number {
   const parsed = typeof value === 'string' ? Number.parseFloat(value) : Number.NaN;
 
   return Number.isNaN(parsed) ? fallback : parsed;
+}
+
+const WRAPPED = new WeakMap<object, Signal<unknown>>();
+
+/**
+ * Coerces a value-or-signal into a signal, the way `coerceArray` coerces a
+ * value-or-array into an array. A `Signal` passes through by reference. A
+ * static object (or function) is wrapped once per reference, so every caller
+ * handed the same object - every instance under one injector reading the same
+ * token value - shares one readonly signal and nothing is allocated after the
+ * first call. A primitive cannot key the cache and is wrapped fresh per call.
+ *
+ * `isSignal` checks Angular's signal brand, so a plain formatter function or a
+ * bundle of them is wrapped as a value, never mistaken for a signal.
+ *
+ * Use it at a read site that must stay correct once a token starts carrying a
+ * `Signal`: `private readonly i18n = coerceSignal(inject(TOKEN))`, then read
+ * `i18n().x` inside a `computed()` or the template.
+ *
+ * @category core/utils
+ * @since 0.1.0
+ * @relatedTo coerceBooleanProperty, coerceNumberProperty, createOverrideMerge
+ */
+export function coerceSignal<T>(source: T | Signal<T>): Signal<T> {
+  if (isSignal(source)) {
+    return source;
+  }
+  const cacheable = (typeof source === 'object' && source !== null) || typeof source === 'function';
+  if (!cacheable) {
+    return signal(source).asReadonly();
+  }
+  const key = source as object;
+  const cached = WRAPPED.get(key) as Signal<T> | undefined;
+  if (cached) {
+    return cached;
+  }
+  const wrapped = signal(source).asReadonly();
+  WRAPPED.set(key, wrapped);
+  return wrapped;
 }

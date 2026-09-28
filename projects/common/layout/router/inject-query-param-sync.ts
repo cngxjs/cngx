@@ -1,14 +1,8 @@
-import {
-  effect,
-  inject,
-  isSignal,
-  signal,
-  untracked,
-  type Signal,
-  type WritableSignal,
-} from '@angular/core';
+import { effect, inject, untracked, type Signal, type WritableSignal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
+
+import { coerceSignal } from '@cngx/core/utils';
 
 import { warnRouterAbsent } from './warn-router-absent';
 
@@ -71,11 +65,10 @@ export function injectQueryParamSync<T = boolean>(
 
   const route = inject(ActivatedRoute);
 
-  const paramSignal: Signal<string> = isSignal(opts.param) ? opts.param : signal(opts.param);
+  const paramSignal: Signal<string> = coerceSignal(opts.param);
   const serialize: (value: T) => string | null =
     opts.serialize ?? ((value) => (value ? 'open' : null));
-  const deserialize: (raw: string | null) => T =
-    opts.deserialize ?? ((raw) => (raw != null) as T);
+  const deserialize: (raw: string | null) => T = opts.deserialize ?? ((raw) => (raw != null) as T);
 
   // Closure bookkeeping, seeded from the initial URL read. `lastWritten` is
   // the serialized value the reflect path last pushed to the URL; the hydrate

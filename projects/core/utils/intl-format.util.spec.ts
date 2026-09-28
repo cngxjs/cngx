@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { dateTimeFormatterFor } from './intl-format.util';
+import { dateTimeFormatterFor, numberFormatterFor } from './intl-format.util';
 
 describe('dateTimeFormatterFor', () => {
   it('returns the same formatter instance for equal locale + options', () => {
@@ -36,5 +36,20 @@ describe('dateTimeFormatterFor', () => {
     expect(dateTimeFormatterFor('en-US', combo(0)).format(date)).toBe(
       new Intl.DateTimeFormat('en-US', combo(0)).format(date),
     );
+  });
+});
+
+describe('numberFormatterFor', () => {
+  it('returns the same formatter instance for equal locale + options', () => {
+    const a = numberFormatterFor('en-US', { style: 'percent' });
+    const b = numberFormatterFor('en-US', { style: 'percent' });
+    expect(a).toBe(b);
+  });
+
+  it('returns a second instance for a second locale', () => {
+    const en = numberFormatterFor('en-US', { style: 'percent' });
+    const de = numberFormatterFor('de-DE', { style: 'percent' });
+    expect(de).not.toBe(en);
+    expect(de.format(0.42)).toBe(new Intl.NumberFormat('de-DE', { style: 'percent' }).format(0.42));
   });
 });

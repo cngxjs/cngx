@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CNGX_FEEDBACK_CONFIG } from '../config/feedback-config';
+import { provideFeedbackI18n } from '../config/feedback-i18n';
 import { CngxAlerter } from './alerter.service';
 import { CngxAlertStack } from './alert-stack';
 
@@ -81,7 +82,7 @@ describe('CngxAlertStack', () => {
     const overflow = stackEl.querySelector('.cngx-alert-stack__overflow');
     expect(overflow).toBeTruthy();
     expect(overflow?.textContent).toContain('2 more');
-    expect(overflow?.getAttribute('aria-label')).toBe('Show 2 more alerts');
+    expect(overflow?.getAttribute('aria-label')).toBe('+ 2 more alerts');
   });
 
   it('expands all alerts when overflow button is clicked', () => {
@@ -313,7 +314,7 @@ describe('CngxAlertStack', () => {
     const overflow = stackEl.querySelector('.cngx-alert-stack__overflow');
     expect(overflow?.hasAttribute('aria-controls')).toBe(false);
     expect(overflow?.hasAttribute('aria-expanded')).toBe(false);
-    expect(overflow?.getAttribute('aria-label')).toBe('Show 2 more alerts');
+    expect(overflow?.getAttribute('aria-label')).toBe('+ 2 more alerts');
   });
 
   // ── Timer pause on hover/focus (WCAG 2.2.1) ──────────────
@@ -344,5 +345,62 @@ describe('CngxAlertStack', () => {
       .map((node) => node.textContent ?? '')
       .join('\n');
     expect(styleText).toMatch(/\.cngx-alert-stack__dismiss\s*\{[^}]*flex-shrink:\s*0/);
+  });
+
+  describe('overflow label in name (WCAG 2.5.3)', () => {
+    const showFive = (alerter: CngxAlerter): void => {
+      for (let i = 0; i < 5; i++) {
+        alerter.show({ message: `Alert ${i}`, severity: 'error', scope: 'test' });
+      }
+    };
+
+    it('keeps the visible label inside the accessible name by default', () => {
+      const { fixture, stackEl, alerter } = setup();
+      showFive(alerter);
+      fixture.detectChanges();
+      const overflow = stackEl.querySelector('.cngx-alert-stack__overflow')!;
+      const visible = overflow.textContent!.trim();
+      expect(visible).toBe('+ 2 more');
+      expect(overflow.getAttribute('aria-label')!.toLowerCase()).toContain(visible.toLowerCase());
+    });
+
+    it('renders a translated pair and stays silent when it contains the visible label', () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideFeedbackI18n({
+            announcements: {
+              alertOverflow: (n) => `+ ${n} weitere Hinweise`,
+              alertOverflowVisible: (n) => `+ ${n} weitere`,
+            },
+          }),
+        ],
+      });
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      const { fixture, stackEl, alerter } = setup();
+      showFive(alerter);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const overflow = stackEl.querySelector('.cngx-alert-stack__overflow')!;
+      expect(overflow.textContent!.trim()).toBe('+ 2 weitere');
+      expect(overflow.getAttribute('aria-label')).toBe('+ 2 weitere Hinweise');
+      expect(warn).not.toHaveBeenCalled();
+    });
+
+    it('warns once in dev mode when a translated pair breaks containment', () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideFeedbackI18n({ announcements: { alertOverflow: (n) => `Show ${n} hidden` } }),
+        ],
+      });
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      const { fixture, alerter } = setup();
+      showFive(alerter);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(warn).toHaveBeenCalledTimes(1);
+      expect(String(warn.mock.calls[0][0])).toContain('WCAG 2.5.3');
+    });
   });
 });

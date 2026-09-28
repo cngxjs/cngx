@@ -1,4 +1,6 @@
-import type { CngxSidenavConfig } from './sidenav.config';
+import type { Signal } from '@angular/core';
+
+import type { CngxSidenavConfig, CngxSidenavLabels } from './sidenav.config';
 import type { CngxSidenavConfigFeature } from './provide-sidenav-config';
 
 /**
@@ -74,4 +76,23 @@ export function withSidenavRouterSync(
   payload: NonNullable<CngxSidenavConfig['routerSync']>,
 ): CngxSidenavConfigFeature {
   return { kind: 'routerSync', payload };
+}
+
+/**
+ * Set the app-wide sidenav copy. Unset keys keep the English default; pass a
+ * `Signal` of a partial bundle to switch languages at runtime. The resize
+ * handle reads its key once when each sidenav is created, so a per-instance
+ * `[resizeLabel]` still wins. A later call replaces the whole bundle.
+ *
+ * ```ts
+ * provideSidenavConfig(withSidenavLabels({ resizeHandle: 'Navigation anpassen' }));
+ * ```
+ *
+ * @category ui/sidenav
+ * @since 0.1.0
+ */
+export function withSidenavLabels(
+  labels: Partial<CngxSidenavLabels> | Signal<Partial<CngxSidenavLabels>>,
+): CngxSidenavConfigFeature {
+  return { kind: 'labels', payload: { labels } };
 }

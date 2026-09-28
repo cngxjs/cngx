@@ -6,11 +6,12 @@ import {
   computed,
   inject,
   input,
+  untracked,
   ViewEncapsulation,
 } from '@angular/core';
 
 import { CNGX_FEEDBACK_CONFIG } from '../config/feedback-config';
-import { injectFeedbackI18n } from '../config/feedback-i18n';
+import { injectResolvedFeedbackI18n } from '../config/feedback-i18n';
 import { CngxSeverityIcon } from '../config/severity-icon';
 import { CngxToaster, type ToastState } from './toast.service';
 
@@ -116,7 +117,7 @@ export type ToastPosition =
             </span>
           }
           @if (toast.count > 1) {
-            <span class="cngx-toast__count">(x{{ toast.count }})</span>
+            <span class="cngx-toast__count">{{ repeatCount()(toast.count) }}</span>
           }
           @if (toast.config.action; as action) {
             <button type="button" class="cngx-toast__action" (click)="action.handler()">
@@ -126,7 +127,7 @@ export type ToastPosition =
         </div>
         @if (toast.config.dismissible) {
           <cngx-close-button
-            label="Dismiss"
+            [label]="i18n().dismissLabel"
             class="cngx-toast__dismiss"
             (click)="service.dismiss(toast.id)"
           />
@@ -140,11 +141,23 @@ export class CngxToastOutlet {
   protected readonly service = inject(CngxToaster);
   private readonly config = inject(CNGX_FEEDBACK_CONFIG, { optional: true });
 
+  protected readonly i18n = injectResolvedFeedbackI18n();
+
   /**
-   * Region name, resolved once from the i18n bundle. Constant for the host's
-   * lifetime - the bundle is a DI value, not reactive state.
+   * @internal - repeat-marker formatter for toasts, which are live regions. The toast
+   * list is the only tracked source; the formatter is read untracked, so a copy flip
+   * never rewrites a shown toast and the next toast transition picks it up.
    */
-  protected readonly regionLabel = injectFeedbackI18n().notificationsRegionLabel;
+  protected readonly repeatCount = computed(() => {
+    this.service.toasts();
+    return untracked(() => this.i18n().toastRepeatCount);
+  });
+
+  /**
+   * Region name, resolved once from the i18n bundle at construction: it is a
+   * static host attribute, not a reactive binding.
+   */
+  protected readonly regionLabel = this.i18n().notificationsRegionLabel;
 
   /** Stack position. */
   readonly position = input<ToastPosition>('bottom-end');

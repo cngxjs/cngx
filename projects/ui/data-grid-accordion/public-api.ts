@@ -23,6 +23,7 @@ export {
 } from './data-grid-accordion.token';
 export type {
   CngxDataGridAccordionConfig,
+  CngxDataGridAccordionLabels,
   CngxDataGridSeverity,
   CngxDataGridSkin,
 } from './config/data-grid-accordion.config';
@@ -32,5 +33,5 @@ export {
   provideDataGridAccordionConfigAt,
   type CngxDataGridAccordionConfigFeature,
 } from './config/provide-data-grid-accordion-config';
-export { withDataGridSkin } from './config/features';
+export { withDataGridAccordionLabels, withDataGridSkin } from './config/features';
 export { injectDataGridAccordionConfig } from './config/inject-data-grid-accordion-config';

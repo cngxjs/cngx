@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { arrayEqual, setEqual } from './equality';
+import { arrayEqual, recordEqual, setEqual } from './equality';
 
 describe('setEqual', () => {
   it('returns true for the same reference', () => {
@@ -56,5 +56,40 @@ describe('arrayEqual', () => {
 
   it('uses Object.is for NaN equality', () => {
     expect(arrayEqual([NaN], [NaN])).toBe(true);
+  });
+});
+
+describe('recordEqual', () => {
+  it('returns true for the same reference', () => {
+    const r = { a: 1 };
+    expect(recordEqual(r, r)).toBe(true);
+  });
+
+  it('returns true for key-wise equal records', () => {
+    expect(recordEqual({ a: 1, b: 'x' }, { b: 'x', a: 1 })).toBe(true);
+  });
+
+  it('returns false when a value changed', () => {
+    expect(recordEqual({ a: 1, b: 'x' }, { a: 1, b: 'y' })).toBe(false);
+  });
+
+  it('returns false for an extra key', () => {
+    expect(recordEqual<Record<string, number>>({ a: 1 }, { a: 1, b: 2 })).toBe(false);
+  });
+
+  it('returns false for a missing key with the same key count', () => {
+    expect(
+      recordEqual<Record<string, number | undefined>>({ a: undefined }, { b: undefined }),
+    ).toBe(false);
+  });
+
+  it('treats NaN values as equal via Object.is', () => {
+    expect(recordEqual({ a: NaN }, { a: NaN })).toBe(true);
+  });
+
+  it('compares nested objects by reference', () => {
+    const inner = { x: 1 };
+    expect(recordEqual({ a: inner }, { a: inner })).toBe(true);
+    expect(recordEqual({ a: { x: 1 } }, { a: { x: 1 } })).toBe(false);
   });
 });

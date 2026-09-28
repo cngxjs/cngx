@@ -19,6 +19,7 @@ import { CngxDialog } from '@cngx/common/dialog';
 import { parseKeyCombo, type CngxAsyncState } from '@cngx/core/utils';
 
 import { injectCommandPaletteConfig } from '../config/command-palette-config';
+import { CNGX_COMMAND_PALETTE_DEFAULTS } from '../panel/command-palette-defaults';
 import { CngxCommandPanel } from '../panel/command-panel.component';
 import { CngxCommandPanelShell } from '../panel/command-panel-shell.component';
 import { CNGX_COMMAND_PALETTE_HOST, type CngxCommandPaletteHost } from '../panel/panel-host.token';
@@ -110,8 +111,15 @@ export class CngxCommandPalette implements CngxCommandPaletteHost {
   /** Debounce for the search input. */
   readonly debounceMs = input<number>(150);
 
-  /** Accessible name for the dialog. */
-  readonly ariaLabel = input<string>('Command palette');
+  protected readonly config = injectCommandPaletteConfig();
+
+  /**
+   * Accessible name for the dialog. Defaults to `paletteLabel` from
+   * `CNGX_COMMAND_PALETTE_CONFIG` (`withCommandPaletteLabels`), read at construction.
+   */
+  readonly ariaLabel = input<string>(
+    this.config.paletteLabel ?? CNGX_COMMAND_PALETTE_DEFAULTS.paletteLabel,
+  );
 
   /**
    * Per-instance open combo (parsed via `parseKeyCombo`, e.g. `'mod+shift+p'`).
@@ -124,7 +132,6 @@ export class CngxCommandPalette implements CngxCommandPaletteHost {
   /** Fired when the user asks to retry a failed result load. */
   readonly retry = output<void>();
 
-  protected readonly config = injectCommandPaletteConfig();
 
   // Instance slot directives (content-projected). contentChild must be a direct
   // field initializer (AOT NG8110). Each resolves instance > config > null.

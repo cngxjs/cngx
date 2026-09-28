@@ -17,6 +17,7 @@ import {
   CngxFailed,
   CngxPending,
   CngxSucceeded,
+  injectInteractiveI18n,
   reflectAsyncDisplayStatus,
   type AsyncAction,
 } from '@cngx/common/interactive';
@@ -111,8 +112,8 @@ export type ActionButtonVariant = 'primary' | 'secondary' | 'ghost';
       [enabled]="clickEnabled()"
       [busy]="effectiveBusy()"
       [autoAnnounce]="false"
-      [succeededAnnouncement]="succeededAnnouncement() ?? succeededLabel() ?? 'Action succeeded'"
-      [failedAnnouncement]="failedAnnouncement() ?? failedLabel() ?? 'Action failed'"
+      [succeededAnnouncement]="succeededAnnouncement() ?? succeededLabel() ?? i18n().asyncClickSucceeded"
+      [failedAnnouncement]="failedAnnouncement() ?? failedLabel() ?? i18n().asyncClickFailed"
       [attr.aria-describedby]="describedBy()"
       [class]="'cngx-action-button cngx-action-button--' + variant()"
     >
@@ -163,6 +164,7 @@ export type ActionButtonVariant = 'primary' | 'secondary' | 'ghost';
 export class CngxActionButton {
   private readonly toaster = inject(CngxToaster, { optional: true });
   private readonly externalToastOn = inject(CngxToastOn, { self: true, optional: true });
+  protected readonly i18n = injectInteractiveI18n();
 
   /** The async action to execute on click. */
   readonly action = input.required<AsyncAction>();
@@ -179,10 +181,16 @@ export class CngxActionButton {
   /** Visual variant - sets CSS class `cngx-action-button--{variant}`. */
   readonly variant = input<ActionButtonVariant>('primary');
 
-  /** SR announcement on success. Falls back to `succeededLabel`, then `'Action succeeded'`. */
+  /**
+   * SR announcement on success. Falls back to `succeededLabel`, then
+   * `CNGX_INTERACTIVE_I18N.asyncClickSucceeded`.
+   */
   readonly succeededAnnouncement = input<string | undefined>(undefined);
 
-  /** SR announcement on failure. Falls back to `failedLabel`, then `'Action failed'`. */
+  /**
+   * SR announcement on failure. Falls back to `failedLabel`, then
+   * `CNGX_INTERACTIVE_I18N.asyncClickFailed`.
+   */
   readonly failedAnnouncement = input<string | undefined>(undefined);
 
   /** Fallback text while pending (when no `cngxPending` template is projected). */
@@ -279,9 +287,17 @@ export class CngxActionButton {
   protected readonly effectiveAnnouncement = computed(() => {
     switch (this.effectiveStatus()) {
       case 'success':
-        return this.succeededAnnouncement() ?? this.succeededLabel() ?? 'Action succeeded';
+        return (
+          this.succeededAnnouncement() ??
+          this.succeededLabel() ??
+          untracked(() => this.i18n().asyncClickSucceeded)
+        );
       case 'error':
-        return this.failedAnnouncement() ?? this.failedLabel() ?? 'Action failed';
+        return (
+          this.failedAnnouncement() ??
+          this.failedLabel() ??
+          untracked(() => this.i18n().asyncClickFailed)
+        );
       default:
         return '';
     }

@@ -10,6 +10,7 @@ import {
 import { createVisibilityGate, injectLoadingConfig, type CngxAsyncState } from '@cngx/core/utils';
 
 import { CNGX_FEEDBACK_CONFIG } from '../config/feedback-config';
+import { injectResolvedFeedbackI18n } from '../config/feedback-i18n';
 
 /**
  * Visual variant for the loading indicator.
@@ -106,6 +107,7 @@ export type LoadingIndicatorVariant = 'spinner' | 'bar';
 export class CngxLoadingIndicator {
   private readonly config = inject(CNGX_FEEDBACK_CONFIG, { optional: true });
   private readonly loadingConfig = injectLoadingConfig();
+  private readonly i18n = injectResolvedFeedbackI18n();
 
   /** Bind an async state - shows indicator when `isBusy()`. */
   readonly state = input<CngxAsyncState<unknown> | undefined>(undefined);
@@ -116,8 +118,8 @@ export class CngxLoadingIndicator {
   /** Visual variant. */
   readonly variant = input<LoadingIndicatorVariant>('spinner');
 
-  /** Screen reader label. */
-  readonly label = input<string>('Loading');
+  /** Screen reader label. Defaults to `CNGX_FEEDBACK_I18N.loadingLabel`, read at construction. */
+  readonly label = input<string>(this.i18n().loadingLabel);
 
   /** Delay in ms before showing the indicator. Defaults to `CNGX_LOADING_CONFIG.showDelay`. */
   readonly delay = input<number>(this.loadingConfig.showDelay);

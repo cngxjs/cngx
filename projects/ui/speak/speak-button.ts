@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from '@angular/core';
 import { type CngxSpeak } from '@cngx/common';
 
+import { injectSpeakI18n } from './speak-i18n';
+
 /**
  * Ready-made speaker button that connects to a {@link CngxSpeak} directive
  * via an explicit `[speakRef]` input - no ancestor injection.
@@ -80,19 +82,21 @@ import { type CngxSpeak } from '@cngx/common';
   `,
 })
 export class CngxSpeakButton {
+  private readonly i18n = injectSpeakI18n();
+
   /** The `CngxSpeak` directive instance to connect to. */
   readonly speakRef = input.required<CngxSpeak>();
 
   /**
-   * Accessible label while idle - the action the button offers. English by
-   * default; supply the consumer locale to override.
+   * Accessible label while idle - the action the button offers. Defaults to
+   * `CNGX_SPEAK_I18N.readAloud`, read at construction.
    */
-  readonly readAloudLabel = input('Read aloud');
+  readonly readAloudLabel = input(this.i18n().readAloud);
 
   /**
    * Accessible label while speaking - the action the button offers to
-   * interrupt playback. English by default; supply the consumer locale to
-   * override.
+   * interrupt playback. Defaults to `CNGX_SPEAK_I18N.stopSpeaking`, read at
+   * construction.
    */
-  readonly stopLabel = input('Stop speaking');
+  readonly stopLabel = input(this.i18n().stopSpeaking);
 }

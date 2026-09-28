@@ -15,11 +15,17 @@ import {
   signal,
   ViewEncapsulation,
 } from '@angular/core';
-import { createTransitionTracker, matchesKeyCombo, parseKeyCombo } from '@cngx/core/utils';
+import {
+  createOverrideMerge,
+  createTransitionTracker,
+  matchesKeyCombo,
+  parseKeyCombo,
+} from '@cngx/core/utils';
 import { CNGX_HOVER_INTENT_DEFAULTS, CngxHoverIntent } from '@cngx/common/interactive';
 import { CNGX_CONTAINER_SIZE } from '@cngx/common/layout';
 
 import { injectSidenavConfig } from './config/inject-sidenav-config';
+import { CNGX_SIDENAV_LABELS_DEFAULTS } from './config/sidenav.config.defaults';
 import { CNGX_SIDENAV } from './sidenav-token';
 
 /**
@@ -208,10 +214,13 @@ export class CngxSidenav {
   readonly resizable = input<boolean>(false);
 
   /**
-   * Accessible name of the resize separator. English default; per-instance
-   * like `ariaLabel`, since it names this rail's handle.
+   * Accessible name of the resize separator. Defaults to the `resizeHandle`
+   * label (`withSidenavLabels`), read at construction; per-instance like
+   * `ariaLabel`, since it names this rail's handle.
    */
-  readonly resizeLabel = input<string>('Resize navigation');
+  readonly resizeLabel = input<string>(
+    createOverrideMerge(CNGX_SIDENAV_LABELS_DEFAULTS, this.cfg.labels)().resizeHandle,
+  );
 
   /**
    * Minimum width constraint during resize. Use a px value: drag and keyboard

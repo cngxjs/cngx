@@ -13,7 +13,7 @@ import { CngxSidenav } from './sidenav';
 import { CngxSidenavLayout } from './sidenav-layout';
 import { CngxSidenavContent } from './sidenav-content';
 import { provideSidenavConfig } from './config/provide-sidenav-config';
-import { withSidenavDimensions, withSidenavHoverDwell } from './config/features';
+import { withSidenavDimensions, withSidenavHoverDwell, withSidenavLabels } from './config/features';
 
 @Component({
   template: `
@@ -599,6 +599,20 @@ describe('CngxSidenav ariaLabel', () => {
 
 describe('CngxSidenav resizable', () => {
   afterEach(() => vi.restoreAllMocks());
+
+  it('names the resize handle from the sidenav labels bundle', () => {
+    TestBed.configureTestingModule({
+      providers: [provideSidenavConfig(withSidenavLabels({ resizeHandle: 'Navigation anpassen' }))],
+    });
+    const fixture = TestBed.createComponent(DualHost);
+    fixture.componentInstance.resizable.set(true);
+    fixture.detectChanges();
+    const leftDe = fixture.debugElement.queryAll(By.directive(CngxSidenav))[0];
+    const handle = (leftDe.nativeElement as HTMLElement).querySelector<HTMLElement>(
+      '.cngx-sidenav__resize-handle',
+    )!;
+    expect(handle.getAttribute('aria-label')).toBe('Navigation anpassen');
+  });
 
   function setupDual() {
     const fixture = TestBed.createComponent(DualHost);

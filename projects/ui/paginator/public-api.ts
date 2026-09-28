@@ -54,6 +54,8 @@ export {
   withPaginatorAnnouncements,
   withPaginatorRangeFormat,
   withPaginatorPageStatusFormat,
+  withPaginatorPageOfPagesFormat,
+  withPaginatorLoadMoreFormat,
   withPaginatorPageSizeOptions,
   withPaginatorTemplates,
   injectPaginatorConfig,

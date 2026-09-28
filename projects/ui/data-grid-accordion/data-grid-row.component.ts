@@ -14,6 +14,7 @@ import { nextUid, type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils
 import { CNGX_ACCORDION, CngxAccordionPanel } from '@cngx/common/interactive';
 
 import type { CngxDataGridSeverity } from './config/data-grid-accordion.config';
+import { injectDataGridAccordionLabels } from './config/data-grid-accordion.config.defaults';
 import { CNGX_DATA_GRID_ACCORDION } from './data-grid-accordion.token';
 import { CngxDgCell } from './data-grid-cell.directive';
 import { CngxDgaRowBusy } from './data-grid-row-busy.directive';
@@ -68,6 +69,8 @@ import { CngxDgaRowError } from './data-grid-row-error.directive';
   },
 })
 export class CngxDataGridRow {
+  protected readonly labels = injectDataGridAccordionLabels();
+
   /**
    * Stable id this row registers under in the coordinator's open-set. Defaults to
    * a generated id; bind `[panelId]` to a stable row value to address the row
@@ -92,8 +95,11 @@ export class CngxDataGridRow {
    * communicates the state it is handed.
    */
   readonly state = input<AsyncStatus | CngxAsyncState<unknown> | undefined>(undefined);
-  /** Error message announced in the error state. English default; override per locale. */
-  readonly errorMessage = input('Failed to load');
+  /**
+   * Error message announced in the error state. Defaults to the `rowLoadFailed`
+   * label, read at construction.
+   */
+  readonly errorMessage = input(this.labels().rowLoadFailed);
 
   private readonly accordion = inject(CNGX_ACCORDION);
   protected readonly grid = inject(CNGX_DATA_GRID_ACCORDION);

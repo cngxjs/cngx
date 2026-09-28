@@ -6,6 +6,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CngxLiveAnnouncer } from '@cngx/common/a11y';
 import { CngxSort } from '@cngx/common/data';
 
+import { withDataGridAccordionLabels } from './config/features';
+import { provideDataGridAccordionConfig } from './config/provide-data-grid-accordion-config';
 import { CngxDataGridAccordion } from './data-grid-accordion.component';
 import { CngxDataGridHeader } from './data-grid-header.component';
 import { CngxDgCell } from './data-grid-cell.directive';
@@ -164,6 +166,25 @@ describe('CngxDgaSortHeader', () => {
     nameEl.click();
     fixture.detectChanges();
     expect(spy).toHaveBeenCalledWith('Betrag aufsteigend sortiert');
+  });
+
+  it('defaults the status and announcement strings from the labels bundle', () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      imports: [Host],
+      providers: [
+        provideDataGridAccordionConfig(
+          withDataGridAccordionLabels({
+            sortNone: 'nicht sortiert',
+            sortAnnouncedAscending: '{label} aufsteigend sortiert',
+          }),
+        ),
+      ],
+    });
+    const { nameDir } = setup();
+    expect(nameDir.notSortedLabel()).toBe('nicht sortiert');
+    expect(nameDir.ascendingAnnouncement()).toBe('{label} aufsteigend sortiert');
+    expect(nameDir.descendingLabel()).toBe('sorted descending, activate to sort ascending');
   });
 });
 

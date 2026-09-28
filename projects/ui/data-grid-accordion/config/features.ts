@@ -1,4 +1,6 @@
-import type { CngxDataGridSkin } from './data-grid-accordion.config';
+import type { Signal } from '@angular/core';
+
+import type { CngxDataGridAccordionLabels, CngxDataGridSkin } from './data-grid-accordion.config';
 import type { CngxDataGridAccordionConfigFeature } from './provide-data-grid-accordion-config';
 
 // Sort and filter ship NO config feature (no `withDataGridSort` / `withDataGridFilter`).
@@ -25,4 +27,27 @@ import type { CngxDataGridAccordionConfigFeature } from './provide-data-grid-acc
  */
 export function withDataGridSkin(skin: CngxDataGridSkin): CngxDataGridAccordionConfigFeature {
   return { kind: 'skin', payload: { skin } };
+}
+
+/**
+ * Set the app-wide copy of the grid's count, sort, filter and row surfaces.
+ * Unset keys keep the English default. Pass a `Signal` of a partial bundle to
+ * switch languages at runtime; the count region and the note tag follow it,
+ * input defaults read it once when each part is created. A later call (or a nested
+ * `provideDataGridAccordionConfigAt`) replaces the whole bundle rather than
+ * merging with it.
+ *
+ * ```ts
+ * provideDataGridAccordionConfig(
+ *   withDataGridAccordionLabels({ filterRows: 'Zeilen filtern', count: (n) => `${n} Treffer` }),
+ * );
+ * ```
+ *
+ * @category ui/data-grid-accordion
+ * @since 0.1.0
+ */
+export function withDataGridAccordionLabels(
+  labels: Partial<CngxDataGridAccordionLabels> | Signal<Partial<CngxDataGridAccordionLabels>>,
+): CngxDataGridAccordionConfigFeature {
+  return { kind: 'labels', payload: { labels } };
 }

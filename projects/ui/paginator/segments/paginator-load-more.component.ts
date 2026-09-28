@@ -8,7 +8,7 @@ import {
 
 import { CngxRipple } from '@cngx/common/interactive';
 
-import { injectPaginatorConfig } from '../paginator-config';
+import { CNGX_PAGINATOR_READOUT_DEFAULTS, injectPaginatorConfig } from '../paginator-config';
 import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
 
 /**
@@ -49,7 +49,7 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
       <span class="cngx-paginator__load-more-label">{{ ariaLabel() }}</span>
       @if (!host.isLast()) {
         <span class="cngx-paginator__load-more-count" aria-hidden="true">
-          {{ shown() }} / {{ host.total() }}
+          {{ readout() }}
         </span>
       }
     </button>
@@ -81,6 +81,13 @@ export class CngxPaginatorLoadMore {
    * honestly without a local clamp.
    */
   protected readonly shown = computed<number>(() => this.host.clampedRange()[1]);
+
+  /** Visible progress readout from the config formatter (EN default `shown / total`). */
+  protected readonly readout = computed(() => {
+    const format =
+      this.config.formats.loadMoreReadout ?? CNGX_PAGINATOR_READOUT_DEFAULTS.loadMoreReadout;
+    return format(this.shown(), this.host.total());
+  });
 
   /** Reveal the next page. Guarded so a disabled click is a no-op. */
   protected handleClick(): void {

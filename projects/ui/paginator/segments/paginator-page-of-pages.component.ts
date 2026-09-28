@@ -9,7 +9,7 @@ import {
 import { CngxListbox, CngxListboxTrigger, CngxOption } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
 
-import { injectPaginatorConfig } from '../paginator-config';
+import { CNGX_PAGINATOR_READOUT_DEFAULTS, injectPaginatorConfig } from '../paginator-config';
 import { CNGX_PAGINATOR_GLYPHS } from '../paginator-glyphs';
 import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
 
@@ -47,9 +47,7 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
       [disabled]="host.isBusy()"
       (click)="pop.toggle()"
     >
-      <span class="cngx-paginator__select-label"
-        ><b>{{ host.pageIndex() + 1 }}</b> / {{ host.totalPages() }}</span
-      >
+      <span class="cngx-paginator__select-label" [innerHTML]="readout()"></span>
       <span class="cngx-paginator__select-caret" aria-hidden="true">{{ glyphs.caret }}</span>
     </button>
     <div cngxPopover #pop="cngxPopover" [closeOnOutsideClick]="true">
@@ -74,6 +72,16 @@ export class CngxPaginatorPageOfPages {
   protected readonly host = inject(CNGX_PAGINATOR_HOST);
   protected readonly config = injectPaginatorConfig();
   protected readonly glyphs = CNGX_PAGINATOR_GLYPHS;
+
+  /**
+   * Trigger readout from the config formatter (EN default `<b>page</b> / total`),
+   * rendered as sanitised HTML like the range segment.
+   */
+  protected readonly readout = computed(() => {
+    const format =
+      this.config.formats.pageOfPagesReadout ?? CNGX_PAGINATOR_READOUT_DEFAULTS.pageOfPagesReadout;
+    return format(this.host.pageIndex() + 1, this.host.totalPages());
+  });
 
   /**
    * The 1-based page numbers `1..totalPages`. Length-keyed `equal` keeps the

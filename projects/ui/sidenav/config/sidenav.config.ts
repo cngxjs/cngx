@@ -1,3 +1,5 @@
+import type { Signal } from '@angular/core';
+
 /**
  * App-wide cascade for the sidenav family's dimension defaults, the mini
  * expand-on-hover dwell, and the `shortcut` behaviour knob.
@@ -70,4 +72,25 @@ export interface CngxSidenavConfig {
    * Per-instance `[shortcut]` still wins. A flat top-level scalar.
    */
   readonly shortcut?: string;
+
+  /**
+   * App-wide sidenav copy. Reactive from birth: pass a partial bundle or a
+   * `Signal` of one; unset keys keep the English default. Override via
+   * `withSidenavLabels(...)`. A later feature replaces the whole bundle.
+   */
+  readonly labels?: Partial<CngxSidenavLabels> | Signal<Partial<CngxSidenavLabels>>;
+}
+
+/**
+ * User-facing copy of the sidenav. Library defaults are English.
+ *
+ * @category ui/sidenav
+ * @since 0.1.0
+ */
+export interface CngxSidenavLabels {
+  /**
+   * Default of `[resizeLabel]`, the accessible name of the resize separator.
+   * Read once when each sidenav is created.
+   */
+  readonly resizeHandle: string;
 }

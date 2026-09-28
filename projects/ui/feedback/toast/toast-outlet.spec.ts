@@ -1,8 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { provideToasts } from './toast.service';
+import { CNGX_FEEDBACK_I18N, type CngxFeedbackI18n } from '../config/feedback-i18n';
+import { CngxToaster, provideToasts } from './toast.service';
 import { CngxToastOutlet } from './toast-outlet';
 
 @Component({
@@ -40,5 +41,29 @@ describe('CngxToastOutlet', () => {
       .map((node) => node.textContent ?? '')
       .join('\n');
     expect(styleText).toMatch(/\.cngx-toast__dismiss\s*\{[^}]*flex-shrink:\s*0/);
+  });
+
+  it('keeps a shown repeat marker on a copy flip and uses the new copy on the next repeat', () => {
+    // The public token type is a plain bundle; a Signal-carrying value exercises the
+    // reactive-ready read path the follow-up program switches on.
+    const copy = signal<Partial<CngxFeedbackI18n>>({});
+    TestBed.overrideProvider(CNGX_FEEDBACK_I18N, { useValue: copy as unknown as CngxFeedbackI18n });
+    const { fixture, outletEl } = setup();
+    const toaster = fixture.debugElement.children[0].injector.get(CngxToaster);
+    const countText = (): string | undefined =>
+      outletEl.querySelector('.cngx-toast__count')?.textContent?.trim();
+
+    toaster.show({ message: 'Saved' });
+    toaster.show({ message: 'Saved' });
+    fixture.detectChanges();
+    expect(countText()).toBe('(x2)');
+
+    copy.set({ toastRepeatCount: (count) => `${count}-mal` });
+    fixture.detectChanges();
+    expect(countText()).toBe('(x2)');
+
+    toaster.show({ message: 'Saved' });
+    fixture.detectChanges();
+    expect(countText()).toBe('3-mal');
   });
 });

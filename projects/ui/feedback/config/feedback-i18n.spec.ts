@@ -2,15 +2,33 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
+import { CngxAlert } from '../alert/alert';
 import { CngxAlertStack } from '../alert/alert-stack';
 import { CngxToastOutlet } from '../toast/toast-outlet';
+import { CngxToaster, provideToasts } from '../toast/toast.service';
 import { provideFeedback, withAlerts, withToasts } from './feedback-config';
 import {
   CNGX_FEEDBACK_I18N,
   injectFeedbackI18n,
+  injectResolvedFeedbackI18n,
   provideFeedbackI18n,
   withFeedbackI18nLabels,
 } from './feedback-i18n';
+
+@Component({
+  imports: [CngxAlert],
+  template: `
+    <cngx-alert [closable]="true">One</cngx-alert>
+    <cngx-alert [closable]="true">Two</cngx-alert>
+  `,
+})
+class AlertPairHost {}
+
+@Component({
+  imports: [CngxToastOutlet],
+  template: '<cngx-toast-outlet />',
+})
+class ToastHost {}
 
 @Component({
   standalone: true,
@@ -86,7 +104,7 @@ describe('CNGX_FEEDBACK_I18N', () => {
     const { announcements } = TestBed.inject(CNGX_FEEDBACK_I18N);
     expect(announcements.asyncLoaded).toBe('Inhalt geladen');
     expect(announcements.asyncLoading).toBe('Loading content');
-    expect(announcements.alertOverflow(3)).toBe('Show 3 more alerts');
+    expect(announcements.alertOverflow(3)).toBe('+ 3 more alerts');
   });
 
   it('announces the overridden async phrases and alert dismissal', () => {
@@ -100,5 +118,79 @@ describe('CNGX_FEEDBACK_I18N', () => {
     const { announcements } = TestBed.inject(CNGX_FEEDBACK_I18N);
     expect(announcements.alertDismissed).toBe('Hinweis verworfen');
     expect(announcements.alertOverflow(2)).toBe('2 weitere');
+  });
+
+  describe('dismiss, banner and repeat copy', () => {
+    it('fills the new keys with the English defaults without a provider', () => {
+      const bundle = TestBed.runInInjectionContext(() => injectResolvedFeedbackI18n());
+      expect(bundle().dismissLabel).toBe('Dismiss');
+      expect(bundle().bannerActionFailed).toBe('Action failed');
+      expect(bundle().toastRepeatCount(3)).toBe('(x3)');
+    });
+
+    it('keeps the English defaults for a full bundle provided without the new keys', () => {
+      TestBed.configureTestingModule({
+        providers: [
+          {
+            provide: CNGX_FEEDBACK_I18N,
+            useValue: {
+              alertsRegionLabel: 'Hinweise',
+              notificationsRegionLabel: 'Meldungen',
+              announcements: {
+                alertDismissed: 'Verworfen',
+                alertOverflow: (count: number) => `${count} weitere`,
+                asyncLoading: 'Laedt',
+                asyncLoaded: 'Geladen',
+                asyncError: 'Fehler',
+                asyncRefreshing: 'Aktualisiert',
+                asyncRefreshed: 'Aktuell',
+                asyncRefreshFailed: 'Aktualisierung fehlgeschlagen',
+              },
+            },
+          },
+        ],
+      });
+      const bundle = TestBed.runInInjectionContext(() => injectResolvedFeedbackI18n());
+      expect(bundle().alertsRegionLabel).toBe('Hinweise');
+      expect(bundle().dismissLabel).toBe('Dismiss');
+      expect(bundle().bannerActionFailed).toBe('Action failed');
+    });
+
+    it('names every alert dismiss button from dismissLabel', () => {
+      TestBed.configureTestingModule({
+        providers: [provideFeedbackI18n({ dismissLabel: 'Schliessen' })],
+      });
+      const fixture = TestBed.createComponent(AlertPairHost);
+      fixture.detectChanges();
+      const labels = Array.from(
+        (fixture.nativeElement as HTMLElement).querySelectorAll('.cngx-alert__dismiss button'),
+      ).map((b) => b.getAttribute('aria-label'));
+      expect(labels).toEqual(['Schliessen', 'Schliessen']);
+    });
+
+    it('renders the toast repeat marker through toastRepeatCount', () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideToasts(),
+          provideFeedbackI18n({ toastRepeatCount: (count) => `${count}-mal` }),
+        ],
+      });
+      const fixture = TestBed.createComponent(ToastHost);
+      const toaster = fixture.debugElement.children[0].injector.get(CngxToaster);
+      toaster.show({ message: 'Saved' });
+      toaster.show({ message: 'Saved' });
+      fixture.detectChanges();
+      const count = (fixture.nativeElement as HTMLElement).querySelector('.cngx-toast__count');
+      expect(count?.textContent?.trim()).toBe('2-mal');
+    });
+
+    it('shares one i18n Signal across alert instances under one injector', () => {
+      const fixture = TestBed.createComponent(AlertPairHost);
+      fixture.detectChanges();
+      const [first, second] = fixture.debugElement
+        .queryAll((el) => el.name === 'cngx-alert')
+        .map((el) => (el.componentInstance as unknown as { i18n: unknown }).i18n);
+      expect(first).toBe(second);
+    });
   });
 });

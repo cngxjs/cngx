@@ -17,6 +17,8 @@ export interface CngxCommandPaletteDefaults {
   readonly loadingLabel: string;
   readonly errorLabel: string;
   readonly retryLabel: string;
+  /** Accessible name of the palette dialog. */
+  readonly paletteLabel: string;
   /** Builds the polite `aria-live` result-count message. */
   readonly resultCount: (count: number) => string;
   /** Keyboard-legend rows rendered in the footer. */
@@ -32,6 +34,7 @@ export const CNGX_COMMAND_PALETTE_DEFAULTS: CngxCommandPaletteDefaults = {
   loadingLabel: 'Loading commands...',
   errorLabel: 'Could not load commands.',
   retryLabel: 'Retry',
+  paletteLabel: 'Command palette',
   resultCount: (count) => (count === 1 ? '1 result' : `${count} results`),
   footerLegend: [
     { keys: 'up down', label: 'Navigate' },

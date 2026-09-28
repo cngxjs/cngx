@@ -1,6 +1,6 @@
 import { memoize } from './memo.util';
 
-const DATE_TIME_FORMATTER_CACHE_LIMIT = 32;
+const INTL_FORMATTER_CACHE_LIMIT = 32;
 
 // Key is `locale|serialized-options`; BCP-47 tags cannot contain `|`.
 // The parse runs on cache miss only.
@@ -12,7 +12,7 @@ const formatterForKey = memoize(
       JSON.parse(key.slice(sep + 1)) as Intl.DateTimeFormatOptions,
     );
   },
-  { cacheLimit: DATE_TIME_FORMATTER_CACHE_LIMIT },
+  { cacheLimit: INTL_FORMATTER_CACHE_LIMIT },
 );
 
 /**
@@ -36,4 +36,33 @@ export function dateTimeFormatterFor(
   options: Intl.DateTimeFormatOptions,
 ): Intl.DateTimeFormat {
   return formatterForKey(`${locale}|${JSON.stringify(options)}`);
+}
+
+const numberFormatterForKey = memoize(
+  (key: string): Intl.NumberFormat => {
+    const sep = key.indexOf('|');
+    return new Intl.NumberFormat(
+      key.slice(0, sep),
+      JSON.parse(key.slice(sep + 1)) as Intl.NumberFormatOptions,
+    );
+  },
+  { cacheLimit: INTL_FORMATTER_CACHE_LIMIT },
+);
+
+/**
+ * Bounded `Intl.NumberFormat` cache keyed on locale + options, the number
+ * sibling of `dateTimeFormatterFor` with the same key scheme and cap. Read
+ * the locale from `injectLocale()` inside the formatting `computed()` so a
+ * locale flip re-formats:
+ * `computed(() => numberFormatterFor(this.locale(), { style: 'percent' }).format(v))`.
+ *
+ * @category core/utils
+ * @since 0.1.0
+ * @relatedTo dateTimeFormatterFor, memoize
+ */
+export function numberFormatterFor(
+  locale: string,
+  options: Intl.NumberFormatOptions,
+): Intl.NumberFormat {
+  return numberFormatterForKey(`${locale}|${JSON.stringify(options)}`);
 }

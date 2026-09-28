@@ -13,7 +13,11 @@ import { parseKeyCombo } from '@cngx/core/utils';
 import { CNGX_FORM_FIELD_CONTROL } from '@cngx/forms/field';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { provideCommandPaletteConfig, withPaletteShortcut } from '../config/command-palette-config';
+import {
+  provideCommandPaletteConfig,
+  withCommandPaletteLabels,
+  withPaletteShortcut,
+} from '../config/command-palette-config';
 import { CngxCommandPalette } from './command-palette.component';
 import { CngxCommandPaletteTrigger } from './command-palette-trigger.directive';
 import {
@@ -234,6 +238,14 @@ describe('CngxCommandPalette', () => {
   it('gives the dialog an accessible name', () => {
     configure();
     expect(dialogEl.getAttribute('aria-label')).toBe('Command palette');
+  });
+
+  it('names the dialog from the paletteLabel config key', () => {
+    configure(
+      [],
+      [provideCommandPaletteConfig(withCommandPaletteLabels({ paletteLabel: 'Befehlspalette' }))],
+    );
+    expect(dialogEl.getAttribute('aria-label')).toBe('Befehlspalette');
   });
 
   it('provides no CNGX_FORM_FIELD_CONTROL - the demarcation from CngxCombobox', () => {

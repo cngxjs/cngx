@@ -3,9 +3,10 @@ import {
   makeEnvironmentProviders,
   type EnvironmentProviders,
   type Provider,
+  type Signal,
 } from '@angular/core';
 
-import type { CngxSidenavConfig } from './sidenav.config';
+import type { CngxSidenavConfig, CngxSidenavLabels } from './sidenav.config';
 import { CNGX_SIDENAV_CONFIG, CNGX_SIDENAV_DEFAULTS } from './sidenav.config.defaults';
 
 /**
@@ -37,6 +38,12 @@ export type CngxSidenavConfigFeature =
   | {
       readonly kind: 'shortcut';
       readonly payload: { readonly shortcut: string };
+    }
+  | {
+      readonly kind: 'labels';
+      readonly payload: {
+        readonly labels: Partial<CngxSidenavLabels> | Signal<Partial<CngxSidenavLabels>>;
+      };
     };
 
 /**
@@ -52,6 +59,7 @@ function reduceFeatures(features: readonly CngxSidenavConfigFeature[]): Partial<
     hover?: NonNullable<CngxSidenavConfig['hover']>;
     routerSync?: NonNullable<CngxSidenavConfig['routerSync']>;
     shortcut?: string;
+    labels?: CngxSidenavConfig['labels'];
   } = {};
   for (const f of features) {
     switch (f.kind) {
@@ -66,6 +74,9 @@ function reduceFeatures(features: readonly CngxSidenavConfigFeature[]): Partial<
         break;
       case 'shortcut':
         out.shortcut = f.payload.shortcut;
+        break;
+      case 'labels':
+        out.labels = f.payload.labels;
         break;
     }
   }
@@ -93,6 +104,7 @@ function mergeConfig(
     hover: { ...base.hover, ...partial.hover },
     routerSync: { ...base.routerSync, ...partial.routerSync },
     shortcut: partial.shortcut ?? base.shortcut,
+    labels: partial.labels ?? base.labels,
   };
 }
 

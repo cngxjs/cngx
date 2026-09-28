@@ -1,4 +1,5 @@
-import { inject, InjectionToken, type Provider } from '@angular/core';
+import { inject, InjectionToken, type Provider, type Signal } from '@angular/core';
+import { coerceSignal, createOverrideMerge } from '@cngx/core/utils';
 
 import type { FeedbackFeature } from './feedback-config';
 
@@ -13,8 +14,23 @@ import type { FeedbackFeature } from './feedback-config';
 export interface CngxFeedbackAnnouncements {
   /** Announced when a user dismisses an alert. */
   readonly alertDismissed: string;
-  /** Accessible name of the alert-stack overflow trigger. Receives the hidden count. */
+  /**
+   * Accessible name of the alert-stack overflow trigger. Receives the hidden
+   * count. Must contain the visible label from
+   * {@link CngxFeedbackAnnouncements.alertOverflowVisible} for the same count
+   * (WCAG 2.5.3 Label in Name, compared case-insensitively): a speech-input
+   * user says what they see. A dev-mode warning fires when a translated pair
+   * breaks containment.
+   */
   readonly alertOverflow: (count: number) => string;
+  /**
+   * Visible text of the alert-stack overflow trigger. Receives the hidden
+   * count; its output must be contained in
+   * {@link CngxFeedbackAnnouncements.alertOverflow} for the same count.
+   * Optional for compatibility with full bundles written before it existed;
+   * the English default applies when absent.
+   */
+  readonly alertOverflowVisible?: (count: number) => string;
   /** `idle -> loading` on `CngxAsyncContainer`. */
   readonly asyncLoading: string;
   /** `loading -> success`. */
@@ -48,6 +64,42 @@ export interface CngxFeedbackI18n {
   readonly notificationsRegionLabel: string;
   /** Live-region copy - see {@link CngxFeedbackAnnouncements}. */
   readonly announcements: CngxFeedbackAnnouncements;
+  /**
+   * Accessible name of the dismiss button on alerts, stacked alerts, toasts and
+   * banners. Optional for compatibility with full bundles written before it
+   * existed; the English default applies when absent.
+   */
+  readonly dismissLabel?: string;
+  /**
+   * Shown in the banner's `role="alert"` slot when its action rejects. Optional
+   * for the same compatibility reason as {@link CngxFeedbackI18n.dismissLabel}.
+   */
+  readonly bannerActionFailed?: string;
+  /**
+   * Visible repeat marker on a toast raised more than once. Receives the repeat
+   * count. Optional for the same compatibility reason as
+   * {@link CngxFeedbackI18n.dismissLabel}.
+   */
+  readonly toastRepeatCount?: (count: number) => string;
+  /**
+   * Default accessible name of `CngxLoadingIndicator` and `CngxLoadingOverlay`.
+   * Read once at construction as the default of their `label` input. Optional
+   * for the same compatibility reason as {@link CngxFeedbackI18n.dismissLabel}.
+   */
+  readonly loadingLabel?: string;
+  /**
+   * Default accessible name of `CngxProgress`, read once at construction as the
+   * default of its `label` input. Optional for the same compatibility reason as
+   * {@link CngxFeedbackI18n.dismissLabel}.
+   */
+  readonly progressLabel?: string;
+  /**
+   * `aria-valuetext` of a determinate `CngxProgress`. Receives the rounded
+   * percent (0-100) and that value already formatted as a percent in the app
+   * locale; the default returns the formatted string. Optional for the same
+   * compatibility reason as {@link CngxFeedbackI18n.dismissLabel}.
+   */
+  readonly progressValueText?: (percent: number, formatted: string) => string;
 }
 
 /**
@@ -60,12 +112,22 @@ export type CngxFeedbackI18nOverrides = Partial<Omit<CngxFeedbackI18n, 'announce
   readonly announcements?: Partial<CngxFeedbackAnnouncements>;
 };
 
-const FEEDBACK_I18N_DEFAULTS: CngxFeedbackI18n = {
+/** @internal - English defaults, also the fallback for optional keys a full bundle omits. */
+export const FEEDBACK_I18N_DEFAULTS: Required<CngxFeedbackI18n> & {
+  readonly announcements: Required<CngxFeedbackAnnouncements>;
+} = {
   alertsRegionLabel: 'Alerts',
   notificationsRegionLabel: 'Notifications',
+  dismissLabel: 'Dismiss',
+  bannerActionFailed: 'Action failed',
+  toastRepeatCount: (count) => `(x${count})`,
+  loadingLabel: 'Loading',
+  progressLabel: 'Progress',
+  progressValueText: (_percent, formatted) => formatted,
   announcements: {
     alertDismissed: 'Alert dismissed',
-    alertOverflow: (count) => `Show ${count} more alerts`,
+    alertOverflow: (count) => `+ ${count} more alerts`,
+    alertOverflowVisible: (count) => `+ ${count} more`,
     asyncLoading: 'Loading content',
     asyncLoaded: 'Content loaded',
     asyncError: 'Error loading content',
@@ -164,4 +226,16 @@ export function provideFeedbackI18n(overrides: CngxFeedbackI18nOverrides): Provi
  */
 export function injectFeedbackI18n(): CngxFeedbackI18n {
   return inject(CNGX_FEEDBACK_I18N);
+}
+
+/**
+ * @internal - the feedback bundle as a shared signal with every optional key
+ * filled from the English defaults. One `computed()` per injected bundle, so
+ * row-level readers (alerts, toasts, banners) allocate nothing after the first.
+ */
+export function injectResolvedFeedbackI18n(): Signal<Required<CngxFeedbackI18n>> {
+  return createOverrideMerge<Required<CngxFeedbackI18n>>(
+    FEEDBACK_I18N_DEFAULTS,
+    coerceSignal(injectFeedbackI18n()),
+  );
 }

@@ -1,9 +1,12 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createManualState } from '@cngx/common/data';
 import type { ManualAsyncState } from '@cngx/common/data';
 
+import { provideFeedbackI18n } from '../config/feedback-i18n';
+import { CngxLoadingIndicator } from '../loading/loading-indicator';
 import {
   CngxAsyncContainer,
   CngxAsyncContentTpl,
@@ -165,6 +168,24 @@ describe('CngxAsyncContainer', () => {
     openGate(fixture);
 
     expect(container.querySelector('cngx-loading-indicator')).toBeTruthy();
+  });
+
+  it('names the refresh indicator from the i18n bundle', () => {
+    TestBed.configureTestingModule({
+      providers: [provideFeedbackI18n({ announcements: { asyncRefreshing: 'Wird aktualisiert' } })],
+    });
+    const { fixture, state } = setup();
+    state.setSuccess(['Alice']);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    state.set('refreshing');
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    openGate(fixture);
+
+    const indicator = fixture.debugElement.query(By.directive(CngxLoadingIndicator));
+    expect((indicator.componentInstance as CngxLoadingIndicator).label()).toBe('Wird aktualisiert');
   });
 
   it('hides refresh indicator when not refreshing', () => {

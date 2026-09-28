@@ -1,6 +1,10 @@
-import { InjectionToken } from '@angular/core';
+import { inject, InjectionToken, type Signal } from '@angular/core';
+import { createOverrideMerge } from '@cngx/core/utils';
 
-import type { CngxDataGridAccordionConfig } from './data-grid-accordion.config';
+import type {
+  CngxDataGridAccordionConfig,
+  CngxDataGridAccordionLabels,
+} from './data-grid-accordion.config';
 
 /**
  * Library defaults for the data-grid-accordion configuration cascade. The base
@@ -41,3 +45,35 @@ export const CNGX_DATA_GRID_ACCORDION_CONFIG = new InjectionToken<CngxDataGridAc
     factory: () => CNGX_DATA_GRID_ACCORDION_DEFAULTS,
   },
 );
+
+/**
+ * @internal - English copy of the data-grid-accordion family. Each sort status
+ * describes the primary (non-additive) click outcome, so a screen reader hears
+ * both the current sort and what activating does.
+ */
+export const CNGX_DATA_GRID_ACCORDION_LABELS_DEFAULTS: CngxDataGridAccordionLabels = {
+  count: (count) => `${count} ${count === 1 ? 'result' : 'results'}`,
+  countSingular: 'result',
+  countPlural: 'results',
+  sortNone: 'not sorted, activate to sort ascending',
+  sortAscending: 'sorted ascending, activate to sort descending',
+  sortDescending: 'sorted descending, activate to sort ascending',
+  sortAnnouncedAscending: 'Sorted by {label} ascending',
+  sortAnnouncedDescending: 'Sorted by {label} descending',
+  sortAnnouncedCleared: 'Sorting by {label} cleared',
+  filter: 'Filter',
+  filterRows: 'Filter rows',
+  rowLoadFailed: 'Failed to load',
+  note: 'NOTE',
+};
+
+/**
+ * @internal - the resolved labels bundle. One shared `computed()` per config
+ * object, so row-level parts allocate nothing after the first.
+ */
+export function injectDataGridAccordionLabels(): Signal<CngxDataGridAccordionLabels> {
+  return createOverrideMerge(
+    CNGX_DATA_GRID_ACCORDION_LABELS_DEFAULTS,
+    inject(CNGX_DATA_GRID_ACCORDION_CONFIG).labels,
+  );
+}
