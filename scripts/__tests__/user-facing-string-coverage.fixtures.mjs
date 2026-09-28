@@ -33,7 +33,7 @@ export const COMPLETED_PHASE = 0;
  * Exact RATCHET length. Asserted equal, so the ceiling cannot be padded:
  * every row-closing commit removes its rows and lowers this number with them.
  */
-export const RATCHET_CEILING = 24;
+export const RATCHET_CEILING = 33;
 
 /**
  * The ceiling at the end of Phase 1. Provisional until the last Phase 1 commit
@@ -195,6 +195,60 @@ export const RATCHET = [
     file: 'projects/data-display/treetable/treetable.component.ts',
     value: '1 row deselected',
     note: 'deselection announcement singular hardcoded',
+    closesIn: 4,
+  },
+  {
+    file: 'projects/ui/feedback/alert/alert.ts',
+    value: 'Dismiss',
+    note: 'dismiss button label static in the template',
+    closesIn: 2,
+  },
+  {
+    file: 'projects/ui/feedback/alert/alert-stack.ts',
+    value: 'Dismiss',
+    note: 'dismiss button label static in the template',
+    closesIn: 2,
+  },
+  {
+    file: 'projects/ui/feedback/alert/alert-stack.ts',
+    value: '+ {} more',
+    note: 'overflow button text composed in the template',
+    closesIn: 2,
+  },
+  {
+    file: 'projects/ui/feedback/toast/toast-outlet.ts',
+    value: 'Dismiss',
+    note: 'dismiss button label static in the template',
+    closesIn: 2,
+  },
+  {
+    file: 'projects/ui/feedback/banner/banner-outlet.ts',
+    value: 'Dismiss',
+    note: 'dismiss button label static in the template',
+    closesIn: 2,
+  },
+  {
+    file: 'projects/ui/feedback/banner/banner-outlet.ts',
+    value: 'Action failed',
+    note: 'banner action error text static in the template',
+    closesIn: 2,
+  },
+  {
+    file: 'projects/ui/feedback/async-container/async-container.ts',
+    value: 'Refreshing content',
+    note: 'refreshing live-region text static in the template',
+    closesIn: 2,
+  },
+  {
+    file: 'projects/common/popover/popover-panel.component.ts',
+    value: 'Close',
+    note: 'close button label static in the template',
+    closesIn: 3,
+  },
+  {
+    file: 'projects/forms/input/char-count.component.ts',
+    value: '{} (min {})',
+    note: 'minimum readout composed in the template',
     closesIn: 4,
   },
 ];

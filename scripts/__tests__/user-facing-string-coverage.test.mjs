@@ -2,6 +2,7 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 
+import { parseTemplate, TmplAstRecursiveVisitor, tmplAstVisitAll } from '@angular/compiler';
 import ts from 'typescript';
 import { describe, expect, it } from 'vitest';
 
@@ -277,7 +278,14 @@ export function scanSource(source, fileName = 'x.ts') {
   const findings = [];
 
   const visit = (node) => {
-    if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node) || isComponentTemplate(node)) {
+    if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) {
+      return;
+    }
+    if (isComponentTemplate(node)) {
+      if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) {
+        const { line } = sf.getLineAndCharacterOfPosition(node.getStart(sf));
+        findings.push(...scanTemplate(node.text, fileName, line));
+      }
       return;
     }
     const value = phraseOf(node, sf);
@@ -301,6 +309,86 @@ export function scanSource(source, fileName = 'x.ts') {
   return findings;
 }
 
+/** Static attributes whose value is read out or shown. */
+const ATTRIBUTE_SINKS = new Set([
+  'aria-label',
+  'aria-roledescription',
+  'aria-valuetext',
+  'aria-description',
+  'aria-placeholder',
+  'title',
+  'alt',
+  'placeholder',
+  'label',
+]);
+
+/** @param {string} text */
+const hasWord = (text) => /[A-Za-z]{2,}/.test(text);
+
+/** @param {string} text */
+const normaliseWhitespace = (text) => text.replace(/\s+/g, ' ').trim();
+
+/**
+ * Collects static copy from a parsed template. The recursive visitor descends
+ * into control-flow blocks (`@if` branches, `@switch` cases, `@for` /
+ * `@empty`, `@defer` sub-blocks), not only element children.
+ */
+class TemplateSinkVisitor extends TmplAstRecursiveVisitor {
+  /**
+   * @param {StringFinding[]} out
+   * @param {number} lineOffset
+   */
+  constructor(out, lineOffset) {
+    super();
+    this.out = out;
+    this.lineOffset = lineOffset;
+  }
+
+  add(value, span) {
+    this.out.push({ line: span.start.line + 1 + this.lineOffset, value, coverage: 'uncovered' });
+  }
+
+  visitTextAttribute(attribute) {
+    const isSink = ATTRIBUTE_SINKS.has(attribute.name) || attribute.name.endsWith('Label');
+    if (isSink && hasWord(attribute.value)) {
+      this.add(normaliseWhitespace(attribute.value), attribute.sourceSpan);
+    }
+  }
+
+  visitText(text) {
+    const value = normaliseWhitespace(text.value);
+    if (hasWord(value)) {
+      this.add(value, text.sourceSpan);
+    }
+  }
+
+  visitBoundText(text) {
+    const strings = text.value.ast.strings ?? [];
+    if (hasWord(strings.join(' '))) {
+      this.add(normaliseWhitespace(strings.join('{}')), text.sourceSpan);
+    }
+  }
+}
+
+/**
+ * Static copy in an Angular template: sink attributes (`aria-label`, `title`,
+ * `placeholder`, `*Label`, ...), text nodes, and the static parts of an
+ * interpolation (`+ {{ n }} more` is reported as `+ {} more`). Template copy
+ * has no override path by construction, so every finding is `uncovered`.
+ *
+ * @param {string} template
+ * @param {string} fileName
+ * @param {number} [lineOffset] 0-based line of the template's first line
+ * @returns {readonly StringFinding[]}
+ */
+export function scanTemplate(template, fileName, lineOffset = 0) {
+  const parsed = parseTemplate(template, fileName, { preserveWhitespaces: false });
+  /** @type {StringFinding[]} */
+  const out = [];
+  tmplAstVisitAll(new TemplateSinkVisitor(out, lineOffset), parsed.nodes);
+  return out;
+}
+
 /**
  * @param {{ before: string; context: string; isOverrideSource: boolean }} input
  * @returns {StringCoverage}
@@ -321,6 +409,18 @@ const classify = (input) => {
   return 'uncovered';
 };
 
+/** TypeScript sources and external `templateUrl` templates. */
+const SCANNED_EXTENSION = /\.(?:ts|html)$/;
+
+/**
+ * @param {string} file repo-relative path
+ * @returns {readonly StringFinding[]}
+ */
+const scanFile = (file) => {
+  const text = readFileSync(resolve(REPO_ROOT, file), 'utf-8');
+  return file.endsWith('.html') ? scanTemplate(text, file) : scanSource(text, file);
+};
+
 /**
  * @param {string} relDir
  * @returns {string[]}
@@ -334,7 +434,7 @@ const walkSources = (relDir) => {
         out.push(...walkSources(rel));
       }
     } else if (
-      entry.endsWith('.ts') &&
+      SCANNED_EXTENSION.test(entry) &&
       !entry.includes('.spec.') &&
       !entry.includes('.fixtures.') &&
       !entry.endsWith('.d.ts')
@@ -347,7 +447,7 @@ const walkSources = (relDir) => {
 
 const SOURCES = walkSources('projects');
 const UNCOVERED = SOURCES.flatMap((file) =>
-  scanSource(readFileSync(resolve(REPO_ROOT, file), 'utf-8'), file)
+  scanFile(file)
     .filter((finding) => finding.coverage === 'uncovered')
     .map((finding) => ({ file, ...finding })),
 );
@@ -556,6 +656,47 @@ describe('user-facing string scanner', () => {
 
   it('ignores a lone placeholder', () => {
     expect(scanSource("const tpl = '{x}';", 'x.ts')).toEqual([]);
+  });
+
+  it('reports a static sink attribute in an inline template', () => {
+    const source = [
+      '@Component({',
+      '  template: `',
+      '    <button label="Dismiss"></button>',
+      '  `,',
+      '})',
+      'class X {}',
+    ].join('\n');
+    expect(scanSource(source, 'alert.ts')).toEqual([
+      { line: 3, value: 'Dismiss', coverage: 'uncovered' },
+    ]);
+  });
+
+  it('reports a text node', () => {
+    expect(scanTemplate('<span role="status">Refreshing content</span>', 'x.html')).toEqual([
+      { line: 1, value: 'Refreshing content', coverage: 'uncovered' },
+    ]);
+  });
+
+  it('reports the static parts of an interpolation', () => {
+    expect(scanTemplate('<button>+ {{ n }} more</button>', 'x.html')).toEqual([
+      { line: 1, value: '+ {} more', coverage: 'uncovered' },
+    ]);
+  });
+
+  it('ignores bound attributes and non-sink attributes', () => {
+    expect(scanTemplate('<div class="foo" [attr.aria-label]="x()"></div>', 'x.html')).toEqual([]);
+  });
+
+  it('reports a sink nested in a control-flow block', () => {
+    const template = ['@if (x) {', '  <cngx-popover-close label="Close" />', '}'].join('\n');
+    expect(scanTemplate(template, 'x.html')).toEqual([
+      { line: 2, value: 'Close', coverage: 'uncovered' },
+    ]);
+  });
+
+  it('scans external .html templates', () => {
+    expect(SOURCES.some((file) => file.endsWith('.html'))).toBe(true);
   });
 
   it('ignores strings inside comments', () => {
