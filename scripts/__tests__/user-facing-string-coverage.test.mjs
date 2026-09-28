@@ -4,7 +4,14 @@ import { dirname, resolve } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { ALREADY_COVERED, EXCLUDED, RATCHET } from './user-facing-string-coverage.fixtures.mjs';
+import {
+  ALREADY_COVERED,
+  COMPLETED_PHASE,
+  EXCLUDED,
+  PHASE_1_CEILING,
+  RATCHET,
+  RATCHET_CEILING,
+} from './user-facing-string-coverage.fixtures.mjs';
 
 // Coverage guard for the EN-default contract: cngx ships English library
 // defaults, and every one of them is overridable through the config cascade
@@ -276,6 +283,41 @@ const UNCOVERED = SOURCES.flatMap((file) =>
     .map((finding) => ({ file, ...finding })),
 );
 
+/**
+ * The ratchet's shrink rules as a pure check, so each rule carries a negative
+ * self-test below. Returns one message per violation.
+ *
+ * (a) the length equals the ceiling exactly - no padded headroom;
+ * (b) every row names the phase that closes it (2, 3 or 4);
+ * (c) no row outlives its phase;
+ * (d) after Phase 1 the ceiling never rises above the frozen Phase 1 ceiling.
+ *
+ * @param {{
+ *   ratchet: readonly import('./user-facing-string-coverage.fixtures.mjs').StringManifestEntry[];
+ *   ceiling: number;
+ *   completedPhase: number;
+ *   phase1Ceiling: number;
+ * }} input
+ * @returns {string[]}
+ */
+export function checkRatchet({ ratchet, ceiling, completedPhase, phase1Ceiling }) {
+  const violations = [];
+  if (ratchet.length !== ceiling) {
+    violations.push(`(a) RATCHET has ${ratchet.length} rows, ceiling is ${ceiling}`);
+  }
+  for (const row of ratchet) {
+    if (![2, 3, 4].includes(row.closesIn)) {
+      violations.push(`(b) ${row.file}: ${row.value} has closesIn ${row.closesIn}`);
+    } else if (row.closesIn <= completedPhase) {
+      violations.push(`(c) ${row.file}: ${row.value} outlived phase ${row.closesIn}`);
+    }
+  }
+  if (completedPhase >= 1 && ceiling > phase1Ceiling) {
+    violations.push(`(d) ceiling ${ceiling} exceeds the Phase 1 ceiling ${phase1Ceiling}`);
+  }
+  return violations;
+}
+
 /** @param {{ file: string; value: string }} entry */
 const key = (entry) => `${entry.file}\t${entry.value}`;
 const manifested = new Set([...RATCHET, ...ALREADY_COVERED, ...EXCLUDED].map(key));
@@ -299,8 +341,15 @@ describe('user-facing string coverage', () => {
 });
 
 describe('user-facing string ratchet', () => {
-  it('carries no gap at all - adding one is a conscious edit', () => {
-    expect(RATCHET).toEqual([]);
+  it('only shrinks, through an exact ceiling and a closing phase per row', () => {
+    expect(
+      checkRatchet({
+        ratchet: RATCHET,
+        ceiling: RATCHET_CEILING,
+        completedPhase: COMPLETED_PHASE,
+        phase1Ceiling: PHASE_1_CEILING,
+      }),
+    ).toEqual([]);
   });
 
   it('carries no ratchet row that is already fixed', () => {
@@ -317,6 +366,33 @@ describe('user-facing string ratchet', () => {
       .filter((entry) => entry.note.trim().length < 10)
       .map((entry) => `${entry.file}: ${entry.value}`);
     expect(unreasoned).toEqual([]);
+  });
+});
+
+describe('user-facing string ratchet rules', () => {
+  const row = (closesIn) => ({ file: 'x.ts', value: 'Close', note: 'fixture row', closesIn });
+  const base = { ratchet: [row(2), row(3)], ceiling: 2, completedPhase: 0, phase1Ceiling: 2 };
+
+  it('passes an exact ceiling with a closing phase per row', () => {
+    expect(checkRatchet(base)).toEqual([]);
+  });
+
+  it('(a) fails a ceiling above the length', () => {
+    expect(checkRatchet({ ...base, ceiling: 3 })).toHaveLength(1);
+  });
+
+  it('(b) fails a row without closesIn and a row closing in an unknown phase', () => {
+    const ratchet = [row(undefined), row(5)];
+    expect(checkRatchet({ ...base, ratchet })).toHaveLength(2);
+  });
+
+  it('(c) fails a row that outlived its phase', () => {
+    expect(checkRatchet({ ...base, completedPhase: 2 })).toHaveLength(1);
+  });
+
+  it('(d) fails a ceiling above the Phase 1 ceiling once Phase 1 is done', () => {
+    const ratchet = [row(2), row(3), row(4)];
+    expect(checkRatchet({ ...base, ratchet, ceiling: 3, completedPhase: 1 })).toHaveLength(1);
   });
 });
 
