@@ -390,6 +390,28 @@ export function scanTemplate(template, fileName, lineOffset = 0) {
 }
 
 /**
+ * Generated `content:` copy in a stylesheet. Screen readers read it, and no
+ * token reaches it. CSS escapes (`'\25BC'`) are glyphs, not words;
+ * `content: attr(x) / ''` carries no string copy at all.
+ *
+ * @param {string} stylesheet
+ * @returns {readonly StringFinding[]}
+ */
+export function scanStylesheet(stylesheet) {
+  const code = stylesheet.replace(/\/\*[\s\S]*?\*\//g, (comment) => comment.replace(/[^\n]/g, ' '));
+  /** @type {StringFinding[]} */
+  const out = [];
+  for (const match of code.matchAll(/content\s*:\s*(['"])((?:\\.|(?!\1).)*)\1/g)) {
+    const value = match[2];
+    if (hasWord(value.replace(/\\[0-9a-fA-F]{1,6}\s?/g, ''))) {
+      const line = code.slice(0, match.index).split('\n').length;
+      out.push({ line, value, coverage: 'uncovered' });
+    }
+  }
+  return out;
+}
+
+/**
  * @param {{ before: string; context: string; isOverrideSource: boolean }} input
  * @returns {StringCoverage}
  */
@@ -409,8 +431,8 @@ const classify = (input) => {
   return 'uncovered';
 };
 
-/** TypeScript sources and external `templateUrl` templates. */
-const SCANNED_EXTENSION = /\.(?:ts|html)$/;
+/** TypeScript sources, external `templateUrl` templates and stylesheets. */
+const SCANNED_EXTENSION = /\.(?:ts|html|css|scss)$/;
 
 /**
  * @param {string} file repo-relative path
@@ -418,7 +440,13 @@ const SCANNED_EXTENSION = /\.(?:ts|html)$/;
  */
 const scanFile = (file) => {
   const text = readFileSync(resolve(REPO_ROOT, file), 'utf-8');
-  return file.endsWith('.html') ? scanTemplate(text, file) : scanSource(text, file);
+  if (file.endsWith('.html')) {
+    return scanTemplate(text, file);
+  }
+  if (/\.s?css$/.test(file)) {
+    return scanStylesheet(text);
+  }
+  return scanSource(text, file);
 };
 
 /**
@@ -697,6 +725,18 @@ describe('user-facing string scanner', () => {
 
   it('scans external .html templates', () => {
     expect(SOURCES.some((file) => file.endsWith('.html'))).toBe(true);
+  });
+
+  it('reports stylesheet content copy', () => {
+    const stylesheet = ['.x::before {', "  content: 'NOTE';", '}'].join('\n');
+    expect(scanStylesheet(stylesheet)).toEqual([{ line: 2, value: 'NOTE', coverage: 'uncovered' }]);
+  });
+
+  it('ignores a CSS escape glyph and an attr() name', () => {
+    const stylesheet = [".a::after { content: '\\25BC'; }", ".b::after { content: attr(data-x) / ''; }"].join(
+      '\n',
+    );
+    expect(scanStylesheet(stylesheet)).toEqual([]);
   });
 
   it('ignores strings inside comments', () => {
