@@ -4,7 +4,7 @@
 import { computed, linkedSignal, type Signal } from '@angular/core';
 import { createAnnouncementPhrase } from '@cngx/core/utils';
 
-import type { CngxTabsConfig } from '../tabs-config';
+import { TABS_CONFIG_DEFAULTS, type CngxTabsConfig } from '../tabs-config';
 import type { CngxTabsI18n } from '../i18n/tabs-i18n';
 import type { CngxTabGroupHost, CngxTabHandle } from '../tab-group-host.token';
 
@@ -135,11 +135,15 @@ export function createTabGroupAnnouncements(
   const closedAnnouncement = options.closedAnnouncement ?? ((): string => '');
 
   const tabsRoleDescription = computed<string>(
-    () => config.fallbackLabels?.tabRoleDescription ?? 'tab list',
+    () =>
+      config.fallbackLabels?.tabRoleDescription ??
+      TABS_CONFIG_DEFAULTS.fallbackLabels.tabRoleDescription,
   );
 
   const tabPanelRoleDescription = computed<string>(
-    () => config.fallbackLabels?.tabPanelRoleDescription ?? 'tab panel',
+    () =>
+      config.fallbackLabels?.tabPanelRoleDescription ??
+      TABS_CONFIG_DEFAULTS.fallbackLabels.tabPanelRoleDescription,
   );
 
   const resolvedAriaLabel = computed<string | null>(() => {

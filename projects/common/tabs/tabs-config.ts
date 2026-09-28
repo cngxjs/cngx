@@ -289,7 +289,12 @@ export interface CngxTabsConfig {
   readonly templates?: CngxTabsTemplates;
 }
 
-const TABS_CONFIG_DEFAULTS: Required<
+/**
+ * @internal - library defaults of {@link CNGX_TABS_CONFIG}. Exported from
+ * this file (not from `public-api.ts`) so the announcement factory falls
+ * back to the same `fallbackLabels` strings instead of repeating them.
+ */
+export const TABS_CONFIG_DEFAULTS: Required<
   Omit<
     CngxTabsConfig,
     | 'ariaLabels'
@@ -306,7 +311,7 @@ const TABS_CONFIG_DEFAULTS: Required<
   >
 > & {
   ariaLabels: CngxTabsAriaLabels;
-  fallbackLabels: CngxTabsFallbackLabels;
+  fallbackLabels: Required<CngxTabsFallbackLabels>;
   templates: CngxTabsTemplates;
 } = {
   defaultOrientation: 'horizontal',
