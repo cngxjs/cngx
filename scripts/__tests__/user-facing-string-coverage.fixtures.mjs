@@ -35,7 +35,7 @@ export const COMPLETED_PHASE = 1;
  * Exact RATCHET length. Asserted equal, so the ceiling cannot be padded:
  * every row-closing commit removes its rows and lowers this number with them.
  */
-export const RATCHET_CEILING = 61;
+export const RATCHET_CEILING = 60;
 
 /**
  * The RATCHET keys (`file` + tab + `value`) at the end of Phase 1, frozen in
@@ -193,12 +193,6 @@ export const RATCHET = [
     value: '1 row deselected',
     note: 'deselection announcement singular hardcoded',
     closesIn: 4,
-  },
-  {
-    file: 'projects/ui/feedback/async-container/async-container.ts',
-    value: 'Refreshing content',
-    note: 'refreshing live-region text static in the template',
-    closesIn: 2,
   },
   {
     file: 'projects/common/popover/popover-panel.component.ts',

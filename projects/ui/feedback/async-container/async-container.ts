@@ -19,7 +19,7 @@ import {
   type CngxAsyncState,
 } from '@cngx/core/utils';
 
-import { injectFeedbackI18n } from '../config/feedback-i18n';
+import { injectResolvedFeedbackI18n } from '../config/feedback-i18n';
 import { createStateBridge } from '../internal/state-bridge';
 import { CngxLoadingIndicator } from '../loading/loading-indicator';
 import { CngxToaster } from '../toast/toast.service';
@@ -147,7 +147,7 @@ export class CngxAsyncErrorTpl {
       <cngx-loading-indicator
         [loading]="true"
         variant="bar"
-        label="Refreshing content"
+        [label]="i18n().announcements.asyncRefreshing"
         class="cngx-async-container__refresh"
       />
     }
@@ -191,7 +191,7 @@ export class CngxAsyncErrorTpl {
 })
 export class CngxAsyncContainer<T> {
   private readonly toaster = inject(CngxToaster, { optional: true });
-  private readonly announcements = injectFeedbackI18n().announcements;
+  protected readonly i18n = injectResolvedFeedbackI18n();
   private readonly loadingConfig = injectLoadingConfig();
 
   /** The async state to render. */
@@ -286,19 +286,20 @@ export class CngxAsyncContainer<T> {
         if (status === 'pending' || prev === 'pending') {
           return;
         }
+        const announcements = this.i18n().announcements;
 
         if (prev === 'idle' && status === 'loading') {
-          this.announcement.set(this.announcements.asyncLoading);
+          this.announcement.set(announcements.asyncLoading);
         } else if (prev === 'loading' && status === 'success') {
-          this.announcement.set(this.announcements.asyncLoaded);
+          this.announcement.set(announcements.asyncLoaded);
         } else if (prev === 'loading' && status === 'error') {
-          this.announcement.set(this.announcements.asyncError);
+          this.announcement.set(announcements.asyncError);
         } else if (status === 'refreshing') {
-          this.announcement.set(this.announcements.asyncRefreshing);
+          this.announcement.set(announcements.asyncRefreshing);
         } else if (prev === 'refreshing' && status === 'success') {
-          this.announcement.set(this.announcements.asyncRefreshed);
+          this.announcement.set(announcements.asyncRefreshed);
         } else if (prev === 'refreshing' && status === 'error') {
-          this.announcement.set(this.announcements.asyncRefreshFailed);
+          this.announcement.set(announcements.asyncRefreshFailed);
         }
 
         this.fireToast(status);
