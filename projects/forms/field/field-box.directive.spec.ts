@@ -1,5 +1,5 @@
 import { Component, Directive, input, signal } from '@angular/core';
-import { TestBed } from '@angular/core/testing';
+import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import {
   CNGX_FORM_FIELD_CONTROL,
   CNGX_FORM_FIELD_HOST,
@@ -25,6 +25,10 @@ class StubControl implements CngxFormFieldControl {
   readonly empty = signal(true);
   readonly disabled = this.off;
   readonly errorState = this.invalid;
+  focusCalls = 0;
+  focus(): void {
+    this.focusCalls++;
+  }
 }
 
 function box(fixture: { nativeElement: HTMLElement }): HTMLElement {
@@ -186,5 +190,41 @@ describe('CngxFieldBox', () => {
     expect(box(fixture).hasAttribute('data-invalid')).toBe(false);
     expect(box(fixture).hasAttribute('data-disabled')).toBe(false);
     expect(box(fixture).hasAttribute('data-readonly')).toBe(false);
+  });
+
+  describe('click forwarding', () => {
+    @Component({
+      template: `
+        <span cngxFieldBox>
+          <span stubControl cngxPrefix class="affix"></span>
+          <span stubControl class="main"></span>
+        </span>
+      `,
+      imports: [CngxFieldBox, CngxPrefix, StubControl],
+    })
+    class Host {}
+
+    function controls(fixture: ComponentFixture<unknown>) {
+      const [affix, main] = fixture.debugElement
+        .queryAll((d) => d.nativeElement.hasAttribute?.('stubControl'))
+        .map((d) => d.injector.get(StubControl));
+      return { affix, main };
+    }
+
+    it('focuses the main control on a click on the box padding', () => {
+      const fixture = TestBed.createComponent(Host);
+      fixture.detectChanges();
+      box(fixture).click();
+      const { affix, main } = controls(fixture);
+      expect(main.focusCalls).toBe(1);
+      expect(affix.focusCalls).toBe(0);
+    });
+
+    it('leaves a click on a child to that child', () => {
+      const fixture = TestBed.createComponent(Host);
+      fixture.detectChanges();
+      (fixture.nativeElement.querySelector('.affix') as HTMLElement).click();
+      expect(controls(fixture).main.focusCalls).toBe(0);
+    });
   });
 });

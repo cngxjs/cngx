@@ -368,12 +368,12 @@ describe.each(MATRIX)('field box literal sizes: %s skin, %s, touch %s', (skin, d
     expect(box.getBoundingClientRect().height).toBeCloseTo(touch ? coarse : fine, 0);
   });
 
-  it('gives an interactive affix at least a 24 x 24 target', () => {
+  it('gives an interactive affix at least a 24 x 24 target and 44px wide on touch', () => {
     const root = mountMatrix(skin, density, touch);
     for (const selector of ['.c-icon-button', '.c-text-button']) {
       const rect = query(query(root, selector), 'button').getBoundingClientRect();
       expect(rect.height).toBeGreaterThanOrEqual(24 - 0.5);
-      expect(rect.width).toBeGreaterThanOrEqual(24 - 0.5);
+      expect(rect.width).toBeGreaterThanOrEqual((touch ? 44 : 32) - 0.5);
     }
   });
 });

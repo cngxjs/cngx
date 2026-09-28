@@ -133,17 +133,16 @@
       cursor: pointer;
     }
 
-    /* Inside the box the button is as tall as the line box, not the 2rem
-       standalone floor, so it never pushes the box past its formula. The
-       floor that remains is the box's own touch floor minus padding and
-       border: 0 on a fine pointer, and exactly enough on a coarse one for
-       the box to land on --cngx-target-min. */
+    /* Inside the box the button stretches to the line box instead of the
+       2rem standalone floor, so it never pushes the box past its formula.
+       The block floor is the box's own touch floor minus padding and border:
+       0 on a fine pointer, and exactly enough on a coarse one for the box to
+       land on --cngx-target-min. The inline floor keeps the standalone rule
+       (2rem, 44px under a coarse pointer), because width is not part of the
+       box formula. A click on the box padding focuses the main control, so
+       the box, not the stretched button alone, is the touch target. */
     :scope > .cngx-field-affix--interactive {
       align-self: stretch;
-      min-inline-size: max(
-        0px,
-        calc(var(--cngx-target-min, 0px) - 2 * var(--cngx-field-padding-block, 0.5rem) - 2px)
-      );
       min-block-size: max(
         0px,
         calc(var(--cngx-target-min, 0px) - 2 * var(--cngx-field-padding-block, 0.5rem) - 2px)

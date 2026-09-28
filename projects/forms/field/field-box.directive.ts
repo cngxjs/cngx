@@ -34,7 +34,9 @@ import { CngxFieldSkinHost } from './field-skin.directive';
  * form-field control that is not an affix. It publishes that state as
  * `data-invalid` / `data-disabled`, and the surrounding field's readonly
  * flag as `data-readonly`, so a disabled suffix button never greys the row.
- * One main control per box; a second non-affix control is ignored.
+ * One main control per box; a second non-affix control is ignored. A click
+ * on the box padding focuses the main control, so the whole box is its hit
+ * area.
  *
  * ```html
  * <span cngxFieldBox>
@@ -63,6 +65,7 @@ import { CngxFieldSkinHost } from './field-skin.directive';
     '[attr.data-invalid]': 'dataInvalid()',
     '[attr.data-disabled]': 'dataDisabled()',
     '[attr.data-readonly]': 'dataReadonly()',
+    '(click)': 'handleClick($event)',
   },
 })
 export class CngxFieldBox implements CngxFieldBoxContract {
@@ -82,6 +85,20 @@ export class CngxFieldBox implements CngxFieldBoxContract {
   protected readonly dataInvalid = computed(() => (this.mainControl()?.errorState() ? '' : null));
   protected readonly dataDisabled = computed(() => (this.mainControl()?.disabled() ? '' : null));
   protected readonly dataReadonly = computed(() => (this.fieldHost?.readonly?.() ? '' : null));
+
+  private readonly element = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+
+  /**
+   * A click on the box itself - its padding, not a child - focuses the main
+   * control, so the whole box is the hit area on a coarse pointer, the way a
+   * label forwards to its control.
+   */
+  protected handleClick(event: MouseEvent): void {
+    if (event.target !== this.element) {
+      return;
+    }
+    this.mainControl()?.focus?.();
+  }
 }
 
 /**
