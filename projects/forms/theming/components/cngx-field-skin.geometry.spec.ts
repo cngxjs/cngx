@@ -22,6 +22,7 @@ import { afterEach, describe, expect, it } from 'vitest';
     '../../../core/theming/reset.css',
     './cngx-field-skin.css',
     './cngx-field-affix.css',
+    '../../select/shared/select-base.css',
   ],
   encapsulation: ViewEncapsulation.None,
   template: `
@@ -54,6 +55,14 @@ import { afterEach, describe, expect, it } from 'vitest';
     </span>
     <div data-color-scheme="light">
       <input class="fill-light" type="text" data-skin="fill" placeholder="Search" />
+      <input class="fill-invalid-light" type="text" data-skin="fill" aria-invalid="true" />
+      <input class="bare-light" type="text" data-skin="bare" placeholder="Search" />
+      <input class="bare-invalid-light" type="text" data-skin="bare" aria-invalid="true" />
+      <span class="probe-page-light" style="background: var(--cngx-color-surface)"></span>
+      <span
+        class="probe-select-placeholder-light"
+        style="background: var(--cngx-select-placeholder-color)"
+      ></span>
       <span
         class="probe-underline-light"
         style="background: var(--cngx-field-underline-focus-color)"
@@ -68,6 +77,14 @@ import { afterEach, describe, expect, it } from 'vitest';
     </div>
     <div data-color-scheme="dark">
       <input class="fill-dark" type="text" data-skin="fill" placeholder="Search" />
+      <input class="fill-invalid-dark" type="text" data-skin="fill" aria-invalid="true" />
+      <input class="bare-dark" type="text" data-skin="bare" placeholder="Search" />
+      <input class="bare-invalid-dark" type="text" data-skin="bare" aria-invalid="true" />
+      <span class="probe-page-dark" style="background: var(--cngx-color-surface)"></span>
+      <span
+        class="probe-select-placeholder-dark"
+        style="background: var(--cngx-select-placeholder-color)"
+      ></span>
       <span
         class="probe-underline-dark"
         style="background: var(--cngx-field-underline-focus-color)"
@@ -272,6 +289,61 @@ describe('field skin geometry', () => {
     const underline = getComputedStyle(query(root, `.probe-underline-${scheme}`)).backgroundColor;
     expect(contrast(surface, underline)).toBeGreaterThanOrEqual(3);
     expect(contrast(hover, underline)).toBeGreaterThanOrEqual(3);
+  });
+
+  // The contrast ratchet: every colour recipe of the fill and bare skins,
+  // measured in both schemes against the surface it sits on. Non-text
+  // indicators need 3:1 (WCAG 1.4.11), text needs 4.5:1 (1.4.3). Disabled is
+  // left out on purpose: 1.4.3 exempts inactive components.
+  describe.each(['light', 'dark'])('contrast ratchet, %s scheme', (scheme) => {
+    function colours(root: HTMLElement): { surface: string; hover: string; page: string } {
+      return {
+        surface: getComputedStyle(query(root, `.fill-${scheme}`)).backgroundColor,
+        hover: getComputedStyle(query(root, `.probe-hover-${scheme}`)).backgroundColor,
+        page: getComputedStyle(query(root, `.probe-page-${scheme}`)).backgroundColor,
+      };
+    }
+
+    it('holds 3:1 for the resting underline on the resting and the hover surface', () => {
+      const root = mount();
+      const { surface, hover } = colours(root);
+      const underline = computedValue(query(root, `.fill-${scheme}`), 'border-bottom-color');
+      expect(contrast(surface, underline)).toBeGreaterThanOrEqual(3);
+      expect(contrast(hover, underline)).toBeGreaterThanOrEqual(3);
+    });
+
+    it('holds 3:1 for the error underline on the fill surface', () => {
+      const root = mount();
+      const { surface } = colours(root);
+      const error = computedValue(query(root, `.fill-invalid-${scheme}`), 'border-bottom-color');
+      expect(contrast(surface, error)).toBeGreaterThanOrEqual(3);
+    });
+
+    it('holds 4.5:1 for the placeholder on the fill surface and on the page', () => {
+      const root = mount();
+      const { surface, page } = colours(root);
+      const fill = getComputedStyle(query(root, `.fill-${scheme}`), '::placeholder').color;
+      const bare = getComputedStyle(query(root, `.bare-${scheme}`), '::placeholder').color;
+      expect(contrast(surface, fill)).toBeGreaterThanOrEqual(4.5);
+      expect(contrast(page, bare)).toBeGreaterThanOrEqual(4.5);
+    });
+
+    it('holds 4.5:1 for the select placeholder on the fill surface and on the page', () => {
+      const root = mount();
+      const { surface, page } = colours(root);
+      const placeholder = getComputedStyle(
+        query(root, `.probe-select-placeholder-${scheme}`),
+      ).backgroundColor;
+      expect(contrast(surface, placeholder)).toBeGreaterThanOrEqual(4.5);
+      expect(contrast(page, placeholder)).toBeGreaterThanOrEqual(4.5);
+    });
+
+    it('holds 4.5:1 for the bare error text on the page', () => {
+      const root = mount();
+      const { page } = colours(root);
+      const text = computedValue(query(root, `.bare-invalid-${scheme}`), 'color');
+      expect(contrast(page, text)).toBeGreaterThanOrEqual(4.5);
+    });
   });
 
   // The hover surface is a text mix of the resting one; too strong a mix
