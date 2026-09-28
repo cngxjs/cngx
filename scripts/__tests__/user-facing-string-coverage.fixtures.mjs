@@ -27,7 +27,7 @@
  * the final commit of each phase; a RATCHET row whose `closesIn` is at or
  * below it fails the suite, so no row outlives the phase that owns it.
  */
-export const COMPLETED_PHASE = 0;
+export const COMPLETED_PHASE = 1;
 
 /**
  * Exact RATCHET length. Asserted equal, so the ceiling cannot be padded:
@@ -36,9 +36,9 @@ export const COMPLETED_PHASE = 0;
 export const RATCHET_CEILING = 71;
 
 /**
- * The ceiling at the end of Phase 1. Provisional until the last Phase 1 commit
- * freezes it; from `COMPLETED_PHASE >= 1` on, `RATCHET_CEILING` may never
- * exceed it, so no new row enters after Phase 1.
+ * The ceiling at the end of Phase 1, frozen. Never raised again: from
+ * `COMPLETED_PHASE >= 1` on, `RATCHET_CEILING` may never exceed it, so no new
+ * row enters after Phase 1.
  */
 export const PHASE_1_CEILING = 71;
 
