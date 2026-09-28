@@ -5,8 +5,8 @@ import {
   input,
   ViewEncapsulation,
 } from '@angular/core';
-import type { CngxAsyncState } from '@cngx/core/utils';
-import { CHART_I18N_EN } from '../i18n/chart-i18n';
+import { injectLocale, type CngxAsyncState } from '@cngx/core/utils';
+import { formatChartNumber } from '../chart/format-number';
 import { injectPresetState } from './preset-state';
 
 /**
@@ -26,8 +26,8 @@ interface SegmentRendering {
   readonly left: number;
   readonly width: number;
   readonly color: string | null;
-  readonly label: string;
-  readonly value: number;
+  /** `<label>: <value>` with the value in the app locale. */
+  readonly title: string;
 }
 
 /**
@@ -65,10 +65,10 @@ interface SegmentRendering {
         <span class="cngx-preset-skeleton" aria-hidden="true"></span>
       }
       @case ('empty') {
-        <span class="cngx-preset-fallback">{{ i18n.empty() }}</span>
+        <span class="cngx-preset-fallback">{{ i18n().empty() }}</span>
       }
       @case ('error') {
-        <span class="cngx-preset-fallback cngx-preset-fallback--error">{{ i18n.error() }}</span>
+        <span class="cngx-preset-fallback cngx-preset-fallback--error">{{ i18n().error() }}</span>
       }
       @case ('none') {}
       @default {
@@ -79,7 +79,7 @@ interface SegmentRendering {
               [style.left.%]="s.left"
               [style.width.%]="s.width"
               [style.background]="s.color"
-              [attr.title]="s.label + ': ' + s.value"
+              [attr.title]="s.title"
               [attr.aria-hidden]="true"
             ></div>
           }
@@ -135,6 +135,7 @@ export class CngxStackedBar {
 
   private readonly preset = injectPresetState(() => this.state());
   protected readonly i18n = this.preset.i18n;
+  private readonly locale = injectLocale();
   protected readonly activeView = this.preset.activeView;
 
   /** True while the skeleton branch renders - the host announces busy, the span stays decorative. */
@@ -155,6 +156,7 @@ export class CngxStackedBar {
   protected readonly segmentRenderings = computed<readonly SegmentRendering[]>(
     () => {
       const total = this.resolvedTotal();
+      const locale = this.locale();
       let runningLeft = 0;
       return this.segments().map((s, i) => {
         const width = (s.value / total) * 100;
@@ -165,8 +167,7 @@ export class CngxStackedBar {
           left,
           width,
           color: s.color ?? null,
-          label: s.label,
-          value: s.value,
+          title: `${s.label}: ${formatChartNumber(s.value, locale)}`,
         };
       });
     },
@@ -179,30 +180,25 @@ export class CngxStackedBar {
     // "Empty stacked bar" while aria-busy announces a load in flight.
     const view = this.activeView();
     if (view === 'skeleton') {
-      return this.i18n.loading();
+      return this.i18n().loading();
     }
     if (view === 'empty') {
-      return this.i18n.empty();
+      return this.i18n().empty();
     }
     if (view === 'error') {
-      return this.i18n.error();
+      return this.i18n().error();
     }
     const explicit = this.ariaLabel();
     if (explicit !== null && explicit !== '') {
       return explicit;
     }
     const segments = this.segments();
-    // The ?? falls back to the shared English defaults for a direct
-    // useValue token override that predates the optional stacked-bar
-    // keys - provideChartI18n merges them in itself.
+    // The resolved bundle fills the optional stacked-bar keys from the
+    // locale defaults when a direct useValue token override omits them.
     if (segments.length === 0) {
-      return this.i18n.stackedBarEmpty?.() ?? CHART_I18N_EN.stackedBarEmpty();
+      return this.i18n().stackedBarEmpty();
     }
-    const total = this.resolvedTotal();
-    return (
-      this.i18n.stackedBarSummary?.(total, segments) ??
-      CHART_I18N_EN.stackedBarSummary(total, segments)
-    );
+    return this.i18n().stackedBarSummary(this.resolvedTotal(), segments);
   });
 }
 
@@ -225,8 +221,7 @@ function segmentRenderingsEqual(
       x.left !== y.left ||
       x.width !== y.width ||
       x.color !== y.color ||
-      x.label !== y.label ||
-      x.value !== y.value
+      x.title !== y.title
     ) {
       return false;
     }

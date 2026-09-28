@@ -1,19 +1,35 @@
+import { numberFormatterFor } from '@cngx/core/utils';
+
+const FRACTION_OPTIONS: Intl.NumberFormatOptions = {
+  maximumSignificantDigits: 12,
+  useGrouping: false,
+};
+
+const INTEGER_OPTIONS: Intl.NumberFormatOptions = {
+  maximumFractionDigits: 0,
+  useGrouping: false,
+};
+
 /**
  * Strip floating-point arithmetic noise from a number destined for
- * human-facing text: `6.6000000000000005` becomes `'6.6'`, `2.2` stays
- * `'2.2'`, `25` stays `'25'`. Integers and non-finite values pass
- * through `String(v)` untouched. 12 significant digits keep every
- * sensible chart value intact while collapsing the trailing 1e-15
- * noise accumulated float math produces.
+ * human-facing text and format it in `locale`: `6.6000000000000005`
+ * becomes `'6.6'` (`'6,6'` in `de`), `2.2` stays `'2.2'`, `25` stays
+ * `'25'`. 12 significant digits keep every sensible chart value intact
+ * while collapsing the trailing 1e-15 noise accumulated float math
+ * produces; integers keep every digit. No grouping, so en-US output is
+ * identical to the plain `String(v)` it replaced. Non-finite values pass
+ * through `String(v)` untouched.
  *
  * Shared by the default axis tick formatter, the default i18n summary
  * and the SR data table, so all three read the same value the same way.
  *
  * @internal
  */
-export function formatChartNumber(v: number): string {
-  if (Number.isInteger(v) || !Number.isFinite(v)) {
+export function formatChartNumber(v: number, locale: string): string {
+  if (!Number.isFinite(v)) {
     return String(v);
   }
-  return Number(v.toPrecision(12)).toString();
+  const options = Number.isInteger(v) ? INTEGER_OPTIONS : FRACTION_OPTIONS;
+  // Intl prints -0 as "-0"; String(-0) is "0".
+  return numberFormatterFor(locale, options).format(v === 0 ? 0 : v);
 }

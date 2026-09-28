@@ -1,4 +1,7 @@
-import { InjectionToken } from '@angular/core';
+import { computed, inject, InjectionToken, type Signal } from '@angular/core';
+import { injectLocale, memoize } from '@cngx/core/utils';
+import { recordEqual } from '@cngx/utils';
+
 import { formatChartNumber } from '../chart/format-number';
 
 /**
@@ -54,50 +57,87 @@ export interface CngxChartI18n {
 }
 
 /**
- * The English default strings - the single source every fallback path
- * resolves against. Module-internal (not on `public-api.ts`):
- * `CngxStackedBar` reads the two stacked-bar keys from here when a
- * direct `useValue` token override omits them, so the English never
- * exists twice.
+ * Every formatter a {@link createChartI18nDefaults} call produced. A token
+ * key holding one of these is still a library default, so the use-site
+ * resolver swaps it for the current locale's default.
  *
  * @internal
  */
-export const CHART_I18N_EN: Required<CngxChartI18n> = {
-  summary: ({ trend, min, max, current, thresholds }) => {
-    const trendText = trend === 'up' ? 'Trending up' : trend === 'down' ? 'Trending down' : 'Flat';
-    const thresholdText =
-      thresholds.length === 0
-        ? 'No thresholds.'
-        : thresholds.length === 1
-          ? 'One threshold crossing.'
-          : `${thresholds.length} threshold crossings.`;
-    return `${trendText}. Min ${formatChartNumber(min)}, max ${formatChartNumber(max)}, current ${formatChartNumber(current)}. ${thresholdText}`;
+const DEFAULT_FORMATTERS = new WeakSet<object>();
+
+const CHART_I18N_DEFAULTS_CACHE_LIMIT = 32;
+
+/**
+ * The English default strings for one number locale - the single source
+ * every fallback path resolves against. Numbers inside the copy
+ * (summary min / max / current, threshold, stacked-bar values) format in
+ * `locale`; the words stay English. Memoized per locale, so every reader
+ * of one locale shares the same function references.
+ *
+ * @internal
+ */
+export const createChartI18nDefaults = memoize(
+  (locale: string): Required<CngxChartI18n> => {
+    const defaults = buildChartI18nDefaults(locale);
+    for (const fn of Object.values(defaults)) {
+      DEFAULT_FORMATTERS.add(fn);
+    }
+    return defaults;
   },
-  dataTable: () => 'Data table',
-  valueColumnLabel: () => 'Value',
-  trendChanged: (trend) =>
-    trend === 'up'
-      ? 'Trend changed to up'
-      : trend === 'down'
-        ? 'Trend changed to down'
-        : 'Trend flattened',
-  thresholdAlert: (threshold) => `Threshold ${formatChartNumber(threshold)} crossed`,
-  connectionLost: () => 'Connection lost',
-  connectionReconnecting: () => 'Reconnecting',
-  connectionRestored: () => 'Connection restored',
-  empty: () => 'No data',
-  loading: () => 'Loading',
-  error: () => 'Error loading chart',
-  stackedBarEmpty: () => 'Empty stacked bar',
-  stackedBarSummary: (total, segments) =>
-    `Total ${formatChartNumber(total)}. ${segments
-      .map((s) => `${s.label}: ${formatChartNumber(s.value)}`)
-      .join(', ')}.`,
-};
+  { cacheLimit: CHART_I18N_DEFAULTS_CACHE_LIMIT },
+);
+
+/** @internal */
+function buildChartI18nDefaults(locale: string): Required<CngxChartI18n> {
+  const num = (v: number): string => formatChartNumber(v, locale);
+  return {
+    summary: ({ trend, min, max, current, thresholds }) => {
+      const trendText =
+        trend === 'up' ? 'Trending up' : trend === 'down' ? 'Trending down' : 'Flat';
+      const thresholdText =
+        thresholds.length === 0
+          ? 'No thresholds.'
+          : thresholds.length === 1
+            ? 'One threshold crossing.'
+            : `${thresholds.length} threshold crossings.`;
+      return `${trendText}. Min ${num(min)}, max ${num(max)}, current ${num(current)}. ${thresholdText}`;
+    },
+    dataTable: () => 'Data table',
+    valueColumnLabel: () => 'Value',
+    trendChanged: (trend) =>
+      trend === 'up'
+        ? 'Trend changed to up'
+        : trend === 'down'
+          ? 'Trend changed to down'
+          : 'Trend flattened',
+    thresholdAlert: (threshold) => `Threshold ${num(threshold)} crossed`,
+    connectionLost: () => 'Connection lost',
+    connectionReconnecting: () => 'Reconnecting',
+    connectionRestored: () => 'Connection restored',
+    empty: () => 'No data',
+    loading: () => 'Loading',
+    error: () => 'Error loading chart',
+    stackedBarEmpty: () => 'Empty stacked bar',
+    stackedBarSummary: (total, segments) =>
+      `Total ${num(total)}. ${segments.map((s) => `${s.label}: ${num(s.value)}`).join(', ')}.`,
+  };
+}
+
+/**
+ * The en-US defaults. Module-internal (not on `public-api.ts`):
+ * {@link provideChartI18n} merges over it, and {@link injectChartI18n}
+ * recognises its keys as defaults, so the English never exists twice.
+ *
+ * @internal
+ */
+export const CHART_I18N_EN: Required<CngxChartI18n> = createChartI18nDefaults('en-US');
 
 /**
  * Injection token for chart i18n strings. Defaults to English via
- * `factory:`. Override at app root with {@link provideChartI18n}.
+ * `factory:`, with numbers in the root app locale (`CNGX_LOCALE`, falling
+ * back to `LOCALE_ID`). Override at app root with {@link provideChartI18n};
+ * every key left at its default still follows the app locale at the use
+ * site, including a runtime `CNGX_LOCALE` flip.
  *
  * @category common/chart/i18n
  * @wcag AA
@@ -106,7 +146,7 @@ export const CHART_I18N_EN: Required<CngxChartI18n> = {
  */
 export const CNGX_CHART_I18N = new InjectionToken<CngxChartI18n>('CngxChartI18n', {
   providedIn: 'root',
-  factory: (): CngxChartI18n => CHART_I18N_EN,
+  factory: (): CngxChartI18n => createChartI18nDefaults(injectLocale()()),
 });
 
 /**
@@ -131,4 +171,55 @@ export function provideChartI18n(i18n: Partial<CngxChartI18n>): {
   useValue: CngxChartI18n;
 } {
   return { provide: CNGX_CHART_I18N, useValue: { ...CHART_I18N_EN, ...i18n } };
+}
+
+/** @internal */
+type ChartI18nKey = keyof CngxChartI18n;
+
+/** @internal */
+const resolvedByToken = new WeakMap<
+  CngxChartI18n,
+  WeakMap<Signal<string>, Signal<Required<CngxChartI18n>>>
+>();
+
+/**
+ * @internal - the chart i18n bundle as a locale-aware signal. Every key
+ * that is absent from the token value, or still a library default (the
+ * en-US bundle, the token factory's root-locale snapshot, or a
+ * {@link provideChartI18n} merge that kept it), resolves to the current
+ * `CNGX_LOCALE` default; a key the consumer passed stays theirs verbatim.
+ * One `computed()` per (token value, locale signal) pair, so every chart
+ * part under one injector shares it.
+ */
+export function injectChartI18n(): Signal<Required<CngxChartI18n>> {
+  const bundle = inject(CNGX_CHART_I18N);
+  const locale = injectLocale();
+  let byLocale = resolvedByToken.get(bundle);
+  if (!byLocale) {
+    byLocale = new WeakMap();
+    resolvedByToken.set(bundle, byLocale);
+  }
+  let resolved = byLocale.get(locale);
+  if (!resolved) {
+    resolved = computed(() => resolveChartI18n(bundle, createChartI18nDefaults(locale())), {
+      equal: recordEqual,
+    });
+    byLocale.set(locale, resolved);
+  }
+  return resolved;
+}
+
+/** @internal */
+function resolveChartI18n(
+  bundle: CngxChartI18n,
+  localized: Required<CngxChartI18n>,
+): Required<CngxChartI18n> {
+  const out: Record<string, unknown> = { ...localized };
+  for (const key of Object.keys(localized) as ChartI18nKey[]) {
+    const own = bundle[key];
+    if (own !== undefined && !DEFAULT_FORMATTERS.has(own)) {
+      out[key] = own;
+    }
+  }
+  return out as Required<CngxChartI18n>;
 }

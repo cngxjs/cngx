@@ -1,6 +1,7 @@
-import { computed, Component, signal } from '@angular/core';
+import { computed, Component, LOCALE_ID, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { CNGX_LOCALE } from '@cngx/core/utils';
 import { createResizeObserverMock } from '@cngx/testing';
 import { CngxAxis } from './axis.component';
 import { type CngxAxisPosition, type CngxAxisType } from './axis-position';
@@ -605,5 +606,72 @@ describe('CngxAxis - the room an axis reserves', () => {
     // No domain means no ticks; the axis still draws its line, and the
     // gutter collapses to the tick length plus the label offset.
     expect(transformFor((h) => h.domain.set(undefined))).toBe('translate(9,0)');
+  });
+});
+
+describe('CngxAxis - app locale', () => {
+  beforeEach(() => {
+    createResizeObserverMock().install(window);
+  });
+
+  afterEach(() => vi.unstubAllGlobals());
+
+  @Component({
+    standalone: true,
+    imports: [CngxChart, CngxAxis],
+    template: `
+      <cngx-chart [data]="[1, 2, 3]" [width]="400" [height]="100">
+        <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 1]" [ticks]="3"></svg:g>
+        <svg:g cngxAxis position="top" type="time" [domain]="dates" [ticks]="2"></svg:g>
+      </cngx-chart>
+    `,
+  })
+  class LocaleHost {
+    readonly dates = [new Date(2026, 8, 1), new Date(2026, 8, 5)];
+  }
+
+  function labels(root: HTMLElement, position: 'bottom' | 'top'): string[] {
+    return Array.from(
+      root.querySelectorAll<SVGTextElement>(`.cngx-axis--${position} .cngx-axis__tick-label`),
+    ).map((el) => el.textContent?.trim() ?? '');
+  }
+
+  it('formats default number and date ticks with LOCALE_ID when no CNGX_LOCALE is provided', () => {
+    TestBed.configureTestingModule({
+      imports: [LocaleHost],
+      providers: [{ provide: LOCALE_ID, useValue: 'de' }],
+    });
+    const fixture = TestBed.createComponent(LocaleHost);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    expect(labels(root, 'bottom')).toContain('0,5');
+    expect(labels(root, 'top')[0]).toBe(
+      new Intl.DateTimeFormat('de', { month: 'short', day: 'numeric' }).format(
+        new Date(2026, 8, 1),
+      ),
+    );
+  });
+
+  it('re-formats the default ticks on a CNGX_LOCALE flip without re-creating the axis', () => {
+    const locale = signal('en-US');
+    TestBed.configureTestingModule({
+      imports: [LocaleHost],
+      providers: [{ provide: CNGX_LOCALE, useValue: locale.asReadonly() }],
+    });
+    const fixture = TestBed.createComponent(LocaleHost);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    const axis = root.querySelector('.cngx-axis--bottom');
+    expect(labels(root, 'bottom')).toContain('0.5');
+
+    locale.set('de-DE');
+    fixture.detectChanges();
+    expect(root.querySelector('.cngx-axis--bottom')).toBe(axis);
+    expect(labels(root, 'bottom')).toContain('0,5');
+    expect(labels(root, 'top')[0]).toBe(
+      new Intl.DateTimeFormat('de-DE', { month: 'short', day: 'numeric' }).format(
+        new Date(2026, 8, 1),
+      ),
+    );
   });
 });

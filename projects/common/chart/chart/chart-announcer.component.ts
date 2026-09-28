@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, untracked } from '@angular/core';
 
-import { CNGX_CHART_I18N } from '../i18n/chart-i18n';
+import { injectChartI18n } from '../i18n/chart-i18n';
 import { type CngxChart } from './chart.component';
 
 /**
@@ -69,17 +69,23 @@ export class CngxChartAnnouncer {
   /** The chart instance whose `significantChange()` this announcer voices. */
   readonly chart = input.required<CngxChart>({ alias: 'cngxChartAnnouncer' });
 
-  private readonly i18n = inject(CNGX_CHART_I18N);
+  private readonly i18n = injectChartI18n();
 
-  /** Polite (informational) text for trend flips; empty otherwise. */
+  /**
+   * Polite (informational) text for trend flips; empty otherwise. The copy
+   * is read untracked: only the chart event re-derives a live region, so a
+   * copy or locale flip never re-speaks a shown announcement.
+   */
   protected readonly politeAnnouncement = computed(() => {
     const ev = this.chart().significantChange();
-    return ev?.kind === 'trend-flip' ? this.i18n.trendChanged(ev.to) : '';
+    return ev?.kind === 'trend-flip' ? untracked(() => this.i18n().trendChanged(ev.to)) : '';
   });
 
-  /** Assertive (interrupting) text for threshold crossings; empty otherwise. */
+  /** Assertive (interrupting) text for threshold crossings; empty otherwise. Copy untracked, as above. */
   protected readonly assertiveAnnouncement = computed(() => {
     const ev = this.chart().significantChange();
-    return ev?.kind === 'threshold-cross' ? this.i18n.thresholdAlert(ev.threshold) : '';
+    return ev?.kind === 'threshold-cross'
+      ? untracked(() => this.i18n().thresholdAlert(ev.threshold))
+      : '';
   });
 }
