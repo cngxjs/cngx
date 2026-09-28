@@ -154,8 +154,7 @@ export function isBacktickPhrase(spans) {
     return false;
   }
   return spans.some((span, i) => {
-    const text =
-      (i > 0 ? SUBSTITUTION : '') + span + (i < spans.length - 1 ? SUBSTITUTION : '');
+    const text = (i > 0 ? SUBSTITUTION : '') + span + (i < spans.length - 1 ? SUBSTITUTION : '');
     return BOUNDED_WORD.test(text);
   });
 }
@@ -259,6 +258,216 @@ const phraseOf = (node, sf) => {
   return null;
 };
 
+/** An `input()` field whose default is read out or shown (rule c). */
+const LABEL_INPUT_FIELD =
+  /(label|text|noun|singular|plural|phrase|announcement|message|title|placeholder|description)$/i;
+
+/** A module-level const holding a word map (rule d). */
+const WORD_CONST = /WORD|LABEL|TEXT|PHRASE|NOUN/;
+
+/** A `computed()` field that resolves copy (rule e). */
+const LABEL_COMPUTED_FIELD = /label|text|announcement|valuetext|phrase|message/i;
+
+/** Their first argument is an attribute name, not copy. */
+const ATTRIBUTE_CALLS = new Set([
+  'hasAttribute',
+  'getAttribute',
+  'setAttribute',
+  'removeAttribute',
+]);
+
+/** Calls whose first argument is a lookup key, not copy. */
+const LOOKUP_CALLS = new Set(['includes', 'startsWith', 'endsWith', 'indexOf', 'has', 'get']);
+
+const EQUALITY_OPERATORS = new Set([
+  ts.SyntaxKind.EqualsEqualsEqualsToken,
+  ts.SyntaxKind.ExclamationEqualsEqualsToken,
+  ts.SyntaxKind.EqualsEqualsToken,
+  ts.SyntaxKind.ExclamationEqualsToken,
+  ts.SyntaxKind.InKeyword,
+]);
+
+/** @param {ts.Node | undefined} node */
+const unwrapExpression = (node) => {
+  let current = node;
+  while (
+    current &&
+    (ts.isAsExpression(current) ||
+      ts.isSatisfiesExpression(current) ||
+      ts.isParenthesizedExpression(current))
+  ) {
+    current = current.expression;
+  }
+  return current;
+};
+
+/** @param {ts.Node | undefined} node */
+const isStringLiteralLike = (node) =>
+  !!node && (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node));
+
+/**
+ * @param {ts.Node | undefined} node
+ * @param {string} callee
+ * @returns {node is ts.CallExpression}
+ */
+const isCallTo = (node, callee) =>
+  !!node &&
+  ts.isCallExpression(node) &&
+  ts.isIdentifier(node.expression) &&
+  node.expression.text === callee;
+
+/**
+ * Does the const's declared type say its values are strings? A key map such
+ * as `Record<Score, PasswordStrengthLabel>` holds a union of keys, not copy.
+ *
+ * @param {ts.VariableDeclaration} declaration
+ */
+const declaresStringValues = (declaration) => {
+  const type = declaration.type;
+  if (!type) {
+    return true;
+  }
+  if (ts.isTypeReferenceNode(type) && type.typeName.getText() === 'Record') {
+    return type.typeArguments?.[1]?.kind === ts.SyntaxKind.StringKeyword;
+  }
+  if (ts.isTypeLiteralNode(type)) {
+    return type.members.every(
+      (member) => !member.type || member.type.kind === ts.SyntaxKind.StringKeyword,
+    );
+  }
+  return false;
+};
+
+/**
+ * A literal that is compared, looked up, used as a key or an attribute name.
+ *
+ * @param {ts.Node} node
+ */
+const isDataLiteral = (node) => {
+  const parent = node.parent;
+  if (ts.isBinaryExpression(parent)) {
+    return EQUALITY_OPERATORS.has(parent.operatorToken.kind);
+  }
+  if (ts.isCaseClause(parent) || ts.isLiteralTypeNode(parent)) {
+    return true;
+  }
+  if (ts.isElementAccessExpression(parent)) {
+    return parent.argumentExpression === node;
+  }
+  if (ts.isPropertyAssignment(parent)) {
+    return parent.name === node;
+  }
+  if (ts.isCallExpression(parent) && parent.arguments[0] === node) {
+    const callee = parent.expression;
+    const name = ts.isPropertyAccessExpression(callee) ? callee.name.text : '';
+    return ATTRIBUTE_CALLS.has(name) || LOOKUP_CALLS.has(name);
+  }
+  return false;
+};
+
+/**
+ * Lowercase copy found by where it flows, not by its shape (an `input()`
+ * default of `'horizontal'` is an enum value, one of `'results'` on `plural`
+ * is copy):
+ *
+ * (c) the default of an `input()` whose field name is a label sink, read
+ *     through a same-file `const X = '...'` when the default is `X`;
+ * (d) a value of the object literal a module-level `*WORD*` / `*LABEL*` /
+ *     `*TEXT*` / `*PHRASE*` / `*NOUN*` const is initialised with, unless the
+ *     key is `providedIn` or the declared value type is not `string`;
+ * (e) a literal inside a `computed()` assigned to a label field, unless it is
+ *     compared, looked up, a key, or an attribute name.
+ *
+ * @param {ts.SourceFile} sf
+ * @returns {{ node: ts.Node; value: string }[]}
+ */
+const sinkHitsOf = (sf) => {
+  /** @type {Map<string, string>} */
+  const stringConsts = new Map();
+  for (const statement of sf.statements) {
+    if (!ts.isVariableStatement(statement)) {
+      continue;
+    }
+    for (const declaration of statement.declarationList.declarations) {
+      const init = unwrapExpression(declaration.initializer);
+      if (ts.isIdentifier(declaration.name) && isStringLiteralLike(init)) {
+        stringConsts.set(declaration.name.text, init.text);
+      }
+    }
+  }
+
+  /** @type {{ node: ts.Node; value: string }[]} */
+  const hits = [];
+  const add = (node, value) => {
+    if (hasWord(value)) {
+      hits.push({ node, value });
+    }
+  };
+
+  const labelInputDefault = (node) => {
+    const init = unwrapExpression(node.initializer);
+    if (!isCallTo(init, 'input') || !LABEL_INPUT_FIELD.test(node.name.text)) {
+      return;
+    }
+    const arg = unwrapExpression(init.arguments[0]);
+    if (isStringLiteralLike(arg)) {
+      add(arg, arg.text);
+    } else if (arg && ts.isIdentifier(arg) && stringConsts.has(arg.text)) {
+      add(arg, stringConsts.get(arg.text));
+    }
+  };
+
+  const wordConstValues = (statement) => {
+    for (const declaration of statement.declarationList.declarations) {
+      const init = unwrapExpression(declaration.initializer);
+      const isWordMap =
+        ts.isIdentifier(declaration.name) &&
+        WORD_CONST.test(declaration.name.text) &&
+        !!init &&
+        ts.isObjectLiteralExpression(init) &&
+        declaresStringValues(declaration);
+      if (!isWordMap) {
+        continue;
+      }
+      for (const property of init.properties) {
+        const value = ts.isPropertyAssignment(property)
+          ? unwrapExpression(property.initializer)
+          : undefined;
+        if (property.name?.getText(sf) !== 'providedIn' && isStringLiteralLike(value)) {
+          add(value, value.text);
+        }
+      }
+    }
+  };
+
+  const labelComputedLiterals = (node) => {
+    const init = unwrapExpression(node.initializer);
+    if (!isCallTo(init, 'computed') || !LABEL_COMPUTED_FIELD.test(node.name.text)) {
+      return;
+    }
+    const inner = (child) => {
+      if (isStringLiteralLike(child) && !isDataLiteral(child)) {
+        add(child, child.text);
+      }
+      child.forEachChild(inner);
+    };
+    init.arguments.forEach(inner);
+  };
+
+  const visit = (node) => {
+    if (ts.isPropertyDeclaration(node) && node.initializer && ts.isIdentifier(node.name)) {
+      labelInputDefault(node);
+      labelComputedLiterals(node);
+    }
+    if (ts.isVariableStatement(node) && ts.isSourceFile(node.parent)) {
+      wordConstValues(node);
+    }
+    node.forEachChild(visit);
+  };
+  visit(sf);
+  return hits;
+};
+
 /**
  * Classifies one file's user-facing literals. Exported so the negative
  * fixtures below can prove the scanner is capable of failing - a guard that
@@ -276,6 +485,24 @@ export function scanSource(source, fileName = 'x.ts') {
     OVERRIDE_SOURCE_FILE.test(fileName) || /\/i18n\//.test(fileName) || OVERRIDE_TOKEN.test(code);
   /** @type {StringFinding[]} */
   const findings = [];
+  /** @type {Set<ts.Node>} */
+  const reported = new Set();
+
+  const report = (node, value, atSink) => {
+    const { line, character } = sf.getLineAndCharacterOfPosition(node.getStart(sf));
+    const before = lines[line].slice(0, character);
+    if (COMPARISON_BEFORE.test(before)) {
+      return;
+    }
+    const head = expressionHead(lines, line);
+    const context = lines.slice(Math.max(0, head - 2), line + 1).join('\n');
+    findings.push({
+      line: line + 1,
+      value,
+      coverage: classify({ before, context, isOverrideSource, atSink }),
+    });
+    reported.add(node);
+  };
 
   const visit = (node) => {
     if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) {
@@ -290,21 +517,17 @@ export function scanSource(source, fileName = 'x.ts') {
     }
     const value = phraseOf(node, sf);
     if (value !== null) {
-      const { line, character } = sf.getLineAndCharacterOfPosition(node.getStart(sf));
-      const before = lines[line].slice(0, character);
-      if (!COMPARISON_BEFORE.test(before)) {
-        const head = expressionHead(lines, line);
-        const context = lines.slice(Math.max(0, head - 2), line + 1).join('\n');
-        findings.push({
-          line: line + 1,
-          value,
-          coverage: classify({ before, context, isOverrideSource }),
-        });
-      }
+      report(node, value, false);
     }
     node.forEachChild(visit);
   };
   visit(sf);
+
+  for (const hit of sinkHitsOf(sf)) {
+    if (!reported.has(hit.node)) {
+      report(hit.node, hit.value, true);
+    }
+  }
 
   return findings;
 }
@@ -412,7 +635,11 @@ export function scanStylesheet(stylesheet) {
 }
 
 /**
- * @param {{ before: string; context: string; isOverrideSource: boolean }} input
+ * `atSink` findings are lowercase copy found by rules (c)-(e); a label-sink
+ * `input()` default among them is a gap even while an uppercase phrase default
+ * still counts as covered.
+ *
+ * @param {{ before: string; context: string; isOverrideSource: boolean; atSink: boolean }} input
  * @returns {StringCoverage}
  */
 const classify = (input) => {
@@ -425,7 +652,7 @@ const classify = (input) => {
   if (/(?:\?\?|\|\|)\s*$/.test(input.before.trimEnd()) && CONFIG_READ.test(input.context)) {
     return 'config-fallback';
   }
-  if (/\binput(?:\.required)?\s*(?:<[^>]*>)?\([^'"`\n]*$/.test(input.before)) {
+  if (!input.atSink && /\binput(?:\.required)?\s*(?:<[^>]*>)?\([^'"`\n]*$/.test(input.before)) {
     return 'input-default';
   }
   return 'uncovered';
@@ -522,7 +749,9 @@ const found = new Set(UNCOVERED.map(key));
 
 /** @param {readonly import('./user-facing-string-coverage.fixtures.mjs').StringManifestEntry[]} manifest */
 const stale = (manifest) =>
-  manifest.filter((entry) => !found.has(key(entry))).map((entry) => `${entry.file}: ${entry.value}`);
+  manifest
+    .filter((entry) => !found.has(key(entry)))
+    .map((entry) => `${entry.file}: ${entry.value}`);
 
 describe('user-facing string coverage', () => {
   it('finds sources to scan', () => {
@@ -633,9 +862,10 @@ describe('user-facing string scanner', () => {
   });
 
   it('ignores event-key names and token debug names', () => {
-    const source = ["if (event.key === 'ArrowDown') {}", "new InjectionToken('CngxSelectPanelHost');"].join(
-      '\n',
-    );
+    const source = [
+      "if (event.key === 'ArrowDown') {}",
+      "new InjectionToken('CngxSelectPanelHost');",
+    ].join('\n');
     expect(scanSource(source, 'x.ts')).toEqual([]);
   });
 
@@ -733,10 +963,66 @@ describe('user-facing string scanner', () => {
   });
 
   it('ignores a CSS escape glyph and an attr() name', () => {
-    const stylesheet = [".a::after { content: '\\25BC'; }", ".b::after { content: attr(data-x) / ''; }"].join(
-      '\n',
-    );
+    const stylesheet = [
+      ".a::after { content: '\\25BC'; }",
+      ".b::after { content: attr(data-x) / ''; }",
+    ].join('\n');
     expect(scanStylesheet(stylesheet)).toEqual([]);
+  });
+
+  it('(c) reports a lowercase default on a label-sink input', () => {
+    const source = "class X { readonly plural = input<string>('results'); }";
+    expect(scanSource(source, 'count.ts')).toEqual([
+      { line: 1, value: 'results', coverage: 'uncovered' },
+    ]);
+  });
+
+  it('(c) ignores an enum default on a non-label input', () => {
+    expect(scanSource("class X { readonly orientation = input('horizontal'); }", 'x.ts')).toEqual(
+      [],
+    );
+  });
+
+  it('(c) reads a const-indirected default through to its literal', () => {
+    const source = [
+      "const NOT_SORTED = 'not sorted';",
+      'class X {',
+      '  readonly notSortedLabel = input(NOT_SORTED);',
+      '}',
+    ].join('\n');
+    expect(scanSource(source, 'sort.ts')).toEqual([
+      { line: 3, value: 'not sorted', coverage: 'uncovered' },
+    ]);
+  });
+
+  it('(d) reports a value of a word-map const', () => {
+    const source = "const SENTIMENT_WORD = { good: 'improved' };";
+    expect(scanSource(source, 'delta.ts')).toEqual([
+      { line: 1, value: 'improved', coverage: 'uncovered' },
+    ]);
+  });
+
+  it('(d) ignores providedIn, array consts and key maps', () => {
+    const source = [
+      "const TOKEN_LABEL = { providedIn: 'root' };",
+      "const TEXT_SCALE_VALUES = ['sm', 'md'];",
+      "const SCORE_LABELS: Record<Score, PasswordStrengthLabel> = { 0: 'weak' };",
+    ].join('\n');
+    expect(scanSource(source, 'x.ts')).toEqual([]);
+  });
+
+  it('(e) reports a literal a label computed() resolves to', () => {
+    const source =
+      "class X { readonly resolvedLabel = computed(() => (this.dir() === 'up' ? 'up' : '')); }";
+    expect(scanSource(source, 'trend.ts')).toEqual([
+      { line: 1, value: 'up', coverage: 'uncovered' },
+    ]);
+  });
+
+  it('(e) ignores an attribute name inside a label computed()', () => {
+    const source =
+      "class X { readonly ariaLabel = computed(() => this.el.hasAttribute('aria-label')); }";
+    expect(scanSource(source, 'x.ts')).toEqual([]);
   });
 
   it('ignores strings inside comments', () => {
