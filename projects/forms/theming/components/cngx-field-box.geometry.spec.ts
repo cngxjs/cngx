@@ -378,6 +378,19 @@ describe.each(MATRIX)('field box literal sizes: %s skin, %s, touch %s', (skin, d
   });
 });
 
+// The border width is a token the formula and the touch floor both read, so a
+// theme that thickens it keeps every box on its formula and on 44 under touch.
+describe('field box border token', () => {
+  it.each([false, true])('keeps a 2px border box on its formula (touch %s)', (touch) => {
+    const root = mountMatrix('outline', 'comfortable', touch);
+    root.style.setProperty('--cngx-field-border-width', '2px');
+    const box = query(root, '.c-text-affix');
+    expect(px(box, 'border-top-width')).toBe(2);
+    const formula = lineBox(box) + px(box, 'padding-top') + px(box, 'padding-bottom') + 4;
+    expect(box.getBoundingClientRect().height).toBeCloseTo(touch ? 44 : formula, 0);
+  });
+});
+
 describe('field box textarea', () => {
   it.each(['outline', 'fill', 'bare'] as const)(
     'grows a default two-row %s textarea by exactly one line box',

@@ -16,6 +16,40 @@
 
 @layer cngx.tokens {
   /**
+   * Border width of the field box on every side, in every skin (transparent
+   * where a skin paints none). The box height and the touch floor of the
+   * controls inside it are derived from it, so changing it keeps the box on
+   * its formula.
+   * @group Sizing
+   */
+  @property --cngx-field-border-width {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 1px;
+  }
+
+  /**
+   * Width of the focus ring an outline or bare box draws around its main
+   * control.
+   * @group Sizing
+   */
+  @property --cngx-field-ring-width {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 2px;
+  }
+
+  /**
+   * Distance between the box edge and its focus ring.
+   * @group Sizing
+   */
+  @property --cngx-field-ring-offset {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 3px;
+  }
+
+  /**
    * Gap between the prefix, control, and suffix in an affix row.
    * @group Layout
    */
@@ -60,7 +94,7 @@
        the box. Its colour is its own token so the resting border can be
        raised to 3:1 in one line. */
     :scope[data-skin='outline'] {
-      border: 1px solid
+      border: var(--cngx-field-border-width, 1px) solid
         var(--cngx-field-outline-color, var(--cngx-color-border, oklch(0.88 0.005 250)));
       border-radius: var(--cngx-radius-md, 8px);
     }
@@ -80,8 +114,9 @@
     :scope:is([data-skin='outline'], [data-skin='bare']):focus-within:not(
         :has(:is(.cngx-field-prefix, .cngx-field-suffix):focus-within)
       ) {
-      outline: 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50));
-      outline-offset: 3px;
+      outline: var(--cngx-field-ring-width, 2px) solid
+        var(--cngx-color-primary, oklch(0.66 0.19 50));
+      outline-offset: var(--cngx-field-ring-offset, 3px);
     }
 
     /* The editable control grows; min-inline-size:0 lets it shrink past its
@@ -146,7 +181,10 @@
       align-self: stretch;
       min-block-size: max(
         0px,
-        calc(var(--cngx-target-min, 0px) - 2 * var(--cngx-field-padding-block, 0.5rem) - 2px)
+        calc(
+          var(--cngx-target-min, 0px) - 2 * var(--cngx-field-padding-block, 0.5rem) - 2 *
+            var(--cngx-field-border-width, 1px)
+        )
       );
     }
 

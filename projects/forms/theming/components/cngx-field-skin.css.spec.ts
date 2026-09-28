@@ -103,14 +103,14 @@ describe('cngx-field-skin.css', () => {
     const reset = SOURCE.slice(
       SOURCE.indexOf('.cngx-field-box[data-skin] > :is(input, textarea, select),'),
     );
-    const body = reset.slice(reset.indexOf('{'), reset.indexOf('}'));
+    const body = reset.slice(reset.indexOf('{'), reset.indexOf('}')).replace(/\s+/g, ' ');
     for (const declaration of [
       'padding: 0',
       'border: 0',
       'background: transparent',
       'box-shadow: none',
       'color: inherit',
-      '2 * var(--cngx-field-padding-block, 0.5rem) - 2px',
+      '2 * var(--cngx-field-border-width, 1px)',
     ]) {
       expect(body).toContain(declaration);
     }

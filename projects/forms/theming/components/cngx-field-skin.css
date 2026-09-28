@@ -109,7 +109,7 @@
       padding-inline: var(--cngx-field-padding-inline, 1rem);
       /* 1px transparent on top and the sides keeps the box formula; only the
          bottom edge is painted. */
-      border: 1px solid transparent;
+      border: var(--cngx-field-border-width, 1px) solid transparent;
       border-block-end-color: var(
         --cngx-field-underline-color,
         var(--cngx-color-border, oklch(0.88 0.005 250))
@@ -208,7 +208,7 @@
       --cngx-field-padding-inline: var(--cngx-space-md);
       padding-block: var(--cngx-field-padding-block, 0.5rem);
       padding-inline: var(--cngx-field-padding-inline, 1rem);
-      border: 1px solid transparent;
+      border: var(--cngx-field-border-width, 1px) solid transparent;
       border-radius: 0;
       background: transparent;
       /* Bare exists inside something that owns the area - a cell, a toolbar
@@ -260,7 +260,10 @@
   .cngx-field-box[data-skin] > :is(input, textarea, select):is(:focus-visible, :autofill) {
     min-block-size: max(
       0px,
-      calc(var(--cngx-target-min, 0px) - 2 * var(--cngx-field-padding-block, 0.5rem) - 2px)
+      calc(
+        var(--cngx-target-min, 0px) - 2 * var(--cngx-field-padding-block, 0.5rem) - 2 *
+          var(--cngx-field-border-width, 1px)
+      )
     );
     padding: 0;
     border: 0;

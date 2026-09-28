@@ -1530,7 +1530,7 @@
       --cngx-field-padding-inline: var(--cngx-space-md);
       padding-block: var(--cngx-field-padding-block, 0.5rem);
       padding-inline: var(--cngx-field-padding-inline, 1rem);
-      border: 1px solid transparent;
+      border: var(--cngx-field-border-width, 1px) solid transparent;
       border-block-end-color: var(
         --cngx-field-underline-color,
         var(--cngx-color-border, oklch(0.88 0.005 250))
@@ -1571,7 +1571,7 @@
       --cngx-field-padding-inline: var(--cngx-space-md);
       padding-block: var(--cngx-field-padding-block, 0.5rem);
       padding-inline: var(--cngx-field-padding-inline, 1rem);
-      border: 1px solid transparent;
+      border: var(--cngx-field-border-width, 1px) solid transparent;
       border-radius: 0;
       background: transparent;
     }
