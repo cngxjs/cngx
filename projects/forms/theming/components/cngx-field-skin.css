@@ -7,12 +7,14 @@
  * attribute; `outline` writes nothing, because `cngx.base` already paints
  * the outline look.
  *
- * `fill` is the filled-with-underline treatment: tinted surface, hairline
+ * `fill` is the filled-with-underline treatment: grey surface, hairline
  * bottom border, and a `--cngx-field-underline-size` underline in the focus
  * colour drawn as an inset `box-shadow`, so focus costs no layout shift.
- * `bare` strips surface and border entirely for a control embedded in
- * something that already owns the box - a table filter row, an inline cell
- * editor - and keeps only the focus underline.
+ * `bare` strips surface, border and underline entirely for a control
+ * embedded in something that already owns the box - a table filter row, an
+ * inline cell editor. It keeps the regular `cngx.reset` focus ring and shows
+ * an error as danger-tinted text plus a thin danger ring, never as a line, so
+ * it cannot be mistaken for `fill`.
  *
  * Both key their error / disabled / readonly variants on native and ARIA
  * truth first (`[aria-invalid='true']`, `:disabled`, `[readonly]`,
@@ -24,26 +26,29 @@
  * them and the `var()` fallback chain takes over:
  * `--cngx-field-fill-bg`, `--cngx-field-fill-bg-hover`,
  * `--cngx-field-underline-color`, `--cngx-field-underline-focus-color`.
- * The Material bridge SETs all four.
+ * The two surface tokens and the focus colour get light / dark defaults in
+ * `cngx.tokens` (light grey on white, dark grey on black); the Material
+ * bridge SETs all four in `cngx.components`, which wins over those defaults.
  *
  * `--cngx-field-underline-focus-color` deliberately does NOT fall back to
  * `--cngx-color-primary`. The default Ember primary measures 2.94:1 at rest
  * and 2.70:1 on hover against the fill surface - below the WCAG 1.4.11 floor,
  * because the surface tint darkens the backdrop under an already-borderline
  * orange. The darker `oklch(0.58 0.19 50)` keeps the same hue and chroma and
- * measures 4.05:1 / 3.72:1 (4.58:1 for `bare` on white). Asserted in
- * `cngx-field-skin.geometry.spec.ts`.
+ * measures about 4:1 at rest on the light fill surface. On dark the default
+ * lifts to the dark primary `oklch(0.72 0.18 50)`, about 5:1 at rest and
+ * 4.6:1 on hover. Asserted in `cngx-field-skin.geometry.spec.ts`.
  *
- * A11y note: the focus underline is a bottom edge, not a full perimeter, so
- * `fill` and `bare` satisfy WCAG 2.4.7 and 2.4.11 but consciously not 2.4.13
+ * A11y note: the `fill` focus underline is a bottom edge, not a full
+ * perimeter, so it satisfies WCAG 2.4.7 and 2.4.11 but consciously not 2.4.13
  * (Focus Appearance, AAA) - the same trade-off a filled Material field makes.
- * `outline` is the AAA path. Under `forced-colors` an underline does not
- * survive at all, so the reset outline is restored there.
+ * `outline` and `bare` keep the full focus ring. Under `forced-colors` an
+ * underline does not survive at all, so the reset outline is restored there.
  */
 
 @layer cngx.tokens {
   /**
-   * Thickness of the focus underline on the `fill` and `bare` skins.
+   * Thickness of the focus underline on the `fill` skin.
    * `inherits: true` so a single `:root` override retunes every field.
    * @group Sizing
    */
@@ -51,6 +56,36 @@
     syntax: '<length>';
     inherits: true;
     initial-value: 2px;
+  }
+
+  /* Fill surface and focus-underline defaults. Plain assignments, not
+   * registrations, so a theme can still unset them. Light grey on a white
+   * page, dark grey on a dark one - a fixed tint of the text colour read too
+   * faint on dark surfaces. The focus colour lifts with the surface: the
+   * light value drops to about 2.7:1 on the dark hover surface. */
+  :root {
+    --cngx-field-fill-bg: oklch(0.955 0.004 250);
+    --cngx-field-fill-bg-hover: oklch(0.93 0.005 250);
+    --cngx-field-underline-focus-color: oklch(0.58 0.19 50);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-field-fill-bg: oklch(0.29 0.006 250);
+      --cngx-field-fill-bg-hover: oklch(0.33 0.006 250);
+      --cngx-field-underline-focus-color: oklch(0.72 0.18 50);
+    }
+  }
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-field-fill-bg: oklch(0.29 0.006 250);
+    --cngx-field-fill-bg-hover: oklch(0.33 0.006 250);
+    --cngx-field-underline-focus-color: oklch(0.72 0.18 50);
+  }
+  [data-color-scheme='light'],
+  .light {
+    --cngx-field-fill-bg: oklch(0.955 0.004 250);
+    --cngx-field-fill-bg-hover: oklch(0.93 0.005 250);
+    --cngx-field-underline-focus-color: oklch(0.58 0.19 50);
   }
 }
 
@@ -157,41 +192,46 @@
          slot - so the container decides the width. Block size stays
          content-driven; the --cngx-target-min floor from cngx.base survives. */
       inline-size: 100%;
-      transition: box-shadow 150ms ease;
     }
 
-    :scope:is(:focus-visible, :focus-within) {
-      outline: none;
-      box-shadow: inset 0 calc(-1 * var(--cngx-field-underline-size, 2px)) 0
-        var(--cngx-field-underline-focus-color, oklch(0.58 0.19 50));
-    }
-
+    /* No underline in any state - that is the fill look. Focus keeps the
+       cngx.reset ring untouched. An error tints the value text; the danger
+       token alone measures about 4:1 on white, under the 4.5:1 text floor, so
+       it is pulled toward the text colour: darker on light, lighter on dark.
+       With an affix row as the box the value sits in the nested input, which
+       is tinted too. */
     :scope:is([aria-invalid='true'], .cngx-field--error *),
-    :scope:has([aria-invalid='true']) {
-      box-shadow: inset 0 -1px 0
-        var(--cngx-field-error-color, var(--cngx-color-danger, oklch(0.58 0.22 27)));
+    :scope:has([aria-invalid='true']),
+    :scope:has([aria-invalid='true']) > :is(input, textarea, select) {
+      color: var(
+        --cngx-field-bare-error-text-color,
+        color-mix(
+          in oklch,
+          var(--cngx-color-danger, oklch(0.6 0.18 25)) 75%,
+          var(--cngx-color-text, oklch(0.2 0.01 250))
+        )
+      );
     }
 
-    :scope:is([aria-invalid='true'], .cngx-field--error *):is(:focus-visible, :focus-within),
-    :scope:has([aria-invalid='true']):is(:focus-visible, :focus-within) {
-      box-shadow: inset 0 calc(-1 * var(--cngx-field-underline-size, 2px)) 0
+    /* Text alone vanishes on an empty field, which is the most common error
+       (required). A 1px ring marks the box as well - thinner than the 2px
+       focus ring, and dropped while focused so it never hides that ring. */
+    :scope:is([aria-invalid='true'], .cngx-field--error *):not(:focus-within),
+    :scope:has([aria-invalid='true']):not(:focus-within) {
+      outline: 1px solid
         var(--cngx-field-error-color, var(--cngx-color-danger, oklch(0.58 0.22 27)));
+      outline-offset: 2px;
     }
 
     :scope:is(:disabled, .cngx-field--disabled *),
     :scope:has(:disabled) {
       opacity: var(--cngx-field-disabled-opacity, 0.6);
     }
-
-    /* Bare draws no resting underline, so boosting the resting colour would
-       be a no-op here - the focus underline is the only thing it paints. */
-    [data-contrast='more'] :scope {
-      --cngx-field-underline-focus-color: var(--cngx-color-text, oklch(0.2 0.01 250));
-    }
   }
 
   /* Nested boxes: when an affix row is the box, the control inside must not
-     draw a second surface or a second underline. Authored outside both
+     draw a second surface or a second underline. For bare the nested input
+     keeps its own focus ring - the row is not focusable itself. Authored outside both
      scopes at (0,3,1) so it beats the control's own (0,2,0) :scope rules,
      including its focus and autofill shadows. */
   .cngx-field-affix-row[data-skin='fill'] > :is(input, textarea, select)[data-skin='fill'],
@@ -206,6 +246,13 @@
     background: transparent;
     box-shadow: none;
   }
+
+  /* The bare row draws the error ring; the nested input must not draw a
+     second one. Its focus ring stays - the row is not focusable. */
+  .cngx-field-affix-row[data-skin='bare']
+    > :is(input, textarea, select)[data-skin='bare']:not(:focus-visible) {
+    outline: none;
+  }
 }
 
 /* Unlayered, outside @scope, full selectors repeated: a layered or
@@ -214,17 +261,13 @@
    border is redrawn in a system colour. */
 @media (forced-colors: active) {
   :is(input, textarea, select)[data-skin='fill'],
-  :is(input, textarea, select)[data-skin='bare'],
-  .cngx-field-affix-row[data-skin='fill'],
-  .cngx-field-affix-row[data-skin='bare'] {
+  .cngx-field-affix-row[data-skin='fill'] {
     border-block-end: 1px solid FieldText;
     box-shadow: none;
   }
 
   :is(input, textarea, select)[data-skin='fill']:is(:focus-visible, :focus-within),
-  :is(input, textarea, select)[data-skin='bare']:is(:focus-visible, :focus-within),
-  .cngx-field-affix-row[data-skin='fill']:is(:focus-visible, :focus-within),
-  .cngx-field-affix-row[data-skin='bare']:is(:focus-visible, :focus-within) {
+  .cngx-field-affix-row[data-skin='fill']:is(:focus-visible, :focus-within) {
     outline: 2px solid Highlight;
     outline-offset: 3px;
     box-shadow: none;

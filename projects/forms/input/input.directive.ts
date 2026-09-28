@@ -79,10 +79,29 @@ export class CngxInput implements CngxFormFieldControl {
 
   /** @internal */
   protected readonly inputId = this.id;
+  /**
+   * Consumer `aria-labelledby`. Wins over the field label, and is the only
+   * name source outside a `cngx-form-field` (a table filter input named by
+   * its column header). Taken as an input so the host binding below does not
+   * overwrite the attribute with `null`.
+   */
+  readonly ariaLabelledBy = input<string | undefined>(undefined, { alias: 'aria-labelledby' });
+
+  /**
+   * Consumer `aria-describedby`. Appended to the field's hint and error ids,
+   * never replacing them.
+   */
+  readonly ariaDescribedBy = input<string | undefined>(undefined, { alias: 'aria-describedby' });
+
   /** @internal */
-  protected readonly describedBy = computed(() => this.presenter?.describedBy() ?? null);
+  protected readonly describedBy = computed(() => {
+    const ids = [this.presenter?.describedBy(), this.ariaDescribedBy()].filter(Boolean);
+    return ids.length > 0 ? ids.join(' ') : null;
+  });
   /** @internal */
-  protected readonly labelledBy = computed(() => this.presenter?.labelId() ?? null);
+  protected readonly labelledBy = computed(
+    () => this.ariaLabelledBy() ?? this.presenter?.labelId() ?? null,
+  );
   /** @internal */
   protected readonly ariaInvalid = computed(() => (this.presenter?.showError() ? true : null));
   /** @internal */

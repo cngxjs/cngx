@@ -15,8 +15,8 @@ import { afterEach, describe, expect, it } from 'vitest';
   selector: 'cngx-field-skin-geometry-host',
   standalone: true,
   // The reset comes along because the skins are authored against it: it owns
-  // `box-sizing: border-box` and the `:focus-visible` ring the fill and bare
-  // scopes suppress on their own root.
+  // `box-sizing: border-box` and the `:focus-visible` ring the fill scope
+  // suppresses on its own root and the bare scope keeps.
   styleUrls: [
     '../../../core/theming/system-tokens.css',
     '../../../core/theming/reset.css',
@@ -41,6 +41,21 @@ import { afterEach, describe, expect, it } from 'vitest';
       )"
     ></span>
     <input class="solo-bare" type="text" data-skin="bare" />
+    <input class="bare-invalid" type="text" data-skin="bare" aria-invalid="true" />
+    <span class="cngx-field-affix-row bare-row" data-skin="bare">
+      <span class="cngx-field-prefix">$</span>
+      <input class="bare-row-input" type="text" data-skin="bare" aria-invalid="true" />
+    </span>
+    <div data-color-scheme="light">
+      <input class="fill-light" type="text" data-skin="fill" />
+      <span class="probe-underline-light" style="background: var(--cngx-field-underline-focus-color)"></span>
+      <span class="probe-hover-light" style="background: var(--cngx-field-fill-bg-hover)"></span>
+    </div>
+    <div data-color-scheme="dark">
+      <input class="fill-dark" type="text" data-skin="fill" />
+      <span class="probe-underline-dark" style="background: var(--cngx-field-underline-focus-color)"></span>
+      <span class="probe-hover-dark" style="background: var(--cngx-field-fill-bg-hover)"></span>
+    </div>
     <span class="cngx-field-affix-row row" data-skin="fill">
       <span class="cngx-field-prefix">$</span>
       <input class="nested-fill" type="text" data-skin="fill" />
@@ -172,6 +187,37 @@ describe('field skin geometry', () => {
     const surface = getComputedStyle(query(root, '.solo-fill')).backgroundColor;
     const underline = getComputedStyle(query(root, '.probe-underline')).backgroundColor;
     expect(contrast(surface, underline)).toBeGreaterThanOrEqual(3);
+  });
+
+  it.each(['light', 'dark'])('holds 3:1 at rest and on hover in the %s scheme', (scheme) => {
+    const root = mount();
+    const surface = getComputedStyle(query(root, `.fill-${scheme}`)).backgroundColor;
+    const hover = getComputedStyle(query(root, `.probe-hover-${scheme}`)).backgroundColor;
+    const underline = getComputedStyle(query(root, `.probe-underline-${scheme}`)).backgroundColor;
+    expect(contrast(surface, underline)).toBeGreaterThanOrEqual(3);
+    expect(contrast(hover, underline)).toBeGreaterThanOrEqual(3);
+  });
+
+  it('shows a bare error as tinted text, never as a line', () => {
+    const root = mount();
+    const invalid = query(root, '.bare-invalid');
+    const valid = query(root, '.solo-bare');
+    expect(computedValue(invalid, 'box-shadow')).toBe('none');
+    expect(computedValue(invalid, 'border-bottom-width')).toBe('0px');
+    expect(computedValue(invalid, 'color')).not.toBe(computedValue(valid, 'color'));
+  });
+
+  it('rings a bare error so an empty field still shows it', () => {
+    const root = mount();
+    expect(computedValue(query(root, '.bare-invalid'), 'outline-style')).toBe('solid');
+    expect(computedValue(query(root, '.bare-invalid'), 'outline-width')).toBe('1px');
+    expect(computedValue(query(root, '.solo-bare'), 'outline-style')).toBe('none');
+  });
+
+  it('draws one bare error ring per affix row, on the row', () => {
+    const root = mount();
+    expect(computedValue(query(root, '.bare-row'), 'outline-style')).toBe('solid');
+    expect(computedValue(query(root, '.bare-row-input'), 'outline-style')).toBe('none');
   });
 
   it('holds 3:1 on the hover surface, which is the worst case', () => {

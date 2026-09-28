@@ -1,10 +1,13 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, type Type } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { CngxFormField, type CngxFieldAccessor } from '@cngx/forms/field';
+import { createMockField } from '@cngx/forms/field/testing';
 import { computedValue } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { CngxMultiSelect } from '../multi-select/multi-select.component';
 import { CngxSelect } from '../single-select/select.component';
+import { CngxTypeahead } from '../typeahead/typeahead.component';
 import type { CngxSelectOptionDef } from './option.model';
 
 // Runs in a real Chromium (the `test-geometry` target). Covers the resting
@@ -43,10 +46,44 @@ class SkinHost {
   readonly value = signal<string | undefined>(undefined);
 }
 
+// The wrapper triggers (combobox, typeahead, both action variants) carry
+// `aria-invalid` / `disabled` on the inner `[role='combobox']` input, not on
+// the trigger. The typeahead stands in for all four.
+@Component({
+  selector: 'cngx-select-skin-state-host',
+  standalone: true,
+  imports: [CngxTypeahead, CngxFormField],
+  template: `
+    <cngx-typeahead class="valid" skin="fill" [label]="'Colour'" [options]="options" />
+    <cngx-form-field [field]="invalidField">
+      <cngx-typeahead class="invalid" skin="fill" [label]="'Colour'" [options]="options" />
+    </cngx-form-field>
+    <cngx-typeahead class="off" skin="fill" [disabled]="true" [label]="'Colour'" [options]="options" />
+    <cngx-typeahead class="bare-valid" skin="bare" [label]="'Colour'" [options]="options" />
+    <cngx-form-field [field]="invalidBareField">
+      <cngx-typeahead class="bare-invalid" skin="bare" [label]="'Colour'" [options]="options" />
+    </cngx-form-field>
+  `,
+  styleUrls: ['../../theming/components/cngx-field-skin.css'],
+})
+class StateHost {
+  readonly options = OPTIONS;
+  readonly invalidField: CngxFieldAccessor = createMockField({
+    name: 'colour',
+    invalid: true,
+    touched: true,
+  }).accessor;
+  readonly invalidBareField: CngxFieldAccessor = createMockField({
+    name: 'shade',
+    invalid: true,
+    touched: true,
+  }).accessor;
+}
+
 let mountedRoot: HTMLElement | null = null;
 
-function mount(): HTMLElement {
-  const fixture = TestBed.createComponent(SkinHost);
+function mount(host: Type<unknown> = SkinHost): HTMLElement {
+  const fixture = TestBed.createComponent(host);
   mountedRoot = fixture.nativeElement as HTMLElement;
   document.body.appendChild(mountedRoot);
   fixture.detectChanges();
@@ -89,5 +126,28 @@ describe('select-family field skins', () => {
     expect(computedValue(nested, 'border-top-width')).not.toBe('0px');
     expect(computedValue(row, 'border-bottom-width')).toBe('1px');
     expect(computedValue(row, 'border-top-width')).toBe('0px');
+  });
+
+  it('turns the underline to the error colour when the inner combobox input is invalid', () => {
+    const root = mount(StateHost);
+    const valid = computedValue(trigger(root, '.valid'), 'border-bottom-color');
+    const invalid = computedValue(trigger(root, '.invalid'), 'border-bottom-color');
+    expect(invalid).not.toBe(valid);
+  });
+
+  it('shows a bare error as tinted trigger text, never as a line', () => {
+    const root = mount(StateHost);
+    const valid = trigger(root, '.bare-valid');
+    const invalid = trigger(root, '.bare-invalid');
+    expect(computedValue(invalid, 'border-bottom-width')).toBe('0px');
+    expect(computedValue(invalid, 'box-shadow')).toBe('none');
+    expect(computedValue(invalid, 'color')).not.toBe(computedValue(valid, 'color'));
+    expect(computedValue(invalid, 'outline-style')).toBe('solid');
+    expect(computedValue(valid, 'outline-style')).toBe('none');
+  });
+
+  it('dashes the underline when the inner combobox input is disabled', () => {
+    const el = trigger(mount(StateHost), '.off');
+    expect(computedValue(el, 'border-bottom-style')).toBe('dashed');
   });
 });

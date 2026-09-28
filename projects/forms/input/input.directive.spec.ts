@@ -34,6 +34,24 @@ class HostWithFormField {
 })
 class HostStandalone {}
 
+@Component({
+  template: `<input cngxInput aria-labelledby="col-name" aria-describedby="col-note" />`,
+  imports: [CngxInput],
+})
+class HostStandaloneWithAria {}
+
+@Component({
+  template: `
+    <cngx-form-field [field]="field()">
+      <input cngxInput aria-labelledby="custom-label" aria-describedby="extra-note" />
+    </cngx-form-field>
+  `,
+  imports: [CngxFormField, CngxInput],
+})
+class HostFieldWithAria {
+  field = signal<CngxFieldAccessor>(createMockField({ name: 'email' }).accessor);
+}
+
 describe('CngxInput', () => {
   describe('with CngxFormField parent', () => {
     let fixture: ReturnType<typeof TestBed.createComponent<HostWithFormField>>;
@@ -282,6 +300,34 @@ describe('CngxInput', () => {
       inputEl.value = 'text';
       inputEl.dispatchEvent(new Event('input'));
       expect(directive.empty()).toBe(false);
+    });
+  });
+
+  describe('consumer aria references', () => {
+    it('keeps aria-labelledby and aria-describedby without a presenter', () => {
+      const fixture = TestBed.createComponent(HostStandaloneWithAria);
+      fixture.detectChanges();
+      const el = fixture.nativeElement.querySelector('input') as HTMLElement;
+      expect(el.getAttribute('aria-labelledby')).toBe('col-name');
+      expect(el.getAttribute('aria-describedby')).toBe('col-note');
+    });
+
+    it('lets a consumer aria-labelledby win over the field label', () => {
+      const fixture = TestBed.createComponent(HostFieldWithAria);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const el = fixture.nativeElement.querySelector('input') as HTMLElement;
+      expect(el.getAttribute('aria-labelledby')).toBe('custom-label');
+    });
+
+    it('appends a consumer aria-describedby to the field hint and error ids', () => {
+      const fixture = TestBed.createComponent(HostFieldWithAria);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const el = fixture.nativeElement.querySelector('input') as HTMLElement;
+      const ids = el.getAttribute('aria-describedby')?.split(' ') ?? [];
+      expect(ids).toContain('extra-note');
+      expect(ids.some((id) => id.endsWith('-hint'))).toBe(true);
     });
   });
 
