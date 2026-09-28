@@ -2,7 +2,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'CngxFieldSkinHost: bare skin in a table filter row',
-  subtitle: 'A filter row under the column headers, built from plain <code>&lt;input cngxFieldSkin="bare"&gt;</code> with no <code>&lt;cngx-form-field&gt;</code>. The table cell owns the boundary; the input paints only its focus underline.',
+  subtitle: 'A filter row under the column headers, built from plain <code>&lt;input cngxFieldSkin="bare"&gt;</code> with no <code>&lt;cngx-form-field&gt;</code>. The table cell owns the boundary; the input paints nothing at rest and shows only the focus ring.',
   description: 'Each filter takes its accessible name from the column header through <code>aria-labelledby</code>, so the header text is announced as the label without a second string to translate. When no visible header exists, use <code>aria-label</code> instead; a placeholder is not a label. Outside a field there is no label, hint or error to wire, so the inputs carry only <code>CngxFieldSkinHost</code> through the explicit <code>cngxFieldSkin</code> attribute; the same attribute composes with any input directive, here <code>input[cngxSearch]</code> in the location column. The consumer rule <code>td:has([data-skin=\'bare\']) { padding: 0 }</code> hands the whole cell to the input as its hit area; the input keeps its own padding and touch-target floor.',
   level: 'atom',
   audience: ['dev', 'design', 'a11y'],

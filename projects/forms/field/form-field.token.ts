@@ -134,7 +134,9 @@ export interface FormFieldConfig {
    *
    * Loses to a per-instance binding: a control resolves its own
    * `[cngxFieldSkin]` first, then the surrounding field's `[skin]`, then
-   * this value, then `'outline'`.
+   * this value, then `'outline'`. A direct-child control of a
+   * `CngxFieldBox` ignores the cascade and resolves to `'bare'`: the box
+   * carries the skin, the control inside is reset.
    */
   skin?: CngxFieldSkin;
 }
@@ -526,7 +528,7 @@ export function withRequiredMarker(marker = '*'): FormFieldFeature {
  * inside them.
  *
  * Reaches every host that composes `CngxFieldSkinHost`: `input cngxInput`,
- * `CngxAffixRow`, and the nine select-family triggers. A `[skin]` on a
+ * `CngxFieldBox`, and the nine select-family triggers. A `[skin]` on a
  * surrounding `cngx-form-field` or a `[cngxFieldSkin]` on a single control
  * still wins locally.
  *

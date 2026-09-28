@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it } from 'vitest';
@@ -338,5 +338,27 @@ describe('CngxInput', () => {
       const el = fixture.nativeElement.querySelector('input') as HTMLElement;
       expect(el.getAttribute('data-skin')).toBe('bare');
     });
+  });
+});
+
+describe('CngxInput readonly', () => {
+  it('reads a static readonly attribute without a surrounding field', () => {
+    @Component({ template: `<input cngxInput readonly />`, imports: [CngxInput] })
+    class Host {
+      readonly input = viewChild.required(CngxInput);
+    }
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+    expect(fixture.componentInstance.input().readonly()).toBe(true);
+  });
+
+  it('is not readonly without the attribute or a readonly field', () => {
+    @Component({ template: `<input cngxInput />`, imports: [CngxInput] })
+    class Host {
+      readonly input = viewChild.required(CngxInput);
+    }
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+    expect(fixture.componentInstance.input().readonly()).toBe(false);
   });
 });

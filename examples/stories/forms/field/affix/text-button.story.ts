@@ -9,13 +9,13 @@ export const STORY: DemoSpec = {
   artifact: 'standalone',
   focus: ['composition', 'a11y-pattern'],
   framework: 'signal-forms',
-  apiComponents: ['CngxSuffix', 'CngxAffixRow', 'CngxFormField'],
+  apiComponents: ['CngxSuffix', 'CngxFieldBox', 'CngxFormField'],
   moduleImports: [
     'import { form, FormField } from \'@angular/forms/signals\';',
-    'import { CngxFormField, CngxLabel, CngxAffixRow, CngxSuffix } from \'@cngx/forms/field\';',
+    'import { CngxFormField, CngxLabel, CngxFieldBox, CngxSuffix } from \'@cngx/forms/field\';',
     'import { CngxInput } from \'@cngx/forms/input\';',
   ],
-  imports: ['CngxFormField', 'CngxLabel', 'CngxAffixRow', 'CngxSuffix', 'CngxInput', 'FormField'],
+  imports: ['CngxFormField', 'CngxLabel', 'CngxFieldBox', 'CngxSuffix', 'CngxInput', 'FormField'],
   references: [
     { label: 'WCAG 4.1.2 Name, Role, Value', href: 'https://www.w3.org/WAI/WCAG21/Understanding/name-role-value.html' },
   ],
@@ -29,7 +29,7 @@ export const STORY: DemoSpec = {
   template: `  <div style="max-inline-size:24rem">
     <cngx-form-field [field]="checkoutForm.coupon" skin="fill">
       <label cngxLabel>Coupon code</label>
-      <span cngxAffixRow>
+      <span cngxFieldBox>
         <input cngxInput [formField]="checkoutForm.coupon" autocomplete="off" />
         <button type="button" cngxSuffix cngxSuffixInteractive
           [disabled]="isEmpty()"

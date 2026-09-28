@@ -1,4 +1,5 @@
 import { booleanAttribute, Directive, input } from '@angular/core';
+import { CNGX_FIELD_AFFIX } from './field-box.token';
 
 /**
  * Typed suffix affix for a form-field control - a positioned add-on rendered
@@ -12,7 +13,7 @@ import { booleanAttribute, Directive, input } from '@angular/core';
  * contributes the `cngx-field-suffix` styling-hook class only.
  *
  * ```html
- * <span cngxAffixRow>
+ * <span cngxFieldBox>
  *   <input cngxInput cngxNumericInput [field]="f.weight" />
  *   <span cngxSuffix>kg</span>
  * </span>
@@ -23,7 +24,7 @@ import { booleanAttribute, Directive, input } from '@angular/core';
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/suffix.directive.ts
  * @since 0.2.0
- * @relatedTo CngxPrefix, CngxAffixRow, CngxFormField, CngxInput, withCurrency
+ * @relatedTo CngxPrefix, CngxFieldBox, CngxFormField, CngxInput, withCurrency
  * <example-url>http://localhost:4200/#/forms/field/affix/currency-and-unit</example-url>
  * <example-url>http://localhost:4200/#/forms/field/affix/icon-and-icon-button</example-url>
  * <example-url>http://localhost:4200/#/forms/field/affix/text-button</example-url>
@@ -32,6 +33,7 @@ import { booleanAttribute, Directive, input } from '@angular/core';
   selector: '[cngxSuffix]',
   standalone: true,
   exportAs: 'cngxSuffix',
+  providers: [{ provide: CNGX_FIELD_AFFIX, useValue: true }],
   host: {
     class: 'cngx-field-suffix',
     '[class.cngx-field-affix--interactive]': 'interactive()',

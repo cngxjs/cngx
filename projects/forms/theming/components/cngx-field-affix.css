@@ -1,15 +1,54 @@
 /**
  * @overview
- * Track B structural CSS for the form-field affix row. The host carries
- * `.cngx-field-affix-row` (the `CngxAffixRow` directive) and lays its
- * `CngxPrefix` / control / `CngxSuffix` children on one baseline-aligned line:
- * the control grows to fill, the affixes hug their content. The inter-item gap
- * is the `--cngx-field-affix-gap` custom property. Purely structural - no
- * colour - so it carries no Material dependency; a consumer or bridge tints the
- * affixes through their own `--cngx-field-*` properties.
+ * Track B CSS for the field box. The host carries `.cngx-field-box` (the
+ * `CngxFieldBox` directive, alias `CngxAffixRow`) and lays its `CngxPrefix` /
+ * control / `CngxSuffix` children on one baseline-aligned line: the control
+ * grows to fill, the affixes hug their content. The inter-item gap is the
+ * `--cngx-field-affix-gap` custom property.
+ *
+ * The box is the only painted element of the field. Its height is the line
+ * box plus `2 * --cngx-field-padding-block` plus a 1px border on both sides,
+ * in every skin; density scales the padding only. This file paints the
+ * outline look and the focus ring for outline and bare boxes; the fill and
+ * bare paint lives in `cngx-field-skin.css`. A direct-child control is reset
+ * to bare there, so nothing inside the box draws a second box.
  */
 
 @layer cngx.tokens {
+  /**
+   * Border width of the field box on every side, in every skin (transparent
+   * where a skin paints none). The box height and the touch floor of the
+   * controls inside it are derived from it, so changing it keeps the box on
+   * its formula.
+   * @group Sizing
+   */
+  @property --cngx-field-border-width {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 1px;
+  }
+
+  /**
+   * Width of the focus ring an outline or bare box draws around its main
+   * control.
+   * @group Sizing
+   */
+  @property --cngx-field-ring-width {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 2px;
+  }
+
+  /**
+   * Distance between the box edge and its focus ring.
+   * @group Sizing
+   */
+  @property --cngx-field-ring-offset {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 3px;
+  }
+
   /**
    * Gap between the prefix, control, and suffix in an affix row.
    * @group Layout
@@ -22,12 +61,16 @@
 }
 
 @layer cngx.components {
-  @scope (.cngx-field-affix-row) {
+  @scope (.cngx-field-box) {
     :scope {
       /* Derive the affix-row gap from the global scale so a root [data-density]
          compacts it (SET-from-scale rule; the registered pixel initial defeats
          the use-site fallback). gap 0.5 -> sm. */
       --cngx-field-affix-gap: var(--cngx-space-sm);
+      /* The one box padding every skin shares, SET-from-scale so a root
+         [data-density] recompacts the box: sm block, md inline. */
+      --cngx-field-padding-block: var(--cngx-space-sm);
+      --cngx-field-padding-inline: var(--cngx-space-md);
       /* SET-from-scale so the interactive affix padding tracks density. The
          icon size stays font-relative on purpose - it is a glyph gauge that
          follows text scale, not the spacing rungs. */
@@ -42,6 +85,38 @@
       align-items: center;
       gap: var(--cngx-field-affix-gap, 0.5rem);
       inline-size: 100%;
+      padding-block: var(--cngx-field-padding-block, 0.5rem);
+      padding-inline: var(--cngx-field-padding-inline, 1rem);
+      min-block-size: var(--cngx-target-min, 0px);
+    }
+
+    /* Outline: the hairline the base layer draws on a lone control, moved to
+       the box. Its colour is its own token so the resting border can be
+       raised to 3:1 in one line. */
+    :scope[data-skin='outline'] {
+      border: var(--cngx-field-border-width, 1px) solid
+        var(--cngx-field-outline-color, var(--cngx-color-border, oklch(0.88 0.005 250)));
+      border-radius: var(--cngx-radius-md, 8px);
+    }
+
+    :scope[data-skin='outline']:is(
+        [data-invalid],
+        :has(> :is(input, textarea, select)[aria-invalid='true'])
+      ) {
+      border-color: var(--cngx-field-error-color, var(--cngx-color-danger, oklch(0.58 0.22 27)));
+    }
+
+    /* The control inside is reset and draws no ring, so the box draws the
+       cngx.reset ring for outline and bare. Not while focus sits anywhere
+       inside an affix - a button, or the trigger of a composite such as a
+       currency picker: the affix keeps its own ring, so the box ring marks
+       the main control only. Fill replaces the ring with its underline. */
+    :scope:is([data-skin='outline'], [data-skin='bare']):focus-within:not(
+        :has(:is(.cngx-field-prefix, .cngx-field-suffix):focus-within)
+      ) {
+      outline: var(--cngx-field-ring-width, 2px) solid
+        var(--cngx-color-primary, oklch(0.66 0.19 50));
+      outline-offset: var(--cngx-field-ring-offset, 3px);
     }
 
     /* The editable control grows; min-inline-size:0 lets it shrink past its
@@ -92,6 +167,25 @@
       color: inherit;
       font: inherit;
       cursor: pointer;
+    }
+
+    /* Inside the box the button stretches to the line box instead of the
+       2rem standalone floor, so it never pushes the box past its formula.
+       The block floor is the box's own touch floor minus padding and border:
+       0 on a fine pointer, and exactly enough on a coarse one for the box to
+       land on --cngx-target-min. The inline floor keeps the standalone rule
+       (2rem, 44px under a coarse pointer), because width is not part of the
+       box formula. A click on the box padding focuses the main control, so
+       the box, not the stretched button alone, is the touch target. */
+    :scope > .cngx-field-affix--interactive {
+      align-self: stretch;
+      min-block-size: max(
+        0px,
+        calc(
+          var(--cngx-target-min, 0px) - 2 * var(--cngx-field-padding-block, 0.5rem) - 2 *
+            var(--cngx-field-border-width, 1px)
+        )
+      );
     }
 
     .cngx-field-affix--interactive:hover {

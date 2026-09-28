@@ -43,9 +43,11 @@ export type CngxFieldSkin = 'outline' | 'fill' | 'bare';
  * - `skin?: Signal<CngxFieldSkin | undefined>` - the field's own,
  *   unresolved appearance value. The host publishes what was bound to it
  *   and nothing else; resolving the cascade is the reader's job.
+ * - `readonly?: Signal<boolean>` - whether the field is readonly, so a
+ *   field box can paint the readonly state of the field it sits in.
  *
  * Deliberately scoped to these members. The full presenter exposes
- * many more signals (constraints, ARIA IDs, dirty / pending / readonly /
+ * many more signals (constraints, ARIA IDs, dirty / pending /
  * submitting); pulling all of them through a token would over-couple the
  * control surface to the presenter's evolution. Anything richer lives
  * inside the form-field bridge directives in `@cngx/forms/field`, not
@@ -83,6 +85,11 @@ export interface CngxFormFieldHostContract {
    * own the fallback.
    */
   readonly skin?: Signal<CngxFieldSkin | undefined>;
+  /**
+   * Whether the field is readonly. Optional so non-presenter hosts need
+   * not implement it; consumers read it as `host.readonly?.() ?? false`.
+   */
+  readonly readonly?: Signal<boolean>;
 }
 
 /**

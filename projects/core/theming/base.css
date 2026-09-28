@@ -110,7 +110,7 @@
     background: transparent;
     color: var(--cngx-color-text, oklch(0.2 0.01 250));
     font: inherit;
-    font-size: var(--cngx-font-size-md, 0.9375rem);
+    font-size: var(--cngx-font-size-control, 1rem);
   }
   input,
   textarea {

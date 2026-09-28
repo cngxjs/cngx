@@ -574,13 +574,15 @@ html.dark .cngx-ex-tag[data-dim='stability'][data-value='deprecated'] {
 // boundary a bare control does not paint. The :has() rule is the documented
 // consumer rule that hands the whole cell to the input as its hit area;
 // descendant, not child, because cngx-form-field is display: contents and
-// sits between the cell and the input.
+// sits between the cell and the input. A bare control keeps the field box
+// metrics (box padding plus a 1px transparent border), so a read cell pads by
+// the same amount and entering edit mode moves no text.
 .demo-skin-table {
   border-collapse: collapse;
   inline-size: 100%;
 }
 .demo-skin-table :is(th, td) {
-  padding: var(--cngx-space-xs, 4px) var(--cngx-space-sm, 8px);
+  padding: calc(var(--cngx-space-sm, 8px) + 1px) calc(var(--cngx-space-md, 16px) + 1px);
   border: var(--cngx-border-width, 1px) solid var(--cngx-color-border, #cbd5e1);
   text-align: start;
 }
@@ -3331,10 +3333,10 @@ pre.code-block code {
 }
 
 .demo-input {
-  /* Inherits base.css <input> chrome; rule exists so consumers can chain
+  /* Inherits base.css <input> chrome, font included, so the demos measure
+   * what ships. The rule exists so consumers can chain
    * `.demo-input.demo-otp-slot` without ambiguity, and as a hook for any
    * future demo-specific input overrides. */
-  font: inherit;
 }
 
 // Stack cngx-checkbox-group / cngx-radio-group children vertically with a

@@ -1,4 +1,5 @@
 import { booleanAttribute, Directive, input } from '@angular/core';
+import { CNGX_FIELD_AFFIX } from './field-box.token';
 
 /**
  * Typed prefix affix for a form-field control - a positioned add-on rendered
@@ -16,7 +17,7 @@ import { booleanAttribute, Directive, input } from '@angular/core';
  * a styling hook, not a layout opinion.
  *
  * ```html
- * <span cngxAffixRow>
+ * <span cngxFieldBox>
  *   <span cngxPrefix>$</span>
  *   <input cngxInput cngxNumericInput [field]="f.amount" />
  * </span>
@@ -27,7 +28,7 @@ import { booleanAttribute, Directive, input } from '@angular/core';
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/prefix.directive.ts
  * @since 0.2.0
- * @relatedTo CngxSuffix, CngxAffixRow, CngxFormField, CngxInput, withCurrency
+ * @relatedTo CngxSuffix, CngxFieldBox, CngxFormField, CngxInput, withCurrency
  * <example-url>http://localhost:4200/#/forms/field/affix/currency-and-unit</example-url>
  * <example-url>http://localhost:4200/#/forms/field/affix/icon-and-icon-button</example-url>
  * <example-url>http://localhost:4200/#/forms/field/affix/select-in-field</example-url>
@@ -36,6 +37,7 @@ import { booleanAttribute, Directive, input } from '@angular/core';
   selector: '[cngxPrefix]',
   standalone: true,
   exportAs: 'cngxPrefix',
+  providers: [{ provide: CNGX_FIELD_AFFIX, useValue: true }],
   host: {
     class: 'cngx-field-prefix',
     '[class.cngx-field-affix--interactive]': 'interactive()',

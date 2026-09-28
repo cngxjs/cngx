@@ -3,16 +3,16 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxPrefix: select-in-field affix',
   subtitle: 'An amount field with a currency picker in front of the value, inside one <code>&lt;cngx-form-field&gt;</code>. The affix row is the box, so picker and amount share one surface and one underline.',
-  description: 'A field has exactly one control: here the amount input, which owns the label, the ARIA state and the value. The currency <code>&lt;cngx-select&gt;</code> is a second control living inside that field, so it must be detached from it. The <code>demoAffixDetach</code> directive, a sibling file of this story, provides <code>CngxFormFieldPresenter</code> as <code>null</code> for the select element. Without it the select would register a competing <code>CNGX_FORM_FIELD_CONTROL</code>, copy the amount field\'s error state, and try to write the currency into the amount. The select keeps its own accessible name through <code>[label]</code>; <code>cngxPrefixInteractive</code> keeps it in the tab order. Inside the skinned row the select trigger keeps its outline chrome as a nested control and draws no second surface or underline; the row draws the only one. The same shield sits inside <code>CngxPhoneInput</code> for its country picker.',
+  description: 'A field has exactly one control: here the amount input, which owns the label, the ARIA state and the value. The currency <code>&lt;cngx-select&gt;</code> is a second control living inside that field, so it must be detached from it. The <code>demoAffixDetach</code> directive, a sibling file of this story, provides <code>CngxFormFieldPresenter</code> as <code>null</code> for the select element. Without it the select would register a competing <code>CNGX_FORM_FIELD_CONTROL</code>, copy the amount field\'s error state, and try to write the currency into the amount. The select keeps its own accessible name through <code>[label]</code>; <code>cngxPrefixInteractive</code> keeps it in the tab order. The row is the field box: the nested select resolves to bare and drops its trigger chrome, so the row draws the only surface, border and underline in every skin. The same shield sits inside <code>CngxPhoneInput</code> for its country picker.',
   level: 'molecule',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
   focus: ['composition', 'integration'],
   framework: 'signal-forms',
-  apiComponents: ['CngxPrefix', 'CngxAffixRow', 'CngxSelect', 'CngxFormField'],
+  apiComponents: ['CngxPrefix', 'CngxFieldBox', 'CngxSelect', 'CngxFormField'],
   moduleImports: [
     'import { form, schema, required, pattern, FormField } from \'@angular/forms/signals\';',
-    'import { CngxFormField, CngxLabel, CngxFieldErrors, CngxAffixRow, CngxPrefix } from \'@cngx/forms/field\';',
+    'import { CngxFormField, CngxLabel, CngxFieldErrors, CngxFieldBox, CngxPrefix } from \'@cngx/forms/field\';',
     'import { CngxInput } from \'@cngx/forms/input\';',
     'import { CngxSelect, type CngxSelectOptionDef } from \'@cngx/forms/select\';',
     'import { DemoAffixDetach } from \'./_affix-detach.directive\';',
@@ -21,7 +21,7 @@ export const STORY: DemoSpec = {
     'CngxFormField',
     'CngxLabel',
     'CngxFieldErrors',
-    'CngxAffixRow',
+    'CngxFieldBox',
     'CngxPrefix',
     'CngxInput',
     'CngxSelect',
@@ -42,7 +42,7 @@ export const STORY: DemoSpec = {
   template: `  <div style="max-inline-size:24rem">
     <cngx-form-field [field]="paymentForm.amount" skin="fill">
       <label cngxLabel>Transfer amount</label>
-      <span cngxAffixRow>
+      <span cngxFieldBox>
         <cngx-select cngxPrefix cngxPrefixInteractive demoAffixDetach
           [label]="'Currency'" [options]="currencies" [(value)]="currency" />
         <input cngxInput [formField]="paymentForm.amount" inputmode="decimal" />

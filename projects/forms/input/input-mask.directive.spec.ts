@@ -4,6 +4,8 @@ import { LOCALE_ID } from '@angular/core';
 import { CNGX_FORM_FIELD_HOST, type CngxFormFieldHostContract } from '@cngx/core/tokens';
 import { CNGX_VALUE_TRANSFORMER, type CngxValueTransformer } from '@cngx/forms/field';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { CngxFieldSkinHost, provideFormField, withFieldSkin } from '@cngx/forms/field';
+import { CngxInput } from './input.directive';
 import { CngxInputMask, type MaskTokenMap } from './input-mask.directive';
 import { provideInputConfig, withPhonePatterns } from './input-config';
 import { loadAllMaskPresets } from './mask-presets/registry';
@@ -848,5 +850,37 @@ describe('CngxInputMask', () => {
       expect(directive.rawValue()).toBe('');
       expect(input.value).toBe('(___) ___-____');
     });
+  });
+});
+
+@Component({
+  template: `<input cngxInput [cngxInputMask]="'000'" />`,
+  imports: [CngxInput, CngxInputMask],
+})
+class ComposedCngxInputMaskHost {}
+
+describe('CngxInputMask composed with cngxInput', () => {
+  it('creates under a skin config and writes the config skin once', () => {
+    TestBed.configureTestingModule({ providers: [provideFormField(withFieldSkin('fill'))] });
+    const fixture = TestBed.createComponent(ComposedCngxInputMaskHost);
+    expect(() => fixture.detectChanges()).not.toThrow();
+    const input = fixture.nativeElement.querySelector('input') as HTMLInputElement;
+    expect(input.getAttribute('data-skin')).toBe('fill');
+    expect(
+      fixture.debugElement.query((d) => d.nativeElement === input).injector.get(CngxFieldSkinHost),
+    ).toBeTruthy();
+  });
+
+  // CngxInput already hosts CngxFieldSkinHost; a second host on the same
+  // element throws NG0309, so the value directive must never grow its own.
+  it('does not host CngxFieldSkinHost itself', () => {
+    const hostsOf = (type: unknown): unknown[] => {
+      const def = (type as { ɵdir: { hostDirectives?: unknown[] | null } }).ɵdir;
+      return (def.hostDirectives ?? []).map((entry) =>
+        typeof entry === 'function' ? entry : (entry as { directive: unknown }).directive,
+      );
+    };
+    expect(hostsOf(CngxInput)).toContain(CngxFieldSkinHost);
+    expect(hostsOf(CngxInputMask)).not.toContain(CngxFieldSkinHost);
   });
 });

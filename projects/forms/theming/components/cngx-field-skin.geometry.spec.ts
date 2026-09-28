@@ -42,23 +42,39 @@ import { afterEach, describe, expect, it } from 'vitest';
     ></span>
     <input class="solo-bare" type="text" data-skin="bare" />
     <input class="bare-invalid" type="text" data-skin="bare" aria-invalid="true" />
-    <span class="cngx-field-affix-row bare-row" data-skin="bare">
+    <div data-color-scheme="dark">
+      <input class="bare-invalid-dark" type="text" data-skin="bare" aria-invalid="true" />
+    </div>
+    <span class="cngx-field-box cngx-field-affix-row bare-row" data-skin="bare">
       <span class="cngx-field-prefix">$</span>
       <input class="bare-row-input" type="text" data-skin="bare" aria-invalid="true" />
     </span>
     <div data-color-scheme="light">
       <input class="fill-light" type="text" data-skin="fill" />
-      <span class="probe-underline-light" style="background: var(--cngx-field-underline-focus-color)"></span>
+      <span
+        class="probe-underline-light"
+        style="background: var(--cngx-field-underline-focus-color)"
+      ></span>
       <span class="probe-hover-light" style="background: var(--cngx-field-fill-bg-hover)"></span>
     </div>
     <div data-color-scheme="dark">
       <input class="fill-dark" type="text" data-skin="fill" />
-      <span class="probe-underline-dark" style="background: var(--cngx-field-underline-focus-color)"></span>
+      <span
+        class="probe-underline-dark"
+        style="background: var(--cngx-field-underline-focus-color)"
+      ></span>
       <span class="probe-hover-dark" style="background: var(--cngx-field-fill-bg-hover)"></span>
     </div>
-    <span class="cngx-field-affix-row row" data-skin="fill">
+    <span class="cngx-field-box cngx-field-affix-row row" data-skin="fill">
       <span class="cngx-field-prefix">$</span>
-      <input class="nested-fill" type="text" data-skin="fill" />
+      <input class="nested-fill" type="text" data-skin="bare" />
+    </span>
+    <span class="cngx-field-box cngx-field-affix-row outline-row" data-skin="outline">
+      <span class="cngx-field-prefix">$</span>
+      <input class="nested-outline" type="text" data-skin="bare" />
+    </span>
+    <span class="cngx-field-box cngx-field-affix-row projected-row" data-skin="outline">
+      <input class="projected-fill" type="text" data-skin="fill" aria-invalid="true" />
     </span>
     <table>
       <tbody>
@@ -141,8 +157,11 @@ afterEach(() => {
 describe('field skin geometry', () => {
   it('draws the fill skin as an underline, not a box', () => {
     const input = query(mount(), '.solo-fill');
+    // 1px on every side keeps the shared box formula; only the bottom edge
+    // is painted.
     expect(computedValue(input, 'border-bottom-width')).toBe('1px');
-    expect(computedValue(input, 'border-top-width')).toBe('0px');
+    expect(computedValue(input, 'border-top-width')).toBe('1px');
+    expect(computedValue(input, 'border-top-color')).toBe('rgba(0, 0, 0, 0)');
   });
 
   it('grows the underline into the focus colour on focus', async () => {
@@ -155,7 +174,7 @@ describe('field skin geometry', () => {
 
   it('strips surface and border on the bare skin', () => {
     const input = query(mount(), '.solo-bare');
-    expect(computedValue(input, 'border-bottom-width')).toBe('0px');
+    expect(computedValue(input, 'border-bottom-color')).toBe('rgba(0, 0, 0, 0)');
     expect(computedValue(input, 'background-color')).toBe('rgba(0, 0, 0, 0)');
   });
 
@@ -168,6 +187,27 @@ describe('field skin geometry', () => {
     expect(computedValue(nested, 'box-shadow')).toBe('none');
     expect(computedValue(nested, 'background-color')).toBe('rgba(0, 0, 0, 0)');
     expect(computedValue(row, 'border-bottom-width')).toBe('1px');
+  });
+
+  it('moves the outline hairline from the control to an outline box', () => {
+    const root = mount();
+    const row = query(root, '.outline-row');
+    const nested = query(root, '.nested-outline');
+    for (const side of ['top', 'right', 'bottom', 'left']) {
+      expect(computedValue(row, `border-${side}-width`)).toBe('1px');
+      expect(computedValue(row, `border-${side}-style`)).toBe('solid');
+    }
+    expect(computedValue(nested, 'border-top-width')).toBe('0px');
+    expect(computedValue(nested, 'padding-top')).toBe('0px');
+  });
+
+  // A projected control the box cannot see as a content child keeps its own
+  // resolved skin; the box must still be the only painted element.
+  it('paints no skin on a control that kept its own skin inside a box', () => {
+    const input = query(mount(), '.projected-fill');
+    expect(computedValue(input, 'background-color')).toBe('rgba(0, 0, 0, 0)');
+    expect(computedValue(input, 'border-bottom-width')).toBe('0px');
+    expect(computedValue(input, 'box-shadow')).toBe('none');
   });
 
   it('fills a zero-padding table cell on the inline axis', () => {
@@ -203,16 +243,22 @@ describe('field skin geometry', () => {
     const invalid = query(root, '.bare-invalid');
     const valid = query(root, '.solo-bare');
     expect(computedValue(invalid, 'box-shadow')).toBe('none');
-    expect(computedValue(invalid, 'border-bottom-width')).toBe('0px');
+    expect(computedValue(invalid, 'border-bottom-color')).toBe('rgba(0, 0, 0, 0)');
     expect(computedValue(invalid, 'color')).not.toBe(computedValue(valid, 'color'));
   });
 
-  it('rings a bare error so an empty field still shows it', () => {
-    const root = mount();
-    expect(computedValue(query(root, '.bare-invalid'), 'outline-style')).toBe('solid');
-    expect(computedValue(query(root, '.bare-invalid'), 'outline-width')).toBe('1px');
-    expect(computedValue(query(root, '.solo-bare'), 'outline-style')).toBe('none');
-  });
+  // A red mixed toward the bluish text colour in oklch walks the hue through
+  // 360 and renders magenta; the error text has to stay red in both schemes.
+  it.each(['.bare-invalid', '.bare-invalid-dark'])(
+    'keeps the %s error text red, not magenta',
+    (selector) => {
+      const [r, g, b] = toRgb(getComputedStyle(query(mount(), selector)).color);
+      // Red keeps blue level with green; the oklch hue walk lifts blue well
+      // above green (light #9a3c6c, dark #eb89b7), which is what reads magenta.
+      expect(r).toBeGreaterThan(g);
+      expect(b - g).toBeLessThan(20);
+    },
+  );
 
   it('draws one bare error ring per affix row, on the row', () => {
     const root = mount();

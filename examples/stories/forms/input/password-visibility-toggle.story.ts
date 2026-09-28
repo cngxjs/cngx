@@ -15,10 +15,10 @@ export const STORY: DemoSpec = {
     'import { CngxRadioGroup, CngxRadio } from \'@cngx/common/interactive\';',
     'import type { CngxFieldSkin } from \'@cngx/forms/field\';',
     'import { form, schema, required, email, minLength, maxLength, FormField } from \'@angular/forms/signals\';',
-    'import { CngxFormField, CngxLabel, CngxHint, CngxFieldErrors, CngxAffixRow, CngxSuffix } from \'@cngx/forms/field\';',
+    'import { CngxFormField, CngxLabel, CngxHint, CngxFieldErrors, CngxFieldBox, CngxSuffix } from \'@cngx/forms/field\';',
     'import { CngxInput, CngxPasswordToggle } from \'@cngx/forms/input\';',
   ],
-  imports: ['CngxFormField', 'CngxLabel', 'CngxInput', 'CngxHint', 'CngxFieldErrors', 'CngxPasswordToggle', 'FormField', 'CngxAffixRow', 'CngxSuffix', 'CngxRadioGroup', 'CngxRadio'],
+  imports: ['CngxFormField', 'CngxLabel', 'CngxInput', 'CngxHint', 'CngxFieldErrors', 'CngxPasswordToggle', 'FormField', 'CngxFieldBox', 'CngxSuffix', 'CngxRadioGroup', 'CngxRadio'],
   setup: `private readonly loginModel = signal({ email: '', password: '' });
   private readonly loginSchema = schema<{ email: string; password: string }>(root => {
     required(root.email);
@@ -34,7 +34,7 @@ export const STORY: DemoSpec = {
     <div class="demo-field">
       <cngx-form-field [field]="passwordField" [skin]="skin()">
         <label cngxLabel>Password</label>
-        <span cngxAffixRow>
+        <span cngxFieldBox>
           <input cngxInput cngxPasswordToggle #pwd="cngxPasswordToggle" [formField]="passwordField"
             placeholder="At least 8 characters"
           />

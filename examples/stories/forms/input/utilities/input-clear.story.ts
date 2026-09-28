@@ -13,16 +13,16 @@ export const STORY: DemoSpec = {
   moduleImports: [
     'import { CngxRadioGroup, CngxRadio } from \'@cngx/common/interactive\';',
     'import type { CngxFieldSkin } from \'@cngx/forms/field\';',
-    'import { CngxAffixRow, CngxSuffix } from \'@cngx/forms/field\';',
+    'import { CngxFieldBox, CngxSuffix } from \'@cngx/forms/field\';',
     'import { CngxInput, CngxInputClear } from \'@cngx/forms/input\';',
   ],
-  imports: ['CngxAffixRow', 'CngxSuffix', 'CngxInput', 'CngxInputClear', 'CngxRadioGroup', 'CngxRadio'],
+  imports: ['CngxFieldBox', 'CngxSuffix', 'CngxInput', 'CngxInputClear', 'CngxRadioGroup', 'CngxRadio'],
   setup: `protected readonly skin = signal<CngxFieldSkin>('outline');`,
   template: `
   <div class="demo-form">
     <div class="demo-field">
       <label class="demo-label" for="ic-name">Name</label>
-      <span cngxAffixRow [skin]="skin()">
+      <span cngxFieldBox [skin]="skin()">
         <input id="ic-name" cngxInput [skin]="skin()" #nameInput placeholder="Type something..." class="demo-input" />
         <button type="button" cngxSuffix cngxSuffixInteractive [cngxInputClear]="nameInput" #clr="cngxInputClear"
           [disabled]="!clr.hasValue()">

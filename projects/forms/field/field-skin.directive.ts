@@ -1,5 +1,6 @@
-import { computed, Directive, inject, input } from '@angular/core';
+import { computed, Directive, ElementRef, inject, input } from '@angular/core';
 import { CNGX_FORM_FIELD_HOST, type CngxFieldSkin } from '@cngx/core/tokens';
+import { CNGX_FIELD_BOX } from './field-box.token';
 import { CNGX_FORM_FIELD_CONFIG } from './form-field.token';
 
 /**
@@ -21,9 +22,16 @@ import { CNGX_FORM_FIELD_CONFIG } from './form-field.token';
  * control - still resolves its own input and the app-wide default, which is
  * exactly what the `bare` skin is for.
  *
- * **Where it is already composed.** `CngxInput`, `CngxAffixRow` and the nine
+ * **Where it is already composed.** `CngxInput`, `CngxFieldBox` and the nine
  * select-family triggers host this directive and re-alias its input to the
  * short `skin`, so `<input cngxInput skin="bare">` works out of the box.
+ *
+ * **Inside a box.** A host that is a direct-child control of a
+ * {@link CngxFieldBox} resolves to `'bare'` whatever it is bound to: the box
+ * is the painted element, the control inside is not. The box itself writes
+ * its resolved skin in every case, `'outline'` included, so it can be
+ * styled in every skin. A control behind a wrapper element is not a direct
+ * child and follows the cascade above.
  *
  * `CngxFormField` does NOT host it - the field is `display: contents` and has
  * no box to paint. It forwards its own `[skin]` into `CngxFormFieldPresenter`,
@@ -31,12 +39,19 @@ import { CNGX_FORM_FIELD_CONFIG } from './form-field.token';
  * inside then resolves it through the cascade above. Binding
  * `[cngxFieldSkin]` on `cngx-form-field` itself does nothing.
  *
- * Controls that do not host `cngxInput` opt in with the explicit attribute:
+ * Value directives compose with `cngxInput`: `<input cngxInput
+ * cngxNumericInput>` follows `withFieldSkin(...)` with no extra attribute.
+ * Never add this directive to a value directive's host - `CngxInput` already
+ * hosts it, and a second skin host on one element throws NG0309.
+ *
+ * A lone value directive is not a field control, and an OTP slot or a listbox
+ * search owns its own chrome, so these opt in with the explicit attribute:
  * `CngxNumericInput`, `CngxInputMask`, `CngxInputFormat`, `CngxOtpSlot`,
  * `input[cngxListboxSearch]`, `input[cngxSearch]`, `input[cngxDgaFilter]`.
  * They are not reached by `withFieldSkin(...)` either - the config tier is
  * read by this directive, so a control that does not compose it stays on the
- * base outline look until the attribute is set.
+ * base outline look until the attribute is set. Inside a `CngxFieldBox` none
+ * of them needs the attribute: the box reset strips their paint.
  *
  * ```html
  * <input cngxNumericInput cngxFieldSkin="bare" />
@@ -46,7 +61,7 @@ import { CNGX_FORM_FIELD_CONFIG } from './form-field.token';
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/field-skin.directive.ts
  * @since 0.1.0
- * @relatedTo CngxFormField, CngxInput, CngxAffixRow, withFieldSkin
+ * @relatedTo CngxFormField, CngxInput, CngxFieldBox, withFieldSkin
  * <example-url>http://localhost:4200/#/forms/field/skin/fill</example-url>
  * <example-url>http://localhost:4200/#/forms/field/skin/bare-table-filter</example-url>
  * <example-url>http://localhost:4200/#/forms/field/skin/bare-cell-edit</example-url>
@@ -63,6 +78,15 @@ import { CNGX_FORM_FIELD_CONFIG } from './form-field.token';
 export class CngxFieldSkinHost {
   private readonly host = inject(CNGX_FORM_FIELD_HOST, { optional: true });
   private readonly config = inject(CNGX_FORM_FIELD_CONFIG);
+  private readonly element = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+  private readonly outerBox = inject(CNGX_FIELD_BOX, { skipSelf: true, optional: true });
+  private readonly isBox = inject(CNGX_FIELD_BOX, { self: true, optional: true }) !== null;
+
+  /** True when this host is a direct-child control of a `CngxFieldBox`. */
+  private readonly nested = computed(
+    () =>
+      this.outerBox?.controlElements().some((ref) => ref.nativeElement === this.element) ?? false,
+  );
 
   /**
    * Appearance for this control. Unset falls through to the field, then the
@@ -76,9 +100,17 @@ export class CngxFieldSkinHost {
     transform: (value) => (value === '' ? undefined : value),
   });
 
-  /** The resolved skin as an attribute value; `null` for the default `'outline'`. */
+  /**
+   * The resolved skin as an attribute value. A direct-child control of a box
+   * is always `'bare'`; a box writes every skin, `'outline'` included; any
+   * other host writes `null` for the default `'outline'`.
+   */
   protected readonly dataSkin = computed(() => {
+    if (this.nested()) {
+      return 'bare';
+    }
     const resolved = this.skin() ?? this.host?.skin?.() ?? this.config.skin ?? 'outline';
-    return resolved === 'outline' ? null : resolved;
+    const keepsOutline = this.isBox;
+    return resolved === 'outline' && !keepsOutline ? null : resolved;
   });
 }

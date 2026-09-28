@@ -608,9 +608,11 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   /** @internal */ protected readonly isCommittingOption =
     this.core.panelHostAdapter.isCommittingOption;
 
+  // `''` counts as no selection: Signal Forms start a string field at '', and
+  // the trigger must show that as the placeholder, styled as one.
   protected isEmpty(): boolean {
     const v = this.value();
-    return v === undefined || v === null;
+    return v === undefined || v === null || v === '';
   }
 
   constructor() {

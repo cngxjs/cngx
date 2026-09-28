@@ -97,4 +97,12 @@ describe('field Material bridge', () => {
       expect(CONSUMED).toContain(name);
     }
   });
+
+  // The box class is the stable hook; the affix-row class only survives as a
+  // deprecated alias and must not be what the bridge depends on.
+  it('keys the skin tokens on the field box class', () => {
+    const css = compiledCss('v1');
+    expect(css).toContain('.cngx-field-box[data-skin]');
+    expect(css).not.toContain('.cngx-field-affix-row');
+  });
 });

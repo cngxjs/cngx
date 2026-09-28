@@ -180,10 +180,11 @@
 
     .cngx-select__trigger {
       /* Derive trigger spacing from the global scale so a root [data-density]
-         compacts it (SET-from-scale rule; read on the trigger host). gap 0.5
-         -> sm; padding 0.5/0.75 -> sm/sm (inline 12 tie sm/md -> sm). */
+         compacts it (SET-from-scale rule; read on the trigger host). gap 0.5 ->
+         sm; padding 0.5/0.75 -> sm/md; inline md, the shared box inline
+         padding, so the value starts at the same x as in an input. */
       --cngx-select-gap: var(--cngx-space-sm);
-      --cngx-select-padding: var(--cngx-space-sm) var(--cngx-space-sm);
+      --cngx-select-padding: var(--cngx-space-sm) var(--cngx-space-md);
       /* Self-contained sizing: without this the min-height contract depends
          on a global border-box reset the consumer may not load. */
       box-sizing: border-box;

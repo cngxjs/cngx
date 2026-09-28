@@ -30,6 +30,13 @@ export interface CngxFormFieldControl {
   readonly disabled: Signal<boolean>;
   /** Whether the control is in an error state. */
   readonly errorState: Signal<boolean>;
+  /**
+   * Whether the control is readonly. Optional so controls without a
+   * readonly concept keep satisfying the contract; a field box reads it as
+   * `control.readonly?.() ?? false` to paint the readonly state of its main
+   * control outside a `cngx-form-field` too.
+   */
+  readonly readonly?: Signal<boolean>;
   /** Programmatically focus the control. */
   focus?(options?: FocusOptions): void;
 }

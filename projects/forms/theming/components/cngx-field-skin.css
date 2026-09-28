@@ -1,11 +1,18 @@
 /**
  * @overview
- * Track B CSS for the `fill` and `bare` form-field skins. The box is
- * whatever element carries `data-skin` - a native control, or the
- * `.cngx-field-affix-row` when affixes are present - never the
- * `display: contents` field shell. `CngxFieldSkinHost` writes the
- * attribute; `outline` writes nothing, because `cngx.base` already paints
- * the outline look.
+ * Track B CSS for the `fill` and `bare` form-field skins. The box is the
+ * outermost element that carries `data-skin` - a `.cngx-field-box`, or a
+ * lone native control - never the `display: contents` field shell.
+ * `CngxFieldSkinHost` writes the attribute. On a lone control `outline`
+ * writes nothing, because `cngx.base` already paints the outline look; a
+ * box writes `outline` too and paints it in `cngx-field-affix.css`.
+ *
+ * One box model in every skin: height is the line box plus
+ * `2 * --cngx-field-padding-block` plus a 1px border on both sides, with the
+ * border painted transparent where a skin draws none. Density scales the
+ * padding only. A direct-child control of a box resolves to `bare`, gets
+ * none of the bare paint (the bare root excludes `.cngx-field-box > *`), and
+ * is reset at the end of this file, so the box paints every state.
  *
  * `fill` is the filled-with-underline treatment: grey surface, hairline
  * bottom border, and a `--cngx-field-underline-size` underline in the focus
@@ -16,11 +23,13 @@
  * an error as danger-tinted text plus a thin danger ring, never as a line, so
  * it cannot be mistaken for `fill`.
  *
- * Both key their error / disabled / readonly variants on native and ARIA
- * truth first (`[aria-invalid='true']`, `:disabled`, `[readonly]`,
- * `[aria-readonly='true']`) and on the presenter's `.cngx-field--*` classes
- * second, so they render correctly on a bare input with no surrounding
- * field and under `cngxBindField`, Reactive Forms or any CVA.
+ * Both key their error / disabled / readonly variants on the box's own
+ * state: native and ARIA truth on a lone control (`[aria-invalid='true']`,
+ * `:disabled`, `[readonly]`, `[aria-readonly='true']`), and the derived
+ * `data-invalid` / `data-disabled` / `data-readonly` a `CngxFieldBox`
+ * publishes from its main control. A box around a control with no cngx
+ * directive falls back to a child-bounded `:has(> ...)`, so a disabled
+ * affix button never greys the row.
  *
  * Four colour tokens are left unregistered on purpose so a theme can unset
  * them and the `var()` fallback chain takes over:
@@ -90,17 +99,21 @@
 }
 
 @layer cngx.components {
-  @scope (:is(input, textarea, select)[data-skin='fill'], .cngx-field-affix-row[data-skin='fill']) {
+  @scope (:is(input, textarea, select)[data-skin='fill']:not(.cngx-field-box > *), .cngx-field-box[data-skin='fill']) {
     :scope {
       /* SET-from-scale so a root [data-density] recompacts the fill box.
-         Matches the outline padding in cngx.base: sm block, md inline. */
-      --cngx-field-fill-padding-block: var(--cngx-space-sm);
-      --cngx-field-fill-padding-inline: var(--cngx-space-md);
-      padding-block: var(--cngx-field-fill-padding-block, 0.5rem);
-      padding-inline: var(--cngx-field-fill-padding-inline, 1rem);
-      border: 0;
-      border-block-end: 1px solid
-        var(--cngx-field-underline-color, var(--cngx-color-border, oklch(0.88 0.005 250)));
+         The shared box padding, same as outline: sm block, md inline. */
+      --cngx-field-padding-block: var(--cngx-space-sm);
+      --cngx-field-padding-inline: var(--cngx-space-md);
+      padding-block: var(--cngx-field-padding-block, 0.5rem);
+      padding-inline: var(--cngx-field-padding-inline, 1rem);
+      /* 1px transparent on top and the sides keeps the box formula; only the
+         bottom edge is painted. */
+      border: var(--cngx-field-border-width, 1px) solid transparent;
+      border-block-end-color: var(
+        --cngx-field-underline-color,
+        var(--cngx-color-border, oklch(0.88 0.005 250))
+      );
       border-radius: var(--cngx-radius-md, 8px) var(--cngx-radius-md, 8px) 0 0;
       background: var(
         --cngx-field-fill-bg,
@@ -130,8 +143,11 @@
     }
 
     /* Suppressed on :scope only - an interactive CngxSuffix inside the box
-       keeps the cngx.reset ring. The underline replaces it here. */
-    :scope:is(:focus-visible, :focus-within) {
+       keeps the cngx.reset ring. The underline replaces it here, and marks
+       the main control only: focus inside an affix draws no underline. */
+    :scope:is(:focus-visible, :focus-within):not(
+        :has(:is(.cngx-field-prefix, .cngx-field-suffix):focus-within)
+      ) {
       outline: none;
       box-shadow: inset 0 calc(-1 * var(--cngx-field-underline-size, 2px)) 0
         var(--cngx-field-underline-focus-color, oklch(0.58 0.19 50));
@@ -149,24 +165,24 @@
           );
     }
 
-    :scope:is([aria-invalid='true'], .cngx-field--error *),
-    :scope:has([aria-invalid='true']) {
+    :scope:is([aria-invalid='true'], [data-invalid]),
+    :scope:has(> :is(input, textarea, select)[aria-invalid='true']) {
       border-block-end-color: var(
         --cngx-field-error-color,
         var(--cngx-color-danger, oklch(0.58 0.22 27))
       );
     }
 
-    :scope:is(:disabled, .cngx-field--disabled *),
-    :scope:has(:disabled) {
+    :scope:is(:disabled, [data-disabled]),
+    :scope:has(> :is(input, textarea, select):disabled) {
       border-block-end-style: dashed;
       opacity: var(--cngx-field-disabled-opacity, 0.6);
     }
 
     /* Readonly is editable-looking but inert: keep the resting surface on
        hover so the control does not invite a click it will not honour. */
-    :scope:is([readonly], [aria-readonly='true'], .cngx-field--readonly *):hover,
-    :scope:has([readonly], [aria-readonly='true']):hover {
+    :scope:is([readonly], [aria-readonly='true'], [data-readonly]):hover,
+    :scope:has(> :is(input, textarea, select):is([readonly], [aria-readonly='true'])):hover {
       background: var(
         --cngx-field-fill-bg,
         color-mix(in oklch, var(--cngx-color-text, oklch(0.2 0.01 250)) 6%, transparent)
@@ -180,12 +196,19 @@
     }
   }
 
-  @scope (:is(input, textarea, select)[data-skin='bare'], .cngx-field-affix-row[data-skin='bare']) {
+  /* A control that sits in a box is inert: both skin roots exclude a DOM
+     child of a box, so none of the skin state paint lands inside a box, even
+     for a projected control that kept its own resolved skin. The box paints
+     every state. */
+  @scope (:is(input, textarea, select)[data-skin='bare']:not(.cngx-field-box > *), .cngx-field-box[data-skin='bare']) {
     :scope {
-      /* SET-from-scale; bare is the compact rung by definition. */
-      --cngx-field-bare-padding: var(--cngx-space-xs);
-      padding: var(--cngx-field-bare-padding, 0.25rem);
-      border: 0;
+      /* Bare is outline metrics with transparent borders: a skin is paint,
+         size is density. SET-from-scale, same pair as the other skins. */
+      --cngx-field-padding-block: var(--cngx-space-sm);
+      --cngx-field-padding-inline: var(--cngx-space-md);
+      padding-block: var(--cngx-field-padding-block, 0.5rem);
+      padding-inline: var(--cngx-field-padding-inline, 1rem);
+      border: var(--cngx-field-border-width, 1px) solid transparent;
       border-radius: 0;
       background: transparent;
       /* Bare exists inside something that owns the area - a cell, a toolbar
@@ -198,15 +221,16 @@
        cngx.reset ring untouched. An error tints the value text; the danger
        token alone measures about 4:1 on white, under the 4.5:1 text floor, so
        it is pulled toward the text colour: darker on light, lighter on dark.
-       With an affix row as the box the value sits in the nested input, which
-       is tinted too. */
-    :scope:is([aria-invalid='true'], .cngx-field--error *),
-    :scope:has([aria-invalid='true']),
-    :scope:has([aria-invalid='true']) > :is(input, textarea, select) {
+       Mixed in oklab, not oklch: an oklch mix interpolates the hue from red
+       (25) toward the bluish text (250) the short way round through 360 and
+       lands on magenta. In a box the nested control inherits the colour
+       through its reset. */
+    :scope:is([aria-invalid='true'], [data-invalid]),
+    :scope:has(> :is(input, textarea, select)[aria-invalid='true']) {
       color: var(
         --cngx-field-bare-error-text-color,
         color-mix(
-          in oklch,
+          in oklab,
           var(--cngx-color-danger, oklch(0.6 0.18 25)) 75%,
           var(--cngx-color-text, oklch(0.2 0.01 250))
         )
@@ -216,42 +240,54 @@
     /* Text alone vanishes on an empty field, which is the most common error
        (required). A 1px ring marks the box as well - thinner than the 2px
        focus ring, and dropped while focused so it never hides that ring. */
-    :scope:is([aria-invalid='true'], .cngx-field--error *):not(:focus-within),
-    :scope:has([aria-invalid='true']):not(:focus-within) {
+    :scope:is([aria-invalid='true'], [data-invalid]):not(:focus-within),
+    :scope:has(> :is(input, textarea, select)[aria-invalid='true']):not(:focus-within) {
       outline: 1px solid
         var(--cngx-field-error-color, var(--cngx-color-danger, oklch(0.58 0.22 27)));
       outline-offset: 2px;
     }
 
-    :scope:is(:disabled, .cngx-field--disabled *),
-    :scope:has(:disabled) {
+    :scope:is(:disabled, [data-disabled]),
+    :scope:has(> :is(input, textarea, select):disabled) {
       opacity: var(--cngx-field-disabled-opacity, 0.6);
     }
   }
 
-  /* Nested boxes: when an affix row is the box, the control inside must not
-     draw a second surface or a second underline. For bare the nested input
-     keeps its own focus ring - the row is not focusable itself. Authored outside both
-     scopes at (0,3,1) so it beats the control's own (0,2,0) :scope rules,
-     including its focus and autofill shadows. */
-  .cngx-field-affix-row[data-skin='fill'] > :is(input, textarea, select)[data-skin='fill'],
-  .cngx-field-affix-row[data-skin='fill']
-    > :is(input, textarea, select)[data-skin='fill']:is(:focus-visible, :focus-within, :autofill),
-  .cngx-field-affix-row[data-skin='bare'] > :is(input, textarea, select)[data-skin='bare'],
-  .cngx-field-affix-row[data-skin='bare']
-    > :is(input, textarea, select)[data-skin='bare']:is(:focus-visible, :focus-within, :autofill) {
-    padding-inline: 0;
+  /* Nested controls: a direct child of a box is bare and inert, so this reset
+     is all that styles it on top of cngx.base. No surface, no border, no
+     padding and no ring of its own - the box draws them. The value text
+     takes the box colour, so the box's state decides it. The floor is the
+     box's touch floor minus its padding and border: 0 on a fine pointer, and
+     exactly enough on a coarse one for the box to land on --cngx-target-min. */
+  .cngx-field-box[data-skin] > :is(input, textarea, select),
+  .cngx-field-box[data-skin] > :is(input, textarea, select):is(:focus-visible, :autofill) {
+    min-block-size: max(
+      0px,
+      calc(
+        var(--cngx-target-min, 0px) - 2 * var(--cngx-field-padding-block, 0.5rem) - 2 *
+          var(--cngx-field-border-width, 1px)
+      )
+    );
+    padding: 0;
     border: 0;
     border-radius: 0;
     background: transparent;
     box-shadow: none;
+    outline: none;
+    color: inherit;
   }
 
-  /* The bare row draws the error ring; the nested input must not draw a
-     second one. Its focus ring stays - the row is not focusable. */
-  .cngx-field-affix-row[data-skin='bare']
-    > :is(input, textarea, select)[data-skin='bare']:not(:focus-visible) {
-    outline: none;
+  /* The box owns the clear affordance: a clear control inside a box is a
+     CngxInputClear suffix, themed and floored like the box. The UA search
+     cancel glyph ignores the cngx tokens, has no touch floor and sits next to
+     that suffix as a second clear button, so it goes - inside a box only; a
+     standalone search input keeps the browser-native one. */
+  .cngx-field-box[data-skin] > input[type='search']::-webkit-search-cancel-button {
+    display: none;
+  }
+
+  .cngx-field-box[data-skin] > input[type='search']::-webkit-search-decoration {
+    appearance: none;
   }
 }
 
@@ -260,14 +296,17 @@
    not a forced-colors indicator, so the reset outline comes back and the
    border is redrawn in a system colour. */
 @media (forced-colors: active) {
-  :is(input, textarea, select)[data-skin='fill'],
-  .cngx-field-affix-row[data-skin='fill'] {
+  :is(input, textarea, select)[data-skin='fill']:not(.cngx-field-box > *),
+  .cngx-field-box[data-skin='fill'] {
     border-block-end: 1px solid FieldText;
     box-shadow: none;
   }
 
-  :is(input, textarea, select)[data-skin='fill']:is(:focus-visible, :focus-within),
-  .cngx-field-affix-row[data-skin='fill']:is(:focus-visible, :focus-within) {
+  :is(input, textarea, select)[data-skin='fill']:not(.cngx-field-box > *):is(
+      :focus-visible,
+      :focus-within
+    ),
+  .cngx-field-box[data-skin='fill']:is(:focus-visible, :focus-within) {
     outline: 2px solid Highlight;
     outline-offset: 3px;
     box-shadow: none;

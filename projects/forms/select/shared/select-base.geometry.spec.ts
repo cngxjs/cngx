@@ -12,8 +12,8 @@ import type { CngxSelectOptionDef } from './option.model';
 
 // Runs in a real Chromium (the `test-geometry` target). Covers the resting
 // half of the field-skin blocks every variant stylesheet carries: the trigger
-// - not the component host - is the box, and a trigger nested inside a skinned
-// affix row keeps its full outline border so the row alone draws the surface.
+// - not the component host - is the box, and a trigger nested inside a field
+// box is reset to transparent so the box alone draws the surface.
 // Two variants stand in for the two trigger shapes (single row and chip
 // strip); the remaining seven reuse the same CSS paths.
 //
@@ -33,11 +33,13 @@ const OPTIONS: CngxSelectOptionDef<string>[] = [
   standalone: true,
   imports: [CngxSelect, CngxMultiSelect],
   template: `
-    <cngx-select class="solo" skin="fill" [label]="'Colour'" [options]="options" />
-    <cngx-multi-select class="chips" skin="fill" [label]="'Colours'" [options]="options" />
-    <span class="cngx-field-affix-row row" data-skin="fill">
-      <cngx-select class="nested" skin="fill" [label]="'Currency'" [options]="options" />
-    </span>
+    <div style="display: grid; line-height: 1.5">
+      <cngx-select class="solo" skin="fill" [label]="'Colour'" [options]="options" />
+      <cngx-multi-select class="chips" skin="fill" [label]="'Colours'" [options]="options" />
+      <span class="cngx-field-box cngx-field-affix-row row" data-skin="fill">
+        <cngx-select class="nested" skin="bare" [label]="'Currency'" [options]="options" />
+      </span>
+    </div>
   `,
   styleUrls: ['../../theming/components/cngx-field-skin.css'],
 })
@@ -54,15 +56,23 @@ class SkinHost {
   standalone: true,
   imports: [CngxTypeahead, CngxFormField],
   template: `
-    <cngx-typeahead class="valid" skin="fill" [label]="'Colour'" [options]="options" />
-    <cngx-form-field [field]="invalidField">
-      <cngx-typeahead class="invalid" skin="fill" [label]="'Colour'" [options]="options" />
-    </cngx-form-field>
-    <cngx-typeahead class="off" skin="fill" [disabled]="true" [label]="'Colour'" [options]="options" />
-    <cngx-typeahead class="bare-valid" skin="bare" [label]="'Colour'" [options]="options" />
-    <cngx-form-field [field]="invalidBareField">
-      <cngx-typeahead class="bare-invalid" skin="bare" [label]="'Colour'" [options]="options" />
-    </cngx-form-field>
+    <div style="display: grid; line-height: 1.5">
+      <cngx-typeahead class="valid" skin="fill" [label]="'Colour'" [options]="options" />
+      <cngx-form-field [field]="invalidField">
+        <cngx-typeahead class="invalid" skin="fill" [label]="'Colour'" [options]="options" />
+      </cngx-form-field>
+      <cngx-typeahead
+        class="off"
+        skin="fill"
+        [disabled]="true"
+        [label]="'Colour'"
+        [options]="options"
+      />
+      <cngx-typeahead class="bare-valid" skin="bare" [label]="'Colour'" [options]="options" />
+      <cngx-form-field [field]="invalidBareField">
+        <cngx-typeahead class="bare-invalid" skin="bare" [label]="'Colour'" [options]="options" />
+      </cngx-form-field>
+    </div>
   `,
   styleUrls: ['../../theming/components/cngx-field-skin.css'],
 })
@@ -91,11 +101,30 @@ function mount(host: Type<unknown> = SkinHost): HTMLElement {
 }
 
 function trigger(root: HTMLElement, hostSelector: string): HTMLElement {
-  const el = root.querySelector(`${hostSelector} [class$="__trigger"]`);
+  const el = root.querySelector(`${hostSelector} .cngx-field-trigger`);
   if (!el) {
     throw new Error(`${hostSelector} trigger did not render`);
   }
   return el as HTMLElement;
+}
+
+function px(el: Element, property: string): number {
+  const value = parseFloat(computedValue(el, property));
+  if (Number.isNaN(value)) {
+    throw new Error(`${property} is not a length: '${computedValue(el, property)}'`);
+  }
+  return value;
+}
+
+// A min-height floors the border box only under border-box sizing. This harness
+// loads no global reset, and some variant triggers do not set box-sizing
+// themselves, so the floor is converted to the border box it produces.
+function boxHeight(el: HTMLElement): number {
+  const chrome = px(el, 'padding-top') + px(el, 'padding-bottom') + 2;
+  const formula = px(el, 'line-height') + chrome;
+  const contentBox = computedValue(el, 'box-sizing') === 'content-box';
+  const floor = px(el, 'min-height') + (contentBox ? chrome : 0);
+  return Math.max(formula, floor);
 }
 
 afterEach(() => {
@@ -107,25 +136,29 @@ describe('select-family field skins', () => {
   it('draws the fill trigger as an underline, not a box', () => {
     const el = trigger(mount(), '.solo');
     expect(computedValue(el, 'border-bottom-width')).toBe('1px');
-    expect(computedValue(el, 'border-top-width')).toBe('0px');
+    expect(computedValue(el, 'border-top-width')).toBe('1px');
+    expect(computedValue(el, 'border-top-color')).toBe('rgba(0, 0, 0, 0)');
   });
 
   it('applies the same treatment to a chip-strip trigger', () => {
     const el = trigger(mount(), '.chips');
     expect(computedValue(el, 'border-bottom-width')).toBe('1px');
-    expect(computedValue(el, 'border-top-width')).toBe('0px');
+    expect(computedValue(el, 'border-top-width')).toBe('1px');
+    expect(computedValue(el, 'border-top-color')).toBe('rgba(0, 0, 0, 0)');
   });
 
-  it('keeps a trigger nested in a skinned affix row on its outline chrome', () => {
+  it('resets a trigger nested in a field box so the box draws the only chrome', () => {
     const root = mount();
     const nested = trigger(root, '.nested');
     const row = root.querySelector('.row') as HTMLElement;
-    // The `:not(.cngx-field-affix-row[data-skin] > *)` guard excludes the
-    // nested host, so its trigger keeps all four borders while the row is the
-    // only element carrying the underline.
-    expect(computedValue(nested, 'border-top-width')).not.toBe('0px');
+    // The nested select resolves to bare; the bare root excludes a box child
+    // and the nested reset strips the base trigger chrome, 2.125rem floor
+    // included.
+    expect(computedValue(nested, 'border-top-width')).toBe('0px');
+    expect(computedValue(nested, 'padding-top')).toBe('0px');
+    expect(computedValue(nested, 'min-height')).toBe('0px');
     expect(computedValue(row, 'border-bottom-width')).toBe('1px');
-    expect(computedValue(row, 'border-top-width')).toBe('0px');
+    expect(computedValue(row, 'border-top-color')).toBe('rgba(0, 0, 0, 0)');
   });
 
   it('turns the underline to the error colour when the inner combobox input is invalid', () => {
@@ -139,12 +172,30 @@ describe('select-family field skins', () => {
     const root = mount(StateHost);
     const valid = trigger(root, '.bare-valid');
     const invalid = trigger(root, '.bare-invalid');
-    expect(computedValue(invalid, 'border-bottom-width')).toBe('0px');
+    expect(computedValue(invalid, 'border-bottom-color')).toBe('rgba(0, 0, 0, 0)');
     expect(computedValue(invalid, 'box-shadow')).toBe('none');
     expect(computedValue(invalid, 'color')).not.toBe(computedValue(valid, 'color'));
     expect(computedValue(invalid, 'outline-style')).toBe('solid');
     expect(computedValue(valid, 'outline-style')).toBe('none');
   });
+
+  // The trigger is a box like any other: line box + 2 * block padding + 2px
+  // border, floored by its own min-height (the 2.125rem trigger floor).
+  it.each(['.solo', '.chips'])(
+    'sizes the fill %s trigger by the shared box formula',
+    (hostSelector) => {
+      const el = trigger(mount(), hostSelector);
+      expect(el.getBoundingClientRect().height).toBeCloseTo(boxHeight(el), 0);
+    },
+  );
+
+  it.each(['.bare-valid', '.bare-invalid'])(
+    'sizes the bare %s trigger by the shared box formula',
+    (hostSelector) => {
+      const el = trigger(mount(StateHost), hostSelector);
+      expect(el.getBoundingClientRect().height).toBeCloseTo(boxHeight(el), 0);
+    },
+  );
 
   it('dashes the underline when the inner combobox input is disabled', () => {
     const el = trigger(mount(StateHost), '.off');

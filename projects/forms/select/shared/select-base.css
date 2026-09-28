@@ -34,11 +34,11 @@
  *   trigger, thickening in the focus colour
  * - `data-skin='bare'` - no border, no surface, no underline; regular focus ring
  *
- * The per-variant trigger rules live in each variant stylesheet and read
- * the same four `--cngx-field-*` tokens as the input skins, so one
- * `withFieldSkin(...)` covers the whole field family. A trigger that sits
- * as a direct child of a skinned affix row keeps its outline chrome - the
- * row is the box there.
+ * The skin rules key on the shared `.cngx-field-trigger` class every
+ * variant template carries, and read the same `--cngx-field-*` tokens as
+ * the input skins, so one `withFieldSkin(...)` covers the whole field
+ * family. A select that sits as a direct child of a `.cngx-field-box` is
+ * reset to transparent - the box is the only painted element there.
  *
  * Chip-list overflow modes via `data-overflow`:
  *
@@ -1494,13 +1494,26 @@
   }
 
   /* ── Field skins ──────────────────────────────────────────────────────
-     One rule set for all nine triggers. The host carries `data-skin` from
-     the composed `CngxFieldSkinHost`; the trigger is the box and reads the
-     same four `--cngx-field-*` tokens an input does, so a single
-     `withFieldSkin(...)` covers the whole field family.
+     One rule set for all nine triggers, keyed on the shared
+     `.cngx-field-trigger` class. The host carries `data-skin` from the
+     composed `CngxFieldSkinHost`; the trigger is the box and reads the same
+     `--cngx-field-*` tokens an input does, so a single `withFieldSkin(...)`
+     covers the whole field family.
 
-     A trigger whose host sits as a direct child of a skinned affix row is
-     exempt: the row is the box there and draws the only underline.
+     Every root is bound to the select's own host: the trigger is the host's
+     grandchild in all nine templates (host > root div > trigger). A
+     descendant selector would match through a surrounding form field or
+     field box, which carry `data-skin` too.
+
+     A select that is a direct child of a `.cngx-field-box` stays inert: it
+     resolves to bare when the box sees it as a control, and both roots
+     exclude a DOM child of a box anyway, so a projected host that kept its
+     own skin gets no paint either. The box paints every state.
+
+     `:scope.cngx-field-trigger` is (0,2,0): it outranks the variant trigger
+     base rule, and ties with the variant state rules (up to 0,3,0) resolve
+     on scope proximity, where the trigger root is 0 hops away and the
+     variant's host root 2.
 
      Outline suppression (fill only) stays on the trigger - option rows,
      chips, chip-remove buttons and the caret keep their own focus rings.
@@ -1510,230 +1523,119 @@
      `[role='combobox']` input: combobox, typeahead and both action variants
      wrap a real input that carries `aria-invalid` / `disabled` itself. */
 
-  :is(
-      .cngx-select,
-      .cngx-multi-select,
-      .cngx-combobox,
-      .cngx-typeahead,
-      .cngx-tree-select,
-      .cngx-action-select,
-      .cngx-action-multi-select,
-      .cngx-reorderable-multi-select,
-      .cngx-select-shell
-    )[data-skin='fill']:not(.cngx-field-affix-row[data-skin] > *)
-    :is(
-      .cngx-select__trigger,
-      .cngx-multi-select__trigger,
-      .cngx-combobox__trigger,
-      .cngx-typeahead__trigger,
-      .cngx-tree-select__trigger,
-      .cngx-action-select__trigger,
-      .cngx-action-multi-select__trigger,
-      .cngx-reorderable-multi-select__trigger,
-      .cngx-select-shell__trigger
-    ) {
-    --cngx-select-skin-padding-block: var(--cngx-space-sm);
-    --cngx-select-skin-padding-inline: var(--cngx-space-md);
-    padding: var(--cngx-select-skin-padding-block, 0.5rem)
-      var(--cngx-select-skin-padding-inline, 1rem);
-    border: 0;
-    border-block-end: 1px solid
-      var(--cngx-field-underline-color, var(--cngx-color-border, oklch(0.88 0.005 250)));
-    border-radius: var(--cngx-radius-md, 8px) var(--cngx-radius-md, 8px) 0 0;
-    background: var(
-      --cngx-field-fill-bg,
-      color-mix(in oklch, var(--cngx-color-text, oklch(0.2 0.01 250)) 6%, transparent)
-    );
+  @scope ([data-skin='fill']:not(.cngx-field-box > *) > * > .cngx-field-trigger) {
+    :scope.cngx-field-trigger {
+      /* The shared box padding, SET-from-scale: sm block, md inline. */
+      --cngx-field-padding-block: var(--cngx-space-sm);
+      --cngx-field-padding-inline: var(--cngx-space-md);
+      padding-block: var(--cngx-field-padding-block, 0.5rem);
+      padding-inline: var(--cngx-field-padding-inline, 1rem);
+      border: var(--cngx-field-border-width, 1px) solid transparent;
+      border-block-end-color: var(
+        --cngx-field-underline-color,
+        var(--cngx-color-border, oklch(0.88 0.005 250))
+      );
+      border-radius: var(--cngx-radius-md, 8px) var(--cngx-radius-md, 8px) 0 0;
+      background: var(
+        --cngx-field-fill-bg,
+        color-mix(in oklch, var(--cngx-color-text, oklch(0.2 0.01 250)) 6%, transparent)
+      );
+    }
+
+    :scope.cngx-field-trigger:is(:focus-visible, :focus-within) {
+      outline: none;
+      box-shadow: inset 0 calc(-1 * var(--cngx-field-underline-size, 2px)) 0
+        var(--cngx-field-underline-focus-color, oklch(0.58 0.19 50));
+    }
+
+    :scope.cngx-field-trigger:is(
+        [aria-invalid='true'],
+        :has(> [role='combobox'][aria-invalid='true'])
+      ) {
+      border-color: transparent;
+      border-block-end-color: var(
+        --cngx-field-error-color,
+        var(--cngx-color-danger, oklch(0.58 0.22 27))
+      );
+    }
+
+    :scope.cngx-field-trigger:is([aria-disabled='true'], :has(> [role='combobox']:disabled)) {
+      border-block-end-style: dashed;
+    }
   }
 
-  :is(
-      .cngx-select,
-      .cngx-multi-select,
-      .cngx-combobox,
-      .cngx-typeahead,
-      .cngx-tree-select,
-      .cngx-action-select,
-      .cngx-action-multi-select,
-      .cngx-reorderable-multi-select,
-      .cngx-select-shell
-    )[data-skin='bare']:not(.cngx-field-affix-row[data-skin] > *)
-    :is(
-      .cngx-select__trigger,
-      .cngx-multi-select__trigger,
-      .cngx-combobox__trigger,
-      .cngx-typeahead__trigger,
-      .cngx-tree-select__trigger,
-      .cngx-action-select__trigger,
-      .cngx-action-multi-select__trigger,
-      .cngx-reorderable-multi-select__trigger,
-      .cngx-select-shell__trigger
-    ) {
-    --cngx-select-skin-padding-bare: var(--cngx-space-xs);
-    padding: var(--cngx-select-skin-padding-bare, 0.25rem);
+  @scope ([data-skin='bare']:not(.cngx-field-box > *) > * > .cngx-field-trigger) {
+    :scope.cngx-field-trigger {
+      /* Bare is outline metrics with transparent borders. */
+      --cngx-field-padding-block: var(--cngx-space-sm);
+      --cngx-field-padding-inline: var(--cngx-space-md);
+      padding-block: var(--cngx-field-padding-block, 0.5rem);
+      padding-inline: var(--cngx-field-padding-inline, 1rem);
+      border: var(--cngx-field-border-width, 1px) solid transparent;
+      border-radius: 0;
+      background: transparent;
+    }
+
+    /* Bare draws no line in any state; an error tints the trigger text,
+       pulled toward the text colour so it clears the 4.5:1 text floor. Mixed
+       in oklab, because an oklch hue walk from red to the bluish text colour
+       passes through magenta. */
+    :scope.cngx-field-trigger:is(
+        [aria-invalid='true'],
+        :has(> [role='combobox'][aria-invalid='true'])
+      ) {
+      border-color: transparent;
+      color: var(
+        --cngx-field-bare-error-text-color,
+        color-mix(
+          in oklab,
+          var(--cngx-color-danger, oklch(0.6 0.18 25)) 75%,
+          var(--cngx-color-text, oklch(0.2 0.01 250))
+        )
+      );
+    }
+
+    /* ...and a 1px ring, because text alone vanishes on an empty trigger.
+       Dropped while focused so the focus ring is never hidden. */
+    :scope.cngx-field-trigger:is(
+        [aria-invalid='true'],
+        :has(> [role='combobox'][aria-invalid='true'])
+      ):not(:focus-within) {
+      outline: 1px solid
+        var(--cngx-field-error-color, var(--cngx-color-danger, oklch(0.58 0.22 27)));
+      outline-offset: 2px;
+    }
+  }
+
+  /* A bare select draws no box, so a minimum width only leaves an empty run
+     between the value and the caret. It sizes to its content, standalone and
+     inside a field box alike. Keyed on the host, which carries every
+     variant's min-width. */
+  [data-skin='bare']:has(> * > .cngx-field-trigger) {
+    min-width: 0;
+  }
+
+  /* A select nested in a field box: the box is the only painted element,
+     so the trigger drops its base chrome (1px border, padding, the 2.125rem
+     floor, the error glow). The value text takes the box colour. */
+  .cngx-field-box[data-skin] > [data-skin] > * > .cngx-field-trigger {
+    min-height: 0;
+    padding: 0;
     border: 0;
     border-radius: 0;
     background: transparent;
+    box-shadow: none;
+    color: inherit;
   }
 
-  :is(
-      .cngx-select,
-      .cngx-multi-select,
-      .cngx-combobox,
-      .cngx-typeahead,
-      .cngx-tree-select,
-      .cngx-action-select,
-      .cngx-action-multi-select,
-      .cngx-reorderable-multi-select,
-      .cngx-select-shell
-    )[data-skin='fill']:not(.cngx-field-affix-row[data-skin] > *)
-    :is(
-      .cngx-select__trigger,
-      .cngx-multi-select__trigger,
-      .cngx-combobox__trigger,
-      .cngx-typeahead__trigger,
-      .cngx-tree-select__trigger,
-      .cngx-action-select__trigger,
-      .cngx-action-multi-select__trigger,
-      .cngx-reorderable-multi-select__trigger,
-      .cngx-select-shell__trigger
-    ):is(:focus-visible, :focus-within) {
+  /* The main control's ring is the box ring. A select that is an affix (a
+     currency picker) keeps its own trigger ring, because the box does not
+     ring for focus inside an affix. */
+  .cngx-field-box[data-skin]
+    > [data-skin]:not(.cngx-field-prefix, .cngx-field-suffix)
+    > *
+    > .cngx-field-trigger {
     outline: none;
-    box-shadow: inset 0 calc(-1 * var(--cngx-field-underline-size, 2px)) 0
-      var(--cngx-field-underline-focus-color, oklch(0.58 0.19 50));
-  }
-
-  :is(
-      .cngx-select,
-      .cngx-multi-select,
-      .cngx-combobox,
-      .cngx-typeahead,
-      .cngx-tree-select,
-      .cngx-action-select,
-      .cngx-action-multi-select,
-      .cngx-reorderable-multi-select,
-      .cngx-select-shell
-    )[data-skin='fill']:not(.cngx-field-affix-row[data-skin] > *)
-    :is(
-      .cngx-select__trigger,
-      .cngx-multi-select__trigger,
-      .cngx-combobox__trigger,
-      .cngx-typeahead__trigger,
-      .cngx-tree-select__trigger,
-      .cngx-action-select__trigger,
-      .cngx-action-multi-select__trigger,
-      .cngx-reorderable-multi-select__trigger,
-      .cngx-select-shell__trigger
-    ):is([aria-invalid='true'], :has(> [role='combobox'][aria-invalid='true'])) {
-    border-block-end: 1px solid
-      var(--cngx-field-error-color, var(--cngx-color-danger, oklch(0.58 0.22 27)));
-  }
-
-  /* Bare draws no line in any state; an error tints the trigger text, pulled
-     toward the text colour so it clears the 4.5:1 text floor. */
-  :is(
-      .cngx-select,
-      .cngx-multi-select,
-      .cngx-combobox,
-      .cngx-typeahead,
-      .cngx-tree-select,
-      .cngx-action-select,
-      .cngx-action-multi-select,
-      .cngx-reorderable-multi-select,
-      .cngx-select-shell
-    )[data-skin='bare']:not(.cngx-field-affix-row[data-skin] > *)
-    :is(
-      .cngx-select__trigger,
-      .cngx-multi-select__trigger,
-      .cngx-combobox__trigger,
-      .cngx-typeahead__trigger,
-      .cngx-tree-select__trigger,
-      .cngx-action-select__trigger,
-      .cngx-action-multi-select__trigger,
-      .cngx-reorderable-multi-select__trigger,
-      .cngx-select-shell__trigger
-    ):is([aria-invalid='true'], :has(> [role='combobox'][aria-invalid='true'])) {
-    color: var(
-      --cngx-field-bare-error-text-color,
-      color-mix(
-        in oklch,
-        var(--cngx-color-danger, oklch(0.6 0.18 25)) 75%,
-        var(--cngx-color-text, oklch(0.2 0.01 250))
-      )
-    );
-  }
-
-  /* ...and a 1px ring, because text alone vanishes on an empty trigger.
-     Dropped while focused so the focus ring is never hidden. */
-  :is(
-      .cngx-select,
-      .cngx-multi-select,
-      .cngx-combobox,
-      .cngx-typeahead,
-      .cngx-tree-select,
-      .cngx-action-select,
-      .cngx-action-multi-select,
-      .cngx-reorderable-multi-select,
-      .cngx-select-shell
-    )[data-skin='bare']:not(.cngx-field-affix-row[data-skin] > *)
-    :is(
-      .cngx-select__trigger,
-      .cngx-multi-select__trigger,
-      .cngx-combobox__trigger,
-      .cngx-typeahead__trigger,
-      .cngx-tree-select__trigger,
-      .cngx-action-select__trigger,
-      .cngx-action-multi-select__trigger,
-      .cngx-reorderable-multi-select__trigger,
-      .cngx-select-shell__trigger
-    ):is([aria-invalid='true'], :has(> [role='combobox'][aria-invalid='true'])):not(:focus-within) {
-    outline: 1px solid
-      var(--cngx-field-error-color, var(--cngx-color-danger, oklch(0.58 0.22 27)));
-    outline-offset: 2px;
-  }
-
-  :is(
-      .cngx-select,
-      .cngx-multi-select,
-      .cngx-combobox,
-      .cngx-typeahead,
-      .cngx-tree-select,
-      .cngx-action-select,
-      .cngx-action-multi-select,
-      .cngx-reorderable-multi-select,
-      .cngx-select-shell
-    )[data-skin='fill']:not(.cngx-field-affix-row[data-skin] > *)
-    :is(
-      .cngx-select__trigger,
-      .cngx-multi-select__trigger,
-      .cngx-combobox__trigger,
-      .cngx-typeahead__trigger,
-      .cngx-tree-select__trigger,
-      .cngx-action-select__trigger,
-      .cngx-action-multi-select__trigger,
-      .cngx-reorderable-multi-select__trigger,
-      .cngx-select-shell__trigger
-    ):is([aria-disabled='true'], :has(> [role='combobox']:disabled)) {
-    border-block-end-style: dashed;
-  }
-
-  /* Chip strips wrap onto several rows; keep the last row off the underline.
-     Only the four chip-strip variants need it - the single-row triggers do
-     not wrap. */
-  :is(
-      .cngx-multi-select,
-      .cngx-combobox,
-      .cngx-action-multi-select,
-      .cngx-reorderable-multi-select
-    )[data-skin='fill']:not(.cngx-field-affix-row[data-skin] > *)
-    :is(
-      .cngx-multi-select__trigger,
-      .cngx-combobox__trigger,
-      .cngx-action-multi-select__trigger,
-      .cngx-reorderable-multi-select__trigger
-    ) {
-    padding-block-end: calc(
-      var(--cngx-select-skin-padding-block, 0.5rem) + var(--cngx-field-underline-size, 2px)
-    );
   }
 }
 
@@ -1821,59 +1723,20 @@
   }
 }
 
-/* Unlayered, outside any @layer, full selectors repeated: a layered override
-   does not reliably win this cascade. The fill and bare skins trade the focus
-   outline for an inset box-shadow underline, and WHCM strips box-shadow
-   outright - without this a skinned trigger would have no focus indicator. */
+/* Unlayered, outside any @layer and @scope, full selectors repeated: a
+   layered override does not reliably win this cascade. The fill skin trades
+   the focus outline for an inset box-shadow underline, and WHCM strips
+   box-shadow outright - without this a skinned trigger would have no focus
+   indicator. */
 @media (forced-colors: active) {
-  :is(
-      .cngx-select,
-      .cngx-multi-select,
-      .cngx-combobox,
-      .cngx-typeahead,
-      .cngx-tree-select,
-      .cngx-action-select,
-      .cngx-action-multi-select,
-      .cngx-reorderable-multi-select,
-      .cngx-select-shell
-    )[data-skin='fill']
-    :is(
-      .cngx-select__trigger,
-      .cngx-multi-select__trigger,
-      .cngx-combobox__trigger,
-      .cngx-typeahead__trigger,
-      .cngx-tree-select__trigger,
-      .cngx-action-select__trigger,
-      .cngx-action-multi-select__trigger,
-      .cngx-reorderable-multi-select__trigger,
-      .cngx-select-shell__trigger
-    ) {
+  [data-skin='fill']:not(.cngx-field-box > *) > * > .cngx-field-trigger {
     border-block-end: 1px solid FieldText;
     box-shadow: none;
   }
 
-  :is(
-      .cngx-select,
-      .cngx-multi-select,
-      .cngx-combobox,
-      .cngx-typeahead,
-      .cngx-tree-select,
-      .cngx-action-select,
-      .cngx-action-multi-select,
-      .cngx-reorderable-multi-select,
-      .cngx-select-shell
-    )[data-skin='fill']
-    :is(
-      .cngx-select__trigger,
-      .cngx-multi-select__trigger,
-      .cngx-combobox__trigger,
-      .cngx-typeahead__trigger,
-      .cngx-tree-select__trigger,
-      .cngx-action-select__trigger,
-      .cngx-action-multi-select__trigger,
-      .cngx-reorderable-multi-select__trigger,
-      .cngx-select-shell__trigger
-    ):is(:focus-visible, :focus-within) {
+  [data-skin='fill']:not(.cngx-field-box > *)
+    > *
+    > .cngx-field-trigger:is(:focus-visible, :focus-within) {
     outline: 2px solid Highlight;
     outline-offset: 2px;
     box-shadow: none;

@@ -27,10 +27,7 @@ import {
   withAriaLabels,
 } from '../shared/config';
 import type { CngxSelectOptionDef, CngxSelectOptionsInput } from '../shared/option.model';
-import type {
-  CngxSelectCommitAction,
-  CngxSelectCommitMode,
-} from '../shared/commit-action.types';
+import type { CngxSelectCommitAction, CngxSelectCommitMode } from '../shared/commit-action.types';
 
 // jsdom does not implement the Popover API - polyfill so CngxPopover can toggle.
 function polyfillPopover(): void {
@@ -140,16 +137,13 @@ class StandaloneA11yHost {
 }
 
 @Component({
-  template: `
-    <cngx-select [label]="'G'" [options]="grouped" [(value)]="value" />
-  `,
+  template: ` <cngx-select [label]="'G'" [options]="grouped" [(value)]="value" /> `,
   imports: [CngxSelect],
 })
 class GroupedHost {
   readonly grouped = GROUPED_OPTIONS;
   readonly value = signal<string | undefined>(undefined);
 }
-
 
 function flush(fixture: { detectChanges: () => void }): void {
   TestBed.flushEffects();
@@ -332,6 +326,15 @@ describe('CngxSelect - standalone', () => {
     expect(select.selected()?.label).toBe('Rot');
     expect(select.triggerValue()).toBe('Rot');
     expect(select.empty()).toBe(false);
+  });
+
+  it('treats an empty string as no selection and styles the placeholder', () => {
+    const { fixture, select } = setup();
+    fixture.componentInstance.value.set('');
+    flush(fixture);
+    expect(select.empty()).toBe(true);
+    const label = fixture.nativeElement.querySelector('.cngx-select__label') as HTMLElement;
+    expect(label.classList.contains('cngx-select__label--placeholder')).toBe(true);
   });
 
   it('blocks handleClickOutside from closing the panel while actionDirty() is true', () => {
@@ -626,8 +629,9 @@ describe('CngxSelect - async state consumer', () => {
     const optionList = select.options();
     // options input is still empty array - the flatOptions must come from state
     expect(optionList.length).toBe(0);
-    const flatOptions = (select as unknown as { flatOptions: () => CngxSelectOptionDef<string>[] })
-      .flatOptions();
+    const flatOptions = (
+      select as unknown as { flatOptions: () => CngxSelectOptionDef<string>[] }
+    ).flatOptions();
     expect(flatOptions.map((o) => o.value)).toEqual(['red', 'green', 'blue']);
   });
 
@@ -681,12 +685,7 @@ describe('CngxSelect - async state consumer', () => {
     @Component({
       selector: 'spinner-host',
       template: `
-        <cngx-select
-          [label]="'X'"
-          [state]="state"
-          [loadingVariant]="'spinner'"
-          [(value)]="value"
-        />
+        <cngx-select [label]="'X'" [state]="state" [loadingVariant]="'spinner'" [(value)]="value" />
       `,
       imports: [CngxSelect],
     })
@@ -787,12 +786,7 @@ describe('CngxSelect - async state consumer', () => {
     @Component({
       selector: 'ref-none-host',
       template: `
-        <cngx-select
-          [label]="'X'"
-          [state]="state"
-          [refreshingVariant]="'none'"
-          [(value)]="value"
-        />
+        <cngx-select [label]="'X'" [state]="state" [refreshingVariant]="'none'" [(value)]="value" />
       `,
       imports: [CngxSelect],
     })
@@ -917,9 +911,7 @@ describe('CngxSelect - commit action producer', () => {
       fixture,
       select: selectDe.componentInstance as CngxSelect<string>,
       host: fixture.componentInstance,
-      triggerBtn: selectDe.nativeElement.querySelector(
-        '.cngx-select__trigger',
-      ) as HTMLElement,
+      triggerBtn: selectDe.nativeElement.querySelector('.cngx-select__trigger') as HTMLElement,
       firstOption: () =>
         selectDe.nativeElement.querySelector('[cngxOption]:nth-of-type(1)') as HTMLElement,
       secondOption: () =>
@@ -930,8 +922,11 @@ describe('CngxSelect - commit action producer', () => {
   it('optimistic success: value stays at intended, selectionChange emits on success', () => {
     const { fixture, host, triggerBtn, secondOption } = setup();
     let lastChange: CngxSelectChange<string> | null = null;
-    fixture.debugElement.query(By.directive(CngxSelect)).componentInstance
-      .selectionChange.subscribe((c: CngxSelectChange<string>) => (lastChange = c));
+    fixture.debugElement
+      .query(By.directive(CngxSelect))
+      .componentInstance.selectionChange.subscribe(
+        (c: CngxSelectChange<string>) => (lastChange = c),
+      );
 
     triggerBtn.click();
     flush(fixture);
@@ -1059,9 +1054,7 @@ describe('CngxSelect - commit action producer', () => {
 
 @Component({
   selector: 'announcer-host',
-  template: `
-    <cngx-select [label]="'Lang'" [options]="options" [(value)]="value" />
-  `,
+  template: ` <cngx-select [label]="'Lang'" [options]="options" [(value)]="value" /> `,
   imports: [CngxSelect],
 })
 class AnnouncerHost {
@@ -1072,12 +1065,7 @@ class AnnouncerHost {
 @Component({
   selector: 'announcer-off-host',
   template: `
-    <cngx-select
-      [label]="'Lang'"
-      [options]="options"
-      [(value)]="value"
-      [announceChanges]="false"
-    />
+    <cngx-select [label]="'Lang'" [options]="options" [(value)]="value" [announceChanges]="false" />
   `,
   imports: [CngxSelect],
 })
@@ -1208,7 +1196,9 @@ describe('CngxSelect - config cascade (input > component-scope > app-scope > def
     const panel = fixture.debugElement.nativeElement.querySelector(
       '.cngx-select__panel',
     ) as HTMLElement;
-    expect(panel.style.getPropertyValue('--cngx-select-panel-min-width')).toBe('anchor-size(width)');
+    expect(panel.style.getPropertyValue('--cngx-select-panel-min-width')).toBe(
+      'anchor-size(width)',
+    );
   });
 
   it('component-scope provideSelectConfigAt overrides app-scope', () => {
@@ -1238,9 +1228,7 @@ describe('CngxSelect - config cascade (input > component-scope > app-scope > def
   it('loadingVariant config applied across instances', () => {
     @Component({
       selector: 'lv-host',
-      template: `
-        <cngx-select [label]="'X'" [state]="state" [(value)]="value" />
-      `,
+      template: ` <cngx-select [label]="'X'" [state]="state" [(value)]="value" /> `,
       imports: [CngxSelect],
     })
     class LvHost {
@@ -1335,6 +1323,9 @@ describe('CngxSelect listbox fallback label', () => {
 
 describeCommitControllerCascade('CngxSelect');
 
-describeFieldSkinHost('CngxSelect', CngxSelect, 'cngx-select', () =>
-  createMockField({ name: 'pick' }).accessor,
+describeFieldSkinHost(
+  'CngxSelect',
+  CngxSelect,
+  'cngx-select',
+  () => createMockField({ name: 'pick' }).accessor,
 );
