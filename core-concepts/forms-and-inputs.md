@@ -60,6 +60,12 @@ Everything visible and audible around a control is a **slot** you drop into `<cn
 
 Two error slots exist on purpose. `<cngx-field-errors />` is the default: it reads the field's validators and renders whatever is currently failing, with the messages resolved from config. `[cngxError]` is the escape hatch for when you want to render one specific message in one specific place yourself. Most forms only ever need `<cngx-field-errors />`.
 
+### Skins
+
+The shell adds no box, so the look belongs to the control. There are three skins: `outline` (the default, a hairline border), `fill` (a tinted surface with a focus underline) and `bare` (no surface and no border, for a control that sits inside something else that already draws the edge, such as a table cell or a toolbar). Set `[skin]` on `<cngx-form-field>` and every control inside picks it up. Set `[cngxFieldSkin]` on a single control to override it, or `provideFormField(withFieldSkin('fill'))` to change the app-wide default. Neither `fill` nor `bare` adds any DOM. With affixes, the affix row becomes the box and the input inside drops its own surface.
+
+A `bare` input in a table filter row usually has no field and no visible label of its own. Point `aria-labelledby` at the column header so the header text is the accessible name. Use `aria-label` only when there is no visible header. Four colour tokens theme the look: `--cngx-field-fill-bg`, `--cngx-field-fill-bg-hover`, `--cngx-field-underline-color` and `--cngx-field-underline-focus-color`. The demos live at `/forms/field/skin/fill`, `/forms/field/skin/bare-table-filter` and `/forms/field/skin/bare-cell-edit`. cngx does not ship a floating label; the label stays above the control.
+
 ---
 
 ## Choosing how the value binds

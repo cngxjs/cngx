@@ -11,20 +11,33 @@ export const STORY: DemoSpec = {
     'CngxInputClear',
   ],
   moduleImports: [
-    'import { CngxInputClear } from \'@cngx/forms/input\';',
+    'import { CngxRadioGroup, CngxRadio } from \'@cngx/common/interactive\';',
+    'import type { CngxFieldSkin } from \'@cngx/forms/field\';',
+    'import { CngxAffixRow, CngxSuffix } from \'@cngx/forms/field\';',
+    'import { CngxInput, CngxInputClear } from \'@cngx/forms/input\';',
   ],
-  imports: ['CngxInputClear'],
+  imports: ['CngxAffixRow', 'CngxSuffix', 'CngxInput', 'CngxInputClear', 'CngxRadioGroup', 'CngxRadio'],
+  setup: `protected readonly skin = signal<CngxFieldSkin>('outline');`,
   template: `
   <div class="demo-form">
     <div class="demo-field">
       <label class="demo-label" for="ic-name">Name</label>
-      <div style="display:flex;gap:8px;align-items:center">
-        <input id="ic-name" #nameInput placeholder="Type something..." class="demo-input" style="flex:1" />
-        <button type="button" [cngxInputClear]="nameInput" #clr="cngxInputClear"
-          class="chip" [style.opacity]="clr.hasValue() ? 1 : 0.3">
+      <span cngxAffixRow [skin]="skin()">
+        <input id="ic-name" cngxInput [skin]="skin()" #nameInput placeholder="Type something..." class="demo-input" />
+        <button type="button" cngxSuffix cngxSuffixInteractive [cngxInputClear]="nameInput" #clr="cngxInputClear"
+          [disabled]="!clr.hasValue()">
           Clear
         </button>
-      </div>
+      </span>
+    </div>
+  </div>`,
+  templateChrome: `<div class="event-grid" style="margin-top:8px">
+    <div class="event-row" style="margin-top:8px">
+      <cngx-radio-group [(value)]="skin" name="field-skin" label="Field skin">
+        <cngx-radio value="outline">Outline</cngx-radio>
+        <cngx-radio value="fill">Fill</cngx-radio>
+        <cngx-radio value="bare">Bare</cngx-radio>
+      </cngx-radio-group>
     </div>
   </div>`,
 };

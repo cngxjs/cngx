@@ -5,7 +5,9 @@ import { provideDialog } from '@cngx/common/dialog';
 import {
   provideFormField,
   withErrorMessages,
+  withFieldSkin,
   withRequiredMarker,
+  type CngxFieldSkin,
 } from '@cngx/forms/field';
 import {
   provideFeedback,
@@ -33,6 +35,25 @@ function initialTextScale(): 'sm' | 'md' | 'lg' {
   return 'md';
 }
 
+// Seed the app-wide field skin from the floating toggle's persisted choice
+// (localStorage 'cngx_field_skin', written by main.ts). The toggle reloads
+// the page, so a static withFieldSkin(...) at bootstrap is enough. 'outline'
+// is the library default and adds no provider at all, so without an explicit
+// choice the catalogue renders exactly as it would with no toggle.
+function initialFieldSkin(): Exclude<CngxFieldSkin, 'outline'> | null {
+  try {
+    const v = localStorage.getItem('cngx_field_skin');
+    if (v === 'fill' || v === 'bare') {
+      return v;
+    }
+  } catch {
+    // localStorage may be unavailable; fall back to the outline default.
+  }
+  return null;
+}
+
+const fieldSkin = initialFieldSkin();
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
@@ -57,6 +78,12 @@ export const appConfig: ApplicationConfig = {
     // attribute so the OS prefers-contrast preference stays in charge until a
     // user opts into an explicit override.
     provideContrast(),
+    // App-wide field skin from the floating [F] toggle. Reaches every control
+    // that composes CngxFieldSkinHost (cngxInput, affix rows, the nine select
+    // triggers). A story that binds its own [skin], or a control that only
+    // opts in by the cngxFieldSkin attribute, keeps its own value - the same
+    // cascade a real app gets.
+    ...(fieldSkin ? [provideFormField(withFieldSkin(fieldSkin))] : []),
     // Hash routing - GitHub Pages serves a single index.html and cannot rewrite
     // deep paths to it. With withHashLocation() every route resolves client-side
     // off the `#` fragment, no 404 fallback trick required.

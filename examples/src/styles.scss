@@ -104,6 +104,7 @@ body {
 }
 #cngx-ex-color-scheme-toggle,
 #cngx-ex-density-toggle,
+#cngx-ex-field-skin-toggle,
 #cngx-ex-text-scale-toggle,
 #cngx-ex-direction-toggle {
   display: inline-block;
@@ -119,12 +120,14 @@ body {
 }
 #cngx-ex-color-scheme-toggle:hover,
 #cngx-ex-density-toggle:hover,
+#cngx-ex-field-skin-toggle:hover,
 #cngx-ex-text-scale-toggle:hover,
 #cngx-ex-direction-toggle:hover {
   background: color-mix(in oklch, var(--cngx-color-surface, #fff), currentColor 6%);
 }
 #cngx-ex-color-scheme-toggle:focus-visible,
 #cngx-ex-density-toggle:focus-visible,
+#cngx-ex-field-skin-toggle:focus-visible,
 #cngx-ex-text-scale-toggle:focus-visible,
 #cngx-ex-direction-toggle:focus-visible {
   outline: 1px solid var(--cngx-color-primary, #4a8cff);
@@ -565,6 +568,31 @@ html.dark .cngx-ex-tag[data-dim='stability'][data-value='deprecated'] {
 // the full <td> without inset.
 .demo-table-emptycell {
   padding: 0;
+}
+
+// Demo-only data table for the bare field-skin stories. The table owns the
+// boundary a bare control does not paint. The :has() rule is the documented
+// consumer rule that hands the whole cell to the input as its hit area;
+// descendant, not child, because cngx-form-field is display: contents and
+// sits between the cell and the input.
+.demo-skin-table {
+  border-collapse: collapse;
+  inline-size: 100%;
+}
+.demo-skin-table :is(th, td) {
+  padding: var(--cngx-space-xs, 4px) var(--cngx-space-sm, 8px);
+  border: var(--cngx-border-width, 1px) solid var(--cngx-color-border, #cbd5e1);
+  text-align: start;
+}
+.demo-skin-table td:has([data-skin='bare']) {
+  padding: 0;
+}
+.demo-cell-errors {
+  margin: var(--cngx-space-xs, 4px) 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.8125rem;
+  color: var(--cngx-color-danger, #b91c1c);
 }
 
 // Demo-only layout cell for cngx-grid and cngx-stack demos. Renders a flat
