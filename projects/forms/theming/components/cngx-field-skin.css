@@ -13,8 +13,8 @@
  * `bare` strips surface, border and underline entirely for a control
  * embedded in something that already owns the box - a table filter row, an
  * inline cell editor. It keeps the regular `cngx.reset` focus ring and shows
- * an error as danger-tinted text, never as a line, so it cannot be mistaken
- * for `fill`.
+ * an error as danger-tinted text plus a thin danger ring, never as a line, so
+ * it cannot be mistaken for `fill`.
  *
  * Both key their error / disabled / readonly variants on native and ARIA
  * truth first (`[aria-invalid='true']`, `:disabled`, `[readonly]`,
@@ -195,11 +195,11 @@
     }
 
     /* No underline in any state - that is the fill look. Focus keeps the
-       cngx.reset ring untouched; an error tints the value text instead. The
-       danger token alone measures about 4:1 on white, under the 4.5:1 text
-       floor, so it is pulled toward the text colour: darker on light, lighter
-       on dark. With an affix row as the box the value sits in the nested
-       input, which is tinted too. */
+       cngx.reset ring untouched. An error tints the value text; the danger
+       token alone measures about 4:1 on white, under the 4.5:1 text floor, so
+       it is pulled toward the text colour: darker on light, lighter on dark.
+       With an affix row as the box the value sits in the nested input, which
+       is tinted too. */
     :scope:is([aria-invalid='true'], .cngx-field--error *),
     :scope:has([aria-invalid='true']),
     :scope:has([aria-invalid='true']) > :is(input, textarea, select) {
@@ -211,6 +211,16 @@
           var(--cngx-color-text, oklch(0.2 0.01 250))
         )
       );
+    }
+
+    /* Text alone vanishes on an empty field, which is the most common error
+       (required). A 1px ring marks the box as well - thinner than the 2px
+       focus ring, and dropped while focused so it never hides that ring. */
+    :scope:is([aria-invalid='true'], .cngx-field--error *):not(:focus-within),
+    :scope:has([aria-invalid='true']):not(:focus-within) {
+      outline: 1px solid
+        var(--cngx-field-error-color, var(--cngx-color-danger, oklch(0.58 0.22 27)));
+      outline-offset: 2px;
     }
 
     :scope:is(:disabled, .cngx-field--disabled *),
@@ -235,6 +245,13 @@
     border-radius: 0;
     background: transparent;
     box-shadow: none;
+  }
+
+  /* The bare row draws the error ring; the nested input must not draw a
+     second one. Its focus ring stays - the row is not focusable. */
+  .cngx-field-affix-row[data-skin='bare']
+    > :is(input, textarea, select)[data-skin='bare']:not(:focus-visible) {
+    outline: none;
   }
 }
 

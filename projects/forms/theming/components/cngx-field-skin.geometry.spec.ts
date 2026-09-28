@@ -42,6 +42,10 @@ import { afterEach, describe, expect, it } from 'vitest';
     ></span>
     <input class="solo-bare" type="text" data-skin="bare" />
     <input class="bare-invalid" type="text" data-skin="bare" aria-invalid="true" />
+    <span class="cngx-field-affix-row bare-row" data-skin="bare">
+      <span class="cngx-field-prefix">$</span>
+      <input class="bare-row-input" type="text" data-skin="bare" aria-invalid="true" />
+    </span>
     <div data-color-scheme="light">
       <input class="fill-light" type="text" data-skin="fill" />
       <span class="probe-underline-light" style="background: var(--cngx-field-underline-focus-color)"></span>
@@ -201,6 +205,19 @@ describe('field skin geometry', () => {
     expect(computedValue(invalid, 'box-shadow')).toBe('none');
     expect(computedValue(invalid, 'border-bottom-width')).toBe('0px');
     expect(computedValue(invalid, 'color')).not.toBe(computedValue(valid, 'color'));
+  });
+
+  it('rings a bare error so an empty field still shows it', () => {
+    const root = mount();
+    expect(computedValue(query(root, '.bare-invalid'), 'outline-style')).toBe('solid');
+    expect(computedValue(query(root, '.bare-invalid'), 'outline-width')).toBe('1px');
+    expect(computedValue(query(root, '.solo-bare'), 'outline-style')).toBe('none');
+  });
+
+  it('draws one bare error ring per affix row, on the row', () => {
+    const root = mount();
+    expect(computedValue(query(root, '.bare-row'), 'outline-style')).toBe('solid');
+    expect(computedValue(query(root, '.bare-row-input'), 'outline-style')).toBe('none');
   });
 
   it('holds 3:1 on the hover surface, which is the worst case', () => {

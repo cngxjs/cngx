@@ -142,6 +142,8 @@ describe('select-family field skins', () => {
     expect(computedValue(invalid, 'border-bottom-width')).toBe('0px');
     expect(computedValue(invalid, 'box-shadow')).toBe('none');
     expect(computedValue(invalid, 'color')).not.toBe(computedValue(valid, 'color'));
+    expect(computedValue(invalid, 'outline-style')).toBe('solid');
+    expect(computedValue(valid, 'outline-style')).toBe('none');
   });
 
   it('dashes the underline when the inner combobox input is disabled', () => {

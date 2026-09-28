@@ -51,14 +51,17 @@ describe('cngx-field-skin.css', () => {
     expect(scoped).not.toContain('@media');
   });
 
-  it('suppresses the reset outline only on the scope root', () => {
+  it('suppresses the reset outline only on the scope root or off focus', () => {
+    // A descendant may only lose its outline while it is not focused (the
+    // bare row's nested input drops the duplicate error ring); an interactive
+    // affix button must always keep its focus ring.
     const lines = SOURCE.split('\n');
     const heads = lines
       .map((line, i) => (line.includes('outline: none') ? lines[i - 1].trim() : null))
       .filter((head): head is string => head !== null);
     expect(heads.length).toBeGreaterThan(0);
     for (const head of heads) {
-      expect(head.startsWith(':scope')).toBe(true);
+      expect(head.startsWith(':scope') || head.includes(':not(:focus-visible)')).toBe(true);
     }
   });
 

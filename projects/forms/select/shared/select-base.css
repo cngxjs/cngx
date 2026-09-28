@@ -1662,6 +1662,35 @@
     );
   }
 
+  /* ...and a 1px ring, because text alone vanishes on an empty trigger.
+     Dropped while focused so the focus ring is never hidden. */
+  :is(
+      .cngx-select,
+      .cngx-multi-select,
+      .cngx-combobox,
+      .cngx-typeahead,
+      .cngx-tree-select,
+      .cngx-action-select,
+      .cngx-action-multi-select,
+      .cngx-reorderable-multi-select,
+      .cngx-select-shell
+    )[data-skin='bare']:not(.cngx-field-affix-row[data-skin] > *)
+    :is(
+      .cngx-select__trigger,
+      .cngx-multi-select__trigger,
+      .cngx-combobox__trigger,
+      .cngx-typeahead__trigger,
+      .cngx-tree-select__trigger,
+      .cngx-action-select__trigger,
+      .cngx-action-multi-select__trigger,
+      .cngx-reorderable-multi-select__trigger,
+      .cngx-select-shell__trigger
+    ):is([aria-invalid='true'], :has(> [role='combobox'][aria-invalid='true'])):not(:focus-within) {
+    outline: 1px solid
+      var(--cngx-field-error-color, var(--cngx-color-danger, oklch(0.58 0.22 27)));
+    outline-offset: 2px;
+  }
+
   :is(
       .cngx-select,
       .cngx-multi-select,
