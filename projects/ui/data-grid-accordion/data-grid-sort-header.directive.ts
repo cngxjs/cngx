@@ -12,14 +12,8 @@ import { CngxLiveAnnouncer } from '@cngx/common/a11y';
 import { createSortHeaderState } from '@cngx/common/data';
 import { nextUid } from '@cngx/core/utils';
 
+import { injectDataGridAccordionLabels } from './config/data-grid-accordion.config.defaults';
 import { CNGX_DATA_GRID_ACCORDION } from './data-grid-accordion.token';
-
-// EN default status text. Each string describes the primary (non-additive) click
-// outcome so a screen reader hears both the current sort and what activating does.
-// English by default, per the library-defaults-are-English rule.
-const NOT_SORTED = 'not sorted, activate to sort ascending';
-const SORTED_ASCENDING = 'sorted ascending, activate to sort descending';
-const SORTED_DESCENDING = 'sorted descending, activate to sort ascending';
 
 /**
  * Makes a {@link CngxDataGridHeader} cell sort the grid it lives in with a single
@@ -90,28 +84,43 @@ export class CngxDgaSortHeader {
   /** The field key this header cell sorts by. */
   readonly field = input.required<string>({ alias: 'cngxDgaSortHeader' });
 
-  /** SR status while unsorted. English default; override for other locales. */
-  readonly notSortedLabel = input(NOT_SORTED, { alias: 'cngxDgaSortStatusNotSorted' });
-  /** SR status while sorted ascending. English default; override for other locales. */
-  readonly ascendingLabel = input(SORTED_ASCENDING, { alias: 'cngxDgaSortStatusAscending' });
-  /** SR status while sorted descending. English default; override for other locales. */
-  readonly descendingLabel = input(SORTED_DESCENDING, { alias: 'cngxDgaSortStatusDescending' });
+  private readonly labels = injectDataGridAccordionLabels();
+
+  /** SR status while unsorted. Defaults to the `sortNone` label, read once. */
+  readonly notSortedLabel = input(this.labels().sortNone, { alias: 'cngxDgaSortStatusNotSorted' });
+  /** SR status while sorted ascending. Defaults to the `sortAscending` label, read once. */
+  readonly ascendingLabel = input(this.labels().sortAscending, {
+    alias: 'cngxDgaSortStatusAscending',
+  });
+  /** SR status while sorted descending. Defaults to the `sortDescending` label, read once. */
+  readonly descendingLabel = input(this.labels().sortDescending, {
+    alias: 'cngxDgaSortStatusDescending',
+  });
 
   /**
    * Human column name spoken in the live sort announcement (`{label}` placeholder
    * of the announcement templates). Defaults to the field key.
    */
   readonly label = input<string | undefined>(undefined, { alias: 'cngxDgaSortLabel' });
-  /** Live announcement fired when this column becomes sorted ascending. `{label}` is replaced. */
-  readonly ascendingAnnouncement = input('Sorted by {label} ascending', {
+  /**
+   * Live announcement fired when this column becomes sorted ascending. `{label}` is
+   * replaced. Defaults to the `sortAnnouncedAscending` label, read at construction.
+   */
+  readonly ascendingAnnouncement = input(this.labels().sortAnnouncedAscending, {
     alias: 'cngxDgaSortAnnounceAscending',
   });
-  /** Live announcement fired when this column becomes sorted descending. `{label}` is replaced. */
-  readonly descendingAnnouncement = input('Sorted by {label} descending', {
+  /**
+   * Live announcement fired when this column becomes sorted descending. `{label}` is
+   * replaced. Defaults to the `sortAnnouncedDescending` label, read at construction.
+   */
+  readonly descendingAnnouncement = input(this.labels().sortAnnouncedDescending, {
     alias: 'cngxDgaSortAnnounceDescending',
   });
-  /** Live announcement fired when this column's sort is cleared. `{label}` is replaced. */
-  readonly clearedAnnouncement = input('Sorting by {label} cleared', {
+  /**
+   * Live announcement fired when this column's sort is cleared. `{label}` is replaced.
+   * Defaults to the `sortAnnouncedCleared` label, read at construction.
+   */
+  readonly clearedAnnouncement = input(this.labels().sortAnnouncedCleared, {
     alias: 'cngxDgaSortAnnounceCleared',
   });
 

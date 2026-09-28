@@ -35,7 +35,7 @@ export const COMPLETED_PHASE = 1;
  * Exact RATCHET length. Asserted equal, so the ceiling cannot be padded:
  * every row-closing commit removes its rows and lowers this number with them.
  */
-export const RATCHET_CEILING = 56;
+export const RATCHET_CEILING = 45;
 
 /**
  * The RATCHET keys (`file` + tab + `value`) at the end of Phase 1, frozen in
@@ -207,36 +207,6 @@ export const RATCHET = [
     closesIn: 2,
   },
   {
-    file: 'projects/ui/data-grid-accordion/data-grid-count.directive.ts',
-    value: 'result',
-    note: 'count noun is a bare input default',
-    closesIn: 2,
-  },
-  {
-    file: 'projects/ui/data-grid-accordion/data-grid-count.directive.ts',
-    value: 'results',
-    note: 'count noun is a bare input default',
-    closesIn: 2,
-  },
-  {
-    file: 'projects/ui/data-grid-accordion/data-grid-sort-header.directive.ts',
-    value: 'not sorted, activate to sort ascending',
-    note: 'sort status is a bare input default through a const',
-    closesIn: 2,
-  },
-  {
-    file: 'projects/ui/data-grid-accordion/data-grid-sort-header.directive.ts',
-    value: 'sorted ascending, activate to sort descending',
-    note: 'sort status is a bare input default through a const',
-    closesIn: 2,
-  },
-  {
-    file: 'projects/ui/data-grid-accordion/data-grid-sort-header.directive.ts',
-    value: 'sorted descending, activate to sort ascending',
-    note: 'sort status is a bare input default through a const',
-    closesIn: 2,
-  },
-  {
     file: 'projects/common/data/display/delta/delta.component.ts',
     value: 'improved',
     note: 'sentiment word spoken in the label, no token',
@@ -299,42 +269,6 @@ export const RATCHET = [
   {
     file: 'projects/ui/command-palette/palette/command-palette.component.ts',
     value: 'Command palette',
-    note: 'bare input default, per-instance only',
-    closesIn: 2,
-  },
-  {
-    file: 'projects/ui/data-grid-accordion/data-grid-filter-field.component.ts',
-    value: 'Filter',
-    note: 'bare input default, per-instance only',
-    closesIn: 2,
-  },
-  {
-    file: 'projects/ui/data-grid-accordion/data-grid-filter.directive.ts',
-    value: 'Filter rows',
-    note: 'bare input default, per-instance only',
-    closesIn: 2,
-  },
-  {
-    file: 'projects/ui/data-grid-accordion/data-grid-row.component.ts',
-    value: 'Failed to load',
-    note: 'bare input default, per-instance only',
-    closesIn: 2,
-  },
-  {
-    file: 'projects/ui/data-grid-accordion/data-grid-sort-header.directive.ts',
-    value: 'Sorted by {label} ascending',
-    note: 'bare input default, per-instance only',
-    closesIn: 2,
-  },
-  {
-    file: 'projects/ui/data-grid-accordion/data-grid-sort-header.directive.ts',
-    value: 'Sorted by {label} descending',
-    note: 'bare input default, per-instance only',
-    closesIn: 2,
-  },
-  {
-    file: 'projects/ui/data-grid-accordion/data-grid-sort-header.directive.ts',
-    value: 'Sorting by {label} cleared',
     note: 'bare input default, per-instance only',
     closesIn: 2,
   },

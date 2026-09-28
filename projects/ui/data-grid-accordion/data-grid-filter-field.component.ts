@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from '@a
 
 import { nextUid } from '@cngx/core/utils';
 
+import { injectDataGridAccordionLabels } from './config/data-grid-accordion.config.defaults';
 import { CngxDgaFilter } from './data-grid-filter.directive';
 
 /**
@@ -49,8 +50,13 @@ import { CngxDgaFilter } from './data-grid-filter.directive';
   },
 })
 export class CngxDgaFilterField {
-  /** Visible label text; also drives the input's accessible name. English default. */
-  readonly label = input('Filter');
+  private readonly labels = injectDataGridAccordionLabels();
+
+  /**
+   * Visible label text; also drives the input's accessible name. Defaults to the
+   * `filter` label, read at construction.
+   */
+  readonly label = input(this.labels().filter);
   /** Optional placeholder shown inside the input. */
   readonly placeholder = input<string | undefined>(undefined);
   /** Debounce in ms forwarded to the hosted `cngxDgaFilter`. */

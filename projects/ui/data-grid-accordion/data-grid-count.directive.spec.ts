@@ -5,6 +5,9 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import { CngxDataGridAccordion } from './data-grid-accordion.component';
 import { CngxDataGridFooter } from './data-grid-footer.component';
+import type { CngxDataGridAccordionLabels } from './config/data-grid-accordion.config';
+import { withDataGridAccordionLabels } from './config/features';
+import { provideDataGridAccordionConfig } from './config/provide-data-grid-accordion-config';
 import { CngxDgaCount } from './data-grid-count.directive';
 
 @Component({
@@ -57,6 +60,62 @@ describe('CngxDgaCount', () => {
     fixture.detectChanges();
     TestBed.flushEffects();
     expect(el.textContent).toBe('7 results');
+  });
+  describe('labels bundle', () => {
+    @Component({
+      template: `<span
+        [cngxDgaCount]="count()"
+        cngxDgaCountSingular="row"
+        cngxDgaCountPlural="rows"
+      ></span>`,
+      imports: [CngxDgaCount],
+    })
+    class NounHost {
+      readonly count = signal(2);
+    }
+
+    const labelsOverride = signal<Partial<CngxDataGridAccordionLabels>>({});
+
+    beforeEach(() => {
+      labelsOverride.set({});
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideDataGridAccordionConfig(withDataGridAccordionLabels(labelsOverride))],
+      });
+    });
+
+    it('writes the translated count when no noun is bound', () => {
+      labelsOverride.set({ count: (n) => `${n} Treffer` });
+      const { el } = setup();
+      expect(el.textContent).toBe('0 Treffer');
+    });
+
+    it('keeps the legacy <count> <noun> composition for bound nouns', () => {
+      labelsOverride.set({ count: (n) => `${n} Treffer` });
+      const fixture = TestBed.createComponent(NounHost);
+      fixture.detectChanges();
+      const el = fixture.debugElement.query(By.directive(CngxDgaCount))
+        .nativeElement as HTMLElement;
+      expect(el.textContent).toBe('2 rows');
+    });
+
+    it('does not rewrite a shown count on a copy flip; the next count speaks the new copy', () => {
+      const { fixture, host, el } = setup();
+      host.count.set(3);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(el.textContent).toBe('3 results');
+
+      labelsOverride.set({ count: (n) => `${n} Treffer` });
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(el.textContent).toBe('3 results');
+
+      host.count.set(4);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(el.textContent).toBe('4 Treffer');
+    });
   });
 });
 

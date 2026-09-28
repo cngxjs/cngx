@@ -1,6 +1,7 @@
 import { DOCUMENT } from '@angular/common';
 import { DestroyRef, Directive, effect, ElementRef, inject, input } from '@angular/core';
 
+import { injectDataGridAccordionLabels } from './config/data-grid-accordion.config.defaults';
 import { CNGX_DATA_GRID_ACCORDION } from './data-grid-accordion.token';
 
 /**
@@ -48,8 +49,10 @@ import { CNGX_DATA_GRID_ACCORDION } from './data-grid-accordion.token';
   },
 })
 export class CngxDgaFilter {
-  /** Accessible name for the filter box. English default; override for other locales. */
-  readonly ariaLabel = input('Filter rows', { alias: 'cngxDgaFilterLabel' });
+  private readonly labels = injectDataGridAccordionLabels();
+
+  /** Accessible name for the filter box. Defaults to the `filterRows` label, read once. */
+  readonly ariaLabel = input(this.labels().filterRows, { alias: 'cngxDgaFilterLabel' });
   /** Debounce in ms between the last keystroke and writing `grid.filterTerm`. */
   readonly debounce = input(200, { alias: 'cngxDgaFilterDebounce' });
 

@@ -3,16 +3,22 @@ import {
   makeEnvironmentProviders,
   type EnvironmentProviders,
   type Provider,
+  type Signal,
 } from '@angular/core';
 
-import type { CngxDataGridAccordionConfig, CngxDataGridSkin } from './data-grid-accordion.config';
+import type {
+  CngxDataGridAccordionConfig,
+  CngxDataGridAccordionLabels,
+  CngxDataGridSkin,
+} from './data-grid-accordion.config';
 import {
   CNGX_DATA_GRID_ACCORDION_CONFIG,
   CNGX_DATA_GRID_ACCORDION_DEFAULTS,
 } from './data-grid-accordion.config.defaults';
 
 /**
- * Discriminated-union shape returned by `withDataGridSkin`. The reducer in
+ * Discriminated-union shape returned by `withDataGridSkin` and
+ * `withDataGridAccordionLabels`. The reducer in
  * `provideDataGridAccordionConfig` / `provideDataGridAccordionConfigAt` matches
  * on `kind` and writes `payload` onto the corresponding config key. Mirrors
  * `CngxAccordionConfigFeature` from `@cngx/ui/accordion` so the consumer's mental
@@ -21,10 +27,19 @@ import {
  * @category ui/data-grid-accordion
  * @since 0.1.0
  */
-export interface CngxDataGridAccordionConfigFeature {
-  readonly kind: 'skin';
-  readonly payload: { readonly skin: CngxDataGridSkin };
-}
+export type CngxDataGridAccordionConfigFeature =
+  | {
+      readonly kind: 'skin';
+      readonly payload: { readonly skin: CngxDataGridSkin };
+    }
+  | {
+      readonly kind: 'labels';
+      readonly payload: {
+        readonly labels:
+          | Partial<CngxDataGridAccordionLabels>
+          | Signal<Partial<CngxDataGridAccordionLabels>>;
+      };
+    };
 
 /**
  * Reduces a list of feature objects into a partial config - last write wins per
@@ -35,11 +50,14 @@ export interface CngxDataGridAccordionConfigFeature {
 function reduceFeatures(
   features: readonly CngxDataGridAccordionConfigFeature[],
 ): Partial<CngxDataGridAccordionConfig> {
-  const out: { skin?: CngxDataGridSkin } = {};
+  const out: { skin?: CngxDataGridSkin; labels?: CngxDataGridAccordionConfig['labels'] } = {};
   for (const f of features) {
     switch (f.kind) {
       case 'skin':
         out.skin = f.payload.skin;
+        break;
+      case 'labels':
+        out.labels = f.payload.labels;
         break;
     }
   }
@@ -57,6 +75,7 @@ function mergeConfig(
 ): CngxDataGridAccordionConfig {
   return {
     skin: partial.skin ?? base.skin,
+    labels: partial.labels ?? base.labels,
   };
 }
 
