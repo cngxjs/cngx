@@ -95,8 +95,12 @@ a per-instance `[skin]` still wins. Columns are per-instance, so there is no
 ## Config
 
 `provideDataGridAccordionConfig(...)` / `provideDataGridAccordionConfigAt(...)` with the
-single `withDataGridSkin(name)` feature; read it back with
-`injectDataGridAccordionConfig()`.
+`withDataGridSkin(name)` and `withDataGridAccordionLabels({...})` features; read it back
+with `injectDataGridAccordionConfig()`. `withDataGridAccordionLabels` takes a partial
+bundle (or a `Signal` of one) for the count, sort, filter, row-error and note copy;
+unset keys keep the English default. `CngxDataGridAccordionConfigFeature` is a union
+since the labels feature landed - see [the migration note](./config-feature-migration.md)
+if you extended or merged the old interface.
 
 ## Sort and filter
 
