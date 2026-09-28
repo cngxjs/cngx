@@ -1,4 +1,5 @@
 import { booleanAttribute, Directive, input } from '@angular/core';
+import { CNGX_FIELD_AFFIX } from './field-box.token';
 
 /**
  * Typed suffix affix for a form-field control - a positioned add-on rendered
@@ -32,6 +33,7 @@ import { booleanAttribute, Directive, input } from '@angular/core';
   selector: '[cngxSuffix]',
   standalone: true,
   exportAs: 'cngxSuffix',
+  providers: [{ provide: CNGX_FIELD_AFFIX, useValue: true }],
   host: {
     class: 'cngx-field-suffix',
     '[class.cngx-field-affix--interactive]': 'interactive()',

@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { CngxIcon } from '@cngx/common/display';
 
-import { CngxAffixRow } from '../../field/affix-row.directive';
+import { CngxAffixRow } from '../../field/field-box.directive';
 
 // Runs in a real Chromium (the `test-geometry` target). This is Track-B CSS: it
 // ships in the aggregated `cngx.css`, not on any component styleUrl, so the host

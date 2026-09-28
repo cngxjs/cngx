@@ -6,7 +6,8 @@ export { CngxHint } from './hint.directive';
 export { CngxError } from './error.directive';
 export { CngxPrefix } from './prefix.directive';
 export { CngxSuffix } from './suffix.directive';
-export { CngxAffixRow } from './affix-row.directive';
+export { CngxFieldBox, CngxAffixRow } from './field-box.directive';
+export { CNGX_FIELD_BOX, CNGX_FIELD_AFFIX, type CngxFieldBoxContract } from './field-box.token';
 export { CngxFieldSkinHost } from './field-skin.directive';
 export { CngxRequired, type CngxRequiredContext } from './required.component';
 export { focusFirstError } from './focus-first-error';
@@ -50,10 +51,7 @@ export {
   type CngxFormFieldHostContract,
 } from './form-field.token';
 export { CngxErrorScopeFieldBridge } from './error-scope-field-bridge.directive';
-export {
-  CNGX_VALUE_TRANSFORMER,
-  type CngxValueTransformer,
-} from './value-transformer.token';
+export { CNGX_VALUE_TRANSFORMER, type CngxValueTransformer } from './value-transformer.token';
 export type {
   CngxFieldRef,
   CngxFieldAccessor,
