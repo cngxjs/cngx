@@ -1,5 +1,5 @@
 /**
- * Manifests for `user-facing-string-coverage.spec.ts`.
+ * Manifests for `user-facing-string-coverage.test.mjs`.
  *
  * Kept beside the guard rather than inside it: the three lists are the
  * auditable artefact of the i18n coverage program, they change on a different
@@ -11,15 +11,14 @@
  * fail on every unrelated edit above it.
  */
 
-/** One row of any of the three manifests. */
-export interface StringManifestEntry {
-  /** Repo-relative path, exactly as the scanner reports it. */
-  readonly file: string;
-  /** The literal, verbatim. */
-  readonly value: string;
-  /** Why this row exists. One clause, no prose. */
-  readonly note: string;
-}
+/**
+ * One row of any of the three manifests.
+ *
+ * @typedef {object} StringManifestEntry
+ * @property {string} file Repo-relative path, exactly as the scanner reports it.
+ * @property {string} value The literal, verbatim.
+ * @property {string} note Why this row exists. One clause, no prose.
+ */
 
 /**
  * The gap list: user-facing strings that ship with no override path.
@@ -27,16 +26,20 @@ export interface StringManifestEntry {
  * Empty since 2026-09-22 - the A2 i18n audit drove it to zero. The suite
  * asserts the emptiness actively, so re-adding a row is a conscious edit with
  * a one-clause reason, not a quiet regression.
+ *
+ * @type {readonly StringManifestEntry[]}
  */
-export const RATCHET: readonly StringManifestEntry[] = [];
+export const RATCHET = [];
 
 /**
  * Strings the scanner cannot prove are covered, but which are - the override
  * read happens through an indirection the regex does not follow.
  *
  * Not a parking lot: every row names the token that overrides it.
+ *
+ * @type {readonly StringManifestEntry[]}
  */
-export const ALREADY_COVERED: readonly StringManifestEntry[] = [
+export const ALREADY_COVERED = [
   {
     file: 'projects/forms/input/phone-input/countries.ts',
     value: 'United States',
@@ -117,8 +120,10 @@ export const ALREADY_COVERED: readonly StringManifestEntry[] = [
 /**
  * Deliberate non-hooks. Each row cites the accepted-debt entry that settled
  * it, so the guard does not re-raise a closed decision on every run.
+ *
+ * @type {readonly StringManifestEntry[]}
  */
-export const EXCLUDED: readonly StringManifestEntry[] = [
+export const EXCLUDED = [
   {
     file: 'projects/common/interactive/guard/can-deactivate.ts',
     value: 'You have unsaved changes. Leave anyway?',

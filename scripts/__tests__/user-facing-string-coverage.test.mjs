@@ -1,12 +1,10 @@
-import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
-import { resolve } from 'node:path';
-import {
-  ALREADY_COVERED,
-  EXCLUDED,
-  RATCHET,
-  type StringManifestEntry,
-} from './user-facing-string-coverage.fixtures';
+import { fileURLToPath } from 'node:url';
+import { dirname, resolve } from 'node:path';
+
+import { describe, expect, it } from 'vitest';
+
+import { ALREADY_COVERED, EXCLUDED, RATCHET } from './user-facing-string-coverage.fixtures.mjs';
 
 // Coverage guard for the EN-default contract: cngx ships English library
 // defaults, and every one of them is overridable through the config cascade
@@ -30,9 +28,10 @@ import {
 //      block). Never reaches an end user, never translated.
 //
 // Everything else is a gap and must carry a manifest row. See
-// `user-facing-string-coverage.fixtures.ts`.
+// `user-facing-string-coverage.fixtures.mjs`.
 
-const REPO_ROOT = resolve(__dirname, '..', '..', '..');
+const HERE = dirname(fileURLToPath(import.meta.url));
+const REPO_ROOT = resolve(HERE, '..', '..');
 
 /**
  * Directories whose strings are never library defaults: demo code is
@@ -79,27 +78,30 @@ const DEV_MARKER = /console\.|new Error|isDevMode|ngDevMode|\bthrow\b|\bwarn[A-Z
 /** Reads that make a following `??` / `||` literal a mere fallback. */
 const CONFIG_READ = /\b(?:config|cfg|i18n|labels|messages|glyphs|defaults|ariaLabels)\b/i;
 
-export type StringCoverage =
-  | 'override-source'
-  | 'config-fallback'
-  | 'input-default'
-  | 'dev-message'
-  | 'uncovered';
+/**
+ * @typedef {'override-source' | 'config-fallback' | 'input-default' | 'dev-message' | 'uncovered'} StringCoverage
+ */
 
-export interface StringFinding {
-  readonly line: number;
-  readonly value: string;
-  readonly coverage: StringCoverage;
-}
+/**
+ * @typedef {object} StringFinding
+ * @property {number} line
+ * @property {string} value
+ * @property {StringCoverage} coverage
+ */
 
 /**
  * Strips comments while preserving line count - a JSDoc `@example` block is
  * full of `aria-label="Price range"` prose, and the guard reports line numbers
  * a reviewer has to be able to open.
  */
-export function stripComments(source: string): string {
+/**
+ * @param {string} source
+ * @returns {string}
+ */
+export function stripComments(source) {
   let out = '';
-  let mode: 'code' | 'block' | 'line' = 'code';
+  /** @type {'code' | 'block' | 'line'} */
+  let mode = 'code';
   let i = 0;
   while (i < source.length) {
     const c = source[i];
@@ -141,8 +143,13 @@ export function stripComments(source: string): string {
   return out;
 }
 
-/** Does this literal read as copy a user could be shown? */
-export function isUserFacingPhrase(value: string): boolean {
+/**
+ * Does this literal read as copy a user could be shown?
+ *
+ * @param {string} value
+ * @returns {boolean}
+ */
+export function isUserFacingPhrase(value) {
   if (value.length < 3 || value.length > 120) {
     return false;
   }
@@ -160,8 +167,12 @@ export function isUserFacingPhrase(value: string): boolean {
  * Walks back over a `'a' + 'b'` concatenation so a literal on the fifth line of
  * a `console.warn(...)` chain is classified by the head of the chain, not by
  * its own line.
+ *
+ * @param {readonly string[]} lines
+ * @param {number} index
+ * @returns {number}
  */
-const expressionHead = (lines: readonly string[], index: number): number => {
+const expressionHead = (lines, index) => {
   let head = index;
   while (head > 0) {
     const previous = lines[head - 1].trimEnd();
@@ -177,13 +188,18 @@ const expressionHead = (lines: readonly string[], index: number): number => {
  * Classifies one file's user-facing literals. Exported so the negative
  * fixtures below can prove the scanner is capable of failing - a guard that
  * only ever reports green is indistinguishable from a broken matcher.
+ *
+ * @param {string} source
+ * @param {string} [fileName]
+ * @returns {readonly StringFinding[]}
  */
-export function scanSource(source: string, fileName = 'x.ts'): readonly StringFinding[] {
+export function scanSource(source, fileName = 'x.ts') {
   const code = stripComments(source);
   const lines = code.split('\n');
   const isOverrideSource =
     OVERRIDE_SOURCE_FILE.test(fileName) || /\/i18n\//.test(fileName) || OVERRIDE_TOKEN.test(code);
-  const findings: StringFinding[] = [];
+  /** @type {StringFinding[]} */
+  const findings = [];
 
   lines.forEach((line, index) => {
     for (const match of line.matchAll(/'([A-Z][^'\n]{2,119})'/g)) {
@@ -209,11 +225,11 @@ export function scanSource(source: string, fileName = 'x.ts'): readonly StringFi
   return findings;
 }
 
-const classify = (input: {
-  before: string;
-  context: string;
-  isOverrideSource: boolean;
-}): StringCoverage => {
+/**
+ * @param {{ before: string; context: string; isOverrideSource: boolean }} input
+ * @returns {StringCoverage}
+ */
+const classify = (input) => {
   if (DEV_MARKER.test(input.context)) {
     return 'dev-message';
   }
@@ -229,8 +245,12 @@ const classify = (input: {
   return 'uncovered';
 };
 
-const walkSources = (relDir: string): string[] => {
-  const out: string[] = [];
+/**
+ * @param {string} relDir
+ * @returns {string[]}
+ */
+const walkSources = (relDir) => {
+  const out = [];
   for (const entry of readdirSync(resolve(REPO_ROOT, relDir))) {
     const rel = `${relDir}/${entry}`;
     if (statSync(resolve(REPO_ROOT, rel)).isDirectory()) {
@@ -256,11 +276,13 @@ const UNCOVERED = SOURCES.flatMap((file) =>
     .map((finding) => ({ file, ...finding })),
 );
 
-const key = (entry: { file: string; value: string }): string => `${entry.file}\t${entry.value}`;
+/** @param {{ file: string; value: string }} entry */
+const key = (entry) => `${entry.file}\t${entry.value}`;
 const manifested = new Set([...RATCHET, ...ALREADY_COVERED, ...EXCLUDED].map(key));
 const found = new Set(UNCOVERED.map(key));
 
-const stale = (manifest: readonly StringManifestEntry[]): string[] =>
+/** @param {readonly import('./user-facing-string-coverage.fixtures.mjs').StringManifestEntry[]} manifest */
+const stale = (manifest) =>
   manifest.filter((entry) => !found.has(key(entry))).map((entry) => `${entry.file}: ${entry.value}`);
 
 describe('user-facing string coverage', () => {
