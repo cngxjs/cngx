@@ -1,11 +1,20 @@
-import { InjectionToken, type Provider, type TemplateRef } from '@angular/core';
+import { InjectionToken, type Provider, type Signal, type TemplateRef } from '@angular/core';
 
 import type { CngxPopoverArrowContext } from './popover-panel-slots';
-import type { CngxPopoverPanelConfig, PopoverPanelFeature } from './popover-panel.types';
+import type {
+  CngxPopoverPanelConfig,
+  CngxPopoverPanelLabels,
+  PopoverPanelFeature,
+} from './popover-panel.types';
 
 /** @internal Default configuration - no auto-dismiss, no close-on-success, variant='default'. */
 const DEFAULT_CONFIG: CngxPopoverPanelConfig = {
   defaultVariant: 'default',
+};
+
+/** @internal English panel copy; `CngxPopoverPanel` merges `config.labels` over it. */
+export const POPOVER_PANEL_LABELS_DEFAULTS: CngxPopoverPanelLabels = {
+  close: 'Close',
 };
 
 /**
@@ -110,4 +119,24 @@ export function withArrow(show = true): PopoverPanelFeature {
  */
 export function withArrowTemplate(tpl: TemplateRef<CngxPopoverArrowContext>): PopoverPanelFeature {
   return (config) => ({ ...config, templates: { ...config.templates, arrow: tpl } });
+}
+
+/**
+ * Set the app-wide panel copy. Unset keys keep the English default; pass a
+ * `Signal` of a partial bundle to switch languages at runtime. A later call
+ * replaces the whole bundle. Mirrors `withDialogLabels`.
+ *
+ * ```typescript
+ * providers: [
+ *   providePopoverPanel(withPopoverPanelLabels({ close: 'Schliessen' })),
+ * ]
+ * ```
+ *
+ * @category common/popover
+ * @since 0.1.0
+ */
+export function withPopoverPanelLabels(
+  labels: Partial<CngxPopoverPanelLabels> | Signal<Partial<CngxPopoverPanelLabels>>,
+): PopoverPanelFeature {
+  return (config) => ({ ...config, labels });
 }

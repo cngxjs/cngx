@@ -14,10 +14,10 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import type { CngxAsyncState } from '@cngx/core/utils';
-import { nextUid } from '@cngx/core/utils';
+import { createOverrideMerge, nextUid } from '@cngx/core/utils';
 
 import { CNGX_POPOVER_ARROW_BOUNDS, type CngxPopoverArrowBounds } from './popover-arrow-bounds';
-import { CNGX_POPOVER_PANEL_CONFIG } from './popover-panel.config';
+import { CNGX_POPOVER_PANEL_CONFIG, POPOVER_PANEL_LABELS_DEFAULTS } from './popover-panel.config';
 import {
   CngxPopoverArrow,
   type CngxPopoverArrowContext,
@@ -152,7 +152,7 @@ import type { PopoverPanelRole } from './popover.types';
               <ng-container *ngTemplateOutlet="tpl.templateRef" />
             } @else {
               <cngx-close-button
-                label="Close"
+                [label]="closeLabel()"
                 class="cngx-popover-panel__close"
                 (click)="popover.hide()"
               />
@@ -225,6 +225,12 @@ export class CngxPopoverPanel implements CngxPopoverArrowBounds {
 
   /** Show an arrow. Falls back to global config from `providePopoverPanel(withArrow())`. */
   readonly showArrowInput = input<boolean | undefined>(undefined, { alias: 'showArrow' });
+
+  /** Panel copy: `config.labels` over the English defaults, one shared merge per config object. */
+  private readonly labels = createOverrideMerge(POPOVER_PANEL_LABELS_DEFAULTS, this.config.labels);
+
+  /** Accessible name of the built-in close button. */
+  protected readonly closeLabel = computed(() => this.labels().close);
 
   /** Resolved showClose - input takes precedence over config. */
   readonly showClose = computed(() => this.showCloseInput() ?? this.config.showClose ?? false);

@@ -1,4 +1,4 @@
-import type { TemplateRef } from '@angular/core';
+import type { Signal, TemplateRef } from '@angular/core';
 
 import type { CngxPopoverArrowContext } from './popover-panel-slots';
 
@@ -44,6 +44,24 @@ export interface CngxPopoverPanelConfig {
      */
     arrow?: TemplateRef<CngxPopoverArrowContext>;
   };
+
+  /**
+   * App-wide panel copy, set via `withPopoverPanelLabels(...)`. Unset keys
+   * keep the English default. A `Signal` of a partial bundle switches
+   * languages at runtime; the panel reads it reactively.
+   */
+  readonly labels?: Partial<CngxPopoverPanelLabels> | Signal<Partial<CngxPopoverPanelLabels>>;
+}
+
+/**
+ * User-facing copy of `CngxPopoverPanel`. Library defaults are English.
+ *
+ * @category common/popover
+ * @since 0.1.0
+ */
+export interface CngxPopoverPanelLabels {
+  /** Accessible name of the built-in close button (`[showClose]`). */
+  readonly close: string;
 }
 
 /**

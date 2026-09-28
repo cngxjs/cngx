@@ -26,7 +26,11 @@ export {
 } from './floating-fallback';
 
 // Panel molecule
-export type { CngxPopoverPanelConfig, PopoverPanelFeature } from './popover-panel.types';
+export type {
+  CngxPopoverPanelConfig,
+  CngxPopoverPanelLabels,
+  PopoverPanelFeature,
+} from './popover-panel.types';
 export {
   CNGX_POPOVER_PANEL_CONFIG,
   providePopoverPanel,
@@ -36,6 +40,7 @@ export {
   withCloseButton,
   withArrow,
   withArrowTemplate,
+  withPopoverPanelLabels,
 } from './popover-panel.config';
 export { CngxPopoverPanel } from './popover-panel.component';
 export { CngxPopoverAction, type PopoverActionVariant } from './popover-action.component';
