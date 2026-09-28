@@ -33,7 +33,7 @@ export const COMPLETED_PHASE = 0;
  * Exact RATCHET length. Asserted equal, so the ceiling cannot be padded:
  * every row-closing commit removes its rows and lowers this number with them.
  */
-export const RATCHET_CEILING = 15;
+export const RATCHET_CEILING = 24;
 
 /**
  * The ceiling at the end of Phase 1. Provisional until the last Phase 1 commit
@@ -142,6 +142,60 @@ export const RATCHET = [
     value: 'Action failed',
     note: 'per-instance [failedAnnouncement] / [failedLabel] only, no app-wide path',
     closesIn: 2,
+  },
+  {
+    file: 'projects/ui/feedback/loading/progress.ts',
+    value: '{} percent',
+    note: 'progress aria-valuetext composed by hand, not locale-formatted',
+    closesIn: 2,
+  },
+  {
+    file: 'projects/common/data/display/goal/goal.component.ts',
+    value: '{} of {}',
+    note: 'goal readout composed in English word order',
+    closesIn: 3,
+  },
+  {
+    file: 'projects/common/display/segmented-progress/segmented-progress.component.ts',
+    value: '{} of {}',
+    note: 'segment readout composed in English word order',
+    closesIn: 3,
+  },
+  {
+    file: 'projects/common/display/avatar-group/avatar-group.component.ts',
+    value: '{} {}, {} not shown',
+    note: 'overflow label composed in English word order',
+    closesIn: 3,
+  },
+  {
+    file: 'projects/ui/mat-stepper/material-bridge/handle.ts',
+    value: 'Step {}',
+    note: 'fallback step label composed by hand',
+    closesIn: 3,
+  },
+  {
+    file: 'projects/data-display/treetable/treetable.component.ts',
+    value: '{} rows selected',
+    note: 'selection announcement plural composed by hand',
+    closesIn: 4,
+  },
+  {
+    file: 'projects/data-display/treetable/treetable.component.ts',
+    value: '{} rows deselected',
+    note: 'deselection announcement plural composed by hand',
+    closesIn: 4,
+  },
+  {
+    file: 'projects/data-display/treetable/treetable.component.ts',
+    value: '1 row selected',
+    note: 'selection announcement singular hardcoded',
+    closesIn: 4,
+  },
+  {
+    file: 'projects/data-display/treetable/treetable.component.ts',
+    value: '1 row deselected',
+    note: 'deselection announcement singular hardcoded',
+    closesIn: 4,
   },
 ];
 

@@ -2,6 +2,7 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 
+import ts from 'typescript';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -96,59 +97,23 @@ const CONFIG_READ = /\b(?:config|cfg|i18n|labels|messages|glyphs|defaults|ariaLa
  * @property {StringCoverage} coverage
  */
 
-/**
- * Strips comments while preserving line count - a JSDoc `@example` block is
- * full of `aria-label="Price range"` prose, and the guard reports line numbers
- * a reviewer has to be able to open.
- */
-/**
- * @param {string} source
- * @returns {string}
- */
-export function stripComments(source) {
-  let out = '';
-  /** @type {'code' | 'block' | 'line'} */
-  let mode = 'code';
-  let i = 0;
-  while (i < source.length) {
-    const c = source[i];
-    const next = source[i + 1];
-    if (mode === 'code') {
-      if (c === '/' && next === '*') {
-        mode = 'block';
-        i += 2;
-        continue;
-      }
-      if (c === '/' && next === '/') {
-        mode = 'line';
-        i += 2;
-        continue;
-      }
-      out += c;
-      i += 1;
-      continue;
-    }
-    if (mode === 'block') {
-      if (c === '*' && next === '/') {
-        mode = 'code';
-        i += 2;
-        continue;
-      }
-      out += c === '\n' ? '\n' : ' ';
-      i += 1;
-      continue;
-    }
-    if (c === '\n') {
-      mode = 'code';
-      out += '\n';
-      i += 1;
-      continue;
-    }
-    out += ' ';
-    i += 1;
-  }
-  return out;
-}
+/** A `{identifier}` placeholder inside a literal: normalised, not disqualifying. */
+const PLACEHOLDER = /\{[A-Za-z_$][\w$]*\}/g;
+
+/** `1 row selected` - a count glued to a word, composed by hand. */
+const DIGIT_PHRASE = /^\d+\s+[a-z]{2,}/;
+
+/** Backtick spans that are CSS, selectors, ids, paths or units - code, not copy. */
+const BACKTICK_NOISE = /[-#.:[/()=]|px|var|calc/;
+
+/** Stands in for a `${...}` substitution while testing word boundaries. */
+const SUBSTITUTION = '\u0000';
+
+/** A word of 2+ letters bounded by whitespace or the ends of the text. */
+const BOUNDED_WORD = /(?:^|\s)[A-Za-z]{2,}(?=\s|$|[,;!?])/;
+
+/** A literal being compared against or searched for is data, not copy. */
+const COMPARISON_BEFORE = /(?:===|!==|\.includes\(|\.startsWith\(|\.endsWith\(|indexOf\()\s*$/;
 
 /**
  * Does this literal read as copy a user could be shown?
@@ -166,8 +131,58 @@ export function isUserFacingPhrase(value) {
   if (!/^[A-Z]/.test(value) || !/[a-z]/.test(value)) {
     return false;
   }
+  const bare = value.replace(PLACEHOLDER, '');
+  if (bare.trim().length === 0) {
+    return false;
+  }
   // Template fragments, selectors and code snippets.
-  return !/[<>{}=_]|\$\{|=>/.test(value);
+  return !/[<>{}=_]|\$\{|=>/.test(bare);
+}
+
+/**
+ * Does a backtick literal compose copy? `spans` are the static parts between
+ * substitutions. A word only counts when whitespace or the text's own edge
+ * bounds it - `${n}ms` and `${key}State` glue a word to a substitution and
+ * stay silent.
+ *
+ * @param {readonly string[]} spans
+ * @returns {boolean}
+ */
+export function isBacktickPhrase(spans) {
+  if (spans.join('{}').length > 200 || BACKTICK_NOISE.test(spans.join(''))) {
+    return false;
+  }
+  return spans.some((span, i) => {
+    const text =
+      (i > 0 ? SUBSTITUTION : '') + span + (i < spans.length - 1 ? SUBSTITUTION : '');
+    return BOUNDED_WORD.test(text);
+  });
+}
+
+/**
+ * The source with every comment blanked and line count preserved - a JSDoc
+ * `@example` block is full of `aria-label="Price range"` prose, and the
+ * classification context must not see it.
+ *
+ * @param {ts.SourceFile} sf
+ * @returns {string}
+ */
+function commentFreeText(sf) {
+  const chars = sf.text.split('');
+  const blank = (range) => {
+    for (let i = range.pos; i < range.end; i++) {
+      if (chars[i] !== '\n') {
+        chars[i] = ' ';
+      }
+    }
+  };
+  const visit = (node) => {
+    (ts.getLeadingCommentRanges(sf.text, node.getFullStart()) ?? []).forEach(blank);
+    (ts.getTrailingCommentRanges(sf.text, node.getEnd()) ?? []).forEach(blank);
+    node.getChildren(sf).forEach(visit);
+  };
+  visit(sf);
+  return chars.join('');
 }
 
 /**
@@ -192,6 +207,58 @@ const expressionHead = (lines, index) => {
 };
 
 /**
+ * A `template:` initializer of an `@Component` decorator. Its content is
+ * markup, not TypeScript copy.
+ *
+ * @param {ts.Node} node
+ * @returns {boolean}
+ */
+const isComponentTemplate = (node) => {
+  const prop = node.parent;
+  if (!prop || !ts.isPropertyAssignment(prop) || prop.initializer !== node) {
+    return false;
+  }
+  if (!ts.isIdentifier(prop.name) || prop.name.text !== 'template') {
+    return false;
+  }
+  const call = prop.parent?.parent;
+  return (
+    !!call &&
+    ts.isCallExpression(call) &&
+    ts.isIdentifier(call.expression) &&
+    call.expression.text === 'Component'
+  );
+};
+
+/**
+ * Which rule, if any, makes this literal copy. Single- and double-quoted
+ * literals follow the uppercase phrase rule; a backtick literal also counts
+ * when it composes words around substitutions; any literal starting with a
+ * count glued to a word counts.
+ *
+ * @param {ts.Node} node
+ * @param {ts.SourceFile} sf
+ * @returns {string | null} the value to report, `{}` per substitution
+ */
+const phraseOf = (node, sf) => {
+  if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) {
+    const value = node.text;
+    const quote = sf.text[node.getStart(sf)];
+    const isPhrase =
+      isUserFacingPhrase(value) ||
+      (quote === '`' && isBacktickPhrase([value])) ||
+      DIGIT_PHRASE.test(value);
+    return isPhrase ? value : null;
+  }
+  if (ts.isTemplateExpression(node)) {
+    const spans = [node.head.text, ...node.templateSpans.map((span) => span.literal.text)];
+    const value = spans.join('{}');
+    return isBacktickPhrase(spans) || DIGIT_PHRASE.test(value) ? value : null;
+  }
+  return null;
+};
+
+/**
  * Classifies one file's user-facing literals. Exported so the negative
  * fixtures below can prove the scanner is capable of failing - a guard that
  * only ever reports green is indistinguishable from a broken matcher.
@@ -201,33 +268,35 @@ const expressionHead = (lines, index) => {
  * @returns {readonly StringFinding[]}
  */
 export function scanSource(source, fileName = 'x.ts') {
-  const code = stripComments(source);
+  const sf = ts.createSourceFile(fileName, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  const code = commentFreeText(sf);
   const lines = code.split('\n');
   const isOverrideSource =
     OVERRIDE_SOURCE_FILE.test(fileName) || /\/i18n\//.test(fileName) || OVERRIDE_TOKEN.test(code);
   /** @type {StringFinding[]} */
   const findings = [];
 
-  lines.forEach((line, index) => {
-    for (const match of line.matchAll(/'([A-Z][^'\n]{2,119})'/g)) {
-      const value = match[1];
-      if (!isUserFacingPhrase(value)) {
-        continue;
-      }
-      const before = line.slice(0, match.index);
-      // A literal being compared against or searched for is data, not copy.
-      if (/(?:===|!==|\.includes\(|\.startsWith\(|\.endsWith\(|indexOf\()\s*$/.test(before)) {
-        continue;
-      }
-      const head = expressionHead(lines, index);
-      const context = lines.slice(Math.max(0, head - 2), index + 1).join('\n');
-      findings.push({
-        line: index + 1,
-        value,
-        coverage: classify({ before, context, isOverrideSource }),
-      });
+  const visit = (node) => {
+    if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node) || isComponentTemplate(node)) {
+      return;
     }
-  });
+    const value = phraseOf(node, sf);
+    if (value !== null) {
+      const { line, character } = sf.getLineAndCharacterOfPosition(node.getStart(sf));
+      const before = lines[line].slice(0, character);
+      if (!COMPARISON_BEFORE.test(before)) {
+        const head = expressionHead(lines, line);
+        const context = lines.slice(Math.max(0, head - 2), line + 1).join('\n');
+        findings.push({
+          line: line + 1,
+          value,
+          coverage: classify({ before, context, isOverrideSource }),
+        });
+      }
+    }
+    node.forEachChild(visit);
+  };
+  visit(sf);
 
   return findings;
 }
@@ -246,7 +315,7 @@ const classify = (input) => {
   if (/(?:\?\?|\|\|)\s*$/.test(input.before.trimEnd()) && CONFIG_READ.test(input.context)) {
     return 'config-fallback';
   }
-  if (/\binput(?:\.required)?\s*(?:<[^>]*>)?\([^'\n]*$/.test(input.before)) {
+  if (/\binput(?:\.required)?\s*(?:<[^>]*>)?\([^'"`\n]*$/.test(input.before)) {
     return 'input-default';
   }
   return 'uncovered';
@@ -445,6 +514,48 @@ describe('user-facing string scanner', () => {
   it('ignores a literal that is compared against, not shown', () => {
     const source = "const isMac = navigator.userAgent.includes('Mac');";
     expect(scanSource(source, 'sidenav.ts')).toEqual([]);
+  });
+
+  it('reports a double-quoted phrase', () => {
+    const source = 'const title = "Close panel";';
+    expect(scanSource(source, 'panel.ts')).toEqual([
+      { line: 1, value: 'Close panel', coverage: 'uncovered' },
+    ]);
+  });
+
+  it('reports a backtick phrase with its substitutions normalised', () => {
+    const source = 'const label = `${done} of ${total}`;';
+    expect(scanSource(source, 'goal.ts')).toEqual([
+      { line: 1, value: '{} of {}', coverage: 'uncovered' },
+    ]);
+  });
+
+  it('ignores a word glued to a substitution', () => {
+    const source = ['const d = `${ms}ms`;', 'const k = `${key}State`;'].join('\n');
+    expect(scanSource(source, 'x.ts')).toEqual([]);
+  });
+
+  it('reports a digit-leading phrase', () => {
+    const source = "const one = count === 1 ? '1 row selected' : other;";
+    expect(scanSource(source, 'table.ts')).toEqual([
+      { line: 1, value: '1 row selected', coverage: 'uncovered' },
+    ]);
+  });
+
+  it('ignores SVG path data', () => {
+    const source = "const d = 'M12 2 L22 22 H2 Z'; const e = `M${x} ${y} L${x2} ${y2}`;";
+    expect(scanSource(source, 'icon.ts')).toEqual([]);
+  });
+
+  it('classifies a literal with a {placeholder} as a phrase', () => {
+    const source = "const tpl = 'Sorted by {label} ascending';";
+    expect(scanSource(source, 'sort.ts')).toEqual([
+      { line: 1, value: 'Sorted by {label} ascending', coverage: 'uncovered' },
+    ]);
+  });
+
+  it('ignores a lone placeholder', () => {
+    expect(scanSource("const tpl = '{x}';", 'x.ts')).toEqual([]);
   });
 
   it('ignores strings inside comments', () => {
