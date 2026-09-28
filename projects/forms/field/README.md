@@ -152,11 +152,23 @@ wiring.
 default. `provideFormFieldAt(withFieldSkin('bare'))` in a component's
 `viewProviders` scopes it to one subtree, typically a table.
 
-**Controls that do not host `cngxInput`** opt in with the explicit attribute:
+**Value directives compose with `cngxInput`.** `CngxInput` hosts the skin
+directive, so `<input cngxInput cngxNumericInput>` follows `withFieldSkin(...)`
+with no extra attribute. The same holds for `CngxInputMask` and
+`CngxInputFormat`. Do not add the skin directive to a value directive's host:
+a second skin host on one element throws NG0309.
+
+```html
+<input cngxInput cngxNumericInput [field]="f.amount" />
+```
+
+A lone value directive is not a field control, and an OTP slot or a listbox
+search owns its own chrome, so these opt in with the explicit attribute:
 `CngxNumericInput`, `CngxInputMask`, `CngxInputFormat`, `CngxOtpSlot`,
 `input[cngxListboxSearch]`, `input[cngxSearch]`, `input[cngxDgaFilter]`. They
 are not reached by `withFieldSkin(...)` until the attribute is present, because
-the config is read by the skin directive itself.
+the config is read by the skin directive itself. Inside a `CngxFieldBox` none of
+them needs the attribute: the box reset strips their paint.
 
 ```html
 <input cngxNumericInput cngxFieldSkin="bare" />
