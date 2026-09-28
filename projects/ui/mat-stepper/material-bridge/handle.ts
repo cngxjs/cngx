@@ -185,6 +185,12 @@ function resolveStepLabel(matStep: MatStep, id: string, i18n: CngxStepperI18n | 
  * {@link CNGX_MAT_STEP_HANDLE_FACTORY} resolves to a function with
  * this exact shape - overrides match it identically.
  *
+ * The third argument is the stepper i18n bundle the directive injected;
+ * it carries the last-resort label (`stepFallbackLabel`). An override
+ * that declares only `(matStep, idSeed)` still type-checks, but its
+ * unlabelled steps lose the localized fallback - forward `i18n` when
+ * delegating to {@link createMatStepHandle}.
+ *
  * @category ui/mat-stepper
  */
 export type CngxMatStepHandleFactory = typeof createMatStepHandle;
