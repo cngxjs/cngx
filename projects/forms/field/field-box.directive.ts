@@ -32,8 +32,9 @@ import { CngxFieldSkinHost } from './field-skin.directive';
  *
  * The box paints the state of its **main control**: the first direct-child
  * form-field control that is not an affix. It publishes that state as
- * `data-invalid` / `data-disabled`, and the surrounding field's readonly
- * flag as `data-readonly`, so a disabled suffix button never greys the row.
+ * `data-invalid` / `data-disabled` / `data-readonly` (readonly also when
+ * the surrounding field is), so a disabled suffix button never greys the
+ * row.
  * One main control per box; a second non-affix control is ignored. A click
  * on the box padding focuses the main control, so the whole box is its hit
  * area.
@@ -84,7 +85,11 @@ export class CngxFieldBox implements CngxFieldBoxContract {
 
   protected readonly dataInvalid = computed(() => (this.mainControl()?.errorState() ? '' : null));
   protected readonly dataDisabled = computed(() => (this.mainControl()?.disabled() ? '' : null));
-  protected readonly dataReadonly = computed(() => (this.fieldHost?.readonly?.() ? '' : null));
+  protected readonly dataReadonly = computed(() => {
+    const controlReadonly = this.mainControl()?.readonly?.() ?? false;
+    const fieldReadonly = this.fieldHost?.readonly?.() ?? false;
+    return controlReadonly || fieldReadonly ? '' : null;
+  });
 
   private readonly element = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
 

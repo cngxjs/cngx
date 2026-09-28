@@ -190,6 +190,30 @@ describe('CngxFieldBox', () => {
     expect(box(fixture).getAttribute('data-readonly')).toBe('');
   });
 
+  it('publishes readonly from the main control outside a field', () => {
+    @Component({
+      template: `<span cngxFieldBox><input cngxInput readonly /></span>`,
+      imports: [CngxFieldBox, CngxInput],
+    })
+    class Host {}
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+    expect(box(fixture).getAttribute('data-readonly')).toBe('');
+  });
+
+  it('ignores a readonly affix control', () => {
+    @Component({
+      template: `<span cngxFieldBox
+        ><input cngxInput cngxPrefix readonly /><span stubControl></span
+      ></span>`,
+      imports: [CngxFieldBox, CngxInput, CngxPrefix, StubControl],
+    })
+    class Host {}
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+    expect(box(fixture).hasAttribute('data-readonly')).toBe(false);
+  });
+
   it('writes no state attribute without a field host or a control', () => {
     @Component({ template: `<span cngxFieldBox><input /></span>`, imports: [CngxFieldBox] })
     class Host {}

@@ -1,4 +1,12 @@
-import { computed, Directive, ElementRef, inject, input, signal } from '@angular/core';
+import {
+  computed,
+  Directive,
+  ElementRef,
+  HostAttributeToken,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 import {
   CngxFieldSkinHost,
   CngxFormFieldPresenter,
@@ -76,6 +84,12 @@ export class CngxInput implements CngxFormFieldControl {
   readonly empty = this.emptyState.asReadonly();
   readonly disabled = computed(() => this.presenter?.disabled() ?? false);
   readonly errorState = computed(() => this.presenter?.showError() ?? false);
+  private readonly readonlyAttribute =
+    inject(new HostAttributeToken('readonly'), { optional: true }) !== null;
+  /** Readonly from the surrounding field, or from a static `readonly` attribute. */
+  readonly readonly = computed(
+    () => this.readonlyAttribute || (this.presenter?.readonly() ?? false),
+  );
 
   // Host binding computeds - null-safe when no presenter.
 
