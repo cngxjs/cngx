@@ -2,7 +2,9 @@ import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
+import { provideFeedbackI18n } from '../config/feedback-i18n';
 import { CngxLoadingIndicator, type LoadingIndicatorVariant } from './loading-indicator';
+import { CngxLoadingOverlay } from './loading-overlay';
 
 @Component({
   template: `<cngx-loading-indicator
@@ -222,5 +224,31 @@ describe('CngxLoadingIndicator', () => {
     vi.advanceTimersByTime(100);
     fixture.detectChanges();
     expect(el.classList.contains('cngx-loading-indicator--visible')).toBe(false);
+  });
+
+  describe('default label from CNGX_FEEDBACK_I18N', () => {
+    @Component({
+      template: `<cngx-loading-indicator /><cngx-loading-overlay />`,
+      imports: [CngxLoadingIndicator, CngxLoadingOverlay],
+    })
+    class UnlabelledHost {}
+
+    const labels = (): string[] => {
+      const fixture = TestBed.createComponent(UnlabelledHost);
+      fixture.detectChanges();
+      return fixture.debugElement.children.map((el) =>
+        (el.componentInstance as CngxLoadingIndicator | CngxLoadingOverlay).label(),
+      );
+    };
+
+    it('defaults both labels to the English loadingLabel', () => {
+      expect(labels()).toEqual(['Loading', 'Loading']);
+    });
+
+    it('defaults both labels to a translated loadingLabel', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({ providers: [provideFeedbackI18n({ loadingLabel: 'Laedt' })] });
+      expect(labels()).toEqual(['Laedt', 'Laedt']);
+    });
   });
 });

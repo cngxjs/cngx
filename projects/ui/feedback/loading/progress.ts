@@ -5,7 +5,9 @@ import {
   input,
   ViewEncapsulation,
 } from '@angular/core';
-import type { CngxAsyncState } from '@cngx/core/utils';
+import { injectLocale, numberFormatterFor, type CngxAsyncState } from '@cngx/core/utils';
+
+import { injectResolvedFeedbackI18n } from '../config/feedback-i18n';
 
 /**
  * Visual variant for the progress indicator.
@@ -16,6 +18,8 @@ export type ProgressVariant = 'linear' | 'circular';
 
 /** @internal */
 const CIRCUMFERENCE = 2 * Math.PI * 20; // r=20
+/** @internal */
+const PERCENT_FORMAT: Intl.NumberFormatOptions = { style: 'percent' };
 /** @internal */
 const CIRCLE_DASH_ARRAY = `${CIRCUMFERENCE}, ${CIRCUMFERENCE}`;
 
@@ -78,7 +82,7 @@ const CIRCLE_DASH_ARRAY = `${CIRCUMFERENCE}, ${CIRCUMFERENCE}`;
         ></div>
       </div>
       @if (showLabel() && isDeterminate()) {
-        <span class="cngx-progress__label" aria-hidden="true"> {{ effectiveProgress() }}% </span>
+        <span class="cngx-progress__label" aria-hidden="true"> {{ formattedPercent() }} </span>
       }
     } @else {
       <svg class="cngx-progress__circle" viewBox="0 0 50 50" aria-hidden="true">
@@ -103,13 +107,16 @@ const CIRCLE_DASH_ARRAY = `${CIRCUMFERENCE}, ${CIRCUMFERENCE}`;
         />
       </svg>
       @if (showLabel() && isDeterminate()) {
-        <span class="cngx-progress__label" aria-hidden="true"> {{ effectiveProgress() }}% </span>
+        <span class="cngx-progress__label" aria-hidden="true"> {{ formattedPercent() }} </span>
       }
     }
   `,
   styleUrls: ['./progress.css'],
 })
 export class CngxProgress {
+  private readonly i18n = injectResolvedFeedbackI18n();
+  private readonly locale = injectLocale();
+
   /** Bind an async state - reads `progress()` for determinate mode. */
   readonly state = input<CngxAsyncState<unknown> | undefined>(undefined);
 
@@ -122,8 +129,11 @@ export class CngxProgress {
   /** Show percentage label next to the bar. */
   readonly showLabel = input<boolean>(false);
 
-  /** Screen reader label describing *what* is progressing. */
-  readonly label = input<string>('Progress');
+  /**
+   * Screen reader label describing *what* is progressing. Defaults to
+   * `CNGX_FEEDBACK_I18N.progressLabel`, read at construction.
+   */
+  readonly label = input<string>(this.i18n().progressLabel);
 
   /** @internal */
   protected readonly effectiveProgress = computed(() => {
@@ -140,10 +150,23 @@ export class CngxProgress {
   /** @internal - `null` removes the attribute from the DOM for indeterminate mode. */
   protected readonly ariaValueNow = computed(() => this.effectiveProgress() ?? null);
 
+  /** @internal - the rounded percent formatted in the app locale (`42%`, `42 %`). */
+  protected readonly formattedPercent = computed(() => {
+    const p = this.effectiveProgress();
+    if (p === undefined) {
+      return null;
+    }
+    return numberFormatterFor(this.locale(), PERCENT_FORMAT).format(p / 100);
+  });
+
   /** @internal */
   protected readonly ariaValueText = computed(() => {
     const p = this.effectiveProgress();
-    return p !== undefined ? `${p} percent` : null;
+    const formatted = this.formattedPercent();
+    if (p === undefined || formatted === null) {
+      return null;
+    }
+    return this.i18n().progressValueText(p, formatted);
   });
 
   /** @internal */

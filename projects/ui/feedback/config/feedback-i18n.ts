@@ -81,6 +81,25 @@ export interface CngxFeedbackI18n {
    * {@link CngxFeedbackI18n.dismissLabel}.
    */
   readonly toastRepeatCount?: (count: number) => string;
+  /**
+   * Default accessible name of `CngxLoadingIndicator` and `CngxLoadingOverlay`.
+   * Read once at construction as the default of their `label` input. Optional
+   * for the same compatibility reason as {@link CngxFeedbackI18n.dismissLabel}.
+   */
+  readonly loadingLabel?: string;
+  /**
+   * Default accessible name of `CngxProgress`, read once at construction as the
+   * default of its `label` input. Optional for the same compatibility reason as
+   * {@link CngxFeedbackI18n.dismissLabel}.
+   */
+  readonly progressLabel?: string;
+  /**
+   * `aria-valuetext` of a determinate `CngxProgress`. Receives the rounded
+   * percent (0-100) and that value already formatted as a percent in the app
+   * locale; the default returns the formatted string. Optional for the same
+   * compatibility reason as {@link CngxFeedbackI18n.dismissLabel}.
+   */
+  readonly progressValueText?: (percent: number, formatted: string) => string;
 }
 
 /**
@@ -102,6 +121,9 @@ export const FEEDBACK_I18N_DEFAULTS: Required<CngxFeedbackI18n> & {
   dismissLabel: 'Dismiss',
   bannerActionFailed: 'Action failed',
   toastRepeatCount: (count) => `(x${count})`,
+  loadingLabel: 'Loading',
+  progressLabel: 'Progress',
+  progressValueText: (_percent, formatted) => formatted,
   announcements: {
     alertDismissed: 'Alert dismissed',
     alertOverflow: (count) => `+ ${count} more alerts`,

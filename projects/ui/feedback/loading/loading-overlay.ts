@@ -12,6 +12,7 @@ import {
 } from '@angular/core';
 import { createVisibilityGate, injectLoadingConfig, type CngxAsyncState } from '@cngx/core/utils';
 
+import { injectResolvedFeedbackI18n } from '../config/feedback-i18n';
 import { CngxLoadingIndicator } from './loading-indicator';
 
 /**
@@ -91,6 +92,7 @@ import { CngxLoadingIndicator } from './loading-indicator';
 export class CngxLoadingOverlay {
   private readonly doc = inject(DOCUMENT);
   private readonly loadingConfig = injectLoadingConfig();
+  private readonly i18n = injectResolvedFeedbackI18n();
 
   /** Bind an async state - shows overlay when `isBusy()`. */
   readonly state = input<CngxAsyncState<unknown> | undefined>(undefined);
@@ -98,8 +100,11 @@ export class CngxLoadingOverlay {
   /** Direct boolean control - alternative to `[state]`. */
   readonly loading = input<boolean>(false);
 
-  /** Screen reader label for the spinner. */
-  readonly label = input<string>('Loading');
+  /**
+   * Screen reader label for the spinner. Defaults to
+   * `CNGX_FEEDBACK_I18N.loadingLabel`, read at construction.
+   */
+  readonly label = input<string>(this.i18n().loadingLabel);
 
   /** Delay in ms before showing the overlay. Defaults to `CNGX_LOADING_CONFIG.showDelay`. */
   readonly delay = input<number>(this.loadingConfig.showDelay);

@@ -35,7 +35,7 @@ export const COMPLETED_PHASE = 1;
  * Exact RATCHET length. Asserted equal, so the ceiling cannot be padded:
  * every row-closing commit removes its rows and lowers this number with them.
  */
-export const RATCHET_CEILING = 60;
+export const RATCHET_CEILING = 56;
 
 /**
  * The RATCHET keys (`file` + tab + `value`) at the end of Phase 1, frozen in
@@ -139,12 +139,6 @@ export const RATCHET = [
     value: 'Brazil',
     note: 'CNGX_PHONE_COUNTRIES label, only a per-instance [countries] swap reaches it',
     closesIn: 4,
-  },
-  {
-    file: 'projects/ui/feedback/loading/progress.ts',
-    value: '{} percent',
-    note: 'progress aria-valuetext composed by hand, not locale-formatted',
-    closesIn: 2,
   },
   {
     file: 'projects/common/data/display/goal/goal.component.ts',
@@ -283,24 +277,6 @@ export const RATCHET = [
     value: 'avatars',
     note: 'overflow noun is a bare input default',
     closesIn: 3,
-  },
-  {
-    file: 'projects/ui/feedback/loading/loading-indicator.ts',
-    value: 'Loading',
-    note: 'bare input default, per-instance only',
-    closesIn: 2,
-  },
-  {
-    file: 'projects/ui/feedback/loading/loading-overlay.ts',
-    value: 'Loading',
-    note: 'bare input default, per-instance only',
-    closesIn: 2,
-  },
-  {
-    file: 'projects/ui/feedback/loading/progress.ts',
-    value: 'Progress',
-    note: 'bare input default, per-instance only',
-    closesIn: 2,
   },
   {
     file: 'projects/ui/sidenav/sidenav.ts',
