@@ -74,6 +74,12 @@ export interface CngxCommandPaletteConfig {
   readonly errorLabel: string;
   /** Retry-button copy in the error state. */
   readonly retryLabel: string;
+  /**
+   * Default of the palette's `[ariaLabel]`, the dialog's accessible name. Read
+   * once when each palette is created. Optional for compatibility with full
+   * configs written before it existed; the English default applies when absent.
+   */
+  readonly paletteLabel?: string;
   /** Builds the polite `aria-live` result-count message. */
   readonly resultCount: (count: number) => string;
   /** Keyboard-legend rows rendered in the footer. */
@@ -112,6 +118,7 @@ export const DEFAULT_COMMAND_PALETTE_CONFIG: CngxCommandPaletteConfig = {
   loadingLabel: CNGX_COMMAND_PALETTE_DEFAULTS.loadingLabel,
   errorLabel: CNGX_COMMAND_PALETTE_DEFAULTS.errorLabel,
   retryLabel: CNGX_COMMAND_PALETTE_DEFAULTS.retryLabel,
+  paletteLabel: CNGX_COMMAND_PALETTE_DEFAULTS.paletteLabel,
   resultCount: CNGX_COMMAND_PALETTE_DEFAULTS.resultCount,
   footerLegend: CNGX_COMMAND_PALETTE_DEFAULTS.footerLegend,
 };
@@ -204,7 +211,13 @@ export function withCommandPaletteLabels(
   labels: Partial<
     Pick<
       CngxCommandPaletteConfig,
-      'searchPlaceholder' | 'listboxLabel' | 'emptyLabel' | 'loadingLabel' | 'errorLabel' | 'retryLabel'
+      | 'searchPlaceholder'
+      | 'listboxLabel'
+      | 'emptyLabel'
+      | 'loadingLabel'
+      | 'errorLabel'
+      | 'retryLabel'
+      | 'paletteLabel'
     >
   >,
 ): CngxCommandPaletteConfigFeature {
