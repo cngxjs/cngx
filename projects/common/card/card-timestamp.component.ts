@@ -3,18 +3,17 @@ import {
   Component,
   computed,
   effect,
-  inject,
   input,
   isDevMode,
-  LOCALE_ID,
   ViewEncapsulation,
 } from '@angular/core';
-import { dateTimeFormatterFor } from '@cngx/core/utils';
+import { dateTimeFormatterFor, injectLocale } from '@cngx/core/utils';
 
 /**
  * Displays a formatted date/timestamp, typically in a card footer.
  *
- * Uses `Intl.DateTimeFormat` with the injected `LOCALE_ID`.
+ * Uses `Intl.DateTimeFormat` with the app locale (`CNGX_LOCALE`, falling back
+ * to the nearest `LOCALE_ID`); a locale flip re-formats.
  *
  * ```html
  * <cngx-card>
@@ -48,7 +47,7 @@ import { dateTimeFormatterFor } from '@cngx/core/utils';
   styleUrls: ['./card-timestamp.component.css'],
 })
 export class CngxCardTimestamp {
-  private readonly locale = inject(LOCALE_ID);
+  private readonly locale = injectLocale();
 
   /** Date to display. Accepts Date objects or ISO strings. */
   readonly date = input.required<Date | string>();
@@ -101,7 +100,7 @@ export class CngxCardTimestamp {
       month: '2-digit',
       day: '2-digit',
     };
-    return dateTimeFormatterFor(this.locale, fmt).format(this.dateObj());
+    return dateTimeFormatterFor(this.locale(), fmt).format(this.dateObj());
   });
 
   constructor() {

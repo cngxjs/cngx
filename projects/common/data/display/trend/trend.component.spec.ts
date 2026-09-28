@@ -1,6 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { CNGX_LOCALE } from '@cngx/core/utils';
 import { CngxTrend } from './trend.component';
 
 @Component({
@@ -63,5 +64,26 @@ describe('CngxTrend', () => {
     const label = el.getAttribute('aria-label')!;
     expect(label).toContain('+5.3');
     expect(label).toContain('up');
+  });
+});
+
+describe('CngxTrend - CNGX_LOCALE', () => {
+  it('re-formats on a locale flip without re-creating the component', () => {
+    const locale = signal('en-US');
+    TestBed.configureTestingModule({
+      imports: [TestHost],
+      providers: [{ provide: CNGX_LOCALE, useValue: locale.asReadonly() }],
+    });
+    const fixture = TestBed.createComponent(TestHost);
+    fixture.componentInstance.value.set(2.1);
+    fixture.detectChanges();
+    const el: HTMLElement = fixture.nativeElement.querySelector('cngx-trend');
+    expect(el.textContent).toContain('+2.1');
+
+    locale.set('de-DE');
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('cngx-trend')).toBe(el);
+    expect(el.textContent).toContain('+2,1');
+    expect(el.textContent).not.toContain('2.1');
   });
 });

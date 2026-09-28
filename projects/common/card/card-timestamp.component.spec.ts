@@ -2,6 +2,7 @@ import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { LOCALE_ID } from '@angular/core';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { CNGX_LOCALE } from '@cngx/core/utils';
 import { CngxCardTimestamp } from './card-timestamp.component';
 
 @Component({
@@ -84,5 +85,24 @@ describe('CngxCardTimestamp', () => {
     host.date.set('2025-12-25');
     fixture.detectChanges();
     expect(el.querySelector('time')!.textContent!.trim()).toContain('12/25/2025');
+  });
+});
+
+describe('CngxCardTimestamp - CNGX_LOCALE', () => {
+  it('re-formats on a locale flip without re-creating the component', () => {
+    const locale = signal('en-US');
+    TestBed.configureTestingModule({
+      imports: [TestHost],
+      providers: [{ provide: CNGX_LOCALE, useValue: locale.asReadonly() }],
+    });
+    const fixture = TestBed.createComponent(TestHost);
+    fixture.detectChanges();
+    const time: HTMLTimeElement = fixture.nativeElement.querySelector('time');
+    expect(time.textContent!.trim()).toContain('03/15/2026');
+
+    locale.set('de-DE');
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('time')).toBe(time);
+    expect(time.textContent!.trim()).toContain('15.03.2026');
   });
 });

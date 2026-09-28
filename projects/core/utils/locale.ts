@@ -20,9 +20,9 @@ const localeSignalFor = memoize((id: string): Signal<string> => signal(id).asRea
 
 /**
  * The locale source cngx formatters read through {@link injectLocale}.
- * `CngxProgress` formats with it today. The atoms that still inject `LOCALE_ID`
- * directly (`CngxTime`, `CngxMetric`, `CngxTrend`, `CngxDelta`,
- * `CngxCardTimestamp`, `CngxNumericInput`, `CngxInputMask`) follow the nearest
+ * `CngxProgress`, `CngxTime`, `CngxMetric`, `CngxTrend`, `CngxDelta` and
+ * `CngxCardTimestamp` format with it today. The atoms that still inject
+ * `LOCALE_ID` directly (`CngxNumericInput`, `CngxInputMask`) follow the nearest
  * `LOCALE_ID` only and do not see a provided `CNGX_LOCALE` until they move onto
  * this token.
  *

@@ -2,17 +2,17 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  inject,
   input,
-  LOCALE_ID,
   ViewEncapsulation,
 } from '@angular/core';
+import { injectLocale, numberFormatterFor } from '@cngx/core/utils';
 
 /**
  * Displays a formatted numeric value with optional unit.
  *
- * Uses `Intl.NumberFormat` with the injected `LOCALE_ID` for locale-aware
- * formatting. Null values render as an em-dash.
+ * Uses `Intl.NumberFormat` with the app locale (`CNGX_LOCALE`, falling back to
+ * the nearest `LOCALE_ID`) for locale-aware formatting; a locale flip
+ * re-formats. Null values render as an em-dash.
  *
  * Composable - works inside any card variant, header, body, or standalone.
  *
@@ -67,7 +67,7 @@ import {
   styleUrls: ['./metric.component.css'],
 })
 export class CngxMetric {
-  private readonly locale = inject(LOCALE_ID);
+  private readonly locale = injectLocale();
 
   /** Numeric or string value. `null` renders as a placeholder hyphen. */
   readonly value = input.required<number | string | null>();
@@ -87,9 +87,7 @@ export class CngxMetric {
     if (typeof v === 'string') {
       return v;
     }
-    return this.format()
-      ? new Intl.NumberFormat(this.locale, this.format()).format(v)
-      : v.toLocaleString(this.locale);
+    return numberFormatterFor(this.locale(), this.format() ?? {}).format(v);
   });
 
   /** @internal Full accessible description including unit. */

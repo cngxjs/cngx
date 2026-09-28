@@ -2,11 +2,10 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  inject,
   input,
-  LOCALE_ID,
   ViewEncapsulation,
 } from '@angular/core';
+import { injectLocale } from '@cngx/core/utils';
 
 import {
   deltaDirection,
@@ -85,7 +84,7 @@ const SENTIMENT_WORD: Record<DeltaSentiment, string> = {
   styleUrls: ['./delta.component.css'],
 })
 export class CngxDelta {
-  private readonly locale = inject(LOCALE_ID);
+  private readonly locale = injectLocale();
 
   /** Signed delta. Positive = up, negative = down, zero = flat. */
   readonly value = input.required<number>();
@@ -117,7 +116,7 @@ export class CngxDelta {
 
   /** @internal Formatted magnitude. */
   protected readonly formattedValue = computed(() =>
-    formatDelta(this.value(), this.mode(), this.locale, this.format()),
+    formatDelta(this.value(), this.mode(), this.locale(), this.format()),
   );
 
   /** @internal Full SR label: magnitude plus the sentiment word. */
