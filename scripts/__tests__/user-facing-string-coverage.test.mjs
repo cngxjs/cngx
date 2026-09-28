@@ -33,11 +33,14 @@ import {
 //      The literal is dead weight the moment a consumer provides the token.
 //      An `input()` defaulted from a token read (`input(this.i18n().x)`) has
 //      no literal at all.
-//
-// A bare `input('X')` default is NOT covered: a per-instance binding alone is
-// not translatable, the app-wide path is the token.
 //   3. It is a dev-only message (`console.warn`, `new Error`, an `isDevMode()`
 //      block). Never reaches an end user, never translated.
+//
+// Both 2 and 3 are decided by the literal's position in the AST, never by
+// neighbouring lines. A bare `input('X')` default is NOT covered: a
+// per-instance binding alone is not translatable, the app-wide path is the
+// token. A template the scanner cannot parse or resolve fails the suite
+// rather than passing unread.
 //
 // Everything else is a gap and must carry a manifest row. See
 // `user-facing-string-coverage.fixtures.mjs`.
@@ -84,14 +87,17 @@ const OVERRIDE_SOURCE_FILE = /(?:^|[-.])(?:config|defaults|i18n|token|tokens|lab
 /** An injection token whose payload is the area's config / label bundle. */
 const OVERRIDE_TOKEN = /new InjectionToken<\s*[A-Za-z0-9_]*(?:Config|I18n|Labels|Messages)\b/;
 
-/** Markers of a message that only ever reaches a developer's console. */
-const DEV_MARKER = /console\.|new Error|isDevMode|ngDevMode|\bthrow\b|\bwarn[A-Z]/;
+/** A guard expression that only holds in a development build. */
+const DEV_GUARD = /\b(?:isDevMode|ngDevMode)\b/;
+
+/** A call that only ever writes to a developer's console. */
+const DEV_CALL = /^console\.|(?:^|\.)warn[A-Z]\w*$/;
 
 /** Reads that make a following `??` / `||` literal a mere fallback. */
 const CONFIG_READ = /\b(?:config|cfg|i18n|labels|messages|glyphs|defaults|ariaLabels)\b/i;
 
 /**
- * @typedef {'override-source' | 'config-fallback' | 'dev-message' | 'uncovered'} StringCoverage
+ * @typedef {'override-source' | 'config-fallback' | 'dev-message' | 'uncovered' | 'unscannable'} StringCoverage
  */
 
 /**
@@ -164,8 +170,8 @@ export function isBacktickPhrase(spans) {
 
 /**
  * The source with every comment blanked and line count preserved - a JSDoc
- * `@example` block is full of `aria-label="Price range"` prose, and the
- * classification context must not see it.
+ * `@example` block is full of `aria-label="Price range"` prose, and neither
+ * the comparison check nor the override-token check may see it.
  *
  * @param {ts.SourceFile} sf
  * @returns {string}
@@ -189,48 +195,126 @@ function commentFreeText(sf) {
 }
 
 /**
- * Walks back over a `'a' + 'b'` concatenation so a literal on the fifth line of
- * a `console.warn(...)` chain is classified by the head of the chain, not by
- * its own line.
+ * Is `node` inside `container`?
  *
- * @param {readonly string[]} lines
- * @param {number} index
- * @returns {number}
+ * @param {ts.Node} node
+ * @param {ts.Node | undefined} container
  */
-const expressionHead = (lines, index) => {
-  let head = index;
-  while (head > 0) {
-    const previous = lines[head - 1].trimEnd();
-    if (!/[+(,]$/.test(previous)) {
-      break;
+const isWithin = (node, container) =>
+  !!container && node.pos >= container.pos && node.end <= container.end;
+
+/**
+ * A literal that only ever reaches a developer: an argument of a `throw`, a
+ * `new *Error(...)`, a `console.*` / `warn*` call, or anything behind an
+ * `isDevMode()` / `ngDevMode` guard. Decided by the literal's ancestors, never
+ * by neighbouring lines - copy two lines below an unrelated `throw` stays copy.
+ *
+ * @param {ts.Node} node
+ * @param {ts.SourceFile} sf
+ */
+const isDevOnly = (node, sf) => {
+  for (let current = node.parent; current; current = current.parent) {
+    if (ts.isThrowStatement(current)) {
+      return true;
     }
-    head -= 1;
+    if (ts.isNewExpression(current) && /Error$/.test(current.expression.getText(sf))) {
+      return true;
+    }
+    if (ts.isCallExpression(current) && DEV_CALL.test(current.expression.getText(sf))) {
+      return true;
+    }
+    const guardedIf =
+      ts.isIfStatement(current) &&
+      DEV_GUARD.test(current.expression.getText(sf)) &&
+      isWithin(node, current.thenStatement);
+    const guardedAnd =
+      ts.isBinaryExpression(current) &&
+      current.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken &&
+      DEV_GUARD.test(current.left.getText(sf)) &&
+      isWithin(node, current.right);
+    if (guardedIf || guardedAnd) {
+      return true;
+    }
   }
-  return head;
+  return false;
 };
 
 /**
- * A `template:` initializer of an `@Component` decorator. Its content is
- * markup, not TypeScript copy.
+ * A literal on the right of `??` / `||` whose left operand reads a config,
+ * i18n or labels bundle (`config.ariaLabels?.x ?? 'X'`). The left operand
+ * itself decides, not a word on a neighbouring line.
  *
  * @param {ts.Node} node
- * @returns {boolean}
+ * @param {ts.SourceFile} sf
  */
-const isComponentTemplate = (node) => {
-  const prop = node.parent;
-  if (!prop || !ts.isPropertyAssignment(prop) || prop.initializer !== node) {
+const isConfigFallback = (node, sf) => {
+  let operand = node;
+  while (ts.isParenthesizedExpression(operand.parent)) {
+    operand = operand.parent;
+  }
+  const parent = operand.parent;
+  return (
+    ts.isBinaryExpression(parent) &&
+    parent.right === operand &&
+    (parent.operatorToken.kind === ts.SyntaxKind.QuestionQuestionToken ||
+      parent.operatorToken.kind === ts.SyntaxKind.BarBarToken) &&
+    CONFIG_READ.test(parent.left.getText(sf))
+  );
+};
+
+/**
+ * The `template:` initializer of an `@Component` decorator, whatever its
+ * shape. Its content is markup, not TypeScript copy.
+ *
+ * @param {ts.Node} node
+ * @returns {node is ts.PropertyAssignment}
+ */
+const isComponentTemplateProperty = (node) => {
+  if (
+    !ts.isPropertyAssignment(node) ||
+    !ts.isIdentifier(node.name) ||
+    node.name.text !== 'template'
+  ) {
     return false;
   }
-  if (!ts.isIdentifier(prop.name) || prop.name.text !== 'template') {
-    return false;
-  }
-  const call = prop.parent?.parent;
+  const call = node.parent?.parent;
   return (
     !!call &&
     ts.isCallExpression(call) &&
     ts.isIdentifier(call.expression) &&
     call.expression.text === 'Component'
   );
+};
+
+/**
+ * Resolves a `template:` initializer to the literal that holds the markup: the
+ * initializer itself, or a same-file `const X = \`...\`` it names. A template
+ * built with substitutions, or imported from elsewhere, cannot be scanned.
+ *
+ * @param {ts.Expression} initializer
+ * @param {ts.SourceFile} sf
+ * @returns {ts.StringLiteral | ts.NoSubstitutionTemplateLiteral | null}
+ */
+const templateLiteralOf = (initializer, sf) => {
+  if (ts.isStringLiteral(initializer) || ts.isNoSubstitutionTemplateLiteral(initializer)) {
+    return initializer;
+  }
+  if (!ts.isIdentifier(initializer)) {
+    return null;
+  }
+  for (const statement of sf.statements) {
+    if (!ts.isVariableStatement(statement)) {
+      continue;
+    }
+    for (const declaration of statement.declarationList.declarations) {
+      const init = declaration.initializer;
+      const named = ts.isIdentifier(declaration.name) && declaration.name.text === initializer.text;
+      if (named && init && (ts.isStringLiteral(init) || ts.isNoSubstitutionTemplateLiteral(init))) {
+        return init;
+      }
+    }
+  }
+  return null;
 };
 
 /**
@@ -373,7 +457,7 @@ const isDataLiteral = (node) => {
  * default of `'horizontal'` is an enum value, one of `'results'` on `plural`
  * is copy):
  *
- * (c) the default of an `input()` whose field name is a label sink, read
+ * (c) the default of an `input()` / `model()` whose field name is a label sink, read
  *     through a same-file `const X = '...'` when the default is `X`;
  * (d) a value of the object literal a module-level `*WORD*` / `*LABEL*` /
  *     `*TEXT*` / `*PHRASE*` / `*NOUN*` const is initialised with, unless the
@@ -409,7 +493,8 @@ const sinkHitsOf = (sf) => {
 
   const labelInputDefault = (node) => {
     const init = unwrapExpression(node.initializer);
-    if (!isCallTo(init, 'input') || !LABEL_INPUT_FIELD.test(node.name.text)) {
+    const isSignalInput = isCallTo(init, 'input') || isCallTo(init, 'model');
+    if (!isSignalInput || !LABEL_INPUT_FIELD.test(node.name.text)) {
       return;
     }
     const arg = unwrapExpression(init.arguments[0]);
@@ -490,32 +575,43 @@ export function scanSource(source, fileName = 'x.ts') {
   const findings = [];
   /** @type {Set<ts.Node>} */
   const reported = new Set();
+  /** @type {Set<ts.Node>} template literals, scanned as markup instead */
+  const templates = new Set();
+
+  const lineOf = (node) => sf.getLineAndCharacterOfPosition(node.getStart(sf)).line;
 
   const report = (node, value) => {
     const { line, character } = sf.getLineAndCharacterOfPosition(node.getStart(sf));
-    const before = lines[line].slice(0, character);
-    if (COMPARISON_BEFORE.test(before)) {
+    if (COMPARISON_BEFORE.test(lines[line].slice(0, character))) {
       return;
     }
-    const head = expressionHead(lines, line);
-    const context = lines.slice(Math.max(0, head - 2), line + 1).join('\n');
-    findings.push({
-      line: line + 1,
-      value,
-      coverage: classify({ before, context, isOverrideSource }),
-    });
+    findings.push({ line: line + 1, value, coverage: classify(node, sf, isOverrideSource) });
     reported.add(node);
   };
 
+  const collectTemplates = (node) => {
+    if (isComponentTemplateProperty(node)) {
+      const literal = templateLiteralOf(node.initializer, sf);
+      if (literal) {
+        templates.add(literal);
+        findings.push(...scanTemplate(literal.text, fileName, lineOf(literal)));
+      } else {
+        findings.push({
+          line: lineOf(node) + 1,
+          value: 'template: not a same-file string literal',
+          coverage: 'unscannable',
+        });
+      }
+    }
+    node.forEachChild(collectTemplates);
+  };
+  collectTemplates(sf);
+
   const visit = (node) => {
-    if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) {
+    if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node) || templates.has(node)) {
       return;
     }
-    if (isComponentTemplate(node)) {
-      if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) {
-        const { line } = sf.getLineAndCharacterOfPosition(node.getStart(sf));
-        findings.push(...scanTemplate(node.text, fileName, line));
-      }
+    if (isComponentTemplateProperty(node) && !ts.isIdentifier(node.initializer)) {
       return;
     }
     const value = phraseOf(node, sf);
@@ -610,7 +706,11 @@ class TemplateSinkVisitor extends TmplAstRecursiveVisitor {
 export function scanTemplate(template, fileName, lineOffset = 0) {
   const parsed = parseTemplate(template, fileName, { preserveWhitespaces: false });
   /** @type {StringFinding[]} */
-  const out = [];
+  const out = (parsed.errors ?? []).map((error) => ({
+    line: error.span.start.line + 1 + lineOffset,
+    value: `template parse error: ${error.msg}`,
+    coverage: /** @type {StringCoverage} */ ('unscannable'),
+  }));
   tmplAstVisitAll(new TemplateSinkVisitor(out, lineOffset), parsed.nodes);
   return out;
 }
@@ -638,17 +738,19 @@ export function scanStylesheet(stylesheet) {
 }
 
 /**
- * @param {{ before: string; context: string; isOverrideSource: boolean }} input
+ * @param {ts.Node} node the literal
+ * @param {ts.SourceFile} sf
+ * @param {boolean} isOverrideSource
  * @returns {StringCoverage}
  */
-const classify = (input) => {
-  if (DEV_MARKER.test(input.context)) {
+const classify = (node, sf, isOverrideSource) => {
+  if (isDevOnly(node, sf)) {
     return 'dev-message';
   }
-  if (input.isOverrideSource) {
+  if (isOverrideSource) {
     return 'override-source';
   }
-  if (/(?:\?\?|\|\|)\s*$/.test(input.before.trimEnd()) && CONFIG_READ.test(input.context)) {
+  if (isConfigFallback(node, sf)) {
     return 'config-fallback';
   }
   return 'uncovered';
@@ -697,11 +799,9 @@ const walkSources = (relDir) => {
 };
 
 const SOURCES = walkSources('projects');
-const UNCOVERED = SOURCES.flatMap((file) =>
-  scanFile(file)
-    .filter((finding) => finding.coverage === 'uncovered')
-    .map((finding) => ({ file, ...finding })),
-);
+const FINDINGS = SOURCES.flatMap((file) => scanFile(file).map((finding) => ({ file, ...finding })));
+const UNCOVERED = FINDINGS.filter((finding) => finding.coverage === 'uncovered');
+const UNSCANNABLE = FINDINGS.filter((finding) => finding.coverage === 'unscannable');
 
 /**
  * The ratchet's shrink rules as a pure check, so each rule carries a negative
@@ -753,6 +853,10 @@ const stale = (manifest) =>
 describe('user-facing string coverage', () => {
   it('finds sources to scan', () => {
     expect(SOURCES.length).toBeGreaterThan(300);
+  });
+
+  it('parses every template it meets - an unparsed template is not a green one', () => {
+    expect(UNSCANNABLE.map((f) => `${f.file}:${f.line}: ${f.value}`)).toEqual([]);
   });
 
   it('routes every user-facing string through an override or a manifest', () => {
@@ -866,14 +970,49 @@ describe('user-facing string scanner', () => {
     expect(scanSource(source, 'breadcrumb.ts')[0].coverage).toBe('config-fallback');
   });
 
-  it('treats input(this.i18n.x) as config-fallback', () => {
-    const source = 'class X { readonly label = input(this.i18n.loadingLabel); }';
-    expect(scanSource(source, 'loading.ts').filter((f) => f.coverage === 'uncovered')).toEqual([]);
+  it("treats input(this.i18n.x ?? 'X') as config-fallback", () => {
+    const source = "class X { readonly label = input(this.i18n.loadingLabel ?? 'Loading'); }";
+    expect(scanSource(source, 'loading.ts')[0].coverage).toBe('config-fallback');
   });
 
-  it('treats input(this.i18n().x) as config-fallback', () => {
-    const source = 'class X { readonly label = input(this.i18n().loadingLabel); }';
-    expect(scanSource(source, 'loading.ts').filter((f) => f.coverage === 'uncovered')).toEqual([]);
+  it("treats input(this.i18n().x ?? 'X') as config-fallback", () => {
+    const source = "class X { readonly label = input(this.i18n().loadingLabel ?? 'Loading'); }";
+    expect(scanSource(source, 'loading.ts')[0].coverage).toBe('config-fallback');
+  });
+
+  it('does not take a config word on a neighbouring line for a fallback', () => {
+    const source = [
+      'const config = inject(CONFIG);',
+      "const label = this.fallback() ?? 'Close panel';",
+    ].join('\n');
+    expect(scanSource(source, 'panel.ts')[0].coverage).toBe('uncovered');
+  });
+
+  it('does not take an unrelated throw two lines above for dev copy', () => {
+    const source = [
+      'class X {',
+      '  check() { if (!this.el) { throw y; } }',
+      "  readonly closeLabel = input('Close panel');",
+      '}',
+    ].join('\n');
+    expect(scanSource(source, 'panel.ts')[0].coverage).toBe('uncovered');
+  });
+
+  it('classifies copy behind an isDevMode() guard as dev copy', () => {
+    const source = "if (isDevMode()) { report('Missing label on the trigger'); }";
+    expect(scanSource(source, 'x.ts')[0].coverage).toBe('dev-message');
+  });
+
+  it('keeps copy in the production branch of an isDevMode() guard', () => {
+    const source = "if (isDevMode()) { check(); } else { show('Close panel'); }";
+    expect(scanSource(source, 'x.ts')[0].coverage).toBe('uncovered');
+  });
+
+  it('(c) reports a lowercase default on a label-sink model()', () => {
+    const source = "class X { readonly plural = model<string>('results'); }";
+    expect(scanSource(source, 'count.ts')).toEqual([
+      { line: 1, value: 'results', coverage: 'uncovered' },
+    ]);
   });
 
   it('classifies a literal on the fourth line of a console.warn chain as dev copy', () => {
@@ -980,6 +1119,32 @@ describe('user-facing string scanner', () => {
     expect(scanTemplate(template, 'x.html')).toEqual([
       { line: 2, value: 'Close', coverage: 'uncovered' },
     ]);
+  });
+
+  it('scans a template held in a same-file const', () => {
+    const source = [
+      'const T = `',
+      '  <button label="Dismiss"></button>',
+      '`;',
+      '@Component({ template: T })',
+      'class X {}',
+    ].join('\n');
+    expect(scanSource(source, 'alert.ts')).toEqual([
+      { line: 2, value: 'Dismiss', coverage: 'uncovered' },
+    ]);
+  });
+
+  it('reports a template it cannot scan instead of skipping it', () => {
+    const source = '@Component({ template: `<b>${label}</b>` }) class X {}';
+    expect(scanSource(source, 'x.ts').map((f) => f.coverage)).toEqual(['unscannable']);
+  });
+
+  it('reports a template parse error instead of returning green', () => {
+    expect(
+      scanTemplate('<div><span>Close panel</div>', 'x.html').some(
+        (f) => f.coverage === 'unscannable',
+      ),
+    ).toBe(true);
   });
 
   it('scans external .html templates', () => {
