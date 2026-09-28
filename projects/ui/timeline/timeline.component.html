@@ -99,7 +99,7 @@
             @if (dateHeaderTpl(); as tpl) {
               <ng-container *ngTemplateOutlet="tpl; context: { $implicit: group }" />
             } @else {
-              {{ labels.groupLabel(group) }}
+              {{ groupHeaderLabel()(group) }}
             }
           </div>
         }

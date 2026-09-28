@@ -8,6 +8,7 @@ import {
   SkipSelf,
   type TemplateRef,
 } from '@angular/core';
+import { dateTimeFormatterFor } from '@cngx/core/utils';
 
 import type { TimelineGroup } from './grouping';
 import type { TimelineStatus } from './marker.component';
@@ -93,9 +94,11 @@ export interface CngxTimelineLabels {
   /**
    * Formats a group's header when no `*cngxTimelineDateHeader` slot is
    * bound. Receives the whole group so a consumer can fold the item
-   * count into the header. Defaults to the group's start date in the
-   * browser locale - a date, unlike the strings above, has no sensible
-   * English-only default.
+   * count into the header. Defaults to the group's start date in the app
+   * locale (`CNGX_LOCALE`, falling back to the nearest `LOCALE_ID`) - a
+   * date, unlike the strings above, has no sensible English-only default.
+   * The timeline re-formats the default on a locale flip; a consumer
+   * formatter is called as is.
    */
   readonly groupLabel?: (group: TimelineGroup<unknown>) => string;
 }
@@ -147,6 +150,23 @@ export interface CngxTimelineConfig {
   readonly templates?: CngxTimelineTemplates;
 }
 
+/**
+ * @internal - a group's start date as a numeric date in `locale`. The
+ * timeline header calls it with the `CNGX_LOCALE` value while the config
+ * still holds {@link TIMELINE_DEFAULT_GROUP_LABEL}.
+ */
+export function formatTimelineGroupDate(group: TimelineGroup<unknown>, locale: string): string {
+  return dateTimeFormatterFor(locale, {}).format(group.start);
+}
+
+/**
+ * @internal - the library default of `labels.groupLabel`. The timeline
+ * header recognises it by reference and formats in the app locale instead;
+ * the `en-US` here only applies to a direct call.
+ */
+export const TIMELINE_DEFAULT_GROUP_LABEL = (group: TimelineGroup<unknown>): string =>
+  formatTimelineGroupDate(group, 'en-US');
+
 const TIMELINE_CONFIG_DEFAULTS: Required<CngxTimelineConfig> = {
   labels: {
     timelineRegion: 'Timeline',
@@ -163,7 +183,7 @@ const TIMELINE_CONFIG_DEFAULTS: Required<CngxTimelineConfig> = {
       upcoming: 'Upcoming',
       rejected: 'Rejected',
     },
-    groupLabel: (group) => group.start.toLocaleDateString(),
+    groupLabel: TIMELINE_DEFAULT_GROUP_LABEL,
   },
   templates: {},
 };

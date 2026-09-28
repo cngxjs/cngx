@@ -1,4 +1,4 @@
-import { Component, computed, signal, TemplateRef, viewChild } from '@angular/core';
+import { Component, computed, LOCALE_ID, signal, TemplateRef, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import {
   CNGX_TIMELINE_GROUPING_FACTORY,
@@ -12,6 +12,7 @@ import {
   withTimelineTemplates,
   type TimelineGroupBy,
 } from '@cngx/common/timeline';
+import { CNGX_LOCALE } from '@cngx/core/utils';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { CngxTimeline, type CngxTimelineMode, type CngxTimelineSkin } from './timeline.component';
@@ -101,12 +102,12 @@ function mount(): { host: Host; el: HTMLElement; detect: () => void } {
 const text = (el: Element | null): string => (el?.textContent ?? '').trim();
 
 /**
- * The default `groupLabel` formats the band's start date in the browser
- * locale, so the expectation has to be built the same way rather than
- * hardcoded - otherwise the spec only passes in one locale.
+ * The default `groupLabel` formats the band's start date in the app locale
+ * (`CNGX_LOCALE`, else `LOCALE_ID`, `en-US` in TestBed), so the expectation
+ * is built through `Intl` rather than hardcoded.
  */
-const dayLabel = (year: number, monthIndex: number, day: number): string =>
-  new Date(year, monthIndex, day).toLocaleDateString();
+const dayLabel = (year: number, monthIndex: number, day: number, locale = 'en-US'): string =>
+  new Intl.DateTimeFormat(locale, {}).format(new Date(year, monthIndex, day));
 
 describe('CngxTimeline', () => {
   beforeEach(() => {
@@ -337,6 +338,53 @@ describe('CngxTimeline', () => {
       expect(el.querySelector('.cngx-timeline__list')?.getAttribute('aria-label')).toBe(
         'Audit trail',
       );
+    });
+  });
+
+  describe('group header locale', () => {
+    it('formats the default header with LOCALE_ID when no CNGX_LOCALE is provided', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        imports: [Host],
+        providers: [{ provide: LOCALE_ID, useValue: 'de' }],
+      });
+      const { el } = mount();
+
+      expect(Array.from(el.querySelectorAll('.cngx-timeline__date-header')).map(text)).toEqual([
+        dayLabel(2026, 6, 21, 'de'),
+        dayLabel(2026, 6, 20, 'de'),
+      ]);
+    });
+
+    it('re-formats the default header on a CNGX_LOCALE flip', () => {
+      const locale = signal('en-US');
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        imports: [Host],
+        providers: [{ provide: CNGX_LOCALE, useValue: locale.asReadonly() }],
+      });
+      const { el, detect } = mount();
+      const header = el.querySelector('.cngx-timeline__date-header');
+      expect(text(header)).toBe(dayLabel(2026, 6, 21));
+
+      locale.set('de-DE');
+      detect();
+      expect(el.querySelector('.cngx-timeline__date-header')).toBe(header);
+      expect(text(header)).toBe(dayLabel(2026, 6, 21, 'de-DE'));
+    });
+
+    it('calls a consumer groupLabel as is, ignoring the locale', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        imports: [Host],
+        providers: [
+          { provide: LOCALE_ID, useValue: 'de' },
+          provideTimelineConfig(withTimelineLabels({ groupLabel: (g) => `G:${g.key}` })),
+        ],
+      });
+      const { el } = mount();
+
+      expect(text(el.querySelector('.cngx-timeline__date-header'))).toBe('G:2026-07-21');
     });
   });
 
