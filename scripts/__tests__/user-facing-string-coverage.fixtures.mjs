@@ -33,7 +33,7 @@ export const COMPLETED_PHASE = 0;
  * Exact RATCHET length. Asserted equal, so the ceiling cannot be padded:
  * every row-closing commit removes its rows and lowers this number with them.
  */
-export const RATCHET_CEILING = 46;
+export const RATCHET_CEILING = 71;
 
 /**
  * The ceiling at the end of Phase 1. Provisional until the last Phase 1 commit
@@ -328,6 +328,156 @@ export const RATCHET = [
     value: 'avatars',
     note: 'overflow noun is a bare input default',
     closesIn: 3,
+  },
+  {
+    file: 'projects/ui/feedback/loading/loading-indicator.ts',
+    value: 'Loading',
+    note: 'bare input default, per-instance only',
+    closesIn: 2,
+  },
+  {
+    file: 'projects/ui/feedback/loading/loading-overlay.ts',
+    value: 'Loading',
+    note: 'bare input default, per-instance only',
+    closesIn: 2,
+  },
+  {
+    file: 'projects/ui/feedback/loading/progress.ts',
+    value: 'Progress',
+    note: 'bare input default, per-instance only',
+    closesIn: 2,
+  },
+  {
+    file: 'projects/ui/sidenav/sidenav.ts',
+    value: 'Resize navigation',
+    note: 'bare input default, per-instance only',
+    closesIn: 2,
+  },
+  {
+    file: 'projects/ui/speak/speak-button.ts',
+    value: 'Read aloud',
+    note: 'bare input default, per-instance only',
+    closesIn: 2,
+  },
+  {
+    file: 'projects/ui/speak/speak-button.ts',
+    value: 'Stop speaking',
+    note: 'bare input default, per-instance only',
+    closesIn: 2,
+  },
+  {
+    file: 'projects/ui/command-palette/palette/command-palette.component.ts',
+    value: 'Command palette',
+    note: 'bare input default, per-instance only',
+    closesIn: 2,
+  },
+  {
+    file: 'projects/ui/data-grid-accordion/data-grid-filter-field.component.ts',
+    value: 'Filter',
+    note: 'bare input default, per-instance only',
+    closesIn: 2,
+  },
+  {
+    file: 'projects/ui/data-grid-accordion/data-grid-filter.directive.ts',
+    value: 'Filter rows',
+    note: 'bare input default, per-instance only',
+    closesIn: 2,
+  },
+  {
+    file: 'projects/ui/data-grid-accordion/data-grid-row.component.ts',
+    value: 'Failed to load',
+    note: 'bare input default, per-instance only',
+    closesIn: 2,
+  },
+  {
+    file: 'projects/ui/data-grid-accordion/data-grid-sort-header.directive.ts',
+    value: 'Sorted by {label} ascending',
+    note: 'bare input default, per-instance only',
+    closesIn: 2,
+  },
+  {
+    file: 'projects/ui/data-grid-accordion/data-grid-sort-header.directive.ts',
+    value: 'Sorted by {label} descending',
+    note: 'bare input default, per-instance only',
+    closesIn: 2,
+  },
+  {
+    file: 'projects/ui/data-grid-accordion/data-grid-sort-header.directive.ts',
+    value: 'Sorting by {label} cleared',
+    note: 'bare input default, per-instance only',
+    closesIn: 2,
+  },
+  {
+    file: 'projects/common/interactive/async-click/async-click.directive.ts',
+    value: 'Action succeeded',
+    note: 'bare input default, per-instance only',
+    closesIn: 2,
+  },
+  {
+    file: 'projects/common/interactive/async-click/async-click.directive.ts',
+    value: 'Action failed',
+    note: 'bare input default, per-instance only',
+    closesIn: 2,
+  },
+  {
+    file: 'projects/common/display/chip/chip.component.ts',
+    value: 'Remove',
+    note: 'bare input default, per-instance only',
+    closesIn: 3,
+  },
+  {
+    file: 'projects/common/interactive/breadcrumb/breadcrumb.directive.ts',
+    value: 'Breadcrumb',
+    note: 'bare input default, per-instance only',
+    closesIn: 3,
+  },
+  {
+    file: 'projects/common/interactive/copy/copy-block.ts',
+    value: 'Copy',
+    note: 'bare input default, per-instance only',
+    closesIn: 3,
+  },
+  {
+    file: 'projects/common/interactive/copy/copy-block.ts',
+    value: 'Copied!',
+    note: 'bare input default, per-instance only',
+    closesIn: 3,
+  },
+  {
+    file: 'projects/common/interactive/copy/copy-block.ts',
+    value: 'Copied to clipboard',
+    note: 'bare input default, per-instance only',
+    closesIn: 3,
+  },
+  {
+    file: 'projects/common/interactive/slider/range-slider.component.ts',
+    value: 'Minimum',
+    note: 'bare input default, per-instance only',
+    closesIn: 3,
+  },
+  {
+    file: 'projects/common/interactive/slider/range-slider.component.ts',
+    value: 'Maximum',
+    note: 'bare input default, per-instance only',
+    closesIn: 3,
+  },
+  {
+    file: 'projects/common/layout/text/expandable-text.ts',
+    value: 'Show more',
+    note: 'bare input default, per-instance only',
+    closesIn: 3,
+  },
+  {
+    file: 'projects/common/layout/text/expandable-text.ts',
+    value: 'Show less',
+    note: 'bare input default, per-instance only',
+    closesIn: 3,
+  },
+  {
+    file: 'projects/forms/select/declarative/select-search.component.ts',
+    value: 'Search…',
+    note: 'bare input default, per-instance only',
+    closesIn: 4,
   },
 ];
 

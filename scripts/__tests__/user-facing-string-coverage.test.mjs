@@ -23,7 +23,7 @@ import {
 // second is reachable from a consumer's language file.
 //
 // The rule: a user-facing string literal lives in an override source, or it is
-// on a manifest. Four ways to be covered, all structural:
+// on a manifest. Three ways to be covered, all structural:
 //
 //   1. The file IS the override source - an `i18n/` module, a `*-config.ts` /
 //      `*.defaults.ts`, or any file declaring a `Cngx*Config` / `*I18n` /
@@ -31,9 +31,12 @@ import {
 //      definition.
 //   2. The use-site coalesces off a config read (`config.ariaLabels?.x ?? 'X'`).
 //      The literal is dead weight the moment a consumer provides the token.
-//   3. The literal is an `input()` default, so the consumer overrides it
-//      per instance.
-//   4. It is a dev-only message (`console.warn`, `new Error`, an `isDevMode()`
+//      An `input()` defaulted from a token read (`input(this.i18n().x)`) has
+//      no literal at all.
+//
+// A bare `input('X')` default is NOT covered: a per-instance binding alone is
+// not translatable, the app-wide path is the token.
+//   3. It is a dev-only message (`console.warn`, `new Error`, an `isDevMode()`
 //      block). Never reaches an end user, never translated.
 //
 // Everything else is a gap and must carry a manifest row. See
@@ -88,7 +91,7 @@ const DEV_MARKER = /console\.|new Error|isDevMode|ngDevMode|\bthrow\b|\bwarn[A-Z
 const CONFIG_READ = /\b(?:config|cfg|i18n|labels|messages|glyphs|defaults|ariaLabels)\b/i;
 
 /**
- * @typedef {'override-source' | 'config-fallback' | 'input-default' | 'dev-message' | 'uncovered'} StringCoverage
+ * @typedef {'override-source' | 'config-fallback' | 'dev-message' | 'uncovered'} StringCoverage
  */
 
 /**
@@ -488,7 +491,7 @@ export function scanSource(source, fileName = 'x.ts') {
   /** @type {Set<ts.Node>} */
   const reported = new Set();
 
-  const report = (node, value, atSink) => {
+  const report = (node, value) => {
     const { line, character } = sf.getLineAndCharacterOfPosition(node.getStart(sf));
     const before = lines[line].slice(0, character);
     if (COMPARISON_BEFORE.test(before)) {
@@ -499,7 +502,7 @@ export function scanSource(source, fileName = 'x.ts') {
     findings.push({
       line: line + 1,
       value,
-      coverage: classify({ before, context, isOverrideSource, atSink }),
+      coverage: classify({ before, context, isOverrideSource }),
     });
     reported.add(node);
   };
@@ -517,7 +520,7 @@ export function scanSource(source, fileName = 'x.ts') {
     }
     const value = phraseOf(node, sf);
     if (value !== null) {
-      report(node, value, false);
+      report(node, value);
     }
     node.forEachChild(visit);
   };
@@ -525,7 +528,7 @@ export function scanSource(source, fileName = 'x.ts') {
 
   for (const hit of sinkHitsOf(sf)) {
     if (!reported.has(hit.node)) {
-      report(hit.node, hit.value, true);
+      report(hit.node, hit.value);
     }
   }
 
@@ -635,11 +638,7 @@ export function scanStylesheet(stylesheet) {
 }
 
 /**
- * `atSink` findings are lowercase copy found by rules (c)-(e); a label-sink
- * `input()` default among them is a gap even while an uppercase phrase default
- * still counts as covered.
- *
- * @param {{ before: string; context: string; isOverrideSource: boolean; atSink: boolean }} input
+ * @param {{ before: string; context: string; isOverrideSource: boolean }} input
  * @returns {StringCoverage}
  */
 const classify = (input) => {
@@ -651,9 +650,6 @@ const classify = (input) => {
   }
   if (/(?:\?\?|\|\|)\s*$/.test(input.before.trimEnd()) && CONFIG_READ.test(input.context)) {
     return 'config-fallback';
-  }
-  if (!input.atSink && /\binput(?:\.required)?\s*(?:<[^>]*>)?\([^'"`\n]*$/.test(input.before)) {
-    return 'input-default';
   }
   return 'uncovered';
 };
@@ -842,9 +838,24 @@ describe('user-facing string scanner', () => {
     expect(scanSource(source, 'select.component.ts')[0].coverage).toBe('config-fallback');
   });
 
-  it('treats an input default as covered', () => {
+  it('reports a bare input default', () => {
     const source = "readonly removeAriaLabel = input<string>('Remove');";
-    expect(scanSource(source, 'chip.component.ts')[0].coverage).toBe('input-default');
+    expect(scanSource(source, 'chip.component.ts')[0].coverage).toBe('uncovered');
+  });
+
+  it("treats input(cfg.x ?? 'X') as config-fallback", () => {
+    const source = "readonly ariaLabel = input(this.cfg.ariaLabel ?? 'Breadcrumb');";
+    expect(scanSource(source, 'breadcrumb.ts')[0].coverage).toBe('config-fallback');
+  });
+
+  it('treats input(this.i18n.x) as config-fallback', () => {
+    const source = 'class X { readonly label = input(this.i18n.loadingLabel); }';
+    expect(scanSource(source, 'loading.ts').filter((f) => f.coverage === 'uncovered')).toEqual([]);
+  });
+
+  it('treats input(this.i18n().x) as config-fallback', () => {
+    const source = 'class X { readonly label = input(this.i18n().loadingLabel); }';
+    expect(scanSource(source, 'loading.ts').filter((f) => f.coverage === 'uncovered')).toEqual([]);
   });
 
   it('classifies a literal on the fourth line of a console.warn chain as dev copy', () => {
