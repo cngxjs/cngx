@@ -1,6 +1,6 @@
 import { memoize } from './memo.util';
 
-const DATE_TIME_FORMATTER_CACHE_LIMIT = 32;
+const INTL_FORMATTER_CACHE_LIMIT = 32;
 
 // Key is `locale|serialized-options`; BCP-47 tags cannot contain `|`.
 // The parse runs on cache miss only.
@@ -12,7 +12,7 @@ const formatterForKey = memoize(
       JSON.parse(key.slice(sep + 1)) as Intl.DateTimeFormatOptions,
     );
   },
-  { cacheLimit: DATE_TIME_FORMATTER_CACHE_LIMIT },
+  { cacheLimit: INTL_FORMATTER_CACHE_LIMIT },
 );
 
 /**
@@ -46,7 +46,7 @@ const numberFormatterForKey = memoize(
       JSON.parse(key.slice(sep + 1)) as Intl.NumberFormatOptions,
     );
   },
-  { cacheLimit: DATE_TIME_FORMATTER_CACHE_LIMIT },
+  { cacheLimit: INTL_FORMATTER_CACHE_LIMIT },
 );
 
 /**
