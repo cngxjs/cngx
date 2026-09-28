@@ -2,7 +2,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'CngxFieldSkinHost: bare skin as an inline cell editor',
-  subtitle: 'Switch a table row into edit mode and each cell renders a real <code>&lt;input&gt;</code> inside <code>&lt;cngx-form-field skin="bare"&gt;</code>. The cell keeps its size and border; the input adds only a focus underline, which turns red when the value is invalid.',
+  subtitle: 'Switch a table row into edit mode and each cell renders a real <code>&lt;input&gt;</code> inside <code>&lt;cngx-form-field skin="bare"&gt;</code>. The cell keeps its size and border; the input paints nothing at rest, shows the focus ring while editing, and tints its text with a thin danger ring when the value is invalid.',
   description: 'The field keeps its full contract inside the cell: a visually hidden <code>cngxLabel</code> names the input, and <code>aria-invalid</code> plus <code>aria-errormessage</code> flip when a touched value breaks a rule. A 24px row has no room for a message block, so each cell wraps <code>&lt;cngx-field-errors&gt;</code> in a visually hidden element: it is the element <code>aria-errormessage</code> points to and it makes the one announcement. The visible copy below the table is <code>aria-hidden</code> so the message is not read twice. Clear the name, then leave the cell to see both. This demo covers only the skin. It does not implement the edit grammar (Enter to commit, Escape to revert, announcing the saved value), which is a separate concern and not part of the field skins.',
   level: 'molecule',
   audience: ['dev', 'design', 'a11y'],
@@ -19,7 +19,8 @@ export const STORY: DemoSpec = {
   references: [
     { label: 'WCAG 3.3.1 Error Identification', href: 'https://www.w3.org/WAI/WCAG21/Understanding/error-identification.html' },
   ],
-  css: `/* The cell becomes the input's hit area. */
+  css: `/* The cell hands its padding to the input, which carries the same
+   box padding, so entering edit mode moves no text. */
 td:has([data-skin='bare']) {
   padding: 0;
 }`,
