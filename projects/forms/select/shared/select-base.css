@@ -1607,6 +1607,20 @@
     }
   }
 
+  /* A bare select draws no box, so a minimum width only leaves an empty run
+     between the value and the caret. The container decides the width, like
+     for a bare input: a standalone bare select fills it (a table cell, a
+     toolbar slot), and a select nested in a field box - bare by resolution -
+     hugs its content (a currency picker next to an amount). Keyed on the
+     host, which carries every variant's min-width. */
+  [data-skin='bare']:has(> * > .cngx-field-trigger) {
+    min-width: 0;
+  }
+
+  [data-skin='bare']:not(.cngx-field-box > *):has(> * > .cngx-field-trigger) {
+    inline-size: 100%;
+  }
+
   /* A select nested in a field box: the box is the only painted element,
      so the trigger drops its base chrome (1px border, padding, the 2.125rem
      floor, the error glow). The value text takes the box colour. */

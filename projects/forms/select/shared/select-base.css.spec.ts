@@ -163,6 +163,14 @@ describe('select-family field-skin rule set', () => {
     expect(bare).not.toMatch(/in oklch,\s*var\(--cngx-color-danger/);
   });
 
+  it('lifts the host minimum width for a bare select, keyed on the host', () => {
+    const flat = SHARED.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\s+/g, ' ');
+    expect(flat).toContain("[data-skin='bare']:has(> * > .cngx-field-trigger) { min-width: 0; }");
+    expect(flat).toContain(
+      "[data-skin='bare']:not(.cngx-field-box > *):has(> * > .cngx-field-trigger) { inline-size: 100%; }",
+    );
+  });
+
   it('drops the chip-strip underline reserve', () => {
     expect(SHARED).not.toContain('padding-block-end: calc(');
   });

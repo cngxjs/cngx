@@ -391,6 +391,32 @@ describe('field box border token', () => {
   });
 });
 
+// A bare select paints no box, so its width comes from where it sits: the
+// container for a standalone bare select, its own content inside a field box.
+describe('bare select width', () => {
+  it('drops the minimum width and fills the container when standalone', () => {
+    const root = mountMatrix('bare', 'comfortable', false);
+    const host = query(root, '.c-single');
+    expect(computedValue(host, 'min-width')).toBe('0px');
+    const container = host.parentElement!.getBoundingClientRect().width;
+    expect(host.getBoundingClientRect().width).toBeCloseTo(container, 0);
+  });
+
+  it.each(['outline', 'fill', 'bare'] as const)(
+    'lets a select nested in a %s box hug its content',
+    (skin) => {
+      const host = query(mountMatrix(skin, 'comfortable', false), '.c-nested-select cngx-select');
+      expect(computedValue(host, 'min-width')).toBe('0px');
+      expect(host.getBoundingClientRect().width).toBeLessThan(160);
+    },
+  );
+
+  it('keeps the minimum width on an outline select', () => {
+    const host = query(mountMatrix('outline', 'comfortable', false), '.c-single');
+    expect(computedValue(host, 'min-width')).toBe('160px');
+  });
+});
+
 describe('field box textarea', () => {
   it.each(['outline', 'fill', 'bare'] as const)(
     'grows a default two-row %s textarea by exactly one line box',
