@@ -116,6 +116,13 @@
   textarea {
     caret-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
   }
+  /* The UA placeholder grey sits near 3:1 and carries its own opacity.
+   * Muted text clears 4.5:1 on the page and on a tinted fill surface. */
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
+    opacity: 1;
+  }
 
   kbd {
     display: inline-block;

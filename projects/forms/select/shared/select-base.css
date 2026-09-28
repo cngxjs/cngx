@@ -872,6 +872,9 @@
     --cngx-select-chip-drop-bar-color: var(--cngx-color-primary);
     --cngx-select-trigger-invalid-border-color: var(--cngx-color-danger);
     --cngx-select-trigger-invalid-outline-color: var(--cngx-color-danger);
+    /* Muted text clears 4.5:1 on the page and on a fill surface; the
+       registered alpha initial sits near 3.9:1 on white. */
+    --cngx-select-placeholder-color: var(--cngx-color-text-muted);
   }
 
   /* Dark-mode component-local swap - alpha-on-black surfaces dissolve
@@ -1744,24 +1747,25 @@
 
 /* Dark-mode swap for the shared placeholder, caret, and clear colors -
  * the alpha-on-black defaults dissolve on a dark page, so flip them to
- * alpha-on-white. Kept at the top level (not nested in @scope or @layer)
+ * alpha-on-white. The placeholder follows the muted text colour instead,
+ * restated per block so a scheme island re-reads its own rung. Kept at the top level (not nested in @scope or @layer)
  * so the @media cascade survives. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-color-scheme='light']):not(.light) {
-    --cngx-select-placeholder-color: oklch(1 0 0 / 0.5);
+    --cngx-select-placeholder-color: var(--cngx-color-text-muted);
     --cngx-select-caret-color: oklch(1 0 0 / 0.5);
     --cngx-select-clear-color: oklch(1 0 0 / 0.5);
   }
 }
 [data-color-scheme='dark'],
 .dark {
-  --cngx-select-placeholder-color: oklch(1 0 0 / 0.5);
+  --cngx-select-placeholder-color: var(--cngx-color-text-muted);
   --cngx-select-caret-color: oklch(1 0 0 / 0.5);
   --cngx-select-clear-color: oklch(1 0 0 / 0.5);
 }
 [data-color-scheme='light'],
 .light {
-  --cngx-select-placeholder-color: oklch(0 0 0 / 0.5);
+  --cngx-select-placeholder-color: var(--cngx-color-text-muted);
   --cngx-select-caret-color: oklch(0 0 0 / 0.5);
   --cngx-select-clear-color: oklch(0 0 0 / 0.5);
 }

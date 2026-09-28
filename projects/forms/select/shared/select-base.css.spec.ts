@@ -168,6 +168,14 @@ describe('select-family field-skin rule set', () => {
     expect(fill).toContain('--cngx-color-primary-strong');
   });
 
+  it('defaults the placeholder to the muted text colour in every scheme', () => {
+    const assignments = [...SHARED.matchAll(/--cngx-select-placeholder-color: ([^;]+);/g)].map(
+      (m) => m[1],
+    );
+    // :root delegation plus the OS-dark, explicit-dark and explicit-light blocks
+    expect(assignments).toEqual(Array(4).fill('var(--cngx-color-text-muted)'));
+  });
+
   it('derives the shared box padding from the density scale', () => {
     expect(SHARED).toContain('--cngx-field-padding-block: var(--cngx-space-sm)');
     expect(SHARED).toContain('--cngx-field-padding-inline: var(--cngx-space-md)');

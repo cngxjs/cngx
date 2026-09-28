@@ -262,6 +262,17 @@ describe('cngx-field-skin.css', () => {
     expect(cancelRules[0][1].trim().startsWith('.cngx-field-box[data-skin] >')).toBe(true);
   });
 
+  it('gives the lone fill and bare control the field placeholder colour', () => {
+    for (const skin of ['fill', 'bare']) {
+      const scope = SOURCE.slice(
+        SOURCE.indexOf(`@scope (:is(input, textarea, select)[data-skin='${skin}']`),
+      );
+      const block = scope.slice(0, scope.indexOf('\n  }\n')).replace(/\s+/g, ' ');
+      expect(block).toContain(':scope::placeholder, :scope > :is(input, textarea)::placeholder {');
+      expect(block).toContain('--cngx-field-placeholder-color, var(--cngx-color-text-muted');
+    }
+  });
+
   it('repaints the surface under UA autofill', () => {
     expect(SOURCE).toContain(':scope:autofill');
   });

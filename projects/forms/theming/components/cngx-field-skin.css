@@ -148,6 +148,13 @@
       );
     }
 
+    /* Placeholder colour of the field family, over the base-layer muted
+       default. Unregistered, so a theme can unset it. */
+    :scope::placeholder,
+    :scope > :is(input, textarea)::placeholder {
+      color: var(--cngx-field-placeholder-color, var(--cngx-color-text-muted, oklch(0.5 0.01 250)));
+    }
+
     /* The UA autofill tint would replace the surface outright. Painting it
        back as a full-height inset shadow keeps the cngx fill visible. */
     :scope:autofill {
@@ -267,6 +274,13 @@
 
     :scope:is(:focus-visible, :focus-within) {
       outline-offset: var(--cngx-field-ring-offset, -2px);
+    }
+
+    /* Placeholder colour of the field family, over the base-layer muted
+       default. Unregistered, so a theme can unset it. */
+    :scope::placeholder,
+    :scope > :is(input, textarea)::placeholder {
+      color: var(--cngx-field-placeholder-color, var(--cngx-color-text-muted, oklch(0.5 0.01 250)));
     }
 
     /* No underline in any state - that is the fill look. An error tints the
