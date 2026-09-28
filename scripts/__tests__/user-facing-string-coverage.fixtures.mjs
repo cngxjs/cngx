@@ -35,7 +35,7 @@ export const COMPLETED_PHASE = 2;
  * Exact RATCHET length. Asserted equal, so the ceiling cannot be padded:
  * every row-closing commit removes its rows and lowers this number with them.
  */
-export const RATCHET_CEILING = 40;
+export const RATCHET_CEILING = 33;
 
 /**
  * The RATCHET keys (`file` + tab + `value`) at the end of Phase 1, frozen in
@@ -141,12 +141,6 @@ export const RATCHET = [
     closesIn: 4,
   },
   {
-    file: 'projects/common/data/display/goal/goal.component.ts',
-    value: '{} of {}',
-    note: 'goal readout composed in English word order',
-    closesIn: 3,
-  },
-  {
     file: 'projects/common/display/segmented-progress/segmented-progress.component.ts',
     value: '{} of {}',
     note: 'segment readout composed in English word order',
@@ -199,42 +193,6 @@ export const RATCHET = [
     value: '{} (min {})',
     note: 'minimum readout composed in the template',
     closesIn: 4,
-  },
-  {
-    file: 'projects/common/data/display/delta/delta.component.ts',
-    value: 'improved',
-    note: 'sentiment word spoken in the label, no token',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/data/display/delta/delta.component.ts',
-    value: 'declined',
-    note: 'sentiment word spoken in the label, no token',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/data/display/delta/delta.component.ts',
-    value: 'unchanged',
-    note: 'sentiment word spoken in the label, no token',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/data/display/trend/trend.component.ts',
-    value: 'up',
-    note: 'direction word spoken in the label, no token',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/data/display/trend/trend.component.ts',
-    value: 'down',
-    note: 'direction word spoken in the label, no token',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/data/display/trend/trend.component.ts',
-    value: 'unchanged',
-    note: 'direction word spoken in the label, no token',
-    closesIn: 3,
   },
   {
     file: 'projects/common/display/avatar-group/avatar-group.component.ts',

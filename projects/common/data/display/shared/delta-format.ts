@@ -56,8 +56,9 @@ export function directionGlyph(direction: DeltaDirection): string {
 /**
  * Format the magnitude. The sign is carried by the arrow and colour, not the
  * digits: a positive value gains a leading `+`, everything else prints its
- * absolute value unsigned. Percent mode appends a narrow-no-break-space + `%`
- * and defaults to one fraction digit; absolute mode uses the locale grouping.
+ * absolute value unsigned. Percent mode formats with `Intl` `style: 'percent'`
+ * (so the locale places the `%` sign) and defaults to one fraction digit;
+ * absolute mode uses the locale grouping.
  * A supplied `Intl.NumberFormatOptions` overrides the default digit handling
  * in both modes.
  */
@@ -70,13 +71,13 @@ export function formatDelta(
   const abs = Math.abs(value);
   const prefix = value > 0 ? '+' : '';
   if (mode === 'percent') {
-    // Locale-aware like absolute mode: toFixed would hardcode the "." decimal
-    // separator regardless of locale.
-    const num = new Intl.NumberFormat(
-      locale,
-      format ?? { minimumFractionDigits: 1, maximumFractionDigits: 1 },
-    ).format(abs);
-    return `${prefix}${num}\u202f%`;
+    // The input is already in percent units; Intl's percent style multiplies
+    // by 100, so scale down first and let the locale place the sign.
+    const num = new Intl.NumberFormat(locale, {
+      ...(format ?? { minimumFractionDigits: 1, maximumFractionDigits: 1 }),
+      style: 'percent',
+    }).format(abs / 100);
+    return `${prefix}${num}`;
   }
   const num = format ? new Intl.NumberFormat(locale, format).format(abs) : abs.toLocaleString(locale);
   return `${prefix}${num}`;

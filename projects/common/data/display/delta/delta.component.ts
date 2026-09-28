@@ -14,14 +14,8 @@ import {
   formatDelta,
   type DeltaMode,
   type DeltaPolarity,
-  type DeltaSentiment,
 } from '../shared/delta-format';
-
-const SENTIMENT_WORD: Record<DeltaSentiment, string> = {
-  positive: 'improved',
-  negative: 'declined',
-  neutral: 'unchanged',
-};
+import { injectKpiI18n } from '../shared/kpi-i18n';
 
 /**
  * Sentiment-aware delta indicator. Where `CngxTrend` colours strictly by
@@ -85,6 +79,7 @@ const SENTIMENT_WORD: Record<DeltaSentiment, string> = {
 })
 export class CngxDelta {
   private readonly locale = injectLocale();
+  private readonly i18n = injectKpiI18n();
 
   /** Signed delta. Positive = up, negative = down, zero = flat. */
   readonly value = input.required<number>();
@@ -119,12 +114,11 @@ export class CngxDelta {
     formatDelta(this.value(), this.mode(), this.locale(), this.format()),
   );
 
-  /** @internal Full SR label: magnitude plus the sentiment word. */
-  protected readonly resolvedLabel = computed(() => {
-    const override = this.label();
-    if (override) {
-      return override;
-    }
-    return `${this.formattedValue()} ${SENTIMENT_WORD[this.sentiment()]}`;
-  });
+  /**
+   * @internal Full SR label: magnitude plus the sentiment word, composed by
+   * `CNGX_KPI_I18N.deltaLabel` unless `[label]` is bound.
+   */
+  protected readonly resolvedLabel = computed(
+    () => this.label() ?? this.i18n().deltaLabel(this.formattedValue(), this.sentiment()),
+  );
 }
