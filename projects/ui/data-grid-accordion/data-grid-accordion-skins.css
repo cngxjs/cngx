@@ -418,8 +418,10 @@
     border-block-end: 1px solid var(--cngx-dga-border-color, #d1d5db);
   }
 
+  /* The tag text comes from the labels bundle (`note`) through data-note-label;
+     the empty alt text keeps the decorative tag out of the region's accessible name. */
   .cngx-dga-row__region::before {
-    content: 'NOTE';
+    content: attr(data-note-label) / '';
     position: absolute;
     inset-block-start: 0.4rem;
     inset-inline-start: 3rem;

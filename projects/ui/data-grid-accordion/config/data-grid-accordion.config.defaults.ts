@@ -64,6 +64,7 @@ export const CNGX_DATA_GRID_ACCORDION_LABELS_DEFAULTS: CngxDataGridAccordionLabe
   filter: 'Filter',
   filterRows: 'Filter rows',
   rowLoadFailed: 'Failed to load',
+  note: 'NOTE',
 };
 
 /**

@@ -78,8 +78,8 @@ export interface CngxDataGridAccordionConfig {
 /**
  * User-facing copy of the data-grid-accordion family. Library defaults are
  * English. Keys read as input defaults (`countSingular`, `sort*`, `filter*`,
- * `rowLoadFailed`) are read once when each part is created; `count` follows a
- * live bundle.
+ * `rowLoadFailed`) are read once when each part is created; `count` and `note`
+ * follow a live bundle.
  *
  * @category ui/data-grid-accordion
  * @since 0.1.0
@@ -109,4 +109,9 @@ export interface CngxDataGridAccordionLabels {
   readonly filterRows: string;
   /** Default of the `CngxDataGridRow` `[errorMessage]`. */
   readonly rowLoadFailed: string;
+  /**
+   * Tag the skins draw before a row's detail region (CSS `content`), read from the
+   * region's `data-note-label`. Decorative: it never enters the accessible name.
+   */
+  readonly note: string;
 }

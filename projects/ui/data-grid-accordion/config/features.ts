@@ -32,8 +32,8 @@ export function withDataGridSkin(skin: CngxDataGridSkin): CngxDataGridAccordionC
 /**
  * Set the app-wide copy of the grid's count, sort, filter and row surfaces.
  * Unset keys keep the English default. Pass a `Signal` of a partial bundle to
- * switch languages at runtime; the count region follows it, input defaults read
- * it once when each part is created. A later call (or a nested
+ * switch languages at runtime; the count region and the note tag follow it,
+ * input defaults read it once when each part is created. A later call (or a nested
  * `provideDataGridAccordionConfigAt`) replaces the whole bundle rather than
  * merging with it.
  *

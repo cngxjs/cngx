@@ -12,7 +12,12 @@ import { CngxDataGridHeader } from './data-grid-header.component';
 import { CngxDataGridRow } from './data-grid-row.component';
 import { CngxDgaRowError } from './data-grid-row-error.directive';
 import { CngxDgCell } from './data-grid-cell.directive';
-import type { CngxDataGridSeverity } from './config/data-grid-accordion.config';
+import type {
+  CngxDataGridAccordionLabels,
+  CngxDataGridSeverity,
+} from './config/data-grid-accordion.config';
+import { withDataGridAccordionLabels } from './config/features';
+import { provideDataGridAccordionConfig } from './config/provide-data-grid-accordion-config';
 
 @Component({
   template: `<cngx-data-grid-accordion columns="8ch 1fr auto" [multi]="true">
@@ -158,6 +163,22 @@ describe('CngxDataGridRow', () => {
     // The group publishes the single column template; header/summary/footer all
     // read the inherited property in CSS, so one host value drives all three.
     expect(group.style.getPropertyValue('--cngx-dga-columns')).toBe('8ch 1fr auto');
+  });
+
+  it('tags each detail region from the note label and follows a live bundle', () => {
+    const labels = signal<Partial<CngxDataGridAccordionLabels>>({});
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      imports: [Host],
+      providers: [provideDataGridAccordionConfig(withDataGridAccordionLabels(labels))],
+    });
+    const { fixture, rows } = setup();
+    const region = rows[0].querySelector('.cngx-dga-row__region') as HTMLElement;
+    expect(region.getAttribute('data-note-label')).toBe('NOTE');
+
+    labels.set({ note: 'HINWEIS' });
+    fixture.detectChanges();
+    expect(region.getAttribute('data-note-label')).toBe('HINWEIS');
   });
 });
 

@@ -31,6 +31,7 @@
   [id]="regionId"
   [attr.aria-labelledby]="summaryLabelledBy()"
   [attr.aria-busy]="busy() ? 'true' : null"
+  [attr.data-note-label]="labels().note"
   [hidden]="regionHidden()"
 >
   @switch (status()) {
