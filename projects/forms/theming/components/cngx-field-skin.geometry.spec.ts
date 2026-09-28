@@ -43,6 +43,7 @@ import { afterEach, describe, expect, it } from 'vitest';
       )"
     ></span>
     <input class="solo-bare" type="text" data-skin="bare" />
+    <input class="bare-disabled" type="text" data-skin="bare" disabled />
     <input class="bare-invalid" type="text" data-skin="bare" aria-invalid="true" />
     <div data-color-scheme="dark">
       <input class="bare-invalid-dark" type="text" data-skin="bare" aria-invalid="true" />
@@ -294,6 +295,31 @@ describe('field skin geometry', () => {
       expect(b - g).toBeLessThan(20);
     },
   );
+
+  it('draws the bare rings inside the box and the focused error ring in danger', async () => {
+    const root = mount();
+    const invalid = query(root, '.bare-invalid') as HTMLInputElement;
+    const danger = computedValue(invalid, 'outline-color');
+    expect(computedValue(invalid, 'outline-offset')).toBe('-1px');
+    invalid.focus();
+    await settle();
+    expect(computedValue(invalid, 'outline-width')).toBe('2px');
+    expect(computedValue(invalid, 'outline-offset')).toBe('-2px');
+    expect(computedValue(invalid, 'outline-color')).toBe(danger);
+    const valid = query(root, '.solo-bare') as HTMLInputElement;
+    valid.focus();
+    await settle();
+    expect(computedValue(valid, 'outline-offset')).toBe('-2px');
+    expect(computedValue(valid, 'outline-color')).not.toBe(danger);
+  });
+
+  it('marks a disabled bare field with muted text and a dotted baseline, not opacity', () => {
+    const root = mount();
+    const disabled = query(root, '.bare-disabled');
+    expect(computedValue(disabled, 'opacity')).toBe('1');
+    expect(computedValue(disabled, 'border-bottom-style')).toBe('dotted');
+    expect(computedValue(disabled, 'cursor')).toBe('not-allowed');
+  });
 
   it('draws one bare error ring per affix row, on the row', () => {
     const root = mount();

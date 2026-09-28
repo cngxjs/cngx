@@ -1576,12 +1576,12 @@
       border-color: transparent;
       border-block-end-color: var(
         --cngx-field-error-color,
-        var(--cngx-color-danger, oklch(0.58 0.22 27))
+        var(--cngx-color-danger, oklch(0.6 0.18 25))
       );
       /* 2px danger underline; outranks the focus rule, so focus never
          repaints an invalid trigger in the focus colour. */
       box-shadow: inset 0 calc(-1 * var(--cngx-field-underline-size, 2px)) 0
-        var(--cngx-field-error-color, var(--cngx-color-danger, oklch(0.58 0.22 27)));
+        var(--cngx-field-error-color, var(--cngx-color-danger, oklch(0.6 0.18 25)));
     }
 
     /* Disabled fades by colour, never opacity (the variant trigger rules set
@@ -1612,10 +1612,15 @@
       background: transparent;
     }
 
-    /* Bare draws no line in any state; an error tints the trigger text,
-       pulled toward the text colour so it clears the 4.5:1 text floor. Mixed
-       in oklab, because an oklch hue walk from red to the bluish text colour
-       passes through magenta. */
+    /* The ring goes inside the trigger, as on a bare input: a flush bare
+       select in a cell or toolbar would clip an outset ring. */
+    :scope.cngx-field-trigger:is(:focus-visible, :focus-within) {
+      outline-offset: calc(-1 * var(--cngx-field-ring-width, 2px));
+    }
+
+    /* Bare draws no line in any state; an error tints the trigger text with
+       --cngx-color-danger-text, which clears the 4.5:1 text floor and stays
+       red. */
     :scope.cngx-field-trigger:is(
         [aria-invalid='true'],
         :has(> [role='combobox'][aria-invalid='true'])
@@ -1623,23 +1628,45 @@
       border-color: transparent;
       color: var(
         --cngx-field-bare-error-text-color,
-        color-mix(
-          in oklab,
-          var(--cngx-color-danger, oklch(0.6 0.18 25)) 75%,
-          var(--cngx-color-text, oklch(0.2 0.01 250))
+        var(
+          --cngx-color-danger-text,
+          color-mix(
+            in oklab,
+            var(--cngx-color-danger, oklch(0.6 0.18 25)) 75%,
+            var(--cngx-color-text, oklch(0.2 0.01 250))
+          )
         )
       );
     }
 
-    /* ...and a 1px ring, because text alone vanishes on an empty trigger.
-       Dropped while focused so the focus ring is never hidden. */
+    /* ...and a 1px inset ring, because text alone vanishes on an empty
+       trigger. */
     :scope.cngx-field-trigger:is(
         [aria-invalid='true'],
         :has(> [role='combobox'][aria-invalid='true'])
       ):not(:focus-within) {
-      outline: 1px solid
-        var(--cngx-field-error-color, var(--cngx-color-danger, oklch(0.58 0.22 27)));
-      outline-offset: 2px;
+      outline: 1px solid var(--cngx-field-error-color, var(--cngx-color-danger, oklch(0.6 0.18 25)));
+      outline-offset: -1px;
+    }
+
+    /* Focused while invalid: the focus ring takes the danger colour, so the
+       error stays visible under focus. */
+    :scope.cngx-field-trigger:is(
+        [aria-invalid='true'],
+        :has(> [role='combobox'][aria-invalid='true'])
+      ):focus-visible {
+      outline: var(--cngx-field-ring-width, 2px) solid
+        var(--cngx-field-error-color, var(--cngx-color-danger, oklch(0.6 0.18 25)));
+      outline-offset: calc(-1 * var(--cngx-field-ring-width, 2px));
+    }
+
+    /* Disabled reads as muted text plus a dotted baseline, never opacity
+       (the variant trigger rules set one; it is lifted here). */
+    :scope.cngx-field-trigger:is([aria-disabled='true'], :has(> [role='combobox']:disabled)) {
+      border-block-end-style: dotted;
+      border-block-end-color: var(--cngx-color-border, oklch(0.88 0.005 250));
+      color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
+      opacity: 1;
     }
   }
 
@@ -1776,5 +1803,10 @@
     outline: 2px solid Highlight;
     outline-offset: 2px;
     box-shadow: none;
+  }
+
+  /* Bare paints no border, so a resting bare trigger would have no edge. */
+  [data-skin='bare']:not(.cngx-field-box > *) > * > .cngx-field-trigger {
+    border: var(--cngx-field-border-width, 1px) solid FieldText;
   }
 }

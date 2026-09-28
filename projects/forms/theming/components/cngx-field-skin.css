@@ -19,9 +19,10 @@
  * colour drawn as an inset `box-shadow`, so focus costs no layout shift.
  * `bare` strips surface, border and underline entirely for a control
  * embedded in something that already owns the box - a table filter row, an
- * inline cell editor. It keeps the regular `cngx.reset` focus ring and shows
- * an error as danger-tinted text plus a thin danger ring, never as a line, so
- * it cannot be mistaken for `fill`.
+ * inline cell editor. It keeps the regular focus ring, drawn inside the box so
+ * a cell or toolbar does not clip it, and shows an error as
+ * `--cngx-color-danger-text` plus a thin inset danger ring, never as a line,
+ * so it cannot be mistaken for `fill`.
  *
  * Both key their error / disabled / readonly variants on the box's own
  * state: native and ARIA truth on a lone control (`[aria-invalid='true']`,
@@ -196,10 +197,10 @@
     :scope:has(> :is(input, textarea, select)[aria-invalid='true']) {
       border-block-end-color: var(
         --cngx-field-error-color,
-        var(--cngx-color-danger, oklch(0.58 0.22 27))
+        var(--cngx-color-danger, oklch(0.6 0.18 25))
       );
       box-shadow: inset 0 calc(-1 * var(--cngx-field-underline-size, 2px)) 0
-        var(--cngx-field-error-color, var(--cngx-color-danger, oklch(0.58 0.22 27)));
+        var(--cngx-field-error-color, var(--cngx-color-danger, oklch(0.6 0.18 25)));
     }
 
     /* Disabled fades by colour, not opacity: opacity would also fade an
@@ -257,41 +258,69 @@
          slot - so the container decides the width. Block size stays
          content-driven; the --cngx-target-min floor from cngx.base survives. */
       inline-size: 100%;
+      /* Bare sits flush in a cell or toolbar slot, where an outset ring is
+         clipped by the container or collides with its neighbour. The ring
+         goes inside the box: the box ring in cngx-field-affix.css reads this
+         offset, and a lone control applies it below. */
+      --cngx-field-ring-offset: calc(-1 * var(--cngx-field-ring-width, 2px));
     }
 
-    /* No underline in any state - that is the fill look. Focus keeps the
-       cngx.reset ring untouched. An error tints the value text; the danger
-       token alone measures about 4:1 on white, under the 4.5:1 text floor, so
-       it is pulled toward the text colour: darker on light, lighter on dark.
-       Mixed in oklab, not oklch: an oklch mix interpolates the hue from red
-       (25) toward the bluish text (250) the short way round through 360 and
-       lands on magenta. In a box the nested control inherits the colour
-       through its reset. */
+    :scope:is(:focus-visible, :focus-within) {
+      outline-offset: var(--cngx-field-ring-offset, -2px);
+    }
+
+    /* No underline in any state - that is the fill look. An error tints the
+       value text with --cngx-color-danger-text: danger pulled toward the text
+       colour in oklab, so it clears the 4.5:1 text floor and stays red. In a
+       box the nested control inherits the colour through its reset. */
     :scope:is([aria-invalid='true'], [data-invalid]),
     :scope:has(> :is(input, textarea, select)[aria-invalid='true']) {
       color: var(
         --cngx-field-bare-error-text-color,
-        color-mix(
-          in oklab,
-          var(--cngx-color-danger, oklch(0.6 0.18 25)) 75%,
-          var(--cngx-color-text, oklch(0.2 0.01 250))
+        var(
+          --cngx-color-danger-text,
+          color-mix(
+            in oklab,
+            var(--cngx-color-danger, oklch(0.6 0.18 25)) 75%,
+            var(--cngx-color-text, oklch(0.2 0.01 250))
+          )
         )
       );
     }
 
     /* Text alone vanishes on an empty field, which is the most common error
-       (required). A 1px ring marks the box as well - thinner than the 2px
-       focus ring, and dropped while focused so it never hides that ring. */
+       (required). A 1px inset ring marks the box as well - thinner than the
+       focus ring. */
     :scope:is([aria-invalid='true'], [data-invalid]):not(:focus-within),
     :scope:has(> :is(input, textarea, select)[aria-invalid='true']):not(:focus-within) {
-      outline: 1px solid
-        var(--cngx-field-error-color, var(--cngx-color-danger, oklch(0.58 0.22 27)));
-      outline-offset: 2px;
+      outline: 1px solid var(--cngx-field-error-color, var(--cngx-color-danger, oklch(0.6 0.18 25)));
+      outline-offset: -1px;
     }
 
+    /* Focused while invalid: the focus ring takes the danger colour, so the
+       error stays visible and focus is still the thicker ring. Carries the
+       affix opt-out of the box ring, which it has to outrank. */
+    :scope:is([aria-invalid='true'], [data-invalid]):is(:focus-visible, :focus-within):not(
+        :has(:is(.cngx-field-prefix, .cngx-field-suffix):focus-within)
+      ),
+    :scope:has(> :is(input, textarea, select)[aria-invalid='true']):is(
+        :focus-visible,
+        :focus-within
+      ):not(:has(:is(.cngx-field-prefix, .cngx-field-suffix):focus-within)) {
+      outline: var(--cngx-field-ring-width, 2px) solid
+        var(--cngx-field-error-color, var(--cngx-color-danger, oklch(0.6 0.18 25)));
+      outline-offset: var(--cngx-field-ring-offset, -2px);
+    }
+
+    /* Disabled reads as muted text plus a dotted baseline, never opacity: a
+       bare control has no surface to fade, and opacity would fade an affix
+       with it. */
     :scope:is(:disabled, [data-disabled]),
     :scope:has(> :is(input, textarea, select):disabled) {
-      opacity: var(--cngx-field-disabled-opacity, 0.6);
+      border-block-end-style: dotted;
+      border-block-end-color: var(--cngx-color-border, oklch(0.88 0.005 250));
+      color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
+      cursor: not-allowed;
     }
   }
 
@@ -352,6 +381,13 @@
     outline: 2px solid Highlight;
     outline-offset: 3px;
     box-shadow: none;
+  }
+
+  /* Bare paints no border, so under forced colours a resting bare field
+     would have no edge at all. */
+  :is(input, textarea, select)[data-skin='bare']:not(.cngx-field-box > *),
+  .cngx-field-box[data-skin='bare'] {
+    border: var(--cngx-field-border-width, 1px) solid FieldText;
   }
 }
 

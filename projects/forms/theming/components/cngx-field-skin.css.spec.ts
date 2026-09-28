@@ -118,14 +118,47 @@ describe('cngx-field-skin.css', () => {
 
   it('keeps the bare scope free of any underline and of outline suppression', () => {
     // Bare has to read differently from fill: no line in any state, and the
-    // regular cngx.reset focus ring instead of a drawn indicator.
+    // regular focus ring instead of a drawn indicator. The one edge it draws
+    // is the dotted disabled baseline, which no fill state uses.
     const bare = SOURCE.slice(
       SOURCE.indexOf("@scope (:is(input, textarea, select)[data-skin='bare']"),
       SOURCE.indexOf('/* Nested controls'),
     );
     expect(bare).not.toContain('box-shadow');
-    expect(bare).not.toContain('border-block-end');
     expect(bare).not.toContain('outline: none');
+    const edges = [...bare.matchAll(/border-block-end-style: (\w+)/g)].map((m) => m[1]);
+    expect(edges).toEqual(['dotted']);
+  });
+
+  it('tints the bare error text with the danger text token and rings it inset', () => {
+    const bare = SOURCE.slice(
+      SOURCE.indexOf("@scope (:is(input, textarea, select)[data-skin='bare']"),
+      SOURCE.indexOf('/* Nested controls'),
+    )
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/\s+/g, ' ');
+    expect(bare).toContain('--cngx-field-bare-error-text-color, var( --cngx-color-danger-text,');
+    expect(bare).toContain('outline-offset: -1px');
+    expect(bare).toContain(
+      '--cngx-field-ring-offset: calc(-1 * var(--cngx-field-ring-width, 2px))',
+    );
+    expect(bare).not.toContain('opacity');
+  });
+
+  it('uses the registered danger default as the only danger fallback literal', () => {
+    const literals = [...SOURCE.matchAll(/--cngx-color-danger, (oklch\([^)]*\))/g)].map(
+      (m) => m[1],
+    );
+    expect(literals.length).toBeGreaterThan(0);
+    expect(new Set(literals)).toEqual(new Set(['oklch(0.6 0.18 25)']));
+  });
+
+  it('draws a system-colour edge on a resting bare field under forced colours', () => {
+    const media = SOURCE.slice(SOURCE.indexOf('@media (forced-colors: active)'));
+    const flat = media.replace(/\s+/g, ' ');
+    expect(flat).toContain(
+      ".cngx-field-box[data-skin='bare'] { border: var(--cngx-field-border-width, 1px) solid FieldText; }",
+    );
   });
 
   it('gives the fill surface and both line colours a default in every scheme block', () => {
