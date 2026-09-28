@@ -17,7 +17,7 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxNumericInput', 'CngxPrefix', 'CngxSuffix', 'CngxFieldBox', 'CngxRadioGroup', 'CngxRadio'],
   viewProviders: ["provideInputConfig(withCurrency({ code: 'CHF', locale: 'de-CH' }))"],
-  setup: `protected readonly skin = signal<CngxFieldSkin>('outline');`,
+  setupChrome: `protected readonly skin = signal<CngxFieldSkin>('outline');`,
   template: `  <div class="demo-field" style="max-inline-size:24rem">
     <label class="demo-label" for="affix-price">Monthly price</label>
     <span cngxFieldBox [skin]="skin()">
