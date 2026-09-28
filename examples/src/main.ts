@@ -279,6 +279,58 @@ function installDensityToggle(): void {
   render();
 }
 
+// Floating field-skin debug toggle. Cycles outline -> fill -> bare -> outline
+// by writing `localStorage['cngx_field_skin']` and reloading: app.config
+// reads the key once at bootstrap into provideFormField(withFieldSkin(...)),
+// so the whole catalogue renders through the real config tier instead of a
+// DOM patch. `outline` is the library default and clears the key.
+// Standalone-only, same rationale as the other toggles.
+const CNGX_FIELD_SKIN_KEY = 'cngx_field_skin';
+
+type FieldSkinPref = 'fill' | 'bare' | null;
+
+function readPersistedFieldSkin(): FieldSkinPref {
+  try {
+    const v = localStorage.getItem(CNGX_FIELD_SKIN_KEY);
+    if (v === 'fill' || v === 'bare') {
+      return v;
+    }
+  } catch {
+    // localStorage may be unavailable in restrictive contexts; treat as outline.
+  }
+  return null;
+}
+
+function installFieldSkinToggle(): void {
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.id = 'cngx-ex-field-skin-toggle';
+  togglesContainer().appendChild(btn);
+
+  const pref = readPersistedFieldSkin();
+  const label = pref ?? 'outline';
+  // F for field; o / f / b for the active skin.
+  btn.textContent = `[F:${label.charAt(0)}]`;
+  btn.title = `Field skin: ${label} - click to cycle (reloads the page)`;
+  btn.setAttribute('aria-label', `Field skin: ${label}. Activate to cycle; the page reloads.`);
+
+  btn.addEventListener('click', () => {
+    // outline (null) -> fill -> bare -> outline
+    const next: FieldSkinPref = pref === null ? 'fill' : pref === 'fill' ? 'bare' : null;
+    try {
+      if (next === null) {
+        localStorage.removeItem(CNGX_FIELD_SKIN_KEY);
+      } else {
+        localStorage.setItem(CNGX_FIELD_SKIN_KEY, next);
+      }
+    } catch {
+      // localStorage unavailable: nothing to persist, so nothing to reload into.
+      return;
+    }
+    globalThis.location.reload();
+  });
+}
+
 // Floating direction debug toggle. Flips `<html dir>` between ltr (default,
 // attribute cleared) and rtl by writing the `cngx_direction` localStorage key.
 // The single attribute write drives the shipped CNGX_DIRECTION signal through
@@ -424,6 +476,7 @@ bootstrapApplication(App, appConfig)
     if (!isEmbeddedInIframe()) {
       installColorSchemeToggle();
       installDensityToggle();
+      installFieldSkinToggle();
       installTextScaleToggle(appRef.injector);
       installDirectionToggle();
     }
