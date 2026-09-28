@@ -200,7 +200,11 @@ describe('field skin geometry', () => {
     const input = query(mount(), '.solo-fill') as HTMLInputElement;
     input.focus();
     await settle();
-    expect(computedValue(input, 'box-shadow')).toContain('-2px');
+    // 1px border plus a 1px shadow: the 2px underline is one line in one
+    // colour, the resting border never shows under the focus colour.
+    const shadow = computedValue(input, 'box-shadow');
+    expect(shadow).toContain('-1px');
+    expect(shadow).toContain(computedValue(input, 'border-bottom-color'));
     expect(computedValue(input, 'outline-style')).toBe('none');
   });
 
@@ -211,8 +215,9 @@ describe('field skin geometry', () => {
     invalid.focus();
     await settle();
     const shadow = computedValue(invalid, 'box-shadow');
-    expect(shadow).toContain('-2px');
+    expect(shadow).toContain('-1px');
     expect(shadow).toContain(danger);
+    expect(computedValue(invalid, 'border-bottom-color')).toBe(danger);
   });
 
   it('fades a disabled fill field by colour, not opacity', () => {

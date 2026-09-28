@@ -208,7 +208,7 @@ describe('cngx-field-skin.css', () => {
     expect(error).toBeGreaterThan(focus);
     const body = fill.slice(error, fill.indexOf('}', error)).replace(/\s+/g, ' ');
     expect(body).toContain(
-      'box-shadow: inset 0 calc(-1 * var(--cngx-field-underline-size, 2px)) 0',
+      'box-shadow: inset 0 calc(var(--cngx-field-border-width, 1px) - var(--cngx-field-underline-size, 2px)) 0',
     );
   });
 
