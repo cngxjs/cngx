@@ -62,6 +62,36 @@ describe('cngx-field-skin.css', () => {
     }
   });
 
+  it('keeps the bare scope free of any underline and of outline suppression', () => {
+    // Bare has to read differently from fill: no line in any state, and the
+    // regular cngx.reset focus ring instead of a drawn indicator.
+    const bare = SOURCE.slice(
+      SOURCE.indexOf("@scope (:is(input, textarea, select)[data-skin='bare']"),
+      SOURCE.indexOf('/* Nested boxes'),
+    );
+    expect(bare).not.toContain('box-shadow');
+    expect(bare).not.toContain('border-block-end');
+    expect(bare).not.toContain('outline: none');
+  });
+
+  it('gives the fill surface and focus colour a light and a dark default', () => {
+    const tokens = SOURCE.slice(
+      SOURCE.indexOf('@layer cngx.tokens'),
+      SOURCE.indexOf('@layer cngx.components'),
+    );
+    const dark = tokens.slice(tokens.indexOf('@media (prefers-color-scheme: dark)'));
+    for (const token of [
+      '--cngx-field-fill-bg:',
+      '--cngx-field-fill-bg-hover:',
+      '--cngx-field-underline-focus-color:',
+    ]) {
+      expect(tokens).toContain(token);
+      expect(dark).toContain(token);
+    }
+    expect(tokens).toContain("[data-color-scheme='dark']");
+    expect(tokens).toContain("[data-color-scheme='light']");
+  });
+
   it('repaints the surface under UA autofill', () => {
     expect(SOURCE).toContain(':scope:autofill');
   });

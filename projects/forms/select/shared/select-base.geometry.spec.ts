@@ -59,6 +59,10 @@ class SkinHost {
       <cngx-typeahead class="invalid" skin="fill" [label]="'Colour'" [options]="options" />
     </cngx-form-field>
     <cngx-typeahead class="off" skin="fill" [disabled]="true" [label]="'Colour'" [options]="options" />
+    <cngx-typeahead class="bare-valid" skin="bare" [label]="'Colour'" [options]="options" />
+    <cngx-form-field [field]="invalidBareField">
+      <cngx-typeahead class="bare-invalid" skin="bare" [label]="'Colour'" [options]="options" />
+    </cngx-form-field>
   `,
   styleUrls: ['../../theming/components/cngx-field-skin.css'],
 })
@@ -66,6 +70,11 @@ class StateHost {
   readonly options = OPTIONS;
   readonly invalidField: CngxFieldAccessor = createMockField({
     name: 'colour',
+    invalid: true,
+    touched: true,
+  }).accessor;
+  readonly invalidBareField: CngxFieldAccessor = createMockField({
+    name: 'shade',
     invalid: true,
     touched: true,
   }).accessor;
@@ -124,6 +133,15 @@ describe('select-family field skins', () => {
     const valid = computedValue(trigger(root, '.valid'), 'border-bottom-color');
     const invalid = computedValue(trigger(root, '.invalid'), 'border-bottom-color');
     expect(invalid).not.toBe(valid);
+  });
+
+  it('shows a bare error as tinted trigger text, never as a line', () => {
+    const root = mount(StateHost);
+    const valid = trigger(root, '.bare-valid');
+    const invalid = trigger(root, '.bare-invalid');
+    expect(computedValue(invalid, 'border-bottom-width')).toBe('0px');
+    expect(computedValue(invalid, 'box-shadow')).toBe('none');
+    expect(computedValue(invalid, 'color')).not.toBe(computedValue(valid, 'color'));
   });
 
   it('dashes the underline when the inner combobox input is disabled', () => {
