@@ -104,6 +104,7 @@ body {
 }
 #cngx-ex-color-scheme-toggle,
 #cngx-ex-density-toggle,
+#cngx-ex-field-skin-toggle,
 #cngx-ex-text-scale-toggle,
 #cngx-ex-direction-toggle {
   display: inline-block;
@@ -119,12 +120,14 @@ body {
 }
 #cngx-ex-color-scheme-toggle:hover,
 #cngx-ex-density-toggle:hover,
+#cngx-ex-field-skin-toggle:hover,
 #cngx-ex-text-scale-toggle:hover,
 #cngx-ex-direction-toggle:hover {
   background: color-mix(in oklch, var(--cngx-color-surface, #fff), currentColor 6%);
 }
 #cngx-ex-color-scheme-toggle:focus-visible,
 #cngx-ex-density-toggle:focus-visible,
+#cngx-ex-field-skin-toggle:focus-visible,
 #cngx-ex-text-scale-toggle:focus-visible,
 #cngx-ex-direction-toggle:focus-visible {
   outline: 1px solid var(--cngx-color-primary, #4a8cff);
