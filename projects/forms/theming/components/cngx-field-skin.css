@@ -352,15 +352,16 @@
      is all that styles it on top of cngx.base. No surface, no border, no
      padding and no ring of its own - the box draws them. The value text
      takes the box colour, so the box's state decides it. The floor is the
-     box's touch floor minus its padding and border: 0 on a fine pointer, and
-     exactly enough on a coarse one for the box to land on --cngx-target-min. */
+     box's touch floor minus its padding, its border and an inner label line:
+     0 on a fine pointer, and exactly enough on a coarse one for the box to
+     land on --cngx-target-min. */
   .cngx-field-box[data-skin] > :is(input, textarea, select),
   .cngx-field-box[data-skin] > :is(input, textarea, select):is(:focus-visible, :autofill) {
     min-block-size: max(
       0px,
       calc(
         var(--cngx-target-min, 0px) - 2 * var(--cngx-field-padding-block, 0.5rem) - 2 *
-          var(--cngx-field-border-width, 1px)
+          var(--cngx-field-border-width, 1px) - var(--cngx-field-label-row, 0px)
       )
     );
     padding: 0;
