@@ -1,8 +1,15 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { vi } from 'vitest';
+import { beforeEach, vi } from 'vitest';
 import { CngxActionButton } from './action-button';
-import { CngxFailed, CngxPending, CngxSucceeded } from '@cngx/common/interactive';
+import {
+  CngxFailed,
+  CngxPending,
+  CngxSucceeded,
+  provideInteractiveI18n,
+  withInteractiveI18nLabels,
+  type CngxInteractiveI18n,
+} from '@cngx/common/interactive';
 import { type CngxAsyncState, buildAsyncStateView, type AsyncStatus } from '@cngx/core/utils';
 import { CngxToaster } from '@cngx/ui/feedback';
 
@@ -121,6 +128,20 @@ class ExternalStateHost {
     this.callCount++;
     return Promise.resolve();
   };
+}
+
+// ── Unlabelled external-state host (i18n fallback) ───────────────────────
+
+@Component({
+  template: `
+    <cngx-action-button [action]="action" [externalState]="mockState">Idle</cngx-action-button>
+  `,
+  imports: [CngxActionButton],
+})
+class UnlabelledExternalHost {
+  readonly mock = buildMockState();
+  readonly mockState = this.mock.state;
+  readonly action = () => Promise.resolve();
 }
 
 // ── Disabled-reason host ────────────────────────────────────────────────
@@ -621,6 +642,55 @@ describe('CngxActionButton', () => {
         flush(fixture);
         expect(btn.textContent).toBeDefined();
       });
+    });
+  });
+
+  describe('i18n fallback', () => {
+    const i18nOverrides = signal<Partial<CngxInteractiveI18n>>({});
+
+    beforeEach(() => {
+      i18nOverrides.set({});
+      TestBed.configureTestingModule({
+        providers: [provideInteractiveI18n(withInteractiveI18nLabels(i18nOverrides))],
+      });
+    });
+
+    const liveText = (fixture: ReturnType<typeof TestBed.createComponent>): string =>
+      (
+        fixture.nativeElement.querySelector('[aria-live="polite"]') as HTMLElement
+      ).textContent!.trim();
+
+    it('announces the EN default without labels or a translation', () => {
+      const fixture = TestBed.createComponent(UnlabelledExternalHost);
+      fixture.componentInstance.mock.status.set('success');
+      flush(fixture);
+      expect(liveText(fixture)).toBe('Action succeeded');
+    });
+
+    it('keeps a shown announcement on a copy flip and speaks the new language next', () => {
+      const fixture = TestBed.createComponent(UnlabelledExternalHost);
+      const { status } = fixture.componentInstance.mock;
+      status.set('success');
+      flush(fixture);
+      expect(liveText(fixture)).toBe('Action succeeded');
+
+      i18nOverrides.set({ asyncClickSucceeded: 'Erledigt', asyncClickFailed: 'Fehlgeschlagen' });
+      flush(fixture);
+      expect(liveText(fixture)).toBe('Action succeeded');
+
+      status.set('idle');
+      flush(fixture);
+      status.set('success');
+      flush(fixture);
+      expect(liveText(fixture)).toBe('Erledigt');
+    });
+
+    it('falls back to the translated failure phrase', () => {
+      i18nOverrides.set({ asyncClickFailed: 'Fehlgeschlagen' });
+      const fixture = TestBed.createComponent(UnlabelledExternalHost);
+      fixture.componentInstance.mock.status.set('error');
+      flush(fixture);
+      expect(liveText(fixture)).toBe('Fehlgeschlagen');
     });
   });
 });
