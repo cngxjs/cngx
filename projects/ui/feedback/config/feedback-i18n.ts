@@ -1,4 +1,5 @@
-import { inject, InjectionToken, type Provider } from '@angular/core';
+import { inject, InjectionToken, type Provider, type Signal } from '@angular/core';
+import { coerceSignal, createOverrideMerge } from '@cngx/core/utils';
 
 import type { FeedbackFeature } from './feedback-config';
 
@@ -48,6 +49,23 @@ export interface CngxFeedbackI18n {
   readonly notificationsRegionLabel: string;
   /** Live-region copy - see {@link CngxFeedbackAnnouncements}. */
   readonly announcements: CngxFeedbackAnnouncements;
+  /**
+   * Accessible name of the dismiss button on alerts, stacked alerts, toasts and
+   * banners. Optional for compatibility with full bundles written before it
+   * existed; the English default applies when absent.
+   */
+  readonly dismissLabel?: string;
+  /**
+   * Shown in the banner's `role="alert"` slot when its action rejects. Optional
+   * for the same compatibility reason as {@link CngxFeedbackI18n.dismissLabel}.
+   */
+  readonly bannerActionFailed?: string;
+  /**
+   * Visible repeat marker on a toast raised more than once. Receives the repeat
+   * count. Optional for the same compatibility reason as
+   * {@link CngxFeedbackI18n.dismissLabel}.
+   */
+  readonly toastRepeatCount?: (count: number) => string;
 }
 
 /**
@@ -60,9 +78,12 @@ export type CngxFeedbackI18nOverrides = Partial<Omit<CngxFeedbackI18n, 'announce
   readonly announcements?: Partial<CngxFeedbackAnnouncements>;
 };
 
-const FEEDBACK_I18N_DEFAULTS: CngxFeedbackI18n = {
+const FEEDBACK_I18N_DEFAULTS: Required<CngxFeedbackI18n> = {
   alertsRegionLabel: 'Alerts',
   notificationsRegionLabel: 'Notifications',
+  dismissLabel: 'Dismiss',
+  bannerActionFailed: 'Action failed',
+  toastRepeatCount: (count) => `(x${count})`,
   announcements: {
     alertDismissed: 'Alert dismissed',
     alertOverflow: (count) => `Show ${count} more alerts`,
@@ -164,4 +185,13 @@ export function provideFeedbackI18n(overrides: CngxFeedbackI18nOverrides): Provi
  */
 export function injectFeedbackI18n(): CngxFeedbackI18n {
   return inject(CNGX_FEEDBACK_I18N);
+}
+
+/**
+ * @internal - the feedback bundle as a shared signal with every optional key
+ * filled from the English defaults. One `computed()` per injected bundle, so
+ * row-level readers (alerts, toasts, banners) allocate nothing after the first.
+ */
+export function injectResolvedFeedbackI18n(): Signal<Required<CngxFeedbackI18n>> {
+  return createOverrideMerge(FEEDBACK_I18N_DEFAULTS, coerceSignal(injectFeedbackI18n()));
 }

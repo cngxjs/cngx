@@ -20,7 +20,7 @@ import { createMediaQuerySignal, type CngxAsyncState } from '@cngx/core/utils';
 import { CngxCloseButton } from '@cngx/common/interactive';
 
 import { CNGX_FEEDBACK_CONFIG } from '../config/feedback-config';
-import { injectFeedbackI18n } from '../config/feedback-i18n';
+import { injectResolvedFeedbackI18n } from '../config/feedback-i18n';
 import { CngxSeverityIcon } from '../config/severity-icon';
 import { createPausableTimer } from '../internal/pausable-timer';
 import { createStateBridge } from '../internal/state-bridge';
@@ -173,7 +173,11 @@ export class CngxAlertAction {}
       </div>
     </div>
     @if (effectiveClosable()) {
-      <cngx-close-button label="Dismiss" class="cngx-alert__dismiss" (click)="handleDismiss()" />
+      <cngx-close-button
+        [label]="i18n().dismissLabel"
+        class="cngx-alert__dismiss"
+        (click)="handleDismiss()"
+      />
     }
     <span class="cngx-sr-only" aria-live="polite" aria-atomic="true">{{ announcement() }}</span>
   `,
@@ -181,7 +185,7 @@ export class CngxAlertAction {}
 })
 export class CngxAlert {
   private readonly config = inject(CNGX_FEEDBACK_CONFIG, { optional: true });
-  private readonly announcements = injectFeedbackI18n().announcements;
+  protected readonly i18n = injectResolvedFeedbackI18n();
   private readonly destroyRef = inject(DestroyRef);
 
   /** Alert severity - determines visual style, default icon, and ARIA role. */
@@ -442,7 +446,7 @@ export class CngxAlert {
     this.manualDismissed.set(true);
     this.autoDismissTimer.clear();
     this.collapseTimer.clear();
-    this.announcementState.set(this.announcements.alertDismissed);
+    this.announcementState.set(this.i18n().announcements.alertDismissed);
     this.dismissed.emit();
   }
 

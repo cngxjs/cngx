@@ -35,7 +35,7 @@ export const COMPLETED_PHASE = 1;
  * Exact RATCHET length. Asserted equal, so the ceiling cannot be padded:
  * every row-closing commit removes its rows and lowers this number with them.
  */
-export const RATCHET_CEILING = 67;
+export const RATCHET_CEILING = 62;
 
 /**
  * The RATCHET keys (`file` + tab + `value`) at the end of Phase 1, frozen in
@@ -195,39 +195,9 @@ export const RATCHET = [
     closesIn: 4,
   },
   {
-    file: 'projects/ui/feedback/alert/alert.ts',
-    value: 'Dismiss',
-    note: 'dismiss button label static in the template',
-    closesIn: 2,
-  },
-  {
-    file: 'projects/ui/feedback/alert/alert-stack.ts',
-    value: 'Dismiss',
-    note: 'dismiss button label static in the template',
-    closesIn: 2,
-  },
-  {
     file: 'projects/ui/feedback/alert/alert-stack.ts',
     value: '+ {} more',
     note: 'overflow button text composed in the template',
-    closesIn: 2,
-  },
-  {
-    file: 'projects/ui/feedback/toast/toast-outlet.ts',
-    value: 'Dismiss',
-    note: 'dismiss button label static in the template',
-    closesIn: 2,
-  },
-  {
-    file: 'projects/ui/feedback/banner/banner-outlet.ts',
-    value: 'Dismiss',
-    note: 'dismiss button label static in the template',
-    closesIn: 2,
-  },
-  {
-    file: 'projects/ui/feedback/banner/banner-outlet.ts',
-    value: 'Action failed',
-    note: 'banner action error text static in the template',
     closesIn: 2,
   },
   {

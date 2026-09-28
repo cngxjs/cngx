@@ -11,6 +11,7 @@ import {
 import { CngxCloseButton } from '@cngx/common/interactive';
 
 import { CNGX_FEEDBACK_CONFIG } from '../config/feedback-config';
+import { injectResolvedFeedbackI18n } from '../config/feedback-i18n';
 import { CngxSeverityIcon } from '../config/severity-icon';
 import { CngxBanner, type BannerState } from './banner.service';
 
@@ -83,7 +84,7 @@ import { CngxBanner, type BannerState } from './banner.service';
         <div class="cngx-banner__body">
           <span class="cngx-banner__message">{{ banner.config.message }}</span>
           @if (banner.actionError) {
-            <span class="cngx-banner__error" role="alert">Action failed</span>
+            <span class="cngx-banner__error" role="alert">{{ i18n().bannerActionFailed }}</span>
           }
         </div>
         @if (banner.config.action; as action) {
@@ -99,7 +100,7 @@ import { CngxBanner, type BannerState } from './banner.service';
         }
         @if (banner.config.dismissible && !banner.actionPending) {
           <cngx-close-button
-            label="Dismiss"
+            [label]="i18n().dismissLabel"
             class="cngx-banner__dismiss"
             (click)="service.dismiss(banner.id)"
           />
@@ -112,6 +113,7 @@ import { CngxBanner, type BannerState } from './banner.service';
 export class CngxBannerOutlet {
   protected readonly service = inject(CngxBanner);
   private readonly config = inject(CNGX_FEEDBACK_CONFIG, { optional: true });
+  protected readonly i18n = injectResolvedFeedbackI18n();
 
   /**
    * @internal - skip enter animation for banners present at first render.
