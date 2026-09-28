@@ -33,11 +33,13 @@ const OPTIONS: CngxSelectOptionDef<string>[] = [
   standalone: true,
   imports: [CngxSelect, CngxMultiSelect],
   template: `
-    <cngx-select class="solo" skin="fill" [label]="'Colour'" [options]="options" />
-    <cngx-multi-select class="chips" skin="fill" [label]="'Colours'" [options]="options" />
-    <span class="cngx-field-box cngx-field-affix-row row" data-skin="fill">
-      <cngx-select class="nested" skin="bare" [label]="'Currency'" [options]="options" />
-    </span>
+    <div style="display: grid; line-height: 1.5">
+      <cngx-select class="solo" skin="fill" [label]="'Colour'" [options]="options" />
+      <cngx-multi-select class="chips" skin="fill" [label]="'Colours'" [options]="options" />
+      <span class="cngx-field-box cngx-field-affix-row row" data-skin="fill">
+        <cngx-select class="nested" skin="bare" [label]="'Currency'" [options]="options" />
+      </span>
+    </div>
   `,
   styleUrls: ['../../theming/components/cngx-field-skin.css'],
 })
@@ -54,21 +56,23 @@ class SkinHost {
   standalone: true,
   imports: [CngxTypeahead, CngxFormField],
   template: `
-    <cngx-typeahead class="valid" skin="fill" [label]="'Colour'" [options]="options" />
-    <cngx-form-field [field]="invalidField">
-      <cngx-typeahead class="invalid" skin="fill" [label]="'Colour'" [options]="options" />
-    </cngx-form-field>
-    <cngx-typeahead
-      class="off"
-      skin="fill"
-      [disabled]="true"
-      [label]="'Colour'"
-      [options]="options"
-    />
-    <cngx-typeahead class="bare-valid" skin="bare" [label]="'Colour'" [options]="options" />
-    <cngx-form-field [field]="invalidBareField">
-      <cngx-typeahead class="bare-invalid" skin="bare" [label]="'Colour'" [options]="options" />
-    </cngx-form-field>
+    <div style="display: grid; line-height: 1.5">
+      <cngx-typeahead class="valid" skin="fill" [label]="'Colour'" [options]="options" />
+      <cngx-form-field [field]="invalidField">
+        <cngx-typeahead class="invalid" skin="fill" [label]="'Colour'" [options]="options" />
+      </cngx-form-field>
+      <cngx-typeahead
+        class="off"
+        skin="fill"
+        [disabled]="true"
+        [label]="'Colour'"
+        [options]="options"
+      />
+      <cngx-typeahead class="bare-valid" skin="bare" [label]="'Colour'" [options]="options" />
+      <cngx-form-field [field]="invalidBareField">
+        <cngx-typeahead class="bare-invalid" skin="bare" [label]="'Colour'" [options]="options" />
+      </cngx-form-field>
+    </div>
   `,
   styleUrls: ['../../theming/components/cngx-field-skin.css'],
 })
@@ -102,6 +106,25 @@ function trigger(root: HTMLElement, hostSelector: string): HTMLElement {
     throw new Error(`${hostSelector} trigger did not render`);
   }
   return el as HTMLElement;
+}
+
+function px(el: Element, property: string): number {
+  const value = parseFloat(computedValue(el, property));
+  if (Number.isNaN(value)) {
+    throw new Error(`${property} is not a length: '${computedValue(el, property)}'`);
+  }
+  return value;
+}
+
+// A min-height floors the border box only under border-box sizing. This harness
+// loads no global reset, and some variant triggers do not set box-sizing
+// themselves, so the floor is converted to the border box it produces.
+function boxHeight(el: HTMLElement): number {
+  const chrome = px(el, 'padding-top') + px(el, 'padding-bottom') + 2;
+  const formula = px(el, 'line-height') + chrome;
+  const contentBox = computedValue(el, 'box-sizing') === 'content-box';
+  const floor = px(el, 'min-height') + (contentBox ? chrome : 0);
+  return Math.max(formula, floor);
 }
 
 afterEach(() => {
@@ -155,6 +178,24 @@ describe('select-family field skins', () => {
     expect(computedValue(invalid, 'outline-style')).toBe('solid');
     expect(computedValue(valid, 'outline-style')).toBe('none');
   });
+
+  // The trigger is a box like any other: line box + 2 * block padding + 2px
+  // border, floored by its own min-height (the 2.125rem trigger floor).
+  it.each(['.solo', '.chips'])(
+    'sizes the fill %s trigger by the shared box formula',
+    (hostSelector) => {
+      const el = trigger(mount(), hostSelector);
+      expect(el.getBoundingClientRect().height).toBeCloseTo(boxHeight(el), 0);
+    },
+  );
+
+  it.each(['.bare-valid', '.bare-invalid'])(
+    'sizes the bare %s trigger by the shared box formula',
+    (hostSelector) => {
+      const el = trigger(mount(StateHost), hostSelector);
+      expect(el.getBoundingClientRect().height).toBeCloseTo(boxHeight(el), 0);
+    },
+  );
 
   it('dashes the underline when the inner combobox input is disabled', () => {
     const el = trigger(mount(StateHost), '.off');

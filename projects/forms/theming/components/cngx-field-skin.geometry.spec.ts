@@ -66,6 +66,10 @@ import { afterEach, describe, expect, it } from 'vitest';
       <span class="cngx-field-prefix">$</span>
       <input class="nested-fill" type="text" data-skin="bare" />
     </span>
+    <span class="cngx-field-box cngx-field-affix-row outline-row" data-skin="outline">
+      <span class="cngx-field-prefix">$</span>
+      <input class="nested-outline" type="text" data-skin="bare" />
+    </span>
     <table>
       <tbody>
         <tr>
@@ -177,6 +181,18 @@ describe('field skin geometry', () => {
     expect(computedValue(nested, 'box-shadow')).toBe('none');
     expect(computedValue(nested, 'background-color')).toBe('rgba(0, 0, 0, 0)');
     expect(computedValue(row, 'border-bottom-width')).toBe('1px');
+  });
+
+  it('moves the outline hairline from the control to an outline box', () => {
+    const root = mount();
+    const row = query(root, '.outline-row');
+    const nested = query(root, '.nested-outline');
+    for (const side of ['top', 'right', 'bottom', 'left']) {
+      expect(computedValue(row, `border-${side}-width`)).toBe('1px');
+      expect(computedValue(row, `border-${side}-style`)).toBe('solid');
+    }
+    expect(computedValue(nested, 'border-top-width')).toBe('0px');
+    expect(computedValue(nested, 'padding-top')).toBe('0px');
   });
 
   it('fills a zero-padding table cell on the inline axis', () => {
