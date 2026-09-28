@@ -104,7 +104,7 @@ describe('CNGX_FEEDBACK_I18N', () => {
     const { announcements } = TestBed.inject(CNGX_FEEDBACK_I18N);
     expect(announcements.asyncLoaded).toBe('Inhalt geladen');
     expect(announcements.asyncLoading).toBe('Loading content');
-    expect(announcements.alertOverflow(3)).toBe('Show 3 more alerts');
+    expect(announcements.alertOverflow(3)).toBe('+ 3 more alerts');
   });
 
   it('announces the overridden async phrases and alert dismissal', () => {

@@ -14,8 +14,23 @@ import type { FeedbackFeature } from './feedback-config';
 export interface CngxFeedbackAnnouncements {
   /** Announced when a user dismisses an alert. */
   readonly alertDismissed: string;
-  /** Accessible name of the alert-stack overflow trigger. Receives the hidden count. */
+  /**
+   * Accessible name of the alert-stack overflow trigger. Receives the hidden
+   * count. Must contain the visible label from
+   * {@link CngxFeedbackAnnouncements.alertOverflowVisible} for the same count
+   * (WCAG 2.5.3 Label in Name, compared case-insensitively): a speech-input
+   * user says what they see. A dev-mode warning fires when a translated pair
+   * breaks containment.
+   */
   readonly alertOverflow: (count: number) => string;
+  /**
+   * Visible text of the alert-stack overflow trigger. Receives the hidden
+   * count; its output must be contained in
+   * {@link CngxFeedbackAnnouncements.alertOverflow} for the same count.
+   * Optional for compatibility with full bundles written before it existed;
+   * the English default applies when absent.
+   */
+  readonly alertOverflowVisible?: (count: number) => string;
   /** `idle -> loading` on `CngxAsyncContainer`. */
   readonly asyncLoading: string;
   /** `loading -> success`. */
@@ -78,7 +93,10 @@ export type CngxFeedbackI18nOverrides = Partial<Omit<CngxFeedbackI18n, 'announce
   readonly announcements?: Partial<CngxFeedbackAnnouncements>;
 };
 
-const FEEDBACK_I18N_DEFAULTS: Required<CngxFeedbackI18n> = {
+/** @internal - English defaults, also the fallback for optional keys a full bundle omits. */
+export const FEEDBACK_I18N_DEFAULTS: Required<CngxFeedbackI18n> & {
+  readonly announcements: Required<CngxFeedbackAnnouncements>;
+} = {
   alertsRegionLabel: 'Alerts',
   notificationsRegionLabel: 'Notifications',
   dismissLabel: 'Dismiss',
@@ -86,7 +104,8 @@ const FEEDBACK_I18N_DEFAULTS: Required<CngxFeedbackI18n> = {
   toastRepeatCount: (count) => `(x${count})`,
   announcements: {
     alertDismissed: 'Alert dismissed',
-    alertOverflow: (count) => `Show ${count} more alerts`,
+    alertOverflow: (count) => `+ ${count} more alerts`,
+    alertOverflowVisible: (count) => `+ ${count} more`,
     asyncLoading: 'Loading content',
     asyncLoaded: 'Content loaded',
     asyncError: 'Error loading content',
@@ -193,5 +212,8 @@ export function injectFeedbackI18n(): CngxFeedbackI18n {
  * row-level readers (alerts, toasts, banners) allocate nothing after the first.
  */
 export function injectResolvedFeedbackI18n(): Signal<Required<CngxFeedbackI18n>> {
-  return createOverrideMerge(FEEDBACK_I18N_DEFAULTS, coerceSignal(injectFeedbackI18n()));
+  return createOverrideMerge<Required<CngxFeedbackI18n>>(
+    FEEDBACK_I18N_DEFAULTS,
+    coerceSignal(injectFeedbackI18n()),
+  );
 }

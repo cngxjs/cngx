@@ -9,6 +9,7 @@ import {
   inject,
   Injector,
   input,
+  isDevMode,
   linkedSignal,
   untracked,
   ViewEncapsulation,
@@ -17,7 +18,7 @@ import {
 import { CngxCloseButton } from '@cngx/common/interactive';
 
 import { CNGX_FEEDBACK_CONFIG } from '../config/feedback-config';
-import { injectResolvedFeedbackI18n } from '../config/feedback-i18n';
+import { FEEDBACK_I18N_DEFAULTS, injectResolvedFeedbackI18n } from '../config/feedback-i18n';
 import { CngxSeverityIcon } from '../config/severity-icon';
 import { CngxAlerter, type AlertState } from './alerter.service';
 
@@ -151,7 +152,7 @@ function entriesEqual(a: readonly StackEntry[], b: readonly StackEntry[]): boole
         [attr.aria-label]="overflowLabel()"
         (click)="handleExpandOverflow()"
       >
-        + {{ overflowCount() }} more
+        {{ overflowVisibleLabel() }}
       </button>
     }
   `,
@@ -252,6 +253,14 @@ export class CngxAlertStack {
     this.i18n().announcements.alertOverflow(this.overflowCount()),
   );
 
+  /** @internal - visible text of the overflow trigger, contained in its accessible name. */
+  protected readonly overflowVisibleLabel = computed(() => {
+    const visible =
+      this.i18n().announcements.alertOverflowVisible ??
+      FEEDBACK_I18N_DEFAULTS.announcements.alertOverflowVisible;
+    return visible(this.overflowCount());
+  });
+
   /**
    * @internal - arrival detection derived via linkedSignal (not managed in
    * the effect). `arrived` is true only when a key shows up that was not
@@ -275,6 +284,28 @@ export class CngxAlertStack {
   });
 
   constructor() {
+    if (isDevMode()) {
+      const warned = new Set<string>();
+      effect(() => {
+        if (this.overflowCount() === 0) {
+          return;
+        }
+        const visible = this.overflowVisibleLabel();
+        const name = this.overflowLabel();
+        const pair = `${visible}\u0000${name}`;
+        if (name.toLowerCase().includes(visible.toLowerCase()) || warned.has(pair)) {
+          return;
+        }
+        warned.add(pair);
+        untracked(() =>
+          console.warn(
+            `[CngxAlertStack] The overflow aria-label "${name}" does not contain its visible ` +
+              `label "${visible}" (WCAG 2.5.3). Make alertOverflow(count) include ` +
+              'alertOverflowVisible(count).',
+          ),
+        );
+      });
+    }
     effect(() => {
       const { arrived } = this.arrivalTransition();
       if (arrived && untracked(this.autoScroll)) {
