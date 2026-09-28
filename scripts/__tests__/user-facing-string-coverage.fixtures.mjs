@@ -35,7 +35,7 @@ export const COMPLETED_PHASE = 2;
  * Exact RATCHET length. Asserted equal, so the ceiling cannot be padded:
  * every row-closing commit removes its rows and lowers this number with them.
  */
-export const RATCHET_CEILING = 22;
+export const RATCHET_CEILING = 20;
 
 /**
  * The RATCHET keys (`file` + tab + `value`) at the end of Phase 1, frozen in
@@ -175,18 +175,6 @@ export const RATCHET = [
     value: '{} (min {})',
     note: 'minimum readout composed in the template',
     closesIn: 4,
-  },
-  {
-    file: 'projects/common/layout/text/expandable-text.ts',
-    value: 'Show more',
-    note: 'bare input default, per-instance only',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/layout/text/expandable-text.ts',
-    value: 'Show less',
-    note: 'bare input default, per-instance only',
-    closesIn: 3,
   },
   {
     file: 'projects/forms/select/declarative/select-search.component.ts',

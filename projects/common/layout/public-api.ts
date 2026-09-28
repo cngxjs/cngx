@@ -35,3 +35,11 @@ export {
   CngxExpandableToggle,
   type CngxExpandableToggleContext,
 } from './text/expandable-text';
+export {
+  CNGX_LAYOUT_I18N,
+  injectLayoutI18n,
+  provideLayoutI18n,
+  withLayoutI18nLabels,
+  type CngxLayoutI18n,
+  type CngxLayoutI18nFeature,
+} from './i18n/layout-i18n';
