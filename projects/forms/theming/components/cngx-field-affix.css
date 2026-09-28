@@ -73,11 +73,12 @@
     }
 
     /* The control inside is reset and draws no ring, so the box draws the
-       cngx.reset ring for outline and bare. Not while an interactive affix
-       holds focus: that button keeps its own ring and one ring is enough.
-       Fill replaces the ring with its underline. */
+       cngx.reset ring for outline and bare. Not while focus sits anywhere
+       inside an affix - a button, or the trigger of a composite such as a
+       currency picker: the affix keeps its own ring, so the box ring marks
+       the main control only. Fill replaces the ring with its underline. */
     :scope:is([data-skin='outline'], [data-skin='bare']):focus-within:not(
-        :has(.cngx-field-affix--interactive:focus-visible)
+        :has(:is(.cngx-field-prefix, .cngx-field-suffix):focus-within)
       ) {
       outline: 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50));
       outline-offset: 3px;

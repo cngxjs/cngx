@@ -116,15 +116,25 @@ describe('select-family field-skin rule set', () => {
     expect(at).toBeGreaterThan(SHARED.indexOf('@layer cngx.components'));
     expect(at).toBeLessThan(SHARED.indexOf('@keyframes'));
     const body = SHARED.slice(at, SHARED.indexOf('}', at));
-    for (const declaration of ['min-height: 0', 'padding: 0', 'border: 0', 'outline: none']) {
+    for (const declaration of ['min-height: 0', 'padding: 0', 'border: 0']) {
       expect(body).toContain(declaration);
     }
+    expect(body).not.toContain('outline');
+  });
+
+  // The box rings for its main control only; a select that is an affix keeps
+  // its own trigger ring, so only non-affix hosts lose the outline.
+  it('drops the trigger ring only for a select that is not an affix', () => {
+    const flat = SHARED.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\s+/g, ' ');
+    const rule = flat.slice(flat.indexOf('.cngx-field-box[data-skin] > [data-skin]:not('));
+    const head = rule.slice(0, rule.indexOf('{'));
+    expect(head).toContain(':not(.cngx-field-prefix, .cngx-field-suffix)');
+    expect(rule.slice(rule.indexOf('{'), rule.indexOf('}'))).toContain('outline: none');
   });
 
   it('binds every trigger selector to the host, never to an ancestor', () => {
-    const uses = [
-      ...SHARED.replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/([^\n]*)\.cngx-field-trigger/g),
-    ].map((match) => match[1]);
+    const flat = SHARED.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\s+/g, ' ');
+    const uses = [...flat.matchAll(/([^{};]*)\.cngx-field-trigger/g)].map((match) => match[1]);
     expect(uses.length).toBeGreaterThan(0);
     for (const prefix of uses) {
       // Inside a host-bound @scope, `:scope.cngx-field-trigger` is the root.

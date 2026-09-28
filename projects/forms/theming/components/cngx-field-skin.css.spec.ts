@@ -144,6 +144,19 @@ describe('cngx-field-skin.css', () => {
     expect(tokens).toContain("[data-color-scheme='light']");
   });
 
+  // Focus in an affix (a button, or a composite picker's trigger) is marked by
+  // the affix's own ring; the box ring and the fill underline mark the main
+  // control only, so the two never show the same indicator.
+  it('keeps the box ring and the fill underline off focus inside an affix', () => {
+    const optOut = ':not(\n        :has(:is(.cngx-field-prefix, .cngx-field-suffix):focus-within)';
+    const affix = readFileSync(
+      resolve(process.cwd(), 'projects/forms/theming/components/cngx-field-affix.css'),
+      'utf8',
+    );
+    expect(SOURCE).toContain(`:scope:is(:focus-visible, :focus-within)${optOut}`);
+    expect(affix).toContain(`:focus-within${optOut}`);
+  });
+
   it('repaints the surface under UA autofill', () => {
     expect(SOURCE).toContain(':scope:autofill');
   });

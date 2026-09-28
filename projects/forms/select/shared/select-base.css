@@ -1607,7 +1607,7 @@
 
   /* A select nested in a field box: the box is the only painted element,
      so the trigger drops its base chrome (1px border, padding, the 2.125rem
-     floor, the focus and error rings). The value text takes the box colour. */
+     floor, the error glow). The value text takes the box colour. */
   .cngx-field-box[data-skin] > [data-skin] > * > .cngx-field-trigger {
     min-height: 0;
     padding: 0;
@@ -1615,8 +1615,17 @@
     border-radius: 0;
     background: transparent;
     box-shadow: none;
-    outline: none;
     color: inherit;
+  }
+
+  /* The main control's ring is the box ring. A select that is an affix (a
+     currency picker) keeps its own trigger ring, because the box does not
+     ring for focus inside an affix. */
+  .cngx-field-box[data-skin]
+    > [data-skin]:not(.cngx-field-prefix, .cngx-field-suffix)
+    > *
+    > .cngx-field-trigger {
+    outline: none;
   }
 }
 
