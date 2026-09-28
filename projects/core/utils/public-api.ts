@@ -4,7 +4,7 @@
 export { coerceBooleanProperty, coerceNumberProperty, coerceSignal } from './coerce.util';
 export { createOverrideMerge } from './override-merge';
 export { memoize, type MemoizeOptions } from './memo.util';
-export { dateTimeFormatterFor } from './intl-format.util';
+export { dateTimeFormatterFor, numberFormatterFor } from './intl-format.util';
 export { parseKeyCombo, matchesKeyCombo, type KeyCombo } from './keyboard.util';
 export { matchesTypeahead } from './typeahead.util';
 export { hasTransition, onTransitionDone, type TransitionDoneHandle } from './transition.util';

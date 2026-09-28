@@ -37,3 +37,31 @@ export function dateTimeFormatterFor(
 ): Intl.DateTimeFormat {
   return formatterForKey(`${locale}|${JSON.stringify(options)}`);
 }
+
+const numberFormatterForKey = memoize(
+  (key: string): Intl.NumberFormat => {
+    const sep = key.indexOf('|');
+    return new Intl.NumberFormat(
+      key.slice(0, sep),
+      JSON.parse(key.slice(sep + 1)) as Intl.NumberFormatOptions,
+    );
+  },
+  { cacheLimit: DATE_TIME_FORMATTER_CACHE_LIMIT },
+);
+
+/**
+ * Bounded `Intl.NumberFormat` cache keyed on locale + options, the number
+ * sibling of `dateTimeFormatterFor` with the same key scheme and cap. Read
+ * the locale from `injectLocale()` inside the formatting `computed()` so a
+ * locale flip re-formats:
+ * `computed(() => numberFormatterFor(this.locale(), { style: 'percent' }).format(v))`.
+ *
+ * @category core/utils
+ * @relatedTo dateTimeFormatterFor, memoize
+ */
+export function numberFormatterFor(
+  locale: string,
+  options: Intl.NumberFormatOptions,
+): Intl.NumberFormat {
+  return numberFormatterForKey(`${locale}|${JSON.stringify(options)}`);
+}
