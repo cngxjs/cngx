@@ -221,13 +221,16 @@
        cngx.reset ring untouched. An error tints the value text; the danger
        token alone measures about 4:1 on white, under the 4.5:1 text floor, so
        it is pulled toward the text colour: darker on light, lighter on dark.
-       In a box the nested control inherits the colour through its reset. */
+       Mixed in oklab, not oklch: an oklch mix interpolates the hue from red
+       (25) toward the bluish text (250) the short way round through 360 and
+       lands on magenta. In a box the nested control inherits the colour
+       through its reset. */
     :scope:is([aria-invalid='true'], [data-invalid]),
     :scope:has(> :is(input, textarea, select)[aria-invalid='true']) {
       color: var(
         --cngx-field-bare-error-text-color,
         color-mix(
-          in oklch,
+          in oklab,
           var(--cngx-color-danger, oklch(0.6 0.18 25)) 75%,
           var(--cngx-color-text, oklch(0.2 0.01 250))
         )

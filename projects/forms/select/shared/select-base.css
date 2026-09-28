@@ -1577,7 +1577,9 @@
     }
 
     /* Bare draws no line in any state; an error tints the trigger text,
-       pulled toward the text colour so it clears the 4.5:1 text floor. */
+       pulled toward the text colour so it clears the 4.5:1 text floor. Mixed
+       in oklab, because an oklch hue walk from red to the bluish text colour
+       passes through magenta. */
     :scope.cngx-field-trigger:is(
         [aria-invalid='true'],
         :has(> [role='combobox'][aria-invalid='true'])
@@ -1586,7 +1588,7 @@
       color: var(
         --cngx-field-bare-error-text-color,
         color-mix(
-          in oklch,
+          in oklab,
           var(--cngx-color-danger, oklch(0.6 0.18 25)) 75%,
           var(--cngx-color-text, oklch(0.2 0.01 250))
         )

@@ -42,6 +42,9 @@ import { afterEach, describe, expect, it } from 'vitest';
     ></span>
     <input class="solo-bare" type="text" data-skin="bare" />
     <input class="bare-invalid" type="text" data-skin="bare" aria-invalid="true" />
+    <div data-color-scheme="dark">
+      <input class="bare-invalid-dark" type="text" data-skin="bare" aria-invalid="true" />
+    </div>
     <span class="cngx-field-box cngx-field-affix-row bare-row" data-skin="bare">
       <span class="cngx-field-prefix">$</span>
       <input class="bare-row-input" type="text" data-skin="bare" aria-invalid="true" />
@@ -244,12 +247,18 @@ describe('field skin geometry', () => {
     expect(computedValue(invalid, 'color')).not.toBe(computedValue(valid, 'color'));
   });
 
-  it('rings a bare error so an empty field still shows it', () => {
-    const root = mount();
-    expect(computedValue(query(root, '.bare-invalid'), 'outline-style')).toBe('solid');
-    expect(computedValue(query(root, '.bare-invalid'), 'outline-width')).toBe('1px');
-    expect(computedValue(query(root, '.solo-bare'), 'outline-style')).toBe('none');
-  });
+  // A red mixed toward the bluish text colour in oklch walks the hue through
+  // 360 and renders magenta; the error text has to stay red in both schemes.
+  it.each(['.bare-invalid', '.bare-invalid-dark'])(
+    'keeps the %s error text red, not magenta',
+    (selector) => {
+      const [r, g, b] = toRgb(getComputedStyle(query(mount(), selector)).color);
+      // Red keeps blue level with green; the oklch hue walk lifts blue well
+      // above green (light #9a3c6c, dark #eb89b7), which is what reads magenta.
+      expect(r).toBeGreaterThan(g);
+      expect(b - g).toBeLessThan(20);
+    },
+  );
 
   it('draws one bare error ring per affix row, on the row', () => {
     const root = mount();

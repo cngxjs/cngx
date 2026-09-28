@@ -155,6 +155,14 @@ describe('select-family field-skin rule set', () => {
     expect(SHARED).not.toContain('--cngx-select-skin-padding');
   });
 
+  it('mixes the bare error text in oklab so it stays red', () => {
+    const bare = scopeBlock(
+      "@scope ([data-skin='bare']:not(.cngx-field-box > *) > * > .cngx-field-trigger)",
+    );
+    expect(bare).toContain('in oklab');
+    expect(bare).not.toMatch(/in oklch,\s*var\(--cngx-color-danger/);
+  });
+
   it('drops the chip-strip underline reserve', () => {
     expect(SHARED).not.toContain('padding-block-end: calc(');
   });
