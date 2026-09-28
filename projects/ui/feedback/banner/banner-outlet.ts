@@ -3,8 +3,10 @@ import {
   afterNextRender,
   ChangeDetectionStrategy,
   Component,
+  computed,
   inject,
   signal,
+  untracked,
   ViewEncapsulation,
 } from '@angular/core';
 
@@ -84,7 +86,7 @@ import { CngxBanner, type BannerState } from './banner.service';
         <div class="cngx-banner__body">
           <span class="cngx-banner__message">{{ banner.config.message }}</span>
           @if (banner.actionError) {
-            <span class="cngx-banner__error" role="alert">{{ i18n().bannerActionFailed }}</span>
+            <span class="cngx-banner__error" role="alert">{{ actionFailedCopy() }}</span>
           }
         </div>
         @if (banner.config.action; as action) {
@@ -114,6 +116,16 @@ export class CngxBannerOutlet {
   protected readonly service = inject(CngxBanner);
   private readonly config = inject(CNGX_FEEDBACK_CONFIG, { optional: true });
   protected readonly i18n = injectResolvedFeedbackI18n();
+
+  /**
+   * @internal - action-error copy for the `role="alert"` slot. The banner list is the
+   * only tracked source; the copy is read untracked, so a copy flip never rewrites a
+   * shown alert and the next banner transition picks the new language up.
+   */
+  protected readonly actionFailedCopy = computed(() => {
+    this.service.banners();
+    return untracked(() => this.i18n().bannerActionFailed);
+  });
 
   /**
    * @internal - skip enter animation for banners present at first render.

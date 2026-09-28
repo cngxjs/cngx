@@ -6,6 +6,7 @@ import {
   computed,
   inject,
   input,
+  untracked,
   ViewEncapsulation,
 } from '@angular/core';
 
@@ -116,7 +117,7 @@ export type ToastPosition =
             </span>
           }
           @if (toast.count > 1) {
-            <span class="cngx-toast__count">{{ i18n().toastRepeatCount(toast.count) }}</span>
+            <span class="cngx-toast__count">{{ repeatCount()(toast.count) }}</span>
           }
           @if (toast.config.action; as action) {
             <button type="button" class="cngx-toast__action" (click)="action.handler()">
@@ -141,6 +142,16 @@ export class CngxToastOutlet {
   private readonly config = inject(CNGX_FEEDBACK_CONFIG, { optional: true });
 
   protected readonly i18n = injectResolvedFeedbackI18n();
+
+  /**
+   * @internal - repeat-marker formatter for toasts, which are live regions. The toast
+   * list is the only tracked source; the formatter is read untracked, so a copy flip
+   * never rewrites a shown toast and the next toast transition picks it up.
+   */
+  protected readonly repeatCount = computed(() => {
+    this.service.toasts();
+    return untracked(() => this.i18n().toastRepeatCount);
+  });
 
   /**
    * Region name, resolved once from the i18n bundle at construction: it is a
