@@ -35,7 +35,7 @@ export const COMPLETED_PHASE = 1;
  * Exact RATCHET length. Asserted equal, so the ceiling cannot be padded:
  * every row-closing commit removes its rows and lowers this number with them.
  */
-export const RATCHET_CEILING = 44;
+export const RATCHET_CEILING = 42;
 
 /**
  * The RATCHET keys (`file` + tab + `value`) at the end of Phase 1, frozen in
@@ -245,18 +245,6 @@ export const RATCHET = [
   {
     file: 'projects/ui/sidenav/sidenav.ts',
     value: 'Resize navigation',
-    note: 'bare input default, per-instance only',
-    closesIn: 2,
-  },
-  {
-    file: 'projects/ui/speak/speak-button.ts',
-    value: 'Read aloud',
-    note: 'bare input default, per-instance only',
-    closesIn: 2,
-  },
-  {
-    file: 'projects/ui/speak/speak-button.ts',
-    value: 'Stop speaking',
     note: 'bare input default, per-instance only',
     closesIn: 2,
   },
