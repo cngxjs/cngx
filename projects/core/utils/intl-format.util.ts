@@ -57,6 +57,7 @@ const numberFormatterForKey = memoize(
  * `computed(() => numberFormatterFor(this.locale(), { style: 'percent' }).format(v))`.
  *
  * @category core/utils
+ * @since 0.1.0
  * @relatedTo dateTimeFormatterFor, memoize
  */
 export function numberFormatterFor(

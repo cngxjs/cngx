@@ -66,6 +66,7 @@ const WRAPPED = new WeakMap<object, Signal<unknown>>();
  * `i18n().x` inside a `computed()` or the template.
  *
  * @category core/utils
+ * @since 0.1.0
  * @relatedTo coerceBooleanProperty, coerceNumberProperty, createOverrideMerge
  */
 export function coerceSignal<T>(source: T | Signal<T>): Signal<T> {

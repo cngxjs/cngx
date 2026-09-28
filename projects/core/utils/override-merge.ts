@@ -23,7 +23,12 @@ const MERGES = new WeakMap<object, WeakMap<object, Signal<object>>>();
  * nothing after the first. `undefined` overrides share one entry per
  * defaults reference.
  *
+ * The merge is a plain spread, like every `with*I18nLabels` feature: a key
+ * present in the override wins even when its value is `undefined`, so build
+ * override objects from the keys you mean to set, never from `{ key: maybe }`.
+ *
  * @category core/utils
+ * @since 0.1.0
  * @relatedTo coerceSignal, createControlledSource
  */
 export function createOverrideMerge<T extends object>(

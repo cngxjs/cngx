@@ -63,6 +63,7 @@ export function arrayEqual<T>(a: readonly T[], b: readonly T[]): boolean {
  * the previous reference and downstream readers do not re-render.
  *
  * @category utils
+ * @since 0.1.0
  * @relatedTo setEqual, arrayEqual
  */
 export function recordEqual<T extends object>(a: T, b: T): boolean {
