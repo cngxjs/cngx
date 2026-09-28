@@ -72,3 +72,12 @@ export {
   type CngxTagGroupHeaderContext,
   type CngxTagGroupAccessoryContext,
 } from './tag-group/slots/tag-group-slot.context';
+export {
+  CNGX_DISPLAY_I18N,
+  injectDisplayI18n,
+  provideDisplayI18n,
+  withDisplayI18nLabels,
+  type CngxAvatarStatus,
+  type CngxDisplayI18n,
+  type CngxDisplayI18nFeature,
+} from './i18n/display-i18n';

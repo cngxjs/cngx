@@ -35,7 +35,7 @@ export const COMPLETED_PHASE = 2;
  * Exact RATCHET length. Asserted equal, so the ceiling cannot be padded:
  * every row-closing commit removes its rows and lowers this number with them.
  */
-export const RATCHET_CEILING = 33;
+export const RATCHET_CEILING = 29;
 
 /**
  * The RATCHET keys (`file` + tab + `value`) at the end of Phase 1, frozen in
@@ -141,18 +141,6 @@ export const RATCHET = [
     closesIn: 4,
   },
   {
-    file: 'projects/common/display/segmented-progress/segmented-progress.component.ts',
-    value: '{} of {}',
-    note: 'segment readout composed in English word order',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/display/avatar-group/avatar-group.component.ts',
-    value: '{} {}, {} not shown',
-    note: 'overflow label composed in English word order',
-    closesIn: 3,
-  },
-  {
     file: 'projects/ui/mat-stepper/material-bridge/handle.ts',
     value: 'Step {}',
     note: 'fallback step label composed by hand',
@@ -193,18 +181,6 @@ export const RATCHET = [
     value: '{} (min {})',
     note: 'minimum readout composed in the template',
     closesIn: 4,
-  },
-  {
-    file: 'projects/common/display/avatar-group/avatar-group.component.ts',
-    value: 'avatars',
-    note: 'overflow noun is a bare input default',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/display/chip/chip.component.ts',
-    value: 'Remove',
-    note: 'bare input default, per-instance only',
-    closesIn: 3,
   },
   {
     file: 'projects/common/interactive/breadcrumb/breadcrumb.directive.ts',

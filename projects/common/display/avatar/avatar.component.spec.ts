@@ -3,6 +3,11 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it } from 'vitest';
 
+import {
+  provideDisplayI18n,
+  withDisplayI18nLabels,
+  type CngxDisplayI18n,
+} from '../i18n/display-i18n';
 import { CngxAvatar } from './avatar.component';
 
 @Component({
@@ -155,5 +160,39 @@ describe('CngxAvatar', () => {
     const { hostEl } = setup();
     const dot = hostEl.querySelector('.cngx-avatar__status');
     expect(dot).toBeNull();
+  });
+});
+
+describe('CngxAvatar - CNGX_DISPLAY_I18N', () => {
+  it('announces the translated status word instead of the raw key, live on a flip', () => {
+    const overrides = signal<Partial<CngxDisplayI18n>>({
+      avatarStatus: (status) => (status === 'busy' ? 'beschaeftigt' : status),
+    });
+    TestBed.configureTestingModule({
+      imports: [AvatarHost],
+      providers: [provideDisplayI18n(withDisplayI18nLabels(overrides))],
+    });
+    const fixture = TestBed.createComponent(AvatarHost);
+    fixture.componentInstance.status.set('busy');
+    fixture.detectChanges();
+    const dot = (fixture.nativeElement as HTMLElement).querySelector('.cngx-avatar__status')!;
+    expect(dot.getAttribute('aria-label')).toBe('beschaeftigt');
+
+    overrides.set({ avatarStatus: (status) => (status === 'busy' ? 'occupe' : status) });
+    fixture.detectChanges();
+    expect(dot.getAttribute('aria-label')).toBe('occupe');
+  });
+
+  it('lets the per-instance statusLabel win over the bundle', () => {
+    TestBed.configureTestingModule({
+      imports: [AvatarHost],
+      providers: [provideDisplayI18n(withDisplayI18nLabels({ avatarStatus: () => 'bundle' }))],
+    });
+    const fixture = TestBed.createComponent(AvatarHost);
+    fixture.componentInstance.status.set('away');
+    fixture.componentInstance.statusLabel.set((status) => `instance ${status}`);
+    fixture.detectChanges();
+    const dot = (fixture.nativeElement as HTMLElement).querySelector('.cngx-avatar__status')!;
+    expect(dot.getAttribute('aria-label')).toBe('instance away');
   });
 });

@@ -10,6 +10,11 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { CngxAvatar } from '../avatar/avatar.component';
+import {
+  composeAvatarGroupLabel,
+  DISPLAY_I18N_DEFAULTS,
+  injectDisplayI18n,
+} from '../i18n/display-i18n';
 
 /**
  * Stacked avatar group with an overflow pill. Project `<cngx-avatar>` children;
@@ -62,20 +67,27 @@ import { CngxAvatar } from '../avatar/avatar.component';
   `,
 })
 export class CngxAvatarGroup {
+  private readonly i18n = injectDisplayI18n();
+  /** Construction-time noun default; a `label` still equal to it is treated as unbound. */
+  private readonly nounSnapshot = this.i18n().avatarGroupNoun;
+
   /** Maximum avatars to show before collapsing the rest into the pill. Unset = show all. */
   readonly max = input<number | undefined>(undefined);
   /** Size preset for the overflow pill and stacking overlap (mirrors `CngxAvatar`). */
   readonly size = input<'xs' | 'sm' | 'md' | 'lg' | 'xl'>('md');
   /** Pill shape (mirrors `CngxAvatar`). */
   readonly shape = input<'circle' | 'square'>('circle');
-  /** Entity noun used in the `aria-label` summary. EN default. */
-  readonly label = input<string>('avatars');
+  /**
+   * Entity noun used in the `aria-label` summary. Defaults to
+   * `CNGX_DISPLAY_I18N.avatarGroupNoun`, read at construction; binding a
+   * different noun switches to the English `<total> <noun>` composition.
+   */
+  readonly label = input<string>(this.nounSnapshot);
 
   /**
-   * Format closure for the accessible summary. When set, it replaces the
-   * built-in EN phrase (`"{total} {label}, {hidden} not shown"`) entirely -
-   * the i18n hook for consumers whose locale needs a different sentence
-   * shape. `hidden` is `0` when nothing is collapsed.
+   * Format closure for the accessible summary. When set, it wins over
+   * `CNGX_DISPLAY_I18N.avatarGroupLabel` and the bound `label` noun.
+   * `hidden` is `0` when nothing is collapsed.
    */
   readonly labelFormat = input<((total: number, hidden: number) => string) | undefined>(undefined);
 
@@ -108,7 +120,16 @@ export class CngxAvatarGroup {
       return format(total, hidden);
     }
     const noun = this.label();
-    return hidden > 0 ? `${total} ${noun}, ${hidden} not shown` : `${total} ${noun}`;
+    if (noun !== this.nounSnapshot) {
+      return composeAvatarGroupLabel(total, hidden, noun);
+    }
+    const i18n = this.i18n();
+    // A consumer formatter owns word order and plurals; otherwise the resolved
+    // noun composes, so a noun-only override still reaches AT.
+    if (i18n.avatarGroupLabel !== DISPLAY_I18N_DEFAULTS.avatarGroupLabel) {
+      return i18n.avatarGroupLabel(total, hidden);
+    }
+    return composeAvatarGroupLabel(total, hidden, i18n.avatarGroupNoun);
   });
 
   constructor() {
