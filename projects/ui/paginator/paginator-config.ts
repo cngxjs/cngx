@@ -88,7 +88,32 @@ export interface CngxPaginatorFormats {
    * `announcements.pageChange` live-region phrasing, which stays plain text.
    */
   readonly pageStatus: (page: number, totalPages: number) => string;
+  /**
+   * Trigger readout of the `cngx-pgn-page-of-pages` dropdown, given the 1-based
+   * current page and total page count. Rendered as sanitised HTML (the default
+   * bolds the page). Optional for compatibility with full configs written before
+   * it existed; the English default applies when absent.
+   */
+  readonly pageOfPagesReadout?: (page: number, totalPages: number) => string;
+  /**
+   * Visible progress readout of the `cngx-pgn-load-more` button, given the items
+   * revealed so far and the total. Plain text, decorative (`aria-hidden`); the
+   * button's accessible name stays `ariaLabels.loadMore`. Optional for the same
+   * compatibility reason as {@link CngxPaginatorFormats.pageOfPagesReadout}.
+   */
+  readonly loadMoreReadout?: (shown: number, total: number) => string;
 }
+
+/**
+ * @internal - English readout formatters; the fallback for the optional
+ * `formats` keys a full consumer config omits.
+ */
+export const CNGX_PAGINATOR_READOUT_DEFAULTS: Required<
+  Pick<CngxPaginatorFormats, 'pageOfPagesReadout' | 'loadMoreReadout'>
+> = {
+  pageOfPagesReadout: (page, totalPages) => `<b>${page}</b> / ${totalPages}`,
+  loadMoreReadout: (shown, total) => `${shown} / ${total}`,
+};
 
 /**
  * Live-region announcement phrasing. The paginator announces the effective page
@@ -181,6 +206,7 @@ export const CNGX_PAGINATOR_DEFAULTS: CngxPaginatorConfig = {
     // Angular's sanitiser keeps `<b>` and strips anything dangerous.
     range: (start, end, total) => `<b>${start}-${end}</b> of ${total}`,
     pageStatus: (page, totalPages) => `Page <b>${page}</b> of ${totalPages}`,
+    ...CNGX_PAGINATOR_READOUT_DEFAULTS,
   },
   // Includes the brain's default pageSize (10) so the trigger value is always a
   // member of the panel; a common data-table ladder, locale-neutral.
@@ -327,6 +353,47 @@ export function withPaginatorPageStatusFormat(
   pageStatus: CngxPaginatorFormats['pageStatus'],
 ): CngxPaginatorConfigFeature {
   return { kind: 'formats', payload: { pageStatus } };
+}
+
+/**
+ * Override the page-of-pages trigger readout. The `cngx-pgn-page-of-pages`
+ * segment renders the returned string as sanitised HTML, so this localises the
+ * `a / b` separator and its order.
+ *
+ * ```ts
+ * provideCngxPaginatorConfig(
+ *   withPaginatorPageOfPagesFormat((page, totalPages) => `<b>${page}</b> von ${totalPages}`),
+ * );
+ * ```
+ *
+ * @category ui/paginator
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/paginator-config.ts
+ * @since 0.1.0
+ */
+export function withPaginatorPageOfPagesFormat(
+  pageOfPagesReadout: NonNullable<CngxPaginatorFormats['pageOfPagesReadout']>,
+): CngxPaginatorConfigFeature {
+  return { kind: 'formats', payload: { pageOfPagesReadout } };
+}
+
+/**
+ * Override the load-more progress readout. The `cngx-pgn-load-more` segment
+ * renders the returned string as plain text beside its label.
+ *
+ * ```ts
+ * provideCngxPaginatorConfig(
+ *   withPaginatorLoadMoreFormat((shown, total) => `${shown} von ${total}`),
+ * );
+ * ```
+ *
+ * @category ui/paginator
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/paginator-config.ts
+ * @since 0.1.0
+ */
+export function withPaginatorLoadMoreFormat(
+  loadMoreReadout: NonNullable<CngxPaginatorFormats['loadMoreReadout']>,
+): CngxPaginatorConfigFeature {
+  return { kind: 'formats', payload: { loadMoreReadout } };
 }
 
 /**

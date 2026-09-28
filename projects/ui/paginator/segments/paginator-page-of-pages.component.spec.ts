@@ -6,6 +6,7 @@ import { describe, expect, test } from 'vitest';
 import { CngxPaginate, createManualState } from '@cngx/common/data';
 import type { CngxAsyncState } from '@cngx/core/utils';
 
+import { provideCngxPaginatorConfig, withPaginatorPageOfPagesFormat } from '../paginator-config';
 import { CngxPaginator } from '../paginator.component';
 import { CngxPaginatorPageOfPages } from './paginator-page-of-pages.component';
 
@@ -139,5 +140,19 @@ describe('CngxPaginatorPageOfPages', () => {
       ?.click();
     await settle(fixture);
     expect(paginate.pageIndex()).toBe(0);
+  });
+
+  test('the trigger readout follows a translated formatter', async () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideCngxPaginatorConfig(
+          withPaginatorPageOfPagesFormat((page, totalPages) => `<b>${page}</b> von ${totalPages}`),
+        ),
+      ],
+    });
+    const { fixture } = await setup();
+    expect(label(fixture)).toBe('1 von 10');
+    const bold = fixture.nativeElement.querySelector('.cngx-paginator__select-label b');
+    expect(bold?.textContent).toBe('1');
   });
 });

@@ -29,7 +29,7 @@ import { readFileSync } from 'node:fs';
  * the final commit of each phase; a RATCHET row whose `closesIn` is at or
  * below it fails the suite, so no row outlives the phase that owns it.
  */
-export const COMPLETED_PHASE = 1;
+export const COMPLETED_PHASE = 2;
 
 /**
  * Exact RATCHET length. Asserted equal, so the ceiling cannot be padded:

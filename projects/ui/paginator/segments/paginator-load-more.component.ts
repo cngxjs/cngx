@@ -7,8 +7,9 @@ import {
 } from '@angular/core';
 
 import { CngxRipple } from '@cngx/common/interactive';
+import { coerceSignal } from '@cngx/core/utils';
 
-import { injectPaginatorConfig } from '../paginator-config';
+import { CNGX_PAGINATOR_READOUT_DEFAULTS, injectPaginatorConfig } from '../paginator-config';
 import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
 
 /**
@@ -49,7 +50,7 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
       <span class="cngx-paginator__load-more-label">{{ ariaLabel() }}</span>
       @if (!host.isLast()) {
         <span class="cngx-paginator__load-more-count" aria-hidden="true">
-          {{ shown() }} / {{ host.total() }}
+          {{ readout() }}
         </span>
       }
     </button>
@@ -58,7 +59,7 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
 })
 export class CngxPaginatorLoadMore {
   protected readonly host = inject(CNGX_PAGINATOR_HOST);
-  private readonly config = injectPaginatorConfig();
+  private readonly config = coerceSignal(injectPaginatorConfig());
 
   /**
    * Accessible name from the config cascade. On the last page the actionable
@@ -67,8 +68,8 @@ export class CngxPaginatorLoadMore {
    */
   protected readonly ariaLabel = computed(() =>
     this.host.isLast()
-      ? this.config.ariaLabels.allLoaded(this.host.total())
-      : this.config.ariaLabels.loadMore,
+      ? this.config().ariaLabels.allLoaded(this.host.total())
+      : this.config().ariaLabels.loadMore,
   );
 
   /** Disabled on the last page or while busy - the trigger becomes a no-op. */
@@ -81,6 +82,13 @@ export class CngxPaginatorLoadMore {
    * honestly without a local clamp.
    */
   protected readonly shown = computed<number>(() => this.host.clampedRange()[1]);
+
+  /** Visible progress readout from the config formatter (EN default `shown / total`). */
+  protected readonly readout = computed(() => {
+    const format =
+      this.config().formats.loadMoreReadout ?? CNGX_PAGINATOR_READOUT_DEFAULTS.loadMoreReadout;
+    return format(this.shown(), this.host.total());
+  });
 
   /** Reveal the next page. Guarded so a disabled click is a no-op. */
   protected handleClick(): void {
