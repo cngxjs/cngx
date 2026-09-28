@@ -32,8 +32,8 @@ export const CNGX_FIELD_BOX = new InjectionToken<CngxFieldBoxContract>('CngxFiel
  * Marker provided by `CngxPrefix` and `CngxSuffix`, so a box can tell an
  * affix control (a currency picker) apart from its main control.
  *
- * @internal Exported only because the affix directives and the box live in
- * sibling files.
+ * @internal Not part of the public API: the affix directives and the box
+ * import it from this file.
  * @category forms/field
  */
 export const CNGX_FIELD_AFFIX = new InjectionToken<true>('CngxFieldAffix');

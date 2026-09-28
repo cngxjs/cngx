@@ -36,6 +36,14 @@ function box(fixture: { nativeElement: HTMLElement }): HTMLElement {
 }
 
 describe('CngxFieldBox', () => {
+  // The affix marker is an implementation detail shared by sibling files; the
+  // public entry must not leak it.
+  it('keeps the affix marker token out of the public entry', async () => {
+    const api: Record<string, unknown> = await import('./public-api');
+    expect(api['CNGX_FIELD_AFFIX']).toBeUndefined();
+    expect(api['CNGX_FIELD_BOX']).toBeDefined();
+  });
+
   it('carries the box class and keeps the affix-row class for existing CSS', () => {
     @Component({ template: `<span cngxFieldBox><input /></span>`, imports: [CngxFieldBox] })
     class Host {}
