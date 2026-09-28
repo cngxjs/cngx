@@ -35,7 +35,7 @@ export const COMPLETED_PHASE = 1;
  * Exact RATCHET length. Asserted equal, so the ceiling cannot be padded:
  * every row-closing commit removes its rows and lowers this number with them.
  */
-export const RATCHET_CEILING = 71;
+export const RATCHET_CEILING = 69;
 
 /**
  * The RATCHET keys (`file` + tab + `value`) at the end of Phase 1, frozen in
@@ -413,18 +413,6 @@ export const RATCHET = [
   {
     file: 'projects/ui/data-grid-accordion/data-grid-sort-header.directive.ts',
     value: 'Sorting by {label} cleared',
-    note: 'bare input default, per-instance only',
-    closesIn: 2,
-  },
-  {
-    file: 'projects/common/interactive/async-click/async-click.directive.ts',
-    value: 'Action succeeded',
-    note: 'bare input default, per-instance only',
-    closesIn: 2,
-  },
-  {
-    file: 'projects/common/interactive/async-click/async-click.directive.ts',
-    value: 'Action failed',
     note: 'bare input default, per-instance only',
     closesIn: 2,
   },

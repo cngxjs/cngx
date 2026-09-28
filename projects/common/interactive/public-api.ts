@@ -4,6 +4,14 @@
 export { CngxAsyncClick, type AsyncAction } from './async-click/async-click.directive';
 export { CngxPending, CngxSucceeded, CngxFailed } from './async-click/async-status-templates';
 export {
+  CNGX_INTERACTIVE_I18N,
+  injectInteractiveI18n,
+  provideInteractiveI18n,
+  withInteractiveI18nLabels,
+  type CngxInteractiveI18n,
+  type CngxInteractiveI18nFeature,
+} from './i18n/interactive-i18n';
+export {
   CngxAsyncStatus,
   reflectAsyncDisplayStatus,
   type CngxAsyncDisplayStatus,

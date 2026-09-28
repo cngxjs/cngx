@@ -16,6 +16,8 @@ import {
 import { buildAsyncStateView, type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
 import { firstValueFrom, isObservable, type Observable } from 'rxjs';
 
+import { injectInteractiveI18n } from '../i18n/interactive-i18n';
+
 /**
  * Action function that returns a Promise or Observable.
  *
@@ -111,11 +113,19 @@ export class CngxAsyncClick {
    */
   readonly busy = input<boolean>(false);
 
-  /** Label announced to screen readers on success. */
-  readonly succeededAnnouncement = input<string>('Action succeeded');
+  private readonly i18n = injectInteractiveI18n();
 
-  /** Label announced to screen readers on failure. */
-  readonly failedAnnouncement = input<string>('Action failed');
+  /**
+   * Label announced to screen readers on success. Defaults to
+   * `CNGX_INTERACTIVE_I18N.asyncClickSucceeded`, read at construction.
+   */
+  readonly succeededAnnouncement = input<string>(this.i18n().asyncClickSucceeded);
+
+  /**
+   * Label announced to screen readers on failure. Defaults to
+   * `CNGX_INTERACTIVE_I18N.asyncClickFailed`, read at construction.
+   */
+  readonly failedAnnouncement = input<string>(this.i18n().asyncClickFailed);
 
   /**
    * Auto-render the polite live region announcing success/failure.
