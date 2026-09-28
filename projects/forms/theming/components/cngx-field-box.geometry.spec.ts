@@ -353,6 +353,31 @@ describe.each(MATRIX)('field box matrix: %s skin, %s, touch %s', (skin, density,
   });
 });
 
+// The literal contract rides on the 1rem control font: a 24px line box in
+// every control, so every composition lands on the same number.
+const LITERAL: Readonly<Record<Density, readonly [number, number]>> = {
+  comfortable: [42, 44],
+  compact: [34, 44],
+  spacious: [50, 50],
+};
+
+describe.each(MATRIX)('field box literal sizes: %s skin, %s, touch %s', (skin, density, touch) => {
+  it.each(CASES)('%s measures the contract height', (_name, pick) => {
+    const box = pick(mountMatrix(skin, density, touch));
+    const [fine, coarse] = LITERAL[density];
+    expect(box.getBoundingClientRect().height).toBeCloseTo(touch ? coarse : fine, 0);
+  });
+
+  it('gives an interactive affix at least a 24 x 24 target', () => {
+    const root = mountMatrix(skin, density, touch);
+    for (const selector of ['.c-icon-button', '.c-text-button']) {
+      const rect = query(query(root, selector), 'button').getBoundingClientRect();
+      expect(rect.height).toBeGreaterThanOrEqual(24 - 0.5);
+      expect(rect.width).toBeGreaterThanOrEqual(24 - 0.5);
+    }
+  });
+});
+
 describe('field box textarea', () => {
   it.each(['outline', 'fill', 'bare'] as const)(
     'grows a default two-row %s textarea by exactly one line box',

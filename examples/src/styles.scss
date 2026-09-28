@@ -3333,10 +3333,10 @@ pre.code-block code {
 }
 
 .demo-input {
-  /* Inherits base.css <input> chrome; rule exists so consumers can chain
+  /* Inherits base.css <input> chrome, font included, so the demos measure
+   * what ships. The rule exists so consumers can chain
    * `.demo-input.demo-otp-slot` without ambiguity, and as a hook for any
    * future demo-specific input overrides. */
-  font: inherit;
 }
 
 // Stack cngx-checkbox-group / cngx-radio-group children vertically with a

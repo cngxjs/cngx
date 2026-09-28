@@ -418,6 +418,18 @@
   }
 
   /**
+   * Font-size of native form controls (1rem). The same size the select
+   * triggers render at, so an input and a select share one line box and one
+   * field box height.
+   * @group Typography
+   */
+  @property --cngx-font-size-control {
+    syntax: '*';
+    inherits: true;
+    initial-value: 1rem;
+  }
+
+  /**
    * Font-size - large (1.0625rem). Emphasized headings, dialog
    * titles.
    * @group Typography
