@@ -7,7 +7,6 @@ import {
 } from '@angular/core';
 
 import { CngxRipple } from '@cngx/common/interactive';
-import { coerceSignal } from '@cngx/core/utils';
 
 import { CNGX_PAGINATOR_READOUT_DEFAULTS, injectPaginatorConfig } from '../paginator-config';
 import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
@@ -59,7 +58,7 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
 })
 export class CngxPaginatorLoadMore {
   protected readonly host = inject(CNGX_PAGINATOR_HOST);
-  private readonly config = coerceSignal(injectPaginatorConfig());
+  private readonly config = injectPaginatorConfig();
 
   /**
    * Accessible name from the config cascade. On the last page the actionable
@@ -68,8 +67,8 @@ export class CngxPaginatorLoadMore {
    */
   protected readonly ariaLabel = computed(() =>
     this.host.isLast()
-      ? this.config().ariaLabels.allLoaded(this.host.total())
-      : this.config().ariaLabels.loadMore,
+      ? this.config.ariaLabels.allLoaded(this.host.total())
+      : this.config.ariaLabels.loadMore,
   );
 
   /** Disabled on the last page or while busy - the trigger becomes a no-op. */
@@ -86,7 +85,7 @@ export class CngxPaginatorLoadMore {
   /** Visible progress readout from the config formatter (EN default `shown / total`). */
   protected readonly readout = computed(() => {
     const format =
-      this.config().formats.loadMoreReadout ?? CNGX_PAGINATOR_READOUT_DEFAULTS.loadMoreReadout;
+      this.config.formats.loadMoreReadout ?? CNGX_PAGINATOR_READOUT_DEFAULTS.loadMoreReadout;
     return format(this.shown(), this.host.total());
   });
 
