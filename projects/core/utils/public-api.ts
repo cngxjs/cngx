@@ -5,6 +5,7 @@ export { coerceBooleanProperty, coerceNumberProperty, coerceSignal } from './coe
 export { createOverrideMerge } from './override-merge';
 export { memoize, type MemoizeOptions } from './memo.util';
 export { dateTimeFormatterFor, numberFormatterFor } from './intl-format.util';
+export { CNGX_LOCALE, injectLocale, provideLocale, provideLocaleAt } from './locale';
 export { parseKeyCombo, matchesKeyCombo, type KeyCombo } from './keyboard.util';
 export { matchesTypeahead } from './typeahead.util';
 export { hasTransition, onTransitionDone, type TransitionDoneHandle } from './transition.util';
