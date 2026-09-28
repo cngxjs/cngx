@@ -130,7 +130,7 @@ export class CngxMatStepper {
   // index, not at the tail. The seam re-registers the diverging
   // suffix in query order while keeping surviving handle instances.
   private readonly seam = createOrderedRegistrationSeam<MatStep, CngxMatStepHandleSetup>({
-    create: (step) => this.createHandle(step, () => nextUid('cngx-mat-step-')),
+    create: (step) => this.createHandle(step, () => nextUid('cngx-mat-step-'), this.i18n),
     register: (setup) => this.presenter.register(setup.handle),
     unregister: (setup) => this.presenter.unregister(setup.handle.id, setup.handle),
     dispose: () => {

@@ -29,13 +29,13 @@ import { readFileSync } from 'node:fs';
  * the final commit of each phase; a RATCHET row whose `closesIn` is at or
  * below it fails the suite, so no row outlives the phase that owns it.
  */
-export const COMPLETED_PHASE = 2;
+export const COMPLETED_PHASE = 3;
 
 /**
  * Exact RATCHET length. Asserted equal, so the ceiling cannot be padded:
  * every row-closing commit removes its rows and lowers this number with them.
  */
-export const RATCHET_CEILING = 20;
+export const RATCHET_CEILING = 19;
 
 /**
  * The RATCHET keys (`file` + tab + `value`) at the end of Phase 1, frozen in
@@ -139,12 +139,6 @@ export const RATCHET = [
     value: 'Brazil',
     note: 'CNGX_PHONE_COUNTRIES label, only a per-instance [countries] swap reaches it',
     closesIn: 4,
-  },
-  {
-    file: 'projects/ui/mat-stepper/material-bridge/handle.ts',
-    value: 'Step {}',
-    note: 'fallback step label composed by hand',
-    closesIn: 3,
   },
   {
     file: 'projects/data-display/treetable/treetable.component.ts',
