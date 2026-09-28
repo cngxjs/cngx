@@ -51,3 +51,35 @@ export function arrayEqual<T>(a: readonly T[], b: readonly T[]): boolean {
   }
   return true;
 }
+
+/**
+ * Shallow key-wise equality for two plain records. Returns `true` when both
+ * records reference the same object, or when they have the same own
+ * enumerable keys and every key holds an `Object.is`-equal value. Nested
+ * objects compare by reference, not by content.
+ *
+ * Intended as an `equal` arg for `computed()` returning a label or config
+ * bundle, so a re-run that merges the same values into a fresh object keeps
+ * the previous reference and downstream readers do not re-render.
+ *
+ * @category utils
+ * @relatedTo setEqual, arrayEqual
+ */
+export function recordEqual<T extends object>(a: T, b: T): boolean {
+  if (a === b) {
+    return true;
+  }
+  const keysA = Object.keys(a);
+  if (keysA.length !== Object.keys(b).length) {
+    return false;
+  }
+  for (const key of keysA) {
+    if (!Object.hasOwn(b, key)) {
+      return false;
+    }
+    if (!Object.is((a as Record<string, unknown>)[key], (b as Record<string, unknown>)[key])) {
+      return false;
+    }
+  }
+  return true;
+}
