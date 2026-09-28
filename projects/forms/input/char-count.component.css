@@ -73,7 +73,7 @@
   @property --cngx-field-char-count-over-color {
     syntax: '<color>';
     inherits: true;
-    initial-value: oklch(0.55 0.21 27);
+    initial-value: oklch(0.6 0.18 25);
   }
 
   /* Delegating token - over-color tracks the danger chain so a
@@ -107,7 +107,7 @@
     :scope.cngx-char-count--over {
       color: var(
         --cngx-field-char-count-over-color,
-        var(--cngx-field-error-color, var(--cngx-color-danger, oklch(0.55 0.21 27)))
+        var(--cngx-field-error-color, var(--cngx-color-danger, oklch(0.6 0.18 25)))
       );
     }
   }

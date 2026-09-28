@@ -36,7 +36,7 @@
   @property --cngx-field-required-color {
     syntax: '<color>';
     inherits: true;
-    initial-value: oklch(0.55 0.21 27);
+    initial-value: oklch(0.6 0.18 25);
   }
 
   /* Delegating token - required-marker tracks the danger chain so a
@@ -62,7 +62,7 @@
     .cngx-label__required {
       color: var(
         --cngx-field-required-color,
-        var(--cngx-field-error-color, var(--cngx-color-danger, oklch(0.55 0.21 27)))
+        var(--cngx-field-error-color, var(--cngx-color-danger, oklch(0.6 0.18 25)))
       );
       margin-inline-start: 0.125em;
     }
