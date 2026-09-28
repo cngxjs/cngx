@@ -5,7 +5,7 @@
   [enabled]="panelOpen()"
   (clickOutside)="handleClickOutside()"
 >
-  <div class="cngx-typeahead__trigger" (click)="handleWrapperClick()">
+  <div class="cngx-typeahead__trigger cngx-field-trigger" (click)="handleWrapperClick()">
     @if (inputPrefixTpl(); as prefixTpl) {
       <span class="cngx-typeahead__prefix" (click)="$event.stopPropagation()">
         <ng-container *ngTemplateOutlet="prefixTpl; context: inputSlotContext()" />

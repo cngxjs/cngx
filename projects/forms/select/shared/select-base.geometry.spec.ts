@@ -12,8 +12,8 @@ import type { CngxSelectOptionDef } from './option.model';
 
 // Runs in a real Chromium (the `test-geometry` target). Covers the resting
 // half of the field-skin blocks every variant stylesheet carries: the trigger
-// - not the component host - is the box, and a trigger nested inside a skinned
-// affix row keeps its full outline border so the row alone draws the surface.
+// - not the component host - is the box, and a trigger nested inside a field
+// box is reset to transparent so the box alone draws the surface.
 // Two variants stand in for the two trigger shapes (single row and chip
 // strip); the remaining seven reuse the same CSS paths.
 //
@@ -36,7 +36,7 @@ const OPTIONS: CngxSelectOptionDef<string>[] = [
     <cngx-select class="solo" skin="fill" [label]="'Colour'" [options]="options" />
     <cngx-multi-select class="chips" skin="fill" [label]="'Colours'" [options]="options" />
     <span class="cngx-field-box cngx-field-affix-row row" data-skin="fill">
-      <cngx-select class="nested" skin="fill" [label]="'Currency'" [options]="options" />
+      <cngx-select class="nested" skin="bare" [label]="'Currency'" [options]="options" />
     </span>
   `,
   styleUrls: ['../../theming/components/cngx-field-skin.css'],
@@ -97,7 +97,7 @@ function mount(host: Type<unknown> = SkinHost): HTMLElement {
 }
 
 function trigger(root: HTMLElement, hostSelector: string): HTMLElement {
-  const el = root.querySelector(`${hostSelector} [class$="__trigger"]`);
+  const el = root.querySelector(`${hostSelector} .cngx-field-trigger`);
   if (!el) {
     throw new Error(`${hostSelector} trigger did not render`);
   }
@@ -113,23 +113,27 @@ describe('select-family field skins', () => {
   it('draws the fill trigger as an underline, not a box', () => {
     const el = trigger(mount(), '.solo');
     expect(computedValue(el, 'border-bottom-width')).toBe('1px');
-    expect(computedValue(el, 'border-top-width')).toBe('0px');
+    expect(computedValue(el, 'border-top-width')).toBe('1px');
+    expect(computedValue(el, 'border-top-color')).toBe('rgba(0, 0, 0, 0)');
   });
 
   it('applies the same treatment to a chip-strip trigger', () => {
     const el = trigger(mount(), '.chips');
     expect(computedValue(el, 'border-bottom-width')).toBe('1px');
-    expect(computedValue(el, 'border-top-width')).toBe('0px');
+    expect(computedValue(el, 'border-top-width')).toBe('1px');
+    expect(computedValue(el, 'border-top-color')).toBe('rgba(0, 0, 0, 0)');
   });
 
-  it('keeps a trigger nested in a skinned affix row on its outline chrome', () => {
+  it('resets a trigger nested in a field box so the box draws the only chrome', () => {
     const root = mount();
     const nested = trigger(root, '.nested');
     const row = root.querySelector('.row') as HTMLElement;
-    // The `:not(.cngx-field-affix-row[data-skin] > *)` guard excludes the
-    // nested host, so its trigger keeps all four borders while the row is the
-    // only element carrying the underline.
-    expect(computedValue(nested, 'border-top-width')).not.toBe('0px');
+    // The nested select resolves to bare; the bare root excludes a box child
+    // and the nested reset strips the base trigger chrome, 2.125rem floor
+    // included.
+    expect(computedValue(nested, 'border-top-width')).toBe('0px');
+    expect(computedValue(nested, 'padding-top')).toBe('0px');
+    expect(computedValue(nested, 'min-height')).toBe('0px');
     expect(computedValue(row, 'border-bottom-width')).toBe('1px');
     expect(computedValue(row, 'border-top-color')).toBe('rgba(0, 0, 0, 0)');
   });
@@ -145,7 +149,7 @@ describe('select-family field skins', () => {
     const root = mount(StateHost);
     const valid = trigger(root, '.bare-valid');
     const invalid = trigger(root, '.bare-invalid');
-    expect(computedValue(invalid, 'border-bottom-width')).toBe('0px');
+    expect(computedValue(invalid, 'border-bottom-color')).toBe('rgba(0, 0, 0, 0)');
     expect(computedValue(invalid, 'box-shadow')).toBe('none');
     expect(computedValue(invalid, 'color')).not.toBe(computedValue(valid, 'color'));
     expect(computedValue(invalid, 'outline-style')).toBe('solid');
