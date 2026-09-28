@@ -42,23 +42,29 @@ import { afterEach, describe, expect, it } from 'vitest';
     ></span>
     <input class="solo-bare" type="text" data-skin="bare" />
     <input class="bare-invalid" type="text" data-skin="bare" aria-invalid="true" />
-    <span class="cngx-field-affix-row bare-row" data-skin="bare">
+    <span class="cngx-field-box cngx-field-affix-row bare-row" data-skin="bare">
       <span class="cngx-field-prefix">$</span>
       <input class="bare-row-input" type="text" data-skin="bare" aria-invalid="true" />
     </span>
     <div data-color-scheme="light">
       <input class="fill-light" type="text" data-skin="fill" />
-      <span class="probe-underline-light" style="background: var(--cngx-field-underline-focus-color)"></span>
+      <span
+        class="probe-underline-light"
+        style="background: var(--cngx-field-underline-focus-color)"
+      ></span>
       <span class="probe-hover-light" style="background: var(--cngx-field-fill-bg-hover)"></span>
     </div>
     <div data-color-scheme="dark">
       <input class="fill-dark" type="text" data-skin="fill" />
-      <span class="probe-underline-dark" style="background: var(--cngx-field-underline-focus-color)"></span>
+      <span
+        class="probe-underline-dark"
+        style="background: var(--cngx-field-underline-focus-color)"
+      ></span>
       <span class="probe-hover-dark" style="background: var(--cngx-field-fill-bg-hover)"></span>
     </div>
-    <span class="cngx-field-affix-row row" data-skin="fill">
+    <span class="cngx-field-box cngx-field-affix-row row" data-skin="fill">
       <span class="cngx-field-prefix">$</span>
-      <input class="nested-fill" type="text" data-skin="fill" />
+      <input class="nested-fill" type="text" data-skin="bare" />
     </span>
     <table>
       <tbody>
@@ -141,8 +147,11 @@ afterEach(() => {
 describe('field skin geometry', () => {
   it('draws the fill skin as an underline, not a box', () => {
     const input = query(mount(), '.solo-fill');
+    // 1px on every side keeps the shared box formula; only the bottom edge
+    // is painted.
     expect(computedValue(input, 'border-bottom-width')).toBe('1px');
-    expect(computedValue(input, 'border-top-width')).toBe('0px');
+    expect(computedValue(input, 'border-top-width')).toBe('1px');
+    expect(computedValue(input, 'border-top-color')).toBe('rgba(0, 0, 0, 0)');
   });
 
   it('grows the underline into the focus colour on focus', async () => {
@@ -155,7 +164,7 @@ describe('field skin geometry', () => {
 
   it('strips surface and border on the bare skin', () => {
     const input = query(mount(), '.solo-bare');
-    expect(computedValue(input, 'border-bottom-width')).toBe('0px');
+    expect(computedValue(input, 'border-bottom-color')).toBe('rgba(0, 0, 0, 0)');
     expect(computedValue(input, 'background-color')).toBe('rgba(0, 0, 0, 0)');
   });
 
@@ -203,7 +212,7 @@ describe('field skin geometry', () => {
     const invalid = query(root, '.bare-invalid');
     const valid = query(root, '.solo-bare');
     expect(computedValue(invalid, 'box-shadow')).toBe('none');
-    expect(computedValue(invalid, 'border-bottom-width')).toBe('0px');
+    expect(computedValue(invalid, 'border-bottom-color')).toBe('rgba(0, 0, 0, 0)');
     expect(computedValue(invalid, 'color')).not.toBe(computedValue(valid, 'color'));
   });
 

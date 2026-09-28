@@ -30,12 +30,7 @@ import { CngxAffixRow } from '../../field/field-box.directive';
     <div cngxAffixRow class="patterns">
       <span class="cngx-field-prefix"><cngx-icon>search</cngx-icon></span>
       <input type="text" />
-      <button
-        type="button"
-        class="cngx-field-suffix cngx-field-affix--interactive"
-      >
-        x
-      </button>
+      <button type="button" class="cngx-field-suffix cngx-field-affix--interactive">x</button>
     </div>
   `,
 })
@@ -92,12 +87,14 @@ describe('CngxAffixRow geometry', () => {
     expect(computedValue(query(row, '.cngx-field-prefix'), 'flex-grow')).toBe('0');
   });
 
-  it('floors the interactive affix button on both axes', () => {
-    const button = query(mountPatterns(), '.cngx-field-affix--interactive');
-    // 2rem is the design size; --cngx-target-min is inert (0px) on the fine
-    // pointer the headless run reports, so max() resolves to the design size.
-    expect(parseFloat(computedValue(button, 'min-height'))).toBeGreaterThanOrEqual(32);
-    expect(parseFloat(computedValue(button, 'min-width'))).toBeGreaterThanOrEqual(32);
+  it('sizes the interactive affix to the box line instead of a standalone floor', () => {
+    const row = mountPatterns();
+    const button = query(row, '.cngx-field-affix--interactive');
+    // Inside the box the floor is --cngx-target-min minus padding and border,
+    // which is 0px on the fine pointer the headless run reports; the button
+    // stretches to the line box and never pushes the box past its formula.
+    expect(computedValue(button, 'min-height')).toBe('0px');
+    expect(computedValue(button, 'align-self')).toBe('stretch');
     expect(computedValue(button, 'justify-content')).toBe('center');
   });
 

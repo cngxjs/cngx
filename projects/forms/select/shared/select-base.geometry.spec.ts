@@ -35,7 +35,7 @@ const OPTIONS: CngxSelectOptionDef<string>[] = [
   template: `
     <cngx-select class="solo" skin="fill" [label]="'Colour'" [options]="options" />
     <cngx-multi-select class="chips" skin="fill" [label]="'Colours'" [options]="options" />
-    <span class="cngx-field-affix-row row" data-skin="fill">
+    <span class="cngx-field-box cngx-field-affix-row row" data-skin="fill">
       <cngx-select class="nested" skin="fill" [label]="'Currency'" [options]="options" />
     </span>
   `,
@@ -58,7 +58,13 @@ class SkinHost {
     <cngx-form-field [field]="invalidField">
       <cngx-typeahead class="invalid" skin="fill" [label]="'Colour'" [options]="options" />
     </cngx-form-field>
-    <cngx-typeahead class="off" skin="fill" [disabled]="true" [label]="'Colour'" [options]="options" />
+    <cngx-typeahead
+      class="off"
+      skin="fill"
+      [disabled]="true"
+      [label]="'Colour'"
+      [options]="options"
+    />
     <cngx-typeahead class="bare-valid" skin="bare" [label]="'Colour'" [options]="options" />
     <cngx-form-field [field]="invalidBareField">
       <cngx-typeahead class="bare-invalid" skin="bare" [label]="'Colour'" [options]="options" />
@@ -125,7 +131,7 @@ describe('select-family field skins', () => {
     // only element carrying the underline.
     expect(computedValue(nested, 'border-top-width')).not.toBe('0px');
     expect(computedValue(row, 'border-bottom-width')).toBe('1px');
-    expect(computedValue(row, 'border-top-width')).toBe('0px');
+    expect(computedValue(row, 'border-top-color')).toBe('rgba(0, 0, 0, 0)');
   });
 
   it('turns the underline to the error colour when the inner combobox input is invalid', () => {

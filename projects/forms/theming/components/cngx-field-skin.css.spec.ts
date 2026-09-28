@@ -15,10 +15,36 @@ const SOURCE = readFileSync(
 );
 
 describe('cngx-field-skin.css', () => {
-  it('derives every spacing token from the scale', () => {
-    expect(SOURCE).toContain('--cngx-field-fill-padding-block: var(--cngx-space-sm)');
-    expect(SOURCE).toContain('--cngx-field-fill-padding-inline: var(--cngx-space-md)');
-    expect(SOURCE).toContain('--cngx-field-bare-padding: var(--cngx-space-xs)');
+  it('derives the shared box padding pair from the scale in both skins', () => {
+    for (const skin of ['fill', 'bare']) {
+      const scope = SOURCE.slice(SOURCE.indexOf(`[data-skin='${skin}']`));
+      const root = scope.slice(0, scope.indexOf('}'));
+      expect(root).toContain('--cngx-field-padding-block: var(--cngx-space-sm)');
+      expect(root).toContain('--cngx-field-padding-inline: var(--cngx-space-md)');
+    }
+    expect(SOURCE).not.toContain('--cngx-field-fill-padding');
+    expect(SOURCE).not.toContain('--cngx-field-bare-padding');
+  });
+
+  it('keeps every bare scope root off a control nested in a box', () => {
+    const roots = [...SOURCE.matchAll(/@scope \(([^{]*)\) \{/g)]
+      .map((match) => match[1])
+      .filter((root) => root.includes("[data-skin='bare']"));
+    expect(roots.length).toBeGreaterThan(0);
+    for (const root of roots) {
+      const controlRoot = root.split(', .cngx-field-box')[0];
+      expect(controlRoot).toContain(':not(.cngx-field-box > *)');
+    }
+  });
+
+  it('keys state on the box and bounds the native fallback to direct children', () => {
+    expect(SOURCE).not.toContain('.cngx-field--error *');
+    expect(SOURCE).not.toContain('.cngx-field--disabled *');
+    expect(SOURCE).not.toContain(':has(:disabled)');
+    expect(SOURCE).not.toMatch(/:has\(\[aria-invalid/);
+    expect(SOURCE).toContain('[data-invalid]');
+    expect(SOURCE).toContain('[data-disabled]');
+    expect(SOURCE).toContain('[data-readonly]');
   });
 
   it('registers the underline size as an inheriting length', () => {
@@ -51,17 +77,40 @@ describe('cngx-field-skin.css', () => {
     expect(scoped).not.toContain('@media');
   });
 
-  it('suppresses the reset outline only on the scope root or off focus', () => {
-    // A descendant may only lose its outline while it is not focused (the
-    // bare row's nested input drops the duplicate error ring); an interactive
-    // affix button must always keep its focus ring.
-    const lines = SOURCE.split('\n');
-    const heads = lines
-      .map((line, i) => (line.includes('outline: none') ? lines[i - 1].trim() : null))
-      .filter((head): head is string => head !== null);
-    expect(heads.length).toBeGreaterThan(0);
-    for (const head of heads) {
-      expect(head.startsWith(':scope') || head.includes(':not(:focus-visible)')).toBe(true);
+  it('suppresses the reset outline only on the scope root or a control nested in a box', () => {
+    // The box draws the ring for the control inside it; an interactive affix
+    // button is never a nested :is(input, textarea, select) and must always
+    // keep its own focus ring.
+    const rules = SOURCE.replace(/\/\*[\s\S]*?\*\//g, '')
+      .split('}')
+      .filter((rule) => rule.includes('outline: none'))
+      .map((rule) => {
+        const head = rule.slice(0, rule.lastIndexOf('{', rule.indexOf('outline: none')));
+        return head.slice(head.lastIndexOf('{') + 1).trim();
+      });
+    expect(rules.length).toBeGreaterThan(0);
+    for (const selector of rules) {
+      const nestedControl = selector.startsWith(
+        '.cngx-field-box[data-skin] > :is(input, textarea, select)',
+      );
+      expect(selector.startsWith(':scope') || nestedControl).toBe(true);
+    }
+  });
+
+  it('resets a nested control to transparent with the box floor', () => {
+    const reset = SOURCE.slice(
+      SOURCE.indexOf('.cngx-field-box[data-skin] > :is(input, textarea, select),'),
+    );
+    const body = reset.slice(reset.indexOf('{'), reset.indexOf('}'));
+    for (const declaration of [
+      'padding: 0',
+      'border: 0',
+      'background: transparent',
+      'box-shadow: none',
+      'color: inherit',
+      '2 * var(--cngx-field-padding-block, 0.5rem) - 2px',
+    ]) {
+      expect(body).toContain(declaration);
     }
   });
 
@@ -70,7 +119,7 @@ describe('cngx-field-skin.css', () => {
     // regular cngx.reset focus ring instead of a drawn indicator.
     const bare = SOURCE.slice(
       SOURCE.indexOf("@scope (:is(input, textarea, select)[data-skin='bare']"),
-      SOURCE.indexOf('/* Nested boxes'),
+      SOURCE.indexOf('/* Nested controls'),
     );
     expect(bare).not.toContain('box-shadow');
     expect(bare).not.toContain('border-block-end');
