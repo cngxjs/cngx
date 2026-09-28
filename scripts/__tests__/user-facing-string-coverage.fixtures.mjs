@@ -11,6 +11,8 @@
  * fail on every unrelated edit above it.
  */
 
+import { readFileSync } from 'node:fs';
+
 /**
  * One row of any of the three manifests.
  *
@@ -36,11 +38,18 @@ export const COMPLETED_PHASE = 1;
 export const RATCHET_CEILING = 71;
 
 /**
- * The ceiling at the end of Phase 1, frozen. Never raised again: from
- * `COMPLETED_PHASE >= 1` on, `RATCHET_CEILING` may never exceed it, so no new
- * row enters after Phase 1.
+ * The RATCHET keys (`file` + tab + `value`) at the end of Phase 1, frozen in
+ * `user-facing-string-coverage.phase1.json`. From `COMPLETED_PHASE >= 1` on
+ * every RATCHET row must be one of them: a row can be fixed and removed, but
+ * no new row enters after Phase 1, not even in exchange for a fixed one.
+ *
+ * @type {ReadonlySet<string>}
  */
-export const PHASE_1_CEILING = 71;
+export const PHASE_1_KEYS = new Set(
+  JSON.parse(
+    readFileSync(new URL('./user-facing-string-coverage.phase1.json', import.meta.url), 'utf-8'),
+  ),
+);
 
 /**
  * The gap list: user-facing strings that ship with no app-wide override path.

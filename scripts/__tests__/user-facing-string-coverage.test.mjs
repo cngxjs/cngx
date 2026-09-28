@@ -10,7 +10,7 @@ import {
   ALREADY_COVERED,
   COMPLETED_PHASE,
   EXCLUDED,
-  PHASE_1_CEILING,
+  PHASE_1_KEYS,
   RATCHET,
   RATCHET_CEILING,
 } from './user-facing-string-coverage.fixtures.mjs';
@@ -710,17 +710,18 @@ const UNCOVERED = SOURCES.flatMap((file) =>
  * (a) the length equals the ceiling exactly - no padded headroom;
  * (b) every row names the phase that closes it (2, 3 or 4);
  * (c) no row outlives its phase;
- * (d) after Phase 1 the ceiling never rises above the frozen Phase 1 ceiling.
+ * (d) after Phase 1 every row is one of the frozen Phase 1 keys - fixed rows
+ *     leave, no row enters, not even in exchange for a fixed one.
  *
  * @param {{
  *   ratchet: readonly import('./user-facing-string-coverage.fixtures.mjs').StringManifestEntry[];
  *   ceiling: number;
  *   completedPhase: number;
- *   phase1Ceiling: number;
+ *   phase1Keys: ReadonlySet<string>;
  * }} input
  * @returns {string[]}
  */
-export function checkRatchet({ ratchet, ceiling, completedPhase, phase1Ceiling }) {
+export function checkRatchet({ ratchet, ceiling, completedPhase, phase1Keys }) {
   const violations = [];
   if (ratchet.length !== ceiling) {
     violations.push(`(a) RATCHET has ${ratchet.length} rows, ceiling is ${ceiling}`);
@@ -731,9 +732,9 @@ export function checkRatchet({ ratchet, ceiling, completedPhase, phase1Ceiling }
     } else if (row.closesIn <= completedPhase) {
       violations.push(`(c) ${row.file}: ${row.value} outlived phase ${row.closesIn}`);
     }
-  }
-  if (completedPhase >= 1 && ceiling > phase1Ceiling) {
-    violations.push(`(d) ceiling ${ceiling} exceeds the Phase 1 ceiling ${phase1Ceiling}`);
+    if (completedPhase >= 1 && !phase1Keys.has(key(row))) {
+      violations.push(`(d) ${row.file}: ${row.value} entered after Phase 1`);
+    }
   }
   return violations;
 }
@@ -769,9 +770,14 @@ describe('user-facing string ratchet', () => {
         ratchet: RATCHET,
         ceiling: RATCHET_CEILING,
         completedPhase: COMPLETED_PHASE,
-        phase1Ceiling: PHASE_1_CEILING,
+        phase1Keys: PHASE_1_KEYS,
       }),
     ).toEqual([]);
+  });
+
+  it('freezes the Phase 1 keys as a sorted, duplicate-free snapshot', () => {
+    const keys = [...PHASE_1_KEYS];
+    expect(keys).toEqual([...new Set(keys)].sort());
   });
 
   it('carries no ratchet row that is already fixed', () => {
@@ -792,8 +798,14 @@ describe('user-facing string ratchet', () => {
 });
 
 describe('user-facing string ratchet rules', () => {
-  const row = (closesIn) => ({ file: 'x.ts', value: 'Close', note: 'fixture row', closesIn });
-  const base = { ratchet: [row(2), row(3)], ceiling: 2, completedPhase: 0, phase1Ceiling: 2 };
+  const row = (closesIn, value = 'Close') => ({
+    file: 'x.ts',
+    value,
+    note: 'fixture row',
+    closesIn,
+  });
+  const phase1Keys = new Set(['x.ts\tClose', 'x.ts\tOpen']);
+  const base = { ratchet: [row(2), row(3, 'Open')], ceiling: 2, completedPhase: 0, phase1Keys };
 
   it('passes an exact ceiling with a closing phase per row', () => {
     expect(checkRatchet(base)).toEqual([]);
@@ -812,9 +824,15 @@ describe('user-facing string ratchet rules', () => {
     expect(checkRatchet({ ...base, completedPhase: 2 })).toHaveLength(1);
   });
 
-  it('(d) fails a ceiling above the Phase 1 ceiling once Phase 1 is done', () => {
-    const ratchet = [row(2), row(3), row(4)];
-    expect(checkRatchet({ ...base, ratchet, ceiling: 3, completedPhase: 1 })).toHaveLength(1);
+  it('(d) fails a row that entered after Phase 1, even in exchange for a fixed one', () => {
+    const ratchet = [row(2), row(3, 'Dismiss')];
+    expect(checkRatchet({ ...base, ratchet, completedPhase: 1 })).toEqual([
+      '(d) x.ts: Dismiss entered after Phase 1',
+    ]);
+  });
+
+  it('(d) passes a Phase 1 row once Phase 1 is done', () => {
+    expect(checkRatchet({ ...base, completedPhase: 1 })).toEqual([]);
   });
 });
 
