@@ -16,9 +16,11 @@ const INTEGER_OPTIONS: Intl.NumberFormatOptions = {
  * becomes `'6.6'` (`'6,6'` in `de`), `2.2` stays `'2.2'`, `25` stays
  * `'25'`. 12 significant digits keep every sensible chart value intact
  * while collapsing the trailing 1e-15 noise accumulated float math
- * produces; integers keep every digit. No grouping, so en-US output is
- * identical to the plain `String(v)` it replaced. Non-finite values pass
- * through `String(v)` untouched.
+ * produces; integers keep every digit. No grouping, so en-US output
+ * matches the plain `String(v)` it replaced for every value `String`
+ * prints without an exponent; exponential magnitudes print positionally
+ * instead (`1e-7` -> `0.0000001`, `1e21` -> 22 digits). Non-finite values
+ * pass through `String(v)` untouched.
  *
  * Shared by the default axis tick formatter, the default i18n summary
  * and the SR data table, so all three read the same value the same way.

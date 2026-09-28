@@ -15,6 +15,7 @@ import type { DeltaDirection, DeltaSentiment } from './delta-format';
  * win over the bundle.
  *
  * @category common/data/i18n
+ * @since 0.1.0
  */
 export interface CngxKpiI18n {
   /** `CngxDelta` accessible name: formatted magnitude plus the sentiment word. */

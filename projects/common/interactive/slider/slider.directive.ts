@@ -120,7 +120,6 @@ export class CngxSliderTrack {
     min: this.min,
     max: this.max,
     step: this.step,
-    locale: this.locale,
     valueText: (v) => {
       const format = this.valueText();
       return format ? format(v) : formatSliderValue(v, this.locale());

@@ -21,6 +21,7 @@ export type CngxAvatarStatus = 'online' | 'offline' | 'busy' | 'away';
  * instance; the formatter keys are read reactively.
  *
  * @category common/display/i18n
+ * @since 0.1.0
  */
 export interface CngxDisplayI18n {
   /** `CngxAvatar` status dot accessible name. English keeps the raw status word. */

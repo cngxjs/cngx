@@ -101,7 +101,6 @@ export class CngxSliderThumb {
     step: this.range.step,
     boundedMin: computed(() => this.bounds().min()),
     boundedMax: computed(() => this.bounds().max()),
-    locale: this.locale,
     valueText: (v) => {
       const format = this.range.valueText();
       return format ? format(v) : formatSliderValue(v, this.locale());

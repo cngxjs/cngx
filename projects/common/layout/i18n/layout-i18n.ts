@@ -12,6 +12,7 @@ import { coerceSignal, createOverrideMerge } from '@cngx/core/utils';
  * per instance.
  *
  * @category common/layout/i18n
+ * @since 0.1.0
  */
 export interface CngxLayoutI18n {
   /** Default of the `CngxExpandableText` `moreLabel` input. */
