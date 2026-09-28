@@ -205,14 +205,15 @@
     }
 
     .cngx-action-multi-select__trigger {
-      /* Derive trigger spacing from the global scale (SET-from-scale rule;
-         read on the trigger host). gap 0.375 -> xs (tie xs/sm -> xs, shift
-         6->4). Block padding is sm to match the text-control baseline so a
-         single-line chip row measures the same as a bare input / text
-         select; the chip strip caps each chip to one line (see select-base).
-         inline xs. */
+      /* Derive trigger spacing from the global scale (SET-from-scale rule; read
+         on the trigger host). gap 0.375 -> xs (tie xs/sm -> xs, shift 6->4).
+         Block padding is sm to match the text-control baseline so a single-line
+         chip row measures the same as a bare input / text select; the chip
+         strip caps each chip to one line (see select-base). inline md, the
+         shared box inline padding, so the value starts at the same x as in an
+         input. */
       --cngx-action-multi-select-gap: var(--cngx-space-xs);
-      --cngx-action-multi-select-padding: var(--cngx-space-sm) var(--cngx-space-xs);
+      --cngx-action-multi-select-padding: var(--cngx-space-sm) var(--cngx-space-md);
       display: flex;
       align-items: center;
       gap: var(

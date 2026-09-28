@@ -80,6 +80,17 @@ describe('CngxSelect geometry', () => {
     host.style.setProperty('--cngx-target-min', '64px');
     expect(computedValue(trigger, 'min-height')).toBe('64px');
   });
+
+  it('starts the value at the shared md inline padding of the field box', () => {
+    const host = mount();
+    // No system tokens in this harness: pin the two scale rungs the trigger
+    // padding SETs from, so the assertion reads the rung, not a fallback.
+    host.style.setProperty('--cngx-space-sm', '8px');
+    host.style.setProperty('--cngx-space-md', '16px');
+    const trigger = query(host, '.cngx-field-trigger');
+    expect(computedValue(trigger, 'padding-inline-start')).toBe('16px');
+    expect(computedValue(trigger, 'padding-inline-end')).toBe('16px');
+  });
 });
 
 describe('CngxSelect geometry - ancestor-set sizing tokens reach their read sites', () => {

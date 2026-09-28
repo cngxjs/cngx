@@ -128,13 +128,14 @@
     }
 
     .cngx-typeahead__trigger {
-      /* Derive trigger spacing from the global scale (SET-from-scale rule;
-         read on the trigger host). gap 0.5 -> sm. Block padding is sm so the
-         inline-input trigger scales with density and measures the same as a
-         bare input / text select (42/34/50) instead of pinning flat to the
-         min-height floor. inline sm. */
+      /* Derive trigger spacing from the global scale (SET-from-scale rule; read
+         on the trigger host). gap 0.5 -> sm. Block padding is sm so the inline-
+         input trigger scales with density and measures the same as a bare input
+         / text select (42/34/50) instead of pinning flat to the min-height
+         floor. inline md, the shared box inline padding, so the value starts at
+         the same x as in an input. */
       --cngx-typeahead-gap: var(--cngx-space-sm);
-      --cngx-typeahead-padding: var(--cngx-space-sm) var(--cngx-space-sm);
+      --cngx-typeahead-padding: var(--cngx-space-sm) var(--cngx-space-md);
       display: flex;
       align-items: center;
       gap: var(--cngx-typeahead-gap, 0.5rem);
