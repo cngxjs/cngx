@@ -128,22 +128,77 @@ describe('cngx-field-skin.css', () => {
     expect(bare).not.toContain('outline: none');
   });
 
-  it('gives the fill surface and focus colour a light and a dark default', () => {
+  it('gives the fill surface and both line colours a default in every scheme block', () => {
     const tokens = SOURCE.slice(
       SOURCE.indexOf('@layer cngx.tokens'),
       SOURCE.indexOf('@layer cngx.components'),
     );
-    const dark = tokens.slice(tokens.indexOf('@media (prefers-color-scheme: dark)'));
-    for (const token of [
-      '--cngx-field-fill-bg:',
-      '--cngx-field-fill-bg-hover:',
-      '--cngx-field-underline-focus-color:',
-    ]) {
-      expect(tokens).toContain(token);
-      expect(dark).toContain(token);
+    const blocks = [...tokens.matchAll(/(?::root|\.dark|\.light)[^{*`]*\{([^}]*)\}/g)].map(
+      (match) => match[1],
+    );
+    expect(blocks.length).toBe(4);
+    for (const block of blocks) {
+      expect(block).toContain('--cngx-field-fill-bg:');
+      // A var() resolves where it is declared, so each block re-reads the
+      // scheme's own rung instead of inheriting the root's resolved colour.
+      expect(block).toContain('--cngx-field-underline-color: var(--cngx-color-text-muted);');
+      expect(block).toContain(
+        '--cngx-field-underline-focus-color: var(--cngx-color-primary-strong);',
+      );
     }
-    expect(tokens).toContain("[data-color-scheme='dark']");
-    expect(tokens).toContain("[data-color-scheme='light']");
+  });
+
+  // The hover surface is derived at the use site from the resting surface; a
+  // default assignment would pin a root-resolved colour that a surface
+  // override on a subtree never reaches.
+  it('derives the hover surface from the resting surface instead of a default', () => {
+    const tokens = SOURCE.slice(
+      SOURCE.indexOf('@layer cngx.tokens'),
+      SOURCE.indexOf('@layer cngx.components'),
+    );
+    expect(tokens).not.toContain('--cngx-field-fill-bg-hover:');
+    const hover = SOURCE.slice(SOURCE.indexOf(':scope:hover {'));
+    const body = hover.slice(0, hover.indexOf('}')).replace(/\s+/g, ' ');
+    expect(body).toContain('--cngx-field-fill-bg-hover, color-mix( in oklab,');
+    expect(body).toContain('var( --cngx-field-fill-bg,');
+    expect(body).toContain('border-block-end-color: var(--cngx-color-text');
+  });
+
+  it('keeps the error underline after the focus underline so focus never repaints it', () => {
+    const fill = SOURCE.slice(
+      SOURCE.indexOf("@scope (:is(input, textarea, select)[data-skin='fill']"),
+      SOURCE.indexOf("@scope (:is(input, textarea, select)[data-skin='bare']"),
+    );
+    const focus = fill.indexOf(':scope:is(:focus-visible, :focus-within):where(');
+    const error = fill.indexOf(":scope:is([aria-invalid='true'], [data-invalid]),");
+    expect(focus).toBeGreaterThan(-1);
+    expect(error).toBeGreaterThan(focus);
+    const body = fill.slice(error, fill.indexOf('}', error)).replace(/\s+/g, ' ');
+    expect(body).toContain(
+      'box-shadow: inset 0 calc(-1 * var(--cngx-field-underline-size, 2px)) 0',
+    );
+  });
+
+  it('fades a disabled fill field by colour, never by opacity', () => {
+    const fill = SOURCE.slice(
+      SOURCE.indexOf("@scope (:is(input, textarea, select)[data-skin='fill']"),
+      SOURCE.indexOf("@scope (:is(input, textarea, select)[data-skin='bare']"),
+    );
+    const at = fill.indexOf(':scope:is(:disabled, [data-disabled]),');
+    const body = fill.slice(at, fill.indexOf('}', at));
+    expect(body).toContain('border-block-end-style: dashed');
+    expect(body).toContain('38%');
+    expect(body).not.toContain('opacity');
+  });
+
+  it('snaps the fill transitions under reduced motion, unlayered and outside @scope', () => {
+    const media = SOURCE.indexOf('@media (prefers-reduced-motion: reduce)');
+    expect(media).toBeGreaterThan(SOURCE.lastIndexOf('@scope'));
+    expect(media).toBeGreaterThan(SOURCE.lastIndexOf('@layer cngx.components'));
+    const block = SOURCE.slice(media);
+    expect(block).toContain(".cngx-field-box[data-skin='fill']");
+    expect(block).toContain('transition: none');
+    expect(block).not.toContain('@layer');
   });
 
   // Focus in an affix (a button, or a composite picker's trigger) is marked by
@@ -151,11 +206,13 @@ describe('cngx-field-skin.css', () => {
   // control only, so the two never show the same indicator.
   it('keeps the box ring and the fill underline off focus inside an affix', () => {
     const optOut = ':not(\n        :has(:is(.cngx-field-prefix, .cngx-field-suffix):focus-within)';
+    const fillOptOut =
+      ':where(\n        :not(:has(:is(.cngx-field-prefix, .cngx-field-suffix):focus-within))';
     const affix = readFileSync(
       resolve(process.cwd(), 'projects/forms/theming/components/cngx-field-affix.css'),
       'utf8',
     );
-    expect(SOURCE).toContain(`:scope:is(:focus-visible, :focus-within)${optOut}`);
+    expect(SOURCE).toContain(`:scope:is(:focus-visible, :focus-within)${fillOptOut}`);
     expect(affix).toContain(`:focus-within${optOut}`);
   });
 

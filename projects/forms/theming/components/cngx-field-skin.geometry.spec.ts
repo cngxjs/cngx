@@ -26,6 +26,8 @@ import { afterEach, describe, expect, it } from 'vitest';
   encapsulation: ViewEncapsulation.None,
   template: `
     <input class="solo-fill" type="text" data-skin="fill" />
+    <input class="fill-invalid" type="text" data-skin="fill" aria-invalid="true" />
+    <input class="fill-disabled" type="text" data-skin="fill" disabled />
     <span
       class="probe-underline"
       style="background: var(
@@ -37,7 +39,7 @@ import { afterEach, describe, expect, it } from 'vitest';
       class="probe-hover"
       style="background: var(
         --cngx-field-fill-bg-hover,
-        color-mix(in oklch, var(--cngx-color-text, oklch(0.2 0.01 250)) 10%, transparent)
+        color-mix(in oklab, var(--cngx-color-text) 8%, var(--cngx-field-fill-bg))
       )"
     ></span>
     <input class="solo-bare" type="text" data-skin="bare" />
@@ -55,7 +57,13 @@ import { afterEach, describe, expect, it } from 'vitest';
         class="probe-underline-light"
         style="background: var(--cngx-field-underline-focus-color)"
       ></span>
-      <span class="probe-hover-light" style="background: var(--cngx-field-fill-bg-hover)"></span>
+      <span
+        class="probe-hover-light"
+        style="background: var(
+          --cngx-field-fill-bg-hover,
+          color-mix(in oklab, var(--cngx-color-text) 8%, var(--cngx-field-fill-bg))
+        )"
+      ></span>
     </div>
     <div data-color-scheme="dark">
       <input class="fill-dark" type="text" data-skin="fill" />
@@ -63,7 +71,13 @@ import { afterEach, describe, expect, it } from 'vitest';
         class="probe-underline-dark"
         style="background: var(--cngx-field-underline-focus-color)"
       ></span>
-      <span class="probe-hover-dark" style="background: var(--cngx-field-fill-bg-hover)"></span>
+      <span
+        class="probe-hover-dark"
+        style="background: var(
+          --cngx-field-fill-bg-hover,
+          color-mix(in oklab, var(--cngx-color-text) 8%, var(--cngx-field-fill-bg))
+        )"
+      ></span>
     </div>
     <span class="cngx-field-box cngx-field-affix-row row" data-skin="fill">
       <span class="cngx-field-prefix">$</span>
@@ -170,6 +184,27 @@ describe('field skin geometry', () => {
     await settle();
     expect(computedValue(input, 'box-shadow')).toContain('-2px');
     expect(computedValue(input, 'outline-style')).toBe('none');
+  });
+
+  it('keeps the 2px danger underline on an invalid fill field while focused', async () => {
+    const root = mount();
+    const invalid = query(root, '.fill-invalid') as HTMLInputElement;
+    const danger = computedValue(invalid, 'border-bottom-color');
+    invalid.focus();
+    await settle();
+    const shadow = computedValue(invalid, 'box-shadow');
+    expect(shadow).toContain('-2px');
+    expect(shadow).toContain(danger);
+  });
+
+  it('fades a disabled fill field by colour, not opacity', () => {
+    const root = mount();
+    const disabled = query(root, '.fill-disabled');
+    expect(computedValue(disabled, 'opacity')).toBe('1');
+    expect(computedValue(disabled, 'border-bottom-style')).toBe('dashed');
+    expect(computedValue(disabled, 'color')).not.toBe(
+      computedValue(query(root, '.solo-fill'), 'color'),
+    );
   });
 
   it('strips surface and border on the bare skin', () => {

@@ -149,6 +149,25 @@ describe('select-family field-skin rule set', () => {
     }
   });
 
+  it('applies the fill recipes to the trigger: hover, 2px error underline, colour-only disabled', () => {
+    const fill = scopeBlock(
+      "@scope ([data-skin='fill']:not(.cngx-field-box > *) > * > .cngx-field-trigger)",
+    ).replace(/\s+/g, ' ');
+    expect(fill).toContain(':scope.cngx-field-trigger:hover {');
+    expect(fill).toContain('--cngx-field-fill-bg-hover, color-mix( in oklab,');
+    const error = fill.slice(fill.indexOf(":scope.cngx-field-trigger:is( [aria-invalid='true']"));
+    expect(error.slice(0, error.indexOf('}'))).toContain(
+      'box-shadow: inset 0 calc(-1 * var(--cngx-field-underline-size, 2px)) 0',
+    );
+    const disabled = fill.slice(
+      fill.indexOf(":scope.cngx-field-trigger:is([aria-disabled='true']"),
+    );
+    const body = disabled.slice(0, disabled.indexOf('}'));
+    expect(body).toContain('38%');
+    expect(body).toContain('opacity: 1');
+    expect(fill).toContain('--cngx-color-primary-strong');
+  });
+
   it('derives the shared box padding from the density scale', () => {
     expect(SHARED).toContain('--cngx-field-padding-block: var(--cngx-space-sm)');
     expect(SHARED).toContain('--cngx-field-padding-inline: var(--cngx-space-md)');
