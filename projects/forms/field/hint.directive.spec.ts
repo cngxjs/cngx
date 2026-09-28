@@ -48,6 +48,10 @@ describe('CngxHint', () => {
     expect(hintEl.id).toBe('cngx-password-hint');
   });
 
+  it('carries the cngx-hint class the field typography keys on', () => {
+    expect(hintEl.classList).toContain('cngx-hint');
+  });
+
   it('renders projected content', () => {
     expect(hintEl.textContent?.trim()).toBe('Help text');
   });

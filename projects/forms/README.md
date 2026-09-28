@@ -338,14 +338,13 @@ html {
 
 | Variable | Default (M3) | Description |
 |-|-|-|
-| `--cngx-field-label-color` | `--mat-sys-on-surface` | Label text |
-| `--cngx-field-label-font-size` | `0.875rem` | Label size |
+| `--cngx-field-label-color` | `--mat-sys-on-surface-variant` | Label text |
+| `--cngx-field-label-font-size` | `0.8125rem` | Label size |
 | `--cngx-field-label-weight` | `500` | Label weight |
 | `--cngx-field-required-color` | `--mat-sys-error` | Required marker |
 | `--cngx-field-hint-color` | `--mat-sys-on-surface-variant` | Hint text |
-| `--cngx-field-hint-font-size` | `0.75rem` | Hint size |
-| `--cngx-field-error-color` | `--mat-sys-error` | Error text |
-| `--cngx-field-error-font-size` | `0.75rem` | Error size |
+| `--cngx-field-hint-font-size` | `0.8125rem` | Hint and error list size |
+| `--cngx-field-error-color` | `--mat-sys-error` | Error text, and the label while the field shows an error |
 | `--cngx-form-errors-color` | `--mat-sys-error` | Form-error summary text |
 | `--cngx-form-errors-font-size` | `0.875rem` | Form-error summary size |
 | `--cngx-field-pending-color` | `--mat-sys-primary` | Pending indicator |

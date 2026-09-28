@@ -1,0 +1,103 @@
+/**
+ * @overview
+ * Track B typography for the text around a field control: the label
+ * (`CngxLabel`, host class `.cngx-label`), the hint (`CngxHint`, host class
+ * `.cngx-hint`) and the error list (`cngx-field-errors`). Class and element
+ * selectors only, never the directive attributes, so an organism that reuses
+ * `cngxLabel` or `cngxHint` on its own element does not inherit this paint.
+ *
+ * Label and hint are supporting text: `--cngx-color-text-muted` at
+ * `0.8125rem`, which clears 4.5:1 on the page and on the fill surface in both
+ * schemes. The label weight is 500 so it still reads as the field's name at
+ * the smaller size.
+ *
+ * Error text (the error list, and the label while the field shows an error)
+ * reads `--cngx-field-error-color` first, so a theme or the Material bridge
+ * sets one colour for every error surface of the field. Without it, it falls
+ * back to `--cngx-color-danger-text`: plain danger is about 4:1 on white,
+ * under the 4.5:1 text floor. A disabled label drops to 38% text, never
+ * `opacity`, the same recipe as the disabled fill control.
+ *
+ * The three colour tokens are unregistered on purpose, so a theme can unset
+ * them and the fallback chain takes over:
+ * `--cngx-field-label-color`, `--cngx-field-hint-color`,
+ * `--cngx-field-error-color`. Asserted in `cngx-field-skin.geometry.spec.ts`.
+ */
+
+@layer cngx.tokens {
+  /**
+   * Font size of the field label.
+   * @group Typography
+   */
+  @property --cngx-field-label-font-size {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0.8125rem;
+  }
+
+  /**
+   * Font weight of the field label.
+   * @group Typography
+   */
+  @property --cngx-field-label-weight {
+    syntax: '*';
+    inherits: true;
+    initial-value: 500;
+  }
+
+  /**
+   * Font size of the hint and of the error list.
+   * @group Typography
+   */
+  @property --cngx-field-hint-font-size {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0.8125rem;
+  }
+}
+
+@layer cngx.components {
+  .cngx-label {
+    font-size: var(--cngx-field-label-font-size, 0.8125rem);
+    font-weight: var(--cngx-field-label-weight, 500);
+    color: var(--cngx-field-label-color, var(--cngx-color-text-muted, oklch(0.5 0.01 250)));
+  }
+
+  .cngx-label.cngx-label--error {
+    color: var(
+      --cngx-field-error-color,
+      var(
+        --cngx-color-danger-text,
+        color-mix(
+          in oklab,
+          var(--cngx-color-danger, oklch(0.6 0.18 25)) 75%,
+          var(--cngx-color-text, oklch(0.2 0.01 250))
+        )
+      )
+    );
+  }
+
+  .cngx-label.cngx-label--disabled {
+    color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
+  }
+
+  .cngx-hint {
+    font-size: var(--cngx-field-hint-font-size, 0.8125rem);
+    color: var(--cngx-field-hint-color, var(--cngx-color-text-muted, oklch(0.5 0.01 250)));
+  }
+
+  cngx-field-errors {
+    font-size: var(--cngx-field-hint-font-size, 0.8125rem);
+    color: var(
+      --cngx-field-error-color,
+      var(
+        --cngx-color-danger-text,
+        color-mix(
+          in oklab,
+          var(--cngx-color-danger, oklch(0.6 0.18 25)) 75%,
+          var(--cngx-color-text, oklch(0.2 0.01 250))
+        )
+      )
+    );
+  }
+}
