@@ -1505,10 +1505,10 @@
      descendant selector would match through a surrounding form field or
      field box, which carry `data-skin` too.
 
-     A select that is a direct child of a `.cngx-field-box` resolves to bare
-     and stays inert: the bare root excludes it and the box paints every
-     state. The fill root needs no exemption, because a host inside a box is
-     never fill.
+     A select that is a direct child of a `.cngx-field-box` stays inert: it
+     resolves to bare when the box sees it as a control, and both roots
+     exclude a DOM child of a box anyway, so a projected host that kept its
+     own skin gets no paint either. The box paints every state.
 
      `:scope.cngx-field-trigger` is (0,2,0): it outranks the variant trigger
      base rule, and ties with the variant state rules (up to 0,3,0) resolve
@@ -1523,7 +1523,7 @@
      `[role='combobox']` input: combobox, typeahead and both action variants
      wrap a real input that carries `aria-invalid` / `disabled` itself. */
 
-  @scope ([data-skin='fill'] > * > .cngx-field-trigger) {
+  @scope ([data-skin='fill']:not(.cngx-field-box > *) > * > .cngx-field-trigger) {
     :scope.cngx-field-trigger {
       /* The shared box padding, SET-from-scale: sm block, md inline. */
       --cngx-field-padding-block: var(--cngx-space-sm);
@@ -1719,12 +1719,14 @@
    box-shadow outright - without this a skinned trigger would have no focus
    indicator. */
 @media (forced-colors: active) {
-  [data-skin='fill'] > * > .cngx-field-trigger {
+  [data-skin='fill']:not(.cngx-field-box > *) > * > .cngx-field-trigger {
     border-block-end: 1px solid FieldText;
     box-shadow: none;
   }
 
-  [data-skin='fill'] > * > .cngx-field-trigger:is(:focus-visible, :focus-within) {
+  [data-skin='fill']:not(.cngx-field-box > *)
+    > *
+    > .cngx-field-trigger:is(:focus-visible, :focus-within) {
     outline: 2px solid Highlight;
     outline-offset: 2px;
     box-shadow: none;

@@ -70,6 +70,9 @@ import { afterEach, describe, expect, it } from 'vitest';
       <span class="cngx-field-prefix">$</span>
       <input class="nested-outline" type="text" data-skin="bare" />
     </span>
+    <span class="cngx-field-box cngx-field-affix-row projected-row" data-skin="outline">
+      <input class="projected-fill" type="text" data-skin="fill" aria-invalid="true" />
+    </span>
     <table>
       <tbody>
         <tr>
@@ -193,6 +196,15 @@ describe('field skin geometry', () => {
     }
     expect(computedValue(nested, 'border-top-width')).toBe('0px');
     expect(computedValue(nested, 'padding-top')).toBe('0px');
+  });
+
+  // A projected control the box cannot see as a content child keeps its own
+  // resolved skin; the box must still be the only painted element.
+  it('paints no skin on a control that kept its own skin inside a box', () => {
+    const input = query(mount(), '.projected-fill');
+    expect(computedValue(input, 'background-color')).toBe('rgba(0, 0, 0, 0)');
+    expect(computedValue(input, 'border-bottom-width')).toBe('0px');
+    expect(computedValue(input, 'box-shadow')).toBe('none');
   });
 
   it('fills a zero-padding table cell on the inline axis', () => {

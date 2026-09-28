@@ -90,21 +90,27 @@ describe('select-family field-skin rule set', () => {
   });
 
   it('draws the fill surface and underline from the shared field tokens', () => {
-    const fill = scopeBlock("@scope ([data-skin='fill'] > * > .cngx-field-trigger)");
+    const fill = scopeBlock(
+      "@scope ([data-skin='fill']:not(.cngx-field-box > *) > * > .cngx-field-trigger)",
+    );
     expect(fill).toContain('--cngx-field-underline-color');
     expect(fill).toContain('--cngx-field-fill-bg');
   });
 
-  it('keeps a select nested in a box inert on the bare root only', () => {
+  it('keeps a select nested in a box inert on both skin roots', () => {
     expect(SHARED).toContain(
       "@scope ([data-skin='bare']:not(.cngx-field-box > *) > * > .cngx-field-trigger)",
     );
-    expect(SHARED).toContain("@scope ([data-skin='fill'] > * > .cngx-field-trigger)");
+    expect(SHARED).toContain(
+      "@scope ([data-skin='fill']:not(.cngx-field-box > *) > * > .cngx-field-trigger)",
+    );
     expect(SHARED).not.toContain('.cngx-field-affix-row');
   });
 
   it('replaces the focus outline with the underline', () => {
-    const fill = scopeBlock("@scope ([data-skin='fill'] > * > .cngx-field-trigger)");
+    const fill = scopeBlock(
+      "@scope ([data-skin='fill']:not(.cngx-field-box > *) > * > .cngx-field-trigger)",
+    );
     expect(fill).toContain(':scope.cngx-field-trigger:is(:focus-visible, :focus-within)');
     expect(fill).toContain('--cngx-field-underline-focus-color');
     expect(fill).toContain('--cngx-field-underline-size');

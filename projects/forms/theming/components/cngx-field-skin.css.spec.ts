@@ -26,11 +26,13 @@ describe('cngx-field-skin.css', () => {
     expect(SOURCE).not.toContain('--cngx-field-bare-padding');
   });
 
-  it('keeps every bare scope root off a control nested in a box', () => {
-    const roots = [...SOURCE.matchAll(/@scope \(([^{]*)\) \{/g)]
-      .map((match) => match[1])
-      .filter((root) => root.includes("[data-skin='bare']"));
-    expect(roots.length).toBeGreaterThan(0);
+  // A DOM child of a box gets no skin paint whatever its own data-skin says:
+  // a control the box does not see as a direct content child (projected
+  // through ng-content) keeps its own resolved skin, and the CSS must not
+  // paint it anyway.
+  it('keeps every skin scope root off a control nested in a box', () => {
+    const roots = [...SOURCE.matchAll(/@scope \(([^{]*)\) \{/g)].map((match) => match[1]);
+    expect(roots.length).toBe(2);
     for (const root of roots) {
       const controlRoot = root.split(', .cngx-field-box')[0];
       expect(controlRoot).toContain(':not(.cngx-field-box > *)');

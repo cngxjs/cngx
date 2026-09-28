@@ -99,7 +99,7 @@
 }
 
 @layer cngx.components {
-  @scope (:is(input, textarea, select)[data-skin='fill'], .cngx-field-box[data-skin='fill']) {
+  @scope (:is(input, textarea, select)[data-skin='fill']:not(.cngx-field-box > *), .cngx-field-box[data-skin='fill']) {
     :scope {
       /* SET-from-scale so a root [data-density] recompacts the fill box.
          The shared box padding, same as outline: sm block, md inline. */
@@ -196,9 +196,10 @@
     }
   }
 
-  /* A control that resolved to bare only because it sits in a box is inert:
-     the root excludes it, so none of the bare state paint lands inside an
-     outline or fill box. The box paints every state. */
+  /* A control that sits in a box is inert: both skin roots exclude a DOM
+     child of a box, so none of the skin state paint lands inside a box, even
+     for a projected control that kept its own resolved skin. The box paints
+     every state. */
   @scope (:is(input, textarea, select)[data-skin='bare']:not(.cngx-field-box > *), .cngx-field-box[data-skin='bare']) {
     :scope {
       /* Bare is outline metrics with transparent borders: a skin is paint,
@@ -276,13 +277,16 @@
    not a forced-colors indicator, so the reset outline comes back and the
    border is redrawn in a system colour. */
 @media (forced-colors: active) {
-  :is(input, textarea, select)[data-skin='fill'],
+  :is(input, textarea, select)[data-skin='fill']:not(.cngx-field-box > *),
   .cngx-field-box[data-skin='fill'] {
     border-block-end: 1px solid FieldText;
     box-shadow: none;
   }
 
-  :is(input, textarea, select)[data-skin='fill']:is(:focus-visible, :focus-within),
+  :is(input, textarea, select)[data-skin='fill']:not(.cngx-field-box > *):is(
+      :focus-visible,
+      :focus-within
+    ),
   .cngx-field-box[data-skin='fill']:is(:focus-visible, :focus-within) {
     outline: 2px solid Highlight;
     outline-offset: 3px;
