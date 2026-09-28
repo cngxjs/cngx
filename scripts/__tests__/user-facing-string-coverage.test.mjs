@@ -2,7 +2,17 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 
-import { parseTemplate, TmplAstRecursiveVisitor, tmplAstVisitAll } from '@angular/compiler';
+import {
+  ASTWithSource,
+  Binary,
+  Conditional,
+  Interpolation,
+  LiteralPrimitive,
+  ParenthesizedExpression,
+  parseTemplate,
+  TmplAstRecursiveVisitor,
+  tmplAstVisitAll,
+} from '@angular/compiler';
 import ts from 'typescript';
 import { describe, expect, it } from 'vitest';
 
@@ -283,6 +293,26 @@ const isComponentTemplateProperty = (node) => {
     ts.isCallExpression(call) &&
     ts.isIdentifier(call.expression) &&
     call.expression.text === 'Component'
+  );
+};
+
+/**
+ * The `host:` object of an `@Component` / `@Directive` decorator.
+ *
+ * @param {ts.Node} node
+ * @returns {node is ts.PropertyAssignment & { initializer: ts.ObjectLiteralExpression }}
+ */
+const isDecoratorHost = (node) => {
+  if (!ts.isPropertyAssignment(node) || !ts.isIdentifier(node.name) || node.name.text !== 'host') {
+    return false;
+  }
+  const call = node.parent?.parent;
+  return (
+    ts.isObjectLiteralExpression(node.initializer) &&
+    !!call &&
+    ts.isCallExpression(call) &&
+    ts.isIdentifier(call.expression) &&
+    ['Component', 'Directive'].includes(call.expression.text)
   );
 };
 
@@ -589,7 +619,30 @@ export function scanSource(source, fileName = 'x.ts') {
     reported.add(node);
   };
 
+  /** @type {ts.Node[]} static host sink values, reported after the phrase pass */
+  const hostSinkValues = [];
+
+  const collectHost = (property) => {
+    const name =
+      ts.isStringLiteral(property.name) || ts.isIdentifier(property.name) ? property.name.text : '';
+    const value = property.initializer;
+    if (!isStringLiteralLike(value)) {
+      return;
+    }
+    if (name.startsWith('[')) {
+      // A host binding is a template binding on the host element: parse it as one.
+      templates.add(value);
+      const synthetic = `<x ${name}="${value.text.replace(/"/g, '&quot;')}"></x>`;
+      findings.push(...scanTemplate(synthetic, fileName, lineOf(value)));
+    } else if (isSinkName(name) && hasWord(value.text)) {
+      hostSinkValues.push(value);
+    }
+  };
+
   const collectTemplates = (node) => {
+    if (isDecoratorHost(node)) {
+      node.initializer.properties.filter(ts.isPropertyAssignment).forEach(collectHost);
+    }
     if (isComponentTemplateProperty(node)) {
       const literal = templateLiteralOf(node.initializer, sf);
       if (literal) {
@@ -627,6 +680,11 @@ export function scanSource(source, fileName = 'x.ts') {
       report(hit.node, hit.value);
     }
   }
+  for (const value of hostSinkValues) {
+    if (!reported.has(value)) {
+      report(value, value.text);
+    }
+  }
 
   return findings;
 }
@@ -644,8 +702,48 @@ const ATTRIBUTE_SINKS = new Set([
   'label',
 ]);
 
+/**
+ * An attribute, host key or binding target whose value is read out or shown.
+ *
+ * @param {string} name
+ */
+const isSinkName = (name) => ATTRIBUTE_SINKS.has(name) || name.endsWith('Label');
+
 /** @param {string} text */
 const hasWord = (text) => /[A-Za-z]{2,}/.test(text);
+
+/**
+ * String literals in value position of a binding expression - the whole
+ * expression, a branch of `a ? 'X' : 'Y'`, an operand of `??` / `||` / `+`.
+ * Call and pipe arguments, and comparison operands, are data. The right side
+ * of `??` / `||` after a config read (`ariaLabels.x ?? 'X'`) is a covered
+ * fallback, exactly as in TypeScript.
+ *
+ * @param {unknown} ast
+ * @param {string} source the expression source the AST spans index into
+ * @returns {string[]}
+ */
+const valueLiterals = (ast, source) => {
+  if (ast instanceof ASTWithSource) {
+    return valueLiterals(ast.ast, ast.source ?? source);
+  }
+  if (ast instanceof ParenthesizedExpression) {
+    return valueLiterals(ast.expression, source);
+  }
+  if (ast instanceof LiteralPrimitive) {
+    return typeof ast.value === 'string' && hasWord(ast.value) ? [ast.value] : [];
+  }
+  if (ast instanceof Conditional) {
+    return [...valueLiterals(ast.trueExp, source), ...valueLiterals(ast.falseExp, source)];
+  }
+  if (!(ast instanceof Binary) || !['??', '||', '+'].includes(ast.operation)) {
+    return [];
+  }
+  const left = valueLiterals(ast.left, source);
+  const leftText = source.slice(ast.left.span.start, ast.left.span.end);
+  const isFallback = ast.operation !== '+' && CONFIG_READ.test(leftText);
+  return isFallback ? left : [...left, ...valueLiterals(ast.right, source)];
+};
 
 /** @param {string} text */
 const normaliseWhitespace = (text) => text.replace(/\s+/g, ' ').trim();
@@ -671,10 +769,22 @@ class TemplateSinkVisitor extends TmplAstRecursiveVisitor {
   }
 
   visitTextAttribute(attribute) {
-    const isSink = ATTRIBUTE_SINKS.has(attribute.name) || attribute.name.endsWith('Label');
-    if (isSink && hasWord(attribute.value)) {
+    if (isSinkName(attribute.name) && hasWord(attribute.value)) {
       this.add(normaliseWhitespace(attribute.value), attribute.sourceSpan);
     }
+  }
+
+  visitBoundAttribute(attribute) {
+    if (!isSinkName(attribute.name)) {
+      return;
+    }
+    const source = attribute.value.source ?? '';
+    const ast = attribute.value instanceof ASTWithSource ? attribute.value.ast : attribute.value;
+    if (ast instanceof Interpolation) {
+      this.addInterpolation(ast, source, attribute.sourceSpan);
+      return;
+    }
+    valueLiterals(ast, source).forEach((value) => this.add(value, attribute.sourceSpan));
   }
 
   visitText(text) {
@@ -685,18 +795,27 @@ class TemplateSinkVisitor extends TmplAstRecursiveVisitor {
   }
 
   visitBoundText(text) {
-    const strings = text.value.ast.strings ?? [];
+    this.addInterpolation(text.value.ast, text.value.source ?? '', text.sourceSpan);
+  }
+
+  addInterpolation(interpolation, source, span) {
+    const strings = interpolation.strings ?? [];
     if (hasWord(strings.join(' '))) {
-      this.add(normaliseWhitespace(strings.join('{}')), text.sourceSpan);
+      this.add(normaliseWhitespace(strings.join('{}')), span);
+    }
+    for (const expression of interpolation.expressions ?? []) {
+      valueLiterals(expression, source).forEach((value) => this.add(value, span));
     }
   }
 }
 
 /**
  * Static copy in an Angular template: sink attributes (`aria-label`, `title`,
- * `placeholder`, `*Label`, ...), text nodes, and the static parts of an
- * interpolation (`+ {{ n }} more` is reported as `+ {} more`). Template copy
- * has no override path by construction, so every finding is `uncovered`.
+ * `placeholder`, `*Label`, ...) whether static, interpolated or bound, text
+ * nodes, the static parts of an interpolation (`+ {{ n }} more` is reported
+ * as `+ {} more`), and string literals in value position of a bound sink or
+ * an interpolation (`{{ open ? 'Collapse' : 'Expand' }}`). Template copy has
+ * no override path by construction, so every finding is `uncovered`.
  *
  * @param {string} template
  * @param {string} fileName
@@ -717,8 +836,10 @@ export function scanTemplate(template, fileName, lineOffset = 0) {
 
 /**
  * Generated `content:` copy in a stylesheet. Screen readers read it, and no
- * token reaches it. CSS escapes (`'\25BC'`) are glyphs, not words;
- * `content: attr(x) / ''` carries no string copy at all.
+ * token reaches it. Every string in the declaration counts - the alt text
+ * after `/` (`'\25BC' / 'Expand'`) is exactly what AT reads, and a string
+ * after `counter(n)` is copy too. CSS escapes (`'\25BC'`) are glyphs, not
+ * words; `content: attr(x) / ''` carries no string copy at all.
  *
  * @param {string} stylesheet
  * @returns {readonly StringFinding[]}
@@ -727,11 +848,13 @@ export function scanStylesheet(stylesheet) {
   const code = stylesheet.replace(/\/\*[\s\S]*?\*\//g, (comment) => comment.replace(/[^\n]/g, ' '));
   /** @type {StringFinding[]} */
   const out = [];
-  for (const match of code.matchAll(/content\s*:\s*(['"])((?:\\.|(?!\1).)*)\1/g)) {
-    const value = match[2];
-    if (hasWord(value.replace(/\\[0-9a-fA-F]{1,6}\s?/g, ''))) {
-      const line = code.slice(0, match.index).split('\n').length;
-      out.push({ line, value, coverage: 'uncovered' });
+  for (const declaration of code.matchAll(/content\s*:([^;}]*)/g)) {
+    const line = code.slice(0, declaration.index).split('\n').length;
+    for (const string of declaration[1].matchAll(/(['"])((?:\\.|(?!\1).)*)\1/g)) {
+      const value = string[2];
+      if (hasWord(value.replace(/\\[0-9a-fA-F]{1,6}\s?/g, ''))) {
+        out.push({ line, value, coverage: 'uncovered' });
+      }
     }
   }
   return out;
@@ -1114,6 +1237,58 @@ describe('user-facing string scanner', () => {
     expect(scanTemplate('<div class="foo" [attr.aria-label]="x()"></div>', 'x.html')).toEqual([]);
   });
 
+  it('reports the static parts of an interpolated sink attribute', () => {
+    expect(scanTemplate('<button aria-label="Remove {{ name }}"></button>', 'x.html')).toEqual([
+      { line: 1, value: 'Remove {}', coverage: 'uncovered' },
+    ]);
+  });
+
+  it('reports a literal bound into a sink', () => {
+    expect(scanTemplate(`<button [attr.aria-label]="'Close panel'"></button>`, 'x.html')).toEqual([
+      { line: 1, value: 'Close panel', coverage: 'uncovered' },
+    ]);
+  });
+
+  it('reports literal branches of an interpolation', () => {
+    const findings = scanTemplate(`<span>{{ open ? 'Collapse' : 'Expand' }}</span>`, 'x.html');
+    expect(findings.map((f) => f.value)).toEqual(['Collapse', 'Expand']);
+  });
+
+  it('treats a config coalesce inside a binding as covered', () => {
+    const template = `<div [attr.aria-label]="host.ariaLabels.loading ?? 'Loading options'"></div>`;
+    expect(scanTemplate(template, 'x.html')).toEqual([]);
+  });
+
+  it('ignores pipe and call arguments', () => {
+    const template = `<span>{{ d | date: 'short' }}</span><b [title]="fmt(x, 'long')"></b>`;
+    expect(scanTemplate(template, 'x.html')).toEqual([]);
+  });
+
+  it('reports lowercase copy on a static host sink, not on other host keys', () => {
+    const source = [
+      '@Directive({',
+      "  host: { role: 'region', 'aria-live': 'polite', 'aria-roledescription': 'carousel' },",
+      '})',
+      'class X {}',
+    ].join('\n');
+    expect(scanSource(source, 'carousel.ts')).toEqual([
+      { line: 2, value: 'carousel', coverage: 'uncovered' },
+    ]);
+  });
+
+  it('reports literals in a host sink binding', () => {
+    const source = [
+      '@Component({',
+      `  host: { '[attr.aria-label]': "open() ? 'Collapse' : 'Expand'" },`,
+      '})',
+      'class X {}',
+    ].join('\n');
+    expect(scanSource(source, 'toggle.ts')).toEqual([
+      { line: 2, value: 'Collapse', coverage: 'uncovered' },
+      { line: 2, value: 'Expand', coverage: 'uncovered' },
+    ]);
+  });
+
   it('reports a sink nested in a control-flow block', () => {
     const template = ['@if (x) {', '  <cngx-popover-close label="Close" />', '}'].join('\n');
     expect(scanTemplate(template, 'x.html')).toEqual([
@@ -1154,6 +1329,17 @@ describe('user-facing string scanner', () => {
   it('reports stylesheet content copy', () => {
     const stylesheet = ['.x::before {', "  content: 'NOTE';", '}'].join('\n');
     expect(scanStylesheet(stylesheet)).toEqual([{ line: 2, value: 'NOTE', coverage: 'uncovered' }]);
+  });
+
+  it('reports the alt text after a glyph and a string after counter()', () => {
+    const stylesheet = [
+      ".a::after { content: '\\25BC' / 'Expand'; }",
+      ".b::after { content: counter(n) ' items'; }",
+    ].join('\n');
+    expect(scanStylesheet(stylesheet).map((f) => [f.line, f.value])).toEqual([
+      [1, 'Expand'],
+      [2, ' items'],
+    ]);
   });
 
   it('ignores a CSS escape glyph and an attr() name', () => {
