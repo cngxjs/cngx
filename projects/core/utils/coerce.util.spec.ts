@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import '@angular/compiler';
-import { coerceBooleanProperty, coerceNumberProperty } from './coerce.util';
+import { isSignal, signal } from '@angular/core';
+import { coerceBooleanProperty, coerceNumberProperty, coerceSignal } from './coerce.util';
 
 describe('coerceBooleanProperty', () => {
   it('returns true for truthy strings', () => {
@@ -44,5 +45,36 @@ describe('coerceNumberProperty', () => {
     expect(coerceNumberProperty(true, -1)).toBe(-1);
     expect(coerceNumberProperty(false, -1)).toBe(-1);
     expect(coerceNumberProperty({}, -1)).toBe(-1);
+  });
+});
+
+describe('coerceSignal', () => {
+  it('wraps a static value into a signal reading that value', () => {
+    const bundle = { label: 'Close' };
+    const result = coerceSignal(bundle);
+    expect(isSignal(result)).toBe(true);
+    expect(result()).toBe(bundle);
+    expect(coerceSignal('en-US')()).toBe('en-US');
+  });
+
+  it('passes a signal through by reference', () => {
+    const source = signal({ label: 'Close' });
+    expect(coerceSignal(source)).toBe(source);
+  });
+
+  it('returns the same signal for the same static object', () => {
+    const bundle = { label: 'Close' };
+    expect(coerceSignal(bundle)).toBe(coerceSignal(bundle));
+    expect(coerceSignal({ label: 'Close' })).not.toBe(coerceSignal(bundle));
+  });
+
+  it('never takes a plain formatter function or a bundle of them for a signal', () => {
+    const format = (count: number): string => `${count} more`;
+    const wrappedFn = coerceSignal<(count: number) => string>(format);
+    expect(wrappedFn).not.toBe(format);
+    expect(wrappedFn()).toBe(format);
+
+    const bundle = { alertOverflow: format };
+    expect(coerceSignal(bundle)()).toBe(bundle);
   });
 });

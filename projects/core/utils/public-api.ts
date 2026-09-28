@@ -1,7 +1,8 @@
 /**
  * @module @cngx/core/utils
  */
-export { coerceBooleanProperty, coerceNumberProperty } from './coerce.util';
+export { coerceBooleanProperty, coerceNumberProperty, coerceSignal } from './coerce.util';
+export { createOverrideMerge } from './override-merge';
 export { memoize, type MemoizeOptions } from './memo.util';
 export { dateTimeFormatterFor } from './intl-format.util';
 export { parseKeyCombo, matchesKeyCombo, type KeyCombo } from './keyboard.util';
@@ -9,15 +10,9 @@ export { matchesTypeahead } from './typeahead.util';
 export { hasTransition, onTransitionDone, type TransitionDoneHandle } from './transition.util';
 export { nextUid } from './uid.util';
 export { type AsyncStatus, type CngxAsyncState } from './async-state';
-export {
-  buildAsyncStateView,
-  type AsyncStateViewSources,
-} from './build-async-state-view';
+export { buildAsyncStateView, type AsyncStateViewSources } from './build-async-state-view';
 export { createAggregateAsyncState } from './aggregate-async-state';
-export {
-  createAnnouncementPhrase,
-  type AnnouncementPhraseOptions,
-} from './announcement-phrase';
+export { createAnnouncementPhrase, type AnnouncementPhraseOptions } from './announcement-phrase';
 export {
   createTransitionTracker,
   type StatusTransition,
