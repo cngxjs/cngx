@@ -1,6 +1,5 @@
-import { readFileSync, readdirSync, statSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
-import { dirname, resolve } from 'node:path';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 
 import {
   ASTWithSource,
@@ -17,6 +16,21 @@ import {
 import ts from 'typescript';
 import { describe, expect, it } from 'vitest';
 
+import {
+  CONFIG_READ,
+  commentFreeText,
+  hostEntries,
+  isCallTo,
+  isComponentTemplateProperty,
+  isConfigFallback,
+  isDecoratorHost,
+  isStringLiteralLike,
+  isWithin,
+  REPO_ROOT,
+  templateLiteralOf,
+  unwrapExpression,
+  walkSources,
+} from './_i18n-ast.mjs';
 import {
   ALREADY_COVERED,
   EXCLUDED,
@@ -54,17 +68,6 @@ import {
 // Everything else is a gap and must carry a manifest row. See
 // `user-facing-string-coverage.fixtures.mjs`.
 
-const HERE = dirname(fileURLToPath(import.meta.url));
-const REPO_ROOT = resolve(HERE, '..', '..');
-
-/**
- * Directories whose strings are never library defaults: demo code is
- * consumer-authored, `projects/testing` is not published, and a
- * `__test-helpers` folder holds spec scaffolding that happens not to carry the
- * `.spec.ts` suffix.
- */
-const SKIPPED_DIRS = new Set(['examples', 'testing', '__test-helpers']);
-
 /** `event.key` values and the like - code, not copy. */
 const KEY_NAMES = new Set([
   'ArrowUp',
@@ -101,9 +104,6 @@ const DEV_GUARD = /\b(?:isDevMode|ngDevMode)\b/;
 
 /** A call that only ever writes to a developer's console. */
 const DEV_CALL = /^console\.|(?:^|\.)warn[A-Z]\w*$/;
-
-/** Reads that make a following `??` / `||` literal a mere fallback. */
-const CONFIG_READ = /\b(?:config|cfg|i18n|labels|messages|glyphs|defaults|ariaLabels)\b/i;
 
 /**
  * @typedef {'override-source' | 'config-fallback' | 'dev-message' | 'uncovered' | 'unscannable'} StringCoverage
@@ -178,41 +178,6 @@ export function isBacktickPhrase(spans) {
 }
 
 /**
- * The source with every comment blanked and line count preserved - a JSDoc
- * `@example` block is full of `aria-label="Price range"` prose, and neither
- * the comparison check nor the override-token check may see it.
- *
- * @param {ts.SourceFile} sf
- * @returns {string}
- */
-function commentFreeText(sf) {
-  const chars = sf.text.split('');
-  const blank = (range) => {
-    for (let i = range.pos; i < range.end; i++) {
-      if (chars[i] !== '\n') {
-        chars[i] = ' ';
-      }
-    }
-  };
-  const visit = (node) => {
-    (ts.getLeadingCommentRanges(sf.text, node.getFullStart()) ?? []).forEach(blank);
-    (ts.getTrailingCommentRanges(sf.text, node.getEnd()) ?? []).forEach(blank);
-    node.getChildren(sf).forEach(visit);
-  };
-  visit(sf);
-  return chars.join('');
-}
-
-/**
- * Is `node` inside `container`?
- *
- * @param {ts.Node} node
- * @param {ts.Node | undefined} container
- */
-const isWithin = (node, container) =>
-  !!container && node.pos >= container.pos && node.end <= container.end;
-
-/**
  * A literal that only ever reaches a developer: an argument of a `throw`, a
  * `new *Error(...)`, a `console.*` / `warn*` call, or anything behind an
  * `isDevMode()` / `ngDevMode` guard. Decided by the literal's ancestors, never
@@ -246,104 +211,6 @@ const isDevOnly = (node, sf) => {
     }
   }
   return false;
-};
-
-/**
- * A literal on the right of `??` / `||` whose left operand reads a config,
- * i18n or labels bundle (`config.ariaLabels?.x ?? 'X'`). The left operand
- * itself decides, not a word on a neighbouring line.
- *
- * @param {ts.Node} node
- * @param {ts.SourceFile} sf
- */
-const isConfigFallback = (node, sf) => {
-  let operand = node;
-  while (ts.isParenthesizedExpression(operand.parent)) {
-    operand = operand.parent;
-  }
-  const parent = operand.parent;
-  return (
-    ts.isBinaryExpression(parent) &&
-    parent.right === operand &&
-    (parent.operatorToken.kind === ts.SyntaxKind.QuestionQuestionToken ||
-      parent.operatorToken.kind === ts.SyntaxKind.BarBarToken) &&
-    CONFIG_READ.test(parent.left.getText(sf))
-  );
-};
-
-/**
- * The `template:` initializer of an `@Component` decorator, whatever its
- * shape. Its content is markup, not TypeScript copy.
- *
- * @param {ts.Node} node
- * @returns {node is ts.PropertyAssignment}
- */
-const isComponentTemplateProperty = (node) => {
-  if (
-    !ts.isPropertyAssignment(node) ||
-    !ts.isIdentifier(node.name) ||
-    node.name.text !== 'template'
-  ) {
-    return false;
-  }
-  const call = node.parent?.parent;
-  return (
-    !!call &&
-    ts.isCallExpression(call) &&
-    ts.isIdentifier(call.expression) &&
-    call.expression.text === 'Component'
-  );
-};
-
-/**
- * The `host:` object of an `@Component` / `@Directive` decorator.
- *
- * @param {ts.Node} node
- * @returns {node is ts.PropertyAssignment & { initializer: ts.ObjectLiteralExpression }}
- */
-const isDecoratorHost = (node) => {
-  if (!ts.isPropertyAssignment(node) || !ts.isIdentifier(node.name) || node.name.text !== 'host') {
-    return false;
-  }
-  const call = node.parent?.parent;
-  return (
-    ts.isObjectLiteralExpression(node.initializer) &&
-    !!call &&
-    ts.isCallExpression(call) &&
-    ts.isIdentifier(call.expression) &&
-    ['Component', 'Directive'].includes(call.expression.text)
-  );
-};
-
-/**
- * Resolves a `template:` initializer to the literal that holds the markup: the
- * initializer itself, or a same-file `const X = \`...\`` it names. A template
- * built with substitutions, or imported from elsewhere, cannot be scanned.
- *
- * @param {ts.Expression} initializer
- * @param {ts.SourceFile} sf
- * @returns {ts.StringLiteral | ts.NoSubstitutionTemplateLiteral | null}
- */
-const templateLiteralOf = (initializer, sf) => {
-  if (ts.isStringLiteral(initializer) || ts.isNoSubstitutionTemplateLiteral(initializer)) {
-    return initializer;
-  }
-  if (!ts.isIdentifier(initializer)) {
-    return null;
-  }
-  for (const statement of sf.statements) {
-    if (!ts.isVariableStatement(statement)) {
-      continue;
-    }
-    for (const declaration of statement.declarationList.declarations) {
-      const init = declaration.initializer;
-      const named = ts.isIdentifier(declaration.name) && declaration.name.text === initializer.text;
-      if (named && init && (ts.isStringLiteral(init) || ts.isNoSubstitutionTemplateLiteral(init))) {
-        return init;
-      }
-    }
-  }
-  return null;
 };
 
 /**
@@ -402,35 +269,6 @@ const EQUALITY_OPERATORS = new Set([
   ts.SyntaxKind.ExclamationEqualsToken,
   ts.SyntaxKind.InKeyword,
 ]);
-
-/** @param {ts.Node | undefined} node */
-const unwrapExpression = (node) => {
-  let current = node;
-  while (
-    current &&
-    (ts.isAsExpression(current) ||
-      ts.isSatisfiesExpression(current) ||
-      ts.isParenthesizedExpression(current))
-  ) {
-    current = current.expression;
-  }
-  return current;
-};
-
-/** @param {ts.Node | undefined} node */
-const isStringLiteralLike = (node) =>
-  !!node && (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node));
-
-/**
- * @param {ts.Node | undefined} node
- * @param {string} callee
- * @returns {node is ts.CallExpression}
- */
-const isCallTo = (node, callee) =>
-  !!node &&
-  ts.isCallExpression(node) &&
-  ts.isIdentifier(node.expression) &&
-  node.expression.text === callee;
 
 /**
  * Does the const's declared type say its values are strings? A key map such
@@ -621,13 +459,7 @@ export function scanSource(source, fileName = 'x.ts') {
   /** @type {ts.Node[]} static host sink values, reported after the phrase pass */
   const hostSinkValues = [];
 
-  const collectHost = (property) => {
-    const name =
-      ts.isStringLiteral(property.name) || ts.isIdentifier(property.name) ? property.name.text : '';
-    const value = property.initializer;
-    if (!isStringLiteralLike(value)) {
-      return;
-    }
+  const collectHost = ({ name, value }) => {
     if (name.startsWith('[')) {
       // A host binding is a template binding on the host element: parse it as one.
       templates.add(value);
@@ -640,7 +472,7 @@ export function scanSource(source, fileName = 'x.ts') {
 
   const collectTemplates = (node) => {
     if (isDecoratorHost(node)) {
-      node.initializer.properties.filter(ts.isPropertyAssignment).forEach(collectHost);
+      hostEntries(node).forEach(collectHost);
     }
     if (isComponentTemplateProperty(node)) {
       const literal = templateLiteralOf(node.initializer, sf);
@@ -896,31 +728,7 @@ const scanFile = (file) => {
   return scanSource(text, file);
 };
 
-/**
- * @param {string} relDir
- * @returns {string[]}
- */
-const walkSources = (relDir) => {
-  const out = [];
-  for (const entry of readdirSync(resolve(REPO_ROOT, relDir))) {
-    const rel = `${relDir}/${entry}`;
-    if (statSync(resolve(REPO_ROOT, rel)).isDirectory()) {
-      if (!SKIPPED_DIRS.has(entry)) {
-        out.push(...walkSources(rel));
-      }
-    } else if (
-      SCANNED_EXTENSION.test(entry) &&
-      !entry.includes('.spec.') &&
-      !entry.includes('.fixtures.') &&
-      !entry.endsWith('.d.ts')
-    ) {
-      out.push(rel);
-    }
-  }
-  return out;
-};
-
-const SOURCES = walkSources('projects');
+const SOURCES = walkSources('projects', SCANNED_EXTENSION);
 const FINDINGS = SOURCES.flatMap((file) => scanFile(file).map((finding) => ({ file, ...finding })));
 const UNCOVERED = FINDINGS.filter((finding) => finding.coverage === 'uncovered');
 const UNSCANNABLE = FINDINGS.filter((finding) => finding.coverage === 'unscannable');
