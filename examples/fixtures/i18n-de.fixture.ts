@@ -1,4 +1,4 @@
-import type { Provider } from '@angular/core';
+import { computed, signal, type Provider } from '@angular/core';
 import { provideLocaleAt } from '@cngx/core/utils';
 import { provideKpiI18n, withKpiI18nLabels } from '@cngx/common/data';
 import { provideDisplayI18n, withDisplayI18nLabels } from '@cngx/common/display';
@@ -71,6 +71,20 @@ export const INTERACTIVE_DE = {
 };
 
 export const POPOVER_PANEL_DE = { close: 'Schließen' };
+
+/**
+ * Language of the live-switch story, flipped by its EN / DE toggle. The
+ * computed sources below feed the reactive-from-birth tokens, so the flip
+ * re-renders their copy without a reload. Module-level, so the story's
+ * `viewProviders` can reference them.
+ */
+export const DEMO_LANG = signal<'en' | 'de'>('en');
+const isDe = (): boolean => DEMO_LANG() === 'de';
+export const DEMO_KPI_LABELS = computed(() => (isDe() ? KPI_DE : {}));
+export const DEMO_DISPLAY_LABELS = computed(() => (isDe() ? DISPLAY_DE : {}));
+export const DEMO_INTERACTIVE_LABELS = computed(() => (isDe() ? INTERACTIVE_DE : {}));
+export const DEMO_POPOVER_PANEL_LABELS = computed(() => (isDe() ? POPOVER_PANEL_DE : {}));
+export const DEMO_LOCALE = computed(() => (isDe() ? 'de-DE' : 'en-US'));
 
 /** The German pack, spread into the root providers by `?lang=de`. */
 export const DE_PACK: Provider[] = [
