@@ -61,8 +61,7 @@ export const PHASE_1_KEYS = new Set(
  *
  * @type {readonly StringManifestEntry[]}
  */
-export const RATCHET = [
-];
+export const RATCHET = [];
 
 /**
  * Strings the scanner cannot prove are covered, but which are - the override
@@ -86,5 +85,26 @@ export const EXCLUDED = [
     file: 'projects/common/interactive/guard/can-deactivate.ts',
     value: 'You have unsaved changes. Leave anyway?',
     note: 'design reason: canDeactivateWhenClean(message) takes the caller copy, this is its fallback',
+  },
+];
+
+/**
+ * The only `localeCompare` call sites the locale-source guard accepts. Sort
+ * collation, not displayed text: both comparators are pure functions without
+ * an injection context and use the runtime default collation. Routing them
+ * through `CNGX_LOCALE` would change sort order per locale, so they stay out
+ * of the single-locale-source rule until the follow-up program threads a
+ * locale into the sort utilities.
+ *
+ * @type {readonly { file: string; note: string }[]}
+ */
+export const LOCALE_COMPARE_ALLOWED = [
+  {
+    file: 'projects/common/data/data-source/smart-data-source.ts',
+    note: 'smart data source sort comparator, runtime default collation',
+  },
+  {
+    file: 'projects/data-display/treetable/tree.utils.ts',
+    note: 'treetable sort comparator, runtime default collation',
   },
 ];

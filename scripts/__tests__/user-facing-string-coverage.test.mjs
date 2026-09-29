@@ -5,6 +5,7 @@ import { dirname, resolve } from 'node:path';
 import {
   ASTWithSource,
   Binary,
+  BindingPipe,
   Conditional,
   Interpolation,
   LiteralPrimitive,
@@ -20,6 +21,7 @@ import {
   ALREADY_COVERED,
   COMPLETED_PHASE,
   EXCLUDED,
+  LOCALE_COMPARE_ALLOWED,
   PHASE_1_KEYS,
   RATCHET,
   RATCHET_CEILING,
@@ -926,6 +928,160 @@ const FINDINGS = SOURCES.flatMap((file) => scanFile(file).map((finding) => ({ fi
 const UNCOVERED = FINDINGS.filter((finding) => finding.coverage === 'uncovered');
 const UNSCANNABLE = FINDINGS.filter((finding) => finding.coverage === 'unscannable');
 
+// Locale source guard: `CNGX_LOCALE` is the only locale cngx formats with.
+// `injectLocale()` owns the one `inject(LOCALE_ID)` fallback; every `Intl` call
+// gets an explicit locale; library templates format through a `computed()`
+// over `injectLocale()`, never through an Angular locale pipe (those read the
+// static `LOCALE_ID`).
+
+/** The one file allowed to read `LOCALE_ID`: the `injectLocale()` fallback. */
+const LOCALE_SOURCE_FILE = 'projects/core/utils/locale.ts';
+
+/** `Intl` constructors whose first argument is the locale. */
+const INTL_LOCALE_CTORS = new Set([
+  'Collator',
+  'DateTimeFormat',
+  'DisplayNames',
+  'DurationFormat',
+  'ListFormat',
+  'NumberFormat',
+  'PluralRules',
+  'RelativeTimeFormat',
+  'Segmenter',
+]);
+
+const TO_LOCALE_STRING = /^toLocale(?:Date|Time)?String$/;
+
+/** Angular pipes that read the static `LOCALE_ID`. */
+const LOCALE_PIPES = new Set(['date', 'number', 'percent', 'currency', 'i18nPlural', 'i18nSelect']);
+
+/**
+ * @typedef {object} LocaleFinding
+ * @property {1 | 2 | 3 | 4 | 5} rule
+ * @property {number} line 1-based
+ * @property {string} text
+ */
+
+/**
+ * Every `BindingPipe` in a parsed template, found by walking the whole node
+ * graph, so pipes inside control-flow blocks, `@let` and event bindings count.
+ *
+ * @param {string} template
+ * @param {string} fileName
+ * @param {number} lineOffset 0-based line of the template's first line
+ * @returns {LocaleFinding[]}
+ */
+const localePipesIn = (template, fileName, lineOffset) => {
+  const parsed = parseTemplate(template, fileName, { preserveWhitespaces: false });
+  /** @type {LocaleFinding[]} */
+  const out = [];
+  const seen = new Set();
+  const walk = (value) => {
+    if (!value || typeof value !== 'object' || seen.has(value)) {
+      return;
+    }
+    seen.add(value);
+    if (value instanceof BindingPipe && LOCALE_PIPES.has(value.name)) {
+      const offset = value.nameSpan?.start ?? value.sourceSpan?.start ?? 0;
+      const line = template.slice(0, offset).split('\n').length + lineOffset;
+      out.push({ rule: 5, line, text: `| ${value.name}` });
+    }
+    for (const child of Array.isArray(value) ? value : Object.values(value)) {
+      walk(child);
+    }
+  };
+  walk(parsed.nodes);
+  return out;
+};
+
+/**
+ * Violations of the single-locale-source rule in one file. `.html` files are
+ * scanned for locale pipes only; `.ts` files for the four call-site rules and
+ * the locale pipes of their inline `template:`.
+ *
+ * (1) `inject(LOCALE_ID)` outside {@link LOCALE_SOURCE_FILE};
+ * (2) an `Intl` locale constructor with no or a literal `undefined` locale,
+ *     or `toLocale*String(undefined, ...)`;
+ * (3) `toLocaleString()` / `toLocaleDateString()` / `toLocaleTimeString()`
+ *     with no arguments;
+ * (4) every `localeCompare(` call (the caller filters the allow-list);
+ * (5) an Angular locale pipe in a template.
+ *
+ * @param {string} source
+ * @param {string} fileName repo-relative path
+ * @returns {LocaleFinding[]}
+ */
+export function scanLocaleSources(source, fileName) {
+  if (fileName.endsWith('.html')) {
+    return localePipesIn(source, fileName, 0);
+  }
+  const sf = ts.createSourceFile(fileName, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  /** @type {LocaleFinding[]} */
+  const out = [];
+  const lineOf = (node) => sf.getLineAndCharacterOfPosition(node.getStart(sf)).line;
+  const add = (rule, node) =>
+    out.push({ rule, line: lineOf(node) + 1, text: node.getText(sf).replace(/\s+/g, ' ') });
+  const isUndefined = (node) => !!node && ts.isIdentifier(node) && node.text === 'undefined';
+  const intlCtorName = (callee) =>
+    ts.isPropertyAccessExpression(callee) &&
+    ts.isIdentifier(callee.expression) &&
+    callee.expression.text === 'Intl' &&
+    INTL_LOCALE_CTORS.has(callee.name.text);
+
+  const visit = (node) => {
+    if (isComponentTemplateProperty(node)) {
+      const literal = templateLiteralOf(node.initializer, sf);
+      if (literal) {
+        out.push(...localePipesIn(literal.text, fileName, lineOf(literal)));
+      }
+    }
+    if (ts.isNewExpression(node) || ts.isCallExpression(node)) {
+      const args = node.arguments ?? [];
+      const callee = node.expression;
+      if (intlCtorName(callee) && (args.length === 0 || isUndefined(args[0]))) {
+        add(2, node);
+      }
+      if (ts.isCallExpression(node) && ts.isIdentifier(callee) && callee.text === 'inject') {
+        const first = args[0];
+        if (
+          first &&
+          ts.isIdentifier(first) &&
+          first.text === 'LOCALE_ID' &&
+          fileName !== LOCALE_SOURCE_FILE
+        ) {
+          add(1, node);
+        }
+      }
+      if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(callee)) {
+        const method = callee.name.text;
+        if (TO_LOCALE_STRING.test(method) && args.length === 0) {
+          add(3, node);
+        } else if (TO_LOCALE_STRING.test(method) && isUndefined(args[0])) {
+          add(2, node);
+        }
+        if (method === 'localeCompare') {
+          add(4, node);
+        }
+      }
+    }
+    node.forEachChild(visit);
+  };
+  visit(sf);
+  return out;
+}
+
+const LOCALE_FINDINGS = SOURCES.filter((file) => /\.(?:ts|html)$/.test(file)).flatMap((file) =>
+  scanLocaleSources(readFileSync(resolve(REPO_ROOT, file), 'utf-8'), file).map((finding) => ({
+    file,
+    ...finding,
+  })),
+);
+const LOCALE_COMPARE_FILES = new Set(LOCALE_COMPARE_ALLOWED.map((row) => row.file));
+const localeViolations = (rule) =>
+  LOCALE_FINDINGS.filter((finding) => finding.rule === rule).map(
+    (finding) => `${finding.file}:${finding.line}: ${finding.text}`,
+  );
+
 /**
  * The ratchet's shrink rules as a pure check, so each rule carries a negative
  * self-test below. Returns one message per violation.
@@ -1408,5 +1564,80 @@ describe('user-facing string scanner', () => {
   it('ignores strings inside comments', () => {
     const source = "/* host: { 'aria-label': 'Alerts' } */ const x = 1;";
     expect(scanSource(source, 'x.ts')).toEqual([]);
+  });
+});
+
+describe('locale source', () => {
+  it('reads LOCALE_ID only inside injectLocale()', () => {
+    expect(localeViolations(1)).toEqual([]);
+  });
+
+  it('passes an explicit locale to every Intl constructor and toLocale*String call', () => {
+    expect(localeViolations(2)).toEqual([]);
+  });
+
+  it('calls no toLocale*String() without arguments', () => {
+    expect(localeViolations(3)).toEqual([]);
+  });
+
+  it('collates with localeCompare only at the allow-listed sort sites', () => {
+    const unlisted = LOCALE_FINDINGS.filter(
+      (finding) => finding.rule === 4 && !LOCALE_COMPARE_FILES.has(finding.file),
+    ).map((finding) => `${finding.file}:${finding.line}: ${finding.text}`);
+    expect(unlisted).toEqual([]);
+  });
+
+  it('carries no localeCompare allow-list row that no longer exists', () => {
+    const present = new Set(
+      LOCALE_FINDINGS.filter((finding) => finding.rule === 4).map((finding) => finding.file),
+    );
+    expect(LOCALE_COMPARE_ALLOWED.filter((row) => !present.has(row.file))).toEqual([]);
+    expect(LOCALE_COMPARE_ALLOWED.filter((row) => row.note.trim().length < 10)).toEqual([]);
+  });
+
+  it('applies no Angular locale pipe in a library template', () => {
+    expect(localeViolations(5)).toEqual([]);
+  });
+});
+
+describe('locale source rules', () => {
+  const rules = (source, fileName = 'x.component.ts') =>
+    scanLocaleSources(source, fileName).map((finding) => finding.rule);
+
+  it('(1) reports inject(LOCALE_ID) outside the locale source', () => {
+    expect(rules('class X { readonly l = inject(LOCALE_ID); }')).toEqual([1]);
+    expect(rules('const l = inject(LOCALE_ID);', 'projects/core/utils/locale.ts')).toEqual([]);
+  });
+
+  it('(2) reports an Intl constructor without a locale', () => {
+    expect(rules('const f = new Intl.DateTimeFormat(undefined, {});')).toEqual([2]);
+    expect(rules('const f = new Intl.NumberFormat();')).toEqual([2]);
+    expect(rules('const tz = Intl.DateTimeFormat().resolvedOptions();')).toEqual([2]);
+    expect(rules('const s = d.toLocaleDateString(undefined, { month: "long" });')).toEqual([2]);
+  });
+
+  it('(3) reports a toLocale*String() call without arguments', () => {
+    expect(rules('const s = d.toLocaleDateString();')).toEqual([3]);
+    expect(rules('const s = n.toLocaleString();')).toEqual([3]);
+  });
+
+  it('(4) reports every localeCompare call', () => {
+    expect(rules('const c = a.localeCompare(b);')).toEqual([4]);
+  });
+
+  it('(5) reports an Angular locale pipe in inline and external templates', () => {
+    const inline = '@Component({ template: `<span>{{ v | number }}</span>` }) class X {}';
+    expect(rules(inline)).toEqual([5]);
+    expect(rules('@if (on) { <b>{{ d | date: "short" }}</b> }', 'x.component.html')).toEqual([5]);
+    expect(rules('<b>{{ v | json }}</b>', 'x.component.html')).toEqual([]);
+  });
+
+  it('passes injectLocale() and an explicit locale', () => {
+    const source = [
+      'const locale = injectLocale();',
+      'const s = n.toLocaleString(locale());',
+      "const f = new Intl.NumberFormat(locale(), { style: 'percent' });",
+    ].join('\n');
+    expect(rules(source)).toEqual([]);
   });
 });
