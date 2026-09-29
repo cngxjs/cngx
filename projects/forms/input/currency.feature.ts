@@ -10,7 +10,8 @@ export interface CurrencyOptions {
   readonly code: string;
   /**
    * Locale override for currency formatting. Falls back to the numeric locale
-   * (`withNumericDefaults`) and then `LOCALE_ID`.
+   * (`withNumericDefaults`) and then the app locale (`CNGX_LOCALE`, default the
+   * nearest `LOCALE_ID`).
    */
   readonly locale?: string;
 }
