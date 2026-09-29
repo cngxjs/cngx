@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
 import { coerceSignal } from './coerce.util';
-import { createOverrideMerge } from './override-merge';
+import { createNestedOverrideMerge, createOverrideMerge } from './override-merge';
 
 interface Labels {
   readonly a: string;
@@ -71,5 +71,90 @@ describe('createOverrideMerge', () => {
 
     expect(first.labels).toBe(second.labels);
     expect(first.labels().b).toBe('Schliessen');
+  });
+});
+
+interface StatusBundle {
+  readonly title: string;
+  readonly statusLabels: { readonly done: string; readonly errored: string };
+}
+
+const STATUS_DEFAULTS: StatusBundle = {
+  title: 'Steps',
+  statusLabels: { done: 'Done', errored: 'Errored' },
+};
+
+describe('createNestedOverrideMerge', () => {
+  it('keeps the other nested defaults under a partial nested override', () => {
+    const merged = createNestedOverrideMerge(
+      STATUS_DEFAULTS,
+      { statusLabels: { done: 'Fertig' } },
+      'statusLabels',
+    );
+    expect(merged()).toEqual({
+      title: 'Steps',
+      statusLabels: { done: 'Fertig', errored: 'Errored' },
+    });
+  });
+
+  it('merges the top level like a plain spread', () => {
+    const merged = createNestedOverrideMerge(
+      STATUS_DEFAULTS,
+      { title: 'Schritte' },
+      'statusLabels',
+    );
+    expect(merged()).toEqual({ title: 'Schritte', statusLabels: STATUS_DEFAULTS.statusLabels });
+  });
+
+  it('follows a live flip of the nested record into a dependent computed', () => {
+    const source = signal<{ statusLabels?: Partial<StatusBundle['statusLabels']> }>({});
+    const merged = createNestedOverrideMerge(STATUS_DEFAULTS, source, 'statusLabels');
+    const done = computed(() => merged().statusLabels.done);
+
+    expect(done()).toBe('Done');
+    source.set({ statusLabels: { done: 'Fertig' } });
+    expect(done()).toBe('Fertig');
+    expect(merged().statusLabels.errored).toBe('Errored');
+  });
+
+  it('returns the same signal for the same (defaults, overrides, key)', () => {
+    const overrides = { statusLabels: { done: 'Fertig' } };
+    expect(createNestedOverrideMerge(STATUS_DEFAULTS, overrides, 'statusLabels')).toBe(
+      createNestedOverrideMerge(STATUS_DEFAULTS, overrides, 'statusLabels'),
+    );
+    expect(createNestedOverrideMerge(STATUS_DEFAULTS, undefined, 'statusLabels')).toBe(
+      createNestedOverrideMerge(STATUS_DEFAULTS, undefined, 'statusLabels'),
+    );
+    expect(createNestedOverrideMerge(STATUS_DEFAULTS, { ...overrides }, 'statusLabels')).not.toBe(
+      createNestedOverrideMerge(STATUS_DEFAULTS, overrides, 'statusLabels'),
+    );
+  });
+
+  it('keeps the merged reference when an override is re-set to an equal nested record', () => {
+    const source = signal<{ statusLabels?: Partial<StatusBundle['statusLabels']> }>({
+      statusLabels: { done: 'Fertig' },
+    });
+    const merged = createNestedOverrideMerge(STATUS_DEFAULTS, source, 'statusLabels');
+    let runs = 0;
+    const downstream = computed(() => {
+      runs++;
+      return merged().statusLabels.done;
+    });
+
+    const first = merged();
+    downstream();
+    source.set({ statusLabels: { done: 'Fertig' } });
+
+    expect(merged()).toBe(first);
+    downstream();
+    expect(runs).toBe(1);
+  });
+
+  it('hands out a new reference when a nested value changes', () => {
+    const source = signal<{ statusLabels?: Partial<StatusBundle['statusLabels']> }>({});
+    const merged = createNestedOverrideMerge(STATUS_DEFAULTS, source, 'statusLabels');
+    const first = merged();
+    source.set({ statusLabels: { errored: 'Fehler' } });
+    expect(merged()).not.toBe(first);
   });
 });
