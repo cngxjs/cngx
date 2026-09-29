@@ -1,3 +1,4 @@
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 import {
@@ -22,8 +23,23 @@ import {
   isDecoratorHost,
   REPO_ROOT,
   unwrapExpression,
+  walkSources,
 } from './_i18n-ast.mjs';
-import { RULE_FIXTURES } from './reactive-i18n-coverage.fixtures.mjs';
+import {
+  CALIBRATION_MEMBERS,
+  CALIBRATION_REGIONS,
+  CALIBRATION_TOKENS,
+  COMPLETED_PHASE,
+  COPY_TOKENS,
+  EXEMPT,
+  HELPERS,
+  LIVE_REGIONS,
+  PHASE_1_KEYS,
+  RATCHET,
+  RATCHET_CEILING,
+  RULE_FIXTURES,
+  SETTINGS_TOKENS,
+} from './reactive-i18n-coverage.fixtures.mjs';
 
 // Coverage guard for runtime language switching. A2 made every cngx string
 // overridable; A2b makes every one of them follow a live language Signal. The
@@ -166,6 +182,25 @@ export function discoverTokens(sourceFiles) {
 const isSignalType = (type) =>
   type.getCallSignatures().length > 0 &&
   type.getProperties().some((p) => String(p.escapedName).includes('SIGNAL'));
+
+/**
+ * A copy key whose value is used directly (a string, a formatter) rather
+ * than as a bundle of further keys.
+ *
+ * @param {ts.TypeChecker} checker
+ * @param {ts.Type} type
+ */
+const isFlatValue = (checker, type) => {
+  const nonNull = checker.getNonNullableType(type);
+  const members = nonNull.isUnion() ? nonNull.types : [nonNull];
+  return members.every(
+    (m) =>
+      !!(
+        m.flags &
+        (ts.TypeFlags.StringLike | ts.TypeFlags.NumberLike | ts.TypeFlags.BooleanLike)
+      ) || m.getCallSignatures().length > 0,
+  );
+};
 
 /**
  * @typedef {object} CopyModel
@@ -602,6 +637,10 @@ const memberKeyOf = (node) => {
     if (isMember && !member) {
       member = ts.isConstructorDeclaration(current) ? 'constructor' : current.name?.getText();
     }
+    if (ts.isDecorator(current) && !member) {
+      const call = current.expression;
+      member = `@${ts.isCallExpression(call) ? call.expression.getText() : call.getText()}`;
+    }
     if (ts.isClassLike(current)) {
       return `${current.name?.text ?? '(anonymous)'}.${member ?? '(class)'}`;
     }
@@ -625,6 +664,7 @@ const memberKeyOf = (node) => {
  * @typedef {object} ReadEvent
  * @property {'signal' | 'deref' | 'key'} kind
  * @property {string} token
+ * @property {boolean} [flat] a `key` read whose value is the copy itself
  * @property {ts.Node} node
  */
 
@@ -633,7 +673,8 @@ const memberKeyOf = (node) => {
  *
  * - `signal`  a Signal of copy (or the locale) is called
  * - `deref`   a raw copy value is dereferenced, spread, destructured or called
- * - `key`     a config copy key is taken as a value
+ * - `key`     a config copy key is taken as a value; `flat` when that value
+ *             is the copy itself (a string, a formatter), not a bundle
  *
  * @param {CopyModel} model
  * @param {ts.Node} node
@@ -664,7 +705,8 @@ function readEventAt(model, node, cache) {
       return { kind: 'deref', token: objectOrigin.token, node };
     }
     if (isCopyKeyAccess(model, node, objectOrigin) && !isMergeHelperArgument(node)) {
-      return { kind: 'key', token: objectOrigin.token, node };
+      const flat = isFlatValue(checker, checker.getTypeAtLocation(node));
+      return { kind: 'key', token: objectOrigin.token, node, flat };
     }
     return null;
   }
@@ -688,6 +730,7 @@ function readEventAt(model, node, cache) {
  * @property {string} root the class member the chain starts at
  * @property {ReadEvent['kind'] | 'member'} kind
  * @property {string | null} token
+ * @property {boolean} [flat]
  */
 
 /**
@@ -736,7 +779,8 @@ function templateReads(model, classType, memberOrigins, ast, out) {
             (i) => i.token === origin.token && i.copyKeys,
           );
           if (info?.copyKeys?.has(node.name)) {
-            out.push({ root: receiver.root, kind: 'key', token: origin.token });
+            const flat = isFlatValue(checker, type);
+            out.push({ root: receiver.root, kind: 'key', token: origin.token, flat });
             origin = { kind: 'raw', token: origin.token };
           } else {
             origin = originOfType(model, type);
@@ -919,7 +963,7 @@ export function analyzeFile(model, sf, fileName) {
         add(member, 'R1', event.token);
       } else if (scope === 'construction') {
         add(member, 'R2', event.token);
-      } else if (event.kind === 'deref' && !isInHelperBody(node)) {
+      } else if ((event.kind === 'deref' || event.flat) && !isInHelperBody(node)) {
         add(member, 'R3', event.token);
       }
     }
@@ -1140,7 +1184,7 @@ function analyzeClass(model, cls, sf, fileName, cache, add, regions, unscannable
   };
   const addTemplateDerefs = (reads) => {
     for (const read of reads) {
-      if (read.kind === 'deref') {
+      if (read.kind === 'deref' || read.flat) {
         add(`${className}.template:${read.root}`, 'R3', read.token);
       }
     }
@@ -1550,5 +1594,128 @@ describe('reactive i18n manifest checks', () => {
       '|`@cngx/b`|`CNGX_B`|x|',
     ].join('\n');
     expect(guideTableTokens(markdown)).toEqual(['CNGX_A_I18N']);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Repo scan
+
+/** The accepted-debt registers are local-only; CI checks the reference shape. */
+const DEBT_DIR = resolve(REPO_ROOT, '.internal/architektur');
+
+/** The phase from which an `EXEMPT` row's `debtRef` must resolve. */
+const DEBT_REF_PHASE = 6;
+
+const SOURCES = walkSources('projects', /\.ts$/);
+const PROGRAM = createProgram(SOURCES.map((file) => resolve(REPO_ROOT, file)));
+const SOURCE_FILES = SOURCES.map((file) => PROGRAM.getSourceFile(resolve(REPO_ROOT, file)));
+const TOKENS = discoverTokens(SOURCE_FILES);
+const MODEL = buildCopyModel(PROGRAM, TOKENS, COPY_TOKENS, HELPERS);
+const SCAN = SOURCES.map((file, i) => analyzeFile(MODEL, SOURCE_FILES[i], file));
+const FINDINGS = SCAN.flatMap((result) => result.findings);
+const REGIONS = SCAN.flatMap((result) => result.regions);
+const UNSCANNABLE = SCAN.flatMap((result) => result.unscannable);
+
+/** @param {string} path repo-relative */
+const readRepoFile = (path) => {
+  const absolute = resolve(REPO_ROOT, path);
+  return existsSync(absolute) ? readFileSync(absolute, 'utf-8') : null;
+};
+
+describe('reactive i18n coverage', () => {
+  it('finds sources and tokens to scan', () => {
+    expect(SOURCES.length).toBeGreaterThan(900);
+    expect(TOKENS.length).toBeGreaterThan(150);
+  });
+
+  it('classifies every exported injection token and partitions every copy key', () => {
+    expect(
+      classificationViolations({
+        discovered: TOKENS.map((t) => t.token),
+        copyTokens: COPY_TOKENS,
+        settingsTokens: SETTINGS_TOKENS,
+        typeKeys: MODEL.typeKeys,
+      }),
+    ).toEqual([]);
+  });
+
+  it('closes every copy token in one of the phases 2..7', () => {
+    const outOfRange = COPY_TOKENS.filter((t) => t.closesIn < 2 || t.closesIn > 7).map(
+      (t) => t.token,
+    );
+    expect(outOfRange).toEqual([]);
+  });
+
+  it('parses every template it meets', () => {
+    expect(UNSCANNABLE).toEqual([]);
+  });
+
+  it('carries every finding on the ratchet or the exempt list', () => {
+    const listed = new Set([...RATCHET, ...EXEMPT].map(rowKey));
+    const unlisted = FINDINGS.filter((finding) => !listed.has(rowKey(finding))).map(rowKey);
+    expect(unlisted).toEqual([]);
+  });
+
+  it('carries no ratchet or exempt row that is already fixed', () => {
+    const found = new Set(FINDINGS.map(rowKey));
+    const stale = [...RATCHET, ...EXEMPT].filter((row) => !found.has(rowKey(row))).map(rowKey);
+    expect(stale).toEqual([]);
+  });
+
+  it('keeps the ratchet exact, phased and frozen', () => {
+    expect(
+      ratchetViolations({
+        ratchet: RATCHET,
+        ceiling: RATCHET_CEILING,
+        completedPhase: COMPLETED_PHASE,
+        phase1Keys: PHASE_1_KEYS,
+      }),
+    ).toEqual([]);
+  });
+
+  it('gives every exempt row a reason and an accepted-debt reference', () => {
+    const malformed = EXEMPT.filter(
+      (row) =>
+        row.reason.trim().length < 20 || !/^[a-z0-9-]+-accepted-debt\.md#.+/.test(row.debtRef),
+    ).map(rowKey);
+    expect(malformed).toEqual([]);
+  });
+
+  it('resolves every exempt debtRef once its register entry is due', () => {
+    const unresolved = EXEMPT.filter((row) => {
+      const [register, heading] = row.debtRef.split('#');
+      const path = resolve(DEBT_DIR, register);
+      if (COMPLETED_PHASE < DEBT_REF_PHASE || !existsSync(DEBT_DIR)) {
+        return false;
+      }
+      return !existsSync(path) || !readFileSync(path, 'utf-8').includes(heading);
+    }).map((row) => row.debtRef);
+    expect(unresolved).toEqual([]);
+  });
+
+  it('found every calibration site at the end of Phase 1', () => {
+    const frozen = [...PHASE_1_KEYS, ...EXEMPT.map(rowKey)].map((key) => key.split('\t'));
+    const missingMembers = CALIBRATION_MEMBERS.filter(
+      ([file, member]) => !frozen.some(([f, m]) => f === file && m === member),
+    ).map(([file, member]) => `${file} ${member}`);
+    const missingTokens = CALIBRATION_TOKENS.filter(
+      (token) => !frozen.some(([, , , t]) => t === token),
+    );
+    const listedRegions = new Set(LIVE_REGIONS.map((e) => `${e.file} ${e.region}`));
+    const missingRegions = CALIBRATION_REGIONS.map(([file, region]) => `${file} ${region}`).filter(
+      (key) => !listedRegions.has(key),
+    );
+    expect([...missingMembers, ...missingTokens, ...missingRegions]).toEqual([]);
+  });
+
+  it('lists every live region that renders copy, with its no-respeak spec when due', () => {
+    expect(
+      liveRegionViolations({
+        discovered: REGIONS,
+        manifest: LIVE_REGIONS,
+        completedPhase: COMPLETED_PHASE,
+        readSpec: readRepoFile,
+      }),
+    ).toEqual([]);
   });
 });
