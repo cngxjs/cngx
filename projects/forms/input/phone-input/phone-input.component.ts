@@ -50,7 +50,9 @@ class CngxPhoneInputDetach {}
  * (a null `CngxFormFieldPresenter` in the inner element's `providers`, via
  * `CngxPhoneInputDetach`) so only this component wires the field ARIA and value.
  *
- * The country list is consumer-overridable through `[countries]`. Selecting a
+ * The country list is consumer-overridable through `[countries]`; the picked
+ * row is matched by region, so a localized list (and `withPhoneDefaultRegion`)
+ * preselects its own row. Selecting a
  * country pre-fills its dial code (e.g. `+49`); switching country clears the
  * entered national number (the mask's documented auto-clear on pattern change)
  * and re-seeds the new dial code.
@@ -92,7 +94,8 @@ class CngxPhoneInputDetach {}
     <cngx-select
       cngxPhoneInputDetach
       class="cngx-phone-input__country"
-      [(value)]="country"
+      [value]="resolvedCountry()"
+      (valueChange)="handleCountryChange($event)"
       [options]="selectOptions()"
       [disabled]="disabled()"
       [aria-label]="resolvedCountryLabel()"
@@ -167,16 +170,31 @@ export class CngxPhoneInput implements CngxFormFieldControl {
 
   readonly focused = this.aria.focused;
 
+  /** Construction-time default of `country`; equal means the consumer never set it. */
+  private readonly defaultCountry = this.country();
+
+  /**
+   * @internal The active row of `countries()`: the row matching the selected
+   * country's region, or - while `country` is untouched - the row matching
+   * `phoneDefaultRegion`; else the first row. Matching by region keeps a
+   * localized `[countries]` list in charge of the picked object.
+   */
+  protected readonly resolvedCountry = computed(() => {
+    const list = this.countries();
+    const selected = this.country();
+    const untouched = selected === this.defaultCountry;
+    const region = (untouched ? this.config.phoneDefaultRegion : undefined) ?? selected.region;
+    return list.find((c) => c.region === region) ?? list[0] ?? selected;
+  });
+
   /** The mask region from the selected country, fed to `phone:<region>`. */
-  protected readonly region = computed(
-    () => this.country()?.region ?? CNGX_PHONE_COUNTRIES[0].region,
-  );
+  protected readonly region = computed(() => this.resolvedCountry().region);
 
   // value() is dial-code-prefixed (the prefill seeds the country code digits),
   // so it is not the national subscriber number. Strip the dial code before
   // handing it to the metadata strategy, which contracts on national digits.
   private readonly nationalDigits = computed(() => {
-    const cc = this.country().dialCode.replace(/\D/g, '');
+    const cc = this.resolvedCountry().dialCode.replace(/\D/g, '');
     const v = this.value();
     return v.startsWith(cc) ? v.slice(cc.length) : v;
   });
@@ -254,15 +272,6 @@ export class CngxPhoneInput implements CngxFormFieldControl {
   });
 
   constructor() {
-    // App-wide default region (overridden by a per-instance [country] binding).
-    const region = this.config.phoneDefaultRegion;
-    if (region) {
-      const match = CNGX_PHONE_COUNTRIES.find((c) => c.region === region);
-      if (match) {
-        this.country.set(match);
-      }
-    }
-
     createFieldSync<string>({
       componentValue: this.value,
       valueEquals: Object.is,
@@ -275,7 +284,7 @@ export class CngxPhoneInput implements CngxFormFieldControl {
     // field-restored number. The dial-code digits land in the mask's `+NN`
     // country-code slots (slot count matches the dial-code length per region).
     effect(() => {
-      const dialDigits = this.country().dialCode.replace(/\D/g, '');
+      const dialDigits = this.resolvedCountry().dialCode.replace(/\D/g, '');
       untracked(() => {
         queueMicrotask(() => {
           if (this.value() === '') {
@@ -284,6 +293,13 @@ export class CngxPhoneInput implements CngxFormFieldControl {
         });
       });
     });
+  }
+
+  /** @internal */
+  protected handleCountryChange(next: Country | undefined): void {
+    if (next) {
+      this.country.set(next);
+    }
   }
 
   /** @internal */

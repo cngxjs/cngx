@@ -12,7 +12,8 @@ import {
 import { providePhoneMetadata, type CngxPhoneMetadata } from '../phone-metadata';
 import { loadAllMaskPresets } from '../mask-presets/registry';
 import { CngxPhoneInput } from './phone-input.component';
-import { CNGX_PHONE_COUNTRIES } from './countries';
+import { CngxSelect } from '@cngx/forms/select';
+import { CNGX_PHONE_COUNTRIES, type Country } from './countries';
 
 const mobileAdapter: CngxPhoneMetadata = {
   lineType: (_region, national) => (/^1[567]/.test(national) ? 'mobile' : 'unknown'),
@@ -361,6 +362,58 @@ describe('CngxPhoneInput', () => {
 
     const fixture = TestBed.createComponent(BareHost);
     fixture.detectChanges();
-    expect(fixture.componentInstance.phone().country().region).toBe('DE');
+    const mask = fixture.debugElement.query(By.directive(CngxInputMask)).injector.get(CngxInputMask);
+    expect(mask.mask()).toBe('phone:DE');
+  });
+
+  it('resolves the default region against a localized [countries] list', () => {
+    TestBed.configureTestingModule({
+      providers: [provideInputConfig(withPhoneDefaultRegion('AT'))],
+    });
+
+    const localized: readonly Country[] = [
+      { region: 'DE', dialCode: '+49', label: 'Deutschland' },
+      { region: 'AT', dialCode: '+43', label: 'Österreich' },
+    ];
+
+    @Component({
+      template: `<cngx-phone-input [countries]="countries" />`,
+      imports: [CngxPhoneInput],
+    })
+    class LocalizedHost {
+      readonly countries = localized;
+    }
+
+    const fixture = TestBed.createComponent(LocalizedHost);
+    document.body.appendChild(fixture.nativeElement);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+
+    const select = fixture.debugElement.query(By.directive(CngxSelect)).componentInstance as CngxSelect<Country>;
+    expect(select.value()).toBe(localized[1]);
+    const mask = fixture.debugElement.query(By.directive(CngxInputMask)).injector.get(CngxInputMask);
+    expect(mask.mask()).toBe('phone:AT');
+  });
+
+  it('keeps a bound country that matches a localized row by region', () => {
+    const localized: readonly Country[] = [
+      { region: 'DE', dialCode: '+49', label: 'Deutschland' },
+      { region: 'AT', dialCode: '+43', label: 'Österreich' },
+    ];
+
+    @Component({
+      template: `<cngx-phone-input [countries]="countries" [(country)]="country" />`,
+      imports: [CngxPhoneInput],
+    })
+    class BoundHost {
+      readonly countries = localized;
+      country: Country = { region: 'AT', dialCode: '+43', label: 'Austria' };
+    }
+
+    const fixture = TestBed.createComponent(BoundHost);
+    fixture.detectChanges();
+    const select = fixture.debugElement.query(By.directive(CngxSelect)).componentInstance as CngxSelect<Country>;
+    expect(select.value()).toBe(localized[1]);
   });
 });
