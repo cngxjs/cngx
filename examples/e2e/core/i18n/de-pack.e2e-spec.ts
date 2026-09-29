@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
 import { EN_RESIDUE_STRINGS } from '../../../fixtures/i18n-en-residue.fixture';
 import { gotoDemoLang } from '../../_helpers';
@@ -10,7 +10,7 @@ import { routesIn } from '../../_routes';
 // `cngx-*` host: demo chrome is story copy, not library copy.
 
 /** Fails loudly on a renamed story instead of landing on the home page. */
-async function openDe(page: import('@playwright/test').Page, route: string): Promise<void> {
+async function openDe(page: Page, route: string): Promise<void> {
   const segments = route.split('/').slice(0, -1);
   expect(routesIn(...segments).map((r) => r.path)).toContain(route);
   await gotoDemoLang(page, route, 'de');
