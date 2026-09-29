@@ -10,7 +10,7 @@ import {
   model,
   untracked,
 } from '@angular/core';
-import { nextUid } from '@cngx/core/utils';
+import { injectLocale, nextUid } from '@cngx/core/utils';
 import {
   CngxFormFieldPresenter,
   CNGX_FORM_FIELD_CONTROL,
@@ -22,7 +22,7 @@ import { CngxSelect, type CngxSelectOptionDef } from '@cngx/forms/select';
 import { CngxInputMask } from '../input-mask.directive';
 import { CNGX_INPUT_CONFIG, DEFAULT_INPUT_ARIA_LABELS } from '../input-config';
 import { CNGX_PHONE_METADATA } from '../phone-metadata';
-import { CNGX_PHONE_COUNTRIES, type Country } from './countries';
+import { createPhoneCountries, type Country } from './countries';
 
 /**
  * Nulls the surrounding `CngxFormFieldPresenter` for the element it sits on, so
@@ -126,11 +126,18 @@ export class CngxPhoneInput implements CngxFormFieldControl {
   /** The masked phone number (raw digits the mask accepted). Two-way bindable. */
   readonly value = model<string>('');
 
-  /** The selected country. Two-way bindable; defaults to the first entry. */
-  readonly country = model<Country>(CNGX_PHONE_COUNTRIES[0]);
+  /**
+   * Default country list, labelled in the app locale (`CNGX_LOCALE`, default the
+   * nearest `LOCALE_ID`) once at construction; a later locale flip does not
+   * relabel it.
+   */
+  private readonly localeCountries = createPhoneCountries(injectLocale()());
 
-  /** Overrides the picker's country list. */
-  readonly countries = input<readonly Country[]>(CNGX_PHONE_COUNTRIES);
+  /** The selected country. Two-way bindable; defaults to the first entry. */
+  readonly country = model<Country>(this.localeCountries[0]);
+
+  /** Overrides the picker's country list. Default: the built-in regions, named in the app locale. */
+  readonly countries = input<readonly Country[]>(this.localeCountries);
 
   /**
    * Which mask alternate to use. `'auto'` (default) picks landline vs mobile by

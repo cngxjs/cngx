@@ -1,4 +1,4 @@
-import { Component, viewChild } from '@angular/core';
+import { Component, LOCALE_ID, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { CngxFormField } from '@cngx/forms/field';
@@ -13,7 +13,11 @@ import { providePhoneMetadata, type CngxPhoneMetadata } from '../phone-metadata'
 import { loadAllMaskPresets } from '../mask-presets/registry';
 import { CngxPhoneInput } from './phone-input.component';
 import { CngxSelect } from '@cngx/forms/select';
-import { CNGX_PHONE_COUNTRIES, type Country } from './countries';
+import { provideLocale } from '@cngx/core/utils';
+import { createPhoneCountries, type Country } from './countries';
+
+const CNGX_PHONE_COUNTRIES = createPhoneCountries('en-US');
+const FULL_ICU = new Intl.DisplayNames('de', { type: 'region' }).of('AT') === 'Österreich';
 
 const mobileAdapter: CngxPhoneMetadata = {
   lineType: (_region, national) => (/^1[567]/.test(national) ? 'mobile' : 'unknown'),
@@ -415,5 +419,57 @@ describe('CngxPhoneInput', () => {
     fixture.detectChanges();
     const select = fixture.debugElement.query(By.directive(CngxSelect)).componentInstance as CngxSelect<Country>;
     expect(select.value()).toBe(localized[1]);
+  });
+
+  describe('locale-derived country names', () => {
+    @Component({ template: `<cngx-phone-input />`, imports: [CngxPhoneInput] })
+    class BareHost {
+      readonly phone = viewChild.required(CngxPhoneInput);
+    }
+
+    function labelFor(region: string): string | undefined {
+      const fixture = TestBed.createComponent(BareHost);
+      fixture.detectChanges();
+      const select = fixture.debugElement.query(By.directive(CngxSelect))
+        .componentInstance as CngxSelect<Country>;
+      const option = (select.options() ?? []).find(
+        (o) => 'value' in o && (o.value as Country).region === region,
+      );
+      return option && 'label' in option ? option.label : undefined;
+    }
+
+    it('keeps the EN labels byte-identical', () => {
+      expect(CNGX_PHONE_COUNTRIES.map((c) => c.label)).toEqual([
+        'United States',
+        'United Kingdom',
+        'Germany',
+        'Austria',
+        'Switzerland',
+        'France',
+        'Italy',
+        'Spain',
+        'Slovenia',
+        'Croatia',
+        'Poland',
+        'Japan',
+        'Brazil',
+      ]);
+      expect(CNGX_PHONE_COUNTRIES.map((c) => c.region)).toContain('UK');
+      expect(labelFor('AT')).toBe('+43 Austria');
+    });
+
+    it('shares one list per locale', () => {
+      expect(createPhoneCountries('en-US')).toBe(CNGX_PHONE_COUNTRIES);
+    });
+
+    it.runIf(FULL_ICU)('names the countries in LOCALE_ID when no CNGX_LOCALE is provided', () => {
+      TestBed.configureTestingModule({ providers: [{ provide: LOCALE_ID, useValue: 'de' }] });
+      expect(labelFor('AT')).toBe('+43 Österreich');
+    });
+
+    it.runIf(FULL_ICU)('names the countries in CNGX_LOCALE', () => {
+      TestBed.configureTestingModule({ providers: [provideLocale('de')] });
+      expect(labelFor('AT')).toBe('+43 Österreich');
+    });
   });
 });

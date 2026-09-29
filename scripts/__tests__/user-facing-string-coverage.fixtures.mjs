@@ -35,7 +35,7 @@ export const COMPLETED_PHASE = 3;
  * Exact RATCHET length. Asserted equal, so the ceiling cannot be padded:
  * every row-closing commit removes its rows and lowers this number with them.
  */
-export const RATCHET_CEILING = 18;
+export const RATCHET_CEILING = 5;
 
 /**
  * The RATCHET keys (`file` + tab + `value`) at the end of Phase 1, frozen in
@@ -62,84 +62,6 @@ export const PHASE_1_KEYS = new Set(
  * @type {readonly StringManifestEntry[]}
  */
 export const RATCHET = [
-  {
-    file: 'projects/forms/input/phone-input/countries.ts',
-    value: 'United States',
-    note: 'CNGX_PHONE_COUNTRIES label, only a per-instance [countries] swap reaches it',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/input/phone-input/countries.ts',
-    value: 'United Kingdom',
-    note: 'CNGX_PHONE_COUNTRIES label, only a per-instance [countries] swap reaches it',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/input/phone-input/countries.ts',
-    value: 'Germany',
-    note: 'CNGX_PHONE_COUNTRIES label, only a per-instance [countries] swap reaches it',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/input/phone-input/countries.ts',
-    value: 'Austria',
-    note: 'CNGX_PHONE_COUNTRIES label, only a per-instance [countries] swap reaches it',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/input/phone-input/countries.ts',
-    value: 'Switzerland',
-    note: 'CNGX_PHONE_COUNTRIES label, only a per-instance [countries] swap reaches it',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/input/phone-input/countries.ts',
-    value: 'France',
-    note: 'CNGX_PHONE_COUNTRIES label, only a per-instance [countries] swap reaches it',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/input/phone-input/countries.ts',
-    value: 'Italy',
-    note: 'CNGX_PHONE_COUNTRIES label, only a per-instance [countries] swap reaches it',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/input/phone-input/countries.ts',
-    value: 'Spain',
-    note: 'CNGX_PHONE_COUNTRIES label, only a per-instance [countries] swap reaches it',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/input/phone-input/countries.ts',
-    value: 'Slovenia',
-    note: 'CNGX_PHONE_COUNTRIES label, only a per-instance [countries] swap reaches it',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/input/phone-input/countries.ts',
-    value: 'Croatia',
-    note: 'CNGX_PHONE_COUNTRIES label, only a per-instance [countries] swap reaches it',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/input/phone-input/countries.ts',
-    value: 'Poland',
-    note: 'CNGX_PHONE_COUNTRIES label, only a per-instance [countries] swap reaches it',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/input/phone-input/countries.ts',
-    value: 'Japan',
-    note: 'CNGX_PHONE_COUNTRIES label, only a per-instance [countries] swap reaches it',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/input/phone-input/countries.ts',
-    value: 'Brazil',
-    note: 'CNGX_PHONE_COUNTRIES label, only a per-instance [countries] swap reaches it',
-    closesIn: 4,
-  },
   {
     file: 'projects/data-display/treetable/treetable.component.ts',
     value: '{} rows selected',
