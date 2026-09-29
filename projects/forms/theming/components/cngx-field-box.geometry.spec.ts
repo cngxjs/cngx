@@ -560,6 +560,17 @@ describe.each(MATRIX)('field box inner label: %s skin, %s, touch %s', (skin, den
 });
 
 describe('field box inner label placement', () => {
+  // The label line comes out of the button's block floor, so on a coarse
+  // pointer the button spans the value line instead of growing the box: at
+  // least 24 x 24 (WCAG 2.5.8 AA) and the 44px inline floor.
+  it.each([false, true])('keeps the interactive affix at 24px or more (touch %s)', (touch) => {
+    const box = query(mountInnerLabel('fill', 'comfortable', touch), '.l-affixed');
+    const rect = query(box, ':scope > button').getBoundingClientRect();
+    expect(rect.height).toBeGreaterThanOrEqual(24 - 0.5);
+    expect(rect.width).toBeGreaterThanOrEqual((touch ? 44 : 32) - 0.5);
+    expect(box.getBoundingClientRect().height).toBeCloseTo(56, 0);
+  });
+
   it('spans the label over the whole box width and keeps the value line on one row', () => {
     const box = query(mountInnerLabel('fill', 'comfortable', false), '.l-affixed');
     const label = query(box, ':scope > .cngx-label');
@@ -571,7 +582,7 @@ describe('field box inner label placement', () => {
     expect(new Set(tops).size).toBe(1);
   });
 
-  it('sets the inner label as muted 13px text', () => {
+  it('sets the inner label as 13px text on a 14px line', () => {
     const label = query(mountInnerLabel('fill', 'comfortable', false), '.l-plain > .cngx-label');
     expect(computedValue(label, 'font-size')).toBe('13px');
     expect(computedValue(label, 'line-height')).toBe('14px');

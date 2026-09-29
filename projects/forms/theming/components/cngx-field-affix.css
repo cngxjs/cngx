@@ -240,8 +240,11 @@
        0 on a fine pointer, and exactly enough on a coarse one for the box to
        land on --cngx-target-min. The inline floor keeps the standalone rule
        (2rem, 44px under a coarse pointer), because width is not part of the
-       box formula. A click on the box padding focuses the main control, so
-       the box, not the stretched button alone, is the touch target. */
+       box formula. A click on the box padding focuses the main control, not
+       the button, so the button's own block size is its target. Under an
+       inner label the floor also subtracts the label line, so the box stays
+       on its formula; the button then spans the 24px value line, the WCAG
+       2.5.8 AA minimum, and keeps the 44px inline floor. */
     :scope > .cngx-field-affix--interactive {
       align-self: stretch;
       min-block-size: max(
