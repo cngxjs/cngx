@@ -12,6 +12,15 @@ export async function gotoDemo(page: Page, routePath: string): Promise<void> {
 }
 
 /**
+ * `gotoDemo` with a language pack: `?lang=de` sits before the hash, so the
+ * hash router never sees it and the app bootstraps with that pack.
+ */
+export async function gotoDemoLang(page: Page, routePath: string, lang: string): Promise<void> {
+  const clean = routePath.replace(/^\/+/, '');
+  await page.goto(`/?lang=${lang}#/${clean}`);
+}
+
+/**
  * Assert the *computed* CSS display of a node. Catches the class of bug
  * where a component is functionally wired but the consumer-side layout
  * stylesheet is missing — e.g. cngx-card-grid hosting `.cngx-card-grid`

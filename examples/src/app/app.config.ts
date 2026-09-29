@@ -1,4 +1,4 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
+import { ApplicationConfig, provideBrowserGlobalErrorListeners, type Provider } from '@angular/core';
 import { provideRouter, TitleStrategy, withHashLocation } from '@angular/router';
 import { provideContrast, provideDensity, provideMotion, provideTextScale } from '@cngx/core';
 import { provideDialog } from '@cngx/common/dialog';
@@ -16,6 +16,7 @@ import {
   withToasts,
 } from '@cngx/ui/feedback';
 
+import { DE_PACK } from '../../fixtures/i18n-de.fixture';
 import { routes } from './app.routes';
 import { CngxExamplesTitleStrategy } from './cngx-examples-title-strategy';
 
@@ -53,6 +54,18 @@ function initialFieldSkin(): Exclude<CngxFieldSkin, 'outline'> | null {
 }
 
 const fieldSkin = initialFieldSkin();
+
+// `?lang=de` (before the hash, so the hash router never sees it) swaps in the
+// German reference pack. LOCALE_ID is left alone, so Angular pipes in demo
+// chrome need no registerLocaleData; cngx formats through CNGX_LOCALE.
+function initialLanguagePack(): Provider[] {
+  try {
+    return new URLSearchParams(location.search).get('lang') === 'de' ? DE_PACK : [];
+  } catch {
+    // location may be unavailable; fall back to the English defaults.
+  }
+  return [];
+}
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -114,6 +127,7 @@ export const appConfig: ApplicationConfig = {
     // CngxAlerter / CngxBanner / CngxToaster are not providedIn: 'root';
     // root-level access requires opting in via with*() feature functions.
     provideFeedback(withAlerts(), withBanners(), withToasts()),
+    ...initialLanguagePack(),
     // CngxDialogOpener for imperative `dialog.open(Component)` usage.
     // Demo-only: stories that teach the programmatic path inject the opener
     // from this root provider so they do not need their own ApplicationConfig.
