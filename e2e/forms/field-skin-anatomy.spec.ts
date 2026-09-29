@@ -65,6 +65,25 @@ test.describe('field skin anatomy stories', () => {
     });
   }
 
+  // The catalogue stories carry no skin of their own; the app-wide skin toggle
+  // (config tier) decides, so every story renders in the skin picked there.
+  const CATALOGUE = [
+    { route: '/#/forms/select/single-select/signal-forms-required', host: 'cngx-select' },
+    { route: '/#/forms/select/multi-select/multi-basic', host: 'cngx-multi-select' },
+    { route: '/#/forms/select/combobox/combobox-basic-tag-picker-with-typeahead-filter', host: 'cngx-combobox' },
+    { route: '/#/forms/select/tree-select/basic-single-level-toggle', host: 'cngx-tree-select' },
+    { route: '/#/forms/field/error/basic', host: 'input' },
+    { route: '/#/forms/input/utilities/input-clear', host: '.cngx-field-box' },
+  ] as const;
+
+  for (const { route, host } of CATALOGUE) {
+    test(`app skin toggle reaches ${route.replace('/#/forms/', '')}`, async ({ page }) => {
+      await page.addInitScript(() => localStorage.setItem('cngx_field_skin', 'fill'));
+      await page.goto(route);
+      await expect(page.locator(`main ${host}`).first()).toHaveAttribute('data-skin', 'fill');
+    });
+  }
+
   test('fill: every box carries the fill skin, the controls inside resolve to bare', async ({ page }) => {
     await page.goto('/#/forms/field/skin/fill-anatomy');
     const boxes = page.locator('main .cngx-field-box');

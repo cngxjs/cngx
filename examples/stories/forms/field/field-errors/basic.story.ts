@@ -11,21 +11,18 @@ export const STORY: DemoSpec = {
   framework: 'signal-forms',
   apiComponents: ['CngxFieldErrors', 'CngxFormField', 'CngxLabel'],
   moduleImports: [
-    'import { CngxRadioGroup, CngxRadio } from \'@cngx/common/interactive\';',
-    'import type { CngxFieldSkin } from \'@cngx/forms/field\';',
     'import { form, schema, required } from \'@angular/forms/signals\';',
     'import { CngxFormField, CngxLabel, CngxFieldErrors } from \'@cngx/forms/field\';',
     'import { CngxInput } from \'@cngx/forms/input\';',
   ],
-  imports: ['FormsModule', 'CngxFormField', 'CngxLabel', 'CngxFieldErrors', 'CngxInput', 'CngxRadioGroup', 'CngxRadio'],
+  imports: ['FormsModule', 'CngxFormField', 'CngxLabel', 'CngxFieldErrors', 'CngxInput'],
   references: [
     { label: 'WCAG 3.3.1 Error Identification', href: 'https://www.w3.org/WAI/WCAG21/Understanding/error-identification.html' },
   ],
   setup: `protected readonly model = signal<{ email: string }>({ email: '' });
   protected readonly profile = form(this.model, schema((root) => {
     required(root.email, { message: 'Email is required.' });
-  }));
-  protected readonly skin = signal<CngxFieldSkin>('outline');`,
+  }));`,
   setupChrome: `  protected handleValidate(): void {
     this.profile.email().markAsTouched();
   }
@@ -33,7 +30,7 @@ export const STORY: DemoSpec = {
     this.model.set({ email: '' });
   }`,
   template: `  <div style="display:grid;gap:16px;max-width:360px">
-    <cngx-form-field [field]="profile.email" [skin]="skin()">
+    <cngx-form-field [field]="profile.email">
       <label cngxLabel>Email</label>
       <input cngxInput type="email" [(ngModel)]="profile.email().value" />
       <cngx-field-errors />
@@ -56,12 +53,5 @@ export const STORY: DemoSpec = {
         <span class="event-label">Errors visible</span>
         <span class="event-value">{{ profile.email().touched() && profile.email().invalid() ? 'shown' : 'hidden' }}</span>
       </div>
-    <div class="event-row" style="margin-top:8px">
-      <cngx-radio-group [(value)]="skin" name="field-skin" label="Field skin">
-        <cngx-radio value="outline">Outline</cngx-radio>
-        <cngx-radio value="fill">Fill</cngx-radio>
-        <cngx-radio value="bare">Bare</cngx-radio>
-      </cngx-radio-group>
-    </div>
     </div>`,
 };

@@ -12,8 +12,6 @@ export const STORY: DemoSpec = {
   apiComponents: ['CngxFieldSkinHost', 'CngxFormField', 'CngxFieldBox', 'CngxInput'],
   moduleImports: [
     'import { form, schema, required, pattern, FormField } from \'@angular/forms/signals\';',
-    'import { CngxRadioGroup, CngxRadio } from \'@cngx/common/interactive\';',
-    'import type { CngxFieldSkin } from \'@cngx/forms/field\';',
     'import { CngxFormField, CngxLabel, CngxHint, CngxFieldErrors, CngxFieldBox, CngxPrefix, CngxSuffix } from \'@cngx/forms/field\';',
     'import { CngxInput } from \'@cngx/forms/input\';',
   ],
@@ -27,8 +25,6 @@ export const STORY: DemoSpec = {
     'CngxSuffix',
     'CngxInput',
     'FormField',
-    'CngxRadioGroup',
-    'CngxRadio',
   ],
   references: [
     { label: 'WCAG 1.4.11 Non-text Contrast', href: 'https://www.w3.org/WAI/WCAG21/Understanding/non-text-contrast.html' },
@@ -39,17 +35,16 @@ export const STORY: DemoSpec = {
     required(root.name, { message: 'Name is required.' });
     required(root.amount, { message: 'Amount is required.' });
     pattern(root.amount, /^\\d+(\\.\\d{1,2})?$/, { message: 'Use a number with up to two decimals.' });
-  }));
-  protected readonly skin = signal<CngxFieldSkin>('fill');`,
+  }));`,
   template: `  <div style="display:grid;gap:16px;max-inline-size:24rem">
-    <cngx-form-field [field]="orderForm.name" [skin]="skin()">
+    <cngx-form-field [field]="orderForm.name" skin="fill">
       <label cngxLabel>Name on invoice</label>
       <input cngxInput [formField]="orderForm.name" autocomplete="name" />
       <span cngxHint>As it should appear on the invoice.</span>
       <cngx-field-errors />
     </cngx-form-field>
 
-    <cngx-form-field [field]="orderForm.amount" [skin]="skin()">
+    <cngx-form-field [field]="orderForm.amount" skin="fill">
       <label cngxLabel>Amount</label>
       <span cngxFieldBox>
         <span cngxPrefix>EUR</span>
@@ -58,14 +53,5 @@ export const STORY: DemoSpec = {
       </span>
       <cngx-field-errors />
     </cngx-form-field>
-  </div>`,
-  templateChrome: `<div class="event-grid" style="margin-top:12px">
-    <div class="event-row"><span class="event-label">Active skin</span><span class="event-value">{{ skin() }}</span></div>
-    <div class="event-row" style="margin-top:8px">
-      <cngx-radio-group [(value)]="skin" name="field-skin" label="Field skin">
-        <cngx-radio value="outline">Outline</cngx-radio>
-        <cngx-radio value="fill">Fill</cngx-radio>
-      </cngx-radio-group>
-    </div>
   </div>`,
 };
