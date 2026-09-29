@@ -1,4 +1,5 @@
 import { computed, inject, InjectionToken, untracked, type Signal } from '@angular/core';
+import { numberFormatterFor } from '@cngx/core/utils';
 
 import type { CngxFilterBuilderI18n } from './filter-builder.config';
 import type { FilterMutationEvent } from './filter-builder-state';
@@ -26,6 +27,11 @@ export interface CngxFilterBuilderAnnouncerSources<TValue = unknown> {
   readonly lastMutation: Signal<FilterMutationEvent | null>;
   readonly fieldMap: Signal<ReadonlyMap<string, FilterFieldDef<TValue>>>;
   readonly i18n: CngxFilterBuilderI18n;
+  /**
+   * Locale numeric filter values are spoken in. Read untracked, so a locale
+   * flip never re-speaks the last mutation. Omitted: `String(value)`.
+   */
+  readonly locale?: Signal<string>;
 }
 
 /**
@@ -38,14 +44,30 @@ export type CngxFilterBuilderAnnouncerFactory = <TValue = unknown>(
 ) => CngxFilterBuilderAnnouncer;
 
 /** @internal */
-function renderValueForAnnouncement(value: unknown): string {
+const ANNOUNCED_NUMBER: Intl.NumberFormatOptions = {
+  useGrouping: false,
+  maximumFractionDigits: 20,
+};
+
+/** @internal */
+function renderValueForAnnouncement(
+  value: unknown,
+  i18n: CngxFilterBuilderI18n,
+  locale: string | undefined,
+): string {
   if (value === null || value === undefined) {
     return '';
   }
   if (typeof value === 'string') {
     return `"${value}"`;
   }
-  if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint') {
+  if (typeof value === 'boolean') {
+    return (value ? i18n.booleanTrue : i18n.booleanFalse) ?? String(value);
+  }
+  if (typeof value === 'number' && locale) {
+    return numberFormatterFor(locale, ANNOUNCED_NUMBER).format(value);
+  }
+  if (typeof value === 'number' || typeof value === 'bigint') {
     return String(value);
   }
   return '';
@@ -65,7 +87,11 @@ export function createFilterBuilderAnnouncer<TValue>(
       return '';
     }
     const ctx = event.context;
-    const announce = sources.i18n.announcement;
+    const i18n = sources.i18n;
+    const announce = i18n.announcement;
+    const locale = untracked(() => sources.locale?.());
+    const operator = ctx?.operator ?? '';
+    const operatorLabel = i18n.operators[operator] ?? operator;
 
     const fieldLabel = ctx?.fieldKey
       ? (untracked(() => sources.fieldMap().get(ctx.fieldKey!)?.label) ?? ctx.fieldKey)
@@ -77,23 +103,28 @@ export function createFilterBuilderAnnouncer<TValue>(
       case 'remove-filter':
         return announce.filterRemoved({
           fieldLabel,
-          operator: ctx?.operator ?? '',
-          value: renderValueForAnnouncement(ctx?.value),
+          operator,
+          operatorLabel,
+          value: renderValueForAnnouncement(ctx?.value, i18n, locale),
         });
       case 'add-group':
         return announce.groupAdded();
       case 'remove-group':
         return announce.groupRemoved();
-      case 'set-logic':
-        return announce.logicChanged({ logic: ctx?.logic ?? 'and' });
+      case 'set-logic': {
+        const logic = ctx?.logic ?? 'and';
+        return announce.logicChanged({ logic, logicLabel: i18n[logic] });
+      }
       case 'toggle-negated':
         return ctx?.negated ? announce.groupNegated() : announce.groupUnnegated();
       case 'set-field':
         return announce.fieldChanged({ fieldLabel });
       case 'set-operator':
-        return announce.operatorChanged({ operator: ctx?.operator ?? '' });
+        return announce.operatorChanged({ operator, operatorLabel });
       case 'set-value':
-        return announce.valueChanged({ value: renderValueForAnnouncement(ctx?.value) });
+        return announce.valueChanged({
+          value: renderValueForAnnouncement(ctx?.value, i18n, locale),
+        });
       case 'clear':
         return announce.filtersCleared();
       default:

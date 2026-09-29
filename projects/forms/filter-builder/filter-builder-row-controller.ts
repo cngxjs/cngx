@@ -300,6 +300,7 @@ export function createFilterRowController(
       return deps.config.i18n.expressionLabel({
         fieldLabel,
         operator: expression.operator,
+        operatorLabel: operatorLabel(expression.operator),
       });
     }),
     removeButtonTemplate: computed(
