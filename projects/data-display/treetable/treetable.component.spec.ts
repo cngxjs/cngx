@@ -612,6 +612,33 @@ describe('CngxTreetable', () => {
       expect(region()).toBe('3 rows deselected');
     });
 
+    it('routes bulk selection announcements through withTreetableLabels', () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideTreetable(
+            withTreetableLabels({
+              rowsSelected: (n) => (n === 1 ? '1 Zeile ausgewählt' : `${n} Zeilen ausgewählt`),
+              rowsDeselected: (n) => (n === 1 ? '1 Zeile abgewählt' : `${n} Zeilen abgewählt`),
+            }),
+          ),
+        ],
+      });
+      const fixture = mount({ selectionMode: 'multi' });
+      const t = fixture.componentInstance;
+      const region = () =>
+        (
+          fixture.debugElement.query(By.css('.cngx-treetable__sr')).nativeElement as HTMLElement
+        ).textContent?.trim();
+
+      t.toggleAll();
+      fixture.detectChanges();
+      expect(region()).toBe('3 Zeilen ausgewählt');
+
+      t.toggleAll();
+      fixture.detectChanges();
+      expect(region()).toBe('3 Zeilen abgewählt');
+    });
+
     it('stays silent in the live region on per-row selection toggles', () => {
       const fixture = mount({ selectionMode: 'multi' });
       const t = fixture.componentInstance;

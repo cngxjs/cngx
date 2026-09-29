@@ -74,9 +74,7 @@ export interface TreetableTemplates {
 
 /**
  * Every built-in string `CngxTreetable` renders or announces. English
- * by default; localise app-wide via {@link withTreetableLabels}. The
- * counted bulk-selection announcements ("N rows selected") are not in
- * this bag - they are parameterised and stay library-owned for now.
+ * by default; localise app-wide via {@link withTreetableLabels}.
  *
  * @category data-display/treetable
  */
@@ -97,6 +95,10 @@ export interface TreetableLabels {
   selectAll: string;
   /** `aria-label` of a body row's selection checkbox. */
   selectRow: string;
+  /** Live-region announcement after select-all selects `count` visible rows. */
+  rowsSelected?: (count: number) => string;
+  /** Live-region announcement after select-all deselects `count` visible rows. */
+  rowsDeselected?: (count: number) => string;
 }
 
 /**
@@ -104,7 +106,7 @@ export interface TreetableLabels {
  * component overlays `CNGX_TREETABLE_CONFIG.labels` on top of this.
  * @internal
  */
-export const TREETABLE_DEFAULT_LABELS: TreetableLabels = {
+export const TREETABLE_DEFAULT_LABELS: Required<TreetableLabels> = {
   loading: 'Loading',
   refreshing: 'Refreshing',
   errorFallback: 'Data failed to load',
@@ -113,6 +115,8 @@ export const TREETABLE_DEFAULT_LABELS: TreetableLabels = {
   collapse: 'Collapse',
   selectAll: 'Select all rows',
   selectRow: 'Select row',
+  rowsSelected: (count) => (count === 1 ? '1 row selected' : `${count} rows selected`),
+  rowsDeselected: (count) => (count === 1 ? '1 row deselected' : `${count} rows deselected`),
 };
 
 /**
