@@ -8,6 +8,7 @@ import {
   inject,
   input,
   model,
+  type OnInit,
   untracked,
 } from '@angular/core';
 import { injectLocale, nextUid } from '@cngx/core/utils';
@@ -122,7 +123,7 @@ class CngxPhoneInputDetach {}
   `,
   styleUrl: './phone-input.component.css',
 })
-export class CngxPhoneInput implements CngxFormFieldControl {
+export class CngxPhoneInput implements CngxFormFieldControl, OnInit {
   /** The masked phone number (raw digits the mask accepted). Two-way bindable. */
   readonly value = model<string>('');
 
@@ -133,7 +134,10 @@ export class CngxPhoneInput implements CngxFormFieldControl {
    */
   private readonly localeCountries = createPhoneCountries(injectLocale()());
 
-  /** The selected country. Two-way bindable; defaults to the first entry. */
+  /**
+   * The selected country. Two-way bindable; defaults to the `phoneDefaultRegion`
+   * row of `countries`, else the first entry.
+   */
   readonly country = model<Country>(this.localeCountries[0]);
 
   /** Overrides the picker's country list. Default: the built-in regions, named in the app locale. */
@@ -181,17 +185,15 @@ export class CngxPhoneInput implements CngxFormFieldControl {
   private readonly defaultCountry = this.country();
 
   /**
-   * @internal The active row of `countries()`: the row matching the selected
-   * country's region, or - while `country` is untouched - the row matching
-   * `phoneDefaultRegion`; else the first row. Matching by region keeps a
-   * localized `[countries]` list in charge of the picked object.
+   * @internal The active row of `countries()`: the row whose region matches
+   * the selected country, else the first row. Matching by region keeps a
+   * localized `[countries]` list in charge of the picked object; a bound
+   * `country` whose region the list lacks falls back to the first row.
    */
   protected readonly resolvedCountry = computed(() => {
     const list = this.countries();
     const selected = this.country();
-    const untouched = selected === this.defaultCountry;
-    const region = (untouched ? this.config.phoneDefaultRegion : undefined) ?? selected.region;
-    return list.find((c) => c.region === region) ?? list[0] ?? selected;
+    return list.find((c) => c.region === selected.region) ?? list[0] ?? selected;
   });
 
   /** The mask region from the selected country, fed to `phone:<region>`. */
@@ -300,6 +302,23 @@ export class CngxPhoneInput implements CngxFormFieldControl {
         });
       });
     });
+  }
+
+  /**
+   * Applies `phoneDefaultRegion` once the inputs are bound, so it resolves
+   * against the active `[countries]` list. Skipped when `country` is bound:
+   * a per-instance binding wins over the app-wide default. "Bound" means the
+   * value differs from the construction-time default row.
+   */
+  ngOnInit(): void {
+    const region = this.config.phoneDefaultRegion;
+    if (!region || this.country() !== this.defaultCountry) {
+      return;
+    }
+    const match = this.countries().find((c) => c.region === region);
+    if (match) {
+      this.country.set(match);
+    }
   }
 
   /** @internal */

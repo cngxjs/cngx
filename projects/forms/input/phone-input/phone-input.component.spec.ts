@@ -368,6 +368,75 @@ describe('CngxPhoneInput', () => {
     fixture.detectChanges();
     const mask = fixture.debugElement.query(By.directive(CngxInputMask)).injector.get(CngxInputMask);
     expect(mask.mask()).toBe('phone:DE');
+    expect(fixture.componentInstance.phone().country().region).toBe('DE');
+  });
+
+  it('keeps the first row selectable under a configured default region', () => {
+    TestBed.configureTestingModule({
+      providers: [provideInputConfig(withPhoneDefaultRegion('DE'))],
+    });
+
+    @Component({ template: `<cngx-phone-input />`, imports: [CngxPhoneInput] })
+    class BareHost {
+      readonly phone = viewChild.required(CngxPhoneInput);
+    }
+
+    const fixture = TestBed.createComponent(BareHost);
+    fixture.detectChanges();
+    const select = fixture.debugElement.query(By.directive(CngxSelect))
+      .componentInstance as CngxSelect<Country>;
+    const phone = fixture.componentInstance.phone();
+    expect(phone.country().region).toBe('DE');
+
+    select.value.set(CNGX_PHONE_COUNTRIES[0]);
+    fixture.detectChanges();
+    expect(phone.country()).toBe(CNGX_PHONE_COUNTRIES[0]);
+    expect(select.value()).toBe(CNGX_PHONE_COUNTRIES[0]);
+    const mask = fixture.debugElement.query(By.directive(CngxInputMask)).injector.get(CngxInputMask);
+    expect(mask.mask()).toBe('phone:US');
+  });
+
+  it('lets a bound country win over the configured default region', () => {
+    TestBed.configureTestingModule({
+      providers: [provideInputConfig(withPhoneDefaultRegion('DE'))],
+    });
+    const bound: Country = { region: 'US', dialCode: '+1', label: 'USA' };
+
+    @Component({
+      template: `<cngx-phone-input [(country)]="country" />`,
+      imports: [CngxPhoneInput],
+    })
+    class BoundUsHost {
+      readonly phone = viewChild.required(CngxPhoneInput);
+      country = bound;
+    }
+
+    const fixture = TestBed.createComponent(BoundUsHost);
+    fixture.detectChanges();
+    expect(fixture.componentInstance.phone().country()).toBe(bound);
+    expect(fixture.componentInstance.country).toBe(bound);
+  });
+
+  it('falls back to the first row for a bound country the list lacks', () => {
+    const localized: readonly Country[] = [
+      { region: 'DE', dialCode: '+49', label: 'Deutschland' },
+      { region: 'AT', dialCode: '+43', label: 'Österreich' },
+    ];
+
+    @Component({
+      template: `<cngx-phone-input [countries]="countries" [country]="country" />`,
+      imports: [CngxPhoneInput],
+    })
+    class MissingHost {
+      readonly countries = localized;
+      readonly country: Country = { region: 'JP', dialCode: '+81', label: 'Japan' };
+    }
+
+    const fixture = TestBed.createComponent(MissingHost);
+    fixture.detectChanges();
+    const select = fixture.debugElement.query(By.directive(CngxSelect))
+      .componentInstance as CngxSelect<Country>;
+    expect(select.value()).toBe(localized[0]);
   });
 
   it('resolves the default region against a localized [countries] list', () => {
