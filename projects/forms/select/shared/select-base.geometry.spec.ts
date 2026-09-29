@@ -54,7 +54,7 @@ class SkinHost {
 @Component({
   selector: 'cngx-select-skin-state-host',
   standalone: true,
-  imports: [CngxTypeahead, CngxFormField],
+  imports: [CngxTypeahead, CngxSelect, CngxFormField],
   template: `
     <div style="display: grid; line-height: 1.5">
       <cngx-typeahead class="valid" skin="fill" [label]="'Colour'" [options]="options" />
@@ -68,6 +68,13 @@ class SkinHost {
         [label]="'Colour'"
         [options]="options"
       />
+      <cngx-typeahead
+        class="outline-off"
+        [disabled]="true"
+        [label]="'Colour'"
+        [options]="options"
+      />
+      <cngx-select class="select-outline-off" [disabled]="true" [label]="'Colour'" [options]="options" />
       <cngx-typeahead class="bare-valid" skin="bare" [label]="'Colour'" [options]="options" />
       <cngx-form-field [field]="invalidBareField">
         <cngx-typeahead class="bare-invalid" skin="bare" [label]="'Colour'" [options]="options" />
@@ -201,4 +208,30 @@ describe('select-family field skins', () => {
     const el = trigger(mount(StateHost), '.off');
     expect(computedValue(el, 'border-bottom-style')).toBe('dashed');
   });
+
+  // Outline is the default skin and writes no data-skin; disabled fades by
+  // colour there too, with the variant opacity lifted.
+  it.each(['.outline-off', '.select-outline-off'])(
+    'paints a disabled outline trigger (%s) by colour and a dashed border, not opacity',
+    (hostSelector) => {
+      const root = mount(StateHost);
+      const el = trigger(root, hostSelector);
+      expect(computedValue(el, 'opacity')).toBe('1');
+      for (const side of ['top', 'right', 'bottom', 'left']) {
+        expect(computedValue(el, `border-${side}-style`)).toBe('dashed');
+      }
+      expect(computedValue(el, 'color')).not.toBe(computedValue(trigger(root, '.valid'), 'color'));
+    },
+  );
+
+  it.each(['.off', '.outline-off'])(
+    'keeps the disabled inner combobox input (%s) at full opacity in the trigger colour',
+    (hostSelector) => {
+      const el = trigger(mount(StateHost), hostSelector);
+      const input = el.querySelector<HTMLElement>(':scope > [role="combobox"]');
+      expect(input).not.toBeNull();
+      expect(computedValue(input!, 'opacity')).toBe('1');
+      expect(computedValue(input!, 'color')).toBe(computedValue(el, 'color'));
+    },
+  );
 });
