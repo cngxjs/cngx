@@ -20,6 +20,7 @@ import { afterEach, describe, expect, it } from 'vitest';
   styleUrls: [
     '../../../core/theming/system-tokens.css',
     '../../../core/theming/reset.css',
+    '../../../core/theming/base.css',
     './cngx-field-skin.css',
     './cngx-field-affix.css',
     '../../select/shared/select-base.css',
@@ -63,6 +64,12 @@ import { afterEach, describe, expect, it } from 'vitest';
       <input class="bare-light" type="text" data-skin="bare" placeholder="Search" />
       <input class="bare-invalid-light" type="text" data-skin="bare" aria-invalid="true" />
       <span class="probe-page-light" style="background: var(--cngx-color-surface)"></span>
+      <input class="outline-light" type="text" value="Value" />
+      <input class="outline-disabled-light" type="text" value="Value" disabled />
+      <span class="cngx-field-box cngx-field-affix-row outline-box-disabled-light" data-skin="outline">
+        <span class="cngx-field-prefix">$</span>
+        <input type="text" data-skin="bare" value="Value" disabled />
+      </span>
       <label class="cngx-label label-light">Name</label>
       <label class="cngx-label cngx-label--error label-error-light">Name</label>
       <span class="cngx-hint hint-light">Hint</span>
@@ -90,6 +97,12 @@ import { afterEach, describe, expect, it } from 'vitest';
       <input class="bare-dark" type="text" data-skin="bare" placeholder="Search" />
       <input class="bare-invalid-dark" type="text" data-skin="bare" aria-invalid="true" />
       <span class="probe-page-dark" style="background: var(--cngx-color-surface)"></span>
+      <input class="outline-dark" type="text" value="Value" />
+      <input class="outline-disabled-dark" type="text" value="Value" disabled />
+      <span class="cngx-field-box cngx-field-affix-row outline-box-disabled-dark" data-skin="outline">
+        <span class="cngx-field-prefix">$</span>
+        <input type="text" data-skin="bare" value="Value" disabled />
+      </span>
       <label class="cngx-label label-dark">Name</label>
       <label class="cngx-label cngx-label--error label-error-dark">Name</label>
       <span class="cngx-hint hint-dark">Hint</span>
@@ -154,7 +167,7 @@ function settle(): Promise<void> {
 // Rasterise a computed colour to sRGB bytes. Chromium reports these tokens in
 // oklab / color() notation depending on the declaration, so parsing the string
 // is brittle; painting it and reading the pixel back is not.
-function toRgb(color: string): [number, number, number] {
+function toRgb(color: string, underlay = '#fff'): [number, number, number] {
   const canvas = document.createElement('canvas');
   canvas.width = 1;
   canvas.height = 1;
@@ -164,7 +177,7 @@ function toRgb(color: string): [number, number, number] {
   }
   // White underlay so a translucent surface composites the way it renders on
   // the page, which is what the contrast ratio has to be measured against.
-  ctx.fillStyle = '#fff';
+  ctx.fillStyle = underlay;
   ctx.fillRect(0, 0, 1, 1);
   ctx.fillStyle = color;
   ctx.fillRect(0, 0, 1, 1);
@@ -180,12 +193,16 @@ function relativeLuminance([r, g, b]: [number, number, number]): number {
   return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
 }
 
-function contrast(a: string, b: string): number {
-  const la = relativeLuminance(toRgb(a));
-  const lb = relativeLuminance(toRgb(b));
+function contrast(a: string, b: string, underlay?: string): number {
+  const la = relativeLuminance(toRgb(a, underlay));
+  const lb = relativeLuminance(toRgb(b, underlay));
   const [hi, lo] = la > lb ? [la, lb] : [lb, la];
   return (hi + 0.05) / (lo + 0.05);
 }
+
+// Legibility floor for disabled value text. Not a WCAG number (1.4.3 exempts
+// inactive controls); it keeps the value readable at the 38% recipe.
+const DISABLED_TEXT_FLOOR = 2;
 
 function query(root: HTMLElement, selector: string): HTMLElement {
   const el = root.querySelector(selector);
@@ -390,6 +407,28 @@ describe('field skin geometry', () => {
       expect(contrast(page, manual)).toBeGreaterThanOrEqual(4.5);
       expect(manual).toBe(list);
     });
+
+    // 1.4.3 exempts a disabled control, so this ratchet pins distinctness
+    // instead of a floor: the disabled value text of a lone outline control
+    // and of an outline box reads clearly fainter than the resting value, and
+    // stays above a legibility floor on its own tinted surface.
+    it('fades disabled outline value text below the resting value, above the floor', () => {
+      const root = mount();
+      const { page } = colours(root);
+      const resting = computedValue(query(root, `.outline-${scheme}`), 'color');
+      const restingRatio = contrast(page, resting, page);
+      for (const selector of [`.outline-disabled-${scheme}`, `.outline-box-disabled-${scheme}`]) {
+        const el = query(root, selector);
+        const surface = computedValue(el, 'background-color');
+        const text = computedValue(el, 'color');
+        // Text and surface are both translucent: composite the surface on the
+        // page first, then measure the text on that.
+        const ground = `rgb(${toRgb(surface, page).join(' ')})`;
+        const ratio = contrast(ground, text, ground);
+        expect(ratio).toBeLessThan(restingRatio / 2);
+        expect(ratio).toBeGreaterThanOrEqual(DISABLED_TEXT_FLOOR);
+      }
+    });
   });
 
   it('sets the label, hint and both error surfaces at 13px', () => {
@@ -454,6 +493,24 @@ describe('field skin geometry', () => {
     expect(computedValue(disabled, 'opacity')).toBe('1');
     expect(computedValue(disabled, 'border-bottom-style')).toBe('dotted');
     expect(computedValue(disabled, 'cursor')).toBe('not-allowed');
+  });
+
+  it('marks a disabled outline control and outline box with a dashed border, not opacity', () => {
+    const root = mount();
+    for (const selector of ['.outline-disabled-light', '.outline-box-disabled-light']) {
+      const el = query(root, selector);
+      expect(computedValue(el, 'opacity')).toBe('1');
+      for (const side of ['top', 'right', 'bottom', 'left']) {
+        expect(computedValue(el, `border-${side}-style`)).toBe('dashed');
+      }
+      expect(computedValue(el, 'cursor')).toBe('not-allowed');
+    }
+    expect(computedValue(query(root, '.outline-light'), 'border-top-style')).toBe('solid');
+    // The prefix keeps its own muted colour; only the value fades.
+    const box = query(root, '.outline-box-disabled-light');
+    expect(computedValue(query(box, '.cngx-field-prefix'), 'color')).not.toBe(
+      computedValue(box, 'color'),
+    );
   });
 
   it('draws one bare error ring per affix row, on the row', () => {
