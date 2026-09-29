@@ -83,6 +83,7 @@ function createMockHost(): {
       loadFailedRetry: 'Retry',
       refreshFailed: 'Refresh failed',
       refreshFailedRetry: 'Try again',
+      searchPlaceholder: 'Search…',
       commitFailed: 'Save failed',
       commitFailedRetry: 'Try again',
     },

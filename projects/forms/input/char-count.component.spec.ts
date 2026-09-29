@@ -6,6 +6,7 @@ import { CngxFormField, type CngxFieldAccessor } from '@cngx/forms/field';
 import { createMockField } from '@cngx/forms/field/testing';
 import { CngxInput } from './input.directive';
 import { CngxCharCount } from './char-count.component';
+import { provideInputConfig, withInputAriaLabels } from './input-config';
 
 @Component({
   template: `
@@ -98,6 +99,62 @@ describe('CngxCharCount', () => {
 
     const el = fix.debugElement.query(By.directive(CngxCharCount)).nativeElement as HTMLElement;
     expect(el.textContent?.trim()).toBe('0/100');
+  });
+
+  it('renders the minimum readout when only [min] applies', async () => {
+    const mock = createMockField({ name: 'bio' });
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ imports: [MinHost] });
+    const fix = TestBed.createComponent(MinHost);
+    fix.componentInstance.field.set(mock.accessor);
+    fix.detectChanges();
+    TestBed.flushEffects();
+    await fix.whenStable();
+    fix.detectChanges();
+
+    const el = fix.debugElement.query(By.directive(CngxCharCount)).nativeElement as HTMLElement;
+    expect(el.textContent?.trim()).toBe('0 (min 10)');
+  });
+
+  describe('translated readouts (withInputAriaLabels)', () => {
+    async function setup(host: typeof ExplicitMaxHost | typeof MinHost) {
+      const mock = createMockField({ name: 'bio' });
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        imports: [host],
+        providers: [
+          provideInputConfig(
+            withInputAriaLabels({
+              charCountMax: (current, max) => `${current} von ${max}`,
+              charCountMin: (current, min) => `${current} (mindestens ${min})`,
+            }),
+          ),
+        ],
+      });
+      const fix = TestBed.createComponent(host);
+      fix.componentInstance.field.set(mock.accessor);
+      fix.detectChanges();
+      TestBed.flushEffects();
+      await fix.whenStable();
+      fix.detectChanges();
+      const el = fix.debugElement.query(By.directive(CngxCharCount)).nativeElement as HTMLElement;
+      const input = fix.debugElement.query(By.css('input')).nativeElement as HTMLInputElement;
+      return { fix, el, input };
+    }
+
+    it('formats the maximum readout through charCountMax', async () => {
+      const { fix, el, input } = await setup(ExplicitMaxHost);
+      expect(el.textContent?.trim()).toBe('0 von 100');
+      input.value = 'abc';
+      input.dispatchEvent(new Event('input'));
+      fix.detectChanges();
+      expect(el.textContent?.trim()).toBe('3 von 100');
+    });
+
+    it('formats the minimum readout through charCountMin', async () => {
+      const { el } = await setup(MinHost);
+      expect(el.textContent?.trim()).toBe('0 (mindestens 10)');
+    });
   });
 
   describe('FieldState value fallback (no sibling DOM input)', () => {
@@ -195,5 +252,18 @@ class NoLimitHost {
   imports: [CngxFormField, CngxInput, CngxCharCount],
 })
 class ExplicitMaxHost {
+  field = signal<CngxFieldAccessor>(createMockField({ name: 'bio' }).accessor);
+}
+
+@Component({
+  template: `
+    <cngx-form-field [field]="field()">
+      <input cngxInput />
+      <cngx-char-count [min]="10" />
+    </cngx-form-field>
+  `,
+  imports: [CngxFormField, CngxInput, CngxCharCount],
+})
+class MinHost {
   field = signal<CngxFieldAccessor>(createMockField({ name: 'bio' }).accessor);
 }

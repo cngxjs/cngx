@@ -5,6 +5,7 @@ import { CNGX_FORM_FIELD_HOST, type CngxFormFieldHostContract } from '@cngx/core
 import { CNGX_VALUE_TRANSFORMER, type CngxValueTransformer } from '@cngx/forms/field';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { CngxFieldSkinHost, provideFormField, withFieldSkin } from '@cngx/forms/field';
+import { CNGX_LOCALE } from '@cngx/core/utils';
 import { CngxInput } from './input.directive';
 import { CngxInputMask, type MaskTokenMap } from './input-mask.directive';
 import { provideInputConfig, withPhonePatterns } from './input-config';
@@ -594,6 +595,46 @@ describe('CngxInputMask', () => {
     it('should resolve "date" preset for ja locale (YYYY/MM/DD)', () => {
       const { input } = setup({ mask: 'date', locale: 'ja-JP' });
       expect(input.value).toBe('____/__/__');
+    });
+
+    describe('CNGX_LOCALE flip', () => {
+      function setupWithLocale() {
+        const localeSignal = signal('en-US');
+        TestBed.configureTestingModule({
+          providers: [{ provide: CNGX_LOCALE, useValue: localeSignal }],
+        });
+        const fixture = TestBed.createComponent(Host);
+        fixture.componentInstance.mask.set('date');
+        flush(fixture);
+        const input = fixture.nativeElement.querySelector('input') as HTMLInputElement;
+        return { fixture, input, directive: fixture.componentInstance.directive(), localeSignal };
+      }
+
+      it('re-resolves the preset and keeps the raw digits (no auto-clear)', () => {
+        const { fixture, input, directive, localeSignal } = setupWithLocale();
+        typeSequence(input, '12312024', directive, fixture);
+        expect(input.value).toBe('12/31/2024');
+        expect(directive.value()).toBe('12312024');
+
+        localeSignal.set('de-DE');
+        flush(fixture);
+        expect(directive.value()).toBe('12312024');
+        expect(input.value).toBe('12.31.2024');
+      });
+
+      it('keeps the caret on the same raw index on a focused flip', () => {
+        const { fixture, input, directive, localeSignal } = setupWithLocale();
+        document.body.appendChild(fixture.nativeElement);
+        input.focus();
+        typeSequence(input, '1231', directive, fixture);
+        expect(input.selectionStart).toBe(6);
+
+        localeSignal.set('de-DE');
+        flush(fixture);
+        expect(input.value).toBe('12.31.____');
+        expect(input.selectionStart).toBe(6);
+        fixture.nativeElement.remove();
+      });
     });
 
     it('should resolve "phone:CH" preset', () => {

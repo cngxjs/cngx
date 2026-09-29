@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { describe, expect, it } from 'vitest';
 
-import { provideSelectConfig, withAriaLabels } from '../shared/config';
+import { provideSelectConfig, withAriaLabels, withFallbackLabels } from '../shared/config';
 import { CngxSelectSearch } from './select-search.component';
 import { CNGX_SELECT_SHELL_SEARCH_HOST } from './select-search-host';
 
@@ -79,5 +79,38 @@ describe('CngxSelectSearch - aria-label cascade', () => {
     });
     const { input } = setup(HostNoLabel);
     expect(input.getAttribute('aria-label')).toBe('Find an option');
+  });
+});
+
+@Component({
+  template: `
+    <div fakeSearchHost>
+      <cngx-select-search />
+    </div>
+  `,
+  imports: [CngxSelectSearch, FakeSearchHostDir],
+})
+class HostUnbound {}
+
+describe('CngxSelectSearch - placeholder cascade', () => {
+  it('defaults to the library English placeholder', () => {
+    const { input } = setup(HostUnbound);
+    expect(input.placeholder).toBe('Search…');
+  });
+
+  it('reads withFallbackLabels({ searchPlaceholder }) when unbound', () => {
+    TestBed.configureTestingModule({
+      providers: [provideSelectConfig(withFallbackLabels({ searchPlaceholder: 'Suchen…' }))],
+    });
+    const { input } = setup(HostUnbound);
+    expect(input.placeholder).toBe('Suchen…');
+  });
+
+  it('lets a bound [placeholder] win over the config', () => {
+    TestBed.configureTestingModule({
+      providers: [provideSelectConfig(withFallbackLabels({ searchPlaceholder: 'Suchen…' }))],
+    });
+    const { input } = setup(HostNoLabel);
+    expect(input.placeholder).toBe('Filter…');
   });
 });

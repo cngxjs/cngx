@@ -46,7 +46,7 @@ describe('createFilterBuilderAnnouncer', () => {
     expect(announcer.announcement()).toBe('Filter added: unknown');
   });
 
-  it('formats remove-filter with field label, operator, and quoted value', () => {
+  it('formats remove-filter with field label, operator label, and quoted value', () => {
     const announcer = createFilterBuilderAnnouncer(
       buildSources({
         kind: 'remove-filter',
@@ -54,7 +54,96 @@ describe('createFilterBuilderAnnouncer', () => {
         context: { fieldKey: 'name', operator: 'contains', value: 'foo' },
       }),
     );
-    expect(announcer.announcement()).toBe('Filter removed: First name contains "foo"');
+    expect(announcer.announcement()).toBe('Filter removed: First name Contains "foo"');
+  });
+
+  it('announces the operator label, not the raw key', () => {
+    const announcer = createFilterBuilderAnnouncer(
+      buildSources({ kind: 'set-operator', path: [0], context: { operator: 'gte' } }),
+    );
+    expect(announcer.announcement()).toBe('Operator changed to Greater than or equal');
+  });
+
+  it('falls back to the raw operator key when no label exists', () => {
+    const announcer = createFilterBuilderAnnouncer(
+      buildSources({ kind: 'set-operator', path: [0], context: { operator: 'custom' } }),
+    );
+    expect(announcer.announcement()).toBe('Operator changed to custom');
+  });
+
+  it('announces a custom operator by its definition label', () => {
+    const operators = new Map([['near', { label: 'Near', evaluate: () => true }]]);
+    const announcer = createFilterBuilderAnnouncer({
+      ...buildSources({ kind: 'set-operator', path: [0], context: { operator: 'near' } }),
+      operators,
+    });
+    expect(announcer.announcement()).toBe('Operator changed to Near');
+  });
+
+  it('lets an i18n entry win over the operator definition label', () => {
+    const operators = new Map([['near', { label: 'Near', evaluate: () => true }]]);
+    const base = CNGX_FILTER_BUILDER_DEFAULTS.i18n;
+    const announcer = createFilterBuilderAnnouncer({
+      ...buildSources({ kind: 'set-operator', path: [0], context: { operator: 'near' } }),
+      i18n: { ...base, operators: { ...base.operators, near: 'In der Nähe' } },
+      operators,
+    });
+    expect(announcer.announcement()).toBe('Operator changed to In der Nähe');
+  });
+
+  it('passes translated operator, logic and boolean words to the formatters', () => {
+    const base = CNGX_FILTER_BUILDER_DEFAULTS.i18n;
+    const i18n = {
+      ...base,
+      or: 'ODER',
+      booleanTrue: 'wahr',
+      operators: { ...base.operators, gte: 'Größer oder gleich' },
+      announcement: {
+        ...base.announcement,
+        operatorChanged: ({ operatorLabel }: { operator: string; operatorLabel?: string }) =>
+          `Operator geändert zu ${operatorLabel}`,
+        logicChanged: ({ logicLabel }: { logicLabel?: string }) => `Logik: ${logicLabel}`,
+        valueChanged: ({ value }: { value: string }) => `Wert: ${value}`,
+      },
+    };
+    const lastMutation = signal<FilterMutationEvent | null>({
+      kind: 'set-operator',
+      path: [0],
+      context: { operator: 'gte' },
+    });
+    const announcer = createFilterBuilderAnnouncer({ ...buildSources(null), lastMutation, i18n });
+    expect(announcer.announcement()).toBe('Operator geändert zu Größer oder gleich');
+    lastMutation.set({ kind: 'set-logic', path: [], context: { logic: 'or' } });
+    expect(announcer.announcement()).toBe('Logik: ODER');
+    lastMutation.set({ kind: 'set-value', path: [0], context: { value: true } });
+    expect(announcer.announcement()).toBe('Wert: wahr');
+  });
+
+  it('keeps numbers as String(value) when no locale is passed', () => {
+    const announcer = createFilterBuilderAnnouncer(
+      buildSources({ kind: 'set-value', path: [0], context: { value: 1234.5 } }),
+    );
+    expect(announcer.announcement()).toBe('Value changed to 1234.5');
+  });
+
+  it('formats numbers in the passed locale without grouping', () => {
+    const announcer = createFilterBuilderAnnouncer({
+      ...buildSources({ kind: 'set-value', path: [0], context: { value: 1234.5 } }),
+      locale: signal('de-DE'),
+    });
+    expect(announcer.announcement()).toBe('Value changed to 1234,5');
+  });
+
+  it('does not re-speak the last mutation when the locale flips', () => {
+    const locale = signal('en-US');
+    const announcer = createFilterBuilderAnnouncer({
+      ...buildSources({ kind: 'set-value', path: [0], context: { value: 1.5 } }),
+      locale,
+    });
+    const first = announcer.announcement();
+    expect(first).toBe('Value changed to 1.5');
+    locale.set('de-DE');
+    expect(announcer.announcement()).toBe(first);
   });
 
   it('formats set-logic as uppercase logic name', () => {

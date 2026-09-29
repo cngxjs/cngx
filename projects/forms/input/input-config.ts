@@ -23,7 +23,7 @@ export interface InputConfig {
   readonly maskGuide?: boolean;
   /** Custom mask tokens available globally. */
   readonly customTokens?: MaskTokenMap;
-  /** Default locale for `CngxNumericInput` (overrides `LOCALE_ID`). */
+  /** Default locale for `CngxNumericInput` (overrides the app locale: `CNGX_LOCALE`, default the nearest `LOCALE_ID`). */
   readonly numericLocale?: string;
   /** Default decimal places for `CngxNumericInput`. */
   readonly numericDecimals?: number;
@@ -90,6 +90,10 @@ export interface InputAriaLabels {
   readonly ratingItem: (step: number, max: number) => string;
   /** `aria-label` for the `CngxPhoneInput` country picker. Default: `'Country'` */
   readonly phoneCountry: string;
+  /** Visible `CngxCharCount` readout when a maximum applies. Default: `` (current, max) => `${current}/${max}` `` */
+  readonly charCountMax?: (current: number, max: number) => string;
+  /** Visible `CngxCharCount` readout when only a minimum applies. Default: `` (current, min) => `${current} (min ${min})` `` */
+  readonly charCountMin?: (current: number, min: number) => string;
 }
 
 /**
@@ -98,7 +102,7 @@ export interface InputAriaLabels {
  *
  * @category forms/input
  */
-export const DEFAULT_INPUT_ARIA_LABELS: InputAriaLabels = {
+export const DEFAULT_INPUT_ARIA_LABELS: Required<InputAriaLabels> = {
   clear: 'Clear',
   otpGroup: 'One-time code',
   otpSlot: (index, length) => `Digit ${index + 1} of ${length}`,
@@ -114,6 +118,8 @@ export const DEFAULT_INPUT_ARIA_LABELS: InputAriaLabels = {
   ratingValue: (value, max) => `${value} of ${max}`,
   ratingItem: (step, max) => `${step} of ${max}`,
   phoneCountry: 'Country',
+  charCountMax: (current, max) => `${current}/${max}`,
+  charCountMin: (current, min) => `${current} (min ${min})`,
 };
 
 /**
@@ -242,7 +248,7 @@ export function injectInputConfig(): InputConfig {
  * - Consumer entries merge per key onto the built-ins and win on collision.
  * - Resolved as `{ ...PHONE_PATTERNS, ...config.phonePatterns }[region]`,
  *   falling back to US when the region is absent.
- * - Region comes from `phone:<REGION>` or `LOCALE_ID`.
+ * - Region comes from `phone:<REGION>` or the app locale (`CNGX_LOCALE`, default the nearest `LOCALE_ID`).
  * - Pattern tokens: `0` = required digit, literals pass through.
  *
  * ```typescript
@@ -271,7 +277,7 @@ export function withPhonePatterns(patterns: Record<string, string>): InputConfig
  *   `config.ibanPatterns`; an unknown region falls back to
  *   `AA00 0000 0000 0000 0000 00`.
  * - Consumer entries merge per key and win on collision.
- * - Region comes from `iban:<REGION>` or `LOCALE_ID`.
+ * - Region comes from `iban:<REGION>` or the app locale (`CNGX_LOCALE`, default the nearest `LOCALE_ID`).
  *
  * ```typescript
  * provideInputConfig(withIbanPatterns({ BE: 'AA00 0000 0000 0000' }));
@@ -299,7 +305,7 @@ export function withIbanPatterns(patterns: Record<string, string>): InputConfigF
  * - Resolved against the lazily-loaded built-in table merged with
  *   `config.zipPatterns`; an unknown region falls back to `00000`.
  * - Consumer entries merge per key and win on collision.
- * - Region comes from `zip:<REGION>` or `LOCALE_ID`.
+ * - Region comes from `zip:<REGION>` or the app locale (`CNGX_LOCALE`, default the nearest `LOCALE_ID`).
  *
  * ```typescript
  * provideInputConfig(withZipPatterns({ NL: '0000 AA' }));
@@ -332,7 +338,7 @@ export function withZipPatterns(patterns: Record<string, string>): InputConfigFe
  *
  * ```typescript
  * provideInputConfig(withDateFormats({ 'en-NZ': '00/00/0000' }));
- * // LOCALE_ID 'en-NZ' + <input cngxInputMask="date" />
+ * // app locale 'en-NZ' (CNGX_LOCALE, default the nearest LOCALE_ID) + <input cngxInputMask="date" />
  * ```
  *
  * @see {@link provideInputConfig}
@@ -415,7 +421,7 @@ export function withCustomTokens(tokens: MaskTokenMap): InputConfigFeature {
 /**
  * Sets app-wide defaults for `CngxNumericInput`.
  *
- * - `locale` overrides `LOCALE_ID` for numeric inputs only.
+ * - `locale` overrides the app locale (`CNGX_LOCALE`, default the nearest `LOCALE_ID`) for numeric inputs only.
  * - `decimals` and `step` set formatting (`step` default `1`).
  * - Each key applies only when supplied; a partial override leaves the rest at
  *   the directive's defaults.

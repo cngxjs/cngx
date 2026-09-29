@@ -185,6 +185,8 @@ export interface CngxSelectFallbackLabels {
   readonly refreshFailed?: string;
   /** Inline refresh error retry button. Default `'Try again'`. */
   readonly refreshFailedRetry?: string;
+  /** `<cngx-select-search>` visible placeholder. Default `'Search…'`. */
+  readonly searchPlaceholder?: string;
   /** Commit-error banner. Default `'Save failed'`. */
   readonly commitFailed?: string;
   /** Commit-error retry button. Default `'Try again'`. */
@@ -413,6 +415,7 @@ export const CNGX_SELECT_DEFAULTS: Required<
     loadFailedRetry: 'Retry',
     refreshFailed: 'Refresh failed',
     refreshFailedRetry: 'Try again',
+    searchPlaceholder: 'Search…',
     commitFailed: 'Save failed',
     commitFailedRetry: 'Try again',
   },

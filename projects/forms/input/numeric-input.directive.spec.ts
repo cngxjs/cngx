@@ -5,7 +5,9 @@ import { CNGX_FORM_FIELD_HOST, type CngxFormFieldHostContract } from '@cngx/core
 import { CNGX_VALUE_TRANSFORMER, type CngxValueTransformer } from '@cngx/forms/field';
 import { describe, expect, it, vi } from 'vitest';
 import { CngxFieldSkinHost, provideFormField, withFieldSkin } from '@cngx/forms/field';
+import { CNGX_LOCALE } from '@cngx/core/utils';
 import { CngxInput } from './input.directive';
+import { provideInputConfig, withNumericDefaults } from './input-config';
 import { CngxNumericInput } from './numeric-input.directive';
 
 @Component({
@@ -211,6 +213,73 @@ describe('CngxNumericInput', () => {
       expect(directive.numericValue()).toBe(1234.56);
       // Swiss uses various group separators - just verify the value round-trips
       expect(input.value).toBeTruthy();
+    });
+  });
+
+  describe('CNGX_LOCALE source', () => {
+    function setupWithLocale(
+      initial: string,
+      opts: { inputLocale?: string; configLocale?: string } = {},
+    ) {
+      const localeSignal = signal(initial);
+      TestBed.configureTestingModule({
+        providers: [
+          { provide: LOCALE_ID, useValue: 'en-US' },
+          { provide: CNGX_LOCALE, useValue: localeSignal },
+          ...(opts.configLocale
+            ? [provideInputConfig(withNumericDefaults({ locale: opts.configLocale }))]
+            : []),
+        ],
+      });
+      const fixture = TestBed.createComponent(Host);
+      if (opts.inputLocale) {
+        fixture.componentInstance.locale.set(opts.inputLocale);
+      }
+      flush(fixture);
+      const input = fixture.nativeElement.querySelector('input') as HTMLInputElement;
+      return { fixture, input, directive: fixture.componentInstance.directive(), localeSignal };
+    }
+
+    it('re-formats a blurred value when the locale flips, model unchanged', () => {
+      const { fixture, input, directive, localeSignal } = setupWithLocale('en-US');
+      directive.setValue(1234.5);
+      flush(fixture);
+      expect(input.value).toBe('1,234.5');
+
+      localeSignal.set('de-DE');
+      flush(fixture);
+      expect(input.value).toBe('1.234,5');
+      expect(directive.value()).toBe(1234.5);
+    });
+
+    it('keeps the typed text on a focused flip and parses it in the locale it was typed in', () => {
+      const { fixture, input, directive, localeSignal } = setupWithLocale('de-DE');
+      focus(input);
+      flush(fixture);
+      input.value = '1,5';
+
+      localeSignal.set('en-US');
+      flush(fixture);
+      expect(input.value).toBe('1,5');
+
+      blur(input);
+      flush(fixture);
+      expect(directive.value()).toBe(1.5);
+      expect(input.value).toBe('1.5');
+    });
+
+    it('lets the [locale] input outrank CNGX_LOCALE', () => {
+      const { fixture, input, directive } = setupWithLocale('en-US', { inputLocale: 'de-DE' });
+      directive.setValue(1234.5);
+      flush(fixture);
+      expect(input.value).toBe('1.234,5');
+    });
+
+    it('lets numericLocale outrank CNGX_LOCALE', () => {
+      const { fixture, input, directive } = setupWithLocale('en-US', { configLocale: 'de-DE' });
+      directive.setValue(1234.5);
+      flush(fixture);
+      expect(input.value).toBe('1.234,5');
     });
   });
 

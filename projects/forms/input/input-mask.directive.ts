@@ -7,13 +7,13 @@ import {
   forwardRef,
   inject,
   input,
-  LOCALE_ID,
   model,
   type Signal,
   untracked,
 } from '@angular/core';
 import { clamp } from '@cngx/utils';
 import { CNGX_FORM_FIELD_HOST } from '@cngx/core/tokens';
+import { injectLocale } from '@cngx/core/utils';
 import { CNGX_VALUE_TRANSFORMER, type CngxValueTransformer } from '@cngx/forms/field';
 import { CNGX_INPUT_CONFIG, type InputConfig } from './input-config';
 import {
@@ -362,7 +362,8 @@ export type MaskTokenMap = Record<string, MaskTokenDef>;
  *
  * ### Built-in presets
  *
- * Pass a preset name instead of a pattern. Region suffix optional (defaults to `LOCALE_ID`).
+ * Pass a preset name instead of a pattern. Region suffix optional (defaults to the app
+ * locale, `CNGX_LOCALE`, falling back to the nearest `LOCALE_ID`).
  *
  * | Preset | Example | Notes |
  * |-|-|-|
@@ -377,6 +378,13 @@ export type MaskTokenMap = Record<string, MaskTokenDef>;
  * | `zip` | `cngxInputMask="zip:DE"` | Country-specific |
  * | `ip` / `ipv4` | `cngxInputMask="ip"` | `099.099.099.099` |
  * | `mac` | `cngxInputMask="mac"` | `AA:AA:AA:AA:AA:AA` |
+ *
+ * ### Locale flips
+ *
+ * A preset re-resolves when the app locale changes. The raw `value` keeps its
+ * digits, so a filled `date` / `datetime` mask re-reads the same digits in the
+ * new field order (`en-US` `MM/DD/YYYY` vs `de` `DD.MM.YYYY`). An app that flips
+ * the locale under a filled date mask re-sets `value`.
  *
  * ### Multiple patterns
  *
@@ -456,7 +464,7 @@ export type MaskTokenMap = Record<string, MaskTokenDef>;
 export class CngxInputMask {
   private readonly el = inject<ElementRef<HTMLInputElement>>(ElementRef);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly locale = inject(LOCALE_ID);
+  private readonly locale = injectLocale();
   private readonly config = inject(CNGX_INPUT_CONFIG);
   private readonly host = inject(CNGX_FORM_FIELD_HOST, { optional: true });
 
@@ -538,7 +546,7 @@ export class CngxInputMask {
     () => {
       const maskVal = this.mask();
       // Reading the signal makes this recompute when a lazily-imported table lands.
-      const preset = resolvePreset(maskVal, this.locale, maskPresetTables(), this.config);
+      const preset = resolvePreset(maskVal, this.locale(), maskPresetTables(), this.config);
       if (preset) {
         return preset.patterns.flatMap((p) => p.split('|'));
       }

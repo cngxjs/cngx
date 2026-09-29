@@ -1,10 +1,11 @@
-import { Component, computed, signal, viewChild } from '@angular/core';
+import { Component, computed, signal, viewChild, type Provider } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
 import type { FilterFieldDef, FilterGroup, FilterNode } from './filter-builder.types';
 import { CNGX_FILTER_BUILDER_HOST, type CngxFilterBuilderHost } from './filter-builder-host.token';
 import { CngxFilterGroup } from './filter-builder-group.directive';
+import { provideFilterBuilderConfigAt, withFilterBuilderI18n } from './filter-builder.config';
 
 const FIELD: FilterFieldDef = { key: 'name', label: 'Name', editorType: 'string' };
 
@@ -59,14 +60,18 @@ class Host {
   readonly directive = viewChild.required(CngxFilterGroup);
 }
 
-function setup(initial: FilterGroup, path: readonly number[] = []): {
+function setup(
+  initial: FilterGroup,
+  path: readonly number[] = [],
+  extraProviders: Provider[] = [],
+): {
   fixture: ReturnType<typeof TestBed.createComponent<Host>>;
   host: Host;
   directive: CngxFilterGroup;
 } {
   const mockHost = buildMockHost(initial);
   TestBed.configureTestingModule({
-    providers: [{ provide: CNGX_FILTER_BUILDER_HOST, useValue: mockHost }],
+    providers: [{ provide: CNGX_FILTER_BUILDER_HOST, useValue: mockHost }, ...extraProviders],
   });
 
   const fixture = TestBed.createComponent(Host);
@@ -118,6 +123,14 @@ describe('CngxFilterGroup', () => {
     TestBed.flushEffects();
 
     expect(directive.groupLabel()).toBe('Filter group (OR, negated)');
+  });
+
+  it('names the group with the translated logic word and negation tag', () => {
+    const tree: FilterGroup = { type: 'group', id: 'g1', logic: 'or', negated: true, filters: [] };
+    const { directive } = setup(tree, [], [
+      provideFilterBuilderConfigAt(withFilterBuilderI18n({ or: 'ODER', negatedTag: 'negiert' })),
+    ]);
+    expect(directive.groupLabel()).toBe('Root filter group (ODER, negiert)');
   });
 
   it('reflects null safely when the path addresses an expression', () => {

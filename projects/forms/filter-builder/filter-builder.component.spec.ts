@@ -164,13 +164,13 @@ describe('CngxFilterBuilder - announcer text', () => {
     expect(presenter.announcement()).toBe('Logic changed to OR');
   });
 
-  it('announces "Filter removed: Name eq \\"foo\\"" on remove', () => {
+  it('announces "Filter removed: Name Equals \\"foo\\"" on remove', () => {
     const initial = createFilterGroup('and', [createFilterExpression('name', 'eq', 'foo')]);
     const { fixture, presenter } = basicSetup(initial);
     presenter.removeNode([0]);
     fixture.detectChanges();
     TestBed.flushEffects();
-    expect(presenter.announcement()).toBe('Filter removed: Name eq "foo"');
+    expect(presenter.announcement()).toBe('Filter removed: Name Equals "foo"');
   });
 
   it('announces "Group negated" on toggleNegated', () => {
@@ -209,7 +209,7 @@ describe('CngxFilterBuilder - ARIA labels reactive', () => {
     const { hostEl } = basicSetup(initial);
     const expr = hostEl.querySelector('.cngx-filter-builder__expression') as HTMLElement;
     expect(expr.getAttribute('role')).toBe('group');
-    expect(expr.getAttribute('aria-label')).toBe('Filter: Name contains');
+    expect(expr.getAttribute('aria-label')).toBe('Filter: Name Contains');
   });
 });
 

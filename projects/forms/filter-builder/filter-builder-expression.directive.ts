@@ -4,6 +4,7 @@ import type { FilterExpression } from './filter-builder.types';
 import { injectFilterBuilderConfig } from './filter-builder.config';
 import { CNGX_FILTER_BUILDER_HOST } from './filter-builder-host.token';
 import { isExpressionIncomplete, referenceEqual } from './filter-builder-internal';
+import { resolveOperatorLabel } from './filter-builder-operators';
 
 /** @internal */
 const EMPTY_OPERATORS: readonly string[] = Object.freeze([]) as readonly string[];
@@ -100,9 +101,15 @@ export class CngxFilterExpression {
     }
     const def = this.fieldDef();
     const fieldLabel = def?.label ?? expr.field;
+    const operator = expr.operator;
     return this.config.i18n.expressionLabel({
       fieldLabel,
-      operator: expr.operator,
+      operator,
+      operatorLabel: resolveOperatorLabel(
+        operator,
+        this.config.i18n.operators,
+        this.config.operators,
+      ),
     });
   });
 }

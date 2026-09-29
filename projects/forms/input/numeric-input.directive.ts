@@ -6,13 +6,13 @@ import {
   forwardRef,
   inject,
   input,
-  LOCALE_ID,
   model,
   signal,
   type Signal,
   untracked,
 } from '@angular/core';
 import { CNGX_FORM_FIELD_HOST } from '@cngx/core/tokens';
+import { injectLocale } from '@cngx/core/utils';
 import { CNGX_VALUE_TRANSFORMER, type CngxValueTransformer } from '@cngx/forms/field';
 import { CNGX_INPUT_CONFIG } from './input-config';
 
@@ -165,11 +165,16 @@ function isAllowedChar(
 })
 export class CngxNumericInput {
   private readonly el = inject<ElementRef<HTMLInputElement>>(ElementRef);
-  private readonly localeId = inject(LOCALE_ID);
+  private readonly appLocale = injectLocale();
   private readonly config = inject(CNGX_INPUT_CONFIG);
   private readonly host = inject(CNGX_FORM_FIELD_HOST, { optional: true });
 
-  /** Locale for number formatting. Falls back to global config, then `LOCALE_ID`. */
+  /**
+   * Locale for number formatting. Falls back to global config, then the app
+   * locale (`CNGX_LOCALE`, default the nearest `LOCALE_ID`). A locale flip
+   * while the input is focused applies on blur: the typed text is parsed in
+   * the locale it was typed in.
+   */
   readonly locale = input<string | undefined>(undefined);
 
   /** Minimum allowed value. */
@@ -193,8 +198,12 @@ export class CngxNumericInput {
   // Resolved config: input > global config > default.
 
   private readonly resolvedLocale = computed(
-    () => this.locale() ?? this.config.numericLocale ?? this.localeId,
+    () => this.locale() ?? this.config.numericLocale ?? this.appLocale(),
   );
+  /** Locale pinned at focus, so a flip mid-edit neither rewrites nor misparses the typed text. */
+  private readonly editLocale = signal<string | undefined>(undefined);
+  /** Locale the current text is shown and parsed in. */
+  private readonly activeLocale = computed(() => this.editLocale() ?? this.resolvedLocale());
   private readonly resolvedCurrency = computed(() => this.config.numericCurrency);
   /** A configured currency's standard fraction-digit count (USD 2, JPY 0). */
   private readonly currencyDecimals = computed(() => {
@@ -221,7 +230,7 @@ export class CngxNumericInput {
 
   private readonly focusedState = signal(false);
 
-  private readonly separators = computed(() => detectSeparators(this.resolvedLocale()), {
+  private readonly separators = computed(() => detectSeparators(this.activeLocale()), {
     equal: (a, b) => a.decimal === b.decimal && a.group === b.group,
   });
 
@@ -254,6 +263,8 @@ export class CngxNumericInput {
       const value = this.value();
       const { decimal } = this.separators();
       const formatOnBlur = this.formatOnBlur();
+      // Tracked so a blurred flip between locales that share separators still re-formats.
+      this.activeLocale();
 
       untracked(() => {
         const el = this.el.nativeElement;
@@ -303,7 +314,7 @@ export class CngxNumericInput {
     if (!display.trim()) {
       return null;
     }
-    const parsed = parseLocaleNumber(display, this.resolvedLocale());
+    const parsed = parseLocaleNumber(display, this.activeLocale());
     if (parsed == null) {
       return null;
     }
@@ -381,6 +392,7 @@ export class CngxNumericInput {
 
   /** @internal */
   protected handleFocus(): void {
+    this.editLocale.set(this.resolvedLocale());
     this.focusedState.set(true);
     queueMicrotask(() => {
       this.el.nativeElement.select();
@@ -392,7 +404,7 @@ export class CngxNumericInput {
     this.focusedState.set(false);
     this.host?.markAsTouched();
     const raw = this.el.nativeElement.value;
-    const parsed = parseLocaleNumber(raw, this.resolvedLocale());
+    const parsed = parseLocaleNumber(raw, this.activeLocale());
 
     if (parsed != null) {
       const rounded = this.roundToDecimals(parsed);
@@ -402,6 +414,7 @@ export class CngxNumericInput {
       this.updateValue(null);
     }
     // Invalid text path: keep previous value; the display effect restores it.
+    this.editLocale.set(undefined);
   }
 
   /** @internal */
@@ -412,7 +425,7 @@ export class CngxNumericInput {
       return;
     }
 
-    const parsed = parseLocaleNumber(pasted, this.resolvedLocale());
+    const parsed = parseLocaleNumber(pasted, this.activeLocale());
     if (parsed != null) {
       const rounded = this.roundToDecimals(parsed);
       const clamped = this.clamp(rounded);

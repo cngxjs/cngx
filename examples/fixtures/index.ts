@@ -7,3 +7,17 @@ export {
   FILTER_BUILDER_SEED,
   type FilterBuilderPerson,
 } from './filter-builder-fixtures';
+export {
+  DE_PACK,
+  DEMO_DISPLAY_LABELS,
+  DEMO_INTERACTIVE_LABELS,
+  DEMO_KPI_LABELS,
+  DEMO_LANG,
+  DEMO_LOCALE,
+  DEMO_POPOVER_PANEL_LABELS,
+  DISPLAY_DE,
+  EN_RESIDUE_STRINGS,
+  INTERACTIVE_DE,
+  KPI_DE,
+  POPOVER_PANEL_DE,
+} from './i18n-de.fixture';

@@ -80,6 +80,8 @@ export class CngxFilterGroup {
       logic: this.logic(),
       negated: this.negated(),
       isRoot: this.isRoot(),
+      logicLabel: this.config.i18n[this.logic()],
+      negatedTag: this.config.i18n.negatedTag,
     }),
   );
 }

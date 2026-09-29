@@ -143,7 +143,7 @@ describe('CngxFilterExpression', () => {
       filters: [{ type: 'expression', id: 'e1', field: 'name', operator: 'contains', value: 'foo' }],
     };
     const { directive } = setup(tree, [FIELD_NAME]);
-    expect(directive.expressionLabel()).toBe('Filter: Name contains');
+    expect(directive.expressionLabel()).toBe('Filter: Name Contains');
   });
 
   it('returns null node when path addresses a group instead of an expression', () => {

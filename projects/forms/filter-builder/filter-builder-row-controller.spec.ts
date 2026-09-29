@@ -293,7 +293,7 @@ describe('createFilterRowController - derivations', () => {
 
     node.set(createFilterExpression('name', 'eq', 'foo'));
     expect(controller.isIncomplete()).toBe(false);
-    expect(controller.ariaLabel()).toBe('Filter: Name eq');
+    expect(controller.ariaLabel()).toBe('Filter: Name Equals');
   });
 });
 

@@ -152,7 +152,7 @@ Implements `ControlValueAccessor` for Reactive Forms.
 
 ### Locale-Aware Presets
 
-Pass a preset name instead of a pattern. Region suffix optional -- defaults to `LOCALE_ID`.
+Pass a preset name instead of a pattern. Region suffix optional -- defaults to the app locale (`CNGX_LOCALE`, falling back to the nearest `LOCALE_ID`).
 
 | Preset | Example | Notes |
 |-|-|-|

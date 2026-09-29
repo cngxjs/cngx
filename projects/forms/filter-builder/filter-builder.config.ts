@@ -57,12 +57,18 @@ export interface CngxFilterBuilderGroupLabelContext {
   readonly logic: FilterLogic;
   readonly negated: boolean;
   readonly isRoot: boolean;
+  /** Translated logic word (`i18n.and` / `or` / `xor`); `logic` stays the raw key. */
+  readonly logicLabel?: string;
+  /** Translated negation marker (`i18n.negatedTag`). */
+  readonly negatedTag?: string;
 }
 
 /** Context passed to `i18n.expressionLabel` when building an expression row's accessible label. */
 export interface CngxFilterBuilderExpressionLabelContext {
   readonly fieldLabel: string;
   readonly operator: string;
+  /** Translated operator label (`i18n.operators[operator]`); `operator` stays the raw key. */
+  readonly operatorLabel?: string;
 }
 
 /**
@@ -72,14 +78,19 @@ export interface CngxFilterBuilderExpressionLabelContext {
  */
 export interface CngxFilterBuilderAnnouncementFormatters {
   readonly filterAdded: (args: { fieldLabel: string }) => string;
-  readonly filterRemoved: (args: { fieldLabel: string; operator: string; value: string }) => string;
+  readonly filterRemoved: (args: {
+    fieldLabel: string;
+    operator: string;
+    value: string;
+    operatorLabel?: string;
+  }) => string;
   readonly groupAdded: () => string;
   readonly groupRemoved: () => string;
-  readonly logicChanged: (args: { logic: FilterLogic }) => string;
+  readonly logicChanged: (args: { logic: FilterLogic; logicLabel?: string }) => string;
   readonly groupNegated: () => string;
   readonly groupUnnegated: () => string;
   readonly fieldChanged: (args: { fieldLabel: string }) => string;
-  readonly operatorChanged: (args: { operator: string }) => string;
+  readonly operatorChanged: (args: { operator: string; operatorLabel?: string }) => string;
   readonly valueChanged: (args: { value: string }) => string;
   readonly filtersCleared: () => string;
 }
@@ -106,6 +117,12 @@ export interface CngxFilterBuilderI18n {
   readonly expressionLabel: (ctx: CngxFilterBuilderExpressionLabelContext) => string;
   readonly unboundFilterLabel: string;
   readonly announcement: CngxFilterBuilderAnnouncementFormatters;
+  /** Negation marker in the group label. Default: `'negated'`. */
+  readonly negatedTag?: string;
+  /** Spoken form of a `true` filter value in announcements. Default: `'true'`. */
+  readonly booleanTrue?: string;
+  /** Spoken form of a `false` filter value in announcements. Default: `'false'`. */
+  readonly booleanFalse?: string;
 }
 
 /**
@@ -152,14 +169,24 @@ const DEFAULT_I18N: CngxFilterBuilderI18n = Object.freeze({
     in: 'In',
     notIn: 'Not in',
   }),
-  groupLabel: ({ logic, negated, isRoot }: CngxFilterBuilderGroupLabelContext): string => {
-    const upper = logic.toUpperCase();
-    const negTag = negated ? ', negated' : '';
+  groupLabel: ({
+    logic,
+    negated,
+    isRoot,
+    logicLabel,
+    negatedTag,
+  }: CngxFilterBuilderGroupLabelContext): string => {
+    const upper = logicLabel ?? logic.toUpperCase();
+    const negTag = negated ? `, ${negatedTag ?? 'negated'}` : '';
     const heading = isRoot ? 'Root filter group' : 'Filter group';
     return `${heading} (${upper}${negTag})`;
   },
-  expressionLabel: ({ fieldLabel, operator }: CngxFilterBuilderExpressionLabelContext): string => {
-    const op = operator || '(no operator)';
+  expressionLabel: ({
+    fieldLabel,
+    operator,
+    operatorLabel,
+  }: CngxFilterBuilderExpressionLabelContext): string => {
+    const op = (operatorLabel ?? operator) || '(no operator)';
     return `Filter: ${fieldLabel} ${op}`;
   },
   unboundFilterLabel: 'Unbound filter',
@@ -169,22 +196,32 @@ const DEFAULT_I18N: CngxFilterBuilderI18n = Object.freeze({
       fieldLabel,
       operator,
       value,
+      operatorLabel,
     }: {
       fieldLabel: string;
       operator: string;
       value: string;
-    }) => `Filter removed: ${fieldLabel} ${operator} ${value}`.trim().replace(/\s+/g, ' '),
+      operatorLabel?: string;
+    }) =>
+      `Filter removed: ${fieldLabel} ${operatorLabel ?? operator} ${value}`
+        .trim()
+        .replace(/\s+/g, ' '),
     groupAdded: () => 'Filter group added',
     groupRemoved: () => 'Filter group removed',
-    logicChanged: ({ logic }: { logic: FilterLogic }) => `Logic changed to ${logic.toUpperCase()}`,
+    logicChanged: ({ logic, logicLabel }: { logic: FilterLogic; logicLabel?: string }) =>
+      `Logic changed to ${logicLabel ?? logic.toUpperCase()}`,
     groupNegated: () => 'Group negated',
     groupUnnegated: () => 'Group un-negated',
     fieldChanged: ({ fieldLabel }: { fieldLabel: string }) => `Field changed to ${fieldLabel}`,
-    operatorChanged: ({ operator }: { operator: string }) => `Operator changed to ${operator}`,
+    operatorChanged: ({ operator, operatorLabel }: { operator: string; operatorLabel?: string }) =>
+      `Operator changed to ${operatorLabel ?? operator}`,
     valueChanged: ({ value }: { value: string }) =>
       value ? `Value changed to ${value}` : 'Value changed',
     filtersCleared: () => 'Filters cleared',
   }) as CngxFilterBuilderAnnouncementFormatters,
+  negatedTag: 'negated',
+  booleanTrue: 'true',
+  booleanFalse: 'false',
 }) as CngxFilterBuilderI18n;
 
 /** @internal Library defaults; English. */

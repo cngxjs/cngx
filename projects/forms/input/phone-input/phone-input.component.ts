@@ -8,9 +8,10 @@ import {
   inject,
   input,
   model,
+  type OnInit,
   untracked,
 } from '@angular/core';
-import { nextUid } from '@cngx/core/utils';
+import { injectLocale, nextUid } from '@cngx/core/utils';
 import {
   CngxFormFieldPresenter,
   CNGX_FORM_FIELD_CONTROL,
@@ -22,7 +23,7 @@ import { CngxSelect, type CngxSelectOptionDef } from '@cngx/forms/select';
 import { CngxInputMask } from '../input-mask.directive';
 import { CNGX_INPUT_CONFIG, DEFAULT_INPUT_ARIA_LABELS } from '../input-config';
 import { CNGX_PHONE_METADATA } from '../phone-metadata';
-import { CNGX_PHONE_COUNTRIES, type Country } from './countries';
+import { createPhoneCountries, type Country } from './countries';
 
 /**
  * Nulls the surrounding `CngxFormFieldPresenter` for the element it sits on, so
@@ -50,7 +51,9 @@ class CngxPhoneInputDetach {}
  * (a null `CngxFormFieldPresenter` in the inner element's `providers`, via
  * `CngxPhoneInputDetach`) so only this component wires the field ARIA and value.
  *
- * The country list is consumer-overridable through `[countries]`. Selecting a
+ * The country list is consumer-overridable through `[countries]`; the picked
+ * row is matched by region, so a localized list (and `withPhoneDefaultRegion`)
+ * preselects its own row. Selecting a
  * country pre-fills its dial code (e.g. `+49`); switching country clears the
  * entered national number (the mask's documented auto-clear on pattern change)
  * and re-seeds the new dial code.
@@ -92,7 +95,8 @@ class CngxPhoneInputDetach {}
     <cngx-select
       cngxPhoneInputDetach
       class="cngx-phone-input__country"
-      [(value)]="country"
+      [value]="resolvedCountry()"
+      (valueChange)="handleCountryChange($event)"
       [options]="selectOptions()"
       [disabled]="disabled()"
       [aria-label]="resolvedCountryLabel()"
@@ -119,15 +123,25 @@ class CngxPhoneInputDetach {}
   `,
   styleUrl: './phone-input.component.css',
 })
-export class CngxPhoneInput implements CngxFormFieldControl {
+export class CngxPhoneInput implements CngxFormFieldControl, OnInit {
   /** The masked phone number (raw digits the mask accepted). Two-way bindable. */
   readonly value = model<string>('');
 
-  /** The selected country. Two-way bindable; defaults to the first entry. */
-  readonly country = model<Country>(CNGX_PHONE_COUNTRIES[0]);
+  /**
+   * Default country list, labelled in the app locale (`CNGX_LOCALE`, default the
+   * nearest `LOCALE_ID`) once at construction; a later locale flip does not
+   * relabel it.
+   */
+  private readonly localeCountries = createPhoneCountries(injectLocale()());
 
-  /** Overrides the picker's country list. */
-  readonly countries = input<readonly Country[]>(CNGX_PHONE_COUNTRIES);
+  /**
+   * The selected country. Two-way bindable; defaults to the `phoneDefaultRegion`
+   * row of `countries`, else the first entry.
+   */
+  readonly country = model<Country>(this.localeCountries[0]);
+
+  /** Overrides the picker's country list. Default: the built-in regions, named in the app locale. */
+  readonly countries = input<readonly Country[]>(this.localeCountries);
 
   /**
    * Which mask alternate to use. `'auto'` (default) picks landline vs mobile by
@@ -167,16 +181,29 @@ export class CngxPhoneInput implements CngxFormFieldControl {
 
   readonly focused = this.aria.focused;
 
+  /** Construction-time default of `country`; equal means the consumer never set it. */
+  private readonly defaultCountry = this.country();
+
+  /**
+   * @internal The active row of `countries()`: the row whose region matches
+   * the selected country, else the first row. Matching by region keeps a
+   * localized `[countries]` list in charge of the picked object; a bound
+   * `country` whose region the list lacks falls back to the first row.
+   */
+  protected readonly resolvedCountry = computed(() => {
+    const list = this.countries();
+    const selected = this.country();
+    return list.find((c) => c.region === selected.region) ?? list[0] ?? selected;
+  });
+
   /** The mask region from the selected country, fed to `phone:<region>`. */
-  protected readonly region = computed(
-    () => this.country()?.region ?? CNGX_PHONE_COUNTRIES[0].region,
-  );
+  protected readonly region = computed(() => this.resolvedCountry().region);
 
   // value() is dial-code-prefixed (the prefill seeds the country code digits),
   // so it is not the national subscriber number. Strip the dial code before
   // handing it to the metadata strategy, which contracts on national digits.
   private readonly nationalDigits = computed(() => {
-    const cc = this.country().dialCode.replace(/\D/g, '');
+    const cc = this.resolvedCountry().dialCode.replace(/\D/g, '');
     const v = this.value();
     return v.startsWith(cc) ? v.slice(cc.length) : v;
   });
@@ -254,15 +281,6 @@ export class CngxPhoneInput implements CngxFormFieldControl {
   });
 
   constructor() {
-    // App-wide default region (overridden by a per-instance [country] binding).
-    const region = this.config.phoneDefaultRegion;
-    if (region) {
-      const match = CNGX_PHONE_COUNTRIES.find((c) => c.region === region);
-      if (match) {
-        this.country.set(match);
-      }
-    }
-
     createFieldSync<string>({
       componentValue: this.value,
       valueEquals: Object.is,
@@ -275,7 +293,7 @@ export class CngxPhoneInput implements CngxFormFieldControl {
     // field-restored number. The dial-code digits land in the mask's `+NN`
     // country-code slots (slot count matches the dial-code length per region).
     effect(() => {
-      const dialDigits = this.country().dialCode.replace(/\D/g, '');
+      const dialDigits = this.resolvedCountry().dialCode.replace(/\D/g, '');
       untracked(() => {
         queueMicrotask(() => {
           if (this.value() === '') {
@@ -284,6 +302,30 @@ export class CngxPhoneInput implements CngxFormFieldControl {
         });
       });
     });
+  }
+
+  /**
+   * Applies `phoneDefaultRegion` once the inputs are bound, so it resolves
+   * against the active `[countries]` list. Skipped when `country` is bound:
+   * a per-instance binding wins over the app-wide default. "Bound" means the
+   * value differs from the construction-time default row.
+   */
+  ngOnInit(): void {
+    const region = this.config.phoneDefaultRegion;
+    if (!region || this.country() !== this.defaultCountry) {
+      return;
+    }
+    const match = this.countries().find((c) => c.region === region);
+    if (match) {
+      this.country.set(match);
+    }
+  }
+
+  /** @internal */
+  protected handleCountryChange(next: Country | undefined): void {
+    if (next) {
+      this.country.set(next);
+    }
   }
 
   /** @internal */

@@ -32,7 +32,8 @@ import { NgTemplateOutlet } from '@angular/common';
 import type { CngxAsyncState } from '@cngx/core/utils';
 import { resolveAsyncView, type AsyncView } from '@cngx/common/data';
 import { injectDirection, resolveInlineArrowKey } from '@cngx/core';
-import { arrayEqual } from '@cngx/utils';
+import { coerceSignal } from '@cngx/core/utils';
+import { arrayEqual, recordEqual } from '@cngx/utils';
 import { CngxTreetableRow } from './treetable-row.directive';
 import {
   CngxCellTpl,
@@ -314,17 +315,17 @@ export class CngxTreetable<T = unknown> {
    */
   readonly retry = output<void>();
 
-  private readonly config = inject(CNGX_TREETABLE_CONFIG);
+  private readonly config = coerceSignal(inject(CNGX_TREETABLE_CONFIG));
 
   /**
    * @internal Resolved copy for every built-in string: app-wide
    * `CNGX_TREETABLE_CONFIG.labels` overlaid on the English library
-   * defaults. Plain field - the config token is injected once.
+   * defaults.
    */
-  protected readonly labels: TreetableLabels = {
-    ...TREETABLE_DEFAULT_LABELS,
-    ...this.config.labels,
-  };
+  protected readonly labels = computed<Required<TreetableLabels>>(
+    () => ({ ...TREETABLE_DEFAULT_LABELS, ...this.config().labels }),
+    { equal: recordEqual },
+  );
 
   /** Document writing direction - swaps the physical expand/collapse arrows under `rtl` (APG treegrid). */
   private readonly direction = injectDirection();
@@ -348,19 +349,19 @@ export class CngxTreetable<T = unknown> {
    * (`null` here; the template branches to it).
    */
   protected readonly resolvedEmptyTpl = computed(
-    () => this.emptyTpl()?.template ?? this.config.templates?.empty ?? null,
+    () => this.emptyTpl()?.template ?? this.config().templates?.empty ?? null,
   );
   /** @internal See `resolvedEmptyTpl`. */
   protected readonly resolvedErrorTpl = computed(
-    () => this.errorTpl()?.template ?? this.config.templates?.error ?? null,
+    () => this.errorTpl()?.template ?? this.config().templates?.error ?? null,
   );
   /** @internal See `resolvedEmptyTpl`. */
   protected readonly resolvedSkeletonRowTpl = computed(
-    () => this.skeletonRowTpl()?.template ?? this.config.templates?.skeletonRow ?? null,
+    () => this.skeletonRowTpl()?.template ?? this.config().templates?.skeletonRow ?? null,
   );
   /** @internal See `resolvedEmptyTpl`. */
   protected readonly resolvedRefreshTpl = computed(
-    () => this.refreshTpl()?.template ?? this.config.templates?.refresh ?? null,
+    () => this.refreshTpl()?.template ?? this.config().templates?.refresh ?? null,
   );
 
   /** @internal Stable retry callback handed to the error-template context. */
@@ -474,17 +475,21 @@ export class CngxTreetable<T = unknown> {
    * failures have anything to say; the string is empty otherwise so the
    * region stays in the DOM while staying silent. Single announcer for
    * the failure - the error surface itself carries no `role="alert"`
-   * (that would double-fire on top of this region).
+   * (that would double-fire on top of this region). The copy is read
+   * untracked: a label change never re-speaks the current phase, the next
+   * view transition speaks in the new copy.
    */
   protected readonly stateAnnouncement = computed(() => {
     const view = this.activeView();
+    const refreshing = this.showsRefreshIndicator();
+    const labels = untracked(this.labels);
     if (view === 'skeleton') {
-      return this.labels.loading;
+      return labels.loading;
     }
     if (view === 'error' || view === 'content+error') {
-      return this.labels.errorFallback;
+      return labels.errorFallback;
     }
-    return this.showsRefreshIndicator() ? this.labels.refreshing : '';
+    return refreshing ? labels.refreshing : '';
   });
 
   /**
@@ -528,7 +533,7 @@ export class CngxTreetable<T = unknown> {
    */
   readonly resolvedOptions = computed<CngxTreetableOptions<T>>(
     () => ({
-      ...this.config,
+      ...this.config(),
       ...this.options(),
     }),
     {
@@ -814,9 +819,7 @@ export class CngxTreetable<T = unknown> {
       // the visible rows, so "Selection cleared" would misreport whenever
       // hidden-selected rows survive.
       const cleared = visible.size;
-      this.selectionAnnouncementState.set(
-        cleared === 1 ? '1 row deselected' : `${cleared} rows deselected`,
-      );
+      this.selectionAnnouncementState.set(this.labels().rowsDeselected(cleared));
       return;
     }
     const visibleIds = this.visibleNodes().map((n) => n.id);
@@ -828,7 +831,7 @@ export class CngxTreetable<T = unknown> {
       return next;
     });
     const count = visibleIds.length;
-    this.selectionAnnouncementState.set(count === 1 ? '1 row selected' : `${count} rows selected`);
+    this.selectionAnnouncementState.set(this.labels().rowsSelected(count));
   }
 
   /**
