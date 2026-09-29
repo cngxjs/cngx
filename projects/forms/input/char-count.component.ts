@@ -13,7 +13,9 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
+import { coerceSignal } from '@cngx/core/utils';
 import { CngxFormFieldPresenter } from '@cngx/forms/field';
+import { CNGX_INPUT_CONFIG, DEFAULT_INPUT_ARIA_LABELS } from './input-config';
 
 /**
  * Live character counter for text inputs inside a `cngx-form-field`.
@@ -24,6 +26,9 @@ import { CngxFormFieldPresenter } from '@cngx/forms/field';
  *
  * Pass `[max]` / `[min]` explicitly or let the component read them from
  * the presenter's constraint metadata.
+ *
+ * The readout copy comes from `CNGX_INPUT_CONFIG.ariaLabels.charCountMax` /
+ * `charCountMin` (set via `withInputAriaLabels`), English by default.
  *
  * Basic (auto-wired)
  * ```html
@@ -56,10 +61,8 @@ import { CngxFormFieldPresenter } from '@cngx/forms/field';
   imports: [NgTemplateOutlet],
   template: `@if (customTpl()) {
       <ng-container *ngTemplateOutlet="customTpl()!; context: tplContext()" />
-    } @else if (resolvedMax() != null) {
-      <span class="cngx-char-count__readout">{{ currentLength() }}/{{ resolvedMax() }}</span>
-    } @else if (resolvedMin() != null) {
-      <span class="cngx-char-count__readout">{{ currentLength() }} (min {{ resolvedMin() }})</span>
+    } @else if (readout(); as text) {
+      <span class="cngx-char-count__readout">{{ text }}</span>
     }`,
   styleUrls: ['./char-count.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -75,6 +78,7 @@ export class CngxCharCount {
   private readonly presenter = inject(CngxFormFieldPresenter);
   private readonly el = inject(ElementRef);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly config = coerceSignal(inject(CNGX_INPUT_CONFIG));
 
   /** Optional custom template. */
   protected readonly customTpl = contentChild<TemplateRef<CngxCharCountContext>>(TemplateRef);
@@ -126,6 +130,21 @@ export class CngxCharCount {
   readonly isOver = computed(() => {
     const max = this.resolvedMax();
     return max != null && this.currentLength() > max;
+  });
+
+  /** @internal - default readout text, `null` when neither max nor min applies. */
+  protected readonly readout = computed(() => {
+    const labels = this.config().ariaLabels;
+    const current = this.currentLength();
+    const max = this.resolvedMax();
+    if (max != null) {
+      return (labels?.charCountMax ?? DEFAULT_INPUT_ARIA_LABELS.charCountMax)(current, max);
+    }
+    const min = this.resolvedMin();
+    if (min != null) {
+      return (labels?.charCountMin ?? DEFAULT_INPUT_ARIA_LABELS.charCountMin)(current, min);
+    }
+    return null;
   });
 
   /** @internal */

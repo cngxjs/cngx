@@ -90,6 +90,10 @@ export interface InputAriaLabels {
   readonly ratingItem: (step: number, max: number) => string;
   /** `aria-label` for the `CngxPhoneInput` country picker. Default: `'Country'` */
   readonly phoneCountry: string;
+  /** Visible `CngxCharCount` readout when a maximum applies. Default: `` (current, max) => `${current}/${max}` `` */
+  readonly charCountMax?: (current: number, max: number) => string;
+  /** Visible `CngxCharCount` readout when only a minimum applies. Default: `` (current, min) => `${current} (min ${min})` `` */
+  readonly charCountMin?: (current: number, min: number) => string;
 }
 
 /**
@@ -98,7 +102,7 @@ export interface InputAriaLabels {
  *
  * @category forms/input
  */
-export const DEFAULT_INPUT_ARIA_LABELS: InputAriaLabels = {
+export const DEFAULT_INPUT_ARIA_LABELS: Required<InputAriaLabels> = {
   clear: 'Clear',
   otpGroup: 'One-time code',
   otpSlot: (index, length) => `Digit ${index + 1} of ${length}`,
@@ -114,6 +118,8 @@ export const DEFAULT_INPUT_ARIA_LABELS: InputAriaLabels = {
   ratingValue: (value, max) => `${value} of ${max}`,
   ratingItem: (step, max) => `${step} of ${max}`,
   phoneCountry: 'Country',
+  charCountMax: (current, max) => `${current}/${max}`,
+  charCountMin: (current, min) => `${current} (min ${min})`,
 };
 
 /**
