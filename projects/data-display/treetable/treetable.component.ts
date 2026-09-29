@@ -475,17 +475,21 @@ export class CngxTreetable<T = unknown> {
    * failures have anything to say; the string is empty otherwise so the
    * region stays in the DOM while staying silent. Single announcer for
    * the failure - the error surface itself carries no `role="alert"`
-   * (that would double-fire on top of this region).
+   * (that would double-fire on top of this region). The copy is read
+   * untracked: a label change never re-speaks the current phase, the next
+   * view transition speaks in the new copy.
    */
   protected readonly stateAnnouncement = computed(() => {
     const view = this.activeView();
+    const refreshing = this.showsRefreshIndicator();
+    const labels = untracked(this.labels);
     if (view === 'skeleton') {
-      return this.labels().loading;
+      return labels.loading;
     }
     if (view === 'error' || view === 'content+error') {
-      return this.labels().errorFallback;
+      return labels.errorFallback;
     }
-    return this.showsRefreshIndicator() ? this.labels().refreshing : '';
+    return refreshing ? labels.refreshing : '';
   });
 
   /**
