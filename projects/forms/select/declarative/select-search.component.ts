@@ -52,8 +52,14 @@ import { CNGX_SELECT_SHELL_SEARCH_HOST } from './select-search-host';
   styleUrls: ['./select-search.component.css'],
 })
 export class CngxSelectSearch {
-  /** Placeholder text on the input. */
-  readonly placeholder = input<string>('Search…');
+  private readonly config = resolveSelectConfig();
+
+  /**
+   * Placeholder text on the input. Default:
+   * `CNGX_SELECT_CONFIG.ariaLabels.searchPlaceholder` (EN `'Search…'`), read
+   * once at construction.
+   */
+  readonly placeholder = input<string>(this.config.ariaLabels?.searchPlaceholder ?? '');
 
   /**
    * ARIA label override. Cascade: per-instance `[aria-label]` →
@@ -64,7 +70,6 @@ export class CngxSelectSearch {
 
   /** @internal */
   protected readonly host = inject(CNGX_SELECT_SHELL_SEARCH_HOST);
-  private readonly config = resolveSelectConfig();
 
   /**
    * Resolved ARIA label per the cascade above. `null` when neither

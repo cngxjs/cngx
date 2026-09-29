@@ -81,3 +81,36 @@ describe('CngxSelectSearch - aria-label cascade', () => {
     expect(input.getAttribute('aria-label')).toBe('Find an option');
   });
 });
+
+@Component({
+  template: `
+    <div fakeSearchHost>
+      <cngx-select-search />
+    </div>
+  `,
+  imports: [CngxSelectSearch, FakeSearchHostDir],
+})
+class HostUnbound {}
+
+describe('CngxSelectSearch - placeholder cascade', () => {
+  it('defaults to the library English placeholder', () => {
+    const { input } = setup(HostUnbound);
+    expect(input.placeholder).toBe('Search…');
+  });
+
+  it('reads withAriaLabels({ searchPlaceholder }) when unbound', () => {
+    TestBed.configureTestingModule({
+      providers: [provideSelectConfig(withAriaLabels({ searchPlaceholder: 'Suchen…' }))],
+    });
+    const { input } = setup(HostUnbound);
+    expect(input.placeholder).toBe('Suchen…');
+  });
+
+  it('lets a bound [placeholder] win over the config', () => {
+    TestBed.configureTestingModule({
+      providers: [provideSelectConfig(withAriaLabels({ searchPlaceholder: 'Suchen…' }))],
+    });
+    const { input } = setup(HostNoLabel);
+    expect(input.placeholder).toBe('Filter…');
+  });
+});

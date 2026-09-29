@@ -35,7 +35,7 @@ export const COMPLETED_PHASE = 3;
  * Exact RATCHET length. Asserted equal, so the ceiling cannot be padded:
  * every row-closing commit removes its rows and lowers this number with them.
  */
-export const RATCHET_CEILING = 5;
+export const RATCHET_CEILING = 4;
 
 /**
  * The RATCHET keys (`file` + tab + `value`) at the end of Phase 1, frozen in
@@ -84,12 +84,6 @@ export const RATCHET = [
     file: 'projects/data-display/treetable/treetable.component.ts',
     value: '1 row deselected',
     note: 'deselection announcement singular hardcoded',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/select/declarative/select-search.component.ts',
-    value: 'Search…',
-    note: 'bare input default, per-instance only',
     closesIn: 4,
   },
 ];
