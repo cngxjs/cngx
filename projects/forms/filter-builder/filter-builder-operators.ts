@@ -191,6 +191,21 @@ export function resolveOperatorDef(
   return (operators ?? CNGX_FILTER_BUILTIN_OPERATOR_DEFS).get(operator);
 }
 
+/**
+ * Label for an operator key: the i18n entry, else the operator definition's
+ * `label`, else the raw key. The one resolution path the picker, the row
+ * `aria-label` and the live-region announcements share.
+ *
+ * @internal
+ */
+export function resolveOperatorLabel(
+  operator: string,
+  i18nOperators: Readonly<Record<string, string>>,
+  operators?: ReadonlyMap<string, CngxFilterOperatorDef>,
+): string {
+  return i18nOperators[operator] ?? resolveOperatorDef(operator, operators)?.label ?? operator;
+}
+
 /** @internal One warning per unknown operator key per application lifetime. */
 const warnedUnknownOperators = new Set<string>();
 

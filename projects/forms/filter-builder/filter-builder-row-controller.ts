@@ -2,7 +2,7 @@ import { computed, InjectionToken, type Signal, type TemplateRef } from '@angula
 import { arrayEqual } from '@cngx/utils';
 
 import { isExpressionValueEmpty } from './filter-builder-internal';
-import { resolveOperatorDef } from './filter-builder-operators';
+import { resolveOperatorLabel } from './filter-builder-operators';
 import type { CngxFilterBuilderRemoveButtonContext } from './filter-builder-slots';
 import type { CngxFilterBuilderTemplateRegistry } from './filter-builder-template-registry';
 import type { CngxFilterBuilderValueEditorContext } from './filter-builder-value-editor.slot';
@@ -230,11 +230,7 @@ export function createFilterRowController(
   }
 
   function operatorLabel(operator: string): string {
-    return (
-      deps.config.i18n.operators[operator] ??
-      resolveOperatorDef(operator, deps.config.operators)?.label ??
-      operator
-    );
+    return resolveOperatorLabel(operator, deps.config.i18n.operators, deps.config.operators);
   }
 
   function writeValue(next: unknown): void {

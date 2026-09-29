@@ -2,6 +2,7 @@ import { computed, inject, InjectionToken, untracked, type Signal } from '@angul
 import { numberFormatterFor } from '@cngx/core/utils';
 
 import type { CngxFilterBuilderI18n } from './filter-builder.config';
+import { resolveOperatorLabel, type CngxFilterOperatorDef } from './filter-builder-operators';
 import type { FilterMutationEvent } from './filter-builder-state';
 import type { FilterFieldDef } from './filter-builder.types';
 
@@ -32,6 +33,11 @@ export interface CngxFilterBuilderAnnouncerSources<TValue = unknown> {
    * flip never re-speaks the last mutation. Omitted: `String(value)`.
    */
   readonly locale?: Signal<string>;
+  /**
+   * Operator registry, so a custom operator announces its definition `label`
+   * when the i18n bundle has no entry for it. Omitted: the builtin registry.
+   */
+  readonly operators?: ReadonlyMap<string, CngxFilterOperatorDef>;
 }
 
 /**
@@ -91,7 +97,7 @@ export function createFilterBuilderAnnouncer<TValue>(
     const announce = i18n.announcement;
     const locale = untracked(() => sources.locale?.());
     const operator = ctx?.operator ?? '';
-    const operatorLabel = i18n.operators[operator] ?? operator;
+    const operatorLabel = resolveOperatorLabel(operator, i18n.operators, sources.operators);
 
     const fieldLabel = ctx?.fieldKey
       ? (untracked(() => sources.fieldMap().get(ctx.fieldKey!)?.label) ?? ctx.fieldKey)

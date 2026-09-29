@@ -71,6 +71,26 @@ describe('createFilterBuilderAnnouncer', () => {
     expect(announcer.announcement()).toBe('Operator changed to custom');
   });
 
+  it('announces a custom operator by its definition label', () => {
+    const operators = new Map([['near', { label: 'Near', evaluate: () => true }]]);
+    const announcer = createFilterBuilderAnnouncer({
+      ...buildSources({ kind: 'set-operator', path: [0], context: { operator: 'near' } }),
+      operators,
+    });
+    expect(announcer.announcement()).toBe('Operator changed to Near');
+  });
+
+  it('lets an i18n entry win over the operator definition label', () => {
+    const operators = new Map([['near', { label: 'Near', evaluate: () => true }]]);
+    const base = CNGX_FILTER_BUILDER_DEFAULTS.i18n;
+    const announcer = createFilterBuilderAnnouncer({
+      ...buildSources({ kind: 'set-operator', path: [0], context: { operator: 'near' } }),
+      i18n: { ...base, operators: { ...base.operators, near: 'In der Nähe' } },
+      operators,
+    });
+    expect(announcer.announcement()).toBe('Operator changed to In der Nähe');
+  });
+
   it('passes translated operator, logic and boolean words to the formatters', () => {
     const base = CNGX_FILTER_BUILDER_DEFAULTS.i18n;
     const i18n = {

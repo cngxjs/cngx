@@ -92,6 +92,7 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
     fieldMap: this.fieldMap,
     i18n: this.config.i18n,
     locale: injectLocale(),
+    operators: this.config.operators,
   });
   readonly announcement: Signal<string> = this.announcer.announcement;
 
