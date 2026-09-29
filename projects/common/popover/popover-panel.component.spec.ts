@@ -1,4 +1,4 @@
-import { Component, TemplateRef, viewChild } from '@angular/core';
+import { Component, signal, TemplateRef, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -8,6 +8,7 @@ import {
   withArrow,
   withArrowTemplate,
   withCloseButton,
+  withPopoverPanelLabels,
 } from './popover-panel.config';
 import {
   CngxPopoverArrow,
@@ -240,6 +241,25 @@ describe('CngxPopoverPanel', () => {
     const { panelEl } = setup(CloseButtonHost);
     const closeBtn = panelEl.querySelector('.cngx-popover-panel__close');
     expect(closeBtn).toBeTruthy();
+  });
+
+  it('names the close button with the English default', () => {
+    const { panelEl } = setup(CloseButtonHost);
+    const btn = panelEl.querySelector('.cngx-popover-panel__close button');
+    expect(btn?.getAttribute('aria-label')).toBe('Close');
+  });
+
+  it('names the close button from withPopoverPanelLabels, live through a Signal', () => {
+    const labels = signal<{ close?: string }>({ close: 'Schliessen' });
+    const { fixture, panelEl } = setup(CloseButtonHost, [
+      providePopoverPanel(withPopoverPanelLabels(labels)),
+    ]);
+    const btn = panelEl.querySelector('.cngx-popover-panel__close button');
+    expect(btn?.getAttribute('aria-label')).toBe('Schliessen');
+
+    labels.set({});
+    fixture.detectChanges();
+    expect(btn?.getAttribute('aria-label')).toBe('Close');
   });
 
   it('should hide close button when showClose is false', () => {

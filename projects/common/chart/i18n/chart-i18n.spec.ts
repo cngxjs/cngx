@@ -1,6 +1,14 @@
+import { Component, LOCALE_ID, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { provideLocale } from '@cngx/core/utils';
 import { describe, expect, it } from 'vitest';
-import { CNGX_CHART_I18N, provideChartI18n, type CngxChartI18n } from './chart-i18n';
+import { CngxChartDataTable } from '../chart/data-table.component';
+import {
+  CNGX_CHART_I18N,
+  injectChartI18n,
+  provideChartI18n,
+  type CngxChartI18n,
+} from './chart-i18n';
 
 describe('CNGX_CHART_I18N', () => {
   it('resolves to English defaults when no override is provided', () => {
@@ -115,3 +123,93 @@ describe('CNGX_CHART_I18N', () => {
     expect(i18n.trendChanged('flat')).toBe('Trend flattened');
   });
 });
+
+describe('injectChartI18n', () => {
+  const noisy = {
+    trend: 'flat',
+    min: 1,
+    max: 6.6000000000000005,
+    current: 2,
+    thresholds: [],
+  } as const;
+
+  it('keeps a passed key verbatim and formats an omitted summary with LOCALE_ID', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideChartI18n({ dataTable: () => 'Datentabelle' }),
+        { provide: LOCALE_ID, useValue: 'de' },
+      ],
+    });
+    const i18n = TestBed.runInInjectionContext(() => injectChartI18n());
+    expect(i18n().dataTable()).toBe('Datentabelle');
+    expect(i18n().summary(noisy)).toContain('max 6,6');
+    expect(i18n().thresholdAlert(2.5)).toBe('Threshold 2,5 crossed');
+  });
+
+  it('formats the token factory default in the root locale', () => {
+    TestBed.configureTestingModule({ providers: [{ provide: LOCALE_ID, useValue: 'de' }] });
+    expect(TestBed.inject(CNGX_CHART_I18N).summary(noisy)).toContain('max 6,6');
+  });
+
+  it('re-formats omitted keys on a CNGX_LOCALE flip, rendered without re-creating the component', () => {
+    const locale = signal('en-US');
+    TestBed.configureTestingModule({
+      imports: [TableHost],
+      providers: [provideLocale(locale)],
+    });
+    const i18n = TestBed.runInInjectionContext(() => injectChartI18n());
+    const fixture = TestBed.createComponent(TableHost);
+    fixture.detectChanges();
+    const table = fixture.nativeElement.querySelector('cngx-chart-data-table') as HTMLElement;
+    const cell = (): string =>
+      table.querySelector('tbody tr td:last-child')?.textContent?.trim() ?? '';
+    expect(i18n().summary(noisy)).toContain('max 6.6');
+    expect(cell()).toBe('6.6');
+
+    locale.set('de-DE');
+    fixture.detectChanges();
+    expect(i18n().summary(noisy)).toContain('max 6,6');
+    expect(fixture.nativeElement.querySelector('cngx-chart-data-table')).toBe(table);
+    expect(cell()).toBe('6,6');
+  });
+
+  it('shares one Signal across chart parts under one injector', () => {
+    TestBed.configureTestingModule({});
+    const first = TestBed.runInInjectionContext(() => injectChartI18n());
+    const second = TestBed.runInInjectionContext(() => injectChartI18n());
+    expect(first).toBe(second);
+  });
+
+  it('keeps the merged reference when a locale flip leaves every key equal', () => {
+    const locale = signal('en-US');
+    const full: Required<CngxChartI18n> = {
+      summary: () => 'S',
+      dataTable: () => 'D',
+      valueColumnLabel: () => 'V',
+      trendChanged: () => 'T',
+      thresholdAlert: () => 'A',
+      connectionLost: () => 'L',
+      connectionReconnecting: () => 'R',
+      connectionRestored: () => 'O',
+      empty: () => 'E',
+      loading: () => 'G',
+      error: () => 'X',
+      stackedBarEmpty: () => 'B',
+      stackedBarSummary: () => 'M',
+    };
+    TestBed.configureTestingModule({
+      providers: [provideChartI18n(full), provideLocale(locale)],
+    });
+    const i18n = TestBed.runInInjectionContext(() => injectChartI18n());
+    const before = i18n();
+    locale.set('de-DE');
+    expect(i18n()).toBe(before);
+  });
+});
+
+@Component({
+  standalone: true,
+  imports: [CngxChartDataTable],
+  template: `<cngx-chart-data-table [values]="[6.6000000000000005]" [hidden]="false" />`,
+})
+class TableHost {}

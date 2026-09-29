@@ -163,3 +163,36 @@ describe('createTabGroupAnnouncements - statusPhrase', () => {
     expect(statusPhrase(handle)).toBe('2 fields invalid');
   });
 });
+
+describe('createTabGroupAnnouncements - role descriptions', () => {
+  beforeEach(() => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+  });
+
+  function roleDescriptions(config: CngxTabsConfig) {
+    return TestBed.runInInjectionContext(() =>
+      createTabGroupAnnouncements({
+        presenter: makePresenter(),
+        i18n: TestBed.inject(CNGX_TABS_I18N),
+        config,
+        ariaLabel: signal<string | undefined>(undefined),
+        ariaLabelledBy: signal<string | undefined>(undefined),
+      }),
+    );
+  }
+
+  it('falls back to the config defaults when a config omits fallbackLabels', () => {
+    const bundle = roleDescriptions({});
+    expect(bundle.tabsRoleDescription()).toBe('tab list');
+    expect(bundle.tabPanelRoleDescription()).toBe('tab panel');
+  });
+
+  it('uses the configured fallback labels when set', () => {
+    const bundle = roleDescriptions({
+      fallbackLabels: { tabRoleDescription: 'Registerliste', tabPanelRoleDescription: 'Register' },
+    });
+    expect(bundle.tabsRoleDescription()).toBe('Registerliste');
+    expect(bundle.tabPanelRoleDescription()).toBe('Register');
+  });
+});

@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { resolveAsyncView, type AsyncView } from '@cngx/common/data';
 import type { CngxAsyncState } from '@cngx/core/utils';
-import { CNGX_CHART_I18N, type CngxChartI18n } from '../i18n/chart-i18n';
+import { injectChartI18n, type CngxChartI18n } from '../i18n/chart-i18n';
 
 /**
  * Reactive bundle returned by {@link injectPresetState}. Each preset
@@ -18,7 +18,7 @@ import { CNGX_CHART_I18N, type CngxChartI18n } from '../i18n/chart-i18n';
  * @internal
  */
 export interface PresetStateContext {
-  readonly i18n: CngxChartI18n;
+  readonly i18n: Signal<Required<CngxChartI18n>>;
   readonly activeView: Signal<AsyncView>;
 }
 
@@ -40,7 +40,7 @@ export interface PresetStateContext {
 export function injectPresetState(
   state: () => CngxAsyncState<unknown> | undefined,
 ): PresetStateContext {
-  const i18n = inject(CNGX_CHART_I18N);
+  const i18n = injectChartI18n();
   const activeView = computed<AsyncView>(() => {
     const s = state();
     if (!s) {

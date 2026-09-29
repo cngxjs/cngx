@@ -1,6 +1,7 @@
 import { Component, LOCALE_ID, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { CNGX_LOCALE } from '@cngx/core/utils';
 import { CngxDelta } from './delta.component';
 import type { DeltaMode, DeltaPolarity } from '../shared/delta-format';
 
@@ -98,5 +99,29 @@ describe('CngxDelta', () => {
     fixture.detectChanges();
     expect(el.textContent).toContain('+1,234');
     expect(el.textContent).not.toContain('%');
+  });
+});
+
+describe('CngxDelta - CNGX_LOCALE', () => {
+  it('outranks LOCALE_ID and re-formats on a flip without re-creating the component', () => {
+    const locale = signal('en-US');
+    TestBed.configureTestingModule({
+      imports: [TestHost],
+      providers: [
+        { provide: LOCALE_ID, useValue: 'fr-FR' },
+        { provide: CNGX_LOCALE, useValue: locale.asReadonly() },
+      ],
+    });
+    const fixture = TestBed.createComponent(TestHost);
+    fixture.componentInstance.value.set(2.1);
+    fixture.detectChanges();
+    const el: HTMLElement = fixture.nativeElement.querySelector('cngx-delta');
+    expect(el.textContent).toContain('+2.1');
+
+    locale.set('de-DE');
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('cngx-delta')).toBe(el);
+    expect(el.textContent).toContain('+2,1');
+    expect(el.getAttribute('aria-label')).toContain('2,1');
   });
 });

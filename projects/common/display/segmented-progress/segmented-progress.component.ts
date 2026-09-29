@@ -7,6 +7,8 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 
+import { injectDisplayI18n } from '../i18n/display-i18n';
+
 /**
  * State of a single segment in a {@link CngxSegmentedProgress}.
  *
@@ -69,6 +71,8 @@ const segmentsEqual = (a: readonly SegmentState[], b: readonly SegmentState[]): 
   styleUrl: './segmented-progress.css',
 })
 export class CngxSegmentedProgress {
+  private readonly i18n = injectDisplayI18n();
+
   /** Number of completed positions (0-based count). Drives derivation. */
   readonly value = input<number>(0);
 
@@ -84,9 +88,10 @@ export class CngxSegmentedProgress {
   /**
    * Override the `aria-valuetext` string. Receives `(now, max)` - the
    * completed-segment count and the total segment count. Mirrors
-   * `CngxStepperCount.format`; the default is `(now, max) => \`${now} of
-   * ${max}\``. Supply a localised closure for non-English position text
-   * (e.g. `(n, m) => \`Schritt ${n} von ${m}\``).
+   * `CngxStepperCount.format`; wins over the app-wide
+   * `CNGX_DISPLAY_I18N.segmentedProgressValueText` (English default
+   * `(now, max) => \`${now} of ${max}\``). Supply a closure for per-instance
+   * position text (e.g. `(n, m) => \`Schritt ${n} von ${m}\``).
    */
   readonly valueTextFormat = input<((now: number, max: number) => string) | undefined>(undefined);
 
@@ -120,7 +125,7 @@ export class CngxSegmentedProgress {
 
   /** `aria-valuetext` - human-readable position via the resolved format closure. */
   protected readonly valueText: Signal<string> = computed(() => {
-    const fmt = this.valueTextFormat() ?? ((now: number, max: number) => `${now} of ${max}`);
+    const fmt = this.valueTextFormat() ?? this.i18n().segmentedProgressValueText;
     return fmt(this.now(), this.max());
   });
 }

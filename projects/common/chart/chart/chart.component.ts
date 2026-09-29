@@ -11,6 +11,7 @@ import {
   input,
   isDevMode,
   type Signal,
+  untracked,
   ViewEncapsulation,
 } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
@@ -20,7 +21,7 @@ import { createTransitionTracker, nextUid, type CngxAsyncState } from '@cngx/cor
 import { type CngxAxisPosition, type CngxAxisType } from '../axis/axis-position';
 import { CNGX_CHART_AXIS } from '../axis/chart-axis';
 import { CngxThreshold } from '../layers/threshold.component';
-import { CNGX_CHART_I18N } from '../i18n/chart-i18n';
+import { injectChartI18n } from '../i18n/chart-i18n';
 import { CngxChartDataTable } from './data-table.component';
 import {
   CHART_SMALL_BREAKPOINT_PX,
@@ -204,7 +205,7 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
             <ng-container *ngTemplateOutlet="tpl; context: slotContext()" />
           </div>
         } @else {
-          <div class="cngx-chart__fallback" [attr.aria-hidden]="true">{{ i18n.empty() }}</div>
+          <div class="cngx-chart__fallback" [attr.aria-hidden]="true">{{ i18n().empty() }}</div>
         }
       }
       @case ('error') {
@@ -214,7 +215,7 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
           </div>
         } @else {
           <div class="cngx-chart__fallback cngx-chart__fallback--error" [attr.aria-hidden]="true">
-            {{ i18n.error() }}
+            {{ i18n().error() }}
           </div>
         }
       }
@@ -244,7 +245,7 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
           class="cngx-chart__connection-overlay cngx-chart__connection-overlay--error"
           role="alert"
         >
-          {{ i18n.connectionLost() }}
+          {{ connectionOverlayText() }}
         </div>
       }
     } @else if (connectionView() === 'reconnecting') {
@@ -260,7 +261,7 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
           class="cngx-chart__connection-overlay cngx-chart__connection-overlay--reconnecting"
           role="status"
         >
-          {{ i18n.connectionReconnecting() }}
+          {{ connectionOverlayText() }}
         </div>
       }
     }
@@ -524,7 +525,7 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
   private readonly axes = contentChildren(CNGX_CHART_AXIS, { descendants: true });
   private readonly thresholds = contentChildren(CngxThreshold, { descendants: true });
   private readonly layers = contentChildren(CNGX_CHART_LAYER, { descendants: true });
-  protected readonly i18n = inject(CNGX_CHART_I18N);
+  protected readonly i18n = injectChartI18n();
   protected readonly dataTableId = nextUid('cngx-chart-data-table');
 
   private readonly loadingSlot = contentChild(CngxChartLoading);
@@ -628,6 +629,23 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
   });
 
   /**
+   * Text of the default connection overlay (a `role="alert"` /
+   * `role="status"` live region). Only the connection view is tracked;
+   * the copy is read untracked, so a runtime copy or locale flip does not
+   * rewrite a shown announcement - the next transition speaks the new one.
+   */
+  protected readonly connectionOverlayText = computed(() => {
+    const view = this.connectionView();
+    return untracked(() => {
+      const i18n = this.i18n();
+      if (view === 'error') {
+        return i18n.connectionLost();
+      }
+      return view === 'reconnecting' ? i18n.connectionReconnecting() : '';
+    });
+  });
+
+  /**
    * Context for the connection-slot templates - the connection-channel
    * twin of {@link errorContext}, carrying the live connection error.
    */
@@ -657,7 +675,7 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
     const current = this.connectionTransition.current();
     const previous = this.connectionTransition.previous();
     const restored = current === 'success' && (previous === 'error' || previous === 'refreshing');
-    return restored ? this.i18n.connectionRestored() : '';
+    return restored ? untracked(() => this.i18n().connectionRestored()) : '';
   });
 
   constructor() {
@@ -1050,19 +1068,19 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
   protected readonly ariaLabelText = computed(() => {
     const view = this.activeView();
     if (view === 'skeleton') {
-      return this.i18n.loading();
+      return this.i18n().loading();
     }
     if (view === 'empty') {
-      return this.i18n.empty();
+      return this.i18n().empty();
     }
     if (view === 'error') {
-      return this.i18n.error();
+      return this.i18n().error();
     }
     const explicit = this.ariaLabel();
     if (explicit !== null && explicit !== undefined && explicit !== '') {
       return explicit;
     }
-    return this.i18n.summary(this.summary());
+    return this.i18n().summary(this.summary());
   });
 
   /**

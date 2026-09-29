@@ -2,7 +2,12 @@ import { computed, InjectionToken, signal, type Signal, type TemplateRef } from 
 import type { MatStep } from '@angular/material/stepper';
 
 import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
-import type { CngxStepRegistration, CngxStepStatus } from '@cngx/common/stepper';
+import {
+  resolveStepFallbackLabel,
+  type CngxStepperI18n,
+  type CngxStepRegistration,
+  type CngxStepStatus,
+} from '@cngx/common/stepper';
 
 /**
  * Shared `signal(undefined)` constant used as the `errorAggregator`
@@ -87,8 +92,11 @@ function readMatStepLabelTemplateText(template: TemplateRef<unknown>): string | 
  *      throwaway detached `EmbeddedViewRef` ({@link readMatStepLabelTemplateText}).
  *      Captures literal `matStepLabel` markup; dynamic interpolation
  *      bails through to (4).
- *   4. `Step <id>` - deterministic, derived from the cngx handle
- *      id. Always non-empty.
+ *   4. `CNGX_STEPPER_I18N.stepFallbackLabel(id)` (English default
+ *      `Step <id>`) - deterministic, derived from the cngx handle id.
+ *      Always non-empty. The `[cngxMatStepper]` directive passes its
+ *      injected bundle as `i18n`; without one the English default
+ *      applies.
  *   Documented limitation: runtime label changes do not propagate.
  *   CDK's `CdkStep` does not expose a `_stateChanges` Subject
  *   analogous to `MatTab._stateChanges`, so cngx cannot re-trigger
@@ -120,9 +128,10 @@ function readMatStepLabelTemplateText(template: TemplateRef<unknown>): string | 
 export function createMatStepHandle(
   matStep: MatStep,
   idSeed: () => string,
+  i18n?: CngxStepperI18n,
 ): CngxMatStepHandleSetup {
   const id = idSeed();
-  const labelText = resolveStepLabel(matStep, id);
+  const labelText = resolveStepLabel(matStep, id, i18n);
   const label = signal<string>(labelText).asReadonly();
   const disabled = signal<boolean>(false).asReadonly();
   const state = computed<CngxStepStatus>(() => {
@@ -152,7 +161,7 @@ export function createMatStepHandle(
  *
  * @internal
  */
-function resolveStepLabel(matStep: MatStep, id: string): string {
+function resolveStepLabel(matStep: MatStep, id: string, i18n: CngxStepperI18n | undefined): string {
   const labelInput = matStep.label;
   if (typeof labelInput === 'string' && labelInput.length > 0) {
     return labelInput;
@@ -168,13 +177,19 @@ function resolveStepLabel(matStep: MatStep, id: string): string {
       return text;
     }
   }
-  return `Step ${id}`;
+  return resolveStepFallbackLabel(i18n, id);
 }
 
 /**
  * Factory signature for {@link createMatStepHandle}. The DI token
  * {@link CNGX_MAT_STEP_HANDLE_FACTORY} resolves to a function with
  * this exact shape - overrides match it identically.
+ *
+ * The third argument is the stepper i18n bundle the directive injected;
+ * it carries the last-resort label (`stepFallbackLabel`). An override
+ * that declares only `(matStep, idSeed)` still type-checks, but its
+ * unlabelled steps lose the localized fallback - forward `i18n` when
+ * delegating to {@link createMatStepHandle}.
  *
  * @category ui/mat-stepper
  */

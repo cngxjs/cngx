@@ -1,6 +1,6 @@
 # Metric
 
-Display atom for a single formatted numeric figure plus an optional unit. Wraps `Intl.NumberFormat` against the injected `LOCALE_ID` so values render in the user's locale without per-component plumbing. `null` collapses to an em-dash placeholder; strings pass through unformatted for "N/A" rows. No state ownership, no async lifecycle, no business logic. It renders a number, period.
+Display atom for a single formatted numeric figure plus an optional unit. Wraps `Intl.NumberFormat` against the app locale (`CNGX_LOCALE`, falling back to the nearest `LOCALE_ID`) so values render in the user's locale without per-component plumbing. `null` collapses to an em-dash placeholder; strings pass through unformatted for "N/A" rows. No state ownership, no async lifecycle, no business logic. It renders a number, period.
 
 ## Import
 
@@ -41,11 +41,21 @@ If the metric sits next to its own visible heading (`<header cngxCardHeader>Hear
 
 ## Locale behaviour
 
-Formatting is driven by Angular's `LOCALE_ID`. Override globally:
+Formatting is driven by the app locale: `CNGX_LOCALE` when provided, otherwise the nearest Angular `LOCALE_ID`. Setting `LOCALE_ID` keeps working:
 
 ```ts
 bootstrapApplication(App, {
   providers: [{ provide: LOCALE_ID, useValue: 'de-AT' }],
+});
+```
+
+`provideLocale(...)` from `@cngx/core/utils` sets the locale for cngx formatters without touching `LOCALE_ID`. It also accepts a `Signal<string>`, so switching the locale at runtime re-formats every rendered metric:
+
+```ts
+const locale = signal('de-AT');
+
+bootstrapApplication(App, {
+  providers: [provideLocale(locale)],
 });
 ```
 

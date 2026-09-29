@@ -29,13 +29,13 @@ import { readFileSync } from 'node:fs';
  * the final commit of each phase; a RATCHET row whose `closesIn` is at or
  * below it fails the suite, so no row outlives the phase that owns it.
  */
-export const COMPLETED_PHASE = 2;
+export const COMPLETED_PHASE = 3;
 
 /**
  * Exact RATCHET length. Asserted equal, so the ceiling cannot be padded:
  * every row-closing commit removes its rows and lowers this number with them.
  */
-export const RATCHET_CEILING = 40;
+export const RATCHET_CEILING = 19;
 
 /**
  * The RATCHET keys (`file` + tab + `value`) at the end of Phase 1, frozen in
@@ -141,30 +141,6 @@ export const RATCHET = [
     closesIn: 4,
   },
   {
-    file: 'projects/common/data/display/goal/goal.component.ts',
-    value: '{} of {}',
-    note: 'goal readout composed in English word order',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/display/segmented-progress/segmented-progress.component.ts',
-    value: '{} of {}',
-    note: 'segment readout composed in English word order',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/display/avatar-group/avatar-group.component.ts',
-    value: '{} {}, {} not shown',
-    note: 'overflow label composed in English word order',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/ui/mat-stepper/material-bridge/handle.ts',
-    value: 'Step {}',
-    note: 'fallback step label composed by hand',
-    closesIn: 3,
-  },
-  {
     file: 'projects/data-display/treetable/treetable.component.ts',
     value: '{} rows selected',
     note: 'selection announcement plural composed by hand',
@@ -189,112 +165,10 @@ export const RATCHET = [
     closesIn: 4,
   },
   {
-    file: 'projects/common/popover/popover-panel.component.ts',
-    value: 'Close',
-    note: 'close button label static in the template',
-    closesIn: 3,
-  },
-  {
     file: 'projects/forms/input/char-count.component.ts',
     value: '{} (min {})',
     note: 'minimum readout composed in the template',
     closesIn: 4,
-  },
-  {
-    file: 'projects/common/data/display/delta/delta.component.ts',
-    value: 'improved',
-    note: 'sentiment word spoken in the label, no token',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/data/display/delta/delta.component.ts',
-    value: 'declined',
-    note: 'sentiment word spoken in the label, no token',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/data/display/delta/delta.component.ts',
-    value: 'unchanged',
-    note: 'sentiment word spoken in the label, no token',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/data/display/trend/trend.component.ts',
-    value: 'up',
-    note: 'direction word spoken in the label, no token',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/data/display/trend/trend.component.ts',
-    value: 'down',
-    note: 'direction word spoken in the label, no token',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/data/display/trend/trend.component.ts',
-    value: 'unchanged',
-    note: 'direction word spoken in the label, no token',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/display/avatar-group/avatar-group.component.ts',
-    value: 'avatars',
-    note: 'overflow noun is a bare input default',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/display/chip/chip.component.ts',
-    value: 'Remove',
-    note: 'bare input default, per-instance only',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/interactive/breadcrumb/breadcrumb.directive.ts',
-    value: 'Breadcrumb',
-    note: 'bare input default, per-instance only',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/interactive/copy/copy-block.ts',
-    value: 'Copy',
-    note: 'bare input default, per-instance only',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/interactive/copy/copy-block.ts',
-    value: 'Copied!',
-    note: 'bare input default, per-instance only',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/interactive/copy/copy-block.ts',
-    value: 'Copied to clipboard',
-    note: 'bare input default, per-instance only',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/interactive/slider/range-slider.component.ts',
-    value: 'Minimum',
-    note: 'bare input default, per-instance only',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/interactive/slider/range-slider.component.ts',
-    value: 'Maximum',
-    note: 'bare input default, per-instance only',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/layout/text/expandable-text.ts',
-    value: 'Show more',
-    note: 'bare input default, per-instance only',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/layout/text/expandable-text.ts',
-    value: 'Show less',
-    note: 'bare input default, per-instance only',
-    closesIn: 3,
   },
   {
     file: 'projects/forms/select/declarative/select-search.component.ts',

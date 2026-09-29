@@ -1,6 +1,7 @@
 import { computed, contentChildren, Directive, inject, input } from '@angular/core';
 import { arrayEqual, setEqual } from '@cngx/utils';
 
+import { injectResolvedInteractiveI18n } from '../i18n/interactive-i18n';
 import { CngxBreadcrumbItem } from './breadcrumb-item.directive';
 import { CNGX_BREADCRUMB_COLLAPSE_STRATEGY } from './breadcrumb-collapse.token';
 import { CNGX_BREADCRUMB, type CngxBreadcrumbHost } from './breadcrumb.token';
@@ -44,8 +45,13 @@ import { CNGX_BREADCRUMB, type CngxBreadcrumbHost } from './breadcrumb.token';
   },
 })
 export class CngxBreadcrumb implements CngxBreadcrumbHost {
-  /** Accessible name of the navigation landmark. EN default. */
-  readonly label = input<string>('Breadcrumb');
+  private readonly i18n = injectResolvedInteractiveI18n();
+
+  /**
+   * Accessible name of the navigation landmark. Defaults to
+   * `CNGX_INTERACTIVE_I18N.breadcrumb`, read at construction.
+   */
+  readonly label = input<string>(this.i18n().breadcrumb);
   /** Maximum crumbs to show before the middle collapses. Unset = never collapse. */
   readonly maxVisible = input<number | undefined>(undefined);
 

@@ -2,13 +2,13 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  inject,
   input,
-  LOCALE_ID,
   ViewEncapsulation,
 } from '@angular/core';
+import { injectLocale } from '@cngx/core/utils';
 
 import { deltaDirection, directionGlyph, formatDelta } from '../shared/delta-format';
+import { injectKpiI18n } from '../shared/kpi-i18n';
 
 /**
  * Displays a trend indicator with directional arrow and formatted percentage.
@@ -69,7 +69,8 @@ import { deltaDirection, directionGlyph, formatDelta } from '../shared/delta-for
   styleUrls: ['./trend.component.css'],
 })
 export class CngxTrend {
-  private readonly locale = inject(LOCALE_ID);
+  private readonly locale = injectLocale();
+  private readonly i18n = injectKpiI18n();
 
   /** Trend percentage. Positive = up, negative = down, zero = flat. */
   readonly value = input.required<number>();
@@ -81,15 +82,12 @@ export class CngxTrend {
   protected readonly icon = computed(() => directionGlyph(deltaDirection(this.value())));
 
   /** @internal */
-  protected readonly formattedValue = computed(() => formatDelta(this.value(), 'percent', this.locale));
+  protected readonly formattedValue = computed(() => formatDelta(this.value(), 'percent', this.locale()));
 
   /** @internal */
-  protected readonly resolvedLabel = computed(() => {
-    if (this.label()) {
-      return this.label()!;
-    }
-    const direction = deltaDirection(this.value());
-    const dir = direction === 'up' ? 'up' : direction === 'down' ? 'down' : 'unchanged';
-    return `${this.formattedValue()} ${dir}`;
-  });
+  protected readonly resolvedLabel = computed(
+    () =>
+      this.label() ??
+      this.i18n().trendLabel(this.formattedValue(), deltaDirection(this.value())),
+  );
 }

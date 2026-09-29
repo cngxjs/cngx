@@ -3,6 +3,8 @@ import { TestBed } from '@angular/core/testing';
 import { MatStepperModule, MatStep, MatStepper } from '@angular/material/stepper';
 import { describe, expect, test } from 'vitest';
 
+import { CNGX_STEPPER_I18N } from '@cngx/common/stepper';
+
 import { createMatStepHandle } from './handle';
 
 let idCounter = 0;
@@ -92,6 +94,25 @@ describe('createMatStepHandle - Phase 6.2 label fallback ladder', () => {
     const handle = createMatStepHandle(matSteps[3], seedId).handle;
     expect(handle.label()).toBe(`Step ${handle.id}`);
     expect(handle.label().length).toBeGreaterThan('Step '.length);
+  });
+
+  test('axis L4b: tier 4 reads CNGX_STEPPER_I18N.stepFallbackLabel when a bundle is passed', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const matSteps = await renderLabels();
+    const i18n = TestBed.inject(CNGX_STEPPER_I18N);
+    const handle = createMatStepHandle(matSteps[3], seedId, {
+      ...i18n,
+      stepFallbackLabel: (id) => `Schritt ${id}`,
+    }).handle;
+    expect(handle.label()).toBe(`Schritt ${handle.id}`);
+
+    const legacy = createMatStepHandle(matSteps[3], seedId, {
+      ...i18n,
+      stepFallbackLabel: undefined,
+    }).handle;
+    expect(legacy.label()).toBe(`Step ${legacy.id}`);
   });
 
   test('axis L5: paired hasError + completed write - `_completedOverride` re-fire surfaces the error', async () => {

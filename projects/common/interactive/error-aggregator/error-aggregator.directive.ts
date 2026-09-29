@@ -14,6 +14,7 @@ import {
   signal,
   untracked,
 } from '@angular/core';
+import { injectLocale } from '@cngx/core/utils';
 import { createErrorAggregatorContract } from '../error-registry/aggregator-contract';
 import { errorSourceMapEqual } from '../error-registry/equal-fns';
 import { CngxErrorRegistry } from '../error-registry/error-registry';
@@ -133,6 +134,7 @@ export class CngxErrorAggregator implements CngxErrorAggregatorContract {
   private readonly contract = createErrorAggregatorContract({
     sourcesState: this.sourcesState,
     scope: this.effectiveScope,
+    locale: injectLocale(),
   });
 
   readonly hasError = this.contract.hasError;

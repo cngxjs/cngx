@@ -53,10 +53,10 @@ import { injectPresetState, warnIfUnnamedPreset } from './preset-state';
         <span class="cngx-preset-skeleton" aria-hidden="true"></span>
       }
       @case ('empty') {
-        <span class="cngx-preset-fallback">{{ i18n.empty() }}</span>
+        <span class="cngx-preset-fallback">{{ i18n().empty() }}</span>
       }
       @case ('error') {
-        <span class="cngx-preset-fallback cngx-preset-fallback--error">{{ i18n.error() }}</span>
+        <span class="cngx-preset-fallback cngx-preset-fallback--error">{{ i18n().error() }}</span>
       }
       @case ('none') {}
       @default {

@@ -12,6 +12,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 
+import { injectLayoutI18n } from '../i18n/layout-i18n';
 import { CngxTruncate } from './truncate.directive';
 
 /**
@@ -134,14 +135,22 @@ export class CngxExpandableToggle {
   `,
 })
 export class CngxExpandableText {
+  private readonly i18n = injectLayoutI18n();
+
   /** Maximum visible lines when collapsed. */
   readonly lines = input<number>(3);
   /** Whether the text is expanded. Supports two-way `[(expanded)]` binding. */
   readonly expanded = model<boolean>(false);
-  /** Label for the "show more" button. */
-  readonly moreLabel = input<string>('Show more');
-  /** Label for the "show less" button. */
-  readonly lessLabel = input<string>('Show less');
+  /**
+   * Label for the "show more" button. Defaults to
+   * `CNGX_LAYOUT_I18N.expandableTextMore`, read at construction.
+   */
+  readonly moreLabel = input<string>(this.i18n().expandableTextMore);
+  /**
+   * Label for the "show less" button. Defaults to
+   * `CNGX_LAYOUT_I18N.expandableTextLess`, read at construction.
+   */
+  readonly lessLabel = input<string>(this.i18n().expandableTextLess);
 
   /** Optional custom toggle template projected by the consumer. */
   protected readonly customToggle = contentChild(CngxExpandableToggle);

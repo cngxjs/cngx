@@ -7,6 +7,8 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 
+import { injectDisplayI18n, type CngxAvatarStatus } from '../i18n/display-i18n';
+
 /**
  * Display atom for user/person/entity avatars.
  *
@@ -73,6 +75,8 @@ import {
   `,
 })
 export class CngxAvatar {
+  private readonly i18n = injectDisplayI18n();
+
   /** Image URL. When set and loads successfully, the image is shown. */
   readonly src = input<string | undefined>(undefined);
   /** Alternate text for the image. Required when `src` is used. */
@@ -84,26 +88,23 @@ export class CngxAvatar {
   /** Visual shape. */
   readonly shape = input<'circle' | 'square'>('circle');
   /** Optional user-presence status indicator. */
-  readonly status = input<'online' | 'offline' | 'busy' | 'away' | undefined>(undefined);
+  readonly status = input<CngxAvatarStatus | undefined>(undefined);
 
   /**
-   * Format closure for the status dot's accessible label. When set, it
-   * replaces the raw EN status key entirely - the i18n hook for
-   * consumers whose locale needs localized status announcements.
-   * Mirrors the `labelFormat` closure on `CngxAvatarGroup`.
+   * Format closure for the status dot's accessible label. When set, it wins
+   * over the app-wide `CNGX_DISPLAY_I18N.avatarStatus` (English default: the
+   * status word). Mirrors the `labelFormat` closure on `CngxAvatarGroup`.
    */
-  readonly statusLabel = input<
-    ((status: 'online' | 'offline' | 'busy' | 'away') => string) | undefined
-  >(undefined);
+  readonly statusLabel = input<((status: CngxAvatarStatus) => string) | undefined>(undefined);
 
-  /** Accessible label of the status dot - the closure's output when set, else the raw status key. */
+  /** Accessible label of the status dot - the closure's output when set, else `CNGX_DISPLAY_I18N.avatarStatus`. */
   protected readonly statusAriaLabel = computed(() => {
     const status = this.status();
     if (!status) {
       return null;
     }
-    const format = this.statusLabel();
-    return format ? format(status) : status;
+    const format = this.statusLabel() ?? this.i18n().avatarStatus;
+    return format(status);
   });
 
   // Keyed on src(): a new URL resets both flags, so a failed image recovers

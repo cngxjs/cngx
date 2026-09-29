@@ -25,7 +25,9 @@ import {
   CngxTimelineMarkerTpl,
   CngxTimelineRetryButton,
   CngxTimelineSkeleton,
+  formatTimelineGroupDate,
   injectTimelineConfig,
+  TIMELINE_DEFAULT_GROUP_LABEL,
   type CngxTimelineItemContext,
   type CngxTimelineMarkerHost,
   type TimelineDateAccessor,
@@ -33,7 +35,7 @@ import {
   type TimelineGroup,
   type TimelineGroupBy,
 } from '@cngx/common/timeline';
-import { CNGX_STATEFUL, nextUid, type CngxAsyncState } from '@cngx/core/utils';
+import { CNGX_STATEFUL, injectLocale, nextUid, type CngxAsyncState } from '@cngx/core/utils';
 import { CngxSkeletonContainer, CngxSkeletonPlaceholder } from '@cngx/ui/skeleton';
 
 import { createTimelineSlots } from './slot-cascade';
@@ -369,6 +371,21 @@ export class CngxTimeline<T = unknown> implements CngxTimelineMarkerHost {
 
   /** @internal Fallback copy for every surface with no slot bound. */
   protected readonly labels = createTimelineFallbackCopy(this.config);
+
+  private readonly locale = injectLocale();
+
+  /**
+   * @internal Group header formatter: the consumer's `labels.groupLabel`,
+   * or - while the config holds the library default - the start date in
+   * the app locale, so a `CNGX_LOCALE` flip re-formats the headers.
+   */
+  protected readonly groupHeaderLabel = computed<(group: TimelineGroup<unknown>) => string>(() => {
+    if (this.config.labels?.groupLabel !== TIMELINE_DEFAULT_GROUP_LABEL) {
+      return this.labels.groupLabel;
+    }
+    const locale = this.locale();
+    return (group) => formatTimelineGroupDate(group, locale);
+  });
 
   /** @internal The body switch, the busy flag and the live-region text. */
   private readonly view = inject(CNGX_TIMELINE_VIEW_FACTORY)(

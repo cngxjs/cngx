@@ -1,4 +1,5 @@
-import { computed, isDevMode, type Signal, type WritableSignal } from '@angular/core';
+import { computed, isDevMode, untracked, type Signal, type WritableSignal } from '@angular/core';
+import { memoize } from '@cngx/core/utils';
 import type {
   CngxErrorAggregatorContract,
   CngxErrorAggregatorSourceEntry,
@@ -6,8 +7,19 @@ import type {
 import type { CngxErrorScopeContract } from '../error-scope/error-scope.token';
 import { shallowReadonlyArrayEqual } from './equal-fns';
 
-/** @internal */
-const ERROR_LABEL_JOINER = ', ';
+const ERROR_LIST_FORMAT_CACHE_LIMIT = 32;
+
+/**
+ * @internal - one `Intl.ListFormat` per locale for the announcement joiner.
+ * The `unit` / `short` style joins without a conjunction in en-US
+ * (`A, B, C`, identical to the former `', '` join); de-DE reads
+ * `A, B und C`.
+ */
+const errorListFormatFor = memoize(
+  (locale: string): Intl.ListFormat =>
+    new Intl.ListFormat(locale, { type: 'unit', style: 'short' }),
+  { cacheLimit: ERROR_LIST_FORMAT_CACHE_LIMIT },
+);
 
 /**
  * Inputs required to build the shared error-aggregator computed graph.
@@ -29,6 +41,8 @@ export interface ErrorAggregatorContractDeps {
    * that case `shouldShow` short-circuits to `hasError` directly.
    */
   readonly scope: Signal<CngxErrorScopeContract | null | undefined>;
+  /** Locale of the announcement list joiner (`injectLocale()` at the call site). */
+  readonly locale: Signal<string>;
 }
 
 /**
@@ -111,9 +125,15 @@ export function createErrorAggregatorContract(
     return resolved ? resolved.showErrors() : true;
   });
 
-  const announcement: Signal<string> = computed(() =>
-    shouldShow() ? errorLabels().join(ERROR_LABEL_JOINER) : '',
-  );
+  // Live-region text: the locale is read untracked, so a locale flip never
+  // re-speaks a shown announcement; the next error change speaks it.
+  const announcement: Signal<string> = computed(() => {
+    if (!shouldShow()) {
+      return '';
+    }
+    const labels = errorLabels();
+    return untracked(() => errorListFormatFor(deps.locale()).format(labels));
+  });
 
   return {
     hasError,

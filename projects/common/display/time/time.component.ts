@@ -3,13 +3,11 @@ import {
   Component,
   computed,
   effect,
-  inject,
   input,
   isDevMode,
-  LOCALE_ID,
   ViewEncapsulation,
 } from '@angular/core';
-import { dateTimeFormatterFor, memoize } from '@cngx/core/utils';
+import { dateTimeFormatterFor, injectLocale, memoize } from '@cngx/core/utils';
 
 /**
  * Unit ladder for the relative formatter, smallest first. Each `amount` is the
@@ -39,8 +37,9 @@ const RELATIVE_DIVISIONS: readonly { readonly amount: number; readonly unit: Int
  * `datetime` attribute (ISO 8601) plus a human string in one of two modes:
  * `absolute` (via `Intl.DateTimeFormat`) or `relative` (via
  * `Intl.RelativeTimeFormat`, e.g. "3 days ago"). Formatting resolves against
- * the injected `LOCALE_ID` - English out of the box, locale-driven when the app
- * provides one; no hardcoded strings.
+ * the app locale (`CNGX_LOCALE`, falling back to the nearest `LOCALE_ID`) -
+ * English out of the box, locale-driven when the app provides one, re-formatted
+ * on a locale flip; no hardcoded strings.
  *
  * Relative mode is render-time, not live-ticking: it recomputes when `[date]`
  * changes, not on a timer, so "2 minutes ago" does not self-update. A consumer
@@ -72,7 +71,7 @@ const RELATIVE_DIVISIONS: readonly { readonly amount: number; readonly unit: Int
   template: `<time [attr.datetime]="iso()">{{ formatted() }}</time>`,
 })
 export class CngxTime {
-  private readonly locale = inject(LOCALE_ID);
+  private readonly locale = injectLocale();
 
   /** Instant to render. Accepts a `Date`, an ISO string, or an epoch-ms number. */
   readonly date = input.required<Date | string | number>();
@@ -126,11 +125,12 @@ export class CngxTime {
       return '';
     }
     const instant = this.instant();
+    const locale = this.locale();
     if (this.mode() === 'relative') {
-      return this.formatRelative(instant.getTime(), Date.now());
+      return this.formatRelative(instant.getTime(), Date.now(), locale);
     }
     const format = this.format() ?? { year: 'numeric', month: 'short', day: 'numeric' };
-    return dateTimeFormatterFor(this.locale, format).format(instant);
+    return dateTimeFormatterFor(locale, format).format(instant);
   });
 
   constructor() {
@@ -146,8 +146,8 @@ export class CngxTime {
     }
   }
 
-  private formatRelative(target: number, now: number): string {
-    const rtf = relativeFormatterFor(this.locale);
+  private formatRelative(target: number, now: number, locale: string): string {
+    const rtf = relativeFormatterFor(locale);
     let delta = (target - now) / 1000;
     for (const division of RELATIVE_DIVISIONS) {
       if (Math.abs(delta) < division.amount) {

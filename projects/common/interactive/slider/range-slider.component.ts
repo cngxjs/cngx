@@ -10,6 +10,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 
+import { injectResolvedInteractiveI18n } from '../i18n/interactive-i18n';
 import { CngxRangeSliderTrack } from './range-slider.directive';
 import { CngxSliderThumb } from './slider-thumb.directive';
 import { createSliderTicks } from './slider-ticks';
@@ -104,10 +105,18 @@ import { createSliderTicks } from './slider-ticks';
   `,
 })
 export class CngxRangeSlider {
-  /** Accessible name of the start (minimum) thumb. EN default. */
-  readonly startLabel = input<string>('Minimum');
-  /** Accessible name of the end (maximum) thumb. EN default. */
-  readonly endLabel = input<string>('Maximum');
+  private readonly i18n = injectResolvedInteractiveI18n();
+
+  /**
+   * Accessible name of the start (minimum) thumb. Defaults to
+   * `CNGX_INTERACTIVE_I18N.rangeMinimum`, read at construction.
+   */
+  readonly startLabel = input<string>(this.i18n().rangeMinimum);
+  /**
+   * Accessible name of the end (maximum) thumb. Defaults to
+   * `CNGX_INTERACTIVE_I18N.rangeMaximum`, read at construction.
+   */
+  readonly endLabel = input<string>(this.i18n().rangeMaximum);
   /** Render the formatted `start - end` values centred between the thumbs (visual only). */
   readonly showValue = input(false, { transform: booleanAttribute });
   /** Show the combined `start - end` value as a bubble only while focused / dragged. */

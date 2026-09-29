@@ -51,13 +51,13 @@ describe('delta-format', () => {
 
   describe('formatDelta', () => {
     it('percent mode: positive gains +, others print unsigned magnitude', () => {
-      expect(formatDelta(5.3, 'percent', 'en-US')).toBe('+5.3\u202f%');
-      expect(formatDelta(-2.1, 'percent', 'en-US')).toBe('2.1\u202f%');
-      expect(formatDelta(0, 'percent', 'en-US')).toBe('0.0\u202f%');
+      expect(formatDelta(5.3, 'percent', 'en-US')).toBe('+5.3%');
+      expect(formatDelta(-2.1, 'percent', 'en-US')).toBe('2.1%');
+      expect(formatDelta(0, 'percent', 'en-US')).toBe('0.0%');
     });
 
     it('percent mode honours Intl format options', () => {
-      expect(formatDelta(5.3, 'percent', 'en-US', { maximumFractionDigits: 0 })).toBe('+5\u202f%');
+      expect(formatDelta(5.3, 'percent', 'en-US', { maximumFractionDigits: 0 })).toBe('+5%');
     });
 
     it('absolute mode uses locale grouping and drops the percent sign', () => {
@@ -67,8 +67,12 @@ describe('delta-format', () => {
 
     it('percent mode is locale-aware like absolute mode', () => {
       // de-DE writes the decimal separator as a comma; toFixed would print ".".
-      expect(formatDelta(5.3, 'percent', 'de-DE')).toBe('+5,3\u202f%');
-      expect(formatDelta(0, 'percent', 'de-DE')).toBe('0,0\u202f%');
+      expect(formatDelta(5.3, 'percent', 'de-DE')).toBe('+5,3\u00a0%');
+      expect(formatDelta(0, 'percent', 'de-DE')).toBe('0,0\u00a0%');
+    });
+
+    it('percent mode lets the locale place the percent sign', () => {
+      expect(formatDelta(5.3, 'percent', 'tr-TR')).toBe('+%5,3');
     });
   });
 });

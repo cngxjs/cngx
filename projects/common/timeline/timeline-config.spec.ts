@@ -10,6 +10,7 @@ import {
   provideTimelineConfigAt,
   withTimelineLabels,
   type CngxTimelineConfig,
+  formatTimelineGroupDate,
 } from './timeline-config';
 
 function group(start: Date): TimelineGroup<unknown> {
@@ -44,11 +45,15 @@ describe('timeline config cascade', () => {
       });
     });
 
-    it('formats a group header from its start date', () => {
+    it('formats a group header from its start date (en-US on a direct call)', () => {
       TestBed.configureTestingModule({});
       const start = new Date(2026, 6, 20);
 
-      expect(readConfig().labels?.groupLabel?.(group(start))).toBe(start.toLocaleDateString());
+      expect(readConfig().labels?.groupLabel?.(group(start))).toBe('7/20/2026');
+    });
+
+    it('formats a group date in a given locale', () => {
+      expect(formatTimelineGroupDate(group(new Date(2026, 6, 20)), 'de-DE')).toBe('20.7.2026');
     });
 
     it('reserves an empty templates bag for the slot stage', () => {

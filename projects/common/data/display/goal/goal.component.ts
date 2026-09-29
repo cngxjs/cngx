@@ -7,6 +7,8 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 
+import { injectKpiI18n } from '../shared/kpi-i18n';
+
 /**
  * Determinate attainment bar - a continuous progress toward a target
  * (quota reached, budget spent, goal met). Named `CngxGoal` because
@@ -52,6 +54,8 @@ import {
   styleUrls: ['./goal.component.css'],
 })
 export class CngxGoal {
+  private readonly i18n = injectKpiI18n();
+
   /** Current attainment. Clamped to `[0, max]`. */
   readonly value = input.required<number>();
 
@@ -68,8 +72,9 @@ export class CngxGoal {
 
   /**
    * Override the `aria-valuetext` string. Receives `(now, max)` - the clamped
-   * value and the target. The default is `(now, max) => \`${now} of ${max}\``.
-   * Supply a localised closure for richer text (e.g.
+   * value and the target. Wins over the app-wide `CNGX_KPI_I18N.goalValueText`
+   * (English default `(now, max) => \`${now} of ${max}\``). Supply a closure
+   * for richer per-instance text (e.g.
    * `(n, m) => \`${n} of ${m}, ${Math.round((n / m) * 100)}% of quota\``).
    */
   readonly valueTextFormat = input<((now: number, max: number) => string) | undefined>(undefined);
@@ -90,7 +95,7 @@ export class CngxGoal {
 
   /** `aria-valuetext` - human-readable attainment via the resolved closure. */
   protected readonly valueText: Signal<string> = computed(() => {
-    const fmt = this.valueTextFormat() ?? ((now: number, max: number) => `${now} of ${max}`);
+    const fmt = this.valueTextFormat() ?? this.i18n().goalValueText;
     return fmt(this.now(), this.maxValue());
   });
 }

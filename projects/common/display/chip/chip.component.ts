@@ -9,6 +9,8 @@ import {
 
 import { nextUid } from '@cngx/core/utils';
 
+import { injectDisplayI18n } from '../i18n/display-i18n';
+
 /**
  * Chip / tag molecule - a small, self-contained pill rendering projected
  * content plus an optional close affordance.
@@ -94,6 +96,8 @@ import { nextUid } from '@cngx/core/utils';
   `,
 })
 export class CngxChip {
+  private readonly i18n = injectDisplayI18n();
+
   /**
    * Whether the close button is rendered. Typed as `boolean` - bind a
    * signal getter (`[removable]="!select.disabled()"`) if the flag
@@ -109,12 +113,13 @@ export class CngxChip {
   readonly id = input<string | null>(null);
 
   /**
-   * A11y label for the close button. Defaults to a generic "Remove";
-   * consumers with option labels on hand should supply something more
+   * A11y label for the close button. Defaults to `CNGX_DISPLAY_I18N.chipRemove`
+   * (English "Remove"), read at construction; consumers with option labels on
+   * hand should supply something more
    * specific (e.g. `"Remove Red"`) so screen readers know which chip
    * the button removes.
    */
-  readonly removeAriaLabel = input<string>('Remove');
+  readonly removeAriaLabel = input<string>(this.i18n().chipRemove);
 
   /** Fires when the user clicks the close button. */
   readonly remove = output<MouseEvent>();

@@ -1,6 +1,8 @@
-import { LOCALE_ID } from '@angular/core';
+import { LOCALE_ID, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { CNGX_LOCALE } from '@cngx/core/utils';
 
 import { CngxTime } from './time.component';
 
@@ -158,5 +160,28 @@ describe('CngxTime', () => {
     fixture.componentRef.setInput('date', '2026-03-15T12:00:00.000Z');
     fixture.detectChanges();
     expect(timeEl.getAttribute('datetime')).toBe(iso);
+  });
+});
+
+describe('CngxTime - CNGX_LOCALE', () => {
+  it('re-formats absolute and relative output on a locale flip without re-creating the component', () => {
+    const locale = signal('en-US');
+    TestBed.configureTestingModule({ providers: [{ provide: CNGX_LOCALE, useValue: locale.asReadonly() }] });
+    const date = new Date('2026-03-15T12:00:00Z');
+    const absolute = make(date);
+    const relative = make(Date.now() - 3 * 86_400_000, { mode: 'relative' });
+    expect(absolute.timeEl.textContent?.trim()).toBe(
+      new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: 'numeric' }).format(date),
+    );
+    expect(relative.timeEl.textContent?.trim()).toBe('3 days ago');
+
+    locale.set('de-DE');
+    absolute.fixture.detectChanges();
+    relative.fixture.detectChanges();
+    expect(absolute.fixture.nativeElement.querySelector('time')).toBe(absolute.timeEl);
+    expect(absolute.timeEl.textContent?.trim()).toBe(
+      new Intl.DateTimeFormat('de-DE', { year: 'numeric', month: 'short', day: 'numeric' }).format(date),
+    );
+    expect(relative.timeEl.textContent?.trim()).toBe('vor 3 Tagen');
   });
 });

@@ -52,7 +52,20 @@ export { CngxAsync, type CngxAsyncContext } from './async/async.directive';
 export { CngxMetric } from './display/metric/metric.component';
 export { CngxTrend } from './display/trend/trend.component';
 export { CngxDelta } from './display/delta/delta.component';
-export { type DeltaPolarity, type DeltaMode } from './display/shared/delta-format';
+export {
+  type DeltaPolarity,
+  type DeltaMode,
+  type DeltaDirection,
+  type DeltaSentiment,
+} from './display/shared/delta-format';
+export {
+  CNGX_KPI_I18N,
+  injectKpiI18n,
+  provideKpiI18n,
+  withKpiI18nLabels,
+  type CngxKpiI18n,
+  type CngxKpiI18nFeature,
+} from './display/shared/kpi-i18n';
 export { CngxStat } from './display/stat/stat.component';
 export { CngxStatCoordinator } from './display/stat/stat-coordinator.directive';
 export {

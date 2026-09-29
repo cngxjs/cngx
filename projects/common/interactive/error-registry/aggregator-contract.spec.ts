@@ -6,6 +6,8 @@ import type { CngxErrorScopeContract } from '../error-scope/error-scope.token';
 import { createErrorAggregatorContract } from './aggregator-contract';
 import { errorSourceMapEqual } from './equal-fns';
 
+const EN_US = signal('en-US').asReadonly();
+
 function makeSources() {
   return signal<ReadonlyMap<string, CngxErrorAggregatorSourceEntry>>(
     new Map(),
@@ -38,6 +40,7 @@ describe('createErrorAggregatorContract', () => {
       const contract = createErrorAggregatorContract({
         sourcesState,
         scope: scope.asReadonly(),
+        locale: EN_US,
       });
 
       expect(contract.hasError()).toBe(false);
@@ -56,6 +59,7 @@ describe('createErrorAggregatorContract', () => {
       const contract = createErrorAggregatorContract({
         sourcesState,
         scope: scope.asReadonly(),
+        locale: EN_US,
       });
 
       contract.addSource({ key: 'a', condition: a.asReadonly(), label: 'A' });
@@ -80,6 +84,30 @@ describe('createErrorAggregatorContract', () => {
       expect(contract.announcement()).toBe('A, B');
     });
 
+    it('joins labels with the locale list format, reading the locale untracked', () => {
+      const a = signal(true);
+      const b = signal(false);
+      const locale = signal('de-DE');
+      const sourcesState = makeSources();
+      const contract = createErrorAggregatorContract({
+        sourcesState,
+        scope: signal<CngxErrorScopeContract | null>(null).asReadonly(),
+        locale: locale.asReadonly(),
+      });
+      contract.addSource({ key: 'a', condition: a.asReadonly(), label: 'A' });
+      contract.addSource({ key: 'b', condition: b.asReadonly(), label: 'B' });
+      contract.addSource({ key: 'c', condition: signal(true).asReadonly(), label: 'C' });
+      contract.addSource({ key: 'd', condition: signal(true).asReadonly(), label: 'D' });
+      TestBed.flushEffects();
+      expect(contract.announcement()).toBe('A, C und D');
+
+      locale.set('en-US');
+      expect(contract.announcement()).toBe('A, C und D');
+
+      b.set(true);
+      expect(contract.announcement()).toBe('A, B, C, D');
+    });
+
     it('omits labels for entries without a label', () => {
       const a = signal(true);
       const b = signal(true);
@@ -88,6 +116,7 @@ describe('createErrorAggregatorContract', () => {
       const contract = createErrorAggregatorContract({
         sourcesState,
         scope: scope.asReadonly(),
+        locale: EN_US,
       });
 
       contract.addSource({ key: 'a', condition: a.asReadonly(), label: 'A' });
@@ -107,6 +136,7 @@ describe('createErrorAggregatorContract', () => {
       const contract = createErrorAggregatorContract({
         sourcesState,
         scope: scope.asReadonly(),
+        locale: EN_US,
       });
       contract.addSource({ key: 'a', condition: a.asReadonly(), label: 'A' });
       TestBed.flushEffects();
@@ -122,6 +152,7 @@ describe('createErrorAggregatorContract', () => {
       const contract = createErrorAggregatorContract({
         sourcesState,
         scope: scope.asReadonly(),
+        locale: EN_US,
       });
       contract.addSource({ key: 'a', condition: a.asReadonly(), label: 'A' });
       TestBed.flushEffects();
@@ -149,6 +180,7 @@ describe('createErrorAggregatorContract', () => {
       const contract = createErrorAggregatorContract({
         sourcesState,
         scope: scope.asReadonly(),
+        locale: EN_US,
       });
       contract.addSource({ key: 'a', condition: a.asReadonly(), label: 'A' });
       TestBed.flushEffects();
@@ -167,6 +199,7 @@ describe('createErrorAggregatorContract', () => {
       const contract = createErrorAggregatorContract({
         sourcesState,
         scope: scope.asReadonly(),
+        locale: EN_US,
       });
 
       const cond = signal(true);
@@ -185,6 +218,7 @@ describe('createErrorAggregatorContract', () => {
       const contract = createErrorAggregatorContract({
         sourcesState,
         scope: scope.asReadonly(),
+        locale: EN_US,
       });
       expect(() => contract.removeSource('missing')).not.toThrow();
     });
@@ -201,6 +235,7 @@ describe('createErrorAggregatorContract', () => {
     const contract = createErrorAggregatorContract({
       sourcesState,
       scope: scope.asReadonly(),
+      locale: EN_US,
     });
 
     const refA = a.asReadonly();

@@ -8,6 +8,8 @@ import {
 import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
 
+import { provideLocale } from '@cngx/core/utils';
+
 import { CngxChartAnnouncer } from './chart-announcer.component';
 import { type CngxChart } from './chart.component';
 import { type CngxSignificantChange } from './significant-change';
@@ -102,5 +104,28 @@ describe('CngxChartAnnouncer', () => {
     fixture.componentInstance.sig.set({ kind: 'trend-flip', from: 'up', to: 'down' });
     TestBed.tick();
     expect(runs).toBe(base + 2);
+  });
+});
+
+describe('CngxChartAnnouncer - locale flip', () => {
+  it('keeps a shown announcement on a CNGX_LOCALE flip and speaks the new locale on the next event', () => {
+    const locale = signal('en-US');
+    TestBed.configureTestingModule({ imports: [Host], providers: [provideLocale(locale)] });
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+    const assertive = (fixture.nativeElement as HTMLElement).querySelector(
+      '[role="alert"][aria-live="assertive"]',
+    ) as HTMLElement;
+    fixture.componentInstance.sig.set({ kind: 'threshold-cross', threshold: 2.5, direction: 'up' });
+    fixture.detectChanges();
+    expect(assertive.textContent?.trim()).toBe('Threshold 2.5 crossed');
+
+    locale.set('de-DE');
+    fixture.detectChanges();
+    expect(assertive.textContent?.trim()).toBe('Threshold 2.5 crossed');
+
+    fixture.componentInstance.sig.set({ kind: 'threshold-cross', threshold: 3.5, direction: 'up' });
+    fixture.detectChanges();
+    expect(assertive.textContent?.trim()).toBe('Threshold 3,5 crossed');
   });
 });

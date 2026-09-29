@@ -2,12 +2,11 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  inject,
   input,
   ViewEncapsulation,
 } from '@angular/core';
-import { nextUid } from '@cngx/core/utils';
-import { CNGX_CHART_I18N } from '../i18n/chart-i18n';
+import { injectLocale, nextUid } from '@cngx/core/utils';
+import { injectChartI18n } from '../i18n/chart-i18n';
 import { formatChartNumber } from './format-number';
 
 /**
@@ -56,7 +55,7 @@ import { formatChartNumber } from './format-number';
         @for (row of rows(); track row.index) {
           <tr>
             <th scope="row">{{ row.index + 1 }}</th>
-            <td>{{ fmt(row.value) }}</td>
+            <td>{{ fmt()(row.value) }}</td>
           </tr>
         }
       </tbody>
@@ -91,7 +90,8 @@ export class CngxChartDataTable {
   readonly id = input<string | undefined>(undefined);
 
   private readonly defaultId = nextUid('cngx-chart-data-table');
-  private readonly i18n = inject(CNGX_CHART_I18N);
+  private readonly i18n = injectChartI18n();
+  private readonly locale = injectLocale();
 
   /**
    * Resolved host id - the explicit `[id]` input wins over the
@@ -101,11 +101,14 @@ export class CngxChartDataTable {
    */
   protected readonly resolvedId = computed(() => this.id() ?? this.defaultId);
 
-  protected readonly caption = computed(() => this.i18n.dataTable());
-  protected readonly valueColumnLabel = computed(() => this.i18n.valueColumnLabel());
+  protected readonly caption = computed(() => this.i18n().dataTable());
+  protected readonly valueColumnLabel = computed(() => this.i18n().valueColumnLabel());
 
-  /** Noise-stripped display text - see {@link formatChartNumber}. */
-  protected readonly fmt = formatChartNumber;
+  /** Noise-stripped display text in the app locale - see {@link formatChartNumber}. */
+  protected readonly fmt = computed(() => {
+    const locale = this.locale();
+    return (v: number): string => formatChartNumber(v, locale);
+  });
 
   protected readonly rows = computed<readonly { index: number; value: number }[]>(
     () => {

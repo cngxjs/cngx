@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import { CNGX_CHART_CONTEXT, type CngxChartPlotArea } from '../chart/chart-context';
 import { CNGX_CHART_AXIS, type CngxChartAxis } from './chart-axis';
+import { dateTimeFormatterFor, injectLocale } from '@cngx/core/utils';
 import { formatChartNumber } from '../chart/format-number';
 import { type CngxAxisPosition, type CngxAxisType } from './axis-position';
 
@@ -280,6 +281,20 @@ export class CngxAxis implements CngxChartAxis {
   readonly axisLabel = input<string | null>(null, { alias: 'label' });
 
   private readonly ctx = inject(CNGX_CHART_CONTEXT);
+  private readonly locale = injectLocale();
+
+  /**
+   * The bound `[format]`, or the default tick formatter bound to the app
+   * locale (`CNGX_LOCALE`), so a locale flip re-formats the default labels.
+   */
+  private readonly resolvedFormat = computed<(v: unknown) => string>(() => {
+    const fmt = this.format();
+    if (fmt !== defaultTickFormat) {
+      return fmt;
+    }
+    const locale = this.locale();
+    return (v) => defaultTickFormat(v, locale);
+  });
 
   /**
    * Tick values to render. Resolution order:
@@ -428,7 +443,7 @@ export class CngxAxis implements CngxChartAxis {
    * the label's width is exactly what overhangs the plot corner.
    */
   private readonly longestTickLabel = computed<number>(() => {
-    const fmt = this.format();
+    const fmt = this.resolvedFormat();
     let longest = 0;
     for (const v of this.tickValues()) {
       const len = fmt(v).length;
@@ -500,7 +515,7 @@ export class CngxAxis implements CngxChartAxis {
     () => {
       const pos = this.position();
       const values = this.tickValues();
-      const fmt = this.format();
+      const fmt = this.resolvedFormat();
       const plot = this.plot();
       if (!plot) {
         return [];
@@ -677,35 +692,34 @@ function buildTickRendering(
  * Default tick label formatter. Strips floating-point arithmetic
  * noise from non-integer numbers - `6.6000000000000005` becomes
  * `'6.6'`, `2.2` stays `'2.2'`, `25` stays `'25'` - without rounding
- * away meaningful precision. Dates go through cached `Intl` formatters
- * ({@link formatDateTick}); other types fall through to `String(v)`.
- * Consumers needing a richer format bind `[format]`.
+ * away meaningful precision, in the app locale's decimal separator.
+ * Dates go through cached `Intl` formatters ({@link formatDateTick});
+ * other types fall through to `String(v)`. Consumers needing a richer
+ * format bind `[format]`. `CngxAxis` calls it with the `CNGX_LOCALE`
+ * value; the `en-US` default only applies to a direct call.
  *
  * @internal
  */
-function defaultTickFormat(v: unknown): string {
+function defaultTickFormat(v: unknown, locale = 'en-US'): string {
   if (typeof v === 'number') {
-    return formatChartNumber(v);
+    return formatChartNumber(v, locale);
   }
   if (v instanceof Date) {
-    return formatDateTick(v);
+    return formatDateTick(v, locale);
   }
   return String(v);
 }
 
-/**
- * Lazily constructed, module-cached `Intl.DateTimeFormat` instances
- * for {@link formatDateTick}. Constructing a formatter is expensive
- * (locale data lookup); formatting with a cached one is cheap, and the
- * label strings feed the gutter arithmetic on every tick recompute.
- *
- * @internal
- */
-let dateTickFormat: Intl.DateTimeFormat | undefined;
 /** @internal */
-let timeTickFormat: Intl.DateTimeFormat | undefined;
+const DATE_TICK_OPTIONS: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
 /** @internal */
-let timeSecondsTickFormat: Intl.DateTimeFormat | undefined;
+const TIME_TICK_OPTIONS: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit' };
+/** @internal */
+const TIME_SECONDS_TICK_OPTIONS: Intl.DateTimeFormatOptions = {
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit',
+};
 
 /**
  * Compact Date tick label. `String(Date)` produces a ~60-character
@@ -713,30 +727,26 @@ let timeSecondsTickFormat: Intl.DateTimeFormat | undefined;
  * collapses the plot to a sliver of gutter. Instead: a date at local
  * midnight labels as a short date (`Sep 4`), any other instant as a
  * time (`09:14`, with seconds only when the instant carries them) -
- * the resolution a generated time-axis tick actually has.
+ * the resolution a generated time-axis tick actually has. Formatters
+ * come from the bounded `dateTimeFormatterFor` cache (constructing one
+ * is expensive; the labels feed the gutter arithmetic on every tick
+ * recompute).
  *
  * @internal
  */
-function formatDateTick(v: Date): string {
+function formatDateTick(v: Date, locale: string): string {
   if (Number.isNaN(v.getTime())) {
     return '';
   }
   const midnight =
     v.getHours() === 0 && v.getMinutes() === 0 && v.getSeconds() === 0 && v.getMilliseconds() === 0;
   if (midnight) {
-    dateTickFormat ??= new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' });
-    return dateTickFormat.format(v);
+    return dateTimeFormatterFor(locale, DATE_TICK_OPTIONS).format(v);
   }
   if (v.getSeconds() === 0 && v.getMilliseconds() === 0) {
-    timeTickFormat ??= new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' });
-    return timeTickFormat.format(v);
+    return dateTimeFormatterFor(locale, TIME_TICK_OPTIONS).format(v);
   }
-  timeSecondsTickFormat ??= new Intl.DateTimeFormat(undefined, {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-  });
-  return timeSecondsTickFormat.format(v);
+  return dateTimeFormatterFor(locale, TIME_SECONDS_TICK_OPTIONS).format(v);
 }
 
 /** @internal */

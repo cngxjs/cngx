@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from '@angular/core';
 
+import { injectResolvedInteractiveI18n } from '../i18n/interactive-i18n';
 import { CngxCopyText } from './copy-text.directive';
 
 /**
@@ -64,12 +65,17 @@ import { CngxCopyText } from './copy-text.directive';
   styleUrls: ['./copy-block.css'],
 })
 export class CngxCopyBlock {
+  private readonly i18n = injectResolvedInteractiveI18n();
+
   /** The text value to copy to clipboard. */
   readonly value = input.required<string>();
-  /** Label for the copy button. */
-  readonly buttonLabel = input<string>('Copy');
-  /** Label shown after successful copy. */
-  readonly copiedLabel = input<string>('Copied!');
-  /** Screen reader announcement on copy. */
-  readonly srAnnouncement = input<string>('Copied to clipboard');
+  /** Label for the copy button. Defaults to `CNGX_INTERACTIVE_I18N.copy`, read at construction. */
+  readonly buttonLabel = input<string>(this.i18n().copy);
+  /** Label shown after successful copy. Defaults to `CNGX_INTERACTIVE_I18N.copied`, read at construction. */
+  readonly copiedLabel = input<string>(this.i18n().copied);
+  /**
+   * Screen reader announcement on copy. Defaults to
+   * `CNGX_INTERACTIVE_I18N.copiedAnnouncement`, read at construction.
+   */
+  readonly srAnnouncement = input<string>(this.i18n().copiedAnnouncement);
 }
