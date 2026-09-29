@@ -39,6 +39,19 @@ import { CngxFieldSkinHost } from './field-skin.directive';
  * on the box padding focuses the main control, so the whole box is its hit
  * area.
  *
+ * **Label inside the box.** Besides the control and its affixes, the box
+ * takes a {@link CngxLabel} as a direct child: placed there, it renders as an
+ * inner label on its own line above the value, and the box grows by that line (56px instead
+ * of 42px at comfortable density). Placement is the whole API, there is no
+ * position input. Use one placement per form.
+ *
+ * ```html
+ * <span cngxFieldBox>
+ *   <label cngxLabel>Order reference</label>
+ *   <input cngxInput [formField]="f.reference" />
+ * </span>
+ * ```
+ *
  * ```html
  * <span cngxFieldBox>
  *   <span cngxPrefix>CHF</span>
@@ -52,10 +65,11 @@ import { CngxFieldSkinHost } from './field-skin.directive';
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/field-box.directive.ts
  * @since 0.2.0
- * @relatedTo CngxPrefix, CngxSuffix, CngxFormField, CngxInput, CngxFieldSkinHost, CNGX_FIELD_BOX
+ * @relatedTo CngxPrefix, CngxSuffix, CngxLabel, CngxFormField, CngxInput, CngxFieldSkinHost, CNGX_FIELD_BOX
  * <example-url>http://localhost:4200/#/forms/field/affix/currency-and-unit</example-url>
- * <example-url>http://localhost:4200/#/forms/field/skin/fill</example-url>
+ * <example-url>http://localhost:4200/#/forms/field/skin/outline-anatomy</example-url>
  * <example-url>http://localhost:4200/#/forms/field/skin/fill-anatomy</example-url>
+ * <example-url>http://localhost:4200/#/forms/field/skin/bare-anatomy</example-url>
  */
 @Directive({
   selector: '[cngxFieldBox], [cngxAffixRow]',
