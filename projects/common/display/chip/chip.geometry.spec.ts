@@ -68,6 +68,34 @@ describe('CngxChip geometry', () => {
     expect(computedValue(host, 'justify-content')).toBe('center');
   });
 
+  it('gives the remove button a 24x24 hit box on a fine pointer without growing the chip', () => {
+    const host = mount();
+    const remove = query(host, '.cngx-chip__remove');
+    host.style.setProperty('--cngx-target-min', '0px');
+    const target = remove.getBoundingClientRect();
+    expect(target.width).toBeGreaterThanOrEqual(24);
+    expect(target.height).toBeGreaterThanOrEqual(24);
+    // The AA floor is hit area only: the chip stays as tall as its label line
+    // plus padding, the same height a static label chip has.
+    const label = query(host, '.cngx-chip__label');
+    const padding =
+      parseFloat(computedValue(host, 'padding-block-start')) +
+      parseFloat(computedValue(host, 'padding-block-end'));
+    expect(host.getBoundingClientRect().height).toBeCloseTo(
+      label.getBoundingClientRect().height + padding,
+      0,
+    );
+  });
+
+  it('lays the remove floor out once the pointer floor exceeds the AA floor', () => {
+    const host = mount();
+    const remove = query(host, '.cngx-chip__remove');
+    host.style.setProperty('--cngx-target-min', '44px');
+    expect(computedValue(remove, 'margin-top')).toBe('0px');
+    expect(computedValue(remove, 'margin-inline-start')).toBe('0px');
+    expect(remove.getBoundingClientRect().height).toBeCloseTo(44, 0);
+  });
+
   it('floors the nested remove button as a centred tap target', () => {
     const host = mount();
     const remove = query(host, '.cngx-chip__remove');

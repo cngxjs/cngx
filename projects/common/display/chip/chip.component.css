@@ -34,7 +34,9 @@
  *
  * - `.cngx-chip__label` - the text, ellipsis-truncates
  * - `.cngx-chip__remove` - inline button, fades in / out via
- *   `--cngx-chip-remove-opacity` + `:focus-visible` ring
+ *   `--cngx-chip-remove-opacity` + `:focus-visible` ring; its hit box is
+ *   at least `--cngx-chip-remove-target` (default `1.5rem`, the WCAG 2.5.8
+ *   floor) on every pointer without changing the chip height
  *
  * **Inheritance**
  *
@@ -541,14 +543,27 @@
       border-radius: var(--cngx-chip-remove-radius, var(--cngx-radius-sm, 2px));
 
       /* Touch-target floor - the remove button is its own tap target,
-         nested inside the chip; give its hit box the pointer-derived
-         minimum on both axes while the glyph stays its design size,
-         centred. Inert at 0px on a fine pointer. */
+         nested inside the chip (and, in a multi select, inside the combobox
+         trigger), so WCAG 2.5.8 wants 24x24 on every pointer. The hit box
+         takes the larger of the 24px AA floor and the pointer-derived
+         minimum; the glyph stays its design size, centred. */
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      min-inline-size: var(--cngx-target-min, 0px);
-      min-block-size: var(--cngx-target-min, 0px);
+      min-inline-size: max(var(--cngx-chip-remove-target, 1.5rem), var(--cngx-target-min, 0px));
+      min-block-size: max(var(--cngx-chip-remove-target, 1.5rem), var(--cngx-target-min, 0px));
+      /* On a fine pointer the AA floor is hit area, not layout: a negative
+         margin hands back what the box adds over the 1em glyph line, so the
+         chip - and a trigger holding it - keeps its height. Once the pointer
+         floor exceeds the AA floor (coarse pointer) the deficit is 0 and the
+         laid-out floor applies as before. */
+      margin: calc(
+        -0.5 *
+          max(
+            0px,
+            var(--cngx-chip-remove-target, 1.5rem) - max(1em, var(--cngx-target-min, 0px))
+          )
+      );
     }
     .cngx-chip__remove:hover {
       opacity: var(--cngx-chip-remove-opacity-hover, 1);
