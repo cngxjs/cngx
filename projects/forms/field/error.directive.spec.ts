@@ -37,6 +37,10 @@ describe('CngxError', () => {
     errorEl = fixture.debugElement.query(By.directive(CngxError)).nativeElement;
   });
 
+  it('carries the cngx-error class the field typography keys on', () => {
+    expect(errorEl.classList).toContain('cngx-error');
+  });
+
   it('sets id to error ID', () => {
     expect(errorEl.id).toBe('cngx-email-error');
   });

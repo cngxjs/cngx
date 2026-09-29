@@ -21,6 +21,22 @@ import { CNGX_FORM_FIELD_CONFIG } from './form-field.token';
  * - `cngx-label--error` - when field errors are visible or the discovered control reports an error state
  * - `cngx-label--disabled` - when the field or the discovered control is disabled
  *
+ * Placement is composition, not an input: a label placed as a direct child of
+ * a `CngxFieldBox` renders as an inner static label, on its own line above the
+ * prefix / control / suffix line inside the box surface (the Material 3 filled
+ * look, without a float). The box grows by the label line and keeps its
+ * formula. Place the label in one spot per form, outside every box or inside
+ * every box.
+ *
+ * ```html
+ * <cngx-form-field [field]="form.reference" skin="fill">
+ *   <span cngxFieldBox>
+ *     <label cngxLabel>Order reference</label>
+ *     <input cngxInput [formField]="form.reference" />
+ *   </span>
+ * </cngx-form-field>
+ * ```
+ *
  * Global required marker (no per-label code needed)
  * ```ts
  * provideFormField(withRequiredMarker())
@@ -50,6 +66,7 @@ import { CNGX_FORM_FIELD_CONFIG } from './form-field.token';
  * <example-url>http://localhost:4200/#/forms/field/label/required-marker</example-url>
  * <example-url>http://localhost:4200/#/forms/field/label/error-and-disabled-classes</example-url>
  * <example-url>http://localhost:4200/#/forms/field/label/show-required-override</example-url>
+ * <example-url>http://localhost:4200/#/forms/field/skin/fill-inner-label</example-url>
  */
 @Component({
   // eslint-disable-next-line @angular-eslint/component-selector -- attribute selector by design (label can be any element)

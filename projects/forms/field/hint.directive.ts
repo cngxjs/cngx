@@ -6,7 +6,8 @@ import { CngxFormFieldPresenter } from './form-field-presenter';
  *
  * Automatically sets its `id` for `aria-describedby` linkage.
  * The hint remains in the DOM at all times - screen readers read it alongside errors
- * to provide context.
+ * to provide context. The host carries `cngx-hint`, the hook the field
+ * typography in `@cngx/themes/cngx.css` sizes and tints.
  *
  * ```html
  * <span cngxHint>Business email address</span>
@@ -24,6 +25,7 @@ import { CngxFormFieldPresenter } from './form-field-presenter';
   standalone: true,
   exportAs: 'cngxHint',
   host: {
+    class: 'cngx-hint',
     '[id]': 'presenter.hintId()',
   },
 })

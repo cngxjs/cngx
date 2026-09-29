@@ -11,7 +11,9 @@ import { CngxFormFieldPresenter } from './form-field-presenter';
  * (touched AND invalid), and the presenter references the container in the input's
  * `aria-describedby` only while the error is shown - a directly referenced node lands in
  * the accessible description even when `aria-hidden` (accname 1.2 §2A), so the reference
- * itself is the gate. `role="alert"` ensures screen readers announce errors.
+ * itself is the gate. `role="alert"` ensures screen readers announce errors. The host
+ * carries `cngx-error`, which the field typography in `@cngx/themes/cngx.css` sizes and
+ * tints like the `cngx-field-errors` list.
  *
  * ```html
  * <div cngxError>
@@ -39,6 +41,7 @@ import { CngxFormFieldPresenter } from './form-field-presenter';
   standalone: true,
   exportAs: 'cngxError',
   host: {
+    class: 'cngx-error',
     '[id]': 'presenter.errorId()',
     '[attr.aria-hidden]': 'ariaHidden()',
     '[attr.role]': 'role()',

@@ -12,6 +12,20 @@
  * outline look and the focus ring for outline and bare boxes; the fill and
  * bare paint lives in `cngx-field-skin.css`. A direct-child control is reset
  * to bare there, so nothing inside the box draws a second box.
+ *
+ * Inner label: a `<label cngxLabel>` placed as a direct child of the box
+ * (Material 3 filled look, static, no animation). The box wraps onto two
+ * lines, the label on its own line above the prefix / control / suffix line,
+ * with no row gap. The label line is `--cngx-field-inner-label-line`,
+ * unregistered and derived by default from `--cngx-field-label-font-size`
+ * plus 0.0625rem (14px at the 13px default), so a larger label grows the
+ * line and the box instead of overlapping the value. Padding and border stay untouched, so the
+ * box formula holds unchanged with the label line added: comfortable
+ * 14 + 24 + 2 * 8 + 2 = 56, compact 14 + 24 + 2 * 4 + 2 = 48, spacious
+ * 14 + 24 + 2 * 12 + 2 = 64. Wrapping instead of fixed grid areas keeps any
+ * number of affixes on either side working. The touch floor of the controls
+ * inside subtracts the label line, so a coarse pointer does not add height
+ * to a box that is already past 44px.
  */
 
 @layer cngx.tokens {
@@ -101,6 +115,22 @@
       padding-block: var(--cngx-field-padding-block, 0.5rem);
       padding-inline: var(--cngx-field-padding-inline, 1rem);
       min-block-size: var(--cngx-target-min, 0px);
+    }
+
+    /* Inner label. --cngx-field-label-row is plain (unregistered) so it
+       inherits to the children, whose touch floors subtract it. */
+    :scope:has(> .cngx-label) {
+      --cngx-field-label-row: var(
+        --cngx-field-inner-label-line,
+        calc(var(--cngx-field-label-font-size, 0.8125rem) + 0.0625rem)
+      );
+      flex-wrap: wrap;
+      row-gap: 0;
+    }
+
+    :scope > .cngx-label {
+      flex: 0 0 100%;
+      line-height: var(--cngx-field-label-row, 0.875rem);
     }
 
     /* Outline: the hairline the base layer draws on a lone control, moved to
@@ -216,15 +246,18 @@
        0 on a fine pointer, and exactly enough on a coarse one for the box to
        land on --cngx-target-min. The inline floor keeps the standalone rule
        (2rem, 44px under a coarse pointer), because width is not part of the
-       box formula. A click on the box padding focuses the main control, so
-       the box, not the stretched button alone, is the touch target. */
+       box formula. A click on the box padding focuses the main control, not
+       the button, so the button's own block size is its target. Under an
+       inner label the floor also subtracts the label line, so the box stays
+       on its formula; the button then spans the 24px value line, the WCAG
+       2.5.8 AA minimum, and keeps the 44px inline floor. */
     :scope > .cngx-field-affix--interactive {
       align-self: stretch;
       min-block-size: max(
         0px,
         calc(
           var(--cngx-target-min, 0px) - 2 * var(--cngx-field-padding-block, 0.5rem) - 2 *
-            var(--cngx-field-border-width, 1px)
+            var(--cngx-field-border-width, 1px) - var(--cngx-field-label-row, 0px)
         )
       );
     }

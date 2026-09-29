@@ -5,8 +5,8 @@
 // CngxHint, CngxError, CngxFieldErrors, CngxCharCount, CngxInput).
 // Default visuals + shake animation ship with the components; this
 // file aligns the token families the forms lib actually reads:
-// hint, error, required, and the char-count typography. Label and
-// input-border visuals are component-owned (no token surface).
+// label, hint, error, required, and the char-count typography. Label and
+// hint sizes stay on the cngx scale (no Material type token here).
 //
 //   @use '@angular/material' as mat;
 //   @use '@cngx/themes/material/field-theme' as form-field;
@@ -14,11 +14,13 @@
 
 @mixin color($theme) {
   @if mat.get-theme-version($theme) == 1 {
+    --cngx-field-label-color: var(--mat-sys-on-surface-variant);
     --cngx-field-hint-color: var(--mat-sys-on-surface-variant);
     --cngx-field-error-color: var(--mat-sys-error);
     --cngx-field-required-color: var(--mat-sys-error);
     @include skin-color($theme);
   } @else {
+    --cngx-field-label-color: #{rgba(mat.get-theme-color($theme, foreground, text), 0.6)};
     --cngx-field-hint-color: #{rgba(mat.get-theme-color($theme, foreground, text), 0.54)};
     --cngx-field-error-color: #{mat.get-theme-color($theme, warn)};
     --cngx-field-required-color: #{mat.get-theme-color($theme, warn)};

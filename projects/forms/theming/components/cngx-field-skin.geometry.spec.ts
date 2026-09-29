@@ -1,4 +1,4 @@
-import { Component, ViewEncapsulation } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA, Component, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { computedValue } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -23,8 +23,12 @@ import { afterEach, describe, expect, it } from 'vitest';
     './cngx-field-skin.css',
     './cngx-field-affix.css',
     '../../select/shared/select-base.css',
+    './cngx-field-text.css',
   ],
   encapsulation: ViewEncapsulation.None,
+  // cngx-field-errors is probed as a plain element: the typography keys on the
+  // element name, and the component would need a form field around it.
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   template: `
     <input class="solo-fill" type="text" data-skin="fill" />
     <input class="fill-invalid" type="text" data-skin="fill" aria-invalid="true" />
@@ -59,6 +63,11 @@ import { afterEach, describe, expect, it } from 'vitest';
       <input class="bare-light" type="text" data-skin="bare" placeholder="Search" />
       <input class="bare-invalid-light" type="text" data-skin="bare" aria-invalid="true" />
       <span class="probe-page-light" style="background: var(--cngx-color-surface)"></span>
+      <label class="cngx-label label-light">Name</label>
+      <label class="cngx-label cngx-label--error label-error-light">Name</label>
+      <span class="cngx-hint hint-light">Hint</span>
+      <cngx-field-errors class="errors-light"><p>Required.</p></cngx-field-errors>
+      <div class="cngx-error error-light">Required.</div>
       <span
         class="probe-select-placeholder-light"
         style="background: var(--cngx-select-placeholder-color)"
@@ -81,6 +90,11 @@ import { afterEach, describe, expect, it } from 'vitest';
       <input class="bare-dark" type="text" data-skin="bare" placeholder="Search" />
       <input class="bare-invalid-dark" type="text" data-skin="bare" aria-invalid="true" />
       <span class="probe-page-dark" style="background: var(--cngx-color-surface)"></span>
+      <label class="cngx-label label-dark">Name</label>
+      <label class="cngx-label cngx-label--error label-error-dark">Name</label>
+      <span class="cngx-hint hint-dark">Hint</span>
+      <cngx-field-errors class="errors-dark"><p>Required.</p></cngx-field-errors>
+      <div class="cngx-error error-dark">Required.</div>
       <span
         class="probe-select-placeholder-dark"
         style="background: var(--cngx-select-placeholder-color)"
@@ -349,6 +363,41 @@ describe('field skin geometry', () => {
       const text = computedValue(query(root, `.bare-invalid-${scheme}`), 'color');
       expect(contrast(page, text)).toBeGreaterThanOrEqual(4.5);
     });
+
+    // An inner label sits on the fill surface, hovered or not; an outer one
+    // on the page.
+    it('holds 4.5:1 for the label and the hint on the page and the fill surfaces', () => {
+      const root = mount();
+      const { surface, hover, page } = colours(root);
+      const label = computedValue(query(root, `.label-${scheme}`), 'color');
+      const hint = computedValue(query(root, `.hint-${scheme}`), 'color');
+      for (const ground of [page, surface, hover]) {
+        expect(contrast(ground, label)).toBeGreaterThanOrEqual(4.5);
+      }
+      expect(contrast(page, hint)).toBeGreaterThanOrEqual(4.5);
+    });
+
+    it('holds 4.5:1 for the error label and the error list on the page and the fill surfaces', () => {
+      const root = mount();
+      const { surface, hover, page } = colours(root);
+      const label = computedValue(query(root, `.label-error-${scheme}`), 'color');
+      const list = computedValue(query(root, `.errors-${scheme} p`), 'color');
+      const manual = computedValue(query(root, `.error-${scheme}`), 'color');
+      for (const ground of [page, surface, hover]) {
+        expect(contrast(ground, label)).toBeGreaterThanOrEqual(4.5);
+      }
+      expect(contrast(page, list)).toBeGreaterThanOrEqual(4.5);
+      expect(contrast(page, manual)).toBeGreaterThanOrEqual(4.5);
+      expect(manual).toBe(list);
+    });
+  });
+
+  it('sets the label, hint and both error surfaces at 13px', () => {
+    const root = mount();
+    for (const selector of ['.label-light', '.hint-light', '.errors-light p', '.error-light']) {
+      expect(computedValue(query(root, selector), 'font-size')).toBe('13px');
+    }
+    expect(computedValue(query(root, '.label-light'), 'font-weight')).toBe('500');
   });
 
   // The hover surface is a text mix of the resting one; too strong a mix

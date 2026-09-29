@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest';
  * (`projects/themes/material/field-theme.scss`). The bridge's historic
  * defect was name drift - 12 of 18 written tokens had zero consumers -
  * so this spec pins the emitted token-name set against the names the
- * forms lib actually reads (hint/error/required colors, char-count
+ * forms lib actually reads (label/hint/error/required colors, char-count
  * typography, and the sibling-scoped form-errors pair). Co-located with
  * the consumer because `projects/themes/material/` has no test target.
  */
@@ -56,6 +56,7 @@ describe('field Material bridge', () => {
     '--cngx-field-fill-bg',
     '--cngx-field-fill-bg-hover',
     '--cngx-field-hint-color',
+    '--cngx-field-label-color',
     '--cngx-field-required-color',
     '--cngx-field-underline-color',
     '--cngx-field-underline-focus-color',

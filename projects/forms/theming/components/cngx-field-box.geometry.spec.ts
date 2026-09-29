@@ -1,7 +1,7 @@
 import { Component, signal, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { CngxIcon } from '@cngx/common/display';
-import { CngxFormField, CngxPrefix, CngxSuffix } from '@cngx/forms/field';
+import { CngxFormField, CngxLabel, CngxPrefix, CngxSuffix } from '@cngx/forms/field';
 import { createMockField } from '@cngx/forms/field/testing';
 import { CngxInput } from '@cngx/forms/input';
 import { CngxMultiSelect, CngxSelect, type CngxSelectOptionDef } from '@cngx/forms/select';
@@ -169,6 +169,44 @@ class InertHost {
   }
 }
 
+// A label placed inside the box: the Material 3 filled look without a float.
+// One field per composition, because a label belongs to exactly one field.
+@Component({
+  selector: 'cngx-field-box-inner-label-host',
+  standalone: true,
+  imports: [CngxFieldBox, CngxFormField, CngxLabel, CngxInput, CngxPrefix, CngxSuffix, CngxIcon],
+  styleUrls: [...HARNESS_STYLES, './cngx-field-text.css'],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    <div [attr.data-density]="density()" [attr.data-touch]="touch()">
+      <cngx-form-field [field]="plain">
+        <span cngxFieldBox class="l-plain" [skin]="skin()">
+          <label cngxLabel>Name</label>
+          <input cngxInput />
+        </span>
+      </cngx-form-field>
+      <cngx-form-field [field]="affixed">
+        <span cngxFieldBox class="l-affixed" [skin]="skin()">
+          <label cngxLabel>Amount</label>
+          <span cngxPrefix>CHF</span>
+          <input cngxInput />
+          <button type="button" cngxSuffix cngxSuffixInteractive aria-label="Clear">
+            <cngx-icon>close</cngx-icon>
+          </button>
+          <span cngxSuffix>/ month</span>
+        </span>
+      </cngx-form-field>
+    </div>
+  `,
+})
+class InnerLabelHost {
+  readonly plain = createMockField({ name: 'plain' }).accessor;
+  readonly affixed = createMockField({ name: 'affixed' }).accessor;
+  readonly skin = signal<Skin>('fill');
+  readonly density = signal<Density>('comfortable');
+  readonly touch = signal<'on' | null>(null);
+}
+
 let mountedRoot: HTMLElement | null = null;
 
 function mount(): HTMLElement {
@@ -194,6 +232,17 @@ function mountPatterns(): HTMLElement {
 
 function mountMatrix(skin: Skin, density: Density, touch: boolean): HTMLElement {
   const fixture = TestBed.createComponent(MatrixHost);
+  fixture.componentInstance.skin.set(skin);
+  fixture.componentInstance.density.set(density);
+  fixture.componentInstance.touch.set(touch ? 'on' : null);
+  mountedRoot = fixture.nativeElement as HTMLElement;
+  document.body.appendChild(mountedRoot);
+  fixture.detectChanges();
+  return mountedRoot;
+}
+
+function mountInnerLabel(skin: Skin, density: Density, touch: boolean): HTMLElement {
+  const fixture = TestBed.createComponent(InnerLabelHost);
   fixture.componentInstance.skin.set(skin);
   fixture.componentInstance.density.set(density);
   fixture.componentInstance.touch.set(touch ? 'on' : null);
@@ -474,5 +523,82 @@ describe('field box inert nested controls', () => {
     expect(computedValue(nested, 'outline-style')).toBe('none');
     expect(computedValue(nested, 'border-bottom-style')).toBe('none');
     expect(computedValue(nested, 'border-top-width')).toBe('0px');
+  });
+});
+
+// The box formula with a 14px label line on top of the 24px value line. The
+// label line is subtracted from the controls' touch floor, so a coarse pointer
+// adds nothing to a box that is already past 44px.
+const INNER_LABEL: Readonly<Record<Density, number>> = {
+  comfortable: 56,
+  compact: 48,
+  spacious: 64,
+};
+
+describe.each(MATRIX)('field box inner label: %s skin, %s, touch %s', (skin, density, touch) => {
+  it.each(['.l-plain', '.l-affixed'])(
+    '%s stacks a 14px label over a 24px value line',
+    (selector) => {
+      const box = query(mountInnerLabel(skin, density, touch), selector);
+      const label = query(box, ':scope > .cngx-label');
+      const input = query(box, ':scope > input');
+      expect(box.getBoundingClientRect().height).toBeCloseTo(INNER_LABEL[density], 0);
+      expect(label.getBoundingClientRect().height).toBeCloseTo(14, 0);
+      expect(input.getBoundingClientRect().height).toBeCloseTo(24, 0);
+      expect(label.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+        input.getBoundingClientRect().top + 0.5,
+      );
+      for (const child of Array.from(box.children)) {
+        if (child !== label) {
+          expect(child.getBoundingClientRect().top).toBeGreaterThanOrEqual(
+            label.getBoundingClientRect().bottom - 0.5,
+          );
+        }
+      }
+    },
+  );
+});
+
+describe('field box inner label placement', () => {
+  // The label line comes out of the button's block floor, so on a coarse
+  // pointer the button spans the value line instead of growing the box: at
+  // least 24 x 24 (WCAG 2.5.8 AA) and the 44px inline floor.
+  it.each([false, true])('keeps the interactive affix at 24px or more (touch %s)', (touch) => {
+    const box = query(mountInnerLabel('fill', 'comfortable', touch), '.l-affixed');
+    const rect = query(box, ':scope > button').getBoundingClientRect();
+    expect(rect.height).toBeGreaterThanOrEqual(24 - 0.5);
+    expect(rect.width).toBeGreaterThanOrEqual((touch ? 44 : 32) - 0.5);
+    expect(box.getBoundingClientRect().height).toBeCloseTo(56, 0);
+  });
+
+  it('spans the label over the whole box width and keeps the value line on one row', () => {
+    const box = query(mountInnerLabel('fill', 'comfortable', false), '.l-affixed');
+    const label = query(box, ':scope > .cngx-label');
+    const content = box.getBoundingClientRect().width - px(box, 'padding-left') * 2 - 2;
+    expect(label.getBoundingClientRect().width).toBeCloseTo(content, 0);
+    const tops = Array.from(box.children)
+      .filter((child) => child !== label)
+      .map((child) => Math.round(child.getBoundingClientRect().top));
+    expect(new Set(tops).size).toBe(1);
+  });
+
+  // The line follows the label size, so an override grows the box instead of
+  // pushing label glyphs into the value line.
+  it('derives the inner label line from the label font size', () => {
+    const box = query(mountInnerLabel('fill', 'comfortable', false), '.l-plain');
+    box.style.setProperty('--cngx-field-label-font-size', '1rem');
+    const label = query(box, ':scope > .cngx-label');
+    const input = query(box, ':scope > input');
+    expect(computedValue(label, 'line-height')).toBe('17px');
+    expect(box.getBoundingClientRect().height).toBeCloseTo(59, 0);
+    expect(label.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+      input.getBoundingClientRect().top + 0.5,
+    );
+  });
+
+  it('sets the inner label as 13px text on a 14px line', () => {
+    const label = query(mountInnerLabel('fill', 'comfortable', false), '.l-plain > .cngx-label');
+    expect(computedValue(label, 'font-size')).toBe('13px');
+    expect(computedValue(label, 'line-height')).toBe('14px');
   });
 });
