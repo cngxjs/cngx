@@ -76,13 +76,15 @@ export const STORY: DemoSpec = {
         (blur)="emailForm.email().markAsTouched()"
       />
       <div cngxError style="display:grid;gap:4px;margin-top:6px">
-        @for (e of emailForm.email().errors(); track e.kind) {
-          <p style="margin:0">
-            @if (e.kind === 'taken') {
-              <strong>Server:</strong>
-            }
-            {{ e.message }}
-          </p>
+        @if (emailForm.email().touched()) {
+          @for (e of emailForm.email().errors(); track e.kind) {
+            <p style="margin:0">
+              @if (e.kind === 'taken') {
+                <strong>Server:</strong>
+              }
+              {{ e.message }}
+            </p>
+          }
         }
       </div>
     </cngx-form-field>
