@@ -2,16 +2,19 @@
  * @overview
  * Track B typography for the text around a field control: the label
  * (`CngxLabel`, host class `.cngx-label`), the hint (`CngxHint`, host class
- * `.cngx-hint`) and the error list (`cngx-field-errors`). Class and element
- * selectors only, never the directive attributes, so an organism that reuses
- * `cngxLabel` or `cngxHint` on its own element does not inherit this paint.
+ * `.cngx-hint`), the error list (`cngx-field-errors`) and the manual error
+ * container (`CngxError`, host class `.cngx-error`). Class and element
+ * selectors only: the classes are the directives' own host classes, so every
+ * use of the directive gets this paint, and an organism opts out by
+ * overriding the tokens, not by avoiding the attribute.
  *
  * Label and hint are supporting text: `--cngx-color-text-muted` at
  * `0.8125rem`, which clears 4.5:1 on the page and on the fill surface in both
  * schemes. The label weight is 500 so it still reads as the field's name at
  * the smaller size.
  *
- * Error text (the error list, and the label while the field shows an error)
+ * Error text (the error list, the manual error container, and the label while
+ * the field shows an error)
  * reads `--cngx-field-error-color` first, so a theme or the Material bridge
  * sets one colour for every error surface of the field. Without it, it falls
  * back to `--cngx-color-danger-text`: plain danger is about 4:1 on white,
@@ -21,7 +24,9 @@
  * The three colour tokens are unregistered on purpose, so a theme can unset
  * them and the fallback chain takes over:
  * `--cngx-field-label-color`, `--cngx-field-hint-color`,
- * `--cngx-field-error-color`. Asserted in `cngx-field-skin.geometry.spec.ts`.
+ * `--cngx-field-error-color`. The contrast of every recipe is asserted in
+ * `cngx-field-skin.geometry.spec.ts`, the unregistration in
+ * `cngx-field-text.css.spec.ts`.
  */
 
 @layer cngx.tokens {
@@ -86,7 +91,8 @@
     color: var(--cngx-field-hint-color, var(--cngx-color-text-muted, oklch(0.5 0.01 250)));
   }
 
-  cngx-field-errors {
+  cngx-field-errors,
+  .cngx-error {
     font-size: var(--cngx-field-hint-font-size, 0.8125rem);
     color: var(
       --cngx-field-error-color,

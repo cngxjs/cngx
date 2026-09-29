@@ -22,7 +22,7 @@ describe('cngx-field-text.css', () => {
   // that reuses the directive on its own element.
   it('keys on classes and the error element, never on directive attributes', () => {
     expect(CODE).not.toMatch(/\[cngx/i);
-    for (const selector of ['.cngx-label {', '.cngx-hint {', 'cngx-field-errors {']) {
+    for (const selector of ['.cngx-label {', '.cngx-hint {', 'cngx-field-errors, .cngx-error {']) {
       expect(FLAT).toContain(selector);
     }
   });
@@ -40,7 +40,7 @@ describe('cngx-field-text.css', () => {
     expect(error).toMatch(
       /^[^}]*color: var\( --cngx-field-error-color, var\( --cngx-color-danger-text,/,
     );
-    const list = FLAT.slice(FLAT.indexOf('cngx-field-errors {'));
+    const list = FLAT.slice(FLAT.indexOf('cngx-field-errors, .cngx-error {'));
     expect(list).toMatch(
       /^[^}]*color: var\( --cngx-field-error-color, var\( --cngx-color-danger-text,/,
     );

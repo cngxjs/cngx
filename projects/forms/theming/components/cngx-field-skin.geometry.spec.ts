@@ -67,6 +67,7 @@ import { afterEach, describe, expect, it } from 'vitest';
       <label class="cngx-label cngx-label--error label-error-light">Name</label>
       <span class="cngx-hint hint-light">Hint</span>
       <cngx-field-errors class="errors-light"><p>Required.</p></cngx-field-errors>
+      <div class="cngx-error error-light">Required.</div>
       <span
         class="probe-select-placeholder-light"
         style="background: var(--cngx-select-placeholder-color)"
@@ -93,6 +94,7 @@ import { afterEach, describe, expect, it } from 'vitest';
       <label class="cngx-label cngx-label--error label-error-dark">Name</label>
       <span class="cngx-hint hint-dark">Hint</span>
       <cngx-field-errors class="errors-dark"><p>Required.</p></cngx-field-errors>
+      <div class="cngx-error error-dark">Required.</div>
       <span
         class="probe-select-placeholder-dark"
         style="background: var(--cngx-select-placeholder-color)"
@@ -380,16 +382,19 @@ describe('field skin geometry', () => {
       const { surface, hover, page } = colours(root);
       const label = computedValue(query(root, `.label-error-${scheme}`), 'color');
       const list = computedValue(query(root, `.errors-${scheme} p`), 'color');
+      const manual = computedValue(query(root, `.error-${scheme}`), 'color');
       for (const ground of [page, surface, hover]) {
         expect(contrast(ground, label)).toBeGreaterThanOrEqual(4.5);
       }
       expect(contrast(page, list)).toBeGreaterThanOrEqual(4.5);
+      expect(contrast(page, manual)).toBeGreaterThanOrEqual(4.5);
+      expect(manual).toBe(list);
     });
   });
 
-  it('sets the label, hint and error list at 13px', () => {
+  it('sets the label, hint and both error surfaces at 13px', () => {
     const root = mount();
-    for (const selector of ['.label-light', '.hint-light', '.errors-light p']) {
+    for (const selector of ['.label-light', '.hint-light', '.errors-light p', '.error-light']) {
       expect(computedValue(query(root, selector), 'font-size')).toBe('13px');
     }
     expect(computedValue(query(root, '.label-light'), 'font-weight')).toBe('500');
