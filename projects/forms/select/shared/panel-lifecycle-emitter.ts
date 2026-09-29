@@ -6,6 +6,7 @@ import {
   type OutputEmitterRef,
   type Signal,
 } from '@angular/core';
+import { createTransitionTracker } from '@cngx/core/utils';
 
 /**
  * Config for {@link createPanelLifecycleEmitter}.
@@ -13,6 +14,10 @@ import {
  * @category forms/select/panel
  */
 export interface PanelLifecycleEmitterOptions {
+  /**
+   * Only flips of this signal emit. The value it holds at mount is the
+   * initial state, not a transition, and is never emitted.
+   */
   readonly panelOpen: Signal<boolean>;
   /** Re-focused after close. Dereferenced lazily on each transition. */
   readonly restoreFocusTarget: Signal<ElementRef<HTMLElement> | undefined>;
@@ -34,17 +39,23 @@ export interface PanelLifecycleEmitterOptions {
 
 /**
  * One `effect()` that emits `openedChange`/`opened`/`closed` on
- * `panelOpen` flips and restores focus to the trigger after close.
- * Output emits + focus call wrapped in `untracked`. Injection context
- * required.
+ * `panelOpen` flips and restores focus to the trigger after an
+ * open -> closed flip. The mount value is not a flip: a panel mounted
+ * closed emits nothing and never moves focus, a panel mounted open
+ * emits no `opened`. Output emits + focus call wrapped in `untracked`.
+ * Injection context required.
  *
  * @category forms/select/panel
  */
 export function createPanelLifecycleEmitter(
   opts: PanelLifecycleEmitterOptions,
 ): void {
+  const flip = createTransitionTracker(() => opts.panelOpen());
   effect(() => {
-    const open = opts.panelOpen();
+    const open = flip.current();
+    if (open === flip.previous()) {
+      return;
+    }
     untracked(() => {
       opts.openedChange.emit(open);
       if (open) {
@@ -88,6 +99,9 @@ export type CngxPanelLifecycleEmitterFactory = (
  * Factory for the panel lifecycle emitter - runs open / close side effects and
  * restores focus to the trigger on close. Default `createPanelLifecycleEmitter`.
  * Override for telemetry, analytics, or a custom focus-restore strategy.
+ * Custom factories keep the contract: emit and restore focus on real
+ * `panelOpen` flips only, never for the value `panelOpen` holds at mount -
+ * a mount-time restore steals page focus from wherever it was.
  *
  * @category forms/select/panel
  * @wcag AA
