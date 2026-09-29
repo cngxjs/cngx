@@ -77,4 +77,39 @@ describe('coerceSignal', () => {
     const bundle = { alertOverflow: format };
     expect(coerceSignal(bundle)()).toBe(bundle);
   });
+
+  it('shares one signal per equal primitive', () => {
+    expect(coerceSignal('Close')).toBe(coerceSignal('Close'));
+    expect(coerceSignal(3)).toBe(coerceSignal(3));
+    expect(coerceSignal<string | undefined>(undefined)).toBe(
+      coerceSignal<string | undefined>(undefined),
+    );
+  });
+
+  it('keeps distinct primitives on distinct signals', () => {
+    expect(coerceSignal('Close')).not.toBe(coerceSignal('Schliessen'));
+    expect(coerceSignal<string | number>('1')).not.toBe(coerceSignal<string | number>(1));
+    expect(coerceSignal('Close')()).toBe('Close');
+    expect(coerceSignal('Schliessen')()).toBe('Schliessen');
+  });
+
+  it('keeps evicting after a nullish value was wrapped', () => {
+    expect(coerceSignal<string | null>(null)).toBe(coerceSignal<string | null>(null));
+    const first = coerceSignal('after-nullish');
+    for (let i = 0; i < 64; i++) {
+      coerceSignal(`nullish-filler-${i}`);
+    }
+    expect(coerceSignal('after-nullish')).not.toBe(first);
+  });
+
+  it('reads the right value after a primitive was evicted', () => {
+    const first = coerceSignal('evicted-first');
+    for (let i = 0; i < 64; i++) {
+      coerceSignal(`filler-${i}`);
+    }
+    const again = coerceSignal('evicted-first');
+    expect(again).not.toBe(first);
+    expect(again()).toBe('evicted-first');
+    expect(first()).toBe('evicted-first');
+  });
 });
