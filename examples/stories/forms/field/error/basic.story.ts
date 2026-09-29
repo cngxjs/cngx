@@ -38,8 +38,10 @@ export const STORY: DemoSpec = {
         autocomplete="username"
       />
       <div cngxError>
-        @for (e of userForm.username().errors(); track e.kind) {
-          <p style="margin:4px 0 0">{{ e.message }}</p>
+        @if (userForm.username().touched()) {
+          @for (e of userForm.username().errors(); track e.kind) {
+            <p style="margin:4px 0 0">{{ e.message }}</p>
+          }
         }
       </div>
     </cngx-form-field>
