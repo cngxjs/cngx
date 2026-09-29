@@ -66,7 +66,7 @@ import { CNGX_FORM_FIELD_CONFIG } from './form-field.token';
  * <example-url>http://localhost:4200/#/forms/field/label/required-marker</example-url>
  * <example-url>http://localhost:4200/#/forms/field/label/error-and-disabled-classes</example-url>
  * <example-url>http://localhost:4200/#/forms/field/label/show-required-override</example-url>
- * <example-url>http://localhost:4200/#/forms/field/skin/fill-inner-label</example-url>
+ * <example-url>http://localhost:4200/#/forms/field/skin/fill-anatomy</example-url>
  */
 @Component({
   // eslint-disable-next-line @angular-eslint/component-selector -- attribute selector by design (label can be any element)
