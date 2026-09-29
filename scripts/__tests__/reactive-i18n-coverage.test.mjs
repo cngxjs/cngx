@@ -1693,6 +1693,14 @@ describe('reactive i18n coverage', () => {
     expect(unresolved).toEqual([]);
   });
 
+  it('lists exactly the copy tokens in the localisation guide table', () => {
+    const guide = guideTableTokens(readRepoFile('core-concepts/i18n.md') ?? '').sort();
+    const copy = COPY_TOKENS.filter((t) => t.kind !== 'locale')
+      .map((t) => t.token)
+      .sort();
+    expect(guide).toEqual(copy);
+  });
+
   it('found every calibration site at the end of Phase 1', () => {
     const frozen = [...PHASE_1_KEYS, ...EXEMPT.map(rowKey)].map((key) => key.split('\t'));
     const missingMembers = CALIBRATION_MEMBERS.filter(
