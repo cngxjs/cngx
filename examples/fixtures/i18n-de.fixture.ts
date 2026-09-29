@@ -6,7 +6,7 @@ import { provideInteractiveI18n, withInteractiveI18nLabels } from '@cngx/common/
 import { provideTreetableAt, withTreetableLabels } from '@cngx/data-display/treetable';
 import { provideFilterBuilderConfigAt, withFilterBuilderI18n } from '@cngx/forms/filter-builder';
 import { provideInputConfigAt, withInputAriaLabels } from '@cngx/forms/input';
-import { provideSelectConfigAt, withAriaLabels } from '@cngx/forms/select';
+import { provideSelectConfigAt, withFallbackLabels } from '@cngx/forms/select';
 import { provideFeedbackI18n } from '@cngx/ui/feedback';
 
 // German reference pack for the examples app. Not a shipped translation: it
@@ -166,7 +166,7 @@ export const DE_PACK: Provider[] = [
       charCountMin: (current, min) => `${current} (mindestens ${min})`,
     }),
   ),
-  ...provideSelectConfigAt(withAriaLabels({ searchPlaceholder: 'Suchen…' })),
+  ...provideSelectConfigAt(withFallbackLabels({ searchPlaceholder: 'Suchen…' })),
   provideKpiI18n(withKpiI18nLabels(KPI_DE)),
   provideInteractiveI18n(withInteractiveI18nLabels(INTERACTIVE_DE)),
   provideDisplayI18n(withDisplayI18nLabels(DISPLAY_DE)),

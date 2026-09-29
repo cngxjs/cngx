@@ -56,10 +56,10 @@ export class CngxSelectSearch {
 
   /**
    * Placeholder text on the input. Default:
-   * `CNGX_SELECT_CONFIG.ariaLabels.searchPlaceholder` (EN `'Search…'`), read
+   * `CNGX_SELECT_CONFIG.fallbackLabels.searchPlaceholder` (EN `'Search…'`), read
    * once at construction.
    */
-  readonly placeholder = input<string>(this.config.ariaLabels?.searchPlaceholder ?? '');
+  readonly placeholder = input<string>(this.config.fallbackLabels.searchPlaceholder);
 
   /**
    * ARIA label override. Cascade: per-instance `[aria-label]` →

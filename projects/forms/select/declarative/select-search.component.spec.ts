@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { describe, expect, it } from 'vitest';
 
-import { provideSelectConfig, withAriaLabels } from '../shared/config';
+import { provideSelectConfig, withAriaLabels, withFallbackLabels } from '../shared/config';
 import { CngxSelectSearch } from './select-search.component';
 import { CNGX_SELECT_SHELL_SEARCH_HOST } from './select-search-host';
 
@@ -98,9 +98,9 @@ describe('CngxSelectSearch - placeholder cascade', () => {
     expect(input.placeholder).toBe('Search…');
   });
 
-  it('reads withAriaLabels({ searchPlaceholder }) when unbound', () => {
+  it('reads withFallbackLabels({ searchPlaceholder }) when unbound', () => {
     TestBed.configureTestingModule({
-      providers: [provideSelectConfig(withAriaLabels({ searchPlaceholder: 'Suchen…' }))],
+      providers: [provideSelectConfig(withFallbackLabels({ searchPlaceholder: 'Suchen…' }))],
     });
     const { input } = setup(HostUnbound);
     expect(input.placeholder).toBe('Suchen…');
@@ -108,7 +108,7 @@ describe('CngxSelectSearch - placeholder cascade', () => {
 
   it('lets a bound [placeholder] win over the config', () => {
     TestBed.configureTestingModule({
-      providers: [provideSelectConfig(withAriaLabels({ searchPlaceholder: 'Suchen…' }))],
+      providers: [provideSelectConfig(withFallbackLabels({ searchPlaceholder: 'Suchen…' }))],
     });
     const { input } = setup(HostNoLabel);
     expect(input.placeholder).toBe('Filter…');
