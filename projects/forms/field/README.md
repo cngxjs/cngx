@@ -123,9 +123,9 @@ box, never on the `display: contents` field shell.
 
 | Skin | Look | Use it for |
 |-|-|-|
-| `outline` | Hairline border on all four sides. The default; writes no attribute | Regular forms |
-| `fill` | Tinted surface, bottom border, focus underline | Dense forms, Material-style layouts |
-| `bare` | No surface, no border, focus underline only; fills its parent inline | Table filter rows, inline cell editors, toolbars |
+| `outline` | Hairline border on all four sides, full focus ring. The default; a lone control writes no attribute | Regular forms |
+| `fill` | Tinted surface with a bottom underline: muted at rest, 2px in the focus colour on focus, 2px danger on error | Dense forms, Material-style layouts |
+| `bare` | No surface and no border at rest; focus ring drawn inside the box; error as danger text plus a 1px inset danger ring; fills its parent inline | Table filter rows, inline cell editors, toolbars |
 
 ```html
 <cngx-form-field [field]="f.name" skin="fill">
@@ -141,16 +141,58 @@ own [cngxFieldSkin] / [skin]  ->  surrounding cngx-form-field [skin]  ->  withFi
 ```
 
 `CngxInput` and `CngxFieldBox` compose the directive and alias its input to
-`skin`. With affixes, the `cngxFieldBox` is the box in every skin: prefix,
-value and suffix share one surface, one border and one underline, and a
-control that is a direct child of the box resolves to `bare` and drops its
-own. The box owns its direct children only; a composite such as
-`CngxPhoneInput` is its own box and sits directly in `cngx-form-field`. The
-select-family triggers (`CngxSelect`, `CngxMultiSelect`, `CngxCombobox`,
-`CngxTypeahead`, `CngxTreeSelect`, `CngxActionSelect`,
+`skin`. The select-family triggers (`CngxSelect`, `CngxMultiSelect`,
+`CngxCombobox`, `CngxTypeahead`, `CngxTreeSelect`, `CngxActionSelect`,
 `CngxActionMultiSelect`, `CngxReorderableMultiSelect`, `CngxSelectShell`)
 compose it too, so a field-level or app-wide skin reaches them without extra
 wiring.
+
+**One box.** The box is the outermost element that carries the skin: a lone
+control is its own box, a `cngxFieldBox` is the box for its affixes and its
+main control, and a select paints its trigger. Every skin uses the same box
+model: height is the line box plus twice the block padding plus a 1px border
+on both sides, and a skin that draws no border paints it transparent. That
+makes a single-line box 42px at comfortable density, 34px compact and 50px
+spacious, in every skin and for every composition; on a coarse pointer the
+touch-target floor raises it to at least 44px. Density scales the padding only, and
+`bare` has the metrics of `outline`, so switching skin never moves a layout.
+
+**The box owns its direct children.** Everything that is a direct child of a
+`cngxFieldBox` belongs to the box, and only those:
+
+- a control that is a direct child resolves to `bare` on its own and drops its
+  surface, border and padding, so a picker inside a box needs no skin wiring;
+- the box reads its state from its main control, the first direct-child control
+  that is not a `cngxPrefix` / `cngxSuffix`, and writes it as `data-invalid`,
+  `data-disabled` and `data-readonly`. One main control per box; a second one
+  is ignored, and an invalid or disabled affix picker never changes the box;
+- a control behind a wrapper element is not a direct child and follows the
+  normal cascade.
+
+**Composites are their own box.** A component that renders its own controls,
+such as `CngxPhoneInput`, is already a box. Place it directly in
+`cngx-form-field`, never inside `cngxFieldBox`.
+
+**Inner label.** A `<label cngxLabel>` placed as a direct child of a
+`cngxFieldBox` renders inside the box, on its own line above the value. The
+label line is the label font size plus `0.0625rem` (14px at the default
+13px), the box grows by that line and nothing else: 56px comfortable, 48px
+compact, 64px spacious, and 56px on a coarse pointer, where affix buttons span
+the value line and keep their 44px inline floor. It is placement, not an
+input: the same label outside the box sits above it. Use one placement per
+form; a form that mixes inner and outer labels reads as two kinds of control.
+
+```html
+<cngx-form-field [field]="f.reference" skin="fill">
+  <span cngxFieldBox>
+    <label cngxLabel>Order reference</label>
+    <input cngxInput [formField]="f.reference" />
+  </span>
+</cngx-form-field>
+```
+
+cngx does not ship a floating label. The label stays static, above the box or
+inside it.
 
 **App-wide and per region.** `provideFormField(withFieldSkin('fill'))` sets the
 default. `provideFormFieldAt(withFieldSkin('bare'))` in a component's
@@ -171,8 +213,10 @@ search owns its own chrome, so these opt in with the explicit attribute:
 `CngxNumericInput`, `CngxInputMask`, `CngxInputFormat`, `CngxOtpSlot`,
 `input[cngxListboxSearch]`, `input[cngxSearch]`, `input[cngxDgaFilter]`. They
 are not reached by `withFieldSkin(...)` until the attribute is present, because
-the config is read by the skin directive itself. Inside a `CngxFieldBox` none of
-them needs the attribute: the box reset strips their paint.
+the config is read by the skin directive itself. An empty `cngxFieldSkin`
+attribute opts in and follows the cascade. Inside a `CngxFieldBox` none of
+them needs the attribute: they are direct children, so the box strips their
+paint.
 
 ```html
 <input cngxNumericInput cngxFieldSkin="bare" />
@@ -192,9 +236,11 @@ twice. Without a visible header, use `aria-label`. A placeholder is not a label.
 
 **The container owns the boundary.** `bare` paints nothing at rest, so the
 cell, toolbar or grid area around it has to draw the edge. To make the whole
-table cell the input's hit area, drop the cell padding; the input keeps its own
-padding and touch-target floor. The selector is a descendant match because
-`cngx-form-field` sits between the cell and the input:
+table cell the input's hit area, drop the cell padding; the bare control
+carries the box padding, so its text sits where the text of a read-only cell
+with the same padding sits, and entering edit mode moves nothing. The
+selector is a descendant match because `cngx-form-field` sits between the
+cell and the input:
 
 ```css
 td:has([data-skin='bare']) {
@@ -202,31 +248,45 @@ td:has([data-skin='bare']) {
 }
 ```
 
-**States.** Error, disabled and readonly key on `aria-invalid`, `:disabled`,
-`[readonly]` and `aria-readonly` first and on the presenter classes second, so
-they render the same with or without a surrounding field.
+**States.** A lone control keys error, disabled and readonly on
+`aria-invalid`, `:disabled`, `[readonly]` and `aria-readonly`, so it renders
+the same with or without a surrounding field. A box keys them on the
+`data-invalid` / `data-disabled` / `data-readonly` it derives from its main
+control.
 
-**Focus.** `fill` and `bare` show focus as a 2px bottom underline. That meets
-WCAG 2.4.7 and 2.4.11 but not 2.4.13 (Focus Appearance, AAA), which asks for a
-full perimeter. `withFieldSkin('outline')` is the AAA path. Under
-`forced-colors: active` the regular focus outline comes back.
+**Focus.** `outline` and `bare` draw the full focus ring; `bare` draws it inside
+the box, so a cell or a toolbar does not clip it. `fill` shows focus as a 2px
+bottom underline. That meets WCAG 2.4.7 and 2.4.11 but not 2.4.13 (Focus
+Appearance, AAA), which asks for a full perimeter. `withFieldSkin('outline')`
+is the AAA path. Under `forced-colors: active` the regular focus outline comes
+back.
 
 **Theme tokens.**
 
 | Token | Controls |
 |-|-|
 | `--cngx-field-fill-bg` | `fill` surface at rest |
-| `--cngx-field-fill-bg-hover` | `fill` surface on hover |
-| `--cngx-field-underline-color` | Resting bottom border of `fill` |
-| `--cngx-field-underline-focus-color` | Focus underline of `fill` and `bare` |
-| `--cngx-field-underline-size` | Focus underline thickness (default `2px`) |
+| `--cngx-field-fill-bg-hover` | `fill` surface on hover (unset: the surface with 5% text mixed in) |
+| `--cngx-field-underline-color` | Resting underline of `fill` |
+| `--cngx-field-underline-focus-color` | Focus underline of `fill` |
+| `--cngx-field-underline-size` | Focus and error underline thickness (default `2px`) |
+| `--cngx-field-outline-color` | Border of an `outline` field box |
+| `--cngx-field-border-width` | Box border width in every skin (default `1px`) |
+| `--cngx-field-ring-width` | Focus ring width of `outline` and `bare` (default `2px`) |
+| `--cngx-field-ring-offset` | Focus ring offset (default `3px`; `bare` draws it inside) |
+| `--cngx-field-affix-color` | Text and icon colour of a non-interactive affix |
+| `--cngx-field-affix-divider` | Width of the line between an affix and the value (default `0px`, set `1px` to draw it) |
+| `--cngx-field-placeholder-color` | Placeholder colour of native field controls (select triggers read `--cngx-select-placeholder-color`) |
+| `--cngx-field-label-font-size` | Label size (default `0.8125rem`) |
+| `--cngx-field-label-weight` | Label weight (default `500`) |
+| `--cngx-field-label-color` | Label colour |
 | `--cngx-field-inner-label-line` | Line height of a label placed inside a field box (default: label font size + `0.0625rem`) |
+| `--cngx-field-hint-font-size` | Hint and error text size (default `0.8125rem`) |
+| `--cngx-field-hint-color` | Hint colour |
+| `--cngx-field-error-color` | Error label, error list and `cngxError` text colour, and the `bare` error ring |
 
-The Material bridge (`@cngx/themes/material/field-theme`) sets the four colour
-tokens from `--mat-sys-*`.
-
-cngx does not ship a floating label. The label stays static above the control,
-or, placed as a direct child of a `cngxFieldBox`, on its own line inside the box.
+The Material bridge (`@cngx/themes/material/field-theme`) sets the surface,
+underline, label, hint, affix and error colours from `--mat-sys-*`.
 
 ### Affix patterns
 

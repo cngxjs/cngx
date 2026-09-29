@@ -16,13 +16,11 @@ export const STORY: DemoSpec = {
     'CngxHint',
   ],
   moduleImports: [
-    'import { CngxRadioGroup, CngxRadio } from \'@cngx/common/interactive\';',
-    'import type { CngxFieldSkin } from \'@cngx/forms/field\';',
     'import { form, schema, required, minLength, maxLength } from \'@angular/forms/signals\';',
     'import { CngxFormField, CngxFormFieldPresenter, CngxLabel, CngxHint, CngxFieldErrors, CNGX_FORM_FIELD_CONFIG, DEFAULT_HINT_FORMATTERS } from \'@cngx/forms/field\';',
     'import { CngxInput } from \'@cngx/forms/input\';',
   ],
-  imports: ['CngxFormField', 'CngxLabel', 'CngxInput', 'CngxHint', 'CngxFieldErrors', 'CngxRadioGroup', 'CngxRadio'],
+  imports: ['CngxFormField', 'CngxLabel', 'CngxInput', 'CngxHint', 'CngxFieldErrors'],
   viewProviders: [
     '{ provide: CNGX_FORM_FIELD_CONFIG, useValue: { constraintHints: DEFAULT_HINT_FORMATTERS } }',
   ],
@@ -32,10 +30,9 @@ export const STORY: DemoSpec = {
     minLength(root.username, 3);
     maxLength(root.username, 12);
   }));
-  protected readonly presenter = viewChild(CngxFormFieldPresenter);
-  protected readonly skin = signal<CngxFieldSkin>('outline');`,
+  protected readonly presenter = viewChild(CngxFormFieldPresenter);`,
   template: `  <div class="demo-field" style="max-width:480px">
-    <cngx-form-field [field]="hintForm.username" [skin]="skin()">
+    <cngx-form-field [field]="hintForm.username">
       <label cngxLabel>Username</label>
       <input cngxInput placeholder="pick a handle" />
       @if (presenter(); as p) {
@@ -55,13 +52,6 @@ export const STORY: DemoSpec = {
     <div class="event-row">
       <span class="event-label">value</span>
       <span class="event-value">{{ hintForm.username().value() }}</span>
-    </div>
-    <div class="event-row" style="margin-top:8px">
-      <cngx-radio-group [(value)]="skin" name="field-skin" label="Field skin">
-        <cngx-radio value="outline">Outline</cngx-radio>
-        <cngx-radio value="fill">Fill</cngx-radio>
-        <cngx-radio value="bare">Bare</cngx-radio>
-      </cngx-radio-group>
     </div>
   </div>`,
 };

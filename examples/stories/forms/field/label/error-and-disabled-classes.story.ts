@@ -14,13 +14,11 @@ export const STORY: DemoSpec = {
     'CngxFormField',
   ],
   moduleImports: [
-    'import { CngxRadioGroup, CngxRadio } from \'@cngx/common/interactive\';',
-    'import type { CngxFieldSkin } from \'@cngx/forms/field\';',
     "import { form, schema, required, disabled } from '@angular/forms/signals';",
     "import { CngxFormField, CngxLabel } from '@cngx/forms/field';",
     "import { CngxInput } from '@cngx/forms/input';",
   ],
-  imports: ['CngxFormField', 'CngxLabel', 'CngxInput', 'CngxRadioGroup', 'CngxRadio'],
+  imports: ['CngxFormField', 'CngxLabel', 'CngxInput'],
   references: [
     { label: 'WCAG 1.3.1 Info and Relationships', href: 'https://www.w3.org/WAI/WCAG21/Understanding/info-and-relationships.html' },
     { label: 'WCAG 3.3.2 Labels or Instructions', href: 'https://www.w3.org/WAI/WCAG21/Understanding/labels-or-instructions.html' },
@@ -34,8 +32,7 @@ export const STORY: DemoSpec = {
     required(root.valid, { message: 'Required.' });
     required(root.invalid, { message: 'Required.' });
     disabled(root.locked, () => this.lockEnabled());
-  }));
-  protected readonly skin = signal<CngxFieldSkin>('outline');`,
+  }));`,
   setupChrome: `  protected readonly lockEnabled = signal(true);
   protected handleValidate(): void {
     this.stateForm.valid().markAsTouched();
@@ -49,17 +46,17 @@ export const STORY: DemoSpec = {
     this.lockEnabled.set(next);
   }`,
   template: `  <div style="display:grid;gap:16px;max-width:360px">
-    <cngx-form-field [field]="stateForm.valid" [skin]="skin()">
+    <cngx-form-field [field]="stateForm.valid">
       <label cngxLabel>Valid field</label>
       <input cngxInput type="email" />
     </cngx-form-field>
 
-    <cngx-form-field [field]="stateForm.invalid" [skin]="skin()">
+    <cngx-form-field [field]="stateForm.invalid">
       <label cngxLabel>Invalid (touched)</label>
       <input cngxInput type="email" />
     </cngx-form-field>
 
-    <cngx-form-field [field]="stateForm.locked" [skin]="skin()">
+    <cngx-form-field [field]="stateForm.locked">
       <label cngxLabel>Disabled field</label>
       <input cngxInput type="text" />
     </cngx-form-field>
@@ -97,12 +94,5 @@ export const STORY: DemoSpec = {
           disabled: {{ stateForm.locked().disabled() ? 'yes' : 'no' }}
         </span>
       </div>
-    <div class="event-row" style="margin-top:8px">
-      <cngx-radio-group [(value)]="skin" name="field-skin" label="Field skin">
-        <cngx-radio value="outline">Outline</cngx-radio>
-        <cngx-radio value="fill">Fill</cngx-radio>
-        <cngx-radio value="bare">Bare</cngx-radio>
-      </cngx-radio-group>
-    </div>
     </div>`,
 };

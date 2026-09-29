@@ -12,13 +12,11 @@ export const STORY: DemoSpec = {
     'CngxPasswordToggle',
   ],
   moduleImports: [
-    'import { CngxRadioGroup, CngxRadio } from \'@cngx/common/interactive\';',
-    'import type { CngxFieldSkin } from \'@cngx/forms/field\';',
     'import { form, schema, required, email, minLength, maxLength, FormField } from \'@angular/forms/signals\';',
     'import { CngxFormField, CngxLabel, CngxHint, CngxFieldErrors, CngxFieldBox, CngxSuffix } from \'@cngx/forms/field\';',
     'import { CngxInput, CngxPasswordToggle } from \'@cngx/forms/input\';',
   ],
-  imports: ['CngxFormField', 'CngxLabel', 'CngxInput', 'CngxHint', 'CngxFieldErrors', 'CngxPasswordToggle', 'FormField', 'CngxFieldBox', 'CngxSuffix', 'CngxRadioGroup', 'CngxRadio'],
+  imports: ['CngxFormField', 'CngxLabel', 'CngxInput', 'CngxHint', 'CngxFieldErrors', 'CngxPasswordToggle', 'FormField', 'CngxFieldBox', 'CngxSuffix'],
   setup: `private readonly loginModel = signal({ email: '', password: '' });
   private readonly loginSchema = schema<{ email: string; password: string }>(root => {
     required(root.email);
@@ -28,11 +26,10 @@ export const STORY: DemoSpec = {
     maxLength(root.password, 64);
   });
   protected readonly loginForm = form(this.loginModel, this.loginSchema);
-  protected readonly passwordField = this.loginForm.password;
-  protected readonly skin = signal<CngxFieldSkin>('outline');`,
+  protected readonly passwordField = this.loginForm.password;`,
   template: `  <div class="demo-form">
     <div class="demo-field">
-      <cngx-form-field [field]="passwordField" [skin]="skin()">
+      <cngx-form-field [field]="passwordField">
         <label cngxLabel>Password</label>
         <span cngxFieldBox>
           <input cngxInput cngxPasswordToggle #pwd="cngxPasswordToggle" [formField]="passwordField"
@@ -50,14 +47,5 @@ export const STORY: DemoSpec = {
   </div>`,
   templateChrome: `<div class="status-row">
       <span class="status-badge">Visible: {{ pwd.visible() }}</span>
-    </div>
-  <div class="event-grid" style="margin-top:8px">
-    <div class="event-row" style="margin-top:8px">
-      <cngx-radio-group [(value)]="skin" name="field-skin" label="Field skin">
-        <cngx-radio value="outline">Outline</cngx-radio>
-        <cngx-radio value="fill">Fill</cngx-radio>
-        <cngx-radio value="bare">Bare</cngx-radio>
-      </cngx-radio-group>
-    </div>
-  </div>`,
+    </div>`,
 };

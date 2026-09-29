@@ -15,21 +15,18 @@ export const STORY: DemoSpec = {
     { label: 'WCAG 4.1.3 Status Messages', href: 'https://www.w3.org/WAI/WCAG21/Understanding/status-messages.html' },
   ],
   moduleImports: [
-    'import { CngxRadioGroup, CngxRadio } from \'@cngx/common/interactive\';',
-    'import type { CngxFieldSkin } from \'@cngx/forms/field\';',
     'import { form, schema, required, minLength } from \'@angular/forms/signals\';',
     'import { CngxFormField, CngxLabel, CngxError } from \'@cngx/forms/field\';',
     'import { CngxInput } from \'@cngx/forms/input\';',
   ],
-  imports: ['CngxFormField', 'CngxLabel', 'CngxError', 'CngxInput', 'CngxRadioGroup', 'CngxRadio'],
+  imports: ['CngxFormField', 'CngxLabel', 'CngxError', 'CngxInput'],
   setup: `protected readonly model = signal<{ username: string }>({ username: '' });
   protected readonly userForm = form(this.model, schema((root) => {
     required(root.username, { message: 'Username is required' });
     minLength(root.username, 3, { message: 'At least 3 characters' });
-  }));
-  protected readonly skin = signal<CngxFieldSkin>('outline');`,
+  }));`,
   template: `  <div style="display:grid;gap:16px;max-width:420px">
-    <cngx-form-field [field]="userForm.username" [skin]="skin()">
+    <cngx-form-field [field]="userForm.username">
       <label cngxLabel for="basic-username">Username</label>
       <input
         cngxInput
@@ -41,19 +38,12 @@ export const STORY: DemoSpec = {
         autocomplete="username"
       />
       <div cngxError>
-        @for (e of userForm.username().errors(); track e.kind) {
-          <p style="margin:4px 0 0">{{ e.message }}</p>
+        @if (userForm.username().touched()) {
+          @for (e of userForm.username().errors(); track e.kind) {
+            <p style="margin:4px 0 0">{{ e.message }}</p>
+          }
         }
       </div>
     </cngx-form-field>
-  </div>`,
-  templateChrome: `<div class="event-grid" style="margin-top:8px">
-    <div class="event-row" style="margin-top:8px">
-      <cngx-radio-group [(value)]="skin" name="field-skin" label="Field skin">
-        <cngx-radio value="outline">Outline</cngx-radio>
-        <cngx-radio value="fill">Fill</cngx-radio>
-        <cngx-radio value="bare">Bare</cngx-radio>
-      </cngx-radio-group>
-    </div>
   </div>`,
 };

@@ -12,9 +12,7 @@ export const STORY: DemoSpec = {
   apiComponents: ['CngxPrefix', 'CngxSuffix', 'CngxFieldBox', 'CngxInputClear'],
   moduleImports: [
     'import { form, FormField } from \'@angular/forms/signals\';',
-    'import { CngxRadioGroup, CngxRadio } from \'@cngx/common/interactive\';',
     'import { CngxIcon } from \'@cngx/common/display\';',
-    'import type { CngxFieldSkin } from \'@cngx/forms/field\';',
     'import { CngxFormField, CngxLabel, CngxFieldBox, CngxPrefix, CngxSuffix } from \'@cngx/forms/field\';',
     'import { CngxInput, CngxInputClear } from \'@cngx/forms/input\';',
   ],
@@ -28,18 +26,15 @@ export const STORY: DemoSpec = {
     'CngxInputClear',
     'CngxIcon',
     'FormField',
-    'CngxRadioGroup',
-    'CngxRadio',
   ],
   references: [
     { label: 'WCAG 2.5.8 Target Size (Minimum)', href: 'https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html' },
     { label: 'WCAG 4.1.2 Name, Role, Value', href: 'https://www.w3.org/WAI/WCAG21/Understanding/name-role-value.html' },
   ],
   setup: `private readonly model = signal({ query: '' });
-  protected readonly searchForm = form(this.model);
-  protected readonly skin = signal<CngxFieldSkin>('fill');`,
+  protected readonly searchForm = form(this.model);`,
   template: `  <div style="max-inline-size:24rem">
-    <cngx-form-field [field]="searchForm.query" [skin]="skin()">
+    <cngx-form-field [field]="searchForm.query" skin="fill">
       <label cngxLabel>Search people</label>
       <span cngxFieldBox>
         <span cngxPrefix>
@@ -63,12 +58,5 @@ export const STORY: DemoSpec = {
   </div>`,
   templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Query</span><span class="event-value">{{ searchForm.query().value() || '(empty)' }}</span></div>
-    <div class="event-row" style="margin-top:8px">
-      <cngx-radio-group [(value)]="skin" name="field-skin" label="Field skin">
-        <cngx-radio value="outline">Outline</cngx-radio>
-        <cngx-radio value="fill">Fill</cngx-radio>
-        <cngx-radio value="bare">Bare</cngx-radio>
-      </cngx-radio-group>
-    </div>
   </div>`,
 };

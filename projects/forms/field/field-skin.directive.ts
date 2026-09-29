@@ -50,8 +50,10 @@ import { CNGX_FORM_FIELD_CONFIG } from './form-field.token';
  * `input[cngxListboxSearch]`, `input[cngxSearch]`, `input[cngxDgaFilter]`.
  * They are not reached by `withFieldSkin(...)` either - the config tier is
  * read by this directive, so a control that does not compose it stays on the
- * base outline look until the attribute is set. Inside a `CngxFieldBox` none
- * of them needs the attribute: the box reset strips their paint.
+ * base outline look until the attribute is set. An empty `cngxFieldSkin`
+ * attribute opts in without a value and follows the cascade. Inside a
+ * `CngxFieldBox` none of them needs the attribute: as direct children they
+ * resolve to `'bare'` and the box reset strips their paint.
  *
  * ```html
  * <input cngxNumericInput cngxFieldSkin="bare" />
@@ -62,6 +64,9 @@ import { CNGX_FORM_FIELD_CONFIG } from './form-field.token';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/field-skin.directive.ts
  * @since 0.1.0
  * @relatedTo CngxFormField, CngxInput, CngxFieldBox, withFieldSkin
+ * <example-url>http://localhost:4200/#/forms/field/skin/outline-anatomy</example-url>
+ * <example-url>http://localhost:4200/#/forms/field/skin/fill-anatomy</example-url>
+ * <example-url>http://localhost:4200/#/forms/field/skin/bare-anatomy</example-url>
  * <example-url>http://localhost:4200/#/forms/field/skin/fill</example-url>
  * <example-url>http://localhost:4200/#/forms/field/skin/bare-table-filter</example-url>
  * <example-url>http://localhost:4200/#/forms/field/skin/bare-cell-edit</example-url>
