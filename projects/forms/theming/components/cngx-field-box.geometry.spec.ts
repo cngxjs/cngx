@@ -582,6 +582,20 @@ describe('field box inner label placement', () => {
     expect(new Set(tops).size).toBe(1);
   });
 
+  // The line follows the label size, so an override grows the box instead of
+  // pushing label glyphs into the value line.
+  it('derives the inner label line from the label font size', () => {
+    const box = query(mountInnerLabel('fill', 'comfortable', false), '.l-plain');
+    box.style.setProperty('--cngx-field-label-font-size', '1rem');
+    const label = query(box, ':scope > .cngx-label');
+    const input = query(box, ':scope > input');
+    expect(computedValue(label, 'line-height')).toBe('17px');
+    expect(box.getBoundingClientRect().height).toBeCloseTo(59, 0);
+    expect(label.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+      input.getBoundingClientRect().top + 0.5,
+    );
+  });
+
   it('sets the inner label as 13px text on a 14px line', () => {
     const label = query(mountInnerLabel('fill', 'comfortable', false), '.l-plain > .cngx-label');
     expect(computedValue(label, 'font-size')).toBe('13px');

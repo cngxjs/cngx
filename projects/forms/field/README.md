@@ -220,11 +220,13 @@ full perimeter. `withFieldSkin('outline')` is the AAA path. Under
 | `--cngx-field-underline-color` | Resting bottom border of `fill` |
 | `--cngx-field-underline-focus-color` | Focus underline of `fill` and `bare` |
 | `--cngx-field-underline-size` | Focus underline thickness (default `2px`) |
+| `--cngx-field-inner-label-line` | Line height of a label placed inside a field box (default: label font size + `0.0625rem`) |
 
 The Material bridge (`@cngx/themes/material/field-theme`) sets the four colour
 tokens from `--mat-sys-*`.
 
-cngx does not ship a floating label. The label stays static above the control.
+cngx does not ship a floating label. The label stays static above the control,
+or, placed as a direct child of a `cngxFieldBox`, on its own line inside the box.
 
 ### Affix patterns
 

@@ -15,8 +15,11 @@
  *
  * Inner label: a `<label cngxLabel>` placed as a direct child of the box
  * (Material 3 filled look, static, no animation). The box wraps onto two
- * lines, the label on its own 0.875rem line above the prefix / control /
- * suffix line, with no row gap. Padding and border stay untouched, so the
+ * lines, the label on its own line above the prefix / control / suffix line,
+ * with no row gap. The label line is `--cngx-field-inner-label-line`,
+ * unregistered and derived by default from `--cngx-field-label-font-size`
+ * plus 0.0625rem (14px at the 13px default), so a larger label grows the
+ * line and the box instead of overlapping the value. Padding and border stay untouched, so the
  * box formula holds unchanged with the label line added: comfortable
  * 14 + 24 + 2 * 8 + 2 = 56, compact 14 + 24 + 2 * 4 + 2 = 48, spacious
  * 14 + 24 + 2 * 12 + 2 = 64. Wrapping instead of fixed grid areas keeps any
@@ -117,14 +120,17 @@
     /* Inner label. --cngx-field-label-row is plain (unregistered) so it
        inherits to the children, whose touch floors subtract it. */
     :scope:has(> .cngx-label) {
-      --cngx-field-label-row: var(--cngx-field-inner-label-line, 0.875rem);
+      --cngx-field-label-row: var(
+        --cngx-field-inner-label-line,
+        calc(var(--cngx-field-label-font-size, 0.8125rem) + 0.0625rem)
+      );
       flex-wrap: wrap;
       row-gap: 0;
     }
 
     :scope > .cngx-label {
       flex: 0 0 100%;
-      line-height: var(--cngx-field-inner-label-line, 0.875rem);
+      line-height: var(--cngx-field-label-row, 0.875rem);
     }
 
     /* Outline: the hairline the base layer draws on a lone control, moved to
