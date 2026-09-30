@@ -715,27 +715,6 @@ export const RATCHET = [
     closesIn: 3,
   },
   {
-    file: 'projects/common/timeline/timeline-config.ts',
-    member: 'withTimelineLabels',
-    rule: 'R3',
-    token: 'CNGX_TIMELINE_CONFIG',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/timeline/timeline-item.component.ts',
-    member: 'CngxTimelineItem.errorText',
-    rule: 'R3',
-    token: 'CNGX_TIMELINE_CONFIG',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/timeline/timeline-item.component.ts',
-    member: 'CngxTimelineItem.statusText',
-    rule: 'R3',
-    token: 'CNGX_TIMELINE_CONFIG',
-    closesIn: 3,
-  },
-  {
     file: 'projects/data-display/treetable/treetable.component.ts',
     member: 'CngxTreetable.stateAnnouncement',
     rule: 'R3',
@@ -1884,27 +1863,6 @@ export const RATCHET = [
     closesIn: 7,
   },
   {
-    file: 'projects/ui/timeline/timeline-labels.ts',
-    member: 'createTimelineFallbackCopy',
-    rule: 'R3',
-    token: 'CNGX_TIMELINE_CONFIG',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/ui/timeline/timeline.component.ts',
-    member: 'CngxTimeline.groupHeaderLabel',
-    rule: 'R3',
-    token: 'CNGX_TIMELINE_CONFIG',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/ui/timeline/timeline.component.ts',
-    member: 'CngxTimeline.listLabel',
-    rule: 'R3',
-    token: 'CNGX_TIMELINE_CONFIG',
-    closesIn: 3,
-  },
-  {
     file: 'projects/ui/toc/config/provide-toc-config.ts',
     member: 'mergeConfig',
     rule: 'R3',
@@ -1927,7 +1885,7 @@ export const RATCHET = [
   },
 ];
 
-export const RATCHET_CEILING = 188;
+export const RATCHET_CEILING = 182;
 
 /** The last phase whose closing commit has landed. */
 export const COMPLETED_PHASE = 2;

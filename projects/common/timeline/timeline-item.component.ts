@@ -12,12 +12,14 @@ import {
   isDevMode,
   ViewEncapsulation,
 } from '@angular/core';
-import { type CngxAsyncState } from '@cngx/core/utils';
+import { coerceSignal, type CngxAsyncState } from '@cngx/core/utils';
 
 import { CngxTimelineConnector, type TimelineConnectorPosition } from './connector.component';
 import { CNGX_TIMELINE_MARKER_HOST } from './marker-host.token';
 import { CngxTimelineMarker, type TimelineStatus } from './marker.component';
-import { injectTimelineConfig } from './timeline-config';
+import { injectTimelineConfig, type CngxTimelineLabels } from './timeline-config';
+
+const NO_LABELS: CngxTimelineLabels = {};
 
 /**
  * Marks the element that holds an item's timestamp, so the item can place
@@ -212,7 +214,9 @@ const FOCUSABLE =
   styleUrls: ['./timeline-tokens.css', './timeline-item.component.css'],
 })
 export class CngxTimelineItem {
-  private readonly config = injectTimelineConfig();
+  private readonly labels = coerceSignal<CngxTimelineLabels>(
+    injectTimelineConfig().labels ?? NO_LABELS,
+  );
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
 
   /**
@@ -298,17 +302,17 @@ export class CngxTimelineItem {
    * announces the `rejected` it shows, not the editorial status it kept.
    */
   protected readonly statusText = computed(() => {
-    const labels = this.config.labels;
+    const labels = this.labels();
     if (this.busy()) {
-      return labels?.itemBusy ?? '';
+      return labels.itemBusy ?? '';
     }
     const status = this.markerStatus();
-    return status ? (labels?.status?.[status] ?? '') : '';
+    return status ? (labels.status?.[status] ?? '') : '';
   });
 
   /** @internal Visible inline error, blank unless this row failed. */
   protected readonly errorText = computed(() =>
-    this.failed() ? (this.config.labels?.itemErrorFallback ?? '') : '',
+    this.failed() ? (this.labels().itemErrorFallback ?? '') : '',
   );
 
   constructor() {

@@ -61,6 +61,16 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - `CngxMenuConfig.ariaLabels` is typed `CngxMenuAriaLabels | Signal<CngxMenuAriaLabels>`, and once `withAriaLabels` ran it holds a `Signal`. Code that reads it off `injectMenuConfig()` or `CNGX_MENU_CONFIG` wraps the key: `injectMenuConfig().ariaLabels.itemActivated` becomes `coerceSignal(injectMenuConfig().ariaLabels)().itemActivated` (`coerceSignal` from `@cngx/core/utils`), read inside a `computed()`, a template or a handler. A hand-written `CngxMenuConfigFeature` that spreads `cfg.ariaLabels` merges through `createOverrideMerge(cfg.ariaLabels, overrides)` instead.
 - `withAriaLabels` now also accepts a `Signal<Partial<CngxMenuAriaLabels>>` for runtime switching; plain partials still merge over the inherited labels.
 
+### @cngx/common/timeline
+
+- `CngxTimelineConfig.labels` is typed `CngxTimelineLabels | Signal<CngxTimelineLabels>`, and once `withTimelineLabels` ran it holds a `Signal`. Code that reads it off `injectTimelineConfig()` or `CNGX_TIMELINE_CONFIG` wraps the key: `injectTimelineConfig().labels?.retry` becomes `coerceSignal(injectTimelineConfig().labels ?? {})().retry` (`coerceSignal` from `@cngx/core/utils`), read inside a `computed()`, a template or a handler. A hand-written `CngxTimelineConfigFeature` that spreads `config.labels` merges through `createNestedOverrideMerge(config.labels ?? {}, overrides, 'status')` instead, which keeps the per-status merge.
+- `withTimelineLabels` now also accepts a `Signal<CngxTimelineLabels>` for runtime switching; plain bundles still merge over the inherited labels, `status` key by key.
+
+### @cngx/ui/timeline
+
+- `createTimelineFallbackCopy(config)` now returns `Signal<CngxTimelineFallbackCopy>`. Call it where you read a string: `copy.retry` becomes `copy().retry`.
+- The `labels` argument of `createTimelineView` and of a `CngxTimelineViewFactory` override (`CNGX_TIMELINE_VIEW_FACTORY`) is now `Signal<CngxTimelineFallbackCopy>`. An override that builds the announcement reads the copy inside `untracked(() => labels().loading)`, so a language switch does not re-voice the live region.
+
 ### @cngx/ui/mat-stepper
 
 - The optional third argument of `createMatStepHandle` (and so of `CngxMatStepHandleFactory` overrides) is now `Signal<CngxStepperI18n>`. An override that delegates to `createMatStepHandle` forwards the Signal unchanged; the last-resort `Step <id>` label then follows a language switch.

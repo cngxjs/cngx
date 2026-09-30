@@ -1,3 +1,4 @@
+import { coerceSignal } from '@cngx/core/utils';
 import { Component, TemplateRef, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
@@ -16,7 +17,12 @@ import {
   provideTimelineConfig,
   withTimelineLabels,
   withTimelineTemplates,
+  type CngxTimelineConfig,
+  type CngxTimelineLabels,
 } from './timeline-config';
+
+const lbl = (config: CngxTimelineConfig): CngxTimelineLabels =>
+  coerceSignal<CngxTimelineLabels>(config.labels ?? {})();
 
 interface Event {
   readonly id: number;
@@ -241,8 +247,8 @@ describe('timeline template slots', () => {
       });
       const config = TestBed.runInInjectionContext(() => injectTimelineConfig());
 
-      expect(config.labels?.retry).toBe('Again');
-      expect(config.labels?.emptyFallback).toBe('No events yet.');
+      expect(lbl(config).retry).toBe('Again');
+      expect(lbl(config).emptyFallback).toBe('No events yet.');
       expect(config.templates?.loadingTail).toBe(tailTpl);
     });
   });

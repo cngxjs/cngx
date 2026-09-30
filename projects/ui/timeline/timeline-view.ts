@@ -1,4 +1,4 @@
-import { computed, InjectionToken, type Signal } from '@angular/core';
+import { computed, InjectionToken, untracked, type Signal } from '@angular/core';
 import { resolveAsyncView, type AsyncView } from '@cngx/common/data';
 import type { CngxAsyncState } from '@cngx/core/utils';
 
@@ -49,7 +49,7 @@ export interface CngxTimelineView {
 export function createTimelineView(
   state: () => CngxAsyncState<unknown> | undefined,
   isEmpty: () => boolean,
-  labels: CngxTimelineFallbackCopy,
+  labels: Signal<CngxTimelineFallbackCopy>,
 ): CngxTimelineView {
   const activeView = computed<AsyncView>(() => {
     const empty = isEmpty();
@@ -83,19 +83,21 @@ export function createTimelineView(
     showsContent,
     refreshing,
     ariaBusy: computed(() => (state()?.isBusy() ? 'true' : null)),
+    // Copy is read untracked: a language switch never re-voices the region;
+    // the next view transition speaks the new language.
     announcement: computed(() => {
       const view = activeView();
       if (view === 'skeleton') {
-        return labels.loading;
+        return untracked(() => labels().loading);
       }
       // The single announcer for the failure: the built-in error surface
       // carries no role="alert" (that would double-fire on top of this
       // region), so the fallback reaches AT here whether the built-in markup
       // or a bound *cngxTimelineError renders.
       if (view === 'error' || view === 'content+error') {
-        return labels.errorFallback;
+        return untracked(() => labels().errorFallback);
       }
-      return refreshing() ? labels.refreshing : '';
+      return refreshing() ? untracked(() => labels().refreshing) : '';
     }),
   };
 }
@@ -108,7 +110,7 @@ export function createTimelineView(
 export type CngxTimelineViewFactory = (
   state: () => CngxAsyncState<unknown> | undefined,
   isEmpty: () => boolean,
-  labels: CngxTimelineFallbackCopy,
+  labels: Signal<CngxTimelineFallbackCopy>,
 ) => CngxTimelineView;
 
 /**

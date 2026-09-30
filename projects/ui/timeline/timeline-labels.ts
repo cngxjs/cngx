@@ -1,8 +1,12 @@
-import type { CngxTimelineConfig, TimelineGroup } from '@cngx/common/timeline';
+import { computed, type Signal } from '@angular/core';
+import type { CngxTimelineConfig, CngxTimelineLabels, TimelineGroup } from '@cngx/common/timeline';
+import { coerceSignal } from '@cngx/core/utils';
+
+const NO_LABELS: CngxTimelineLabels = {};
 
 /**
  * The fallback copy the timeline renders when a consumer bound no slot for
- * a surface, resolved once from the config cascade.
+ * a surface, resolved from the config cascade.
  *
  * @category ui/timeline
  */
@@ -28,14 +32,19 @@ export interface CngxTimelineFallbackCopy {
  * @category ui/timeline
  * @since 0.1.0
  */
-export function createTimelineFallbackCopy(config: CngxTimelineConfig): CngxTimelineFallbackCopy {
-  const labels = config.labels;
-  return {
-    retry: labels?.retry ?? '',
-    errorFallback: labels?.errorFallback ?? '',
-    emptyFallback: labels?.emptyFallback ?? '',
-    loading: labels?.loading ?? '',
-    refreshing: labels?.refreshing ?? '',
-    groupLabel: (group) => labels?.groupLabel?.(group) ?? group.key,
-  };
+export function createTimelineFallbackCopy(
+  config: CngxTimelineConfig,
+): Signal<CngxTimelineFallbackCopy> {
+  const source = coerceSignal<CngxTimelineLabels>(config.labels ?? NO_LABELS);
+  return computed(() => {
+    const labels = source();
+    return {
+      retry: labels.retry ?? '',
+      errorFallback: labels.errorFallback ?? '',
+      emptyFallback: labels.emptyFallback ?? '',
+      loading: labels.loading ?? '',
+      refreshing: labels.refreshing ?? '',
+      groupLabel: (group) => labels.groupLabel?.(group) ?? group.key,
+    };
+  });
 }
