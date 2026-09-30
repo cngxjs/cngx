@@ -1,4 +1,6 @@
+@use 'sass:color';
 @use 'sass:list';
+@use 'sass:math';
 
 // Private conventions module for the Material bridges. Every bridge routes
 // its token emission through `on()` so the two placement conventions the
@@ -56,4 +58,55 @@
     $out: list.append($out, '#{$host} *', $separator: comma);
   }
   @return $out;
+}
+
+/// Mixes `$color` toward `$toward` in oklab, one percent at a time, until it
+/// clears `$ratio` (WCAG 2 contrast) against every one of `$surfaces`. The
+/// compile-time twin of the core `--cngx-color-danger-text` derivation: an M2
+/// palette hands the bridge a literal, and the raw 500 shade of most warn
+/// palettes misses 4.5:1 as text (red 3.7:1 on white, 2.7:1 on the dark
+/// card). Stepping instead of a fixed weight keeps the hue as close to the
+/// palette as the surfaces allow, and returns a colour that already passes
+/// unchanged. `$toward` should be the opaque text colour of the scheme.
+@function readable-on($color, $toward, $surfaces, $ratio: 4.5) {
+  $weight: 100%;
+  $mixed: $color;
+  @while $weight > 0% and _min-contrast($mixed, $surfaces) < $ratio {
+    $weight: $weight - 1%;
+    $mixed: _rgb8(color.mix($color, $toward, $weight, $method: oklab));
+  }
+  @return $mixed;
+}
+
+// Rounded 8-bit sRGB, so the value the contrast loop checks is the hex that
+// ships (an oklab mix otherwise emits fractional rgb() channels).
+@function _rgb8($c) {
+  $rgb: color.to-gamut(color.to-space($c, rgb), $method: local-minde);
+  @return color.change(
+    $rgb,
+    $red: math.round(color.channel($rgb, 'red', $space: rgb)),
+    $green: math.round(color.channel($rgb, 'green', $space: rgb)),
+    $blue: math.round(color.channel($rgb, 'blue', $space: rgb))
+  );
+}
+
+@function _min-contrast($color, $surfaces) {
+  $min: 21;
+  @each $surface in $surfaces {
+    $min: math.min($min, _contrast($color, $surface));
+  }
+  @return $min;
+}
+
+@function _contrast($a, $b) {
+  $la: _luminance($a);
+  $lb: _luminance($b);
+  @return math.div(math.max($la, $lb) + 0.05, math.min($la, $lb) + 0.05);
+}
+
+@function _luminance($c) {
+  $lin: color.to-space($c, srgb-linear);
+  @return 0.2126 * color.channel($lin, 'red', $space: srgb-linear) + 0.7152 *
+    color.channel($lin, 'green', $space: srgb-linear) + 0.0722 *
+    color.channel($lin, 'blue', $space: srgb-linear);
 }
