@@ -89,14 +89,14 @@ export function coerceSignal<T>(source: T | Signal<T>): Signal<T> {
   if (isSignal(source)) {
     return source;
   }
-  const cacheable = (typeof source === 'object' && source !== null) || typeof source === 'function';
   if (source === undefined) {
     return UNDEFINED_SIGNAL as Signal<T>;
   }
   if (source === null) {
     return NULL_SIGNAL as Signal<T>;
   }
-  if (!cacheable) {
+  const isObjectLike = typeof source === 'object' || typeof source === 'function';
+  if (!isObjectLike) {
     return wrapPrimitive(source) as Signal<T>;
   }
   const key = source as object;
