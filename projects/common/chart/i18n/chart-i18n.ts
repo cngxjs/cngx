@@ -149,7 +149,7 @@ export const CNGX_CHART_I18N = new InjectionToken<Signal<CngxChartI18n>>('CngxCh
   providedIn: 'root',
   factory: (): Signal<CngxChartI18n> => {
     const locale = injectLocale();
-    return computed(() => createChartI18nDefaults(locale()));
+    return computed(() => createChartI18nDefaults(locale()), { equal: recordEqual });
   },
 });
 

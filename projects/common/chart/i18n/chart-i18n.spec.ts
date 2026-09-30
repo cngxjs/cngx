@@ -198,6 +198,19 @@ describe('injectChartI18n', () => {
     expect(raw.valueColumnLabel).toBe(CHART_I18N_EN.valueColumnLabel);
   });
 
+  it('keeps the default bundle reference when a locale flip lands on a cached locale', () => {
+    const locale = signal('en-US');
+    TestBed.configureTestingModule({ providers: [provideLocale(locale)] });
+    const bundle = TestBed.inject(CNGX_CHART_I18N);
+    const english = bundle();
+
+    locale.set('de-DE');
+    expect(bundle()).not.toBe(english);
+
+    locale.set('en-US');
+    expect(bundle()).toBe(english);
+  });
+
   it('shares one Signal across chart parts under one injector', () => {
     TestBed.configureTestingModule({});
     const first = TestBed.runInInjectionContext(() => injectChartI18n());
