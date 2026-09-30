@@ -5,9 +5,11 @@ import {
   computed,
   inject,
   input,
+  untracked,
 } from '@angular/core';
 
 import { CngxFocusTrap } from '@cngx/common/a11y';
+import { recordEqual } from '@cngx/utils';
 
 import {
   CNGX_SELECT_PANEL_VIEW_HOST,
@@ -161,4 +163,55 @@ export class CngxSelectPanelShell<T = unknown> {
     }),
     { equal: (a, b) => a.previousCount === b.previousCount },
   );
+
+  // Live-region copy. Each region reads its copy untracked and re-reads it
+  // only when its own status changes, so a language flip never re-speaks a
+  // shown region; the next time it appears it speaks the new language.
+
+  /** @internal Loading and first-load error regions, keyed on `activeView`. */
+  protected readonly viewCopy = computed(
+    () => {
+      this.host.activeView();
+      return untracked(() => {
+        const fallback = this.host.fallbackLabels();
+        return {
+          statusLoading: this.host.ariaLabels().statusLoading ?? 'Loading options',
+          loading: fallback.loading,
+          loadFailed: fallback.loadFailed,
+          loadFailedRetry: fallback.loadFailedRetry,
+        };
+      });
+    },
+    { equal: recordEqual },
+  );
+
+  /** @internal Inline refresh-error region, keyed on `showInlineError`. */
+  protected readonly inlineErrorCopy = computed(
+    () => {
+      this.host.showInlineError();
+      return untracked(() => {
+        const fallback = this.host.fallbackLabels();
+        return { message: fallback.refreshFailed, retry: fallback.refreshFailedRetry };
+      });
+    },
+    { equal: recordEqual },
+  );
+
+  /** @internal Commit-error banner region, keyed on `showCommitError`. */
+  protected readonly commitErrorCopy = computed(
+    () => {
+      this.host.showCommitError();
+      return untracked(() => {
+        const fallback = this.host.fallbackLabels();
+        return { message: fallback.commitFailed, retry: fallback.commitFailedRetry };
+      });
+    },
+    { equal: recordEqual },
+  );
+
+  /** @internal Refreshing indicator region, keyed on `showRefreshIndicator`. */
+  protected readonly refreshingLabel = computed(() => {
+    this.host.showRefreshIndicator();
+    return untracked(() => this.host.ariaLabels().statusRefreshing ?? 'Refreshing options');
+  });
 }

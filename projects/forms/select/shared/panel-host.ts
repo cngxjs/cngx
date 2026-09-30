@@ -86,8 +86,8 @@ export interface CngxSelectPanelViewHost<T = unknown> {
   readonly refreshingVariant: Signal<CngxSelectRefreshingVariant>;
   readonly commitErrorDisplay: Signal<CngxSelectCommitErrorDisplay>;
   readonly tpl: CngxSelectPanelShellTemplates<T>;
-  /** All keys non-optional; library defaults applied. */
-  readonly fallbackLabels: Required<CngxSelectFallbackLabels>;
+  /** All keys non-optional; library defaults applied. Follows a language flip. */
+  readonly fallbackLabels: Signal<Required<CngxSelectFallbackLabels>>;
   /** Search-input variants forward this; button triggers omit (shell → `''`). */
   readonly searchTerm?: Signal<string>;
   /** `unfilteredFlatOptions().length`. Shell → `0` when omitted. */
@@ -95,7 +95,7 @@ export interface CngxSelectPanelViewHost<T = unknown> {
   /** Frozen `flatOptions().length` during refresh. Shell → `0` when omitted. */
   readonly previousLoadedCount?: Signal<number>;
   /** Mirrors `CNGX_SELECT_CONFIG.ariaLabels`. Per-instance inputs apply outside. */
-  readonly ariaLabels: CngxSelectAriaLabels;
+  readonly ariaLabels: Signal<CngxSelectAriaLabels>;
   handleRetry(): void;
 
   /** Action slot's live search term. Shell → `''` when omitted. */

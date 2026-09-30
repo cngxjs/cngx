@@ -5,10 +5,15 @@ import {
   CNGX_SELECT_DEFAULTS,
   type CngxSelectConfig,
 } from '../config';
+import { type CngxResolvedSelectLabels, resolveSelectLabels } from './resolve-labels';
+
+const NO_CONFIG: CngxSelectConfig = {};
 
 /**
  * Effective {@link CngxSelectConfig} for the current injector, merged
- * with library defaults. Always fully populated.
+ * with library defaults. Always fully populated. The copy keys
+ * (`ariaLabels`, `fallbackLabels`, `announcer`) are `Signal`s, read lazily
+ * so a runtime language switch reaches every select.
  *
  * @internal
  */
@@ -18,12 +23,11 @@ export function resolveSelectConfig(): Required<
     'panelClass' | 'templates' | 'announcer' | 'ariaLabels' | 'fallbackLabels'
   >
 > &
-  Pick<
-    typeof CNGX_SELECT_DEFAULTS,
-    'panelClass' | 'templates' | 'announcer' | 'ariaLabels' | 'fallbackLabels'
-  > {
-  const user = inject(CNGX_SELECT_CONFIG, { optional: true }) ?? {};
+  Pick<typeof CNGX_SELECT_DEFAULTS, 'panelClass' | 'templates'> &
+  CngxResolvedSelectLabels {
+  const user = inject(CNGX_SELECT_CONFIG, { optional: true }) ?? NO_CONFIG;
   return {
+    ...resolveSelectLabels(user),
     panelWidth: user.panelWidth ?? CNGX_SELECT_DEFAULTS.panelWidth,
     loadingVariant: user.loadingVariant ?? CNGX_SELECT_DEFAULTS.loadingVariant,
     skeletonRowCount: user.skeletonRowCount ?? CNGX_SELECT_DEFAULTS.skeletonRowCount,
@@ -61,22 +65,9 @@ export function resolveSelectConfig(): Required<
     restoreFocus: user.restoreFocus ?? CNGX_SELECT_DEFAULTS.restoreFocus,
     dismissOn: user.dismissOn ?? CNGX_SELECT_DEFAULTS.dismissOn,
     openOn: user.openOn ?? CNGX_SELECT_DEFAULTS.openOn,
-    announcer: {
-      ...CNGX_SELECT_DEFAULTS.announcer,
-      ...user.announcer,
-      format: user.announcer?.format ?? CNGX_SELECT_DEFAULTS.announcer.format,
-    },
     templates: {
       ...CNGX_SELECT_DEFAULTS.templates,
       ...user.templates,
-    },
-    ariaLabels: {
-      ...CNGX_SELECT_DEFAULTS.ariaLabels,
-      ...user.ariaLabels,
-    },
-    fallbackLabels: {
-      ...CNGX_SELECT_DEFAULTS.fallbackLabels,
-      ...user.fallbackLabels,
     },
   };
 }

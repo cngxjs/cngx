@@ -3,6 +3,7 @@ import {
   DestroyRef,
   inject,
   signal,
+  untracked,
   type Signal,
   type WritableSignal,
 } from '@angular/core';
@@ -154,10 +155,10 @@ export interface CngxSelectCore<T, TCommit> {
   readonly skeletonIndices: Signal<number[]>;
   readonly panelClassList: Signal<string | readonly string[] | null>;
   readonly panelWidthCss: Signal<string | null>;
-  /** Plain object - config is resolved per-injector and immutable. */
-  readonly fallbackLabels: Required<CngxSelectFallbackLabels>;
-  /** Mirrors `CNGX_SELECT_CONFIG.ariaLabels`. Forwarded onto the panel host. */
-  readonly ariaLabels: CngxSelectAriaLabels;
+  /** Resolved `CNGX_SELECT_CONFIG.fallbackLabels`; follows a language flip. */
+  readonly fallbackLabels: Signal<Required<CngxSelectFallbackLabels>>;
+  /** Resolved `CNGX_SELECT_CONFIG.ariaLabels`. Forwarded onto the panel host. */
+  readonly ariaLabels: Signal<CngxSelectAriaLabels>;
 
   readonly resolvedId: Signal<string>;
   readonly resolvedAriaLabel: Signal<string | null>;
@@ -468,7 +469,7 @@ export function createSelectCore<T, TCommit>(
     if (placeholder.length > 0) {
       return placeholder;
     }
-    return config.ariaLabels?.listboxFallback ?? 'Options';
+    return config.ariaLabels().listboxFallback ?? 'Options';
   });
 
   const resolvedShowSelectionIndicator = computed<boolean>(() => !deps.hideSelectionIndicator());
@@ -644,11 +645,13 @@ export function createSelectCore<T, TCommit>(
     return flatOptions().find((o) => eq(o.value, value)) ?? null;
   }
 
+  // Announcement copy is read untracked: a language flip must not re-run
+  // the effect that announces, only the next announcement speaks it.
   function commitErrorMessage(err: unknown): string {
     const label = deps.label();
     const aria = deps.ariaLabel();
-    const fieldFallback = config.ariaLabels.fieldLabelFallback ?? 'Selection';
-    const failedMessage = config.ariaLabels.commitFailedMessage ?? 'Save failed';
+    const fieldFallback = untracked(() => config.ariaLabels().fieldLabelFallback) ?? 'Selection';
+    const failedMessage = untracked(() => config.ariaLabels().commitFailedMessage) ?? 'Save failed';
     const labelText = label !== '' ? label : (aria ?? fieldFallback);
     const detail = err instanceof Error ? err.message : undefined;
     return detail ? `${labelText}: ${failedMessage} - ${detail}` : `${labelText}: ${failedMessage}`;
@@ -671,16 +674,15 @@ export function createSelectCore<T, TCommit>(
     fromIndex?: number,
     toIndex?: number,
   ): void {
-    const announcerConfig = config.announcer;
     const perInstance = announcerInputs.announceChanges();
-    const enabled = perInstance ?? announcerConfig.enabled ?? true;
+    const enabled = perInstance ?? untracked(() => config.announcer().enabled) ?? true;
     if (!enabled) {
       return;
     }
-    const format = announcerInputs.announceTemplate() ?? announcerConfig.format;
+    const format = announcerInputs.announceTemplate() ?? untracked(() => config.announcer().format);
     const label = deps.label();
     const aria = deps.ariaLabel();
-    let fieldLabel = config.ariaLabels.fieldLabelFallback ?? 'Selection';
+    let fieldLabel = untracked(() => config.ariaLabels().fieldLabelFallback) ?? 'Selection';
     if (label.length > 0) {
       fieldLabel = label;
     } else if (aria && aria.length > 0) {
@@ -695,7 +697,10 @@ export function createSelectCore<T, TCommit>(
       fromIndex,
       toIndex,
     });
-    announcer.announce(message, announcerConfig.politeness);
+    announcer.announce(
+      message,
+      untracked(() => config.announcer().politeness),
+    );
   }
 
   return {

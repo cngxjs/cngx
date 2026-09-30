@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { coerceSignal } from '@cngx/core/utils';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -33,7 +34,7 @@ describe('provideCngxSelect (app-wide aggregator)', () => {
     });
     const cfg = TestBed.inject(CNGX_SELECT_CONFIG);
     expect(cfg.panelWidth).toBe(480);
-    expect(cfg.ariaLabels?.clearButton).toBe('Wipe');
+    expect(coerceSignal(cfg.ariaLabels ?? {})().clearButton).toBe('Wipe');
   });
 
   it('dispatches CngxActionSelectConfig features to CNGX_ACTION_SELECT_CONFIG', () => {

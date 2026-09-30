@@ -59,7 +59,7 @@ export class CngxSelectSearch {
    * `CNGX_SELECT_CONFIG.fallbackLabels.searchPlaceholder` (EN `'Search…'`), read
    * once at construction.
    */
-  readonly placeholder = input<string>(this.config.fallbackLabels.searchPlaceholder);
+  readonly placeholder = input<string>(this.config.fallbackLabels().searchPlaceholder);
 
   /**
    * ARIA label override. Cascade: per-instance `[aria-label]` →
@@ -79,7 +79,7 @@ export class CngxSelectSearch {
    * @internal
    */
   protected readonly resolvedAriaLabel = computed<string | null>(
-    () => this.ariaLabel() ?? this.config.ariaLabels?.searchInput ?? null,
+    () => this.ariaLabel() ?? this.config.ariaLabels().searchInput ?? null,
   );
 
   /** @internal */

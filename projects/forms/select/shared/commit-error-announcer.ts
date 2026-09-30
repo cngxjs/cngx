@@ -1,4 +1,4 @@
-import { InjectionToken, type Signal } from '@angular/core';
+import { InjectionToken, untracked, type Signal } from '@angular/core';
 
 import type { CngxSelectAnnouncer } from './announcer';
 import type { CngxSelectOptionDef } from './option.model';
@@ -78,7 +78,10 @@ export function createCommitErrorAnnouncer(
   return (err: unknown): void => {
     const p = opts.policy();
     if (p.kind === 'verbose') {
-      opts.deps.announcer.announce(opts.deps.commitErrorMessage(err), p.severity);
+      // The message reads copy; untracked so a language flip never re-runs
+      // an effect that announced it.
+      const message = untracked(() => opts.deps.commitErrorMessage(err));
+      opts.deps.announcer.announce(message, p.severity);
       return;
     }
     opts.deps.softAnnounce(null, 'removed', 0, false);

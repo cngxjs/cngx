@@ -224,7 +224,7 @@ export class CngxSelectShell<T = unknown>
   readonly hideCaret = input<boolean>(!this.config.showCaret);
   readonly clearable = input<boolean>(false);
   readonly clearButtonAriaLabel = input<string>(
-    this.config.ariaLabels?.clearButton ?? 'Clear selection',
+    this.config.ariaLabels().clearButton ?? 'Clear selection',
   );
   readonly clearGlyph = input<TemplateRef<void> | null>(null);
   readonly caretGlyph = input<TemplateRef<void> | null>(null);

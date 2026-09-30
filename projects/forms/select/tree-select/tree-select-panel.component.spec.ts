@@ -69,7 +69,7 @@ function makeShellHost(): CngxSelectPanelHost {
     commitErrorDisplay: signal('banner'),
     panelClassList: signal(null),
     panelWidthCss: signal(null),
-    fallbackLabels: {
+    fallbackLabels: signal({
       loading: 'Loading…',
       empty: 'No Options',
       loadFailed: 'Loading failed',
@@ -79,15 +79,15 @@ function makeShellHost(): CngxSelectPanelHost {
       searchPlaceholder: 'Search…',
       commitFailed: 'Save failed',
       commitFailedRetry: 'Try again',
-    },
-    ariaLabels: {
+    }),
+    ariaLabels: signal({
       treeExpand: 'Expand node',
       treeCollapse: 'Collapse node',
       statusLoading: 'Loading options',
       statusRefreshing: 'Refreshing options',
       fieldLabelFallback: 'Selection',
       commitFailedMessage: 'Save failed',
-    },
+    }),
     resolvedListboxLabel: signal(''),
     resolvedShowSelectionIndicator: signal(true),
     resolvedSelectionIndicatorVariant: signal('checkbox'),

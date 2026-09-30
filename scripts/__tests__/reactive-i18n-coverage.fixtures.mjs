@@ -946,13 +946,6 @@ export const RATCHET = [
     closesIn: 4,
   },
   {
-    file: 'projects/forms/select/declarative/select-search.component.ts',
-    member: 'CngxSelectSearch.resolvedAriaLabel',
-    rule: 'R3',
-    token: 'CNGX_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
     file: 'projects/forms/select/multi-select/multi-select.component.ts',
     member: 'CngxMultiSelect.chipRemoveAriaLabel',
     rule: 'R1',
@@ -995,34 +988,6 @@ export const RATCHET = [
     closesIn: 4,
   },
   {
-    file: 'projects/forms/select/shared/config.ts',
-    member: 'makeSelectConfig',
-    rule: 'R3',
-    token: 'CNGX_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
-    member: 'CngxSelectPanelShell.host',
-    rule: 'R4',
-    token: 'CNGX_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
-    member: 'CngxSelectPanelShell.template:host',
-    rule: 'R3',
-    token: 'CNGX_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/select/shared/internal/select-core.ts',
-    member: 'createSelectCore',
-    rule: 'R3',
-    token: 'CNGX_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
     file: 'projects/forms/select/shared/reorderable-select-config.ts',
     member: 'resolveReorderableSelectConfig',
     rule: 'R3',
@@ -1038,13 +1003,6 @@ export const RATCHET = [
   },
   {
     file: 'projects/forms/select/tree-select/tree-select.component.ts',
-    member: 'CngxTreeSelect.announce',
-    rule: 'R3',
-    token: 'CNGX_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/select/tree-select/tree-select.component.ts',
     member: 'CngxTreeSelect.chipRemoveAriaLabel',
     rule: 'R1',
     token: 'CNGX_SELECT_CONFIG',
@@ -1054,13 +1012,6 @@ export const RATCHET = [
     file: 'projects/forms/select/tree-select/tree-select.component.ts',
     member: 'CngxTreeSelect.clearButtonAriaLabel',
     rule: 'R1',
-    token: 'CNGX_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/select/tree-select/tree-select.component.ts',
-    member: 'CngxTreeSelect.commitErrorMessage',
-    rule: 'R3',
     token: 'CNGX_SELECT_CONFIG',
     closesIn: 4,
   },
@@ -1780,7 +1731,7 @@ export const RATCHET = [
   },
 ];
 
-export const RATCHET_CEILING = 167;
+export const RATCHET_CEILING = 160;
 
 /** The last phase whose closing commit has landed. */
 export const COMPLETED_PHASE = 3;
@@ -2002,72 +1953,70 @@ export const LIVE_REGIONS = [
   },
   {
     file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
-    region: 'CngxSelectPanelShell.div(host.ariaLabels,host.skeletonIndices)',
+    region: 'CngxSelectPanelShell.div(commitErrorCopy,host.commitErrorContext,host.tpl)',
     spec: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 4,
   },
   {
     file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
-    region: 'CngxSelectPanelShell.div(host.ariaLabels,host.tpl)',
+    region: 'CngxSelectPanelShell.div(host.errorContext,host.handleRetry,host.tpl,inlineErrorCopy)',
     spec: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 4,
   },
   {
     file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
-    region: 'CngxSelectPanelShell.div(host.ariaLabels,host.tpl)#2',
+    region: 'CngxSelectPanelShell.div(host.errorContext,host.handleRetry,host.tpl,viewCopy)',
     spec: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 4,
   },
   {
     file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
-    region: 'CngxSelectPanelShell.div(host.ariaLabels,host.tpl)#3',
+    region: 'CngxSelectPanelShell.div(host.skeletonIndices,viewCopy)',
     spec: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 4,
   },
   {
     file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
-    region: 'CngxSelectPanelShell.div(host.ariaLabels,host.tpl)#4',
+    region: 'CngxSelectPanelShell.div(host.tpl,refreshingLabel)',
     spec: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 4,
   },
   {
     file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
-    region: 'CngxSelectPanelShell.div(host.ariaLabels,host.tpl)#5',
+    region: 'CngxSelectPanelShell.div(host.tpl,refreshingLabel)#2',
     spec: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 4,
   },
   {
     file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
-    region: 'CngxSelectPanelShell.div(host.commitErrorContext,host.fallbackLabels,host.tpl)',
+    region: 'CngxSelectPanelShell.div(host.tpl,refreshingLabel)#3',
     spec: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 4,
   },
   {
     file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
-    region:
-      'CngxSelectPanelShell.div(host.errorContext,host.fallbackLabels,host.handleRetry,host.tpl)',
+    region: 'CngxSelectPanelShell.div(host.tpl,viewCopy)',
     spec: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 4,
   },
   {
     file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
-    region:
-      'CngxSelectPanelShell.div(host.errorContext,host.fallbackLabels,host.handleRetry,host.tpl)#2',
+    region: 'CngxSelectPanelShell.div(host.tpl,viewCopy)#2',
     spec: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 4,
   },
   {
     file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
-    region: 'CngxSelectPanelShell.div(host.fallbackLabels)',
+    region: 'CngxSelectPanelShell.div(viewCopy)',
     spec: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 4,

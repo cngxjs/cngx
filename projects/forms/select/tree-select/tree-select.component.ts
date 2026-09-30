@@ -287,15 +287,15 @@ export class CngxTreeSelect<T = unknown>
    * Falls back to English. Ignored when `*cngxTreeSelectNode` is
    * projected.
    */
-  readonly twistyExpandLabel = input<string>(this.config.ariaLabels?.treeExpand ?? 'Expand node');
+  readonly twistyExpandLabel = input<string>(this.config.ariaLabels().treeExpand ?? 'Expand node');
   readonly twistyCollapseLabel = input<string>(
-    this.config.ariaLabels?.treeCollapse ?? 'Collapse node',
+    this.config.ariaLabels().treeCollapse ?? 'Collapse node',
   );
   readonly clearable = input<boolean>(false);
   readonly clearButtonAriaLabel = input<string>(
-    this.config.ariaLabels?.clearButton ?? 'Reset selection',
+    this.config.ariaLabels().clearButton ?? 'Reset selection',
   );
-  readonly chipRemoveAriaLabel = input<string>(this.config.ariaLabels?.chipRemove ?? 'Remove');
+  readonly chipRemoveAriaLabel = input<string>(this.config.ariaLabels().chipRemove ?? 'Remove');
   readonly loading = input<boolean>(false);
   readonly loadingVariant = input<CngxSelectLoadingVariant>(this.config.loadingVariant);
   readonly skeletonRowCount = input<number>(this.config.skeletonRowCount);
@@ -448,16 +448,16 @@ export class CngxTreeSelect<T = unknown>
     action: 'added' | 'removed',
     count: number,
   ): void {
-    const announcerConfig = this.config.announcer;
+    // Copy read untracked: a language flip must not re-announce.
     const perInstance = this.announceChanges();
-    const enabled = perInstance ?? announcerConfig.enabled ?? true;
+    const enabled = perInstance ?? untracked(() => this.config.announcer().enabled) ?? true;
     if (!enabled) {
       return;
     }
-    const format = this.announceTemplate() ?? announcerConfig.format;
+    const format = this.announceTemplate() ?? untracked(() => this.config.announcer().format);
     const label = this.label();
     const aria = this.ariaLabel();
-    let fieldLabel = this.config.ariaLabels?.fieldLabelFallback ?? 'Selection';
+    let fieldLabel = untracked(() => this.config.ariaLabels().fieldLabelFallback) ?? 'Selection';
     if (label.length > 0) {
       fieldLabel = label;
     } else if (aria && aria.length > 0) {
@@ -470,7 +470,7 @@ export class CngxTreeSelect<T = unknown>
       action,
       count,
     });
-    this.announcer.announce(message, announcerConfig.politeness);
+    this.announcer.announce(message, untracked(() => this.config.announcer().politeness));
   }
 
   /**
@@ -499,8 +499,10 @@ export class CngxTreeSelect<T = unknown>
   private commitErrorMessage(err: unknown): string {
     const label = this.label();
     const aria = this.ariaLabel();
-    const fieldFallback = this.config.ariaLabels.fieldLabelFallback ?? 'Selection';
-    const failedMessage = this.config.ariaLabels.commitFailedMessage ?? 'Save failed';
+    const fieldFallback =
+      untracked(() => this.config.ariaLabels().fieldLabelFallback) ?? 'Selection';
+    const failedMessage =
+      untracked(() => this.config.ariaLabels().commitFailedMessage) ?? 'Save failed';
     const labelText = label !== '' ? label : (aria ?? fieldFallback);
     const detail = err instanceof Error ? err.message : undefined;
     return detail ? `${labelText}: ${failedMessage} - ${detail}` : `${labelText}: ${failedMessage}`;
