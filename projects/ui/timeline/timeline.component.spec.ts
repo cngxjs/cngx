@@ -1,6 +1,7 @@
 import { Component, computed, LOCALE_ID, signal, TemplateRef, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import {
+  CNGX_TIMELINE_CONFIG,
   CNGX_TIMELINE_GROUPING_FACTORY,
   CngxTimelineDateHeader,
   CngxTimelineItem,
@@ -371,6 +372,18 @@ describe('CngxTimeline', () => {
       detect();
       expect(el.querySelector('.cngx-timeline__date-header')).toBe(header);
       expect(text(header)).toBe(dayLabel(2026, 6, 21, 'de-DE'));
+    });
+
+    it('falls back to the band key and no region name when the config carries no labels', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        imports: [Host],
+        providers: [{ provide: CNGX_TIMELINE_CONFIG, useValue: {} }],
+      });
+      const { el } = mount();
+
+      expect(text(el.querySelector('.cngx-timeline__date-header'))).toBe('2026-07-21');
+      expect(el.querySelector('.cngx-timeline__list')?.hasAttribute('aria-label')).toBe(false);
     });
 
     it('calls a consumer groupLabel as is, ignoring the locale', () => {

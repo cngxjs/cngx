@@ -3,7 +3,11 @@ import type { CngxTimelineConfig, CngxTimelineLabels, TimelineGroup } from '@cng
 import { coerceSignal } from '@cngx/core/utils';
 import { recordEqual } from '@cngx/utils';
 
-const NO_LABELS: CngxTimelineLabels = {};
+/**
+ * @internal Shared empty bundle for a config without `labels`. One identity,
+ * so every `coerceSignal` over it resolves to the same cached source.
+ */
+export const TIMELINE_NO_LABELS: CngxTimelineLabels = {};
 
 /**
  * The fallback copy the timeline renders when a consumer bound no slot for
@@ -26,6 +30,10 @@ export interface CngxTimelineFallbackCopy {
  * accessor, and the optional-chaining lives in one place instead of at every
  * use site.
  *
+ * Returns a `Signal`: when the config's `labels` is a `Signal` (as it is once
+ * `withTimelineLabels` ran), the copy follows a runtime language switch. The
+ * bundle keeps its reference while the resolved strings stay equal.
+ *
  * `groupLabel` keeps the band's key as its own last resort: a consumer who
  * clears the formatter should still get a legible header rather than an
  * empty one that leaves the group unnamed.
@@ -36,7 +44,7 @@ export interface CngxTimelineFallbackCopy {
 export function createTimelineFallbackCopy(
   config: CngxTimelineConfig,
 ): Signal<CngxTimelineFallbackCopy> {
-  const source = coerceSignal<CngxTimelineLabels>(config.labels ?? NO_LABELS);
+  const source = coerceSignal<CngxTimelineLabels>(config.labels ?? TIMELINE_NO_LABELS);
   // The wrapper closure is rebuilt only when the consumer formatter itself
   // changes, so an unrelated label flip keeps `groupLabel` reference-stable.
   const formatter = computed(() => source().groupLabel);

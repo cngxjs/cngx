@@ -46,7 +46,7 @@ import {
 import { CngxSkeletonContainer, CngxSkeletonPlaceholder } from '@cngx/ui/skeleton';
 
 import { createTimelineSlots } from './slot-cascade';
-import { createTimelineFallbackCopy } from './timeline-labels';
+import { createTimelineFallbackCopy, TIMELINE_NO_LABELS } from './timeline-labels';
 import { CNGX_TIMELINE_VIEW_FACTORY } from './timeline-view';
 
 /**
@@ -229,7 +229,11 @@ export type CngxTimelineOrientation = 'vertical' | 'horizontal';
 })
 export class CngxTimeline<T = unknown> implements CngxTimelineMarkerHost {
   private readonly config = injectTimelineConfig();
-  private readonly configLabels = coerceSignal<CngxTimelineLabels>(this.config.labels ?? {});
+  // Same cached source `createTimelineFallbackCopy` resolves (coerceSignal is
+  // identity-keyed), read here for the raw `groupLabel` and `timelineRegion`.
+  private readonly configLabels = coerceSignal<CngxTimelineLabels>(
+    this.config.labels ?? TIMELINE_NO_LABELS,
+  );
   private readonly groupingFactory = inject(CNGX_TIMELINE_GROUPING_FACTORY);
   private readonly uid = nextUid('cngx-timeline');
 
