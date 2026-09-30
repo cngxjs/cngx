@@ -45,35 +45,37 @@ export const STORY: DemoSpec = {
         (blur)="emailForm.email().markAsTouched()"
       />
       <div cngxError style="display:grid;gap:6px;margin-top:6px">
-        @for (e of emailForm.email().errors(); track e.kind) {
-          <p style="display:flex;align-items:center;gap:8px;margin:0">
-            @switch (iconFor(e.kind)) {
-              @case ('required') {
-                <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-                  <path d="M8 2v12M3 5l10 6M3 11l10-6" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-                </svg>
+        @if (emailForm.email().touched()) {
+          @for (e of emailForm.email().errors(); track e.kind) {
+            <p style="display:flex;align-items:center;gap:8px;margin:0">
+              @switch (iconFor(e.kind)) {
+                @case ('required') {
+                  <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                    <path d="M8 2v12M3 5l10 6M3 11l10-6" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                  </svg>
+                }
+                @case ('length') {
+                  <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                    <rect x="1" y="5" width="14" height="6" stroke="currentColor" stroke-width="1.2" fill="none"/>
+                    <path d="M4 5v2M8 5v3M12 5v2" stroke="currentColor" stroke-width="1.2"/>
+                  </svg>
+                }
+                @case ('email') {
+                  <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                    <rect x="1.5" y="3.5" width="13" height="9" stroke="currentColor" stroke-width="1.2" fill="none"/>
+                    <path d="M1.5 4l6.5 5 6.5-5" stroke="currentColor" stroke-width="1.2" fill="none"/>
+                  </svg>
+                }
+                @default {
+                  <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                    <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.2" fill="none"/>
+                    <path d="M8 4v5M8 11v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                  </svg>
+                }
               }
-              @case ('length') {
-                <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-                  <rect x="1" y="5" width="14" height="6" stroke="currentColor" stroke-width="1.2" fill="none"/>
-                  <path d="M4 5v2M8 5v3M12 5v2" stroke="currentColor" stroke-width="1.2"/>
-                </svg>
-              }
-              @case ('email') {
-                <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-                  <rect x="1.5" y="3.5" width="13" height="9" stroke="currentColor" stroke-width="1.2" fill="none"/>
-                  <path d="M1.5 4l6.5 5 6.5-5" stroke="currentColor" stroke-width="1.2" fill="none"/>
-                </svg>
-              }
-              @default {
-                <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-                  <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.2" fill="none"/>
-                  <path d="M8 4v5M8 11v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                </svg>
-              }
-            }
-            <span>{{ e.message }}</span>
-          </p>
+              <span>{{ e.message }}</span>
+            </p>
+          }
         }
       </div>
     </cngx-form-field>

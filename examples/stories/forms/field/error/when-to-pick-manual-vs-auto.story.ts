@@ -54,14 +54,16 @@ export const STORY: DemoSpec = {
           (blur)="userForm.manualName().markAsTouched()"
         />
         <div cngxError style="display:grid;gap:4px;margin-top:6px">
-          @for (e of userForm.manualName().errors(); track e.kind) {
-            <p style="display:flex;align-items:flex-start;gap:6px;margin:0">
-              <span aria-hidden="true">&bull;</span>
-              <span>
-                <strong style="">{{ e.kind }}</strong>
-                {{ e.message }}
-              </span>
-            </p>
+          @if (userForm.manualName().touched()) {
+            @for (e of userForm.manualName().errors(); track e.kind) {
+              <p style="display:flex;align-items:flex-start;gap:6px;margin:0">
+                <span aria-hidden="true">&bull;</span>
+                <span>
+                  <strong style="">{{ e.kind }}</strong>
+                  {{ e.message }}
+                </span>
+              </p>
+            }
           }
         </div>
       </cngx-form-field>
