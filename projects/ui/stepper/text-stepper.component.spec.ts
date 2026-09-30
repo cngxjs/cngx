@@ -266,3 +266,37 @@ describe('CngxTextStepper language switch', () => {
     expect(error.textContent?.trim()).toContain('Payment: Fehler');
   });
 });
+
+describe('CngxTextStepper consumer-translated step label', () => {
+  @Component({
+    standalone: true,
+    imports: [CngxTextStepper, CngxStep],
+    template: `
+      <cngx-text-stepper [(activeStepIndex)]="active" [showCurrentLabel]="true">
+        <div cngxStep [label]="lang() === 'de' ? 'Kunde' : 'Customer'"></div>
+        <div cngxStep [label]="lang() === 'de' ? 'Zahlung' : 'Payment'"></div>
+      </cngx-text-stepper>
+    `,
+  })
+  class LabelSwitchHost {
+    active = signal(0);
+    lang = signal<'en' | 'de'>('en');
+  }
+
+  it('does not re-announce on a language flip of the step label', () => {
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const fixture = TestBed.createComponent(LabelSwitchHost);
+    fixture.detectChanges();
+    const text = fixture.nativeElement.querySelector('.cngx-text-stepper__text') as HTMLElement;
+    expect(text.textContent?.trim()).toBe('Step 1 of 2: Customer');
+
+    fixture.componentInstance.lang.set('de');
+    fixture.detectChanges();
+    expect(text.textContent?.trim()).toBe('Step 1 of 2: Customer');
+
+    fixture.componentInstance.active.set(1);
+    fixture.detectChanges();
+    expect(text.textContent?.trim()).toBe('Step 2 of 2: Zahlung');
+  });
+});
+

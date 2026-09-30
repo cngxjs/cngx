@@ -1,4 +1,4 @@
-import { signal, type WritableSignal } from '@angular/core';
+import { computed, signal, type WritableSignal } from '@angular/core';
 import { describe, expect, it } from 'vitest';
 
 import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
@@ -180,5 +180,34 @@ describe('resolveStepperErrorSummary', () => {
       expect(resolveStepperErrorSummary(multi, stepsOnly, i18n)).toBe('2 errors');
       expect(resolveStepperErrorSummary(none, stepsOnly, i18n)).toBe('');
     });
+  });
+});
+
+describe('resolveStepperErrorSummary language switch', () => {
+  it('does not re-announce on a language flip of a consumer-translated label', () => {
+    const lang = signal<'en' | 'de'>('en');
+    const i18n = {
+      statusLabels: { errored: 'Errored' },
+      stepHasErrors: (count: number) => `${count} errors`,
+    } as unknown as CngxStepperI18n;
+    const stepsOnly = signal<readonly CngxStepNode[]>([
+      stubNode({
+        id: 'pay',
+        flatIndex: 0,
+        label: computed(() => (lang() === 'de' ? 'Zahlung' : 'Payment')),
+      }),
+    ]);
+    const errorCount = signal(1);
+    const view = { errorCount, firstErrorIndex: signal(0) };
+    const summary = computed(() => resolveStepperErrorSummary(view, stepsOnly, i18n));
+    expect(summary()).toBe('Payment: Errored');
+
+    lang.set('de');
+    expect(summary()).toBe('Payment: Errored');
+
+    errorCount.set(0);
+    expect(summary()).toBe('');
+    errorCount.set(1);
+    expect(summary()).toBe('Zahlung: Errored');
   });
 });

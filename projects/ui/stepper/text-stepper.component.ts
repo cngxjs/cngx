@@ -111,8 +111,9 @@ export class CngxTextStepper {
     if (total === 0) {
       return '';
     }
-    // Live region: the bundle is read untracked so a language switch does
-    // not re-speak the caption; the next step change speaks the new language.
+    // Live region: copy and the step label (which a consumer may translate)
+    // are read untracked so a language switch does not re-speak the
+    // caption; the next step change speaks the new language.
     const current = this.currentStep();
     const base = untracked(() => this.i18n().textStepperFormat(current, total));
     if (!this.showCurrentLabel()) {
@@ -123,7 +124,7 @@ export class CngxTextStepper {
     if (!node) {
       return base;
     }
-    return `${base}: ${node.label()}`;
+    return `${base}: ${untracked(node.label)}`;
   });
 
   /**

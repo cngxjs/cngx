@@ -1,4 +1,4 @@
-import { computed, type Signal } from '@angular/core';
+import { computed, untracked, type Signal } from '@angular/core';
 
 import type { CngxStepperI18n } from './i18n/stepper-i18n';
 import type { CngxStepNode, CngxStepperHost, CngxStepStatus } from './stepper-host.token';
@@ -134,7 +134,10 @@ export function createStepperStateView(inputs: {
  * (the classic mobile-collapse summary) are a guaranteed no-op.
  *
  * Pure helper - reads signals at call time, intended to be wrapped in the
- * caller's `computed()`.
+ * caller's `computed()`. The phrase feeds live regions, so the step label
+ * is read untracked: a label that follows a language switch must not
+ * re-announce the line. Pass the i18n bundle as an untracked snapshot for
+ * the same reason.
  *
  * @category common/stepper
  * @since 0.1.0
@@ -155,7 +158,7 @@ export function resolveStepperErrorSummary(
     if (custom !== undefined && custom !== '') {
       return custom;
     }
-    const label = node?.label();
+    const label = node ? untracked(node.label) : undefined;
     return label ? `${label}: ${i18n.statusLabels.errored}` : i18n.statusLabels.errored;
   }
   return i18n.stepHasErrors(count);

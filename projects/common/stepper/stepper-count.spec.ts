@@ -109,3 +109,37 @@ describe('CngxStepperCount non-live caption', () => {
     expect(span.textContent).toBe('Schritt 1 von 3');
   });
 });
+
+describe('CngxStepperCount consumer format', () => {
+  @Component({
+    standalone: true,
+    imports: [CngxStepperCount],
+    template: `<cngx-stepper-count [host]="host" [format]="format()" />`,
+  })
+  class FormatHost {
+    readonly lang = signal<'en' | 'de'>('en');
+    readonly format = computed(() =>
+      this.lang() === 'de'
+        ? (c: number, t: number) => `${c} von ${t}`
+        : (c: number, t: number) => `${c} of ${t}`,
+    );
+    host = stubHost(0, 3);
+  }
+
+  it('does not re-announce on a language flip of a consumer format', () => {
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const fixture = TestBed.createComponent(FormatHost);
+    fixture.detectChanges();
+    const span = fixture.nativeElement.querySelector('cngx-stepper-count > span') as HTMLElement;
+    expect(span.textContent).toBe('1 of 3');
+
+    fixture.componentInstance.lang.set('de');
+    fixture.detectChanges();
+    expect(span.textContent).toBe('1 of 3');
+
+    (fixture.componentInstance.host.activeStepIndex as ReturnType<typeof signal<number>>).set(1);
+    fixture.detectChanges();
+    expect(span.textContent).toBe('2 von 3');
+  });
+});
+

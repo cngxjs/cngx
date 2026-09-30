@@ -180,8 +180,9 @@ export function createTabGroupAnnouncements(
     seed: (src) => src.phrase,
   });
 
-  // Copy is read untracked in the live region: a language switch must not
-  // re-speak the last phrase; the next transition speaks the new language.
+  // Copy and tab labels (which a consumer may translate) are read untracked
+  // in the live region: a language switch must not re-speak the last phrase;
+  // the next transition speaks the new language.
   const liveAnnouncement = computed<string>(() => {
     // Read the close phrase EAGERLY: linkedSignal only observes status
     // snapshots it is actually read under, so a lazy read at the idle
@@ -200,7 +201,8 @@ export function createTabGroupAnnouncements(
       const failedIdx = presenter.lastFailedIndex();
       const originIdx = presenter.originIndexDuringCommit();
       if (failedIdx !== undefined && originIdx !== undefined) {
-        const originLabel = presenter.tabs()[originIdx]?.label();
+        const origin = presenter.tabs()[originIdx];
+        const originLabel = origin ? untracked(origin.label) : undefined;
         if (originLabel) {
           return untracked(() => i18n().commitRolledBackTo(originLabel));
         }
@@ -214,7 +216,7 @@ export function createTabGroupAnnouncements(
       if (!tab) {
         return '';
       }
-      const label = tab.label() ?? '';
+      const label = untracked(tab.label) ?? '';
       const count = tabs.length;
       const prevIdx = priorActiveIndex();
       return untracked(() => {

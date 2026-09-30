@@ -66,7 +66,9 @@ export interface CngxStepperCountHost {
   encapsulation: ViewEncapsulation.None,
   // Two spans so only the live one reads copy untracked: a language switch
   // re-renders a plain caption at once, while a live caption keeps its text
-  // until the next step change (no re-announcement).
+  // until the next step change (no re-announcement). `live` is a mount-time
+  // choice; the live span exists from the first render, before any change
+  // it announces.
   template: `
     @if (live()) {
       <span aria-live="polite">{{ liveLabel() }}</span>
@@ -91,7 +93,11 @@ export interface CngxStepperCountHost {
   },
 })
 export class CngxStepperCount {
-  /** When `true`, wraps the rendered string in an `aria-live="polite"` span. */
+  /**
+   * When `true`, wraps the rendered string in an `aria-live="polite"` span.
+   * Set it once per instance: toggling it swaps the span, and the region
+   * content present at that moment is not announced.
+   */
   readonly live = input<boolean>(true);
 
   /**
@@ -149,13 +155,17 @@ export class CngxStepperCount {
     return fmt(position.current, position.total);
   });
 
-  /** {@link label} for the live span: the bundle is read untracked. */
+  /**
+   * {@link label} for the live span: the bundle and a consumer `format`
+   * (which may itself be language-dependent) are read untracked.
+   */
   protected readonly liveLabel = computed<string>(() => {
     const position = this.position();
     if (!position) {
       return '';
     }
-    const fmt = this.format() ?? untracked(() => this.i18n().textStepperFormat);
-    return fmt(position.current, position.total);
+    return untracked(() =>
+      (this.format() ?? this.i18n().textStepperFormat)(position.current, position.total),
+    );
   });
 }

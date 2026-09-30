@@ -302,3 +302,53 @@ describe('createTabGroupAnnouncements - config copy switch', () => {
   });
 });
 
+describe('createTabGroupAnnouncements - consumer-translated tab labels', () => {
+  function labelSetup() {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const lang = signal<'en' | 'de'>('en');
+    const handle = (id: string, en: string, de: string): CngxTabHandle => ({
+      ...makeHandle(),
+      id,
+      label: computed(() => (lang() === 'de' ? de : en)),
+    });
+    const { presenter, current, previous } = makeCommitPresenter();
+    const tabs = presenter.tabs as ReturnType<typeof signal<readonly CngxTabHandle[]>>;
+    tabs.set([handle('a', 'Profile', 'Profil'), handle('b', 'Account', 'Konto')]);
+    const bundle = createTabGroupAnnouncements({
+      presenter,
+      i18n: TestBed.inject(CNGX_TABS_I18N),
+      config: {},
+      ariaLabel: signal<string | undefined>(undefined),
+      ariaLabelledBy: signal<string | undefined>(undefined),
+    });
+    const host = presenter as unknown as {
+      activeIndex: ReturnType<typeof signal<number>>;
+      lastFailedIndex: ReturnType<typeof signal<number | undefined>>;
+      originIndexDuringCommit: ReturnType<typeof signal<number | undefined>>;
+    };
+    return { lang, bundle, current, previous, host };
+  }
+
+  it('does not re-announce the landed tab on a language flip', () => {
+    const { lang, bundle, current, previous, host } = labelSetup();
+    host.activeIndex.set(1);
+    previous.set('pending');
+    current.set('success');
+    expect(bundle.liveAnnouncement()).toBe('Next tab: Tab 2 of 2: Account');
+
+    lang.set('de');
+    expect(bundle.liveAnnouncement()).toBe('Next tab: Tab 2 of 2: Account');
+  });
+
+  it('does not re-announce the rollback origin on a language flip', () => {
+    const { lang, bundle, current, host } = labelSetup();
+    host.lastFailedIndex.set(1);
+    host.originIndexDuringCommit.set(0);
+    current.set('error');
+    expect(bundle.liveAnnouncement()).toBe('Could not save changes - reverted to "Profile".');
+
+    lang.set('de');
+    expect(bundle.liveAnnouncement()).toBe('Could not save changes - reverted to "Profile".');
+  });
+});
