@@ -610,13 +610,6 @@ export const HELPERS = ['injectResolvedFeedbackI18n', 'injectChartI18n', 'resolv
 /** @type {readonly RatchetRow[]} */
 export const RATCHET = [
   {
-    file: 'projects/common/data/recycler/recycler.ts',
-    member: 'injectRecycler',
-    rule: 'R3',
-    token: 'CNGX_RECYCLER_I18N',
-    closesIn: 3,
-  },
-  {
     file: 'projects/common/dialog/config/dialog-config.ts',
     member: 'provideDialogConfig',
     rule: 'R3',
@@ -2032,7 +2025,7 @@ export const RATCHET = [
   },
 ];
 
-export const RATCHET_CEILING = 203;
+export const RATCHET_CEILING = 202;
 
 /** The last phase whose closing commit has landed. */
 export const COMPLETED_PHASE = 2;

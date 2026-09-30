@@ -9,6 +9,7 @@ import {
   inject,
   input,
   output,
+  type Signal,
   TemplateRef,
   ViewEncapsulation,
 } from '@angular/core';
@@ -22,6 +23,7 @@ import {
   type RecyclerI18n,
   resolveAsyncView,
 } from '@cngx/common/data';
+import { coerceSignal } from '@cngx/core/utils';
 import { CngxEmptyState } from '@cngx/ui/empty-state';
 import { CngxProgress } from '@cngx/ui/feedback';
 
@@ -118,14 +120,14 @@ export type CngxIncrementalListSkin = 'plain' | 'divided' | 'card';
       // owner of view-state (no double-announce). The no-state recycler branch
       // never calls filtered()/error() anyway.
       provide: CNGX_RECYCLER_I18N,
-      useFactory: (): RecyclerI18n => {
+      useFactory: (): Signal<RecyclerI18n> => {
         const config = injectIncrementalListConfig();
-        return {
+        return coerceSignal<RecyclerI18n>({
           loaded: (count, total) => config.ariaLabels.loadedMore(count, total),
           filtered: () => '',
           empty: () => '',
           error: () => '',
-        };
+        });
       },
     },
   ],
