@@ -91,7 +91,7 @@ export const STEPPER_DE: CngxStepperI18nOverrides = {
   groupSummaryProgress: (completed, total) => `${completed} von ${total} Schritten erledigt`,
 };
 
-export const STEPPER_ARIA_DE: CngxStepperAriaLabels = { stepperRegion: 'Schrittfolge' };
+export const STEPPER_ARIA_DE: CngxStepperAriaLabels = { stepperRegion: 'Bestellschritte' };
 export const STEPPER_FALLBACK_DE: CngxStepperFallbackLabels = {
   groupRoleDescription: 'Schrittgruppe',
   stepRoleDescription: 'Schrittfolge',
@@ -137,6 +137,26 @@ export const DEMO_STEPPER_ARIA_LABELS = computed<CngxStepperAriaLabels>(() =>
 );
 export const DEMO_STEPPER_FALLBACK_LABELS = computed<CngxStepperFallbackLabels>(() =>
   isDe() ? STEPPER_FALLBACK_DE : {},
+);
+/** Consumer-owned step and tab labels, translated by the same language signal. */
+export const DEMO_FLOW_LABELS = computed(() =>
+  isDe()
+    ? {
+        customer: 'Kunde',
+        payment: 'Zahlung',
+        review: 'Prüfung',
+        profile: 'Profil',
+        account: 'Konto',
+        notifications: 'Benachrichtigungen',
+      }
+    : {
+        customer: 'Customer',
+        payment: 'Payment',
+        review: 'Review',
+        profile: 'Profile',
+        account: 'Account',
+        notifications: 'Notifications',
+      },
 );
 export const DEMO_TABS_LABELS = computed<Partial<CngxTabsI18n>>(() => (isDe() ? TABS_DE : {}));
 export const DEMO_TABS_ARIA_LABELS = computed<CngxTabsAriaLabels>(() => (isDe() ? TABS_ARIA_DE : {}));

@@ -89,16 +89,23 @@ test.describe('live language switch', () => {
 
     // (3) Flip to German mid-commit: labels switch, the pending phrases stay.
     await page.getByRole('button', { name: 'DE', exact: true }).click();
-    await expect(stepper).toHaveAttribute('aria-label', 'Schrittfolge');
+    await expect(stepper).toHaveAttribute('aria-label', 'Bestellschritte');
     await expect(stepper).toHaveAttribute('aria-roledescription', 'Schrittfolge');
     await expect(tabGroup).toHaveAttribute('aria-label', 'Reiter');
     await expect(tabGroup).toHaveAttribute('aria-roledescription', 'Reiterliste');
     await expect(stepperRegion).toHaveText('Committing step…');
     await expect(tabsRegion).toHaveText('Switching tab…');
 
-    // (4) The landing announcements speak German.
-    await expect(stepperRegion).toHaveText('Schritt 2 von 3: Payment');
-    await expect(tabsRegion).toHaveText('Nächster Reiter: Reiter 2 von 3: Account');
+    // (4) The landing announcements speak German, consumer labels included.
+    await expect(stepperRegion).toHaveText('Schritt 2 von 3: Zahlung');
+    await expect(tabsRegion).toHaveText('Nächster Reiter: Reiter 2 von 3: Konto');
+
+    // (5) A flip after landing re-labels the landmarks, not the landed phrases.
+    await page.getByRole('button', { name: 'EN', exact: true }).click();
+    await expect(stepper).toHaveAttribute('aria-label', 'Stepper');
+    await expect(tabGroup).toHaveAttribute('aria-label', 'Tabs');
+    await expect(stepperRegion).toHaveText('Schritt 2 von 3: Zahlung');
+    await expect(tabsRegion).toHaveText('Nächster Reiter: Reiter 2 von 3: Konto');
   });
 });
 

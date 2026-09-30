@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'Stepper and tabs copy follows one language <code>Signal</code>: flip EN / DE while a commit is pending and the labels switch at once, the pending announcement keeps its text, and the landing announcement speaks German.',
   description:
-    'The stepper and tab-group i18n tokens and the <code>ariaLabels</code> / <code>fallbackLabels</code> config keys are fed from computed signals through <code>viewProviders</code>. Both organisms commit pessimistically with a short delay, so a flip can land mid-commit.',
+    'The stepper and tab-group i18n tokens and the <code>ariaLabels</code> / <code>fallbackLabels</code> config keys are fed from computed signals through <code>viewProviders</code>; the step and tab labels are consumer strings translated by the same signal. Both organisms commit pessimistically with a short delay, so a flip can land mid-commit.',
   level: 'organism',
   audience: ['dev', 'a11y'],
   artifact: 'standalone',
@@ -16,7 +16,7 @@ export const STORY: DemoSpec = {
     "import { CngxTab, CngxTabContent, provideTabsConfigAt, provideTabsI18n, withTabsAriaLabels, withTabsFallbackLabels, withTabsI18nLabels, type CngxTabsCommitAction } from '@cngx/common/tabs';",
     "import { CngxStepper } from '@cngx/ui/stepper';",
     "import { CngxTabGroup } from '@cngx/ui/tabs';",
-    "import { DEMO_LANG, DEMO_STEPPER_ARIA_LABELS, DEMO_STEPPER_FALLBACK_LABELS, DEMO_STEPPER_LABELS, DEMO_TABS_ARIA_LABELS, DEMO_TABS_FALLBACK_LABELS, DEMO_TABS_LABELS } from '../../../../fixtures';",
+    "import { DEMO_FLOW_LABELS, DEMO_LANG, DEMO_STEPPER_ARIA_LABELS, DEMO_STEPPER_FALLBACK_LABELS, DEMO_STEPPER_LABELS, DEMO_TABS_ARIA_LABELS, DEMO_TABS_FALLBACK_LABELS, DEMO_TABS_LABELS } from '../../../../fixtures';",
   ],
   imports: ['CngxStepper', 'CngxStep', 'CngxTabGroup', 'CngxTab', 'CngxTabContent'],
   viewProviders: [
@@ -25,26 +25,27 @@ export const STORY: DemoSpec = {
     'provideTabsI18n(withTabsI18nLabels(DEMO_TABS_LABELS))',
     '...provideTabsConfigAt(withTabsAriaLabels(DEMO_TABS_ARIA_LABELS), withTabsFallbackLabels(DEMO_TABS_FALLBACK_LABELS))',
   ],
-  setup: `private readonly delay = (): Promise<boolean> =>
+  setup: `protected readonly labels = DEMO_FLOW_LABELS;
+  private readonly delay = (): Promise<boolean> =>
     new Promise<boolean>((resolve) => setTimeout(() => resolve(true), 1500));
   protected readonly stepCommit: CngxStepperCommitAction = () => this.delay();
   protected readonly tabCommit: CngxTabsCommitAction = () => this.delay();`,
   template: `
   <div class="demo-stack">
     <cngx-stepper [commitAction]="stepCommit" commitMode="pessimistic">
-      <div cngxStep label="Customer"></div>
-      <div cngxStep label="Payment"></div>
-      <div cngxStep label="Review"></div>
+      <div cngxStep [label]="labels().customer"></div>
+      <div cngxStep [label]="labels().payment"></div>
+      <div cngxStep [label]="labels().review"></div>
     </cngx-stepper>
     <cngx-tab-group [commitAction]="tabCommit" commitMode="pessimistic">
-      <div cngxTab [label]="'Profile'">
-        <ng-template cngxTabContent><p>Profile content.</p></ng-template>
+      <div cngxTab [label]="labels().profile">
+        <ng-template cngxTabContent><p>{{ labels().profile }}</p></ng-template>
       </div>
-      <div cngxTab [label]="'Account'">
-        <ng-template cngxTabContent><p>Account content.</p></ng-template>
+      <div cngxTab [label]="labels().account">
+        <ng-template cngxTabContent><p>{{ labels().account }}</p></ng-template>
       </div>
-      <div cngxTab [label]="'Notifications'">
-        <ng-template cngxTabContent><p>Notification preferences.</p></ng-template>
+      <div cngxTab [label]="labels().notifications">
+        <ng-template cngxTabContent><p>{{ labels().notifications }}</p></ng-template>
       </div>
     </cngx-tab-group>
   </div>`,
