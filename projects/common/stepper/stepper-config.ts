@@ -4,8 +4,11 @@ import {
   InjectionToken,
   makeEnvironmentProviders,
   type Provider,
+  type Signal,
   type TemplateRef,
 } from '@angular/core';
+
+import { createOverrideMerge } from '@cngx/core/utils';
 
 import type { CngxDotStepperDotContext } from './slots/dot-stepper-dot.directive';
 import type { CngxStepBadgeContext } from './slots/step-badge.directive';
@@ -250,8 +253,10 @@ export interface CngxStepperConfig {
    * classic strip and on the Material twin (`<cngx-mat-stepper>`).
    */
   readonly mobileSwipe?: boolean;
-  readonly ariaLabels?: CngxStepperAriaLabels;
-  readonly fallbackLabels?: CngxStepperFallbackLabels;
+  /** Landmark labels; a `Signal` switches the language at runtime. */
+  readonly ariaLabels?: CngxStepperAriaLabels | Signal<CngxStepperAriaLabels>;
+  /** Role descriptions; a `Signal` switches the language at runtime. */
+  readonly fallbackLabels?: CngxStepperFallbackLabels | Signal<CngxStepperFallbackLabels>;
   readonly templates?: CngxStepperTemplates;
 }
 
@@ -287,6 +292,9 @@ const STEPPER_CONFIG_DEFAULTS: Required<
   },
   templates: {},
 };
+
+/** @internal - shared empty base, so label merges over an unset key memoize. */
+const NO_LABELS: object = {};
 
 /**
  * DI token for the resolved stepper config. `providedIn: 'root'` with
@@ -527,13 +535,16 @@ export function withStepperDensity(
 /**
  * Merge ARIA labels into the cascade. Keys not provided keep their
  * library defaults; per-instance overrides on the stepper still win.
+ * Pass a `Signal` to switch the language at runtime.
  *
  * @category common/stepper
  */
-export function withStepperAriaLabels(labels: CngxStepperAriaLabels): CngxStepperConfigFeature {
+export function withStepperAriaLabels(
+  labels: CngxStepperAriaLabels | Signal<CngxStepperAriaLabels>,
+): CngxStepperConfigFeature {
   return defineStepperConfigFeature((cfg) => ({
     ...cfg,
-    ariaLabels: { ...cfg.ariaLabels, ...labels },
+    ariaLabels: createOverrideMerge<CngxStepperAriaLabels>(cfg.ariaLabels ?? NO_LABELS, labels),
   }));
 }
 
@@ -541,15 +552,19 @@ export function withStepperAriaLabels(labels: CngxStepperAriaLabels): CngxSteppe
  * Merge fallback role descriptions (`groupRoleDescription` /
  * `stepRoleDescription`) into the cascade. These feed the strip's
  * `aria-roledescription` attributes when the consumer supplies none.
+ * Pass a `Signal` to switch the language at runtime.
  *
  * @category common/stepper
  */
 export function withStepperFallbackLabels(
-  labels: CngxStepperFallbackLabels,
+  labels: CngxStepperFallbackLabels | Signal<CngxStepperFallbackLabels>,
 ): CngxStepperConfigFeature {
   return defineStepperConfigFeature((cfg) => ({
     ...cfg,
-    fallbackLabels: { ...cfg.fallbackLabels, ...labels },
+    fallbackLabels: createOverrideMerge<CngxStepperFallbackLabels>(
+      cfg.fallbackLabels ?? NO_LABELS,
+      labels,
+    ),
   }));
 }
 

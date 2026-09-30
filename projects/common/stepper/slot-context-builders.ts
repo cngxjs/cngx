@@ -27,8 +27,8 @@ export interface CngxStepperSlotContextBuildersInputs {
    * reporting `expanded: true` without the caller wiring a predicate.
    */
   readonly isGroupCollapsed?: (node: CngxStepNode) => boolean;
-  /** i18n bundle - supplies the `errored` status label as the message fallback. */
-  readonly i18n: CngxStepperI18n;
+  /** i18n bundle Signal - supplies the `errored` status label as the message fallback. */
+  readonly i18n: Signal<CngxStepperI18n>;
 }
 
 /**
@@ -171,7 +171,7 @@ export function createStepperSlotContextBuilders(
     // Resolution order: direct [error] string > first aggregator label >
     // i18n errored status phrase. Always non-empty so a bare
     // `{{ message }}` template renders a reason.
-    const message = node.errorMessage?.() ?? errorLabels[0] ?? i18n.statusLabels.errored;
+    const message = node.errorMessage?.() ?? errorLabels[0] ?? i18n().statusLabels.errored;
     return { node, message, errorLabels, announcement };
   });
 

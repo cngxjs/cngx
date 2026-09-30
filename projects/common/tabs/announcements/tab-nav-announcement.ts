@@ -1,4 +1,12 @@
-import { afterNextRender, computed, linkedSignal, signal, type Injector, type Signal } from '@angular/core';
+import {
+  afterNextRender,
+  computed,
+  linkedSignal,
+  signal,
+  untracked,
+  type Injector,
+  type Signal,
+} from '@angular/core';
 
 import type { CngxTabGroupHost } from '../tab-group-host.token';
 
@@ -89,7 +97,13 @@ export function createTabNavAnnouncement(
     if (id === null || id === priorActiveId()) {
       return '';
     }
-    return presenter.tabs().find((tab) => tab.id === id)?.label() ?? '';
+    // The label may be translated by the consumer; read untracked so a
+    // language switch does not re-announce the landing section.
+    const landed = presenter.tabs().find((tab) => tab.id === id);
+    if (!landed) {
+      return '';
+    }
+    return untracked(landed.label) ?? '';
   });
 
   afterNextRender(

@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test';
 import { gotoDemo } from '../../_helpers';
 import { routesIn } from '../../_routes';
 
-// Proves the reactive-ready i18n surfaces switch EN -> DE without a reload,
+// Proves the reactive i18n surfaces switch EN -> DE without a reload,
 // and the flip rule for live regions: the shown text stays until the next
 // status change, which then speaks German. Only the surfaces listed here are
 // claimed live; static-by-necessity inputs and older tokens are not.
@@ -62,4 +62,50 @@ test.describe('live language switch', () => {
     await actionButton.click();
     await expect(liveRegion).toHaveText('Aktion erfolgreich');
   });
+
+  test('stepper and tabs switch labels at once and keep a pending announcement', async ({
+    page,
+  }) => {
+    const route = 'core/i18n/language-pack/live-switch-stepper-tabs';
+    expect(routesIn('core', 'i18n', 'language-pack').map((r) => r.path)).toContain(route);
+    await gotoDemo(page, route);
+
+    const stepper = page.locator('cngx-stepper');
+    const tabGroup = page.locator('cngx-tab-group');
+    const stepperRegion = page.locator('.cngx-stepper__live-region');
+    const tabsRegion = page.locator('.cngx-tabs__live-region');
+
+    // (1) EN baseline.
+    await expect(stepper).toHaveAttribute('aria-label', 'Stepper');
+    await expect(stepper).toHaveAttribute('aria-roledescription', 'stepper');
+    await expect(tabGroup).toHaveAttribute('aria-label', 'Tabs');
+    await expect(tabGroup).toHaveAttribute('aria-roledescription', 'tab list');
+
+    // (2) Start both pessimistic commits in English.
+    await page.locator('button.cngx-stepper__step').nth(1).click();
+    await tabGroup.getByRole('tab', { name: /Account/ }).click();
+    await expect(stepperRegion).toHaveText('Committing step…');
+    await expect(tabsRegion).toHaveText('Switching tab…');
+
+    // (3) Flip to German mid-commit: labels switch, the pending phrases stay.
+    await page.getByRole('button', { name: 'DE', exact: true }).click();
+    await expect(stepper).toHaveAttribute('aria-label', 'Bestellschritte');
+    await expect(stepper).toHaveAttribute('aria-roledescription', 'Schrittfolge');
+    await expect(tabGroup).toHaveAttribute('aria-label', 'Reiter');
+    await expect(tabGroup).toHaveAttribute('aria-roledescription', 'Reiterliste');
+    await expect(stepperRegion).toHaveText('Committing step…');
+    await expect(tabsRegion).toHaveText('Switching tab…');
+
+    // (4) The landing announcements speak German, consumer labels included.
+    await expect(stepperRegion).toHaveText('Schritt 2 von 3: Zahlung');
+    await expect(tabsRegion).toHaveText('Nächster Reiter: Reiter 2 von 3: Konto');
+
+    // (5) A flip after landing re-labels the landmarks, not the landed phrases.
+    await page.getByRole('button', { name: 'EN', exact: true }).click();
+    await expect(stepper).toHaveAttribute('aria-label', 'Stepper');
+    await expect(tabGroup).toHaveAttribute('aria-label', 'Tabs');
+    await expect(stepperRegion).toHaveText('Schritt 2 von 3: Zahlung');
+    await expect(tabsRegion).toHaveText('Nächster Reiter: Reiter 2 von 3: Konto');
+  });
 });
+

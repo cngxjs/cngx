@@ -1,4 +1,4 @@
-import { Component, provideZonelessChangeDetection, signal } from '@angular/core';
+import { Component, computed, provideZonelessChangeDetection, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -6,6 +6,7 @@ import { Subject } from 'rxjs';
 
 import { CngxAsyncClick } from '@cngx/common/interactive';
 
+import { provideStepperI18n, withStepperI18nLabels } from '../i18n/stepper-i18n';
 import { CngxStepperPresenter } from '../presenter.directive';
 import type { CngxStepRegistration, CngxStepStatus } from '../stepper-host.token';
 import { CngxStepperComplete } from './stepper-complete.directive';
@@ -263,6 +264,46 @@ describe('stepper nav controls', () => {
       fixture.detectChanges();
       expect(warnSpy).toHaveBeenCalledTimes(1);
       expect(warnSpy.mock.calls[0][0]).toContain('both gate aria-disabled');
+    });
+  });
+
+  describe('icon-only fallback label', () => {
+    @Component({
+      standalone: true,
+      imports: [CngxStepperPrevious, CngxStepperNext],
+      hostDirectives: [CngxStepperPresenter],
+      template: `
+        <button cngxStepperPrevious></button>
+        <button cngxStepperNext></button>
+      `,
+    })
+    class IconNavHost {}
+
+    it('follows a language flip', async () => {
+      const lang = signal<'en' | 'de'>('en');
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideStepperI18n(
+            withStepperI18nLabels(
+              computed(() =>
+                lang() === 'de' ? { previousStep: 'Zurueck', nextStep: 'Weiter' } : {},
+              ),
+            ),
+          ),
+        ],
+      });
+      const fixture = TestBed.createComponent(IconNavHost);
+      await fixture.whenStable();
+      const prev = fixture.nativeElement.querySelector('[cngxStepperPrevious]') as HTMLElement;
+      const next = fixture.nativeElement.querySelector('[cngxStepperNext]') as HTMLElement;
+      expect(prev.getAttribute('aria-label')).toBe('Previous step');
+      expect(next.getAttribute('aria-label')).toBe('Next step');
+
+      lang.set('de');
+      await fixture.whenStable();
+      expect(prev.getAttribute('aria-label')).toBe('Zurueck');
+      expect(next.getAttribute('aria-label')).toBe('Weiter');
     });
   });
 });

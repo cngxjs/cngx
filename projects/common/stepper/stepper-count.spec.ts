@@ -1,8 +1,9 @@
-import { Component, signal } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { describe, expect, it } from 'vitest';
 
+import { provideStepperI18n, withStepperI18nLabels } from './i18n/stepper-i18n';
 import { CngxStepperCount, type CngxStepperCountHost } from './stepper-count';
 import { type CngxStepNode } from './stepper-host.token';
 
@@ -45,3 +46,100 @@ describe('CngxStepperCount aria-live', () => {
     expect(span.getAttribute('aria-live')).toBeNull();
   });
 });
+
+describe('CngxStepperCount language switch', () => {
+  it('does not re-announce on a language flip', () => {
+    const lang = signal<'en' | 'de'>('en');
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideStepperI18n(
+          withStepperI18nLabels(
+            computed(() =>
+              lang() === 'de'
+                ? { textStepperFormat: (c: number, t: number) => `Schritt ${c} von ${t}` }
+                : {},
+            ),
+          ),
+        ),
+      ],
+    });
+    const fixture = TestBed.createComponent(CountHost);
+    const host = stubHost(0, 3);
+    fixture.componentInstance.host = host;
+    fixture.detectChanges();
+    const span = fixture.nativeElement.querySelector('cngx-stepper-count > span') as HTMLElement;
+    expect(span.textContent).toBe('Step 1 of 3');
+
+    lang.set('de');
+    fixture.detectChanges();
+    expect(span.textContent).toBe('Step 1 of 3');
+
+    (host.activeStepIndex as ReturnType<typeof signal<number>>).set(1);
+    fixture.detectChanges();
+    expect(span.textContent).toBe('Schritt 2 von 3');
+  });
+});
+
+describe('CngxStepperCount non-live caption', () => {
+  it('follows a language flip at once when [live]="false"', () => {
+    const lang = signal<'en' | 'de'>('en');
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideStepperI18n(
+          withStepperI18nLabels(
+            computed(() =>
+              lang() === 'de'
+                ? { textStepperFormat: (c: number, t: number) => `Schritt ${c} von ${t}` }
+                : {},
+            ),
+          ),
+        ),
+      ],
+    });
+    const fixture = TestBed.createComponent(CountHost);
+    fixture.componentInstance.live = false;
+    fixture.detectChanges();
+    const span = fixture.nativeElement.querySelector('cngx-stepper-count > span') as HTMLElement;
+    expect(span.textContent).toBe('Step 1 of 3');
+
+    lang.set('de');
+    fixture.detectChanges();
+    expect(span.textContent).toBe('Schritt 1 von 3');
+  });
+});
+
+describe('CngxStepperCount consumer format', () => {
+  @Component({
+    standalone: true,
+    imports: [CngxStepperCount],
+    template: `<cngx-stepper-count [host]="host" [format]="format()" />`,
+  })
+  class FormatHost {
+    readonly lang = signal<'en' | 'de'>('en');
+    readonly format = computed(() =>
+      this.lang() === 'de'
+        ? (c: number, t: number) => `${c} von ${t}`
+        : (c: number, t: number) => `${c} of ${t}`,
+    );
+    host = stubHost(0, 3);
+  }
+
+  it('does not re-announce on a language flip of a consumer format', () => {
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const fixture = TestBed.createComponent(FormatHost);
+    fixture.detectChanges();
+    const span = fixture.nativeElement.querySelector('cngx-stepper-count > span') as HTMLElement;
+    expect(span.textContent).toBe('1 of 3');
+
+    fixture.componentInstance.lang.set('de');
+    fixture.detectChanges();
+    expect(span.textContent).toBe('1 of 3');
+
+    (fixture.componentInstance.host.activeStepIndex as ReturnType<typeof signal<number>>).set(1);
+    fixture.detectChanges();
+    expect(span.textContent).toBe('2 von 3');
+  });
+});
+

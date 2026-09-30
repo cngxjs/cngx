@@ -7,6 +7,8 @@ import {
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { coerceSignal } from '@cngx/core/utils';
+
 import {
   CNGX_STEPPER_I18N,
   withStepperI18nLabels,
@@ -51,9 +53,9 @@ describe('provideCngxStepper', () => {
     const i18n = TestBed.inject(CNGX_STEPPER_I18N);
     expect(cfg.defaultOrientation).toBe('vertical');
     expect(cfg.defaultLinear).toBe(true);
-    expect(cfg.ariaLabels?.stepperRegion).toBe('Schrittfolge');
-    expect(i18n.stepperLabel).toBe('Schrittfolge');
-    expect(i18n.previousStep).toBe('Vorheriger');
+    expect(coerceSignal(cfg.ariaLabels)()?.stepperRegion).toBe('Schrittfolge');
+    expect(i18n().stepperLabel).toBe('Schrittfolge');
+    expect(i18n().previousStep).toBe('Vorheriger');
   });
 
   it('falls back to library defaults when no features are passed', () => {
@@ -64,7 +66,7 @@ describe('provideCngxStepper', () => {
     const i18n = TestBed.inject(CNGX_STEPPER_I18N);
     expect(cfg.defaultOrientation).toBe('horizontal');
     expect(cfg.defaultLinear).toBe(false);
-    expect(i18n.stepperLabel).toBe('Stepper');
+    expect(i18n().stepperLabel).toBe('Stepper');
   });
 
   it('only-config features leave i18n at library defaults (no spurious i18n provider)', () => {
@@ -75,8 +77,8 @@ describe('provideCngxStepper', () => {
       ],
     });
     const i18n = TestBed.inject(CNGX_STEPPER_I18N);
-    expect(i18n.stepperLabel).toBe('Stepper');
-    expect(i18n.previousStep).toBe('Previous step');
+    expect(i18n().stepperLabel).toBe('Stepper');
+    expect(i18n().previousStep).toBe('Previous step');
   });
 
   it('only-i18n features leave config at library defaults', () => {
@@ -89,7 +91,7 @@ describe('provideCngxStepper', () => {
     const cfg = TestBed.inject(CNGX_STEPPER_CONFIG);
     const i18n = TestBed.inject(CNGX_STEPPER_I18N);
     expect(cfg.defaultOrientation).toBe('horizontal');
-    expect(i18n.stepperLabel).toBe('Schritte');
+    expect(i18n().stepperLabel).toBe('Schritte');
   });
 
   it('injectStepperConfig sees the aggregator-provided config in an injection context', () => {
@@ -161,7 +163,7 @@ describe('provideCngxStepper', () => {
       const cfg = TestBed.inject(CNGX_STEPPER_CONFIG);
       const i18n = TestBed.inject(CNGX_STEPPER_I18N);
       expect(cfg.defaultOrientation).toBe('vertical');
-      expect(i18n.stepperLabel).toBe('Schrittfolge');
+      expect(i18n().stepperLabel).toBe('Schrittfolge');
       expect(warnSpy).toHaveBeenCalledTimes(1);
     });
   });
@@ -193,7 +195,7 @@ describe('provideCngxStepperAt', () => {
     const scopedCfg = fixture.debugElement.injector.get(CNGX_STEPPER_CONFIG);
     const scopedI18n = fixture.debugElement.injector.get(CNGX_STEPPER_I18N);
     expect(scopedCfg.defaultOrientation).toBe('vertical');
-    expect(scopedI18n.stepperLabel).toBe('Schrittfolge');
+    expect(scopedI18n().stepperLabel).toBe('Schrittfolge');
   });
 
   it('an i18n-only call does not shadow an app-wide config with an empty one', () => {

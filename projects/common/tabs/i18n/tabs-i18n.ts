@@ -1,4 +1,5 @@
-import { inject, InjectionToken, type Provider } from '@angular/core';
+import { inject, InjectionToken, type Provider, type Signal } from '@angular/core';
+import { coerceSignal, createOverrideMerge } from '@cngx/core/utils';
 
 /**
  * Tabs i18n surface. Library defaults are English; consumers
@@ -8,6 +9,11 @@ import { inject, InjectionToken, type Provider } from '@angular/core';
  * @category common/tabs/i18n
  */
 export interface CngxTabsI18n {
+  /**
+   * Last tier of the tab-group `aria-label`. It only applies when
+   * `CNGX_TABS_CONFIG.ariaLabels.tabsRegion` is unset; that key defaults
+   * to `'Tabs'`, so localise the landmark through `withTabsAriaLabels(...)`.
+   */
   readonly tabsLabel: string;
   readonly selectedTab: (label: string, position: number, count: number) => string;
   /**
@@ -71,17 +77,19 @@ const TABS_I18N_DEFAULTS: CngxTabsI18n = {
 };
 
 /**
- * DI token for the tabs i18n bundle. `providedIn: 'root'` with
- * English defaults.
+ * DI token for the tabs i18n bundle, as a `Signal` so a runtime language
+ * switch re-renders every label it feeds. `providedIn: 'root'` with English
+ * defaults. Provide it through {@link provideTabsI18n}; a
+ * `{ provide, useValue }` entry must supply a `Signal<CngxTabsI18n>`.
  *
  * @category common/tabs/i18n
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/i18n/tabs-i18n.ts
  * @since 0.1.0
  */
-export const CNGX_TABS_I18N = new InjectionToken<CngxTabsI18n>('CngxTabsI18n', {
+export const CNGX_TABS_I18N = new InjectionToken<Signal<CngxTabsI18n>>('CngxTabsI18n', {
   providedIn: 'root',
-  factory: () => TABS_I18N_DEFAULTS,
+  factory: () => coerceSignal(TABS_I18N_DEFAULTS),
 });
 
 /**
@@ -92,7 +100,7 @@ export const CNGX_TABS_I18N = new InjectionToken<CngxTabsI18n>('CngxTabsI18n', {
  *
  * @category common/tabs/i18n
  */
-export type CngxTabsI18nFeature = ((bundle: CngxTabsI18n) => CngxTabsI18n) & {
+export type CngxTabsI18nFeature = ((bundle: Signal<CngxTabsI18n>) => Signal<CngxTabsI18n>) & {
   readonly _target: 'i18n';
 };
 
@@ -101,7 +109,9 @@ export type CngxTabsI18nFeature = ((bundle: CngxTabsI18n) => CngxTabsI18n) & {
  *
  * @internal
  */
-function defineTabsI18nFeature(fn: (bundle: CngxTabsI18n) => CngxTabsI18n): CngxTabsI18nFeature {
+function defineTabsI18nFeature(
+  fn: (bundle: Signal<CngxTabsI18n>) => Signal<CngxTabsI18n>,
+): CngxTabsI18nFeature {
   return Object.assign(fn, { _target: 'i18n' as const });
 }
 
@@ -109,16 +119,14 @@ function defineTabsI18nFeature(fn: (bundle: CngxTabsI18n) => CngxTabsI18n): Cngx
  * Override i18n labels via a partial bundle - unset keys keep the
  * English default. Same shape as `withTabsAriaLabels` /
  * `withTabsFallbackLabels` so `provideCngxTabs` composes both
- * surfaces uniformly.
+ * surfaces uniformly. Pass a `Signal` to switch the language at runtime.
  *
  * @category common/tabs/i18n
  */
-export function withTabsI18nLabels(overrides: Partial<CngxTabsI18n>): CngxTabsI18nFeature {
-  return defineTabsI18nFeature((bundle) => ({ ...bundle, ...overrides }));
-}
-
-function resolveI18nFeatures(features: readonly CngxTabsI18nFeature[]): CngxTabsI18n {
-  return features.reduce<CngxTabsI18n>((bundle, feat) => feat(bundle), TABS_I18N_DEFAULTS);
+export function withTabsI18nLabels(
+  overrides: Partial<CngxTabsI18n> | Signal<Partial<CngxTabsI18n>>,
+): CngxTabsI18nFeature {
+  return defineTabsI18nFeature((bundle) => createOverrideMerge(bundle, overrides));
 }
 
 /**
@@ -141,15 +149,20 @@ function resolveI18nFeatures(features: readonly CngxTabsI18nFeature[]): CngxTabs
 export function provideTabsI18n(...features: readonly CngxTabsI18nFeature[]): Provider {
   return {
     provide: CNGX_TABS_I18N,
-    useValue: resolveI18nFeatures(features),
+    useFactory: () =>
+      features.reduce<Signal<CngxTabsI18n>>(
+        (bundle, feat) => feat(bundle),
+        coerceSignal(TABS_I18N_DEFAULTS),
+      ),
   };
 }
 
 /**
- * Inject the resolved tabs i18n bundle.
+ * Inject the resolved tabs i18n bundle. Read it inside a `computed()`,
+ * template or handler so a language switch reaches the label.
  *
  * @category common/tabs/i18n
  */
-export function injectTabsI18n(): CngxTabsI18n {
+export function injectTabsI18n(): Signal<CngxTabsI18n> {
   return inject(CNGX_TABS_I18N);
 }

@@ -4,8 +4,10 @@ import {
   InjectionToken,
   makeEnvironmentProviders,
   type Provider,
+  type Signal,
   type TemplateRef,
 } from '@angular/core';
+import { createOverrideMerge } from '@cngx/core/utils';
 
 import type { CngxTabOverflowItemContext } from './overflow/tab-overflow-item.directive';
 import type { CngxTabOverflowTriggerContext } from './overflow/tab-overflow-trigger.directive';
@@ -265,8 +267,10 @@ export interface CngxTabsConfig {
    * {@link withTabsAddable}.
    */
   readonly addable?: boolean;
-  readonly ariaLabels?: CngxTabsAriaLabels;
-  readonly fallbackLabels?: CngxTabsFallbackLabels;
+  /** Landmark labels; a `Signal` switches the language at runtime. */
+  readonly ariaLabels?: CngxTabsAriaLabels | Signal<CngxTabsAriaLabels>;
+  /** Role descriptions; a `Signal` switches the language at runtime. */
+  readonly fallbackLabels?: CngxTabsFallbackLabels | Signal<CngxTabsFallbackLabels>;
   /**
    * Quiescence window (ms) for the overflow IO debounce. Burst
    * emissions during strip animations collapse to one write; the
@@ -586,29 +590,41 @@ export function withTabsAddable(addable: boolean): CngxTabsConfigFeature {
   return defineTabsConfigFeature((cfg) => ({ ...cfg, addable }));
 }
 
+/** @internal - shared empty base, so label merges over an unset key memoize. */
+const NO_LABELS: object = {};
+
 /**
  * Merge ARIA labels into the cascade. Keys not provided keep their
  * library defaults; per-instance overrides on the tab group still win.
+ * Pass a `Signal` to switch the language at runtime.
  *
  * @category common/tabs
  */
-export function withTabsAriaLabels(labels: CngxTabsAriaLabels): CngxTabsConfigFeature {
+export function withTabsAriaLabels(
+  labels: CngxTabsAriaLabels | Signal<CngxTabsAriaLabels>,
+): CngxTabsConfigFeature {
   return defineTabsConfigFeature((cfg) => ({
     ...cfg,
-    ariaLabels: { ...cfg.ariaLabels, ...labels },
+    ariaLabels: createOverrideMerge<CngxTabsAriaLabels>(cfg.ariaLabels ?? NO_LABELS, labels),
   }));
 }
 
 /**
- * Merge text fallback labels (overflow trigger, busy / rejection text)
- * into the cascade. Used when a slot directive is not present.
+ * Merge the tablist / tab-panel `aria-roledescription` fallbacks into the
+ * cascade. Keys not provided keep their library defaults. Pass a `Signal`
+ * to switch the language at runtime.
  *
  * @category common/tabs
  */
-export function withTabsFallbackLabels(labels: CngxTabsFallbackLabels): CngxTabsConfigFeature {
+export function withTabsFallbackLabels(
+  labels: CngxTabsFallbackLabels | Signal<CngxTabsFallbackLabels>,
+): CngxTabsConfigFeature {
   return defineTabsConfigFeature((cfg) => ({
     ...cfg,
-    fallbackLabels: { ...cfg.fallbackLabels, ...labels },
+    fallbackLabels: createOverrideMerge<CngxTabsFallbackLabels>(
+      cfg.fallbackLabels ?? NO_LABELS,
+      labels,
+    ),
   }));
 }
 

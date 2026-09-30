@@ -8,6 +8,7 @@ import {
   inject,
   input,
   type TemplateRef,
+  untracked,
 } from '@angular/core';
 
 import {
@@ -22,6 +23,7 @@ import {
   resolveStepperErrorSummary,
   type CngxStepNode,
 } from '@cngx/common/stepper';
+import { coerceSignal } from '@cngx/core/utils';
 import { CngxProgress } from '@cngx/ui/feedback';
 
 import { CngxStepperErrorLine } from './stepper-error-line.component';
@@ -96,9 +98,11 @@ export class CngxProgressBarStepper {
     i18n: this.i18n,
   });
 
+  private readonly fallbackLabels = coerceSignal(this.config.fallbackLabels);
+
   /** Landmark role-description with config + i18n cascade, mirroring `<cngx-stepper>`. */
   protected readonly stepperRoleDescription = computed<string>(
-    () => this.config.fallbackLabels?.stepRoleDescription ?? this.i18n.stepperLabel,
+    () => this.fallbackLabels()?.stepRoleDescription ?? this.i18n().stepperLabel,
   );
 
   private readonly emptySlot = contentChild(CngxStepperEmpty);
@@ -145,7 +149,7 @@ export class CngxProgressBarStepper {
   });
 
   protected readonly captionText = computed<string>(() =>
-    this.i18n.textStepperFormat(this.currentStep(), this.totalSteps()),
+    this.i18n().textStepperFormat(this.currentStep(), this.totalSteps()),
   );
 
   /**
@@ -154,7 +158,7 @@ export class CngxProgressBarStepper {
    * Read only when `stateView.hasAnyError()` gates the template.
    */
   protected readonly errorText = computed<string>(() =>
-    resolveStepperErrorSummary(this.stateView, this.presenter.stepsOnly, this.i18n, (node: CngxStepNode) =>
+    resolveStepperErrorSummary(this.stateView, this.presenter.stepsOnly, untracked(() => this.i18n()), (node: CngxStepNode) =>
       node.errorMessage?.() ?? node.errorAggregator?.()?.errorLabels?.()?.[0],
     ),
   );

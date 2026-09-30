@@ -1,13 +1,17 @@
 import {
   Component,
+  computed,
   EnvironmentInjector,
   TemplateRef,
   ViewChild,
   provideZonelessChangeDetection,
   runInInjectionContext,
+  signal,
 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
+
+import { coerceSignal } from '@cngx/core/utils';
 
 import {
   CNGX_TABS_CONFIG,
@@ -118,7 +122,7 @@ describe('CngxTabsConfig', () => {
         provideTabsConfig(withTabsAriaLabels({ tabsRegion: 'Reiter' })),
       ],
     });
-    expect(TestBed.inject(CNGX_TABS_CONFIG).ariaLabels?.tabsRegion).toBe('Reiter');
+    expect(coerceSignal(TestBed.inject(CNGX_TABS_CONFIG).ariaLabels)()?.tabsRegion).toBe('Reiter');
   });
 
   it('withTabsFallbackLabels merges into the fallbackLabels bag', () => {
@@ -130,7 +134,7 @@ describe('CngxTabsConfig', () => {
         ),
       ],
     });
-    expect(TestBed.inject(CNGX_TABS_CONFIG).fallbackLabels?.tabRoleDescription).toBe(
+    expect(coerceSignal(TestBed.inject(CNGX_TABS_CONFIG).fallbackLabels)()?.tabRoleDescription).toBe(
       'Reiter',
     );
   });
@@ -420,3 +424,72 @@ describe('CngxTabsConfig', () => {
     });
   });
 });
+
+describe('CngxTabsConfig copy keys', () => {
+  beforeEach(() => {
+    TestBed.resetTestingModule();
+  });
+
+  it('resolves static label overrides to the same bundles as the eager merge', () => {
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const defaults = TestBed.inject(CNGX_TABS_CONFIG);
+    const defaultAria = coerceSignal(defaults.ariaLabels)();
+    const defaultFallback = coerceSignal(defaults.fallbackLabels)();
+    TestBed.resetTestingModule();
+
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideTabsConfig(
+          withTabsAriaLabels({ tabsRegion: 'Reiter' }),
+          withTabsFallbackLabels({ tabRoleDescription: 'Reiterliste' }),
+          withTabsFallbackLabels({ tabPanelRoleDescription: 'Reiterinhalt' }),
+        ),
+      ],
+    });
+    const cfg = TestBed.inject(CNGX_TABS_CONFIG);
+    expect(coerceSignal(cfg.ariaLabels)()).toEqual({ ...defaultAria, tabsRegion: 'Reiter' });
+    expect(coerceSignal(cfg.fallbackLabels)()).toEqual({
+      ...defaultFallback,
+      tabRoleDescription: 'Reiterliste',
+      tabPanelRoleDescription: 'Reiterinhalt',
+    });
+  });
+
+  it('a Signal label override follows a language flip and keeps unset defaults', () => {
+    const lang = signal<'en' | 'de'>('en');
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideTabsConfig(
+          withTabsAriaLabels(computed(() => (lang() === 'de' ? { tabsRegion: 'Reiter' } : {}))),
+          withTabsFallbackLabels(
+            computed(() => (lang() === 'de' ? { tabRoleDescription: 'Reiterliste' } : {})),
+          ),
+        ),
+      ],
+    });
+    const cfg = TestBed.inject(CNGX_TABS_CONFIG);
+    const aria = coerceSignal(cfg.ariaLabels);
+    const fallback = coerceSignal(cfg.fallbackLabels);
+    expect(aria()?.tabsRegion).toBe('Tabs');
+    expect(fallback()?.tabRoleDescription).toBe('tab list');
+
+    lang.set('de');
+    expect(aria()?.tabsRegion).toBe('Reiter');
+    expect(fallback()?.tabRoleDescription).toBe('Reiterliste');
+    expect(fallback()?.tabPanelRoleDescription).toBe('tab panel');
+  });
+
+  it('keeps the label bundle reference when an override is re-set to an equal object', () => {
+    const labels = signal({ tabsRegion: 'Reiter' });
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), provideTabsConfig(withTabsAriaLabels(labels))],
+    });
+    const aria = coerceSignal(TestBed.inject(CNGX_TABS_CONFIG).ariaLabels);
+    const before = aria();
+    labels.set({ tabsRegion: 'Reiter' });
+    expect(aria()).toBe(before);
+  });
+});
+

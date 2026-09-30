@@ -1,4 +1,4 @@
-import { computed, type Signal } from '@angular/core';
+import { computed, untracked, type Signal } from '@angular/core';
 
 import type { CngxTabGroupHost, injectTabsI18n } from '@cngx/common/tabs';
 
@@ -57,11 +57,11 @@ export interface CngxMatTabRejectionState {
 
 /**
  * Build the {@link CngxMatTabRejectionState} bundle for a given
- * presenter + i18n pair. Two computeds share one source-walk
- * (`lastFailedIndex` → `originIndexDuringCommit` → `tabs[idx].label()`)
- * via Angular's signal memoisation - the second computed re-uses
- * the first's cached `originLabel` value, so the `tabs()` traversal
- * happens at most once per state change.
+ * presenter + i18n pair. `descriptorText` re-uses the cached
+ * `originLabel` walk (`lastFailedIndex` → `originIndexDuringCommit` →
+ * `tabs[idx].label()`). The live announcement walks the indices itself so
+ * they stay tracked while the label, which a consumer may translate, is
+ * read untracked.
  *
  * @internal
  */
@@ -94,17 +94,27 @@ export function createRejectionState(
       return '';
     }
     const label = originLabel();
-    return label ? i18n.commitRolledBackTo(label) : i18n.commitFailedRetry;
+    const copy = i18n();
+    return label ? copy.commitRolledBackTo(label) : copy.commitFailedRetry;
   });
 
+  // Feeds the live announcer: copy and the origin tab label (which a
+  // consumer may translate) are read untracked so a language switch does
+  // not re-announce; the next transition speaks the new language.
   const liveAnnouncement: Signal<string> = computed(() => {
     const current = presenter.commitTransition.current();
     if (current === 'pending') {
-      return i18n.commitInFlight;
+      return untracked(() => i18n().commitInFlight);
     }
     if (current === 'error') {
-      const label = originLabel();
-      return label ? i18n.commitRolledBackTo(label) : i18n.commitFailedRetry;
+      const failedIdx = presenter.lastFailedIndex();
+      const originIdx = presenter.originIndexDuringCommit();
+      const hasOrigin = failedIdx !== undefined && originIdx !== undefined;
+      const origin = hasOrigin ? presenter.tabs()[originIdx] : undefined;
+      return untracked(() => {
+        const label = origin?.label();
+        return label ? i18n().commitRolledBackTo(label) : i18n().commitFailedRetry;
+      });
     }
     return '';
   });

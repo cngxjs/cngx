@@ -1,4 +1,7 @@
 import { computed, type Signal } from '@angular/core';
+
+import { coerceSignal } from '@cngx/core/utils';
+
 import type { CngxStepperI18n } from './i18n/stepper-i18n';
 import type {
   CngxStepperConfig,
@@ -62,7 +65,7 @@ export function createStepperHostAttrs(
 
 /**
  * Input bundle for {@link createStepperAccname}: the two per-instance
- * accname inputs plus the resolved config and i18n bundle.
+ * accname inputs plus the resolved config and the i18n bundle Signal.
  *
  * @internal
  */
@@ -70,7 +73,7 @@ export interface CngxStepperAccnameInputs {
   readonly ariaLabel: Signal<string | undefined>;
   readonly ariaLabelledBy: Signal<string | undefined>;
   readonly config: CngxStepperConfig;
-  readonly i18n: CngxStepperI18n;
+  readonly i18n: Signal<CngxStepperI18n>;
 }
 
 /**
@@ -84,12 +87,11 @@ export interface CngxStepperAccnameInputs {
  * @internal
  */
 export function createStepperAccname(inputs: CngxStepperAccnameInputs): Signal<string | null> {
+  const ariaLabels = coerceSignal(inputs.config.ariaLabels);
   return computed<string | null>(() => {
     if (inputs.ariaLabelledBy()) {
       return null; // labelledby trumps label
     }
-    return (
-      inputs.ariaLabel() ?? inputs.config.ariaLabels?.stepperRegion ?? inputs.i18n.stepperLabel
-    );
+    return inputs.ariaLabel() ?? ariaLabels()?.stepperRegion ?? inputs.i18n().stepperLabel;
   });
 }

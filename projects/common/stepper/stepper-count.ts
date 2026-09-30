@@ -5,6 +5,7 @@ import {
   inject,
   input,
   type Signal,
+  untracked,
   ViewEncapsulation,
 } from '@angular/core';
 
@@ -63,7 +64,18 @@ export interface CngxStepperCountHost {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  template: '<span [attr.aria-live]="live() ? \'polite\' : null">{{ label() }}</span>',
+  // Two spans so only the live one reads copy untracked: a language switch
+  // re-renders a plain caption at once, while a live caption keeps its text
+  // until the next step change (no re-announcement). `live` is a mount-time
+  // choice; the live span exists from the first render, before any change
+  // it announces.
+  template: `
+    @if (live()) {
+      <span aria-live="polite">{{ liveLabel() }}</span>
+    } @else {
+      <span>{{ label() }}</span>
+    }
+  `,
   // The `N/M` shapes (`N/M`, `N/M complete`, `round(c/t*100)%`) are two number
   // groups joined by a neutral `/` that swaps under RTL. isolate fences the
   // boundary; direction:ltr pins the `current/total` order (the CngxDelta
@@ -81,7 +93,11 @@ export interface CngxStepperCountHost {
   },
 })
 export class CngxStepperCount {
-  /** When `true`, wraps the rendered string in an `aria-live="polite"` span. */
+  /**
+   * When `true`, wraps the rendered string in an `aria-live="polite"` span.
+   * Set it once per instance: toggling it swaps the span, and the region
+   * content present at that moment is not announced.
+   */
   readonly live = input<boolean>(true);
 
   /**
@@ -110,20 +126,46 @@ export class CngxStepperCount {
     () => this.host() ?? this.injectedHost,
   );
 
+  /** 1-based active position and step total, or `null` while there is nothing to count. */
+  private readonly position = computed<{ current: number; total: number } | null>(
+    () => {
+      const host = this.resolvedHost();
+      if (!host) {
+        return null;
+      }
+      const total = host.stepsOnly().length;
+      if (total === 0) {
+        return null;
+      }
+      // Clamp against the live total - a transiently out-of-range active
+      // index (steps removed at runtime) must not render "Step 5 of 3".
+      const current = Math.min(Math.max(host.activeStepIndex() + 1, 1), total);
+      return { current, total };
+    },
+    { equal: (a, b) => a?.current === b?.current && a?.total === b?.total },
+  );
+
   /** Resolved caption - reactive on activeStepIndex / stepsOnly / format / i18n. */
   protected readonly label = computed<string>(() => {
-    const host = this.resolvedHost();
-    if (!host) {
+    const position = this.position();
+    if (!position) {
       return '';
     }
-    const total = host.stepsOnly().length;
-    if (total === 0) {
+    const fmt = this.format() ?? this.i18n().textStepperFormat;
+    return fmt(position.current, position.total);
+  });
+
+  /**
+   * {@link label} for the live span: the bundle and a consumer `format`
+   * (which may itself be language-dependent) are read untracked.
+   */
+  protected readonly liveLabel = computed<string>(() => {
+    const position = this.position();
+    if (!position) {
       return '';
     }
-    // Clamp against the live total - a transiently out-of-range active
-    // index (steps removed at runtime) must not render "Step 5 of 3".
-    const current = Math.min(Math.max(host.activeStepIndex() + 1, 1), total);
-    const fmt = this.format() ?? this.i18n.textStepperFormat;
-    return fmt(current, total);
+    return untracked(() =>
+      (this.format() ?? this.i18n().textStepperFormat)(position.current, position.total),
+    );
   });
 }

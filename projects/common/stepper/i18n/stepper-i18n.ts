@@ -1,4 +1,5 @@
-import { inject, InjectionToken, type Provider } from '@angular/core';
+import { inject, InjectionToken, type Provider, type Signal } from '@angular/core';
+import { coerceSignal, createNestedOverrideMerge } from '@cngx/core/utils';
 
 /**
  * Status-pill labels used by the `stripe-status-rich` skin (and any
@@ -24,6 +25,14 @@ export interface CngxStepperStatusLabels {
  * @category common/stepper/i18n
  */
 export interface CngxStepperI18n {
+  /**
+   * Last tier of the landmark `aria-label` and of the organism's
+   * `aria-roledescription`. The label applies only while
+   * `CNGX_STEPPER_CONFIG.ariaLabels.stepperRegion` (default `'Stepper'`) is
+   * unset, the role description only while `fallbackLabels.stepRoleDescription`
+   * (default `'stepper'`) is unset. Localise both through
+   * `withStepperAriaLabels(...)` and `withStepperFallbackLabels(...)`.
+   */
   readonly stepperLabel: string;
   /**
    * Landmark `aria-roledescription` for compact step-indicator
@@ -146,17 +155,20 @@ export function resolveStepFallbackLabel(i18n: CngxStepperI18n | undefined, id: 
 }
 
 /**
- * DI token for the resolved stepper i18n bundle. `providedIn: 'root'`
- * with English defaults.
+ * DI token for the resolved stepper i18n bundle, as a `Signal` so a
+ * runtime language switch re-renders every label it feeds.
+ * `providedIn: 'root'` with English defaults. Provide it through
+ * {@link provideStepperI18n}; a `{ provide, useValue }` entry must supply a
+ * `Signal<CngxStepperI18n>`.
  *
  * @category common/stepper/i18n
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/i18n/stepper-i18n.ts
  * @since 0.1.0
  */
-export const CNGX_STEPPER_I18N = new InjectionToken<CngxStepperI18n>('CngxStepperI18n', {
+export const CNGX_STEPPER_I18N = new InjectionToken<Signal<CngxStepperI18n>>('CngxStepperI18n', {
   providedIn: 'root',
-  factory: () => STEPPER_I18N_DEFAULTS,
+  factory: () => coerceSignal(STEPPER_I18N_DEFAULTS),
 });
 
 /**
@@ -166,7 +178,9 @@ export const CNGX_STEPPER_I18N = new InjectionToken<CngxStepperI18n>('CngxSteppe
  *
  * @category common/stepper/i18n
  */
-export type CngxStepperI18nFeature = ((bundle: CngxStepperI18n) => CngxStepperI18n) & {
+export type CngxStepperI18nFeature = ((
+  bundle: Signal<CngxStepperI18n>,
+) => Signal<CngxStepperI18n>) & {
   readonly _target: 'i18n';
 };
 
@@ -177,7 +191,7 @@ export type CngxStepperI18nFeature = ((bundle: CngxStepperI18n) => CngxStepperI1
  * @internal
  */
 function defineStepperI18nFeature(
-  fn: (bundle: CngxStepperI18n) => CngxStepperI18n,
+  fn: (bundle: Signal<CngxStepperI18n>) => Signal<CngxStepperI18n>,
 ): CngxStepperI18nFeature {
   return Object.assign(fn, { _target: 'i18n' as const });
 }
@@ -186,26 +200,17 @@ function defineStepperI18nFeature(
  * Override stepper i18n labels. Partial override - unset keys keep
  * the English default. {@link CngxStepperStatusLabels} is merged
  * key-by-key so consumers can override one pill label without
- * restating the rest. Sibling of `withStepperAriaLabels` /
- * `withStepperFallbackLabels`.
+ * restating the rest. Pass a `Signal` to switch the language at runtime.
+ * Sibling of `withStepperAriaLabels` / `withStepperFallbackLabels`.
  *
  * @category common/stepper/i18n
  */
 export function withStepperI18nLabels(
-  overrides: CngxStepperI18nOverrides,
+  overrides: CngxStepperI18nOverrides | Signal<CngxStepperI18nOverrides>,
 ): CngxStepperI18nFeature {
-  return defineStepperI18nFeature((bundle) => ({
-    ...bundle,
-    ...overrides,
-    statusLabels: overrides.statusLabels
-      ? { ...bundle.statusLabels, ...overrides.statusLabels }
-      : bundle.statusLabels,
-  }));
-}
-
-/** @internal */
-function resolveI18nFeatures(features: readonly CngxStepperI18nFeature[]): CngxStepperI18n {
-  return features.reduce<CngxStepperI18n>((bundle, feat) => feat(bundle), STEPPER_I18N_DEFAULTS);
+  return defineStepperI18nFeature((bundle) =>
+    createNestedOverrideMerge(bundle, overrides, 'statusLabels'),
+  );
 }
 
 /**
@@ -227,15 +232,21 @@ function resolveI18nFeatures(features: readonly CngxStepperI18nFeature[]): CngxS
 export function provideStepperI18n(...features: readonly CngxStepperI18nFeature[]): Provider {
   return {
     provide: CNGX_STEPPER_I18N,
-    useValue: resolveI18nFeatures(features),
+    useFactory: () =>
+      features.reduce<Signal<CngxStepperI18n>>(
+        (bundle, feat) => feat(bundle),
+        coerceSignal(STEPPER_I18N_DEFAULTS),
+      ),
   };
 }
 
 /**
- * Inject the resolved stepper i18n bundle in an injection context.
+ * Inject the resolved stepper i18n bundle in an injection context. Read it
+ * inside a `computed()`, template or handler so a language switch reaches
+ * the label.
  *
  * @category common/stepper/i18n
  */
-export function injectStepperI18n(): CngxStepperI18n {
+export function injectStepperI18n(): Signal<CngxStepperI18n> {
   return inject(CNGX_STEPPER_I18N);
 }

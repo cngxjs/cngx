@@ -2,6 +2,8 @@ import { computed, signal, type Provider } from '@angular/core';
 import { provideLocaleAt } from '@cngx/core/utils';
 import { provideKpiI18n, withKpiI18nLabels } from '@cngx/common/data';
 import { provideDisplayI18n, withDisplayI18nLabels } from '@cngx/common/display';
+import type { CngxStepperAriaLabels, CngxStepperFallbackLabels, CngxStepperI18nOverrides } from '@cngx/common/stepper';
+import type { CngxTabsAriaLabels, CngxTabsFallbackLabels, CngxTabsI18n } from '@cngx/common/tabs';
 import { provideInteractiveI18n, withInteractiveI18nLabels } from '@cngx/common/interactive';
 import { provideTreetableAt, withTreetableLabels } from '@cngx/data-display/treetable';
 import { provideFilterBuilderConfigAt, withFilterBuilderI18n } from '@cngx/forms/filter-builder';
@@ -72,6 +74,50 @@ export const INTERACTIVE_DE = {
 
 export const POPOVER_PANEL_DE = { close: 'Schließen' };
 
+/** German stepper copy for the stepper / tabs live-switch story. */
+export const STEPPER_DE: CngxStepperI18nOverrides = {
+  stepperLabel: 'Schrittfolge',
+  stepIndicatorRoleDescription: 'Schrittanzeige',
+  selectedStep: (label, position, count) => `Schritt ${position} von ${count}: ${label}`,
+  stepHasErrors: (count) => `${count} Fehler`,
+  previousStep: 'Vorheriger Schritt',
+  nextStep: 'Nächster Schritt',
+  commitInFlight: 'Schritt wird gespeichert…',
+  commitRolledBackTo: (originLabel) => `Zurück zu Schritt „${originLabel}".`,
+  stepRolledBackSuffix: 'Dieser Schritt wurde zurückgesetzt.',
+  statusLabels: { done: 'Erledigt', inProgress: 'In Arbeit', upNext: 'Als Nächstes', errored: 'Fehler' },
+  textStepperFormat: (current, total) => `Schritt ${current} von ${total}`,
+  groupSummaryCount: (total) => `${total} Schritte`,
+  groupSummaryProgress: (completed, total) => `${completed} von ${total} Schritten erledigt`,
+};
+
+export const STEPPER_ARIA_DE: CngxStepperAriaLabels = { stepperRegion: 'Bestellschritte' };
+export const STEPPER_FALLBACK_DE: CngxStepperFallbackLabels = {
+  groupRoleDescription: 'Schrittgruppe',
+  stepRoleDescription: 'Schrittfolge',
+};
+
+/** German tabs copy for the stepper / tabs live-switch story. */
+export const TABS_DE: Partial<CngxTabsI18n> = {
+  tabsLabel: 'Reiter',
+  selectedTab: (label, position, count) => `Reiter ${position} von ${count}: ${label}`,
+  tabHasErrors: (count) => `${count} Fehler`,
+  moreTabsLabel: (count) => `${count} weitere`,
+  previousTab: 'Vorheriger Reiter',
+  nextTab: 'Nächster Reiter',
+  closeTab: (label) => `„${label}" schließen`,
+  addTab: 'Reiter hinzufügen',
+  closedTab: (label) => (label ? `„${label}" geschlossen` : 'Reiter geschlossen'),
+  commitInFlight: 'Reiter wird gewechselt…',
+  commitRolledBackTo: (originLabel) => `Änderungen nicht gespeichert - zurück zu „${originLabel}".`,
+};
+
+export const TABS_ARIA_DE: CngxTabsAriaLabels = { tabsRegion: 'Reiter' };
+export const TABS_FALLBACK_DE: CngxTabsFallbackLabels = {
+  tabRoleDescription: 'Reiterliste',
+  tabPanelRoleDescription: 'Reiterinhalt',
+};
+
 /**
  * Language of the live-switch story, flipped by its EN / DE toggle. The
  * computed sources below feed the reactive-from-birth tokens, so the flip
@@ -85,6 +131,38 @@ export const DEMO_DISPLAY_LABELS = computed(() => (isDe() ? DISPLAY_DE : {}));
 export const DEMO_INTERACTIVE_LABELS = computed(() => (isDe() ? INTERACTIVE_DE : {}));
 export const DEMO_POPOVER_PANEL_LABELS = computed(() => (isDe() ? POPOVER_PANEL_DE : {}));
 export const DEMO_LOCALE = computed(() => (isDe() ? 'de-DE' : 'en-US'));
+export const DEMO_STEPPER_LABELS = computed<CngxStepperI18nOverrides>(() => (isDe() ? STEPPER_DE : {}));
+export const DEMO_STEPPER_ARIA_LABELS = computed<CngxStepperAriaLabels>(() =>
+  isDe() ? STEPPER_ARIA_DE : {},
+);
+export const DEMO_STEPPER_FALLBACK_LABELS = computed<CngxStepperFallbackLabels>(() =>
+  isDe() ? STEPPER_FALLBACK_DE : {},
+);
+/** Consumer-owned step and tab labels, translated by the same language signal. */
+export const DEMO_FLOW_LABELS = computed(() =>
+  isDe()
+    ? {
+        customer: 'Kunde',
+        payment: 'Zahlung',
+        review: 'Prüfung',
+        profile: 'Profil',
+        account: 'Konto',
+        notifications: 'Benachrichtigungen',
+      }
+    : {
+        customer: 'Customer',
+        payment: 'Payment',
+        review: 'Review',
+        profile: 'Profile',
+        account: 'Account',
+        notifications: 'Notifications',
+      },
+);
+export const DEMO_TABS_LABELS = computed<Partial<CngxTabsI18n>>(() => (isDe() ? TABS_DE : {}));
+export const DEMO_TABS_ARIA_LABELS = computed<CngxTabsAriaLabels>(() => (isDe() ? TABS_ARIA_DE : {}));
+export const DEMO_TABS_FALLBACK_LABELS = computed<CngxTabsFallbackLabels>(() =>
+  isDe() ? TABS_FALLBACK_DE : {},
+);
 
 /** The German pack, spread into the root providers by `?lang=de`. */
 export const DE_PACK: Provider[] = [

@@ -1,12 +1,12 @@
-import { signal } from '@angular/core';
+import { signal, type Signal } from '@angular/core';
 import { describe, expect, it } from 'vitest';
 
 import type { CngxStepperI18n } from './i18n/stepper-i18n';
 import { createStepperSlotContextBuilders } from './slot-context-builders';
 import type { CngxStepNode, CngxStepperHost } from './stepper-host.token';
 
-function stubI18n(): CngxStepperI18n {
-  return { statusLabels: { errored: 'Errored' } } as unknown as CngxStepperI18n;
+function stubI18n(): Signal<CngxStepperI18n> {
+  return signal({ statusLabels: { errored: 'Errored' } } as unknown as CngxStepperI18n);
 }
 
 function stubNode(overrides: Partial<CngxStepNode> & { id: string }): CngxStepNode {

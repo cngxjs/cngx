@@ -1,4 +1,4 @@
-import { Component, provideZonelessChangeDetection } from '@angular/core';
+import { Component, computed, provideZonelessChangeDetection, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { MatStepperModule, MatStep, MatStepper } from '@angular/material/stepper';
 import { describe, expect, test } from 'vitest';
@@ -102,17 +102,36 @@ describe('createMatStepHandle - Phase 6.2 label fallback ladder', () => {
     });
     const matSteps = await renderLabels();
     const i18n = TestBed.inject(CNGX_STEPPER_I18N);
-    const handle = createMatStepHandle(matSteps[3], seedId, {
-      ...i18n,
-      stepFallbackLabel: (id) => `Schritt ${id}`,
-    }).handle;
+    const handle = createMatStepHandle(
+      matSteps[3],
+      seedId,
+      computed(() => ({ ...i18n(), stepFallbackLabel: (id: string) => `Schritt ${id}` })),
+    ).handle;
     expect(handle.label()).toBe(`Schritt ${handle.id}`);
 
-    const legacy = createMatStepHandle(matSteps[3], seedId, {
-      ...i18n,
-      stepFallbackLabel: undefined,
-    }).handle;
+    const legacy = createMatStepHandle(
+      matSteps[3],
+      seedId,
+      computed(() => ({ ...i18n(), stepFallbackLabel: undefined })),
+    ).handle;
     expect(legacy.label()).toBe(`Step ${legacy.id}`);
+  });
+
+  test('axis L4c: the tier-4 fallback label follows a language flip', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const matSteps = await renderLabels();
+    const base = TestBed.inject(CNGX_STEPPER_I18N);
+    const lang = signal<'en' | 'de'>('en');
+    const i18n = computed(() =>
+      lang() === 'de' ? { ...base(), stepFallbackLabel: (id: string) => `Schritt ${id}` } : base(),
+    );
+    const handle = createMatStepHandle(matSteps[3], seedId, i18n).handle;
+    expect(handle.label()).toBe(`Step ${handle.id}`);
+
+    lang.set('de');
+    expect(handle.label()).toBe(`Schritt ${handle.id}`);
   });
 
   test('axis L5: paired hasError + completed write - `_completedOverride` re-fire surfaces the error', async () => {

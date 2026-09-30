@@ -172,3 +172,43 @@ describe('CngxTabNav', () => {
     expect(anchor(1).classList.contains('cngx-tab-nav__link--error')).toBe(true);
   });
 });
+
+@Component({
+  standalone: true,
+  selector: 'nav-lang-host',
+  imports: [CngxTabNav, CngxTabLink],
+  template: `
+    <cngx-tab-nav [activeIndex]="active()" aria-label="Sections">
+      <a cngxTabLink id="overview" [label]="lang() === 'de' ? 'Übersicht' : 'Overview'">x</a>
+      <a cngxTabLink id="profile" [label]="lang() === 'de' ? 'Profil' : 'Profile'">y</a>
+    </cngx-tab-nav>
+  `,
+})
+class NavLangHost {
+  readonly active = signal(0);
+  readonly lang = signal<'en' | 'de'>('en');
+}
+
+describe('CngxTabNav language switch', () => {
+  it('does not re-announce on a language flip of a consumer-translated label', async () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const fixture = TestBed.createComponent(NavLangHost);
+    fixture.detectChanges();
+    const liveRegion = fixture.nativeElement.querySelector(
+      '.cngx-tab-nav__live-region',
+    ) as HTMLElement;
+    await settleMountWindow(fixture);
+    fixture.componentInstance.active.set(1);
+    fixture.detectChanges();
+    expect(liveRegion.textContent?.trim()).toBe('Profile');
+
+    fixture.componentInstance.lang.set('de');
+    fixture.detectChanges();
+    expect(liveRegion.textContent?.trim()).toBe('Profile');
+
+    fixture.componentInstance.active.set(0);
+    fixture.detectChanges();
+    expect(liveRegion.textContent?.trim()).toBe('Übersicht');
+  });
+});

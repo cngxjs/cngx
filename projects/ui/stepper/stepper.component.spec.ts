@@ -1,5 +1,6 @@
-import { Component, signal } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createResizeObserverMock } from '@cngx/testing';
@@ -22,6 +23,7 @@ import {
   withStepperMobileCollapse,
   withStepperMobileSwipe,
   withStepperSkin,
+  type CngxStepperI18nOverrides,
 } from '@cngx/common/stepper';
 
 import { CngxStepper } from './stepper.component';
@@ -1804,3 +1806,144 @@ describe('CngxStepper organism', () => {
     });
   });
 });
+
+describe('CngxStepper language switch', () => {
+  function languageSwitch() {
+    const lang = signal<'en' | 'de'>('en');
+    const overrides = computed<CngxStepperI18nOverrides>(() =>
+      lang() === 'de'
+        ? {
+            commitInFlight: 'Speichere Schritt',
+            commitRolledBackTo: (label) => `Zurueck zu "${label}".`,
+            statusLabels: { errored: 'Fehler' },
+          }
+        : {},
+    );
+    return { lang, overrides };
+  }
+
+  @Component({
+    standalone: true,
+    imports: [CngxStepper, CngxStep],
+    template: `
+      <cngx-stepper aria-label="Wizard" [commitAction]="action">
+        <div cngxStep label="A"></div>
+        <div cngxStep label="B" [error]="err()"></div>
+      </cngx-stepper>
+    `,
+  })
+  class SwitchHost {
+    err = signal<boolean>(false);
+    resolveCommit: (accepted: boolean) => void = () => undefined;
+    readonly action: CngxStepperCommitAction = () =>
+      new Promise<boolean>((resolve) => {
+        this.resolveCommit = resolve;
+      });
+  }
+
+  it('does not re-announce on a language flip (commit announcement)', async () => {
+    const { lang, overrides } = languageSwitch();
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideStepperI18n(withStepperI18nLabels(overrides)),
+      ],
+    });
+    const fixture = TestBed.createComponent(SwitchHost);
+    fixture.detectChanges();
+    const buttons = fixture.nativeElement.querySelectorAll(
+      'button.cngx-stepper__step',
+    ) as NodeListOf<HTMLButtonElement>;
+    buttons[1].click();
+    fixture.detectChanges();
+    const region = fixture.nativeElement.querySelector('.cngx-stepper__live-region') as HTMLElement;
+    expect(region.textContent?.trim()).toBe('Committing step…');
+
+    lang.set('de');
+    fixture.detectChanges();
+    expect(region.textContent?.trim()).toBe('Committing step…');
+
+    fixture.componentInstance.resolveCommit(false);
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(region.textContent?.trim()).toBe('Zurueck zu "A".');
+  });
+
+  it('does not re-announce on a language flip (collapsed error summary)', () => {
+    const { lang, overrides } = languageSwitch();
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideStepperI18n(withStepperI18nLabels(overrides)),
+      ],
+    });
+    const fixture = TestBed.createComponent(SwitchHost);
+    fixture.componentInstance.err.set(true);
+    fixture.detectChanges();
+    // The collapsed branch that renders this text mounts on a CSS
+    // container rung jsdom cannot reach, so the region's text source is
+    // read directly.
+    const stepper = fixture.debugElement.query(By.directive(CngxStepper))
+      .componentInstance as CngxStepper;
+    const summary = (): string => stepper['mobileErrorSummary']();
+    expect(summary()).toBe('B: Errored');
+
+    lang.set('de');
+    expect(summary()).toBe('B: Errored');
+
+    fixture.componentInstance.err.set(false);
+    fixture.detectChanges();
+    expect(summary()).toBe('');
+    fixture.componentInstance.err.set(true);
+    fixture.detectChanges();
+    expect(summary()).toBe('B: Fehler');
+  });
+});
+
+describe('CngxStepper config copy switch', () => {
+  @Component({
+    standalone: true,
+    imports: [CngxStepper, CngxStep, CngxStepGroup],
+    template: `
+      <cngx-stepper>
+        <div cngxStepGroup label="g">
+          <div cngxStep label="A"></div>
+        </div>
+      </cngx-stepper>
+    `,
+  })
+  class LabelHost {}
+
+  it('re-labels the landmark and the group on a language flip', () => {
+    const lang = signal<'en' | 'de'>('en');
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideStepperConfig(
+          withStepperAriaLabels(computed(() => (lang() === 'de' ? { stepperRegion: 'Schrittfolge' } : {}))),
+          withStepperFallbackLabels(
+            computed(() =>
+              lang() === 'de'
+                ? { groupRoleDescription: 'Schrittgruppe', stepRoleDescription: 'Schritte' }
+                : {},
+            ),
+          ),
+        ),
+      ],
+    });
+    const fixture = TestBed.createComponent(LabelHost);
+    fixture.detectChanges();
+    const host = fixture.nativeElement.querySelector('cngx-stepper') as HTMLElement;
+    const group = fixture.nativeElement.querySelector('.cngx-stepper__group-header') as HTMLElement;
+    expect(host.getAttribute('aria-label')).toBe('Stepper');
+    expect(host.getAttribute('aria-roledescription')).toBe('stepper');
+    expect(group.getAttribute('aria-roledescription')).toBe('step group');
+
+    lang.set('de');
+    fixture.detectChanges();
+    expect(host.getAttribute('aria-label')).toBe('Schrittfolge');
+    expect(host.getAttribute('aria-roledescription')).toBe('Schritte');
+    expect(group.getAttribute('aria-roledescription')).toBe('Schrittgruppe');
+  });
+});
+

@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { provideZonelessChangeDetection } from '@angular/core';
+import { computed, provideZonelessChangeDetection, signal } from '@angular/core';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -7,6 +7,7 @@ import {
   injectStepperI18n,
   provideStepperI18n,
   withStepperI18nLabels,
+  type CngxStepperI18nOverrides,
 } from './stepper-i18n';
 
 describe('CngxStepperI18n', () => {
@@ -14,7 +15,7 @@ describe('CngxStepperI18n', () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
-    const i18n = TestBed.inject(CNGX_STEPPER_I18N);
+    const i18n = TestBed.inject(CNGX_STEPPER_I18N)();
     expect(i18n.stepperLabel).toBe('Stepper');
     expect(i18n.selectedStep('Customer', 1, 3)).toBe('Step 1 of 3: Customer');
     expect(i18n.stepHasErrors(1)).toBe('1 error');
@@ -39,7 +40,7 @@ describe('CngxStepperI18n', () => {
         ),
       ],
     });
-    const i18n = TestBed.inject(CNGX_STEPPER_I18N);
+    const i18n = TestBed.inject(CNGX_STEPPER_I18N)();
     expect(i18n.commitInFlight).toBe('Speichere Schritt…');
     expect(i18n.commitRolledBackTo('Kunde')).toBe(
       'Konnte nicht speichern - zurück zu „Kunde".',
@@ -61,7 +62,7 @@ describe('CngxStepperI18n', () => {
         ),
       ],
     });
-    const i18n = TestBed.inject(CNGX_STEPPER_I18N);
+    const i18n = TestBed.inject(CNGX_STEPPER_I18N)();
     expect(i18n.stepperLabel).toBe('Schrittfolge');
     expect(i18n.selectedStep('Kunde', 1, 3)).toBe('Schritt 1 von 3: Kunde');
     // Unset keys keep their English default.
@@ -78,7 +79,7 @@ describe('CngxStepperI18n', () => {
         ),
       ],
     });
-    const i18n = TestBed.inject(CNGX_STEPPER_I18N);
+    const i18n = TestBed.inject(CNGX_STEPPER_I18N)();
     // Second feature wins on overlapping keys.
     expect(i18n.stepperLabel).toBe('B');
     expect(i18n.previousStep).toBe('Vor');
@@ -96,7 +97,7 @@ describe('CngxStepperI18n', () => {
       providers: [provideZonelessChangeDetection()],
     });
     TestBed.runInInjectionContext(() => {
-      const i18n = injectStepperI18n();
+      const i18n = injectStepperI18n()();
       expect(i18n.stepperLabel).toBe('Stepper');
     });
   });
@@ -106,7 +107,7 @@ describe('CngxStepperI18n', () => {
       TestBed.configureTestingModule({
         providers: [provideZonelessChangeDetection()],
       });
-      const i18n = TestBed.inject(CNGX_STEPPER_I18N);
+      const i18n = TestBed.inject(CNGX_STEPPER_I18N)();
       expect(i18n.statusLabels.done).toBe('Done');
       expect(i18n.statusLabels.inProgress).toBe('In progress');
       expect(i18n.statusLabels.upNext).toBe('Up next');
@@ -124,7 +125,7 @@ describe('CngxStepperI18n', () => {
           ),
         ],
       });
-      const i18n = TestBed.inject(CNGX_STEPPER_I18N);
+      const i18n = TestBed.inject(CNGX_STEPPER_I18N)();
       expect(i18n.statusLabels.done).toBe('Erledigt');
       expect(i18n.statusLabels.errored).toBe('Fehler');
       // Unset keys keep their English default.
@@ -142,7 +143,7 @@ describe('CngxStepperI18n', () => {
           ),
         ],
       });
-      const i18n = TestBed.inject(CNGX_STEPPER_I18N);
+      const i18n = TestBed.inject(CNGX_STEPPER_I18N)();
       // Second feature wins on overlapping keys.
       expect(i18n.statusLabels.done).toBe('B');
       // Earlier features survive when later features don't touch the key.
@@ -151,6 +152,93 @@ describe('CngxStepperI18n', () => {
       expect(i18n.statusLabels.upNext).toBe('C');
       // Un-overridden keys keep the English default.
       expect(i18n.statusLabels.inProgress).toBe('In progress');
+    });
+  });
+
+  describe('runtime language switch', () => {
+    it('a Signal override flips every label without a re-inject', () => {
+      const lang = signal<'en' | 'de'>('en');
+      const overrides = (): CngxStepperI18nOverrides =>
+        lang() === 'de' ? { stepperLabel: 'Schrittfolge', statusLabels: { done: 'Erledigt' } } : {};
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideStepperI18n(withStepperI18nLabels(computed(overrides))),
+        ],
+      });
+      const i18n = TestBed.inject(CNGX_STEPPER_I18N);
+      expect(i18n().stepperLabel).toBe('Stepper');
+      expect(i18n().statusLabels.done).toBe('Done');
+
+      lang.set('de');
+      expect(i18n().stepperLabel).toBe('Schrittfolge');
+      expect(i18n().statusLabels.done).toBe('Erledigt');
+      expect(i18n().statusLabels.errored).toBe('Errored');
+    });
+
+    it('injects one Signal per injector', () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideStepperI18n(withStepperI18nLabels({ stepperLabel: 'A' })),
+        ],
+      });
+      const first = TestBed.inject(CNGX_STEPPER_I18N);
+      const second = TestBed.runInInjectionContext(() => injectStepperI18n());
+      expect(second).toBe(first);
+    });
+
+    it('keeps the bundle reference when an override is re-set to an equal object', () => {
+      const overrides = signal<CngxStepperI18nOverrides>({ statusLabels: { done: 'Erledigt' } });
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideStepperI18n(withStepperI18nLabels(overrides)),
+        ],
+      });
+      const i18n = TestBed.inject(CNGX_STEPPER_I18N);
+      const before = i18n();
+      overrides.set({ statusLabels: { done: 'Erledigt' } });
+      expect(i18n()).toBe(before);
+    });
+
+    it('resolves static overrides to the same bundle as the eager merge', () => {
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const defaults = TestBed.inject(CNGX_STEPPER_I18N)();
+      TestBed.resetTestingModule();
+
+      const first: CngxStepperI18nOverrides = {
+        stepperLabel: 'Schrittfolge',
+        statusLabels: { done: 'Erledigt', errored: 'Fehler' },
+      };
+      const second: CngxStepperI18nOverrides = { previousStep: 'Vor', statusLabels: { done: 'Fertig' } };
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideStepperI18n(withStepperI18nLabels(first), withStepperI18nLabels(second)),
+        ],
+      });
+      expect(TestBed.inject(CNGX_STEPPER_I18N)()).toEqual({
+        ...defaults,
+        ...first,
+        ...second,
+        statusLabels: { ...defaults.statusLabels, ...first.statusLabels, ...second.statusLabels },
+      });
+    });
+
+    it('an override without statusLabels keeps every default pill label', () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideStepperI18n(withStepperI18nLabels({ stepperLabel: 'Schrittfolge' })),
+        ],
+      });
+      expect(TestBed.inject(CNGX_STEPPER_I18N)().statusLabels).toEqual({
+        done: 'Done',
+        inProgress: 'In progress',
+        upNext: 'Up next',
+        errored: 'Errored',
+      });
     });
   });
 });

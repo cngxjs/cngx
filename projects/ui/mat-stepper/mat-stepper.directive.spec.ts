@@ -1,11 +1,13 @@
-import { Component, signal, provideZonelessChangeDetection } from '@angular/core';
+import { Component, computed, signal, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { MatStepperModule, MatStepper } from '@angular/material/stepper';
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 
 import { CngxLiveAnnouncer } from '@cngx/common/a11y';
 import {
   CngxStepperPresenter,
+  provideStepperI18n,
+  withStepperI18nLabels,
   type CngxStepperCommitAction,
 } from '@cngx/common/stepper';
 
@@ -130,6 +132,24 @@ class CommitHostCmp {
     new Promise<boolean>(() => undefined);
   protected mode: 'optimistic' | 'pessimistic' = 'pessimistic';
   protected active = 0;
+}
+
+@Component({
+  standalone: true,
+  imports: [MatStepperModule, CngxMatStepper],
+  template: `
+    <mat-stepper cngxMatStepper [commitAction]="commit" commitMode="pessimistic">
+      <mat-step><p>One</p></mat-step>
+      <mat-step><p>Two</p></mat-step>
+    </mat-stepper>
+  `,
+})
+class UnlabelledCommitHostCmp {
+  resolveCommit: (accepted: boolean) => void = () => undefined;
+  protected commit: CngxStepperCommitAction = () =>
+    new Promise<boolean>((resolve) => {
+      this.resolveCommit = resolve;
+    });
 }
 
 async function setupPlumbing(): Promise<Plumbing> {
@@ -485,6 +505,53 @@ describe('CngxMatStepper instrumentation directive', () => {
       expect(politeRegions[politeRegions.length - 1]?.textContent).toBe('Committing step\u2026');
     } finally {
       TestBed.inject(CngxLiveAnnouncer).ngOnDestroy();
+    }
+  });
+
+  test('axis 15b: does not re-announce on a language flip when the landed step uses the i18n fallback label', async () => {
+    const lang = signal<'en' | 'de'>('en');
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideStepperI18n(
+          withStepperI18nLabels(
+            computed(() =>
+              lang() === 'de' ? { stepFallbackLabel: (id: string) => `Schritt ${id}` } : {},
+            ),
+          ),
+        ),
+      ],
+    });
+    const announcer = TestBed.inject(CngxLiveAnnouncer);
+    const announce = vi.spyOn(announcer, 'announce');
+    const fixture = TestBed.createComponent(UnlabelledCommitHostCmp);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const presenter = fixture.debugElement
+      .query((el) => el.componentInstance instanceof MatStepper)
+      .injector.get(CngxStepperPresenter);
+
+    try {
+      presenter.select(1);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(announce.mock.calls.at(-1)?.[0]).toBe('Committing step\u2026');
+
+      fixture.componentInstance.resolveCommit(true);
+      await fixture.whenStable();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(presenter.commitTransition.current()).toBe('success');
+      const landed = announce.mock.calls.at(-1)?.[0];
+      expect(landed).toMatch(/^Step 2 of 2: Step /);
+      const callsBeforeFlip = announce.mock.calls.length;
+
+      lang.set('de');
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(announce.mock.calls.length).toBe(callsBeforeFlip);
+    } finally {
+      announcer.ngOnDestroy();
     }
   });
 

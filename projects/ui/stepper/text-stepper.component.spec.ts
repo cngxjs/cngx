@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, computed, signal, type Signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { describe, expect, it } from 'vitest';
@@ -8,6 +8,7 @@ import {
   CngxStepperEmpty,
   provideStepperI18n,
   withStepperI18nLabels,
+  type CngxStepperI18nOverrides,
 } from '@cngx/common/stepper';
 
 import { CngxTextStepper } from './text-stepper.component';
@@ -202,3 +203,100 @@ describe('CngxTextStepper', () => {
     expect(glyph.textContent?.trim()).not.toBe('');
   });
 });
+
+function languageSwitch(): {
+  lang: ReturnType<typeof signal<'en' | 'de'>>;
+  overrides: Signal<CngxStepperI18nOverrides>;
+} {
+  const lang = signal<'en' | 'de'>('en');
+  const overrides = computed<CngxStepperI18nOverrides>(() =>
+    lang() === 'de'
+      ? {
+          stepIndicatorRoleDescription: 'Schrittanzeige',
+          textStepperFormat: (current, total) => `Schritt ${current} von ${total}`,
+          statusLabels: { errored: 'Fehler' },
+        }
+      : {},
+  );
+  return { lang, overrides };
+}
+
+describe('CngxTextStepper language switch', () => {
+  @Component({
+    standalone: true,
+    imports: [CngxTextStepper, CngxStep],
+    template: `
+      <cngx-text-stepper [(activeStepIndex)]="active">
+        <div cngxStep label="Customer"></div>
+        <div cngxStep label="Payment" [error]="err()"></div>
+      </cngx-text-stepper>
+    `,
+  })
+  class SwitchHost {
+    active = signal(0);
+    err = signal<boolean>(true);
+  }
+
+  it('does not re-announce on a language flip', () => {
+    const { lang, overrides } = languageSwitch();
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideStepperI18n(withStepperI18nLabels(overrides)),
+      ],
+    });
+    const fixture = TestBed.createComponent(SwitchHost);
+    fixture.detectChanges();
+    const text = fixture.nativeElement.querySelector('.cngx-text-stepper__text') as HTMLElement;
+    const error = fixture.nativeElement.querySelector('.cngx-text-stepper__error') as HTMLElement;
+    expect(text.textContent?.trim()).toBe('Step 1 of 2');
+    expect(error.textContent?.trim()).toContain('Payment: Errored');
+
+    lang.set('de');
+    fixture.detectChanges();
+    expect(text.textContent?.trim()).toBe('Step 1 of 2');
+    expect(error.textContent?.trim()).toContain('Payment: Errored');
+
+    fixture.componentInstance.active.set(1);
+    fixture.componentInstance.err.set(false);
+    fixture.detectChanges();
+    fixture.componentInstance.err.set(true);
+    fixture.detectChanges();
+    expect(text.textContent?.trim()).toBe('Schritt 2 von 2');
+    expect(error.textContent?.trim()).toContain('Payment: Fehler');
+  });
+});
+
+describe('CngxTextStepper consumer-translated step label', () => {
+  @Component({
+    standalone: true,
+    imports: [CngxTextStepper, CngxStep],
+    template: `
+      <cngx-text-stepper [(activeStepIndex)]="active" [showCurrentLabel]="true">
+        <div cngxStep [label]="lang() === 'de' ? 'Kunde' : 'Customer'"></div>
+        <div cngxStep [label]="lang() === 'de' ? 'Zahlung' : 'Payment'"></div>
+      </cngx-text-stepper>
+    `,
+  })
+  class LabelSwitchHost {
+    active = signal(0);
+    lang = signal<'en' | 'de'>('en');
+  }
+
+  it('does not re-announce on a language flip of the step label', () => {
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const fixture = TestBed.createComponent(LabelSwitchHost);
+    fixture.detectChanges();
+    const text = fixture.nativeElement.querySelector('.cngx-text-stepper__text') as HTMLElement;
+    expect(text.textContent?.trim()).toBe('Step 1 of 2: Customer');
+
+    fixture.componentInstance.lang.set('de');
+    fixture.detectChanges();
+    expect(text.textContent?.trim()).toBe('Step 1 of 2: Customer');
+
+    fixture.componentInstance.active.set(1);
+    fixture.detectChanges();
+    expect(text.textContent?.trim()).toBe('Step 2 of 2: Zahlung');
+  });
+});
+
