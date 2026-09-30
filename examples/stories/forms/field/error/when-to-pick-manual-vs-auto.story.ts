@@ -13,8 +13,9 @@ export const STORY: DemoSpec = {
   moduleImports: [
     'import { form, schema, required, minLength } from \'@angular/forms/signals\';',
     'import { CngxFormField, CngxLabel, CngxError, CngxFieldErrors } from \'@cngx/forms/field\';',
+    'import { CngxInput } from \'@cngx/forms/input\';',
   ],
-  imports: ['CngxFormField', 'CngxLabel', 'CngxError', 'CngxFieldErrors'],
+  imports: ['CngxFormField', 'CngxLabel', 'CngxError', 'CngxFieldErrors', 'CngxInput'],
   setup: `protected readonly model = signal<{ autoName: string; manualName: string }>({ autoName: '', manualName: '' });
   protected readonly userForm = form(this.model, schema<{ autoName: string; manualName: string }>((root) => {
     required(root.autoName, { message: 'This field is required' });
@@ -24,12 +25,12 @@ export const STORY: DemoSpec = {
   }));`,
   template: `  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:720px">
 
-    <section style="display:grid;gap:8px">
+    <section style="display:grid;gap:8px;align-content:start">
       <h3 style="margin:0">Auto: cngx-field-errors</h3>
       <cngx-form-field [field]="userForm.autoName">
-        <label cngxLabel for="pick-auto-name">Display name</label>
+        <label cngxLabel>Display name</label>
         <input
-          id="pick-auto-name"
+          cngxInput
           type="text"
           [value]="userForm.autoName().value()"
           (input)="userForm.autoName().value.set($any($event.target).value)"
@@ -42,12 +43,12 @@ export const STORY: DemoSpec = {
       </p>
     </section>
 
-    <section style="display:grid;gap:8px">
+    <section style="display:grid;gap:8px;align-content:start">
       <h3 style="margin:0">Manual: div cngxError</h3>
       <cngx-form-field [field]="userForm.manualName">
-        <label cngxLabel for="pick-manual-name">Display name</label>
+        <label cngxLabel>Display name</label>
         <input
-          id="pick-manual-name"
+          cngxInput
           type="text"
           [value]="userForm.manualName().value()"
           (input)="userForm.manualName().value.set($any($event.target).value)"
