@@ -57,7 +57,10 @@ export class CngxDialogClose {
   readonly value = input<unknown>(undefined, { alias: 'cngxDialogClose' });
 
   /**
-   * Explicit `aria-label` override.
+   * Explicit `aria-label` override. Bind a dynamic accessible name here,
+   * not through `[attr.aria-label]`: the directive owns the host's
+   * `aria-label` binding, so a second binding on the same attribute races it.
+   * A static `aria-label="..."` attribute on the host is kept as is.
    *
    * When not set, the directive auto-detects whether the host element
    * has descriptive text content. If it does (e.g. "Cancel", "Confirm"),
@@ -66,10 +69,11 @@ export class CngxDialogClose {
    */
   readonly label = input<string | undefined>(undefined, { alias: 'cngxDialogCloseLabel' });
 
-  // Read once at construction: after the first render the host binding owns
-  // aria-label, so a later recompute (a language switch) must not mistake the
-  // directive's own attribute for a consumer-authored one.
-  private readonly consumerAriaLabel = (this.elRef.nativeElement as HTMLElement).hasAttribute(
+  // The value is read once at construction and written back through the host
+  // binding: returning null would remove the consumer's attribute, and after
+  // the first render the binding owns aria-label, so a recompute must not
+  // mistake the directive's own value for a consumer-authored one.
+  private readonly consumerAriaLabel = (this.elRef.nativeElement as HTMLElement).getAttribute(
     'aria-label',
   );
 
@@ -80,6 +84,7 @@ export class CngxDialogClose {
   /**
    * Computed `aria-label`. Returns:
    * - explicit `label()` input if set
+   * - the consumer's static `aria-label` attribute, kept as is
    * - `null` if host text is descriptive (> 1 char, not whitespace-only)
    * - `'Close dialog'` for icon-only / single-char content
    */
@@ -89,9 +94,8 @@ export class CngxDialogClose {
       return explicit || null;
     }
 
-    // If host already has aria-label attribute set by the consumer, don't override
-    if (this.consumerAriaLabel) {
-      return null;
+    if (this.consumerAriaLabel !== null) {
+      return this.consumerAriaLabel;
     }
 
     const el = this.elRef.nativeElement as HTMLElement;
