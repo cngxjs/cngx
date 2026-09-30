@@ -203,6 +203,27 @@ describe('select-family field skins', () => {
     expect(el.getBoundingClientRect().height).toBeCloseTo(boxHeight(el), 0);
   });
 
+  // The caret glyph is an SVG whose box is its ink, and align-items centres
+  // that box, so it sits on the trigger's middle whatever the font. The text
+  // glyph it replaced sat about 0.13 x the caret size low, visible next to the
+  // value in a content-sized bare picker nested in a field box.
+  it.each([
+    ['nested bare picker', SkinHost, '.nested'],
+    ['fill select', SkinHost, '.solo'],
+    ['fill multi-select', SkinHost, '.chips'],
+    ['fill typeahead', StateHost, '.valid'],
+  ] as const)('centres the default caret on the %s trigger', (_name, host, hostSelector) => {
+    const el = trigger(mount(host), hostSelector);
+    const glyph = el.querySelector('[class*="__caret"] svg');
+    if (!glyph) {
+      throw new Error(`${hostSelector} renders no caret svg`);
+    }
+    const box = el.getBoundingClientRect();
+    const caret = glyph.getBoundingClientRect();
+    expect(caret.height).toBeGreaterThan(0);
+    expect(Math.abs(caret.top + caret.height / 2 - (box.top + box.height / 2))).toBeLessThanOrEqual(0.5);
+  });
+
   it('draws the fill trigger as an underline, not a box', () => {
     const el = trigger(mount(), '.solo');
     expect(computedValue(el, 'border-bottom-width')).toBe('1px');

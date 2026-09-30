@@ -229,7 +229,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
    */
   readonly clearGlyph = input<TemplateRef<void> | null>(null);
   /**
-   * Replaces the built-in `▾` caret glyph. Ignored when
+   * Replaces the built-in caret glyph. Ignored when
    * `*cngxSelectCaret` is projected.
    */
   readonly caretGlyph = input<TemplateRef<void> | null>(null);
