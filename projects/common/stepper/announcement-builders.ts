@@ -85,7 +85,9 @@ export function createStepperAnnouncementBuilders(
       // double-announce a position the SR user already reached.
       const landed = presenter.stepsOnly()[presenter.activeStepIndex()];
       if (landed) {
-        const label = landed.label();
+        // A step label can itself derive from copy (the Material bridge's
+        // `Step <id>` fallback), so it is read untracked too.
+        const label = untracked(landed.label);
         const count = presenter.stepsOnly().length;
         return untracked(() => inputs.i18n().selectedStep(label, landed.flatIndex + 1, count));
       }
@@ -98,7 +100,8 @@ export function createStepperAnnouncementBuilders(
       const failedIdx = presenter.lastFailedIndex();
       const originIdx = presenter.originIndexDuringCommit();
       if (failedIdx !== undefined && originIdx !== undefined) {
-        const originLabel = stepsOnly()[originIdx]?.label();
+        const origin = stepsOnly()[originIdx];
+        const originLabel = origin ? untracked(origin.label) : undefined;
         if (originLabel) {
           return untracked(() => inputs.i18n().commitRolledBackTo(originLabel));
         }
