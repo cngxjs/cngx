@@ -1,6 +1,7 @@
 import { computed, type Signal } from '@angular/core';
 import type { CngxTimelineConfig, CngxTimelineLabels, TimelineGroup } from '@cngx/common/timeline';
 import { coerceSignal } from '@cngx/core/utils';
+import { recordEqual } from '@cngx/utils';
 
 const NO_LABELS: CngxTimelineLabels = {};
 
@@ -36,15 +37,25 @@ export function createTimelineFallbackCopy(
   config: CngxTimelineConfig,
 ): Signal<CngxTimelineFallbackCopy> {
   const source = coerceSignal<CngxTimelineLabels>(config.labels ?? NO_LABELS);
-  return computed(() => {
-    const labels = source();
-    return {
-      retry: labels.retry ?? '',
-      errorFallback: labels.errorFallback ?? '',
-      emptyFallback: labels.emptyFallback ?? '',
-      loading: labels.loading ?? '',
-      refreshing: labels.refreshing ?? '',
-      groupLabel: (group) => labels.groupLabel?.(group) ?? group.key,
-    };
+  // The wrapper closure is rebuilt only when the consumer formatter itself
+  // changes, so an unrelated label flip keeps `groupLabel` reference-stable.
+  const formatter = computed(() => source().groupLabel);
+  const groupLabel = computed(() => {
+    const format = formatter();
+    return (group: TimelineGroup<unknown>): string => format?.(group) ?? group.key;
   });
+  return computed(
+    () => {
+      const labels = source();
+      return {
+        retry: labels.retry ?? '',
+        errorFallback: labels.errorFallback ?? '',
+        emptyFallback: labels.emptyFallback ?? '',
+        loading: labels.loading ?? '',
+        refreshing: labels.refreshing ?? '',
+        groupLabel: groupLabel(),
+      };
+    },
+    { equal: recordEqual },
+  );
 }
