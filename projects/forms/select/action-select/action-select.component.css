@@ -192,7 +192,12 @@
     .cngx-action-select__caret {
       color: var(--cngx-select-caret-color, currentColor);
       font-size: var(--cngx-select-caret-size, 1em);
-      line-height: 0;
+      /* The glyph box, not the font's ascent/descent, is what align-items
+         centres: a zero line-height left the ink of a text glyph below the
+         value text by about 0.13 x the caret size. */
+      display: inline-flex;
+      align-items: center;
+      line-height: 1;
     }
 
     .cngx-action-select__clear:focus-visible {

@@ -89,7 +89,11 @@
           <ng-container *ngTemplateOutlet="glyph" />
         </span>
       } @else {
-        <span aria-hidden="true" class="cngx-action-select__caret">&#9662;</span>
+        <span aria-hidden="true" class="cngx-action-select__caret">
+          <svg viewBox="0 0 10 10" width="0.27em" height="0.27em" focusable="false">
+            <path d="M0 0h10L5 10z" fill="currentColor" />
+          </svg>
+        </span>
       }
     }
   </div>

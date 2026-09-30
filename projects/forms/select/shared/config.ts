@@ -271,7 +271,7 @@ export interface CngxSelectConfig {
    * single-select. Defaults to `'auto'`.
    */
   readonly selectionIndicatorVariant?: CngxSelectSelectionIndicatorVariant;
-  /** Whether the default trigger caret (▾) is shown at all. */
+  /** Whether the default trigger caret is shown at all. */
   readonly showCaret?: boolean;
   /** Focus-restore to trigger on panel close. */
   readonly restoreFocus?: boolean;
