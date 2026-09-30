@@ -82,7 +82,7 @@ td:has([data-skin='bare']) {
     email(root.email, { message: 'Enter a valid email address.' });
   }));`,
   template: `  <div style="display:grid;gap:16px">
-    <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+    <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;--cngx-field-bare-inline-size:16rem">
       <cngx-form-field [field]="anatomyForm.query" skin="bare">
         <label cngxLabel class="cngx-sr-only">Icon and clear button</label>
         <span cngxFieldBox>

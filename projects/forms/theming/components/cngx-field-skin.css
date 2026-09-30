@@ -272,9 +272,13 @@
       border-radius: 0;
       background: transparent;
       /* Bare exists inside something that owns the area - a cell, a toolbar
-         slot - so the container decides the width. Block size stays
-         content-driven; the --cngx-target-min floor from cngx.base survives. */
-      inline-size: 100%;
+         slot - so the container decides the width: 100% fills a cell, and a
+         container that lines several bare fields up (a toolbar) sets
+         --cngx-field-bare-inline-size on itself. Unregistered, so it inherits
+         from the container and the 100% fallback holds everywhere else.
+         Block size stays content-driven; the --cngx-target-min floor from
+         cngx.base survives. */
+      inline-size: var(--cngx-field-bare-inline-size, 100%);
       /* Bare sits flush in a cell or toolbar slot, where an outset ring is
          clipped by the container or collides with its neighbour. The ring
          goes inside the box: the box ring in cngx-field-affix.css reads this
