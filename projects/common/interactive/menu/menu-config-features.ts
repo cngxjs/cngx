@@ -1,4 +1,11 @@
-import { defineMenuConfigFeature, type CngxMenuAriaLabels, type CngxMenuConfigFeature } from './menu-config';
+import type { Signal } from '@angular/core';
+import { createOverrideMerge } from '@cngx/core/utils';
+
+import {
+  defineMenuConfigFeature,
+  type CngxMenuAriaLabels,
+  type CngxMenuConfigFeature,
+} from './menu-config';
 
 /**
  * Override one or more ARIA strings (English defaults). Unset keys keep
@@ -7,10 +14,12 @@ import { defineMenuConfigFeature, type CngxMenuAriaLabels, type CngxMenuConfigFe
  *
  * @category common/interactive/menu
  */
-export function withAriaLabels(partial: Partial<CngxMenuAriaLabels>): CngxMenuConfigFeature {
+export function withAriaLabels(
+  partial: Partial<CngxMenuAriaLabels> | Signal<Partial<CngxMenuAriaLabels>>,
+): CngxMenuConfigFeature {
   return defineMenuConfigFeature((cfg) => ({
     ...cfg,
-    ariaLabels: { ...cfg.ariaLabels, ...partial },
+    ariaLabels: createOverrideMerge(cfg.ariaLabels, partial),
   }));
 }
 

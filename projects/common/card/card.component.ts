@@ -6,6 +6,7 @@ import {
   input,
   model,
   output,
+  untracked,
   ViewEncapsulation,
 } from '@angular/core';
 import { Router } from '@angular/router';
@@ -222,7 +223,7 @@ export class CngxCard {
     }),
     arm: (curr, prev) => {
       if (curr.selectable && curr.selected !== prev.selected) {
-        return curr.selected ? this.i18n.selected : this.i18n.deselected;
+        return untracked(() => (curr.selected ? this.i18n().selected : this.i18n().deselected));
       }
       return null;
     },
@@ -241,8 +242,10 @@ export class CngxCard {
     // snapshots it is actually read under - a lazy read behind the
     // loading arm would skip the loading-start snapshot and never
     // spend the phrase (same trap as tabs' closedPhrase).
+    // Copy is read untracked so a language switch never re-voices the
+    // region; the next transition speaks the new language.
     const phrase = this.selectionPhrase();
-    return this.loading() ? this.i18n.loading : phrase;
+    return this.loading() ? untracked(() => this.i18n().loading) : phrase;
   });
 
   /** Emits when an interactive card is clicked or activated via keyboard. */

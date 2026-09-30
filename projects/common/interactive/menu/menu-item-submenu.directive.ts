@@ -12,7 +12,7 @@ import {
   untracked,
 } from '@angular/core';
 
-import { nextUid } from '@cngx/core/utils';
+import { coerceSignal, nextUid } from '@cngx/core/utils';
 
 import {
   CNGX_HOVER_INTENT_DEFAULTS,
@@ -114,7 +114,7 @@ export class CngxMenuItemSubmenu implements CngxMenuSubmenuLike {
   private readonly menuHost = inject(CNGX_MENU_HOST, { optional: true });
   private readonly wiring = inject(CNGX_MENU_SUBMENU_WIRING, { optional: true });
   private readonly announcer = inject(CNGX_MENU_ANNOUNCER_FACTORY)();
-  private readonly menuConfig = injectMenuConfig();
+  private readonly ariaLabels = coerceSignal(injectMenuConfig().ariaLabels);
   private readonly destroyRef = inject(DestroyRef);
   private readonly ownId = nextUid('cngx-menu-submenu');
 
@@ -227,9 +227,9 @@ export class CngxMenuItemSubmenu implements CngxMenuSubmenuLike {
       }
       untracked(() => {
         if (current) {
-          this.announcer.announce(this.menuConfig.ariaLabels.submenuOpened);
+          this.announcer.announce(this.ariaLabels().submenuOpened);
         } else {
-          this.announcer.announce(this.menuConfig.ariaLabels.submenuClosed);
+          this.announcer.announce(this.ariaLabels().submenuClosed);
         }
       });
     });

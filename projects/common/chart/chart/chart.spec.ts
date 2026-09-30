@@ -1,5 +1,6 @@
 import {
   Component,
+  computed,
   Directive,
   effect,
   EnvironmentInjector,
@@ -1737,5 +1738,70 @@ describe('CngxChart - duplicate same-orientation axis dev warning', () => {
     fixture.detectChanges();
     await fixture.whenStable();
     expect(warn.mock.calls.some((c) => String(c[0]).includes('share one orientation'))).toBe(false);
+  });
+});
+
+describe('CngxChart - connection copy flip', () => {
+  beforeEach(() => createResizeObserverMock().install(window));
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('does not re-announce on a language flip', async () => {
+    const { createManualState } = await import('@cngx/common/data');
+    const { provideChartI18n } = await import('../i18n/chart-i18n');
+    const lang = signal<'en' | 'de'>('en');
+    @Component({
+      standalone: true,
+      imports: [CngxChart],
+      template: `<cngx-chart
+        [data]="[1, 2, 3]"
+        [connectionState]="cs"
+        [width]="200"
+        [height]="100"
+        data-testid="chart"
+      />`,
+    })
+    class Host {
+      readonly cs = createManualState<unknown>();
+    }
+    TestBed.configureTestingModule({
+      imports: [Host],
+      providers: [
+        provideChartI18n(
+          computed(() =>
+            lang() === 'de'
+              ? {
+                  connectionLost: () => 'Verbindung verloren',
+                  connectionReconnecting: () => 'Verbinde neu',
+                  connectionRestored: () => 'Verbindung wiederhergestellt',
+                }
+              : {},
+          ),
+        ),
+      ],
+    });
+    const fixture = TestBed.createComponent(Host);
+    fixture.componentInstance.cs.setError(new Error('down'));
+    fixture.detectChanges();
+    const chart = fixture.nativeElement.querySelector('[data-testid="chart"]') as HTMLElement;
+    const overlay = (): string =>
+      chart.querySelector('.cngx-chart__connection-overlay')?.textContent?.trim() ?? '';
+    const region = chart.querySelector('.cngx-chart__sr-status') as HTMLElement;
+    expect(overlay()).toBe('Connection lost');
+
+    lang.set('de');
+    fixture.detectChanges();
+    expect(overlay()).toBe('Connection lost');
+
+    fixture.componentInstance.cs.set('refreshing');
+    fixture.detectChanges();
+    expect(overlay()).toBe('Verbinde neu');
+
+    fixture.componentInstance.cs.set('success');
+    fixture.detectChanges();
+    expect(region.textContent?.trim()).toBe('Verbindung wiederhergestellt');
+
+    lang.set('en');
+    fixture.detectChanges();
+    expect(region.textContent?.trim()).toBe('Verbindung wiederhergestellt');
   });
 });

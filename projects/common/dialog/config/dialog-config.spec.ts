@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { Component, ElementRef, signal, viewChild } from '@angular/core';
+import { Component, computed, ElementRef, signal, viewChild } from '@angular/core';
+import { coerceSignal } from '@cngx/core/utils';
 import { TestBed } from '@angular/core/testing';
 
 import { CngxDialog } from '../dialog/dialog.directive';
@@ -42,7 +43,7 @@ describe('CNGX_DIALOG_DEFAULTS', () => {
   });
 
   it('ships the five English labels without any provider', () => {
-    expect(TestBed.inject(CNGX_DIALOG_DEFAULTS).labels).toEqual({
+    expect(coerceSignal(TestBed.inject(CNGX_DIALOG_DEFAULTS).labels)()).toEqual({
       close: 'Close dialog',
       errorFallback: 'An error occurred',
       dragHandle: 'Move dialog',
@@ -55,7 +56,7 @@ describe('CNGX_DIALOG_DEFAULTS', () => {
     TestBed.configureTestingModule({
       providers: [provideDialogConfig(withDialogLabels({ close: 'Dialog schließen' }))],
     });
-    const { labels } = TestBed.runInInjectionContext(() => injectDialogConfig());
+    const labels = coerceSignal(TestBed.runInInjectionContext(() => injectDialogConfig()).labels)();
     expect(labels.close).toBe('Dialog schließen');
     expect(labels.dragHandle).toBe('Move dialog');
   });
@@ -69,7 +70,7 @@ describe('CNGX_DIALOG_DEFAULTS', () => {
         ),
       ],
     });
-    const { labels } = TestBed.runInInjectionContext(() => injectDialogConfig());
+    const labels = coerceSignal(TestBed.runInInjectionContext(() => injectDialogConfig()).labels)();
     expect(labels.close).toBe('Schließen');
     expect(labels.dragHandle).toBe('Verschieben');
   });
@@ -114,5 +115,83 @@ describe('CNGX_DIALOG_DEFAULTS', () => {
 
     const live = fixture.nativeElement.querySelector('[aria-live]');
     expect(live?.textContent).toBe('Ein Fehler ist aufgetreten');
+  });
+
+  it('resolves plain features to the same bundle as the eager merge did', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideDialogConfig(
+          withDialogLabels({ close: 'Schließen', dragHandle: 'A' }),
+          withDialogLabels({ dragHandle: 'Verschieben' }),
+        ),
+      ],
+    });
+    expect(coerceSignal(TestBed.inject(CNGX_DIALOG_DEFAULTS).labels)()).toEqual({
+      close: 'Schließen',
+      errorFallback: 'An error occurred',
+      dragHandle: 'Verschieben',
+      dragHandleRoleDescription: 'draggable',
+      dragInstructions: 'Use arrow keys to move the dialog; Shift for larger steps',
+    });
+  });
+
+  describe('language switch', () => {
+    const lang = signal<'en' | 'de'>('en');
+    const DE = {
+      close: 'Dialog schließen',
+      errorFallback: 'Ein Fehler ist aufgetreten',
+      dragHandle: 'Dialog verschieben',
+      dragHandleRoleDescription: 'verschiebbar',
+      dragInstructions: 'Pfeiltasten bewegen den Dialog',
+    };
+
+    beforeEach(() => {
+      lang.set('en');
+      TestBed.configureTestingModule({
+        providers: [
+          provideDialogConfig(withDialogLabels(computed(() => (lang() === 'de' ? DE : {})))),
+        ],
+      });
+    });
+
+    it('relabels the close button, the drag handle and its instruction in place', () => {
+      const fixture = host();
+      const root = fixture.nativeElement as HTMLElement;
+      const button = root.querySelector('button') as HTMLElement;
+      const handle = root.querySelector('.handle') as HTMLElement;
+      const hint = root.querySelector('[id^="cngx-dialog-drag-hint"]') as HTMLElement;
+      expect(button.getAttribute('aria-label')).toBe('Close dialog');
+      expect(handle.getAttribute('aria-label')).toBe('Move dialog');
+
+      lang.set('de');
+      fixture.detectChanges();
+      expect(button.getAttribute('aria-label')).toBe('Dialog schließen');
+      expect(handle.getAttribute('aria-label')).toBe('Dialog verschieben');
+      expect(handle.getAttribute('aria-roledescription')).toBe('verschiebbar');
+      expect(hint.textContent).toBe('Pfeiltasten bewegen den Dialog');
+      expect(root.querySelector('[id^="cngx-dialog-drag-hint"]')).toBe(hint);
+    });
+
+    it('does not re-announce on a language flip', async () => {
+      const fixture = host();
+      fixture.componentInstance.error.set(true);
+      fixture.detectChanges();
+      await Promise.resolve();
+      const live = fixture.nativeElement.querySelector('[aria-live]') as HTMLElement;
+      expect(live.textContent).toBe('An error occurred');
+      live.textContent = '';
+
+      lang.set('de');
+      fixture.detectChanges();
+      await Promise.resolve();
+      expect(live.textContent).toBe('');
+
+      fixture.componentInstance.error.set(false);
+      fixture.detectChanges();
+      fixture.componentInstance.error.set(true);
+      fixture.detectChanges();
+      await Promise.resolve();
+      expect(live.textContent).toBe('Ein Fehler ist aufgetreten');
+    });
   });
 });

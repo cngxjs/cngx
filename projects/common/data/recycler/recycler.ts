@@ -2,6 +2,7 @@ import {
   DestroyRef,
   type ElementRef,
   InjectionToken,
+  type Provider,
   type Signal,
   computed,
   effect,
@@ -13,7 +14,7 @@ import {
 } from '@angular/core';
 import { clamp } from '@cngx/utils';
 import type { CngxAsyncState } from '@cngx/core/utils';
-import { createTransitionTracker, createVisibilityGate } from '@cngx/core/utils';
+import { coerceSignal, createTransitionTracker, createVisibilityGate } from '@cngx/core/utils';
 
 import { computeRange } from './range-computer';
 import { createScrollObserver } from './scroll-observer';
@@ -37,21 +38,23 @@ export interface RecyclerI18n {
 }
 
 /**
- * Injection token for recycler SR announcement texts.
- * Provides English defaults via factory. Override with `provideRecyclerI18n()`.
+ * Injection token for recycler SR announcement texts, a `Signal` so the
+ * texts follow a runtime language switch. Provides English defaults via
+ * factory. Override with `provideRecyclerI18n()`.
  *
  * @category common/data/recycler
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/recycler/recycler.ts
  * @since 0.1.0
  */
-export const CNGX_RECYCLER_I18N = new InjectionToken<RecyclerI18n>('CngxRecyclerI18n', {
-  factory: (): RecyclerI18n => ({
-    loaded: (n, t) => `${n} more items loaded. ${t} total.`,
-    filtered: (c) => `${c} results found.`,
-    empty: () => 'No results.',
-    error: () => 'Error loading data.',
-  }),
+export const CNGX_RECYCLER_I18N = new InjectionToken<Signal<RecyclerI18n>>('CngxRecyclerI18n', {
+  factory: (): Signal<RecyclerI18n> =>
+    coerceSignal<RecyclerI18n>({
+      loaded: (n, t) => `${n} more items loaded. ${t} total.`,
+      filtered: (c) => `${c} results found.`,
+      empty: () => 'No results.',
+      error: () => 'Error loading data.',
+    }),
 });
 
 /**
@@ -68,8 +71,8 @@ export const CNGX_RECYCLER_I18N = new InjectionToken<RecyclerI18n>('CngxRecycler
  *
  * @category common/data/recycler
  */
-export function provideRecyclerI18n(i18n: RecyclerI18n) {
-  return { provide: CNGX_RECYCLER_I18N, useValue: i18n };
+export function provideRecyclerI18n(i18n: RecyclerI18n | Signal<RecyclerI18n>): Provider {
+  return { provide: CNGX_RECYCLER_I18N, useFactory: () => coerceSignal(i18n) };
 }
 
 /**
@@ -487,21 +490,22 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
         return;
       }
 
-      // Route by result first: a load that settles with zero items is the
-      // empty phrase, no matter which busy status preceded it - "0 results
-      // found" is the filtered phrase, not the empty one.
-      if (current === 'success' && total === 0) {
-        announcementState.set(i18n.empty());
-      } else if (current === 'success' && (previous === 'loading' || previous === 'refreshing')) {
-        const diff = total - prevTotal;
-        if (diff > 0) {
-          announcementState.set(i18n.loaded(diff, total));
-        } else {
-          announcementState.set(i18n.filtered(total));
+      // Copy is read untracked: a language switch must not re-run the
+      // effect and re-voice the region; the next transition speaks it.
+      untracked(() => {
+        const copy = i18n();
+        // Route by result first: a load that settles with zero items is the
+        // empty phrase, no matter which busy status preceded it - "0 results
+        // found" is the filtered phrase, not the empty one.
+        if (current === 'success' && total === 0) {
+          announcementState.set(copy.empty());
+        } else if (current === 'success' && (previous === 'loading' || previous === 'refreshing')) {
+          const diff = total - prevTotal;
+          announcementState.set(diff > 0 ? copy.loaded(diff, total) : copy.filtered(total));
+        } else if (current === 'error') {
+          announcementState.set(copy.error());
         }
-      } else if (current === 'error') {
-        announcementState.set(i18n.error());
-      }
+      });
 
       untracked(() => previousTotal.set(total));
     });
@@ -513,11 +517,14 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
       const prevTotal = untracked(() => previousTotal());
       const diff = total - prevTotal;
 
-      if (prevTotal > 0 && diff > 0) {
-        announcementState.set(i18n.loaded(diff, total));
-      } else if (prevTotal > 0 && total === 0) {
-        announcementState.set(i18n.empty());
-      }
+      untracked(() => {
+        const copy = i18n();
+        if (prevTotal > 0 && diff > 0) {
+          announcementState.set(copy.loaded(diff, total));
+        } else if (prevTotal > 0 && total === 0) {
+          announcementState.set(copy.empty());
+        }
+      });
 
       untracked(() => previousTotal.set(total));
     });

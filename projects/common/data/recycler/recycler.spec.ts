@@ -1,10 +1,10 @@
-import { provideZonelessChangeDetection, signal, type WritableSignal } from '@angular/core';
+import { computed, provideZonelessChangeDetection, signal, type WritableSignal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { createResizeObserverMock } from '@cngx/testing';
 import type { CngxAsyncState, AsyncStatus } from '@cngx/core/utils';
 
-import { injectRecycler, type CngxRecycler } from './recycler';
+import { injectRecycler, provideRecyclerI18n, type CngxRecycler, type RecyclerI18n } from './recycler';
 
 function createMockState(
   overrides?: Partial<{
@@ -226,6 +226,101 @@ describe('injectRecycler', () => {
       TestBed.flushEffects();
 
       expect(recycler.announcement()).toBe('3 results found.');
+    });
+  });
+
+  describe('language switch', () => {
+    const EN: RecyclerI18n = {
+      loaded: (n, t) => `${n} more items loaded. ${t} total.`,
+      filtered: (c) => `${c} results found.`,
+      empty: () => 'No results.',
+      error: () => 'Error loading data.',
+    };
+    const DE: RecyclerI18n = {
+      loaded: (n, t) => `${n} weitere Einträge. ${t} gesamt.`,
+      filtered: (c) => `${c} Ergebnisse.`,
+      empty: () => 'Keine Ergebnisse.',
+      error: () => 'Fehler beim Laden.',
+    };
+
+    it('does not re-announce on a language flip', () => {
+      const lang = signal<'en' | 'de'>('en');
+      TestBed.configureTestingModule({
+        providers: [provideRecyclerI18n(computed(() => (lang() === 'de' ? DE : EN)))],
+      });
+      const status = signal<AsyncStatus>('refreshing');
+      const total = signal(7);
+      let recycler!: CngxRecycler;
+      TestBed.runInInjectionContext(() => {
+        recycler = injectRecycler({
+          scrollElement: mockContainer,
+          totalCount: () => total(),
+          estimateSize: 48,
+          state: createMockState({ status }),
+        });
+      });
+      TestBed.flushEffects();
+
+      total.set(3);
+      status.set('success');
+      TestBed.flushEffects();
+      expect(recycler.announcement()).toBe('3 results found.');
+
+      lang.set('de');
+      TestBed.flushEffects();
+      expect(recycler.announcement()).toBe('3 results found.');
+
+      status.set('error');
+      TestBed.flushEffects();
+      expect(recycler.announcement()).toBe('Fehler beim Laden.');
+    });
+
+    it('keeps the stateless load-count phrase on a flip', () => {
+      const lang = signal<'en' | 'de'>('en');
+      TestBed.configureTestingModule({
+        providers: [provideRecyclerI18n(computed(() => (lang() === 'de' ? DE : EN)))],
+      });
+      const total = signal(20);
+      let recycler!: CngxRecycler;
+      TestBed.runInInjectionContext(() => {
+        recycler = injectRecycler({
+          scrollElement: mockContainer,
+          totalCount: () => total(),
+          estimateSize: 48,
+        });
+      });
+      TestBed.flushEffects();
+
+      total.set(40);
+      TestBed.flushEffects();
+      expect(recycler.announcement()).toBe('20 more items loaded. 40 total.');
+
+      lang.set('de');
+      TestBed.flushEffects();
+      expect(recycler.announcement()).toBe('20 more items loaded. 40 total.');
+
+      total.set(50);
+      TestBed.flushEffects();
+      expect(recycler.announcement()).toBe('10 weitere Einträge. 50 gesamt.');
+    });
+
+    it('replaces the whole bundle with a plain override, as before', () => {
+      TestBed.configureTestingModule({ providers: [provideRecyclerI18n(DE)] });
+      const status = signal<AsyncStatus>('loading');
+      let recycler!: CngxRecycler;
+      TestBed.runInInjectionContext(() => {
+        recycler = injectRecycler({
+          scrollElement: mockContainer,
+          totalCount: () => 0,
+          estimateSize: 48,
+          state: createMockState({ status }),
+        });
+      });
+      TestBed.flushEffects();
+
+      status.set('success');
+      TestBed.flushEffects();
+      expect(recycler.announcement()).toBe('Keine Ergebnisse.');
     });
   });
 

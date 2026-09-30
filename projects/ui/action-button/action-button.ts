@@ -112,8 +112,8 @@ export type ActionButtonVariant = 'primary' | 'secondary' | 'ghost';
       [enabled]="clickEnabled()"
       [busy]="effectiveBusy()"
       [autoAnnounce]="false"
-      [succeededAnnouncement]="succeededAnnouncement() ?? succeededLabel() ?? i18n().asyncClickSucceeded"
-      [failedAnnouncement]="failedAnnouncement() ?? failedLabel() ?? i18n().asyncClickFailed"
+      [succeededAnnouncement]="succeededAnnouncement() ?? succeededLabel()"
+      [failedAnnouncement]="failedAnnouncement() ?? failedLabel()"
       [attr.aria-describedby]="describedBy()"
       [class]="'cngx-action-button cngx-action-button--' + variant()"
     >
@@ -287,16 +287,15 @@ export class CngxActionButton {
   protected readonly effectiveAnnouncement = computed(() => {
     switch (this.effectiveStatus()) {
       case 'success':
-        return (
-          this.succeededAnnouncement() ??
-          this.succeededLabel() ??
-          untracked(() => this.i18n().asyncClickSucceeded)
+        return untracked(
+          () =>
+            this.succeededAnnouncement() ??
+            this.succeededLabel() ??
+            this.i18n().asyncClickSucceeded,
         );
       case 'error':
-        return (
-          this.failedAnnouncement() ??
-          this.failedLabel() ??
-          untracked(() => this.i18n().asyncClickFailed)
+        return untracked(
+          () => this.failedAnnouncement() ?? this.failedLabel() ?? this.i18n().asyncClickFailed,
         );
       default:
         return '';

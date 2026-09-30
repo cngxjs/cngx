@@ -128,7 +128,7 @@ export class CngxExpandableToggle {
           [attr.aria-expanded]="expanded()"
           (click)="expanded.set(!expanded())"
         >
-          {{ expanded() ? lessLabel() : moreLabel() }}
+          {{ expanded() ? resolvedLessLabel() : resolvedMoreLabel() }}
         </button>
       }
     }
@@ -142,15 +142,21 @@ export class CngxExpandableText {
   /** Whether the text is expanded. Supports two-way `[(expanded)]` binding. */
   readonly expanded = model<boolean>(false);
   /**
-   * Label for the "show more" button. Defaults to
-   * `CNGX_LAYOUT_I18N.expandableTextMore`, read at construction.
+   * Label for the "show more" button. Unbound, it follows
+   * `CNGX_LAYOUT_I18N.expandableTextMore`.
    */
-  readonly moreLabel = input<string>(this.i18n().expandableTextMore);
+  readonly moreLabel = input<string | undefined>(undefined);
   /**
-   * Label for the "show less" button. Defaults to
-   * `CNGX_LAYOUT_I18N.expandableTextLess`, read at construction.
+   * Label for the "show less" button. Unbound, it follows
+   * `CNGX_LAYOUT_I18N.expandableTextLess`.
    */
-  readonly lessLabel = input<string>(this.i18n().expandableTextLess);
+  readonly lessLabel = input<string | undefined>(undefined);
+  protected readonly resolvedMoreLabel = computed(
+    () => this.moreLabel() ?? this.i18n().expandableTextMore,
+  );
+  protected readonly resolvedLessLabel = computed(
+    () => this.lessLabel() ?? this.i18n().expandableTextLess,
+  );
 
   /** Optional custom toggle template projected by the consumer. */
   protected readonly customToggle = contentChild(CngxExpandableToggle);

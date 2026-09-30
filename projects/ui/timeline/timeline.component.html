@@ -54,7 +54,7 @@
       @if (emptyTpl(); as tpl) {
         <ng-container *ngTemplateOutlet="tpl; context: { $implicit: emptyReason() }" />
       } @else {
-        {{ labels.emptyFallback }}
+        {{ labels().emptyFallback }}
       }
     </div>
   }
@@ -135,7 +135,7 @@
     @if (loadingTailTpl(); as tpl) {
       <ng-container *ngTemplateOutlet="tpl" />
     } @else {
-      {{ labels.refreshing }}
+      {{ labels().refreshing }}
     }
   </div>
 }
@@ -161,12 +161,12 @@
       <!-- No role="alert" here: the polite region below is the single
            announcer for every view transition, error included - an alert on
            top of it would double-fire the same fallback. -->
-      <p class="cngx-timeline__error-message">{{ labels.errorFallback }}</p>
+      <p class="cngx-timeline__error-message">{{ labels().errorFallback }}</p>
       @if (retryButtonTpl(); as tpl) {
         <ng-container *ngTemplateOutlet="tpl; context: { $implicit: emitRetry }" />
       } @else {
         <button class="cngx-timeline__retry" type="button" (click)="emitRetry()">
-          {{ labels.retry }}
+          {{ labels().retry }}
         </button>
       }
     }

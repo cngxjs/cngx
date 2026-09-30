@@ -6,6 +6,7 @@ import {
 } from '@angular/core/rxjs-interop';
 
 import { CngxActiveDescendant } from '@cngx/common/a11y';
+import { coerceSignal } from '@cngx/core/utils';
 
 import { CNGX_MENU_ANNOUNCER_FACTORY } from './menu-announcer';
 import { injectMenuConfig } from './menu-config';
@@ -66,7 +67,7 @@ export class CngxMenu implements CngxMenuHost {
 
   private readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly announcer = inject(CNGX_MENU_ANNOUNCER_FACTORY)();
-  private readonly menuConfig = injectMenuConfig();
+  private readonly ariaLabels = coerceSignal(injectMenuConfig().ariaLabels);
 
   /** Internal registry backing {@link submenuItems}. */
   private readonly _submenuItems = signal<readonly CngxMenuSubmenuLike[]>([], {
@@ -104,7 +105,7 @@ export class CngxMenu implements CngxMenuHost {
       .pipe(takeUntilDestroyed())
       .subscribe(() => {
         untracked(() => {
-          this.announcer.announce(this.menuConfig.ariaLabels.itemActivated);
+          this.announcer.announce(this.ariaLabels().itemActivated);
         });
       });
   }

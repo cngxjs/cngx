@@ -1,10 +1,13 @@
-import { Component, signal } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxPopover } from '@cngx/common/popover';
 
+import { CNGX_MENU_ANNOUNCER_FACTORY, type CngxMenuAnnouncerLike } from './menu-announcer';
+import { provideMenuConfigAt } from './menu-config';
+import { withAriaLabels } from './menu-config-features';
 import { CngxMenuItem } from './menu-item.directive';
 import {
   CngxMenuItemSubmenu,
@@ -452,5 +455,55 @@ describe('CngxMenuItemSubmenu submenu try-fallbacks dev warning', () => {
     } finally {
       warnSpy.mockRestore();
     }
+  });
+});
+
+describe('CngxMenuItemSubmenu language switch', () => {
+  const lang = signal<'en' | 'de'>('en');
+  let calls: string[];
+
+  beforeEach(() => {
+    polyfillPopover();
+    lang.set('en');
+    calls = [];
+    const stub: CngxMenuAnnouncerLike = { announce: (msg) => calls.push(msg) };
+    TestBed.configureTestingModule({
+      imports: [SubmenuHost],
+      providers: [
+        { provide: CNGX_MENU_ANNOUNCER_FACTORY, useValue: () => stub },
+        provideMenuConfigAt(
+          withAriaLabels(
+            computed(() =>
+              lang() === 'de'
+                ? { submenuOpened: 'Untermenü geöffnet', submenuClosed: 'Untermenü geschlossen' }
+                : {},
+            ),
+          ),
+        ),
+      ],
+    });
+  });
+
+  it('does not re-announce on a language flip', () => {
+    const fixture = TestBed.createComponent(SubmenuHost);
+    fixture.detectChanges();
+    TestBed.tick();
+    const popovers = fixture.debugElement.queryAll(By.directive(CngxPopover));
+    const innerPop = popovers[1].injector.get(CngxPopover);
+
+    innerPop.show();
+    TestBed.tick();
+    fixture.detectChanges();
+    expect(calls).toEqual(['Submenu opened']);
+
+    lang.set('de');
+    TestBed.tick();
+    fixture.detectChanges();
+    expect(calls).toEqual(['Submenu opened']);
+
+    innerPop.hide();
+    TestBed.tick();
+    fixture.detectChanges();
+    expect(calls).toEqual(['Submenu opened', 'Untermenü geschlossen']);
   });
 });

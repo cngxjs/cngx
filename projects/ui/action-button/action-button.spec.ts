@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { beforeEach, vi } from 'vitest';
 import { CngxActionButton } from './action-button';
@@ -692,5 +692,40 @@ describe('CngxActionButton', () => {
       flush(fixture);
       expect(liveText(fixture)).toBe('Fehlgeschlagen');
     });
+  });
+});
+
+describe('CngxActionButton language switch', () => {
+  it('does not re-announce on a language flip', () => {
+    const lang = signal<'en' | 'de'>('en');
+    TestBed.configureTestingModule({
+      imports: [UnlabelledExternalHost],
+      providers: [
+        provideInteractiveI18n(
+          withInteractiveI18nLabels(
+            computed(() =>
+              lang() === 'de'
+                ? { asyncClickSucceeded: 'Erledigt', asyncClickFailed: 'Fehlgeschlagen' }
+                : {},
+            ),
+          ),
+        ),
+      ],
+    });
+    const fixture = TestBed.createComponent(UnlabelledExternalHost);
+    fixture.detectChanges();
+    const live = fixture.nativeElement.querySelector('[aria-live="polite"]') as HTMLElement;
+
+    fixture.componentInstance.mock.status.set('success');
+    fixture.detectChanges();
+    expect(live.textContent?.trim()).toBe('Action succeeded');
+
+    lang.set('de');
+    fixture.detectChanges();
+    expect(live.textContent?.trim()).toBe('Action succeeded');
+
+    fixture.componentInstance.mock.status.set('error');
+    fixture.detectChanges();
+    expect(live.textContent?.trim()).toBe('Fehlgeschlagen');
   });
 });

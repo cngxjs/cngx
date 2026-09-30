@@ -71,7 +71,7 @@ import { injectDisplayI18n } from '../i18n/display-i18n';
       <button
         type="button"
         class="cngx-chip__remove"
-        [attr.aria-label]="removeAriaLabel()"
+        [attr.aria-label]="resolvedRemoveAriaLabel()"
         (click)="handleRemoveClick($event)"
       >
         <!--
@@ -113,13 +113,16 @@ export class CngxChip {
   readonly id = input<string | null>(null);
 
   /**
-   * A11y label for the close button. Defaults to `CNGX_DISPLAY_I18N.chipRemove`
-   * (English "Remove"), read at construction; consumers with option labels on
-   * hand should supply something more
+   * A11y label for the close button. Unbound, it follows
+   * `CNGX_DISPLAY_I18N.chipRemove` (English "Remove"); consumers with option
+   * labels on hand should supply something more
    * specific (e.g. `"Remove Red"`) so screen readers know which chip
    * the button removes.
    */
-  readonly removeAriaLabel = input<string>(this.i18n().chipRemove);
+  readonly removeAriaLabel = input<string | undefined>(undefined);
+  protected readonly resolvedRemoveAriaLabel = computed(
+    () => this.removeAriaLabel() ?? this.i18n().chipRemove,
+  );
 
   /** Fires when the user clicks the close button. */
   readonly remove = output<MouseEvent>();

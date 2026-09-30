@@ -1,5 +1,6 @@
+import { coerceSignal } from '@cngx/core/utils';
 import { TestBed } from '@angular/core/testing';
-import { Injector, runInInjectionContext } from '@angular/core';
+import { computed, Injector, runInInjectionContext, signal } from '@angular/core';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -23,11 +24,11 @@ describe('CNGX_MENU_CONFIG', () => {
   it('default factory provides English defaults', () => {
     TestBed.configureTestingModule({});
     const config = TestBed.inject(CNGX_MENU_CONFIG);
-    expect(config.ariaLabels.submenuOpened).toBe('Submenu opened');
-    expect(config.ariaLabels.submenuClosed).toBe('Submenu closed');
-    expect(config.ariaLabels.itemActivated).toBe('Item activated');
-    expect(config.ariaLabels.itemDisabled).toBe('Item disabled');
-    expect(config.ariaLabels.menuDismissed).toBe('Menu dismissed');
+    expect(coerceSignal(config.ariaLabels)().submenuOpened).toBe('Submenu opened');
+    expect(coerceSignal(config.ariaLabels)().submenuClosed).toBe('Submenu closed');
+    expect(coerceSignal(config.ariaLabels)().itemActivated).toBe('Item activated');
+    expect(coerceSignal(config.ariaLabels)().itemDisabled).toBe('Item disabled');
+    expect(coerceSignal(config.ariaLabels)().menuDismissed).toBe('Menu dismissed');
     expect(config.typeaheadDebounce).toBe(300);
     expect(config.submenuOpenDelay).toBe(0);
     expect(config.submenuCloseDelay).toBe(150);
@@ -59,9 +60,9 @@ describe('CNGX_MENU_CONFIG', () => {
       providers: [provideMenuConfig(withAriaLabels({ submenuOpened: 'Untermenü geöffnet' }))],
     });
     const config = TestBed.inject(CNGX_MENU_CONFIG);
-    expect(config.ariaLabels.submenuOpened).toBe('Untermenü geöffnet');
-    expect(config.ariaLabels.submenuClosed).toBe('Submenu closed');
-    expect(config.ariaLabels.itemActivated).toBe('Item activated');
+    expect(coerceSignal(config.ariaLabels)().submenuOpened).toBe('Untermenü geöffnet');
+    expect(coerceSignal(config.ariaLabels)().submenuClosed).toBe('Submenu closed');
+    expect(coerceSignal(config.ariaLabels)().itemActivated).toBe('Item activated');
   });
 
   it('multiple features compose left-to-right', () => {
@@ -80,7 +81,7 @@ describe('CNGX_MENU_CONFIG', () => {
     expect(config.submenuOpenDelay).toBe(150);
     expect(config.submenuCloseDelay).toBe(75);
     expect(config.closeOnSelect).toBe(false);
-    expect(config.ariaLabels).toEqual(DEFAULT_MENU_CONFIG.ariaLabels);
+    expect(coerceSignal(config.ariaLabels)()).toEqual(coerceSignal(DEFAULT_MENU_CONFIG.ariaLabels)());
   });
 
   it('repeat applications of withAriaLabels merge incrementally', () => {
@@ -93,9 +94,9 @@ describe('CNGX_MENU_CONFIG', () => {
       ],
     });
     const config = TestBed.inject(CNGX_MENU_CONFIG);
-    expect(config.ariaLabels.submenuOpened).toBe('A');
-    expect(config.ariaLabels.submenuClosed).toBe('B');
-    expect(config.ariaLabels.itemActivated).toBe('Item activated');
+    expect(coerceSignal(config.ariaLabels)().submenuOpened).toBe('A');
+    expect(coerceSignal(config.ariaLabels)().submenuClosed).toBe('B');
+    expect(coerceSignal(config.ariaLabels)().itemActivated).toBe('Item activated');
   });
 
   it('injectMenuConfig works inside an injection context', () => {
@@ -121,5 +122,22 @@ describe('CNGX_MENU_CONFIG', () => {
     for (const f of features) {
       expect((f as { _target?: string })._target).toBe('config');
     }
+  });
+
+  it('follows a Signal withAriaLabels and keeps unset keys English', () => {
+    const lang = signal<'en' | 'de'>('en');
+    TestBed.configureTestingModule({
+      providers: [
+        provideMenuConfig(
+          withAriaLabels(computed(() => (lang() === 'de' ? { itemActivated: 'Aktiviert' } : {}))),
+        ),
+      ],
+    });
+    const labels = coerceSignal(TestBed.inject(CNGX_MENU_CONFIG).ariaLabels);
+    expect(labels().itemActivated).toBe('Item activated');
+
+    lang.set('de');
+    expect(labels().itemActivated).toBe('Aktiviert');
+    expect(labels().itemDisabled).toBe('Item disabled');
   });
 });

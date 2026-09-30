@@ -1,4 +1,5 @@
-import { Component, inject } from '@angular/core';
+import { coerceSignal } from '@cngx/core/utils';
+import { Component, computed, inject, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
@@ -10,8 +11,12 @@ import {
   provideTimelineConfigAt,
   withTimelineLabels,
   type CngxTimelineConfig,
+  type CngxTimelineLabels,
   formatTimelineGroupDate,
 } from './timeline-config';
+
+const lbl = (config: CngxTimelineConfig): CngxTimelineLabels =>
+  coerceSignal<CngxTimelineLabels>(config.labels ?? {})();
 
 function group(start: Date): TimelineGroup<unknown> {
   return { key: 'k', start, items: [] };
@@ -31,7 +36,7 @@ describe('timeline config cascade', () => {
 
     it('ships English text for every label', () => {
       TestBed.configureTestingModule({});
-      const { labels } = readConfig();
+      const labels = lbl(readConfig());
 
       expect(labels).toMatchObject({
         timelineRegion: 'Timeline',
@@ -49,7 +54,7 @@ describe('timeline config cascade', () => {
       TestBed.configureTestingModule({});
       const start = new Date(2026, 6, 20);
 
-      expect(readConfig().labels?.groupLabel?.(group(start))).toBe('7/20/2026');
+      expect(lbl(readConfig()).groupLabel?.(group(start))).toBe('7/20/2026');
     });
 
     it('formats a group date in a given locale', () => {
@@ -68,7 +73,7 @@ describe('timeline config cascade', () => {
       TestBed.configureTestingModule({
         providers: [provideTimelineConfig(withTimelineLabels({ retry: 'Erneut versuchen' }))],
       });
-      const { labels } = readConfig();
+      const labels = lbl(readConfig());
 
       expect(labels?.retry).toBe('Erneut versuchen');
       expect(labels?.emptyFallback).toBe('No events yet.');
@@ -83,7 +88,7 @@ describe('timeline config cascade', () => {
           ),
         ],
       });
-      const { labels } = readConfig();
+      const labels = lbl(readConfig());
 
       expect(labels?.retry).toBe('Two');
       expect(labels?.emptyFallback).toBe('Nothing here.');
@@ -98,19 +103,19 @@ describe('timeline config cascade', () => {
         ],
       });
 
-      expect(readConfig().labels?.groupLabel?.(group(new Date(2026, 6, 20)))).toBe('Week of 2026');
+      expect(lbl(readConfig()).groupLabel?.(group(new Date(2026, 6, 20)))).toBe('Week of 2026');
     });
 
     it('leaves the library defaults untouched for the next injector', () => {
       TestBed.configureTestingModule({
         providers: [provideTimelineConfig(withTimelineLabels({ retry: 'Mutated?' }))],
       });
-      expect(readConfig().labels?.retry).toBe('Mutated?');
+      expect(lbl(readConfig()).retry).toBe('Mutated?');
 
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({});
 
-      expect(readConfig().labels?.retry).toBe('Retry');
+      expect(lbl(readConfig()).retry).toBe('Retry');
     });
   });
 
@@ -131,8 +136,8 @@ describe('timeline config cascade', () => {
       });
       const fixture = TestBed.createComponent(ScopeHost);
 
-      expect(fixture.componentInstance.config.labels?.retry).toBe('Scoped');
-      expect(readConfig().labels?.retry).toBe('Root');
+      expect(lbl(fixture.componentInstance.config).retry).toBe('Scoped');
+      expect(lbl(readConfig()).retry).toBe('Root');
     });
 
     it('merges a scoped override onto the root config instead of replacing it', () => {
@@ -152,8 +157,8 @@ describe('timeline config cascade', () => {
       const fixture = TestBed.createComponent(ScopeHost);
 
       // Re-phrasing one label must not reset the rest of the app's wording.
-      expect(fixture.componentInstance.config.labels?.retry).toBe('Scoped');
-      expect(fixture.componentInstance.config.labels?.emptyFallback).toBe('Root empty.');
+      expect(lbl(fixture.componentInstance.config).retry).toBe('Scoped');
+      expect(lbl(fixture.componentInstance.config).emptyFallback).toBe('Root empty.');
     });
 
     it('falls back to the library defaults when no parent config is provided', () => {
@@ -169,8 +174,62 @@ describe('timeline config cascade', () => {
       TestBed.configureTestingModule({ imports: [ScopeHost] });
       const fixture = TestBed.createComponent(ScopeHost);
 
-      expect(fixture.componentInstance.config.labels?.retry).toBe('Scoped');
-      expect(fixture.componentInstance.config.labels?.emptyFallback).toBe('No events yet.');
+      expect(lbl(fixture.componentInstance.config).retry).toBe('Scoped');
+      expect(lbl(fixture.componentInstance.config).emptyFallback).toBe('No events yet.');
+    });
+  });
+
+  describe('Signal labels', () => {
+    it('keeps the other status defaults on a partial status override', () => {
+      TestBed.configureTestingModule({
+        providers: [provideTimelineConfig(withTimelineLabels({ status: { done: 'Erledigt' } }))],
+      });
+      expect(lbl(readConfig()).status).toEqual({
+        done: 'Erledigt',
+        active: 'In progress',
+        upcoming: 'Upcoming',
+        rejected: 'Rejected',
+      });
+    });
+
+    it('resolves plain features to the same bundle as the eager merge did', () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideTimelineConfig(
+            withTimelineLabels({ retry: 'Nochmal', status: { active: 'Läuft' } }),
+            withTimelineLabels({ emptyFallback: 'Leer', status: { done: 'Erledigt' } }),
+          ),
+        ],
+      });
+      const labels = lbl(readConfig());
+      expect(labels).toMatchObject({
+        timelineRegion: 'Timeline',
+        retry: 'Nochmal',
+        emptyFallback: 'Leer',
+        status: { done: 'Erledigt', active: 'Läuft', upcoming: 'Upcoming', rejected: 'Rejected' },
+      });
+    });
+
+    it('follows a Signal override and keeps the nested status defaults', () => {
+      const lang = signal<'en' | 'de'>('en');
+      TestBed.configureTestingModule({
+        providers: [
+          provideTimelineConfig(
+            withTimelineLabels(
+              computed(() =>
+                lang() === 'de' ? { retry: 'Erneut versuchen', status: { done: 'Erledigt' } } : {},
+              ),
+            ),
+          ),
+        ],
+      });
+      const labels = coerceSignal<CngxTimelineLabels>(readConfig().labels ?? {});
+      expect(labels().retry).toBe('Retry');
+
+      lang.set('de');
+      expect(labels().retry).toBe('Erneut versuchen');
+      expect(labels().status?.done).toBe('Erledigt');
+      expect(labels().status?.active).toBe('In progress');
     });
   });
 });

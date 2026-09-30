@@ -1,4 +1,4 @@
-import { signal } from '@angular/core';
+import { computed, signal } from '@angular/core';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { CngxActiveDescendant } from '@cngx/common/a11y';
@@ -7,9 +7,10 @@ import {
   createContextMenuTriggerCore,
   type CngxContextMenuTriggerPopoverRef,
 } from './context-menu-trigger-core';
-import type { CngxMenuDismissHandlerFactory } from './dismiss-handler';
+import type { CngxMenuDismissHandlerFactory, CngxMenuDismissHandlerOptions } from './dismiss-handler';
 import { createMenuFocusStack, type CngxMenuFocusStack } from './menu-focus-stack';
 import { DEFAULT_MENU_CONFIG } from './menu-config';
+import { withAriaLabels } from './menu-config-features';
 import type { CngxMenuHost } from './menu-host.token';
 import { createW3CMenuStrategy } from './menu-nav-strategy';
 
@@ -99,6 +100,27 @@ describe('createContextMenuTriggerCore', () => {
   function arrow(k: 'ArrowLeft' | 'ArrowRight'): KeyboardEvent {
     return { key: k, preventDefault: vi.fn() } as unknown as KeyboardEvent;
   }
+
+  it('announces the dismissal in the language current at dismiss time', () => {
+    const lang = signal<'en' | 'de'>('en');
+    const menuConfig = withAriaLabels(
+      computed(() => (lang() === 'de' ? { menuDismissed: 'Menü geschlossen' } : {})),
+    )(DEFAULT_MENU_CONFIG);
+    let opts: CngxMenuDismissHandlerOptions | undefined;
+    const capturingFactory: CngxMenuDismissHandlerFactory = (o) => {
+      opts = o;
+      return { attach: () => () => {} };
+    };
+    const announce = vi.fn();
+    const core = build({ menuConfig, dismissFactory: capturingFactory, announcer: { announce } });
+    core.handleContextMenu(mouse());
+    expect(opts).toBeDefined();
+
+    opts!.onDismiss?.('escape');
+    lang.set('de');
+    opts!.onDismiss?.('escape');
+    expect(announce.mock.calls.map((c) => c[0])).toEqual(['Menu dismissed', 'Menü geschlossen']);
+  });
 
   it('default resolveOpen prevents default and opens the popover on contextmenu', () => {
     const core = build();

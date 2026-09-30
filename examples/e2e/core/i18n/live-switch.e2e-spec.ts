@@ -107,5 +107,53 @@ test.describe('live language switch', () => {
     await expect(stepperRegion).toHaveText('Schritt 2 von 3: Zahlung');
     await expect(tabsRegion).toHaveText('Nächster Reiter: Reiter 2 von 3: Konto');
   });
-});
 
+  test('common surfaces switch labels at once and keep a shown announcement', async ({ page }) => {
+    const route = 'core/i18n/language-pack/live-switch-common';
+    expect(routesIn('core', 'i18n', 'language-pack').map((r) => r.path)).toContain(route);
+    await gotoDemo(page, route);
+
+    const card = page.locator('cngx-card');
+    const cardRegion = card.locator('[aria-live="polite"]');
+    const copyBlock = page.locator('cngx-copy-block');
+    const copyButton = copyBlock.getByRole('button');
+    const copyRegion = copyBlock.locator('[aria-live="polite"]');
+    const breadcrumb = page.locator('nav[cngxBreadcrumb]');
+    const chipRemove = page.locator('cngx-chip button');
+    const thumbs = page.locator('cngx-range-slider [cngxSliderThumb]');
+    const toggle = page.locator('.cngx-expandable-text__toggle');
+    const chartFallback = page.locator('cngx-chart .cngx-chart__fallback');
+    const timelineEmpty = page.locator('cngx-timeline .cngx-timeline__empty');
+
+    // (1) EN baseline.
+    await expect(breadcrumb).toHaveAttribute('aria-label', 'Breadcrumb');
+    await expect(chipRemove).toHaveAccessibleName('Remove');
+    await expect(thumbs.first()).toHaveAttribute('aria-label', 'Minimum');
+    await expect(toggle).toHaveText('Show less');
+    await expect(chartFallback).toHaveText('No data');
+    await expect(timelineEmpty).toHaveText('No events yet.');
+    await expect(copyButton).toHaveText('Copy');
+
+    // (2) Announcements in English.
+    await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
+    await card.click();
+    await expect(cardRegion).toHaveText('Selected');
+    await copyButton.click();
+    await expect(copyRegion).toHaveText('Copied to clipboard');
+
+    // (3) Flip to German, no reload: labels switch, announcements stay.
+    await page.getByRole('button', { name: 'DE', exact: true }).click();
+    await expect(breadcrumb).toHaveAttribute('aria-label', 'Brotkrumennavigation');
+    await expect(chipRemove).toHaveAccessibleName('Entfernen');
+    await expect(toggle).toHaveText('Weniger anzeigen');
+    await expect(chartFallback).toHaveText('Keine Daten');
+    await expect(timelineEmpty).toHaveText('Noch keine Ereignisse.');
+    await expect(copyButton).toHaveText('Kopiert!');
+    await expect(cardRegion).toHaveText('Selected');
+    await expect(copyRegion).toHaveText('Copied to clipboard');
+
+    // (4) The next change speaks German.
+    await card.click();
+    await expect(cardRegion).toHaveText('Abgewählt');
+  });
+});

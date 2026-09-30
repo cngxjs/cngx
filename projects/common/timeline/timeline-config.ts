@@ -5,10 +5,11 @@ import {
   makeEnvironmentProviders,
   Optional,
   type Provider,
+  type Signal,
   SkipSelf,
   type TemplateRef,
 } from '@angular/core';
-import { dateTimeFormatterFor } from '@cngx/core/utils';
+import { createNestedOverrideMerge, dateTimeFormatterFor } from '@cngx/core/utils';
 
 import type { TimelineGroup } from './grouping';
 import type { TimelineStatus } from './marker.component';
@@ -146,7 +147,12 @@ export interface CngxTimelineTemplates {
  * @category common/timeline
  */
 export interface CngxTimelineConfig {
-  readonly labels?: CngxTimelineLabels;
+  /**
+   * A plain bundle or a `Signal` of one; once {@link withTimelineLabels} ran
+   * it holds a `Signal`, so the copy follows a runtime language switch. Read
+   * it through `coerceSignal` from `@cngx/core/utils`.
+   */
+  readonly labels?: CngxTimelineLabels | Signal<CngxTimelineLabels>;
   readonly templates?: CngxTimelineTemplates;
 }
 
@@ -215,9 +221,15 @@ export const CNGX_TIMELINE_CONFIG = new InjectionToken<CngxTimelineConfig>('Cngx
 export type CngxTimelineConfigFeature = (config: CngxTimelineConfig) => CngxTimelineConfig;
 
 /**
+ * @internal Shared empty bundle for a config without `labels`. One identity,
+ * so every `coerceSignal` over it resolves to the same cached source.
+ */
+export const TIMELINE_NO_LABELS: CngxTimelineLabels = {};
+
+/**
  * Merge label overrides into the cascade. Keys left out keep their
  * English library default, so a consumer translates what they need and
- * nothing more.
+ * nothing more. Pass a `Signal` to switch the language at runtime.
  *
  * ```ts
  * provideTimelineConfig(
@@ -231,17 +243,19 @@ export type CngxTimelineConfigFeature = (config: CngxTimelineConfig) => CngxTime
  *
  * @category common/timeline
  */
-export function withTimelineLabels(labels: CngxTimelineLabels): CngxTimelineConfigFeature {
+export function withTimelineLabels(
+  labels: CngxTimelineLabels | Signal<CngxTimelineLabels>,
+): CngxTimelineConfigFeature {
   return (config) => ({
     ...config,
-    labels: {
-      ...config.labels,
-      ...labels,
-      // One level deeper than the rest: `status` is a map, and a shallow
-      // spread would let a consumer who renames one status silently
-      // silence the other three.
-      status: { ...config.labels?.status, ...labels.status },
-    },
+    // One level deeper than the rest: `status` is a map, and a shallow
+    // spread would let a consumer who renames one status silently
+    // silence the other three.
+    labels: createNestedOverrideMerge<CngxTimelineLabels, 'status'>(
+      config.labels ?? TIMELINE_NO_LABELS,
+      labels,
+      'status',
+    ),
   });
 }
 

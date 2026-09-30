@@ -1,7 +1,8 @@
-import { Component, signal, viewChild } from '@angular/core';
+import { Component, computed, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 import { of, type Observable } from 'rxjs';
+import { provideInteractiveI18n, withInteractiveI18nLabels } from '../i18n/interactive-i18n';
 import { CngxAsyncClick, type AsyncAction } from './async-click.directive';
 
 // ── Deferred promise helper ─────────────────────────────────────────────
@@ -264,5 +265,43 @@ describe('CngxAsyncClick', () => {
     TestBed.flushEffects();
     const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
     expect(btn.nextElementSibling).toBeNull();
+  });
+});
+
+describe('CngxAsyncClick language switch', () => {
+  it('does not re-announce on a language flip', async () => {
+    const lang = signal<'en' | 'de'>('en');
+    TestBed.configureTestingModule({
+      providers: [
+        provideInteractiveI18n(
+          withInteractiveI18nLabels(
+            computed(() =>
+              lang() === 'de'
+                ? { asyncClickSucceeded: 'Erledigt', asyncClickFailed: 'Fehlgeschlagen' }
+                : {},
+            ),
+          ),
+        ),
+      ],
+    });
+    const { btn, host, fixture } = setupButton();
+    const region = btn.nextElementSibling as HTMLElement;
+    host.actionImpl = () => Promise.resolve();
+    btn.click();
+    await vi.waitFor(() => {
+      flush(fixture);
+      expect(region.textContent?.trim()).toBe('Action succeeded');
+    });
+
+    lang.set('de');
+    flush(fixture);
+    expect(region.textContent?.trim()).toBe('Action succeeded');
+
+    host.actionImpl = () => Promise.reject(new Error('nope'));
+    btn.click();
+    await vi.waitFor(() => {
+      flush(fixture);
+      expect(region.textContent?.trim()).toBe('Fehlgeschlagen');
+    });
   });
 });

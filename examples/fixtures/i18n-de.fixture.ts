@@ -74,6 +74,15 @@ export const INTERACTIVE_DE = {
 
 export const POPOVER_PANEL_DE = { close: 'Schließen' };
 
+/** German copy for the card, chart, layout and timeline surfaces, shared with the common live-switch story. */
+export const CARD_DE = { selected: 'Ausgewählt', deselected: 'Abgewählt', loading: 'Wird geladen' };
+export const CHART_DE = { empty: () => 'Keine Daten' };
+export const LAYOUT_DE = {
+  expandableTextMore: 'Mehr anzeigen',
+  expandableTextLess: 'Weniger anzeigen',
+};
+export const TIMELINE_DE = { emptyFallback: 'Noch keine Ereignisse.', timelineRegion: 'Zeitleiste' };
+
 /** German stepper copy for the stepper / tabs live-switch story. */
 export const STEPPER_DE: CngxStepperI18nOverrides = {
   stepperLabel: 'Schrittfolge',
@@ -131,6 +140,10 @@ export const DEMO_DISPLAY_LABELS = computed(() => (isDe() ? DISPLAY_DE : {}));
 export const DEMO_INTERACTIVE_LABELS = computed(() => (isDe() ? INTERACTIVE_DE : {}));
 export const DEMO_POPOVER_PANEL_LABELS = computed(() => (isDe() ? POPOVER_PANEL_DE : {}));
 export const DEMO_LOCALE = computed(() => (isDe() ? 'de-DE' : 'en-US'));
+export const DEMO_CARD_LABELS = computed(() => (isDe() ? CARD_DE : {}));
+export const DEMO_CHART_LABELS = computed(() => (isDe() ? CHART_DE : {}));
+export const DEMO_LAYOUT_LABELS = computed(() => (isDe() ? LAYOUT_DE : {}));
+export const DEMO_TIMELINE_LABELS = computed(() => (isDe() ? TIMELINE_DE : {}));
 export const DEMO_STEPPER_LABELS = computed<CngxStepperI18nOverrides>(() => (isDe() ? STEPPER_DE : {}));
 export const DEMO_STEPPER_ARIA_LABELS = computed<CngxStepperAriaLabels>(() =>
   isDe() ? STEPPER_ARIA_DE : {},

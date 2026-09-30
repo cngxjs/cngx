@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { createManualState } from '@cngx/common/data';
 import {
@@ -8,6 +8,8 @@ import {
   CngxTimelineLoadingTail,
   CngxTimelineRetryButton,
   CngxTimelineSkeleton,
+  provideTimelineConfig,
+  withTimelineLabels,
 } from '@cngx/common/timeline';
 import { CNGX_STATEFUL, type AsyncStatus, type CngxStateful } from '@cngx/core/utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -564,5 +566,55 @@ describe('CngxTimeline async body', () => {
       settleGate(detect);
       expect(el.querySelector('.cngx-timeline__list')?.hasAttribute('aria-busy')).toBe(false);
     });
+  });
+});
+
+describe('CngxTimeline language switch', () => {
+  const lang = signal<'en' | 'de'>('en');
+
+  beforeEach(() => {
+    lang.set('en');
+    TestBed.configureTestingModule({
+      imports: [Host],
+      providers: [
+        provideTimelineConfig(
+          withTimelineLabels(
+            computed(() =>
+              lang() === 'de'
+                ? {
+                    errorFallback: 'Zeitleiste nicht geladen.',
+                    loading: 'Lade Zeitleiste',
+                    retry: 'Erneut versuchen',
+                  }
+                : {},
+            ),
+          ),
+        ),
+      ],
+    });
+    vi.useFakeTimers();
+  });
+
+  it('does not re-announce on a language flip', () => {
+    const { el, host, detect } = mount();
+    host.state.setError(new Error('boom'));
+    vi.advanceTimersByTime(1000);
+    detect();
+    const region = el.querySelector('.cngx-timeline__sr-only') as HTMLElement;
+    expect(region.textContent?.trim()).toBe('Could not load the timeline.');
+
+    lang.set('de');
+    detect();
+    expect(region.textContent?.trim()).toBe('Could not load the timeline.');
+    // The visible surfaces are not live and follow the flip at once.
+    expect(el.querySelector('.cngx-timeline__retry')?.textContent?.trim()).toBe('Erneut versuchen');
+
+    host.state.set('loading');
+    vi.advanceTimersByTime(1000);
+    detect();
+    host.state.setError(new Error('again'));
+    vi.advanceTimersByTime(1000);
+    detect();
+    expect(region.textContent?.trim()).toBe('Zeitleiste nicht geladen.');
   });
 });

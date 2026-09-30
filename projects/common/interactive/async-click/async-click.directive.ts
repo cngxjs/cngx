@@ -116,16 +116,16 @@ export class CngxAsyncClick {
   private readonly i18n = injectInteractiveI18n();
 
   /**
-   * Label announced to screen readers on success. Defaults to
-   * `CNGX_INTERACTIVE_I18N.asyncClickSucceeded`, read at construction.
+   * Label announced to screen readers on success. Unbound, it resolves to
+   * `CNGX_INTERACTIVE_I18N.asyncClickSucceeded` at announcement time.
    */
-  readonly succeededAnnouncement = input<string>(this.i18n().asyncClickSucceeded);
+  readonly succeededAnnouncement = input<string | undefined>(undefined);
 
   /**
-   * Label announced to screen readers on failure. Defaults to
-   * `CNGX_INTERACTIVE_I18N.asyncClickFailed`, read at construction.
+   * Label announced to screen readers on failure. Unbound, it resolves to
+   * `CNGX_INTERACTIVE_I18N.asyncClickFailed` at announcement time.
    */
-  readonly failedAnnouncement = input<string>(this.i18n().asyncClickFailed);
+  readonly failedAnnouncement = input<string | undefined>(undefined);
 
   /**
    * Auto-render the polite live region announcing success/failure.
@@ -238,11 +238,13 @@ export class CngxAsyncClick {
    * `autoAnnounce` is `false`.
    */
   readonly announcement = computed(() => {
+    // Copy is read untracked: only a settle re-derives the region, so a
+    // language switch never re-voices it; the next settle speaks the new one.
     if (this.succeededState()) {
-      return this.succeededAnnouncement();
+      return untracked(() => this.succeededAnnouncement() ?? this.i18n().asyncClickSucceeded);
     }
     if (this.failedState()) {
-      return this.failedAnnouncement();
+      return untracked(() => this.failedAnnouncement() ?? this.i18n().asyncClickFailed);
     }
     return '';
   });

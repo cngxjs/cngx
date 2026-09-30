@@ -68,8 +68,6 @@ import {
 })
 export class CngxAvatarGroup {
   private readonly i18n = injectDisplayI18n();
-  /** Construction-time noun default; a `label` still equal to it is treated as unbound. */
-  private readonly nounSnapshot = this.i18n().avatarGroupNoun;
 
   /** Maximum avatars to show before collapsing the rest into the pill. Unset = show all. */
   readonly max = input<number | undefined>(undefined);
@@ -78,11 +76,12 @@ export class CngxAvatarGroup {
   /** Pill shape (mirrors `CngxAvatar`). */
   readonly shape = input<'circle' | 'square'>('circle');
   /**
-   * Entity noun used in the `aria-label` summary. Defaults to
-   * `CNGX_DISPLAY_I18N.avatarGroupNoun`, read at construction; binding a
-   * different noun switches to the English `<total> <noun>` composition.
+   * Entity noun used in the `aria-label` summary. Unbound, it follows
+   * `CNGX_DISPLAY_I18N.avatarGroupNoun` (or its `avatarGroupLabel`
+   * formatter); a bound noun switches to the English `<total> <noun>`
+   * composition.
    */
-  readonly label = input<string>(this.nounSnapshot);
+  readonly label = input<string | undefined>(undefined);
 
   /**
    * Format closure for the accessible summary. When set, it wins over
@@ -120,7 +119,7 @@ export class CngxAvatarGroup {
       return format(total, hidden);
     }
     const noun = this.label();
-    if (noun !== this.nounSnapshot) {
+    if (noun !== undefined) {
       return composeAvatarGroupLabel(total, hidden, noun);
     }
     const i18n = this.i18n();

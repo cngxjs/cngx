@@ -41,17 +41,18 @@ import { CNGX_BREADCRUMB, type CngxBreadcrumbHost } from './breadcrumb.token';
   standalone: true,
   providers: [{ provide: CNGX_BREADCRUMB, useExisting: CngxBreadcrumb }],
   host: {
-    '[attr.aria-label]': 'label()',
+    '[attr.aria-label]': 'resolvedLabel()',
   },
 })
 export class CngxBreadcrumb implements CngxBreadcrumbHost {
   private readonly i18n = injectResolvedInteractiveI18n();
 
   /**
-   * Accessible name of the navigation landmark. Defaults to
-   * `CNGX_INTERACTIVE_I18N.breadcrumb`, read at construction.
+   * Accessible name of the navigation landmark. Unbound, it follows
+   * `CNGX_INTERACTIVE_I18N.breadcrumb`, including a runtime language switch.
    */
-  readonly label = input<string>(this.i18n().breadcrumb);
+  readonly label = input<string | undefined>(undefined);
+  protected readonly resolvedLabel = computed(() => this.label() ?? this.i18n().breadcrumb);
   /** Maximum crumbs to show before the middle collapses. Unset = never collapse. */
   readonly maxVisible = input<number | undefined>(undefined);
 

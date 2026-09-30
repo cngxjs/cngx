@@ -33,13 +33,20 @@ import {
   type TimelineDateAccessor,
   type TimelineDirection,
   type TimelineGroup,
+  type CngxTimelineLabels,
   type TimelineGroupBy,
 } from '@cngx/common/timeline';
-import { CNGX_STATEFUL, injectLocale, nextUid, type CngxAsyncState } from '@cngx/core/utils';
+import {
+  CNGX_STATEFUL,
+  coerceSignal,
+  injectLocale,
+  nextUid,
+  type CngxAsyncState,
+} from '@cngx/core/utils';
 import { CngxSkeletonContainer, CngxSkeletonPlaceholder } from '@cngx/ui/skeleton';
 
 import { createTimelineSlots } from './slot-cascade';
-import { createTimelineFallbackCopy } from './timeline-labels';
+import { createTimelineFallbackCopy, TIMELINE_NO_LABELS } from './timeline-labels';
 import { CNGX_TIMELINE_VIEW_FACTORY } from './timeline-view';
 
 /**
@@ -222,6 +229,11 @@ export type CngxTimelineOrientation = 'vertical' | 'horizontal';
 })
 export class CngxTimeline<T = unknown> implements CngxTimelineMarkerHost {
   private readonly config = injectTimelineConfig();
+  // Same cached source `createTimelineFallbackCopy` resolves (coerceSignal is
+  // identity-keyed), read here for the raw `groupLabel` and `timelineRegion`.
+  private readonly configLabels = coerceSignal<CngxTimelineLabels>(
+    this.config.labels ?? TIMELINE_NO_LABELS,
+  );
   private readonly groupingFactory = inject(CNGX_TIMELINE_GROUPING_FACTORY);
   private readonly uid = nextUid('cngx-timeline');
 
@@ -380,8 +392,8 @@ export class CngxTimeline<T = unknown> implements CngxTimelineMarkerHost {
    * the app locale, so a `CNGX_LOCALE` flip re-formats the headers.
    */
   protected readonly groupHeaderLabel = computed<(group: TimelineGroup<unknown>) => string>(() => {
-    if (this.config.labels?.groupLabel !== TIMELINE_DEFAULT_GROUP_LABEL) {
-      return this.labels.groupLabel;
+    if (this.configLabels().groupLabel !== TIMELINE_DEFAULT_GROUP_LABEL) {
+      return this.labels().groupLabel;
     }
     const locale = this.locale();
     return (group) => formatTimelineGroupDate(group, locale);
@@ -421,7 +433,7 @@ export class CngxTimeline<T = unknown> implements CngxTimelineMarkerHost {
 
   /** @internal Config fallback only applies when nothing was named explicitly. */
   protected readonly listLabel = computed(() =>
-    this.ariaLabelledBy() ? null : (this.ariaLabel() ?? this.config.labels?.timelineRegion ?? null),
+    this.ariaLabelledBy() ? null : (this.ariaLabel() ?? this.configLabels().timelineRegion ?? null),
   );
 
   /** @internal A group is named by its own header element, keyed on position. */

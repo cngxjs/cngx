@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  input,
+  untracked,
+  viewChild,
+  ViewEncapsulation,
+} from '@angular/core';
 
 import { injectResolvedInteractiveI18n } from '../i18n/interactive-i18n';
 import { CngxCopyText } from './copy-text.directive';
@@ -54,12 +62,12 @@ import { CngxCopyText } from './copy-text.directive';
       #cp="cngxCopyText"
       [class.cngx-copy-block__button--copied]="cp.copied()"
     >
-      {{ cp.copied() ? copiedLabel() : buttonLabel() }}
+      {{ cp.copied() ? resolvedCopiedLabel() : resolvedButtonLabel() }}
     </button>
     <!-- Outside the button: a child of a button lands in its accessible
          name, so the announcement text would rename the control. -->
     <span aria-live="polite" class="cngx-sr-only">
-      {{ cp.copied() ? srAnnouncement() : '' }}
+      {{ liveAnnouncement() }}
     </span>
   `,
   styleUrls: ['./copy-block.css'],
@@ -69,13 +77,30 @@ export class CngxCopyBlock {
 
   /** The text value to copy to clipboard. */
   readonly value = input.required<string>();
-  /** Label for the copy button. Defaults to `CNGX_INTERACTIVE_I18N.copy`, read at construction. */
-  readonly buttonLabel = input<string>(this.i18n().copy);
-  /** Label shown after successful copy. Defaults to `CNGX_INTERACTIVE_I18N.copied`, read at construction. */
-  readonly copiedLabel = input<string>(this.i18n().copied);
+  /** Label for the copy button. Unbound, it follows `CNGX_INTERACTIVE_I18N.copy`. */
+  readonly buttonLabel = input<string | undefined>(undefined);
+  /** Label shown after successful copy. Unbound, it follows `CNGX_INTERACTIVE_I18N.copied`. */
+  readonly copiedLabel = input<string | undefined>(undefined);
   /**
-   * Screen reader announcement on copy. Defaults to
-   * `CNGX_INTERACTIVE_I18N.copiedAnnouncement`, read at construction.
+   * Screen reader announcement on copy. Unbound, it follows
+   * `CNGX_INTERACTIVE_I18N.copiedAnnouncement`.
    */
-  readonly srAnnouncement = input<string>(this.i18n().copiedAnnouncement);
+  readonly srAnnouncement = input<string | undefined>(undefined);
+
+  private readonly copyText = viewChild(CngxCopyText);
+
+  protected readonly resolvedButtonLabel = computed(() => this.buttonLabel() ?? this.i18n().copy);
+  protected readonly resolvedCopiedLabel = computed(
+    () => this.copiedLabel() ?? this.i18n().copied,
+  );
+
+  /**
+   * Live-region text. Only the copied state is tracked: a language switch
+   * never re-voices the region; the next copy speaks the new language.
+   */
+  protected readonly liveAnnouncement = computed(() =>
+    this.copyText()?.copied()
+      ? untracked(() => this.srAnnouncement() ?? this.i18n().copiedAnnouncement)
+      : '',
+  );
 }

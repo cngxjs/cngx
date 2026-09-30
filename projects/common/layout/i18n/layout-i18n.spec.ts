@@ -47,9 +47,12 @@ describe('CNGX_LAYOUT_I18N', () => {
       imports: [Host],
       providers: [provideLayoutI18n(withLayoutI18nLabels({ expandableTextMore: 'Mehr anzeigen' }))],
     });
-    const cmp = expandableText();
-    expect(cmp.moreLabel()).toBe('Mehr anzeigen');
-    expect(cmp.lessLabel()).toBe('Show less');
+    const cmp = expandableText() as unknown as {
+      resolvedMoreLabel(): string;
+      resolvedLessLabel(): string;
+    };
+    expect(cmp.resolvedMoreLabel()).toBe('Mehr anzeigen');
+    expect(cmp.resolvedLessLabel()).toBe('Show less');
   });
 
   it('flips live through a Signal override', () => {
@@ -70,5 +73,29 @@ describe('CNGX_LAYOUT_I18N', () => {
     const first = TestBed.runInInjectionContext(() => injectLayoutI18n());
     const second = TestBed.runInInjectionContext(() => injectLayoutI18n());
     expect(first).toBe(second);
+  });
+
+  it('relabels the built-in toggle on a language flip', () => {
+    const overrides = signal<Partial<CngxLayoutI18n>>({});
+    TestBed.configureTestingModule({
+      imports: [Host],
+      providers: [provideLayoutI18n(withLayoutI18nLabels(overrides))],
+    });
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+    const cmp = fixture.debugElement
+      .query(By.directive(CngxExpandableText))
+      .injector.get(CngxExpandableText);
+    cmp.expanded.set(true);
+    fixture.detectChanges();
+    const toggle = (): string =>
+      (fixture.nativeElement as HTMLElement)
+        .querySelector('.cngx-expandable-text__toggle')
+        ?.textContent?.trim() ?? '';
+    expect(toggle()).toBe('Show less');
+
+    overrides.set({ expandableTextLess: 'Weniger anzeigen' });
+    fixture.detectChanges();
+    expect(toggle()).toBe('Weniger anzeigen');
   });
 });

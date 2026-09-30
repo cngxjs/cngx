@@ -11,7 +11,7 @@ import {
   CngxTimelineOpposite,
   CngxTimelineTime,
 } from './timeline-item.component';
-import { provideTimelineConfig, withTimelineLabels } from './timeline-config';
+import { CNGX_TIMELINE_CONFIG, provideTimelineConfig, withTimelineLabels } from './timeline-config';
 
 const ALL_STATUSES: readonly AsyncStatus[] = [
   'idle',
@@ -164,6 +164,21 @@ describe('CngxTimelineItem', () => {
       expect(item.querySelector('cngx-timeline-marker')?.getAttribute('data-status')).toBe(
         'upcoming',
       );
+    });
+
+    it('renders no status line for a hand-provided config without labels', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        imports: [Host],
+        providers: [{ provide: CNGX_TIMELINE_CONFIG, useValue: {} }],
+      });
+      const { item, host, detect } = mount();
+
+      host.status.set('done');
+      detect();
+
+      expect(item.getAttribute('data-status')).toBe('done');
+      expect(statusLine(item)).toBeNull();
     });
 
     it('takes the wording from a consumer override', () => {

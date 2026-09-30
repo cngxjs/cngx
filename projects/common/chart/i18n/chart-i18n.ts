@@ -1,5 +1,5 @@
-import { computed, inject, InjectionToken, type Signal } from '@angular/core';
-import { injectLocale, memoize } from '@cngx/core/utils';
+import { computed, inject, InjectionToken, type Provider, type Signal } from '@angular/core';
+import { createOverrideMerge, injectLocale, memoize } from '@cngx/core/utils';
 import { recordEqual } from '@cngx/utils';
 
 import { formatChartNumber } from '../chart/format-number';
@@ -133,20 +133,24 @@ function buildChartI18nDefaults(locale: string): Required<CngxChartI18n> {
 export const CHART_I18N_EN: Required<CngxChartI18n> = createChartI18nDefaults('en-US');
 
 /**
- * Injection token for chart i18n strings. Defaults to English via
- * `factory:`, with numbers in the root app locale (`CNGX_LOCALE`, falling
- * back to `LOCALE_ID`). Override at app root with {@link provideChartI18n};
- * every key left at its default still follows the app locale at the use
- * site, including a runtime `CNGX_LOCALE` flip.
+ * Injection token for chart i18n strings, a `Signal` so the copy follows a
+ * runtime language switch. Defaults to English via `factory:`, with numbers
+ * in the root app locale (`CNGX_LOCALE`, falling back to `LOCALE_ID`), read
+ * live. Override at app root with {@link provideChartI18n}; every key left
+ * at its default still follows the app locale at the use site, including a
+ * runtime `CNGX_LOCALE` flip.
  *
  * @category common/chart/i18n
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/i18n/chart-i18n.ts
  * @since 0.1.0
  */
-export const CNGX_CHART_I18N = new InjectionToken<CngxChartI18n>('CngxChartI18n', {
+export const CNGX_CHART_I18N = new InjectionToken<Signal<CngxChartI18n>>('CngxChartI18n', {
   providedIn: 'root',
-  factory: (): CngxChartI18n => createChartI18nDefaults(injectLocale()()),
+  factory: (): Signal<CngxChartI18n> => {
+    const locale = injectLocale();
+    return computed(() => createChartI18nDefaults(locale()), { equal: recordEqual });
+  },
 });
 
 /**
@@ -154,7 +158,8 @@ export const CNGX_CHART_I18N = new InjectionToken<CngxChartI18n>('CngxChartI18n'
  * the English defaults, so a consumer localises only the keys they
  * care about and every key added to {@link CngxChartI18n} later keeps
  * its default instead of forcing an update. Passing a full object
- * still works - it simply overrides every key.
+ * still works - it simply overrides every key. Pass a `Signal` to switch
+ * the language at runtime.
  *
  * ```typescript
  * providers: [provideChartI18n({
@@ -166,11 +171,13 @@ export const CNGX_CHART_I18N = new InjectionToken<CngxChartI18n>('CngxChartI18n'
  *
  * @category common/chart/i18n
  */
-export function provideChartI18n(i18n: Partial<CngxChartI18n>): {
-  provide: typeof CNGX_CHART_I18N;
-  useValue: CngxChartI18n;
-} {
-  return { provide: CNGX_CHART_I18N, useValue: { ...CHART_I18N_EN, ...i18n } };
+export function provideChartI18n(
+  i18n: Partial<CngxChartI18n> | Signal<Partial<CngxChartI18n>>,
+): Provider {
+  return {
+    provide: CNGX_CHART_I18N,
+    useFactory: (): Signal<CngxChartI18n> => createOverrideMerge<CngxChartI18n>(CHART_I18N_EN, i18n),
+  };
 }
 
 /** @internal */
@@ -178,7 +185,7 @@ type ChartI18nKey = keyof CngxChartI18n;
 
 /** @internal */
 const resolvedByToken = new WeakMap<
-  CngxChartI18n,
+  Signal<CngxChartI18n>,
   WeakMap<Signal<string>, Signal<Required<CngxChartI18n>>>
 >();
 
@@ -201,25 +208,22 @@ export function injectChartI18n(): Signal<Required<CngxChartI18n>> {
   }
   let resolved = byLocale.get(locale);
   if (!resolved) {
-    resolved = computed(() => resolveChartI18n(bundle, createChartI18nDefaults(locale())), {
-      equal: recordEqual,
-    });
+    resolved = computed(
+      () => {
+        const own = bundle();
+        const localized = createChartI18nDefaults(locale());
+        const out: Record<string, unknown> = { ...localized };
+        for (const key of Object.keys(localized) as ChartI18nKey[]) {
+          const value = own[key];
+          if (value !== undefined && !DEFAULT_FORMATTERS.has(value)) {
+            out[key] = value;
+          }
+        }
+        return out as Required<CngxChartI18n>;
+      },
+      { equal: recordEqual },
+    );
     byLocale.set(locale, resolved);
   }
   return resolved;
-}
-
-/** @internal */
-function resolveChartI18n(
-  bundle: CngxChartI18n,
-  localized: Required<CngxChartI18n>,
-): Required<CngxChartI18n> {
-  const out: Record<string, unknown> = { ...localized };
-  for (const key of Object.keys(localized) as ChartI18nKey[]) {
-    const own = bundle[key];
-    if (own !== undefined && !DEFAULT_FORMATTERS.has(own)) {
-      out[key] = own;
-    }
-  }
-  return out as Required<CngxChartI18n>;
 }

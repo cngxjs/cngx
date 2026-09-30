@@ -73,12 +73,12 @@ import { createSliderTicks } from './slider-ticks';
   },
   template: `
     <span class="cngx-slider__track"></span>
-    <span cngxSliderThumb="start" [attr.aria-label]="startLabel()">
+    <span cngxSliderThumb="start" [attr.aria-label]="resolvedStartLabel()">
       @if (thumbGlyph(); as glyph) {
         <ng-container *ngTemplateOutlet="glyph" />
       }
     </span>
-    <span cngxSliderThumb="end" [attr.aria-label]="endLabel()">
+    <span cngxSliderThumb="end" [attr.aria-label]="resolvedEndLabel()">
       @if (thumbGlyph(); as glyph) {
         <ng-container *ngTemplateOutlet="glyph" />
       }
@@ -108,15 +108,19 @@ export class CngxRangeSlider {
   private readonly i18n = injectResolvedInteractiveI18n();
 
   /**
-   * Accessible name of the start (minimum) thumb. Defaults to
-   * `CNGX_INTERACTIVE_I18N.rangeMinimum`, read at construction.
+   * Accessible name of the start (minimum) thumb. Unbound, it follows
+   * `CNGX_INTERACTIVE_I18N.rangeMinimum`.
    */
-  readonly startLabel = input<string>(this.i18n().rangeMinimum);
+  readonly startLabel = input<string | undefined>(undefined);
   /**
-   * Accessible name of the end (maximum) thumb. Defaults to
-   * `CNGX_INTERACTIVE_I18N.rangeMaximum`, read at construction.
+   * Accessible name of the end (maximum) thumb. Unbound, it follows
+   * `CNGX_INTERACTIVE_I18N.rangeMaximum`.
    */
-  readonly endLabel = input<string>(this.i18n().rangeMaximum);
+  readonly endLabel = input<string | undefined>(undefined);
+  protected readonly resolvedStartLabel = computed(
+    () => this.startLabel() ?? this.i18n().rangeMinimum,
+  );
+  protected readonly resolvedEndLabel = computed(() => this.endLabel() ?? this.i18n().rangeMaximum);
   /** Render the formatted `start - end` values centred between the thumbs (visual only). */
   readonly showValue = input(false, { transform: booleanAttribute });
   /** Show the combined `start - end` value as a bubble only while focused / dragged. */

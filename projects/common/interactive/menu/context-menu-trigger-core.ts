@@ -1,5 +1,6 @@
 import { type Signal } from '@angular/core';
 import { resolveInlineArrowKey, type CngxDirection } from '@cngx/core';
+import { coerceSignal } from '@cngx/core/utils';
 
 import {
   createMenuTriggerDismissBinding,
@@ -174,6 +175,7 @@ export function createContextMenuTriggerCore(
 ): CngxContextMenuTriggerCore {
   const resolveOpen = deps.resolveOpen ?? DEFAULT_RESOLVE_OPEN;
   const resolveKeyboardOpen = deps.resolveKeyboardOpen ?? DEFAULT_RESOLVE_KEYBOARD_OPEN;
+  const ariaLabels = coerceSignal(deps.menuConfig.ariaLabels);
 
   // Shared submenu focus-stack model - identical W3C APG keyboard contract to
   // CngxMenuTrigger. The core owns the ArrowRight/ArrowLeft/Escape routing;
@@ -191,7 +193,7 @@ export function createContextMenuTriggerCore(
     hostElement: deps.hostElement,
     menuConfig: deps.menuConfig,
     factory: deps.dismissFactory,
-    onDismiss: () => deps.announcer.announce(deps.menuConfig.ariaLabels.menuDismissed),
+    onDismiss: () => deps.announcer.announce(ariaLabels().menuDismissed),
   });
 
   let virtualAnchor: HTMLElement | null = null;

@@ -1,3 +1,4 @@
+import { coerceSignal } from '@cngx/core/utils';
 import { Injector, runInInjectionContext } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
@@ -24,9 +25,9 @@ describe('provideCngxMenu', () => {
     const injector = TestBed.inject(Injector);
     const config = runInInjectionContext(injector, () => injectMenuConfig());
     expect(config.typeaheadDebounce).toBe(500);
-    expect(config.ariaLabels.submenuOpened).toBe('Submenu opened (override)');
+    expect(coerceSignal(config.ariaLabels)().submenuOpened).toBe('Submenu opened (override)');
     // Untouched keys keep their defaults.
-    expect(config.ariaLabels.submenuClosed).toBe(DEFAULT_MENU_CONFIG.ariaLabels.submenuClosed);
+    expect(coerceSignal(config.ariaLabels)().submenuClosed).toBe(coerceSignal(DEFAULT_MENU_CONFIG.ariaLabels)().submenuClosed);
     expect(config.closeOnSelect).toBe(DEFAULT_MENU_CONFIG.closeOnSelect);
   });
 });
