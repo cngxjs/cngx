@@ -54,6 +54,18 @@ export function createOverrideMerge<T extends object>(
   return merged;
 }
 
+/** The keys of `T` whose value is a plain record, not a primitive or a function. */
+type RecordKeys<T> = {
+  [P in keyof T]-?: NonNullable<T[P]> extends (...args: never[]) => unknown
+    ? never
+    : NonNullable<T[P]> extends object
+      ? P
+      : never;
+}[keyof T];
+
+/** `true` when `K` is a union of more than one key. */
+type IsUnion<K, All = K> = K extends unknown ? ([All] extends [K] ? false : true) : never;
+
 /**
  * The override shape {@link createNestedOverrideMerge} accepts: any subset of
  * the top-level keys, and any subset of the one nested record `K`.
@@ -62,7 +74,7 @@ export function createOverrideMerge<T extends object>(
  * @since 0.1.0
  * @relatedTo createNestedOverrideMerge
  */
-export type CngxNestedOverrides<T, K extends keyof T> = Partial<Omit<T, K>> & {
+export type CngxNestedOverrides<T, K extends RecordKeys<T>> = Partial<Omit<T, K>> & {
   readonly [P in K]?: Partial<T[P]>;
 };
 
@@ -101,10 +113,10 @@ function nestedEqual<T extends object>(key: keyof T): (a: T, b: T) => boolean {
  * @since 0.1.0
  * @relatedTo createOverrideMerge, coerceSignal, CngxNestedOverrides
  */
-export function createNestedOverrideMerge<T extends object, K extends keyof T>(
+export function createNestedOverrideMerge<T extends object, K extends RecordKeys<T>>(
   defaults: T | Signal<T>,
   overrides: CngxNestedOverrides<T, K> | Signal<CngxNestedOverrides<T, K>> | undefined,
-  key: K,
+  key: true extends IsUnion<K> ? never : K,
 ): Signal<T> {
   let byOverrides = NESTED_MERGES.get(defaults);
   if (!byOverrides) {

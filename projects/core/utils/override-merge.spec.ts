@@ -150,6 +150,15 @@ describe('createNestedOverrideMerge', () => {
     expect(runs).toBe(1);
   });
 
+  it('accepts only one key, and only one whose value is a record', () => {
+    // @ts-expect-error - `title` holds a string, not a record
+    createNestedOverrideMerge(STATUS_DEFAULTS, undefined, 'title');
+    const either = 'statusLabels' as 'statusLabels' | 'title';
+    // @ts-expect-error - a union key would merge only one of its members
+    createNestedOverrideMerge(STATUS_DEFAULTS, undefined, either);
+    expect(true).toBe(true);
+  });
+
   it('hands out a new reference when a nested value changes', () => {
     const source = signal<{ statusLabels?: Partial<StatusBundle['statusLabels']> }>({});
     const merged = createNestedOverrideMerge(STATUS_DEFAULTS, source, 'statusLabels');
