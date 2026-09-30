@@ -103,6 +103,7 @@ export class CngxMenuTrigger {
   private readonly direction = injectDirection();
   private readonly hostElRef = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly menuConfig = injectMenuConfig();
+  private readonly ariaLabels = coerceSignal(this.menuConfig.ariaLabels);
   private readonly announcer = inject(CNGX_MENU_ANNOUNCER_FACTORY)();
 
   /**
@@ -123,8 +124,7 @@ export class CngxMenuTrigger {
     hostElement: this.hostElRef.nativeElement,
     menuConfig: this.menuConfig,
     factory: inject(CNGX_MENU_DISMISS_HANDLER_FACTORY),
-    onDismiss: () =>
-      this.announcer.announce(coerceSignal(this.menuConfig.ariaLabels)().menuDismissed),
+    onDismiss: () => this.announcer.announce(this.ariaLabels().menuDismissed),
   });
 
   /**

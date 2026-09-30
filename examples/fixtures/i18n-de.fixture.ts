@@ -74,7 +74,7 @@ export const INTERACTIVE_DE = {
 
 export const POPOVER_PANEL_DE = { close: 'Schließen' };
 
-/** German copy for the Phase 3 common surfaces, shared with the common live-switch story. */
+/** German copy for the card, chart, layout and timeline surfaces, shared with the common live-switch story. */
 export const CARD_DE = { selected: 'Ausgewählt', deselected: 'Abgewählt', loading: 'Wird geladen' };
 export const CHART_DE = { empty: () => 'Keine Daten' };
 export const LAYOUT_DE = {
