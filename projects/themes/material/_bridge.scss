@@ -1,6 +1,7 @@
 @use 'sass:color';
 @use 'sass:list';
 @use 'sass:math';
+@use '@angular/material' as mat;
 
 // Private conventions module for the Material bridges. Every bridge routes
 // its token emission through `on()` so the two placement conventions the
@@ -27,7 +28,7 @@
 //
 // Deliberate non-adopters (each documents why in place): system-bridge
 // and density-bridge emit bare declarations on the theme host, unlayered
-// by design; nav-link-theme emits bare declarations consumed inside
+// by design (system-bridge still reads `m2-warn-text()` from here); nav-link-theme emits bare declarations consumed inside
 // sidenav's `on()` block; feedback-theme's `density($level)` emits its
 // own unlayered `:where` block because it is a consumer-level opt-in
 // included at an arbitrary call-site, not part of `theme($theme)` -
@@ -76,6 +77,23 @@
     $mixed: _rgb8(color.mix($color, $toward, $weight, $method: oklab));
   }
   @return $mixed;
+}
+
+/// The M2 warn colour as a text colour. The warn 500 is a fill colour: red
+/// sits at 3.7:1 on white and 2.7:1 on the dark card, under 4.5:1 for text.
+/// Every M2 bridge token that paints warn as text (error lines, the required
+/// asterisk, the error summary, the danger text rung, a remove glyph) reads
+/// this instead of the raw palette colour, so all of them derive the same
+/// hex. Surfaces are the page and the card (the M2 fill and panel colour),
+/// the mix target is the opaque scheme text colour. M3 needs none of this:
+/// its error role is already a text tone.
+@function m2-warn-text($theme) {
+  $text: color.change(mat.get-theme-color($theme, foreground, text), $alpha: 1);
+  $surfaces: (
+    mat.get-theme-color($theme, background, background),
+    mat.get-theme-color($theme, background, card)
+  );
+  @return readable-on(mat.get-theme-color($theme, warn), $text, $surfaces);
 }
 
 // Rounded 8-bit sRGB, so the value the contrast loop checks is the hex that

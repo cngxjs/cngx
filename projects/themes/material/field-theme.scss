@@ -1,5 +1,4 @@
 @use '@angular/material' as mat;
-@use 'sass:color';
 @use './bridge' as bridge;
 
 // Material bridge for CngxFormField (+ sub-directives CngxLabel,
@@ -23,26 +22,15 @@
   } @else {
     --cngx-field-label-color: #{rgba(mat.get-theme-color($theme, foreground, text), 0.6)};
     --cngx-field-hint-color: #{rgba(mat.get-theme-color($theme, foreground, text), 0.54)};
-    --cngx-field-error-color: #{_m2-error-color($theme)};
-    --cngx-field-required-color: #{mat.get-theme-color($theme, warn)};
+    --cngx-field-error-color: #{bridge.m2-warn-text($theme)};
+    --cngx-field-required-color: #{bridge.m2-warn-text($theme)};
     @include skin-color($theme);
   }
 }
 
-// The M2 warn 500 is a fill colour, not a text colour: red sits at 3.7:1 on
-// white and 2.7:1 on the dark card, under 4.5:1 for the error text. The same
-// token paints the error underline and the invalid outline, so text-grade
-// contrast on the page and on the fill surface (the card colour) covers the
-// 3:1 the line needs. Mixed toward the text colour in oklab, like the core
-// --cngx-color-danger-text rung; M3's error role is already a text tone.
-@function _m2-error-color($theme) {
-  $text: color.change(mat.get-theme-color($theme, foreground, text), $alpha: 1);
-  $surfaces: (
-    mat.get-theme-color($theme, background, background),
-    mat.get-theme-color($theme, background, card)
-  );
-  @return bridge.readable-on(mat.get-theme-color($theme, warn), $text, $surfaces);
-}
+// M2 error, underline and invalid outline share one token, and the required
+// asterisk is label text: all read the warn text colour from the bridge
+// module (4.5:1 on page and card, which covers the 3:1 the lines need).
 
 // The fill surface, the underline in both its resting and focus colour, and
 // the affix glyph tint. Shared by the field scope and the bare-control scope
@@ -79,8 +67,8 @@
     --cngx-form-errors-color: var(--mat-sys-error);
     --cngx-field-error-color: var(--mat-sys-error);
   } @else {
-    --cngx-form-errors-color: #{mat.get-theme-color($theme, warn)};
-    --cngx-field-error-color: #{_m2-error-color($theme)};
+    --cngx-form-errors-color: #{bridge.m2-warn-text($theme)};
+    --cngx-field-error-color: #{bridge.m2-warn-text($theme)};
   }
 }
 

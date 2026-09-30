@@ -146,6 +146,8 @@ probe {
     return {
       error: pick(/cngx-form-field\)\s*\{[^}]*--cngx-field-error-color: (#[0-9a-f]{6})/),
       formErrorsScope: pick(/cngx-form-errors\)\s*\{[^}]*--cngx-field-error-color: (#[0-9a-f]{6})/),
+      required: pick(/cngx-form-field\)\s*\{[^}]*--cngx-field-required-color: (#[0-9a-f]{6})/),
+      summary: pick(/cngx-form-errors\)\s*\{[^}]*--cngx-form-errors-color: (#[0-9a-f]{6})/),
       warn: probe('warn'),
       page: probe('page'),
       card: probe('card'),
@@ -173,6 +175,14 @@ probe {
           expect(contrast(t['error'], surface)).toBeGreaterThanOrEqual(4.5);
         }
         expect(t['formErrorsScope']).toBe(t['error']);
+      });
+
+      it(`${scheme} ${warn}: required asterisk and error summary read as 4.5:1 text`, () => {
+        const t = m2(scheme, warn);
+        for (const surface of [t['page'], t['card']]) {
+          expect(contrast(t['required'], surface)).toBeGreaterThanOrEqual(4.5);
+          expect(contrast(t['summary'], surface)).toBeGreaterThanOrEqual(4.5);
+        }
       });
     }
   }
@@ -225,4 +235,71 @@ html { @include bridge.theme($theme); }
     expect(css).toMatch(/--cngx-color-primary-strong: #[0-9a-f]{3,6}/);
     expect(css).toMatch(/--cngx-color-danger-text: #[0-9a-f]{3,6}/);
   });
+});
+
+// danger stays the raw warn (fill colour); only the text rung is derived,
+// against the page and the card the system surface maps to.
+describe('system Material bridge M2 danger text contrast', () => {
+  function m2(scheme: 'light' | 'dark', warn: string): Record<string, string> {
+    const css = compileString(
+      `
+@use 'sass:color';
+@use '@angular/material' as mat;
+@use 'material/system-bridge' as bridge;
+
+$theme: mat.m2-define-${scheme}-theme((color: (
+  primary: mat.m2-define-palette(mat.$m2-indigo-palette),
+  accent: mat.m2-define-palette(mat.$m2-pink-palette),
+  warn: mat.m2-define-palette(mat.$m2-${warn}-palette),
+)));
+
+html { @include bridge.theme($theme); }
+probe {
+  --warn: #{color.ie-hex-str(mat.get-theme-color($theme, warn))};
+  --page: #{color.ie-hex-str(mat.get-theme-color($theme, background, background))};
+  --card: #{color.ie-hex-str(mat.get-theme-color($theme, background, card))};
+}
+`,
+      { loadPaths: LOAD_PATHS },
+    ).css;
+    const pick = (pattern: RegExp): string => {
+      const hit = css.match(pattern);
+      if (!hit) {
+        throw new Error(`no match for ${pattern}`);
+      }
+      return hit[1];
+    };
+    const probe = (name: string): string => `#${pick(new RegExp(`--${name}: #FF([0-9A-F]{6})`)).toLowerCase()}`;
+    return {
+      danger: pick(/--cngx-color-danger: (#[0-9a-f]{6})/),
+      dangerText: pick(/--cngx-color-danger-text: (#[0-9a-f]{6})/),
+      warn: probe('warn'),
+      page: probe('page'),
+      card: probe('card'),
+    };
+  }
+
+  function luminance(hex: string): number {
+    const [r, g, b] = [1, 3, 5]
+      .map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
+      .map((v) => (v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  }
+
+  function contrast(a: string, b: string): number {
+    const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+    return (hi + 0.05) / (lo + 0.05);
+  }
+
+  for (const scheme of ['light', 'dark'] as const) {
+    for (const warn of ['red', 'deep-orange', 'pink', 'orange']) {
+      it(`${scheme} ${warn}: danger text 4.5:1 on page and card, danger stays raw warn`, () => {
+        const t = m2(scheme, warn);
+        for (const surface of [t['page'], t['card']]) {
+          expect(contrast(t['dangerText'], surface)).toBeGreaterThanOrEqual(4.5);
+        }
+        expect(t['danger']).toBe(t['warn']);
+      });
+    }
+  }
 });

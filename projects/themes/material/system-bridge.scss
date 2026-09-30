@@ -1,5 +1,6 @@
 @use 'sass:meta';
 @use '@angular/material' as mat;
+@use './bridge' as bridge;
 
 // System-token bridge - maps cngx foundation tokens
 // (--cngx-color-*, --cngx-space-*, --cngx-radius-*, --cngx-duration-*,
@@ -83,8 +84,9 @@
   --cngx-color-border: #{rgba($divider, 0.12)};
   --cngx-color-primary: #{$primary};
   --cngx-color-primary-strong: #{$primary};
+  // danger stays the raw warn (a fill colour); the text rung is derived
   --cngx-color-danger: #{$warn};
-  --cngx-color-danger-text: #{$warn};
+  --cngx-color-danger-text: #{bridge.m2-warn-text($theme)};
   --cngx-color-info: #{$primary};
 }
 
