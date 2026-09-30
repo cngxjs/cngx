@@ -96,8 +96,12 @@ const CAMEL_WORD = /^[A-Z][a-z0-9]*(?:[A-Z][a-z0-9]*)+$/;
 /** Basenames that mark a file as the override source for its area. */
 const OVERRIDE_SOURCE_FILE = /(?:^|[-.])(?:config|defaults|i18n|token|tokens|labels|messages)\.ts$/;
 
-/** An injection token whose payload is the area's config / label bundle. */
-const OVERRIDE_TOKEN = /new InjectionToken<\s*[A-Za-z0-9_]*(?:Config|I18n|Labels|Messages)\b/;
+/**
+ * An injection token whose payload is the area's config / label bundle,
+ * plain or wrapped in a `Signal` (the reactive i18n token shape).
+ */
+const OVERRIDE_TOKEN =
+  /new InjectionToken<\s*(?:Signal<\s*)?[A-Za-z0-9_]*(?:Config|I18n|Labels|Messages)\b/;
 
 /** A guard expression that only holds in a development build. */
 const DEV_GUARD = /\b(?:isDevMode|ngDevMode)\b/;
@@ -948,6 +952,17 @@ describe('user-facing string scanner', () => {
   it('treats a literal in an i18n module as the EN default', () => {
     const source = "export const D = { previousStep: 'Previous step' };";
     expect(scanSource(source, 'projects/common/stepper/i18n/stepper-i18n.ts')[0].coverage).toBe(
+      'override-source',
+    );
+  });
+
+  it('treats a literal next to a Signal-typed i18n token as the EN default', () => {
+    const source = [
+      "export const T = new InjectionToken<Signal<RecyclerI18n>>('T', {",
+      "  factory: () => coerceSignal({ empty: () => 'No results.' }),",
+      '});',
+    ].join('\n');
+    expect(scanSource(source, 'projects/common/data/recycler/recycler.ts')[0].coverage).toBe(
       'override-source',
     );
   });
