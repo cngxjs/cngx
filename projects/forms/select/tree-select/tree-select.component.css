@@ -131,7 +131,9 @@
   }
 
   /**
-   * Opacity multiplier applied when the trigger is disabled.
+   * Opacity multiplier for a disabled trigger. No field skin reads it any
+   * more: every skin paints disabled by colour and lifts the opacity (see
+   * `select-base.css`). Kept registered so existing overrides stay valid.
    * @group State / Disabled
    */
   @property --cngx-tree-select-disabled-opacity {

@@ -330,8 +330,9 @@
   }
 
   /**
-   * Opacity multiplier applied when the trigger is disabled. Shared
-   * family-wide so every variant dims its disabled trigger identically.
+   * Opacity multiplier for a disabled trigger. No field skin reads it any
+   * more: outline, fill and bare paint disabled by colour and lift the
+   * opacity. Kept registered so existing overrides stay valid.
    * @group State / Disabled
    */
   @property --cngx-select-disabled-opacity {
@@ -1680,6 +1681,31 @@
       color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
       opacity: 1;
     }
+  }
+
+  /* Outline is the default look: a lone outline select carries no
+     `data-skin` (outline resolves to none) or, when set explicitly,
+     `outline`. Disabled fades by colour, never opacity, the same recipe as a
+     disabled outline input: a dashed border, a faint text tint on the
+     surface and 38% value text. The variant trigger rules set an opacity; it
+     is lifted here, as in the fill and bare scopes. */
+  @scope (:is(:not([data-skin]), [data-skin='outline']):not(.cngx-field-box > *) > * > .cngx-field-trigger) {
+    :scope.cngx-field-trigger:is([aria-disabled='true'], :has(> [role='combobox']:disabled)) {
+      border-style: dashed;
+      background: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 4%, transparent);
+      color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
+      opacity: 1;
+    }
+  }
+
+  /* The wrapper triggers (typeahead, action select) also dim their inner
+     `[role='combobox']` input by opacity, which would fade the value twice
+     under the trigger's colour recipe in every skin. The input takes the
+     trigger colour instead. Bound to the host like every trigger rule (the
+     trigger is the host's grandchild); `*` keeps it skin-agnostic. */
+  * > * > .cngx-field-trigger > [role='combobox']:disabled {
+    color: inherit;
+    opacity: 1;
   }
 
   /* A bare select draws no box, so a minimum width only leaves an empty run
