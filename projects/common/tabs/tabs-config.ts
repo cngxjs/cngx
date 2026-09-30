@@ -610,9 +610,9 @@ export function withTabsAriaLabels(
 }
 
 /**
- * Merge text fallback labels (overflow trigger, busy / rejection text)
- * into the cascade. Used when a slot directive is not present. Pass a
- * `Signal` to switch the language at runtime.
+ * Merge the tablist / tab-panel `aria-roledescription` fallbacks into the
+ * cascade. Keys not provided keep their library defaults. Pass a `Signal`
+ * to switch the language at runtime.
  *
  * @category common/tabs
  */

@@ -9,6 +9,11 @@ import { coerceSignal, createOverrideMerge } from '@cngx/core/utils';
  * @category common/tabs/i18n
  */
 export interface CngxTabsI18n {
+  /**
+   * Last tier of the tab-group `aria-label`. It only applies when
+   * `CNGX_TABS_CONFIG.ariaLabels.tabsRegion` is unset; that key defaults
+   * to `'Tabs'`, so localise the landmark through `withTabsAriaLabels(...)`.
+   */
   readonly tabsLabel: string;
   readonly selectedTab: (label: string, position: number, count: number) => string;
   /**
@@ -73,7 +78,7 @@ const TABS_I18N_DEFAULTS: CngxTabsI18n = {
 
 /**
  * DI token for the tabs i18n bundle, as a `Signal` so a runtime language
- * switch re-renders every label. `providedIn: 'root'` with English
+ * switch re-renders every label it feeds. `providedIn: 'root'` with English
  * defaults. Provide it through {@link provideTabsI18n}; a
  * `{ provide, useValue }` entry must supply a `Signal<CngxTabsI18n>`.
  *

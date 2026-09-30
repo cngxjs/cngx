@@ -25,6 +25,14 @@ export interface CngxStepperStatusLabels {
  * @category common/stepper/i18n
  */
 export interface CngxStepperI18n {
+  /**
+   * Last tier of the landmark `aria-label` and of the organism's
+   * `aria-roledescription`. The label applies only while
+   * `CNGX_STEPPER_CONFIG.ariaLabels.stepperRegion` (default `'Stepper'`) is
+   * unset, the role description only while `fallbackLabels.stepRoleDescription`
+   * (default `'stepper'`) is unset. Localise both through
+   * `withStepperAriaLabels(...)` and `withStepperFallbackLabels(...)`.
+   */
   readonly stepperLabel: string;
   /**
    * Landmark `aria-roledescription` for compact step-indicator
@@ -148,9 +156,10 @@ export function resolveStepFallbackLabel(i18n: CngxStepperI18n | undefined, id: 
 
 /**
  * DI token for the resolved stepper i18n bundle, as a `Signal` so a
- * runtime language switch re-renders every label. `providedIn: 'root'`
- * with English defaults. Provide it through {@link provideStepperI18n};
- * a `{ provide, useValue }` entry must supply a `Signal<CngxStepperI18n>`.
+ * runtime language switch re-renders every label it feeds.
+ * `providedIn: 'root'` with English defaults. Provide it through
+ * {@link provideStepperI18n}; a `{ provide, useValue }` entry must supply a
+ * `Signal<CngxStepperI18n>`.
  *
  * @category common/stepper/i18n
  * @wcag AA
