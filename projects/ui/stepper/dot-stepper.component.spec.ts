@@ -1,4 +1,4 @@
-import { Component, signal, TemplateRef, viewChild } from '@angular/core';
+import { Component, computed, signal, TemplateRef, viewChild, type Signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { provideDirection } from '@cngx/core';
@@ -10,8 +10,11 @@ import {
   CngxStep,
   CngxStepperEmpty,
   provideStepperConfig,
+  provideStepperI18n,
   withDotStepperDotTemplate,
   withStepperAriaLabels,
+  withStepperI18nLabels,
+  type CngxStepperI18nOverrides,
 } from '@cngx/common/stepper';
 
 import { CngxDotStepper } from './dot-stepper.component';
@@ -442,5 +445,64 @@ describe('CngxDotStepper', () => {
       expect(host.getAttribute('aria-labelledby')).toBe('dot-title');
       expect(host.hasAttribute('aria-label')).toBe(false);
     });
+  });
+});
+
+function languageSwitch(): {
+  lang: ReturnType<typeof signal<'en' | 'de'>>;
+  overrides: Signal<CngxStepperI18nOverrides>;
+} {
+  const lang = signal<'en' | 'de'>('en');
+  const overrides = computed<CngxStepperI18nOverrides>(() =>
+    lang() === 'de'
+      ? {
+          stepIndicatorRoleDescription: 'Schrittanzeige',
+          textStepperFormat: (current, total) => `Schritt ${current} von ${total}`,
+          statusLabels: { errored: 'Fehler' },
+        }
+      : {},
+  );
+  return { lang, overrides };
+}
+
+describe('CngxDotStepper language switch', () => {
+  @Component({
+    standalone: true,
+    imports: [CngxDotStepper, CngxStep],
+    template: `
+      <cngx-dot-stepper aria-label="Carousel">
+        <div cngxStep label="One"></div>
+        <div cngxStep label="Two" [error]="err()"></div>
+      </cngx-dot-stepper>
+    `,
+  })
+  class SwitchHost {
+    err = signal<boolean>(true);
+  }
+
+  it('re-labels the landmark and does not re-announce on a language flip', () => {
+    const { lang, overrides } = languageSwitch();
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideStepperI18n(withStepperI18nLabels(overrides)),
+      ],
+    });
+    const fixture = TestBed.createComponent(SwitchHost);
+    fixture.detectChanges();
+    const host = fixture.nativeElement.querySelector('cngx-dot-stepper') as HTMLElement;
+    const error = fixture.nativeElement.querySelector('.cngx-dot-stepper__error') as HTMLElement;
+    expect(error.textContent?.trim()).toContain('Two: Errored');
+
+    lang.set('de');
+    fixture.detectChanges();
+    expect(host.getAttribute('aria-roledescription')).toBe('Schrittanzeige');
+    expect(error.textContent?.trim()).toContain('Two: Errored');
+
+    fixture.componentInstance.err.set(false);
+    fixture.detectChanges();
+    fixture.componentInstance.err.set(true);
+    fixture.detectChanges();
+    expect(error.textContent?.trim()).toContain('Two: Fehler');
   });
 });

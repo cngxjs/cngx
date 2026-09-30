@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, computed, signal, type Signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { describe, expect, it } from 'vitest';
@@ -11,6 +11,7 @@ import {
   withStepperAriaLabels,
   withStepperFallbackLabels,
   withStepperI18nLabels,
+  type CngxStepperI18nOverrides,
 } from '@cngx/common/stepper';
 
 import { CngxProgressBarStepper } from './progress-bar-stepper.component';
@@ -237,5 +238,69 @@ describe('CngxProgressBarStepper', () => {
       expect(note.textContent).toBe('No steps yet');
       expect(fixture.nativeElement.querySelector('cngx-progress')).toBeNull();
     });
+  });
+});
+
+function languageSwitch(): {
+  lang: ReturnType<typeof signal<'en' | 'de'>>;
+  overrides: Signal<CngxStepperI18nOverrides>;
+} {
+  const lang = signal<'en' | 'de'>('en');
+  const overrides = computed<CngxStepperI18nOverrides>(() =>
+    lang() === 'de'
+      ? {
+          stepIndicatorRoleDescription: 'Schrittanzeige',
+          textStepperFormat: (current, total) => `Schritt ${current} von ${total}`,
+          statusLabels: { errored: 'Fehler' },
+        }
+      : {},
+  );
+  return { lang, overrides };
+}
+
+describe('CngxProgressBarStepper language switch', () => {
+  @Component({
+    standalone: true,
+    imports: [CngxProgressBarStepper, CngxStep],
+    template: `
+      <cngx-progress-bar-stepper [showStepCount]="true">
+        <div cngxStep label="One"></div>
+        <div cngxStep label="Two" [error]="err()"></div>
+      </cngx-progress-bar-stepper>
+    `,
+  })
+  class SwitchHost {
+    err = signal<boolean>(true);
+  }
+
+  it('re-renders the caption and does not re-announce on a language flip', () => {
+    const { lang, overrides } = languageSwitch();
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideStepperI18n(withStepperI18nLabels(overrides)),
+      ],
+    });
+    const fixture = TestBed.createComponent(SwitchHost);
+    fixture.detectChanges();
+    const caption = fixture.nativeElement.querySelector(
+      '.cngx-progress-bar-stepper__caption',
+    ) as HTMLElement;
+    const error = fixture.nativeElement.querySelector(
+      '.cngx-progress-bar-stepper__error',
+    ) as HTMLElement;
+    expect(caption.textContent?.trim()).toBe('Step 1 of 2');
+    expect(error.textContent?.trim()).toContain('Two: Errored');
+
+    lang.set('de');
+    fixture.detectChanges();
+    expect(caption.textContent?.trim()).toBe('Schritt 1 von 2');
+    expect(error.textContent?.trim()).toContain('Two: Errored');
+
+    fixture.componentInstance.err.set(false);
+    fixture.detectChanges();
+    fixture.componentInstance.err.set(true);
+    fixture.detectChanges();
+    expect(error.textContent?.trim()).toContain('Two: Fehler');
   });
 });

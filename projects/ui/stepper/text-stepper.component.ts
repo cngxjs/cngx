@@ -9,6 +9,7 @@ import {
   input,
   type Signal,
   type TemplateRef,
+  untracked,
 } from '@angular/core';
 
 import {
@@ -110,7 +111,10 @@ export class CngxTextStepper {
     if (total === 0) {
       return '';
     }
-    const base = this.i18n.textStepperFormat(this.currentStep(), total);
+    // Live region: the bundle is read untracked so a language switch does
+    // not re-speak the caption; the next step change speaks the new language.
+    const current = this.currentStep();
+    const base = untracked(() => this.i18n().textStepperFormat(current, total));
     if (!this.showCurrentLabel()) {
       return base;
     }
@@ -129,7 +133,7 @@ export class CngxTextStepper {
    * `stateView.hasAnyError()`, so this is only read when non-empty.
    */
   protected readonly errorText = computed<string>(() =>
-    resolveStepperErrorSummary(this.stateView, this.stepNodes, this.i18n, (node: CngxStepNode) =>
+    resolveStepperErrorSummary(this.stateView, this.stepNodes, untracked(() => this.i18n()), (node: CngxStepNode) =>
       node.errorMessage?.() ?? node.errorAggregator?.()?.errorLabels?.()?.[0],
     ),
   );

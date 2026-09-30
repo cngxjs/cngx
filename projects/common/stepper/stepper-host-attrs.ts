@@ -62,7 +62,7 @@ export function createStepperHostAttrs(
 
 /**
  * Input bundle for {@link createStepperAccname}: the two per-instance
- * accname inputs plus the resolved config and i18n bundle.
+ * accname inputs plus the resolved config and the i18n bundle Signal.
  *
  * @internal
  */
@@ -70,7 +70,7 @@ export interface CngxStepperAccnameInputs {
   readonly ariaLabel: Signal<string | undefined>;
   readonly ariaLabelledBy: Signal<string | undefined>;
   readonly config: CngxStepperConfig;
-  readonly i18n: CngxStepperI18n;
+  readonly i18n: Signal<CngxStepperI18n>;
 }
 
 /**
@@ -89,7 +89,7 @@ export function createStepperAccname(inputs: CngxStepperAccnameInputs): Signal<s
       return null; // labelledby trumps label
     }
     return (
-      inputs.ariaLabel() ?? inputs.config.ariaLabels?.stepperRegion ?? inputs.i18n.stepperLabel
+      inputs.ariaLabel() ?? inputs.config.ariaLabels?.stepperRegion ?? inputs.i18n().stepperLabel
     );
   });
 }

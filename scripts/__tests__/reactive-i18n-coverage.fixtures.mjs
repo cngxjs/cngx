@@ -869,41 +869,6 @@ export const RATCHET = [
     closesIn: 3,
   },
   {
-    file: 'projects/common/stepper/announcement-builders.ts',
-    member: 'createStepperAnnouncementBuilders',
-    rule: 'R3',
-    token: 'CNGX_STEPPER_I18N',
-    closesIn: 2,
-  },
-  {
-    file: 'projects/common/stepper/controls/stepper-next.directive.ts',
-    member: 'CngxStepperNext.constructor',
-    rule: 'R3',
-    token: 'CNGX_STEPPER_I18N',
-    closesIn: 2,
-  },
-  {
-    file: 'projects/common/stepper/controls/stepper-previous.directive.ts',
-    member: 'CngxStepperPrevious.constructor',
-    rule: 'R3',
-    token: 'CNGX_STEPPER_I18N',
-    closesIn: 2,
-  },
-  {
-    file: 'projects/common/stepper/i18n/stepper-i18n.ts',
-    member: 'withStepperI18nLabels',
-    rule: 'R3',
-    token: 'CNGX_STEPPER_I18N',
-    closesIn: 2,
-  },
-  {
-    file: 'projects/common/stepper/slot-context-builders.ts',
-    member: 'createStepperSlotContextBuilders',
-    rule: 'R3',
-    token: 'CNGX_STEPPER_I18N',
-    closesIn: 2,
-  },
-  {
     file: 'projects/common/stepper/stepper-config.ts',
     member: 'withStepperAriaLabels',
     rule: 'R3',
@@ -918,31 +883,10 @@ export const RATCHET = [
     closesIn: 2,
   },
   {
-    file: 'projects/common/stepper/stepper-count.ts',
-    member: 'CngxStepperCount.label',
-    rule: 'R3',
-    token: 'CNGX_STEPPER_I18N',
-    closesIn: 2,
-  },
-  {
-    file: 'projects/common/stepper/stepper-count.ts',
-    member: 'CngxStepperCount.label',
-    rule: 'R4',
-    token: 'CNGX_STEPPER_I18N',
-    closesIn: 2,
-  },
-  {
     file: 'projects/common/stepper/stepper-host-attrs.ts',
     member: 'createStepperAccname',
     rule: 'R3',
     token: 'CNGX_STEPPER_CONFIG',
-    closesIn: 2,
-  },
-  {
-    file: 'projects/common/stepper/stepper-host-attrs.ts',
-    member: 'createStepperAccname',
-    rule: 'R3',
-    token: 'CNGX_STEPPER_I18N',
     closesIn: 2,
   },
   {
@@ -2157,45 +2101,10 @@ export const RATCHET = [
     closesIn: 7,
   },
   {
-    file: 'projects/ui/stepper/dot-stepper.component.ts',
-    member: 'CngxDotStepper.ariaLabelFor',
-    rule: 'R3',
-    token: 'CNGX_STEPPER_I18N',
-    closesIn: 2,
-  },
-  {
-    file: 'projects/ui/stepper/dot-stepper.component.ts',
-    member: 'CngxDotStepper.template:i18n',
-    rule: 'R3',
-    token: 'CNGX_STEPPER_I18N',
-    closesIn: 2,
-  },
-  {
-    file: 'projects/ui/stepper/progress-bar-stepper.component.ts',
-    member: 'CngxProgressBarStepper.captionText',
-    rule: 'R3',
-    token: 'CNGX_STEPPER_I18N',
-    closesIn: 2,
-  },
-  {
     file: 'projects/ui/stepper/progress-bar-stepper.component.ts',
     member: 'CngxProgressBarStepper.stepperRoleDescription',
     rule: 'R3',
     token: 'CNGX_STEPPER_CONFIG',
-    closesIn: 2,
-  },
-  {
-    file: 'projects/ui/stepper/progress-bar-stepper.component.ts',
-    member: 'CngxProgressBarStepper.stepperRoleDescription',
-    rule: 'R3',
-    token: 'CNGX_STEPPER_I18N',
-    closesIn: 2,
-  },
-  {
-    file: 'projects/ui/stepper/stepper.component.ts',
-    member: 'CngxStepper.announcement',
-    rule: 'R4',
-    token: 'CNGX_STEPPER_I18N',
     closesIn: 2,
   },
   {
@@ -2207,37 +2116,9 @@ export const RATCHET = [
   },
   {
     file: 'projects/ui/stepper/stepper.component.ts',
-    member: 'CngxStepper.mobileDotAriaLabel',
-    rule: 'R3',
-    token: 'CNGX_STEPPER_I18N',
-    closesIn: 2,
-  },
-  {
-    file: 'projects/ui/stepper/stepper.component.ts',
     member: 'CngxStepper.stepperRoleDescription',
     rule: 'R3',
     token: 'CNGX_STEPPER_CONFIG',
-    closesIn: 2,
-  },
-  {
-    file: 'projects/ui/stepper/stepper.component.ts',
-    member: 'CngxStepper.stepperRoleDescription',
-    rule: 'R3',
-    token: 'CNGX_STEPPER_I18N',
-    closesIn: 2,
-  },
-  {
-    file: 'projects/ui/stepper/text-stepper.component.ts',
-    member: 'CngxTextStepper.stepText',
-    rule: 'R3',
-    token: 'CNGX_STEPPER_I18N',
-    closesIn: 2,
-  },
-  {
-    file: 'projects/ui/stepper/text-stepper.component.ts',
-    member: 'CngxTextStepper.stepText',
-    rule: 'R4',
-    token: 'CNGX_STEPPER_I18N',
     closesIn: 2,
   },
   {
@@ -2305,7 +2186,7 @@ export const RATCHET = [
   },
 ];
 
-export const RATCHET_CEILING = 242;
+export const RATCHET_CEILING = 225;
 
 /** The last phase whose closing commit has landed. */
 export const COMPLETED_PHASE = 1;
@@ -2492,7 +2373,7 @@ export const LIVE_REGIONS = [
   },
   {
     file: 'projects/common/stepper/stepper-count.ts',
-    region: 'CngxStepperCount.span(label,live)',
+    region: 'CngxStepperCount.span(liveLabel)',
     spec: 'projects/common/stepper/stepper-count.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 2,
@@ -2720,9 +2601,44 @@ export const LIVE_REGIONS = [
     closesIn: 7,
   },
   {
+    file: 'projects/ui/stepper/dot-stepper.component.ts',
+    region: 'CngxDotStepper.span(errorText)',
+    spec: 'projects/ui/stepper/dot-stepper.component.spec.ts',
+    testName: 'does not re-announce on a language flip',
+    closesIn: 2,
+  },
+  {
+    file: 'projects/ui/stepper/progress-bar-stepper.component.ts',
+    region: 'CngxProgressBarStepper.span(errorText)',
+    spec: 'projects/ui/stepper/progress-bar-stepper.component.spec.ts',
+    testName: 'does not re-announce on a language flip',
+    closesIn: 2,
+  },
+  {
     file: 'projects/ui/stepper/stepper.component.ts',
     region: 'CngxStepper.span(announcement.liveAnnouncement)',
     spec: 'projects/ui/stepper/stepper.component.spec.ts',
+    testName: 'does not re-announce on a language flip',
+    closesIn: 2,
+  },
+  {
+    file: 'projects/ui/stepper/stepper.component.ts',
+    region: 'CngxStepper.span(mobileErrorSummary)',
+    spec: 'projects/ui/stepper/stepper.component.spec.ts',
+    testName: 'does not re-announce on a language flip',
+    closesIn: 2,
+  },
+  {
+    file: 'projects/ui/stepper/stepper.component.ts',
+    region: 'CngxStepper.span(mobileErrorSummary)#2',
+    spec: 'projects/ui/stepper/stepper.component.spec.ts',
+    testName: 'does not re-announce on a language flip',
+    closesIn: 2,
+  },
+  {
+    file: 'projects/ui/stepper/text-stepper.component.ts',
+    region: 'CngxTextStepper.span(errorText)',
+    spec: 'projects/ui/stepper/text-stepper.component.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 2,
   },

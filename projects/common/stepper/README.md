@@ -29,7 +29,7 @@ The presenter is a pure-derivation host directive - every visible piece of state
 | `CNGX_STEP_GROUP_HOST` | Group-scoped variant of the host contract. `CngxStep` injects this with optional fallback to `CNGX_STEPPER_HOST` so steps can register against a parent group OR the root presenter. |
 | `CNGX_STEP_PANEL_HOST` | Rendering-surface contract for organisms. Provides `flatSteps` / `activeStepIndex` / `activeStepId` Signals plus `labelTemplateFor(id)` / `contentTemplateFor(id)` template lookups. |
 | `CNGX_STEPPER_CONFIG` | App-wide stepper configuration token (defaults, ARIA labels, fallback labels, router-sync mode). |
-| `CNGX_STEPPER_I18N` | I18n bundle token (default English; consumers override via `provideStepperI18n`). |
+| `CNGX_STEPPER_I18N` | I18n bundle token, a `Signal` (default English; consumers override via `provideStepperI18n`). |
 | `CNGX_STEPPER_COMMIT_HANDLER_FACTORY` | Pluggable async-commit handler factory. Default: `createStepperCommitHandler`. Override for telemetry / retry / offline-queue without forking. |
 
 ### Configuration cascade
@@ -53,7 +53,7 @@ Resolution priority: per-instance Input → `viewProviders` → root provider �
 | Export | Description |
 |-|-|
 | `provideStepperI18n(bundle)` | Provide a localised i18n bundle (defaults are English). |
-| `injectStepperI18n()` | Read the resolved i18n bundle in directives / components. |
+| `injectStepperI18n()` | Read the resolved i18n bundle as a `Signal` in directives / components; call it inside a `computed()` or template so a language switch reaches the label. |
 | `CngxStepperI18n` | The bundle interface (`stepperLabel`, `selectedStep(label, idx, count)`, `stepCompleted`, `stepErrored`, …). |
 
 ### Utilities

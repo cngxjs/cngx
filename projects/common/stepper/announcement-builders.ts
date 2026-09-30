@@ -1,4 +1,4 @@
-import { computed, type Signal } from '@angular/core';
+import { computed, untracked, type Signal } from '@angular/core';
 
 import type { CngxStepperI18n } from './i18n/stepper-i18n';
 import type { CngxStepNode, CngxStepperHost } from './stepper-host.token';
@@ -6,14 +6,14 @@ import type { CngxStepNode, CngxStepperHost } from './stepper-host.token';
 /**
  * Input bundle for {@link createStepperAnnouncementBuilders}. The presenter
  * surface (commit transition + failed-index signals), the step-only flat
- * projection, and the resolved i18n strings.
+ * projection, and the resolved i18n bundle Signal.
  *
  * @internal
  */
 export interface CngxStepperAnnouncementBuildersInputs {
   readonly presenter: CngxStepperHost;
   readonly stepsOnly: Signal<readonly CngxStepNode[]>;
-  readonly i18n: CngxStepperI18n;
+  readonly i18n: Signal<CngxStepperI18n>;
 }
 
 /**
@@ -63,12 +63,15 @@ export interface CngxStepperAnnouncementBuilders {
 export function createStepperAnnouncementBuilders(
   inputs: CngxStepperAnnouncementBuildersInputs,
 ): CngxStepperAnnouncementBuilders {
-  const { presenter, stepsOnly, i18n } = inputs;
+  const { presenter, stepsOnly } = inputs;
 
+  // The live region reads copy untracked: a language switch must not
+  // re-speak the last phrase. The next commit transition speaks the new
+  // language.
   const liveAnnouncement = computed<string>(() => {
     const current = presenter.commitTransition.current();
     if (current === 'pending') {
-      return i18n.commitInFlight;
+      return untracked(() => inputs.i18n().commitInFlight);
     }
     if (
       current === 'success' &&
@@ -82,11 +85,9 @@ export function createStepperAnnouncementBuilders(
       // double-announce a position the SR user already reached.
       const landed = presenter.stepsOnly()[presenter.activeStepIndex()];
       if (landed) {
-        return i18n.selectedStep(
-          landed.label(),
-          landed.flatIndex + 1,
-          presenter.stepsOnly().length,
-        );
+        const label = landed.label();
+        const count = presenter.stepsOnly().length;
+        return untracked(() => inputs.i18n().selectedStep(label, landed.flatIndex + 1, count));
       }
       return '';
     }
@@ -99,15 +100,16 @@ export function createStepperAnnouncementBuilders(
       if (failedIdx !== undefined && originIdx !== undefined) {
         const originLabel = stepsOnly()[originIdx]?.label();
         if (originLabel) {
-          return i18n.commitRolledBackTo(originLabel);
+          return untracked(() => inputs.i18n().commitRolledBackTo(originLabel));
         }
       }
-      return i18n.commitFailedRetry;
+      return untracked(() => inputs.i18n().commitFailedRetry);
     }
     return '';
   });
 
   const statusPhrase = (node: CngxStepNode): string => {
+    const i18n = inputs.i18n();
     const aggregator = node.errorAggregator?.();
     let base = aggregator?.shouldShow?.() ? (aggregator.announcement?.() ?? '') : '';
     if (!base && node.kind === 'step') {
@@ -128,6 +130,7 @@ export function createStepperAnnouncementBuilders(
   // (resolveStepperStatusLabel) renders, so a group's SR description can
   // never disagree with its visible pill.
   const groupStatusPhrase = (node: CngxStepNode): string => {
+    const i18n = inputs.i18n();
     const status = node.state();
     if (status === 'error') {
       return i18n.statusLabels.errored;

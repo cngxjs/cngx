@@ -13,6 +13,7 @@ import {
   input,
   type Signal,
   type TemplateRef,
+  untracked,
 } from '@angular/core';
 import { injectDirection } from '@cngx/core';
 
@@ -277,7 +278,7 @@ export class CngxStepper implements CngxStepPanelHost {
 
   /** Stepper landmark role-description with config + i18n cascade. */
   protected readonly stepperRoleDescription = computed<string>(
-    () => this.config.fallbackLabels?.stepRoleDescription ?? this.i18n.stepperLabel,
+    () => this.config.fallbackLabels?.stepRoleDescription ?? this.i18n().stepperLabel,
   );
 
   /** Resolved skin / connectors / mobile-indicator host attrs (Level-2 cascade helper). */
@@ -335,7 +336,7 @@ export class CngxStepper implements CngxStepPanelHost {
   protected readonly swipeNav = inject(CngxStepperSwipeNav, { host: true });
 
   protected statusLabelFor = (node: CngxStepNode): string =>
-    resolveStepperStatusLabel(node, this.i18n, this.slotContext.isActive(node));
+    resolveStepperStatusLabel(node, this.i18n(), this.slotContext.isActive(node));
 
   /** Mobile-dot `data-state`: unified error (rejection + aggregator) over the raw status. */
   protected mobileDotState(node: CngxStepNode): string {
@@ -344,8 +345,9 @@ export class CngxStepper implements CngxStepPanelHost {
 
   /** Mobile-dot `aria-label`, appending the errored status when the dot has an error. */
   protected mobileDotAriaLabel(node: CngxStepNode, index: number): string {
-    const base = this.i18n.selectedStep(node.label(), index + 1, this.stepsOnly().length);
-    return this.stateView.hasError(node) ? `${base}: ${this.i18n.statusLabels.errored}` : base;
+    const i18n = this.i18n();
+    const base = i18n.selectedStep(node.label(), index + 1, this.stepsOnly().length);
+    return this.stateView.hasError(node) ? `${base}: ${i18n.statusLabels.errored}` : base;
   }
   protected readonly groupRoleDescription = computed<string>(
     () => this.config.fallbackLabels?.groupRoleDescription ?? 'step group',
@@ -470,7 +472,7 @@ export class CngxStepper implements CngxStepPanelHost {
     resolveStepperErrorSummary(
       this.stateView,
       this.stepsOnly,
-      this.i18n,
+      untracked(() => this.i18n()),
       (node) => this.stepErrorMessageOf(node) ?? undefined,
     ),
   );

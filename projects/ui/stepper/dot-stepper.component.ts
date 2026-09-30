@@ -9,6 +9,7 @@ import {
   input,
   type Signal,
   type TemplateRef,
+  untracked,
 } from '@angular/core';
 
 import {
@@ -89,7 +90,7 @@ import { CngxStepperErrorLine } from './stepper-error-line.component';
     // Not tab-reachable while step-less: an empty focus stop that only
     // announces the accname over no content is noise, not navigation.
     '[attr.tabindex]': "stepNodes().length === 0 ? null : '0'",
-    '[attr.aria-roledescription]': 'i18n.stepIndicatorRoleDescription',
+    '[attr.aria-roledescription]': 'i18n().stepIndicatorRoleDescription',
     '[attr.aria-label]': 'resolvedAriaLabel()',
     '[attr.aria-labelledby]': 'ariaLabelledBy()',
     '[attr.aria-invalid]': 'stateView.hasAnyError() ? "true" : null',
@@ -136,7 +137,7 @@ export class CngxDotStepper {
     resolveStepperErrorSummary(
       this.stateView,
       this.stepNodes,
-      this.i18n,
+      untracked(() => this.i18n()),
       (node) => node.errorMessage?.() ?? node.errorAggregator?.()?.errorLabels?.()?.[0],
     ),
   );
@@ -182,8 +183,9 @@ export class CngxDotStepper {
   }
 
   protected ariaLabelFor(node: CngxStepNode, index: number): string {
-    const base = this.i18n.selectedStep(node.label(), index + 1, this.stepNodes().length);
-    return this.stateView.hasError(node) ? `${base}: ${this.i18n.statusLabels.errored}` : base;
+    const i18n = this.i18n();
+    const base = i18n.selectedStep(node.label(), index + 1, this.stepNodes().length);
+    return this.stateView.hasError(node) ? `${base}: ${i18n.statusLabels.errored}` : base;
   }
 
   /** Build the slot context for `*cngxDotStepperDot`. */

@@ -1,5 +1,6 @@
 import {
   afterEveryRender,
+  afterRenderEffect,
   computed,
   Directive,
   ElementRef,
@@ -100,8 +101,17 @@ export class CngxStepperNext {
         el.removeAttribute('aria-label');
         el.removeAttribute('data-cngx-label-fallback');
       } else if (!hasText && !ownsFallback) {
-        el.setAttribute('aria-label', this.i18n.nextStep);
+        el.setAttribute('aria-label', this.i18n().nextStep);
         el.setAttribute('data-cngx-label-fallback', '');
+      }
+    });
+
+    // A language switch re-labels a fallback this directive owns.
+    afterRenderEffect(() => {
+      const label = this.i18n().nextStep;
+      const el = this.elementRef.nativeElement;
+      if (el.hasAttribute('data-cngx-label-fallback')) {
+        el.setAttribute('aria-label', label);
       }
     });
 
