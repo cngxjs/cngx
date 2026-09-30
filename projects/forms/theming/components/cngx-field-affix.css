@@ -149,6 +149,25 @@
       border-color: var(--cngx-field-error-color, var(--cngx-color-danger, oklch(0.6 0.18 25)));
     }
 
+    /* Disabled, the lone-control recipe from cngx.base moved to the box: a
+       dashed border, a faint surface tint and faded value text, never
+       opacity, so an affix that still matters does not fade with it. The
+       nested control inherits the text colour through its reset. Keyed on the
+       main control only (data-disabled, or a direct-child control), so a
+       disabled affix button never greys the row. */
+    :scope[data-skin='outline']:is(
+        [data-disabled],
+        :has(> :is(input, textarea, select):disabled)
+      ) {
+      border-style: dashed;
+      background: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 4%, transparent);
+      color: var(
+        --cngx-field-disabled-color,
+        color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent)
+      );
+      cursor: not-allowed;
+    }
+
     /* The control inside is reset and draws no ring, so the box draws the
        cngx.reset ring for outline and bare. Not while focus sits anywhere
        inside an affix - a button, or the trigger of a composite such as a

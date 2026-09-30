@@ -123,6 +123,18 @@
     color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
     opacity: 1;
   }
+  /* The explicit colour and border above also override the UA's disabled
+   * dimming, so disabled is restated here - by colour, never opacity: 38%
+   * text, a faint text tint on the surface, and a dashed border that keeps
+   * the state readable without colour. Same recipe as a disabled fill field. */
+  input:disabled,
+  textarea:disabled,
+  select:disabled {
+    border-style: dashed;
+    background: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 4%, transparent);
+    color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
+    cursor: not-allowed;
+  }
 
   kbd {
     display: inline-block;
