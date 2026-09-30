@@ -209,6 +209,31 @@ class InnerLabelHost {
 
 let mountedRoot: HTMLElement | null = null;
 
+// A toolbar lines bare fields up in a wrapping flex row. The bare width is the
+// container's call: 100% by default (a cell), a token value on the toolbar.
+@Component({
+  selector: 'cngx-field-box-toolbar-host',
+  standalone: true,
+  imports: [CngxFieldBox, CngxInput],
+  styleUrls: HARNESS_STYLES,
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    @for (width of widths; track width) {
+      <div
+        [class]="width ? 'bar sized' : 'bar'"
+        style="display: flex; flex-wrap: wrap; gap: 8px; inline-size: 800px"
+        [style.--cngx-field-bare-inline-size]="width"
+      >
+        <span cngxFieldBox skin="bare" class="t-box"><input cngxInput /></span>
+        <input cngxInput skin="bare" class="t-lone" />
+      </div>
+    }
+  `,
+})
+class ToolbarHost {
+  readonly widths: readonly (string | null)[] = [null, '16rem'];
+}
+
 function mount(): HTMLElement {
   const fixture = TestBed.createComponent(AffixHost);
   mountedRoot = fixture.nativeElement as HTMLElement;
@@ -600,5 +625,33 @@ describe('field box inner label placement', () => {
     const label = query(mountInnerLabel('fill', 'comfortable', false), '.l-plain > .cngx-label');
     expect(computedValue(label, 'font-size')).toBe('13px');
     expect(computedValue(label, 'line-height')).toBe('14px');
+  });
+});
+
+describe('bare field width token', () => {
+  function mountToolbar(): HTMLElement {
+    const fixture = TestBed.createComponent(ToolbarHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    return mountedRoot;
+  }
+
+  it('fills its container by default, so bare fields in a wrapping row stack', () => {
+    const bar = query(mountToolbar(), '.bar:not(.sized)');
+    const box = query(bar, '.t-box');
+    const lone = query(bar, '.t-lone');
+    expect(box.getBoundingClientRect().width).toBeCloseTo(800, 0);
+    expect(lone.getBoundingClientRect().width).toBeCloseTo(800, 0);
+    expect(lone.getBoundingClientRect().top).toBeGreaterThan(box.getBoundingClientRect().top);
+  });
+
+  it('takes the container token, so a toolbar lines bare fields up on one row', () => {
+    const bar = query(mountToolbar(), '.bar.sized');
+    const box = query(bar, '.t-box');
+    const lone = query(bar, '.t-lone');
+    expect(box.getBoundingClientRect().width).toBeCloseTo(256, 0);
+    expect(lone.getBoundingClientRect().width).toBeCloseTo(256, 0);
+    expect(lone.getBoundingClientRect().top).toBeCloseTo(box.getBoundingClientRect().top, 0);
   });
 });
