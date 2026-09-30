@@ -513,9 +513,9 @@ describe('bare select width', () => {
     },
   );
 
-  it('keeps the minimum width on an outline select', () => {
+  it('keeps the preferred width on an outline select', () => {
     const host = query(mountMatrix('outline', 'comfortable', false), '.c-single');
-    expect(computedValue(host, 'min-width')).toBe('160px');
+    expect(host.getBoundingClientRect().width).toBeGreaterThanOrEqual(160);
   });
 });
 

@@ -1708,12 +1708,27 @@
     color: inherit;
   }
 
-  /* A bare select draws no box, so a minimum width only leaves an empty run
-     between the value and the caret. It sizes to its content, standalone and
-     inside a field box alike. Keyed on the host, which carries every
-     variant's min-width. */
-  [data-skin='bare']:has(> * > .cngx-field-trigger) {
-    min-width: 0;
+  /* A bare select draws no box, so a preferred width only leaves an empty
+     run between the value and the caret. It sizes to its content, standalone
+     and inside a field box alike. Keyed on the host, whose ::before carries
+     every variant's preferred width. */
+  [data-skin='bare']:has(> * > .cngx-field-trigger)::before {
+    display: none;
+  }
+
+  /* A container that lines bare fields up (a toolbar) sets
+     --cngx-field-bare-inline-size, and a bare select takes it like a bare
+     input. No fallback: unset, the declaration computes to auto and the
+     select keeps its content width. A select nested in a field box is an
+     affix and never takes it, although the token inherits into the box. */
+  [data-skin='bare']:not(.cngx-field-box > *):has(> * > .cngx-field-trigger) {
+    inline-size: var(--cngx-field-bare-inline-size);
+  }
+
+  /* Typeahead and action select fill their container by default (their host
+     is a full-width block); unset, the token keeps that. */
+  :is(.cngx-typeahead, .cngx-action-select)[data-skin='bare']:not(.cngx-field-box > *) {
+    inline-size: var(--cngx-field-bare-inline-size, 100%);
   }
 
   /* A select nested in a field box: the box is the only painted element,

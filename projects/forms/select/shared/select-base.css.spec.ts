@@ -237,10 +237,15 @@ describe('select-family field-skin rule set', () => {
     );
   });
 
-  it('lifts the host minimum width for a bare select, keyed on the host', () => {
+  // Bare hugs its content (no preferred width) unless a container sets the
+  // bare inline-size token; without a fallback, an unset token computes to
+  // auto, so the content width survives.
+  it('sizes a bare select from its content or the container token, keyed on the host', () => {
     const flat = SHARED.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\s+/g, ' ');
-    expect(flat).toContain("[data-skin='bare']:has(> * > .cngx-field-trigger) { min-width: 0; }");
-    expect(flat).not.toMatch(/\[data-skin='bare'\][^{]*\.cngx-field-trigger\) \{ inline-size/);
+    expect(flat).toContain("[data-skin='bare']:has(> * > .cngx-field-trigger)::before { display: none; }");
+    expect(flat).toContain(
+      "[data-skin='bare']:not(.cngx-field-box > *):has(> * > .cngx-field-trigger) { inline-size: var(--cngx-field-bare-inline-size); }",
+    );
   });
 
   it('drops the chip-strip underline reserve', () => {

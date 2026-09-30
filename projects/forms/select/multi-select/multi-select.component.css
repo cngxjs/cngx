@@ -49,7 +49,9 @@
 
 @layer cngx.tokens {
   /**
-   * Minimum inline size of the trigger.
+   * Preferred minimum inline size of the select. A standalone or toolbar
+   * select is at least this wide; a narrower cell shrinks it, as it does an
+   * input.
    * @group Layout
    */
   @property --cngx-multi-select-min-width {
@@ -176,7 +178,25 @@
       display: inline-block;
       position: relative;
       font: inherit;
-      min-width: var(--cngx-multi-select-min-width, var(--cngx-select-min-width, 10rem));
+      min-width: 0;
+      max-inline-size: 100%;
+      /* Resolved on the host, where a consumer sets the non-inheriting
+         min-width token, and handed to the ::before through an unregistered
+         (inheriting) private property. */
+      --_cngx-select-floor: var(--cngx-multi-select-min-width, var(--cngx-select-min-width, 10rem));
+    }
+
+    /* The floor is a preferred width, like the intrinsic size of an input:
+       it sizes a standalone or toolbar select, and a narrower cell shrinks
+       the select instead of letting it spill into the next one. A zero-height
+       box carries the floor and the host caps at its container: a percentage
+       minimum on the host would resolve to zero wherever the width comes
+       from the content. */
+    :scope::before {
+      content: '';
+      display: block;
+      inline-size: var(--_cngx-select-floor);
+      max-inline-size: 100%;
     }
 
     .cngx-multi-select__root {
