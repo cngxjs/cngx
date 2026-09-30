@@ -1,5 +1,6 @@
 import { type Signal } from '@angular/core';
 import { resolveInlineArrowKey, type CngxDirection } from '@cngx/core';
+import { coerceSignal } from '@cngx/core/utils';
 
 import {
   createMenuTriggerDismissBinding,
@@ -191,7 +192,8 @@ export function createContextMenuTriggerCore(
     hostElement: deps.hostElement,
     menuConfig: deps.menuConfig,
     factory: deps.dismissFactory,
-    onDismiss: () => deps.announcer.announce(deps.menuConfig.ariaLabels.menuDismissed),
+    onDismiss: () =>
+      deps.announcer.announce(coerceSignal(deps.menuConfig.ariaLabels)().menuDismissed),
   });
 
   let virtualAnchor: HTMLElement | null = null;

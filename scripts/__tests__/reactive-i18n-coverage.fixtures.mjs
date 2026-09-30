@@ -687,48 +687,6 @@ export const RATCHET = [
     closesIn: 3,
   },
   {
-    file: 'projects/common/interactive/menu/context-menu-trigger-core.ts',
-    member: 'createContextMenuTriggerCore',
-    rule: 'R3',
-    token: 'CNGX_MENU_CONFIG',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/interactive/menu/menu-config-features.ts',
-    member: 'withAriaLabels',
-    rule: 'R3',
-    token: 'CNGX_MENU_CONFIG',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/interactive/menu/menu-item-core.ts',
-    member: 'injectMenuItemCore',
-    rule: 'R3',
-    token: 'CNGX_MENU_CONFIG',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/interactive/menu/menu-item-submenu.directive.ts',
-    member: 'CngxMenuItemSubmenu.constructor',
-    rule: 'R3',
-    token: 'CNGX_MENU_CONFIG',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/interactive/menu/menu-trigger.directive.ts',
-    member: 'CngxMenuTrigger.dismissBinding',
-    rule: 'R3',
-    token: 'CNGX_MENU_CONFIG',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/interactive/menu/menu.directive.ts',
-    member: 'CngxMenu.constructor',
-    rule: 'R3',
-    token: 'CNGX_MENU_CONFIG',
-    closesIn: 3,
-  },
-  {
     file: 'projects/common/interactive/slider/range-slider.component.ts',
     member: 'CngxRangeSlider.endLabel',
     rule: 'R1',
@@ -1969,7 +1927,7 @@ export const RATCHET = [
   },
 ];
 
-export const RATCHET_CEILING = 194;
+export const RATCHET_CEILING = 188;
 
 /** The last phase whose closing commit has landed. */
 export const COMPLETED_PHASE = 2;

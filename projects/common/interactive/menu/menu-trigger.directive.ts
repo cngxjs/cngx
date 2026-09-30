@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 import { outputToObservable } from '@angular/core/rxjs-interop';
 import { injectDirection, resolveInlineArrowKey } from '@cngx/core';
+import { coerceSignal } from '@cngx/core/utils';
 
 import {
   CNGX_MENU_DISMISS_HANDLER_FACTORY,
@@ -122,7 +123,8 @@ export class CngxMenuTrigger {
     hostElement: this.hostElRef.nativeElement,
     menuConfig: this.menuConfig,
     factory: inject(CNGX_MENU_DISMISS_HANDLER_FACTORY),
-    onDismiss: () => this.announcer.announce(this.menuConfig.ariaLabels.menuDismissed),
+    onDismiss: () =>
+      this.announcer.announce(coerceSignal(this.menuConfig.ariaLabels)().menuDismissed),
   });
 
   /**

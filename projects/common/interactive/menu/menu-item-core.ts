@@ -1,7 +1,7 @@
 import { computed, ElementRef, inject, type Signal } from '@angular/core';
 
 import { CngxActiveDescendant } from '@cngx/common/a11y';
-import { nextUid } from '@cngx/core/utils';
+import { coerceSignal, nextUid } from '@cngx/core/utils';
 
 import { CNGX_MENU_ANNOUNCER_FACTORY } from './menu-announcer';
 import { injectMenuConfig } from './menu-config';
@@ -74,7 +74,7 @@ export function injectMenuItemCore<T = unknown>(
   const elementRef = inject(ElementRef<HTMLElement>);
   const ad = inject(CngxActiveDescendant, { optional: true });
   const announcer = inject(CNGX_MENU_ANNOUNCER_FACTORY)();
-  const menuConfig = injectMenuConfig();
+  const ariaLabels = coerceSignal(injectMenuConfig().ariaLabels);
 
   const id = nextUid('cngx-menu-item');
 
@@ -91,7 +91,7 @@ export function injectMenuItemCore<T = unknown>(
     },
     handleClick(): void {
       if (options.disabled()) {
-        announcer.announce(menuConfig.ariaLabels.itemDisabled);
+        announcer.announce(ariaLabels().itemDisabled);
         return;
       }
       if (!ad) {

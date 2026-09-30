@@ -5,6 +5,7 @@ import {
   Optional,
   type EnvironmentProviders,
   type Provider,
+  type Signal,
   SkipSelf,
 } from '@angular/core';
 
@@ -31,7 +32,7 @@ export interface CngxMenuAriaLabels {
  * @category common/interactive/menu
  */
 export interface CngxMenuConfig {
-  readonly ariaLabels: CngxMenuAriaLabels;
+  readonly ariaLabels: CngxMenuAriaLabels | Signal<CngxMenuAriaLabels>;
   readonly typeaheadDebounce: number;
   /** Hover dwell (ms) before a hovered submenu parent opens. Default `0`. */
   readonly submenuOpenDelay: number;
