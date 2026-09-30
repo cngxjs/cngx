@@ -1,5 +1,6 @@
 import {
   Component,
+  computed,
   effect,
   EnvironmentInjector,
   runInInjectionContext,
@@ -10,6 +11,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import { provideLocale } from '@cngx/core/utils';
 
+import { provideChartI18n } from '../i18n/chart-i18n';
 import { CngxChartAnnouncer } from './chart-announcer.component';
 import { type CngxChart } from './chart.component';
 import { type CngxSignificantChange } from './significant-change';
@@ -127,5 +129,43 @@ describe('CngxChartAnnouncer - locale flip', () => {
     fixture.componentInstance.sig.set({ kind: 'threshold-cross', threshold: 3.5, direction: 'up' });
     fixture.detectChanges();
     expect(assertive.textContent?.trim()).toBe('Threshold 3,5 crossed');
+  });
+});
+
+describe('CngxChartAnnouncer - copy flip', () => {
+  it('does not re-announce on a language flip', () => {
+    const lang = signal<'en' | 'de'>('en');
+    TestBed.configureTestingModule({
+      imports: [Host],
+      providers: [
+        provideChartI18n(
+          computed(() =>
+            lang() === 'de'
+              ? {
+                  trendChanged: (t: 'up' | 'down' | 'flat') => `Trend jetzt ${t}`,
+                  thresholdAlert: (v: number) => `Schwelle ${v} überschritten`,
+                }
+              : {},
+          ),
+        ),
+      ],
+    });
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    const polite = root.querySelector('[role="status"][aria-live="polite"]') as HTMLElement;
+    const assertive = root.querySelector('[role="alert"][aria-live="assertive"]') as HTMLElement;
+
+    fixture.componentInstance.sig.set({ kind: 'trend-flip', from: 'up', to: 'down' });
+    fixture.detectChanges();
+    expect(polite.textContent?.trim()).toBe('Trend changed to down');
+
+    lang.set('de');
+    fixture.detectChanges();
+    expect(polite.textContent?.trim()).toBe('Trend changed to down');
+
+    fixture.componentInstance.sig.set({ kind: 'threshold-cross', threshold: 2, direction: 'up' });
+    fixture.detectChanges();
+    expect(assertive.textContent?.trim()).toBe('Schwelle 2 überschritten');
   });
 });

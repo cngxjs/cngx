@@ -1,9 +1,10 @@
-import { Component, LOCALE_ID, signal } from '@angular/core';
+import { Component, computed, LOCALE_ID, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideLocale } from '@cngx/core/utils';
 import { describe, expect, it } from 'vitest';
 import { CngxChartDataTable } from '../chart/data-table.component';
 import {
+  CHART_I18N_EN,
   CNGX_CHART_I18N,
   injectChartI18n,
   provideChartI18n,
@@ -13,7 +14,7 @@ import {
 describe('CNGX_CHART_I18N', () => {
   it('resolves to English defaults when no override is provided', () => {
     TestBed.configureTestingModule({});
-    const i18n = TestBed.inject(CNGX_CHART_I18N);
+    const i18n = TestBed.inject(CNGX_CHART_I18N)();
     expect(i18n.empty()).toBe('No data');
     expect(i18n.loading()).toBe('Loading');
     expect(i18n.error()).toBe('Error loading chart');
@@ -23,7 +24,7 @@ describe('CNGX_CHART_I18N', () => {
 
   it('formats a typical summary string with all sections', () => {
     TestBed.configureTestingModule({});
-    const i18n = TestBed.inject(CNGX_CHART_I18N);
+    const i18n = TestBed.inject(CNGX_CHART_I18N)();
     const text = i18n.summary({
       trend: 'up',
       min: 5,
@@ -36,7 +37,7 @@ describe('CNGX_CHART_I18N', () => {
 
   it('strips float-arithmetic noise from summary and threshold numbers', () => {
     TestBed.configureTestingModule({});
-    const i18n = TestBed.inject(CNGX_CHART_I18N);
+    const i18n = TestBed.inject(CNGX_CHART_I18N)();
     const text = i18n.summary({
       trend: 'flat',
       min: 0.30000000000000004,
@@ -51,7 +52,7 @@ describe('CNGX_CHART_I18N', () => {
 
   it('uses the singular threshold form for zero / one and plural for many', () => {
     TestBed.configureTestingModule({});
-    const i18n = TestBed.inject(CNGX_CHART_I18N);
+    const i18n = TestBed.inject(CNGX_CHART_I18N)();
     expect(i18n.summary({ trend: 'flat', min: 0, max: 0, current: 0, thresholds: [] })).toContain(
       'No thresholds.',
     );
@@ -77,7 +78,7 @@ describe('CNGX_CHART_I18N', () => {
     TestBed.configureTestingModule({
       providers: [provideChartI18n(override)],
     });
-    const i18n = TestBed.inject(CNGX_CHART_I18N);
+    const i18n = TestBed.inject(CNGX_CHART_I18N)();
     expect(i18n.empty()).toBe('EMPTY_OVR');
     expect(i18n.valueColumnLabel()).toBe('COL_OVR');
     expect(i18n.connectionLost()).toBe('LOST_OVR');
@@ -91,7 +92,7 @@ describe('CNGX_CHART_I18N', () => {
     TestBed.configureTestingModule({
       providers: [provideChartI18n({ empty: () => 'Nix da' })],
     });
-    const i18n = TestBed.inject(CNGX_CHART_I18N);
+    const i18n = TestBed.inject(CNGX_CHART_I18N)();
     expect(i18n.empty()).toBe('Nix da');
     expect(i18n.loading()).toBe('Loading');
     expect(i18n.stackedBarEmpty?.()).toBe('Empty stacked bar');
@@ -99,7 +100,7 @@ describe('CNGX_CHART_I18N', () => {
 
   it('strips float noise from the stacked-bar summary default', () => {
     TestBed.configureTestingModule({});
-    const i18n = TestBed.inject(CNGX_CHART_I18N);
+    const i18n = TestBed.inject(CNGX_CHART_I18N)();
     const text = i18n.stackedBarSummary?.(6.6000000000000005, [
       { label: 'A', value: 2.2 },
       { label: 'B', value: 4.4000000000000004 },
@@ -109,7 +110,7 @@ describe('CNGX_CHART_I18N', () => {
 
   it('returns English defaults for the connection-lifecycle keys', () => {
     TestBed.configureTestingModule({});
-    const i18n = TestBed.inject(CNGX_CHART_I18N);
+    const i18n = TestBed.inject(CNGX_CHART_I18N)();
     expect(i18n.connectionLost()).toBe('Connection lost');
     expect(i18n.connectionReconnecting()).toBe('Reconnecting');
     expect(i18n.connectionRestored()).toBe('Connection restored');
@@ -117,7 +118,7 @@ describe('CNGX_CHART_I18N', () => {
 
   it('returns the trend-changed string keyed by direction', () => {
     TestBed.configureTestingModule({});
-    const i18n = TestBed.inject(CNGX_CHART_I18N);
+    const i18n = TestBed.inject(CNGX_CHART_I18N)();
     expect(i18n.trendChanged('up')).toBe('Trend changed to up');
     expect(i18n.trendChanged('down')).toBe('Trend changed to down');
     expect(i18n.trendChanged('flat')).toBe('Trend flattened');
@@ -148,7 +149,7 @@ describe('injectChartI18n', () => {
 
   it('formats the token factory default in the root locale', () => {
     TestBed.configureTestingModule({ providers: [{ provide: LOCALE_ID, useValue: 'de' }] });
-    expect(TestBed.inject(CNGX_CHART_I18N).summary(noisy)).toContain('max 6,6');
+    expect(TestBed.inject(CNGX_CHART_I18N)().summary(noisy)).toContain('max 6,6');
   });
 
   it('re-formats omitted keys on a CNGX_LOCALE flip, rendered without re-creating the component', () => {
@@ -171,6 +172,30 @@ describe('injectChartI18n', () => {
     expect(i18n().summary(noisy)).toContain('max 6,6');
     expect(fixture.nativeElement.querySelector('cngx-chart-data-table')).toBe(table);
     expect(cell()).toBe('6,6');
+  });
+
+  it('follows a Signal override at runtime and keeps omitted keys on the locale default', () => {
+    const lang = signal<'en' | 'de'>('en');
+    TestBed.configureTestingModule({
+      providers: [
+        provideChartI18n(computed(() => (lang() === 'de' ? { empty: () => 'Keine Daten' } : {}))),
+      ],
+    });
+    const i18n = TestBed.runInInjectionContext(() => injectChartI18n());
+    expect(i18n().empty()).toBe('No data');
+
+    lang.set('de');
+    expect(i18n().empty()).toBe('Keine Daten');
+    expect(i18n().loading()).toBe('Loading');
+  });
+
+  it('resolves a plain override to the same strings as the eager merge did', () => {
+    TestBed.configureTestingModule({
+      providers: [provideChartI18n({ dataTable: () => 'Datentabelle' })],
+    });
+    const raw = TestBed.inject(CNGX_CHART_I18N)();
+    expect(raw.dataTable()).toBe('Datentabelle');
+    expect(raw.valueColumnLabel).toBe(CHART_I18N_EN.valueColumnLabel);
   });
 
   it('shares one Signal across chart parts under one injector', () => {

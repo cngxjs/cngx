@@ -610,27 +610,6 @@ export const HELPERS = ['injectResolvedFeedbackI18n', 'injectChartI18n', 'resolv
 /** @type {readonly RatchetRow[]} */
 export const RATCHET = [
   {
-    file: 'projects/common/chart/i18n/chart-i18n.ts',
-    member: 'CNGX_CHART_I18N',
-    rule: 'R2',
-    token: 'CNGX_LOCALE',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/chart/i18n/chart-i18n.ts',
-    member: 'provideChartI18n',
-    rule: 'R3',
-    token: 'CNGX_CHART_I18N',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/chart/i18n/chart-i18n.ts',
-    member: 'resolveChartI18n',
-    rule: 'R3',
-    token: 'CNGX_CHART_I18N',
-    closesIn: 3,
-  },
-  {
     file: 'projects/common/data/recycler/recycler.ts',
     member: 'injectRecycler',
     rule: 'R3',
@@ -2053,7 +2032,7 @@ export const RATCHET = [
   },
 ];
 
-export const RATCHET_CEILING = 206;
+export const RATCHET_CEILING = 203;
 
 /** The last phase whose closing commit has landed. */
 export const COMPLETED_PHASE = 2;
@@ -2185,35 +2164,35 @@ export const LIVE_REGIONS = [
   {
     file: 'projects/common/chart/chart/chart-announcer.component.ts',
     region: 'CngxChartAnnouncer.span(assertiveAnnouncement)',
-    spec: 'projects/common/chart/chart/chart-announcer.component.spec.ts',
+    spec: 'projects/common/chart/chart/chart-announcer.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 3,
   },
   {
     file: 'projects/common/chart/chart/chart-announcer.component.ts',
     region: 'CngxChartAnnouncer.span(politeAnnouncement)',
-    spec: 'projects/common/chart/chart/chart-announcer.component.spec.ts',
+    spec: 'projects/common/chart/chart/chart-announcer.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 3,
   },
   {
     file: 'projects/common/chart/chart/chart.component.ts',
     region: 'CngxChart.div(connectionOverlayText)',
-    spec: 'projects/common/chart/chart/chart.component.spec.ts',
+    spec: 'projects/common/chart/chart/chart.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 3,
   },
   {
     file: 'projects/common/chart/chart/chart.component.ts',
     region: 'CngxChart.div(connectionOverlayText)#2',
-    spec: 'projects/common/chart/chart/chart.component.spec.ts',
+    spec: 'projects/common/chart/chart/chart.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 3,
   },
   {
     file: 'projects/common/chart/chart/chart.component.ts',
     region: 'CngxChart.span(connectionRestoredAnnouncement)',
-    spec: 'projects/common/chart/chart/chart.component.spec.ts',
+    spec: 'projects/common/chart/chart/chart.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 3,
   },
