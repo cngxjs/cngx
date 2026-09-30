@@ -43,7 +43,6 @@ for (const story of MANUAL_SLOT_STORIES) {
     });
   });
 }
-
 test.describe('field error server-injected-error story reset', () => {
   test('clears the touched state, so the slot is empty again after Reset', async ({ page }) => {
     await page.goto('/#/forms/field/error/server-injected-error');

@@ -225,7 +225,7 @@ Convenience helpers that wire the recycler renderer for variants with the `withV
 
 ### `panel-lifecycle-emitter.ts`
 
-Single shared `effect()` that emits `openedChange` + `opened` + `closed` outputs in response to `panelOpen` flips and restores focus to the trigger after close. All 8 variants wire through this factory.
+Single shared `effect()` that emits `openedChange` + `opened` + `closed` outputs in response to `panelOpen` flips (never the mount value) and restores focus to the trigger after an open -> closed flip. All 8 variants wire through this factory.
 
 | Symbol | Purpose |
 |-|-|

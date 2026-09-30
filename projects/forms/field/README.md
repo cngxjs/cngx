@@ -271,6 +271,7 @@ back.
 | `--cngx-field-underline-focus-color` | Focus underline of `fill` |
 | `--cngx-field-underline-size` | Focus and error underline thickness (default `2px`) |
 | `--cngx-field-outline-color` | Border of an `outline` field box |
+| `--cngx-field-disabled-color` | Value text of a disabled `outline` field box (unset: 38% text colour) |
 | `--cngx-field-border-width` | Box border width in every skin (default `1px`) |
 | `--cngx-field-ring-width` | Focus ring width of `outline` and `bare` (default `2px`) |
 | `--cngx-field-ring-offset` | Focus ring offset (default `3px`; `bare` draws it inside) |

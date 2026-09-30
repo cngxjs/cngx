@@ -64,7 +64,64 @@ class NoRestoreProbe {
   }
 }
 
+function focusCountingButton(): { button: HTMLButtonElement; calls: () => number } {
+  const button = document.createElement('button');
+  let focusCalls = 0;
+  button.focus = (): void => {
+    focusCalls++;
+  };
+  return { button, calls: () => focusCalls };
+}
+
 describe('createPanelLifecycleEmitter', () => {
+  it('emits nothing and restores no focus for a panel mounted closed', async () => {
+    const fixture = TestBed.createComponent(LifecycleProbe);
+    const c = fixture.componentInstance;
+    const { button, calls } = focusCountingButton();
+    c.target.set(new ElementRef(button));
+
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    await drainMicrotasks();
+
+    expect(c.openedChangeLog).toEqual([]);
+    expect(c.closedLog).toEqual([]);
+    expect(c.restoringLog).toEqual([]);
+    expect(calls()).toBe(0);
+  });
+
+  it('emits no opened for a panel mounted open', () => {
+    const fixture = TestBed.createComponent(LifecycleProbe);
+    const c = fixture.componentInstance;
+    c.panelOpen.set(true);
+
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    expect(c.openedChangeLog).toEqual([]);
+    expect(c.openedLog).toEqual([]);
+  });
+
+  it('emits each real flip after a silent mount', async () => {
+    const fixture = TestBed.createComponent(LifecycleProbe);
+    const c = fixture.componentInstance;
+    const { button, calls } = focusCountingButton();
+    c.target.set(new ElementRef(button));
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    c.panelOpen.set(true);
+    TestBed.flushEffects();
+    c.panelOpen.set(false);
+    TestBed.flushEffects();
+    await drainMicrotasks();
+
+    expect(c.openedChangeLog).toEqual([true, false]);
+    expect(c.openedLog).toEqual([1]);
+    expect(c.closedLog).toEqual([1]);
+    expect(calls()).toBe(1);
+  });
+
   it('emits openedChange(true) and opened on an open flip', () => {
     const fixture = TestBed.createComponent(LifecycleProbe);
     fixture.detectChanges();
