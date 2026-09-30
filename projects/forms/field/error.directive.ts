@@ -15,14 +15,21 @@ import { CngxFormFieldPresenter } from './form-field-presenter';
  * carries `cngx-error`, which the field typography in `@cngx/themes/cngx.css` sizes and
  * tints like the `cngx-field-errors` list.
  *
+ * Gate the content on the same condition as the container (touched AND invalid). Content
+ * rendered while the container is `aria-hidden` is on screen but hidden from screen readers.
+ *
  * ```html
- * <div cngxError>
- *   @if (presenter.errors(); as errors) {
- *     @for (e of errors; track e.kind) {
- *       <span>{{ e.message }}</span>
+ * <cngx-form-field [field]="form.email">
+ *   <label cngxLabel>Email</label>
+ *   <input cngxInput />
+ *   <div cngxError>
+ *     @if (form.email().touched() && form.email().invalid()) {
+ *       @for (e of form.email().errors(); track e.kind) {
+ *         <span>{{ e.message }}</span>
+ *       }
  *     }
- *   }
- * </div>
+ *   </div>
+ * </cngx-form-field>
  * ```
  *
  * @category forms/field
