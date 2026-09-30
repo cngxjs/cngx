@@ -18,19 +18,28 @@ test.describe('field error basic story', () => {
 });
 
 // Same contract for every manual-slot story: nothing at rest, the message
-// after the first blur.
+// after the first blur. The input is found by its accessible name, so the
+// label wiring is part of the contract. `scope` narrows the page when two
+// fields share a label.
 const MANUAL_SLOT_STORIES = [
-  { route: 'icons-per-kind', input: '#kind-email', message: 'Email is required' },
-  { route: 'when-to-pick-manual-vs-auto', input: '#pick-manual-name', message: 'This field is required' },
-  { route: 'server-injected-error', input: '#server-email', message: 'Email is required' },
+  { route: 'icons-per-kind', scope: 'main', label: 'Email address', message: 'Email is required' },
+  {
+    route: 'when-to-pick-manual-vs-auto',
+    scope: 'main section:has(> h3:text-is("Manual: div cngxError"))',
+    label: 'Display name',
+    message: 'This field is required',
+  },
+  { route: 'server-injected-error', scope: 'main', label: 'Email address', message: 'Email is required' },
 ] as const;
 
 for (const story of MANUAL_SLOT_STORIES) {
   test.describe(`field error ${story.route} story`, () => {
     test('keeps the manual error slot empty until the field is touched', async ({ page }) => {
       await page.goto(`/#/forms/field/error/${story.route}`);
-      const field = page.locator('main cngx-form-field', { has: page.locator(story.input) });
-      const input = field.locator(story.input);
+      const field = page
+        .locator(story.scope)
+        .locator('cngx-form-field', { has: page.getByRole('textbox', { name: story.label }) });
+      const input = field.getByRole('textbox', { name: story.label });
       const slot = field.locator('.cngx-error');
 
       await expect(input).toBeVisible();
@@ -46,8 +55,10 @@ for (const story of MANUAL_SLOT_STORIES) {
 test.describe('field error server-injected-error story reset', () => {
   test('clears the touched state, so the slot is empty again after Reset', async ({ page }) => {
     await page.goto('/#/forms/field/error/server-injected-error');
-    const field = page.locator('main cngx-form-field', { has: page.locator('#server-email') });
-    const input = field.locator('#server-email');
+    const field = page.locator('main cngx-form-field', {
+      has: page.getByRole('textbox', { name: 'Email address' }),
+    });
+    const input = field.getByRole('textbox', { name: 'Email address' });
     const slot = field.locator('.cngx-error');
 
     await input.focus();

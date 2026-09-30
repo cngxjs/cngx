@@ -27,10 +27,9 @@ export const STORY: DemoSpec = {
   }));`,
   template: `  <div style="display:grid;gap:16px;max-width:420px">
     <cngx-form-field [field]="userForm.username">
-      <label cngxLabel for="basic-username">Username</label>
+      <label cngxLabel>Username</label>
       <input
         cngxInput
-        id="basic-username"
         type="text"
         [value]="userForm.username().value()"
         (input)="userForm.username().value.set($any($event.target).value)"
