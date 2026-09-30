@@ -1,6 +1,6 @@
 import { Component, signal, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { CngxFieldErrors, CngxFormField, CngxHint, CngxLabel } from '@cngx/forms/field';
+import { CngxError, CngxFieldErrors, CngxFormField, CngxHint, CngxLabel } from '@cngx/forms/field';
 import { createMockField, mockValidationError } from '@cngx/forms/field/testing';
 import { CngxInput } from '@cngx/forms/input';
 import { computedValue } from '@cngx/testing/geometry';
@@ -32,7 +32,7 @@ type Density = 'compact' | 'comfortable' | 'spacious';
 @Component({
   selector: 'cngx-field-stack-geometry-host',
   standalone: true,
-  imports: [CngxFormField, CngxLabel, CngxHint, CngxFieldErrors, CngxInput, CngxFieldBox],
+  imports: [CngxFormField, CngxLabel, CngxHint, CngxFieldErrors, CngxError, CngxInput, CngxFieldBox],
   styleUrls: HARNESS_STYLES,
   encapsulation: ViewEncapsulation.None,
   template: `
@@ -54,12 +54,28 @@ type Density = 'compact' | 'comfortable' | 'spacious';
           <input cngxInput />
         </span>
       </cngx-form-field>
+      <cngx-form-field class="f-manual-empty" [field]="plain" [skin]="skin()">
+        <label cngxLabel>Nickname</label>
+        <input cngxInput />
+        <span cngxHint>Optional</span>
+        <div cngxError>
+          @if (manualEmptyShown()) {
+            <p>Never rendered</p>
+          }
+        </div>
+      </cngx-form-field>
+      <cngx-form-field class="f-manual-shown" [field]="invalid" [skin]="skin()">
+        <label cngxLabel>Handle</label>
+        <input cngxInput />
+        <div cngxError><p style="margin: 0">Enter a handle.</p></div>
+      </cngx-form-field>
     </div>
   `,
 })
 class StackHost {
   readonly skin = signal<Skin>('outline');
   readonly density = signal<Density>('comfortable');
+  readonly manualEmptyShown = signal(false);
   readonly invalid = createMockField({
     name: 'name',
     invalid: true,
@@ -145,6 +161,24 @@ describe.each(MATRIX)('field stack: %s skin, %s', (skin, density) => {
     const first = query(root, '.f-lone');
     const next = query(root, '.f-box > .cngx-label');
     expect(rect(next).top - rect(first).bottom).toBeCloseTo(16, 0);
+  });
+
+  // The empty manual error container is the live region waiting for content;
+  // it must not add a hint gap below the last visible line.
+  it('ends the field at the hint when the manual error container is empty', () => {
+    const field = query(mount(skin, density), '.f-manual-empty');
+    const hint = query(field, ':scope > .cngx-hint');
+    expect(query(field, ':scope > .cngx-error').matches(':empty')).toBe(true);
+    expect(rect(field).bottom - rect(hint).bottom).toBeCloseTo(0, 0);
+  });
+
+  it('puts one hint gap above a manual error container that holds content', () => {
+    const field = query(mount(skin, density), '.f-manual-shown');
+    const input = query(field, ':scope > input');
+    const error = query(field, ':scope > .cngx-error');
+    expect(computedValue(error, 'position')).toBe('static');
+    expect(rect(error).top - rect(input).bottom).toBeCloseTo(GAP[density], 0);
+    expect(rect(field).bottom - rect(error).bottom).toBeCloseTo(0, 0);
   });
 
   it('keeps a field with an inner label as display: contents', () => {

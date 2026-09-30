@@ -107,6 +107,14 @@
     margin-block: 0;
   }
 
+  /* The manual error container stays in the DOM as the live region; empty, it
+     is a zero-height flex item that would still take one hint gap. Out of
+     flow it keeps its node and its live-region identity, and it is back in
+     flow the moment content lands. */
+  cngx-form-field:has(> .cngx-label) > .cngx-error:empty {
+    position: absolute;
+  }
+
   .cngx-label {
     font-size: var(--cngx-field-label-font-size, 0.8125rem);
     font-weight: var(--cngx-field-label-weight, 500);

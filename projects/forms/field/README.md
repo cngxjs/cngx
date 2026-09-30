@@ -8,7 +8,9 @@ A11y coordination layer for form fields. Strong opinions about ARIA, zero opinio
 deterministic IDs, error gating, and CSS state classes across its child directives. Once it holds a
 `label[cngxLabel]` as a direct child it becomes the field's own stack (a flex column): the label sits
 `--cngx-field-label-gap` above the control or box, hint and error lines follow at
-`--cngx-field-hint-gap`. The container around the fields only spaces one field from the next.
+`--cngx-field-hint-gap`. An empty `[cngxError]` container takes no gap: it stays in the DOM as the
+live region but leaves the flow until content lands. The container around the fields only spaces one
+field from the next.
 
 ## Exports
 
