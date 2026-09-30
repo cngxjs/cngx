@@ -28,7 +28,8 @@ import type { CngxTabGroupHost, CngxTabHandle } from '../tab-group-host.token';
 export interface CngxTabDismissalsOptions {
   readonly host: CngxTabGroupHost;
   readonly config: CngxTabsConfig;
-  readonly i18n: CngxTabsI18n;
+  /** Tabs i18n bundle Signal (`injectTabsI18n()`). */
+  readonly i18n: Signal<CngxTabsI18n>;
   readonly closable: Signal<boolean | undefined>;
   readonly addable: Signal<boolean | undefined>;
   readonly hostElement: HTMLElement;
@@ -143,7 +144,10 @@ export function createTabDismissals(opts: CngxTabDismissalsOptions): CngxTabDism
       if (landed === undefined) {
         return prev.value;
       }
-      return opts.i18n.closedTab(pending.get(landed.id) ?? '');
+      // Feeds the live region: copy is read untracked so a language
+      // switch does not re-announce the last close.
+      const label = pending.get(landed.id) ?? '';
+      return untracked(() => opts.i18n().closedTab(label));
     },
   });
 
@@ -219,7 +223,7 @@ export function createTabDismissals(opts: CngxTabDismissalsOptions): CngxTabDism
     resolvedClosable,
     resolvedAddable,
     isTabClosable,
-    closeButtonLabel: (tab) => opts.i18n.closeTab(tab.label() ?? ''),
+    closeButtonLabel: (tab) => opts.i18n().closeTab(tab.label() ?? ''),
     closeIconContextFor: (tab) => {
       let ctx = closeIconContextCache.get(tab);
       if (!ctx) {

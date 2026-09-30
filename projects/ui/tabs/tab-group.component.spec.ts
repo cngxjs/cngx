@@ -1,4 +1,5 @@
 import {
+  computed,
   Component,
   TemplateRef,
   ViewChild,
@@ -2444,3 +2445,35 @@ describe('CngxTabGroup panelMode=lazy x route-sync deep link', () => {
     expect(fixture.nativeElement.querySelector('.body-b')).not.toBeNull();
   });
 });
+
+describe('CngxTabGroup language switch', () => {
+  it('re-labels the close and add buttons on a language flip', () => {
+    const lang = signal<'en' | 'de'>('en');
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideTabsI18n(
+          withTabsI18nLabels(
+            computed(() =>
+              lang() === 'de'
+                ? { addTab: 'Reiter hinzufuegen', closeTab: (label: string) => `"${label}" schliessen` }
+                : {},
+            ),
+          ),
+        ),
+      ],
+    });
+    const fixture = TestBed.createComponent(DismissableHost);
+    fixture.detectChanges();
+    const add = fixture.nativeElement.querySelector('.cngx-tabs__add') as HTMLButtonElement;
+    const close = fixture.nativeElement.querySelector('.cngx-tabs__close') as HTMLButtonElement;
+    expect(add.getAttribute('aria-label')).toBe('Add tab');
+    expect(close.getAttribute('aria-label')).toBe('Close "Profile"');
+
+    lang.set('de');
+    fixture.detectChanges();
+    expect(add.getAttribute('aria-label')).toBe('Reiter hinzufuegen');
+    expect(close.getAttribute('aria-label')).toBe('"Profile" schliessen');
+  });
+});
+

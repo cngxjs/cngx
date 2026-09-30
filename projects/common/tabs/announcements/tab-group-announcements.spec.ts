@@ -1,11 +1,16 @@
-import { provideZonelessChangeDetection, signal } from '@angular/core';
+import { computed, provideZonelessChangeDetection, signal, type Signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
 
 import { CNGX_TABS_CONFIG, type CngxTabsConfig } from '../tabs-config';
-import { CNGX_TABS_I18N, type CngxTabsI18n } from '../i18n/tabs-i18n';
+import {
+  CNGX_TABS_I18N,
+  provideTabsI18n,
+  withTabsI18nLabels,
+  type CngxTabsI18n,
+} from '../i18n/tabs-i18n';
 import type { CngxTabGroupHost, CngxTabHandle } from '../tab-group-host.token';
 import { createTabGroupAnnouncements } from './tab-group-announcements';
 
@@ -55,7 +60,7 @@ function makeCommitPresenter(): {
 }
 
 describe('createTabGroupAnnouncements - closedAnnouncement priority chain', () => {
-  let i18n: CngxTabsI18n;
+  let i18n: Signal<CngxTabsI18n>;
   let config: CngxTabsConfig;
 
   beforeEach(() => {
@@ -90,7 +95,7 @@ describe('createTabGroupAnnouncements - closedAnnouncement priority chain', () =
     const { bundle, closed, current } = chainSetup();
     closed.set('Closed "B"');
     current.set('pending');
-    expect(bundle.liveAnnouncement()).toBe(i18n.commitInFlight);
+    expect(bundle.liveAnnouncement()).toBe(i18n().commitInFlight);
   });
 
   it('a stale close phrase does not re-enter after commit activity returns to idle', () => {
@@ -99,7 +104,7 @@ describe('createTabGroupAnnouncements - closedAnnouncement priority chain', () =
     expect(bundle.liveAnnouncement()).toBe('Closed "B"');
     // Commit activity spends the phrase...
     current.set('pending');
-    expect(bundle.liveAnnouncement()).toBe(i18n.commitInFlight);
+    expect(bundle.liveAnnouncement()).toBe(i18n().commitInFlight);
     current.set('idle');
     // ...so returning to idle must not re-announce the old close.
     expect(bundle.liveAnnouncement()).toBe('');
@@ -110,7 +115,7 @@ describe('createTabGroupAnnouncements - closedAnnouncement priority chain', () =
 });
 
 describe('createTabGroupAnnouncements - statusPhrase', () => {
-  let i18n: CngxTabsI18n;
+  let i18n: Signal<CngxTabsI18n>;
   let config: CngxTabsConfig;
 
   function build(): ReturnType<typeof createTabGroupAnnouncements> {
@@ -144,7 +149,7 @@ describe('createTabGroupAnnouncements - statusPhrase', () => {
   it('falls back to tabHasErrors(1) for a bare direct flag with no message', () => {
     const { statusPhrase } = build();
     const handle = makeHandle({ hasError: true, errorMessage: undefined });
-    expect(statusPhrase(handle)).toBe(i18n.tabHasErrors(1));
+    expect(statusPhrase(handle)).toBe(i18n().tabHasErrors(1));
   });
 
   it('prefers the aggregator announcement over the direct message', () => {
@@ -196,3 +201,62 @@ describe('createTabGroupAnnouncements - role descriptions', () => {
     expect(bundle.tabPanelRoleDescription()).toBe('Register');
   });
 });
+
+describe('createTabGroupAnnouncements - language switch', () => {
+  function switchSetup() {
+    const lang = signal<'en' | 'de'>('en');
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideTabsI18n(
+          withTabsI18nLabels(
+            computed<Partial<CngxTabsI18n>>(() =>
+              lang() === 'de'
+                ? {
+                    tabsLabel: 'Reiter',
+                    commitInFlight: 'Wechsle Reiter',
+                    commitFailedRetry: 'Abgelehnt',
+                    tabHasErrors: (count) => `${count} Fehler`,
+                  }
+                : {},
+            ),
+          ),
+        ),
+      ],
+    });
+    const { presenter, current } = makeCommitPresenter();
+    const bundle = createTabGroupAnnouncements({
+      presenter,
+      i18n: TestBed.inject(CNGX_TABS_I18N),
+      config: {},
+      ariaLabel: signal<string | undefined>(undefined),
+      ariaLabelledBy: signal<string | undefined>(undefined),
+    });
+    return { lang, bundle, current };
+  }
+
+  it('does not re-announce on a language flip', () => {
+    const { lang, bundle, current } = switchSetup();
+    current.set('pending');
+    expect(bundle.liveAnnouncement()).toBe('Switching tab…');
+
+    lang.set('de');
+    expect(bundle.liveAnnouncement()).toBe('Switching tab…');
+
+    current.set('error');
+    expect(bundle.liveAnnouncement()).toBe('Abgelehnt');
+  });
+
+  it('re-labels the non-live surfaces at once', () => {
+    const { lang, bundle } = switchSetup();
+    const handle = makeHandle({ hasError: true });
+    expect(bundle.resolvedAriaLabel()).toBe('Tabs');
+    expect(bundle.statusPhrase(handle)).toBe('1 error');
+
+    lang.set('de');
+    expect(bundle.resolvedAriaLabel()).toBe('Reiter');
+    expect(bundle.statusPhrase(handle)).toBe('1 Fehler');
+  });
+});
+

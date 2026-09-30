@@ -52,8 +52,8 @@ describe('provideCngxTabs', () => {
     expect(cfg.defaultOrientation).toBe('vertical');
     expect(cfg.overflowStabilizeMs).toBe(150);
     expect(cfg.ariaLabels?.tabsRegion).toBe('Bereiche');
-    expect(i18n.tabsLabel).toBe('Bereiche');
-    expect(i18n.moreTabsLabel(3)).toBe('3 mehr');
+    expect(i18n().tabsLabel).toBe('Bereiche');
+    expect(i18n().moreTabsLabel(3)).toBe('3 mehr');
   });
 
   it('falls back to library defaults when no features are passed', () => {
@@ -64,7 +64,7 @@ describe('provideCngxTabs', () => {
     const i18n = TestBed.inject(CNGX_TABS_I18N);
     expect(cfg.defaultOrientation).toBe('horizontal');
     expect(cfg.overflowStabilizeMs).toBe(100);
-    expect(i18n.tabsLabel).toBe('Tabs');
+    expect(i18n().tabsLabel).toBe('Tabs');
   });
 
   it('only-config features leave i18n at library defaults (no spurious i18n provider)', () => {
@@ -75,8 +75,8 @@ describe('provideCngxTabs', () => {
       ],
     });
     const i18n = TestBed.inject(CNGX_TABS_I18N);
-    expect(i18n.tabsLabel).toBe('Tabs');
-    expect(i18n.previousTab).toBe('Previous tab');
+    expect(i18n().tabsLabel).toBe('Tabs');
+    expect(i18n().previousTab).toBe('Previous tab');
   });
 
   it('only-i18n features leave config at library defaults', () => {
@@ -89,7 +89,7 @@ describe('provideCngxTabs', () => {
     const cfg = TestBed.inject(CNGX_TABS_CONFIG);
     const i18n = TestBed.inject(CNGX_TABS_I18N);
     expect(cfg.defaultOrientation).toBe('horizontal');
-    expect(i18n.tabsLabel).toBe('Reiter');
+    expect(i18n().tabsLabel).toBe('Reiter');
   });
 
   it('injectTabsConfig sees the aggregator-provided config in an injection context', () => {
@@ -161,7 +161,7 @@ describe('provideCngxTabs', () => {
       const cfg = TestBed.inject(CNGX_TABS_CONFIG);
       const i18n = TestBed.inject(CNGX_TABS_I18N);
       expect(cfg.defaultOrientation).toBe('vertical');
-      expect(i18n.tabsLabel).toBe('Bereiche');
+      expect(i18n().tabsLabel).toBe('Bereiche');
       expect(warnSpy).toHaveBeenCalledTimes(1);
     });
   });
@@ -193,7 +193,7 @@ describe('provideCngxTabsAt', () => {
     const scopedCfg = fixture.debugElement.injector.get(CNGX_TABS_CONFIG);
     const scopedI18n = fixture.debugElement.injector.get(CNGX_TABS_I18N);
     expect(scopedCfg.defaultOrientation).toBe('vertical');
-    expect(scopedI18n.tabsLabel).toBe('Bereiche');
+    expect(scopedI18n().tabsLabel).toBe('Bereiche');
   });
 
   it('an i18n-only call does not shadow an app-wide config with an empty one', () => {

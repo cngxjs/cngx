@@ -876,27 +876,6 @@ export const RATCHET = [
     closesIn: 2,
   },
   {
-    file: 'projects/common/tabs/announcements/tab-group-announcements.ts',
-    member: 'createTabGroupAnnouncements',
-    rule: 'R3',
-    token: 'CNGX_TABS_I18N',
-    closesIn: 2,
-  },
-  {
-    file: 'projects/common/tabs/dismissals/tab-dismissals.ts',
-    member: 'createTabDismissals',
-    rule: 'R3',
-    token: 'CNGX_TABS_I18N',
-    closesIn: 2,
-  },
-  {
-    file: 'projects/common/tabs/i18n/tabs-i18n.ts',
-    member: 'withTabsI18nLabels',
-    rule: 'R3',
-    token: 'CNGX_TABS_I18N',
-    closesIn: 2,
-  },
-  {
     file: 'projects/common/tabs/tabs-config.ts',
     member: 'withTabsAriaLabels',
     rule: 'R3',
@@ -2080,27 +2059,6 @@ export const RATCHET = [
     closesIn: 7,
   },
   {
-    file: 'projects/ui/tabs/tab-group.component.ts',
-    member: 'CngxTabGroup.announcements',
-    rule: 'R4',
-    token: 'CNGX_TABS_I18N',
-    closesIn: 2,
-  },
-  {
-    file: 'projects/ui/tabs/tab-group.component.ts',
-    member: 'CngxTabGroup.template:i18n',
-    rule: 'R3',
-    token: 'CNGX_TABS_I18N',
-    closesIn: 2,
-  },
-  {
-    file: 'projects/ui/tabs/tab-overflow.component.ts',
-    member: 'CngxTabOverflow.template:i18n',
-    rule: 'R3',
-    token: 'CNGX_TABS_I18N',
-    closesIn: 2,
-  },
-  {
     file: 'projects/ui/timeline/timeline-labels.ts',
     member: 'createTimelineFallbackCopy',
     rule: 'R3',
@@ -2144,7 +2102,7 @@ export const RATCHET = [
   },
 ];
 
-export const RATCHET_CEILING = 219;
+export const RATCHET_CEILING = 213;
 
 /** The last phase whose closing commit has landed. */
 export const COMPLETED_PHASE = 1;
@@ -2610,7 +2568,7 @@ export const LIVE_REGIONS = [
   {
     file: 'projects/ui/tabs/tab-group.component.ts',
     region: 'CngxTabGroup.span(announcements.liveAnnouncement)',
-    spec: 'projects/ui/tabs/tab-group.component.spec.ts',
+    spec: 'projects/common/tabs/announcements/tab-group-announcements.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 2,
   },

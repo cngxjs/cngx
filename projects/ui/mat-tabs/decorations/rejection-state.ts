@@ -1,4 +1,4 @@
-import { computed, type Signal } from '@angular/core';
+import { computed, untracked, type Signal } from '@angular/core';
 
 import type { CngxTabGroupHost, injectTabsI18n } from '@cngx/common/tabs';
 
@@ -94,17 +94,22 @@ export function createRejectionState(
       return '';
     }
     const label = originLabel();
-    return label ? i18n.commitRolledBackTo(label) : i18n.commitFailedRetry;
+    const copy = i18n();
+    return label ? copy.commitRolledBackTo(label) : copy.commitFailedRetry;
   });
 
+  // Feeds the live announcer: copy is read untracked so a language switch
+  // does not re-announce; the next transition speaks the new language.
   const liveAnnouncement: Signal<string> = computed(() => {
     const current = presenter.commitTransition.current();
     if (current === 'pending') {
-      return i18n.commitInFlight;
+      return untracked(() => i18n().commitInFlight);
     }
     if (current === 'error') {
       const label = originLabel();
-      return label ? i18n.commitRolledBackTo(label) : i18n.commitFailedRetry;
+      return untracked(() =>
+        label ? i18n().commitRolledBackTo(label) : i18n().commitFailedRetry,
+      );
     }
     return '';
   });

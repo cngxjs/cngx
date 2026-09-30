@@ -1,7 +1,7 @@
 // Single-consumer factory - staged under family-uniformity
 // (`createTabGroupTemplateBindings` and `CngxMatTabAggregatorContent`).
 // Re-eval on second consumer or sibling debt closure.
-import { computed, linkedSignal, type Signal } from '@angular/core';
+import { computed, linkedSignal, untracked, type Signal } from '@angular/core';
 import { createAnnouncementPhrase } from '@cngx/core/utils';
 
 import { TABS_CONFIG_DEFAULTS, type CngxTabsConfig } from '../tabs-config';
@@ -18,7 +18,8 @@ import type { CngxTabGroupHost, CngxTabHandle } from '../tab-group-host.token';
  */
 export interface CngxTabGroupAnnouncementsOptions {
   readonly presenter: CngxTabGroupHost;
-  readonly i18n: CngxTabsI18n;
+  /** Tabs i18n bundle Signal (`injectTabsI18n()`). */
+  readonly i18n: Signal<CngxTabsI18n>;
   readonly config: CngxTabsConfig;
   /** Per-instance `aria-label` Input on the organism. */
   readonly ariaLabel: Signal<string | undefined>;
@@ -150,7 +151,7 @@ export function createTabGroupAnnouncements(
     if (ariaLabelledBy()) {
       return null;
     }
-    return ariaLabel() ?? config.ariaLabels?.tabsRegion ?? i18n.tabsLabel;
+    return ariaLabel() ?? config.ariaLabels?.tabsRegion ?? i18n().tabsLabel;
   });
 
   // `prev?.source` = source value before the most recent change -
@@ -176,6 +177,8 @@ export function createTabGroupAnnouncements(
     seed: (src) => src.phrase,
   });
 
+  // Copy is read untracked in the live region: a language switch must not
+  // re-speak the last phrase; the next transition speaks the new language.
   const liveAnnouncement = computed<string>(() => {
     // Read the close phrase EAGERLY: linkedSignal only observes status
     // snapshots it is actually read under, so a lazy read at the idle
@@ -184,7 +187,7 @@ export function createTabGroupAnnouncements(
     const closeConfirmation = closedPhrase();
     const current = presenter.commitTransition.current();
     if (current === 'pending') {
-      return i18n.commitInFlight;
+      return untracked(() => i18n().commitInFlight);
     }
     if (current === 'error') {
       // No `previous === 'pending'` guard - sync rejections collapse
@@ -196,10 +199,10 @@ export function createTabGroupAnnouncements(
       if (failedIdx !== undefined && originIdx !== undefined) {
         const originLabel = presenter.tabs()[originIdx]?.label();
         if (originLabel) {
-          return i18n.commitRolledBackTo(originLabel);
+          return untracked(() => i18n().commitRolledBackTo(originLabel));
         }
       }
-      return i18n.commitFailedRetry;
+      return untracked(() => i18n().commitFailedRetry);
     }
     if (current === 'success') {
       const tabs = presenter.tabs();
@@ -209,15 +212,19 @@ export function createTabGroupAnnouncements(
         return '';
       }
       const label = tab.label() ?? '';
-      const positionPhrase = i18n.selectedTab(label, idx + 1, tabs.length);
+      const count = tabs.length;
       const prevIdx = priorActiveIndex();
-      if (idx > prevIdx) {
-        return `${i18n.nextTab}: ${positionPhrase}`;
-      }
-      if (idx < prevIdx) {
-        return `${i18n.previousTab}: ${positionPhrase}`;
-      }
-      return positionPhrase;
+      return untracked(() => {
+        const copy = i18n();
+        const positionPhrase = copy.selectedTab(label, idx + 1, count);
+        if (idx > prevIdx) {
+          return `${copy.nextTab}: ${positionPhrase}`;
+        }
+        if (idx < prevIdx) {
+          return `${copy.previousTab}: ${positionPhrase}`;
+        }
+        return positionPhrase;
+      });
     }
     // Idle: the landed-close confirmation is the only phrase that may
     // hold the region, and only until the next commit activity.
@@ -237,15 +244,16 @@ export function createTabGroupAnnouncements(
     if (directMessage) {
       return directMessage;
     }
-    return i18n.tabHasErrors(aggregator?.errorCount() ?? 1);
+    return i18n().tabHasErrors(aggregator?.errorCount() ?? 1);
   }
 
   function tabAriaLabel(tab: CngxTabHandle, position: number): string {
     const tabs = presenter.tabs();
     const label = tab.label() ?? '';
     const detail = tab.subLabel();
-    const labelPart = detail ? i18n.tabLabelWithDetail(label, detail) : label;
-    return i18n.selectedTab(labelPart, position, tabs.length);
+    const copy = i18n();
+    const labelPart = detail ? copy.tabLabelWithDetail(label, detail) : label;
+    return copy.selectedTab(labelPart, position, tabs.length);
   }
 
   // Eager seed - `linkedSignal` is lazy and the success arm doesn't

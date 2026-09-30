@@ -7,7 +7,7 @@
   [cngxPopoverTrigger]="overflowPopover"
   [haspopup]="'menu'"
   [hidden]="!hasHiddenTabs()"
-  [attr.aria-label]="i18n.moreTabsLabel(hiddenCount())"
+  [attr.aria-label]="i18n().moreTabsLabel(hiddenCount())"
   (activated)="handleAdActivated($event)"
   (keydown)="handleTriggerKeydown($event)"
   (click)="overflowPopover.toggle()"
@@ -18,7 +18,7 @@
       *ngTemplateOutlet="triggerTpl; context: templates.triggerContext()"
     />
   } @else {
-    {{ i18n.moreTabsLabel(hiddenCount()) }}
+    {{ i18n().moreTabsLabel(hiddenCount()) }}
   }
 </button>
 
@@ -33,7 +33,7 @@
   class="cngx-tab-overflow__panel"
   placement="bottom-end"
   panelClass="cngx-tab-overflow__panel-surface"
-  [attr.aria-label]="i18n.moreTabsLabel(hiddenCount())"
+  [attr.aria-label]="i18n().moreTabsLabel(hiddenCount())"
 >
   <!--
     `role="presentation"` flattens the <ul> away from the
