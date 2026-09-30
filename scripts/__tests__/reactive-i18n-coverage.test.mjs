@@ -78,6 +78,12 @@ const MERGE_HELPERS = new Set(['coerceSignal', 'createOverrideMerge', 'createNes
 /** `role` values that make an element a live region. */
 const LIVE_ROLES = new Set(['status', 'alert', 'log']);
 
+/** A live `role` literal inside a bound expression or a member initializer. */
+const LIVE_ROLE_LITERAL = /['"](?:status|alert|log)['"]/;
+
+/** Calls that hand text to an announcer (`announce`, `announceCommitError`). */
+const ANNOUNCE_CALL = /^announce/i;
+
 /**
  * @typedef {object} CopyTokenSpec
  * @property {string} token
@@ -304,7 +310,102 @@ export function buildCopyModel(program, tokens, copyTokens, helpers) {
       }
     }
   }
-  return { checker, types, localeTokens, helpers: new Set(helpers), typeKeys };
+  const ownFiles = program.getSourceFiles().filter((sf) => !sf.fileName.includes('node_modules'));
+  return {
+    checker,
+    types,
+    localeTokens,
+    helpers: new Set(helpers),
+    typeKeys,
+    liveAttributes: discoverLiveAttributes(ownFiles),
+    factoryTokens: new Map(),
+  };
+}
+
+/**
+ * Is a `host:` object a live region: static `aria-live`, a bound
+ * `[attr.aria-live]`, or a live `role`, static or bound (a bound role counts
+ * when its expression, or the initializer of a member it calls, names a live
+ * role literal).
+ *
+ * @param {{ name: string; value: ts.StringLiteral | ts.NoSubstitutionTemplateLiteral }[]} host
+ * @param {(expression: string) => boolean} isLiveRoleExpression
+ */
+const isLiveHost = (host, isLiveRoleExpression) =>
+  host.some(
+    (e) =>
+      e.name === 'aria-live' ||
+      e.name === '[attr.aria-live]' ||
+      (e.name === 'role' && LIVE_ROLES.has(e.value.text)) ||
+      (e.name === '[attr.role]' && isLiveRoleExpression(e.value.text)),
+  );
+
+/**
+ * Does a bound role expression resolve to a live role: a literal in the
+ * expression itself, or in the initializer of a member it calls.
+ *
+ * @param {string} expression
+ * @param {ReadonlyMap<string, string>} memberTexts
+ */
+const isLiveRoleExpression = (expression, memberTexts) =>
+  LIVE_ROLE_LITERAL.test(expression) ||
+  [...expression.matchAll(/([A-Za-z_$][\w$]*)\s*\(/g)].some((m) =>
+    LIVE_ROLE_LITERAL.test(memberTexts.get(m[1]) ?? ''),
+  );
+
+/**
+ * The initializer (or body) text of every member of a class, by name.
+ *
+ * @param {ts.ClassDeclaration} cls
+ * @returns {Map<string, string>}
+ */
+const memberTextsOf = (cls) =>
+  new Map(
+    cls.members
+      .filter((m) => m.name && (ts.isPropertyDeclaration(m) || ts.isMethodDeclaration(m)))
+      .map((m) => [
+        m.name.getText(),
+        (ts.isPropertyDeclaration(m) ? m.initializer : m.body)?.getText() ?? '',
+      ]),
+  );
+
+/**
+ * Attribute names whose directive turns its host into a live region
+ * (`cngxLiveRegion`): an element carrying one is a live region in a template.
+ *
+ * @param {readonly ts.SourceFile[]} sourceFiles
+ * @returns {Set<string>}
+ */
+export function discoverLiveAttributes(sourceFiles) {
+  const out = new Set();
+  for (const sf of sourceFiles) {
+    for (const cls of sf.statements.filter(ts.isClassDeclaration)) {
+      const call = decoratorCall(cls, ['Directive', 'Component']);
+      const meta = call?.arguments[0];
+      if (!meta || !ts.isObjectLiteralExpression(meta)) {
+        continue;
+      }
+      const hostProperty = meta.properties.find(isDecoratorHost);
+      const host = hostProperty ? hostEntries(hostProperty) : [];
+      const texts = memberTextsOf(cls);
+      if (!isLiveHost(host, (e) => isLiveRoleExpression(e, texts))) {
+        continue;
+      }
+      const selector = meta.properties.find(
+        (p) => ts.isPropertyAssignment(p) && p.name.getText() === 'selector',
+      );
+      const selectorText =
+        selector &&
+        ts.isPropertyAssignment(selector) &&
+        ts.isStringLiteralLike(selector.initializer)
+          ? selector.initializer.text
+          : '';
+      for (const m of selectorText.matchAll(/\[([A-Za-z][\w-]*)\]/g)) {
+        out.add(m[1]);
+      }
+    }
+  }
+  return out;
 }
 
 // ---------------------------------------------------------------------------
@@ -723,14 +824,176 @@ function readEventAt(model, node, cache) {
 }
 
 // ---------------------------------------------------------------------------
+// Taint
+
+/**
+ * The copy tokens a subtree reads: read events, dereferences of copy-typed
+ * parameters (a pure builder still reads copy), `this.x` members through
+ * `memberTokens`, and - with `followLocals` - the initializers of the local
+ * consts it names, so a factory's `computed` over a local closure counts.
+ * `untracked(...)` bodies are skipped unless `includeUntracked`.
+ *
+ * @param {CopyModel} model
+ * @param {Map<ts.Node, Origin>} cache
+ * @param {ts.Node} root
+ * @param {{ includeUntracked: boolean; followLocals?: boolean; memberTokens?: (node: ts.PropertyAccessExpression) => Iterable<string> }} options
+ * @returns {Set<string>}
+ */
+function subtreeTokens(model, cache, root, options) {
+  const { checker } = model;
+  const out = new Set();
+  const followed = new Set();
+  const walk = (node, boundary) => {
+    if (!options.includeUntracked && isUntracked(node, boundary)) {
+      return;
+    }
+    const event = readEventAt(model, node, cache);
+    if (event) {
+      out.add(event.token);
+    }
+    const isAccess = ts.isPropertyAccessExpression(node) || ts.isElementAccessExpression(node);
+    const onThis = isAccess && node.expression.kind === ts.SyntaxKind.ThisKeyword;
+    if (isAccess && !onThis) {
+      const origin = originOf(model, node.expression, cache);
+      if (origin?.kind === 'param') {
+        out.add(origin.token);
+      }
+    }
+    const readsFactoryResult =
+      ts.isPropertyAccessExpression(node) && ts.isCallExpression(unwrapExpression(node.expression));
+    if (readsFactoryResult) {
+      const tokens = factoryPropertyTokens(
+        model,
+        cache,
+        node.expression,
+        node.name.text,
+        options.includeUntracked,
+      );
+      tokens.forEach((t) => out.add(t));
+    }
+    if (onThis && ts.isPropertyAccessExpression(node) && options.memberTokens) {
+      for (const token of options.memberTokens(node)) {
+        out.add(token);
+      }
+    }
+    if (options.followLocals && ts.isIdentifier(node)) {
+      const declaration = checker.getSymbolAtLocation(node)?.valueDeclaration;
+      const isLocal =
+        !!declaration &&
+        ts.isVariableDeclaration(declaration) &&
+        !!declaration.initializer &&
+        !isModuleLevelConst(declaration);
+      if (isLocal && !followed.has(declaration)) {
+        followed.add(declaration);
+        walk(declaration.initializer, declaration.initializer);
+      }
+    }
+    node.forEachChild((child) => walk(child, boundary));
+  };
+  walk(root, root);
+  return out;
+}
+
+/**
+ * The copy tokens behind `member.prop` when `member` is initialized by a
+ * factory call (`announcement = createStepperAnnouncementBuilders(...)`): the
+ * factory's returned object literal is resolved to the expression behind
+ * `prop`, and that expression's closure is walked.
+ *
+ * @param {CopyModel} model
+ * @param {Map<ts.Node, Origin>} cache
+ * @param {ts.Expression | undefined} initializer the member's initializer
+ * @param {string} prop
+ * @param {boolean} includeUntracked
+ * @returns {Set<string>}
+ */
+function factoryPropertyTokens(model, cache, initializer, prop, includeUntracked) {
+  const { checker } = model;
+  const call = unwrapExpression(initializer);
+  if (!call || !ts.isCallExpression(call)) {
+    return new Set();
+  }
+  let symbol = checker.getSymbolAtLocation(unwrapExpression(call.expression));
+  if (symbol && symbol.flags & ts.SymbolFlags.Alias) {
+    symbol = checker.getAliasedSymbol(symbol);
+  }
+  const declaration = symbol?.valueDeclaration;
+  const fn =
+    declaration && ts.isFunctionDeclaration(declaration)
+      ? declaration
+      : declaration &&
+          ts.isVariableDeclaration(declaration) &&
+          declaration.initializer &&
+          (ts.isArrowFunction(declaration.initializer) ||
+            ts.isFunctionExpression(declaration.initializer))
+        ? declaration.initializer
+        : undefined;
+  if (!fn?.body || fn.getSourceFile().fileName.includes('node_modules')) {
+    return new Set();
+  }
+  const key = `${fn.getSourceFile().fileName}:${fn.pos}\t${prop}\t${includeUntracked}`;
+  const memo = model.factoryTokens.get(key);
+  if (memo) {
+    return memo;
+  }
+  const out = new Set();
+  model.factoryTokens.set(key, out);
+  const values = [];
+  const collect = (object) => {
+    const literal = unwrapExpression(object);
+    if (!literal || !ts.isObjectLiteralExpression(literal)) {
+      return;
+    }
+    for (const property of literal.properties) {
+      if (property.name?.getText() !== prop) {
+        continue;
+      }
+      if (ts.isPropertyAssignment(property)) {
+        values.push(property.initializer);
+      } else if (ts.isShorthandPropertyAssignment(property)) {
+        const local = checker.getShorthandAssignmentValueSymbol(property)?.valueDeclaration;
+        if (local && ts.isVariableDeclaration(local) && local.initializer) {
+          values.push(local.initializer);
+        }
+      } else if (ts.isMethodDeclaration(property) && property.body) {
+        values.push(property.body);
+      }
+    }
+  };
+  if (!ts.isBlock(fn.body)) {
+    collect(fn.body);
+  }
+  const findReturns = (node) => {
+    if (node !== fn && isFunctionLike(node)) {
+      return;
+    }
+    if (ts.isReturnStatement(node) && node.expression) {
+      collect(node.expression);
+    }
+    node.forEachChild(findReturns);
+  };
+  findReturns(fn);
+  for (const value of values) {
+    for (const token of subtreeTokens(model, cache, value, {
+      includeUntracked,
+      followLocals: true,
+    })) {
+      out.add(token);
+    }
+  }
+  return out;
+}
+
+// ---------------------------------------------------------------------------
 // Templates
 
 /**
  * @typedef {object} TemplateRead
  * @property {string} root the class member the chain starts at
- * @property {ReadEvent['kind'] | 'member'} kind
+ * @property {ReadEvent['kind'] | 'member' | 'member-prop'} kind
  * @property {string | null} token
  * @property {boolean} [flat]
+ * @property {string} [prop] for `member-prop`: the property read off the member
  */
 
 /**
@@ -768,6 +1031,12 @@ function templateReads(model, classType, memberOrigins, ast, out) {
       }
     } else if (node instanceof PropertyRead || node instanceof SafePropertyRead) {
       const receiver = evaluate(node.receiver);
+      const readsMemberProperty =
+        (node.receiver instanceof PropertyRead || node.receiver instanceof SafePropertyRead) &&
+        node.receiver.receiver instanceof ImplicitReceiver;
+      if (receiver && readsMemberProperty) {
+        out.push({ root: receiver.root, kind: 'member-prop', token: null, prop: node.name });
+      }
       if (receiver) {
         const property = checker.getNonNullableType(receiver.type).getProperty(node.name);
         const type = property ? checker.getTypeOfSymbol(property) : checker.getAnyType();
@@ -854,14 +1123,16 @@ function templateReads(model, classType, memberOrigins, ast, out) {
 
 /**
  * The live regions of a parsed template: elements with `aria-live` (static
- * or bound) or a live `role`, each with the template nodes of its subtree.
+ * or bound), a live `role` (static or bound), or an attribute of a directive
+ * that makes its host live (`cngxLiveRegion`), each with its subtree.
  *
  * @param {readonly unknown[]} nodes
- * @returns {{ id: string; subtree: unknown }[]}
+ * @param {ReadonlySet<string>} liveAttributes
+ * @param {(expression: string) => boolean} isLiveRole
+ * @returns {{ tag: string; subtree: unknown }[]}
  */
-function templateRegions(nodes) {
+function templateRegions(nodes, liveAttributes, isLiveRole) {
   const regions = [];
-  const counts = new Map();
   const seen = new Set();
   const visit = (value) => {
     if (!value || typeof value !== 'object' || seen.has(value)) {
@@ -872,14 +1143,15 @@ function templateRegions(nodes) {
       const attributes = [...value.attributes, ...value.inputs];
       const isLive = attributes.some(
         (a) =>
-          (a instanceof TmplAstTextAttribute && a.name === 'aria-live') ||
-          (a instanceof TmplAstBoundAttribute && a.name === 'aria-live') ||
-          (a instanceof TmplAstTextAttribute && a.name === 'role' && LIVE_ROLES.has(a.value)),
+          a.name === 'aria-live' ||
+          liveAttributes.has(a.name) ||
+          (a instanceof TmplAstTextAttribute && a.name === 'role' && LIVE_ROLES.has(a.value)) ||
+          (a instanceof TmplAstBoundAttribute &&
+            a.name === 'role' &&
+            isLiveRole(a.value?.source ?? '')),
       );
       if (isLive) {
-        const n = (counts.get(value.name) ?? 0) + 1;
-        counts.set(value.name, n);
-        regions.push({ id: `${value.name}#${n}`, subtree: value });
+        regions.push({ tag: value.name, subtree: value });
       }
     }
     for (const child of Array.isArray(value) ? value : Object.values(value)) {
@@ -971,10 +1243,64 @@ export function analyzeFile(model, sf, fileName) {
   };
   visit(sf);
 
-  // Per class: carrier fixpoint, R1 through carriers, R4.
+  // Per class: carrier fixpoint, R1 through carriers, R4 through templates.
+  /** @type {Map<ts.ClassDeclaration, (node: ts.PropertyAccessExpression, includeUntracked: boolean) => Iterable<string>>} */
+  const classTokens = new Map();
   for (const cls of sf.statements.filter(ts.isClassDeclaration)) {
-    analyzeClass(model, cls, sf, fileName, cache, add, regions, unscannable);
+    classTokens.set(cls, analyzeClass(model, cls, sf, fileName, cache, add, regions, unscannable));
   }
+
+  // R4 through an effect that announces copy, in a class or a factory.
+  const ordinals = new Map();
+  const visitEffects = (node) => {
+    const callee = ts.isCallExpression(node) ? unwrapExpression(node.expression) : undefined;
+    const isEffect =
+      !!callee && ts.isIdentifier(callee) && callee.text === 'effect' && !!node.arguments[0];
+    if (isEffect) {
+      let owner = node.parent;
+      while (owner && !ts.isClassDeclaration(owner)) {
+        owner = owner.parent;
+      }
+      const memberTokensOf = owner ? classTokens.get(owner) : undefined;
+      const body = node.arguments[0];
+      const tokensOf = (includeUntracked) =>
+        subtreeTokens(model, cache, body, {
+          includeUntracked,
+          followLocals: true,
+          memberTokens: memberTokensOf
+            ? (access) => memberTokensOf(access, includeUntracked)
+            : undefined,
+        });
+      let announces = false;
+      const findAnnounce = (child) => {
+        if (ts.isCallExpression(child)) {
+          const c = unwrapExpression(child.expression);
+          const name = ts.isPropertyAccessExpression(c)
+            ? c.name.text
+            : ts.isIdentifier(c)
+              ? c.text
+              : '';
+          announces ||= ANNOUNCE_CALL.test(name);
+        }
+        child.forEachChild(findAnnounce);
+      };
+      findAnnounce(body);
+      const touching = announces ? tokensOf(true) : new Set();
+      if (touching.size) {
+        const member = memberKeyOf(node);
+        const n = (ordinals.get(member) ?? 0) + 1;
+        ordinals.set(member, n);
+        regions.push({
+          file: fileName,
+          region: `${member}:effect#${n}`,
+          tokens: [...touching].sort(),
+        });
+        tokensOf(false).forEach((t) => add(member, 'R4', t));
+      }
+    }
+    node.forEachChild(visitEffects);
+  };
+  visitEffects(sf);
 
   return { findings: [...findings.values()], regions, unscannable };
 }
@@ -988,6 +1314,8 @@ export function analyzeFile(model, sf, fileName) {
  * @param {(member: string, rule: Finding['rule'], token: string) => void} add
  * @param {Region[]} regions
  * @param {string[]} unscannable
+ * @returns {(node: ts.PropertyAccessExpression, includeUntracked: boolean) => Iterable<string>}
+ *   the copy tokens behind a `this.x` read in this class
  */
 function analyzeClass(model, cls, sf, fileName, cache, add, regions, unscannable) {
   const { checker } = model;
@@ -1008,41 +1336,44 @@ function analyzeClass(model, cls, sf, fileName, cache, add, regions, unscannable
     }
   }
 
+  const initializerOf = (name) => {
+    const m = members.find((x) => nameOf(x) === name);
+    return m && ts.isPropertyDeclaration(m) ? m.initializer : undefined;
+  };
+  /** `this.member.prop` where `member` holds a factory result. */
+  const factoryTokensOf = (access, includeUntracked) => {
+    const parent = access.parent;
+    return parent && ts.isPropertyAccessExpression(parent) && parent.expression === access
+      ? factoryPropertyTokens(
+          model,
+          cache,
+          initializerOf(access.name.text),
+          parent.name.text,
+          includeUntracked,
+        )
+      : [];
+  };
+
   // Copy tokens each member reads: `tracked` skips `untracked(...)` bodies,
   // `touching` does not. Fixpoint over `this.x` references between members.
   /** @param {boolean} includeUntracked */
   const carriers = (includeUntracked) => {
     /** @type {Map<string, Set<string>>} */
     const tokens = new Map(members.map((m) => [nameOf(m), new Set()]));
-    const direct = new Map();
     const refs = new Map();
     for (const m of members) {
-      const body = bodyOf(m);
-      const own = new Set();
       const references = new Set();
-      const walk = (node) => {
-        if (!includeUntracked && isUntracked(node, body)) {
-          return;
-        }
-        const event = readEventAt(model, node, cache);
-        if (event) {
-          own.add(event.token);
-        }
-        if (
-          ts.isPropertyAccessExpression(node) &&
-          node.expression.kind === ts.SyntaxKind.ThisKeyword &&
-          tokens.has(node.name.text)
-        ) {
-          references.add(node.name.text);
-        }
-        node.forEachChild(walk);
-      };
-      walk(body);
-      direct.set(nameOf(m), own);
+      const own = subtreeTokens(model, cache, bodyOf(m), {
+        includeUntracked,
+        memberTokens: (access) => {
+          if (tokens.has(access.name.text)) {
+            references.add(access.name.text);
+          }
+          return factoryTokensOf(access, includeUntracked);
+        },
+      });
+      own.forEach((t) => tokens.get(nameOf(m)).add(t));
       refs.set(nameOf(m), references);
-    }
-    for (const [name, own] of direct) {
-      own.forEach((t) => tokens.get(name).add(t));
     }
     let changed = true;
     while (changed) {
@@ -1063,6 +1394,10 @@ function analyzeClass(model, cls, sf, fileName, cache, add, regions, unscannable
   };
   const tracked = carriers(false);
   const touching = carriers(true);
+  const memberTokens = (access, includeUntracked) => [
+    ...((includeUntracked ? touching : tracked).get(access.name.text) ?? []),
+    ...factoryTokensOf(access, includeUntracked),
+  ];
 
   // R1 through a carrier: an input default reading a copy-derived member.
   for (const m of members) {
@@ -1084,76 +1419,19 @@ function analyzeClass(model, cls, sf, fileName, cache, add, regions, unscannable
     walk(m.initializer);
   }
 
-  // R4 through an effect that announces tracked copy.
-  const effectOwners = [
-    ...members
-      .filter(ts.isPropertyDeclaration)
-      .map((m) => ({ key: nameOf(m), node: m.initializer })),
-    ...cls.members
-      .filter(ts.isConstructorDeclaration)
-      .filter((c) => c.body)
-      .map((c) => ({ key: 'constructor', node: c.body })),
-  ];
-  for (const owner of effectOwners) {
-    let ordinal = 0;
-    const walk = (node) => {
-      const callee = ts.isCallExpression(node) ? unwrapExpression(node.expression) : undefined;
-      if (callee && ts.isIdentifier(callee) && callee.text === 'effect' && node.arguments[0]) {
-        ordinal++;
-        const effectBody = node.arguments[0];
-        let announces = false;
-        const trackedTokens = new Set();
-        const touchingTokens = new Set();
-        const inner = (child) => {
-          if (ts.isCallExpression(child)) {
-            const c = unwrapExpression(child.expression);
-            const name = ts.isPropertyAccessExpression(c)
-              ? c.name.text
-              : ts.isIdentifier(c)
-                ? c.text
-                : '';
-            announces ||= /announce$/i.test(name);
-          }
-          const untracked = isUntracked(child, effectBody);
-          const event = readEventAt(model, child, cache);
-          const refTokens =
-            ts.isPropertyAccessExpression(child) &&
-            child.expression.kind === ts.SyntaxKind.ThisKeyword
-              ? [...((untracked ? touching : tracked).get(child.name.text) ?? [])]
-              : [];
-          const found = [...(event ? [event.token] : []), ...refTokens];
-          found.forEach((t) => touchingTokens.add(t));
-          if (!untracked) {
-            found.forEach((t) => trackedTokens.add(t));
-          }
-          child.forEachChild(inner);
-        };
-        inner(effectBody);
-        if (announces && touchingTokens.size) {
-          regions.push({
-            file: fileName,
-            region: `${className}.${owner.key}:effect#${ordinal}`,
-            tokens: [...touchingTokens].sort(),
-          });
-          trackedTokens.forEach((t) => add(`${className}.${owner.key}`, 'R4', t));
-        }
-      }
-      node.forEachChild(walk);
-    };
-    walk(owner.node);
-  }
-
   // Templates and host bindings.
   const classType = checker.getDeclaredTypeOfSymbol(checker.getSymbolAtLocation(cls.name));
   const component = decoratorCall(cls, ['Component']);
   const directive = component ?? decoratorCall(cls, ['Directive']);
   if (!directive) {
-    return;
+    return memberTokens;
   }
   const meta = directive.arguments[0];
   const hostProperty =
     meta && ts.isObjectLiteralExpression(meta) ? meta.properties.find(isDecoratorHost) : undefined;
   const host = hostProperty ? hostEntries(hostProperty) : [];
+  const texts = memberTextsOf(cls);
+  const isLiveRole = (expression) => isLiveRoleExpression(expression, texts);
 
   const readsOf = (ast) => {
     const out = [];
@@ -1176,6 +1454,12 @@ function analyzeClass(model, cls, sf, fileName, cache, add, regions, unscannable
       if (read.kind === 'member') {
         (touching.get(read.root) ?? []).forEach((t) => touched.add(t));
         (tracked.get(read.root) ?? []).forEach((t) => note(read.root, t));
+      } else if (read.kind === 'member-prop') {
+        const init = initializerOf(read.root);
+        factoryPropertyTokens(model, cache, init, read.prop, true).forEach((t) => touched.add(t));
+        factoryPropertyTokens(model, cache, init, read.prop, false).forEach((t) =>
+          note(read.root, t),
+        );
       } else {
         note(read.root, read.token);
       }
@@ -1209,29 +1493,33 @@ function analyzeClass(model, cls, sf, fileName, cache, add, regions, unscannable
     }
   }
 
-  const reportRegion = (id, reads) => {
+  const seenIds = new Map();
+  const reportRegion = (baseId, reads) => {
     const { touched, trackedByRoot } = classify(reads);
     if (!touched.size) {
       return;
     }
+    const n = (seenIds.get(baseId) ?? 0) + 1;
+    seenIds.set(baseId, n);
+    const id = n === 1 ? baseId : `${baseId}#${n}`;
     regions.push({ file: fileName, region: `${className}.${id}`, tokens: [...touched].sort() });
     for (const [root, tokens] of trackedByRoot) {
       tokens.forEach((t) => add(`${className}.${root}`, 'R4', t));
     }
   };
 
-  const hostIsLive = host.some(
-    (e) =>
-      e.name === 'aria-live' ||
-      e.name === '[attr.aria-live]' ||
-      (e.name === 'role' && LIVE_ROLES.has(e.value.text)),
-  );
-  if (hostIsLive) {
+  if (isLiveHost(host, isLiveRole)) {
     reportRegion('host', [...hostReads, ...readsOf(templateNodes)]);
   }
-  for (const region of templateRegions(templateNodes)) {
-    reportRegion(region.id, readsOf(region.subtree));
+  for (const region of templateRegions(templateNodes, model.liveAttributes, isLiveRole)) {
+    const reads = readsOf(region.subtree);
+    const viaProperty = new Set(reads.filter((r) => r.kind === 'member-prop').map((r) => r.root));
+    const parts = reads
+      .filter((r) => r.kind === 'member-prop' || !viaProperty.has(r.root))
+      .map((r) => (r.kind === 'member-prop' ? `${r.root}.${r.prop}` : r.root));
+    reportRegion(`${region.tag}(${[...new Set(parts)].sort().join(',')})`, reads);
   }
+  return memberTokens;
 }
 
 // ---------------------------------------------------------------------------

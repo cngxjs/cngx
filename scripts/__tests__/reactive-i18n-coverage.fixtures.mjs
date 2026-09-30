@@ -751,6 +751,13 @@ export const RATCHET = [
   },
   {
     file: 'projects/common/interactive/async-click/async-click.directive.ts',
+    member: 'CngxAsyncClick.installAnnounceRegion',
+    rule: 'R4',
+    token: 'CNGX_INTERACTIVE_I18N',
+    closesIn: 3,
+  },
+  {
+    file: 'projects/common/interactive/async-click/async-click.directive.ts',
     member: 'CngxAsyncClick.succeededAnnouncement',
     rule: 'R1',
     token: 'CNGX_INTERACTIVE_I18N',
@@ -1590,6 +1597,13 @@ export const RATCHET = [
     closesIn: 7,
   },
   {
+    file: 'projects/ui/chart-panel/chart-panel.component.ts',
+    member: 'CngxChartPanel.busyLabel',
+    rule: 'R4',
+    token: 'CNGX_CHART_PANEL_CONFIG',
+    closesIn: 7,
+  },
+  {
     file: 'projects/ui/chart-panel/config/provide-chart-panel-config.ts',
     member: 'mergeConfig',
     rule: 'R3',
@@ -1656,6 +1670,13 @@ export const RATCHET = [
     file: 'projects/ui/collection/incremental-list.component.ts',
     member: 'CngxIncrementalList.retryLabel',
     rule: 'R3',
+    token: 'CNGX_INCREMENTAL_LIST_CONFIG',
+    closesIn: 7,
+  },
+  {
+    file: 'projects/ui/collection/incremental-list.component.ts',
+    member: 'CngxIncrementalList.statusMessage',
+    rule: 'R4',
     token: 'CNGX_INCREMENTAL_LIST_CONFIG',
     closesIn: 7,
   },
@@ -1794,8 +1815,29 @@ export const RATCHET = [
   },
   {
     file: 'projects/ui/feedback/alert/alert-stack.ts',
+    member: 'CngxAlertStack.i18n',
+    rule: 'R4',
+    token: 'CNGX_FEEDBACK_I18N',
+    closesIn: 6,
+  },
+  {
+    file: 'projects/ui/feedback/alert/alert-stack.ts',
     member: 'CngxAlertStack.regionLabel',
     rule: 'R2',
+    token: 'CNGX_FEEDBACK_I18N',
+    closesIn: 6,
+  },
+  {
+    file: 'projects/ui/feedback/alert/alert.ts',
+    member: 'CngxAlert.handleDismiss',
+    rule: 'R4',
+    token: 'CNGX_FEEDBACK_I18N',
+    closesIn: 6,
+  },
+  {
+    file: 'projects/ui/feedback/alert/alert.ts',
+    member: 'CngxAlert.i18n',
+    rule: 'R4',
     token: 'CNGX_FEEDBACK_I18N',
     closesIn: 6,
   },
@@ -1810,6 +1852,13 @@ export const RATCHET = [
     file: 'projects/ui/feedback/loading/loading-indicator.ts',
     member: 'CngxLoadingIndicator.label',
     rule: 'R1',
+    token: 'CNGX_FEEDBACK_I18N',
+    closesIn: 6,
+  },
+  {
+    file: 'projects/ui/feedback/loading/loading-indicator.ts',
+    member: 'CngxLoadingIndicator.label',
+    rule: 'R4',
     token: 'CNGX_FEEDBACK_I18N',
     closesIn: 6,
   },
@@ -1831,6 +1880,13 @@ export const RATCHET = [
     file: 'projects/ui/feedback/loading/progress.ts',
     member: 'CngxProgress.label',
     rule: 'R1',
+    token: 'CNGX_FEEDBACK_I18N',
+    closesIn: 6,
+  },
+  {
+    file: 'projects/ui/feedback/toast/toast-outlet.ts',
+    member: 'CngxToastOutlet.i18n',
+    rule: 'R4',
     token: 'CNGX_FEEDBACK_I18N',
     closesIn: 6,
   },
@@ -2137,6 +2193,13 @@ export const RATCHET = [
   },
   {
     file: 'projects/ui/stepper/stepper.component.ts',
+    member: 'CngxStepper.announcement',
+    rule: 'R4',
+    token: 'CNGX_STEPPER_I18N',
+    closesIn: 2,
+  },
+  {
+    file: 'projects/ui/stepper/stepper.component.ts',
     member: 'CngxStepper.groupRoleDescription',
     rule: 'R3',
     token: 'CNGX_STEPPER_CONFIG',
@@ -2175,6 +2238,13 @@ export const RATCHET = [
     member: 'CngxTextStepper.stepText',
     rule: 'R4',
     token: 'CNGX_STEPPER_I18N',
+    closesIn: 2,
+  },
+  {
+    file: 'projects/ui/tabs/tab-group.component.ts',
+    member: 'CngxTabGroup.announcements',
+    rule: 'R4',
+    token: 'CNGX_TABS_I18N',
     closesIn: 2,
   },
   {
@@ -2235,7 +2305,7 @@ export const RATCHET = [
   },
 ];
 
-export const RATCHET_CEILING = 232;
+export const RATCHET_CEILING = 242;
 
 /** The last phase whose closing commit has landed. */
 export const COMPLETED_PHASE = 1;
@@ -2359,49 +2429,56 @@ export const EXEMPT = [
 export const LIVE_REGIONS = [
   {
     file: 'projects/common/card/card.component.ts',
-    region: 'CngxCard.span#1',
+    region: 'CngxCard.span(liveAnnouncement,liveRegionId)',
     spec: 'projects/common/card/card.component.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 3,
   },
   {
     file: 'projects/common/chart/chart/chart-announcer.component.ts',
-    region: 'CngxChartAnnouncer.span#1',
+    region: 'CngxChartAnnouncer.span(assertiveAnnouncement)',
     spec: 'projects/common/chart/chart/chart-announcer.component.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 3,
   },
   {
     file: 'projects/common/chart/chart/chart-announcer.component.ts',
-    region: 'CngxChartAnnouncer.span#2',
+    region: 'CngxChartAnnouncer.span(politeAnnouncement)',
     spec: 'projects/common/chart/chart/chart-announcer.component.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 3,
   },
   {
     file: 'projects/common/chart/chart/chart.component.ts',
-    region: 'CngxChart.div#2',
+    region: 'CngxChart.div(connectionOverlayText)',
     spec: 'projects/common/chart/chart/chart.component.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 3,
   },
   {
     file: 'projects/common/chart/chart/chart.component.ts',
-    region: 'CngxChart.div#4',
+    region: 'CngxChart.div(connectionOverlayText)#2',
     spec: 'projects/common/chart/chart/chart.component.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 3,
   },
   {
     file: 'projects/common/chart/chart/chart.component.ts',
-    region: 'CngxChart.span#1',
+    region: 'CngxChart.span(connectionRestoredAnnouncement)',
     spec: 'projects/common/chart/chart/chart.component.spec.ts',
+    testName: 'does not re-announce on a language flip',
+    closesIn: 3,
+  },
+  {
+    file: 'projects/common/interactive/async-click/async-click.directive.ts',
+    region: 'CngxAsyncClick.installAnnounceRegion:effect#1',
+    spec: 'projects/common/interactive/async-click/async-click.directive.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 3,
   },
   {
     file: 'projects/common/interactive/copy/copy-block.ts',
-    region: 'CngxCopyBlock.span#1',
+    region: 'CngxCopyBlock.span(srAnnouncement)',
     spec: 'projects/common/interactive/copy/copy-block.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 3,
@@ -2415,14 +2492,14 @@ export const LIVE_REGIONS = [
   },
   {
     file: 'projects/common/stepper/stepper-count.ts',
-    region: 'CngxStepperCount.span#1',
+    region: 'CngxStepperCount.span(label,live)',
     spec: 'projects/common/stepper/stepper-count.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 2,
   },
   {
     file: 'projects/data-display/treetable/treetable.component.ts',
-    region: 'CngxTreetable.span#2',
+    region: 'CngxTreetable.span(stateAnnouncement)',
     spec: 'projects/data-display/treetable/treetable.component.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 5,
@@ -2450,155 +2527,216 @@ export const LIVE_REGIONS = [
   },
   {
     file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
-    region: 'CngxSelectPanelShell.div#1',
+    region: 'CngxSelectPanelShell.div(host.ariaLabels,host.skeletonIndices)',
     spec: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 4,
   },
   {
     file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
-    region: 'CngxSelectPanelShell.div#10',
+    region: 'CngxSelectPanelShell.div(host.ariaLabels,host.tpl)',
     spec: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 4,
   },
   {
     file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
-    region: 'CngxSelectPanelShell.div#2',
+    region: 'CngxSelectPanelShell.div(host.ariaLabels,host.tpl)#2',
     spec: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 4,
   },
   {
     file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
-    region: 'CngxSelectPanelShell.div#3',
+    region: 'CngxSelectPanelShell.div(host.ariaLabels,host.tpl)#3',
     spec: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 4,
   },
   {
     file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
-    region: 'CngxSelectPanelShell.div#4',
+    region: 'CngxSelectPanelShell.div(host.ariaLabels,host.tpl)#4',
     spec: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 4,
   },
   {
     file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
-    region: 'CngxSelectPanelShell.div#5',
+    region: 'CngxSelectPanelShell.div(host.ariaLabels,host.tpl)#5',
     spec: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 4,
   },
   {
     file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
-    region: 'CngxSelectPanelShell.div#6',
+    region: 'CngxSelectPanelShell.div(host.commitErrorContext,host.fallbackLabels,host.tpl)',
     spec: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 4,
   },
   {
     file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
-    region: 'CngxSelectPanelShell.div#7',
+    region:
+      'CngxSelectPanelShell.div(host.errorContext,host.fallbackLabels,host.handleRetry,host.tpl)',
     spec: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 4,
   },
   {
     file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
-    region: 'CngxSelectPanelShell.div#8',
+    region:
+      'CngxSelectPanelShell.div(host.errorContext,host.fallbackLabels,host.handleRetry,host.tpl)#2',
     spec: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 4,
   },
   {
     file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
-    region: 'CngxSelectPanelShell.div#9',
+    region: 'CngxSelectPanelShell.div(host.fallbackLabels)',
     spec: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 4,
   },
   {
     file: 'projects/ui/accordion/accordion-item.component.ts',
-    region: 'CngxAccordionItem.div#1',
+    region: 'CngxAccordionItem.div(errorMessage,errorTemplate)',
     spec: 'projects/ui/accordion/accordion-item.component.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 7,
   },
   {
     file: 'projects/ui/action-button/action-button.ts',
-    region: 'CngxActionButton.span#1',
+    region: 'CngxActionButton.span(effectiveAnnouncement)',
     spec: 'projects/ui/action-button/action-button.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 3,
   },
   {
+    file: 'projects/ui/chart-panel/chart-panel.component.ts',
+    region: 'CngxChartPanel.span(busyLabel,panelBusy)',
+    spec: 'projects/ui/chart-panel/chart-panel.component.spec.ts',
+    testName: 'does not re-announce on a language flip',
+    closesIn: 7,
+  },
+  {
+    file: 'projects/ui/collection/incremental-list.component.ts',
+    region: 'CngxIncrementalList.span(statusMessage)',
+    spec: 'projects/ui/collection/incremental-list.component.spec.ts',
+    testName: 'does not re-announce on a language flip',
+    closesIn: 7,
+  },
+  {
     file: 'projects/ui/command-palette/panel/command-panel-shell.component.ts',
-    region: 'CngxCommandPanelShell.div#1',
+    region: 'CngxCommandPanelShell.div(config.errorLabel,config.retryLabel,retry.emit)',
     spec: 'projects/ui/command-palette/panel/command-panel-shell.component.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 6,
   },
   {
     file: 'projects/ui/command-palette/panel/command-panel-shell.component.ts',
-    region: 'CngxCommandPanelShell.div#2',
+    region: 'CngxCommandPanelShell.div(config.errorLabel)',
     spec: 'projects/ui/command-palette/panel/command-panel-shell.component.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 6,
   },
   {
     file: 'projects/ui/command-palette/panel/command-panel.component.ts',
-    region: 'CngxCommandPanel.span#1',
+    region: 'CngxCommandPanel.span(countMessage)',
     spec: 'projects/ui/command-palette/panel/command-panel.component.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 6,
   },
   {
     file: 'projects/ui/data-grid-accordion/data-grid-row.component.ts',
-    region: 'CngxDataGridRow.div#1',
+    region: 'CngxDataGridRow.div(errorMessage,errorTemplate)',
     spec: 'projects/ui/data-grid-accordion/data-grid-row.component.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 6,
   },
   {
+    file: 'projects/ui/feedback/alert/alert-stack.ts',
+    region: 'CngxAlertStack.div(i18n,iconFor)',
+    spec: 'projects/ui/feedback/alert/alert-stack.spec.ts',
+    testName: 'does not re-announce on a language flip',
+    closesIn: 6,
+  },
+  {
+    file: 'projects/ui/feedback/alert/alert.ts',
+    region: 'CngxAlert.host',
+    spec: 'projects/ui/feedback/alert/alert.spec.ts',
+    testName: 'does not re-announce on a language flip',
+    closesIn: 6,
+  },
+  {
     file: 'projects/ui/feedback/banner/banner-outlet.ts',
-    region: 'CngxBannerOutlet.div#1',
+    region:
+      'CngxBannerOutlet.div(actionFailedCopy,i18n,iconFor,pastFirstRender,service.dismiss,service.executeAction)',
     spec: 'projects/ui/feedback/banner/banner-outlet.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 6,
   },
   {
     file: 'projects/ui/feedback/banner/banner-outlet.ts',
-    region: 'CngxBannerOutlet.span#1',
+    region: 'CngxBannerOutlet.span(actionFailedCopy)',
     spec: 'projects/ui/feedback/banner/banner-outlet.spec.ts',
+    testName: 'does not re-announce on a language flip',
+    closesIn: 6,
+  },
+  {
+    file: 'projects/ui/feedback/loading/loading-indicator.ts',
+    region: 'CngxLoadingIndicator.host',
+    spec: 'projects/ui/feedback/loading/loading-indicator.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 6,
   },
   {
     file: 'projects/ui/feedback/loading/loading-overlay.ts',
-    region: 'CngxLoadingOverlay.div#1',
+    region: 'CngxLoadingOverlay.div(label)',
     spec: 'projects/ui/feedback/loading/loading-overlay.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 6,
   },
   {
+    file: 'projects/ui/feedback/toast/toast-outlet.ts',
+    region:
+      'CngxToastOutlet.div(i18n,iconFor,repeatCount,service.dismiss,service.pauseTimer,service.resumeTimer)',
+    spec: 'projects/ui/feedback/toast/toast-outlet.spec.ts',
+    testName: 'does not re-announce on a language flip',
+    closesIn: 6,
+  },
+  {
     file: 'projects/ui/mat-paginator/mat-paginator-bridge.directive.ts',
-    region: 'CngxMatPaginator.constructor:effect#2',
+    region: 'CngxMatPaginator.constructor:effect#1',
     spec: 'projects/ui/mat-paginator/mat-paginator-bridge.directive.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 6,
   },
   {
     file: 'projects/ui/stat-card/stat-card.component.ts',
-    region: 'CngxStatCard.cngx-card#1',
+    region:
+      'CngxStatCard.cngx-card(activeView,busyLabel,cardLabelledBy,emptyText,errorDescription,errorText,live,resolvedTreatment,showRefreshIndicator,skeletonSlots,staleText)',
     spec: 'projects/ui/stat-card/stat-card.component.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 7,
   },
   {
+    file: 'projects/ui/stepper/stepper.component.ts',
+    region: 'CngxStepper.span(announcement.liveAnnouncement)',
+    spec: 'projects/ui/stepper/stepper.component.spec.ts',
+    testName: 'does not re-announce on a language flip',
+    closesIn: 2,
+  },
+  {
     file: 'projects/ui/stepper/text-stepper.component.ts',
-    region: 'CngxTextStepper.span#1',
+    region: 'CngxTextStepper.span(stepText)',
     spec: 'projects/ui/stepper/text-stepper.component.spec.ts',
+    testName: 'does not re-announce on a language flip',
+    closesIn: 2,
+  },
+  {
+    file: 'projects/ui/tabs/tab-group.component.ts',
+    region: 'CngxTabGroup.span(announcements.liveAnnouncement)',
+    spec: 'projects/ui/tabs/tab-group.component.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 2,
   },
@@ -2862,6 +3000,62 @@ export class R4Untracked {
 }
 `;
 
+const R4_SHAPES = `
+import { Component, Directive, computed, effect, inject, signal } from '@angular/core';
+import { DEMO_I18N, DEMO_SIGNAL_I18N, type DemoI18n } from './tokens';
+
+@Directive({ selector: '[demoLive]', host: { '[attr.aria-live]': "'polite'" } })
+export class DemoLive {}
+
+export class DemoAnnouncer {
+  announceChange(message: string): string {
+    return message;
+  }
+}
+
+export function createDemoAnnouncements(i18n: DemoI18n, status: () => string) {
+  const liveAnnouncement = computed(() => (status() === 'done' ? i18n.previous : ''));
+  return { liveAnnouncement };
+}
+
+export function mountDemoAnnouncer(i18n: DemoI18n, announcer: DemoAnnouncer): void {
+  effect(() => {
+    announcer.announceChange(i18n.previous);
+  });
+}
+
+@Component({
+  selector: 'r4-shapes',
+  imports: [DemoLive],
+  template: \`
+    <div [attr.role]="failed() ? 'alert' : 'status'">{{ message() }}</div>
+    <span demoLive>{{ announcements.liveAnnouncement() }}</span>
+    <p demoLive>{{ spoken() }}</p>
+  \`,
+})
+export class R4Shapes {
+  protected readonly i18n = inject(DEMO_SIGNAL_I18N);
+  protected readonly raw = inject(DEMO_I18N);
+  protected readonly failed = signal(false);
+  protected readonly status = signal('idle');
+  protected readonly message = computed(() => this.i18n().previous);
+  protected readonly announcements = createDemoAnnouncements(this.raw, () => this.status());
+  protected readonly spoken = createDemoAnnouncements(this.raw, () => this.status())
+    .liveAnnouncement;
+}
+
+@Component({
+  selector: 'r4-bound-host',
+  template: '',
+  host: { '[attr.role]': 'liveRole()', '[attr.aria-label]': 'label()' },
+})
+export class R4BoundHost {
+  protected readonly i18n = inject(DEMO_SIGNAL_I18N);
+  protected readonly liveRole = computed(() => 'status');
+  protected readonly label = computed(() => this.i18n().previous);
+}
+`;
+
 /**
  * In-memory sources, the copy model they run against, and the rows each file
  * must produce (`member rule token`).
@@ -2878,6 +3072,7 @@ export const RULE_FIXTURES = {
     'r3-pass.ts': R3_PASS,
     'r4.ts': R4,
     'r4-pass.ts': R4_PASS,
+    'r4-shapes.ts': R4_SHAPES,
   },
   /** @type {readonly CopyTokenEntry[]} */
   copyTokens: [
@@ -2925,12 +3120,24 @@ export const RULE_FIXTURES = {
       'R4Tracked.constructor R4 DEMO_SIGNAL_I18N',
     ],
     'r4-pass.ts': [],
+    'r4-shapes.ts': [
+      'R4Shapes.message R4 DEMO_SIGNAL_I18N',
+      'R4Shapes.announcements R4 DEMO_I18N',
+      'R4Shapes.spoken R4 DEMO_I18N',
+      'R4BoundHost.label R4 DEMO_SIGNAL_I18N',
+      'mountDemoAnnouncer R4 DEMO_I18N',
+    ],
   },
   expectedRegions: [
     'r4.ts R4Tracked.host',
-    'r4.ts R4Tracked.p#1',
+    'r4.ts R4Tracked.p(message)',
     'r4.ts R4Tracked.constructor:effect#1',
-    'r4-pass.ts R4Untracked.p#1',
-    'r4-pass.ts R4Untracked.span#1',
+    'r4-pass.ts R4Untracked.p(announcement)',
+    'r4-pass.ts R4Untracked.span(spoken)',
+    'r4-shapes.ts R4Shapes.div(failed,message)',
+    'r4-shapes.ts R4Shapes.span(announcements.liveAnnouncement)',
+    'r4-shapes.ts R4Shapes.p(spoken)',
+    'r4-shapes.ts R4BoundHost.host',
+    'r4-shapes.ts mountDemoAnnouncer:effect#1',
   ],
 };
