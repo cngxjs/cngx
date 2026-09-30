@@ -10,9 +10,9 @@ import {
   signal,
   untracked,
 } from '@angular/core';
-import { nextUid } from '@cngx/core/utils';
+import { coerceSignal, nextUid } from '@cngx/core/utils';
 
-import { injectDialogConfig } from '../config/dialog-config';
+import { injectDialogConfig, type CngxDialogLabels } from '../config/dialog-config';
 import { CNGX_DIALOG_ARIA_REGISTRY } from '../dialog/dialog-aria-registry';
 import { applySrOnly } from '../dialog/sr-only';
 
@@ -76,7 +76,7 @@ import { applySrOnly } from '../dialog/sr-only';
 export class CngxDialogDraggable {
   private readonly elRef = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly doc = inject(DOCUMENT);
-  private readonly labels = injectDialogConfig().labels;
+  private readonly labels = coerceSignal(injectDialogConfig().labels);
   private readonly destroyRef = inject(DestroyRef);
   private readonly ariaRegistry = inject(CNGX_DIALOG_ARIA_REGISTRY, { optional: true });
 
@@ -140,6 +140,13 @@ export class CngxDialogDraggable {
       untracked(() => this.setupHandle(handleEl));
     });
 
+    // A language switch relabels the promoted handle and the instruction in
+    // place, without re-running the handle setup.
+    effect(() => {
+      const labels = this.labels();
+      untracked(() => this.applyLabels(labels));
+    });
+
     this.destroyRef.onDestroy(() => this.cleanup());
   }
 
@@ -166,8 +173,8 @@ export class CngxDialogDraggable {
     // on the dialog element itself would clobber its accessible name (the
     // title) and its role text.
     if (!el.hasAttribute('aria-roledescription') && el !== this.elRef.nativeElement) {
-      el.setAttribute('aria-roledescription', this.labels.dragHandleRoleDescription);
-      el.setAttribute('aria-label', this.labels.dragHandle);
+      el.setAttribute('aria-roledescription', this.labels().dragHandleRoleDescription);
+      el.setAttribute('aria-label', this.labels().dragHandle);
       this.handleAddedAria = true;
     }
     // The keyboard path is live on every handle, so the instruction is too.
@@ -325,6 +332,17 @@ export class CngxDialogDraggable {
     };
   }
 
+  /** Re-apply the handle labels and the instruction text this directive owns. */
+  private applyLabels(labels: CngxDialogLabels): void {
+    if (this.currentHandle && this.handleAddedAria) {
+      this.currentHandle.setAttribute('aria-roledescription', labels.dragHandleRoleDescription);
+      this.currentHandle.setAttribute('aria-label', labels.dragHandle);
+    }
+    if (this.instructionNode) {
+      this.instructionNode.textContent = labels.dragInstructions;
+    }
+  }
+
   private instructionNode: HTMLElement | null = null;
   private releaseInstruction: (() => void) | null = null;
   private handleAddedDescribedBy = false;
@@ -338,7 +356,7 @@ export class CngxDialogDraggable {
   private createInstructionNode(): HTMLElement {
     const node = this.doc.createElement('span');
     node.id = nextUid('cngx-dialog-drag-hint');
-    node.textContent = this.labels.dragInstructions;
+    node.textContent = this.labels().dragInstructions;
     applySrOnly(node);
     this.elRef.nativeElement.appendChild(node);
     this.instructionNode = node;

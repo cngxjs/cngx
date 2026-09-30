@@ -610,62 +610,6 @@ export const HELPERS = ['injectResolvedFeedbackI18n', 'injectChartI18n', 'resolv
 /** @type {readonly RatchetRow[]} */
 export const RATCHET = [
   {
-    file: 'projects/common/dialog/config/dialog-config.ts',
-    member: 'provideDialogConfig',
-    rule: 'R3',
-    token: 'CNGX_DIALOG_DEFAULTS',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/dialog/dialog/dialog-close.directive.ts',
-    member: 'CngxDialogClose.ariaLabel',
-    rule: 'R3',
-    token: 'CNGX_DIALOG_DEFAULTS',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/dialog/dialog/dialog-close.directive.ts',
-    member: 'CngxDialogClose.labels',
-    rule: 'R2',
-    token: 'CNGX_DIALOG_DEFAULTS',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/dialog/dialog/dialog.directive.ts',
-    member: 'CngxDialog.constructor',
-    rule: 'R3',
-    token: 'CNGX_DIALOG_DEFAULTS',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/dialog/dialog/dialog.directive.ts',
-    member: 'CngxDialog.labels',
-    rule: 'R2',
-    token: 'CNGX_DIALOG_DEFAULTS',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/dialog/draggable/dialog-draggable.directive.ts',
-    member: 'CngxDialogDraggable.createInstructionNode',
-    rule: 'R3',
-    token: 'CNGX_DIALOG_DEFAULTS',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/dialog/draggable/dialog-draggable.directive.ts',
-    member: 'CngxDialogDraggable.labels',
-    rule: 'R2',
-    token: 'CNGX_DIALOG_DEFAULTS',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/dialog/draggable/dialog-draggable.directive.ts',
-    member: 'CngxDialogDraggable.setupHandle',
-    rule: 'R3',
-    token: 'CNGX_DIALOG_DEFAULTS',
-    closesIn: 3,
-  },
-  {
     file: 'projects/common/display/avatar-group/avatar-group.component.ts',
     member: 'CngxAvatarGroup.label',
     rule: 'R1',
@@ -2025,7 +1969,7 @@ export const RATCHET = [
   },
 ];
 
-export const RATCHET_CEILING = 202;
+export const RATCHET_CEILING = 194;
 
 /** The last phase whose closing commit has landed. */
 export const COMPLETED_PHASE = 2;

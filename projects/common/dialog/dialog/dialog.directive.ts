@@ -17,6 +17,7 @@ import {
 
 import { buildAsyncStateView, type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
 import {
+  coerceSignal,
   hasTransition,
   nextUid,
   onTransitionDone,
@@ -141,7 +142,7 @@ export class CngxDialog<T = unknown> implements DialogRef<T>, CngxDialogAriaRegi
   private readonly renderer = inject(Renderer2);
   private readonly destroyRef = inject(DestroyRef);
   private readonly dialogStack = inject(CngxDialogStack);
-  private readonly labels = injectDialogConfig().labels;
+  private readonly labels = coerceSignal(injectDialogConfig().labels);
 
   // Armed while a close transition runs; cancelled on destroy so the
   // transitionend listener and fallback timer never outlive the directive.
@@ -391,8 +392,10 @@ export class CngxDialog<T = unknown> implements DialogRef<T>, CngxDialogAriaRegi
       // so a retried identical failure would never re-fire this effect.
       if (this.effectiveError() && this.liveRegion) {
         const errMsg = this.state()?.error() ?? this.submitErrorState();
+        // The fallback copy is read untracked: a language switch must not
+        // re-fire the announcement; the next error speaks the new language.
         this.liveRegion.textContent =
-          typeof errMsg === 'string' ? errMsg : this.labels.errorFallback;
+          typeof errMsg === 'string' ? errMsg : untracked(() => this.labels().errorFallback);
         // Clear after one frame (same pattern as the title announce) so a
         // repeated identical error is a fresh mutation the SR re-announces.
         requestAnimationFrame(() => {

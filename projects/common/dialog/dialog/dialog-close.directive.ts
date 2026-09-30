@@ -1,4 +1,5 @@
 import { computed, Directive, ElementRef, inject, input } from '@angular/core';
+import { coerceSignal } from '@cngx/core/utils';
 
 import { injectDialogConfig } from '../config/dialog-config';
 import { DIALOG_REF } from './dialog-ref';
@@ -50,7 +51,7 @@ import { DIALOG_REF } from './dialog-ref';
 export class CngxDialogClose {
   private readonly dialogRef = inject(DIALOG_REF);
   private readonly elRef = inject(ElementRef<HTMLElement>);
-  private readonly labels = injectDialogConfig().labels;
+  private readonly labels = coerceSignal(injectDialogConfig().labels);
 
   /** Value to pass to `close()`. When `undefined`, calls `dismiss()` instead. */
   readonly value = input<unknown>(undefined, { alias: 'cngxDialogClose' });
@@ -64,6 +65,13 @@ export class CngxDialogClose {
    * empty, or visually an icon, `aria-label` defaults to `"Close dialog"`.
    */
   readonly label = input<string | undefined>(undefined, { alias: 'cngxDialogCloseLabel' });
+
+  // Read once at construction: after the first render the host binding owns
+  // aria-label, so a later recompute (a language switch) must not mistake the
+  // directive's own attribute for a consumer-authored one.
+  private readonly consumerAriaLabel = (this.elRef.nativeElement as HTMLElement).hasAttribute(
+    'aria-label',
+  );
 
   /** Set type="button" on <button> hosts to prevent form submit. */
   protected readonly hostType =
@@ -82,17 +90,17 @@ export class CngxDialogClose {
     }
 
     // If host already has aria-label attribute set by the consumer, don't override
-    const el = this.elRef.nativeElement as HTMLElement;
-    if (el.hasAttribute('aria-label')) {
+    if (this.consumerAriaLabel) {
       return null;
     }
 
+    const el = this.elRef.nativeElement as HTMLElement;
     const text = el.textContent?.trim() ?? '';
     if (text.length > 1) {
       return null;
     }
 
-    return this.labels.close;
+    return this.labels().close;
   });
 
   protected handleClick(): void {

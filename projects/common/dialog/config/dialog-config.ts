@@ -1,4 +1,5 @@
-import { inject, InjectionToken, type Provider } from '@angular/core';
+import { inject, InjectionToken, type Provider, type Signal } from '@angular/core';
+import { createOverrideMerge } from '@cngx/core/utils';
 
 /**
  * The five interaction strings the dialog family renders on its own behalf.
@@ -32,6 +33,11 @@ export interface CngxDialogLabels {
  * `CngxDialogOpener.open()`. This one carries defaults for every dialog in the
  * scope; that one configures a single dialog instance.
  *
+ * `labels` is a plain bundle or a `Signal` of one; once
+ * {@link provideDialogConfig} ran it holds a `Signal`, so the strings follow
+ * a runtime language switch. Read it through `coerceSignal` from
+ * `@cngx/core/utils`.
+ *
  * Only `labels` today. Size / backdrop / close-on-escape / focus-fallback
  * defaults are deliberately absent - no consumer has asked for them, and a key
  * with no caller is configuration for its own sake.
@@ -41,7 +47,7 @@ export interface CngxDialogLabels {
  * @since 0.1.0
  */
 export interface CngxDialogDefaults {
-  readonly labels: CngxDialogLabels;
+  readonly labels: CngxDialogLabels | Signal<CngxDialogLabels>;
 }
 
 const DIALOG_LABEL_DEFAULTS: CngxDialogLabels = {
@@ -76,12 +82,13 @@ export const CNGX_DIALOG_DEFAULTS = new InjectionToken<CngxDialogDefaults>('Cngx
  */
 export interface CngxDialogConfigFeature {
   /** @internal */
-  readonly labels?: Partial<CngxDialogLabels>;
+  readonly labels?: Partial<CngxDialogLabels> | Signal<Partial<CngxDialogLabels>>;
 }
 
 /**
  * Override dialog interaction strings. Unset keys keep the English default,
- * and two calls merge rather than replace.
+ * and two calls merge rather than replace. Pass a `Signal` to switch the
+ * language at runtime.
  *
  * ```ts
  * bootstrapApplication(AppComponent, {
@@ -97,7 +104,9 @@ export interface CngxDialogConfigFeature {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/dialog/config/dialog-config.ts
  * @since 0.1.0
  */
-export function withDialogLabels(overrides: Partial<CngxDialogLabels>): CngxDialogConfigFeature {
+export function withDialogLabels(
+  overrides: Partial<CngxDialogLabels> | Signal<Partial<CngxDialogLabels>>,
+): CngxDialogConfigFeature {
   return { labels: overrides };
 }
 
@@ -109,11 +118,17 @@ export function withDialogLabels(overrides: Partial<CngxDialogLabels>): CngxDial
  * @since 0.1.0
  */
 export function provideDialogConfig(...features: CngxDialogConfigFeature[]): Provider[] {
-  const labels = features.reduce<CngxDialogLabels>(
-    (acc, feature) => ({ ...acc, ...feature.labels }),
-    DIALOG_LABEL_DEFAULTS,
-  );
-  return [{ provide: CNGX_DIALOG_DEFAULTS, useValue: { labels } }];
+  return [
+    {
+      provide: CNGX_DIALOG_DEFAULTS,
+      useFactory: (): CngxDialogDefaults => ({
+        labels: features.reduce<Signal<CngxDialogLabels>>(
+          (acc, feature) => createOverrideMerge(acc, feature.labels),
+          createOverrideMerge(DIALOG_LABEL_DEFAULTS, undefined),
+        ),
+      }),
+    },
+  ];
 }
 
 /**
