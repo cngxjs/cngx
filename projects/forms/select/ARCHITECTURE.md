@@ -489,7 +489,7 @@ All are reactive computeds - they always reflect the current state, never go sta
 **Live region announcer.** `CngxSelectAnnouncer` is `providedIn: 'root'` and announces every selection change through a global polite live region.
 `CngxSelectAnnouncerConfig.format()` builds the sentence; override for custom locales or sentence shapes.
 
-**Focus restoration.** On panel close, focus returns to the trigger.
+**Focus restoration.** On panel close, focus returns to the trigger. Only an open -> closed flip restores; the closed state a select mounts in never moves focus.
 This lives in `createPanelLifecycleEmitter` (one factory across all variants), wrapped in a `queueMicrotask` so the focus write happens after the popover-close DOM mutation settles.
 
 ---
