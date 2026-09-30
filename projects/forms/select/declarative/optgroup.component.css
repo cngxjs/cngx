@@ -10,7 +10,7 @@
  * - `:host` - block-level wrapper, no chrome of its own
  * - `.cngx-select__group-header` - uppercase, condensed-tracking label
  *   (padding `0.25rem 0.5rem`, `font-size: 0.75rem`, `font-weight: 600`,
- *   `opacity: 0.7`, `letter-spacing: 0.04em`)
+ *   muted text colour, `letter-spacing: 0.04em`)
  *
  * **Inheritance**
  *
@@ -33,7 +33,7 @@
   padding: var(--cngx-select-optgroup-padding, 0.25rem 0.5rem);
   font-size: 0.75rem;
   font-weight: 600;
-  opacity: 0.7;
+  color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }

@@ -15,8 +15,9 @@
  *   (`mixed` gets NO tint - the indeterminate indicator communicates the
  *   partial state; a background tint would visually equate it with fully
  *   selected)
- * - `[aria-disabled='true']` on a node - opacity dim + `cursor:
- *   not-allowed`
+ * - `[aria-disabled='true']` on a node - 38% text colour (twisty and
+ *   checkbox follow it) + `cursor: not-allowed`; GrayText under forced
+ *   colors
  * - `.cngx-tree-select__twisty--open` - 90deg rotation marking expanded
  *   state (transition suppressed under `prefers-reduced-motion`)
  *
@@ -179,16 +180,6 @@
   }
 
   /**
-   * Opacity multiplier applied when a node is disabled.
-   * @group State / Disabled
-   */
-  @property --cngx-tree-select-node-disabled-opacity {
-    syntax: '<number>';
-    inherits: false;
-    initial-value: 0.5;
-  }
-
-  /**
    * Diameter of the expand / collapse twisty toggle.
    * @group Layout
    */
@@ -295,9 +286,13 @@
       background: var(--cngx-select-option-highlight-bg, oklch(0.66 0.19 50 / 0.1));
     }
 
+    /* Disabled fades by colour, never opacity: 38% text, the recipe of a
+       disabled field. The twisty and the checkbox border are currentColor;
+       a checked box takes the faded colour as its fill. */
     .cngx-tree-select__node[aria-disabled='true'] {
+      --cngx-checkbox-checked-bg: currentColor;
       cursor: not-allowed;
-      opacity: var(--cngx-tree-select-node-disabled-opacity, 0.5);
+      color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
     }
 
     .cngx-tree-select__twisty {
@@ -368,5 +363,11 @@
   .cngx-tree-select__node.cngx-tree-select__node--active {
     background: Highlight;
     color: HighlightText;
+  }
+
+  /* The faded disabled colour is forced to CanvasText; GrayText keeps the
+     state visible. */
+  .cngx-tree-select__node[aria-disabled='true'] {
+    color: GrayText;
   }
 }

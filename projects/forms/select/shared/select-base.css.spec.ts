@@ -164,7 +164,7 @@ describe('select-family field-skin rule set', () => {
     );
     const body = disabled.slice(0, disabled.indexOf('}'));
     expect(body).toContain('38%');
-    expect(body).toContain('opacity: 1');
+    expect(body).not.toContain('opacity');
     expect(fill).toContain('--cngx-color-primary-strong');
   });
 
@@ -220,7 +220,7 @@ describe('select-family field-skin rule set', () => {
     );
     const body = disabled.slice(0, disabled.indexOf('}'));
     expect(body).toContain('border-block-end-style: dotted');
-    expect(body).toContain('opacity: 1');
+    expect(body).not.toContain('opacity');
   });
 
   it('uses the registered danger default as the only skin danger fallback literal', () => {
@@ -237,10 +237,15 @@ describe('select-family field-skin rule set', () => {
     );
   });
 
-  it('lifts the host minimum width for a bare select, keyed on the host', () => {
+  // Bare hugs its content (no preferred width) unless a container sets the
+  // bare inline-size token; without a fallback, an unset token computes to
+  // auto, so the content width survives.
+  it('sizes a bare select from its content or the container token, keyed on the host', () => {
     const flat = SHARED.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\s+/g, ' ');
-    expect(flat).toContain("[data-skin='bare']:has(> * > .cngx-field-trigger) { min-width: 0; }");
-    expect(flat).not.toMatch(/\[data-skin='bare'\][^{]*\.cngx-field-trigger\) \{ inline-size/);
+    expect(flat).toContain("[data-skin='bare']:has(> * > .cngx-field-trigger)::before { display: none; }");
+    expect(flat).toContain(
+      "[data-skin='bare']:not(.cngx-field-box > *):has(> * > .cngx-field-trigger) { inline-size: var(--cngx-field-bare-inline-size); }",
+    );
   });
 
   it('drops the chip-strip underline reserve', () => {
@@ -269,5 +274,24 @@ describe('select-family field-skin rule set', () => {
 
   it('reads no Material system token in the shared stylesheet', () => {
     expect(SHARED).not.toContain('var(--mat-sys-');
+  });
+});
+
+// Disabled and resting states are painted by colour, never opacity, so the
+// family ships no opacity knob: a registered one would promise an override
+// that nothing reads.
+describe('select-family opacity tokens', () => {
+  const STYLESHEETS = [
+    'shared/select-base.css',
+    'tree-select/tree-select-panel.component.css',
+    'declarative/option.component.css',
+    'declarative/optgroup.component.css',
+    ...VARIANTS.map((variant) => `${VARIANT_FILES[variant]}.component.css`),
+  ];
+
+  it.each(STYLESHEETS)('%s registers and reads no opacity token', (file) => {
+    const code = read(file);
+    expect(code).not.toMatch(/@property --cngx-[a-z-]*opacity\b/);
+    expect(code).not.toMatch(/var\(\s*--cngx-[a-z-]*opacity\b/);
   });
 });

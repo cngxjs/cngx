@@ -14,8 +14,8 @@
  *
  * - `:focus-visible` on `.cngx-reorderable-multi-select__trigger` -
  *   focus-ring outline + offset
- * - `[aria-disabled='true']` on the trigger - opacity dim + `cursor:
- *   not-allowed`
+ * - `[aria-disabled='true']` on the trigger - `cursor: not-allowed`; the
+ *   field skin fades it by colour
  * - `[aria-invalid='true']` on the trigger - danger border + box-shadow
  *   glow at focus-within time
  *
@@ -55,7 +55,9 @@
 
 @layer cngx.tokens {
   /**
-   * Minimum inline size of the trigger.
+   * Preferred minimum inline size of the select. A standalone or toolbar
+   * select is at least this wide; a narrower cell shrinks it, as it does an
+   * input.
    * @group Layout
    */
   @property --cngx-reorderable-multi-select-min-width {
@@ -145,26 +147,6 @@
     initial-value: 2px solid oklch(0.66 0.19 50);
   }
 
-  /**
-   * Opacity multiplier applied when the trigger is disabled.
-   * @group State / Disabled
-   */
-  @property --cngx-reorderable-multi-select-disabled-opacity {
-    syntax: '<number>';
-    inherits: false;
-    initial-value: 0.5;
-  }
-
-  /**
-   * Resting opacity of the clear-all button.
-   * @group State / Clear
-   */
-  @property --cngx-reorderable-multi-select-clear-opacity {
-    syntax: '<number>';
-    inherits: false;
-    initial-value: 0.6;
-  }
-
   /* Delegating tokens - trigger border + focus-ring track the
    * foundation chain. Shorthands pin their structural part and
    * inherit the color via the delegating foundation token. */
@@ -180,10 +162,28 @@
       display: inline-block;
       position: relative;
       font: inherit;
-      min-width: var(
+      min-width: 0;
+      max-inline-size: 100%;
+      /* Resolved on the host, where a consumer sets the non-inheriting
+         min-width token, and handed to the ::before through an unregistered
+         (inheriting) private property. */
+      --_cngx-select-floor: var(
         --cngx-reorderable-multi-select-min-width,
         var(--cngx-multi-select-min-width, var(--cngx-select-min-width, 10rem))
       );
+    }
+
+    /* The floor is a preferred width, like the intrinsic size of an input:
+       it sizes a standalone or toolbar select, and a narrower cell shrinks
+       the select instead of letting it spill into the next one. A zero-height
+       box carries the floor and the host caps at its container: a percentage
+       minimum on the host would resolve to zero wherever the width comes
+       from the content. */
+    :scope::before {
+      content: '';
+      display: block;
+      inline-size: var(--_cngx-select-floor);
+      max-inline-size: 100%;
     }
 
     .cngx-reorderable-multi-select__root {
@@ -258,10 +258,6 @@
     }
 
     .cngx-reorderable-multi-select__trigger[aria-disabled='true'] {
-      opacity: var(
-        --cngx-reorderable-multi-select-disabled-opacity,
-        var(--cngx-multi-select-disabled-opacity, var(--cngx-select-disabled-opacity, 0.5))
-      );
       cursor: not-allowed;
     }
 
@@ -291,14 +287,10 @@
       cursor: pointer;
       padding: 0 0.25rem;
       font: inherit;
-      opacity: var(
-        --cngx-reorderable-multi-select-clear-opacity,
-        var(--cngx-multi-select-clear-opacity, 0.6)
-      );
     }
 
     .cngx-reorderable-multi-select__clear-all:hover {
-      opacity: 1;
+      color: var(--cngx-color-text, oklch(0.2 0.01 250));
     }
 
     .cngx-reorderable-multi-select__clear-all:focus-visible {
@@ -316,7 +308,6 @@
       display: inline-flex;
       align-items: center;
       line-height: 1;
-      opacity: 0.7;
     }
   }
 }

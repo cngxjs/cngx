@@ -13,8 +13,8 @@
  *
  * - `.cngx-option--highlighted` on an option row - primary-tinted
  *   background marking the keyboard-focused row
- * - `[aria-disabled='true']` on an option - opacity 0.5 + `cursor:
- *   not-allowed`
+ * - `[aria-disabled='true']` on an option - 38% text colour, the field
+ *   disabled recipe, + `cursor: not-allowed` (GrayText under forced colors)
  * - `.cngx-select__option--pending` - `cursor: progress` while a row's
  *   commit is in flight
  * - `.cngx-select__chip-list--reordering` - whole-strip `cursor:
@@ -327,18 +327,6 @@
     syntax: '*';
     inherits: true;
     initial-value: 1.6em;
-  }
-
-  /**
-   * Opacity multiplier for a disabled trigger. No field skin reads it any
-   * more: outline, fill and bare paint disabled by colour and lift the
-   * opacity. Kept registered so existing overrides stay valid.
-   * @group State / Disabled
-   */
-  @property --cngx-select-disabled-opacity {
-    syntax: '<number>';
-    inherits: false;
-    initial-value: 0.5;
   }
 
   /**
@@ -986,7 +974,9 @@
     padding: var(--cngx-select-optgroup-padding, 0.25rem 0.5rem);
     font-size: var(--cngx-select-optgroup-font-size, 0.75rem);
     font-weight: 600;
-    opacity: 0.7;
+    /* Quieter than an option by colour, not opacity: the muted text rung,
+       like a hint. */
+    color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
     text-transform: uppercase;
     letter-spacing: 0.04em;
   }
@@ -1015,9 +1005,14 @@
   .cngx-select__option::before {
     content: none;
   }
+  /* Disabled fades by colour, never opacity: 38% text, the recipe of a
+     disabled field. The check glyph follows it. */
   .cngx-select__option[aria-disabled='true'] {
-    opacity: 0.5;
+    color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
     cursor: not-allowed;
+  }
+  .cngx-select__option[aria-disabled='true'] .cngx-select__check {
+    color: inherit;
   }
   .cngx-select__option.cngx-option--highlighted {
     background: var(--cngx-select-option-highlight-bg, oklch(0.66 0.19 50 / 0.1));
@@ -1038,7 +1033,7 @@
     --cngx-select-message-padding: var(--cngx-space-sm) var(--cngx-space-sm);
     padding: var(--cngx-select-message-padding, 0.5rem 0.75rem);
     font-style: italic;
-    opacity: 0.7;
+    color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
   }
 
   .cngx-select__skeleton {
@@ -1597,9 +1592,8 @@
         var(--cngx-field-error-color, var(--cngx-color-danger, oklch(0.6 0.18 25)));
     }
 
-    /* Disabled fades by colour, never opacity (the variant trigger rules set
-       one; it is lifted here); the dashed underline keeps the state readable
-       without colour. */
+    /* Disabled fades by colour, never opacity; the dashed underline keeps the
+       state readable without colour. */
     :scope.cngx-field-trigger:is([aria-disabled='true'], :has(> [role='combobox']:disabled)) {
       border-block-end-style: dashed;
       border-block-end-color: color-mix(
@@ -1609,7 +1603,6 @@
       );
       background: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 4%, transparent);
       color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
-      opacity: 1;
     }
   }
 
@@ -1673,13 +1666,11 @@
       outline-offset: calc(-1 * var(--cngx-field-ring-width, 2px));
     }
 
-    /* Disabled reads as muted text plus a dotted baseline, never opacity
-       (the variant trigger rules set one; it is lifted here). */
+    /* Disabled reads as muted text plus a dotted baseline, never opacity. */
     :scope.cngx-field-trigger:is([aria-disabled='true'], :has(> [role='combobox']:disabled)) {
       border-block-end-style: dotted;
       border-block-end-color: var(--cngx-color-border, oklch(0.88 0.005 250));
       color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
-      opacity: 1;
     }
   }
 
@@ -1687,33 +1678,45 @@
      `data-skin` (outline resolves to none) or, when set explicitly,
      `outline`. Disabled fades by colour, never opacity, the same recipe as a
      disabled outline input: a dashed border, a faint text tint on the
-     surface and 38% value text. The variant trigger rules set an opacity; it
-     is lifted here, as in the fill and bare scopes. */
+     surface and 38% value text. */
   @scope (:is(:not([data-skin]), [data-skin='outline']):not(.cngx-field-box > *) > * > .cngx-field-trigger) {
     :scope.cngx-field-trigger:is([aria-disabled='true'], :has(> [role='combobox']:disabled)) {
       border-style: dashed;
       background: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 4%, transparent);
       color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
-      opacity: 1;
     }
   }
 
-  /* The wrapper triggers (typeahead, action select) also dim their inner
-     `[role='combobox']` input by opacity, which would fade the value twice
-     under the trigger's colour recipe in every skin. The input takes the
-     trigger colour instead. Bound to the host like every trigger rule (the
-     trigger is the host's grandchild); `*` keeps it skin-agnostic. */
+  /* The wrapper triggers (typeahead, action select) put `disabled` on their
+     inner `[role='combobox']` input; the input takes the trigger colour, so
+     the value fades once, by the skin's colour recipe. Bound to the host
+     like every trigger rule (the trigger is the host's grandchild); `*` keeps
+     it skin-agnostic. */
   * > * > .cngx-field-trigger > [role='combobox']:disabled {
     color: inherit;
-    opacity: 1;
   }
 
-  /* A bare select draws no box, so a minimum width only leaves an empty run
-     between the value and the caret. It sizes to its content, standalone and
-     inside a field box alike. Keyed on the host, which carries every
-     variant's min-width. */
-  [data-skin='bare']:has(> * > .cngx-field-trigger) {
-    min-width: 0;
+  /* A bare select draws no box, so a preferred width only leaves an empty
+     run between the value and the caret. It sizes to its content, standalone
+     and inside a field box alike. Keyed on the host, whose ::before carries
+     every variant's preferred width. */
+  [data-skin='bare']:has(> * > .cngx-field-trigger)::before {
+    display: none;
+  }
+
+  /* A container that lines bare fields up (a toolbar) sets
+     --cngx-field-bare-inline-size, and a bare select takes it like a bare
+     input. No fallback: unset, the declaration computes to auto and the
+     select keeps its content width. A select nested in a field box is an
+     affix and never takes it, although the token inherits into the box. */
+  [data-skin='bare']:not(.cngx-field-box > *):has(> * > .cngx-field-trigger) {
+    inline-size: var(--cngx-field-bare-inline-size);
+  }
+
+  /* Typeahead and action select fill their container by default (their host
+     is a full-width block); unset, the token keeps that. */
+  :is(.cngx-typeahead, .cngx-action-select)[data-skin='bare']:not(.cngx-field-box > *) {
+    inline-size: var(--cngx-field-bare-inline-size, 100%);
   }
 
   /* A select nested in a field box: the box is the only painted element,
@@ -1823,6 +1826,13 @@
   .cngx-select__option.cngx-option--highlighted .cngx-select__check {
     color: HighlightText;
   }
+
+  /* A disabled option fades by colour, which the forced palette overrides
+     with CanvasText; GrayText is the system colour for a disabled item. */
+  .cngx-select__option[aria-disabled='true'],
+  .cngx-select__option[aria-disabled='true'] .cngx-select__check {
+    color: GrayText;
+  }
 }
 
 /* Unlayered, outside any @layer and @scope, full selectors repeated: a
@@ -1847,5 +1857,25 @@
   /* Bare paints no border, so a resting bare trigger would have no edge. */
   [data-skin='bare']:not(.cngx-field-box > *) > * > .cngx-field-trigger {
     border: var(--cngx-field-border-width, 1px) solid FieldText;
+  }
+
+  /* The shorthands above reset a disabled trigger's baseline to solid, and
+     the faded text is forced to CanvasText, so a disabled fill or bare
+     trigger would read as enabled. The baseline style comes back and every
+     disabled trigger names GrayText. */
+  [data-skin='fill']:not(.cngx-field-box > *)
+    > *
+    > .cngx-field-trigger:is([aria-disabled='true'], :has(> [role='combobox']:disabled)) {
+    border-block-end-style: dashed;
+  }
+
+  [data-skin='bare']:not(.cngx-field-box > *)
+    > *
+    > .cngx-field-trigger:is([aria-disabled='true'], :has(> [role='combobox']:disabled)) {
+    border-block-end-style: dotted;
+  }
+
+  * > * > .cngx-field-trigger:is([aria-disabled='true'], :has(> [role='combobox']:disabled)) {
+    color: GrayText;
   }
 }

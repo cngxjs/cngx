@@ -14,9 +14,9 @@
  *
  * - `:focus-visible` on `.cngx-select-shell__trigger` - focus-ring
  *   outline + offset
- * - `[aria-disabled='true']` on the trigger - opacity dim + `cursor:
- *   not-allowed`
- * - `:hover` on `.cngx-select-shell__clear` - opacity 1
+ * - `[aria-disabled='true']` on the trigger - `cursor: not-allowed`; the
+ *   field skin fades it by colour
+ * - `:hover` on `.cngx-select-shell__clear` - full text colour
  * - `:focus-visible` on the clear button - 2px primary-tinted outline
  *
  * **Slots**
@@ -51,7 +51,9 @@
 
 @layer cngx.tokens {
   /**
-   * Minimum inline size of the trigger.
+   * Preferred minimum inline size of the select. A standalone or toolbar
+   * select is at least this wide; a narrower cell shrinks it, as it does an
+   * input.
    * @group Layout
    */
   @property --cngx-select-shell-min-width {
@@ -153,18 +155,6 @@
   }
 
   /**
-   * Opacity multiplier for a disabled trigger. No field skin reads it any
-   * more: every skin paints disabled by colour and lifts the opacity (see
-   * `select-base.css`). Kept registered so existing overrides stay valid.
-   * @group State / Disabled
-   */
-  @property --cngx-select-shell-disabled-opacity {
-    syntax: '<number>';
-    inherits: false;
-    initial-value: 0.5;
-  }
-
-  /**
    * Gap inside the label slot (between glyph and text).
    * @group Layout
    */
@@ -172,26 +162,6 @@
     syntax: '*';
     inherits: false;
     initial-value: 0.375rem;
-  }
-
-  /**
-   * Opacity of the caret glyph.
-   * @group Surface
-   */
-  @property --cngx-select-shell-caret-opacity {
-    syntax: '<number>';
-    inherits: false;
-    initial-value: 0.7;
-  }
-
-  /**
-   * Resting opacity of the clear button.
-   * @group State / Clear
-   */
-  @property --cngx-select-shell-clear-opacity {
-    syntax: '<number>';
-    inherits: false;
-    initial-value: 0.6;
   }
 
   /* Delegating tokens - trigger border + focus-ring color + focus
@@ -209,7 +179,25 @@
       display: inline-block;
       position: relative;
       font: inherit;
-      min-width: var(--cngx-select-shell-min-width, var(--cngx-select-min-width, 10rem));
+      min-width: 0;
+      max-inline-size: 100%;
+      /* Resolved on the host, where a consumer sets the non-inheriting
+         min-width token, and handed to the ::before through an unregistered
+         (inheriting) private property. */
+      --_cngx-select-floor: var(--cngx-select-shell-min-width, var(--cngx-select-min-width, 10rem));
+    }
+
+    /* The floor is a preferred width, like the intrinsic size of an input:
+       it sizes a standalone or toolbar select, and a narrower cell shrinks
+       the select instead of letting it spill into the next one. A zero-height
+       box carries the floor and the host caps at its container: a percentage
+       minimum on the host would resolve to zero wherever the width comes
+       from the content. */
+    :scope::before {
+      content: '';
+      display: block;
+      inline-size: var(--_cngx-select-floor);
+      max-inline-size: 100%;
     }
 
     .cngx-select-shell__root {
@@ -260,7 +248,6 @@
     }
 
     .cngx-select-shell__trigger[aria-disabled='true'] {
-      opacity: var(--cngx-select-shell-disabled-opacity, var(--cngx-select-disabled-opacity, 0.5));
       cursor: not-allowed;
     }
 
@@ -290,7 +277,6 @@
       display: inline-flex;
       align-items: center;
       line-height: 1;
-      opacity: var(--cngx-select-shell-caret-opacity, 0.7);
     }
 
     .cngx-select-shell__clear {
@@ -302,10 +288,9 @@
       cursor: pointer;
       padding: 0 0.25rem;
       font: inherit;
-      opacity: var(--cngx-select-shell-clear-opacity, 0.6);
     }
     .cngx-select-shell__clear:hover {
-      opacity: 1;
+      color: var(--cngx-color-text, oklch(0.2 0.01 250));
     }
     .cngx-select-shell__clear:focus-visible {
       outline: 2px solid

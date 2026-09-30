@@ -109,6 +109,9 @@ const FORCED_COLORS_HARDENED_HOSTS: readonly string[] = [
   // an inset box-shadow underline, which WHCM strips entirely; the block
   // restores the reset outline and redraws the edge in FieldText.
   'projects/forms/theming/components/cngx-field-skin.css',
+  // @cngx/forms/field - the disabled label fades by colour only, which the
+  // forced palette paints as CanvasText; re-signalled with GrayText.
+  'projects/forms/theming/components/cngx-field-text.css',
   // @cngx/forms/filter-builder - the pill rows draw their segment dividers
   // with box-shadow, which WHCM strips; redrawn as ButtonBorder borders.
   'projects/forms/filter-builder/filter-builder-expression-row.component.css',
@@ -270,7 +273,7 @@ describe('forced-colors hardened-hosts manifest', () => {
   });
 
   it('fixes the manifest size so a bulk edit dropping several hosts is caught', () => {
-    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(29);
+    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(30);
   });
 });
 
