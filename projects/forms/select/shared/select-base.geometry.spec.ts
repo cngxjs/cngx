@@ -5,8 +5,15 @@ import { createMockField } from '@cngx/forms/field/testing';
 import { computedValue } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
 
+import { CngxActionMultiSelect } from '../action-multi-select/action-multi-select.component';
+import { CngxActionSelect } from '../action-select/action-select.component';
+import { CngxCombobox } from '../combobox/combobox.component';
+import { CngxSelectOption } from '../declarative/option.component';
 import { CngxMultiSelect } from '../multi-select/multi-select.component';
+import { CngxReorderableMultiSelect } from '../reorderable-multi-select/reorderable-multi-select.component';
+import { CngxSelectShell } from '../select-shell/select-shell.component';
 import { CngxSelect } from '../single-select/select.component';
+import { CngxTreeSelect } from '../tree-select/tree-select.component';
 import { CngxTypeahead } from '../typeahead/typeahead.component';
 import type { CngxSelectOptionDef } from './option.model';
 
@@ -97,6 +104,57 @@ class StateHost {
   }).accessor;
 }
 
+// Every variant in the default (outline) skin, so the box-sizing contract is
+// checked on all nine triggers, not only the two shape stand-ins above.
+@Component({
+  selector: 'cngx-select-trigger-box-host',
+  standalone: true,
+  imports: [
+    CngxSelect,
+    CngxMultiSelect,
+    CngxCombobox,
+    CngxTypeahead,
+    CngxTreeSelect,
+    CngxActionSelect,
+    CngxActionMultiSelect,
+    CngxReorderableMultiSelect,
+    CngxSelectShell,
+    CngxSelectOption,
+  ],
+  template: `
+    <div style="display: grid; line-height: 1.5">
+      <cngx-select class="v-select" [label]="'Colour'" [options]="options" />
+      <cngx-multi-select class="v-multi" [label]="'Colour'" [options]="options" />
+      <cngx-combobox class="v-combobox" [label]="'Colour'" [options]="options" />
+      <cngx-typeahead class="v-typeahead" [label]="'Colour'" [options]="options" />
+      <cngx-tree-select class="v-tree" [label]="'Colour'" [nodeIdFn]="nodeId" />
+      <cngx-action-select class="v-action" [label]="'Colour'" [options]="options" />
+      <cngx-action-multi-select class="v-action-multi" [label]="'Colour'" [options]="options" />
+      <cngx-reorderable-multi-select class="v-reorder" [label]="'Colour'" [options]="options" />
+      <cngx-select-shell class="v-shell" [label]="'Colour'">
+        <cngx-option [value]="'red'">Red</cngx-option>
+      </cngx-select-shell>
+    </div>
+  `,
+  styleUrls: ['../../theming/components/cngx-field-skin.css'],
+})
+class AllTriggersHost {
+  readonly options = OPTIONS;
+  readonly nodeId = (value: unknown): string => String(value);
+}
+
+const ALL_TRIGGERS = [
+  '.v-select',
+  '.v-multi',
+  '.v-combobox',
+  '.v-typeahead',
+  '.v-tree',
+  '.v-action',
+  '.v-action-multi',
+  '.v-reorder',
+  '.v-shell',
+];
+
 let mountedRoot: HTMLElement | null = null;
 
 function mount(host: Type<unknown> = SkinHost): HTMLElement {
@@ -123,15 +181,12 @@ function px(el: Element, property: string): number {
   return value;
 }
 
-// A min-height floors the border box only under border-box sizing. This harness
-// loads no global reset, and some variant triggers do not set box-sizing
-// themselves, so the floor is converted to the border box it produces.
+// Line box + 2 * block padding + 2px border, floored by the min-height. Every
+// trigger sets border-box itself (this harness loads no global reset), so the
+// min-height floors the border box directly.
 function boxHeight(el: HTMLElement): number {
-  const chrome = px(el, 'padding-top') + px(el, 'padding-bottom') + 2;
-  const formula = px(el, 'line-height') + chrome;
-  const contentBox = computedValue(el, 'box-sizing') === 'content-box';
-  const floor = px(el, 'min-height') + (contentBox ? chrome : 0);
-  return Math.max(formula, floor);
+  const formula = px(el, 'line-height') + px(el, 'padding-top') + px(el, 'padding-bottom') + 2;
+  return Math.max(formula, px(el, 'min-height'));
 }
 
 afterEach(() => {
@@ -140,6 +195,14 @@ afterEach(() => {
 });
 
 describe('select-family field skins', () => {
+  // Self-contained sizing: the min-height floor and width: 100% must not
+  // depend on a consumer's global border-box reset, which this harness omits.
+  it.each(ALL_TRIGGERS)('sizes the %s trigger as a border box', (hostSelector) => {
+    const el = trigger(mount(AllTriggersHost), hostSelector);
+    expect(computedValue(el, 'box-sizing')).toBe('border-box');
+    expect(el.getBoundingClientRect().height).toBeCloseTo(boxHeight(el), 0);
+  });
+
   it('draws the fill trigger as an underline, not a box', () => {
     const el = trigger(mount(), '.solo');
     expect(computedValue(el, 'border-bottom-width')).toBe('1px');

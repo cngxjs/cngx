@@ -185,6 +185,9 @@
          padding, so the value starts at the same x as in an input. */
       --cngx-tree-select-trigger-gap: var(--cngx-space-sm);
       --cngx-tree-select-trigger-padding: var(--cngx-space-sm) var(--cngx-space-md);
+      /* Self-contained sizing: without this the min-height contract depends
+         on a global border-box reset the consumer may not load. */
+      box-sizing: border-box;
       display: flex;
       align-items: center;
       gap: var(--cngx-tree-select-trigger-gap, 0.5rem);
