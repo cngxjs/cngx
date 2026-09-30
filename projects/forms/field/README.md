@@ -5,8 +5,10 @@ A11y coordination layer for form fields. Strong opinions about ARIA, zero opinio
 ## What it does
 
 `cngx-form-field` is an invisible container (`display: contents`) that coordinates ARIA attributes,
-deterministic IDs, error gating, and CSS state classes across its child directives. The developer
-controls all layout and styling.
+deterministic IDs, error gating, and CSS state classes across its child directives. Once it holds a
+`label[cngxLabel]` as a direct child it becomes the field's own stack (a flex column): the label sits
+`--cngx-field-label-gap` above the control or box, hint and error lines follow at
+`--cngx-field-hint-gap`. The container around the fields only spaces one field from the next.
 
 ## Exports
 
@@ -87,7 +89,8 @@ decorator type:
   `CngxRequired`, `CngxLabel`.
 - Pure `:host { display: contents }` hosts inline their one rule via `styles:`.
   These render no box of their own and have nothing to theme: `CngxFieldErrors`,
-  `CngxFormField`.
+  `CngxFormField` (which also inlines its structural stack rule; the gap tokens
+  live in cngx.css).
 
 The split is intentional. A host that only declares `display: contents` does not
 earn a sibling `.css` file; a skin that delegates tokens does. Keep new field
@@ -119,7 +122,7 @@ provideFormField(
 ## Skins
 
 Three looks, no extra DOM. The skin lands on the element that is actually the
-box, never on the `display: contents` field shell.
+box, never on the field shell.
 
 | Skin | Look | Use it for |
 |-|-|-|
@@ -283,6 +286,8 @@ back.
 | `--cngx-field-label-color` | Label colour |
 | `--cngx-field-inner-label-line` | Line height of a label placed inside a field box (default: label font size + `0.0625rem`) |
 | `--cngx-field-hint-font-size` | Hint and error text size (default `0.8125rem`) |
+| `--cngx-field-label-gap` | Label to control or box, in a field that holds its label (default `--cngx-space-xs`) |
+| `--cngx-field-hint-gap` | Control or box to hint, and between hint and error lines (default `--cngx-space-xs`) |
 | `--cngx-field-hint-color` | Hint colour |
 | `--cngx-field-error-color` | Error label, error list and `cngxError` text colour, and the `bare` error ring |
 
