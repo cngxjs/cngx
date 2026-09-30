@@ -43,3 +43,18 @@ for (const story of MANUAL_SLOT_STORIES) {
     });
   });
 }
+test.describe('field error server-injected-error story reset', () => {
+  test('clears the touched state, so the slot is empty again after Reset', async ({ page }) => {
+    await page.goto('/#/forms/field/error/server-injected-error');
+    const field = page.locator('main cngx-form-field', { has: page.locator('#server-email') });
+    const input = field.locator('#server-email');
+    const slot = field.locator('.cngx-error');
+
+    await input.focus();
+    await input.blur();
+    await expect(slot).toContainText('Email is required');
+
+    await page.getByRole('button', { name: 'Reset' }).click();
+    await expect(slot).toHaveText('');
+  });
+});

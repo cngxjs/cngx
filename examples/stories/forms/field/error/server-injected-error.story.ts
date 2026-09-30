@@ -60,6 +60,7 @@ export const STORY: DemoSpec = {
   }
   protected handleReset(): void {
     this.model.set({ email: '' });
+    this.emailForm().reset();
     this.takenEmails.set(new Set());
     this.checkCount.set(0);
     this.checking.set(false);
