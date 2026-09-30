@@ -4,7 +4,13 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
 
-import { CNGX_TABS_CONFIG, type CngxTabsConfig } from '../tabs-config';
+import {
+  CNGX_TABS_CONFIG,
+  provideTabsConfig,
+  withTabsAriaLabels,
+  withTabsFallbackLabels,
+  type CngxTabsConfig,
+} from '../tabs-config';
 import {
   CNGX_TABS_I18N,
   provideTabsI18n,
@@ -257,6 +263,42 @@ describe('createTabGroupAnnouncements - language switch', () => {
     lang.set('de');
     expect(bundle.resolvedAriaLabel()).toBe('Reiter');
     expect(bundle.statusPhrase(handle)).toBe('1 Fehler');
+  });
+});
+
+describe('createTabGroupAnnouncements - config copy switch', () => {
+  it('re-labels the landmark and role descriptions on a language flip', () => {
+    const lang = signal<'en' | 'de'>('en');
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideTabsConfig(
+          withTabsAriaLabels(computed(() => (lang() === 'de' ? { tabsRegion: 'Reiter' } : {}))),
+          withTabsFallbackLabels(
+            computed(() =>
+              lang() === 'de'
+                ? { tabRoleDescription: 'Reiterliste', tabPanelRoleDescription: 'Reiterinhalt' }
+                : {},
+            ),
+          ),
+        ),
+      ],
+    });
+    const bundle = createTabGroupAnnouncements({
+      presenter: makePresenter(),
+      i18n: TestBed.inject(CNGX_TABS_I18N),
+      config: TestBed.inject(CNGX_TABS_CONFIG),
+      ariaLabel: signal<string | undefined>(undefined),
+      ariaLabelledBy: signal<string | undefined>(undefined),
+    });
+    expect(bundle.resolvedAriaLabel()).toBe('Tabs');
+    expect(bundle.tabsRoleDescription()).toBe('tab list');
+
+    lang.set('de');
+    expect(bundle.resolvedAriaLabel()).toBe('Reiter');
+    expect(bundle.tabsRoleDescription()).toBe('Reiterliste');
+    expect(bundle.tabPanelRoleDescription()).toBe('Reiterinhalt');
   });
 });
 

@@ -869,27 +869,6 @@ export const RATCHET = [
     closesIn: 3,
   },
   {
-    file: 'projects/common/tabs/announcements/tab-group-announcements.ts',
-    member: 'createTabGroupAnnouncements',
-    rule: 'R3',
-    token: 'CNGX_TABS_CONFIG',
-    closesIn: 2,
-  },
-  {
-    file: 'projects/common/tabs/tabs-config.ts',
-    member: 'withTabsAriaLabels',
-    rule: 'R3',
-    token: 'CNGX_TABS_CONFIG',
-    closesIn: 2,
-  },
-  {
-    file: 'projects/common/tabs/tabs-config.ts',
-    member: 'withTabsFallbackLabels',
-    rule: 'R3',
-    token: 'CNGX_TABS_CONFIG',
-    closesIn: 2,
-  },
-  {
     file: 'projects/common/timeline/timeline-config.ts',
     member: 'withTimelineLabels',
     rule: 'R3',
@@ -2102,7 +2081,7 @@ export const RATCHET = [
   },
 ];
 
-export const RATCHET_CEILING = 213;
+export const RATCHET_CEILING = 210;
 
 /** The last phase whose closing commit has landed. */
 export const COMPLETED_PHASE = 1;

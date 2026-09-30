@@ -2,7 +2,7 @@
 // (`createTabGroupTemplateBindings` and `CngxMatTabAggregatorContent`).
 // Re-eval on second consumer or sibling debt closure.
 import { computed, linkedSignal, untracked, type Signal } from '@angular/core';
-import { createAnnouncementPhrase } from '@cngx/core/utils';
+import { coerceSignal, createAnnouncementPhrase } from '@cngx/core/utils';
 
 import { TABS_CONFIG_DEFAULTS, type CngxTabsConfig } from '../tabs-config';
 import type { CngxTabsI18n } from '../i18n/tabs-i18n';
@@ -135,23 +135,26 @@ export function createTabGroupAnnouncements(
   const { presenter, i18n, config, ariaLabel, ariaLabelledBy } = options;
   const closedAnnouncement = options.closedAnnouncement ?? ((): string => '');
 
+  const fallbackLabels = coerceSignal(config.fallbackLabels);
+  const defaultFallbackLabels = coerceSignal(TABS_CONFIG_DEFAULTS.fallbackLabels);
+  const ariaLabels = coerceSignal(config.ariaLabels);
+
   const tabsRoleDescription = computed<string>(
     () =>
-      config.fallbackLabels?.tabRoleDescription ??
-      TABS_CONFIG_DEFAULTS.fallbackLabels.tabRoleDescription,
+      fallbackLabels()?.tabRoleDescription ?? defaultFallbackLabels().tabRoleDescription,
   );
 
   const tabPanelRoleDescription = computed<string>(
     () =>
-      config.fallbackLabels?.tabPanelRoleDescription ??
-      TABS_CONFIG_DEFAULTS.fallbackLabels.tabPanelRoleDescription,
+      fallbackLabels()?.tabPanelRoleDescription ??
+      defaultFallbackLabels().tabPanelRoleDescription,
   );
 
   const resolvedAriaLabel = computed<string | null>(() => {
     if (ariaLabelledBy()) {
       return null;
     }
-    return ariaLabel() ?? config.ariaLabels?.tabsRegion ?? i18n().tabsLabel;
+    return ariaLabel() ?? ariaLabels()?.tabsRegion ?? i18n().tabsLabel;
   });
 
   // `prev?.source` = source value before the most recent change -
