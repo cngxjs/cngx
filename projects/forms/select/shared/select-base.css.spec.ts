@@ -276,3 +276,22 @@ describe('select-family field-skin rule set', () => {
     expect(SHARED).not.toContain('var(--mat-sys-');
   });
 });
+
+// Disabled and resting states are painted by colour, never opacity, so the
+// family ships no opacity knob: a registered one would promise an override
+// that nothing reads.
+describe('select-family opacity tokens', () => {
+  const STYLESHEETS = [
+    'shared/select-base.css',
+    'tree-select/tree-select-panel.component.css',
+    'declarative/option.component.css',
+    'declarative/optgroup.component.css',
+    ...VARIANTS.map((variant) => `${VARIANT_FILES[variant]}.component.css`),
+  ];
+
+  it.each(STYLESHEETS)('%s registers and reads no opacity token', (file) => {
+    const code = read(file);
+    expect(code).not.toMatch(/@property --cngx-[a-z-]*opacity\b/);
+    expect(code).not.toMatch(/var\(\s*--cngx-[a-z-]*opacity\b/);
+  });
+});

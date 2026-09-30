@@ -133,18 +133,6 @@
   }
 
   /**
-   * Opacity multiplier for a disabled trigger. No field skin reads it any
-   * more: every skin paints disabled by colour and lifts the opacity (see
-   * `select-base.css`). Kept registered so existing overrides stay valid.
-   * @group State / Disabled
-   */
-  @property --cngx-tree-select-disabled-opacity {
-    syntax: '<number>';
-    inherits: false;
-    initial-value: 0.5;
-  }
-
-  /**
    * Hit-target diameter of the clear-all button.
    * @group State / Clear
    */

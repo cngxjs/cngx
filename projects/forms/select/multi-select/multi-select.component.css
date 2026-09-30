@@ -141,28 +141,6 @@
     initial-value: 2px solid oklch(0.66 0.19 50);
   }
 
-  /**
-   * Opacity multiplier for a disabled trigger. No field skin reads it any
-   * more: every skin paints disabled by colour and lifts the opacity (see
-   * `select-base.css`). Kept registered so existing overrides stay valid.
-   * @group State / Disabled
-   */
-  @property --cngx-multi-select-disabled-opacity {
-    syntax: '<number>';
-    inherits: false;
-    initial-value: 0.5;
-  }
-
-  /**
-   * Resting opacity of the clear-all button.
-   * @group State / Clear
-   */
-  @property --cngx-multi-select-clear-opacity {
-    syntax: '<number>';
-    inherits: false;
-    initial-value: 0.6;
-  }
-
   /* Delegating tokens - trigger border + focus-ring track the
    * foundation chain. Shorthands pin their structural part and
    * inherit the color via the delegating foundation token. */

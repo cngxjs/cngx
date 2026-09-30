@@ -149,18 +149,6 @@
   }
 
   /**
-   * Opacity multiplier for a disabled trigger. No field skin reads it any
-   * more: every skin paints disabled by colour and lifts the opacity (see
-   * `select-base.css`). Kept registered so existing overrides stay valid.
-   * @group State / Disabled
-   */
-  @property --cngx-combobox-disabled-opacity {
-    syntax: '<number>';
-    inherits: false;
-    initial-value: 0.5;
-  }
-
-  /**
    * Flex basis of the inline input - sets the preferred starting
    * width before the input grows or shrinks.
    * @group Layout
@@ -180,16 +168,6 @@
     syntax: '*';
     inherits: false;
     initial-value: 4rem;
-  }
-
-  /**
-   * Resting opacity of the clear-all button.
-   * @group State / Clear
-   */
-  @property --cngx-combobox-clear-opacity {
-    syntax: '<number>';
-    inherits: false;
-    initial-value: 0.6;
   }
 
   /* Delegating tokens - trigger border + focus-ring track the

@@ -180,16 +180,6 @@
   }
 
   /**
-   * Opacity multiplier applied when a node is disabled.
-   * @group State / Disabled
-   */
-  @property --cngx-tree-select-node-disabled-opacity {
-    syntax: '<number>';
-    inherits: false;
-    initial-value: 0.5;
-  }
-
-  /**
    * Diameter of the expand / collapse twisty toggle.
    * @group Layout
    */

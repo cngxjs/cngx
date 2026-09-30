@@ -330,18 +330,6 @@
   }
 
   /**
-   * Opacity multiplier for a disabled trigger. No field skin reads it any
-   * more: outline, fill and bare paint disabled by colour and lift the
-   * opacity. Kept registered so existing overrides stay valid.
-   * @group State / Disabled
-   */
-  @property --cngx-select-disabled-opacity {
-    syntax: '<number>';
-    inherits: false;
-    initial-value: 0.5;
-  }
-
-  /**
    * Vertical gap between skeleton placeholder rows.
    * @group State / Loading
    */
