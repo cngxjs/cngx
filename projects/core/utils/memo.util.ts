@@ -41,9 +41,10 @@ export function memoize<K, V>(fn: (key: K) => V, options?: MemoizeOptions): (key
     }
     const result = fn(key);
     if (limit !== undefined && cache.size >= limit) {
-      const oldest = cache.keys().next().value;
-      if (oldest !== undefined) {
-        cache.delete(oldest);
+      // Check `done`, not the key: `undefined` is a valid key and must evict too.
+      const oldest = cache.keys().next();
+      if (!oldest.done) {
+        cache.delete(oldest.value);
       }
     }
     cache.set(key, result);

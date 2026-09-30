@@ -67,4 +67,28 @@ describe('memoize', () => {
     fn('c');
     expect(calls).toBe(4);
   });
+
+  it('evicts an undefined key and stays bounded after one was cached', () => {
+    let calls = 0;
+    const fn = memoize(
+      (key: string | undefined) => {
+        calls++;
+        return key ?? 'none';
+      },
+      { cacheLimit: 2 },
+    );
+
+    fn(undefined);
+    fn('a');
+    // Third distinct key evicts `undefined`, the oldest entry.
+    fn('b');
+    expect(calls).toBe(3);
+
+    fn(undefined);
+    expect(calls).toBe(4);
+
+    // Re-inserting `undefined` evicted 'a', so the cache still holds two entries.
+    fn('a');
+    expect(calls).toBe(5);
+  });
 });
