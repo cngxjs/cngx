@@ -81,6 +81,9 @@ const LIVE_ROLES = new Set(['status', 'alert', 'log']);
 /** A live `role` literal inside a bound expression or a member initializer. */
 const LIVE_ROLE_LITERAL = /['"](?:status|alert|log)['"]/;
 
+/** Angular's `[SIGNAL]` brand, as TypeScript names a unique-symbol key. */
+const SIGNAL_BRAND = /^__@SIGNAL@\d+$/;
+
 /** Calls that hand text to an announcer (`announce`, `announceCommitError`). */
 const ANNOUNCE_CALL = /^announce/i;
 
@@ -187,7 +190,7 @@ export function discoverTokens(sourceFiles) {
  */
 const isSignalType = (type) =>
   type.getCallSignatures().length > 0 &&
-  type.getProperties().some((p) => String(p.escapedName).includes('SIGNAL'));
+  type.getProperties().some((p) => SIGNAL_BRAND.test(String(p.escapedName)));
 
 /**
  * A copy key whose value is used directly (a string, a formatter) rather
@@ -1927,6 +1930,8 @@ describe('reactive i18n coverage', () => {
     ).toEqual([]);
   });
 
+  // Tokens close in 2..7; a ratchet row may close as late as 8, the key-shape
+  // pass, which reshapes keys after their token already follows a flip.
   it('closes every copy token in one of the phases 2..7', () => {
     const outOfRange = COPY_TOKENS.filter((t) => t.closesIn < 2 || t.closesIn > 7).map(
       (t) => t.token,
@@ -1969,17 +1974,22 @@ describe('reactive i18n coverage', () => {
     expect(malformed).toEqual([]);
   });
 
-  it('resolves every exempt debtRef once its register entry is due', () => {
-    const unresolved = EXEMPT.filter((row) => {
-      const [register, heading] = row.debtRef.split('#');
-      const path = resolve(DEBT_DIR, register);
-      if (COMPLETED_PHASE < DEBT_REF_PHASE || !existsSync(DEBT_DIR)) {
-        return false;
-      }
-      return !existsSync(path) || !readFileSync(path, 'utf-8').includes(heading);
-    }).map((row) => row.debtRef);
-    expect(unresolved).toEqual([]);
-  });
+  // The registers are local-only: where they are absent (CI) the check reports
+  // as skipped rather than passing without having looked.
+  it.skipIf(!existsSync(DEBT_DIR))(
+    'resolves every exempt debtRef once its register entry is due',
+    () => {
+      const unresolved = EXEMPT.filter((row) => {
+        const [register, heading] = row.debtRef.split('#');
+        const path = resolve(DEBT_DIR, register);
+        if (COMPLETED_PHASE < DEBT_REF_PHASE) {
+          return false;
+        }
+        return !existsSync(path) || !readFileSync(path, 'utf-8').includes(heading);
+      }).map((row) => row.debtRef);
+      expect(unresolved).toEqual([]);
+    },
+  );
 
   it('lists exactly the copy tokens in the localisation guide table', () => {
     const guide = guideTableTokens(readRepoFile('core-concepts/i18n.md') ?? '').sort();
