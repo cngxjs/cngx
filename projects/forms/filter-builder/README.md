@@ -284,22 +284,22 @@ Dev-mode guards (`isDevMode()`) warn when `fields()` is empty or when `value()` 
 
 ## CSS variables
 
-All values are routed through `var(--cngx-*, fallback)`. Material variants default to `--mat-sys-*`.
+All values are routed through `var(--cngx-*, fallback)`. Spacing tokens are set from the `--cngx-space-*` scale, so a `[data-density]` root compacts the builder; colour tokens delegate to the `--cngx-color-*` foundation. Under Angular Material, `@cngx/themes/material/filter-builder-theme` maps the border, empty-state, error and action colours onto the Material theme; the rail follows `--cngx-color-border`, which the system bridge maps.
 
 | Variable | Default |
 |-|-|
-| `--cngx-filter-builder-padding` | `0.5rem` |
+| `--cngx-filter-builder-padding` | `var(--cngx-space-sm)` (8px at comfortable density) |
 | `--cngx-filter-builder-bg` | `transparent` |
-| `--cngx-filter-builder-fg` | `inherit` |
-| `--cngx-filter-builder-gap` | `0.5rem` |
-| `--cngx-filter-builder-group-padding` | `0.5rem` |
-| `--cngx-filter-builder-group-border` | `1px solid var(--mat-sys-outline-variant, #ddd)` |
+| `--cngx-filter-builder-fg` | `currentColor` (the inherited text colour) |
+| `--cngx-filter-builder-gap` | `var(--cngx-space-sm)` (8px at comfortable density) |
+| `--cngx-filter-builder-group-padding` | `var(--cngx-space-sm)` (8px at comfortable density), read by the negated box |
+| `--cngx-filter-builder-group-border` | `none`; set it for a boxed group |
 | `--cngx-filter-builder-radius` | `0.375rem` |
 | `--cngx-filter-builder-negated-border-style` | `dashed` |
 | `--cngx-filter-builder-indent` | `1.25rem` |
-| `--cngx-filter-builder-rail` | `2px solid var(--mat-sys-outline-variant, #ddd)` |
-| `--cngx-filter-builder-empty-padding` | `0.75rem` |
-| `--cngx-filter-builder-empty-fg` | `var(--mat-sys-on-surface-variant, #666)` |
+| `--cngx-filter-builder-rail` | `2px solid var(--cngx-color-border)` |
+| `--cngx-filter-builder-empty-padding` | `var(--cngx-space-sm)` (8px at comfortable density) |
+| `--cngx-filter-builder-empty-fg` | `oklch(0.45 0 0)`, dark scheme `oklch(0.7 0 0)` |
 | `--cngx-filter-builder-error-fg` | `var(--cngx-color-danger-text)`, danger mixed toward the text colour so the remove glyph clears 4.5:1 (remove-action fallback) |
 
 Each nested group also exposes a depth host style, `--cngx-filter-builder-depth`, set to the group's path length. Consumers can read it from CSS (e.g. `[style*="--cngx-filter-builder-depth: 2"]`) to drive depth-aware decoration without re-implementing the path math.
