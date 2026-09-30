@@ -8,7 +8,8 @@
  *
  * **State modifiers**
  *
- * - `[aria-disabled='true']` - opacity 0.5 + `cursor: not-allowed`
+ * - `[aria-disabled='true']` - 38% text colour + `cursor: not-allowed`
+ *   (GrayText under forced colors)
  * - `.cngx-option--highlighted` - primary-tinted background marking the
  *   keyboard-focused row
  * - `[hidden]` - `display: none` so filtered-out options remove from
@@ -58,8 +59,10 @@
   border-radius: var(--cngx-select-option-radius, 0.125rem);
 }
 
+/* Disabled fades by colour, never opacity: 38% text, the recipe of a
+   disabled field, locked to the data-mode row (select-base.css). */
 :host([aria-disabled='true']) {
-  opacity: 0.5;
+  color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
   cursor: not-allowed;
 }
 
@@ -76,4 +79,12 @@
 
 :host([hidden]) {
   display: none;
+}
+
+/* Forced colors overwrite the faded colour with CanvasText; GrayText keeps a
+   disabled row distinguishable. */
+@media (forced-colors: active) {
+  :host([aria-disabled='true']) {
+    color: GrayText;
+  }
 }

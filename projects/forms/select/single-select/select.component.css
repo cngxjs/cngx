@@ -11,11 +11,11 @@
  *
  * - `:focus-visible` on `.cngx-select__trigger` - focus-ring outline +
  *   offset
- * - `[aria-disabled='true']` on the trigger - opacity dim + `cursor:
- *   not-allowed`
+ * - `[aria-disabled='true']` on the trigger - `cursor: not-allowed`; the
+ *   field skin fades it by colour
  * - `[aria-invalid='true']` on the trigger - danger border + box-shadow
  *   glow at focus-within time
- * - `:hover` on `.cngx-select__clear` - opacity 1
+ * - `:hover` on `.cngx-select__clear` - full text colour
  * - `:focus-visible` on the clear button - 2px primary outline
  *
  * **Slots**
@@ -215,7 +215,6 @@
       outline-offset: var(--cngx-select-focus-offset, 2px);
     }
     .cngx-select__trigger[aria-disabled='true'] {
-      opacity: var(--cngx-select-disabled-opacity, 0.5);
       cursor: not-allowed;
     }
 
@@ -253,7 +252,6 @@
       display: inline-flex;
       align-items: center;
       line-height: 1;
-      opacity: 0.7;
     }
 
     .cngx-select__clear {
@@ -265,10 +263,9 @@
       cursor: pointer;
       padding: 0 0.25rem;
       font: inherit;
-      opacity: 0.6;
     }
     .cngx-select__clear:hover {
-      opacity: 1;
+      color: var(--cngx-color-text, oklch(0.2 0.01 250));
     }
     .cngx-select__clear:focus-visible {
       outline: 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50));

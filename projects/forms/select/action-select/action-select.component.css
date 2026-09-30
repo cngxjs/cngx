@@ -11,8 +11,8 @@
  *
  * - `:focus-within` on `.cngx-action-select__trigger` - 2px primary
  *   outline + 2px offset
- * - `.cngx-action-select__input:disabled` - `cursor: not-allowed` +
- *   opacity dim
+ * - `.cngx-action-select__input:disabled` - `cursor: not-allowed`;
+ *   the trigger takes the field skin colour
  * - `:focus-visible` on `.cngx-action-select__clear` - 2px primary
  *   outline + rounded corner
  *
@@ -174,7 +174,6 @@
 
     .cngx-action-select__input:disabled {
       cursor: not-allowed;
-      opacity: var(--cngx-select-disabled-opacity, 0.5);
     }
 
     .cngx-action-select__clear,

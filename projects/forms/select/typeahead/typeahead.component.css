@@ -14,8 +14,8 @@
  *   danger border + box-shadow glow at focus-within time (paints on the
  *   visible wrapper without a TS-side rebind since `role="combobox"`
  *   lives on the input)
- * - `.cngx-typeahead__input:disabled` - `cursor: not-allowed` + opacity
- *   dim
+ * - `.cngx-typeahead__input:disabled` - `cursor: not-allowed`; the
+ *   trigger takes the field skin colour
  * - `:focus-visible` on `.cngx-typeahead__clear` - 2px primary outline +
  *   rounded corner
  *
@@ -192,7 +192,6 @@
 
     .cngx-typeahead__input:disabled {
       cursor: not-allowed;
-      opacity: var(--cngx-select-disabled-opacity, 0.5);
     }
 
     .cngx-typeahead__clear,

@@ -14,8 +14,8 @@
  *
  * - `:focus-visible` on `.cngx-reorderable-multi-select__trigger` -
  *   focus-ring outline + offset
- * - `[aria-disabled='true']` on the trigger - opacity dim + `cursor:
- *   not-allowed`
+ * - `[aria-disabled='true']` on the trigger - `cursor: not-allowed`; the
+ *   field skin fades it by colour
  * - `[aria-invalid='true']` on the trigger - danger border + box-shadow
  *   glow at focus-within time
  *
@@ -258,10 +258,6 @@
     }
 
     .cngx-reorderable-multi-select__trigger[aria-disabled='true'] {
-      opacity: var(
-        --cngx-reorderable-multi-select-disabled-opacity,
-        var(--cngx-multi-select-disabled-opacity, var(--cngx-select-disabled-opacity, 0.5))
-      );
       cursor: not-allowed;
     }
 
@@ -291,14 +287,10 @@
       cursor: pointer;
       padding: 0 0.25rem;
       font: inherit;
-      opacity: var(
-        --cngx-reorderable-multi-select-clear-opacity,
-        var(--cngx-multi-select-clear-opacity, 0.6)
-      );
     }
 
     .cngx-reorderable-multi-select__clear-all:hover {
-      opacity: 1;
+      color: var(--cngx-color-text, oklch(0.2 0.01 250));
     }
 
     .cngx-reorderable-multi-select__clear-all:focus-visible {
@@ -316,7 +308,6 @@
       display: inline-flex;
       align-items: center;
       line-height: 1;
-      opacity: 0.7;
     }
   }
 }

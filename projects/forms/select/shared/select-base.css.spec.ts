@@ -164,7 +164,7 @@ describe('select-family field-skin rule set', () => {
     );
     const body = disabled.slice(0, disabled.indexOf('}'));
     expect(body).toContain('38%');
-    expect(body).toContain('opacity: 1');
+    expect(body).not.toContain('opacity');
     expect(fill).toContain('--cngx-color-primary-strong');
   });
 
@@ -220,7 +220,7 @@ describe('select-family field-skin rule set', () => {
     );
     const body = disabled.slice(0, disabled.indexOf('}'));
     expect(body).toContain('border-block-end-style: dotted');
-    expect(body).toContain('opacity: 1');
+    expect(body).not.toContain('opacity');
   });
 
   it('uses the registered danger default as the only skin danger fallback literal', () => {

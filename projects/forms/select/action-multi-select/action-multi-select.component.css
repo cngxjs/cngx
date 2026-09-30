@@ -12,9 +12,9 @@
  *
  * - `:focus-within` on `.cngx-action-multi-select__trigger` - focus-ring
  *   outline + offset
- * - `[aria-disabled='true']` on the trigger - opacity dim + `cursor:
- *   not-allowed`
- * - `:hover` on `.cngx-action-multi-select__clear-all` - opacity 1
+ * - `[aria-disabled='true']` on the trigger - `cursor: not-allowed`; the
+ *   field skin fades it by colour
+ * - `:hover` on `.cngx-action-multi-select__clear-all` - full text colour
  * - `:focus-visible` on the clear-all button - 2px primary outline
  *
  * **Slots**
@@ -272,10 +272,6 @@
     }
 
     .cngx-action-multi-select__trigger[aria-disabled='true'] {
-      opacity: var(
-        --cngx-action-multi-select-disabled-opacity,
-        var(--cngx-combobox-disabled-opacity, var(--cngx-select-disabled-opacity, 0.5))
-      );
       cursor: not-allowed;
     }
 
@@ -316,14 +312,10 @@
       cursor: pointer;
       padding: 0 0.25rem;
       font: inherit;
-      opacity: var(
-        --cngx-action-multi-select-clear-opacity,
-        var(--cngx-combobox-clear-opacity, 0.6)
-      );
     }
 
     .cngx-action-multi-select__clear-all:hover {
-      opacity: 1;
+      color: var(--cngx-color-text, oklch(0.2 0.01 250));
     }
 
     .cngx-action-multi-select__clear-all:focus-visible {
@@ -341,7 +333,6 @@
       display: inline-flex;
       align-items: center;
       line-height: 1;
-      opacity: 0.7;
       pointer-events: none;
     }
   }

@@ -10,8 +10,8 @@
  *
  * - `:focus-visible` on `.cngx-tree-select__trigger` - focus-ring
  *   outline + 1px offset
- * - `[aria-disabled='true']` on the trigger - opacity dim + `cursor:
- *   not-allowed`
+ * - `[aria-disabled='true']` on the trigger - `cursor: not-allowed`; the
+ *   field skin fades it by colour
  * - `[aria-invalid='true']` on the trigger - danger border + box-shadow
  *   glow at focus-within time
  *
@@ -218,7 +218,6 @@
 
     .cngx-tree-select__trigger[aria-disabled='true'] {
       cursor: not-allowed;
-      opacity: var(--cngx-tree-select-disabled-opacity, 0.5);
     }
 
     .cngx-tree-select__trigger[aria-invalid='true'] {
