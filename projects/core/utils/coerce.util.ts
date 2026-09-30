@@ -1,5 +1,7 @@
 import { isSignal, signal, type Signal } from '@angular/core';
 
+import { memoize } from './memo.util';
+
 /**
  * Coerces a value to a boolean.
  *
@@ -50,13 +52,27 @@ export function coerceNumberProperty(value: unknown, fallback = 0): number {
 
 const WRAPPED = new WeakMap<object, Signal<unknown>>();
 
+/** Primitive copy keys repeat across row-level instances; 64 distinct values cover a page. */
+const PRIMITIVE_CACHE_LIMIT = 64;
+
+const wrapPrimitive = memoize((value: unknown) => signal(value).asReadonly(), {
+  cacheLimit: PRIMITIVE_CACHE_LIMIT,
+});
+
+// Nullish values stay out of the memo: an unset copy key is the most common
+// primitive, and a nullish key would pin the memo's FIFO eviction.
+const UNDEFINED_SIGNAL = signal(undefined).asReadonly();
+const NULL_SIGNAL = signal(null).asReadonly();
+
 /**
  * Coerces a value-or-signal into a signal, the way `coerceArray` coerces a
  * value-or-array into an array. A `Signal` passes through by reference. A
  * static object (or function) is wrapped once per reference, so every caller
  * handed the same object - every instance under one injector reading the same
  * token value - shares one readonly signal and nothing is allocated after the
- * first call. A primitive cannot key the cache and is wrapped fresh per call.
+ * first call. A primitive shares one readonly signal per value through a
+ * bounded cache (the 64 most recently first-seen values), so a flat copy key
+ * read in every row of a list allocates one signal, not one per row.
  *
  * `isSignal` checks Angular's signal brand, so a plain formatter function or a
  * bundle of them is wrapped as a value, never mistaken for a signal.
@@ -73,9 +89,15 @@ export function coerceSignal<T>(source: T | Signal<T>): Signal<T> {
   if (isSignal(source)) {
     return source;
   }
-  const cacheable = (typeof source === 'object' && source !== null) || typeof source === 'function';
-  if (!cacheable) {
-    return signal(source).asReadonly();
+  if (source === undefined) {
+    return UNDEFINED_SIGNAL as Signal<T>;
+  }
+  if (source === null) {
+    return NULL_SIGNAL as Signal<T>;
+  }
+  const isObjectLike = typeof source === 'object' || typeof source === 'function';
+  if (!isObjectLike) {
+    return wrapPrimitive(source) as Signal<T>;
   }
   const key = source as object;
   const cached = WRAPPED.get(key) as Signal<T> | undefined;

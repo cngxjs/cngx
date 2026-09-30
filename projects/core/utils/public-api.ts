@@ -2,7 +2,11 @@
  * @module @cngx/core/utils
  */
 export { coerceBooleanProperty, coerceNumberProperty, coerceSignal } from './coerce.util';
-export { createOverrideMerge } from './override-merge';
+export {
+  createNestedOverrideMerge,
+  createOverrideMerge,
+  type CngxNestedOverrides,
+} from './override-merge';
 export { memoize, type MemoizeOptions } from './memo.util';
 export { dateTimeFormatterFor, numberFormatterFor } from './intl-format.util';
 export { CNGX_LOCALE, injectLocale, provideLocale, provideLocaleAt } from './locale';
