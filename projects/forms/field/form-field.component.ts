@@ -5,7 +5,11 @@ import { CngxFormFieldPresenter } from './form-field-presenter';
 /**
  * Invisible A11y coordination container for form fields.
  *
- * Renders as `display: contents` - zero visual footprint.
+ * Renders as `display: contents` - zero visual footprint - until it holds a
+ * `CngxLabel` as a direct child. Then it is the field's own stack: a flex
+ * column that spaces label, control and hint with `--cngx-field-label-gap`
+ * and `--cngx-field-hint-gap`, so the container around the fields only
+ * spaces one field from the next.
  * All ARIA coordination (IDs, describedby, error gating) and CSS state classes
  * are handled by the hosted {@link CngxFormFieldPresenter}.
  *
@@ -47,6 +51,14 @@ import { CngxFormFieldPresenter } from './form-field-presenter';
   styles: `
     :host {
       display: contents;
+    }
+    /* With a label the field is the stack: label, control or box, hint and
+       errors in one column, spaced by the --cngx-field-label-gap and
+       --cngx-field-hint-gap tokens (cngx.css). The consumer's container
+       spaces fields from each other, never a label from its control. */
+    :host(:has(> .cngx-label)) {
+      display: flex;
+      flex-direction: column;
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -59,9 +59,54 @@
     inherits: true;
     initial-value: 0.8125rem;
   }
+
+  /**
+   * Distance from the label to its control or field box, in a
+   * `cngx-form-field` that holds the label as a direct child. SET from
+   * `--cngx-space-xs` on the field, so a root `[data-density]` tracks it.
+   * @group Layout
+   */
+  @property --cngx-field-label-gap {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0.25rem;
+  }
+
+  /**
+   * Distance from the control or field box to the hint and between hint and
+   * error lines, in the same field stack. SET from `--cngx-space-xs`.
+   * @group Layout
+   */
+  @property --cngx-field-hint-gap {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0.25rem;
+  }
 }
 
 @layer cngx.components {
+  /* The field with a label is a flex column (CngxFormField host style). Every
+     item after the label, including each line a contents-rendered error list
+     projects, is one hint gap apart; the label trades the difference in its
+     own margin so it sits one label gap above the control. */
+  cngx-form-field:has(> .cngx-label) {
+    --cngx-field-label-gap: var(--cngx-space-xs);
+    --cngx-field-hint-gap: var(--cngx-space-xs);
+    row-gap: var(--cngx-field-hint-gap, 0.25rem);
+  }
+
+  cngx-form-field:has(> .cngx-label) > .cngx-label {
+    margin-block-end: calc(
+      var(--cngx-field-label-gap, 0.25rem) - var(--cngx-field-hint-gap, 0.25rem)
+    );
+  }
+
+  /* The default error lines are paragraphs; their UA 1em margin would add to
+     the hint gap in the flex column, so the gap token alone spaces them. */
+  cngx-form-field:has(> .cngx-label) > cngx-field-errors > p {
+    margin-block: 0;
+  }
+
   .cngx-label {
     font-size: var(--cngx-field-label-font-size, 0.8125rem);
     font-weight: var(--cngx-field-label-weight, 500);
