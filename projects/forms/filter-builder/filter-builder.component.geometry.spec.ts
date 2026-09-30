@@ -103,12 +103,58 @@ function query(root: HTMLElement, selector: string): HTMLElement {
   return el as HTMLElement;
 }
 
+// The remove glyph is text: it reads the danger TEXT rung (danger pulled
+// toward the text colour), never plain danger, which sits near 4:1 on the
+// page. The glyph is muted at rest and turns danger on hover / focus-visible.
+// Set on the root because the delegating SET lives on :root.
+const DANGER_PROPS = ['--cngx-color-danger', '--cngx-color-danger-text', '--cngx-color-text'];
+
+function setRoot(props: Record<string, string>): void {
+  for (const [name, value] of Object.entries(props)) {
+    document.documentElement.style.setProperty(name, value);
+  }
+}
+
+function resolvedColor(value: string): string {
+  const probe = document.createElement('span');
+  probe.style.color = value;
+  document.body.appendChild(probe);
+  const color = getComputedStyle(probe).color;
+  probe.remove();
+  return color;
+}
+
 afterEach(() => {
   mountedRoot?.remove();
   mountedRoot = null;
+  for (const name of DANGER_PROPS) {
+    document.documentElement.style.removeProperty(name);
+  }
 });
 
 describe('CngxFilterBuilder geometry', () => {
+  it('paints the remove glyph with the danger text colour, not plain danger', () => {
+    setRoot({ '--cngx-color-danger': 'rgb(200, 0, 0)', '--cngx-color-danger-text': 'rgb(10, 20, 30)' });
+    const remove = query(mount(), '.cngx-filter-builder__action-button--remove');
+    remove.focus();
+    expect(remove.matches(':focus-visible')).toBe(true);
+    expect(computedValue(remove, 'color')).toBe('rgb(10, 20, 30)');
+  });
+
+  it('derives the remove glyph colour from danger when no danger text rung is set', () => {
+    setRoot({
+      '--cngx-color-danger': 'rgb(200, 0, 0)',
+      '--cngx-color-danger-text': 'initial',
+      '--cngx-color-text': 'rgb(0, 0, 0)',
+    });
+    const remove = query(mount(), '.cngx-filter-builder__action-button--remove');
+    remove.focus();
+    expect(remove.matches(':focus-visible')).toBe(true);
+    expect(computedValue(remove, 'color')).toBe(
+      resolvedColor('color-mix(in oklab, rgb(200, 0, 0) 75%, rgb(0, 0, 0))'),
+    );
+  });
+
   it('renders the builder as a block container', () => {
     expect(computedValue(mount(), 'display')).toBe('block');
   });
