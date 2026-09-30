@@ -160,3 +160,12 @@
     );
   }
 }
+
+/* Forced colors paint the 38% label colour as CanvasText, the colour of an
+   enabled label; GrayText keeps the disabled state visible. Unlayered and
+   outside any scope, like every forced-colors block. */
+@media (forced-colors: active) {
+  .cngx-label.cngx-label--disabled {
+    color: GrayText;
+  }
+}

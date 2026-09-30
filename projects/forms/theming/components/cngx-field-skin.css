@@ -418,6 +418,36 @@
   .cngx-field-box[data-skin='bare'] {
     border: var(--cngx-field-border-width, 1px) solid FieldText;
   }
+
+  /* The border shorthands above reset a disabled field's baseline to solid,
+     and text is forced to CanvasText, so a disabled fill or bare field would
+     read as enabled. The baseline style comes back and a disabled box names
+     GrayText (a lone control gets it from cngx.base). */
+  :is(input, textarea, select)[data-skin='fill']:not(.cngx-field-box > *):disabled,
+  .cngx-field-box[data-skin='fill']:is(
+      :disabled,
+      [data-disabled],
+      :has(> :is(input, textarea, select):disabled)
+    ) {
+    border-block-end-style: dashed;
+  }
+
+  :is(input, textarea, select)[data-skin='bare']:not(.cngx-field-box > *):disabled,
+  .cngx-field-box[data-skin='bare']:is(
+      :disabled,
+      [data-disabled],
+      :has(> :is(input, textarea, select):disabled)
+    ) {
+    border-block-end-style: dotted;
+  }
+
+  .cngx-field-box[data-skin]:is(
+      :disabled,
+      [data-disabled],
+      :has(> :is(input, textarea, select):disabled)
+    ) {
+    color: GrayText;
+  }
 }
 
 /* Reduced motion: the state changes snap. The [data-motion] axis is covered

@@ -28,7 +28,9 @@ describe('cngx-field-text.css', () => {
   });
 
   it('paints every colour through a token, with literals only as var() fallbacks', () => {
-    const colours = [...FLAT.matchAll(/color: ([^;]+);/g)].map((m) => m[1]);
+    // The forced-colors block names system colours (GrayText) by design.
+    const themed = FLAT.slice(0, FLAT.indexOf('@media (forced-colors: active)'));
+    const colours = [...themed.matchAll(/color: ([^;]+);/g)].map((m) => m[1]);
     expect(colours.length).toBeGreaterThan(0);
     for (const value of colours) {
       expect(value.startsWith('var(') || value.startsWith('color-mix(in oklab, var(')).toBe(true);

@@ -1855,4 +1855,24 @@
   [data-skin='bare']:not(.cngx-field-box > *) > * > .cngx-field-trigger {
     border: var(--cngx-field-border-width, 1px) solid FieldText;
   }
+
+  /* The shorthands above reset a disabled trigger's baseline to solid, and
+     the faded text is forced to CanvasText, so a disabled fill or bare
+     trigger would read as enabled. The baseline style comes back and every
+     disabled trigger names GrayText. */
+  [data-skin='fill']:not(.cngx-field-box > *)
+    > *
+    > .cngx-field-trigger:is([aria-disabled='true'], :has(> [role='combobox']:disabled)) {
+    border-block-end-style: dashed;
+  }
+
+  [data-skin='bare']:not(.cngx-field-box > *)
+    > *
+    > .cngx-field-trigger:is([aria-disabled='true'], :has(> [role='combobox']:disabled)) {
+    border-block-end-style: dotted;
+  }
+
+  * > * > .cngx-field-trigger:is([aria-disabled='true'], :has(> [role='combobox']:disabled)) {
+    color: GrayText;
+  }
 }
