@@ -348,7 +348,6 @@ html {
 | `--cngx-form-errors-color` | `--mat-sys-error` | Form-error summary text |
 | `--cngx-form-errors-font-size` | `0.875rem` | Form-error summary size |
 | `--cngx-field-pending-color` | `--mat-sys-primary` | Pending indicator |
-| `--cngx-field-disabled-opacity` | `0.38` | Disabled state |
 | `--cngx-field-input-border-color` | `--mat-sys-outline` | Input border |
 | `--cngx-field-input-error-border-color` | `--mat-sys-error` | Error border |
 | `--cngx-field-input-focus-border-color` | `--mat-sys-primary` | Focus border |

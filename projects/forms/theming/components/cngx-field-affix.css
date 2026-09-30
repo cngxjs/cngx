@@ -155,10 +155,7 @@
        nested control inherits the text colour through its reset. Keyed on the
        main control only (data-disabled, or a direct-child control), so a
        disabled affix button never greys the row. */
-    :scope[data-skin='outline']:is(
-        [data-disabled],
-        :has(> :is(input, textarea, select):disabled)
-      ) {
+    :scope[data-skin='outline']:is([data-disabled], :has(> :is(input, textarea, select):disabled)) {
       border-style: dashed;
       background: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 4%, transparent);
       color: var(
@@ -285,9 +282,12 @@
       background: color-mix(in oklch, var(--cngx-color-text, oklch(0.2 0.01 250)) 8%, transparent);
     }
 
+    /* Disabled fades by colour, never opacity: 38% text, the recipe of a
+       disabled field. Inside a disabled box the button already inherits that
+       colour, so it fades once. */
     .cngx-field-affix--interactive:disabled {
       cursor: default;
-      opacity: var(--cngx-field-disabled-opacity, 0.6);
+      color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
     }
 
     .cngx-field-affix--interactive:disabled:hover {
