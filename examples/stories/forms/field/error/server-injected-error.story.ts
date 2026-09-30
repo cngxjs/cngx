@@ -17,8 +17,9 @@ export const STORY: DemoSpec = {
   moduleImports: [
     'import { form, schema, required, email, validate } from \'@angular/forms/signals\';',
     'import { CngxFormField, CngxLabel, CngxError } from \'@cngx/forms/field\';',
+    'import { CngxInput } from \'@cngx/forms/input\';',
   ],
-  imports: ['CngxFormField', 'CngxLabel', 'CngxError'],
+  imports: ['CngxFormField', 'CngxLabel', 'CngxError', 'CngxInput'],
   setup: `protected readonly model = signal<{ email: string }>({ email: '' });
   protected readonly takenEmails = signal<ReadonlySet<string>>(new Set());
   protected readonly emailForm = form(this.model, schema<{ email: string }>((root) => {
@@ -67,9 +68,9 @@ export const STORY: DemoSpec = {
   }`,
   template: `  <div style="display:grid;gap:16px;max-width:480px">
     <cngx-form-field [field]="emailForm.email">
-      <label cngxLabel for="server-email">Email address</label>
+      <label cngxLabel>Email address</label>
       <input
-        id="server-email"
+        cngxInput
         type="email"
         autocomplete="email"
         [value]="emailForm.email().value()"
