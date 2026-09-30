@@ -300,7 +300,7 @@ All values are routed through `var(--cngx-*, fallback)`. Material variants defau
 | `--cngx-filter-builder-rail` | `2px solid var(--mat-sys-outline-variant, #ddd)` |
 | `--cngx-filter-builder-empty-padding` | `0.75rem` |
 | `--cngx-filter-builder-empty-fg` | `var(--mat-sys-on-surface-variant, #666)` |
-| `--cngx-filter-builder-error-fg` | `var(--mat-sys-error, #b3261e)` (remove-action fallback) |
+| `--cngx-filter-builder-error-fg` | `var(--cngx-color-danger-text)`, danger mixed toward the text colour so the remove glyph clears 4.5:1 (remove-action fallback) |
 
 Each nested group also exposes a depth host style, `--cngx-filter-builder-depth`, set to the group's path length. Consumers can read it from CSS (e.g. `[style*="--cngx-filter-builder-depth: 2"]`) to drive depth-aware decoration without re-implementing the path math.
 

@@ -155,7 +155,17 @@
     .cngx-filter-builder__action-button--remove:focus-visible {
       color: var(
         --cngx-filter-builder-action-remove-fg,
-        var(--cngx-filter-builder-error-fg, var(--cngx-color-danger, oklch(0.55 0.18 25)))
+        var(
+          --cngx-filter-builder-error-fg,
+          var(
+            --cngx-color-danger-text,
+            color-mix(
+              in oklab,
+              var(--cngx-color-danger, oklch(0.6 0.18 25)) 75%,
+              var(--cngx-color-text, oklch(0.2 0.01 250))
+            )
+          )
+        )
       );
       background: var(--cngx-filter-builder-action-hover-bg, oklch(0 0 0 / 0.04));
     }

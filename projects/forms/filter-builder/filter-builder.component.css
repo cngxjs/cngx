@@ -60,8 +60,10 @@
  * - `--cngx-filter-builder-rail` -> `2px solid
  *   var(--cngx-color-border)`
  * - `--cngx-filter-builder-action-remove-fg` ->
- *   `--cngx-filter-builder-error-fg` -> `--cngx-color-danger`
- * - `--cngx-filter-builder-error-fg` -> `--cngx-color-danger`
+ *   `--cngx-filter-builder-error-fg` -> `--cngx-color-danger-text`
+ * - `--cngx-filter-builder-error-fg` -> `--cngx-color-danger-text`
+ *   (danger mixed toward the text colour in oklab, so the glyph clears
+ *   4.5:1 as text; plain danger sits near 4:1 on the page)
  *
  * Layout / sizing / motion tokens stay structural (no foundation
  * delegate). `--cngx-filter-builder-action-button` borders carry the
@@ -353,7 +355,7 @@
   /**
    * Foreground color of the destructive remove button. Falls back
    * through `--cngx-filter-builder-error-fg` and then
-   * `--cngx-color-danger`.
+   * `--cngx-color-danger-text`.
    * @group Variant / Remove
    * @see [[--cngx-color-danger]]
    */
@@ -365,7 +367,7 @@
 
   /**
    * Error-tone foreground shared across the builder's error states.
-   * Falls back through `--cngx-color-danger`.
+   * Falls back through `--cngx-color-danger-text`.
    * @group State / Error
    */
   @property --cngx-filter-builder-error-fg {
@@ -395,8 +397,14 @@
     --cngx-filter-builder-border-color: var(--cngx-color-border);
     --cngx-filter-builder-action-border: var(--cngx-color-border);
     --cngx-filter-builder-rail: 2px solid var(--cngx-color-border);
-    --cngx-filter-builder-action-remove-fg: var(--cngx-color-danger);
-    --cngx-filter-builder-error-fg: var(--cngx-color-danger);
+    --cngx-filter-builder-action-remove-fg: var(
+      --cngx-color-danger-text,
+      color-mix(in oklab, var(--cngx-color-danger) 75%, var(--cngx-color-text))
+    );
+    --cngx-filter-builder-error-fg: var(
+      --cngx-color-danger-text,
+      color-mix(in oklab, var(--cngx-color-danger) 75%, var(--cngx-color-text))
+    );
   }
 
   /* Dark-mode component-local swap - alpha-on-black hover-bg
@@ -568,7 +576,17 @@
     .cngx-filter-builder__action-button--remove {
       color: var(
         --cngx-filter-builder-action-remove-fg,
-        var(--cngx-filter-builder-error-fg, var(--cngx-color-danger, oklch(0.55 0.18 25)))
+        var(
+          --cngx-filter-builder-error-fg,
+          var(
+            --cngx-color-danger-text,
+            color-mix(
+              in oklab,
+              var(--cngx-color-danger, oklch(0.6 0.18 25)) 75%,
+              var(--cngx-color-text, oklch(0.2 0.01 250))
+            )
+          )
+        )
       );
     }
 
