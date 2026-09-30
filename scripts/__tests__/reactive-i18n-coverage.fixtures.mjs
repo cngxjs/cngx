@@ -610,111 +610,6 @@ export const HELPERS = ['injectResolvedFeedbackI18n', 'injectChartI18n', 'resolv
 /** @type {readonly RatchetRow[]} */
 export const RATCHET = [
   {
-    file: 'projects/common/display/avatar-group/avatar-group.component.ts',
-    member: 'CngxAvatarGroup.label',
-    rule: 'R1',
-    token: 'CNGX_DISPLAY_I18N',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/display/avatar-group/avatar-group.component.ts',
-    member: 'CngxAvatarGroup.nounSnapshot',
-    rule: 'R2',
-    token: 'CNGX_DISPLAY_I18N',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/display/chip/chip.component.ts',
-    member: 'CngxChip.removeAriaLabel',
-    rule: 'R1',
-    token: 'CNGX_DISPLAY_I18N',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/interactive/async-click/async-click.directive.ts',
-    member: 'CngxAsyncClick.failedAnnouncement',
-    rule: 'R1',
-    token: 'CNGX_INTERACTIVE_I18N',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/interactive/async-click/async-click.directive.ts',
-    member: 'CngxAsyncClick.installAnnounceRegion',
-    rule: 'R4',
-    token: 'CNGX_INTERACTIVE_I18N',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/interactive/async-click/async-click.directive.ts',
-    member: 'CngxAsyncClick.succeededAnnouncement',
-    rule: 'R1',
-    token: 'CNGX_INTERACTIVE_I18N',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/interactive/breadcrumb/breadcrumb.directive.ts',
-    member: 'CngxBreadcrumb.label',
-    rule: 'R1',
-    token: 'CNGX_INTERACTIVE_I18N',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/interactive/copy/copy-block.ts',
-    member: 'CngxCopyBlock.buttonLabel',
-    rule: 'R1',
-    token: 'CNGX_INTERACTIVE_I18N',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/interactive/copy/copy-block.ts',
-    member: 'CngxCopyBlock.copiedLabel',
-    rule: 'R1',
-    token: 'CNGX_INTERACTIVE_I18N',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/interactive/copy/copy-block.ts',
-    member: 'CngxCopyBlock.srAnnouncement',
-    rule: 'R1',
-    token: 'CNGX_INTERACTIVE_I18N',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/interactive/copy/copy-block.ts',
-    member: 'CngxCopyBlock.srAnnouncement',
-    rule: 'R4',
-    token: 'CNGX_INTERACTIVE_I18N',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/interactive/slider/range-slider.component.ts',
-    member: 'CngxRangeSlider.endLabel',
-    rule: 'R1',
-    token: 'CNGX_INTERACTIVE_I18N',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/interactive/slider/range-slider.component.ts',
-    member: 'CngxRangeSlider.startLabel',
-    rule: 'R1',
-    token: 'CNGX_INTERACTIVE_I18N',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/layout/text/expandable-text.ts',
-    member: 'CngxExpandableText.lessLabel',
-    rule: 'R1',
-    token: 'CNGX_LAYOUT_I18N',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/layout/text/expandable-text.ts',
-    member: 'CngxExpandableText.moreLabel',
-    rule: 'R1',
-    token: 'CNGX_LAYOUT_I18N',
-    closesIn: 3,
-  },
-  {
     file: 'projects/data-display/treetable/treetable.component.ts',
     member: 'CngxTreetable.stateAnnouncement',
     rule: 'R3',
@@ -1885,7 +1780,7 @@ export const RATCHET = [
   },
 ];
 
-export const RATCHET_CEILING = 182;
+export const RATCHET_CEILING = 167;
 
 /** The last phase whose closing commit has landed. */
 export const COMPLETED_PHASE = 2;
@@ -2058,7 +1953,7 @@ export const LIVE_REGIONS = [
   },
   {
     file: 'projects/common/interactive/copy/copy-block.ts',
-    region: 'CngxCopyBlock.span(srAnnouncement)',
+    region: 'CngxCopyBlock.span(liveAnnouncement)',
     spec: 'projects/common/interactive/copy/copy-block.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 3,

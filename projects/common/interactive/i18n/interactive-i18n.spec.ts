@@ -1,7 +1,7 @@
 import { Component, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideLocale } from '@cngx/core/utils';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxAsyncClick } from '../async-click/async-click.directive';
 import { CngxBreadcrumb } from '../breadcrumb/breadcrumb.directive';
@@ -75,7 +75,7 @@ describe('CNGX_INTERACTIVE_I18N', () => {
     expect(first).toBe(second);
   });
 
-  it('defaults the CngxAsyncClick announcements from the bundle', () => {
+  it('defaults the CngxAsyncClick announcements from the bundle', async () => {
     TestBed.configureTestingModule({
       imports: [Host],
       providers: [
@@ -90,8 +90,13 @@ describe('CNGX_INTERACTIVE_I18N', () => {
     const fixture = TestBed.createComponent(Host);
     fixture.detectChanges();
     const directive = fixture.componentInstance.directive();
-    expect(directive.succeededAnnouncement()).toBe('Erledigt');
-    expect(directive.failedAnnouncement()).toBe('Fehler');
+    expect(directive.succeededAnnouncement()).toBeUndefined();
+
+    (fixture.nativeElement.querySelector('button') as HTMLButtonElement).click();
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      expect(directive.announcement()).toBe('Erledigt');
+    });
   });
 
   it('fills the optional keys for a directly provided bundle that predates them', () => {

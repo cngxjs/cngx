@@ -60,6 +60,16 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 
 - `CngxMenuConfig.ariaLabels` is typed `CngxMenuAriaLabels | Signal<CngxMenuAriaLabels>`, and once `withAriaLabels` ran it holds a `Signal`. Code that reads it off `injectMenuConfig()` or `CNGX_MENU_CONFIG` wraps the key: `injectMenuConfig().ariaLabels.itemActivated` becomes `coerceSignal(injectMenuConfig().ariaLabels)().itemActivated` (`coerceSignal` from `@cngx/core/utils`), read inside a `computed()`, a template or a handler. A hand-written `CngxMenuConfigFeature` that spreads `cfg.ariaLabels` merges through `createOverrideMerge(cfg.ariaLabels, overrides)` instead.
 - `withAriaLabels` now also accepts a `Signal<Partial<CngxMenuAriaLabels>>` for runtime switching; plain partials still merge over the inherited labels.
+- The copy inputs `CngxAsyncClick.succeededAnnouncement` / `.failedAnnouncement`, `CngxBreadcrumb.label`, `CngxCopyBlock.buttonLabel` / `.copiedLabel` / `.srAnnouncement` and `CngxRangeSlider.startLabel` / `.endLabel` are now `input<string | undefined>`, and an unbound input reads `undefined` instead of the construction-time `CNGX_INTERACTIVE_I18N` default. Template bindings and attribute values are unchanged. Code that reads the input programmatically (`directive.succeededAnnouncement()`) gets `undefined` when nothing is bound; read the rendered result instead, for `CngxAsyncClick` its `announcement()`.
+
+### @cngx/common/display
+
+- The copy inputs `CngxAvatarGroup.label` and `CngxChip.removeAriaLabel` are now `input<string | undefined>`, and an unbound input reads `undefined` instead of the construction-time `CNGX_DISPLAY_I18N` default. Template bindings are unchanged; the rendered `aria-label` follows a language switch.
+- `CngxAvatarGroup`: a bound `label` now always composes the English `<total> <noun>` summary, also when it happens to equal the `avatarGroupNoun` default. Leave `label` unbound to use a custom `avatarGroupLabel` formatter.
+
+### @cngx/common/layout
+
+- The copy inputs `CngxExpandableText.moreLabel` / `.lessLabel` are now `input<string | undefined>`, and an unbound input reads `undefined` instead of the construction-time `CNGX_LAYOUT_I18N` default. Template bindings are unchanged; the rendered toggle label follows a language switch.
 
 ### @cngx/common/timeline
 
