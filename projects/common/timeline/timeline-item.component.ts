@@ -17,9 +17,7 @@ import { coerceSignal, type CngxAsyncState } from '@cngx/core/utils';
 import { CngxTimelineConnector, type TimelineConnectorPosition } from './connector.component';
 import { CNGX_TIMELINE_MARKER_HOST } from './marker-host.token';
 import { CngxTimelineMarker, type TimelineStatus } from './marker.component';
-import { injectTimelineConfig, type CngxTimelineLabels } from './timeline-config';
-
-const NO_LABELS: CngxTimelineLabels = {};
+import { injectTimelineConfig, TIMELINE_NO_LABELS, type CngxTimelineLabels } from './timeline-config';
 
 /**
  * Marks the element that holds an item's timestamp, so the item can place
@@ -215,7 +213,7 @@ const FOCUSABLE =
 })
 export class CngxTimelineItem {
   private readonly labels = coerceSignal<CngxTimelineLabels>(
-    injectTimelineConfig().labels ?? NO_LABELS,
+    injectTimelineConfig().labels ?? TIMELINE_NO_LABELS,
   );
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
 

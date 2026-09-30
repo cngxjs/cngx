@@ -220,8 +220,11 @@ export const CNGX_TIMELINE_CONFIG = new InjectionToken<CngxTimelineConfig>('Cngx
  */
 export type CngxTimelineConfigFeature = (config: CngxTimelineConfig) => CngxTimelineConfig;
 
-/** @internal */
-const NO_LABELS: CngxTimelineLabels = {};
+/**
+ * @internal Shared empty bundle for a config without `labels`. One identity,
+ * so every `coerceSignal` over it resolves to the same cached source.
+ */
+export const TIMELINE_NO_LABELS: CngxTimelineLabels = {};
 
 /**
  * Merge label overrides into the cascade. Keys left out keep their
@@ -249,7 +252,7 @@ export function withTimelineLabels(
     // spread would let a consumer who renames one status silently
     // silence the other three.
     labels: createNestedOverrideMerge<CngxTimelineLabels, 'status'>(
-      config.labels ?? NO_LABELS,
+      config.labels ?? TIMELINE_NO_LABELS,
       labels,
       'status',
     ),
