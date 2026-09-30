@@ -192,6 +192,9 @@
          value starts at the same x as in an input. */
       --cngx-multi-select-gap: var(--cngx-space-sm);
       --cngx-multi-select-padding: var(--cngx-space-sm) var(--cngx-space-md);
+      /* Self-contained sizing: without this the min-height contract depends
+         on a global border-box reset the consumer may not load. */
+      box-sizing: border-box;
       display: flex;
       align-items: center;
       gap: var(--cngx-multi-select-gap, var(--cngx-select-gap, 0.5rem));

@@ -216,6 +216,9 @@
          input. */
       --cngx-action-multi-select-gap: var(--cngx-space-xs);
       --cngx-action-multi-select-padding: var(--cngx-space-sm) var(--cngx-space-md);
+      /* Self-contained sizing: without this the min-height contract depends
+         on a global border-box reset the consumer may not load. */
+      box-sizing: border-box;
       display: flex;
       align-items: center;
       gap: var(

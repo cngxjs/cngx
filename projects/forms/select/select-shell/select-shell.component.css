@@ -223,6 +223,9 @@
          in an input. */
       --cngx-select-shell-gap: var(--cngx-space-sm);
       --cngx-select-shell-padding: var(--cngx-space-sm) var(--cngx-space-md);
+      /* Self-contained sizing: without this the min-height contract depends
+         on a global border-box reset the consumer may not load. */
+      box-sizing: border-box;
       display: inline-flex;
       align-items: center;
       gap: var(--cngx-select-shell-gap, var(--cngx-select-gap, 0.5rem));

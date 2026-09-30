@@ -136,6 +136,9 @@
          the same x as in an input. */
       --cngx-typeahead-gap: var(--cngx-space-sm);
       --cngx-typeahead-padding: var(--cngx-space-sm) var(--cngx-space-md);
+      /* Self-contained sizing: without this the min-height contract depends
+         on a global border-box reset the consumer may not load. */
+      box-sizing: border-box;
       display: flex;
       align-items: center;
       gap: var(--cngx-typeahead-gap, 0.5rem);
