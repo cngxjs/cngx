@@ -610,34 +610,6 @@ export const HELPERS = ['injectResolvedFeedbackI18n', 'injectChartI18n', 'resolv
 /** @type {readonly RatchetRow[]} */
 export const RATCHET = [
   {
-    file: 'projects/common/card/card.component.ts',
-    member: 'CngxCard.liveAnnouncement',
-    rule: 'R3',
-    token: 'CNGX_CARD_I18N',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/card/card.component.ts',
-    member: 'CngxCard.liveAnnouncement',
-    rule: 'R4',
-    token: 'CNGX_CARD_I18N',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/card/card.component.ts',
-    member: 'CngxCard.selectionPhrase',
-    rule: 'R3',
-    token: 'CNGX_CARD_I18N',
-    closesIn: 3,
-  },
-  {
-    file: 'projects/common/card/i18n/card-i18n.ts',
-    member: 'withCardI18nLabels',
-    rule: 'R3',
-    token: 'CNGX_CARD_I18N',
-    closesIn: 3,
-  },
-  {
     file: 'projects/common/chart/i18n/chart-i18n.ts',
     member: 'CNGX_CHART_I18N',
     rule: 'R2',
@@ -2081,7 +2053,7 @@ export const RATCHET = [
   },
 ];
 
-export const RATCHET_CEILING = 210;
+export const RATCHET_CEILING = 206;
 
 /** The last phase whose closing commit has landed. */
 export const COMPLETED_PHASE = 2;

@@ -1,10 +1,11 @@
-import { Component, signal } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CngxCard } from './card.component';
 import { CngxCardHeader } from './card-header.directive';
 import { CngxCardBody } from './card-body.directive';
+import { provideCardI18n, withCardI18nLabels } from './i18n/card-i18n';
 
 @Component({
   template: `
@@ -390,5 +391,70 @@ describe('CngxCard', () => {
     const live1 = card1.querySelector('[aria-live]')!.id;
     const live2 = card2.querySelector('[aria-live]')!.id;
     expect(live1).not.toBe(live2);
+  });
+});
+
+describe('CngxCard language switch', () => {
+  const lang = signal<'en' | 'de'>('en');
+
+  beforeEach(() => {
+    lang.set('en');
+    TestBed.configureTestingModule({
+      imports: [TestHost],
+      providers: [
+        provideCardI18n(
+          withCardI18nLabels(
+            computed(() =>
+              lang() === 'de'
+                ? { selected: 'Ausgewählt', deselected: 'Abgewählt', loading: 'Lädt' }
+                : {},
+            ),
+          ),
+        ),
+      ],
+    });
+  });
+
+  it('does not re-announce on a language flip', () => {
+    const fixture = TestBed.createComponent(TestHost);
+    const host = fixture.componentInstance;
+    host.cardType.set('button');
+    host.selectable.set(true);
+    fixture.detectChanges();
+    const card: HTMLElement = fixture.nativeElement.querySelector('cngx-card');
+    const liveRegion = card.querySelector('[aria-live="polite"]')!;
+
+    card.click();
+    fixture.detectChanges();
+    expect(liveRegion.textContent!.trim()).toBe('Selected');
+
+    lang.set('de');
+    fixture.detectChanges();
+    expect(liveRegion.textContent!.trim()).toBe('Selected');
+
+    card.click();
+    fixture.detectChanges();
+    expect(liveRegion.textContent!.trim()).toBe('Abgewählt');
+  });
+
+  it('keeps the loading phrase on a flip and speaks the next transition in the new language', () => {
+    const fixture = TestBed.createComponent(TestHost);
+    const host = fixture.componentInstance;
+    host.selectable.set(true);
+    host.loading.set(true);
+    fixture.detectChanges();
+    const card: HTMLElement = fixture.nativeElement.querySelector('cngx-card');
+    const liveRegion = card.querySelector('[aria-live="polite"]')!;
+    expect(liveRegion.textContent!.trim()).toBe('Loading');
+
+    lang.set('de');
+    fixture.detectChanges();
+    expect(liveRegion.textContent!.trim()).toBe('Loading');
+
+    host.loading.set(false);
+    fixture.detectChanges();
+    host.loading.set(true);
+    fixture.detectChanges();
+    expect(liveRegion.textContent!.trim()).toBe('Lädt');
   });
 });

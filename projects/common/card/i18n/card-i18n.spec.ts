@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { Component, signal } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
 import { CngxCard } from '../card.component';
@@ -33,7 +33,7 @@ describe('CNGX_CARD_I18N', () => {
   });
 
   it('ships the three English phrases without a provider', () => {
-    expect(TestBed.inject(CNGX_CARD_I18N)).toEqual({
+    expect(TestBed.inject(CNGX_CARD_I18N)()).toEqual({
       selected: 'Selected',
       deselected: 'Deselected',
       loading: 'Loading',
@@ -46,8 +46,45 @@ describe('CNGX_CARD_I18N', () => {
       providers: [provideCardI18n(withCardI18nLabels({ selected: 'Ausgewählt' }))],
     });
     const bundle = TestBed.runInInjectionContext(() => injectCardI18n());
-    expect(bundle.selected).toBe('Ausgewählt');
-    expect(bundle.deselected).toBe('Deselected');
+    expect(bundle().selected).toBe('Ausgewählt');
+    expect(bundle().deselected).toBe('Deselected');
+  });
+
+  it('resolves plain overrides to the same bundle as the eager merge did', () => {
+    const overrides = { selected: 'Ausgewählt', loading: 'Lädt' };
+    TestBed.configureTestingModule({
+      imports: [Host],
+      providers: [provideCardI18n(withCardI18nLabels(overrides))],
+    });
+    expect(TestBed.inject(CNGX_CARD_I18N)()).toEqual({
+      selected: 'Ausgewählt',
+      deselected: 'Deselected',
+      loading: 'Lädt',
+    });
+  });
+
+  it('follows a Signal override and keeps its reference on an equal recompute', () => {
+    const lang = signal<'en' | 'de' | 'de-AT'>('en');
+    TestBed.configureTestingModule({
+      imports: [Host],
+      providers: [
+        provideCardI18n(
+          withCardI18nLabels(
+            computed(() => (lang() === 'en' ? {} : { selected: 'Ausgewählt' })),
+          ),
+        ),
+      ],
+    });
+    const bundle = TestBed.inject(CNGX_CARD_I18N);
+    expect(bundle().selected).toBe('Selected');
+
+    lang.set('de');
+    const german = bundle();
+    expect(german.selected).toBe('Ausgewählt');
+    expect(german.deselected).toBe('Deselected');
+
+    lang.set('de-AT');
+    expect(bundle()).toBe(german);
   });
 
   it('announces the overridden selection phrases on a real toggle', () => {
