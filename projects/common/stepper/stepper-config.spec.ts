@@ -1,7 +1,9 @@
-import { Component, TemplateRef, ViewChild } from '@angular/core';
+import { Component, computed, signal, TemplateRef, ViewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { describe, expect, it } from 'vitest';
+
+import { coerceSignal } from '@cngx/core/utils';
 
 import {
   CNGX_STEPPER_CONFIG,
@@ -38,7 +40,7 @@ describe('CngxStepperConfig', () => {
     expect(cfg.defaultOrientation).toBe('horizontal');
     expect(cfg.defaultLinear).toBe(false);
     expect(cfg.defaultCommitMode).toBe('pessimistic');
-    expect(cfg.ariaLabels?.stepperRegion).toBe('Stepper');
+    expect(coerceSignal(cfg.ariaLabels)()?.stepperRegion).toBe('Stepper');
   });
 
   it('provideStepperConfig merges with* features in order', () => {
@@ -55,7 +57,7 @@ describe('CngxStepperConfig', () => {
     const cfg = TestBed.inject(CNGX_STEPPER_CONFIG);
     expect(cfg.defaultOrientation).toBe('vertical');
     expect(cfg.defaultCommitMode).toBe('optimistic');
-    expect(cfg.ariaLabels?.stepperRegion).toBe('Schrittfolge');
+    expect(coerceSignal(cfg.ariaLabels)()?.stepperRegion).toBe('Schrittfolge');
   });
 
   it('injectStepperConfig works inside an injection context', () => {
@@ -392,5 +394,69 @@ describe('CngxStepperConfig', () => {
       expect(withStepGroupHeaderTemplate(stub)._target).toBe('config');
       expect(withStepperEmptyTemplate(stub)._target).toBe('config');
     });
+  });
+});
+
+describe('CngxStepperConfig copy keys', () => {
+  it('resolves static label overrides to the same bundles as the eager merge', () => {
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const defaults = TestBed.inject(CNGX_STEPPER_CONFIG);
+    const defaultAria = coerceSignal(defaults.ariaLabels)();
+    const defaultFallback = coerceSignal(defaults.fallbackLabels)();
+    TestBed.resetTestingModule();
+
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideStepperConfig(
+          withStepperAriaLabels({ stepperRegion: 'A' }),
+          withStepperFallbackLabels({ groupRoleDescription: 'Gruppe' }),
+          withStepperFallbackLabels({ stepRoleDescription: 'Schritte' }),
+        ),
+      ],
+    });
+    const cfg = TestBed.inject(CNGX_STEPPER_CONFIG);
+    expect(coerceSignal(cfg.ariaLabels)()).toEqual({ ...defaultAria, stepperRegion: 'A' });
+    expect(coerceSignal(cfg.fallbackLabels)()).toEqual({
+      ...defaultFallback,
+      groupRoleDescription: 'Gruppe',
+      stepRoleDescription: 'Schritte',
+    });
+  });
+
+  it('a Signal label override follows a language flip and keeps unset defaults', () => {
+    const lang = signal<'en' | 'de'>('en');
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideStepperConfig(
+          withStepperAriaLabels(computed(() => (lang() === 'de' ? { stepperRegion: 'Schrittfolge' } : {}))),
+          withStepperFallbackLabels(
+            computed(() => (lang() === 'de' ? { groupRoleDescription: 'Schrittgruppe' } : {})),
+          ),
+        ),
+      ],
+    });
+    const cfg = TestBed.inject(CNGX_STEPPER_CONFIG);
+    const aria = coerceSignal(cfg.ariaLabels);
+    const fallback = coerceSignal(cfg.fallbackLabels);
+    expect(aria()?.stepperRegion).toBe('Stepper');
+    expect(fallback()?.groupRoleDescription).toBe('step group');
+
+    lang.set('de');
+    expect(aria()?.stepperRegion).toBe('Schrittfolge');
+    expect(fallback()?.groupRoleDescription).toBe('Schrittgruppe');
+    expect(fallback()?.stepRoleDescription).toBe('stepper');
+  });
+
+  it('keeps the label bundle reference when an override is re-set to an equal object', () => {
+    const labels = signal({ stepperRegion: 'Schrittfolge' });
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), provideStepperConfig(withStepperAriaLabels(labels))],
+    });
+    const aria = coerceSignal(TestBed.inject(CNGX_STEPPER_CONFIG).ariaLabels);
+    const before = aria();
+    labels.set({ stepperRegion: 'Schrittfolge' });
+    expect(aria()).toBe(before);
   });
 });

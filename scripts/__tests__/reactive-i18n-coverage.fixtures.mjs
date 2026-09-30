@@ -869,27 +869,6 @@ export const RATCHET = [
     closesIn: 3,
   },
   {
-    file: 'projects/common/stepper/stepper-config.ts',
-    member: 'withStepperAriaLabels',
-    rule: 'R3',
-    token: 'CNGX_STEPPER_CONFIG',
-    closesIn: 2,
-  },
-  {
-    file: 'projects/common/stepper/stepper-config.ts',
-    member: 'withStepperFallbackLabels',
-    rule: 'R3',
-    token: 'CNGX_STEPPER_CONFIG',
-    closesIn: 2,
-  },
-  {
-    file: 'projects/common/stepper/stepper-host-attrs.ts',
-    member: 'createStepperAccname',
-    rule: 'R3',
-    token: 'CNGX_STEPPER_CONFIG',
-    closesIn: 2,
-  },
-  {
     file: 'projects/common/tabs/announcements/tab-group-announcements.ts',
     member: 'createTabGroupAnnouncements',
     rule: 'R3',
@@ -2101,27 +2080,6 @@ export const RATCHET = [
     closesIn: 7,
   },
   {
-    file: 'projects/ui/stepper/progress-bar-stepper.component.ts',
-    member: 'CngxProgressBarStepper.stepperRoleDescription',
-    rule: 'R3',
-    token: 'CNGX_STEPPER_CONFIG',
-    closesIn: 2,
-  },
-  {
-    file: 'projects/ui/stepper/stepper.component.ts',
-    member: 'CngxStepper.groupRoleDescription',
-    rule: 'R3',
-    token: 'CNGX_STEPPER_CONFIG',
-    closesIn: 2,
-  },
-  {
-    file: 'projects/ui/stepper/stepper.component.ts',
-    member: 'CngxStepper.stepperRoleDescription',
-    rule: 'R3',
-    token: 'CNGX_STEPPER_CONFIG',
-    closesIn: 2,
-  },
-  {
     file: 'projects/ui/tabs/tab-group.component.ts',
     member: 'CngxTabGroup.announcements',
     rule: 'R4',
@@ -2186,7 +2144,7 @@ export const RATCHET = [
   },
 ];
 
-export const RATCHET_CEILING = 225;
+export const RATCHET_CEILING = 219;
 
 /** The last phase whose closing commit has landed. */
 export const COMPLETED_PHASE = 1;

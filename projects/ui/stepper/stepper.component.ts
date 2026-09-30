@@ -70,7 +70,7 @@ import {
   CNGX_DIRECTIVE_BY_ID_MAP_FACTORY,
   CNGX_ORGANISM_SCROLL_SYNC_FACTORY,
 } from '@cngx/common/tabs';
-import { coerceBooleanProperty } from '@cngx/core/utils';
+import { coerceBooleanProperty, coerceSignal } from '@cngx/core/utils';
 
 import { CngxStepperErrorLine } from './stepper-error-line.component';
 
@@ -276,9 +276,11 @@ export class CngxStepper implements CngxStepPanelHost {
     });
   }
 
+  private readonly fallbackLabels = coerceSignal(this.config.fallbackLabels);
+
   /** Stepper landmark role-description with config + i18n cascade. */
   protected readonly stepperRoleDescription = computed<string>(
-    () => this.config.fallbackLabels?.stepRoleDescription ?? this.i18n().stepperLabel,
+    () => this.fallbackLabels()?.stepRoleDescription ?? this.i18n().stepperLabel,
   );
 
   /** Resolved skin / connectors / mobile-indicator host attrs (Level-2 cascade helper). */
@@ -350,7 +352,7 @@ export class CngxStepper implements CngxStepPanelHost {
     return this.stateView.hasError(node) ? `${base}: ${i18n.statusLabels.errored}` : base;
   }
   protected readonly groupRoleDescription = computed<string>(
-    () => this.config.fallbackLabels?.groupRoleDescription ?? 'step group',
+    () => this.fallbackLabels()?.groupRoleDescription ?? 'step group',
   );
 
   /**

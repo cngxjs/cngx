@@ -23,6 +23,7 @@ import {
   resolveStepperErrorSummary,
   type CngxStepNode,
 } from '@cngx/common/stepper';
+import { coerceSignal } from '@cngx/core/utils';
 import { CngxProgress } from '@cngx/ui/feedback';
 
 import { CngxStepperErrorLine } from './stepper-error-line.component';
@@ -97,9 +98,11 @@ export class CngxProgressBarStepper {
     i18n: this.i18n,
   });
 
+  private readonly fallbackLabels = coerceSignal(this.config.fallbackLabels);
+
   /** Landmark role-description with config + i18n cascade, mirroring `<cngx-stepper>`. */
   protected readonly stepperRoleDescription = computed<string>(
-    () => this.config.fallbackLabels?.stepRoleDescription ?? this.i18n().stepperLabel,
+    () => this.fallbackLabels()?.stepRoleDescription ?? this.i18n().stepperLabel,
   );
 
   private readonly emptySlot = contentChild(CngxStepperEmpty);

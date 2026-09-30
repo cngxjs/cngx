@@ -1899,3 +1899,51 @@ describe('CngxStepper language switch', () => {
     expect(summary()).toBe('B: Fehler');
   });
 });
+
+describe('CngxStepper config copy switch', () => {
+  @Component({
+    standalone: true,
+    imports: [CngxStepper, CngxStep, CngxStepGroup],
+    template: `
+      <cngx-stepper>
+        <div cngxStepGroup label="g">
+          <div cngxStep label="A"></div>
+        </div>
+      </cngx-stepper>
+    `,
+  })
+  class LabelHost {}
+
+  it('re-labels the landmark and the group on a language flip', () => {
+    const lang = signal<'en' | 'de'>('en');
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideStepperConfig(
+          withStepperAriaLabels(computed(() => (lang() === 'de' ? { stepperRegion: 'Schrittfolge' } : {}))),
+          withStepperFallbackLabels(
+            computed(() =>
+              lang() === 'de'
+                ? { groupRoleDescription: 'Schrittgruppe', stepRoleDescription: 'Schritte' }
+                : {},
+            ),
+          ),
+        ),
+      ],
+    });
+    const fixture = TestBed.createComponent(LabelHost);
+    fixture.detectChanges();
+    const host = fixture.nativeElement.querySelector('cngx-stepper') as HTMLElement;
+    const group = fixture.nativeElement.querySelector('.cngx-stepper__group-header') as HTMLElement;
+    expect(host.getAttribute('aria-label')).toBe('Stepper');
+    expect(host.getAttribute('aria-roledescription')).toBe('stepper');
+    expect(group.getAttribute('aria-roledescription')).toBe('step group');
+
+    lang.set('de');
+    fixture.detectChanges();
+    expect(host.getAttribute('aria-label')).toBe('Schrittfolge');
+    expect(host.getAttribute('aria-roledescription')).toBe('Schritte');
+    expect(group.getAttribute('aria-roledescription')).toBe('Schrittgruppe');
+  });
+});
+
