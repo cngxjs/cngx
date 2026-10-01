@@ -1,4 +1,4 @@
-import { Component, viewChild } from '@angular/core';
+import { Component, computed, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it, vi } from 'vitest';
 import { CngxLiveAnnouncer } from '@cngx/common/a11y';
@@ -117,6 +117,40 @@ describe('CngxPasswordStrength', () => {
       type(input, 'Abcdef1!Ghijkl2?');
       vi.advanceTimersByTime(400);
       expect(announce).toHaveBeenCalledWith('Stärke: strong');
+    });
+  });
+
+  describe('language switch', () => {
+    it('does not re-announce on a language flip', () => {
+      const lang = signal<'en' | 'de'>('en');
+      TestBed.configureTestingModule({
+        providers: [
+          provideInputConfig(
+            withInputAriaLabels(
+              computed(() =>
+                lang() === 'de' ? { passwordStrength: (label: string) => `Stärke: ${label}` } : {},
+              ),
+            ),
+          ),
+        ],
+      });
+      vi.useFakeTimers();
+      const announcer = TestBed.inject(CngxLiveAnnouncer);
+      const announce = vi.spyOn(announcer, 'announce').mockImplementation(() => {});
+      const { input } = setup();
+      type(input, 'abc');
+      vi.advanceTimersByTime(400);
+      expect(announce).toHaveBeenCalledTimes(1);
+
+      lang.set('de');
+      TestBed.flushEffects();
+      vi.advanceTimersByTime(1000);
+      expect(announce).toHaveBeenCalledTimes(1);
+
+      type(input, 'Abcdef1!Ghijkl2?');
+      vi.advanceTimersByTime(400);
+      expect(announce).toHaveBeenCalledTimes(2);
+      expect(announce).toHaveBeenLastCalledWith('Stärke: strong');
     });
   });
 });

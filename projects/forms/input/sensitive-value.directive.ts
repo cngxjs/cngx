@@ -1,6 +1,6 @@
 import { Directive, inject, output, signal, type Signal } from '@angular/core';
 import { CngxLiveAnnouncer } from '@cngx/common/a11y';
-import { CNGX_INPUT_CONFIG, DEFAULT_INPUT_ARIA_LABELS } from './input-config';
+import { DEFAULT_INPUT_ARIA_LABELS, injectInputAriaLabels } from './input-config';
 
 /**
  * Audit record emitted by {@link CngxSensitiveValue} on each reveal/hide, for
@@ -56,7 +56,7 @@ export interface SensitiveRevealAudit {
   },
 })
 export class CngxSensitiveValue {
-  private readonly config = inject(CNGX_INPUT_CONFIG);
+  private readonly ariaLabels = injectInputAriaLabels();
   private readonly announcer = inject(CngxLiveAnnouncer);
 
   private readonly revealedState = signal(false);
@@ -88,11 +88,11 @@ export class CngxSensitiveValue {
     }
     this.revealedState.set(next);
     this.audit.emit({ revealed: next, at: Date.now() });
-    const labels = this.config.ariaLabels;
+    const labels = this.ariaLabels();
     this.announcer.announce(
       next
-        ? (labels?.sensitiveReveal ?? DEFAULT_INPUT_ARIA_LABELS.sensitiveReveal)
-        : (labels?.sensitiveHide ?? DEFAULT_INPUT_ARIA_LABELS.sensitiveHide),
+        ? (labels.sensitiveReveal ?? DEFAULT_INPUT_ARIA_LABELS.sensitiveReveal)
+        : (labels.sensitiveHide ?? DEFAULT_INPUT_ARIA_LABELS.sensitiveHide),
     );
   }
 }

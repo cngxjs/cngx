@@ -100,6 +100,11 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - A direct `{ provide: CNGX_ERROR_MESSAGES, useValue: map }` must supply a Signal. Prefer `provideErrorMessages(map)` at an environment injector, or `provideFormFieldAt(withErrorMessages(map))` on a component. `provideErrorMessages` and `withErrorMessages` now also accept a `Signal<ErrorMessageMap>` for runtime switching; `withErrorMessages` still merges key by key across features.
 - `FormFieldConfig.errorMessages` and `.constraintHints` are typed `T | Signal<T>`, and once `withErrorMessages` / `withConstraintHints` ran they hold a `Signal`. Code that reads them off `injectFormFieldConfig()` or `CNGX_FORM_FIELD_CONFIG` wraps the key once, in a field: `private readonly hints = coerceSignal(injectFormFieldConfig().constraintHints);` (`coerceSignal` from `@cngx/core/utils`), then `this.hints()?.lengthRange(8, 64)` inside a `computed()`, a template or a handler. `withConstraintHints` now also accepts a `Signal<Partial<ConstraintHintFormatters>>`; unset formatters keep the English defaults.
 
+### @cngx/forms/input
+
+- `InputConfig.ariaLabels` is typed `Partial<InputAriaLabels> | Signal<Partial<InputAriaLabels>>`, and once `withInputAriaLabels` ran it holds a `Signal`. Code that reads it off `injectInputConfig()` or `CNGX_INPUT_CONFIG` wraps the key once, in a field: with a module-level `const NO_LABELS: Partial<InputAriaLabels> = {};`, write `private readonly labels = coerceSignal(injectInputConfig().ariaLabels ?? NO_LABELS);` (`coerceSignal` from `@cngx/core/utils`) and read `this.labels().clear ?? DEFAULT_INPUT_ARIA_LABELS.clear` inside a `computed()`, a template or a handler. `withInputAriaLabels` now also accepts a `Signal<Partial<InputAriaLabels>>`; plain partials still merge key by key across features.
+- `InputConfig.numericLocale` is typed `string | Signal<string>`. Code that reads it off the config wraps it the same way: `coerceSignal(injectInputConfig().numericLocale)()`. `withNumericDefaults({ locale })` and `withCurrency({ locale })` now also accept a `Signal<string>`; `CngxNumericInput` follows a switch while blurred and applies it on blur while focused, as it already does for `CNGX_LOCALE`.
+
 ---
 
 ## Behaviour changes

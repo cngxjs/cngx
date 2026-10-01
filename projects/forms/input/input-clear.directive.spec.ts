@@ -1,4 +1,4 @@
-import { Component, viewChild } from '@angular/core';
+import { Component, computed, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { CngxInputClear } from './input-clear.directive';
 import { provideInputConfig, withInputAriaLabels } from './input-config';
@@ -40,6 +40,22 @@ describe('CngxInputClear', () => {
       providers: [provideInputConfig(withInputAriaLabels({ clear: 'Leeren' }))],
     });
     const { button } = setup();
+    expect(button.getAttribute('aria-label')).toBe('Leeren');
+  });
+
+  it('follows a language flip of the aria-label at once', () => {
+    const lang = signal<'en' | 'de'>('en');
+    TestBed.configureTestingModule({
+      providers: [
+        provideInputConfig(
+          withInputAriaLabels(computed(() => (lang() === 'de' ? { clear: 'Leeren' } : {}))),
+        ),
+      ],
+    });
+    const { fixture, button } = setup();
+    expect(button.getAttribute('aria-label')).toBe('Clear');
+    lang.set('de');
+    fixture.detectChanges();
     expect(button.getAttribute('aria-label')).toBe('Leeren');
   });
 

@@ -1,3 +1,4 @@
+import type { Signal } from '@angular/core';
 import type { InputConfigFeature } from './input-config';
 
 /**
@@ -13,7 +14,7 @@ export interface CurrencyOptions {
    * (`withNumericDefaults`) and then the app locale (`CNGX_LOCALE`, default the
    * nearest `LOCALE_ID`).
    */
-  readonly locale?: string;
+  readonly locale?: string | Signal<string>;
 }
 
 /**

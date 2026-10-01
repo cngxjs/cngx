@@ -1,6 +1,6 @@
 import { Directive, inject, signal, type Signal } from '@angular/core';
 import { CngxLiveAnnouncer } from '@cngx/common/a11y';
-import { CNGX_INPUT_CONFIG, DEFAULT_INPUT_ARIA_LABELS } from './input-config';
+import { DEFAULT_INPUT_ARIA_LABELS, injectInputAriaLabels } from './input-config';
 
 /**
  * Caps-lock warning for password and other case-sensitive fields.
@@ -44,7 +44,7 @@ import { CNGX_INPUT_CONFIG, DEFAULT_INPUT_ARIA_LABELS } from './input-config';
   },
 })
 export class CngxCapsLock {
-  private readonly config = inject(CNGX_INPUT_CONFIG);
+  private readonly ariaLabels = injectInputAriaLabels();
   private readonly announcer = inject(CngxLiveAnnouncer);
 
   private readonly capsOnState = signal(false);
@@ -64,7 +64,7 @@ export class CngxCapsLock {
     this.capsOnState.set(active);
     if (active && !was) {
       this.announcer.announce(
-        this.config.ariaLabels?.capsLockOn ?? DEFAULT_INPUT_ARIA_LABELS.capsLockOn,
+        this.ariaLabels().capsLockOn ?? DEFAULT_INPUT_ARIA_LABELS.capsLockOn,
         'assertive',
       );
     }

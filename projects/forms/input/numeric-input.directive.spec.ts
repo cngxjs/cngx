@@ -275,6 +275,41 @@ describe('CngxNumericInput', () => {
       expect(input.value).toBe('1.234,5');
     });
 
+    it('follows a Signal numericLocale when blurred and pins it while focused', () => {
+      const numericLocale = signal('de-DE');
+      TestBed.configureTestingModule({
+        providers: [
+          { provide: LOCALE_ID, useValue: 'en-US' },
+          provideInputConfig(withNumericDefaults({ locale: numericLocale })),
+        ],
+      });
+      const fixture = TestBed.createComponent(Host);
+      flush(fixture);
+      const input = fixture.nativeElement.querySelector('input') as HTMLInputElement;
+      const directive = fixture.componentInstance.directive();
+      directive.setValue(1234.5);
+      flush(fixture);
+      expect(input.value).toBe('1.234,5');
+
+      numericLocale.set('en-US');
+      flush(fixture);
+      expect(input.value).toBe('1,234.5');
+
+      numericLocale.set('de-DE');
+      flush(fixture);
+      focus(input);
+      flush(fixture);
+      input.value = '1,5';
+      numericLocale.set('en-US');
+      flush(fixture);
+      expect(input.value).toBe('1,5');
+
+      blur(input);
+      flush(fixture);
+      expect(directive.value()).toBe(1.5);
+      expect(input.value).toBe('1.5');
+    });
+
     it('lets numericLocale outrank CNGX_LOCALE', () => {
       const { fixture, input, directive } = setupWithLocale('en-US', { configLocale: 'de-DE' });
       directive.setValue(1234.5);

@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { fromEvent } from 'rxjs';
-import { CNGX_INPUT_CONFIG, DEFAULT_INPUT_ARIA_LABELS } from './input-config';
+import { DEFAULT_INPUT_ARIA_LABELS, injectInputAriaLabels } from './input-config';
 
 /**
  * Headless clear behavior for an input or textarea.
@@ -45,11 +45,11 @@ import { CNGX_INPUT_CONFIG, DEFAULT_INPUT_ARIA_LABELS } from './input-config';
 })
 export class CngxInputClear {
   private readonly destroyRef = inject(DestroyRef);
-  private readonly config = inject(CNGX_INPUT_CONFIG);
+  private readonly ariaLabels = injectInputAriaLabels();
 
   /** Accessible label for the clear control. Config-driven, EN default. */
   protected readonly ariaLabel = computed(
-    () => this.config.ariaLabels?.clear ?? DEFAULT_INPUT_ARIA_LABELS.clear,
+    () => this.ariaLabels().clear ?? DEFAULT_INPUT_ARIA_LABELS.clear,
   );
 
   /** Reference to the input or textarea element to clear. */

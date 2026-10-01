@@ -21,7 +21,11 @@ import {
 } from '@cngx/forms/field';
 import { CngxSelect, type CngxSelectOptionDef } from '@cngx/forms/select';
 import { CngxInputMask } from '../input-mask.directive';
-import { CNGX_INPUT_CONFIG, DEFAULT_INPUT_ARIA_LABELS } from '../input-config';
+import {
+  CNGX_INPUT_CONFIG,
+  DEFAULT_INPUT_ARIA_LABELS,
+  injectInputAriaLabels,
+} from '../input-config';
 import { CNGX_PHONE_METADATA } from '../phone-metadata';
 import { createPhoneCountries, type Country } from './countries';
 
@@ -168,6 +172,7 @@ export class CngxPhoneInput implements CngxFormFieldControl, OnInit {
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
   private readonly config = inject(CNGX_INPUT_CONFIG);
+  private readonly ariaLabels = injectInputAriaLabels();
   private readonly metadata = inject(CNGX_PHONE_METADATA);
 
   private readonly fallbackId = nextUid('cngx-phone-input-');
@@ -277,7 +282,7 @@ export class CngxPhoneInput implements CngxFormFieldControl, OnInit {
     if (explicit !== '') {
       return explicit;
     }
-    return this.config.ariaLabels?.phoneCountry ?? DEFAULT_INPUT_ARIA_LABELS.phoneCountry;
+    return this.ariaLabels().phoneCountry ?? DEFAULT_INPUT_ARIA_LABELS.phoneCountry;
   });
 
   constructor() {

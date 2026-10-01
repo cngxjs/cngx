@@ -12,7 +12,7 @@ import {
   untracked,
 } from '@angular/core';
 import { CNGX_FORM_FIELD_HOST } from '@cngx/core/tokens';
-import { injectLocale } from '@cngx/core/utils';
+import { coerceSignal, injectLocale } from '@cngx/core/utils';
 import { CNGX_VALUE_TRANSFORMER, type CngxValueTransformer } from '@cngx/forms/field';
 import { CNGX_INPUT_CONFIG } from './input-config';
 
@@ -167,6 +167,7 @@ export class CngxNumericInput {
   private readonly el = inject<ElementRef<HTMLInputElement>>(ElementRef);
   private readonly appLocale = injectLocale();
   private readonly config = inject(CNGX_INPUT_CONFIG);
+  private readonly numericLocale = coerceSignal(this.config.numericLocale);
   private readonly host = inject(CNGX_FORM_FIELD_HOST, { optional: true });
 
   /**
@@ -198,7 +199,7 @@ export class CngxNumericInput {
   // Resolved config: input > global config > default.
 
   private readonly resolvedLocale = computed(
-    () => this.locale() ?? this.config.numericLocale ?? this.appLocale(),
+    () => this.locale() ?? this.numericLocale() ?? this.appLocale(),
   );
   /** Locale pinned at focus, so a flip mid-edit neither rewrites nor misparses the typed text. */
   private readonly editLocale = signal<string | undefined>(undefined);

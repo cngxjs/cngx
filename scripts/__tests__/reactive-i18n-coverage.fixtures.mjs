@@ -722,83 +722,6 @@ export const RATCHET = [
     closesIn: 5,
   },
   {
-    file: 'projects/forms/input/caps-lock.directive.ts',
-    member: 'CngxCapsLock.handleModifierEvent',
-    rule: 'R3',
-    token: 'CNGX_INPUT_CONFIG',
-    closesIn: 5,
-  },
-  {
-    file: 'projects/forms/input/copy-value.directive.ts',
-    member: 'CngxCopyValue.copy',
-    rule: 'R3',
-    token: 'CNGX_INPUT_CONFIG',
-    closesIn: 5,
-  },
-  {
-    file: 'projects/forms/input/file-drop.directive.ts',
-    member: 'CngxFileDrop.resolvedAriaLabel',
-    rule: 'R3',
-    token: 'CNGX_INPUT_CONFIG',
-    closesIn: 5,
-  },
-  {
-    file: 'projects/forms/input/input-clear.directive.ts',
-    member: 'CngxInputClear.ariaLabel',
-    rule: 'R3',
-    token: 'CNGX_INPUT_CONFIG',
-    closesIn: 5,
-  },
-  {
-    file: 'projects/forms/input/input-config.ts',
-    member: 'withInputAriaLabels',
-    rule: 'R3',
-    token: 'CNGX_INPUT_CONFIG',
-    closesIn: 5,
-  },
-  {
-    file: 'projects/forms/input/input-filter.directive.ts',
-    member: 'CngxInputFilter.handleBeforeInput',
-    rule: 'R3',
-    token: 'CNGX_INPUT_CONFIG',
-    closesIn: 5,
-  },
-  {
-    file: 'projects/forms/input/numeric-input.directive.ts',
-    member: 'CngxNumericInput.resolvedLocale',
-    rule: 'R3',
-    token: 'CNGX_INPUT_CONFIG',
-    closesIn: 5,
-  },
-  {
-    file: 'projects/forms/input/otp-input.directive.ts',
-    member: 'CngxOtpInput.announceComplete',
-    rule: 'R3',
-    token: 'CNGX_INPUT_CONFIG',
-    closesIn: 5,
-  },
-  {
-    file: 'projects/forms/input/otp-input.directive.ts',
-    member: 'CngxOtpInput.groupLabel',
-    rule: 'R3',
-    token: 'CNGX_INPUT_CONFIG',
-    closesIn: 5,
-  },
-  {
-    file: 'projects/forms/input/otp-input.directive.ts',
-    member: 'CngxOtpSlot.slotLabel',
-    rule: 'R3',
-    token: 'CNGX_INPUT_CONFIG',
-    closesIn: 5,
-  },
-  {
-    file: 'projects/forms/input/password-strength.directive.ts',
-    member: 'CngxPasswordStrength.constructor',
-    rule: 'R3',
-    token: 'CNGX_INPUT_CONFIG',
-    closesIn: 5,
-  },
-  {
     file: 'projects/forms/input/phone-input/phone-input.component.ts',
     member: 'CngxPhoneInput.countries',
     rule: 'R1',
@@ -810,34 +733,6 @@ export const RATCHET = [
     member: 'CngxPhoneInput.localeCountries',
     rule: 'R2',
     token: 'CNGX_LOCALE',
-    closesIn: 5,
-  },
-  {
-    file: 'projects/forms/input/phone-input/phone-input.component.ts',
-    member: 'CngxPhoneInput.resolvedCountryLabel',
-    rule: 'R3',
-    token: 'CNGX_INPUT_CONFIG',
-    closesIn: 5,
-  },
-  {
-    file: 'projects/forms/input/rating/rating.component.ts',
-    member: 'CngxRating.commit',
-    rule: 'R3',
-    token: 'CNGX_INPUT_CONFIG',
-    closesIn: 5,
-  },
-  {
-    file: 'projects/forms/input/rating/rating.component.ts',
-    member: 'CngxRating.itemLabels',
-    rule: 'R3',
-    token: 'CNGX_INPUT_CONFIG',
-    closesIn: 5,
-  },
-  {
-    file: 'projects/forms/input/sensitive-value.directive.ts',
-    member: 'CngxSensitiveValue.setRevealed',
-    rule: 'R3',
-    token: 'CNGX_INPUT_CONFIG',
     closesIn: 5,
   },
   {
@@ -1535,7 +1430,7 @@ export const RATCHET = [
   },
 ];
 
-export const RATCHET_CEILING = 132;
+export const RATCHET_CEILING = 117;
 
 /** The last phase whose closing commit has landed. */
 export const COMPLETED_PHASE = 4;
