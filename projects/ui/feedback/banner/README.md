@@ -87,6 +87,11 @@ import { CngxBannerOutlet } from '@cngx/ui/feedback';
 export class AppComponent {}
 ```
 
+#### CSS Custom Properties
+
+- `--cngx-banner-{severity}-bg` / `-border` / `-icon` - Per-severity palette
+- `--cngx-banner-action-color` (default the severity accent mixed 60% into `--cngx-color-text`) - Action label and border color; pin it to `--cngx-banner-accent` for the pure accent
+
 ### CngxBannerOn
 
 Declarative directive bridging `CngxAsyncState` changes to banner displays.

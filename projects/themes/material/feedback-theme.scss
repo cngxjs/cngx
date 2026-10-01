@@ -121,6 +121,11 @@
     --cngx-alert-info-icon: #{mat.get-theme-color($theme, primary)};
     --cngx-alert-error-icon: #{mat.get-theme-color($theme, warn)};
   }
+
+  // Keep the Material look: the action paints in the pure severity accent,
+  // not the cngx text-mixed default (the M3 accents clear 4.5:1 on their 8%
+  // tint).
+  --cngx-alert-action-color: var(--cngx-alert-icon-color);
 }
 
 @mixin toast-base() {
@@ -258,6 +263,11 @@
     --cngx-banner-error-icon: #{mat.get-theme-color($theme, warn)};
     --cngx-banner-error-color: #{mat.get-theme-color($theme, warn)};
   }
+
+  // Keep the Material look: the action paints in the pure severity accent,
+  // not the cngx text-mixed default (the M3 accents clear 4.5:1 on their 8%
+  // tint).
+  --cngx-banner-action-color: var(--cngx-banner-accent);
 }
 
 // Shared density presets for the CngxCloseButton atom that alert,
