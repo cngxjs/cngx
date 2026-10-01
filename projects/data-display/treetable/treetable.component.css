@@ -872,13 +872,26 @@
    the cells because each `cdk-cell` paints its own `color`. The `--focused`
    keyboard cursor self-heals via its `outline`; `--highlighted` is a transient
    hover tint with no persistent meaning, left to collapse (no component in the
-   sweep hardens a pure hover state). */
+   sweep hardens a pure hover state).
+   The expand toggle is a `<button>`: forced, it paints ButtonText on a Canvas
+   backplate box inside the Highlight row. Only the toggle opts out of forcing
+   (a row-level opt-out would unforce the author focus outline of the row), so
+   the selected row declares `--_cngx-forced-ink` and the toggle draws its glyph
+   and any outline in that ink on a transparent background. */
 @media (forced-colors: active) {
   .cngx-treetable cdk-row.cngx-treetable__row--selected {
     background: Highlight;
+    --_cngx-forced-ink: HighlightText;
   }
 
   .cngx-treetable cdk-row.cngx-treetable__row--selected cdk-cell {
     color: HighlightText;
+  }
+
+  .cngx-treetable cdk-row.cngx-treetable__row--selected .cngx-treetable__toggle {
+    forced-color-adjust: none;
+    background: transparent;
+    color: var(--_cngx-forced-ink, HighlightText);
+    outline-color: var(--_cngx-forced-ink, HighlightText);
   }
 }
