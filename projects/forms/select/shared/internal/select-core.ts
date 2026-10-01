@@ -25,11 +25,7 @@ import {
   type CngxCommitController,
 } from '../commit-controller.token';
 import type { CngxSelectCommitAction, CngxSelectCommitErrorDisplay } from '../commit-action.types';
-import {
-  type CngxSelectAnnouncerConfig,
-  type CngxSelectAriaLabels,
-  type CngxSelectFallbackLabels,
-} from '../config';
+import { type CngxSelectAnnouncerConfig, type CngxSelectFallbackLabels } from '../config';
 import {
   flattenSelectOptions,
   isCngxSelectOptionGroupDef,
@@ -39,6 +35,7 @@ import {
   type CngxSelectOptionsInput,
 } from '../option.model';
 import { resolveSelectConfig } from './resolve-config';
+import type { CngxResolvedSelectAriaLabels } from './resolve-labels';
 import type { CngxSelectCommitErrorContext, CngxSelectErrorContext } from '../template-slots';
 
 /**
@@ -158,7 +155,7 @@ export interface CngxSelectCore<T, TCommit> {
   /** Resolved `CNGX_SELECT_CONFIG.fallbackLabels`; follows a language flip. */
   readonly fallbackLabels: Signal<Required<CngxSelectFallbackLabels>>;
   /** Resolved `CNGX_SELECT_CONFIG.ariaLabels`. Forwarded onto the panel host. */
-  readonly ariaLabels: Signal<CngxSelectAriaLabels>;
+  readonly ariaLabels: Signal<CngxResolvedSelectAriaLabels>;
 
   readonly resolvedId: Signal<string>;
   readonly resolvedAriaLabel: Signal<string | null>;
@@ -469,7 +466,7 @@ export function createSelectCore<T, TCommit>(
     if (placeholder.length > 0) {
       return placeholder;
     }
-    return config.ariaLabels().listboxFallback ?? 'Options';
+    return config.ariaLabels().listboxFallback;
   });
 
   const resolvedShowSelectionIndicator = computed<boolean>(() => !deps.hideSelectionIndicator());
@@ -645,13 +642,13 @@ export function createSelectCore<T, TCommit>(
     return flatOptions().find((o) => eq(o.value, value)) ?? null;
   }
 
-  // Announcement copy is read untracked: a language flip must not re-run
-  // the effect that announces, only the next announcement speaks it.
+  // Read untracked by the commit-error announcer, so a language flip never
+  // re-runs the effect that announced it.
   function commitErrorMessage(err: unknown): string {
     const label = deps.label();
     const aria = deps.ariaLabel();
-    const fieldFallback = untracked(() => config.ariaLabels().fieldLabelFallback) ?? 'Selection';
-    const failedMessage = untracked(() => config.ariaLabels().commitFailedMessage) ?? 'Save failed';
+    const fieldFallback = config.ariaLabels().fieldLabelFallback;
+    const failedMessage = config.ariaLabels().commitFailedMessage;
     const labelText = label !== '' ? label : (aria ?? fieldFallback);
     const detail = err instanceof Error ? err.message : undefined;
     return detail ? `${labelText}: ${failedMessage} - ${detail}` : `${labelText}: ${failedMessage}`;
@@ -685,7 +682,7 @@ export function createSelectCore<T, TCommit>(
       const format = announcerInputs.announceTemplate() ?? config.announcer().format;
       const label = deps.label();
       const aria = deps.ariaLabel();
-      let fieldLabel = config.ariaLabels().fieldLabelFallback ?? 'Selection';
+      let fieldLabel = config.ariaLabels().fieldLabelFallback;
       if (label.length > 0) {
         fieldLabel = label;
       } else if (aria && aria.length > 0) {

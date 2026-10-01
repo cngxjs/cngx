@@ -290,12 +290,12 @@ export class CngxTreeSelect<T = unknown>
   readonly twistyExpandLabel = input<string | undefined>(undefined);
   /** @internal Bound value, else the config copy; panel-host contract. */
   readonly resolvedTwistyExpandLabel = computed<string>(
-    () => this.twistyExpandLabel() ?? this.config.ariaLabels().treeExpand ?? 'Expand node',
+    () => this.twistyExpandLabel() ?? this.config.ariaLabels().treeExpand,
   );
   readonly twistyCollapseLabel = input<string | undefined>(undefined);
   /** @internal Bound value, else the config copy; panel-host contract. */
   readonly resolvedTwistyCollapseLabel = computed<string>(
-    () => this.twistyCollapseLabel() ?? this.config.ariaLabels().treeCollapse ?? 'Collapse node',
+    () => this.twistyCollapseLabel() ?? this.config.ariaLabels().treeCollapse,
   );
   readonly clearable = input<boolean>(false);
   readonly clearButtonAriaLabel = input<string | undefined>(undefined);
@@ -470,7 +470,7 @@ export class CngxTreeSelect<T = unknown>
       const format = this.announceTemplate() ?? this.config.announcer().format;
       const label = this.label();
       const aria = this.ariaLabel();
-      let fieldLabel = this.config.ariaLabels().fieldLabelFallback ?? 'Selection';
+      let fieldLabel = this.config.ariaLabels().fieldLabelFallback;
       if (label.length > 0) {
         fieldLabel = label;
       } else if (aria && aria.length > 0) {
@@ -513,10 +513,8 @@ export class CngxTreeSelect<T = unknown>
   private commitErrorMessage(err: unknown): string {
     const label = this.label();
     const aria = this.ariaLabel();
-    const fieldFallback =
-      untracked(() => this.config.ariaLabels().fieldLabelFallback) ?? 'Selection';
-    const failedMessage =
-      untracked(() => this.config.ariaLabels().commitFailedMessage) ?? 'Save failed';
+    const fieldFallback = this.config.ariaLabels().fieldLabelFallback;
+    const failedMessage = this.config.ariaLabels().commitFailedMessage;
     const labelText = label !== '' ? label : (aria ?? fieldFallback);
     const detail = err instanceof Error ? err.message : undefined;
     return detail ? `${labelText}: ${failedMessage} - ${detail}` : `${labelText}: ${failedMessage}`;

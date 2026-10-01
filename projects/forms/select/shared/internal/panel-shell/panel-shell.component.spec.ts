@@ -11,7 +11,6 @@ import { type AsyncView } from '@cngx/common/data';
 import { describe, expect, it, vi } from 'vitest';
 import type { CngxSelectCommitErrorDisplay } from '../../commit-action.types';
 import type {
-  CngxSelectAriaLabels,
   CngxSelectFallbackLabels,
   CngxSelectLoadingVariant,
   CngxSelectRefreshingVariant,
@@ -24,6 +23,7 @@ import {
 } from '../../panel-host';
 import { provideActionSelectConfig, withActionAriaLabel } from '../../action-select-config';
 import { CngxSelectAction } from '../../template-slots';
+import type { CngxResolvedSelectAriaLabels } from '../resolve-labels';
 import { CngxSelectPanelShell } from './panel-shell.component';
 
 /**
@@ -41,7 +41,7 @@ interface MockHostControls {
   showRefreshIndicator: WritableSignal<boolean>;
   handleRetry: ReturnType<typeof vi.fn>;
   fallbackLabels: WritableSignal<Required<CngxSelectFallbackLabels>>;
-  ariaLabels: WritableSignal<CngxSelectAriaLabels>;
+  ariaLabels: WritableSignal<CngxResolvedSelectAriaLabels>;
 }
 
 const EN_FALLBACK: Required<CngxSelectFallbackLabels> = {
@@ -56,13 +56,15 @@ const EN_FALLBACK: Required<CngxSelectFallbackLabels> = {
   commitFailedRetry: 'Try again',
 };
 
-const EN_ARIA: CngxSelectAriaLabels = {
+const EN_ARIA: CngxResolvedSelectAriaLabels = {
   treeExpand: 'Expand node',
   treeCollapse: 'Collapse node',
   statusLoading: 'Loading options',
   statusRefreshing: 'Refreshing options',
   fieldLabelFallback: 'Selection',
   commitFailedMessage: 'Save failed',
+  searchInput: 'Search options',
+  listboxFallback: 'Options',
 };
 
 function createMockHost(): {
@@ -260,7 +262,7 @@ describe('CngxSelectPanelShell - language flip', () => {
     commitFailed: 'Speichern fehlgeschlagen',
     commitFailedRetry: 'Nochmal speichern',
   };
-  const DE_ARIA: CngxSelectAriaLabels = {
+  const DE_ARIA: CngxResolvedSelectAriaLabels = {
     ...EN_ARIA,
     statusLoading: 'Lade Optionen',
     statusRefreshing: 'Aktualisiere Optionen',

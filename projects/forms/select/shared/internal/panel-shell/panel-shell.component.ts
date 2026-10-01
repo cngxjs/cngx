@@ -186,7 +186,7 @@ export class CngxSelectPanelShell<T = unknown> {
       return untracked(() => {
         const fallback = this.host.fallbackLabels();
         return {
-          statusLoading: this.host.ariaLabels().statusLoading ?? 'Loading options',
+          statusLoading: this.host.ariaLabels().statusLoading,
           loading: fallback.loading,
           loadFailed: fallback.loadFailed,
           loadFailedRetry: fallback.loadFailedRetry,
@@ -227,6 +227,6 @@ export class CngxSelectPanelShell<T = unknown> {
   protected readonly refreshingLabel = computed(() => {
     this.host.showRefreshIndicator();
     this.host.refreshingVariant();
-    return untracked(() => this.host.ariaLabels().statusRefreshing ?? 'Refreshing options');
+    return untracked(() => this.host.ariaLabels().statusRefreshing);
   });
 }

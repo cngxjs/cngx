@@ -324,7 +324,7 @@ export const CNGX_SELECT_DEFAULTS: Required<
   readonly announcer: Required<Omit<CngxSelectAnnouncerConfig, 'format'>> & {
     readonly format: NonNullable<CngxSelectAnnouncerConfig['format']>;
   };
-  readonly ariaLabels: CngxSelectAriaLabels;
+  readonly ariaLabels: Required<Omit<CngxSelectAriaLabels, 'clearButton' | 'chipRemove'>>;
   readonly fallbackLabels: Required<CngxSelectFallbackLabels>;
 } = {
   panelWidth: 'trigger',

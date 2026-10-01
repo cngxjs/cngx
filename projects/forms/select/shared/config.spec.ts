@@ -185,6 +185,18 @@ describe('runtime language switch', () => {
     expect(config.announcer().enabled).toBe(true);
   });
 
+  it('fills a defaulted key an override sets to undefined', () => {
+    const config = resolveIn([
+      provideSelectConfig(
+        withAriaLabels({ statusLoading: undefined }),
+        withFallbackLabels({ empty: undefined }),
+      ),
+    ]);
+    expect(config.ariaLabels().statusLoading).toBe('Loading options');
+    expect(config.fallbackLabels().empty).toBe('No Options');
+    expect(config.ariaLabels().clearButton).toBeUndefined();
+  });
+
   it('shares one Signal per config and keeps its reference on an equal recompute', () => {
     const labels = signal<CngxSelectAriaLabels>({ statusLoading: 'Lade Optionen' });
     TestBed.configureTestingModule({ providers: [provideSelectConfig(withAriaLabels(labels))] });

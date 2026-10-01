@@ -87,6 +87,8 @@ function makeShellHost(): CngxSelectPanelHost {
       statusRefreshing: 'Refreshing options',
       fieldLabelFallback: 'Selection',
       commitFailedMessage: 'Save failed',
+      searchInput: 'Search options',
+      listboxFallback: 'Options',
     }),
     resolvedListboxLabel: signal(''),
     resolvedShowSelectionIndicator: signal(true),

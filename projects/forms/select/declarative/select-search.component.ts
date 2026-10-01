@@ -83,7 +83,7 @@ export class CngxSelectSearch {
    * @internal
    */
   protected readonly resolvedAriaLabel = computed<string | null>(
-    () => this.ariaLabel() ?? this.config.ariaLabels().searchInput ?? null,
+    () => this.ariaLabel() ?? this.config.ariaLabels().searchInput,
   );
 
   /** @internal */

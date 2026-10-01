@@ -32,7 +32,6 @@ import type {
   CngxSelectCommitErrorDisplay,
 } from './commit-action.types';
 import type {
-  CngxSelectAriaLabels,
   CngxSelectFallbackLabels,
   CngxSelectLoadingVariant,
   CngxSelectRefreshingVariant,
@@ -43,6 +42,7 @@ import type {
   CngxSelectOptionGroupDef,
   CngxSelectOptionsInput,
 } from './option.model';
+import type { CngxResolvedSelectAriaLabels } from './internal/resolve-labels';
 import type { CngxSelectTemplateRegistry } from './template-registry';
 import type { AsyncView } from '@cngx/common/data';
 
@@ -95,7 +95,7 @@ export interface CngxSelectPanelViewHost<T = unknown> {
   /** Frozen `flatOptions().length` during refresh. Shell → `0` when omitted. */
   readonly previousLoadedCount?: Signal<number>;
   /** Mirrors `CNGX_SELECT_CONFIG.ariaLabels`. Per-instance inputs apply outside. */
-  readonly ariaLabels: Signal<CngxSelectAriaLabels>;
+  readonly ariaLabels: Signal<CngxResolvedSelectAriaLabels>;
   handleRetry(): void;
 
   /** Action slot's live search term. Shell → `''` when omitted. */
