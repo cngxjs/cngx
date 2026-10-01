@@ -290,7 +290,7 @@ describe('forced-colors hardened-hosts manifest', () => {
   });
 
   it('fixes the manifest size so a bulk edit dropping several hosts is caught', () => {
-    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(39);
+    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(40);
   });
 });
 
