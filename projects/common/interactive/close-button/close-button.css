@@ -125,10 +125,15 @@
   /* Derive from the motion scale (motion-accepted-debt.md section 2). The
    * registered initial-value wins over the read-site var() fallback, so the
    * token must be SET from the scale for a --cngx-duration-* brand override to
-   * reach the colour transition. Host SET (read on the .cngx-close-button
-   * host). Layer cngx.tokens keeps a Material bridge winning. 150ms -> fast. */
-  :where(.cngx-close-button) {
+   * reach the colour transition. Broadcast :where(host, host *) because the
+   * token is inherits:false and read on the .cngx-close-button__btn
+   * descendant. Layer cngx.tokens keeps a Material bridge winning.
+   * 150ms -> fast. */
+  :where(.cngx-close-button, .cngx-close-button *) {
     --cngx-close-button-transition: var(--cngx-duration-fast);
+  }
+
+  :where(.cngx-close-button) {
     /* Quiet at rest by colour, never opacity: the hint colour clears 4.5:1 on
      * the page (half-opacity currentColor sat at 3.05:1 in light). */
     --cngx-close-button-color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
