@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input, signal, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
@@ -21,7 +21,12 @@ import { CngxFilterBuilderPresenter } from './filter-builder-presenter.directive
 import type { CngxFilterBuilderTemplateRegistry } from './filter-builder-template-registry';
 import { createEmptyFilterRoot, createFilterExpression, createFilterGroup } from './filter-builder.helpers';
 import type { FilterFieldDef, FilterGroup } from './filter-builder.types';
-import { provideFilterBuilderConfig, withMaxNestingDepth, withNegation } from './filter-builder.config';
+import {
+  provideFilterBuilderConfig,
+  withFilterBuilderI18n,
+  withMaxNestingDepth,
+  withNegation,
+} from './filter-builder.config';
 
 const FIELD_NAME: FilterFieldDef = { key: 'name', label: 'Name', editorType: 'string' };
 const FIELD_AGE: FilterFieldDef = { key: 'age', label: 'Age', editorType: 'number' };
@@ -210,6 +215,52 @@ describe('CngxFilterBuilder - ARIA labels reactive', () => {
     const expr = hostEl.querySelector('.cngx-filter-builder__expression') as HTMLElement;
     expect(expr.getAttribute('role')).toBe('group');
     expect(expr.getAttribute('aria-label')).toBe('Filter: Name Contains');
+  });
+});
+
+describe('CngxFilterBuilder - language switch', () => {
+  it('re-renders the group, expression, add-filter and remove labels on a flip', () => {
+    const lang = signal<'en' | 'de'>('en');
+    TestBed.configureTestingModule({
+      providers: [
+        provideFilterBuilderConfig(
+          withFilterBuilderI18n(
+            computed(() =>
+              lang() === 'de'
+                ? {
+                    and: 'UND',
+                    addFilter: 'Filter hinzufügen',
+                    removeFilter: 'Filter entfernen',
+                    operators: { contains: 'Enthält' },
+                  }
+                : {},
+            ),
+          ),
+        ),
+      ],
+    });
+    const initial = createFilterGroup('and', [createFilterExpression('name', 'contains', 'foo')]);
+    const { fixture, hostEl } = basicSetup(initial);
+    const rootGroup = hostEl.querySelector('.cngx-filter-builder__group') as HTMLElement;
+    const expr = hostEl.querySelector('.cngx-filter-builder__expression') as HTMLElement;
+    const buttonTexts = () =>
+      Array.from(hostEl.querySelectorAll('button')).map((b) =>
+        (b.textContent ?? '').replace(/^\+\s*/, '').trim(),
+      );
+    const ariaLabels = () =>
+      Array.from(hostEl.querySelectorAll('[aria-label]')).map((el) => el.getAttribute('aria-label'));
+    expect(rootGroup.getAttribute('aria-label')).toBe('Root filter group (AND)');
+    expect(expr.getAttribute('aria-label')).toBe('Filter: Name Contains');
+    expect(buttonTexts()).toContain('Add filter');
+    expect(ariaLabels()).toContain('Remove filter');
+
+    lang.set('de');
+    fixture.detectChanges();
+    expect(rootGroup.getAttribute('aria-label')).toBe('Root filter group (UND)');
+    expect(expr.getAttribute('aria-label')).toBe('Filter: Name Enthält');
+    expect(buttonTexts()).toContain('Filter hinzufügen');
+    expect(ariaLabels()).toContain('Filter entfernen');
+    expect(ariaLabels()).not.toContain('Remove filter');
   });
 });
 
