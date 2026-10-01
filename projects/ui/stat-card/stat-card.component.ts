@@ -26,7 +26,6 @@ import { CngxEmptyState } from '@cngx/ui/empty-state';
 import { CngxLoadingIndicator } from '@cngx/ui/feedback';
 
 import { injectStatCardAriaLabels, injectStatCardConfig } from './config/inject-stat-card-config';
-import type { CngxStatCardResolvedAriaLabels } from './config/stat-card.config';
 
 /** Placeholder shape for a card whose consumer projected no stat slots at all. */
 const DEFAULT_SKELETON_SLOTS: readonly CngxStatSlotKind[] = ['label', 'value', 'caption'];
@@ -329,32 +328,36 @@ export class CngxStatCard {
     return view;
   });
 
-  protected readonly resolvedBusyLabel = computed(() => this.busyLabel() ?? this.copyText('busy'));
-  protected readonly resolvedErrorText = computed(
-    () => this.errorText() ?? this.copyText('errorFallback'),
-  );
-  protected readonly resolvedErrorDescription = computed(
-    () => this.errorDescription() ?? this.copyText('errorDescription'),
-  );
-  protected readonly resolvedStaleText = computed(
-    () => this.staleText() ?? this.copyText('staleFallback'),
-  );
-  protected readonly resolvedEmptyText = computed(
-    () => this.emptyText() ?? this.copyText('emptyFallback'),
-  );
+  protected readonly resolvedBusyLabel = computed(() => {
+    this.trackPhase();
+    return this.busyLabel() ?? untracked(() => this.ariaLabels().busy);
+  });
+  protected readonly resolvedErrorText = computed(() => {
+    this.trackPhase();
+    return this.errorText() ?? untracked(() => this.ariaLabels().errorFallback);
+  });
+  protected readonly resolvedErrorDescription = computed(() => {
+    this.trackPhase();
+    return this.errorDescription() ?? untracked(() => this.ariaLabels().errorDescription);
+  });
+  protected readonly resolvedStaleText = computed(() => {
+    this.trackPhase();
+    return this.staleText() ?? untracked(() => this.ariaLabels().staleFallback);
+  });
+  protected readonly resolvedEmptyText = computed(() => {
+    this.trackPhase();
+    return this.emptyText() ?? untracked(() => this.ariaLabels().emptyFallback);
+  });
 
   /**
-   * A cascade string, read untracked and keyed on the view and busy phase
-   * (both read straight from the signals the template polls, so a phase that
-   * returns to an earlier value still re-reads). The whole card can be a live
-   * region, so a language switch must not re-render its text; the next view or
-   * busy change speaks the new language. A bound input stays tracked.
+   * Keys the untracked cascade reads above on the view and busy phase, read
+   * straight from the signals the template polls (so a phase that returns to an
+   * earlier value still re-reads). The whole card can be a live region, so a
+   * language switch must not re-render its text; the next view or busy change
+   * speaks the new language. A bound input stays tracked.
    */
-  private copyText<K extends keyof CngxStatCardResolvedAriaLabels>(
-    key: K,
-  ): CngxStatCardResolvedAriaLabels[K] {
+  private trackPhase(): void {
     this.activeView();
     this.busy();
-    return untracked(() => this.ariaLabels()[key]);
   }
 }

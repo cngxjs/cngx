@@ -197,10 +197,6 @@ module.exports = tseslint.config(
                     'CngxFilterBuilderI18n.and',
                     'CngxFilterBuilderI18n.or',
                     'CngxFilterBuilderI18n.xor',
-                    // Read dynamically via `this.copyText('staleFallback')`
-                    // (stat-card.component.ts), which keys the untracked
-                    // live-region read on the tile's view phase.
-                    'CngxStatCardAriaLabels.staleFallback',
                 ],
             }],
         },
