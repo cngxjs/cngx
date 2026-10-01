@@ -98,4 +98,6 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 
 ## Behaviour changes
 
-No behaviour changes yet.
+### @cngx/forms/select
+
+- The `*cngxSelectAction` slot wrapper in every select panel is now a named group: `role="group"` with `aria-label` from `CngxActionSelectConfig.ariaLabel` (English default `'Inline action'`, set it with `withActionAriaLabel`). Screen readers announce the group name when focus enters the action slot. Before, the key was accepted but never rendered.

@@ -11,6 +11,7 @@ import {
 import { CngxFocusTrap } from '@cngx/common/a11y';
 import { recordEqual } from '@cngx/utils';
 
+import { resolveActionSelectConfig } from '../../action-select-config';
 import {
   CNGX_SELECT_PANEL_VIEW_HOST,
   type CngxSelectActionCallbacks,
@@ -76,6 +77,12 @@ export class CngxSelectPanelShell<T = unknown> {
 
   /** Default `'bottom'`. */
   readonly actionPosition = input<CngxSelectPanelActionPosition>('bottom');
+
+  /**
+   * @internal Accessible name of the action-slot group, from
+   * `CNGX_ACTION_SELECT_CONFIG.ariaLabel`; follows a language switch.
+   */
+  protected readonly actionLabel = resolveActionSelectConfig().ariaLabel;
 
   /** @internal */
   protected readonly showActionTop = computed<boolean>(() => {

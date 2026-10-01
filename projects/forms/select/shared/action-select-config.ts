@@ -37,7 +37,10 @@ export type CngxActionPosition = 'top' | 'bottom' | 'both' | 'none';
 export interface CngxActionSelectConfig {
   /** When the panel-shell's `CngxFocusTrap` activates. Default `'dirty'`. */
   readonly focusTrapBehavior?: CngxActionFocusTrapBehavior;
-  /** ARIA label on the action-slot wrapper, value or `Signal`. Localisation hook. */
+  /**
+   * Accessible name of the action-slot group (`role="group"`) in every select
+   * panel, value or `Signal`. Default `'Inline action'`. Localisation hook.
+   */
   readonly ariaLabel?: string | Signal<string>;
   /**
    * Forces `closeOnCreate` across both organisms. `null` (default) keeps

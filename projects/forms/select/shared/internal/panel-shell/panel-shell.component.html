@@ -1,6 +1,6 @@
 @if (showActionTop()) {
   @if (host.tpl.action(); as tpl) {
-    <div class="cngx-select__action cngx-select__action--top">
+    <div class="cngx-select__action cngx-select__action--top" role="group" [attr.aria-label]="actionLabel()">
       <ng-container *ngTemplateOutlet="tpl; context: actionContext()" />
     </div>
   }
@@ -177,7 +177,7 @@
 }
 @if (showActionBottom()) {
   @if (host.tpl.action(); as tpl) {
-    <div class="cngx-select__action cngx-select__action--bottom">
+    <div class="cngx-select__action cngx-select__action--bottom" role="group" [attr.aria-label]="actionLabel()">
       <ng-container *ngTemplateOutlet="tpl; context: actionContext()" />
     </div>
   }

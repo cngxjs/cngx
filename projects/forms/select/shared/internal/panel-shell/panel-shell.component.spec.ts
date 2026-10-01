@@ -22,6 +22,7 @@ import {
   type CngxSelectActionCallbacks,
   type CngxSelectPanelHost,
 } from '../../panel-host';
+import { provideActionSelectConfig, withActionAriaLabel } from '../../action-select-config';
 import { CngxSelectAction } from '../../template-slots';
 import { CngxSelectPanelShell } from './panel-shell.component';
 
@@ -463,6 +464,22 @@ function setupAction() {
 }
 
 describe('CngxSelectPanelShell - action slot', () => {
+  it('names the action slot as a group from the action-select config', () => {
+    const label = signal('Inline action');
+    TestBed.configureTestingModule({
+      providers: [provideActionSelectConfig(withActionAriaLabel(label))],
+    });
+    const { fixture } = setupAction();
+    const root = fixture.nativeElement as HTMLElement;
+    const group = root.querySelector('.cngx-select__action--bottom');
+    expect(group?.getAttribute('role')).toBe('group');
+    expect(group?.getAttribute('aria-label')).toBe('Inline action');
+
+    label.set('Schnellaktion');
+    fixture.detectChanges();
+    expect(group?.getAttribute('aria-label')).toBe('Schnellaktion');
+  });
+
   it("renders the action template above the projected body when position='top'", () => {
     const { fixture } = setupAction();
     fixture.componentInstance.actionPosition.set('top');
