@@ -2386,6 +2386,30 @@ export class R4BoundHost {
  * In-memory sources, the copy model they run against, and the rows each file
  * must produce (`member rule token`).
  */
+const R4_INTERSECTION = `
+import { Component, computed, input, signal, untracked, type Signal } from '@angular/core';
+import type { DemoLabels } from './tokens';
+
+type ResolvedDemoLabels = DemoLabels & Required<Pick<DemoLabels, 'clear'>>;
+
+@Component({
+  selector: 'r4-intersection',
+  template: \`
+    <p aria-live="polite">{{ tracked() }}</p>
+    <span role="status">{{ keyed() }}</span>
+  \`,
+})
+export class R4Intersection {
+  protected readonly labels: Signal<ResolvedDemoLabels> = signal({ clear: 'Clear', more: 'More' });
+  readonly status = input(false);
+  protected readonly tracked = computed(() => this.labels().clear);
+  protected readonly keyed = computed(() => {
+    this.status();
+    return untracked(() => this.labels().clear);
+  });
+}
+`;
+
 export const RULE_FIXTURES = {
   sources: {
     'tokens.ts': TOKENS,
@@ -2399,6 +2423,7 @@ export const RULE_FIXTURES = {
     'r4.ts': R4,
     'r4-pass.ts': R4_PASS,
     'r4-shapes.ts': R4_SHAPES,
+    'r4-intersection.ts': R4_INTERSECTION,
   },
   /** @type {readonly CopyTokenEntry[]} */
   copyTokens: [
@@ -2453,6 +2478,7 @@ export const RULE_FIXTURES = {
       'R4BoundHost.label R4 DEMO_SIGNAL_I18N',
       'mountDemoAnnouncer R4 DEMO_I18N',
     ],
+    'r4-intersection.ts': ['R4Intersection.tracked R4 DEMO_CONFIG'],
   },
   expectedRegions: [
     'r4.ts R4Tracked.host',
@@ -2465,5 +2491,7 @@ export const RULE_FIXTURES = {
     'r4-shapes.ts R4Shapes.p(spoken)',
     'r4-shapes.ts R4BoundHost.host',
     'r4-shapes.ts mountDemoAnnouncer:effect#1',
+    'r4-intersection.ts R4Intersection.p(tracked)',
+    'r4-intersection.ts R4Intersection.span(keyed)',
   ],
 };

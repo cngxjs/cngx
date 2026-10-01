@@ -439,9 +439,14 @@ const originOfType = (model, type) => {
     if (isSignalType(member)) {
       continue;
     }
-    const info = model.types.get(namingSymbol(model.checker, member));
-    if (info) {
-      return { kind: info.kind === 'config' ? 'config' : 'raw', token: info.token };
+    // A resolved shape that intersects a copy type with a stricter view of it
+    // (`Labels & Required<Pick<Labels, ...>>`) is still that copy type.
+    const parts = member.isIntersection() ? member.types : [member];
+    for (const part of parts) {
+      const info = model.types.get(namingSymbol(model.checker, part));
+      if (info) {
+        return { kind: info.kind === 'config' ? 'config' : 'raw', token: info.token };
+      }
     }
   }
   return null;
