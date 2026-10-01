@@ -53,6 +53,13 @@ describe('CNGX_CHART_PANEL_CONFIG cascade', () => {
     expect(labels()()).toEqual({ busy: 'Aktualisiert' });
   });
 
+  it('falls back to the default for a label an override sets to undefined', () => {
+    TestBed.configureTestingModule({
+      providers: [provideChartPanelConfig(withChartPanelAriaLabels({ busy: undefined }))],
+    });
+    expect(labels()().busy).toBe('Updating');
+  });
+
   it('follows Signal labels and keeps the bundle reference on an equal recompute', () => {
     const lang = signal<'en' | 'de' | 'de-AT'>('en');
     TestBed.configureTestingModule({

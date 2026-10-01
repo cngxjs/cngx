@@ -1,5 +1,5 @@
 import { inject, type Signal } from '@angular/core';
-import { createOverrideMerge } from '@cngx/core/utils';
+import { createDefaultsFill, createOverrideMerge } from '@cngx/core/utils';
 
 import type { CngxChartPanelAriaLabels, CngxChartPanelConfig } from './chart-panel.config';
 import {
@@ -23,7 +23,7 @@ export function injectChartPanelConfig(): CngxChartPanelConfig {
 
 /**
  * The resolved strings of the chart-panel config in scope, every key filled
- * from the English defaults, as a Signal that follows a runtime language
+ * from the English defaults (also a key an override sets to `undefined`), as a Signal that follows a runtime language
  * switch. Runs in injection context; read it inside a `computed()`, a
  * template or a handler, and untracked where it builds live-region text.
  *
@@ -31,8 +31,8 @@ export function injectChartPanelConfig(): CngxChartPanelConfig {
  * @since 0.1.0
  */
 export function injectChartPanelAriaLabels(): Signal<Required<CngxChartPanelAriaLabels>> {
-  return createOverrideMerge(
+  return createDefaultsFill(
+    createOverrideMerge(CNGX_CHART_PANEL_ARIA_LABELS_DEFAULTS, injectChartPanelConfig().ariaLabels),
     CNGX_CHART_PANEL_ARIA_LABELS_DEFAULTS,
-    injectChartPanelConfig().ariaLabels,
   );
 }

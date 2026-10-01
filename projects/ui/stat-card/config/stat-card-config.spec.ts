@@ -82,6 +82,14 @@ describe('CNGX_STAT_CARD_CONFIG cascade', () => {
     });
   });
 
+  it('falls back to the default for a label an override sets to undefined', () => {
+    TestBed.configureTestingModule({
+      providers: [provideStatCardConfig(withStatCardAriaLabels({ busy: undefined }))],
+    });
+    expect(labels()().busy).toBe('Loading');
+    expect(labels()().errorDescription).toBeUndefined();
+  });
+
   it('follows Signal labels and keeps the bundle reference on an equal recompute', () => {
     const lang = signal<'en' | 'de' | 'de-AT'>('en');
     TestBed.configureTestingModule({

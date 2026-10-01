@@ -130,4 +130,11 @@ describe('CNGX_BREADCRUMB_CONFIG', () => {
     lang.set('de-AT');
     expect(labels()).toBe(german);
   });
+
+  it('falls back to the default for a label an override sets to undefined', () => {
+    TestBed.configureTestingModule({
+      providers: [provideBreadcrumbConfig(withBreadcrumbAriaLabels({ bar: undefined }))],
+    });
+    expect(resolvedLabels().bar).toBe('Breadcrumb');
+  });
 });

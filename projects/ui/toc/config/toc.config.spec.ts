@@ -137,4 +137,11 @@ describe('CNGX_TOC_CONFIG', () => {
     lang.set('de-AT');
     expect(labels()).toBe(german);
   });
+
+  it('falls back to the default for a label an override sets to undefined', () => {
+    TestBed.configureTestingModule({
+      providers: [provideTocConfig(withTocAriaLabels({ nav: undefined }))],
+    });
+    expect(navLabel()).toBe('On this page');
+  });
 });

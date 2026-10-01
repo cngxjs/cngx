@@ -1,5 +1,5 @@
 import { inject, type Signal } from '@angular/core';
-import { createOverrideMerge } from '@cngx/core/utils';
+import { createDefaultsFill, createOverrideMerge } from '@cngx/core/utils';
 
 import type { CngxStatCardConfig, CngxStatCardResolvedAriaLabels } from './stat-card.config';
 import {
@@ -30,7 +30,7 @@ export function injectStatCardConfig(): CngxStatCardConfig {
 
 /**
  * The resolved strings of the stat-card config in scope, filled from the
- * English defaults, as a Signal that follows a runtime language switch. Runs
+ * English defaults (also a key an override sets to `undefined`), as a Signal that follows a runtime language switch. Runs
  * in injection context; read it inside a `computed()`, a template or a
  * handler, and untracked where it builds live-region text.
  *
@@ -38,5 +38,8 @@ export function injectStatCardConfig(): CngxStatCardConfig {
  * @since 0.1.0
  */
 export function injectStatCardAriaLabels(): Signal<CngxStatCardResolvedAriaLabels> {
-  return createOverrideMerge(CNGX_STAT_CARD_ARIA_LABELS_DEFAULTS, injectStatCardConfig().ariaLabels);
+  return createDefaultsFill(
+    createOverrideMerge(CNGX_STAT_CARD_ARIA_LABELS_DEFAULTS, injectStatCardConfig().ariaLabels),
+    CNGX_STAT_CARD_ARIA_LABELS_DEFAULTS,
+  );
 }

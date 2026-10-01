@@ -1,5 +1,5 @@
 import { inject, type Signal } from '@angular/core';
-import { createOverrideMerge } from '@cngx/core/utils';
+import { createDefaultsFill, createOverrideMerge } from '@cngx/core/utils';
 
 import type { CngxTocAriaLabels, CngxTocConfig } from './toc.config';
 import { CNGX_TOC_ARIA_LABELS_DEFAULTS, CNGX_TOC_CONFIG } from './toc.config.defaults';
@@ -27,7 +27,7 @@ export function injectTocConfig(): CngxTocConfig {
 
 /**
  * The resolved accessible names of the toc config in scope, every key filled
- * from the English defaults, as a Signal that follows a runtime language
+ * from the English defaults (also a key an override sets to `undefined`), as a Signal that follows a runtime language
  * switch. Runs in injection context; read it inside a `computed()`, a template
  * or a handler.
  *
@@ -35,5 +35,8 @@ export function injectTocConfig(): CngxTocConfig {
  * @since 0.1.0
  */
 export function injectTocAriaLabels(): Signal<Required<CngxTocAriaLabels>> {
-  return createOverrideMerge(CNGX_TOC_ARIA_LABELS_DEFAULTS, injectTocConfig().ariaLabels);
+  return createDefaultsFill(
+    createOverrideMerge(CNGX_TOC_ARIA_LABELS_DEFAULTS, injectTocConfig().ariaLabels),
+    CNGX_TOC_ARIA_LABELS_DEFAULTS,
+  );
 }
