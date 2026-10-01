@@ -18,8 +18,18 @@ cngx-range-slider {
 }
 
 cngx-range-slider[aria-disabled='true'] {
-  opacity: 0.5;
   cursor: not-allowed;
+  /* Disabled by colour, never opacity (the field recipe): fill and thumb ring
+   * take the disabled colour, the track a faint text tint, and the value
+   * labels inherit the disabled text colour. */
+  --cngx-slider-fill-color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
+  --cngx-slider-thumb-border-color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
+  --cngx-slider-track-color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 12%, transparent);
+  color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
+}
+
+cngx-range-slider[aria-disabled='true'] :is(.cngx-slider__value, .cngx-slider__tick-label) {
+  color: inherit;
 }
 
 cngx-range-slider .cngx-slider__track {

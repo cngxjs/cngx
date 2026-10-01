@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'A disabled checkbox short-circuits both <code>handleClick</code> and <code>handleKeydown</code>, sets <code>aria-disabled="true"</code>, and drops <code>tabindex</code> to <code>-1</code> so it leaves the tab order while remaining programmatically focusable.',
   description:
-    'Demonstrates the three disabled visual states (locked-on, locked-off, locked-mixed) and the cancel-mutation contract. <code>disabled()</code> gates <code>advance()</code> so the click and keydown handlers exit early; the indicator dims via the <code>--cngx-checkbox-disabled-opacity</code> token instead of swapping templates. The optional <code>[disabledReason]</code> input drops a string into a permanently-attached SR-only span; the host points <code>aria-describedby</code> at it only while the reason is non-empty.',
+    'Demonstrates the three disabled visual states (locked-on, locked-off, locked-mixed) and the cancel-mutation contract. <code>disabled()</code> gates <code>advance()</code> so the click and keydown handlers exit early; the label and indicator fade by colour (the 38% text recipe of a disabled field) instead of swapping templates. The optional <code>[disabledReason]</code> input drops a string into a permanently-attached SR-only span; the host points <code>aria-describedby</code> at it only while the reason is non-empty.',
   level: 'molecule',
   audience: ['dev', 'a11y'],
   artifact: 'standalone',

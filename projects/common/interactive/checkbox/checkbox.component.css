@@ -4,15 +4,15 @@
  * `<cngx-checkbox-indicator>`. The host carries `.cngx-checkbox` and
  * renders the indicator plus a `.cngx-checkbox__label` slot for the
  * projected label text and a `.cngx-checkbox__sr-only` slot for
- * assistive-only copy. The `--cngx-checkbox-color` and
- * `--cngx-checkbox-disabled-opacity` tokens are owned by
+ * assistive-only copy. The `--cngx-checkbox-color` token is owned by
  * `CngxCheckboxIndicator` and read here without re-registration so
  * the vocabulary stays unified.
  *
  * **State modifiers**
  *
- * - `--disabled` - `cursor: not-allowed` + opacity dim via
- *   `--cngx-checkbox-disabled-opacity`
+ * - `--disabled` - `cursor: not-allowed`; the label takes the 38% text
+ *   recipe of a disabled field (the indicator fades itself), GrayText
+ *   under forced colors
  *
  * **Slots**
  *
@@ -124,9 +124,12 @@
       vertical-align: middle;
     }
 
+    /* Disabled by colour, never opacity: the label takes the field recipe;
+     * the indicator receives [disabled] and fades itself, so nothing
+     * compounds. */
     :scope.cngx-checkbox--disabled {
       cursor: not-allowed;
-      opacity: var(--cngx-checkbox-disabled-opacity, 0.5);
+      color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
     }
 
     :scope:focus-visible {
@@ -162,5 +165,15 @@
    * container. */
   .cngx-checkbox + .cngx-checkbox {
     margin-inline-start: var(--cngx-checkbox-sibling-gap, 1rem);
+  }
+}
+
+/* forced-colors (WHCM): disabled is painted by colour, and an author colour is
+ * forced to CanvasText, so a disabled label would read as enabled. Re-signal it
+ * with GrayText. Unlayered + direct selector (outside @scope) to beat the
+ * layered rule. */
+@media (forced-colors: active) {
+  .cngx-checkbox.cngx-checkbox--disabled {
+    color: GrayText;
   }
 }

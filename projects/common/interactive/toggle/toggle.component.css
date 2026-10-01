@@ -11,8 +11,9 @@
  *
  * - `--checked` - swaps the track to `--cngx-toggle-track-bg-on` and
  *   translates the thumb by `--cngx-toggle-thumb-travel`
- * - `--disabled` - `cursor: not-allowed` + opacity dim via
- *   `--cngx-toggle-disabled-opacity`
+ * - `--disabled` - `cursor: not-allowed`; label and on-track take the
+ *   38% text recipe of a disabled field, the off-track a faint text tint,
+ *   the thumb drops its lift; GrayText under forced colors
  * - `--label-before` - `flex-direction: row-reverse` so the label
  *   reads before the track
  *
@@ -80,16 +81,6 @@
     syntax: '*';
     inherits: true;
     initial-value: currentColor;
-  }
-
-  /**
-   * Opacity multiplier applied by `.cngx-toggle--disabled`.
-   * @group State / Disabled
-   */
-  @property --cngx-toggle-disabled-opacity {
-    syntax: '<number>';
-    inherits: false;
-    initial-value: 0.5;
   }
 
   /**
@@ -305,9 +296,10 @@
       flex-direction: row-reverse;
     }
 
+    /* Disabled by colour, never opacity (the field recipe). */
     :scope.cngx-toggle--disabled {
       cursor: not-allowed;
-      opacity: var(--cngx-toggle-disabled-opacity, 0.5);
+      color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
     }
 
     :scope:focus-visible {
@@ -362,6 +354,21 @@
       transform: translateX(var(--cngx-toggle-thumb-travel, 1rem));
     }
 
+    /* Disabled track and thumb: the off-track takes a faint text tint, the
+     * on-track the disabled colour, and the thumb drops its lift. After the
+     * checked rules so they win on source order. */
+    :scope.cngx-toggle--disabled .cngx-toggle__track {
+      background: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 12%, transparent);
+    }
+
+    :scope.cngx-toggle--disabled.cngx-toggle--checked .cngx-toggle__track {
+      background: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
+    }
+
+    :scope.cngx-toggle--disabled .cngx-toggle__thumb {
+      box-shadow: none;
+    }
+
     .cngx-toggle__label {
       flex: 0 1 auto;
       min-inline-size: 0;
@@ -397,11 +404,16 @@
  * [thumbGlyph] visible. Unlayered + direct selectors (outside @scope) to beat
  * the layered component rule and sidestep the @scope/layer cascade trap. */
 @media (forced-colors: active) {
+  /* Inset outlines, not borders: the thumb is absolutely positioned from the
+   * track's padding box, so a 1px track border shifted it 1px off-centre, and a
+   * thumb border grew a content-box thumb by 2px. */
   .cngx-toggle__track {
-    border: 1px solid ButtonBorder;
+    outline: 1px solid ButtonBorder;
+    outline-offset: -1px;
   }
   .cngx-toggle__thumb {
-    border: 1px solid ButtonText;
+    outline: 1px solid ButtonText;
+    outline-offset: -1px;
   }
   .cngx-toggle.cngx-toggle--checked .cngx-toggle__track {
     /* Host-class specificity to match the base `:scope.cngx-toggle--checked
@@ -409,5 +421,19 @@
      * The track is a child span (not the button host), so no forced-color-adjust
      * is needed - only the button's own background is UA-forced. */
     background: Highlight !important;
+  }
+  /* Disabled is painted by colour, which the forced palette overrides;
+   * re-signal it with GrayText on the label, the outline and the on-track. */
+  .cngx-toggle.cngx-toggle--disabled {
+    color: GrayText;
+  }
+  .cngx-toggle.cngx-toggle--disabled .cngx-toggle__track {
+    outline-color: GrayText;
+  }
+  .cngx-toggle.cngx-toggle--disabled .cngx-toggle__thumb {
+    outline-color: GrayText;
+  }
+  .cngx-toggle.cngx-toggle--disabled.cngx-toggle--checked .cngx-toggle__track {
+    background: GrayText !important;
   }
 }

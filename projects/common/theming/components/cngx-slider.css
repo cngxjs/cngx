@@ -103,9 +103,13 @@
     cursor: pointer;
   }
 
+  /* Disabled by colour, never opacity (the field recipe). */
   :is([cngxSliderTrack], [cngxRangeSliderTrack])[aria-disabled='true'] {
-    opacity: 0.5;
     cursor: not-allowed;
+    --cngx-slider-fill-color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
+    --cngx-slider-thumb-border-color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
+    --cngx-slider-track-color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 12%, transparent);
+    color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
   }
 
   :is([cngxSliderTrack], [cngxRangeSliderTrack]) .cngx-slider__track {

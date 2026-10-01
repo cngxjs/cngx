@@ -10,7 +10,9 @@
  * **State modifiers**
  *
  * - `--checked` - primary fill, on-primary text, primary border
- * - `--disabled` - opacity 0.5, `cursor: not-allowed`
+ * - `--disabled` - `cursor: not-allowed`; 38% text on a faint text tint,
+ *   a checked segment fills with the disabled colour; GrayText under
+ *   forced colors
  * - `:hover:not(--disabled):not(--checked)` - 8% primary tint over the surface
  * - `--checked:hover:not(--disabled)` - primary fill darkened for feedback,
  *   keeping the on-primary text contrast (an unguarded plain hover would drop
@@ -119,9 +121,19 @@
       border-color: color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 88%, black);
     }
 
+    /* Disabled by colour, never opacity (the field recipe): 38% text on a
+     * faint text tint; a checked segment fills with the disabled colour and
+     * keeps a surface label. */
     :scope.cngx-button-toggle--disabled {
-      opacity: 0.5;
+      background: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 4%, var(--cngx-color-surface, oklch(1 0 0)));
+      color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
       cursor: not-allowed;
+    }
+
+    :scope.cngx-button-toggle--disabled.cngx-button-toggle--checked {
+      background: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
+      color: var(--cngx-color-surface, oklch(1 0 0));
+      border-color: transparent;
     }
   }
 }
@@ -143,5 +155,19 @@
     background: Highlight !important;
     color: HighlightText !important;
     border-color: Highlight !important;
+  }
+  /* Disabled is painted by colour. A native :disabled button gets GrayText from
+   * the UA, an aria-disabled one does not, so restate it; a checked disabled
+   * segment fills with GrayText (the repeated classes beat the Highlight rule). */
+  .cngx-button-toggle.cngx-button-toggle--disabled {
+    forced-color-adjust: none;
+    background: ButtonFace;
+    color: GrayText;
+    border-color: GrayText;
+  }
+  .cngx-button-toggle.cngx-button-toggle--disabled.cngx-button-toggle--checked {
+    background: GrayText !important;
+    color: ButtonFace !important;
+    border-color: GrayText !important;
   }
 }
