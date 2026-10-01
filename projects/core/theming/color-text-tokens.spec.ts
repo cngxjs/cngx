@@ -56,3 +56,23 @@ describe('--cngx-color-danger-text', () => {
     },
   );
 });
+
+describe('--cngx-color-highlight', () => {
+  // Readers (the command palette match <mark>) paint the inherited body text on
+  // this fill, so the dark rung is a dark amber, never the light pale yellow.
+  it('registers as an inheriting colour with the light rung as initial', () => {
+    const block = schemeBlock(/@property --cngx-color-highlight\s*{[^}]+}/);
+    expect(block).toContain("syntax: '<color>'");
+    expect(block).toContain('inherits: true');
+    expect(block).toContain('initial-value: oklch(0.92 0.115 96)');
+  });
+
+  it.each([
+    ['light', 'oklch(0.92 0.115 96)'],
+    ['os dark', 'oklch(0.45 0.08 95)'],
+    ['explicit dark', 'oklch(0.45 0.08 95)'],
+    ['explicit light', 'oklch(0.92 0.115 96)'],
+  ] as const)('is set in the %s block', (scheme, value) => {
+    expect(BLOCKS[scheme]()).toContain(`--cngx-color-highlight: ${value};`);
+  });
+});

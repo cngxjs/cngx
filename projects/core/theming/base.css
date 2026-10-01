@@ -25,7 +25,7 @@
  * - `<kbd>` - inline block, hairline border with a 2 px bottom edge
  *   (key-cap silhouette), monospaced.
  * - `<dl>` - two-column grid (`max-content 1fr`), tabular figures on
- *   `<dd>`, muted opacity on `<dt>`.
+ *   `<dd>`, muted text colour on `<dt>`.
  * - `<hr>` - hairline `border-block-start` matching `--cngx-color-
  *   border`, rhythmic `--cngx-space-md` block margin. Strips the
  *   1990s inset bevel.
@@ -156,9 +156,9 @@
     margin: var(--cngx-space-sm, 8px) 0;
     font-size: var(--cngx-font-size-sm, 0.8125rem);
   }
+  /* Quiet by colour, never opacity: the muted text colour. */
   dl > dt {
-    color: var(--cngx-color-text, oklch(0.2 0.01 250));
-    opacity: 0.65;
+    color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
   }
   dl > dd {
     margin: 0;
