@@ -1,12 +1,17 @@
 import {
+  computed,
   inject,
   InjectionToken,
+  isSignal,
   makeEnvironmentProviders,
   Optional,
   SkipSelf,
   type EnvironmentProviders,
   type Provider,
+  type Signal,
 } from '@angular/core';
+import { coerceSignal } from '@cngx/core/utils';
+import { recordEqual } from '@cngx/utils';
 
 import { CNGX_COMMAND_PALETTE_DEFAULTS } from '../panel/command-palette-defaults';
 import type {
@@ -53,6 +58,10 @@ export interface CngxCommandPaletteLegendEntry {
  * consumer-supplied through {@link provideCommandPaletteConfig} and the `with*`
  * features - never hard-coded (`feedback_en_default_locale`).
  *
+ * Every copy key accepts a value or a `Signal`, so the palette follows a
+ * runtime language switch. Read a key through `coerceSignal` from
+ * `@cngx/core/utils`, inside a `computed()`, a template or a handler.
+ *
  * @category ui/command-palette
  * @since 0.1.0
  */
@@ -63,27 +72,29 @@ export interface CngxCommandPaletteConfig {
    */
   readonly openShortcut: string;
   /** Placeholder + accessible name for the search input. */
-  readonly searchPlaceholder: string;
+  readonly searchPlaceholder: string | Signal<string>;
   /** Accessible label for the results listbox. */
-  readonly listboxLabel: string;
+  readonly listboxLabel: string | Signal<string>;
   /** Empty-state copy (async source returned no results). */
-  readonly emptyLabel: string;
+  readonly emptyLabel: string | Signal<string>;
   /** First-load skeleton copy. */
-  readonly loadingLabel: string;
+  readonly loadingLabel: string | Signal<string>;
   /** Error-state copy. */
-  readonly errorLabel: string;
+  readonly errorLabel: string | Signal<string>;
   /** Retry-button copy in the error state. */
-  readonly retryLabel: string;
+  readonly retryLabel: string | Signal<string>;
   /**
-   * Default of the palette's `[ariaLabel]`, the dialog's accessible name. Read
-   * once when each palette is created. Optional for compatibility with full
-   * configs written before it existed; the English default applies when absent.
+   * Accessible name of the palette dialog while its `[ariaLabel]` is unbound.
+   * Optional for compatibility with full configs written before it existed;
+   * the English default applies when absent.
    */
-  readonly paletteLabel?: string;
+  readonly paletteLabel?: string | Signal<string>;
   /** Builds the polite `aria-live` result-count message. */
-  readonly resultCount: (count: number) => string;
+  readonly resultCount: ((count: number) => string) | Signal<(count: number) => string>;
   /** Keyboard-legend rows rendered in the footer. */
-  readonly footerLegend: readonly CngxCommandPaletteLegendEntry[];
+  readonly footerLegend:
+    | readonly CngxCommandPaletteLegendEntry[]
+    | Signal<readonly CngxCommandPaletteLegendEntry[]>;
   /** Global default slot templates (config = strings, slots = structure). */
   readonly templates?: CngxCommandPaletteTemplates;
 }
@@ -201,27 +212,119 @@ export function injectCommandPaletteConfig(): CngxCommandPaletteConfig {
 }
 
 /**
+ * @internal - the palette's copy keys as plain values, as
+ * {@link resolveCommandPaletteCopy} hands them to the components.
+ */
+interface CngxCommandPaletteCopy {
+  readonly searchPlaceholder: string;
+  readonly listboxLabel: string;
+  readonly emptyLabel: string;
+  readonly loadingLabel: string;
+  readonly errorLabel: string;
+  readonly retryLabel: string;
+  readonly paletteLabel: string;
+  readonly resultCount: (count: number) => string;
+  readonly footerLegend: readonly CngxCommandPaletteLegendEntry[];
+}
+
+const valueOf = <T>(source: T | Signal<T>): T => (isSignal(source) ? source() : source);
+
+/**
+ * @internal - the config with every copy key unwrapped to a plain value. Still
+ * a {@link CngxCommandPaletteConfig}, so a reader keeps one config shape.
+ */
+export type CngxCommandPaletteResolvedConfig = CngxCommandPaletteConfig & CngxCommandPaletteCopy;
+
+const RESOLVED_COPY = new WeakMap<
+  CngxCommandPaletteConfig,
+  Signal<CngxCommandPaletteResolvedConfig>
+>();
+
+/**
+ * @internal - one Signal of the config's copy keys, each unwrapped, so a
+ * language switch reaches every reader. Memoized per config object: every
+ * palette part under one injector reads the same `computed()`. Read it inside a
+ * `computed()`, a template or a handler.
+ */
+export function resolveCommandPaletteCopy(
+  config: CngxCommandPaletteConfig,
+): Signal<CngxCommandPaletteResolvedConfig> {
+  const cached = RESOLVED_COPY.get(config);
+  if (cached) {
+    return cached;
+  }
+  const copy = computed<CngxCommandPaletteResolvedConfig>(
+    () => ({
+      ...config,
+      searchPlaceholder: valueOf(config.searchPlaceholder),
+      listboxLabel: valueOf(config.listboxLabel),
+      emptyLabel: valueOf(config.emptyLabel),
+      loadingLabel: valueOf(config.loadingLabel),
+      errorLabel: valueOf(config.errorLabel),
+      retryLabel: valueOf(config.retryLabel),
+      paletteLabel: valueOf(config.paletteLabel) ?? CNGX_COMMAND_PALETTE_DEFAULTS.paletteLabel,
+      resultCount: valueOf(config.resultCount),
+      footerLegend: valueOf(config.footerLegend),
+    }),
+    { equal: recordEqual },
+  );
+  RESOLVED_COPY.set(config, copy);
+  return copy;
+}
+
+/**
+ * The text-label keys {@link withCommandPaletteLabels} overrides.
+ *
+ * @category ui/command-palette
+ * @since 0.1.0
+ */
+export type CngxCommandPaletteLabelKey =
+  | 'searchPlaceholder'
+  | 'listboxLabel'
+  | 'emptyLabel'
+  | 'loadingLabel'
+  | 'errorLabel'
+  | 'retryLabel'
+  | 'paletteLabel';
+
+const LABEL_KEYS: readonly CngxCommandPaletteLabelKey[] = [
+  'searchPlaceholder',
+  'listboxLabel',
+  'emptyLabel',
+  'loadingLabel',
+  'errorLabel',
+  'retryLabel',
+  'paletteLabel',
+];
+
+/**
  * Override any subset of the palette's text labels. Unset labels keep the
- * English defaults.
+ * inherited value. Pass a `Signal` of the overrides to switch the language at
+ * runtime; a key the Signal sets wins over the inherited value, an unset key
+ * follows it.
  *
  * @category ui/command-palette
  * @since 0.1.0
  */
 export function withCommandPaletteLabels(
-  labels: Partial<
-    Pick<
-      CngxCommandPaletteConfig,
-      | 'searchPlaceholder'
-      | 'listboxLabel'
-      | 'emptyLabel'
-      | 'loadingLabel'
-      | 'errorLabel'
-      | 'retryLabel'
-      | 'paletteLabel'
-    >
-  >,
+  labels:
+    | Partial<Pick<CngxCommandPaletteConfig, CngxCommandPaletteLabelKey>>
+    | Signal<Partial<Record<CngxCommandPaletteLabelKey, string>>>,
 ): CngxCommandPaletteConfigFeature {
-  return (config) => ({ ...config, ...labels });
+  if (!isSignal(labels)) {
+    return (config) => ({ ...config, ...labels });
+  }
+  return (config) => {
+    const next: Record<string, unknown> = { ...config };
+    for (const key of LABEL_KEYS) {
+      const inherited = coerceSignal(config[key]);
+      next[key] = computed(() => {
+        const patch = labels();
+        return key in patch ? patch[key] : inherited();
+      });
+    }
+    return next as unknown as CngxCommandPaletteConfig;
+  };
 }
 
 /**
@@ -238,26 +341,30 @@ export function withPaletteShortcut(combo: string): CngxCommandPaletteConfigFeat
 }
 
 /**
- * Replace the footer keyboard legend.
+ * Replace the footer keyboard legend. Pass a `Signal` to switch the language at
+ * runtime.
  *
  * @category ui/command-palette
  * @since 0.1.0
  */
 export function withKeyboardLegend(
-  entries: readonly CngxCommandPaletteLegendEntry[],
+  entries:
+    | readonly CngxCommandPaletteLegendEntry[]
+    | Signal<readonly CngxCommandPaletteLegendEntry[]>,
 ): CngxCommandPaletteConfigFeature {
   return (config) => ({ ...config, footerLegend: entries });
 }
 
 /**
  * Replace the `aria-live` result-count formatter (e.g. for pluralisation in
- * another locale).
+ * another locale). Pass a `Signal` of the formatter to switch the language at
+ * runtime; the live count speaks the new formatter on its next change.
  *
  * @category ui/command-palette
  * @since 0.1.0
  */
 export function withResultCountFormatter(
-  formatter: (count: number) => string,
+  formatter: ((count: number) => string) | Signal<(count: number) => string>,
 ): CngxCommandPaletteConfigFeature {
   return (config) => ({ ...config, resultCount: formatter });
 }

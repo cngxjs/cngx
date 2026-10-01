@@ -605,7 +605,12 @@ export const SETTINGS_TOKENS = [
  *
  * @type {readonly string[]}
  */
-export const HELPERS = ['injectResolvedFeedbackI18n', 'injectChartI18n', 'resolveSelectConfig'];
+export const HELPERS = [
+  'injectResolvedFeedbackI18n',
+  'injectChartI18n',
+  'resolveSelectConfig',
+  'resolveCommandPaletteCopy',
+];
 
 /** @type {readonly RatchetRow[]} */
 export const RATCHET = [
@@ -804,48 +809,6 @@ export const RATCHET = [
     rule: 'R4',
     token: 'CNGX_INCREMENTAL_LIST_CONFIG',
     closesIn: 7,
-  },
-  {
-    file: 'projects/ui/command-palette/palette/command-palette.component.ts',
-    member: 'CngxCommandPalette.ariaLabel',
-    rule: 'R1',
-    token: 'CNGX_COMMAND_PALETTE_CONFIG',
-    closesIn: 6,
-  },
-  {
-    file: 'projects/ui/command-palette/panel/command-panel-shell.component.ts',
-    member: 'CngxCommandPanelShell.config',
-    rule: 'R4',
-    token: 'CNGX_COMMAND_PALETTE_CONFIG',
-    closesIn: 6,
-  },
-  {
-    file: 'projects/ui/command-palette/panel/command-panel-shell.component.ts',
-    member: 'CngxCommandPanelShell.template:config',
-    rule: 'R3',
-    token: 'CNGX_COMMAND_PALETTE_CONFIG',
-    closesIn: 6,
-  },
-  {
-    file: 'projects/ui/command-palette/panel/command-panel.component.ts',
-    member: 'CngxCommandPanel.countMessage',
-    rule: 'R3',
-    token: 'CNGX_COMMAND_PALETTE_CONFIG',
-    closesIn: 6,
-  },
-  {
-    file: 'projects/ui/command-palette/panel/command-panel.component.ts',
-    member: 'CngxCommandPanel.countMessage',
-    rule: 'R4',
-    token: 'CNGX_COMMAND_PALETTE_CONFIG',
-    closesIn: 6,
-  },
-  {
-    file: 'projects/ui/command-palette/panel/command-panel.component.ts',
-    member: 'CngxCommandPanel.template:config',
-    rule: 'R3',
-    token: 'CNGX_COMMAND_PALETTE_CONFIG',
-    closesIn: 6,
   },
   {
     file: 'projects/ui/mat-paginator/mat-paginator-bridge.directive.ts',
@@ -1108,7 +1071,7 @@ export const RATCHET = [
   },
 ];
 
-export const RATCHET_CEILING = 71;
+export const RATCHET_CEILING = 65;
 
 /** The last phase whose closing commit has landed. */
 export const COMPLETED_PHASE = 5;
@@ -1428,14 +1391,14 @@ export const LIVE_REGIONS = [
   },
   {
     file: 'projects/ui/command-palette/panel/command-panel-shell.component.ts',
-    region: 'CngxCommandPanelShell.div(config.errorLabel,config.retryLabel,retry.emit)',
+    region: 'CngxCommandPanelShell.div(errorText,retry.emit,retryText)',
     spec: 'projects/ui/command-palette/panel/command-panel-shell.component.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 6,
   },
   {
     file: 'projects/ui/command-palette/panel/command-panel-shell.component.ts',
-    region: 'CngxCommandPanelShell.div(config.errorLabel)',
+    region: 'CngxCommandPanelShell.div(errorText)',
     spec: 'projects/ui/command-palette/panel/command-panel-shell.component.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 6,

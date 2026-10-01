@@ -4,6 +4,10 @@ import { provideCommands, type CngxCommand, type CngxCommandGroup } from '@cngx/
 import { buildAsyncStateView, type CngxAsyncState } from '@cngx/core/utils';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import {
+  provideCommandPaletteConfig,
+  withResultCountFormatter,
+} from '../config/command-palette-config';
 import { CngxCommandPanel } from './command-panel.component';
 import { CNGX_COMMAND_PALETTE_HOST } from './panel-host.token';
 
@@ -274,5 +278,23 @@ describe('CngxCommandPanel', () => {
 
     expect(event.defaultPrevented).toBe(false);
     expect(input.getAttribute('aria-activedescendant')).toBe(before);
+  });
+
+  it('does not re-announce on a language flip', () => {
+    const format = signal((n: number) => `${n} hits`);
+    TestBed.configureTestingModule({
+      providers: [provideCommandPaletteConfig(withResultCountFormatter(format))],
+    });
+    configure([cmd('a', 'Alpha'), cmd('b', 'Beta')]);
+    const live = (): string =>
+      (fixture.nativeElement.querySelector('[aria-live="polite"]') as HTMLElement).textContent!.trim();
+    expect(live()).toBe('2 hits');
+
+    format.set((n) => `${n} Treffer`);
+    fixture.detectChanges();
+    expect(live()).toBe('2 hits');
+
+    type('alp');
+    expect(live()).toBe('1 Treffer');
   });
 });

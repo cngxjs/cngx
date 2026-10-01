@@ -25,6 +25,7 @@ export {
   withCommandPaletteTemplates,
   type CngxCommandPaletteConfig,
   type CngxCommandPaletteConfigFeature,
+  type CngxCommandPaletteLabelKey,
   type CngxCommandPaletteLegendEntry,
   type CngxCommandPaletteTemplates,
 } from './config/command-palette-config';

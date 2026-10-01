@@ -5,6 +5,7 @@ import {
   computed,
   input,
   output,
+  untracked,
   ViewEncapsulation,
   type TemplateRef,
 } from '@angular/core';
@@ -13,7 +14,10 @@ import type { CngxCommandGroup } from '@cngx/common/command';
 import { resolveAsyncView, type AsyncView } from '@cngx/common/data';
 import type { CngxAsyncState } from '@cngx/core/utils';
 
-import { injectCommandPaletteConfig } from '../config/command-palette-config';
+import {
+  injectCommandPaletteConfig,
+  resolveCommandPaletteCopy,
+} from '../config/command-palette-config';
 import type {
   CngxCommandPaletteErrorContext,
   CngxCommandPaletteLoadingContext,
@@ -46,7 +50,7 @@ import type {
         @if (loadingTpl(); as tpl) {
           <ng-container [ngTemplateOutlet]="tpl" [ngTemplateOutletContext]="{}" />
         } @else {
-          <div class="cngx-command-state" aria-busy="true">{{ config.loadingLabel }}</div>
+          <div class="cngx-command-state" aria-busy="true">{{ copy().loadingLabel }}</div>
         }
       }
       @case ('error') {
@@ -57,16 +61,16 @@ import type {
           />
         } @else {
           <div class="cngx-command-state cngx-command-state--error" role="alert">
-            <span>{{ config.errorLabel }}</span>
+            <span>{{ errorText() }}</span>
             <button type="button" class="cngx-command-retry" (click)="retry.emit()">
-              {{ config.retryLabel }}
+              {{ retryText() }}
             </button>
           </div>
         }
       }
       @default {
         @if (view() === 'content+error') {
-          <div class="cngx-command-state--error-banner" role="alert">{{ config.errorLabel }}</div>
+          <div class="cngx-command-state--error-banner" role="alert">{{ errorText() }}</div>
         }
         <ng-content />
       }
@@ -84,7 +88,7 @@ export class CngxCommandPanelShell {
   /** Fired when the user clicks Retry in the error state. */
   readonly retry = output<void>();
 
-  protected readonly config = injectCommandPaletteConfig();
+  protected readonly copy = resolveCommandPaletteCopy(injectCommandPaletteConfig());
 
   /** The resolved view. `content` when no async source is bound. */
   protected readonly view = computed<AsyncView>(() => {
@@ -99,6 +103,22 @@ export class CngxCommandPanelShell {
   });
 
   protected readonly errorValue = computed<unknown>(() => this.results()?.error());
+
+  /**
+   * @internal - copy of the `role="alert"` error regions, keyed on the view. Read
+   * untracked, so a language switch never re-speaks a shown error; the next error
+   * speaks the new language.
+   */
+  protected readonly errorText = computed(() => {
+    this.view();
+    return untracked(() => this.copy().errorLabel);
+  });
+
+  /** @internal - retry-button copy inside the error region, keyed like {@link errorText}. */
+  protected readonly retryText = computed(() => {
+    this.view();
+    return untracked(() => this.copy().retryLabel);
+  });
 
   /** Stable bound callback for the error slot's `retry`. */
   protected readonly emitRetry = (): void => this.retry.emit();

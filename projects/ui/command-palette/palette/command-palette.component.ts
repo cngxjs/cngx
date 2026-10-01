@@ -18,8 +18,10 @@ import type { CngxCommandGroup } from '@cngx/common/command';
 import { CngxDialog } from '@cngx/common/dialog';
 import { parseKeyCombo, type CngxAsyncState } from '@cngx/core/utils';
 
-import { injectCommandPaletteConfig } from '../config/command-palette-config';
-import { CNGX_COMMAND_PALETTE_DEFAULTS } from '../panel/command-palette-defaults';
+import {
+  injectCommandPaletteConfig,
+  resolveCommandPaletteCopy,
+} from '../config/command-palette-config';
 import { CngxCommandPanel } from '../panel/command-panel.component';
 import { CngxCommandPanelShell } from '../panel/command-panel-shell.component';
 import { CNGX_COMMAND_PALETTE_HOST, type CngxCommandPaletteHost } from '../panel/panel-host.token';
@@ -72,7 +74,7 @@ import { CNGX_PALETTE_KEYBINDING_FACTORY } from './palette-keybinding';
       cngxDialog
       #dialog="cngxDialog"
       class="cngx-command-palette"
-      [attr.aria-label]="ariaLabel()"
+      [attr.aria-label]="resolvedAriaLabel()"
     >
       <cngx-command-panel-shell
         [results]="results()"
@@ -93,7 +95,7 @@ import { CNGX_PALETTE_KEYBINDING_FACTORY } from './palette-keybinding';
         @if (footerTpl(); as tpl) {
           <ng-container [ngTemplateOutlet]="tpl" [ngTemplateOutletContext]="{}" />
         } @else {
-          @for (entry of config.footerLegend; track entry.label) {
+          @for (entry of copy().footerLegend; track entry.label) {
             <span class="cngx-command-legend"><kbd>{{ entry.keys }}</kbd> {{ entry.label }}</span>
           }
         }
@@ -111,14 +113,18 @@ export class CngxCommandPalette implements CngxCommandPaletteHost {
   /** Debounce for the search input. */
   readonly debounceMs = input<number>(150);
 
-  protected readonly config = injectCommandPaletteConfig();
+  private readonly config = injectCommandPaletteConfig();
+  protected readonly copy = resolveCommandPaletteCopy(this.config);
 
   /**
-   * Accessible name for the dialog. Defaults to `paletteLabel` from
-   * `CNGX_COMMAND_PALETTE_CONFIG` (`withCommandPaletteLabels`), read at construction.
+   * Accessible name for the dialog. Unbound, `paletteLabel` from
+   * `CNGX_COMMAND_PALETTE_CONFIG` (`withCommandPaletteLabels`) applies.
    */
-  readonly ariaLabel = input<string>(
-    this.config.paletteLabel ?? CNGX_COMMAND_PALETTE_DEFAULTS.paletteLabel,
+  readonly ariaLabel = input<string | undefined>(undefined);
+
+  /** @internal */
+  protected readonly resolvedAriaLabel = computed(
+    () => this.ariaLabel() ?? this.copy().paletteLabel,
   );
 
   /**
