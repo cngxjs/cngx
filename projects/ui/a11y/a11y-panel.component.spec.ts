@@ -114,6 +114,33 @@ describe('CngxA11yPanel', () => {
     expect(announce).toHaveBeenCalledWith('Einstellungen zurueckgesetzt');
   });
 
+  it('keeps the rendered axis groups when a label flip leaves them unchanged', () => {
+    const labels = signal<CngxA11yPanelLabelsOverride>({});
+    TestBed.configureTestingModule({
+      providers: [
+        provideA11yPreferences(),
+        provideA11yPanelConfig(withA11yPanelLabels(labels)),
+        { provide: CngxLiveAnnouncer, useValue: { announce: vi.fn() } },
+      ],
+    });
+    const fixture = TestBed.createComponent(CngxA11yPanel);
+    fixture.detectChanges();
+    const firstGroup = groups(fixture)[0];
+
+    // Only the heading changes: every axis keeps its label and options, so the
+    // view array is kept and no group is re-created.
+    labels.set({ heading: 'Barrierefreiheit' });
+    fixture.detectChanges();
+    expect(groups(fixture)[0]).toBe(firstGroup);
+
+    labels.set({ heading: 'Barrierefreiheit', axes: { density: 'Abstand' } });
+    fixture.detectChanges();
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelector('.cngx-a11y-panel__axis-label')
+        ?.textContent?.trim(),
+    ).toBe('Abstand');
+  });
+
   it('writes the axis signal and reflects onto <html> when a toggle is picked', () => {
     const { fixture, prefs } = setup();
     // First group is density; its first option is `compact`.
