@@ -11,10 +11,10 @@ export const STORY: DemoSpec = {
   framework: 'signal-forms',
   apiComponents: ['CngxFieldErrors', 'CngxFormField', 'CngxLabel'],
   moduleImports: [
-    'import { form, schema, required, minLength } from \'@angular/forms/signals\';',
+    'import { form, schema, required, minLength, FormField } from \'@angular/forms/signals\';',
     'import { CngxFormField, CngxLabel, CngxFieldErrors } from \'@cngx/forms/field\';',
   ],
-  imports: ['FormsModule', 'CngxFormField', 'CngxLabel', 'CngxFieldErrors'],
+  imports: ['FormField', 'CngxFormField', 'CngxLabel', 'CngxFieldErrors'],
   references: [
     { label: 'WCAG 3.3.1 Error Identification', href: 'https://www.w3.org/WAI/WCAG21/Understanding/error-identification.html' },
     { label: 'WCAG 3.3.3 Error Suggestion', href: 'https://www.w3.org/WAI/WCAG21/Understanding/error-suggestion.html' },
@@ -27,7 +27,7 @@ export const STORY: DemoSpec = {
   template: `  <div style="display:grid;gap:16px;max-width:360px">
     <cngx-form-field [field]="profile.username">
       <label cngxLabel>Username</label>
-      <input type="text" [(ngModel)]="profile.username().value" />
+      <input type="text" [formField]="profile.username" />
       <cngx-field-errors />
     </cngx-form-field>
   </div>`,

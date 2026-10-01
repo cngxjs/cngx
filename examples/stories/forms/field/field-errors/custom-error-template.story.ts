@@ -11,10 +11,10 @@ export const STORY: DemoSpec = {
   framework: 'signal-forms',
   apiComponents: ['CngxFieldErrors', 'CngxFormField', 'CngxLabel'],
   moduleImports: [
-    'import { form, schema, required, minLength } from \'@angular/forms/signals\';',
+    'import { form, schema, required, minLength, FormField } from \'@angular/forms/signals\';',
     'import { CngxFormField, CngxLabel, CngxFieldErrors } from \'@cngx/forms/field\';',
   ],
-  imports: ['FormsModule', 'CngxFormField', 'CngxLabel', 'CngxFieldErrors'],
+  imports: ['FormField', 'CngxFormField', 'CngxLabel', 'CngxFieldErrors'],
   setup: `protected readonly model = signal<{ password: string }>({ password: '' });
   protected readonly profile = form(this.model, schema((root) => {
     required(root.password, { message: 'Password is required.' });
@@ -23,7 +23,7 @@ export const STORY: DemoSpec = {
   template: `  <div style="display:grid;gap:16px;max-width:360px">
     <cngx-form-field [field]="profile.password">
       <label cngxLabel>Password</label>
-      <input type="password" [(ngModel)]="profile.password().value" />
+      <input type="password" [formField]="profile.password" />
       <cngx-field-errors>
         <ng-template let-message="message" let-kind="kind" let-index="index">
           <p [style.color]="'var(--cngx-color-danger, #b00020)'">
