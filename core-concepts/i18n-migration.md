@@ -100,6 +100,10 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 
 - The copy input `CngxSidenav.resizeLabel` is now `input<string | undefined>`, and an unbound input reads `undefined` instead of the construction-time `withSidenavLabels` `resizeHandle` default. Template bindings are unchanged; the rendered resize-handle `aria-label` follows a language switch while the input is unbound. Code that reads `sidenav.resizeLabel()` programmatically gets `undefined` when nothing is bound.
 
+### @cngx/ui/speak
+
+- The copy inputs `CngxSpeakButton.readAloudLabel` / `.stopLabel` are now `input<string | undefined>`, and an unbound input reads `undefined` instead of the construction-time `CNGX_SPEAK_I18N` default. Template bindings are unchanged; the rendered button `aria-label` follows a language switch while the input is unbound. Code that reads the input programmatically gets `undefined` when nothing is bound.
+
 ### @cngx/forms/select
 
 - `CngxSelectConfig.ariaLabels`, `.fallbackLabels` and `.announcer` accept a value or a `Signal`, and once `withAriaLabels` / `withFallbackLabels` / `withAnnouncer` ran the key holds a `Signal`. Code that reads a key off `CNGX_SELECT_CONFIG` or a `makeSelectConfig(...)` result wraps it once, in a field: with a module-level `const NO_ARIA_LABELS: CngxSelectAriaLabels = {};`, write `private readonly ariaLabels = coerceSignal(config.ariaLabels ?? NO_ARIA_LABELS);` (`coerceSignal` from `@cngx/core/utils`) and read `this.ariaLabels().clearButton` inside a `computed()`, a template or a handler, where you used to read `config.ariaLabels?.clearButton`. A fresh `{}` per call would create a new Signal on every read.

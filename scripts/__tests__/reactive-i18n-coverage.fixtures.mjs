@@ -1002,20 +1002,6 @@ export const RATCHET = [
     closesIn: 6,
   },
   {
-    file: 'projects/ui/speak/speak-button.ts',
-    member: 'CngxSpeakButton.readAloudLabel',
-    rule: 'R1',
-    token: 'CNGX_SPEAK_I18N',
-    closesIn: 6,
-  },
-  {
-    file: 'projects/ui/speak/speak-button.ts',
-    member: 'CngxSpeakButton.stopLabel',
-    rule: 'R1',
-    token: 'CNGX_SPEAK_I18N',
-    closesIn: 6,
-  },
-  {
     file: 'projects/ui/stat-card/config/provide-stat-card-config.ts',
     member: 'mergeConfig',
     rule: 'R3',
@@ -1122,7 +1108,7 @@ export const RATCHET = [
   },
 ];
 
-export const RATCHET_CEILING = 73;
+export const RATCHET_CEILING = 71;
 
 /** The last phase whose closing commit has landed. */
 export const COMPLETED_PHASE = 5;
