@@ -9,8 +9,8 @@
  * **State modifiers**
  *
  * - `--checked` - circle border + dot paint in the checked-color
- * - `--disabled` - opacity dim via
- *   `--cngx-radio-indicator-disabled-opacity`
+ * - `--disabled` - paints by colour, never opacity: ring and dot take
+ *   the 38% text recipe of a disabled field; GrayText under forced colors
  *
  * **Size variants**
  *
@@ -105,16 +105,6 @@
     syntax: '<color>';
     inherits: true;
     initial-value: oklch(0.66 0.19 50);
-  }
-
-  /**
-   * Opacity multiplier applied by `.cngx-radio-indicator--disabled`.
-   * @group State / Disabled
-   */
-  @property --cngx-radio-indicator-disabled-opacity {
-    syntax: '<number>';
-    inherits: false;
-    initial-value: 0.5;
   }
 
   /**
@@ -267,8 +257,11 @@
       transition: var(--cngx-radio-indicator-transition, transform 120ms ease);
     }
 
+    /* Disabled by colour, never opacity (the field recipe): the checked ring
+     * and dot follow currentColor, so the whole glyph fades together. */
     :scope.cngx-radio-indicator--disabled {
-      opacity: var(--cngx-radio-indicator-disabled-opacity, 0.5);
+      --cngx-radio-indicator-checked-color: currentColor;
+      color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -289,5 +282,16 @@
 @media (forced-colors: active) {
   .cngx-radio-indicator__dot {
     background: CanvasText;
+  }
+  /* Disabled is painted by colour, which the forced palette overrides; re-signal
+   * it with GrayText on the ring and the dot. */
+  .cngx-radio-indicator.cngx-radio-indicator--disabled {
+    color: GrayText;
+  }
+  .cngx-radio-indicator.cngx-radio-indicator--disabled .cngx-radio-indicator__circle {
+    border-color: GrayText;
+  }
+  .cngx-radio-indicator.cngx-radio-indicator--disabled .cngx-radio-indicator__dot {
+    background: GrayText;
   }
 }

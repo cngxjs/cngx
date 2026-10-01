@@ -13,7 +13,9 @@
  * - `--checked` - box fills with the checked-bg, glyph paints in
  *   the checked-color
  * - `--indeterminate` - same surface as checked, dash glyph
- * - `--disabled` - opacity dim via `--cngx-checkbox-disabled-opacity`
+ * - `--disabled` - paints by colour, never opacity: box, glyph and a
+ *   checked fill take the 38% text recipe of a disabled field; GrayText
+ *   under forced colors
  *
  * **Variants**
  *
@@ -131,16 +133,6 @@
   }
 
   /**
-   * Opacity multiplier applied by `.cngx-checkbox-indicator--disabled`.
-   * @group State / Disabled
-   */
-  @property --cngx-checkbox-disabled-opacity {
-    syntax: '<number>';
-    inherits: false;
-    initial-value: 0.5;
-  }
-
-  /**
    * Size token for the `.cngx-checkbox-indicator--sm` variant.
    * @group Variant / Size
    */
@@ -237,8 +229,15 @@
       color: var(--cngx-checkbox-checked-color, oklch(1 0 0));
     }
 
+    /* Disabled by colour, never opacity (the field recipe): the stroke and
+     * the bare glyph follow currentColor, and the checked fill takes the same
+     * colour explicitly - a currentColor fill would resolve on the box, whose
+     * colour is the glyph colour, and vanish. The glyph switches to the
+     * surface so it stays readable on the grey fill in both schemes. */
     :scope.cngx-checkbox-indicator--disabled {
-      opacity: var(--cngx-checkbox-disabled-opacity, 0.5);
+      --cngx-checkbox-checked-bg: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
+      --cngx-checkbox-checked-color: var(--cngx-color-surface, oklch(1 0 0));
+      color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
     }
 
     .cngx-checkbox-indicator__check,
@@ -255,5 +254,27 @@
       color: var(--cngx-checkbox-color, var(--cngx-color-primary, oklch(0.66 0.19 50)));
       font-size: var(--cngx-checkbox-size, 1em);
     }
+  }
+}
+
+/* forced-colors (WHCM): disabled is painted by colour, and an author colour is
+ * forced to CanvasText, so a disabled indicator would read as enabled. Re-signal
+ * with GrayText. The checked fill is a background, which the forced palette
+ * flattens; opt the box out so the GrayText fill and the Canvas glyph land -
+ * without the opt-out the text backplate paints Canvas over the glyph cell.
+ * Unlayered + direct selectors (outside @scope) to beat the layered rule. */
+@media (forced-colors: active) {
+  .cngx-checkbox-indicator.cngx-checkbox-indicator--disabled {
+    color: GrayText;
+  }
+  .cngx-checkbox-indicator.cngx-checkbox-indicator--disabled:is(
+      .cngx-checkbox-indicator--checked,
+      .cngx-checkbox-indicator--indeterminate
+    )
+    .cngx-checkbox-indicator__box {
+    forced-color-adjust: none;
+    background: GrayText;
+    border-color: GrayText;
+    color: Canvas;
   }
 }
