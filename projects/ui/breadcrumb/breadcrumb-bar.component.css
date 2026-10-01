@@ -1637,5 +1637,8 @@
   .cngx-breadcrumb__link[aria-current='page'] {
     background: Highlight !important;
     color: HighlightText !important;
+    /* Chromium paints a Canvas backplate behind the text; without the opt-out
+     * the HighlightText label sits on that plate and vanishes. */
+    forced-color-adjust: none;
   }
 }

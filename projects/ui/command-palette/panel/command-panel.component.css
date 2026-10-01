@@ -98,6 +98,19 @@
   .cngx-command-row.cngx-option--highlighted {
     background: Highlight;
     color: HighlightText;
+    /* Chromium paints a Canvas backplate behind the text; without the opt-out
+     * the HighlightText label sits on that plate and vanishes. The opt-out is
+     * inherited, so the match highlight and a shortcut chip inside the row
+     * would paint their unforced author colours: draw them in the row ink. */
+    forced-color-adjust: none;
+  }
+  .cngx-command-row.cngx-option--highlighted :is(mark, kbd) {
+    background: transparent;
+    color: inherit;
+    border-color: currentColor;
+  }
+  .cngx-command-row.cngx-option--highlighted mark {
+    text-decoration: underline;
   }
 }
 
