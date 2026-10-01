@@ -1,4 +1,4 @@
-import type { TemplateRef } from '@angular/core';
+import type { Signal, TemplateRef } from '@angular/core';
 
 import type { CngxAccordionItemIconContext } from '../accordion-item-icon.directive';
 import type { CngxAccordionItemStateContext } from '../accordion-item-state-context';
@@ -66,15 +66,18 @@ export interface CngxAccordionConfig {
    * Reason announced to assistive tech when an item is disabled, bound through
    * the item's always-present `aria-describedby` reason element. English
    * default; a per-instance `[disabledReason]` still wins over the cascade.
+   * Accepts a `Signal` so the reason follows a runtime language switch.
    */
-  readonly disabledReason: string;
+  readonly disabledReason: string | Signal<string>;
   /**
    * Message announced (via a `role="alert"`) when an item's `[state]` is error
    * and no `*cngxAccordionItemError` slot is provided. English default; a
    * per-instance `[errorMessage]` or the error slot still wins. Ships a spoken
    * default so the error state is never silent to assistive tech (Pillar 2).
+   * Accepts a `Signal`; a shown message keeps its text on a language switch and
+   * speaks the new language with the next error.
    */
-  readonly errorMessage: string;
+  readonly errorMessage: string | Signal<string>;
   /**
    * Default `aria-level` (2-6) every `CngxAccordionGroup` heading wrapper
    * reflects when `[headingLevel]` is not bound. Clamped into the ARIA range by

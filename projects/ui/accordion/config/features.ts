@@ -1,3 +1,5 @@
+import type { Signal } from '@angular/core';
+
 import type { CngxAccordionConfig, CngxAccordionSkin } from './accordion.config';
 import type { CngxAccordionConfigFeature } from './provide-accordion-config';
 
@@ -6,7 +8,8 @@ import type { CngxAccordionConfigFeature } from './provide-accordion-config';
  * (spoken when an item is disabled) and `errorMessage` (spoken via `role="alert"`
  * when an item's `[state]` is error and no error slot is given). Pass either or
  * both. Per-instance `[disabledReason]` / `[errorMessage]` still win over the
- * cascade; this only sets the fallback.
+ * cascade; this only sets the fallback. Pass a `Signal` for either string to
+ * switch the language at runtime.
  *
  * ```ts
  * provideAccordionConfig(
@@ -21,8 +24,8 @@ import type { CngxAccordionConfigFeature } from './provide-accordion-config';
  * @since 0.1.0
  */
 export function withAccordionLabels(payload: {
-  disabledReason?: string;
-  errorMessage?: string;
+  disabledReason?: string | Signal<string>;
+  errorMessage?: string | Signal<string>;
 }): CngxAccordionConfigFeature {
   return { kind: 'labels', payload };
 }

@@ -44,10 +44,10 @@
 <span
   [id]="reasonId"
   class="cngx-visually-hidden"
-  [attr.aria-hidden]="disabled() && disabledReason() ? null : 'true'"
+  [attr.aria-hidden]="disabled() && resolvedDisabledReason() ? null : 'true'"
 >
   @if (disabled()) {
-    {{ disabledReason() }}
+    {{ resolvedDisabledReason() }}
   }
 </span>
 
@@ -65,10 +65,10 @@
         @if (errorTemplate(); as tpl) {
           <ng-container
             [ngTemplateOutlet]="tpl"
-            [ngTemplateOutletContext]="{ $implicit: 'error', message: errorMessage() }"
+            [ngTemplateOutletContext]="{ $implicit: 'error', message: resolvedErrorMessage() }"
           />
         } @else {
-          <span class="cngx-accordion-item__error-default">{{ errorMessage() }}</span>
+          <span class="cngx-accordion-item__error-default">{{ resolvedErrorMessage() }}</span>
         }
       </div>
     }

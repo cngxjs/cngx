@@ -3,6 +3,7 @@ import {
   makeEnvironmentProviders,
   type EnvironmentProviders,
   type Provider,
+  type Signal,
 } from '@angular/core';
 
 import type { CngxAccordionConfig, CngxAccordionSkin } from './accordion.config';
@@ -22,7 +23,10 @@ import { CNGX_ACCORDION_CONFIG, CNGX_ACCORDION_DEFAULTS } from './accordion.conf
 export type CngxAccordionConfigFeature =
   | {
       readonly kind: 'labels';
-      readonly payload: { readonly disabledReason?: string; readonly errorMessage?: string };
+      readonly payload: {
+        readonly disabledReason?: string | Signal<string>;
+        readonly errorMessage?: string | Signal<string>;
+      };
     }
   | { readonly kind: 'headingLevel'; readonly payload: { readonly headingLevel: number } }
   | { readonly kind: 'skin'; readonly payload: { readonly skin: CngxAccordionSkin } }
@@ -38,8 +42,8 @@ function reduceFeatures(
   features: readonly CngxAccordionConfigFeature[],
 ): Partial<CngxAccordionConfig> {
   const out: {
-    disabledReason?: string;
-    errorMessage?: string;
+    disabledReason?: string | Signal<string>;
+    errorMessage?: string | Signal<string>;
     headingLevel?: number;
     skin?: CngxAccordionSkin;
     templates?: NonNullable<CngxAccordionConfig['templates']>;
@@ -69,9 +73,10 @@ function reduceFeatures(
 }
 
 /**
- * Merges a partial config onto a base. Scalars take the partial when present;
- * `templates` is a one-level spread so a partial that sets only some template
- * keys keeps the base's other keys.
+ * Merges a partial config onto a base. Every key `reduceFeatures` set wins
+ * (it never sets one to `undefined`), a copy key `Signal` passes through as a
+ * value; `templates` is a one-level spread so a partial that sets only some
+ * template keys keeps the base's other keys.
  *
  * @internal
  */
@@ -80,10 +85,8 @@ function mergeConfig(
   partial: Partial<CngxAccordionConfig>,
 ): CngxAccordionConfig {
   return {
-    disabledReason: partial.disabledReason ?? base.disabledReason,
-    errorMessage: partial.errorMessage ?? base.errorMessage,
-    headingLevel: partial.headingLevel ?? base.headingLevel,
-    skin: partial.skin ?? base.skin,
+    ...base,
+    ...partial,
     templates: { ...base.templates, ...partial.templates },
   };
 }

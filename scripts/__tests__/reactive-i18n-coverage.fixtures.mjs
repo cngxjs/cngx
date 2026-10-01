@@ -610,6 +610,7 @@ export const HELPERS = [
   'injectChartI18n',
   'resolveSelectConfig',
   'resolveCommandPaletteCopy',
+  'resolveAccordionCopy',
 ];
 
 /** @type {readonly RatchetRow[]} */
@@ -640,34 +641,6 @@ export const RATCHET = [
     member: 'applyFeatures',
     rule: 'R3',
     token: 'CNGX_A11Y_PANEL_CONFIG',
-    closesIn: 7,
-  },
-  {
-    file: 'projects/ui/accordion/accordion-item.component.ts',
-    member: 'CngxAccordionItem.disabledReason',
-    rule: 'R1',
-    token: 'CNGX_ACCORDION_CONFIG',
-    closesIn: 7,
-  },
-  {
-    file: 'projects/ui/accordion/accordion-item.component.ts',
-    member: 'CngxAccordionItem.errorMessage',
-    rule: 'R1',
-    token: 'CNGX_ACCORDION_CONFIG',
-    closesIn: 7,
-  },
-  {
-    file: 'projects/ui/accordion/accordion-item.component.ts',
-    member: 'CngxAccordionItem.errorMessage',
-    rule: 'R4',
-    token: 'CNGX_ACCORDION_CONFIG',
-    closesIn: 7,
-  },
-  {
-    file: 'projects/ui/accordion/config/provide-accordion-config.ts',
-    member: 'mergeConfig',
-    rule: 'R3',
-    token: 'CNGX_ACCORDION_CONFIG',
     closesIn: 7,
   },
   {
@@ -917,7 +890,7 @@ export const RATCHET = [
   },
 ];
 
-export const RATCHET_CEILING = 43;
+export const RATCHET_CEILING = 39;
 
 /** The last phase whose closing commit has landed. */
 export const COMPLETED_PHASE = 6;
@@ -1209,7 +1182,7 @@ export const LIVE_REGIONS = [
   },
   {
     file: 'projects/ui/accordion/accordion-item.component.ts',
-    region: 'CngxAccordionItem.div(errorMessage,errorTemplate)',
+    region: 'CngxAccordionItem.div(errorTemplate,resolvedErrorMessage)',
     spec: 'projects/ui/accordion/accordion-item.component.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 7,

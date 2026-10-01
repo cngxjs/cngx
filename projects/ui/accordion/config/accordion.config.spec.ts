@@ -1,6 +1,8 @@
 import {
   Component,
+  computed,
   inject,
+  signal,
   type EnvironmentProviders,
   type Provider,
   type TemplateRef,
@@ -15,12 +17,13 @@ import { CngxAccordionItem } from '../accordion-item.component';
 import type { CngxAccordionItemIconContext } from '../accordion-item-icon.directive';
 import type { CngxAccordionItemStateContext } from '../accordion-item-state-context';
 import { CngxAccordionItemTitle } from '../accordion-item-title.directive';
-import { CNGX_ACCORDION_CONFIG } from './accordion.config.defaults';
+import { CNGX_ACCORDION_CONFIG, CNGX_ACCORDION_DEFAULTS } from './accordion.config.defaults';
 import {
   withAccordionLabels,
   withAccordionTemplates,
   withDefaultHeadingLevel,
 } from './features';
+import { resolveAccordionCopy } from './inject-accordion-config';
 import { provideAccordionConfig, provideAccordionConfigAt } from './provide-accordion-config';
 
 const fakeIconTemplate = () => ({}) as unknown as TemplateRef<CngxAccordionItemIconContext>;
@@ -32,6 +35,9 @@ const IMPORTS = [CngxAccordionGroup, CngxAccordionItem, CngxAccordionItemTitle];
   template: `<cngx-accordion-group>
     <cngx-accordion-item [disabled]="true">
       <span cngxAccordionItemTitle>A</span>
+    </cngx-accordion-item>
+    <cngx-accordion-item [state]="'error'">
+      <span cngxAccordionItemTitle>B</span>
     </cngx-accordion-item>
   </cngx-accordion-group>`,
   imports: IMPORTS,
@@ -68,8 +74,12 @@ function render(host: Type<unknown>, providers: (Provider | EnvironmentProviders
   TestBed.configureTestingModule({ imports: [host], providers });
   const fixture = TestBed.createComponent(host);
   fixture.detectChanges();
-  const item = fixture.debugElement.query(By.directive(CngxAccordionItem)).injector.get(CngxAccordionItem);
   const group = fixture.debugElement.query(By.directive(CngxAccordionGroup)).injector.get(CngxAccordionGroup);
+  const root = fixture.nativeElement as HTMLElement;
+  const item = {
+    disabledReason: () => root.querySelector('.cngx-visually-hidden')?.textContent?.trim(),
+    errorMessage: () => root.querySelector('[role="alert"]')?.textContent?.trim(),
+  };
   return { item, group };
 }
 
@@ -121,6 +131,47 @@ describe('accordion config cascade', () => {
     ]);
     expect(item.disabledReason()).toBe('per-instance');
     expect(group.headingLevel()).toBe(5);
+  });
+
+  it('resolves plain labels to the same config as the eager merge did', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideAccordionConfig(
+          withAccordionLabels({ errorMessage: 'Load failed.' }),
+          withDefaultHeadingLevel(2),
+        ),
+      ],
+    });
+    expect(TestBed.inject(CNGX_ACCORDION_CONFIG)).toEqual({
+      disabledReason: CNGX_ACCORDION_DEFAULTS.disabledReason,
+      errorMessage: 'Load failed.',
+      headingLevel: 2,
+      skin: undefined,
+      templates: {},
+    });
+  });
+
+  it('follows a Signal label and keeps the resolved copy reference on an equal recompute', () => {
+    const lang = signal<'en' | 'de' | 'de-AT'>('en');
+    const disabledReason = computed(() =>
+      lang() === 'en' ? 'This section is locked.' : 'Dieser Abschnitt ist gesperrt.',
+    );
+    const { item } = render(UnboundHost, [
+      provideAccordionConfig(withAccordionLabels({ disabledReason })),
+    ]);
+    const copy = TestBed.runInInjectionContext(() =>
+      resolveAccordionCopy(inject(CNGX_ACCORDION_CONFIG)),
+    );
+    expect(item.disabledReason()).toBe('This section is locked.');
+
+    lang.set('de');
+    TestBed.tick();
+    expect(item.disabledReason()).toBe('Dieser Abschnitt ist gesperrt.');
+    const german = copy();
+    expect(german.errorMessage).toBe(CNGX_ACCORDION_DEFAULTS.errorMessage);
+
+    lang.set('de-AT');
+    expect(copy()).toBe(german);
   });
 
   it('clamps a config heading level into the ARIA 2-6 range at the group', () => {
