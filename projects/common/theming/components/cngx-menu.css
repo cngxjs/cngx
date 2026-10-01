@@ -414,7 +414,10 @@
  * Canvas, erasing the cursor and the dividers. Re-signal the active item with
  * the Highlight pair and re-draw the separator with CanvasText ink. The checked
  * item self-heals (its ::before glyph + bolder weight survive). Unlayered +
- * direct selectors (outside @layer) to beat the layered component rule. */
+ * direct selectors (outside @layer) to beat the layered component rule.
+ * The highlighted item opts out of forcing, so its children see the UNFORCED
+ * author colours: it declares `--_cngx-forced-ink` and the shortcut and the
+ * checked glyph (both carry their own colours) paint that ink. */
 @media (forced-colors: active) {
   .cngx-menu-item--highlighted {
     /* Menu items are typically <button>s; the UA forces a form-control
@@ -425,6 +428,11 @@
     forced-color-adjust: none;
     background: Highlight;
     color: HighlightText;
+    --_cngx-forced-ink: HighlightText;
+  }
+  .cngx-menu-item--highlighted .cngx-menu-item__kbd,
+  :is([cngxMenuItemCheckbox], [cngxMenuItemRadio]).cngx-menu-item--highlighted.cngx-menu-item--checked::before {
+    color: var(--_cngx-forced-ink, currentColor);
   }
   [cngxMenuSeparator] {
     background: CanvasText;
@@ -438,6 +446,7 @@
   .cngx-menu-item--disabled.cngx-menu-item--highlighted {
     background: Canvas;
     color: GrayText;
+    --_cngx-forced-ink: GrayText;
     outline: 2px solid Highlight;
     outline-offset: -2px;
   }
