@@ -256,7 +256,9 @@ describe('CngxSelectPanelShell - language flip', () => {
     loadFailed: 'Laden fehlgeschlagen',
     loadFailedRetry: 'Erneut versuchen',
     refreshFailed: 'Aktualisieren fehlgeschlagen',
+    refreshFailedRetry: 'Nochmal versuchen',
     commitFailed: 'Speichern fehlgeschlagen',
+    commitFailedRetry: 'Nochmal speichern',
   };
   const DE_ARIA: CngxSelectAriaLabels = {
     ...EN_ARIA,
@@ -264,81 +266,150 @@ describe('CngxSelectPanelShell - language flip', () => {
     statusRefreshing: 'Aktualisiere Optionen',
   };
 
-  function flipToGerman(controls: MockHostControls): void {
-    controls.fallbackLabels.set(DE_FALLBACK);
-    controls.ariaLabels.set(DE_ARIA);
+  /** A live region: how to show it, how to cycle its status, how to read its copy. */
+  interface RegionCase {
+    readonly arrange?: (c: MockHostControls) => void;
+    readonly show: (c: MockHostControls) => void;
+    readonly hide: (c: MockHostControls) => void;
+    readonly read: (root: HTMLElement) => string | null | undefined;
+    readonly en: string;
+    readonly de: string;
   }
 
-  it('does not re-announce on a language flip', () => {
+  // The region keeps its copy over a flip and speaks the new language only
+  // after its own status cycles.
+  function expectKeepsCopyUntilStatus(region: RegionCase): void {
     const { fixture, controls } = setup();
-    controls.activeView.set('skeleton');
-    controls.loadingVariant.set('spinner');
+    region.arrange?.(controls);
+    region.show(controls);
     fixture.detectChanges();
     const root = fixture.nativeElement as HTMLElement;
-    const spinner = () => root.querySelector('.cngx-select__spinner-wrap');
-    expect(spinner()?.getAttribute('aria-label')).toBe('Loading options');
+    expect(region.read(root)).toBe(region.en);
 
-    flipToGerman(controls);
+    controls.fallbackLabels.set(DE_FALLBACK);
+    controls.ariaLabels.set(DE_ARIA);
     fixture.detectChanges();
-    expect(spinner()?.getAttribute('aria-label')).toBe('Loading options');
+    expect(region.read(root)).toBe(region.en);
 
-    // The next status transition speaks the new language.
-    controls.activeView.set('content');
+    region.hide(controls);
     fixture.detectChanges();
-    controls.activeView.set('skeleton');
+    region.show(controls);
     fixture.detectChanges();
-    expect(spinner()?.getAttribute('aria-label')).toBe('Lade Optionen');
+    expect(region.read(root)).toBe(region.de);
+  }
+
+  const label = (selector: string) => (root: HTMLElement) =>
+    root.querySelector(selector)?.getAttribute('aria-label');
+  const text = (selector: string) => (root: HTMLElement) =>
+    root.querySelector(selector)?.textContent?.trim();
+  const messageAndRetry = (selector: string) => (root: HTMLElement) => {
+    const region = root.querySelector(selector);
+    const message = region?.querySelector('.cngx-select__error-message')?.textContent?.trim();
+    const retry = region?.querySelector('.cngx-select__error-retry')?.textContent?.trim();
+    return `${message} | ${retry}`;
+  };
+  const loading = (variant: CngxSelectLoadingVariant) => ({
+    arrange: (c: MockHostControls) => c.loadingVariant.set(variant),
+    show: (c: MockHostControls) => c.activeView.set('skeleton'),
+    hide: (c: MockHostControls) => c.activeView.set('content'),
+  });
+  const refreshing = (variant: CngxSelectRefreshingVariant) => ({
+    arrange: (c: MockHostControls) => c.refreshingVariant.set(variant),
+    show: (c: MockHostControls) => c.showRefreshIndicator.set(true),
+    hide: (c: MockHostControls) => c.showRefreshIndicator.set(false),
   });
 
-  it('keeps the shown error and banner copy until their status changes', () => {
-    const { fixture, controls } = setup();
-    controls.showInlineError.set(true);
-    controls.showCommitError.set(true);
-    controls.showRefreshIndicator.set(true);
-    fixture.detectChanges();
-    const root = fixture.nativeElement as HTMLElement;
-    const inline = () =>
-      root.querySelector('.cngx-select__error--inline .cngx-select__error-message')?.textContent;
-    const banner = () =>
-      root.querySelector('.cngx-select__commit-error .cngx-select__error-message')?.textContent;
-    const refreshing = () =>
-      root.querySelector('.cngx-select__refreshing')?.getAttribute('aria-label');
-
-    flipToGerman(controls);
-    fixture.detectChanges();
-    expect(inline()).toBe('Refresh failed');
-    expect(banner()).toBe('Save failed');
-    expect(refreshing()).toBe('Refreshing options');
-
-    controls.showInlineError.set(false);
-    controls.showCommitError.set(false);
-    controls.showRefreshIndicator.set(false);
-    fixture.detectChanges();
-    controls.showInlineError.set(true);
-    controls.showCommitError.set(true);
-    controls.showRefreshIndicator.set(true);
-    fixture.detectChanges();
-    expect(inline()).toBe('Aktualisieren fehlgeschlagen');
-    expect(banner()).toBe('Speichern fehlgeschlagen');
-    expect(refreshing()).toBe('Aktualisiere Optionen');
+  it('keeps the spinner loading label on a language flip', () => {
+    expectKeepsCopyUntilStatus({
+      ...loading('spinner'),
+      read: label('.cngx-select__spinner-wrap'),
+      en: 'Loading options',
+      de: 'Lade Optionen',
+    });
   });
 
-  it('keeps the first-load error region and its retry label until the view changes', () => {
-    const { fixture, controls } = setup();
-    controls.activeView.set('error');
-    fixture.detectChanges();
-    const root = fixture.nativeElement as HTMLElement;
-    const retry = () => root.querySelector('.cngx-select__error-retry')?.textContent?.trim();
+  it('keeps the bar loading label on a language flip', () => {
+    expectKeepsCopyUntilStatus({
+      ...loading('bar'),
+      read: label('.cngx-select__loading-bar'),
+      en: 'Loading options',
+      de: 'Lade Optionen',
+    });
+  });
 
-    flipToGerman(controls);
-    fixture.detectChanges();
-    expect(retry()).toBe('Retry');
+  it('keeps the text loading message on a language flip', () => {
+    expectKeepsCopyUntilStatus({
+      ...loading('text'),
+      read: text('.cngx-select__loading'),
+      en: 'Loading…',
+      de: 'Lädt…',
+    });
+  });
 
-    controls.activeView.set('skeleton');
-    fixture.detectChanges();
-    controls.activeView.set('error');
-    fixture.detectChanges();
-    expect(retry()).toBe('Erneut versuchen');
+  it('keeps the skeleton loading label on a language flip', () => {
+    expectKeepsCopyUntilStatus({
+      ...loading('skeleton'),
+      read: label('.cngx-select__skeleton'),
+      en: 'Loading options',
+      de: 'Lade Optionen',
+    });
+  });
+
+  it('keeps the first-load error and its retry label on a language flip', () => {
+    expectKeepsCopyUntilStatus({
+      show: (c) => c.activeView.set('error'),
+      hide: (c) => c.activeView.set('content'),
+      read: messageAndRetry('.cngx-select__error'),
+      en: 'Loading failed | Retry',
+      de: 'Laden fehlgeschlagen | Erneut versuchen',
+    });
+  });
+
+  it('keeps the inline refresh error and its retry label on a language flip', () => {
+    expectKeepsCopyUntilStatus({
+      show: (c) => c.showInlineError.set(true),
+      hide: (c) => c.showInlineError.set(false),
+      read: messageAndRetry('.cngx-select__error--inline'),
+      en: 'Refresh failed | Try again',
+      de: 'Aktualisieren fehlgeschlagen | Nochmal versuchen',
+    });
+  });
+
+  it('keeps the commit-error banner and its retry label on a language flip', () => {
+    expectKeepsCopyUntilStatus({
+      show: (c) => c.showCommitError.set(true),
+      hide: (c) => c.showCommitError.set(false),
+      read: messageAndRetry('.cngx-select__commit-error'),
+      en: 'Save failed | Try again',
+      de: 'Speichern fehlgeschlagen | Nochmal speichern',
+    });
+  });
+
+  it('keeps the spinner refreshing label on a language flip', () => {
+    expectKeepsCopyUntilStatus({
+      ...refreshing('spinner'),
+      read: label('.cngx-select__refreshing-spinner'),
+      en: 'Refreshing options',
+      de: 'Aktualisiere Optionen',
+    });
+  });
+
+  it('keeps the dots refreshing label on a language flip', () => {
+    expectKeepsCopyUntilStatus({
+      ...refreshing('dots'),
+      read: label('.cngx-select__refreshing-dots'),
+      en: 'Refreshing options',
+      de: 'Aktualisiere Optionen',
+    });
+  });
+
+  it('keeps the bar refreshing label on a language flip', () => {
+    expectKeepsCopyUntilStatus({
+      ...refreshing('bar'),
+      read: label('.cngx-select__refreshing'),
+      en: 'Refreshing options',
+      de: 'Aktualisiere Optionen',
+    });
   });
 
   it('flips the non-live empty message immediately', () => {
@@ -347,7 +418,7 @@ describe('CngxSelectPanelShell - language flip', () => {
     fixture.detectChanges();
     const root = fixture.nativeElement as HTMLElement;
 
-    flipToGerman(controls);
+    controls.fallbackLabels.set(DE_FALLBACK);
     fixture.detectChanges();
     expect(root.querySelector('.cngx-select__empty')?.textContent).toBe('Keine Optionen');
   });
