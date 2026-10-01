@@ -280,11 +280,14 @@
  * Unlayered + direct selector (outside @scope) to beat the layered component
  * rule and sidestep the @scope/layer cascade trap. */
 @media (forced-colors: active) {
-  /* currentColor, not CanvasText: it is CanvasText on a forced row and stays
-   * HighlightText inside a row that opts out of forcing (forced-color-adjust is
-   * inherited), so the dot never vanishes against a Highlight fill. The checked
-   * ring follows the same ink. */
+  /* The row ink, not a fixed CanvasText: the dot inherits the already-forced
+   * row colour (CanvasText on a plain row, HighlightText inside a row that opts
+   * out of forcing, since forced-color-adjust is inherited), so it never
+   * vanishes against a Highlight fill. The dot opts out itself: a forced
+   * background turns any non-system value, currentColor included, into Canvas.
+   * The checked ring follows the same ink. */
   .cngx-radio-indicator__dot {
+    forced-color-adjust: none;
     background: currentColor;
   }
   .cngx-radio-indicator.cngx-radio-indicator--checked .cngx-radio-indicator__circle {

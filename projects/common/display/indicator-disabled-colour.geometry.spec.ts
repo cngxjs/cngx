@@ -64,6 +64,9 @@ const SCHEMES = ['light', 'dark'] as const;
     <span class="probe-gray" style="color: GrayText"></span>
     <span class="probe-canvastext" style="color: CanvasText"></span>
     <span class="probe-highlighttext" style="color: HighlightText"></span>
+    <span class="cngx-radio-indicator cngx-radio-indicator--md cngx-radio-indicator--checked plain-radio">
+      <span class="cngx-radio-indicator__circle"><span class="cngx-radio-indicator__dot"></span></span>
+    </span>
     <div class="opted-out" style="forced-color-adjust: none; background: Highlight; color: HighlightText">
       <span class="cngx-checkbox-indicator cngx-checkbox-indicator--md cngx-checkbox-indicator--checked">
         <span class="cngx-checkbox-indicator__box"><span class="cngx-checkbox-indicator__check">✓</span></span>
@@ -178,6 +181,9 @@ describe.each(SCHEMES)('disabled indicators, %s', (scheme) => {
     expect(computedValue(one(root, '.opted-out .cngx-radio-indicator__dot'), 'background-color')).toBe(ink);
     expect(computedValue(one(root, '.opted-out .cngx-radio-indicator__circle'), 'border-top-color')).toBe(ink);
     expect(computedValue(at(root, '.cbi-enabled .cngx-checkbox-indicator__box'), 'border-top-color')).toBe(
+      computedValue(one(root, '.probe-canvastext'), 'color'),
+    );
+    expect(computedValue(one(root, '.plain-radio .cngx-radio-indicator__dot'), 'background-color')).toBe(
       computedValue(one(root, '.probe-canvastext'), 'color'),
     );
   });
