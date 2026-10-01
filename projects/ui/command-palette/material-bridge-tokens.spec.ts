@@ -81,7 +81,6 @@ describe('command-palette Material bridge', () => {
     '--cngx-command-row-active-bg',
     '--cngx-command-row-active-color',
     '--cngx-command-row-color',
-    '--cngx-command-row-disabled-opacity',
     '--cngx-command-shadow',
     '--cngx-command-state-color',
   ];

@@ -187,7 +187,6 @@ so a root `[data-density]` swap re-scales the whole palette.
 | `--cngx-command-header-color` / `--cngx-command-header-size` / `--cngx-command-header-weight` / `--cngx-command-header-pad-y` / `--cngx-command-header-pad-x` | muted / `0.75rem` / `600` / `xs` / `sm` space | Group headers |
 | `--cngx-command-row-color` / `--cngx-command-row-radius` / `--cngx-command-row-gap` / `--cngx-command-row-pad` | inherit / `--cngx-radius-sm` / `sm` / `sm` space | Command rows |
 | `--cngx-command-row-active-bg` / `--cngx-command-row-active-color` | accent / inherit | Highlighted row |
-| `--cngx-command-row-disabled-opacity` | `0.5` | Disabled row |
 | `--cngx-command-mark-bg` | `--cngx-color-highlight` | Match `<mark>` |
 | `--cngx-command-state-pad` / `--cngx-command-state-color` / `--cngx-command-error-color` / `--cngx-command-retry-bg` | `lg` space / muted / danger / transparent | Loading, empty and error chrome |
 | `--cngx-command-footer-gap` / `--cngx-command-footer-pad-y` / `--cngx-command-footer-pad-x` / `--cngx-command-footer-size` / `--cngx-command-footer-color` | `md` / `sm` / `md` space / `0.75rem` / muted | Legend footer |
