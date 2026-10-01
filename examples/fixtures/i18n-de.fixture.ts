@@ -180,12 +180,6 @@ export const SELECT_ANNOUNCER_DE: CngxSelectAnnouncerConfig = {
   },
 };
 
-/**
- * Language of the live-switch story, flipped by its EN / DE toggle. The
- * computed sources below feed the reactive-from-birth tokens, so the flip
- * re-renders their copy without a reload. Module-level, so the story's
- * `viewProviders` can reference them.
- */
 const minLengthOf = (error: unknown): number =>
   (error as { minLength?: number }).minLength ?? 0;
 export const ERROR_MESSAGES_EN: ErrorMessageMap = {
@@ -210,6 +204,12 @@ export const TREETABLE_DE: Partial<TreetableLabels> = {
   rowsDeselected: (n) => (n === 1 ? '1 Zeile abgewählt' : `${n} Zeilen abgewählt`),
 };
 
+/**
+ * Language of the live-switch story, flipped by its EN / DE toggle. The
+ * computed sources below feed the reactive-from-birth tokens, so the flip
+ * re-renders their copy without a reload. Module-level, so the story's
+ * `viewProviders` can reference them.
+ */
 export const DEMO_LANG = signal<'en' | 'de'>('en');
 const isDe = (): boolean => DEMO_LANG() === 'de';
 export const DEMO_KPI_LABELS = computed(() => (isDe() ? KPI_DE : {}));
@@ -264,7 +264,6 @@ export const DEMO_SELECT_ANNOUNCER = computed<CngxSelectAnnouncerConfig>(() =>
   isDe() ? SELECT_ANNOUNCER_DE : {},
 );
 
-/** The German pack, spread into the root providers by `?lang=de`. */
 export const DEMO_ERROR_MESSAGES = computed<ErrorMessageMap>(() =>
   isDe() ? ERROR_MESSAGES_DE : ERROR_MESSAGES_EN,
 );
@@ -275,6 +274,7 @@ export const DEMO_TREETABLE_LABELS = computed<Partial<TreetableLabels>>(() =>
   isDe() ? TREETABLE_DE : {},
 );
 
+/** The German pack, spread into the root providers by `?lang=de`. */
 export const DE_PACK: Provider[] = [
   provideFeedbackI18n({
     alertsRegionLabel: 'Hinweise',

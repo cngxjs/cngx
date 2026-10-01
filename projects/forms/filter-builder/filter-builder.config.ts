@@ -295,6 +295,7 @@ function feature(
 
 /**
  * Override any subset of the i18n bundle. `operators` is shallow-merged.
+ * Pass a `Signal` to switch the copy at runtime; the merge then follows it.
  *
  * @category forms/filter-builder/config
  */

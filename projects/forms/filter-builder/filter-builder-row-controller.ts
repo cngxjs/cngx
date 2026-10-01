@@ -109,7 +109,8 @@ export interface CngxFilterRowWriteSink {
  * Dependencies `createFilterRowController` composes over. `node`, `fields`
  * and `templates` are signals owned by the host component; `fieldMap` is
  * optional - when omitted the controller derives it from `fields`.
- * `config` and `editors` are injection-time snapshots, and `sink` is the
+ * `config` and `editors` are injection-time objects; the copy under
+ * `config.i18n` may be a `Signal` and is read live. `sink` is the
  * component's write seam.
  *
  * @category forms/filter-builder/config
