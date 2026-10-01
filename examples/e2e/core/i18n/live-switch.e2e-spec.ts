@@ -186,4 +186,37 @@ test.describe('live language switch', () => {
     await chipRemove('Green').click();
     await expect(liveRegion).toHaveText('Colors: Green entfernt, 1 ausgewählt');
   });
+
+  test('forms and treetable copy switch labels at once and keep a shown validation message', async ({
+    page,
+  }) => {
+    const route = 'core/i18n/language-pack/live-switch-forms';
+    expect(routesIn('core', 'i18n', 'language-pack').map((r) => r.path)).toContain(route);
+    await gotoDemo(page, route);
+
+    const field = page.locator('cngx-form-field');
+    const input = field.locator('input');
+    const clear = field.locator('button[aria-label]');
+    const errors = field.locator('cngx-field-errors');
+    const expandToggle = page.locator('cngx-treetable .cngx-treetable__expand-cell button').first();
+
+    // (1) EN baseline.
+    await expect(clear).toHaveAttribute('aria-label', 'Clear');
+    await expect(expandToggle).toHaveAttribute('aria-label', /^(Expand|Collapse)$/);
+
+    // (2) A shown validation message in English.
+    await input.click();
+    await page.keyboard.press('Tab');
+    await expect(errors).toHaveText('This field is required.');
+
+    // (3) Flip to German, no reload: labels switch, the shown message stays.
+    await page.getByRole('button', { name: 'DE', exact: true }).click();
+    await expect(clear).toHaveAttribute('aria-label', 'Leeren');
+    await expect(expandToggle).toHaveAttribute('aria-label', /^(Aufklappen|Zuklappen)$/);
+    await expect(errors).toHaveText('This field is required.');
+
+    // (4) The next error change speaks German.
+    await input.fill('abc');
+    await expect(errors).toHaveText('Mindestens 6 Zeichen.');
+  });
 });

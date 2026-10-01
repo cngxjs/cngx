@@ -5,9 +5,14 @@ import { provideDisplayI18n, withDisplayI18nLabels } from '@cngx/common/display'
 import type { CngxStepperAriaLabels, CngxStepperFallbackLabels, CngxStepperI18nOverrides } from '@cngx/common/stepper';
 import type { CngxTabsAriaLabels, CngxTabsFallbackLabels, CngxTabsI18n } from '@cngx/common/tabs';
 import { provideInteractiveI18n, withInteractiveI18nLabels } from '@cngx/common/interactive';
-import { provideTreetableAt, withTreetableLabels } from '@cngx/data-display/treetable';
+import {
+  provideTreetableAt,
+  withTreetableLabels,
+  type TreetableLabels,
+} from '@cngx/data-display/treetable';
+import type { ErrorMessageMap } from '@cngx/forms/field';
 import { provideFilterBuilderConfigAt, withFilterBuilderI18n } from '@cngx/forms/filter-builder';
-import { provideInputConfigAt, withInputAriaLabels } from '@cngx/forms/input';
+import { provideInputConfigAt, withInputAriaLabels, type InputAriaLabels } from '@cngx/forms/input';
 import {
   provideSelectConfigAt,
   withFallbackLabels,
@@ -181,6 +186,30 @@ export const SELECT_ANNOUNCER_DE: CngxSelectAnnouncerConfig = {
  * re-renders their copy without a reload. Module-level, so the story's
  * `viewProviders` can reference them.
  */
+const minLengthOf = (error: unknown): number =>
+  (error as { minLength?: number }).minLength ?? 0;
+export const ERROR_MESSAGES_EN: ErrorMessageMap = {
+  required: () => 'This field is required.',
+  minLength: (e) => `At least ${minLengthOf(e)} characters.`,
+};
+export const ERROR_MESSAGES_DE: ErrorMessageMap = {
+  required: () => 'Pflichtfeld.',
+  minLength: (e) => `Mindestens ${minLengthOf(e)} Zeichen.`,
+};
+export const INPUT_ARIA_DE: Partial<InputAriaLabels> = { clear: 'Leeren' };
+export const TREETABLE_DE: Partial<TreetableLabels> = {
+  loading: 'Wird geladen',
+  refreshing: 'Wird aktualisiert',
+  errorFallback: 'Daten konnten nicht geladen werden',
+  emptyFallback: 'Keine Daten',
+  expand: 'Aufklappen',
+  collapse: 'Zuklappen',
+  selectAll: 'Alle Zeilen auswählen',
+  selectRow: 'Zeile auswählen',
+  rowsSelected: (n) => (n === 1 ? '1 Zeile ausgewählt' : `${n} Zeilen ausgewählt`),
+  rowsDeselected: (n) => (n === 1 ? '1 Zeile abgewählt' : `${n} Zeilen abgewählt`),
+};
+
 export const DEMO_LANG = signal<'en' | 'de'>('en');
 const isDe = (): boolean => DEMO_LANG() === 'de';
 export const DEMO_KPI_LABELS = computed(() => (isDe() ? KPI_DE : {}));
@@ -236,6 +265,16 @@ export const DEMO_SELECT_ANNOUNCER = computed<CngxSelectAnnouncerConfig>(() =>
 );
 
 /** The German pack, spread into the root providers by `?lang=de`. */
+export const DEMO_ERROR_MESSAGES = computed<ErrorMessageMap>(() =>
+  isDe() ? ERROR_MESSAGES_DE : ERROR_MESSAGES_EN,
+);
+export const DEMO_INPUT_ARIA_LABELS = computed<Partial<InputAriaLabels>>(() =>
+  isDe() ? INPUT_ARIA_DE : {},
+);
+export const DEMO_TREETABLE_LABELS = computed<Partial<TreetableLabels>>(() =>
+  isDe() ? TREETABLE_DE : {},
+);
+
 export const DE_PACK: Provider[] = [
   provideFeedbackI18n({
     alertsRegionLabel: 'Hinweise',
@@ -257,20 +296,7 @@ export const DE_PACK: Provider[] = [
       asyncRefreshFailed: 'Aktualisierung fehlgeschlagen',
     },
   }),
-  ...provideTreetableAt(
-    withTreetableLabels({
-      loading: 'Wird geladen',
-      refreshing: 'Wird aktualisiert',
-      errorFallback: 'Daten konnten nicht geladen werden',
-      emptyFallback: 'Keine Daten',
-      expand: 'Aufklappen',
-      collapse: 'Zuklappen',
-      selectAll: 'Alle Zeilen auswählen',
-      selectRow: 'Zeile auswählen',
-      rowsSelected: (n) => (n === 1 ? '1 Zeile ausgewählt' : `${n} Zeilen ausgewählt`),
-      rowsDeselected: (n) => (n === 1 ? '1 Zeile abgewählt' : `${n} Zeilen abgewählt`),
-    }),
-  ),
+  ...provideTreetableAt(withTreetableLabels(TREETABLE_DE)),
   ...provideFilterBuilderConfigAt(
     withFilterBuilderI18n({
       addFilter: 'Filter hinzufügen',
