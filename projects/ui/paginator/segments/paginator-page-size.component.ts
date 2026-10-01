@@ -10,7 +10,7 @@ import {
 import { CngxListbox, CngxListboxTrigger, CngxOption } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
 
-import { injectPaginatorConfig } from '../paginator-config';
+import { injectPaginatorAriaLabels, injectPaginatorConfig } from '../paginator-config';
 import { CNGX_PAGINATOR_GLYPHS } from '../paginator-glyphs';
 import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
 
@@ -44,7 +44,7 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
       [cngxPopoverTrigger]="pop"
       [haspopup]="'listbox'"
       [popover]="pop"
-      [attr.aria-label]="config.ariaLabels.itemsPerPage"
+      [attr.aria-label]="ariaLabels().itemsPerPage"
       [disabled]="host.isBusy()"
       (click)="pop.toggle()"
     >
@@ -56,7 +56,7 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
         cngxListbox
         class="cngx-paginator__select-panel"
         tabindex="0"
-        [label]="config.ariaLabels.itemsPerPage"
+        [label]="ariaLabels().itemsPerPage"
         [value]="host.pageSize()"
         (activated)="onSelect($event, pop, trigger)"
         #lb="cngxListbox"
@@ -71,7 +71,8 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
 })
 export class CngxPaginatorPageSize {
   protected readonly host = inject(CNGX_PAGINATOR_HOST);
-  protected readonly config = injectPaginatorConfig();
+  private readonly config = injectPaginatorConfig();
+  protected readonly ariaLabels = injectPaginatorAriaLabels();
   protected readonly glyphs = CNGX_PAGINATOR_GLYPHS;
 
   /**

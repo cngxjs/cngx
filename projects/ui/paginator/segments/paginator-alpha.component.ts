@@ -9,7 +9,7 @@ import {
 import { CngxRovingItem, CngxRovingTabindex } from '@cngx/common/a11y';
 import { CNGX_BUCKET_PAGINATE_HOST } from '@cngx/common/data';
 
-import { injectPaginatorConfig } from '../paginator-config';
+import { injectPaginatorAriaLabels } from '../paginator-config';
 
 /**
  * Alphabetical / category chips: a `role="group"` toggle strip over the
@@ -48,7 +48,7 @@ import { injectPaginatorConfig } from '../paginator-config';
     <div
       class="cngx-paginator__alpha"
       role="group"
-      [attr.aria-label]="config.ariaLabels.bucketGroup"
+      [attr.aria-label]="ariaLabels().bucketGroup"
       cngxRovingTabindex
       [(activeIndex)]="rovingIndex"
     >
@@ -79,7 +79,7 @@ import { injectPaginatorConfig } from '../paginator-config';
 })
 export class CngxPaginatorAlpha {
   protected readonly host = inject(CNGX_BUCKET_PAGINATE_HOST);
-  protected readonly config = injectPaginatorConfig();
+  protected readonly ariaLabels = injectPaginatorAriaLabels();
 
   /**
    * Roving focus cursor. A `linkedSignal` so the strip's single tab stop tracks
@@ -110,8 +110,8 @@ export class CngxPaginatorAlpha {
    */
   protected chipLabel(label: string): string {
     return this.host.isEmpty(label)
-      ? this.config.ariaLabels.emptyBucket(label)
-      : this.config.ariaLabels.bucket(label);
+      ? this.ariaLabels().emptyBucket(label)
+      : this.ariaLabels().bucket(label);
   }
 
   protected select(label: string): void {

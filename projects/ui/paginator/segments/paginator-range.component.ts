@@ -6,7 +6,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 
-import { injectPaginatorConfig } from '../paginator-config';
+import { injectPaginatorFormats } from '../paginator-config';
 import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
 
 /**
@@ -33,7 +33,7 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
 })
 export class CngxPaginatorRange {
   protected readonly host = inject(CNGX_PAGINATOR_HOST);
-  private readonly config = injectPaginatorConfig();
+  private readonly formats = injectPaginatorFormats();
 
   /** 1-based index of the first item on the current page (0 when empty). */
   protected readonly start = computed<number>(() =>
@@ -49,6 +49,6 @@ export class CngxPaginatorRange {
 
   /** Formatted readout from the config range formatter (EN default `start-end of total`). */
   protected readonly text = computed<string>(() =>
-    this.config.formats.range(this.start(), this.end(), this.host.total()),
+    this.formats().range(this.start(), this.end(), this.host.total()),
   );
 }

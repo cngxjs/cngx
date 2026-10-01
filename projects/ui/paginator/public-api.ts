@@ -59,6 +59,9 @@ export {
   withPaginatorPageSizeOptions,
   withPaginatorTemplates,
   injectPaginatorConfig,
+  injectPaginatorAriaLabels,
+  injectPaginatorAnnouncements,
+  injectPaginatorFormats,
 } from './paginator-config';
 export {
   createPaginatorAnnouncer,

@@ -8,7 +8,7 @@ import {
 
 import { CngxProgress } from '@cngx/ui/feedback';
 
-import { injectPaginatorConfig } from '../paginator-config';
+import { injectPaginatorAriaLabels } from '../paginator-config';
 import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
 
 /**
@@ -39,7 +39,7 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
       <cngx-progress
         variant="linear"
         [progress]="fillPercent()"
-        [label]="config.ariaLabels.railPosition"
+        [label]="ariaLabels().railPosition"
       />
       <span
         class="cngx-paginator__rail-knob"
@@ -52,7 +52,7 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
 })
 export class CngxPaginatorRail {
   protected readonly host = inject(CNGX_PAGINATOR_HOST);
-  protected readonly config = injectPaginatorConfig();
+  protected readonly ariaLabels = injectPaginatorAriaLabels();
 
   /**
    * Fill percentage (0-100) of the current page across the page span. A single

@@ -6,7 +6,11 @@ import { describe, expect, test } from 'vitest';
 
 import { CngxPaginate, createManualState } from '@cngx/common/data';
 import type { CngxAsyncState } from '@cngx/core/utils';
-import { provideCngxPaginatorConfig, withPaginatorAnnouncements } from '@cngx/ui/paginator';
+import {
+  provideCngxPaginatorConfig,
+  withPaginatorAnnouncements,
+  type CngxPaginatorAnnouncements,
+} from '@cngx/ui/paginator';
 
 import {
   CngxMatPaginator,
@@ -272,6 +276,26 @@ describe('CngxMatPaginator (bridge)', () => {
     await settle(fixture);
     const live = fixture.nativeElement.querySelector('.cngx-mat-paginator-live') as HTMLElement;
     expect(live.textContent).toBe('Seite 1 von 10');
+  });
+
+  test('(k4) does not re-announce on a language flip', async () => {
+    const phrases = signal<Partial<CngxPaginatorAnnouncements>>({});
+    TestBed.configureTestingModule({
+      providers: [...providers, provideCngxPaginatorConfig(withPaginatorAnnouncements(phrases))],
+    });
+    const { fixture, paginate, host } = await setup();
+    host.announce.set(true);
+    await settle(fixture);
+    const live = fixture.nativeElement.querySelector('.cngx-mat-paginator-live') as HTMLElement;
+    expect(live.textContent).toBe('Page 1 of 10');
+
+    phrases.set({ pageChange: (page, total) => `Seite ${page} von ${total}` });
+    await settle(fixture);
+    expect(live.textContent).toBe('Page 1 of 10');
+
+    paginate.setPage(1);
+    await settle(fixture);
+    expect(live.textContent).toBe('Seite 2 von 10');
   });
 
   test('(k3) a bound [announceLabel] overrides the config default with the range context', async () => {

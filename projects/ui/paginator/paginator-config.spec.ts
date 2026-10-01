@@ -1,15 +1,21 @@
-import { Injector, runInInjectionContext } from '@angular/core';
+import { computed, Injector, runInInjectionContext, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, test } from 'vitest';
 
 import {
   CNGX_PAGINATOR_CONFIG,
   CNGX_PAGINATOR_DEFAULTS,
+  injectPaginatorAnnouncements,
+  injectPaginatorAriaLabels,
   injectPaginatorConfig,
+  injectPaginatorFormats,
   provideCngxPaginatorConfig,
   provideCngxPaginatorConfigAt,
+  withPaginatorAnnouncements,
   withPaginatorAriaLabels,
   withPaginatorPageSizeOptions,
+  withPaginatorRangeFormat,
+  type CngxPaginatorAriaLabels,
 } from './paginator-config';
 
 describe('paginator page-size options cascade', () => {
@@ -43,11 +49,63 @@ describe('paginator page-size options cascade', () => {
       parent,
     });
     const config = runInInjectionContext(child, () => injectPaginatorConfig());
+    const ariaLabels = runInInjectionContext(child, () => injectPaginatorAriaLabels());
+    const announcements = runInInjectionContext(child, () => injectPaginatorAnnouncements());
 
     expect(config.pageSizeOptions).toEqual([5, 15]);
     // The scoped override changes only its own sub-tree; the parent's aria-label
     // and the default announcements survive the merge.
-    expect(config.ariaLabels.next).toBe('Nächste Seite');
-    expect(config.announcements.loading).toBe('Loading');
+    expect(ariaLabels().next).toBe('Nächste Seite');
+    expect(announcements().loading).toBe('Loading');
+  });
+
+  test('resolves plain overrides to the same bundles as the eager merge did', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideCngxPaginatorConfig(
+          withPaginatorAriaLabels({ next: 'Nächste Seite' }),
+          withPaginatorAnnouncements({ loading: 'Lädt' }),
+        ),
+      ],
+    });
+    const ariaLabels = TestBed.runInInjectionContext(() => injectPaginatorAriaLabels());
+    const announcements = TestBed.runInInjectionContext(() => injectPaginatorAnnouncements());
+    expect(ariaLabels()).toEqual({ ...CNGX_PAGINATOR_DEFAULTS.ariaLabels, next: 'Nächste Seite' });
+    expect(announcements()).toEqual({ ...CNGX_PAGINATOR_DEFAULTS.announcements, loading: 'Lädt' });
+  });
+
+  test('follows Signal overrides and keeps the bundle reference on an equal recompute', () => {
+    const lang = signal<'en' | 'de' | 'de-AT'>('en');
+    TestBed.configureTestingModule({
+      providers: [
+        provideCngxPaginatorConfig(
+          withPaginatorAriaLabels(
+            computed<Partial<CngxPaginatorAriaLabels>>(() =>
+              lang() === 'en' ? {} : { next: 'Nächste Seite' },
+            ),
+          ),
+          withPaginatorRangeFormat(
+            computed(() =>
+              lang() === 'en'
+                ? (start: number, end: number, total: number) => `${start}-${end} of ${total}`
+                : (start: number, end: number, total: number) => `${start}-${end} von ${total}`,
+            ),
+          ),
+        ),
+      ],
+    });
+    const ariaLabels = TestBed.runInInjectionContext(() => injectPaginatorAriaLabels());
+    const formats = TestBed.runInInjectionContext(() => injectPaginatorFormats());
+    expect(ariaLabels().next).toBe('Next page');
+    expect(formats().range(1, 10, 95)).toBe('1-10 of 95');
+
+    lang.set('de');
+    const german = ariaLabels();
+    expect(german.next).toBe('Nächste Seite');
+    expect(german.previous).toBe('Previous page');
+    expect(formats().range(1, 10, 95)).toBe('1-10 von 95');
+
+    lang.set('de-AT');
+    expect(ariaLabels()).toBe(german);
   });
 });

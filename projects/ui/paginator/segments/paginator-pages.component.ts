@@ -15,7 +15,7 @@ import { CngxRovingItem, CngxRovingTabindex } from '@cngx/common/a11y';
 import { CngxListbox, CngxListboxTrigger, CngxOption } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
 
-import { injectPaginatorConfig } from '../paginator-config';
+import { injectPaginatorAriaLabels } from '../paginator-config';
 import { CNGX_PAGINATOR_GLYPHS } from '../paginator-glyphs';
 import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
 import { pageWindowEqual, type PageWindow } from './page-model';
@@ -59,7 +59,7 @@ import { CNGX_PAGINATOR_PAGE_WINDOW_FACTORY } from './paginator-page-window.toke
             class="cngx-paginator__button cngx-paginator__page"
             [class.cngx-paginator__page--current]="isCurrent(item.index)"
             [attr.aria-current]="isCurrent(item.index) ? 'page' : null"
-            [attr.aria-label]="config.ariaLabels.page(item.index + 1)"
+            [attr.aria-label]="ariaLabels().page(item.index + 1)"
             [attr.aria-disabled]="host.isBusy() ? 'true' : null"
             (click)="goto(item.index)"
           >
@@ -75,7 +75,7 @@ import { CNGX_PAGINATOR_PAGE_WINDOW_FACTORY } from './paginator-page-window.toke
             [cngxPopoverTrigger]="morePopover"
             [haspopup]="'listbox'"
             [popover]="morePopover"
-            [attr.aria-label]="config.ariaLabels.morePages"
+            [attr.aria-label]="ariaLabels().morePages"
             (click)="openOverflow(morePopover, moreUl)"
           >
             {{ glyphs.more }}
@@ -92,7 +92,7 @@ import { CNGX_PAGINATOR_PAGE_WINDOW_FACTORY } from './paginator-page-window.toke
               #moreUl
               tabindex="0"
               class="cngx-paginator__overflow-panel"
-              [label]="config.ariaLabels.morePages"
+              [label]="ariaLabels().morePages"
               [value]="null"
               (valueChange)="onSelectOverflow($event, morePopover)"
             >
@@ -109,7 +109,7 @@ import { CNGX_PAGINATOR_PAGE_WINDOW_FACTORY } from './paginator-page-window.toke
 })
 export class CngxPaginatorPages {
   protected readonly host = inject(CNGX_PAGINATOR_HOST);
-  protected readonly config = injectPaginatorConfig();
+  protected readonly ariaLabels = injectPaginatorAriaLabels();
   protected readonly glyphs = CNGX_PAGINATOR_GLYPHS;
   private readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly injector = inject(Injector);

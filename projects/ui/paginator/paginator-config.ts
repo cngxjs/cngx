@@ -1,13 +1,17 @@
 import {
+  computed,
   inject,
   InjectionToken,
+  isSignal,
   makeEnvironmentProviders,
   Optional,
   SkipSelf,
   type EnvironmentProviders,
   type Provider,
+  type Signal,
   type TemplateRef,
 } from '@angular/core';
+import { createOverrideMerge } from '@cngx/core/utils';
 
 /**
  * Accessible-name strings for the paginator landmark and its segment parts.
@@ -156,14 +160,19 @@ export interface CngxPaginatorTemplates {
  * each merged independently by the reducer in
  * {@link provideCngxPaginatorConfig}.
  *
+ * The three copy sub-trees accept a value or a `Signal`, so the paginator
+ * follows a runtime language switch. Read them through
+ * {@link injectPaginatorAriaLabels}, {@link injectPaginatorAnnouncements} and
+ * {@link injectPaginatorFormats}, inside a `computed()`, a template or a handler.
+ *
  * @category ui/paginator
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/paginator-config.ts
  * @since 0.1.0
  */
 export interface CngxPaginatorConfig {
-  readonly ariaLabels: CngxPaginatorAriaLabels;
-  readonly announcements: CngxPaginatorAnnouncements;
-  readonly formats: CngxPaginatorFormats;
+  readonly ariaLabels: CngxPaginatorAriaLabels | Signal<CngxPaginatorAriaLabels>;
+  readonly announcements: CngxPaginatorAnnouncements | Signal<CngxPaginatorAnnouncements>;
+  readonly formats: CngxPaginatorFormats | Signal<CngxPaginatorFormats>;
   /**
    * Default items-per-page choices the `cngx-pgn-page-size` dropdown renders
    * when no per-instance `[options]` is bound. The instance input still wins
@@ -175,39 +184,49 @@ export interface CngxPaginatorConfig {
   readonly templates?: CngxPaginatorTemplates;
 }
 
+const ARIA_LABELS_DEFAULTS: CngxPaginatorAriaLabels = {
+  label: 'Pagination',
+  first: 'First page',
+  previous: 'Previous page',
+  next: 'Next page',
+  last: 'Last page',
+  page: (page) => `Page ${page}`,
+  morePages: 'More pages',
+  itemsPerPage: 'Items per page',
+  goToPage: 'Go to page',
+  pageOfPages: 'Select page',
+  loadMore: 'Load more',
+  allLoaded: (total) => `All ${total} loaded`,
+  bucket: (label) => label,
+  emptyBucket: (label) => `${label}, no items`,
+  bucketGroup: 'Categories',
+  railPosition: 'Page position',
+};
+
+const ANNOUNCEMENTS_DEFAULTS: CngxPaginatorAnnouncements = {
+  pageChange: (page, totalPages) => `Page ${page} of ${totalPages}`,
+  loading: 'Loading',
+  updated: 'Updated',
+};
+
+const FORMATS_DEFAULTS: CngxPaginatorFormats = {
+  // The readout segments render the formatter output as sanitised HTML, so the
+  // current value (the page, or the item range) is emphasised with `<b>`;
+  // Angular's sanitiser keeps `<b>` and strips anything dangerous.
+  range: (start, end, total) => `<b>${start}-${end}</b> of ${total}`,
+  pageStatus: (page, totalPages) => `Page <b>${page}</b> of ${totalPages}`,
+  ...CNGX_PAGINATOR_READOUT_DEFAULTS,
+};
+
 /** Library defaults - English. Override via {@link provideCngxPaginatorConfig}. */
-export const CNGX_PAGINATOR_DEFAULTS: CngxPaginatorConfig = {
-  ariaLabels: {
-    label: 'Pagination',
-    first: 'First page',
-    previous: 'Previous page',
-    next: 'Next page',
-    last: 'Last page',
-    page: (page) => `Page ${page}`,
-    morePages: 'More pages',
-    itemsPerPage: 'Items per page',
-    goToPage: 'Go to page',
-    pageOfPages: 'Select page',
-    loadMore: 'Load more',
-    allLoaded: (total) => `All ${total} loaded`,
-    bucket: (label) => label,
-    emptyBucket: (label) => `${label}, no items`,
-    bucketGroup: 'Categories',
-    railPosition: 'Page position',
-  },
-  announcements: {
-    pageChange: (page, totalPages) => `Page ${page} of ${totalPages}`,
-    loading: 'Loading',
-    updated: 'Updated',
-  },
-  formats: {
-    // The readout segments render the formatter output as sanitised HTML, so the
-    // current value (the page, or the item range) is emphasised with `<b>`;
-    // Angular's sanitiser keeps `<b>` and strips anything dangerous.
-    range: (start, end, total) => `<b>${start}-${end}</b> of ${total}`,
-    pageStatus: (page, totalPages) => `Page <b>${page}</b> of ${totalPages}`,
-    ...CNGX_PAGINATOR_READOUT_DEFAULTS,
-  },
+export const CNGX_PAGINATOR_DEFAULTS: CngxPaginatorConfig & {
+  readonly ariaLabels: CngxPaginatorAriaLabels;
+  readonly announcements: CngxPaginatorAnnouncements;
+  readonly formats: CngxPaginatorFormats;
+} = {
+  ariaLabels: ARIA_LABELS_DEFAULTS,
+  announcements: ANNOUNCEMENTS_DEFAULTS,
+  formats: FORMATS_DEFAULTS,
   // Includes the brain's default pageSize (10) so the trigger value is always a
   // member of the panel; a common data-table ladder, locale-neutral.
   pageSizeOptions: [10, 25, 50, 100],
@@ -222,10 +241,13 @@ export const CNGX_PAGINATOR_DEFAULTS: CngxPaginatorConfig = {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/paginator-config.ts
  * @since 0.1.0
  */
-export const CNGX_PAGINATOR_CONFIG = new InjectionToken<CngxPaginatorConfig>('CngxPaginatorConfig', {
-  providedIn: 'root',
-  factory: () => CNGX_PAGINATOR_DEFAULTS,
-});
+export const CNGX_PAGINATOR_CONFIG = new InjectionToken<CngxPaginatorConfig>(
+  'CngxPaginatorConfig',
+  {
+    providedIn: 'root',
+    factory: () => CNGX_PAGINATOR_DEFAULTS,
+  },
+);
 
 /**
  * A single configuration override produced by a `with*` feature factory.
@@ -238,11 +260,33 @@ export const CNGX_PAGINATOR_CONFIG = new InjectionToken<CngxPaginatorConfig>('Cn
  * @since 0.1.0
  */
 export type CngxPaginatorConfigFeature =
-  | { readonly kind: 'ariaLabels'; readonly payload: Partial<CngxPaginatorAriaLabels> }
-  | { readonly kind: 'announcements'; readonly payload: Partial<CngxPaginatorAnnouncements> }
-  | { readonly kind: 'formats'; readonly payload: Partial<CngxPaginatorFormats> }
+  | {
+      readonly kind: 'ariaLabels';
+      readonly payload: Partial<CngxPaginatorAriaLabels> | Signal<Partial<CngxPaginatorAriaLabels>>;
+    }
+  | {
+      readonly kind: 'announcements';
+      readonly payload:
+        | Partial<CngxPaginatorAnnouncements>
+        | Signal<Partial<CngxPaginatorAnnouncements>>;
+    }
+  | {
+      readonly kind: 'formats';
+      readonly payload: Partial<CngxPaginatorFormats> | Signal<Partial<CngxPaginatorFormats>>;
+    }
   | { readonly kind: 'pageSizeOptions'; readonly payload: readonly number[] }
   | { readonly kind: 'templates'; readonly payload: Partial<CngxPaginatorTemplates> };
+
+/** One `formats` key as a feature payload, a value or a Signal. */
+function formatPayload<K extends keyof CngxPaginatorFormats>(
+  key: K,
+  value: NonNullable<CngxPaginatorFormats[K]> | Signal<NonNullable<CngxPaginatorFormats[K]>>,
+): Partial<CngxPaginatorFormats> | Signal<Partial<CngxPaginatorFormats>> {
+  if (isSignal(value)) {
+    return computed(() => ({ [key]: value() }) as Partial<CngxPaginatorFormats>);
+  }
+  return { [key]: value } as Partial<CngxPaginatorFormats>;
+}
 
 /** Reduce a feature list onto a base config, merging each sub-tree in isolation. */
 function applyFeatures(
@@ -256,11 +300,11 @@ function applyFeatures(
   let templates = base.templates;
   for (const feature of features) {
     if (feature.kind === 'ariaLabels') {
-      ariaLabels = { ...ariaLabels, ...feature.payload };
+      ariaLabels = createOverrideMerge(ariaLabels, feature.payload);
     } else if (feature.kind === 'announcements') {
-      announcements = { ...announcements, ...feature.payload };
+      announcements = createOverrideMerge(announcements, feature.payload);
     } else if (feature.kind === 'formats') {
-      formats = { ...formats, ...feature.payload };
+      formats = createOverrideMerge(formats, feature.payload);
     } else if (feature.kind === 'pageSizeOptions') {
       // A size list is one atomic value - replace, do not merge.
       pageSizeOptions = feature.payload;
@@ -273,7 +317,8 @@ function applyFeatures(
 
 /**
  * Override any subset of the paginator accessible-name strings. Per-instance
- * `aria-label` bindings still win over the cascade for the landmark name.
+ * `aria-label` bindings still win over the cascade for the landmark name. Pass
+ * a `Signal` to switch the language at runtime.
  *
  * ```ts
  * provideCngxPaginatorConfig(
@@ -286,13 +331,15 @@ function applyFeatures(
  * @since 0.1.0
  */
 export function withPaginatorAriaLabels(
-  payload: Partial<CngxPaginatorAriaLabels>,
+  payload: Partial<CngxPaginatorAriaLabels> | Signal<Partial<CngxPaginatorAriaLabels>>,
 ): CngxPaginatorConfigFeature {
   return { kind: 'ariaLabels', payload };
 }
 
 /**
- * Override any subset of the paginator live-region announcement phrasing.
+ * Override any subset of the paginator live-region announcement phrasing. Pass
+ * a `Signal` to switch the language at runtime; the live region speaks the new
+ * phrasing with its next change.
  *
  * ```ts
  * provideCngxPaginatorConfig(
@@ -309,7 +356,7 @@ export function withPaginatorAriaLabels(
  * @since 0.1.0
  */
 export function withPaginatorAnnouncements(
-  payload: Partial<CngxPaginatorAnnouncements>,
+  payload: Partial<CngxPaginatorAnnouncements> | Signal<Partial<CngxPaginatorAnnouncements>>,
 ): CngxPaginatorConfigFeature {
   return { kind: 'announcements', payload };
 }
@@ -329,9 +376,9 @@ export function withPaginatorAnnouncements(
  * @since 0.1.0
  */
 export function withPaginatorRangeFormat(
-  range: CngxPaginatorFormats['range'],
+  range: CngxPaginatorFormats['range'] | Signal<CngxPaginatorFormats['range']>,
 ): CngxPaginatorConfigFeature {
-  return { kind: 'formats', payload: { range } };
+  return { kind: 'formats', payload: formatPayload('range', range) };
 }
 
 /**
@@ -350,9 +397,9 @@ export function withPaginatorRangeFormat(
  * @since 0.1.0
  */
 export function withPaginatorPageStatusFormat(
-  pageStatus: CngxPaginatorFormats['pageStatus'],
+  pageStatus: CngxPaginatorFormats['pageStatus'] | Signal<CngxPaginatorFormats['pageStatus']>,
 ): CngxPaginatorConfigFeature {
-  return { kind: 'formats', payload: { pageStatus } };
+  return { kind: 'formats', payload: formatPayload('pageStatus', pageStatus) };
 }
 
 /**
@@ -371,9 +418,11 @@ export function withPaginatorPageStatusFormat(
  * @since 0.1.0
  */
 export function withPaginatorPageOfPagesFormat(
-  pageOfPagesReadout: NonNullable<CngxPaginatorFormats['pageOfPagesReadout']>,
+  pageOfPagesReadout:
+    | NonNullable<CngxPaginatorFormats['pageOfPagesReadout']>
+    | Signal<NonNullable<CngxPaginatorFormats['pageOfPagesReadout']>>,
 ): CngxPaginatorConfigFeature {
-  return { kind: 'formats', payload: { pageOfPagesReadout } };
+  return { kind: 'formats', payload: formatPayload('pageOfPagesReadout', pageOfPagesReadout) };
 }
 
 /**
@@ -391,9 +440,11 @@ export function withPaginatorPageOfPagesFormat(
  * @since 0.1.0
  */
 export function withPaginatorLoadMoreFormat(
-  loadMoreReadout: NonNullable<CngxPaginatorFormats['loadMoreReadout']>,
+  loadMoreReadout:
+    | NonNullable<CngxPaginatorFormats['loadMoreReadout']>
+    | Signal<NonNullable<CngxPaginatorFormats['loadMoreReadout']>>,
 ): CngxPaginatorConfigFeature {
-  return { kind: 'formats', payload: { loadMoreReadout } };
+  return { kind: 'formats', payload: formatPayload('loadMoreReadout', loadMoreReadout) };
 }
 
 /**
@@ -496,4 +547,45 @@ export function provideCngxPaginatorConfigAt(
  */
 export function injectPaginatorConfig(): CngxPaginatorConfig {
   return inject(CNGX_PAGINATOR_CONFIG);
+}
+
+/**
+ * The resolved accessible-name strings of the paginator config in scope, as a
+ * Signal that follows a runtime language switch. Runs in injection context.
+ *
+ * @category ui/paginator
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/paginator-config.ts
+ * @since 0.1.0
+ */
+export function injectPaginatorAriaLabels(): Signal<CngxPaginatorAriaLabels> {
+  return createOverrideMerge(ARIA_LABELS_DEFAULTS, injectPaginatorConfig().ariaLabels);
+}
+
+/**
+ * The resolved live-region phrasing of the paginator config in scope, as a
+ * Signal. Read it untracked where it builds live-region text, so a language
+ * switch does not re-speak the current message. Runs in injection context.
+ *
+ * @category ui/paginator
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/paginator-config.ts
+ * @since 0.1.0
+ */
+export function injectPaginatorAnnouncements(): Signal<CngxPaginatorAnnouncements> {
+  return createOverrideMerge(ANNOUNCEMENTS_DEFAULTS, injectPaginatorConfig().announcements);
+}
+
+/**
+ * The resolved readout formatters of the paginator config in scope, as a
+ * Signal with the optional keys filled from the English defaults. Runs in
+ * injection context.
+ *
+ * @category ui/paginator
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/paginator-config.ts
+ * @since 0.1.0
+ */
+export function injectPaginatorFormats(): Signal<Required<CngxPaginatorFormats>> {
+  return createOverrideMerge(
+    FORMATS_DEFAULTS as Required<CngxPaginatorFormats>,
+    injectPaginatorConfig().formats,
+  );
 }

@@ -10,7 +10,7 @@ import {
 import { clamp } from '@cngx/utils';
 import { CngxRovingItem, CngxRovingTabindex } from '@cngx/common/a11y';
 
-import { injectPaginatorConfig } from '../paginator-config';
+import { injectPaginatorAriaLabels } from '../paginator-config';
 import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
 
 /** Resting size tier of a rendered dot. Edge dots shrink (iOS page-control). */
@@ -136,7 +136,7 @@ function dotsEqual(a: DotModel, b: DotModel): boolean {
             [class.cngx-paginator__dot--current]="isCurrent(dot.index)"
             [attr.data-size]="dot.size"
             [attr.aria-current]="isCurrent(dot.index) ? 'page' : null"
-            [attr.aria-label]="config.ariaLabels.page(dot.index + 1)"
+            [attr.aria-label]="ariaLabels().page(dot.index + 1)"
             [attr.aria-disabled]="host.isBusy() ? 'true' : null"
             (click)="goto(dot.index)"
           ></button>
@@ -148,7 +148,7 @@ function dotsEqual(a: DotModel, b: DotModel): boolean {
 })
 export class CngxPaginatorDots {
   protected readonly host = inject(CNGX_PAGINATOR_HOST);
-  protected readonly config = injectPaginatorConfig();
+  protected readonly ariaLabels = injectPaginatorAriaLabels();
 
   /**
    * The rendered dots + viewport anchor. Structural `equal` keeps the reference
