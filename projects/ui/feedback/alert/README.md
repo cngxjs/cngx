@@ -58,6 +58,7 @@ readonly saveState = injectAsyncState(() => this.save$);
 - `--cngx-alert-{severity}-bg` - Per-severity background
 - `--cngx-alert-{severity}-border` - Per-severity border color
 - `--cngx-alert-{severity}-icon` - Per-severity icon color
+- `--cngx-alert-action-color` (default the severity accent mixed 60% into `--cngx-color-text`) - Action label and border color; pin it to `--cngx-alert-icon-color` for the pure accent
 
 #### Accessibility
 

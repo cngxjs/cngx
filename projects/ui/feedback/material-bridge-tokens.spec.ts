@@ -58,6 +58,7 @@ function emittedTokenNames(themeVersion: 'v1' | 'v0'): string[] {
 describe('feedback Material bridge', () => {
   // every name is consumed by the ui/feedback component stylesheets
   const CONSUMED = [
+    '--cngx-alert-action-color',
     '--cngx-alert-actions-gap',
     '--cngx-alert-bg',
     '--cngx-alert-border-radius',
@@ -86,6 +87,7 @@ describe('feedback Material bridge', () => {
     '--cngx-alert-warning-bg',
     '--cngx-alert-warning-border',
     '--cngx-alert-warning-icon',
+    '--cngx-banner-action-color',
     '--cngx-banner-action-font-size',
     '--cngx-banner-action-font-weight',
     '--cngx-banner-action-padding',
@@ -164,6 +166,19 @@ describe('feedback Material bridge', () => {
     expect(names.length).toBeGreaterThan(0);
     for (const name of names) {
       expect(CONSUMED).toContain(name);
+    }
+  });
+
+  it('pins the alert and banner action to the pure severity accent (M3 + M2)', () => {
+    // The cngx default mixes the accent into the text colour for 4.5:1 on the
+    // light tint; the Material palette accents already clear it, so the
+    // bridge keeps the Material look.
+    for (const themeVersion of ['v1', 'v0'] as const) {
+      const css = compiledTheme(themeVersion);
+      expect(css, themeVersion).toContain(
+        '--cngx-alert-action-color: var(--cngx-alert-icon-color)',
+      );
+      expect(css, themeVersion).toContain('--cngx-banner-action-color: var(--cngx-banner-accent)');
     }
   });
 

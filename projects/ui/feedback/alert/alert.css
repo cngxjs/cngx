@@ -40,7 +40,8 @@
  *   `--collapsed`
  * - `.cngx-alert__actions` - trailing action row, hidden when empty
  * - `.cngx-alert__action` - projected `[cngxAlertAction]` button
- *   tinted by `--cngx-alert-icon-color`
+ *   tinted by `--cngx-alert-action-color` (derived from
+ *   `--cngx-alert-icon-color`)
  * - `.cngx-alert__dismiss` - dismiss control
  *
  * **Dark mode**
@@ -371,6 +372,20 @@
   }
 
   /**
+   * Label and border color of the projected action button. Unset by
+   * default, so the use site derives it from the severity accent mixed
+   * 60% into the text color: the pure accent misses 4.5:1 on the light
+   * tint. Pin it to `--cngx-alert-icon-color` to paint the action in
+   * the pure accent again (the Material bridge does).
+   * @group State / Action
+   * @default color-mix(in oklab, var(--cngx-alert-icon-color) 60%, var(--cngx-color-text))
+   */
+  @property --cngx-alert-action-color {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
    * Background tint applied on hover of the projected action button.
    * @group State / Action
    */
@@ -639,15 +654,16 @@
     }
 
     /* Projected `[cngxAlertAction]` button - transparent surface with
-     * a severity-tinted border + text via `--cngx-alert-icon-color`
-     * (which is pinned per severity above). Mirrors the banner action
+     * a severity-tinted border + text via `--cngx-alert-action-color`,
+     * which derives from `--cngx-alert-icon-color` (pinned per severity
+     * above) mixed into the text color for 4.5:1. Mirrors the banner action
      * pattern but without the banner's hit-target min-size since
      * alert content is taller and a padding-based hit-target is
      * sufficient. */
     .cngx-alert__action {
       appearance: none;
       background: var(--cngx-alert-action-bg, transparent);
-      border: 1px solid var(--cngx-alert-icon-color, currentColor);
+      border: 1px solid currentColor;
       border-radius: var(--cngx-alert-action-radius, 4px);
       padding: var(--cngx-alert-action-padding, 4px 10px);
       /* Floor the action-row height to the pointer-derived target on a coarse
@@ -656,7 +672,14 @@
       cursor: pointer;
       font-size: var(--cngx-alert-action-font-size, 0.875rem);
       font-weight: var(--cngx-alert-action-font-weight, 600);
-      color: var(--cngx-alert-icon-color, currentColor);
+      color: var(
+        --cngx-alert-action-color,
+        color-mix(
+          in oklab,
+          var(--cngx-alert-icon-color, currentColor) 60%,
+          var(--cngx-color-text, oklch(0.2 0.01 250))
+        )
+      );
       white-space: nowrap;
     }
 
