@@ -157,8 +157,6 @@
   }
 
   .cngx-chip__remove {
-    --cngx-chip-remove-opacity: 0.6;
-    --cngx-chip-remove-opacity-hover: 1;
     --cngx-chip-remove-radius: 2px;
     --cngx-chip-remove-focus-width: 3px;
     --cngx-chip-remove-focus-offset: 2px;

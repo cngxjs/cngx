@@ -17,8 +17,18 @@ cngx-slider {
 }
 
 cngx-slider[aria-disabled='true'] {
-  opacity: 0.5;
   cursor: not-allowed;
+  /* Disabled by colour, never opacity (the field recipe): fill and thumb ring
+   * take the disabled colour, the track a faint text tint, and the value
+   * labels inherit the disabled text colour. */
+  --cngx-slider-fill-color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
+  --cngx-slider-thumb-border-color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
+  --cngx-slider-track-color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 12%, transparent);
+  color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
+}
+
+cngx-slider[aria-disabled='true'] :is(.cngx-slider__value, .cngx-slider__tick-label) {
+  color: inherit;
 }
 
 cngx-slider .cngx-slider__track {
@@ -214,4 +224,31 @@ cngx-slider[aria-orientation='vertical'] .cngx-slider__value {
   inset-inline-start: auto;
   inset-inline-end: calc(100% + 0.5rem);
   translate: 0 -50%;
+}
+
+/* forced-colors (WHCM): track and fill are painted only with background (the
+ * range band is a gradient), which the forced palette flattens to Canvas - the
+ * value and range vanish and only the thumb rings remain. Opt the track and
+ * fill out of forcing and feed the existing colour tokens system keywords, so
+ * every orientation keeps its own geometry: CanvasText track, Highlight value.
+ * A disabled slider reads GrayText on a Canvas track with a GrayText edge, so
+ * the value stays visible. Unlayered, after the base rules. */
+@media (forced-colors: active) {
+  cngx-slider {
+    --cngx-slider-track-color: CanvasText;
+    --cngx-slider-fill-color: Highlight;
+  }
+  cngx-slider :is(.cngx-slider__track, .cngx-slider__fill) {
+    forced-color-adjust: none;
+  }
+  cngx-slider[aria-disabled='true'] {
+    --cngx-slider-track-color: Canvas;
+    --cngx-slider-fill-color: GrayText;
+    --cngx-slider-thumb-border-color: GrayText;
+    color: GrayText;
+  }
+  cngx-slider[aria-disabled='true'] .cngx-slider__track {
+    outline: 1px solid GrayText;
+    outline-offset: -1px;
+  }
 }

@@ -12,8 +12,9 @@
  * - `:hover` - wash applied via `--cngx-popover-action-hover-bg`
  * - `:focus-visible` - outline ring in
  *   `--cngx-popover-panel-accent-text`
- * - `:disabled` / `[aria-disabled="true"]` - opacity 0.5,
- *   cursor: not-allowed
+ * - `:disabled` / `[aria-disabled="true"]` - 38% text (the disabled field
+ *   recipe), never opacity; a filled variant fills with the disabled
+ *   colour; cursor: not-allowed; GrayText under forced colors
  *
  * **Variants**
  *
@@ -205,7 +206,6 @@
     }
     :scope:disabled,
     :scope[aria-disabled='true'] {
-      opacity: 0.5;
       cursor: not-allowed;
     }
 
@@ -234,6 +234,21 @@
     :scope.cngx-popover-action--ghost:hover {
       background: var(--cngx-popover-action-hover-bg, oklch(0 0 0 / 0.04));
     }
+
+    /* Disabled by colour, never opacity (the field recipe). After the
+     * variants so it wins; a filled variant fills with the disabled colour
+     * and keeps a surface label. */
+    :scope:is(:disabled, [aria-disabled='true']) {
+      color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
+    }
+    :scope:is(.cngx-popover-action--primary, .cngx-popover-action--danger):is(
+        :disabled,
+        [aria-disabled='true']
+      ) {
+      background: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
+      color: var(--cngx-color-surface, oklch(1 0 0));
+      filter: none;
+    }
   }
 
   /* sr-only utility on the announcement span - sibling of the action
@@ -251,5 +266,16 @@
     clip: rect(0, 0, 0, 0);
     white-space: nowrap;
     border: 0;
+  }
+}
+
+/* forced-colors (WHCM): disabled is painted by colour. A native :disabled
+ * button gets GrayText from the UA, an aria-disabled one (a pending action)
+ * does not, so restate it. Unlayered + direct selector (outside @scope) to beat
+ * the layered rule. */
+@media (forced-colors: active) {
+  .cngx-popover-action:is(:disabled, [aria-disabled='true']) {
+    color: GrayText;
+    border-color: GrayText;
   }
 }

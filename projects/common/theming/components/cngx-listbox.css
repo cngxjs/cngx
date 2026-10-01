@@ -21,7 +21,8 @@
  *   `aria-activedescendant`)
  * - `--selected` - higher-alpha primary tint so committed state
  *   reads stronger than the transient cursor
- * - `--disabled` - opacity 0.5, `cursor: not-allowed`
+ * - `--disabled` - 38% text (the disabled field recipe), never opacity;
+ *   `cursor: not-allowed`; GrayText under forced colors
  * - `--hidden` - `display: none`
  *
  * Container `:focus-visible` paints a 2px ring (the container
@@ -104,16 +105,6 @@
     syntax: '<color>';
     inherits: true;
     initial-value: oklch(0.66 0.19 50 / 0.18);
-  }
-
-  /**
-   * Opacity multiplier applied to disabled options.
-   * @group State / Disabled
-   */
-  @property --cngx-option-disabled-opacity {
-    syntax: '<number>';
-    inherits: false;
-    initial-value: 0.5;
   }
 
   /**
@@ -220,8 +211,9 @@
     background: var(--cngx-option-selected-bg, oklch(0.66 0.19 50 / 0.18));
   }
 
+  /* Disabled by colour, never opacity (the field recipe). */
   .cngx-option--disabled {
-    opacity: var(--cngx-option-disabled-opacity, 0.5);
+    color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
     cursor: not-allowed;
   }
 
@@ -245,9 +237,26 @@
      * without !important (unlayered beats layered). */
     background: Highlight;
     color: HighlightText;
+    /* Chromium paints a Canvas backplate behind the label text; without the
+     * opt-out the HighlightText label sits on that plate and vanishes. The
+     * opt-out is inherited, so the row declares its ink for nested indicators
+     * (checkbox, radio), which would otherwise paint unforced author colours. */
+    forced-color-adjust: none;
+    --_cngx-forced-ink: HighlightText;
   }
   .cngx-option--highlighted {
     outline: 2px solid CanvasText;
     outline-offset: -2px;
+  }
+  /* Disabled is painted by colour, which the forced palette overrides;
+   * re-signal it with GrayText, as a GrayText fill when selected. */
+  .cngx-option--disabled {
+    color: GrayText;
+    --_cngx-forced-ink: GrayText;
+  }
+  .cngx-option--disabled.cngx-option--selected {
+    background: GrayText;
+    color: Canvas;
+    --_cngx-forced-ink: Canvas;
   }
 }

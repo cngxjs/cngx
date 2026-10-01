@@ -168,16 +168,6 @@
   }
 
   /**
-   * Opacity multiplier applied to a disabled (bound or busy) button.
-   * @group State / Disabled
-   */
-  @property --cngx-paginator-disabled-opacity {
-    syntax: '<number>';
-    inherits: true;
-    initial-value: 0.45;
-  }
-
-  /**
    * Muted track the page row sits in under the `segmented` skin. Derived from
    * surface + border so it tracks the foundation light / dark scheme.
    * @group Skin

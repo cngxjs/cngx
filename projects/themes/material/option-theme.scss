@@ -11,8 +11,10 @@
 //     secondary-container (M3 filter-chip / mat-list-option selected fill)
 //   - density: padding scales with mat density (M3 default option = 48px
 //     row, 12px block / 16px inline)
-//   - base: corner-small for the option's own radius; M3 disabled-emphasis
-//     0.38 instead of the cngx default 0.5
+//   - base: corner-small for the option's own radius. Disabled needs no
+//     bridge: the option paints it as 38% of the text colour, which is M3's
+//     on-surface disabled emphasis once the system bridge maps the text
+//     colour
 //
 // Typography is intentionally NOT bridged: cngx-listbox.css ships no
 // --cngx-option-font-size token (the directive inherits font from the
@@ -70,13 +72,8 @@
     // a flatter look; aligning here lets options nest inside mat-card
     // surfaces without visual mismatch.
     --cngx-option-radius: var(--mat-sys-corner-small, 8px);
-
-    // M3 disabled emphasis is 0.38, not 0.5. Anchor on the system token
-    // so a consumer flipping the Material disabled curve picks it up.
-    --cngx-option-disabled-opacity: 0.38;
   } @else {
     --cngx-option-radius: 4px;
-    --cngx-option-disabled-opacity: 0.38;
   }
 }
 

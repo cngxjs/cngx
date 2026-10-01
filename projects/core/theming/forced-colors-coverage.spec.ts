@@ -76,11 +76,14 @@ const SCAN_HARD_FAIL = true;
 const FORCED_COLORS_HARDENED_HOSTS: readonly string[] = [
   // @cngx/common/display - tint/background-drawn breaks (not box-shadow; caught
   // by author review, not the flat scan)
+  'projects/common/display/checkbox-indicator/checkbox-indicator.component.css',
   'projects/common/display/chip/chip.component.css',
   'projects/common/display/radio-indicator/radio-indicator.component.css',
   'projects/common/theming/components/cngx-badge.css',
   'projects/common/theming/components/cngx-divider.css',
   // @cngx/common/interactive (Phase B) - box-shadow / tint state breaks
+  'projects/common/interactive/checkbox/checkbox.component.css',
+  'projects/common/interactive/radio/radio.component.css',
   'projects/common/interactive/toggle/toggle.component.css',
   'projects/common/theming/components/cngx-button-toggle.css',
   'projects/common/theming/components/cngx-listbox.css',
@@ -116,6 +119,14 @@ const FORCED_COLORS_HARDENED_HOSTS: readonly string[] = [
   // with box-shadow, which WHCM strips; redrawn as ButtonBorder borders.
   'projects/forms/filter-builder/filter-builder-expression-row.component.css',
   'projects/forms/filter-builder/filter-builder-row.component.css',
+  // Disabled painted by colour, re-signalled with GrayText (an aria-disabled
+  // control gets no UA GrayText).
+  'projects/common/popover/popover-action.component.css',
+  // Slider track + fill are background-only (range: a gradient) and flatten.
+  'projects/common/interactive/slider/slider.component.css',
+  'projects/common/interactive/slider/range-slider.component.css',
+  'projects/common/theming/components/cngx-slider.css',
+  'projects/ui/tabs/tab-overflow.component.css',
   // @cngx/ui/feedback (Phase D) - the toast overlay's only edge is its
   // box-shadow elevation (plus a one-sided accent); re-drawn with ButtonBorder.
   'projects/ui/feedback/toast/toast-outlet.css',
@@ -273,7 +284,7 @@ describe('forced-colors hardened-hosts manifest', () => {
   });
 
   it('fixes the manifest size so a bulk edit dropping several hosts is caught', () => {
-    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(30);
+    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(38);
   });
 });
 

@@ -21,7 +21,9 @@
  *
  * - `--highlighted` - tinted background (keyboard cursor via
  *   `aria-activedescendant`)
- * - `--disabled` - opacity 0.5, `cursor: not-allowed`
+ * - `--disabled` - 38% text (the disabled field recipe), never opacity,
+ *   shortcut and checked glyph included; `cursor: not-allowed`; GrayText
+ *   under forced colors
  * - `--checked` - bolder font-weight plus a leading glyph drawn by
  *   `::before` so the cue lands even without a projected icon:
  *   `[cngxMenuItemCheckbox]` -> `&check;`, `[cngxMenuItemRadio]` ->
@@ -102,16 +104,6 @@
     syntax: '<color>';
     inherits: true;
     initial-value: oklch(0.66 0.19 50 / 0.1);
-  }
-
-  /**
-   * Opacity multiplier applied to disabled menu items.
-   * @group State / Disabled
-   */
-  @property --cngx-menu-item-disabled-opacity {
-    syntax: '<number>';
-    inherits: false;
-    initial-value: 0.5;
   }
 
   /**
@@ -338,9 +330,17 @@
     background: var(--cngx-menu-item-highlight-bg, oklch(0.66 0.19 50 / 0.1));
   }
 
+  /* Disabled by colour, never opacity (the field recipe). The shortcut and
+   * the checked glyph carry their own colours, so they follow explicitly; the
+   * glyph selector repeats the class to outrank the checked ::before rules
+   * below (0,3,1). */
   .cngx-menu-item--disabled {
-    opacity: var(--cngx-menu-item-disabled-opacity, 0.5);
+    color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
     cursor: not-allowed;
+  }
+  .cngx-menu-item--disabled .cngx-menu-item__kbd,
+  :is([cngxMenuItemCheckbox], [cngxMenuItemRadio]).cngx-menu-item--disabled.cngx-menu-item--disabled.cngx-menu-item--checked::before {
+    color: inherit;
   }
 
   /*
@@ -428,5 +428,17 @@
   }
   [cngxMenuSeparator] {
     background: CanvasText;
+  }
+  /* Disabled is painted by colour, which the forced palette overrides;
+   * re-signal it with GrayText. The cursor on a disabled item stays visible
+   * as an inset Highlight outline instead of the Highlight fill. */
+  .cngx-menu-item--disabled {
+    color: GrayText;
+  }
+  .cngx-menu-item--disabled.cngx-menu-item--highlighted {
+    background: Canvas;
+    color: GrayText;
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
   }
 }

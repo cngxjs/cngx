@@ -567,8 +567,9 @@
       color: var(--cngx-color-danger, oklch(0.6 0.22 25));
     }
 
+    /* Quieter than the panel copy by colour (the hint colour), not opacity. */
     .cngx-popover-panel__empty {
-      opacity: 0.6;
+      color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
     }
 
     @media (prefers-reduced-motion: reduce) {
