@@ -1282,6 +1282,70 @@ describe('CngxSelect - config cascade (input > component-scope > app-scope > def
 });
 
 @Component({
+  template: `<cngx-select [options]="options" [clearable]="true" [(value)]="value" />`,
+  imports: [CngxSelect],
+})
+class UnboundClearHost {
+  readonly options = OPTIONS;
+  readonly value = signal<string | undefined>('red');
+}
+
+@Component({
+  template: `
+    <cngx-select
+      [options]="options"
+      [clearable]="true"
+      [clearButtonAriaLabel]="'Wipe'"
+      [(value)]="value"
+    />
+  `,
+  imports: [CngxSelect],
+})
+class BoundClearHost {
+  readonly options = OPTIONS;
+  readonly value = signal<string | undefined>('red');
+}
+
+describe('CngxSelect clear button label', () => {
+  beforeEach(() => {
+    polyfillPopover();
+    TestBed.resetTestingModule();
+  });
+
+  function clearLabel(fixture: ComponentFixture<unknown>): string | null {
+    return fixture.nativeElement.querySelector('.cngx-select__clear')?.getAttribute('aria-label');
+  }
+
+  it('follows a Signal of ariaLabels while unbound', () => {
+    const labels = signal<CngxSelectAriaLabels>({ clearButton: 'Clear selection' });
+    TestBed.configureTestingModule({ providers: [provideSelectConfig(withAriaLabels(labels))] });
+    const fixture = TestBed.createComponent(UnboundClearHost);
+    flush(fixture);
+    expect(clearLabel(fixture)).toBe('Clear selection');
+
+    labels.set({ clearButton: 'Auswahl löschen' });
+    flush(fixture);
+    expect(clearLabel(fixture)).toBe('Auswahl löschen');
+  });
+
+  it('keeps a bound clearButtonAriaLabel over the config', () => {
+    const labels = signal<CngxSelectAriaLabels>({ clearButton: 'Clear selection' });
+    TestBed.configureTestingModule({ providers: [provideSelectConfig(withAriaLabels(labels))] });
+    const fixture = TestBed.createComponent(BoundClearHost);
+    flush(fixture);
+    labels.set({ clearButton: 'Auswahl löschen' });
+    flush(fixture);
+    expect(clearLabel(fixture)).toBe('Wipe');
+  });
+
+  it('falls back to the variant default when the config sets no clearButton', () => {
+    const fixture = TestBed.createComponent(UnboundClearHost);
+    flush(fixture);
+    expect(clearLabel(fixture)).toBe('Clear selection');
+  });
+});
+
+@Component({
   // No label, no aria-label, no placeholder - the three names the panel
   // normally borrows before the fallback fires.
   template: `<cngx-select [options]="options" />`,

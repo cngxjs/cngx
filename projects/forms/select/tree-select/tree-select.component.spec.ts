@@ -6,6 +6,11 @@ import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { describeCommitControllerCascade } from '../shared/__test-helpers/commit-controller-cascade';
 import { createMockField } from '@cngx/forms/field/testing';
 import { describeFieldSkinHost } from '../shared/__test-helpers/field-skin-host';
+import {
+  provideSelectConfig,
+  withAriaLabels,
+  type CngxSelectAriaLabels,
+} from '../shared/config';
 import { CngxTreeSelect } from './tree-select.component';
 import { CngxTreeSelectChip } from './tree-select-chip.directive';
 import { CngxTreeSelectTriggerLabel } from './tree-select-trigger-label.directive';
@@ -393,3 +398,33 @@ describeCommitControllerCascade('CngxTreeSelect');
 describeFieldSkinHost('CngxTreeSelect', CngxTreeSelect, 'cngx-tree-select', () =>
   createMockField({ name: 'pick' }).accessor,
 );
+
+describe('CngxTreeSelect - runtime language switch', () => {
+  beforeAll(() => polyfillPopover());
+
+  it('resolves the twisty labels from a Signal of ariaLabels', () => {
+    const labels = signal<CngxSelectAriaLabels>({ treeExpand: 'Expand node' });
+    TestBed.configureTestingModule({ providers: [provideSelectConfig(withAriaLabels(labels))] });
+    const { tree } = setup();
+    expect(tree.resolvedTwistyExpandLabel()).toBe('Expand node');
+    expect(tree.resolvedTwistyCollapseLabel()).toBe('Collapse node');
+
+    labels.set({ treeExpand: 'Knoten erweitern', treeCollapse: 'Knoten reduzieren' });
+    expect(tree.resolvedTwistyExpandLabel()).toBe('Knoten erweitern');
+    expect(tree.resolvedTwistyCollapseLabel()).toBe('Knoten reduzieren');
+  });
+
+  it('flips the clear label while unbound', () => {
+    const labels = signal<CngxSelectAriaLabels>({});
+    TestBed.configureTestingModule({ providers: [provideSelectConfig(withAriaLabels(labels))] });
+    const { fixture, root } = setup();
+    const clear = () => root.querySelector('.cngx-tree-select__clear-all');
+    fixture.componentInstance.values.set([{ id: 'a', name: 'Alpha' }]);
+    fixture.detectChanges();
+    const before = clear()?.getAttribute('aria-label');
+    labels.set({ clearButton: 'Auswahl zurücksetzen' });
+    fixture.detectChanges();
+    expect(before).toBe('Reset selection');
+    expect(clear()?.getAttribute('aria-label')).toBe('Auswahl zurücksetzen');
+  });
+});

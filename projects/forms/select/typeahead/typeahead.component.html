@@ -67,7 +67,7 @@
         <button
           type="button"
           class="cngx-typeahead__clear"
-          [attr.aria-label]="clearButtonAriaLabel()"
+          [attr.aria-label]="resolvedClearButtonAriaLabel()"
           (click)="handleClearClick($event)"
         >
           @if (clearGlyph(); as glyph) {

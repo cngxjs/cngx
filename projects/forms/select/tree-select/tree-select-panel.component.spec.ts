@@ -157,8 +157,8 @@ class TreeHost implements CngxTreeSelectPanelHost<Row> {
   readonly twistyOpenGlyph = signal<TemplateRef<void> | null>(null).asReadonly();
   readonly checkGlyph = signal<TemplateRef<void> | null>(null).asReadonly();
   readonly dashGlyph = signal<TemplateRef<void> | null>(null).asReadonly();
-  readonly twistyExpandLabel = signal('Expand').asReadonly();
-  readonly twistyCollapseLabel = signal('Collapse').asReadonly();
+  readonly resolvedTwistyExpandLabel = signal('Expand').asReadonly();
+  readonly resolvedTwistyCollapseLabel = signal('Collapse').asReadonly();
   close(): void {
     /* no-op in the spec harness */
   }

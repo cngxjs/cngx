@@ -73,7 +73,7 @@
           } @else {
             <cngx-chip
               [removable]="!disabled()"
-              [removeAriaLabel]="chipRemoveAriaLabel() + ': ' + opt.label"
+              [removeAriaLabel]="resolvedChipRemoveAriaLabel() + ': ' + opt.label"
               (remove)="handleChipRemoveClick($event, opt)"
             >
               {{ opt.label }}
@@ -105,7 +105,7 @@
         <button
           type="button"
           class="cngx-tree-select__clear-all"
-          [attr.aria-label]="clearButtonAriaLabel()"
+          [attr.aria-label]="resolvedClearButtonAriaLabel()"
           (click)="handleClearAllClick($event)"
           (keydown.enter)="$event.stopPropagation()"
           (keydown.space)="$event.stopPropagation()"

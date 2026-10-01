@@ -287,15 +287,27 @@ export class CngxTreeSelect<T = unknown>
    * Falls back to English. Ignored when `*cngxTreeSelectNode` is
    * projected.
    */
-  readonly twistyExpandLabel = input<string>(this.config.ariaLabels().treeExpand ?? 'Expand node');
-  readonly twistyCollapseLabel = input<string>(
-    this.config.ariaLabels().treeCollapse ?? 'Collapse node',
+  readonly twistyExpandLabel = input<string | undefined>(undefined);
+  /** @internal Bound value, else the config copy; panel-host contract. */
+  readonly resolvedTwistyExpandLabel = computed<string>(
+    () => this.twistyExpandLabel() ?? this.config.ariaLabels().treeExpand ?? 'Expand node',
+  );
+  readonly twistyCollapseLabel = input<string | undefined>(undefined);
+  /** @internal Bound value, else the config copy; panel-host contract. */
+  readonly resolvedTwistyCollapseLabel = computed<string>(
+    () => this.twistyCollapseLabel() ?? this.config.ariaLabels().treeCollapse ?? 'Collapse node',
   );
   readonly clearable = input<boolean>(false);
-  readonly clearButtonAriaLabel = input<string>(
-    this.config.ariaLabels().clearButton ?? 'Reset selection',
+  readonly clearButtonAriaLabel = input<string | undefined>(undefined);
+  /** @internal Bound value, else the config copy; follows a language switch. */
+  protected readonly resolvedClearButtonAriaLabel = computed<string>(
+    () => this.clearButtonAriaLabel() ?? this.config.ariaLabels().clearButton ?? 'Reset selection',
   );
-  readonly chipRemoveAriaLabel = input<string>(this.config.ariaLabels().chipRemove ?? 'Remove');
+  readonly chipRemoveAriaLabel = input<string | undefined>(undefined);
+  /** @internal Bound value, else the config copy; follows a language switch. */
+  protected readonly resolvedChipRemoveAriaLabel = computed<string>(
+    () => this.chipRemoveAriaLabel() ?? this.config.ariaLabels().chipRemove ?? 'Remove',
+  );
   readonly loading = input<boolean>(false);
   readonly loadingVariant = input<CngxSelectLoadingVariant>(this.config.loadingVariant);
   readonly skeletonRowCount = input<number>(this.config.skeletonRowCount);

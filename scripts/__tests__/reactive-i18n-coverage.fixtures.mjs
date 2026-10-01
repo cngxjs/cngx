@@ -904,125 +904,6 @@ export const RATCHET = [
     closesIn: 5,
   },
   {
-    file: 'projects/forms/select/action-multi-select/action-multi-select.component.ts',
-    member: 'CngxActionMultiSelect.chipRemoveAriaLabel',
-    rule: 'R1',
-    token: 'CNGX_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/select/action-multi-select/action-multi-select.component.ts',
-    member: 'CngxActionMultiSelect.clearButtonAriaLabel',
-    rule: 'R1',
-    token: 'CNGX_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/select/action-select/action-select.component.ts',
-    member: 'CngxActionSelect.clearButtonAriaLabel',
-    rule: 'R1',
-    token: 'CNGX_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/select/combobox/combobox.component.ts',
-    member: 'CngxCombobox.chipRemoveAriaLabel',
-    rule: 'R1',
-    token: 'CNGX_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/select/combobox/combobox.component.ts',
-    member: 'CngxCombobox.clearButtonAriaLabel',
-    rule: 'R1',
-    token: 'CNGX_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/select/declarative/select-search.component.ts',
-    member: 'CngxSelectSearch.placeholder',
-    rule: 'R1',
-    token: 'CNGX_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/select/multi-select/multi-select.component.ts',
-    member: 'CngxMultiSelect.chipRemoveAriaLabel',
-    rule: 'R1',
-    token: 'CNGX_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/select/multi-select/multi-select.component.ts',
-    member: 'CngxMultiSelect.clearButtonAriaLabel',
-    rule: 'R1',
-    token: 'CNGX_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/select/reorderable-multi-select/reorderable-multi-select.component.ts',
-    member: 'CngxReorderableMultiSelect.chipRemoveAriaLabel',
-    rule: 'R1',
-    token: 'CNGX_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/select/reorderable-multi-select/reorderable-multi-select.component.ts',
-    member: 'CngxReorderableMultiSelect.clearButtonAriaLabel',
-    rule: 'R1',
-    token: 'CNGX_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/select/select-shell/select-shell.component.ts',
-    member: 'CngxSelectShell.clearButtonAriaLabel',
-    rule: 'R1',
-    token: 'CNGX_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/select/single-select/select.component.ts',
-    member: 'CngxSelect.clearButtonAriaLabel',
-    rule: 'R1',
-    token: 'CNGX_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/select/tree-select/tree-select.component.ts',
-    member: 'CngxTreeSelect.chipRemoveAriaLabel',
-    rule: 'R1',
-    token: 'CNGX_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/select/tree-select/tree-select.component.ts',
-    member: 'CngxTreeSelect.clearButtonAriaLabel',
-    rule: 'R1',
-    token: 'CNGX_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/select/tree-select/tree-select.component.ts',
-    member: 'CngxTreeSelect.twistyCollapseLabel',
-    rule: 'R1',
-    token: 'CNGX_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/select/tree-select/tree-select.component.ts',
-    member: 'CngxTreeSelect.twistyExpandLabel',
-    rule: 'R1',
-    token: 'CNGX_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/select/typeahead/typeahead.component.ts',
-    member: 'CngxTypeahead.clearButtonAriaLabel',
-    rule: 'R1',
-    token: 'CNGX_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
     file: 'projects/ui/a11y/a11y-panel.component.ts',
     member: 'CngxA11yPanel.buildAxisViews',
     rule: 'R3',
@@ -1717,7 +1598,7 @@ export const RATCHET = [
   },
 ];
 
-export const RATCHET_CEILING = 158;
+export const RATCHET_CEILING = 141;
 
 /** The last phase whose closing commit has landed. */
 export const COMPLETED_PHASE = 3;

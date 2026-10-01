@@ -41,7 +41,7 @@
       [class.cngx-select__chip-list--reordering]="reorderDir.dragging()"
       [attr.data-overflow]="effectiveChipOverflow()"
       role="group"
-      [attr.aria-label]="reorderAriaLabel()"
+      [attr.aria-label]="resolvedReorderAriaLabel()"
       [attr.aria-disabled]="reorderDisabled() ? 'true' : null"
       [cngxReorder]="valuesSignal"
       [disabled]="reorderDisabled()"
@@ -110,7 +110,7 @@
             } @else {
               <cngx-chip
                 [removable]="!disabled()"
-                [removeAriaLabel]="chipRemoveAriaLabel() + ': ' + opt.label"
+                [removeAriaLabel]="resolvedChipRemoveAriaLabel() + ': ' + opt.label"
                 (remove)="handleChipRemoveClick($event, opt)"
               >
                 {{ opt.label }}
@@ -143,7 +143,7 @@
         <button
           type="button"
           class="cngx-reorderable-multi-select__clear-all"
-          [attr.aria-label]="clearButtonAriaLabel()"
+          [attr.aria-label]="resolvedClearButtonAriaLabel()"
           (click)="handleClearAllClick($event)"
           (keydown.enter)="$event.stopPropagation()"
           (keydown.space)="$event.stopPropagation()"
