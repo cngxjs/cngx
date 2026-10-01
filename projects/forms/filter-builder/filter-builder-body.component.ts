@@ -65,7 +65,7 @@ const EMPTY_OPERATORS: readonly string[] = Object.freeze([]) as readonly string[
 })
 export class CngxFilterBuilderBody {
   protected readonly host = inject(CNGX_FILTER_BUILDER_HOST);
-  protected readonly config = injectFilterBuilderConfig();
+  private readonly config = injectFilterBuilderConfig();
   protected readonly i18n = coerceSignal(this.config.i18n);
 
   readonly templates = input.required<CngxFilterBuilderTemplateRegistry>();
