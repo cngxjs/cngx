@@ -263,8 +263,9 @@ export interface CngxSelectConfig {
   /** Whether the default selected-indicator (checkmark) is shown at all. */
   readonly showSelectionIndicator?: boolean;
   /**
-   * Position of the per-option selection indicator relative to the label
-   * inside a panel row. Defaults to `'before'`.
+   * Position of the per-option selection indicator inside a panel row:
+   * `'after'` places it at the row end, `'before'` ahead of the label.
+   * Defaults to `'after'`.
    */
   readonly selectionIndicatorPosition?: CngxSelectSelectionIndicatorPosition;
   /**
@@ -344,7 +345,7 @@ export const CNGX_SELECT_DEFAULTS: Required<
   typeaheadDebounceInterval: 300,
   typeaheadWhileClosed: true,
   showSelectionIndicator: true,
-  selectionIndicatorPosition: 'before',
+  selectionIndicatorPosition: 'after',
   selectionIndicatorVariant: 'auto',
   showCaret: true,
   restoreFocus: true,
@@ -634,7 +635,8 @@ export function withSelectionIndicator(enabled: boolean): CngxSelectConfigFeatur
 }
 
 /**
- * Sets the selection-indicator position. Default `'before'`.
+ * Sets the selection-indicator position: `'after'` (default) at the row end,
+ * `'before'` ahead of the label.
  */
 export function withSelectionIndicatorPosition(
   position: CngxSelectSelectionIndicatorPosition,

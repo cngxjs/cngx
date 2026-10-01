@@ -1024,6 +1024,10 @@
     color: var(--cngx-select-check-color, var(--cngx-color-primary, oklch(0.66 0.19 50)));
     font-weight: 700;
   }
+  /* An 'after' indicator sits at the row end, not right behind the label. */
+  .cngx-select__option--indicator-after > .cngx-select__check {
+    margin-inline-start: auto;
+  }
 
   .cngx-select__loading,
   .cngx-select__empty {
@@ -1822,6 +1826,12 @@
   .cngx-select__option.cngx-option--highlighted {
     background: Highlight;
     color: HighlightText;
+    /* Chromium paints a Canvas backplate behind the label text; without the
+     * opt-out the HighlightText label sits on that plate and vanishes. The
+     * opt-out is inherited, so the row declares its ink for nested indicators
+     * (checkbox, radio), which would otherwise paint unforced author colours. */
+    forced-color-adjust: none;
+    --_cngx-forced-ink: HighlightText;
   }
   .cngx-select__option.cngx-option--highlighted .cngx-select__check {
     color: HighlightText;

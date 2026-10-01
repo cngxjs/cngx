@@ -45,6 +45,7 @@
     class="cngx-select__option"
     [class.cngx-select__option--selected]="host.isSelected(opt)"
     [class.cngx-select__option--pending]="host.isCommittingOption(opt)"
+    [class.cngx-select__option--indicator-after]="host.resolvedSelectionIndicatorPosition() === 'after'"
     [attr.data-cngx-recycle-index]="virtualIndex"
     [attr.aria-setsize]="virtualIndex !== null ? virtualizer()?.setsize() : null"
     [attr.aria-posinset]="virtualIndex !== null ? virtualIndex + 1 : null"
