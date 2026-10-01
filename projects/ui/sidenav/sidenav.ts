@@ -169,7 +169,7 @@ export type ResolvedSidenavMode = Exclude<SidenavMode, 'auto'>;
         (focus)="handleResizeFocus()"
         role="separator"
         tabindex="0"
-        [attr.aria-label]="resizeLabel()"
+        [attr.aria-label]="resolvedResizeLabel()"
         [attr.aria-orientation]="'vertical'"
         [attr.aria-valuenow]="widthValueNow()"
         [attr.aria-valuemin]="minWidthPx()"
@@ -214,12 +214,17 @@ export class CngxSidenav {
   readonly resizable = input<boolean>(false);
 
   /**
-   * Accessible name of the resize separator. Defaults to the `resizeHandle`
-   * label (`withSidenavLabels`), read at construction; per-instance like
-   * `ariaLabel`, since it names this rail's handle.
+   * Accessible name of the resize separator. Unbound, the `resizeHandle` label
+   * (`withSidenavLabels`) applies; per-instance like `ariaLabel`, since it
+   * names this rail's handle.
    */
-  readonly resizeLabel = input<string>(
-    createOverrideMerge(CNGX_SIDENAV_LABELS_DEFAULTS, this.cfg.labels)().resizeHandle,
+  readonly resizeLabel = input<string | undefined>(undefined);
+
+  private readonly labels = createOverrideMerge(CNGX_SIDENAV_LABELS_DEFAULTS, this.cfg.labels);
+
+  /** @internal */
+  protected readonly resolvedResizeLabel = computed(
+    () => this.resizeLabel() ?? this.labels().resizeHandle,
   );
 
   /**

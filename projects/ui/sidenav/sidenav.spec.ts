@@ -14,6 +14,7 @@ import { CngxSidenavLayout } from './sidenav-layout';
 import { CngxSidenavContent } from './sidenav-content';
 import { provideSidenavConfig } from './config/provide-sidenav-config';
 import { withSidenavDimensions, withSidenavHoverDwell, withSidenavLabels } from './config/features';
+import type { CngxSidenavLabels } from './config/sidenav.config';
 
 @Component({
   template: `
@@ -599,6 +600,26 @@ describe('CngxSidenav ariaLabel', () => {
 
 describe('CngxSidenav resizable', () => {
   afterEach(() => vi.restoreAllMocks());
+
+  it('renames an unbound resize handle on a language switch', () => {
+    const labels = signal<Partial<CngxSidenavLabels>>({});
+    TestBed.configureTestingModule({
+      providers: [provideSidenavConfig(withSidenavLabels(labels))],
+    });
+    const fixture = TestBed.createComponent(DualHost);
+    fixture.componentInstance.resizable.set(true);
+    fixture.detectChanges();
+    const leftDe = fixture.debugElement.queryAll(By.directive(CngxSidenav))[0];
+    const handle = (leftDe.nativeElement as HTMLElement).querySelector<HTMLElement>(
+      '.cngx-sidenav__resize-handle',
+    )!;
+    const before = handle.getAttribute('aria-label');
+
+    labels.set({ resizeHandle: 'Navigation anpassen' });
+    fixture.detectChanges();
+    expect(handle.getAttribute('aria-label')).toBe('Navigation anpassen');
+    expect(before).not.toBe('Navigation anpassen');
+  });
 
   it('names the resize handle from the sidenav labels bundle', () => {
     TestBed.configureTestingModule({

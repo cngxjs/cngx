@@ -1002,13 +1002,6 @@ export const RATCHET = [
     closesIn: 6,
   },
   {
-    file: 'projects/ui/sidenav/sidenav.ts',
-    member: 'CngxSidenav.resizeLabel',
-    rule: 'R1',
-    token: 'CNGX_SIDENAV_CONFIG',
-    closesIn: 6,
-  },
-  {
     file: 'projects/ui/speak/speak-button.ts',
     member: 'CngxSpeakButton.readAloudLabel',
     rule: 'R1',
@@ -1129,7 +1122,7 @@ export const RATCHET = [
   },
 ];
 
-export const RATCHET_CEILING = 74;
+export const RATCHET_CEILING = 73;
 
 /** The last phase whose closing commit has landed. */
 export const COMPLETED_PHASE = 5;
