@@ -390,8 +390,8 @@ describe('CngxIncrementalList', () => {
 
     labels.set({ empty: 'Noch nichts hier', loading: 'Wird geladen' });
     await settle(fixture);
-    // The visible empty view is not a live region and follows the switch at once.
-    expect(emptyTitle()).toContain('Noch nichts hier');
+    // The empty state is a status region of its own and keeps its title too.
+    expect(emptyTitle()).toContain('Nothing here yet');
     expect(sr()).toBe('Nothing here yet');
 
     manual.set('refreshing');
@@ -400,6 +400,7 @@ describe('CngxIncrementalList', () => {
     manual.setSuccess([]);
     await settle(fixture);
     expect(sr()).toBe('Noch nichts hier');
+    expect(emptyTitle()).toContain('Noch nichts hier');
   });
 
   test('a projected item slot renders each accumulated row with its context', async () => {

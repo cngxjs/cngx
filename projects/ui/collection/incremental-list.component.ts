@@ -268,7 +268,15 @@ export class CngxIncrementalList<T = unknown> {
   // They follow a language switch at once; the live region below reads them
   // untracked.
   protected readonly loadingLabel = computed(() => this.ariaLabels().loading);
-  protected readonly emptyLabel = computed(() => this.ariaLabels().empty);
+  /**
+   * The empty view renders `cngx-empty-state`, itself a polite status region, so
+   * its title is read untracked and keyed on the view: a language switch does
+   * not re-announce it, the next settle speaks the new language.
+   */
+  protected readonly emptyLabel = computed(() => {
+    this.view();
+    return untracked(() => this.ariaLabels().empty);
+  });
   protected readonly errorLabel = computed(() => this.ariaLabels().error);
   protected readonly pageErrorLabel = computed(() => this.ariaLabels().pageError);
   protected readonly retryLabel = computed(() => this.ariaLabels().retry);

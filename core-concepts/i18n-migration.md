@@ -135,7 +135,7 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 
 - `CngxIncrementalListConfig.ariaLabels` is typed `CngxIncrementalListAriaLabels | Signal<CngxIncrementalListAriaLabels>`, and once `withIncrementalListAriaLabels` ran it holds a `Signal`. Code that reads it off `injectIncrementalListConfig()` or `CNGX_INCREMENTAL_LIST_CONFIG` reads the resolved bundle through the new accessor instead: `injectIncrementalListConfig().ariaLabels.empty` becomes `injectIncrementalListAriaLabels()().empty`, called inside a `computed()`, a template or a handler. `CNGX_INCREMENTAL_LIST_DEFAULTS` keeps its plain bundle.
 - `withIncrementalListAriaLabels` now also accepts a `Signal` of the partial bundle. Plain partials keep their merge rules; `provideIncrementalListConfigAt` still merges over the parent scope. A hand-built `CngxIncrementalListConfigFeature` payload may be a `Signal` as well.
-- The settle live region and the recycler load-count announcement read their phrasing untracked: a language switch does not re-speak the current message, the next settle or load speaks the new language. The visible empty, error, retry and end texts follow the switch at once.
+- The settle live region and the recycler load-count announcement read their phrasing untracked: a language switch does not re-speak the current message, the next settle or load speaks the new language. The empty-state title (a status region of its own) keeps its text until the next settle too; the visible error, retry and end texts follow the switch at once.
 
 ### @cngx/ui/stat-card
 
