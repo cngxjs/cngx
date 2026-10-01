@@ -610,27 +610,6 @@ export const HELPERS = ['injectResolvedFeedbackI18n', 'injectChartI18n', 'resolv
 /** @type {readonly RatchetRow[]} */
 export const RATCHET = [
   {
-    file: 'projects/data-display/treetable/treetable.component.ts',
-    member: 'CngxTreetable.stateAnnouncement',
-    rule: 'R3',
-    token: 'CNGX_TREETABLE_CONFIG',
-    closesIn: 5,
-  },
-  {
-    file: 'projects/data-display/treetable/treetable.component.ts',
-    member: 'CngxTreetable.stateAnnouncement',
-    rule: 'R4',
-    token: 'CNGX_TREETABLE_CONFIG',
-    closesIn: 5,
-  },
-  {
-    file: 'projects/data-display/treetable/treetable.token.ts',
-    member: 'withTreetableLabels',
-    rule: 'R3',
-    token: 'CNGX_TREETABLE_CONFIG',
-    closesIn: 5,
-  },
-  {
     file: 'projects/ui/a11y/a11y-panel.component.ts',
     member: 'CngxA11yPanel.buildAxisViews',
     rule: 'R3',
@@ -1325,7 +1304,7 @@ export const RATCHET = [
   },
 ];
 
-export const RATCHET_CEILING = 102;
+export const RATCHET_CEILING = 99;
 
 /** The last phase whose closing commit has landed. */
 export const COMPLETED_PHASE = 4;

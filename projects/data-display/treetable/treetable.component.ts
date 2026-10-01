@@ -54,6 +54,7 @@ import {
 } from './tree.utils';
 import {
   CNGX_TREETABLE_CONFIG,
+  NO_TREETABLE_LABELS,
   TREETABLE_DEFAULT_LABELS,
   type TreetableLabels,
 } from './treetable.token';
@@ -323,7 +324,10 @@ export class CngxTreetable<T = unknown> {
    * defaults.
    */
   protected readonly labels = computed<Required<TreetableLabels>>(
-    () => ({ ...TREETABLE_DEFAULT_LABELS, ...this.config().labels }),
+    () => ({
+      ...TREETABLE_DEFAULT_LABELS,
+      ...coerceSignal(this.config().labels ?? NO_TREETABLE_LABELS)(),
+    }),
     { equal: recordEqual },
   );
 
@@ -482,14 +486,16 @@ export class CngxTreetable<T = unknown> {
   protected readonly stateAnnouncement = computed(() => {
     const view = this.activeView();
     const refreshing = this.showsRefreshIndicator();
-    const labels = untracked(this.labels);
-    if (view === 'skeleton') {
-      return labels.loading;
-    }
-    if (view === 'error' || view === 'content+error') {
-      return labels.errorFallback;
-    }
-    return refreshing ? labels.refreshing : '';
+    return untracked(() => {
+      const labels = this.labels();
+      if (view === 'skeleton') {
+        return labels.loading;
+      }
+      if (view === 'error' || view === 'content+error') {
+        return labels.errorFallback;
+      }
+      return refreshing ? labels.refreshing : '';
+    });
   });
 
   /**

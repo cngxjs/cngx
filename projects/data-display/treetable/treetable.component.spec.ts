@@ -1,4 +1,4 @@
-import { Component, signal, viewChild, type Provider, type TemplateRef } from '@angular/core';
+import { Component, computed, signal, viewChild, type TemplateRef } from '@angular/core';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { createManualState } from '@cngx/common/data';
@@ -17,7 +17,6 @@ import {
   CNGX_TREETABLE_CONFIG,
   provideTreetable,
   withTreetableLabels,
-  type TreetableConfig,
   type TreetableTemplates,
 } from './treetable.token';
 
@@ -863,19 +862,25 @@ describe('CngxTreetable', () => {
       return (regions[1].nativeElement as HTMLElement).textContent?.trim() ?? '';
     }
 
-    it('keeps the state announcement on a copy flip until the next view transition', () => {
-      const config = signal<TreetableConfig>({
-        labels: { loading: 'Loading', errorFallback: 'Failed' },
+    it('does not re-announce on a language flip', () => {
+      const lang = signal<'en' | 'de'>('en');
+      TestBed.configureTestingModule({
+        providers: [
+          provideTreetable(
+            withTreetableLabels(
+              computed(() =>
+                lang() === 'de' ? { loading: 'Wird geladen', errorFallback: 'Fehlgeschlagen' } : {},
+              ),
+            ),
+          ),
+        ],
       });
-      // The token is not Signal-typed yet; the use site already coerces a Signal value through.
-      const provider: Provider = { provide: CNGX_TREETABLE_CONFIG, useValue: config };
-      TestBed.configureTestingModule({ providers: [provider] });
       const { fixture, state } = mount([]);
       state.set('loading');
       fixture.detectChanges();
       expect(stateRegionText(fixture)).toBe('Loading');
 
-      config.set({ labels: { loading: 'Wird geladen', errorFallback: 'Fehlgeschlagen' } });
+      lang.set('de');
       fixture.detectChanges();
       expect(stateRegionText(fixture)).toBe('Loading');
 

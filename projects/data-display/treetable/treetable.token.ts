@@ -3,8 +3,10 @@ import {
   makeEnvironmentProviders,
   type EnvironmentProviders,
   type Provider,
+  type Signal,
   type TemplateRef,
 } from '@angular/core';
+import { createOverrideMerge } from '@cngx/core/utils';
 import type { CngxErrorTplContext, CngxSkeletonRowTplContext } from './models';
 
 /**
@@ -42,9 +44,10 @@ export interface TreetableConfig {
   /**
    * App-wide copy overrides for every built-in string the treetable
    * renders or announces. Unset keys fall back to the English library
-   * defaults. Register via {@link withTreetableLabels}.
+   * defaults. Register via {@link withTreetableLabels}; holds a `Signal`
+   * once that feature ran, so the copy follows a runtime language switch.
    */
-  labels?: Partial<TreetableLabels>;
+  labels?: Partial<TreetableLabels> | Signal<Partial<TreetableLabels>>;
   /**
    * App-wide default templates for the async-state surfaces. Middle
    * tier of the slot cascade: a projected `ng-template` slot on the
@@ -100,6 +103,12 @@ export interface TreetableLabels {
   /** Live-region announcement after select-all deselects `count` visible rows. */
   rowsDeselected?: (count: number) => string;
 }
+
+/**
+ * Shared empty label bundle, so every unconfigured reader shares one Signal.
+ * @internal
+ */
+export const NO_TREETABLE_LABELS: Partial<TreetableLabels> = {};
 
 /**
  * English library defaults for {@link TreetableLabels}. Internal - the
@@ -247,7 +256,7 @@ export function withHighlightOnHover(enabled = true): TreetableFeature {
  * Feature: app-wide copy overrides for the treetable's built-in
  * strings ({@link TreetableLabels}). Partial - unset keys keep the
  * English library defaults. Later calls merge over earlier ones
- * key-by-key.
+ * key-by-key. Pass a `Signal` to switch the copy at runtime.
  *
  * ```ts
  * provideTreetable(
@@ -262,8 +271,12 @@ export function withHighlightOnHover(enabled = true): TreetableFeature {
  *
  * @category data-display/treetable
  */
-export function withTreetableLabels(labels: Partial<TreetableLabels>): TreetableFeature {
-  return { _apply: (c) => ({ ...c, labels: { ...c.labels, ...labels } }) };
+export function withTreetableLabels(
+  labels: Partial<TreetableLabels> | Signal<Partial<TreetableLabels>>,
+): TreetableFeature {
+  return {
+    _apply: (c) => ({ ...c, labels: createOverrideMerge(c.labels ?? NO_TREETABLE_LABELS, labels) }),
+  };
 }
 
 /**
